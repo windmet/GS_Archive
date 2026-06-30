@@ -6,7 +6,9 @@
  *
  * Asset directory structure (expected in /public/assets/):
  *   assets/bg/{bgId}.png
- *   assets/bgm/{bgmId}.ogg
+ *   assets/audio/bgm/{bgmId}.ogg    (proxied via Vite dev middleware)
+ *   assets/audio/se/{cueName}.ogg   (proxied — searches sfx/telephone/system dirs)
+ *   assets/audio/ambient/{cue}.ogg  (proxied — strips _t suffix for file lookup)
  *   assets/spine/{modelId}/comu.atlas
  *   assets/spine/{modelId}/comu.skel
  *   assets/spine/{modelId}/faces/{faceName}.png
@@ -20,7 +22,23 @@ export function getBgUrl(bgId) {
 }
 
 export function getBgmUrl(bgmId) {
-  return `${ASSET_BASE}/bgm/${bgmId}.ogg`
+  return `${ASSET_BASE}/audio/bgm/${bgmId}.ogg`
+}
+
+/**
+ * Sound effect (SE) — footsteps, phone rings, door knocks, etc.
+ * The dev middleware searches sfx/, telephone/, and system/ directories.
+ */
+export function getSeUrl(cueName) {
+  return `${ASSET_BASE}/audio/se/${cueName}.ogg`
+}
+
+/**
+ * Ambient/environmental audio — background atmosphere (cafe, rain, traffic, etc.)
+ * The dev middleware handles _t suffix stripping for file lookup.
+ */
+export function getAmbientUrl(cueName) {
+  return `${ASSET_BASE}/audio/ambient/${cueName}.ogg`
 }
 
 export function getSpineAtlasUrl(modelId) {
@@ -67,6 +85,37 @@ export function getVoiceUrl(voiceFile, scenarioId) {
 }
 
 /**
+ * Original game lip-sync scale JSON.
+ * Compiled scenarios store paths such as:
+ *   adxlip/001tom/2_1_001_01/2_1_001_01_00_09.json
+ */
+export function getLipSyncUrl(lipPath) {
+  if (!lipPath) return ''
+  const clean = String(lipPath).replace(/^\/+/, '')
+  return `${ASSET_BASE}/lipsync/${clean}`
+}
+
+/**
+ * Per-character mouth configuration (idolmouthsetting).
+ * Maps each expression to its open/close mouth scale and attachment names.
+ */
+export function getMouthSettingUrl(idolId) {
+  return `/data/idolsetting/mouth/idol_mouth_stg_${idolId}.json`
+}
+
+/**
+ * Per-character default offset (idolothersetting).
+ * Provides default X/Y position offset for each character's spine.
+ */
+export function getOtherSettingUrl(idolId) {
+  return `/data/idolsetting/other/idol_other_stg_${idolId}.json`
+}
+
+export function getBodyTypeUrl() {
+  return `/data/idolsetting/body_type.json`
+}
+
+/**
  * Mobile phone UI assets — indexed by chara_id (e.g. "001tom").
  */
 export function getMobileBgUrl(charaId) {
@@ -75,6 +124,10 @@ export function getMobileBgUrl(charaId) {
 
 export function getMobileIconUrl(charaId) {
   return `${ASSET_BASE}/idols/mobile_icons/image_chara_mobile_icon_${charaId}.png`
+}
+
+export function getCharaIconUrl(charaId) {
+  return `${ASSET_BASE}/idols/icons/image_chara_icon_${charaId}.png`
 }
 
 /**
@@ -96,4 +149,12 @@ export function getEmojiUrl(emojiId) {
  */
 export function getStampUrl(stampId) {
   return `${ASSET_BASE}/stamps/${stampId}.png`
+}
+
+/**
+ * Effect textures (bg effects like cameraflare spritesheets).
+ * Frame-based effects follow the pattern: {effectName}_{frameIndex}.png
+ */
+export function getEffectUrl(effectName, frameIndex) {
+  return `/data/fx_extracted/${effectName}_${frameIndex}.png`
 }

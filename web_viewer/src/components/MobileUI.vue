@@ -67,17 +67,25 @@ function cleanSpeaker(raw) {
 
 function stepToMessage(step) {
   const d = step.dialogue || {}
+  const stamp = step.stamp || null
   const rawSpeaker = d.speaker || ''
   // If speaker is a raw chara_id like "024shk", resolve to display name
-  let speaker = cleanSpeaker(rawSpeaker)
-  const charaId = step.chara_id || IDOL_NAME_TO_ID[speaker] || ''
+  let speaker = cleanSpeaker(stamp?.speaker || rawSpeaker)
+  const charaId = stamp?.chara_id || step.chara_id || IDOL_NAME_TO_ID[speaker] || ''
   if (/^\d{3}[a-z0-9]{3}$/.test(speaker)) {
     speaker = IDOL_ID_TO_NAME[speaker] || speaker
   }
   const text = resolveTextContent(d)
   const prod = isProducer(rawSpeaker)
+  if (stamp?.id) {
+    return { speaker, text: '', charaId, isProducer: prod, isStamp: true, stampId: stamp.id }
+  }
   const stampMatch = text.match(/^<emoji>(image_mobile_stamp_.+?)<\/emoji>$/)
   return { speaker, text, charaId, isProducer: prod, isStamp: !!stampMatch, stampId: stampMatch ? stampMatch[1] : null }
+}
+
+function isTalkHistoryStep(step) {
+  return step?.type === 'talk' || step?.type === 'talk_stamp'
 }
 
 // ── Accumulate talk messages as they're encountered ──
@@ -87,7 +95,7 @@ const _acc = ref(new Set())
 
 watch(() => props.stepIndex, (idx) => {
   const step = props.step
-  if (!step || step.type !== 'talk') return
+  if (!isTalkHistoryStep(step)) return
   if (_acc.value.has(idx)) return
   _acc.value = new Set([..._acc.value, idx])
   talkByIndex.value = { ...talkByIndex.value, [idx]: stepToMessage(step) }
@@ -96,7 +104,7 @@ watch(() => props.stepIndex, (idx) => {
 
 watch(() => props.step, (step) => {
   const idx = props.stepIndex
-  if (!step || step.type !== 'talk' || _acc.value.has(idx)) return
+  if (!isTalkHistoryStep(step) || _acc.value.has(idx)) return
   _acc.value = new Set([..._acc.value, idx])
   talkByIndex.value = { ...talkByIndex.value, [idx]: stepToMessage(step) }
   nextTick(scrollToBottom)

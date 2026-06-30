@@ -1,29 +1,32 @@
-<template>
-  <div class="story-viewer-root" tabindex="0" @keydown.left="goPrev" @keydown.right="goNext">
+﻿<template>
+  <div class="story-viewer-root" :class="{ 'stage-only': HIDE_UI }" tabindex="0" @keydown.left="goPrev" @keydown.right="goNext">
     <div class="viewer-stage">
-    <!-- Spine rendering layer (bg + characters) -->
-    <SpineStage ref="spineStageRef" :step="currentStep" />
+    <!-- Spine rendering layer (background + characters) -->
+    <SpineStage ref="spineStageRef" :step="currentStep" :fallbackBg="firstAvailableBg" />
 
     <!-- Top bar -->
-    <div class="top-bar" v-if="compiledData">
-      <button class="bar-btn" @click="$emit('back')">← Back</button>
-      <span class="step-counter">{{ currentStepIndex + 1 }} / {{ compiledData.steps.length }}</span>
+    <div class="top-bar" v-if="compiledData && !HIDE_UI">
+      <button class="bar-btn" @click="$emit('back')">Back</button>
+      <div class="progress-counter">
+        <span v-if="currentEpisodeLabel" class="episode-badge">{{ currentEpisodeLabel }}</span>
+        <span class="step-counter">{{ currentStepIndex + 1 }} / {{ compiledData.steps.length }}</span>
+      </div>
       <div class="top-bar-right">
         <button class="lang-btn" @click.stop="cycleLanguage">{{ langLabel }}</button>
         <button class="bar-btn" v-if="!isLastStep" @click="goNext">Skip →</button>
       </div>
     </div>
 
-    <!-- Audio player for voice → 改用 Web Audio API，完全绕过 IDM 嗅探 -->
+    <!-- Voice audio player: handled by the Web Audio API to avoid IDM sniffing -->
 
-    <!-- UI Overlay — step type specific -->
-    <div class="ui-overlay" v-if="compiledData">
+    <!-- UI overlay for step-specific screens -->
+    <div class="ui-overlay" v-if="compiledData && !HIDE_UI">
 
       <!-- ADV dialogue -->
       <AdvUI v-if="currentStep.type === 'adv'" :dialogue="currentStep.dialogue" :step="currentStep" :playing="isPlaying" @click="goNext" />
 
-      <!-- Talk / chat mode: v-show keeps component mounted across choice steps -->
-      <MobileUI v-show="currentStep.type === 'talk'"
+      <!-- Talk / chat mode: keep the component mounted across choice steps -->
+      <MobileUI v-show="currentStep.type === 'talk' || currentStep.type === 'talk_stamp'"
         :dialogue="currentStep.dialogue" :step="currentStep"
         :stepIndex="currentStepIndex" :scenarioId="compiledData?.scenario_id"
         :historyStack="historyStack" :choiceTexts="choiceTexts" />
@@ -38,29 +41,26 @@
         @select="onChoice"
       />
 
-      <!-- Synopsis / Title -->
-      <div v-if="currentStep.type === 'synopsis' || currentStep.type === 'title'" class="meta-step">
-        <div class="meta-title-bg"></div>
-        <div class="meta-content">
-          <div class="meta-title" v-if="currentStep.dialogue?.speaker">{{ resolveText(currentStep.dialogue, 'JP').speaker }}</div>
-          <div class="meta-chapter" v-if="synopsisText && isChapterText(synopsisText)">
-            {{ synopsisText }}
-          </div>
-          <div class="meta-text" v-else-if="synopsisText">{{ synopsisText }}</div>
-        </div>
-      </div>
+      <!-- Title (episode/chapter title card) -->
+      <TitleUI v-if="currentStep.type === 'title'" :step="currentStep" />
+
+      <!-- Synopsis (summary text with glassmorphism) -->
+      <SynopsisUI v-if="currentStep.type === 'synopsis'" :step="currentStep" />
+
+      <!-- Time/location caption -->
+      <TextTimeUI v-if="currentStep.type === 'text_time'" :step="currentStep" @next="goNext" />
 
     </div>
 
     <!-- Bottom navigation bar -->
-    <div class="nav-bar" v-if="compiledData && compiledData.steps.length > 0">
-      <button class="nav-btn" @click.stop="goPrev" :disabled="isFirstStep">◀</button>
+    <div class="nav-bar" v-if="compiledData && compiledData.steps.length > 0 && !HIDE_UI">
+      <button class="nav-btn" @click.stop="goPrev" :disabled="isFirstStep">Prev</button>
       <span class="nav-label">{{ currentStep.type }}</span>
       <button class="nav-btn" @click.stop="goNext" :disabled="isLastStep">▶</button>
     </div>
 
     </div><!-- /viewer-stage -->
-    <div class="loading" v-if="!compiledData">Loading story data...</div>
+    <div class="loading" v-if="!compiledData && !HIDE_UI">Loading story data...</div>
   </div>
 </template>
 
@@ -70,17 +70,28 @@ import AdvUI from '../components/AdvUI.vue'
 import MobileUI from '../components/MobileUI.vue'
 import CallUI from '../components/CallUI.vue'
 import ChoiceUI from '../components/ChoiceUI.vue'
-// SpineStage lazily loaded — PIXI.js (720KB) only loads when user plays a story
+import TitleUI from '../components/TitleUI.vue'
+import SynopsisUI from '../components/SynopsisUI.vue'
+import TextTimeUI from '../components/TextTimeUI.vue'
+// SpineStage is lazy-loaded so PIXI.js only loads when a story opens
 const SpineStage = defineAsyncComponent(() => import('../components/SpineStage.vue'))
-import { resolveText } from '../utils/TextHelper.js'
 import { languageMode, setLanguageMode } from '../utils/LanguageStore.js'
-import { getVoiceUrl } from '../utils/AssetResolver.js'
+import { getAutoAdvanceTiming, isTransitionStep } from '../utils/StoryStepFlow.js'
+import { useVoicePlayer } from './useVoicePlayer.js'
+import { AudioManager } from './AudioManager.js'
 
 const props = defineProps({
   scenarioJson: { type: Object, default: null },
   scenarioUrl: { type: String, default: null },
 })
 const emit = defineEmits(['back', 'ready'])
+const URL_FLAGS = new URLSearchParams(window.location.search)
+const HIDE_UI = URL_FLAGS.get('stageOnly') === '1' || URL_FLAGS.get('hideUI') === '1' || URL_FLAGS.get('transparentUI') === '1'
+const START_STEP_VALUE = URL_FLAGS.get('startStep')
+const START_STEP = START_STEP_VALUE == null || START_STEP_VALUE === '' ? null : Number(START_STEP_VALUE)
+const NO_VOICE = URL_FLAGS.get('noVoice') === '1'
+const SNAPSHOT_AT_VALUE = URL_FLAGS.get('snapshotAt')
+const SNAPSHOT_AT = SNAPSHOT_AT_VALUE == null || SNAPSHOT_AT_VALUE === '' ? null : Number(SNAPSHOT_AT_VALUE)
 
 const spineStageRef = ref(null)
 const compiledData = ref(null)
@@ -90,42 +101,29 @@ const selectedChoices = reactive(new Map())
 const _ready = ref(false)
 const isPlaying = ref(false)
 
-// ── Timeline (mid-sentence face/animation changes) ──
+// 鈹€鈹€ Timeline (mid-sentence face/animation changes) 鈹€鈹€
 let _timelineEvents = []
 const _firedTimeline = new Set()
 let _timelineStartTime = 0
 let _timelineRAF = false
+let _fadeAutoTimer = null
+let _fadeAutoSeq = 0
+let _snapshotTimer = null
+let _seTimers = []
 
-// ── Web Audio API 语音播放 ──
-let _audioCtx = null
-let _currentSource = null
-let _lastVoiceUrl = null
-let _lastVoiceStepIndex = -1
-let _voiceCharaId = null  // 当前说话的角色，用于嘴型动画
+// 鈹€鈹€ 闈炶闊抽煶棰戯紙SE/鐜闊?BGM锛夌鐞?鈹€鈹€
+const _audioManager = new AudioManager()
+let _lastEnvCue = null
+let _lastBgmId = null
 
-// ── Web Audio AnalyserNode: 实时音频频谱分析 ──
-let globalAnalyser = null
-let _globalGain = null  // GainNode: 全局音量控制（当前 0.6 = 60%）
-let frequencyData = null
+let voicePlayer = null
 
-/**
- * 获取当前播放语音的实时音量 (0.0 ~ 1.0).
- * 基于 AnalyserNode 的频域数据计算平均强度.
- */
-const getVoiceVolume = () => {
-  if (!globalAnalyser || !frequencyData) return 0
-  globalAnalyser.getByteFrequencyData(frequencyData)
-  let sum = 0
-  for (let i = 0; i < frequencyData.length; i++) sum += frequencyData[i]
-  return (sum / frequencyData.length) / 255.0
-}
+const getVoiceVolume = () => voicePlayer?.getVoiceVolume?.() || 0
 
 // 控制 Spine 嘴型动画（Track 2），传入真实音量回调
 function _setTalking(on) {
-  const mgr = spineStageRef.value?.manager
-  if (mgr && _voiceCharaId) {
-    mgr.setSpineTalking(_voiceCharaId, on, getVoiceVolume)
-  }
+  if (NO_VOICE) return
+  voicePlayer?.setTalking?.(on)
 }
 
 /**
@@ -134,131 +132,55 @@ function _setTalking(on) {
  * Once running, subsequent source.start(0) calls work even from async contexts.
  */
 function _ensureAudioCtx() {
-  if (!_audioCtx) {
-    _audioCtx = new (window.AudioContext || window.webkitAudioContext)()
-  }
-  if (_audioCtx.state === 'suspended') {
-    // fire-and-forget — browser grants resume within user gesture
-    _audioCtx.resume()
-  }
+  voicePlayer?.ensureAudioCtx?.()
 }
 
 function _resetVoiceDedup() {
-  _lastVoiceUrl = null
-  _lastVoiceStepIndex = -1
+  voicePlayer?.resetVoiceDedup?.()
+}
+
+function _clearFadeAutoAdvance() {
+  _fadeAutoSeq++
+  if (_fadeAutoTimer) {
+    clearTimeout(_fadeAutoTimer)
+    _fadeAutoTimer = null
+  }
+}
+
+function _clearSnapshotTimer() {
+  if (_snapshotTimer) {
+    clearTimeout(_snapshotTimer)
+    _snapshotTimer = null
+  }
+}
+
+function _clearSeTimers() {
+  for (const timer of _seTimers) {
+    clearTimeout(timer)
+  }
+  _seTimers = []
+}
+
+function _playStepSE(se) {
+  if (!se?.cue) return
+  const rawDelay = se.delay ?? se.volume ?? 0
+  const delay = Number.parseFloat(rawDelay)
+  if (Number.isFinite(delay) && delay > 0) {
+    const timer = setTimeout(() => {
+      _audioManager.playSE(se.cue)
+    }, delay * 1000)
+    _seTimers.push(timer)
+  } else {
+    _audioManager.playSE(se.cue)
+  }
 }
 
 function _stopCurrentVoice(reason = 'unspecified') {
-  if (_currentSource) {
-    console.warn('🛑 [Audio] _stopCurrentVoice  reason:', reason)
-    try { _currentSource.stop() } catch (e) { /* 可能已经 stopped */ }
-    try { _currentSource.disconnect() } catch (e) { /* 可能已经 disconnected */ }
-    _currentSource = null
-    _setTalking(false)
-  }
+  voicePlayer?.stopCurrentVoice?.(reason)
 }
 
-async function playVoice() {
-  const step = currentStep.value
-  const voice = step?.dialogue?.voice
-  const scenarioId = compiledData.value?.scenario_id
-  if (!voice) {
-    console.log('[Audio] playVoice: no voice in step, skipping')
-    return
-  }
 
-  // 去重：同一个 step 的同一段语音，不去重复触发
-  if (voice === _lastVoiceUrl && currentStepIndex.value === _lastVoiceStepIndex) {
-    console.log('[Audio] dedup: same voice already processed for this step, skip')
-    return
-  }
-  _lastVoiceUrl = voice
-  _lastVoiceStepIndex = currentStepIndex.value
-
-  _stopCurrentVoice('playVoice-new')
-  _voiceCharaId = step.chara_id || null
-  isPlaying.value = false
-
-  // AudioContext should already be running (activated in goNext/goPrev/onChoice)
-  _ensureAudioCtx()
-
-  try {
-    const voiceUrl = getVoiceUrl(voice, scenarioId)
-    console.log('[Audio] stepIdx:', currentStepIndex.value, 'voice:', voice, 'url:', voiceUrl)
-    const bust = Date.now()
-    const res = await fetch(`${voiceUrl}?_=${bust}`)
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-
-    const contentType = res.headers.get('content-type') || ''
-    console.log('[Audio] response:', { voice, status: res.status, contentType, size: res.headers.get('content-length') })
-
-    const arrayBuffer = await res.arrayBuffer()
-    console.log('[Audio] fetch OK, size:', arrayBuffer.byteLength, 'voice:', voice)
-
-    // Guard: reject non-audio responses (Vite SPA fallback returns HTML)
-    if (arrayBuffer.byteLength < 1000 || contentType.includes('text/html')) {
-      console.warn('⚠️ [Audio] non-audio response, content-type:', contentType, 'size:', arrayBuffer.byteLength)
-      throw new Error(`Not an audio file: ${contentType} (${arrayBuffer.byteLength} bytes)`)
-    }
-
-    // Fallback resume — in case this path was reached without user gesture
-    if (_audioCtx.state === 'suspended') {
-      console.warn('[Audio] AudioContext was suspended, attempting resume')
-      await _audioCtx.resume()
-    }
-
-    let audioBuffer
-    try {
-      audioBuffer = await _audioCtx.decodeAudioData(arrayBuffer)
-    } catch (decodeErr) {
-      console.error('❌ [Audio] decodeAudioData FAILED:', decodeErr.message, 'voice:', voice, 'bufferSize:', arrayBuffer.byteLength)
-      isPlaying.value = false
-      return
-    }
-    console.log('✅ [Audio] decoded OK:', voice, 'duration:', audioBuffer.duration.toFixed(2) + 's', 'channels:', audioBuffer.numberOfChannels, 'ctxState:', _audioCtx.state)
-
-    // 在 start 之前再检查一次有没有被新的 playVoice 取代
-    if (_currentSource || voice !== _lastVoiceUrl) {
-      console.log('[Audio] superseded by newer voice before start, dropping')
-      return
-    }
-
-    // 创建 AnalyserNode + GainNode（全局音量），保持永久连接至 destination
-    if (!globalAnalyser) {
-      _globalGain = _audioCtx.createGain()
-      _globalGain.gain.value = 0.5  // 全局音量 50%
-      globalAnalyser = _audioCtx.createAnalyser()
-      globalAnalyser.fftSize = 256
-      frequencyData = new Uint8Array(globalAnalyser.frequencyBinCount)
-      // 路由: Source → Gain(0.6) → Analyser → Destination
-      _globalGain.connect(globalAnalyser)
-      globalAnalyser.connect(_audioCtx.destination)
-    }
-    const source = _audioCtx.createBufferSource()
-    source.buffer = audioBuffer
-    source.connect(_globalGain)
-    source.start(0)
-
-    // 开始嘴型动画 (Track 2)
-    _setTalking(true)
-
-    _currentSource = source
-    isPlaying.value = true
-    console.log('🔊 [Audio] playback started:', voice)
-
-    source.onended = () => {
-      console.log('[Audio] playback ended:', voice)
-      _setTalking(false)
-      isPlaying.value = false
-      if (_currentSource === source) _currentSource = null
-    }
-  } catch (err) {
-    console.warn('[Audio] playback failed:', err.message, 'voice:', voice)
-    isPlaying.value = false
-  }
-}
-
-// ── Timeline (mid-sentence face/animation changes) ──
+// 鈹€鈹€ Timeline (mid-sentence face/animation changes) 鈹€鈹€
 
 function _startTimeline() {
   _cancelTimeline()
@@ -306,7 +228,14 @@ function _fireTimelineEvent(event) {
       sweat_flag: event.sweat_flag,
     })
   } else if (event.type === 'spine_anim') {
-    mgr.switchSpineAnim(event.chara_id, event.value)
+    if (event.no_back) mgr.playSpineAnim?.(event.chara_id, event.value, false, true)
+    else mgr.switchSpineAnim(event.chara_id, event.value)
+  } else if (event.type === 'spine_neck_anim') {
+    mgr.playSpineNeckAnim?.(event.chara_id, event.value)
+  } else if (event.type === 'spine_neck_stop') {
+    mgr.stopSpineNeckAnim?.(event.chara_id)
+  } else if (event.type === 'spine_color') {
+    mgr.setSpineColor(event.chara_id, event.value, event.duration ?? 0, 0)
   }
 }
 
@@ -331,6 +260,23 @@ function _cancelTimeline() {
   _firedTimeline.clear()
 }
 
+function freezeScene(reason = 'snapshot') {
+  _clearFadeAutoAdvance()
+  _clearSnapshotTimer()
+  _cancelTimeline()
+  spineStageRef.value?.manager?.cancelAllSpineTweens?.()
+  _stopCurrentVoice(reason)
+  return spineStageRef.value?.dumpScene?.() || window.dumpScene?.() || []
+}
+
+function scheduleSnapshot() {
+  _clearSnapshotTimer()
+  if (!Number.isFinite(SNAPSHOT_AT) || SNAPSHOT_AT < 0) return
+  _snapshotTimer = setTimeout(() => {
+    window.__SNAPSHOT__ = freezeScene('snapshotAt')
+  }, SNAPSHOT_AT * 1000)
+}
+
 // Computed: expose selectedChoices as plain object for MobileUI prop reactivity
 const choiceTexts = computed(() => {
   const obj = {}
@@ -345,16 +291,48 @@ const currentStep = computed(() => {
   return compiledData.value.steps[currentStepIndex.value] || {}
 })
 
+if (!voicePlayer) {
+  voicePlayer = useVoicePlayer({
+    spineStageRef,
+    currentStep,
+    currentStepIndex,
+    compiledData,
+    isPlaying,
+    noVoice: NO_VOICE,
+  })
+}
+
 const isFirstStep = computed(() => historyStack.value.length === 0)
 const isLastStep = computed(() => !compiledData.value || currentStepIndex.value >= compiledData.value.steps.length - 1)
 
-const synopsisText = computed(() => {
-  const d = currentStep.value?.dialogue
-  return d ? resolveText(d).text : ''
+const currentEpisode = computed(() => {
+  const episodes = compiledData.value?.episodes || []
+  if (!episodes.length) return null
+  const current = currentStepIndex.value
+  return episodes.find(ep => current >= ep.start_step_index && current <= ep.end_step_index) || null
+})
+
+const currentEpisodeLabel = computed(() => {
+  const ep = currentEpisode.value
+  if (!ep) {
+    const idx = currentStep.value?.episode_index
+    if (idx == null) return ''
+    return `EP${String(Number(idx) + 1).padStart(2, '0')}`
+  }
+  const no = String(ep.episode_no || ep.episode_index + 1).padStart(2, '0')
+  return `EP${no}`
+})
+
+const firstAvailableBg = computed(() => {
+  if (!compiledData.value?.steps) return null
+  for (const step of compiledData.value.steps) {
+    if (step.state?.bg) return step.state.bg
+  }
+  return null
 })
 
 const langLabel = computed(() => {
-  const labels = { JP: 'JP', CN: '中文', BILINGUAL: 'JP+CN' }
+  const labels = { JP: 'JP', CN: '涓枃', BILINGUAL: 'JP+CN' }
   return labels[languageMode.value] || 'JP'
 })
 
@@ -365,8 +343,15 @@ function cycleLanguage() {
   setLanguageMode(LANG_CYCLE[(idx + 1) % LANG_CYCLE.length])
 }
 
+function applyStartStepIfNeeded() {
+  if (!compiledData.value?.steps?.length) return
+  if (!Number.isFinite(START_STEP)) return
+  const target = Math.max(0, Math.min(compiledData.value.steps.length - 1, START_STEP - 1))
+  currentStepIndex.value = target
+}
+
 onMounted(async () => {
-  // 全局调试工具：在 Console 输入 showAnims('001tom') 查看角色的所有动作
+  // 全局调试工具：在 Console 输入 showAnims("001tom") 查看角色的所有动作
   window.showAnims = window.showAnims || (async (charaId, modelIdx) => {
     const models = ['001tom_002_00','001tom_003_00','001tom_004_00','001tom_004_01','001tom_005_00','001tom_101_00','001tom_101_01','001tom_102_00','001tom_103_00','001tom_103_01',
       '002dra_002_00','002dra_003_00','003min_002_00','003min_003_00','004ren_002_00','004ren_003_00','005sho_002_00','005sho_003_00',
@@ -374,7 +359,7 @@ onMounted(async () => {
       '008ter_002_00','008ter_003_00','009ryu_002_00','009ryu_003_00',
       '010kai_002_00','010kai_003_00']
     const modelList = models.filter(m => m.startsWith(charaId))
-    if (modelList.length === 0) { console.warn('Unknown charaId:', charaId, '— try one of:', [...new Set(models.map(m => m.split('_')[0]))].join(', ')); return }
+    if (modelList.length === 0) { console.warn('Unknown charaId:', charaId, '鈥?try one of:', [...new Set(models.map(m => m.split('_')[0]))].join(', ')); return }
     const targetModels = modelIdx !== undefined ? [modelList[modelIdx]] : modelList
     for (const modelId of targetModels) {
       try {
@@ -398,14 +383,15 @@ onMounted(async () => {
         atlas.pages.forEach(p => p.pma = true)
         const sd = new SkeletonBinary(new AtlasAttachmentLoader(atlas)).readSkeletonData(new Uint8Array(skelBuf))
         const anims = sd.animations.map(a => a.name)
-        console.log(`%c▼ ${modelId} — ${anims.length} animations`, 'font-weight:bold;color:#88ddff;font-size:13px')
+        console.log(`%c鈻?${modelId} 鈥?${anims.length} animations`, 'font-weight:bold;color:#88ddff;font-size:13px')
         console.log(anims.map((a, i) => `${String(i+1).padStart(2,'0')}. ${a}`).join('\n'))
       } catch (e) { console.warn(`[${modelId}] load failed:`, e.message) }
     }
   })
-  console.log('💡 Console tip: type showAnims("001tom") to see all animations for a character')
+  console.log('馃挕 Console tip: type showAnims("001tom") to see all animations for a character')
   if (props.scenarioJson) {
     compiledData.value = props.scenarioJson
+    applyStartStepIfNeeded()
   } else if (props.scenarioUrl) {
     await loadScenario(props.scenarioUrl)
   }
@@ -442,7 +428,7 @@ onMounted(async () => {
   // SpineStage applies first step state reactively via :step prop binding.
   // No explicit applyStepState call needed.
 
-  // 语音由 watch(currentStep) 统一处理
+  // Voice playback is handled in watch(currentStep) for a single source of truth
 
   // Enable runtime watch
   _ready.value = true
@@ -450,48 +436,135 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  console.warn('🚨 [Lifecycle] StoryViewer onBeforeUnmount FIRED!')
+  console.warn('馃毃 [Lifecycle] StoryViewer onBeforeUnmount FIRED!')
+  _clearFadeAutoAdvance()
+  _clearSeTimers()
   _fastForwardTimeline()
   _stopCurrentVoice('onBeforeUnmount')
-  if (_audioCtx) {
-    _audioCtx.close().catch(() => {})
-    _audioCtx = null
-  }
+  // Stop BGM and ambient in AudioManager
+  _audioManager.dispose()
   _resetVoiceDedup()
 })
 
 // Watch step changes to trigger voice playback and timeline
 watch(currentStep, (newStep, oldStep) => {
-  console.log('[Audio] watch(currentStep) fired:', oldStep?.dialogue?.voice, '→', newStep?.dialogue?.voice)
-  playVoice()
+  console.log('[Audio] watch(currentStep) fired:', oldStep?.dialogue?.voice, '->', newStep?.dialogue?.voice)
+  _clearFadeAutoAdvance()
+  _clearSeTimers()
+  _clearSnapshotTimer()
+
+  const episodeChanged = oldStep && newStep && oldStep.episode_index !== newStep.episode_index
+  if (episodeChanged) {
+    spineStageRef.value?.manager?.cancelAllSpineTweens?.()
+  }
+
+  // SE (one-shot)
+  const seEvents = Array.isArray(newStep?.state?.se_events) ? newStep.state.se_events : []
+  if (seEvents.length > 0) {
+    for (const se of seEvents) {
+      _playStepSE(se)
+    }
+  } else {
+    const se = newStep?.state?.se
+    _playStepSE(se)
+  }
+
+  // Ambient audio (looping)
+  const env = newStep?.state?.environmental
+  const oldEnv = oldStep?.state?.environmental
+  const envCue = env?.cue
+  const oldEnvCue = oldEnv?.cue
+  if (envCue && envCue !== _lastEnvCue) {
+    _audioManager.playAmbient(envCue, 0.5, env?.volume)
+    _lastEnvCue = envCue
+  } else if (!envCue && _lastEnvCue) {
+    _audioManager.stopAmbient()
+    _lastEnvCue = null
+  }
+  // Environmental volume ducking
+  if (env?.volume != null && env.volume !== '' && envCue === _lastEnvCue) {
+    _audioManager.setAmbientVolume(env.volume)
+  }
+  if (newStep?.state?.environmental_duck_target != null) {
+    _audioManager.setAmbientVolume(newStep.state.environmental_duck_target)
+  }
+
+  // BGM
+  const bgmId = newStep?.state?.bgm
+  const bgmStopFade = newStep?.state?.bgm_stop_fade
+  if (bgmId && bgmId !== _lastBgmId) {
+    _audioManager.playBgm(bgmId)
+    _lastBgmId = bgmId
+  } else if (!bgmId && _lastBgmId) {
+    _audioManager.stopBgm(bgmStopFade != null ? bgmStopFade : 1.0)
+    _lastBgmId = null
+  }
+
+  // Screen fade step: auto-advance after animation
+  const autoAdvance = getAutoAdvanceTiming(newStep)
+  if (autoAdvance) {
+    const autoSeq = _fadeAutoSeq
+    const autoStepIndex = currentStepIndex.value
+    _fadeAutoTimer = setTimeout(() => {
+      _fadeAutoTimer = null
+      if (autoSeq === _fadeAutoSeq && currentStepIndex.value === autoStepIndex && !isLastStep.value) {
+        if (autoAdvance.pushHistory) {
+          historyStack.value.push(currentStepIndex.value)
+        }
+        currentStepIndex.value++
+        _resetVoiceDedup()
+      }
+    }, autoAdvance.delayMs)
+  }
+
+  voicePlayer?.playVoice?.()
   _startTimeline()
+  scheduleSnapshot()
 })
 
-function isChapterText(text) {
-  return /^[第\d零壱弐参話\-]+/.test(text)
-}
 
 
 function goNext() {
+  _clearFadeAutoAdvance()
   // Fast-forward any remaining timeline events before leaving this step
   _fastForwardTimeline()
   // Activate AudioContext synchronously within user gesture
   _ensureAudioCtx()
   if (!isLastStep.value) {
-    historyStack.value.push(currentStepIndex.value)
+    const currentStep = compiledData.value?.steps?.[currentStepIndex.value]
+    if (!isTransitionStep(currentStep)) {
+      historyStack.value.push(currentStepIndex.value)
+    }
     currentStepIndex.value++
     _resetVoiceDedup()
   }
 }
 function goPrev() {
+  _clearFadeAutoAdvance()
   _fastForwardTimeline()
   _ensureAudioCtx()
   if (historyStack.value.length > 0) {
-    currentStepIndex.value = historyStack.value.pop()
+    let target = historyStack.value.pop()
+    while (target > 0 && isTransitionStep(compiledData.value?.steps?.[target])) {
+      if (historyStack.value.length === 0) {
+        target--
+        continue
+      }
+      target = historyStack.value.pop()
+    }
+    currentStepIndex.value = target
+    _resetVoiceDedup()
+  } else if (currentStepIndex.value > 0) {
+    let target = currentStepIndex.value - 1
+    while (target > 0 && isTransitionStep(compiledData.value?.steps?.[target])) {
+      target--
+    }
+    currentStepIndex.value = target
     _resetVoiceDedup()
   }
 }
 function onChoice(opt) {
+  _clearFadeAutoAdvance()
   _fastForwardTimeline()
   _ensureAudioCtx()
   _resetVoiceDedup()
@@ -505,6 +578,7 @@ function onChoice(opt) {
   }
 }
 function goToStep(index) {
+  _clearFadeAutoAdvance()
   _fastForwardTimeline()
   if (compiledData.value && index >= 0 && index < compiledData.value.steps.length) {
     historyStack.value.push(currentStepIndex.value)
@@ -514,14 +588,16 @@ function goToStep(index) {
 
 async function loadScenario(url) {
   try {
-    const r = await fetch(url)
+    const sep = url.includes('?') ? '&' : '?'
+    const r = await fetch(`${url}${sep}v=${Date.now()}`, { cache: 'no-store' })
     compiledData.value = await r.json()
+    applyStartStepIfNeeded()
   } catch (err) {
     console.error('[StoryViewer] Failed to load:', err)
   }
 }
 
-defineExpose({ goNext, goPrev, goToStep, currentStepIndex })
+defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene })
 </script>
 
 <style scoped>
@@ -557,7 +633,29 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex })
   border-radius: 4px; cursor: pointer; font-size: 0.75rem;
 }
 .bar-btn:hover { background: rgba(255,255,255,0.25); }
-.step-counter { color: rgba(255,255,255,0.65); font-size: 0.75rem; }
+.progress-counter {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+}
+.step-counter { color: rgba(255,255,255,0.78); font-size: 0.75rem; }
+.episode-badge {
+  color: #061521;
+  background: rgba(136, 221, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
 .top-bar-right { display: flex; align-items: center; gap: 6px; }
 .lang-btn {
   background: rgba(255,255,255,0.12); color: #88ddff; border: 1px solid rgba(136,221,255,0.3);
@@ -579,54 +677,7 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex })
 .nav-btn:disabled { opacity: 0.3; cursor: default; }
 .nav-label { color: rgba(255,255,255,0.5); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; }
 
-.meta-step {
-  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  color: #333;
-}
-.meta-title-bg {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 70%; max-width: 500px;
-  height: auto;
-  min-height: 180px;
-  background: rgba(255, 255, 255, 0.7);
-  pointer-events: none;
-}
-/* Diagonal lines overlay on bg */
-.meta-title-bg::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-image: repeating-linear-gradient(
-    135deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.04) 2px,
-    rgba(0, 0, 0, 0.04) 6px
-  );
-  opacity: 0.7;
-}
-.meta-content {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-.meta-title { font-size: 1.6rem; font-weight: bold; margin-bottom: 4px; color: #222; text-align: center; }
-.meta-chapter {
-  display: inline-block;
-  background: #11BAFC;
-  color: #fff;
-  padding: 6px 18px;
-  border-radius: 4px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  text-align: center;
-}
-.meta-text { font-size: 1rem; line-height: 1.8; max-width: 600px; text-align: center; color: #444; }
 .loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #333; font-size: 1.2rem; }
 </style>
+
+

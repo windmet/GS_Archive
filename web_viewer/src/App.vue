@@ -89,7 +89,7 @@
           <!-- Default group display -->
           <template v-else>
             <span class="group-title">{{ g.title }}</span>
-            <span class="group-meta">{{ g.files.length }} files</span>
+            <span class="group-meta">{{ groupFileCount(g) }} files</span>
           </template>
         </button>
       </div>
@@ -128,7 +128,7 @@
           @click="openEpisodeFiles(ep)"
         >
           <span class="episode-title">{{ ep.title || ep.id }}</span>
-          <span class="episode-count">{{ ep.files.length }} files</span>
+          <span class="episode-count">{{ groupFileCount(ep) }} files</span>
         </button>
       </div>
     </div>
@@ -176,6 +176,8 @@ import { ref, computed, onMounted } from 'vue'
 import StoryViewer from './core/StoryViewer.vue'
 import SpineViewer from './components/SpineViewer.vue'
 import { IDOL_ID_TO_NAME } from './utils/IdolNameMap.js'
+import { groupFileCount, groupFileList } from './utils/IndexNormalizer.js'
+import { countScenarioFiles, getCategoryCountText } from './utils/IndexStats.js'
 import { Preloader } from './utils/Preloader.js'
 import LoadingScreen from './components/LoadingScreen.vue'
 
@@ -210,31 +212,7 @@ const CATEGORIES = [
   { id: 'extra', name: '额外剧情' },
 ]
 
-const totalFiles = computed(() => {
-  if (!indexData.value) return 0
-  let sum = 0
-  for (const cat of indexData.value.categories) {
-    if (cat.groups) sum += cat.groups.reduce((s, g) => s + g.files.length, 0)
-    if (cat.characters) {
-      for (const ch of Object.values(cat.characters)) {
-        sum += ch.groups.reduce((s, g) => s + g.files.length, 0)
-      }
-    }
-    if (cat.individual) {
-      for (const ch of Object.values(cat.individual)) {
-        sum += ch.groups.reduce((s, g) => s + g.files.length, 0)
-      }
-    }
-    if (cat.units) {
-      for (const u of cat.units) {
-        for (const ep of u.episodes) {
-          sum += ep.files.length
-        }
-      }
-    }
-  }
-  return sum
-})
+const totalFiles = computed(() => countScenarioFiles(indexData.value?.categories || []))
 
 function categoryById(id) {
   if (!indexData.value) return null
@@ -244,23 +222,7 @@ function categoryById(id) {
 const currentCategory = computed(() => categoryById(currentCategoryId.value))
 
 function catCountText(id) {
-  const cat = categoryById(id)
-  if (!cat) return ''
-  if (cat.id === 'idol' && cat.characters) return `${Object.keys(cat.characters).length} idols`
-  if (cat.id === 'idol_chat') {
-    const n = Object.keys(cat.individual || {}).length
-    const g = (cat.groups || []).length
-    return `${n + g} chats`
-  }
-  if (cat.id === 'idol_phone') {
-    return `${Object.keys(cat.individual || {}).length} calls`
-  }
-  if (cat.units) return `${cat.units.length} units`
-  if (cat.groups) {
-    const c = cat.groups.reduce((s, g) => s + g.files.length, 0)
-    return `${c} files`
-  }
-  return ''
+  return getCategoryCountText(categoryById(id))
 }
 
 // — Idol / Chat grid —
@@ -362,7 +324,7 @@ const episodeZeroUnits = computed(() => {
 // — File list —
 const filteredFiles = computed(() => {
   if (!currentGroup.value) return []
-  const files = currentGroup.value.files
+  const files = groupFileList(currentGroup.value)
   const q = filterQuery.value.toLowerCase()
   if (!q) return files
   return files.filter(fn => fn.toLowerCase().includes(q))
@@ -417,7 +379,7 @@ function openUnit(unit) {
 
 function openEpisodeFiles(ep) {
   // Create a synthetic group object from episode data
-  currentGroup.value = { id: ep.id, title: ep.title, files: ep.files }
+  currentGroup.value = { id: ep.id, title: ep.title, files: groupFileList(ep) }
   filterQuery.value = ''
   view.value = 'files'
 }
@@ -459,7 +421,7 @@ async function loadScenario(name) {
   loading.value = true
   preloadProgress.value = 0
   try {
-    const r = await fetch(`/data/compiled/${name}`)
+    const r = await fetch(`/data/compiled/${name}?v=${Date.now()}`, { cache: 'no-store' })
     const scenario = await r.json()
 
     // Preload all scenario assets before switching to player
@@ -479,6 +441,11 @@ async function loadScenario(name) {
 onMounted(async () => {
   try {
     const r = await fetch('/data/compiled/index.json')
+    if (!r.ok) throw new Error(`HTTP ${r.status}`)
+    const contentType = r.headers.get('content-type') || ''
+    if (contentType.includes('text/html')) {
+      throw new Error('index.json returned HTML; compiled data is missing or not proxied')
+    }
     indexData.value = await r.json()
   } catch (err) {
     console.error('Failed to load index:', err)
