@@ -1878,7 +1878,9 @@ export class PixiStageManager {
       const mouthCloseBone = spine.skeleton.findBone('mouth_close')
       const chinControlBone = spine.skeleton.findBone('chin_control')
       const chinControlBaseY = chinControlBone ? chinControlBone.data.y : 0
-      const activeMouthBone = mouthSlot.bone || mouthBone || mouthCloseBone
+      const mouthSlotBone = mouthSlot.bone?.data?.name || 'mouth'
+      const isChildRig = mouthSlotBone === 'mouth_close'
+      const activeMouthBone = isChildRig ? (mouthCloseBone || mouthSlot.bone) : (mouthBone || mouthSlot.bone)
       const activeMouthDataScaleX = activeMouthBone ? activeMouthBone.data.scaleX : 1
       const activeMouthDataScaleY = activeMouthBone ? activeMouthBone.data.scaleY : 1
       const resetBoneScale = (bone) => {
@@ -1886,7 +1888,6 @@ export class PixiStageManager {
         bone.scaleX = bone.data.scaleX
         bone.scaleY = bone.data.scaleY
       }
-      const isChildRig = mouthSlotBone === 'mouth_close'
       // 闂傚倸鍊搁崐鎼佸磹妞嬪海鐭嗗〒姘ｅ亾鐎规洦鍨跺畷绋课旈埀顒勫磼閵婏妇绡€濠电姴鍊绘晶鏇犵棯閹岀吋闁哄瞼鍠栧畷婊嗩槾閻㈩垱鐩弻锝夊箻閸愬弶娈婚梺鍝勬湰缁嬫牜绮诲☉銏犵闁告劏鏁╅敂鐣岀?婵犵數濮烽弫鍛婃叏閻戝鈧倿鎸婃竟鈺嬬秮瀹曘劑寮堕幋鐙呯幢闂備線鈧偛鑻晶鎾煛鐏炲墽銆掗柍褜鍓ㄧ紞鍡涘磻閸涱垯鐒婇柟娈垮枤绾捐偐绱撴担璇＄劷婵炴彃顕埀顒侇問閸犳牠鎮ユ總鍝ュ祦閻庯綆鍣弫鍥煟閹邦厼绲绘い銉﹀姉缁辨捇宕掑顑藉亾妞嬪孩顐介柨鐔哄Т闂傤垱銇勯弽顐沪闁抽攱妫冮弻娑㈠即閵娿儳浠滈梺閫炲苯澧柛鐔风摠娣囧﹪鎮滈挊澶屽幐婵炶揪绲界€氀囧疾濠靛绠熼柟闂寸缁狅綁鏌ㄩ弮鍥т汗缂佸绻樺娲箰鎼淬垻顦ラ梺绋匡工缂嶅﹪骞冮敓鐘插嵆闁靛骏绱曢崢顏呯節閻㈤潧浠滈柣蹇旂箞瀹曟繈骞橀鐣屽幈闁瑰吋鐣崹濠氭儗瀹€鈧槐鎺撴綇閵娿儳鐟插┑鐐靛帶缁绘﹢宕洪敓鐘茬＜闁靛牆瀚、姒th slot 缂傚倸鍊搁崐鎼佸磹閹间礁纾归柟闂寸绾惧綊鏌ｉ幋锝呅撻柛濠傛健閺屻劑寮撮悙娴嬪亾閹间礁鍨傞柛宀€鍋為埛鎺楁煕椤愩倕鏋庨柛鐘虫礋閺屻倝鎮ч崼婵愬殝闂侀潧娲ょ€氼垳绮诲☉銏犵閻犺桨璀﹂弳顐⑩攽閻愭妫庨柛瀣姈閹便劑鎮界粙璇撅箓鏌涢弴銊ユ灓闁汇倐鍋撻梻浣筋潐瀹曟ê鈻嶉弴鐐╂灁濠电姵纰嶉埛鎴︽煙閼测晛浠滈柍褜鍓氬ú鐔笺€侀弽顓炲窛闁规鍠曠花鐑芥⒒閸屾瑨鍏岀紒顕呭灦閺佸啴鍩￠崨顓犵崶闂佸搫绉查崝宥夊矗韫囨稒鐓曢悘鐐插⒔閳笺倕霉濠婂嫮鐭掓鐐寸墪鑿愭い鎺嗗亾闁诲浚鍣ｉ弻宥夘敍濞戞瑧顦紓浣介哺鐢偤鍩€椤掑﹦绉靛ù婊嗘硾鍗遍柛锔诲幘绾捐偐绱撴担璇＄劷缂佺姵姘ㄧ槐鎺楁偐瀹曞洦鍒涢悗娈垮枟閹告娊骞冨▎鎾崇骇闁瑰瓨绻傞～鍫ユ⒒閸屾艾鈧悂宕愭搴ｇ焼濞撴埃鍋撶€规洦鍨跺畷绋课旈埀顒勫磼閵婏妇绡€濠电姴鍊绘晶鏇犵棯閹岀吋闁哄瞼鍠栧畷婊嗩槾閻㈩垱鐩弻锝夊箻閸愬弶娈婚梺鍝勬湰缁嬫牜绮诲☉銏犵闁告劏鏁╅敂鐣岀?
       // Determine whether this model uses the regular mouth rig or the child rig.
       // mouth_close is the child-specific base bone; regular rigs use mouth.
