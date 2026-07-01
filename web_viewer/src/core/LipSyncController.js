@@ -1,0 +1,307 @@
+import { getMouthSettingUrl as defaultGetMouthSettingUrl } from '../utils/AssetResolver.js'
+
+const ORIGINAL_LIP_OPEN_THRESHOLD = 0.04
+const ORIGINAL_LIP_SCALE_MIN = 1.0
+const FALLBACK_LIP_OPEN_SCALE = 3.0
+
+// Keep this object even while empty. The lip calculation references it directly,
+// and future per-character compensation should be added here instead of changing
+// the core rig logic.
+const LIP_OPEN_SCALE_OVERRIDE = {
+  // 044ame: mouth slot on mouth_close, mouth bone was incorrectly reset to 1.0.
+  // Fixed by scaling mouth alongside mouth_close in child-style rigs.
+}
+
+export class LipSyncController {
+  constructor({
+    getSpineEntry,
+    getMouthSettingUrl = defaultGetMouthSettingUrl,
+  }) {
+    this.getSpineEntry = getSpineEntry
+    this.getMouthSettingUrl = getMouthSettingUrl
+    this.pendingTalking = {}
+  }
+
+  setTalking(idolId, isTalking, volumeCallback = null) {
+    const entry = this.getSpineEntry?.(idolId)
+    if (!entry) {
+      if (isTalking && volumeCallback) {
+        this.pendingTalking[idolId] = { volumeCallback }
+        console.log(`[PixiStageManager] Queued lip-sync for "${idolId}" until spine load`)
+      } else {
+        delete this.pendingTalking[idolId]
+      }
+      return
+    }
+
+    const { spine } = entry
+    spine.customIsTalking = isTalking
+    if (isTalking && volumeCallback) {
+      spine.getVoiceVolume = volumeCallback
+    } else if (!isTalking) {
+      delete this.pendingTalking[idolId]
+      delete spine.getVoiceVolume
+    }
+
+    this._installHook(idolId, spine)
+
+    if (isTalking && !spine._mouthData) {
+      this._loadMouthSetting(idolId, spine)
+    }
+  }
+
+  clearPending(idolId = null) {
+    if (idolId) {
+      delete this.pendingTalking[idolId]
+      return
+    }
+    this.pendingTalking = {}
+  }
+
+  _installHook(idolId, spine) {
+    if (spine._lipSyncHooked) return
+
+    const mouthSlot = spine.skeleton.slots.find(s => /^mouth$/i.test(s.data.name))
+    const mouthClipSlot = spine.skeleton.slots.find(s => /^mouth_clip$/i.test(s.data.name))
+    const tongueSlot = spine.skeleton.slots.find(s => /^tongue$/i.test(s.data.name))
+    const toothTopSlot = spine.skeleton.slots.find(s => /^tooth_top$/i.test(s.data.name))
+    const toothBotSlot = spine.skeleton.slots.find(s => /^tooth_bottom$/i.test(s.data.name))
+    if (!mouthSlot) return
+
+    const mouthBone = spine.skeleton.findBone('mouth')
+    const mouthCloseBone = spine.skeleton.findBone('mouth_close')
+    const chinControlBone = spine.skeleton.findBone('chin_control')
+    const chinControlBaseY = chinControlBone ? chinControlBone.data.y : 0
+    const mouthSlotBone = mouthSlot.bone?.data?.name || 'mouth'
+    const isChildRig = mouthSlotBone === 'mouth_close'
+    const activeMouthBone = isChildRig ? (mouthCloseBone || mouthSlot.bone) : (mouthBone || mouthSlot.bone)
+    const activeMouthDataScaleX = activeMouthBone ? activeMouthBone.data.scaleX : 1
+    const activeMouthDataScaleY = activeMouthBone ? activeMouthBone.data.scaleY : 1
+
+    this._logRigDiagnostics(idolId, spine, {
+      mouthSlot,
+      mouthBone,
+      mouthCloseBone,
+      chinControlBone,
+      activeMouthBone,
+      isChildRig,
+    })
+
+    const resetBoneScale = (bone) => {
+      if (!bone) return
+      bone.scaleX = bone.data.scaleX
+      bone.scaleY = bone.data.scaleY
+    }
+    const setSlotAttachment = (slotName, attachmentName) => {
+      const slot = spine.skeleton.findSlot(slotName)
+      if (!slot) return
+      spine.skeleton.setAttachment(slotName, attachmentName || null)
+    }
+    const applyAttachmentList = (items) => {
+      if (!Array.isArray(items)) return
+      for (const item of items) {
+        if (!item?.slotName) continue
+        setSlotAttachment(item.slotName, item.attachmentName || null)
+      }
+    }
+    const resetMouthBones = (closeScale = ORIGINAL_LIP_SCALE_MIN) => {
+      if (activeMouthBone) {
+        activeMouthBone.scaleX = activeMouthDataScaleX * closeScale
+        activeMouthBone.scaleY = activeMouthDataScaleY
+      }
+      if (mouthBone && mouthBone !== activeMouthBone) {
+        // 044ame-style rigs need mouth and mouth_close kept in sync.
+        mouthBone.scaleX = mouthBone.data.scaleX * closeScale
+        mouthBone.scaleY = mouthBone.data.scaleY
+      }
+      if (mouthCloseBone && mouthCloseBone !== activeMouthBone) resetBoneScale(mouthCloseBone)
+      if (chinControlBone) chinControlBone.y = chinControlBaseY
+    }
+    const closeMouth = (exp, mouthEntry, currentAttName) => {
+      const closeName = mouthEntry?.closeMouthAttachmentName || `mouth_${exp}1`
+      if (currentAttName !== closeName) {
+        spine.skeleton.setAttachment('mouth', closeName)
+      }
+      resetMouthBones(mouthEntry?.closeMouthScale ?? ORIGINAL_LIP_SCALE_MIN)
+      applyAttachmentList(mouthEntry?.attachmentsWhenCloseMouth)
+      if (tongueSlot) spine.skeleton.setAttachment('tongue', null)
+      if (toothTopSlot) spine.skeleton.setAttachment('tooth_top', null)
+      if (toothBotSlot) spine.skeleton.setAttachment('tooth_bottom', null)
+      if (mouthClipSlot) spine.skeleton.setAttachment('mouth_clip', null)
+    }
+
+    const origUpdateWT = spine.skeleton.updateWorldTransform
+    spine.skeleton.updateWorldTransform = function () {
+      try {
+        const currentAtt = mouthSlot.attachment
+        if (!currentAtt?.name) return
+
+        const match = currentAtt.name.match(/^(mouth_(.+?))(\d)$/i)
+        if (!match) return
+
+        const exp = match[2]
+        const mouthEntry = spine._mouthData?.mouthes?.find(m => m.animationName === `face_${exp}`) || null
+
+        if (!spine._lipAttachChecked) {
+          spine._lipAttachChecked = true
+          logAttachmentDiagnostics(idolId, spine, currentAtt, mouthSlot)
+        }
+
+        const lipValue = (spine.customIsTalking && spine.getVoiceVolume)
+          ? Math.min(1, Math.max(0, spine.getVoiceVolume()))
+          : 0
+        const isOpen = !mouthEntry?.turnOffLipSync && lipValue > ORIGINAL_LIP_OPEN_THRESHOLD
+
+        if (isOpen) {
+          const openName = mouthEntry?.openMouthAttachmentName || `mouth_${exp}2`
+          if (currentAtt.name !== openName) {
+            spine.skeleton.setAttachment('mouth', openName)
+          }
+
+          const openRatio = lipValue
+          const mouthOpenScale = (mouthEntry?.openMouthScale ?? FALLBACK_LIP_OPEN_SCALE) * (LIP_OPEN_SCALE_OVERRIDE[idolId] || 1)
+          const dynScaleY = ORIGINAL_LIP_SCALE_MIN + openRatio * (mouthOpenScale - ORIGINAL_LIP_SCALE_MIN)
+
+          logPreScaleDiagnostics(idolId, spine, exp, mouthBone, mouthCloseBone, chinControlBone)
+
+          if (activeMouthBone) {
+            activeMouthBone.scaleX = activeMouthDataScaleX * dynScaleY
+            activeMouthBone.scaleY = activeMouthDataScaleY
+          }
+          if (isChildRig && mouthBone && mouthBone !== activeMouthBone) {
+            mouthBone.scaleX = mouthBone.data.scaleX * dynScaleY
+            mouthBone.scaleY = mouthBone.data.scaleY
+          }
+          if (chinControlBone && chinControlBone.data.length > 0) {
+            const chinDelta = chinControlBaseY - chinControlBone.y
+            if (chinDelta > 0) {
+              chinControlBone.y = chinControlBaseY - chinDelta * (1 + 0.5 * openRatio)
+            }
+          }
+
+          logScaleDiagnostics(idolId, spine, exp, openRatio, mouthOpenScale, dynScaleY, activeMouthDataScaleX, activeMouthBone)
+
+          if (mouthBone && mouthBone !== activeMouthBone && !isChildRig) resetBoneScale(mouthBone)
+          if (mouthCloseBone && mouthCloseBone !== activeMouthBone) resetBoneScale(mouthCloseBone)
+          applyAttachmentList(mouthEntry?.attachmentsWhenOpenMouth)
+          if (tongueSlot) {
+            const tName = mouthEntry?.tongueAttachmentName || null
+            spine.skeleton.setAttachment('tongue', tName || null)
+          }
+          if (toothTopSlot) {
+            const tName = mouthEntry?.upperTeethAttachmentName || null
+            spine.skeleton.setAttachment('tooth_top', tName || null)
+          }
+          if (toothBotSlot) {
+            const tName = mouthEntry?.lowerTeethAttachmentName || null
+            spine.skeleton.setAttachment('tooth_bottom', tName || null)
+          }
+          if (mouthClipSlot) {
+            const cName = mouthEntry?.openMouthClipAttachmentName || null
+            spine.skeleton.setAttachment('mouth_clip', cName || null)
+          }
+
+          if (!spine._lipSyncDumpFired) {
+            if (spine._lipSyncDumpCounter === undefined) spine._lipSyncDumpCounter = 0
+            spine._lipSyncDumpCounter++
+            if (spine._lipSyncDumpCounter >= 5) {
+              spine._lipSyncDumpFired = true
+              console.log(`[LipSync] ${idolId} exp=${exp} mode=original value=${lipValue.toFixed(3)}`)
+            }
+          }
+        } else {
+          closeMouth(exp, mouthEntry, currentAtt.name)
+        }
+      } catch (e) {
+        console.warn(`[LipSync] updateWorldTransform error for "${idolId}":`, e)
+      } finally {
+        origUpdateWT.call(this)
+      }
+    }
+
+    spine._lipSyncHooked = true
+    if (typeof window !== 'undefined') {
+      if (!window._s) window._s = {}
+      window._s[idolId] = spine
+      if (!window._probe) window._probe = {}
+      window._probe[idolId] = () => {
+        console.log(`[Probe] ${idolId} available via window._s['${idolId}']`)
+      }
+    }
+  }
+
+  async _loadMouthSetting(idolId, spine) {
+    try {
+      const resp = await fetch(this.getMouthSettingUrl(idolId))
+      if (!resp.ok) return
+      const data = await resp.json()
+      if (data?.mouthes?.length) {
+        spine._mouthData = data
+        if (spine.customIsTalking) {
+          try {
+            spine.skeleton.updateWorldTransform()
+          } catch (_) {}
+        }
+      }
+    } catch (_) {
+      // Silently fall back to fallback constants.
+    }
+  }
+
+  _logRigDiagnostics(idolId, spine, { mouthSlot, mouthBone, mouthCloseBone, chinControlBone, activeMouthBone, isChildRig }) {
+    const shouldLog = idolId === '044ame' || idolId === '001tom' || idolId === '040ren' || idolId === '047shu'
+    if (!shouldLog) return
+
+    const mouthBoneDS = mouthBone ? `mouth(data.scaleX=${mouthBone.data.scaleX})` : 'mouth(not-found)'
+    const mouthCloseDS = mouthCloseBone ? `mouth_close(data.scaleX=${mouthCloseBone.data.scaleX})` : 'mouth_close(not-found)'
+    const slotBoneName = mouthSlot.bone?.data?.name || '(no-bone)'
+    const activeBoneName = activeMouthBone?.data?.name || '(none)'
+    const mouthParent = mouthBone ? mouthBone.parent?.data?.name || '(root)' : 'N/A'
+    const closeParent = mouthCloseBone ? mouthCloseBone.parent?.data?.name || '(root)' : 'N/A'
+    const mouthRotation = mouthBone ? mouthBone.data.rotation : 'N/A'
+    const closeRotation = mouthCloseBone ? mouthCloseBone.data.rotation : 'N/A'
+    const mouthLength = mouthBone ? mouthBone.data.length : 'N/A'
+    const closeLength = mouthCloseBone ? mouthCloseBone.data.length : 'N/A'
+    const slotsOnMouthBone = spine.skeleton.slots.filter(s => s.bone?.data?.name === 'mouth').map(s => s.data.name).join(',') || 'none'
+    const slotsOnCloseBone = spine.skeleton.slots.filter(s => s.bone?.data?.name === 'mouth_close').map(s => s.data.name).join(',') || 'none'
+    const toothBone = spine.skeleton.findBone('tooth')
+    const toothInfo = toothBone ? `tooth(rot=${toothBone.data.rotation},sX=${toothBone.data.scaleX},sY=${toothBone.data.scaleY},parent=${toothBone.parent?.data?.name})` : 'tooth(not-found)'
+    const mouthBX = mouthBone ? mouthBone.data.x : 'N/A'
+    const mouthBY = mouthBone ? mouthBone.data.y : 'N/A'
+    const closeBX = mouthCloseBone ? mouthCloseBone.data.x : 'N/A'
+    const closeBY = mouthCloseBone ? mouthCloseBone.data.y : 'N/A'
+
+    console.log(`[LipRig] ${idolId}: slotBone="${slotBoneName}" childRig=${isChildRig} activeBone="${activeBoneName}"`)
+    console.log(`[LipRig]   ${mouthBoneDS} ${mouthCloseDS}`)
+    console.log(`[LipRig]   mouth(parent=${mouthParent},pos=(${mouthBX},${mouthBY}),rot=${mouthRotation},len=${mouthLength},sX=${mouthBone?.data?.scaleX}) mouth_close(parent=${closeParent},pos=(${closeBX},${closeBY}),rot=${closeRotation},len=${closeLength},sX=${mouthCloseBone?.data?.scaleX}) ${toothInfo}`)
+    console.log(`[LipRig]   slotsOn_mouth=[${slotsOnMouthBone}] slotsOn_mouth_close=[${slotsOnCloseBone}] chin_control=${chinControlBone ? 'found' : 'not-found'}`)
+  }
+}
+
+function logAttachmentDiagnostics(idolId, spine, att, mouthSlot) {
+  if (idolId !== '044ame' && idolId !== '040ren') return
+  const isMesh = att.type === 2
+  const isRegion = att.type === 0
+  let meshBones = 'N/A'
+  if (isMesh && att.bones) {
+    meshBones = Array.from(att.bones).map(bi => {
+      const b = spine.skeleton.bones[bi]
+      return b ? b.data.name : `idx${bi}`
+    }).join(',')
+  }
+  console.log(`[LipAttach] ${idolId} att="${att.name}" type=${isMesh ? 'MESH' : isRegion ? 'REGION' : 'UNKNOWN'} meshBones=[${meshBones}] slotBone=${mouthSlot.bone?.data?.name}`)
+}
+
+function logPreScaleDiagnostics(idolId, spine, exp, mouthBone, mouthCloseBone, chinControlBone) {
+  if ((idolId !== '044ame' && idolId !== '001tom' && idolId !== '040ren') || spine._lipSyncDumpCounter >= 2) return
+  const preMouthScaleX = mouthBone ? mouthBone.scaleX : -1
+  const preCloseScaleX = mouthCloseBone ? mouthCloseBone.scaleX : -1
+  const preChinY = chinControlBone ? chinControlBone.y : -999
+  console.log(`[LipBonePre] ${idolId} exp=${exp} mouth.scaleX=${preMouthScaleX.toFixed(3)} mouth_close.scaleX=${preCloseScaleX.toFixed(3)} chin_control.y=${preChinY.toFixed(1)}`)
+}
+
+function logScaleDiagnostics(idolId, spine, exp, openRatio, mouthOpenScale, dynScaleY, activeMouthDataScaleX, activeMouthBone) {
+  if ((idolId !== '044ame' && idolId !== '001tom' && idolId !== '040ren') || spine._lipSyncDumpFired || spine._lipSyncDumpCounter >= 5) return
+  const finalScaleX = activeMouthBone ? activeMouthBone.scaleX.toFixed(3) : 'N/A'
+  console.log(`[LipCalc] ${idolId} exp=${exp} openRatio=${openRatio.toFixed(3)} mouthOpenScale=${mouthOpenScale} dynScaleY=${dynScaleY.toFixed(3)} baseDataScaleX=${activeMouthDataScaleX} finalScaleX=${finalScaleX}`)
+}
