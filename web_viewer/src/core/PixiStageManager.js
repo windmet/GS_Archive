@@ -28,6 +28,7 @@ import { easeOutCubic, runRafTween } from './rafTween.js'
 import { tweenOverlayFade, tweenOverlayPunch, tweenOverlaySlide } from './transitionTweens.js'
 import { loadAndCreateSpine } from './spineSpawnPipeline.js'
 import { finalizeSpawnedSpine } from './spineSpawnFinalize.js'
+import { BackgroundManager } from './BackgroundManager.js'
 import { fitSpineToPrefabRect as fitSpineToPrefabRectUtil, getPrefabRectMetrics as getPrefabRectMetricsUtil } from './spinePrefabFit.js'
 import { LipSyncController } from './LipSyncController.js'
 
@@ -65,8 +66,6 @@ export class PixiStageManager {
     this.height = options.height || containerEl.clientHeight || 720
 
     this.app = null
-    this.bgSprite = null
-    this.currentBgId = null
     this.spineInstances = {}   // { idolId: { spine: Spine, modelId: string, marker: Graphics } }
     this._spawnTokens = {}
     this._pendingTalking = {}
@@ -93,11 +92,8 @@ export class PixiStageManager {
     this._blurFilter = null     // PIXI.BlurFilter for bg DOF
     this._bgOverlaySprite = null  // color overlay sprite for bg_color
     this._bgBlurAmount = 0
-    this._bgBlurTweenRaf = null
-    this._bgColorTweenRaf = null
     this._bgOverlayColor = 0xFFFFFF
     this._spineColorTweens = {}
-    this._bgEffectEntries = {}
     this._cameraflareTextures = null
 
     this._init()
@@ -122,6 +118,15 @@ export class PixiStageManager {
     this.app.stage.addChild(this.bgContainer)
     this.app.stage.addChild(this.bgEffectContainer)
     this.app.stage.addChild(this.spineContainer)
+    this.backgroundManager = new BackgroundManager({
+      app: this.app,
+      bgContainer: this.bgContainer,
+      bgEffectContainer: this.bgEffectContainer,
+      getWidth: () => this.width,
+      getHeight: () => this.height,
+      getBgUrl,
+      loadTextureFromUrl: url => this._loadTextureFromUrl(url),
+    })
     this._debugOverlay = new PIXI.Container()
     this._debugOverlay.eventMode = 'none'
     this.app.stage.addChild(this._debugOverlay)
@@ -171,9 +176,7 @@ export class PixiStageManager {
           this.width = width
           this.height = height
           this.app.renderer.resize(width, height)
-          if (this.bgSprite) {
-            this._applyBgCover(this.bgSprite)
-          }
+          this.backgroundManager?.handleResize()
           if (this._fadeOverlay) {
             this._fadeOverlay.width = width
             this._fadeOverlay.height = height
@@ -186,7 +189,6 @@ export class PixiStageManager {
             this._effectOverlay.width = width
             this._effectOverlay.height = height
           }
-          this._resizeBgEffects()
           // Spines stay at their current positions on resize (user may have dragged them)
         }
       }
@@ -451,68 +453,84 @@ export class PixiStageManager {
     entry.spine.scale.set(newScale)
     this._emitSpineState(idolId)
   }
-  // Background
-
-  /**
-   * cover 濠电姷鏁告慨鐑藉极閸涘﹥鍙忛柣鎴濐潟閳ь剙鍊块幐濠冪珶閳哄绉€规洏鍔戝鍫曞箣濠靛牃鍋撻鐑嗘富闁靛牆鎳愮粻浼存煟濡も偓濡繈骞冮悙鍝勫瀭妞ゆ劗濮崇花濠氭⒑閻熺増鎯堟俊顐ｎ殕缁傚秹宕滆绾惧ジ鏌涢幘妤€妫欓妤呮⒑閸涘鎴﹀磿閹惰棄鐓″鑸靛姈閸嬨劎绱掔€ｎ厽纭堕柛鏃撶畱椤啴濡堕崱妤冪懆闁诲孩鍑归崣鍐箖閿熺姵鍋勯柛蹇氬亹閸橆亪妫呴銏℃悙闁挎洏鍎遍埢宥夊川鐎涙鍘介棅顐㈡处濞叉牠鍩㈤崼銉︾厸閻忕偛澧藉ú鎾煙椤斿搫鈧牠骞忛崨瀛樷拹闁归偊鍓氶悗鎶芥⒒閸屾瑦绁版い鏇熺墵瀹曞綊寮跺Λ鍨そ椤㈡﹢锝為钘変壕濞达綀鍊介弮鍫濆窛妞ゆ挾濯Σ瑙勪繆閻愵亜鈧牜鏁繝鍥ㄥ€块柨鏇炲€归崑鐔搞亜閹板墎鎮肩紒鈾€鍋撴繝鐢靛仜閻楀棝鎮樺┑瀣嚑闁绘梹鎮舵禍婊勩亜閹捐泛浠у褎绋撶槐鎺楀磼濮樻瘷褎銇勯姀鈽嗘疁鐎规洜鍠栭、鏇㈠Χ鎼粹剝娅嶉梻鍌氬€烽懗鍫曗€﹂崼銏″床闁圭増婢樼憴锕傛倵閿濆骸鏋涢柣顓燁殜閻擃偊宕堕妸褉濮囬梺缁樻尪閸庤尙鎹㈠┑瀣棃婵炴垶鐟Λ鈥愁渻閵堝啫鍔ら柛瀣ㄥ€濆璇差吋婢跺鍙嗛柣搴秵娴滅偤顢栭崒婊呯＝濞达絼绮欓崫娲煙閻熺増鎼愰柣锝囧厴楠炴帡骞嬮鐔峰厞闂備胶顭堢换鎰版儍閻戣棄鍑犻柛娑樼摠閻撶喖骞栧ǎ顒€鐒洪柛鐔风箻閺屾盯鎮╅搹顐㈢３閻庤娲樼换鍫ョ嵁鐎ｎ喗鏅滈柟顖嗗懌鍋婇梻鍌欒兌绾爼宕滃┑瀣闁荤喖鍋婇悗鑸点亜韫囨挻顥犵痪鍙ョ矙閺屾稓浠﹂悙顒傛闁哄稄绻濆铏圭磼濮楀棙鐣峰銈冨妼閻楁捇鐛幋锕€顫呴柣姗嗗亝閺傗偓闂備焦鎮堕崕顕€寮插┑瀣垫晩闁哄洢鍨洪埛鎺懨归敐鍫殐闁稿簺鍎甸弻娑㈠Ω瑜嶉。鑲╃磼閸屾氨校闁靛牞缍佸畷姗€鍩￠崘銊ョ婵犵妲呴崑濠囥€傞敃鍌涘殑闁割偅娉欓崶顒佹櫇闁稿本绋撻崢鎼佹⒑閸涘﹦鐭婇柛鐔稿缁棃顢欓懞銉ュ伎婵犵數濮撮崯顖炲Φ濠靛洣绻嗘い鎰╁灩閺嗭綁鏌涢埡瀣瘈鐎规洘锕㈤、鎾活敍閵堝洨袦濠殿喖锕ㄥ▍锝囨閹烘嚦鐔烘嫚閼碱剦鏆″┑锛勫亼閸娧呯不閹存繄鏆︽い鎺嗗亾鐎规挸瀚板楦裤亹閹烘垳鍠婇梺绋跨箲閿曘垹顕ｉ妸锔绢浄閻庯綆鍋嗛崢閬嶆⒑闂堟侗妲归柛銊ф暬楠炲﹪骞囬悧鍫濅粧濡炪倖姊婚弲顐ゅ姬閳ь剙鈹戦悙鑼闁诲繑绻堝鎼佹偄閸忚偐鍙嗛梺鍝勬处椤ㄥ棗鈻嶆繝鍕ㄥ亾鐟欏嫭绀冮柛銊ョ仢閻ｇ兘宕￠悙鈺傜€婚梺鐟邦嚟婵兘宕㈤鐐粹拻濞达綀顫夐崑鐘绘煕鎼淬垺銇濈€规洘绮岄～婵堟崉閾忕櫢绱遍梻浣哄仺閸庡绮旈瑁や汗闁圭儤鎸诲▍婊勭節閵忥絽鐓愰拑杈ㄣ亜閵夛妇澧い顏勫暣婵℃儼绠涘鐓庢倛缂傚倷鑳舵慨鐢稿箲閸パ屽殨閻犲洦绁村Σ鍫ユ煏韫囨洖顫嶉柍鍝勬噺閻撳繐顭跨拠鈥崇仩闁瑰嘲顑夊畷顖溾偓锝庡枟閳锋帒霉閿濆牆袚闁靛棗鍟扮槐鎺楀焵椤掍焦濯撮柧蹇撴贡閻撳姊洪崷顓℃闁哥姵顨婂畷鎴﹀煛閸屾粎鐦堥梻鍌氱墛娓氭宕曡箛娑欑厽闁圭儤鍨规禒娑㈡煏閸パ冾伃妤犵偞甯￠獮瀣攽閹邦亝鍋呯紓鍌氬€风拋鏌ュ磻閹炬剚鐔嗛悹铏瑰劋濠€浼存煕閻樺啿濮嶉柡宀嬬節瀹曟帒鈹戦崶鈹库偓濠囨⒑閸濆嫭锛旂紒鐘虫崌瀵寮撮悢椋庣獮濠电偞鍨崹娲敁瀹ュ鈷戠紒瀣閹癸綁鏌涢悩宕囧⒌鐎殿喖顭锋俊鎼佸Ψ閵忊槅娼旀繝纰樻閸垳鎷冮敂鐣岊浄濡わ絽鍟埛鎴犵磽娴ｈ鐒介柟鍐插閵囧嫰濡搁妷锔绘￥闂佺懓绠嶉崹褰掑煡婢舵劕顫呴柣妯活問閸氬懘姊绘担铏瑰笡闁告梹娲熼幃娲Ω閳轰胶锛熼柟鍏肩暘閸斿秹鍩涢幋锔界厱婵炴垶菤婵洦銇勮箛鎾搭棤缂佲偓婵犲倵鏀介柣妯哄级閹兼劙鏌￠崟鈺佸姦锟?   */
-  _applyBgCover(sprite) {
-    if (!sprite?.texture) return
-    // 婵犵數濮烽弫鍛婃叏閹绢喗鍎夊鑸靛姇缁狙囧箹鐎涙ɑ灏ù婊堢畺閺岋繝宕堕妷銉т患缂佺偓鍎冲﹢閬嶅箟閹间焦鍋嬮柛顐ｇ箘閻熸煡姊洪崫鍕濞存粠浜滈～蹇涙惞鐟欏嫬鐝伴梺鍛婄懃椤︻垶寮ㄩ鐑嗘富闁靛牆楠告禍婊勩亜閿旇棄顥嬮柟骞垮灩閳藉鈻庨幋鐘垫闂備焦鎮堕崕顕€寮插☉姘辩焾闁挎洍鍋撻柍瑙勫灴椤㈡瑦鎱ㄩ幇顏嗘崟闂備胶顭堥鍡涘箰婵犳哎鈧啴濡烽埡鍌氣偓椋庘偓鐟板閸犳牠宕滈崼鏇熲拺閻犲洠鈧櫕鐏嶉梺鑽ゅ暱閺呯娀鎮伴鈧獮妯兼嫚閼碱剦鍞规俊鐐€栭崝褏寰婃禒瀣紶婵炲樊浜濋悡娑氣偓鍏夊亾閻庯綆鍓涜摫闂備浇顕栭崹鍗炍涢崘顔兼槬闁告洦鍨扮粈鍐┿亜閹捐泛顎岄柡鈧妸鈺傗拻闁稿本鐟ㄩ崗灞俱亜閵忕媴宸ラ柍璇茬Ч瀵挳濮€閻樻鍞堕梻浣哥秺濡法绮堟笟鈧幃鈥斥攽閸艾浜炬鐐茬仢閸旀碍銇勯敂璇茬仯缂侇喖顭烽幖褰掝敃閿涘嫮鐣鹃梻渚€娼ч悧鍡欌偓姘煎櫍瀹曟繂顓奸崱娆戭啎闂佸憡渚楅崰姘櫠閻㈠憡鐓涚€光偓鐎ｎ剛袣缂備胶濮甸惄顖氼嚕閹绢喗鍊烽柣妤€鐗嗛悡鏇㈡⒒閸屾瑨鍏岄柛搴ｆ暬瀹曟粌鈹戦崰顔界洴瀹曟﹢濡歌濞堟儳顪冮妶鍡欏闁告垵缍婂畷銉р偓锝庝憾閻斿棝鎮归搹鐟扮殤闁告梻鍠愰妵鍕籍閳ь剟宕濆▎鎾宠摕闁斥晛鍟欢鐐测攽閻樻彃顏╂い銈傚亾闂傚倷鑳堕…鍫⑩偓娑掓櫆缁绘稒绻濋崶顬儵鏌涘☉娆愬剹闁轰礁妫濋弻娑㈠即閵娿儱顫梺鍛娒肩划娆忣潖濞差亜妫橀柕澶涢檮閻濇棃姊洪崫銉ユ珡闁稿锕獮鍐潨閳ь剚淇婇悿顖ｆЪ闂佺顑嗛悧妤冩崲濞戙垹骞㈡俊顖濐嚙闂夊秹姊虹紒妯诲鞍闁烩晩鍨跺璇测槈閵忕姷鐤€闂佸疇妗ㄧ粈渚€鈥栨径鎰€甸柣鐔哄閸熺偟绱掔拠鎻掓殻濠碉紕鏁诲畷鐔碱敆娴ｇ濡虫繝纰樻閸ㄩ潧顩奸妸锔剧彾闁哄洢鍨洪埛鎺楁煕鐏炴崘澹橀柍褜鍓氶幃鍌氱暦閹版澘绠瑰ù锝呮憸閿涙瑩姊鸿ぐ鎺擄紵缂佲偓娴ｈ櫣涓嶉柣妯款嚙缁犺绻涢敐搴″闁绘帞鍎ょ换娑㈠醇濠婂懐鐓撻梺缁樻惄閸嬪﹤鐣烽崼鏇炍╅柨鏃傝檸濡茬増淇婇悙顏勨偓銈夊磻閸涱劶鍝勎熼崗鐓庡簥濠电娀娼ч鍡浰夐崼鐔虹闁瑰鍋熼幊鍛存煕閺冣偓閹倸顫忛搹鍦＜婵☆垳鍎甸幏濠氭⒑閸愭彃妲婚柣妤佹尭椤曪綁顢曢敃鈧壕濂告煟閹邦剦鍤熼柛姗€浜跺娲传閸曨剙鍋嶉梺鍛婃煥閺堫剟寮查崼鏇ㄦ晪闁逞屽墴瀵顓奸崼顐ｎ€囬梻浣告啞閹稿鎮烽埡鍛伋闁挎洖鍊归崐濠氭煢濡警妲洪柣锝呮惈閳规垿顢欐慨鎰捕闂佺顑嗛幑鍥蓟閻旂⒈鏁婇柣锝呮湰閸ｄ即鎮楃憴鍕┛缂佸弶鍎抽銉╁礋椤掑倻鐦堥梺鍛婂姇瑜扮偤骞嬮悜鑺モ拻闁稿本鑹鹃埀顒傚厴閹虫宕奸弴鐐插亶閻熸粍妫冮獮鍐ㄎ熸笟顖涘兊闁荤姴鎼幖顐︽倵椤撱垺鍋℃繝濠傛噹椤ｅジ鎮介娑樼缂侇喖顭烽幃銏ゆ⒐閹邦喚鐣鹃梻渚€娼ч悧鍡欌偓姘煎櫍瀹曟繂顓奸崨顏呮杸濡炪倖鐗楅崙褰掑吹閻旇櫣纾奸弶鍫涘妼缁椦囨煃瑜滈崜銊х礊閸℃稑鍌ㄩ柣锝呮湰閸忔粓鏌涢锝嗙锟?
-    sprite.height = this.height
-    sprite.scale.x = sprite.scale.y
-    // 闂傚倸鍊搁崐鎼佸磹閹间礁纾圭€瑰嫭鍣磋ぐ鎺戠倞妞ゆ巻鍋撴潻婵嬫⒑闁偛鑻晶鎾煛鐏炲墽銆掗柍褜鍓ㄧ紞鍡涘磻閸涱厾鏆︾€光偓閸曨剛鍘搁悗鍏夊亾闁逞屽墴瀹曚即寮介婧惧亾娴ｇ硶妲堥柕蹇曞Т閼板潡姊洪崫鍕窛闁革絻鍎辫灒闁稿本鍩冮弨?2% 闂傚倸鍊搁崐鎼佸磹閹间礁纾归柣鎴ｅГ閸ゅ嫰鏌涢锝嗙８闁逞屽厸閻掞妇鎹㈠┑瀣＜婵°倓鑳舵禍娆愮節閻㈤潧浠﹂柛顭戝灦瀹曠懓煤椤忓嫮鏌у┑鐘绘涧椤戝棝鎮¤箛鎿冪唵閻犺櫣鍎らˉ鐐寸箾閸涱厽鍣界紒杈ㄥ浮閹亪鍩€椤掑嫬闂柨婵嗩槸閽冪喖鏌￠崶銉ョ仼闂佸崬娲︾换婵嬪垂椤愩垹顫嶉柡浣哥墦濮婄粯鎷呴悷鎵虫灆闂佽　鍋撻梺顒€绉寸粈澶愭煛瀹ュ骸浜濈€规洖寮剁换婵嬫濞戞瑥绐涚紓浣叉閸嬫捇姊绘担渚劸闁哄牜鍓氱粭鐔肺旈埀顒冪亱闂侀潧鐗嗛ˇ浼村煕閹寸姷纾藉ù锝堫嚃閻掔晫绱掗悩铏碍妞ゎ叀鍎婚ˇ鍙夌箾閺夋垵妲婚崡閬嶆煙閻楀牊绶茬紒鐘差煼閹綊宕堕鍕闂佹寧绋掔划宀勫煘閹达附鍊烽柡澶嬪灩娴煎洦绻涚€涙鐭ら柛鎾跺枎閻ｅ嘲鈹戠€ｎ偄鈧鏌ら幁鎺戝姉闁圭柉娅ｇ槐鎺旂磼閵忕姴绠归梺鐟板暱濞村嘲危閹扮増鏅濋柛灞剧〒閸樺崬鈹戞幊閸婃挾绮堟笟鈧崺銏ゅ即閻曚焦顔旈梺缁樺姈瑜板啴寮抽敐鍥ｅ亾鐟欏嫭绀堟い顓炵墣閻忓啴姊洪柅鐐茶嫰婢у鈧娲栫紞濠傜暦閹烘垟妲堥柡宥忓閻╁酣姊绘担绛嬫綈濠㈢懓顑夊鎻掆槈閵忊€斥偓鍫曟⒑椤掆偓缁夌敻鎮￠弴鐔稿弿婵妫楁晶顕€鏌嶈閸撴瑩鎮樺┑瀣剁稏闊洦鎷嬪ú顏嶆晜闁告洦鍋嗛悰鈺佲攽閻樺灚鏆╁┑顔芥尦瀹曟劗绱掑Ο纰辨祫闂佸湱铏庨崰妤呭煕閹达附鐓曢柨鏃囶嚙楠炴劙鏌熼崙銈囩瘈闁哄本绋撻埀顒婄秵娴滅兘鐓渚囨闁绘劕寮堕ˉ銏⑩偓瑙勬礀閵堝憡淇婇悜钘壩ㄩ柕澶堝妷閸嬫捇宕归瑙勬杸闂佺粯鍔栧娆撴倶閿曞倹鐓犻柣鐔告緲閳锋梻绱掗纭疯含闁轰礁鍟村畷鎺戔槈閹烘挸顏归梻鍌欑閹诧紕鎹㈤崒婧惧亾濮樼厧骞栨い鏂跨箰閳规垹鈧綆鍋嗛崢閬嶆煙閸忚偐鏆橀柛銊潐閹便劑宕堕浣瑰殙?
-    sprite.scale.x *= 1.02
-    sprite.scale.y *= 1.02
-    sprite.anchor.set(0, 0)
-    // 闂傚倸鍊搁崐宄懊归崶顒夋晪鐟滃繘鍩€椤掍胶鈻撻柡鍛█閵嗕礁鈻庨幘鍐插敤濡炪倖鎸鹃崑鐔兼偘閵夆晜鈷戦柛婵嗗閳诲鏌涘Ο鍨汗缂侇喛宕甸幉鎾礋閳衡偓缁ㄥ姊虹憴鍕凡濠⒀冮叄閹箖鏌嗗鍡欏幐闂佸憡娲嶉弲娑㈠礉濠婂叇搴ㄥ炊瑜濋煬顒€鈹戦垾宕囧煟鐎规洏鍔戦、娆撳礂绾板彉鍝楅梻鍌氬€风粈渚€骞栭锔绘晞闁告洦鍘介鑺ユ叏濡寧纭剧紒鐘崇墬娣囧﹪濡堕崒姘闂備礁鐤囧Λ鍕囬鐐茬厺鐎广儱顦伴幆鐐淬亜閹扳晛鐏ù鐘虫尦濮婂搫鐣烽崶鈺佺闂佸湱鎳撳ú銈夋偩闁垮闄勭紒瀣仢瀹撳棝姊虹紒妯荤叆闁圭⒈鍋婇悰顕€宕奸妷锔惧幗闁硅壈鎻槐鏇㈡偩椤撱垺鐓曢幖娣妺閹茬偓顨ラ悙璇ц含妤犵偛娲、娆撳矗閵壯呮喒闂佽姘﹂～澶娒洪弽顬℃椽濡歌椤ユ艾鈹戦崒姘暈闁绘挸鍟伴幉绋款煥閸繄顦┑鐐叉閹稿宕戦埡鍌滅瘈闂傚牊渚楅崕蹇曠磼閳ь剛鈧綆鍋佹禍婊堟煙閺夎法鍩ｆ俊缁㈠櫍閺岋繝宕卞Δ浣告畻濠殿喖锕︾划顖炲箯閸涙潙浼犻柕澶樼仢閵娾晜鈷戠紒瀣儥閸庡繘鏌ㄩ弴銊ょ盎闁伙絿鍏樻慨鈧幒鎶藉磻閸涘瓨鐓曢柟鎵虫櫅婵″ジ鏌ｆ惔顔煎箺缂佺粯绻堝Λ鍐ㄢ槈濡嘲浜鹃柟闂寸缁犵喖鏌ㄩ悢鍝勑ｉ柛瀣€块弻鏇熷緞濞戞﹩娲紓浣哄█缁犳牠寮婚悢琛″亾閻㈡鐒鹃柛鎾讳憾閺岋綁骞掑鍥╃厯闂佸搫鐭夌紞渚€鐛幒妤€绠ｉ柣鎰级濞堟ê鈹戦悜鍥╁埌婵炲眰鍊濋弫鍐敂閸繄鐤囬梺缁橆焽椤掕尙妲愰敐鍡欑瘈闂傚牊绋掗ˉ鐐淬亜閺傚灝顏ǎ鍥э躬閹瑩顢旈崟銊ヤ壕闁靛牆顦壕璇层€掑锝呬壕閻庤娲栫紞濠囧箠閻愬搫唯闁挎洍鍋撶€殿喖娼″娲焻閻愯尪瀚板褎鎸抽弻锛勪沪閻ｅ睗褔鏌涢埞鎯у⒉闁瑰嘲鎳樺畷銊︾節閸愭儳鏁抽梻浣藉吹閸嬬偟鍠婂澶嬫櫇闁靛繒濯鏍р攽閻樺疇澹樼痪鎯у悑閹便劌顫滈崱妤€骞嬮梺绋款儐閹瑰洭骞冮悾宀€鐭欓悹渚厜缁遍亶姊绘担绛嬫綈闁稿孩濞婇、姘额敇閻樻彃袣闂侀€炲苯澧紒缁樼箞閹粙妫冨ù韬插灲閺屾稒绻濋崒婊呅ㄩ悗瑙勬礀閸熻法鍙呭銈呯箰閹虫劙宕㈡禒瀣拺闁圭娴风粻鎾淬亜閿旇娅嶆鐐差槹閵堬綁宕橀埡鍐ㄥ箰闂佽绻掗崑娑欐櫠娴犲鐓″鑸靛姈閹虫岸鏌″搴″箺闁绘挸鍟伴幉绋款煥閸繄顦梺缁樻⒒閸樠囧几娓氣偓閺屾盯骞囬棃娑欑亪闁搞儱鐡ㄧ换婵嬪閿濆棛銆愰梺鎸庢穿缁犳捇寮澶嬪亜閻忓繋鐒﹂弬鈧俊鐐€栧濠氭偤閺冨牊鍊块柟顖嗗本瀵岄柣搴㈢⊕钃遍柛濠冨姍閺屻劌鈹戦崼婵呮閻庢鍠楅幐铏叏閳ь剟鏌ㄥ☉妯侯仼妤犵偞顨嗙换婵堝枈濡椿娼戦梺鎼炲妺閸楁娊骞冨Ο琛℃斀闁割偆鍣ュ鐔兼⒑閹稿孩绀€闁稿﹤缍婇幃锟犳偄閸忚偐鍘甸梺缁樺灦閿氶柣鎾亾闂備礁鎲″濠氬窗閹捐埖锟?    sprite.x = Math.round((this.width - sprite.width) / 2)
-    sprite.y = 0
+  get bgSprite() {
+    return this.backgroundManager?.bgSprite ?? null
   }
 
-  async setBackground(bgId, transition = null) {
-    if (bgId === this.currentBgId) return
-    this.currentBgId = bgId
+  // Background
 
-    const oldSprite = this.bgSprite
-    try {
-      const url = getBgUrl(bgId)
-      const texture = await this._loadTextureFromUrl(url)
-      const newSprite = new PIXI.Sprite(texture)
-      this._applyBgCover(newSprite)
-      newSprite.alpha = 0
-      this.bgContainer.addChild(newSprite)
-      this.bgSprite = newSprite
-
-      const delayMs = Math.max(0, Number(transition?.delay || 0)) * 1000
-      const durationMs = Math.max(0.01, Number(transition?.duration || 0.5)) * 1000
-      const start = performance.now()
-      const tickerFn = () => {
-        const elapsed = performance.now() - start
-        if (elapsed < delayMs) return
-        const t = Math.min((elapsed - delayMs) / durationMs, 1)
-        if (oldSprite) oldSprite.alpha = 1 - t
-        newSprite.alpha = t
-        if (t >= 1) {
-          this.app.ticker.remove(tickerFn)
-          if (oldSprite) {
-            this.bgContainer.removeChild(oldSprite)
-            oldSprite.destroy({ texture: true })
-          }
-        }
-      }
-      this.app.ticker.add(tickerFn)
-    } catch (err) {
-      console.warn(`[PixiStageManager] Failed to load bg "${bgId}":`, err.message)
-    }
+  setBackground(bgId, transition = null) {
+    return this.backgroundManager?.setBackground(bgId, transition)
   }
 
   clearBackground() {
-    this.currentBgId = null
-    if (this.bgSprite) {
-      this.bgContainer.removeChild(this.bgSprite)
-      this.bgSprite.destroy({ texture: true })
-      this.bgSprite = null
-    }
+    return this.backgroundManager?.clearBackground()
   }
+
+  setBgBlur(amount, duration = 0, delay = 0) {
+    return this.backgroundManager?.setBgBlur(amount, duration, delay)
+  }
+
+  _ensureBgBlurFilter() {
+    return this.backgroundManager?._ensureBgBlurFilter()
+  }
+
+  setBgBlurInstant(amount) {
+    return this.backgroundManager?.setBgBlurInstant(amount)
+  }
+
+  clearBgBlur() {
+    return this.backgroundManager?.clearBgBlur()
+  }
+
+  setBgColorOverlay(hexColor, duration = 0, delay = 0) {
+    return this.backgroundManager?.setBgColorOverlay(hexColor, duration, delay)
+  }
+
+  clearBgColorOverlay() {
+    return this.backgroundManager?.clearBgColorOverlay()
+  }
+
+  _hexToRgb(color) {
+    return this.backgroundManager?._hexToRgb(color)
+  }
+
+  _rgbToHex(rgb) {
+    return this.backgroundManager?._rgbToHex(rgb)
+  }
+
+  applyBgEffects(effects = []) {
+    return this.backgroundManager?.applyBgEffects(effects)
+  }
+
+  _createBgEffect(id) {
+    return this.backgroundManager?._createBgEffect(id)
+  }
+
+  _drawRain(graphics, id) {
+    return this.backgroundManager?._drawRain(graphics, id)
+  }
+
+  _resizeBgEffects() {
+    return this.backgroundManager?._resizeBgEffects()
+  }
+
+  _bgEffectTargetAlpha(id) {
+    return this.backgroundManager?._bgEffectTargetAlpha(id)
+  }
+
+  _loadCameraflareTextures() {
+    return this.backgroundManager?._loadCameraflareTextures()
+  }
+
+  _animateBgEffectAlpha(entry, targetAlpha, duration = 0, delay = 0, onDone = null) {
+    return this.backgroundManager?._animateBgEffectAlpha(entry, targetAlpha, duration, delay, onDone)
+  }
+
+  _removeBgEffect(id) {
+    return this.backgroundManager?._removeBgEffect(id)
+  }
+
   // Visual Filters
 
   /**
@@ -548,555 +566,6 @@ export class PixiStageManager {
     } else {
       this.app.stage.filters = null
     }
-  }
-
-  /**
-   * Apply blur to the background sprite (image_bg_dof).
-   */
-  setBgBlur(amount, duration = 0, delay = 0) {
-    const target = Math.max(0, Number(amount || 0))
-    const durationMs = Math.max(0, Number(duration || 0)) * 1000
-    const delayMs = Math.max(0, Number(delay || 0)) * 1000
-    this._bgBlurTween?.cancel?.()
-    const apply = (value) => {
-      this._bgBlurAmount = value
-      if (value > 0.01) {
-        this._ensureBgBlurFilter()
-        this._blurFilter.blur = value
-      } else {
-        this._bgBlurAmount = 0
-        this.clearBgBlur()
-      }
-    }
-    if (durationMs > 0 || delayMs > 0) {
-      this._bgBlurTween = runRafTween({
-        durationMs,
-        delayMs,
-        startValue: this._bgBlurAmount || 0,
-        endValue: target,
-        ease: easeOutCubic,
-        onUpdate: apply,
-      })
-    } else {
-      apply(target)
-    }
-  }
-
-  _ensureBgBlurFilter() {
-    if (!this._blurFilter) {
-      this._blurFilter = new PIXI.BlurFilter()
-      this._blurFilter.quality = 4
-      this._blurFilter.resolution = this.app.renderer.resolution
-      this._blurFilter.padding = 0
-    }
-    if (this.bgSprite) {
-      this.bgSprite.filters = this.bgSprite.filters || []
-      if (!this.bgSprite.filters.includes(this._blurFilter)) {
-        this.bgSprite.filters.push(this._blurFilter)
-      }
-    }
-  }
-
-  setBgBlurInstant(amount) {
-    const value = Math.max(0, Number(amount || 0))
-    if (value > 0) {
-      if (!this._blurFilter) {
-        this._blurFilter = new PIXI.BlurFilter()
-        this._blurFilter.quality = 4
-        this._blurFilter.resolution = this.app.renderer.resolution
-        this._blurFilter.padding = 0
-      }
-      this._blurFilter.blur = value
-      this._bgBlurAmount = value
-      if (this.bgSprite) {
-        this.bgSprite.filters = this.bgSprite.filters || []
-        if (!this.bgSprite.filters.includes(this._blurFilter)) {
-          this.bgSprite.filters.push(this._blurFilter)
-        }
-      }
-    } else {
-      this.clearBgBlur()
-    }
-  }
-
-  clearBgBlur() {
-    this._bgBlurAmount = 0
-    if (this._blurFilter && this.bgSprite?.filters) {
-      this.bgSprite.filters = this.bgSprite.filters.filter(f => f !== this._blurFilter)
-      if (this.bgSprite.filters.length === 0) this.bgSprite.filters = null
-    }
-  }
-
-  /**
-   * Apply a color overlay to the background (image_bg_color).
-   * Places a semi-transparent colored sprite on top of the background.
-   */
-  setBgColorOverlay(hexColor, duration = 0, delay = 0) {
-    this._bgColorTween?.cancel?.()
-
-    // null / undefined / '#FFFFFF' means no overlay 锟?clear or fade out
-    if (!hexColor || (typeof hexColor === 'string' && hexColor.toUpperCase() === '#FFFFFF')) {
-      if (duration > 0 && this._bgOverlaySprite && this._bgOverlaySprite.parent) {
-        const durationMs = Math.max(0, Number(duration)) * 1000
-        const delayMs = Math.max(0, Number(delay)) * 1000
-        const startAlpha = this._bgOverlaySprite.alpha
-        this._bgColorTween = runRafTween({
-          durationMs,
-          delayMs,
-          startValue: startAlpha,
-          endValue: 0,
-          ease: t => 1 - Math.pow(1 - t, 3),
-          onUpdate: (alpha) => {
-            if (this._bgOverlaySprite) this._bgOverlaySprite.alpha = Math.max(0, alpha)
-          },
-          onComplete: () => this.clearBgColorOverlay(),
-        })
-      } else {
-        this.clearBgColorOverlay()
-      }
-      return
-    }
-
-    const targetColor = parseInt(hexColor.replace('#', ''), 16)
-    const durationMs = Math.max(0, Number(duration || 0)) * 1000
-    const delayMs = Math.max(0, Number(delay || 0)) * 1000
-    if (!this._bgOverlaySprite) {
-      this._bgOverlaySprite = new PIXI.Sprite(PIXI.Texture.WHITE)
-      this._bgOverlaySprite.blendMode = PIXI.BLEND_MODES.MULTIPLY
-    }
-    if (!this._bgOverlaySprite.parent) {
-      this.bgContainer.addChild(this._bgOverlaySprite)
-      // Re-added after clear 锟?reset stale tint from previous cycle.
-      // Without this, one frame renders the old tint before the tween's
-      // first rAF tick, causing a visible flash.
-      this._bgOverlaySprite.tint = 0xFFFFFF
-      this._bgOverlayColor = 0xFFFFFF
-    }
-    this._bgOverlaySprite.alpha = 0.85
-    this._bgOverlaySprite.width = this.width
-    this._bgOverlaySprite.height = this.height
-    const startColor = this._bgOverlayColor ?? 0xFFFFFF
-    const startRgb = this._hexToRgb(startColor)
-    const targetRgb = this._hexToRgb(targetColor)
-    const apply = (rgb) => {
-      const color = this._rgbToHex(rgb)
-      this._bgOverlayColor = color
-      this._bgOverlaySprite.tint = color
-    }
-    if (durationMs > 0 || delayMs > 0) {
-      this._bgColorTween = runRafTween({
-        durationMs,
-        delayMs,
-        startValue: 0,
-        endValue: 1,
-        ease: easeOutCubic,
-        onUpdate: (t) => {
-          apply({
-            r: startRgb.r + (targetRgb.r - startRgb.r) * t,
-            g: startRgb.g + (targetRgb.g - startRgb.g) * t,
-            b: startRgb.b + (targetRgb.b - startRgb.b) * t,
-          })
-        },
-      })
-    } else {
-      apply(targetRgb)
-    }
-  }
-
-  clearBgColorOverlay() {
-    this._bgOverlayColor = 0xFFFFFF
-    if (this._bgOverlaySprite && this._bgOverlaySprite.parent) {
-      this.bgContainer.removeChild(this._bgOverlaySprite)
-    }
-  }
-
-  _hexToRgb(color) {
-    return { r: (color >> 16) & 255, g: (color >> 8) & 255, b: color & 255 }
-  }
-
-  _rgbToHex({ r, g, b }) {
-    return ((Math.round(r) & 255) << 16) | ((Math.round(g) & 255) << 8) | (Math.round(b) & 255)
-  }
-  // Camera zoom / pan
-
-  /**
-   * Apply camera zoom and offset to the visual stage.
-   * Camera at (offsetX, offsetY) with zoom factor. Background and characters
-   * share the transform so authored bg closeups do not become character-only
-   * pulls.
-   */
-  setCameraZoom(zoomData) {
-    const resetDuration = Number(zoomData?.duration || 0)
-    if (!zoomData || (zoomData.zoom === 1.0 && zoomData.offset_x === 0 && zoomData.offset_y === 0 && resetDuration <= 0)) {
-      this.resetCameraZoom()
-      return
-    }
-    this._cameraZoom = zoomData
-    const { zoom, offset_x, offset_y, duration } = zoomData
-    const animDuration = (duration > 0) ? duration * 1000 : 0
-    const coordScale = this.width / 1280
-    const centerX = this.width / 2
-
-    // Calculate target transform
-    const targetScale = zoom
-    const targetX = centerX * (1 - zoom) - offset_x * coordScale * zoom
-    const targetY = this.height / 2 * (1 - zoom) - offset_y * coordScale * zoom
-
-    // Cancel any in-progress tween
-    this._cameraTween?.cancel?.()
-
-    const applyCameraTransform = (scale, x, y) => {
-      const bgScale = Math.max(1, scale)
-      const bgSprite = this.bgSprite
-      const bgMinX = bgSprite ? this.width - ((bgSprite.x + bgSprite.width) * bgScale) : this.width * 0.5 * (1 - bgScale)
-      const bgMaxX = bgSprite ? -bgSprite.x * bgScale : 0
-      const bgMinY = bgSprite ? this.height - ((bgSprite.y + bgSprite.height) * bgScale) : this.height * 0.5 * (1 - bgScale)
-      const bgMaxY = bgSprite ? -bgSprite.y * bgScale : 0
-      this.bgContainer.scale.set(bgScale)
-      this.bgContainer.x = Math.min(bgMaxX, Math.max(bgMinX, x))
-      this.bgContainer.y = Math.min(bgMaxY, Math.max(bgMinY, y))
-      this.spineContainer.scale.set(scale)
-      this.spineContainer.x = x
-      this.spineContainer.y = y
-    }
-
-    if (animDuration > 0 && this.spineContainer.scale.x > 0) {
-      // Animated transition
-      const startScale = this.spineContainer.scale.x
-      const startX = this.spineContainer.x
-      const startY = this.spineContainer.y
-      this._cameraTween = runRafTween({
-        durationMs: animDuration,
-        startValue: 0,
-        endValue: 1,
-        ease: easeOutCubic,
-        onUpdate: (t) => {
-          applyCameraTransform(
-            startScale + (targetScale - startScale) * t,
-            startX + (targetX - startX) * t,
-            startY + (targetY - startY) * t,
-          )
-        },
-      })
-    } else {
-      // Instant
-      applyCameraTransform(targetScale, targetX, targetY)
-    }
-  }
-
-  resetCameraZoom() {
-    this._cameraTween?.cancel?.()
-    this._cameraZoom = null
-    this.bgContainer.scale.set(1)
-    this.bgContainer.x = 0
-    this.bgContainer.y = 0
-    this.spineContainer.scale.set(1)
-    this.spineContainer.x = 0
-    this.spineContainer.y = 0
-  }
-  // Screen fade overlay
-
-  /**
-   * Animate the screen fade overlay.
-   * @param {string} type - "in" (fade from color to clear) or "out" (fade to color)
-   * @param {string} color - hex color e.g. "#000000" or "#FFFFFF"
-   * @param {number} duration - animation duration in seconds
-   * @returns {Promise} resolves when animation completes
-   */
-  setScreenFade(type, color, duration, delay = 0, maxAlpha = 1) {
-    const token = ++this._screenFadeToken
-    return new Promise(resolve => {
-      if (!this._fadeOverlay || this._fadeOverlay.destroyed) {
-        resolve()
-        return
-      }
-      const hex = parseInt(color.replace('#', ''), 16)
-      this._fadeOverlay.tint = hex
-      this._fadeOverlay.visible = true
-
-      const alpha = Math.max(0, Math.min(1, Number(maxAlpha ?? 1)))
-      const startAlpha = type === 'in' ? alpha : 0
-      const endAlpha = type === 'in' ? 0 : alpha
-      this._fadeOverlay.alpha = startAlpha
-
-      const dur = Math.max(duration, 0) * 1000
-      const delayMs = Math.max(0, Number(delay || 0)) * 1000
-      if (dur <= 0) {
-        if (token !== this._screenFadeToken) { resolve(); return }
-        this._fadeOverlay.alpha = endAlpha
-        if (type === 'in') this._fadeOverlay.visible = false
-        resolve()
-        return
-      }
-      tweenOverlayFade({
-        overlay: this._fadeOverlay,
-        token,
-        isCurrent: t => t === this._screenFadeToken,
-        durationMs: dur,
-        delayMs,
-        startAlpha,
-        endAlpha,
-        onFinish: () => {
-          if (type === 'in' && this._fadeOverlay && !this._fadeOverlay.destroyed) {
-            this._fadeOverlay.visible = false
-          }
-          resolve()
-        },
-      })
-    })
-  }
-
-  clearScreenFade() {
-    this._screenFadeToken++
-    if (!this._fadeOverlay || this._fadeOverlay.destroyed) return
-    this._fadeOverlay.alpha = 0
-    this._fadeOverlay.visible = false
-  }
-
-  playScreenEffects(effects = []) {
-    if (!Array.isArray(effects) || effects.length === 0 || !this._effectOverlay) return
-    const token = ++this._screenEffectToken
-    for (const effect of effects) {
-      const delayMs = Math.max(0, Number(effect?.delay || 0)) * 1000
-      setTimeout(() => {
-        if (token !== this._screenEffectToken) return
-        if (effect?.type === 'single') this._playSingleScreenEffect(effect)
-        else this._playFadeScreenEffect(effect)
-      }, delayMs)
-    }
-  }
-
-  _playFadeScreenEffect(effect) {
-    const overlay = this._effectOverlay
-    if (!overlay || overlay.destroyed) return
-    const type = effect?.type || 'fadeout'
-    const color = String(effect?.color || '#FFFFFF')
-    overlay.tint = parseInt(color.replace('#', ''), 16)
-    overlay.width = this.width
-    overlay.height = this.height
-    overlay.visible = true
-    const maxAlpha = Math.max(0, Math.min(1, Number(effect?.alpha ?? 1)))
-    const startAlpha = type === 'fadein' ? 0 : maxAlpha
-    const endAlpha = type === 'fadein' ? maxAlpha : 0
-    overlay.alpha = startAlpha
-    const durationMs = Math.max(0, Number(effect?.duration || 0)) * 1000
-    tweenOverlayFade({
-      overlay,
-      token: this._screenEffectToken,
-      isCurrent: token => token === this._screenEffectToken,
-      durationMs,
-      startAlpha,
-      endAlpha,
-      onFinish: () => {
-        if (endAlpha <= 0 && overlay && !overlay.destroyed) overlay.visible = false
-      },
-    })
-  }
-
-  _playSingleScreenEffect(effect) {
-    const id = effect?.id || ''
-    if (id === 'fx_adv_punch') {
-      this._playPunchEffect(effect)
-    } else if (id === 'fx_adv_kamifubuki') {
-      this._playFadeScreenEffect({ type: 'fadein', color: '#FFFFFF', alpha: 0.25, duration: 0.12 })
-      this._playFadeScreenEffect({ type: 'fadeout', color: '#FFFFFF', alpha: 0.25, duration: 0.35 })
-    }
-  }
-
-  _playPunchEffect(effect) {
-    const overlay = this._effectOverlay
-    if (!overlay || overlay.destroyed) return
-    overlay.tint = 0xffffff
-    overlay.width = this.width
-    overlay.height = this.height
-    overlay.alpha = 0.55
-    overlay.visible = true
-    const dir = Math.sign(Number(effect?.x || 0))
-    const durationMs = Math.max(120, Number(effect?.duration || 0.35) * 1000)
-    tweenOverlayPunch({
-      overlay,
-      spineContainer: this.spineContainer,
-      durationMs,
-      dir: dir || 1,
-    })
-  }
-
-  setScreenSlide(type, color = '#000000', duration = 0.5, delay = 0, direction = '6') {
-    const token = ++this._screenSlideToken
-    if (!this._slideOverlay || this._slideOverlay.destroyed) return
-    const overlay = this._slideOverlay
-    overlay.tint = parseInt(String(color || '#000000').replace('#', ''), 16)
-    overlay.width = this.width
-    overlay.height = this.height
-    overlay.alpha = 1
-    overlay.visible = true
-
-    const offscreen = this._slideOffset(direction)
-    const start = type === 'out' ? { x: 0, y: 0 } : offscreen
-    const end = type === 'out' ? offscreen : { x: 0, y: 0 }
-    overlay.x = start.x
-    overlay.y = start.y
-
-    const delayMs = Math.max(0, Number(delay || 0)) * 1000
-    const durationMs = Math.max(0, Number(duration || 0)) * 1000
-    tweenOverlaySlide({
-      overlay,
-      token,
-      isCurrent: t => t === this._screenSlideToken,
-      durationMs,
-      delayMs,
-      start,
-      end,
-      onFinish: () => {
-        overlay.x = end.x
-        overlay.y = end.y
-        if (type === 'out') overlay.visible = false
-      },
-    })
-  }
-
-  _slideOffset(direction) {
-    const dir = String(direction || '6')
-    if (dir === '4') return { x: -this.width, y: 0 }
-    if (dir === '8') return { x: 0, y: -this.height }
-    if (dir === '2') return { x: 0, y: this.height }
-    return { x: this.width, y: 0 }
-  }
-
-  clearScreenSlide() {
-    this._screenSlideToken++
-    if (!this._slideOverlay || this._slideOverlay.destroyed) return
-    this._slideOverlay.visible = false
-    this._slideOverlay.x = 0
-    this._slideOverlay.y = 0
-  }
-
-  applyBgEffects(effects = []) {
-    const desired = new Set()
-    for (const effect of effects || []) {
-      const id = effect?.id
-      if (!id) continue
-      desired.add(id)
-      let entry = this._bgEffectEntries[id]
-      if (!entry) {
-        entry = this._createBgEffect(id)
-        this._bgEffectEntries[id] = entry
-        if (entry.container) this.bgEffectContainer.addChild(entry.container)
-      }
-      const ending = effect.action === 'end' || effect.visible === false
-      const targetAlpha = ending ? 0 : this._bgEffectTargetAlpha(id)
-      entry.container.visible = true
-      this._animateBgEffectAlpha(entry, targetAlpha, effect.duration, effect.delay, () => {
-        if (ending) this._removeBgEffect(id)
-      })
-    }
-
-    for (const id of Object.keys(this._bgEffectEntries)) {
-      if (!desired.has(id)) this._removeBgEffect(id)
-    }
-  }
-
-  _createBgEffect(id) {
-    const container = new PIXI.Container()
-    container.eventMode = 'none'
-    container.alpha = 0
-    const entry = { id, container, ticker: null, graphics: [] }
-
-    if (id === 'cameraflare') {
-      // DISABLED 锟?2212christmas is snow/glow, not a cameraflare effect
-      console.warn('[PixiStageManager] cameraflare disabled')
-    } else if (id.startsWith('fx_adv_rain')) {
-      const rain = new PIXI.Graphics()
-      this._drawRain(rain, id)
-      container.addChild(rain)
-      entry.graphics.push(rain)
-      const speed = id.includes('heavy') ? 9 : 5
-      entry.ticker = () => {
-        rain.y += speed
-        if (rain.y > 28) rain.y = 0
-      }
-      this.app.ticker.add(entry.ticker)
-    }
-
-    return entry
-  }
-
-  _drawRain(graphics, id) {
-    graphics.clear()
-    const heavy = id.includes('heavy')
-    const count = heavy ? 150 : 80
-    graphics.lineStyle(heavy ? 2 : 1, 0xcfe9ff, heavy ? 0.36 : 0.28)
-    for (let i = 0; i < count; i++) {
-      const x = (i * 97) % Math.max(1, this.width + 80) - 40
-      const y = (i * 53) % Math.max(1, this.height + 60) - 60
-      graphics.moveTo(x, y)
-      graphics.lineTo(x - 18, y + (heavy ? 42 : 32))
-    }
-  }
-
-  _resizeBgEffects() {
-    for (const entry of Object.values(this._bgEffectEntries)) {
-      if (!entry?.graphics?.length) continue
-      if (entry.id === 'cameraflare') {
-        // no-op 锟?cameraflare is code-generated, handled in _createBgEffect
-      } else if (entry.id.startsWith('fx_adv_rain')) {
-        this._drawRain(entry.graphics[0], entry.id)
-      }
-    }
-  }
-
-  _bgEffectTargetAlpha(id) {
-    if (id === 'cameraflare') return 0.85
-    if (id.startsWith('fx_adv_rain')) return 0.85
-    return 0
-  }
-
-  _loadCameraflareTextures() {
-    if (this._cameraflareTextures) return this._cameraflareTextures
-    const urls = [0, 1, 2, 3].map(i => `/data/fx_extracted/shine_frame_${i}.png`)
-    this._cameraflareTextures = Promise.all(urls.map(url => this._loadTextureFromUrl(url)))
-      .catch(e => {
-        this._cameraflareTextures = null
-        throw e
-      })
-    return this._cameraflareTextures
-  }
-
-  _animateBgEffectAlpha(entry, targetAlpha, duration = 0, delay = 0, onDone = null) {
-    if (!entry?.container) return
-    const token = (entry.token || 0) + 1
-    entry.token = token
-    const startAlpha = entry.container.alpha
-    const delayMs = Math.max(0, Number(delay || 0)) * 1000
-    const durationMs = Math.max(0, Number(duration || 0)) * 1000
-    const t0 = performance.now()
-    const tick = () => {
-      if (entry.token !== token || !entry.container || entry.container.destroyed) return
-      const elapsed = performance.now() - t0
-      if (elapsed < delayMs) {
-        requestAnimationFrame(tick)
-        return
-      }
-      const t = durationMs <= 0 ? 1 : Math.min((elapsed - delayMs) / durationMs, 1)
-      entry.container.alpha = startAlpha + (targetAlpha - startAlpha) * t
-      if (t >= 1) {
-        entry.container.visible = targetAlpha > 0
-        if (onDone) onDone()
-      } else {
-        requestAnimationFrame(tick)
-      }
-    }
-    requestAnimationFrame(tick)
-  }
-
-  _removeBgEffect(id) {
-    const entry = this._bgEffectEntries[id]
-    if (!entry) return
-    entry.token = (entry.token || 0) + 1
-    if (entry.ticker) this.app.ticker.remove(entry.ticker)
-    if (entry.container?.parent) entry.container.parent.removeChild(entry.container)
-    entry.container?.destroy({ children: true })
-    delete this._bgEffectEntries[id]
   }
 
   cancelAllSpineTweens() {
@@ -2293,11 +1762,8 @@ export class PixiStageManager {
     this._resizeObserver?.disconnect()
     this._resizeObserver = null
     this.clearAllSpines()
-    this.clearBackground()
-    for (const id of Object.keys(this._bgEffectEntries)) {
-      this._removeBgEffect(id)
-    }
-    this._bgEffectEntries = {}
+    this.backgroundManager?.destroy()
+    this.backgroundManager = null
     if (this.app) {
       this.app.destroy(true)
       this.app = null

@@ -432,3 +432,22 @@ import { normalizeFileList, groupFileList, groupFileCount } from './utils/IndexN
 4. 手动验证至少一个 ADULT rig 和一个 CHILD rig 的 lip-sync：嘴能张开，内部牙齿/舌头不被横向拉伸，开口强度随角色和表情变化。
 
 ---
+
+## 2026-07-01 追加：BackgroundManager 已拆出
+本轮已将 `PixiStageManager.js` 的背景生命周期与背景特效迁出到 `src/core/BackgroundManager.js`。
+
+### 当前边界
+- `PixiStageManager.js` 现在只保留背景相关 public facade、`setCameraFilter()`、以及仍需和 `bgSprite` 联动的镜头缩放逻辑。
+- `BackgroundManager.js` 负责：`setBackground`、`clearBackground`、背景模糊、背景色遮罩、背景特效、resize 适配。
+- `setCameraZoom()` 仍在 `PixiStageManager.js`，但通过 `bgSprite` getter 读取背景状态，后续可以在不改背景实现的前提下继续拆镜头控制。
+
+### 当前尺寸
+| 文件 | 当前行数 | 状态 |
+|---|---:|---|
+| `src/core/PixiStageManager.js` | 约 1320+ | 继续瘦身中，背景实现已迁出 |
+| `src/core/BackgroundManager.js` | 约 320+ | 已接管背景与背景特效 |
+
+### 这一刀后要记住
+1. 不要把背景逻辑再写回 `PixiStageManager.js`。
+2. 镜头缩放仍然可以保留在主类，先别急着把 `bgContainer` 的 clamp 再拆散。
+3. 下一个高性价比目标是 `CameraController`，但必须先确认背景平铺和 clamp 行为完全稳定。
