@@ -744,9 +744,14 @@ export class PixiStageManager {
 
     const applyCameraTransform = (scale, x, y) => {
       const bgScale = Math.max(1, scale)
+      const bgSprite = this.bgSprite
+      const bgMinX = bgSprite ? this.width - ((bgSprite.x + bgSprite.width) * bgScale) : this.width * 0.5 * (1 - bgScale)
+      const bgMaxX = bgSprite ? -bgSprite.x * bgScale : 0
+      const bgMinY = bgSprite ? this.height - ((bgSprite.y + bgSprite.height) * bgScale) : this.height * 0.5 * (1 - bgScale)
+      const bgMaxY = bgSprite ? -bgSprite.y * bgScale : 0
       this.bgContainer.scale.set(bgScale)
-      this.bgContainer.x = bgScale === scale ? x : 0
-      this.bgContainer.y = bgScale === scale ? y : 0
+      this.bgContainer.x = Math.min(bgMaxX, Math.max(bgMinX, x))
+      this.bgContainer.y = Math.min(bgMaxY, Math.max(bgMinY, y))
       this.spineContainer.scale.set(scale)
       this.spineContainer.x = x
       this.spineContainer.y = y
@@ -1870,20 +1875,17 @@ export class PixiStageManager {
 
       // 闂傚倸鍊搁崐鎼佸磹妞嬪海鐭嗗〒姘ｅ亾鐎规洦鍨跺畷绋课旈埀顒勫磼閵婏妇绡€濠电姴鍊绘晶鏇犵棯閹岀吋闁哄瞼鍠栧畷婊嗩槾閻㈩垱鐩弻锝夊箻閸愬弶娈婚梺鍝勬湰缁嬫牜绮诲☉銏犵闁告劏鏁╅敂鐣岀?闂傚倸鍊搁崐鎼佸磹妞嬪海鐭嗗〒姘ｅ亾妤犵偛顦甸弫鎾绘偐閸愯弓鐢婚梺鍝勵槸閻楀啴寮插┑鍫㈢焼濠电姴娲﹂悡鍐喐濠婂牆绀堥柣鏃傚帶閽冪喐绻涢幋鐑嗙劯闁绘柨鍚嬮崑锟犳煛婢跺孩纭堕柕鍫櫍濮婄粯鎷呯粵瀣異闂佹悶鍔嶆竟鍡涘焵椤掍礁鍤柛鐘冲哺瀹曟岸骞掗幋鏃€鐎婚梺瑙勫劤閸熷潡鎮楅鐑嗘富闁靛牆妫欓ˉ鍡涙煕鐎ｎ偄濮夌紒顔界懇楠炲鈹戦崘鈺傛澑闂佸湱鍎ゆ繛濠傜暦閹邦儵鏃€鎷呴悷鏉夸紟濠电偞娼欓崥瀣焽濞嗘垹鐭嗗鑸靛姈閻撴瑩寮堕崼鐔峰姢闁伙附绮撻弻?闂傚倸鍊搁崐鎼佸磹妞嬪海鐭嗗〒姘ｅ亾鐎规洦鍨跺畷绋课旈埀顒勫磼閵婏妇绡€濠电姴鍊绘晶鏇犵棯閹岀吋闁哄瞼鍠栧畷婊嗩槾閻㈩垱鐩弻锝夊箻閸愬弶娈婚梺鍝勬湰缁嬫牜绮诲☉銏犵闁告劏鏁╅敂鐣岀?
       const mouthBone = spine.skeleton.findBone('mouth')
-      const mouthDataScaleX = mouthBone ? mouthBone.data.scaleX : 1
-      const mouthDataScaleY = mouthBone ? mouthBone.data.scaleY : 1
       const mouthCloseBone = spine.skeleton.findBone('mouth_close')
-      const mouthCloseDataScaleX = mouthCloseBone ? mouthCloseBone.data.scaleX : 1
-      const mouthCloseDataScaleY = mouthCloseBone ? mouthCloseBone.data.scaleY : 1
-      const toothBone = spine.skeleton.findBone('tooth')
-      const toothDataScaleX = toothBone ? toothBone.data.scaleX : 1
-      const toothDataScaleY = toothBone ? toothBone.data.scaleY : 1
-      const tongueBone = spine.skeleton.findBone('tongue')
-      const tongueDataScaleX = tongueBone ? tongueBone.data.scaleX : 1
-      const tongueDataScaleY = tongueBone ? tongueBone.data.scaleY : 1
       const chinControlBone = spine.skeleton.findBone('chin_control')
       const chinControlBaseY = chinControlBone ? chinControlBone.data.y : 0
-      const mouthSlotBone = mouthSlot.bone?.data?.name || 'mouth'
+      const activeMouthBone = mouthSlot.bone || mouthBone || mouthCloseBone
+      const activeMouthDataScaleX = activeMouthBone ? activeMouthBone.data.scaleX : 1
+      const activeMouthDataScaleY = activeMouthBone ? activeMouthBone.data.scaleY : 1
+      const resetBoneScale = (bone) => {
+        if (!bone) return
+        bone.scaleX = bone.data.scaleX
+        bone.scaleY = bone.data.scaleY
+      }
       const isChildRig = mouthSlotBone === 'mouth_close'
       // 闂傚倸鍊搁崐鎼佸磹妞嬪海鐭嗗〒姘ｅ亾鐎规洦鍨跺畷绋课旈埀顒勫磼閵婏妇绡€濠电姴鍊绘晶鏇犵棯閹岀吋闁哄瞼鍠栧畷婊嗩槾閻㈩垱鐩弻锝夊箻閸愬弶娈婚梺鍝勬湰缁嬫牜绮诲☉銏犵闁告劏鏁╅敂鐣岀?婵犵數濮烽弫鍛婃叏閻戝鈧倿鎸婃竟鈺嬬秮瀹曘劑寮堕幋鐙呯幢闂備線鈧偛鑻晶鎾煛鐏炲墽銆掗柍褜鍓ㄧ紞鍡涘磻閸涱垯鐒婇柟娈垮枤绾捐偐绱撴担璇＄劷婵炴彃顕埀顒侇問閸犳牠鎮ユ總鍝ュ祦閻庯綆鍣弫鍥煟閹邦厼绲绘い銉﹀姉缁辨捇宕掑顑藉亾妞嬪孩顐介柨鐔哄Т闂傤垱銇勯弽顐沪闁抽攱妫冮弻娑㈠即閵娿儳浠滈梺閫炲苯澧柛鐔风摠娣囧﹪鎮滈挊澶屽幐婵炶揪绲界€氀囧疾濠靛绠熼柟闂寸缁狅綁鏌ㄩ弮鍥т汗缂佸绻樺娲箰鎼淬垻顦ラ梺绋匡工缂嶅﹪骞冮敓鐘插嵆闁靛骏绱曢崢顏呯節閻㈤潧浠滈柣蹇旂箞瀹曟繈骞橀鐣屽幈闁瑰吋鐣崹濠氭儗瀹€鈧槐鎺撴綇閵娿儳鐟插┑鐐靛帶缁绘﹢宕洪敓鐘茬＜闁靛牆瀚、姒th slot 缂傚倸鍊搁崐鎼佸磹閹间礁纾归柟闂寸绾惧綊鏌ｉ幋锝呅撻柛濠傛健閺屻劑寮撮悙娴嬪亾閹间礁鍨傞柛宀€鍋為埛鎺楁煕椤愩倕鏋庨柛鐘虫礋閺屻倝鎮ч崼婵愬殝闂侀潧娲ょ€氼垳绮诲☉銏犵閻犺桨璀﹂弳顐⑩攽閻愭妫庨柛瀣姈閹便劑鎮界粙璇撅箓鏌涢弴銊ユ灓闁汇倐鍋撻梻浣筋潐瀹曟ê鈻嶉弴鐐╂灁濠电姵纰嶉埛鎴︽煙閼测晛浠滈柍褜鍓氬ú鐔笺€侀弽顓炲窛闁规鍠曠花鐑芥⒒閸屾瑨鍏岀紒顕呭灦閺佸啴鍩￠崨顓犵崶闂佸搫绉查崝宥夊矗韫囨稒鐓曢悘鐐插⒔閳笺倕霉濠婂嫮鐭掓鐐寸墪鑿愭い鎺嗗亾闁诲浚鍣ｉ弻宥夘敍濞戞瑧顦紓浣介哺鐢偤鍩€椤掑﹦绉靛ù婊嗘硾鍗遍柛锔诲幘绾捐偐绱撴担璇＄劷缂佺姵姘ㄧ槐鎺楁偐瀹曞洦鍒涢悗娈垮枟閹告娊骞冨▎鎾崇骇闁瑰瓨绻傞～鍫ユ⒒閸屾艾鈧悂宕愭搴ｇ焼濞撴埃鍋撶€规洦鍨跺畷绋课旈埀顒勫磼閵婏妇绡€濠电姴鍊绘晶鏇犵棯閹岀吋闁哄瞼鍠栧畷婊嗩槾閻㈩垱鐩弻锝夊箻閸愬弶娈婚梺鍝勬湰缁嬫牜绮诲☉銏犵闁告劏鏁╅敂鐣岀?
       // Determine whether this model uses the regular mouth rig or the child rig.
@@ -1915,25 +1917,12 @@ export class PixiStageManager {
             const mouthOpenScale = mouthEntry?.openMouthScale ?? FALLBACK_LIP_OPEN_SCALE
             const dynScaleY = ORIGINAL_LIP_SCALE_MIN + openRatio * (mouthOpenScale - ORIGINAL_LIP_SCALE_MIN)
 
-            if (mouthBone) {
-              mouthBone.scaleX = mouthDataScaleX * dynScaleY
-              mouthBone.scaleY = mouthDataScaleY
+            if (activeMouthBone) {
+              activeMouthBone.scaleX = activeMouthDataScaleX * dynScaleY
+              activeMouthBone.scaleY = activeMouthDataScaleY
             }
-            if (isChildRig) {
-              if (mouthCloseBone) {
-                mouthCloseBone.scaleX = mouthCloseDataScaleX
-                mouthCloseBone.scaleY = mouthCloseDataScaleY
-              }
-            } else {
-              if (toothBone) {
-                toothBone.scaleX = toothDataScaleX * dynScaleY
-                toothBone.scaleY = toothDataScaleY
-              }
-              if (tongueBone) {
-                tongueBone.scaleX = tongueDataScaleX * dynScaleY
-                tongueBone.scaleY = tongueDataScaleY
-              }
-            }
+            if (mouthBone && mouthBone !== activeMouthBone) resetBoneScale(mouthBone)
+            if (mouthCloseBone && mouthCloseBone !== activeMouthBone) resetBoneScale(mouthCloseBone)
             if (tongueSlot) {
               const tName = mouthEntry?.tongueAttachmentName || null
               spine.skeleton.setAttachment('tongue', tName || null)
@@ -1965,14 +1954,11 @@ export class PixiStageManager {
             if (currentAtt.name !== closeAttachmentName) {
               spine.skeleton.setAttachment('mouth', closeAttachmentName)
             }
-            if (mouthBone) { mouthBone.scaleX = mouthDataScaleX; mouthBone.scaleY = mouthDataScaleY }
-            if (!isChildRig) {
-              if (toothBone) { toothBone.scaleX = toothDataScaleX; toothBone.scaleY = toothDataScaleY }
-              if (tongueBone) { tongueBone.scaleX = tongueDataScaleX; tongueBone.scaleY = tongueDataScaleY }
-            }
+            resetBoneScale(activeMouthBone)
+            if (mouthBone && mouthBone !== activeMouthBone) resetBoneScale(mouthBone)
+            if (mouthCloseBone && mouthCloseBone !== activeMouthBone) resetBoneScale(mouthCloseBone)
             // 闂傚倸鍊搁崐鎼佸磹妞嬪海鐭嗗〒姘ｅ亾妤犵偞鐗犻、鏇㈡晝閳ь剟鎮块鈧弻锝呂旈埀顒勬偋婵犲洤鐭楅煫鍥ㄦ嫻閺冨牊鏅查柛娑卞幗閻忔捇姊?adult/child rig 闂傚倸鍊搁崐鎼佸磹閻戣姤鍤勯柛顐ｆ穿缂嶆牠鎮楅敐搴℃灈缂佲偓閸愵喗鐓冮柛婵嗗閺嗙喖鏌涘鍡楀缂佽鲸鎹囧畷鎺戔枎閹存繂顬夋俊鐐€戦崝宀勫箠濡寧顥ら梻浣告惈椤︿即顢栧▎鎾冲惞婵°倕鎳忛悡鏇㈡煛閸ャ儱濡煎ù婊€绮欓弻娑橆潩椤掑鍓堕梺鍝勬湰閻╊垰顕ｉ幘顔嘉╅柕澶堝劤椤旀帡鏌?tooth/tongue闂傚倸鍊搁崐鎼佸磹閻戣姤鍤勯柛顐ｆ礀绾惧鏌曟繛鐐珔缁炬儳娼￠弻锛勪沪鐠囨彃濮庨梺钘夊暟閸犳牠寮婚妸鈺傚亜闁告繂瀚呴姀銈嗙厽闁圭儤鍨规禒娑㈡煏閸パ冾伃妤犵偞甯掗濂稿炊瑜嶉‖澶愭⒒娴ｇ懓鈻曢柡鈧柆宥呯婵炲棙鎸搁拑鐔哥箾閹存瑥鐏╅幆鐔兼⒑閹稿孩鐓ュ褌绮欓幃鈩冩媴閾忓湱锛濇繛杈剧悼椤牓鍩€椤掆偓濠€閬嶅极椤曗偓閺佹捇鎮╅鐟颁壕濞撴埃鍋撶€殿喕绮欓、鏇㈡晲閸涱垽绱￠梻鍌欑窔濞佳嗗櫣闂佸憡娲﹂崑鍛存倶閳ь剛绱撻崒姘偓鎼佸磹閹间礁纾归柟闂寸绾惧綊鏌熼梻瀵割槮缁炬儳缍婇弻锝夊閵忊晝鍔搁梺姹囧€楅崑鎾舵崲濠靛洨绡€闁稿本绮岄。鍝勨攽閳藉棗浜濋柨姘舵婢舵劖鐓ユ繝闈涙婢ф垿鏌嶈閸忔﹢宕戦幘缁樷拺缂佸顑欓崕鎰版煙閻熺増鍠樻鐐插暣閹粓鎸婃径宀勭崜闂備礁婀遍…鍫⑩偓娑掓櫊椤㈡﹢骞愭惔锝囩槇?
             if (chinControlBone) chinControlBone.y = chinControlBaseY
-            if (mouthCloseBone) mouthCloseBone.scaleY = mouthCloseDataScaleY
             if (tongueSlot) spine.skeleton.setAttachment('tongue', null)
             if (toothTopSlot) spine.skeleton.setAttachment('tooth_top', null)
             if (toothBotSlot) spine.skeleton.setAttachment('tooth_bottom', null)
