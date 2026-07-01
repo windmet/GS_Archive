@@ -35,6 +35,7 @@ export class LipSyncController {
     }
 
     const { spine } = entry
+    spine._modelName = entry.modelId || '?'
     spine.customIsTalking = isTalking
     if (isTalking && volumeCallback) {
       spine.getVoiceVolume = volumeCallback
@@ -64,12 +65,14 @@ export class LipSyncController {
     const mouthSlot = spine.skeleton.slots.find(s => /^mouth$/i.test(s.data.name))
     const mouthClipSlot = spine.skeleton.slots.find(s => /^mouth_clip$/i.test(s.data.name))
     const tongueSlot = spine.skeleton.slots.find(s => /^tongue$/i.test(s.data.name))
-    const toothTopSlot = spine.skeleton.slots.find(s => /^tooth_top$/i.test(s.data.name))
+    // Some sub-models (244sub) have "tooth" slot instead of "tooth_top"/"tooth_bottom"
+    const toothTopSlot = spine.skeleton.slots.find(s => /^tooth_top$/i.test(s.data.name)) || spine.skeleton.slots.find(s => /^tooth$/i.test(s.data.name))
     const toothBotSlot = spine.skeleton.slots.find(s => /^tooth_bottom$/i.test(s.data.name))
     if (!mouthSlot) return
 
     const mouthBone = spine.skeleton.findBone('mouth')
     const mouthCloseBone = spine.skeleton.findBone('mouth_close')
+    const mouthClipBone = spine.skeleton.findBone('mouth_clip')
     const chinControlBone = spine.skeleton.findBone('chin_control')
     const chinControlBaseY = chinControlBone ? chinControlBone.data.y : 0
     const mouthSlotBone = mouthSlot.bone?.data?.name || 'mouth'
@@ -86,6 +89,14 @@ export class LipSyncController {
       activeMouthBone,
       isChildRig,
     })
+    // Dump full slot/bone for child rigs to find naming mismatches
+    if (isChildRig) {
+      const allSlots = spine.skeleton.slots.map(s => `${s.data.name}(bone=${s.bone?.data?.name || '?'})`).join(', ')
+      const allBones = spine.skeleton.bones.map(b => `${b.data.name}(sX=${b.data.scaleX},sY=${b.data.scaleY},parent=${b.parent?.data?.name || 'root'},len=${b.data.length})`).join(', ')
+      console.log(`[RigDump] ${idolId} (model=${spine._modelName || '?'}) slots=[${allSlots}]`)
+      console.log(`[RigDump] ${idolId} bones=[${allBones}]`)
+      console.log(`[RigDump] ${idolId} mouthClipSlot=${!!mouthClipSlot} tongueSlot=${!!tongueSlot} toothTopSlot=${!!toothTopSlot} toothBotSlot=${!!toothBotSlot}`)
+    }
 
     const resetBoneScale = (bone) => {
       if (!bone) return
@@ -116,6 +127,7 @@ export class LipSyncController {
       }
       if (mouthCloseBone && mouthCloseBone !== activeMouthBone) resetBoneScale(mouthCloseBone)
       if (chinControlBone) chinControlBone.y = chinControlBaseY
+      if (mouthClipBone) mouthClipBone.scaleX = mouthClipBone.data.scaleX
     }
     const closeMouth = (exp, mouthEntry, currentAttName) => {
       const closeName = mouthEntry?.closeMouthAttachmentName || `mouth_${exp}1`
@@ -172,13 +184,15 @@ export class LipSyncController {
             mouthBone.scaleX = mouthBone.data.scaleX * dynScaleY
             mouthBone.scaleY = mouthBone.data.scaleY
           }
-          if (chinControlBone && chinControlBone.data.length > 0) {
-            const chinDelta = chinControlBaseY - chinControlBone.y
-            if (chinDelta > 0) {
-              chinControlBone.y = chinControlBaseY - chinDelta * (1 + 0.5 * openRatio)
+          // Scale mouth_clip bone alongside active mouth bone so the clip region
+          // expands with the mouth opening, hiding deformed interior parts (244sub
+          // has tooth mesh weighted to mouth_close — bone-only compensation can't fix mesh skinning).
+          if (mouthClipBone && isChildRig) {
+            mouthClipBone.scaleX = mouthClipBone.data.scaleX * dynScaleY
+            if (idolId === '244sub' || idolId === '040ren') {
+              console.log(`[LipClip] ${idolId} mouth_clip.scaleX=${mouthClipBone.data.scaleX}->${mouthClipBone.scaleX.toFixed(3)} (dynScaleY=${dynScaleY.toFixed(3)})`)
             }
           }
-
           logScaleDiagnostics(idolId, spine, exp, openRatio, mouthOpenScale, dynScaleY, activeMouthDataScaleX, activeMouthBone)
 
           if (mouthBone && mouthBone !== activeMouthBone && !isChildRig) resetBoneScale(mouthBone)
@@ -231,12 +245,34 @@ export class LipSyncController {
   }
 
   async _loadMouthSetting(idolId, spine) {
+    // Some models (e.g. 244sub_001_00 for 040ren's child variant) have their own
+    // mouth setting file keyed by model prefix, not idolId.
+    const modelId = spine._modelName || ''
+    const modelPrefix = modelId.replace(/_\d{3}_\d{2}$/, '')  // "244sub_001_00" → "244sub"
+    const primaryId = (modelPrefix && modelPrefix !== idolId) ? modelPrefix : idolId
     try {
-      const resp = await fetch(this.getMouthSettingUrl(idolId))
+      const resp = await fetch(this.getMouthSettingUrl(primaryId))
+      if (!resp.ok && primaryId !== idolId) {
+        // Fall back to idolId-based mouth setting for models without their own.
+        const fallback = await fetch(this.getMouthSettingUrl(idolId))
+        if (!fallback.ok) return
+        const data = await fallback.json()
+        if (data?.mouthes?.length) {
+          spine._mouthData = data
+          console.log(`[LipMouth] ${idolId} model "${modelId}" has no own mouth setting, using idolId`)
+          if (spine.customIsTalking) {
+            try { spine.skeleton.updateWorldTransform() } catch (_) {}
+          }
+        }
+        return
+      }
       if (!resp.ok) return
       const data = await resp.json()
       if (data?.mouthes?.length) {
         spine._mouthData = data
+        if (primaryId !== idolId) {
+          console.log(`[LipMouth] ${idolId} using model-specific mouth setting: ${primaryId}`)
+        }
         if (spine.customIsTalking) {
           try {
             spine.skeleton.updateWorldTransform()
