@@ -134,7 +134,7 @@
               @click="openCardScenario(entry)"
             >
               <span>{{ entry['3'] || entry.resource_id }}</span>
-              <small>{{ entry.resource_id }}</small>
+              <small>{{ cardScenarioSubtitle(entry) }}</small>
             </button>
           </div>
         </section>
@@ -475,14 +475,24 @@ const scenarioMetaByFile = computed(() => {
       rows: [],
     }
     if (resourceId && !entry.resourceIds.includes(resourceId)) entry.resourceIds.push(resourceId)
-    const title = row['3'] || row['9']
+    const title = rowDisplayTitle(row)
     if (title && !entry.titles.includes(title)) entry.titles.push(title)
+    if (!entry.summary && row.compiled_summary) entry.summary = row.compiled_summary
     if (row.compiled_exists === false) entry.exists = false
     entry.rows.push(row)
     map.set(key, entry)
   }
   return map
 })
+
+function rowDisplayTitle(row) {
+  const rawTitle = row?.['3'] || row?.['9']
+  if (rawTitle && typeof rawTitle === 'string') return rawTitle
+  const compiledTitle = row?.compiled_summary?.title
+  if (compiledTitle) return compiledTitle
+  if (rawTitle !== undefined && rawTitle !== null) return String(rawTitle)
+  return ''
+}
 
 function displayTitleForMeta(meta, fallbackFile) {
   const titles = meta?.titles?.filter(Boolean) || []
@@ -507,15 +517,26 @@ function fileEntryFor(fn) {
     }
   }
   const resourceText = meta.resourceIds.length ? meta.resourceIds.join(', ') : fn
+  const summaryText = summaryTextForMeta(meta)
   const title = displayTitleForMeta(meta, fn)
   return {
     file: fn,
     title,
-    subtitle: resourceText,
+    subtitle: summaryText ? `${resourceText} · ${summaryText}` : resourceText,
     resourceId: meta.resourceIds[0] || fn,
     missing: meta.exists === false,
     searchText: `${fn} ${title} ${resourceText}`,
   }
+}
+
+function summaryTextForMeta(meta) {
+  const summary = meta?.summary
+  if (!summary) return ''
+  const parts = []
+  if (summary.voice_count) parts.push(`${summary.voice_count} voices`)
+  if (summary.lip_count) parts.push(`${summary.lip_count} lips`)
+  if (!parts.length && summary.step_count) parts.push(`${summary.step_count} steps`)
+  return parts.join(' · ')
 }
 
 const filteredFileEntries = computed(() => {
@@ -636,6 +657,14 @@ function openCardScenario(entry) {
   if (entry?.compiled_file) {
     loadScenario(entry.compiled_file, 'card_detail')
   }
+}
+
+function cardScenarioSubtitle(entry) {
+  const parts = [entry?.resource_id].filter(Boolean)
+  const summary = entry?.compiled_summary
+  if (summary?.voice_count) parts.push(`${summary.voice_count} voices`)
+  if (summary?.lip_count) parts.push(`${summary.lip_count} lips`)
+  return parts.join(' · ')
 }
 
 function voiceUrl(cue) {

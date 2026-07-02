@@ -272,6 +272,78 @@ def collect_compiled_stems(compiled_dir: Path | None) -> set[str]:
     return {path.stem for path in compiled_dir.glob("*.json") if path.stem not in excluded}
 
 
+def summarize_compiled_scenario(path: Path) -> dict[str, Any]:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+        return {}
+
+    steps = data.get("steps") or []
+    step_types: Counter[str] = Counter()
+    chara_ids: set[str] = set()
+    title = None
+    voice_count = 0
+    lip_count = 0
+
+    for step in steps:
+        if not isinstance(step, dict):
+            continue
+        step_type = step.get("type")
+        if isinstance(step_type, str):
+            step_types[step_type] += 1
+
+        dialogue = step.get("dialogue") if isinstance(step.get("dialogue"), dict) else {}
+        text = dialogue.get("text")
+        if not title and step_type == "title" and isinstance(text, str):
+            title = text
+        if dialogue.get("voice"):
+            voice_count += 1
+        if isinstance(dialogue.get("lip"), dict) and dialogue["lip"].get("path"):
+            lip_count += 1
+
+        chara_id = step.get("chara_id")
+        if isinstance(chara_id, str):
+            chara_ids.add(chara_id)
+        state = step.get("state") if isinstance(step.get("state"), dict) else {}
+        for spine in state.get("spines") or []:
+            if isinstance(spine, dict) and isinstance(spine.get("id"), str):
+                chara_ids.add(spine["id"])
+
+    if not title:
+        for step in steps:
+            if not isinstance(step, dict):
+                continue
+            dialogue = step.get("dialogue") if isinstance(step.get("dialogue"), dict) else {}
+            text = dialogue.get("text")
+            if isinstance(text, str) and text and text != "【あらすじ】":
+                title = text.splitlines()[0]
+                break
+
+    return {
+        "scenario_id": data.get("scenario_id"),
+        "title": title,
+        "step_count": len(steps),
+        "step_types": dict(sorted(step_types.items())),
+        "voice_count": voice_count,
+        "lip_count": lip_count,
+        "characters": sorted(chara_ids),
+    }
+
+
+def collect_compiled_summaries(compiled_dir: Path | None) -> dict[str, dict[str, Any]]:
+    if not compiled_dir or not compiled_dir.exists():
+        return {}
+    excluded = {"index", "manifest", "voice_index"}
+    summaries = {}
+    for path in compiled_dir.glob("*.json"):
+        if path.stem in excluded:
+            continue
+        summary = summarize_compiled_scenario(path)
+        if summary:
+            summaries[path.stem] = summary
+    return summaries
+
+
 def collect_voice_stems(voice_dir: Path | None) -> set[str]:
     if not voice_dir or not voice_dir.exists():
         return set()
@@ -294,6 +366,7 @@ def compiled_filename(resource_id: str, compiled_stems: set[str]) -> str | None:
 def build_story_master_index(
     story_tables: dict[str, list[dict[str, Any]]],
     compiled_stems: set[str],
+    compiled_summaries: dict[str, dict[str, Any]],
 ) -> dict[str, Any]:
     def row_with_file(row: dict[str, Any], resource_key: str = "6") -> dict[str, Any]:
         resource_id = row.get(resource_key)
@@ -303,6 +376,10 @@ def build_story_master_index(
             out["compiled_resource_id"] = normalize_compiled_resource(resource_id)
             out["compiled_file"] = compiled_filename(resource_id, compiled_stems)
             out["compiled_exists"] = compiled_exists(resource_id, compiled_stems)
+            if out["compiled_file"]:
+                summary = compiled_summaries.get(Path(out["compiled_file"]).stem)
+                if summary:
+                    out["compiled_summary"] = summary
         return out
 
     return {
@@ -336,6 +413,7 @@ def build_card_index(
     story_tables: dict[str, list[dict[str, Any]]],
     voice_stems: set[str],
     compiled_stems: set[str],
+    compiled_summaries: dict[str, dict[str, Any]],
 ) -> dict[str, Any]:
     cues_by_card: dict[int, list[dict[str, Any]]] = defaultdict(list)
     for cue in card_voice_cues:
@@ -355,6 +433,10 @@ def build_card_index(
             entry["resource_id"] = resource_id
             entry["compiled_file"] = compiled_filename(resource_id, compiled_stems)
             entry["compiled_exists"] = compiled_exists(resource_id, compiled_stems)
+            if entry["compiled_file"]:
+                summary = compiled_summaries.get(Path(entry["compiled_file"]).stem)
+                if summary:
+                    entry["compiled_summary"] = summary
         scenario_rows_by_card[card_id].append(entry)
 
     indexed_cards = []
@@ -594,17 +676,19 @@ def main() -> None:
 
     records = list(iter_top_records(decoded))
     compiled_stems = collect_compiled_stems(args.compiled_dir)
+    compiled_summaries = collect_compiled_summaries(args.compiled_dir)
     voice_stems = collect_voice_stems(args.voice_dir)
     card_parameters = extract_card_parameters(records)
     story_tables = extract_scenario_titles(records)
     card_voice_cues = extract_card_voice_cues(records)
-    story_master_index = build_story_master_index(story_tables, compiled_stems)
+    story_master_index = build_story_master_index(story_tables, compiled_stems, compiled_summaries)
     card_index = build_card_index(
         card_parameters,
         card_voice_cues,
         story_tables,
         voice_stems,
         compiled_stems,
+        compiled_summaries,
     )
     validation_report = build_validation_report(
         story_tables,
