@@ -61,6 +61,18 @@
       </div>
       <div class="filter-bar">
         <input v-model="filterQuery" placeholder="Search card..." class="filter-input" />
+        <div class="card-rarity-tabs">
+          <button
+            v-for="tab in cardRarityTabs"
+            :key="tab.id"
+            class="card-rarity-tab"
+            :class="{ active: currentCardRarity === tab.id }"
+            @click="currentCardRarity = tab.id"
+          >
+            <span>{{ tab.label }}</span>
+            <small>{{ tab.count }}</small>
+          </button>
+        </div>
       </div>
       <div class="card-archive-list">
         <button
@@ -69,6 +81,13 @@
           class="card-archive-row"
           @click="openCard(card)"
         >
+          <img
+            :src="cardIconUrl(card.resource_id, true)"
+            :alt="card.title || card.resource_id"
+            class="card-thumb"
+            loading="lazy"
+            @error="fallbackCardIcon($event, card.resource_id)"
+          />
           <span class="card-rarity">{{ card.rarity || 'CARD' }}</span>
           <span class="card-main">
             <span class="card-title">{{ card.title || card.resource_id }}</span>
@@ -89,6 +108,12 @@
       </div>
       <div v-if="currentCard" class="card-detail">
         <section class="card-detail-head">
+          <img
+            :src="cardIconUrl(currentCard.resource_id, true)"
+            :alt="currentCard.title || currentCard.resource_id"
+            class="card-detail-art"
+            @error="fallbackCardIcon($event, currentCard.resource_id)"
+          />
           <div class="card-detail-meta">
             <span class="card-rarity">{{ currentCard.rarity || 'CARD' }}</span>
             <span>{{ currentCard.resource_id }}</span>
@@ -310,6 +335,7 @@ const currentCharacterId = ref('')
 const currentGroup = ref(null)
 const currentUnit = ref(null)
 const currentCardId = ref('')
+const currentCardRarity = ref('all')
 const returnViewAfterPlayer = ref('files')
 
 const CATEGORIES = [
@@ -582,13 +608,32 @@ const currentCards = computed(() => {
   return ids.map(id => cardMap.value.get(id)).filter(Boolean)
 })
 
+const cardRarityTabs = computed(() => {
+  const order = ['SSR', 'SR', 'R', 'N']
+  const counts = new Map()
+  for (const card of currentCards.value) {
+    const rarity = card.rarity || 'CARD'
+    counts.set(rarity, (counts.get(rarity) || 0) + 1)
+  }
+  const tabs = [{ id: 'all', label: 'All', count: currentCards.value.length }]
+  for (const rarity of order) {
+    if (counts.has(rarity)) tabs.push({ id: rarity, label: rarity, count: counts.get(rarity) })
+  }
+  for (const [rarity, count] of [...counts.entries()].sort()) {
+    if (!order.includes(rarity)) tabs.push({ id: rarity, label: rarity, count })
+  }
+  return tabs
+})
+
 const filteredCards = computed(() => {
   const q = filterQuery.value.toLowerCase()
-  if (!q) return currentCards.value
+  const rarity = currentCardRarity.value
   return currentCards.value.filter(card =>
+    (rarity === 'all' || card.rarity === rarity) &&
+    (!q ||
     String(card.title || '').toLowerCase().includes(q) ||
     String(card.resource_id || '').toLowerCase().includes(q) ||
-    String(card.rarity || '').toLowerCase().includes(q)
+    String(card.rarity || '').toLowerCase().includes(q))
   )
 })
 
@@ -606,6 +651,7 @@ function openCategory(cat) {
     currentCategoryId.value = cat.id
     currentCharacterId.value = ''
     currentGroup.value = null
+    currentCardRarity.value = 'all'
     view.value = 'idols'
   } else if (cat.id === 'episode_zero') {
     currentCategoryId.value = 'episode_zero'
@@ -631,6 +677,7 @@ function openIdol(entry) {
   if (currentCategoryId.value === 'cards') {
     currentCharacterId.value = entry.id
     currentCardId.value = ''
+    currentCardRarity.value = 'all'
     filterQuery.value = ''
     view.value = 'cards'
     return
@@ -649,6 +696,7 @@ function openCard(card) {
 
 function goBackFromCards() {
   currentCardId.value = ''
+  currentCardRarity.value = 'all'
   filterQuery.value = ''
   view.value = 'idols'
 }
@@ -670,6 +718,19 @@ function cardScenarioSubtitle(entry) {
 function voiceUrl(cue) {
   if (!cue) return ''
   return getVoiceUrl(`${cue}.m4a`)
+}
+
+function cardIconUrl(resourceId, awakened = true) {
+  if (!resourceId) return ''
+  const suffix = awakened ? 'p' : ''
+  return `/assets/cards/icons/image_card_icon_${resourceId}${suffix}.png`
+}
+
+function fallbackCardIcon(event, resourceId) {
+  const img = event?.target
+  if (!img || img.dataset.fallbackApplied === '1') return
+  img.dataset.fallbackApplied = '1'
+  img.src = cardIconUrl(resourceId, false)
 }
 
 function openGroup(group) {
@@ -989,9 +1050,37 @@ onMounted(async () => {
   gap: 8px;
   padding: 12px 16px 24px;
 }
+.card-rarity-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.card-rarity-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 28px;
+  border: 1px solid #d8dfe8;
+  border-radius: 6px;
+  background: #fff;
+  color: #444;
+  padding: 4px 9px;
+  cursor: pointer;
+  font-size: 0.76rem;
+}
+.card-rarity-tab small {
+  color: #888;
+  font-size: 0.68rem;
+}
+.card-rarity-tab.active {
+  border-color: #7fb2e5;
+  background: #edf6ff;
+  color: #245b91;
+}
 .card-archive-row {
   display: grid;
-  grid-template-columns: 56px 1fr auto;
+  grid-template-columns: 56px 44px 1fr auto;
   align-items: center;
   gap: 12px;
   width: 100%;
@@ -1009,6 +1098,14 @@ onMounted(async () => {
   background: #f5faff;
   border-color: #b3d9ff;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.card-thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #eee;
+  border: 1px solid #e4e4e4;
 }
 .card-rarity {
   display: inline-flex;
@@ -1057,6 +1154,16 @@ onMounted(async () => {
   border: 1px solid #e8e8e8;
   border-radius: 8px;
   padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.card-detail-art {
+  display: block;
+  width: min(220px, 70vw);
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e4e4e4;
+  background: #eee;
   margin-bottom: 12px;
 }
 .card-detail-head h3 {
