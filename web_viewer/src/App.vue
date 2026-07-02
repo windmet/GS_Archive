@@ -109,10 +109,10 @@
       <div v-if="currentCard" class="card-detail">
         <section class="card-detail-head">
           <img
-            :src="cardIconUrl(currentCard.resource_id, true)"
+            :src="cardLargeImageUrl(currentCard.resource_id, true)"
             :alt="currentCard.title || currentCard.resource_id"
             class="card-detail-art"
-            @error="fallbackCardIcon($event, currentCard.resource_id)"
+            @error="fallbackCardLargeImage($event, currentCard.resource_id)"
           />
           <div class="card-detail-meta">
             <span class="card-rarity">{{ currentCard.rarity || 'CARD' }}</span>
@@ -726,6 +726,12 @@ function cardIconUrl(resourceId, awakened = true) {
   return `/assets/cards/icons/image_card_icon_${resourceId}${suffix}.png`
 }
 
+function cardLargeImageUrl(resourceId, awakened = true) {
+  if (!resourceId) return ''
+  const suffix = awakened ? 'p' : ''
+  return `/assets/cards/large/image_card_portrait_show_${resourceId}${suffix}.png`
+}
+
 function fallbackCardIcon(event, resourceId) {
   const img = event?.target
   if (!img) return
@@ -736,6 +742,23 @@ function fallbackCardIcon(event, resourceId) {
   }
   img.dataset.fallbackApplied = '1'
   img.src = cardIconUrl(resourceId, false)
+}
+
+function fallbackCardLargeImage(event, resourceId) {
+  const img = event?.target
+  if (!img) return
+  const stage = img.dataset.fallbackStage || 'large-awakened'
+  if (stage === 'large-awakened') {
+    img.dataset.fallbackStage = 'large-normal'
+    img.src = cardLargeImageUrl(resourceId, false)
+    return
+  }
+  if (stage === 'large-normal') {
+    img.dataset.fallbackStage = 'icon-awakened'
+    img.src = cardIconUrl(resourceId, true)
+    return
+  }
+  fallbackCardIcon(event, resourceId)
 }
 
 function openGroup(group) {
