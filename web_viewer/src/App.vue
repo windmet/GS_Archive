@@ -53,6 +53,108 @@
       </div>
     </div>
 
+    <!-- ====== CARD ARCHIVE: CARD LIST ====== -->
+    <div v-if="view === 'cards'" class="screen list-screen">
+      <div class="list-header">
+        <button class="back-btn" @click="goBackFromCards">← Back</button>
+        <h2>{{ currentCardCharacterName }}</h2>
+      </div>
+      <div class="filter-bar">
+        <input v-model="filterQuery" placeholder="Search card..." class="filter-input" />
+      </div>
+      <div class="card-archive-list">
+        <button
+          v-for="card in filteredCards"
+          :key="card.resource_id"
+          class="card-archive-row"
+          @click="openCard(card)"
+        >
+          <span class="card-rarity">{{ card.rarity || 'CARD' }}</span>
+          <span class="card-main">
+            <span class="card-title">{{ card.title || card.resource_id }}</span>
+            <span class="card-resource">{{ card.resource_id }}</span>
+          </span>
+          <span class="card-counts">
+            {{ card.home_voice_cues?.length || 0 }} voices · {{ card.scenario_entries?.length || 0 }} stories
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ====== CARD ARCHIVE: DETAIL ====== -->
+    <div v-if="view === 'card_detail'" class="screen list-screen">
+      <div class="list-header">
+        <button class="back-btn" @click="view = 'cards'">← Back</button>
+        <h2>{{ currentCard?.title || currentCard?.resource_id || 'Card' }}</h2>
+      </div>
+      <div v-if="currentCard" class="card-detail">
+        <section class="card-detail-head">
+          <div class="card-detail-meta">
+            <span class="card-rarity">{{ currentCard.rarity || 'CARD' }}</span>
+            <span>{{ currentCard.resource_id }}</span>
+            <span v-if="currentCard.voice_base">{{ currentCard.voice_base }}</span>
+          </div>
+          <h3>{{ currentCard.title || currentCard.resource_id }}</h3>
+        </section>
+
+        <section class="card-detail-section">
+          <h4>卡面文本</h4>
+          <div v-if="currentCard.texts?.normal" class="card-text-block">
+            <strong>普通</strong>
+            <p>{{ currentCard.texts.normal }}</p>
+          </div>
+          <div v-if="currentCard.texts?.awakened" class="card-text-block">
+            <strong>特训后</strong>
+            <p>{{ currentCard.texts.awakened }}</p>
+          </div>
+          <div v-if="currentCard.texts?.extra" class="card-text-block">
+            <strong>短台词</strong>
+            <p>{{ currentCard.texts.extra }}</p>
+          </div>
+        </section>
+
+        <section v-if="currentCard.home_voice_cues?.length" class="card-detail-section">
+          <h4>首页触摸语音</h4>
+          <div class="voice-list">
+            <div v-for="cue in currentCard.home_voice_cues" :key="cue.cue" class="voice-row">
+              <span>{{ cue.cue }}</span>
+              <audio controls preload="none" :src="voiceUrl(cue.cue)"></audio>
+            </div>
+          </div>
+        </section>
+
+        <section v-if="currentCard.scenario_entries?.length" class="card-detail-section">
+          <h4>关联剧情 / 电话</h4>
+          <div class="scenario-link-list">
+            <button
+              v-for="entry in currentCard.scenario_entries"
+              :key="entry.resource_id"
+              class="scenario-link-btn"
+              :disabled="!entry.compiled_file"
+              @click="openCardScenario(entry)"
+            >
+              <span>{{ entry['3'] || entry.resource_id }}</span>
+              <small>{{ entry.resource_id }}</small>
+            </button>
+          </div>
+        </section>
+
+        <section v-if="currentCard.voice_candidates?.unmapped_card_only?.length" class="card-detail-section">
+          <h4>未归类卡面语音候选</h4>
+          <div class="voice-list">
+            <div
+              v-for="cue in currentCard.voice_candidates.unmapped_card_only"
+              :key="cue"
+              class="voice-row"
+            >
+              <span>{{ cue }}</span>
+              <audio controls preload="none" :src="voiceUrl(cue)"></audio>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
     <!-- ====== GROUP LIST (idol character or generic category) ====== -->
     <div v-if="view === 'groups'" class="screen list-screen">
       <div class="list-header">
@@ -144,12 +246,15 @@
       </div>
       <div class="file-list">
         <button
-          v-for="fn in filteredFiles"
-          :key="fn"
+          v-for="entry in filteredFileEntries"
+          :key="entry.file || entry.resourceId"
           class="file-btn"
-          @click="loadScenario(fn)"
+          :class="{ 'file-btn-missing': entry.missing }"
+          :disabled="entry.missing"
+          @click="loadScenario(entry.file)"
         >
-          {{ formatFileName(fn) }}
+          <span class="file-title">{{ entry.title }}</span>
+          <span v-if="entry.subtitle" class="file-subtitle">{{ entry.subtitle }}</span>
         </button>
       </div>
     </div>
@@ -179,6 +284,7 @@ import { IDOL_ID_TO_NAME } from './utils/IdolNameMap.js'
 import { groupFileCount, groupFileList } from './utils/IndexNormalizer.js'
 import { countScenarioFiles, getCategoryCountText } from './utils/IndexStats.js'
 import { Preloader } from './utils/Preloader.js'
+import { getVoiceUrl } from './utils/AssetResolver.js'
 import LoadingScreen from './components/LoadingScreen.vue'
 
 function resolveChatName(ch) {
@@ -191,6 +297,8 @@ function resolveChatName(ch) {
 
 const view = ref('home')
 const indexData = ref(null)
+const cardIndexData = ref(null)
+const storyMasterData = ref(null)
 const currentScenario = ref(null)
 const filterQuery = ref('')
 const loading = ref(false)
@@ -201,6 +309,8 @@ const currentCategoryId = ref('')
 const currentCharacterId = ref('')
 const currentGroup = ref(null)
 const currentUnit = ref(null)
+const currentCardId = ref('')
+const returnViewAfterPlayer = ref('files')
 
 const CATEGORIES = [
   { id: 'main_story', name: '主线剧情' },
@@ -208,6 +318,7 @@ const CATEGORIES = [
   { id: 'idol', name: '偶像个人' },
   { id: 'idol_chat', name: '短信聊天' },
   { id: 'idol_phone', name: '电话聊天' },
+  { id: 'cards', name: '卡片档案' },
   { id: 'episode_zero', name: '第零话' },
   { id: 'extra', name: '额外剧情' },
 ]
@@ -222,12 +333,26 @@ function categoryById(id) {
 const currentCategory = computed(() => categoryById(currentCategoryId.value))
 
 function catCountText(id) {
+  if (id === 'cards') {
+    const cards = cardIndexData.value?.meta?.card_count || cardIndexData.value?.cards?.length || 0
+    const chars = Object.keys(cardIndexData.value?.by_character || {}).length
+    return cards ? `${cards} cards · ${chars} idols` : ''
+  }
   return getCategoryCountText(categoryById(id))
 }
 
 // — Idol / Chat grid —
 const idolList = computed(() => {
   const catId = currentCategoryId.value
+  if (catId === 'cards') {
+    const byCharacter = cardIndexData.value?.by_character || {}
+    return Object.entries(byCharacter).map(([id, cards]) => ({
+      id,
+      name: IDOL_ID_TO_NAME[id] || indexData.value?.characters?.[id] || id,
+      cardCount: cards.length,
+      _isGroup: false,
+    }))
+  }
   if (catId === 'idol_phone') {
     const cat = categoryById('idol_phone')
     const source = cat?.individual
@@ -304,12 +429,14 @@ const groupTitle = computed(() => {
 })
 
 const categoryHeaderText = computed(() => {
+  if (currentCategoryId.value === 'cards') return '卡片档案'
   if (currentCategoryId.value === 'idol_chat') return '短信聊天'
   if (currentCategoryId.value === 'idol_phone') return '电话聊天'
   return '偶像个人'
 })
 
 const categoryFilterPlaceholder = computed(() => {
+  if (currentCategoryId.value === 'cards') return 'Search card idol...'
   if (currentCategoryId.value === 'idol_chat') return 'Search chat...'
   if (currentCategoryId.value === 'idol_phone') return 'Search phone...'
   return 'Search idol...'
@@ -321,19 +448,140 @@ const episodeZeroUnits = computed(() => {
   return cat?.units || []
 })
 
-// — File list —
-const filteredFiles = computed(() => {
+function collectStoryRows(data) {
+  if (!data) return []
+  return [
+    ...(data.main?.episodes || []),
+    ...(data.idol_story?.episodes || []),
+    ...(data.card_scenarios || []),
+    ...(data.work || []),
+    ...(data.birthday || []),
+    ...(data.extra?.episodes || []),
+  ]
+}
+
+const scenarioMetaByFile = computed(() => {
+  const map = new Map()
+  for (const row of collectStoryRows(storyMasterData.value)) {
+    const file = row.compiled_file
+    const resourceId = row.resource_id
+    if (!file && !resourceId) continue
+    const key = file || `missing:${resourceId}`
+    const entry = map.get(key) || {
+      file,
+      resourceIds: [],
+      titles: [],
+      exists: row.compiled_exists !== false,
+      rows: [],
+    }
+    if (resourceId && !entry.resourceIds.includes(resourceId)) entry.resourceIds.push(resourceId)
+    const title = row['3'] || row['9']
+    if (title && !entry.titles.includes(title)) entry.titles.push(title)
+    if (row.compiled_exists === false) entry.exists = false
+    entry.rows.push(row)
+    map.set(key, entry)
+  }
+  return map
+})
+
+function displayTitleForMeta(meta, fallbackFile) {
+  const titles = meta?.titles?.filter(Boolean) || []
+  if (!titles.length) return formatFileName(fallbackFile || meta?.resourceIds?.[0] || '')
+  if (titles.length === 1) return titles[0]
+  if (titles.every(title => /^エピソード\d+$/.test(String(title)))) {
+    return `${titles[0]} - ${titles[titles.length - 1]}`
+  }
+  return titles.slice(0, 2).join(' / ') + (titles.length > 2 ? ` +${titles.length - 2}` : '')
+}
+
+function fileEntryFor(fn) {
+  const meta = scenarioMetaByFile.value.get(fn)
+  if (!meta) {
+    return {
+      file: fn,
+      title: formatFileName(fn),
+      subtitle: '',
+      resourceId: fn,
+      missing: false,
+      searchText: fn,
+    }
+  }
+  const resourceText = meta.resourceIds.length ? meta.resourceIds.join(', ') : fn
+  const title = displayTitleForMeta(meta, fn)
+  return {
+    file: fn,
+    title,
+    subtitle: resourceText,
+    resourceId: meta.resourceIds[0] || fn,
+    missing: meta.exists === false,
+    searchText: `${fn} ${title} ${resourceText}`,
+  }
+}
+
+const filteredFileEntries = computed(() => {
   if (!currentGroup.value) return []
   const files = groupFileList(currentGroup.value)
+  let entries = files.map(fileEntryFor)
+
+  if (currentCategoryId.value === 'extra') {
+    const existingFiles = new Set(files)
+    const missingExtra = (storyMasterData.value?.extra?.episodes || [])
+      .filter(row => row.compiled_exists === false)
+      .map(row => {
+        const resourceId = row.resource_id || row['5']
+        const title = row['3'] || resourceId
+        return {
+          file: null,
+          title,
+          subtitle: `${resourceId} · missing compiled`,
+          resourceId,
+          missing: true,
+          searchText: `${title} ${resourceId}`,
+        }
+      })
+      .filter(entry => !existingFiles.has(entry.file))
+    entries = [...entries, ...missingExtra]
+  }
+
   const q = filterQuery.value.toLowerCase()
-  if (!q) return files
-  return files.filter(fn => fn.toLowerCase().includes(q))
+  if (!q) return entries
+  return entries.filter(entry => entry.searchText.toLowerCase().includes(q))
+})
+
+const cardMap = computed(() => {
+  const map = new Map()
+  for (const card of cardIndexData.value?.cards || []) {
+    map.set(card.resource_id, card)
+  }
+  return map
+})
+
+const currentCards = computed(() => {
+  const ids = cardIndexData.value?.by_character?.[currentCharacterId.value] || []
+  return ids.map(id => cardMap.value.get(id)).filter(Boolean)
+})
+
+const filteredCards = computed(() => {
+  const q = filterQuery.value.toLowerCase()
+  if (!q) return currentCards.value
+  return currentCards.value.filter(card =>
+    String(card.title || '').toLowerCase().includes(q) ||
+    String(card.resource_id || '').toLowerCase().includes(q) ||
+    String(card.rarity || '').toLowerCase().includes(q)
+  )
+})
+
+const currentCard = computed(() => cardMap.value.get(currentCardId.value) || null)
+
+const currentCardCharacterName = computed(() => {
+  const id = currentCharacterId.value
+  return IDOL_ID_TO_NAME[id] || indexData.value?.characters?.[id] || id || 'Cards'
 })
 
 // — Navigation —
 function openCategory(cat) {
   filterQuery.value = ''
-  if (cat.id === 'idol' || cat.id === 'idol_chat' || cat.id === 'idol_phone') {
+  if (cat.id === 'idol' || cat.id === 'idol_chat' || cat.id === 'idol_phone' || cat.id === 'cards') {
     currentCategoryId.value = cat.id
     currentCharacterId.value = ''
     currentGroup.value = null
@@ -359,10 +607,40 @@ function openIdol(entry) {
     view.value = 'files'
     return
   }
+  if (currentCategoryId.value === 'cards') {
+    currentCharacterId.value = entry.id
+    currentCardId.value = ''
+    filterQuery.value = ''
+    view.value = 'cards'
+    return
+  }
   currentCharacterId.value = entry.id
   currentCategoryId.value = currentCategoryId.value || 'idol'
   currentGroup.value = null
   view.value = 'groups'
+}
+
+function openCard(card) {
+  currentCardId.value = card.resource_id
+  filterQuery.value = ''
+  view.value = 'card_detail'
+}
+
+function goBackFromCards() {
+  currentCardId.value = ''
+  filterQuery.value = ''
+  view.value = 'idols'
+}
+
+function openCardScenario(entry) {
+  if (entry?.compiled_file) {
+    loadScenario(entry.compiled_file, 'card_detail')
+  }
+}
+
+function voiceUrl(cue) {
+  if (!cue) return ''
+  return getVoiceUrl(`${cue}.m4a`)
 }
 
 function openGroup(group) {
@@ -395,6 +673,10 @@ function goBackFromGroups() {
 function goBackToFiles() {
   if (currentUnit.value) {
     view.value = 'episodes'
+  } else if (currentCategoryId.value === 'cards' && currentCardId.value) {
+    view.value = 'card_detail'
+  } else if (currentCategoryId.value === 'cards') {
+    view.value = 'cards'
   } else if (currentCharacterId.value && (currentCategoryId.value === 'idol_chat' || currentCategoryId.value === 'idol_phone')) {
     view.value = 'idols'
   } else if (currentCharacterId.value) {
@@ -406,7 +688,8 @@ function goBackToFiles() {
 
 function closePlayer() {
   currentScenario.value = null
-  view.value = 'files'
+  view.value = returnViewAfterPlayer.value || 'files'
+  returnViewAfterPlayer.value = 'files'
 }
 
 function onPlayerReady() {
@@ -417,7 +700,7 @@ function formatFileName(fn) {
   return fn.replace(/\.json$/, '').replace(/^[^_]+_[^_]+_scenario_/, '')
 }
 
-async function loadScenario(name) {
+async function loadScenario(name, returnView = 'files') {
   loading.value = true
   preloadProgress.value = 0
   try {
@@ -430,6 +713,7 @@ async function loadScenario(name) {
     })
 
     currentScenario.value = scenario
+    returnViewAfterPlayer.value = returnView
     view.value = 'player'
     loading.value = false
   } catch (err) {
@@ -449,6 +733,22 @@ onMounted(async () => {
     indexData.value = await r.json()
   } catch (err) {
     console.error('Failed to load index:', err)
+  }
+
+  try {
+    const r = await fetch('/data/masterdata/card_index.json')
+    if (!r.ok) throw new Error(`HTTP ${r.status}`)
+    cardIndexData.value = await r.json()
+  } catch (err) {
+    console.error('Failed to load card index:', err)
+  }
+
+  try {
+    const r = await fetch('/data/masterdata/story_master_index.json')
+    if (!r.ok) throw new Error(`HTTP ${r.status}`)
+    storyMasterData.value = await r.json()
+  } catch (err) {
+    console.error('Failed to load story master index:', err)
   }
 
   // ── 全局调试：showAnims('001tom') 在 Console 打印角色所有动作 ──
@@ -653,6 +953,169 @@ onMounted(async () => {
 .event-title { font-size: 0.82rem; color: #111; font-weight: bold; line-height: 1.3; }
 .event-catchphrase { font-size: 0.7rem; color: #777; font-style: italic; line-height: 1.2; }
 
+/* —— Card Archive —— */
+.card-archive-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px 24px;
+}
+.card-archive-row {
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 64px;
+  text-align: left;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  color: #333;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.card-archive-row:hover {
+  background: #f5faff;
+  border-color: #b3d9ff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.card-rarity {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 24px;
+  border-radius: 6px;
+  background: #edf2ff;
+  color: #3157a4;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.card-main {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.card-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #222;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.card-resource {
+  font-family: monospace;
+  font-size: 0.72rem;
+  color: #888;
+}
+.card-counts {
+  font-size: 0.72rem;
+  color: #777;
+  white-space: nowrap;
+}
+.card-detail {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 16px;
+}
+.card-detail-head,
+.card-detail-section {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.card-detail-head h3 {
+  margin: 8px 0 0;
+  font-size: 1.15rem;
+  color: #222;
+}
+.card-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: #777;
+  font-family: monospace;
+  font-size: 0.78rem;
+}
+.card-detail-section h4 {
+  margin: 0 0 10px;
+  font-size: 0.92rem;
+  color: #333;
+}
+.card-text-block {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 10px;
+  margin-top: 10px;
+}
+.card-text-block:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+  margin-top: 0;
+}
+.card-text-block strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #3157a4;
+  font-size: 0.78rem;
+}
+.card-text-block p {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.65;
+  color: #222;
+}
+.voice-list,
+.scenario-link-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.voice-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) minmax(220px, 360px);
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  background: #fafafa;
+}
+.voice-row span {
+  font-family: monospace;
+  font-size: 0.78rem;
+  color: #555;
+}
+.voice-row audio {
+  width: 100%;
+  height: 32px;
+}
+.scenario-link-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 9px 10px;
+  cursor: pointer;
+  color: #333;
+}
+.scenario-link-btn:hover:not(:disabled) { background: #f0f4ff; border-color: #c8dcff; }
+.scenario-link-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.scenario-link-btn small {
+  color: #888;
+  font-family: monospace;
+  font-size: 0.72rem;
+}
+
 /* —— Episode Zero Unit Grid —— */
 .unit-grid {
   display: grid;
@@ -686,13 +1149,33 @@ onMounted(async () => {
 /* —— File List —— */
 .file-list { padding: 8px 16px 16px; }
 .file-btn {
-  display: block; width: 100%; text-align: left;
+  display: flex; flex-direction: column; gap: 3px;
+  width: 100%; text-align: left;
   background: #fff; border: 1px solid #eee;
   border-radius: 6px; padding: 8px 12px; margin-bottom: 4px; cursor: pointer;
-  color: #666; font-size: 0.78rem; font-family: monospace;
+  color: #444; font-size: 0.78rem;
   transition: background 0.15s;
 }
 .file-btn:hover { background: #f0f4ff; color: #222; }
+.file-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+.file-btn-missing {
+  border-style: dashed;
+  background: #f8f8f8;
+}
+.file-title {
+  font-size: 0.86rem;
+  color: #333;
+  line-height: 1.35;
+}
+.file-subtitle {
+  font-family: monospace;
+  font-size: 0.7rem;
+  color: #888;
+  line-height: 1.25;
+}
 
 /* —— Loading Overlay —— */
 .loading-overlay {
