@@ -728,7 +728,12 @@ function cardIconUrl(resourceId, awakened = true) {
 
 function fallbackCardIcon(event, resourceId) {
   const img = event?.target
-  if (!img || img.dataset.fallbackApplied === '1') return
+  if (!img) return
+  if (img.dataset.fallbackApplied === '1') {
+    img.classList.add('card-image-missing')
+    img.removeAttribute('src')
+    return
+  }
   img.dataset.fallbackApplied = '1'
   img.src = cardIconUrl(resourceId, false)
 }
@@ -1165,6 +1170,9 @@ onMounted(async () => {
   border: 1px solid #e4e4e4;
   background: #eee;
   margin-bottom: 12px;
+}
+.card-image-missing {
+  display: none;
 }
 .card-detail-head h3 {
   margin: 8px 0 0;
