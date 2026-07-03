@@ -144,6 +144,7 @@
             <div v-for="cue in currentCard.home_voice_cues" :key="cue.cue" class="voice-row">
               <span>{{ cue.cue }}</span>
               <audio controls preload="none" :src="voiceUrl(cue.cue)"></audio>
+              <button class="voice-preview-btn" @click="previewCardVoice(cue.cue)">Preview</button>
             </div>
           </div>
         </section>
@@ -174,6 +175,7 @@
             >
               <span>{{ cue }}</span>
               <audio controls preload="none" :src="voiceUrl(cue)"></audio>
+              <button class="voice-preview-btn" @click="previewCardVoice(cue)">Preview</button>
             </div>
           </div>
         </section>
@@ -761,6 +763,83 @@ function fallbackCardLargeImage(event, resourceId) {
   fallbackCardIcon(event, resourceId)
 }
 
+function previewCardVoice(cue) {
+  const card = currentCard.value
+  if (!card || !cue) return
+  currentScenario.value = buildCardVoicePreviewScenario(card, cue)
+  returnViewAfterPlayer.value = 'card_detail'
+  view.value = 'player'
+}
+
+function buildCardVoicePreviewScenario(card, cue) {
+  const charaId = card.character_id || card.resource_id?.slice(0, 6) || ''
+  const voiceBase = card.voice_base || cue.split('_').slice(0, 5).join('_')
+  const model = `${charaId}_002_00`
+  return {
+    scenario_id: `card_voice_preview_${card.resource_id}_${cue}`,
+    total_steps: 1,
+    steps: [
+      {
+        step_id: 1,
+        type: 'adv',
+        chara_id: charaId,
+        state: {
+          bg: 'bg001_315pro_in_01',
+          bg_effect: null,
+          bg_transition: null,
+          bg_effects: [],
+          bg_profile: null,
+          bgm: null,
+          bgm_volume: 100,
+          se: null,
+          se_events: [],
+          environmental: null,
+          spines: [
+            {
+              id: charaId,
+              model,
+              face: 'face_default',
+              anim: 'wait_loop',
+              position: 0,
+              visible: true,
+              pos_x: 0,
+              pos_y: 0,
+              fade: { type: 'in', delay: 0, duration: 0 },
+            },
+          ],
+          talk_mode: false,
+          phone_mode: false,
+          camera_zoom: null,
+          screen_fade: null,
+          screen_slide: null,
+          screen_effects: [],
+          bgm_stop_fade: null,
+          environmental_volume: null,
+          environmental_duck_target: null,
+          camera_filter: null,
+          bg_color: null,
+          bg_dof: null,
+          bg_color_transition: null,
+          bg_dof_transition: null,
+          text_disabled: false,
+          image_icon: null,
+        },
+        dialogue: {
+          speaker: currentCardCharacterName.value,
+          text: `${card.title || card.resource_id}\n${cue}`,
+          text_jp: `${card.title || card.resource_id}\n${cue}`,
+          text_cn: '',
+          voice: `${cue}.m4a`,
+          lip: {
+            source: 'adxlip',
+            path: `adxlip/${charaId}/${voiceBase}/${cue}.json`,
+          },
+        },
+      },
+    ],
+  }
+}
+
 function openGroup(group) {
   currentGroup.value = group
   filterQuery.value = ''
@@ -1246,7 +1325,7 @@ onMounted(async () => {
 }
 .voice-row {
   display: grid;
-  grid-template-columns: minmax(160px, 1fr) minmax(220px, 360px);
+  grid-template-columns: minmax(160px, 1fr) minmax(220px, 360px) auto;
   align-items: center;
   gap: 12px;
   padding: 8px 10px;
@@ -1262,6 +1341,20 @@ onMounted(async () => {
 .voice-row audio {
   width: 100%;
   height: 32px;
+}
+.voice-preview-btn {
+  min-height: 30px;
+  border: 1px solid #c8dcff;
+  border-radius: 6px;
+  background: #f5faff;
+  color: #245b91;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 0.74rem;
+  white-space: nowrap;
+}
+.voice-preview-btn:hover {
+  background: #e8f2ff;
 }
 .scenario-link-btn {
   display: flex;
