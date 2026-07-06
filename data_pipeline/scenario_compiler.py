@@ -14,6 +14,7 @@ Output:
 import json
 import copy
 import os
+import re
 from typing import Any, Optional
 
 
@@ -23,14 +24,44 @@ class ScenarioState:
     def __init__(self):
         self.bg: Optional[str] = None
         self.bg_effect: Optional[str] = None
+        self.bg_transition: Optional[dict] = None
+        self.bg_effects: list[dict] = []
+        self.bg_profile: Optional[dict] = None
         self.bgm: Optional[str] = None
         self.bgm_volume: int = 100
+        self.se: Optional[dict] = None          # Legacy last one-shot SE
+        self.se_events: list[dict] = []         # All one-shot SE in this step
+        self.environmental: Optional[dict] = None  # {"cue": str, "volume": str} or None
         self.spines: list[dict] = []         # [{id, model, face, anim, pos, ...}]
         self.talk_mode: bool = False          # True inside talk_start/end block
         self.phone_mode: bool = False         # True inside phone_start/end block
+        # Camera zoom/pan (dolly)
+        self.camera_zoom: Optional[dict] = None    # {"zoom": float, "offset_x": float, "offset_y": float, "duration": float}
+        # Screen fade transition (one-shot, consumed by next step)
+        self.screen_fade: Optional[dict] = None    # {"type": "in"|"out", "duration": float, "color": str}
+        self.screen_slide: Optional[dict] = None   # {"type": "in"|"out", "delay": float, "duration": float, "direction": str}
+        self.screen_effects: list[dict] = []       # one-shot screen/effect flashes
+        # Audio extras
+        self.bgm_volume: int = 100
+        self.bgm_stop_fade: Optional[float] = None  # fade duration for bgm_stop
+        self.environmental_volume: Optional[float] = None  # 0.0-1.0 volume for ambient
+        self.environmental_duck_target: Optional[float] = None  # duck target volume
+        # Visual filters (memory/flashback effects)
+        self.camera_filter: Optional[str] = None   # e.g. "gray" from camera_color
+        self.bg_color: Optional[str] = None        # hex color overlay e.g. "#AAAAAA"
+        self.bg_dof: Optional[float] = None        # depth-of-field blur amount
+        self.bg_color_transition: Optional[dict] = None
+        self.bg_dof_transition: Optional[dict] = None
+        self.text_disabled: bool = False            # hide text box (set by text_disable, consumed by next dialogue)
+        self.image_icon: Optional[dict] = None      # scene/dialogue identity icon
 
     def snapshot(self) -> dict:
-        return copy.deepcopy(self.__dict__)
+        snapshot = copy.deepcopy(self.__dict__)
+        snapshot["spines"] = [
+            s for s in snapshot["spines"]
+            if s.get("visible", False)
+        ]
+        return snapshot
 
     def set_bg(self, bg_id: str):
         self.bg = bg_id
@@ -52,16 +83,30 @@ class ScenarioState:
                     face: str = "face_default",
                     anim: str = "wait_loop",
                     position: int = 0):
+        existing = self.find_spine(idol_id)
+        parts_visible = existing.get("parts_visible") if existing else None
         entry = {
             "id": idol_id,
             "model": model,
             "face": face,
             "anim": anim,
             "position": position,
+            "visible": existing.get("visible", False) if existing else False,
         }
-        existing = self.find_spine(idol_id)
         if existing:
+            # Preserve pos_x/pos_y already set by _idol_position command
+            pos_x = existing.get("pos_x")
+            pos_y = existing.get("pos_y")
+            idol_priority = existing.get("idol_priority")
             existing.update(entry)
+            if pos_x is not None:
+                existing["pos_x"] = pos_x
+            if pos_y is not None:
+                existing["pos_y"] = pos_y
+            if idol_priority is not None:
+                existing["idol_priority"] = idol_priority
+            if parts_visible is not None:
+                existing["parts_visible"] = parts_visible
         else:
             self.spines.append(entry)
 
@@ -79,12 +124,57 @@ class ScenarioState:
         spine = self.find_spine(idol_id)
         if spine:
             spine["anim"] = anim
+            spine.pop("anim_no_back", None)
+
+    def update_spine_neck_anim(self, idol_id: str, anim: Optional[str]):
+        spine = self.find_spine(idol_id)
+        if spine:
+            if anim:
+                spine["neck_anim"] = anim
+                spine.pop("neck_anim_stop", None)
+            else:
+                spine["neck_anim_stop"] = True
+                spine.pop("neck_anim", None)
 
     def remove_spine(self, idol_id: str):
         self.spines = [s for s in self.spines if s["id"] != idol_id]
 
+    def set_spine_visible(self, idol_id: str, visible: bool):
+        spine = self.find_spine(idol_id)
+        if spine:
+            spine["visible"] = visible
+
+    def set_spine_parts_visible(self, idol_id: str, visible: bool):
+        spine = self.find_spine(idol_id)
+        if spine:
+            spine["parts_visible"] = visible
+
     def clear_spines(self):
         self.spines.clear()
+
+    def clear_episode_visual_context(self):
+        """Reset visual-only state at an episode boundary.
+
+        Do not clear bg, bgm, environmental audio, or spines here. Audit data
+        shows a meaningful minority of episodes intentionally carry those
+        across boundaries.
+        """
+        self.screen_fade = None
+        self.screen_slide = None
+        self.screen_effects = []
+        self.camera_zoom = None
+        self.camera_filter = None
+        self.bg_color = None
+        self.bg_dof = None
+        self.bg_color_transition = None
+        self.bg_dof_transition = None
+        self.bg_transition = None
+        self.bg_effects = []
+        self.se = None
+        self.se_events = []
+        self.bgm_stop_fade = None
+        self.environmental_volume = None
+        self.environmental_duck_target = None
 
 
 class ScenarioCompiler:
@@ -93,12 +183,29 @@ class ScenarioCompiler:
     Walks Command array, dispatches by Type, snapshots on dialogue.
     """
 
+    LIPSYNC_ROOT = os.environ.get(
+        "SIDEM_LIPSYNC_ROOT",
+        r"E:\BaiduNetdiskDownload\SideM\scripts\lipsyncdata\adxlip",
+    )
+    ADV_BACKGROUND_ROOT = os.environ.get(
+        "SIDEM_ADV_BACKGROUND_ROOT",
+        r"E:\BaiduNetdiskDownload\SideM\scripts\advbackground\json",
+    )
+    AUDIO_ROOT = os.environ.get(
+        "SIDEM_AUDIO_ROOT",
+        r"E:\BaiduNetdiskDownload\SideM\GS_Res\Audio",
+    )
+    _LIPSYNC_BASENAME_INDEX: Optional[dict[str, str]] = None
+    _ADV_BACKGROUND_INDEX: Optional[dict[str, dict]] = None
+
     def __init__(self, raw_data: dict, scenario_id: str = ""):
         self.raw = raw_data
         self.scenario_id = scenario_id or self._infer_id(raw_data)
         self.state = ScenarioState()
         self.steps: list[dict] = []
+        self.episodes: list[dict] = []
         self.step_counter = 0
+        self._current_episode: Optional[dict] = None
 
         # Voice state
         self._voice_prefix: Optional[str] = None      # from voice_file command
@@ -106,15 +213,39 @@ class ScenarioCompiler:
         # Timeline (mid-sentence changes from delayed commands)
         self._timeline_events: list[dict] = []
 
+        # Silent performance block tracking. Raw scripts often contain
+        # sound/action/wait beats with no dialogue; those need their own
+        # auto-advancing stage steps instead of being swallowed by the next
+        # dialogue snapshot.
+        self._stage_dirty: bool = False
+        self._stage_has_performance: bool = False
+        self._stage_duration_hint: float = 0.0
+        self._pending_text_disable: bool = False
+        self._pending_text_disable_duration: float = 0.6
+        self._pending_idol_priority: dict[str, float] = {}
+        self._pending_parts_visible: dict[str, bool] = {}
+        self._pending_fadeout_ids: set[str] = set()
+        self._pending_bg_effect_end_ids: set[str] = set()
+        self._bgm_from_advbackground: bool = False
+        self._environmental_from_advbackground: bool = False
+
         # Branching / choice state
         self._pending_selection: Optional[dict] = None  # buffered choice step
         self._pending_choice_count: int = 0
         self._jump_point_labels: list[str] = []          # pending labels from jump_point
-        self._jump_point_map: dict[str, int] = {}       # label → step_id
+        self._jump_point_map: dict[str, int] = {}       # label → step_id (last mapping only)
+        self._jump_point_entries: list[tuple[str, int]] = []  # chronological (label, step_id) pairs
 
         # Synopsis dedup — skip consecutive synopsis/title steps with same content
         self._last_synopsis_key: Optional[str] = None
         self._last_title_key: Optional[str] = None
+
+        # Lip-sync state
+        self._noLipSync: bool = False          # set by voice_noLip, consumed by next text step
+        self._noLipVoiceSuffix: Optional[str] = None  # voice suffix from voice_noLip command
+        self._voiceBareSuffix: Optional[str] = None   # voice suffix from bare voice command
+        self._lip_owner_id: Optional[str] = self._infer_lip_owner_id(self.scenario_id)
+        self._lip_base_id: Optional[str] = self._infer_lip_base_id(self.scenario_id)
 
     # ----------------------------------------------------------------
     # Main entry
@@ -124,19 +255,51 @@ class ScenarioCompiler:
         commands = self.raw.get("Command", [])
         for cmd in commands:
             self._process(cmd)
+        self._flush_pending_text_disable()
         return self._output()
 
     @classmethod
-    def compile_group(cls, raw_data_list: list[dict], group_id: str) -> dict:
+    def compile_group(cls, raw_data_list: list[dict], group_id: str,
+                      part_ids: Optional[list[str]] = None) -> dict:
         """
         Compile multiple raw files as a single continuous scenario.
         All commands from all files are fed through ONE state machine.
         """
         compiler = cls(raw_data_list[0], group_id)
-        for data in raw_data_list:
+        for idx, data in enumerate(raw_data_list):
+            if idx > 0:
+                # Lettered scenario files are authored as episode chunks.
+                # If the new chunk declares its own cast before the first text,
+                # treat it as a fresh visual scene. Otherwise keep visible
+                # spines for the audited carryover cases.
+                if cls._declares_initial_spines(data):
+                    compiler.state.clear_spines()
+                    compiler._pending_idol_priority.clear()
+                    compiler._pending_parts_visible.clear()
+                    compiler._pending_fadeout_ids.clear()
+                    compiler._pending_bg_effect_end_ids.clear()
+                # Always reset transient visual context at the boundary.
+                compiler.state.clear_episode_visual_context()
+            source_id = part_ids[idx] if part_ids and idx < len(part_ids) else data.get("scenarioId", "")
+            compiler._begin_episode(source_id or f"episode_{idx + 1}")
             for cmd in data.get("Command", []):
                 compiler._process(cmd)
+            compiler._flush_pending_text_disable()
+            compiler._end_episode()
         return compiler._output()
+
+    @staticmethod
+    def _declares_initial_spines(raw_data: dict) -> bool:
+        """Return true when a chunk declares its cast before first dialogue."""
+        dialogue_types = {"text", "talk_text", "phone_text", "text_se_off"}
+        for cmd in raw_data.get("Command", []):
+            ctype = cmd.get("Type", "")
+            if ctype in dialogue_types:
+                return False
+            if ctype == "idol_model":
+                vals = cmd.get("Values", [])
+                return bool(len(vals) >= 2 and vals[0] and vals[1])
+        return False
 
     # ----------------------------------------------------------------
     # Command dispatch
@@ -156,30 +319,70 @@ class ScenarioCompiler:
             "change_bg_effect":     self._change_bg_effect,
             "screen_fadeout":       self._screen_fade,
             "screen_fadein":        self._screen_fadein,
+            "screen_fadecolor":     self._screen_fadecolor,
+            "screen_slidein":       self._screen_slidein,
+            "screen_slideout":      self._screen_slideout,
+            "image_bg_dissolve":    self._image_bg_dissolve,
+            "image_bg_dof":         self._image_bg_dof,
+            "image_bg_color":       self._image_bg_color,
+            "image_bg_view_type":   self._image_bg_view_type,
+            "effect_bgstart":       self._effect_bgstart,
+            "effect_bgend":         self._effect_bgend,
+            "effect_fadein":        self._effect_fadein,
+            "effect_fadeout":       self._effect_fadeout,
+            "effect_single":        self._effect_single,
+
+            # Camera / visual filters
+            "camera_color":         self._camera_color,
+            "camera_defaultcolor":  self._camera_defaultcolor,
+            "camera_zoom":          self._camera_zoom,
+            "camera_resetzoom":     self._camera_resetzoom,
 
             # Audio
             "bgm":                  self._bgm,
-            "se":                   None,  # silently skip
+            "bgm_stop":             self._bgm_stop,
+            "se":                   self._se,
+            "se_stop":              self._se_stop,
             "voice_file":           self._voice_file,
+            "voice_noLip":          self._voice_noLip,
+            "voice":                self._voice_bare,
+            "text_se_off":          self._text_se_off,
 
             # Character (idol) management
             "idol_model":           self._idol_model,
             "idol_position":        self._idol_position,
+            "idol_slide":           self._idol_slide,
+            "idol_slidein":         self._idol_slide,
+            "idol_slideout":        self._idol_slide,
             "idol_fadein":          self._idol_fadein,
             "idol_fadeout":         self._idol_fadeout,
+            "idol_delete":          self._idol_delete,
             "idol_face":            self._idol_face,
             "idol_animation":       self._idol_animation,
-            "idol_neckanimation":   self._idol_animation,  # neck anims (neck_question, etc.) → same as body anim
+            "idol_nobackanimation": self._idol_nobackanimation,
+            "idol_neckanimation":   self._idol_neckanimation,
+            "idol_neckanimation_stop": self._idol_neckanimation_stop,
+            "idol_parts_on":        self._idol_parts_on,
+            "idol_parts_off":       self._idol_parts_off,
+            "idol_color":           self._idol_color,
+            "idol_priority":        self._idol_priority,
+            "idol_zoom":            self._idol_zoom,
+            "idol_zoom_reset":      self._idol_zoom_reset,
             "image_icon":           None,  # icon for mob chars — skip
+
+            "image_icon":           self._image_icon,
+            "image_Icon":           self._image_icon,
 
             # Dialogue-producing
             "text":                 self._text,
             "talk_text":            self._talk_text,
             "talk_start":           self._talk_start,
             "talk_end":             None,
+            "talk_stamp":           self._talk_stamp,
             "phone_text":           self._phone_text,
             "phone_start":          self._phone_start,
             "phone_end":            None,
+            "text_disable":         self._text_disable,
 
             # Branching / choices
             "text_select":          self._select,
@@ -188,11 +391,18 @@ class ScenarioCompiler:
             "jump_point":           self._jump_point_cmd,
             "jump":                 None,  # skip — flow control handled by step index
 
+            "cut_end":              self._cut_end,
+            "lounge_end":           self._cut_end,
+
             # Meta
             "text_synopsis":        self._text_synopsis,
             "text_title":           self._text_title,
-            "wait":                 None,  # timing — no visual change
-            "environmental":        None,
+            "text_time":            self._text_time,
+            "wait":                 self._wait,
+            "environmental":            self._environmental,
+            "environmental_stop":       self._environmental_stop,
+            "environmental_volume":     self._environmental_volume,
+            "environmental_ducking":    self._environmental_ducking,
         }
 
         handler = dispatch.get(ctype)
@@ -204,34 +414,546 @@ class ScenarioCompiler:
     # Scene state commands
     # ----------------------------------------------------------------
 
+    def _mark_stage_change(self, performance: bool = True):
+        self._stage_dirty = True
+        if performance:
+            self._stage_has_performance = True
+
+    @staticmethod
+    def _safe_float(value: Any, default: float = 0.0) -> float:
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return default
+
+    def _wait(self, vals: list):
+        """Raw wait can be a standalone silent performance beat."""
+        duration = self._safe_float(vals[0], 0.0) if vals else 0.0
+        if duration <= 0:
+            return
+        if self._pending_text_disable:
+            self._pending_text_disable_duration = max(self._pending_text_disable_duration, duration)
+            # A wait after text_disable is the authored length of the hidden
+            # text-box transition. Emit it now so later reset/fade-in commands
+            # become their own silent stage instead of overwriting this shot.
+            self._flush_pending_text_disable()
+            return
+        if self._stage_dirty and self._stage_has_performance:
+            self._emit_stage(duration)
+
+    def _clear_stage_buffer(self):
+        self._stage_dirty = False
+        self._stage_has_performance = False
+        self._stage_duration_hint = 0.0
+
+    def _extend_stage_duration(self, duration: float):
+        if duration is not None and duration > 0:
+            self._stage_duration_hint = max(self._stage_duration_hint, duration)
+
+    def _extend_pending_text_disable_duration(self, *durations: float):
+        if not self._pending_text_disable:
+            return
+        for duration in durations:
+            if duration is not None and duration > 0:
+                self._pending_text_disable_duration = max(self._pending_text_disable_duration, duration)
+
+    def _extend_pending_text_disable_from_vals(self, vals: list, delay_index: int = 0, duration_index: int = 1):
+        if not self._pending_text_disable:
+            return
+        delay = self._safe_float(vals[delay_index], 0.0) if len(vals) > delay_index else 0.0
+        duration = self._safe_float(vals[duration_index], 0.0) if len(vals) > duration_index else 0.0
+        self._extend_pending_text_disable_duration(delay + duration)
+
+    def _flush_pending_text_disable(self):
+        if not self._pending_text_disable:
+            return
+        duration = max(0.2, self._pending_text_disable_duration)
+        self._pending_text_disable = False
+        self._pending_text_disable_duration = 0.6
+        self._emit_step("text_disable", None, None, None, None, duration=duration)
+
+    def _emit_stage(self, duration: float):
+        timeline_tail = 0.0
+        if self._timeline_events:
+            timeline_tail = max(self._safe_float(e.get("time"), 0.0) for e in self._timeline_events)
+        self._emit_step("stage", None, None, None, None, duration=max(0.05, duration, self._stage_duration_hint, timeline_tail + 0.2))
+
+    @classmethod
+    def _load_adv_background_index(cls) -> dict[str, dict]:
+        if cls._ADV_BACKGROUND_INDEX is not None:
+            return cls._ADV_BACKGROUND_INDEX
+
+        index: dict[str, dict] = {}
+        root = cls.ADV_BACKGROUND_ROOT
+        if os.path.isdir(root):
+            for name in os.listdir(root):
+                if not name.startswith("advbg_data_") or not name.endswith(".json"):
+                    continue
+                path = os.path.join(root, name)
+                try:
+                    with open(path, "r", encoding="utf-8-sig") as f:
+                        data = json.load(f)
+                except Exception:
+                    continue
+                image_id = data.get("imageId")
+                if image_id:
+                    index[image_id] = data
+
+        cls._ADV_BACKGROUND_INDEX = index
+        return index
+
+    @classmethod
+    def _default_audio_exists(cls, audio_type: str, cue: Optional[str]) -> bool:
+        if not cue or cue in ("-", "no_bgm"):
+            return False
+
+        if audio_type == "bgm":
+            return os.path.isfile(os.path.join(cls.AUDIO_ROOT, "bgm", f"{cue}.ogg"))
+
+        if audio_type == "ambient":
+            path = os.path.join(cls.AUDIO_ROOT, "ambient", f"{cue}.ogg")
+            if os.path.isfile(path):
+                return True
+            if cue.endswith("_t"):
+                return os.path.isfile(os.path.join(cls.AUDIO_ROOT, "ambient", f"{cue[:-2]}.ogg"))
+
+        return False
+
+    def _apply_adv_background_defaults(self, bg_id: str):
+        meta = self._load_adv_background_index().get(bg_id)
+        if not meta:
+            self.state.bg_profile = None
+            return
+
+        self.state.bg_profile = {
+            "imageId": meta.get("imageId"),
+            "lightPosition": meta.get("lightPosition"),
+            "lightCoordinate": meta.get("lightCoordinate"),
+            "lightAlpha": meta.get("lightAlpha"),
+            "colorOffSet": meta.get("colorOffSet"),
+            "colorScale": meta.get("colorScale"),
+            "colorSaturation": meta.get("colorSaturation"),
+        }
+
+        bgm_cue = meta.get("bgmCueName")
+        if self._default_audio_exists("bgm", bgm_cue) and (not self.state.bgm or self._bgm_from_advbackground):
+            self.state.set_bgm(bgm_cue)
+            self._bgm_from_advbackground = True
+        elif self._bgm_from_advbackground and not self._default_audio_exists("bgm", bgm_cue):
+            self.state.stop_bgm()
+            self._bgm_from_advbackground = False
+
+        ambience_cue = meta.get("ambienceCueName")
+        if self._default_audio_exists("ambient", ambience_cue) and (not self.state.environmental or self._environmental_from_advbackground):
+            self.state.environmental = {"cue": ambience_cue}
+            self._environmental_from_advbackground = True
+        elif self._environmental_from_advbackground and not self._default_audio_exists("ambient", ambience_cue):
+            self.state.environmental = None
+            self._environmental_from_advbackground = False
+
     def _image_bg(self, vals: list):
         """Values: [bg_id, ...]"""
         if vals and vals[0]:
             self.state.set_bg(vals[0])
+            self._apply_adv_background_defaults(vals[0])
+            self._mark_stage_change()
+
+    def _image_bg_dissolve(self, vals: list):
+        """Background dissolve transition.
+        Values: [bg_id, color?, delay?, duration?, ...]
+        """
+        if vals and vals[0]:
+            delay = self._safe_float(vals[2], 0.0) if len(vals) > 2 else 0.0
+            duration = self._safe_float(vals[3], 0.5) if len(vals) > 3 and vals[3] != "" else 0.5
+            self.state.set_bg(vals[0])
+            self.state.bg_transition = {
+                "type": "dissolve",
+                "color": vals[1] if len(vals) > 1 and vals[1] else "",
+                "delay": delay,
+                "duration": duration,
+            }
+            self._extend_pending_text_disable_duration(delay + duration)
+            self._mark_stage_change()
 
     def _change_bg_effect(self, vals: list):
         if vals and vals[0]:
             self.state.bg_effect = vals[0]
+            self._mark_stage_change()
 
     def _screen_fade(self, vals: list):
-        """screen_fadeout — purely visual transition (no state change)."""
-        pass
+        """screen_fadeout — fade to black/color. Emits as a standalone step.
+        Values: [mode?, duration?, ...]
+        mode 0 = black, 1 = white
+        """
+        # Raw values are delay, duration, and optional color; color defaults to black.
+        delay = self._safe_float(vals[0], 0.0) if len(vals) > 0 else 0.0
+        duration = self._safe_float(vals[1], 0.5) if len(vals) > 1 and vals[1] else 0.5
+        color = vals[2] if len(vals) > 2 and vals[2] else "#000000"
+        self.state.screen_fade = {
+            "type": "in",
+            "duration": duration,
+            "delay": delay,
+            "color": color,
+        }
+        self._clear_stage_buffer()
+        self._emit_step("fadeout", None, None, None, None)
 
     def _screen_fadein(self, vals: list):
-        """screen_fadein — new scene begins. State is already clean."""
-        pass
+        """screen_fadein — fade in from black/color. Emits as a standalone step.
+        Values: [mode?, duration?, hex_color?, ...]
+        mode 0 = black, 1 = white; hex_color overrides mode.
+        """
+        # Raw values are delay, duration, and optional color; color defaults to black.
+        delay = self._safe_float(vals[0], 0.0) if len(vals) > 0 else 0.0
+        duration = self._safe_float(vals[1], 0.5) if len(vals) > 1 and vals[1] else 0.5
+        color = vals[2] if len(vals) > 2 and vals[2] else "#000000"
+        self.state.screen_fade = {
+            "type": "out",
+            "duration": duration,
+            "delay": delay,
+            "color": color,
+        }
+        self._clear_stage_buffer()
+        self._emit_step("fadein", None, None, None, None)
+
+    # ── Camera zoom / pan ──
+
+    def _screen_fadecolor(self, vals: list):
+        """Color screen fade with explicit overlay alpha."""
+        mode = vals[0] if len(vals) > 0 and vals[0] else "0"
+        duration = self._safe_float(vals[1], 0.5) if len(vals) > 1 else 0.5
+        color = vals[2] if len(vals) > 2 and vals[2] else ("#FFFFFF" if mode in ("1", "2") else "#000000")
+        alpha = self._safe_float(vals[4], 1.0) if len(vals) > 4 and vals[4] != "" else 1.0
+        delay = self._safe_float(vals[5], 0.0) if len(vals) > 5 else 0.0
+        fade_type = "in" if mode == "1" else "out"
+        self.state.screen_fade = {
+            "type": fade_type,
+            "duration": duration,
+            "delay": delay,
+            "color": color,
+            "alpha": max(0.0, min(1.0, alpha)),
+        }
+        self._clear_stage_buffer()
+        self._emit_step("fadecolor", None, None, None, None, duration=delay + duration)
+
+    def _screen_slidein(self, vals: list):
+        self._screen_slide(vals, "in")
+
+    def _screen_slideout(self, vals: list):
+        self._screen_slide(vals, "out")
+
+    def _screen_slide(self, vals: list, slide_type: str):
+        """Screen wipe transition. Values: [delay?, duration?, direction?, ...]."""
+        delay = self._safe_float(vals[0], 0.0) if len(vals) > 0 else 0.0
+        duration = self._safe_float(vals[1], 0.5) if len(vals) > 1 and vals[1] != "" else 0.5
+        direction = str(vals[2]) if len(vals) > 2 and vals[2] else "6"
+        self.state.screen_slide = {
+            "type": slide_type,
+            "delay": delay,
+            "duration": duration,
+            "direction": direction,
+            "color": "#000000",
+        }
+        self._clear_stage_buffer()
+        self._emit_step(f"slide{slide_type}", None, None, None, None)
+
+    def _find_bg_effect(self, effect_id: str) -> Optional[dict]:
+        for effect in self.state.bg_effects:
+            if effect.get("id") == effect_id:
+                return effect
+        return None
+
+    def _effect_bgstart(self, vals: list):
+        """Start persistent background effect. Values: [effect_id, delay?, duration?, ...]."""
+        if not vals or not vals[0]:
+            return
+        effect_id = vals[0]
+        delay = self._safe_float(vals[1], 0.0) if len(vals) > 1 else 0.0
+        duration = self._safe_float(vals[2], 0.0) if len(vals) > 2 and vals[2] != "" else 0.0
+        payload = {
+            "id": effect_id,
+            "visible": True,
+            "action": "start",
+            "delay": delay,
+            "duration": duration,
+        }
+        effect = self._find_bg_effect(effect_id)
+        if effect:
+            effect.update(payload)
+        else:
+            self.state.bg_effects.append(payload)
+        self._pending_bg_effect_end_ids.discard(effect_id)
+        self._extend_pending_text_disable_duration(delay + duration)
+        self._mark_stage_change()
+
+    def _effect_bgend(self, vals: list):
+        """End persistent background effect. Values: [effect_id, delay?, duration?, ...]."""
+        if not vals or not vals[0]:
+            return
+        effect_id = vals[0]
+        delay = self._safe_float(vals[1], 0.0) if len(vals) > 1 else 0.0
+        duration = self._safe_float(vals[2], 0.0) if len(vals) > 2 and vals[2] != "" else 0.0
+        payload = {
+            "id": effect_id,
+            "visible": False,
+            "action": "end",
+            "delay": delay,
+            "duration": duration,
+        }
+        effect = self._find_bg_effect(effect_id)
+        if effect:
+            effect.update(payload)
+        else:
+            self.state.bg_effects.append(payload)
+        self._pending_bg_effect_end_ids.add(effect_id)
+        self._extend_pending_text_disable_duration(delay + duration)
+        self._mark_stage_change()
+
+    def _camera_zoom(self, vals: list):
+        """Camera dolly zoom/pan.
+        Values: [wait_before, duration, offset_x?, offset_y?, zoom?]
+        offset_x/offset_y are native game coords camera target center.
+        zoom: 1.0=default, >1=zoom in, <1=zoom out
+        """
+        if len(vals) >= 3:
+            duration = float(vals[1]) if vals[1] else 0
+            offset_x = float(vals[2]) if len(vals) > 2 and vals[2] else 0
+            offset_y = float(vals[3]) if len(vals) > 3 and vals[3] else 0
+            zoom = float(vals[4]) if len(vals) > 4 and vals[4] else 1.0
+            self.state.camera_zoom = {
+                "zoom": zoom, "offset_x": offset_x, "offset_y": offset_y,
+                "duration": duration,
+            }
+            self._extend_pending_text_disable_from_vals(vals, 0, 1)
+            self._extend_stage_duration(self._safe_float(vals[0], 0.0) + duration)
+            self._mark_stage_change()
+
+    def _camera_resetzoom(self, vals: list):
+        """Reset camera to default position and zoom."""
+        delay = self._safe_float(vals[0], 0.0) if len(vals) > 0 else 0.0
+        duration = self._safe_float(vals[1], 0.0) if len(vals) > 1 else 0.0
+        self.state.camera_zoom = {
+            "zoom": 1.0,
+            "offset_x": 0.0,
+            "offset_y": 0.0,
+            "duration": duration,
+            "delay": delay,
+        }
+        self._extend_pending_text_disable_duration(delay + duration)
+        self._extend_stage_duration(delay + duration)
+        self._mark_stage_change()
+
+    def _camera_color(self, vals: list):
+        """Values: [filter_name, delay, duration, ...] — e.g. ["gray", "0", "0"]"""
+        if vals and vals[0]:
+            self.state.camera_filter = vals[0]
+            self._extend_pending_text_disable_from_vals(vals, 1, 2)
+            self._mark_stage_change()
+
+    def _camera_defaultcolor(self, vals: list):
+        """Revert camera filter/color to default."""
+        self.state.camera_filter = None
+        self._mark_stage_change()
+
+    def _image_bg_dof(self, vals: list):
+        """Background depth-of-field blur.
+        Values: [delay, duration, blur_amount?, ...]
+        blur_amount empty → clear blur.
+        """
+        if len(vals) >= 3 and vals[2]:
+            try:
+                self.state.bg_dof = float(vals[2])
+            except ValueError:
+                self.state.bg_dof = None
+        else:
+            self.state.bg_dof = None
+        delay = self._safe_float(vals[0], 0.0) if len(vals) > 0 else 0.0
+        duration = self._safe_float(vals[1], 0.0) if len(vals) > 1 else 0.0
+        self.state.bg_dof_transition = {"delay": delay, "duration": duration}
+        self._extend_pending_text_disable_from_vals(vals, 0, 1)
+        self._mark_stage_change()
+
+    def _image_bg_color(self, vals: list):
+        """Background color overlay.
+        Values: [delay, duration, hex_color?, ...]
+        hex_color empty → clear overlay; otherwise #RRGGBB.
+        """
+        if len(vals) >= 3 and vals[2]:
+            self.state.bg_color = vals[2]
+        else:
+            self.state.bg_color = None
+        delay = self._safe_float(vals[0], 0.0) if len(vals) > 0 else 0.0
+        duration = self._safe_float(vals[1], 0.0) if len(vals) > 1 else 0.0
+        self.state.bg_color_transition = {"delay": delay, "duration": duration}
+        self._extend_pending_text_disable_from_vals(vals, 0, 1)
+        self._mark_stage_change()
+
+    def _image_bg_view_type(self, vals: list):
+        """Background display mode hint for event stills."""
+        if vals:
+            self.state.bg_view_type = vals[0] if vals[0] != "" else None
+            self._mark_stage_change(False)
+
+    def _effect_fadein(self, vals: list):
+        self._append_screen_effect("fadein", vals)
+
+    def _effect_fadeout(self, vals: list):
+        self._append_screen_effect("fadeout", vals)
+
+    def _append_screen_effect(self, effect_type: str, vals: list):
+        delay = self._safe_float(vals[0], 0.0) if len(vals) > 0 else 0.0
+        duration = self._safe_float(vals[1], 0.0) if len(vals) > 1 else 0.0
+        color = vals[2] if len(vals) > 2 and vals[2] else "#FFFFFF"
+        alpha = self._safe_float(vals[4], 1.0) if len(vals) > 4 and vals[4] != "" else 1.0
+        self.state.screen_effects.append({
+            "type": effect_type,
+            "delay": delay,
+            "duration": duration,
+            "color": color,
+            "alpha": max(0.0, min(1.0, alpha)),
+        })
+        self._extend_pending_text_disable_duration(delay + duration)
+        self._mark_stage_change()
+
+    def _effect_single(self, vals: list):
+        if not vals or not vals[0]:
+            return
+        delay = self._safe_float(vals[1], 0.0) if len(vals) > 1 else 0.0
+        x = self._safe_float(vals[2], 0.0) if len(vals) > 2 else 0.0
+        y = self._safe_float(vals[3], 0.0) if len(vals) > 3 else 0.0
+        scale = self._safe_float(vals[4], 1.0) if len(vals) > 4 and vals[4] != "" else 1.0
+        self.state.screen_effects.append({
+            "type": "single",
+            "id": vals[0],
+            "delay": delay,
+            "x": x,
+            "y": y,
+            "scale": scale,
+            "duration": 0.35,
+        })
+        self._extend_pending_text_disable_duration(delay + 0.35)
+        self._mark_stage_change()
 
     def _bgm(self, vals: list):
-        """Values: [cue_id, ...] — empty vals means stop."""
-        if vals and vals[0]:
+        """Values: [cue_id, ...] — empty vals means stop.
+        'no_bgm' is a special keyword meaning no BGM should play.
+        """
+        if vals and vals[0] and vals[0] != 'no_bgm':
             self.state.set_bgm(vals[0])
+            self._bgm_from_advbackground = False
         else:
             self.state.stop_bgm()
+            self._bgm_from_advbackground = False
+        self._mark_stage_change()
+
+    def _bgm_stop(self, vals: list):
+        """BGM stop with optional fade duration.
+        Values: [fade_duration?, ...]
+        """
+        fade = float(vals[0]) if vals and vals[0] else 0
+        self.state.stop_bgm()
+        self._bgm_from_advbackground = False
+        self.state.bgm_stop_fade = fade
+        self._mark_stage_change()
+
+    def _se(self, vals: list):
+        """Sound effect — one-shot audio.
+        Values: [cue_name, delay?, ...]
+        """
+        if vals and vals[0]:
+            event = {"cue": vals[0]}
+            if len(vals) > 1 and vals[1]:
+                event["delay"] = self._safe_float(vals[1], 0.0)
+            self.state.se = event
+            self.state.se_events.append(event)
+            self._mark_stage_change()
+
+    def _se_stop(self, vals: list):
+        """Stop SE playback (not commonly used, but supported)."""
+        self.state.se = None
+        self.state.se_events = []
+        self._mark_stage_change()
+
+    def _environmental(self, vals: list):
+        """Looping ambient audio — crossfades from previous.
+        Values: [main_cue, fade_cue?, ..., volume?, state?, ...]
+        vals[0]=main_cue, vals[1]=crossfade_to_cue, vals[3]=volume
+        """
+        if vals and vals[0]:
+            env = {"cue": vals[0]}
+            if len(vals) > 3 and vals[3]:
+                try:
+                    env["volume"] = float(vals[3])
+                except ValueError:
+                    env["volume"] = None
+            self.state.environmental = env
+            self._environmental_from_advbackground = False
+            self._mark_stage_change()
+
+    def _environmental_stop(self, vals: list):
+        """Stop ambient with fade.
+        Values: [fade_seconds, ...]
+        """
+        self.state.environmental = None
+        self._environmental_from_advbackground = False
+        self._mark_stage_change()
+
+    def _environmental_volume(self, vals: list):
+        """Set ambient volume directly.
+        Values: [volume?, ...]
+        """
+        if vals and vals[0]:
+            try:
+                vol = float(vals[0])
+                if self.state.environmental:
+                    self.state.environmental["volume"] = vol
+                    self._mark_stage_change()
+            except ValueError:
+                pass
+
+    def _environmental_ducking(self, vals: list):
+        """Duck/attenuate environmental audio.
+        Values: [target_volume?, ...] — 0=full duck (mute), 0.5=half volume.
+        Sets environmental_duck_target on state (one-shot, consumed by next snapshot).
+        """
+        if vals and vals[0]:
+            try:
+                self.state.environmental_duck_target = float(vals[0])
+                self._mark_stage_change()
+            except ValueError:
+                pass
 
     def _voice_file(self, vals: list):
         """Values: [voice_prefix, ...]"""
         if vals and vals[0]:
             self._voice_prefix = vals[0]
+            self._mark_stage_change(False)
+
+    def _voice_noLip(self, vals: list):
+        """Voice-only without lip sync (内心声).
+        Values: [chara_id, delay, voice_suffix, ...]
+        Sets a flag consumed by the next text step.
+        Stores the voice suffix so the next text step can use it.
+        """
+        self._noLipSync = True
+        if len(vals) > 2 and vals[2]:
+            self._noLipVoiceSuffix = vals[2]
+
+    def _voice_bare(self, vals: list):
+        """Bare voice command — provides audio for the next text step.
+        Values: [chara_id, delay, voice_suffix, ...]
+        Unlike voice_noLip, this does NOT suppress lip sync.
+        The following text command's vals[4] (クチパク/off) controls lip sync.
+        """
+        if len(vals) > 2 and vals[2]:
+            self._voiceBareSuffix = vals[2]
+
+    def _text_se_off(self, vals: list):
+        """On-screen text with sound effect, no speaker, no lip sync.
+        Values: ['', text, ...]
+        """
+        text = vals[1] if len(vals) > 1 and vals[1] else ""
+        self._emit_step("adv", "", text, None, None, lipSync=False)
 
     # ----------------------------------------------------------------
     # Character (idol) commands
@@ -241,21 +963,160 @@ class ScenarioCompiler:
         """Values: [chara_id, model_id, ...]"""
         if len(vals) >= 2 and vals[0] and vals[1]:
             self.state.spawn_spine(vals[0], vals[1])
+            if vals[0] in self._pending_idol_priority:
+                spine = self.state.find_spine(vals[0])
+                if spine:
+                    spine["idol_priority"] = self._pending_idol_priority[vals[0]]
+            if vals[0] in self._pending_parts_visible:
+                spine = self.state.find_spine(vals[0])
+                if spine:
+                    spine["parts_visible"] = self._pending_parts_visible[vals[0]]
+            self._mark_stage_change(False)
 
     def _idol_position(self, vals: list):
-        """Values: [chara_id, x, y?, ...]"""
-        # x=0 usually means center; position slot concept TBD
-        pass
+        """Values: [chara_id, x, y?, ...]
+        x,y are native game coordinates (e.g. 0,0 = center; -200,0 = left).
+        Stored in spine state for frontend positioning.
+        """
+        if vals and vals[0]:
+            pos_x = float(vals[1]) if len(vals) > 1 and vals[1] else 0.0
+            pos_y = float(vals[2]) if len(vals) > 2 and vals[2] else 0.0
+            spine = self.state.find_spine(vals[0])
+            if spine:
+                spine["pos_x"] = pos_x
+                spine["pos_y"] = pos_y
+                self._mark_stage_change(False)
+
+    def _idol_slide(self, vals: list):
+        """Animate character to target position.
+        Values: [chara_id, wait_before?, duration?, pos_x?, pos_y?]
+        Also handles idle_slidein / idol_slideout (same format, diff semantics).
+        Updates pos_x/pos_y immediately + stores slide_duration for frontend animation.
+        """
+        if vals and vals[0]:
+            wait = float(vals[1]) if len(vals) > 1 and vals[1] else 0
+            duration = float(vals[2]) if len(vals) > 2 and vals[2] else 0.3
+            pos_x = float(vals[3]) if len(vals) > 3 and vals[3] else 0.0
+            pos_y = float(vals[4]) if len(vals) > 4 and vals[4] else 0.0
+            spine = self.state.find_spine(vals[0])
+            if spine:
+                spine["pos_x"] = pos_x
+                spine["pos_y"] = pos_y
+                spine["slide_duration"] = duration
+                self._mark_stage_change()
+
+    def _idol_color(self, vals: list):
+        """Tint character with a color (dim/emphasize).
+        Values: [chara_id, delay?, duration?, hex_color?]
+        hex_color: #AAAAAA (dim), #FFFFFF (normal).
+        delay=0 → immediate state; delay>0 → timeline event (mid-sentence change).
+        """
+        if len(vals) >= 4 and vals[0] and vals[3]:
+            delay = float(vals[1]) if vals[1] else 0
+            duration = float(vals[2]) if len(vals) > 2 and vals[2] else 0
+            color = vals[3]
+            if self._pending_text_disable:
+                spine = self.state.find_spine(vals[0])
+                if spine:
+                    spine["idol_color"] = color
+                    spine["idol_color_transition"] = {"delay": delay, "duration": duration}
+            elif delay > 0:
+                self._timeline_events.append({
+                    "time": delay,
+                    "type": "spine_color",
+                    "chara_id": vals[0],
+                    "value": color,
+                    "duration": duration,
+                })
+            else:
+                spine = self.state.find_spine(vals[0])
+                if spine:
+                    spine["idol_color"] = color
+            self._extend_pending_text_disable_duration(delay + duration)
+            self._mark_stage_change()
+
+    def _idol_priority(self, vals: list):
+        """Render priority for multi-character scenes.
+        Values: [chara_id, priority, ...]. Higher values render in front.
+        """
+        if len(vals) >= 2 and vals[0] and vals[1] != "":
+            priority = self._safe_float(vals[1], 0.0)
+            self._pending_idol_priority[vals[0]] = priority
+            spine = self.state.find_spine(vals[0])
+            if spine:
+                spine["idol_priority"] = priority
+            self._mark_stage_change()
+
+    # Y-offset factor applied when idol_zoom < 1.0 to compensate for
+    # the visual sinking caused by root-anchored scaling. Derived from
+    # the entrance scene in 1_1_013the_02 where zoom=0.8 needed +150px:
+    #   150 = (1 - 0.8) * 750
+    # Only applies for zoom < 1.0 (characters scaled down look "sunk"
+    # because the root-anchor compresses them toward the waist). Zoom
+    # > 1.0 (enlarged) naturally fills the vertical space — no lift needed.
+    ZOOM_Y_OFFSET_FACTOR = 750.0
+
+    def _idol_zoom(self, vals: list):
+        """Character-specific zoom (scale multiplier).
+        Values: [chara_id, wait?, duration?, ?, ?, zoom_level?]
+        zoom_level: 0.8=80%, 1.2=120%, etc.
+        Stores zoom multiplier in spine state. Also computes a Y
+        offset (idol_zoom_y_offset) to counteract visual sinking
+        when the character scales down around the root anchor.
+        """
+        if vals and vals[0] and len(vals) >= 6 and vals[5]:
+            zoom = float(vals[5])
+            spine = self.state.find_spine(vals[0])
+            if spine:
+                spine["idol_zoom"] = zoom
+                if zoom < 1.0 and zoom > 0:
+                    spine["idol_zoom_y_offset"] = (1.0 - zoom) * self.ZOOM_Y_OFFSET_FACTOR
+                else:
+                    spine.pop("idol_zoom_y_offset", None)
+                self._mark_stage_change()
+
+    def _idol_zoom_reset(self, vals: list):
+        """Reset character zoom to default."""
+        if vals and vals[0]:
+            spine = self.state.find_spine(vals[0])
+            if spine:
+                spine.pop("idol_zoom", None)
+                spine.pop("idol_zoom_y_offset", None)
+                self._mark_stage_change()
 
     def _idol_fadein(self, vals: list):
         """Values: [chara_id, delay, duration?, ...]"""
-        # Anime show — handled by frontend tween; state is already set
-        pass
+        if vals and vals[0]:
+            delay = self._safe_float(vals[1], 0.0) if len(vals) > 1 else 0.0
+            duration = self._safe_float(vals[2], 0.2) if len(vals) > 2 and vals[2] != "" else 0.2
+            self._pending_fadeout_ids.discard(vals[0])
+            self.state.set_spine_visible(vals[0], True)
+            spine = self.state.find_spine(vals[0])
+            if spine:
+                spine["fade"] = {"type": "in", "delay": delay, "duration": duration}
+            self._extend_pending_text_disable_duration(delay + duration)
+            self._mark_stage_change()
 
     def _idol_fadeout(self, vals: list):
         """Values: [chara_id, delay, duration?, ...]"""
         if vals and vals[0]:
+            delay = self._safe_float(vals[1], 0.0) if len(vals) > 1 else 0.0
+            duration = self._safe_float(vals[2], 0.2) if len(vals) > 2 and vals[2] != "" else 0.2
+            # Keep the spine visible for the emitted step so the frontend can
+            # animate alpha to 0, then hide it from following snapshots.
+            self.state.set_spine_visible(vals[0], True)
+            spine = self.state.find_spine(vals[0])
+            if spine:
+                spine["fade"] = {"type": "out", "delay": delay, "duration": duration}
+                self._pending_fadeout_ids.add(vals[0])
+            self._extend_pending_text_disable_duration(delay + duration)
+            self._mark_stage_change()
+
+    def _idol_delete(self, vals: list):
+        """Values: [chara_id, ...]"""
+        if vals and vals[0]:
             self.state.remove_spine(vals[0])
+            self._mark_stage_change()
 
     def _idol_face(self, vals: list):
         """
@@ -294,6 +1155,7 @@ class ScenarioCompiler:
             else:
                 # delay=0 → immediate state update
                 self.state.update_spine_face(vals[0], vals[2], face_flags)
+            self._mark_stage_change()
 
     def _idol_animation(self, vals: list):
         """
@@ -312,6 +1174,97 @@ class ScenarioCompiler:
                 })
             else:
                 self.state.update_spine_anim(vals[0], vals[2])
+            self._mark_stage_change()
+
+    def _idol_nobackanimation(self, vals: list):
+        """Body animation that should not auto-chain back to wait/loop."""
+        if len(vals) >= 3 and vals[0] and vals[2]:
+            delay = float(vals[1]) if vals[1] else 0
+            if delay > 0:
+                self._timeline_events.append({
+                    "time": delay,
+                    "type": "spine_anim",
+                    "chara_id": vals[0],
+                    "value": vals[2],
+                    "no_back": True,
+                })
+            else:
+                self.state.update_spine_anim(vals[0], vals[2])
+                spine = self.state.find_spine(vals[0])
+                if spine:
+                    spine["anim_no_back"] = True
+            self._mark_stage_change()
+
+    def _idol_neckanimation(self, vals: list):
+        """Neck/head animation on a separate track from body animation."""
+        if len(vals) >= 3 and vals[0] and vals[2]:
+            delay = float(vals[1]) if vals[1] else 0
+            if delay > 0:
+                self._timeline_events.append({
+                    "time": delay,
+                    "type": "spine_neck_anim",
+                    "chara_id": vals[0],
+                    "value": vals[2],
+                })
+            else:
+                self.state.update_spine_neck_anim(vals[0], vals[2])
+            self._mark_stage_change()
+
+    def _idol_neckanimation_stop(self, vals: list):
+        """Stop neck/head animation at the authored delay."""
+        if len(vals) >= 1 and vals[0]:
+            delay = float(vals[1]) if len(vals) > 1 and vals[1] else 0
+            if delay > 0:
+                self._timeline_events.append({
+                    "time": delay,
+                    "type": "spine_neck_stop",
+                    "chara_id": vals[0],
+                    "value": "",
+                })
+            else:
+                self.state.update_spine_neck_anim(vals[0], None)
+            self._mark_stage_change()
+
+    def _idol_parts_on(self, vals: list):
+        """Show optional model parts for a character."""
+        if vals and vals[0]:
+            self._pending_parts_visible[vals[0]] = True
+            self.state.set_spine_parts_visible(vals[0], True)
+            self._mark_stage_change()
+
+    def _idol_parts_off(self, vals: list):
+        """Hide optional model parts for a character."""
+        if vals and vals[0]:
+            self._pending_parts_visible[vals[0]] = False
+            self.state.set_spine_parts_visible(vals[0], False)
+            self._mark_stage_change()
+
+    def _image_icon(self, vals: list):
+        """Scene/dialogue identity icon.
+
+        Raw values usually store [icon_id, display_id, layer?, ...]. The first
+        non-empty identifier is the asset key used by image_chara_icon_*.png.
+        """
+        icon_id = ""
+        display_id = ""
+        for idx in (0, 1):
+            if len(vals) > idx and vals[idx]:
+                candidate = str(vals[idx]).strip()
+                if candidate and not candidate.startswith("$"):
+                    if not icon_id:
+                        icon_id = candidate
+                    if idx == 1:
+                        display_id = candidate
+                    break
+        if not icon_id:
+            return
+        layer = vals[2] if len(vals) > 2 and vals[2] else ""
+        self.state.image_icon = {
+            "id": icon_id,
+            "display_id": display_id or icon_id,
+            "layer": layer,
+        }
+        self._mark_stage_change(False)
 
     # ----------------------------------------------------------------
     # Talk mode
@@ -331,19 +1284,54 @@ class ScenarioCompiler:
     # Dialogue commands — Step emission
     # ----------------------------------------------------------------
 
+    def _text_disable(self, vals: list):
+        """Hide text box immediately (standalone step — like screen_fadeout).
+        The frontend sees step.type='text_disable' and hides the ADV text box,
+        allowing transition effects (bg_dof, bg_color, idol_color) to play
+        cleanly before the next dialogue step appears.
+        """
+        self._pending_text_disable = True
+        self._pending_text_disable_duration = 0.6
+        self._clear_stage_buffer()
+
     def _text(self, vals: list):
         """
         Main ADV dialogue.
-        Values: [speaker_name, text, chara_id, voice_suffix, ...]
+        Values: [speaker_name, text, chara_id, voice_suffix, lipSync_flag?, ...]
+
+        lipSync_flag (vals[4]):
+          - "off" → inner monologue (voice plays but mouth doesn't move)
+          - "クチパク" or empty → normal (lip sync enabled)
         """
         speaker = vals[0] if len(vals) > 0 and vals[0] else ""
         text = vals[1] if len(vals) > 1 and vals[1] else ""
         chara_id = vals[2] if len(vals) > 2 else ""
         voice_suffix = vals[3] if len(vals) > 3 else ""
 
-        voice = self._build_voice_filename(voice_suffix) if voice_suffix else None
+        # Determine lipSync state
+        lipSync = None  # None = default (true)
+        if len(vals) > 4 and vals[4].strip() == "off":
+            lipSync = False
+        elif self._noLipSync:
+            lipSync = False
 
-        self._emit_step("adv", speaker, text, voice, chara_id)
+        # Inherit voice suffix from voice_noLip command
+        if self._noLipVoiceSuffix and not voice_suffix:
+            voice_suffix = self._noLipVoiceSuffix
+
+        # Inherit voice suffix from bare voice command
+        if self._voiceBareSuffix and not voice_suffix:
+            voice_suffix = self._voiceBareSuffix
+
+        # Clear inherited voice state
+        self._noLipSync = False
+        self._noLipVoiceSuffix = None
+        self._voiceBareSuffix = None
+
+        voice = self._build_voice_filename(voice_suffix) if voice_suffix else None
+        lip = self._resolve_lip_sync(chara_id, voice_suffix, lipSync)
+
+        self._emit_step("adv", speaker, text, voice, chara_id, lipSync, lip)
 
     def _talk_text(self, vals: list):
         """
@@ -356,6 +1344,27 @@ class ScenarioCompiler:
 
         self._emit_step("talk", speaker, text, None, chara_id)
 
+    def _talk_stamp(self, vals: list):
+        """
+        Talk/chat stamp.
+        Values: [speaker_name, stamp_id, chara_id, side?, ...]
+        """
+        speaker = vals[0] if len(vals) > 0 and vals[0] else ""
+        raw_stamp = vals[1] if len(vals) > 1 and vals[1] else ""
+        chara_id = vals[2] if len(vals) > 2 else ""
+        side = vals[3] if len(vals) > 3 and vals[3] != "" else ""
+        stamp_id = raw_stamp if raw_stamp.startswith("image_mobile_stamp_") else f"image_mobile_stamp_{raw_stamp}"
+
+        self._emit_step("talk_stamp", speaker, "", None, chara_id, duration=1.0)
+        self.steps[-1]["stamp"] = {
+            "id": stamp_id,
+            "raw_id": raw_stamp,
+            "speaker": speaker,
+            "chara_id": chara_id,
+            "side": side,
+        }
+        self.steps[-1]["auto_advance"] = True
+
     def _phone_text(self, vals: list):
         """
         Phone call dialogue.
@@ -366,7 +1375,8 @@ class ScenarioCompiler:
         chara_id = vals[2] if len(vals) > 2 else ""
         voice_suffix = vals[3] if len(vals) > 3 else ""
         voice = self._build_voice_filename(voice_suffix) if voice_suffix else None
-        self._emit_step("call", speaker, text, voice, chara_id)
+        lip = self._resolve_lip_sync(chara_id, voice_suffix, None)
+        self._emit_step("call", speaker, text, voice, chara_id, None, lip)
 
     # ----------------------------------------------------------------
     # Branching / choice handling
@@ -382,6 +1392,7 @@ class ScenarioCompiler:
         long_text = vals[2] if len(vals) > 2 and vals[2] else ""
 
         if self._pending_selection is None:
+            self._flush_pending_text_disable()
             self._apply_timeline()  # flush pending timeline before choice snapshot
             self._pending_selection = {
                 "type": "choice",
@@ -399,6 +1410,15 @@ class ScenarioCompiler:
         label = vals[0] if vals and vals[0] else ""
         if label:
             self._jump_point_labels.append(label)
+
+    def _cut_end(self, vals: list):
+        """Scene segment boundary. Flush silent performance if one is pending."""
+        if self._pending_text_disable:
+            if self._stage_dirty and self._stage_has_performance:
+                self._flush_pending_text_disable()
+            return
+        if self._stage_dirty and self._stage_has_performance:
+            self._emit_stage(0.2)
 
     def _flush_selection(self):
         """Emit the buffered selection as a step."""
@@ -441,6 +1461,17 @@ class ScenarioCompiler:
         self._last_title_key = key
         self._emit_step("title", chapter, title, None, None)
 
+    def _text_time(self, vals: list):
+        """Time/location caption shown during transitions."""
+        self._apply_timeline()
+        text = vals[0] if len(vals) > 0 and vals[0] else ""
+        if not text:
+            return
+        self._clear_stage_buffer()
+        self._emit_step("text_time", None, None, None, None, duration=1.2)
+        self.steps[-1]["text_time"] = {"text": text}
+        self.steps[-1]["auto_advance"] = True
+
     # ----------------------------------------------------------------
     # Voice filename construction
     # ----------------------------------------------------------------
@@ -449,11 +1480,207 @@ class ScenarioCompiler:
         """
         Construct voice filename.
         - If voice_file prefix was set: {prefix}_{suffix}.m4a
+        - If scenario_id implies a lip/voice base and the suffix is numeric:
+          {base}_{suffix}.m4a
         - Otherwise: {suffix}.m4a  (standalone voice ID)
         """
         if self._voice_prefix:
             return f"{self._voice_prefix}_{suffix}.m4a"
+        if re.search(r"(?<!\d)9_2_\d{3}(?!\d)", self.scenario_id or "") and self._lip_base_id and suffix == "00":
+            return f"{self._lip_base_id}.m4a"
+        if self._lip_base_id and re.match(r"^\d+$", suffix):
+            return f"{self._lip_base_id}_{suffix}.m4a"
         return f"{suffix}.m4a"
+
+    @staticmethod
+    def _infer_lip_owner_id(scenario_id: str) -> Optional[str]:
+        """Best-effort owner directory for adxlip data.
+
+        Most solo stories store lip data under the speaking chara id. Some
+        grouped 1_2 stories store all lip data under the scenario owner id
+        embedded in the compiled scenario_id, e.g. 1_x_001tom_2.
+        """
+        m = re.search(r"\d{3}[a-z]{3}", scenario_id or "")
+        return m.group(0) if m else None
+
+    @staticmethod
+    def _infer_lip_base_id(scenario_id: str) -> Optional[str]:
+        """Infer a voice/lip base id from scenario_id when raw data omits voice_file."""
+        m = re.search(r"(?<!\d)(9_2_\d{3})(?!\d)", scenario_id or "")
+        if m:
+            return f"{m.group(1)}_00"
+        m = re.search(r"(?<!\d)([1-9]_\d+_\d+_\d{2})(?!\d)", scenario_id or "")
+        if m:
+            return m.group(1)
+        m = re.search(r"(?<!\d)([1-9]_\d+_\d{3})(?!\d)", scenario_id or "")
+        return m.group(1) if m else None
+
+    def _lip_json_info(self, rel_path: str) -> Optional[dict]:
+        abs_path = os.path.join(self.LIPSYNC_ROOT, rel_path)
+        if not os.path.exists(abs_path):
+            return None
+        info = {
+            "source": "adxlip",
+            "path": "adxlip/" + rel_path.replace(os.sep, "/"),
+        }
+        try:
+            with open(abs_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            scales = data.get("scales")
+            if isinstance(scales, list):
+                info["frames"] = len(scales)
+        except Exception:
+            pass
+        return info
+
+    @classmethod
+    def _ensure_lipsync_basename_index(cls) -> dict[str, str]:
+        if cls._LIPSYNC_BASENAME_INDEX is not None:
+            return cls._LIPSYNC_BASENAME_INDEX
+
+        index: dict[str, str] = {}
+        if os.path.isdir(cls.LIPSYNC_ROOT):
+            for root, _dirs, files in os.walk(cls.LIPSYNC_ROOT):
+                for name in files:
+                    if not name.endswith(".json"):
+                        continue
+                    rel = os.path.relpath(os.path.join(root, name), cls.LIPSYNC_ROOT)
+                    index.setdefault(name, rel)
+        cls._LIPSYNC_BASENAME_INDEX = index
+        return index
+
+    def _resolve_lip_sync(self, chara_id: str, voice_suffix: str,
+                          lipSync: Optional[bool]) -> Optional[dict]:
+        """Find original game lip-scale JSON for the current voice cue.
+
+        Known adxlip layouts:
+          1) adxlip/{chara}/{prefix}/{prefix}_{suffix}.json
+          2) adxlip/{owner}/{base}/{base}_{letter}/{base}_{suffix}.json
+             where voice_file is {base}_{letter} and suffix is letter+number.
+          3) adxlip/{chara}/{prefix}/{suffix}.json
+             for commands where suffix is already a full cue name.
+          4) adxlip/main/{main}/{base}/{base}_{letter}/{base}_{suffix}.json
+             for main story scenarios such as 1_4_001_00_a1009.
+        """
+        if lipSync is False or not voice_suffix:
+            return None
+
+        owners = []
+        for value in (chara_id, self._lip_owner_id):
+            if value and value not in owners:
+                owners.append(value)
+        if self._lip_owner_id:
+            epi_owner = os.path.join("epi", self._lip_owner_id)
+            if epi_owner not in owners:
+                owners.append(epi_owner)
+
+        candidates = []
+        if self._lip_base_id:
+            main_parts = self._lip_base_id.split("_")
+            if len(main_parts) >= 3:
+                main_id = "_".join(main_parts[:3])
+                base = self._lip_base_id
+                prefix = self._voice_prefix or ""
+                if prefix.startswith(f"{base}_") and re.match(r"^\d+$", voice_suffix):
+                    candidates.append(os.path.join("main", main_id, base, prefix, f"{prefix}_{voice_suffix}.json"))
+                letter = voice_suffix[0] if re.match(r"^[a-z]\d+$", voice_suffix) else ""
+                if letter:
+                    candidates.append(os.path.join("main", main_id, base, f"{base}_{letter}", f"{base}_{voice_suffix}.json"))
+                subpart = voice_suffix.split("_", 1)[0] if re.match(r"^[a-z]\d+_\d+$", voice_suffix) else ""
+                if subpart:
+                    candidates.append(os.path.join("main", main_id, base, f"{base}_{subpart}", f"{base}_{voice_suffix}.json"))
+
+                # Event stories, e.g.
+                # adxlip/event/1_3_10001_01/1_3_10001_01_a/1_3_10001_01_a1003.json
+                letter = voice_suffix[0] if re.match(r"^[a-z]\d+$", voice_suffix) else ""
+                if letter:
+                    candidates.append(os.path.join("event", base, f"{base}_{letter}", f"{base}_{voice_suffix}.json"))
+                if prefix.startswith(f"{base}_") and re.match(r"^\d+$", voice_suffix):
+                    candidates.append(os.path.join("event", base, prefix, f"{prefix}_{voice_suffix}.json"))
+
+                # Season stories, e.g.
+                # adxlip/season/5_01_22/5_01_000_22/5_01_000_22_a1000.json
+                # adxlip/season/5_00_000_22/5_00_000_22_a1000.json
+                if base.startswith("5_"):
+                    season_group = None
+                    if len(main_parts) >= 4 and main_parts[0] == "5":
+                        if main_parts[1] == "05":
+                            season_group = "5_05_fes"
+                        elif main_parts[1] == "00" and main_parts[2] == "000" and main_parts[3] == "22":
+                            season_group = base
+                        else:
+                            season_group = f"{main_parts[0]}_{main_parts[1]}_{main_parts[3]}"
+                    if season_group:
+                        candidates.append(os.path.join("season", season_group, base, f"{base}_{voice_suffix}.json"))
+                        candidates.append(os.path.join("season", season_group, base, f"{voice_suffix}.json"))
+                        candidates.append(os.path.join("season", season_group, f"{base}_{voice_suffix}.json"))
+                        candidates.append(os.path.join("season", season_group, f"{voice_suffix}.json"))
+                        if len(main_parts) >= 4:
+                            shared_base = f"{main_parts[0]}_{main_parts[1]}_999_{main_parts[3]}"
+                            candidates.append(os.path.join("season", season_group, shared_base, f"{base}_{voice_suffix}.json"))
+                            candidates.append(os.path.join("season", season_group, shared_base, f"{voice_suffix}.json"))
+                        # Short numeric suffix: try removing the last segment of base
+                        if re.match(r"^\d+$", voice_suffix) and base.count("_") >= 3:
+                            short_base = "_".join(base.split("_")[:-1])
+                            candidates.append(os.path.join("season", season_group, short_base, f"{base}_{voice_suffix}.json"))
+
+        for owner in owners:
+            prefix = self._voice_prefix
+            if prefix:
+                candidates.append(os.path.join(owner, prefix, f"{prefix}_{voice_suffix}.json"))
+                # Short numeric suffix: try parent directory (one level up)
+                if re.match(r"^\d+$", voice_suffix) and prefix.count("_") >= 3:
+                    short_prefix = "_".join(prefix.split("_")[:-1])
+                    candidates.append(os.path.join(owner, short_prefix, f"{prefix}_{voice_suffix}.json"))
+                    candidates.append(os.path.join(owner, short_prefix, f"{voice_suffix}.json"))
+
+            if prefix and voice_suffix.startswith(prefix):
+                candidates.append(os.path.join(owner, prefix, f"{voice_suffix}.json"))
+
+            m = re.match(r"^(.+)_([a-z])$", prefix or "")
+            if m and voice_suffix.startswith(m.group(2)):
+                base, letter = m.group(1), m.group(2)
+                candidates.append(os.path.join(owner, base, f"{base}_{letter}", f"{base}_{voice_suffix}.json"))
+
+            if not prefix and self._lip_base_id:
+                letter = voice_suffix[0] if re.match(r"^[a-z]\d+$", voice_suffix) else ""
+                if letter:
+                    base = self._lip_base_id
+                    candidates.append(os.path.join(owner, base, f"{base}_{letter}", f"{base}_{voice_suffix}.json"))
+                if re.match(r"^\d+$", voice_suffix):
+                    base = self._lip_base_id
+                    candidates.append(os.path.join(owner, base, f"{base}_{voice_suffix}.json"))
+                    candidates.append(os.path.join(owner, base, f"{voice_suffix}.json"))
+
+        seen = set()
+        for rel in candidates:
+            if rel in seen:
+                continue
+            seen.add(rel)
+            info = self._lip_json_info(rel)
+            if info:
+                return info
+
+        # Exact filename fallback. This catches cross-owner / cross-prefix
+        # official lip data such as 5_01_038_23_b1000.json and the 9_2
+        # profile files that live outside the normal owner tree.
+        basename_candidates = []
+        if self._voice_prefix:
+            basename_candidates.append(f"{self._voice_prefix}_{voice_suffix}.json")
+        if self._lip_base_id:
+            basename_candidates.append(f"{self._lip_base_id}_{voice_suffix}.json")
+            basename_candidates.append(f"{self._lip_base_id}.json")
+        basename_candidates.append(f"{voice_suffix}.json")
+
+        basename_index = self._ensure_lipsync_basename_index()
+        for name in basename_candidates:
+            rel = basename_index.get(name)
+            if not rel:
+                continue
+            info = self._lip_json_info(rel)
+            if info:
+                return info
+        return None
 
     # ----------------------------------------------------------------
     # Timeline / mid-sentence change handling
@@ -468,6 +1695,18 @@ class ScenarioCompiler:
                 self.state.update_spine_face(event["chara_id"], event["value"], event)
             elif event["type"] == "spine_anim":
                 self.state.update_spine_anim(event["chara_id"], event["value"])
+                if event.get("no_back"):
+                    spine = self.state.find_spine(event["chara_id"])
+                    if spine:
+                        spine["anim_no_back"] = True
+            elif event["type"] == "spine_neck_anim":
+                self.state.update_spine_neck_anim(event["chara_id"], event["value"])
+            elif event["type"] == "spine_neck_stop":
+                self.state.update_spine_neck_anim(event["chara_id"], None)
+            elif event["type"] == "spine_color":
+                spine = self.state.find_spine(event["chara_id"])
+                if spine:
+                    spine["idol_color"] = event["value"]
         self._timeline_events.clear()
 
     @staticmethod
@@ -538,15 +1777,53 @@ class ScenarioCompiler:
     # Step emission
     # ----------------------------------------------------------------
 
+    @staticmethod
+    def _infer_episode_part(source_id: str) -> str:
+        m = re.search(r"_([a-z])$", source_id or "")
+        return m.group(1) if m else ""
+
+    def _begin_episode(self, source_id: str):
+        part = self._infer_episode_part(source_id)
+        self._current_episode = {
+            "episode_index": len(self.episodes),
+            "episode_no": len(self.episodes) + 1,
+            "part": part,
+            "source_scenario_id": source_id,
+            "start_step_index": len(self.steps),
+            "start_step_id": self.step_counter + 1,
+        }
+
+    def _end_episode(self):
+        if not self._current_episode:
+            return
+        ep = self._current_episode
+        start = ep["start_step_index"]
+        end = len(self.steps)
+        ep["end_step_index"] = end - 1 if end > start else start - 1
+        ep["end_step_id"] = self.step_counter if end > start else self.step_counter
+        ep["step_count"] = end - start
+        for step in self.steps[start:end]:
+            step["episode_index"] = ep["episode_index"]
+            step["episode_part"] = ep["part"]
+        self.episodes.append(ep)
+        self._current_episode = None
+
     def _emit_step(self, step_type: str,
                    speaker: Optional[str], text: Optional[str],
-                   voice: Optional[str], chara_id: Optional[str]):
+                   voice: Optional[str], chara_id: Optional[str],
+                   lipSync: Optional[bool] = None,
+                   lip: Optional[dict] = None,
+                   duration: Optional[float] = None):
+        if step_type != "text_disable" and self._pending_text_disable:
+            self._flush_pending_text_disable()
+
         self.step_counter += 1
 
         # Track all pending jump_point labels → this step
         if self._jump_point_labels:
             for lbl in self._jump_point_labels:
                 self._jump_point_map[lbl] = self.step_counter
+                self._jump_point_entries.append((lbl, self.step_counter))
             self._jump_point_labels.clear()
 
         step = {
@@ -557,8 +1834,47 @@ class ScenarioCompiler:
             "state": self.state.snapshot(),
         }
 
-        # Attach timeline events (mid-sentence changes) to dialogue steps
-        if self._timeline_events and step_type in ("adv", "talk", "call"):
+        if step_type == "stage":
+            step["duration"] = duration if duration is not None else 0.6
+            step["auto_advance"] = True
+            step["hide_dialogue"] = True
+        elif duration is not None:
+            step["duration"] = duration
+
+        # One-shot state fields — clear after snapshot so they don't leak to next step
+        self.state.se = None
+        self.state.se_events = []
+        self.state.screen_fade = None
+        self.state.screen_slide = None
+        self.state.screen_effects = []
+        self.state.bg_transition = None
+        self.state.bg_dof_transition = None
+        self.state.bg_color_transition = None
+        self.state.bgm_stop_fade = None
+        self.state.environmental_duck_target = None
+        self.state.text_disabled = False
+        for effect in self.state.bg_effects:
+            effect.pop("action", None)
+            effect.pop("delay", None)
+            effect.pop("duration", None)
+        if self._pending_bg_effect_end_ids:
+            self.state.bg_effects = [
+                effect for effect in self.state.bg_effects
+                if effect.get("id") not in self._pending_bg_effect_end_ids
+            ]
+            self._pending_bg_effect_end_ids.clear()
+        for spine in self.state.spines:
+            spine.pop("fade", None)
+            spine.pop("neck_anim_stop", None)
+            spine.pop("idol_color_transition", None)
+        if self._pending_fadeout_ids:
+            for idol_id in list(self._pending_fadeout_ids):
+                self.state.set_spine_visible(idol_id, False)
+            self._pending_fadeout_ids.clear()
+
+        # Attach timeline events to playable steps. Dialogue uses this for
+        # mid-sentence changes; stage uses it for silent performance beats.
+        if self._timeline_events and step_type in ("adv", "talk", "call", "stage", "text_disable"):
             step["timeline"] = self._process_timeline(list(self._timeline_events))
             self._apply_timeline()  # apply to main state for future step continuity
         elif self._timeline_events:
@@ -567,6 +1883,9 @@ class ScenarioCompiler:
 
         if chara_id:
             step["chara_id"] = chara_id
+
+        if lipSync is not None:
+            step["lipSync"] = lipSync
 
         if speaker is not None or text is not None:
             dialogue = {
@@ -577,28 +1896,44 @@ class ScenarioCompiler:
             }
             if voice:
                 dialogue["voice"] = voice
+            if lip:
+                dialogue["lip"] = lip
             step["dialogue"] = dialogue
 
         self.steps.append(step)
+        self._clear_stage_buffer()
 
     # ----------------------------------------------------------------
     # Output
     # ----------------------------------------------------------------
 
     def _output(self) -> dict:
-        # Resolve choice option labels to step IDs
+        # Resolve choice option labels to step IDs.
+        # Jump labels can repeat across episodes (e.g. "phone_select1" used in
+        # both early and late parts of the same scenario).  The flat dict
+        # _jump_point_map only keeps the LAST mapping, so a choice early in the
+        # timeline would resolve to the wrong (last) step_id.  Instead, scan
+        # chronologically and pick the first entry after the choice step.
         for step in self.steps:
             if step.get("type") == "choice":
                 for opt in step.get("options", []):
                     label = opt.get("label", "")
-                    opt["step_id"] = self._jump_point_map.get(label, 0)
+                    target = 0
+                    for lbl, sid in self._jump_point_entries:
+                        if lbl == label and sid > step["step_id"]:
+                            target = sid
+                            break
+                    opt["step_id"] = target
 
-        return {
+        result = {
             "scenario_id": self.scenario_id,
             "total_steps": len(self.steps),
             "steps": self.steps,
             "jump_points": dict(self._jump_point_map),
         }
+        if self.episodes:
+            result["episodes"] = self.episodes
+        return result
 
     @staticmethod
     def _infer_id(raw_data: dict) -> str:

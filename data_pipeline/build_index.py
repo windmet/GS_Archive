@@ -14,6 +14,10 @@ COMPILED_DIR = os.path.abspath(os.path.join(
     "web_viewer", "public", "data", "compiled"
 ))
 INDEX_PATH = os.path.join(COMPILED_DIR, "index.json")
+MASTERDATA_CARD_INDEX_PATH = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), "..",
+    "web_viewer", "public", "data", "masterdata", "card_index.json"
+))
 EXCLUDE = {"manifest.json", "voice_index.json", "index.json"}
 
 # ── Task 2C: Episode Zero Unit Mapping ────────────────────────────
@@ -218,7 +222,24 @@ def derive_title(steps: list, fallback: str) -> str:
     return fallback
 
 
+def load_card_home_voice_files() -> set[str]:
+    try:
+        with open(MASTERDATA_CARD_INDEX_PATH, "r", encoding="utf-8") as f:
+            card_index = json.load(f)
+    except Exception:
+        return set()
+
+    files: set[str] = set()
+    for card in card_index.get("cards", []):
+        for cue in card.get("home_voice_cues") or []:
+            file_name = cue.get("compiled_file")
+            if isinstance(file_name, str) and file_name:
+                files.add(file_name)
+    return files
+
+
 def build_index():
+    card_home_voice_files = load_card_home_voice_files()
     files_list = sorted(
         f for f in os.listdir(COMPILED_DIR)
         if f.endswith(".json") and f not in EXCLUDE
@@ -242,6 +263,11 @@ def build_index():
         parent, scenario_id = parse_compiled_filename(fn)
         cat = categorize(parent)
         chara_id = extract_chara_id(parent) if parent else None
+
+        # Masterdata table 91 owns card home-touch voice scenes. They are useful
+        # as card preview templates, but should not remain in the idol archive.
+        if fn in card_home_voice_files:
+            continue
 
         # Non-idol chars → extra
         if cat == "idol" and chara_id and not is_idol_id(chara_id):

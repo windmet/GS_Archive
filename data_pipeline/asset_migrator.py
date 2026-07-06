@@ -90,8 +90,11 @@ def copy_spine_models() -> int:
 
         dst_dir = os.path.join(SPINE_ASSETS_DIR, entry)
 
-        # Skip if already fully copied (dir exists with comu.skel present)
-        if os.path.isdir(dst_dir) and os.path.isfile(os.path.join(dst_dir, "comu.skel")):
+        # Skip if already fully copied (all 3 core files present)
+        if os.path.isdir(dst_dir) and all(
+            os.path.isfile(os.path.join(dst_dir, f))
+            for f in ("comu.skel", "comu.atlas", "comu.png")
+        ):
             continue
 
         os.makedirs(dst_dir, exist_ok=True)

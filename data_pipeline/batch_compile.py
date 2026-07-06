@@ -121,13 +121,15 @@ def compile_batch():
 
                 # ── Merge group ──
                 raw_data_list = []
+                part_ids = []
                 for fn, sid in sorted(group, key=lambda x: x[0]):
                     in_path = os.path.join(SCENARIO_ROOT, parent, fn)
                     raw_data_list.append(ScenarioCompiler.load_json(in_path))
+                    part_ids.append(sid)
 
                 try:
                     merge_key = f"{parent}_{base_id}" if parent != base_id else base_id
-                    result = ScenarioCompiler.compile_group(raw_data_list, merge_key)
+                    result = ScenarioCompiler.compile_group(raw_data_list, merge_key, part_ids)
 
                     out_name = f"{merge_key}.json"
                     out_path = os.path.join(OUTPUT_DIR, out_name)
