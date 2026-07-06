@@ -144,7 +144,7 @@
             <div v-for="cue in currentCard.home_voice_cues" :key="cue.cue" class="voice-row">
               <span>{{ cue.cue }}</span>
               <audio controls preload="none" :src="voiceUrl(cue.cue)"></audio>
-              <button class="voice-preview-btn" @click="previewCardVoice(cue.cue)">Preview</button>
+              <button class="voice-preview-btn" @click="previewCardVoice(cue)">Preview</button>
             </div>
           </div>
         </section>
@@ -326,6 +326,7 @@ const view = ref('home')
 const indexData = ref(null)
 const cardIndexData = ref(null)
 const storyMasterData = ref(null)
+const idolUnitData = ref(null)
 const currentScenario = ref(null)
 const filterQuery = ref('')
 const loading = ref(false)
@@ -376,7 +377,7 @@ const idolList = computed(() => {
     const byCharacter = cardIndexData.value?.by_character || {}
     return Object.entries(byCharacter).map(([id, cards]) => ({
       id,
-      name: IDOL_ID_TO_NAME[id] || indexData.value?.characters?.[id] || id,
+      name: idolDisplayName(id),
       cardCount: cards.length,
       _isGroup: false,
     }))
@@ -480,6 +481,8 @@ function collectStoryRows(data) {
   if (!data) return []
   return [
     ...(data.main?.episodes || []),
+    ...(data.event?.episodes || []),
+    ...(data.unit_story?.episodes || []),
     ...(data.idol_story?.episodes || []),
     ...(data.card_scenarios || []),
     ...(data.work || []),
@@ -643,8 +646,16 @@ const currentCard = computed(() => cardMap.value.get(currentCardId.value) || nul
 
 const currentCardCharacterName = computed(() => {
   const id = currentCharacterId.value
-  return IDOL_ID_TO_NAME[id] || indexData.value?.characters?.[id] || id || 'Cards'
+  return idolDisplayName(id) || 'Cards'
 })
+
+function idolDisplayName(id) {
+  if (!id) return ''
+  return idolUnitData.value?.by_idol_code?.[id]?.display_name ||
+    IDOL_ID_TO_NAME[id] ||
+    indexData.value?.characters?.[id] ||
+    id
+}
 
 // — Navigation —
 function openCategory(cat) {
@@ -772,11 +783,24 @@ function previewCardVoice(cue) {
 }
 
 function buildCardVoicePreviewScenario(card, cue) {
+  const cueId = typeof cue === 'string' ? cue : cue.cue
+  const preview = typeof cue === 'object' ? cue.preview : null
+  if (preview?.preview_step) {
+    const step = JSON.parse(JSON.stringify(preview.preview_step))
+    step.step_id = 1
+    return {
+      scenario_id: `card_voice_preview_${card.resource_id}_${cueId}`,
+      source_scenario_id: preview.scenario_id,
+      source_compiled_file: preview.compiled_file,
+      total_steps: 1,
+      steps: [step],
+    }
+  }
   const charaId = card.character_id || card.resource_id?.slice(0, 6) || ''
-  const voiceBase = card.voice_base || cue.split('_').slice(0, 5).join('_')
+  const voiceBase = card.voice_base || cueId.split('_').slice(0, 5).join('_')
   const model = `${charaId}_002_00`
   return {
-    scenario_id: `card_voice_preview_${card.resource_id}_${cue}`,
+    scenario_id: `card_voice_preview_${card.resource_id}_${cueId}`,
     total_steps: 1,
     steps: [
       {
@@ -826,13 +850,13 @@ function buildCardVoicePreviewScenario(card, cue) {
         },
         dialogue: {
           speaker: currentCardCharacterName.value,
-          text: `${card.title || card.resource_id}\n${cue}`,
-          text_jp: `${card.title || card.resource_id}\n${cue}`,
+          text: `${card.title || card.resource_id}\n${cueId}`,
+          text_jp: `${card.title || card.resource_id}\n${cueId}`,
           text_cn: '',
-          voice: `${cue}.m4a`,
+          voice: `${cueId}.m4a`,
           lip: {
             source: 'adxlip',
-            path: `adxlip/${charaId}/${voiceBase}/${cue}.json`,
+            path: `adxlip/${charaId}/${voiceBase}/${cueId}.json`,
           },
         },
       },
@@ -946,6 +970,14 @@ onMounted(async () => {
     storyMasterData.value = await r.json()
   } catch (err) {
     console.error('Failed to load story master index:', err)
+  }
+
+  try {
+    const r = await fetch('/data/masterdata/idol_unit_dictionary.json')
+    if (!r.ok) throw new Error(`HTTP ${r.status}`)
+    idolUnitData.value = await r.json()
+  } catch (err) {
+    console.error('Failed to load idol/unit dictionary:', err)
   }
 
   // ── 全局调试：showAnims('001tom') 在 Console 打印角色所有动作 ──

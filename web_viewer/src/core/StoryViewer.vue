@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="story-viewer-root" :class="{ 'stage-only': HIDE_UI }" tabindex="0" @keydown.left="goPrev" @keydown.right="goNext">
     <div class="viewer-stage">
     <!-- Spine rendering layer (background + characters) -->
@@ -23,7 +23,15 @@
     <div class="ui-overlay" v-if="compiledData && !HIDE_UI">
 
       <!-- ADV dialogue -->
-      <AdvUI v-if="currentStep.type === 'adv'" :dialogue="currentStep.dialogue" :step="currentStep" :playing="isPlaying" @click="goNext" />
+      <Transition name="adv-dialogue-fade" appear>
+        <AdvUI
+          v-if="showAdvDialogue"
+          :dialogue="currentStep.dialogue"
+          :step="currentStep"
+          :playing="isPlaying"
+          @click="goNext"
+        />
+      </Transition>
 
       <!-- Talk / chat mode: keep the component mounted across choice steps -->
       <MobileUI v-show="currentStep.type === 'talk' || currentStep.type === 'talk_stamp'"
@@ -76,9 +84,11 @@ import TextTimeUI from '../components/TextTimeUI.vue'
 // SpineStage is lazy-loaded so PIXI.js only loads when a story opens
 const SpineStage = defineAsyncComponent(() => import('../components/SpineStage.vue'))
 import { languageMode, setLanguageMode } from '../utils/LanguageStore.js'
-import { getAutoAdvanceTiming, isTransitionStep } from '../utils/StoryStepFlow.js'
 import { useVoicePlayer } from './useVoicePlayer.js'
 import { AudioManager } from './AudioManager.js'
+import { useTimelineRunner } from './useTimelineRunner.js'
+import { useStoryNavigation } from './useStoryNavigation.js'
+import { useStepSceneEffects } from './useStepSceneEffects.js'
 
 const props = defineProps({
   scenarioJson: { type: Object, default: null },
@@ -101,22 +111,17 @@ const selectedChoices = reactive(new Map())
 const _ready = ref(false)
 const isPlaying = ref(false)
 
-// 鈹€鈹€ Timeline (mid-sentence face/animation changes) 鈹€鈹€
-let _timelineEvents = []
-const _firedTimeline = new Set()
-let _timelineStartTime = 0
-let _timelineRAF = false
-let _fadeAutoTimer = null
-let _fadeAutoSeq = 0
-let _snapshotTimer = null
-let _seTimers = []
+let _readyTimer = null
 
-// 鈹€鈹€ 闈炶闊抽煶棰戯紙SE/鐜闊?BGM锛夌鐞?鈹€鈹€
 const _audioManager = new AudioManager()
-let _lastEnvCue = null
-let _lastBgmId = null
 
 let voicePlayer = null
+let clearFadeAutoAdvance = () => {}
+let clearSnapshotTimer = () => {}
+let clearSeTimers = () => {}
+let scheduleSnapshot = () => {}
+let handleStepChange = () => {}
+let cleanupStepSceneEffects = () => {}
 
 const getVoiceVolume = () => voicePlayer?.getVoiceVolume?.() || 0
 
@@ -139,142 +144,17 @@ function _resetVoiceDedup() {
   voicePlayer?.resetVoiceDedup?.()
 }
 
-function _clearFadeAutoAdvance() {
-  _fadeAutoSeq++
-  if (_fadeAutoTimer) {
-    clearTimeout(_fadeAutoTimer)
-    _fadeAutoTimer = null
-  }
-}
-
-function _clearSnapshotTimer() {
-  if (_snapshotTimer) {
-    clearTimeout(_snapshotTimer)
-    _snapshotTimer = null
-  }
-}
-
-function _clearSeTimers() {
-  for (const timer of _seTimers) {
-    clearTimeout(timer)
-  }
-  _seTimers = []
-}
-
-function _playStepSE(se) {
-  if (!se?.cue) return
-  const rawDelay = se.delay ?? se.volume ?? 0
-  const delay = Number.parseFloat(rawDelay)
-  if (Number.isFinite(delay) && delay > 0) {
-    const timer = setTimeout(() => {
-      _audioManager.playSE(se.cue)
-    }, delay * 1000)
-    _seTimers.push(timer)
-  } else {
-    _audioManager.playSE(se.cue)
-  }
-}
-
 function _stopCurrentVoice(reason = 'unspecified') {
   voicePlayer?.stopCurrentVoice?.(reason)
 }
 
-
-// 鈹€鈹€ Timeline (mid-sentence face/animation changes) 鈹€鈹€
-
-function _startTimeline() {
-  _cancelTimeline()
-  const step = currentStep.value
-  if (!step?.timeline || step.timeline.length === 0) {
-    _timelineEvents = []
-    return
-  }
-  _timelineEvents = step.timeline
-  _firedTimeline.clear()
-  _timelineStartTime = performance.now()
-  _timelineRAF = true
-  _tickTimeline()
-}
-
-function _tickTimeline() {
-  if (!_timelineRAF) return
-  // Stop polling once all events fired
-  if (_firedTimeline.size >= _timelineEvents.length) {
-    _timelineRAF = false
-    return
-  }
-
-  const elapsed = (performance.now() - _timelineStartTime) / 1000
-
-  for (let i = 0; i < _timelineEvents.length; i++) {
-    if (_firedTimeline.has(i)) continue
-    if (elapsed >= _timelineEvents[i].time) {
-      _fireTimelineEvent(_timelineEvents[i])
-      _firedTimeline.add(i)
-    }
-  }
-
-  requestAnimationFrame(_tickTimeline)
-}
-
-function _fireTimelineEvent(event) {
-  const mgr = spineStageRef.value?.manager
-  if (!mgr) return
-  console.log('[Timeline] fire:', event.type, event.chara_id, event.value, 'at', event.time + 's')
-  if (event.type === 'spine_face') {
-    mgr.updateSpineFace(event.chara_id, event.value, {
-      anim_flag: event.anim_flag,
-      blush_flag: event.blush_flag,
-      sweat_flag: event.sweat_flag,
-    })
-  } else if (event.type === 'spine_anim') {
-    if (event.no_back) mgr.playSpineAnim?.(event.chara_id, event.value, false, true)
-    else mgr.switchSpineAnim(event.chara_id, event.value)
-  } else if (event.type === 'spine_neck_anim') {
-    mgr.playSpineNeckAnim?.(event.chara_id, event.value)
-  } else if (event.type === 'spine_neck_stop') {
-    mgr.stopSpineNeckAnim?.(event.chara_id)
-  } else if (event.type === 'spine_color') {
-    mgr.setSpineColor(event.chara_id, event.value, event.duration ?? 0, 0)
-  }
-}
-
-/**
- * Fast-forward: fire all remaining un-fired timeline events instantly.
- * Must be called BEFORE navigating to the next step, so the spine state
- * catches up to where it would have been had the timeline completed naturally.
- */
-function _fastForwardTimeline() {
-  if (!_timelineEvents || _timelineEvents.length === 0) return
-  for (let i = 0; i < _timelineEvents.length; i++) {
-    if (_firedTimeline.has(i)) continue
-    _fireTimelineEvent(_timelineEvents[i])
-    _firedTimeline.add(i)
-  }
-  _cancelTimeline()
-}
-
-function _cancelTimeline() {
-  _timelineRAF = false
-  _timelineEvents = []
-  _firedTimeline.clear()
-}
-
 function freezeScene(reason = 'snapshot') {
-  _clearFadeAutoAdvance()
-  _clearSnapshotTimer()
-  _cancelTimeline()
+  clearFadeAutoAdvance()
+  clearSnapshotTimer()
+  cancelTimeline()
   spineStageRef.value?.manager?.cancelAllSpineTweens?.()
   _stopCurrentVoice(reason)
   return spineStageRef.value?.dumpScene?.() || window.dumpScene?.() || []
-}
-
-function scheduleSnapshot() {
-  _clearSnapshotTimer()
-  if (!Number.isFinite(SNAPSHOT_AT) || SNAPSHOT_AT < 0) return
-  _snapshotTimer = setTimeout(() => {
-    window.__SNAPSHOT__ = freezeScene('snapshotAt')
-  }, SNAPSHOT_AT * 1000)
 }
 
 // Computed: expose selectedChoices as plain object for MobileUI prop reactivity
@@ -291,6 +171,11 @@ const currentStep = computed(() => {
   return compiledData.value.steps[currentStepIndex.value] || {}
 })
 
+const showAdvDialogue = computed(() => {
+  const step = currentStep.value
+  return step?.type === 'adv' && step?.hide_dialogue !== true && step?.state?.text_disabled !== true
+})
+
 if (!voicePlayer) {
   voicePlayer = useVoicePlayer({
     spineStageRef,
@@ -302,53 +187,58 @@ if (!voicePlayer) {
   })
 }
 
-const isFirstStep = computed(() => historyStack.value.length === 0)
-const isLastStep = computed(() => !compiledData.value || currentStepIndex.value >= compiledData.value.steps.length - 1)
-
-const currentEpisode = computed(() => {
-  const episodes = compiledData.value?.episodes || []
-  if (!episodes.length) return null
-  const current = currentStepIndex.value
-  return episodes.find(ep => current >= ep.start_step_index && current <= ep.end_step_index) || null
+const { startTimeline, fastForwardTimeline, cancelTimeline } = useTimelineRunner({
+  spineStageRef,
+  currentStep,
 })
 
-const currentEpisodeLabel = computed(() => {
-  const ep = currentEpisode.value
-  if (!ep) {
-    const idx = currentStep.value?.episode_index
-    if (idx == null) return ''
-    return `EP${String(Number(idx) + 1).padStart(2, '0')}`
-  }
-  const no = String(ep.episode_no || ep.episode_index + 1).padStart(2, '0')
-  return `EP${no}`
+const {
+  isFirstStep,
+  isLastStep,
+  currentEpisode,
+  currentEpisodeLabel,
+  firstAvailableBg,
+  langLabel,
+  cycleLanguage,
+  applyStartStepIfNeeded,
+  goNext,
+  goPrev,
+  onChoice,
+  goToStep,
+} = useStoryNavigation({
+  compiledData,
+  currentStep,
+  currentStepIndex,
+  historyStack,
+  selectedChoices,
+  languageMode,
+  setLanguageMode,
+  startStep: START_STEP,
+  clearFadeAutoAdvance: () => clearFadeAutoAdvance(),
+  fastForwardTimeline,
+  ensureAudioCtx: _ensureAudioCtx,
+  resetVoiceDedup: _resetVoiceDedup,
 })
 
-const firstAvailableBg = computed(() => {
-  if (!compiledData.value?.steps) return null
-  for (const step of compiledData.value.steps) {
-    if (step.state?.bg) return step.state.bg
-  }
-  return null
+const stepSceneEffects = useStepSceneEffects({
+  currentStepIndex,
+  isLastStep,
+  historyStack,
+  spineStageRef,
+  audioManager: _audioManager,
+  voicePlayer,
+  resetVoiceDedup: _resetVoiceDedup,
+  startTimeline,
+  snapshotAt: SNAPSHOT_AT,
+  snapshotAction: () => { window.__SNAPSHOT__ = freezeScene('snapshotAt') },
 })
 
-const langLabel = computed(() => {
-  const labels = { JP: 'JP', CN: '涓枃', BILINGUAL: 'JP+CN' }
-  return labels[languageMode.value] || 'JP'
-})
-
-const LANG_CYCLE = ['JP', 'CN', 'BILINGUAL']
-function cycleLanguage() {
-  const cur = languageMode.value
-  const idx = LANG_CYCLE.indexOf(cur)
-  setLanguageMode(LANG_CYCLE[(idx + 1) % LANG_CYCLE.length])
-}
-
-function applyStartStepIfNeeded() {
-  if (!compiledData.value?.steps?.length) return
-  if (!Number.isFinite(START_STEP)) return
-  const target = Math.max(0, Math.min(compiledData.value.steps.length - 1, START_STEP - 1))
-  currentStepIndex.value = target
-}
+clearFadeAutoAdvance = stepSceneEffects.clearFadeAutoAdvance
+clearSnapshotTimer = stepSceneEffects.clearSnapshotTimer
+clearSeTimers = stepSceneEffects.clearSeTimers
+scheduleSnapshot = stepSceneEffects.scheduleSnapshot
+handleStepChange = stepSceneEffects.handleStepChange
+cleanupStepSceneEffects = stepSceneEffects.cleanup
 
 onMounted(async () => {
   // 全局调试工具：在 Console 输入 showAnims("001tom") 查看角色的所有动作
@@ -359,7 +249,7 @@ onMounted(async () => {
       '008ter_002_00','008ter_003_00','009ryu_002_00','009ryu_003_00',
       '010kai_002_00','010kai_003_00']
     const modelList = models.filter(m => m.startsWith(charaId))
-    if (modelList.length === 0) { console.warn('Unknown charaId:', charaId, '鈥?try one of:', [...new Set(models.map(m => m.split('_')[0]))].join(', ')); return }
+    if (modelList.length === 0) { console.warn('Unknown charaId:', charaId, '- try one of:', [...new Set(models.map(m => m.split('_')[0]))].join(', ')); return }
     const targetModels = modelIdx !== undefined ? [modelList[modelIdx]] : modelList
     for (const modelId of targetModels) {
       try {
@@ -383,12 +273,12 @@ onMounted(async () => {
         atlas.pages.forEach(p => p.pma = true)
         const sd = new SkeletonBinary(new AtlasAttachmentLoader(atlas)).readSkeletonData(new Uint8Array(skelBuf))
         const anims = sd.animations.map(a => a.name)
-        console.log(`%c鈻?${modelId} 鈥?${anims.length} animations`, 'font-weight:bold;color:#88ddff;font-size:13px')
+        console.log(`%c> ${modelId} - ${anims.length} animations`, 'font-weight:bold;color:#88ddff;font-size:13px')
         console.log(anims.map((a, i) => `${String(i+1).padStart(2,'0')}. ${a}`).join('\n'))
       } catch (e) { console.warn(`[${modelId}] load failed:`, e.message) }
     }
   })
-  console.log('馃挕 Console tip: type showAnims("001tom") to see all animations for a character')
+  console.log('[TIP] Console: type showAnims("001tom") to list all animations for a character')
   if (props.scenarioJson) {
     compiledData.value = props.scenarioJson
     applyStartStepIfNeeded()
@@ -400,7 +290,7 @@ onMounted(async () => {
   nextTick(() => { document.querySelector('.story-viewer-root')?.focus() })
 
   // Safety timeout: ready always fires within 5s even if assets fail
-  const readyTimer = setTimeout(() => {
+  _readyTimer = setTimeout(() => {
     if (!_ready.value) {
       _ready.value = true
       emit('ready')
@@ -423,7 +313,10 @@ onMounted(async () => {
     }
   }
 
-  clearTimeout(readyTimer)
+  if (_readyTimer) {
+    clearTimeout(_readyTimer)
+    _readyTimer = null
+  }
 
   // SpineStage applies first step state reactively via :step prop binding.
   // No explicit applyStepState call needed.
@@ -436,10 +329,13 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  console.warn('馃毃 [Lifecycle] StoryViewer onBeforeUnmount FIRED!')
-  _clearFadeAutoAdvance()
-  _clearSeTimers()
-  _fastForwardTimeline()
+  console.warn('[Lifecycle] StoryViewer onBeforeUnmount FIRED!')
+  cleanupStepSceneEffects()
+  if (_readyTimer) {
+    clearTimeout(_readyTimer)
+    _readyTimer = null
+  }
+  fastForwardTimeline()
   _stopCurrentVoice('onBeforeUnmount')
   // Stop BGM and ambient in AudioManager
   _audioManager.dispose()
@@ -447,144 +343,9 @@ onBeforeUnmount(() => {
 })
 
 // Watch step changes to trigger voice playback and timeline
-watch(currentStep, (newStep, oldStep) => {
-  console.log('[Audio] watch(currentStep) fired:', oldStep?.dialogue?.voice, '->', newStep?.dialogue?.voice)
-  _clearFadeAutoAdvance()
-  _clearSeTimers()
-  _clearSnapshotTimer()
-
-  const episodeChanged = oldStep && newStep && oldStep.episode_index !== newStep.episode_index
-  if (episodeChanged) {
-    spineStageRef.value?.manager?.cancelAllSpineTweens?.()
-  }
-
-  // SE (one-shot)
-  const seEvents = Array.isArray(newStep?.state?.se_events) ? newStep.state.se_events : []
-  if (seEvents.length > 0) {
-    for (const se of seEvents) {
-      _playStepSE(se)
-    }
-  } else {
-    const se = newStep?.state?.se
-    _playStepSE(se)
-  }
-
-  // Ambient audio (looping)
-  const env = newStep?.state?.environmental
-  const oldEnv = oldStep?.state?.environmental
-  const envCue = env?.cue
-  const oldEnvCue = oldEnv?.cue
-  if (envCue && envCue !== _lastEnvCue) {
-    _audioManager.playAmbient(envCue, 0.5, env?.volume)
-    _lastEnvCue = envCue
-  } else if (!envCue && _lastEnvCue) {
-    _audioManager.stopAmbient()
-    _lastEnvCue = null
-  }
-  // Environmental volume ducking
-  if (env?.volume != null && env.volume !== '' && envCue === _lastEnvCue) {
-    _audioManager.setAmbientVolume(env.volume)
-  }
-  if (newStep?.state?.environmental_duck_target != null) {
-    _audioManager.setAmbientVolume(newStep.state.environmental_duck_target)
-  }
-
-  // BGM
-  const bgmId = newStep?.state?.bgm
-  const bgmStopFade = newStep?.state?.bgm_stop_fade
-  if (bgmId && bgmId !== _lastBgmId) {
-    _audioManager.playBgm(bgmId)
-    _lastBgmId = bgmId
-  } else if (!bgmId && _lastBgmId) {
-    _audioManager.stopBgm(bgmStopFade != null ? bgmStopFade : 1.0)
-    _lastBgmId = null
-  }
-
-  // Screen fade step: auto-advance after animation
-  const autoAdvance = getAutoAdvanceTiming(newStep)
-  if (autoAdvance) {
-    const autoSeq = _fadeAutoSeq
-    const autoStepIndex = currentStepIndex.value
-    _fadeAutoTimer = setTimeout(() => {
-      _fadeAutoTimer = null
-      if (autoSeq === _fadeAutoSeq && currentStepIndex.value === autoStepIndex && !isLastStep.value) {
-        if (autoAdvance.pushHistory) {
-          historyStack.value.push(currentStepIndex.value)
-        }
-        currentStepIndex.value++
-        _resetVoiceDedup()
-      }
-    }, autoAdvance.delayMs)
-  }
-
-  voicePlayer?.playVoice?.()
-  _startTimeline()
-  scheduleSnapshot()
-})
+watch(currentStep, handleStepChange)
 
 
-
-function goNext() {
-  _clearFadeAutoAdvance()
-  // Fast-forward any remaining timeline events before leaving this step
-  _fastForwardTimeline()
-  // Activate AudioContext synchronously within user gesture
-  _ensureAudioCtx()
-  if (!isLastStep.value) {
-    const currentStep = compiledData.value?.steps?.[currentStepIndex.value]
-    if (!isTransitionStep(currentStep)) {
-      historyStack.value.push(currentStepIndex.value)
-    }
-    currentStepIndex.value++
-    _resetVoiceDedup()
-  }
-}
-function goPrev() {
-  _clearFadeAutoAdvance()
-  _fastForwardTimeline()
-  _ensureAudioCtx()
-  if (historyStack.value.length > 0) {
-    let target = historyStack.value.pop()
-    while (target > 0 && isTransitionStep(compiledData.value?.steps?.[target])) {
-      if (historyStack.value.length === 0) {
-        target--
-        continue
-      }
-      target = historyStack.value.pop()
-    }
-    currentStepIndex.value = target
-    _resetVoiceDedup()
-  } else if (currentStepIndex.value > 0) {
-    let target = currentStepIndex.value - 1
-    while (target > 0 && isTransitionStep(compiledData.value?.steps?.[target])) {
-      target--
-    }
-    currentStepIndex.value = target
-    _resetVoiceDedup()
-  }
-}
-function onChoice(opt) {
-  _clearFadeAutoAdvance()
-  _fastForwardTimeline()
-  _ensureAudioCtx()
-  _resetVoiceDedup()
-  const text = opt.detail || opt.text || opt.label || ''
-  if (text) {
-    selectedChoices.set(currentStepIndex.value, text)
-  }
-  if (opt.step_id) {
-    historyStack.value.push(currentStepIndex.value)
-    currentStepIndex.value = opt.step_id - 1
-  }
-}
-function goToStep(index) {
-  _clearFadeAutoAdvance()
-  _fastForwardTimeline()
-  if (compiledData.value && index >= 0 && index < compiledData.value.steps.length) {
-    historyStack.value.push(currentStepIndex.value)
-    currentStepIndex.value = index
-  }
-}
 
 async function loadScenario(url) {
   try {
@@ -622,6 +383,25 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene })
 }
 .ui-overlay > * {
   pointer-events: auto;
+}
+.adv-dialogue-fade-enter-active,
+.adv-dialogue-fade-leave-active {
+  transition:
+    opacity 280ms ease,
+    transform 280ms ease,
+    filter 280ms ease;
+}
+.adv-dialogue-fade-enter-from,
+.adv-dialogue-fade-leave-to {
+  opacity: 0;
+  transform: translateY(14px);
+  filter: blur(2px);
+}
+.adv-dialogue-fade-enter-to,
+.adv-dialogue-fade-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
 }
 .top-bar {
   position: absolute; top: 0; left: 0; right: 0; z-index: 10;

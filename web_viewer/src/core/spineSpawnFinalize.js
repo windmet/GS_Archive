@@ -16,6 +16,13 @@ export function finalizeSpawnedSpine({
   fadeIn,
   setSpineTalking,
 }) {
+  const fadeWrapper = new PIXI.Container()
+  fadeWrapper.addChild(spine)
+  if (manager._spawnTokens[idolId] !== spawnToken) {
+    fadeWrapper.destroy({ children: true, texture: false, baseTexture: false })
+    return null
+  }
+
   const marker = new PIXI.Graphics()
   marker.beginFill(0xff0000)
   marker.drawCircle(0, 0, 8)
@@ -26,12 +33,6 @@ export function finalizeSpawnedSpine({
   marker.visible = debugMode
   manager._debugOverlay?.addChild(marker)
 
-  const fadeWrapper = new PIXI.Container()
-  fadeWrapper.addChild(spine)
-  if (manager._spawnTokens[idolId] !== spawnToken) {
-    fadeWrapper.destroy({ children: true, texture: false, baseTexture: false })
-    return null
-  }
   spineContainer.addChild(fadeWrapper)
   manager.spineInstances[idolId] = {
     spine,

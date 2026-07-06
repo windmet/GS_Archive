@@ -23,10 +23,14 @@
         <label>Y <input type="number" step="1" :value="state.y" @input="setProp(id, 'y', $event.target.value)" /></label>
         <label>S <input type="number" step="0.01" :value="state.scale" @input="setProp(id, 'scale', $event.target.value)" /></label>
       </div>
-      <div v-if="state.prefabMeta" class="debug-prefab">
+      <div v-if="state.costumeInfo || state.prefabMeta" class="debug-prefab">
         <span>model {{ state.modelId }}</span>
+        <span v-if="state.costumeInfo">idol {{ state.costumeInfo.idol_name || state.costumeInfo.idol_code }}</span>
+        <span v-if="state.costumeInfo">costume {{ state.costumeInfo.costume_name || 'unknown' }}</span>
+        <span v-if="state.costumeInfo">source table{{ (state.costumeInfo.source_tables || []).join('/') }}</span>
+        <span v-if="state.costumeInfo">spine {{ yesNo(state.costumeInfo.spine_exists) }} / prefab {{ yesNo(state.costumeInfo.prefab_meta_exists) }}</span>
         <span>ref {{ state.referenceSource }} {{ fmt(state.referenceY) }}</span>
-        <span>prefabY {{ fmt(state.prefabMeta.derived?.prefabPositionY) }}</span>
+        <span v-if="state.prefabMeta">prefabY {{ fmt(state.prefabMeta.derived?.prefabPositionY) }}</span>
         <span>baseY {{ fmt(state.computedBaseY) }}</span>
         <span>finalBaseY {{ fmt(state.finalBaseY) }}</span>
       </div>
@@ -76,6 +80,7 @@ import { ref, watch, onMounted, onBeforeUnmount, markRaw, reactive, onUnmounted,
 import { PixiStageManager } from '../core/PixiStageManager.js'
 import { getBodyTypeUrl, getOtherSettingUrl, getCharaIconUrl } from '../utils/AssetResolver.js'
 import { loadCostumePrefabMeta } from '../utils/CostumePrefabMetaStore.js'
+import { loadCostumeDictionary } from '../utils/CostumeDictionaryStore.js'
 import { getCachedMotionSetting, loadIdolMotionSettings } from '../utils/IdolMotionSettingStore.js'
 import { computeVisualRootY as computeVisualRootYUtil, resolveBaseY as resolveBaseYUtil } from '../utils/YPositionResolver.js'
 import {
@@ -108,6 +113,7 @@ const motionSettingsReady = ref(false)
 const spineStates = reactive({})
 const boundsSnapshot = ref(null)
 let costumePrefabMeta = {}
+let costumeDictionary = {}
 
 onMounted(() => {
   if (!containerRef.value) return
@@ -126,6 +132,7 @@ onMounted(() => {
   }
 
   void _loadPrefabMeta()
+  void _loadCostumeDictionary()
   void _loadMotionSettings()
   installDebugGlobals()
 })
@@ -322,6 +329,7 @@ function onSpineDragged(e) {
     config: {
       usePrefabMeta: USE_PREFAB_META,
       costumePrefabMeta,
+      costumeDictionary,
       otherSettingCache: _otherSettingCache,
       modelYOffsetMap: MODEL_Y_OFFSET,
       baseAnchor: BASE_ANCHOR,
@@ -348,6 +356,7 @@ function syncStates() {
       config: {
         usePrefabMeta: USE_PREFAB_META,
         costumePrefabMeta,
+        costumeDictionary,
         otherSettingCache: _otherSettingCache,
         modelYOffsetMap: MODEL_Y_OFFSET,
         baseAnchor: BASE_ANCHOR,
@@ -458,6 +467,7 @@ const Y_DEBUG_STORE = (window.__SIDEM_Y_DIAG__ = window.__SIDEM_Y_DIAG__ || {})
 let _bodyTypePromise = null
 const _bodyTypeById = {}
 let _prefabMetaPromise = null
+let _costumeDictionaryPromise = null
 let _motionSettingsPromise = null
 
 async function _loadBodyTypes() {
@@ -487,6 +497,21 @@ async function _loadPrefabMeta() {
       return costumePrefabMeta
     })
   return _prefabMetaPromise
+}
+
+async function _loadCostumeDictionary() {
+  if (_costumeDictionaryPromise) return _costumeDictionaryPromise
+  _costumeDictionaryPromise = loadCostumeDictionary()
+    .then(models => {
+      costumeDictionary = models || {}
+      if (debugMode.value) syncStates()
+      return costumeDictionary
+    })
+    .catch(() => {
+      costumeDictionary = {}
+      return costumeDictionary
+    })
+  return _costumeDictionaryPromise
 }
 
 async function _loadMotionSettings() {
@@ -561,6 +586,12 @@ function fmt(value) {
   return typeof value === 'number' ? Number(value.toFixed(3)).toString() : 'null'
 }
 
+function yesNo(value) {
+  if (value === true) return 'yes'
+  if (value === false) return 'no'
+  return 'unknown'
+}
+
 watch(() => props.step, (step, oldStep) => {
   if (!manager) return
   applyStateToken++
@@ -601,7 +632,7 @@ async function applyState(step) {
 
   // ── Reset all visual filters BEFORE applying new state ──
   manager.setCameraFilter(null)
-  manager.applyBgEffects?.(state.bg_effects || [])
+    manager.applyBgEffects?.(state.bg_effects || [], state.bg_profile || null)
 
   // ── Background (use fallbackBg when step has no bg) ──
   const bg = state.bg || props.fallbackBg
@@ -708,6 +739,7 @@ async function applyState(step) {
         config: {
           usePrefabMeta: USE_PREFAB_META,
           costumePrefabMeta,
+          costumeDictionary,
           otherSettingCache: _otherSettingCache,
           modelYOffsetMap: MODEL_Y_OFFSET,
           baseAnchor: BASE_ANCHOR,

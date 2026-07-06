@@ -64,7 +64,7 @@ export function getSpineFaceUrl(modelId, faceName) {
  * actual file on disk has a scenario prefix (e.g. "1_1_001_03_a1001.m4a").
  * The prefix is derived from the scenario_id: the last 4 underscore-delimited tokens.
  *
- * Voice files with a numeric leading character (e.g. "2_1_001_01_00_09.m4a")
+ * Voice files containing underscores (e.g. "2_1_001_01_00_09.m4a")
  * are already fully qualified and used as-is.
  *
  * @param {string} voiceFile - raw voice field from scenario data
@@ -72,8 +72,9 @@ export function getSpineFaceUrl(modelId, faceName) {
  * @returns {string} resolved asset URL
  */
 export function getVoiceUrl(voiceFile, scenarioId) {
-  // If voice name starts with a letter → short name, derive prefix from scenario_id
-  if (voiceFile && /^[a-zA-Z]/.test(voiceFile) && scenarioId) {
+  // Short names need the scenario prefix. This covers both letter suffixes
+  // like a1001.m4a and work-story numeric suffixes like 2001.m4a.
+  if (voiceFile && !voiceFile.includes('_') && scenarioId) {
     const parts = scenarioId.split('_')
     if (parts.length >= 4) {
       const prefix = parts.slice(-4).join('_')
