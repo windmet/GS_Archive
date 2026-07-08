@@ -322,7 +322,9 @@ export class BackgroundManager {
       ? new URLSearchParams(window.location.search)
       : new URLSearchParams()
     if (params.get('bgfx') === '0') return true
-    if (id === 'cameraflare' && params.get('cameraflare') !== '1') return true
+    // Archived: the extracted particle attempt was visually poor on web.
+    // Keep the implementation below for reference, but do not enable it at runtime.
+    if (id === 'cameraflare') return true
     return false
   }
 

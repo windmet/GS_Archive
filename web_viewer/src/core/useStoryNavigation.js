@@ -45,7 +45,7 @@ export function useStoryNavigation({
   })
 
   const langLabel = computed(() => {
-    const labels = { JP: 'JP', CN: '涓枃', BILINGUAL: 'JP+CN' }
+    const labels = { JP: 'JP', CN: '中文', BILINGUAL: 'JP+CN' }
     return labels[languageMode.value] || 'JP'
   })
 

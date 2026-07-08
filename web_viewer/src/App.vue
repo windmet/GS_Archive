@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div id="story-viewer">
 
     <!-- ====== HOME ====== -->
@@ -17,7 +17,7 @@
         </button>
         <!-- Spine Lab entry -->
         <button class="cat-btn lab-btn" @click="view = 'spine_lab'">
-          <span class="cat-label">🧪 Spine 实验室</span>
+          <span class="cat-label">Spine 实验室</span>
           <span class="cat-count">自由预览</span>
         </button>
       </div>
@@ -26,7 +26,7 @@
     <!-- ====== IDOL CHARACTER GRID ====== -->
     <div v-if="view === 'idols'" class="screen list-screen">
       <div class="list-header">
-        <button class="back-btn" @click="view = 'home'">← Back</button>
+        <button class="back-btn" @click="view = 'home'">鈫?Back</button>
         <h2>{{ categoryHeaderText }}</h2>
       </div>
       <div class="filter-bar">
@@ -56,7 +56,7 @@
     <!-- ====== CARD ARCHIVE: CARD LIST ====== -->
     <div v-if="view === 'cards'" class="screen list-screen">
       <div class="list-header">
-        <button class="back-btn" @click="goBackFromCards">← Back</button>
+        <button class="back-btn" @click="goBackFromCards">鈫?Back</button>
         <h2>{{ currentCardCharacterName }}</h2>
       </div>
       <div class="filter-bar">
@@ -185,7 +185,7 @@
     <!-- ====== GROUP LIST (idol character or generic category) ====== -->
     <div v-if="view === 'groups'" class="screen list-screen">
       <div class="list-header">
-        <button class="back-btn" @click="goBackFromGroups">← Back</button>
+        <button class="back-btn" @click="goBackFromGroups">鈫?Back</button>
         <h2>{{ groupTitle }}</h2>
       </div>
       <div class="filter-bar">
@@ -227,7 +227,7 @@
     <!-- ====== EPISODE ZERO: UNIT GRID ====== -->
     <div v-if="view === 'episode_zero_units'" class="screen list-screen">
       <div class="list-header">
-        <button class="back-btn" @click="view = 'home'">← Back</button>
+        <button class="back-btn" @click="view = 'home'">鈫?Back</button>
         <h2>第零话</h2>
       </div>
       <div class="unit-grid">
@@ -246,7 +246,7 @@
     <!-- ====== EPISODE ZERO: EPISODE LIST ====== -->
     <div v-if="view === 'episodes'" class="screen list-screen">
       <div class="list-header">
-        <button class="back-btn" @click="view = 'episode_zero_units'">← Back</button>
+        <button class="back-btn" @click="view = 'episode_zero_units'">鈫?Back</button>
         <h2>{{ currentUnit?.unit_name || 'Episodes' }}</h2>
       </div>
       <div class="episode-list">
@@ -265,7 +265,7 @@
     <!-- ====== SCENARIO FILE LIST ====== -->
     <div v-if="view === 'files'" class="screen list-screen">
       <div class="list-header">
-        <button class="back-btn" @click="goBackToFiles">← Back</button>
+        <button class="back-btn" @click="goBackToFiles">鈫?Back</button>
         <h2>{{ currentGroup?.title || 'Scenarios' }}</h2>
       </div>
       <div class="filter-bar">
@@ -315,7 +315,7 @@ import { getVoiceUrl } from './utils/AssetResolver.js'
 import LoadingScreen from './components/LoadingScreen.vue'
 
 function resolveChatName(ch) {
-  // index may store raw chara_id "031sak" as name — resolve to display name
+  // index may store raw chara_id such as "031sak"; resolve to display name.
   if (ch && /^\d{3}[a-z0-9]{3}$/.test(ch.name || '')) {
     return { ...ch, name: IDOL_ID_TO_NAME[ch.name] || ch.name }
   }
@@ -370,7 +370,7 @@ function catCountText(id) {
   return getCategoryCountText(categoryById(id))
 }
 
-// — Idol / Chat grid —
+// Idol / chat grid.
 const idolList = computed(() => {
   const catId = currentCategoryId.value
   if (catId === 'cards') {
@@ -406,7 +406,7 @@ const filteredIdols = computed(() => {
   return idolList.value.filter(ch => ch.name.toLowerCase().includes(q))
 })
 
-// — Group list —
+// Group list.
 const filteredGroups = computed(() => {
   if (!currentCharacterId.value && !currentCategoryId.value) return []
   let groups = []
@@ -471,7 +471,7 @@ const categoryFilterPlaceholder = computed(() => {
   return 'Search idol...'
 })
 
-// — Episode Zero units —
+// Episode Zero units.
 const episodeZeroUnits = computed(() => {
   const cat = categoryById('episode_zero')
   return cat?.units || []
@@ -657,7 +657,7 @@ function idolDisplayName(id) {
     id
 }
 
-// — Navigation —
+// Navigation.
 function openCategory(cat) {
   filterQuery.value = ''
   if (cat.id === 'idol' || cat.id === 'idol_chat' || cat.id === 'idol_phone' || cat.id === 'cards') {
@@ -679,7 +679,7 @@ function openCategory(cat) {
 
 function openIdol(entry) {
   filterQuery.value = ''
-  // Group chat entry in idol_chat grid — go directly to file view (1 session per unit)
+  // Group chat entry in idol_chat grid: go directly to file view.
   if (entry._isGroup && entry._groupData) {
     currentCharacterId.value = entry.id
     currentCategoryId.value = 'idol_chat'
@@ -943,7 +943,17 @@ async function loadScenario(name, returnView = 'files') {
   }
 }
 
+function getStartupScenarioFile() {
+  const params = new URLSearchParams(window.location.search)
+  const raw = params.get('scenario') || params.get('file')
+  if (!raw) return ''
+  const normalized = raw.trim().replace(/^\/?data\/compiled\//, '')
+  if (!normalized || normalized.includes('..') || normalized.startsWith('/')) return ''
+  return normalized.endsWith('.json') ? normalized : `${normalized}.json`
+}
+
 onMounted(async () => {
+  const startupScenarioFile = getStartupScenarioFile()
   try {
     const r = await fetch('/data/compiled/index.json')
     if (!r.ok) throw new Error(`HTTP ${r.status}`)
@@ -980,7 +990,11 @@ onMounted(async () => {
     console.error('Failed to load idol/unit dictionary:', err)
   }
 
-  // ── 全局调试：showAnims('001tom') 在 Console 打印角色所有动作 ──
+
+  if (startupScenarioFile) {
+    await loadScenario(startupScenarioFile, 'home')
+  }
+  // Global debug helper: showAnims('001tom') prints available Spine animations.
   window.showAnims = async (charaId, modelIdx) => {
     const KNOWN_MODELS = [
       '001tom_002_00','001tom_003_00','001tom_004_00','001tom_004_01','001tom_005_00','001tom_101_00','001tom_101_01','001tom_102_00','001tom_103_00','001tom_103_01',
@@ -1005,7 +1019,7 @@ onMounted(async () => {
         const [atlasR, skelR] = await Promise.all([fetch(atlasUrl), fetch(skelUrl)])
         if (!atlasR.ok || !skelR.ok) { console.warn(`[${modelId}] files not found`); continue }
         const [atlasBuf, skelBuf] = await Promise.all([atlasR.arrayBuffer(), skelR.arrayBuffer()])
-        // Decode atlas — same logic as PixiStageManager._decodeAtlasText
+        // Decode atlas with the same logic as PixiStageManager._decodeAtlasText.
         const fullText = new TextDecoder('utf-8').decode(atlasBuf)
         const si = fullText.indexOf('\nsize:')
         let atlasText = fullText
@@ -1058,12 +1072,12 @@ onMounted(async () => {
         atlas.pages.forEach(p => p.pma = true)
         const sd = new SkeletonBinary(new AtlasAttachmentLoader(atlas)).readSkeletonData(new Uint8Array(skelBuf))
         const anims = sd.animations.map(a => a.name)
-        console.log(`%c▼ ${modelId} — ${anims.length} animations • ${sd.bones.length} bones`, 'font-weight:bold;color:#88ddff;font-size:14px')
+        console.log(`%c■ ${modelId} - ${anims.length} animations - ${sd.bones.length} bones`, 'font-weight:bold;color:#88ddff;font-size:14px')
         console.log(anims.map((a, i) => `  ${String(i+1).padStart(2,'0')}. ${a}`).join('\n'))
       } catch (e) { console.warn(`[${modelId}] load failed:`, e?.message || e) }
     }
   }
-  console.log('%c💡 Console: showAnims("001tom") — list all animations', 'color:#88ddff;font-size:12px')
+  console.log('%cConsole: showAnims("001tom") - list all animations', 'color:#88ddff;font-size:12px')
 })
 </script>
 
@@ -1125,7 +1139,7 @@ onMounted(async () => {
 }
 .filter-input:focus { outline: none; border-color: #88ccff; box-shadow: 0 0 0 2px rgba(136,204,255,0.2); }
 
-/* —— Idol Grid with Avatars —— */
+/* Idol grid with avatars */
 .idol-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -1147,7 +1161,7 @@ onMounted(async () => {
 
 .group-card { border-color: #b3d9ff; background: #f5faff; }
 
-/* —— Group List —— */
+/* Group list */
 .group-list {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1167,7 +1181,7 @@ onMounted(async () => {
 .group-title { display: block; font-size: 0.85rem; color: #333; line-height: 1.3; }
 .group-meta { font-size: 0.7rem; color: #999; margin-top: auto; }
 
-/* Event-specific display — fixed-height image + uniform card */
+/* Event-specific display: fixed-height image + uniform card */
 .group-card-event { align-items: stretch; padding: 0; overflow: hidden; }
 .group-card-event .event-img-wrap {
   width: 100%; height: 140px; display: flex; align-items: center; justify-content: center;
@@ -1182,7 +1196,7 @@ onMounted(async () => {
 .event-title { font-size: 0.82rem; color: #111; font-weight: bold; line-height: 1.3; }
 .event-catchphrase { font-size: 0.7rem; color: #777; font-style: italic; line-height: 1.2; }
 
-/* —— Card Archive —— */
+/* Card archive */
 .card-archive-list {
   display: flex;
   flex-direction: column;
@@ -1408,7 +1422,7 @@ onMounted(async () => {
   font-size: 0.72rem;
 }
 
-/* —— Episode Zero Unit Grid —— */
+/* Episode Zero unit grid */
 .unit-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -1425,7 +1439,7 @@ onMounted(async () => {
 .unit-name { font-size: 0.85rem; font-weight: bold; color: #333; text-align: center; }
 .unit-count { font-size: 0.7rem; color: #999; }
 
-/* —— Episode List —— */
+/* Episode list */
 .episode-list { padding: 8px 16px 16px; }
 .episode-btn {
   display: block; width: 100%; text-align: left;
@@ -1438,7 +1452,7 @@ onMounted(async () => {
 .episode-title { display: block; font-size: 0.9rem; margin-bottom: 2px; color: #333; }
 .episode-count { font-size: 0.7rem; color: #999; }
 
-/* —— File List —— */
+/* File list */
 .file-list { padding: 8px 16px 16px; }
 .file-btn {
   display: flex; flex-direction: column; gap: 3px;
@@ -1469,7 +1483,7 @@ onMounted(async () => {
   line-height: 1.25;
 }
 
-/* —— Loading Overlay —— */
+/* Loading overlay */
 .loading-overlay {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   background: #fff; z-index: 9999;
@@ -1488,7 +1502,7 @@ onMounted(async () => {
 </style>
 
 <style>
-/* Global reset — no page-level scrollbar */
+/* Global reset: no page-level scrollbar */
 html, body { margin: 0; padding: 0; height: 100%; overflow-x: hidden; overflow-y: hidden; }
 *, *::before, *::after { box-sizing: border-box; }
 #app { overflow-x: hidden; }
