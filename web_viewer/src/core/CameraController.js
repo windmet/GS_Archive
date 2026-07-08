@@ -29,8 +29,13 @@ export class CameraController {
     const bgMaxY = bgSprite ? -bgSprite.y * bgScale : 0
 
     this.bgContainer.scale.set(bgScale)
-    this.bgContainer.x = Math.min(bgMaxX, Math.max(bgMinX, x))
-    this.bgContainer.y = Math.min(bgMaxY, Math.max(bgMinY, y))
+    if (bgScale > 1) {
+      this.bgContainer.x = Math.min(bgMaxX, Math.max(bgMinX, x))
+      this.bgContainer.y = Math.min(bgMaxY, Math.max(bgMinY, y))
+    } else {
+      this.bgContainer.x = 0
+      this.bgContainer.y = 0
+    }
     this.spineContainer.scale.set(scale)
     this.spineContainer.x = x
     this.spineContainer.y = y

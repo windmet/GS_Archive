@@ -1,19 +1,19 @@
-<template>
+﻿<template>
   <div ref="containerRef" class="spine-stage-root"></div>
 
   <div v-if="sceneIcon" class="scene-icon">
     <img :src="sceneIcon.src" alt="" @error="$event.target.style.display = 'none'" />
   </div>
 
-  <!-- Debug Toggle — always visible, bottom-right corner -->
+  <!-- Debug Toggle: always visible, bottom-right corner -->
   <button class="debug-toggle" @click="debugMode = !debugMode" :title="debugMode ? '关闭调试' : '开启调试'">
-    {{ debugMode ? '✕' : '⚙' }}
+    {{ debugMode ? 'ON' : 'DBG' }}
   </button>
 
-  <!-- Debug Dashboard — visible when debugMode is on -->
+  <!-- Debug Dashboard: visible when debugMode is on -->
   <div v-if="debugMode" class="debug-panel">
     <div class="debug-title">Spine Debug <span class="debug-mode">yMode={{ Y_MODE }} ps={{ PIXEL_SCALE }}</span>
-      <button class="debug-copy-btn" @click="copyParamURL" title="复制当前所有参数到剪贴板">📋 复制参数</button>
+      <button class="debug-copy-btn" @click="copyParamURL" title="复制当前参数到剪贴板">复制参数</button>
     </div>
 
     <div v-for="(state, id) in spineStates" :key="id" class="debug-row">
@@ -41,16 +41,16 @@
         <span>root->bottom {{ fmt(state.bounds.rootToBottom) }}</span>
       </div>
       <div class="debug-btns">
-        <button @click="adjustScale(id, -1)">−1</button>
-        <button @click="adjustScale(id, -0.1)">−0.1</button>
+        <button @click="adjustScale(id, -1)">-1</button>
+        <button @click="adjustScale(id, -0.1)">-0.1</button>
         <button @click="adjustScale(id, 0.1)">+0.1</button>
         <button @click="adjustScale(id, 1)">+1</button>
-        <button @click="centerSpine(id)">◉ 居中</button>
+        <button @click="centerSpine(id)">Center</button>
       </div>
     </div>
 
     <div class="debug-hint">
-      💡 在画面上拖拽 Spine 可移动 · 输入框直接改坐标
+      Drag a Spine on the stage to move it. Use the inputs for exact coordinates.
     </div>
   </div>
 
@@ -83,6 +83,7 @@ import { loadCostumePrefabMeta } from '../utils/CostumePrefabMetaStore.js'
 import { loadCostumeDictionary } from '../utils/CostumeDictionaryStore.js'
 import { getCachedMotionSetting, loadIdolMotionSettings } from '../utils/IdolMotionSettingStore.js'
 import { computeVisualRootY as computeVisualRootYUtil, resolveBaseY as resolveBaseYUtil } from '../utils/YPositionResolver.js'
+import { applyStepSceneState } from '../core/applyStepSceneState.js'
 import {
   buildBoundsSnapshot,
   buildSpineDebugState,
@@ -197,6 +198,81 @@ function installDebugGlobals() {
     console.table(rows)
     return rows
   }
+  window.dumpStage = () => {
+    if (!manager) {
+      console.warn('No stage manager.')
+      return
+    }
+    const data = {
+      width: manager.width,
+      height: manager.height,
+      bgContainer: null,
+      spineContainer: null,
+      silhouettes: null,
+      spines: null,
+      cameraZoom: null,
+    }
+    // Collect container positions
+    if (manager.bgContainer) {
+      data.bgContainer = {
+        x: manager.bgContainer.x,
+        y: manager.bgContainer.y,
+        scale: manager.bgContainer.scale?.x ?? null,
+      }
+    }
+    if (manager.spineContainer) {
+      data.spineContainer = {
+        x: manager.spineContainer.x,
+        y: manager.spineContainer.y,
+        scale: manager.spineContainer.scale?.x ?? null,
+      }
+    }
+    // Collect background sprite info
+    const bg = manager._bgSprite
+    if (bg) {
+      data.bgSprite = {
+        x: bg.x, y: bg.y,
+        width: bg.width, height: bg.height,
+        scaleX: bg.scale?.x ?? null,
+        scaleY: bg.scale?.y ?? null,
+      }
+    }
+    // Collect silhouette info
+    const sil = manager._silhouetteSprites || {}
+    data.silhouettes = Object.entries(sil).map(([id, sprite]) => ({
+      id,
+      x: sprite?.x ?? null,
+      y: sprite?.y ?? null,
+      scaleX: sprite?.scale?.x ?? null,
+      scaleY: sprite?.scale?.y ?? null,
+      width: sprite?.width ?? null,
+      height: sprite?.height ?? null,
+    }))
+    // Collect spine info
+    data.spines = Object.entries(manager.spineInstances || {}).map(([id, entry]) => {
+      const snap = manager.getSpineRuntimeSnapshot?.(id)
+      return {
+        id,
+        modelId: entry?.modelId || snap?.modelId || '',
+        x: entry?.spine?.x ?? null,
+        y: entry?.spine?.y ?? null,
+        scale: entry?.spine?.scale?.x ?? null,
+        alpha: entry?.spine?.alpha ?? null,
+      }
+    })
+    // Camera zoom
+    if (manager.cameraController) {
+      const cc = manager.cameraController
+      data.cameraZoom = {
+        zoom: cc._zoom ?? cc.zoom ?? null,
+        offsetX: cc._offsetX ?? cc.offsetX ?? null,
+        offsetY: cc._offsetY ?? cc.offsetY ?? null,
+      }
+    }
+    console.log('=== Stage Dump ===')
+    console.table(data)
+    return data
+  }
 }
 
 function getDialogueBoxTop() {
@@ -244,8 +320,8 @@ function copyParamURL() {
     // Flash feedback on the button via a temporary toast
     const btn = document.querySelector('.debug-copy-btn')
     if (btn) {
-      btn.textContent = '✅ 已复制!'
-      setTimeout(() => { btn.textContent = '📋 复制参数' }, 1500)
+      btn.textContent = 'Copied'
+      setTimeout(() => { btn.textContent = '复制参数' }, 1500)
     }
   }).catch(() => {
     // Fallback: select and copy via textarea
@@ -263,7 +339,7 @@ function copyParamURL() {
 function computeVisualRootY(id, baseY, posY = 0) {
   if (!manager) return baseY
   // Negate posY: scenario uses Unity convention (Y+ = up, Y- = down),
-  // but web/PixiJS has Y+ = down. So negative posY (down in game) → larger Y in screen.
+  // but web/PixiJS has Y+ = down. So negative posY (down in game) 鈫?larger Y in screen.
   const rootY = computeVisualRootYUtil(baseY, posY, manager.width)
   const entry = manager.spineInstances?.[id]
   const snap = manager.getSpineRuntimeSnapshot(id)
@@ -405,7 +481,7 @@ const NON_VISUAL_IDS = new Set([
   'mob', 'group', '100grp', '06fra', '001jup',
 ])
 
-// ── Per-character default position from idolothersetting ──
+// 鈹€鈹€ Per-character default position from idolothersetting 鈹€鈹€
 const _otherSettingCache = {}
 const URL_FLAGS = new URLSearchParams(window.location.search)
 function readUrlNumber(name, fallback) {
@@ -421,8 +497,8 @@ function normalizeSourceMode(raw, fallback = 'prefab') {
 const SUB_MODEL_RE = /^\d{3}sub_/
 // Direct prefabY mapping: devs hand-tuned prefabY to compensate for pose differences.
 // Formula: BASE_ANCHOR - (referenceY - ANCHOR_UNITY_Y) * PIXEL_SCALE
-//   = conservative -> 024shk(-515, lifted by devs) → floats UP
-//   = negative diff -> 016sei(-745, sunk by devs) → sinks DOWN
+//   = conservative -> 024shk(-515, lifted by devs) 鈫?floats UP
+//   = negative diff -> 016sei(-745, sunk by devs) 鈫?sinks DOWN
 const PIXEL_SCALE = readUrlNumber('pixelScale', 0.75)
 const BASE_ANCHOR = readUrlNumber('baseAnchor', 780)
 const ANCHOR_UNITY_Y = readUrlNumber('anchorUnityY', -575)  // 011min prefabY
@@ -437,9 +513,9 @@ const FIT_MODE = (URL_FLAGS.get('fitMode') || 'fixedScale').toLowerCase()
 const ANCHOR_MODE = (URL_FLAGS.get('anchorMode') || 'bottom').toLowerCase()
 const VISUAL_HEIGHT_REFERENCE = readUrlNumber('visualRefHeight', 2640)
 const VISUAL_HEIGHT_STRENGTH = readUrlNumber('heightStrength', 0.8)
-// ── Per-character overrides from URL (e.g. y_016sei=890&s_024shk=0.23) ──
+// Per-character overrides from URL (e.g. y_016sei=890&s_024shk=0.23).
 // These snapshot each character's final X/Y/Scale after positioning,
-// so the "复制参数" button captures multi-character debug adjustments.
+// so the copy-params button captures multi-character debug adjustments.
 const CHARA_OVERRIDE_RE = /^(x|y|s)_(.+)$/
 const CHARA_OVERRIDES = {}
 for (const [key, val] of URL_FLAGS.entries()) {
@@ -566,8 +642,8 @@ function resolveBaseY(charaId, modelId = '') {
   const baseY = SUB_MODEL_RE.test(modelId) ? SUB_BASE_ANCHOR : BASE_ANCHOR
   const referenceY = typeof reference.y === 'number' ? reference.y : null
 
-  // Uniform prefabY → screen mapping: trust the devs' hand-tuned positionY.
-  // No pivot/bottom correction needed — prefabY already compensates for pose height.
+  // Uniform prefabY-to-screen mapping: trust the devs' hand-tuned positionY.
+  // No pivot/bottom correction needed; prefabY already compensates for pose height.
   let computedBaseY = baseY
   if (Number.isFinite(referenceY)) {
     computedBaseY = SUB_MODEL_RE.test(modelId)
@@ -595,13 +671,13 @@ function yesNo(value) {
 watch(() => props.step, (step, oldStep) => {
   if (!manager) return
   applyStateToken++
-  // 即使 step 没有 state，也要清理残留 spine（比如回退到 synopsis/title 步骤时）
+  // Clear stale stage state when returning to non-story screens.
   if (!step?.state) {
-    // 使用 fallbackBg 作为背景，避免黑屏
     if (props.fallbackBg) {
       manager.setBackground(props.fallbackBg)
+    } else {
+      manager.clearBackground()
     }
-    // 清理滤镜（非剧情步骤不需要滤镜）
     manager.setCameraFilter(null)
     manager.clearBgBlur()
     manager.clearBgColorOverlay()
@@ -630,66 +706,13 @@ async function applyState(step) {
   await _loadBodyTypes()
   if (token !== applyStateToken || !manager) return
 
-  // ── Reset all visual filters BEFORE applying new state ──
-  manager.setCameraFilter(null)
-    manager.applyBgEffects?.(state.bg_effects || [], state.bg_profile || null)
-
-  // ── Background (use fallbackBg when step has no bg) ──
-  const bg = state.bg || props.fallbackBg
-  if (bg) manager.setBackground(bg, state.bg_transition || null)
-  else manager.clearBackground()
-
-  // ── Apply visual filters if specified for this step ──
-  if (state.camera_filter) manager.setCameraFilter(state.camera_filter)
-  const bgDofTransition = state.bg_dof_transition || {}
-  const bgColorTransition = state.bg_color_transition || {}
-  const keepHeartVoiceBlur = state.bg_color && state.bg_color !== '#FFFFFF'
-  manager.setBgBlur(
-    keepHeartVoiceBlur && state.bg_dof ? state.bg_dof * 6 : 0,
-    bgDofTransition.duration ?? 0,
-    bgDofTransition.delay ?? 0,
-  )
-  manager.setBgColorOverlay(
-    state.bg_color || null,
-    bgColorTransition.duration ?? 0,
-    bgColorTransition.delay ?? 0,
-  )
-
-  if (state.screen_slide) {
-    const slide = state.screen_slide
-    manager.setScreenSlide?.(
-      slide.type,
-      slide.color || '#000000',
-      slide.duration ?? 0.5,
-      slide.delay ?? 0,
-      slide.direction || '6',
-    )
-  } else {
-    manager.clearScreenSlide?.()
-  }
-
-  // ── Camera zoom/pan ──
-  if (state.camera_zoom) {
-    manager.setCameraZoom(state.camera_zoom)
-  } else {
-    manager.resetCameraZoom()
-  }
-
-  // ── Screen fade transition (one-shot) ──
-  if (state.screen_fade) {
-    const sf = state.screen_fade
-    manager.setScreenFade(sf.type, sf.color, sf.duration, sf.delay || 0, sf.alpha ?? 1)
-  } else {
-    manager.clearScreenFade()
-  }
-
-  const screenEffectsKey = `${step.step_id || ''}:${JSON.stringify(state.screen_effects || [])}`
-  if (state.screen_effects?.length && screenEffectsKey !== lastScreenEffectsKey) {
-    lastScreenEffectsKey = screenEffectsKey
-    manager.playScreenEffects?.(state.screen_effects)
-  } else if (!state.screen_effects?.length) {
-    lastScreenEffectsKey = ''
-  }
+  lastScreenEffectsKey = applyStepSceneState({
+    manager,
+    step,
+    state,
+    fallbackBg: props.fallbackBg,
+    lastScreenEffectsKey,
+  })
 
   const charaId = step.chara_id || ''
   const desired = state.spines || []
@@ -697,7 +720,7 @@ async function applyState(step) {
   const desiredIds = new Set()
   const desiredOrder = []
   let hasOfficialPriority = false
-  // ── Phase 1: Process all desired spines ──
+  // 鈹€鈹€ Phase 1: Process all desired spines 鈹€鈹€
   for (const spineState of desired) {
     const sid = spineState.id
     if (!sid || NON_VISUAL_IDS.has(sid) || !spineState.model) continue
@@ -758,7 +781,7 @@ async function applyState(step) {
 
     if (existing && existing.modelId === modelId) {
       existing.prefabMeta = prefabMeta
-      // Same model – update face/anim and reposition
+      // Same model: update face/anim and reposition.
       if (spineState.face) manager.updateSpineFace(sid, spineState.face, spineState)
       if (spineState.anim) manager.playSpineAnim(sid, spineState.anim, !!step.timeline, !!spineState.anim_no_back, getMotionSetting(sid, modelId, spineState.anim))
       if (spineState.neck_anim_stop) manager.stopSpineNeckAnim?.(sid)
@@ -798,7 +821,7 @@ async function applyState(step) {
         manager.setSpineAlpha?.(sid, 1)
       }
     } else {
-      // Different model or new – remove old, spawn new
+      // Different model or new model: remove old, then spawn new.
       if (existing) manager.removeSpine(sid, true)
       try {
         await manager.spawnSpine(sid, modelId, {
@@ -815,7 +838,15 @@ async function applyState(step) {
           return
         }
         const entry = manager.spineInstances[sid]
-        if (!entry) continue
+        if (!entry) {
+          // Spine asset not found — try silhouette fallback
+          const pX = spineState.pos_x ?? 0
+          let pY = spineState.pos_y ?? 0
+          if (spineState.idol_zoom_y_offset) pY += spineState.idol_zoom_y_offset
+          const rootY = computeVisualRootY(sid, resolved.finalBaseY, pY)
+          manager.showSilhouette(sid, modelId, pX, 0, rootY)
+          continue
+        }
         entry.prefabMeta = prefabMeta
         const posX = spineState.pos_x ?? 0
         let posY = spineState.pos_y ?? 0
@@ -851,14 +882,14 @@ async function applyState(step) {
     }
   }
 
-  // ── Phase 2: Remove spines no longer in scene ──
+  // 鈹€鈹€ Phase 2: Remove spines no longer in scene 鈹€鈹€
   for (const sid of existingIds) {
     if (!desiredIds.has(sid)) {
       manager.removeSpine(sid, true)
     }
   }
 
-  // ── Phase 3: Official z-order, fallback to current speaker front ──
+  // 鈹€鈹€ Phase 3: Official z-order, fallback to current speaker front 鈹€鈹€
   if (hasOfficialPriority) {
     const orderedIds = desiredOrder
       .slice()
@@ -874,7 +905,7 @@ async function applyState(step) {
     manager.bringToFront(charaId)
   }
 
-  // ── Apply per-character URL overrides after all positioning logic ──
+  // 鈹€鈹€ Apply per-character URL overrides after all positioning logic 鈹€鈹€
   applyCharaOverrides(manager)
 
   syncBoundsSnapshot(step)
@@ -900,7 +931,7 @@ defineExpose({
   height: 100% !important;
 }
 
-/* ── Debug Toggle ── */
+/* 鈹€鈹€ Debug Toggle 鈹€鈹€ */
 .scene-icon {
   position: absolute;
   top: 18px;
@@ -947,7 +978,7 @@ defineExpose({
   color: #aaefff;
 }
 
-/* ── Debug Panel ── */
+/* 鈹€鈹€ Debug Panel 鈹€鈹€ */
 .debug-panel {
   position: absolute;
   top: 50px;

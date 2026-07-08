@@ -159,3 +159,10 @@ export function getStampUrl(stampId) {
 export function getEffectUrl(effectName, frameIndex) {
   return `/data/fx_extracted/${effectName}_${frameIndex}.png`
 }
+
+/**
+ * Silhouette PNG URLs for NPC/non-idol characters that have no Spine model.
+ */
+export function getSilhouetteUrl(modelId) {
+  return `${ASSET_BASE}/silhouette/${modelId}.png`
+}

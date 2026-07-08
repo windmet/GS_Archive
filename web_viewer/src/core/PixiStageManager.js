@@ -16,7 +16,7 @@
 import * as PIXI from 'pixi.js'
 import { Spine, SkeletonBinary, AtlasAttachmentLoader } from '@pixi-spine/runtime-3.8'
 import { TextureAtlas } from '@pixi-spine/base'
-import { getBgUrl, getMouthSettingUrl, getSpineAtlasUrl, getSpineSkelUrl } from '../utils/AssetResolver.js'
+import { getBgUrl, getMouthSettingUrl, getSpineAtlasUrl, getSpineSkelUrl, getSilhouetteUrl } from '../utils/AssetResolver.js'
 import { easeOutCubic, runRafTween } from './rafTween.js'
 import { tweenOverlayFade, tweenOverlayPunch, tweenOverlaySlide } from './transitionTweens.js'
 import { loadAndCreateSpine } from './spineSpawnPipeline.js'
@@ -63,6 +63,7 @@ export class PixiStageManager {
     this.app = null
     this.spineInstances = {}   // { idolId: { spine: Spine, modelId: string, marker: Graphics } }
     this._spawnTokens = {}
+    this._silhouetteSprites = {}  // { idolId: PIXI.Sprite } — fallback for missing Spine assets
     this._pendingTalking = {}
     this.lipSyncController = new LipSyncController({
       getSpineEntry: idolId => this.spineInstances[idolId],
@@ -1023,6 +1024,70 @@ export class PixiStageManager {
   fitSpineToPrefabRect(spine, prefabMeta, options = {}) {
     return fitSpineToPrefabRectUtil(spine, prefabMeta, this.height, options)
   }
+  // Silhouette fallback for missing Spine assets (NPC/non-idol characters)
+
+  showSilhouette(idolId, modelId, posX = 0, posY = 0, baseY = null) {
+    if (this._silhouetteSprites[idolId]) return  // already shown
+    const pendingKey = `_sil_pending_${idolId}`
+    if (this[pendingKey]) return
+    this[pendingKey] = true
+    const url = getSilhouetteUrl(modelId)
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.src = url
+    img.onload = () => {
+      delete this[pendingKey]
+      if (!this.spineContainer) return
+      // Remove any stale sprite for this idol
+      const old = this._silhouetteSprites[idolId]
+      if (old) {
+        if (old.parent) old.parent.removeChild(old)
+        try { old.destroy() } catch (_) {}
+      }
+      const bt = PIXI.BaseTexture.from(img)
+      bt.alphaMode = PIXI.ALPHA_MODES.PMA
+      const texture = PIXI.Texture.from(bt)
+      const sprite = new PIXI.Sprite(texture)
+      sprite.anchor.set(0.5, 1.0)
+      const stageW = this.width || 1280
+      const stageH = this.height || 720
+      const baseX = stageW / 2 + posX * (stageW / 1280)
+      const baseYPos = baseY ?? Math.round(stageH * 0.62)
+      sprite.x = baseX
+      sprite.y = baseYPos - 200
+      const silScale = (stageH * 0.85) / img.height
+      sprite.scale.set(silScale)
+      this.spineContainer.addChild(sprite)
+      this._silhouetteSprites[idolId] = sprite
+    }
+    img.onerror = () => {
+      delete this[pendingKey]
+      if (!this._silhouetteSprites[idolId]) {
+        this._silhouetteSprites[idolId] = null
+      }
+    }
+  }
+
+  removeSilhouette(idolId) {
+    const sprite = this._silhouetteSprites[idolId]
+    if (sprite) {
+      if (sprite.parent) sprite.parent.removeChild(sprite)
+      try { sprite.destroy() } catch (_) {}
+    }
+    delete this._silhouetteSprites[idolId]
+  }
+
+  clearAllSilhouettes() {
+    for (const idolId of Object.keys(this._silhouetteSprites)) {
+      const sprite = this._silhouetteSprites[idolId]
+      if (sprite) {
+        if (sprite.parent) sprite.parent.removeChild(sprite)
+        try { sprite.destroy() } catch (_) {}
+      }
+    }
+    this._silhouetteSprites = {}
+  }
+
   // Spine loading
 
   async spawnSpine(idolId, modelId, options = {}) {
@@ -1978,10 +2043,12 @@ export class PixiStageManager {
    * The model fades out over ~12 frames then destroys itself.
    */
   removeSpine(idolId, immediate = false) {
+    this.removeSilhouette(idolId)
     return this.spineManager?.removeSpine(idolId, immediate)
   }
 
   clearAllSpines() {
+    this.clearAllSilhouettes()
     return this.spineManager?.clearAllSpines()
     this.lipSyncController.clearPending()
     this._pendingTalking = this.lipSyncController.pendingTalking
