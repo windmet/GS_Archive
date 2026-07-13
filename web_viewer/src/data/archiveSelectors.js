@@ -230,6 +230,25 @@ export function cardsForCharacter(cardIndexData, cardMap, characterId) {
   return ids.map(id => cardMap.get(id)).filter(Boolean)
 }
 
+export function buildUnitCardSummary(cardMap, memberCodes) {
+  const members = new Set(memberCodes || [])
+  const cards = [...(cardMap?.values?.() || [])]
+    .filter(card => members.has(card.character_id))
+    .sort((a, b) => Number(a.card_id || 0) - Number(b.card_id || 0))
+  const rarityCounts = {}
+  for (const card of cards) {
+    const rarity = card.rarity || 'CARD'
+    rarityCounts[rarity] = (rarityCounts[rarity] || 0) + 1
+  }
+  return {
+    cards,
+    total: cards.length,
+    rarity_counts: rarityCounts,
+    cards_with_story: cards.filter(card => card.scenario_entries?.length).length,
+    single_state: cards.filter(card => card.single_state).length,
+  }
+}
+
 export function buildCardRarityTabs(cards) {
   const order = ['SSR', 'SR', 'R', 'N']
   const counts = new Map()

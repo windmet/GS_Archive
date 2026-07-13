@@ -14,6 +14,35 @@
       <p>{{ unit.description }}</p>
     </section>
 
+    <section class="unit-section unit-card-summary" aria-labelledby="unit-cards-title">
+      <div class="section-heading">
+        <h3 id="unit-cards-title">成员卡片</h3>
+        <button class="section-command" @click="emit('open-cards')">
+          <Images :size="16" />
+          <span>查看卡片</span>
+          <ChevronRight :size="15" />
+        </button>
+      </div>
+      <dl class="unit-stat-grid">
+        <div>
+          <dt>全部</dt>
+          <dd>{{ cardStats.total || 0 }}</dd>
+        </div>
+        <div>
+          <dt>SSR</dt>
+          <dd>{{ cardStats.rarity_counts?.SSR || 0 }}</dd>
+        </div>
+        <div>
+          <dt>有卡片小剧情</dt>
+          <dd>{{ cardStats.cards_with_story || 0 }}</dd>
+        </div>
+        <div>
+          <dt>单卡面</dt>
+          <dd>{{ cardStats.single_state || 0 }}</dd>
+        </div>
+      </dl>
+    </section>
+
     <section class="unit-section" aria-labelledby="unit-members-title">
       <div class="section-heading">
         <h3 id="unit-members-title">成员</h3>
@@ -23,6 +52,57 @@
         <button v-for="member in members" :key="member.idol_code" @click="emit('open-idol', member)">
           <img :src="`/assets/idols/icons/image_chara_icon_${member.idol_code}.png`" :alt="member.display_name" />
           <span>{{ member.display_name }}</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="unit-section" aria-labelledby="unit-events-title">
+      <div class="section-heading">
+        <h3 id="unit-events-title">固定组合团活</h3>
+        <span>{{ eventRelations.team_events?.length || 0 }}</span>
+      </div>
+      <div class="unit-stories event-stories">
+        <button v-for="event in eventRelations.team_events" :key="event.event_id" @click="emit('open-story', event)">
+          <Play :size="15" fill="currentColor" />
+          <span>
+            <strong>{{ event.title }}</strong>
+            <small>{{ event.series }} · {{ event.file }}</small>
+          </span>
+          <small>{{ event.characters.length }} members</small>
+        </button>
+      </div>
+    </section>
+
+    <section v-if="eventRelations.attribute_event_appearances?.length" class="unit-section" aria-labelledby="attribute-events-title">
+      <div class="section-heading">
+        <h3 id="attribute-events-title">属性团曲出演</h3>
+        <span>{{ eventRelations.attribute_event_appearances.length }}</span>
+      </div>
+      <div class="unit-stories event-stories">
+        <button v-for="event in eventRelations.attribute_event_appearances" :key="event.event_id" @click="emit('open-story', event)">
+          <Play :size="15" fill="currentColor" />
+          <span>
+            <strong>{{ event.title }}</strong>
+            <small>{{ event.attribute }} · {{ matchingMemberNames(event) }}</small>
+          </span>
+          <small>{{ event.file }}</small>
+        </button>
+      </div>
+    </section>
+
+    <section v-if="eventRelations.mixed_unit_appearances?.length" class="unit-section" aria-labelledby="mixed-events-title">
+      <div class="section-heading">
+        <h3 id="mixed-events-title">跨组合团活出演</h3>
+        <span>{{ eventRelations.mixed_unit_appearances.length }}</span>
+      </div>
+      <div class="unit-stories event-stories">
+        <button v-for="event in eventRelations.mixed_unit_appearances" :key="event.event_id" @click="emit('open-story', event)">
+          <Play :size="15" fill="currentColor" />
+          <span>
+            <strong>{{ event.title }}</strong>
+            <small>{{ matchingMemberNames(event) }}</small>
+          </span>
+          <small>{{ event.file }}</small>
         </button>
       </div>
     </section>
@@ -47,15 +127,25 @@
 </template>
 
 <script setup>
-import { Play } from '@lucide/vue'
+import { ChevronRight, Images, Play } from '@lucide/vue'
 import { getBgUrl } from '../../utils/AssetResolver.js'
 
-defineProps({
+const props = defineProps({
   unit: { type: Object, default: null },
   members: { type: Array, default: () => [] },
   stories: { type: Array, default: () => [] },
+  cardStats: { type: Object, default: () => ({}) },
+  eventRelations: {
+    type: Object,
+    default: () => ({ team_events: [], attribute_event_appearances: [], mixed_unit_appearances: [] }),
+  },
 })
-const emit = defineEmits(['open-idol', 'open-story'])
+const emit = defineEmits(['open-idol', 'open-story', 'open-cards'])
+
+function matchingMemberNames(event) {
+  const names = new Map(props.members.map(member => [member.idol_code, member.display_name]))
+  return (event.matching_character_ids || []).map(idolCode => names.get(idolCode) || idolCode).join('、')
+}
 </script>
 
 <style scoped>
@@ -72,6 +162,12 @@ const emit = defineEmits(['open-idol', 'open-story'])
 .section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .section-heading h3 { margin: 0; font-size: 0.86rem; }
 .section-heading span { color: #7a858e; font-size: 0.66rem; }
+.section-command { display: inline-flex; align-items: center; gap: 5px; min-height: 32px; padding: 5px 8px; border: 1px solid #cbd5da; border-radius: 5px; background: #fff; color: #247c77; cursor: pointer; font-size: 0.68rem; }
+.section-command:hover { border-color: #73c9c2; background: #f2fbfa; }
+.unit-stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; margin: 0; background: #e5e9ec; }
+.unit-stat-grid > div { min-width: 0; padding: 12px; background: #f8fafb; }
+.unit-stat-grid dt { overflow: hidden; color: #68747c; font-size: 0.64rem; text-overflow: ellipsis; white-space: nowrap; }
+.unit-stat-grid dd { margin: 5px 0 0; color: #233039; font-size: 1.12rem; font-weight: 700; }
 .unit-members { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
 .unit-members button { display: flex; align-items: center; gap: 9px; min-width: 0; min-height: 52px; padding: 7px 9px; border: 1px solid #e0e5e8; border-radius: 6px; background: #fff; color: #26313a; cursor: pointer; text-align: left; }
 .unit-members button:hover { border-color: #73c9c2; background: #f2fbfa; }
@@ -84,6 +180,7 @@ const emit = defineEmits(['open-idol', 'open-story'])
 .unit-stories button > span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .unit-stories strong { overflow: hidden; font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; }
 .unit-stories small { color: #7a858e; font-size: 0.63rem; }
+.event-stories button > small { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 @media (max-width: 560px) {
   .unit-detail { padding: 10px; }
@@ -91,6 +188,7 @@ const emit = defineEmits(['open-idol', 'open-story'])
   .unit-hero h2 { font-size: 1.45rem; }
   .unit-description, .unit-section { margin-top: 8px; padding: 14px; }
   .unit-members { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .unit-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .unit-stories button { grid-template-columns: 20px minmax(0, 1fr); }
   .unit-stories button > small { grid-column: 2; }
 }

@@ -131,13 +131,16 @@
         :entries="visibleStoryCatalogEntries"
         :domain-options="storyDomainOptions"
         :domain="currentStoryDomain"
+        :event-scope-options="storyEventScopeOptions"
+        :event-scope="currentEventScope"
         :availability="currentStoryAvailability"
         :sort="currentStorySort"
         :catalog-total="storyCatalog.length"
         :filtered-total="filteredStoryCatalog.length"
         @select="openCatalogStory"
         @load-more="storyVisibleLimit += 80"
-        @update:domain="currentStoryDomain = $event"
+        @update:domain="setStoryDomain"
+        @update:event-scope="currentEventScope = $event"
         @update:availability="currentStoryAvailability = $event"
         @update:sort="currentStorySort = $event"
       />
@@ -153,8 +156,11 @@
         :unit="currentArchiveUnit"
         :members="currentArchiveUnitMembers"
         :stories="currentArchiveUnitStories"
+        :card-stats="currentArchiveUnitEntry?.cardStats"
+        :event-relations="currentArchiveUnitEntry?.eventRelations"
         @open-idol="openUnitMember"
         @open-story="openUnitStory"
+        @open-cards="openUnitCards"
       />
     </ArchiveShell>
 
@@ -200,6 +206,7 @@ import { loadArchiveData } from './data/ArchiveDataRepository.js'
 import {
   buildCardMap,
   buildCardRarityTabs,
+  buildUnitCardSummary,
   buildScenarioMetaByFile,
   buildStoryCatalog,
   cardsForCharacter,
@@ -253,6 +260,7 @@ const cardLayout = ref('compact')
 const cardArtMode = ref('clean')
 const currentIdolUnitFilter = ref('')
 const currentStoryDomain = ref('')
+const currentEventScope = ref('all')
 const currentStoryAvailability = ref('all')
 const currentStorySort = ref('domain')
 const storyVisibleLimit = ref(80)
@@ -439,7 +447,27 @@ const episodeZeroUnits = computed(() => {
 
 const scenarioMetaByFile = computed(() => buildScenarioMetaByFile(storyMasterData.value))
 
-const storyCatalog = computed(() => buildStoryCatalog(storyMasterData.value))
+const eventRelationByFile = computed(() => new Map(
+  (archiveManifestData.value?.unit_event_relations || []).map(relation => [relation.file, relation]),
+))
+
+const storyCatalog = computed(() => buildStoryCatalog(storyMasterData.value).map(entry => {
+  if (entry.domain !== 'event') return entry
+  const relation = eventRelationByFile.value.get(entry.file)
+  if (!relation) return { ...entry, eventScope: 'unclassified', eventScopeLabel: '活动' }
+  const eventScopeLabel = relation.event_scope === 'fixed_unit_event'
+    ? '固定团活'
+    : (relation.event_scope === 'attribute_event' ? `属性·${relation.attribute}` : '跨组合团活')
+  return {
+    ...entry,
+    title: relation.title,
+    subtitle: [entry.title, entry.subtitle].filter(Boolean).join(' / '),
+    searchText: `${entry.searchText} ${relation.title} ${relation.attribute || ''}`.toLowerCase(),
+    eventScope: relation.event_scope,
+    eventScopeLabel,
+    eventRelation: relation,
+  }
+}))
 
 const storyDomainOptions = computed(() => {
   const counts = new Map()
@@ -451,11 +479,25 @@ const storyDomainOptions = computed(() => {
   return [...counts.entries()].map(([id, count]) => ({ id, count, label: labels.get(id) || id }))
 })
 
+const storyEventScopeOptions = computed(() => {
+  const labels = {
+    fixed_unit_event: '固定组合团活',
+    attribute_event: '属性团曲',
+    mixed_unit_event: '跨组合团活',
+  }
+  return Object.entries(labels).map(([id, label]) => ({
+    id,
+    label,
+    count: storyCatalog.value.filter(entry => entry.domain === 'event' && entry.eventScope === id).length,
+  }))
+})
+
 const filteredStoryCatalog = computed(() => {
   const query = filterQuery.value.trim().toLowerCase()
   const availability = currentStoryAvailability.value
   const entries = storyCatalog.value.filter(entry =>
     (!currentStoryDomain.value || entry.domain === currentStoryDomain.value) &&
+    (currentStoryDomain.value !== 'event' || currentEventScope.value === 'all' || entry.eventScope === currentEventScope.value) &&
     (availability === 'all' || (availability === 'playable' ? entry.exists : !entry.exists)) &&
     (!query || entry.searchText.includes(query)),
   )
@@ -471,13 +513,22 @@ const visibleStoryCatalogEntries = computed(() => filteredStoryCatalog.value.sli
 
 const unitCatalogEntries = computed(() => (idolUnitData.value?.units || []).map(unit => {
   const unitId = String(unit.unit_id)
+  const members = Object.entries(archiveManifestData.value?.unit_membership_by_idol || {})
+    .filter(([, evidence]) => String(evidence.unit_id) === unitId)
+    .map(([idolCode]) => ({ idol_code: idolCode, ...idolUnitData.value?.by_idol_code?.[idolCode] }))
+    .sort((a, b) => Number(a.idol_id || 0) - Number(b.idol_id || 0))
+  const cardStats = buildUnitCardSummary(cardMap.value, members.map(member => member.idol_code))
+  const eventRelations = archiveManifestData.value?.unit_event_relations_by_unit?.[unitId] || {
+    team_events: [],
+    attribute_event_appearances: [],
+    mixed_unit_appearances: [],
+  }
   return {
     unit,
-    members: Object.entries(archiveManifestData.value?.unit_membership_by_idol || {})
-      .filter(([, evidence]) => String(evidence.unit_id) === unitId)
-      .map(([idolCode]) => ({ idol_code: idolCode, ...idolUnitData.value?.by_idol_code?.[idolCode] }))
-      .sort((a, b) => Number(a.idol_id || 0) - Number(b.idol_id || 0)),
+    members,
     storyCount: storyCatalog.value.filter(entry => entry.domain === 'unit_story' && entry.unitId === unitId).length,
+    cardStats,
+    eventRelations,
   }
 }))
 
@@ -488,6 +539,11 @@ const currentArchiveUnit = computed(() => (idolUnitData.value?.units || []).find
 const currentArchiveUnitMembers = computed(() => {
   const id = String(currentArchiveUnit.value?.unit_id || '')
   return unitCatalogEntries.value.find(entry => String(entry.unit.unit_id) === id)?.members || []
+})
+
+const currentArchiveUnitEntry = computed(() => {
+  const id = String(currentArchiveUnit.value?.unit_id || '')
+  return unitCatalogEntries.value.find(entry => String(entry.unit.unit_id) === id) || null
 })
 
 const currentArchiveUnitStories = computed(() => {
@@ -728,6 +784,7 @@ function currentArchiveRoute() {
       : (currentUnit.value?.unit_code || currentUnit.value?.id || ''),
     unitFilter: currentIdolUnitFilter.value,
     storyType: currentStoryDomain.value,
+    eventScope: currentEventScope.value,
     availability: currentStoryAvailability.value,
     sort: currentStorySort.value,
     episode: currentEpisodeId.value,
@@ -805,6 +862,7 @@ async function applyArchiveRoute(route) {
     currentCardRelationState.value = route.relationState || 'all'
     currentIdolUnitFilter.value = route.unitFilter || ''
     currentStoryDomain.value = route.storyType || ''
+    currentEventScope.value = route.eventScope || 'all'
     currentStoryAvailability.value = route.availability || 'all'
     currentStorySort.value = route.sort || 'domain'
     currentEpisodeId.value = route.episode || ''
@@ -864,6 +922,7 @@ function goHome() {
   currentCardRelationState.value = 'all'
   currentIdolUnitFilter.value = ''
   currentStoryDomain.value = ''
+  currentEventScope.value = 'all'
   currentStoryAvailability.value = 'all'
   currentStorySort.value = 'domain'
   commitView('home')
@@ -917,6 +976,7 @@ async function openSpineLab() {
 function openArchiveStatus() {
   filterQuery.value = ''
   currentStoryDomain.value = ''
+  currentEventScope.value = 'all'
   currentStoryAvailability.value = 'all'
   currentStorySort.value = 'domain'
   commitView('archive_status')
@@ -925,10 +985,17 @@ function openArchiveStatus() {
 function openStoryCatalog() {
   filterQuery.value = ''
   currentStoryDomain.value = ''
+  currentEventScope.value = 'all'
   currentStoryAvailability.value = 'all'
   currentStorySort.value = 'domain'
   storyVisibleLimit.value = 80
   commitView('story_catalog')
+}
+
+function setStoryDomain(domain) {
+  currentStoryDomain.value = domain
+  currentEventScope.value = 'all'
+  storyVisibleLimit.value = 80
 }
 
 function openUnitCatalog() {
@@ -963,6 +1030,20 @@ function openUnitStory(story) {
   if (story?.file && story.exists) loadScenario(story.file, 'unit_detail')
 }
 
+function openUnitCards() {
+  const unitId = String(currentArchiveUnit.value?.unit_id || '')
+  if (!unitId) return
+  filterQuery.value = ''
+  currentCategoryId.value = 'cards'
+  currentCharacterId.value = ''
+  currentArchiveUnitCode.value = ''
+  currentIdolUnitFilter.value = unitId
+  currentCardRarity.value = 'all'
+  currentCardAssetState.value = 'all'
+  currentCardRelationState.value = 'all'
+  commitView('idols')
+}
+
 function openCatalogStory(entry) {
   if (entry?.file && entry.exists) loadScenario(entry.file, 'story_catalog')
 }
@@ -989,6 +1070,7 @@ function openCategoryById(categoryId) {
 function openCategory(cat) {
   filterQuery.value = ''
   currentStoryDomain.value = ''
+  currentEventScope.value = 'all'
   currentStoryAvailability.value = 'all'
   currentStorySort.value = 'domain'
   currentUnit.value = null
@@ -1323,11 +1405,11 @@ onMounted(async () => {
   removeSpineAnimationDebug = installSpineAnimationDebug()
 })
 
-watch([filterQuery, currentCardRarity, currentCardAssetState, currentCardRelationState, currentIdolUnitFilter, currentStoryDomain, currentStoryAvailability, currentStorySort], () => {
+watch([filterQuery, currentCardRarity, currentCardAssetState, currentCardRelationState, currentIdolUnitFilter, currentStoryDomain, currentEventScope, currentStoryAvailability, currentStorySort], () => {
   syncArchiveRoute({ replace: true })
 })
 
-watch([filterQuery, currentStoryDomain, currentStoryAvailability, currentStorySort], () => {
+watch([filterQuery, currentStoryDomain, currentEventScope, currentStoryAvailability, currentStorySort], () => {
   storyVisibleLimit.value = 80
 })
 

@@ -100,6 +100,7 @@ const verificationItems = computed(() => {
   const homeVoices = props.verification?.card_home_voices || {}
   const cardScenarios = props.verification?.card_scenarios || {}
   const relations = props.verification?.card_relations || {}
+  const unitEvents = props.verification?.unit_event_relations || {}
   return [
     {
       label: '场景结构',
@@ -130,6 +131,12 @@ const verificationItems = computed(() => {
       value: relations.release_series_failures ? '需排查' : '通过',
       detail: `${formatCount(relations.direct_story_cards)} story cards · ${formatCount(relations.valid_release_series)} series`,
       tone: relations.release_series_failures ? 'warn' : 'ok',
+    },
+    {
+      label: '组合活动关系',
+      value: unitEvents.failures ? '需排查' : '通过',
+      detail: `${formatCount(unitEvents.valid)} / ${formatCount(unitEvents.total)} events`,
+      tone: unitEvents.failures ? 'warn' : 'ok',
     },
   ]
 })
@@ -168,6 +175,9 @@ const inventoryItems = computed(() => {
     { label: '语音文件', value: counts.voice_files },
     { label: '卡片小剧情', value: props.manifest?.coverage?.card_relations?.cards_with_direct_story },
     { label: '共通系列', value: counts.release_series },
+    { label: '固定组合团活', value: props.manifest?.coverage?.unit_events?.fixed_unit_events },
+    { label: '属性团曲', value: props.manifest?.coverage?.unit_events?.attribute_events },
+    { label: '跨组合团活', value: props.manifest?.coverage?.unit_events?.mixed_unit_events },
   ]
 })
 

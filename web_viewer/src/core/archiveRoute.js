@@ -6,6 +6,7 @@ const ROUTE_QUERY_KEYS = [
   'unit',
   'unit_filter',
   'story_type',
+  'event_scope',
   'availability',
   'sort',
   'episode',
@@ -38,6 +39,7 @@ const VALID_VIEWS = new Set([
 ])
 
 const VALID_CARD_RELATION_STATES = new Set(['all', 'card_story', 'release_series', 'unrelated'])
+const VALID_EVENT_SCOPES = new Set(['all', 'fixed_unit_event', 'attribute_event', 'mixed_unit_event'])
 
 function clean(value) {
   return typeof value === 'string' ? value.trim() : ''
@@ -56,6 +58,8 @@ export function readArchiveRoute(input = window.location.href) {
   const scenario = normalizeScenarioFile(params.get('scenario') || params.get('file') || '')
   const requestedView = clean(params.get('view'))
   const requestedRelationState = clean(params.get('relation_state'))
+  const requestedStoryType = clean(params.get('story_type'))
+  const requestedEventScope = clean(params.get('event_scope'))
   const view = scenario
     ? 'player'
     : (VALID_VIEWS.has(requestedView) ? requestedView : 'home')
@@ -67,7 +71,10 @@ export function readArchiveRoute(input = window.location.href) {
     group: clean(params.get('group')),
     unit: clean(params.get('unit')),
     unitFilter: clean(params.get('unit_filter')),
-    storyType: clean(params.get('story_type')),
+    storyType: requestedStoryType,
+    eventScope: requestedStoryType === 'event' && VALID_EVENT_SCOPES.has(requestedEventScope)
+      ? requestedEventScope
+      : 'all',
     availability: clean(params.get('availability')) || 'all',
     sort: clean(params.get('sort')) || 'domain',
     episode: clean(params.get('episode')),
@@ -94,6 +101,7 @@ export function buildArchiveUrl(input, route) {
   if (route.unit) url.searchParams.set('unit', route.unit)
   if (route.unitFilter) url.searchParams.set('unit_filter', route.unitFilter)
   if (route.storyType) url.searchParams.set('story_type', route.storyType)
+  if (route.eventScope && route.eventScope !== 'all') url.searchParams.set('event_scope', route.eventScope)
   if (route.availability && route.availability !== 'all') url.searchParams.set('availability', route.availability)
   if (route.sort && route.sort !== 'domain') url.searchParams.set('sort', route.sort)
   if (route.episode) url.searchParams.set('episode', route.episode)

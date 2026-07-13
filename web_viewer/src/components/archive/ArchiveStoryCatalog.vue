@@ -10,6 +10,15 @@
           </option>
         </select>
       </label>
+      <label v-if="domain === 'event'">
+        <span>活动类型</span>
+        <select :value="eventScope" @change="emit('update:event-scope', $event.target.value)">
+          <option value="all">全部活动</option>
+          <option v-for="option in eventScopeOptions" :key="option.id" :value="option.id">
+            {{ option.label }}（{{ option.count }}）
+          </option>
+        </select>
+      </label>
       <label>
         <span>可用性</span>
         <select :value="availability" @change="emit('update:availability', $event.target.value)">
@@ -44,7 +53,7 @@
           <Play v-if="entry.exists" :size="16" fill="currentColor" />
           <FileWarning v-else :size="18" />
         </span>
-        <span class="story-domain">{{ entry.domainLabel }}</span>
+        <span class="story-domain">{{ entry.eventScopeLabel || entry.domainLabel }}</span>
         <span class="story-main">
           <strong>{{ entry.title }}</strong>
           <small>{{ entry.resourceId }}</small>
@@ -72,13 +81,15 @@ defineProps({
   entries: { type: Array, default: () => [] },
   domainOptions: { type: Array, default: () => [] },
   domain: { type: String, default: '' },
+  eventScopeOptions: { type: Array, default: () => [] },
+  eventScope: { type: String, default: 'all' },
   availability: { type: String, default: 'all' },
   sort: { type: String, default: 'domain' },
   catalogTotal: { type: Number, default: 0 },
   filteredTotal: { type: Number, default: 0 },
 })
 
-const emit = defineEmits(['select', 'load-more', 'update:domain', 'update:availability', 'update:sort'])
+const emit = defineEmits(['select', 'load-more', 'update:domain', 'update:event-scope', 'update:availability', 'update:sort'])
 </script>
 
 <style scoped>

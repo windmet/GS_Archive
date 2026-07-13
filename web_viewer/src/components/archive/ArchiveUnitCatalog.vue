@@ -6,7 +6,10 @@
         <span class="unit-color" :style="{ backgroundColor: entry.unit.unit_color || '#23a99f' }"></span>
         <span class="unit-copy">
           <strong>{{ entry.unit.unit_name }}</strong>
-          <small>{{ entry.members.length }} members · {{ entry.storyCount }} stories</small>
+          <small>
+            {{ entry.members.length }} members · {{ entry.cardStats.total }} cards ·
+            {{ entry.eventRelations.team_events.length }} events
+          </small>
         </span>
         <span class="member-stack" aria-hidden="true">
           <img
