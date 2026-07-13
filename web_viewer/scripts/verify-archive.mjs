@@ -45,11 +45,12 @@ function relationRecords(cardIndex, field) {
   )
 }
 
-const [compiledFiles, voiceEntries, cardIndex, storyMaster] = await Promise.all([
+const [compiledFiles, voiceEntries, cardIndex, storyMaster, archiveManifest] = await Promise.all([
   listFiles(compiledRoot, name => name.endsWith('.json') && !['index.json', 'manifest.json', 'voice_index.json'].includes(name)),
   readdir(voiceRoot, { withFileTypes: true }),
   readFile(path.join(publicRoot, 'data', 'masterdata', 'card_index.json'), 'utf8').then(JSON.parse),
   readFile(path.join(publicRoot, 'data', 'masterdata', 'story_master_index.json'), 'utf8').then(JSON.parse),
+  readFile(path.join(publicRoot, 'data', 'archive_manifest.json'), 'utf8').then(JSON.parse),
 ])
 
 const voiceNames = new Set(voiceEntries.filter(entry => entry.isFile()).map(entry => entry.name))
@@ -189,6 +190,64 @@ for (const [seriesId, cards] of releaseSeriesGroups) {
   }
 }
 
+function sameValues(left, right) {
+  const a = [...new Set(left)].sort()
+  const b = [...new Set(right)].sort()
+  return a.length === b.length && a.every((value, index) => value === b[index])
+}
+
+const SPECIAL_EVENT_CLASSIFICATIONS = new Map([
+  ['430006', { event_scope: 'attribute_event', attribute: 'INTELLIGENCE' }],
+  ['430007', { event_scope: 'attribute_event', attribute: 'PHYSICAL' }],
+  ['430008', { event_scope: 'attribute_event', attribute: 'MENTAL' }],
+  ['410017', { event_scope: 'mixed_unit_event', attribute: '' }],
+  ['410018', { event_scope: 'mixed_unit_event', attribute: '' }],
+])
+
+const membership = archiveManifest.unit_membership_by_idol || {}
+const membersByUnit = new Map()
+for (const [idolCode, evidence] of Object.entries(membership)) {
+  const unitId = String(evidence.unit_id)
+  if (!membersByUnit.has(unitId)) membersByUnit.set(unitId, [])
+  membersByUnit.get(unitId).push(idolCode)
+}
+const eventGroups = new Map((storyMaster.event?.groups || []).map(group => [String(group['1']), group]))
+const eventEpisodes = new Map()
+for (const episode of storyMaster.event?.episodes || []) {
+  const groupId = String(episode['2'])
+  if (!eventEpisodes.has(groupId)) eventEpisodes.set(groupId, [])
+  eventEpisodes.get(groupId).push(episode)
+}
+const unitEventFailures = []
+let validUnitEvents = 0
+for (const relation of archiveManifest.unit_event_relations || []) {
+  const groupId = String(relation.event_group_id)
+  const group = eventGroups.get(groupId)
+  const episodes = eventEpisodes.get(groupId) || []
+  const actualCharacters = [...new Set(episodes.flatMap(episode => episode.compiled_summary?.characters || []))]
+    .filter(idolCode => membership[idolCode])
+  const actualUnitIds = [...new Set(actualCharacters.map(idolCode => String(membership[idolCode].unit_id)))]
+  const actualFiles = [...new Set(episodes.map(episode => episode.compiled_file).filter(Boolean))]
+  const exactUnitId = [...membersByUnit.entries()].find(([, members]) => sameValues(members, actualCharacters))?.[0] || ''
+  const specialClassification = SPECIAL_EVENT_CLASSIFICATIONS.get(String(relation.event_id))
+  const expectedScope = exactUnitId ? 'fixed_unit_event' : (specialClassification?.event_scope || 'unclassified_cross_unit')
+  const valid = group &&
+    String(group['2']) === String(relation.event_id) &&
+    group['9'] === relation.title &&
+    group['10'] === relation.release_at &&
+    sameValues(actualCharacters, relation.characters || []) &&
+    sameValues(actualUnitIds, relation.participating_unit_ids || []) &&
+    exactUnitId === String(relation.unit_id || '') &&
+    (actualFiles[0] || '') === (relation.file || '') &&
+    relation.event_scope === expectedScope &&
+    relation.attribute === (specialClassification?.attribute || '') &&
+    relation.relation_type === (exactUnitId ? 'exact_compiled_character_roster' : 'confirmed_cross_unit_event_classification')
+  if (valid) validUnitEvents += 1
+  else if (unitEventFailures.length < SAMPLE_LIMIT) {
+    unitEventFailures.push({ relation, actualCharacters, actualUnitIds, actualFiles, exactUnitId })
+  }
+}
+
 const report = {
   schema_version: 1,
   generated_at: new Date().toISOString(),
@@ -233,6 +292,15 @@ const report = {
     release_series_failures: releaseSeriesFailures.length,
     release_series_failure_samples: releaseSeriesFailures,
   },
+  unit_event_relations: {
+    total: archiveManifest.unit_event_relations?.length || 0,
+    valid: validUnitEvents,
+    failures: unitEventFailures.length,
+    failure_samples: unitEventFailures,
+    fixed_unit_events: (archiveManifest.unit_event_relations || []).filter(event => event.event_scope === 'fixed_unit_event').length,
+    attribute_events: (archiveManifest.unit_event_relations || []).filter(event => event.event_scope === 'attribute_event').length,
+    mixed_unit_events: (archiveManifest.unit_event_relations || []).filter(event => event.event_scope === 'mixed_unit_event').length,
+  },
 }
 
 const outputPath = path.join(publicRoot, 'data', 'archive_verification.json')
@@ -245,4 +313,5 @@ console.log(JSON.stringify({
   cardHomeVoices: `${availableHomeVoices}/${homeVoiceRecords.length}`,
   cardScenarios: `${availableCardScenarios}/${cardScenarioRecords.length}`,
   releaseSeries: `${validReleaseSeries}/${releaseSeriesGroups.size}`,
+  unitEvents: `${validUnitEvents}/${archiveManifest.unit_event_relations?.length || 0}`,
 }))

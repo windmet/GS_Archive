@@ -148,6 +148,100 @@ function deriveUnitMembership() {
   return { membership, ambiguous }
 }
 
+const SPECIAL_EVENT_CLASSIFICATIONS = new Map([
+  ['430006', { event_scope: 'attribute_event', attribute: 'INTELLIGENCE' }],
+  ['430007', { event_scope: 'attribute_event', attribute: 'PHYSICAL' }],
+  ['430008', { event_scope: 'attribute_event', attribute: 'MENTAL' }],
+  ['410017', { event_scope: 'mixed_unit_event', attribute: '' }],
+  ['410018', { event_scope: 'mixed_unit_event', attribute: '' }],
+])
+
+function deriveUnitEventRelations(membership) {
+  const membersByUnit = new Map()
+  for (const [idolCode, evidence] of Object.entries(membership)) {
+    const unitId = String(evidence.unit_id)
+    if (!membersByUnit.has(unitId)) membersByUnit.set(unitId, new Set())
+    membersByUnit.get(unitId).add(idolCode)
+  }
+
+  const groups = new Map((storyMaster.event?.groups || []).map(group => [String(group['1']), group]))
+  const episodesByGroup = new Map()
+  for (const episode of storyMaster.event?.episodes || []) {
+    const groupId = String(episode['2'])
+    if (!episodesByGroup.has(groupId)) episodesByGroup.set(groupId, [])
+    episodesByGroup.get(groupId).push(episode)
+  }
+
+  const byUnit = Object.fromEntries([...membersByUnit.keys()].map(unitId => [unitId, {
+    team_events: [],
+    attribute_event_appearances: [],
+    mixed_unit_appearances: [],
+  }]))
+  const events = []
+
+  for (const [groupId, episodes] of episodesByGroup) {
+    const group = groups.get(groupId)
+    if (!group) continue
+    const characters = [...new Set(episodes.flatMap(episode => episode.compiled_summary?.characters || []))]
+      .filter(idolCode => membership[idolCode])
+      .sort()
+    const characterSet = new Set(characters)
+    const participatingUnitIds = [...new Set(characters.map(idolCode => String(membership[idolCode].unit_id)))].sort()
+    const exactUnitId = [...membersByUnit.entries()].find(([, members]) =>
+      members.size === characterSet.size && [...members].every(idolCode => characterSet.has(idolCode)),
+    )?.[0] || ''
+    const specialClassification = SPECIAL_EVENT_CLASSIFICATIONS.get(String(group['2']))
+    const eventScope = exactUnitId ? 'fixed_unit_event' : (specialClassification?.event_scope || 'unclassified_cross_unit')
+    const title = group['9'] || ''
+    const relation = {
+      event_group_id: group['1'],
+      event_id: group['2'],
+      event_code: group['4'],
+      title,
+      release_at: group['10'],
+      series: title.startsWith('GROWING SIGN@L')
+        ? 'GROWING SIGN@L'
+        : (title.startsWith('GROWING SELECTION') ? 'GROWING SELECTION' : 'OTHER'),
+      file: [...new Set(episodes.map(episode => episode.compiled_file).filter(Boolean))][0] || '',
+      exists: episodes.some(episode => episode.compiled_exists !== false && episode.compiled_file),
+      characters,
+      participating_unit_ids: participatingUnitIds,
+      unit_id: exactUnitId,
+      event_scope: eventScope,
+      attribute: specialClassification?.attribute || '',
+      relation_type: exactUnitId ? 'exact_compiled_character_roster' : 'confirmed_cross_unit_event_classification',
+      classification_source: exactUnitId
+        ? 'compiled roster equals fixed-unit membership'
+        : 'user-confirmed event classification 2026-07-14',
+    }
+    events.push(relation)
+
+    if (exactUnitId) {
+      byUnit[exactUnitId].team_events.push(relation)
+      continue
+    }
+    for (const unitId of participatingUnitIds) {
+      if (!byUnit[unitId]) continue
+      const target = eventScope === 'attribute_event'
+        ? byUnit[unitId].attribute_event_appearances
+        : byUnit[unitId].mixed_unit_appearances
+      target.push({
+        ...relation,
+        matching_character_ids: characters.filter(idolCode => String(membership[idolCode].unit_id) === unitId),
+      })
+    }
+  }
+
+  const sortRelations = (a, b) => Number(a.release_at || 0) - Number(b.release_at || 0)
+  events.sort(sortRelations)
+  for (const relations of Object.values(byUnit)) {
+    relations.team_events.sort(sortRelations)
+    relations.attribute_event_appearances.sort(sortRelations)
+    relations.mixed_unit_appearances.sort(sortRelations)
+  }
+  return { events, byUnit }
+}
+
 const iconNames = new Set(await readdir(path.join(publicRoot, 'assets/cards/icons')))
 const largeNames = new Set(await readdir(path.join(publicRoot, 'assets/cards/large')))
 const voiceNames = new Set(await readdir(path.join(publicRoot, 'assets/voice')))
@@ -195,6 +289,7 @@ for (const card of archiveCards) {
   }
 }
 const unitEvidence = deriveUnitMembership()
+const unitEventEvidence = deriveUnitEventRelations(unitEvidence.membership)
 const storyCoverage = collectCompiledCoverage(storyMaster)
 const homeVoiceCoverage = cardRelationCoverage('home_voice_cues')
 const cardScenarioCoverage = cardRelationCoverage('scenario_entries')
@@ -284,8 +379,19 @@ const manifest = {
       ambiguous: unitEvidence.ambiguous,
       method: 'unit_story_character_frequency',
     },
+    unit_events: {
+      total: unitEventEvidence.events.length,
+      fixed_unit_events: unitEventEvidence.events.filter(event => event.event_scope === 'fixed_unit_event').length,
+      attribute_events: unitEventEvidence.events.filter(event => event.event_scope === 'attribute_event').length,
+      mixed_unit_events: unitEventEvidence.events.filter(event => event.event_scope === 'mixed_unit_event').length,
+      signal_exact_unit_roster: unitEventEvidence.events.filter(event => event.unit_id && event.series === 'GROWING SIGN@L').length,
+      selection_exact_unit_roster: unitEventEvidence.events.filter(event => event.unit_id && event.series === 'GROWING SELECTION').length,
+      rule: 'fixed unit requires exact compiled roster; attribute and mixed-unit events use confirmed classification',
+    },
   },
   unit_membership_by_idol: unitEvidence.membership,
+  unit_event_relations: unitEventEvidence.events,
+  unit_event_relations_by_unit: unitEventEvidence.byUnit,
   card_assets_by_id: cardAssetsById,
   sources: sourcePaths,
   external_sources: {
