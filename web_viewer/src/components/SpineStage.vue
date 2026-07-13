@@ -199,80 +199,93 @@ function installDebugGlobals() {
     return rows
   }
   window.dumpStage = () => {
-    if (!manager) {
-      console.warn('No stage manager.')
-      return
-    }
-    const data = {
-      width: manager.width,
-      height: manager.height,
-      bgContainer: null,
-      spineContainer: null,
-      silhouettes: null,
-      spines: null,
-      cameraZoom: null,
-    }
-    // Collect container positions
-    if (manager.bgContainer) {
-      data.bgContainer = {
-        x: manager.bgContainer.x,
-        y: manager.bgContainer.y,
-        scale: manager.bgContainer.scale?.x ?? null,
-      }
-    }
-    if (manager.spineContainer) {
-      data.spineContainer = {
-        x: manager.spineContainer.x,
-        y: manager.spineContainer.y,
-        scale: manager.spineContainer.scale?.x ?? null,
-      }
-    }
-    // Collect background sprite info
-    const bg = manager._bgSprite
-    if (bg) {
-      data.bgSprite = {
-        x: bg.x, y: bg.y,
-        width: bg.width, height: bg.height,
-        scaleX: bg.scale?.x ?? null,
-        scaleY: bg.scale?.y ?? null,
-      }
-    }
-    // Collect silhouette info
-    const sil = manager._silhouetteSprites || {}
-    data.silhouettes = Object.entries(sil).map(([id, sprite]) => ({
-      id,
-      x: sprite?.x ?? null,
-      y: sprite?.y ?? null,
-      scaleX: sprite?.scale?.x ?? null,
-      scaleY: sprite?.scale?.y ?? null,
-      width: sprite?.width ?? null,
-      height: sprite?.height ?? null,
-    }))
-    // Collect spine info
-    data.spines = Object.entries(manager.spineInstances || {}).map(([id, entry]) => {
-      const snap = manager.getSpineRuntimeSnapshot?.(id)
-      return {
-        id,
-        modelId: entry?.modelId || snap?.modelId || '',
-        x: entry?.spine?.x ?? null,
-        y: entry?.spine?.y ?? null,
-        scale: entry?.spine?.scale?.x ?? null,
-        alpha: entry?.spine?.alpha ?? null,
-      }
-    })
-    // Camera zoom
-    if (manager.cameraController) {
-      const cc = manager.cameraController
-      data.cameraZoom = {
-        zoom: cc._zoom ?? cc.zoom ?? null,
-        offsetX: cc._offsetX ?? cc.offsetX ?? null,
-        offsetY: cc._offsetY ?? cc.offsetY ?? null,
-      }
-    }
+    const data = collectStageDebugData()
     console.log('=== Stage Dump ===')
     console.table(data)
     return data
   }
+}
+
+function collectStageDebugData() {
+  if (!manager) return null
+  const data = {
+    width: manager.width,
+    height: manager.height,
+    bgContainer: null,
+    bgSprite: null,
+    spineContainer: null,
+    silhouettes: [],
+    spines: [],
+    cameraZoom: null,
+  }
+  if (manager.bgContainer) {
+    data.bgContainer = {
+      x: manager.bgContainer.x,
+      y: manager.bgContainer.y,
+      scale: manager.bgContainer.scale?.x ?? null,
+    }
+  }
+  if (manager.spineContainer) {
+    data.spineContainer = {
+      x: manager.spineContainer.x,
+      y: manager.spineContainer.y,
+      scale: manager.spineContainer.scale?.x ?? null,
+    }
+  }
+  const bg = manager.bgSprite || manager.backgroundManager?.bgSprite || manager._bgSprite
+  if (bg) {
+    data.bgSprite = {
+      x: bg.x,
+      y: bg.y,
+      width: bg.width,
+      height: bg.height,
+      scaleX: bg.scale?.x ?? null,
+      scaleY: bg.scale?.y ?? null,
+    }
+  }
+  data.silhouettes = Object.entries(manager._silhouetteSprites || {}).map(([id, sprite]) => ({
+    id,
+    x: sprite?.x ?? null,
+    y: sprite?.y ?? null,
+    scaleX: sprite?.scale?.x ?? null,
+    scaleY: sprite?.scale?.y ?? null,
+    width: sprite?.width ?? null,
+    height: sprite?.height ?? null,
+  }))
+  data.spines = Object.entries(manager.spineInstances || {}).map(([id, entry]) => {
+    const snap = manager.getSpineRuntimeSnapshot?.(id)
+    return {
+      id,
+      modelId: entry?.modelId || snap?.modelId || '',
+      x: entry?.spine?.x ?? null,
+      y: entry?.spine?.y ?? null,
+      scale: entry?.spine?.scale?.x ?? null,
+      alpha: entry?.spine?.alpha ?? null,
+    }
+  })
+  if (manager.cameraController) {
+    const cc = manager.cameraController
+    data.cameraZoom = {
+      state: cc._cameraZoom ?? null,
+      tweenActive: !!cc._cameraTween,
+      bgScale: manager.bgContainer?.scale?.x ?? null,
+      spineScale: manager.spineContainer?.scale?.x ?? null,
+    }
+  }
+  return data
+}
+
+function publishStageDebugData() {
+  if (!containerRef.value) return
+  const data = collectStageDebugData()
+  if (!data) return
+  containerRef.value.dataset.stageDebug = JSON.stringify(data)
+}
+
+function scheduleStageDebugPublish() {
+  publishStageDebugData()
+  requestAnimationFrame(() => publishStageDebugData())
+  setTimeout(() => publishStageDebugData(), 350)
 }
 
 function getDialogueBoxTop() {
@@ -717,6 +730,12 @@ async function applyState(step) {
   const charaId = step.chara_id || ''
   const desired = state.spines || []
   const existingIds = new Set(Object.keys(manager.spineInstances))
+  for (const sid of Object.keys(manager._silhouetteSprites || {})) {
+    existingIds.add(sid)
+  }
+  for (const sid of Object.keys(manager._silhouettePending || {})) {
+    existingIds.add(sid)
+  }
   const desiredIds = new Set()
   const desiredOrder = []
   let hasOfficialPriority = false
@@ -778,6 +797,15 @@ async function applyState(step) {
       debugMode: debugMode.value,
       store: Y_DEBUG_STORE,
     })
+
+    if (manager.hasSilhouetteFallback?.(sid, modelId)) {
+      const posX = spineState.pos_x ?? 0
+      let posY = spineState.pos_y ?? 0
+      if (spineState.idol_zoom_y_offset) posY += spineState.idol_zoom_y_offset
+      const rootY = computeVisualRootY(sid, resolved.finalBaseY, posY)
+      manager.showSilhouette(sid, modelId, posX, 0, rootY)
+      continue
+    }
 
     if (existing && existing.modelId === modelId) {
       existing.prefabMeta = prefabMeta
@@ -910,6 +938,7 @@ async function applyState(step) {
 
   syncBoundsSnapshot(step)
   if (debugMode.value) syncStates()
+  scheduleStageDebugPublish()
 }
 
 defineExpose({

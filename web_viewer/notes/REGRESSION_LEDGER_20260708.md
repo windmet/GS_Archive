@@ -35,7 +35,7 @@ http://127.0.0.1:5173/?scenario=1_1_013the_02_1_1_013_02.json&startStep=5
 | `1_1_013the_02_1_1_013_02` | `public/data/compiled/1_1_013the_02_1_1_013_02.json` | 202 | silent stage intro, footsteps, two-character entrance, text_disable heart-voice transitions, camera zoom/reset | 32 `stage`, 36 `text_disable`, 9 `camera_zoom`, 103 multi-spine steps, 97 timeline-bearing steps | smoke pass: browser rendered ADV at 10/202 after direct open from `startStep=5`; canvas visible; no console errors |
 | `1_1_015leg_04_1_1_015_04` | `public/data/compiled/1_1_015leg_04_1_1_015_04.json` | 252 | multi-character retention, continuous dialogue, transition-step back navigation, camera/background clamp samples | 77 `stage`, 25 `text_disable`, 38 `camera_zoom`, 91 multi-spine steps, 78 timeline-bearing steps | smoke pass: browser rendered multi-character ADV at 12/252; canvas visible; no console errors |
 | `1_4_001_00` | `public/data/compiled/1_4_001_00.json` | 60 | official lip-sync comparison across `047shu`, `001tom`, `004ter`; camera zoom with three-character stage | 16 `stage`, 9 `text_disable`, 37 `camera_zoom`, 12 multi-spine steps, 8 timeline-bearing steps | smoke pass: browser rendered three-character ADV at 20/60; canvas visible; no console errors; lip motion still needs voice-on check |
-| `1_4_001_01` | `public/data/compiled/1_4_001_01.json` | 432 | long branch/call/talk flow, repeated choice labels, phone route continuity, broader state replay, `102sha` icon/silhouette separation | 145 `stage`, 38 `text_disable`, 8 `choice`, 132 `camera_zoom`, 1 `screen_effects`, 74 multi-spine steps, choices at steps 37/40/107/180/186/247/387/430; `image_icon: 102sha` persists from displayed steps 2-432; `102sha_001_00` appears as a spine from displayed step 23 but has no current public Spine asset | fail: browser confirmed persistent top-left icon; raw/compiled confirm missing formal render asset for president silhouette; displayed 19->20 has no data-layer bg/camera move |
+| `1_4_001_01` | `public/data/compiled/1_4_001_01.json` | 432 | long branch/call/talk flow, repeated choice labels, phone route continuity, broader state replay, `102sha` icon/silhouette separation | 145 `stage`, 38 `text_disable`, 8 `choice`, 132 `camera_zoom`, 1 `screen_effects`, 74 multi-spine steps, choices at steps 37/40/107/180/186/247/387/430; affected steps now have `image_icon: null`; `102sha_001_00` uses the public silhouette fallback from displayed step 23 | partial pass: icon removed; silhouette visible and continuous across displayed 24-27; displayed 17->18 confirmed as foreground camera reset with stable background; choice/phone branches remain pending |
 
 ## Initial Step Evidence
 
@@ -82,16 +82,17 @@ Manual checks:
 - Contains 8 choice steps, including known repeated label risk areas.
 - Step 107 is a choice step; earlier notes identified this region as a phone route continuity check.
 - Contains `call`, `talk`, `choice`, `stage`, `adv`, and `text_disable`, making it a good end-to-end navigation sample.
-- Displayed `20 / 432` currently shows a floating top-left `102sha` icon because `state.image_icon` is rendered by `SpineStage.vue` and the aggregate keeps `image_icon: 102sha` from displayed steps 2-432.
-- The president stage silhouette is a separate path: raw declares `idol_model 102sha_001_00` and later `idol_fadein 102sha`; aggregate compiled emits it from displayed step 23, but `public/assets/spines/102sha_001_00` is missing.
-- Displayed `19 -> 20` keeps the same `bg001_315pro_in_11` and camera `zoom=1, offset_x=0, offset_y=0`; no raw/compiled background-shift command was found.
+- The stale top-left `102sha` icon is fixed; the affected compiled range now presents `image_icon: null`.
+- The president path still originates from raw `idol_model 102sha_001_00` plus `idol_fadein 102sha`; missing Spine data now falls back to `public/assets/silhouette/102sha_001_00.png`.
+- The fallback uses `baseY + 25` and 1.2 times the original first-pass scale. Displayed steps 24-27 retain it continuously instead of removing and asynchronously recreating it on every dialogue.
+- Displayed `17 -> 18` keeps identical background container/sprite metrics while `camera_resetzoom` changes the foreground/spine container from 0.9 to 1.
 
 Manual checks:
 
 - Verify repeated phone/talk labels resolve to the next matching label after the choice, not a later duplicate.
 - Verify call/talk UI survives choice transitions.
 - Verify fast forward/back does not replay stale screen effects or stale camera state.
-- Add a targeted Pixi dump for background and camera containers before rechecking the reported displayed `19 -> 20` background shift.
+- Verify the silhouette is removed after the president leaves and does not return from a stale image callback.
 
 ## Browser Evidence - 2026-07-08
 

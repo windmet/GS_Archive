@@ -1,0 +1,14 @@
+{
+  "caseId": "smoke_04_model_replace",
+  "assertions": [
+    { "type": "model-changed", "expected": true },
+    { "type": "old-model-removed", "expected": true },
+    { "type": "new-model-spawned", "expected": true },
+    { "type": "no-console-error", "expected": true }
+  ],
+  "manualCheck": [
+    "旧模型完全消失（无残留纹理）",
+    "新模型正常显示",
+    "中间无闪烁空档期过长"
+  ]
+}

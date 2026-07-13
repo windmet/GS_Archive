@@ -1,0 +1,16 @@
+{
+  "description": "Smoke test manifest for SpineStage",
+  "version": "1.0.0",
+  "cases": [
+    { "id": "smoke_01_single_spine", "description": "单人立绘", "scenarioFile": "scenarios/smoke_01_single_spine.json", "expectedFile": "expected/smoke_01_expected.json" },
+    { "id": "smoke_02_two_spines_priority", "description": "双人同屏 priority", "scenarioFile": "scenarios/smoke_02_two_spines_priority.json", "expectedFile": "expected/smoke_02_expected.json" },
+    { "id": "smoke_03_same_model_update", "description": "同模型更新", "scenarioFile": "scenarios/smoke_03_same_model_update.json", "expectedFile": "expected/smoke_03_expected.json" },
+    { "id": "smoke_04_model_replace", "description": "换模型", "scenarioFile": "scenarios/smoke_04_model_replace.json", "expectedFile": "expected/smoke_04_expected.json" },
+    { "id": "smoke_05_remove_spine", "description": "角色退场", "scenarioFile": "scenarios/smoke_05_remove_spine.json", "expectedFile": "expected/smoke_05_expected.json" },
+    { "id": "smoke_06_background_switch", "description": "背景切换", "scenarioFile": "scenarios/smoke_06_background_switch.json", "expectedFile": "expected/smoke_06_expected.json" },
+    { "id": "smoke_07_fallback_background", "description": "Fallback 背景", "scenarioFile": "scenarios/smoke_07_fallback_background.json", "expectedFile": "expected/smoke_07_expected.json" },
+    { "id": "smoke_08_missing_spine_silhouette", "description": "缺失 spine fallback", "scenarioFile": "scenarios/smoke_08_missing_spine_silhouette.json", "expectedFile": "expected/smoke_08_expected.json" },
+    { "id": "smoke_09_scene_icon", "description": "Scene icon 显示", "scenarioFile": "scenarios/smoke_09_scene_icon.json", "expectedFile": "expected/smoke_09_expected.json" },
+    { "id": "smoke_10_screen_slide", "description": "画面过渡效果", "scenarioFile": "scenarios/smoke_10_screen_slide.json", "expectedFile": "expected/smoke_10_expected.json" }
+  ]
+}

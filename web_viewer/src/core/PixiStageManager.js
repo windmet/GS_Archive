@@ -64,6 +64,8 @@ export class PixiStageManager {
     this.spineInstances = {}   // { idolId: { spine: Spine, modelId: string, marker: Graphics } }
     this._spawnTokens = {}
     this._silhouetteSprites = {}  // { idolId: PIXI.Sprite } — fallback for missing Spine assets
+    this._silhouettePending = {}  // { idolId: { token, modelId, posX, posY, baseY } }
+    this._silhouetteLoadTokens = {}
     this._pendingTalking = {}
     this.lipSyncController = new LipSyncController({
       getSpineEntry: idolId => this.spineInstances[idolId],
@@ -1026,17 +1028,59 @@ export class PixiStageManager {
   }
   // Silhouette fallback for missing Spine assets (NPC/non-idol characters)
 
+  _layoutSilhouette(sprite, sourceWidth, sourceHeight, posX = 0, posY = 0, baseY = null) {
+    const stageW = this.width || 1280
+    const stageH = this.height || 720
+    const baseX = stageW / 2 + posX * (stageW / 1280)
+    const baseYPos = baseY ?? Math.round(stageH * 0.62)
+    sprite.x = baseX
+    sprite.y = baseYPos + 25 + posY * (stageW / 1280)
+    const silScale = (stageH * 1.02) / sourceHeight
+    sprite.scale.set(silScale)
+  }
+
+  hasSilhouetteFallback(idolId, modelId = null) {
+    const sprite = this._silhouetteSprites[idolId]
+    const pending = this._silhouettePending[idolId]
+    return !!(
+      (sprite && (!modelId || sprite._silhouetteModelId === modelId)) ||
+      (pending && (!modelId || pending.modelId === modelId))
+    )
+  }
+
   showSilhouette(idolId, modelId, posX = 0, posY = 0, baseY = null) {
-    if (this._silhouetteSprites[idolId]) return  // already shown
-    const pendingKey = `_sil_pending_${idolId}`
-    if (this[pendingKey]) return
-    this[pendingKey] = true
+    const existing = this._silhouetteSprites[idolId]
+    if (existing && existing._silhouetteModelId === modelId) {
+      const source = existing.texture?.baseTexture?.resource?.source
+      this._layoutSilhouette(
+        existing,
+        source?.naturalWidth || source?.width || existing.texture.width,
+        source?.naturalHeight || source?.height || existing.texture.height,
+        posX,
+        posY,
+        baseY,
+      )
+      return
+    }
+    if (existing) this.removeSilhouette(idolId)
+
+    const pending = this._silhouettePending[idolId]
+    if (pending && pending.modelId === modelId) {
+      Object.assign(pending, { posX, posY, baseY })
+      return
+    }
+
+    const token = (this._silhouetteLoadTokens[idolId] || 0) + 1
+    this._silhouetteLoadTokens[idolId] = token
+    this._silhouettePending[idolId] = { token, modelId, posX, posY, baseY }
     const url = getSilhouetteUrl(modelId)
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.src = url
     img.onload = () => {
-      delete this[pendingKey]
+      const latest = this._silhouettePending[idolId]
+      if (!latest || latest.token !== token) return
+      delete this._silhouettePending[idolId]
       if (!this.spineContainer) return
       // Remove any stale sprite for this idol
       const old = this._silhouetteSprites[idolId]
@@ -1049,19 +1093,15 @@ export class PixiStageManager {
       const texture = PIXI.Texture.from(bt)
       const sprite = new PIXI.Sprite(texture)
       sprite.anchor.set(0.5, 1.0)
-      const stageW = this.width || 1280
-      const stageH = this.height || 720
-      const baseX = stageW / 2 + posX * (stageW / 1280)
-      const baseYPos = baseY ?? Math.round(stageH * 0.62)
-      sprite.x = baseX
-      sprite.y = baseYPos - 200
-      const silScale = (stageH * 0.85) / img.height
-      sprite.scale.set(silScale)
+      sprite._silhouetteModelId = modelId
+      this._layoutSilhouette(sprite, img.width, img.height, latest.posX, latest.posY, latest.baseY)
       this.spineContainer.addChild(sprite)
       this._silhouetteSprites[idolId] = sprite
     }
     img.onerror = () => {
-      delete this[pendingKey]
+      const latest = this._silhouettePending[idolId]
+      if (!latest || latest.token !== token) return
+      delete this._silhouettePending[idolId]
       if (!this._silhouetteSprites[idolId]) {
         this._silhouetteSprites[idolId] = null
       }
@@ -1069,6 +1109,8 @@ export class PixiStageManager {
   }
 
   removeSilhouette(idolId) {
+    this._silhouetteLoadTokens[idolId] = (this._silhouetteLoadTokens[idolId] || 0) + 1
+    delete this._silhouettePending[idolId]
     const sprite = this._silhouetteSprites[idolId]
     if (sprite) {
       if (sprite.parent) sprite.parent.removeChild(sprite)
@@ -1078,14 +1120,13 @@ export class PixiStageManager {
   }
 
   clearAllSilhouettes() {
-    for (const idolId of Object.keys(this._silhouetteSprites)) {
-      const sprite = this._silhouetteSprites[idolId]
-      if (sprite) {
-        if (sprite.parent) sprite.parent.removeChild(sprite)
-        try { sprite.destroy() } catch (_) {}
-      }
+    const idolIds = new Set([
+      ...Object.keys(this._silhouetteSprites),
+      ...Object.keys(this._silhouettePending),
+    ])
+    for (const idolId of idolIds) {
+      this.removeSilhouette(idolId)
     }
-    this._silhouetteSprites = {}
   }
 
   // Spine loading

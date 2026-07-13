@@ -1,0 +1,11 @@
+{
+  "caseId": "smoke_07_fallback_background",
+  "assertions": [
+    { "type": "background-visible", "expected": true },
+    { "type": "no-console-error", "expected": true }
+  ],
+  "manualCheck": [
+    "尽管 step.bg 为 null，背景仍显示 fallback",
+    "控制台无 'missing background' 类型错误"
+  ]
+}

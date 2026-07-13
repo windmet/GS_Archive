@@ -1,0 +1,16 @@
+{
+  "caseId": "smoke_01_single_spine",
+  "assertions": [
+    { "type": "background-visible", "expected": true },
+    { "type": "spine-count", "expected": 1 },
+    { "type": "visible-spines", "expected": ["016sei"] },
+    { "type": "front-spine", "expected": "016sei" },
+    { "type": "no-console-error", "expected": true }
+  ],
+  "manualCheck": [
+    "背景正常显示",
+    "角色显示在屏幕中央",
+    "默认 face/anim 生效",
+    "debug 面板关闭时不影响舞台"
+  ]
+}

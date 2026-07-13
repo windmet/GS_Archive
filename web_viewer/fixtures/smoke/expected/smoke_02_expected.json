@@ -1,0 +1,14 @@
+{
+  "caseId": "smoke_02_two_spines_priority",
+  "assertions": [
+    { "type": "spine-count", "expected": 2 },
+    { "type": "visible-spines", "expected": ["016sei", "011min"] },
+    { "type": "background-visible", "expected": true },
+    { "type": "no-console-error", "expected": true }
+  ],
+  "manualCheck": [
+    "两名角色均显示在正确位置",
+    "idol_priority 高的角色在前面",
+    "背景没有闪烁为空"
+  ]
+}

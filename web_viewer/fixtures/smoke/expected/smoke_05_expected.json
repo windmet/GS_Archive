@@ -1,0 +1,14 @@
+{
+  "caseId": "smoke_05_remove_spine",
+  "assertions": [
+    { "type": "final-spine-count", "expected": 0 },
+    { "type": "old-spines-removed", "expected": true },
+    { "type": "background-still-visible", "expected": true },
+    { "type": "no-console-error", "expected": true }
+  ],
+  "manualCheck": [
+    "旧角色完全消失",
+    "背景仍然显示（画面不卡死）",
+    "无内存泄漏提示"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "caseId": "smoke_06_background_switch",
+  "assertions": [
+    { "type": "background-visible", "expected": true },
+    { "type": "no-console-error", "expected": true }
+  ],
+  "manualCheck": [
+    "背景从 day → night 变化",
+    "切换过程平滑（有 transition 时可见过渡）",
+    "无黑色空窗期"
+  ]
+}

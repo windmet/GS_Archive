@@ -1,0 +1,17 @@
+{
+  "caseId": "smoke_03_same_model_update",
+  "assertions": [
+    { "type": "model-changed", "expected": false },
+    { "type": "spine-recreated", "expected": false },
+    { "type": "face-updated", "expected": true },
+    { "type": "anim-updated", "expected": true },
+    { "type": "position-updated", "expected": true },
+    { "type": "no-console-error", "expected": true }
+  ],
+  "manualCheck": [
+    "角色没有闪烁重生（无销毁重建过程）",
+    "表情从 default 变为 smile",
+    "动画从 wait_loop 变为 talk_loop",
+    "角色位置平移"
+  ]
+}

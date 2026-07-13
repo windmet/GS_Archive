@@ -7,6 +7,19 @@ Scope:
 - Raw source checked: `E:\BaiduNetdiskDownload\SideM\scripts\scenariodata\1_4_001_01\scenario_1_4_001_01_a.json`
 - User-visible report point: displayed `20 / 432`
 
+## 2026-07-10 Resolution Addendum
+
+This addendum supersedes the original current-status conclusions below.
+
+- The compiled scenario now has `image_icon: null` through the affected region, and browser verification confirms that the floating top-left president icon is gone.
+- `public/assets/silhouette/102sha_001_00.png` is now connected as the deliberate fallback for the missing president Spine model.
+- The fallback is rendered at `1.2x` the first-pass scale and positioned at `baseY + 25`.
+- The dialogue-step flicker was caused by fallback silhouettes not being recognized as existing character instances. Every new dialogue retried the missing Spine, removed the silhouette, then asynchronously recreated it.
+- The fallback manager now reuses an existing or pending silhouette, updates its layout in place, and cancels stale image callbacks when the character leaves.
+- Browser interaction from displayed steps `24 -> 25 -> 26 -> 27` kept `102sha` continuously present with identical layout values and no empty fallback frame.
+- Background sampling around displayed `17 -> 18` showed unchanged `bgContainer` and `bgSprite` values. Raw command `camera_resetzoom` resets the foreground/spine container from `0.9` to `1`; the background itself does not move.
+- Production build passed on 2026-07-10. The remaining bundle-size warning is unchanged and unrelated.
+
 ## Summary
 
 The small president silhouette at the top-left is not the president stage portrait. It is the frontend's standalone `image_icon` overlay. In the aggregate compiled scenario, `image_icon: 102sha` is retained from displayed step `2 / 432` through `432 / 432`, so the overlay appears long after its useful range.

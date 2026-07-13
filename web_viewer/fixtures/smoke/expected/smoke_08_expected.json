@@ -1,0 +1,14 @@
+{
+  "caseId": "smoke_08_missing_spine_silhouette",
+  "assertions": [
+    { "type": "spine-asset-missing", "expected": true },
+    { "type": "silhouette-shown", "expected": true },
+    { "type": "scene-still-usable", "expected": true },
+    { "type": "no-fatal-error", "expected": true }
+  ],
+  "manualCheck": [
+    "没有 spine 时显示 silhouette 占位",
+    "场景不崩溃（不白屏、不卡死）",
+    "debug 面板可正常打开"
+  ]
+}
