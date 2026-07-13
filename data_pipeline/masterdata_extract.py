@@ -8,6 +8,7 @@ top-level field number behaves like a table id.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 from collections import Counter, defaultdict
@@ -1004,6 +1005,37 @@ def build_card_index(
     compiled_stems: set[str],
     compiled_summaries: dict[str, dict[str, Any]],
 ) -> dict[str, Any]:
+    cards_by_release_title: dict[tuple[int, str], list[dict[str, Any]]] = defaultdict(list)
+    for card in cards:
+        release_at = card.get("18")
+        title = card.get("40") or card.get("13")
+        resource_id = card.get("14")
+        if isinstance(release_at, int) and isinstance(title, str) and isinstance(resource_id, str):
+            cards_by_release_title[(release_at, title)].append(card)
+
+    release_series_by_card_id: dict[int, dict[str, Any]] = {}
+    release_series_count = 0
+    for (release_at, title), batch in cards_by_release_title.items():
+        resource_ids = sorted({row.get("14") for row in batch if isinstance(row.get("14"), str)})
+        if len(resource_ids) < 2:
+            continue
+        character_ids = sorted({resource_id[:6] for resource_id in resource_ids})
+        digest = hashlib.sha1(title.encode("utf-8")).hexdigest()[:10]
+        relation = {
+            "series_id": f"release_{release_at}_{digest}",
+            "title": title,
+            "release_at": release_at,
+            "card_count": len(resource_ids),
+            "character_count": len(character_ids),
+            "relation_type": "exact_release_timestamp_and_title",
+            "_source": source(1, {"release_at": 18, "title": 40}),
+        }
+        release_series_count += 1
+        for row in batch:
+            card_id = row.get("1")
+            if isinstance(card_id, int):
+                release_series_by_card_id[card_id] = relation
+
     cues_by_card: dict[int, list[dict[str, Any]]] = defaultdict(list)
     for cue in card_voice_cues:
         card_id = cue.get("card_id")
@@ -1098,6 +1130,7 @@ def build_card_index(
             "title_full": card.get("13"),
             "title": card.get("40") or card.get("13"),
             "release_at": card.get("18"),
+            "release_series": release_series_by_card_id.get(card_id),
             "texts": {
                 "normal": card.get("19"),
                 "awakened": card.get("22"),
@@ -1133,6 +1166,7 @@ def build_card_index(
         "meta": {
             "card_count": len(indexed_cards),
             "home_voice_cue_count": len(card_voice_cues),
+            "release_series_count": release_series_count,
         },
     }
 
