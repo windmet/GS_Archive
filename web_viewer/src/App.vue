@@ -1,290 +1,162 @@
 ﻿<template>
   <div id="story-viewer">
 
-    <!-- ====== HOME ====== -->
-    <div v-if="view === 'home'" class="screen home-screen">
-      <h1 class="app-title">SideM Story Viewer</h1>
-      <p class="app-subtitle">{{ totalFiles }} scenarios</p>
-      <div class="category-grid">
-        <button
-          v-for="cat in CATEGORIES"
-          :key="cat.id"
-          class="cat-btn"
-          @click="openCategory(cat)"
-        >
-          <span class="cat-label">{{ cat.name }}</span>
-          <span class="cat-count">{{ catCountText(cat.id) }}</span>
-        </button>
-        <!-- Spine Lab entry -->
-        <button class="cat-btn lab-btn" @click="view = 'spine_lab'">
-          <span class="cat-label">Spine 实验室</span>
-          <span class="cat-count">自由预览</span>
-        </button>
-      </div>
-    </div>
+    <ArchiveShell
+      v-if="archiveShellVisible"
+      v-model="filterQuery"
+      :active-section="archiveSection"
+      :title="archiveTitle"
+      :searchable="archiveSearchable"
+      :search-placeholder="archiveSearchPlaceholder"
+      :show-back="archiveShowBack"
+      @navigate="navigateArchiveSection"
+      @back="goArchiveBack"
+    >
+      <ArchiveHome
+        v-if="view === 'home'"
+        embedded
+        :total-files="totalFiles"
+        :categories="homeCategories"
+        :stats="archiveStats"
+        :manifest="archiveManifestData"
+        @select="openCategoryById"
+        @open-status="openArchiveStatus"
+        @open-spine-lab="openSpineLab"
+      />
 
-    <!-- ====== IDOL CHARACTER GRID ====== -->
-    <div v-if="view === 'idols'" class="screen list-screen">
-      <div class="list-header">
-        <button class="back-btn" @click="view = 'home'">鈫?Back</button>
-        <h2>{{ categoryHeaderText }}</h2>
-      </div>
-      <div class="filter-bar">
-        <input v-model="filterQuery" :placeholder="categoryFilterPlaceholder" class="filter-input" />
-      </div>
-      <div class="idol-grid">
-        <button
-          v-for="entry in filteredIdols"
-          :key="entry.id"
-          class="idol-card"
-          :class="{ 'group-card': entry._isGroup }"
-          @click="openIdol(entry)"
-        >
-          <img
-            v-if="!entry._isGroup"
-            :src="`/assets/idols/icons/image_chara_icon_${entry.id}.png`"
-            :alt="entry.name"
-            class="idol-avatar"
-            loading="lazy"
-          />
-          <div v-else class="group-avatar"></div>
-          <span class="idol-name">{{ entry.name }}</span>
-        </button>
-      </div>
-    </div>
+      <ArchiveIdolGrid
+        v-if="view === 'idols'"
+        embedded
+        v-model="filterQuery"
+        :title="categoryHeaderText"
+        :filter-placeholder="categoryFilterPlaceholder"
+        :idols="filteredIdols"
+        :unit-options="idolUnitOptions"
+        :current-unit="currentIdolUnitFilter"
+        :idols-before-unit-filter="searchMatchedIdols.length"
+        @back="goHome"
+        @select="openIdol"
+        @select-unit="currentIdolUnitFilter = $event"
+        @open-units="openUnitCatalog"
+      />
 
-    <!-- ====== CARD ARCHIVE: CARD LIST ====== -->
-    <div v-if="view === 'cards'" class="screen list-screen">
-      <div class="list-header">
-        <button class="back-btn" @click="goBackFromCards">鈫?Back</button>
-        <h2>{{ currentCardCharacterName }}</h2>
-      </div>
-      <div class="filter-bar">
-        <input v-model="filterQuery" placeholder="Search card..." class="filter-input" />
-        <div class="card-rarity-tabs">
-          <button
-            v-for="tab in cardRarityTabs"
-            :key="tab.id"
-            class="card-rarity-tab"
-            :class="{ active: currentCardRarity === tab.id }"
-            @click="currentCardRarity = tab.id"
-          >
-            <span>{{ tab.label }}</span>
-            <small>{{ tab.count }}</small>
-          </button>
-        </div>
-      </div>
-      <div class="card-archive-list">
-        <button
-          v-for="card in filteredCards"
-          :key="card.resource_id"
-          class="card-archive-row"
-          @click="openCard(card)"
-        >
-          <img
-            :src="cardIconUrl(card.resource_id, true)"
-            :alt="card.title || card.resource_id"
-            class="card-thumb"
-            loading="lazy"
-            @error="fallbackCardIcon($event, card.resource_id)"
-          />
-          <span class="card-rarity">{{ card.rarity || 'CARD' }}</span>
-          <span class="card-main">
-            <span class="card-title">{{ card.title || card.resource_id }}</span>
-            <span class="card-resource">{{ card.resource_id }}</span>
-          </span>
-          <span class="card-counts">
-            {{ card.home_voice_cues?.length || 0 }} voices · {{ card.scenario_entries?.length || 0 }} stories
-          </span>
-        </button>
-      </div>
-    </div>
+      <ArchiveCardList
+        v-if="view === 'cards'"
+        embedded
+        v-model="filterQuery"
+        :title="currentCardCharacterName"
+        :cards="filteredCards"
+        :rarity-tabs="cardRarityTabs"
+        :current-rarity="currentCardRarity"
+        :current-asset-state="currentCardAssetState"
+        :current-relation-state="currentCardRelationState"
+        v-model:layout="cardLayout"
+        @back="goBackFromCards"
+        @select-card="openCard"
+        @select-rarity="currentCardRarity = $event"
+        @select-asset-state="currentCardAssetState = $event"
+        @select-relation-state="currentCardRelationState = $event"
+      />
 
-    <!-- ====== CARD ARCHIVE: DETAIL ====== -->
-    <div v-if="view === 'card_detail'" class="screen list-screen">
-      <div class="list-header">
-        <button class="back-btn" @click="view = 'cards'">← Back</button>
-        <h2>{{ currentCard?.title || currentCard?.resource_id || 'Card' }}</h2>
-      </div>
-      <div v-if="currentCard" class="card-detail">
-        <section class="card-detail-head">
-          <img
-            :src="cardLargeImageUrl(currentCard.resource_id, true)"
-            :alt="currentCard.title || currentCard.resource_id"
-            class="card-detail-art"
-            @error="fallbackCardLargeImage($event, currentCard.resource_id)"
-          />
-          <div class="card-detail-meta">
-            <span class="card-rarity">{{ currentCard.rarity || 'CARD' }}</span>
-            <span>{{ currentCard.resource_id }}</span>
-            <span v-if="currentCard.voice_base">{{ currentCard.voice_base }}</span>
-          </div>
-          <h3>{{ currentCard.title || currentCard.resource_id }}</h3>
-        </section>
+      <ArchiveIdolDetail
+        v-if="view === 'idol_detail'"
+        :idol="currentIdolProfile"
+        :stats="currentIdolStats"
+        @open-domain="openIdolDomain"
+        @open-unit="openUnitFromIdol"
+      />
 
-        <section class="card-detail-section">
-          <h4>卡面文本</h4>
-          <div v-if="currentCard.texts?.normal" class="card-text-block">
-            <strong>普通</strong>
-            <p>{{ currentCard.texts.normal }}</p>
-          </div>
-          <div v-if="currentCard.texts?.awakened" class="card-text-block">
-            <strong>特训后</strong>
-            <p>{{ currentCard.texts.awakened }}</p>
-          </div>
-          <div v-if="currentCard.texts?.extra" class="card-text-block">
-            <strong>短台词</strong>
-            <p>{{ currentCard.texts.extra }}</p>
-          </div>
-        </section>
+      <ArchiveCardDetail
+        v-if="view === 'card_detail'"
+        embedded
+        :card="currentCard"
+        :asset-status="currentCardAssetStatus"
+        :art-mode="cardArtMode"
+        :previous-card="previousCard"
+        :next-card="nextCard"
+        :series-cards="currentSeriesCards"
+        @back="goBackToCards"
+        @preview-voice="previewCardVoice"
+        @open-scenario="openCardScenario"
+        @navigate-card="openCard"
+        @navigate-related-card="openRelatedCard"
+        @update:art-mode="cardArtMode = $event"
+      />
 
-        <section v-if="currentCard.home_voice_cues?.length" class="card-detail-section">
-          <h4>首页触摸语音</h4>
-          <div class="voice-list">
-            <div v-for="cue in currentCard.home_voice_cues" :key="cue.cue" class="voice-row">
-              <span>{{ cue.cue }}</span>
-              <audio controls preload="none" :src="voiceUrl(cue.cue)"></audio>
-              <button class="voice-preview-btn" @click="previewCardVoice(cue)">Preview</button>
-            </div>
-          </div>
-        </section>
+      <ArchiveGroupList
+        v-if="view === 'groups'"
+        embedded
+        v-model="filterQuery"
+        :title="groupTitle"
+        :groups="filteredGroups"
+        @back="goBackFromGroups"
+        @select="openGroup"
+      />
 
-        <section v-if="currentCard.scenario_entries?.length" class="card-detail-section">
-          <h4>关联剧情 / 电话</h4>
-          <div class="scenario-link-list">
-            <button
-              v-for="entry in currentCard.scenario_entries"
-              :key="entry.resource_id"
-              class="scenario-link-btn"
-              :disabled="!entry.compiled_file"
-              @click="openCardScenario(entry)"
-            >
-              <span>{{ entry['3'] || entry.resource_id }}</span>
-              <small>{{ cardScenarioSubtitle(entry) }}</small>
-            </button>
-          </div>
-        </section>
+      <ArchiveUnitGrid
+        v-if="view === 'episode_zero_units'"
+        embedded
+        :units="episodeZeroUnits"
+        @back="goHome"
+        @select="openUnit"
+      />
 
-        <section v-if="currentCard.voice_candidates?.unmapped_card_only?.length" class="card-detail-section">
-          <h4>未归类卡面语音候选</h4>
-          <div class="voice-list">
-            <div
-              v-for="cue in currentCard.voice_candidates.unmapped_card_only"
-              :key="cue"
-              class="voice-row"
-            >
-              <span>{{ cue }}</span>
-              <audio controls preload="none" :src="voiceUrl(cue)"></audio>
-              <button class="voice-preview-btn" @click="previewCardVoice(cue)">Preview</button>
-            </div>
-          </div>
-        </section>
-      </div>
-    </div>
+      <ArchiveEpisodeList
+        v-if="view === 'episodes'"
+        embedded
+        :unit="currentUnit"
+        @back="goBackToUnits"
+        @select="openEpisodeFiles"
+      />
 
-    <!-- ====== GROUP LIST (idol character or generic category) ====== -->
-    <div v-if="view === 'groups'" class="screen list-screen">
-      <div class="list-header">
-        <button class="back-btn" @click="goBackFromGroups">鈫?Back</button>
-        <h2>{{ groupTitle }}</h2>
-      </div>
-      <div class="filter-bar">
-        <input v-model="filterQuery" placeholder="Search group..." class="filter-input" />
-      </div>
-      <div class="group-list">
-        <button
-          v-for="g in filteredGroups"
-          :key="g.id"
-          class="group-card"
-          :class="{ 'group-card-event': g.event_meta }"
-          @click="openGroup(g)"
-        >
-          <!-- Event display with logo -->
-          <template v-if="g.event_meta">
-            <div class="event-img-wrap">
-              <img
-                :src="g.event_meta.logo"
-                :alt="g.event_meta.title"
-                class="event-logo"
-                loading="lazy"
-              />
-            </div>
-            <div class="event-info">
-              <span class="event-series">{{ g.event_meta.series }}</span>
-              <span class="event-title">{{ g.event_meta.title }}</span>
-              <span v-if="g.event_meta.catchphrase" class="event-catchphrase">{{ g.event_meta.catchphrase }}</span>
-            </div>
-          </template>
-          <!-- Default group display -->
-          <template v-else>
-            <span class="group-title">{{ g.title }}</span>
-            <span class="group-meta">{{ groupFileCount(g) }} files</span>
-          </template>
-        </button>
-      </div>
-    </div>
+      <ArchiveFileList
+        v-if="view === 'files'"
+        embedded
+        v-model="filterQuery"
+        :title="currentGroup?.title || 'Scenarios'"
+        :entries="filteredFileEntries"
+        @back="goBackToFiles"
+        @select="openScenarioEntry"
+      />
 
-    <!-- ====== EPISODE ZERO: UNIT GRID ====== -->
-    <div v-if="view === 'episode_zero_units'" class="screen list-screen">
-      <div class="list-header">
-        <button class="back-btn" @click="view = 'home'">鈫?Back</button>
-        <h2>第零话</h2>
-      </div>
-      <div class="unit-grid">
-        <button
-          v-for="unit in episodeZeroUnits"
-          :key="unit.unit_code"
-          class="unit-card"
-          @click="openUnit(unit)"
-        >
-          <span class="unit-name">{{ unit.unit_name }}</span>
-          <span class="unit-count">{{ unit.episodes.length }} episodes</span>
-        </button>
-      </div>
-    </div>
+      <ArchiveStatus
+        v-if="view === 'archive_status'"
+        :manifest="archiveManifestData"
+        :verification="archiveVerificationData"
+        @open-spine-lab="openSpineLab"
+      />
 
-    <!-- ====== EPISODE ZERO: EPISODE LIST ====== -->
-    <div v-if="view === 'episodes'" class="screen list-screen">
-      <div class="list-header">
-        <button class="back-btn" @click="view = 'episode_zero_units'">鈫?Back</button>
-        <h2>{{ currentUnit?.unit_name || 'Episodes' }}</h2>
-      </div>
-      <div class="episode-list">
-        <button
-          v-for="ep in currentUnit?.episodes"
-          :key="ep.id"
-          class="episode-btn"
-          @click="openEpisodeFiles(ep)"
-        >
-          <span class="episode-title">{{ ep.title || ep.id }}</span>
-          <span class="episode-count">{{ groupFileCount(ep) }} files</span>
-        </button>
-      </div>
-    </div>
+      <ArchiveStoryCatalog
+        v-if="view === 'story_catalog'"
+        :entries="visibleStoryCatalogEntries"
+        :domain-options="storyDomainOptions"
+        :domain="currentStoryDomain"
+        :availability="currentStoryAvailability"
+        :sort="currentStorySort"
+        :catalog-total="storyCatalog.length"
+        :filtered-total="filteredStoryCatalog.length"
+        @select="openCatalogStory"
+        @load-more="storyVisibleLimit += 80"
+        @update:domain="currentStoryDomain = $event"
+        @update:availability="currentStoryAvailability = $event"
+        @update:sort="currentStorySort = $event"
+      />
 
-    <!-- ====== SCENARIO FILE LIST ====== -->
-    <div v-if="view === 'files'" class="screen list-screen">
-      <div class="list-header">
-        <button class="back-btn" @click="goBackToFiles">鈫?Back</button>
-        <h2>{{ currentGroup?.title || 'Scenarios' }}</h2>
-      </div>
-      <div class="filter-bar">
-        <input v-model="filterQuery" placeholder="Search scenario..." class="filter-input" />
-      </div>
-      <div class="file-list">
-        <button
-          v-for="entry in filteredFileEntries"
-          :key="entry.file || entry.resourceId"
-          class="file-btn"
-          :class="{ 'file-btn-missing': entry.missing }"
-          :disabled="entry.missing"
-          @click="loadScenario(entry.file)"
-        >
-          <span class="file-title">{{ entry.title }}</span>
-          <span v-if="entry.subtitle" class="file-subtitle">{{ entry.subtitle }}</span>
-        </button>
-      </div>
-    </div>
+      <ArchiveUnitCatalog
+        v-if="view === 'unit_catalog'"
+        :entries="unitCatalogEntries"
+        @select="openArchiveUnit"
+      />
+
+      <ArchiveUnitDetail
+        v-if="view === 'unit_detail'"
+        :unit="currentArchiveUnit"
+        :members="currentArchiveUnitMembers"
+        :stories="currentArchiveUnitStories"
+        @open-idol="openUnitMember"
+        @open-story="openUnitStory"
+      />
+    </ArchiveShell>
 
     <!-- ====== STORY PLAYER ====== -->
     <StoryViewer
@@ -295,7 +167,7 @@
     />
 
     <!-- ====== SPINE LAB ====== -->
-    <SpineViewer v-if="view === 'spine_lab'" @back="view = 'home'" />
+    <SpineViewer v-if="view === 'spine_lab'" @back="goHome" />
 
     <!-- ====== PRELOADER LOADING SCREEN ====== -->
     <LoadingScreen :visible="loading" :progress="preloadProgress" />
@@ -304,15 +176,45 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import StoryViewer from './core/StoryViewer.vue'
-import SpineViewer from './components/SpineViewer.vue'
+import { ref, computed, defineAsyncComponent, onMounted, onBeforeUnmount, watch } from 'vue'
 import { IDOL_ID_TO_NAME } from './utils/IdolNameMap.js'
-import { groupFileCount, groupFileList } from './utils/IndexNormalizer.js'
+import { groupFileList } from './utils/IndexNormalizer.js'
 import { countScenarioFiles, getCategoryCountText } from './utils/IndexStats.js'
 import { Preloader } from './utils/Preloader.js'
-import { getVoiceUrl } from './utils/AssetResolver.js'
 import LoadingScreen from './components/LoadingScreen.vue'
+import ArchiveHome from './components/archive/ArchiveHome.vue'
+import ArchiveShell from './components/archive/ArchiveShell.vue'
+import ArchiveCardList from './components/archive/ArchiveCardList.vue'
+import ArchiveCardDetail from './components/archive/ArchiveCardDetail.vue'
+import ArchiveIdolGrid from './components/archive/ArchiveIdolGrid.vue'
+import ArchiveIdolDetail from './components/archive/ArchiveIdolDetail.vue'
+import ArchiveGroupList from './components/archive/ArchiveGroupList.vue'
+import ArchiveFileList from './components/archive/ArchiveFileList.vue'
+import ArchiveUnitGrid from './components/archive/ArchiveUnitGrid.vue'
+import ArchiveEpisodeList from './components/archive/ArchiveEpisodeList.vue'
+import ArchiveStatus from './components/archive/ArchiveStatus.vue'
+import ArchiveStoryCatalog from './components/archive/ArchiveStoryCatalog.vue'
+import ArchiveUnitCatalog from './components/archive/ArchiveUnitCatalog.vue'
+import ArchiveUnitDetail from './components/archive/ArchiveUnitDetail.vue'
+import { loadArchiveData } from './data/ArchiveDataRepository.js'
+import {
+  buildCardMap,
+  buildCardRarityTabs,
+  buildScenarioMetaByFile,
+  buildStoryCatalog,
+  cardsForCharacter,
+} from './data/archiveSelectors.js'
+import {
+  onArchivePopState,
+  readArchiveRoute,
+  writeArchiveRoute,
+} from './core/archiveRoute.js'
+import { installSpineAnimationDebug } from './debug/installSpineAnimationDebug.js'
+
+const storyViewerLoader = () => import('./core/StoryViewer.vue')
+const spineViewerLoader = () => import('./components/SpineViewer.vue')
+const StoryViewer = defineAsyncComponent(storyViewerLoader)
+const SpineViewer = defineAsyncComponent(spineViewerLoader)
 
 function resolveChatName(ch) {
   // index may store raw chara_id such as "031sak"; resolve to display name.
@@ -327,7 +229,11 @@ const indexData = ref(null)
 const cardIndexData = ref(null)
 const storyMasterData = ref(null)
 const idolUnitData = ref(null)
+const archiveManifestData = ref(null)
+const archiveVerificationData = ref(null)
 const currentScenario = ref(null)
+const currentScenarioFile = ref('')
+const currentPreviewCue = ref('')
 const filterQuery = ref('')
 const loading = ref(false)
 const preloadProgress = ref(0)
@@ -337,9 +243,24 @@ const currentCategoryId = ref('')
 const currentCharacterId = ref('')
 const currentGroup = ref(null)
 const currentUnit = ref(null)
+const currentArchiveUnitCode = ref('')
+const currentEpisodeId = ref('')
 const currentCardId = ref('')
 const currentCardRarity = ref('all')
+const currentCardAssetState = ref('all')
+const currentCardRelationState = ref('all')
+const cardLayout = ref('compact')
+const cardArtMode = ref('clean')
+const currentIdolUnitFilter = ref('')
+const currentStoryDomain = ref('')
+const currentStoryAvailability = ref('all')
+const currentStorySort = ref('domain')
+const storyVisibleLimit = ref(80)
 const returnViewAfterPlayer = ref('files')
+let archiveRouteReady = false
+let applyingArchiveRoute = false
+let removeArchivePopState = null
+let removeSpineAnimationDebug = null
 
 const CATEGORIES = [
   { id: 'main_story', name: '主线剧情' },
@@ -353,6 +274,17 @@ const CATEGORIES = [
 ]
 
 const totalFiles = computed(() => countScenarioFiles(indexData.value?.categories || []))
+const homeCategories = computed(() => CATEGORIES.map(category => ({
+  ...category,
+  count: catCountText(category.id),
+})))
+
+const archiveStats = computed(() => [
+  { label: '剧情文件', value: archiveManifestData.value?.counts?.indexed_scenarios ?? totalFiles.value },
+  { label: '偶像', value: archiveManifestData.value?.counts?.idols ?? Object.keys(idolUnitData.value?.by_idol_code || {}).length },
+  { label: '卡片', value: archiveManifestData.value?.counts?.cards ?? cardIndexData.value?.meta?.card_count ?? cardIndexData.value?.cards?.length ?? 0 },
+  { label: '首页语音', value: archiveManifestData.value?.counts?.home_voice_cues ?? cardIndexData.value?.meta?.home_voice_cue_count ?? 0 },
+])
 
 function categoryById(id) {
   if (!indexData.value) return null
@@ -371,11 +303,17 @@ function catCountText(id) {
 }
 
 // Idol / chat grid.
+function withUnitEvidence(entry) {
+  if (entry._isGroup) return entry
+  const unit = archiveManifestData.value?.unit_membership_by_idol?.[entry.id]
+  return unit ? { ...entry, unitId: String(unit.unit_id), unitCode: unit.unit_code, unitName: unit.unit_name } : entry
+}
+
 const idolList = computed(() => {
   const catId = currentCategoryId.value
   if (catId === 'cards') {
     const byCharacter = cardIndexData.value?.by_character || {}
-    return Object.entries(byCharacter).map(([id, cards]) => ({
+    return Object.entries(byCharacter).map(([id, cards]) => withUnitEvidence({
       id,
       name: idolDisplayName(id),
       cardCount: cards.length,
@@ -386,24 +324,46 @@ const idolList = computed(() => {
     const cat = categoryById('idol_phone')
     const source = cat?.individual
     if (!source) return []
-    return Object.entries(source).map(([id, data]) => ({ id, ...resolveChatName(data), _isGroup: false }))
+    return Object.entries(source).map(([id, data]) => withUnitEvidence({ id, ...resolveChatName(data), _isGroup: false }))
   }
   const cat = categoryById(catId === 'idol_chat' ? 'idol_chat' : 'idol')
   const source = catId === 'idol_chat' ? cat?.individual : cat?.characters
   if (!source) return []
   // For chat category, also include group chat entries
   if (catId === 'idol_chat' && cat?.groups) {
-    const chars = Object.entries(source).map(([id, data]) => ({ id, ...resolveChatName(data), _isGroup: false }))
+    const chars = Object.entries(source).map(([id, data]) => withUnitEvidence({ id, ...resolveChatName(data), _isGroup: false }))
     const groups = cat.groups.map(g => ({ id: g.unit_code, name: g.unit_name, _isGroup: true, _groupData: g }))
     return [...groups, ...chars]
   }
-  return Object.entries(source).map(([id, data]) => ({ id, ...data }))
+  return Object.entries(source).map(([id, data]) => withUnitEvidence({ id, ...data }))
+})
+
+const searchMatchedIdols = computed(() => {
+  const q = filterQuery.value.toLowerCase()
+  if (!q) return idolList.value
+  return idolList.value.filter(ch =>
+    ch.name.toLowerCase().includes(q) ||
+    String(ch.unitName || '').toLowerCase().includes(q),
+  )
 })
 
 const filteredIdols = computed(() => {
-  const q = filterQuery.value.toLowerCase()
-  if (!q) return idolList.value
-  return idolList.value.filter(ch => ch.name.toLowerCase().includes(q))
+  if (!currentIdolUnitFilter.value) return searchMatchedIdols.value
+  return searchMatchedIdols.value.filter(entry => entry.unitId === currentIdolUnitFilter.value)
+})
+
+const idolUnitOptions = computed(() => {
+  if (!['idol', 'cards'].includes(currentCategoryId.value)) return []
+  const counts = new Map()
+  for (const entry of idolList.value) {
+    if (entry.unitId) counts.set(entry.unitId, (counts.get(entry.unitId) || 0) + 1)
+  }
+  return (idolUnitData.value?.units || []).map(unit => ({
+    id: String(unit.unit_id),
+    code: unit.unit_code,
+    name: unit.unit_name,
+    count: counts.get(String(unit.unit_id)) || 0,
+  })).filter(unit => unit.count)
 })
 
 // Group list.
@@ -477,53 +437,65 @@ const episodeZeroUnits = computed(() => {
   return cat?.units || []
 })
 
-function collectStoryRows(data) {
-  if (!data) return []
-  return [
-    ...(data.main?.episodes || []),
-    ...(data.event?.episodes || []),
-    ...(data.unit_story?.episodes || []),
-    ...(data.idol_story?.episodes || []),
-    ...(data.card_scenarios || []),
-    ...(data.work || []),
-    ...(data.birthday || []),
-    ...(data.extra?.episodes || []),
-  ]
-}
+const scenarioMetaByFile = computed(() => buildScenarioMetaByFile(storyMasterData.value))
 
-const scenarioMetaByFile = computed(() => {
-  const map = new Map()
-  for (const row of collectStoryRows(storyMasterData.value)) {
-    const file = row.compiled_file
-    const resourceId = row.resource_id
-    if (!file && !resourceId) continue
-    const key = file || `missing:${resourceId}`
-    const entry = map.get(key) || {
-      file,
-      resourceIds: [],
-      titles: [],
-      exists: row.compiled_exists !== false,
-      rows: [],
-    }
-    if (resourceId && !entry.resourceIds.includes(resourceId)) entry.resourceIds.push(resourceId)
-    const title = rowDisplayTitle(row)
-    if (title && !entry.titles.includes(title)) entry.titles.push(title)
-    if (!entry.summary && row.compiled_summary) entry.summary = row.compiled_summary
-    if (row.compiled_exists === false) entry.exists = false
-    entry.rows.push(row)
-    map.set(key, entry)
+const storyCatalog = computed(() => buildStoryCatalog(storyMasterData.value))
+
+const storyDomainOptions = computed(() => {
+  const counts = new Map()
+  const labels = new Map()
+  for (const entry of storyCatalog.value) {
+    counts.set(entry.domain, (counts.get(entry.domain) || 0) + 1)
+    labels.set(entry.domain, entry.domainLabel)
   }
-  return map
+  return [...counts.entries()].map(([id, count]) => ({ id, count, label: labels.get(id) || id }))
 })
 
-function rowDisplayTitle(row) {
-  const rawTitle = row?.['3'] || row?.['9']
-  if (rawTitle && typeof rawTitle === 'string') return rawTitle
-  const compiledTitle = row?.compiled_summary?.title
-  if (compiledTitle) return compiledTitle
-  if (rawTitle !== undefined && rawTitle !== null) return String(rawTitle)
-  return ''
-}
+const filteredStoryCatalog = computed(() => {
+  const query = filterQuery.value.trim().toLowerCase()
+  const availability = currentStoryAvailability.value
+  const entries = storyCatalog.value.filter(entry =>
+    (!currentStoryDomain.value || entry.domain === currentStoryDomain.value) &&
+    (availability === 'all' || (availability === 'playable' ? entry.exists : !entry.exists)) &&
+    (!query || entry.searchText.includes(query)),
+  )
+  const sorted = [...entries]
+  if (currentStorySort.value === 'title') sorted.sort((a, b) => a.title.localeCompare(b.title, 'ja'))
+  else if (currentStorySort.value === 'resource') sorted.sort((a, b) => a.resourceId.localeCompare(b.resourceId))
+  else if (currentStorySort.value === 'steps_desc') sorted.sort((a, b) => (b.summary?.step_count || 0) - (a.summary?.step_count || 0))
+  else sorted.sort((a, b) => a.domainOrder - b.domainOrder || a.resourceId.localeCompare(b.resourceId))
+  return sorted
+})
+
+const visibleStoryCatalogEntries = computed(() => filteredStoryCatalog.value.slice(0, storyVisibleLimit.value))
+
+const unitCatalogEntries = computed(() => (idolUnitData.value?.units || []).map(unit => {
+  const unitId = String(unit.unit_id)
+  return {
+    unit,
+    members: Object.entries(archiveManifestData.value?.unit_membership_by_idol || {})
+      .filter(([, evidence]) => String(evidence.unit_id) === unitId)
+      .map(([idolCode]) => ({ idol_code: idolCode, ...idolUnitData.value?.by_idol_code?.[idolCode] }))
+      .sort((a, b) => Number(a.idol_id || 0) - Number(b.idol_id || 0)),
+    storyCount: storyCatalog.value.filter(entry => entry.domain === 'unit_story' && entry.unitId === unitId).length,
+  }
+}))
+
+const currentArchiveUnit = computed(() => (idolUnitData.value?.units || []).find(unit =>
+  String(unit.unit_code) === currentArchiveUnitCode.value || String(unit.unit_id) === currentArchiveUnitCode.value,
+) || null)
+
+const currentArchiveUnitMembers = computed(() => {
+  const id = String(currentArchiveUnit.value?.unit_id || '')
+  return unitCatalogEntries.value.find(entry => String(entry.unit.unit_id) === id)?.members || []
+})
+
+const currentArchiveUnitStories = computed(() => {
+  const id = String(currentArchiveUnit.value?.unit_id || '')
+  return storyCatalog.value
+    .filter(entry => entry.domain === 'unit_story' && entry.unitId === id)
+    .sort((a, b) => a.resourceId.localeCompare(b.resourceId))
+})
 
 function displayTitleForMeta(meta, fallbackFile) {
   const titles = meta?.titles?.filter(Boolean) || []
@@ -600,41 +572,25 @@ const filteredFileEntries = computed(() => {
   return entries.filter(entry => entry.searchText.toLowerCase().includes(q))
 })
 
-const cardMap = computed(() => {
-  const map = new Map()
-  for (const card of cardIndexData.value?.cards || []) {
-    map.set(card.resource_id, card)
-  }
-  return map
-})
+const cardMap = computed(() => buildCardMap(cardIndexData.value))
 
-const currentCards = computed(() => {
-  const ids = cardIndexData.value?.by_character?.[currentCharacterId.value] || []
-  return ids.map(id => cardMap.value.get(id)).filter(Boolean)
-})
+const currentCards = computed(() => cardsForCharacter(
+  cardIndexData.value,
+  cardMap.value,
+  currentCharacterId.value,
+))
 
-const cardRarityTabs = computed(() => {
-  const order = ['SSR', 'SR', 'R', 'N']
-  const counts = new Map()
-  for (const card of currentCards.value) {
-    const rarity = card.rarity || 'CARD'
-    counts.set(rarity, (counts.get(rarity) || 0) + 1)
-  }
-  const tabs = [{ id: 'all', label: 'All', count: currentCards.value.length }]
-  for (const rarity of order) {
-    if (counts.has(rarity)) tabs.push({ id: rarity, label: rarity, count: counts.get(rarity) })
-  }
-  for (const [rarity, count] of [...counts.entries()].sort()) {
-    if (!order.includes(rarity)) tabs.push({ id: rarity, label: rarity, count })
-  }
-  return tabs
-})
+const cardRarityTabs = computed(() => buildCardRarityTabs(currentCards.value))
 
 const filteredCards = computed(() => {
   const q = filterQuery.value.toLowerCase()
   const rarity = currentCardRarity.value
+  const assetState = currentCardAssetState.value
+  const relationState = currentCardRelationState.value
   return currentCards.value.filter(card =>
     (rarity === 'all' || card.rarity === rarity) &&
+    matchesCardAssetState(archiveManifestData.value?.card_assets_by_id?.[card.resource_id], assetState) &&
+    matchesCardRelationState(card, relationState) &&
     (!q ||
     String(card.title || '').toLowerCase().includes(q) ||
     String(card.resource_id || '').toLowerCase().includes(q) ||
@@ -643,11 +599,115 @@ const filteredCards = computed(() => {
 })
 
 const currentCard = computed(() => cardMap.value.get(currentCardId.value) || null)
+const currentCardAssetStatus = computed(() => archiveManifestData.value?.card_assets_by_id?.[currentCardId.value] || null)
+const currentCardIndex = computed(() => currentCards.value.findIndex(card => card.resource_id === currentCardId.value))
+const previousCard = computed(() => currentCardIndex.value > 0
+  ? currentCards.value[currentCardIndex.value - 1]
+  : null)
+const nextCard = computed(() => currentCardIndex.value >= 0 && currentCardIndex.value < currentCards.value.length - 1
+  ? currentCards.value[currentCardIndex.value + 1]
+  : null)
+const currentSeriesCards = computed(() => {
+  const seriesId = currentCard.value?.release_series?.series_id
+  if (!seriesId) return []
+  return [...cardMap.value.values()]
+    .filter(card => card.release_series?.series_id === seriesId)
+    .map(card => ({ ...card, character_name: idolDisplayName(card.character_id) }))
+})
 
 const currentCardCharacterName = computed(() => {
   const id = currentCharacterId.value
   return idolDisplayName(id) || 'Cards'
 })
+
+function matchesCardAssetState(status, state) {
+  if (state === 'all') return true
+  if (!status) return false
+  if (state === 'visible_icon') return status.awakened_icon || status.normal_icon
+  if (state === 'complete_icons') return status.awakened_icon && status.normal_icon
+  if (state === 'single_state') return status.single_state
+  if (state === 'has_large') {
+    return status.awakened_portrait || status.normal_portrait ||
+      status.awakened_landscape || status.normal_landscape ||
+      status.awakened_large || status.normal_large
+  }
+  if (state === 'missing_normal') return !status.normal_icon && !status.single_state
+  return true
+}
+
+function matchesCardRelationState(card, state) {
+  if (state === 'all') return true
+  if (state === 'card_story') return Boolean(card?.scenario_entries?.length)
+  if (state === 'release_series') return Boolean(card?.release_series)
+  if (state === 'unrelated') return !card?.scenario_entries?.length && !card?.release_series
+  return true
+}
+
+const currentIdolProfile = computed(() => {
+  const profile = idolUnitData.value?.by_idol_code?.[currentCharacterId.value]
+  if (!profile) return null
+  const unit = archiveManifestData.value?.unit_membership_by_idol?.[currentCharacterId.value]
+  return {
+    ...profile,
+    idol_code: currentCharacterId.value,
+    unit_id: unit?.unit_id || profile.unit_id,
+    unit_code: unit?.unit_code || profile.unit_code,
+    unit_name: unit?.unit_name || profile.unit_name,
+  }
+})
+
+const currentIdolStats = computed(() => {
+  const id = currentCharacterId.value
+  return {
+    cards: cardsForCharacter(cardIndexData.value, cardMap.value, id).length,
+    stories: categoryById('idol')?.characters?.[id]?.groups?.length || 0,
+    chats: categoryById('idol_chat')?.individual?.[id]?.groups?.length || 0,
+    phones: categoryById('idol_phone')?.individual?.[id]?.groups?.length || 0,
+  }
+})
+
+const archiveShellVisible = computed(() => !['player', 'spine_lab'].includes(view.value))
+
+const archiveSection = computed(() => {
+  if (view.value === 'home') return 'home'
+  if (view.value === 'archive_status') return 'resources'
+  if (view.value === 'story_catalog') return 'stories'
+  if (['unit_catalog', 'unit_detail'].includes(view.value)) return 'idols'
+  if (currentCategoryId.value === 'cards' || ['cards', 'card_detail'].includes(view.value)) return 'cards'
+  if (['idol_chat', 'idol_phone'].includes(currentCategoryId.value)) return 'interactions'
+  if (currentCategoryId.value === 'idol') return 'idols'
+  return 'stories'
+})
+
+const archiveTitle = computed(() => {
+  if (view.value === 'home') return 'SideM Archive'
+  if (view.value === 'archive_status') return '数据状态'
+  if (view.value === 'story_catalog') return '故事目录'
+  if (view.value === 'unit_catalog') return '组合资料'
+  if (view.value === 'unit_detail') return currentArchiveUnit.value?.unit_name || '组合详情'
+  if (view.value === 'idols') return categoryHeaderText.value
+  if (view.value === 'idol_detail') return currentIdolProfile.value?.display_name || '偶像详情'
+  if (view.value === 'groups') return groupTitle.value
+  if (view.value === 'cards') return currentCardCharacterName.value
+  if (view.value === 'card_detail') return currentCard.value?.title || currentCard.value?.resource_id || '卡片详情'
+  if (view.value === 'episode_zero_units') return '第零话'
+  if (view.value === 'episodes') return currentUnit.value?.unit_name || '章节'
+  if (view.value === 'files') return currentGroup.value?.title || '剧情文件'
+  return 'SideM Archive'
+})
+
+const archiveSearchable = computed(() => ['idols', 'groups', 'cards', 'files', 'story_catalog'].includes(view.value))
+
+const archiveSearchPlaceholder = computed(() => {
+  if (view.value === 'idols') return categoryFilterPlaceholder.value
+  if (view.value === 'cards') return '搜索卡片标题、稀有度或资源 ID'
+  if (view.value === 'groups') return '搜索章节标题或资源 ID'
+  if (view.value === 'files') return '搜索剧情标题或资源 ID'
+  if (view.value === 'story_catalog') return '搜索标题、资源 ID 或角色代码'
+  return '搜索资料'
+})
+
+const archiveShowBack = computed(() => view.value !== 'home')
 
 function idolDisplayName(id) {
   if (!id) return ''
@@ -657,23 +717,300 @@ function idolDisplayName(id) {
     id
 }
 
+function currentArchiveRoute() {
+  return {
+    view: view.value,
+    category: currentCategoryId.value,
+    idol: currentCharacterId.value,
+    group: currentGroup.value?.id || '',
+    unit: (['unit_detail', 'player'].includes(view.value) && currentArchiveUnitCode.value)
+      ? currentArchiveUnitCode.value
+      : (currentUnit.value?.unit_code || currentUnit.value?.id || ''),
+    unitFilter: currentIdolUnitFilter.value,
+    storyType: currentStoryDomain.value,
+    availability: currentStoryAvailability.value,
+    sort: currentStorySort.value,
+    episode: currentEpisodeId.value,
+    card: currentCardId.value,
+    rarity: currentCardRarity.value,
+    assetState: currentCardAssetState.value,
+    relationState: currentCardRelationState.value,
+    query: filterQuery.value,
+    scenario: view.value === 'player' ? currentScenarioFile.value : '',
+    voice: view.value === 'player' ? currentPreviewCue.value : '',
+    returnView: returnViewAfterPlayer.value,
+  }
+}
+
+function syncArchiveRoute({ replace = false } = {}) {
+  if (!archiveRouteReady || applyingArchiveRoute) return
+  writeArchiveRoute(currentArchiveRoute(), { replace })
+}
+
+function commitView(nextView, options = {}) {
+  view.value = nextView
+  syncArchiveRoute(options)
+}
+
+function groupsForRoute(categoryId, idolId) {
+  if (!categoryId) return []
+  if (!idolId) return categoryById(categoryId)?.groups || []
+  if (categoryId === 'idol_chat' || categoryId === 'idol_phone') {
+    return categoryById(categoryId)?.individual?.[idolId]?.groups || []
+  }
+  return categoryById('idol')?.characters?.[idolId]?.groups || []
+}
+
+function resolveRouteGroup(route) {
+  if (!route.group) return null
+  return groupsForRoute(route.category, route.idol)
+    .find(group => String(group.id) === route.group) || null
+}
+
+function resolveRouteUnit(route) {
+  if (!route.unit) return null
+  return episodeZeroUnits.value.find(unit =>
+    String(unit.unit_code || unit.id) === route.unit,
+  ) || null
+}
+
+function resolveRouteEpisode(unit, route) {
+  if (!unit || !route.episode) return null
+  return (unit.episodes || []).find(episode => String(episode.id) === route.episode) || null
+}
+
+function restoreVoicePreview(route) {
+  const card = cardMap.value.get(route.card)
+  if (!card || !route.voice) return false
+  const cue = (card.home_voice_cues || []).find(item => item?.cue === route.voice) ||
+    (card.voice_candidates?.unmapped_card_only || []).find(item => item === route.voice)
+  if (!cue) return false
+  currentScenario.value = buildCardVoicePreviewScenario(card, cue)
+  currentScenarioFile.value = ''
+  currentPreviewCue.value = route.voice
+  returnViewAfterPlayer.value = route.returnView || 'card_detail'
+  view.value = 'player'
+  return true
+}
+
+async function applyArchiveRoute(route) {
+  applyingArchiveRoute = true
+  try {
+    filterQuery.value = route.query || ''
+    currentCategoryId.value = route.category || ''
+    currentCharacterId.value = route.idol || ''
+    currentCardId.value = route.card || ''
+    currentCardRarity.value = route.rarity || 'all'
+    currentCardAssetState.value = route.assetState || 'all'
+    currentCardRelationState.value = route.relationState || 'all'
+    currentIdolUnitFilter.value = route.unitFilter || ''
+    currentStoryDomain.value = route.storyType || ''
+    currentStoryAvailability.value = route.availability || 'all'
+    currentStorySort.value = route.sort || 'domain'
+    currentEpisodeId.value = route.episode || ''
+    currentArchiveUnitCode.value = (
+      ['unit_catalog', 'unit_detail'].includes(route.view) ||
+      (route.view === 'player' && route.returnView === 'unit_detail')
+    ) ? route.unit || '' : ''
+    currentGroup.value = resolveRouteGroup(route)
+    currentUnit.value = resolveRouteUnit(route)
+    currentScenario.value = null
+    currentScenarioFile.value = ''
+    currentPreviewCue.value = ''
+    returnViewAfterPlayer.value = route.returnView || 'files'
+
+    const episode = resolveRouteEpisode(currentUnit.value, route)
+    if (route.view === 'files' && episode) {
+      currentGroup.value = {
+        id: episode.id,
+        title: episode.title,
+        files: groupFileList(episode),
+      }
+    }
+
+    if (route.view === 'player' && route.scenario) {
+      await loadScenario(route.scenario, route.returnView || 'home', { syncRoute: false })
+      return
+    }
+    if (route.view === 'player' && route.voice) {
+      await storyViewerLoader()
+      if (restoreVoicePreview(route)) return
+    }
+    if (route.view === 'spine_lab') await spineViewerLoader()
+
+    if (route.view === 'unit_detail' && !currentArchiveUnit.value) view.value = 'unit_catalog'
+    else if (route.view === 'idol_detail' && !currentIdolProfile.value) view.value = 'idols'
+    else if (route.view === 'card_detail' && !currentCard.value) view.value = 'cards'
+    else if (route.view === 'cards' && !currentCharacterId.value) view.value = 'idols'
+    else if (route.view === 'files' && !currentGroup.value) view.value = currentCharacterId.value ? 'groups' : 'home'
+    else if (route.view === 'episodes' && !currentUnit.value) view.value = 'episode_zero_units'
+    else view.value = route.view || 'home'
+  } finally {
+    applyingArchiveRoute = false
+  }
+}
+
+function goHome() {
+  filterQuery.value = ''
+  currentCategoryId.value = ''
+  currentCharacterId.value = ''
+  currentGroup.value = null
+  currentUnit.value = null
+  currentArchiveUnitCode.value = ''
+  currentEpisodeId.value = ''
+  currentCardId.value = ''
+  currentCardRarity.value = 'all'
+  currentCardAssetState.value = 'all'
+  currentCardRelationState.value = 'all'
+  currentIdolUnitFilter.value = ''
+  currentStoryDomain.value = ''
+  currentStoryAvailability.value = 'all'
+  currentStorySort.value = 'domain'
+  commitView('home')
+}
+
+function navigateArchiveSection(section) {
+  const categoryBySection = {
+    idols: 'idol',
+    cards: 'cards',
+    interactions: 'idol_chat',
+  }
+  if (section === 'home') goHome()
+  else if (section === 'stories') openStoryCatalog()
+  else if (section === 'resources') openArchiveStatus()
+  else if (categoryBySection[section]) openCategoryById(categoryBySection[section])
+}
+
+function goArchiveBack() {
+  const backByView = {
+    idols: goHome,
+    idol_detail: () => commitView('idols'),
+    groups: goBackFromGroups,
+    episode_zero_units: goHome,
+    episodes: goBackToUnits,
+    files: goBackToFiles,
+    cards: goBackFromCards,
+    card_detail: goBackToCards,
+    archive_status: goHome,
+    story_catalog: goHome,
+    unit_catalog: () => commitView('idols'),
+    unit_detail: () => {
+      currentArchiveUnitCode.value = ''
+      commitView('unit_catalog')
+    },
+  }
+  const handler = backByView[view.value] || goHome
+  handler()
+}
+
+async function openSpineLab() {
+  loading.value = true
+  preloadProgress.value = 100
+  try {
+    await spineViewerLoader()
+    commitView('spine_lab')
+  } finally {
+    loading.value = false
+  }
+}
+
+function openArchiveStatus() {
+  filterQuery.value = ''
+  currentStoryDomain.value = ''
+  currentStoryAvailability.value = 'all'
+  currentStorySort.value = 'domain'
+  commitView('archive_status')
+}
+
+function openStoryCatalog() {
+  filterQuery.value = ''
+  currentStoryDomain.value = ''
+  currentStoryAvailability.value = 'all'
+  currentStorySort.value = 'domain'
+  storyVisibleLimit.value = 80
+  commitView('story_catalog')
+}
+
+function openUnitCatalog() {
+  filterQuery.value = ''
+  currentCategoryId.value = 'idol'
+  currentCharacterId.value = ''
+  currentArchiveUnitCode.value = ''
+  commitView('unit_catalog')
+}
+
+function openArchiveUnit(unit) {
+  if (!unit) return
+  currentCategoryId.value = 'idol'
+  currentCharacterId.value = ''
+  currentArchiveUnitCode.value = String(unit.unit_code || unit.unit_id)
+  commitView('unit_detail')
+}
+
+function openUnitFromIdol(idol) {
+  const unit = (idolUnitData.value?.units || []).find(entry => String(entry.unit_code) === String(idol?.unit_code))
+  if (unit) openArchiveUnit(unit)
+}
+
+function openUnitMember(member) {
+  currentCategoryId.value = 'idol'
+  currentCharacterId.value = member.idol_code
+  currentArchiveUnitCode.value = ''
+  commitView('idol_detail')
+}
+
+function openUnitStory(story) {
+  if (story?.file && story.exists) loadScenario(story.file, 'unit_detail')
+}
+
+function openCatalogStory(entry) {
+  if (entry?.file && entry.exists) loadScenario(entry.file, 'story_catalog')
+}
+
+function goBackToCards() {
+  currentCardId.value = ''
+  filterQuery.value = ''
+  commitView('cards')
+}
+
+function goBackToUnits() {
+  currentUnit.value = null
+  currentEpisodeId.value = ''
+  currentGroup.value = null
+  commitView('episode_zero_units')
+}
+
 // Navigation.
+function openCategoryById(categoryId) {
+  const category = CATEGORIES.find(item => item.id === categoryId)
+  if (category) openCategory(category)
+}
+
 function openCategory(cat) {
   filterQuery.value = ''
+  currentStoryDomain.value = ''
+  currentStoryAvailability.value = 'all'
+  currentStorySort.value = 'domain'
+  currentUnit.value = null
+  currentEpisodeId.value = ''
+  currentCardId.value = ''
+  currentIdolUnitFilter.value = ''
   if (cat.id === 'idol' || cat.id === 'idol_chat' || cat.id === 'idol_phone' || cat.id === 'cards') {
     currentCategoryId.value = cat.id
     currentCharacterId.value = ''
     currentGroup.value = null
     currentCardRarity.value = 'all'
-    view.value = 'idols'
+    currentCardAssetState.value = 'all'
+    currentCardRelationState.value = 'all'
+    commitView('idols')
   } else if (cat.id === 'episode_zero') {
     currentCategoryId.value = 'episode_zero'
-    view.value = 'episode_zero_units'
+    commitView('episode_zero_units')
   } else {
     currentCategoryId.value = cat.id
     currentCharacterId.value = ''
     currentGroup.value = null
-    view.value = 'groups'
+    commitView('groups')
   }
 }
 
@@ -684,34 +1021,70 @@ function openIdol(entry) {
     currentCharacterId.value = entry.id
     currentCategoryId.value = 'idol_chat'
     currentGroup.value = entry._groupData.groups[0]
-    view.value = 'files'
+    commitView('files')
     return
   }
   if (currentCategoryId.value === 'cards') {
     currentCharacterId.value = entry.id
     currentCardId.value = ''
     currentCardRarity.value = 'all'
+    currentCardAssetState.value = 'all'
+    currentCardRelationState.value = 'all'
     filterQuery.value = ''
-    view.value = 'cards'
+    commitView('cards')
+    return
+  }
+  if (currentCategoryId.value === 'idol') {
+    currentCharacterId.value = entry.id
+    currentGroup.value = null
+    commitView('idol_detail')
     return
   }
   currentCharacterId.value = entry.id
   currentCategoryId.value = currentCategoryId.value || 'idol'
   currentGroup.value = null
-  view.value = 'groups'
+  commitView('groups')
+}
+
+function openIdolDomain(domain) {
+  const categoryByDomain = {
+    stories: 'idol',
+    cards: 'cards',
+    chat: 'idol_chat',
+    phone: 'idol_phone',
+  }
+  const category = categoryByDomain[domain]
+  if (!category) return
+  currentCategoryId.value = category
+  currentGroup.value = null
+  currentCardId.value = ''
+  currentCardRarity.value = 'all'
+  currentCardAssetState.value = 'all'
+  currentCardRelationState.value = 'all'
+  filterQuery.value = ''
+  commitView(domain === 'cards' ? 'cards' : 'groups')
 }
 
 function openCard(card) {
   currentCardId.value = card.resource_id
   filterQuery.value = ''
-  view.value = 'card_detail'
+  commitView('card_detail')
+}
+
+function openRelatedCard(card) {
+  if (!card?.resource_id || !card?.character_id) return
+  currentCategoryId.value = 'cards'
+  currentCharacterId.value = card.character_id
+  currentCardId.value = card.resource_id
+  filterQuery.value = ''
+  commitView('card_detail')
 }
 
 function goBackFromCards() {
   currentCardId.value = ''
   currentCardRarity.value = 'all'
   filterQuery.value = ''
-  view.value = 'idols'
+  commitView('idols')
 }
 
 function openCardScenario(entry) {
@@ -720,66 +1093,25 @@ function openCardScenario(entry) {
   }
 }
 
-function cardScenarioSubtitle(entry) {
-  const parts = [entry?.resource_id].filter(Boolean)
-  const summary = entry?.compiled_summary
-  if (summary?.voice_count) parts.push(`${summary.voice_count} voices`)
-  if (summary?.lip_count) parts.push(`${summary.lip_count} lips`)
-  return parts.join(' · ')
-}
-
-function voiceUrl(cue) {
-  if (!cue) return ''
-  return getVoiceUrl(`${cue}.m4a`)
-}
-
-function cardIconUrl(resourceId, awakened = true) {
-  if (!resourceId) return ''
-  const suffix = awakened ? 'p' : ''
-  return `/assets/cards/icons/image_card_icon_${resourceId}${suffix}.png`
-}
-
-function cardLargeImageUrl(resourceId, awakened = true) {
-  if (!resourceId) return ''
-  const suffix = awakened ? 'p' : ''
-  return `/assets/cards/large/image_card_portrait_show_${resourceId}${suffix}.png`
-}
-
-function fallbackCardIcon(event, resourceId) {
-  const img = event?.target
-  if (!img) return
-  if (img.dataset.fallbackApplied === '1') {
-    img.classList.add('card-image-missing')
-    img.removeAttribute('src')
-    return
-  }
-  img.dataset.fallbackApplied = '1'
-  img.src = cardIconUrl(resourceId, false)
-}
-
-function fallbackCardLargeImage(event, resourceId) {
-  const img = event?.target
-  if (!img) return
-  const stage = img.dataset.fallbackStage || 'large-awakened'
-  if (stage === 'large-awakened') {
-    img.dataset.fallbackStage = 'large-normal'
-    img.src = cardLargeImageUrl(resourceId, false)
-    return
-  }
-  if (stage === 'large-normal') {
-    img.dataset.fallbackStage = 'icon-awakened'
-    img.src = cardIconUrl(resourceId, true)
-    return
-  }
-  fallbackCardIcon(event, resourceId)
-}
-
-function previewCardVoice(cue) {
+async function previewCardVoice(cue) {
   const card = currentCard.value
   if (!card || !cue) return
-  currentScenario.value = buildCardVoicePreviewScenario(card, cue)
-  returnViewAfterPlayer.value = 'card_detail'
-  view.value = 'player'
+  await openVoicePreview(card, cue, 'card_detail')
+}
+
+async function openVoicePreview(card, cue, returnView) {
+  loading.value = true
+  preloadProgress.value = 100
+  try {
+    await storyViewerLoader()
+    currentScenario.value = buildCardVoicePreviewScenario(card, cue)
+    currentScenarioFile.value = ''
+    currentPreviewCue.value = typeof cue === 'string' ? cue : cue.cue
+    returnViewAfterPlayer.value = returnView
+    commitView('player')
+  } finally {
+    loading.value = false
+  }
 }
 
 function buildCardVoicePreviewScenario(card, cue) {
@@ -866,51 +1198,66 @@ function buildCardVoicePreviewScenario(card, cue) {
 
 function openGroup(group) {
   currentGroup.value = group
+  currentEpisodeId.value = ''
   filterQuery.value = ''
-  view.value = 'files'
+  commitView('files')
+}
+
+function openScenarioEntry(entry) {
+  if (entry?.file && !entry.missing) loadScenario(entry.file)
 }
 
 function openUnit(unit) {
   currentUnit.value = unit
+  currentEpisodeId.value = ''
   filterQuery.value = ''
-  view.value = 'episodes'
+  commitView('episodes')
 }
 
 function openEpisodeFiles(ep) {
   // Create a synthetic group object from episode data
   currentGroup.value = { id: ep.id, title: ep.title, files: groupFileList(ep) }
+  currentEpisodeId.value = String(ep.id)
   filterQuery.value = ''
-  view.value = 'files'
+  commitView('files')
 }
 
 function goBackFromGroups() {
   if (currentCharacterId.value) {
-    view.value = 'idols'
+    commitView('idols')
   } else {
-    view.value = 'home'
+    goHome()
   }
 }
 
 function goBackToFiles() {
   if (currentUnit.value) {
-    view.value = 'episodes'
+    currentGroup.value = null
+    currentEpisodeId.value = ''
+    commitView('episodes')
   } else if (currentCategoryId.value === 'cards' && currentCardId.value) {
-    view.value = 'card_detail'
+    commitView('card_detail')
   } else if (currentCategoryId.value === 'cards') {
-    view.value = 'cards'
+    commitView('cards')
   } else if (currentCharacterId.value && (currentCategoryId.value === 'idol_chat' || currentCategoryId.value === 'idol_phone')) {
-    view.value = 'idols'
+    currentGroup.value = null
+    commitView('idols')
   } else if (currentCharacterId.value) {
-    view.value = 'groups'
+    currentGroup.value = null
+    commitView('groups')
   } else {
-    view.value = 'groups'
+    currentGroup.value = null
+    commitView('groups')
   }
 }
 
 function closePlayer() {
   currentScenario.value = null
-  view.value = returnViewAfterPlayer.value || 'files'
+  currentScenarioFile.value = ''
+  currentPreviewCue.value = ''
+  const returnView = returnViewAfterPlayer.value || 'files'
   returnViewAfterPlayer.value = 'files'
+  commitView(returnView)
 }
 
 function onPlayerReady() {
@@ -921,7 +1268,7 @@ function formatFileName(fn) {
   return fn.replace(/\.json$/, '').replace(/^[^_]+_[^_]+_scenario_/, '')
 }
 
-async function loadScenario(name, returnView = 'files') {
+async function loadScenario(name, returnView = 'files', options = {}) {
   loading.value = true
   preloadProgress.value = 0
   try {
@@ -929,155 +1276,72 @@ async function loadScenario(name, returnView = 'files') {
     const scenario = await r.json()
 
     // Preload all scenario assets before switching to player
-    await Preloader.preloadScenario(scenario.steps || [], (pct) => {
-      preloadProgress.value = pct
-    })
+    await Promise.all([
+      storyViewerLoader(),
+      Preloader.preloadScenario(scenario.steps || [], (pct) => {
+        preloadProgress.value = pct
+      }),
+    ])
 
     currentScenario.value = scenario
+    currentScenarioFile.value = name
+    currentPreviewCue.value = ''
     returnViewAfterPlayer.value = returnView
     view.value = 'player'
     loading.value = false
+    if (options.syncRoute !== false) syncArchiveRoute()
   } catch (err) {
     console.error('Failed to load:', err)
     loading.value = false
   }
 }
 
-function getStartupScenarioFile() {
-  const params = new URLSearchParams(window.location.search)
-  const raw = params.get('scenario') || params.get('file')
-  if (!raw) return ''
-  const normalized = raw.trim().replace(/^\/?data\/compiled\//, '')
-  if (!normalized || normalized.includes('..') || normalized.startsWith('/')) return ''
-  return normalized.endsWith('.json') ? normalized : `${normalized}.json`
-}
-
 onMounted(async () => {
-  const startupScenarioFile = getStartupScenarioFile()
-  try {
-    const r = await fetch('/data/compiled/index.json')
-    if (!r.ok) throw new Error(`HTTP ${r.status}`)
-    const contentType = r.headers.get('content-type') || ''
-    if (contentType.includes('text/html')) {
-      throw new Error('index.json returned HTML; compiled data is missing or not proxied')
-    }
-    indexData.value = await r.json()
-  } catch (err) {
-    console.error('Failed to load index:', err)
-  }
-
-  try {
-    const r = await fetch('/data/masterdata/card_index.json')
-    if (!r.ok) throw new Error(`HTTP ${r.status}`)
-    cardIndexData.value = await r.json()
-  } catch (err) {
-    console.error('Failed to load card index:', err)
-  }
-
-  try {
-    const r = await fetch('/data/masterdata/story_master_index.json')
-    if (!r.ok) throw new Error(`HTTP ${r.status}`)
-    storyMasterData.value = await r.json()
-  } catch (err) {
-    console.error('Failed to load story master index:', err)
-  }
-
-  try {
-    const r = await fetch('/data/masterdata/idol_unit_dictionary.json')
-    if (!r.ok) throw new Error(`HTTP ${r.status}`)
-    idolUnitData.value = await r.json()
-  } catch (err) {
-    console.error('Failed to load idol/unit dictionary:', err)
+  cardLayout.value = localStorage.getItem('sidem-archive-card-layout') === 'grid' ? 'grid' : 'compact'
+  cardArtMode.value = localStorage.getItem('sidem-archive-card-art-mode') === 'framed' ? 'framed' : 'clean'
+  const initialRoute = readArchiveRoute()
+  const { data, errors } = await loadArchiveData()
+  indexData.value = data.compiledIndex
+  cardIndexData.value = data.cardIndex
+  storyMasterData.value = data.storyMaster
+  idolUnitData.value = data.idolUnit
+  archiveManifestData.value = data.archiveManifest
+  archiveVerificationData.value = data.archiveVerification
+  for (const { key, error } of errors) {
+    console.error(`[ArchiveData] Failed to load ${key}:`, error)
   }
 
 
-  if (startupScenarioFile) {
-    await loadScenario(startupScenarioFile, 'home')
-  }
-  // Global debug helper: showAnims('001tom') prints available Spine animations.
-  window.showAnims = async (charaId, modelIdx) => {
-    const KNOWN_MODELS = [
-      '001tom_002_00','001tom_003_00','001tom_004_00','001tom_004_01','001tom_005_00','001tom_101_00','001tom_101_01','001tom_102_00','001tom_103_00','001tom_103_01',
-      '002dra_002_00','002dra_003_00','003min_002_00','003min_003_00','004ren_002_00','004ren_003_00','005sho_002_00','005sho_003_00',
-      '006aio_002_00','006aio_003_00','007you_002_00','007you_003_00',
-      '008ter_002_00','008ter_003_00','009ryu_002_00','009ryu_003_00',
-      '010kai_002_00','010kai_003_00',
-      '024kir_002_00','024kir_003_00','025suz_002_00','025suz_003_00',
-      '031sak_002_00','031sak_003_00','032nco_002_00','032nco_003_00',
-    ]
-    const models = KNOWN_MODELS.filter(m => m.startsWith(charaId))
-    if (models.length === 0) {
-      const ids = [...new Set(KNOWN_MODELS.map(m => m.split('_')[0]))].sort()
-      console.warn(`Unknown charaId "${charaId}". Try: ${ids.join(', ')}`)
-      return
-    }
-    const targets = modelIdx !== undefined ? [models[modelIdx]] : models
-    for (const modelId of targets) {
-      try {
-        const atlasUrl = `/assets/spines/${modelId}/comu.atlas`
-        const skelUrl = `/assets/spines/${modelId}/comu.skel`
-        const [atlasR, skelR] = await Promise.all([fetch(atlasUrl), fetch(skelUrl)])
-        if (!atlasR.ok || !skelR.ok) { console.warn(`[${modelId}] files not found`); continue }
-        const [atlasBuf, skelBuf] = await Promise.all([atlasR.arrayBuffer(), skelR.arrayBuffer()])
-        // Decode atlas with the same logic as PixiStageManager._decodeAtlasText.
-        const fullText = new TextDecoder('utf-8').decode(atlasBuf)
-        const si = fullText.indexOf('\nsize:')
-        let atlasText = fullText
-        if (si >= 0) {
-          const ls = fullText.lastIndexOf('\n', si - 1)
-          if (ls >= 0) {
-            const c = fullText.substring(ls + 1)
-            if (c.split('\n')[0].trim() && !c.includes(':')) atlasText = c
-          }
-        }
-        // Dynamically load PIXI + spine
-        const PIXI = await import('pixi.js')
-        const { SkeletonBinary, AtlasAttachmentLoader } = await import('@pixi-spine/runtime-3.8')
-        const { TextureAtlas } = await import('@pixi-spine/base')
-        // Extract texture filename from atlas (same as PixiStageManager._extractTextureFilename)
-        const texFileName = (() => {
-          for (const line of atlasText.split('\n')) {
-            const t = line.trim()
-            if (t && !t.includes(':') && !t.startsWith('//')) return t.split('/').pop()
-          }
-          return 'comu.png'
-        })()
-        // Load texture using Image() approach (same as PixiStageManager._loadTextureFromUrl)
-        const baseUrl = `/assets/spines/${modelId}`
-        const texUrl = `${baseUrl}/${texFileName}`
-        const texture = await new Promise((resolve, reject) => {
-          const img = new Image()
-          img.crossOrigin = 'anonymous'
-          img.onload = () => {
-            const bt = PIXI.BaseTexture.from(img)
-            bt.alphaMode = PIXI.ALPHA_MODES.PMA
-            const done = () => resolve(PIXI.Texture.from(bt))
-            if (bt.valid) done()
-            else { bt.once('update', done); setTimeout(() => { bt.valid ? true : done() }, 5000) }
-          }
-          img.onerror = () => reject(new Error('texture load failed'))
-          img.src = texUrl
-        })
-        texture.baseTexture.alphaMode = PIXI.ALPHA_MODES.PMA
-        const texMap = {}; texMap[texFileName] = texture
-        // Create fallback texture (magenta 64x64, same as PixiStageManager._getFallbackTexture)
-        const fbCanvas = document.createElement('canvas'); fbCanvas.width = 64; fbCanvas.height = 64
-        const fbCtx = fbCanvas.getContext('2d'); fbCtx.fillStyle = '#ff00ff'; fbCtx.fillRect(0, 0, 64, 64)
-        const fbBT = PIXI.BaseTexture.from(fbCanvas); fbBT.alphaMode = PIXI.ALPHA_MODES.PMA
-        const atlas = await new Promise((rs, rj) => {
-          new TextureAtlas(atlasText, (p, cb) => {
-            cb(texMap[p.split('/').pop()]?.baseTexture || fbBT)
-          }, r => r ? rs(r) : rj(new Error('atlas fail')))
-        })
-        atlas.pages.forEach(p => p.pma = true)
-        const sd = new SkeletonBinary(new AtlasAttachmentLoader(atlas)).readSkeletonData(new Uint8Array(skelBuf))
-        const anims = sd.animations.map(a => a.name)
-        console.log(`%c■ ${modelId} - ${anims.length} animations - ${sd.bones.length} bones`, 'font-weight:bold;color:#88ddff;font-size:14px')
-        console.log(anims.map((a, i) => `  ${String(i+1).padStart(2,'0')}. ${a}`).join('\n'))
-      } catch (e) { console.warn(`[${modelId}] load failed:`, e?.message || e) }
-    }
-  }
-  console.log('%cConsole: showAnims("001tom") - list all animations', 'color:#88ddff;font-size:12px')
+  await applyArchiveRoute(initialRoute)
+  archiveRouteReady = true
+  writeArchiveRoute(currentArchiveRoute(), { replace: true })
+  removeArchivePopState = onArchivePopState(route => {
+    applyArchiveRoute(route).catch(error => {
+      console.error('[ArchiveRoute] Failed to restore browser history:', error)
+    })
+  })
+  removeSpineAnimationDebug = installSpineAnimationDebug()
+})
+
+watch([filterQuery, currentCardRarity, currentCardAssetState, currentCardRelationState, currentIdolUnitFilter, currentStoryDomain, currentStoryAvailability, currentStorySort], () => {
+  syncArchiveRoute({ replace: true })
+})
+
+watch([filterQuery, currentStoryDomain, currentStoryAvailability, currentStorySort], () => {
+  storyVisibleLimit.value = 80
+})
+
+watch(cardLayout, layout => {
+  localStorage.setItem('sidem-archive-card-layout', layout)
+})
+
+watch(cardArtMode, mode => {
+  localStorage.setItem('sidem-archive-card-art-mode', mode)
+})
+
+onBeforeUnmount(() => {
+  removeArchivePopState?.()
+  removeSpineAnimationDebug?.()
 })
 </script>
 
@@ -1086,419 +1350,6 @@ onMounted(async () => {
   width: 100%; height: 100vh; color: #222;
   background: #f8f9fa; overflow: hidden;
 }
-/* Ensure no horizontal scroll at the app level */
-#story-viewer .screen { overflow-x: hidden; }
-
-/* Home */
-.home-screen {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  min-height: 100%; padding: 40px 20px;
-}
-.app-title { font-size: 1.6rem; margin-bottom: 4px; color: #111; }
-.app-subtitle { color: #888; font-size: 0.85rem; margin-bottom: 40px; }
-
-.category-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px; max-width: 560px; width: 100%;
-}
-.cat-btn {
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  background: #fff; border: 1px solid #e0e0e0;
-  border-radius: 12px; padding: 28px 12px; cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-}
-.cat-btn:hover { background: #f0f4ff; border-color: #88ccff; box-shadow: 0 2px 8px rgba(136,204,255,0.2); }
-.cat-label { font-size: 1rem; font-weight: bold; color: #333; }
-.cat-count { font-size: 0.7rem; color: #999; }
-
-/* Shared list screens */
-.list-screen { padding: 0; height: 100%; overflow-y: auto; overflow-x: hidden; }
-.list-header {
-  position: sticky; top: 0; z-index: 5;
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 16px; background: #fff; border-bottom: 1px solid #e0e0e0;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-}
-.list-header h2 { margin: 0; font-size: 1rem; flex: 1; color: #222; }
-.back-btn {
-  background: transparent; color: #4488cc; border: 1px solid #c0d8ee;
-  border-radius: 6px; padding: 4px 12px; cursor: pointer; font-size: 0.85rem;
-}
-.back-btn:hover { background: #e8f0ff; }
-
-.filter-bar {
-  position: sticky; top: 48px; z-index: 5;
-  padding: 8px 16px; background: #f8f9fa;
-}
-.filter-input {
-  width: 100%; padding: 8px 12px;
-  background: #fff; border: 1px solid #ccc; color: #222;
-  border-radius: 6px; font-size: 0.85rem;
-}
-.filter-input:focus { outline: none; border-color: #88ccff; box-shadow: 0 0 0 2px rgba(136,204,255,0.2); }
-
-/* Idol grid with avatars */
-.idol-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 12px; padding: 16px;
-}
-.idol-card {
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  background: #fff; border: 1px solid #e8e8e8;
-  border-radius: 12px; padding: 16px 8px 12px; cursor: pointer;
-  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-.idol-card:hover { background: #f0f4ff; border-color: #88ccff55; transform: translateY(-2px); box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
-.idol-avatar {
-  width: 56px; height: 56px; border-radius: 50%;
-  object-fit: cover; background: #eee;
-}
-.idol-name { font-size: 0.78rem; color: #444; text-align: center; line-height: 1.2; }
-
-.group-card { border-color: #b3d9ff; background: #f5faff; }
-
-/* Group list */
-.group-list {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px; padding: 12px 16px;
-}
-.group-card {
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  width: 100%; text-align: center;
-  background: #fff; border: 1px solid #e8e8e8;
-  border-radius: 10px; padding: 12px; cursor: pointer;
-  color: #444; transition: background 0.15s, box-shadow 0.15s;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-}
-.group-card:hover { background: #f5f7fa; color: #222; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
-
-/* Default group (non-event) */
-.group-title { display: block; font-size: 0.85rem; color: #333; line-height: 1.3; }
-.group-meta { font-size: 0.7rem; color: #999; margin-top: auto; }
-
-/* Event-specific display: fixed-height image + uniform card */
-.group-card-event { align-items: stretch; padding: 0; overflow: hidden; }
-.group-card-event .event-img-wrap {
-  width: 100%; height: 140px; display: flex; align-items: center; justify-content: center;
-  background: #f0f2f5; overflow: hidden;
-}
-.event-logo {
-  width: 100%; height: 100%; object-fit: contain; display: block;
-  background: #f0f2f5;
-}
-.event-info { display: flex; flex-direction: column; gap: 2px; padding: 6px 8px 10px; flex: 1; }
-.event-series { font-size: 0.65rem; color: #b8860b; text-transform: uppercase; font-weight: 600; }
-.event-title { font-size: 0.82rem; color: #111; font-weight: bold; line-height: 1.3; }
-.event-catchphrase { font-size: 0.7rem; color: #777; font-style: italic; line-height: 1.2; }
-
-/* Card archive */
-.card-archive-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px 16px 24px;
-}
-.card-rarity-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
-}
-.card-rarity-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  min-height: 28px;
-  border: 1px solid #d8dfe8;
-  border-radius: 6px;
-  background: #fff;
-  color: #444;
-  padding: 4px 9px;
-  cursor: pointer;
-  font-size: 0.76rem;
-}
-.card-rarity-tab small {
-  color: #888;
-  font-size: 0.68rem;
-}
-.card-rarity-tab.active {
-  border-color: #7fb2e5;
-  background: #edf6ff;
-  color: #245b91;
-}
-.card-archive-row {
-  display: grid;
-  grid-template-columns: 56px 44px 1fr auto;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  min-height: 64px;
-  text-align: left;
-  background: #fff;
-  border: 1px solid #e8e8e8;
-  border-radius: 8px;
-  padding: 10px 12px;
-  cursor: pointer;
-  color: #333;
-  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
-}
-.card-archive-row:hover {
-  background: #f5faff;
-  border-color: #b3d9ff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-.card-thumb {
-  width: 56px;
-  height: 56px;
-  object-fit: cover;
-  border-radius: 6px;
-  background: #eee;
-  border: 1px solid #e4e4e4;
-}
-.card-rarity {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 44px;
-  height: 24px;
-  border-radius: 6px;
-  background: #edf2ff;
-  color: #3157a4;
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-.card-main {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-.card-title {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #222;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.card-resource {
-  font-family: monospace;
-  font-size: 0.72rem;
-  color: #888;
-}
-.card-counts {
-  font-size: 0.72rem;
-  color: #777;
-  white-space: nowrap;
-}
-.card-detail {
-  max-width: 920px;
-  margin: 0 auto;
-  padding: 16px;
-}
-.card-detail-head,
-.card-detail-section {
-  background: #fff;
-  border: 1px solid #e8e8e8;
-  border-radius: 8px;
-  padding: 14px 16px;
-  margin-bottom: 12px;
-}
-.card-detail-art {
-  display: block;
-  width: min(220px, 70vw);
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  border-radius: 8px;
-  border: 1px solid #e4e4e4;
-  background: #eee;
-  margin-bottom: 12px;
-}
-.card-image-missing {
-  display: none;
-}
-.card-detail-head h3 {
-  margin: 8px 0 0;
-  font-size: 1.15rem;
-  color: #222;
-}
-.card-detail-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  color: #777;
-  font-family: monospace;
-  font-size: 0.78rem;
-}
-.card-detail-section h4 {
-  margin: 0 0 10px;
-  font-size: 0.92rem;
-  color: #333;
-}
-.card-text-block {
-  border-top: 1px solid #f0f0f0;
-  padding-top: 10px;
-  margin-top: 10px;
-}
-.card-text-block:first-of-type {
-  border-top: 0;
-  padding-top: 0;
-  margin-top: 0;
-}
-.card-text-block strong {
-  display: block;
-  margin-bottom: 6px;
-  color: #3157a4;
-  font-size: 0.78rem;
-}
-.card-text-block p {
-  margin: 0;
-  white-space: pre-wrap;
-  line-height: 1.65;
-  color: #222;
-}
-.voice-list,
-.scenario-link-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.voice-row {
-  display: grid;
-  grid-template-columns: minmax(160px, 1fr) minmax(220px, 360px) auto;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 10px;
-  border: 1px solid #f0f0f0;
-  border-radius: 6px;
-  background: #fafafa;
-}
-.voice-row span {
-  font-family: monospace;
-  font-size: 0.78rem;
-  color: #555;
-}
-.voice-row audio {
-  width: 100%;
-  height: 32px;
-}
-.voice-preview-btn {
-  min-height: 30px;
-  border: 1px solid #c8dcff;
-  border-radius: 6px;
-  background: #f5faff;
-  color: #245b91;
-  padding: 4px 10px;
-  cursor: pointer;
-  font-size: 0.74rem;
-  white-space: nowrap;
-}
-.voice-preview-btn:hover {
-  background: #e8f2ff;
-}
-.scenario-link-btn {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  text-align: left;
-  background: #fafafa;
-  border: 1px solid #eee;
-  border-radius: 6px;
-  padding: 9px 10px;
-  cursor: pointer;
-  color: #333;
-}
-.scenario-link-btn:hover:not(:disabled) { background: #f0f4ff; border-color: #c8dcff; }
-.scenario-link-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.scenario-link-btn small {
-  color: #888;
-  font-family: monospace;
-  font-size: 0.72rem;
-}
-
-/* Episode Zero unit grid */
-.unit-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 12px; padding: 16px;
-}
-.unit-card {
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  background: #fff; border: 1px solid #e8e8e8;
-  border-radius: 12px; padding: 20px 10px; cursor: pointer;
-  transition: background 0.15s, box-shadow 0.15s;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-.unit-card:hover { background: #f0f4ff; border-color: #88ccff55; }
-.unit-name { font-size: 0.85rem; font-weight: bold; color: #333; text-align: center; }
-.unit-count { font-size: 0.7rem; color: #999; }
-
-/* Episode list */
-.episode-list { padding: 8px 16px 16px; }
-.episode-btn {
-  display: block; width: 100%; text-align: left;
-  background: #fff; border: 1px solid #e8e8e8;
-  border-radius: 8px; padding: 12px 16px; margin-bottom: 6px; cursor: pointer;
-  color: #444; transition: background 0.15s;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-}
-.episode-btn:hover { background: #f5f7fa; color: #222; }
-.episode-title { display: block; font-size: 0.9rem; margin-bottom: 2px; color: #333; }
-.episode-count { font-size: 0.7rem; color: #999; }
-
-/* File list */
-.file-list { padding: 8px 16px 16px; }
-.file-btn {
-  display: flex; flex-direction: column; gap: 3px;
-  width: 100%; text-align: left;
-  background: #fff; border: 1px solid #eee;
-  border-radius: 6px; padding: 8px 12px; margin-bottom: 4px; cursor: pointer;
-  color: #444; font-size: 0.78rem;
-  transition: background 0.15s;
-}
-.file-btn:hover { background: #f0f4ff; color: #222; }
-.file-btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.58;
-}
-.file-btn-missing {
-  border-style: dashed;
-  background: #f8f8f8;
-}
-.file-title {
-  font-size: 0.86rem;
-  color: #333;
-  line-height: 1.35;
-}
-.file-subtitle {
-  font-family: monospace;
-  font-size: 0.7rem;
-  color: #888;
-  line-height: 1.25;
-}
-
-/* Loading overlay */
-.loading-overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: #fff; z-index: 9999;
-  display: flex; align-items: center; justify-content: center;
-}
-.loading-box {
-  display: flex; flex-direction: column; align-items: center; gap: 16px;
-}
-.loading-spinner {
-  width: 36px; height: 36px;
-  border: 3px solid #e0e0e0; border-top-color: #4488cc;
-  border-radius: 50%; animation: spin 0.8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.loading-text { color: #888; font-size: 0.9rem; }
 </style>
 
 <style>

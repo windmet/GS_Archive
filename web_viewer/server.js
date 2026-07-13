@@ -20,6 +20,7 @@ const DIST_DIR = path.resolve(__dirname, 'dist')
 // External asset roots (mirrors vite.config.js defaults)
 const LIPSYNC_ROOT = process.env.SIDEM_LIPSYNC_ROOT || 'E:/BaiduNetdiskDownload/SideM/scripts/lipsyncdata/adxlip'
 const AUDIO_ROOT = process.env.SIDEM_AUDIO_ROOT || 'E:/BaiduNetdiskDownload/SideM/GS_Res/Audio'
+const CARD_ART_ROOT = process.env.SIDEM_CARD_ART_ROOT || 'E:/BaiduNetdiskDownload/SideM/GS_Res/ALL_PHOTOS/assets/resources/image/image_card'
 
 function addSeAliasCandidates(candidates, fileName) {
   if (!fileName.endsWith('.ogg')) return
@@ -131,6 +132,18 @@ function handleLipsync(urlPath, res) {
   return false
 }
 
+function handleCardArt(urlPath, res) {
+  const clean = decodeURIComponent(urlPath.split('?')[0]).replace(/^\/+/, '')
+  const [kind, ...nameParts] = clean.split('/')
+  const directory = { portrait: 'image_card_portrait', landscape: 'image_card_landscape' }[kind]
+  const fileName = nameParts.join('/')
+  if (!directory || !/^image_card_(portrait|landscape)_[a-z0-9_]+\.png$/i.test(fileName)) return false
+  const rootPath = path.resolve(CARD_ART_ROOT)
+  const filePath = path.resolve(rootPath, directory, fileName)
+  if (!filePath.startsWith(rootPath + path.sep)) return false
+  return serveFile(res, filePath, 86400)
+}
+
 // ── Static file serving from dist/ ──
 function handleStatic(urlPath, res) {
   // Normalise: strip query strings, decode, remove leading /
@@ -183,6 +196,11 @@ const server = http.createServer((req, res) => {
     if (handleAudio(subPath, res)) return
   }
 
+  if (urlPath.startsWith('/assets/card-art/')) {
+    const subPath = urlPath.replace('/assets/card-art', '')
+    if (handleCardArt(subPath, res)) return
+  }
+
   // Route: static files from dist/
   if (handleStatic(urlPath, res)) return
 
@@ -200,5 +218,6 @@ server.listen(port, host, () => {
   }
   console.log(`   Audio:   ${AUDIO_ROOT}`)
   console.log(`   Lipsync: ${LIPSYNC_ROOT}`)
+  console.log(`   Card art: ${CARD_ART_ROOT}`)
   console.log(`   (Press Ctrl+C to stop)`)
 })

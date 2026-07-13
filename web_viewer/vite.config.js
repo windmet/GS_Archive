@@ -5,6 +5,7 @@ import path from 'node:path'
 
 const LIPSYNC_ROOT = process.env.SIDEM_LIPSYNC_ROOT || 'E:/BaiduNetdiskDownload/SideM/scripts/lipsyncdata/adxlip'
 const AUDIO_ROOT = process.env.SIDEM_AUDIO_ROOT || 'E:/BaiduNetdiskDownload/SideM/GS_Res/Audio'
+const CARD_ART_ROOT = process.env.SIDEM_CARD_ART_ROOT || 'E:/BaiduNetdiskDownload/SideM/GS_Res/ALL_PHOTOS/assets/resources/image/image_card'
 
 function addSeAliasCandidates(candidates, fileName) {
   if (!fileName.endsWith('.ogg')) return
@@ -108,8 +109,39 @@ function audioPlugin() {
   }
 }
 
+function cardArtPlugin() {
+  const directories = {
+    portrait: 'image_card_portrait',
+    landscape: 'image_card_landscape',
+  }
+  return {
+    name: 'sidem-card-art',
+    configureServer(server) {
+      server.middlewares.use('/assets/card-art', (req, res, next) => {
+        const rawUrl = decodeURIComponent((req.url || '').split('?')[0]).replace(/^\/+/, '')
+        const [kind, ...nameParts] = rawUrl.split('/')
+        const directory = directories[kind]
+        const fileName = nameParts.join('/')
+        if (!directory || !/^image_card_(portrait|landscape)_[a-z0-9_]+\.png$/i.test(fileName)) {
+          next()
+          return
+        }
+        const rootPath = path.resolve(CARD_ART_ROOT)
+        const filePath = path.resolve(rootPath, directory, fileName)
+        if (!filePath.startsWith(rootPath + path.sep) || !fs.existsSync(filePath)) {
+          next()
+          return
+        }
+        res.setHeader('Content-Type', 'image/png')
+        res.setHeader('Cache-Control', 'public, max-age=86400')
+        fs.createReadStream(filePath).pipe(res)
+      })
+    },
+  }
+}
+
 export default defineConfig({
-  plugins: [vue(), lipsyncStaticPlugin(), audioPlugin()],
+  plugins: [vue(), lipsyncStaticPlugin(), audioPlugin(), cardArtPlugin()],
   optimizeDeps: {
     noDiscovery: true,
     include: ['@pixi/utils'],

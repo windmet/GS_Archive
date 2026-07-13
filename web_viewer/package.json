@@ -6,13 +6,16 @@
   "scripts": {
     "dev": "vite --configLoader native",
     "build": "vite build --configLoader native",
+    "manifest": "node scripts/generate-archive-manifest.mjs",
+    "verify:archive": "node scripts/verify-archive.mjs",
     "preview": "vite preview --configLoader native",
     "start": "node server.js"
   },
   "dependencies": {
-    "vue": "^3.4.0",
+    "@lucide/vue": "^1.24.0",
+    "@pixi-spine/runtime-3.8": "^4.0.6",
     "pixi.js": "^7.4.2",
-    "@pixi-spine/runtime-3.8": "^4.0.6"
+    "vue": "^3.4.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.0",
