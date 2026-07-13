@@ -128,9 +128,9 @@ const verificationItems = computed(() => {
     },
     {
       label: '卡片关系',
-      value: relations.release_series_failures ? '需排查' : '通过',
-      detail: `${formatCount(relations.direct_story_cards)} story cards · ${formatCount(relations.valid_release_series)} series`,
-      tone: relations.release_series_failures ? 'warn' : 'ok',
+      value: relations.release_series_failures || relations.event_card_relation_failures || relations.gasha_card_relation_failures ? '需排查' : '通过',
+      detail: `${formatCount(relations.valid_event_card_relations)} event · ${formatCount(relations.valid_gasha_card_relations)} gasha · ${formatCount(relations.valid_release_series)} series`,
+      tone: relations.release_series_failures || relations.event_card_relation_failures || relations.gasha_card_relation_failures ? 'warn' : 'ok',
     },
     {
       label: '组合活动关系',
@@ -174,6 +174,8 @@ const inventoryItems = computed(() => {
     { label: 'Spine 模型', value: counts.spine_models },
     { label: '语音文件', value: counts.voice_files },
     { label: '卡片小剧情', value: props.manifest?.coverage?.card_relations?.cards_with_direct_story },
+    { label: '活动关联卡', value: props.manifest?.coverage?.card_relations?.cards_with_event_relation },
+    { label: '卡池关联卡', value: props.manifest?.coverage?.card_relations?.cards_with_gasha_relation },
     { label: '共通系列', value: counts.release_series },
     { label: '固定组合团活', value: props.manifest?.coverage?.unit_events?.fixed_unit_events },
     { label: '属性团曲', value: props.manifest?.coverage?.unit_events?.attribute_events },

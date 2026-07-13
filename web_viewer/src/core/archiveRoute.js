@@ -38,7 +38,7 @@ const VALID_VIEWS = new Set([
   'spine_lab',
 ])
 
-const VALID_CARD_RELATION_STATES = new Set(['all', 'card_story', 'release_series', 'unrelated'])
+const VALID_CARD_RELATION_STATES = new Set(['all', 'card_story', 'event_card', 'gasha_card', 'release_series', 'unrelated'])
 const VALID_EVENT_SCOPES = new Set(['all', 'fixed_unit_event', 'attribute_event', 'mixed_unit_event'])
 
 function clean(value) {

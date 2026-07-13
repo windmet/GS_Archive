@@ -78,9 +78,27 @@
         </div>
       </section>
 
-      <section v-if="card.release_series" class="card-detail-section card-relations">
+      <section v-if="eventRelation || gashaRelation || card.release_series" class="card-detail-section card-relations">
         <h4>关联资料</h4>
-        <div class="release-series">
+        <button v-if="eventRelation" class="event-relation" @click="emit('open-event', eventRelation)">
+          <CalendarRange :size="20" />
+          <span>
+            <strong>{{ eventScopeLabel(eventRelation) }}</strong>
+            <b>{{ eventRelation.title }}</b>
+            <small>发布时间一致 · {{ card.character_id }} 在活动阵容中</small>
+          </span>
+          <ArrowUpRight :size="18" />
+        </button>
+        <div v-if="gashaRelation" class="gasha-relation">
+          <Sparkles :size="20" />
+          <span>
+            <strong>卡池 Pickup</strong>
+            <b>{{ gashaRelation.title || `ガシャ ${gashaRelation.gasha_code}` }}</b>
+            <small v-if="gashaRelation.title">ガシャ {{ gashaRelation.gasha_code }}</small>
+            <small>突破道具 {{ gashaRelation.limitbreak_item_id }} · 开放时间 {{ formatDate(gashaRelation.start_at) }}</small>
+          </span>
+        </div>
+        <div v-if="card.release_series" class="release-series">
           <div class="release-series-heading">
             <Layers3 :size="20" />
             <span>
@@ -204,7 +222,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, ImageOff, Layers3 } from '@lucide/vue'
+import { ArrowUpRight, CalendarRange, CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, ImageOff, Layers3, Sparkles } from '@lucide/vue'
 import ArchiveImageLightbox from './ArchiveImageLightbox.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
 import { getVoiceUrl } from '../../utils/AssetResolver.js'
@@ -218,6 +236,8 @@ const props = defineProps({
   previousCard: { type: Object, default: null },
   nextCard: { type: Object, default: null },
   seriesCards: { type: Array, default: () => [] },
+  eventRelation: { type: Object, default: null },
+  gashaRelation: { type: Object, default: null },
 })
 const emit = defineEmits([
   'back',
@@ -225,6 +245,7 @@ const emit = defineEmits([
   'open-scenario',
   'navigate-card',
   'navigate-related-card',
+  'open-event',
   'update:art-mode',
 ])
 
@@ -235,6 +256,12 @@ const normalPortraitUrl = computed(() => getCardPortraitUrl(props.card?.resource
 const awakenedPortraitUrl = computed(() => getCardPortraitUrl(props.card?.resource_id, true, framedPortrait.value))
 const normalLandscapeUrl = computed(() => getCardLandscapeUrl(props.card?.resource_id, false))
 const awakenedLandscapeUrl = computed(() => getCardLandscapeUrl(props.card?.resource_id, true))
+
+function formatDate(timestamp) {
+  if (!Number.isFinite(timestamp)) return 'unknown'
+  return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Tokyo' })
+    .format(new Date(timestamp * 1000))
+}
 
 const lightboxItems = computed(() => {
   if (!props.card) return []
@@ -291,6 +318,12 @@ function scenarioSubtitle(entry) {
   return parts.join(' · ')
 }
 
+function eventScopeLabel(event) {
+  if (event.event_scope === 'fixed_unit_event') return '固定组合团活关联卡'
+  if (event.event_scope === 'attribute_event') return `${event.attribute} 属性团曲关联卡`
+  return '跨组合团活关联卡'
+}
+
 </script>
 
 <style scoped>
@@ -336,6 +369,17 @@ function scenarioSubtitle(entry) {
 .card-detail-section h4 { margin: 0 0 10px; font-size: 0.92rem; color: #333; }
 .card-relations { display: flex; flex-direction: column; gap: 10px; }
 .card-relations h4 { margin-bottom: 0; }
+.event-relation { display: grid; grid-template-columns: 28px minmax(0, 1fr) 20px; align-items: center; gap: 10px; width: 100%; min-height: 66px; padding: 10px 12px; border: 1px solid #bcded9; border-radius: 6px; background: #f3fbfa; color: #187d76; cursor: pointer; text-align: left; }
+.event-relation:hover { border-color: #6ebeb6; background: #eaf8f6; }
+.event-relation > span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.event-relation strong { color: #17736d; font-size: 0.64rem; }
+.event-relation b { overflow: hidden; color: #28353d; font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; }
+.event-relation small { color: #718088; font-size: 0.63rem; line-height: 1.4; }
+.gasha-relation { display: grid; grid-template-columns: 28px minmax(0, 1fr); align-items: center; gap: 10px; min-height: 66px; padding: 10px 12px; border: 1px solid #ead8a7; border-radius: 6px; background: #fffaf0; color: #9a6a13; }
+.gasha-relation > span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.gasha-relation strong { color: #8a5d0d; font-size: 0.64rem; }
+.gasha-relation b { overflow: hidden; color: #28353d; font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; }
+.gasha-relation small { color: #718088; font-size: 0.63rem; line-height: 1.4; }
 .release-series-heading > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .release-series-heading strong { color: #2b3a42; font-size: 0.72rem; }
 .release-series-heading small { color: #718088; font-size: 0.66rem; line-height: 1.4; }

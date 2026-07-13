@@ -75,11 +75,14 @@
         :previous-card="previousCard"
         :next-card="nextCard"
         :series-cards="currentSeriesCards"
+        :event-relation="currentCardEventRelation"
+        :gasha-relation="currentCardGashaRelation"
         @back="goBackToCards"
         @preview-voice="previewCardVoice"
         @open-scenario="openCardScenario"
         @navigate-card="openCard"
         @navigate-related-card="openRelatedCard"
+        @open-event="openCardEvent"
         @update:art-mode="cardArtMode = $event"
       />
 
@@ -656,6 +659,8 @@ const filteredCards = computed(() => {
 
 const currentCard = computed(() => cardMap.value.get(currentCardId.value) || null)
 const currentCardAssetStatus = computed(() => archiveManifestData.value?.card_assets_by_id?.[currentCardId.value] || null)
+const currentCardEventRelation = computed(() => archiveManifestData.value?.event_card_relations_by_card?.[currentCardId.value] || null)
+const currentCardGashaRelation = computed(() => archiveManifestData.value?.gasha_card_relations_by_card?.[currentCardId.value] || null)
 const currentCardIndex = computed(() => currentCards.value.findIndex(card => card.resource_id === currentCardId.value))
 const previousCard = computed(() => currentCardIndex.value > 0
   ? currentCards.value[currentCardIndex.value - 1]
@@ -694,8 +699,15 @@ function matchesCardAssetState(status, state) {
 function matchesCardRelationState(card, state) {
   if (state === 'all') return true
   if (state === 'card_story') return Boolean(card?.scenario_entries?.length)
+  if (state === 'event_card') return Boolean(archiveManifestData.value?.event_card_relations_by_card?.[card?.resource_id])
+  if (state === 'gasha_card') return Boolean(archiveManifestData.value?.gasha_card_relations_by_card?.[card?.resource_id])
   if (state === 'release_series') return Boolean(card?.release_series)
-  if (state === 'unrelated') return !card?.scenario_entries?.length && !card?.release_series
+  if (state === 'unrelated') {
+    return !card?.scenario_entries?.length &&
+      !card?.release_series &&
+      !archiveManifestData.value?.event_card_relations_by_card?.[card?.resource_id] &&
+      !archiveManifestData.value?.gasha_card_relations_by_card?.[card?.resource_id]
+  }
   return true
 }
 
@@ -1179,6 +1191,10 @@ async function previewCardVoice(cue) {
   const card = currentCard.value
   if (!card || !cue) return
   await openVoicePreview(card, cue, 'card_detail')
+}
+
+function openCardEvent(event) {
+  if (event?.file && event.exists) loadScenario(event.file, 'card_detail')
 }
 
 async function openVoicePreview(card, cue, returnView) {

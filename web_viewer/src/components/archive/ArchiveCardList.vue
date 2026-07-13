@@ -129,6 +129,8 @@ const assetStateOptions = [
 const relationStateOptions = [
   { id: 'all', label: '全部关联' },
   { id: 'card_story', label: '有卡片小剧情' },
+  { id: 'event_card', label: '活动关联卡' },
+  { id: 'gasha_card', label: '卡池关联卡' },
   { id: 'release_series', label: '共通系列' },
   { id: 'unrelated', label: '暂无直接关联' },
 ]
