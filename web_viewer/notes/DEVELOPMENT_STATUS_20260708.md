@@ -14,6 +14,8 @@
 - Portrait resources were verified as 640 x 800 (4:5). Preview containers now preserve that ratio with `object-fit: contain`, fixing cropped framed-card edges on desktop and mobile.
 - Corrected the card relation model: release timestamp equality is not an event-story foreign key, so the inferred `release_event` relation and UI jump were removed.
 - Direct card stories now come only from `scenario_entries` (177 canonical cards, 313 / 313 resources verified). Separately, 389 cards form 8 same-title/same-release common series, verified at 8 / 8.
+- Event stories now have an independent unit relation model: 31 fixed-unit events use exact compiled rosters, while three confirmed attribute-song events and two mixed-unit events remain separate. Verification passes at 36 / 36.
+- Unit detail now reports member-card coverage and separates fixed-unit events, attribute-event appearances, and mixed-unit appearances. The story catalog exposes the same 31 / 3 / 2 classification through URL-backed filters.
 
 ## Current Architecture
 
