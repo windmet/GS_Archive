@@ -247,6 +247,49 @@ def extract_scenario_titles(records: list[tuple[int, int, int, int, Any]]) -> di
     return tables
 
 
+def extract_gasha_announcements(
+    records: list[tuple[int, int, int, int, Any]],
+) -> dict[str, Any]:
+    announcements = []
+    for top_field, start, payload_start, end, payload in records:
+        if top_field != 173 or not isinstance(payload, bytes):
+            continue
+        row = parse_message(payload, nested=True)
+        asset_prefix = row.get("5")
+        period = row.get("3")
+        if not isinstance(asset_prefix, str) or "announce_gasha_" not in asset_prefix:
+            continue
+        if not isinstance(period, dict):
+            period = {}
+        code_match = re.search(r"announce_gasha_(\d+)_", asset_prefix)
+        announcements.append({
+            "announcement_id": row.get("1"),
+            "destination_id": row.get("4"),
+            "gasha_code": code_match.group(1) if code_match else "",
+            "asset_prefix": asset_prefix,
+            "start_at": period.get("1"),
+            "end_at": period.get("2"),
+            "announcement_type": row.get("6"),
+            "_source": source(173, {
+                "announcement_id": 1,
+                "period": 3,
+                "destination_id": 4,
+                "asset_prefix": 5,
+                "announcement_type": 6,
+            }, start),
+        })
+
+    announcements.sort(key=lambda item: (item.get("start_at") or 0, item.get("announcement_id") or 0))
+    return {
+        "announcements": announcements,
+        "meta": {
+            "count": len(announcements),
+            "source_table": 173,
+            "relation_note": "Card pickup relations are inferred from LimitbreakItemId (card field 23) plus an exact gasha start timestamp.",
+        },
+    }
+
+
 def extract_table_rows(
     records: list[tuple[int, int, int, int, Any]],
     table_ids: set[int],
@@ -1130,6 +1173,7 @@ def build_card_index(
             "title_full": card.get("13"),
             "title": card.get("40") or card.get("13"),
             "release_at": card.get("18"),
+            "limitbreak_item_id": card.get("23"),
             "release_series": release_series_by_card_id.get(card_id),
             "texts": {
                 "normal": card.get("19"),
@@ -1152,6 +1196,7 @@ def build_card_index(
                 "release_at": 18,
                 "normal_text": 19,
                 "awakened_text": 22,
+                "limitbreak_item_id": 23,
                 "extra_text": 36,
                 "title": 40,
             }, card.get("_offset")),
@@ -1348,6 +1393,7 @@ def main() -> None:
     prefab_models = load_prefab_models(args.prefab_meta)
     card_parameters = extract_card_parameters(records)
     story_tables = extract_scenario_titles(records)
+    gasha_announcement_index = extract_gasha_announcements(records)
     card_voice_cues = extract_card_voice_cues(records)
     card_home_voice_previews = collect_card_home_voice_previews(
         card_voice_cues,
@@ -1391,6 +1437,7 @@ def main() -> None:
         "card_voice_cue_field91_extract.json": card_voice_cues,
         "card_home_voice_preview_extract.json": card_home_voice_previews,
         "story_master_index.json": story_master_index,
+        "gasha_announcement_index.json": gasha_announcement_index,
         "card_index.json": card_index,
         "idol_unit_dictionary.json": idol_unit_dictionary,
         "speaker_dictionary.json": speaker_dictionary,
@@ -1417,6 +1464,7 @@ def main() -> None:
         args.public_out_dir.mkdir(parents=True, exist_ok=True)
         for filename in (
             "story_master_index.json",
+            "gasha_announcement_index.json",
             "card_index.json",
             "idol_unit_dictionary.json",
             "speaker_dictionary.json",

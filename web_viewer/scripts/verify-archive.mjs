@@ -45,11 +45,12 @@ function relationRecords(cardIndex, field) {
   )
 }
 
-const [compiledFiles, voiceEntries, cardIndex, storyMaster, archiveManifest] = await Promise.all([
+const [compiledFiles, voiceEntries, cardIndex, storyMaster, gashaAnnouncementIndex, archiveManifest] = await Promise.all([
   listFiles(compiledRoot, name => name.endsWith('.json') && !['index.json', 'manifest.json', 'voice_index.json'].includes(name)),
   readdir(voiceRoot, { withFileTypes: true }),
   readFile(path.join(publicRoot, 'data', 'masterdata', 'card_index.json'), 'utf8').then(JSON.parse),
   readFile(path.join(publicRoot, 'data', 'masterdata', 'story_master_index.json'), 'utf8').then(JSON.parse),
+  readFile(path.join(publicRoot, 'data', 'masterdata', 'gasha_announcement_index.json'), 'utf8').then(JSON.parse),
   readFile(path.join(publicRoot, 'data', 'archive_manifest.json'), 'utf8').then(JSON.parse),
 ])
 
@@ -248,6 +249,87 @@ for (const relation of archiveManifest.unit_event_relations || []) {
   }
 }
 
+const canonicalCardByResource = new Map(canonicalCards.map(card => [card.resource_id, card]))
+const manifestEventById = new Map((archiveManifest.unit_event_relations || []).map(event => [String(event.event_id), event]))
+const gashaAnnouncementById = new Map((gashaAnnouncementIndex.announcements || []).map(item => [String(item.announcement_id), item]))
+const confirmedGashaTitles = new Map([['10028', '夏の夜を彩るキャンドルナイトガシャ']])
+const gashaCardFailures = []
+let validGashaCardRelations = 0
+for (const [resourceId, relation] of Object.entries(archiveManifest.gasha_card_relations_by_card || {})) {
+  const card = canonicalCardByResource.get(resourceId)
+  const announcement = gashaAnnouncementById.get(String(relation.announcement_id))
+  const valid = card && announcement &&
+    card.resource_id === relation.card_resource_id &&
+    card.card_id === relation.card_id &&
+    card.character_id === relation.character_id &&
+    card.rarity === relation.rarity &&
+    card.limitbreak_item_id === relation.limitbreak_item_id &&
+    card.release_at === relation.start_at &&
+    announcement.start_at === relation.start_at &&
+    announcement.end_at === relation.end_at &&
+    announcement.gasha_code === relation.gasha_code &&
+    relation.title === (confirmedGashaTitles.get(String(relation.gasha_code)) || '') &&
+    relation.title_source === (relation.title ? 'user-confirmed wiki cross-check 2026-07-14' : '') &&
+    announcement.asset_prefix === relation.asset_prefix &&
+    relation.relation_type === 'limitbreak_item_and_exact_gasha_start_timestamp'
+  if (valid) validGashaCardRelations += 1
+  else if (gashaCardFailures.length < SAMPLE_LIMIT) gashaCardFailures.push({ resourceId, relation, card, announcement })
+}
+const gashaStarts = new Map()
+for (const announcement of gashaAnnouncementIndex.announcements || []) {
+  if (!gashaStarts.has(announcement.start_at)) gashaStarts.set(announcement.start_at, [])
+  gashaStarts.get(announcement.start_at).push(announcement)
+}
+const expectedGashaCardIds = canonicalCards
+  .filter(card => Number.isFinite(card.limitbreak_item_id) && (gashaStarts.get(card.release_at) || []).length === 1)
+  .map(card => card.resource_id)
+  .sort()
+const actualGashaCardIds = Object.keys(archiveManifest.gasha_card_relations_by_card || {}).sort()
+if (!sameValues(expectedGashaCardIds, actualGashaCardIds) && gashaCardFailures.length < SAMPLE_LIMIT) {
+  gashaCardFailures.push({
+    reason: 'derived gasha-card id set differs from manifest',
+    expected_count: expectedGashaCardIds.length,
+    actual_count: actualGashaCardIds.length,
+    missing: expectedGashaCardIds.filter(id => !actualGashaCardIds.includes(id)).slice(0, SAMPLE_LIMIT),
+    unexpected: actualGashaCardIds.filter(id => !expectedGashaCardIds.includes(id)).slice(0, SAMPLE_LIMIT),
+  })
+}
+const eventCardFailures = []
+let validEventCardRelations = 0
+for (const [resourceId, relation] of Object.entries(archiveManifest.event_card_relations_by_card || {})) {
+  const card = canonicalCardByResource.get(resourceId)
+  const event = manifestEventById.get(String(relation.event_id))
+  const valid = card && event &&
+    card.resource_id === relation.card_resource_id &&
+    card.card_id === relation.card_id &&
+    card.character_id === relation.character_id &&
+    card.rarity === relation.rarity &&
+    card.release_at === relation.release_at &&
+    event.release_at === relation.release_at &&
+    event.characters.includes(card.character_id) &&
+    event.title === relation.title &&
+    event.file === relation.file &&
+    relation.relation_type === 'exact_release_timestamp_and_event_character_roster'
+  if (valid) validEventCardRelations += 1
+  else if (eventCardFailures.length < SAMPLE_LIMIT) eventCardFailures.push({ resourceId, relation, card, event })
+}
+const expectedEventCardIds = canonicalCards
+  .filter(card => !actualGashaCardIds.includes(card.resource_id) && (archiveManifest.unit_event_relations || []).some(event =>
+    event.release_at === card.release_at && event.characters.includes(card.character_id),
+  ))
+  .map(card => card.resource_id)
+  .sort()
+const actualEventCardIds = Object.keys(archiveManifest.event_card_relations_by_card || {}).sort()
+if (!sameValues(expectedEventCardIds, actualEventCardIds) && eventCardFailures.length < SAMPLE_LIMIT) {
+  eventCardFailures.push({
+    reason: 'derived event-card id set differs from manifest',
+    expected_count: expectedEventCardIds.length,
+    actual_count: actualEventCardIds.length,
+    missing: expectedEventCardIds.filter(id => !actualEventCardIds.includes(id)).slice(0, SAMPLE_LIMIT),
+    unexpected: actualEventCardIds.filter(id => !expectedEventCardIds.includes(id)).slice(0, SAMPLE_LIMIT),
+  })
+}
+
 const report = {
   schema_version: 1,
   generated_at: new Date().toISOString(),
@@ -287,6 +369,14 @@ const report = {
   card_relations: {
     direct_story_cards: canonicalCards.filter(card => card.scenario_entries?.length).length,
     valid_direct_story_entries: availableCardScenarios,
+    event_card_relations: actualEventCardIds.length,
+    valid_event_card_relations: validEventCardRelations,
+    event_card_relation_failures: eventCardFailures.length,
+    event_card_relation_failure_samples: eventCardFailures,
+    gasha_card_relations: actualGashaCardIds.length,
+    valid_gasha_card_relations: validGashaCardRelations,
+    gasha_card_relation_failures: gashaCardFailures.length,
+    gasha_card_relation_failure_samples: gashaCardFailures,
     release_series: releaseSeriesGroups.size,
     valid_release_series: validReleaseSeries,
     release_series_failures: releaseSeriesFailures.length,
@@ -314,4 +404,6 @@ console.log(JSON.stringify({
   cardScenarios: `${availableCardScenarios}/${cardScenarioRecords.length}`,
   releaseSeries: `${validReleaseSeries}/${releaseSeriesGroups.size}`,
   unitEvents: `${validUnitEvents}/${archiveManifest.unit_event_relations?.length || 0}`,
+  eventCards: `${validEventCardRelations}/${actualEventCardIds.length}`,
+  gashaCards: `${validGashaCardRelations}/${actualGashaCardIds.length}`,
 }))

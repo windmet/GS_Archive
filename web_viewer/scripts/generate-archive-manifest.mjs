@@ -33,11 +33,12 @@ async function countDirectories(relativePath) {
   return entries.filter(entry => entry.isDirectory()).length
 }
 
-const [compiledIndex, cardIndex, idolUnit, storyMaster] = await Promise.all([
+const [compiledIndex, cardIndex, idolUnit, storyMaster, gashaAnnouncementIndex] = await Promise.all([
   readJson('data/compiled/index.json'),
   readJson('data/masterdata/card_index.json'),
   readJson('data/masterdata/idol_unit_dictionary.json'),
   readJson('data/masterdata/story_master_index.json'),
+  readJson('data/masterdata/gasha_announcement_index.json'),
 ])
 
 function cardPreferenceScore(card) {
@@ -61,6 +62,7 @@ const sourcePaths = [
   'data/masterdata/card_index.json',
   'data/masterdata/idol_unit_dictionary.json',
   'data/masterdata/story_master_index.json',
+  'data/masterdata/gasha_announcement_index.json',
 ]
 const sourceStats = await Promise.all(sourcePaths.map(relativePath => stat(path.join(publicRoot, relativePath))))
 const dataUpdatedAt = new Date(Math.max(...sourceStats.map(item => item.mtimeMs))).toISOString()
@@ -156,6 +158,10 @@ const SPECIAL_EVENT_CLASSIFICATIONS = new Map([
   ['410018', { event_scope: 'mixed_unit_event', attribute: '' }],
 ])
 
+const CONFIRMED_GASHA_TITLES = new Map([
+  ['10028', '夏の夜を彩るキャンドルナイトガシャ'],
+])
+
 function deriveUnitEventRelations(membership) {
   const membersByUnit = new Map()
   for (const [idolCode, evidence] of Object.entries(membership)) {
@@ -242,6 +248,85 @@ function deriveUnitEventRelations(membership) {
   return { events, byUnit }
 }
 
+function deriveGashaCardRelations(cards, announcements) {
+  const byCard = {}
+  const byGasha = {}
+  const announcementsByStart = new Map()
+  for (const announcement of announcements) {
+    if (!Number.isFinite(announcement.start_at)) continue
+    if (!announcementsByStart.has(announcement.start_at)) announcementsByStart.set(announcement.start_at, [])
+    announcementsByStart.get(announcement.start_at).push(announcement)
+  }
+
+  for (const card of cards) {
+    if (!Number.isFinite(card.limitbreak_item_id)) continue
+    const matches = announcementsByStart.get(card.release_at) || []
+    if (matches.length !== 1) continue
+    const announcement = matches[0]
+    const confirmedTitle = CONFIRMED_GASHA_TITLES.get(String(announcement.gasha_code)) || ''
+    const relation = {
+      card_id: card.card_id,
+      card_resource_id: card.resource_id,
+      character_id: card.character_id,
+      rarity: card.rarity,
+      limitbreak_item_id: card.limitbreak_item_id,
+      announcement_id: announcement.announcement_id,
+      destination_id: announcement.destination_id,
+      gasha_code: announcement.gasha_code,
+      title: confirmedTitle,
+      title_source: confirmedTitle ? 'user-confirmed wiki cross-check 2026-07-14' : '',
+      asset_prefix: announcement.asset_prefix,
+      start_at: announcement.start_at,
+      end_at: announcement.end_at,
+      relation_type: 'limitbreak_item_and_exact_gasha_start_timestamp',
+    }
+    byCard[card.resource_id] = relation
+    const gashaId = String(announcement.announcement_id)
+    if (!byGasha[gashaId]) byGasha[gashaId] = []
+    byGasha[gashaId].push(relation)
+  }
+  for (const relations of Object.values(byGasha)) {
+    relations.sort((a, b) => a.character_id.localeCompare(b.character_id) || Number(a.card_id) - Number(b.card_id))
+  }
+  return { byCard, byGasha }
+}
+
+function deriveEventCardRelations(cards, events, gashaCardIds) {
+  const byCard = {}
+  const byEvent = {}
+  for (const card of cards) {
+    if (gashaCardIds.has(card.resource_id)) continue
+    const event = events.find(candidate =>
+      candidate.release_at === card.release_at && candidate.characters.includes(card.character_id),
+    )
+    if (!event) continue
+    const relation = {
+      card_id: card.card_id,
+      card_resource_id: card.resource_id,
+      character_id: card.character_id,
+      rarity: card.rarity,
+      event_group_id: event.event_group_id,
+      event_id: event.event_id,
+      event_code: event.event_code,
+      title: event.title,
+      release_at: event.release_at,
+      file: event.file,
+      exists: event.exists,
+      event_scope: event.event_scope,
+      attribute: event.attribute,
+      relation_type: 'exact_release_timestamp_and_event_character_roster',
+    }
+    byCard[card.resource_id] = relation
+    const eventId = String(event.event_id)
+    if (!byEvent[eventId]) byEvent[eventId] = []
+    byEvent[eventId].push(relation)
+  }
+  for (const relations of Object.values(byEvent)) {
+    relations.sort((a, b) => a.character_id.localeCompare(b.character_id) || Number(a.card_id) - Number(b.card_id))
+  }
+  return { byCard, byEvent }
+}
+
 const iconNames = new Set(await readdir(path.join(publicRoot, 'assets/cards/icons')))
 const largeNames = new Set(await readdir(path.join(publicRoot, 'assets/cards/large')))
 const voiceNames = new Set(await readdir(path.join(publicRoot, 'assets/voice')))
@@ -290,6 +375,12 @@ for (const card of archiveCards) {
 }
 const unitEvidence = deriveUnitMembership()
 const unitEventEvidence = deriveUnitEventRelations(unitEvidence.membership)
+const gashaCardEvidence = deriveGashaCardRelations(archiveCards, gashaAnnouncementIndex.announcements || [])
+const eventCardEvidence = deriveEventCardRelations(
+  archiveCards,
+  unitEventEvidence.events,
+  new Set(Object.keys(gashaCardEvidence.byCard)),
+)
 const storyCoverage = collectCompiledCoverage(storyMaster)
 const homeVoiceCoverage = cardRelationCoverage('home_voice_cues')
 const cardScenarioCoverage = cardRelationCoverage('scenario_entries')
@@ -368,9 +459,15 @@ const manifest = {
     },
     card_relations: {
       cards_with_direct_story: archiveCards.filter(card => card.scenario_entries?.length).length,
+      cards_with_event_relation: Object.keys(eventCardEvidence.byCard).length,
+      event_card_relation_count: Object.keys(eventCardEvidence.byCard).length,
+      cards_with_gasha_relation: Object.keys(gashaCardEvidence.byCard).length,
+      gasha_card_relation_count: Object.keys(gashaCardEvidence.byCard).length,
       cards_with_release_series: releaseSeriesCards.length,
       release_series_count: releaseSeriesById.size,
       direct_story_rule: 'card scenario row id // 100 equals card id',
+      event_card_rule: 'card is not a gasha pickup, release_at equals event release_at, and character appears in compiled event roster',
+      gasha_card_rule: 'card LimitbreakItemId (field 23) exists and card release_at equals exactly one gasha announcement start_at',
       release_series_rule: 'cards share card table fields 18 (release_at) and 40 (title)',
     },
     unit_membership: {
@@ -392,6 +489,10 @@ const manifest = {
   unit_membership_by_idol: unitEvidence.membership,
   unit_event_relations: unitEventEvidence.events,
   unit_event_relations_by_unit: unitEventEvidence.byUnit,
+  event_card_relations_by_card: eventCardEvidence.byCard,
+  event_card_relations_by_event: eventCardEvidence.byEvent,
+  gasha_card_relations_by_card: gashaCardEvidence.byCard,
+  gasha_card_relations_by_gasha: gashaCardEvidence.byGasha,
   card_assets_by_id: cardAssetsById,
   sources: sourcePaths,
   external_sources: {
