@@ -45,13 +45,15 @@ function relationRecords(cardIndex, field) {
   )
 }
 
-const [compiledFiles, voiceEntries, cardIndex, cardDetailIndex, storyMaster, gashaAnnouncementIndex, archiveManifest] = await Promise.all([
+const [compiledFiles, voiceEntries, gashaBannerFiles, cardIndex, cardDetailIndex, storyMaster, gashaAnnouncementIndex, gashaIndex, archiveManifest] = await Promise.all([
   listFiles(compiledRoot, name => name.endsWith('.json') && !['index.json', 'manifest.json', 'voice_index.json'].includes(name)),
   readdir(voiceRoot, { withFileTypes: true }),
+  listFiles(path.join(publicRoot, 'assets', 'gasha'), name => name.endsWith('.png')),
   readFile(path.join(publicRoot, 'data', 'masterdata', 'card_index.json'), 'utf8').then(JSON.parse),
   readFile(path.join(publicRoot, 'data', 'masterdata', 'card_detail_index.json'), 'utf8').then(JSON.parse),
   readFile(path.join(publicRoot, 'data', 'masterdata', 'story_master_index.json'), 'utf8').then(JSON.parse),
   readFile(path.join(publicRoot, 'data', 'masterdata', 'gasha_announcement_index.json'), 'utf8').then(JSON.parse),
+  readFile(path.join(publicRoot, 'data', 'masterdata', 'gasha_index.json'), 'utf8').then(JSON.parse),
   readFile(path.join(publicRoot, 'data', 'archive_manifest.json'), 'utf8').then(JSON.parse),
 ])
 
@@ -253,7 +255,7 @@ for (const relation of archiveManifest.unit_event_relations || []) {
 const canonicalCardByResource = new Map(canonicalCards.map(card => [card.resource_id, card]))
 const manifestEventById = new Map((archiveManifest.unit_event_relations || []).map(event => [String(event.event_id), event]))
 const gashaAnnouncementById = new Map((gashaAnnouncementIndex.announcements || []).map(item => [String(item.announcement_id), item]))
-const confirmedGashaTitles = new Map([['10028', '夏の夜を彩るキャンドルナイトガシャ']])
+const confirmedGashaTitles = new Map(Object.entries(gashaIndex.by_code || {}).map(([code, gasha]) => [code, gasha.title || '']))
 const gashaCardFailures = []
 let validGashaCardRelations = 0
 for (const [resourceId, relation] of Object.entries(archiveManifest.gasha_card_relations_by_card || {})) {
@@ -270,9 +272,10 @@ for (const [resourceId, relation] of Object.entries(archiveManifest.gasha_card_r
     announcement.end_at === relation.end_at &&
     announcement.gasha_code === relation.gasha_code &&
     relation.title === (confirmedGashaTitles.get(String(relation.gasha_code)) || '') &&
-    relation.title_source === (relation.title ? 'user-confirmed wiki cross-check 2026-07-14' : '') &&
+    relation.title_source === (relation.title ? 'curated' : '') &&
     announcement.asset_prefix === relation.asset_prefix &&
-    relation.relation_type === 'limitbreak_item_and_exact_gasha_start_timestamp'
+    relation.relation_type === 'limitbreak_item_and_exact_gasha_start_timestamp' &&
+    relation.evidence_level === 'derived'
   if (valid) validGashaCardRelations += 1
   else if (gashaCardFailures.length < SAMPLE_LIMIT) gashaCardFailures.push({ resourceId, relation, card, announcement })
 }
@@ -294,6 +297,32 @@ if (!sameValues(expectedGashaCardIds, actualGashaCardIds) && gashaCardFailures.l
     missing: expectedGashaCardIds.filter(id => !actualGashaCardIds.includes(id)).slice(0, SAMPLE_LIMIT),
     unexpected: actualGashaCardIds.filter(id => !expectedGashaCardIds.includes(id)).slice(0, SAMPLE_LIMIT),
   })
+}
+const gashaBannerNames = new Set(gashaBannerFiles.map(file => path.basename(file)))
+const gashaEntityFailures = []
+let validGashaEntities = 0
+for (const gasha of gashaIndex.gashas || []) {
+  const announcement = gashaAnnouncementById.get(String(gasha.announcement_id))
+  const relationCards = gashaIndex.relations_by_gasha?.[String(gasha.id)] || []
+  const valid = announcement &&
+    String(gasha.id) === String(gasha.announcement_id) &&
+    String(gasha.code) === String(announcement.gasha_code) &&
+    gasha.start_at === announcement.start_at &&
+    gasha.end_at === announcement.end_at &&
+    gasha.asset_prefix === announcement.asset_prefix &&
+    gasha.banner_file === `${announcement.asset_prefix}01.png` &&
+    gashaBannerNames.has(gasha.banner_file) &&
+    sameValues(
+      relationCards.map(item => item.card_resource_id).sort(),
+      (gasha.derived_pickup_cards || []).map(item => item.card_resource_id).sort(),
+    )
+  if (valid) validGashaEntities += 1
+  else if (gashaEntityFailures.length < SAMPLE_LIMIT) gashaEntityFailures.push({ gasha, announcement, relationCards })
+}
+const gashaCodes = (gashaIndex.gashas || []).map(item => item.code)
+const gashaIds = (gashaIndex.gashas || []).map(item => item.id)
+if (new Set(gashaCodes).size !== gashaCodes.length || new Set(gashaIds).size !== gashaIds.length) {
+  gashaEntityFailures.push({ reason: 'duplicate gasha code or id' })
 }
 const eventCardFailures = []
 let validEventCardRelations = 0
@@ -438,6 +467,18 @@ const report = {
     operational_voices: cardDetailIndex.meta?.operational_voice_count || 0,
     costume_relations: cardDetailIndex.meta?.costume_relation_count || 0,
   },
+  gashas: {
+    total: gashaIndex.gashas?.length || 0,
+    valid: validGashaEntities,
+    failures: gashaEntityFailures.length,
+    failure_samples: gashaEntityFailures,
+    named: gashaIndex.meta?.named_count || 0,
+    banners: gashaBannerNames.size,
+    derived_pickup_cards: actualGashaCardIds.length,
+    reference_sample: '10028',
+    reference_sample_valid: gashaIndex.by_code?.['10028']?.title === '夏の夜を彩るキャンドルナイトガシャ' &&
+      (gashaIndex.by_code?.['10028']?.derived_pickup_cards || []).some(item => item.card_resource_id === '040ren_ssr02'),
+  },
   unit_event_relations: {
     total: archiveManifest.unit_event_relations?.length || 0,
     valid: validUnitEvents,
@@ -462,6 +503,7 @@ console.log(JSON.stringify({
   unitEvents: `${validUnitEvents}/${archiveManifest.unit_event_relations?.length || 0}`,
   eventCards: `${validEventCardRelations}/${actualEventCardIds.length}`,
   gashaCards: `${validGashaCardRelations}/${actualGashaCardIds.length}`,
+  gashas: `${validGashaEntities}/${gashaIndex.gashas?.length || 0}`,
   cardDetails: `${validCardDetails}/${canonicalCards.length}`,
   renSample: renSampleValid ? 'valid' : 'invalid',
 }))

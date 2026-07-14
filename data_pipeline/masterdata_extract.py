@@ -308,6 +308,119 @@ def extract_gasha_announcements(
     }
 
 
+def canonical_cards(cards: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    by_resource_id: dict[str, dict[str, Any]] = {}
+    for card in cards:
+        resource_id = card.get("resource_id")
+        if not isinstance(resource_id, str) or not resource_id:
+            continue
+        tutorial = bool(re.match(r"^チュートリアル", str(card.get("title") or ""))) or int(card.get("card_id") or 0) >= 90000000
+        score = (0 if tutorial else 100) + len(card.get("home_voice_cues") or []) + len(card.get("scenario_entries") or [])
+        current = by_resource_id.get(resource_id)
+        if not current or score > current["_canonical_score"]:
+            by_resource_id[resource_id] = {**card, "_canonical_score": score}
+    return [
+        {key: value for key, value in card.items() if key != "_canonical_score"}
+        for card in by_resource_id.values()
+    ]
+
+
+def build_gasha_index(
+    announcement_index: dict[str, Any],
+    card_index: dict[str, Any],
+    curated_titles: dict[str, Any],
+) -> dict[str, Any]:
+    title_entries = curated_titles.get("entries_by_code", {}) if isinstance(curated_titles, dict) else {}
+    cards = canonical_cards(card_index.get("cards", []))
+    announcements = announcement_index.get("announcements", [])
+    announcements_by_start: dict[int, list[dict[str, Any]]] = defaultdict(list)
+    for announcement in announcements:
+        start_at = announcement.get("start_at")
+        if isinstance(start_at, int):
+            announcements_by_start[start_at].append(announcement)
+
+    relations_by_card: dict[str, dict[str, Any]] = {}
+    relations_by_gasha: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for card in cards:
+        if not isinstance(card.get("limitbreak_item_id"), int):
+            continue
+        matches = announcements_by_start.get(card.get("release_at"), [])
+        if len(matches) != 1:
+            continue
+        announcement = matches[0]
+        code = str(announcement.get("gasha_code") or "")
+        title_entry = title_entries.get(code, {}) if isinstance(title_entries, dict) else {}
+        relation = {
+            "card_id": card.get("card_id"),
+            "card_resource_id": card.get("resource_id"),
+            "character_id": card.get("character_id"),
+            "rarity": card.get("rarity"),
+            "card_title": card.get("title"),
+            "limitbreak_item_id": card.get("limitbreak_item_id"),
+            "announcement_id": announcement.get("announcement_id"),
+            "destination_id": announcement.get("destination_id"),
+            "gasha_code": code,
+            "title": title_entry.get("title", ""),
+            "title_source": title_entry.get("source_type", "") if title_entry else "",
+            "asset_prefix": announcement.get("asset_prefix"),
+            "start_at": announcement.get("start_at"),
+            "end_at": announcement.get("end_at"),
+            "relation_type": "limitbreak_item_and_exact_gasha_start_timestamp",
+            "evidence_level": "derived",
+        }
+        resource_id = card.get("resource_id")
+        if isinstance(resource_id, str):
+            relations_by_card[resource_id] = relation
+        relations_by_gasha[str(announcement.get("announcement_id"))].append(relation)
+
+    for relations in relations_by_gasha.values():
+        relations.sort(key=lambda item: (str(item.get("character_id") or ""), int(item.get("card_id") or 0)))
+
+    gashas = []
+    for announcement in announcements:
+        announcement_id = str(announcement.get("announcement_id"))
+        code = str(announcement.get("gasha_code") or "")
+        title_entry = title_entries.get(code, {}) if isinstance(title_entries, dict) else {}
+        title = title_entry.get("title", "") if isinstance(title_entry, dict) else ""
+        banner_file = f"{announcement.get('asset_prefix') or ''}01.png"
+        gashas.append({
+            "id": announcement_id,
+            "code": code,
+            "title": title,
+            "display_name": title or f"ガシャ {code}",
+            "name_known": bool(title),
+            "name_source": title_entry if title else {"source_type": "internal_code_fallback"},
+            "announcement_id": announcement.get("announcement_id"),
+            "destination_id": announcement.get("destination_id"),
+            "start_at": announcement.get("start_at"),
+            "end_at": announcement.get("end_at"),
+            "announcement_type": announcement.get("announcement_type"),
+            "asset_prefix": announcement.get("asset_prefix"),
+            "banner_file": banner_file,
+            "banner_url": f"/assets/gasha/{banner_file}",
+            "derived_pickup_cards": relations_by_gasha.get(announcement_id, []),
+            "pickup_relation_type": "limitbreak_item_and_exact_gasha_start_timestamp",
+            "_source": announcement.get("_source"),
+        })
+
+    gashas.sort(key=lambda item: (int(item.get("start_at") or 0), int(item.get("announcement_id") or 0)))
+    return {
+        "schema_version": 1,
+        "gashas": gashas,
+        "by_id": {item["id"]: item for item in gashas},
+        "by_code": {item["code"]: item for item in gashas if item.get("code")},
+        "relations_by_card": relations_by_card,
+        "relations_by_gasha": dict(relations_by_gasha),
+        "meta": {
+            "gasha_count": len(gashas),
+            "named_count": sum(1 for item in gashas if item.get("name_known")),
+            "derived_pickup_count": len(relations_by_card),
+            "raw_source": "client_master_data table 173 announcement rows",
+            "instance_gap": "GashaData values were delivered by GashaListReply and are not present in the saved container.",
+        },
+    }
+
+
 def extract_table_rows(
     records: list[tuple[int, int, int, int, Any]],
     table_ids: set[int],
@@ -1771,6 +1884,11 @@ def main() -> None:
         type=Path,
         default=Path(__file__).resolve().parent / "curated" / "card_voice_transcripts.json",
     )
+    parser.add_argument(
+        "--curated-gasha-titles",
+        type=Path,
+        default=Path(__file__).resolve().parent / "curated" / "gasha_titles.json",
+    )
     args = parser.parse_args()
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
@@ -1785,6 +1903,7 @@ def main() -> None:
     spine_ids = load_spine_ids(args.spines_index)
     prefab_models = load_prefab_models(args.prefab_meta)
     curated_card_voices = load_json_file(args.curated_card_voices) or {}
+    curated_gasha_titles = load_json_file(args.curated_gasha_titles) or {}
     card_parameters = extract_card_parameters(records)
     story_tables = extract_scenario_titles(records)
     gasha_announcement_index = extract_gasha_announcements(records)
@@ -1820,6 +1939,7 @@ def main() -> None:
         curated_card_voices,
     )
     card_detail_index = build_card_detail_index(card_index)
+    gasha_index = build_gasha_index(gasha_announcement_index, card_index, curated_gasha_titles)
     validation_report = build_validation_report(
         story_tables,
         card_voice_cues,
@@ -1835,6 +1955,7 @@ def main() -> None:
         "card_home_voice_preview_extract.json": card_home_voice_previews,
         "story_master_index.json": story_master_index,
         "gasha_announcement_index.json": gasha_announcement_index,
+        "gasha_index.json": gasha_index,
         "card_index.json": card_index,
         "card_detail_index.json": card_detail_index,
         "idol_unit_dictionary.json": idol_unit_dictionary,
@@ -1863,6 +1984,7 @@ def main() -> None:
         for filename in (
             "story_master_index.json",
             "gasha_announcement_index.json",
+            "gasha_index.json",
             "card_index.json",
             "card_detail_index.json",
             "idol_unit_dictionary.json",

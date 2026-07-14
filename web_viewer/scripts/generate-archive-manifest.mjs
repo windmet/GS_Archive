@@ -33,13 +33,13 @@ async function countDirectories(relativePath) {
   return entries.filter(entry => entry.isDirectory()).length
 }
 
-const [compiledIndex, cardIndex, cardDetailIndex, idolUnit, storyMaster, gashaAnnouncementIndex] = await Promise.all([
+const [compiledIndex, cardIndex, cardDetailIndex, idolUnit, storyMaster, gashaIndex] = await Promise.all([
   readJson('data/compiled/index.json'),
   readJson('data/masterdata/card_index.json'),
   readJson('data/masterdata/card_detail_index.json'),
   readJson('data/masterdata/idol_unit_dictionary.json'),
   readJson('data/masterdata/story_master_index.json'),
-  readJson('data/masterdata/gasha_announcement_index.json'),
+  readJson('data/masterdata/gasha_index.json'),
 ])
 
 function cardPreferenceScore(card) {
@@ -65,6 +65,7 @@ const sourcePaths = [
   'data/masterdata/idol_unit_dictionary.json',
   'data/masterdata/story_master_index.json',
   'data/masterdata/gasha_announcement_index.json',
+  'data/masterdata/gasha_index.json',
 ]
 const sourceStats = await Promise.all(sourcePaths.map(relativePath => stat(path.join(publicRoot, relativePath))))
 const dataUpdatedAt = new Date(Math.max(...sourceStats.map(item => item.mtimeMs))).toISOString()
@@ -160,10 +161,6 @@ const SPECIAL_EVENT_CLASSIFICATIONS = new Map([
   ['410018', { event_scope: 'mixed_unit_event', attribute: '' }],
 ])
 
-const CONFIRMED_GASHA_TITLES = new Map([
-  ['10028', '夏の夜を彩るキャンドルナイトガシャ'],
-])
-
 function deriveUnitEventRelations(membership) {
   const membersByUnit = new Map()
   for (const [idolCode, evidence] of Object.entries(membership)) {
@@ -250,49 +247,6 @@ function deriveUnitEventRelations(membership) {
   return { events, byUnit }
 }
 
-function deriveGashaCardRelations(cards, announcements) {
-  const byCard = {}
-  const byGasha = {}
-  const announcementsByStart = new Map()
-  for (const announcement of announcements) {
-    if (!Number.isFinite(announcement.start_at)) continue
-    if (!announcementsByStart.has(announcement.start_at)) announcementsByStart.set(announcement.start_at, [])
-    announcementsByStart.get(announcement.start_at).push(announcement)
-  }
-
-  for (const card of cards) {
-    if (!Number.isFinite(card.limitbreak_item_id)) continue
-    const matches = announcementsByStart.get(card.release_at) || []
-    if (matches.length !== 1) continue
-    const announcement = matches[0]
-    const confirmedTitle = CONFIRMED_GASHA_TITLES.get(String(announcement.gasha_code)) || ''
-    const relation = {
-      card_id: card.card_id,
-      card_resource_id: card.resource_id,
-      character_id: card.character_id,
-      rarity: card.rarity,
-      limitbreak_item_id: card.limitbreak_item_id,
-      announcement_id: announcement.announcement_id,
-      destination_id: announcement.destination_id,
-      gasha_code: announcement.gasha_code,
-      title: confirmedTitle,
-      title_source: confirmedTitle ? 'user-confirmed wiki cross-check 2026-07-14' : '',
-      asset_prefix: announcement.asset_prefix,
-      start_at: announcement.start_at,
-      end_at: announcement.end_at,
-      relation_type: 'limitbreak_item_and_exact_gasha_start_timestamp',
-    }
-    byCard[card.resource_id] = relation
-    const gashaId = String(announcement.announcement_id)
-    if (!byGasha[gashaId]) byGasha[gashaId] = []
-    byGasha[gashaId].push(relation)
-  }
-  for (const relations of Object.values(byGasha)) {
-    relations.sort((a, b) => a.character_id.localeCompare(b.character_id) || Number(a.card_id) - Number(b.card_id))
-  }
-  return { byCard, byGasha }
-}
-
 function deriveEventCardRelations(cards, events, gashaCardIds) {
   const byCard = {}
   const byEvent = {}
@@ -377,7 +331,10 @@ for (const card of archiveCards) {
 }
 const unitEvidence = deriveUnitMembership()
 const unitEventEvidence = deriveUnitEventRelations(unitEvidence.membership)
-const gashaCardEvidence = deriveGashaCardRelations(archiveCards, gashaAnnouncementIndex.announcements || [])
+const gashaCardEvidence = {
+  byCard: gashaIndex.relations_by_card || {},
+  byGasha: gashaIndex.relations_by_gasha || {},
+}
 const eventCardEvidence = deriveEventCardRelations(
   archiveCards,
   unitEventEvidence.events,
@@ -405,6 +362,7 @@ const manifest = {
     compiled_json_files: compiledJsonFiles,
     idols: Object.keys(idolUnit.by_idol_code || {}).length,
     cards: archiveCards.length,
+    gashas: gashaIndex.meta?.gasha_count || 0,
     home_voice_cues: cardIndex.meta?.home_voice_cue_count || 0,
     backgrounds: backgroundFiles,
     spine_models: spineModels,
@@ -479,6 +437,13 @@ const manifest = {
       costumes: Object.keys(cardDetailIndex.costumes_by_key || {}).length,
       operational_voices: cardDetailIndex.meta?.operational_voice_count || 0,
       costume_relations: cardDetailIndex.meta?.costume_relation_count || 0,
+    },
+    gashas: {
+      total: gashaIndex.meta?.gasha_count || 0,
+      named: gashaIndex.meta?.named_count || 0,
+      derived_pickup_cards: gashaIndex.meta?.derived_pickup_count || 0,
+      banner_assets: (gashaIndex.gashas || []).filter(item => item.banner_url).length,
+      instance_source: 'GashaListReply service response (not retained locally)',
     },
     unit_membership: {
       resolved: Object.keys(unitEvidence.membership).length,
