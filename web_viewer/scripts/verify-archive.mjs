@@ -1,6 +1,7 @@
 import { readFile, readdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { resolveVoiceFilenameCandidates } from '../src/utils/AssetResolver.js'
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const publicRoot = path.join(projectRoot, 'public')
@@ -26,34 +27,23 @@ function ratio(available, total) {
   return total ? Number((available / total).toFixed(4)) : 0
 }
 
-function voiceFilenameCandidates(voiceFile, scenarioId) {
-  if (!voiceFile) return []
-  if (voiceFile.includes('_') || !scenarioId) return [voiceFile]
-
-  let parts = scenarioId.replace(/^scenario_/, '').split('_')
-  if (/^\d{3}[a-z]{3}$/.test(parts[0])) parts = parts.slice(1)
-  const prefixes = [parts, parts.slice(-4)]
-  if (/^[a-z]$/i.test(parts.at(-1)) && voiceFile.startsWith(parts.at(-1))) {
-    prefixes.push(parts.slice(0, -1), parts.slice(-5, -1))
-  }
-  return [...new Set(prefixes.filter(value => value.length).map(value => `${value.join('_')}_${voiceFile}`))]
-}
-
 function relationRecords(cardIndex, field) {
   return (cardIndex.cards || []).flatMap(card =>
     (card[field] || []).map(record => ({ card: card.resource_id, ...record })),
   )
 }
 
-const [compiledFiles, voiceEntries, gashaBannerFiles, cardIndex, cardDetailIndex, storyMaster, gashaAnnouncementIndex, gashaIndex, archiveManifest] = await Promise.all([
+const [compiledFiles, voiceEntries, gashaBannerFiles, unitLogoFiles, cardIndex, cardDetailIndex, storyMaster, gashaAnnouncementIndex, gashaIndex, uiAssetCatalog, archiveManifest] = await Promise.all([
   listFiles(compiledRoot, name => name.endsWith('.json') && !['index.json', 'manifest.json', 'voice_index.json'].includes(name)),
   readdir(voiceRoot, { withFileTypes: true }),
   listFiles(path.join(publicRoot, 'assets', 'gasha'), name => name.endsWith('.png')),
+  listFiles(path.join(publicRoot, 'assets', 'units', 'logos'), name => name.endsWith('.png')),
   readFile(path.join(publicRoot, 'data', 'masterdata', 'card_index.json'), 'utf8').then(JSON.parse),
   readFile(path.join(publicRoot, 'data', 'masterdata', 'card_detail_index.json'), 'utf8').then(JSON.parse),
   readFile(path.join(publicRoot, 'data', 'masterdata', 'story_master_index.json'), 'utf8').then(JSON.parse),
   readFile(path.join(publicRoot, 'data', 'masterdata', 'gasha_announcement_index.json'), 'utf8').then(JSON.parse),
   readFile(path.join(publicRoot, 'data', 'masterdata', 'gasha_index.json'), 'utf8').then(JSON.parse),
+  readFile(path.join(publicRoot, 'data', 'assets', 'ui_asset_catalog.json'), 'utf8').then(JSON.parse),
   readFile(path.join(publicRoot, 'data', 'archive_manifest.json'), 'utf8').then(JSON.parse),
 ])
 
@@ -65,6 +55,8 @@ const schemaFailures = []
 const createVoiceStats = () => ({
   references: 0,
   available: 0,
+  exactAvailable: 0,
+  aliasAvailable: 0,
   scenariosWithVoice: 0,
   uniqueResolved: new Set(),
   missingSamples: [],
@@ -105,10 +97,14 @@ for (const file of compiledFiles) {
     if (!rawVoice) continue
     hasVoice = true
     voiceStats.references += 1
-    const candidates = voiceFilenameCandidates(String(rawVoice), scenario.scenario_id)
+    const candidates = resolveVoiceFilenameCandidates(String(rawVoice), scenario.scenario_id)
     const resolved = candidates.find(name => voiceNames.has(name)) || candidates[0] || String(rawVoice)
     voiceStats.uniqueResolved.add(resolved)
-    if (voiceNames.has(resolved)) voiceStats.available += 1
+    if (voiceNames.has(resolved)) {
+      voiceStats.available += 1
+      if (resolved === candidates[0]) voiceStats.exactAvailable += 1
+      else voiceStats.aliasAvailable += 1
+    }
     else if (voiceStats.missingSamples.length < SAMPLE_LIMIT) {
       voiceStats.missingSamples.push({ file: relativeFile, step: step.step_id, raw: rawVoice, candidates })
     }
@@ -120,6 +116,8 @@ function serializeVoiceStats(stats) {
   return {
     references: stats.references,
     available: stats.available,
+    exact_available: stats.exactAvailable,
+    alias_available: stats.aliasAvailable,
     missing: stats.references - stats.available,
     ratio: ratio(stats.available, stats.references),
     scenarios_with_voice: stats.scenariosWithVoice,
@@ -378,6 +376,33 @@ if (
     category_counts: gashaIndex.meta?.category_counts,
   })
 }
+const unitLogoNames = new Set(unitLogoFiles.map(file => path.basename(file)))
+const uiAssetFailures = []
+const uiAssetEntries = uiAssetCatalog.entries || []
+const unitLogoUrls = uiAssetCatalog.featured_sets?.unit_logo_urls || {}
+const uiAssetsValid = uiAssetCatalog.schema_version === 1 &&
+  uiAssetEntries.length === 1231 &&
+  uiAssetCatalog.meta?.entry_count === uiAssetEntries.length &&
+  Object.keys(unitLogoUrls).length === 16 &&
+  unitLogoNames.size === 16 &&
+  Object.values(unitLogoUrls).every(url => unitLogoNames.has(path.basename(url))) &&
+  uiAssetEntries.every(entry =>
+    entry.source_relative &&
+    !path.isAbsolute(entry.source_relative) &&
+    !entry.source_relative.includes('..') &&
+    Number.isFinite(entry.width) &&
+    Number.isFinite(entry.height) &&
+    entry.sha256?.length === 64
+  )
+if (!uiAssetsValid) {
+  uiAssetFailures.push({
+    reason: 'UI asset catalog schema, paths or synced unit logos are invalid',
+    entries: uiAssetEntries.length,
+    declared_entries: uiAssetCatalog.meta?.entry_count,
+    unit_logo_urls: Object.keys(unitLogoUrls).length,
+    unit_logo_files: unitLogoNames.size,
+  })
+}
 const eventCardFailures = []
 let validEventCardRelations = 0
 for (const [resourceId, relation] of Object.entries(archiveManifest.event_card_relations_by_card || {})) {
@@ -534,6 +559,14 @@ const report = {
     reference_sample_valid: gashaIndex.by_code?.['10028']?.title === '夏の夜を彩るキャンドルナイトガシャ' &&
       (gashaIndex.by_code?.['10028']?.derived_pickup_cards || []).some(item => item.card_resource_id === '040ren_ssr02'),
   },
+  ui_assets: {
+    total: uiAssetEntries.length,
+    valid: uiAssetsValid ? uiAssetEntries.length : 0,
+    failures: uiAssetFailures.length,
+    failure_samples: uiAssetFailures,
+    public_unit_logos: unitLogoNames.size,
+    domains: Object.keys(uiAssetCatalog.meta?.counts_by_domain || {}).length,
+  },
   unit_event_relations: {
     total: archiveManifest.unit_event_relations?.length || 0,
     valid: validUnitEvents,
@@ -559,6 +592,7 @@ console.log(JSON.stringify({
   eventCards: `${validEventCardRelations}/${actualEventCardIds.length}`,
   gashaCards: `${validGashaCardRelations}/${actualGashaCardIds.length}`,
   gashas: `${validGashaEntities}/${gashaIndex.gashas?.length || 0}`,
+  uiAssets: `${uiAssetsValid ? uiAssetEntries.length : 0}/${uiAssetEntries.length}`,
   cardDetails: `${validCardDetails}/${canonicalCards.length}`,
   renSample: renSampleValid ? 'valid' : 'invalid',
 }))

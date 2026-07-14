@@ -1,4 +1,4 @@
-import { getLipSyncUrl, getVoiceUrl } from '../utils/AssetResolver.js'
+import { getLipSyncUrl, getVoiceUrlCandidates } from '../utils/AssetResolver.js'
 import { deriveMainLipPathFromVoice, sampleLipCurve } from '../utils/LipSyncHelpers.js'
 
 export function useVoicePlayer({
@@ -112,15 +112,25 @@ export function useVoicePlayer({
     ensureAudioCtx()
 
     try {
-      const voiceUrl = getVoiceUrl(voice, scenarioId)
-      const res = await fetch(`${voiceUrl}?_=${Date.now()}`)
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-
-      const contentType = res.headers.get('content-type') || ''
-      const arrayBuffer = await res.arrayBuffer()
-      if (arrayBuffer.byteLength < 1000 || contentType.includes('text/html')) {
-        throw new Error(`Not an audio file: ${contentType} (${arrayBuffer.byteLength} bytes)`)
+      const voiceUrls = getVoiceUrlCandidates(voice, scenarioId)
+      let arrayBuffer = null
+      let lastFetchError = null
+      for (const voiceUrl of voiceUrls) {
+        try {
+          const res = await fetch(`${voiceUrl}?_=${Date.now()}`)
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          const contentType = res.headers.get('content-type') || ''
+          const candidateBuffer = await res.arrayBuffer()
+          if (candidateBuffer.byteLength < 1000 || contentType.includes('text/html')) {
+            throw new Error(`Not an audio file: ${contentType} (${candidateBuffer.byteLength} bytes)`)
+          }
+          arrayBuffer = candidateBuffer
+          break
+        } catch (error) {
+          lastFetchError = error
+        }
       }
+      if (!arrayBuffer) throw lastFetchError || new Error('No voice filename candidate resolved')
 
       if (audioCtx.state === 'suspended') {
         await audioCtx.resume()
