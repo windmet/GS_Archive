@@ -312,6 +312,11 @@ for (const gasha of gashaIndex.gashas || []) {
     gasha.asset_prefix === announcement.asset_prefix &&
     gasha.banner_file === `${announcement.asset_prefix}01.png` &&
     gashaBannerNames.has(gasha.banner_file) &&
+    gasha.name_known === true &&
+    Boolean(gasha.title) &&
+    Boolean(gasha.category) &&
+    Boolean(gasha.logical_id) &&
+    ['primary', 'final_day'].includes(gasha.phase) &&
     sameValues(
       relationCards.map(item => item.card_resource_id).sort(),
       (gasha.derived_pickup_cards || []).map(item => item.card_resource_id).sort(),
@@ -323,6 +328,55 @@ const gashaCodes = (gashaIndex.gashas || []).map(item => item.code)
 const gashaIds = (gashaIndex.gashas || []).map(item => item.id)
 if (new Set(gashaCodes).size !== gashaCodes.length || new Set(gashaIds).size !== gashaIds.length) {
   gashaEntityFailures.push({ reason: 'duplicate gasha code or id' })
+}
+const logicalGashaIds = new Set((gashaIndex.gashas || []).map(item => item.logical_id))
+const primaryGashas = (gashaIndex.gashas || []).filter(item => item.phase === 'primary')
+const finalDayGashas = (gashaIndex.gashas || []).filter(item => item.phase === 'final_day')
+const expectedCategoryCounts = {
+  standard_pickup: 49,
+  growing_fes: 4,
+  stage_step_up: 2,
+  full_roster_series: 2,
+}
+const finalDayGroupsValid = finalDayGashas.every(item =>
+  item.category === 'growing_fes' &&
+  item.primary_code &&
+  item.logical_member_codes?.includes(item.primary_code) &&
+  item.derived_pickup_cards?.length === 0 &&
+  item.related_pickup_count === 3 &&
+  item.related_pickup_card_ids?.length === 3
+)
+const categoryCountsValid = Object.entries(expectedCategoryCounts).every(
+  ([category, count]) => gashaIndex.meta?.category_counts?.[category] === count,
+)
+const stageReprint = gashaIndex.by_code?.['1000051']
+const stageReprintValid = stageReprint?.is_reprint === true &&
+  stageReprint.reprint_of === '1000011' &&
+  stageReprint.derived_pickup_cards?.length === 0 &&
+  stageReprint.related_pickup_source === 'reprint' &&
+  stageReprint.related_pickup_count === 49 &&
+  stageReprint.related_pickup_card_ids?.length === 49
+if (
+  gashaIndex.schema_version !== 2 ||
+  gashaIndex.meta?.named_count !== 61 ||
+  gashaIndex.meta?.logical_gasha_count !== 57 ||
+  logicalGashaIds.size !== 57 ||
+  primaryGashas.length !== 57 ||
+  finalDayGashas.length !== 4 ||
+  !finalDayGroupsValid ||
+  !stageReprintValid ||
+  !categoryCountsValid
+) {
+  gashaEntityFailures.push({
+    reason: 'gasha normalization summary differs from expected archive evidence',
+    named: gashaIndex.meta?.named_count,
+    logical: logicalGashaIds.size,
+    primary: primaryGashas.length,
+    final_day: finalDayGashas.length,
+    final_day_groups_valid: finalDayGroupsValid,
+    stage_reprint_valid: stageReprintValid,
+    category_counts: gashaIndex.meta?.category_counts,
+  })
 }
 const eventCardFailures = []
 let validEventCardRelations = 0
@@ -469,6 +523,7 @@ const report = {
   },
   gashas: {
     total: gashaIndex.gashas?.length || 0,
+    logical_total: gashaIndex.meta?.logical_gasha_count || 0,
     valid: validGashaEntities,
     failures: gashaEntityFailures.length,
     failure_samples: gashaEntityFailures,

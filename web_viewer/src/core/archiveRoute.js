@@ -12,6 +12,7 @@ const ROUTE_QUERY_KEYS = [
   'episode',
   'card',
   'gasha',
+  'gasha_type',
   'rarity',
   'asset_state',
   'relation_state',
@@ -43,6 +44,7 @@ const VALID_VIEWS = new Set([
 
 const VALID_CARD_RELATION_STATES = new Set(['all', 'card_story', 'event_card', 'gasha_card', 'release_series', 'unrelated'])
 const VALID_EVENT_SCOPES = new Set(['all', 'fixed_unit_event', 'attribute_event', 'mixed_unit_event'])
+const VALID_GASHA_TYPES = new Set(['all', 'standard_pickup', 'growing_fes', 'stage_step_up', 'full_roster_series'])
 
 function clean(value) {
   return typeof value === 'string' ? value.trim() : ''
@@ -83,6 +85,9 @@ export function readArchiveRoute(input = window.location.href) {
     episode: clean(params.get('episode')),
     card: clean(params.get('card')),
     gasha: clean(params.get('gasha')),
+    gashaType: VALID_GASHA_TYPES.has(clean(params.get('gasha_type')))
+      ? clean(params.get('gasha_type'))
+      : 'all',
     rarity: clean(params.get('rarity')) || 'all',
     assetState: clean(params.get('asset_state')) || 'all',
     relationState: VALID_CARD_RELATION_STATES.has(requestedRelationState) ? requestedRelationState : 'all',
@@ -111,6 +116,7 @@ export function buildArchiveUrl(input, route) {
   if (route.episode) url.searchParams.set('episode', route.episode)
   if (route.card) url.searchParams.set('card', route.card)
   if (route.gasha) url.searchParams.set('gasha', route.gasha)
+  if (route.gashaType && route.gashaType !== 'all') url.searchParams.set('gasha_type', route.gashaType)
   if (route.rarity && route.rarity !== 'all') url.searchParams.set('rarity', route.rarity)
   if (route.assetState && route.assetState !== 'all') url.searchParams.set('asset_state', route.assetState)
   if (route.relationState && route.relationState !== 'all') url.searchParams.set('relation_state', route.relationState)

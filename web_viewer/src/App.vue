@@ -90,7 +90,13 @@
       <ArchiveGashaCatalog
         v-if="view === 'gashas'"
         :gashas="filteredGashas"
+        :category-options="gashaCategoryOptions"
+        :category="currentGashaCategory"
+        :total-gashas="gashaCatalog.length"
+        :announcement-count="gashaIndexData?.meta?.gasha_count || 0"
+        :pickup-count="gashaIndexData?.meta?.derived_pickup_count || 0"
         @select="openGasha"
+        @update:category="currentGashaCategory = $event"
       />
 
       <ArchiveGashaDetail
@@ -277,6 +283,7 @@ const currentArchiveUnitCode = ref('')
 const currentEpisodeId = ref('')
 const currentCardId = ref('')
 const currentGashaId = ref('')
+const currentGashaCategory = ref('all')
 const currentCardRarity = ref('all')
 const currentCardAssetState = ref('all')
 const currentCardRelationState = ref('all')
@@ -315,7 +322,7 @@ const archiveStats = computed(() => [
   { label: '剧情文件', value: archiveManifestData.value?.counts?.indexed_scenarios ?? totalFiles.value },
   { label: '偶像', value: archiveManifestData.value?.counts?.idols ?? Object.keys(idolUnitData.value?.by_idol_code || {}).length },
   { label: '卡片', value: archiveManifestData.value?.counts?.cards ?? cardIndexData.value?.meta?.card_count ?? cardIndexData.value?.cards?.length ?? 0 },
-  { label: '卡池', value: archiveManifestData.value?.counts?.gashas ?? gashaIndexData.value?.meta?.gasha_count ?? 0 },
+  { label: '卡池', value: gashaIndexData.value?.meta?.logical_gasha_count ?? archiveManifestData.value?.counts?.gashas ?? 0 },
   { label: '首页语音', value: archiveManifestData.value?.counts?.home_voice_cues ?? cardIndexData.value?.meta?.home_voice_cue_count ?? 0 },
 ])
 
@@ -684,21 +691,56 @@ const currentCard = computed(() => mergeCardDetail(currentCardBase.value, cardDe
 const currentCardAssetStatus = computed(() => archiveManifestData.value?.card_assets_by_id?.[currentCardId.value] || null)
 const currentCardEventRelation = computed(() => archiveManifestData.value?.event_card_relations_by_card?.[currentCardId.value] || null)
 const currentCardGashaRelation = computed(() => gashaIndexData.value?.relations_by_card?.[currentCardId.value] || null)
-const gashaCatalog = computed(() => [...(gashaIndexData.value?.gashas || [])].reverse())
+const GASHA_CATEGORY_LABELS = {
+  standard_pickup: '通常',
+  growing_fes: 'GROWING FES',
+  stage_step_up: 'STAGE',
+  full_roster_series: '全员系列',
+}
+function resolveGashaRelatedCards(gasha) {
+  if (!gasha || !gasha.related_pickup_count) return gasha
+  const sourceCode = gasha.related_pickup_source === 'reprint'
+    ? gasha.reprint_of
+    : gasha.primary_code
+  const sourceCards = gashaIndexData.value?.by_code?.[sourceCode]?.derived_pickup_cards || []
+  const relatedIds = new Set(gasha.related_pickup_card_ids || [])
+  return {
+    ...gasha,
+    related_pickup_cards: sourceCards.filter(card => relatedIds.has(card.card_resource_id)),
+  }
+}
+const gashaCatalog = computed(() => [...(gashaIndexData.value?.gashas || [])]
+  .filter(gasha => gasha.phase === 'primary')
+  .map(resolveGashaRelatedCards)
+  .reverse())
+const gashaCategoryOptions = computed(() => {
+  const counts = gashaIndexData.value?.meta?.category_counts || {}
+  return [
+    { value: 'all', label: '全部', count: gashaCatalog.value.length },
+    ...Object.entries(GASHA_CATEGORY_LABELS).map(([value, label]) => ({
+      value,
+      label,
+      count: counts[value] || 0,
+    })),
+  ]
+})
 const filteredGashas = computed(() => {
   const query = filterQuery.value.trim().toLowerCase()
-  if (!query) return gashaCatalog.value
-  return gashaCatalog.value.filter(gasha =>
-    String(gasha.display_name || '').toLowerCase().includes(query) ||
-    String(gasha.code || '').toLowerCase().includes(query) ||
-    (gasha.derived_pickup_cards || []).some(card =>
-      String(card.card_title || '').toLowerCase().includes(query) ||
-      String(card.card_resource_id || '').toLowerCase().includes(query) ||
-      idolDisplayName(card.character_id).toLowerCase().includes(query)
-    )
-  )
+  return gashaCatalog.value.filter(gasha => {
+    if (currentGashaCategory.value !== 'all' && gasha.category !== currentGashaCategory.value) return false
+    if (!query) return true
+    return String(gasha.display_name || '').toLowerCase().includes(query) ||
+      String(gasha.code || '').toLowerCase().includes(query) ||
+      [...(gasha.derived_pickup_cards || []), ...(gasha.related_pickup_cards || [])].some(card =>
+        String(card.card_title || '').toLowerCase().includes(query) ||
+        String(card.card_resource_id || '').toLowerCase().includes(query) ||
+        idolDisplayName(card.character_id).toLowerCase().includes(query)
+      )
+  })
 })
-const currentGasha = computed(() => gashaIndexData.value?.by_id?.[currentGashaId.value] || null)
+const currentGasha = computed(() => resolveGashaRelatedCards(
+  gashaIndexData.value?.by_id?.[currentGashaId.value] || null,
+))
 const currentCardIndex = computed(() => currentCards.value.findIndex(card => card.resource_id === currentCardId.value))
 const previousCard = computed(() => currentCardIndex.value > 0
   ? currentCards.value[currentCardIndex.value - 1]
@@ -844,6 +886,7 @@ function currentArchiveRoute() {
     episode: currentEpisodeId.value,
     card: currentCardId.value,
     gasha: view.value === 'gasha_detail' ? currentGashaId.value : '',
+    gashaType: ['gashas', 'gasha_detail'].includes(view.value) ? currentGashaCategory.value : 'all',
     rarity: currentCardRarity.value,
     assetState: currentCardAssetState.value,
     relationState: currentCardRelationState.value,
@@ -931,6 +974,7 @@ async function applyArchiveRoute(route) {
     currentCharacterId.value = route.idol || ''
     currentCardId.value = route.card || ''
     currentGashaId.value = route.gasha || ''
+    currentGashaCategory.value = route.gashaType || 'all'
     currentCardRarity.value = route.rarity || 'all'
     currentCardAssetState.value = route.assetState || 'all'
     currentCardRelationState.value = route.relationState || 'all'
@@ -1070,6 +1114,7 @@ function openGashaCatalog() {
   currentCharacterId.value = ''
   currentCardId.value = ''
   currentGashaId.value = ''
+  currentGashaCategory.value = 'all'
   commitView('gashas')
 }
 
@@ -1528,7 +1573,7 @@ onMounted(async () => {
   removeSpineAnimationDebug = installSpineAnimationDebug()
 })
 
-watch([filterQuery, currentCardRarity, currentCardAssetState, currentCardRelationState, currentIdolUnitFilter, currentStoryDomain, currentEventScope, currentStoryAvailability, currentStorySort], () => {
+watch([filterQuery, currentCardRarity, currentCardAssetState, currentCardRelationState, currentGashaCategory, currentIdolUnitFilter, currentStoryDomain, currentEventScope, currentStoryAvailability, currentStorySort], () => {
   syncArchiveRoute({ replace: true })
 })
 

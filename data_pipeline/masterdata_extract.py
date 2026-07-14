@@ -410,6 +410,7 @@ def build_gasha_index(
             "phase": title_entry.get("phase", "primary"),
             "primary_code": title_entry.get("primary_code", code),
             "is_reprint": bool(title_entry.get("is_reprint", False)),
+            "reprint_of": title_entry.get("reprint_of", ""),
             "series": title_entry.get("series", ""),
             "card_set_type": title_entry.get("card_set_type", "new_pickup"),
             "announcement_id": announcement.get("announcement_id"),
@@ -444,11 +445,29 @@ def build_gasha_index(
         member_codes = [member["code"] for member in members]
         for member in members:
             member["logical_member_codes"] = member_codes
-            member["related_pickup_cards"] = (
-                logical_cards
-                if len(members) > 1 and not member.get("derived_pickup_cards")
-                else []
+            related_cards = (
+                logical_cards if len(members) > 1 and not member.get("derived_pickup_cards") else []
             )
+            member["related_pickup_card_ids"] = [
+                card["card_resource_id"] for card in related_cards
+            ]
+            member["related_pickup_count"] = len(related_cards)
+            member["related_pickup_source"] = (
+                "logical_primary"
+                if related_cards
+                else ""
+            )
+
+    gashas_by_code = {item["code"]: item for item in gashas if item.get("code")}
+    for gasha in gashas:
+        reprint_source = gashas_by_code.get(gasha.get("reprint_of"))
+        if gasha.get("is_reprint") and reprint_source and not gasha.get("derived_pickup_cards"):
+            related_cards = reprint_source.get("derived_pickup_cards", [])
+            gasha["related_pickup_card_ids"] = [
+                card["card_resource_id"] for card in related_cards
+            ]
+            gasha["related_pickup_count"] = len(related_cards)
+            gasha["related_pickup_source"] = "reprint"
 
     category_counts = Counter(item["category"] for item in gashas if item.get("phase") == "primary")
     phase_counts = Counter(item["phase"] for item in gashas)
@@ -456,7 +475,7 @@ def build_gasha_index(
         "schema_version": 2,
         "gashas": gashas,
         "by_id": {item["id"]: item for item in gashas},
-        "by_code": {item["code"]: item for item in gashas if item.get("code")},
+        "by_code": gashas_by_code,
         "by_logical_id": {
             logical_id: [item["id"] for item in members]
             for logical_id, members in logical_groups.items()

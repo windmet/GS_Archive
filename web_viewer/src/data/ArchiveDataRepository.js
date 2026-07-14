@@ -22,8 +22,14 @@ function validatePayload(key, payload) {
   if (key === 'cardIndex' && (!Array.isArray(payload.cards) || !payload.by_character)) {
     throw new Error('cardIndex must include cards and by_character')
   }
-  if (key === 'gashaIndex' && (!Array.isArray(payload.gashas) || !payload.by_id || !payload.relations_by_card)) {
-    throw new Error('gashaIndex must include gashas, by_id and relations_by_card')
+  if (key === 'gashaIndex' && (
+    payload.schema_version < 2 ||
+    !Array.isArray(payload.gashas) ||
+    !payload.by_id ||
+    !payload.by_logical_id ||
+    !payload.relations_by_card
+  )) {
+    throw new Error('gashaIndex must include normalized announcement and logical-gasha indexes')
   }
   if (key === 'cardDetailIndex' && (!payload.cards_by_resource_id || !payload.skills_by_id || !payload.costumes_by_key)) {
     throw new Error('cardDetailIndex is missing normalized card detail dictionaries')

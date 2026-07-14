@@ -143,7 +143,7 @@ const verificationItems = computed(() => {
     {
       label: '卡池实体',
       value: gashas.failures || !gashas.reference_sample_valid ? '需排查' : '通过',
-      detail: `${formatCount(gashas.valid)} / ${formatCount(gashas.total)} gashas · ${formatCount(gashas.banners)} banners`,
+      detail: `${formatCount(gashas.logical_total)} pools · ${formatCount(gashas.valid)} / ${formatCount(gashas.total)} notices · ${formatCount(gashas.banners)} banners`,
       tone: gashas.failures || !gashas.reference_sample_valid ? 'warn' : 'ok',
     },
     {

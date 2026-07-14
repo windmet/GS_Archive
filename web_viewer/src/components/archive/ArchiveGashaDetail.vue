@@ -7,7 +7,8 @@
       <div class="gasha-summary">
         <div class="gasha-kicker">
           <span>GASHA {{ gasha.code }}</span>
-          <small :class="{ curated: gasha.name_known }">{{ gasha.name_known ? 'curated name' : 'internal code' }}</small>
+          <small class="curated">{{ categoryLabel(gasha.category) }}</small>
+          <small v-if="gasha.is_reprint" class="reprint">复刻</small>
         </div>
         <h2>{{ gasha.display_name }}</h2>
         <dl>
@@ -15,6 +16,8 @@
           <div><dt>结束</dt><dd>{{ formatDateTime(gasha.end_at) }}</dd></div>
           <div><dt>公告 ID</dt><dd>{{ gasha.announcement_id }}</dd></div>
           <div><dt>目标 ID</dt><dd>{{ gasha.destination_id }}</dd></div>
+          <div><dt>公告阶段</dt><dd>{{ phaseLabel(gasha.phase) }}</dd></div>
+          <div v-if="gasha.logical_member_codes?.length > 1"><dt>同期记录</dt><dd>{{ gasha.logical_member_codes.join(' / ') }}</dd></div>
         </dl>
         <a
           v-if="gasha.name_source?.source_url"
@@ -23,7 +26,7 @@
           rel="noreferrer"
         >
           <ExternalLink :size="15" />
-          名称核对来源
+          {{ gasha.name_source.source_label || '名称核对来源' }}
         </a>
       </div>
     </div>
@@ -32,13 +35,13 @@
       <div class="section-heading">
         <div>
           <h3>关联卡片</h3>
-          <p>LimitbreakItemId + 卡池开放时间</p>
+          <p>{{ relationDescription }}</p>
         </div>
-        <span class="derived-badge">Derived · {{ gasha.derived_pickup_cards?.length || 0 }}</span>
+        <span class="derived-badge">{{ relationBadge }} · {{ pickupCards.length }}</span>
       </div>
       <div class="pickup-grid">
         <button
-          v-for="card in gasha.derived_pickup_cards || []"
+          v-for="card in pickupCards"
           :key="card.card_resource_id"
           @click="emit('open-card', card)"
         >
@@ -57,8 +60,9 @@
       <div class="section-heading"><h3>资料来源</h3></div>
       <dl class="evidence-grid">
         <div><dt>公告</dt><dd>Raw · client_master_data table 173</dd></div>
-        <div><dt>卡片关系</dt><dd>Derived · 精确时间与突破道具</dd></div>
-        <div><dt>名称</dt><dd>{{ gasha.name_known ? 'Curated · wiki / banner 核对' : 'Pending · 尚未校对' }}</dd></div>
+        <div><dt>卡片关系</dt><dd>{{ relationEvidence }}</dd></div>
+        <div><dt>名称</dt><dd>Curated · {{ gasha.name_source?.source_label || 'wiki / banner 核对' }}</dd></div>
+        <div><dt>逻辑卡池</dt><dd>{{ gasha.logical_id }}</dd></div>
         <div><dt>服务实例</dt><dd>Missing · GashaListReply 未留存</dd></div>
       </dl>
     </section>
@@ -66,14 +70,57 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { ChevronRight, ExternalLink } from '@lucide/vue'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 
-defineProps({
+const props = defineProps({
   gasha: { type: Object, default: null },
   idolName: { type: Function, required: true },
 })
 const emit = defineEmits(['open-card'])
+
+const CATEGORY_LABELS = {
+  standard_pickup: '通常招募',
+  growing_fes: 'GROWING FES',
+  stage_step_up: 'STAGE 招募',
+  full_roster_series: '全员系列',
+}
+
+const pickupCards = computed(() => {
+  const direct = props.gasha?.derived_pickup_cards || []
+  return direct.length ? direct : (props.gasha?.related_pickup_cards || [])
+})
+const usesRelatedCards = computed(() =>
+  !(props.gasha?.derived_pickup_cards?.length) && Boolean(props.gasha?.related_pickup_cards?.length),
+)
+const isReprintRelation = computed(() =>
+  usesRelatedCards.value && props.gasha?.related_pickup_source === 'reprint',
+)
+const relationBadge = computed(() => {
+  if (isReprintRelation.value) return '复刻卡片'
+  return usesRelatedCards.value ? '同期卡片' : 'Derived'
+})
+const relationDescription = computed(() => {
+  if (isReprintRelation.value) return `继承自原卡池 ${props.gasha?.reprint_of || ''} 的复刻内容`
+  return usesRelatedCards.value
+    ? `继承自主公告 ${props.gasha?.primary_code || ''} 的同一卡池卡片`
+    : 'LimitbreakItemId + 卡池开放时间'
+})
+const relationEvidence = computed(() => {
+  if (isReprintRelation.value) return `Curated · 外部公告确认复刻自 ${props.gasha?.reprint_of || ''}`
+  return usesRelatedCards.value
+    ? `Grouped · 同逻辑卡池主公告 ${props.gasha?.primary_code || ''}`
+    : 'Derived · 精确时间与突破道具'
+})
+
+function categoryLabel(category) {
+  return CATEGORY_LABELS[category] || category || '未分类'
+}
+
+function phaseLabel(phase) {
+  return phase === 'final_day' ? '最终日公告' : '主公告'
+}
 
 function formatDateTime(timestamp) {
   if (!Number.isFinite(timestamp)) return 'unknown'
@@ -94,6 +141,7 @@ function formatDateTime(timestamp) {
 .gasha-kicker { display: flex; align-items: center; gap: 8px; color: #1c8880; font-size: 0.63rem; font-weight: 800; }
 .gasha-kicker small { padding: 2px 5px; border-radius: 3px; background: #eef1f3; color: #7b858b; font-size: 0.55rem; font-weight: 600; }
 .gasha-kicker small.curated { background: #e8f7f5; color: #177b74; }
+.gasha-kicker small.reprint { background: #fff0db; color: #965f13; }
 .gasha-summary h2 { margin: 10px 0 20px; font-size: 1.18rem; line-height: 1.45; }
 .gasha-summary dl { margin: 0; }
 .gasha-summary dl div { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; padding: 7px 0; border-bottom: 1px solid #edf0f2; font-size: 0.68rem; }
