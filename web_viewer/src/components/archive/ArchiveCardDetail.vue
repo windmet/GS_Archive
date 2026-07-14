@@ -81,36 +81,8 @@
 
       <section v-if="eventRelation || gashaRelation || card.release_series" class="card-detail-section card-relations">
         <h4>关联资料</h4>
-        <button v-if="eventRelation" class="event-relation" @click="emit('open-event', eventRelation)">
-          <CalendarRange :size="20" />
-          <span>
-            <strong>{{ eventScopeLabel(eventRelation) }}</strong>
-            <b>{{ eventRelation.title }}</b>
-            <small>发布时间一致 · {{ card.character_id }} 在活动阵容中</small>
-          </span>
-          <ArrowUpRight :size="18" />
-        </button>
-        <button v-if="gashaRelation" class="gasha-relation" @click="emit('open-gasha', gashaRelation)">
-          <Sparkles :size="20" />
-          <span>
-            <strong>卡池 Pickup</strong>
-            <b>{{ gashaRelation.title || `ガシャ ${gashaRelation.gasha_code}` }}</b>
-            <small v-if="gashaRelation.title">ガシャ {{ gashaRelation.gasha_code }}</small>
-            <small>突破道具 {{ gashaRelation.limitbreak_item_id }} · 开放时间 {{ formatDate(gashaRelation.start_at) }}</small>
-          </span>
-          <ArrowUpRight :size="18" />
-        </button>
+        <ArchiveRelationList :items="relationItems" @select="openRelation" />
         <div v-if="card.release_series" class="release-series">
-          <div class="release-series-heading">
-            <Layers3 :size="20" />
-            <span>
-              <strong>共通系列 · {{ card.release_series.title }}</strong>
-              <small>
-                {{ card.release_series.card_count }} 张卡 / {{ card.release_series.character_count }} 位偶像
-                · 发布时间与标题完全一致
-              </small>
-            </span>
-          </div>
           <div class="release-series-cards" :aria-label="`${card.release_series.title} 系列卡片`">
             <button
               v-for="seriesCard in seriesCards"
@@ -303,9 +275,10 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { Activity, ArrowUpRight, CalendarRange, CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, HeartPulse, ImageOff, Layers3, Shirt, Sparkles } from '@lucide/vue'
+import { Activity, CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, HeartPulse, ImageOff, Shirt } from '@lucide/vue'
 import ArchiveImageLightbox from './ArchiveImageLightbox.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
+import ArchiveRelationList from './ArchiveRelationList.vue'
 import { getVoiceUrl } from '../../utils/AssetResolver.js'
 import { getCardIconUrl, getCardLandscapeUrl, getCardPortraitUrl } from '../../utils/CardAssetResolver.js'
 
@@ -447,6 +420,62 @@ function eventScopeLabel(event) {
   return '跨组合团活关联卡'
 }
 
+const relationItems = computed(() => {
+  const items = []
+  if (props.eventRelation) {
+    items.push({
+      id: `event-${props.eventRelation.event_id}`,
+      kind: 'event',
+      label: eventScopeLabel(props.eventRelation),
+      title: props.eventRelation.title,
+      meta: `发布时间一致 · ${props.card?.character_id || ''} 在活动阵容中`,
+      evidenceLabel: 'Derived',
+      evidenceTone: 'derived',
+      evidence: props.eventRelation.relation_type,
+      statusLabel: props.eventRelation.exists ? '可播放' : '缺少剧情',
+      statusTone: props.eventRelation.exists ? 'available' : 'missing',
+      resource: props.eventRelation.file,
+      payload: props.eventRelation,
+    })
+  }
+  if (props.gashaRelation) {
+    items.push({
+      id: `gasha-${props.gashaRelation.announcement_id}`,
+      kind: 'gasha',
+      label: '卡池 Pickup',
+      title: props.gashaRelation.title || `ガシャ ${props.gashaRelation.gasha_code}`,
+      meta: `ガシャ ${props.gashaRelation.gasha_code} · 突破道具 ${props.gashaRelation.limitbreak_item_id} · ${formatDate(props.gashaRelation.start_at)}`,
+      evidenceLabel: props.gashaRelation.evidence_level === 'curated' ? 'Confirmed' : 'Derived',
+      evidenceTone: props.gashaRelation.evidence_level === 'curated' ? 'confirmed' : 'derived',
+      evidence: props.gashaRelation.relation_type,
+      statusLabel: '已建档',
+      statusTone: 'available',
+      payload: props.gashaRelation,
+    })
+  }
+  if (props.card?.release_series) {
+    items.push({
+      id: `series-${props.card.release_series.series_id}`,
+      kind: 'series',
+      label: '共通系列',
+      title: props.card.release_series.title,
+      meta: `${props.card.release_series.card_count} 张卡 · ${props.card.release_series.character_count} 位偶像`,
+      evidenceLabel: 'Exact',
+      evidenceTone: 'raw',
+      evidence: '发布时间与标题完全一致',
+      statusLabel: '参考关系',
+      statusTone: 'reference',
+      actionable: false,
+    })
+  }
+  return items
+})
+
+function openRelation(item) {
+  if (item.kind === 'event') emit('open-event', item.payload)
+  else if (item.kind === 'gasha') emit('open-gasha', item.payload)
+}
+
 </script>
 
 <style scoped>
@@ -493,18 +522,6 @@ function eventScopeLabel(event) {
 .card-detail-section h4 { margin: 0 0 10px; font-size: 0.92rem; color: #333; }
 .card-relations { display: flex; flex-direction: column; gap: 10px; }
 .card-relations h4 { margin-bottom: 0; }
-.event-relation { display: grid; grid-template-columns: 28px minmax(0, 1fr) 20px; align-items: center; gap: 10px; width: 100%; min-height: 66px; padding: 10px 12px; border: 1px solid #bcded9; border-radius: 6px; background: #f3fbfa; color: #187d76; cursor: pointer; text-align: left; }
-.event-relation:hover { border-color: #6ebeb6; background: #eaf8f6; }
-.event-relation > span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.event-relation strong { color: #17736d; font-size: 0.64rem; }
-.event-relation b { overflow: hidden; color: #28353d; font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; }
-.event-relation small { color: #718088; font-size: 0.63rem; line-height: 1.4; }
-.gasha-relation { display: grid; grid-template-columns: 28px minmax(0, 1fr) 20px; align-items: center; gap: 10px; width: 100%; min-height: 66px; padding: 10px 12px; border: 1px solid #ead8a7; border-radius: 6px; background: #fffaf0; color: #9a6a13; cursor: pointer; font: inherit; text-align: left; }
-.gasha-relation:hover { border-color: #d5b96e; background: #fff6e2; }
-.gasha-relation > span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.gasha-relation strong { color: #8a5d0d; font-size: 0.64rem; }
-.gasha-relation b { overflow: hidden; color: #28353d; font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; }
-.gasha-relation small { color: #718088; font-size: 0.63rem; line-height: 1.4; }
 .gameplay-layout { display: grid; grid-template-columns: minmax(330px, 1.05fr) minmax(260px, 0.95fr); gap: 16px; }
 .parameter-panel, .skill-panel { min-width: 0; }
 .parameter-heading { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: #a33f29; }
@@ -532,11 +549,7 @@ function eventScopeLabel(event) {
 .costume-heading span { color: #697980; font-size: 0.62rem; }
 .costume-row small { display: block; margin-top: 2px; color: #849097; font-family: monospace; font-size: 0.62rem; }
 .costume-row p { margin: 7px 0 0; white-space: pre-wrap; color: #4d5c64; font-size: 0.69rem; line-height: 1.55; }
-.release-series-heading > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.release-series-heading strong { color: #2b3a42; font-size: 0.72rem; }
-.release-series-heading small { color: #718088; font-size: 0.66rem; line-height: 1.4; }
 .release-series { border-top: 1px solid #edf0f2; padding-top: 11px; }
-.release-series-heading { display: grid; grid-template-columns: 28px minmax(0, 1fr); align-items: center; gap: 10px; color: #5272a4; }
 .release-series-cards { display: flex; gap: 7px; margin-top: 10px; padding-bottom: 4px; overflow-x: auto; overscroll-behavior-inline: contain; }
 .release-series-cards button { flex: 0 0 74px; min-width: 0; padding: 5px; border: 1px solid #e1e6e9; border-radius: 6px; background: #fff; color: #4b5962; cursor: pointer; }
 .release-series-cards button:hover:not(:disabled) { border-color: #9fc8c3; background: #f1faf9; }

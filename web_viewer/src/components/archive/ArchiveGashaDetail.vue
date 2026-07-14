@@ -39,21 +39,11 @@
         </div>
         <span class="derived-badge">{{ relationBadge }} · {{ pickupCards.length }}</span>
       </div>
-      <div class="pickup-grid">
-        <button
-          v-for="card in pickupCards"
-          :key="card.card_resource_id"
-          @click="emit('open-card', card)"
-        >
-          <img :src="getCardIconUrl(card.card_resource_id, true)" :alt="card.card_title || card.card_resource_id" />
-          <span>
-            <strong>{{ card.card_title || card.card_resource_id }}</strong>
-            <small>{{ idolName(card.character_id) }} · {{ card.rarity }}</small>
-            <code>{{ card.card_resource_id }}</code>
-          </span>
-          <ChevronRight :size="18" />
-        </button>
-      </div>
+      <ArchiveRelationList
+        layout="grid"
+        :items="pickupRelationItems"
+        @select="emit('open-card', $event.payload)"
+      />
     </section>
 
     <section class="detail-section evidence-section">
@@ -71,7 +61,8 @@
 
 <script setup>
 import { computed } from 'vue'
-import { ChevronRight, ExternalLink } from '@lucide/vue'
+import { ExternalLink } from '@lucide/vue'
+import ArchiveRelationList from './ArchiveRelationList.vue'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 
 const props = defineProps({
@@ -113,6 +104,22 @@ const relationEvidence = computed(() => {
     ? `Grouped · 同逻辑卡池主公告 ${props.gasha?.primary_code || ''}`
     : 'Derived · 精确时间与突破道具'
 })
+const pickupRelationItems = computed(() => pickupCards.value.map(card => ({
+  id: `card-${card.card_resource_id}`,
+  kind: 'card',
+  label: usesRelatedCards.value ? relationBadge.value : '卡池 Pickup',
+  title: card.card_title || card.card_resource_id,
+  meta: `${props.idolName(card.character_id)} · ${card.rarity}`,
+  evidenceLabel: isReprintRelation.value ? 'Confirmed' : (usesRelatedCards.value ? 'Grouped' : 'Derived'),
+  evidenceTone: isReprintRelation.value ? 'confirmed' : (usesRelatedCards.value ? 'grouped' : 'derived'),
+  evidence: relationEvidence.value,
+  statusLabel: '已建档',
+  statusTone: 'available',
+  resource: card.card_resource_id,
+  imageUrl: getCardIconUrl(card.card_resource_id, true),
+  imageAlt: card.card_title || card.card_resource_id,
+  payload: card,
+})))
 
 function categoryLabel(category) {
   return CATEGORY_LABELS[category] || category || '未分类'
@@ -154,15 +161,6 @@ function formatDateTime(timestamp) {
 .section-heading h3 { margin: 0; color: #26363e; font-size: 0.88rem; }
 .section-heading p { margin: 4px 0 0; color: #88939a; font-size: 0.61rem; }
 .derived-badge { padding: 4px 7px; border-radius: 4px; background: #fff2d6; color: #8b6413; font-size: 0.6rem; font-weight: 700; }
-.pickup-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 9px; }
-.pickup-grid button { display: grid; grid-template-columns: 62px minmax(0, 1fr) 18px; align-items: center; gap: 11px; min-width: 0; min-height: 76px; padding: 7px; border: 1px solid #e2e6e8; border-radius: 6px; background: #fff; color: #2e3e46; cursor: pointer; text-align: left; }
-.pickup-grid button:hover { border-color: #82c9c4; background: #f6fbfa; }
-.pickup-grid img { width: 62px; height: 62px; border-radius: 4px; object-fit: cover; }
-.pickup-grid button > span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.pickup-grid strong { overflow: hidden; font-size: 0.73rem; text-overflow: ellipsis; white-space: nowrap; }
-.pickup-grid small { color: #718087; font-size: 0.61rem; }
-.pickup-grid code { color: #919ba0; font-size: 0.58rem; }
-.pickup-grid svg { color: #8c989e; }
 .evidence-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; margin: 0; }
 .evidence-grid div { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; padding: 8px 0; border-bottom: 1px solid #edf0f2; }
 .evidence-grid dt { color: #7d898f; font-size: 0.64rem; }
@@ -172,7 +170,7 @@ function formatDateTime(timestamp) {
   .detail-section { padding: 18px 16px; }
 }
 @media (max-width: 520px) {
-  .pickup-grid, .evidence-grid { grid-template-columns: 1fr; }
+  .evidence-grid { grid-template-columns: 1fr; }
   .gasha-summary h2 { font-size: 1rem; }
 }
 </style>

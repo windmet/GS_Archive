@@ -47,17 +47,11 @@
         <h3 id="event-cards-title">活动关联卡片</h3>
         <span>{{ cards.length }}</span>
       </div>
-      <div class="card-list">
-        <button v-for="card in cards" :key="card.card_resource_id" @click="emit('open-card', card)">
-          <img :src="getCardIconUrl(card.card_resource_id, true)" :alt="card.card_title" />
-          <span>
-            <strong>{{ card.card_title }}</strong>
-            <small>{{ card.character_name }} · {{ card.rarity }}</small>
-            <code>{{ card.card_resource_id }}</code>
-          </span>
-          <ChevronRight :size="16" />
-        </button>
-      </div>
+      <ArchiveRelationList
+        layout="grid"
+        :items="cardRelationItems"
+        @select="emit('open-card', $event.payload)"
+      />
     </section>
 
     <section class="event-evidence" aria-labelledby="event-evidence-title">
@@ -74,7 +68,8 @@
 
 <script setup>
 import { computed } from 'vue'
-import { ChevronRight, Play } from '@lucide/vue'
+import { Play } from '@lucide/vue'
+import ArchiveRelationList from './ArchiveRelationList.vue'
 import { getEventBannerUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 
@@ -91,6 +86,22 @@ const scopeLabel = computed(() => ({
   attribute_event: `${props.event?.attribute || ''} 属性团曲`.trim(),
   mixed_unit_event: '跨组合团活',
 }[props.event?.event_scope] || '活动剧情'))
+const cardRelationItems = computed(() => props.cards.map(card => ({
+  id: `card-${card.card_resource_id}`,
+  kind: 'card',
+  label: '活动关联卡',
+  title: card.card_title,
+  meta: `${card.character_name} · ${card.rarity}`,
+  evidenceLabel: 'Derived',
+  evidenceTone: 'derived',
+  evidence: card.relation_type,
+  statusLabel: '已建档',
+  statusTone: 'available',
+  resource: card.card_resource_id,
+  imageUrl: getCardIconUrl(card.card_resource_id, true),
+  imageAlt: card.card_title,
+  payload: card,
+})))
 
 function formatDate(timestamp) {
   if (!timestamp) return '日期未记录'
@@ -116,16 +127,10 @@ function formatDate(timestamp) {
 .section-heading > span { color: #78838c; font-size: 0.65rem; }
 .idol-list, .unit-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 7px; }
 .idol-list button, .unit-list button { display: flex; align-items: center; gap: 9px; min-width: 0; min-height: 54px; padding: 7px 9px; border: 1px solid #e0e5e8; border-radius: 6px; background: #fff; color: #26323b; cursor: pointer; font: inherit; text-align: left; }
-.idol-list button:hover, .unit-list button:hover, .card-list button:hover { border-color: #6fc5be; background: #f2fbfa; }
+.idol-list button:hover, .unit-list button:hover { border-color: #6fc5be; background: #f2fbfa; }
 .idol-list img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
 .unit-list img { width: 70px; height: 40px; object-fit: contain; }
 .idol-list span, .unit-list span { overflow: hidden; font-size: 0.7rem; text-overflow: ellipsis; white-space: nowrap; }
-.card-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 7px; }
-.card-list button { display: grid; grid-template-columns: 54px minmax(0, 1fr) 18px; align-items: center; gap: 10px; min-width: 0; min-height: 68px; padding: 7px 9px; border: 1px solid #e0e5e8; border-radius: 6px; background: #fff; color: #26323b; cursor: pointer; text-align: left; }
-.card-list img { width: 54px; height: 54px; object-fit: contain; }
-.card-list button > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.card-list strong { overflow: hidden; font-size: 0.73rem; text-overflow: ellipsis; white-space: nowrap; }
-.card-list small, .card-list code { color: #74808a; font-size: 0.62rem; }
 .event-evidence dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin: 12px 0 0; background: #e3e8eb; }
 .event-evidence dl > div { min-width: 0; padding: 10px; background: #f8fafb; }
 .event-evidence dt { color: #75818a; font-size: 0.62rem; }
@@ -137,7 +142,6 @@ function formatDate(timestamp) {
   .event-section, .event-evidence { margin: 8px 9px 0; padding: 13px; }
   .event-evidence { margin-bottom: 9px; }
   .idol-list, .unit-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .card-list { grid-template-columns: minmax(0, 1fr); }
   .event-evidence dl { grid-template-columns: minmax(0, 1fr); }
 }
 </style>

@@ -62,8 +62,10 @@
         v-if="view === 'idol_detail'"
         :idol="currentIdolProfile"
         :stats="currentIdolStats"
+        :events="currentIdolEvents"
         @open-domain="openIdolDomain"
         @open-unit="openUnitFromIdol"
+        @open-event="openIdolEvent"
       />
 
       <ArchiveCardDetail
@@ -852,6 +854,9 @@ const currentIdolStats = computed(() => {
     phones: categoryById('idol_phone')?.individual?.[id]?.groups?.length || 0,
   }
 })
+const currentIdolEvents = computed(() => (archiveManifestData.value?.unit_event_relations || [])
+  .filter(event => (event.characters || []).includes(currentCharacterId.value))
+  .sort((left, right) => Number(left.release_at || 0) - Number(right.release_at || 0)))
 
 const archiveShellVisible = computed(() => !['player', 'spine_lab'].includes(view.value))
 
@@ -1342,6 +1347,10 @@ function openIdolDomain(domain) {
   commitView(domain === 'cards' ? 'cards' : 'groups')
 }
 
+function openIdolEvent(event) {
+  openEventDetail(event, 'idol_detail')
+}
+
 function openCard(card) {
   currentCardId.value = card.resource_id
   commitView('card_detail')
@@ -1419,6 +1428,7 @@ function goBackFromEvent() {
   eventParentView.value = ''
   if (parent === 'card_detail' && currentCard.value) commitView('card_detail')
   else if (parent === 'unit_detail' && currentArchiveUnit.value) commitView('unit_detail')
+  else if (parent === 'idol_detail' && currentIdolProfile.value) commitView('idol_detail')
   else commitView('story_catalog')
 }
 

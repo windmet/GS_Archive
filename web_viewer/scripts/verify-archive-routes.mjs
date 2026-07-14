@@ -67,6 +67,11 @@ assert.equal(eventDetailContext.view, 'event_detail')
 assert.equal(eventDetailContext.event, '410018')
 assert.equal(eventDetailContext.parentView, 'card_detail')
 
+const idolEventContext = readArchiveRoute('http://localhost/?view=event_detail&event=410018&parent=idol_detail&idol=040ren')
+assert.equal(idolEventContext.view, 'event_detail')
+assert.equal(idolEventContext.idol, '040ren')
+assert.equal(idolEventContext.parentView, 'idol_detail')
+
 const eventPlayerContext = readArchiveRoute('http://localhost/?view=player&scenario=1_3_10001_01.json&return=event_detail&parent=unit_detail&event=410001&unit=16cfi')
 assert.equal(eventPlayerContext.view, 'player')
 assert.equal(eventPlayerContext.event, '410001')
@@ -74,4 +79,4 @@ assert.equal(eventPlayerContext.returnView, 'event_detail')
 assert.equal(eventPlayerContext.parentView, 'unit_detail')
 assert.equal(eventPlayerContext.unit, '16cfi')
 
-console.log('Archive route contract: 34 assertions passed')
+console.log('Archive route contract: 37 assertions passed')

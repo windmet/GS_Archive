@@ -45,6 +45,14 @@
       </div>
     </section>
 
+    <section v-if="events.length" class="idol-events" aria-labelledby="idol-events-title">
+      <div class="section-heading">
+        <h3 id="idol-events-title">相关活动</h3>
+        <span>{{ events.length }} events · 按出演阵容</span>
+      </div>
+      <ArchiveRelationList :items="eventItems" @select="emit('open-event', $event.payload)" />
+    </section>
+
     <section v-if="idol.hobby || idol.specialty" class="idol-notes" aria-label="兴趣与特技">
       <div v-if="idol.hobby">
         <h3>兴趣</h3>
@@ -61,13 +69,15 @@
 <script setup>
 import { computed } from 'vue'
 import { BookOpenText, ChevronRight, Images, MessageSquareText, Phone, UsersRound } from '@lucide/vue'
+import ArchiveRelationList from './ArchiveRelationList.vue'
 
 const props = defineProps({
   idol: { type: Object, default: null },
   stats: { type: Object, default: () => ({}) },
+  events: { type: Array, default: () => [] },
 })
 
-const emit = defineEmits(['open-domain', 'open-unit'])
+const emit = defineEmits(['open-domain', 'open-unit', 'open-event'])
 
 const facts = computed(() => [
   { label: '年龄', value: props.idol?.age ? `${props.idol.age}岁` : '' },
@@ -86,6 +96,35 @@ const related = computed(() => [
   { id: 'chat', label: '短信聊天', count: `${props.stats.chats || 0} groups`, icon: MessageSquareText },
   { id: 'phone', label: '电话聊天', count: `${props.stats.phones || 0} groups`, icon: Phone },
 ])
+
+const eventItems = computed(() => props.events.map(event => {
+  const confirmed = String(event.relation_type || '').startsWith('confirmed_')
+  return {
+    id: `event-${event.event_id}`,
+    kind: 'event',
+    label: eventScopeLabel(event),
+    title: event.title,
+    meta: [event.series, formatDate(event.release_at)].filter(Boolean).join(' · '),
+    evidenceLabel: confirmed ? 'Confirmed' : 'Derived',
+    evidenceTone: confirmed ? 'confirmed' : 'derived',
+    evidence: event.classification_source,
+    statusLabel: event.exists ? '可播放' : '缺少剧情',
+    statusTone: event.exists ? 'available' : 'missing',
+    resource: event.file,
+    payload: event,
+  }
+}))
+
+function eventScopeLabel(event) {
+  if (event.event_scope === 'fixed_unit_event') return '固定组合团活'
+  if (event.event_scope === 'attribute_event') return `${event.attribute || ''} 属性团曲`.trim()
+  return '跨组合团活'
+}
+
+function formatDate(timestamp) {
+  if (!timestamp) return ''
+  return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium' }).format(new Date(Number(timestamp) * 1000))
+}
 </script>
 
 <style scoped>
@@ -109,7 +148,7 @@ const related = computed(() => [
 .idol-unit-link { display: inline-flex; align-items: center; gap: 6px; min-height: 29px; margin-top: 12px; padding: 0 8px; border: 1px solid #42515d; border-radius: 5px; background: #22303b; color: #dce5e9; cursor: pointer; font: inherit; font-size: 0.68rem; }
 .idol-unit-link:hover { border-color: #58cec5; }
 .idol-color { position: absolute; right: 26px; top: 24px; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.8); border-radius: 50%; }
-.idol-facts, .idol-related, .idol-notes { margin-top: 18px; padding: 20px; border: 1px solid #dfe4e8; background: #fff; }
+.idol-facts, .idol-related, .idol-events, .idol-notes { margin-top: 18px; padding: 20px; border: 1px solid #dfe4e8; background: #fff; }
 .idol-facts dl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; }
 .idol-facts dl div { min-width: 0; padding: 10px 16px; border-left: 1px solid #e5e9ec; }
 .idol-facts dl div:nth-child(4n + 1) { border-left: 0; }
@@ -154,7 +193,7 @@ const related = computed(() => [
   .idol-portrait { width: 78px; height: 78px; }
   .idol-identity h2 { font-size: 1.2rem; }
   .idol-color { right: 16px; top: 16px; }
-  .idol-facts, .idol-related, .idol-notes { margin-top: 10px; padding: 14px; }
+  .idol-facts, .idol-related, .idol-events, .idol-notes { margin-top: 10px; padding: 14px; }
   .idol-facts dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .idol-facts dl div { padding: 9px 8px; }
   .related-grid { grid-template-columns: 1fr; }
