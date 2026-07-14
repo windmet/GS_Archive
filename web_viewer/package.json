@@ -8,6 +8,7 @@
     "build": "vite build --configLoader native",
     "smoke": "vite build --configLoader native",
     "chibi:scan": "node scripts/scan-live-chibi-compatibility.mjs",
+    "chibi:audio": "python scripts/prepare-live-chibi-audio.py",
     "manifest": "node scripts/generate-archive-manifest.mjs",
     "verify:archive": "node scripts/verify-archive.mjs",
     "preview": "vite preview --configLoader native",
