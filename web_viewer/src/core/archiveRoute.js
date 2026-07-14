@@ -43,8 +43,34 @@ const VALID_VIEWS = new Set([
 ])
 
 const VALID_CARD_RELATION_STATES = new Set(['all', 'card_story', 'event_card', 'gasha_card', 'release_series', 'unrelated'])
+const VALID_CARD_ASSET_STATES = new Set(['all', 'visible_icon', 'complete_icons', 'has_large', 'single_state', 'missing_normal'])
+const VALID_CARD_RARITIES = new Set(['all', 'N', 'R', 'SR', 'SSR'])
+const VALID_CATEGORIES = new Set(['main_story', 'event', 'idol', 'idol_chat', 'idol_phone', 'cards', 'episode_zero', 'extra'])
 const VALID_EVENT_SCOPES = new Set(['all', 'fixed_unit_event', 'attribute_event', 'mixed_unit_event'])
 const VALID_GASHA_TYPES = new Set(['all', 'standard_pickup', 'growing_fes', 'stage_step_up', 'full_roster_series'])
+const VALID_STORY_AVAILABILITY = new Set(['all', 'playable', 'missing'])
+const VALID_STORY_SORTS = new Set(['domain', 'title', 'resource', 'steps_desc'])
+const VALID_RETURN_VIEWS = new Set([...VALID_VIEWS].filter(view => !['player', 'spine_lab'].includes(view)))
+
+const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
+  home: { section: 'home', required: [] },
+  archive_status: { section: 'resources', required: [] },
+  story_catalog: { section: 'stories', required: [] },
+  unit_catalog: { section: 'idols', required: [] },
+  unit_detail: { section: 'idols', required: ['unit'], fallback: 'unit_catalog' },
+  idols: { section: 'category', required: [] },
+  idol_detail: { section: 'idols', required: ['idol'], fallback: 'idols' },
+  groups: { section: 'category', required: ['category'], fallback: 'home' },
+  episode_zero_units: { section: 'stories', required: [] },
+  episodes: { section: 'stories', required: ['unit'], fallback: 'episode_zero_units' },
+  files: { section: 'category', required: ['group'], fallback: 'home' },
+  cards: { section: 'cards', required: ['idol'], fallback: 'idols' },
+  card_detail: { section: 'cards', required: ['card'], fallback: 'cards' },
+  gashas: { section: 'gashas', required: [] },
+  gasha_detail: { section: 'gashas', required: ['gasha'], fallback: 'gashas' },
+  player: { section: 'player', required: [], fallback: 'home' },
+  spine_lab: { section: 'resources', required: [] },
+})
 
 function clean(value) {
   return typeof value === 'string' ? value.trim() : ''
@@ -56,74 +82,121 @@ export function normalizeScenarioFile(value) {
   return normalized.endsWith('.json') ? normalized : `${normalized}.json`
 }
 
-export function readArchiveRoute(input = window.location.href) {
-  const base = typeof window === 'undefined' ? 'http://localhost/' : window.location.origin
-  const url = new URL(input, base)
-  const params = url.searchParams
-  const scenario = normalizeScenarioFile(params.get('scenario') || params.get('file') || '')
-  const requestedView = clean(params.get('view'))
-  const requestedRelationState = clean(params.get('relation_state'))
-  const requestedStoryType = clean(params.get('story_type'))
-  const requestedEventScope = clean(params.get('event_scope'))
-  const view = scenario
-    ? 'player'
-    : (VALID_VIEWS.has(requestedView) ? requestedView : 'home')
+function allowed(value, values, fallback) {
+  return values.has(value) ? value : fallback
+}
 
-  return {
+export function normalizeArchiveRoute(input = {}) {
+  const scenario = normalizeScenarioFile(input.scenario || '')
+  const voice = clean(input.voice)
+  const card = clean(input.card)
+  let view = scenario ? 'player' : allowed(clean(input.view), VALID_VIEWS, 'home')
+  let category = allowed(clean(input.category), VALID_CATEGORIES, '')
+
+  if (['idol_detail'].includes(view)) category = 'idol'
+  if (['cards', 'card_detail'].includes(view)) category = 'cards'
+  if (['episode_zero_units', 'episodes'].includes(view)) category = 'episode_zero'
+
+  const route = {
     view,
+    category,
+    idol: clean(input.idol),
+    group: clean(input.group),
+    unit: clean(input.unit),
+    unitFilter: clean(input.unitFilter),
+    storyType: clean(input.storyType),
+    eventScope: clean(input.storyType) === 'event'
+      ? allowed(clean(input.eventScope), VALID_EVENT_SCOPES, 'all')
+      : 'all',
+    availability: allowed(clean(input.availability), VALID_STORY_AVAILABILITY, 'all'),
+    sort: allowed(clean(input.sort), VALID_STORY_SORTS, 'domain'),
+    episode: clean(input.episode),
+    card,
+    gasha: clean(input.gasha),
+    gashaType: allowed(clean(input.gashaType), VALID_GASHA_TYPES, 'all'),
+    rarity: allowed(clean(input.rarity), VALID_CARD_RARITIES, 'all'),
+    assetState: allowed(clean(input.assetState), VALID_CARD_ASSET_STATES, 'all'),
+    relationState: allowed(clean(input.relationState), VALID_CARD_RELATION_STATES, 'all'),
+    query: clean(input.query),
+    scenario,
+    voice,
+    returnView: allowed(clean(input.returnView), VALID_RETURN_VIEWS, ''),
+  }
+
+  const contract = ARCHIVE_ROUTE_CONTRACTS[view]
+  if (view === 'player' && !scenario && !(voice && card)) view = contract.fallback
+  else if (contract?.required.some(key => !route[key])) view = contract.fallback
+  route.view = view || 'home'
+  return route
+}
+
+export function archiveSectionForRoute(route) {
+  const normalized = normalizeArchiveRoute(route)
+  const section = ARCHIVE_ROUTE_CONTRACTS[normalized.view]?.section || 'stories'
+  if (section !== 'category') return section
+  if (normalized.category === 'cards') return 'cards'
+  if (['idol_chat', 'idol_phone'].includes(normalized.category)) return 'interactions'
+  if (normalized.category === 'idol') return 'idols'
+  return 'stories'
+}
+
+export function readArchiveRoute(input = null) {
+  const base = typeof window === 'undefined' ? 'http://localhost/' : window.location.origin
+  const current = input || (typeof window === 'undefined' ? base : window.location.href)
+  const url = new URL(current, base)
+  const params = url.searchParams
+  return normalizeArchiveRoute({
+    view: params.get('view'),
     category: clean(params.get('category')),
     idol: clean(params.get('idol')),
     group: clean(params.get('group')),
     unit: clean(params.get('unit')),
     unitFilter: clean(params.get('unit_filter')),
-    storyType: requestedStoryType,
-    eventScope: requestedStoryType === 'event' && VALID_EVENT_SCOPES.has(requestedEventScope)
-      ? requestedEventScope
-      : 'all',
-    availability: clean(params.get('availability')) || 'all',
-    sort: clean(params.get('sort')) || 'domain',
+    storyType: params.get('story_type'),
+    eventScope: params.get('event_scope'),
+    availability: params.get('availability'),
+    sort: params.get('sort'),
     episode: clean(params.get('episode')),
     card: clean(params.get('card')),
     gasha: clean(params.get('gasha')),
-    gashaType: VALID_GASHA_TYPES.has(clean(params.get('gasha_type')))
-      ? clean(params.get('gasha_type'))
-      : 'all',
-    rarity: clean(params.get('rarity')) || 'all',
-    assetState: clean(params.get('asset_state')) || 'all',
-    relationState: VALID_CARD_RELATION_STATES.has(requestedRelationState) ? requestedRelationState : 'all',
+    gashaType: params.get('gasha_type'),
+    rarity: params.get('rarity'),
+    assetState: params.get('asset_state'),
+    relationState: params.get('relation_state'),
     query: clean(params.get('q')),
-    scenario,
+    scenario: params.get('scenario') || params.get('file'),
     voice: clean(params.get('voice')),
     returnView: clean(params.get('return')),
-  }
+  })
 }
 
 export function buildArchiveUrl(input, route) {
   const url = new URL(input, typeof window === 'undefined' ? 'http://localhost/' : window.location.origin)
+  const normalized = normalizeArchiveRoute(route)
   for (const key of ROUTE_QUERY_KEYS) url.searchParams.delete(key)
   url.searchParams.delete('file')
 
-  if (route.view && route.view !== 'home') url.searchParams.set('view', route.view)
-  if (route.category) url.searchParams.set('category', route.category)
-  if (route.idol) url.searchParams.set('idol', route.idol)
-  if (route.group) url.searchParams.set('group', route.group)
-  if (route.unit) url.searchParams.set('unit', route.unit)
-  if (route.unitFilter) url.searchParams.set('unit_filter', route.unitFilter)
-  if (route.storyType) url.searchParams.set('story_type', route.storyType)
-  if (route.eventScope && route.eventScope !== 'all') url.searchParams.set('event_scope', route.eventScope)
-  if (route.availability && route.availability !== 'all') url.searchParams.set('availability', route.availability)
-  if (route.sort && route.sort !== 'domain') url.searchParams.set('sort', route.sort)
-  if (route.episode) url.searchParams.set('episode', route.episode)
-  if (route.card) url.searchParams.set('card', route.card)
-  if (route.gasha) url.searchParams.set('gasha', route.gasha)
-  if (route.gashaType && route.gashaType !== 'all') url.searchParams.set('gasha_type', route.gashaType)
-  if (route.rarity && route.rarity !== 'all') url.searchParams.set('rarity', route.rarity)
-  if (route.assetState && route.assetState !== 'all') url.searchParams.set('asset_state', route.assetState)
-  if (route.relationState && route.relationState !== 'all') url.searchParams.set('relation_state', route.relationState)
-  if (route.query) url.searchParams.set('q', route.query)
-  if (route.scenario) url.searchParams.set('scenario', normalizeScenarioFile(route.scenario))
-  if (route.voice) url.searchParams.set('voice', route.voice)
-  if (route.returnView && route.returnView !== 'files') url.searchParams.set('return', route.returnView)
+  if (normalized.view !== 'home') url.searchParams.set('view', normalized.view)
+  if (normalized.category) url.searchParams.set('category', normalized.category)
+  if (normalized.idol) url.searchParams.set('idol', normalized.idol)
+  if (normalized.group) url.searchParams.set('group', normalized.group)
+  if (normalized.unit) url.searchParams.set('unit', normalized.unit)
+  if (normalized.unitFilter) url.searchParams.set('unit_filter', normalized.unitFilter)
+  if (normalized.storyType) url.searchParams.set('story_type', normalized.storyType)
+  if (normalized.eventScope !== 'all') url.searchParams.set('event_scope', normalized.eventScope)
+  if (normalized.availability !== 'all') url.searchParams.set('availability', normalized.availability)
+  if (normalized.sort !== 'domain') url.searchParams.set('sort', normalized.sort)
+  if (normalized.episode) url.searchParams.set('episode', normalized.episode)
+  if (normalized.card) url.searchParams.set('card', normalized.card)
+  if (normalized.gasha) url.searchParams.set('gasha', normalized.gasha)
+  if (normalized.gashaType !== 'all') url.searchParams.set('gasha_type', normalized.gashaType)
+  if (normalized.rarity !== 'all') url.searchParams.set('rarity', normalized.rarity)
+  if (normalized.assetState !== 'all') url.searchParams.set('asset_state', normalized.assetState)
+  if (normalized.relationState !== 'all') url.searchParams.set('relation_state', normalized.relationState)
+  if (normalized.query) url.searchParams.set('q', normalized.query)
+  if (normalized.scenario) url.searchParams.set('scenario', normalized.scenario)
+  if (normalized.voice) url.searchParams.set('voice', normalized.voice)
+  if (normalized.returnView && normalized.returnView !== 'files') url.searchParams.set('return', normalized.returnView)
   return url
 }
 
@@ -139,4 +212,4 @@ export function onArchivePopState(handler) {
   return () => window.removeEventListener('popstate', listener)
 }
 
-export { ROUTE_QUERY_KEYS, VALID_VIEWS }
+export { ARCHIVE_ROUTE_CONTRACTS, ROUTE_QUERY_KEYS, VALID_VIEWS }

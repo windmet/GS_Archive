@@ -239,6 +239,7 @@ import {
   mergeCardDetail,
 } from './data/archiveSelectors.js'
 import {
+  archiveSectionForRoute,
   onArchivePopState,
   readArchiveRoute,
   writeArchiveRoute,
@@ -818,17 +819,17 @@ const currentIdolStats = computed(() => {
 
 const archiveShellVisible = computed(() => !['player', 'spine_lab'].includes(view.value))
 
-const archiveSection = computed(() => {
-  if (view.value === 'home') return 'home'
-  if (view.value === 'archive_status') return 'resources'
-  if (view.value === 'story_catalog') return 'stories'
-  if (['gashas', 'gasha_detail'].includes(view.value)) return 'gashas'
-  if (['unit_catalog', 'unit_detail'].includes(view.value)) return 'idols'
-  if (currentCategoryId.value === 'cards' || ['cards', 'card_detail'].includes(view.value)) return 'cards'
-  if (['idol_chat', 'idol_phone'].includes(currentCategoryId.value)) return 'interactions'
-  if (currentCategoryId.value === 'idol') return 'idols'
-  return 'stories'
-})
+const archiveSection = computed(() => archiveSectionForRoute({
+  view: view.value,
+  category: currentCategoryId.value,
+  idol: currentCharacterId.value,
+  card: currentCardId.value,
+  gasha: currentGashaId.value,
+  unit: currentArchiveUnitCode.value || currentUnit.value?.unit_code || currentUnit.value?.id || '',
+  group: currentGroup.value?.id || '',
+  scenario: view.value === 'player' ? currentScenarioFile.value : '',
+  voice: view.value === 'player' ? currentPreviewCue.value : '',
+}))
 
 const archiveTitle = computed(() => {
   if (view.value === 'home') return 'SideM Archive'
