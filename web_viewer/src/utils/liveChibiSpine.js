@@ -11,8 +11,9 @@ import { BinaryInput, TextureAtlas, TextureAtlasRegion } from '@pixi-spine/base'
 
 export const LIVE_CHIBI_BASE = '/assets/live-chibi'
 const LIVE_CHIBI_LIP_OPEN_THRESHOLD = 0.04
-const LIVE_CHIBI_LIP_SCALE_MIN = 1
-const LIVE_CHIBI_LIP_OPEN_SCALE = 3
+const LIVE_CHIBI_LIP_CLOSED_SCALE = 1
+const LIVE_CHIBI_LIP_OPEN_SCALE_MIN = 0.4
+const LIVE_CHIBI_LIP_OPEN_SCALE_MAX = 1.4
 
 class CostumeAtlasAttachmentLoader extends AtlasAttachmentLoader {
   missingRegions = new Set()
@@ -103,7 +104,7 @@ function installLiveChibiLipSync(spine) {
     value: 0,
     singing: false,
     attachment: null,
-    scale: LIVE_CHIBI_LIP_SCALE_MIN,
+    scale: LIVE_CHIBI_LIP_CLOSED_SCALE,
   }
   skeleton.updateWorldTransform = function (...args) {
     try {
@@ -116,9 +117,9 @@ function installLiveChibiLipSync(spine) {
         skeleton.setAttachment('mouth', attachmentName)
       }
       state.scale = open
-        ? LIVE_CHIBI_LIP_SCALE_MIN
-          + value * (LIVE_CHIBI_LIP_OPEN_SCALE - LIVE_CHIBI_LIP_SCALE_MIN)
-        : LIVE_CHIBI_LIP_SCALE_MIN
+        ? LIVE_CHIBI_LIP_OPEN_SCALE_MIN
+          + value * (LIVE_CHIBI_LIP_OPEN_SCALE_MAX - LIVE_CHIBI_LIP_OPEN_SCALE_MIN)
+        : LIVE_CHIBI_LIP_CLOSED_SCALE
       mouthBone.scaleX = baseScaleX * state.scale
       mouthBone.scaleY = baseScaleY
       state.attachment = attachmentName
@@ -138,7 +139,7 @@ export function applyLiveChibiLipSync(runtime, curve, milliseconds, singing) {
     value: 0,
     singing: false,
     attachment: null,
-    scale: LIVE_CHIBI_LIP_SCALE_MIN,
+    scale: LIVE_CHIBI_LIP_CLOSED_SCALE,
   }
   controller.value = singing ? sampleLiveChibiLipSync(curve, milliseconds) : 0
   controller.singing = Boolean(singing && curve)
