@@ -45,10 +45,11 @@ function relationRecords(cardIndex, field) {
   )
 }
 
-const [compiledFiles, voiceEntries, cardIndex, storyMaster, gashaAnnouncementIndex, archiveManifest] = await Promise.all([
+const [compiledFiles, voiceEntries, cardIndex, cardDetailIndex, storyMaster, gashaAnnouncementIndex, archiveManifest] = await Promise.all([
   listFiles(compiledRoot, name => name.endsWith('.json') && !['index.json', 'manifest.json', 'voice_index.json'].includes(name)),
   readdir(voiceRoot, { withFileTypes: true }),
   readFile(path.join(publicRoot, 'data', 'masterdata', 'card_index.json'), 'utf8').then(JSON.parse),
+  readFile(path.join(publicRoot, 'data', 'masterdata', 'card_detail_index.json'), 'utf8').then(JSON.parse),
   readFile(path.join(publicRoot, 'data', 'masterdata', 'story_master_index.json'), 'utf8').then(JSON.parse),
   readFile(path.join(publicRoot, 'data', 'masterdata', 'gasha_announcement_index.json'), 'utf8').then(JSON.parse),
   readFile(path.join(publicRoot, 'data', 'archive_manifest.json'), 'utf8').then(JSON.parse),
@@ -330,6 +331,51 @@ if (!sameValues(expectedEventCardIds, actualEventCardIds) && eventCardFailures.l
   })
 }
 
+const cardDetailFailures = []
+let validCardDetails = 0
+for (const card of canonicalCards) {
+  const detail = cardDetailIndex.cards_by_resource_id?.[card.resource_id]
+  if (!detail) {
+    if (cardDetailFailures.length < SAMPLE_LIMIT) cardDetailFailures.push({ card: card.resource_id, reason: 'missing detail' })
+    continue
+  }
+  const skillId = detail.gameplay?.skill_id
+  const centerSkillId = detail.gameplay?.center_skill_id
+  const missingCostumes = (detail.costume_relations || [])
+    .filter(relation => !cardDetailIndex.costumes_by_key?.[relation.costume_key])
+    .map(relation => relation.costume_key)
+  const missingVoices = (detail.operational_voice_cues || [])
+    .filter(cue => !voiceNames.has(`${cue.cue}.m4a`))
+    .map(cue => cue.cue)
+  const valid = detail.gameplay?.attribute?.name &&
+    (!skillId || cardDetailIndex.skills_by_id?.[skillId]) &&
+    (!centerSkillId || cardDetailIndex.center_skills_by_id?.[centerSkillId]) &&
+    missingCostumes.length === 0 && missingVoices.length === 0
+  if (valid) validCardDetails += 1
+  else if (cardDetailFailures.length < SAMPLE_LIMIT) {
+    cardDetailFailures.push({ card: card.resource_id, skillId, centerSkillId, missingCostumes, missingVoices })
+  }
+}
+
+const renCard = canonicalCardByResource.get('040ren_ssr02')
+const renDetail = cardDetailIndex.cards_by_resource_id?.['040ren_ssr02']
+const renSkill = cardDetailIndex.skills_by_id?.[renDetail?.gameplay?.skill_id]
+const renCostumeModels = new Set((renDetail?.costume_relations || []).map(relation =>
+  cardDetailIndex.costumes_by_key?.[relation.costume_key]?.model_resource_id,
+))
+const renSampleValid = renCard && renDetail &&
+  renDetail.gameplay?.attribute?.name === 'Physical' && renDetail.gameplay?.life === 40 &&
+  renDetail.gameplay?.appeal?.initial === 6801 && renDetail.gameplay?.appeal?.max_unlimit === 7140 &&
+  renDetail.gameplay?.appeal?.max_limitbreak === 8496 &&
+  renSkill?.levels?.[0]?.description === '13秒ごとに30％の確率で7秒間、PERFECT/GREATのスコアが29％アップし、GREATをPERFECTにする' &&
+  renCard.scenario_entries?.some(entry => entry.resource_id === '2_4_040_02_09_c') &&
+  renDetail.operational_voice_cues?.length === 8 &&
+  renDetail.operational_voice_cues?.filter(cue => cue.text_source === 'curated').length === 7 &&
+  renCostumeModels.has('040ren_104_00') && renCostumeModels.has('040ren_104_01')
+if (!renSampleValid && cardDetailFailures.length < SAMPLE_LIMIT) {
+  cardDetailFailures.push({ card: '040ren_ssr02', reason: 'reference sample differs from verified wiki/masterdata values' })
+}
+
 const report = {
   schema_version: 1,
   generated_at: new Date().toISOString(),
@@ -382,6 +428,16 @@ const report = {
     release_series_failures: releaseSeriesFailures.length,
     release_series_failure_samples: releaseSeriesFailures,
   },
+  card_details: {
+    total: canonicalCards.length,
+    valid: validCardDetails,
+    failures: cardDetailFailures.length,
+    failure_samples: cardDetailFailures,
+    reference_sample: '040ren_ssr02',
+    reference_sample_valid: Boolean(renSampleValid),
+    operational_voices: cardDetailIndex.meta?.operational_voice_count || 0,
+    costume_relations: cardDetailIndex.meta?.costume_relation_count || 0,
+  },
   unit_event_relations: {
     total: archiveManifest.unit_event_relations?.length || 0,
     valid: validUnitEvents,
@@ -406,4 +462,6 @@ console.log(JSON.stringify({
   unitEvents: `${validUnitEvents}/${archiveManifest.unit_event_relations?.length || 0}`,
   eventCards: `${validEventCardRelations}/${actualEventCardIds.length}`,
   gashaCards: `${validGashaCardRelations}/${actualGashaCardIds.length}`,
+  cardDetails: `${validCardDetails}/${canonicalCards.length}`,
+  renSample: renSampleValid ? 'valid' : 'invalid',
 }))

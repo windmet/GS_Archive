@@ -33,9 +33,10 @@ async function countDirectories(relativePath) {
   return entries.filter(entry => entry.isDirectory()).length
 }
 
-const [compiledIndex, cardIndex, idolUnit, storyMaster, gashaAnnouncementIndex] = await Promise.all([
+const [compiledIndex, cardIndex, cardDetailIndex, idolUnit, storyMaster, gashaAnnouncementIndex] = await Promise.all([
   readJson('data/compiled/index.json'),
   readJson('data/masterdata/card_index.json'),
+  readJson('data/masterdata/card_detail_index.json'),
   readJson('data/masterdata/idol_unit_dictionary.json'),
   readJson('data/masterdata/story_master_index.json'),
   readJson('data/masterdata/gasha_announcement_index.json'),
@@ -60,6 +61,7 @@ const archiveCards = [...canonicalCardsById.values()]
 const sourcePaths = [
   'data/compiled/index.json',
   'data/masterdata/card_index.json',
+  'data/masterdata/card_detail_index.json',
   'data/masterdata/idol_unit_dictionary.json',
   'data/masterdata/story_master_index.json',
   'data/masterdata/gasha_announcement_index.json',
@@ -469,6 +471,14 @@ const manifest = {
       event_card_rule: 'card is not a gasha pickup, release_at equals event release_at, and character appears in compiled event roster',
       gasha_card_rule: 'card LimitbreakItemId (field 23) exists and card release_at equals exactly one gasha announcement start_at',
       release_series_rule: 'cards share card table fields 18 (release_at) and 40 (title)',
+    },
+    card_details: {
+      cards: Object.keys(cardDetailIndex.cards_by_resource_id || {}).length,
+      skills: Object.keys(cardDetailIndex.skills_by_id || {}).length,
+      center_skills: Object.keys(cardDetailIndex.center_skills_by_id || {}).length,
+      costumes: Object.keys(cardDetailIndex.costumes_by_key || {}).length,
+      operational_voices: cardDetailIndex.meta?.operational_voice_count || 0,
+      costume_relations: cardDetailIndex.meta?.costume_relation_count || 0,
     },
     unit_membership: {
       resolved: Object.keys(unitEvidence.membership).length,

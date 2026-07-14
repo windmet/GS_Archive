@@ -18,6 +18,24 @@ from typing import Any
 
 DEFAULT_KEY = b"DefaultPassPhrase"
 
+IDOL_TYPE_NAMES = {
+    1: "Physical",
+    2: "Intelligence",
+    3: "Mental",
+    4: "All",
+}
+
+OPERATIONAL_VOICE_SUFFIXES = {
+    "02_00": ("gasha_change", "スカウト・チェンジ！"),
+    "03_01": ("unit_formation", "ユニット編成 1"),
+    "03_02": ("unit_formation", "ユニット編成 2"),
+    "03_03": ("unit_formation", "ユニット編成 3"),
+    "04_01": ("live_start", "ライブ開始"),
+    "04_02": ("special_appeal_normal", "スペシャルアピール（通常）"),
+    "04_03": ("special_appeal_unit", "スペシャルアピール（ユニット）"),
+    "04_04": ("skill_activation", "スキル発動"),
+}
+
 
 def read_varint(data: bytes, pos: int, end: int) -> tuple[int, int]:
     value = 0
@@ -191,7 +209,7 @@ def extract_card_parameters(records: list[tuple[int, int, int, int, Any]]) -> li
     for top_field, start, payload_start, end, payload in records:
         if top_field != 1 or not isinstance(payload, bytes):
             continue
-        parsed = parse_message(payload)
+        parsed = parse_message(payload, nested=True)
         resource_id = parsed.get("14")
         if isinstance(resource_id, str) and PATTERNS["card_resource"].match(resource_id):
             parsed["_offset"] = start
@@ -587,7 +605,7 @@ def build_home_interaction_index(
 ) -> dict[str, Any]:
     rows = []
     specs = [
-        (32, "work_unlock", "10", {"id": 1, "unlock_text": 3, "base_resource_id": 9, "resource_id": 10}),
+        (32, "card_link_talk", "10", {"id": 1, "title": 3, "base_resource_id": 9, "resource_id": 10}),
         (34, "birthday_unlock", "10", {"id": 1, "title": 3, "base_resource_id": 9, "resource_id": 10}),
         (104, "home_time_slot_resource", "4", {"id": 1, "base_resource_id": 3, "resource_id": 4, "start_time": 5, "end_time": 6}),
         (105, "home_schedule_time_slot", "5", {"id": 1, "base_resource_id": 4, "resource_id": 5, "start_time": 7, "end_time": 8}),
@@ -1039,14 +1057,240 @@ def build_story_master_index(
     }
 
 
+def build_card_parameter(raw: Any) -> dict[str, Any] | None:
+    if not isinstance(raw, dict) or not isinstance(raw.get("1"), int):
+        return None
+    initial = raw.get("1")
+    awakening_step = raw.get("2") if isinstance(raw.get("2"), int) else 0
+    limitbreak_step = raw.get("3") if isinstance(raw.get("3"), int) else 0
+    idol_limitbreak_step = raw.get("4") if isinstance(raw.get("4"), int) else 0
+    return {
+        "initial": initial,
+        "max_unlimit": initial + awakening_step,
+        "max_limitbreak": initial + awakening_step + limitbreak_step * 4,
+        "awakening_step": awakening_step,
+        "limitbreak_step": limitbreak_step,
+        "idol_limitbreak_step": idol_limitbreak_step,
+    }
+
+
+def render_skill_description(template: str, level: dict[str, Any], effects: list[dict[str, Any]]) -> str:
+    replacements = {
+        "interval": level.get("11"),
+        "calc_rate": level.get("10"),
+        "period": level.get("12"),
+    }
+    if effects and isinstance(effects[0].get("4"), int):
+        replacements["d01"] = effects[0]["4"]
+    rendered = template
+    for key, value in replacements.items():
+        if value is not None:
+            rendered = rendered.replace(f"<{key}>", str(value))
+    return rendered
+
+
+def build_card_reference_maps(tables: dict[int, list[dict[str, Any]]]) -> dict[str, Any]:
+    skill_levels: dict[int, list[dict[str, Any]]] = defaultdict(list)
+    for row in tables.get(21, []):
+        if isinstance(row.get("2"), int):
+            skill_levels[row["2"]].append(row)
+    skill_effects: dict[int, list[dict[str, Any]]] = defaultdict(list)
+    for row in tables.get(40, []):
+        if isinstance(row.get("2"), int):
+            skill_effects[row["2"]].append(row)
+    return {
+        "idols": {row.get("1"): row for row in tables.get(2, []) if isinstance(row.get("1"), int)},
+        "skills": {row.get("1"): row for row in tables.get(20, []) if isinstance(row.get("1"), int)},
+        "centers": {row.get("1"): row for row in tables.get(23, []) if isinstance(row.get("1"), int)},
+        "skill_levels": skill_levels,
+        "skill_effects": skill_effects,
+        "live_costumes": {row.get("1"): row for row in tables.get(27, []) if isinstance(row.get("1"), int)},
+        "story_costumes": {row.get("1"): row for row in tables.get(28, []) if isinstance(row.get("1"), int)},
+    }
+
+
+def build_card_gameplay(card: dict[str, Any], references: dict[str, Any]) -> dict[str, Any]:
+    idol_rows = references["idols"]
+    skill_rows = references["skills"]
+    center_rows = references["centers"]
+    skill_levels = references["skill_levels"]
+    skill_effects = references["skill_effects"]
+
+    idol = idol_rows.get(card.get("2"), {})
+    idol_type = idol.get("7")
+    parameters = {
+        "visual": build_card_parameter(card.get("9")),
+        "vocal": build_card_parameter(card.get("10")),
+        "dance": build_card_parameter(card.get("11")),
+    }
+    appeal = {
+        key: sum(parameter.get(key, 0) for parameter in parameters.values() if parameter)
+        for key in ("initial", "max_unlimit", "max_limitbreak")
+    }
+
+    skill_id = card.get("5")
+    skill_row = skill_rows.get(skill_id, {})
+    level_entries = []
+    for level in sorted(skill_levels.get(skill_id, []), key=lambda item: item.get("3") or 0):
+        effect_group_id = level.get("8")
+        effects = sorted(
+            skill_effects.get(effect_group_id, []),
+            key=lambda item: (item.get("9") or 0, item.get("1") or 0),
+        )
+        template = skill_row.get("3") if isinstance(skill_row.get("3"), str) else ""
+        level_entries.append({
+            "level": level.get("3"),
+            "rate": level.get("10"),
+            "interval": level.get("11"),
+            "duration": level.get("12"),
+            "effect_group_id": effect_group_id,
+            "description": render_skill_description(template, level, effects),
+            "effects": [
+                {
+                    "id": effect.get("1"),
+                    "value": effect.get("4"),
+                }
+                for effect in effects
+            ],
+            "_source": source(21, {
+                "skill_id": 2,
+                "level": 3,
+                "effect_group_id": 8,
+                "rate": 10,
+                "interval": 11,
+                "duration": 12,
+            }, level.get("_offset")),
+        })
+
+    center_id = card.get("6")
+    center = center_rows.get(center_id, {})
+    return {
+        "attribute": {
+            "id": idol_type,
+            "name": IDOL_TYPE_NAMES.get(idol_type, "Unknown"),
+            "_source": source(2, {"idol_id": 1, "idol_type": 7}, idol.get("_offset")),
+        },
+        "life": card.get("12"),
+        "parameters": parameters,
+        "appeal": appeal,
+        "skill": {
+            "id": skill_id,
+            "name": skill_row.get("2"),
+            "description_template": skill_row.get("3"),
+            "levels": level_entries,
+            "_source": source(20, {
+                "skill_id": 1,
+                "name": 2,
+                "description_template": 3,
+                "skill_level_group_id": 4,
+                "skill_detail_group_id": 5,
+            }, skill_row.get("_offset")),
+        },
+        "center_skill": {
+            "id": center_id,
+            "name": center.get("2"),
+            "description": center.get("3"),
+            "_source": source(23, {"center_skill_id": 1, "name": 2, "description": 3}, center.get("_offset")),
+        },
+        "_source": source(1, {
+            "skill_id": 5,
+            "center_skill_id": 6,
+            "visual": 9,
+            "vocal": 10,
+            "dance": 11,
+            "life": 12,
+        }, card.get("_offset")),
+    }
+
+
+def build_card_costume_relations(card: dict[str, Any], references: dict[str, Any]) -> list[dict[str, Any]]:
+    live_costumes = references["live_costumes"]
+    story_costumes = references["story_costumes"]
+    specs = [
+        ("live_initial", "Live 普通", 45, 27, live_costumes),
+        ("live_awakened", "Live 特训", 46, 27, live_costumes),
+        ("live_limitbreak", "Live 突破", 47, 27, live_costumes),
+        ("story_initial", "剧情普通", 48, 28, story_costumes),
+        ("story_awakened", "剧情特训", 49, 28, story_costumes),
+        ("story_limitbreak", "剧情突破", 50, 28, story_costumes),
+        ("home_initial", "主页默认", 51, 28, story_costumes),
+        ("home_awakened", "主页特训", 52, 28, story_costumes),
+    ]
+    relations = []
+    for slot, label, card_field, table_id, lookup in specs:
+        costume_id = card.get(str(card_field))
+        if not isinstance(costume_id, int):
+            continue
+        costume = lookup.get(costume_id, {})
+        relations.append({
+            "slot": slot,
+            "label": label,
+            "costume_id": costume_id,
+            "name": costume.get("3"),
+            "description": costume.get("4"),
+            "model_resource_id": costume.get("5"),
+            "release_at": costume.get("6"),
+            "_source": source(table_id, {
+                "costume_id": 1,
+                "idol_numeric_id": 2,
+                "name": 3,
+                "description": 4,
+                "model_resource_id": 5,
+                "release_at": 6,
+            }, costume.get("_offset")),
+            "_card_source": source(1, {"costume_id": card_field}, card.get("_offset")),
+        })
+    return relations
+
+
+def classify_card_operational_voices(
+    card: dict[str, Any],
+    resource_id: str,
+    voice_base: str | None,
+    voice_stems: set[str],
+    curated_cards: dict[str, Any],
+) -> list[dict[str, Any]]:
+    if not voice_base:
+        return []
+    curated_card = curated_cards.get(resource_id, {}) if isinstance(curated_cards, dict) else {}
+    curated_voices = curated_card.get("voices", {}) if isinstance(curated_card, dict) else {}
+    entries = []
+    for suffix, (category, label) in OPERATIONAL_VOICE_SUFFIXES.items():
+        cue = f"{voice_base}_{suffix}"
+        if cue not in voice_stems:
+            continue
+        curated = curated_voices.get(cue, {}) if isinstance(curated_voices, dict) else {}
+        raw_text = card.get("36") if suffix == "02_00" and isinstance(card.get("36"), str) else ""
+        text = raw_text or (curated.get("text") if isinstance(curated, dict) else "") or ""
+        text_source = "masterdata" if raw_text else ("curated" if text else "audio_only")
+        entry = {
+            "cue": cue,
+            "category": category,
+            "label": label,
+            "text": text,
+            "text_source": text_source,
+            "audio_exists": True,
+        }
+        if text_source == "masterdata":
+            entry["_source"] = source(1, {"gasha_voice_text": 36}, card.get("_offset"))
+        elif text_source == "curated":
+            entry["source_url"] = curated_card.get("source_url")
+            entry["verified_at"] = curated_card.get("verified_at")
+            entry["mapping_basis"] = curated_card.get("mapping_basis")
+        entries.append(entry)
+    return entries
+
+
 def build_card_index(
     cards: list[dict[str, Any]],
     card_voice_cues: list[dict[str, Any]],
     card_home_voice_previews: dict[str, dict[str, Any]],
     story_tables: dict[str, list[dict[str, Any]]],
+    catalog_tables: dict[int, list[dict[str, Any]]],
     voice_stems: set[str],
     compiled_stems: set[str],
     compiled_summaries: dict[str, dict[str, Any]],
+    curated_card_voices: dict[str, Any],
 ) -> dict[str, Any]:
     cards_by_release_title: dict[tuple[int, str], list[dict[str, Any]]] = defaultdict(list)
     for card in cards:
@@ -1106,11 +1350,46 @@ def build_card_index(
             entry["resource_id"] = resource_id
             entry["compiled_file"] = compiled_filename(resource_id, compiled_stems)
             entry["compiled_exists"] = compiled_exists(resource_id, compiled_stems)
+            if resource_id.endswith("_09_a"):
+                entry["communication_type"] = "limitbreak_phone"
+                entry["communication_label"] = "限界突破4回後"
+            elif resource_id.endswith("_09_b"):
+                entry["communication_type"] = "awakened_phone"
+                entry["communication_label"] = "チェンジ！後"
             if entry["compiled_file"]:
                 summary = compiled_summaries.get(Path(entry["compiled_file"]).stem)
                 if summary:
                     entry["compiled_summary"] = summary
         scenario_rows_by_card[card_id].append(entry)
+
+    card_link_talks_by_resource: dict[str, dict[str, Any]] = {}
+    for row in catalog_tables.get(32, []):
+        resource_id = row.get("10")
+        if not isinstance(resource_id, str):
+            continue
+        entry = dict(row)
+        entry.update({
+            "resource_id": resource_id,
+            "compiled_file": compiled_filename(resource_id, compiled_stems),
+            "compiled_exists": compiled_exists(resource_id, compiled_stems),
+            "display_title": "スカウト後トーク",
+            "communication_type": "scout_talk",
+            "communication_label": "スカウト後",
+            "_source": source(32, {
+                "id": 1,
+                "raw_title": 3,
+                "base_resource_id": 9,
+                "resource_id": 10,
+            }, row.get("_offset")),
+        })
+        if entry["compiled_file"]:
+            summary = compiled_summaries.get(Path(entry["compiled_file"]).stem)
+            if summary:
+                entry["compiled_summary"] = summary
+        card_link_talks_by_resource[resource_id] = entry
+
+    curated_cards = curated_card_voices.get("cards", {}) if isinstance(curated_card_voices, dict) else {}
+    card_references = build_card_reference_maps(catalog_tables)
 
     indexed_cards = []
     by_character: dict[str, list[str]] = defaultdict(list)
@@ -1147,6 +1426,31 @@ def build_card_index(
                     voice_base = re.sub(r"_09_[a-z]$", "", resource)
                     break
 
+        if voice_base:
+            scout_talk = card_link_talks_by_resource.get(f"{voice_base}_09_c")
+            if scout_talk and not any(
+                item.get("resource_id") == scout_talk.get("resource_id") for item in scenario_entries
+            ):
+                scenario_entries.append(scout_talk)
+                scenario_entries.sort(key=lambda item: (
+                    0 if item.get("communication_type") == "scout_talk" else 1,
+                    item.get("1") if isinstance(item.get("1"), int) else 0,
+                ))
+                scenario_resources.add(scout_talk["resource_id"])
+
+        operational_voices = classify_card_operational_voices(
+            card,
+            resource_id,
+            voice_base,
+            voice_stems,
+            curated_cards,
+        )
+        classified_voice_names = {item["cue"] for item in operational_voices}
+        card_text_voice_names = {
+            f"{voice_base}_01_01",
+            f"{voice_base}_01_09",
+        } if voice_base else set()
+
         all_card_voice_candidates: list[str] = []
         unmapped_voice_candidates: list[str] = []
         if voice_base:
@@ -1159,6 +1463,8 @@ def build_card_index(
                     mapped_prefixes.add(resource)
             for stem in all_card_voice_candidates:
                 if stem in home_cue_names:
+                    continue
+                if stem in card_text_voice_names or stem in classified_voice_names:
                     continue
                 if any(stem.startswith(f"{prefix}") for prefix in scenario_resources if isinstance(prefix, str)):
                     continue
@@ -1175,6 +1481,8 @@ def build_card_index(
             "release_at": card.get("18"),
             "limitbreak_item_id": card.get("23"),
             "release_series": release_series_by_card_id.get(card_id),
+            "gameplay": build_card_gameplay(card, card_references),
+            "costume_relations": build_card_costume_relations(card, card_references),
             "texts": {
                 "normal": card.get("19"),
                 "awakened": card.get("22"),
@@ -1183,6 +1491,7 @@ def build_card_index(
             "voice_base": voice_base,
             "home_voice_cues": home_cues,
             "scenario_entries": scenario_entries,
+            "operational_voice_cues": operational_voices,
             "voice_candidates": {
                 "all": all_card_voice_candidates,
                 "unmapped_card_only": unmapped_voice_candidates,
@@ -1212,6 +1521,85 @@ def build_card_index(
             "card_count": len(indexed_cards),
             "home_voice_cue_count": len(card_voice_cues),
             "release_series_count": release_series_count,
+            "gameplay_card_count": sum(1 for card in indexed_cards if card.get("gameplay")),
+            "card_link_talk_count": sum(
+                1
+                for card in indexed_cards
+                for entry in card.get("scenario_entries", [])
+                if entry.get("communication_type") == "scout_talk"
+            ),
+            "operational_voice_count": sum(len(card.get("operational_voice_cues", [])) for card in indexed_cards),
+            "costume_relation_count": sum(len(card.get("costume_relations", [])) for card in indexed_cards),
+        },
+    }
+
+
+def build_card_detail_index(card_index: dict[str, Any]) -> dict[str, Any]:
+    details: dict[str, dict[str, Any]] = {}
+    skills: dict[str, dict[str, Any]] = {}
+    center_skills: dict[str, dict[str, Any]] = {}
+    costumes: dict[str, dict[str, Any]] = {}
+
+    for card in card_index.get("cards", []):
+        resource_id = card.get("resource_id")
+        if not isinstance(resource_id, str):
+            continue
+        gameplay = card.pop("gameplay", {})
+        skill = gameplay.pop("skill", {}) if isinstance(gameplay, dict) else {}
+        center_skill = gameplay.pop("center_skill", {}) if isinstance(gameplay, dict) else {}
+        skill_id = skill.get("id") if isinstance(skill, dict) else None
+        center_skill_id = center_skill.get("id") if isinstance(center_skill, dict) else None
+        if isinstance(skill_id, int):
+            skills[str(skill_id)] = skill
+            gameplay["skill_id"] = skill_id
+        if isinstance(center_skill_id, int):
+            center_skills[str(center_skill_id)] = center_skill
+            gameplay["center_skill_id"] = center_skill_id
+
+        costume_refs = []
+        for relation in card.pop("costume_relations", []):
+            costume_id = relation.get("costume_id")
+            table_id = (relation.get("_source") or {}).get("table")
+            if not isinstance(costume_id, int) or table_id not in (27, 28):
+                continue
+            domain = "live" if table_id == 27 else "story"
+            costume_key = f"{domain}:{costume_id}"
+            costumes[costume_key] = {
+                key: value
+                for key, value in relation.items()
+                if key not in {"slot", "label", "_card_source"}
+            }
+            costume_refs.append({
+                "slot": relation.get("slot"),
+                "label": relation.get("label"),
+                "costume_key": costume_key,
+                "_source": relation.get("_card_source"),
+            })
+
+        operational_voices = card.pop("operational_voice_cues", [])
+        details[resource_id] = {
+            "gameplay": gameplay,
+            "costume_relations": costume_refs,
+            "operational_voice_cues": operational_voices,
+        }
+        card["detail_available"] = True
+
+    return {
+        "cards_by_resource_id": details,
+        "skills_by_id": skills,
+        "center_skills_by_id": center_skills,
+        "costumes_by_key": costumes,
+        "meta": {
+            "card_count": len(details),
+            "skill_count": len(skills),
+            "center_skill_count": len(center_skills),
+            "costume_count": len(costumes),
+            "operational_voice_count": sum(
+                len(item.get("operational_voice_cues", [])) for item in details.values()
+            ),
+            "costume_relation_count": sum(
+                len(item.get("costume_relations", [])) for item in details.values()
+            ),
         },
     }
 
@@ -1378,6 +1766,11 @@ def main() -> None:
     parser.add_argument("--spines-index", type=Path)
     parser.add_argument("--prefab-meta", type=Path)
     parser.add_argument("--bg-dir", type=Path)
+    parser.add_argument(
+        "--curated-card-voices",
+        type=Path,
+        default=Path(__file__).resolve().parent / "curated" / "card_voice_transcripts.json",
+    )
     args = parser.parse_args()
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
@@ -1391,6 +1784,7 @@ def main() -> None:
     voice_stems = collect_voice_stems(args.voice_dir)
     spine_ids = load_spine_ids(args.spines_index)
     prefab_models = load_prefab_models(args.prefab_meta)
+    curated_card_voices = load_json_file(args.curated_card_voices) or {}
     card_parameters = extract_card_parameters(records)
     story_tables = extract_scenario_titles(records)
     gasha_announcement_index = extract_gasha_announcements(records)
@@ -1402,7 +1796,7 @@ def main() -> None:
     )
     catalog_tables = extract_table_rows(
         records,
-        {2, 24, 27, 28, 29, 32, 34, 46, 90, 100, 101, 104, 105, 107, 108, 110, 112, 133, 159, 162, 165, 168, 176},
+        {2, 20, 21, 23, 24, 27, 28, 29, 32, 34, 40, 46, 90, 100, 101, 104, 105, 107, 108, 110, 112, 133, 159, 162, 165, 168, 176},
     )
     idol_unit_dictionary = build_idol_unit_dictionary(catalog_tables)
     speaker_dictionary = build_speaker_dictionary(catalog_tables, idol_unit_dictionary)
@@ -1419,10 +1813,13 @@ def main() -> None:
         card_voice_cues,
         card_home_voice_previews,
         story_tables,
+        catalog_tables,
         voice_stems,
         compiled_stems,
         compiled_summaries,
+        curated_card_voices,
     )
+    card_detail_index = build_card_detail_index(card_index)
     validation_report = build_validation_report(
         story_tables,
         card_voice_cues,
@@ -1439,6 +1836,7 @@ def main() -> None:
         "story_master_index.json": story_master_index,
         "gasha_announcement_index.json": gasha_announcement_index,
         "card_index.json": card_index,
+        "card_detail_index.json": card_detail_index,
         "idol_unit_dictionary.json": idol_unit_dictionary,
         "speaker_dictionary.json": speaker_dictionary,
         "costume_dictionary.json": costume_dictionary,
@@ -1466,6 +1864,7 @@ def main() -> None:
             "story_master_index.json",
             "gasha_announcement_index.json",
             "card_index.json",
+            "card_detail_index.json",
             "idol_unit_dictionary.json",
             "speaker_dictionary.json",
             "costume_dictionary.json",

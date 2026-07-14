@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-13T17:26:35.129Z",
-  "data_updated_at": "2026-07-13T17:26:13.824Z",
+  "generated_at": "2026-07-14T02:39:03.494Z",
+  "data_updated_at": "2026-07-14T02:38:53.111Z",
   "counts": {
     "indexed_scenarios": 2576,
     "compiled_json_files": 8443,
@@ -28,8 +28,8 @@
       "ratio": 1
     },
     "card_scenarios": {
-      "total": 313,
-      "available": 313,
+      "total": 425,
+      "available": 425,
       "missing": 0,
       "ratio": 1
     },
@@ -381,6 +381,14 @@
       "event_card_rule": "card is not a gasha pickup, release_at equals event release_at, and character appears in compiled event roster",
       "gasha_card_rule": "card LimitbreakItemId (field 23) exists and card release_at equals exactly one gasha announcement start_at",
       "release_series_rule": "cards share card table fields 18 (release_at) and 40 (title)"
+    },
+    "card_details": {
+      "cards": 826,
+      "skills": 160,
+      "center_skills": 53,
+      "costumes": 1098,
+      "operational_voices": 3457,
+      "costume_relations": 2640
     },
     "unit_membership": {
       "resolved": 49,
@@ -27013,6 +27021,7 @@
   "sources": [
     "data/compiled/index.json",
     "data/masterdata/card_index.json",
+    "data/masterdata/card_detail_index.json",
     "data/masterdata/idol_unit_dictionary.json",
     "data/masterdata/story_master_index.json",
     "data/masterdata/gasha_announcement_index.json"
