@@ -59,6 +59,28 @@
       </dl>
     </section>
 
+    <section v-if="uiAssets" class="ui-assets-section" aria-labelledby="ui-assets-title">
+      <div class="section-heading">
+        <div>
+          <h3 id="ui-assets-title">原作视觉资产证据</h3>
+          <p>已筛选可用于资料库识别、导航与内容封面的本地 PNG。</p>
+        </div>
+        <span>Schema {{ uiAssets.schema_version }}</span>
+      </div>
+      <dl class="inventory-grid ui-assets-grid">
+        <div v-for="item in uiAssetSummaryItems" :key="item.label">
+          <dt>{{ item.label }}</dt>
+          <dd>{{ formatCount(item.value) }}</dd>
+        </div>
+      </dl>
+      <div class="domain-list" aria-label="视觉资产资料域">
+        <span v-for="domain in uiAssetDomains" :key="domain.name">
+          {{ domainLabel(domain.name) }} <strong>{{ formatCount(domain.count) }}</strong>
+        </span>
+      </div>
+      <p class="scope-note">{{ uiAssets.source?.scope }}</p>
+    </section>
+
     <section v-if="missingNormalIcons.length" class="missing-section" aria-labelledby="missing-title">
       <div class="section-heading">
         <h3 id="missing-title">缺少普通卡图</h3>
@@ -72,9 +94,12 @@
 
     <section v-if="missingVoiceSamples.length" class="missing-section" aria-labelledby="voice-missing-title">
       <div class="section-heading">
-        <h3 id="voice-missing-title">待补齐的规范场景语音</h3>
+        <h3 id="voice-missing-title">待人工核实的规范场景语音</h3>
         <span>{{ formatCount(verification.dialogue_voices?.missing) }} references</span>
       </div>
+      <p class="scope-note">
+        这些条目在别名规则后仍未找到本地音频，可能是原始音频未完整导出，也可能是历史场景引用异常。
+      </p>
       <div class="voice-missing-list">
         <code v-for="entry in missingVoiceSamples" :key="`${entry.file}:${entry.step}`">
           {{ entry.file }} #{{ entry.step }} · {{ entry.raw }}
@@ -91,6 +116,7 @@ import { ChevronRight, ScanSearch } from '@lucide/vue'
 const props = defineProps({
   manifest: { type: Object, default: null },
   verification: { type: Object, default: null },
+  uiAssets: { type: Object, default: null },
 })
 const emit = defineEmits(['open-spine-lab'])
 
@@ -113,7 +139,7 @@ const verificationItems = computed(() => {
     {
       label: '剧情语音',
       value: `${(Number(voices.ratio || 0) * 100).toFixed(1)}%`,
-      detail: `${formatCount(voices.available)} / ${formatCount(voices.references)} references`,
+      detail: `${formatCount(voices.available)} / ${formatCount(voices.references)} · 直接 ${formatCount(voices.exact_available)} · 别名 ${formatCount(voices.alias_available)}`,
       tone: Number(voices.ratio || 0) >= 0.98 ? 'ok' : 'warn',
     },
     {
@@ -205,6 +231,33 @@ const inventoryItems = computed(() => {
   ]
 })
 
+const uiAssetSummaryItems = computed(() => [
+  { label: '筛选素材', value: props.uiAssets?.meta?.entry_count },
+  { label: '资料域', value: Object.keys(props.uiAssets?.meta?.counts_by_domain || {}).length },
+  { label: '可用组合 Logo', value: props.uiAssets?.meta?.public_unit_logo_count },
+  { label: '导航/封面候选', value: props.uiAssets?.meta?.counts_by_recommended_use?.content_navigation },
+])
+const uiAssetDomains = computed(() => Object.entries(props.uiAssets?.meta?.counts_by_domain || {})
+  .map(([name, count]) => ({ name, count }))
+  .sort((left, right) => right.count - left.count))
+
+const DOMAIN_LABELS = {
+  brand: '品牌',
+  event: '活动',
+  gasha: '卡池',
+  home: '首页参考',
+  idol: '偶像',
+  interaction: '通讯',
+  item: '道具',
+  music: '音乐',
+  shared: '共用',
+  story: '故事',
+  tutorial: '教程参考',
+  unit: '组合',
+  work: '工作',
+}
+const domainLabel = name => DOMAIN_LABELS[name] || name
+
 const missingNormalIcons = computed(() => props.manifest?.coverage?.card_icons?.missing_normal || [])
 const missingVoiceSamples = computed(() => props.verification?.dialogue_voices?.missing_samples?.slice(0, 24) || [])
 const formatCount = value => Number(value || 0).toLocaleString('en-US')
@@ -220,7 +273,7 @@ const formatDateTime = value => value ? new Intl.DateTimeFormat('zh-CN', { dateS
 .status-summary p { margin: 0; color: #9eabb5; font-size: 0.7rem; }
 .status-summary button { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 9px; min-width: 190px; min-height: 42px; padding: 0 13px; border: 1px solid #42515d; border-radius: 6px; background: #22303b; color: #fff; cursor: pointer; font: inherit; font-size: 0.76rem; }
 .status-summary button:hover { border-color: #55c9c0; }
-.verification-section, .coverage-section, .inventory-section, .missing-section { margin-top: 18px; padding: 20px; border: 1px solid #dfe4e8; background: #fff; }
+.verification-section, .coverage-section, .inventory-section, .ui-assets-section, .missing-section { margin-top: 18px; padding: 20px; border: 1px solid #dfe4e8; background: #fff; }
 .section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
 .section-heading h3 { margin: 0; font-size: 0.88rem; }
 .section-heading p { margin: 4px 0 0; color: #7c8790; font-size: 0.68rem; }
@@ -246,6 +299,10 @@ const formatDateTime = value => value ? new Intl.DateTimeFormat('zh-CN', { dateS
 .inventory-grid div:first-child { padding-left: 0; border-left: 0; }
 .inventory-grid dt { color: #7c8790; font-size: 0.67rem; }
 .inventory-grid dd { margin: 5px 0 0; font-size: 1.12rem; font-weight: 750; }
+.ui-assets-grid { border-bottom: 1px solid #edf0f2; padding-bottom: 16px; }
+.domain-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.domain-list span { padding: 4px 7px; border: 1px solid #dde5e8; border-radius: 4px; color: #66737c; font-size: 0.65rem; }
+.domain-list strong { margin-left: 3px; color: #1b7772; }
 .missing-list { display: flex; flex-wrap: wrap; gap: 6px; }
 .missing-list code, .missing-list > span { padding: 4px 6px; border-radius: 4px; background: #f0f3f5; color: #59656e; font-size: 0.66rem; }
 .voice-missing-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
@@ -262,7 +319,7 @@ const formatDateTime = value => value ? new Intl.DateTimeFormat('zh-CN', { dateS
   .status-screen { padding: 12px; }
   .status-summary { align-items: stretch; flex-direction: column; padding: 20px; }
   .status-summary button { width: 100%; }
-  .verification-section, .coverage-section, .inventory-section, .missing-section { margin-top: 10px; padding: 14px; }
+  .verification-section, .coverage-section, .inventory-section, .ui-assets-section, .missing-section { margin-top: 10px; padding: 14px; }
   .coverage-row { grid-template-columns: minmax(0, 1fr) 58px; gap: 6px 10px; padding: 9px 0; }
   .coverage-track, .coverage-row small { grid-row: 2; }
   .inventory-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 0; }

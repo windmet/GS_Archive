@@ -33,13 +33,14 @@ async function countDirectories(relativePath) {
   return entries.filter(entry => entry.isDirectory()).length
 }
 
-const [compiledIndex, cardIndex, cardDetailIndex, idolUnit, storyMaster, gashaIndex] = await Promise.all([
+const [compiledIndex, cardIndex, cardDetailIndex, idolUnit, storyMaster, gashaIndex, uiAssetCatalog] = await Promise.all([
   readJson('data/compiled/index.json'),
   readJson('data/masterdata/card_index.json'),
   readJson('data/masterdata/card_detail_index.json'),
   readJson('data/masterdata/idol_unit_dictionary.json'),
   readJson('data/masterdata/story_master_index.json'),
   readJson('data/masterdata/gasha_index.json'),
+  readJson('data/assets/ui_asset_catalog.json'),
 ])
 
 function cardPreferenceScore(card) {
@@ -66,6 +67,7 @@ const sourcePaths = [
   'data/masterdata/story_master_index.json',
   'data/masterdata/gasha_announcement_index.json',
   'data/masterdata/gasha_index.json',
+  'data/assets/ui_asset_catalog.json',
 ]
 const sourceStats = await Promise.all(sourcePaths.map(relativePath => stat(path.join(publicRoot, relativePath))))
 const dataUpdatedAt = new Date(Math.max(...sourceStats.map(item => item.mtimeMs))).toISOString()
@@ -368,6 +370,8 @@ const manifest = {
     spine_models: spineModels,
     voice_files: voiceFiles,
     release_series: releaseSeriesById.size,
+    ui_asset_entries: uiAssetCatalog.meta?.entry_count || 0,
+    unit_logos: uiAssetCatalog.meta?.public_unit_logo_count || 0,
   },
   coverage: {
     story_master_records: storyCoverage,
@@ -444,6 +448,12 @@ const manifest = {
       derived_pickup_cards: gashaIndex.meta?.derived_pickup_count || 0,
       banner_assets: (gashaIndex.gashas || []).filter(item => item.banner_url).length,
       instance_source: 'GashaListReply service response (not retained locally)',
+    },
+    ui_assets: {
+      total: uiAssetCatalog.meta?.entry_count || 0,
+      public_unit_logos: uiAssetCatalog.meta?.public_unit_logo_count || 0,
+      domains: uiAssetCatalog.meta?.counts_by_domain || {},
+      scope: uiAssetCatalog.source?.scope || '',
     },
     unit_membership: {
       resolved: Object.keys(unitEvidence.membership).length,

@@ -6,6 +6,7 @@ const ARCHIVE_SOURCES = {
   idolUnit: '/data/masterdata/idol_unit_dictionary.json',
   archiveManifest: '/data/archive_manifest.json',
   archiveVerification: '/data/archive_verification.json',
+  uiAssetCatalog: '/data/assets/ui_asset_catalog.json',
 }
 
 const CARD_DETAIL_SOURCE = '/data/masterdata/card_detail_index.json'
@@ -45,6 +46,9 @@ function validatePayload(key, payload) {
   }
   if (key === 'archiveVerification' && (!payload.scenarios || !payload.dialogue_voices)) {
     throw new Error('archiveVerification must include scenarios and dialogue_voices')
+  }
+  if (key === 'uiAssetCatalog' && (!Array.isArray(payload.entries) || !payload.meta || !payload.featured_sets)) {
+    throw new Error('uiAssetCatalog must include entries, meta and featured_sets')
   }
   return payload
 }

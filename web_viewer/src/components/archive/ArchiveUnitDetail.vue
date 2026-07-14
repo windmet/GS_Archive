@@ -3,6 +3,7 @@
     <header class="unit-hero" :style="{ backgroundImage: `url(${getBgUrl(unit.representative_bg)})` }">
       <span class="unit-hero-shade" aria-hidden="true"></span>
       <div class="unit-hero-copy">
+        <img class="unit-hero-logo" :src="getUnitLogoUrl(unit.unit_code)" alt="" />
         <span>{{ unit.unit_code }}</span>
         <h2>{{ unit.unit_name }}</h2>
         <p>{{ unit.unit_kana }}</p>
@@ -128,7 +129,7 @@
 
 <script setup>
 import { ChevronRight, Images, Play } from '@lucide/vue'
-import { getBgUrl } from '../../utils/AssetResolver.js'
+import { getBgUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 
 const props = defineProps({
   unit: { type: Object, default: null },
@@ -153,6 +154,7 @@ function matchingMemberNames(event) {
 .unit-hero { position: relative; display: flex; align-items: flex-end; min-height: 220px; padding: 26px 28px; overflow: hidden; background-position: center; background-size: cover; color: #fff; }
 .unit-hero-shade { position: absolute; inset: 0; background: rgba(15, 24, 31, 0.62); }
 .unit-hero-copy { position: relative; z-index: 1; }
+.unit-hero-logo { display: block; width: min(220px, 55vw); height: 74px; margin-bottom: 10px; object-fit: contain; object-position: left center; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45)); }
 .unit-hero-copy > span { color: #6bd6ce; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.67rem; }
 .unit-hero h2 { margin: 7px 0 5px; font-size: 1.8rem; letter-spacing: 0; }
 .unit-hero p { margin: 0; color: #d5dde2; font-size: 0.72rem; }

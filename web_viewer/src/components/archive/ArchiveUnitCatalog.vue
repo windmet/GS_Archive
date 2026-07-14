@@ -5,6 +5,7 @@
         <img :src="getBgUrl(entry.unit.representative_bg)" :alt="entry.unit.unit_name" loading="lazy" />
         <span class="unit-color" :style="{ backgroundColor: entry.unit.unit_color || '#23a99f' }"></span>
         <span class="unit-copy">
+          <img class="unit-logo" :src="getUnitLogoUrl(entry.unit.unit_code)" alt="" loading="lazy" />
           <strong>{{ entry.unit.unit_name }}</strong>
           <small>
             {{ entry.members.length }} members · {{ entry.cardStats.total }} cards ·
@@ -28,7 +29,7 @@
 
 <script setup>
 import { ChevronRight } from '@lucide/vue'
-import { getBgUrl } from '../../utils/AssetResolver.js'
+import { getBgUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 
 defineProps({ entries: { type: Array, default: () => [] } })
 const emit = defineEmits(['select'])
@@ -42,6 +43,7 @@ const emit = defineEmits(['select'])
 .unit-entry > img { width: 94px; height: 94px; object-fit: cover; }
 .unit-color { width: 5px; height: 56px; border-radius: 3px; }
 .unit-copy { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.unit-logo { width: min(132px, 100%); height: 32px; object-fit: contain; object-position: left center; }
 .unit-copy strong { overflow: hidden; font-size: 0.82rem; text-overflow: ellipsis; white-space: nowrap; }
 .unit-copy small { color: #78838c; font-size: 0.66rem; }
 .member-stack { display: flex; padding-left: 8px; }

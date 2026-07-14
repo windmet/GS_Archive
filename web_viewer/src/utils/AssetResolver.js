@@ -71,18 +71,77 @@ export function getSpineFaceUrl(modelId, faceName) {
  * @param {string} [scenarioId] - scenario_id, used to derive prefix for short names
  * @returns {string} resolved asset URL
  */
-export function getVoiceUrl(voiceFile, scenarioId) {
-  // Short names need the scenario prefix. This covers both letter suffixes
-  // like a1001.m4a and work-story numeric suffixes like 2001.m4a.
-  if (voiceFile && !voiceFile.includes('_') && scenarioId) {
-    const parts = scenarioId.split('_')
-    if (parts.length >= 4) {
-      const prefix = parts.slice(-4).join('_')
-      return `${ASSET_BASE}/voice/${prefix}_${voiceFile}`
+function collapseDuplicatedVoicePrefix(filename) {
+  const extensionIndex = filename.lastIndexOf('.')
+  const stem = extensionIndex >= 0 ? filename.slice(0, extensionIndex) : filename
+  const extension = extensionIndex >= 0 ? filename.slice(extensionIndex) : ''
+  const parts = stem.split('_')
+  for (let width = 2; width * 2 < parts.length; width += 1) {
+    if (parts.slice(0, width).join('_') === parts.slice(width, width * 2).join('_')) {
+      return `${parts.slice(width).join('_')}${extension}`
     }
   }
-  // Otherwise use the voice field as-is (already fully qualified)
-  return `${ASSET_BASE}/voice/${voiceFile}`
+  return filename
+}
+
+function expandVoiceAliases(filename) {
+  const aliases = [filename]
+  const add = value => {
+    if (value && !aliases.includes(value)) aliases.push(value)
+  }
+  const transforms = [
+    value => value.replace(/_t\d+_/gi, '_'),
+    value => value.replace(/_([a-z])_\1(?=\d)/gi, '_$1'),
+    value => value.replace(/^5_01_999_\d+_5_01_/, '5_01_'),
+    collapseDuplicatedVoicePrefix,
+  ]
+
+  for (let index = 0; index < aliases.length; index += 1) {
+    for (const transform of transforms) add(transform(aliases[index]))
+  }
+  return aliases
+}
+
+function scenarioVoicePrefixes(scenarioId, voiceFile) {
+  if (!scenarioId) return []
+  const parts = String(scenarioId).replace(/^scenario_/, '').split('_')
+  const prefixes = []
+  const add = value => {
+    if (value.length && !prefixes.some(prefix => prefix.join('_') === value.join('_'))) prefixes.push(value)
+  }
+
+  // Synthetic archive ids such as 3_x_001tom_3_1_001 retain the source
+  // category and idol code before the real audio-bank prefix.
+  if (/^[34]$/i.test(parts[0]) && parts[1] === 'x' && /^\d{3}[a-z]{3}$/i.test(parts[2])) {
+    add(parts.slice(3))
+  }
+  if (/^\d{3}[a-z]{3}$/i.test(parts[0])) add(parts.slice(1))
+  if (/^[a-z]$/i.test(parts.at(-1)) && String(voiceFile).startsWith(parts.at(-1))) {
+    add(parts.slice(0, -1))
+    add(parts.slice(-5, -1))
+  }
+  add(parts.slice(-4))
+  add(parts)
+  return prefixes
+}
+
+export function resolveVoiceFilenameCandidates(voiceFile, scenarioId) {
+  if (!voiceFile) return []
+  const raw = String(voiceFile)
+  const baseNames = raw.includes('_')
+    ? [raw]
+    : scenarioVoicePrefixes(scenarioId, raw).map(prefix => `${prefix.join('_')}_${raw}`)
+  if (!baseNames.length) baseNames.push(raw)
+  return [...new Set(baseNames.flatMap(expandVoiceAliases))]
+}
+
+export function getVoiceUrlCandidates(voiceFile, scenarioId) {
+  return resolveVoiceFilenameCandidates(voiceFile, scenarioId)
+    .map(filename => `${ASSET_BASE}/voice/${filename}`)
+}
+
+export function getVoiceUrl(voiceFile, scenarioId) {
+  return getVoiceUrlCandidates(voiceFile, scenarioId)[0] || `${ASSET_BASE}/voice/${voiceFile}`
 }
 
 /**
@@ -136,6 +195,10 @@ export function getCharaIconUrl(charaId) {
  */
 export function getUnitMobileBgUrl(unitId) {
   return `${ASSET_BASE}/units/mobile_bg/image_unit_mobile_background_${unitId}.png`
+}
+
+export function getUnitLogoUrl(unitId) {
+  return `${ASSET_BASE}/units/logos/image_unit_logo_${unitId}.png`
 }
 
 /**

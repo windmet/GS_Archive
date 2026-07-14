@@ -146,6 +146,7 @@
         v-if="view === 'archive_status'"
         :manifest="archiveManifestData"
         :verification="archiveVerificationData"
+        :ui-assets="uiAssetCatalogData"
         @open-spine-lab="openSpineLab"
       />
 
@@ -267,6 +268,7 @@ const storyMasterData = ref(null)
 const idolUnitData = ref(null)
 const archiveManifestData = ref(null)
 const archiveVerificationData = ref(null)
+const uiAssetCatalogData = ref(null)
 const currentScenario = ref(null)
 const currentScenarioFile = ref('')
 const currentPreviewCue = ref('')
@@ -1557,6 +1559,7 @@ onMounted(async () => {
   idolUnitData.value = data.idolUnit
   archiveManifestData.value = data.archiveManifest
   archiveVerificationData.value = data.archiveVerification
+  uiAssetCatalogData.value = data.uiAssetCatalog
   for (const { key, error } of errors) {
     console.error(`[ArchiveData] Failed to load ${key}:`, error)
   }
