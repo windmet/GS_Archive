@@ -1,504 +1,725 @@
 <template>
-  <div class="spine-viewer-root">
-    <!-- PIXI canvas container -->
-    <div ref="canvasRef" class="viewer-canvas"></div>
+  <div class="chibi-lab">
+    <header class="lab-header">
+      <button class="icon-button back-button" type="button" aria-label="返回资料馆" @click="emit('back')">
+        <ArrowLeft :size="22" />
+      </button>
+      <div class="header-divider" aria-hidden="true"></div>
+      <h1>舞台小人实验室</h1>
+      <div class="header-meta">Spine 3.8 · 实验预览</div>
+    </header>
 
-    <!-- Sidebar Control Panel -->
-    <div class="control-panel">
-      <h2 class="panel-title">Spine 实验室</h2>
+    <main class="lab-workspace">
+      <section class="stage-shell" aria-label="舞台小人预览">
+        <div class="stage-backdrop" aria-hidden="true"></div>
+        <div ref="canvasRef" class="stage-canvas"></div>
 
-      <div class="ctrl-group">
-        <label class="ctrl-label">Background</label>
-        <select v-model="selectedBg" class="ctrl-select" @change="onBgChange">
-          <option value="">(none)</option>
-          <option v-for="bg in bgList" :key="bg" :value="bg">{{ bg }}</option>
-        </select>
-      </div>
+        <div v-if="loading" class="stage-state">
+          <LoaderCircle class="loading-icon" :size="26" />
+          <span>{{ statusText }}</span>
+        </div>
+        <div v-else-if="errorText" class="stage-state error-state">
+          <CircleAlert :size="26" />
+          <strong>暂时无法显示舞台小人</strong>
+          <span>{{ errorText }}</span>
+        </div>
 
-      <div class="ctrl-group">
-        <label class="ctrl-label">Idol Model</label>
-        <select v-model="selectedModel" class="ctrl-select" @change="onModelChange">
-          <option value="">(select)</option>
-          <option v-for="m in modelList" :key="m" :value="m">{{ m }}</option>
-        </select>
-      </div>
-
-      <div class="ctrl-group" v-if="animList.length > 0">
-        <label class="ctrl-label">Animation</label>
-        <select v-model="selectedAnim" class="ctrl-select" @change="onAnimChange">
-          <option v-for="a in animList" :key="a" :value="a">{{ a }}</option>
-        </select>
-      </div>
-
-      <div class="ctrl-group" v-if="faceList.length > 0">
-        <label class="ctrl-label">Face</label>
-        <div class="face-btns">
-          <button
-            v-for="f in faceList"
-            :key="f"
-            class="face-btn"
-            :class="{ active: selectedFace === f }"
-            @click="onFaceChange(f)"
-          >
-            {{ f.replace('face_', '') }}
+        <div class="transport" :class="{ disabled: !runtimeReady }">
+          <button type="button" aria-label="上一个动作" @click="stepMotion(-1)">
+            <SkipBack :size="20" />
           </button>
+          <button class="primary-transport" type="button" :aria-label="transportPaused ? '播放' : '暂停'" @click="togglePlayback">
+            <Play v-if="transportPaused" :size="22" fill="currentColor" />
+            <Pause v-else :size="22" fill="currentColor" />
+          </button>
+          <button type="button" aria-label="下一个动作" @click="stepMotion(1)">
+            <SkipForward :size="20" />
+          </button>
+          <div class="transport-divider" aria-hidden="true"></div>
+          <div class="transport-motion">
+            <span>{{ selectedMotion?.label || '—' }}</span>
+            <small v-if="selectedMotion">{{ selectedMotion.name }} · #{{ selectedMotion.id }}</small>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div class="ctrl-group">
-        <label class="ctrl-label">Scale</label>
-        <div class="scale-row">
-          <button class="scale-btn" @click="adjustScale(-0.05)">−</button>
-          <span class="scale-val">{{ currentScale.toFixed(2) }}</span>
-          <button class="scale-btn" @click="adjustScale(0.05)">+</button>
+      <aside
+        class="inspector"
+        aria-label="舞台小人控制台"
+        :data-runtime-diagnostics="runtimeDiagnostics ? JSON.stringify(runtimeDiagnostics) : ''"
+      >
+        <div class="inspector-scroll">
+          <section class="control-section selection-section">
+            <label>
+              <span>角色</span>
+              <select v-model="selectedCharacterId" @change="loadSelectedCharacter">
+                <option v-for="character in characters" :key="character.id" :value="character.id">
+                  {{ character.name }} · {{ character.id }}
+                </option>
+              </select>
+            </label>
+            <label>
+              <span>服装</span>
+              <select v-model="selectedCostumeId" @change="loadSelectedCharacter">
+                <option v-for="costume in costumes" :key="costume.id" :value="costume.id">
+                  {{ costume.label }}
+                </option>
+              </select>
+            </label>
+            <label>
+              <span>动作库</span>
+              <select v-model="selectedPackId" @change="selectDefaultMotion">
+                <option v-for="pack in motionPacks" :key="pack.id" :value="pack.id">
+                  {{ pack.label }}
+                </option>
+              </select>
+            </label>
+          </section>
+
+          <section class="control-section motion-section">
+            <div class="section-heading">
+              <div>
+                <h2>动作列表</h2>
+                <span>{{ motions.length }} 个可用动作</span>
+              </div>
+              <button class="text-button" type="button" @click="replayMotion">
+                <RotateCcw :size="15" />重播
+              </button>
+            </div>
+            <select v-model.number="selectedMotionId" class="motion-select" size="8" @change="playSelectedMotion()">
+              <option v-for="motion in motions" :key="motion.id" :value="motion.id">
+                {{ String(motion.id).padStart(2, '0') }}　{{ motion.label }}　/ {{ motion.name }}
+              </option>
+            </select>
+          </section>
+
+          <section v-if="selectedSong" class="control-section choreography-section">
+            <div class="section-heading">
+              <div>
+                <h2>歌曲编排</h2>
+                <span>{{ selectedSong.events.length }} 条动作 · {{ selectedSong.singerEvents?.length || 0 }} 次演唱切换</span>
+              </div>
+            </div>
+            <div
+              class="singer-status"
+              :class="{ singing: selectedPositionIsSinging }"
+              :data-current-singers="currentSingerPositions.join(',')"
+              :data-selected-singing="selectedPositionIsSinging"
+              :data-lip-value="lipSyncState.value.toFixed(3)"
+              :data-mouth-attachment="lipSyncState.attachment || ''"
+            >
+              <Mic2 :size="16" />
+              <div>
+                <span>当前演唱</span>
+                <strong>{{ currentSingerLabel }}</strong>
+              </div>
+              <small>{{ selectedPositionIsSinging ? `${selectedPosition} 号位正在演唱` : `${selectedPosition} 号位伴舞中` }}</small>
+            </div>
+            <div class="lip-sync-status">
+              <span>官方口型曲线</span>
+              <strong>{{ selectedSong.lipSync ? `${selectedSong.lipSync.frames} 帧 · 60 Hz` : '无对应数据' }}</strong>
+              <small>{{ lipSyncState.attachment || 'mouth_close' }} · {{ lipSyncState.value.toFixed(3) }}</small>
+            </div>
+            <label class="song-position">
+              <span>站位</span>
+              <select v-model.number="selectedPosition" @change="seekChoreography">
+                <option v-for="position in selectedSong.positions" :key="position" :value="position">
+                  {{ position }} 号位
+                </option>
+              </select>
+            </label>
+            <label class="timeline-control">
+              <input
+                v-model.number="choreographyTime"
+                type="range"
+                min="0"
+                :max="selectedSong.duration"
+                step="100"
+                @change="seekChoreography"
+              />
+              <span>{{ formatTime(choreographyTime) }} / {{ formatTime(selectedSong.duration) }}</span>
+            </label>
+            <button class="choreography-play" type="button" @click="toggleChoreography">
+              <Pause v-if="choreographyPlaying" :size="18" fill="currentColor" />
+              <Play v-else :size="18" fill="currentColor" />
+              {{ choreographyPlaying ? '暂停编排' : '播放编排' }}
+            </button>
+          </section>
+
+          <section class="control-section playback-section">
+            <h2>播放控制</h2>
+            <div class="playback-buttons">
+              <button type="button" @click="replayMotion"><RotateCcw :size="18" /></button>
+              <button class="wide-play" type="button" @click="togglePlayback">
+                <Play v-if="paused" :size="18" fill="currentColor" />
+                <Pause v-else :size="18" fill="currentColor" />
+                {{ paused ? '继续播放' : '暂停' }}
+              </button>
+            </div>
+            <label class="range-control">
+              <span>速度</span>
+              <input v-model.number="playbackSpeed" type="range" min="0.25" max="2" step="0.05" @input="applyPlaybackSpeed" />
+              <output>{{ playbackSpeed.toFixed(2) }}</output>
+            </label>
+            <label class="range-control">
+              <span>缩放</span>
+              <input v-model.number="modelScale" type="range" min="0.08" max="0.8" step="0.01" @input="applyModelScale" />
+              <output>{{ modelScale.toFixed(2) }}</output>
+            </label>
+          </section>
+
+          <section class="resource-section">
+            <h2>当前资源</h2>
+            <dl>
+              <div><dt>角色</dt><dd>{{ selectedCharacter?.id || '—' }}</dd></div>
+              <div><dt>体型骨架</dt><dd>body-{{ selectedCharacter?.bodyType || '—' }}.skel</dd></div>
+              <div><dt>动作片段</dt><dd>{{ resolvedMotionFile }}</dd></div>
+              <div><dt>服装图集</dt><dd>{{ selectedCostume?.atlas || '—' }}</dd></div>
+            </dl>
+          </section>
         </div>
-      </div>
-
-      <div class="ctrl-info" v-if="statusText">
-        {{ statusText }}
-      </div>
-
-      <button class="back-btn" @click="$emit('back')">← Back to Home</button>
-    </div>
+      </aside>
+    </main>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, markRaw } from 'vue'
+import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import * as PIXI from 'pixi.js'
-import { Spine, SkeletonBinary, AtlasAttachmentLoader } from '@pixi-spine/runtime-3.8'
-import { TextureAtlas } from '@pixi-spine/base'
-import { getSpineSkelUrl, getSpineAtlasUrl, getSpineFaceUrl, getBgUrl } from '../utils/AssetResolver.js'
+import {
+  ArrowLeft,
+  CircleAlert,
+  LoaderCircle,
+  Mic2,
+  Pause,
+  Play,
+  RotateCcw,
+  SkipBack,
+  SkipForward,
+} from '@lucide/vue'
+import {
+  applyLiveChibiLipSync,
+  createLiveChibi,
+  destroyLiveChibi,
+  fetchLiveChibiChoreography,
+  fetchLiveChibiLipSync,
+  fetchLiveChibiManifest,
+  injectLiveChibiMotion,
+  playLiveChibiMotion,
+} from '../utils/liveChibiSpine.js'
 
 const emit = defineEmits(['back'])
 const canvasRef = ref(null)
+const manifest = ref(null)
+const choreography = ref(null)
+const selectedCharacterId = ref('')
+const selectedCostumeId = ref('')
+const selectedPackId = ref('common')
+const selectedMotionId = ref(12)
+const loading = ref(true)
+const statusText = ref('正在准备舞台…')
+const errorText = ref('')
+const paused = ref(false)
+const playbackSpeed = ref(1)
+const modelScale = ref(0.28)
+const runtimeReady = ref(false)
+const runtimeDiagnostics = ref(null)
+const selectedPosition = ref(1)
+const choreographyTime = ref(0)
+const choreographyPlaying = ref(false)
+const lipSyncState = ref({ value: 0, singing: false, attachment: 'mouth_close' })
 
-// ── PIXI state ──
 let app = null
-let bgSprite = null
-let currentSpine = null   // { spine, spineData, modelId }
-let _currentObjectUrl = null
+let runtime = null
+let resizeObserver = null
+let loadSequence = 0
+let motionSequence = 0
+let choreographyFrame = 0
+let choreographyStartedAt = 0
+let choreographyStartOffset = 0
+let choreographyEventIndex = 0
+let lipSyncCurve = null
+let lipSyncLoadSequence = 0
 
-// ── UI state ──
-const bgList = ref([])
-const modelList = ref([])
-const animList = ref([])
-const faceList = ref([])
-const selectedBg = ref('')
-const selectedModel = ref('')
-const selectedAnim = ref('')
-const selectedFace = ref('')
-const currentScale = ref(0.26)
-const statusText = ref('')
+const characters = computed(() => manifest.value?.characters || [])
+const motionPacks = computed(() => [
+  ...(manifest.value?.motionPacks || []),
+  ...((selectedCharacter.value?.bodyType === choreography.value?.bodyType
+    ? choreography.value?.songs
+    : []) || []).map(song => ({
+    id: `song:${song.id}`,
+    label: `歌曲 · ${song.title}`,
+  })),
+])
+const selectedCharacter = computed(() => characters.value.find(item => item.id === selectedCharacterId.value))
+const costumes = computed(() => selectedCharacter.value?.costumes || [])
+const selectedCostume = computed(() => costumes.value.find(item => item.id === selectedCostumeId.value))
+const selectedPack = computed(() => motionPacks.value.find(item => item.id === selectedPackId.value))
+const selectedSong = computed(() => {
+  if (selectedCharacter.value?.bodyType !== choreography.value?.bodyType) return null
+  if (!selectedPackId.value.startsWith('song:')) return null
+  const songId = selectedPackId.value.slice(5)
+  return choreography.value?.songs.find(song => song.id === songId) || null
+})
+const choreographyMotionMap = computed(() => new Map(
+  (choreography.value?.motionCatalog || []).map(motion => [motion.id, motion]),
+))
+const motions = computed(() => selectedSong.value
+  ? selectedSong.value.motionIds.map(id => choreographyMotionMap.value.get(id)).filter(Boolean)
+  : selectedPack.value?.motions || [])
+const selectedMotion = computed(() => motions.value.find(item => item.id === selectedMotionId.value))
+const resolvedMotionFile = computed(() => selectedMotion.value?.file
+  ?.replace('{bodyType}', String(selectedCharacter.value?.bodyType || '—')) || '—')
+const transportPaused = computed(() => selectedSong.value ? !choreographyPlaying.value : paused.value)
+const selectedTimelineEvents = computed(() => (selectedSong.value?.events || [])
+  .filter(event => event.position === selectedPosition.value))
+const currentSingerEvent = computed(() => [...(selectedSong.value?.singerEvents || [])]
+  .reverse()
+  .find(event => event.time <= choreographyTime.value))
+const currentSingerPositions = computed(() => currentSingerEvent.value?.singers || [])
+const selectedPositionIsSinging = computed(() => currentSingerPositions.value.includes(selectedPosition.value))
+const currentSingerLabel = computed(() => currentSingerPositions.value.length
+  ? currentSingerPositions.value.map(position => `${position} 号位`).join('、')
+  : '无人')
 
-// ── Init PIXI ──
 onMounted(async () => {
-  if (!canvasRef.value) return
-  app = markRaw(new PIXI.Application({
-    width: canvasRef.value.clientWidth,
-    height: canvasRef.value.clientHeight,
-    backgroundColor: 0x222222,
-    antialias: true,
-    resolution: window.devicePixelRatio || 1,
-    autoDensity: true,
-  }))
-  canvasRef.value.appendChild(app.view)
-
-  await loadLists()
+  await nextTick()
+  createPixiApp()
+  try {
+    manifest.value = await fetchLiveChibiManifest()
+    if (manifest.value.choreography?.index) {
+      choreography.value = await fetchLiveChibiChoreography(manifest.value.choreography.index)
+    }
+    const initialCharacter = characters.value[0]
+    selectedCharacterId.value = initialCharacter?.id || ''
+    selectedCostumeId.value = initialCharacter?.defaultCostume || initialCharacter?.costumes?.[0]?.id || ''
+    selectDefaultMotion(false)
+    await loadSelectedCharacter()
+  } catch (error) {
+    loading.value = false
+    errorText.value = error.message
+    console.error('[ChibiLab]', error)
+  }
 })
 
 onBeforeUnmount(() => {
-  destroySpine()
-  if (bgSprite) { bgSprite.destroy(true); bgSprite = null }
-  if (app) { app.destroy(true); app = null }
-  if (_currentObjectUrl) { URL.revokeObjectURL(_currentObjectUrl) }
+  loadSequence += 1
+  lipSyncLoadSequence += 1
+  stopChoreography()
+  resizeObserver?.disconnect()
+  destroyLiveChibi(runtime)
+  runtime = null
+  app?.destroy(true)
+  app = null
 })
 
-// ── Load asset list ──
-async function loadLists() {
-  try {
-    // BGs: fetch the list from bg index
-    const r = await fetch('/bg-list.json')
-    if (r.ok) bgList.value = await r.json()
-  } catch (_) {
-    // fallback: manually list using a known pattern
-    bgList.value = []
-  }
-  // Models: fetch from server directory listing
-  try {
-    const r = await fetch('/spines-index.json')
-    if (r.ok) modelList.value = await r.json()
-  } catch (_) {
-    modelList.value = []
-  }
-  statusText.value = `${bgList.value.length} backgrounds, ${modelList.value.length} models`
+function createPixiApp() {
+  const host = canvasRef.value
+  if (!host) return
+  app = markRaw(new PIXI.Application({
+    width: Math.max(1, host.clientWidth),
+    height: Math.max(1, host.clientHeight),
+    backgroundAlpha: 0,
+    antialias: true,
+    autoDensity: true,
+    resolution: Math.min(window.devicePixelRatio || 1, 2),
+  }))
+  host.appendChild(app.view)
+  resizeObserver = new ResizeObserver(() => resizeStage())
+  resizeObserver.observe(host)
 }
 
-// ── Background ──
-async function onBgChange() {
-  if (bgSprite) { bgSprite.destroy(true); bgSprite = null }
-  if (!selectedBg.value) return
+async function loadSelectedCharacter() {
+  const character = selectedCharacter.value
+  if (!character) return
+  if (selectedPackId.value.startsWith('song:')
+    && character.bodyType !== choreography.value?.bodyType) {
+    selectedPackId.value = 'common'
+    selectDefaultMotion(false)
+  }
+  if (!costumes.value.some(item => item.id === selectedCostumeId.value)) {
+    selectedCostumeId.value = character.defaultCostume || costumes.value[0]?.id || ''
+  }
+  const costume = selectedCostume.value
+  if (!costume) return
+
+  const sequence = ++loadSequence
+  motionSequence += 1
+  loading.value = true
+  runtimeReady.value = false
+  runtimeDiagnostics.value = null
+  errorText.value = ''
+  statusText.value = `正在组合 ${character.name} 的骨架与服装…`
+  destroyLiveChibi(runtime)
+  runtime = null
+
   try {
-    const url = getBgUrl(selectedBg.value)
-    const tex = await PIXI.Texture.fromURL(url)
-    bgSprite = new PIXI.Sprite(tex)
-    bgSprite.width = app.screen.width
-    bgSprite.height = app.screen.height
-    app.stage.addChildAt(bgSprite, 0)
-  } catch (err) {
-    console.warn('[SpineViewer] bg load failed:', err.message)
+    const nextRuntime = await createLiveChibi(character, costume)
+    if (sequence !== loadSequence || !app) {
+      destroyLiveChibi(nextRuntime)
+      return
+    }
+    runtime = markRaw({ ...nextRuntime, loadedMotions: new Map() })
+    runtimeDiagnostics.value = nextRuntime.diagnostics
+    app.stage.addChild(runtime.spine)
+    resizeStage(true)
+    loading.value = false
+    runtimeReady.value = true
+    await playSelectedMotion({ reset: true })
+    applyCurrentLipSync()
+  } catch (error) {
+    loading.value = false
+    errorText.value = error.message
+    console.error('[ChibiLab] character load failed', error)
   }
 }
 
-// ── Model loading ──
-async function onModelChange() {
-  destroySpine()
-  animList.value = []
-  faceList.value = []
-  selectedAnim.value = ''
-  selectedFace.value = ''
+function resizeStage(resetScale = false) {
+  if (!app || !canvasRef.value) return
+  const width = Math.max(1, canvasRef.value.clientWidth)
+  const height = Math.max(1, canvasRef.value.clientHeight)
+  app.renderer.resize(width, height)
+  if (!runtime?.spine) return
+  runtime.spine.x = width * 0.5
+  runtime.spine.y = height * 0.87
+  if (resetScale) {
+    const dataWidth = Math.max(runtime.skeletonData.width, 1)
+    const dataHeight = Math.max(runtime.skeletonData.height, 1)
+    const fitScale = Math.min(
+      width * 0.52 / dataWidth,
+      height * 0.68 / dataHeight,
+    )
+    modelScale.value = selectedCharacter.value?.previewScale || fitScale
+  }
+  runtime.spine.scale.set(modelScale.value)
+}
 
-  if (!selectedModel.value) return
-  const modelId = selectedModel.value
-
-  // Load faces
-  await loadFaceList(modelId)
-
-  statusText.value = `Loading ${modelId}...`
-  try {
-    const [atlasBuf, skelBuffer] = await Promise.all([
-      fetch(getSpineAtlasUrl(modelId)).then(r => r.arrayBuffer()),
-      fetch(getSpineSkelUrl(modelId)).then(r => r.arrayBuffer()),
-    ])
-
-    const atlasText = decodeAtlas(atlasBuf)
-    const textureFile = extractTextureFilename(atlasText)
-    const textureUrl = getTextureUrl(modelId, textureFile)
-    const texture = await loadTexture(textureUrl)
-
-    const textureMap = {}
-    textureMap[textureFile] = texture
-
-    const atlas = await new Promise((resolve, reject) => {
-      try {
-        new TextureAtlas(atlasText,
-          (path, cb) => {
-            const fileName = path.split('/').pop()
-            const tex = textureMap[fileName]
-            if (tex && tex.baseTexture) cb(tex.baseTexture)
-            else cb(null)
-          },
-          (result) => { if (result) resolve(result); else reject(new Error('TextureAtlas failed')) }
-        )
-      } catch (e) { reject(e) }
+function selectDefaultMotion(play = true) {
+  stopChoreography(true)
+  loadSelectedSongLipSync()
+  if (selectedSong.value) {
+    if (!selectedSong.value.positions.includes(selectedPosition.value)) {
+      selectedPosition.value = selectedSong.value.positions[0] || 1
+    }
+    const initialEvent = [...selectedTimelineEvents.value]
+      .reverse()
+      .find(event => event.time <= 0) || selectedTimelineEvents.value[0]
+    selectedMotionId.value = initialEvent?.motion || motions.value[0]?.id || 0
+    if (play && initialEvent) playSelectedMotion({
+      speedScale: initialEvent.speed / 1000,
+      mode: initialEvent.mode,
+      pauseTime: initialEvent.pauseTime,
+      reset: true,
     })
-
-    for (const page of atlas.pages) page.pma = true
-
-    const cleanSkel = decodeSkel(skelBuffer)
-    const attachmentLoader = new AtlasAttachmentLoader(atlas)
-    const skeletonBinary = new SkeletonBinary(attachmentLoader)
-    const skeletonData = skeletonBinary.readSkeletonData(new Uint8Array(cleanSkel))
-
-    currentScale.value = computeAutoScale(skeletonData)
-    const spine = new Spine(skeletonData)
-    spine.stateData.defaultMix = 0.2
-    spine.x = app.screen.width * 0.5
-    spine.y = app.screen.height + 20
-    spine.scale.set(currentScale.value)
-
-    app.stage.addChild(spine)
-    currentSpine = { spine, spineData: skeletonData, modelId }
-    currentScale.value = spine.scale.x
-
-    // Populate animations
-    animList.value = skeletonData.animations.map(a => a.name)
-    if (animList.value.length > 0) {
-      selectedAnim.value = animList.value[0]
-      spine.state.setAnimation(0, selectedAnim.value, true)
-    }
-
-    statusText.value = `${modelId} — ${animList.value.length} anims, ${faceList.value.length} faces`
-  } catch (err) {
-    statusText.value = `Failed to load ${modelId}: ${err.message}`
-    console.error(err)
+    return
   }
+  const requestedMotionId = Number(new URLSearchParams(window.location.search).get('motion'))
+  const preferred = motions.value.find(item => item.id === requestedMotionId)
+    || motions.value.find(item => item.name === 'wait')
+    || motions.value[0]
+  selectedMotionId.value = preferred?.id || 0
+  if (play) playSelectedMotion({ reset: true })
 }
 
-function computeAutoScale(skeletonData) {
-  const h = skeletonData.height
-  if (h > 0) {
-    const REF_HEIGHT = 3060
-    return 0.26 * (REF_HEIGHT / h)
-  }
-  return 0.26
-}
-
-// ── Face list ──
-async function loadFaceList(modelId) {
-  faceList.value = []
+async function loadSelectedSongLipSync() {
+  const song = selectedSong.value
+  const sequence = ++lipSyncLoadSequence
+  lipSyncCurve = null
+  applyCurrentLipSync()
+  if (!song?.lipSync?.file) return
   try {
-    const r = await fetch(`/spines/${modelId}/faces/index.json`)
-    if (r.ok) {
-      const data = await r.json()
-      faceList.value = data
-    }
-  } catch (_) { /* index doesn't exist */ }
-  // Fallback: derive from file listing
-  if (faceList.value.length === 0) {
-    const known = ['face_default', 'face_happy', 'face_joy', 'face_sad', 'face_angry',
-      'face_serious', 'face_surprise', 'face_shy', 'face_think', 'face_trouble', 'face_swet']
-    faceList.value = known
+    const curve = await fetchLiveChibiLipSync(song.lipSync.file)
+    if (sequence !== lipSyncLoadSequence || selectedSong.value?.id !== song.id) return
+    lipSyncCurve = curve
+    applyCurrentLipSync()
+  } catch (error) {
+    if (sequence !== lipSyncLoadSequence) return
+    console.warn('[ChibiLab] lip-sync load failed', error)
   }
 }
 
-// ── Animation ──
-function onAnimChange() {
-  if (!currentSpine || !selectedAnim.value) return
-  const { spine, spineData } = currentSpine
-  // 完全清除所有轨道，不留任何残留
-  spine.state.clearTracks()
-  // 强制立即过渡到空姿势（mix=0 即无过渡帧）
-  spine.state.setEmptyAnimation(0, 0)
-  // 设置新动画
-  if (selectedAnim.value === 'wait_loop') {
-    spine.state.setAnimation(0, 'wait_loop', true)
-  } else {
-    spine.state.setAnimation(0, selectedAnim.value, false)
-    if (spineData.findAnimation('wait_loop')) {
-      spine.state.addAnimation(0, 'wait_loop', true, 0)
+function applyCurrentLipSync() {
+  lipSyncState.value = applyLiveChibiLipSync(
+    runtime,
+    lipSyncCurve,
+    choreographyTime.value,
+    selectedPositionIsSinging.value,
+  )
+}
+
+async function playSelectedMotion({ speedScale = 1, mode = 2, pauseTime = 0, reset = true } = {}) {
+  if (!runtime || !selectedMotion.value) return
+  const motion = selectedMotion.value
+  const sequence = ++motionSequence
+  const motionRuntime = runtime
+  statusText.value = `正在载入动作 ${motion.label}…`
+  try {
+    const animationNames = await injectLiveChibiMotion(motionRuntime, motion)
+    if (sequence !== motionSequence || runtime !== motionRuntime) return
+    motionRuntime.currentAnimations = animationNames
+    motionRuntime.motionSpeedScale = speedScale
+    paused.value = false
+    const playback = playLiveChibiMotion(motionRuntime, animationNames, { mode, reset })
+    const visualBounds = motionRuntime.spine.getLocalBounds()
+    runtimeDiagnostics.value = {
+      ...motionRuntime.diagnostics,
+      motion: motion.id,
+      choreographyMode: mode,
+      pauseTime,
+      playback,
+      visualBounds: {
+        x: visualBounds.x,
+        y: visualBounds.y,
+        width: visualBounds.width,
+        height: visualBounds.height,
+      },
+      previewScale: modelScale.value,
+      renderedHeight: visualBounds.height * modelScale.value,
     }
+    applyPlaybackSpeed()
+  } catch (error) {
+    errorText.value = `动作 ${motion.id} 加载失败：${error.message}`
+    console.error('[ChibiLab] motion load failed', error)
   }
 }
 
-// ── Face ──
-function onFaceChange(faceName) {
-  selectedFace.value = faceName
-  if (!currentSpine || !currentSpine.modelId) return
-  const modelId = currentSpine.modelId
-  const url = getSpineFaceUrl(modelId, faceName)
-  loadTexture(url).then(tex => {
-    if (!currentSpine) return
-    const { spine } = currentSpine
-    const slotNames = ['face', 'faces', 'head', 'Face', 'Faces']
-    let targetSlot = null
-    for (const name of slotNames) {
-      targetSlot = spine.skeleton.findSlot(name)
-      if (targetSlot) break
-    }
-    if (!targetSlot) {
-      for (const slot of spine.skeleton.slots) {
-        if (slot.data.name.toLowerCase().includes('face')) {
-          targetSlot = slot
-          break
-        }
-      }
-    }
-    if (!targetSlot) return
-    const curAttachment = targetSlot.getAttachment()
-    if (curAttachment && curAttachment.region) {
-      curAttachment.region.texture = tex
-    }
-  }).catch(() => {})
+function replayMotion() {
+  if (!runtime?.currentAnimations) return
+  paused.value = false
+  playLiveChibiMotion(runtime, runtime.currentAnimations, { reset: true })
+  applyPlaybackSpeed()
 }
 
-// ── Scale ──
-function adjustScale(delta) {
-  if (!currentSpine) return
-  currentScale.value = Math.max(0.01, Math.min(5, currentScale.value + delta))
-  currentSpine.spine.scale.set(currentScale.value)
+function togglePlayback() {
+  if (selectedSong.value) {
+    toggleChoreography()
+    return
+  }
+  if (!runtime) return
+  paused.value = !paused.value
+  runtime.spine.state.timeScale = paused.value ? 0 : playbackSpeed.value
 }
 
-// ── Cleanup ──
-function destroySpine() {
-  if (currentSpine) {
-    if (currentSpine.spine.parent) currentSpine.spine.parent.removeChild(currentSpine.spine)
-    currentSpine.spine.destroy({ children: true, textures: true })
-    currentSpine = null
+function applyPlaybackSpeed() {
+  if (runtime && !paused.value) {
+    runtime.spine.state.timeScale = playbackSpeed.value * (runtime.motionSpeedScale || 1)
   }
 }
 
-// ── Texture helpers (mirrors PixiStageManager) ──
-function decodeAtlas(buf) {
-  const view = new DataView(buf)
-  const nameLen = view.getUint32(0, true)
-  if (nameLen > 0 && nameLen < 200) {
-    const padding = (4 - (4 + nameLen) % 4) % 4
-    const headerSize = 4 + nameLen + padding + 4
-    const decoder = new TextDecoder('utf-8')
-    return decoder.decode(buf.slice(headerSize))
-  }
-  return new TextDecoder('utf-8').decode(buf)
+function applyModelScale() {
+  runtime?.spine?.scale.set(modelScale.value)
 }
 
-function decodeSkel(buf) {
-  const view = new DataView(buf)
-  const nameLen = view.getUint32(0, true)
-  if (nameLen > 0 && nameLen < 100) {
-    let printable = true
-    for (let i = 0; i < nameLen; i++) {
-      const b = view.getUint8(4 + i)
-      if (b < 0x20 || b > 0x7e) { printable = false; break }
-    }
-    if (printable) {
-      const padding = (4 - (4 + nameLen) % 4) % 4
-      const headerSize = 4 + nameLen + padding + 4
-      return buf.slice(headerSize)
-    }
-  }
-  return buf
+function stepMotion(direction) {
+  stopChoreography()
+  if (!motions.value.length) return
+  const currentIndex = Math.max(0, motions.value.findIndex(item => item.id === selectedMotionId.value))
+  const nextIndex = (currentIndex + direction + motions.value.length) % motions.value.length
+  selectedMotionId.value = motions.value[nextIndex].id
+  playSelectedMotion()
 }
 
-function extractTextureFilename(atlasText) {
-  const firstLine = atlasText.split('\n')[0].trim()
-  const pngMatch = firstLine.match(/^([a-zA-Z0-9_\-]+\.(png|jpg))/)
-  if (pngMatch) return pngMatch[1]
-  // Some atlases start with size line
-  const lines = atlasText.split('\n')
-  for (const line of lines) {
-    const m = line.trim().match(/^([a-zA-Z0-9_\-]+\.(png|jpg))/)
-    if (m) return m[1]
-  }
-  return 'comu.png'
+function formatTime(milliseconds) {
+  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000))
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = String(totalSeconds % 60).padStart(2, '0')
+  return `${minutes}:${seconds}`
 }
 
-function getTextureUrl(modelId, filename) {
-  return `${window.location.origin}/assets/spines/${modelId}/${filename}`
-}
-
-function loadTexture(url) {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.crossOrigin = 'anonymous'
-    img.onload = () => {
-      const base = new PIXI.BaseTexture(img)
-      base.alphaMode = PIXI.ALPHA_MODES.PMA
-      resolve(new PIXI.Texture(base))
-    }
-    img.onerror = () => reject(new Error(`Failed to load ${url}`))
-    img.src = url
+function playChoreographyEvent(event, { reset = false } = {}) {
+  const motion = choreographyMotionMap.value.get(event.motion)
+  if (!motion) return
+  selectedMotionId.value = motion.id
+  playSelectedMotion({
+    speedScale: event.speed / 1000,
+    mode: event.mode,
+    pauseTime: event.pauseTime,
+    reset,
   })
+}
+
+function seekChoreography() {
+  stopChoreography()
+  const event = [...selectedTimelineEvents.value]
+    .reverse()
+    .find(item => item.time <= choreographyTime.value)
+  if (event) playChoreographyEvent(event, { reset: true })
+  applyCurrentLipSync()
+}
+
+function toggleChoreography() {
+  if (choreographyPlaying.value) {
+    stopChoreography()
+    return
+  }
+  const events = selectedTimelineEvents.value
+  if (!events.length || !selectedSong.value) return
+  if (choreographyTime.value >= selectedSong.value.duration) choreographyTime.value = 0
+
+  choreographyEventIndex = events.findIndex(event => event.time > choreographyTime.value)
+  if (choreographyEventIndex < 0) choreographyEventIndex = events.length
+  const currentEvent = events[Math.max(0, choreographyEventIndex - 1)]
+  if (currentEvent && currentEvent.time <= choreographyTime.value) {
+    playChoreographyEvent(currentEvent, { reset: true })
+  }
+
+  choreographyStartOffset = choreographyTime.value
+  choreographyStartedAt = performance.now()
+  choreographyPlaying.value = true
+  choreographyFrame = requestAnimationFrame(updateChoreography)
+}
+
+function updateChoreography(now) {
+  if (!choreographyPlaying.value || !selectedSong.value) return
+  const events = selectedTimelineEvents.value
+  choreographyTime.value = Math.min(
+    selectedSong.value.duration,
+    choreographyStartOffset + (now - choreographyStartedAt) * playbackSpeed.value,
+  )
+  while (choreographyEventIndex < events.length
+    && events[choreographyEventIndex].time <= choreographyTime.value) {
+    playChoreographyEvent(events[choreographyEventIndex])
+    choreographyEventIndex += 1
+  }
+  applyCurrentLipSync()
+  if (choreographyTime.value >= selectedSong.value.duration) {
+    stopChoreography()
+    return
+  }
+  choreographyFrame = requestAnimationFrame(updateChoreography)
+}
+
+function stopChoreography(reset = false) {
+  if (choreographyFrame) cancelAnimationFrame(choreographyFrame)
+  choreographyFrame = 0
+  choreographyPlaying.value = false
+  if (reset) choreographyTime.value = 0
 }
 </script>
 
 <style scoped>
-.spine-viewer-root {
-  position: fixed; inset: 0;
-  display: flex;
-  background: #1a1a2e;
-  color: #e0e0e0;
+.chibi-lab {
+  --ink: #08111f;
+  --panel: #132235;
+  --panel-deep: #0e1a2a;
+  --line: rgba(172, 197, 224, 0.18);
+  --text: #f2f6fb;
+  --muted: #91a4ba;
+  --accent: #3c9cff;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  color: var(--text);
+  background: var(--ink);
+  font-family: Inter, "Noto Sans SC", "Microsoft YaHei", sans-serif;
 }
-.viewer-canvas {
-  flex: 1; height: 100%;
-}
-.control-panel {
-  width: 280px; flex-shrink: 0;
-  background: #16213e;
-  border-left: 1px solid #2a3a5c;
-  padding: 20px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.panel-title {
-  font-size: 1rem;
-  color: #88ddff;
-  margin: 0 0 4px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #2a3a5c;
-}
-.ctrl-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.ctrl-label {
-  font-size: 0.7rem;
-  color: #8899bb;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.ctrl-select {
-  background: #0f3460;
-  border: 1px solid #2a4a7c;
-  color: #e0e0e0;
-  padding: 8px 10px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  cursor: pointer;
-  max-height: 200px;
-}
-.ctrl-select:focus {
-  outline: none;
-  border-color: #5599ff;
-}
-.face-btns {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.face-btn {
-  background: #0f3460;
-  border: 1px solid #2a4a7c;
-  color: #c0d0e0;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  cursor: pointer;
-  transition: all 0.12s;
-}
-.face-btn:hover {
-  background: #1a4a80;
-  border-color: #4488cc;
-}
-.face-btn.active {
-  background: #4488cc;
-  border-color: #66aaff;
-  color: #fff;
-}
-.scale-row {
+
+.lab-header {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 4;
+  height: 62px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 18px;
+  padding: 0 22px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(7, 17, 31, 0.96);
 }
-.scale-btn {
-  width: 32px; height: 32px;
-  background: #0f3460;
-  border: 1px solid #2a4a7c;
-  color: #e0e0e0;
-  border-radius: 6px;
-  font-size: 1.1rem;
-  cursor: pointer;
+
+.lab-header h1 { margin: 0; font-size: 20px; font-weight: 680; letter-spacing: 0.02em; }
+.header-meta { margin-left: auto; color: var(--muted); font-size: 12px; letter-spacing: 0.04em; }
+.header-divider { width: 1px; height: 26px; background: var(--line); }
+.icon-button { display: grid; place-items: center; width: 38px; height: 38px; padding: 0; color: var(--text); background: transparent; border: 0; border-radius: 8px; cursor: pointer; }
+.icon-button:hover { background: rgba(255, 255, 255, 0.07); }
+
+.lab-workspace { position: absolute; inset: 62px 0 0; display: grid; grid-template-columns: minmax(0, 1fr) 380px; min-height: 0; }
+.stage-shell { position: relative; min-width: 0; overflow: hidden; background: #101a26; }
+.stage-backdrop { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(4, 9, 17, 0.25), rgba(4, 9, 17, 0.08) 56%, rgba(4, 9, 17, 0.48)), url('/assets/bg/bg086_dancestudio_in_01.png') center / cover no-repeat; filter: saturate(0.72) brightness(0.62); transform: scale(1.015); }
+.stage-shell::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 52%, transparent 22%, rgba(3, 8, 15, 0.34) 92%); }
+.stage-canvas { position: absolute; inset: 0; z-index: 1; }
+.stage-canvas :deep(canvas) { display: block; width: 100%; height: 100%; }
+
+.stage-state { position: absolute; z-index: 3; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 11px; color: #c8d6e6; font-size: 13px; background: rgba(7, 14, 24, 0.46); backdrop-filter: blur(4px); }
+.loading-icon { animation: spin 1s linear infinite; }
+.error-state { text-align: center; color: #ffc9c9; }
+.error-state span { max-width: 420px; color: #aebbc9; line-height: 1.6; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.transport { position: absolute; z-index: 3; left: 50%; bottom: 30px; width: min(620px, calc(100% - 48px)); min-height: 82px; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; gap: 18px; padding: 0 28px; border: 1px solid rgba(170, 199, 231, 0.28); border-radius: 15px; background: rgba(8, 18, 32, 0.9); box-shadow: 0 18px 55px rgba(0, 0, 0, 0.38); backdrop-filter: blur(16px); }
+.transport.disabled { pointer-events: none; opacity: 0.55; }
+.transport button, .playback-buttons button { display: inline-flex; align-items: center; justify-content: center; height: 44px; min-width: 58px; color: #dce8f4; background: #142438; border: 1px solid rgba(173, 202, 232, 0.28); border-radius: 8px; cursor: pointer; }
+.transport button:hover, .playback-buttons button:hover { border-color: rgba(79, 164, 255, 0.75); background: #192e47; }
+.transport .primary-transport { width: 58px; height: 58px; border-radius: 50%; color: white; border-color: var(--accent); background: rgba(34, 107, 181, 0.52); }
+.transport-divider { width: 1px; height: 38px; background: var(--line); }
+.transport-motion { min-width: 150px; display: flex; flex-direction: column; gap: 4px; }
+.transport-motion span { font-size: 15px; font-weight: 650; }
+.transport-motion small { color: var(--muted); font-size: 11px; }
+
+.inspector { min-width: 0; background: linear-gradient(180deg, #17283c, #101e2f); border-left: 1px solid var(--line); overflow: hidden; }
+.inspector-scroll { height: 100%; overflow-y: auto; scrollbar-color: rgba(134, 162, 192, 0.38) transparent; }
+.control-section, .resource-section { padding: 22px 22px 20px; border-bottom: 1px solid var(--line); }
+.selection-section { display: grid; gap: 15px; }
+.selection-section label { display: grid; grid-template-columns: 66px minmax(0, 1fr); gap: 12px; align-items: center; }
+.selection-section label > span, .range-control > span { color: #d8e3ef; font-size: 13px; }
+select { width: 100%; color: #edf4fb; background: #122033; border: 1px solid rgba(170, 199, 229, 0.3); border-radius: 7px; font: 500 13px/1.2 inherit; outline: none; }
+.selection-section select { height: 42px; padding: 0 12px; }
+select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(60, 156, 255, 0.12); }
+h2 { margin: 0; color: #d4dfeb; font-size: 12px; font-weight: 650; letter-spacing: 0.05em; }
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
+.section-heading > div { display: flex; flex-direction: column; gap: 5px; }
+.section-heading span { color: var(--muted); font-size: 11px; }
+.text-button { display: inline-flex; align-items: center; gap: 6px; padding: 7px 9px; color: #bcd0e4; background: transparent; border: 0; border-radius: 6px; font: 600 11px/1 inherit; cursor: pointer; }
+.text-button:hover { background: rgba(255, 255, 255, 0.06); }
+.motion-select { height: 208px; padding: 5px; overflow-y: auto; }
+.motion-select option { padding: 10px 9px; border-radius: 5px; color: #bdcddd; }
+.motion-select option:checked { color: #fff; background: linear-gradient(#174b78, #174b78); }
+.choreography-section { display: grid; gap: 15px; background: rgba(30, 74, 116, 0.14); }
+.singer-status { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 48px; padding: 9px 11px; color: #9db0c4; background: rgba(7, 17, 31, 0.42); border: 1px solid rgba(157, 176, 196, 0.16); border-radius: 8px; }
+.singer-status > div { display: grid; gap: 4px; }
+.singer-status span { color: var(--muted); font-size: 10px; letter-spacing: 0.08em; }
+.singer-status strong { color: #dce8f4; font-size: 12px; }
+.singer-status small { color: #8296aa; font-size: 10px; }
+.singer-status.singing { color: #7fc0ff; background: rgba(38, 116, 190, 0.18); border-color: rgba(74, 160, 242, 0.42); }
+.singer-status.singing strong, .singer-status.singing small { color: #dff1ff; }
+.lip-sync-status { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; }
+.lip-sync-status strong { color: var(--text); font-weight: 600; }
+.lip-sync-status small { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+.song-position { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 10px; align-items: center; color: #d8e3ef; font-size: 13px; }
+.song-position select { height: 38px; padding: 0 10px; }
+.timeline-control { display: grid; gap: 7px; }
+.timeline-control input { width: 100%; margin: 0; accent-color: var(--accent); }
+.timeline-control span { color: var(--muted); font: 600 11px/1 monospace; text-align: right; }
+.choreography-play { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 42px; color: white; background: rgba(34, 107, 181, 0.52); border: 1px solid var(--accent); border-radius: 8px; font: 650 12px/1 inherit; cursor: pointer; }
+.choreography-play:hover { background: rgba(40, 127, 213, 0.62); }
+.playback-section { display: grid; gap: 17px; }
+.playback-buttons { display: flex; gap: 10px; }
+.playback-buttons .wide-play { flex: 1; gap: 8px; font: 600 12px/1 inherit; }
+.range-control { display: grid; grid-template-columns: 42px minmax(0, 1fr) 48px; gap: 10px; align-items: center; }
+.range-control input { width: 100%; accent-color: var(--accent); }
+.range-control output { color: #e9f2fb; font: 600 12px/1 inherit; text-align: right; font-variant-numeric: tabular-nums; }
+.resource-section { border-bottom: 0; }
+.resource-section h2 { margin-bottom: 14px; }
+.resource-section dl { margin: 0; display: grid; gap: 10px; }
+.resource-section dl div { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 10px; font-size: 11px; }
+.resource-section dt { color: var(--muted); }
+.resource-section dd { margin: 0; color: #d3dfeb; overflow-wrap: anywhere; }
+
+@media (max-width: 860px) {
+  .lab-header { height: 54px; padding: 0 12px; gap: 11px; }
+  .lab-header h1 { font-size: 16px; }
+  .header-meta { display: none; }
+  .lab-workspace { inset-top: 54px; grid-template-columns: 1fr; grid-template-rows: minmax(390px, 58vh) minmax(0, 1fr); overflow-y: auto; }
+  .stage-shell { min-height: 390px; }
+  .inspector { border-left: 0; border-top: 1px solid var(--line); overflow: visible; }
+  .inspector-scroll { height: auto; overflow: visible; }
+  .transport { bottom: 16px; min-height: 66px; gap: 10px; padding: 0 14px; }
+  .transport button { min-width: 44px; height: 40px; }
+  .transport .primary-transport { width: 48px; height: 48px; }
+  .transport-motion { min-width: 0; flex: 1; }
 }
-.scale-btn:hover { background: #1a4a80; }
-.scale-val {
-  min-width: 50px;
-  text-align: center;
-  font-size: 0.9rem;
-  font-family: monospace;
-  color: #88ddff;
-}
-.ctrl-info {
-  font-size: 0.75rem;
-  color: #7799aa;
-  line-height: 1.4;
-  padding: 8px;
-  background: rgba(0,0,0,0.2);
-  border-radius: 6px;
-}
-.back-btn {
-  margin-top: auto;
-  background: transparent;
-  border: 1px solid #3a5a8c;
-  color: #88bbee;
-  padding: 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.85rem;
-}
-.back-btn:hover {
-  background: rgba(136,187,238,0.1);
-  border-color: #5599dd;
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-icon { animation: none; }
 }
 </style>
