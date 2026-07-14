@@ -205,6 +205,10 @@ export function getBrandMarkUrl() {
   return `${ASSET_BASE}/brand/image_logo_imas_M_mark.png`
 }
 
+export function getEventBannerUrl(eventCode) {
+  return `${ASSET_BASE}/events/banners/image_home_announce_event_${eventCode}_01.png`
+}
+
 /**
  * Chat emoji images.
  */

@@ -161,12 +161,38 @@ def copy_brand_mark(source_root: Path, public_root: Path) -> str:
     return f"/assets/brand/{source.name}"
 
 
+def load_event_codes(archive_manifest: Path | None) -> list[str]:
+    if not archive_manifest or not archive_manifest.exists():
+        return []
+    payload = json.loads(archive_manifest.read_text(encoding="utf-8"))
+    return sorted({
+        str(event["event_code"])
+        for event in payload.get("unit_event_relations", [])
+        if event.get("event_code")
+    })
+
+
+def copy_event_banners(source_root: Path, public_root: Path, event_codes: list[str]) -> dict[str, str]:
+    destination = public_root / "assets" / "events" / "banners"
+    destination.mkdir(parents=True, exist_ok=True)
+    banners: dict[str, str] = {}
+    for event_code in event_codes:
+        filename = f"image_home_announce_event_{event_code}_01.png"
+        source = source_root / "image" / "image_event" / "announce" / event_code / filename
+        if not source.exists():
+            continue
+        shutil.copy2(source, destination / filename)
+        banners[event_code] = f"/assets/events/banners/{filename}"
+    return banners
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("source_root", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--local-data", type=Path)
     parser.add_argument("--public-root", type=Path)
+    parser.add_argument("--archive-manifest", type=Path)
     args = parser.parse_args()
 
     source_root = args.source_root.resolve()
@@ -182,12 +208,20 @@ def main() -> None:
     public_root = args.public_root.resolve() if args.public_root else None
     unit_logo_urls = copy_unit_logos(source_root, public_root) if public_root else {}
     brand_mark_url = copy_brand_mark(source_root, public_root) if public_root else ""
+    event_banner_urls = copy_event_banners(
+        source_root,
+        public_root,
+        load_event_codes(args.archive_manifest),
+    ) if public_root else {}
     for entry in entries:
         match = re.fullmatch(r"image_unit_logo_(\w+)\.png", entry["filename"])
         if match and match.group(1) in unit_logo_urls:
             entry["public_url"] = unit_logo_urls[match.group(1)]
         if entry["filename"] == "image_logo_imas_M_mark.png" and brand_mark_url:
             entry["public_url"] = brand_mark_url
+        event_banner_match = re.fullmatch(r"image_home_announce_event_(\d+)_01\.png", entry["filename"])
+        if event_banner_match and event_banner_match.group(1) in event_banner_urls:
+            entry["public_url"] = event_banner_urls[event_banner_match.group(1)]
 
     payload = {
         "schema_version": 1,
@@ -203,12 +237,14 @@ def main() -> None:
         "featured_sets": {
             "unit_logo_urls": unit_logo_urls,
             "brand_mark_url": brand_mark_url,
+            "event_banner_urls": event_banner_urls,
         },
         "local_state": load_local_state(args.local_data),
         "meta": {
             "entry_count": len(entries),
             "public_unit_logo_count": len(unit_logo_urls),
             "public_brand_mark_count": int(bool(brand_mark_url)),
+            "public_event_banner_count": len(event_banner_urls),
             "counts_by_domain": dict(sorted(Counter(entry["domain"] for entry in entries).items())),
             "counts_by_role": dict(sorted(Counter(entry["role"] for entry in entries).items())),
             "counts_by_recommended_use": dict(sorted(Counter(entry["recommended_use"] for entry in entries).items())),

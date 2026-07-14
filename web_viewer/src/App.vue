@@ -106,6 +106,18 @@
         @open-card="openGashaCard"
       />
 
+      <ArchiveEventDetail
+        v-if="view === 'event_detail'"
+        :event="currentEvent"
+        :cards="currentEventCards"
+        :idols="currentEventIdols"
+        :units="currentEventUnits"
+        @play="playCurrentEvent"
+        @open-card="openEventCard"
+        @open-idol="openEventIdol"
+        @open-unit="openEventUnit"
+      />
+
       <ArchiveGroupList
         v-if="view === 'groups'"
         embedded
@@ -184,6 +196,7 @@
         :event-relations="currentArchiveUnitEntry?.eventRelations"
         @open-idol="openUnitMember"
         @open-story="openUnitStory"
+        @open-event="openUnitEvent"
         @open-cards="openUnitCards"
       />
     </ArchiveShell>
@@ -218,6 +231,7 @@ import ArchiveCardList from './components/archive/ArchiveCardList.vue'
 import ArchiveCardDetail from './components/archive/ArchiveCardDetail.vue'
 import ArchiveGashaCatalog from './components/archive/ArchiveGashaCatalog.vue'
 import ArchiveGashaDetail from './components/archive/ArchiveGashaDetail.vue'
+import ArchiveEventDetail from './components/archive/ArchiveEventDetail.vue'
 import ArchiveIdolGrid from './components/archive/ArchiveIdolGrid.vue'
 import ArchiveIdolDetail from './components/archive/ArchiveIdolDetail.vue'
 import ArchiveGroupList from './components/archive/ArchiveGroupList.vue'
@@ -286,6 +300,8 @@ const currentArchiveUnitCode = ref('')
 const currentEpisodeId = ref('')
 const currentCardId = ref('')
 const currentGashaId = ref('')
+const currentEventId = ref('')
+const eventParentView = ref('')
 const currentGashaCategory = ref('all')
 const currentCardRarity = ref('all')
 const currentCardAssetState = ref('all')
@@ -744,6 +760,26 @@ const filteredGashas = computed(() => {
 const currentGasha = computed(() => resolveGashaRelatedCards(
   gashaIndexData.value?.by_id?.[currentGashaId.value] || null,
 ))
+const eventMap = computed(() => new Map((archiveManifestData.value?.unit_event_relations || [])
+  .map(event => [String(event.event_id), event])))
+const currentEvent = computed(() => eventMap.value.get(currentEventId.value) || null)
+const currentEventCards = computed(() => (archiveManifestData.value?.event_card_relations_by_event?.[currentEventId.value] || [])
+  .map(relation => {
+    const card = cardMap.value.get(relation.card_resource_id)
+    return {
+      ...relation,
+      card_title: card?.title || relation.card_resource_id,
+      character_name: idolDisplayName(relation.character_id),
+    }
+  }))
+const currentEventIdols = computed(() => (currentEvent.value?.characters || []).map(idolCode => ({
+  idol_code: idolCode,
+  ...(idolUnitData.value?.by_idol_code?.[idolCode] || {}),
+})))
+const currentEventUnits = computed(() => {
+  const unitIds = new Set((currentEvent.value?.participating_unit_ids || []).map(String))
+  return (idolUnitData.value?.units || []).filter(unit => unitIds.has(String(unit.unit_id)))
+})
 const currentCardIndex = computed(() => currentCards.value.findIndex(card => card.resource_id === currentCardId.value))
 const previousCard = computed(() => currentCardIndex.value > 0
   ? currentCards.value[currentCardIndex.value - 1]
@@ -837,6 +873,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'story_catalog') return '故事目录'
   if (view.value === 'gashas') return '卡池档案'
   if (view.value === 'gasha_detail') return currentGasha.value?.display_name || '卡池详情'
+  if (view.value === 'event_detail') return currentEvent.value?.title || '活动详情'
   if (view.value === 'unit_catalog') return '组合资料'
   if (view.value === 'unit_detail') return currentArchiveUnit.value?.unit_name || '组合详情'
   if (view.value === 'idols') return categoryHeaderText.value
@@ -873,12 +910,17 @@ function idolDisplayName(id) {
 }
 
 function currentArchiveRoute() {
+  const returnsToEvent = view.value === 'player' && returnViewAfterPlayer.value === 'event_detail'
+  const preservesEventContext = view.value === 'event_detail' || returnsToEvent
+  const preservesArchiveUnit = view.value === 'unit_detail' ||
+    (view.value === 'player' && returnViewAfterPlayer.value === 'unit_detail') ||
+    (preservesEventContext && eventParentView.value === 'unit_detail')
   return {
     view: view.value,
     category: currentCategoryId.value,
     idol: currentCharacterId.value,
     group: currentGroup.value?.id || '',
-    unit: (['unit_detail', 'player'].includes(view.value) && currentArchiveUnitCode.value)
+    unit: (preservesArchiveUnit && currentArchiveUnitCode.value)
       ? currentArchiveUnitCode.value
       : (currentUnit.value?.unit_code || currentUnit.value?.id || ''),
     unitFilter: currentIdolUnitFilter.value,
@@ -888,6 +930,7 @@ function currentArchiveRoute() {
     sort: currentStorySort.value,
     episode: currentEpisodeId.value,
     card: currentCardId.value,
+    event: currentEventId.value,
     gasha: view.value === 'gasha_detail' ? currentGashaId.value : '',
     gashaType: ['gashas', 'gasha_detail'].includes(view.value) ? currentGashaCategory.value : 'all',
     rarity: currentCardRarity.value,
@@ -897,6 +940,7 @@ function currentArchiveRoute() {
     scenario: view.value === 'player' ? currentScenarioFile.value : '',
     voice: view.value === 'player' ? currentPreviewCue.value : '',
     returnView: returnViewAfterPlayer.value,
+    parentView: preservesEventContext ? eventParentView.value : '',
   }
 }
 
@@ -976,6 +1020,8 @@ async function applyArchiveRoute(route) {
     currentCategoryId.value = route.category || ''
     currentCharacterId.value = route.idol || ''
     currentCardId.value = route.card || ''
+    currentEventId.value = route.event || ''
+    eventParentView.value = route.parentView || ''
     currentGashaId.value = route.gasha || ''
     currentGashaCategory.value = route.gashaType || 'all'
     currentCardRarity.value = route.rarity || 'all'
@@ -987,9 +1033,12 @@ async function applyArchiveRoute(route) {
     currentStoryAvailability.value = route.availability || 'all'
     currentStorySort.value = route.sort || 'domain'
     currentEpisodeId.value = route.episode || ''
+    const restoresEventContext = route.view === 'event_detail' ||
+      (route.view === 'player' && route.returnView === 'event_detail')
     currentArchiveUnitCode.value = (
       ['unit_catalog', 'unit_detail'].includes(route.view) ||
-      (route.view === 'player' && route.returnView === 'unit_detail')
+      (route.view === 'player' && route.returnView === 'unit_detail') ||
+      (restoresEventContext && route.parentView === 'unit_detail')
     ) ? route.unit || '' : ''
     currentGroup.value = resolveRouteGroup(route)
     currentUnit.value = resolveRouteUnit(route)
@@ -1021,6 +1070,7 @@ async function applyArchiveRoute(route) {
     else if (route.view === 'idol_detail' && !currentIdolProfile.value) view.value = 'idols'
     else if (route.view === 'card_detail' && !currentCard.value) view.value = 'cards'
     else if (route.view === 'gasha_detail' && !currentGasha.value) view.value = 'gashas'
+    else if (route.view === 'event_detail' && !currentEvent.value) view.value = 'story_catalog'
     else if (route.view === 'cards' && !currentCharacterId.value) view.value = 'idols'
     else if (route.view === 'files' && !currentGroup.value) view.value = currentCharacterId.value ? 'groups' : 'home'
     else if (route.view === 'episodes' && !currentUnit.value) view.value = 'episode_zero_units'
@@ -1039,6 +1089,8 @@ function goHome() {
   currentArchiveUnitCode.value = ''
   currentEpisodeId.value = ''
   currentCardId.value = ''
+  currentEventId.value = ''
+  eventParentView.value = ''
   currentGashaId.value = ''
   currentCardRarity.value = 'all'
   currentCardAssetState.value = 'all'
@@ -1079,6 +1131,7 @@ function goArchiveBack() {
       currentGashaId.value = ''
       commitView('gashas')
     },
+    event_detail: goBackFromEvent,
     archive_status: goHome,
     story_catalog: goHome,
     unit_catalog: () => commitView('idols'),
@@ -1167,6 +1220,10 @@ function openUnitMember(member) {
 
 function openUnitStory(story) {
   if (story?.file && story.exists) loadScenario(story.file, 'unit_detail')
+}
+
+function openUnitEvent(event) {
+  openEventDetail(event, 'unit_detail')
 }
 
 function openUnitCards() {
@@ -1346,7 +1403,57 @@ async function previewCardVoice(cue) {
 }
 
 function openCardEvent(event) {
-  if (event?.file && event.exists) loadScenario(event.file, 'card_detail')
+  openEventDetail(event, 'card_detail')
+}
+
+function openEventDetail(event, parentView = 'story_catalog') {
+  if (!event?.event_id) return
+  currentEventId.value = String(event.event_id)
+  eventParentView.value = parentView
+  commitView('event_detail')
+}
+
+function goBackFromEvent() {
+  const parent = eventParentView.value
+  currentEventId.value = ''
+  eventParentView.value = ''
+  if (parent === 'card_detail' && currentCard.value) commitView('card_detail')
+  else if (parent === 'unit_detail' && currentArchiveUnit.value) commitView('unit_detail')
+  else commitView('story_catalog')
+}
+
+function playCurrentEvent() {
+  if (currentEvent.value?.file && currentEvent.value.exists) {
+    loadScenario(currentEvent.value.file, 'event_detail')
+  }
+}
+
+function openEventCard(relation) {
+  const card = cardMap.value.get(relation?.card_resource_id)
+  if (!card) return
+  currentCategoryId.value = 'cards'
+  currentCharacterId.value = card.character_id
+  currentCardId.value = card.resource_id
+  currentEventId.value = ''
+  eventParentView.value = ''
+  filterQuery.value = ''
+  commitView('card_detail')
+}
+
+function openEventIdol(idol) {
+  currentCategoryId.value = 'idol'
+  currentCharacterId.value = idol.idol_code
+  currentCardId.value = ''
+  currentArchiveUnitCode.value = ''
+  currentEventId.value = ''
+  eventParentView.value = ''
+  commitView('idol_detail')
+}
+
+function openEventUnit(unit) {
+  currentEventId.value = ''
+  eventParentView.value = ''
+  openArchiveUnit(unit)
 }
 
 async function openVoicePreview(card, cue, returnView) {

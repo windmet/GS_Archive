@@ -33,11 +33,12 @@ function relationRecords(cardIndex, field) {
   )
 }
 
-const [compiledFiles, voiceEntries, gashaBannerFiles, unitLogoFiles, cardIndex, cardDetailIndex, storyMaster, gashaAnnouncementIndex, gashaIndex, uiAssetCatalog, archiveManifest] = await Promise.all([
+const [compiledFiles, voiceEntries, gashaBannerFiles, unitLogoFiles, eventBannerFiles, cardIndex, cardDetailIndex, storyMaster, gashaAnnouncementIndex, gashaIndex, uiAssetCatalog, archiveManifest] = await Promise.all([
   listFiles(compiledRoot, name => name.endsWith('.json') && !['index.json', 'manifest.json', 'voice_index.json'].includes(name)),
   readdir(voiceRoot, { withFileTypes: true }),
   listFiles(path.join(publicRoot, 'assets', 'gasha'), name => name.endsWith('.png')),
   listFiles(path.join(publicRoot, 'assets', 'units', 'logos'), name => name.endsWith('.png')),
+  listFiles(path.join(publicRoot, 'assets', 'events', 'banners'), name => name.endsWith('.png')),
   readFile(path.join(publicRoot, 'data', 'masterdata', 'card_index.json'), 'utf8').then(JSON.parse),
   readFile(path.join(publicRoot, 'data', 'masterdata', 'card_detail_index.json'), 'utf8').then(JSON.parse),
   readFile(path.join(publicRoot, 'data', 'masterdata', 'story_master_index.json'), 'utf8').then(JSON.parse),
@@ -377,15 +378,21 @@ if (
   })
 }
 const unitLogoNames = new Set(unitLogoFiles.map(file => path.basename(file)))
+const eventBannerNames = new Set(eventBannerFiles.map(file => path.basename(file)))
 const uiAssetFailures = []
 const uiAssetEntries = uiAssetCatalog.entries || []
 const unitLogoUrls = uiAssetCatalog.featured_sets?.unit_logo_urls || {}
+const eventBannerUrls = uiAssetCatalog.featured_sets?.event_banner_urls || {}
+const expectedEventBannerCount = archiveManifest.unit_event_relations?.length || 0
 const uiAssetsValid = uiAssetCatalog.schema_version === 1 &&
   uiAssetEntries.length === 1231 &&
   uiAssetCatalog.meta?.entry_count === uiAssetEntries.length &&
   Object.keys(unitLogoUrls).length === 16 &&
   unitLogoNames.size === 16 &&
   Object.values(unitLogoUrls).every(url => unitLogoNames.has(path.basename(url))) &&
+  Object.keys(eventBannerUrls).length === expectedEventBannerCount &&
+  eventBannerNames.size === expectedEventBannerCount &&
+  Object.values(eventBannerUrls).every(url => eventBannerNames.has(path.basename(url))) &&
   uiAssetEntries.every(entry =>
     entry.source_relative &&
     !path.isAbsolute(entry.source_relative) &&
@@ -396,11 +403,14 @@ const uiAssetsValid = uiAssetCatalog.schema_version === 1 &&
   )
 if (!uiAssetsValid) {
   uiAssetFailures.push({
-    reason: 'UI asset catalog schema, paths or synced unit logos are invalid',
+    reason: 'UI asset catalog schema, paths or synced featured assets are invalid',
     entries: uiAssetEntries.length,
     declared_entries: uiAssetCatalog.meta?.entry_count,
     unit_logo_urls: Object.keys(unitLogoUrls).length,
     unit_logo_files: unitLogoNames.size,
+    event_banner_urls: Object.keys(eventBannerUrls).length,
+    event_banner_files: eventBannerNames.size,
+    expected_event_banners: expectedEventBannerCount,
   })
 }
 const eventCardFailures = []
@@ -565,6 +575,7 @@ const report = {
     failures: uiAssetFailures.length,
     failure_samples: uiAssetFailures,
     public_unit_logos: unitLogoNames.size,
+    public_event_banners: eventBannerNames.size,
     domains: Object.keys(uiAssetCatalog.meta?.counts_by_domain || {}).length,
   },
   unit_event_relations: {

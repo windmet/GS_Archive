@@ -21,13 +21,14 @@ assert.deepEqual(
     view: 'idol_detail', category: 'idol', idol: '001tom', group: '', unit: '', unitFilter: '',
     storyType: '', eventScope: 'all', availability: 'all', sort: 'domain', episode: '', card: '',
     gasha: '', gashaType: 'all', rarity: 'all', assetState: 'all', relationState: 'all', query: '',
-    scenario: '', voice: '', returnView: '',
+    event: '', scenario: '', voice: '', returnView: '', parentView: '',
   },
 )
 
 assert.equal(normalizeArchiveRoute({ view: 'idol_detail' }).view, 'idols')
 assert.equal(normalizeArchiveRoute({ view: 'unit_detail' }).view, 'unit_catalog')
 assert.equal(normalizeArchiveRoute({ view: 'gasha_detail' }).view, 'gashas')
+assert.equal(normalizeArchiveRoute({ view: 'event_detail' }).view, 'story_catalog')
 assert.equal(normalizeArchiveRoute({ view: 'episodes' }).view, 'episode_zero_units')
 assert.equal(normalizeArchiveRoute({ view: 'player' }).view, 'home')
 assert.equal(normalizeArchiveRoute({ view: 'player', card: '001tom_n01', voice: '2_1_001_01_01_01' }).view, 'player')
@@ -36,6 +37,7 @@ assert.equal(archiveSectionForRoute({ view: 'idol_detail', idol: '001tom' }), 'i
 assert.equal(archiveSectionForRoute({ view: 'groups', category: 'idol_chat', group: 'chat-1' }), 'interactions')
 assert.equal(archiveSectionForRoute({ view: 'card_detail', card: '001tom_n01' }), 'cards')
 assert.equal(archiveSectionForRoute({ view: 'archive_status' }), 'resources')
+assert.equal(archiveSectionForRoute({ view: 'event_detail', event: '410018' }), 'stories')
 
 const sourceRoute = {
   view: 'card_detail',
@@ -60,4 +62,16 @@ const gashaDetailContext = readArchiveRoute('http://localhost/?view=gasha_detail
 assert.equal(gashaDetailContext.query, 'summer')
 assert.equal(gashaDetailContext.gashaType, 'standard_pickup')
 
-console.log('Archive route contract: 23 assertions passed')
+const eventDetailContext = readArchiveRoute('http://localhost/?view=event_detail&event=410018&parent=card_detail&card=040ren_sr13&idol=040ren')
+assert.equal(eventDetailContext.view, 'event_detail')
+assert.equal(eventDetailContext.event, '410018')
+assert.equal(eventDetailContext.parentView, 'card_detail')
+
+const eventPlayerContext = readArchiveRoute('http://localhost/?view=player&scenario=1_3_10001_01.json&return=event_detail&parent=unit_detail&event=410001&unit=16cfi')
+assert.equal(eventPlayerContext.view, 'player')
+assert.equal(eventPlayerContext.event, '410001')
+assert.equal(eventPlayerContext.returnView, 'event_detail')
+assert.equal(eventPlayerContext.parentView, 'unit_detail')
+assert.equal(eventPlayerContext.unit, '16cfi')
+
+console.log('Archive route contract: 34 assertions passed')

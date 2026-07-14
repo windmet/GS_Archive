@@ -11,6 +11,7 @@ const ROUTE_QUERY_KEYS = [
   'sort',
   'episode',
   'card',
+  'event',
   'gasha',
   'gasha_type',
   'rarity',
@@ -20,6 +21,7 @@ const ROUTE_QUERY_KEYS = [
   'scenario',
   'voice',
   'return',
+  'parent',
 ]
 
 const VALID_VIEWS = new Set([
@@ -32,6 +34,7 @@ const VALID_VIEWS = new Set([
   'files',
   'cards',
   'card_detail',
+  'event_detail',
   'gashas',
   'gasha_detail',
   'archive_status',
@@ -66,6 +69,7 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   files: { section: 'category', required: ['group'], fallback: 'home' },
   cards: { section: 'cards', required: ['idol'], fallback: 'idols' },
   card_detail: { section: 'cards', required: ['card'], fallback: 'cards' },
+  event_detail: { section: 'stories', required: ['event'], fallback: 'story_catalog' },
   gashas: { section: 'gashas', required: [] },
   gasha_detail: { section: 'gashas', required: ['gasha'], fallback: 'gashas' },
   player: { section: 'player', required: [], fallback: 'home' },
@@ -122,6 +126,7 @@ export function normalizeArchiveRoute(input = {}) {
     sort: allowed(clean(input.sort), VALID_STORY_SORTS, 'domain'),
     episode: clean(input.episode),
     card,
+    event: clean(input.event),
     gasha: clean(input.gasha),
     gashaType: allowed(clean(input.gashaType), VALID_GASHA_TYPES, 'all'),
     rarity: allowed(clean(input.rarity), VALID_CARD_RARITIES, 'all'),
@@ -131,6 +136,7 @@ export function normalizeArchiveRoute(input = {}) {
     scenario,
     voice,
     returnView: allowed(clean(input.returnView), VALID_RETURN_VIEWS, ''),
+    parentView: allowed(clean(input.parentView), VALID_RETURN_VIEWS, ''),
   }
 
   const contract = ARCHIVE_ROUTE_CONTRACTS[view]
@@ -168,6 +174,7 @@ export function readArchiveRoute(input = null) {
     sort: params.get('sort'),
     episode: clean(params.get('episode')),
     card: clean(params.get('card')),
+    event: clean(params.get('event')),
     gasha: clean(params.get('gasha')),
     gashaType: params.get('gasha_type'),
     rarity: params.get('rarity'),
@@ -177,6 +184,7 @@ export function readArchiveRoute(input = null) {
     scenario: params.get('scenario') || params.get('file'),
     voice: clean(params.get('voice')),
     returnView: clean(params.get('return')),
+    parentView: clean(params.get('parent')),
   })
 }
 
@@ -198,6 +206,7 @@ export function buildArchiveUrl(input, route) {
   if (normalized.sort !== 'domain') url.searchParams.set('sort', normalized.sort)
   if (normalized.episode) url.searchParams.set('episode', normalized.episode)
   if (normalized.card) url.searchParams.set('card', normalized.card)
+  if (normalized.event) url.searchParams.set('event', normalized.event)
   if (normalized.gasha) url.searchParams.set('gasha', normalized.gasha)
   if (normalized.gashaType !== 'all') url.searchParams.set('gasha_type', normalized.gashaType)
   if (normalized.rarity !== 'all') url.searchParams.set('rarity', normalized.rarity)
@@ -207,6 +216,7 @@ export function buildArchiveUrl(input, route) {
   if (normalized.scenario) url.searchParams.set('scenario', normalized.scenario)
   if (normalized.voice) url.searchParams.set('voice', normalized.voice)
   if (normalized.returnView && normalized.returnView !== 'files') url.searchParams.set('return', normalized.returnView)
+  if (normalized.parentView) url.searchParams.set('parent', normalized.parentView)
   return url
 }
 

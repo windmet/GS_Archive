@@ -63,7 +63,7 @@
         <span>{{ eventRelations.team_events?.length || 0 }}</span>
       </div>
       <div class="unit-stories event-stories">
-        <button v-for="event in eventRelations.team_events" :key="event.event_id" @click="emit('open-story', event)">
+        <button v-for="event in eventRelations.team_events" :key="event.event_id" @click="emit('open-event', event)">
           <Play :size="15" fill="currentColor" />
           <span>
             <strong>{{ event.title }}</strong>
@@ -80,7 +80,7 @@
         <span>{{ eventRelations.attribute_event_appearances.length }}</span>
       </div>
       <div class="unit-stories event-stories">
-        <button v-for="event in eventRelations.attribute_event_appearances" :key="event.event_id" @click="emit('open-story', event)">
+        <button v-for="event in eventRelations.attribute_event_appearances" :key="event.event_id" @click="emit('open-event', event)">
           <Play :size="15" fill="currentColor" />
           <span>
             <strong>{{ event.title }}</strong>
@@ -97,7 +97,7 @@
         <span>{{ eventRelations.mixed_unit_appearances.length }}</span>
       </div>
       <div class="unit-stories event-stories">
-        <button v-for="event in eventRelations.mixed_unit_appearances" :key="event.event_id" @click="emit('open-story', event)">
+        <button v-for="event in eventRelations.mixed_unit_appearances" :key="event.event_id" @click="emit('open-event', event)">
           <Play :size="15" fill="currentColor" />
           <span>
             <strong>{{ event.title }}</strong>
@@ -141,7 +141,7 @@ const props = defineProps({
     default: () => ({ team_events: [], attribute_event_appearances: [], mixed_unit_appearances: [] }),
   },
 })
-const emit = defineEmits(['open-idol', 'open-story', 'open-cards'])
+const emit = defineEmits(['open-idol', 'open-story', 'open-event', 'open-cards'])
 
 function matchingMemberNames(event) {
   const names = new Map(props.members.map(member => [member.idol_code, member.display_name]))
