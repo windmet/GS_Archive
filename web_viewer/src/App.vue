@@ -205,7 +205,7 @@ import ArchiveStatus from './components/archive/ArchiveStatus.vue'
 import ArchiveStoryCatalog from './components/archive/ArchiveStoryCatalog.vue'
 import ArchiveUnitCatalog from './components/archive/ArchiveUnitCatalog.vue'
 import ArchiveUnitDetail from './components/archive/ArchiveUnitDetail.vue'
-import { loadArchiveData } from './data/ArchiveDataRepository.js'
+import { loadArchiveData, loadCardDetailData } from './data/ArchiveDataRepository.js'
 import {
   buildCardMap,
   buildCardRarityTabs,
@@ -213,6 +213,7 @@ import {
   buildScenarioMetaByFile,
   buildStoryCatalog,
   cardsForCharacter,
+  mergeCardDetail,
 } from './data/archiveSelectors.js'
 import {
   onArchivePopState,
@@ -237,6 +238,8 @@ function resolveChatName(ch) {
 const view = ref('home')
 const indexData = ref(null)
 const cardIndexData = ref(null)
+const cardDetailData = ref(null)
+const cardDetailLoadPromise = ref(null)
 const storyMasterData = ref(null)
 const idolUnitData = ref(null)
 const archiveManifestData = ref(null)
@@ -657,7 +660,8 @@ const filteredCards = computed(() => {
   )
 })
 
-const currentCard = computed(() => cardMap.value.get(currentCardId.value) || null)
+const currentCardBase = computed(() => cardMap.value.get(currentCardId.value) || null)
+const currentCard = computed(() => mergeCardDetail(currentCardBase.value, cardDetailData.value))
 const currentCardAssetStatus = computed(() => archiveManifestData.value?.card_assets_by_id?.[currentCardId.value] || null)
 const currentCardEventRelation = computed(() => archiveManifestData.value?.event_card_relations_by_card?.[currentCardId.value] || null)
 const currentCardGashaRelation = computed(() => archiveManifestData.value?.gasha_card_relations_by_card?.[currentCardId.value] || null)
@@ -848,10 +852,27 @@ function resolveRouteEpisode(unit, route) {
   return (unit.episodes || []).find(episode => String(episode.id) === route.episode) || null
 }
 
+async function ensureCardDetailData() {
+  if (cardDetailData.value) return cardDetailData.value
+  if (!cardDetailLoadPromise.value) {
+    cardDetailLoadPromise.value = loadCardDetailData().then(data => {
+      cardDetailData.value = data
+      return data
+    }).catch(error => {
+      console.error('[ArchiveData] Failed to load cardDetailIndex:', error)
+      cardDetailLoadPromise.value = null
+      return null
+    })
+  }
+  return cardDetailLoadPromise.value
+}
+
 function restoreVoicePreview(route) {
   const card = cardMap.value.get(route.card)
   if (!card || !route.voice) return false
   const cue = (card.home_voice_cues || []).find(item => item?.cue === route.voice) ||
+    (mergeCardDetail(card, cardDetailData.value)?.operational_voice_cues || []).find(item => item?.cue === route.voice) ||
+    Object.values(card.card_text_voices || {}).find(item => item === route.voice) ||
     (card.voice_candidates?.unmapped_card_only || []).find(item => item === route.voice)
   if (!cue) return false
   currentScenario.value = buildCardVoicePreviewScenario(card, cue)
@@ -865,6 +886,7 @@ function restoreVoicePreview(route) {
 async function applyArchiveRoute(route) {
   applyingArchiveRoute = true
   try {
+    if (route.card && route.voice) await ensureCardDetailData()
     filterQuery.value = route.query || ''
     currentCategoryId.value = route.category || ''
     currentCharacterId.value = route.idol || ''
@@ -1215,6 +1237,7 @@ async function openVoicePreview(card, cue, returnView) {
 function buildCardVoicePreviewScenario(card, cue) {
   const cueId = typeof cue === 'string' ? cue : cue.cue
   const preview = typeof cue === 'object' ? cue.preview : null
+  const cueText = typeof cue === 'object' && cue.text ? cue.text : `${card.title || card.resource_id}\n${cueId}`
   if (preview?.preview_step) {
     const step = JSON.parse(JSON.stringify(preview.preview_step))
     step.step_id = 1
@@ -1280,8 +1303,8 @@ function buildCardVoicePreviewScenario(card, cue) {
         },
         dialogue: {
           speaker: currentCardCharacterName.value,
-          text: `${card.title || card.resource_id}\n${cueId}`,
-          text_jp: `${card.title || card.resource_id}\n${cueId}`,
+          text: cueText,
+          text_jp: cueText,
           text_cn: '',
           voice: `${cueId}.m4a`,
           lip: {
@@ -1427,6 +1450,10 @@ watch([filterQuery, currentCardRarity, currentCardAssetState, currentCardRelatio
 
 watch([filterQuery, currentStoryDomain, currentEventScope, currentStoryAvailability, currentStorySort], () => {
   storyVisibleLimit.value = 80
+})
+
+watch([view, currentCardId], ([nextView, cardId]) => {
+  if (nextView === 'card_detail' && cardId) ensureCardDetailData()
 })
 
 watch(cardLayout, layout => {

@@ -202,11 +202,12 @@ export function normalizeCard(card) {
     card.voice_candidates?.unmapped_card_only,
     item => typeof item === 'string' ? item : item?.cue,
   )
+  const allVoices = new Set(card.voice_candidates?.all || [])
   const normalTextVoice = card.voice_base ? `${card.voice_base}_01_01` : ''
   const awakenedTextVoice = card.voice_base ? `${card.voice_base}_01_09` : ''
   const cardTextVoices = {
-    normal: unmappedVoices.includes(normalTextVoice) ? normalTextVoice : '',
-    awakened: unmappedVoices.includes(awakenedTextVoice) ? awakenedTextVoice : '',
+    normal: allVoices.has(normalTextVoice) ? normalTextVoice : '',
+    awakened: allVoices.has(awakenedTextVoice) ? awakenedTextVoice : '',
   }
   const singleState = !cardTextVoices.normal && Boolean(cardTextVoices.awakened)
   const mappedTextVoices = new Set(Object.values(cardTextVoices).filter(Boolean))
@@ -222,6 +223,29 @@ export function normalizeCard(card) {
           unmapped_card_only: unmappedVoices.filter(item => !mappedTextVoices.has(item)),
         }
       : card.voice_candidates,
+  }
+}
+
+export function mergeCardDetail(card, cardDetailIndex) {
+  if (!card?.resource_id || !cardDetailIndex) return card
+  const detail = cardDetailIndex.cards_by_resource_id?.[card.resource_id]
+  if (!detail) return card
+  const gameplay = detail.gameplay
+    ? {
+        ...detail.gameplay,
+        skill: cardDetailIndex.skills_by_id?.[detail.gameplay.skill_id] || null,
+        center_skill: cardDetailIndex.center_skills_by_id?.[detail.gameplay.center_skill_id] || null,
+      }
+    : null
+  const costumeRelations = (detail.costume_relations || []).map(relation => ({
+    ...cardDetailIndex.costumes_by_key?.[relation.costume_key],
+    ...relation,
+  }))
+  return {
+    ...card,
+    gameplay,
+    costume_relations: costumeRelations,
+    operational_voice_cues: detail.operational_voice_cues || [],
   }
 }
 

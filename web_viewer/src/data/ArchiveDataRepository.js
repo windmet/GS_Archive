@@ -7,6 +7,8 @@ const ARCHIVE_SOURCES = {
   archiveVerification: '/data/archive_verification.json',
 }
 
+const CARD_DETAIL_SOURCE = '/data/masterdata/card_detail_index.json'
+
 const payloadCache = new Map()
 
 function validatePayload(key, payload) {
@@ -18,6 +20,9 @@ function validatePayload(key, payload) {
   }
   if (key === 'cardIndex' && (!Array.isArray(payload.cards) || !payload.by_character)) {
     throw new Error('cardIndex must include cards and by_character')
+  }
+  if (key === 'cardDetailIndex' && (!payload.cards_by_resource_id || !payload.skills_by_id || !payload.costumes_by_key)) {
+    throw new Error('cardDetailIndex is missing normalized card detail dictionaries')
   }
   if (key === 'storyMaster' && !payload.main && !payload.idol_story) {
     throw new Error('storyMaster has no recognized story families')
@@ -75,8 +80,12 @@ export async function loadArchiveData(options = {}) {
   return { data, errors }
 }
 
+export function loadCardDetailData(options = {}) {
+  return fetchJson('cardDetailIndex', CARD_DETAIL_SOURCE, options)
+}
+
 export function clearArchiveDataCache() {
   payloadCache.clear()
 }
 
-export { ARCHIVE_SOURCES }
+export { ARCHIVE_SOURCES, CARD_DETAIL_SOURCE }

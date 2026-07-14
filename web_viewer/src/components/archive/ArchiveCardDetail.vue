@@ -42,6 +42,7 @@
         <div class="card-head-copy">
           <div class="card-detail-meta">
             <span class="card-rarity">{{ card.rarity || 'CARD' }}</span>
+            <span v-if="card.gameplay?.attribute?.name" class="card-attribute">{{ card.gameplay.attribute.name }}</span>
             <span>{{ card.resource_id }}</span>
             <span v-if="card.voice_base">{{ card.voice_base }}</span>
           </div>
@@ -125,6 +126,64 @@
         </div>
       </section>
 
+      <section v-if="card.gameplay" class="card-detail-section">
+        <h4>能力与技能</h4>
+        <div class="gameplay-layout">
+          <div class="parameter-panel">
+            <div class="parameter-heading">
+              <Activity :size="18" />
+              <strong>{{ card.gameplay.attribute?.name || 'Unknown' }}</strong>
+              <span><HeartPulse :size="15" /> Life {{ card.gameplay.life ?? '—' }}</span>
+            </div>
+            <table class="parameter-table">
+              <thead>
+                <tr><th>能力</th><th>初期</th><th>无凸最大</th><th>满凸最大</th></tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in parameterRows" :key="row.label" :class="{ total: row.total }">
+                  <th>{{ row.label }}</th>
+                  <td>{{ formatNumber(row.initial) }}</td>
+                  <td>{{ formatNumber(row.max_unlimit) }}</td>
+                  <td>{{ formatNumber(row.max_limitbreak) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="skill-panel">
+            <div v-if="card.gameplay.center_skill?.name" class="skill-row">
+              <strong>中心效果 · {{ card.gameplay.center_skill.name }}</strong>
+              <p>{{ card.gameplay.center_skill.description }}</p>
+            </div>
+            <div v-if="card.gameplay.skill?.name" class="skill-row">
+              <div class="skill-heading">
+                <strong>技能 · {{ card.gameplay.skill.name }}</strong>
+                <select v-if="card.gameplay.skill.levels?.length" v-model.number="selectedSkillLevel" aria-label="技能等级">
+                  <option v-for="level in card.gameplay.skill.levels" :key="level.level" :value="level.level">Lv.{{ level.level }}</option>
+                </select>
+              </div>
+              <p>{{ selectedSkill?.description || card.gameplay.skill.description_template }}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section v-if="uniqueCostumes.length" class="card-detail-section">
+        <h4>关联衣装</h4>
+        <div class="costume-list">
+          <div v-for="costume in uniqueCostumes" :key="costume.key" class="costume-row">
+            <Shirt :size="20" />
+            <div>
+              <div class="costume-heading">
+                <strong>{{ costume.name || `Costume ${costume.costume_id}` }}</strong>
+                <span>{{ costume.labels.join(' · ') }}</span>
+              </div>
+              <small>{{ costume.model_resource_id || costume.key }}</small>
+              <p v-if="costume.description">{{ costume.description }}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section v-if="assetStatus?.normal_landscape || assetStatus?.awakened_landscape" class="card-detail-section">
         <h4>SSR 完整横图</h4>
         <div class="card-landscape-comparison">
@@ -177,7 +236,28 @@
         <h4>首页触摸语音</h4>
         <div class="voice-list">
           <div v-for="cue in card.home_voice_cues" :key="cue.cue" class="voice-row">
-            <span>{{ cue.cue }}</span>
+            <div class="voice-copy">
+              <strong>{{ cue.cue }}</strong>
+              <p v-if="cue.preview?.text">{{ cue.preview.text }}</p>
+            </div>
+            <audio controls preload="none" :src="voiceUrl(cue.cue)"></audio>
+            <button class="voice-preview-btn" @click="emit('preview-voice', cue)">Preview</button>
+          </div>
+        </div>
+      </section>
+
+      <section v-if="card.operational_voice_cues?.length" class="card-detail-section">
+        <h4>演出语音</h4>
+        <div class="voice-list">
+          <div v-for="cue in card.operational_voice_cues" :key="cue.cue" class="voice-row">
+            <div class="voice-copy">
+              <div class="voice-label">
+                <strong>{{ cue.label }}</strong>
+                <small :class="`source-${cue.text_source}`">{{ voiceSourceLabel(cue.text_source) }}</small>
+              </div>
+              <p v-if="cue.text">{{ cue.text }}</p>
+              <code>{{ cue.cue }}</code>
+            </div>
             <audio controls preload="none" :src="voiceUrl(cue.cue)"></audio>
             <button class="voice-preview-btn" @click="emit('preview-voice', cue)">Preview</button>
           </div>
@@ -194,8 +274,8 @@
             :disabled="!entry.compiled_file"
             @click="emit('open-scenario', entry)"
           >
-            <span>{{ entry['3'] || entry.resource_id }}</span>
-            <small>{{ scenarioSubtitle(entry) }}</small>
+            <span>{{ entry.display_title || entry['3'] || entry.resource_id }}</span>
+            <small>{{ [entry.communication_label, scenarioSubtitle(entry)].filter(Boolean).join(' · ') }}</small>
           </button>
         </div>
       </section>
@@ -221,8 +301,8 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
-import { ArrowUpRight, CalendarRange, CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, ImageOff, Layers3, Sparkles } from '@lucide/vue'
+import { computed, ref, watch } from 'vue'
+import { Activity, ArrowUpRight, CalendarRange, CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, HeartPulse, ImageOff, Layers3, Shirt, Sparkles } from '@lucide/vue'
 import ArchiveImageLightbox from './ArchiveImageLightbox.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
 import { getVoiceUrl } from '../../utils/AssetResolver.js'
@@ -251,16 +331,57 @@ const emit = defineEmits([
 
 const lightboxOpen = ref(false)
 const lightboxIndex = ref(0)
+const selectedSkillLevel = ref(1)
 const framedPortrait = computed(() => props.artMode === 'framed')
 const normalPortraitUrl = computed(() => getCardPortraitUrl(props.card?.resource_id, false, framedPortrait.value))
 const awakenedPortraitUrl = computed(() => getCardPortraitUrl(props.card?.resource_id, true, framedPortrait.value))
 const normalLandscapeUrl = computed(() => getCardLandscapeUrl(props.card?.resource_id, false))
 const awakenedLandscapeUrl = computed(() => getCardLandscapeUrl(props.card?.resource_id, true))
 
+watch(() => props.card?.resource_id, () => {
+  selectedSkillLevel.value = props.card?.gameplay?.skill?.levels?.[0]?.level || 1
+})
+
+const selectedSkill = computed(() => props.card?.gameplay?.skill?.levels
+  ?.find(level => level.level === selectedSkillLevel.value) || null)
+
+const parameterRows = computed(() => {
+  const gameplay = props.card?.gameplay
+  if (!gameplay) return []
+  return [
+    { label: 'Appeal', ...gameplay.appeal, total: true },
+    { label: 'Vo', ...(gameplay.parameters?.vocal || {}) },
+    { label: 'Da', ...(gameplay.parameters?.dance || {}) },
+    { label: 'Vi', ...(gameplay.parameters?.visual || {}) },
+  ]
+})
+
+const uniqueCostumes = computed(() => {
+  const byModel = new Map()
+  for (const relation of props.card?.costume_relations || []) {
+    const key = relation.model_resource_id || relation.costume_key
+    if (!key) continue
+    const current = byModel.get(key) || { ...relation, key, labels: [] }
+    if (relation.label && !current.labels.includes(relation.label)) current.labels.push(relation.label)
+    byModel.set(key, current)
+  }
+  return [...byModel.values()]
+})
+
 function formatDate(timestamp) {
   if (!Number.isFinite(timestamp)) return 'unknown'
   return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Tokyo' })
     .format(new Date(timestamp * 1000))
+}
+
+function formatNumber(value) {
+  return Number.isFinite(value) ? new Intl.NumberFormat('zh-CN').format(value) : '—'
+}
+
+function voiceSourceLabel(sourceType) {
+  if (sourceType === 'masterdata') return '原始文本'
+  if (sourceType === 'curated') return '人工校对'
+  return '仅音频'
 }
 
 const lightboxItems = computed(() => {
@@ -360,6 +481,7 @@ function eventScopeLabel(event) {
   display: inline-flex; align-items: center; justify-content: center; min-width: 44px; height: 24px;
   border-radius: 6px; background: #edf2ff; color: #3157a4; font-size: 0.72rem; font-weight: 700;
 }
+.card-attribute { padding: 3px 7px; border: 1px solid #efb9ac; border-radius: 4px; background: #fff4f0; color: #a33f29; font-family: inherit; font-size: 0.66rem; font-weight: 700; }
 .asset-status-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin: 18px 0 0; }
 .asset-status-grid div { display: grid; grid-template-columns: 18px minmax(0, 1fr); align-items: center; gap: 2px 6px; min-width: 0; padding: 7px 8px; border: 1px solid #d8ebe8; border-radius: 6px; color: #168b83; }
 .asset-status-grid div.missing { border-color: #e1e5e7; color: #8a949b; }
@@ -380,6 +502,33 @@ function eventScopeLabel(event) {
 .gasha-relation strong { color: #8a5d0d; font-size: 0.64rem; }
 .gasha-relation b { overflow: hidden; color: #28353d; font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; }
 .gasha-relation small { color: #718088; font-size: 0.63rem; line-height: 1.4; }
+.gameplay-layout { display: grid; grid-template-columns: minmax(330px, 1.05fr) minmax(260px, 0.95fr); gap: 16px; }
+.parameter-panel, .skill-panel { min-width: 0; }
+.parameter-heading { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: #a33f29; }
+.parameter-heading strong { font-size: 0.78rem; }
+.parameter-heading span { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; color: #67747c; font-size: 0.68rem; }
+.parameter-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-variant-numeric: tabular-nums; }
+.parameter-table th, .parameter-table td { padding: 7px 8px; border-bottom: 1px solid #edf0f2; text-align: right; font-size: 0.7rem; }
+.parameter-table thead th { color: #7a858c; font-size: 0.62rem; font-weight: 600; }
+.parameter-table th:first-child { text-align: left; }
+.parameter-table tbody th { color: #46545d; }
+.parameter-table tr.total th, .parameter-table tr.total td { background: #f4f8fa; color: #263941; font-weight: 700; }
+.skill-panel { display: flex; flex-direction: column; gap: 10px; }
+.skill-row { padding: 10px 0; border-bottom: 1px solid #edf0f2; }
+.skill-row:first-child { padding-top: 0; }
+.skill-row:last-child { padding-bottom: 0; border-bottom: 0; }
+.skill-row strong { color: #2d4551; font-size: 0.75rem; }
+.skill-row p { margin: 7px 0 0; color: #4c5c64; font-size: 0.72rem; line-height: 1.6; }
+.skill-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.skill-heading select { height: 28px; padding: 0 26px 0 8px; border: 1px solid #d7dfe3; border-radius: 4px; background: #fff; color: #40515a; font-size: 0.68rem; }
+.costume-list { display: flex; flex-direction: column; }
+.costume-row { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; padding: 11px 0; border-bottom: 1px solid #edf0f2; color: #58718a; }
+.costume-row:last-child { border-bottom: 0; }
+.costume-heading { display: flex; flex-wrap: wrap; align-items: baseline; gap: 7px; }
+.costume-heading strong { color: #293b45; font-size: 0.76rem; }
+.costume-heading span { color: #697980; font-size: 0.62rem; }
+.costume-row small { display: block; margin-top: 2px; color: #849097; font-family: monospace; font-size: 0.62rem; }
+.costume-row p { margin: 7px 0 0; white-space: pre-wrap; color: #4d5c64; font-size: 0.69rem; line-height: 1.55; }
 .release-series-heading > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .release-series-heading strong { color: #2b3a42; font-size: 0.72rem; }
 .release-series-heading small { color: #718088; font-size: 0.66rem; line-height: 1.4; }
@@ -406,8 +555,16 @@ function eventScopeLabel(event) {
   align-items: center; gap: 12px; padding: 8px 10px;
   border: 1px solid #f0f0f0; border-radius: 6px; background: #fafafa;
 }
-.voice-row span { font-family: monospace; font-size: 0.78rem; color: #555; overflow-wrap: anywhere; }
+.voice-row > span { font-family: monospace; font-size: 0.78rem; color: #555; overflow-wrap: anywhere; }
 .voice-row audio { width: 100%; height: 32px; }
+.voice-copy { min-width: 0; }
+.voice-copy strong { color: #344851; font-size: 0.72rem; }
+.voice-copy p { margin: 4px 0 0; white-space: pre-wrap; color: #4f5e66; font-size: 0.68rem; line-height: 1.5; }
+.voice-copy code { display: block; margin-top: 4px; color: #89949a; font-size: 0.6rem; overflow-wrap: anywhere; }
+.voice-label { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.voice-label small { padding: 2px 5px; border-radius: 3px; background: #eef2f4; color: #6b7980; font-size: 0.56rem; }
+.voice-label small.source-masterdata { background: #e9f7f5; color: #197b73; }
+.voice-label small.source-curated { background: #fff3d8; color: #8b6413; }
 .voice-preview-btn {
   min-height: 30px; border: 1px solid #c8dcff; border-radius: 6px;
   background: #f5faff; color: #245b91; padding: 4px 10px; cursor: pointer;
@@ -432,5 +589,7 @@ function eventScopeLabel(event) {
   .card-text-heading { align-items: flex-start; flex-direction: column; }
   .card-text-voice { width: 100%; }
   .card-text-voice audio { width: 100%; }
+  .gameplay-layout { grid-template-columns: 1fr; }
+  .parameter-table th, .parameter-table td { padding: 6px 5px; }
 }
 </style>

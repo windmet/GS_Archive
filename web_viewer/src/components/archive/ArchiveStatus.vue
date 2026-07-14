@@ -100,6 +100,7 @@ const verificationItems = computed(() => {
   const homeVoices = props.verification?.card_home_voices || {}
   const cardScenarios = props.verification?.card_scenarios || {}
   const relations = props.verification?.card_relations || {}
+  const cardDetails = props.verification?.card_details || {}
   const unitEvents = props.verification?.unit_event_relations || {}
   return [
     {
@@ -133,6 +134,12 @@ const verificationItems = computed(() => {
       tone: relations.release_series_failures || relations.event_card_relation_failures || relations.gasha_card_relation_failures ? 'warn' : 'ok',
     },
     {
+      label: '卡片详情资料',
+      value: cardDetails.failures || !cardDetails.reference_sample_valid ? '需排查' : '通过',
+      detail: `${formatCount(cardDetails.valid)} / ${formatCount(cardDetails.total)} cards · 040ren sample`,
+      tone: cardDetails.failures || !cardDetails.reference_sample_valid ? 'warn' : 'ok',
+    },
+    {
       label: '组合活动关系',
       value: unitEvents.failures ? '需排查' : '通过',
       detail: `${formatCount(unitEvents.valid)} / ${formatCount(unitEvents.total)} events`,
@@ -146,6 +153,7 @@ const coverageItems = computed(() => {
   const unit = coverage.unit_membership || {}
   const rows = [
     ['剧情 master', coverage.story_master_records],
+    ['卡片详情资料', { available: coverage.card_details?.cards, total: props.manifest?.counts?.cards, ratio: coverage.card_details?.cards / (props.manifest?.counts?.cards || 1) }],
     ['首页语音关联', coverage.card_home_voices],
     ['卡片剧情关联', coverage.card_scenarios],
     ['双态卡普通语音', { available: coverage.card_text_voices?.normal_available, total: coverage.card_text_voices?.normal_expected, ratio: coverage.card_text_voices?.normal_ratio }],
@@ -173,6 +181,10 @@ const inventoryItems = computed(() => {
     { label: '背景', value: counts.backgrounds },
     { label: 'Spine 模型', value: counts.spine_models },
     { label: '语音文件', value: counts.voice_files },
+    { label: '卡片技能', value: props.manifest?.coverage?.card_details?.skills },
+    { label: '中心效果', value: props.manifest?.coverage?.card_details?.center_skills },
+    { label: '衣装资料', value: props.manifest?.coverage?.card_details?.costumes },
+    { label: '演出语音关联', value: props.manifest?.coverage?.card_details?.operational_voices },
     { label: '卡片小剧情', value: props.manifest?.coverage?.card_relations?.cards_with_direct_story },
     { label: '活动关联卡', value: props.manifest?.coverage?.card_relations?.cards_with_event_relation },
     { label: '卡池关联卡', value: props.manifest?.coverage?.card_relations?.cards_with_gasha_relation },
