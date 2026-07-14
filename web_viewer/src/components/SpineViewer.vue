@@ -47,6 +47,9 @@
         class="inspector"
         aria-label="舞台小人控制台"
         :data-runtime-diagnostics="runtimeDiagnostics ? JSON.stringify(runtimeDiagnostics) : ''"
+        :data-audio-ready="audioReady"
+        :data-audio-file="selectedSongAudio?.file || ''"
+        :data-song-motions-ready="songMotionsReady"
       >
         <div class="inspector-scroll">
           <section class="control-section selection-section">
@@ -121,6 +124,12 @@
               <strong>{{ selectedSong.lipSync ? `${selectedSong.lipSync.frames} 帧 · 60 Hz` : '无对应数据' }}</strong>
               <small>{{ lipSyncState.attachment || 'mouth_close' }} · {{ lipSyncState.value.toFixed(3) }} · ×{{ lipSyncState.scale.toFixed(2) }}</small>
             </div>
+            <div class="lip-sync-status song-audio-status">
+              <span>歌曲音频</span>
+              <strong>{{ selectedSongAudio ? (audioReady ? '已加载 · 音频主时钟' : '正在加载') : '无对应音频' }}</strong>
+              <small v-if="selectedSongAudio">{{ formatTime(selectedSongAudio.duration) }}</small>
+            </div>
+            <small v-if="audioError" class="audio-error">{{ audioError }}</small>
             <label class="song-position">
               <span>站位</span>
               <select v-model.number="selectedPosition" @change="seekChoreography">
@@ -134,16 +143,16 @@
                 v-model.number="choreographyTime"
                 type="range"
                 min="0"
-                :max="selectedSong.duration"
+                :max="choreographyDuration"
                 step="100"
                 @change="seekChoreography"
               />
-              <span>{{ formatTime(choreographyTime) }} / {{ formatTime(selectedSong.duration) }}</span>
+              <span>{{ formatTime(choreographyTime) }} / {{ formatTime(choreographyDuration) }}</span>
             </label>
-            <button class="choreography-play" type="button" @click="toggleChoreography">
+            <button class="choreography-play" type="button" :disabled="songMotionsLoading" @click="toggleChoreography">
               <Pause v-if="choreographyPlaying" :size="18" fill="currentColor" />
               <Play v-else :size="18" fill="currentColor" />
-              {{ choreographyPlaying ? '暂停编排' : '播放编排' }}
+              {{ songMotionsLoading ? '正在预载歌曲动作…' : (choreographyPlaying ? '暂停编排' : '播放编排') }}
             </button>
           </section>
 
@@ -176,6 +185,7 @@
               <div><dt>体型骨架</dt><dd>body-{{ selectedCharacter?.bodyType || '—' }}.skel</dd></div>
               <div><dt>动作片段</dt><dd>{{ resolvedMotionFile }}</dd></div>
               <div><dt>服装图集</dt><dd>{{ selectedCostume?.atlas || '—' }}</dd></div>
+              <div v-if="selectedSongAudio"><dt>歌曲音频</dt><dd>{{ selectedSongAudio.file }}</dd></div>
             </dl>
           </section>
         </div>
@@ -205,6 +215,7 @@ import {
   fetchLiveChibiChoreography,
   fetchLiveChibiLipSync,
   fetchLiveChibiManifest,
+  fetchLiveChibiMusicIndex,
   injectLiveChibiMotion,
   playLiveChibiMotion,
 } from '../utils/liveChibiSpine.js'
@@ -213,6 +224,7 @@ const emit = defineEmits(['back'])
 const canvasRef = ref(null)
 const manifest = ref(null)
 const choreography = ref(null)
+const musicIndex = ref(null)
 const selectedCharacterId = ref('')
 const selectedCostumeId = ref('')
 const selectedPackId = ref('common')
@@ -229,6 +241,10 @@ const selectedPosition = ref(1)
 const choreographyTime = ref(0)
 const choreographyPlaying = ref(false)
 const lipSyncState = ref({ value: 0, singing: false, attachment: 'mouth_close', scale: 1 })
+const audioReady = ref(false)
+const audioError = ref('')
+const songMotionsReady = ref(false)
+const songMotionsLoading = ref(false)
 
 let app = null
 let runtime = null
@@ -241,6 +257,7 @@ let choreographyStartOffset = 0
 let choreographyEventIndex = 0
 let lipSyncCurve = null
 let lipSyncLoadSequence = 0
+let songAudio = null
 
 const characters = computed(() => manifest.value?.characters || [])
 const motionPacks = computed(() => [
@@ -262,6 +279,14 @@ const selectedSong = computed(() => {
   const songId = selectedPackId.value.slice(5)
   return choreography.value?.songs.find(song => song.id === songId) || null
 })
+const selectedSongAudio = computed(() => (
+  selectedSong.value ? musicIndex.value?.songs?.[selectedSong.value.id] || null : null
+))
+const choreographyDuration = computed(() => Math.max(
+  selectedSong.value?.duration || 0,
+  selectedSong.value?.lipSync?.duration || 0,
+  selectedSongAudio.value?.duration || 0,
+))
 const choreographyMotionMap = computed(() => new Map(
   (choreography.value?.motionCatalog || []).map(motion => [motion.id, motion]),
 ))
@@ -291,6 +316,7 @@ onMounted(async () => {
     if (manifest.value.choreography?.index) {
       choreography.value = await fetchLiveChibiChoreography(manifest.value.choreography.index)
     }
+    musicIndex.value = await fetchLiveChibiMusicIndex()
     const initialCharacter = characters.value[0]
     selectedCharacterId.value = initialCharacter?.id || ''
     selectedCostumeId.value = initialCharacter?.defaultCostume || initialCharacter?.costumes?.[0]?.id || ''
@@ -307,6 +333,12 @@ onBeforeUnmount(() => {
   loadSequence += 1
   lipSyncLoadSequence += 1
   stopChoreography()
+  if (songAudio) {
+    songAudio.pause()
+    songAudio.removeAttribute('src')
+    songAudio.load()
+    songAudio = null
+  }
   resizeObserver?.disconnect()
   destroyLiveChibi(runtime)
   runtime = null
@@ -348,6 +380,7 @@ async function loadSelectedCharacter() {
   motionSequence += 1
   loading.value = true
   runtimeReady.value = false
+  songMotionsReady.value = false
   runtimeDiagnostics.value = null
   errorText.value = ''
   statusText.value = `正在组合 ${character.name} 的骨架与服装…`
@@ -397,7 +430,9 @@ function resizeStage(resetScale = false) {
 
 function selectDefaultMotion(play = true) {
   stopChoreography(true)
+  songMotionsReady.value = false
   loadSelectedSongLipSync()
+  loadSelectedSongAudio()
   if (selectedSong.value) {
     if (!selectedSong.value.positions.includes(selectedPosition.value)) {
       selectedPosition.value = selectedSong.value.positions[0] || 1
@@ -420,6 +455,52 @@ function selectDefaultMotion(play = true) {
     || motions.value[0]
   selectedMotionId.value = preferred?.id || 0
   if (play) playSelectedMotion({ reset: true })
+}
+
+async function preloadSelectedSongMotions() {
+  if (!runtime || !selectedSong.value) return false
+  if (songMotionsReady.value) return true
+  const targetRuntime = runtime
+  const targetSongId = selectedSong.value.id
+  songMotionsLoading.value = true
+  try {
+    await Promise.all(motions.value.map(motion => injectLiveChibiMotion(targetRuntime, motion)))
+    if (runtime !== targetRuntime || selectedSong.value?.id !== targetSongId) return false
+    songMotionsReady.value = true
+    return true
+  } catch (error) {
+    audioError.value = `歌曲动作预载失败：${error.message}`
+    return false
+  } finally {
+    if (runtime === targetRuntime) songMotionsLoading.value = false
+  }
+}
+
+function loadSelectedSongAudio() {
+  if (songAudio) {
+    songAudio.pause()
+    songAudio.removeAttribute('src')
+    songAudio.load()
+  }
+  songAudio = null
+  audioReady.value = false
+  audioError.value = ''
+  const audioEntry = selectedSongAudio.value
+  if (!audioEntry?.file) return
+
+  const audio = new Audio(`/assets/live-chibi/${audioEntry.file}`)
+  audio.preload = 'auto'
+  audio.playbackRate = playbackSpeed.value
+  audio.addEventListener('canplay', () => {
+    if (songAudio === audio) audioReady.value = true
+  })
+  audio.addEventListener('error', () => {
+    if (songAudio !== audio) return
+    audioReady.value = false
+    audioError.value = '歌曲音频加载失败'
+  })
+  songAudio = audio
+  audio.load()
 }
 
 async function loadSelectedSongLipSync() {
@@ -448,7 +529,13 @@ function applyCurrentLipSync() {
   )
 }
 
-async function playSelectedMotion({ speedScale = 1, mode = 2, pauseTime = 0, reset = true } = {}) {
+async function playSelectedMotion({
+  speedScale = 1,
+  mode = 2,
+  pauseTime = 0,
+  reset = true,
+  seekOffset = 0,
+} = {}) {
   if (!runtime || !selectedMotion.value) return
   const motion = selectedMotion.value
   const sequence = ++motionSequence
@@ -461,12 +548,14 @@ async function playSelectedMotion({ speedScale = 1, mode = 2, pauseTime = 0, res
     motionRuntime.motionSpeedScale = speedScale
     paused.value = false
     const playback = playLiveChibiMotion(motionRuntime, animationNames, { mode, reset })
+    if (seekOffset > 0) motionRuntime.spine.update(seekOffset / 1000 * speedScale)
     const visualBounds = motionRuntime.spine.getLocalBounds()
     runtimeDiagnostics.value = {
       ...motionRuntime.diagnostics,
       motion: motion.id,
       choreographyMode: mode,
       pauseTime,
+      seekOffset,
       playback,
       visualBounds: {
         x: visualBounds.x,
@@ -505,6 +594,7 @@ function applyPlaybackSpeed() {
   if (runtime && !paused.value) {
     runtime.spine.state.timeScale = playbackSpeed.value * (runtime.motionSpeedScale || 1)
   }
+  if (songAudio) songAudio.playbackRate = playbackSpeed.value
 }
 
 function applyModelScale() {
@@ -527,45 +617,62 @@ function formatTime(milliseconds) {
   return `${minutes}:${seconds}`
 }
 
-function playChoreographyEvent(event, { reset = false } = {}) {
+function playChoreographyEvent(event, { reset = false, seekTime = null } = {}) {
   const motion = choreographyMotionMap.value.get(event.motion)
   if (!motion) return
   selectedMotionId.value = motion.id
-  playSelectedMotion({
+  return playSelectedMotion({
     speedScale: event.speed / 1000,
     mode: event.mode,
     pauseTime: event.pauseTime,
     reset,
+    seekOffset: seekTime === null ? 0 : Math.max(0, seekTime - event.time),
   })
 }
 
 function seekChoreography() {
   stopChoreography()
+  if (songAudio) songAudio.currentTime = choreographyTime.value / 1000
   const event = [...selectedTimelineEvents.value]
     .reverse()
     .find(item => item.time <= choreographyTime.value)
-  if (event) playChoreographyEvent(event, { reset: true })
+  if (event) playChoreographyEvent(event, { reset: true, seekTime: choreographyTime.value })
   applyCurrentLipSync()
 }
 
-function toggleChoreography() {
+async function toggleChoreography() {
   if (choreographyPlaying.value) {
     stopChoreography()
     return
   }
   const events = selectedTimelineEvents.value
   if (!events.length || !selectedSong.value) return
-  if (choreographyTime.value >= selectedSong.value.duration) choreographyTime.value = 0
+  if (!await preloadSelectedSongMotions()) return
+  if (choreographyTime.value >= choreographyDuration.value) choreographyTime.value = 0
 
   choreographyEventIndex = events.findIndex(event => event.time > choreographyTime.value)
   if (choreographyEventIndex < 0) choreographyEventIndex = events.length
   const currentEvent = events[Math.max(0, choreographyEventIndex - 1)]
   if (currentEvent && currentEvent.time <= choreographyTime.value) {
-    playChoreographyEvent(currentEvent, { reset: true })
+    await playChoreographyEvent(currentEvent, {
+      reset: true,
+      seekTime: choreographyTime.value,
+    })
   }
 
   choreographyStartOffset = choreographyTime.value
   choreographyStartedAt = performance.now()
+  if (songAudio && selectedSongAudio.value) {
+    songAudio.currentTime = choreographyTime.value / 1000
+    songAudio.playbackRate = playbackSpeed.value
+    try {
+      await songAudio.play()
+      audioError.value = ''
+    } catch (error) {
+      audioError.value = `歌曲音频无法播放：${error.message}`
+      return
+    }
+  }
   choreographyPlaying.value = true
   choreographyFrame = requestAnimationFrame(updateChoreography)
 }
@@ -574,8 +681,10 @@ function updateChoreography(now) {
   if (!choreographyPlaying.value || !selectedSong.value) return
   const events = selectedTimelineEvents.value
   choreographyTime.value = Math.min(
-    selectedSong.value.duration,
-    choreographyStartOffset + (now - choreographyStartedAt) * playbackSpeed.value,
+    choreographyDuration.value,
+    songAudio && !songAudio.paused
+      ? songAudio.currentTime * 1000
+      : choreographyStartOffset + (now - choreographyStartedAt) * playbackSpeed.value,
   )
   while (choreographyEventIndex < events.length
     && events[choreographyEventIndex].time <= choreographyTime.value) {
@@ -583,7 +692,7 @@ function updateChoreography(now) {
     choreographyEventIndex += 1
   }
   applyCurrentLipSync()
-  if (choreographyTime.value >= selectedSong.value.duration) {
+  if (choreographyTime.value >= choreographyDuration.value) {
     stopChoreography()
     return
   }
@@ -594,7 +703,11 @@ function stopChoreography(reset = false) {
   if (choreographyFrame) cancelAnimationFrame(choreographyFrame)
   choreographyFrame = 0
   choreographyPlaying.value = false
-  if (reset) choreographyTime.value = 0
+  songAudio?.pause()
+  if (reset) {
+    choreographyTime.value = 0
+    if (songAudio) songAudio.currentTime = 0
+  }
 }
 </script>
 
@@ -686,6 +799,7 @@ h2 { margin: 0; color: #d4dfeb; font-size: 12px; font-weight: 650; letter-spacin
 .lip-sync-status { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; }
 .lip-sync-status strong { color: var(--text); font-weight: 600; }
 .lip-sync-status small { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+.audio-error { color: #ff9b9b; font-size: 11px; }
 .song-position { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 10px; align-items: center; color: #d8e3ef; font-size: 13px; }
 .song-position select { height: 38px; padding: 0 10px; }
 .timeline-control { display: grid; gap: 7px; }

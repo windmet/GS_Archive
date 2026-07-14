@@ -71,6 +71,13 @@ export async function fetchLiveChibiChoreography(relativePath) {
   return response.json()
 }
 
+export async function fetchLiveChibiMusicIndex() {
+  const response = await fetch(`${LIVE_CHIBI_BASE}/music/index.json`)
+  if (response.status === 404) return null
+  if (!response.ok) throw new Error(`歌曲音频索引加载失败 (${response.status})`)
+  return response.json()
+}
+
 export async function fetchLiveChibiLipSync(relativePath) {
   if (!relativePath) return null
   const response = await fetch(`${LIVE_CHIBI_BASE}/${relativePath}`)
