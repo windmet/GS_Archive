@@ -1,0 +1,249 @@
+# 舞台小人 Spine 与歌曲编排开发记录（2026-07-14）
+
+## 目标与当前结论
+
+本模块用于独立预览《SideM GROWING STARS》的 LiveCharacter 舞台小人，并为后续桌宠、单曲舞蹈回放和多人舞台预览保留扩展空间。
+
+当前已确认游戏资源不是“一套完整 Spine 文件对应一名角色”，而是三层组合：
+
+1. 体型共用 setup skeleton：`livecharacter/setup/{1..5}/live_costume_setup_N.skel.bytes`。
+2. 角色服装 atlas/texture：例如 `001tom_005_00/cos.atlas + cos.png`。
+3. 独立 animation fragment：`live_costume_animation_{bodyType}_{motionId}.bytes`。
+
+歌曲 CSV 是舞台时间轴和编排表，但动作并不只来自当前 60 个通用动作。正式歌曲同时引用大量歌曲专属 motion ID。
+
+## 已实现范围
+
+- 兼容性代表角色：天ヶ瀬 冬馬（body 1）、柏木 翼（body 2）、御手洗 翔太（body 3）、岡村 直央（body 4）、水嶋 咲（body 5）。
+- 代表服装：五名角色均使用 `005_00`。
+- 通用动作：60 个（ID 2–61）。
+- 跨体型歌曲动作抽查：5 个（ID 4001、12001、16004、32005、56011）。
+- 歌曲编排：118 份有效 CSV。
+- 有效 `Livechara_motion` 事件：21,860 条。
+- 歌曲引用的唯一动作：1,403 个。
+- 其中通用动作：54 个；歌曲专属动作：1,349 个。
+- body-1 资源覆盖：1,403 / 1,403，无缺失引用。
+
+五种体型的动态兼容矩阵已经跑通：300 次通用动作切换（5 × 60）和 25 次歌曲动作切换（5 × 5），共 325 次。全量歌曲动作目录仍只为 body 1 生成，避免在数据结构稳定前复制四套大体积资源。
+
+静态服装盘点共找到 549 套：body 1 为 265 套、body 2 为 100 套、body 3 为 143 套、body 4 为 32 套、body 5 为 9 套。549 套均可映射体型，且没有缺少 `cos.atlas` 或 `cos.png`；这只是静态完整性检查，不代表 549 套都已经逐一在浏览器渲染。
+
+随后已完成全量 Web 资源构建：manifest 现包含 49 名角色和全部 549 套服装，服装下拉框可以直接切换对应 `cos.atlas/cos.png`。额外生成 `inventory.json`，记录每套服装的角色、体型、atlas 页数、region 数和纹理字节数，供后续兼容报告与增量构建使用。
+
+`npm run chibi:scan` 会读取五套 setup skeleton 的全部 attachment path，并与每套服装 atlas 的 region 集合比较。由于 setup 是同体型所有可选附件的并集，单套服装覆盖率约 37% 是正常现象；报告以同体型中位数识别异常，而不是要求每套服装覆盖全部可选附件。本轮 549 套全部落在各自体型的正常分布内，未发现 region 数量或覆盖率异常的离群服装。报告输出为 `compatibility-report.json`。
+
+生成后的 Web 资源约 58.5 MiB，其中歌曲编排索引约 2.1 MiB。动作二进制按 motion ID 独立保存，浏览器按需加载，不会在页面启动时一次性下载全部动作。
+
+## 数据生成
+
+入口脚本：`scripts/prepare-live-chibi-assets.py`
+
+运行：
+
+```powershell
+python scripts\prepare-live-chibi-assets.py
+```
+
+输出根目录：
+
+```text
+public/assets/live-chibi/
+├─ manifest.json
+├─ inventory.json
+├─ compatibility-report.json
+├─ setup/body-{1..5}.skel
+├─ costumes/{idol}_{costume}/
+├─ motions/common/{1..5}/{motionId}.bin
+├─ motions/compatibility/{1..5}/{motionId}.bin
+├─ motions/choreography/1/{motionId}.bin
+└─ choreography/index.json
+```
+
+`choreography/index.json` 包含：
+
+- `motionCatalog`：动作 ID、内部动画名、显示名、文件路径。
+- `songs`：歌曲代码、标题、变体、时长、站位、动作集合和事件时间轴。
+- 每条事件保存 `time`、`motion`、`speed`、`position`、目标坐标、hold 和播放模式。
+
+歌曲标题优先由 `public/data/masterdata/music_catalog.json` 补全；无法匹配时保留资源代码。
+
+## 浏览器运行时拼装
+
+核心加载器：`src/utils/liveChibiSpine.js`
+
+运行时流程：
+
+1. 读取 body setup skeleton。
+2. 读取所选服装 atlas/texture。
+3. 组合 `body + head + cos_defo` skin。
+4. 按 motion ID 请求 animation fragment。
+5. 把 fragment 中的 animation 注入已有 `SkeletonData`。
+6. 在同一个 Spine 实例上切换动作，不重新创建角色。
+
+## 已修复问题
+
+### 1. 头、眼睛和四肢在动作中消失
+
+原因不是 PNG 缺图，也不是骨骼权重不足。animation fragment 使用 Spine binary 的 `readStringRef()`，引用的是 setup skeleton 中的共享字符串表。早期实现用空字符串表解析 fragment，导致 attachment 名称全部变成 `null`，动作执行时清空对应 slot。
+
+修复方式：从 setup binary 提取字符串表，并在构造动作 `BinaryInput` 时复用。
+
+### 2. 连续预览后手部等附件看似叠加
+
+每次切换动作并没有新建小人。残影来自上一动作留下的 optional attachment 状态，以及快速切换时较早的异步请求可能晚于新选择完成。
+
+修复方式：
+
+- 播放新动作前执行 `skeleton.setToSetupPose()`。
+- 清理旧 track 后再设置新动画，并立即 `update(0)`。
+- 使用 motion sequence token 丢弃过时的异步加载结果。
+
+### 3. body 2 缺少围巾等 linked mesh 时整个角色加载失败
+
+部分服装 atlas 不包含 setup 骨架引用的父网格，例如 `muffler_R_B`。直接跳过缺失父附件会让后续 linked mesh 无法建立拓扑，从而中止整个 Spine 解析。
+
+修复方式：为缺失的 region/mesh 建立使用透明空纹理的占位 attachment，保留父子引用和网格拓扑，但不渲染错误内容。这样既不会出现早期测试中见到的绿色纹理块，也不会因单个可选附件缺失而丢失整个人物。
+
+### 4. 不同 body type 的默认视觉身高不一致
+
+原自动适配只参考 setup skeleton 的声明宽高。待机姿势的实际 attachment bounds 与声明高度不同，导致 body 2、3、4 分别显示为冬马的约 114%、126%、119%。第一次修正又把五套骨架直接校准成等高，忽略了同一 body type 内角色官方身高不同；因此 163 cm 的翔太和 165 cm 的丽仍然与 175 cm 的冬马几乎一样高。
+
+最终方案分两步：先使用画布实际非透明像素消除五套 setup 骨架的固有倍率差，再读取 `idol_unit_dictionary.json` 的官方身高，以冬马 175 cm 为基准为 49 名角色分别生成 `previewScale`。例如翔太为约 `0.2958`、丽为约 `0.2995`、翼为约 `0.3019`、直央为约 `0.3034`；咲继续以 `0.28` 为安全上限，避免头发和举手动作裁切。透明占位 attachment 只用于保持 linked mesh 拓扑，不再参与可见尺寸校准。
+
+### 5. 特殊服装的裙身或躯干缺失
+
+复现样本为水嶋 咲 `031sak_102_00/01` 和冬美 旬 `021jun_103_00/01`。这些 atlas 文件都完整包含 4 个 `dress` skin region，但早期运行时只组合 `body + head + cos_defo`，导致服装主体仍留在未启用的 `dress` skin 中。相同结构还存在于 `skirt`、`kimono`、`poncho_big`、`animal` 和角色专用 skin。
+
+修复方式不是为两个服装写死映射，而是在 skeleton 解析完成后检查每个可选 skin：只要其中至少一个 attachment 对应 atlas 的真实 region（不是透明缺图占位），就把该 skin 加入当前 costume skin。咲 102 和冬美旬 103 现在都会自动组合 `body + head + cos_defo + dress`，待机与 `future` 动作实测主体保持完整。
+
+兼容扫描报告 schema 2 同时记录每套服装的 `skinMatches`、setup attachment 缺失但存在同 slot 候选的 `recoverableSlots`，用于继续排查其余服装。当前 549 套中检测到的专属 skin 覆盖包括：`dress` 207 套、`skirt` 159 套、`kimono` 27 套，以及少量角色/造型专属 skin。
+
+## 原始 Unity3D prefab 与缩放结论
+
+以 `costume_035mco_107_00.unity3d` 为主样本，并用五种体型的 `005_00` costume 包交叉确认：
+
+- 每个 costume 包在资源层面确实同时包含成人 Spine 和舞台小人 Spine。
+- 成人部分是 `comu.skel + comu.atlas + comu` 纹理，并带有包内唯一的 `GameObject / RectTransform / SkeletonGraphic`。
+- 该 `SkeletonGraphic.skeletonDataAsset` 明确指向 `comu_SkeletonData`，因此包内 RectTransform 的位置、尺寸和 pivot 都属于成人交流立绘，不属于舞台小人。
+- 小人部分是 `cos.atlas + cos` 纹理及 `live_costume_atlas_*`；costume 包内没有第二个指向小人的 GameObject/RectTransform prefab。
+- 小人的公共骨架在 `live_costume_setup_1..5.unity3d`。五套 `SkeletonDataAsset.scale` 全部是 `0.003333332948386669`，即约 `1 / 300`。
+- `live_character_info_data_list.unity3d` 只提供角色 ID 到 body type 的映射，没有角色显示倍率。
+
+因此要区分两层缩放：`1 / 300` 是 Spine 数据导入倍率；实验室里的缩放滑杆和自动 fit 是浏览器视窗/未来桌宠窗口的显示倍率。costume 包中的成人 RectTransform 不能作为小人的放大缩小依据。舞台上的最终大小、站位和移动更可能由运行时角色控制器、舞台相机及歌曲 CSV 坐标共同决定，而不是存在于这个 costume prefab 中。
+
+## 歌曲编排预览
+
+界面：`src/components/SpineViewer.vue`
+
+动作库现在包含两类来源：
+
+- `通用动作`：原有 60 个独立动作。
+- `歌曲 · 标题`：按单曲/变体列出该编排实际使用的动作。
+
+歌曲模式支持：
+
+- 选择歌曲或编排变体。
+- 选择 1–5 号站位（以 CSV 实际存在的站位为准）。
+- 查看单曲动作集合。
+- 拖动时间轴预览指定时间之前的当前动作。
+- 按 CSV 时间戳、速度倍率自动播放动作编排。
+
+目前只回放角色 motion；CSV 中的角色移动坐标、镜头、灯光、舞台特效、音乐同步和多角色同屏尚未接入。
+
+## 动作衔接复核（2026-07-14）
+
+根据存档视频中连续舞蹈的表现，重新核对了 119 份 live effect CSV、Spine 动作片段和 IPA 的 IL2CPP metadata。结论是：没有发现另一套“整首歌连续动画”，但当前 Web 播放器确实只实现了原播放协议的一部分。
+
+原客户端的关键入口可从 metadata 恢复为：
+
+```text
+LiveObjectIdol.PlayMotion(time, data, skip)
+LiveObjectIdol.PlayMotionInner(motionId, isLoop, actualPos, speed, pauseTime, skip)
+```
+
+这说明一次动作事件不只是 motion ID 和速度，还包含循环状态、实际舞台位置、暂停随机动作的时间以及跳播状态。当前生成器把 CSV 第 9、10 个值临时命名为 `hold`、`mode`，但这两个名字并非原字段名；第 9 个值现已可确认与 `pauseTime` 对应，常见的 `999999` 表示长时间压住随机动作回退，而不是单个舞步自身的时长。第 10 个值为 1/2/3 的播放模式：3 几乎只出现在开场初始化，2 是正常编舞切换，1 只用于少数特殊持续段。它如何映射到 `isLoop` 仍需在播放器复刻阶段保留为原始枚举，不应继续当成普通布尔值猜测。
+
+动作 fragment 通常包含一对动画：
+
+- `_3dance`：进入/舞步段。
+- `_4loop`：目标姿势的循环段。
+
+以 ANYWHERE 开头为例，`32005` 在歌曲时间 1600 ms 开始，`32006` 在 1800 ms 开始；前者的 `_3dance` 总长为 0.6 秒，却会在 0.2 秒处被下一事件接管。直接解析骨骼姿态后确认，`32005 @ 0.2s` 与 `32006 @ 0s` 的骨骼差仅约 `0.000002 RMS`，说明 CSV 时间戳和动作片段是共同制作的衔接锚点，而不是简单等待每段播完。其他切换点存在非零姿态差，需要上一条 TrackEntry 参与混合。
+
+当前 `playLiveChibiMotion()` 在每次事件前调用 `state.clearTracks()`，随后才 `setAnimation()`。这会删除上一条 TrackEntry，因此即使 `defaultMix` 已设为 0.16 秒，也无法发生跨动作混合。`setToSetupPose()` 主要为清理附件残留而加入；骨骼衔接应改为保留旧 track，通过槽位/附件的定向恢复解决叠加，不能再把清 track 当成附件修复的一部分。
+
+本轮还确认当前编排索引遗漏了以下角色事件：
+
+- `Livechara_position`：1,178 条；包含站位、X/Y 和显示倍率/深度参数，例如 ANYWHERE 的 1700、1730、1850 变化。
+- `Livechara_motion_group`：545 条；原客户端对应 `AddMotion(motionGroupId, motionId, weight)`，定义带权随机动作组。
+- `Livechara_motion_group_change`：90 条；切换当前随机动作组。
+- `SwitchSinger`：2,868 条；决定多角色编排中当前演唱/表现对象。
+- `Livechara_Offset`、嘴型修正和角色颜色等少量角色控制事件。
+
+随机动作组不是正式舞步的另一套完整编排，但会填充脚本动作之间的空闲期；多角色舞台、位置/缩放和完整复刻不能忽略这些事件。
+
+新增只读诊断工具 `scripts/inspect-live-chibi-motion.mjs`，可列出动作内部动画名、时长和 timeline 类型，也可比较两个动作在指定切换时刻的骨骼姿态：
+
+```powershell
+node scripts\inspect-live-chibi-motion.mjs 1 32005 32006
+node scripts\inspect-live-chibi-motion.mjs 1 --transition 32005 0.2 32006
+```
+
+### DRIVE A LIVE 基准实现与验证
+
+标准 `drvalv_live_effect.csv` 已选作第一首连续动作基准：
+
+- 225 条 `Livechara_motion` 可严格组成 45 个时间点 × 5 个站位。
+- 每个时间点的五个站位在 motion ID、speed、pauseTime 和 mode 上完全一致，没有站位专属舞步。
+- 角色差异来自 16 条 `SwitchSinger`。每条事件的 5 个开关分别对应 1–5 号位，例如 0 ms 为 3 号位、6535 ms 为 2/5 号位、10392 ms 为 1/4 号位、15964 ms 为全员。
+- `Livechara_position` 只有开场 5 条定义，五人倍率均为 1700，X/Y 不同。
+
+编排索引先升级为 schema 2，动作事件中的临时 `hold` 字段改为原语义 `pauseTime`，并为每首歌保留 `singerEvents`、`positionEvents`、`motionGroupEvents` 和 `motionGroupChanges`；接入口型后进一步升级为 schema 3。全库统计为 21,860 条动作、2,868 条演唱者切换和 1,178 条位置事件。
+
+连续播放不再在每次歌曲动作前 `clearTracks()`：模式 3、主动跳播和手动重播才执行完整 setup reset；正常模式 2/1 切换只恢复 slot，并保留上一条 TrackEntry，以 0.12 秒混合骨骼。旧 TrackEntry 的 attachment/draw-order threshold 设为 0，避免手、脸和服装附件在混合期间重新叠加。进入段结束后按其完整 duration 排入 `_4loop`，不再使用 `delay=0` 导致循环段提前一个 mix duration。
+
+预览界面现在显示当前演唱站位，以及所选站位处于“正在演唱”还是“伴舞中”。`SwitchSinger` 与 `adxlip_for_live` 的官方逐帧曲线已经组合：前者选择启用口型的站位，后者给出实际开合幅度，不使用伪造的固定开合。
+
+浏览器验证路径为：选择 `DRIVE A LIVE` → 站位 2 → 跳到 7000 ms，界面正确显示 2/5 号位演唱；随后从 7000 ms 以 2× 播放越过 10300/10392 ms，动作从 #26 切换到 #8，演唱者变为 1/4 号位。运行时诊断记录 `reset: false`、`mixDuration: 0.12`，且没有控制台 error。
+
+## 为什么暂不先跑全部人物服装
+
+当前应先稳定动作/编排数据模型，再扩展所有人物和服装。原因：
+
+- 五种 body type 的动画内容需要确认能共用同一索引语义。
+- 服装 atlas 可能包含特殊 skin/slot，需要先建立兼容性报告。
+- 多角色时间轴会使用同一动作 ID，但具有不同站位、速度和坐标。
+- 现在先用一个 body type 验证完整歌曲编排，可以避免生成大量重复或结构错误的 Web 资源。
+
+## 推荐后续顺序
+
+1. 抽查不同歌曲、不同站位以及歌曲专属动作的附件完整性。
+2. 根据 `inventory.json` 对 549 套服装做 atlas/skin 批量兼容性扫描并标注异常组合。
+3. 扩大 body type 2–5 的歌曲动作抽查；确认无体型特有异常后再生成完整 motion catalog。
+4. 对异常服装做浏览器定点复测。
+5. 最后接入音乐文件、CSV 坐标移动、多角色同屏和完整舞台时间轴。
+
+## 验证命令
+
+```powershell
+python scripts\prepare-live-chibi-assets.py
+npm run chibi:scan
+npm run smoke
+```
+
+## DRIVE A LIVE 官方口型曲线（2026-07-14）
+
+逐音节嘴型并不在舞蹈 CSV 中，而在 `scripts/lipsyncdata/adxlip_for_live/<songCode>/<songCode>_for_lipsync.json`。`drvalv_for_lipsync.json` 含 7,817 个 `scales` 采样点；按原播放器采用的 60 Hz 解释，对应约 130.28 秒。有效开合量是 `scales[].y`，DRIVE A LIVE 的范围为 0 到约 0.9002。`scales[].x` 没有作为当前单轴嘴骨的输入；这与正比人物 Spine 的 `sampleLipCurve()` 和 `LipSyncController` 用法一致。
+
+全量构建现在会扫描 60 条官方曲线并导出紧凑的 `lipsync/<songCode>.json`。编排索引升级为 schema 3，每首可匹配歌曲附带 `lipSync.file / sampleRate / frames / duration / source`。118 个编排脚本中有 117 个可命中曲线，共覆盖 59 个实际歌曲代码；`drv999` 没有对应曲线，源目录额外存在未被当前编排引用的 `reason`。导出曲线总大小约 6.8 MiB。
+
+小人 setup pose 的 `mouth` 槽默认附件是 `mouth_open`，这正是此前静止时一直张嘴的原因。五套小人骨架采用同一类简化 rig：一个 `mouth` 槽、一个 `mouth` 骨，以及 `mouth_close / mouth_open`（含 `_fl` 镜像）附件。运行时按正比 Spine 的原则处理：
+
+- 未演唱或曲线低于阈值时使用 `mouth_close`；
+- `SwitchSinger` 只决定所选站位是否启用曲线；
+- 演唱站位按歌曲时间以 60 Hz 线性插值 `y`，切到 `mouth_open` 并只缩放 `mouth` 骨；
+- 镜像动作继续使用同后缀的 `_fl` 嘴部附件，不把头部或其他附件纳入口型缩放。
+
+浏览器定点验证：DRIVE A LIVE 4 秒、3 号位为当前演唱者时，曲线值为 0.226，附件为 `mouth_open`；同一时刻切到伴舞的 2 号位，值归零且附件为 `mouth_close`。从 6.2 秒播放跨过 6,535 ms 的 `SwitchSinger` 后，2/5 号位开始演唱，2 号位实测曲线值 0.585 并正确张嘴。页面同时显示曲线帧数、当前值和附件，便于后续和录像逐帧比对。
+
+`smoke` 当前执行一次完整 Vite 生产构建，与 `npm run build` 等价。
