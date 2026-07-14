@@ -60,4 +60,4 @@ If a new note is lip or mouth related, put it in `01_lipsync/` first. If it is u
 - `04_refactor/ARCHIVE_QUERY_AND_UNIT_UI_20260713.md` - cross-domain story model, query routes, card asset-state UI, and unit catalog/detail behavior.
 - `04_refactor/CARD_DETAIL_MEDIA_INTERACTION_20260713.md` - card-detail clean/framed mode, full-screen media viewer, card navigation, and the corrected 4:5 portrait preview ratio.
 - `04_refactor/CARD_RELATION_EVIDENCE_20260713.md` - source fields, proof rules, validation, and UI behavior for same-release events and common card series.
-- `04_refactor/STAGE_CHIBI_SPINE_AND_CHOREOGRAPHY_20260714.md` - LiveCharacter resource composition, attachment bug fixes, 1,403-motion catalog, song choreography timeline, and full-build sequencing.
+- `04_refactor/STAGE_CHIBI_SPINE_AND_CHOREOGRAPHY_20260714.md` - LiveCharacter resource composition, attachment bug fixes, 1,403-motion catalog, official lip curves, ACB-to-M4A song extraction, and audio-clock choreography.

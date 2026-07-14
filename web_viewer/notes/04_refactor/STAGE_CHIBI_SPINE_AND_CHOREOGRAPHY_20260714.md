@@ -246,4 +246,28 @@ npm run smoke
 
 浏览器定点验证：DRIVE A LIVE 4 秒、3 号位为当前演唱者时，曲线值为 0.226、最终倍率约为 0.626，附件为 `mouth_open`；同一时刻切到伴舞的 2 号位，值归零且附件为 `mouth_close`。从 6.2 秒播放跨过 6,535 ms 的 `SwitchSinger` 后，2/5 号位开始演唱，2 号位曲线值约 0.585、最终倍率约 0.985。页面同时显示曲线帧数、当前值、最终倍率和附件，便于后续和录像逐帧比对。
 
+## ACB 歌曲提取与音频主时钟（2026-07-14）
+
+原始歌曲位于 `E:\BaiduNetdiskDownload\SideM\GS_Res\新建文件夹\RAW\audio`。`song3_<songCode>.acb` 是内嵌 `@UTF + AFS2` 的 CRI 音频包，实际音频编码为 HCA。构建使用本机 `E:\Program Files\vgmstream-win64\vgmstream-cli.exe` 解码，再由 FFmpeg 转为浏览器可播放的 AAC/M4A：
+
+```powershell
+python scripts\prepare-live-chibi-audio.py --song-code drvalv --force
+npm run chibi:audio
+```
+
+`scripts/prepare-live-chibi-audio.py` 会读取编排索引、检查每个 ACB 的子流清单、匹配编排变体、通过管道解码并写入 `public/assets/live-chibi/music`，最后生成 `music/index.json`。无后缀编排选择带有根 cue 的标准子流；例如 DRIVE A LIVE 的第 17 子流同时具有 `song3_drvalv / preview / soundcheck` 别名。`01jup` 等变体精确映射到 `001jup` 等组合子流；`solo / solo_multi / solo_single / tutorial` 没有独立组合混音时回退到标准子流。
+
+全量结果：
+
+- 60 个编排歌曲代码全部命中 `song3_<songCode>.acb`；
+- 118 个编排脚本全部建立音频映射；
+- 生成 108 个不同的 M4A，总大小 316,497,240 bytes；
+- FFprobe 全量确认 108 个文件均为有效 AAC，缺失、损坏和索引时长漂移均为 0；
+- 10 个特殊 solo/tutorial 编排复用同曲标准音频；
+- DRIVE A LIVE 音频为 44.1 kHz 双声道、130.285 秒，官方口型曲线约 130.283 秒，差值约 2 ms。
+
+DRIVE A LIVE 还包含 `song3_drvalv_bgm.acb` 伴奏和 49 条 `song3_drvalv_<idol>.acb` 单声道人声分轨，三者长度完全一致。这为后续五人舞台按所选角色实时混合“伴奏 + 角色声轨”提供了原始依据；当前单人预览先使用对应编排的官方组合混音。
+
+预览器加载 `music/index.json` 后，以 `HTMLAudioElement.currentTime` 作为歌曲编排、`SwitchSinger` 和口型的主时钟。开始播放前会预载该曲使用的全部 Spine 动作，避免首次请求造成动作迟到；拖动时间轴时，当前动作会推进到事件内部偏移，而不是从该动作的第 0 帧重新开始。浏览器抽查确认 DRIVE A LIVE `01jup` 命中 `music/drvalv_001jup.m4a`，拖到 7 秒时 #26 动作内偏移为 668 ms；ANYWHERE 命中 `music/anwhre.m4a` 并采用音频的 2:01 总时长。
+
 `smoke` 当前执行一次完整 Vite 生产构建，与 `npm run build` 等价。
