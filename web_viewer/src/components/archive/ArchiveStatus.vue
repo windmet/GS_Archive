@@ -101,6 +101,7 @@ const verificationItems = computed(() => {
   const cardScenarios = props.verification?.card_scenarios || {}
   const relations = props.verification?.card_relations || {}
   const cardDetails = props.verification?.card_details || {}
+  const gashas = props.verification?.gashas || {}
   const unitEvents = props.verification?.unit_event_relations || {}
   return [
     {
@@ -140,6 +141,12 @@ const verificationItems = computed(() => {
       tone: cardDetails.failures || !cardDetails.reference_sample_valid ? 'warn' : 'ok',
     },
     {
+      label: '卡池实体',
+      value: gashas.failures || !gashas.reference_sample_valid ? '需排查' : '通过',
+      detail: `${formatCount(gashas.valid)} / ${formatCount(gashas.total)} gashas · ${formatCount(gashas.banners)} banners`,
+      tone: gashas.failures || !gashas.reference_sample_valid ? 'warn' : 'ok',
+    },
+    {
       label: '组合活动关系',
       value: unitEvents.failures ? '需排查' : '通过',
       detail: `${formatCount(unitEvents.valid)} / ${formatCount(unitEvents.total)} events`,
@@ -154,6 +161,7 @@ const coverageItems = computed(() => {
   const rows = [
     ['剧情 master', coverage.story_master_records],
     ['卡片详情资料', { available: coverage.card_details?.cards, total: props.manifest?.counts?.cards, ratio: coverage.card_details?.cards / (props.manifest?.counts?.cards || 1) }],
+    ['卡池 Banner', { available: coverage.gashas?.banner_assets, total: coverage.gashas?.total, ratio: coverage.gashas?.banner_assets / (coverage.gashas?.total || 1) }],
     ['首页语音关联', coverage.card_home_voices],
     ['卡片剧情关联', coverage.card_scenarios],
     ['双态卡普通语音', { available: coverage.card_text_voices?.normal_available, total: coverage.card_text_voices?.normal_expected, ratio: coverage.card_text_voices?.normal_ratio }],
@@ -185,6 +193,8 @@ const inventoryItems = computed(() => {
     { label: '中心效果', value: props.manifest?.coverage?.card_details?.center_skills },
     { label: '衣装资料', value: props.manifest?.coverage?.card_details?.costumes },
     { label: '演出语音关联', value: props.manifest?.coverage?.card_details?.operational_voices },
+    { label: '卡池公告', value: counts.gashas },
+    { label: '已确认卡池名', value: props.manifest?.coverage?.gashas?.named },
     { label: '卡片小剧情', value: props.manifest?.coverage?.card_relations?.cards_with_direct_story },
     { label: '活动关联卡', value: props.manifest?.coverage?.card_relations?.cards_with_event_relation },
     { label: '卡池关联卡', value: props.manifest?.coverage?.card_relations?.cards_with_gasha_relation },

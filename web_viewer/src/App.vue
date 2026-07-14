@@ -83,7 +83,21 @@
         @navigate-card="openCard"
         @navigate-related-card="openRelatedCard"
         @open-event="openCardEvent"
+        @open-gasha="openCardGasha"
         @update:art-mode="cardArtMode = $event"
+      />
+
+      <ArchiveGashaCatalog
+        v-if="view === 'gashas'"
+        :gashas="filteredGashas"
+        @select="openGasha"
+      />
+
+      <ArchiveGashaDetail
+        v-if="view === 'gasha_detail'"
+        :gasha="currentGasha"
+        :idol-name="idolDisplayName"
+        @open-card="openGashaCard"
       />
 
       <ArchiveGroupList
@@ -195,6 +209,8 @@ import ArchiveHome from './components/archive/ArchiveHome.vue'
 import ArchiveShell from './components/archive/ArchiveShell.vue'
 import ArchiveCardList from './components/archive/ArchiveCardList.vue'
 import ArchiveCardDetail from './components/archive/ArchiveCardDetail.vue'
+import ArchiveGashaCatalog from './components/archive/ArchiveGashaCatalog.vue'
+import ArchiveGashaDetail from './components/archive/ArchiveGashaDetail.vue'
 import ArchiveIdolGrid from './components/archive/ArchiveIdolGrid.vue'
 import ArchiveIdolDetail from './components/archive/ArchiveIdolDetail.vue'
 import ArchiveGroupList from './components/archive/ArchiveGroupList.vue'
@@ -238,6 +254,7 @@ function resolveChatName(ch) {
 const view = ref('home')
 const indexData = ref(null)
 const cardIndexData = ref(null)
+const gashaIndexData = ref(null)
 const cardDetailData = ref(null)
 const cardDetailLoadPromise = ref(null)
 const storyMasterData = ref(null)
@@ -259,6 +276,7 @@ const currentUnit = ref(null)
 const currentArchiveUnitCode = ref('')
 const currentEpisodeId = ref('')
 const currentCardId = ref('')
+const currentGashaId = ref('')
 const currentCardRarity = ref('all')
 const currentCardAssetState = ref('all')
 const currentCardRelationState = ref('all')
@@ -297,6 +315,7 @@ const archiveStats = computed(() => [
   { label: '剧情文件', value: archiveManifestData.value?.counts?.indexed_scenarios ?? totalFiles.value },
   { label: '偶像', value: archiveManifestData.value?.counts?.idols ?? Object.keys(idolUnitData.value?.by_idol_code || {}).length },
   { label: '卡片', value: archiveManifestData.value?.counts?.cards ?? cardIndexData.value?.meta?.card_count ?? cardIndexData.value?.cards?.length ?? 0 },
+  { label: '卡池', value: archiveManifestData.value?.counts?.gashas ?? gashaIndexData.value?.meta?.gasha_count ?? 0 },
   { label: '首页语音', value: archiveManifestData.value?.counts?.home_voice_cues ?? cardIndexData.value?.meta?.home_voice_cue_count ?? 0 },
 ])
 
@@ -664,7 +683,22 @@ const currentCardBase = computed(() => cardMap.value.get(currentCardId.value) ||
 const currentCard = computed(() => mergeCardDetail(currentCardBase.value, cardDetailData.value))
 const currentCardAssetStatus = computed(() => archiveManifestData.value?.card_assets_by_id?.[currentCardId.value] || null)
 const currentCardEventRelation = computed(() => archiveManifestData.value?.event_card_relations_by_card?.[currentCardId.value] || null)
-const currentCardGashaRelation = computed(() => archiveManifestData.value?.gasha_card_relations_by_card?.[currentCardId.value] || null)
+const currentCardGashaRelation = computed(() => gashaIndexData.value?.relations_by_card?.[currentCardId.value] || null)
+const gashaCatalog = computed(() => [...(gashaIndexData.value?.gashas || [])].reverse())
+const filteredGashas = computed(() => {
+  const query = filterQuery.value.trim().toLowerCase()
+  if (!query) return gashaCatalog.value
+  return gashaCatalog.value.filter(gasha =>
+    String(gasha.display_name || '').toLowerCase().includes(query) ||
+    String(gasha.code || '').toLowerCase().includes(query) ||
+    (gasha.derived_pickup_cards || []).some(card =>
+      String(card.card_title || '').toLowerCase().includes(query) ||
+      String(card.card_resource_id || '').toLowerCase().includes(query) ||
+      idolDisplayName(card.character_id).toLowerCase().includes(query)
+    )
+  )
+})
+const currentGasha = computed(() => gashaIndexData.value?.by_id?.[currentGashaId.value] || null)
 const currentCardIndex = computed(() => currentCards.value.findIndex(card => card.resource_id === currentCardId.value))
 const previousCard = computed(() => currentCardIndex.value > 0
   ? currentCards.value[currentCardIndex.value - 1]
@@ -704,13 +738,13 @@ function matchesCardRelationState(card, state) {
   if (state === 'all') return true
   if (state === 'card_story') return Boolean(card?.scenario_entries?.length)
   if (state === 'event_card') return Boolean(archiveManifestData.value?.event_card_relations_by_card?.[card?.resource_id])
-  if (state === 'gasha_card') return Boolean(archiveManifestData.value?.gasha_card_relations_by_card?.[card?.resource_id])
+  if (state === 'gasha_card') return Boolean(gashaIndexData.value?.relations_by_card?.[card?.resource_id])
   if (state === 'release_series') return Boolean(card?.release_series)
   if (state === 'unrelated') {
     return !card?.scenario_entries?.length &&
       !card?.release_series &&
       !archiveManifestData.value?.event_card_relations_by_card?.[card?.resource_id] &&
-      !archiveManifestData.value?.gasha_card_relations_by_card?.[card?.resource_id]
+      !gashaIndexData.value?.relations_by_card?.[card?.resource_id]
   }
   return true
 }
@@ -744,6 +778,7 @@ const archiveSection = computed(() => {
   if (view.value === 'home') return 'home'
   if (view.value === 'archive_status') return 'resources'
   if (view.value === 'story_catalog') return 'stories'
+  if (['gashas', 'gasha_detail'].includes(view.value)) return 'gashas'
   if (['unit_catalog', 'unit_detail'].includes(view.value)) return 'idols'
   if (currentCategoryId.value === 'cards' || ['cards', 'card_detail'].includes(view.value)) return 'cards'
   if (['idol_chat', 'idol_phone'].includes(currentCategoryId.value)) return 'interactions'
@@ -755,6 +790,8 @@ const archiveTitle = computed(() => {
   if (view.value === 'home') return 'SideM Archive'
   if (view.value === 'archive_status') return '数据状态'
   if (view.value === 'story_catalog') return '故事目录'
+  if (view.value === 'gashas') return '卡池档案'
+  if (view.value === 'gasha_detail') return currentGasha.value?.display_name || '卡池详情'
   if (view.value === 'unit_catalog') return '组合资料'
   if (view.value === 'unit_detail') return currentArchiveUnit.value?.unit_name || '组合详情'
   if (view.value === 'idols') return categoryHeaderText.value
@@ -768,11 +805,12 @@ const archiveTitle = computed(() => {
   return 'SideM Archive'
 })
 
-const archiveSearchable = computed(() => ['idols', 'groups', 'cards', 'files', 'story_catalog'].includes(view.value))
+const archiveSearchable = computed(() => ['idols', 'groups', 'cards', 'gashas', 'files', 'story_catalog'].includes(view.value))
 
 const archiveSearchPlaceholder = computed(() => {
   if (view.value === 'idols') return categoryFilterPlaceholder.value
   if (view.value === 'cards') return '搜索卡片标题、稀有度或资源 ID'
+  if (view.value === 'gashas') return '搜索卡池编号、名称、卡片或偶像'
   if (view.value === 'groups') return '搜索章节标题或资源 ID'
   if (view.value === 'files') return '搜索剧情标题或资源 ID'
   if (view.value === 'story_catalog') return '搜索标题、资源 ID 或角色代码'
@@ -805,6 +843,7 @@ function currentArchiveRoute() {
     sort: currentStorySort.value,
     episode: currentEpisodeId.value,
     card: currentCardId.value,
+    gasha: view.value === 'gasha_detail' ? currentGashaId.value : '',
     rarity: currentCardRarity.value,
     assetState: currentCardAssetState.value,
     relationState: currentCardRelationState.value,
@@ -891,6 +930,7 @@ async function applyArchiveRoute(route) {
     currentCategoryId.value = route.category || ''
     currentCharacterId.value = route.idol || ''
     currentCardId.value = route.card || ''
+    currentGashaId.value = route.gasha || ''
     currentCardRarity.value = route.rarity || 'all'
     currentCardAssetState.value = route.assetState || 'all'
     currentCardRelationState.value = route.relationState || 'all'
@@ -933,6 +973,7 @@ async function applyArchiveRoute(route) {
     if (route.view === 'unit_detail' && !currentArchiveUnit.value) view.value = 'unit_catalog'
     else if (route.view === 'idol_detail' && !currentIdolProfile.value) view.value = 'idols'
     else if (route.view === 'card_detail' && !currentCard.value) view.value = 'cards'
+    else if (route.view === 'gasha_detail' && !currentGasha.value) view.value = 'gashas'
     else if (route.view === 'cards' && !currentCharacterId.value) view.value = 'idols'
     else if (route.view === 'files' && !currentGroup.value) view.value = currentCharacterId.value ? 'groups' : 'home'
     else if (route.view === 'episodes' && !currentUnit.value) view.value = 'episode_zero_units'
@@ -951,6 +992,7 @@ function goHome() {
   currentArchiveUnitCode.value = ''
   currentEpisodeId.value = ''
   currentCardId.value = ''
+  currentGashaId.value = ''
   currentCardRarity.value = 'all'
   currentCardAssetState.value = 'all'
   currentCardRelationState.value = 'all'
@@ -970,6 +1012,7 @@ function navigateArchiveSection(section) {
   }
   if (section === 'home') goHome()
   else if (section === 'stories') openStoryCatalog()
+  else if (section === 'gashas') openGashaCatalog()
   else if (section === 'resources') openArchiveStatus()
   else if (categoryBySection[section]) openCategoryById(categoryBySection[section])
 }
@@ -984,6 +1027,11 @@ function goArchiveBack() {
     files: goBackToFiles,
     cards: goBackFromCards,
     card_detail: goBackToCards,
+    gashas: goHome,
+    gasha_detail: () => {
+      currentGashaId.value = ''
+      commitView('gashas')
+    },
     archive_status: goHome,
     story_catalog: goHome,
     unit_catalog: () => commitView('idols'),
@@ -1014,6 +1062,15 @@ function openArchiveStatus() {
   currentStoryAvailability.value = 'all'
   currentStorySort.value = 'domain'
   commitView('archive_status')
+}
+
+function openGashaCatalog() {
+  filterQuery.value = ''
+  currentCategoryId.value = ''
+  currentCharacterId.value = ''
+  currentCardId.value = ''
+  currentGashaId.value = ''
+  commitView('gashas')
 }
 
 function openStoryCatalog() {
@@ -1182,6 +1239,32 @@ function openIdolDomain(domain) {
 }
 
 function openCard(card) {
+  currentCardId.value = card.resource_id
+  filterQuery.value = ''
+  commitView('card_detail')
+}
+
+function openGasha(gasha) {
+  if (!gasha?.id) return
+  currentCategoryId.value = ''
+  currentCharacterId.value = ''
+  currentCardId.value = ''
+  currentGashaId.value = String(gasha.id)
+  filterQuery.value = ''
+  commitView('gasha_detail')
+}
+
+function openCardGasha(relation) {
+  if (!relation?.announcement_id) return
+  const gasha = gashaIndexData.value?.by_id?.[String(relation.announcement_id)]
+  if (gasha) openGasha(gasha)
+}
+
+function openGashaCard(relation) {
+  const card = cardMap.value.get(relation?.card_resource_id)
+  if (!card) return
+  currentCategoryId.value = 'cards'
+  currentCharacterId.value = card.character_id
   currentCardId.value = card.resource_id
   filterQuery.value = ''
   commitView('card_detail')
@@ -1424,6 +1507,7 @@ onMounted(async () => {
   const { data, errors } = await loadArchiveData()
   indexData.value = data.compiledIndex
   cardIndexData.value = data.cardIndex
+  gashaIndexData.value = data.gashaIndex
   storyMasterData.value = data.storyMaster
   idolUnitData.value = data.idolUnit
   archiveManifestData.value = data.archiveManifest

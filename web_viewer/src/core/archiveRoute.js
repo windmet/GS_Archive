@@ -11,6 +11,7 @@ const ROUTE_QUERY_KEYS = [
   'sort',
   'episode',
   'card',
+  'gasha',
   'rarity',
   'asset_state',
   'relation_state',
@@ -30,6 +31,8 @@ const VALID_VIEWS = new Set([
   'files',
   'cards',
   'card_detail',
+  'gashas',
+  'gasha_detail',
   'archive_status',
   'story_catalog',
   'unit_catalog',
@@ -79,6 +82,7 @@ export function readArchiveRoute(input = window.location.href) {
     sort: clean(params.get('sort')) || 'domain',
     episode: clean(params.get('episode')),
     card: clean(params.get('card')),
+    gasha: clean(params.get('gasha')),
     rarity: clean(params.get('rarity')) || 'all',
     assetState: clean(params.get('asset_state')) || 'all',
     relationState: VALID_CARD_RELATION_STATES.has(requestedRelationState) ? requestedRelationState : 'all',
@@ -106,6 +110,7 @@ export function buildArchiveUrl(input, route) {
   if (route.sort && route.sort !== 'domain') url.searchParams.set('sort', route.sort)
   if (route.episode) url.searchParams.set('episode', route.episode)
   if (route.card) url.searchParams.set('card', route.card)
+  if (route.gasha) url.searchParams.set('gasha', route.gasha)
   if (route.rarity && route.rarity !== 'all') url.searchParams.set('rarity', route.rarity)
   if (route.assetState && route.assetState !== 'all') url.searchParams.set('asset_state', route.assetState)
   if (route.relationState && route.relationState !== 'all') url.searchParams.set('relation_state', route.relationState)

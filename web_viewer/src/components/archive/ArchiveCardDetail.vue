@@ -90,7 +90,7 @@
           </span>
           <ArrowUpRight :size="18" />
         </button>
-        <div v-if="gashaRelation" class="gasha-relation">
+        <button v-if="gashaRelation" class="gasha-relation" @click="emit('open-gasha', gashaRelation)">
           <Sparkles :size="20" />
           <span>
             <strong>卡池 Pickup</strong>
@@ -98,7 +98,8 @@
             <small v-if="gashaRelation.title">ガシャ {{ gashaRelation.gasha_code }}</small>
             <small>突破道具 {{ gashaRelation.limitbreak_item_id }} · 开放时间 {{ formatDate(gashaRelation.start_at) }}</small>
           </span>
-        </div>
+          <ArrowUpRight :size="18" />
+        </button>
         <div v-if="card.release_series" class="release-series">
           <div class="release-series-heading">
             <Layers3 :size="20" />
@@ -326,6 +327,7 @@ const emit = defineEmits([
   'navigate-card',
   'navigate-related-card',
   'open-event',
+  'open-gasha',
   'update:art-mode',
 ])
 
@@ -497,7 +499,8 @@ function eventScopeLabel(event) {
 .event-relation strong { color: #17736d; font-size: 0.64rem; }
 .event-relation b { overflow: hidden; color: #28353d; font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; }
 .event-relation small { color: #718088; font-size: 0.63rem; line-height: 1.4; }
-.gasha-relation { display: grid; grid-template-columns: 28px minmax(0, 1fr); align-items: center; gap: 10px; min-height: 66px; padding: 10px 12px; border: 1px solid #ead8a7; border-radius: 6px; background: #fffaf0; color: #9a6a13; }
+.gasha-relation { display: grid; grid-template-columns: 28px minmax(0, 1fr) 20px; align-items: center; gap: 10px; width: 100%; min-height: 66px; padding: 10px 12px; border: 1px solid #ead8a7; border-radius: 6px; background: #fffaf0; color: #9a6a13; cursor: pointer; font: inherit; text-align: left; }
+.gasha-relation:hover { border-color: #d5b96e; background: #fff6e2; }
 .gasha-relation > span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .gasha-relation strong { color: #8a5d0d; font-size: 0.64rem; }
 .gasha-relation b { overflow: hidden; color: #28353d; font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; }

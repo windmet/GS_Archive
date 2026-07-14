@@ -71,6 +71,7 @@ import {
   Images,
   MessageSquare,
   Search,
+  Sparkles,
   Users,
 } from '@lucide/vue'
 
@@ -91,10 +92,11 @@ const navigation = [
   { id: 'stories', label: '故事', icon: BookMarked },
   { id: 'idols', label: '偶像', icon: Users },
   { id: 'cards', label: '卡片', icon: Images },
+  { id: 'gashas', label: '卡池', icon: Sparkles },
   { id: 'interactions', label: '互动', icon: MessageSquare },
   { id: 'resources', label: '资源', icon: FolderOpen },
 ]
-const mobileNavigation = navigation
+const mobileNavigation = navigation.filter(item => item.id !== 'resources')
 </script>
 
 <style scoped>
