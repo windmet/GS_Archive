@@ -107,6 +107,7 @@
               :data-selected-singing="selectedPositionIsSinging"
               :data-lip-value="lipSyncState.value.toFixed(3)"
               :data-mouth-attachment="lipSyncState.attachment || ''"
+              :data-mouth-scale="lipSyncState.scale.toFixed(3)"
             >
               <Mic2 :size="16" />
               <div>
@@ -118,7 +119,7 @@
             <div class="lip-sync-status">
               <span>官方口型曲线</span>
               <strong>{{ selectedSong.lipSync ? `${selectedSong.lipSync.frames} 帧 · 60 Hz` : '无对应数据' }}</strong>
-              <small>{{ lipSyncState.attachment || 'mouth_close' }} · {{ lipSyncState.value.toFixed(3) }}</small>
+              <small>{{ lipSyncState.attachment || 'mouth_close' }} · {{ lipSyncState.value.toFixed(3) }} · ×{{ lipSyncState.scale.toFixed(2) }}</small>
             </div>
             <label class="song-position">
               <span>站位</span>
@@ -227,7 +228,7 @@ const runtimeDiagnostics = ref(null)
 const selectedPosition = ref(1)
 const choreographyTime = ref(0)
 const choreographyPlaying = ref(false)
-const lipSyncState = ref({ value: 0, singing: false, attachment: 'mouth_close' })
+const lipSyncState = ref({ value: 0, singing: false, attachment: 'mouth_close', scale: 1 })
 
 let app = null
 let runtime = null

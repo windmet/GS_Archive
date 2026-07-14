@@ -10,6 +10,9 @@ import {
 import { BinaryInput, TextureAtlas, TextureAtlasRegion } from '@pixi-spine/base'
 
 export const LIVE_CHIBI_BASE = '/assets/live-chibi'
+const LIVE_CHIBI_LIP_OPEN_THRESHOLD = 0.04
+const LIVE_CHIBI_LIP_SCALE_MIN = 1
+const LIVE_CHIBI_LIP_OPEN_SCALE = 3
 
 class CostumeAtlasAttachmentLoader extends AtlasAttachmentLoader {
   missingRegions = new Set()
@@ -100,18 +103,23 @@ function installLiveChibiLipSync(spine) {
     value: 0,
     singing: false,
     attachment: null,
+    scale: LIVE_CHIBI_LIP_SCALE_MIN,
   }
   skeleton.updateWorldTransform = function (...args) {
     try {
       const currentName = mouthSlot.attachment?.name || mouthSlot.data.attachmentName || 'mouth_open'
       const flipped = currentName.endsWith('_fl')
       const value = state.singing ? state.value : 0
-      const open = value > 0.08
+      const open = value > LIVE_CHIBI_LIP_OPEN_THRESHOLD
       const attachmentName = `mouth_${open ? 'open' : 'close'}${flipped ? '_fl' : ''}`
       if (mouthSlot.attachment?.name !== attachmentName) {
         skeleton.setAttachment('mouth', attachmentName)
       }
-      mouthBone.scaleX = baseScaleX * (open ? Math.max(0.12, value) : 1)
+      state.scale = open
+        ? LIVE_CHIBI_LIP_SCALE_MIN
+          + value * (LIVE_CHIBI_LIP_OPEN_SCALE - LIVE_CHIBI_LIP_SCALE_MIN)
+        : LIVE_CHIBI_LIP_SCALE_MIN
+      mouthBone.scaleX = baseScaleX * state.scale
       mouthBone.scaleY = baseScaleY
       state.attachment = attachmentName
     } finally {
@@ -126,7 +134,12 @@ function installLiveChibiLipSync(spine) {
 
 export function applyLiveChibiLipSync(runtime, curve, milliseconds, singing) {
   const controller = runtime?.lipSyncController
-  if (!controller) return { value: 0, singing: false, attachment: null }
+  if (!controller) return {
+    value: 0,
+    singing: false,
+    attachment: null,
+    scale: LIVE_CHIBI_LIP_SCALE_MIN,
+  }
   controller.value = singing ? sampleLiveChibiLipSync(curve, milliseconds) : 0
   controller.singing = Boolean(singing && curve)
   runtime.spine.skeleton.updateWorldTransform()
@@ -134,6 +147,7 @@ export function applyLiveChibiLipSync(runtime, curve, milliseconds, singing) {
     value: controller.value,
     singing: controller.singing,
     attachment: controller.attachment,
+    scale: controller.scale,
   }
 }
 
