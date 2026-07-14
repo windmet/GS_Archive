@@ -201,6 +201,10 @@ export function getUnitLogoUrl(unitId) {
   return `${ASSET_BASE}/units/logos/image_unit_logo_${unitId}.png`
 }
 
+export function getBrandMarkUrl() {
+  return `${ASSET_BASE}/brand/image_logo_imas_M_mark.png`
+}
+
 /**
  * Chat emoji images.
  */

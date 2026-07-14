@@ -151,6 +151,16 @@ def copy_unit_logos(source_root: Path, public_root: Path) -> dict[str, str]:
     return logos
 
 
+def copy_brand_mark(source_root: Path, public_root: Path) -> str:
+    source = source_root / "image" / "image_logo" / "image_logo_imas_M_mark.png"
+    if not source.exists():
+        return ""
+    destination = public_root / "assets" / "brand" / source.name
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, destination)
+    return f"/assets/brand/{source.name}"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("source_root", type=Path)
@@ -169,11 +179,15 @@ def main() -> None:
             continue
         entries.extend(file_record(source_root, group, path) for path in sorted(directory.rglob("*.png")))
 
-    unit_logo_urls = copy_unit_logos(source_root, args.public_root.resolve()) if args.public_root else {}
+    public_root = args.public_root.resolve() if args.public_root else None
+    unit_logo_urls = copy_unit_logos(source_root, public_root) if public_root else {}
+    brand_mark_url = copy_brand_mark(source_root, public_root) if public_root else ""
     for entry in entries:
         match = re.fullmatch(r"image_unit_logo_(\w+)\.png", entry["filename"])
         if match and match.group(1) in unit_logo_urls:
             entry["public_url"] = unit_logo_urls[match.group(1)]
+        if entry["filename"] == "image_logo_imas_M_mark.png" and brand_mark_url:
+            entry["public_url"] = brand_mark_url
 
     payload = {
         "schema_version": 1,
@@ -188,11 +202,13 @@ def main() -> None:
         "by_id": {entry["id"]: entry for entry in entries},
         "featured_sets": {
             "unit_logo_urls": unit_logo_urls,
+            "brand_mark_url": brand_mark_url,
         },
         "local_state": load_local_state(args.local_data),
         "meta": {
             "entry_count": len(entries),
             "public_unit_logo_count": len(unit_logo_urls),
+            "public_brand_mark_count": int(bool(brand_mark_url)),
             "counts_by_domain": dict(sorted(Counter(entry["domain"] for entry in entries).items())),
             "counts_by_role": dict(sorted(Counter(entry["role"] for entry in entries).items())),
             "counts_by_recommended_use": dict(sorted(Counter(entry["recommended_use"] for entry in entries).items())),

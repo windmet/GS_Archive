@@ -72,6 +72,16 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   spine_lab: { section: 'resources', required: [] },
 })
 
+const ARCHIVE_NAVIGATION = Object.freeze([
+  { id: 'home', label: '首页' },
+  { id: 'stories', label: '故事' },
+  { id: 'idols', label: '偶像' },
+  { id: 'cards', label: '卡片' },
+  { id: 'gashas', label: '卡池' },
+  { id: 'interactions', label: '互动' },
+  { id: 'resources', label: '资源' },
+])
+
 function clean(value) {
   return typeof value === 'string' ? value.trim() : ''
 }
@@ -212,4 +222,4 @@ export function onArchivePopState(handler) {
   return () => window.removeEventListener('popstate', listener)
 }
 
-export { ARCHIVE_ROUTE_CONTRACTS, ROUTE_QUERY_KEYS, VALID_VIEWS }
+export { ARCHIVE_NAVIGATION, ARCHIVE_ROUTE_CONTRACTS, ROUTE_QUERY_KEYS, VALID_VIEWS }

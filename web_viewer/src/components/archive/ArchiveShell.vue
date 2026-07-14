@@ -2,7 +2,7 @@
   <div class="archive-shell" :class="{ 'has-inspector': hasInspector }">
     <aside class="archive-sidebar" aria-label="资料馆导航">
       <div class="archive-brand">
-        <BookMarked :size="26" :stroke-width="2" />
+        <img :src="getBrandMarkUrl()" alt="" />
         <span>SideM<br />Archive</span>
       </div>
       <nav class="archive-nav">
@@ -25,7 +25,7 @@
         <span>返回</span>
       </button>
       <div class="archive-mobile-brand">
-        <BookMarked :size="24" :stroke-width="2" />
+        <img :src="getBrandMarkUrl()" alt="" />
         <span>SideM Archive</span>
       </div>
       <h1>{{ title }}</h1>
@@ -74,6 +74,8 @@ import {
   Sparkles,
   Users,
 } from '@lucide/vue'
+import { ARCHIVE_NAVIGATION } from '../../core/archiveRoute.js'
+import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
 
 defineProps({
   activeSection: { type: String, default: 'home' },
@@ -87,16 +89,9 @@ defineProps({
 
 const emit = defineEmits(['navigate', 'back', 'update:modelValue'])
 
-const navigation = [
-  { id: 'home', label: '首页', icon: Home },
-  { id: 'stories', label: '故事', icon: BookMarked },
-  { id: 'idols', label: '偶像', icon: Users },
-  { id: 'cards', label: '卡片', icon: Images },
-  { id: 'gashas', label: '卡池', icon: Sparkles },
-  { id: 'interactions', label: '互动', icon: MessageSquare },
-  { id: 'resources', label: '资源', icon: FolderOpen },
-]
-const mobileNavigation = navigation.filter(item => item.id !== 'resources')
+const iconBySection = { home: Home, stories: BookMarked, idols: Users, cards: Images, gashas: Sparkles, interactions: MessageSquare, resources: FolderOpen }
+const navigation = ARCHIVE_NAVIGATION.map(item => ({ ...item, icon: iconBySection[item.id] }))
+const mobileNavigation = navigation
 </script>
 
 <style scoped>
@@ -138,7 +133,7 @@ const mobileNavigation = navigation.filter(item => item.id !== 'resources')
   font-weight: 700;
   line-height: 1.05;
 }
-.archive-brand svg { color: #41c6bd; }
+.archive-brand img { width: 34px; height: 26px; object-fit: contain; filter: brightness(0) invert(1); }
 .archive-nav { display: flex; flex-direction: column; gap: 4px; padding: 6px; }
 .archive-nav button {
   position: relative;
@@ -263,7 +258,7 @@ const mobileNavigation = navigation.filter(item => item.id !== 'resources')
     font-size: 1.05rem;
     font-weight: 750;
   }
-  .archive-mobile-brand svg { color: var(--archive-accent); }
+  .archive-mobile-brand img { width: 31px; height: 24px; object-fit: contain; }
   .archive-back { grid-row: 1; grid-column: 1; }
   .archive-back + .archive-mobile-brand { grid-column: 2; }
   .archive-topbar h1 { grid-row: 2; grid-column: 1; font-size: 1.25rem; }
@@ -275,7 +270,7 @@ const mobileNavigation = navigation.filter(item => item.id !== 'resources')
     grid-column: 1;
     grid-row: 3;
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     border-top: 1px solid var(--archive-border);
     background: #fff;
     z-index: 20;
