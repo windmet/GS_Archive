@@ -331,6 +331,21 @@ def build_gasha_index(
     curated_titles: dict[str, Any],
 ) -> dict[str, Any]:
     title_entries = curated_titles.get("entries_by_code", {}) if isinstance(curated_titles, dict) else {}
+    title_sources = curated_titles.get("sources", {}) if isinstance(curated_titles, dict) else {}
+
+    def resolved_title_entry(code: str) -> dict[str, Any]:
+        entry = title_entries.get(code, {}) if isinstance(title_entries, dict) else {}
+        if not isinstance(entry, dict):
+            return {}
+        source = title_sources.get(entry.get("source_ref"), {}) if isinstance(title_sources, dict) else {}
+        return {
+            **entry,
+            "source_type": "curated",
+            "source_label": source.get("label", ""),
+            "source_url": source.get("url", ""),
+            "verified_at": source.get("retrieved_at", ""),
+        }
+
     cards = canonical_cards(card_index.get("cards", []))
     announcements = announcement_index.get("announcements", [])
     announcements_by_start: dict[int, list[dict[str, Any]]] = defaultdict(list)
@@ -349,7 +364,7 @@ def build_gasha_index(
             continue
         announcement = matches[0]
         code = str(announcement.get("gasha_code") or "")
-        title_entry = title_entries.get(code, {}) if isinstance(title_entries, dict) else {}
+        title_entry = resolved_title_entry(code)
         relation = {
             "card_id": card.get("card_id"),
             "card_resource_id": card.get("resource_id"),
@@ -380,7 +395,7 @@ def build_gasha_index(
     for announcement in announcements:
         announcement_id = str(announcement.get("announcement_id"))
         code = str(announcement.get("gasha_code") or "")
-        title_entry = title_entries.get(code, {}) if isinstance(title_entries, dict) else {}
+        title_entry = resolved_title_entry(code)
         title = title_entry.get("title", "") if isinstance(title_entry, dict) else ""
         banner_file = f"{announcement.get('asset_prefix') or ''}01.png"
         gashas.append({
@@ -390,6 +405,13 @@ def build_gasha_index(
             "display_name": title or f"ガシャ {code}",
             "name_known": bool(title),
             "name_source": title_entry if title else {"source_type": "internal_code_fallback"},
+            "category": title_entry.get("category", "standard_pickup"),
+            "logical_id": title_entry.get("logical_id", f"gasha_{code}"),
+            "phase": title_entry.get("phase", "primary"),
+            "primary_code": title_entry.get("primary_code", code),
+            "is_reprint": bool(title_entry.get("is_reprint", False)),
+            "series": title_entry.get("series", ""),
+            "card_set_type": title_entry.get("card_set_type", "new_pickup"),
             "announcement_id": announcement.get("announcement_id"),
             "destination_id": announcement.get("destination_id"),
             "start_at": announcement.get("start_at"),
@@ -404,17 +426,50 @@ def build_gasha_index(
         })
 
     gashas.sort(key=lambda item: (int(item.get("start_at") or 0), int(item.get("announcement_id") or 0)))
+    logical_groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for gasha in gashas:
+        logical_groups[gasha["logical_id"]].append(gasha)
+
+    for logical_id, members in logical_groups.items():
+        logical_cards_by_id: dict[str, dict[str, Any]] = {}
+        for member in members:
+            for card in member.get("derived_pickup_cards", []):
+                resource_id = card.get("card_resource_id")
+                if isinstance(resource_id, str):
+                    logical_cards_by_id[resource_id] = card
+        logical_cards = sorted(
+            logical_cards_by_id.values(),
+            key=lambda item: (str(item.get("character_id") or ""), int(item.get("card_id") or 0)),
+        )
+        member_codes = [member["code"] for member in members]
+        for member in members:
+            member["logical_member_codes"] = member_codes
+            member["related_pickup_cards"] = (
+                logical_cards
+                if len(members) > 1 and not member.get("derived_pickup_cards")
+                else []
+            )
+
+    category_counts = Counter(item["category"] for item in gashas if item.get("phase") == "primary")
+    phase_counts = Counter(item["phase"] for item in gashas)
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "gashas": gashas,
         "by_id": {item["id"]: item for item in gashas},
         "by_code": {item["code"]: item for item in gashas if item.get("code")},
+        "by_logical_id": {
+            logical_id: [item["id"] for item in members]
+            for logical_id, members in logical_groups.items()
+        },
         "relations_by_card": relations_by_card,
         "relations_by_gasha": dict(relations_by_gasha),
         "meta": {
             "gasha_count": len(gashas),
+            "logical_gasha_count": len(logical_groups),
             "named_count": sum(1 for item in gashas if item.get("name_known")),
             "derived_pickup_count": len(relations_by_card),
+            "category_counts": dict(sorted(category_counts.items())),
+            "phase_counts": dict(sorted(phase_counts.items())),
             "raw_source": "client_master_data table 173 announcement rows",
             "instance_gap": "GashaData values were delivered by GashaListReply and are not present in the saved container.",
         },
