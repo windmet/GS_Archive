@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite --configLoader native",
     "build": "vite build --configLoader native",
+    "smoke": "vite build --configLoader native",
+    "chibi:scan": "node scripts/scan-live-chibi-compatibility.mjs",
     "manifest": "node scripts/generate-archive-manifest.mjs",
     "verify:archive": "node scripts/verify-archive.mjs",
     "preview": "vite preview --configLoader native",
