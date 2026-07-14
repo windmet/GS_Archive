@@ -1189,7 +1189,6 @@ function openCatalogStory(entry) {
 
 function goBackToCards() {
   currentCardId.value = ''
-  filterQuery.value = ''
   commitView('cards')
 }
 
@@ -1288,17 +1287,17 @@ function openIdolDomain(domain) {
 
 function openCard(card) {
   currentCardId.value = card.resource_id
-  filterQuery.value = ''
   commitView('card_detail')
 }
 
 function openGasha(gasha) {
   if (!gasha?.id) return
+  const preserveCatalogQuery = view.value === 'gashas'
   currentCategoryId.value = ''
   currentCharacterId.value = ''
   currentCardId.value = ''
   currentGashaId.value = String(gasha.id)
-  filterQuery.value = ''
+  if (!preserveCatalogQuery) filterQuery.value = ''
   commitView('gasha_detail')
 }
 

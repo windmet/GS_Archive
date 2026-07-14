@@ -51,4 +51,13 @@ assert.equal(builtUrl.searchParams.get('unknown'), 'kept')
 assert.equal(builtUrl.searchParams.has('file'), false)
 assert.deepEqual(readArchiveRoute(builtUrl.href), normalizeArchiveRoute(sourceRoute))
 
-console.log('Archive route contract: 18 assertions passed')
+const cardDetailContext = readArchiveRoute('http://localhost/?view=card_detail&idol=001tom&card=001tom_ssr01&rarity=SSR&q=Jupiter')
+assert.equal(cardDetailContext.query, 'Jupiter')
+assert.equal(cardDetailContext.rarity, 'SSR')
+assert.equal(cardDetailContext.category, 'cards')
+
+const gashaDetailContext = readArchiveRoute('http://localhost/?view=gasha_detail&gasha=10028&gasha_type=standard_pickup&q=summer')
+assert.equal(gashaDetailContext.query, 'summer')
+assert.equal(gashaDetailContext.gashaType, 'standard_pickup')
+
+console.log('Archive route contract: 23 assertions passed')
