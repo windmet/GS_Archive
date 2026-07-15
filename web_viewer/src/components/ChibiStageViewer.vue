@@ -8,6 +8,13 @@
     :data-current-singers="currentSingerPositions.join(',')"
     :data-position-tween-ms="POSITION_TWEEN_MS"
     :data-derived-group-events="derivedGroupEventCount"
+    :data-camera-event-time="currentCameraState.eventTime"
+    :data-camera-zoom="currentCameraState.zoom.toFixed(4)"
+    :data-camera-x="currentCameraState.x.toFixed(2)"
+    :data-camera-y="currentCameraState.y.toFixed(2)"
+    :data-camera-rotation="currentCameraState.rotation.toFixed(2)"
+    :data-camera-focus-position="currentCameraState.stagePosition || ''"
+    :data-camera-enabled="cameraEnabled"
   >
     <header class="stage-header">
       <button class="icon-button" type="button" aria-label="返回资料馆" @click="emit('back')">
@@ -113,6 +120,7 @@
             <div class="song-facts">
               <span>{{ selectedSong?.events.length || 0 }} 条动作</span>
               <span>{{ selectedSong?.singerEvents.length || 0 }} 次演唱切换</span>
+              <span>{{ selectedSong?.cameraEvents?.length || 0 }} 条镜头</span>
               <span>{{ selectedSongAudio ? '官方音频' : '无音频' }}</span>
             </div>
           </section>
@@ -180,6 +188,10 @@
               <input v-model.number="playbackSpeed" type="range" min="0.5" max="2" step="0.05" @input="applyPlaybackSpeed" />
               <output>{{ playbackSpeed.toFixed(2) }}×</output>
             </label>
+            <label class="camera-toggle">
+              <input v-model="cameraEnabled" type="checkbox" @change="applyCameraTransform" />
+              <span>启用 CSV 角色镜头</span>
+            </label>
             <dl class="runtime-summary">
               <div><dt>活动站位</dt><dd>{{ activePositions.join(' / ') || '—' }}</dd></div>
               <div><dt>当前演唱</dt><dd>{{ currentSingerLabel }}</dd></div>
@@ -187,6 +199,7 @@
               <div><dt>音频时钟</dt><dd>{{ audioReady ? '已就绪' : '等待加载' }}</dd></div>
               <div><dt>位置过渡</dt><dd>{{ POSITION_TWEEN_MS }}ms 平滑插值</dd></div>
               <div><dt>动作组补位</dt><dd>{{ derivedGroupEventCount }} 处</dd></div>
+              <div><dt>当前镜头</dt><dd>{{ currentCameraLabel }}</dd></div>
             </dl>
             <small v-if="audioError" class="audio-error">{{ audioError }}</small>
           </section>
@@ -242,10 +255,12 @@ const audioError = ref('')
 const stageTime = ref(0)
 const playbackSpeed = ref(1)
 const playing = ref(false)
+const cameraEnabled = ref(true)
 const allPositions = [1, 2, 3, 4, 5]
 const POSITION_TWEEN_MS = 350
 
 let app = null
+let cameraContainer = null
 let resizeObserver = null
 let animationFrame = 0
 let playbackStartedAt = 0
@@ -323,6 +338,12 @@ const performanceEventsByPosition = computed(() => {
 const derivedGroupEventCount = computed(() => [...performanceEventsByPosition.value.values()]
   .flat()
   .filter(event => event.source === 'group').length)
+const currentCameraState = computed(() => cameraStateAt(stageTime.value))
+const currentCameraLabel = computed(() => {
+  const camera = currentCameraState.value
+  const focus = camera.stagePosition ? `${camera.stagePosition}号位` : '自由'
+  return `${camera.zoom.toFixed(2)}× · ${focus} · ${camera.rotation.toFixed(1)}°`
+})
 
 onMounted(async () => {
   await nextTick()
@@ -354,6 +375,7 @@ onBeforeUnmount(() => {
   runtimes.clear()
   app?.destroy(true)
   app = null
+  cameraContainer = null
 })
 
 function initializeLineup() {
@@ -384,6 +406,9 @@ function createPixiApp() {
     resolution: Math.min(window.devicePixelRatio || 1, 2),
   }))
   app.stage.sortableChildren = true
+  cameraContainer = markRaw(new PIXI.Container())
+  cameraContainer.sortableChildren = true
+  app.stage.addChild(cameraContainer)
   host.appendChild(app.view)
   resizeObserver = new ResizeObserver(() => resizeStage())
   resizeObserver.observe(host)
@@ -447,7 +472,7 @@ async function loadSlot(slot) {
       stagePosition: slot.position,
     })
     runtimes.set(slot.position, stageRuntime)
-    app.stage.addChild(stageRuntime.spine)
+    cameraContainer.addChild(stageRuntime.spine)
     slot.loading = false
     resizeStage()
     await syncSlotAtTime(slot, stageTime.value, true)
@@ -551,18 +576,129 @@ function positionDebugState(position) {
   }
 }
 
+function layoutCoordinatesForStage(position, milliseconds, motionEvent = null) {
+  const positionState = positionStateForStage(position, milliseconds)
+  const event = motionEvent || [...eventsForPosition(position)]
+    .reverse()
+    .find(item => Number(item.time) <= milliseconds)
+  const fallbackX = [-460, -230, 0, 230, 460][position - 1]
+  const positionIsNewer = positionState
+    && (!event || Number(positionState.time) > Number(event.time))
+  return {
+    x: Number(positionIsNewer ? positionState.x : (event?.x ?? positionState?.x ?? fallbackX)),
+    y: Number(positionIsNewer ? positionState.y : (event?.y ?? positionState?.y ?? 180)),
+    scale: Number(positionState?.scale ?? 1700),
+    positionState,
+  }
+}
+
+function sampleCameraTween(tween, milliseconds) {
+  if (!tween) return 0
+  if (tween.duration <= 1 || milliseconds >= tween.start + tween.duration) return tween.to
+  const raw = Math.max(0, Math.min(1, (milliseconds - tween.start) / tween.duration))
+  const eased = 1 - ((1 - raw) ** 3)
+  return tween.from + (tween.to - tween.from) * eased
+}
+
+function cameraStateAt(milliseconds) {
+  const state = {
+    zoom: 1,
+    x: 0,
+    y: 360,
+    rotation: 0,
+    focusSlot: null,
+    stagePosition: null,
+    eventTime: '',
+  }
+  let zoomTween = null
+  let xTween = null
+  let yTween = null
+  let rotationTween = null
+
+  for (const event of (selectedSong.value?.cameraEvents || [])) {
+    const eventTime = Number(event.time)
+    if (eventTime > milliseconds) break
+    state.zoom = zoomTween ? sampleCameraTween(zoomTween, eventTime) : state.zoom
+    state.x = xTween ? sampleCameraTween(xTween, eventTime) : state.x
+    state.y = yTween ? sampleCameraTween(yTween, eventTime) : state.y
+    state.rotation = rotationTween ? sampleCameraTween(rotationTween, eventTime) : state.rotation
+
+    if (event.focusSlot !== null && event.focusSlot !== undefined) {
+      state.focusSlot = Number(event.focusSlot) > 0 ? Number(event.focusSlot) : null
+      state.stagePosition = state.focusSlot
+        ? (event.stagePosition || selectedSong.value?.stagePositionMap
+          ?.find(item => item.performerSlot === state.focusSlot)?.stagePosition || null)
+        : null
+    }
+    if (event.zoom !== null && event.zoom !== undefined) {
+      zoomTween = {
+        from: state.zoom,
+        to: Number(event.zoom) / 1000,
+        start: eventTime,
+        duration: Math.max(0, Number(event.zoomDuration) || 0),
+      }
+    }
+    if (event.x !== null || event.y !== null || event.focusSlot !== null) {
+      const focusX = state.stagePosition
+        ? layoutCoordinatesForStage(state.stagePosition, eventTime).x
+        : 0
+      const targetX = state.stagePosition
+        ? focusX + Number(event.x ?? 0)
+        : Number(event.x ?? state.x)
+      // The source uses a character-root coordinate system when focusSlot is set;
+      // its Y=0 and free-camera Y=360 both represent the visual stage centre.
+      const targetY = state.stagePosition ? 360 : Number(event.y ?? state.y)
+      const duration = Math.max(0, Number(event.moveDuration) || 0)
+      xTween = { from: state.x, to: targetX, start: eventTime, duration }
+      yTween = { from: state.y, to: targetY, start: eventTime, duration }
+    }
+    if (event.rotation !== null && event.rotation !== undefined) {
+      rotationTween = {
+        from: state.rotation,
+        to: Number(event.rotation),
+        start: eventTime,
+        duration: Math.max(0, Number(event.rotationDuration) || 0),
+      }
+    }
+    state.eventTime = eventTime
+  }
+
+  state.zoom = zoomTween ? sampleCameraTween(zoomTween, milliseconds) : state.zoom
+  state.x = xTween ? sampleCameraTween(xTween, milliseconds) : state.x
+  state.y = yTween ? sampleCameraTween(yTween, milliseconds) : state.y
+  state.rotation = rotationTween ? sampleCameraTween(rotationTween, milliseconds) : state.rotation
+  return state
+}
+
+function applyCameraTransform() {
+  if (!cameraContainer || !app) return
+  if (!cameraEnabled.value) {
+    cameraContainer.position.set(0, 0)
+    cameraContainer.pivot.set(0, 0)
+    cameraContainer.scale.set(1)
+    cameraContainer.rotation = 0
+    return
+  }
+  const width = app.renderer.width / app.renderer.resolution
+  const height = app.renderer.height / app.renderer.resolution
+  const viewportScale = Math.min(width / 1280, height / 720)
+  const camera = currentCameraState.value
+  cameraContainer.position.set(width * 0.5, height * 0.5)
+  cameraContainer.pivot.set(
+    width * 0.5 + camera.x * viewportScale,
+    height * 0.5 + (camera.y - 360) * viewportScale,
+  )
+  cameraContainer.scale.set(camera.zoom)
+  cameraContainer.rotation = -camera.rotation * Math.PI / 180
+}
+
 function layoutRuntime(position, motionEvent = null) {
   const runtime = runtimes.get(position)
   if (!runtime || !app || !canvasRef.value) return
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
-  const positionState = positionStateForStage(position, stageTime.value)
-  const fallbackX = [-460, -230, 0, 230, 460][position - 1]
-  const positionIsNewer = positionState
-    && (!motionEvent || Number(positionState.time) > Number(motionEvent.time))
-  const x = Number(positionIsNewer ? positionState.x : (motionEvent?.x ?? positionState?.x ?? fallbackX))
-  const y = Number(positionIsNewer ? positionState.y : (motionEvent?.y ?? positionState?.y ?? 180))
-  const sourceScale = Number(positionState?.scale ?? 1700)
+  const coordinates = layoutCoordinatesForStage(position, stageTime.value, motionEvent)
+  const { x, y, scale: sourceScale, positionState } = coordinates
   const viewportScale = Math.min(width / 1280, height / 720)
   const character = characters.value.find(item => item.id === runtime.characterId)
   const characterScale = Number(character?.previewScale) || 0.28
@@ -594,6 +730,7 @@ function resizeStage() {
     layoutRuntime(position, event)
     if (slot && runtimes.has(position)) runtimes.get(position).spine.visible = true
   }
+  applyCameraTransform()
 }
 
 async function handleSongChange() {
@@ -743,6 +880,7 @@ async function seekStage() {
   await Promise.all(activeSlots.value.map(slot => syncSlotAtTime(slot, stageTime.value, true)))
   resetEventIndices()
   applyCurrentLipSync()
+  applyCameraTransform()
 }
 
 function resetEventIndices() {
@@ -798,6 +936,7 @@ function updateStage(now) {
     eventIndices.set(slot.position, index)
     layoutRuntime(slot.position, runtimes.get(slot.position)?.currentMotionEvent)
   }
+  applyCameraTransform()
   applyCurrentLipSync()
   if (stageTime.value >= stageDuration.value) {
     stopStage()
@@ -940,6 +1079,8 @@ select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(65, 165, 
 .range-control { display: grid; grid-template-columns: 36px minmax(0, 1fr) 48px; gap: 9px; align-items: center; color: #c9d9e8; font-size: 11px; }
 .range-control input { width: 100%; accent-color: var(--accent); }
 .range-control output { text-align: right; font: 650 11px/1 monospace; }
+.camera-toggle { display: flex; gap: 8px; align-items: center; color: #c9d9e8; font-size: 11px; }
+.camera-toggle input { margin: 0; accent-color: var(--accent); }
 .runtime-summary { display: grid; gap: 8px; margin: 0; }
 .runtime-summary div { display: grid; grid-template-columns: 70px 1fr; gap: 10px; font-size: 10px; }
 .runtime-summary dt { color: var(--muted); }

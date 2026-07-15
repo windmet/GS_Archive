@@ -281,6 +281,14 @@ def parse_number(value: str, default: int = 0) -> int:
         return default
 
 
+def parse_optional_number(value: str) -> int | None:
+    try:
+        stripped = value.strip()
+        return int(float(stripped)) if stripped else None
+    except (AttributeError, TypeError, ValueError):
+        return None
+
+
 def choreography_identity(path: Path) -> tuple[str, str]:
     marker = "_live_effect"
     stem = path.stem
@@ -339,6 +347,7 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
         events = []
         singer_events = []
         position_events = []
+        camera_events = []
         motion_group_events = []
         motion_group_changes = []
         with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
@@ -362,6 +371,24 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
                             "x": parse_number(row[3]),
                             "y": parse_number(row[4]),
                             "scale": parse_number(row[5], 1000),
+                        }
+                    )
+                    continue
+                if row[0] == "Camera" and len(row) >= 10:
+                    event_time = parse_optional_number(row[1])
+                    if event_time is None:
+                        continue
+                    camera_events.append(
+                        {
+                            "time": event_time,
+                            "zoom": parse_optional_number(row[2]),
+                            "zoomDuration": parse_optional_number(row[3]),
+                            "focusSlot": parse_optional_number(row[4]),
+                            "x": parse_optional_number(row[5]),
+                            "y": parse_optional_number(row[6]),
+                            "moveDuration": parse_optional_number(row[7]),
+                            "rotation": parse_optional_number(row[8]),
+                            "rotationDuration": parse_optional_number(row[9]),
                         }
                     )
                     continue
@@ -413,6 +440,11 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
         )
         for event in events:
             event["stagePosition"] = stage_position_map.get(event["position"], event["position"])
+        for event in camera_events:
+            focus_slot = event.get("focusSlot")
+            event["stagePosition"] = (
+                stage_position_map.get(focus_slot) if focus_slot and focus_slot > 0 else None
+            )
         positions = sorted(stage_position_map.values())
         songs.append(
             {
@@ -438,6 +470,7 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
                 "positionEvents": sorted(
                     position_events, key=lambda event: (event["time"], event["position"])
                 ),
+                "cameraEvents": sorted(camera_events, key=lambda event: event["time"]),
                 "motionGroupEvents": sorted(
                     motion_group_events,
                     key=lambda event: (event["time"], event["group"], event["motion"]),
@@ -525,13 +558,14 @@ def export_choreography(body_types: list[int]) -> dict:
 
     choreography_relative = Path("choreography") / "index.json"
     choreography = {
-        "schemaVersion": 4,
+        "schemaVersion": 5,
         "bodyTypes": body_types,
         "stats": {
             "songs": len(songs),
             "events": sum(len(song["events"]) for song in songs),
             "singerEvents": sum(len(song["singerEvents"]) for song in songs),
             "positionEvents": sum(len(song["positionEvents"]) for song in songs),
+            "cameraEvents": sum(len(song["cameraEvents"]) for song in songs),
             "lipSyncSongs": sum(1 for song in songs if song.get("lipSync")),
             "lipSyncCurves": len(lip_sync_catalog),
             "motions": len(catalog),
