@@ -961,6 +961,316 @@ def enrich_resource_row(
     return out
 
 
+def normalize_release_condition(payload: Any) -> dict[str, Any] | None:
+    if not isinstance(payload, dict):
+        return None
+    condition_type = payload.get("1")
+    labels = {
+        1: "term_or_default_release",
+        2: "scenario_title_mission",
+        203: "idol_story_episode_finished",
+        1602: "card_acquired",
+        1603: "card_awakened",
+        1604: "card_limit_break",
+    }
+    return {
+        "type": condition_type,
+        "kind": labels.get(condition_type, "unknown"),
+        "param_a": payload.get("2"),
+        "param_b": payload.get("3"),
+        "raw": payload,
+    }
+
+
+def normalize_term(payload: Any) -> dict[str, Any] | None:
+    if not isinstance(payload, dict):
+        return None
+    return {"start_at": payload.get("1"), "end_at": payload.get("2")}
+
+
+def build_idol_episode_index(
+    tables: dict[int, list[dict[str, Any]]],
+    compiled_stems: set[str],
+    compiled_summaries: dict[str, dict[str, Any]],
+    idol_unit_dictionary: dict[str, Any],
+) -> dict[str, Any]:
+    idols = idol_unit_dictionary.get("by_numeric_id", {})
+    products_by_group: dict[int, list[dict[str, Any]]] = defaultdict(list)
+    for row in tables.get(68, []):
+        product = row.get("3") if isinstance(row.get("3"), dict) else {}
+        products_by_group[row.get("2")].append({
+            "id": row.get("1"),
+            "group_id": row.get("2"),
+            "product_type": product.get("1"),
+            "product_id": product.get("2"),
+            "amount": product.get("3"),
+            "sort_order": row.get("4"),
+            "_source": source(68, {
+                "id": 1, "group_id": 2, "product": 3, "sort_order": 4,
+            }, row.get("_offset")),
+        })
+
+    episodes_by_section: dict[int, list[dict[str, Any]]] = defaultdict(list)
+    by_episode_id: dict[str, dict[str, Any]] = {}
+    compiled_episode_count = 0
+    for row in tables.get(9, []):
+        resource_id = row.get("6")
+        compiled_file = compiled_filename(resource_id, compiled_stems) if isinstance(resource_id, str) else None
+        episode = {
+            "id": row.get("1"),
+            "section_id": row.get("2"),
+            "name": row.get("3"),
+            "release_condition": normalize_release_condition(row.get("4")),
+            "open_at": row.get("5"),
+            "resource_id": resource_id,
+            "sort_order": row.get("7"),
+            "product_group_id": row.get("8"),
+            "character_set_id": row.get("9"),
+            "products": products_by_group.get(row.get("8"), []),
+            "compiled_file": compiled_file,
+            "compiled_exists": bool(compiled_file),
+            "_source": source(9, {
+                "id": 1, "section_id": 2, "name": 3, "release_condition": 4,
+                "open_at": 5, "resource_id": 6, "sort_order": 7,
+                "product_group_id": 8, "character_set_id": 9,
+            }, row.get("_offset")),
+        }
+        episodes_by_section[row.get("2")].append(episode)
+        by_episode_id[str(row.get("1"))] = {
+            "id": row.get("1"),
+            "section_id": row.get("2"),
+            "resource_id": resource_id,
+            "compiled_file": compiled_file,
+        }
+        if compiled_file:
+            compiled_episode_count += 1
+
+    sections_by_chapter: dict[int, list[dict[str, Any]]] = defaultdict(list)
+    for row in tables.get(8, []):
+        section_episodes = sorted(
+            episodes_by_section.get(row.get("1"), []),
+            key=lambda item: item.get("sort_order") or 0,
+        )
+        section = {
+            "id": row.get("1"),
+            "chapter_id": row.get("2"),
+            "name": row.get("3"),
+            "release_condition": normalize_release_condition(row.get("4")),
+            "open_at": row.get("5"),
+            "background_resource_id": row.get("6"),
+            "sort_order": row.get("7"),
+            "product_group_id": row.get("8"),
+            "scenario_title": row.get("9"),
+            "products": products_by_group.get(row.get("8"), []),
+            "episodes": section_episodes,
+            "_source": source(8, {
+                "id": 1, "chapter_id": 2, "name": 3, "release_condition": 4,
+                "open_at": 5, "background_resource_id": 6, "sort_order": 7,
+                "product_group_id": 8, "scenario_title": 9,
+            }, row.get("_offset")),
+        }
+        sections_by_chapter[row.get("2")].append(section)
+
+    chapters = []
+    by_idol_code: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in tables.get(7, []):
+        idol = idols.get(str(row.get("2")), {})
+        chapter_sections = sorted(
+            sections_by_chapter.get(row.get("1"), []),
+            key=lambda item: item.get("sort_order") or 0,
+        )
+        chapter = {
+            "id": row.get("1"),
+            "idol_id": row.get("2"),
+            "idol_code": idol.get("idol_code"),
+            "idol_name": idol.get("display_name") or row.get("3"),
+            "name": row.get("3"),
+            "release_condition": normalize_release_condition(row.get("4")),
+            "open_at": row.get("5"),
+            "resource_id": row.get("6"),
+            "sort_order": row.get("7"),
+            "bgm_resource_id": row.get("8"),
+            "sections": chapter_sections,
+            "_source": source(7, {
+                "id": 1, "idol_id": 2, "name": 3, "release_condition": 4,
+                "open_at": 5, "resource_id": 6, "sort_order": 7, "bgm_resource_id": 8,
+            }, row.get("_offset")),
+        }
+        chapters.append(chapter)
+        if chapter["idol_code"]:
+            by_idol_code[chapter["idol_code"]].append(chapter)
+
+    return {
+        "schema_version": 1,
+        "chapters": sorted(chapters, key=lambda item: item.get("sort_order") or 0),
+        "by_idol_code": dict(by_idol_code),
+        "by_episode_id": by_episode_id,
+        "meta": {
+            "chapter_count": len(chapters),
+            "section_count": sum(len(item["sections"]) for item in chapters),
+            "episode_count": len(by_episode_id),
+            "product_count": sum(len(items) for items in products_by_group.values()),
+            "compiled_episode_count": compiled_episode_count,
+        },
+    }
+
+
+def build_mobile_archive_index(
+    tables: dict[int, list[dict[str, Any]]],
+    compiled_stems: set[str],
+    compiled_summaries: dict[str, dict[str, Any]],
+    idol_unit_dictionary: dict[str, Any],
+) -> dict[str, Any]:
+    idols = idol_unit_dictionary.get("by_numeric_id", {})
+    units = idol_unit_dictionary.get("by_unit_id", {})
+
+    personal_rooms = {}
+    for row in tables.get(94, []):
+        idol = idols.get(str(row.get("2")), {})
+        room = row.get("4") if isinstance(row.get("4"), dict) else {}
+        personal_rooms[row.get("1")] = {
+            "id": row.get("1"), "idol_id": row.get("2"),
+            "idol_code": idol.get("idol_code"), "idol_name": idol.get("display_name"),
+            "profile_text": row.get("3"),
+            "background_resource_id": room.get("1"), "icon_resource_id": room.get("2"),
+            "postname_color": room.get("3"), "header_color": room.get("4"),
+            "talkroom_color": room.get("5"),
+            "_source": source(94, {"id": 1, "idol_id": 2, "profile_text": 3, "room": 4}, row.get("_offset")),
+        }
+
+    unit_rooms = {}
+    for row in tables.get(96, []):
+        unit = units.get(str(row.get("2")), {})
+        room = row.get("3") if isinstance(row.get("3"), dict) else {}
+        unit_rooms[row.get("1")] = {
+            "id": row.get("1"), "unit_id": row.get("2"),
+            "unit_code": unit.get("unit_code"), "unit_name": unit.get("unit_name"),
+            "background_resource_id": room.get("1"), "icon_resource_id": room.get("2"),
+            "postname_color": room.get("3"), "header_color": room.get("4"),
+            "talkroom_color": room.get("5"),
+            "_source": source(96, {"id": 1, "unit_id": 2, "room": 3}, row.get("_offset")),
+        }
+
+    group_rooms = {}
+    for row in tables.get(98, []):
+        room = row.get("3") if isinstance(row.get("3"), dict) else {}
+        group_rooms[row.get("1")] = {
+            "id": row.get("1"), "group_id": row.get("2"),
+            "background_resource_id": room.get("1"), "icon_resource_id": room.get("2"),
+            "postname_color": room.get("3"), "header_color": room.get("4"),
+            "talkroom_color": room.get("5"), "raw_room": row.get("3"),
+            "_source": source(98, {"id": 1, "group_id": 2, "room": 3}, row.get("_offset")),
+        }
+
+    specs = {
+        1: (32, "idol_talk", personal_rooms, "8", "9", "10"),
+        2: (34, "unit_talk", unit_rooms, "8", "9", "10"),
+        101: (43, "idol_phone", personal_rooms, "5", "4", None),
+    }
+    scenario_rows = {table_id: {row.get("1"): row for row in tables.get(table_id, [])} for table_id in (32, 34, 36, 43)}
+    conditions = {row.get("2"): row for row in tables.get(180, [])}
+    priorities = {row.get("5"): row for row in tables.get(44, [])}
+    scenarios = []
+    by_idol_code: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    by_unit_code: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    by_kind: dict[str, list[dict[str, Any]]] = defaultdict(list)
+
+    for relation in tables.get(63, []):
+        spec = specs.get(relation.get("3"))
+        if not spec:
+            continue
+        table_id, kind, rooms, room_key, base_key, label_key = spec
+        row = scenario_rows[table_id].get(relation.get("4"))
+        if not row:
+            continue
+        room = rooms.get(row.get(room_key), {})
+        base_resource_id = row.get(base_key)
+        scenario_label = row.get(label_key) if label_key else None
+        compiled_file = compiled_filename(base_resource_id, compiled_stems) if isinstance(base_resource_id, str) else None
+        condition_row = conditions.get(relation.get("7"), {})
+        priority_row = priorities.get(relation.get("2"), {})
+        entry = {
+            "id": relation.get("1"), "group_id": relation.get("2"),
+            "mobile_type": relation.get("3"), "kind": kind,
+            "scenario_id": row.get("1"), "title": row.get("3"),
+            "room_id": row.get(room_key), "idol_code": room.get("idol_code"),
+            "idol_name": room.get("idol_name"), "unit_code": room.get("unit_code"),
+            "unit_name": room.get("unit_name"), "base_resource_id": base_resource_id,
+            "scenario_label_resource_id": scenario_label,
+            "release_order": relation.get("5"), "term": normalize_term(relation.get("6")),
+            "release_condition_group_id": relation.get("7"),
+            "release_condition": normalize_release_condition(condition_row.get("3")),
+            "priority": priority_row.get("4"),
+            "compiled_file": compiled_file, "compiled_exists": bool(compiled_file),
+            "_source": {
+                "scenario": source(table_id, {"id": 1, "title": 3, "base_resource_id": int(base_key), "room_id": int(room_key)}, row.get("_offset")),
+                "relation": source(63, {"id": 1, "group_id": 2, "mobile_type": 3, "scenario_id": 4, "release_order": 5, "term": 6, "condition_group_id": 7}, relation.get("_offset")),
+                "condition": source(180, {"id": 1, "group_id": 2, "release_condition": 3}, condition_row.get("_offset")) if condition_row else None,
+            },
+        }
+        scenarios.append(entry)
+        by_kind[kind].append(entry["id"])
+        if entry["idol_code"]:
+            by_idol_code[entry["idol_code"]].append(entry["id"])
+        if entry["unit_code"]:
+            by_unit_code[entry["unit_code"]].append(entry["id"])
+
+    talk_rooms = {row.get("1"): row for row in tables.get(103, [])}
+    random_topics = []
+    for row in tables.get(104, []):
+        talk_room = talk_rooms.get(row.get("2"), {})
+        mobile_room = personal_rooms.get(talk_room.get("3"), {})
+        resource_id = row.get("3")
+        compiled_file = compiled_filename(resource_id, compiled_stems) if isinstance(resource_id, str) else None
+        random_topics.append({
+            "id": row.get("1"), "talk_room_id": row.get("2"),
+            "idol_code": mobile_room.get("idol_code"), "idol_name": mobile_room.get("idol_name"),
+            "script_name": resource_id, "script_label": row.get("4"),
+            "open_time": row.get("5"), "close_time": row.get("6"),
+            "weight": row.get("7"), "interval_day": row.get("8"),
+            "intro_weights": [row.get(str(field)) for field in range(9, 25)],
+            "compiled_file": compiled_file, "compiled_exists": bool(compiled_file),
+            "_source": source(104, {"id": 1, "talk_room_id": 2, "script_name": 3, "script_label": 4, "open_time": 5, "close_time": 6, "weight": 7, "interval_day": 8}, row.get("_offset")),
+        })
+
+    random_intros = [{
+        "id": row.get("1"), "talk_room_id": row.get("2"), "intro_id": row.get("3"),
+        "script_name": row.get("4"), "script_label": row.get("5"),
+        "join_probability": row.get("6"), "open_time": row.get("7"), "close_time": row.get("8"),
+        "_source": source(105, {"id": 1, "talk_room_id": 2, "intro_id": 3, "script_name": 4, "script_label": 5, "join_probability": 6, "open_time": 7, "close_time": 8}, row.get("_offset")),
+    } for row in tables.get(105, [])]
+
+    return {
+        "schema_version": 1,
+        "rooms": {
+            "personal": list(personal_rooms.values()),
+            "unit": list(unit_rooms.values()),
+            "group": list(group_rooms.values()),
+        },
+        "scenarios": scenarios,
+        "by_kind": dict(by_kind),
+        "by_idol_code": dict(by_idol_code),
+        "by_unit_code": dict(by_unit_code),
+        "random_talk": {
+            "rooms": list(talk_rooms.values()),
+            "topics": random_topics,
+            "intros": random_intros,
+            "segments": tables.get(106, []),
+        },
+        "meta": {
+            "scenario_count": len(scenarios),
+            "kind_counts": {key: len(value) for key, value in by_kind.items()},
+            "compiled_scenario_count": sum(1 for item in scenarios if item["compiled_exists"]),
+            "personal_room_count": len(personal_rooms),
+            "unit_room_count": len(unit_rooms),
+            "group_room_count": len(group_rooms),
+            "random_topic_count": len(random_topics),
+            "random_intro_count": len(random_intros),
+            "user_state_note": "Read, favorite, received and actual unlock state belong to User* service data and are not reconstructed from static masterdata.",
+        },
+    }
+
+
 def build_home_interaction_index(
     tables: dict[int, list[dict[str, Any]]],
     compiled_stems: set[str],
@@ -968,8 +1278,8 @@ def build_home_interaction_index(
 ) -> dict[str, Any]:
     rows = []
     specs = [
-        (32, "card_link_talk", "10", {"id": 1, "title": 3, "base_resource_id": 9, "resource_id": 10}),
-        (34, "birthday_unlock", "10", {"id": 1, "title": 3, "base_resource_id": 9, "resource_id": 10}),
+        (32, "idol_talk_scenario", "10", {"id": 1, "title": 3, "base_resource_id": 9, "resource_id": 10}),
+        (34, "idol_unit_talk_scenario", "10", {"id": 1, "title": 3, "base_resource_id": 9, "resource_id": 10}),
         (104, "home_time_slot_resource", "4", {"id": 1, "base_resource_id": 3, "resource_id": 4, "start_time": 5, "end_time": 6}),
         (105, "home_schedule_time_slot", "5", {"id": 1, "base_resource_id": 4, "resource_id": 5, "start_time": 7, "end_time": 8}),
     ]
@@ -2452,6 +2762,11 @@ def main() -> None:
         help="Generate only work_story_index.json with scene lines and short stories.",
     )
     parser.add_argument(
+        "--idol-communication-only",
+        action="store_true",
+        help="Generate only idol_episode_index.json, mobile_archive_index.json and the corrected home interaction index.",
+    )
+    parser.add_argument(
         "--curated-card-voices",
         type=Path,
         default=Path(__file__).resolve().parent / "curated" / "card_voice_transcripts.json",
@@ -2471,6 +2786,40 @@ def main() -> None:
     records = list(iter_top_records(decoded))
     compiled_stems = collect_compiled_stems(args.compiled_dir)
     compiled_summaries = collect_compiled_summaries(args.compiled_dir)
+    if args.idol_communication_only:
+        communication_tables = extract_table_rows(
+            records,
+            {
+                2, 7, 8, 9, 20, 21, 23, 24, 32, 34, 36, 43, 44, 63, 68,
+                94, 96, 98, 103, 104, 105, 106, 180,
+            },
+        )
+        communication_idols = build_idol_unit_dictionary(communication_tables)
+        selected_outputs = {
+            "idol_episode_index.json": build_idol_episode_index(
+                communication_tables, compiled_stems, compiled_summaries, communication_idols
+            ),
+            "mobile_archive_index.json": build_mobile_archive_index(
+                communication_tables, compiled_stems, compiled_summaries, communication_idols
+            ),
+            "home_interaction_index.json": build_home_interaction_index(
+                communication_tables, compiled_stems, compiled_summaries
+            ),
+        }
+        for filename, data in selected_outputs.items():
+            (args.out_dir / filename).write_text(
+                json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+        if args.public_out_dir:
+            args.public_out_dir.mkdir(parents=True, exist_ok=True)
+            for filename, data in selected_outputs.items():
+                (args.public_out_dir / filename).write_text(
+                    json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
+                )
+        print(f"decoded: {decoded_path}")
+        for filename, data in selected_outputs.items():
+            print(f"{filename}: {data.get('meta', {})}")
+        return
     if args.seasonal_campaign_only:
         seasonal_tables = extract_table_rows(
             records,
@@ -2539,11 +2888,28 @@ def main() -> None:
     )
     catalog_tables = extract_table_rows(
         records,
-        {2, 20, 21, 23, 24, 27, 28, 29, 32, 34, 40, 46, 53, 54, 55, 90, 100, 101, 104, 105, 107, 108, 110, 112, 133, 146, 147, 148, 149, 150, 153, 159, 162, 165, 168, 176},
+        {
+            2, 7, 8, 9, 20, 21, 23, 24, 27, 28, 29, 32, 34, 36, 40, 43, 44,
+            46, 53, 54, 55, 63, 68, 90, 94, 96, 98, 100, 101, 103, 104,
+            105, 106, 107, 108, 110, 112, 133, 146, 147, 148, 149, 150,
+            153, 159, 162, 165, 168, 176, 180,
+        },
     )
     idol_unit_dictionary = build_idol_unit_dictionary(catalog_tables)
     speaker_dictionary = build_speaker_dictionary(catalog_tables, idol_unit_dictionary)
     costume_dictionary = build_costume_dictionary(catalog_tables, idol_unit_dictionary, spine_ids, prefab_models)
+    idol_episode_index = build_idol_episode_index(
+        catalog_tables,
+        compiled_stems,
+        compiled_summaries,
+        idol_unit_dictionary,
+    )
+    mobile_archive_index = build_mobile_archive_index(
+        catalog_tables,
+        compiled_stems,
+        compiled_summaries,
+        idol_unit_dictionary,
+    )
     home_interaction_index = build_home_interaction_index(catalog_tables, compiled_stems, compiled_summaries)
     short_adv_profile_index = build_short_adv_profile_index(catalog_tables, compiled_stems, compiled_summaries)
     seasonal_communication_index = build_seasonal_communication_index(catalog_tables, compiled_stems, compiled_summaries)
@@ -2602,6 +2968,8 @@ def main() -> None:
         "idol_unit_dictionary.json": idol_unit_dictionary,
         "speaker_dictionary.json": speaker_dictionary,
         "costume_dictionary.json": costume_dictionary,
+        "idol_episode_index.json": idol_episode_index,
+        "mobile_archive_index.json": mobile_archive_index,
         "home_interaction_index.json": home_interaction_index,
         "short_adv_profile_index.json": short_adv_profile_index,
         "seasonal_communication_index.json": seasonal_communication_index,
@@ -2634,6 +3002,8 @@ def main() -> None:
             "idol_unit_dictionary.json",
             "speaker_dictionary.json",
             "costume_dictionary.json",
+            "idol_episode_index.json",
+            "mobile_archive_index.json",
             "home_interaction_index.json",
             "short_adv_profile_index.json",
             "seasonal_communication_index.json",

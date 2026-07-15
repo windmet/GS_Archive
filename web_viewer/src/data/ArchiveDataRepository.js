@@ -15,6 +15,10 @@ const ARCHIVE_SOURCES = {
 }
 
 const CARD_DETAIL_SOURCE = '/data/masterdata/card_detail_index.json'
+const IDOL_COMMUNICATION_SOURCES = {
+  idolEpisode: '/data/masterdata/idol_episode_index.json',
+  mobileArchive: '/data/masterdata/mobile_archive_index.json',
+}
 
 const payloadCache = new Map()
 
@@ -54,6 +58,12 @@ function validatePayload(key, payload) {
   }
   if (key === 'workStory' && (payload.schema_version < 1 || !Array.isArray(payload.idols) || !payload.by_idol_code)) {
     throw new Error('workStory must include idol work-story entities')
+  }
+  if (key === 'idolEpisode' && (payload.schema_version < 1 || !Array.isArray(payload.chapters) || !payload.by_idol_code)) {
+    throw new Error('idolEpisode must include normalized chapters and idol indexes')
+  }
+  if (key === 'mobileArchive' && (payload.schema_version < 1 || !Array.isArray(payload.scenarios) || !payload.by_kind)) {
+    throw new Error('mobileArchive must include normalized scenarios and kind indexes')
   }
   if (key === 'idolUnit' && !payload.by_idol_code) {
     throw new Error('idolUnit.by_idol_code is missing')
@@ -118,8 +128,16 @@ export function loadCardDetailData(options = {}) {
   return fetchJson('cardDetailIndex', CARD_DETAIL_SOURCE, options)
 }
 
+export async function loadIdolCommunicationData(options = {}) {
+  const [idolEpisode, mobileArchive] = await Promise.all([
+    fetchJson('idolEpisode', IDOL_COMMUNICATION_SOURCES.idolEpisode, options),
+    fetchJson('mobileArchive', IDOL_COMMUNICATION_SOURCES.mobileArchive, options),
+  ])
+  return { idolEpisode, mobileArchive }
+}
+
 export function clearArchiveDataCache() {
   payloadCache.clear()
 }
 
-export { ARCHIVE_SOURCES, CARD_DETAIL_SOURCE }
+export { ARCHIVE_SOURCES, CARD_DETAIL_SOURCE, IDOL_COMMUNICATION_SOURCES }
