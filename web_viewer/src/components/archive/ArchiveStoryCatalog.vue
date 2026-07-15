@@ -69,9 +69,9 @@
       <section class="portal-section archive-section">
         <div class="section-heading"><div><span>STORY ARCHIVE</span><h2>更多故事</h2></div></div>
         <div class="domain-grid">
-          <button v-for="gateway in secondaryGateways" :key="gateway.id" @click="browse(gateway.id)">
+          <button v-for="gateway in secondaryGateways" :key="gateway.id" @click="openGateway(gateway)">
             <span class="gateway-icon"><component :is="gateway.icon" :size="20" /></span>
-            <span><strong>{{ gateway.label }}</strong><small>{{ domainCount(gateway.id) }} 篇</small></span>
+            <span><strong>{{ gateway.label }}</strong><small>{{ gatewayCount(gateway) }} {{ gateway.unit || '篇' }}</small></span>
             <ArrowRight :size="16" />
           </button>
         </div>
@@ -161,8 +161,9 @@ const props = defineProps({
   eventScopeOptions: { type: Array, default: () => [] }, eventScope: { type: String, default: 'all' },
   availability: { type: String, default: 'all' }, sort: { type: String, default: 'domain' },
   catalogTotal: { type: Number, default: 0 }, filteredTotal: { type: Number, default: 0 },
+  seasonalCampaigns: { type: Array, default: () => [] },
 })
-const emit = defineEmits(['select', 'browse', 'load-more', 'clear-section', 'update:mode', 'update:domain', 'update:event-scope', 'update:availability', 'update:sort'])
+const emit = defineEmits(['select', 'browse', 'open-seasonal', 'load-more', 'clear-section', 'update:mode', 'update:domain', 'update:event-scope', 'update:availability', 'update:sort'])
 
 const groupEntries = domain => {
   const groups = new Map()
@@ -181,11 +182,17 @@ const secondaryGateways = [
   { id: 'idol_story', label: '个人剧情', icon: UserRound }, { id: 'card_scenarios', label: '卡片剧情', icon: CreditCard },
   { id: 'work', label: '工作剧情', icon: Briefcase }, { id: 'birthday', label: '生日剧情', icon: Cake },
   { id: 'extra', label: '额外剧情', icon: Sparkles },
+  { id: 'seasonal_campaign', label: '季节企划', icon: CalendarRange, unit: '组', action: 'seasonal' },
 ]
 const sectionLabel = computed(() => props.allEntries.find(entry => entry.domain === props.domain && entry.sectionId === props.section)?.sectionLabel || props.section)
 
 function browse(domain, section = '') { emit('browse', { domain, section }) }
 function domainCount(domain) { return props.allEntries.filter(entry => entry.domain === domain).length }
+function gatewayCount(gateway) { return gateway.action === 'seasonal' ? props.seasonalCampaigns.length : domainCount(gateway.id) }
+function openGateway(gateway) {
+  if (gateway.action === 'seasonal') emit('open-seasonal')
+  else browse(gateway.id)
+}
 function mainVisual(index) { return `/assets/stories/main/image_story_main_button_${String(index + 1).padStart(2, '0')}.png` }
 function eventBanner(entry) { return `/assets/events/banners/image_home_announce_event_${entry.eventRelation?.event_code || entry.sectionId}_01.png` }
 function unitVisual(id) {
@@ -228,7 +235,7 @@ function hierarchyLabel(entry) { return [entry.sectionLabel, entry.episodeLabel]
 .unit-grid button { position: relative; overflow: hidden; min-height: 82px; padding: 0; border: 1px solid #dfe4e6; border-radius: 6px; background: #f7f9fa; cursor: pointer; }
 .unit-grid img { display: block; width: 100%; height: 100%; min-height: 82px; object-fit: contain; }
 .unit-grid span { position: absolute; right: 5px; bottom: 5px; padding: 2px 5px; border-radius: 3px; background: rgba(24,36,42,.76); color: #fff; font-size: .52rem; }
-.domain-grid { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 8px; }
+.domain-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
 .domain-grid button { display: grid; grid-template-columns: 34px minmax(0,1fr) 16px; align-items: center; gap: 8px; min-height: 66px; padding: 10px; border: 1px solid #dfe5e7; border-radius: 6px; background: #fff; color: #293840; cursor: pointer; text-align: left; }
 .domain-grid button:hover, .event-strip button:hover, .unit-grid button:hover, .chapter-entry:hover { border-color: #66bdb7; box-shadow: 0 4px 14px rgba(28,66,66,.09); }
 .gateway-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: #e8f6f4; color: #147f78; }

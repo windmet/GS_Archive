@@ -183,8 +183,10 @@
         :sort="currentStorySort"
         :catalog-total="storyCatalog.length"
         :filtered-total="filteredStoryCatalog.length"
+        :seasonal-campaigns="seasonalCampaignData?.campaigns || []"
         @select="openCatalogStory"
         @browse="browseStoryCollection"
+        @open-seasonal="openSeasonalCampaign()"
         @load-more="storyVisibleLimit += 80"
         @clear-section="currentStorySection = ''"
         @update:mode="setStoryMode"
@@ -203,6 +205,14 @@
         @play="playStoryDetail"
         @select="openStoryDetail"
         @open-idol="openStoryIdol"
+      />
+
+      <ArchiveSeasonalCampaign
+        v-if="view === 'seasonal_campaign'"
+        :campaign="currentSeasonalCampaign"
+        :campaigns="seasonalCampaignData?.campaigns || []"
+        @select="selectSeasonalCampaign"
+        @play="playSeasonalCampaignStory"
       />
 
       <ArchiveUnitCatalog
@@ -266,6 +276,7 @@ import ArchiveEpisodeList from './components/archive/ArchiveEpisodeList.vue'
 import ArchiveStatus from './components/archive/ArchiveStatus.vue'
 import ArchiveStoryCatalog from './components/archive/ArchiveStoryCatalog.vue'
 import ArchiveStoryDetail from './components/archive/ArchiveStoryDetail.vue'
+import ArchiveSeasonalCampaign from './components/archive/ArchiveSeasonalCampaign.vue'
 import ArchiveUnitCatalog from './components/archive/ArchiveUnitCatalog.vue'
 import ArchiveUnitDetail from './components/archive/ArchiveUnitDetail.vue'
 import { loadArchiveData, loadCardDetailData } from './data/ArchiveDataRepository.js'
@@ -311,6 +322,7 @@ const cardDetailData = ref(null)
 const cardDetailLoadPromise = ref(null)
 const storyMasterData = ref(null)
 const storyPresentationData = ref(null)
+const seasonalCampaignData = ref(null)
 const idolUnitData = ref(null)
 const costumeDictionaryData = ref(null)
 const archiveManifestData = ref(null)
@@ -567,6 +579,13 @@ const storyCatalog = computed(() => buildStoryCatalog(storyMasterData.value, sto
     eventRelation: relation,
   }
 }))
+
+const currentSeasonalCampaign = computed(() => {
+  const campaigns = seasonalCampaignData.value?.campaigns || []
+  return seasonalCampaignData.value?.by_id?.[currentStorySection.value] ||
+    campaigns.find(item => item.id === 'valentine_2023') ||
+    campaigns[0] || null
+})
 
 const storyDomainOptions = computed(() => {
   const counts = new Map()
@@ -957,6 +976,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'archive_status') return '数据状态'
   if (view.value === 'story_catalog') return '故事目录'
   if (view.value === 'story_detail') return currentStory.value?.title || '故事详情'
+  if (view.value === 'seasonal_campaign') return currentSeasonalCampaign.value?.name || '季节企划'
   if (view.value === 'gashas') return '卡池档案'
   if (view.value === 'gasha_detail') return currentGasha.value?.display_name || '卡池详情'
   if (view.value === 'event_detail') return currentEvent.value?.title || '活动详情'
@@ -1180,6 +1200,7 @@ async function applyArchiveRoute(route) {
     else if (route.view === 'gasha_detail' && !currentGasha.value) view.value = 'gashas'
     else if (route.view === 'event_detail' && !currentEvent.value) view.value = 'story_catalog'
     else if (route.view === 'story_detail' && !currentStory.value) view.value = 'story_catalog'
+    else if (route.view === 'seasonal_campaign' && !currentSeasonalCampaign.value) view.value = 'story_catalog'
     else if (route.view === 'cards' && !currentCharacterId.value) view.value = 'idols'
     else if (route.view === 'files' && !currentGroup.value) view.value = currentCharacterId.value ? 'groups' : 'home'
     else if (route.view === 'episodes' && !currentUnit.value) view.value = 'episode_zero_units'
@@ -1263,6 +1284,11 @@ function goArchiveBack() {
     story_catalog: goHome,
     story_detail: () => {
       currentStoryFile.value = ''
+      commitView('story_catalog')
+    },
+    seasonal_campaign: () => {
+      currentStoryDomain.value = ''
+      currentStorySection.value = ''
       commitView('story_catalog')
     },
     unit_catalog: () => commitView('idols'),
@@ -1353,6 +1379,24 @@ function browseStoryCollection({ domain, section = '' }) {
   currentEventScope.value = 'all'
   currentStoryMode.value = 'search'
   storyVisibleLimit.value = 80
+}
+
+function openSeasonalCampaign(campaignId = 'valentine_2023') {
+  const fallback = seasonalCampaignData.value?.campaigns?.[0]?.id || ''
+  currentStoryDomain.value = 'seasonal_campaign'
+  currentStoryMode.value = 'portal'
+  currentStorySection.value = seasonalCampaignData.value?.by_id?.[campaignId] ? campaignId : fallback
+  commitView('seasonal_campaign')
+}
+
+function selectSeasonalCampaign(campaignId) {
+  if (!seasonalCampaignData.value?.by_id?.[campaignId]) return
+  currentStorySection.value = campaignId
+  syncArchiveRoute()
+}
+
+function playSeasonalCampaignStory(file) {
+  if (file) loadScenario(file, 'seasonal_campaign')
 }
 
 function openUnitCatalog() {
@@ -1863,6 +1907,7 @@ onMounted(async () => {
   eventIndexData.value = data.eventIndex
   storyMasterData.value = data.storyMaster
   storyPresentationData.value = data.storyPresentation
+  seasonalCampaignData.value = data.seasonalCampaign
   idolUnitData.value = data.idolUnit
   costumeDictionaryData.value = data.costumeDictionary
   archiveManifestData.value = data.archiveManifest

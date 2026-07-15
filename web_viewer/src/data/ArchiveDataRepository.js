@@ -5,6 +5,7 @@ const ARCHIVE_SOURCES = {
   eventIndex: '/data/masterdata/event_index.json',
   storyMaster: '/data/masterdata/story_master_index.json',
   storyPresentation: '/data/masterdata/story_presentation_index.json',
+  seasonalCampaign: '/data/masterdata/seasonal_campaign_index.json',
   idolUnit: '/data/masterdata/idol_unit_dictionary.json',
   costumeDictionary: '/data/masterdata/costume_dictionary.json',
   archiveManifest: '/data/archive_manifest.json',
@@ -46,6 +47,9 @@ function validatePayload(key, payload) {
   }
   if (key === 'storyPresentation' && (!payload.by_file || payload.schema_version < 1)) {
     throw new Error('storyPresentation must include normalized display metadata')
+  }
+  if (key === 'seasonalCampaign' && (payload.schema_version < 1 || !Array.isArray(payload.campaigns) || !payload.by_id)) {
+    throw new Error('seasonalCampaign must include normalized campaign entities')
   }
   if (key === 'idolUnit' && !payload.by_idol_code) {
     throw new Error('idolUnit.by_idol_code is missing')
