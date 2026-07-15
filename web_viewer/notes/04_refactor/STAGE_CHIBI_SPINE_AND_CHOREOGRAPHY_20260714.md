@@ -22,9 +22,9 @@
 - 有效 `Livechara_motion` 事件：21,860 条。
 - 歌曲引用的唯一动作：1,403 个。
 - 其中通用动作：54 个；歌曲专属动作：1,349 个。
-- body-1 资源覆盖：1,403 / 1,403，无缺失引用。
+- body 1–5 资源覆盖：每种体型均为 1,403 / 1,403，无缺失引用。
 
-五种体型的动态兼容矩阵已经跑通：300 次通用动作切换（5 × 60）和 25 次歌曲动作切换（5 × 5），共 325 次。全量歌曲动作目录仍只为 body 1 生成，避免在数据结构稳定前复制四套大体积资源。
+五种体型的动态兼容矩阵已经跑通：300 次通用动作切换（5 × 60）和 25 次歌曲动作切换（5 × 5），共 325 次。随后确认五种体型都包含歌曲引用的全部 1,403 个动作，现已生成 7,015 个正式舞蹈文件（5 × 1,403）。山下次郎等 body 2–5 角色因此可以直接选择歌曲编排，不再只显示通用组。
 
 静态服装盘点共找到 549 套：body 1 为 265 套、body 2 为 100 套、body 3 为 143 套、body 4 为 32 套、body 5 为 9 套。549 套均可映射体型，且没有缺少 `cos.atlas` 或 `cos.png`；这只是静态完整性检查，不代表 549 套都已经逐一在浏览器渲染。
 
@@ -32,7 +32,7 @@
 
 `npm run chibi:scan` 会读取五套 setup skeleton 的全部 attachment path，并与每套服装 atlas 的 region 集合比较。由于 setup 是同体型所有可选附件的并集，单套服装覆盖率约 37% 是正常现象；报告以同体型中位数识别异常，而不是要求每套服装覆盖全部可选附件。本轮 549 套全部落在各自体型的正常分布内，未发现 region 数量或覆盖率异常的离群服装。报告输出为 `compatibility-report.json`。
 
-生成后的 Web 资源约 58.5 MiB，其中歌曲编排索引约 2.1 MiB。动作二进制按 motion ID 独立保存，浏览器按需加载，不会在页面启动时一次性下载全部动作。
+生成后的 Web 资源约 923 MiB（包含约 302 MiB 的歌曲音频），其中 7,340 个动作文件约 265.7 MiB，歌曲编排索引约 2.85 MiB。动作二进制按 motion ID 独立保存，浏览器按需加载，不会在页面启动时一次性下载全部动作。
 
 ## 数据生成
 
@@ -53,9 +53,9 @@ public/assets/live-chibi/
 ├─ compatibility-report.json
 ├─ setup/body-{1..5}.skel
 ├─ costumes/{idol}_{costume}/
-├─ motions/common/{1..5}/{motionId}.bin
-├─ motions/compatibility/{1..5}/{motionId}.bin
-├─ motions/choreography/1/{motionId}.bin
+├─ motions/common/{1..5}/{motionId}.motion
+├─ motions/compatibility/{1..5}/{motionId}.motion
+├─ motions/choreography/{1..5}/{motionId}.motion
 └─ choreography/index.json
 ```
 
@@ -63,7 +63,7 @@ public/assets/live-chibi/
 
 - `motionCatalog`：动作 ID、内部动画名、显示名、文件路径。
 - `songs`：歌曲代码、标题、变体、时长、站位、动作集合和事件时间轴。
-- 每条事件保存 `time`、`motion`、`speed`、`position`、目标坐标、hold 和播放模式。
+- 每条事件保存 `time`、`motion`、`speed`、原始演员槽位 `position`、左到右舞台编号 `stagePosition`、目标坐标、`pauseTime` 和播放模式。
 
 歌曲标题优先由 `public/data/masterdata/music_catalog.json` 补全；无法匹配时保留资源代码。
 
@@ -143,7 +143,7 @@ public/assets/live-chibi/
 歌曲模式支持：
 
 - 选择歌曲或编排变体。
-- 选择 1–5 号站位（以 CSV 实际存在的站位为准）。
+- 选择从左到右的舞台站位；三人曲为 2/3/4，solo 为 3，动作事件仍保留原始演员槽位供追溯。
 - 查看单曲动作集合。
 - 拖动时间轴预览指定时间之前的当前动作。
 - 按 CSV 时间戳、速度倍率自动播放动作编排。
@@ -206,22 +206,34 @@ node scripts\inspect-live-chibi-motion.mjs 1 --transition 32005 0.2 32006
 
 浏览器验证路径为：选择 `DRIVE A LIVE` → 站位 2 → 跳到 7000 ms，界面正确显示 2/5 号位演唱；随后从 7000 ms 以 2× 播放越过 10300/10392 ms，动作从 #26 切换到 #8，演唱者变为 1/4 号位。运行时诊断记录 `reset: false`、`mixDuration: 0.12`，且没有控制台 error。
 
-## 为什么暂不先跑全部人物服装
+## 全人物构建状态
 
-当前应先稳定动作/编排数据模型，再扩展所有人物和服装。原因：
-
-- 五种 body type 的动画内容需要确认能共用同一索引语义。
-- 服装 atlas 可能包含特殊 skin/slot，需要先建立兼容性报告。
-- 多角色时间轴会使用同一动作 ID，但具有不同站位、速度和坐标。
-- 现在先用一个 body type 验证完整歌曲编排，可以避免生成大量重复或结构错误的 Web 资源。
+五种 body type 的动画索引语义已经确认一致，49 名角色、549 套服装和五体型正式舞蹈资源均已进入全量构建。后续无需再以 body 1 作为歌曲预览限制；仍需抽查的是特殊服装附件、运动中的视觉裁切和多人同屏布局。
 
 ## 推荐后续顺序
 
 1. 抽查不同歌曲、不同站位以及歌曲专属动作的附件完整性。
 2. 根据 `inventory.json` 对 549 套服装做 atlas/skin 批量兼容性扫描并标注异常组合。
-3. 扩大 body type 2–5 的歌曲动作抽查；确认无体型特有异常后再生成完整 motion catalog。
+3. 抽查 body type 2–5 的歌曲动作附件和裁切；完整 motion catalog 已生成。
 4. 对异常服装做浏览器定点复测。
 5. 最后接入音乐文件、CSV 坐标移动、多角色同屏和完整舞台时间轴。
+
+## 舞台站位、全体型歌曲动作与 IDM 兼容（2026-07-15）
+
+CSV 的 `Livechara_motion.position` 是本曲内部的演员槽位，不是画面中从左到右的五个舞台位置。原始数据给出了两条可交叉验证的线索：`Livechara_position` 提供每个演员槽位的 X 坐标，`SwitchSinger` 使用舞台演唱位置。例如三人曲的动作槽位为 1/2/3，但演唱开关为 2/3/4；初始 X 坐标又显示槽位 2 在左、槽位 1 居中、槽位 3 在右。
+
+生成器现在按初始 X 坐标从左到右排序演员槽位，再映射到该人数的舞台位置，并同时保留两套编号：
+
+- `performerSlots`：CSV 动作轨道原始槽位。
+- `positions`：界面使用的舞台站位；三人曲为 2/3/4，solo 为 3。
+- `stagePositionMap`：演员槽位到舞台站位的映射。
+- `events[].position`：原始槽位；`events[].stagePosition`：用于单人预览筛选的舞台位置。
+
+以标准五人初始布局为例，原始槽位顺序是“中、左内、右内、左外、右外”，并非 1 到 5 从左到右。按 X 重排后映射为：槽位 4→舞台 1、槽位 2→舞台 2、槽位 1→舞台 3、槽位 3→舞台 4、槽位 5→舞台 5。`SwitchSinger` 本来就是舞台编号，因此口型判定继续直接使用舞台位置。
+
+歌曲动作导出由单一 body 1 改为 body 1–5。原始目录检查确认五种体型各有 1,427 个 animation fragment，歌曲所需的 1,403 个在每种体型中均无缺失。编排索引升级为 schema 4，并用 `bodyTypes: [1,2,3,4,5]` 声明兼容范围。
+
+动作公开文件扩展名由 `.bin` 改为自定义 `.motion`。文件内容仍是原 Spine 二进制 fragment，运行时解析方式不变；改名只为避免 IDM 按通用 bin 下载规则拦截浏览器 `fetch`，导致第一次点击只触发下载、第二次点击才播放。5173 实测可直接以 HTTP 200 读取 body-2 的 `.motion`，诊断工具也成功解析山下次郎体型的 #4001 和 #12001。
 
 ## 验证命令
 
