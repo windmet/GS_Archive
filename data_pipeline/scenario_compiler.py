@@ -1485,6 +1485,12 @@ class ScenarioCompiler:
         - Otherwise: {suffix}.m4a  (standalone voice ID)
         """
         if self._voice_prefix:
+            part_suffix = re.match(r"^([a-z])\d+$", suffix, re.IGNORECASE)
+            if part_suffix and self._voice_prefix.lower().endswith(f"_{part_suffix.group(1).lower()}"):
+                # Lettered chunks commonly use prefix "..._a" with suffix
+                # "a1000". The authored cue is "..._a1000", not
+                # "..._a_a1000".
+                return f"{self._voice_prefix[:-1]}{suffix}.m4a"
             return f"{self._voice_prefix}_{suffix}.m4a"
         if re.search(r"(?<!\d)9_2_\d{3}(?!\d)", self.scenario_id or "") and self._lip_base_id and suffix == "00":
             return f"{self._lip_base_id}.m4a"
