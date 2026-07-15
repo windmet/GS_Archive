@@ -77,3 +77,22 @@ export function archiveHomeStateStats(idols) {
     playable: cues.filter(cue => cue.voice && cue.compiledFile).length,
   }
 }
+
+const EVENT_SCOPE_LABELS = {
+  fixed_unit_event: '固定组合团活',
+  attribute_event: '属性团曲',
+  mixed_unit_event: '跨组合团活',
+}
+
+export function buildArchiveHomeHighlights(archiveManifestData, uiAssetCatalogData) {
+  const bannerUrls = uiAssetCatalogData?.featured_sets?.event_banner_urls || {}
+  return (archiveManifestData?.unit_event_relations || [])
+    .filter(event => event?.exists && event?.event_id && bannerUrls[event.event_code])
+    .map(event => ({
+      ...event,
+      id: String(event.event_id),
+      bannerUrl: bannerUrls[event.event_code],
+      scopeLabel: EVENT_SCOPE_LABELS[event.event_scope] || '活动剧情',
+    }))
+    .sort((left, right) => Number(right.release_at || 0) - Number(left.release_at || 0))
+}

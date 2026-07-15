@@ -49,6 +49,9 @@ assert.equal(homeUrl.searchParams.get('home_cue'), '2_1_040_01_00_09')
 const cardsUrl = buildArchiveUrl(homeUrl, { ...homeContext, view: 'cards', idol: '040ren' })
 assert.equal(cardsUrl.searchParams.has('home_idol'), false)
 assert.equal(cardsUrl.searchParams.has('home_cue'), false)
+const homeEventContext = readArchiveRoute('http://localhost/?view=event_detail&event=430018&parent=home')
+assert.equal(homeEventContext.view, 'event_detail')
+assert.equal(homeEventContext.parentView, 'home')
 
 const sourceRoute = {
   view: 'card_detail',
@@ -96,4 +99,4 @@ assert.equal(eventPlayerContext.returnView, 'event_detail')
 assert.equal(eventPlayerContext.parentView, 'unit_detail')
 assert.equal(eventPlayerContext.unit, '16cfi')
 
-console.log('Archive route contract: 48 assertions passed')
+console.log('Archive route contract: 50 assertions passed')

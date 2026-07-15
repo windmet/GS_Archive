@@ -17,11 +17,13 @@
         v-model:selected-id="homeSelectedId"
         v-model:selected-cue="homeSelectedCue"
         :idols="archiveHomeIdols"
+        :highlights="archiveHomeHighlights"
         :stats="archiveStats"
         @open-story="navigateArchiveSection('stories')"
         @open-cards="openHomeCards"
         @open-idol="openHomeIdol"
         @open-chat="openHomeChat"
+        @open-event="openHomeEvent"
       />
 
       <ArchiveIdolGrid
@@ -255,7 +257,7 @@ import {
   cardsForCharacter,
   mergeCardDetail,
 } from './data/archiveSelectors.js'
-import { buildArchiveHomeState } from './data/archiveHomeState.js'
+import { buildArchiveHomeHighlights, buildArchiveHomeState } from './data/archiveHomeState.js'
 import {
   archiveSectionForRoute,
   onArchivePopState,
@@ -351,6 +353,10 @@ const archiveHomeIdols = computed(() => buildArchiveHomeState(
   idolUnitData.value,
   cardIndexData.value,
   archiveManifestData.value,
+))
+const archiveHomeHighlights = computed(() => buildArchiveHomeHighlights(
+  archiveManifestData.value,
+  uiAssetCatalogData.value,
 ))
 
 function categoryById(id) {
@@ -1463,6 +1469,10 @@ function openCardEvent(event) {
   openEventDetail(event, 'card_detail')
 }
 
+function openHomeEvent(event) {
+  openEventDetail(event, 'home')
+}
+
 function openEventDetail(event, parentView = 'story_catalog') {
   if (!event?.event_id) return
   currentEventId.value = String(event.event_id)
@@ -1474,7 +1484,8 @@ function goBackFromEvent() {
   const parent = eventParentView.value
   currentEventId.value = ''
   eventParentView.value = ''
-  if (parent === 'card_detail' && currentCard.value) commitView('card_detail')
+  if (parent === 'home') commitView('home')
+  else if (parent === 'card_detail' && currentCard.value) commitView('card_detail')
   else if (parent === 'unit_detail' && currentArchiveUnit.value) commitView('unit_detail')
   else if (parent === 'idol_detail' && currentIdolProfile.value) commitView('idol_detail')
   else commitView('story_catalog')

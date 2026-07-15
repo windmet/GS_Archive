@@ -34,6 +34,25 @@
       </label>
     </header>
 
+    <section v-if="activeHighlight" class="home-highlight" aria-label="活动聚焦">
+      <button class="highlight-main" type="button" @click="emit('open-event', activeHighlight)">
+        <img :src="activeHighlight.bannerUrl" :alt="activeHighlight.title" />
+        <span>
+          <strong>{{ activeHighlight.title }}</strong>
+          <small>{{ activeHighlight.scopeLabel }}</small>
+        </span>
+      </button>
+      <div class="highlight-controls">
+        <button type="button" aria-label="上一个活动" title="上一个活动" @click="stepHighlight(-1)">
+          <ChevronLeft :size="15" />
+        </button>
+        <span>{{ highlightIndex + 1 }} / {{ highlights.length }}</span>
+        <button type="button" aria-label="下一个活动" title="下一个活动" @click="stepHighlight(1)">
+          <ChevronRight :size="15" />
+        </button>
+      </div>
+    </section>
+
     <section class="home-dialogue" aria-label="首页台词" aria-live="polite">
       <div class="dialogue-name">{{ activeCue.speaker || activeIdol.name }}</div>
       <p>{{ activeCue.text }}</p>
@@ -116,11 +135,12 @@ const SpineStage = defineAsyncComponent(() => import('../SpineStage.vue'))
 
 const props = defineProps({
   idols: { type: Array, default: () => [] },
+  highlights: { type: Array, default: () => [] },
   stats: { type: Array, default: () => [] },
   selectedId: { type: String, default: '' },
   selectedCue: { type: String, default: '' },
 })
-const emit = defineEmits(['open-story', 'open-cards', 'open-idol', 'open-chat', 'update:selectedId', 'update:selectedCue'])
+const emit = defineEmits(['open-story', 'open-cards', 'open-idol', 'open-chat', 'open-event', 'update:selectedId', 'update:selectedCue'])
 
 const selectedId = computed({
   get: () => props.selectedId || props.idols[0]?.id || '',
@@ -132,11 +152,13 @@ const lastStartedVoice = ref('')
 const stageReady = ref(false)
 const stageError = ref(false)
 const stageLayout = ref(window.innerWidth <= 560 ? 'compact' : 'wide')
+const highlightIndex = ref(0)
 const spineStageRef = ref(null)
 const currentStepIndex = ref(0)
 
 const activeIdol = computed(() => props.idols.find(idol => idol.id === selectedId.value) || props.idols[0] || null)
 const activeCue = computed(() => activeIdol.value?.cues?.find(cue => cue.cue === props.selectedCue) || activeIdol.value?.cues?.[0] || null)
+const activeHighlight = computed(() => props.highlights[highlightIndex.value] || props.highlights[0] || null)
 const cueIndex = computed(() => Math.max(0, activeIdol.value?.cues?.findIndex(cue => cue.cue === activeCue.value?.cue) || 0))
 const currentStep = computed(() => activeCue.value?.previewStep || {})
 const compiledData = computed(() => ({ scenario_id: activeCue.value?.scenarioId || '' }))
@@ -169,6 +191,11 @@ function nextCue() {
   if (!activeIdol.value?.cues?.length) return
   const nextIndex = (cueIndex.value + 1) % activeIdol.value.cues.length
   emit('update:selectedCue', activeIdol.value.cues[nextIndex].cue)
+}
+
+function stepHighlight(direction) {
+  if (!props.highlights.length) return
+  highlightIndex.value = (highlightIndex.value + direction + props.highlights.length) % props.highlights.length
 }
 
 function stopVoice() {
@@ -227,6 +254,14 @@ onBeforeUnmount(() => {
 .idol-select { display: flex; flex-direction: column; gap: 4px; width: min(260px, 32vw); }
 .idol-select span { color: #d5dee3; font-size: 0.6rem; text-align: right; }
 .idol-select select { width: 100%; height: 36px; padding: 0 30px 0 10px; border: 1px solid rgba(255,255,255,0.42); border-radius: 5px; background: rgba(17,28,36,0.84); color: #fff; font: inherit; font-size: 0.72rem; }
+.home-highlight { position: absolute; z-index: 4; top: 88px; right: 28px; width: min(300px, 31vw); background: rgba(15,25,33,0.9); box-shadow: 0 12px 34px rgba(0,0,0,0.25); }
+.highlight-main { display: block; width: 100%; padding: 0; border: 0; background: transparent; color: #fff; cursor: pointer; text-align: left; }
+.highlight-main img { display: block; width: 100%; aspect-ratio: 940 / 510; object-fit: cover; }
+.highlight-main span { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 8px 10px 4px; }
+.highlight-main strong { overflow: hidden; flex: 1; font-size: 0.64rem; text-overflow: ellipsis; white-space: nowrap; }
+.highlight-main small { flex: 0 0 auto; color: #88d9d3; font-size: 0.53rem; }
+.highlight-controls { display: flex; align-items: center; justify-content: flex-end; gap: 5px; padding: 2px 6px 6px; color: #a8b6bf; font-size: 0.54rem; }
+.highlight-controls button { display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 3px; background: rgba(255,255,255,0.09); color: #fff; cursor: pointer; }
 .home-dialogue { position: absolute; z-index: 4; left: 28px; bottom: 106px; width: min(430px, 43vw); min-height: 132px; padding: 21px 22px 15px; border-left: 4px solid var(--idol-color); background: rgba(255,255,255,0.94); color: #26313a; box-shadow: 0 14px 42px rgba(0,0,0,0.24); }
 .dialogue-name { position: absolute; top: -24px; left: 0; min-width: 150px; padding: 7px 13px; background: var(--idol-color); color: #fff; font-size: 0.72rem; font-weight: 750; }
 .home-dialogue p { min-height: 52px; margin: 0; white-space: pre-line; font-size: 0.78rem; line-height: 1.65; }
@@ -257,6 +292,7 @@ onBeforeUnmount(() => {
 .home-stats dd { margin: 3px 0 0; font-size: 0.78rem; font-weight: 750; }
 
 @media (max-width: 900px) {
+  .home-highlight { width: 250px; }
   .home-dialogue { width: min(420px, 52vw); }
   .home-actions { width: 250px; grid-template-columns: 1fr; }
   .home-actions button { min-height: 46px; }
@@ -270,6 +306,12 @@ onBeforeUnmount(() => {
   .idol-heading h2 { font-size: 1.12rem; }
   .idol-select { width: 168px; }
   .idol-select span { display: none; }
+  .home-highlight { top: 62px; right: 14px; width: 168px; }
+  .highlight-main img { display: none; }
+  .highlight-main span { padding: 5px 7px 2px; }
+  .highlight-main strong { font-size: 0.54rem; }
+  .highlight-main small { display: none; }
+  .highlight-controls { padding: 1px 4px 4px; }
   .home-dialogue { left: 14px; right: 14px; bottom: 164px; width: auto; min-height: 116px; padding: 18px 16px 11px; }
   .home-dialogue p { min-height: 44px; font-size: 0.72rem; line-height: 1.55; }
   .dialogue-meta { margin-top: 5px; }

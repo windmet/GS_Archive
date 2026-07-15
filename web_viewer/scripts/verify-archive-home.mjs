@@ -1,11 +1,16 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
-import { archiveHomeStateStats, buildArchiveHomeState } from '../src/data/archiveHomeState.js'
+import {
+  archiveHomeStateStats,
+  buildArchiveHomeHighlights,
+  buildArchiveHomeState,
+} from '../src/data/archiveHomeState.js'
 
 const readJson = path => JSON.parse(fs.readFileSync(new URL(path, import.meta.url), 'utf8'))
 const idolUnit = readJson('../public/data/masterdata/idol_unit_dictionary.json')
 const cardIndex = readJson('../public/data/masterdata/card_index.json')
 const manifest = readJson('../public/data/archive_manifest.json')
+const uiAssets = readJson('../public/data/assets/ui_asset_catalog.json')
 
 const idols = buildArchiveHomeState(idolUnit, cardIndex, manifest)
 const stats = archiveHomeStateStats(idols)
@@ -25,4 +30,15 @@ assert.equal(toma.cues[0].background, 'bg001_315pro_in_01')
 assert.equal(toma.cues[0].modelId, '001tom_002_00')
 assert.equal(toma.cues[0].previewStep.state.spines[0].id, '001tom')
 
-console.log(`Archive home state: ${stats.idols} idols, ${stats.cues} cues, ${stats.models} models`)
+const highlights = buildArchiveHomeHighlights(manifest, uiAssets)
+assert.equal(highlights.length, 36)
+assert.equal(highlights[0].event_id, 430018)
+assert.equal(highlights[0].event_code, '30018')
+assert.equal(highlights[0].scopeLabel, '固定组合团活')
+assert.equal(highlights[1].event_id, 410018)
+assert.equal(highlights[1].scopeLabel, '跨组合团活')
+for (const highlight of highlights) {
+  assert.ok(fs.existsSync(new URL(`../public${highlight.bannerUrl}`, import.meta.url)), highlight.bannerUrl)
+}
+
+console.log(`Archive home state: ${stats.idols} idols, ${stats.cues} cues, ${stats.models} models, ${highlights.length} highlights`)
