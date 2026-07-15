@@ -160,6 +160,7 @@ export function buildStoryCatalog(data, presentationData = null) {
         playableStartIndex: presentation?.playable_start_index || 0,
         playableStepCount: presentation?.playable_step_count ?? summary?.step_count ?? 0,
         titleCards: presentation?.title_cards || [],
+        episodes: presentation?.episodes || [],
       }
 
       if (resourceId && !entry.resourceIds.includes(resourceId)) entry.resourceIds.push(resourceId)

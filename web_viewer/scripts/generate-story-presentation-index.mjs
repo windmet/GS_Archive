@@ -23,6 +23,7 @@ const files = [...new Set(rows.map(row => row.compiled_file).filter(Boolean))].s
 const byFile = {}
 let synopsisCount = 0
 let skippedSynopsisSteps = 0
+let episodeBoundaryCount = 0
 
 for (const file of files) {
   const scenario = JSON.parse(await readFile(path.join(compiledRoot, file), 'utf8'))
@@ -44,6 +45,33 @@ for (const file of files) {
       candidate.title === card.title,
     ))
 
+  const episodeMap = new Map()
+  steps.forEach((step, index) => {
+    if (!Number.isFinite(Number(step?.episode_index))) return
+    const episodeIndex = Number(step.episode_index)
+    const key = `${episodeIndex}:${step.episode_part || ''}`
+    if (!episodeMap.has(key)) {
+      episodeMap.set(key, {
+        episode_index: episodeIndex,
+        episode_part: step.episode_part || '',
+        start_step_index: index,
+        end_step_index: index,
+        step_count: 0,
+        dialogue_count: 0,
+        voice_count: 0,
+      })
+    }
+    const episode = episodeMap.get(key)
+    episode.end_step_index = index
+    episode.step_count += 1
+    if (step?.dialogue?.speaker || step?.dialogue?.text) episode.dialogue_count += 1
+    if (step?.dialogue?.voice) episode.voice_count += 1
+  })
+  const episodes = [...episodeMap.values()].sort((a, b) =>
+    a.start_step_index - b.start_step_index || a.episode_index - b.episode_index,
+  )
+  episodeBoundaryCount += episodes.length
+
   const preplaySynopsis = synopsisStep
     ? {
         title: synopsisStep.dialogue?.speaker || '',
@@ -60,18 +88,20 @@ for (const file of files) {
     playable_start_index: playableStartIndex < 0 ? 0 : playableStartIndex,
     playable_step_count: Math.max(0, steps.length - Math.max(0, playableStartIndex)),
     title_cards: titleCards,
+    episodes,
   }
 }
 
 const output = {
-  schema_version: 1,
+  schema_version: 2,
   meta: {
     story_file_count: files.length,
     synopsis_count: synopsisCount,
     skipped_synopsis_step_count: skippedSynopsisSteps,
+    episode_boundary_count: episodeBoundaryCount,
   },
   by_file: byFile,
 }
 
 await writeFile(outputPath, `${JSON.stringify(output, null, 2)}\n`, 'utf8')
-console.log(`Wrote ${path.relative(root, outputPath)} (${files.length} stories, ${synopsisCount} synopses)`)
+console.log(`Wrote ${path.relative(root, outputPath)} (${files.length} stories, ${synopsisCount} synopses, ${episodeBoundaryCount} episode boundaries)`)
