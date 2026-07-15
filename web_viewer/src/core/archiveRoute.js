@@ -25,6 +25,7 @@ const ROUTE_QUERY_KEYS = [
   'relation_state',
   'q',
   'scenario',
+  'start_step',
   'voice',
   'return',
   'parent',
@@ -115,6 +116,11 @@ function allowed(value, values, fallback) {
   return values.has(value) ? value : fallback
 }
 
+function positiveInteger(value) {
+  const parsed = Number(value)
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : 0
+}
+
 export function normalizeArchiveRoute(input = {}) {
   const scenario = normalizeScenarioFile(input.scenario || '')
   const voice = clean(input.voice)
@@ -155,6 +161,7 @@ export function normalizeArchiveRoute(input = {}) {
     relationState: allowed(clean(input.relationState), VALID_CARD_RELATION_STATES, 'all'),
     query: clean(input.query),
     scenario,
+    startStep: positiveInteger(input.startStep),
     voice,
     returnView: allowed(clean(input.returnView), VALID_RETURN_VIEWS, ''),
     parentView: allowed(clean(input.parentView), VALID_RETURN_VIEWS, ''),
@@ -209,6 +216,7 @@ export function readArchiveRoute(input = null) {
     relationState: params.get('relation_state'),
     query: clean(params.get('q')),
     scenario: params.get('scenario') || params.get('file'),
+    startStep: params.get('start_step'),
     voice: clean(params.get('voice')),
     returnView: clean(params.get('return')),
     parentView: clean(params.get('parent')),
@@ -247,6 +255,7 @@ export function buildArchiveUrl(input, route) {
   if (normalized.relationState !== 'all') url.searchParams.set('relation_state', normalized.relationState)
   if (normalized.query) url.searchParams.set('q', normalized.query)
   if (normalized.scenario) url.searchParams.set('scenario', normalized.scenario)
+  if (normalized.scenario && normalized.startStep) url.searchParams.set('start_step', String(normalized.startStep))
   if (normalized.voice) url.searchParams.set('voice', normalized.voice)
   if (normalized.returnView && normalized.returnView !== 'files') url.searchParams.set('return', normalized.returnView)
   if (normalized.parentView) url.searchParams.set('parent', normalized.parentView)

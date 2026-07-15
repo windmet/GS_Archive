@@ -116,8 +116,33 @@
         <span class="catalog-count">{{ filteredTotal }} results</span>
       </div>
 
-      <div class="story-list">
-        <p v-if="!entries.length" class="empty-state">没有符合当前条件的故事</p>
+      <p v-if="!entries.length" class="empty-state">没有符合当前条件的故事</p>
+
+      <div v-if="domain === 'event' && entries.length" class="event-entity-grid">
+        <button v-for="entry in entries" :key="entry.id" @click="emit('select', entry)">
+          <span class="event-entity-visual">
+            <img :src="eventBanner(entry)" :alt="entry.masterEvent?.name || entry.title" />
+            <span>{{ entry.eventScopeLabel || '活动剧情' }}</span>
+          </span>
+          <span class="event-entity-copy">
+            <small>{{ eventTypeLabel(entry) }} · {{ formatEventDate(entry) }}</small>
+            <strong>{{ entry.masterEvent?.name || entry.title }}</strong>
+            <span>{{ entry.preplaySynopsis?.text || '已收录完整活动剧情与关联资料。' }}</span>
+          </span>
+          <span class="event-reward-icons">
+            <img
+              v-for="cardId in entry.rewardCardIds?.slice(0, 3)"
+              :key="cardId"
+              :src="getCardIconUrl(cardId, true)"
+              :alt="cardId"
+            />
+            <small v-if="!entry.rewardCardIds?.length">无卡片报酬记录</small>
+          </span>
+          <ArrowRight :size="17" />
+        </button>
+      </div>
+
+      <div v-else-if="domain !== 'event'" class="story-list">
         <button
           v-for="entry in entries"
           :key="entry.id"
@@ -153,6 +178,7 @@
 <script setup>
 import { computed } from 'vue'
 import { ArrowRight, BookOpen, Briefcase, Cake, CalendarRange, ChevronDown, CreditCard, FileWarning, LayoutGrid, Search, Sparkles, UserRound, X } from '@lucide/vue'
+import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 
 const props = defineProps({
   entries: { type: Array, default: () => [] }, allEntries: { type: Array, default: () => [] },
@@ -201,6 +227,16 @@ function openGateway(gateway) {
 }
 function mainVisual(index) { return `/assets/stories/main/image_story_main_button_${String(index + 1).padStart(2, '0')}.png` }
 function eventBanner(entry) { return `/assets/events/banners/image_home_announce_event_${entry.eventRelation?.event_code || entry.sectionId}_01.png` }
+function eventTypeLabel(entry) {
+  return ({ theater: 'THEATER', tour: 'TOUR', carnival: '315 CARNIVAL' })[entry.masterEvent?.event_type_label] || 'EVENT'
+}
+function formatEventDate(entry) {
+  const timestamp = Number(entry.masterEvent?.start_at || entry.releaseAt || 0)
+  if (!timestamp) return '日期未记录'
+  return new Intl.DateTimeFormat('zh-CN', {
+    year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Asia/Tokyo',
+  }).format(new Date(timestamp * 1000))
+}
 function unitVisual(id) {
   const codes = ['01jup', '02dra', '03alt', '04bei', '05w00', '06fra', '07sai', '08hig', '09shi', '10caf', '11mof', '12sem', '13the', '14fla', '15leg', '16cfi']
   return `/assets/stories/units/image_unit_story_button_${codes[Number(id) - 1] || codes[0]}.png`
@@ -253,6 +289,12 @@ function hierarchyLabel(entry) { return [entry.sectionLabel, entry.episodeLabel]
 .section-filter { display: inline-flex; align-items: center; gap: 5px; height: 30px; margin-bottom: 1px; padding: 0 8px; border: 1px solid #b9dedb; border-radius: 4px; background: #edf9f8; color: #147c75; cursor: pointer; font: inherit; font-size: .62rem; }
 .catalog-count { margin: 0 0 8px auto; color: #7b858e; font-size: .65rem; white-space: nowrap; }
 .story-list { display: flex; flex-direction: column; gap: 7px; padding: 12px 16px; }
+.event-entity-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; padding: 12px max(16px, calc((100% - 1120px) / 2)) 30px; }
+.event-entity-grid > button { display: grid; grid-template-columns: 168px minmax(0,1fr) auto 18px; align-items: center; gap: 11px; overflow: hidden; min-height: 112px; padding: 0 11px 0 0; border: 1px solid #dfe5e7; border-radius: 6px; background: #fff; color: #293840; cursor: pointer; font: inherit; text-align: left; }
+.event-entity-grid > button:hover { border-color: #62b9b2; box-shadow: 0 4px 14px rgba(31,72,70,.08); }
+.event-entity-visual { position: relative; align-self: stretch; overflow: hidden; background: #edf1f2; }.event-entity-visual > img { width: 100%; height: 100%; object-fit: contain; }.event-entity-visual > span { position: absolute; right: 5px; bottom: 5px; left: 5px; overflow: hidden; padding: 3px 5px; border-radius: 3px; background: rgba(24,37,42,.78); color: #fff; font-size: .49rem; text-overflow: ellipsis; white-space: nowrap; }
+.event-entity-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }.event-entity-copy > small { color: #15857d; font-size: .53rem; font-weight: 700; }.event-entity-copy > strong { overflow: hidden; font-size: .72rem; line-height: 1.4; text-overflow: ellipsis; white-space: nowrap; }.event-entity-copy > span { display: -webkit-box; overflow: hidden; color: #718087; font-size: .56rem; line-height: 1.45; white-space: pre-line; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.event-reward-icons { display: flex; flex-direction: column; align-items: center; min-width: 34px; }.event-reward-icons img { width: 30px; height: 30px; margin-top: -6px; border: 2px solid #fff; border-radius: 50%; object-fit: contain; box-shadow: 0 1px 4px rgba(33,49,54,.2); }.event-reward-icons img:first-child { margin-top: 0; }.event-reward-icons small { max-width: 52px; color: #99a3a8; font-size: .45rem; line-height: 1.3; text-align: center; }
 .story-row { display: grid; grid-template-columns: 30px 76px minmax(0,1fr) 92px 20px; align-items: center; gap: 10px; min-height: 92px; width: 100%; padding: 10px 12px; border: 1px solid #e0e5e8; border-radius: 6px; background: #fff; color: #29343d; cursor: pointer; text-align: left; }
 .story-row:hover { border-color: #6ac2bc; background: #f5fbfa; }.story-row:disabled { cursor: not-allowed; opacity: .7; }.story-row.missing { border-style: dashed; background: #f3f5f6; }
 .story-play { display: grid; place-items: center; color: #15978e; }.story-domain { display: inline-flex; align-items: center; justify-content: center; min-height: 24px; padding: 3px 6px; border-radius: 4px; background: #eaf8f6; color: #147f78; font-size: .6rem; text-align: center; }
@@ -261,5 +303,6 @@ function hierarchyLabel(entry) { return [entry.sectionLabel, entry.episodeLabel]
 .story-stats { display: flex; flex-direction: column; gap: 3px; color: #73808a; font-size: .6rem; text-align: right; }.row-arrow { color: #819097; }
 .empty-state { margin: 32px 0; color: #7a858e; font-size: .75rem; text-align: center; }.load-more { display: flex; align-items: center; justify-content: center; gap: 6px; width: calc(100% - 32px); min-height: 38px; margin: 0 16px 20px; border: 1px solid #d4dcdf; border-radius: 6px; background: #fff; color: #4f5c65; cursor: pointer; font: inherit; font-size: .69rem; }
 @media (max-width: 850px) { .event-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }.unit-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }.domain-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
-@media (max-width: 620px) { .main-story-band, .portal-section { padding: 18px 12px; }.band-heading { align-items: start; }.main-chapters { grid-template-columns: 1fr; }.event-strip { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }.event-strip button { flex: 0 0 78%; scroll-snap-align: start; }.unit-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.catalog-toolbar { top: 51px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); padding: 8px 10px; }.catalog-toolbar label { min-width: 0; }.catalog-count { justify-self: end; margin: 0; }.story-list { padding: 9px; }.story-row { grid-template-columns: 25px 64px minmax(0,1fr) 16px; gap: 7px; }.story-stats { grid-column: 3; flex-direction: row; gap: 8px; text-align: left; }.row-arrow { grid-column: 4; grid-row: 1 / span 2; }.story-synopsis { -webkit-line-clamp: 3; } }
+@media (max-width: 980px) { .event-entity-grid { grid-template-columns: 1fr; } }
+@media (max-width: 620px) { .main-story-band, .portal-section { padding: 18px 12px; }.band-heading { align-items: start; }.main-chapters { grid-template-columns: 1fr; }.event-strip { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }.event-strip button { flex: 0 0 78%; scroll-snap-align: start; }.unit-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.catalog-toolbar { top: 51px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); padding: 8px 10px; }.catalog-toolbar label { min-width: 0; }.catalog-count { justify-self: end; margin: 0; }.story-list { padding: 9px; }.story-row { grid-template-columns: 25px 64px minmax(0,1fr) 16px; gap: 7px; }.story-stats { grid-column: 3; flex-direction: row; gap: 8px; text-align: left; }.row-arrow { grid-column: 4; grid-row: 1 / span 2; }.story-synopsis { -webkit-line-clamp: 3; }.event-entity-grid { padding: 9px; }.event-entity-grid > button { grid-template-columns: 116px minmax(0,1fr) 16px; min-height: 92px; padding-right: 8px; }.event-reward-icons { display: none; }.event-entity-copy > strong { white-space: normal; }.event-entity-copy > span { -webkit-line-clamp: 1; } }
 </style>

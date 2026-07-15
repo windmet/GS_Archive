@@ -116,10 +116,12 @@
         :event="currentEvent"
         :master-event="currentMasterEvent"
         :story="currentEventStory"
+        :episodes="currentEventEpisodes"
         :cards="currentEventCards"
         :idols="currentEventIdols"
         :units="currentEventUnits"
         @play="playCurrentEvent"
+        @play-episode="playCurrentEventEpisode"
         @open-card="openEventCard"
         @open-idol="openEventIdol"
         @open-unit="openEventUnit"
@@ -249,6 +251,7 @@
     <StoryViewer
       v-if="view === 'player' && currentScenario"
       :scenario-json="currentScenario"
+      :start-step="currentScenarioStartStep"
       @back="closePlayer"
       @ready="onPlayerReady"
     />
@@ -301,6 +304,7 @@ import {
   mergeCardDetail,
 } from './data/archiveSelectors.js'
 import { buildArchiveHomeHighlights, buildArchiveHomeState } from './data/archiveHomeState.js'
+import { buildEventStoryEpisodes } from './data/eventStoryEpisodes.js'
 import {
   archiveSectionForRoute,
   onArchivePopState,
@@ -342,6 +346,7 @@ const archiveVerificationData = ref(null)
 const uiAssetCatalogData = ref(null)
 const currentScenario = ref(null)
 const currentScenarioFile = ref('')
+const currentScenarioStartStep = ref(null)
 const currentPreviewCue = ref('')
 const filterQuery = ref('')
 const loading = ref(false)
@@ -578,6 +583,7 @@ const storyCatalog = computed(() => buildStoryCatalog(storyMasterData.value, sto
   if (entry.domain !== 'event') return entry
   const relation = eventRelationByFile.value.get(entry.file)
   if (!relation) return { ...entry, eventScope: 'unclassified', eventScopeLabel: '活动' }
+  const masterEvent = eventIndexData.value?.by_code?.[String(relation.event_code)] || null
   const eventScopeLabel = relation.event_scope === 'fixed_unit_event'
     ? '固定团活'
     : (relation.event_scope === 'attribute_event' ? `属性·${relation.attribute}` : '跨组合团活')
@@ -589,6 +595,8 @@ const storyCatalog = computed(() => buildStoryCatalog(storyMasterData.value, sto
     eventScope: relation.event_scope,
     eventScopeLabel,
     eventRelation: relation,
+    masterEvent,
+    rewardCardIds: masterEvent?.reward_card_ids || [],
   }
 }))
 
@@ -661,6 +669,10 @@ const currentStoryRelated = computed(() => {
 })
 
 const currentEventStory = computed(() => storyCatalog.value.find(entry => entry.file === currentEvent.value?.file) || null)
+
+const currentEventEpisodes = computed(() => {
+  return buildEventStoryEpisodes(currentEvent.value, currentEventStory.value, storyMasterData.value)
+})
 
 const currentStoryVisualUrl = computed(() => {
   const story = currentStory.value
@@ -1071,6 +1083,7 @@ function currentArchiveRoute() {
     relationState: currentCardRelationState.value,
     query: filterQuery.value,
     scenario: view.value === 'player' ? currentScenarioFile.value : '',
+    startStep: view.value === 'player' ? currentScenarioStartStep.value : 0,
     voice: view.value === 'player' ? currentPreviewCue.value : '',
     returnView: returnViewAfterPlayer.value,
     parentView: preservesEventContext ? eventParentView.value : '',
@@ -1143,6 +1156,7 @@ function restoreVoicePreview(route) {
   if (!cue) return false
   currentScenario.value = buildCardVoicePreviewScenario(card, cue)
   currentScenarioFile.value = ''
+  currentScenarioStartStep.value = null
   currentPreviewCue.value = route.voice
   returnViewAfterPlayer.value = route.returnView || 'card_detail'
   view.value = 'player'
@@ -1191,6 +1205,7 @@ async function applyArchiveRoute(route) {
     currentUnit.value = resolveRouteUnit(route)
     currentScenario.value = null
     currentScenarioFile.value = ''
+    currentScenarioStartStep.value = route.startStep || null
     currentPreviewCue.value = ''
     returnViewAfterPlayer.value = route.returnView || 'files'
 
@@ -1204,7 +1219,7 @@ async function applyArchiveRoute(route) {
     }
 
     if (route.view === 'player' && route.scenario) {
-      await loadScenario(route.scenario, route.returnView || 'home', { syncRoute: false })
+      await loadScenario(route.scenario, route.returnView || 'home', { syncRoute: false, startStep: route.startStep })
       return
     }
     if (route.view === 'player' && route.voice) {
@@ -1712,6 +1727,12 @@ function playCurrentEvent() {
   }
 }
 
+function playCurrentEventEpisode(episode) {
+  if (currentEvent.value?.file && currentEvent.value.exists && episode?.startStep) {
+    loadScenario(currentEvent.value.file, 'event_detail', { startStep: episode.startStep })
+  }
+}
+
 function openEventCard(relation) {
   const card = cardMap.value.get(relation?.card_resource_id)
   if (!card) return
@@ -1747,6 +1768,7 @@ async function openVoicePreview(card, cue, returnView) {
     await storyViewerLoader()
     currentScenario.value = buildCardVoicePreviewScenario(card, cue)
     currentScenarioFile.value = ''
+    currentScenarioStartStep.value = null
     currentPreviewCue.value = typeof cue === 'string' ? cue : cue.cue
     returnViewAfterPlayer.value = returnView
     commitView('player')
@@ -1901,6 +1923,7 @@ function goBackToFiles() {
 function closePlayer() {
   currentScenario.value = null
   currentScenarioFile.value = ''
+  currentScenarioStartStep.value = null
   currentPreviewCue.value = ''
   const returnView = returnViewAfterPlayer.value || 'files'
   returnViewAfterPlayer.value = 'files'
@@ -1932,6 +1955,7 @@ async function loadScenario(name, returnView = 'files', options = {}) {
 
     currentScenario.value = scenario
     currentScenarioFile.value = name
+    currentScenarioStartStep.value = Number(options.startStep) > 0 ? Number(options.startStep) : null
     currentPreviewCue.value = ''
     returnViewAfterPlayer.value = returnView
     view.value = 'player'

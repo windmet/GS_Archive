@@ -89,12 +89,15 @@ import { useStepSceneEffects } from './useStepSceneEffects.js'
 const props = defineProps({
   scenarioJson: { type: Object, default: null },
   scenarioUrl: { type: String, default: null },
+  startStep: { type: Number, default: null },
 })
 const emit = defineEmits(['back', 'ready'])
 const URL_FLAGS = new URLSearchParams(window.location.search)
 const HIDE_UI = URL_FLAGS.get('stageOnly') === '1' || URL_FLAGS.get('hideUI') === '1' || URL_FLAGS.get('transparentUI') === '1'
 const START_STEP_VALUE = URL_FLAGS.get('startStep')
-const START_STEP = START_STEP_VALUE == null || START_STEP_VALUE === '' ? null : Number(START_STEP_VALUE)
+const START_STEP = Number.isFinite(props.startStep) && props.startStep > 0
+  ? props.startStep
+  : (START_STEP_VALUE == null || START_STEP_VALUE === '' ? null : Number(START_STEP_VALUE))
 const NO_VOICE = URL_FLAGS.get('noVoice') === '1'
 const SNAPSHOT_AT_VALUE = URL_FLAGS.get('snapshotAt')
 const SNAPSHOT_AT = SNAPSHOT_AT_VALUE == null || SNAPSHOT_AT_VALUE === '' ? null : Number(SNAPSHOT_AT_VALUE)
