@@ -26,6 +26,7 @@ import { CameraController } from './CameraController.js'
 import { SpineManager } from './SpineManager.js'
 import { fitSpineToPrefabRect as fitSpineToPrefabRectUtil, getPrefabRectMetrics as getPrefabRectMetricsUtil } from './spinePrefabFit.js'
 import { LipSyncController } from './LipSyncController.js'
+import { cancelBlinkCover } from './spineBlinkCover.js'
 
 const ADULT_BASE_SCALE = 0.26
 const SUB_BASE_SCALE = 0.235
@@ -1874,7 +1875,7 @@ export class PixiStageManager {
    *   { anim_flag: 'ç›?|'off', blush_flag: 'ãƒãƒ¼ã‚?|'off', sweat_flag: 'æ±?|'off' }
    *
     * faceFlags.anim_flag controls blink cover timing. 'off' keeps the switch instant; 'ç›? or
-    * an unknown value applies a ~150ms blink cover.
+   * an unknown value applies a ~150ms blink cover.
    */
   updateSpineFace(idolId, faceName, faceFlags) {
     const entry = this.spineInstances[idolId]
@@ -1896,6 +1897,10 @@ export class PixiStageManager {
         }
       }
 
+      // A rapid step change can interrupt the temporary blink cover. Restore
+      // its open-eye attachments before replacing or reusing the face track.
+      cancelBlinkCover(spine)
+
       if (allAnims.includes(animName)) {
         if (spine._currentFaceKey === faceKey) return
         const trackEntry = spine.state.setAnimation(1, animName, true)
@@ -1904,7 +1909,6 @@ export class PixiStageManager {
         if (trackEntry) {
           trackEntry.mixAttachmentThreshold = 0.0
           spine._blinkCoverEndTime = 0
-          spine._savedEyeAtts = null
 
           if (faceFlags && typeof faceFlags === 'object' && faceFlags.anim_flag === 'off') {
             // off means the switch is instant, without blink masking.
