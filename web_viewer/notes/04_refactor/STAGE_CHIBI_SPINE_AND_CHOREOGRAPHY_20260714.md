@@ -362,4 +362,23 @@ npm run chibi:backmonitor
 
 编排索引升级为 schema 6，每首歌新增 `backmonitorEvents`，保留 `time / movie / transition / x / y / scale / rotation / opacity`。多人舞台用一个位于角色后方、处于同一 camera container 内的 Pixi Video Sprite 消费这些事件：切歌和拖动时间轴会切换并定位循环视频，播放、暂停和倍速沿用歌曲主时钟；CSV 的坐标采用 1280×720 舞台空间，Y 轴从下向上，纹理以原始 2 倍显示尺寸再乘千分比 scale。
 
-浏览器定点验证：DRIVE A LIVE 在 -2000 ms 显示 `unique_black`，2500 ms 切换 `ballade_01` 并记录 `alpha_blackout`，15700 ms 切换 `cool_01_2` 并记录 `alpha_star`；三个时刻视频均加载成功，层级位于五名 Spine 角色后方。当前运行时已经精确导出转场的 color/alpha 源，但尚未在 Pixi 中实现双视频遮罩 shader，故这一版只进行主视频硬切；不能把普通 CSS 淡入淡出标记成原版 alpha 转场。
+浏览器定点验证：DRIVE A LIVE 在 -2000 ms 显示 `unique_black`，2500 ms 切换 `ballade_01` 并记录 `alpha_blackout`，15700 ms 切换 `cool_01_2` 并记录 `alpha_star`；三个时刻视频均加载成功，层级位于五名 Spine 角色后方。转场不是前后两块屏幕互相淡入淡出，而是 color 视频作为覆盖画面、alpha 视频红通道作为逐帧遮罩；运行时已用 Pixi Filter 实现双视频采样，并把两路与歌曲时钟的偏差控制在 60 ms 内。主视频在事件时刻立即切换，覆盖层在约 2 秒素材结束后自动隐藏和暂停。VideoResource 禁用隐式自动播放，切歌或销毁时不会残留后台媒体请求。
+
+## Image_layer 纹理与前后景层（2026-07-15）
+
+118 份 `liveeffectscript` 中共有 101 条 `Image_layer / Image_layer_2` 事件，精确引用 57 个 Sprite。引用素材并不在统一贴图包中，而是分别位于 `RAW/asset/song_<songCode>.unity3d`；每个 bundle 均存在与 CSV ID 同名的 Sprite，且指向一张 1900×1060、带完整透明边距的 RGBA Texture2D。旧的 `ALL_PHOTOS` 导出有的保留整张 Texture2D、有的只保留 Sprite 裁剪区域，不能稳定恢复舞台坐标，因此新脚本直接读取 Sprite 关联 Texture2D。
+
+```powershell
+npm run chibi:image-layers
+```
+
+`scripts/prepare-live-chibi-image-layers.py` 输出 `public/assets/live-chibi/image-layers/index.json` 和 57 张 PNG，总大小 29,181,796 bytes；全量检查为 57/57 bundle、57/57 Sprite、零缺失、零透明空图。导出使用 bundle mtime 缓存、临时 PNG 与原子替换，索引记录尺寸、alpha 范围、bundle、Sprite rect 和 texture rect offset。
+
+编排索引升级为 schema 7，并为每首歌写入 `imageLayerEvents`，保留 `time / asset / layerType / depth / hide / raw19`。列 17/18 的 `1` 已由多首歌曲的显隐时序交叉确认是隐藏指令；列 3 作为 Pixi `zIndex`，允许图片层直接与角色交错，而不是强制全部放在角色前或后。运行时按当前歌曲时间重放事件得到每个 asset 的显隐和最新深度，将完整 1900×1060 画布居中并按 `2/3 × viewportScale` 映射到 1280×720 舞台。异步加载按 asset 合并；切歌会使旧请求失效并释放 Sprite、Texture 和 GPU 资源。
+
+浏览器回归验证：
+
+- FLASH LIGHT 开场同时显示 `stage_flslgt_01..04`，深度分别为 1550、1575、1600、1725，四层共同还原墙面、地板、帷幕和前景灯。
+- OUR SONG 开场 6 层；`stage_ossshd_05` 在 16.8 秒由 1760 切到 1860，53.2 秒进一步切到 1930，其他层也按 CSV 更新深度。
+- `tibeti_live_effect` 的 `stage_tibeti_effect01` 在 78.3 秒隐藏、85.1 秒恢复、88.6 秒再次隐藏。
+- 从 FLASH LIGHT 切回 DRIVE A LIVE 后图片层计数立即归零；干净刷新后的切歌回归中没有新增 Backmonitor/Image_layer 加载错误或媒体 AbortError。
