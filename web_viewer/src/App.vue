@@ -211,6 +211,13 @@
         @open-idol="openStoryIdol"
       />
 
+      <ArchiveStoryCollection
+        v-if="view === 'story_collection'"
+        :collection="currentStoryCollection"
+        @play-chapter="playStoryCollectionChapter"
+        @play-episode="playStoryCollectionEpisode"
+      />
+
       <ArchiveSeasonalCampaign
         v-if="view === 'seasonal_campaign'"
         :campaign="currentSeasonalCampaign"
@@ -289,6 +296,7 @@ import ArchiveEpisodeList from './components/archive/ArchiveEpisodeList.vue'
 import ArchiveStatus from './components/archive/ArchiveStatus.vue'
 import ArchiveStoryCatalog from './components/archive/ArchiveStoryCatalog.vue'
 import ArchiveStoryDetail from './components/archive/ArchiveStoryDetail.vue'
+import ArchiveStoryCollection from './components/archive/ArchiveStoryCollection.vue'
 import ArchiveSeasonalCampaign from './components/archive/ArchiveSeasonalCampaign.vue'
 import ArchiveWorkStory from './components/archive/ArchiveWorkStory.vue'
 import ArchiveUnitCatalog from './components/archive/ArchiveUnitCatalog.vue'
@@ -305,6 +313,7 @@ import {
 } from './data/archiveSelectors.js'
 import { buildArchiveHomeHighlights, buildArchiveHomeState } from './data/archiveHomeState.js'
 import { buildEventStoryEpisodes } from './data/eventStoryEpisodes.js'
+import { buildStoryCollections } from './data/storyCollections.js'
 import {
   archiveSectionForRoute,
   onArchivePopState,
@@ -659,6 +668,12 @@ const visibleStoryCatalogEntries = computed(() => filteredStoryCatalog.value.sli
 
 const currentStory = computed(() => storyCatalog.value.find(entry => entry.file === currentStoryFile.value) || null)
 
+const storyCollections = computed(() => buildStoryCollections(storyMasterData.value, storyCatalog.value))
+
+const currentStoryCollection = computed(() => storyCollections.value.find(collection =>
+  collection.domain === currentStoryDomain.value && collection.sectionId === currentStorySection.value,
+) || null)
+
 const currentStoryRelated = computed(() => {
   if (!currentStory.value) return []
   const sameCollection = storyCatalog.value.filter(entry =>
@@ -1007,6 +1022,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'archive_status') return '数据状态'
   if (view.value === 'story_catalog') return '故事目录'
   if (view.value === 'story_detail') return currentStory.value?.title || '故事详情'
+  if (view.value === 'story_collection') return currentStoryCollection.value?.title || '故事章节'
   if (view.value === 'seasonal_campaign') return currentSeasonalCampaign.value?.name || '季节企划'
   if (view.value === 'work_archive') return `${currentWorkIdol.value?.display_name || ''} 工作档案`.trim()
   if (view.value === 'gashas') return '卡池档案'
@@ -1235,6 +1251,7 @@ async function applyArchiveRoute(route) {
     else if (route.view === 'gasha_detail' && !currentGasha.value) view.value = 'gashas'
     else if (route.view === 'event_detail' && !currentEvent.value) view.value = 'story_catalog'
     else if (route.view === 'story_detail' && !currentStory.value) view.value = 'story_catalog'
+    else if (route.view === 'story_collection' && !currentStoryCollection.value) view.value = 'story_catalog'
     else if (route.view === 'seasonal_campaign' && !currentSeasonalCampaign.value) view.value = 'story_catalog'
     else if (route.view === 'work_archive' && !currentWorkIdol.value) view.value = 'story_catalog'
     else if (route.view === 'cards' && !currentCharacterId.value) view.value = 'idols'
@@ -1320,6 +1337,12 @@ function goArchiveBack() {
     story_catalog: goHome,
     story_detail: () => {
       currentStoryFile.value = ''
+      commitView('story_catalog')
+    },
+    story_collection: () => {
+      currentStoryDomain.value = ''
+      currentStorySection.value = ''
+      currentStoryMode.value = 'portal'
       commitView('story_catalog')
     },
     seasonal_campaign: () => {
@@ -1414,6 +1437,14 @@ function setStoryMode(mode) {
 }
 
 function browseStoryCollection({ domain, section = '' }) {
+  if (section && ['main', 'unit_story'].includes(domain)) {
+    currentStoryDomain.value = domain
+    currentStorySection.value = section
+    currentStoryMode.value = 'portal'
+    currentStoryFile.value = ''
+    commitView('story_collection')
+    return
+  }
   filterQuery.value = ''
   currentStoryDomain.value = domain || ''
   currentStorySection.value = section || ''
@@ -1524,6 +1555,16 @@ function openStoryDetail(entry) {
 
 function playStoryDetail(entry = currentStory.value) {
   if (entry?.file && entry.exists) loadScenario(entry.file, 'story_detail')
+}
+
+function playStoryCollectionChapter(chapter) {
+  if (chapter?.file && chapter.exists) loadScenario(chapter.file, 'story_collection')
+}
+
+function playStoryCollectionEpisode({ chapter, episode }) {
+  if (chapter?.file && chapter.exists && episode?.startStep) {
+    loadScenario(chapter.file, 'story_collection', { startStep: episode.startStep })
+  }
 }
 
 function openStoryIdol(idolCode) {
