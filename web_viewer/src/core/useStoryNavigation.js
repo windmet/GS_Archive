@@ -10,6 +10,7 @@ export function useStoryNavigation({
   languageMode,
   setLanguageMode,
   startStep,
+  endStep,
   clearFadeAutoAdvance,
   fastForwardTimeline,
   ensureAudioCtx,
@@ -20,8 +21,27 @@ export function useStoryNavigation({
     const index = steps.findIndex(step => step?.type !== 'synopsis')
     return index < 0 ? 0 : index
   })
-  const isFirstStep = computed(() => historyStack.value.length === 0 && currentStepIndex.value <= firstPlayableIndex.value)
-  const isLastStep = computed(() => !compiledData.value || currentStepIndex.value >= compiledData.value.steps.length - 1)
+  const startEpisode = computed(() => {
+    if (!Number.isFinite(startStep)) return null
+    const startIndex = Math.max(0, startStep - 1)
+    return (compiledData.value?.episodes || []).find(episode =>
+      startIndex >= episode.start_step_index && startIndex <= episode.end_step_index,
+    ) || null
+  })
+  const navigationStartIndex = computed(() => {
+    const lastIndex = Math.max(0, (compiledData.value?.steps?.length || 1) - 1)
+    if (!Number.isFinite(startStep)) return Math.min(firstPlayableIndex.value, lastIndex)
+    return Math.max(firstPlayableIndex.value, Math.min(lastIndex, startStep - 1))
+  })
+  const navigationEndIndex = computed(() => {
+    const lastIndex = Math.max(0, (compiledData.value?.steps?.length || 1) - 1)
+    const inferredEnd = startEpisode.value?.end_step_index
+    const requestedEnd = Number.isFinite(endStep) ? endStep - 1 : inferredEnd
+    if (!Number.isFinite(requestedEnd)) return lastIndex
+    return Math.max(navigationStartIndex.value, Math.min(lastIndex, requestedEnd))
+  })
+  const isFirstStep = computed(() => historyStack.value.length === 0 && currentStepIndex.value <= navigationStartIndex.value)
+  const isLastStep = computed(() => !compiledData.value || currentStepIndex.value >= navigationEndIndex.value)
 
   const currentEpisode = computed(() => {
     const episodes = compiledData.value?.episodes || []
@@ -43,7 +63,7 @@ export function useStoryNavigation({
 
   const firstAvailableBg = computed(() => {
     if (!compiledData.value?.steps) return null
-    for (const step of compiledData.value.steps.slice(firstPlayableIndex.value)) {
+    for (const step of compiledData.value.steps.slice(navigationStartIndex.value, navigationEndIndex.value + 1)) {
       if (step.state?.bg) return step.state.bg
     }
     return null
@@ -64,10 +84,10 @@ export function useStoryNavigation({
   function applyStartStepIfNeeded() {
     if (!compiledData.value?.steps?.length) return
     if (!Number.isFinite(startStep)) {
-      currentStepIndex.value = firstPlayableIndex.value
+      currentStepIndex.value = navigationStartIndex.value
       return
     }
-    const target = Math.max(0, Math.min(compiledData.value.steps.length - 1, startStep - 1))
+    const target = Math.max(navigationStartIndex.value, Math.min(navigationEndIndex.value, startStep - 1))
     currentStepIndex.value = target
   }
 
@@ -91,21 +111,21 @@ export function useStoryNavigation({
     ensureAudioCtx()
     if (historyStack.value.length > 0) {
       let target = historyStack.value.pop()
-      while (target > firstPlayableIndex.value && isTransitionStep(compiledData.value?.steps?.[target])) {
+      while (target > navigationStartIndex.value && isTransitionStep(compiledData.value?.steps?.[target])) {
         if (historyStack.value.length === 0) {
-          target = Math.max(firstPlayableIndex.value, target - 1)
+          target = Math.max(navigationStartIndex.value, target - 1)
           continue
         }
         target = historyStack.value.pop()
       }
-      currentStepIndex.value = Math.max(firstPlayableIndex.value, target)
+      currentStepIndex.value = Math.max(navigationStartIndex.value, target)
       resetVoiceDedup()
-    } else if (currentStepIndex.value > firstPlayableIndex.value) {
+    } else if (currentStepIndex.value > navigationStartIndex.value) {
       let target = currentStepIndex.value - 1
-      while (target > firstPlayableIndex.value && isTransitionStep(compiledData.value?.steps?.[target])) {
+      while (target > navigationStartIndex.value && isTransitionStep(compiledData.value?.steps?.[target])) {
         target--
       }
-      currentStepIndex.value = Math.max(firstPlayableIndex.value, target)
+      currentStepIndex.value = Math.max(navigationStartIndex.value, target)
       resetVoiceDedup()
     }
   }
@@ -119,7 +139,7 @@ export function useStoryNavigation({
     if (text) {
       selectedChoices.set(currentStepIndex.value, text)
     }
-    if (opt.step_id) {
+    if (opt.step_id && opt.step_id - 1 >= navigationStartIndex.value && opt.step_id - 1 <= navigationEndIndex.value) {
       historyStack.value.push(currentStepIndex.value)
       currentStepIndex.value = opt.step_id - 1
     }
@@ -128,7 +148,7 @@ export function useStoryNavigation({
   function goToStep(index) {
     clearFadeAutoAdvance()
     fastForwardTimeline()
-    if (compiledData.value && index >= 0 && index < compiledData.value.steps.length) {
+    if (compiledData.value && index >= navigationStartIndex.value && index <= navigationEndIndex.value) {
       historyStack.value.push(currentStepIndex.value)
       currentStepIndex.value = index
     }
@@ -138,6 +158,8 @@ export function useStoryNavigation({
     isFirstStep,
     isLastStep,
     firstPlayableIndex,
+    navigationStartIndex,
+    navigationEndIndex,
     currentEpisode,
     currentEpisodeLabel,
     firstAvailableBg,

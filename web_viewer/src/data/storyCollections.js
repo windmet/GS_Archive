@@ -25,6 +25,7 @@ export function buildStoryChapterEpisodes(story, rows) {
       part,
       exists: Boolean(story?.exists && boundary),
       startStep: boundary ? playableStart + 1 : 0,
+      endStep: boundary ? Number(boundary.end_step_index) + 1 : 0,
       stepCount: boundary?.step_count || 0,
       dialogueCount: boundary?.dialogue_count || 0,
       voiceCount: boundary?.voice_count || 0,

@@ -21,7 +21,7 @@ assert.deepEqual(
     view: 'idol_detail', homeIdol: '', homeCue: '', homeCostume: '', category: 'idol', idol: '001tom', group: '', unit: '', unitFilter: '',
     storyType: '', storyMode: 'portal', storySection: '', story: '', eventScope: 'all', availability: 'all', sort: 'domain', episode: '', card: '',
     gasha: '', gashaType: 'all', rarity: 'all', assetState: 'all', relationState: 'all', query: '',
-    event: '', scenario: '', startStep: 0, voice: '', returnView: '', parentView: '',
+    event: '', scenario: '', startStep: 0, endStep: 0, voice: '', returnView: '', parentView: '',
   },
 )
 
@@ -67,10 +67,11 @@ assert.equal(storyCollectionContext.view, 'story_collection')
 assert.equal(storyCollectionContext.storyType, 'unit_story')
 assert.equal(storyCollectionContext.storySection, '1')
 
-const storyCollectionPlayer = readArchiveRoute('http://localhost/?view=player&story_type=main&story_section=101&scenario=1_4_001_01.json&start_step=30&return=story_collection')
+const storyCollectionPlayer = readArchiveRoute('http://localhost/?view=player&story_type=main&story_section=101&scenario=1_4_001_01.json&start_step=30&end_step=60&return=story_collection')
 assert.equal(storyCollectionPlayer.returnView, 'story_collection')
 assert.equal(storyCollectionPlayer.storySection, '101')
 assert.equal(buildArchiveUrl('http://localhost/', storyCollectionPlayer).searchParams.get('start_step'), '30')
+assert.equal(buildArchiveUrl('http://localhost/', storyCollectionPlayer).searchParams.get('end_step'), '60')
 
 const homeContext = readArchiveRoute('http://localhost/?home_idol=040ren&home_cue=2_1_040_01_00_09&home_costume=040ren_101_00')
 assert.equal(homeContext.view, 'home')
@@ -137,7 +138,9 @@ assert.equal(eventPlayerContext.unit, '16cfi')
 
 const eventEpisodeContext = readArchiveRoute('http://localhost/?view=player&scenario=1_3_10001_01.json&start_step=31&return=event_detail&event=410001')
 assert.equal(eventEpisodeContext.startStep, 31)
+assert.equal(eventEpisodeContext.endStep, 0)
 assert.equal(buildArchiveUrl('http://localhost/', eventEpisodeContext).searchParams.get('start_step'), '31')
 assert.equal(readArchiveRoute('http://localhost/?view=player&scenario=1_3_10001_01.json&start_step=nope').startStep, 0)
+assert.equal(readArchiveRoute('http://localhost/?view=player&scenario=1_3_10001_01.json&end_step=nope').endStep, 0)
 
 console.log('Archive route contract: story portal and detail routes verified')

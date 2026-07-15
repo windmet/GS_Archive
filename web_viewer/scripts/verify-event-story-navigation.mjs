@@ -25,6 +25,7 @@ for (const event of events) {
   assert.ok(episodes.length > 0, `${event.event_id} has no episode navigation`)
   assert.equal(episodes.length, story.episodes.length, `${event.event_id} has mismatched episode boundaries`)
   assert.ok(episodes.every(episode => episode.startStep > 0), `${event.event_id} has an invalid start step`)
+  assert.ok(episodes.every(episode => episode.endStep >= episode.startStep), `${event.event_id} has an invalid end step`)
   episodeCount += episodes.length
 }
 

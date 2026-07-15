@@ -90,6 +90,7 @@ const props = defineProps({
   scenarioJson: { type: Object, default: null },
   scenarioUrl: { type: String, default: null },
   startStep: { type: Number, default: null },
+  endStep: { type: Number, default: null },
 })
 const emit = defineEmits(['back', 'ready'])
 const URL_FLAGS = new URLSearchParams(window.location.search)
@@ -98,6 +99,10 @@ const START_STEP_VALUE = URL_FLAGS.get('startStep')
 const START_STEP = Number.isFinite(props.startStep) && props.startStep > 0
   ? props.startStep
   : (START_STEP_VALUE == null || START_STEP_VALUE === '' ? null : Number(START_STEP_VALUE))
+const END_STEP_VALUE = URL_FLAGS.get('endStep')
+const END_STEP = Number.isFinite(props.endStep) && props.endStep > 0
+  ? props.endStep
+  : (END_STEP_VALUE == null || END_STEP_VALUE === '' ? null : Number(END_STEP_VALUE))
 const NO_VOICE = URL_FLAGS.get('noVoice') === '1'
 const SNAPSHOT_AT_VALUE = URL_FLAGS.get('snapshotAt')
 const SNAPSHOT_AT = SNAPSHOT_AT_VALUE == null || SNAPSHOT_AT_VALUE === '' ? null : Number(SNAPSHOT_AT_VALUE)
@@ -175,8 +180,8 @@ const showAdvDialogue = computed(() => {
   return step?.type === 'adv' && step?.hide_dialogue !== true && step?.state?.text_disabled !== true
 })
 
-const playableStepNumber = computed(() => Math.max(1, currentStepIndex.value - firstPlayableIndex.value + 1))
-const playableStepTotal = computed(() => Math.max(0, (compiledData.value?.steps?.length || 0) - firstPlayableIndex.value))
+const playableStepNumber = computed(() => Math.max(1, currentStepIndex.value - navigationStartIndex.value + 1))
+const playableStepTotal = computed(() => Math.max(0, navigationEndIndex.value - navigationStartIndex.value + 1))
 
 if (!voicePlayer) {
   voicePlayer = useVoicePlayer({
@@ -198,6 +203,8 @@ const {
   isFirstStep,
   isLastStep,
   firstPlayableIndex,
+  navigationStartIndex,
+  navigationEndIndex,
   currentEpisode,
   currentEpisodeLabel,
   firstAvailableBg,
@@ -217,6 +224,7 @@ const {
   languageMode,
   setLanguageMode,
   startStep: START_STEP,
+  endStep: END_STEP,
   clearFadeAutoAdvance: () => clearFadeAutoAdvance(),
   fastForwardTimeline,
   ensureAudioCtx: _ensureAudioCtx,

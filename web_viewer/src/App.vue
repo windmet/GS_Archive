@@ -259,6 +259,7 @@
       v-if="view === 'player' && currentScenario"
       :scenario-json="currentScenario"
       :start-step="currentScenarioStartStep"
+      :end-step="currentScenarioEndStep"
       @back="closePlayer"
       @ready="onPlayerReady"
     />
@@ -356,6 +357,7 @@ const uiAssetCatalogData = ref(null)
 const currentScenario = ref(null)
 const currentScenarioFile = ref('')
 const currentScenarioStartStep = ref(null)
+const currentScenarioEndStep = ref(null)
 const currentPreviewCue = ref('')
 const filterQuery = ref('')
 const loading = ref(false)
@@ -1100,6 +1102,7 @@ function currentArchiveRoute() {
     query: filterQuery.value,
     scenario: view.value === 'player' ? currentScenarioFile.value : '',
     startStep: view.value === 'player' ? currentScenarioStartStep.value : 0,
+    endStep: view.value === 'player' ? currentScenarioEndStep.value : 0,
     voice: view.value === 'player' ? currentPreviewCue.value : '',
     returnView: returnViewAfterPlayer.value,
     parentView: preservesEventContext ? eventParentView.value : '',
@@ -1173,6 +1176,7 @@ function restoreVoicePreview(route) {
   currentScenario.value = buildCardVoicePreviewScenario(card, cue)
   currentScenarioFile.value = ''
   currentScenarioStartStep.value = null
+  currentScenarioEndStep.value = null
   currentPreviewCue.value = route.voice
   returnViewAfterPlayer.value = route.returnView || 'card_detail'
   view.value = 'player'
@@ -1222,6 +1226,7 @@ async function applyArchiveRoute(route) {
     currentScenario.value = null
     currentScenarioFile.value = ''
     currentScenarioStartStep.value = route.startStep || null
+    currentScenarioEndStep.value = route.endStep || null
     currentPreviewCue.value = ''
     returnViewAfterPlayer.value = route.returnView || 'files'
 
@@ -1235,7 +1240,11 @@ async function applyArchiveRoute(route) {
     }
 
     if (route.view === 'player' && route.scenario) {
-      await loadScenario(route.scenario, route.returnView || 'home', { syncRoute: false, startStep: route.startStep })
+      await loadScenario(route.scenario, route.returnView || 'home', {
+        syncRoute: false,
+        startStep: route.startStep,
+        endStep: route.endStep,
+      })
       return
     }
     if (route.view === 'player' && route.voice) {
@@ -1563,7 +1572,7 @@ function playStoryCollectionChapter(chapter) {
 
 function playStoryCollectionEpisode({ chapter, episode }) {
   if (chapter?.file && chapter.exists && episode?.startStep) {
-    loadScenario(chapter.file, 'story_collection', { startStep: episode.startStep })
+    loadScenario(chapter.file, 'story_collection', { startStep: episode.startStep, endStep: episode.endStep })
   }
 }
 
@@ -1770,7 +1779,7 @@ function playCurrentEvent() {
 
 function playCurrentEventEpisode(episode) {
   if (currentEvent.value?.file && currentEvent.value.exists && episode?.startStep) {
-    loadScenario(currentEvent.value.file, 'event_detail', { startStep: episode.startStep })
+    loadScenario(currentEvent.value.file, 'event_detail', { startStep: episode.startStep, endStep: episode.endStep })
   }
 }
 
@@ -1810,6 +1819,7 @@ async function openVoicePreview(card, cue, returnView) {
     currentScenario.value = buildCardVoicePreviewScenario(card, cue)
     currentScenarioFile.value = ''
     currentScenarioStartStep.value = null
+    currentScenarioEndStep.value = null
     currentPreviewCue.value = typeof cue === 'string' ? cue : cue.cue
     returnViewAfterPlayer.value = returnView
     commitView('player')
@@ -1965,6 +1975,7 @@ function closePlayer() {
   currentScenario.value = null
   currentScenarioFile.value = ''
   currentScenarioStartStep.value = null
+  currentScenarioEndStep.value = null
   currentPreviewCue.value = ''
   const returnView = returnViewAfterPlayer.value || 'files'
   returnViewAfterPlayer.value = 'files'
@@ -1997,6 +2008,7 @@ async function loadScenario(name, returnView = 'files', options = {}) {
     currentScenario.value = scenario
     currentScenarioFile.value = name
     currentScenarioStartStep.value = Number(options.startStep) > 0 ? Number(options.startStep) : null
+    currentScenarioEndStep.value = Number(options.endStep) > 0 ? Number(options.endStep) : null
     currentPreviewCue.value = ''
     returnViewAfterPlayer.value = returnView
     view.value = 'player'

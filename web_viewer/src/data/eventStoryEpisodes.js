@@ -22,6 +22,7 @@ export function buildEventStoryEpisodes(event, story, storyMasterData) {
       resourceId,
       part,
       startStep: playableStart + 1,
+      endStep: boundary ? Number(boundary.end_step_index) + 1 : 0,
       stepCount: boundary?.step_count || 0,
       dialogueCount: boundary?.dialogue_count || 0,
       voiceCount: boundary?.voice_count || 0,

@@ -33,11 +33,19 @@ for (const collection of collections) {
     assert.ok(chapter.file, `${chapter.id} is playable without a compiled file`)
     assert.equal(chapter.episodeCount, chapter.story.episodes.length, `${chapter.id} has mismatched episode boundaries`)
     assert.ok(chapter.episodes.every(episode => episode.startStep > 0), `${chapter.id} has an invalid start step`)
+    assert.ok(chapter.episodes.every(episode => episode.endStep >= episode.startStep), `${chapter.id} has an invalid end step`)
   }
 }
 
 const mainChapterOne = mainCollections.find(collection => collection.sectionId === '101')
+const mainPrologue = mainChapterOne.chapters.find(chapter => chapter.id === '10100')
 const mainEpisodeOne = mainChapterOne.chapters.find(chapter => chapter.id === '10101')
+assert.equal(mainPrologue.file, '1_4_001_00.json')
+assert.equal(mainPrologue.episodes.length, 2)
+assert.equal(mainPrologue.episodes[0].startStep, 2)
+assert.equal(mainPrologue.episodes[0].endStep, 27)
+assert.equal(mainPrologue.episodes[1].startStep, 28)
+assert.equal(mainPrologue.episodes[1].endStep, 60)
 assert.equal(mainEpisodeOne.file, '1_4_001_01.json')
 assert.equal(mainEpisodeOne.episodes.length, 10)
 assert.equal(mainEpisodeOne.episodes[0].startStep, 2)
