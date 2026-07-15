@@ -306,4 +306,23 @@ DRIVE A LIVE 还包含 `song3_drvalv_bgm.acb` 伴奏和 49 条 `song3_drvalv_<id
 - DRIVE A LIVE（パッションMAX Ver.）：只保留 3 号位，其余四个编队控件进入休息状态。
 - solo 3 号位换为山下次郎 `037jir` 后，body-2 运行时可重新组合并保持 ready。
 
-当前仍属于“多人角色层”而非完整 Live 舞美复刻。尚未接入 `Camera`、灯光、Backmonitor、Object_layer、Penlight、随机动作组和 Unity 歌曲特效包；这些数据应在多人动作与位置基线稳定后逐层加入。
+当前仍属于“多人角色层”而非完整 Live 舞美复刻。尚未接入 `Camera`、灯光、Backmonitor、Object_layer、Penlight 和 Unity 歌曲特效包；这些数据应在多人动作与位置基线稳定后逐层加入。
+
+## 位置插值与随机动作组（2026-07-15）
+
+`Livechara_position` 只有时间、演员槽位、X、Y 和 scale，没有持续时间或缓动类型。不能把相邻关键帧之间的整段间隔直接线性插值，否则相隔数十秒的倍率事件会变成持续慢推镜头。当前实现将事件时间解释为变换开始点，在 350 ms 内用 smoothstep 从上一状态过渡到新状态；初始负时间关键帧在歌曲 0 ms 前已经完成。X/Y、scale、显隐和层级都消费同一插值状态。
+
+`Livechara_motion_group` / `Livechara_motion_group_change` 已确认是带权重的动作回退池，不是另一套正式舞蹈编排。运行时只在以下条件同时成立时推导补位事件：
+
+- 当前正式动作的 `pauseTime` 大于 0 且小于 999999；
+- `event.time + pauseTime` 早于下一条正式动作；
+- 该时刻已经切入某个 motion group，且组内存在有效正权重动作。
+
+选择结果用歌曲、站位、触发时间和组号生成确定性哈希，再按原权重取样；因此播放、暂停、拖动时间轴后会得到相同动作。生成器把动作组成员加入歌曲 `motionIds` 和全局 motion catalog，保证播放前与正式舞蹈动作一同预载。全库 118 份脚本最终推导出 103 个补位事件，集中在 21 份 DRIVE A LIVE 标准/路线编排中；没有满足条件的歌曲保持 0 个补位事件。
+
+浏览器定点验证：
+
+- ANYWHERE 的 3 号位在 5600 ms 为 scale 1700、进度 0；5700 ms 为 1705.95、进度 0.286；6000 ms 到达 scale 1730、进度 1。
+- DRIVE A LIVE 在 32200 ms 正式动作加 5000 ms pause 后，于 37200 ms 进入动作组，37300 ms 跳播时五个站位均显示 `source=group`，确定性取样分别为 #36、#33、#8、#33、#10；37600 ms 下一条正式动作会重新接管。
+- 三人 BRAND NEW FIELD 仍严格启用并加载 2/3/4，solo `drv999_live_effect` 仍只启用并加载 3。
+- `npm run smoke` 通过，Vite 6.4.3 共转换 2352 个模块。
