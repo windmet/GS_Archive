@@ -92,6 +92,13 @@ export async function fetchLiveChibiImageLayerIndex() {
   return response.json()
 }
 
+export async function fetchLiveChibiStageBackgroundIndex() {
+  const response = await fetch(`${LIVE_CHIBI_BASE}/stage-backgrounds/index.json`)
+  if (response.status === 404) return null
+  if (!response.ok) throw new Error(`舞台背景索引加载失败 (${response.status})`)
+  return response.json()
+}
+
 export async function fetchLiveChibiLipSync(relativePath) {
   if (!relativePath) return null
   const response = await fetch(`${LIVE_CHIBI_BASE}/${relativePath}`)

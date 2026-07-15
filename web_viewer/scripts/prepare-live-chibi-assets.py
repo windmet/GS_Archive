@@ -350,6 +350,9 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
         camera_events = []
         backmonitor_events = []
         image_layer_events = []
+        lyric_events = []
+        whole_screen_color_events = []
+        character_light_events = []
         motion_group_events = []
         motion_group_changes = []
         with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
@@ -427,6 +430,52 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
                                 for index in (17, 18)
                             ),
                             "raw19": row[19].strip() if len(row) > 19 and row[19].strip() else None,
+                        }
+                    )
+                    continue
+                if row[0] == "Lyric" and len(row) >= 4:
+                    event_time = parse_optional_number(row[1])
+                    text = row[2].strip()
+                    if event_time is not None and text:
+                        lyric_events.append(
+                            {
+                                "time": event_time,
+                                "text": text,
+                                "duration": parse_number(row[3], 10000),
+                            }
+                        )
+                    continue
+                if row[0] == "Whole_screen_color" and len(row) >= 6:
+                    event_time = parse_optional_number(row[1])
+                    if event_time is None:
+                        continue
+                    hide = len(row) > 17 and row[17].strip() == "1"
+                    whole_screen_color_events.append(
+                        {
+                            "time": event_time,
+                            "color": row[2].strip() or None,
+                            "opacity": parse_optional_number(row[3]),
+                            "duration": (
+                                parse_number(row[18], 1)
+                                if hide and len(row) > 18
+                                else parse_number(row[4], 1)
+                            ),
+                            "depth": parse_optional_number(row[5]),
+                            "hide": hide,
+                        }
+                    )
+                    continue
+                if row[0] == "Livechara_Foot_Color" and len(row) >= 6:
+                    event_time = parse_optional_number(row[1])
+                    if event_time is None:
+                        continue
+                    character_light_events.append(
+                        {
+                            "time": event_time,
+                            "color": row[2].strip() or "#ffffff",
+                            "opacity": parse_number(row[3]),
+                            "duration": parse_number(row[4], 1),
+                            "depth": parse_optional_number(row[5]),
                         }
                     )
                     continue
@@ -516,6 +565,13 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
                     image_layer_events,
                     key=lambda event: (event["time"], event["depth"] or 0, event["asset"]),
                 ),
+                "lyricEvents": sorted(lyric_events, key=lambda event: event["time"]),
+                "wholeScreenColorEvents": sorted(
+                    whole_screen_color_events, key=lambda event: event["time"]
+                ),
+                "characterLightEvents": sorted(
+                    character_light_events, key=lambda event: event["time"]
+                ),
                 "motionGroupEvents": sorted(
                     motion_group_events,
                     key=lambda event: (event["time"], event["group"], event["motion"]),
@@ -603,7 +659,7 @@ def export_choreography(body_types: list[int]) -> dict:
 
     choreography_relative = Path("choreography") / "index.json"
     choreography = {
-        "schemaVersion": 7,
+        "schemaVersion": 8,
         "bodyTypes": body_types,
         "stats": {
             "songs": len(songs),
@@ -616,6 +672,13 @@ def export_choreography(body_types: list[int]) -> dict:
             ),
             "imageLayerEvents": sum(
                 len(song["imageLayerEvents"]) for song in songs
+            ),
+            "lyricEvents": sum(len(song["lyricEvents"]) for song in songs),
+            "wholeScreenColorEvents": sum(
+                len(song["wholeScreenColorEvents"]) for song in songs
+            ),
+            "characterLightEvents": sum(
+                len(song["characterLightEvents"]) for song in songs
             ),
             "lipSyncSongs": sum(1 for song in songs if song.get("lipSync")),
             "lipSyncCurves": len(lip_sync_catalog),

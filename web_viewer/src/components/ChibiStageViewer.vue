@@ -7,6 +7,7 @@
     :data-loaded-positions="loadedPositions.join(',')"
     :data-current-singers="currentSingerPositions.join(',')"
     :data-position-tween-ms="POSITION_TWEEN_MS"
+    :data-stage-base-zoom="STAGE_BASE_ZOOM"
     :data-derived-group-events="derivedGroupEventCount"
     :data-camera-event-time="currentCameraState.eventTime"
     :data-camera-zoom="currentCameraState.zoom.toFixed(4)"
@@ -24,6 +25,12 @@
     :data-image-layer-count="visibleImageLayerCount"
     :data-image-layer-assets="visibleImageLayerAssets.join(',')"
     :data-image-layer-depths="visibleImageLayerDepths.join(',')"
+    :data-stage-background-ready="stageBackgroundReady"
+    :data-stage-background-song="stageBackgroundSongId"
+    :data-current-lyric="currentLyric?.text || ''"
+    :data-screen-color="currentWholeScreenColor.color"
+    :data-screen-color-alpha="currentWholeScreenColor.alpha.toFixed(4)"
+    :data-character-light="currentCharacterLight.color"
   >
     <header class="stage-header">
       <button class="icon-button" type="button" aria-label="返回资料馆" @click="emit('back')">
@@ -48,6 +55,10 @@
           <span>NOW PLAYING</span>
           <strong>{{ selectedSong?.title || '—' }}</strong>
           <small>{{ activePositions.length }} 人编排 · 当前演唱 {{ currentSingerLabel }}</small>
+        </div>
+
+        <div v-if="currentLyric" class="stage-lyric" aria-live="polite">
+          {{ currentLyric.text }}
         </div>
 
         <div class="position-rail" aria-label="舞台站位状态">
@@ -132,6 +143,7 @@
               <span>{{ selectedSong?.cameraEvents?.length || 0 }} 条镜头</span>
               <span>{{ selectedSong?.backmonitorEvents?.length || 0 }} 条屏幕</span>
               <span>{{ selectedSong?.imageLayerEvents?.length || 0 }} 条布景</span>
+              <span>{{ selectedSong?.lyricEvents?.length || 0 }} 条歌词</span>
               <span>{{ selectedSongAudio ? '官方音频' : '无音频' }}</span>
             </div>
           </section>
@@ -213,6 +225,8 @@
               <div><dt>当前镜头</dt><dd>{{ currentCameraLabel }}</dd></div>
               <div><dt>舞台屏幕</dt><dd>{{ currentBackmonitorLabel }}</dd></div>
               <div><dt>图片布景</dt><dd>{{ visibleImageLayerCount }} 层</dd></div>
+              <div><dt>静态舞台</dt><dd>{{ stageBackgroundReady ? '已载入' : '无/等待' }}</dd></div>
+              <div><dt>当前歌词</dt><dd>{{ currentLyric?.text || '—' }}</dd></div>
             </dl>
             <small v-if="audioError" class="audio-error">{{ audioError }}</small>
           </section>
@@ -248,6 +262,7 @@ import {
   fetchLiveChibiLipSync,
   fetchLiveChibiManifest,
   fetchLiveChibiMusicIndex,
+  fetchLiveChibiStageBackgroundIndex,
   injectLiveChibiMotion,
   playLiveChibiMotion,
 } from '../utils/liveChibiSpine.js'
@@ -259,6 +274,7 @@ const choreography = ref(null)
 const musicIndex = ref(null)
 const backmonitorIndex = ref(null)
 const imageLayerIndex = ref(null)
+const stageBackgroundIndex = ref(null)
 const selectedSongId = ref('')
 const lineup = ref([])
 const booting = ref(true)
@@ -278,8 +294,10 @@ const backmonitorTransitionActive = ref(false)
 const visibleImageLayerCount = ref(0)
 const visibleImageLayerAssets = ref([])
 const visibleImageLayerDepths = ref([])
+const stageBackgroundReady = ref(false)
 const allPositions = [1, 2, 3, 4, 5]
 const POSITION_TWEEN_MS = 350
+const STAGE_BASE_ZOOM = 1.1
 
 let app = null
 let cameraContainer = null
@@ -301,6 +319,11 @@ let imageLayerSongId = ''
 let imageLayerSequence = 0
 const imageLayerRuntimes = new Map()
 const imageLayerLoads = new Map()
+const stageBackgroundSongId = ref('')
+let stageBackgroundSequence = 0
+let stageBackgroundSprite = null
+let stageBackgroundTexture = null
+let wholeScreenColorOverlay = null
 let resizeObserver = null
 let animationFrame = 0
 let playbackStartedAt = 0
@@ -383,6 +406,9 @@ const currentBackmonitorState = computed(() => backmonitorStateAt(stageTime.valu
 const currentBackmonitorLabel = computed(() => currentBackmonitorState.value.movie
   ? currentBackmonitorState.value.movie.replace('live_backmonitor_movie_', '')
   : '无')
+const currentLyric = computed(() => lyricAt(stageTime.value))
+const currentWholeScreenColor = computed(() => wholeScreenColorAt(stageTime.value))
+const currentCharacterLight = computed(() => characterLightAt(stageTime.value))
 const currentCameraLabel = computed(() => {
   const camera = currentCameraState.value
   const focus = camera.stagePosition ? `${camera.stagePosition}号位` : '自由'
@@ -395,10 +421,16 @@ onMounted(async () => {
   try {
     manifest.value = await fetchLiveChibiManifest()
     choreography.value = await fetchLiveChibiChoreography(manifest.value.choreography.index)
-    ;[musicIndex.value, backmonitorIndex.value, imageLayerIndex.value] = await Promise.all([
+    ;[
+      musicIndex.value,
+      backmonitorIndex.value,
+      imageLayerIndex.value,
+      stageBackgroundIndex.value,
+    ] = await Promise.all([
       fetchLiveChibiMusicIndex(),
       fetchLiveChibiBackmonitorIndex(),
       fetchLiveChibiImageLayerIndex(),
+      fetchLiveChibiStageBackgroundIndex(),
     ])
     initializeLineup()
     selectedSongId.value = songs.value.find(song => song.id === 'drvalv_live_effect')?.id
@@ -421,6 +453,7 @@ onBeforeUnmount(() => {
   releaseAudio()
   releaseBackmonitor()
   releaseImageLayers()
+  releaseStageBackground()
   for (const runtime of runtimes.values()) destroyLiveChibi(runtime)
   runtimes.clear()
   app?.destroy(true)
@@ -460,7 +493,10 @@ function createPixiApp() {
   cameraContainer = markRaw(new PIXI.Container())
   cameraContainer.sortableChildren = true
   backmonitorContainer = markRaw(new PIXI.Container())
-  backmonitorContainer.zIndex = -10000
+  // Backmonitor movies are projected through transparent cut-outs in the
+  // authored stage art.  Keep the video below the static stage composite so
+  // the opaque clockwork/floor pixels act as the original Unity mask.
+  backmonitorContainer.zIndex = -30000
   cameraContainer.addChild(backmonitorContainer)
   app.stage.addChild(cameraContainer)
   host.appendChild(app.view)
@@ -531,6 +567,7 @@ async function loadSlot(slot) {
     resizeStage()
     await syncSlotAtTime(slot, stageTime.value, true)
     applyCurrentLipSync()
+    applyStageLighting()
   } catch (error) {
     if (sequence !== slot.loadSequence) return
     slot.loading = false
@@ -752,6 +789,161 @@ function backmonitorStateAt(milliseconds) {
     state.eventTime = eventTime
   }
   return state
+}
+
+function parseHexColor(value, fallback = 0xffffff) {
+  const match = String(value || '').match(/^#?([0-9a-f]{6})/i)
+  return match ? Number.parseInt(match[1], 16) : fallback
+}
+
+function mixRgb(from, to, progress) {
+  const amount = Math.max(0, Math.min(1, progress))
+  const channel = shift => Math.round(
+    ((from >> shift) & 0xff) + (((to >> shift) & 0xff) - ((from >> shift) & 0xff)) * amount,
+  )
+  return (channel(16) << 16) | (channel(8) << 8) | channel(0)
+}
+
+function sampleColorTransition(transition, milliseconds) {
+  if (!transition) return null
+  const progress = transition.duration <= 0
+    ? 1
+    : Math.max(0, Math.min(1, (milliseconds - transition.start) / transition.duration))
+  return {
+    color: mixRgb(transition.from.color, transition.to.color, progress),
+    alpha: transition.from.alpha + (transition.to.alpha - transition.from.alpha) * progress,
+    depth: transition.to.depth,
+    eventTime: transition.start,
+  }
+}
+
+function colorTrackAt(events, milliseconds, initial, targetForEvent) {
+  let state = { ...initial }
+  let transition = null
+  for (const event of events || []) {
+    const eventTime = Number(event.time)
+    if (eventTime > milliseconds) break
+    if (transition) state = sampleColorTransition(transition, eventTime)
+    const target = targetForEvent(event, state)
+    transition = {
+      from: state,
+      to: target,
+      start: eventTime,
+      duration: Math.max(0, Number(event.duration) || 0),
+    }
+    state = sampleColorTransition(transition, eventTime)
+  }
+  return transition ? sampleColorTransition(transition, milliseconds) : state
+}
+
+function wholeScreenColorAt(milliseconds) {
+  return colorTrackAt(
+    selectedSong.value?.wholeScreenColorEvents,
+    milliseconds,
+    { color: 0x000000, alpha: 0, depth: 1750, eventTime: '' },
+    (event, state) => ({
+      color: event.hide ? state.color : parseHexColor(event.color, state.color),
+      alpha: event.hide ? 0 : Math.max(0, Math.min(1, Number(event.opacity) / 1000)),
+      depth: Number(event.depth ?? state.depth),
+    }),
+  )
+}
+
+function characterLightAt(milliseconds) {
+  return colorTrackAt(
+    selectedSong.value?.characterLightEvents,
+    milliseconds,
+    { color: 0xffffff, alpha: 1, depth: 1250, eventTime: '' },
+    event => ({
+      color: mixRgb(
+        0xffffff,
+        parseHexColor(event.color),
+        Math.max(0, Math.min(1, Number(event.opacity) / 1000)),
+      ),
+      alpha: 1,
+      depth: Number(event.depth ?? 1250),
+    }),
+  )
+}
+
+function lyricAt(milliseconds) {
+  const events = selectedSong.value?.lyricEvents || []
+  const event = [...events].reverse().find(item => Number(item.time) <= milliseconds)
+  if (!event || milliseconds >= Number(event.time) + Number(event.duration || 0)) return null
+  return event
+}
+
+function layoutStageBackground() {
+  if (!app) return
+  const width = app.renderer.width / app.renderer.resolution
+  const height = app.renderer.height / app.renderer.resolution
+  const viewportScale = Math.min(width / 1280, height / 720)
+  for (const sprite of [stageBackgroundSprite, wholeScreenColorOverlay]) {
+    if (!sprite) continue
+    sprite.position.set(width * 0.5, height * 0.5)
+    sprite.scale.set(viewportScale * (2 / 3))
+  }
+}
+
+function releaseStageBackground() {
+  stageBackgroundSequence += 1
+  stageBackgroundSprite?.removeFromParent()
+  stageBackgroundSprite?.destroy()
+  stageBackgroundTexture?.destroy(true)
+  stageBackgroundSprite = null
+  stageBackgroundTexture = null
+  stageBackgroundSongId.value = ''
+  stageBackgroundReady.value = false
+}
+
+async function syncStageBackground() {
+  if (!cameraContainer || !selectedSong.value || !stageBackgroundIndex.value) return
+  const songCode = selectedSong.value.songCode
+  if (stageBackgroundSongId.value === songCode && stageBackgroundSprite) {
+    layoutStageBackground()
+    return
+  }
+  releaseStageBackground()
+  stageBackgroundSongId.value = songCode
+  const entry = stageBackgroundIndex.value.songs?.[songCode]
+  if (!entry) return
+  const sequence = stageBackgroundSequence
+  const texture = await loadImageLayerTexture(entry.file)
+  if (sequence !== stageBackgroundSequence || selectedSong.value?.songCode !== songCode) {
+    texture.destroy(true)
+    return
+  }
+  stageBackgroundTexture = texture
+  stageBackgroundSprite = markRaw(new PIXI.Sprite(texture))
+  stageBackgroundSprite.anchor.set(0.5)
+  stageBackgroundSprite.zIndex = -20000
+  cameraContainer.addChild(stageBackgroundSprite)
+  stageBackgroundReady.value = true
+  layoutStageBackground()
+}
+
+function ensureWholeScreenColorOverlay() {
+  if (wholeScreenColorOverlay || !cameraContainer) return
+  wholeScreenColorOverlay = markRaw(new PIXI.Graphics())
+  wholeScreenColorOverlay.beginFill(0xffffff)
+  wholeScreenColorOverlay.drawRect(-950, -530, 1900, 1060)
+  wholeScreenColorOverlay.endFill()
+  wholeScreenColorOverlay.visible = false
+  cameraContainer.addChild(wholeScreenColorOverlay)
+  layoutStageBackground()
+}
+
+function applyStageLighting() {
+  ensureWholeScreenColorOverlay()
+  const screen = currentWholeScreenColor.value
+  if (wholeScreenColorOverlay) {
+    wholeScreenColorOverlay.tint = screen.color
+    wholeScreenColorOverlay.alpha = screen.alpha
+    wholeScreenColorOverlay.zIndex = screen.depth
+    wholeScreenColorOverlay.visible = screen.alpha > 0.001
+  }
+  const character = currentCharacterLight.value
+  for (const runtime of runtimes.values()) runtime.spine.tint = character.color
 }
 
 function imageLayerStatesAt(milliseconds) {
@@ -1104,7 +1296,7 @@ function applyCameraTransform() {
     width * 0.5 + camera.x * viewportScale,
     height * 0.5 + (camera.y - 360) * viewportScale,
   )
-  cameraContainer.scale.set(camera.zoom)
+  cameraContainer.scale.set(camera.zoom * STAGE_BASE_ZOOM)
   cameraContainer.rotation = -camera.rotation * Math.PI / 180
 }
 
@@ -1126,7 +1318,7 @@ function layoutRuntime(position, motionEvent = null) {
           : 1
 
   runtime.spine.x = width * 0.5 + x * viewportScale
-  runtime.spine.y = height * 0.82 + (y - 180) * viewportScale * 0.32
+  runtime.spine.y = height * 0.66 + (y - 180) * viewportScale * 0.32
   runtime.spine.scale.set(characterScale * ensembleScale * viewportFit * sourceScale / 1700)
   runtime.spine.visible = activePositions.value.includes(position) && y < 4000
   runtime.spine.zIndex = Math.round(y * 10) + position
@@ -1147,6 +1339,8 @@ function resizeStage() {
     if (slot && runtimes.has(position)) runtimes.get(position).spine.visible = true
   }
   applyCameraTransform()
+  layoutStageBackground()
+  applyStageLighting()
   syncBackmonitor(true)
   syncImageLayers().catch(error => console.warn('[ChibiStage] image-layer sync failed', error))
 }
@@ -1298,6 +1492,8 @@ async function seekStage() {
   await Promise.all(activeSlots.value.map(slot => syncSlotAtTime(slot, stageTime.value, true)))
   resetEventIndices()
   applyCurrentLipSync()
+  await syncStageBackground()
+  applyStageLighting()
   applyCameraTransform()
   syncBackmonitor(true)
   await syncImageLayers()
@@ -1358,6 +1554,7 @@ function updateStage(now) {
     layoutRuntime(slot.position, runtimes.get(slot.position)?.currentMotionEvent)
   }
   applyCameraTransform()
+  applyStageLighting()
   syncBackmonitor()
   syncImageLayers().catch(error => console.warn('[ChibiStage] image-layer sync failed', error))
   applyCurrentLipSync()
@@ -1455,6 +1652,28 @@ function formatTime(milliseconds) {
 .performance-hud strong { font-size: 16px; }
 .performance-hud small { color: var(--muted); font-size: 10px; }
 
+.stage-lyric {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: 180px;
+  max-width: min(820px, calc(100% - 80px));
+  padding: 2px 10px 4px;
+  color: #fff;
+  font-size: clamp(15px, 1.7vw, 24px);
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  text-shadow:
+    -2px -2px 0 rgba(0, 0, 0, 0.9),
+    2px -2px 0 rgba(0, 0, 0, 0.9),
+    -2px 2px 0 rgba(0, 0, 0, 0.9),
+    2px 2px 0 rgba(0, 0, 0, 0.9),
+    0 3px 8px rgba(0, 0, 0, 0.9);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
 .position-rail { position: absolute; z-index: 4; left: 50%; bottom: 128px; width: min(720px, calc(100% - 48px)); display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; transform: translateX(-50%); pointer-events: none; }
 .position-marker { min-width: 0; display: grid; justify-items: center; gap: 4px; color: rgba(163, 184, 204, 0.3); }
 .position-marker span { display: grid; place-items: center; width: 25px; height: 25px; border: 1px solid currentColor; border-radius: 50%; font: 700 10px/1 monospace; background: rgba(5, 14, 25, 0.66); }
@@ -1525,6 +1744,7 @@ select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(65, 165, 
   .stage-inspector { overflow: visible; border-top: 1px solid var(--line); border-left: 0; }
   .inspector-scroll { height: auto; overflow: visible; }
   .position-rail { bottom: 112px; }
+  .stage-lyric { bottom: 160px; }
   .transport { bottom: 16px; min-height: 72px; grid-template-columns: 40px 50px minmax(110px, auto) 1fr; padding: 0 12px; }
   .transport button { width: 40px; height: 40px; }
   .transport .primary-transport { width: 50px; height: 50px; }
@@ -1536,6 +1756,7 @@ select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(65, 165, 
   .performance-shell { min-height: 390px; }
   .performance-hud { top: 14px; left: 14px; }
   .position-rail { bottom: 105px; width: calc(100% - 24px); gap: 2px; }
+  .stage-lyric { bottom: 150px; }
   .position-marker small { max-width: 58px; }
   .transport { width: calc(100% - 20px); grid-template-columns: 38px 48px 1fr; gap: 8px; }
   .transport input { grid-column: 1 / -1; margin-bottom: 8px; }
