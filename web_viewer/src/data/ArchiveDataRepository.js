@@ -2,7 +2,9 @@ const ARCHIVE_SOURCES = {
   compiledIndex: '/data/compiled/index.json',
   cardIndex: '/data/masterdata/card_index.json',
   gashaIndex: '/data/masterdata/gasha_index.json',
+  eventIndex: '/data/masterdata/event_index.json',
   storyMaster: '/data/masterdata/story_master_index.json',
+  storyPresentation: '/data/masterdata/story_presentation_index.json',
   idolUnit: '/data/masterdata/idol_unit_dictionary.json',
   costumeDictionary: '/data/masterdata/costume_dictionary.json',
   archiveManifest: '/data/archive_manifest.json',
@@ -33,11 +35,17 @@ function validatePayload(key, payload) {
   )) {
     throw new Error('gashaIndex must include normalized announcement and logical-gasha indexes')
   }
+  if (key === 'eventIndex' && (payload.schema_version < 1 || !Array.isArray(payload.events) || !payload.by_code)) {
+    throw new Error('eventIndex must include normalized event and reward indexes')
+  }
   if (key === 'cardDetailIndex' && (!payload.cards_by_resource_id || !payload.skills_by_id || !payload.costumes_by_key)) {
     throw new Error('cardDetailIndex is missing normalized card detail dictionaries')
   }
   if (key === 'storyMaster' && !payload.main && !payload.idol_story) {
     throw new Error('storyMaster has no recognized story families')
+  }
+  if (key === 'storyPresentation' && (!payload.by_file || payload.schema_version < 1)) {
+    throw new Error('storyPresentation must include normalized display metadata')
   }
   if (key === 'idolUnit' && !payload.by_idol_code) {
     throw new Error('idolUnit.by_idol_code is missing')

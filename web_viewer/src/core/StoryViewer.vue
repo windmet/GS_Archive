@@ -9,7 +9,7 @@
       <button class="bar-btn" @click="$emit('back')">Back</button>
       <div class="progress-counter">
         <span v-if="currentEpisodeLabel" class="episode-badge">{{ currentEpisodeLabel }}</span>
-        <span class="step-counter">{{ currentStepIndex + 1 }} / {{ compiledData.steps.length }}</span>
+        <span class="step-counter">{{ playableStepNumber }} / {{ playableStepTotal }}</span>
       </div>
       <div class="top-bar-right">
         <button class="lang-btn" @click.stop="cycleLanguage">{{ langLabel }}</button>
@@ -52,9 +52,6 @@
       <!-- Title (episode/chapter title card) -->
       <TitleUI v-if="currentStep.type === 'title'" :step="currentStep" />
 
-      <!-- Synopsis (summary text with glassmorphism) -->
-      <SynopsisUI v-if="currentStep.type === 'synopsis'" :step="currentStep" />
-
       <!-- Time/location caption -->
       <TextTimeUI v-if="currentStep.type === 'text_time'" :step="currentStep" @next="goNext" />
 
@@ -79,7 +76,6 @@ import MobileUI from '../components/MobileUI.vue'
 import CallUI from '../components/CallUI.vue'
 import ChoiceUI from '../components/ChoiceUI.vue'
 import TitleUI from '../components/TitleUI.vue'
-import SynopsisUI from '../components/SynopsisUI.vue'
 import TextTimeUI from '../components/TextTimeUI.vue'
 // SpineStage is lazy-loaded so PIXI.js only loads when a story opens
 const SpineStage = defineAsyncComponent(() => import('../components/SpineStage.vue'))
@@ -176,6 +172,9 @@ const showAdvDialogue = computed(() => {
   return step?.type === 'adv' && step?.hide_dialogue !== true && step?.state?.text_disabled !== true
 })
 
+const playableStepNumber = computed(() => Math.max(1, currentStepIndex.value - firstPlayableIndex.value + 1))
+const playableStepTotal = computed(() => Math.max(0, (compiledData.value?.steps?.length || 0) - firstPlayableIndex.value))
+
 if (!voicePlayer) {
   voicePlayer = useVoicePlayer({
     spineStageRef,
@@ -195,6 +194,7 @@ const { startTimeline, fastForwardTimeline, cancelTimeline } = useTimelineRunner
 const {
   isFirstStep,
   isLastStep,
+  firstPlayableIndex,
   currentEpisode,
   currentEpisodeLabel,
   firstAvailableBg,

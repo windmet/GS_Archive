@@ -19,7 +19,7 @@ assert.deepEqual(
   normalizeArchiveRoute({ view: 'idol_detail', idol: '001tom' }),
   {
     view: 'idol_detail', homeIdol: '', homeCue: '', homeCostume: '', category: 'idol', idol: '001tom', group: '', unit: '', unitFilter: '',
-    storyType: '', eventScope: 'all', availability: 'all', sort: 'domain', episode: '', card: '',
+    storyType: '', storyMode: 'portal', storySection: '', story: '', eventScope: 'all', availability: 'all', sort: 'domain', episode: '', card: '',
     gasha: '', gashaType: 'all', rarity: 'all', assetState: 'all', relationState: 'all', query: '',
     event: '', scenario: '', voice: '', returnView: '', parentView: '',
   },
@@ -29,6 +29,7 @@ assert.equal(normalizeArchiveRoute({ view: 'idol_detail' }).view, 'idols')
 assert.equal(normalizeArchiveRoute({ view: 'unit_detail' }).view, 'unit_catalog')
 assert.equal(normalizeArchiveRoute({ view: 'gasha_detail' }).view, 'gashas')
 assert.equal(normalizeArchiveRoute({ view: 'event_detail' }).view, 'story_catalog')
+assert.equal(normalizeArchiveRoute({ view: 'story_detail' }).view, 'story_catalog')
 assert.equal(normalizeArchiveRoute({ view: 'episodes' }).view, 'episode_zero_units')
 assert.equal(normalizeArchiveRoute({ view: 'player' }).view, 'home')
 assert.equal(normalizeArchiveRoute({ view: 'player', card: '001tom_n01', voice: '2_1_001_01_01_01' }).view, 'player')
@@ -38,6 +39,13 @@ assert.equal(archiveSectionForRoute({ view: 'groups', category: 'idol_chat', gro
 assert.equal(archiveSectionForRoute({ view: 'card_detail', card: '001tom_n01' }), 'cards')
 assert.equal(archiveSectionForRoute({ view: 'archive_status' }), 'resources')
 assert.equal(archiveSectionForRoute({ view: 'event_detail', event: '410018' }), 'stories')
+assert.equal(archiveSectionForRoute({ view: 'story_detail', story: '1_4_001_01.json' }), 'stories')
+
+const storyDetailContext = readArchiveRoute('http://localhost/?view=story_detail&story=1_4_001_01&story_type=main&story_mode=search&story_section=101')
+assert.equal(storyDetailContext.view, 'story_detail')
+assert.equal(storyDetailContext.story, '1_4_001_01.json')
+assert.equal(storyDetailContext.storyMode, 'search')
+assert.equal(storyDetailContext.storySection, '101')
 
 const homeContext = readArchiveRoute('http://localhost/?home_idol=040ren&home_cue=2_1_040_01_00_09&home_costume=040ren_101_00')
 assert.equal(homeContext.view, 'home')
@@ -102,4 +110,4 @@ assert.equal(eventPlayerContext.returnView, 'event_detail')
 assert.equal(eventPlayerContext.parentView, 'unit_detail')
 assert.equal(eventPlayerContext.unit, '16cfi')
 
-console.log('Archive route contract: 53 assertions passed')
+console.log('Archive route contract: story portal and detail routes verified')

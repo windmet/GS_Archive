@@ -114,6 +114,8 @@
       <ArchiveEventDetail
         v-if="view === 'event_detail'"
         :event="currentEvent"
+        :master-event="currentMasterEvent"
+        :story="currentEventStory"
         :cards="currentEventCards"
         :idols="currentEventIdols"
         :units="currentEventUnits"
@@ -170,8 +172,11 @@
       <ArchiveStoryCatalog
         v-if="view === 'story_catalog'"
         :entries="visibleStoryCatalogEntries"
+        :all-entries="storyCatalog"
         :domain-options="storyDomainOptions"
         :domain="currentStoryDomain"
+        :section="currentStorySection"
+        :mode="currentStoryMode"
         :event-scope-options="storyEventScopeOptions"
         :event-scope="currentEventScope"
         :availability="currentStoryAvailability"
@@ -179,11 +184,25 @@
         :catalog-total="storyCatalog.length"
         :filtered-total="filteredStoryCatalog.length"
         @select="openCatalogStory"
+        @browse="browseStoryCollection"
         @load-more="storyVisibleLimit += 80"
+        @clear-section="currentStorySection = ''"
+        @update:mode="setStoryMode"
         @update:domain="setStoryDomain"
         @update:event-scope="currentEventScope = $event"
         @update:availability="currentStoryAvailability = $event"
         @update:sort="currentStorySort = $event"
+      />
+
+      <ArchiveStoryDetail
+        v-if="view === 'story_detail'"
+        :story="currentStory"
+        :related="currentStoryRelated"
+        :visual-url="currentStoryVisualUrl"
+        :idol-name="idolDisplayName"
+        @play="playStoryDetail"
+        @select="openStoryDetail"
+        @open-idol="openStoryIdol"
       />
 
       <ArchiveUnitCatalog
@@ -246,6 +265,7 @@ import ArchiveUnitGrid from './components/archive/ArchiveUnitGrid.vue'
 import ArchiveEpisodeList from './components/archive/ArchiveEpisodeList.vue'
 import ArchiveStatus from './components/archive/ArchiveStatus.vue'
 import ArchiveStoryCatalog from './components/archive/ArchiveStoryCatalog.vue'
+import ArchiveStoryDetail from './components/archive/ArchiveStoryDetail.vue'
 import ArchiveUnitCatalog from './components/archive/ArchiveUnitCatalog.vue'
 import ArchiveUnitDetail from './components/archive/ArchiveUnitDetail.vue'
 import { loadArchiveData, loadCardDetailData } from './data/ArchiveDataRepository.js'
@@ -286,9 +306,11 @@ const view = ref('home')
 const indexData = ref(null)
 const cardIndexData = ref(null)
 const gashaIndexData = ref(null)
+const eventIndexData = ref(null)
 const cardDetailData = ref(null)
 const cardDetailLoadPromise = ref(null)
 const storyMasterData = ref(null)
+const storyPresentationData = ref(null)
 const idolUnitData = ref(null)
 const costumeDictionaryData = ref(null)
 const archiveManifestData = ref(null)
@@ -320,6 +342,9 @@ const cardLayout = ref('compact')
 const cardArtMode = ref('clean')
 const currentIdolUnitFilter = ref('')
 const currentStoryDomain = ref('')
+const currentStoryMode = ref('portal')
+const currentStorySection = ref('')
+const currentStoryFile = ref('')
 const currentEventScope = ref('all')
 const currentStoryAvailability = ref('all')
 const currentStorySort = ref('domain')
@@ -525,7 +550,7 @@ const eventRelationByFile = computed(() => new Map(
   (archiveManifestData.value?.unit_event_relations || []).map(relation => [relation.file, relation]),
 ))
 
-const storyCatalog = computed(() => buildStoryCatalog(storyMasterData.value).map(entry => {
+const storyCatalog = computed(() => buildStoryCatalog(storyMasterData.value, storyPresentationData.value).map(entry => {
   if (entry.domain !== 'event') return entry
   const relation = eventRelationByFile.value.get(entry.file)
   if (!relation) return { ...entry, eventScope: 'unclassified', eventScopeLabel: '活动' }
@@ -571,6 +596,7 @@ const filteredStoryCatalog = computed(() => {
   const availability = currentStoryAvailability.value
   const entries = storyCatalog.value.filter(entry =>
     (!currentStoryDomain.value || entry.domain === currentStoryDomain.value) &&
+    (!currentStorySection.value || entry.sectionId === currentStorySection.value) &&
     (currentStoryDomain.value !== 'event' || currentEventScope.value === 'all' || entry.eventScope === currentEventScope.value) &&
     (availability === 'all' || (availability === 'playable' ? entry.exists : !entry.exists)) &&
     (!query || entry.searchText.includes(query)),
@@ -584,6 +610,35 @@ const filteredStoryCatalog = computed(() => {
 })
 
 const visibleStoryCatalogEntries = computed(() => filteredStoryCatalog.value.slice(0, storyVisibleLimit.value))
+
+const currentStory = computed(() => storyCatalog.value.find(entry => entry.file === currentStoryFile.value) || null)
+
+const currentStoryRelated = computed(() => {
+  if (!currentStory.value) return []
+  const sameCollection = storyCatalog.value.filter(entry =>
+    entry.domain === currentStory.value.domain &&
+    (currentStory.value.sectionId ? entry.sectionId === currentStory.value.sectionId : true),
+  )
+  return sameCollection.sort((a, b) => a.releaseAt - b.releaseAt || a.resourceId.localeCompare(b.resourceId))
+})
+
+const currentEventStory = computed(() => storyCatalog.value.find(entry => entry.file === currentEvent.value?.file) || null)
+
+const currentStoryVisualUrl = computed(() => {
+  const story = currentStory.value
+  if (!story) return ''
+  if (story.domain === 'main') {
+    const chapter = Number(story.sectionId) - 100
+    if (chapter >= 1 && chapter <= 2) return `/assets/stories/main/image_story_main_button_${String(chapter).padStart(2, '0')}.png`
+  }
+  if (story.domain === 'unit_story') {
+    const codes = ['01jup', '02dra', '03alt', '04bei', '05w00', '06fra', '07sai', '08hig', '09shi', '10caf', '11mof', '12sem', '13the', '14fla', '15leg', '16cfi']
+    const code = codes[Number(story.sectionId) - 1]
+    if (code) return `/assets/stories/units/image_unit_story_button_${code}.png`
+  }
+  if (story.domain === 'idol_story' && story.sectionId) return `/assets/idols/icons/image_chara_icon_${story.sectionId}.png`
+  return ''
+})
 
 const unitCatalogEntries = computed(() => (idolUnitData.value?.units || []).map(unit => {
   const unitId = String(unit.unit_id)
@@ -786,6 +841,10 @@ const currentGasha = computed(() => resolveGashaRelatedCards(
 const eventMap = computed(() => new Map((archiveManifestData.value?.unit_event_relations || [])
   .map(event => [String(event.event_id), event])))
 const currentEvent = computed(() => eventMap.value.get(currentEventId.value) || null)
+const currentMasterEvent = computed(() => {
+  const code = String(currentEvent.value?.event_code || '')
+  return eventIndexData.value?.by_code?.[code] || null
+})
 const currentEventCards = computed(() => (archiveManifestData.value?.event_card_relations_by_event?.[currentEventId.value] || [])
   .map(relation => {
     const card = cardMap.value.get(relation.card_resource_id)
@@ -897,6 +956,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'home') return 'SideM Archive'
   if (view.value === 'archive_status') return '数据状态'
   if (view.value === 'story_catalog') return '故事目录'
+  if (view.value === 'story_detail') return currentStory.value?.title || '故事详情'
   if (view.value === 'gashas') return '卡池档案'
   if (view.value === 'gasha_detail') return currentGasha.value?.display_name || '卡池详情'
   if (view.value === 'event_detail') return currentEvent.value?.title || '活动详情'
@@ -913,7 +973,7 @@ const archiveTitle = computed(() => {
   return 'SideM Archive'
 })
 
-const archiveSearchable = computed(() => ['idols', 'groups', 'cards', 'gashas', 'files', 'story_catalog'].includes(view.value))
+const archiveSearchable = computed(() => ['idols', 'groups', 'cards', 'gashas', 'files'].includes(view.value) || (view.value === 'story_catalog' && currentStoryMode.value === 'search'))
 
 const archiveSearchPlaceholder = computed(() => {
   if (view.value === 'idols') return categoryFilterPlaceholder.value
@@ -937,6 +997,7 @@ function idolDisplayName(id) {
 
 function currentArchiveRoute() {
   const returnsToEvent = view.value === 'player' && returnViewAfterPlayer.value === 'event_detail'
+  const returnsToStory = view.value === 'player' && returnViewAfterPlayer.value === 'story_detail'
   const preservesEventContext = view.value === 'event_detail' || returnsToEvent
   const preservesArchiveUnit = view.value === 'unit_detail' ||
     (view.value === 'player' && returnViewAfterPlayer.value === 'unit_detail') ||
@@ -954,6 +1015,9 @@ function currentArchiveRoute() {
       : (currentUnit.value?.unit_code || currentUnit.value?.id || ''),
     unitFilter: currentIdolUnitFilter.value,
     storyType: currentStoryDomain.value,
+    storyMode: currentStoryMode.value,
+    storySection: currentStorySection.value,
+    story: (view.value === 'story_detail' || returnsToStory) ? currentStoryFile.value : '',
     eventScope: currentEventScope.value,
     availability: currentStoryAvailability.value,
     sort: currentStorySort.value,
@@ -1062,6 +1126,9 @@ async function applyArchiveRoute(route) {
     currentCardRelationState.value = route.relationState || 'all'
     currentIdolUnitFilter.value = route.unitFilter || ''
     currentStoryDomain.value = route.storyType || ''
+    currentStoryMode.value = route.storyMode || 'portal'
+    currentStorySection.value = route.storySection || ''
+    currentStoryFile.value = route.story || ''
     currentEventScope.value = route.eventScope || 'all'
     currentStoryAvailability.value = route.availability || 'all'
     currentStorySort.value = route.sort || 'domain'
@@ -1112,6 +1179,7 @@ async function applyArchiveRoute(route) {
     else if (route.view === 'card_detail' && !currentCard.value) view.value = 'cards'
     else if (route.view === 'gasha_detail' && !currentGasha.value) view.value = 'gashas'
     else if (route.view === 'event_detail' && !currentEvent.value) view.value = 'story_catalog'
+    else if (route.view === 'story_detail' && !currentStory.value) view.value = 'story_catalog'
     else if (route.view === 'cards' && !currentCharacterId.value) view.value = 'idols'
     else if (route.view === 'files' && !currentGroup.value) view.value = currentCharacterId.value ? 'groups' : 'home'
     else if (route.view === 'episodes' && !currentUnit.value) view.value = 'episode_zero_units'
@@ -1138,6 +1206,9 @@ function goHome() {
   currentCardRelationState.value = 'all'
   currentIdolUnitFilter.value = ''
   currentStoryDomain.value = ''
+  currentStoryMode.value = 'portal'
+  currentStorySection.value = ''
+  currentStoryFile.value = ''
   currentEventScope.value = 'all'
   currentStoryAvailability.value = 'all'
   currentStorySort.value = 'domain'
@@ -1190,6 +1261,10 @@ function goArchiveBack() {
     event_detail: goBackFromEvent,
     archive_status: goHome,
     story_catalog: goHome,
+    story_detail: () => {
+      currentStoryFile.value = ''
+      commitView('story_catalog')
+    },
     unit_catalog: () => commitView('idols'),
     unit_detail: () => {
       currentArchiveUnitCode.value = ''
@@ -1244,6 +1319,9 @@ function openGashaCatalog() {
 function openStoryCatalog() {
   filterQuery.value = ''
   currentStoryDomain.value = ''
+  currentStoryMode.value = 'portal'
+  currentStorySection.value = ''
+  currentStoryFile.value = ''
   currentEventScope.value = 'all'
   currentStoryAvailability.value = 'all'
   currentStorySort.value = 'domain'
@@ -1253,7 +1331,27 @@ function openStoryCatalog() {
 
 function setStoryDomain(domain) {
   currentStoryDomain.value = domain
+  currentStorySection.value = ''
+  currentStoryMode.value = 'search'
   currentEventScope.value = 'all'
+  storyVisibleLimit.value = 80
+}
+
+function setStoryMode(mode) {
+  currentStoryMode.value = mode === 'search' ? 'search' : 'portal'
+  if (currentStoryMode.value === 'portal') {
+    filterQuery.value = ''
+    currentStoryDomain.value = ''
+    currentStorySection.value = ''
+  }
+}
+
+function browseStoryCollection({ domain, section = '' }) {
+  filterQuery.value = ''
+  currentStoryDomain.value = domain || ''
+  currentStorySection.value = section || ''
+  currentEventScope.value = 'all'
+  currentStoryMode.value = 'search'
   storyVisibleLimit.value = 80
 }
 
@@ -1309,7 +1407,24 @@ function openUnitCards() {
 
 function openCatalogStory(entry) {
   if (entry?.eventRelation) openEventDetail(entry.eventRelation, 'story_catalog')
-  else if (entry?.file && entry.exists) loadScenario(entry.file, 'story_catalog')
+  else openStoryDetail(entry)
+}
+
+function openStoryDetail(entry) {
+  if (!entry?.file) return
+  currentStoryFile.value = entry.file
+  commitView('story_detail')
+}
+
+function playStoryDetail(entry = currentStory.value) {
+  if (entry?.file && entry.exists) loadScenario(entry.file, 'story_detail')
+}
+
+function openStoryIdol(idolCode) {
+  if (!/^\d{3}[a-z0-9]{3}$/i.test(idolCode)) return
+  currentCategoryId.value = 'idol'
+  currentCharacterId.value = idolCode
+  commitView('idol_detail')
 }
 
 function goBackToCards() {
@@ -1745,7 +1860,9 @@ onMounted(async () => {
   indexData.value = data.compiledIndex
   cardIndexData.value = data.cardIndex
   gashaIndexData.value = data.gashaIndex
+  eventIndexData.value = data.eventIndex
   storyMasterData.value = data.storyMaster
+  storyPresentationData.value = data.storyPresentation
   idolUnitData.value = data.idolUnit
   costumeDictionaryData.value = data.costumeDictionary
   archiveManifestData.value = data.archiveManifest
@@ -1767,7 +1884,7 @@ onMounted(async () => {
   removeSpineAnimationDebug = installSpineAnimationDebug()
 })
 
-watch([filterQuery, currentCardRarity, currentCardAssetState, currentCardRelationState, currentGashaCategory, currentIdolUnitFilter, currentStoryDomain, currentEventScope, currentStoryAvailability, currentStorySort], () => {
+watch([filterQuery, currentCardRarity, currentCardAssetState, currentCardRelationState, currentGashaCategory, currentIdolUnitFilter, currentStoryDomain, currentStoryMode, currentStorySection, currentEventScope, currentStoryAvailability, currentStorySort], () => {
   syncArchiveRoute({ replace: true })
 })
 
@@ -1775,7 +1892,7 @@ watch([homeSelectedId, homeSelectedCue, homeSelectedCostume], () => {
   if (view.value === 'home') syncArchiveRoute({ replace: true })
 })
 
-watch([filterQuery, currentStoryDomain, currentEventScope, currentStoryAvailability, currentStorySort], () => {
+watch([filterQuery, currentStoryDomain, currentStorySection, currentEventScope, currentStoryAvailability, currentStorySort], () => {
   storyVisibleLimit.value = 80
 })
 

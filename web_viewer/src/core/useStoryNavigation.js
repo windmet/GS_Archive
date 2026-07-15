@@ -15,7 +15,12 @@ export function useStoryNavigation({
   ensureAudioCtx,
   resetVoiceDedup,
 }) {
-  const isFirstStep = computed(() => historyStack.value.length === 0)
+  const firstPlayableIndex = computed(() => {
+    const steps = compiledData.value?.steps || []
+    const index = steps.findIndex(step => step?.type !== 'synopsis')
+    return index < 0 ? 0 : index
+  })
+  const isFirstStep = computed(() => historyStack.value.length === 0 && currentStepIndex.value <= firstPlayableIndex.value)
   const isLastStep = computed(() => !compiledData.value || currentStepIndex.value >= compiledData.value.steps.length - 1)
 
   const currentEpisode = computed(() => {
@@ -38,7 +43,7 @@ export function useStoryNavigation({
 
   const firstAvailableBg = computed(() => {
     if (!compiledData.value?.steps) return null
-    for (const step of compiledData.value.steps) {
+    for (const step of compiledData.value.steps.slice(firstPlayableIndex.value)) {
       if (step.state?.bg) return step.state.bg
     }
     return null
@@ -58,7 +63,10 @@ export function useStoryNavigation({
 
   function applyStartStepIfNeeded() {
     if (!compiledData.value?.steps?.length) return
-    if (!Number.isFinite(startStep)) return
+    if (!Number.isFinite(startStep)) {
+      currentStepIndex.value = firstPlayableIndex.value
+      return
+    }
     const target = Math.max(0, Math.min(compiledData.value.steps.length - 1, startStep - 1))
     currentStepIndex.value = target
   }
@@ -83,21 +91,21 @@ export function useStoryNavigation({
     ensureAudioCtx()
     if (historyStack.value.length > 0) {
       let target = historyStack.value.pop()
-      while (target > 0 && isTransitionStep(compiledData.value?.steps?.[target])) {
+      while (target > firstPlayableIndex.value && isTransitionStep(compiledData.value?.steps?.[target])) {
         if (historyStack.value.length === 0) {
-          target--
+          target = Math.max(firstPlayableIndex.value, target - 1)
           continue
         }
         target = historyStack.value.pop()
       }
-      currentStepIndex.value = target
+      currentStepIndex.value = Math.max(firstPlayableIndex.value, target)
       resetVoiceDedup()
-    } else if (currentStepIndex.value > 0) {
+    } else if (currentStepIndex.value > firstPlayableIndex.value) {
       let target = currentStepIndex.value - 1
-      while (target > 0 && isTransitionStep(compiledData.value?.steps?.[target])) {
+      while (target > firstPlayableIndex.value && isTransitionStep(compiledData.value?.steps?.[target])) {
         target--
       }
-      currentStepIndex.value = target
+      currentStepIndex.value = Math.max(firstPlayableIndex.value, target)
       resetVoiceDedup()
     }
   }
@@ -129,6 +137,7 @@ export function useStoryNavigation({
   return {
     isFirstStep,
     isLastStep,
+    firstPlayableIndex,
     currentEpisode,
     currentEpisodeLabel,
     firstAvailableBg,

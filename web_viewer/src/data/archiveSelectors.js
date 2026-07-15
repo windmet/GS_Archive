@@ -25,27 +25,80 @@ const STORY_DOMAIN_ROWS = [
 const STORY_DOMAIN_ORDER = new Map(STORY_DOMAIN_ROWS.map(([id], index) => [id, index]))
 
 export const STORY_DOMAIN_LABELS = {
-  main: '主线',
-  event: '活动',
-  unit_story: '组合剧情',
+  main: '主线剧情',
+  event: '活动剧情',
+  unit_story: '组合前传',
   idol_story: '个人剧情',
   card_scenarios: '卡片剧情',
-  work: '工作',
-  birthday: '生日',
+  work: '工作剧情',
+  birthday: '生日剧情',
   extra: '额外剧情',
 }
 
-export function buildStoryCatalog(data) {
+export function buildStoryCatalog(data, presentationData = null) {
   if (!data) return []
   const map = new Map()
   const byId = rows => new Map((rows || []).map(row => [String(row['1']), row]))
   const context = {
+    mainGroups: byId(data.main?.groups),
     mainChapters: byId(data.main?.chapters),
     eventGroups: byId(data.event?.groups),
     unitChapters: byId(data.unit_story?.chapters),
     unitGroups: byId(data.unit_story?.groups),
     idolChapters: byId(data.idol_story?.chapters),
     extraGroups: byId(data.extra?.groups),
+  }
+
+  function hierarchyFor(domain, row, summary) {
+    if (domain === 'main') {
+      const chapter = context.mainChapters.get(String(row['2']))
+      const group = context.mainGroups.get(String(chapter?.['2']))
+      return {
+        title: chapter?.['9'] || summary?.title || '',
+        episodeLabel: chapter?.['3'] || '',
+        sectionId: String(group?.['1'] || ''),
+        sectionLabel: group?.['2'] || '',
+        releaseAt: Number(chapter?.['5'] || 0),
+      }
+    }
+    if (domain === 'event') {
+      const group = context.eventGroups.get(String(row['2']))
+      return {
+        title: group?.['9'] || summary?.title || '',
+        episodeLabel: summary?.title || '',
+        sectionId: String(group?.['4'] || group?.['1'] || ''),
+        sectionLabel: STORY_DOMAIN_LABELS.event,
+        releaseAt: Number(group?.['10'] || 0),
+      }
+    }
+    if (domain === 'unit_story') {
+      const chapter = context.unitChapters.get(String(row['2']))
+      const group = context.unitGroups.get(String(chapter?.['2']))
+      return {
+        title: chapter?.['9']?.trim() || summary?.title || '',
+        episodeLabel: chapter?.['3'] || '',
+        sectionId: String(group?.['2'] || ''),
+        sectionLabel: group?.['3'] || '',
+        releaseAt: Number(chapter?.['5'] || 0),
+      }
+    }
+    if (domain === 'idol_story') {
+      const chapter = context.idolChapters.get(String(row['2']))
+      return {
+        title: chapter?.['9'] || summary?.title || '',
+        episodeLabel: chapter?.['3'] || '',
+        sectionId: summary?.characters?.find(character => /^\d{3}[a-z0-9]{3}$/i.test(character)) || '',
+        sectionLabel: '',
+        releaseAt: Number(chapter?.['5'] || 0),
+      }
+    }
+    return {
+      title: summary?.title || rowDisplayTitle(row),
+      episodeLabel: '',
+      sectionId: '',
+      sectionLabel: '',
+      releaseAt: Number(row?.['5'] || 0),
+    }
   }
 
   function contextTitles(domain, row) {
@@ -80,6 +133,8 @@ export function buildStoryCatalog(data) {
       if (!file && !resourceId) continue
       const key = file || `missing:${domain}:${resourceId}`
       const summary = row.compiled_summary || null
+      const presentation = presentationData?.by_file?.[file] || null
+      const hierarchy = hierarchyFor(domain, row, summary)
       const unitChapter = domain === 'unit_story' ? context.unitChapters.get(String(row['2'])) : null
       const unitGroup = unitChapter ? context.unitGroups.get(String(unitChapter['2'])) : null
       const entry = map.get(key) || {
@@ -96,6 +151,15 @@ export function buildStoryCatalog(data) {
         rowCount: 0,
         unitId: unitGroup ? String(unitGroup['2']) : '',
         unitName: unitGroup?.['3'] || '',
+        officialTitle: hierarchy.title,
+        episodeLabel: hierarchy.episodeLabel,
+        sectionId: hierarchy.sectionId,
+        sectionLabel: hierarchy.sectionLabel,
+        releaseAt: hierarchy.releaseAt,
+        preplaySynopsis: presentation?.preplay_synopsis || null,
+        playableStartIndex: presentation?.playable_start_index || 0,
+        playableStepCount: presentation?.playable_step_count ?? summary?.step_count ?? 0,
+        titleCards: presentation?.title_cards || [],
       }
 
       if (resourceId && !entry.resourceIds.includes(resourceId)) entry.resourceIds.push(resourceId)
@@ -116,11 +180,12 @@ export function buildStoryCatalog(data) {
   }
 
   return [...map.values()].map(entry => {
-    const title = entry.titles[0] || entry.resourceIds[0] || entry.file
+    const title = entry.officialTitle || entry.preplaySynopsis?.title || entry.titles[0] || entry.resourceIds[0] || entry.file
+    const secondaryTitles = entry.titles.filter(candidate => candidate && candidate !== title && candidate !== entry.episodeLabel)
     return {
       ...entry,
       title,
-      subtitle: entry.titles.slice(1, 3).join(' / '),
+      subtitle: secondaryTitles.slice(0, 2).join(' / '),
       resourceId: entry.resourceIds[0] || entry.file,
       searchText: [
         title,
@@ -129,6 +194,10 @@ export function buildStoryCatalog(data) {
         ...entry.characters,
         entry.file,
         entry.domainLabel,
+        entry.episodeLabel,
+        entry.sectionLabel,
+        entry.preplaySynopsis?.title,
+        entry.preplaySynopsis?.text,
       ].filter(Boolean).join(' ').toLowerCase(),
     }
   })

@@ -9,6 +9,9 @@ const ROUTE_QUERY_KEYS = [
   'unit',
   'unit_filter',
   'story_type',
+  'story_mode',
+  'story_section',
+  'story',
   'event_scope',
   'availability',
   'sort',
@@ -42,6 +45,7 @@ const VALID_VIEWS = new Set([
   'gasha_detail',
   'archive_status',
   'story_catalog',
+  'story_detail',
   'unit_catalog',
   'unit_detail',
   'player',
@@ -57,12 +61,14 @@ const VALID_EVENT_SCOPES = new Set(['all', 'fixed_unit_event', 'attribute_event'
 const VALID_GASHA_TYPES = new Set(['all', 'standard_pickup', 'growing_fes', 'stage_step_up', 'full_roster_series'])
 const VALID_STORY_AVAILABILITY = new Set(['all', 'playable', 'missing'])
 const VALID_STORY_SORTS = new Set(['domain', 'title', 'resource', 'steps_desc'])
+const VALID_STORY_MODES = new Set(['portal', 'search'])
 const VALID_RETURN_VIEWS = new Set([...VALID_VIEWS].filter(view => !['player', 'spine_lab', 'chibi_stage'].includes(view)))
 
 const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   home: { section: 'home', required: [] },
   archive_status: { section: 'resources', required: [] },
   story_catalog: { section: 'stories', required: [] },
+  story_detail: { section: 'stories', required: ['story'], fallback: 'story_catalog' },
   unit_catalog: { section: 'idols', required: [] },
   unit_detail: { section: 'idols', required: ['unit'], fallback: 'unit_catalog' },
   idols: { section: 'category', required: [] },
@@ -127,6 +133,9 @@ export function normalizeArchiveRoute(input = {}) {
     unit: clean(input.unit),
     unitFilter: clean(input.unitFilter),
     storyType: clean(input.storyType),
+    storyMode: allowed(clean(input.storyMode), VALID_STORY_MODES, 'portal'),
+    storySection: clean(input.storySection),
+    story: normalizeScenarioFile(input.story || ''),
     eventScope: clean(input.storyType) === 'event'
       ? allowed(clean(input.eventScope), VALID_EVENT_SCOPES, 'all')
       : 'all',
@@ -180,6 +189,9 @@ export function readArchiveRoute(input = null) {
     unit: clean(params.get('unit')),
     unitFilter: clean(params.get('unit_filter')),
     storyType: params.get('story_type'),
+    storyMode: params.get('story_mode'),
+    storySection: clean(params.get('story_section')),
+    story: params.get('story'),
     eventScope: params.get('event_scope'),
     availability: params.get('availability'),
     sort: params.get('sort'),
@@ -215,6 +227,9 @@ export function buildArchiveUrl(input, route) {
   if (normalized.unit) url.searchParams.set('unit', normalized.unit)
   if (normalized.unitFilter) url.searchParams.set('unit_filter', normalized.unitFilter)
   if (normalized.storyType) url.searchParams.set('story_type', normalized.storyType)
+  if (normalized.storyMode !== 'portal') url.searchParams.set('story_mode', normalized.storyMode)
+  if (normalized.storySection) url.searchParams.set('story_section', normalized.storySection)
+  if (normalized.story) url.searchParams.set('story', normalized.story)
   if (normalized.eventScope !== 'all') url.searchParams.set('event_scope', normalized.eventScope)
   if (normalized.availability !== 'all') url.searchParams.set('availability', normalized.availability)
   if (normalized.sort !== 'domain') url.searchParams.set('sort', normalized.sort)
