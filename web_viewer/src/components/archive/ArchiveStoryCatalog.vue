@@ -45,12 +45,13 @@
         v-for="entry in entries"
         :key="entry.id"
         class="story-row"
-        :class="{ missing: !entry.exists }"
-        :disabled="!entry.exists"
+        :class="{ missing: !entry.exists && !entry.eventRelation, event: entry.eventRelation }"
+        :disabled="!entry.exists && !entry.eventRelation"
         @click="emit('select', entry)"
       >
         <span class="story-play" aria-hidden="true">
-          <Play v-if="entry.exists" :size="16" fill="currentColor" />
+          <CalendarRange v-if="entry.eventRelation" :size="18" />
+          <Play v-else-if="entry.exists" :size="16" fill="currentColor" />
           <FileWarning v-else :size="18" />
         </span>
         <span class="story-domain">{{ entry.eventScopeLabel || entry.domainLabel }}</span>
@@ -63,7 +64,7 @@
           <span>{{ entry.summary?.step_count || 0 }} steps</span>
           <span>{{ entry.summary?.voice_count || 0 }} voices</span>
         </span>
-        <span class="story-status">{{ entry.exists ? '可播放' : '缺少文件' }}</span>
+        <span class="story-status">{{ entry.eventRelation ? '查看活动' : (entry.exists ? '可播放' : '缺少文件') }}</span>
       </button>
     </div>
 
@@ -75,7 +76,7 @@
 </template>
 
 <script setup>
-import { ChevronDown, FileWarning, Play } from '@lucide/vue'
+import { CalendarRange, ChevronDown, FileWarning, Play } from '@lucide/vue'
 
 defineProps({
   entries: { type: Array, default: () => [] },
@@ -106,6 +107,7 @@ const emit = defineEmits(['select', 'load-more', 'update:domain', 'update:event-
 .story-row.missing { border-style: dashed; background: #f3f5f6; }
 .story-play { display: grid; place-items: center; color: #15978e; }
 .story-row.missing .story-play { color: #8d979e; }
+.story-row.event .story-play { color: #526fa0; }
 .story-domain { display: inline-flex; align-items: center; justify-content: center; min-height: 24px; padding: 3px 6px; border-radius: 4px; background: #eaf8f6; color: #147f78; font-size: 0.64rem; text-align: center; }
 .story-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .story-main strong { overflow: hidden; font-size: 0.8rem; text-overflow: ellipsis; white-space: nowrap; }

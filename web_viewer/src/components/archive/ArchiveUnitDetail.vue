@@ -62,16 +62,7 @@
         <h3 id="unit-events-title">固定组合团活</h3>
         <span>{{ eventRelations.team_events?.length || 0 }}</span>
       </div>
-      <div class="unit-stories event-stories">
-        <button v-for="event in eventRelations.team_events" :key="event.event_id" @click="emit('open-event', event)">
-          <Play :size="15" fill="currentColor" />
-          <span>
-            <strong>{{ event.title }}</strong>
-            <small>{{ event.series }} · {{ event.file }}</small>
-          </span>
-          <small>{{ event.characters.length }} members</small>
-        </button>
-      </div>
+      <ArchiveRelationList :items="teamEventItems" layout="grid" @select="emit('open-event', $event.payload)" />
     </section>
 
     <section v-if="eventRelations.attribute_event_appearances?.length" class="unit-section" aria-labelledby="attribute-events-title">
@@ -79,16 +70,7 @@
         <h3 id="attribute-events-title">属性团曲出演</h3>
         <span>{{ eventRelations.attribute_event_appearances.length }}</span>
       </div>
-      <div class="unit-stories event-stories">
-        <button v-for="event in eventRelations.attribute_event_appearances" :key="event.event_id" @click="emit('open-event', event)">
-          <Play :size="15" fill="currentColor" />
-          <span>
-            <strong>{{ event.title }}</strong>
-            <small>{{ event.attribute }} · {{ matchingMemberNames(event) }}</small>
-          </span>
-          <small>{{ event.file }}</small>
-        </button>
-      </div>
+      <ArchiveRelationList :items="attributeEventItems" layout="grid" @select="emit('open-event', $event.payload)" />
     </section>
 
     <section v-if="eventRelations.mixed_unit_appearances?.length" class="unit-section" aria-labelledby="mixed-events-title">
@@ -96,16 +78,7 @@
         <h3 id="mixed-events-title">跨组合团活出演</h3>
         <span>{{ eventRelations.mixed_unit_appearances.length }}</span>
       </div>
-      <div class="unit-stories event-stories">
-        <button v-for="event in eventRelations.mixed_unit_appearances" :key="event.event_id" @click="emit('open-event', event)">
-          <Play :size="15" fill="currentColor" />
-          <span>
-            <strong>{{ event.title }}</strong>
-            <small>{{ matchingMemberNames(event) }}</small>
-          </span>
-          <small>{{ event.file }}</small>
-        </button>
-      </div>
+      <ArchiveRelationList :items="mixedEventItems" layout="grid" @select="emit('open-event', $event.payload)" />
     </section>
 
     <section class="unit-section" aria-labelledby="unit-stories-title">
@@ -128,7 +101,9 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { ChevronRight, Images, Play } from '@lucide/vue'
+import ArchiveRelationList from './ArchiveRelationList.vue'
 import { getBgUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 
 const props = defineProps({
@@ -147,6 +122,42 @@ function matchingMemberNames(event) {
   const names = new Map(props.members.map(member => [member.idol_code, member.display_name]))
   return (event.matching_character_ids || []).map(idolCode => names.get(idolCode) || idolCode).join('、')
 }
+
+function relationItems(events, label, meta) {
+  return (events || []).map(event => {
+    const confirmed = String(event.relation_type || '').startsWith('confirmed_')
+    return {
+      id: `event-${event.event_id}`,
+      kind: 'event',
+      label,
+      title: event.title,
+      meta: meta(event),
+      evidenceLabel: confirmed ? 'Confirmed' : 'Derived',
+      evidenceTone: confirmed ? 'confirmed' : 'derived',
+      evidence: event.classification_source || event.relation_type,
+      statusLabel: event.exists ? '可播放' : '缺少剧情',
+      statusTone: event.exists ? 'available' : 'missing',
+      resource: event.file,
+      payload: event,
+    }
+  })
+}
+
+const teamEventItems = computed(() => relationItems(
+  props.eventRelations.team_events,
+  '固定组合团活',
+  event => [event.series, `${event.characters?.length || 0} members`].filter(Boolean).join(' · '),
+))
+const attributeEventItems = computed(() => relationItems(
+  props.eventRelations.attribute_event_appearances,
+  '属性团曲出演',
+  event => [event.attribute, matchingMemberNames(event)].filter(Boolean).join(' · '),
+))
+const mixedEventItems = computed(() => relationItems(
+  props.eventRelations.mixed_unit_appearances,
+  '跨组合团活出演',
+  event => matchingMemberNames(event),
+))
 </script>
 
 <style scoped>
@@ -182,7 +193,6 @@ function matchingMemberNames(event) {
 .unit-stories button > span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .unit-stories strong { overflow: hidden; font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; }
 .unit-stories small { color: #7a858e; font-size: 0.63rem; }
-.event-stories button > small { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 @media (max-width: 560px) {
   .unit-detail { padding: 10px; }

@@ -72,6 +72,12 @@ assert.equal(idolEventContext.view, 'event_detail')
 assert.equal(idolEventContext.idol, '040ren')
 assert.equal(idolEventContext.parentView, 'idol_detail')
 
+const groupChatContext = readArchiveRoute('http://localhost/?view=files&category=idol_chat&idol=001jup&group=8_2_x_001jup_8_2_1_001')
+assert.equal(groupChatContext.view, 'files')
+assert.equal(groupChatContext.category, 'idol_chat')
+assert.equal(groupChatContext.idol, '001jup')
+assert.equal(groupChatContext.group, '8_2_x_001jup_8_2_1_001')
+
 const eventPlayerContext = readArchiveRoute('http://localhost/?view=player&scenario=1_3_10001_01.json&return=event_detail&parent=unit_detail&event=410001&unit=16cfi')
 assert.equal(eventPlayerContext.view, 'player')
 assert.equal(eventPlayerContext.event, '410001')
@@ -79,4 +85,4 @@ assert.equal(eventPlayerContext.returnView, 'event_detail')
 assert.equal(eventPlayerContext.parentView, 'unit_detail')
 assert.equal(eventPlayerContext.unit, '16cfi')
 
-console.log('Archive route contract: 37 assertions passed')
+console.log('Archive route contract: 41 assertions passed')

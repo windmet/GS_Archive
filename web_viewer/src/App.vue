@@ -352,6 +352,11 @@ function categoryById(id) {
   return indexData.value.categories.find(c => c.id === id) || null
 }
 
+function groupChatByUnitCode(categoryId, unitCode) {
+  if (categoryId !== 'idol_chat' || !unitCode) return null
+  return categoryById('idol_chat')?.groups?.find(group => group.unit_code === unitCode) || null
+}
+
 const currentCategory = computed(() => categoryById(currentCategoryId.value))
 
 function catCountText(id) {
@@ -436,7 +441,7 @@ const filteredGroups = computed(() => {
     if (currentCategoryId.value === 'idol_chat') {
       const cat = categoryById('idol_chat')
       const ch = cat?.individual?.[currentCharacterId.value]
-      groups = ch?.groups || []
+      groups = ch?.groups || groupChatByUnitCode('idol_chat', currentCharacterId.value)?.groups || []
     } else if (currentCategoryId.value === 'idol_phone') {
       const cat = categoryById('idol_phone')
       const ch = cat?.individual?.[currentCharacterId.value]
@@ -464,7 +469,7 @@ const groupTitle = computed(() => {
     if (currentCategoryId.value === 'idol_chat') {
       const cat = categoryById('idol_chat')
       const ch = resolveChatName(cat?.individual?.[currentCharacterId.value])
-      return ch?.name || currentCharacterId.value
+      return ch?.name || groupChatByUnitCode('idol_chat', currentCharacterId.value)?.unit_name || currentCharacterId.value
     }
     if (currentCategoryId.value === 'idol_phone') {
       const cat = categoryById('idol_phone')
@@ -962,8 +967,12 @@ function commitView(nextView, options = {}) {
 function groupsForRoute(categoryId, idolId) {
   if (!categoryId) return []
   if (!idolId) return categoryById(categoryId)?.groups || []
-  if (categoryId === 'idol_chat' || categoryId === 'idol_phone') {
-    return categoryById(categoryId)?.individual?.[idolId]?.groups || []
+  if (categoryId === 'idol_chat') {
+    return categoryById('idol_chat')?.individual?.[idolId]?.groups ||
+      groupChatByUnitCode('idol_chat', idolId)?.groups || []
+  }
+  if (categoryId === 'idol_phone') {
+    return categoryById('idol_phone')?.individual?.[idolId]?.groups || []
   }
   return categoryById('idol')?.characters?.[idolId]?.groups || []
 }
@@ -1246,7 +1255,8 @@ function openUnitCards() {
 }
 
 function openCatalogStory(entry) {
-  if (entry?.file && entry.exists) loadScenario(entry.file, 'story_catalog')
+  if (entry?.eventRelation) openEventDetail(entry.eventRelation, 'story_catalog')
+  else if (entry?.file && entry.exists) loadScenario(entry.file, 'story_catalog')
 }
 
 function goBackToCards() {
@@ -1592,7 +1602,11 @@ function openEpisodeFiles(ep) {
 
 function goBackFromGroups() {
   if (currentCharacterId.value) {
-    commitView('idols')
+    if (currentCategoryId.value === 'idol') commitView('idol_detail')
+    else {
+      currentCharacterId.value = ''
+      commitView('idols')
+    }
   } else {
     goHome()
   }
@@ -1607,8 +1621,9 @@ function goBackToFiles() {
     commitView('card_detail')
   } else if (currentCategoryId.value === 'cards') {
     commitView('cards')
-  } else if (currentCharacterId.value && (currentCategoryId.value === 'idol_chat' || currentCategoryId.value === 'idol_phone')) {
+  } else if (groupChatByUnitCode(currentCategoryId.value, currentCharacterId.value)) {
     currentGroup.value = null
+    currentCharacterId.value = ''
     commitView('idols')
   } else if (currentCharacterId.value) {
     currentGroup.value = null
