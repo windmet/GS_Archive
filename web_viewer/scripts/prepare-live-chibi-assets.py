@@ -256,7 +256,7 @@ def export_common_motions(body_type: int) -> list[dict]:
             payload = text_asset.m_Script.encode("utf-8", errors="surrogateescape")
             animation_count, animation_name = first_animation_name(payload)
             slug = motion_slug(animation_name)
-            relative_path = Path("motions") / "common" / str(body_type) / f"{motion_id}.bin"
+            relative_path = Path("motions") / "common" / str(body_type) / f"{motion_id}.motion"
             output_path = OUTPUT_ROOT / relative_path
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_bytes(payload)
@@ -288,6 +288,46 @@ def choreography_identity(path: Path) -> tuple[str, str]:
     if marker_index < 0:
         return stem, ""
     return stem[:marker_index], stem[marker_index + len(marker) :].lstrip("_")
+
+
+def build_stage_position_map(
+    motion_positions: list[int], position_events: list[dict], singer_events: list[dict]
+) -> dict[int, int]:
+    """Map per-song motion slots to the game's left-to-right five stage positions."""
+    performer_slots = sorted({position for position in motion_positions if position > 0})
+    if not performer_slots:
+        return {}
+
+    canonical_positions = {
+        1: [3],
+        2: [2, 3],
+        3: [2, 3, 4],
+        4: [1, 2, 3, 4],
+        5: [1, 2, 3, 4, 5],
+    }
+    singer_positions = sorted(
+        {
+            position
+            for event in singer_events
+            for position in event["singers"]
+            if 1 <= position <= 5
+        }
+    )
+    stage_positions = (
+        singer_positions
+        if len(singer_positions) == len(performer_slots)
+        else canonical_positions.get(len(performer_slots), performer_slots)
+    )
+
+    initial_by_slot = {}
+    for event in sorted(position_events, key=lambda item: (item["time"], item["position"])):
+        if event["position"] in performer_slots and event["position"] not in initial_by_slot:
+            initial_by_slot[event["position"]] = event
+    ordered_slots = sorted(
+        performer_slots,
+        key=lambda slot: (initial_by_slot.get(slot, {}).get("x", slot), slot),
+    )
+    return dict(zip(ordered_slots, stage_positions))
 
 
 def read_choreography_scripts() -> tuple[list[dict], set[int]]:
@@ -365,7 +405,13 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
         title = music_catalog.get(song_code, {}).get("title", song_code.upper())
         if variant:
             title = f"{title} · {variant}"
-        positions = sorted({event["position"] for event in events if event["position"] > 0})
+        performer_slots = sorted({event["position"] for event in events if event["position"] > 0})
+        stage_position_map = build_stage_position_map(
+            performer_slots, position_events, singer_events
+        )
+        for event in events:
+            event["stagePosition"] = stage_position_map.get(event["position"], event["position"])
+        positions = sorted(stage_position_map.values())
         songs.append(
             {
                 "id": csv_path.stem,
@@ -376,6 +422,11 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
                 "startTime": min(0, min(event["time"] for event in events)),
                 "duration": max(event["time"] for event in events) + 2000,
                 "positions": positions,
+                "performerSlots": performer_slots,
+                "stagePositionMap": [
+                    {"performerSlot": slot, "stagePosition": stage_position_map[slot]}
+                    for slot in performer_slots
+                ],
                 "motionIds": sorted({event["motion"] for event in events}),
                 "events": sorted(events, key=lambda event: (event["time"], event["position"])),
                 "singerEvents": sorted(singer_events, key=lambda event: event["time"]),
@@ -427,45 +478,50 @@ def export_live_lip_sync() -> dict[str, dict]:
     return catalog
 
 
-def export_choreography(body_type: int) -> dict:
+def export_choreography(body_types: list[int]) -> dict:
     songs, referenced_motion_ids = read_choreography_scripts()
     lip_sync_catalog = export_live_lip_sync()
     for song in songs:
         if song["songCode"] in lip_sync_catalog:
             song["lipSync"] = lip_sync_catalog[song["songCode"]]
-    source_by_id = {}
-    pattern = re.compile(rf"live_costume_animation_{body_type}_(\d+)\.bytes$")
-    for source in ANIMATION_ROOT.rglob(f"live_costume_animation_{body_type}_*.bytes"):
-        match = pattern.fullmatch(source.name)
-        if match:
-            source_by_id[int(match.group(1))] = source
-
-    missing = sorted(referenced_motion_ids - source_by_id.keys())
-    if missing:
-        raise FileNotFoundError(f"Missing body-{body_type} motions: {missing[:20]}")
+    sources_by_body = {}
+    for body_type in body_types:
+        source_by_id = {}
+        pattern = re.compile(rf"live_costume_animation_{body_type}_(\d+)\.bytes$")
+        for source in ANIMATION_ROOT.rglob(f"live_costume_animation_{body_type}_*.bytes"):
+            match = pattern.fullmatch(source.name)
+            if match:
+                source_by_id[int(match.group(1))] = source
+        missing = sorted(referenced_motion_ids - source_by_id.keys())
+        if missing:
+            raise FileNotFoundError(f"Missing body-{body_type} motions: {missing[:20]}")
+        sources_by_body[body_type] = source_by_id
 
     catalog = []
     for motion_id in sorted(referenced_motion_ids):
-        source = source_by_id[motion_id]
+        source = sources_by_body[body_types[0]][motion_id]
         payload = source.read_bytes()
         animation_count, animation_name = first_animation_name(payload)
         slug = motion_slug(animation_name)
-        relative_path = Path("motions") / "choreography" / str(body_type) / f"{motion_id}.bin"
-        copy_required(source, OUTPUT_ROOT / relative_path)
+        for body_type in body_types:
+            relative_path = (
+                Path("motions") / "choreography" / str(body_type) / f"{motion_id}.motion"
+            )
+            copy_required(sources_by_body[body_type][motion_id], OUTPUT_ROOT / relative_path)
         catalog.append(
             {
                 "id": motion_id,
                 "name": slug,
                 "label": MOTION_LABELS.get(slug, slug.replace("_", " ").title()),
                 "animationCount": animation_count,
-                "file": relative_path.as_posix(),
+                "file": f"motions/choreography/{{bodyType}}/{motion_id}.motion",
             }
         )
 
     choreography_relative = Path("choreography") / "index.json"
     choreography = {
-        "schemaVersion": 3,
-        "bodyType": body_type,
+        "schemaVersion": 4,
+        "bodyTypes": body_types,
         "stats": {
             "songs": len(songs),
             "events": sum(len(song["events"]) for song in songs),
@@ -474,6 +530,7 @@ def export_choreography(body_type: int) -> dict:
             "lipSyncSongs": sum(1 for song in songs if song.get("lipSync")),
             "lipSyncCurves": len(lip_sync_catalog),
             "motions": len(catalog),
+            "motionFiles": len(catalog) * len(body_types),
         },
         "motionCatalog": catalog,
         "songs": songs,
@@ -484,7 +541,11 @@ def export_choreography(body_type: int) -> dict:
         json.dumps(choreography, ensure_ascii=False, separators=(",", ":")) + "\n",
         encoding="utf-8",
     )
-    return {"index": choreography_relative.as_posix(), **choreography["stats"]}
+    return {
+        "index": choreography_relative.as_posix(),
+        "bodyTypes": body_types,
+        **choreography["stats"],
+    }
 
 
 def export_compatibility_motions(body_types: list[int]) -> list[dict]:
@@ -503,7 +564,7 @@ def export_compatibility_motions(body_types: list[int]) -> list[dict]:
 
         for motion_id in COMPATIBILITY_MOTION_IDS:
             source = source_by_id[motion_id]
-            relative_path = Path("motions") / "compatibility" / str(body_type) / f"{motion_id}.bin"
+            relative_path = Path("motions") / "compatibility" / str(body_type) / f"{motion_id}.motion"
             copy_required(source, OUTPUT_ROOT / relative_path)
             if body_type == body_types[0]:
                 payload = source.read_bytes()
@@ -515,7 +576,7 @@ def export_compatibility_motions(body_types: list[int]) -> list[dict]:
                         "name": slug,
                         "label": f"兼容抽查 · {slug.replace('_', ' ').title()}",
                         "animationCount": animation_count,
-                        "file": f"motions/compatibility/{{bodyType}}/{motion_id}.bin",
+                        "file": f"motions/compatibility/{{bodyType}}/{motion_id}.motion",
                     }
                 )
     return catalog
@@ -527,12 +588,12 @@ def main() -> None:
     common_by_body = {body_type: export_common_motions(body_type) for body_type in body_types}
     motions = common_by_body[1]
     for motion in motions:
-        motion["file"] = f"motions/common/{{bodyType}}/{motion['id']}.bin"
+        motion["file"] = f"motions/common/{{bodyType}}/{motion['id']}.motion"
 
     characters, inventory = export_all_characters(body_type_map)
 
     compatibility_motions = export_compatibility_motions(body_types)
-    choreography = export_choreography(1)
+    choreography = export_choreography(body_types)
     manifest = {
         "schemaVersion": 4,
         "characters": characters,

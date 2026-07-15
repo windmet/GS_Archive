@@ -60,7 +60,7 @@ function summarizeAnimation(animation) {
 
 function inspectMotion(bodyType, motionId) {
   const setupPath = path.join(assetRoot, 'setup', `body-${bodyType}.skel`)
-  const motionPath = path.join(assetRoot, 'motions', 'choreography', String(bodyType), `${motionId}.bin`)
+  const motionPath = path.join(assetRoot, 'motions', 'choreography', String(bodyType), `${motionId}.motion`)
   const setupBytes = fs.readFileSync(setupPath)
   const skeletonBinary = new SkeletonBinary(new DiagnosticAttachmentLoader())
   const skeletonData = skeletonBinary.readSkeletonData(setupBytes)
@@ -75,7 +75,7 @@ function inspectMotion(bodyType, motionId) {
 }
 
 function parseAnimations(skeletonBinary, skeletonData, setupBytes, bodyType, motionId) {
-  const motionPath = path.join(assetRoot, 'motions', 'choreography', String(bodyType), `${motionId}.bin`)
+  const motionPath = path.join(assetRoot, 'motions', 'choreography', String(bodyType), `${motionId}.motion`)
   const input = new BinaryInput(fs.readFileSync(motionPath), readSetupStringTable(setupBytes))
   const animationCount = input.readInt(true)
   return Array.from({ length: animationCount }, () => {
