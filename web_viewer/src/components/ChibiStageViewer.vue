@@ -6,6 +6,8 @@
     :data-active-positions="activePositions.join(',')"
     :data-loaded-positions="loadedPositions.join(',')"
     :data-current-singers="currentSingerPositions.join(',')"
+    :data-position-tween-ms="POSITION_TWEEN_MS"
+    :data-derived-group-events="derivedGroupEventCount"
   >
     <header class="stage-header">
       <button class="icon-button" type="button" aria-label="返回资料馆" @click="emit('back')">
@@ -44,6 +46,9 @@
             }"
             :data-position="position"
             :data-motion="slotByPosition(position)?.currentMotion || ''"
+            :data-motion-source="slotByPosition(position)?.currentMotionSource || ''"
+            :data-position-scale="positionDebugState(position).scale"
+            :data-position-tween-progress="positionDebugState(position).progress"
           >
             <span>{{ position }}</span>
             <small>{{ characterForSlot(slotByPosition(position))?.name || '空位' }}</small>
@@ -180,6 +185,8 @@
               <div><dt>当前演唱</dt><dd>{{ currentSingerLabel }}</dd></div>
               <div><dt>动作预载</dt><dd>{{ preloading ? `${preloadProgress}%` : (songMotionsReady ? '已完成' : '播放时载入') }}</dd></div>
               <div><dt>音频时钟</dt><dd>{{ audioReady ? '已就绪' : '等待加载' }}</dd></div>
+              <div><dt>位置过渡</dt><dd>{{ POSITION_TWEEN_MS }}ms 平滑插值</dd></div>
+              <div><dt>动作组补位</dt><dd>{{ derivedGroupEventCount }} 处</dd></div>
             </dl>
             <small v-if="audioError" class="audio-error">{{ audioError }}</small>
           </section>
@@ -236,6 +243,7 @@ const stageTime = ref(0)
 const playbackSpeed = ref(1)
 const playing = ref(false)
 const allPositions = [1, 2, 3, 4, 5]
+const POSITION_TWEEN_MS = 350
 
 let app = null
 let resizeObserver = null
@@ -277,6 +285,44 @@ const currentSingerPositions = computed(() => currentSingerEvent.value?.singers 
 const currentSingerLabel = computed(() => currentSingerPositions.value.length
   ? currentSingerPositions.value.map(position => `${position}号位`).join('、')
   : '无人')
+const performanceEventsByPosition = computed(() => {
+  const timelines = new Map(allPositions.map(position => [position, []]))
+  const song = selectedSong.value
+  if (!song) return timelines
+
+  for (const position of activePositions.value) {
+    const scripted = (song.events || [])
+      .filter(event => (event.stagePosition ?? event.position) === position)
+      .map(event => ({ ...event, source: 'script' }))
+    const timeline = [...scripted]
+    for (let index = 0; index < scripted.length; index += 1) {
+      const event = scripted[index]
+      const pauseTime = Number(event.pauseTime)
+      if (!Number.isFinite(pauseTime) || pauseTime <= 0 || pauseTime >= 999999) continue
+      const dueTime = Number(event.time) + pauseTime
+      const nextTime = Number(scripted[index + 1]?.time ?? song.duration ?? dueTime)
+      if (dueTime >= nextTime) continue
+      const group = activeMotionGroupAt(dueTime)
+      const motion = weightedGroupMotion(group, dueTime, position)
+      if (!motion) continue
+      timeline.push({
+        ...event,
+        time: dueTime,
+        motion: motion.motion,
+        speed: 1000,
+        mode: 2,
+        pauseTime: 999999,
+        motionGroup: group,
+        source: 'group',
+      })
+    }
+    timelines.set(position, timeline.sort((a, b) => a.time - b.time || (a.source === 'script' ? -1 : 1)))
+  }
+  return timelines
+})
+const derivedGroupEventCount = computed(() => [...performanceEventsByPosition.value.values()]
+  .flat()
+  .filter(event => event.source === 'group').length)
 
 onMounted(async () => {
   await nextTick()
@@ -321,6 +367,7 @@ function initializeLineup() {
       loadSequence: 0,
       motionSequence: 0,
       currentMotion: null,
+      currentMotionSource: '',
     }
   })
 }
@@ -444,17 +491,64 @@ function sourceSlotForStagePosition(position) {
 }
 
 function eventsForPosition(position) {
-  return (selectedSong.value?.events || [])
-    .filter(event => (event.stagePosition ?? event.position) === position)
+  return performanceEventsByPosition.value.get(position) || []
+}
+
+function activeMotionGroupAt(milliseconds) {
+  return [...(selectedSong.value?.motionGroupChanges || [])]
+    .reverse()
+    .find(event => Number(event.time) <= milliseconds)?.group ?? null
+}
+
+function weightedGroupMotion(group, milliseconds, position) {
+  if (group === null) return null
+  const pool = (selectedSong.value?.motionGroupEvents || [])
+    .filter(event => event.group === group && Number(event.time) <= milliseconds && Number(event.weight) > 0)
+  const totalWeight = pool.reduce((sum, event) => sum + Number(event.weight), 0)
+  if (!pool.length || totalWeight <= 0) return null
+  const seedText = `${selectedSong.value.id}:${position}:${milliseconds}:${group}`
+  let hash = 2166136261
+  for (let index = 0; index < seedText.length; index += 1) {
+    hash ^= seedText.charCodeAt(index)
+    hash = Math.imul(hash, 16777619)
+  }
+  let selection = (hash >>> 0) % totalWeight
+  for (const event of pool) {
+    selection -= Number(event.weight)
+    if (selection < 0) return event
+  }
+  return pool[pool.length - 1]
 }
 
 function positionStateForStage(position, milliseconds) {
   const sourceSlot = sourceSlotForStagePosition(position)
   const events = (selectedSong.value?.positionEvents || [])
     .filter(event => event.position === sourceSlot)
-  return [...events].reverse().find(event => event.time <= milliseconds)
-    || events[0]
-    || null
+  if (!events.length) return null
+  const currentIndex = Math.max(0, events.findLastIndex(event => event.time <= milliseconds))
+  const current = events[currentIndex]
+  const previous = events[currentIndex - 1]
+  if (!previous || milliseconds >= Number(current.time) + POSITION_TWEEN_MS) {
+    return { ...current, tweenProgress: 1 }
+  }
+  const rawProgress = Math.max(0, Math.min(1, (milliseconds - Number(current.time)) / POSITION_TWEEN_MS))
+  const progress = rawProgress * rawProgress * (3 - 2 * rawProgress)
+  const interpolate = key => Number(previous[key]) + (Number(current[key]) - Number(previous[key])) * progress
+  return {
+    ...current,
+    x: interpolate('x'),
+    y: interpolate('y'),
+    scale: interpolate('scale'),
+    tweenProgress: rawProgress,
+  }
+}
+
+function positionDebugState(position) {
+  const state = positionStateForStage(position, stageTime.value)
+  return {
+    scale: state ? Number(state.scale).toFixed(2) : '',
+    progress: state ? Number(state.tweenProgress ?? 1).toFixed(3) : '',
+  }
 }
 
 function layoutRuntime(position, motionEvent = null) {
@@ -484,6 +578,7 @@ function layoutRuntime(position, motionEvent = null) {
   runtime.spine.scale.set(characterScale * ensembleScale * viewportFit * sourceScale / 1700)
   runtime.spine.visible = activePositions.value.includes(position) && y < 4000
   runtime.spine.zIndex = Math.round(y * 10) + position
+  runtime.positionTweenProgress = positionState?.tweenProgress ?? 1
 }
 
 function resizeStage() {
@@ -622,6 +717,7 @@ async function playSlotEvent(slot, event, { reset = false, seekTime = null } = {
   const animationNames = await injectLiveChibiMotion(runtime, motion)
   if (sequence !== slot.motionSequence || runtimes.get(slot.position) !== runtime) return
   slot.currentMotion = motion.id
+  slot.currentMotionSource = event.source || 'script'
   const speedScale = (Number(event.speed) || 1000) / 1000
   runtime.currentMotionEvent = event
   runtime.motionSpeedScale = speedScale

@@ -366,14 +366,16 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
                     )
                     continue
                 if row[0] == "Livechara_motion_group" and len(row) >= 5:
+                    motion_id = parse_number(row[3])
                     motion_group_events.append(
                         {
                             "time": parse_number(row[1]),
                             "group": parse_number(row[2], 1),
-                            "motion": parse_number(row[3]),
+                            "motion": motion_id,
                             "weight": parse_number(row[4], 1),
                         }
                     )
+                    referenced_motion_ids.add(motion_id)
                     continue
                 if row[0] == "Livechara_motion_group_change" and len(row) >= 3:
                     motion_group_changes.append(
@@ -427,7 +429,10 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
                     {"performerSlot": slot, "stagePosition": stage_position_map[slot]}
                     for slot in performer_slots
                 ],
-                "motionIds": sorted({event["motion"] for event in events}),
+                "motionIds": sorted(
+                    {event["motion"] for event in events}
+                    | {event["motion"] for event in motion_group_events}
+                ),
                 "events": sorted(events, key=lambda event: (event["time"], event["position"])),
                 "singerEvents": sorted(singer_events, key=lambda event: event["time"]),
                 "positionEvents": sorted(
