@@ -27,6 +27,7 @@ import { SpineManager } from './SpineManager.js'
 import { fitSpineToPrefabRect as fitSpineToPrefabRectUtil, getPrefabRectMetrics as getPrefabRectMetricsUtil } from './spinePrefabFit.js'
 import { LipSyncController } from './LipSyncController.js'
 import { cancelBlinkCover } from './spineBlinkCover.js'
+import { detectBlinkSlots } from './spineBlinkSlots.js'
 
 const ADULT_BASE_SCALE = 0.26
 const SUB_BASE_SCALE = 0.235
@@ -1575,32 +1576,9 @@ export class PixiStageManager {
    * Detect blink-related slots from skeleton slot names.
    */
   _detectBlinkSlots(spine) {
-    const hide = []
-    const show = []
-    const skin = spine?.skeleton?.data?.defaultSkin
-    const slotNames = spine?.skeleton?.data?.slots?.map(s => s.name) || []
-    for (const name of slotNames) {
-      const low = String(name).toLowerCase()
-      const idx = spine?.skeleton?.data?.findSlotIndex?.(name) ?? -1
-      if (idx < 0) continue
-      if (/_close/.test(low)) {
-        let attName = name
-        if (skin?.attachments?.[idx]) {
-          const keys = Object.keys(skin.attachments[idx])
-          const closeKey = keys.find(k => /close/i.test(k))
-          attName = closeKey ?? keys[0] ?? ""
-        }
-        try {
-          const testAtt = skin?.getAttachment?.(idx, attName) || spine.skeleton.getAttachment(idx, attName)
-          if (testAtt) show.push({ slot: name, att: attName })
-        } catch (_) {}
-      } else if (/_smile/.test(low) || /^(eyelash|eyewhite|eyelight|eyeline|eye_pupil|eyeball)/.test(low) || /eyeball.*skin/.test(low)) {
-        hide.push(name)
-      }
-    }
-    if (hide.length === 0 && show.length === 0) return null
-    console.log("[BlinkCfg]", { slotCount: slotNames.length, hide, show })
-    return { hide, show }
+    const config = detectBlinkSlots(spine)
+    if (config) console.log('[BlinkCfg]', config)
+    return config
   }
 
   /**

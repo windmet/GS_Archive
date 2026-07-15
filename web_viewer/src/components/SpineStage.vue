@@ -199,6 +199,35 @@ function installDebugGlobals() {
     console.table(rows)
     return rows
   }
+  window.dumpEyes = (idolId = '') => {
+    if (!manager) return []
+    return Object.entries(manager.spineInstances)
+      .filter(([id]) => !idolId || id === idolId)
+      .map(([id, entry]) => {
+        const spine = entry?.spine
+        const skeleton = spine?.skeleton
+        const slots = skeleton?.data?.slots || []
+        const isEyePart = value => /eye|lash|pupil|ball|close|smile/i.test(String(value || ''))
+        const attachments = skeleton?.data?.defaultSkin?.getAttachments?.() || []
+        return {
+          idolId: id,
+          modelId: entry?.modelId || '',
+          face: spine?._currentFaceAnim || '',
+          blink: spine?._blinkCfg || null,
+          slots: slots.map((slot, index) => ({
+            index,
+            name: slot.name,
+            defaultAttachment: slot.attachmentName || null,
+            currentAttachment: skeleton.slots[index]?.attachment?.name || null,
+          })).filter(slot => isEyePart(slot.name)),
+          attachments: attachments.map(item => ({
+            slot: slots[item.slotIndex]?.name || '',
+            name: item.name,
+            path: item.attachmentName,
+          })).filter(item => isEyePart(item.slot) || isEyePart(item.name)),
+        }
+      })
+  }
   window.dumpStage = () => {
     const data = collectStageDebugData()
     console.log('=== Stage Dump ===')
@@ -255,6 +284,11 @@ function collectStageDebugData() {
   }))
   data.spines = Object.entries(manager.spineInstances || {}).map(([id, entry]) => {
     const snap = manager.getSpineRuntimeSnapshot?.(id)
+    const spine = entry?.spine
+    const skeleton = spine?.skeleton
+    const slotData = skeleton?.data?.slots || []
+    const isEyePart = value => /eye|lash|pupil|ball|close|smile/i.test(String(value || ''))
+    const skinAttachments = skeleton?.data?.defaultSkin?.getAttachments?.() || []
     return {
       id,
       modelId: entry?.modelId || snap?.modelId || '',
@@ -262,6 +296,18 @@ function collectStageDebugData() {
       y: entry?.spine?.y ?? null,
       scale: entry?.spine?.scale?.x ?? null,
       alpha: entry?.spine?.alpha ?? null,
+      face: spine?._currentFaceAnim || '',
+      blink: spine?._blinkCfg || null,
+      eyeSlots: slotData.map((slot, index) => ({
+        name: slot.name,
+        defaultAttachment: slot.attachmentName || null,
+        currentAttachment: skeleton.slots[index]?.attachment?.name || null,
+      })).filter(slot => isEyePart(slot.name)),
+      eyeAttachments: skinAttachments.map(item => ({
+        slot: slotData[item.slotIndex]?.name || '',
+        name: item.name,
+        path: item.attachmentName,
+      })).filter(item => isEyePart(item.slot) || isEyePart(item.name)),
     }
   })
   if (manager.cameraController) {
