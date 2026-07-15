@@ -41,6 +41,16 @@ export function useVoicePlayer({
     }
   }
 
+  async function waitForRunningAudioContext(timeoutMs = 1800) {
+    ensureAudioCtx()
+    if (audioCtx.state === 'running') return
+    await Promise.race([
+      audioCtx.resume(),
+      new Promise(resolve => setTimeout(resolve, timeoutMs)),
+    ])
+    if (audioCtx.state !== 'running') throw new Error('AudioContext is waiting for a user gesture')
+  }
+
   function resetVoiceDedup() {
     lastVoiceUrl = null
     lastVoiceStepIndex = -1
@@ -94,15 +104,15 @@ export function useVoicePlayer({
     if (noVoice) {
       stopCurrentVoice('noVoice-flag')
       isPlaying.value = false
-      return
+      return false
     }
 
     const step = currentStep.value
     const voice = step?.dialogue?.voice
     const scenarioId = compiledData.value?.scenario_id
-    if (!voice) return
+    if (!voice) return false
 
-    if (voice === lastVoiceUrl && currentStepIndex.value === lastVoiceStepIndex) return
+    if (voice === lastVoiceUrl && currentStepIndex.value === lastVoiceStepIndex) return false
     lastVoiceUrl = voice
     lastVoiceStepIndex = currentStepIndex.value
 
@@ -132,9 +142,7 @@ export function useVoicePlayer({
       }
       if (!arrayBuffer) throw lastFetchError || new Error('No voice filename candidate resolved')
 
-      if (audioCtx.state === 'suspended') {
-        await audioCtx.resume()
-      }
+      await waitForRunningAudioContext()
 
       let audioBuffer
       try {
@@ -142,15 +150,15 @@ export function useVoicePlayer({
       } catch (decodeErr) {
         console.error('[Audio] decodeAudioData FAILED:', decodeErr.message, 'voice:', voice)
         isPlaying.value = false
-        return
+        return false
       }
 
-      if (currentSource || voice !== lastVoiceUrl) return
+      if (currentSource || voice !== lastVoiceUrl) return false
 
       currentLipCurve = await loadLipCurve(step, audioBuffer.duration)
       if (currentSource || voice !== lastVoiceUrl) {
         currentLipCurve = null
-        return
+        return false
       }
 
       const source = audioCtx.createBufferSource()
@@ -170,9 +178,11 @@ export function useVoicePlayer({
         isPlaying.value = false
         if (currentSource === source) currentSource = null
       }
+      return true
     } catch (err) {
       console.warn('[Audio] playback failed:', err.message, 'voice:', voice)
       isPlaying.value = false
+      return false
     }
   }
 

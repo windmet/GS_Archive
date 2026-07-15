@@ -12,17 +12,15 @@
       @navigate="navigateArchiveSection"
       @back="goArchiveBack"
     >
-      <ArchiveHome
+      <ArchiveImmersiveHome
         v-if="view === 'home'"
-        embedded
-        :total-files="totalFiles"
-        :categories="homeCategories"
+        v-model:selected-id="homeSelectedId"
+        :idols="archiveHomeIdols"
         :stats="archiveStats"
-        :manifest="archiveManifestData"
-        @select="openCategoryById"
-        @open-status="openArchiveStatus"
-        @open-spine-lab="openSpineLab"
-        @open-chibi-stage="openChibiStage"
+        @open-story="navigateArchiveSection('stories')"
+        @open-cards="openHomeCards"
+        @open-idol="openHomeIdol"
+        @open-chat="openHomeChat"
       />
 
       <ArchiveIdolGrid
@@ -229,7 +227,7 @@ import { groupFileList } from './utils/IndexNormalizer.js'
 import { countScenarioFiles, getCategoryCountText } from './utils/IndexStats.js'
 import { Preloader } from './utils/Preloader.js'
 import LoadingScreen from './components/LoadingScreen.vue'
-import ArchiveHome from './components/archive/ArchiveHome.vue'
+import ArchiveImmersiveHome from './components/archive/ArchiveImmersiveHome.vue'
 import ArchiveShell from './components/archive/ArchiveShell.vue'
 import ArchiveCardList from './components/archive/ArchiveCardList.vue'
 import ArchiveCardDetail from './components/archive/ArchiveCardDetail.vue'
@@ -256,6 +254,7 @@ import {
   cardsForCharacter,
   mergeCardDetail,
 } from './data/archiveSelectors.js'
+import { buildArchiveHomeState } from './data/archiveHomeState.js'
 import {
   archiveSectionForRoute,
   onArchivePopState,
@@ -320,6 +319,7 @@ const currentEventScope = ref('all')
 const currentStoryAvailability = ref('all')
 const currentStorySort = ref('domain')
 const storyVisibleLimit = ref(80)
+const homeSelectedId = ref('001tom')
 const returnViewAfterPlayer = ref('files')
 let archiveRouteReady = false
 let applyingArchiveRoute = false
@@ -338,18 +338,18 @@ const CATEGORIES = [
 ]
 
 const totalFiles = computed(() => countScenarioFiles(indexData.value?.categories || []))
-const homeCategories = computed(() => CATEGORIES.map(category => ({
-  ...category,
-  count: catCountText(category.id),
-})))
-
 const archiveStats = computed(() => [
-  { label: '剧情文件', value: archiveManifestData.value?.counts?.indexed_scenarios ?? totalFiles.value },
+  { label: '剧情文件', value: archiveVerificationData.value?.scenarios?.parsed_files ?? archiveManifestData.value?.counts?.indexed_scenarios ?? totalFiles.value },
   { label: '偶像', value: archiveManifestData.value?.counts?.idols ?? Object.keys(idolUnitData.value?.by_idol_code || {}).length },
   { label: '卡片', value: archiveManifestData.value?.counts?.cards ?? cardIndexData.value?.meta?.card_count ?? cardIndexData.value?.cards?.length ?? 0 },
   { label: '卡池', value: gashaIndexData.value?.meta?.logical_gasha_count ?? archiveManifestData.value?.counts?.gashas ?? 0 },
   { label: '首页语音', value: archiveManifestData.value?.counts?.home_voice_cues ?? cardIndexData.value?.meta?.home_voice_cue_count ?? 0 },
 ])
+const archiveHomeIdols = computed(() => buildArchiveHomeState(
+  idolUnitData.value,
+  cardIndexData.value,
+  archiveManifestData.value,
+))
 
 function categoryById(id) {
   if (!indexData.value) return null
@@ -1133,6 +1133,21 @@ function navigateArchiveSection(section) {
   else if (section === 'gashas') openGashaCatalog()
   else if (section === 'resources') openArchiveStatus()
   else if (categoryBySection[section]) openCategoryById(categoryBySection[section])
+}
+
+function openHomeIdol(idolId) {
+  currentCategoryId.value = 'idol'
+  openIdol({ id: idolId })
+}
+
+function openHomeCards(idolId) {
+  currentCategoryId.value = 'cards'
+  openIdol({ id: idolId })
+}
+
+function openHomeChat(idolId) {
+  currentCategoryId.value = 'idol_chat'
+  openIdol({ id: idolId })
 }
 
 function goArchiveBack() {

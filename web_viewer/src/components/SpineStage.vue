@@ -5,13 +5,13 @@
     <img :src="sceneIcon.src" alt="" @error="$event.target.style.display = 'none'" />
   </div>
 
-  <!-- Debug Toggle: always visible, bottom-right corner -->
-  <button class="debug-toggle" @click="debugMode = !debugMode" :title="debugMode ? '关闭调试' : '开启调试'">
+  <!-- Debug Toggle: visible in player/lab contexts, hidden by embedded scenes. -->
+  <button v-if="debugControls" class="debug-toggle" @click="debugMode = !debugMode" :title="debugMode ? '关闭调试' : '开启调试'">
     {{ debugMode ? 'ON' : 'DBG' }}
   </button>
 
   <!-- Debug Dashboard: visible when debugMode is on -->
-  <div v-if="debugMode" class="debug-panel">
+  <div v-if="debugControls && debugMode" class="debug-panel">
     <div class="debug-title">Spine Debug <span class="debug-mode">yMode={{ Y_MODE }} ps={{ PIXEL_SCALE }}</span>
       <button class="debug-copy-btn" @click="copyParamURL" title="复制当前参数到剪贴板">复制参数</button>
     </div>
@@ -54,7 +54,7 @@
     </div>
   </div>
 
-  <div v-if="boundsSnapshot" class="bounds-overlay">
+  <div v-if="debugControls && boundsSnapshot" class="bounds-overlay">
     <div
       v-for="line in boundsSnapshot.lines"
       :key="line.key"
@@ -94,6 +94,7 @@ import {
 const props = defineProps({
   step: { type: Object, default: null },
   fallbackBg: { type: String, default: null },
+  debugControls: { type: Boolean, default: true },
 })
 
 const emit = defineEmits(['ready', 'error'])
