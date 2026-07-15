@@ -18,7 +18,7 @@ assert.equal(invalidFilters.eventScope, 'all')
 assert.deepEqual(
   normalizeArchiveRoute({ view: 'idol_detail', idol: '001tom' }),
   {
-    view: 'idol_detail', category: 'idol', idol: '001tom', group: '', unit: '', unitFilter: '',
+    view: 'idol_detail', homeIdol: '', homeCue: '', category: 'idol', idol: '001tom', group: '', unit: '', unitFilter: '',
     storyType: '', eventScope: 'all', availability: 'all', sort: 'domain', episode: '', card: '',
     gasha: '', gashaType: 'all', rarity: 'all', assetState: 'all', relationState: 'all', query: '',
     event: '', scenario: '', voice: '', returnView: '', parentView: '',
@@ -38,6 +38,17 @@ assert.equal(archiveSectionForRoute({ view: 'groups', category: 'idol_chat', gro
 assert.equal(archiveSectionForRoute({ view: 'card_detail', card: '001tom_n01' }), 'cards')
 assert.equal(archiveSectionForRoute({ view: 'archive_status' }), 'resources')
 assert.equal(archiveSectionForRoute({ view: 'event_detail', event: '410018' }), 'stories')
+
+const homeContext = readArchiveRoute('http://localhost/?home_idol=040ren&home_cue=2_1_040_01_00_09')
+assert.equal(homeContext.view, 'home')
+assert.equal(homeContext.homeIdol, '040ren')
+assert.equal(homeContext.homeCue, '2_1_040_01_00_09')
+const homeUrl = buildArchiveUrl('http://localhost/?view=cards&idol=001tom', homeContext)
+assert.equal(homeUrl.searchParams.get('home_idol'), '040ren')
+assert.equal(homeUrl.searchParams.get('home_cue'), '2_1_040_01_00_09')
+const cardsUrl = buildArchiveUrl(homeUrl, { ...homeContext, view: 'cards', idol: '040ren' })
+assert.equal(cardsUrl.searchParams.has('home_idol'), false)
+assert.equal(cardsUrl.searchParams.has('home_cue'), false)
 
 const sourceRoute = {
   view: 'card_detail',
@@ -85,4 +96,4 @@ assert.equal(eventPlayerContext.returnView, 'event_detail')
 assert.equal(eventPlayerContext.parentView, 'unit_detail')
 assert.equal(eventPlayerContext.unit, '16cfi')
 
-console.log('Archive route contract: 41 assertions passed')
+console.log('Archive route contract: 48 assertions passed')

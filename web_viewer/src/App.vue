@@ -15,6 +15,7 @@
       <ArchiveImmersiveHome
         v-if="view === 'home'"
         v-model:selected-id="homeSelectedId"
+        v-model:selected-cue="homeSelectedCue"
         :idols="archiveHomeIdols"
         :stats="archiveStats"
         @open-story="navigateArchiveSection('stories')"
@@ -320,6 +321,7 @@ const currentStoryAvailability = ref('all')
 const currentStorySort = ref('domain')
 const storyVisibleLimit = ref(80)
 const homeSelectedId = ref('001tom')
+const homeSelectedCue = ref('')
 const returnViewAfterPlayer = ref('files')
 let archiveRouteReady = false
 let applyingArchiveRoute = false
@@ -931,6 +933,8 @@ function currentArchiveRoute() {
     (preservesEventContext && eventParentView.value === 'unit_detail')
   return {
     view: view.value,
+    homeIdol: view.value === 'home' ? homeSelectedId.value : '',
+    homeCue: view.value === 'home' ? homeSelectedCue.value : '',
     category: currentCategoryId.value,
     idol: currentCharacterId.value,
     group: currentGroup.value?.id || '',
@@ -1051,6 +1055,9 @@ async function applyArchiveRoute(route) {
     currentStoryAvailability.value = route.availability || 'all'
     currentStorySort.value = route.sort || 'domain'
     currentEpisodeId.value = route.episode || ''
+    const requestedHomeIdol = archiveHomeIdols.value.find(idol => idol.id === route.homeIdol) || archiveHomeIdols.value[0]
+    homeSelectedId.value = requestedHomeIdol?.id || '001tom'
+    homeSelectedCue.value = requestedHomeIdol?.cues?.find(cue => cue.cue === route.homeCue)?.cue || requestedHomeIdol?.cues?.[0]?.cue || ''
     const restoresEventContext = route.view === 'event_detail' ||
       (route.view === 'player' && route.returnView === 'event_detail')
     currentArchiveUnitCode.value = (
@@ -1741,6 +1748,10 @@ onMounted(async () => {
 
 watch([filterQuery, currentCardRarity, currentCardAssetState, currentCardRelationState, currentGashaCategory, currentIdolUnitFilter, currentStoryDomain, currentEventScope, currentStoryAvailability, currentStorySort], () => {
   syncArchiveRoute({ replace: true })
+})
+
+watch([homeSelectedId, homeSelectedCue], () => {
+  if (view.value === 'home') syncArchiveRoute({ replace: true })
 })
 
 watch([filterQuery, currentStoryDomain, currentEventScope, currentStoryAvailability, currentStorySort], () => {

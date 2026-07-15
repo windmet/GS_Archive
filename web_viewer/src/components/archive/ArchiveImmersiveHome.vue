@@ -118,14 +118,14 @@ const props = defineProps({
   idols: { type: Array, default: () => [] },
   stats: { type: Array, default: () => [] },
   selectedId: { type: String, default: '' },
+  selectedCue: { type: String, default: '' },
 })
-const emit = defineEmits(['open-story', 'open-cards', 'open-idol', 'open-chat', 'update:selectedId'])
+const emit = defineEmits(['open-story', 'open-cards', 'open-idol', 'open-chat', 'update:selectedId', 'update:selectedCue'])
 
 const selectedId = computed({
   get: () => props.selectedId || props.idols[0]?.id || '',
   set: value => emit('update:selectedId', value),
 })
-const cueIndex = ref(0)
 const playing = ref(false)
 const voiceError = ref(false)
 const lastStartedVoice = ref('')
@@ -136,7 +136,8 @@ const spineStageRef = ref(null)
 const currentStepIndex = ref(0)
 
 const activeIdol = computed(() => props.idols.find(idol => idol.id === selectedId.value) || props.idols[0] || null)
-const activeCue = computed(() => activeIdol.value?.cues?.[cueIndex.value] || activeIdol.value?.cues?.[0] || null)
+const activeCue = computed(() => activeIdol.value?.cues?.find(cue => cue.cue === props.selectedCue) || activeIdol.value?.cues?.[0] || null)
+const cueIndex = computed(() => Math.max(0, activeIdol.value?.cues?.findIndex(cue => cue.cue === activeCue.value?.cue) || 0))
 const currentStep = computed(() => activeCue.value?.previewStep || {})
 const compiledData = computed(() => ({ scenario_id: activeCue.value?.scenarioId || '' }))
 const voicePlayer = useVoicePlayer({
@@ -148,9 +149,9 @@ const voicePlayer = useVoicePlayer({
 })
 
 watch(() => activeIdol.value?.id, () => {
-  cueIndex.value = 0
   stageError.value = false
   stopVoice()
+  if (activeCue.value?.cue !== props.selectedCue) emit('update:selectedCue', activeCue.value?.cue || '')
 })
 
 watch(activeCue, () => {
@@ -166,7 +167,8 @@ function stepIdol(direction) {
 
 function nextCue() {
   if (!activeIdol.value?.cues?.length) return
-  cueIndex.value = (cueIndex.value + 1) % activeIdol.value.cues.length
+  const nextIndex = (cueIndex.value + 1) % activeIdol.value.cues.length
+  emit('update:selectedCue', activeIdol.value.cues[nextIndex].cue)
 }
 
 function stopVoice() {
