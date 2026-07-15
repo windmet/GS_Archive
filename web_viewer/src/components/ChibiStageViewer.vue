@@ -298,6 +298,7 @@ const stageBackgroundReady = ref(false)
 const allPositions = [1, 2, 3, 4, 5]
 const POSITION_TWEEN_MS = 350
 const STAGE_BASE_ZOOM = 1.1
+const STAGE_TEXTURE_SCALE = 1
 
 let app = null
 let cameraContainer = null
@@ -324,6 +325,8 @@ let stageBackgroundSequence = 0
 let stageBackgroundSprite = null
 let stageBackgroundTexture = null
 let wholeScreenColorOverlay = null
+let characterShadowTexture = null
+let characterShadowLoad = null
 let resizeObserver = null
 let animationFrame = 0
 let playbackStartedAt = 0
@@ -454,8 +457,11 @@ onBeforeUnmount(() => {
   releaseBackmonitor()
   releaseImageLayers()
   releaseStageBackground()
-  for (const runtime of runtimes.values()) destroyLiveChibi(runtime)
+  for (const runtime of runtimes.values()) destroyStageRuntime(runtime)
   runtimes.clear()
+  characterShadowTexture?.destroy(true)
+  characterShadowTexture = null
+  characterShadowLoad = null
   app?.destroy(true)
   app = null
   cameraContainer = null
@@ -525,6 +531,24 @@ function costumeForSlot(slot) {
   return costumesForSlot(slot).find(costume => costume.id === slot.costumeId) || null
 }
 
+function ensureCharacterShadowTexture() {
+  if (characterShadowTexture) return Promise.resolve(characterShadowTexture)
+  if (!characterShadowLoad) {
+    const relativePath = manifest.value?.shared?.characterShadow || 'shared/character-shadow.png'
+    characterShadowLoad = loadImageLayerTexture(relativePath).then(texture => {
+      characterShadowTexture = texture
+      return texture
+    })
+  }
+  return characterShadowLoad
+}
+
+function destroyStageRuntime(runtime) {
+  runtime?.groundShadow?.removeFromParent()
+  runtime?.groundShadow?.destroy()
+  destroyLiveChibi(runtime)
+}
+
 async function handleCharacterChange(slot) {
   const character = characterForSlot(slot)
   slot.costumeId = character?.defaultCostume || character?.costumes?.[0]?.id || ''
@@ -544,17 +568,26 @@ async function loadSlot(slot) {
   const oldRuntime = runtimes.get(slot.position)
   if (oldRuntime) {
     runtimes.delete(slot.position)
-    destroyLiveChibi(oldRuntime)
+    destroyStageRuntime(oldRuntime)
   }
 
   try {
-    const runtime = await createLiveChibi(character, costume)
+    const [runtime, shadowTexture] = await Promise.all([
+      createLiveChibi(character, costume),
+      ensureCharacterShadowTexture(),
+    ])
     if (sequence !== slot.loadSequence || !app) {
       destroyLiveChibi(runtime)
       return
     }
+    const groundShadow = markRaw(new PIXI.Sprite(shadowTexture))
+    groundShadow.anchor.set(0.5)
+    // The source PNG already tops out at 50% alpha; avoid attenuating it a
+    // second time or it disappears against the illuminated stage floor.
+    groundShadow.alpha = 1
     const stageRuntime = markRaw({
       ...runtime,
+      groundShadow,
       loadedMotions: new Map(),
       preloadedSongs: new Set(),
       characterId: character.id,
@@ -562,6 +595,7 @@ async function loadSlot(slot) {
       stagePosition: slot.position,
     })
     runtimes.set(slot.position, stageRuntime)
+    cameraContainer.addChild(stageRuntime.groundShadow)
     cameraContainer.addChild(stageRuntime.spine)
     slot.loading = false
     resizeStage()
@@ -881,7 +915,7 @@ function layoutStageBackground() {
   for (const sprite of [stageBackgroundSprite, wholeScreenColorOverlay]) {
     if (!sprite) continue
     sprite.position.set(width * 0.5, height * 0.5)
-    sprite.scale.set(viewportScale * (2 / 3))
+    sprite.scale.set(viewportScale * STAGE_TEXTURE_SCALE)
   }
 }
 
@@ -983,7 +1017,7 @@ function layoutImageLayers() {
   const viewportScale = Math.min(width / 1280, height / 720)
   for (const runtime of imageLayerRuntimes.values()) {
     runtime.sprite.position.set(width * 0.5, height * 0.5)
-    runtime.sprite.scale.set(viewportScale * (2 / 3))
+    runtime.sprite.scale.set(viewportScale * STAGE_TEXTURE_SCALE)
   }
 }
 
@@ -1318,10 +1352,19 @@ function layoutRuntime(position, motionEvent = null) {
           : 1
 
   runtime.spine.x = width * 0.5 + x * viewportScale
-  runtime.spine.y = height * 0.66 + (y - 180) * viewportScale * 0.32
+  // Live CSV Y is a depth coordinate: smaller values stand closer to the
+  // camera (and therefore lower on screen). Legacy starts the centre member
+  // at Y=170 and the side members at Y=190, matching the official stagger.
+  runtime.spine.y = height * 0.66 + (180 - y) * viewportScale
   runtime.spine.scale.set(characterScale * ensembleScale * viewportFit * sourceScale / 1700)
   runtime.spine.visible = activePositions.value.includes(position) && y < 4000
-  runtime.spine.zIndex = Math.round(y * 10) + position
+  runtime.spine.zIndex = Math.round((360 - y) * 10) + position
+  if (runtime.groundShadow) {
+    runtime.groundShadow.position.set(runtime.spine.x, runtime.spine.y + 3 * viewportScale)
+    runtime.groundShadow.scale.set(runtime.spine.scale.x * 2.1, runtime.spine.scale.y * 0.42)
+    runtime.groundShadow.visible = runtime.spine.visible
+    runtime.groundShadow.zIndex = runtime.spine.zIndex - 1
+  }
   runtime.positionTweenProgress = positionState?.tweenProgress ?? 1
 }
 
@@ -1664,12 +1707,10 @@ function formatTime(milliseconds) {
   font-weight: 700;
   line-height: 1.25;
   text-align: center;
-  text-shadow:
-    -2px -2px 0 rgba(0, 0, 0, 0.9),
-    2px -2px 0 rgba(0, 0, 0, 0.9),
-    -2px 2px 0 rgba(0, 0, 0, 0.9),
-    2px 2px 0 rgba(0, 0, 0, 0.9),
-    0 3px 8px rgba(0, 0, 0, 0.9);
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-stroke: 1.5px rgba(0, 0, 0, 0.96);
+  paint-order: stroke fill;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
   transform: translateX(-50%);
   pointer-events: none;
 }

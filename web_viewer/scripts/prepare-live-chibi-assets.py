@@ -20,6 +20,7 @@ import csv
 from pathlib import Path
 
 import UnityPy
+from PIL import Image
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -134,6 +135,28 @@ def atlas_stats(path: Path) -> dict[str, int]:
         "pages": sum(1 for line in lines if re.search(r"\.(?:png|jpg)$", line.strip(), re.I)),
         "regions": sum(1 for line in lines if line.strip().startswith("rotate:")),
     }
+
+
+def export_character_shadow() -> str:
+    """Export the game's shared 241 px character shadow from a source atlas."""
+    atlas_path = COSTUME_ROOT / "001tom_005_00" / "cos.atlas"
+    texture_path = COSTUME_ROOT / "001tom_005_00" / "cos.png"
+    lines = atlas_path.read_text(encoding="utf-8", errors="replace").splitlines()
+    try:
+        region_index = next(index for index, line in enumerate(lines) if line.strip() == "tex_chara_shadow")
+    except StopIteration as error:
+        raise FileNotFoundError("tex_chara_shadow atlas region") from error
+    xy_match = re.search(r"xy:\s*(\d+)\s*,\s*(\d+)", "\n".join(lines[region_index : region_index + 8]))
+    size_match = re.search(r"size:\s*(\d+)\s*,\s*(\d+)", "\n".join(lines[region_index : region_index + 8]))
+    if not xy_match or not size_match:
+        raise ValueError("tex_chara_shadow atlas coordinates are incomplete")
+    x, y = (int(value) for value in xy_match.groups())
+    width, height = (int(value) for value in size_match.groups())
+    destination = OUTPUT_ROOT / "shared" / "character-shadow.png"
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with Image.open(texture_path) as texture:
+        texture.crop((x, y, x + width, y + height)).save(destination)
+    return destination.relative_to(OUTPUT_ROOT).as_posix()
 
 
 def export_all_characters(body_types: dict[str, int]) -> tuple[list[dict], dict]:
@@ -744,12 +767,14 @@ def main() -> None:
         motion["file"] = f"motions/common/{{bodyType}}/{motion['id']}.motion"
 
     characters, inventory = export_all_characters(body_type_map)
+    character_shadow = export_character_shadow()
 
     compatibility_motions = export_compatibility_motions(body_types)
     choreography = export_choreography(body_types)
     manifest = {
         "schemaVersion": 4,
         "characters": characters,
+        "shared": {"characterShadow": character_shadow},
         "inventory": "inventory.json",
         "motionPacks": [
             {
