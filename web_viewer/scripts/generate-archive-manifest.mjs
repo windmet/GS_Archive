@@ -33,13 +33,14 @@ async function countDirectories(relativePath) {
   return entries.filter(entry => entry.isDirectory()).length
 }
 
-const [compiledIndex, cardIndex, cardDetailIndex, idolUnit, storyMaster, gashaIndex, uiAssetCatalog] = await Promise.all([
+const [compiledIndex, cardIndex, cardDetailIndex, idolUnit, storyMaster, gashaIndex, eventIndex, uiAssetCatalog] = await Promise.all([
   readJson('data/compiled/index.json'),
   readJson('data/masterdata/card_index.json'),
   readJson('data/masterdata/card_detail_index.json'),
   readJson('data/masterdata/idol_unit_dictionary.json'),
   readJson('data/masterdata/story_master_index.json'),
   readJson('data/masterdata/gasha_index.json'),
+  readJson('data/masterdata/event_index.json'),
   readJson('data/assets/ui_asset_catalog.json'),
 ])
 
@@ -65,8 +66,10 @@ const sourcePaths = [
   'data/masterdata/card_detail_index.json',
   'data/masterdata/idol_unit_dictionary.json',
   'data/masterdata/story_master_index.json',
+  'data/masterdata/story_presentation_index.json',
   'data/masterdata/gasha_announcement_index.json',
   'data/masterdata/gasha_index.json',
+  'data/masterdata/event_index.json',
   'data/assets/ui_asset_catalog.json',
 ]
 const sourceStats = await Promise.all(sourcePaths.map(relativePath => stat(path.join(publicRoot, relativePath))))
