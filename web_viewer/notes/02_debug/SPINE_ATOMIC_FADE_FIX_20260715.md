@@ -48,6 +48,18 @@ Every communication Spine now uses this lifecycle:
 Immediate removals also detach the wrapper before destruction, so no disposal
 frame can be rendered.
 
+## Filter Quality Follow-up
+
+Keeping `AlphaFilter` enabled after a fade caused the fully visible model to be
+rendered through a default-resolution offscreen texture. This softened the
+character and introduced subtle edge aliasing.
+
+The whole-model filter now follows the renderer's physical-pixel resolution
+and uses 4x MSAA only while alpha is between zero and one. At alpha one it is
+disabled, returning the model to native Spine rendering. Camera grayscale and
+sepia filters use the same renderer resolution and MSAA policy because they
+previously exhibited the same low-resolution edge artifact.
+
 ## Verification
 
 ```powershell
