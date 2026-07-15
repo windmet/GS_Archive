@@ -85,6 +85,13 @@ export async function fetchLiveChibiBackmonitorIndex() {
   return response.json()
 }
 
+export async function fetchLiveChibiImageLayerIndex() {
+  const response = await fetch(`${LIVE_CHIBI_BASE}/image-layers/index.json`)
+  if (response.status === 404) return null
+  if (!response.ok) throw new Error(`舞台图片层索引加载失败 (${response.status})`)
+  return response.json()
+}
+
 export async function fetchLiveChibiLipSync(relativePath) {
   if (!relativePath) return null
   const response = await fetch(`${LIVE_CHIBI_BASE}/${relativePath}`)

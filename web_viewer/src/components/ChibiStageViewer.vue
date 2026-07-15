@@ -18,7 +18,12 @@
     :data-backmonitor-movie="currentBackmonitorState.movie || ''"
     :data-backmonitor-event-time="currentBackmonitorState.eventTime"
     :data-backmonitor-transition="currentBackmonitorState.transition || ''"
+    :data-backmonitor-transition-active="backmonitorTransitionActive"
+    data-backmonitor-transition-mode="alpha-overlay"
     :data-backmonitor-ready="backmonitorReady"
+    :data-image-layer-count="visibleImageLayerCount"
+    :data-image-layer-assets="visibleImageLayerAssets.join(',')"
+    :data-image-layer-depths="visibleImageLayerDepths.join(',')"
   >
     <header class="stage-header">
       <button class="icon-button" type="button" aria-label="返回资料馆" @click="emit('back')">
@@ -126,6 +131,7 @@
               <span>{{ selectedSong?.singerEvents.length || 0 }} 次演唱切换</span>
               <span>{{ selectedSong?.cameraEvents?.length || 0 }} 条镜头</span>
               <span>{{ selectedSong?.backmonitorEvents?.length || 0 }} 条屏幕</span>
+              <span>{{ selectedSong?.imageLayerEvents?.length || 0 }} 条布景</span>
               <span>{{ selectedSongAudio ? '官方音频' : '无音频' }}</span>
             </div>
           </section>
@@ -206,6 +212,7 @@
               <div><dt>动作组补位</dt><dd>{{ derivedGroupEventCount }} 处</dd></div>
               <div><dt>当前镜头</dt><dd>{{ currentCameraLabel }}</dd></div>
               <div><dt>舞台屏幕</dt><dd>{{ currentBackmonitorLabel }}</dd></div>
+              <div><dt>图片布景</dt><dd>{{ visibleImageLayerCount }} 层</dd></div>
             </dl>
             <small v-if="audioError" class="audio-error">{{ audioError }}</small>
           </section>
@@ -237,6 +244,7 @@ import {
   destroyLiveChibi,
   fetchLiveChibiBackmonitorIndex,
   fetchLiveChibiChoreography,
+  fetchLiveChibiImageLayerIndex,
   fetchLiveChibiLipSync,
   fetchLiveChibiManifest,
   fetchLiveChibiMusicIndex,
@@ -250,6 +258,7 @@ const manifest = ref(null)
 const choreography = ref(null)
 const musicIndex = ref(null)
 const backmonitorIndex = ref(null)
+const imageLayerIndex = ref(null)
 const selectedSongId = ref('')
 const lineup = ref([])
 const booting = ref(true)
@@ -265,6 +274,10 @@ const playbackSpeed = ref(1)
 const playing = ref(false)
 const cameraEnabled = ref(true)
 const backmonitorReady = ref(false)
+const backmonitorTransitionActive = ref(false)
+const visibleImageLayerCount = ref(0)
+const visibleImageLayerAssets = ref([])
+const visibleImageLayerDepths = ref([])
 const allPositions = [1, 2, 3, 4, 5]
 const POSITION_TWEEN_MS = 350
 
@@ -275,6 +288,19 @@ let backmonitorSprite = null
 let backmonitorVideo = null
 let backmonitorTexture = null
 let backmonitorMovie = ''
+let backmonitorTransitionSprite = null
+let backmonitorTransitionVideo = null
+let backmonitorTransitionAlphaVideo = null
+let backmonitorTransitionTexture = null
+let backmonitorTransitionAlphaTexture = null
+let backmonitorTransitionFilter = null
+let backmonitorTransition = ''
+let backmonitorTransitionColorReady = false
+let backmonitorTransitionAlphaReady = false
+let imageLayerSongId = ''
+let imageLayerSequence = 0
+const imageLayerRuntimes = new Map()
+const imageLayerLoads = new Map()
 let resizeObserver = null
 let animationFrame = 0
 let playbackStartedAt = 0
@@ -369,9 +395,10 @@ onMounted(async () => {
   try {
     manifest.value = await fetchLiveChibiManifest()
     choreography.value = await fetchLiveChibiChoreography(manifest.value.choreography.index)
-    ;[musicIndex.value, backmonitorIndex.value] = await Promise.all([
+    ;[musicIndex.value, backmonitorIndex.value, imageLayerIndex.value] = await Promise.all([
       fetchLiveChibiMusicIndex(),
       fetchLiveChibiBackmonitorIndex(),
+      fetchLiveChibiImageLayerIndex(),
     ])
     initializeLineup()
     selectedSongId.value = songs.value.find(song => song.id === 'drvalv_live_effect')?.id
@@ -393,6 +420,7 @@ onBeforeUnmount(() => {
   resizeObserver?.disconnect()
   releaseAudio()
   releaseBackmonitor()
+  releaseImageLayers()
   for (const runtime of runtimes.values()) destroyLiveChibi(runtime)
   runtimes.clear()
   app?.destroy(true)
@@ -701,6 +729,7 @@ function backmonitorStateAt(milliseconds) {
     movie: null,
     movieTime: 0,
     transition: null,
+    transitionTime: 0,
     x: 0,
     y: 360,
     scale: 1000,
@@ -719,9 +748,126 @@ function backmonitorStateAt(milliseconds) {
       if (event[key] !== null && event[key] !== undefined) state[key] = Number(event[key])
     }
     state.transition = event.transition || null
+    if (state.transition) state.transitionTime = eventTime
     state.eventTime = eventTime
   }
   return state
+}
+
+function imageLayerStatesAt(milliseconds) {
+  const states = new Map()
+  for (const event of (selectedSong.value?.imageLayerEvents || [])) {
+    if (Number(event.time) > milliseconds) break
+    const previous = states.get(event.asset) || {
+      asset: event.asset,
+      depth: 0,
+      layerType: event.layerType,
+      visible: false,
+    }
+    states.set(event.asset, {
+      ...previous,
+      depth: event.depth ?? previous.depth,
+      layerType: event.layerType || previous.layerType,
+      visible: !event.hide,
+      eventTime: Number(event.time),
+    })
+  }
+  return states
+}
+
+function loadImageLayerTexture(relativePath) {
+  return new Promise((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => resolve(new PIXI.Texture(new PIXI.BaseTexture(image)))
+    image.onerror = () => reject(new Error(`舞台图片加载失败：${relativePath}`))
+    image.src = `${LIVE_CHIBI_BASE}/${relativePath}`
+  })
+}
+
+function layoutImageLayers() {
+  if (!app) return
+  const width = app.renderer.width / app.renderer.resolution
+  const height = app.renderer.height / app.renderer.resolution
+  const viewportScale = Math.min(width / 1280, height / 720)
+  for (const runtime of imageLayerRuntimes.values()) {
+    runtime.sprite.position.set(width * 0.5, height * 0.5)
+    runtime.sprite.scale.set(viewportScale * (2 / 3))
+  }
+}
+
+function releaseImageLayers() {
+  imageLayerSequence += 1
+  for (const load of imageLayerLoads.values()) {
+    load.then(texture => texture.destroy(true)).catch(() => {})
+  }
+  imageLayerLoads.clear()
+  for (const runtime of imageLayerRuntimes.values()) {
+    runtime.sprite.removeFromParent()
+    runtime.sprite.destroy()
+    runtime.texture.destroy(true)
+  }
+  imageLayerRuntimes.clear()
+  imageLayerSongId = ''
+  visibleImageLayerCount.value = 0
+  visibleImageLayerAssets.value = []
+  visibleImageLayerDepths.value = []
+}
+
+async function syncImageLayers() {
+  if (!cameraContainer || !selectedSong.value || !imageLayerIndex.value) return
+  if (imageLayerSongId !== selectedSong.value.id) {
+    releaseImageLayers()
+    imageLayerSongId = selectedSong.value.id
+  }
+  const sequence = imageLayerSequence
+  const states = imageLayerStatesAt(stageTime.value)
+  const visibleStates = [...states.values()].filter(state => state.visible)
+  visibleImageLayerCount.value = visibleStates.length
+  visibleImageLayerAssets.value = visibleStates.map(state => state.asset).sort()
+  visibleImageLayerDepths.value = visibleStates
+    .map(state => `${state.asset}:${state.depth}`)
+    .sort()
+
+  for (const [asset, runtime] of imageLayerRuntimes) {
+    const state = states.get(asset)
+    runtime.sprite.visible = Boolean(state?.visible)
+    if (state) runtime.sprite.zIndex = Number(state.depth) || 0
+  }
+
+  await Promise.all(visibleStates.map(async state => {
+    let runtime = imageLayerRuntimes.get(state.asset)
+    if (!runtime) {
+      const entry = imageLayerIndex.value.assets?.[state.asset]
+      if (!entry) {
+        console.warn('[ChibiStage] missing image-layer asset', state.asset)
+        return
+      }
+      let load = imageLayerLoads.get(state.asset)
+      if (!load) {
+        load = loadImageLayerTexture(entry.file)
+        imageLayerLoads.set(state.asset, load)
+      }
+      const texture = await load
+      const ownsLoad = imageLayerLoads.get(state.asset) === load
+      if (ownsLoad) imageLayerLoads.delete(state.asset)
+      if (sequence !== imageLayerSequence || imageLayerSongId !== selectedSong.value?.id) {
+        if (ownsLoad) texture.destroy(true)
+        return
+      }
+      runtime = imageLayerRuntimes.get(state.asset)
+      if (!runtime) {
+        const sprite = markRaw(new PIXI.Sprite(texture))
+        sprite.anchor.set(0.5)
+        cameraContainer.addChild(sprite)
+        runtime = { texture, sprite }
+        imageLayerRuntimes.set(state.asset, runtime)
+      }
+    }
+    const current = imageLayerStatesAt(stageTime.value).get(state.asset)
+    runtime.sprite.visible = Boolean(current?.visible)
+    runtime.sprite.zIndex = Number(current?.depth) || 0
+  }))
+  layoutImageLayers()
 }
 
 function ensureBackmonitor() {
@@ -738,16 +884,75 @@ function ensureBackmonitor() {
     syncBackmonitor(true)
   })
   video.addEventListener('error', () => {
-    if (backmonitorVideo !== video) return
+    if (backmonitorVideo !== video || !backmonitorMovie || !video.getAttribute('src')) return
     backmonitorReady.value = false
     console.warn('[ChibiStage] backmonitor video failed', backmonitorMovie)
   })
   backmonitorVideo = video
-  backmonitorTexture = markRaw(PIXI.Texture.from(video))
+  const resource = markRaw(new PIXI.VideoResource(video, { autoPlay: false }))
+  backmonitorTexture = markRaw(new PIXI.Texture(new PIXI.BaseTexture(resource)))
   backmonitorSprite = markRaw(new PIXI.Sprite(backmonitorTexture))
   backmonitorSprite.anchor.set(0.5)
   backmonitorSprite.zIndex = -10000
   backmonitorContainer.addChild(backmonitorSprite)
+}
+
+function ensureBackmonitorTransition() {
+  if (backmonitorTransitionVideo || !backmonitorContainer) return
+  const colorVideo = document.createElement('video')
+  const alphaVideo = document.createElement('video')
+  for (const video of [colorVideo, alphaVideo]) {
+    video.muted = true
+    video.playsInline = true
+    video.preload = 'auto'
+    video.crossOrigin = 'anonymous'
+  }
+  colorVideo.addEventListener('loadedmetadata', () => {
+    if (backmonitorTransitionVideo !== colorVideo) return
+    backmonitorTransitionColorReady = true
+    syncBackmonitor(true)
+  })
+  alphaVideo.addEventListener('loadedmetadata', () => {
+    if (backmonitorTransitionAlphaVideo !== alphaVideo) return
+    backmonitorTransitionAlphaReady = true
+    syncBackmonitor(true)
+  })
+  const handleError = () => {
+    if (
+      !backmonitorTransition
+      || !colorVideo.getAttribute('src')
+      || !alphaVideo.getAttribute('src')
+    ) return
+    backmonitorTransitionActive.value = false
+    if (backmonitorTransitionSprite) backmonitorTransitionSprite.visible = false
+    console.warn('[ChibiStage] backmonitor transition failed', backmonitorTransition)
+  }
+  colorVideo.addEventListener('error', handleError)
+  alphaVideo.addEventListener('error', handleError)
+  backmonitorTransitionVideo = colorVideo
+  backmonitorTransitionAlphaVideo = alphaVideo
+  const colorResource = markRaw(new PIXI.VideoResource(colorVideo, { autoPlay: false }))
+  const alphaResource = markRaw(new PIXI.VideoResource(alphaVideo, { autoPlay: false }))
+  backmonitorTransitionTexture = markRaw(new PIXI.Texture(new PIXI.BaseTexture(colorResource)))
+  backmonitorTransitionAlphaTexture = markRaw(new PIXI.Texture(new PIXI.BaseTexture(alphaResource)))
+  backmonitorTransitionFilter = markRaw(new PIXI.Filter(undefined, `
+    varying vec2 vTextureCoord;
+    uniform sampler2D uSampler;
+    uniform sampler2D uAlphaTexture;
+    void main(void) {
+      vec4 color = texture2D(uSampler, vTextureCoord);
+      float mask = texture2D(uAlphaTexture, vTextureCoord).r;
+      gl_FragColor = color * mask;
+    }
+  `, {
+    uAlphaTexture: backmonitorTransitionAlphaTexture,
+  }))
+  backmonitorTransitionSprite = markRaw(new PIXI.Sprite(backmonitorTransitionTexture))
+  backmonitorTransitionSprite.anchor.set(0.5)
+  backmonitorTransitionSprite.zIndex = -9999
+  backmonitorTransitionSprite.filters = [backmonitorTransitionFilter]
+  backmonitorTransitionSprite.visible = false
+  backmonitorContainer.addChild(backmonitorTransitionSprite)
 }
 
 function layoutBackmonitor(state) {
@@ -763,16 +968,69 @@ function layoutBackmonitor(state) {
   backmonitorSprite.rotation = -state.rotation * Math.PI / 180
   backmonitorSprite.alpha = Math.max(0, Math.min(1, state.opacity / 1000))
   backmonitorSprite.visible = Boolean(state.movie) && state.y < 4000
+  if (backmonitorTransitionSprite) {
+    backmonitorTransitionSprite.position.copyFrom(backmonitorSprite.position)
+    backmonitorTransitionSprite.scale.copyFrom(backmonitorSprite.scale)
+    backmonitorTransitionSprite.rotation = backmonitorSprite.rotation
+    backmonitorTransitionSprite.alpha = backmonitorSprite.alpha
+  }
+}
+
+function pauseBackmonitorTransition() {
+  backmonitorTransitionVideo?.pause()
+  backmonitorTransitionAlphaVideo?.pause()
+  backmonitorTransitionActive.value = false
+  if (backmonitorTransitionSprite) backmonitorTransitionSprite.visible = false
+}
+
+function syncBackmonitorTransition(state, forceSeek = false) {
+  const asset = state.transition
+    ? backmonitorIndex.value?.transitions?.[state.transition]
+    : null
+  if (!asset) {
+    pauseBackmonitorTransition()
+    return
+  }
+  ensureBackmonitorTransition()
+  if (backmonitorTransition !== state.transition) {
+    backmonitorTransition = state.transition
+    backmonitorTransitionColorReady = false
+    backmonitorTransitionAlphaReady = false
+    backmonitorTransitionVideo.src = `${LIVE_CHIBI_BASE}/${asset.colorFile}`
+    backmonitorTransitionAlphaVideo.src = `${LIVE_CHIBI_BASE}/${asset.alphaFile}`
+    backmonitorTransitionVideo.load()
+    backmonitorTransitionAlphaVideo.load()
+    return
+  }
+  if (!backmonitorTransitionColorReady || !backmonitorTransitionAlphaReady) return
+  const duration = Math.min(
+    Number(asset.color?.duration) || 0,
+    Number(asset.alpha?.duration) || 0,
+  ) / 1000
+  const elapsed = Math.max(0, stageTime.value - state.transitionTime) / 1000
+  if (duration <= 0 || elapsed >= duration) {
+    pauseBackmonitorTransition()
+    return
+  }
+  backmonitorTransitionActive.value = true
+  backmonitorTransitionSprite.visible = true
+  for (const video of [backmonitorTransitionVideo, backmonitorTransitionAlphaVideo]) {
+    if (forceSeek || Math.abs(video.currentTime - elapsed) > 0.06) video.currentTime = elapsed
+    video.playbackRate = playbackSpeed.value
+    if (playing.value && video.paused) video.play().catch(() => {})
+  }
 }
 
 function syncBackmonitor(forceSeek = false) {
   const state = currentBackmonitorState.value
   if (!state.movie || !backmonitorIndex.value?.assets?.[state.movie]) {
     if (backmonitorSprite) backmonitorSprite.visible = false
+    pauseBackmonitorTransition()
     return
   }
   ensureBackmonitor()
   layoutBackmonitor(state)
+  syncBackmonitorTransition(state, forceSeek)
   const asset = backmonitorIndex.value.assets[state.movie]
   if (backmonitorMovie !== state.movie) {
     backmonitorMovie = state.movie
@@ -793,6 +1051,9 @@ function syncBackmonitor(forceSeek = false) {
 
 function releaseBackmonitor() {
   backmonitorVideo?.pause()
+  pauseBackmonitorTransition()
+  backmonitorMovie = ''
+  backmonitorTransition = ''
   if (backmonitorVideo) {
     backmonitorVideo.removeAttribute('src')
     backmonitorVideo.load()
@@ -800,11 +1061,29 @@ function releaseBackmonitor() {
   backmonitorSprite?.removeFromParent()
   backmonitorSprite?.destroy()
   backmonitorTexture?.destroy(true)
+  for (const video of [backmonitorTransitionVideo, backmonitorTransitionAlphaVideo]) {
+    if (!video) continue
+    video.removeAttribute('src')
+    video.load()
+  }
+  backmonitorTransitionSprite?.removeFromParent()
+  backmonitorTransitionSprite?.destroy()
+  backmonitorTransitionTexture?.destroy(true)
+  backmonitorTransitionAlphaTexture?.destroy(true)
+  backmonitorTransitionFilter?.destroy()
   backmonitorVideo = null
   backmonitorTexture = null
   backmonitorSprite = null
-  backmonitorMovie = ''
+  backmonitorTransitionSprite = null
+  backmonitorTransitionVideo = null
+  backmonitorTransitionAlphaVideo = null
+  backmonitorTransitionTexture = null
+  backmonitorTransitionAlphaTexture = null
+  backmonitorTransitionFilter = null
+  backmonitorTransitionColorReady = false
+  backmonitorTransitionAlphaReady = false
   backmonitorReady.value = false
+  backmonitorTransitionActive.value = false
 }
 
 function applyCameraTransform() {
@@ -869,6 +1148,7 @@ function resizeStage() {
   }
   applyCameraTransform()
   syncBackmonitor(true)
+  syncImageLayers().catch(error => console.warn('[ChibiStage] image-layer sync failed', error))
 }
 
 async function handleSongChange() {
@@ -1020,6 +1300,7 @@ async function seekStage() {
   applyCurrentLipSync()
   applyCameraTransform()
   syncBackmonitor(true)
+  await syncImageLayers()
 }
 
 function resetEventIndices() {
@@ -1078,6 +1359,7 @@ function updateStage(now) {
   }
   applyCameraTransform()
   syncBackmonitor()
+  syncImageLayers().catch(error => console.warn('[ChibiStage] image-layer sync failed', error))
   applyCurrentLipSync()
   if (stageTime.value >= stageDuration.value) {
     stopStage()
@@ -1092,6 +1374,8 @@ function stopStage(reset = false) {
   playing.value = false
   songAudio?.pause()
   backmonitorVideo?.pause()
+  backmonitorTransitionVideo?.pause()
+  backmonitorTransitionAlphaVideo?.pause()
   if (reset) {
     stageTime.value = 0
     if (songAudio) songAudio.currentTime = 0
@@ -1106,6 +1390,8 @@ async function resetStage() {
 function applyPlaybackSpeed() {
   if (songAudio) songAudio.playbackRate = playbackSpeed.value
   if (backmonitorVideo) backmonitorVideo.playbackRate = playbackSpeed.value
+  if (backmonitorTransitionVideo) backmonitorTransitionVideo.playbackRate = playbackSpeed.value
+  if (backmonitorTransitionAlphaVideo) backmonitorTransitionAlphaVideo.playbackRate = playbackSpeed.value
   for (const position of activePositions.value) {
     const runtime = runtimes.get(position)
     if (runtime) {

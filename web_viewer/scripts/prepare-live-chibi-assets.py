@@ -349,6 +349,7 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
         position_events = []
         camera_events = []
         backmonitor_events = []
+        image_layer_events = []
         motion_group_events = []
         motion_group_changes = []
         with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
@@ -407,6 +408,25 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
                             "scale": parse_optional_number(row[6]),
                             "rotation": parse_optional_number(row[7]),
                             "opacity": parse_optional_number(row[8]),
+                        }
+                    )
+                    continue
+                if row[0] in {"Image_layer", "Image_layer_2"} and len(row) >= 4:
+                    event_time = parse_optional_number(row[1])
+                    asset = row[2].strip()
+                    if event_time is None or not asset:
+                        continue
+                    image_layer_events.append(
+                        {
+                            "time": event_time,
+                            "asset": asset,
+                            "layerType": row[0],
+                            "depth": parse_optional_number(row[3]),
+                            "hide": any(
+                                len(row) > index and row[index].strip() == "1"
+                                for index in (17, 18)
+                            ),
+                            "raw19": row[19].strip() if len(row) > 19 and row[19].strip() else None,
                         }
                     )
                     continue
@@ -491,6 +511,10 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
                 "cameraEvents": sorted(camera_events, key=lambda event: event["time"]),
                 "backmonitorEvents": sorted(
                     backmonitor_events, key=lambda event: event["time"]
+                ),
+                "imageLayerEvents": sorted(
+                    image_layer_events,
+                    key=lambda event: (event["time"], event["depth"] or 0, event["asset"]),
                 ),
                 "motionGroupEvents": sorted(
                     motion_group_events,
@@ -579,7 +603,7 @@ def export_choreography(body_types: list[int]) -> dict:
 
     choreography_relative = Path("choreography") / "index.json"
     choreography = {
-        "schemaVersion": 6,
+        "schemaVersion": 7,
         "bodyTypes": body_types,
         "stats": {
             "songs": len(songs),
@@ -589,6 +613,9 @@ def export_choreography(body_types: list[int]) -> dict:
             "cameraEvents": sum(len(song["cameraEvents"]) for song in songs),
             "backmonitorEvents": sum(
                 len(song["backmonitorEvents"]) for song in songs
+            ),
+            "imageLayerEvents": sum(
+                len(song["imageLayerEvents"]) for song in songs
             ),
             "lipSyncSongs": sum(1 for song in songs if song.get("lipSync")),
             "lipSyncCurves": len(lip_sync_catalog),
