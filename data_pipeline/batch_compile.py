@@ -12,12 +12,14 @@ import json
 import os
 import sys
 import re
+from copy import deepcopy
 from collections import defaultdict
 from scenario_compiler import ScenarioCompiler
 
 SCENARIO_ROOT = r"E:\BaiduNetdiskDownload\SideM\scripts\scenariodata"
 OUTPUT_DIR = os.path.abspath(r"E:\Web_build\SideM_Archived\web_viewer\public\data\compiled")
 VOICE_INDEX = os.path.join(OUTPUT_DIR, "voice_index.json")
+EPISODE_OUTPUT_DIR = os.path.join(OUTPUT_DIR, "episodes")
 
 # Pattern for raw filename: scenario_{scenarioId}.json
 RAW_RE = re.compile(r"^scenario_(.+)\.json$")
@@ -176,6 +178,100 @@ def compile_batch():
     return errors
 
 
+def split_compiled_episodes():
+    """Write independently loadable episode files from merged scenarios.
+
+    The merged result remains the compatibility artifact and state-machine
+    source. Slicing that result preserves inherited audio/scene state while
+    restoring the raw one-file-per-episode playback boundary.
+    """
+    os.makedirs(EPISODE_OUTPUT_DIR, exist_ok=True)
+    expected_files = set()
+    source_owners = {}
+    written = 0
+
+    for fn in sorted(os.listdir(OUTPUT_DIR)):
+        if not fn.endswith(".json") or fn in ("voice_index.json", "manifest.json", "index.json"):
+            continue
+        path = os.path.join(OUTPUT_DIR, fn)
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                scenario = json.load(f)
+        except Exception:
+            continue
+
+        episodes = scenario.get("episodes", [])
+        if len(episodes) < 2:
+            continue
+
+        for episode in episodes:
+            source_id = episode.get("source_scenario_id", "")
+            start = int(episode.get("start_step_index", 0))
+            end = int(episode.get("end_step_index", -1))
+            if not source_id or start < 0 or end < start or end >= len(scenario.get("steps", [])):
+                raise ValueError(f"Invalid episode boundary in {fn}: {episode}")
+            if source_id in source_owners and source_owners[source_id] != fn:
+                raise ValueError(f"Episode id collision: {source_id} in {source_owners[source_id]} and {fn}")
+            source_owners[source_id] = fn
+
+            first_step_id = int(episode.get("start_step_id", start + 1))
+            last_step_id = int(episode.get("end_step_id", end + 1))
+            steps = deepcopy(scenario["steps"][start:end + 1])
+            for step in steps:
+                step["step_id"] = int(step.get("step_id", first_step_id)) - first_step_id + 1
+                step["episode_index"] = 0
+                for option in step.get("options", []):
+                    target = option.get("step_id")
+                    if target is None:
+                        continue
+                    target = int(target)
+                    if target < first_step_id or target > last_step_id:
+                        raise ValueError(f"Cross-episode choice in {fn}: {source_id} -> step {target}")
+                    option["step_id"] = target - first_step_id + 1
+
+            jump_points = {
+                label: int(target) - first_step_id + 1
+                for label, target in scenario.get("jump_points", {}).items()
+                if first_step_id <= int(target) <= last_step_id
+            }
+            local_episode = deepcopy(episode)
+            local_episode.update({
+                "episode_index": 0,
+                "episode_no": 1,
+                "start_step_index": 0,
+                "start_step_id": 1,
+                "end_step_index": len(steps) - 1,
+                "end_step_id": len(steps),
+                "step_count": len(steps),
+            })
+            result = {
+                "scenario_id": source_id,
+                "total_steps": len(steps),
+                "steps": steps,
+                "jump_points": jump_points,
+                "episodes": [local_episode],
+                "aggregate_source": {
+                    "file": fn,
+                    "scenario_id": scenario.get("scenario_id", fn[:-5]),
+                    "start_step_index": start,
+                    "end_step_index": end,
+                },
+            }
+            out_name = f"{source_id}.json"
+            with open(os.path.join(EPISODE_OUTPUT_DIR, out_name), "w", encoding="utf-8") as f:
+                json.dump(result, f, ensure_ascii=False, indent=2)
+            expected_files.add(out_name)
+            written += 1
+
+    for fn in os.listdir(EPISODE_OUTPUT_DIR):
+        if fn.endswith(".json") and fn != "manifest.json" and fn not in expected_files:
+            os.remove(os.path.join(EPISODE_OUTPUT_DIR, fn))
+
+    with open(os.path.join(EPISODE_OUTPUT_DIR, "manifest.json"), "w", encoding="utf-8") as f:
+        json.dump({"count": len(expected_files), "files": sorted(expected_files)}, f, indent=2)
+    print(f"Episode artifacts: {written} files -> {EPISODE_OUTPUT_DIR}")
+
+
 def link_voices():
     """
     Post-process compiled scenarios to resolve voice references against
@@ -302,6 +398,9 @@ def main():
     if do_voice:
         print("\n=== Linking voices ===")
         link_voices()
+
+    print("\n=== Splitting episode artifacts ===")
+    split_compiled_episodes()
 
     print("\nDone.")
 

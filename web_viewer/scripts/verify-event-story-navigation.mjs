@@ -26,6 +26,7 @@ for (const event of events) {
   assert.equal(episodes.length, story.episodes.length, `${event.event_id} has mismatched episode boundaries`)
   assert.ok(episodes.every(episode => episode.startStep > 0), `${event.event_id} has an invalid start step`)
   assert.ok(episodes.every(episode => episode.endStep >= episode.startStep), `${event.event_id} has an invalid end step`)
+  assert.ok(episodes.every(episode => episode.file), `${event.event_id} has an episode without a file`)
   episodeCount += episodes.length
 }
 
@@ -35,6 +36,8 @@ const notAloneEpisodes = buildEventStoryEpisodes(notAloneEvent, notAloneStory, m
 assert.equal(notAloneEpisodes.length, 11)
 assert.deepEqual(notAloneEpisodes.map(episode => episode.part), ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'])
 assert.equal(notAloneEpisodes[0].startStep, 2)
-assert.equal(notAloneEpisodes[5].startStep, 125)
+assert.equal(notAloneEpisodes[0].file, 'episodes/1_3_10001_01_a.json')
+assert.equal(notAloneEpisodes[5].startStep, 1)
+assert.equal(notAloneEpisodes[5].file, 'episodes/1_3_10001_01_f.json')
 
 console.log(`Event story navigation: ${events.length} events, ${episodeCount} episodes verified`)

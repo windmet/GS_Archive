@@ -69,7 +69,20 @@ for (const file of files) {
   })
   const episodes = [...episodeMap.values()].sort((a, b) =>
     a.start_step_index - b.start_step_index || a.episode_index - b.episode_index,
-  )
+  ).map(episode => {
+    const source = (scenario.episodes || []).find(candidate =>
+      Number(candidate.episode_index) === episode.episode_index &&
+      (candidate.part || '') === episode.episode_part,
+    )
+    const localSteps = steps.slice(episode.start_step_index, episode.end_step_index + 1)
+    const localPlayableStart = localSteps.findIndex(step => step?.type !== 'synopsis')
+    return {
+      ...episode,
+      source_scenario_id: source?.source_scenario_id || '',
+      episode_file: source?.source_scenario_id ? `episodes/${source.source_scenario_id}.json` : '',
+      local_playable_start_index: localPlayableStart < 0 ? 0 : localPlayableStart,
+    }
+  })
   episodeBoundaryCount += episodes.length
 
   const preplaySynopsis = synopsisStep
