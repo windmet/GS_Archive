@@ -237,7 +237,7 @@ const playbackSpeed = ref(1)
 const modelScale = ref(0.28)
 const runtimeReady = ref(false)
 const runtimeDiagnostics = ref(null)
-const selectedPosition = ref(1)
+const selectedPosition = ref(3)
 const choreographyTime = ref(0)
 const choreographyPlaying = ref(false)
 const lipSyncState = ref({ value: 0, singing: false, attachment: 'mouth_close', scale: 1 })
@@ -260,21 +260,25 @@ let lipSyncLoadSequence = 0
 let songAudio = null
 
 const characters = computed(() => manifest.value?.characters || [])
+const selectedCharacter = computed(() => characters.value.find(item => item.id === selectedCharacterId.value))
+const choreographyBodyTypes = computed(() => choreography.value?.bodyTypes
+  || (choreography.value?.bodyType ? [choreography.value.bodyType] : []))
+const choreographySupportsCharacter = computed(() => choreographyBodyTypes.value
+  .includes(selectedCharacter.value?.bodyType))
 const motionPacks = computed(() => [
   ...(manifest.value?.motionPacks || []),
-  ...((selectedCharacter.value?.bodyType === choreography.value?.bodyType
+  ...((choreographySupportsCharacter.value
     ? choreography.value?.songs
     : []) || []).map(song => ({
     id: `song:${song.id}`,
     label: `歌曲 · ${song.title}`,
   })),
 ])
-const selectedCharacter = computed(() => characters.value.find(item => item.id === selectedCharacterId.value))
 const costumes = computed(() => selectedCharacter.value?.costumes || [])
 const selectedCostume = computed(() => costumes.value.find(item => item.id === selectedCostumeId.value))
 const selectedPack = computed(() => motionPacks.value.find(item => item.id === selectedPackId.value))
 const selectedSong = computed(() => {
-  if (selectedCharacter.value?.bodyType !== choreography.value?.bodyType) return null
+  if (!choreographySupportsCharacter.value) return null
   if (!selectedPackId.value.startsWith('song:')) return null
   const songId = selectedPackId.value.slice(5)
   return choreography.value?.songs.find(song => song.id === songId) || null
@@ -298,7 +302,7 @@ const resolvedMotionFile = computed(() => selectedMotion.value?.file
   ?.replace('{bodyType}', String(selectedCharacter.value?.bodyType || '—')) || '—')
 const transportPaused = computed(() => selectedSong.value ? !choreographyPlaying.value : paused.value)
 const selectedTimelineEvents = computed(() => (selectedSong.value?.events || [])
-  .filter(event => event.position === selectedPosition.value))
+  .filter(event => (event.stagePosition ?? event.position) === selectedPosition.value))
 const currentSingerEvent = computed(() => [...(selectedSong.value?.singerEvents || [])]
   .reverse()
   .find(event => event.time <= choreographyTime.value))
@@ -366,7 +370,7 @@ async function loadSelectedCharacter() {
   const character = selectedCharacter.value
   if (!character) return
   if (selectedPackId.value.startsWith('song:')
-    && character.bodyType !== choreography.value?.bodyType) {
+    && !choreographySupportsCharacter.value) {
     selectedPackId.value = 'common'
     selectDefaultMotion(false)
   }
@@ -435,7 +439,7 @@ function selectDefaultMotion(play = true) {
   loadSelectedSongAudio()
   if (selectedSong.value) {
     if (!selectedSong.value.positions.includes(selectedPosition.value)) {
-      selectedPosition.value = selectedSong.value.positions[0] || 1
+      selectedPosition.value = selectedSong.value.positions[0] || 3
     }
     const initialEvent = [...selectedTimelineEvents.value]
       .reverse()
