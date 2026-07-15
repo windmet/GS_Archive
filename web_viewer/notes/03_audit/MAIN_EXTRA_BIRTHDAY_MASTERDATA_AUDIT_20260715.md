@@ -1,4 +1,4 @@
-# Main, Extra And Birthday Story Masterdata Audit
+# Main, Extra, Birthday And Seasonal Story Masterdata Audit
 
 Last checked: 2026-07-15
 
@@ -8,10 +8,12 @@ Reference pages:
 - `https://wikiwiki.jp/sidem-gstars/エクストラストーリー`
 - `https://wikiwiki.jp/sidem-gstars/誕生日2021`
 - `https://wikiwiki.jp/sidem-gstars/誕生日：プロデューサー(プレイヤー)`
+- `https://wikiwiki.jp/sidem-gstars/過去のキャンペーン`
+- `https://wikiwiki.jp/sidem-gstars/【キャンペーン】「Happy Valentine 2023」`
 
 ## Conclusion
 
-The local decoded masterdata and compiled scenarios are sufficient to build independent archive pages for the main story, Extra Story, idol birthdays and Producer birthdays. All 432 referenced scenario resources in these families are present locally:
+The local decoded masterdata and compiled scenarios are sufficient to build independent archive pages for the main story, Extra Story, idol birthdays, Producer birthdays and seasonal campaigns. All 432 referenced scenario resources in the first four families are present locally:
 
 - main story: 204/204 episode resources;
 - Extra/Home Story: 47/47 episode resources;
@@ -143,6 +145,93 @@ Use `cycle/year_count` for archive tabs and calendar year for filters. Do not in
 
 The wiki states that Producer birthday content is available for one week after the player-configured birthday and that the login introduction is one-time. Those user-relative rules are not encoded as static terms in tables 76-80. They belong to runtime/user-state behavior and should be described as wiki-confirmed game behavior, not reconstructed as a raw masterdata period.
 
+## Valentine And White Day Campaign Stories
+
+### Classification
+
+Valentine and White Day are neither normal event stories nor Extra Story. They are seasonal campaign entities with participant-specific communications and progression rules. The archive should use a separate `seasonal_campaign` family while still allowing these scenarios to appear in a global story search.
+
+The masterdata contains two paired cycles:
+
+| Cycle | Valentine event | White Day event |
+| --- | --- | --- |
+| 2022 | `40001`, detail id 1 | `50001`, detail id 1 |
+| 2023 | `40002`, detail id 2 | `50002`, detail id 2 |
+
+Table 112 supplies the official campaign names, campaign periods and BGM. Table 153 explicitly links each White Day record back to the matching Valentine id. This relation is stronger than a date/name heuristic and should drive year pairing.
+
+### Campaign and progression tables
+
+| Table | Model | Count | Useful fields |
+| ---: | --- | ---: | --- |
+| 146 | `EventValentineData` | 2 | normal/rare chocolate item ids, aggregation and result-announcement terms |
+| 147 | `EventValentineIdolData` | 98 | 49 idols per year and their level group |
+| 148 | `EventValentineSubCharacterData` | 4 | Yamamura Ken and Saito President per year |
+| 149 | `EventValentineLevelData` | 16 | cumulative point thresholds and level rewards |
+| 150 | `EventValentineRankingRewardData` | 392 | 49 idols x 4 rank bands x 2 years, with honor ids |
+| 153 | `EventWhitedayData` | 2 | White Day to Valentine relation |
+
+For both years, the idol level thresholds are cumulative totals `0, 5, 15, 30, 50, 80`. The Valentine 2023 wiki shows the incremental chocolate costs `5, 10, 15, 20, 30`; these are the deltas between the same cumulative thresholds, not conflicting values.
+
+The support-character level group has only level 1 and level 2, with one chocolate required for level 2. This reproduces the different unlock rule for Yamamura Ken and Saito President.
+
+Table 150 describes ranking reward rules and honor ids. It does not contain historical leaderboard results. Final ranking numbers shown by the wiki remain external curated data and should not be presented as locally recovered masterdata.
+
+### Story tables and counts
+
+| Tables | Family | Raw rows |
+| --- | --- | ---: |
+| 157-159 | Valentine idol story | 149 |
+| 160-162 | Valentine support story | 4 |
+| 163-165 | White Day idol story | 149 |
+| 166-168 | White Day support story | 4 |
+
+The 306 raw episode rows normalize to 208 distinct playback entities:
+
+| Campaign | Raw episode rows | Distinct playback entities |
+| --- | ---: | ---: |
+| Valentine 2022 | 101 | 52 |
+| Valentine 2023 | 52 | 52 |
+| White Day 2022 | 101 | 52 |
+| White Day 2023 | 52 | 52 |
+
+Each distinct campaign set consists of one common introduction, 49 idol stories and two support-character stories.
+
+The 2022 idol rows contain two entries per idol at different required Valentine levels. Their `_a` and `_b` resources compile into one aggregate playback file per idol, so a catalog must preserve the two internal titles/requirements while emitting only one top-level playback entity. The 2023 campaign has one story row per idol and therefore does not require this aggregation.
+
+### Valentine 2023 verification
+
+The local relation reproduces the public campaign rules:
+
+- event period comes from table 112 and matches 2023-01-31 through 2023-02-14;
+- 49 idols use level group 3 and unlock their story at Valentine level 4;
+- Yamamura Ken and Saito President use level group 4 and unlock at level 2;
+- each participant story grants `Product.Type = 2`, amount `10`, confirmed by the wiki as 10 Star Gems after reading;
+- the 49 x 4 ranking honor rows exist in table 150.
+
+The wiki also documents five chocolate-reaction voice variants per idol. Those reactions are separate from tables 159/162 and are not yet normalized by `seasonal_communication_index.json`. They require a dedicated audio-cue relation audit and must not be counted as story episodes.
+
+### White Day relation
+
+White Day episode rows retain `RequiredValentineLevel`, `IsAlwaysReleased` and participant-specific product ids. This supports a paired year page where Valentine progression evidence and White Day return stories are shown together without pretending White Day is an independent generic event story.
+
+The current seasonal index reports the two 2022 support White Day resources as missing because it looks for an aggregate filename. The actual compiled files exist as:
+
+- `5_02_101_22_5_02_101_22_a.json`
+- `5_02_102_22_5_02_102_22_a.json`
+
+This is a resolver false negative, not missing content. The filename resolver should accept split compiled filenames for support-character seasonal stories.
+
+### Archive page direction
+
+1. Add a campaign landing page with 2022/2023 and Valentine/White Day segmented controls.
+2. Show the official period, chocolate items, cumulative level track and reward rules on the campaign entity page.
+3. Present a unit-grouped 49-idol grid plus a separate staff section for Yamamura Ken and Saito President.
+4. Pair each participant's Valentine story with the matching White Day return story.
+5. Expand the 2022 aggregate playback entity into its two internal story titles and unlock levels.
+6. Keep reaction voices in a separate voice panel after their cue mapping is verified.
+7. Label ranking rewards as static rules; do not import wiki leaderboard totals into raw masterdata fields.
+
 ## Recommended Generated Indexes
 
 ```text
@@ -180,6 +269,25 @@ birthday_story_index
       mode_source: compiled-derived
       resource_id
       character_set
+
+seasonal_campaign_index
+  campaigns[]
+    year
+    season: valentine | white_day
+    event_code
+    paired_campaign_id
+    term
+    level_groups[]
+    ranking_reward_rules[]
+    participants[]
+      participant_type: idol | support
+      participant_id
+      episodes[]
+        internal_title
+        required_level
+        resource_id
+        playback_entity_id
+        rewards[]
 ```
 
 ## UI Direction
@@ -188,6 +296,7 @@ birthday_story_index
 2. Build Extra Story from table 178, not every table 143 row. Give the three excluded Home Story campaigns their own special collection.
 3. Add `year 1 / year 2` tabs to birthday pages and a separate calendar filter.
 4. On Producer birthday pages, group by `Story / Talk / Call`, then show location and time-of-day derived from the compiled stage state.
-5. Preserve evidence labels in generated JSON so raw, compiled-derived and wiki-confirmed fields remain distinguishable.
+5. Give Valentine and White Day a paired seasonal campaign page instead of mixing them into Event Story or Extra Story.
+6. Preserve evidence labels in generated JSON so raw, compiled-derived and wiki-confirmed fields remain distinguishable.
 
 The next data task should be a dedicated multi-family story index rather than more UI heuristics on top of the flattened generic catalog.

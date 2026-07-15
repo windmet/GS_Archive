@@ -54,7 +54,7 @@ If a new note is lip or mouth related, put it in `01_lipsync/` first. If it is u
 - `ENCODING_REVIEW_CLASSIFICATION_20260708.md` - classification of encoding-review files and the one active UI label fixed.
 - `SPINE_STAGE_SYNC_EXTRACTION_PLAN_20260708.md` - safe first-cut boundary for reducing `SpineStage.vue`.
 - `03_audit/1_4_001_01_ICON_SILHOUETTE_BG_AUDIT_20260708.md` - root cause notes for the persistent `102sha` icon, missing president silhouette asset path, and displayed `19 -> 20` background-shift check.
-- `03_audit/MAIN_EXTRA_BIRTHDAY_MASTERDATA_AUDIT_20260715.md` - main, Extra/Home Story, idol birthday, and Producer birthday table audit, visibility rules, coverage, and normalized index guidance.
+- `03_audit/MAIN_EXTRA_BIRTHDAY_MASTERDATA_AUDIT_20260715.md` - main, Extra/Home Story, birthday, Valentine/White Day campaign audit, visibility rules, coverage, and normalized index guidance.
 - `04_refactor/MASTERDATA_UI_RECONSTRUCTION_GUIDANCE_20260710.md` - staged plan for masterdata-backed routing, archive UI reconstruction, interaction pages, and data-quality gates.
 - `04_refactor/SEKAI_VIEWER_DIRECTION_GUIDANCE_20260713.md` - selected方案 A, Sekai Viewer comparison, licensing boundary, and archive-first implementation order.
 - `04_refactor/ARCHIVE_COVERAGE_AND_UNIT_EVIDENCE_20260713.md` - generated manifest counts, coverage results, missing card assets, and the evidence-based idol-to-unit derivation.
