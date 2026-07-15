@@ -15,6 +15,10 @@
     :data-camera-rotation="currentCameraState.rotation.toFixed(2)"
     :data-camera-focus-position="currentCameraState.stagePosition || ''"
     :data-camera-enabled="cameraEnabled"
+    :data-backmonitor-movie="currentBackmonitorState.movie || ''"
+    :data-backmonitor-event-time="currentBackmonitorState.eventTime"
+    :data-backmonitor-transition="currentBackmonitorState.transition || ''"
+    :data-backmonitor-ready="backmonitorReady"
   >
     <header class="stage-header">
       <button class="icon-button" type="button" aria-label="返回资料馆" @click="emit('back')">
@@ -121,6 +125,7 @@
               <span>{{ selectedSong?.events.length || 0 }} 条动作</span>
               <span>{{ selectedSong?.singerEvents.length || 0 }} 次演唱切换</span>
               <span>{{ selectedSong?.cameraEvents?.length || 0 }} 条镜头</span>
+              <span>{{ selectedSong?.backmonitorEvents?.length || 0 }} 条屏幕</span>
               <span>{{ selectedSongAudio ? '官方音频' : '无音频' }}</span>
             </div>
           </section>
@@ -200,6 +205,7 @@
               <div><dt>位置过渡</dt><dd>{{ POSITION_TWEEN_MS }}ms 平滑插值</dd></div>
               <div><dt>动作组补位</dt><dd>{{ derivedGroupEventCount }} 处</dd></div>
               <div><dt>当前镜头</dt><dd>{{ currentCameraLabel }}</dd></div>
+              <div><dt>舞台屏幕</dt><dd>{{ currentBackmonitorLabel }}</dd></div>
             </dl>
             <small v-if="audioError" class="audio-error">{{ audioError }}</small>
           </section>
@@ -229,6 +235,7 @@ import {
   applyLiveChibiLipSync,
   createLiveChibi,
   destroyLiveChibi,
+  fetchLiveChibiBackmonitorIndex,
   fetchLiveChibiChoreography,
   fetchLiveChibiLipSync,
   fetchLiveChibiManifest,
@@ -242,6 +249,7 @@ const canvasRef = ref(null)
 const manifest = ref(null)
 const choreography = ref(null)
 const musicIndex = ref(null)
+const backmonitorIndex = ref(null)
 const selectedSongId = ref('')
 const lineup = ref([])
 const booting = ref(true)
@@ -256,11 +264,17 @@ const stageTime = ref(0)
 const playbackSpeed = ref(1)
 const playing = ref(false)
 const cameraEnabled = ref(true)
+const backmonitorReady = ref(false)
 const allPositions = [1, 2, 3, 4, 5]
 const POSITION_TWEEN_MS = 350
 
 let app = null
 let cameraContainer = null
+let backmonitorContainer = null
+let backmonitorSprite = null
+let backmonitorVideo = null
+let backmonitorTexture = null
+let backmonitorMovie = ''
 let resizeObserver = null
 let animationFrame = 0
 let playbackStartedAt = 0
@@ -339,6 +353,10 @@ const derivedGroupEventCount = computed(() => [...performanceEventsByPosition.va
   .flat()
   .filter(event => event.source === 'group').length)
 const currentCameraState = computed(() => cameraStateAt(stageTime.value))
+const currentBackmonitorState = computed(() => backmonitorStateAt(stageTime.value))
+const currentBackmonitorLabel = computed(() => currentBackmonitorState.value.movie
+  ? currentBackmonitorState.value.movie.replace('live_backmonitor_movie_', '')
+  : '无')
 const currentCameraLabel = computed(() => {
   const camera = currentCameraState.value
   const focus = camera.stagePosition ? `${camera.stagePosition}号位` : '自由'
@@ -351,7 +369,10 @@ onMounted(async () => {
   try {
     manifest.value = await fetchLiveChibiManifest()
     choreography.value = await fetchLiveChibiChoreography(manifest.value.choreography.index)
-    musicIndex.value = await fetchLiveChibiMusicIndex()
+    ;[musicIndex.value, backmonitorIndex.value] = await Promise.all([
+      fetchLiveChibiMusicIndex(),
+      fetchLiveChibiBackmonitorIndex(),
+    ])
     initializeLineup()
     selectedSongId.value = songs.value.find(song => song.id === 'drvalv_live_effect')?.id
       || songs.value[0]?.id
@@ -371,11 +392,13 @@ onBeforeUnmount(() => {
   stopStage()
   resizeObserver?.disconnect()
   releaseAudio()
+  releaseBackmonitor()
   for (const runtime of runtimes.values()) destroyLiveChibi(runtime)
   runtimes.clear()
   app?.destroy(true)
   app = null
   cameraContainer = null
+  backmonitorContainer = null
 })
 
 function initializeLineup() {
@@ -408,6 +431,9 @@ function createPixiApp() {
   app.stage.sortableChildren = true
   cameraContainer = markRaw(new PIXI.Container())
   cameraContainer.sortableChildren = true
+  backmonitorContainer = markRaw(new PIXI.Container())
+  backmonitorContainer.zIndex = -10000
+  cameraContainer.addChild(backmonitorContainer)
   app.stage.addChild(cameraContainer)
   host.appendChild(app.view)
   resizeObserver = new ResizeObserver(() => resizeStage())
@@ -670,6 +696,117 @@ function cameraStateAt(milliseconds) {
   return state
 }
 
+function backmonitorStateAt(milliseconds) {
+  const state = {
+    movie: null,
+    movieTime: 0,
+    transition: null,
+    x: 0,
+    y: 360,
+    scale: 1000,
+    rotation: 0,
+    opacity: 1000,
+    eventTime: '',
+  }
+  for (const event of (selectedSong.value?.backmonitorEvents || [])) {
+    const eventTime = Number(event.time)
+    if (eventTime > milliseconds) break
+    if (event.movie) {
+      state.movie = event.movie
+      state.movieTime = eventTime
+    }
+    for (const key of ['x', 'y', 'scale', 'rotation', 'opacity']) {
+      if (event[key] !== null && event[key] !== undefined) state[key] = Number(event[key])
+    }
+    state.transition = event.transition || null
+    state.eventTime = eventTime
+  }
+  return state
+}
+
+function ensureBackmonitor() {
+  if (backmonitorVideo || !backmonitorContainer) return
+  const video = document.createElement('video')
+  video.muted = true
+  video.loop = true
+  video.playsInline = true
+  video.preload = 'auto'
+  video.crossOrigin = 'anonymous'
+  video.addEventListener('loadedmetadata', () => {
+    if (backmonitorVideo !== video) return
+    backmonitorReady.value = true
+    syncBackmonitor(true)
+  })
+  video.addEventListener('error', () => {
+    if (backmonitorVideo !== video) return
+    backmonitorReady.value = false
+    console.warn('[ChibiStage] backmonitor video failed', backmonitorMovie)
+  })
+  backmonitorVideo = video
+  backmonitorTexture = markRaw(PIXI.Texture.from(video))
+  backmonitorSprite = markRaw(new PIXI.Sprite(backmonitorTexture))
+  backmonitorSprite.anchor.set(0.5)
+  backmonitorSprite.zIndex = -10000
+  backmonitorContainer.addChild(backmonitorSprite)
+}
+
+function layoutBackmonitor(state) {
+  if (!backmonitorSprite || !app) return
+  const width = app.renderer.width / app.renderer.resolution
+  const height = app.renderer.height / app.renderer.resolution
+  const viewportScale = Math.min(width / 1280, height / 720)
+  backmonitorSprite.position.set(
+    width * 0.5 + state.x * viewportScale,
+    height * 0.5 + (360 - state.y) * viewportScale,
+  )
+  backmonitorSprite.scale.set(viewportScale * state.scale / 1000 * 2)
+  backmonitorSprite.rotation = -state.rotation * Math.PI / 180
+  backmonitorSprite.alpha = Math.max(0, Math.min(1, state.opacity / 1000))
+  backmonitorSprite.visible = Boolean(state.movie) && state.y < 4000
+}
+
+function syncBackmonitor(forceSeek = false) {
+  const state = currentBackmonitorState.value
+  if (!state.movie || !backmonitorIndex.value?.assets?.[state.movie]) {
+    if (backmonitorSprite) backmonitorSprite.visible = false
+    return
+  }
+  ensureBackmonitor()
+  layoutBackmonitor(state)
+  const asset = backmonitorIndex.value.assets[state.movie]
+  if (backmonitorMovie !== state.movie) {
+    backmonitorMovie = state.movie
+    backmonitorReady.value = false
+    backmonitorVideo.src = `${LIVE_CHIBI_BASE}/${asset.file}`
+    backmonitorVideo.load()
+    return
+  }
+  if (!backmonitorReady.value || !Number.isFinite(backmonitorVideo.duration)) return
+  const elapsed = Math.max(0, stageTime.value - state.movieTime) / 1000
+  const desiredTime = elapsed % backmonitorVideo.duration
+  if (forceSeek || Math.abs(backmonitorVideo.currentTime - desiredTime) > 0.18) {
+    backmonitorVideo.currentTime = desiredTime
+  }
+  backmonitorVideo.playbackRate = playbackSpeed.value
+  if (playing.value && backmonitorVideo.paused) backmonitorVideo.play().catch(() => {})
+}
+
+function releaseBackmonitor() {
+  backmonitorVideo?.pause()
+  if (backmonitorVideo) {
+    backmonitorVideo.removeAttribute('src')
+    backmonitorVideo.load()
+  }
+  backmonitorSprite?.removeFromParent()
+  backmonitorSprite?.destroy()
+  backmonitorTexture?.destroy(true)
+  backmonitorVideo = null
+  backmonitorTexture = null
+  backmonitorSprite = null
+  backmonitorMovie = ''
+  backmonitorReady.value = false
+}
+
 function applyCameraTransform() {
   if (!cameraContainer || !app) return
   if (!cameraEnabled.value) {
@@ -731,6 +868,7 @@ function resizeStage() {
     if (slot && runtimes.has(position)) runtimes.get(position).spine.visible = true
   }
   applyCameraTransform()
+  syncBackmonitor(true)
 }
 
 async function handleSongChange() {
@@ -881,6 +1019,7 @@ async function seekStage() {
   resetEventIndices()
   applyCurrentLipSync()
   applyCameraTransform()
+  syncBackmonitor(true)
 }
 
 function resetEventIndices() {
@@ -915,6 +1054,7 @@ async function toggleStage() {
     }
   }
   playing.value = true
+  syncBackmonitor(true)
   animationFrame = requestAnimationFrame(updateStage)
 }
 
@@ -937,6 +1077,7 @@ function updateStage(now) {
     layoutRuntime(slot.position, runtimes.get(slot.position)?.currentMotionEvent)
   }
   applyCameraTransform()
+  syncBackmonitor()
   applyCurrentLipSync()
   if (stageTime.value >= stageDuration.value) {
     stopStage()
@@ -950,6 +1091,7 @@ function stopStage(reset = false) {
   animationFrame = 0
   playing.value = false
   songAudio?.pause()
+  backmonitorVideo?.pause()
   if (reset) {
     stageTime.value = 0
     if (songAudio) songAudio.currentTime = 0
@@ -963,6 +1105,7 @@ async function resetStage() {
 
 function applyPlaybackSpeed() {
   if (songAudio) songAudio.playbackRate = playbackSpeed.value
+  if (backmonitorVideo) backmonitorVideo.playbackRate = playbackSpeed.value
   for (const position of activePositions.value) {
     const runtime = runtimes.get(position)
     if (runtime) {

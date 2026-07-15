@@ -78,6 +78,13 @@ export async function fetchLiveChibiMusicIndex() {
   return response.json()
 }
 
+export async function fetchLiveChibiBackmonitorIndex() {
+  const response = await fetch(`${LIVE_CHIBI_BASE}/backmonitor/index.json`)
+  if (response.status === 404) return null
+  if (!response.ok) throw new Error(`Backmonitor 索引加载失败 (${response.status})`)
+  return response.json()
+}
+
 export async function fetchLiveChibiLipSync(relativePath) {
   if (!relativePath) return null
   const response = await fetch(`${LIVE_CHIBI_BASE}/${relativePath}`)
