@@ -57,6 +57,7 @@ If a new note is lip or mouth related, put it in `01_lipsync/` first. If it is u
 - `03_audit/1_4_001_01_ICON_SILHOUETTE_BG_AUDIT_20260708.md` - root cause notes for the persistent `102sha` icon, missing president silhouette asset path, and displayed `19 -> 20` background-shift check.
 - `03_audit/MAIN_EXTRA_BIRTHDAY_MASTERDATA_AUDIT_20260715.md` - main, Extra/Home Story, birthday, Valentine/White Day campaign audit, visibility rules, coverage, and normalized index guidance.
 - `03_audit/WORK_STORY_MASTERDATA_AUDIT_20260715.md` - work scene lines and short stories, category relations, compiled coverage, and page guidance.
+- `03_audit/MAIN_PROLOGUE_EPISODE_BOUNDARY_AUDIT_20260715.md` - raw-vs-compiled audit for `1_4_001_00`, episode range isolation, repeated phone-call diagnosis, and voice-prefix correction.
 - `02_debug/SPINE_EYE_BLINK_ATTACHMENT_FIX_20260715.md` - missing-eye root cause, paired `eyeclosed` detection, interrupted-transition recovery, and regression command.
 - `04_refactor/MASTERDATA_UI_RECONSTRUCTION_GUIDANCE_20260710.md` - staged plan for masterdata-backed routing, archive UI reconstruction, interaction pages, and data-quality gates.
 - `04_refactor/SEKAI_VIEWER_DIRECTION_GUIDANCE_20260713.md` - selected方案 A, Sekai Viewer comparison, licensing boundary, and archive-first implementation order.
