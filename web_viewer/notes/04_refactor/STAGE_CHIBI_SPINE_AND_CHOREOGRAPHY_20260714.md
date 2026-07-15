@@ -283,3 +283,27 @@ DRIVE A LIVE 还包含 `song3_drvalv_bgm.acb` 伴奏和 49 条 `song3_drvalv_<id
 预览器加载 `music/index.json` 后，以 `HTMLAudioElement.currentTime` 作为歌曲编排、`SwitchSinger` 和口型的主时钟。开始播放前会预载该曲使用的全部 Spine 动作，避免首次请求造成动作迟到；拖动时间轴时，当前动作会推进到事件内部偏移，而不是从该动作的第 0 帧重新开始。浏览器抽查确认 DRIVE A LIVE `01jup` 命中 `music/drvalv_001jup.m4a`，拖到 7 秒时 #26 动作内偏移为 668 ms；ANYWHERE 命中 `music/anwhre.m4a` 并采用音频的 2:01 总时长。
 
 `smoke` 当前执行一次完整 Vite 生产构建，与 `npm run build` 等价。
+
+## 多人角色舞台 MVP（2026-07-15）
+
+新增独立路由 `?view=chibi_stage` 和组件 `src/components/ChibiStageViewer.vue`。该页面不是把单人预览截图复制五份，而是在同一个 Pixi 舞台中创建最多五个相互独立的 Spine 运行时：每个站位持有自己的 body setup、服装 skin、动作缓存、TrackEntry 和口型控制器，所有实例共享歌曲音频主时钟。
+
+首版功能包括：
+
+- 根据编排的 `positions` 自动启用 1–5 个舞台站位；五人使用 1–5，三人使用 2/3/4，solo 只启用 3。
+- 每个站位独立选择 49 名角色和该角色的全部服装，换人时只重建对应站位。
+- 播放前按当前角色 body type 预载本曲所需 motion fragment；同一运行时再次播放已载入歌曲时复用缓存。
+- 每个站位只消费与其 `stagePosition` 匹配的动作事件，按 CSV 的 speed、mode 和切换时间独立播放。
+- `Livechara_position` 与动作事件中的 X/Y、scale 共同驱动位置、大小、显隐和前后层级；窄窗口额外按舞台高度缩小模型，避免多人头部或四肢越界。
+- `SwitchSinger` 对所有实例逐站判断，只有当前演唱站位使用官方 60 Hz 口型曲线。
+- 歌曲、动作、口型和时间轴滑杆共用同一 `HTMLAudioElement.currentTime`；无音频时回退到 `requestAnimationFrame` 时钟。
+- 首页与单人实验室均可进入多人舞台，单人/多人页面可以互相切换。
+
+页面回归覆盖：
+
+- DRIVE A LIVE：1–5 号位五个运行时全部就绪，默认 3 号位演唱。
+- BRAND NEW FIELD：切歌后活动实例严格收敛为 2/3/4，播放后三个站位同步从通用等待动作进入歌曲专属 #4001/#4004，时间轴与音频按约 1× 推进。
+- DRIVE A LIVE（パッションMAX Ver.）：只保留 3 号位，其余四个编队控件进入休息状态。
+- solo 3 号位换为山下次郎 `037jir` 后，body-2 运行时可重新组合并保持 ready。
+
+当前仍属于“多人角色层”而非完整 Live 舞美复刻。尚未接入 `Camera`、灯光、Backmonitor、Object_layer、Penlight、随机动作组和 Unity 歌曲特效包；这些数据应在多人动作与位置基线稳定后逐层加入。
