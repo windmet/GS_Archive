@@ -906,6 +906,7 @@ async function applyState(step) {
           fitMode: FIT_MODE,
           visualHeightReference: VISUAL_HEIGHT_REFERENCE,
           visualHeightStrength: VISUAL_HEIGHT_STRENGTH,
+          deferReveal: true,
           fadeInDuration: spineState.fade?.type === 'in' ? spineState.fade.duration : undefined,
         })
         if (token !== applyStateToken || !manager) {

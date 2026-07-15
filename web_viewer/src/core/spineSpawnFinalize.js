@@ -17,6 +17,11 @@ export function finalizeSpawnedSpine({
   setSpineTalking,
 }) {
   const fadeWrapper = new PIXI.Container()
+  const wholeModelAlpha = new PIXI.AlphaFilter(0)
+  fadeWrapper.alpha = 1
+  fadeWrapper.visible = false
+  fadeWrapper.filters = [wholeModelAlpha]
+  fadeWrapper._wholeModelAlpha = wholeModelAlpha
   fadeWrapper.addChild(spine)
   if (manager._spawnTokens[idolId] !== spawnToken) {
     fadeWrapper.destroy({ children: true, texture: false, baseTexture: false })
@@ -80,6 +85,6 @@ export function finalizeSpawnedSpine({
     setSpineTalking(idolId, true, queuedTalking.volumeCallback)
   }
 
-  fadeIn(spine, options.fadeInDuration)
+  if (!options.deferReveal) fadeIn(spine, options.fadeInDuration)
   return { marker, wrapper: fadeWrapper }
 }

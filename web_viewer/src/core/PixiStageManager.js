@@ -1777,7 +1777,7 @@ export class PixiStageManager {
         wrapper.filters = previousFilters.length ? previousFilters : null
         const parent = wrapper.parent
         if (parent) parent.removeChild(wrapper)
-        wrapper.destroy({ children: true, textures: true })
+        wrapper.destroy({ children: true, texture: false, baseTexture: false })
       }
     }
     this.app.ticker.add(ticker)
@@ -1790,7 +1790,7 @@ export class PixiStageManager {
     if (!wrapper || wrapper.destroyed) return
     const parent = wrapper.parent
     if (parent) parent.removeChild(wrapper)
-    wrapper.destroy({ children: true, textures: true })
+    wrapper.destroy({ children: true, texture: false, baseTexture: false })
   }
 
   _destroySpineMarker(idolId) {
@@ -1940,10 +1940,7 @@ export class PixiStageManager {
   }
 
   setSpineAlpha(idolId, alpha) {
-    const entry = this.spineInstances[idolId]
-    if (!entry) return
-    const target = entry.wrapper || entry.spine
-    target.alpha = alpha
+    return this.spineManager?.setSpineAlpha(idolId, alpha)
   }
 
   bringSpineToTop(idolId) {

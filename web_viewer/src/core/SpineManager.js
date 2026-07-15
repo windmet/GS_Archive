@@ -79,7 +79,9 @@ export class SpineManager {
   _fadeIn(spine, duration = 0.3) {
     const entry = Object.values(this.manager.spineInstances).find(e => e.spine === spine)
     const target = entry?.wrapper || spine
-    target.alpha = 0
+    const alphaFilter = this._wholeModelAlphaFilter(target, 0)
+    target.alpha = 1
+    target.visible = true
     const durationMs = Math.max(0.01, Number(duration) || 0.3) * 1000
     const start = performance.now()
     const ticker = () => {
@@ -88,7 +90,7 @@ export class SpineManager {
         return
       }
       const t = Math.min((performance.now() - start) / durationMs, 1)
-      target.alpha = t
+      alphaFilter.alpha = t
       if (t >= 1) {
         this.manager.app.ticker.remove(ticker)
       }
@@ -102,7 +104,8 @@ export class SpineManager {
     const target = entry.wrapper || entry.spine
     if (!target || target.destroyed) return
     entry._alphaTween?.cancel?.()
-    const startAlpha = Number.isFinite(target.alpha) ? target.alpha : 1
+    const alphaFilter = this._wholeModelAlphaFilter(target, target.visible ? 1 : 0)
+    const startAlpha = Number.isFinite(alphaFilter.alpha) ? alphaFilter.alpha : 1
     const endAlpha = Math.max(0, Math.min(1, Number(targetAlpha)))
     const delayMs = Math.max(0, Number(delay) || 0) * 1000
     const durMs = Math.max(0.01, Number(duration) || 0.2) * 1000
@@ -113,13 +116,40 @@ export class SpineManager {
       endValue: endAlpha,
       ease: easeOutCubic,
       onUpdate: (alpha) => {
-        if (!target.destroyed) target.alpha = alpha
+        if (!target.destroyed) alphaFilter.alpha = alpha
       },
       shouldStop: () => target.destroyed,
       onComplete: () => {
+        if (!target.destroyed && endAlpha <= 0) target.visible = false
         entry._alphaTween = null
       },
     })
+    if (endAlpha > 0) target.visible = true
+  }
+
+  setSpineAlpha(idolId, alpha) {
+    const entry = this.manager.spineInstances[idolId]
+    if (!entry) return
+    const target = entry.wrapper || entry.spine
+    if (!target || target.destroyed) return
+    entry._alphaTween?.cancel?.()
+    entry._alphaTween = null
+    const value = Math.max(0, Math.min(1, Number(alpha)))
+    const alphaFilter = this._wholeModelAlphaFilter(target, value)
+    alphaFilter.alpha = value
+    target.alpha = 1
+    target.visible = value > 0
+  }
+
+  _wholeModelAlphaFilter(target, initialAlpha = 1) {
+    if (target._wholeModelAlpha && !target._wholeModelAlpha.destroyed) {
+      return target._wholeModelAlpha
+    }
+    const filter = new PIXI.AlphaFilter(initialAlpha)
+    const previousFilters = Array.isArray(target.filters) ? target.filters.filter(Boolean) : []
+    target.filters = [...previousFilters, filter]
+    target._wholeModelAlpha = filter
+    return filter
   }
 
   bringSpineToTop(idolId) {
@@ -202,6 +232,8 @@ export class SpineManager {
           cancelAnimationFrame(entry._slideTweenRaf)
           entry._slideTweenRaf = null
         }
+        entry._alphaTween?.cancel?.()
+        entry._alphaTween = null
         if (entry.marker) {
           const marker = entry.marker
           if (marker.parent) marker.parent.removeChild(marker)
@@ -224,35 +256,35 @@ export class SpineManager {
 
   _fadeOutWrapper(wrapper) {
     if (!wrapper || wrapper.destroyed) return
-    const alphaFilter = new PIXI.AlphaFilter(wrapper.alpha || 1.0)
-    const previousFilters = Array.isArray(wrapper.filters) ? wrapper.filters.slice() : []
-    wrapper.filters = [...previousFilters, alphaFilter]
-
-    const STEP = 0.12
-    const ticker = () => {
-      if (wrapper.destroyed) {
-        this.manager.app.ticker.remove(ticker)
-        return
-      }
-
-      alphaFilter.alpha -= STEP
-
-      if (alphaFilter.alpha <= 0) {
-        this.manager.app.ticker.remove(ticker)
-        wrapper.filters = previousFilters.length ? previousFilters : null
+    wrapper._alphaTween?.cancel?.()
+    const alphaFilter = this._wholeModelAlphaFilter(wrapper, wrapper.visible ? 1 : 0)
+    wrapper.alpha = 1
+    wrapper.visible = true
+    wrapper._alphaTween = runRafTween({
+      durationMs: 200,
+      startValue: Number.isFinite(alphaFilter.alpha) ? alphaFilter.alpha : 1,
+      endValue: 0,
+      ease: easeOutCubic,
+      onUpdate: alpha => {
+        if (!wrapper.destroyed) alphaFilter.alpha = alpha
+      },
+      shouldStop: () => wrapper.destroyed,
+      onComplete: () => {
+        if (wrapper.destroyed) return
+        wrapper.visible = false
         const parent = wrapper.parent
         if (parent) parent.removeChild(wrapper)
-        wrapper.destroy({ children: true, textures: true })
-      }
-    }
-    this.manager.app.ticker.add(ticker)
+        wrapper.destroy({ children: true, texture: false, baseTexture: false })
+      },
+    })
   }
 
   _destroyWrapperNow(wrapper) {
     if (!wrapper || wrapper.destroyed) return
     const parent = wrapper.parent
     if (parent) parent.removeChild(wrapper)
-    wrapper.destroy({ children: true, textures: true })
+    wrapper._alphaTween?.cancel?.()
+    wrapper.destroy({ children: true, texture: false, baseTexture: false })
   }
 
   _destroySpineMarker(idolId) {
@@ -293,6 +325,8 @@ export class SpineManager {
       cancelAnimationFrame(entry._slideTweenRaf)
       entry._slideTweenRaf = null
     }
+    entry._alphaTween?.cancel?.()
+    entry._alphaTween = null
 
     spine.customIsTalking = false
     this._destroySpineMarker(idolId)
