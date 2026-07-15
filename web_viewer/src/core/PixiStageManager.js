@@ -549,6 +549,8 @@ export class PixiStageManager {
         this._grayFilter = new PIXI.ColorMatrixFilter()
         this._grayFilter.padding = 0
       }
+      this._grayFilter.resolution = this.app.renderer.resolution
+      this._grayFilter.multisample = PIXI.MSAA_QUALITY.MEDIUM
       this._grayFilter.matrix = [
         0.58, 0.26, 0.08, 0, 0,
         0.12, 0.76, 0.08, 0, 0,
@@ -561,6 +563,8 @@ export class PixiStageManager {
         this._grayFilter = new PIXI.ColorMatrixFilter()
         this._grayFilter.padding = 0
       }
+      this._grayFilter.resolution = this.app.renderer.resolution
+      this._grayFilter.multisample = PIXI.MSAA_QUALITY.MEDIUM
       // Light warm archive tone: keep enough saturation that costume colors remain readable.
       this._grayFilter.matrix = [
         0.90, 0.12, 0.02, 0, 0,

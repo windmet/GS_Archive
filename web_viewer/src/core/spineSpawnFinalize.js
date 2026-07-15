@@ -18,6 +18,8 @@ export function finalizeSpawnedSpine({
 }) {
   const fadeWrapper = new PIXI.Container()
   const wholeModelAlpha = new PIXI.AlphaFilter(0)
+  wholeModelAlpha.resolution = manager.app?.renderer?.resolution || 1
+  wholeModelAlpha.multisample = PIXI.MSAA_QUALITY.MEDIUM
   fadeWrapper.alpha = 1
   fadeWrapper.visible = false
   fadeWrapper.filters = [wholeModelAlpha]

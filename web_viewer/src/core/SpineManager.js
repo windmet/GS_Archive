@@ -90,9 +90,11 @@ export class SpineManager {
         return
       }
       const t = Math.min((performance.now() - start) / durationMs, 1)
+      alphaFilter.enabled = true
       alphaFilter.alpha = t
       if (t >= 1) {
         this.manager.app.ticker.remove(ticker)
+        alphaFilter.enabled = false
       }
     }
     this.manager.app.ticker.add(ticker)
@@ -116,11 +118,17 @@ export class SpineManager {
       endValue: endAlpha,
       ease: easeOutCubic,
       onUpdate: (alpha) => {
-        if (!target.destroyed) alphaFilter.alpha = alpha
+        if (!target.destroyed) {
+          alphaFilter.enabled = true
+          alphaFilter.alpha = alpha
+        }
       },
       shouldStop: () => target.destroyed,
       onComplete: () => {
-        if (!target.destroyed && endAlpha <= 0) target.visible = false
+        if (!target.destroyed) {
+          if (endAlpha <= 0) target.visible = false
+          else if (endAlpha >= 1) alphaFilter.enabled = false
+        }
         entry._alphaTween = null
       },
     })
@@ -137,15 +145,20 @@ export class SpineManager {
     const value = Math.max(0, Math.min(1, Number(alpha)))
     const alphaFilter = this._wholeModelAlphaFilter(target, value)
     alphaFilter.alpha = value
+    alphaFilter.enabled = value > 0 && value < 1
     target.alpha = 1
     target.visible = value > 0
   }
 
   _wholeModelAlphaFilter(target, initialAlpha = 1) {
     if (target._wholeModelAlpha && !target._wholeModelAlpha.destroyed) {
+      target._wholeModelAlpha.resolution = this.manager.app?.renderer?.resolution || 1
+      target._wholeModelAlpha.multisample = PIXI.MSAA_QUALITY.MEDIUM
       return target._wholeModelAlpha
     }
     const filter = new PIXI.AlphaFilter(initialAlpha)
+    filter.resolution = this.manager.app?.renderer?.resolution || 1
+    filter.multisample = PIXI.MSAA_QUALITY.MEDIUM
     const previousFilters = Array.isArray(target.filters) ? target.filters.filter(Boolean) : []
     target.filters = [...previousFilters, filter]
     target._wholeModelAlpha = filter
@@ -258,6 +271,7 @@ export class SpineManager {
     if (!wrapper || wrapper.destroyed) return
     wrapper._alphaTween?.cancel?.()
     const alphaFilter = this._wholeModelAlphaFilter(wrapper, wrapper.visible ? 1 : 0)
+    alphaFilter.enabled = true
     wrapper.alpha = 1
     wrapper.visible = true
     wrapper._alphaTween = runRafTween({
