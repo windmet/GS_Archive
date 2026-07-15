@@ -326,3 +326,23 @@ DRIVE A LIVE 还包含 `song3_drvalv_bgm.acb` 伴奏和 49 条 `song3_drvalv_<id
 - DRIVE A LIVE 在 32200 ms 正式动作加 5000 ms pause 后，于 37200 ms 进入动作组，37300 ms 跳播时五个站位均显示 `source=group`，确定性取样分别为 #36、#33、#8、#33、#10；37600 ms 下一条正式动作会重新接管。
 - 三人 BRAND NEW FIELD 仍严格启用并加载 2/3/4，solo `drv999_live_effect` 仍只启用并加载 3。
 - `npm run smoke` 通过，Vite 6.4.3 共转换 2352 个模块。
+
+## CSV 镜头轨道与 Unity 绕过边界（2026-07-15）
+
+多人舞台的 Camera 层可以绕过 Unity 运行时直接复刻。118 份 `liveeffectscript` 共包含 8,145 条有效 `Camera` 指令，CSV 自带字段说明：`zoom / zoom_speed / chara / pos_x / pos_y / pos_speed / rotate / rotate_speed`。zoom 使用千分率，三个 speed 字段实际是各自属性的毫秒补间时长；`chara` 使用歌曲内部演员槽位，0 表示自由坐标镜头。
+
+编排索引升级为 schema 5，每首歌新增 `cameraEvents`。运行时把所有角色挂到独立 Pixi camera container，并按歌曲时间重建缩放、平移和旋转三个可被新事件分别打断的 tween。补间采用与现有剧情 `CameraController` 一致的 ease-out cubic。自由镜头以 1280×720、Y=360 为视觉中心；角色聚焦先通过 `stagePositionMap` 把演员槽位映射为舞台站位，再读取该角色在事件时刻的动作/位置 X。源脚本在角色聚焦模式使用另一套根坐标，Y=0 与自由镜头 Y=360 都表达视觉中心，因此网页聚焦模式固定使用视觉中心 Y，避免错误把人物推到画面底部。
+
+浏览器定点验证：
+
+- DRIVE A LIVE：0 ms 为 1.00×；3300 ms 为 1.30×、Y=280；3400 ms 开始 3400 ms 补间，5100 ms 为 1.125×、Y=428.75；6800 ms 被下一条事件接管为 1.20×、X=160、Y=380、旋转 -5°。
+- BRAND NEW FIELD：开场 `focusSlot=1` 映射舞台 3；41000 ms 的槽位 2 映射舞台 2、X=-350；41700 ms 的槽位 3 映射舞台 4、X=350；42200 ms 回到舞台 3、X=0。
+- “启用 CSV 角色镜头”可切换为无变换构图，便于对比和排错。
+
+绕过 Unity 的边界按数据来源分三层：
+
+1. 可仅凭 CSV 与已提取纹理直接实现：Camera、Livechara position/motion/color、SwitchSinger、全屏颜色、Image/Object layer 时序、Penlight 以及基础二维 Spotlight/Searchlight。
+2. 需要离线读取 Unity 资源但不需要运行 Unity：Backmonitor 贴图或序列、Prefab 中的布局参数、简单 ParticleSystem 曲线、材质颜色和混合模式。可由 UnityPy/AssetRipper 提取后在 Pixi 重建。
+3. 不能承诺一比一直接复刻：依赖 Unity 专用 Shader、Mesh、复杂 ParticleSystem 子发射器、VFX Graph 或运行时代码行为的烟雾、镜头光斑和组合特效。遇到此类必须标明“网页近似”或保留缺失状态，不能只凭效果名猜造。
+
+因此后续优先接入纯数据层的 Backmonitor/Image/Object 与基础灯光；粒子效果单独审计 Prefab、Material 和 Shader 后再决定是否复刻。
