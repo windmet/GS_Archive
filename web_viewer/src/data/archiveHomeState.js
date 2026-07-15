@@ -30,7 +30,27 @@ function normalizeHomeCue(card, cue) {
   }
 }
 
-export function buildArchiveHomeState(idolUnitData, cardIndexData, archiveManifestData) {
+function buildCostumesByIdol(costumeDictionaryData) {
+  const result = new Map()
+  for (const costume of Object.values(costumeDictionaryData?.by_model_resource_id || {})) {
+    if (!costume?.idol_code || !costume?.spine_exists || !String(costume.costume_name || '').trim()) continue
+    if (!result.has(costume.idol_code)) result.set(costume.idol_code, [])
+    result.get(costume.idol_code).push({
+      id: costume.model_resource_id,
+      modelId: costume.model_resource_id,
+      name: costume.costume_name.trim(),
+      description: String(costume.description || '').trim(),
+      costumeId: costume.costume_id,
+      releaseAt: costume.release_at,
+      sourceTables: costume.source_tables || [],
+      isSceneDefault: false,
+    })
+  }
+  for (const costumes of result.values()) costumes.sort((left, right) => left.modelId.localeCompare(right.modelId))
+  return result
+}
+
+export function buildArchiveHomeState(idolUnitData, cardIndexData, archiveManifestData, costumeDictionaryData = null) {
   if (!idolUnitData?.by_idol_code || !cardIndexData?.by_character) return []
   const cardsByCharacter = new Map()
   for (const card of cardIndexData.cards || []) {
@@ -38,6 +58,7 @@ export function buildArchiveHomeState(idolUnitData, cardIndexData, archiveManife
     cardsByCharacter.get(card.character_id).push(card)
   }
   const memberships = archiveManifestData?.unit_membership_by_idol || {}
+  const costumesByIdol = buildCostumesByIdol(costumeDictionaryData)
 
   return Object.keys(cardIndexData.by_character)
     .map(idolCode => {
@@ -49,6 +70,22 @@ export function buildArchiveHomeState(idolUnitData, cardIndexData, archiveManife
         .map(cue => normalizeHomeCue(card, cue))
         .filter(Boolean))
       if (!cues.length) return null
+      const costumes = [...(costumesByIdol.get(idolCode) || [])]
+      const knownModels = new Set(costumes.map(costume => costume.modelId))
+      for (const modelId of new Set(cues.map(cue => cue.modelId).filter(Boolean))) {
+        if (knownModels.has(modelId)) continue
+        costumes.unshift({
+          id: modelId,
+          modelId,
+          name: '场景默认',
+          description: '该模型由首页场景直接引用，原始服装表未提供名称。',
+          costumeId: null,
+          releaseAt: null,
+          sourceTables: [],
+          isSceneDefault: true,
+        })
+        knownModels.add(modelId)
+      }
       return {
         id: idolCode,
         idolCode,
@@ -61,6 +98,7 @@ export function buildArchiveHomeState(idolUnitData, cardIndexData, archiveManife
         unitName: membership.unit_name || profile.unit_name || '',
         representativeBg: profile.representative_bg || cues[0].background,
         cues,
+        costumes,
       }
     })
     .filter(Boolean)

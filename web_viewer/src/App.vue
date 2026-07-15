@@ -16,6 +16,7 @@
         v-if="view === 'home'"
         v-model:selected-id="homeSelectedId"
         v-model:selected-cue="homeSelectedCue"
+        v-model:selected-costume="homeSelectedCostume"
         :idols="archiveHomeIdols"
         :highlights="archiveHomeHighlights"
         :stats="archiveStats"
@@ -289,6 +290,7 @@ const cardDetailData = ref(null)
 const cardDetailLoadPromise = ref(null)
 const storyMasterData = ref(null)
 const idolUnitData = ref(null)
+const costumeDictionaryData = ref(null)
 const archiveManifestData = ref(null)
 const archiveVerificationData = ref(null)
 const uiAssetCatalogData = ref(null)
@@ -324,6 +326,7 @@ const currentStorySort = ref('domain')
 const storyVisibleLimit = ref(80)
 const homeSelectedId = ref('001tom')
 const homeSelectedCue = ref('')
+const homeSelectedCostume = ref('')
 const returnViewAfterPlayer = ref('files')
 let archiveRouteReady = false
 let applyingArchiveRoute = false
@@ -353,6 +356,7 @@ const archiveHomeIdols = computed(() => buildArchiveHomeState(
   idolUnitData.value,
   cardIndexData.value,
   archiveManifestData.value,
+  costumeDictionaryData.value,
 ))
 const archiveHomeHighlights = computed(() => buildArchiveHomeHighlights(
   archiveManifestData.value,
@@ -941,6 +945,7 @@ function currentArchiveRoute() {
     view: view.value,
     homeIdol: view.value === 'home' ? homeSelectedId.value : '',
     homeCue: view.value === 'home' ? homeSelectedCue.value : '',
+    homeCostume: view.value === 'home' ? homeSelectedCostume.value : '',
     category: currentCategoryId.value,
     idol: currentCharacterId.value,
     group: currentGroup.value?.id || '',
@@ -1064,6 +1069,10 @@ async function applyArchiveRoute(route) {
     const requestedHomeIdol = archiveHomeIdols.value.find(idol => idol.id === route.homeIdol) || archiveHomeIdols.value[0]
     homeSelectedId.value = requestedHomeIdol?.id || '001tom'
     homeSelectedCue.value = requestedHomeIdol?.cues?.find(cue => cue.cue === route.homeCue)?.cue || requestedHomeIdol?.cues?.[0]?.cue || ''
+    const defaultHomeModel = requestedHomeIdol?.cues?.find(cue => cue.cue === homeSelectedCue.value)?.modelId
+    homeSelectedCostume.value = requestedHomeIdol?.costumes?.find(costume => costume.modelId === route.homeCostume)?.modelId ||
+      requestedHomeIdol?.costumes?.find(costume => costume.modelId === defaultHomeModel)?.modelId ||
+      requestedHomeIdol?.costumes?.[0]?.modelId || ''
     const restoresEventContext = route.view === 'event_detail' ||
       (route.view === 'player' && route.returnView === 'event_detail')
     currentArchiveUnitCode.value = (
@@ -1738,6 +1747,7 @@ onMounted(async () => {
   gashaIndexData.value = data.gashaIndex
   storyMasterData.value = data.storyMaster
   idolUnitData.value = data.idolUnit
+  costumeDictionaryData.value = data.costumeDictionary
   archiveManifestData.value = data.archiveManifest
   archiveVerificationData.value = data.archiveVerification
   uiAssetCatalogData.value = data.uiAssetCatalog
@@ -1761,7 +1771,7 @@ watch([filterQuery, currentCardRarity, currentCardAssetState, currentCardRelatio
   syncArchiveRoute({ replace: true })
 })
 
-watch([homeSelectedId, homeSelectedCue], () => {
+watch([homeSelectedId, homeSelectedCue, homeSelectedCostume], () => {
   if (view.value === 'home') syncArchiveRoute({ replace: true })
 })
 

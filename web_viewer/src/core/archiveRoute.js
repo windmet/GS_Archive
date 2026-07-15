@@ -2,6 +2,7 @@ const ROUTE_QUERY_KEYS = [
   'view',
   'home_idol',
   'home_cue',
+  'home_costume',
   'category',
   'idol',
   'group',
@@ -119,6 +120,7 @@ export function normalizeArchiveRoute(input = {}) {
     view,
     homeIdol: clean(input.homeIdol),
     homeCue: clean(input.homeCue),
+    homeCostume: clean(input.homeCostume),
     category,
     idol: clean(input.idol),
     group: clean(input.group),
@@ -171,6 +173,7 @@ export function readArchiveRoute(input = null) {
     view: params.get('view'),
     homeIdol: clean(params.get('home_idol')),
     homeCue: clean(params.get('home_cue')),
+    homeCostume: clean(params.get('home_costume')),
     category: clean(params.get('category')),
     idol: clean(params.get('idol')),
     group: clean(params.get('group')),
@@ -205,6 +208,7 @@ export function buildArchiveUrl(input, route) {
   if (normalized.view !== 'home') url.searchParams.set('view', normalized.view)
   if (normalized.view === 'home' && normalized.homeIdol) url.searchParams.set('home_idol', normalized.homeIdol)
   if (normalized.view === 'home' && normalized.homeCue) url.searchParams.set('home_cue', normalized.homeCue)
+  if (normalized.view === 'home' && normalized.homeCostume) url.searchParams.set('home_costume', normalized.homeCostume)
   if (normalized.category) url.searchParams.set('category', normalized.category)
   if (normalized.idol) url.searchParams.set('idol', normalized.idol)
   if (normalized.group) url.searchParams.set('group', normalized.group)

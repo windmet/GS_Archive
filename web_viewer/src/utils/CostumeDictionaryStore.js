@@ -6,7 +6,7 @@ export async function loadCostumeDictionary() {
   if (loadingCostumeDictionary) return loadingCostumeDictionary
 
   loadingCostumeDictionary = fetch('/data/masterdata/costume_dictionary.json', {
-    cache: 'no-store',
+    cache: 'default',
   })
     .then(res => (res.ok ? res.json() : null))
     .catch(() => null)

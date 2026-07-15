@@ -4,6 +4,7 @@ const ARCHIVE_SOURCES = {
   gashaIndex: '/data/masterdata/gasha_index.json',
   storyMaster: '/data/masterdata/story_master_index.json',
   idolUnit: '/data/masterdata/idol_unit_dictionary.json',
+  costumeDictionary: '/data/masterdata/costume_dictionary.json',
   archiveManifest: '/data/archive_manifest.json',
   archiveVerification: '/data/archive_verification.json',
   uiAssetCatalog: '/data/assets/ui_asset_catalog.json',
@@ -40,6 +41,9 @@ function validatePayload(key, payload) {
   }
   if (key === 'idolUnit' && !payload.by_idol_code) {
     throw new Error('idolUnit.by_idol_code is missing')
+  }
+  if (key === 'costumeDictionary' && (!Array.isArray(payload.costumes) || !payload.by_model_resource_id)) {
+    throw new Error('costumeDictionary must include costumes and by_model_resource_id')
   }
   if (key === 'archiveManifest' && (!payload.counts || !payload.schema_version)) {
     throw new Error('archiveManifest must include schema_version and counts')

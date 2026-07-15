@@ -4,13 +4,14 @@
     class="immersive-home"
     :data-home-cue="activeCue.cue"
     :data-home-voice="activeCue.voice"
+    :data-home-costume="activeCostume?.modelId || ''"
     :data-last-started-voice="lastStartedVoice"
     :style="{ '--idol-color': activeIdol.color, backgroundImage: `url(${getBgUrl(activeCue.background || activeIdol.representativeBg)})` }"
   >
     <SpineStage
       :key="stageLayout"
       ref="spineStageRef"
-      :step="activeCue.previewStep"
+      :step="renderStep"
       :fallback-bg="activeCue.background || activeIdol.representativeBg"
       :debug-controls="false"
       @ready="stageReady = true"
@@ -99,7 +100,15 @@
       <img :src="getCharaIconUrl(activeIdol.id)" :alt="activeIdol.name" />
       <div>
         <strong>{{ activeIdol.name }}</strong>
-        <small>{{ stageError ? '角色模型不可用' : (stageReady ? '场景已载入' : '正在载入场景') }}</small>
+        <select
+          :value="activeCostume?.modelId || ''"
+          aria-label="首页服装"
+          @change="emit('update:selectedCostume', $event.target.value)"
+        >
+          <option v-for="costume in activeIdol.costumes" :key="costume.modelId" :value="costume.modelId">
+            {{ costume.name }}
+          </option>
+        </select>
       </div>
       <button type="button" aria-label="下一位偶像" title="下一位偶像" @click="stepIdol(1)">
         <ChevronRight :size="20" />
@@ -139,8 +148,9 @@ const props = defineProps({
   stats: { type: Array, default: () => [] },
   selectedId: { type: String, default: '' },
   selectedCue: { type: String, default: '' },
+  selectedCostume: { type: String, default: '' },
 })
-const emit = defineEmits(['open-story', 'open-cards', 'open-idol', 'open-chat', 'open-event', 'update:selectedId', 'update:selectedCue'])
+const emit = defineEmits(['open-story', 'open-cards', 'open-idol', 'open-chat', 'open-event', 'update:selectedId', 'update:selectedCue', 'update:selectedCostume'])
 
 const selectedId = computed({
   get: () => props.selectedId || props.idols[0]?.id || '',
@@ -158,6 +168,22 @@ const currentStepIndex = ref(0)
 
 const activeIdol = computed(() => props.idols.find(idol => idol.id === selectedId.value) || props.idols[0] || null)
 const activeCue = computed(() => activeIdol.value?.cues?.find(cue => cue.cue === props.selectedCue) || activeIdol.value?.cues?.[0] || null)
+const activeCostume = computed(() => activeIdol.value?.costumes?.find(costume => costume.modelId === props.selectedCostume) ||
+  activeIdol.value?.costumes?.find(costume => costume.modelId === activeCue.value?.modelId) ||
+  activeIdol.value?.costumes?.[0] || null)
+const renderStep = computed(() => {
+  const step = activeCue.value?.previewStep
+  if (!step?.state || !activeCostume.value?.modelId) return step || {}
+  return {
+    ...step,
+    state: {
+      ...step.state,
+      spines: (step.state.spines || []).map(spine => spine.id === activeIdol.value?.id
+        ? { ...spine, model: activeCostume.value.modelId }
+        : spine),
+    },
+  }
+})
 const activeHighlight = computed(() => props.highlights[highlightIndex.value] || props.highlights[0] || null)
 const cueIndex = computed(() => Math.max(0, activeIdol.value?.cues?.findIndex(cue => cue.cue === activeCue.value?.cue) || 0))
 const currentStep = computed(() => activeCue.value?.previewStep || {})
@@ -174,6 +200,7 @@ watch(() => activeIdol.value?.id, () => {
   stageError.value = false
   stopVoice()
   if (activeCue.value?.cue !== props.selectedCue) emit('update:selectedCue', activeCue.value?.cue || '')
+  if (activeCostume.value?.modelId !== props.selectedCostume) emit('update:selectedCostume', activeCostume.value?.modelId || '')
 })
 
 watch(activeCue, () => {
@@ -279,11 +306,12 @@ onBeforeUnmount(() => {
 .home-actions span { display: flex; flex-direction: column; min-width: 0; }
 .home-actions strong { font-size: 0.75rem; }
 .home-actions small { overflow: hidden; margin-top: 2px; color: #9fb0ba; font-size: 0.58rem; text-overflow: ellipsis; white-space: nowrap; }
-.idol-switcher { position: absolute; z-index: 4; left: 28px; bottom: 24px; display: grid; grid-template-columns: 32px 44px minmax(120px, 1fr) 32px; align-items: center; gap: 8px; min-width: 270px; padding: 7px; background: rgba(15,25,33,0.88); }
+.idol-switcher { position: absolute; z-index: 4; left: 28px; bottom: 24px; display: grid; grid-template-columns: 32px 44px minmax(170px, 1fr) 32px; align-items: center; gap: 8px; min-width: 330px; padding: 7px; background: rgba(15,25,33,0.88); }
 .idol-switcher img { width: 44px; height: 44px; object-fit: contain; background: rgba(255,255,255,0.92); }
 .idol-switcher div { display: flex; flex-direction: column; min-width: 0; }
 .idol-switcher strong { font-size: 0.7rem; }
-.idol-switcher small { margin-top: 2px; color: #a7b6bf; font-size: 0.56rem; }
+.idol-switcher select { width: 100%; height: 22px; margin-top: 2px; padding: 0 20px 0 0; border: 0; background: transparent; color: #a7b6bf; font: inherit; font-size: 0.56rem; }
+.idol-switcher select option { color: #17212b; }
 .idol-switcher > button { border-color: rgba(255,255,255,0.2); background: transparent; color: #fff; }
 .home-stats { position: absolute; z-index: 4; right: 28px; bottom: 24px; display: grid; grid-template-columns: repeat(4, minmax(62px, 1fr)); min-width: 310px; margin: 0; padding: 9px 0; background: rgba(15,25,33,0.88); }
 .home-stats div { padding: 0 12px; border-left: 1px solid rgba(255,255,255,0.15); }

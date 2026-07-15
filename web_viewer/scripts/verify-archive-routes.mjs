@@ -18,7 +18,7 @@ assert.equal(invalidFilters.eventScope, 'all')
 assert.deepEqual(
   normalizeArchiveRoute({ view: 'idol_detail', idol: '001tom' }),
   {
-    view: 'idol_detail', homeIdol: '', homeCue: '', category: 'idol', idol: '001tom', group: '', unit: '', unitFilter: '',
+    view: 'idol_detail', homeIdol: '', homeCue: '', homeCostume: '', category: 'idol', idol: '001tom', group: '', unit: '', unitFilter: '',
     storyType: '', eventScope: 'all', availability: 'all', sort: 'domain', episode: '', card: '',
     gasha: '', gashaType: 'all', rarity: 'all', assetState: 'all', relationState: 'all', query: '',
     event: '', scenario: '', voice: '', returnView: '', parentView: '',
@@ -39,16 +39,19 @@ assert.equal(archiveSectionForRoute({ view: 'card_detail', card: '001tom_n01' })
 assert.equal(archiveSectionForRoute({ view: 'archive_status' }), 'resources')
 assert.equal(archiveSectionForRoute({ view: 'event_detail', event: '410018' }), 'stories')
 
-const homeContext = readArchiveRoute('http://localhost/?home_idol=040ren&home_cue=2_1_040_01_00_09')
+const homeContext = readArchiveRoute('http://localhost/?home_idol=040ren&home_cue=2_1_040_01_00_09&home_costume=040ren_101_00')
 assert.equal(homeContext.view, 'home')
 assert.equal(homeContext.homeIdol, '040ren')
 assert.equal(homeContext.homeCue, '2_1_040_01_00_09')
+assert.equal(homeContext.homeCostume, '040ren_101_00')
 const homeUrl = buildArchiveUrl('http://localhost/?view=cards&idol=001tom', homeContext)
 assert.equal(homeUrl.searchParams.get('home_idol'), '040ren')
 assert.equal(homeUrl.searchParams.get('home_cue'), '2_1_040_01_00_09')
+assert.equal(homeUrl.searchParams.get('home_costume'), '040ren_101_00')
 const cardsUrl = buildArchiveUrl(homeUrl, { ...homeContext, view: 'cards', idol: '040ren' })
 assert.equal(cardsUrl.searchParams.has('home_idol'), false)
 assert.equal(cardsUrl.searchParams.has('home_cue'), false)
+assert.equal(cardsUrl.searchParams.has('home_costume'), false)
 const homeEventContext = readArchiveRoute('http://localhost/?view=event_detail&event=430018&parent=home')
 assert.equal(homeEventContext.view, 'event_detail')
 assert.equal(homeEventContext.parentView, 'home')
@@ -99,4 +102,4 @@ assert.equal(eventPlayerContext.returnView, 'event_detail')
 assert.equal(eventPlayerContext.parentView, 'unit_detail')
 assert.equal(eventPlayerContext.unit, '16cfi')
 
-console.log('Archive route contract: 50 assertions passed')
+console.log('Archive route contract: 53 assertions passed')

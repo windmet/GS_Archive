@@ -9,10 +9,11 @@ import {
 const readJson = path => JSON.parse(fs.readFileSync(new URL(path, import.meta.url), 'utf8'))
 const idolUnit = readJson('../public/data/masterdata/idol_unit_dictionary.json')
 const cardIndex = readJson('../public/data/masterdata/card_index.json')
+const costumeDictionary = readJson('../public/data/masterdata/costume_dictionary.json')
 const manifest = readJson('../public/data/archive_manifest.json')
 const uiAssets = readJson('../public/data/assets/ui_asset_catalog.json')
 
-const idols = buildArchiveHomeState(idolUnit, cardIndex, manifest)
+const idols = buildArchiveHomeState(idolUnit, cardIndex, manifest, costumeDictionary)
 const stats = archiveHomeStateStats(idols)
 
 assert.equal(stats.idols, 49)
@@ -29,6 +30,10 @@ assert.equal(toma.cues[0].voice, '2_1_001_01_00_09.m4a')
 assert.equal(toma.cues[0].background, 'bg001_315pro_in_01')
 assert.equal(toma.cues[0].modelId, '001tom_002_00')
 assert.equal(toma.cues[0].previewStep.state.spines[0].id, '001tom')
+assert.equal(toma.costumes.length, 12)
+assert.equal(toma.costumes[0].name, 'ベーシックウェア')
+assert.equal(toma.costumes[0].modelId, '001tom_002_00')
+assert.equal(idols.flatMap(idol => idol.costumes).length, 601)
 
 const highlights = buildArchiveHomeHighlights(manifest, uiAssets)
 assert.equal(highlights.length, 36)
