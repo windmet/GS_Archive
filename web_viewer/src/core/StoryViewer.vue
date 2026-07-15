@@ -1,11 +1,11 @@
 <template>
-  <div class="story-viewer-root" :class="{ 'stage-only': HIDE_UI }" tabindex="0" @keydown.left="goPrev" @keydown.right="goNext">
+  <div class="story-viewer-root" :class="{ 'stage-only': HIDE_UI || uiHidden }" tabindex="0" @keydown.left="goPrev" @keydown.right="goNext">
     <div class="viewer-stage">
     <!-- Spine rendering layer (background + characters) -->
     <SpineStage ref="spineStageRef" :step="currentStep" :fallbackBg="firstAvailableBg" />
 
     <!-- Top bar -->
-    <div class="top-bar" v-if="compiledData && !HIDE_UI">
+    <div class="top-bar" v-if="compiledData && !HIDE_UI && !uiHidden">
       <button class="bar-btn" @click="$emit('back')">Back</button>
       <div class="progress-counter">
         <span v-if="currentEpisodeLabel" class="episode-badge">{{ currentEpisodeLabel }}</span>
@@ -13,14 +13,18 @@
       </div>
       <div class="top-bar-right">
         <button class="lang-btn" @click.stop="cycleLanguage">{{ langLabel }}</button>
-        <button class="bar-btn" v-if="!isLastStep" @click="goNext">Skip →</button>
+        <button class="icon-btn" title="Menu" aria-label="Menu" @click.stop="menuOpen = true"><Menu :size="19" /></button>
       </div>
     </div>
+
+    <button v-if="uiHidden && !HIDE_UI" class="restore-ui" title="Show UI" aria-label="Show UI" @click.stop="uiHidden = false">
+      <Eye :size="20" />
+    </button>
 
     <!-- Voice audio player: handled by the Web Audio API to avoid IDM sniffing -->
 
     <!-- UI overlay for step-specific screens -->
-    <div class="ui-overlay" v-if="compiledData && !HIDE_UI">
+    <div class="ui-overlay" v-if="compiledData && !HIDE_UI && !uiHidden && !episodeFinished">
 
       <!-- ADV dialogue -->
       <Transition name="adv-dialogue-fade" appear>
@@ -58,10 +62,35 @@
     </div>
 
     <!-- Bottom navigation bar -->
-    <div class="nav-bar" v-if="compiledData && compiledData.steps.length > 0 && !HIDE_UI">
+    <div class="nav-bar" v-if="compiledData && compiledData.steps.length > 0 && !HIDE_UI && !uiHidden && !episodeFinished">
       <button class="nav-btn" @click.stop="goPrev" :disabled="isFirstStep">Prev</button>
       <span class="nav-label">{{ currentStep.type }}</span>
-      <button class="nav-btn" @click.stop="goNext" :disabled="isLastStep">▶</button>
+      <button class="nav-btn" @click.stop="goNext"><ChevronRight :size="21" /></button>
+    </div>
+
+    <Transition name="menu-slide">
+      <aside v-if="menuOpen && !HIDE_UI" class="playback-menu" aria-label="Playback menu">
+        <header><strong>MENU</strong><button class="icon-btn dark" title="Close" aria-label="Close" @click="menuOpen = false"><X :size="20" /></button></header>
+        <label class="menu-toggle">
+          <span>连续播放</span>
+          <input type="checkbox" :checked="continuousPlayback" @change="emit('update:continuous-playback', $event.target.checked)" />
+        </label>
+        <button @click="uiHidden = true; menuOpen = false"><EyeOff :size="19" /><span>隐藏 UI</span></button>
+        <button @click="skipEpisode"><SkipForward :size="19" /><span>跳过本话</span></button>
+        <button @click="emit('back')"><LogOut :size="19" /><span>返回目录</span></button>
+      </aside>
+    </Transition>
+
+    <div v-if="episodeFinished && !HIDE_UI" class="episode-complete">
+      <div class="complete-panel">
+        <span>{{ hasNextEpisode ? 'EPISODE COMPLETE' : 'STORY COMPLETE' }}</span>
+        <strong>{{ hasNextEpisode ? '本话播放完毕' : '故事播放完毕' }}</strong>
+        <p v-if="transitioning">正在加载下一话...</p>
+        <div v-else>
+          <button v-if="hasNextEpisode" class="primary" @click="emit('next-episode')"><SkipForward :size="18" />下一话</button>
+          <button @click="emit('back')"><LogOut :size="18" />返回目录</button>
+        </div>
+      </div>
     </div>
 
     </div><!-- /viewer-stage -->
@@ -77,6 +106,7 @@ import CallUI from '../components/CallUI.vue'
 import ChoiceUI from '../components/ChoiceUI.vue'
 import TitleUI from '../components/TitleUI.vue'
 import TextTimeUI from '../components/TextTimeUI.vue'
+import { ChevronRight, Eye, EyeOff, LogOut, Menu, SkipForward, X } from '@lucide/vue'
 // SpineStage is lazy-loaded so PIXI.js only loads when a story opens
 const SpineStage = defineAsyncComponent(() => import('../components/SpineStage.vue'))
 import { languageMode, setLanguageMode } from '../utils/LanguageStore.js'
@@ -91,8 +121,10 @@ const props = defineProps({
   scenarioUrl: { type: String, default: null },
   startStep: { type: Number, default: null },
   endStep: { type: Number, default: null },
+  hasNextEpisode: { type: Boolean, default: false },
+  continuousPlayback: { type: Boolean, default: false },
 })
-const emit = defineEmits(['back', 'ready'])
+const emit = defineEmits(['back', 'ready', 'next-episode', 'update:continuous-playback'])
 const URL_FLAGS = new URLSearchParams(window.location.search)
 const HIDE_UI = URL_FLAGS.get('stageOnly') === '1' || URL_FLAGS.get('hideUI') === '1' || URL_FLAGS.get('transparentUI') === '1'
 const START_STEP_VALUE = URL_FLAGS.get('startStep')
@@ -114,6 +146,10 @@ const historyStack = ref([])
 const selectedChoices = reactive(new Map())
 const _ready = ref(false)
 const isPlaying = ref(false)
+const menuOpen = ref(false)
+const uiHidden = ref(false)
+const episodeFinished = ref(false)
+const transitioning = ref(false)
 
 let _readyTimer = null
 
@@ -211,7 +247,7 @@ const {
   langLabel,
   cycleLanguage,
   applyStartStepIfNeeded,
-  goNext,
+  goNext: advanceStep,
   goPrev,
   onChoice,
   goToStep,
@@ -231,6 +267,29 @@ const {
   resetVoiceDedup: _resetVoiceDedup,
 })
 
+function finishEpisode() {
+  if (episodeFinished.value) return
+  clearFadeAutoAdvance()
+  fastForwardTimeline()
+  _stopCurrentVoice('episode-complete')
+  menuOpen.value = false
+  episodeFinished.value = true
+  if (props.continuousPlayback && props.hasNextEpisode) {
+    transitioning.value = true
+    emit('next-episode')
+  }
+}
+
+function goNext() {
+  if (episodeFinished.value) return
+  if (isLastStep.value) finishEpisode()
+  else advanceStep()
+}
+
+function skipEpisode() {
+  finishEpisode()
+}
+
 const stepSceneEffects = useStepSceneEffects({
   currentStepIndex,
   isLastStep,
@@ -240,6 +299,7 @@ const stepSceneEffects = useStepSceneEffects({
   voicePlayer,
   resetVoiceDedup: _resetVoiceDedup,
   startTimeline,
+  onEpisodeEnd: finishEpisode,
   snapshotAt: SNAPSHOT_AT,
   snapshotAction: () => { window.__SNAPSHOT__ = freezeScene('snapshotAt') },
 })
@@ -466,7 +526,27 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene })
 }
 .nav-btn:hover { background: rgba(255,255,255,0.15); }
 .nav-btn:disabled { opacity: 0.3; cursor: default; }
+.nav-btn svg { display: block; margin: auto; }
 .nav-label { color: rgba(255,255,255,0.5); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; }
+
+.icon-btn { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 1px solid rgba(255,255,255,.3); border-radius: 4px; background: rgba(255,255,255,.12); color: #fff; cursor: pointer; }
+.icon-btn.dark { border-color: #d8e0e3; background: #fff; color: #26343c; }
+.restore-ui { position: absolute; top: 12px; right: 12px; z-index: 30; display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid rgba(255,255,255,.55); border-radius: 5px; background: rgba(15,25,30,.58); color: #fff; cursor: pointer; }
+.playback-menu { position: absolute; top: 0; right: 0; z-index: 40; display: flex; flex-direction: column; gap: 8px; width: min(320px, 86vw); height: 100%; padding: 18px; border-left: 1px solid #dfe5e7; background: rgba(248,250,251,.97); color: #26343c; box-shadow: -10px 0 30px rgba(0,0,0,.22); }
+.playback-menu header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 1.25rem; }
+.playback-menu > button, .menu-toggle { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 13px; border: 1px solid #dce3e6; border-radius: 5px; background: #fff; color: #26343c; font: inherit; cursor: pointer; }
+.menu-toggle { justify-content: space-between; cursor: default; }
+.menu-toggle input { width: 42px; height: 22px; accent-color: #12a87d; cursor: pointer; }
+.episode-complete { position: absolute; inset: 0; z-index: 35; display: grid; place-items: center; background: rgba(0,0,0,.5); }
+.complete-panel { width: min(390px, calc(100vw - 32px)); padding: 24px; border: 1px solid rgba(255,255,255,.6); border-radius: 6px; background: rgba(250,252,252,.97); color: #26343c; text-align: center; box-shadow: 0 18px 45px rgba(0,0,0,.28); }
+.complete-panel > span { color: #0d9c75; font-size: .66rem; font-weight: 800; }
+.complete-panel > strong { display: block; margin: 6px 0 18px; font-size: 1.05rem; }
+.complete-panel p { margin: 8px 0 0; color: #64727a; }
+.complete-panel div { display: flex; justify-content: center; gap: 8px; }
+.complete-panel button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 0 14px; border: 1px solid #d6dfe2; border-radius: 5px; background: #fff; color: #26343c; cursor: pointer; font: inherit; }
+.complete-panel button.primary { border-color: #0d9c75; background: #0d9c75; color: #fff; }
+.menu-slide-enter-active, .menu-slide-leave-active { transition: transform 180ms ease, opacity 180ms ease; }
+.menu-slide-enter-from, .menu-slide-leave-to { transform: translateX(100%); opacity: 0; }
 
 .loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #333; font-size: 1.2rem; }
 </style>

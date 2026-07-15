@@ -9,6 +9,7 @@ export function useStepSceneEffects({
   voicePlayer,
   resetVoiceDedup,
   startTimeline,
+  onEpisodeEnd,
   snapshotAt,
   snapshotAction,
 }) {
@@ -115,12 +116,16 @@ export function useStepSceneEffects({
       const autoStepIndex = currentStepIndex.value
       _fadeAutoTimer = setTimeout(() => {
         _fadeAutoTimer = null
-        if (autoSeq === _fadeAutoSeq && currentStepIndex.value === autoStepIndex && !isLastStep.value) {
-          if (autoAdvance.pushHistory) {
-            historyStack.value.push(currentStepIndex.value)
+        if (autoSeq === _fadeAutoSeq && currentStepIndex.value === autoStepIndex) {
+          if (isLastStep.value) {
+            onEpisodeEnd?.()
+          } else {
+            if (autoAdvance.pushHistory) {
+              historyStack.value.push(currentStepIndex.value)
+            }
+            currentStepIndex.value++
+            resetVoiceDedup()
           }
-          currentStepIndex.value++
-          resetVoiceDedup()
         }
       }, autoAdvance.delayMs)
     }

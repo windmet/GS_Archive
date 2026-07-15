@@ -257,11 +257,16 @@
     <!-- ====== STORY PLAYER ====== -->
     <StoryViewer
       v-if="view === 'player' && currentScenario"
+      :key="currentScenarioInstance"
       :scenario-json="currentScenario"
       :start-step="currentScenarioStartStep"
       :end-step="currentScenarioEndStep"
+      :has-next-episode="hasNextPlaybackEpisode"
+      :continuous-playback="continuousPlayback"
       @back="closePlayer"
       @ready="onPlayerReady"
+      @next-episode="playNextEpisode"
+      @update:continuous-playback="continuousPlayback = $event"
     />
 
     <!-- ====== SPINE LAB ====== -->
@@ -358,6 +363,10 @@ const currentScenario = ref(null)
 const currentScenarioFile = ref('')
 const currentScenarioStartStep = ref(null)
 const currentScenarioEndStep = ref(null)
+const currentScenarioInstance = ref(0)
+const playbackQueue = ref([])
+const playbackQueueIndex = ref(-1)
+const continuousPlayback = ref(window.localStorage.getItem('sidem:continuous-playback') === '1')
 const currentPreviewCue = ref('')
 const filterQuery = ref('')
 const loading = ref(false)
@@ -689,6 +698,14 @@ const currentEventStory = computed(() => storyCatalog.value.find(entry => entry.
 
 const currentEventEpisodes = computed(() => {
   return buildEventStoryEpisodes(currentEvent.value, currentEventStory.value, storyMasterData.value)
+})
+
+const hasNextPlaybackEpisode = computed(() =>
+  playbackQueueIndex.value >= 0 && playbackQueueIndex.value < playbackQueue.value.length - 1,
+)
+
+watch(continuousPlayback, enabled => {
+  window.localStorage.setItem('sidem:continuous-playback', enabled ? '1' : '0')
 })
 
 const currentStoryVisualUrl = computed(() => {
@@ -1240,10 +1257,12 @@ async function applyArchiveRoute(route) {
     }
 
     if (route.view === 'player' && route.scenario) {
+      const restoredQueue = restoreEpisodeQueue(route.scenario, route.returnView)
       await loadScenario(route.scenario, route.returnView || 'home', {
         syncRoute: false,
         startStep: route.startStep,
         endStep: route.endStep,
+        preserveQueue: restoredQueue,
       })
       return
     }
@@ -1567,13 +1586,15 @@ function playStoryDetail(entry = currentStory.value) {
 }
 
 function playStoryCollectionChapter(chapter) {
-  if (chapter?.file && chapter.exists) loadScenario(chapter.file, 'story_collection')
+  const queue = (chapter?.episodes || []).filter(episode => episode.exists && episode.file)
+  if (queue.length) startEpisodeQueue(queue, 0, 'story_collection')
+  else if (chapter?.file && chapter.exists) loadScenario(chapter.file, 'story_collection')
 }
 
 function playStoryCollectionEpisode({ chapter, episode }) {
-  if (chapter?.file && chapter.exists && episode?.startStep) {
-    loadScenario(chapter.file, 'story_collection', { startStep: episode.startStep, endStep: episode.endStep })
-  }
+  const queue = (chapter?.episodes || []).filter(candidate => candidate.exists && candidate.file)
+  const index = queue.findIndex(candidate => candidate.id === episode?.id)
+  if (index >= 0) startEpisodeQueue(queue, index, 'story_collection')
 }
 
 function openStoryIdol(idolCode) {
@@ -1772,15 +1793,63 @@ function goBackFromEvent() {
 }
 
 function playCurrentEvent() {
-  if (currentEvent.value?.file && currentEvent.value.exists) {
-    loadScenario(currentEvent.value.file, 'event_detail')
-  }
+  const queue = currentEventEpisodes.value.filter(episode => episode.file)
+  if (queue.length) startEpisodeQueue(queue, 0, 'event_detail')
+  else if (currentEvent.value?.file && currentEvent.value.exists) loadScenario(currentEvent.value.file, 'event_detail')
 }
 
 function playCurrentEventEpisode(episode) {
-  if (currentEvent.value?.file && currentEvent.value.exists && episode?.startStep) {
-    loadScenario(currentEvent.value.file, 'event_detail', { startStep: episode.startStep, endStep: episode.endStep })
+  const queue = currentEventEpisodes.value.filter(candidate => candidate.file)
+  const index = queue.findIndex(candidate => candidate.id === episode?.id)
+  if (index >= 0) startEpisodeQueue(queue, index, 'event_detail')
+}
+
+function startEpisodeQueue(episodes, index, returnView) {
+  playbackQueue.value = episodes.map(episode => ({
+    file: episode.file,
+    startStep: episode.startStep,
+    endStep: episode.endStep,
+    id: episode.id,
+    label: episode.label,
+  }))
+  playbackQueueIndex.value = index
+  loadPlaybackEpisode(playbackQueue.value[index], returnView)
+}
+
+function restoreEpisodeQueue(scenarioFile, returnView) {
+  let episodes = []
+  if (returnView === 'story_collection') {
+    episodes = (currentStoryCollection.value?.chapters || []).flatMap(chapter => chapter.episodes || [])
+  } else if (returnView === 'event_detail') {
+    episodes = currentEventEpisodes.value
   }
+  const queue = episodes.filter(episode => episode.exists !== false && episode.file)
+  const index = queue.findIndex(episode => episode.file === scenarioFile)
+  if (index < 0) return false
+  playbackQueue.value = queue.map(episode => ({
+    file: episode.file,
+    startStep: episode.startStep,
+    endStep: episode.endStep,
+    id: episode.id,
+    label: episode.label,
+  }))
+  playbackQueueIndex.value = index
+  return true
+}
+
+function loadPlaybackEpisode(episode, returnView = returnViewAfterPlayer.value) {
+  if (!episode?.file) return
+  loadScenario(episode.file, returnView, {
+    startStep: episode.startStep,
+    endStep: episode.endStep,
+    preserveQueue: true,
+  })
+}
+
+function playNextEpisode() {
+  if (!hasNextPlaybackEpisode.value) return
+  playbackQueueIndex.value += 1
+  loadPlaybackEpisode(playbackQueue.value[playbackQueueIndex.value])
 }
 
 function openEventCard(relation) {
@@ -1977,6 +2046,8 @@ function closePlayer() {
   currentScenarioStartStep.value = null
   currentScenarioEndStep.value = null
   currentPreviewCue.value = ''
+  playbackQueue.value = []
+  playbackQueueIndex.value = -1
   const returnView = returnViewAfterPlayer.value || 'files'
   returnViewAfterPlayer.value = 'files'
   commitView(returnView)
@@ -2009,6 +2080,11 @@ async function loadScenario(name, returnView = 'files', options = {}) {
     currentScenarioFile.value = name
     currentScenarioStartStep.value = Number(options.startStep) > 0 ? Number(options.startStep) : null
     currentScenarioEndStep.value = Number(options.endStep) > 0 ? Number(options.endStep) : null
+    if (!options.preserveQueue) {
+      playbackQueue.value = []
+      playbackQueueIndex.value = -1
+    }
+    currentScenarioInstance.value += 1
     currentPreviewCue.value = ''
     returnViewAfterPlayer.value = returnView
     view.value = 'player'
