@@ -346,3 +346,20 @@ DRIVE A LIVE 还包含 `song3_drvalv_bgm.acb` 伴奏和 49 条 `song3_drvalv_<id
 3. 不能承诺一比一直接复刻：依赖 Unity 专用 Shader、Mesh、复杂 ParticleSystem 子发射器、VFX Graph 或运行时代码行为的烟雾、镜头光斑和组合特效。遇到此类必须标明“网页近似”或保留缺失状态，不能只凭效果名猜造。
 
 因此后续优先接入纯数据层的 Backmonitor/Image/Object 与基础灯光；粒子效果单独审计 Prefab、Material 和 Shader 后再决定是否复刻。
+
+## Backmonitor USM 解密与舞台屏幕（2026-07-15）
+
+`RAW/movie` 是 3DMV、SSR 演出、公告和 Live 屏幕等内容混合存放的 USM 库，不能按目录整体当作舞台素材导出。当前生成器只读取 118 份 `liveeffectscript` CSV 的 `Backmonitor` 命令，并以实际引用 ID 作为白名单：共 932 条事件、73 个主视频和 4 个 alpha 转场，无缺失引用。
+
+这些 USM 的 CRI 解密 key 为 `0002B875BC731A85`。部分主视频可以被 FFmpeg 直接识别，另一些虽然能读到容器头但没有有效帧，因此批处理统一采用 WannaCRI 0.3.1 解密和 demux，再由 FFmpeg 转为 H.264/yuv420p MP4，避免按文件碰运气。运行方式：
+
+```powershell
+python -m pip install --target $env:TEMP\sidem-wannacri WannaCRI==0.3.1
+npm run chibi:backmonitor
+```
+
+脚本 `scripts/prepare-live-chibi-backmonitor.py` 输出 `public/assets/live-chibi/backmonitor/index.json`、73 个主循环 MP4，以及 4 个转场各自的 color/alpha 双路 MP4。全量验证结果为 81 个 MP4、零空文件；主视频均为 272×144，时长约 0.968–10.010 秒，总大小约 11.3 MB。转码先写临时文件并经 FFprobe 验证后原子替换，构建被中止时不会把半截 MP4 当作缓存复用。
+
+编排索引升级为 schema 6，每首歌新增 `backmonitorEvents`，保留 `time / movie / transition / x / y / scale / rotation / opacity`。多人舞台用一个位于角色后方、处于同一 camera container 内的 Pixi Video Sprite 消费这些事件：切歌和拖动时间轴会切换并定位循环视频，播放、暂停和倍速沿用歌曲主时钟；CSV 的坐标采用 1280×720 舞台空间，Y 轴从下向上，纹理以原始 2 倍显示尺寸再乘千分比 scale。
+
+浏览器定点验证：DRIVE A LIVE 在 -2000 ms 显示 `unique_black`，2500 ms 切换 `ballade_01` 并记录 `alpha_blackout`，15700 ms 切换 `cool_01_2` 并记录 `alpha_star`；三个时刻视频均加载成功，层级位于五名 Spine 角色后方。当前运行时已经精确导出转场的 color/alpha 源，但尚未在 Pixi 中实现双视频遮罩 shader，故这一版只进行主视频硬切；不能把普通 CSS 淡入淡出标记成原版 alpha 转场。
