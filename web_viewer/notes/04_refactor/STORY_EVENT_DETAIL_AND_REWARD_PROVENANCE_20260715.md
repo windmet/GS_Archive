@@ -60,11 +60,16 @@ Implemented:
 - story portal and search modes;
 - independent detail pages for non-event story records;
 - event entity page with official banner, dates, synopsis and playback;
+- event search cards with banner, event scope, event type, date, synopsis and verified reward-card icons;
+- event episode lists built from the formal episode rows and compiled step boundaries;
+- direct playback from an individual episode, including a persistent `start_step` deep link;
 - reward cards grouped by acquisition method;
 - direct separation between Raw reward evidence and Derived same-release relations;
 - synopsis removed from the formal player timeline while remaining on the detail page.
 
 The event page intentionally keeps a supplemental `Derived` section only when a same-release card is not present in a reward table. This makes uncertainty visible instead of silently merging evidence levels.
+
+The presentation index now records `episode_index`, `episode_part`, start/end step, dialogue count and voice count for each compiled episode boundary. The 2026-07-15 verification covers 1,394 compiled stories, 900 pre-play synopses and 1,532 episode boundaries. The event navigation verifier additionally confirms that all 36 archived event entities map to 396 selectable episodes. For Not Alone, the 11 formal parts `a` through `k` resolve to Prologue plus Episodes 1-10; selecting the sixth entry writes `start_step=125` and restores as `EP06` after a page reload.
 
 ## Limits
 
@@ -75,10 +80,10 @@ The event page intentionally keeps a supplemental `Derived` section only when a 
 
 ## Next Direction
 
-1. Replace event catalog rows with entity cards that show banner, date, event type and verified reward-card thumbnails.
-2. Add an episode list to each event page using tables 11 and 12, with a stable episode anchor even though playback currently uses one compiled aggregate file.
-3. Normalize non-card `ProductData` ids so the event page can offer an optional full PT reward table without raw numeric labels.
-4. Add event music linkage through `SongId` and the existing music catalog.
-5. Extend the same independent-page pattern to unit, idol, card, work, birthday and extra story collections without forcing unrelated story families into an event schema.
+1. Apply the verified episode-boundary model to main and unit stories, starting with chapter landing pages that emphasize formal chapter and episode titles.
+2. Normalize non-card `ProductData` ids so the event page can offer an optional full PT reward table without raw numeric labels.
+3. Add event music linkage through `SongId` and the existing music catalog.
+4. Extend the same independent-page pattern to idol, card, work, birthday and extra story collections without forcing unrelated story families into an event schema.
+5. Add optional per-episode completion state locally only after the navigation hierarchy is stable; do not imitate unavailable service-era account state.
 
-The immediate UI priority is the event catalog and episode navigation. The data required for the core event page is no longer the blocker.
+The immediate UI priority is now the main-story and unit-story hierarchy. Event entity presentation and episode navigation are no longer blockers and provide the implementation pattern for those pages.
