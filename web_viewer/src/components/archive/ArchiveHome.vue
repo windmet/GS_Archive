@@ -58,6 +58,16 @@
           </span>
           <ChevronRight :size="18" aria-hidden="true" />
         </button>
+        <button class="cat-btn lab-btn" @click="emit('open-chibi-stage')">
+          <span class="cat-icon" aria-hidden="true">
+            <UsersRound :size="21" :stroke-width="1.8" />
+          </span>
+          <span class="cat-text">
+            <strong>多人舞台</strong>
+            <small>1–5 人歌曲编排</small>
+          </span>
+          <ChevronRight :size="18" aria-hidden="true" />
+        </button>
       </div>
     </section>
   </main>
@@ -75,6 +85,7 @@ import {
   Sparkles,
   Star,
   UserRound,
+  UsersRound,
 } from '@lucide/vue'
 
 defineProps({
@@ -85,7 +96,7 @@ defineProps({
   embedded: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['select', 'open-spine-lab', 'open-status'])
+const emit = defineEmits(['select', 'open-spine-lab', 'open-chibi-stage', 'open-status'])
 
 const icons = {
   main_story: BookOpenText,

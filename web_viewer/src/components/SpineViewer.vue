@@ -6,6 +6,7 @@
       </button>
       <div class="header-divider" aria-hidden="true"></div>
       <h1>舞台小人实验室</h1>
+      <button class="stage-link" type="button" @click="emit('open-stage')">多人舞台</button>
       <div class="header-meta">Spine 3.8 · 实验预览</div>
     </header>
 
@@ -220,7 +221,7 @@ import {
   playLiveChibiMotion,
 } from '../utils/liveChibiSpine.js'
 
-const emit = defineEmits(['back'])
+const emit = defineEmits(['back', 'open-stage'])
 const canvasRef = ref(null)
 const manifest = ref(null)
 const choreography = ref(null)
@@ -746,6 +747,8 @@ function stopChoreography(reset = false) {
 }
 
 .lab-header h1 { margin: 0; font-size: 20px; font-weight: 680; letter-spacing: 0.02em; }
+.stage-link { height: 34px; padding: 0 13px; color: #dcecff; background: rgba(31, 112, 190, 0.25); border: 1px solid rgba(73, 161, 244, 0.46); border-radius: 7px; font: 650 12px/1 inherit; cursor: pointer; }
+.stage-link:hover { background: rgba(38, 130, 218, 0.36); }
 .header-meta { margin-left: auto; color: var(--muted); font-size: 12px; letter-spacing: 0.04em; }
 .header-divider { width: 1px; height: 26px; background: var(--line); }
 .icon-button { display: grid; place-items: center; width: 38px; height: 38px; padding: 0; color: var(--text); background: transparent; border: 0; border-radius: 8px; cursor: pointer; }

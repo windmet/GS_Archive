@@ -22,6 +22,7 @@
         @select="openCategoryById"
         @open-status="openArchiveStatus"
         @open-spine-lab="openSpineLab"
+        @open-chibi-stage="openChibiStage"
       />
 
       <ArchiveIdolGrid
@@ -212,7 +213,8 @@
     />
 
     <!-- ====== SPINE LAB ====== -->
-    <SpineViewer v-if="view === 'spine_lab'" @back="goHome" />
+    <SpineViewer v-if="view === 'spine_lab'" @back="goHome" @open-stage="openChibiStage" />
+    <ChibiStageViewer v-if="view === 'chibi_stage'" @back="goHome" @open-lab="openSpineLab" />
 
     <!-- ====== PRELOADER LOADING SCREEN ====== -->
     <LoadingScreen :visible="loading" :progress="preloadProgress" />
@@ -264,8 +266,10 @@ import { installSpineAnimationDebug } from './debug/installSpineAnimationDebug.j
 
 const storyViewerLoader = () => import('./core/StoryViewer.vue')
 const spineViewerLoader = () => import('./components/SpineViewer.vue')
+const chibiStageViewerLoader = () => import('./components/ChibiStageViewer.vue')
 const StoryViewer = defineAsyncComponent(storyViewerLoader)
 const SpineViewer = defineAsyncComponent(spineViewerLoader)
+const ChibiStageViewer = defineAsyncComponent(chibiStageViewerLoader)
 
 function resolveChatName(ch) {
   // index may store raw chara_id such as "031sak"; resolve to display name.
@@ -863,7 +867,7 @@ const currentIdolEvents = computed(() => (archiveManifestData.value?.unit_event_
   .filter(event => (event.characters || []).includes(currentCharacterId.value))
   .sort((left, right) => Number(left.release_at || 0) - Number(right.release_at || 0)))
 
-const archiveShellVisible = computed(() => !['player', 'spine_lab'].includes(view.value))
+const archiveShellVisible = computed(() => !['player', 'spine_lab', 'chibi_stage'].includes(view.value))
 
 const archiveSection = computed(() => archiveSectionForRoute({
   view: view.value,
@@ -1079,6 +1083,7 @@ async function applyArchiveRoute(route) {
       if (restoreVoicePreview(route)) return
     }
     if (route.view === 'spine_lab') await spineViewerLoader()
+    if (route.view === 'chibi_stage') await chibiStageViewerLoader()
 
     if (route.view === 'unit_detail' && !currentArchiveUnit.value) view.value = 'unit_catalog'
     else if (route.view === 'idol_detail' && !currentIdolProfile.value) view.value = 'idols'
@@ -1164,6 +1169,17 @@ async function openSpineLab() {
   try {
     await spineViewerLoader()
     commitView('spine_lab')
+  } finally {
+    loading.value = false
+  }
+}
+
+async function openChibiStage() {
+  loading.value = true
+  preloadProgress.value = 100
+  try {
+    await chibiStageViewerLoader()
+    commitView('chibi_stage')
   } finally {
     loading.value = false
   }

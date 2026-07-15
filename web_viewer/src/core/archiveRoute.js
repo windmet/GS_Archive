@@ -43,6 +43,7 @@ const VALID_VIEWS = new Set([
   'unit_detail',
   'player',
   'spine_lab',
+  'chibi_stage',
 ])
 
 const VALID_CARD_RELATION_STATES = new Set(['all', 'card_story', 'event_card', 'gasha_card', 'release_series', 'unrelated'])
@@ -53,7 +54,7 @@ const VALID_EVENT_SCOPES = new Set(['all', 'fixed_unit_event', 'attribute_event'
 const VALID_GASHA_TYPES = new Set(['all', 'standard_pickup', 'growing_fes', 'stage_step_up', 'full_roster_series'])
 const VALID_STORY_AVAILABILITY = new Set(['all', 'playable', 'missing'])
 const VALID_STORY_SORTS = new Set(['domain', 'title', 'resource', 'steps_desc'])
-const VALID_RETURN_VIEWS = new Set([...VALID_VIEWS].filter(view => !['player', 'spine_lab'].includes(view)))
+const VALID_RETURN_VIEWS = new Set([...VALID_VIEWS].filter(view => !['player', 'spine_lab', 'chibi_stage'].includes(view)))
 
 const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   home: { section: 'home', required: [] },
@@ -74,6 +75,7 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   gasha_detail: { section: 'gashas', required: ['gasha'], fallback: 'gashas' },
   player: { section: 'player', required: [], fallback: 'home' },
   spine_lab: { section: 'resources', required: [] },
+  chibi_stage: { section: 'resources', required: [] },
 })
 
 const ARCHIVE_NAVIGATION = Object.freeze([
