@@ -75,3 +75,13 @@ Run `npm run verify:work-story` to validate the 49 x 9 / 49 x 4 structure and th
 3. Keep the nine scene lines in a separate tab or section with their full line preview.
 4. Use Physical/Intelli/Mental as filters and color accents; do not create a fictional All-story group.
 5. Display official location names only when backed by Picture Studio masterdata, otherwise show the background resource id.
+
+## Implemented Page
+
+The archive now exposes `view=work_archive&story_type=work&idol=<idol_code>` from the story portal.
+
+- All 49 idols are selectable without leaving the page.
+- The four short stories and nine scene lines remain separate tabs.
+- Story playback returns to the selected idol's work page.
+- Desktop and 390 px mobile layouts avoid horizontal overflow.
+- `npm run verify:routes` covers the work route and `npm run verify:work-story` covers all 637 resources.
