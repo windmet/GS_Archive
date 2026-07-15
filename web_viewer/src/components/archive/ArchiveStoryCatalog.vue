@@ -162,8 +162,9 @@ const props = defineProps({
   availability: { type: String, default: 'all' }, sort: { type: String, default: 'domain' },
   catalogTotal: { type: Number, default: 0 }, filteredTotal: { type: Number, default: 0 },
   seasonalCampaigns: { type: Array, default: () => [] },
+  workIdols: { type: Array, default: () => [] },
 })
-const emit = defineEmits(['select', 'browse', 'open-seasonal', 'load-more', 'clear-section', 'update:mode', 'update:domain', 'update:event-scope', 'update:availability', 'update:sort'])
+const emit = defineEmits(['select', 'browse', 'open-seasonal', 'open-work', 'load-more', 'clear-section', 'update:mode', 'update:domain', 'update:event-scope', 'update:availability', 'update:sort'])
 
 const groupEntries = domain => {
   const groups = new Map()
@@ -180,7 +181,7 @@ const unitGateways = computed(() => groupEntries('unit_story'))
 const featuredEvents = computed(() => props.allEntries.filter(entry => entry.domain === 'event').sort((a, b) => b.releaseAt - a.releaseAt).slice(0, 6))
 const secondaryGateways = [
   { id: 'idol_story', label: '个人剧情', icon: UserRound }, { id: 'card_scenarios', label: '卡片剧情', icon: CreditCard },
-  { id: 'work', label: '工作剧情', icon: Briefcase }, { id: 'birthday', label: '生日剧情', icon: Cake },
+  { id: 'work', label: '工作剧情', icon: Briefcase, unit: '人', action: 'work' }, { id: 'birthday', label: '生日剧情', icon: Cake },
   { id: 'extra', label: '额外剧情', icon: Sparkles },
   { id: 'seasonal_campaign', label: '季节企划', icon: CalendarRange, unit: '组', action: 'seasonal' },
 ]
@@ -188,9 +189,14 @@ const sectionLabel = computed(() => props.allEntries.find(entry => entry.domain 
 
 function browse(domain, section = '') { emit('browse', { domain, section }) }
 function domainCount(domain) { return props.allEntries.filter(entry => entry.domain === domain).length }
-function gatewayCount(gateway) { return gateway.action === 'seasonal' ? props.seasonalCampaigns.length : domainCount(gateway.id) }
+function gatewayCount(gateway) {
+  if (gateway.action === 'seasonal') return props.seasonalCampaigns.length
+  if (gateway.action === 'work') return props.workIdols.length
+  return domainCount(gateway.id)
+}
 function openGateway(gateway) {
   if (gateway.action === 'seasonal') emit('open-seasonal')
+  else if (gateway.action === 'work') emit('open-work')
   else browse(gateway.id)
 }
 function mainVisual(index) { return `/assets/stories/main/image_story_main_button_${String(index + 1).padStart(2, '0')}.png` }

@@ -184,9 +184,11 @@
         :catalog-total="storyCatalog.length"
         :filtered-total="filteredStoryCatalog.length"
         :seasonal-campaigns="seasonalCampaignData?.campaigns || []"
+        :work-idols="workStoryData?.idols || []"
         @select="openCatalogStory"
         @browse="browseStoryCollection"
         @open-seasonal="openSeasonalCampaign()"
+        @open-work="openWorkArchive()"
         @load-more="storyVisibleLimit += 80"
         @clear-section="currentStorySection = ''"
         @update:mode="setStoryMode"
@@ -213,6 +215,14 @@
         :campaigns="seasonalCampaignData?.campaigns || []"
         @select="selectSeasonalCampaign"
         @play="playSeasonalCampaignStory"
+      />
+
+      <ArchiveWorkStory
+        v-if="view === 'work_archive'"
+        :idol="currentWorkIdol"
+        :idols="workStoryData?.idols || []"
+        @select-idol="selectWorkIdol"
+        @play="playWorkStory"
       />
 
       <ArchiveUnitCatalog
@@ -277,6 +287,7 @@ import ArchiveStatus from './components/archive/ArchiveStatus.vue'
 import ArchiveStoryCatalog from './components/archive/ArchiveStoryCatalog.vue'
 import ArchiveStoryDetail from './components/archive/ArchiveStoryDetail.vue'
 import ArchiveSeasonalCampaign from './components/archive/ArchiveSeasonalCampaign.vue'
+import ArchiveWorkStory from './components/archive/ArchiveWorkStory.vue'
 import ArchiveUnitCatalog from './components/archive/ArchiveUnitCatalog.vue'
 import ArchiveUnitDetail from './components/archive/ArchiveUnitDetail.vue'
 import { loadArchiveData, loadCardDetailData } from './data/ArchiveDataRepository.js'
@@ -323,6 +334,7 @@ const cardDetailLoadPromise = ref(null)
 const storyMasterData = ref(null)
 const storyPresentationData = ref(null)
 const seasonalCampaignData = ref(null)
+const workStoryData = ref(null)
 const idolUnitData = ref(null)
 const costumeDictionaryData = ref(null)
 const archiveManifestData = ref(null)
@@ -585,6 +597,13 @@ const currentSeasonalCampaign = computed(() => {
   return seasonalCampaignData.value?.by_id?.[currentStorySection.value] ||
     campaigns.find(item => item.id === 'valentine_2023') ||
     campaigns[0] || null
+})
+
+const currentWorkIdol = computed(() => {
+  const idols = workStoryData.value?.idols || []
+  return workStoryData.value?.by_idol_code?.[currentCharacterId.value] ||
+    workStoryData.value?.by_idol_code?.['001tom'] ||
+    idols[0] || null
 })
 
 const storyDomainOptions = computed(() => {
@@ -977,6 +996,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'story_catalog') return '故事目录'
   if (view.value === 'story_detail') return currentStory.value?.title || '故事详情'
   if (view.value === 'seasonal_campaign') return currentSeasonalCampaign.value?.name || '季节企划'
+  if (view.value === 'work_archive') return `${currentWorkIdol.value?.display_name || ''} 工作档案`.trim()
   if (view.value === 'gashas') return '卡池档案'
   if (view.value === 'gasha_detail') return currentGasha.value?.display_name || '卡池详情'
   if (view.value === 'event_detail') return currentEvent.value?.title || '活动详情'
@@ -1201,6 +1221,7 @@ async function applyArchiveRoute(route) {
     else if (route.view === 'event_detail' && !currentEvent.value) view.value = 'story_catalog'
     else if (route.view === 'story_detail' && !currentStory.value) view.value = 'story_catalog'
     else if (route.view === 'seasonal_campaign' && !currentSeasonalCampaign.value) view.value = 'story_catalog'
+    else if (route.view === 'work_archive' && !currentWorkIdol.value) view.value = 'story_catalog'
     else if (route.view === 'cards' && !currentCharacterId.value) view.value = 'idols'
     else if (route.view === 'files' && !currentGroup.value) view.value = currentCharacterId.value ? 'groups' : 'home'
     else if (route.view === 'episodes' && !currentUnit.value) view.value = 'episode_zero_units'
@@ -1289,6 +1310,11 @@ function goArchiveBack() {
     seasonal_campaign: () => {
       currentStoryDomain.value = ''
       currentStorySection.value = ''
+      commitView('story_catalog')
+    },
+    work_archive: () => {
+      currentStoryDomain.value = ''
+      currentCharacterId.value = ''
       commitView('story_catalog')
     },
     unit_catalog: () => commitView('idols'),
@@ -1397,6 +1423,27 @@ function selectSeasonalCampaign(campaignId) {
 
 function playSeasonalCampaignStory(file) {
   if (file) loadScenario(file, 'seasonal_campaign')
+}
+
+function openWorkArchive(idolCode = '001tom') {
+  const fallback = workStoryData.value?.idols?.[0]?.idol_code || ''
+  const selected = workStoryData.value?.by_idol_code?.[idolCode] ? idolCode : fallback
+  if (!selected) return
+  currentStoryDomain.value = 'work'
+  currentStoryMode.value = 'portal'
+  currentStorySection.value = ''
+  currentCharacterId.value = selected
+  commitView('work_archive')
+}
+
+function selectWorkIdol(idolCode) {
+  if (!workStoryData.value?.by_idol_code?.[idolCode]) return
+  currentCharacterId.value = idolCode
+  syncArchiveRoute()
+}
+
+function playWorkStory(file) {
+  if (file) loadScenario(file, 'work_archive')
 }
 
 function openUnitCatalog() {
@@ -1908,6 +1955,7 @@ onMounted(async () => {
   storyMasterData.value = data.storyMaster
   storyPresentationData.value = data.storyPresentation
   seasonalCampaignData.value = data.seasonalCampaign
+  workStoryData.value = data.workStory
   idolUnitData.value = data.idolUnit
   costumeDictionaryData.value = data.costumeDictionary
   archiveManifestData.value = data.archiveManifest
