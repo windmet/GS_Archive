@@ -17,6 +17,13 @@
         </button>
       </div>
       <span v-if="idol.color" class="idol-color" :style="{ backgroundColor: idol.color }" :title="idol.color"></span>
+      <ArchiveIdolSwitcher
+        class="profile-switcher"
+        :idols="idols"
+        :selected-idol="selectedIdol"
+        dark
+        @select="emit('select-idol', $event)"
+      />
     </header>
 
     <section class="idol-facts" aria-label="偶像档案">
@@ -70,14 +77,17 @@
 import { computed } from 'vue'
 import { BookOpenText, ChevronRight, Images, MessageSquareText, Phone, UsersRound } from '@lucide/vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
+import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
 
 const props = defineProps({
   idol: { type: Object, default: null },
   stats: { type: Object, default: () => ({}) },
   events: { type: Array, default: () => [] },
+  idols: { type: Array, default: () => [] },
+  selectedIdol: { type: String, default: '' },
 })
 
-const emit = defineEmits(['open-domain', 'open-unit', 'open-event'])
+const emit = defineEmits(['open-domain', 'open-unit', 'open-event', 'select-idol'])
 
 const facts = computed(() => [
   { label: '年龄', value: props.idol?.age ? `${props.idol.age}岁` : '' },
@@ -91,10 +101,10 @@ const facts = computed(() => [
 ])
 
 const related = computed(() => [
-  { id: 'stories', label: '个人剧情', count: `${props.stats.stories || 0} groups`, icon: BookOpenText },
+  { id: 'stories', label: '个人故事', count: `${props.stats.stories || 0} segments`, icon: BookOpenText },
   { id: 'cards', label: '卡片', count: `${props.stats.cards || 0} cards`, icon: Images },
-  { id: 'chat', label: '短信聊天', count: `${props.stats.chats || 0} groups`, icon: MessageSquareText },
-  { id: 'phone', label: '电话聊天', count: `${props.stats.phones || 0} groups`, icon: Phone },
+  { id: 'chat', label: '个人聊天', count: `${props.stats.chats || 0} records`, icon: MessageSquareText },
+  { id: 'phone', label: '电话通信', count: `${props.stats.phones || 0} records`, icon: Phone },
 ])
 
 const eventItems = computed(() => props.events.map(event => {
@@ -148,6 +158,7 @@ function formatDate(timestamp) {
 .idol-unit-link { display: inline-flex; align-items: center; gap: 6px; min-height: 29px; margin-top: 12px; padding: 0 8px; border: 1px solid #42515d; border-radius: 5px; background: #22303b; color: #dce5e9; cursor: pointer; font: inherit; font-size: 0.68rem; }
 .idol-unit-link:hover { border-color: #58cec5; }
 .idol-color { position: absolute; right: 26px; top: 24px; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.8); border-radius: 50%; }
+.profile-switcher { width: min(360px, 38vw); margin-left: auto; margin-right: 34px; }
 .idol-facts, .idol-related, .idol-events, .idol-notes { margin-top: 18px; padding: 20px; border: 1px solid #dfe4e8; background: #fff; }
 .idol-facts dl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; }
 .idol-facts dl div { min-width: 0; padding: 10px 16px; border-left: 1px solid #e5e9ec; }
@@ -188,6 +199,8 @@ function formatDate(timestamp) {
 }
 
 @media (max-width: 560px) {
+  .idol-profile-header { align-items: flex-start; flex-wrap: wrap; padding: 18px 16px; }
+  .profile-switcher { flex-basis: 100%; width: 100%; margin: 4px 0 0; }
   .idol-detail { padding: 12px; }
   .idol-profile-header { gap: 15px; min-height: 124px; padding: 18px; }
   .idol-portrait { width: 78px; height: 78px; }

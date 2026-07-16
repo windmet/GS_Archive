@@ -53,12 +53,15 @@
         :current-rarity="currentCardRarity"
         :current-asset-state="currentCardAssetState"
         :current-relation-state="currentCardRelationState"
+        :idols="idolUnitData?.idols || []"
+        :selected-idol="currentCharacterId"
         v-model:layout="cardLayout"
         @back="goBackFromCards"
         @select-card="openCard"
         @select-rarity="currentCardRarity = $event"
         @select-asset-state="currentCardAssetState = $event"
         @select-relation-state="currentCardRelationState = $event"
+        @select-idol="selectPrimaryIdol"
       />
 
       <ArchiveIdolDetail
@@ -66,9 +69,12 @@
         :idol="currentIdolProfile"
         :stats="currentIdolStats"
         :events="currentIdolEvents"
+        :idols="idolUnitData?.idols || []"
+        :selected-idol="currentCharacterId"
         @open-domain="openIdolDomain"
         @open-unit="openUnitFromIdol"
         @open-event="openIdolEvent"
+        @select-idol="selectPrimaryIdol"
       />
 
       <ArchiveCardDetail
@@ -188,13 +194,11 @@
         :seasonal-campaigns="seasonalCampaignData?.campaigns || []"
         :work-idols="workStoryData?.idols || []"
         :idol-story-count="idolEpisodeData?.meta?.section_count || 0"
-        :mobile-count="mobileArchiveData?.meta?.scenario_count || 0"
         @select="openCatalogStory"
         @browse="browseStoryCollection"
         @open-seasonal="openSeasonalCampaign()"
         @open-work="openWorkArchive()"
         @open-idol-story="openIdolStoryArchive()"
-        @open-mobile="openMobileArchive()"
         @load-more="storyVisibleLimit += 80"
         @clear-section="currentStorySection = ''"
         @update:mode="setStoryMode"
@@ -1069,11 +1073,16 @@ const currentIdolProfile = computed(() => {
 
 const currentIdolStats = computed(() => {
   const id = currentCharacterId.value
+  const chapter = idolEpisodeData.value?.by_idol_code?.[id]?.[0]
+  const mobileById = new Map((mobileArchiveData.value?.scenarios || []).map(scenario => [scenario.id, scenario]))
+  const mobileScenarios = (mobileArchiveData.value?.by_idol_code?.[id] || [])
+    .map(scenarioId => mobileById.get(scenarioId))
+    .filter(Boolean)
   return {
     cards: cardsForCharacter(cardIndexData.value, cardMap.value, id).length,
-    stories: categoryById('idol')?.characters?.[id]?.groups?.length || 0,
-    chats: categoryById('idol_chat')?.individual?.[id]?.groups?.length || 0,
-    phones: categoryById('idol_phone')?.individual?.[id]?.groups?.length || 0,
+    stories: (chapter?.sections || []).reduce((sum, section) => sum + (section.episodes?.length || 0), 0),
+    chats: mobileScenarios.filter(scenario => scenario.kind === 'idol_talk').length,
+    phones: mobileScenarios.filter(scenario => scenario.kind === 'idol_phone').length,
   }
 })
 const currentIdolEvents = computed(() => (archiveManifestData.value?.unit_event_relations || [])
@@ -1286,7 +1295,7 @@ async function applyArchiveRoute(route) {
   applyingArchiveRoute = true
   try {
     if (route.card && route.voice) await ensureCardDetailData()
-    if (['story_catalog', 'idol_story_archive', 'mobile_archive'].includes(route.view)) {
+    if (['story_catalog', 'idol_story_archive', 'mobile_archive', 'idol_detail'].includes(route.view)) {
       await ensureIdolCommunicationData()
     }
     filterQuery.value = route.query || ''
@@ -1415,16 +1424,13 @@ function goHome() {
 }
 
 function navigateArchiveSection(section) {
-  const categoryBySection = {
-    idols: 'idol',
-    cards: 'cards',
-    interactions: 'idol_chat',
-  }
   if (section === 'home') goHome()
   else if (section === 'stories') openStoryCatalog()
+  else if (section === 'idols') openPrimaryIdol(currentCharacterId.value)
+  else if (section === 'cards') openPrimaryCards(currentCharacterId.value)
+  else if (section === 'interactions') openMobileArchive({ idolCode: currentCharacterId.value || '001tom', mode: 'personal' })
   else if (section === 'gashas') openGashaCatalog()
   else if (section === 'resources') openArchiveStatus()
-  else if (categoryBySection[section]) openCategoryById(categoryBySection[section])
 }
 
 function openHomeIdol(idolId) {
@@ -1438,14 +1444,13 @@ function openHomeCards(idolId) {
 }
 
 function openHomeChat(idolId) {
-  currentCategoryId.value = 'idol_chat'
-  openIdol({ id: idolId })
+  openMobileArchive({ idolCode: idolId, mode: 'personal' })
 }
 
 function goArchiveBack() {
   const backByView = {
     idols: goHome,
-    idol_detail: () => commitView('idols'),
+    idol_detail: goHome,
     groups: goBackFromGroups,
     episode_zero_units: goHome,
     episodes: goBackToUnits,
@@ -1488,7 +1493,7 @@ function goArchiveBack() {
       currentCharacterId.value = ''
       currentArchiveUnitCode.value = ''
       currentMobileScenarioId.value = ''
-      commitView('story_catalog')
+      goHome()
     },
     unit_catalog: () => commitView('idols'),
     unit_detail: () => {
@@ -1831,14 +1836,15 @@ function openCategory(cat) {
   currentEpisodeId.value = ''
   currentCardId.value = ''
   currentIdolUnitFilter.value = ''
-  if (cat.id === 'idol' || cat.id === 'idol_chat' || cat.id === 'idol_phone' || cat.id === 'cards') {
-    currentCategoryId.value = cat.id
-    currentCharacterId.value = ''
-    currentGroup.value = null
-    currentCardRarity.value = 'all'
-    currentCardAssetState.value = 'all'
-    currentCardRelationState.value = 'all'
-    commitView('idols')
+  if (cat.id === 'idol') {
+    openPrimaryIdol(currentCharacterId.value)
+  } else if (cat.id === 'cards') {
+    openPrimaryCards(currentCharacterId.value)
+  } else if (cat.id === 'idol_chat' || cat.id === 'idol_phone') {
+    openMobileArchive({
+      idolCode: currentCharacterId.value || '001tom',
+      mode: cat.id === 'idol_phone' ? 'phone' : 'personal',
+    })
   } else if (cat.id === 'episode_zero') {
     currentCategoryId.value = 'episode_zero'
     commitView('episode_zero_units')
@@ -1848,6 +1854,39 @@ function openCategory(cat) {
     currentGroup.value = null
     commitView('groups')
   }
+}
+
+function normalizedPrimaryIdol(idolCode = '') {
+  return idolUnitData.value?.by_idol_code?.[idolCode] ? idolCode : '001tom'
+}
+
+function openPrimaryIdol(idolCode = '') {
+  filterQuery.value = ''
+  currentCategoryId.value = 'idol'
+  currentCharacterId.value = normalizedPrimaryIdol(idolCode)
+  currentGroup.value = null
+  currentCardId.value = ''
+  commitView('idol_detail')
+}
+
+function openPrimaryCards(idolCode = '') {
+  filterQuery.value = ''
+  currentCategoryId.value = 'cards'
+  currentCharacterId.value = normalizedPrimaryIdol(idolCode)
+  currentGroup.value = null
+  currentCardId.value = ''
+  currentCardRarity.value = 'all'
+  currentCardAssetState.value = 'all'
+  currentCardRelationState.value = 'all'
+  commitView('cards')
+}
+
+function selectPrimaryIdol(idolCode) {
+  if (!idolUnitData.value?.by_idol_code?.[idolCode]) return
+  currentCharacterId.value = idolCode
+  currentCardId.value = ''
+  filterQuery.value = ''
+  syncArchiveRoute()
 }
 
 function openIdol(entry) {
@@ -1958,7 +1997,8 @@ function goBackFromCards() {
   currentCardId.value = ''
   currentCardRarity.value = 'all'
   filterQuery.value = ''
-  commitView('idols')
+  currentCategoryId.value = 'idol'
+  commitView('idol_detail')
 }
 
 function openCardScenario(entry) {

@@ -83,16 +83,16 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   seasonal_campaign: { section: 'stories', required: [], fallback: 'story_catalog' },
   work_archive: { section: 'stories', required: [], fallback: 'story_catalog' },
   idol_story_archive: { section: 'stories', required: [], fallback: 'story_catalog' },
-  mobile_archive: { section: 'stories', required: [], fallback: 'story_catalog' },
+  mobile_archive: { section: 'interactions', required: [], fallback: 'home' },
   unit_catalog: { section: 'idols', required: [] },
   unit_detail: { section: 'idols', required: ['unit'], fallback: 'unit_catalog' },
   idols: { section: 'category', required: [] },
-  idol_detail: { section: 'idols', required: ['idol'], fallback: 'idols' },
+  idol_detail: { section: 'idols', required: [], fallback: 'home' },
   groups: { section: 'category', required: ['category'], fallback: 'home' },
   episode_zero_units: { section: 'stories', required: [] },
   episodes: { section: 'stories', required: ['unit'], fallback: 'episode_zero_units' },
   files: { section: 'category', required: ['group'], fallback: 'home' },
-  cards: { section: 'cards', required: ['idol'], fallback: 'idols' },
+  cards: { section: 'cards', required: [], fallback: 'home' },
   card_detail: { section: 'cards', required: ['card'], fallback: 'cards' },
   event_detail: { section: 'stories', required: ['event'], fallback: 'story_catalog' },
   gashas: { section: 'gashas', required: [] },
@@ -137,6 +137,15 @@ export function normalizeArchiveRoute(input = {}) {
   const card = clean(input.card)
   let view = scenario ? 'player' : allowed(clean(input.view), VALID_VIEWS, 'home')
   let category = allowed(clean(input.category), VALID_CATEGORIES, '')
+  let idol = clean(input.idol)
+
+  if (view === 'idols' && category === 'idol') view = 'idol_detail'
+  if (view === 'idols' && category === 'cards') view = 'cards'
+  if (view === 'idols' && ['idol_chat', 'idol_phone'].includes(category)) {
+    view = 'mobile_archive'
+    category = ''
+  }
+  if (['idol_detail', 'cards', 'mobile_archive'].includes(view) && !idol) idol = '001tom'
 
   if (['idol_detail'].includes(view)) category = 'idol'
   if (['cards', 'card_detail'].includes(view)) category = 'cards'
@@ -148,7 +157,7 @@ export function normalizeArchiveRoute(input = {}) {
     homeCue: clean(input.homeCue),
     homeCostume: clean(input.homeCostume),
     category,
-    idol: clean(input.idol),
+    idol,
     group: clean(input.group),
     unit: clean(input.unit),
     unitFilter: clean(input.unitFilter),
@@ -156,7 +165,9 @@ export function normalizeArchiveRoute(input = {}) {
     storyMode: allowed(clean(input.storyMode), VALID_STORY_MODES, 'portal'),
     storySection: clean(input.storySection),
     story: normalizeScenarioFile(input.story || ''),
-    mobileMode: allowed(clean(input.mobileMode), VALID_MOBILE_MODES, 'personal'),
+    mobileMode: view === 'mobile_archive' && clean(input.category) === 'idol_phone'
+      ? 'phone'
+      : allowed(clean(input.mobileMode), VALID_MOBILE_MODES, 'personal'),
     mobileScenario: clean(input.mobileScenario),
     eventScope: clean(input.storyType) === 'event'
       ? allowed(clean(input.eventScope), VALID_EVENT_SCOPES, 'all')

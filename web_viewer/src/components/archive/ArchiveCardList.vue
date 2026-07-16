@@ -11,6 +11,18 @@
       </template>
     </ArchiveListHeader>
 
+    <div class="card-idol-heading">
+      <div class="card-idol-copy">
+        <span>CARD ARCHIVE</span>
+        <strong>{{ title }}</strong>
+      </div>
+      <ArchiveIdolSwitcher
+        :idols="idols"
+        :selected-idol="selectedIdol"
+        @select="emit('select-idol', $event)"
+      />
+    </div>
+
     <div class="embedded-filters" aria-label="卡片目录工具栏">
       <div class="card-rarity-tabs">
         <button
@@ -93,6 +105,7 @@
 <script setup>
 import { LayoutGrid, List } from '@lucide/vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
+import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 
 defineProps({
@@ -105,6 +118,8 @@ defineProps({
   modelValue: { type: String, default: '' },
   embedded: { type: Boolean, default: false },
   layout: { type: String, default: 'compact' },
+  idols: { type: Array, default: () => [] },
+  selectedIdol: { type: String, default: '' },
 })
 
 const emit = defineEmits([
@@ -115,6 +130,7 @@ const emit = defineEmits([
   'select-relation-state',
   'update:modelValue',
   'update:layout',
+  'select-idol',
 ])
 
 const assetStateOptions = [
@@ -150,6 +166,11 @@ function fallbackCardIcon(event, resourceId) {
 
 <style scoped>
 .list-screen { height: 100%; padding: 0; overflow-x: hidden; overflow-y: auto; }
+.card-idol-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 14px 16px; border-bottom: 1px solid #e6eaed; background: #f7f9fa; }
+.card-idol-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.card-idol-heading span { color: #168f87; font-size: .56rem; font-weight: 800; }
+.card-idol-heading strong { overflow: hidden; font-size: .9rem; text-overflow: ellipsis; white-space: nowrap; }
+.card-idol-heading :deep(.idol-switcher) { width: min(360px, 48vw); }
 .embedded-filters { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid #edf0f2; background: #fff; }
 .filter-input { width: 100%; padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; background: #fff; color: #222; font-size: 0.85rem; }
 .filter-input:focus { outline: none; border-color: #88ccff; box-shadow: 0 0 0 2px rgba(136, 204, 255, 0.2); }
@@ -179,6 +200,8 @@ function fallbackCardIcon(event, resourceId) {
 .layout-grid .card-counts { grid-column: 2; white-space: normal; }
 
 @media (max-width: 560px) {
+  .card-idol-heading { align-items: flex-start; flex-direction: column; gap: 10px; padding: 12px 10px; }
+  .card-idol-heading :deep(.idol-switcher) { width: 100%; }
   .embedded-filters { grid-template-columns: minmax(0, 1fr) auto auto; align-items: start; padding: 9px 10px; }
   .card-rarity-tabs { grid-column: 1 / -1; }
   .asset-filter { min-width: 0; }

@@ -177,7 +177,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { ArrowRight, BookOpen, Briefcase, Cake, CalendarRange, ChevronDown, CreditCard, FileWarning, LayoutGrid, MessageSquareText, Search, Sparkles, UserRound, X } from '@lucide/vue'
+import { ArrowRight, BookOpen, Briefcase, Cake, CalendarRange, ChevronDown, CreditCard, FileWarning, LayoutGrid, Search, Sparkles, UserRound, X } from '@lucide/vue'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 
 const props = defineProps({
@@ -190,9 +190,8 @@ const props = defineProps({
   seasonalCampaigns: { type: Array, default: () => [] },
   workIdols: { type: Array, default: () => [] },
   idolStoryCount: { type: Number, default: 0 },
-  mobileCount: { type: Number, default: 0 },
 })
-const emit = defineEmits(['select', 'browse', 'open-seasonal', 'open-work', 'open-idol-story', 'open-mobile', 'load-more', 'clear-section', 'update:mode', 'update:domain', 'update:event-scope', 'update:availability', 'update:sort'])
+const emit = defineEmits(['select', 'browse', 'open-seasonal', 'open-work', 'open-idol-story', 'load-more', 'clear-section', 'update:mode', 'update:domain', 'update:event-scope', 'update:availability', 'update:sort'])
 
 const groupEntries = domain => {
   const groups = new Map()
@@ -212,7 +211,6 @@ const secondaryGateways = [
   { id: 'work', label: '工作剧情', icon: Briefcase, unit: '人', action: 'work' }, { id: 'birthday', label: '生日剧情', icon: Cake },
   { id: 'extra', label: '额外剧情', icon: Sparkles },
   { id: 'seasonal_campaign', label: '季节企划', icon: CalendarRange, unit: '组', action: 'seasonal' },
-  { id: 'mobile_archive', label: 'Mobile 通信', icon: MessageSquareText, unit: '条', action: 'mobile' },
 ]
 const sectionLabel = computed(() => props.allEntries.find(entry => entry.domain === props.domain && entry.sectionId === props.section)?.sectionLabel || props.section)
 
@@ -222,14 +220,12 @@ function gatewayCount(gateway) {
   if (gateway.action === 'seasonal') return props.seasonalCampaigns.length
   if (gateway.action === 'work') return props.workIdols.length
   if (gateway.action === 'idol-story') return props.idolStoryCount
-  if (gateway.action === 'mobile') return props.mobileCount
   return domainCount(gateway.id)
 }
 function openGateway(gateway) {
   if (gateway.action === 'seasonal') emit('open-seasonal')
   else if (gateway.action === 'work') emit('open-work')
   else if (gateway.action === 'idol-story') emit('open-idol-story')
-  else if (gateway.action === 'mobile') emit('open-mobile')
   else browse(gateway.id)
 }
 function mainVisual(index) { return `/assets/stories/main/image_story_main_button_${String(index + 1).padStart(2, '0')}.png` }
