@@ -23,7 +23,7 @@ assert.deepEqual(
   normalizeArchiveRoute({ view: 'idol_detail', idol: '001tom' }),
   {
     view: 'idol_detail', homeIdol: '', homeCue: '', homeCostume: '', category: 'idol', idol: '001tom', group: '', unit: '', unitFilter: '',
-    storyType: '', storyMode: 'portal', storySection: '', story: '', eventScope: 'all', availability: 'all', sort: 'domain', episode: '', card: '',
+    storyType: '', storyMode: 'portal', storySection: '', story: '', mobileMode: 'personal', mobileScenario: '', eventScope: 'all', availability: 'all', sort: 'domain', episode: '', card: '',
     gasha: '', gashaType: 'all', rarity: 'all', assetState: 'all', relationState: 'all', query: '',
     event: '', scenario: '', startStep: 0, endStep: 0, voice: '', returnView: '', parentView: '',
   },
@@ -37,6 +37,8 @@ assert.equal(normalizeArchiveRoute({ view: 'story_detail' }).view, 'story_catalo
 assert.equal(normalizeArchiveRoute({ view: 'story_collection' }).view, 'story_catalog')
 assert.equal(normalizeArchiveRoute({ view: 'seasonal_campaign' }).view, 'seasonal_campaign')
 assert.equal(normalizeArchiveRoute({ view: 'work_archive' }).view, 'work_archive')
+assert.equal(normalizeArchiveRoute({ view: 'idol_story_archive' }).view, 'idol_story_archive')
+assert.equal(normalizeArchiveRoute({ view: 'mobile_archive' }).view, 'mobile_archive')
 assert.equal(normalizeArchiveRoute({ view: 'episodes' }).view, 'episode_zero_units')
 assert.equal(normalizeArchiveRoute({ view: 'player' }).view, 'home')
 assert.equal(normalizeArchiveRoute({ view: 'player', card: '001tom_n01', voice: '2_1_001_01_01_01' }).view, 'player')
@@ -50,6 +52,17 @@ assert.equal(archiveSectionForRoute({ view: 'story_detail', story: '1_4_001_01.j
 assert.equal(archiveSectionForRoute({ view: 'story_collection', storyType: 'main', storySection: '101' }), 'stories')
 assert.equal(archiveSectionForRoute({ view: 'seasonal_campaign', storyType: 'seasonal_campaign', storySection: 'valentine_2023' }), 'stories')
 assert.equal(archiveSectionForRoute({ view: 'work_archive', storyType: 'work', idol: '001tom' }), 'stories')
+assert.equal(archiveSectionForRoute({ view: 'idol_story_archive', idol: '001tom' }), 'stories')
+assert.equal(archiveSectionForRoute({ view: 'mobile_archive', idol: '001tom', mobileMode: 'phone' }), 'stories')
+
+const mobileContext = readArchiveRoute('http://localhost/?view=mobile_archive&idol=001tom&unit=01jup&mobile_mode=phone&mobile_scenario=2010209')
+assert.equal(mobileContext.view, 'mobile_archive')
+assert.equal(mobileContext.idol, '001tom')
+assert.equal(mobileContext.unit, '01jup')
+assert.equal(mobileContext.mobileMode, 'phone')
+assert.equal(mobileContext.mobileScenario, '2010209')
+assert.equal(buildArchiveUrl('http://localhost/', mobileContext).searchParams.get('mobile_mode'), 'phone')
+assert.equal(readArchiveRoute('http://localhost/?view=mobile_archive&mobile_mode=invalid').mobileMode, 'personal')
 
 const workContext = readArchiveRoute('http://localhost/?view=work_archive&story_type=work&idol=001tom')
 assert.equal(workContext.view, 'work_archive')

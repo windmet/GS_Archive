@@ -187,10 +187,14 @@
         :filtered-total="filteredStoryCatalog.length"
         :seasonal-campaigns="seasonalCampaignData?.campaigns || []"
         :work-idols="workStoryData?.idols || []"
+        :idol-story-count="idolEpisodeData?.meta?.section_count || 0"
+        :mobile-count="mobileArchiveData?.meta?.scenario_count || 0"
         @select="openCatalogStory"
         @browse="browseStoryCollection"
         @open-seasonal="openSeasonalCampaign()"
         @open-work="openWorkArchive()"
+        @open-idol-story="openIdolStoryArchive()"
+        @open-mobile="openMobileArchive()"
         @load-more="storyVisibleLimit += 80"
         @clear-section="currentStorySection = ''"
         @update:mode="setStoryMode"
@@ -232,6 +236,33 @@
         :idols="workStoryData?.idols || []"
         @select-idol="selectWorkIdol"
         @play="playWorkStory"
+      />
+
+      <ArchiveIdolStory
+        v-if="view === 'idol_story_archive'"
+        :story="currentIdolStoryPage"
+        :idols="idolStoryOptions"
+        @select-idol="selectIdolStory"
+        @play-section="playIdolStorySection"
+        @play-episode="playIdolStoryEpisode"
+        @open-communication="openStoryCommunication"
+      />
+
+      <ArchiveMobileArchive
+        v-if="view === 'mobile_archive'"
+        :archive="mobileArchiveData"
+        :compiled-index="indexData"
+        :idols="idolUnitData?.idols || []"
+        :units="idolUnitData?.units || []"
+        :selected-idol="currentCharacterId"
+        :selected-unit="currentArchiveUnitCode"
+        :mode="currentMobileMode"
+        :focused-scenario-id="currentMobileScenarioId"
+        @select-idol="selectMobileIdol"
+        @select-unit="selectMobileUnit"
+        @update:mode="setMobileMode"
+        @play="playMobileScenario"
+        @open-card="openMobileCard"
       />
 
       <ArchiveUnitCatalog
@@ -305,9 +336,11 @@ import ArchiveStoryDetail from './components/archive/ArchiveStoryDetail.vue'
 import ArchiveStoryCollection from './components/archive/ArchiveStoryCollection.vue'
 import ArchiveSeasonalCampaign from './components/archive/ArchiveSeasonalCampaign.vue'
 import ArchiveWorkStory from './components/archive/ArchiveWorkStory.vue'
+import ArchiveIdolStory from './components/archive/ArchiveIdolStory.vue'
+import ArchiveMobileArchive from './components/archive/ArchiveMobileArchive.vue'
 import ArchiveUnitCatalog from './components/archive/ArchiveUnitCatalog.vue'
 import ArchiveUnitDetail from './components/archive/ArchiveUnitDetail.vue'
-import { loadArchiveData, loadCardDetailData } from './data/ArchiveDataRepository.js'
+import { loadArchiveData, loadCardDetailData, loadIdolCommunicationData } from './data/ArchiveDataRepository.js'
 import {
   buildCardMap,
   buildCardRarityTabs,
@@ -320,6 +353,7 @@ import {
 import { buildArchiveHomeHighlights, buildArchiveHomeState } from './data/archiveHomeState.js'
 import { buildEventStoryEpisodes } from './data/eventStoryEpisodes.js'
 import { buildStoryCollections } from './data/storyCollections.js'
+import { buildIdolStoryOptions, buildIdolStoryPage } from './data/idolCommunicationSelectors.js'
 import {
   archiveSectionForRoute,
   onArchivePopState,
@@ -354,6 +388,9 @@ const storyMasterData = ref(null)
 const storyPresentationData = ref(null)
 const seasonalCampaignData = ref(null)
 const workStoryData = ref(null)
+const idolEpisodeData = ref(null)
+const mobileArchiveData = ref(null)
+const idolCommunicationLoadPromise = ref(null)
 const idolUnitData = ref(null)
 const costumeDictionaryData = ref(null)
 const archiveManifestData = ref(null)
@@ -397,6 +434,8 @@ const currentStoryFile = ref('')
 const currentEventScope = ref('all')
 const currentStoryAvailability = ref('all')
 const currentStorySort = ref('domain')
+const currentMobileMode = ref('personal')
+const currentMobileScenarioId = ref('')
 const storyVisibleLimit = ref(80)
 const homeSelectedId = ref('001tom')
 const homeSelectedCue = ref('')
@@ -632,6 +671,25 @@ const currentWorkIdol = computed(() => {
   return workStoryData.value?.by_idol_code?.[currentCharacterId.value] ||
     workStoryData.value?.by_idol_code?.['001tom'] ||
     idols[0] || null
+})
+
+const idolStoryOptions = computed(() => buildIdolStoryOptions(idolEpisodeData.value, idolUnitData.value))
+
+const currentIdolStoryPage = computed(() => {
+  const fallback = idolStoryOptions.value[0]?.idolCode || ''
+  const idolCode = idolEpisodeData.value?.by_idol_code?.[currentCharacterId.value]
+    ? currentCharacterId.value
+    : fallback
+  const page = buildIdolStoryPage(
+    idolEpisodeData.value,
+    mobileArchiveData.value,
+    storyCatalog.value,
+    idolUnitData.value,
+    idolCode,
+  )
+  if (!page) return null
+  const membership = archiveManifestData.value?.unit_membership_by_idol?.[idolCode]
+  return { ...page, unitName: membership?.unit_name || page.unitName }
 })
 
 const storyDomainOptions = computed(() => {
@@ -1044,6 +1102,8 @@ const archiveTitle = computed(() => {
   if (view.value === 'story_collection') return currentStoryCollection.value?.title || '故事章节'
   if (view.value === 'seasonal_campaign') return currentSeasonalCampaign.value?.name || '季节企划'
   if (view.value === 'work_archive') return `${currentWorkIdol.value?.display_name || ''} 工作档案`.trim()
+  if (view.value === 'idol_story_archive') return `${currentIdolStoryPage.value?.idol_name || ''} 个人故事`.trim()
+  if (view.value === 'mobile_archive') return 'Mobile 通信'
   if (view.value === 'gashas') return '卡池档案'
   if (view.value === 'gasha_detail') return currentGasha.value?.display_name || '卡池详情'
   if (view.value === 'event_detail') return currentEvent.value?.title || '活动详情'
@@ -1087,7 +1147,9 @@ function currentArchiveRoute() {
   const returnsToStory = view.value === 'player' && returnViewAfterPlayer.value === 'story_detail'
   const preservesEventContext = view.value === 'event_detail' || returnsToEvent
   const preservesArchiveUnit = view.value === 'unit_detail' ||
+    view.value === 'mobile_archive' ||
     (view.value === 'player' && returnViewAfterPlayer.value === 'unit_detail') ||
+    (view.value === 'player' && returnViewAfterPlayer.value === 'mobile_archive') ||
     (preservesEventContext && eventParentView.value === 'unit_detail')
   return {
     view: view.value,
@@ -1105,6 +1167,8 @@ function currentArchiveRoute() {
     storyMode: currentStoryMode.value,
     storySection: currentStorySection.value,
     story: (view.value === 'story_detail' || returnsToStory) ? currentStoryFile.value : '',
+    mobileMode: currentMobileMode.value,
+    mobileScenario: currentMobileScenarioId.value,
     eventScope: currentEventScope.value,
     availability: currentStoryAvailability.value,
     sort: currentStorySort.value,
@@ -1182,6 +1246,24 @@ async function ensureCardDetailData() {
   return cardDetailLoadPromise.value
 }
 
+async function ensureIdolCommunicationData() {
+  if (idolEpisodeData.value && mobileArchiveData.value) {
+    return { idolEpisode: idolEpisodeData.value, mobileArchive: mobileArchiveData.value }
+  }
+  if (!idolCommunicationLoadPromise.value) {
+    idolCommunicationLoadPromise.value = loadIdolCommunicationData().then(data => {
+      idolEpisodeData.value = data.idolEpisode
+      mobileArchiveData.value = data.mobileArchive
+      return data
+    }).catch(error => {
+      console.error('[ArchiveData] Failed to load idol communication indexes:', error)
+      idolCommunicationLoadPromise.value = null
+      return null
+    })
+  }
+  return idolCommunicationLoadPromise.value
+}
+
 function restoreVoicePreview(route) {
   const card = cardMap.value.get(route.card)
   if (!card || !route.voice) return false
@@ -1204,6 +1286,9 @@ async function applyArchiveRoute(route) {
   applyingArchiveRoute = true
   try {
     if (route.card && route.voice) await ensureCardDetailData()
+    if (['story_catalog', 'idol_story_archive', 'mobile_archive'].includes(route.view)) {
+      await ensureIdolCommunicationData()
+    }
     filterQuery.value = route.query || ''
     currentCategoryId.value = route.category || ''
     currentCharacterId.value = route.idol || ''
@@ -1223,6 +1308,14 @@ async function applyArchiveRoute(route) {
     currentEventScope.value = route.eventScope || 'all'
     currentStoryAvailability.value = route.availability || 'all'
     currentStorySort.value = route.sort || 'domain'
+    currentMobileMode.value = route.mobileMode || 'personal'
+    currentMobileScenarioId.value = route.mobileScenario || ''
+    if (['idol_story_archive', 'mobile_archive'].includes(route.view) && !idolEpisodeData.value?.by_idol_code?.[currentCharacterId.value]) {
+      currentCharacterId.value = idolEpisodeData.value?.chapters?.[0]?.idol_code || '001tom'
+    }
+    if (route.view === 'mobile_archive' && !mobileArchiveData.value?.by_unit_code?.[currentArchiveUnitCode.value]) {
+      currentArchiveUnitCode.value = idolUnitData.value?.units?.[0]?.unit_code || '01jup'
+    }
     currentEpisodeId.value = route.episode || ''
     const requestedHomeIdol = archiveHomeIdols.value.find(idol => idol.id === route.homeIdol) || archiveHomeIdols.value[0]
     homeSelectedId.value = requestedHomeIdol?.id || '001tom'
@@ -1234,10 +1327,10 @@ async function applyArchiveRoute(route) {
     const restoresEventContext = route.view === 'event_detail' ||
       (route.view === 'player' && route.returnView === 'event_detail')
     currentArchiveUnitCode.value = (
-      ['unit_catalog', 'unit_detail'].includes(route.view) ||
+      ['unit_catalog', 'unit_detail', 'mobile_archive'].includes(route.view) ||
       (route.view === 'player' && route.returnView === 'unit_detail') ||
       (restoresEventContext && route.parentView === 'unit_detail')
-    ) ? route.unit || '' : ''
+    ) ? (route.unit || (route.view === 'mobile_archive' ? (idolUnitData.value?.units?.[0]?.unit_code || '01jup') : '')) : ''
     currentGroup.value = resolveRouteGroup(route)
     currentUnit.value = resolveRouteUnit(route)
     currentScenario.value = null
@@ -1282,6 +1375,8 @@ async function applyArchiveRoute(route) {
     else if (route.view === 'story_collection' && !currentStoryCollection.value) view.value = 'story_catalog'
     else if (route.view === 'seasonal_campaign' && !currentSeasonalCampaign.value) view.value = 'story_catalog'
     else if (route.view === 'work_archive' && !currentWorkIdol.value) view.value = 'story_catalog'
+    else if (route.view === 'idol_story_archive' && !currentIdolStoryPage.value) view.value = 'story_catalog'
+    else if (route.view === 'mobile_archive' && !mobileArchiveData.value) view.value = 'story_catalog'
     else if (route.view === 'cards' && !currentCharacterId.value) view.value = 'idols'
     else if (route.view === 'files' && !currentGroup.value) view.value = currentCharacterId.value ? 'groups' : 'home'
     else if (route.view === 'episodes' && !currentUnit.value) view.value = 'episode_zero_units'
@@ -1314,6 +1409,8 @@ function goHome() {
   currentEventScope.value = 'all'
   currentStoryAvailability.value = 'all'
   currentStorySort.value = 'domain'
+  currentMobileMode.value = 'personal'
+  currentMobileScenarioId.value = ''
   commitView('home')
 }
 
@@ -1383,6 +1480,16 @@ function goArchiveBack() {
       currentCharacterId.value = ''
       commitView('story_catalog')
     },
+    idol_story_archive: () => {
+      currentCharacterId.value = ''
+      commitView('story_catalog')
+    },
+    mobile_archive: () => {
+      currentCharacterId.value = ''
+      currentArchiveUnitCode.value = ''
+      currentMobileScenarioId.value = ''
+      commitView('story_catalog')
+    },
     unit_catalog: () => commitView('idols'),
     unit_detail: () => {
       currentArchiveUnitCode.value = ''
@@ -1434,7 +1541,8 @@ function openGashaCatalog() {
   commitView('gashas')
 }
 
-function openStoryCatalog() {
+async function openStoryCatalog() {
+  await ensureIdolCommunicationData()
   filterQuery.value = ''
   currentStoryDomain.value = ''
   currentStoryMode.value = 'portal'
@@ -1443,6 +1551,8 @@ function openStoryCatalog() {
   currentEventScope.value = 'all'
   currentStoryAvailability.value = 'all'
   currentStorySort.value = 'domain'
+  currentMobileMode.value = 'personal'
+  currentMobileScenarioId.value = ''
   storyVisibleLimit.value = 80
   commitView('story_catalog')
 }
@@ -1518,6 +1628,95 @@ function selectWorkIdol(idolCode) {
 
 function playWorkStory(file) {
   if (file) loadScenario(file, 'work_archive')
+}
+
+async function openIdolStoryArchive(idolCode = '001tom') {
+  await ensureIdolCommunicationData()
+  const fallback = idolEpisodeData.value?.chapters?.[0]?.idol_code || ''
+  const selected = idolEpisodeData.value?.by_idol_code?.[idolCode] ? idolCode : fallback
+  if (!selected) return
+  filterQuery.value = ''
+  currentStoryDomain.value = 'idol_story'
+  currentStoryMode.value = 'portal'
+  currentStorySection.value = ''
+  currentCharacterId.value = selected
+  currentMobileScenarioId.value = ''
+  commitView('idol_story_archive')
+}
+
+function selectIdolStory(idolCode) {
+  if (!idolEpisodeData.value?.by_idol_code?.[idolCode]) return
+  currentCharacterId.value = idolCode
+  currentMobileScenarioId.value = ''
+  syncArchiveRoute()
+}
+
+function playIdolStorySection(section) {
+  const queue = (section?.episodes || []).filter(episode => episode.exists && episode.file)
+  if (queue.length) startEpisodeQueue(queue, 0, 'idol_story_archive')
+}
+
+function playIdolStoryEpisode({ section, episode }) {
+  const queue = (section?.episodes || []).filter(candidate => candidate.exists && candidate.file)
+  const index = queue.findIndex(candidate => candidate.id === episode?.id)
+  if (index >= 0) startEpisodeQueue(queue, index, 'idol_story_archive')
+}
+
+async function openMobileArchive({ idolCode = '001tom', mode = 'personal', scenarioId = '' } = {}) {
+  await ensureIdolCommunicationData()
+  const fallbackIdol = idolEpisodeData.value?.chapters?.[0]?.idol_code || '001tom'
+  const fallbackUnit = idolUnitData.value?.units?.[0]?.unit_code || '01jup'
+  currentCharacterId.value = idolEpisodeData.value?.by_idol_code?.[idolCode] ? idolCode : fallbackIdol
+  currentArchiveUnitCode.value = mobileArchiveData.value?.by_unit_code?.[currentArchiveUnitCode.value]
+    ? currentArchiveUnitCode.value
+    : fallbackUnit
+  currentMobileMode.value = ['personal', 'phone', 'unit', 'random'].includes(mode) ? mode : 'personal'
+  currentMobileScenarioId.value = scenarioId ? String(scenarioId) : ''
+  currentStoryDomain.value = 'mobile_archive'
+  currentStoryMode.value = 'portal'
+  commitView('mobile_archive')
+}
+
+function openStoryCommunication(scenario) {
+  openMobileArchive({
+    idolCode: scenario?.idol_code || currentCharacterId.value,
+    mode: scenario?.kind === 'idol_phone' ? 'phone' : 'personal',
+    scenarioId: scenario?.id || '',
+  })
+}
+
+function selectMobileIdol(idolCode) {
+  if (!idolEpisodeData.value?.by_idol_code?.[idolCode]) return
+  currentCharacterId.value = idolCode
+  currentMobileScenarioId.value = ''
+  syncArchiveRoute()
+}
+
+function selectMobileUnit(unitCode) {
+  if (!mobileArchiveData.value?.by_unit_code?.[unitCode]) return
+  currentArchiveUnitCode.value = unitCode
+  currentMobileScenarioId.value = ''
+  syncArchiveRoute()
+}
+
+function setMobileMode(mode) {
+  if (!['personal', 'phone', 'unit', 'random'].includes(mode)) return
+  currentMobileMode.value = mode
+  currentMobileScenarioId.value = ''
+  syncArchiveRoute()
+}
+
+function playMobileScenario(file) {
+  if (file) loadScenario(file, 'mobile_archive')
+}
+
+function openMobileCard(cardId) {
+  const card = (cardIndexData.value?.cards || []).find(entry => Number(entry.card_id) === Number(cardId))
+  if (!card) return
+  currentCategoryId.value = 'cards'
+  currentCharacterId.value = card.character_id
+  currentCardId.value = card.resource_id
+  commitView('card_detail')
 }
 
 function openUnitCatalog() {
@@ -1684,11 +1883,19 @@ function openIdol(entry) {
 }
 
 function openIdolDomain(domain) {
+  if (domain === 'stories') {
+    openIdolStoryArchive(currentCharacterId.value)
+    return
+  }
+  if (domain === 'chat' || domain === 'phone') {
+    openMobileArchive({
+      idolCode: currentCharacterId.value,
+      mode: domain === 'phone' ? 'phone' : 'personal',
+    })
+    return
+  }
   const categoryByDomain = {
-    stories: 'idol',
     cards: 'cards',
-    chat: 'idol_chat',
-    phone: 'idol_phone',
   }
   const category = categoryByDomain[domain]
   if (!category) return
@@ -1822,6 +2029,8 @@ function restoreEpisodeQueue(scenarioFile, returnView) {
     episodes = (currentStoryCollection.value?.chapters || []).flatMap(chapter => chapter.episodes || [])
   } else if (returnView === 'event_detail') {
     episodes = currentEventEpisodes.value
+  } else if (returnView === 'idol_story_archive') {
+    episodes = (currentIdolStoryPage.value?.sections || []).flatMap(section => section.episodes || [])
   }
   const queue = episodes.filter(episode => episode.exists !== false && episode.file)
   const index = queue.findIndex(episode => episode.file === scenarioFile)
@@ -2130,7 +2339,7 @@ onMounted(async () => {
   removeSpineAnimationDebug = installSpineAnimationDebug()
 })
 
-watch([filterQuery, currentCardRarity, currentCardAssetState, currentCardRelationState, currentGashaCategory, currentIdolUnitFilter, currentStoryDomain, currentStoryMode, currentStorySection, currentEventScope, currentStoryAvailability, currentStorySort], () => {
+watch([filterQuery, currentCardRarity, currentCardAssetState, currentCardRelationState, currentGashaCategory, currentIdolUnitFilter, currentStoryDomain, currentStoryMode, currentStorySection, currentEventScope, currentStoryAvailability, currentStorySort, currentMobileMode, currentMobileScenarioId], () => {
   syncArchiveRoute({ replace: true })
 })
 

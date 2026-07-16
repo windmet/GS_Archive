@@ -12,6 +12,8 @@ const ROUTE_QUERY_KEYS = [
   'story_mode',
   'story_section',
   'story',
+  'mobile_mode',
+  'mobile_scenario',
   'event_scope',
   'availability',
   'sort',
@@ -51,6 +53,8 @@ const VALID_VIEWS = new Set([
   'story_detail',
   'seasonal_campaign',
   'work_archive',
+  'idol_story_archive',
+  'mobile_archive',
   'unit_catalog',
   'unit_detail',
   'player',
@@ -67,6 +71,7 @@ const VALID_GASHA_TYPES = new Set(['all', 'standard_pickup', 'growing_fes', 'sta
 const VALID_STORY_AVAILABILITY = new Set(['all', 'playable', 'missing'])
 const VALID_STORY_SORTS = new Set(['domain', 'title', 'resource', 'steps_desc'])
 const VALID_STORY_MODES = new Set(['portal', 'search'])
+const VALID_MOBILE_MODES = new Set(['personal', 'phone', 'unit', 'random'])
 const VALID_RETURN_VIEWS = new Set([...VALID_VIEWS].filter(view => !['player', 'spine_lab', 'chibi_stage'].includes(view)))
 
 const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
@@ -77,6 +82,8 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   story_detail: { section: 'stories', required: ['story'], fallback: 'story_catalog' },
   seasonal_campaign: { section: 'stories', required: [], fallback: 'story_catalog' },
   work_archive: { section: 'stories', required: [], fallback: 'story_catalog' },
+  idol_story_archive: { section: 'stories', required: [], fallback: 'story_catalog' },
+  mobile_archive: { section: 'stories', required: [], fallback: 'story_catalog' },
   unit_catalog: { section: 'idols', required: [] },
   unit_detail: { section: 'idols', required: ['unit'], fallback: 'unit_catalog' },
   idols: { section: 'category', required: [] },
@@ -149,6 +156,8 @@ export function normalizeArchiveRoute(input = {}) {
     storyMode: allowed(clean(input.storyMode), VALID_STORY_MODES, 'portal'),
     storySection: clean(input.storySection),
     story: normalizeScenarioFile(input.story || ''),
+    mobileMode: allowed(clean(input.mobileMode), VALID_MOBILE_MODES, 'personal'),
+    mobileScenario: clean(input.mobileScenario),
     eventScope: clean(input.storyType) === 'event'
       ? allowed(clean(input.eventScope), VALID_EVENT_SCOPES, 'all')
       : 'all',
@@ -207,6 +216,8 @@ export function readArchiveRoute(input = null) {
     storyMode: params.get('story_mode'),
     storySection: clean(params.get('story_section')),
     story: params.get('story'),
+    mobileMode: params.get('mobile_mode'),
+    mobileScenario: params.get('mobile_scenario'),
     eventScope: params.get('event_scope'),
     availability: params.get('availability'),
     sort: params.get('sort'),
@@ -247,6 +258,8 @@ export function buildArchiveUrl(input, route) {
   if (normalized.storyMode !== 'portal') url.searchParams.set('story_mode', normalized.storyMode)
   if (normalized.storySection) url.searchParams.set('story_section', normalized.storySection)
   if (normalized.story) url.searchParams.set('story', normalized.story)
+  if (normalized.mobileMode !== 'personal') url.searchParams.set('mobile_mode', normalized.mobileMode)
+  if (normalized.mobileScenario) url.searchParams.set('mobile_scenario', normalized.mobileScenario)
   if (normalized.eventScope !== 'all') url.searchParams.set('event_scope', normalized.eventScope)
   if (normalized.availability !== 'all') url.searchParams.set('availability', normalized.availability)
   if (normalized.sort !== 'domain') url.searchParams.set('sort', normalized.sort)
