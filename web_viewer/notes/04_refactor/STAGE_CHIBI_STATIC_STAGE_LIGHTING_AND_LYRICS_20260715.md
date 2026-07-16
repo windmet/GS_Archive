@@ -63,3 +63,15 @@ Legacy 在 27,600 ms 命中首句 `冴えない気分になってくんじゃ`�
 ## 尚未完成
 
 完整 Live 仍需实现 ParticleSystem 类 `Object_layer`、Spotlight、Laserlight、Pinspotlight、Suspensionlight 和 Penlight。ParticleSystem 不能只导出首帧贴图；后续需要读取 prefab 的 emission、shape、velocity、size/color over lifetime、TextureSheetAnimation、材质和混合模式，再决定哪些能在 Pixi 粒子容器中等价复刻。
+
+## Spotlight 时间轴与人物深度带（2026-07-16）
+
+编排索引升级为 schema 10，完整保留 2,338 条 `Spotlight`、7,146 条 `Pinspotlight` 和 2,066 条 `Laserlight`。其中 Spotlight 已确认并使用灯号、目标演员、自由 X、补间/淡出时长、光束色、环境色/强度和 depth；Pinspotlight 的未证实 prefab 控制字段暂以 `parameter4/parameter6` 原样保留，避免错误命名；Laserlight 保存样式、扫动周期、初始角、方向、长度、根坐标、颜色、宽度和 depth。
+
+Study Equal Magic! 的 96,400 ms 事件用 `#EE7800` 聚光灯指向 performer slot 2，映射为舞台 2 号位。浏览器回归显示灯号 10 正确落在左侧后排平台，并单独提亮目标角色。光锥使用柔边 alpha 纹理与 additive 混合，淡出服从 CSV duration；角色本身只做不透明 tint 提亮，避免把 Spine 变成半透明。
+
+本次也修正了人物与舞台对象共用错误 z 公式的问题。全库动态对象常用 depth 为 1500–1850，明确前景对象则达到 2200–2400；旧公式 `(360-y)*10` 会把 Study Equal Magic! 的后排演员算到 900/1300，导致 depth 1500 的 `fx_in_steqmg_overlight_2/3` 直接切过身体。人物现在位于约 2000 的独立深度带，仅以 `(360-y)*0.5` 在演员之间排序；因此 1500 的 overlight 和 1800 的 Spotlight 位于人物后方，2200 以上的真实前景仍可遮挡人物。
+
+舞台放大不再修改整台相机。`STAGE_BASE_ZOOM` 保持 1.10，静态舞台、Backmonitor、Image layer 与固定 Object layer 共同使用 `STAGE_TEXTURE_SCALE = 1.073`；这样平台和布景扩大约 7.3%，但人物继续保持官方全身构图，屏幕视频与舞台镂空仍处在同一环境坐标系。
+
+尚未完成的灯光部分缩小为 Pinspotlight prefab 几何、Laserlight 扫动、Suspensionlight、Penlight，以及 ParticleSystem 类 Object_layer；Spotlight 的环境色叠加和多束交叉还需继续对照更多歌曲。
