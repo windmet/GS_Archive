@@ -41,6 +41,20 @@ export function useVoicePlayer({
     }
   }
 
+  function unlockAudioContext() {
+    ensureAudioCtx()
+    try {
+      const silentBuffer = audioCtx.createBuffer(1, 1, 22050)
+      const silentSource = audioCtx.createBufferSource()
+      silentSource.buffer = silentBuffer
+      silentSource.connect(audioCtx.destination)
+      silentSource.start(0)
+      silentSource.onended = () => {
+        try { silentSource.disconnect() } catch (_) {}
+      }
+    } catch (_) {}
+  }
+
   async function waitForRunningAudioContext(timeoutMs = 1800) {
     ensureAudioCtx()
     if (audioCtx.state === 'running') return
@@ -100,6 +114,82 @@ export function useVoicePlayer({
     return null
   }
 
+  async function prepareVoice({ step = currentStep.value, scenarioId = compiledData.value?.scenario_id } = {}) {
+    const voice = step?.dialogue?.voice
+    if (!voice) return null
+
+    ensureAudioCtx()
+    try {
+      const voiceUrls = getVoiceUrlCandidates(voice, scenarioId)
+      let arrayBuffer = null
+      let lastFetchError = null
+      for (const voiceUrl of voiceUrls) {
+        const controller = new AbortController()
+        const timeoutId = window.setTimeout(() => controller.abort(), 6500)
+        try {
+          const res = await fetch(`${voiceUrl}?_=${Date.now()}`, { signal: controller.signal })
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          const contentType = res.headers.get('content-type') || ''
+          const candidateBuffer = await res.arrayBuffer()
+          if (candidateBuffer.byteLength < 1000 || contentType.includes('text/html')) {
+            throw new Error(`Not an audio file: ${contentType} (${candidateBuffer.byteLength} bytes)`)
+          }
+          arrayBuffer = candidateBuffer
+          break
+        } catch (error) {
+          lastFetchError = error
+        } finally {
+          window.clearTimeout(timeoutId)
+        }
+      }
+      if (!arrayBuffer) throw lastFetchError || new Error('No voice filename candidate resolved')
+
+      let audioBuffer
+      try {
+        audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
+      } catch (decodeErr) {
+        console.error('[Audio] decodeAudioData FAILED:', decodeErr.message, 'voice:', voice)
+        return null
+      }
+
+      const lipCurve = await loadLipCurve(step, audioBuffer.duration)
+      return { voice, step, scenarioId, audioBuffer, lipCurve }
+    } catch (err) {
+      console.warn('[Audio] prepare failed:', err.message, 'voice:', voice)
+      return null
+    }
+  }
+
+  function playPreparedVoice(prepared) {
+    if (!prepared?.audioBuffer || !prepared.voice) return false
+
+    stopCurrentVoice('playPreparedVoice-new')
+    ensureAudioCtx()
+
+    lastVoiceUrl = prepared.voice
+    lastVoiceStepIndex = currentStepIndex.value
+    voiceCharaId = prepared.step?.chara_id || null
+    currentLipCurve = prepared.lipCurve || null
+
+    const source = audioCtx.createBufferSource()
+    source.buffer = prepared.audioBuffer
+    source.connect(audioCtx.destination)
+    voiceStartedAt = performance.now()
+    source.start(0)
+    setTalking(true)
+
+    currentSource = source
+    isPlaying.value = true
+    source.onended = () => {
+      setTalking(false)
+      currentLipCurve = null
+      voiceStartedAt = 0
+      isPlaying.value = false
+      if (currentSource === source) currentSource = null
+    }
+    return true
+  }
+
   async function playVoice() {
     if (noVoice) {
       stopCurrentVoice('noVoice-flag')
@@ -116,74 +206,10 @@ export function useVoicePlayer({
     lastVoiceUrl = voice
     lastVoiceStepIndex = currentStepIndex.value
 
-    stopCurrentVoice('playVoice-new')
-    voiceCharaId = step.chara_id || null
     isPlaying.value = false
-    ensureAudioCtx()
-
-    try {
-      const voiceUrls = getVoiceUrlCandidates(voice, scenarioId)
-      let arrayBuffer = null
-      let lastFetchError = null
-      for (const voiceUrl of voiceUrls) {
-        try {
-          const res = await fetch(`${voiceUrl}?_=${Date.now()}`)
-          if (!res.ok) throw new Error(`HTTP ${res.status}`)
-          const contentType = res.headers.get('content-type') || ''
-          const candidateBuffer = await res.arrayBuffer()
-          if (candidateBuffer.byteLength < 1000 || contentType.includes('text/html')) {
-            throw new Error(`Not an audio file: ${contentType} (${candidateBuffer.byteLength} bytes)`)
-          }
-          arrayBuffer = candidateBuffer
-          break
-        } catch (error) {
-          lastFetchError = error
-        }
-      }
-      if (!arrayBuffer) throw lastFetchError || new Error('No voice filename candidate resolved')
-
-      await waitForRunningAudioContext()
-
-      let audioBuffer
-      try {
-        audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
-      } catch (decodeErr) {
-        console.error('[Audio] decodeAudioData FAILED:', decodeErr.message, 'voice:', voice)
-        isPlaying.value = false
-        return false
-      }
-
-      if (currentSource || voice !== lastVoiceUrl) return false
-
-      currentLipCurve = await loadLipCurve(step, audioBuffer.duration)
-      if (currentSource || voice !== lastVoiceUrl) {
-        currentLipCurve = null
-        return false
-      }
-
-      const source = audioCtx.createBufferSource()
-      source.buffer = audioBuffer
-      source.connect(audioCtx.destination)
-      voiceStartedAt = performance.now()
-      source.start(0)
-      setTalking(true)
-
-      currentSource = source
-      isPlaying.value = true
-
-      source.onended = () => {
-        setTalking(false)
-        currentLipCurve = null
-        voiceStartedAt = 0
-        isPlaying.value = false
-        if (currentSource === source) currentSource = null
-      }
-      return true
-    } catch (err) {
-      console.warn('[Audio] playback failed:', err.message, 'voice:', voice)
-      isPlaying.value = false
-      return false
-    }
+    const prepared = await prepareVoice({ step, scenarioId })
+    if (!prepared || voice !== lastVoiceUrl) return false
+    return playPreparedVoice(prepared)
   }
 
   function dispose() {
@@ -195,10 +221,13 @@ export function useVoicePlayer({
 
   return {
     playVoice,
+    prepareVoice,
+    playPreparedVoice,
     setTalking,
     stopCurrentVoice,
     resetVoiceDedup,
     ensureAudioCtx,
+    unlockAudioContext,
     getVoiceVolume,
     dispose,
   }
