@@ -21,7 +21,9 @@ Backmonitor 不是覆盖在舞台齿轮前的一整块矩形。正确的 Pixi �
 3. CSV `Image_layer` 动态舞台层；
 4. 角色及其余按 depth 排序的演出层。
 
-Legacy 常驻舞台 RGBA 中存在两个不接触画布边界的透明连通区，源图坐标框分别约为 `(754,285)-(964,453)`（211×169）和 `(967,247)-(1095,354)`（129×108）。CSV 的 Backmonitor 初始参数为 `x=0, y=420, scale=900`，所以视频位置并非网页硬编码，也不应给 Legacy 单独写死偏移。舞台纹理从错误的 `2/3` 缩放恢复为源像素尺度后，需要重新确认 CSV Y 原点；当前层级正确，但视频框与两个镂空的最终像素标定仍列为后续校准项。
+Legacy 常驻舞台 RGBA 中存在两个不接触画布边界的透明连通区，源图坐标框分别约为 `(754,285)-(964,453)`（211×169）和 `(967,247)-(1095,354)`（129×108）。CSV 的 Backmonitor 初始参数为 `x=0, y=420, scale=900`，所以视频位置并非网页硬编码，也不应给 Legacy 单独写死偏移。
+
+2026-07-16 对 54 首具有内部透明连通区且开场启用 Backmonitor 的舞台做了全库像素拟合。错误的 `Y origin = 360` 只覆盖 56.91% 的内部透明像素，完整覆盖舞台数为 0；候选原点在 `250` 达到最高总覆盖率 97.05%，34 首达到 98% 以上。Legacy 透明区中心单独反推约为 237，DRIVE A LIVE 约为 247，与全局 250 一致。因此运行时新增 `BACKMONITOR_Y_ORIGIN = 250`，所有背景视频统一上移 110 个舞台坐标，不再按歌曲打补丁。
 
 运行时已把 Backmonitor container 放到静态舞台之后，由舞台 RGBA 自然充当遮罩。视频、舞台、人物和灯光仍共同位于 camera container，CSV 镜头缩放、平移和旋转不会破坏相对坐标。
 
@@ -52,6 +54,12 @@ Legacy 在 27,600 ms 命中首句 `冴えない気分になってくんじゃ`�
 
 五套 setup skeleton 均有第 0 号 `tex_chara_shadow` slot，但 setup attachment 为 null；部分服装 atlas 含同名 241×241 半透明原始纹理。这说明阴影资源存在，只是由游戏运行时另行装配。`scripts/prepare-live-chibi-assets.py` 现在从冬马默认服装图集导出共享 `shared/character-shadow.png`，多人舞台为每个角色创建独立阴影 Sprite，跟随人物 X/Y、缩放、显隐与 zIndex。源纹理最高 alpha 仅 128，因此运行时不再二次降低透明度，并压扁为脚底横向椭圆。
 
+## Object_layer SpriteRenderer（2026-07-16）
+
+全库 4,795 条 `Object_layer` 指令引用 185 个对象：181 个能在 RAW bundle 中定位，4 个缺失；其中 46 个为纯 SpriteRenderer、135 个为真实 ParticleSystem，共 423 个 Sprite 实例和 992 个粒子系统。编排索引升级为 schema 9，并保留每条对象事件的 `time / asset / duration / x / y / scale / depth / hide`。
+
+多人舞台现已支持 46 个纯 SpriteRenderer 对象：离线索引保存每个 Sprite 的原始 pivot、PPU、Transform、tint、alpha、sortingOrder 和材质混合模式；运行时按 CSV 根坐标和 depth 创建 Pixi Container，并消费显示/隐藏 duration 做透明度补间。Legacy 的 `fx_in_lgcosr_overlight` 由 8 个 additive Sprite 组成，在 11,400 ms、27,600 ms 等时间点按原始脚本显隐。ParticleSystem 对象会列入 `data-object-layer-unsupported` 诊断，不会被错误降级成静态 PNG。
+
 ## 尚未完成
 
-完整 Live 仍需实现 `Object_layer`、Spotlight、Laserlight、Pinspotlight、Suspensionlight 和 Penlight。`Object_layer` 中有大量真实 Unity ParticleSystem、SpriteRenderer 和自定义分组，不能把所有对象伪装成静态 PNG；后续应先按 prefab 类型建立可复刻/可近似/暂缺三类清单，再逐类接入 Pixi。
+完整 Live 仍需实现 ParticleSystem 类 `Object_layer`、Spotlight、Laserlight、Pinspotlight、Suspensionlight 和 Penlight。ParticleSystem 不能只导出首帧贴图；后续需要读取 prefab 的 emission、shape、velocity、size/color over lifetime、TextureSheetAnimation、材质和混合模式，再决定哪些能在 Pixi 粒子容器中等价复刻。
