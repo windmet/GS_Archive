@@ -75,3 +75,11 @@ Study Equal Magic! 的 96,400 ms 事件用 `#EE7800` 聚光灯指向 performer s
 舞台放大不再修改整台相机。`STAGE_BASE_ZOOM` 保持 1.10，静态舞台、Backmonitor、Image layer 与固定 Object layer 共同使用 `STAGE_TEXTURE_SCALE = 1.073`；这样平台和布景扩大约 7.3%，但人物继续保持官方全身构图，屏幕视频与舞台镂空仍处在同一环境坐标系。
 
 尚未完成的灯光部分缩小为 Pinspotlight prefab 几何、Laserlight 扫动、Suspensionlight、Penlight，以及 ParticleSystem 类 Object_layer；Spotlight 的环境色叠加和多束交叉还需继续对照更多歌曲。
+
+## 图层调试开关与 Study Equal Magic! 复核（2026-07-16）
+
+多人舞台播放参数区新增“图层调试”，可独立启停静态舞台、背景屏幕、图片布景、舞台物件、灯光染色、光束灯效、舞台人物、人物阴影和歌词。开关控制实际 Pixi/DOM 渲染链，不会改写 CSV 状态；重新打开后会按当前歌曲时间重新同步，而不是显示关闭前的旧帧。灯光特意拆为颜色/明暗与可见光束两项，便于区分角色 tint、全屏遮色和光束几何的层级问题。
+
+以 Study Equal Magic! 93,000 ms 为例，运行时读到的三个对象为 `fx_in_steqmg_overlight_1/2/3`，源 depth 均为 1500；角色位于约 2000，因此这些素材已经处于人物后方。关闭光束后中央浅蓝区域仍存在，说明该部分来自背景屏幕或静态舞台画面，并非 Spotlight 穿透人物。关闭 Object layer 时三个 overlight 正确消失。由此确认该帧的主要层级归类已经正确，剩余构图差异应继续从环境专用缩放和未实现的 Pinspotlight 入手，不应再次整体放大 CSV 相机并连带放大人物。
+
+部分较新的 live-effect CSV 把隐藏标志/时长由 17/18 列移动到 19/20 列。构建脚本现已兼容两种布局，避免把空的隐藏行错误解析为新灯光。Laserlight 运行时已接入样式、周期、角度、方向、长度、根坐标、颜色、宽度和 depth；Unity 灯具的负 X 朝向转换后，Legacy 12,000 ms 的底部光束由错误竖线恢复为向舞台外侧展开的对角线。顶部灯具的角度基准仍需结合更多官方帧继续标定，因此暂不把当前实现视为最终视觉还原。
