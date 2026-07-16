@@ -312,6 +312,22 @@ def parse_optional_number(value: str) -> int | None:
         return None
 
 
+def parse_hide_transition(row: list[str], show_duration: int = 1) -> tuple[bool, int]:
+    """Read both live-effect CSV layouts used by hide commands.
+
+    Most scripts store the hide flag/duration in columns 17/18, while a
+    smaller newer group shifts the same pair to 19/20.
+    """
+    for flag_index, duration_index in ((17, 18), (19, 20)):
+        if len(row) > flag_index and row[flag_index].strip() == "1":
+            return True, (
+                parse_number(row[duration_index], 1)
+                if len(row) > duration_index
+                else 1
+            )
+    return False, show_duration
+
+
 def choreography_identity(path: Path) -> tuple[str, str]:
     marker = "_live_effect"
     stem = path.stem
@@ -536,18 +552,14 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
                     event_time = parse_optional_number(row[1])
                     if event_time is None:
                         continue
-                    hide = len(row) > 17 and row[17].strip() == "1"
+                    hide, duration = parse_hide_transition(row, parse_number(row[5], 1))
                     spotlight_events.append(
                         {
                             "time": event_time,
                             "id": parse_number(row[2]),
                             "targetSlot": parse_optional_number(row[3]),
                             "x": parse_optional_number(row[4]),
-                            "duration": (
-                                parse_number(row[18], 1)
-                                if hide and len(row) > 18
-                                else parse_number(row[5], 1)
-                            ),
+                            "duration": duration,
                             "beamColor": row[6].strip() or None,
                             "characterDepth": parse_optional_number(row[7]),
                             "environmentColor": row[8].strip() or None,
@@ -561,7 +573,7 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
                     event_time = parse_optional_number(row[1])
                     if event_time is None:
                         continue
-                    hide = len(row) > 17 and row[17].strip() == "1"
+                    hide, duration = parse_hide_transition(row)
                     pinspotlight_events.append(
                         {
                             "time": event_time,
@@ -578,7 +590,7 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
                             "environmentColor": row[10].strip() or None,
                             "environmentOpacity": parse_optional_number(row[11]),
                             "depth": parse_optional_number(row[12]),
-                            "duration": parse_number(row[18], 1) if hide and len(row) > 18 else 1,
+                            "duration": duration,
                             "hide": hide,
                         }
                     )
@@ -587,7 +599,7 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
                     event_time = parse_optional_number(row[1])
                     if event_time is None:
                         continue
-                    hide = len(row) > 17 and row[17].strip() == "1"
+                    hide, duration = parse_hide_transition(row)
                     laserlight_events.append(
                         {
                             "time": event_time,
@@ -603,7 +615,7 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
                             "width": parse_optional_number(row[11]),
                             "depth": parse_optional_number(row[12]),
                             "parameter13": parse_optional_number(row[13]),
-                            "duration": parse_number(row[18], 1) if hide and len(row) > 18 else 1,
+                            "duration": duration,
                             "hide": hide,
                         }
                     )

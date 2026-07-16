@@ -17,6 +17,15 @@
     :data-camera-rotation="currentCameraState.rotation.toFixed(2)"
     :data-camera-focus-position="currentCameraState.stagePosition || ''"
     :data-camera-enabled="cameraEnabled"
+    :data-static-stage-enabled="staticStageEnabled"
+    :data-backmonitor-enabled="backmonitorEnabled"
+    :data-image-layers-enabled="imageLayersEnabled"
+    :data-object-layers-enabled="objectLayersEnabled"
+    :data-lighting-enabled="lightingEnabled"
+    :data-beam-effects-enabled="beamEffectsEnabled"
+    :data-characters-enabled="charactersEnabled"
+    :data-character-shadows-enabled="characterShadowsEnabled"
+    :data-lyrics-enabled="lyricsEnabled"
     :data-backmonitor-movie="currentBackmonitorState.movie || ''"
     :data-backmonitor-event-time="currentBackmonitorState.eventTime"
     :data-backmonitor-transition="currentBackmonitorState.transition || ''"
@@ -31,6 +40,8 @@
     :data-object-layer-unsupported="unsupportedObjectLayerAssets.join(',')"
     :data-spotlight-count="visibleSpotlightCount"
     :data-spotlight-ids="visibleSpotlightIds.join(',')"
+    :data-laserlight-count="visibleLaserlightCount"
+    :data-laserlight-ids="visibleLaserlightIds.join(',')"
     :data-stage-background-ready="stageBackgroundReady"
     :data-stage-background-song="stageBackgroundSongId"
     :data-current-lyric="currentLyric?.text || ''"
@@ -63,7 +74,7 @@
           <small>{{ activePositions.length }} 人编排 · 当前演唱 {{ currentSingerLabel }}</small>
         </div>
 
-        <div v-if="currentLyric" class="stage-lyric" aria-live="polite">
+        <div v-if="currentLyric && lyricsEnabled" class="stage-lyric" aria-live="polite">
           {{ currentLyric.text }}
         </div>
 
@@ -221,6 +232,45 @@
               <input v-model="cameraEnabled" type="checkbox" @change="applyCameraTransform" />
               <span>启用 CSV 角色镜头</span>
             </label>
+            <fieldset class="layer-debug-controls">
+              <legend>图层调试</legend>
+              <label>
+                <input v-model="staticStageEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
+                <span>静态舞台</span>
+              </label>
+              <label>
+                <input v-model="backmonitorEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
+                <span>背景屏幕</span>
+              </label>
+              <label>
+                <input v-model="imageLayersEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
+                <span>图片布景</span>
+              </label>
+              <label>
+                <input v-model="objectLayersEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
+                <span>舞台物件</span>
+              </label>
+              <label>
+                <input v-model="lightingEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
+                <span>灯光染色</span>
+              </label>
+              <label>
+                <input v-model="beamEffectsEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
+                <span>光束灯效</span>
+              </label>
+              <label>
+                <input v-model="charactersEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
+                <span>舞台人物</span>
+              </label>
+              <label>
+                <input v-model="characterShadowsEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
+                <span>人物阴影</span>
+              </label>
+              <label>
+                <input v-model="lyricsEnabled" type="checkbox" />
+                <span>歌词</span>
+              </label>
+            </fieldset>
             <dl class="runtime-summary">
               <div><dt>活动站位</dt><dd>{{ activePositions.join(' / ') || '—' }}</dd></div>
               <div><dt>当前演唱</dt><dd>{{ currentSingerLabel }}</dd></div>
@@ -298,6 +348,15 @@ const stageTime = ref(0)
 const playbackSpeed = ref(1)
 const playing = ref(false)
 const cameraEnabled = ref(true)
+const staticStageEnabled = ref(true)
+const backmonitorEnabled = ref(true)
+const imageLayersEnabled = ref(true)
+const objectLayersEnabled = ref(true)
+const lightingEnabled = ref(true)
+const beamEffectsEnabled = ref(true)
+const charactersEnabled = ref(true)
+const characterShadowsEnabled = ref(true)
+const lyricsEnabled = ref(true)
 const backmonitorReady = ref(false)
 const backmonitorTransitionActive = ref(false)
 const visibleImageLayerCount = ref(0)
@@ -308,6 +367,8 @@ const visibleObjectLayerAssets = ref([])
 const unsupportedObjectLayerAssets = ref([])
 const visibleSpotlightCount = ref(0)
 const visibleSpotlightIds = ref([])
+const visibleLaserlightCount = ref(0)
+const visibleLaserlightIds = ref([])
 const stageBackgroundReady = ref(false)
 const allPositions = [1, 2, 3, 4, 5]
 const POSITION_TWEEN_MS = 350
@@ -349,6 +410,7 @@ const objectLayerRuntimes = new Map()
 const objectLayerLoads = new Map()
 const spotlightRuntimes = new Map()
 let spotlightConeTexture = null
+const laserlightRuntimes = new Map()
 const stageBackgroundSongId = ref('')
 let stageBackgroundSequence = 0
 let stageBackgroundSprite = null
@@ -489,6 +551,7 @@ onBeforeUnmount(() => {
   releaseImageLayers()
   releaseObjectLayers()
   releaseSpotlights()
+  releaseLaserlights()
   releaseStageBackground()
   for (const runtime of runtimes.values()) destroyStageRuntime(runtime)
   runtimes.clear()
@@ -950,6 +1013,7 @@ function layoutStageBackground() {
     sprite.position.set(width * 0.5, height * 0.5)
     sprite.scale.set(viewportScale * STAGE_TEXTURE_SCALE)
   }
+  if (stageBackgroundSprite) stageBackgroundSprite.visible = staticStageEnabled.value
 }
 
 function releaseStageBackground() {
@@ -984,6 +1048,7 @@ async function syncStageBackground() {
   stageBackgroundSprite = markRaw(new PIXI.Sprite(texture))
   stageBackgroundSprite.anchor.set(0.5)
   stageBackgroundSprite.zIndex = -20000
+  stageBackgroundSprite.visible = staticStageEnabled.value
   cameraContainer.addChild(stageBackgroundSprite)
   stageBackgroundReady.value = true
   layoutStageBackground()
@@ -1002,6 +1067,11 @@ function ensureWholeScreenColorOverlay() {
 
 function applyStageLighting() {
   ensureWholeScreenColorOverlay()
+  if (!lightingEnabled.value) {
+    if (wholeScreenColorOverlay) wholeScreenColorOverlay.visible = false
+    for (const runtime of runtimes.values()) runtime.spine.tint = 0xffffff
+    return
+  }
   const screen = currentWholeScreenColor.value
   if (wholeScreenColorOverlay) {
     wholeScreenColorOverlay.tint = screen.color
@@ -1103,7 +1173,9 @@ function createSpotlightRuntime(id) {
 function syncSpotlights() {
   if (!app || !cameraContainer) return
   const states = spotlightStatesAt(stageTime.value)
-  const active = [...states.values()].filter(state => state.alpha > 0.001 && state.beamColor)
+  const active = beamEffectsEnabled.value
+    ? [...states.values()].filter(state => state.alpha > 0.001 && state.beamColor)
+    : []
   visibleSpotlightCount.value = active.length
   visibleSpotlightIds.value = active.map(state => state.id).sort((a, b) => a - b)
   for (const [id, runtime] of spotlightRuntimes) {
@@ -1144,6 +1216,131 @@ function releaseSpotlights() {
   spotlightConeTexture = null
   visibleSpotlightCount.value = 0
   visibleSpotlightIds.value = []
+}
+
+function laserlightStatesAt(milliseconds) {
+  const states = new Map()
+  for (const event of (selectedSong.value?.laserlightEvents || [])) {
+    const eventTime = Number(event.time)
+    if (eventTime > milliseconds) break
+    const previous = states.get(event.id)
+    if (event.hide) {
+      if (!previous) continue
+      states.set(event.id, {
+        ...previous,
+        fadeStart: eventTime,
+        fadeDuration: Math.max(0, Number(event.duration) || 0),
+      })
+      continue
+    }
+    const next = { ...(previous || {}) }
+    for (const [key, value] of Object.entries(event)) {
+      if (value !== null && value !== undefined && value !== '') next[key] = value
+    }
+    states.set(event.id, {
+      ...next,
+      alpha: 1,
+      eventTime,
+      fadeStart: null,
+      fadeDuration: 0,
+    })
+  }
+  for (const state of states.values()) {
+    if (state.fadeStart === null) continue
+    state.alpha = state.fadeDuration <= 0
+      ? 0
+      : Math.max(0, 1 - (milliseconds - state.fadeStart) / state.fadeDuration)
+  }
+  return states
+}
+
+function laserSweepAngle(state, milliseconds) {
+  const base = Number(state.angle) || 0
+  const period = Math.max(1, Number(state.sweepDuration) || 1000)
+  const phase = Math.max(0, milliseconds - Number(state.eventTime || state.time || 0)) / period
+  const direction = state.direction === 'left' ? -1 : 1
+  const style = Number(state.style) || 7
+  if (style === 6) return base + direction * phase * 360
+  const amplitudes = { 1: 8, 3: 20, 4: 32, 5: 14, 7: 20, 8: 42, 9: 42 }
+  const cycle = (phase + (style === 9 ? 1 : 0)) % 2
+  const triangle = cycle <= 1 ? cycle : 2 - cycle
+  let angle = base + direction * (amplitudes[style] || 20) * triangle
+  // The source comments call style 3 "カクカクのやつ": the fixture turns
+  // in discrete steps rather than interpolating continuously.
+  if (style === 3) angle = Math.round(angle / 5) * 5
+  return angle
+}
+
+function createLaserlightRuntime(id) {
+  const graphics = markRaw(new PIXI.Graphics())
+  graphics.blendMode = PIXI.BLEND_MODES.ADD
+  cameraContainer.addChild(graphics)
+  const runtime = markRaw({ id, graphics })
+  laserlightRuntimes.set(id, runtime)
+  return runtime
+}
+
+function drawLaserlight(runtime, state, viewportScale) {
+  const graphics = runtime.graphics
+  const length = Math.max(1, Number(state.length) || 900)
+    * viewportScale * STAGE_TEXTURE_SCALE
+  const width = Math.max(0.2, (Number(state.width) || 1000) / 1000)
+  const color = parseHexColor(state.color, 0xffffff)
+  const style = Number(state.style) || 7
+  const intensity = style === 9 ? 0.55 : 1
+  graphics.clear()
+  graphics.lineStyle(18 * width * viewportScale, color, 0.08 * intensity)
+  graphics.moveTo(0, 0)
+  graphics.lineTo(length, 0)
+  graphics.lineStyle(7 * width * viewportScale, color, 0.24 * intensity)
+  graphics.moveTo(0, 0)
+  graphics.lineTo(length, 0)
+  graphics.lineStyle(1.25 * width * viewportScale, 0xffffff, 0.82 * intensity)
+  graphics.moveTo(0, 0)
+  graphics.lineTo(length, 0)
+}
+
+function syncLaserlights() {
+  if (!app || !cameraContainer) return
+  const states = laserlightStatesAt(stageTime.value)
+  const active = beamEffectsEnabled.value
+    ? [...states.values()].filter(state => (
+      state.alpha > 0.001 && state.style && state.color
+    ))
+    : []
+  visibleLaserlightCount.value = active.length
+  visibleLaserlightIds.value = active.map(state => state.id).sort((a, b) => a - b)
+  for (const [id, runtime] of laserlightRuntimes) {
+    runtime.graphics.visible = Boolean(states.get(id)?.alpha > 0.001)
+  }
+  const width = app.renderer.width / app.renderer.resolution
+  const height = app.renderer.height / app.renderer.resolution
+  const viewportScale = Math.min(width / 1280, height / 720)
+  for (const state of active) {
+    const runtime = laserlightRuntimes.get(state.id) || createLaserlightRuntime(state.id)
+    drawLaserlight(runtime, state, viewportScale)
+    runtime.graphics.position.set(
+      width * 0.5 + Number(state.x) * viewportScale * STAGE_TEXTURE_SCALE,
+      height * 0.5 + (360 - Number(state.y)) * viewportScale * STAGE_TEXTURE_SCALE,
+    )
+    // Unity's authored angle points along the fixture's negative X axis.
+    // Converting it as a conventional positive-X screen angle sent the
+    // off-stage fixtures farther outward instead of across the stage.
+    runtime.graphics.rotation = (laserSweepAngle(state, stageTime.value) - 180) * Math.PI / 180
+    runtime.graphics.zIndex = Number(state.depth) || 1650
+    runtime.graphics.alpha = Math.max(0, Math.min(1, Number(state.alpha) || 0))
+    runtime.graphics.visible = true
+  }
+}
+
+function releaseLaserlights() {
+  for (const runtime of laserlightRuntimes.values()) {
+    runtime.graphics.removeFromParent()
+    runtime.graphics.destroy()
+  }
+  laserlightRuntimes.clear()
+  visibleLaserlightCount.value = 0
+  visibleLaserlightIds.value = []
 }
 
 function imageLayerStatesAt(milliseconds) {
@@ -1213,7 +1410,9 @@ async function syncImageLayers() {
   }
   const sequence = imageLayerSequence
   const states = imageLayerStatesAt(stageTime.value)
-  const visibleStates = [...states.values()].filter(state => state.visible)
+  const visibleStates = imageLayersEnabled.value
+    ? [...states.values()].filter(state => state.visible)
+    : []
   visibleImageLayerCount.value = visibleStates.length
   visibleImageLayerAssets.value = visibleStates.map(state => state.asset).sort()
   visibleImageLayerDepths.value = visibleStates
@@ -1222,7 +1421,7 @@ async function syncImageLayers() {
 
   for (const [asset, runtime] of imageLayerRuntimes) {
     const state = states.get(asset)
-    runtime.sprite.visible = Boolean(state?.visible)
+    runtime.sprite.visible = imageLayersEnabled.value && Boolean(state?.visible)
     if (state) runtime.sprite.zIndex = Number(state.depth) || 0
   }
 
@@ -1256,7 +1455,7 @@ async function syncImageLayers() {
       }
     }
     const current = imageLayerStatesAt(stageTime.value).get(state.asset)
-    runtime.sprite.visible = Boolean(current?.visible)
+    runtime.sprite.visible = imageLayersEnabled.value && Boolean(current?.visible)
     runtime.sprite.zIndex = Number(current?.depth) || 0
   }))
   layoutImageLayers()
@@ -1356,7 +1555,7 @@ function layoutObjectLayers(states = objectLayerStatesAt(stageTime.value)) {
     )
     runtime.container.zIndex = Number(state.depth) || 0
     runtime.container.alpha = Math.max(0, Math.min(1, Number(state.alpha) || 0))
-    runtime.container.visible = runtime.container.alpha > 0.001
+    runtime.container.visible = objectLayersEnabled.value && runtime.container.alpha > 0.001
   }
 }
 
@@ -1382,7 +1581,9 @@ async function syncObjectLayers() {
   }
   const sequence = objectLayerSequence
   const states = objectLayerStatesAt(stageTime.value)
-  const activeStates = [...states.values()].filter(state => state.alpha > 0.001)
+  const activeStates = objectLayersEnabled.value
+    ? [...states.values()].filter(state => state.alpha > 0.001)
+    : []
   const supportedStates = []
   const unsupportedStates = []
   for (const state of activeStates) {
@@ -1396,7 +1597,7 @@ async function syncObjectLayers() {
 
   for (const [asset, runtime] of objectLayerRuntimes) {
     const state = states.get(asset)
-    runtime.container.visible = Boolean(state && state.alpha > 0.001)
+    runtime.container.visible = objectLayersEnabled.value && Boolean(state && state.alpha > 0.001)
   }
 
   await Promise.all(supportedStates.map(async state => {
@@ -1525,7 +1726,7 @@ function layoutBackmonitor(state) {
   )
   backmonitorSprite.rotation = -state.rotation * Math.PI / 180
   backmonitorSprite.alpha = Math.max(0, Math.min(1, state.opacity / 1000))
-  backmonitorSprite.visible = Boolean(state.movie) && state.y < 4000
+  backmonitorSprite.visible = backmonitorEnabled.value && Boolean(state.movie) && state.y < 4000
   if (backmonitorTransitionSprite) {
     backmonitorTransitionSprite.position.copyFrom(backmonitorSprite.position)
     backmonitorTransitionSprite.scale.copyFrom(backmonitorSprite.scale)
@@ -1571,7 +1772,7 @@ function syncBackmonitorTransition(state, forceSeek = false) {
     return
   }
   backmonitorTransitionActive.value = true
-  backmonitorTransitionSprite.visible = true
+  backmonitorTransitionSprite.visible = backmonitorEnabled.value
   for (const video of [backmonitorTransitionVideo, backmonitorTransitionAlphaVideo]) {
     if (forceSeek || Math.abs(video.currentTime - elapsed) > 0.06) video.currentTime = elapsed
     video.playbackRate = playbackSpeed.value
@@ -1666,6 +1867,27 @@ function applyCameraTransform() {
   cameraContainer.rotation = -camera.rotation * Math.PI / 180
 }
 
+function applyLayerDebugVisibility() {
+  if (stageBackgroundSprite) stageBackgroundSprite.visible = staticStageEnabled.value
+  if (backmonitorContainer) backmonitorContainer.visible = backmonitorEnabled.value
+  for (const [position, runtime] of runtimes) {
+    runtime.spine.visible = charactersEnabled.value
+      && activePositions.value.includes(position)
+      && layoutCoordinatesForStage(position, stageTime.value).y < 4000
+    if (runtime.groundShadow) {
+      runtime.groundShadow.visible = charactersEnabled.value
+        && characterShadowsEnabled.value
+        && runtime.spine.visible
+    }
+  }
+  syncSpotlights()
+  syncLaserlights()
+  applyStageLighting()
+  syncBackmonitor(true)
+  syncImageLayers().catch(error => console.warn('[ChibiStage] image-layer debug sync failed', error))
+  syncObjectLayers().catch(error => console.warn('[ChibiStage] object-layer debug sync failed', error))
+}
+
 function layoutRuntime(position, motionEvent = null) {
   const runtime = runtimes.get(position)
   if (!runtime || !app || !canvasRef.value) return
@@ -1689,7 +1911,7 @@ function layoutRuntime(position, motionEvent = null) {
   // at Y=170 and the side members at Y=190, matching the official stagger.
   runtime.spine.y = height * 0.66 + (180 - y) * viewportScale
   runtime.spine.scale.set(characterScale * ensembleScale * viewportFit * sourceScale / 1700)
-  runtime.spine.visible = activePositions.value.includes(position) && y < 4000
+  runtime.spine.visible = charactersEnabled.value && activePositions.value.includes(position) && y < 4000
   // Unity reserves the 1200-1900 band for environment washes, beams and
   // image/object layers. Characters occupy their own band around 2000; Y only
   // orders performers against one another. The previous x10 mapping pushed a
@@ -1701,7 +1923,9 @@ function layoutRuntime(position, motionEvent = null) {
   if (runtime.groundShadow) {
     runtime.groundShadow.position.set(runtime.spine.x, runtime.spine.y + 3 * viewportScale)
     runtime.groundShadow.scale.set(runtime.spine.scale.x * 2.1, runtime.spine.scale.y * 0.42)
-    runtime.groundShadow.visible = runtime.spine.visible
+    runtime.groundShadow.visible = charactersEnabled.value
+      && characterShadowsEnabled.value
+      && runtime.spine.visible
     runtime.groundShadow.zIndex = runtime.spine.zIndex - 1
   }
   runtime.positionTweenProgress = positionState?.tweenProgress ?? 1
@@ -1713,16 +1937,15 @@ function resizeStage() {
   const height = Math.max(1, canvasRef.value.clientHeight)
   app.renderer.resize(width, height)
   for (const position of activePositions.value) {
-    const slot = slotByPosition(position)
     const event = eventsForPosition(position)
       .findLast?.(item => item.time <= stageTime.value)
       || [...eventsForPosition(position)].reverse().find(item => item.time <= stageTime.value)
     layoutRuntime(position, event)
-    if (slot && runtimes.has(position)) runtimes.get(position).spine.visible = true
   }
   applyCameraTransform()
   layoutStageBackground()
   syncSpotlights()
+  syncLaserlights()
   applyStageLighting()
   syncBackmonitor(true)
   syncImageLayers().catch(error => console.warn('[ChibiStage] image-layer sync failed', error))
@@ -1878,6 +2101,7 @@ async function seekStage() {
   applyCurrentLipSync()
   await syncStageBackground()
   syncSpotlights()
+  syncLaserlights()
   applyStageLighting()
   applyCameraTransform()
   syncBackmonitor(true)
@@ -1941,6 +2165,7 @@ function updateStage(now) {
   }
   applyCameraTransform()
   syncSpotlights()
+  syncLaserlights()
   applyStageLighting()
   syncBackmonitor()
   syncImageLayers().catch(error => console.warn('[ChibiStage] image-layer sync failed', error))
@@ -2031,6 +2256,8 @@ function formatTime(milliseconds) {
 .performance-shell { position: relative; min-width: 0; overflow: hidden; background: #0b1726; }
 .stage-backdrop { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5, 12, 23, 0.16), rgba(5, 12, 23, 0.04) 55%, rgba(2, 8, 16, 0.62)), url('/assets/bg/bg086_dancestudio_in_01.png') center / cover no-repeat; filter: saturate(0.82) brightness(0.7); transform: scale(1.015); }
 .stage-floor { position: absolute; z-index: 1; left: 6%; right: 6%; bottom: 7%; height: 30%; border: 1px solid rgba(104, 180, 245, 0.2); border-radius: 50%; background: radial-gradient(ellipse at center, rgba(67, 163, 241, 0.16), rgba(20, 70, 115, 0.05) 52%, transparent 72%); transform: perspective(500px) rotateX(62deg); transform-origin: center bottom; }
+.chibi-stage[data-static-stage-enabled="false"] .stage-backdrop,
+.chibi-stage[data-static-stage-enabled="false"] .stage-floor { visibility: hidden; }
 .stage-canvas { position: absolute; z-index: 2; inset: 0; }
 .stage-canvas :deep(canvas) { display: block; width: 100%; height: 100%; }
 .performance-shell::after { content: ""; position: absolute; z-index: 2; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 47%, transparent 28%, rgba(2, 7, 14, 0.34) 100%); }
@@ -2115,6 +2342,10 @@ select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(65, 165, 
 .range-control output { text-align: right; font: 650 11px/1 monospace; }
 .camera-toggle { display: flex; gap: 8px; align-items: center; color: #c9d9e8; font-size: 11px; }
 .camera-toggle input { margin: 0; accent-color: var(--accent); }
+.layer-debug-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; margin: 12px 0 0; padding: 11px 12px 12px; border: 1px solid rgba(111, 174, 229, 0.22); border-radius: 10px; }
+.layer-debug-controls legend { padding: 0 5px; color: #8ebfe9; font-size: 10px; letter-spacing: 0.08em; }
+.layer-debug-controls label { display: flex; gap: 7px; align-items: center; min-width: 0; color: #c9d9e8; font-size: 11px; }
+.layer-debug-controls input { margin: 0; accent-color: var(--accent); }
 .runtime-summary { display: grid; gap: 8px; margin: 0; }
 .runtime-summary div { display: grid; grid-template-columns: 70px 1fr; gap: 10px; font-size: 10px; }
 .runtime-summary dt { color: var(--muted); }
