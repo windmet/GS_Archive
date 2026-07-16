@@ -83,3 +83,23 @@ Study Equal Magic! 的 96,400 ms 事件用 `#EE7800` 聚光灯指向 performer s
 以 Study Equal Magic! 93,000 ms 为例，运行时读到的三个对象为 `fx_in_steqmg_overlight_1/2/3`，源 depth 均为 1500；角色位于约 2000，因此这些素材已经处于人物后方。关闭光束后中央浅蓝区域仍存在，说明该部分来自背景屏幕或静态舞台画面，并非 Spotlight 穿透人物。关闭 Object layer 时三个 overlight 正确消失。由此确认该帧的主要层级归类已经正确，剩余构图差异应继续从环境专用缩放和未实现的 Pinspotlight 入手，不应再次整体放大 CSV 相机并连带放大人物。
 
 部分较新的 live-effect CSV 把隐藏标志/时长由 17/18 列移动到 19/20 列。构建脚本现已兼容两种布局，避免把空的隐藏行错误解析为新灯光。Laserlight 运行时已接入样式、周期、角度、方向、长度、根坐标、颜色、宽度和 depth；Unity 灯具的负 X 朝向转换后，Legacy 12,000 ms 的底部光束由错误竖线恢复为向舞台外侧展开的对角线。顶部灯具的角度基准仍需结合更多官方帧继续标定，因此暂不把当前实现视为最终视觉还原。
+
+## Laserlight 与 Pinspotlight 原始资源复核（2026-07-16）
+
+客户端 XAPK 的 `data.unity3d` 内含 `LiveObjectLaserlight` 及其九组内置效果 prefab。Laserlight 不是一条简单的线：样式 1 为 `0/+5/-5` 三束，样式 3/4 为 `0/+20/-20/0` 四束，样式 5/6 为近似正反向的四束，样式 7 为 `0/180/0/180` 四束。网页运行时已按这些子束角度重建组合灯束，并修正 Unity 舞台坐标的反向 X 与角度符号；Legacy 约 12 秒的上下灯具现在分别向舞台内外展开，不再退化成两条竖线。
+
+新增 `npm run chibi:stage-effects`。`scripts/prepare-live-chibi-stage-effects.py` 会直接从本地 XAPK 的嵌套 APK 中读取 `data.unity3d`，导出三张 Laserlight 纹理、通用前后 Pinspotlight 纹理，以及五张歌曲专用 Pinspotlight 遮罩，并生成 `stage-effects/index.json`。这些是构建产物，与现有 live-chibi 生成资源一样不进入 Git。
+
+Pinspotlight CSV 的字段语义已由原始行和客户端 prefab 交叉确认：第 5 列是位置补间毫秒数，第 6 列是目标 performer slot，而非旧解析中的反向关系。编排索引因此升级为 schema 11。运行时支持两类状态：绑定 performer slot 的人物追光，以及带 X/Y 和长时间补间的自由遮罩。目标人物保持明亮，未命中人物按事件的 environment color/opacity 压暗。
+
+Study Equal Magic! 暴露了一个异步竞态：9 秒附近会同时创建 16 个星形遮罩，快速拖到 30 秒时，旧的纹理加载 Promise 可能重复为同一灯号创建 Sprite；Map 虽只保留最后一个引用，早先创建的 Sprite 已成为无法清理的孤儿。现在每个 Pinspotlight ID 都有唯一的 runtime load Promise，同 ID/同纹理复用一个 Sprite，切换纹理时先销毁旧实例。快速拖动 `9,000 → 30,000 ms` 后星形层立即清空，等待异步请求结束也不会回流。
+
+人物明暗同时扩展到普通 Spotlight：只要存在有效目标灯，目标人物向白色提亮，其他人物按 Spotlight 的环境色和强度压暗。Study Equal Magic! 30 秒为左位亮、另外两位暗；33 秒切换为右位亮，结果与录像帧的演唱聚光一致。
+
+## 整宽 16:9 调试布局（2026-07-16）
+
+旧页面把 430px 控制台固定在画布右侧，导致舞台只有窗口剩余宽度，截图比例随浏览器宽度变化，无法与官方 16:9 录像同条件比对。多人舞台现在改为纵向文档流：顶部保留 sticky 标题栏，舞台画布占页面完整宽度并固定为 `16 / 9`，歌曲、编队和播放/图层调试三栏放在画布下方。页面滚动后即可调整参数；窄屏时控制台自动收为单列。
+
+浏览器回归在 1280×720 可视窗口中确认：画布宽度为整页宽，舞台本身按 16:9 延伸到首屏下方；向下滚动后歌曲、五人编队和图层开关同时可见。此布局只改变观察界面，不修改 Pixi 的 1280×720 舞台坐标、CSV 镜头或角色比例。
+
+当前仍未实现的是 Suspensionlight、Penlight，以及 ParticleSystem 类 `Object_layer`。Laserlight 与 Pinspotlight 已进入可用近似，但 Unity 粒子噪声、材质动画和复杂 shader 仍需继续从 prefab 参数逐项还原。
