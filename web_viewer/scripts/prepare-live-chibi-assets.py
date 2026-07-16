@@ -373,6 +373,7 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
         camera_events = []
         backmonitor_events = []
         image_layer_events = []
+        object_layer_events = []
         lyric_events = []
         whole_screen_color_events = []
         character_light_events = []
@@ -453,6 +454,32 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
                                 for index in (17, 18)
                             ),
                             "raw19": row[19].strip() if len(row) > 19 and row[19].strip() else None,
+                        }
+                    )
+                    continue
+                if row[0] == "Object_layer" and len(row) >= 3:
+                    event_time = parse_optional_number(row[1])
+                    asset = row[2].strip()
+                    if event_time is None or not asset:
+                        continue
+                    hide = len(row) > 17 and row[17].strip() == "1"
+                    object_layer_events.append(
+                        {
+                            "time": event_time,
+                            "asset": asset,
+                            "duration": (
+                                parse_number(row[18], 1)
+                                if hide and len(row) > 18
+                                else parse_number(row[3], 1)
+                            ),
+                            "x": parse_optional_number(row[4]),
+                            "y": parse_optional_number(row[5]),
+                            "scale": parse_optional_number(row[6]),
+                            "depth": parse_optional_number(row[7]),
+                            "hide": hide,
+                            "raw19": row[19].strip()
+                            if len(row) > 19 and row[19].strip()
+                            else None,
                         }
                     )
                     continue
@@ -588,6 +615,10 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
                     image_layer_events,
                     key=lambda event: (event["time"], event["depth"] or 0, event["asset"]),
                 ),
+                "objectLayerEvents": sorted(
+                    object_layer_events,
+                    key=lambda event: (event["time"], event["depth"] or 0, event["asset"]),
+                ),
                 "lyricEvents": sorted(lyric_events, key=lambda event: event["time"]),
                 "wholeScreenColorEvents": sorted(
                     whole_screen_color_events, key=lambda event: event["time"]
@@ -682,7 +713,7 @@ def export_choreography(body_types: list[int]) -> dict:
 
     choreography_relative = Path("choreography") / "index.json"
     choreography = {
-        "schemaVersion": 8,
+        "schemaVersion": 9,
         "bodyTypes": body_types,
         "stats": {
             "songs": len(songs),
@@ -695,6 +726,9 @@ def export_choreography(body_types: list[int]) -> dict:
             ),
             "imageLayerEvents": sum(
                 len(song["imageLayerEvents"]) for song in songs
+            ),
+            "objectLayerEvents": sum(
+                len(song["objectLayerEvents"]) for song in songs
             ),
             "lyricEvents": sum(len(song["lyricEvents"]) for song in songs),
             "wholeScreenColorEvents": sum(

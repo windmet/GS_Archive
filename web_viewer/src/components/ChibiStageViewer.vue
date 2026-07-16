@@ -25,6 +25,9 @@
     :data-image-layer-count="visibleImageLayerCount"
     :data-image-layer-assets="visibleImageLayerAssets.join(',')"
     :data-image-layer-depths="visibleImageLayerDepths.join(',')"
+    :data-object-layer-count="visibleObjectLayerCount"
+    :data-object-layer-assets="visibleObjectLayerAssets.join(',')"
+    :data-object-layer-unsupported="unsupportedObjectLayerAssets.join(',')"
     :data-stage-background-ready="stageBackgroundReady"
     :data-stage-background-song="stageBackgroundSongId"
     :data-current-lyric="currentLyric?.text || ''"
@@ -225,6 +228,7 @@
               <div><dt>当前镜头</dt><dd>{{ currentCameraLabel }}</dd></div>
               <div><dt>舞台屏幕</dt><dd>{{ currentBackmonitorLabel }}</dd></div>
               <div><dt>图片布景</dt><dd>{{ visibleImageLayerCount }} 层</dd></div>
+              <div><dt>舞台对象</dt><dd>{{ visibleObjectLayerCount }} 组</dd></div>
               <div><dt>静态舞台</dt><dd>{{ stageBackgroundReady ? '已载入' : '无/等待' }}</dd></div>
               <div><dt>当前歌词</dt><dd>{{ currentLyric?.text || '—' }}</dd></div>
             </dl>
@@ -259,6 +263,7 @@ import {
   fetchLiveChibiBackmonitorIndex,
   fetchLiveChibiChoreography,
   fetchLiveChibiImageLayerIndex,
+  fetchLiveChibiObjectLayerIndex,
   fetchLiveChibiLipSync,
   fetchLiveChibiManifest,
   fetchLiveChibiMusicIndex,
@@ -274,6 +279,7 @@ const choreography = ref(null)
 const musicIndex = ref(null)
 const backmonitorIndex = ref(null)
 const imageLayerIndex = ref(null)
+const objectLayerIndex = ref(null)
 const stageBackgroundIndex = ref(null)
 const selectedSongId = ref('')
 const lineup = ref([])
@@ -294,11 +300,18 @@ const backmonitorTransitionActive = ref(false)
 const visibleImageLayerCount = ref(0)
 const visibleImageLayerAssets = ref([])
 const visibleImageLayerDepths = ref([])
+const visibleObjectLayerCount = ref(0)
+const visibleObjectLayerAssets = ref([])
+const unsupportedObjectLayerAssets = ref([])
 const stageBackgroundReady = ref(false)
 const allPositions = [1, 2, 3, 4, 5]
 const POSITION_TWEEN_MS = 350
 const STAGE_BASE_ZOOM = 1.1
 const STAGE_TEXTURE_SCALE = 1
+// Backmonitor uses the live-stage content plane rather than the 720 px camera
+// midpoint. Fitting all 54 stages with interior alpha cut-outs peaks at 250;
+// using 360 leaves every movie visibly below its screen opening.
+const BACKMONITOR_Y_ORIGIN = 250
 
 let app = null
 let cameraContainer = null
@@ -320,6 +333,10 @@ let imageLayerSongId = ''
 let imageLayerSequence = 0
 const imageLayerRuntimes = new Map()
 const imageLayerLoads = new Map()
+let objectLayerSongId = ''
+let objectLayerSequence = 0
+const objectLayerRuntimes = new Map()
+const objectLayerLoads = new Map()
 const stageBackgroundSongId = ref('')
 let stageBackgroundSequence = 0
 let stageBackgroundSprite = null
@@ -428,11 +445,13 @@ onMounted(async () => {
       musicIndex.value,
       backmonitorIndex.value,
       imageLayerIndex.value,
+      objectLayerIndex.value,
       stageBackgroundIndex.value,
     ] = await Promise.all([
       fetchLiveChibiMusicIndex(),
       fetchLiveChibiBackmonitorIndex(),
       fetchLiveChibiImageLayerIndex(),
+      fetchLiveChibiObjectLayerIndex(),
       fetchLiveChibiStageBackgroundIndex(),
     ])
     initializeLineup()
@@ -456,6 +475,7 @@ onBeforeUnmount(() => {
   releaseAudio()
   releaseBackmonitor()
   releaseImageLayers()
+  releaseObjectLayers()
   releaseStageBackground()
   for (const runtime of runtimes.values()) destroyStageRuntime(runtime)
   runtimes.clear()
@@ -1096,6 +1116,168 @@ async function syncImageLayers() {
   layoutImageLayers()
 }
 
+function sampleObjectLayerAlpha(state, milliseconds) {
+  const duration = Number(state.tweenDuration) || 0
+  if (duration <= 1 || milliseconds >= state.tweenStart + duration) return state.tweenTo
+  const progress = Math.max(0, Math.min(1, (milliseconds - state.tweenStart) / duration))
+  return state.tweenFrom + (state.tweenTo - state.tweenFrom) * progress
+}
+
+function objectLayerStatesAt(milliseconds) {
+  const states = new Map()
+  for (const event of (selectedSong.value?.objectLayerEvents || [])) {
+    const eventTime = Number(event.time)
+    if (eventTime > milliseconds) break
+    const previous = states.get(event.asset) || {
+      asset: event.asset,
+      x: 0,
+      y: 360,
+      scale: 1000,
+      depth: 0,
+      tweenStart: eventTime,
+      tweenDuration: 1,
+      tweenFrom: 0,
+      tweenTo: 0,
+    }
+    const alphaAtEvent = sampleObjectLayerAlpha(previous, eventTime)
+    states.set(event.asset, {
+      ...previous,
+      x: event.x ?? previous.x,
+      y: event.y ?? previous.y,
+      scale: event.scale ?? previous.scale,
+      depth: event.depth ?? previous.depth,
+      tweenStart: eventTime,
+      tweenDuration: Math.max(1, Number(event.duration) || 1),
+      tweenFrom: alphaAtEvent,
+      tweenTo: event.hide ? 0 : 1,
+      eventTime,
+    })
+  }
+  for (const state of states.values()) state.alpha = sampleObjectLayerAlpha(state, milliseconds)
+  return states
+}
+
+async function loadObjectLayerRuntime(entry) {
+  const textures = await Promise.all(entry.textures.map(async metadata => ({
+    metadata,
+    texture: await loadImageLayerTexture(metadata.file),
+  })))
+  const textureById = new Map(textures.map(item => [item.metadata.id, item]))
+  const container = markRaw(new PIXI.Container())
+  container.sortableChildren = true
+  for (const instance of entry.instances) {
+    const item = textureById.get(instance.texture)
+    if (!item) continue
+    const sprite = markRaw(new PIXI.Sprite(item.texture))
+    sprite.name = instance.name
+    sprite.anchor.set(item.metadata.pivot?.x ?? 0.5, item.metadata.pivot?.y ?? 0.5)
+    sprite.position.set(Number(instance.x) || 0, Number(instance.y) || 0)
+    const pixelsToStage = 100 / (Number(item.metadata.pixelsPerUnit) || 100)
+    sprite.scale.set(
+      (Number(instance.scaleX) || 1) * pixelsToStage,
+      (Number(instance.scaleY) || 1) * pixelsToStage,
+    )
+    sprite.rotation = (Number(instance.rotation) || 0) * Math.PI / 180
+    sprite.tint = Number(instance.tint) || 0xffffff
+    sprite.alpha = Number.isFinite(Number(instance.alpha)) ? Number(instance.alpha) : 1
+    sprite.blendMode = instance.blendMode === 'add' ? PIXI.BLEND_MODES.ADD : PIXI.BLEND_MODES.NORMAL
+    sprite.zIndex = Number(instance.sortingOrder) || 0
+    container.addChild(sprite)
+  }
+  return { container, textures: textures.map(item => item.texture), entry }
+}
+
+function destroyObjectLayerRuntime(runtime) {
+  runtime?.container?.removeFromParent()
+  runtime?.container?.destroy({ children: true })
+  for (const texture of (runtime?.textures || [])) texture.destroy(true)
+}
+
+function layoutObjectLayers(states = objectLayerStatesAt(stageTime.value)) {
+  if (!app) return
+  const width = app.renderer.width / app.renderer.resolution
+  const height = app.renderer.height / app.renderer.resolution
+  const viewportScale = Math.min(width / 1280, height / 720)
+  for (const [asset, runtime] of objectLayerRuntimes) {
+    const state = states.get(asset)
+    if (!state) continue
+    runtime.container.position.set(
+      width * 0.5 + Number(state.x) * viewportScale,
+      height * 0.5 + (360 - Number(state.y)) * viewportScale,
+    )
+    runtime.container.scale.set(viewportScale * Number(state.scale) / 1000)
+    runtime.container.zIndex = Number(state.depth) || 0
+    runtime.container.alpha = Math.max(0, Math.min(1, Number(state.alpha) || 0))
+    runtime.container.visible = runtime.container.alpha > 0.001
+  }
+}
+
+function releaseObjectLayers() {
+  objectLayerSequence += 1
+  for (const load of objectLayerLoads.values()) {
+    load.then(destroyObjectLayerRuntime).catch(() => {})
+  }
+  objectLayerLoads.clear()
+  for (const runtime of objectLayerRuntimes.values()) destroyObjectLayerRuntime(runtime)
+  objectLayerRuntimes.clear()
+  objectLayerSongId = ''
+  visibleObjectLayerCount.value = 0
+  visibleObjectLayerAssets.value = []
+  unsupportedObjectLayerAssets.value = []
+}
+
+async function syncObjectLayers() {
+  if (!cameraContainer || !selectedSong.value || !objectLayerIndex.value) return
+  if (objectLayerSongId !== selectedSong.value.id) {
+    releaseObjectLayers()
+    objectLayerSongId = selectedSong.value.id
+  }
+  const sequence = objectLayerSequence
+  const states = objectLayerStatesAt(stageTime.value)
+  const activeStates = [...states.values()].filter(state => state.alpha > 0.001)
+  const supportedStates = []
+  const unsupportedStates = []
+  for (const state of activeStates) {
+    const entry = objectLayerIndex.value.assets?.[state.asset]
+    if (entry?.kind === 'sprite' || entry?.kind === 'mixed') supportedStates.push(state)
+    else unsupportedStates.push(state)
+  }
+  visibleObjectLayerCount.value = supportedStates.length
+  visibleObjectLayerAssets.value = supportedStates.map(state => state.asset).sort()
+  unsupportedObjectLayerAssets.value = unsupportedStates.map(state => state.asset).sort()
+
+  for (const [asset, runtime] of objectLayerRuntimes) {
+    const state = states.get(asset)
+    runtime.container.visible = Boolean(state && state.alpha > 0.001)
+  }
+
+  await Promise.all(supportedStates.map(async state => {
+    let runtime = objectLayerRuntimes.get(state.asset)
+    if (!runtime) {
+      const entry = objectLayerIndex.value.assets[state.asset]
+      let load = objectLayerLoads.get(state.asset)
+      if (!load) {
+        load = loadObjectLayerRuntime(entry)
+        objectLayerLoads.set(state.asset, load)
+      }
+      runtime = await load
+      const ownsLoad = objectLayerLoads.get(state.asset) === load
+      if (ownsLoad) objectLayerLoads.delete(state.asset)
+      if (sequence !== objectLayerSequence || objectLayerSongId !== selectedSong.value?.id) {
+        if (ownsLoad) destroyObjectLayerRuntime(runtime)
+        return
+      }
+      if (!objectLayerRuntimes.has(state.asset)) {
+        objectLayerRuntimes.set(state.asset, runtime)
+        cameraContainer.addChild(runtime.container)
+      } else if (ownsLoad) {
+        destroyObjectLayerRuntime(runtime)
+      }
+    }
+  }))
+  layoutObjectLayers(objectLayerStatesAt(stageTime.value))
+}
+
 function ensureBackmonitor() {
   if (backmonitorVideo || !backmonitorContainer) return
   const video = document.createElement('video')
@@ -1188,7 +1370,7 @@ function layoutBackmonitor(state) {
   const viewportScale = Math.min(width / 1280, height / 720)
   backmonitorSprite.position.set(
     width * 0.5 + state.x * viewportScale,
-    height * 0.5 + (360 - state.y) * viewportScale,
+    height * 0.5 + (BACKMONITOR_Y_ORIGIN - state.y) * viewportScale,
   )
   backmonitorSprite.scale.set(viewportScale * state.scale / 1000 * 2)
   backmonitorSprite.rotation = -state.rotation * Math.PI / 180
@@ -1386,6 +1568,7 @@ function resizeStage() {
   applyStageLighting()
   syncBackmonitor(true)
   syncImageLayers().catch(error => console.warn('[ChibiStage] image-layer sync failed', error))
+  syncObjectLayers().catch(error => console.warn('[ChibiStage] object-layer sync failed', error))
 }
 
 async function handleSongChange() {
@@ -1540,6 +1723,7 @@ async function seekStage() {
   applyCameraTransform()
   syncBackmonitor(true)
   await syncImageLayers()
+  await syncObjectLayers()
 }
 
 function resetEventIndices() {
@@ -1600,6 +1784,7 @@ function updateStage(now) {
   applyStageLighting()
   syncBackmonitor()
   syncImageLayers().catch(error => console.warn('[ChibiStage] image-layer sync failed', error))
+  syncObjectLayers().catch(error => console.warn('[ChibiStage] object-layer sync failed', error))
   applyCurrentLipSync()
   if (stageTime.value >= stageDuration.value) {
     stopStage()
