@@ -8,7 +8,7 @@
     :data-current-singers="currentSingerPositions.join(',')"
     :data-position-tween-ms="POSITION_TWEEN_MS"
     :data-stage-base-zoom="STAGE_BASE_ZOOM"
-    :data-stage-environment-scale="STAGE_TEXTURE_SCALE"
+    :data-stage-environment-scale="environmentScale.toFixed(3)"
     :data-derived-group-events="derivedGroupEventCount"
     :data-camera-event-time="currentCameraState.eventTime"
     :data-camera-zoom="currentCameraState.zoom.toFixed(4)"
@@ -42,6 +42,8 @@
     :data-spotlight-ids="visibleSpotlightIds.join(',')"
     :data-laserlight-count="visibleLaserlightCount"
     :data-laserlight-ids="visibleLaserlightIds.join(',')"
+    :data-pinspotlight-count="visiblePinspotlightCount"
+    :data-pinspotlight-ids="visiblePinspotlightIds.join(',')"
     :data-stage-background-ready="stageBackgroundReady"
     :data-stage-background-song="stageBackgroundSongId"
     :data-current-lyric="currentLyric?.text || ''"
@@ -271,6 +273,19 @@
                 <span>歌词</span>
               </label>
             </fieldset>
+            <label class="range-control environment-scale-control">
+              <span>环境</span>
+              <input
+                v-model.number="environmentScale"
+                aria-label="舞台环境缩放"
+                type="range"
+                min="0.9"
+                max="1.3"
+                step="0.005"
+                @input="resizeStage"
+              />
+              <output>{{ environmentScale.toFixed(3) }}×</output>
+            </label>
             <dl class="runtime-summary">
               <div><dt>活动站位</dt><dd>{{ activePositions.join(' / ') || '—' }}</dd></div>
               <div><dt>当前演唱</dt><dd>{{ currentSingerLabel }}</dd></div>
@@ -321,6 +336,7 @@ import {
   fetchLiveChibiManifest,
   fetchLiveChibiMusicIndex,
   fetchLiveChibiStageBackgroundIndex,
+  fetchLiveChibiStageEffectIndex,
   injectLiveChibiMotion,
   playLiveChibiMotion,
 } from '../utils/liveChibiSpine.js'
@@ -334,6 +350,7 @@ const backmonitorIndex = ref(null)
 const imageLayerIndex = ref(null)
 const objectLayerIndex = ref(null)
 const stageBackgroundIndex = ref(null)
+const stageEffectIndex = ref(null)
 const selectedSongId = ref('')
 const lineup = ref([])
 const booting = ref(true)
@@ -369,6 +386,8 @@ const visibleSpotlightCount = ref(0)
 const visibleSpotlightIds = ref([])
 const visibleLaserlightCount = ref(0)
 const visibleLaserlightIds = ref([])
+const visiblePinspotlightCount = ref(0)
+const visiblePinspotlightIds = ref([])
 const stageBackgroundReady = ref(false)
 const allPositions = [1, 2, 3, 4, 5]
 const POSITION_TWEEN_MS = 350
@@ -376,9 +395,10 @@ const STAGE_BASE_ZOOM = 1.1
 // Enlarge the authored environment as one registered plane while retaining
 // the official full-body character framing. Stage art, monitor movies and
 // fixed image/object layers all use this same factor.
-const STAGE_TEXTURE_SCALE = 1.073
+const environmentScale = ref(1.073)
 const CHARACTER_DEPTH_BASE = 2000
 const CHARACTER_DEPTH_Y_FACTOR = 0.5
+const CHARACTER_STAGE_SCALE = 0.58
 // Backmonitor uses the live-stage content plane rather than the 720 px camera
 // midpoint. Fitting all 54 stages with interior alpha cut-outs peaks at 250;
 // using 360 leaves every movie visibly below its screen opening.
@@ -411,6 +431,12 @@ const objectLayerLoads = new Map()
 const spotlightRuntimes = new Map()
 let spotlightConeTexture = null
 const laserlightRuntimes = new Map()
+const pinspotlightRuntimes = new Map()
+const pinspotlightRuntimeLoads = new Map()
+const pinspotlightTextures = new Map()
+const pinspotlightLoads = new Map()
+let pinspotlightEnvironmentOverlay = null
+let pinspotlightLoadSequence = 0
 const stageBackgroundSongId = ref('')
 let stageBackgroundSequence = 0
 let stageBackgroundSprite = null
@@ -521,12 +547,14 @@ onMounted(async () => {
       imageLayerIndex.value,
       objectLayerIndex.value,
       stageBackgroundIndex.value,
+      stageEffectIndex.value,
     ] = await Promise.all([
       fetchLiveChibiMusicIndex(),
       fetchLiveChibiBackmonitorIndex(),
       fetchLiveChibiImageLayerIndex(),
       fetchLiveChibiObjectLayerIndex(),
       fetchLiveChibiStageBackgroundIndex(),
+      fetchLiveChibiStageEffectIndex(),
     ])
     initializeLineup()
     selectedSongId.value = songs.value.find(song => song.id === 'drvalv_live_effect')?.id
@@ -552,6 +580,7 @@ onBeforeUnmount(() => {
   releaseObjectLayers()
   releaseSpotlights()
   releaseLaserlights()
+  releasePinspotlights()
   releaseStageBackground()
   for (const runtime of runtimes.values()) destroyStageRuntime(runtime)
   runtimes.clear()
@@ -1011,7 +1040,7 @@ function layoutStageBackground() {
   for (const sprite of [stageBackgroundSprite, wholeScreenColorOverlay]) {
     if (!sprite) continue
     sprite.position.set(width * 0.5, height * 0.5)
-    sprite.scale.set(viewportScale * STAGE_TEXTURE_SCALE)
+    sprite.scale.set(viewportScale * environmentScale.value)
   }
   if (stageBackgroundSprite) stageBackgroundSprite.visible = staticStageEnabled.value
 }
@@ -1080,18 +1109,48 @@ function applyStageLighting() {
     wholeScreenColorOverlay.visible = screen.alpha > 0.001
   }
   const character = currentCharacterLight.value
-  const illuminatedPositions = new Set(
-    [...spotlightStatesAt(stageTime.value).values()]
-      .filter(state => state.alpha > 0.001 && state.stagePosition)
+  const spotlightStates = [...spotlightStatesAt(stageTime.value).values()]
+    .filter(state => state.alpha > 0.001 && state.beamColor)
+  const spotlightPositions = new Set(
+    spotlightStates
+      .filter(state => state.stagePosition)
       .map(state => Number(state.stagePosition)),
+  )
+  const spotlightEnvironment = spotlightStates.findLast?.(state => state.environmentColor)
+    || [...spotlightStates].reverse().find(state => state.environmentColor)
+  const spotlightDim = spotlightEnvironment
+    ? Math.max(0, Math.min(1, Number(spotlightEnvironment.environmentOpacity || 0) / 1000))
+    : 0
+  const spotlightDimColor = parseHexColor(spotlightEnvironment?.environmentColor, 0x221d23)
+  const pinspotlightStates = [...pinspotlightStatesAt(stageTime.value).values()]
+    .filter(state => state.alpha > 0.001 && state.asset)
+  const pinspotlightPositions = new Set(pinspotlightStates
+    .filter(state => state.stagePosition)
+    .map(state => Number(state.stagePosition)))
+  const pinspotlightEnvironment = pinspotlightStates.findLast?.(state => state.environmentColor)
+    || [...pinspotlightStates].reverse().find(state => state.environmentColor)
+  const pinspotlightDim = pinspotlightEnvironment
+    ? Math.max(0, Math.min(1, Number(pinspotlightEnvironment.environmentOpacity || 0) / 1000))
+    : 0
+  const pinspotlightDimColor = parseHexColor(
+    pinspotlightEnvironment?.environmentColor,
+    0x221d23,
   )
   for (const [position, runtime] of runtimes) {
     // A targeted performer is lit independently from the environment wash.
     // Mixing back toward white reproduces that separation without making the
     // Spine itself translucent beneath the foreground beam sprite.
-    runtime.spine.tint = illuminatedPositions.has(position)
-      ? mixRgb(character.color, 0xffffff, 0.35)
-      : character.color
+    if (pinspotlightStates.length > 0) {
+      runtime.spine.tint = pinspotlightPositions.has(position)
+        ? mixRgb(character.color, 0xffffff, 0.5)
+        : mixRgb(character.color, pinspotlightDimColor, pinspotlightDim)
+    } else {
+      runtime.spine.tint = spotlightPositions.has(position)
+        ? mixRgb(character.color, 0xffffff, 0.5)
+        : spotlightStates.length > 0
+          ? mixRgb(character.color, spotlightDimColor, spotlightDim)
+          : character.color
+    }
   }
 }
 
@@ -1261,7 +1320,7 @@ function laserSweepAngle(state, milliseconds) {
   const direction = state.direction === 'left' ? -1 : 1
   const style = Number(state.style) || 7
   if (style === 6) return base + direction * phase * 360
-  const amplitudes = { 1: 8, 3: 20, 4: 32, 5: 14, 7: 20, 8: 42, 9: 42 }
+  const amplitudes = { 1: 8, 3: 10, 4: 10, 5: 14, 7: 20, 8: 42, 9: 42 }
   const cycle = (phase + (style === 9 ? 1 : 0)) % 2
   const triangle = cycle <= 1 ? cycle : 2 - cycle
   let angle = base + direction * (amplitudes[style] || 20) * triangle
@@ -1280,24 +1339,41 @@ function createLaserlightRuntime(id) {
   return runtime
 }
 
+function laserBeamOffsets(style) {
+  // data.unity3d / LiveObjectLaserlight stores nine prefab references.
+  // The dominant style 3 prefab contains four particle systems at
+  // 0 / +20 / -20 / 0 degrees. Style 7 contains paired forward/reverse
+  // systems. Preserve those authored beam groups instead of reducing every
+  // CSV event to one line.
+  if (style === 1) return [0, 5, -5]
+  if (style === 3 || style === 4) return [0, 20, -20, 0]
+  if (style === 5 || style === 6) return [0.5, 1.5, 179.5, 178.5]
+  if (style === 7) return [0, 180, 0, 180]
+  return [0]
+}
+
 function drawLaserlight(runtime, state, viewportScale) {
   const graphics = runtime.graphics
   const length = Math.max(1, Number(state.length) || 900)
-    * viewportScale * STAGE_TEXTURE_SCALE
+    * viewportScale * environmentScale.value
   const width = Math.max(0.2, (Number(state.width) || 1000) / 1000)
   const color = parseHexColor(state.color, 0xffffff)
   const style = Number(state.style) || 7
   const intensity = style === 9 ? 0.55 : 1
+  const offsets = laserBeamOffsets(style)
+  const duplicateAttenuation = offsets.length >= 4 ? 0.72 : 1
   graphics.clear()
-  graphics.lineStyle(18 * width * viewportScale, color, 0.08 * intensity)
-  graphics.moveTo(0, 0)
-  graphics.lineTo(length, 0)
-  graphics.lineStyle(7 * width * viewportScale, color, 0.24 * intensity)
-  graphics.moveTo(0, 0)
-  graphics.lineTo(length, 0)
-  graphics.lineStyle(1.25 * width * viewportScale, 0xffffff, 0.82 * intensity)
-  graphics.moveTo(0, 0)
-  graphics.lineTo(length, 0)
+  const drawPass = (lineWidth, lineColor, alpha) => {
+    graphics.lineStyle(lineWidth, lineColor, alpha * intensity * duplicateAttenuation)
+    for (const offset of offsets) {
+      const radians = offset * Math.PI / 180
+      graphics.moveTo(0, 0)
+      graphics.lineTo(Math.cos(radians) * length, Math.sin(radians) * length)
+    }
+  }
+  drawPass(18 * width * viewportScale, color, 0.08)
+  drawPass(7 * width * viewportScale, color, 0.24)
+  drawPass(1.25 * width * viewportScale, 0xffffff, 0.82)
 }
 
 function syncLaserlights() {
@@ -1320,13 +1396,14 @@ function syncLaserlights() {
     const runtime = laserlightRuntimes.get(state.id) || createLaserlightRuntime(state.id)
     drawLaserlight(runtime, state, viewportScale)
     runtime.graphics.position.set(
-      width * 0.5 + Number(state.x) * viewportScale * STAGE_TEXTURE_SCALE,
-      height * 0.5 + (360 - Number(state.y)) * viewportScale * STAGE_TEXTURE_SCALE,
+      width * 0.5 - Number(state.x) * viewportScale * environmentScale.value,
+      height * 0.5 + (360 - Number(state.y)) * viewportScale * environmentScale.value,
     )
-    // Unity's authored angle points along the fixture's negative X axis.
-    // Converting it as a conventional positive-X screen angle sent the
-    // off-stage fixtures farther outward instead of across the stage.
-    runtime.graphics.rotation = (laserSweepAngle(state, stageTime.value) - 180) * Math.PI / 180
+    // Laserlight's effect-space X axis is opposite the character/ObjectLayer
+    // stage axis. Unity's Y-up angle then maps to the screen by negating it:
+    // 280/260 degree top fixtures point down and inward, while 110/70 degree
+    // floor fixtures point up and outward.
+    runtime.graphics.rotation = -laserSweepAngle(state, stageTime.value) * Math.PI / 180
     runtime.graphics.zIndex = Number(state.depth) || 1650
     runtime.graphics.alpha = Math.max(0, Math.min(1, Number(state.alpha) || 0))
     runtime.graphics.visible = true
@@ -1341,6 +1418,217 @@ function releaseLaserlights() {
   laserlightRuntimes.clear()
   visibleLaserlightCount.value = 0
   visibleLaserlightIds.value = []
+}
+
+function samplePinspotlightState(state, milliseconds) {
+  if (!state) return null
+  const duration = Math.max(0, Number(state.tweenDuration) || 0)
+  const progress = duration <= 0
+    ? 1
+    : Math.max(0, Math.min(1, (milliseconds - state.tweenStart) / duration))
+  const result = {
+    ...state,
+    x: state.fromX + (state.toX - state.fromX) * progress,
+    y: state.fromY + (state.toY - state.fromY) * progress,
+  }
+  if (state.fadeStart !== null) {
+    result.alpha = state.fadeDuration <= 0
+      ? 0
+      : Math.max(0, 1 - (milliseconds - state.fadeStart) / state.fadeDuration)
+  }
+  return result
+}
+
+function pinspotlightStatesAt(milliseconds) {
+  const states = new Map()
+  for (const event of (selectedSong.value?.pinspotlightEvents || [])) {
+    const eventTime = Number(event.time)
+    if (eventTime > milliseconds) break
+    const previous = samplePinspotlightState(states.get(event.id), eventTime)
+    if (event.hide) {
+      if (!previous) continue
+      states.set(event.id, {
+        ...previous,
+        fadeStart: eventTime,
+        fadeDuration: Math.max(0, Number(event.duration) || 0),
+      })
+      continue
+    }
+    const next = { ...(previous || {}) }
+    for (const [key, value] of Object.entries(event)) {
+      if (value !== null && value !== undefined && value !== '') next[key] = value
+    }
+    const fromX = Number(previous?.x ?? event.x ?? 0)
+    const fromY = Number(previous?.y ?? event.y ?? 0)
+    states.set(event.id, {
+      ...next,
+      alpha: 1,
+      tweenStart: eventTime,
+      tweenDuration: Math.max(0, Number(event.duration) || 0),
+      fromX,
+      fromY,
+      toX: Number(event.x ?? fromX),
+      toY: Number(event.y ?? fromY),
+      fadeStart: null,
+      fadeDuration: 0,
+    })
+  }
+  for (const [id, state] of states) {
+    states.set(id, samplePinspotlightState(state, milliseconds))
+  }
+  return states
+}
+
+function ensurePinspotlightEnvironmentOverlay() {
+  if (pinspotlightEnvironmentOverlay || !cameraContainer) return
+  pinspotlightEnvironmentOverlay = markRaw(new PIXI.Graphics())
+  pinspotlightEnvironmentOverlay.beginFill(0xffffff)
+  pinspotlightEnvironmentOverlay.drawRect(-950, -530, 1900, 1060)
+  pinspotlightEnvironmentOverlay.endFill()
+  pinspotlightEnvironmentOverlay.visible = false
+  cameraContainer.addChild(pinspotlightEnvironmentOverlay)
+}
+
+function loadPinspotlightTexture(asset) {
+  const fallbackAsset = stageEffectIndex.value?.assets?.pinspotlight
+  const entry = stageEffectIndex.value?.assets?.[asset] || fallbackAsset
+  if (!entry) return Promise.resolve(null)
+  const cacheKey = stageEffectIndex.value?.assets?.[asset] ? asset : 'pinspotlight'
+  if (pinspotlightTextures.has(cacheKey)) {
+    return Promise.resolve({ texture: pinspotlightTextures.get(cacheKey), cacheKey })
+  }
+  if (!pinspotlightLoads.has(cacheKey)) {
+    pinspotlightLoads.set(cacheKey, loadImageLayerTexture(entry.file).then(texture => {
+      pinspotlightTextures.set(cacheKey, texture)
+      pinspotlightLoads.delete(cacheKey)
+      return { texture, cacheKey }
+    }))
+  }
+  return pinspotlightLoads.get(cacheKey)
+}
+
+function loadPinspotlightRuntime(state, sequence) {
+  const desiredAsset = stageEffectIndex.value?.assets?.[state.asset]
+    ? state.asset
+    : 'pinspotlight'
+  const existing = pinspotlightRuntimes.get(state.id)
+  if (existing?.asset === desiredAsset) return Promise.resolve(existing)
+  const pending = pinspotlightRuntimeLoads.get(state.id)
+  if (pending?.asset === desiredAsset) return pending.promise
+
+  const promise = loadPinspotlightTexture(state.asset).then(loaded => {
+    const currentPending = pinspotlightRuntimeLoads.get(state.id)
+    // A later event may reuse the same lamp ID with another texture while
+    // this request is in flight. Only the latest per-ID request may install
+    // a Sprite; otherwise the old mask can reappear after it was hidden.
+    if (currentPending?.promise !== promise) return pinspotlightRuntimes.get(state.id) || null
+    pinspotlightRuntimeLoads.delete(state.id)
+    if (!loaded || sequence !== pinspotlightLoadSequence || !cameraContainer) return null
+    const current = pinspotlightRuntimes.get(state.id)
+    if (current?.asset === loaded.cacheKey) return current
+    current?.sprite.removeFromParent()
+    current?.sprite.destroy()
+    const sprite = markRaw(new PIXI.Sprite(loaded.texture))
+    sprite.anchor.set(0.5)
+    sprite.blendMode = PIXI.BLEND_MODES.ADD
+    cameraContainer.addChild(sprite)
+    const runtime = markRaw({ id: state.id, asset: loaded.cacheKey, sprite })
+    pinspotlightRuntimes.set(state.id, runtime)
+    return runtime
+  })
+  pinspotlightRuntimeLoads.set(state.id, { asset: desiredAsset, promise })
+  return promise
+}
+
+async function syncPinspotlights() {
+  if (!app || !cameraContainer) return
+  ensurePinspotlightEnvironmentOverlay()
+  const states = pinspotlightStatesAt(stageTime.value)
+  const activeStates = [...states.values()].filter(state => state.alpha > 0.001 && state.asset)
+  const visibleStates = beamEffectsEnabled.value ? activeStates : []
+  visiblePinspotlightCount.value = visibleStates.length
+  visiblePinspotlightIds.value = visibleStates.map(state => state.id).sort((a, b) => a - b)
+
+  const environmentState = lightingEnabled.value
+    ? activeStates.findLast?.(state => state.environmentColor)
+      || [...activeStates].reverse().find(state => state.environmentColor)
+    : null
+  if (pinspotlightEnvironmentOverlay) {
+    pinspotlightEnvironmentOverlay.visible = Boolean(environmentState)
+    if (environmentState) {
+      pinspotlightEnvironmentOverlay.tint = parseHexColor(environmentState.environmentColor, 0x221d23)
+      pinspotlightEnvironmentOverlay.alpha = Math.max(
+        0,
+        Math.min(1, Number(environmentState.environmentOpacity || 0) / 1000),
+      )
+      pinspotlightEnvironmentOverlay.zIndex = Number(environmentState.depth) || 1850
+    }
+  }
+
+  for (const [id, runtime] of pinspotlightRuntimes) {
+    const state = states.get(id)
+    runtime.sprite.visible = beamEffectsEnabled.value && Boolean(state?.alpha > 0.001)
+  }
+
+  const width = app.renderer.width / app.renderer.resolution
+  const height = app.renderer.height / app.renderer.resolution
+  const viewportScale = Math.min(width / 1280, height / 720)
+  const sequence = pinspotlightLoadSequence
+  await Promise.all(visibleStates.map(async state => {
+    let runtime = pinspotlightRuntimes.get(state.id)
+    const desiredAsset = stageEffectIndex.value?.assets?.[state.asset]
+      ? state.asset
+      : 'pinspotlight'
+    if (runtime && runtime.asset !== desiredAsset) {
+      runtime.sprite.removeFromParent()
+      runtime.sprite.destroy()
+      pinspotlightRuntimes.delete(state.id)
+      runtime = null
+    }
+    if (!runtime) runtime = await loadPinspotlightRuntime(state, sequence)
+    if (!runtime) return
+    const current = pinspotlightStatesAt(stageTime.value).get(state.id)
+    if (!current || current.alpha <= 0.001) {
+      runtime.sprite.visible = false
+      return
+    }
+    if (current.stagePosition) {
+      const target = layoutCoordinatesForStage(Number(current.stagePosition), stageTime.value)
+      runtime.sprite.position.set(
+        width * 0.5 + target.x * viewportScale,
+        height * 0.66 + (180 - target.y) * viewportScale - 135 * viewportScale,
+      )
+      runtime.sprite.scale.set(viewportScale * 0.62)
+    } else {
+      runtime.sprite.position.set(
+        width * 0.5 + Number(current.x || 0) * viewportScale * environmentScale.value,
+        height * 0.5 + (360 - Number(current.y || 0)) * viewportScale * environmentScale.value,
+      )
+      runtime.sprite.scale.set(viewportScale * environmentScale.value * 0.7)
+    }
+    runtime.sprite.tint = parseHexColor(current.beamColor, 0xffffff)
+    runtime.sprite.alpha = Math.max(0, Math.min(1, Number(current.alpha) || 0)) * 0.34
+    runtime.sprite.zIndex = (Number(current.depth) || 1850) + 1
+    runtime.sprite.visible = beamEffectsEnabled.value
+  }))
+}
+
+function releasePinspotlights() {
+  pinspotlightLoadSequence += 1
+  for (const runtime of pinspotlightRuntimes.values()) {
+    runtime.sprite.removeFromParent()
+    runtime.sprite.destroy()
+  }
+  pinspotlightRuntimes.clear()
+  pinspotlightRuntimeLoads.clear()
+  pinspotlightLoads.clear()
+  for (const texture of pinspotlightTextures.values()) texture.destroy(true)
+  pinspotlightTextures.clear()
+  pinspotlightEnvironmentOverlay?.removeFromParent()
+  pinspotlightEnvironmentOverlay?.destroy()
+  pinspotlightEnvironmentOverlay = null
+  visiblePinspotlightCount.value = 0
+  visiblePinspotlightIds.value = []
 }
 
 function imageLayerStatesAt(milliseconds) {
@@ -1380,7 +1668,7 @@ function layoutImageLayers() {
   const viewportScale = Math.min(width / 1280, height / 720)
   for (const runtime of imageLayerRuntimes.values()) {
     runtime.sprite.position.set(width * 0.5, height * 0.5)
-    runtime.sprite.scale.set(viewportScale * STAGE_TEXTURE_SCALE)
+    runtime.sprite.scale.set(viewportScale * environmentScale.value)
   }
 }
 
@@ -1547,11 +1835,11 @@ function layoutObjectLayers(states = objectLayerStatesAt(stageTime.value)) {
     const state = states.get(asset)
     if (!state) continue
     runtime.container.position.set(
-      width * 0.5 + Number(state.x) * viewportScale * STAGE_TEXTURE_SCALE,
-      height * 0.5 + (360 - Number(state.y)) * viewportScale * STAGE_TEXTURE_SCALE,
+      width * 0.5 + Number(state.x) * viewportScale * environmentScale.value,
+      height * 0.5 + (360 - Number(state.y)) * viewportScale * environmentScale.value,
     )
     runtime.container.scale.set(
-      viewportScale * STAGE_TEXTURE_SCALE * Number(state.scale) / 1000,
+      viewportScale * environmentScale.value * Number(state.scale) / 1000,
     )
     runtime.container.zIndex = Number(state.depth) || 0
     runtime.container.alpha = Math.max(0, Math.min(1, Number(state.alpha) || 0))
@@ -1718,11 +2006,11 @@ function layoutBackmonitor(state) {
   const height = app.renderer.height / app.renderer.resolution
   const viewportScale = Math.min(width / 1280, height / 720)
   backmonitorSprite.position.set(
-    width * 0.5 + state.x * viewportScale * STAGE_TEXTURE_SCALE,
-    height * 0.5 + (BACKMONITOR_Y_ORIGIN - state.y) * viewportScale * STAGE_TEXTURE_SCALE,
+    width * 0.5 + state.x * viewportScale * environmentScale.value,
+    height * 0.5 + (BACKMONITOR_Y_ORIGIN - state.y) * viewportScale * environmentScale.value,
   )
   backmonitorSprite.scale.set(
-    viewportScale * STAGE_TEXTURE_SCALE * state.scale / 1000 * 2,
+    viewportScale * environmentScale.value * state.scale / 1000 * 2,
   )
   backmonitorSprite.rotation = -state.rotation * Math.PI / 180
   backmonitorSprite.alpha = Math.max(0, Math.min(1, state.opacity / 1000))
@@ -1882,6 +2170,7 @@ function applyLayerDebugVisibility() {
   }
   syncSpotlights()
   syncLaserlights()
+  syncPinspotlights().catch(error => console.warn('[ChibiStage] pinspotlight debug sync failed', error))
   applyStageLighting()
   syncBackmonitor(true)
   syncImageLayers().catch(error => console.warn('[ChibiStage] image-layer debug sync failed', error))
@@ -1899,18 +2188,16 @@ function layoutRuntime(position, motionEvent = null) {
   const character = characters.value.find(item => item.id === runtime.characterId)
   const characterScale = Number(character?.previewScale) || 0.28
   const viewportFit = Math.min(1, height / 620)
-  const ensembleScale = activePositions.value.length >= 5 ? 0.58
-    : activePositions.value.length >= 4 ? 0.64
-      : activePositions.value.length >= 3 ? 0.72
-        : activePositions.value.length >= 2 ? 0.84
-          : 1
-
   runtime.spine.x = width * 0.5 + x * viewportScale
   // Live CSV Y is a depth coordinate: smaller values stand closer to the
   // camera (and therefore lower on screen). Legacy starts the centre member
   // at Y=170 and the side members at Y=190, matching the official stagger.
   runtime.spine.y = height * 0.66 + (180 - y) * viewportScale
-  runtime.spine.scale.set(characterScale * ensembleScale * viewportFit * sourceScale / 1700)
+  // Unity keeps the chibi prefab scale stable across solo, duo and ensemble
+  // lives. Formation coordinates and the authored camera provide the framing;
+  // scaling characters by active member count made three-person stages about
+  // 24% larger than the already calibrated five-person reference.
+  runtime.spine.scale.set(characterScale * CHARACTER_STAGE_SCALE * viewportFit * sourceScale / 1700)
   runtime.spine.visible = charactersEnabled.value && activePositions.value.includes(position) && y < 4000
   // Unity reserves the 1200-1900 band for environment washes, beams and
   // image/object layers. Characters occupy their own band around 2000; Y only
@@ -1946,6 +2233,7 @@ function resizeStage() {
   layoutStageBackground()
   syncSpotlights()
   syncLaserlights()
+  syncPinspotlights().catch(error => console.warn('[ChibiStage] pinspotlight sync failed', error))
   applyStageLighting()
   syncBackmonitor(true)
   syncImageLayers().catch(error => console.warn('[ChibiStage] image-layer sync failed', error))
@@ -2102,6 +2390,7 @@ async function seekStage() {
   await syncStageBackground()
   syncSpotlights()
   syncLaserlights()
+  await syncPinspotlights()
   applyStageLighting()
   applyCameraTransform()
   syncBackmonitor(true)
@@ -2166,6 +2455,7 @@ function updateStage(now) {
   applyCameraTransform()
   syncSpotlights()
   syncLaserlights()
+  syncPinspotlights().catch(error => console.warn('[ChibiStage] pinspotlight sync failed', error))
   applyStageLighting()
   syncBackmonitor()
   syncImageLayers().catch(error => console.warn('[ChibiStage] image-layer sync failed', error))
@@ -2227,15 +2517,17 @@ function formatTime(milliseconds) {
   position: fixed;
   inset: 0;
   z-index: 100;
+  overflow-x: hidden;
+  overflow-y: auto;
   color: var(--text);
   background: var(--ink);
   font-family: Inter, "Noto Sans SC", "Microsoft YaHei", sans-serif;
 }
 
 .stage-header {
-  position: absolute;
+  position: sticky;
   z-index: 5;
-  inset: 0 0 auto;
+  top: 0;
   height: 66px;
   display: flex;
   align-items: center;
@@ -2252,8 +2544,8 @@ function formatTime(milliseconds) {
 .header-meta { margin-left: auto; color: var(--muted); font-size: 11px; }
 .lab-link { height: 34px; margin-left: 8px; padding: 0 13px; color: #dbeeff; background: rgba(30, 109, 184, 0.22); border: 1px solid rgba(65, 165, 255, 0.42); border-radius: 7px; font: 650 11px/1 inherit; cursor: pointer; }
 
-.stage-workspace { position: absolute; inset: 66px 0 0; display: grid; grid-template-columns: minmax(0, 1fr) 430px; min-height: 0; }
-.performance-shell { position: relative; min-width: 0; overflow: hidden; background: #0b1726; }
+.stage-workspace { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); min-height: 0; }
+.performance-shell { position: relative; width: 100%; min-width: 0; aspect-ratio: 16 / 9; overflow: hidden; background: #0b1726; }
 .stage-backdrop { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5, 12, 23, 0.16), rgba(5, 12, 23, 0.04) 55%, rgba(2, 8, 16, 0.62)), url('/assets/bg/bg086_dancestudio_in_01.png') center / cover no-repeat; filter: saturate(0.82) brightness(0.7); transform: scale(1.015); }
 .stage-floor { position: absolute; z-index: 1; left: 6%; right: 6%; bottom: 7%; height: 30%; border: 1px solid rgba(104, 180, 245, 0.2); border-radius: 50%; background: radial-gradient(ellipse at center, rgba(67, 163, 241, 0.16), rgba(20, 70, 115, 0.05) 52%, transparent 72%); transform: perspective(500px) rotateX(62deg); transform-origin: center bottom; }
 .chibi-stage[data-static-stage-enabled="false"] .stage-backdrop,
@@ -2312,9 +2604,10 @@ function formatTime(milliseconds) {
 .transport-copy small { color: var(--muted); font: 600 10px/1 monospace; }
 .transport input { width: 100%; accent-color: var(--accent); }
 
-.stage-inspector { min-width: 0; overflow: hidden; border-left: 1px solid var(--line); background: linear-gradient(180deg, #142940, #0c1b2d); }
-.inspector-scroll { height: 100%; overflow-y: auto; scrollbar-color: rgba(126, 158, 187, 0.4) transparent; }
-.control-section { padding: 20px; border-bottom: 1px solid var(--line); }
+.stage-inspector { min-width: 0; overflow: visible; border-top: 1px solid var(--line); background: linear-gradient(180deg, #142940, #0c1b2d); }
+.inspector-scroll { display: grid; grid-template-columns: minmax(300px, 0.8fr) minmax(460px, 1.25fr) minmax(340px, 0.95fr); align-items: start; height: auto; overflow: visible; }
+.control-section { min-width: 0; height: 100%; padding: 20px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.control-section:last-child { border-right: 0; }
 .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 13px; color: #a9c4dd; }
 .section-heading > div { display: grid; gap: 4px; }
 .section-heading h2 { margin: 0; color: #d9e7f3; font-size: 12px; letter-spacing: 0.06em; }
@@ -2356,10 +2649,11 @@ select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(65, 165, 
   .stage-header { height: 58px; padding: 0 13px; }
   .stage-header h1 { font-size: 15px; }
   .stage-header p, .header-meta { display: none; }
-  .stage-workspace { inset-top: 58px; grid-template-columns: 1fr; grid-template-rows: minmax(430px, 62vh) minmax(0, 1fr); overflow-y: auto; }
-  .performance-shell { min-height: 430px; }
+  .stage-workspace { grid-template-columns: 1fr; overflow: visible; }
+  .performance-shell { min-height: 0; }
   .stage-inspector { overflow: visible; border-top: 1px solid var(--line); border-left: 0; }
-  .inspector-scroll { height: auto; overflow: visible; }
+  .inspector-scroll { grid-template-columns: 1fr; height: auto; overflow: visible; }
+  .control-section { height: auto; border-right: 0; }
   .position-rail { bottom: 112px; }
   .stage-lyric { bottom: 160px; }
   .transport { bottom: 16px; min-height: 72px; grid-template-columns: 40px 50px minmax(110px, auto) 1fr; padding: 0 12px; }
@@ -2369,8 +2663,7 @@ select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(65, 165, 
 
 @media (max-width: 620px) {
   .lab-link { margin-left: auto; }
-  .stage-workspace { grid-template-rows: minmax(390px, 58vh) minmax(0, 1fr); }
-  .performance-shell { min-height: 390px; }
+  .performance-shell { min-height: 390px; aspect-ratio: auto; }
   .performance-hud { top: 14px; left: 14px; }
   .position-rail { bottom: 105px; width: calc(100% - 24px); gap: 2px; }
   .stage-lyric { bottom: 150px; }
