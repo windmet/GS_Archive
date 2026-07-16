@@ -2,7 +2,7 @@
 
 This folder collects working notes and investigation records that were previously scattered at the repository root.
 
-Latest architecture note: `notes/04_refactor/STAGE_CHIBI_SPINE_AND_CHOREOGRAPHY_20260714.md`
+Latest architecture note: `notes/04_refactor/IDOL_STORY_AND_MOBILE_INTERFACE_20260716.md`
 
 ## Layout
 
@@ -70,3 +70,4 @@ If a new note is lip or mouth related, put it in `01_lipsync/` first. If it is u
 - `04_refactor/STAGE_CHIBI_SPINE_AND_CHOREOGRAPHY_20260714.md` - LiveCharacter resource composition, attachment bug fixes, 1,403-motion catalog, official lip curves, ACB-to-M4A song extraction, and audio-clock choreography.
 - `04_refactor/EPISODE_ARTIFACT_AND_CONTINUOUS_PLAYBACK_20260715.md` - compatibility episode artifacts, local step rebasing, playback queues, and continuous episode transitions.
 - `04_refactor/STORY_COLLECTION_INTERFACE_20260715.md` - main/unit collection hierarchy, 744 episode boundaries, stable collection routes, unavailable-record policy, and browser verification.
+- `04_refactor/IDOL_STORY_AND_MOBILE_INTERFACE_20260716.md` - 49-idol personal-story pages, merged SMALL TALK boundaries, normalized Mobile tabs, after-story phone links, and next-phase story collection direction.
