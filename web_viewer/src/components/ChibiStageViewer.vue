@@ -8,6 +8,7 @@
     :data-current-singers="currentSingerPositions.join(',')"
     :data-position-tween-ms="POSITION_TWEEN_MS"
     :data-stage-base-zoom="STAGE_BASE_ZOOM"
+    :data-stage-view-scale="stageViewScale.toFixed(3)"
     :data-stage-environment-scale="environmentScale.toFixed(3)"
     :data-derived-group-events="derivedGroupEventCount"
     :data-camera-event-time="currentCameraState.eventTime"
@@ -273,6 +274,19 @@
                 <span>歌词</span>
               </label>
             </fieldset>
+            <label class="range-control view-scale-control">
+              <span>总览</span>
+              <input
+                v-model.number="stageViewScale"
+                aria-label="整体视图缩放"
+                type="range"
+                min="0.5"
+                max="1.5"
+                step="0.01"
+                @input="applyCameraTransform"
+              />
+              <output>{{ stageViewScale.toFixed(2) }}×</output>
+            </label>
             <label class="range-control environment-scale-control">
               <span>环境</span>
               <input
@@ -392,6 +406,9 @@ const stageBackgroundReady = ref(false)
 const allPositions = [1, 2, 3, 4, 5]
 const POSITION_TWEEN_MS = 350
 const STAGE_BASE_ZOOM = 1.1
+// Debug multiplier for the complete camera container. Unlike environmentScale,
+// this keeps stage art, characters, monitor, shadows and effects registered.
+const stageViewScale = ref(1)
 // Enlarge the authored environment as one registered plane while retaining
 // the official full-body character framing. Stage art, monitor movies and
 // fixed image/object layers all use this same factor.
@@ -399,6 +416,7 @@ const environmentScale = ref(1.073)
 const CHARACTER_DEPTH_BASE = 2000
 const CHARACTER_DEPTH_Y_FACTOR = 0.5
 const CHARACTER_STAGE_SCALE = 0.58
+const CHARACTER_STAGE_BASELINE_RATIO = 0.82
 // Backmonitor uses the live-stage content plane rather than the 720 px camera
 // midpoint. Fitting all 54 stages with interior alpha cut-outs peaks at 250;
 // using 360 leaves every movie visibly below its screen opening.
@@ -530,9 +548,11 @@ const currentLyric = computed(() => lyricAt(stageTime.value))
 const currentWholeScreenColor = computed(() => wholeScreenColorAt(stageTime.value))
 const currentCharacterLight = computed(() => characterLightAt(stageTime.value))
 const currentCameraLabel = computed(() => {
+  if (!cameraEnabled.value) return `${stageViewScale.value.toFixed(2)}× · 总览 · 0.0°`
   const camera = currentCameraState.value
   const focus = camera.stagePosition ? `${camera.stagePosition}号位` : '自由'
-  return `${camera.zoom.toFixed(2)}× · ${focus} · ${camera.rotation.toFixed(1)}°`
+  const composedZoom = camera.zoom * STAGE_BASE_ZOOM * stageViewScale.value
+  return `${composedZoom.toFixed(2)}× · ${focus} · ${camera.rotation.toFixed(1)}°`
 })
 
 onMounted(async () => {
@@ -1249,7 +1269,7 @@ function syncSpotlights() {
       ? layoutCoordinatesForStage(Number(state.stagePosition), stageTime.value)
       : { x: Number(state.x) || 0, y: 180 }
     const targetX = width * 0.5 + target.x * viewportScale
-    const targetY = height * 0.66 + (180 - target.y) * viewportScale
+    const targetY = height * CHARACTER_STAGE_BASELINE_RATIO + (180 - target.y) * viewportScale
     const topY = height * 0.5 - 500 * viewportScale
     runtime.container.position.set(targetX, targetY)
     runtime.container.zIndex = Number(state.depth) || 1800
@@ -1596,7 +1616,7 @@ async function syncPinspotlights() {
       const target = layoutCoordinatesForStage(Number(current.stagePosition), stageTime.value)
       runtime.sprite.position.set(
         width * 0.5 + target.x * viewportScale,
-        height * 0.66 + (180 - target.y) * viewportScale - 135 * viewportScale,
+        height * CHARACTER_STAGE_BASELINE_RATIO + (180 - target.y) * viewportScale - 135 * viewportScale,
       )
       runtime.sprite.scale.set(viewportScale * 0.62)
     } else {
@@ -2135,15 +2155,17 @@ function releaseBackmonitor() {
 
 function applyCameraTransform() {
   if (!cameraContainer || !app) return
+  const width = app.renderer.width / app.renderer.resolution
+  const height = app.renderer.height / app.renderer.resolution
   if (!cameraEnabled.value) {
-    cameraContainer.position.set(0, 0)
-    cameraContainer.pivot.set(0, 0)
-    cameraContainer.scale.set(1)
+    // Scale a camera-disabled overview around the visible canvas centre.
+    // Scaling from (0, 0) would make zooming also look like a coordinate shift.
+    cameraContainer.position.set(width * 0.5, height * 0.5)
+    cameraContainer.pivot.set(width * 0.5, height * 0.5)
+    cameraContainer.scale.set(stageViewScale.value)
     cameraContainer.rotation = 0
     return
   }
-  const width = app.renderer.width / app.renderer.resolution
-  const height = app.renderer.height / app.renderer.resolution
   const viewportScale = Math.min(width / 1280, height / 720)
   const camera = currentCameraState.value
   cameraContainer.position.set(width * 0.5, height * 0.5)
@@ -2151,7 +2173,7 @@ function applyCameraTransform() {
     width * 0.5 + camera.x * viewportScale,
     height * 0.5 + (camera.y - 360) * viewportScale,
   )
-  cameraContainer.scale.set(camera.zoom * STAGE_BASE_ZOOM)
+  cameraContainer.scale.set(camera.zoom * STAGE_BASE_ZOOM * stageViewScale.value)
   cameraContainer.rotation = -camera.rotation * Math.PI / 180
 }
 
@@ -2192,7 +2214,7 @@ function layoutRuntime(position, motionEvent = null) {
   // Live CSV Y is a depth coordinate: smaller values stand closer to the
   // camera (and therefore lower on screen). Legacy starts the centre member
   // at Y=170 and the side members at Y=190, matching the official stagger.
-  runtime.spine.y = height * 0.66 + (180 - y) * viewportScale
+  runtime.spine.y = height * CHARACTER_STAGE_BASELINE_RATIO + (180 - y) * viewportScale
   // Unity keeps the chibi prefab scale stable across solo, duo and ensemble
   // lives. Formation coordinates and the authored camera provide the framing;
   // scaling characters by active member count made three-person stages about
