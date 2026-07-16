@@ -106,6 +106,13 @@ export async function fetchLiveChibiStageBackgroundIndex() {
   return response.json()
 }
 
+export async function fetchLiveChibiStageEffectIndex() {
+  const response = await fetch(`${LIVE_CHIBI_BASE}/stage-effects/index.json`)
+  if (response.status === 404) return null
+  if (!response.ok) throw new Error(`舞台内置特效索引加载失败 (${response.status})`)
+  return response.json()
+}
+
 export async function fetchLiveChibiLipSync(relativePath) {
   if (!relativePath) return null
   const response = await fetch(`${LIVE_CHIBI_BASE}/${relativePath}`)

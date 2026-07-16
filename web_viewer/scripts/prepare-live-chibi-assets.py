@@ -573,17 +573,16 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
                     event_time = parse_optional_number(row[1])
                     if event_time is None:
                         continue
-                    hide, duration = parse_hide_transition(row)
+                    hide, duration = parse_hide_transition(row, parse_number(row[5], 1))
                     pinspotlight_events.append(
                         {
                             "time": event_time,
                             "id": parse_number(row[2]),
                             "asset": row[3].strip() or None,
-                            # These five numeric fields are retained separately
-                            # until the prefab controller semantics are proven.
+                            # The client prefab proves column 5 is the position
+                            # tween duration and column 6 is the performer slot.
                             "parameter4": parse_optional_number(row[4]),
-                            "targetSlot": parse_optional_number(row[5]),
-                            "parameter6": parse_optional_number(row[6]),
+                            "targetSlot": parse_optional_number(row[6]),
                             "x": parse_optional_number(row[7]),
                             "y": parse_optional_number(row[8]),
                             "beamColor": row[9].strip() or None,
@@ -821,7 +820,7 @@ def export_choreography(body_types: list[int]) -> dict:
 
     choreography_relative = Path("choreography") / "index.json"
     choreography = {
-        "schemaVersion": 10,
+        "schemaVersion": 11,
         "bodyTypes": body_types,
         "stats": {
             "songs": len(songs),
