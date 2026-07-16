@@ -2,7 +2,7 @@
 
 This folder collects working notes and investigation records that were previously scattered at the repository root.
 
-Latest architecture note: `notes/04_refactor/IDOL_STORY_AND_MOBILE_INTERFACE_20260716.md`
+Latest architecture note: `notes/04_refactor/PRIMARY_ARCHIVE_NAVIGATION_20260716.md`
 
 ## Layout
 
@@ -71,3 +71,4 @@ If a new note is lip or mouth related, put it in `01_lipsync/` first. If it is u
 - `04_refactor/EPISODE_ARTIFACT_AND_CONTINUOUS_PLAYBACK_20260715.md` - compatibility episode artifacts, local step rebasing, playback queues, and continuous episode transitions.
 - `04_refactor/STORY_COLLECTION_INTERFACE_20260715.md` - main/unit collection hierarchy, 744 episode boundaries, stable collection routes, unavailable-record policy, and browser verification.
 - `04_refactor/IDOL_STORY_AND_MOBILE_INTERFACE_20260716.md` - 49-idol personal-story pages, merged SMALL TALK boundaries, normalized Mobile tabs, after-story phone links, and next-phase story collection direction.
+- `04_refactor/PRIMARY_ARCHIVE_NAVIGATION_20260716.md` - content-first Idol/Card/Interaction navigation, default Touma routes, shared idol switching, legacy URL migration, and normalized related counts.
