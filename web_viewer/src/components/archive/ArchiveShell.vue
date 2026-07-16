@@ -1,5 +1,5 @@
 <template>
-  <div class="archive-shell" :class="{ 'has-inspector': hasInspector }">
+  <div class="archive-shell" :class="{ 'has-inspector': hasInspector, 'is-home': activeSection === 'home' }">
     <aside class="archive-sidebar" aria-label="资料馆导航">
       <div class="archive-brand">
         <img :src="getBrandMarkUrl()" alt="" />
@@ -114,6 +114,13 @@ const mobileNavigation = navigation
   font-family: Inter, "Noto Sans JP", "Noto Sans SC", system-ui, sans-serif;
 }
 .archive-shell.has-inspector { --archive-inspector: min(340px, 28vw); }
+.archive-shell.is-home { --archive-topbar: 0px; }
+.archive-shell.is-home .archive-topbar { display: none; }
+.archive-shell.is-home .archive-content { grid-row: 1 / 3; }
+:global(html[data-archive-home-theme="day"]) .archive-shell.is-home .archive-sidebar { background: #102632; }
+:global(html[data-archive-home-theme="day"]) .archive-shell.is-home .archive-nav button.active { background: rgba(33,183,197,.13); }
+:global(html[data-archive-home-theme="day"]) .archive-shell.is-home .archive-nav button.active::before { background: #21b7c5; }
+:global(html[data-archive-home-theme="night"]) .archive-shell.is-home .archive-sidebar { background: #101b27; }
 .archive-sidebar {
   grid-row: 1 / -1;
   background: #17212b;
@@ -241,6 +248,7 @@ const mobileNavigation = navigation
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: var(--archive-topbar) minmax(0, 1fr) 66px;
   }
+  .archive-shell.is-home { --archive-topbar: 0px; }
   .archive-sidebar { display: none; }
   .archive-topbar {
     grid-column: 1;
