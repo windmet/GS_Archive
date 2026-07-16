@@ -377,6 +377,9 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
         lyric_events = []
         whole_screen_color_events = []
         character_light_events = []
+        spotlight_events = []
+        pinspotlight_events = []
+        laserlight_events = []
         motion_group_events = []
         motion_group_changes = []
         with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
@@ -529,6 +532,82 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
                         }
                     )
                     continue
+                if row[0] == "Spotlight" and len(row) >= 11:
+                    event_time = parse_optional_number(row[1])
+                    if event_time is None:
+                        continue
+                    hide = len(row) > 17 and row[17].strip() == "1"
+                    spotlight_events.append(
+                        {
+                            "time": event_time,
+                            "id": parse_number(row[2]),
+                            "targetSlot": parse_optional_number(row[3]),
+                            "x": parse_optional_number(row[4]),
+                            "duration": (
+                                parse_number(row[18], 1)
+                                if hide and len(row) > 18
+                                else parse_number(row[5], 1)
+                            ),
+                            "beamColor": row[6].strip() or None,
+                            "characterDepth": parse_optional_number(row[7]),
+                            "environmentColor": row[8].strip() or None,
+                            "environmentOpacity": parse_optional_number(row[9]),
+                            "depth": parse_optional_number(row[10]),
+                            "hide": hide,
+                        }
+                    )
+                    continue
+                if row[0] == "Pinspotlight" and len(row) >= 13:
+                    event_time = parse_optional_number(row[1])
+                    if event_time is None:
+                        continue
+                    hide = len(row) > 17 and row[17].strip() == "1"
+                    pinspotlight_events.append(
+                        {
+                            "time": event_time,
+                            "id": parse_number(row[2]),
+                            "asset": row[3].strip() or None,
+                            # These five numeric fields are retained separately
+                            # until the prefab controller semantics are proven.
+                            "parameter4": parse_optional_number(row[4]),
+                            "targetSlot": parse_optional_number(row[5]),
+                            "parameter6": parse_optional_number(row[6]),
+                            "x": parse_optional_number(row[7]),
+                            "y": parse_optional_number(row[8]),
+                            "beamColor": row[9].strip() or None,
+                            "environmentColor": row[10].strip() or None,
+                            "environmentOpacity": parse_optional_number(row[11]),
+                            "depth": parse_optional_number(row[12]),
+                            "duration": parse_number(row[18], 1) if hide and len(row) > 18 else 1,
+                            "hide": hide,
+                        }
+                    )
+                    continue
+                if row[0] == "Laserlight" and len(row) >= 14:
+                    event_time = parse_optional_number(row[1])
+                    if event_time is None:
+                        continue
+                    hide = len(row) > 17 and row[17].strip() == "1"
+                    laserlight_events.append(
+                        {
+                            "time": event_time,
+                            "id": parse_number(row[2]),
+                            "style": parse_optional_number(row[3]),
+                            "sweepDuration": parse_optional_number(row[4]),
+                            "angle": parse_optional_number(row[5]),
+                            "direction": row[6].strip() or None,
+                            "length": parse_optional_number(row[7]),
+                            "x": parse_optional_number(row[8]),
+                            "y": parse_optional_number(row[9]),
+                            "color": row[10].strip() or None,
+                            "width": parse_optional_number(row[11]),
+                            "depth": parse_optional_number(row[12]),
+                            "parameter13": parse_optional_number(row[13]),
+                            "duration": parse_number(row[18], 1) if hide and len(row) > 18 else 1,
+                            "hide": hide,
+                        }
+                    )
+                    continue
                 if row[0] == "Livechara_motion_group" and len(row) >= 5:
                     motion_id = parse_number(row[3])
                     motion_group_events.append(
@@ -582,6 +661,14 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
             event["stagePosition"] = (
                 stage_position_map.get(focus_slot) if focus_slot and focus_slot > 0 else None
             )
+        for light_events in (spotlight_events, pinspotlight_events):
+            for event in light_events:
+                target_slot = event.get("targetSlot")
+                event["stagePosition"] = (
+                    stage_position_map.get(target_slot)
+                    if target_slot and target_slot > 0
+                    else None
+                )
         positions = sorted(stage_position_map.values())
         songs.append(
             {
@@ -625,6 +712,15 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
                 ),
                 "characterLightEvents": sorted(
                     character_light_events, key=lambda event: event["time"]
+                ),
+                "spotlightEvents": sorted(
+                    spotlight_events, key=lambda event: (event["time"], event["id"])
+                ),
+                "pinspotlightEvents": sorted(
+                    pinspotlight_events, key=lambda event: (event["time"], event["id"])
+                ),
+                "laserlightEvents": sorted(
+                    laserlight_events, key=lambda event: (event["time"], event["id"])
                 ),
                 "motionGroupEvents": sorted(
                     motion_group_events,
@@ -713,7 +809,7 @@ def export_choreography(body_types: list[int]) -> dict:
 
     choreography_relative = Path("choreography") / "index.json"
     choreography = {
-        "schemaVersion": 9,
+        "schemaVersion": 10,
         "bodyTypes": body_types,
         "stats": {
             "songs": len(songs),
@@ -737,6 +833,11 @@ def export_choreography(body_types: list[int]) -> dict:
             "characterLightEvents": sum(
                 len(song["characterLightEvents"]) for song in songs
             ),
+            "spotlightEvents": sum(len(song["spotlightEvents"]) for song in songs),
+            "pinspotlightEvents": sum(
+                len(song["pinspotlightEvents"]) for song in songs
+            ),
+            "laserlightEvents": sum(len(song["laserlightEvents"]) for song in songs),
             "lipSyncSongs": sum(1 for song in songs if song.get("lipSync")),
             "lipSyncCurves": len(lip_sync_catalog),
             "motions": len(catalog),

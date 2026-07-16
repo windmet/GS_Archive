@@ -8,6 +8,7 @@
     :data-current-singers="currentSingerPositions.join(',')"
     :data-position-tween-ms="POSITION_TWEEN_MS"
     :data-stage-base-zoom="STAGE_BASE_ZOOM"
+    :data-stage-environment-scale="STAGE_TEXTURE_SCALE"
     :data-derived-group-events="derivedGroupEventCount"
     :data-camera-event-time="currentCameraState.eventTime"
     :data-camera-zoom="currentCameraState.zoom.toFixed(4)"
@@ -28,6 +29,8 @@
     :data-object-layer-count="visibleObjectLayerCount"
     :data-object-layer-assets="visibleObjectLayerAssets.join(',')"
     :data-object-layer-unsupported="unsupportedObjectLayerAssets.join(',')"
+    :data-spotlight-count="visibleSpotlightCount"
+    :data-spotlight-ids="visibleSpotlightIds.join(',')"
     :data-stage-background-ready="stageBackgroundReady"
     :data-stage-background-song="stageBackgroundSongId"
     :data-current-lyric="currentLyric?.text || ''"
@@ -303,11 +306,18 @@ const visibleImageLayerDepths = ref([])
 const visibleObjectLayerCount = ref(0)
 const visibleObjectLayerAssets = ref([])
 const unsupportedObjectLayerAssets = ref([])
+const visibleSpotlightCount = ref(0)
+const visibleSpotlightIds = ref([])
 const stageBackgroundReady = ref(false)
 const allPositions = [1, 2, 3, 4, 5]
 const POSITION_TWEEN_MS = 350
 const STAGE_BASE_ZOOM = 1.1
-const STAGE_TEXTURE_SCALE = 1
+// Enlarge the authored environment as one registered plane while retaining
+// the official full-body character framing. Stage art, monitor movies and
+// fixed image/object layers all use this same factor.
+const STAGE_TEXTURE_SCALE = 1.073
+const CHARACTER_DEPTH_BASE = 2000
+const CHARACTER_DEPTH_Y_FACTOR = 0.5
 // Backmonitor uses the live-stage content plane rather than the 720 px camera
 // midpoint. Fitting all 54 stages with interior alpha cut-outs peaks at 250;
 // using 360 leaves every movie visibly below its screen opening.
@@ -337,6 +347,8 @@ let objectLayerSongId = ''
 let objectLayerSequence = 0
 const objectLayerRuntimes = new Map()
 const objectLayerLoads = new Map()
+const spotlightRuntimes = new Map()
+let spotlightConeTexture = null
 const stageBackgroundSongId = ref('')
 let stageBackgroundSequence = 0
 let stageBackgroundSprite = null
@@ -476,6 +488,7 @@ onBeforeUnmount(() => {
   releaseBackmonitor()
   releaseImageLayers()
   releaseObjectLayers()
+  releaseSpotlights()
   releaseStageBackground()
   for (const runtime of runtimes.values()) destroyStageRuntime(runtime)
   runtimes.clear()
@@ -997,7 +1010,140 @@ function applyStageLighting() {
     wholeScreenColorOverlay.visible = screen.alpha > 0.001
   }
   const character = currentCharacterLight.value
-  for (const runtime of runtimes.values()) runtime.spine.tint = character.color
+  const illuminatedPositions = new Set(
+    [...spotlightStatesAt(stageTime.value).values()]
+      .filter(state => state.alpha > 0.001 && state.stagePosition)
+      .map(state => Number(state.stagePosition)),
+  )
+  for (const [position, runtime] of runtimes) {
+    // A targeted performer is lit independently from the environment wash.
+    // Mixing back toward white reproduces that separation without making the
+    // Spine itself translucent beneath the foreground beam sprite.
+    runtime.spine.tint = illuminatedPositions.has(position)
+      ? mixRgb(character.color, 0xffffff, 0.35)
+      : character.color
+  }
+}
+
+function spotlightStatesAt(milliseconds) {
+  const states = new Map()
+  for (const event of (selectedSong.value?.spotlightEvents || [])) {
+    const eventTime = Number(event.time)
+    if (eventTime > milliseconds) break
+    const previous = states.get(event.id)
+    if (event.hide) {
+      if (!previous) continue
+      states.set(event.id, {
+        ...previous,
+        fadeStart: eventTime,
+        fadeDuration: Math.max(0, Number(event.duration) || 0),
+      })
+      continue
+    }
+    states.set(event.id, {
+      ...event,
+      alpha: 1,
+      fadeStart: null,
+      fadeDuration: 0,
+    })
+  }
+  for (const state of states.values()) {
+    if (state.fadeStart === null) continue
+    state.alpha = state.fadeDuration <= 0
+      ? 0
+      : Math.max(0, 1 - (milliseconds - state.fadeStart) / state.fadeDuration)
+  }
+  return states
+}
+
+function ensureSpotlightConeTexture() {
+  if (spotlightConeTexture) return spotlightConeTexture
+  const canvas = document.createElement('canvas')
+  canvas.width = 256
+  canvas.height = 1024
+  const context = canvas.getContext('2d')
+  const image = context.createImageData(canvas.width, canvas.height)
+  for (let y = 0; y < canvas.height; y += 1) {
+    const vertical = y / (canvas.height - 1)
+    const halfWidth = 0.035 + vertical * 0.465
+    const verticalAlpha = Math.min(1, vertical * 5) * (0.42 + vertical * 0.58)
+    for (let x = 0; x < canvas.width; x += 1) {
+      const distance = Math.abs(x / (canvas.width - 1) - 0.5)
+      const edge = Math.max(0, Math.min(1, (halfWidth - distance) / 0.09))
+      const alpha = Math.round(255 * verticalAlpha * edge * edge * (3 - 2 * edge))
+      const offset = (y * canvas.width + x) * 4
+      image.data[offset] = 255
+      image.data[offset + 1] = 255
+      image.data[offset + 2] = 255
+      image.data[offset + 3] = alpha
+    }
+  }
+  context.putImageData(image, 0, 0)
+  spotlightConeTexture = markRaw(PIXI.Texture.from(canvas))
+  return spotlightConeTexture
+}
+
+function createSpotlightRuntime(id) {
+  const container = markRaw(new PIXI.Container())
+  const cone = markRaw(new PIXI.Sprite(ensureSpotlightConeTexture()))
+  cone.anchor.set(0.5, 1)
+  cone.blendMode = PIXI.BLEND_MODES.ADD
+  const pool = markRaw(new PIXI.Graphics())
+  pool.beginFill(0xffffff)
+  pool.drawEllipse(0, 0, 135, 28)
+  pool.endFill()
+  pool.blendMode = PIXI.BLEND_MODES.ADD
+  container.addChild(cone, pool)
+  cameraContainer.addChild(container)
+  const runtime = markRaw({ id, container, cone, pool })
+  spotlightRuntimes.set(id, runtime)
+  return runtime
+}
+
+function syncSpotlights() {
+  if (!app || !cameraContainer) return
+  const states = spotlightStatesAt(stageTime.value)
+  const active = [...states.values()].filter(state => state.alpha > 0.001 && state.beamColor)
+  visibleSpotlightCount.value = active.length
+  visibleSpotlightIds.value = active.map(state => state.id).sort((a, b) => a - b)
+  for (const [id, runtime] of spotlightRuntimes) {
+    runtime.container.visible = Boolean(states.get(id)?.alpha > 0.001)
+  }
+  const width = app.renderer.width / app.renderer.resolution
+  const height = app.renderer.height / app.renderer.resolution
+  const viewportScale = Math.min(width / 1280, height / 720)
+  for (const state of active) {
+    const runtime = spotlightRuntimes.get(state.id) || createSpotlightRuntime(state.id)
+    const target = state.stagePosition
+      ? layoutCoordinatesForStage(Number(state.stagePosition), stageTime.value)
+      : { x: Number(state.x) || 0, y: 180 }
+    const targetX = width * 0.5 + target.x * viewportScale
+    const targetY = height * 0.66 + (180 - target.y) * viewportScale
+    const topY = height * 0.5 - 500 * viewportScale
+    runtime.container.position.set(targetX, targetY)
+    runtime.container.zIndex = Number(state.depth) || 1800
+    runtime.container.alpha = Math.max(0, Math.min(1, state.alpha))
+    runtime.container.visible = true
+    runtime.cone.tint = parseHexColor(state.beamColor, 0xffffff)
+    runtime.cone.width = 310 * viewportScale
+    runtime.cone.height = Math.max(1, targetY - topY)
+    runtime.cone.alpha = 0.16
+    runtime.pool.tint = runtime.cone.tint
+    runtime.pool.scale.set(viewportScale)
+    runtime.pool.alpha = 0.16
+  }
+}
+
+function releaseSpotlights() {
+  for (const runtime of spotlightRuntimes.values()) {
+    runtime.container.removeFromParent()
+    runtime.container.destroy({ children: true })
+  }
+  spotlightRuntimes.clear()
+  spotlightConeTexture?.destroy(true)
+  spotlightConeTexture = null
+  visibleSpotlightCount.value = 0
+  visibleSpotlightIds.value = []
 }
 
 function imageLayerStatesAt(milliseconds) {
@@ -1202,10 +1348,12 @@ function layoutObjectLayers(states = objectLayerStatesAt(stageTime.value)) {
     const state = states.get(asset)
     if (!state) continue
     runtime.container.position.set(
-      width * 0.5 + Number(state.x) * viewportScale,
-      height * 0.5 + (360 - Number(state.y)) * viewportScale,
+      width * 0.5 + Number(state.x) * viewportScale * STAGE_TEXTURE_SCALE,
+      height * 0.5 + (360 - Number(state.y)) * viewportScale * STAGE_TEXTURE_SCALE,
     )
-    runtime.container.scale.set(viewportScale * Number(state.scale) / 1000)
+    runtime.container.scale.set(
+      viewportScale * STAGE_TEXTURE_SCALE * Number(state.scale) / 1000,
+    )
     runtime.container.zIndex = Number(state.depth) || 0
     runtime.container.alpha = Math.max(0, Math.min(1, Number(state.alpha) || 0))
     runtime.container.visible = runtime.container.alpha > 0.001
@@ -1369,10 +1517,12 @@ function layoutBackmonitor(state) {
   const height = app.renderer.height / app.renderer.resolution
   const viewportScale = Math.min(width / 1280, height / 720)
   backmonitorSprite.position.set(
-    width * 0.5 + state.x * viewportScale,
-    height * 0.5 + (BACKMONITOR_Y_ORIGIN - state.y) * viewportScale,
+    width * 0.5 + state.x * viewportScale * STAGE_TEXTURE_SCALE,
+    height * 0.5 + (BACKMONITOR_Y_ORIGIN - state.y) * viewportScale * STAGE_TEXTURE_SCALE,
   )
-  backmonitorSprite.scale.set(viewportScale * state.scale / 1000 * 2)
+  backmonitorSprite.scale.set(
+    viewportScale * STAGE_TEXTURE_SCALE * state.scale / 1000 * 2,
+  )
   backmonitorSprite.rotation = -state.rotation * Math.PI / 180
   backmonitorSprite.alpha = Math.max(0, Math.min(1, state.opacity / 1000))
   backmonitorSprite.visible = Boolean(state.movie) && state.y < 4000
@@ -1540,7 +1690,14 @@ function layoutRuntime(position, motionEvent = null) {
   runtime.spine.y = height * 0.66 + (180 - y) * viewportScale
   runtime.spine.scale.set(characterScale * ensembleScale * viewportFit * sourceScale / 1700)
   runtime.spine.visible = activePositions.value.includes(position) && y < 4000
-  runtime.spine.zIndex = Math.round((360 - y) * 10) + position
+  // Unity reserves the 1200-1900 band for environment washes, beams and
+  // image/object layers. Characters occupy their own band around 2000; Y only
+  // orders performers against one another. The previous x10 mapping pushed a
+  // rear-platform performer down to z=900, causing authored light planes at
+  // z=1500 to cut across the body.
+  runtime.spine.zIndex = CHARACTER_DEPTH_BASE
+    + Math.round((360 - y) * CHARACTER_DEPTH_Y_FACTOR)
+    + position
   if (runtime.groundShadow) {
     runtime.groundShadow.position.set(runtime.spine.x, runtime.spine.y + 3 * viewportScale)
     runtime.groundShadow.scale.set(runtime.spine.scale.x * 2.1, runtime.spine.scale.y * 0.42)
@@ -1565,6 +1722,7 @@ function resizeStage() {
   }
   applyCameraTransform()
   layoutStageBackground()
+  syncSpotlights()
   applyStageLighting()
   syncBackmonitor(true)
   syncImageLayers().catch(error => console.warn('[ChibiStage] image-layer sync failed', error))
@@ -1719,6 +1877,7 @@ async function seekStage() {
   resetEventIndices()
   applyCurrentLipSync()
   await syncStageBackground()
+  syncSpotlights()
   applyStageLighting()
   applyCameraTransform()
   syncBackmonitor(true)
@@ -1781,6 +1940,7 @@ function updateStage(now) {
     layoutRuntime(slot.position, runtimes.get(slot.position)?.currentMotionEvent)
   }
   applyCameraTransform()
+  syncSpotlights()
   applyStageLighting()
   syncBackmonitor()
   syncImageLayers().catch(error => console.warn('[ChibiStage] image-layer sync failed', error))
