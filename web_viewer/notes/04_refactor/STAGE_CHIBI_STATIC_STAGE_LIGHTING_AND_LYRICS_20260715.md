@@ -44,13 +44,13 @@ Legacy 在 27,600 ms 命中首句 `冴えない気分になってくんじゃ`�
 以用户提供的 Legacy 存档约 10 秒画面为基准：
 
 - 整体镜头仍使用 `STAGE_BASE_ZOOM = 1.10`；1900×1060 静态舞台与 Image layer 改按源像素尺度映射（`STAGE_TEXTURE_SCALE = 1`），让 overscan 自然裁出画面，恢复官方截图中左右齿轮被画框裁切、圆台横向铺满的构图；
-- 人物脚底基线由画布高度 `0.82` 调整为 `0.66`，三名角色落在圆台表面/前缘，不再站到台座下方；
+- 人物脚底基线曾由画布高度 `0.82` 临时调整为 `0.66`，用于补偿当时舞台素材偏小造成的错觉；舞台尺寸完成校准后该补偿已撤销，基线恢复为 `0.82`；
 - 基础倍率施加在整个 camera container，而不是只放大背景，保证 Backmonitor 镂空、人物、Image layer 和灯光坐标保持一致；
 - 10,000 ms 验证 `cyber_02_2` 视频位于镂空之后；17,000 ms 在全屏遮色隐藏时验证明场和台面接触；27,600 ms 验证歌词、暗场与角色 tint。
 
 ## 人物纵深与地面阴影
 
-`Livechara_position` / motion 事件中的 Y 是舞台景深，不是从上向下增长的 DOM 坐标。Legacy 初始中心演员为 `y=170`，左右演员为 `y=190`；官方录像首帧也显示中心脚底更低、更靠前。因此运行时改为 `screenY = base + (180 - y) × viewportScale`，并用 `(360 - y)` 生成 zIndex。宽屏回归中中心位脚底比两侧低约 10–14 个显示像素，符合 20 个源坐标差经镜头缩放后的结果。
+`Livechara_position` / motion 事件中的 Y 是舞台景深，不是从上向下增长的 DOM 坐标。Legacy 初始中心演员为 `y=170`，左右演员为 `y=190`；官方录像首帧也显示中心脚底更低、更靠前。当前运行时使用 `screenY = height × 0.82 + (180 - y) × viewportScale`，并用独立深度带生成 zIndex。`0.82` 是全队落脚基线，`(180 - y)` 只保留 CSV 的前后错落；此前用于补偿小舞台的 `0.66` 整体上移已于舞台尺寸校准后撤销。Spotlight、Pinspotlight 的目标光池与人物复用同一基线，避免灯光和脚底脱节。
 
 五套 setup skeleton 均有第 0 号 `tex_chara_shadow` slot，但 setup attachment 为 null；部分服装 atlas 含同名 241×241 半透明原始纹理。这说明阴影资源存在，只是由游戏运行时另行装配。`scripts/prepare-live-chibi-assets.py` 现在从冬马默认服装图集导出共享 `shared/character-shadow.png`，多人舞台为每个角色创建独立阴影 Sprite，跟随人物 X/Y、缩放、显隐与 zIndex。源纹理最高 alpha 仅 128，因此运行时不再二次降低透明度，并压扁为脚底横向椭圆。
 
@@ -103,3 +103,11 @@ Study Equal Magic! 暴露了一个异步竞态：9 秒附近会同时创建 16 �
 浏览器回归在 1280×720 可视窗口中确认：画布宽度为整页宽，舞台本身按 16:9 延伸到首屏下方；向下滚动后歌曲、五人编队和图层开关同时可见。此布局只改变观察界面，不修改 Pixi 的 1280×720 舞台坐标、CSV 镜头或角色比例。
 
 当前仍未实现的是 Suspensionlight、Penlight，以及 ParticleSystem 类 `Object_layer`。Laserlight 与 Pinspotlight 已进入可用近似，但 Unity 粒子噪声、材质动画和复杂 shader 仍需继续从 prefab 参数逐项还原。
+
+新窗口继续开发时请以 [STAGE_CHIBI_NEXT_WINDOW_HANDOFF_20260716.md](./STAGE_CHIBI_NEXT_WINDOW_HANDOFF_20260716.md) 的状态表和优先级为准。
+
+## 整体视图缩放（2026-07-16）
+
+播放参数新增 `0.50×–1.50×` 的“整体视图缩放”。该倍率施加在完整 camera container 上，因此静态舞台、Backmonitor、Image/Object layer、人物、阴影和灯效会作为一个整体缩放，彼此坐标不会被拆散；它与只调整环境素材的“舞台环境缩放”是两个独立参数。
+
+关闭 CSV 角色镜头时，缩放中心固定在当前 Pixi 画布中心，同时把 camera container 的 position 与 pivot 设为同一个中心点，避免以左上角原点缩放造成看似坐标偏移。开启 CSV 镜头时，整体视图倍率作为调试乘数叠加在编排镜头和 `STAGE_BASE_ZOOM` 上，不改写原始 CSV 数据。浏览器回归已分别验证关闭镜头的 `0.80×` 总览和开启镜头后的倍率合成，控制台“当前镜头”会显示实际合成倍率。
