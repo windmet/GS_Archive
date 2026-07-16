@@ -28,6 +28,7 @@ let episodeBoundaryCount = 0
 for (const file of files) {
   const scenario = JSON.parse(await readFile(path.join(compiledRoot, file), 'utf8'))
   const steps = Array.isArray(scenario.steps) ? scenario.steps : []
+  const sourceRows = rows.filter(row => row.compiled_file === file)
   const playableStartIndex = steps.findIndex(step => step?.type !== 'synopsis')
   const leadingSynopsisSteps = playableStartIndex < 0 ? steps : steps.slice(0, playableStartIndex)
   const synopsisStep = leadingSynopsisSteps.find(step => step?.dialogue?.speaker || step?.dialogue?.text)
@@ -67,6 +68,36 @@ for (const file of files) {
     if (step?.dialogue?.speaker || step?.dialogue?.text) episode.dialogue_count += 1
     if (step?.dialogue?.voice) episode.voice_count += 1
   })
+  if (episodeMap.size === 0) {
+    const namedRows = sourceRows
+      .map(row => ({
+        row,
+        part: String(row.resource_id || '').match(/_([a-z])$/i)?.[1]?.toLowerCase() || '',
+      }))
+      .filter(item => item.part)
+    const stageIndexes = steps
+      .map((step, index) => step?.type === 'stage' ? index : -1)
+      .filter(index => index >= 0)
+
+    if (namedRows.length > 1 && stageIndexes.length >= namedRows.length) {
+      const segmentStarts = [stageIndexes[0], ...stageIndexes.slice(-(namedRows.length - 1))]
+      namedRows.forEach((item, index) => {
+        const startStepIndex = segmentStarts[index]
+        const endStepIndex = (segmentStarts[index + 1] ?? steps.length) - 1
+        const segmentSteps = steps.slice(startStepIndex, endStepIndex + 1)
+        episodeMap.set(`named:${item.part}`, {
+          episode_index: 0,
+          episode_part: item.part,
+          source_resource_id: item.row.resource_id || '',
+          start_step_index: startStepIndex,
+          end_step_index: endStepIndex,
+          step_count: segmentSteps.length,
+          dialogue_count: segmentSteps.filter(step => step?.dialogue?.speaker || step?.dialogue?.text).length,
+          voice_count: segmentSteps.filter(step => step?.dialogue?.voice).length,
+        })
+      })
+    }
+  }
   const episodes = [...episodeMap.values()].sort((a, b) =>
     a.start_step_index - b.start_step_index || a.episode_index - b.episode_index,
   ).map(episode => {

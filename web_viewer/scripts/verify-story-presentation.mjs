@@ -31,6 +31,10 @@ assert.equal(eventPresentation.episodes[10].episode_index, 10)
 assert.equal(eventPresentation.episodes[0].start_step_index, 0)
 assert.equal(eventPresentation.episodes[0].end_step_index < eventPresentation.episodes[1].start_step_index, true)
 
+const toumaSmallTalk = presentation.by_file['1_x_001tom_2_1_2_001_12.json']
+assert.deepEqual(toumaSmallTalk.episodes.map(episode => episode.episode_part), ['a', 'b', 'c'])
+assert.deepEqual(toumaSmallTalk.episodes.map(episode => [episode.start_step_index, episode.end_step_index]), [[2, 7], [8, 13], [14, 19]])
+
 for (const [file, metadata] of Object.entries(presentation.by_file)) {
   assert.ok(metadata.playable_start_index >= 0, `${file} has an invalid playable start`)
   assert.ok(metadata.playable_step_count >= 0, `${file} has an invalid playable count`)
