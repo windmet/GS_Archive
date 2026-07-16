@@ -2,7 +2,7 @@
 
 This folder collects working notes and investigation records that were previously scattered at the repository root.
 
-Latest architecture note: `notes/04_refactor/PRIMARY_ARCHIVE_NAVIGATION_20260716.md`
+Latest architecture note: `notes/04_refactor/ARCHIVE_STORY_NEXT_WINDOW_HANDOFF_20260716.md`
 
 ## Layout
 
@@ -72,3 +72,5 @@ If a new note is lip or mouth related, put it in `01_lipsync/` first. If it is u
 - `04_refactor/STORY_COLLECTION_INTERFACE_20260715.md` - main/unit collection hierarchy, 744 episode boundaries, stable collection routes, unavailable-record policy, and browser verification.
 - `04_refactor/IDOL_STORY_AND_MOBILE_INTERFACE_20260716.md` - 49-idol personal-story pages, merged SMALL TALK boundaries, normalized Mobile tabs, after-story phone links, and next-phase story collection direction.
 - `04_refactor/PRIMARY_ARCHIVE_NAVIGATION_20260716.md` - content-first Idol/Card/Interaction navigation, default Touma routes, shared idol switching, legacy URL migration, and normalized related counts.
+- `04_refactor/ARCHIVE_STORY_NEXT_WINDOW_HANDOFF_20260716.md` - next-window priorities for unified story collections, remaining Extra/Birthday/Card Story domains, player product behavior, local reading state, evidence constraints, and acceptance gates.
+- `04_refactor/STAGE_CHIBI_NEXT_WINDOW_HANDOFF_20260716.md` - current Chibi stage baseline, supported and approximate effects, missing Particle/Suspensionlight/Penlight work, validation rules, and next-window execution order.
