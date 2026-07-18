@@ -1,12 +1,15 @@
+import { getCachedMotionSetting } from '../utils/IdolMotionSettingStore.js'
+
 export function useTimelineRunner({ spineStageRef, currentStep }) {
   let _timelineEvents = []
   const _firedTimeline = new Set()
   let _timelineStartTime = 0
   let _timelineRAF = false
 
-  function _fireTimelineEvent(event) {
+  function _fireTimelineEvent(event, eventIndex) {
     const mgr = spineStageRef.value?.manager
     if (!mgr) return
+    const eventKey = `timeline:${currentStep.value?.step_id || 0}:${eventIndex}`
     console.log('[Timeline] fire:', event.type, event.chara_id, event.value, 'at', event.time + 's')
     if (event.type === 'spine_face') {
       mgr.updateSpineFace(event.chara_id, event.value, {
@@ -15,12 +18,13 @@ export function useTimelineRunner({ spineStageRef, currentStep }) {
         sweat_flag: event.sweat_flag,
       })
     } else if (event.type === 'spine_anim') {
-      if (event.no_back) mgr.playSpineAnim?.(event.chara_id, event.value, false, true)
-      else mgr.switchSpineAnim(event.chara_id, event.value)
+      const modelId = mgr.spineInstances?.[event.chara_id]?.modelId || ''
+      const motionSetting = getCachedMotionSetting(event.chara_id, modelId, event.value)
+      mgr.playSpineAnim?.(event.chara_id, event.value, false, !!event.no_back, motionSetting, true, 0.3)
     } else if (event.type === 'spine_neck_anim') {
-      mgr.playSpineNeckAnim?.(event.chara_id, event.value)
+      mgr.playSpineNeckAnim?.(event.chara_id, event.value, eventKey)
     } else if (event.type === 'spine_neck_stop') {
-      mgr.stopSpineNeckAnim?.(event.chara_id)
+      mgr.stopSpineNeckAnim?.(event.chara_id, eventKey)
     } else if (event.type === 'spine_color') {
       mgr.setSpineColor(event.chara_id, event.value, event.duration ?? 0, 0)
     }
@@ -38,7 +42,7 @@ export function useTimelineRunner({ spineStageRef, currentStep }) {
     for (let i = 0; i < _timelineEvents.length; i++) {
       if (_firedTimeline.has(i)) continue
       if (elapsed >= _timelineEvents[i].time) {
-        _fireTimelineEvent(_timelineEvents[i])
+        _fireTimelineEvent(_timelineEvents[i], i)
         _firedTimeline.add(i)
       }
     }
@@ -64,7 +68,7 @@ export function useTimelineRunner({ spineStageRef, currentStep }) {
     if (!_timelineEvents || _timelineEvents.length === 0) return
     for (let i = 0; i < _timelineEvents.length; i++) {
       if (_firedTimeline.has(i)) continue
-      _fireTimelineEvent(_timelineEvents[i])
+      _fireTimelineEvent(_timelineEvents[i], i)
       _firedTimeline.add(i)
     }
     cancelTimeline()

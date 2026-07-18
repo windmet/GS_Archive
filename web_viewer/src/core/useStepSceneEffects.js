@@ -145,7 +145,7 @@ export function useStepSceneEffects({
 
     if (!restore) {
       voicePlayer?.playVoice?.()
-      startTimeline()
+      if (!isRuntimeCueChannelEnabled('spine')) startTimeline()
       scheduleSnapshot()
     }
   }

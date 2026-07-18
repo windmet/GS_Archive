@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js'
+import { MixBlend } from '@pixi-spine/base'
 import { easeOutCubic, runRafTween } from './rafTween.js'
 
 export class SpineManager {
@@ -173,18 +174,19 @@ export class SpineManager {
     if (parent) parent.setChildIndex(spine, parent.children.length - 1)
   }
 
-  playSpineAnim(idolId, animName, skipChain = false, noBack = false, motionSetting = null) {
+  playSpineAnim(idolId, animName, skipChain = false, noBack = false, motionSetting = null, forceRestart = false, transitionMix = null) {
     const entry = this.manager.spineInstances[idolId]
     if (!entry) return
     const { spine } = entry
     try {
       const allAnims = spine.state.data.skeletonData.animations.map(a => a.name)
-      if (spine._currentBodyAnim === animName) return
+      if (!forceRestart && spine._currentBodyAnim === animName) return
 
+      let track = null
       if (animName.endsWith('_loop')) {
-        spine.state.setAnimation(0, animName, true)
+        track = spine.state.setAnimation(0, animName, true)
       } else if (skipChain || noBack) {
-        spine.state.setAnimation(0, animName, false)
+        track = spine.state.setAnimation(0, animName, false)
       } else {
         const loopVariant = animName + '_loop'
         const officialPose = motionSetting?.pose || ''
@@ -194,10 +196,13 @@ export class SpineManager {
             ? loopVariant
             : 'wait_loop'
 
-        spine.state.setAnimation(0, animName, false)
+        track = spine.state.setAnimation(0, animName, false)
         if (allAnims.includes(fallback)) {
           spine.state.addAnimation(0, fallback, true, 0)
         }
+      }
+      if (track && Number.isFinite(transitionMix)) {
+        track.mixDuration = Math.max(0, transitionMix)
       }
       spine._currentBodyAnim = animName
     } catch (err) {
@@ -216,13 +221,80 @@ export class SpineManager {
         return
       }
       const isLoop = animName.endsWith('_loop')
-      const savedMix = spine.stateData.defaultMix
-      spine.stateData.defaultMix = 0.3
-      spine.state.setAnimation(0, animName, isLoop)
+      const track = spine.state.setAnimation(0, animName, isLoop)
+      if (track) track.mixDuration = 0.3
       spine._currentBodyAnim = animName
-      spine.stateData.defaultMix = savedMix
     } catch (err) {
       console.warn(`[PixiStageManager] Failed to switch anim "${animName}" on "${idolId}":`, err.message)
+    }
+  }
+
+  playSpineNeckAnim(idolId, animName, eventKey = '') {
+    const entry = this.manager.spineInstances[idolId]
+    if (!entry?.spine) return
+    const { spine } = entry
+    try {
+      const allAnims = spine.state.data.skeletonData.animations.map(a => a.name)
+      if (!allAnims.includes(animName)) {
+        console.warn(`[PixiStageManager] Neck anim "${animName}" not found on "${entry.modelId}"`)
+        return
+      }
+      if (eventKey && spine._lastNeckEventKey === eventKey) return
+      if (!eventKey && spine._currentNeckAnim === animName) return
+
+      const playbackToken = (spine._neckPlaybackToken || 0) + 1
+      spine._neckPlaybackToken = playbackToken
+      spine._lastNeckEventKey = eventKey || ''
+      const track = spine.state.setAnimation(3, animName, false)
+      spine._currentNeckAnim = animName
+      if (track) {
+        // SideM neck clips contain offsets authored around the setup pose. They
+        // are an additive performance layer over the current body animation;
+        // replace blending would snap hello/angry poses back to setup at t=0.
+        track.mixBlend = MixBlend.add
+        track.mixDuration = 0
+        const previousTargets = spine._neckAdditiveTargets || { boneIndices: [], deformSlotIndices: [] }
+        const boneIndices = new Set(previousTargets.boneIndices)
+        const deformSlotIndices = new Set(previousTargets.deformSlotIndices)
+        for (const timeline of track.animation?.timelines || []) {
+          if (Number.isInteger(timeline?.boneIndex)) boneIndices.add(timeline.boneIndex)
+          if (timeline?.constructor?.name?.includes('Deform') && Number.isInteger(timeline.slotIndex)) {
+            deformSlotIndices.add(timeline.slotIndex)
+          }
+        }
+        spine._neckAdditiveTargets = {
+          boneIndices: [...boneIndices],
+          deformSlotIndices: [...deformSlotIndices],
+        }
+        spine._neckAdditiveCleanupPending = false
+        track.listener = {
+          complete: () => {
+            if (spine._neckPlaybackToken !== playbackToken) return
+            // A raw neck command owns a pose, not merely a timed gesture.
+            // Clamp the last frame until another neck command, an explicit
+            // neck stop, character removal, or a navigation restore replaces it.
+            track.trackTime = track.animationEnd
+          },
+        }
+      }
+    } catch (err) {
+      console.warn(`[PixiStageManager] Failed to play neck anim "${animName}" on "${idolId}":`, err.message)
+    }
+  }
+
+  stopSpineNeckAnim(idolId, eventKey = '') {
+    const entry = this.manager.spineInstances[idolId]
+    if (!entry?.spine) return
+    try {
+      const { spine } = entry
+      if (eventKey && spine._lastNeckStopEventKey === eventKey) return
+      spine._lastNeckStopEventKey = eventKey || ''
+      spine._neckPlaybackToken = (spine._neckPlaybackToken || 0) + 1
+      spine.state.clearTrack(3)
+      spine._currentNeckAnim = null
+      if (spine._neckAdditiveTargets) spine._neckAdditiveCleanupPending = true
+    } catch (err) {
+      console.warn(`[PixiStageManager] Failed to stop neck anim on "${idolId}":`, err.message)
     }
   }
 

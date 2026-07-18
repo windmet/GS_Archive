@@ -294,6 +294,18 @@ function collectStageDebugData() {
     const spine = entry?.spine
     const skeleton = spine?.skeleton
     const slotData = skeleton?.data?.slots || []
+    const poseBones = Object.fromEntries(
+      ['root', 'chara_MIX', 'body', 'neck', 'head', 'face_control'].map(name => {
+        const bone = skeleton?.findBone?.(name)
+        return [name, bone ? {
+          x: bone.x,
+          y: bone.y,
+          rotation: bone.rotation,
+          worldX: bone.worldX,
+          worldY: bone.worldY,
+        } : null]
+      }),
+    )
     const isEyePart = value => /eye|lash|pupil|ball|close|smile/i.test(String(value || ''))
     const skinAttachments = skeleton?.data?.defaultSkin?.getAttachments?.() || []
     return {
@@ -303,6 +315,11 @@ function collectStageDebugData() {
       y: entry?.spine?.y ?? null,
       scale: entry?.spine?.scale?.x ?? null,
       alpha: entry?.spine?.alpha ?? null,
+      body: spine?._currentBodyAnim || '',
+      neck: spine?._currentNeckAnim || '',
+      lastNeckEventKey: spine?._lastNeckEventKey || '',
+      tracks: snap?.tracks || [],
+      poseBones,
       face: spine?._currentFaceAnim || '',
       blink: spine?._blinkCfg || null,
       eyeSlots: slotData.map((slot, index) => ({
@@ -437,6 +454,7 @@ function syncBoundsSnapshot(step = props.step) {
 watch(debugMode, (on) => {
   if (!manager) return
   manager.setDebugMode(on)
+  publishStageDebugData()
   if (on) {
     syncStates()
   } else {
@@ -757,7 +775,12 @@ watch(() => props.step, (step, oldStep) => {
     boundsSnapshot.value = null
     return
   }
-  applyState(step)
+  const newId = Number(step?.step_id)
+  const oldId = Number(oldStep?.step_id)
+  const resetScreenEffects = Number.isFinite(newId)
+    && Number.isFinite(oldId)
+    && (newId < oldId || newId > oldId + 1)
+  applyState(step, { resetScreenEffects })
 })
 
 watch(() => props.fallbackBg, () => {
@@ -766,7 +789,7 @@ watch(() => props.fallbackBg, () => {
   else manager.clearBackground()
 })
 
-async function applyState(step) {
+async function applyState(step, { resetScreenEffects = false } = {}) {
   if (!manager || !step?.state) return
   const token = ++applyStateToken
   const state = step.state
@@ -779,6 +802,7 @@ async function applyState(step) {
     state,
     fallbackBg: props.fallbackBg,
     lastScreenEffectsKey,
+    resetScreenEffects,
   })
 
   const charaId = step.chara_id || ''
@@ -865,9 +889,9 @@ async function applyState(step) {
       existing.prefabMeta = prefabMeta
       // Same model: update face/anim and reposition.
       if (spineState.face) manager.updateSpineFace(sid, spineState.face, spineState)
-      if (spineState.anim) manager.playSpineAnim(sid, spineState.anim, !!step.timeline, !!spineState.anim_no_back, getMotionSetting(sid, modelId, spineState.anim))
-      if (spineState.neck_anim_stop) manager.stopSpineNeckAnim?.(sid)
-      else if (spineState.neck_anim) manager.playSpineNeckAnim?.(sid, spineState.neck_anim)
+      if (spineState.anim) manager.playSpineAnim(sid, spineState.anim, false, !!spineState.anim_no_back, getMotionSetting(sid, modelId, spineState.anim))
+      if (spineState.neck_anim_stop) manager.stopSpineNeckAnim?.(sid, `state:${step.step_id}:neck-stop:${sid}`)
+      else if (spineState.neck_anim) manager.playSpineNeckAnim?.(sid, spineState.neck_anim, `state:${step.step_id}:neck:${sid}:${spineState.neck_anim}`)
       manager.setSpinePartsVisible?.(sid, spineState.parts_visible !== false)
       manager.flushSpinePose?.(sid, 0)
       const posX = spineState.pos_x ?? 0
@@ -935,9 +959,9 @@ async function applyState(step) {
         let posY = spineState.pos_y ?? 0
         if (spineState.idol_zoom_y_offset) posY += spineState.idol_zoom_y_offset
         if (spineState.face) manager.updateSpineFace(sid, spineState.face, spineState)
-        if (spineState.anim) manager.playSpineAnim(sid, spineState.anim, !!step.timeline, !!spineState.anim_no_back, getMotionSetting(sid, modelId, spineState.anim))
-        if (spineState.neck_anim_stop) manager.stopSpineNeckAnim?.(sid)
-        else if (spineState.neck_anim) manager.playSpineNeckAnim?.(sid, spineState.neck_anim)
+        if (spineState.anim) manager.playSpineAnim(sid, spineState.anim, false, !!spineState.anim_no_back, getMotionSetting(sid, modelId, spineState.anim))
+        if (spineState.neck_anim_stop) manager.stopSpineNeckAnim?.(sid, `state:${step.step_id}:neck-stop:${sid}`)
+        else if (spineState.neck_anim) manager.playSpineNeckAnim?.(sid, spineState.neck_anim, `state:${step.step_id}:neck:${sid}:${spineState.neck_anim}`)
         manager.setSpinePartsVisible?.(sid, spineState.parts_visible !== false)
         manager.flushSpinePose?.(sid, 0)
         const fit = FIT_MODE === 'prefabrect' && prefabMeta

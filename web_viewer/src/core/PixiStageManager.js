@@ -673,6 +673,13 @@ export class PixiStageManager {
     this._fadeOverlay.visible = false
   }
 
+  clearScreenEffects() {
+    this._screenEffectToken++
+    if (!this._effectOverlay || this._effectOverlay.destroyed) return
+    this._effectOverlay.alpha = 0
+    this._effectOverlay.visible = false
+  }
+
   playScreenEffects(effects = []) {
     if (!Array.isArray(effects) || effects.length === 0 || !this._effectOverlay) return
     const token = ++this._screenEffectToken
@@ -1236,7 +1243,9 @@ export class PixiStageManager {
 
       console.log(`[DEBUG] hasMeshOrRegion: ${hasMeshOrRegion}`)
 
-      spine.stateData.defaultMix = 0.12
+      // Step snapshots and neck overlays are authored as cuts. A delayed
+      // timeline body cue opts into its own 0.3s crossfade at dispatch time.
+      spine.stateData.defaultMix = 0
 
       const origStateUpdate = spine.state.update.bind(spine.state)
       spine.state.update = (dt) => {
@@ -1262,7 +1271,27 @@ export class PixiStageManager {
 
       const origApply = spine.state.apply.bind(spine.state)
       spine.state.apply = (skeleton) => {
+        // Additive neck clips must start from a stable Track 0/1 baseline on
+        // every frame. Pixi Spine otherwise retains the prior local pose, so
+        // unkeyed controls such as chara_MIX accumulate their Y offset and the
+        // whole character drifts down. Keep the targets for one extra apply
+        // after Track 3 is cleared so its final offset cannot leak into state.
+        const neckTargets = spine._neckAdditiveTargets
+        const finishNeckCleanup = !!spine._neckAdditiveCleanupPending
+        if (neckTargets) {
+          for (const boneIndex of neckTargets.boneIndices || []) {
+            skeleton.bones?.[boneIndex]?.setToSetupPose?.()
+          }
+          for (const slotIndex of neckTargets.deformSlotIndices || []) {
+            const deform = skeleton.slots?.[slotIndex]?.deform
+            if (deform) deform.length = 0
+          }
+        }
         origApply(skeleton)
+        if (finishNeckCleanup) {
+          spine._neckAdditiveTargets = null
+          spine._neckAdditiveCleanupPending = false
+        }
 
         const blinkCfg = spine._blinkCfg
         if (blinkCfg) {
@@ -2024,40 +2053,8 @@ export class PixiStageManager {
    *   - Single-shot animations (e.g. `neck_yes`, `neck_no`) have no `_loop` variant
    *     and should fall back to `wait_loop`.
    */
-  playSpineAnim(idolId, animName, skipChain = false, noBack = false, motionSetting = null) {
-    return this.spineManager?.playSpineAnim(idolId, animName, skipChain, noBack, motionSetting)
-    const entry = this.spineInstances[idolId]
-    if (!entry) return
-    const { spine } = entry
-    try {
-      const allAnims = spine.state.data.skeletonData.animations.map(a => a.name)
-      if (spine._currentBodyAnim === animName) return
-
-      if (animName.endsWith('_loop')) {
-        // Already a loop animation é”?play directly
-        spine.state.setAnimation(0, animName, true)
-      } else if (skipChain || noBack) {
-        // Single-shot, no auto-chain é”?used when step has timeline
-        spine.state.setAnimation(0, animName, false)
-      } else {
-        // Single-shot animation: play once, then chain the official pose loop.
-        const loopVariant = animName + '_loop'
-        const officialPose = motionSetting?.pose || ''
-        const fallback = officialPose && allAnims.includes(officialPose)
-          ? officialPose
-          : allAnims.includes(loopVariant)
-            ? loopVariant
-            : 'wait_loop'
-
-        spine.state.setAnimation(0, animName, false)
-        if (allAnims.includes(fallback)) {
-          spine.state.addAnimation(0, fallback, true, 0)
-        }
-      }
-      spine._currentBodyAnim = animName
-    } catch (err) {
-      console.warn(`[PixiStageManager] Failed to play anim "${animName}" on "${idolId}":`, err.message)
-    }
+  playSpineAnim(idolId, animName, skipChain = false, noBack = false, motionSetting = null, forceRestart = false, transitionMix = null) {
+    return this.spineManager?.playSpineAnim(idolId, animName, skipChain, noBack, motionSetting, forceRestart, transitionMix)
   }
 
   /**
@@ -2066,64 +2063,14 @@ export class PixiStageManager {
    */
   switchSpineAnim(idolId, animName) {
     return this.spineManager?.switchSpineAnim(idolId, animName)
-    const entry = this.spineInstances[idolId]
-    if (!entry) return
-    const { spine } = entry
-    try {
-      const allAnims = spine.state.data.skeletonData.animations.map(a => a.name)
-      if (!allAnims.includes(animName)) {
-        console.warn(`[PixiStageManager] Anim "${animName}" not found on "${entry.modelId}"`)
-        return
-      }
-      const isLoop = animName.endsWith('_loop')
-      const savedMix = spine.stateData.defaultMix
-      spine.stateData.defaultMix = 0.3  // 300ms é”?smooth timeline anim transitions
-      spine.state.setAnimation(0, animName, isLoop)
-      spine._currentBodyAnim = animName
-      spine.stateData.defaultMix = savedMix
-    } catch (err) {
-      console.warn(`[PixiStageManager] Failed to switch anim "${animName}" on "${idolId}":`, err.message)
-    }
   }
 
-  playSpineNeckAnim(idolId, animName) {
-
-    // Disabled: neck animation on Track 3 can freeze poses; see notes below.
-    // See ADV_STATE_MACHINE_NOTES.md for the intended snap-cut behavior.
-    /* Original code preserved below for reference:
-    const entry = this.spineInstances[idolId]
-    if (!entry) return
-    const { spine } = entry
-    try {
-      const allAnims = spine.state.data.skeletonData.animations.map(a => a.name)
-      if (!allAnims.includes(animName)) {
-        console.warn(`[PixiStageManager] Neck anim "${animName}" not found on "${entry.modelId}"`)
-        return
-      }
-      if (spine._currentNeckAnim === animName) return
-      const track = spine.state.setAnimation(3, animName, false)
-      spine._currentNeckAnim = animName
-      if (track) {
-        const listener = { complete: () => { spine.state.setEmptyAnimation(3, 0.25); spine._currentNeckAnim = null } }
-        track.listener = listener
-    } catch (err) {
-      console.warn(`[PixiStageManager] Failed to play neck anim "${animName}" on "${idolId}":`, err.message)
-    }
-    */
+  playSpineNeckAnim(idolId, animName, eventKey = '') {
+    return this.spineManager?.playSpineNeckAnim(idolId, animName, eventKey)
   }
 
-  stopSpineNeckAnim(idolId) {
-    // Disabled: see playSpineNeckAnim for the reason this is not active.
-    /* original code:
-    /* original code:
-    const entry = this.spineInstances[idolId]
-    try {
-      entry.spine.state.setEmptyAnimation(3, 0.25)
-      entry.spine._currentNeckAnim = null
-    } catch (err) {
-      console.warn(`[PixiStageManager] Failed to stop neck anim on "${idolId}":`, err.message)
-    }
-    */
+  stopSpineNeckAnim(idolId, eventKey = '') {
+    return this.spineManager?.stopSpineNeckAnim(idolId, eventKey)
   }
 
   /**
