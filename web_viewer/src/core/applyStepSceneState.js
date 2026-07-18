@@ -1,3 +1,5 @@
+import { isRuntimeCueChannelEnabled } from './story-runtime/RuntimeFeatureFlags.js'
+
 export function applyStepSceneState({
   manager,
   step,
@@ -41,10 +43,12 @@ export function applyStepSceneState({
     )
   }
 
-  if (state.camera_zoom) {
-    manager.setCameraZoom(state.camera_zoom)
-  } else {
-    manager.resetCameraZoom()
+  if (!isRuntimeCueChannelEnabled('camera')) {
+    if (state.camera_zoom) {
+      manager.setCameraZoom(state.camera_zoom)
+    } else {
+      manager.resetCameraZoom()
+    }
   }
 
   if (state.screen_fade) {

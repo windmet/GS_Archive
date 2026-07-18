@@ -115,6 +115,7 @@ import { AudioManager } from './AudioManager.js'
 import { useTimelineRunner } from './useTimelineRunner.js'
 import { useStoryNavigation } from './useStoryNavigation.js'
 import { useStepSceneEffects } from './useStepSceneEffects.js'
+import { useStoryRuntimeCues } from './story-runtime/useStoryRuntimeCues.js'
 
 const props = defineProps({
   scenarioJson: { type: Object, default: null },
@@ -162,6 +163,8 @@ let clearSeTimers = () => {}
 let scheduleSnapshot = () => {}
 let handleStepChange = () => {}
 let cleanupStepSceneEffects = () => {}
+let handleRuntimeStepChange = () => {}
+let cleanupRuntimeCues = () => {}
 
 const getVoiceVolume = () => voicePlayer?.getVoiceVolume?.() || 0
 
@@ -249,9 +252,9 @@ const {
   cycleLanguage,
   applyStartStepIfNeeded,
   goNext: advanceStep,
-  goPrev,
-  onChoice,
-  goToStep,
+  goPrev: navigatePrev,
+  onChoice: navigateChoice,
+  goToStep: navigateToStep,
 } = useStoryNavigation({
   compiledData,
   currentStep,
@@ -271,6 +274,7 @@ const {
 function finishEpisode() {
   if (episodeFinished.value) return
   clearFadeAutoAdvance()
+  storyRuntimeCues.cancelCurrentStep('episode-complete')
   fastForwardTimeline()
   _stopCurrentVoice('episode-complete')
   menuOpen.value = false
@@ -283,8 +287,24 @@ function finishEpisode() {
 
 function goNext() {
   if (episodeFinished.value) return
+  if (storyRuntimeCues.settleCurrentStep('user-next')) return
   if (isLastStep.value) finishEpisode()
   else advanceStep()
+}
+
+function goPrev() {
+  storyRuntimeCues.cancelCurrentStep('previous')
+  navigatePrev()
+}
+
+function onChoice(option) {
+  storyRuntimeCues.cancelCurrentStep('choice')
+  navigateChoice(option)
+}
+
+function goToStep(index) {
+  storyRuntimeCues.cancelCurrentStep('go-to-step')
+  navigateToStep(index)
 }
 
 function skipEpisode() {
@@ -305,12 +325,21 @@ const stepSceneEffects = useStepSceneEffects({
   snapshotAction: () => { window.__SNAPSHOT__ = freezeScene('snapshotAt') },
 })
 
+const storyRuntimeCues = useStoryRuntimeCues({
+  compiledData,
+  currentStepIndex,
+  spineStageRef,
+  audioManager: _audioManager,
+})
+
 clearFadeAutoAdvance = stepSceneEffects.clearFadeAutoAdvance
 clearSnapshotTimer = stepSceneEffects.clearSnapshotTimer
 clearSeTimers = stepSceneEffects.clearSeTimers
 scheduleSnapshot = stepSceneEffects.scheduleSnapshot
 handleStepChange = stepSceneEffects.handleStepChange
 cleanupStepSceneEffects = stepSceneEffects.cleanup
+handleRuntimeStepChange = storyRuntimeCues.handleStepChange
+cleanupRuntimeCues = storyRuntimeCues.cleanup
 
 onMounted(async () => {
   // 全局调试工具：在 Console 输入 showAnims("001tom") 查看角色的所有动作
@@ -403,6 +432,7 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   console.warn('[Lifecycle] StoryViewer onBeforeUnmount FIRED!')
   cleanupStepSceneEffects()
+  cleanupRuntimeCues()
   if (_readyTimer) {
     clearTimeout(_readyTimer)
     _readyTimer = null
@@ -414,8 +444,10 @@ onBeforeUnmount(() => {
   _resetVoiceDedup()
 })
 
-// Watch step changes to trigger voice playback and timeline
+// Keep the legacy effects watcher behavior unchanged. The opt-in runtime watcher
+// is immediate so a scenario opened directly at an authored step is scheduled.
 watch(currentStep, handleStepChange)
+watch(currentStep, handleRuntimeStepChange, { immediate: true })
 
 
 

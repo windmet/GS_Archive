@@ -1,0 +1,151 @@
+import { StoryClock } from './StoryClock.js'
+import { EffectScheduler } from './EffectScheduler.js'
+import { createPerformanceHandle } from './PerformanceRegistry.js'
+import { normalizeScenario } from './ScenarioNormalizer.js'
+import { getRuntimeCueFeatureFlags } from './RuntimeFeatureFlags.js'
+
+function immediateCamera(camera) {
+  if (!camera) return null
+  return { ...camera, duration: 0, delay: 0 }
+}
+
+export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStageRef, audioManager }) {
+  const flags = getRuntimeCueFeatureFlags()
+  const enabled = flags.camera || flags.se
+  const scheduler = new EffectScheduler({ clock: new StoryClock() })
+  let normalizedSource = null
+  let normalizedScenario = null
+  let managerFrame = null
+  let generation = 0
+
+  if (enabled && typeof window !== 'undefined') {
+    window.__STORY_RUNTIME_CUES__ = scheduler
+  }
+
+  function getNormalizedStep() {
+    if (normalizedSource !== compiledData.value) {
+      normalizedSource = compiledData.value
+      normalizedScenario = normalizedSource ? normalizeScenario(normalizedSource) : null
+    }
+    return normalizedScenario?.steps?.[currentStepIndex.value] || null
+  }
+
+  function getManager() {
+    return spineStageRef.value?.manager || null
+  }
+
+  function applyEntryCameraWhenReady(step, expectedGeneration) {
+    if (!flags.camera) return
+    const apply = () => {
+      if (expectedGeneration !== generation) return
+      const manager = getManager()
+      if (!manager) {
+        managerFrame = requestAnimationFrame(apply)
+        return
+      }
+      managerFrame = null
+      const camera = immediateCamera(step.entry_snapshot?.camera_zoom)
+      if (camera) manager.setCameraZoom(camera)
+      else manager.resetCameraZoom()
+    }
+    apply()
+  }
+
+  function createCameraHandle(cue) {
+    return createPerformanceHandle({
+      id: cue.cue_id,
+      channel: cue.channel,
+      skippable: cue.lifecycle.skippable,
+      blocksInput: cue.lifecycle.blocks_input,
+      blocksAuto: cue.lifecycle.blocks_auto,
+      metadata: { action: cue.action, cue },
+      onStart: () => {
+        console.debug('[StoryRuntime] cue start', cue.cue_id)
+        getManager()?.setCameraZoom({ ...cue.payload, duration: cue.duration, delay: 0 })
+      },
+      onSettle: () => {
+        console.debug('[StoryRuntime] cue settle', cue.cue_id)
+        getManager()?.setCameraZoom(immediateCamera(cue.payload))
+      },
+      onCancel: () => {
+        getManager()?.cameraController?.cancelCameraTween?.()
+      },
+    })
+  }
+
+  function createSeHandle(cue) {
+    audioManager.preloadSE?.(cue.payload.cue)
+    return createPerformanceHandle({
+      id: cue.cue_id,
+      channel: cue.channel,
+      skippable: cue.lifecycle.skippable,
+      blocksInput: cue.lifecycle.blocks_input,
+      blocksAuto: cue.lifecycle.blocks_auto,
+      metadata: { action: cue.action, cue },
+      onStart: () => {
+        console.debug('[StoryRuntime] cue start', cue.cue_id)
+        audioManager.playSE(cue.payload.cue)
+      },
+      // Settling a scheduled transient cue suppresses it instead of playing it.
+      onSettle: () => console.debug('[StoryRuntime] cue suppress', cue.cue_id),
+      onCancel: () => {},
+    })
+  }
+
+  const handlers = new Map()
+  if (flags.camera) handlers.set('camera.transform', createCameraHandle)
+  if (flags.se) handlers.set('se.play', createSeHandle)
+
+  function handleStepChange() {
+    if (!enabled) return
+    generation++
+    if (managerFrame != null) {
+      cancelAnimationFrame(managerFrame)
+      managerFrame = null
+    }
+    scheduler.cancelAll('step-change')
+    const step = getNormalizedStep()
+    if (!step) return
+    applyEntryCameraWhenReady(step, generation)
+    const cues = step.cues.filter(cue => handlers.has(cue.action))
+    scheduler.loadStep(cues, { handlers, context: { step } })
+    scheduler.start()
+    console.debug('[StoryRuntime] scheduled', JSON.stringify(scheduler.inspect()))
+  }
+
+  function settleCurrentStep(reason = 'user-next') {
+    if (!enabled || !scheduler.hasUnsettledSkippable()) return false
+    scheduler.settleSkippable(reason)
+      .then(() => console.debug('[StoryRuntime] settled', reason, JSON.stringify(scheduler.inspect())))
+      .catch(error => console.warn('[StoryRuntime] failed to settle cues:', error))
+    return true
+  }
+
+  function cancelCurrentStep(reason = 'navigation') {
+    if (!enabled) return
+    generation++
+    if (managerFrame != null) {
+      cancelAnimationFrame(managerFrame)
+      managerFrame = null
+    }
+    scheduler.cancelAll(reason).catch(error => {
+      console.warn('[StoryRuntime] failed to cancel cues:', error)
+    })
+  }
+
+  function cleanup() {
+    cancelCurrentStep('cleanup')
+    scheduler.dispose().catch(() => {})
+    if (window.__STORY_RUNTIME_CUES__ === scheduler) delete window.__STORY_RUNTIME_CUES__
+  }
+
+  return {
+    enabled,
+    flags,
+    handleStepChange,
+    settleCurrentStep,
+    cancelCurrentStep,
+    inspect: () => scheduler.inspect(),
+    cleanup,
+  }
+}

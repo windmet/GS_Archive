@@ -1,4 +1,5 @@
 import { getAutoAdvanceTiming } from '../utils/StoryStepFlow.js'
+import { isRuntimeCueChannelEnabled } from './story-runtime/RuntimeFeatureFlags.js'
 
 export function useStepSceneEffects({
   currentStepIndex,
@@ -76,13 +77,15 @@ export function useStepSceneEffects({
       spineStageRef.value?.manager?.cancelAllSpineTweens?.()
     }
 
-    const seEvents = Array.isArray(newStep?.state?.se_events) ? newStep.state.se_events : []
-    if (seEvents.length > 0) {
-      for (const se of seEvents) {
-        playStepSE(se)
+    if (!isRuntimeCueChannelEnabled('se')) {
+      const seEvents = Array.isArray(newStep?.state?.se_events) ? newStep.state.se_events : []
+      if (seEvents.length > 0) {
+        for (const se of seEvents) {
+          playStepSE(se)
+        }
+      } else {
+        playStepSE(newStep?.state?.se)
       }
-    } else {
-      playStepSE(newStep?.state?.se)
     }
 
     const env = newStep?.state?.environmental

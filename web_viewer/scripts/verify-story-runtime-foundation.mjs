@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url'
 import { StoryClock } from '../src/core/story-runtime/StoryClock.js'
 import { PerformanceRegistry, createPerformanceHandle } from '../src/core/story-runtime/PerformanceRegistry.js'
 import { normalizeScenario } from '../src/core/story-runtime/ScenarioNormalizer.js'
+import { EffectScheduler } from '../src/core/story-runtime/EffectScheduler.js'
+import { getRuntimeCueFeatureFlags } from '../src/core/story-runtime/RuntimeFeatureFlags.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -69,6 +71,50 @@ async function verifyPerformanceRegistry() {
   assert.equal(first.status, 'cancelled')
   assert.equal(registry.get('camera-3'), second)
   await registry.dispose()
+}
+
+async function verifyEffectScheduler() {
+  let nowMilliseconds = 0
+  const clock = new StoryClock({ nowMilliseconds: () => nowMilliseconds })
+  const scheduler = new EffectScheduler({
+    clock,
+    requestFrame: () => 1,
+    cancelFrame: () => {},
+  })
+  const calls = []
+  const handlers = new Map([
+    ['camera.transform', cue => createPerformanceHandle({
+      id: cue.cue_id,
+      channel: cue.channel,
+      onStart: () => calls.push('camera:start'),
+      onSettle: () => calls.push('camera:settle'),
+      onCancel: () => calls.push('camera:cancel'),
+    })],
+    ['se.play', cue => createPerformanceHandle({
+      id: cue.cue_id,
+      channel: cue.channel,
+      blocksAuto: false,
+      onStart: () => calls.push('se:start'),
+      onSettle: () => calls.push('se:suppress'),
+    })],
+  ])
+  scheduler.loadStep([
+    { cue_id: 'camera', at: 5.5, duration: 0.2, channel: 'camera', action: 'camera.transform' },
+    { cue_id: 'se', at: 5.6, duration: 0, channel: 'se', action: 'se.play' },
+  ], { handlers })
+  scheduler.start()
+  nowMilliseconds = 5400
+  scheduler.tick()
+  assert.deepEqual(calls, [])
+  assert.equal(scheduler.hasUnsettledSkippable(), true)
+  await scheduler.settleSkippable('user-next')
+  assert.deepEqual(calls, ['camera:settle', 'se:suppress'])
+  assert.equal(scheduler.hasUnsettledSkippable(), false)
+
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCues=1'), { camera: true, se: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCamera=1'), { camera: true, se: false })
+  assert.deepEqual(getRuntimeCueFeatureFlags(''), { camera: false, se: false })
+  await scheduler.dispose()
 }
 
 async function verifyScenarioNormalizer() {
@@ -143,6 +189,7 @@ async function verifyScenarioNormalizer() {
 
 verifyStoryClock()
 await verifyPerformanceRegistry()
+await verifyEffectScheduler()
 await verifyScenarioNormalizer()
 
 console.log('Story runtime foundation: clock, performance lifecycle, IR v2 schema, and legacy Camera/SE normalization verified')

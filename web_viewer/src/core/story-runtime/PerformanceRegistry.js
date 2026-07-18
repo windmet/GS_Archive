@@ -59,8 +59,14 @@ export function createPerformanceHandle({
     get active() { return ACTIVE_STATUSES.has(currentStatus) },
     async start() {
       if (currentStatus !== 'scheduled') return currentStatus
-      await onStart?.()
       currentStatus = 'running'
+      try {
+        await onStart?.()
+      } catch (error) {
+        currentStatus = 'failed'
+        resolveFinished({ status: currentStatus, reason: 'start-failed', error })
+        throw error
+      }
       return currentStatus
     },
     settle(reason = 'settle') {

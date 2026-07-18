@@ -102,8 +102,13 @@ export class CameraController {
     this.spineContainer.y = 0
   }
 
-  destroy() {
+  cancelCameraTween() {
     this._cameraTween?.cancel?.()
+    this._cameraTween = null
+  }
+
+  destroy() {
+    this.cancelCameraTween()
     this._cameraTween = null
     this._cameraZoom = null
   }
