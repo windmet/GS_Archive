@@ -37,7 +37,7 @@ export class EffectScheduler {
       if (!handler) return { cue, handle: null, unsupported: true }
       const handle = handler(cue, context)
       this.registry.register(handle)
-      return { cue, handle, unsupported: false, started: false, completed: false }
+      return { cue, handle, unsupported: false, started: false, startPending: false, completed: false }
     })
     return {
       generation: this._generation,
@@ -61,15 +61,17 @@ export class EffectScheduler {
       const endTime = entry.cue.at + entry.cue.duration
       if (!entry.started && logicalTime >= entry.cue.at) {
         entry.started = true
+        entry.startPending = true
         Promise.resolve(entry.handle.start()).then(() => {
+          entry.startPending = false
           if (entry.completed || !entry.handle.active) return
           if (entry.cue.duration <= 0 || this.clock.now() >= endTime) {
             entry.completed = true
             return entry.handle.complete('natural-completion')
           }
-        }).catch(() => {})
+        }).catch(() => { entry.startPending = false })
       }
-      if (entry.started && !entry.completed && logicalTime >= endTime && entry.handle.status === 'running') {
+      if (entry.started && !entry.startPending && !entry.completed && logicalTime >= endTime && entry.handle.status === 'running') {
         entry.completed = true
         Promise.resolve(entry.handle.complete('natural-completion')).catch(() => {})
       }

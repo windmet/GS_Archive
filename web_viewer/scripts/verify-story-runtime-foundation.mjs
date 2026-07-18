@@ -117,13 +117,41 @@ async function verifyEffectScheduler() {
   assert.equal(scheduler.hasUnsettledSkippable(), false)
   assert.equal(scheduler.hasBlockingAuto(), false)
 
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCues=1'), { camera: true, se: true, screen: true, background: true, snapshot: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCamera=1'), { camera: true, se: false, screen: false, background: false, snapshot: false })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeScreen=1'), { camera: false, se: false, screen: true, background: false, snapshot: false })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeBackground=1'), { camera: false, se: false, screen: false, background: true, snapshot: false })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSnapshots=1'), { camera: false, se: false, screen: false, background: false, snapshot: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags(''), { camera: false, se: false, screen: false, background: false, snapshot: false })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCues=1'), { camera: true, se: true, screen: true, background: true, snapshot: true, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCamera=1'), { camera: true, se: false, screen: false, background: false, snapshot: false, spine: false })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeScreen=1'), { camera: false, se: false, screen: true, background: false, snapshot: false, spine: false })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeBackground=1'), { camera: false, se: false, screen: false, background: true, snapshot: false, spine: false })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSnapshots=1'), { camera: false, se: false, screen: false, background: false, snapshot: true, spine: false })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSpine=1'), { camera: false, se: false, screen: false, background: false, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags(''), { camera: false, se: false, screen: false, background: false, snapshot: false, spine: false })
   await scheduler.dispose()
+
+  let releaseAsyncStart
+  const asyncScheduler = new EffectScheduler({
+    clock: new StoryClock({ nowMilliseconds: () => 0 }),
+    requestFrame: () => 1,
+    cancelFrame: () => {},
+  })
+  asyncScheduler.loadStep([{
+    cue_id: 'async-spine',
+    at: 0,
+    duration: 0,
+    channel: 'spine:a:body',
+    action: 'spine.body.play',
+  }], {
+    handlers: new Map([['spine.body.play', cue => createPerformanceHandle({
+      id: cue.cue_id,
+      channel: cue.channel,
+      onStart: () => new Promise(resolve => { releaseAsyncStart = resolve }),
+    })]]),
+  })
+  asyncScheduler.start()
+  asyncScheduler.tick()
+  assert.equal(asyncScheduler.hasBlockingAuto(), true, 'async cue start must remain an Auto blocker')
+  releaseAsyncStart()
+  await new Promise(resolve => setTimeout(resolve, 0))
+  assert.equal(asyncScheduler.hasBlockingAuto(), false)
+  await asyncScheduler.dispose()
 }
 
 function verifySceneSnapshotStore() {
