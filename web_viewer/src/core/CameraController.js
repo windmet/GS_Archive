@@ -43,7 +43,8 @@ export class CameraController {
 
   setCameraZoom(zoomData) {
     const resetDuration = Number(zoomData?.duration || 0)
-    if (!zoomData || (zoomData.zoom === 1.0 && zoomData.offset_x === 0 && zoomData.offset_y === 0 && resetDuration <= 0)) {
+    const delayMs = Math.max(0, Number(zoomData?.delay || 0) * 1000)
+    if (!zoomData || (zoomData.zoom === 1.0 && zoomData.offset_x === 0 && zoomData.offset_y === 0 && resetDuration <= 0 && delayMs <= 0)) {
       this.resetCameraZoom()
       return
     }
@@ -67,6 +68,7 @@ export class CameraController {
       const startY = this.spineContainer.y
       this._cameraTween = runRafTween({
         durationMs: animDuration,
+        delayMs,
         startValue: 0,
         endValue: 1,
         ease: easeOutCubic,
@@ -77,6 +79,12 @@ export class CameraController {
             startY + (targetY - startY) * t,
           )
         },
+      })
+    } else if (delayMs > 0) {
+      this._cameraTween = runRafTween({
+        durationMs: 0,
+        delayMs,
+        onUpdate: () => this._applyCameraTransform(targetScale, targetX, targetY),
       })
     } else {
       this._applyCameraTransform(targetScale, targetX, targetY)

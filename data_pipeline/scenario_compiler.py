@@ -36,7 +36,7 @@ class ScenarioState:
         self.talk_mode: bool = False          # True inside talk_start/end block
         self.phone_mode: bool = False         # True inside phone_start/end block
         # Camera zoom/pan (dolly)
-        self.camera_zoom: Optional[dict] = None    # {"zoom": float, "offset_x": float, "offset_y": float, "duration": float}
+        self.camera_zoom: Optional[dict] = None    # {"zoom": float, "offset_x": float, "offset_y": float, "duration": float, "delay"?: float}
         # Screen fade transition (one-shot, consumed by next step)
         self.screen_fade: Optional[dict] = None    # {"type": "in"|"out", "duration": float, "color": str}
         self.screen_slide: Optional[dict] = None   # {"type": "in"|"out", "delay": float, "duration": float, "direction": str}
@@ -716,16 +716,17 @@ class ScenarioCompiler:
         zoom: 1.0=default, >1=zoom in, <1=zoom out
         """
         if len(vals) >= 3:
+            delay = self._safe_float(vals[0], 0.0)
             duration = float(vals[1]) if vals[1] else 0
             offset_x = float(vals[2]) if len(vals) > 2 and vals[2] else 0
             offset_y = float(vals[3]) if len(vals) > 3 and vals[3] else 0
             zoom = float(vals[4]) if len(vals) > 4 and vals[4] else 1.0
             self.state.camera_zoom = {
                 "zoom": zoom, "offset_x": offset_x, "offset_y": offset_y,
-                "duration": duration,
+                "duration": duration, "delay": delay,
             }
             self._extend_pending_text_disable_from_vals(vals, 0, 1)
-            self._extend_stage_duration(self._safe_float(vals[0], 0.0) + duration)
+            self._extend_stage_duration(delay + duration)
             self._mark_stage_change()
 
     def _camera_resetzoom(self, vals: list):
@@ -1859,6 +1860,11 @@ class ScenarioCompiler:
         self.state.bgm_stop_fade = None
         self.state.environmental_duck_target = None
         self.state.text_disabled = False
+        # Camera delay is an authored one-shot cue relative to this emitted
+        # step. Keep the resulting zoom state, but do not replay its delay on
+        # every later cumulative-state snapshot.
+        if self.state.camera_zoom:
+            self.state.camera_zoom.pop("delay", None)
         for effect in self.state.bg_effects:
             effect.pop("action", None)
             effect.pop("delay", None)
