@@ -39,8 +39,6 @@ export function applyStepSceneState({
       slide.delay ?? 0,
       slide.direction || '6',
     )
-  } else {
-    manager.clearScreenSlide?.()
   }
 
   if (state.camera_zoom) {

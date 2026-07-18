@@ -65,7 +65,7 @@
     <div class="nav-bar" v-if="compiledData && compiledData.steps.length > 0 && !HIDE_UI && !uiHidden && !episodeFinished">
       <button class="nav-btn" @click.stop="goPrev" :disabled="isFirstStep">Prev</button>
       <span class="nav-label">{{ currentStep.type }}</span>
-      <button class="nav-btn" @click.stop="goNext"><ChevronRight :size="21" /></button>
+      <button class="nav-btn" title="Next" aria-label="Next" @click.stop="goNext"><ChevronRight :size="21" /></button>
     </div>
 
     <Transition name="menu-slide">

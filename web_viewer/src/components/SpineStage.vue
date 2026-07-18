@@ -100,7 +100,14 @@ const props = defineProps({
 const emit = defineEmits(['ready', 'error'])
 
 const sceneIcon = computed(() => {
-  const id = props.step?.state?.image_icon?.display_id || props.step?.state?.image_icon?.id
+  const imageIcon = props.step?.state?.image_icon
+  // Compiled story state may retain icon metadata after the original command,
+  // but an empty layer means there is no drawable scene icon. Keep supporting
+  // the explicit string form used by standalone/smoke scenarios.
+  if (imageIcon && typeof imageIcon === 'object' && !imageIcon.layer) return null
+  const id = typeof imageIcon === 'string'
+    ? imageIcon
+    : imageIcon?.display_id || imageIcon?.id
   if (!id) return null
   return { id, src: getCharaIconUrl(id) }
 })

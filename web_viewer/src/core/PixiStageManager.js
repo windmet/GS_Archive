@@ -851,9 +851,13 @@ export class PixiStageManager {
     overlay.alpha = 1
     overlay.visible = true
 
-    const offscreen = this._slideOffset(direction)
-    const start = type === 'out' ? { x: 0, y: 0 } : offscreen
-    const end = type === 'out' ? offscreen : { x: 0, y: 0 }
+    const travelOffset = this._slideOffset(direction)
+    // `direction` describes the direction in which the curtain travels.
+    // An incoming curtain therefore starts at the opposite edge, while an
+    // outgoing curtain finishes at the edge named by the direction.
+    const incomingOffset = { x: -travelOffset.x, y: -travelOffset.y }
+    const start = type === 'out' ? { x: 0, y: 0 } : incomingOffset
+    const end = type === 'out' ? travelOffset : { x: 0, y: 0 }
     overlay.x = start.x
     overlay.y = start.y
 
