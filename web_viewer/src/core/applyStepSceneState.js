@@ -13,8 +13,10 @@ export function applyStepSceneState({
   manager.applyBgEffects?.(state.bg_effects || [], state.bg_profile || null)
 
   const bg = state.bg || fallbackBg
-  if (bg) manager.setBackground(bg, state.bg_transition || null)
-  else manager.clearBackground()
+  if (!isRuntimeCueChannelEnabled('background')) {
+    if (bg) manager.setBackground(bg, state.bg_transition || null)
+    else manager.clearBackground()
+  }
 
   if (state.camera_filter) manager.setCameraFilter(state.camera_filter)
 

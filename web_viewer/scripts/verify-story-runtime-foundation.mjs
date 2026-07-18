@@ -107,14 +107,17 @@ async function verifyEffectScheduler() {
   scheduler.tick()
   assert.deepEqual(calls, [])
   assert.equal(scheduler.hasUnsettledSkippable(), true)
+  assert.equal(scheduler.hasBlockingAuto(), true)
   await scheduler.settleSkippable('user-next')
   assert.deepEqual(calls, ['camera:settle', 'se:suppress'])
   assert.equal(scheduler.hasUnsettledSkippable(), false)
+  assert.equal(scheduler.hasBlockingAuto(), false)
 
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCues=1'), { camera: true, se: true, screen: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCamera=1'), { camera: true, se: false, screen: false })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeScreen=1'), { camera: false, se: false, screen: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags(''), { camera: false, se: false, screen: false })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCues=1'), { camera: true, se: true, screen: true, background: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCamera=1'), { camera: true, se: false, screen: false, background: false })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeScreen=1'), { camera: false, se: false, screen: true, background: false })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeBackground=1'), { camera: false, se: false, screen: false, background: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags(''), { camera: false, se: false, screen: false, background: false })
   await scheduler.dispose()
 }
 
@@ -167,6 +170,12 @@ async function verifyScenarioNormalizer() {
   const compiledPath = path.join(root, 'public', 'data', 'compiled', 'episodes', '1_4_001_01_a.json')
   const compiled = JSON.parse(await readFile(compiledPath, 'utf8'))
   const normalizedCompiled = normalizeScenario(compiled)
+  const doorBackground = normalizedCompiled.steps[3]
+  const backgroundCue = doorBackground.cues.find(cue => cue.action === 'background.change')
+  assert.equal(doorBackground.entry_snapshot.bg, 'bg002_sky_out_01')
+  assert.equal(backgroundCue?.payload.bg, 'bg030_315prodoor_in_10')
+  assert.equal(backgroundCue?.duration, 1.5)
+  assert.equal(doorBackground.settled_snapshot.bg, 'bg030_315prodoor_in_10')
   const slideIn = normalizedCompiled.steps[5]
   const coveredStage = normalizedCompiled.steps[6]
   const slideOut = normalizedCompiled.steps[7]
@@ -208,4 +217,4 @@ await verifyPerformanceRegistry()
 await verifyEffectScheduler()
 await verifyScenarioNormalizer()
 
-console.log('Story runtime foundation: clock, lifecycle, IR v2, Camera/SE, and directional screen wipe normalization verified')
+console.log('Story runtime foundation: clock, lifecycle, IR v2, Camera/SE, background, and directional wipe normalization verified')

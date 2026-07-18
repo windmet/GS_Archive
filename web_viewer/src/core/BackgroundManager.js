@@ -23,6 +23,7 @@ export class BackgroundManager {
     this.currentBgId = null
 
     this._bgTransitionToken = 0
+    this._bgTransition = null
     this._blurFilter = null
     this._bgBlurAmount = 0
     this._bgBlurTween = null
@@ -58,7 +59,12 @@ export class BackgroundManager {
   }
 
   async setBackground(bgId, transition = null) {
-    if (bgId === this.currentBgId) return
+    if (bgId === this.currentBgId) {
+      if (Number(transition?.duration) === 0) this.settleBackgroundTransition()
+      return
+    }
+    this.settleBackgroundTransition()
+    const oldBgId = this.currentBgId
     this.currentBgId = bgId
 
     const oldSprite = this.bgSprite
@@ -75,8 +81,20 @@ export class BackgroundManager {
       this.bgSprite = newSprite
 
       const delayMs = Math.max(0, Number(transition?.delay || 0)) * 1000
-      const durationMs = Math.max(0.01, Number(transition?.duration || 0.5)) * 1000
+      const durationSeconds = transition?.duration == null ? 0.5 : Number(transition.duration)
+      const durationMs = Math.max(0, Number.isFinite(durationSeconds) ? durationSeconds : 0.5) * 1000
+      let resolveTransition
+      const finished = new Promise(resolve => { resolveTransition = resolve })
       const start = performance.now()
+      const record = {
+        token,
+        oldBgId,
+        newBgId: bgId,
+        oldSprite,
+        newSprite,
+        tickerFn: null,
+        resolve: resolveTransition,
+      }
       const tickerFn = () => {
         if (token !== this._bgTransitionToken) {
           this.app.ticker.remove(tickerFn)
@@ -84,24 +102,70 @@ export class BackgroundManager {
         }
         const elapsed = performance.now() - start
         if (elapsed < delayMs) return
-        const t = Math.min((elapsed - delayMs) / durationMs, 1)
+        const t = durationMs <= 0 ? 1 : Math.min((elapsed - delayMs) / durationMs, 1)
         if (oldSprite) oldSprite.alpha = 1 - t
         newSprite.alpha = t
         if (t >= 1) {
-          this.app.ticker.remove(tickerFn)
-          if (oldSprite?.parent) {
-            this.bgContainer.removeChild(oldSprite)
-            oldSprite.destroy({ texture: true })
-          }
+          this._finishBackgroundTransition(record, 'completed')
         }
       }
+      record.tickerFn = tickerFn
+      this._bgTransition = record
+      if (durationMs <= 0 && delayMs <= 0) {
+        this._finishBackgroundTransition(record, 'completed')
+        return finished
+      }
       this.app.ticker.add(tickerFn)
+      return finished
     } catch (err) {
+      if (this.currentBgId === bgId) this.currentBgId = oldBgId
       console.warn(`[PixiStageManager] Failed to load bg "${bgId}":`, err?.message || err)
     }
   }
 
+  settleBackgroundTransition() {
+    const record = this._bgTransition
+    if (!record) return false
+    this._finishBackgroundTransition(record, 'settled')
+    return true
+  }
+
+  cancelBackgroundTransition() {
+    const record = this._bgTransition
+    if (!record) return false
+    this._bgTransitionToken++
+    if (record.tickerFn) this.app.ticker.remove(record.tickerFn)
+    if (record.newSprite?.parent) this.bgContainer.removeChild(record.newSprite)
+    record.newSprite?.destroy?.({ texture: true })
+    if (record.oldSprite && !record.oldSprite.destroyed) {
+      record.oldSprite.alpha = 1
+      this.bgSprite = record.oldSprite
+      this.currentBgId = record.oldBgId
+    } else {
+      this.bgSprite = null
+      this.currentBgId = null
+    }
+    this._bgTransition = null
+    record.resolve?.({ status: 'cancelled', bgId: record.newBgId })
+    return true
+  }
+
+  _finishBackgroundTransition(record, status) {
+    if (!record || this._bgTransition !== record) return
+    if (record.tickerFn) this.app.ticker.remove(record.tickerFn)
+    record.newSprite.alpha = 1
+    if (record.oldSprite?.parent) {
+      this.bgContainer.removeChild(record.oldSprite)
+      record.oldSprite.destroy({ texture: true })
+    }
+    this.bgSprite = record.newSprite
+    this.currentBgId = record.newBgId
+    this._bgTransition = null
+    record.resolve?.({ status, bgId: record.newBgId })
+  }
+
   clearBackground() {
+    this.cancelBackgroundTransition()
     this._bgTransitionToken++
     this.currentBgId = null
     if (this.bgSprite) {

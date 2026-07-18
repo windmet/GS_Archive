@@ -165,6 +165,7 @@ let handleStepChange = () => {}
 let cleanupStepSceneEffects = () => {}
 let handleRuntimeStepChange = () => {}
 let cleanupRuntimeCues = () => {}
+let isRuntimeAutoBlocked = () => false
 
 const getVoiceVolume = () => voicePlayer?.getVoiceVolume?.() || 0
 
@@ -323,6 +324,7 @@ const stepSceneEffects = useStepSceneEffects({
   onEpisodeEnd: finishEpisode,
   snapshotAt: SNAPSHOT_AT,
   snapshotAction: () => { window.__SNAPSHOT__ = freezeScene('snapshotAt') },
+  isAutoBlocked: () => isRuntimeAutoBlocked(),
 })
 
 const storyRuntimeCues = useStoryRuntimeCues({
@@ -340,6 +342,7 @@ handleStepChange = stepSceneEffects.handleStepChange
 cleanupStepSceneEffects = stepSceneEffects.cleanup
 handleRuntimeStepChange = storyRuntimeCues.handleStepChange
 cleanupRuntimeCues = storyRuntimeCues.cleanup
+isRuntimeAutoBlocked = storyRuntimeCues.hasBlockingAuto
 
 onMounted(async () => {
   // 全局调试工具：在 Console 输入 showAnims("001tom") 查看角色的所有动作

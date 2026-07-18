@@ -13,6 +13,7 @@ export function useStepSceneEffects({
   onEpisodeEnd,
   snapshotAt,
   snapshotAction,
+  isAutoBlocked = () => false,
 }) {
   let _fadeAutoTimer = null
   let _fadeAutoSeq = 0
@@ -118,9 +119,13 @@ export function useStepSceneEffects({
     if (autoAdvance) {
       const autoSeq = _fadeAutoSeq
       const autoStepIndex = currentStepIndex.value
-      _fadeAutoTimer = setTimeout(() => {
+      const attemptAutoAdvance = () => {
         _fadeAutoTimer = null
         if (autoSeq === _fadeAutoSeq && currentStepIndex.value === autoStepIndex) {
+          if (isAutoBlocked()) {
+            _fadeAutoTimer = setTimeout(attemptAutoAdvance, 50)
+            return
+          }
           if (isLastStep.value) {
             onEpisodeEnd?.()
           } else {
@@ -131,7 +136,8 @@ export function useStepSceneEffects({
             resetVoiceDedup()
           }
         }
-      }, autoAdvance.delayMs)
+      }
+      _fadeAutoTimer = setTimeout(attemptAutoAdvance, autoAdvance.delayMs)
     }
 
     voicePlayer?.playVoice?.()

@@ -174,6 +174,25 @@ function buildLegacyCues(step) {
     }))
   }
 
+  const backgroundTransition = state.bg_transition
+  if (state.bg && backgroundTransition) {
+    push(makeCue(step, ordinal, {
+      suffix: 'background-change',
+      at: backgroundTransition.delay,
+      duration: backgroundTransition.duration,
+      channel: 'background',
+      action: 'background.change',
+      target: 'stage-background',
+      payload: {
+        bg: state.bg,
+        type: backgroundTransition.type || 'dissolve',
+        color: backgroundTransition.color || null,
+      },
+      lifecycle: cueLifecycle({ persistence: 'stateful' }),
+      legacyField: 'state.bg_transition',
+    }))
+  }
+
   const seEvents = Array.isArray(state.se_events) && state.se_events.length
     ? state.se_events
     : (state.se?.cue ? [state.se] : [])
@@ -252,6 +271,9 @@ function buildLegacyCues(step) {
 function normalizeLegacyStep(step, previousSettledSnapshot) {
   const entrySnapshot = clone(step.state || {})
   entrySnapshot.screen_overlay = clone(previousSettledSnapshot?.screen_overlay || null)
+  if (step.state?.bg && step.state?.bg_transition) {
+    entrySnapshot.bg = previousSettledSnapshot?.bg || step.state.bg
+  }
   const camera = step.state?.camera_zoom
   if (camera && (finiteNumber(camera.delay) > 0 || finiteNumber(camera.duration) > 0)) {
     entrySnapshot.camera_zoom = stableCamera(previousSettledSnapshot?.camera_zoom)

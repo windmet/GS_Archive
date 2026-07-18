@@ -11,7 +11,7 @@ function immediateCamera(camera) {
 
 export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStageRef, audioManager }) {
   const flags = getRuntimeCueFeatureFlags()
-  const enabled = flags.camera || flags.se || flags.screen
+  const enabled = flags.camera || flags.se || flags.screen || flags.background
   const scheduler = new EffectScheduler({ clock: new StoryClock() })
   let normalizedSource = null
   let normalizedScenario = null
@@ -46,7 +46,7 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
   }
 
   function applyEntryStateWhenReady(step, expectedGeneration) {
-    if (!flags.camera && !flags.screen) return
+    if (!flags.camera && !flags.screen && !flags.background) return
     const apply = () => {
       if (expectedGeneration !== generation) return
       const manager = getManager()
@@ -61,6 +61,11 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
         else manager.resetCameraZoom()
       }
       if (flags.screen) applyEntryScreen(manager, step.entry_snapshot?.screen_overlay)
+      if (flags.background) {
+        const bg = step.entry_snapshot?.bg
+        if (bg) manager.setBackground?.(bg, { duration: 0, delay: 0 })
+        else manager.clearBackground?.()
+      }
     }
     apply()
   }
@@ -149,6 +154,37 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
     })
   }
 
+  function createBackgroundHandle(cue) {
+    const transition = duration => ({
+      type: cue.payload.type,
+      color: cue.payload.color,
+      duration,
+      delay: 0,
+    })
+    return createPerformanceHandle({
+      id: cue.cue_id,
+      channel: cue.channel,
+      skippable: cue.lifecycle.skippable,
+      blocksInput: cue.lifecycle.blocks_input,
+      blocksAuto: cue.lifecycle.blocks_auto,
+      metadata: { action: cue.action, cue },
+      onStart: () => {
+        console.debug('[StoryRuntime] cue start', cue.cue_id)
+        getManager()?.setBackground?.(cue.payload.bg, transition(cue.duration))
+      },
+      onSettle: () => {
+        console.debug('[StoryRuntime] cue settle', cue.cue_id)
+        const manager = getManager()
+        if (!manager?.backgroundManager?.settleBackgroundTransition?.()) {
+          manager?.setBackground?.(cue.payload.bg, transition(0))
+        }
+      },
+      onCancel: () => {
+        getManager()?.backgroundManager?.cancelBackgroundTransition?.()
+      },
+    })
+  }
+
   const handlers = new Map()
   if (flags.camera) handlers.set('camera.transform', createCameraHandle)
   if (flags.se) handlers.set('se.play', createSeHandle)
@@ -156,6 +192,7 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
     handlers.set('screen.directional_wipe', createScreenHandle)
     handlers.set('screen.fade', createScreenHandle)
   }
+  if (flags.background) handlers.set('background.change', createBackgroundHandle)
 
   function handleStepChange() {
     if (!enabled) return
@@ -206,6 +243,7 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
     handleStepChange,
     settleCurrentStep,
     cancelCurrentStep,
+    hasBlockingAuto: () => enabled && scheduler.hasBlockingAuto(),
     inspect: () => scheduler.inspect(),
     cleanup,
   }
