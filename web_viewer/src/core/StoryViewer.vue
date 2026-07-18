@@ -1,5 +1,6 @@
 <template>
-  <div class="story-viewer-root" :class="{ 'stage-only': HIDE_UI || uiHidden }" tabindex="0" @keydown.left="goPrev" @keydown.right="goNext">
+  <div class="story-viewer-root" :class="{ 'stage-only': HIDE_UI || uiHidden }" tabindex="0"
+    @keydown.left="goPrev" @keydown.right="goNext" @keydown.l.prevent="openBacklog" @keydown.esc="closeOverlay">
     <div class="viewer-stage">
     <!-- Spine rendering layer (background + characters) -->
     <SpineStage ref="spineStageRef" :step="stageStep" :fallbackBg="firstAvailableBg" />
@@ -76,10 +77,20 @@
           <input type="checkbox" :checked="continuousPlayback" @change="emit('update:continuous-playback', $event.target.checked)" />
         </label>
         <button @click="uiHidden = true; menuOpen = false"><EyeOff :size="19" /><span>隐藏 UI</span></button>
+        <button @click="openBacklog"><BookOpenText :size="19" /><span>剧情回看</span></button>
         <button @click="skipEpisode"><SkipForward :size="19" /><span>跳过本话</span></button>
         <button @click="emit('back')"><LogOut :size="19" /><span>返回目录</span></button>
       </aside>
     </Transition>
+
+    <StoryBacklog
+      v-if="backlogOpen && !HIDE_UI"
+      :nodes="backlogNodes"
+      :language-mode="languageMode"
+      @close="backlogOpen = false"
+      @restore="restoreFromBacklog"
+      @replay-voice="replayBacklogVoice"
+    />
 
     <div v-if="episodeFinished && !HIDE_UI" class="episode-complete">
       <div class="complete-panel">
@@ -106,7 +117,8 @@ import CallUI from '../components/CallUI.vue'
 import ChoiceUI from '../components/ChoiceUI.vue'
 import TitleUI from '../components/TitleUI.vue'
 import TextTimeUI from '../components/TextTimeUI.vue'
-import { ChevronRight, Eye, EyeOff, LogOut, Menu, SkipForward, X } from '@lucide/vue'
+import StoryBacklog from '../components/StoryBacklog.vue'
+import { BookOpenText, ChevronRight, Eye, EyeOff, LogOut, Menu, SkipForward, X } from '@lucide/vue'
 // SpineStage is lazy-loaded so PIXI.js only loads when a story opens
 const SpineStage = defineAsyncComponent(() => import('../components/SpineStage.vue'))
 import { languageMode, setLanguageMode } from '../utils/LanguageStore.js'
@@ -151,6 +163,8 @@ const sceneSnapshotStore = new SceneSnapshotStore()
 const _ready = ref(false)
 const isPlaying = ref(false)
 const menuOpen = ref(false)
+const backlogOpen = ref(false)
+const backlogNodes = ref([])
 const uiHidden = ref(false)
 const episodeFinished = ref(false)
 const transitioning = ref(false)
@@ -321,8 +335,74 @@ function leaveRestoredScene() {
   restoredSceneState.value = null
 }
 
+function restoreSelectedChoices(values) {
+  selectedChoices.clear()
+  for (const [key, value] of Object.entries(values || {})) {
+    const numericKey = Number(key)
+    selectedChoices.set(Number.isNaN(numericKey) ? key : numericKey, value)
+  }
+}
+
+function currentBacklogNode() {
+  const step = storyRuntimeCues.getNormalizedStep()
+  if (!isReadableHistoryStep(step)) return null
+  return {
+    node_id: `current:${step.step_id}`,
+    episode_index: step.episode_index ?? null,
+    step_index: currentStepIndex.value,
+    step_id: step.step_id,
+    dialogue: step.dialogue || null,
+    selected_choices: Object.fromEntries(selectedChoices),
+    voice: step.dialogue?.voice ? { cue: step.dialogue.voice } : null,
+    current: true,
+  }
+}
+
+function openBacklog() {
+  menuOpen.value = false
+  clearFadeAutoAdvance()
+  storyRuntimeCues.cancelCurrentStep('backlog-open')
+  _stopCurrentVoice('backlog-open')
+  const current = currentBacklogNode()
+  backlogNodes.value = [
+    ...sceneSnapshotStore.list({ readableOnly: true }),
+    ...(current ? [current] : []),
+  ]
+  backlogOpen.value = true
+}
+
+function closeOverlay() {
+  if (backlogOpen.value) backlogOpen.value = false
+  else if (menuOpen.value) menuOpen.value = false
+}
+
+function restoreHistoryNode(node) {
+  storyRuntimeCues.cancelCurrentStep('history-restore')
+  restoreSelectedChoices(node.selected_choices)
+  storyRuntimeCues.prepareRestore(node.step_index, node.snapshot)
+  restoredSceneState.value = node.snapshot
+  const remaining = sceneSnapshotStore.list().map(candidate => candidate.step_index)
+  return navigateRestore(node.step_index, { historyIndices: remaining })
+}
+
+function restoreFromBacklog(nodeId) {
+  const node = sceneSnapshotStore.get(nodeId)
+  if (!node || !sceneSnapshotStore.truncateAfter(nodeId)) return
+  sceneSnapshotStore.popPrevious()
+  backlogOpen.value = false
+  if (!restoreHistoryNode(node)) restoredSceneState.value = null
+}
+
+function replayBacklogVoice(node) {
+  _ensureAudioCtx()
+  voicePlayer?.replayVoiceDetached?.({
+    ...(compiledData.value?.steps?.[node.step_index] || {}),
+    dialogue: node.dialogue,
+  })
+}
+
 function goNext() {
-  if (episodeFinished.value) return
+  if (episodeFinished.value || backlogOpen.value || menuOpen.value) return
   if (storyRuntimeCues.settleCurrentStep('user-next')) return
   recordHistoryStep()
   leaveRestoredScene()
@@ -331,10 +411,12 @@ function goNext() {
 }
 
 function goPrev() {
+  if (backlogOpen.value || menuOpen.value) return
   storyRuntimeCues.cancelCurrentStep('previous')
   const node = storyRuntimeCues.isSnapshotEnabled() ? sceneSnapshotStore.popPrevious() : null
   if (node) {
     const remaining = sceneSnapshotStore.list().map(candidate => candidate.step_index)
+    restoreSelectedChoices(node.selected_choices)
     storyRuntimeCues.prepareRestore(node.step_index, node.snapshot)
     restoredSceneState.value = node.snapshot
     if (navigateRestore(node.step_index, { historyIndices: remaining })) return

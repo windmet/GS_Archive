@@ -114,7 +114,7 @@ export function useVoicePlayer({
     return null
   }
 
-  async function prepareVoice({ step = currentStep.value, scenarioId = compiledData.value?.scenario_id } = {}) {
+  async function prepareVoice({ step = currentStep.value, scenarioId = compiledData.value?.scenario_id, includeLip = true } = {}) {
     const voice = step?.dialogue?.voice
     if (!voice) return null
 
@@ -152,7 +152,7 @@ export function useVoicePlayer({
         return null
       }
 
-      const lipCurve = await loadLipCurve(step, audioBuffer.duration)
+      const lipCurve = includeLip ? await loadLipCurve(step, audioBuffer.duration) : null
       return { voice, step, scenarioId, audioBuffer, lipCurve }
     } catch (err) {
       console.warn('[Audio] prepare failed:', err.message, 'voice:', voice)
@@ -212,6 +212,17 @@ export function useVoicePlayer({
     return playPreparedVoice(prepared)
   }
 
+  async function replayVoiceDetached(step) {
+    if (noVoice || !step?.dialogue?.voice) return false
+    const prepared = await prepareVoice({
+      step,
+      scenarioId: compiledData.value?.scenario_id,
+      includeLip: false,
+    })
+    if (!prepared) return false
+    return playPreparedVoice({ ...prepared, step: { ...step, chara_id: null } })
+  }
+
   function dispose() {
     stopCurrentVoice('dispose')
     try { audioCtx?.close?.() } catch (_) {}
@@ -223,6 +234,7 @@ export function useVoicePlayer({
     playVoice,
     prepareVoice,
     playPreparedVoice,
+    replayVoiceDetached,
     setTalking,
     stopCurrentVoice,
     resetVoiceDedup,
