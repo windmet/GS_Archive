@@ -6,8 +6,14 @@ export function applyStepSceneState({
   state,
   fallbackBg = null,
   lastScreenEffectsKey = '',
+  resetScreenEffects = false,
 }) {
   if (!manager || !state) return lastScreenEffectsKey
+
+  if (resetScreenEffects) {
+    manager.clearScreenEffects?.()
+    lastScreenEffectsKey = ''
+  }
 
   manager.setCameraFilter(null)
   manager.applyBgEffects?.(state.bg_effects || [], state.bg_profile || null)
@@ -56,17 +62,30 @@ export function applyStepSceneState({
   if (!isRuntimeCueChannelEnabled('screen')) {
     if (state.screen_fade) {
       const sf = state.screen_fade
-      manager.setScreenFade(sf.type, sf.color, sf.duration, sf.delay || 0, sf.alpha ?? 1)
+      // Legacy effect_fade and screen_fade historically used separate sprites.
+      // Hand the visible color across before the screen fade begins so a later
+      // screen_fadeout can reveal an earlier effect_fadein without a black layer
+      // remaining above it.
+      manager.playScreenEffects?.([{
+        type: 'fadeout',
+        color: sf.color || '#000000',
+        alpha: sf.alpha ?? 1,
+        duration: 0,
+      }])
+      manager.setScreenFade(sf.type, sf.color || '#000000', sf.duration, sf.delay || 0, sf.alpha ?? 1)
     } else {
       manager.clearScreenFade()
     }
   }
 
-  const screenEffectsKey = `${step?.step_id || ''}:${JSON.stringify(state.screen_effects || [])}`
-  if (state.screen_effects?.length && screenEffectsKey !== lastScreenEffectsKey) {
-    manager.playScreenEffects?.(state.screen_effects)
+  const screenEffects = isRuntimeCueChannelEnabled('screen')
+    ? (state.screen_effects || []).filter(effect => effect?.type !== 'fadein' && effect?.type !== 'fadeout')
+    : (state.screen_effects || [])
+  const screenEffectsKey = `${step?.step_id || ''}:${JSON.stringify(screenEffects)}`
+  if (screenEffects.length && screenEffectsKey !== lastScreenEffectsKey) {
+    manager.playScreenEffects?.(screenEffects)
     return screenEffectsKey
   }
-  if (!state.screen_effects?.length) return ''
+  if (!screenEffects.length) return ''
   return lastScreenEffectsKey
 }

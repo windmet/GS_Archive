@@ -55,7 +55,7 @@ function stableCamera(camera) {
   return result
 }
 
-function stableScreenOverlayFromCue(screenSlide, screenFade) {
+function stableScreenOverlayFromCue(screenSlide, screenFade, screenEffects = []) {
   if (screenSlide) {
     return screenSlide.type === 'in'
       ? {
@@ -73,6 +73,18 @@ function stableScreenOverlayFromCue(screenSlide, screenFade) {
           visible: true,
           color: screenFade.color || '#000000',
           alpha: finiteNumber(screenFade.alpha, 1),
+        }
+      : null
+  }
+  const effectFade = [...screenEffects].reverse().find(effect =>
+    effect?.type === 'fadein' || effect?.type === 'fadeout')
+  if (effectFade) {
+    return effectFade.type === 'fadein'
+      ? {
+          kind: 'fade',
+          visible: true,
+          color: effectFade.color || '#000000',
+          alpha: finiteNumber(effectFade.alpha, 1),
         }
       : null
   }
@@ -253,13 +265,34 @@ function buildLegacyCues(step) {
     }))
   }
 
+  for (const effect of state.screen_effects || []) {
+    if (effect?.type !== 'fadein' && effect?.type !== 'fadeout') continue
+    push(makeCue(step, ordinal, {
+      suffix: `screen-effect-${effect.type}`,
+      at: effect.delay,
+      duration: effect.duration,
+      channel: 'screen',
+      action: 'screen.fade',
+      target: 'screen-overlay',
+      payload: {
+        type: effect.type === 'fadein' ? 'out' : 'in',
+        color: effect.color || '#000000',
+        alpha: effect.alpha ?? 1,
+      },
+      lifecycle: cueLifecycle({ persistence: 'transient', restorePolicy: 'settled' }),
+      legacyField: 'state.screen_effects',
+    }))
+  }
+
   for (const event of step.timeline || []) {
     const cue = normalizeTimelineCue(step, event, ordinal)
     if (!cue) unmapped.push(`timeline.${event?.type || 'unknown'}`)
     push(cue)
   }
 
-  if (state.screen_effects?.length) unmapped.push('state.screen_effects')
+  if (state.screen_effects?.some(effect => effect?.type !== 'fadein' && effect?.type !== 'fadeout')) {
+    unmapped.push('state.screen_effects')
+  }
   for (const spine of state.spines || []) {
     if (spine.fade) unmapped.push(`state.spines.${spine.id}.fade`)
     if (spine.idol_color_transition) unmapped.push(`state.spines.${spine.id}.idol_color_transition`)
@@ -285,7 +318,11 @@ function normalizeLegacyStep(step, previousSettledSnapshot) {
   entrySnapshot.se_events = []
 
   const settledSnapshot = stripLegacyTransientState(step.state)
-  const screenOverlay = stableScreenOverlayFromCue(step.state?.screen_slide, step.state?.screen_fade)
+  const screenOverlay = stableScreenOverlayFromCue(
+    step.state?.screen_slide,
+    step.state?.screen_fade,
+    step.state?.screen_effects,
+  )
   settledSnapshot.screen_overlay = screenOverlay === undefined
     ? clone(previousSettledSnapshot?.screen_overlay || null)
     : screenOverlay

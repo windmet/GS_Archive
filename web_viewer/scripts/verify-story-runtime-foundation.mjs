@@ -11,6 +11,7 @@ import { SceneSnapshotStore, isReadableHistoryStep } from '../src/core/story-run
 import { PlayerPreferencesRepository } from '../src/core/story-runtime/PlayerPreferencesRepository.js'
 import { ReadProgressRepository, createReadKey } from '../src/core/story-runtime/ReadProgressRepository.js'
 import { PlaybackModeController } from '../src/core/story-runtime/PlaybackModeController.js'
+import { applyStepSceneState } from '../src/core/applyStepSceneState.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -171,6 +172,7 @@ function verifySceneSnapshotStore() {
       dialogue: { speaker: 'A', text_jp: 'first', voice: 'voice-1' },
     },
     snapshot: { bg: 'bg-a', se_events: [] },
+    entrySnapshot: { bg: 'bg-entry', screen_overlay: null },
   })
   const second = store.record({
     stepIndex: 11,
@@ -180,6 +182,8 @@ function verifySceneSnapshotStore() {
     captured: true,
   })
   assert.equal(first.snapshot_source, 'compiled-settled')
+  assert.equal(first.navigation_snapshot_source, 'compiled-entry')
+  assert.deepEqual(first.navigation_snapshot, { bg: 'bg-entry', screen_overlay: null })
   assert.equal(second.snapshot_source, 'captured-runtime')
   assert.equal(store.size, 2)
   assert.equal(store.list({ readableOnly: true }).length, 2)
@@ -193,6 +197,29 @@ function verifySceneSnapshotStore() {
   assert.equal(store.size, 0)
   assert.equal(isReadableHistoryStep({ type: 'stage', dialogue: null }), false)
   assert.equal(isReadableHistoryStep({ type: 'adv', dialogue: { text_jp: 'line' } }), true)
+}
+
+function verifyNavigationOverlayReset() {
+  const calls = []
+  const manager = {
+    clearScreenEffects: () => calls.push('clear-effects'),
+    setCameraFilter: () => {},
+    applyBgEffects: () => {},
+    setBackground: () => {},
+    clearBackground: () => {},
+    setBgBlur: () => {},
+    setBgColorOverlay: () => {},
+    resetCameraZoom: () => {},
+    clearScreenFade: () => {},
+  }
+  applyStepSceneState({
+    manager,
+    step: { step_id: 1 },
+    state: { bg: 'bg-a', screen_effects: [] },
+    resetScreenEffects: true,
+  })
+  assert.deepEqual(calls, ['clear-effects'],
+    'reverse and non-contiguous navigation must discard a late overlay from the previous step')
 }
 
 function memoryStorage(initial = {}) {
@@ -371,12 +398,29 @@ async function verifyScenarioNormalizer() {
       assert.ok(Number.isFinite(cue.duration) && cue.duration >= 0, `${cue.cue_id} has invalid duration`)
     }
   }
+
+  const fadeScenarioPath = path.join(root, 'public', 'data', 'compiled', 'episodes', '1_4_001_01_d.json')
+  const fadeScenario = normalizeScenario(JSON.parse(await readFile(fadeScenarioPath, 'utf8')))
+  const effectFadeIn = fadeScenario.steps.find(step => step.step_id === 12)
+  const effectFadeCue = effectFadeIn.cues.find(cue => cue.evidence.legacy_field === 'state.screen_effects')
+  assert.equal(effectFadeCue?.action, 'screen.fade')
+  assert.equal(effectFadeCue?.at, 7.3)
+  assert.equal(effectFadeCue?.duration, 1)
+  assert.equal(effectFadeCue?.payload.type, 'out', 'effect fadein must cover through the shared fade channel')
+  assert.equal(effectFadeIn.entry_snapshot.screen_overlay, null,
+    'returning to the dialogue must restore its pre-cue scene, not its late black curtain')
+  assert.equal(effectFadeIn.settled_snapshot.screen_overlay?.visible, true)
+  const screenFadeOut = fadeScenario.steps.find(step => step.step_id === 14)
+  assert.equal(screenFadeOut.entry_snapshot.screen_overlay?.visible, true)
+  assert.equal(screenFadeOut.cues.find(cue => cue.action === 'screen.fade')?.payload.type, 'in')
+  assert.equal(screenFadeOut.settled_snapshot.screen_overlay, null)
 }
 
 verifyStoryClock()
 await verifyPerformanceRegistry()
 await verifyEffectScheduler()
 verifySceneSnapshotStore()
+verifyNavigationOverlayReset()
 verifyPlayerStateRepositories()
 verifyPlaybackModeController()
 await verifyScenarioNormalizer()

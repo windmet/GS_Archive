@@ -352,6 +352,7 @@ function recordHistoryStep(stepIndex = currentStepIndex.value) {
     stepIndex,
     step,
     snapshot: step.settled_snapshot,
+    entrySnapshot: step.entry_snapshot,
     selectedChoices,
   })
 }
@@ -479,10 +480,11 @@ function handlePlayerKeydown(event) {
 }
 
 function restoreHistoryNode(node) {
+  const navigationSnapshot = node.navigation_snapshot || node.snapshot
   storyRuntimeCues.cancelCurrentStep('history-restore')
   restoreSelectedChoices(node.selected_choices)
-  storyRuntimeCues.prepareRestore(node.step_index, node.snapshot)
-  restoredSceneState.value = node.snapshot
+  storyRuntimeCues.prepareRestore(node.step_index, navigationSnapshot)
+  restoredSceneState.value = navigationSnapshot
   const remaining = sceneSnapshotStore.list().map(candidate => candidate.step_index)
   return navigateRestore(node.step_index, { historyIndices: remaining })
 }
@@ -525,10 +527,11 @@ function goPrev() {
   storyRuntimeCues.cancelCurrentStep('previous')
   const node = storyRuntimeCues.isSnapshotEnabled() ? sceneSnapshotStore.popPrevious() : null
   if (node) {
+    const navigationSnapshot = node.navigation_snapshot || node.snapshot
     const remaining = sceneSnapshotStore.list().map(candidate => candidate.step_index)
     restoreSelectedChoices(node.selected_choices)
-    storyRuntimeCues.prepareRestore(node.step_index, node.snapshot)
-    restoredSceneState.value = node.snapshot
+    storyRuntimeCues.prepareRestore(node.step_index, navigationSnapshot)
+    restoredSceneState.value = navigationSnapshot
     if (navigateRestore(node.step_index, { historyIndices: remaining })) return
     restoredSceneState.value = null
   }

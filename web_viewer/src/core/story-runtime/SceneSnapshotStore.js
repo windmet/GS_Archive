@@ -34,7 +34,7 @@ export class SceneSnapshotStore {
     this._nodes = []
   }
 
-  record({ stepIndex, step, snapshot, selectedChoices = {}, captured = false } = {}) {
+  record({ stepIndex, step, snapshot, entrySnapshot = null, selectedChoices = {}, captured = false } = {}) {
     if (!this._scenarioId) throw new Error('beginScenario must be called before record')
     if (!Number.isInteger(stepIndex) || stepIndex < 0) throw new RangeError('stepIndex must be a non-negative integer')
     if (!step || !Number.isInteger(step.step_id)) throw new TypeError('step with integer step_id is required')
@@ -53,6 +53,8 @@ export class SceneSnapshotStore {
       selected_choices: toChoiceObject(selectedChoices),
       snapshot: clone(snapshot),
       snapshot_source: captured ? 'captured-runtime' : 'compiled-settled',
+      navigation_snapshot: clone(entrySnapshot || snapshot),
+      navigation_snapshot_source: entrySnapshot ? 'compiled-entry' : (captured ? 'captured-runtime' : 'compiled-settled'),
       read: true,
       voice: step.dialogue?.voice ? { cue: step.dialogue.voice } : null,
       created_at: this._now(),
