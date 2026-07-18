@@ -1,6 +1,6 @@
 <template>
   <div class="story-viewer-root" :class="{ 'stage-only': HIDE_UI || uiHidden }" tabindex="0"
-    @keydown.left="goPrev" @keydown.right="goNext" @keydown.l.prevent="openBacklog" @keydown.esc="closeOverlay">
+    @pointerdown.capture="_ensureAudioCtx" @keydown="handlePlayerKeydown">
     <div class="viewer-stage">
     <!-- Spine rendering layer (background + characters) -->
     <SpineStage ref="spineStageRef" :step="stageStep" :fallbackBg="firstAvailableBg" />
@@ -65,7 +65,9 @@
     <!-- Bottom navigation bar -->
     <div class="nav-bar" v-if="compiledData && compiledData.steps.length > 0 && !HIDE_UI && !uiHidden && !episodeFinished">
       <button class="nav-btn" @click.stop="goPrev" :disabled="isFirstStep">Prev</button>
+      <button class="mode-btn" :class="{ active: autoEnabled }" @click.stop="toggleAuto">AUTO</button>
       <span class="nav-label">{{ currentStep.type }}</span>
+      <button class="mode-btn" :class="{ active: skipEnabled }" @click.stop="toggleSkip">SKIP</button>
       <button class="nav-btn" title="Next" aria-label="Next" @click.stop="goNext"><ChevronRight :size="21" /></button>
     </div>
 
@@ -75,6 +77,17 @@
         <label class="menu-toggle">
           <span>连续播放</span>
           <input type="checkbox" :checked="continuousPlayback" @change="emit('update:continuous-playback', $event.target.checked)" />
+        </label>
+        <button :class="{ active: autoEnabled }" @click="toggleAuto"><Play :size="19" /><span>自动播放</span><b>{{ autoEnabled ? 'ON' : 'OFF' }}</b></button>
+        <label class="menu-setting">
+          <span>自动等待</span>
+          <input v-model.number="autoDelayMs" type="number" min="0" max="10000" step="100" @change="saveAutoDelay" />
+          <small>ms</small>
+        </label>
+        <button :class="{ active: skipEnabled }" @click="toggleSkip"><FastForward :size="19" /><span>快进</span><b>{{ skipEnabled ? 'ON' : 'OFF' }}</b></button>
+        <label class="menu-setting">
+          <span>快进范围</span>
+          <select v-model="skipMode" @change="saveSkipMode"><option value="readOnly">仅已读</option><option value="all">全部</option></select>
         </label>
         <button @click="uiHidden = true; menuOpen = false"><EyeOff :size="19" /><span>隐藏 UI</span></button>
         <button @click="openBacklog"><BookOpenText :size="19" /><span>剧情回看</span></button>
@@ -118,7 +131,7 @@ import ChoiceUI from '../components/ChoiceUI.vue'
 import TitleUI from '../components/TitleUI.vue'
 import TextTimeUI from '../components/TextTimeUI.vue'
 import StoryBacklog from '../components/StoryBacklog.vue'
-import { BookOpenText, ChevronRight, Eye, EyeOff, LogOut, Menu, SkipForward, X } from '@lucide/vue'
+import { BookOpenText, ChevronRight, Eye, EyeOff, FastForward, LogOut, Menu, Play, SkipForward, X } from '@lucide/vue'
 // SpineStage is lazy-loaded so PIXI.js only loads when a story opens
 const SpineStage = defineAsyncComponent(() => import('../components/SpineStage.vue'))
 import { languageMode, setLanguageMode } from '../utils/LanguageStore.js'
@@ -129,6 +142,9 @@ import { useStoryNavigation } from './useStoryNavigation.js'
 import { useStepSceneEffects } from './useStepSceneEffects.js'
 import { useStoryRuntimeCues } from './story-runtime/useStoryRuntimeCues.js'
 import { SceneSnapshotStore, isReadableHistoryStep } from './story-runtime/SceneSnapshotStore.js'
+import { PlayerPreferencesRepository } from './story-runtime/PlayerPreferencesRepository.js'
+import { ReadProgressRepository, createReadKey } from './story-runtime/ReadProgressRepository.js'
+import { PlaybackModeController } from './story-runtime/PlaybackModeController.js'
 
 const props = defineProps({
   scenarioJson: { type: Object, default: null },
@@ -152,6 +168,9 @@ const END_STEP = Number.isFinite(props.endStep) && props.endStep > 0
 const NO_VOICE = URL_FLAGS.get('noVoice') === '1'
 const SNAPSHOT_AT_VALUE = URL_FLAGS.get('snapshotAt')
 const SNAPSHOT_AT = SNAPSHOT_AT_VALUE == null || SNAPSHOT_AT_VALUE === '' ? null : Number(SNAPSHOT_AT_VALUE)
+const preferencesRepository = new PlayerPreferencesRepository()
+const readProgressRepository = new ReadProgressRepository()
+const initialPreferences = preferencesRepository.load()
 
 const spineStageRef = ref(null)
 const compiledData = ref(null)
@@ -165,7 +184,11 @@ const isPlaying = ref(false)
 const menuOpen = ref(false)
 const backlogOpen = ref(false)
 const backlogNodes = ref([])
-const uiHidden = ref(false)
+const autoEnabled = ref(initialPreferences.auto_enabled)
+const autoDelayMs = ref(initialPreferences.auto_delay_ms)
+const skipEnabled = ref(false)
+const skipMode = ref(initialPreferences.skip_mode)
+const uiHidden = ref(initialPreferences.ui_hidden)
 const episodeFinished = ref(false)
 const transitioning = ref(false)
 
@@ -183,6 +206,7 @@ let cleanupStepSceneEffects = () => {}
 let handleRuntimeStepChange = () => {}
 let cleanupRuntimeCues = () => {}
 let isRuntimeAutoBlocked = () => false
+let playbackController = null
 
 const getVoiceVolume = () => voicePlayer?.getVoiceVolume?.() || 0
 
@@ -200,6 +224,7 @@ function _setTalking(on) {
 function _ensureAudioCtx() {
   voicePlayer?.ensureAudioCtx?.()
   _audioManager.ensureContext()
+  playbackController?.setPaused('audio-lock', false)
 }
 
 function _resetVoiceDedup() {
@@ -331,6 +356,25 @@ function recordHistoryStep(stepIndex = currentStepIndex.value) {
   })
 }
 
+function readIdentity(step) {
+  if (!step || !Number.isInteger(step.step_id)) return null
+  return {
+    scenarioId: compiledData.value?.scenario_id || props.scenarioUrl || 'inline-scenario',
+    sourceHash: compiledData.value?.source_hash || null,
+    stepId: step.step_id,
+  }
+}
+
+function isStepRead(step) {
+  const identity = readIdentity(step)
+  return identity ? readProgressRepository.has(createReadKey(identity)) : false
+}
+
+function markStepRead(stepIndex = currentStepIndex.value) {
+  const identity = readIdentity(storyRuntimeCues.getNormalizedStep(stepIndex))
+  if (identity) readProgressRepository.mark(identity)
+}
+
 function leaveRestoredScene() {
   restoredSceneState.value = null
 }
@@ -376,6 +420,64 @@ function closeOverlay() {
   else if (menuOpen.value) menuOpen.value = false
 }
 
+function toggleAuto() {
+  _ensureAudioCtx()
+  playbackController?.setAuto(!autoEnabled.value)
+}
+
+function toggleSkip() {
+  _ensureAudioCtx()
+  playbackController?.setSkip(!skipEnabled.value, skipMode.value)
+}
+
+function saveAutoDelay() {
+  playbackController?.setAutoDelay(autoDelayMs.value)
+  const saved = preferencesRepository.update({ auto_delay_ms: autoDelayMs.value })
+  autoDelayMs.value = saved.auto_delay_ms
+}
+
+function saveSkipMode() {
+  const saved = preferencesRepository.update({ skip_mode: skipMode.value })
+  skipMode.value = saved.skip_mode
+  if (skipEnabled.value) playbackController?.setSkip(true, skipMode.value)
+}
+
+function stopPlaybackModes(reason = 'manual-navigation') {
+  if (!playbackController) return
+  playbackController.setAuto(false)
+  playbackController.setSkip(false, skipMode.value)
+  console.debug('[StoryPlayback]', reason)
+}
+
+function handlePlayerKeydown(event) {
+  if (event.repeat) return
+  const tag = event.target?.tagName
+  if (['INPUT', 'SELECT', 'TEXTAREA'].includes(tag) && event.key !== 'Escape') return
+  const key = event.key.toLowerCase()
+  if (key === 'escape') {
+    event.preventDefault()
+    closeOverlay()
+  } else if (key === 'arrowleft') {
+    event.preventDefault()
+    goPrev()
+  } else if (key === 'arrowright' || key === 'enter' || key === ' ') {
+    event.preventDefault()
+    goNext()
+  } else if (key === 'a') {
+    event.preventDefault()
+    toggleAuto()
+  } else if (key === 's' || key === 'control') {
+    event.preventDefault()
+    toggleSkip()
+  } else if (key === 'l') {
+    event.preventDefault()
+    openBacklog()
+  } else if (key === 'h') {
+    event.preventDefault()
+    uiHidden.value = !uiHidden.value
+  }
+}
+
 function restoreHistoryNode(node) {
   storyRuntimeCues.cancelCurrentStep('history-restore')
   restoreSelectedChoices(node.selected_choices)
@@ -390,6 +492,7 @@ function restoreFromBacklog(nodeId) {
   if (!node || !sceneSnapshotStore.truncateAfter(nodeId)) return
   sceneSnapshotStore.popPrevious()
   backlogOpen.value = false
+  stopPlaybackModes('backlog-restore')
   if (!restoreHistoryNode(node)) restoredSceneState.value = null
 }
 
@@ -401,17 +504,24 @@ function replayBacklogVoice(node) {
   })
 }
 
-function goNext() {
-  if (episodeFinished.value || backlogOpen.value || menuOpen.value) return
-  if (storyRuntimeCues.settleCurrentStep('user-next')) return
+function goNext(source = 'user') {
+  if (episodeFinished.value || backlogOpen.value || menuOpen.value) return 'blocked'
+  const reason = typeof source === 'string' ? `${source}-next` : 'user-next'
+  if (storyRuntimeCues.settleCurrentStep(reason)) return 'settled'
+  markStepRead()
   recordHistoryStep()
   leaveRestoredScene()
-  if (isLastStep.value) finishEpisode()
-  else advanceStep()
+  if (isLastStep.value) {
+    finishEpisode()
+    return 'finished'
+  }
+  advanceStep()
+  return 'advanced'
 }
 
 function goPrev() {
   if (backlogOpen.value || menuOpen.value) return
+  stopPlaybackModes('previous')
   storyRuntimeCues.cancelCurrentStep('previous')
   const node = storyRuntimeCues.isSnapshotEnabled() ? sceneSnapshotStore.popPrevious() : null
   if (node) {
@@ -428,6 +538,7 @@ function goPrev() {
 function onChoice(option) {
   storyRuntimeCues.cancelCurrentStep('choice')
   const choiceStepIndex = currentStepIndex.value
+  markStepRead(choiceStepIndex)
   navigateChoice(option)
   recordHistoryStep(choiceStepIndex)
   leaveRestoredScene()
@@ -435,6 +546,7 @@ function onChoice(option) {
 
 function goToStep(index) {
   storyRuntimeCues.cancelCurrentStep('go-to-step')
+  markStepRead()
   recordHistoryStep()
   leaveRestoredScene()
   navigateToStep(index)
@@ -458,6 +570,7 @@ const stepSceneEffects = useStepSceneEffects({
   snapshotAction: () => { window.__SNAPSHOT__ = freezeScene('snapshotAt') },
   isAutoBlocked: () => isRuntimeAutoBlocked(),
   beforeAutoAdvance: () => {
+    markStepRead()
     recordHistoryStep()
     leaveRestoredScene()
   },
@@ -470,6 +583,28 @@ const storyRuntimeCues = useStoryRuntimeCues({
   audioManager: _audioManager,
 })
 
+playbackController = new PlaybackModeController({
+  getStep: () => storyRuntimeCues.getNormalizedStep(),
+  getVoiceState: () => voicePlayer?.getVoiceState?.() || 'idle',
+  hasBlockingAuto: () => storyRuntimeCues.hasBlockingAuto(),
+  hasNonSkippable: () => storyRuntimeCues.hasNonSkippable(),
+  isRead: isStepRead,
+  autoDelayMs: autoDelayMs.value,
+  onAdvance: source => goNext(source),
+  onModeChange: state => {
+    autoEnabled.value = state.auto_enabled
+    skipEnabled.value = state.skip_enabled
+    skipMode.value = state.skip_mode
+    preferencesRepository.update({
+      auto_enabled: state.auto_enabled,
+      auto_delay_ms: autoDelayMs.value,
+      skip_mode: state.skip_mode,
+    })
+  },
+})
+playbackController.setAuto(autoEnabled.value)
+playbackController.setPaused('audio-lock', autoEnabled.value)
+
 clearFadeAutoAdvance = stepSceneEffects.clearFadeAutoAdvance
 clearSnapshotTimer = stepSceneEffects.clearSnapshotTimer
 clearSeTimers = stepSceneEffects.clearSeTimers
@@ -481,6 +616,8 @@ cleanupRuntimeCues = storyRuntimeCues.cleanup
 isRuntimeAutoBlocked = storyRuntimeCues.hasBlockingAuto
 
 onMounted(async () => {
+  window.__STORY_PLAYBACK__ = playbackController
+  document.addEventListener('visibilitychange', handleVisibilityChange)
   // 全局调试工具：在 Console 输入 showAnims("001tom") 查看角色的所有动作
   window.showAnims = window.showAnims || (async (charaId, modelIdx) => {
     const models = ['001tom_002_00','001tom_003_00','001tom_004_00','001tom_004_01','001tom_005_00','001tom_101_00','001tom_101_01','001tom_102_00','001tom_103_00','001tom_103_01',
@@ -573,6 +710,9 @@ onBeforeUnmount(() => {
   console.warn('[Lifecycle] StoryViewer onBeforeUnmount FIRED!')
   cleanupStepSceneEffects()
   cleanupRuntimeCues()
+  playbackController?.dispose()
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+  if (window.__STORY_PLAYBACK__ === playbackController) delete window.__STORY_PLAYBACK__
   if (_readyTimer) {
     clearTimeout(_readyTimer)
     _readyTimer = null
@@ -588,8 +728,21 @@ onBeforeUnmount(() => {
 // is immediate so a scenario opened directly at an authored step is scheduled.
 watch(currentStep, (newStep, oldStep) => {
   handleStepChange(newStep, oldStep, { restore: Boolean(restoredSceneState.value) })
+  playbackController?.notifyStateChanged()
 })
 watch(currentStep, handleRuntimeStepChange, { immediate: true })
+watch([menuOpen, backlogOpen, episodeFinished], ([menu, backlog, finished]) => {
+  if (menu || backlog || finished) clearFadeAutoAdvance()
+  playbackController?.setPaused('overlay', menu || backlog || finished)
+}, { immediate: true })
+watch(uiHidden, hidden => {
+  preferencesRepository.update({ ui_hidden: hidden })
+})
+
+function handleVisibilityChange() {
+  if (document.hidden) clearFadeAutoAdvance()
+  playbackController?.setPaused('visibility', document.hidden)
+}
 
 
 
@@ -704,6 +857,8 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene })
 .nav-btn:disabled { opacity: 0.3; cursor: default; }
 .nav-btn svg { display: block; margin: auto; }
 .nav-label { color: rgba(255,255,255,0.5); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; }
+.mode-btn { min-width: 48px; height: 28px; border: 1px solid rgba(255,255,255,.2); border-radius: 5px; background: rgba(0,0,0,.16); color: rgba(255,255,255,.48); cursor: pointer; font-size: .58rem; font-weight: 800; letter-spacing: .08em; }
+.mode-btn.active { border-color: #69d9c7; background: rgba(48,177,157,.24); color: #bff8ef; box-shadow: 0 0 10px rgba(105,217,199,.18); }
 
 .icon-btn { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 1px solid rgba(255,255,255,.3); border-radius: 4px; background: rgba(255,255,255,.12); color: #fff; cursor: pointer; }
 .icon-btn.dark { border-color: #d8e0e3; background: #fff; color: #26343c; }
@@ -711,8 +866,15 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene })
 .playback-menu { position: absolute; top: 0; right: 0; z-index: 40; display: flex; flex-direction: column; gap: 8px; width: min(320px, 86vw); height: 100%; padding: 18px; border-left: 1px solid #dfe5e7; background: rgba(248,250,251,.97); color: #26343c; box-shadow: -10px 0 30px rgba(0,0,0,.22); }
 .playback-menu header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 1.25rem; }
 .playback-menu > button, .menu-toggle { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 13px; border: 1px solid #dce3e6; border-radius: 5px; background: #fff; color: #26343c; font: inherit; cursor: pointer; }
+.playback-menu > button b { margin-left: auto; color: #718087; font-size: .68rem; }
+.playback-menu > button.active { border-color: #33aa92; background: #e9f8f4; color: #167a67; }
+.playback-menu > button.active b { color: #167a67; }
 .menu-toggle { justify-content: space-between; cursor: default; }
 .menu-toggle input { width: 42px; height: 22px; accent-color: #12a87d; cursor: pointer; }
+.menu-setting { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 7px; min-height: 42px; padding: 0 13px; border: 1px solid #e3e8ea; border-radius: 5px; background: #f7f9fa; color: #4b5b63; font-size: .78rem; }
+.menu-setting input { width: 76px; }
+.menu-setting select, .menu-setting input { min-height: 28px; border: 1px solid #ccd5d9; border-radius: 4px; background: #fff; color: #26343c; }
+.menu-setting small { color: #839096; }
 .episode-complete { position: absolute; inset: 0; z-index: 35; display: grid; place-items: center; background: rgba(0,0,0,.5); }
 .complete-panel { width: min(390px, calc(100vw - 32px)); padding: 24px; border: 1px solid rgba(255,255,255,.6); border-radius: 6px; background: rgba(250,252,252,.97); color: #26343c; text-align: center; box-shadow: 0 18px 45px rgba(0,0,0,.28); }
 .complete-panel > span { color: #0d9c75; font-size: .66rem; font-weight: 800; }
@@ -726,5 +888,3 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene })
 
 .loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #333; font-size: 1.2rem; }
 </style>
-
-

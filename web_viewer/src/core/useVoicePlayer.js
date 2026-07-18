@@ -16,6 +16,7 @@ export function useVoicePlayer({
   let voiceStartedAt = 0
   let currentLipCurve = null
   let voiceCharaId = null
+  let voiceState = 'idle'
   const ORIGINAL_LIP_GAIN = 1.0
 
   const getVoiceVolume = () => {
@@ -71,6 +72,7 @@ export function useVoicePlayer({
   }
 
   function stopCurrentVoice(reason = 'unspecified') {
+    voiceState = 'idle'
     if (!currentSource) return
     console.warn('[Audio] stopCurrentVoice:', reason)
     try { currentSource.stop() } catch (_) {}
@@ -179,12 +181,14 @@ export function useVoicePlayer({
     setTalking(true)
 
     currentSource = source
+    voiceState = 'playing'
     isPlaying.value = true
     source.onended = () => {
       setTalking(false)
       currentLipCurve = null
       voiceStartedAt = 0
       isPlaying.value = false
+      voiceState = 'ended'
       if (currentSource === source) currentSource = null
     }
     return true
@@ -194,32 +198,44 @@ export function useVoicePlayer({
     if (noVoice) {
       stopCurrentVoice('noVoice-flag')
       isPlaying.value = false
+      voiceState = 'idle'
       return false
     }
 
     const step = currentStep.value
     const voice = step?.dialogue?.voice
     const scenarioId = compiledData.value?.scenario_id
-    if (!voice) return false
+    if (!voice) {
+      voiceState = 'idle'
+      return false
+    }
 
     if (voice === lastVoiceUrl && currentStepIndex.value === lastVoiceStepIndex) return false
     lastVoiceUrl = voice
     lastVoiceStepIndex = currentStepIndex.value
 
     isPlaying.value = false
+    voiceState = 'preparing'
     const prepared = await prepareVoice({ step, scenarioId })
-    if (!prepared || voice !== lastVoiceUrl) return false
+    if (!prepared || voice !== lastVoiceUrl) {
+      voiceState = 'ended'
+      return false
+    }
     return playPreparedVoice(prepared)
   }
 
   async function replayVoiceDetached(step) {
     if (noVoice || !step?.dialogue?.voice) return false
+    voiceState = 'preparing'
     const prepared = await prepareVoice({
       step,
       scenarioId: compiledData.value?.scenario_id,
       includeLip: false,
     })
-    if (!prepared) return false
+    if (!prepared) {
+      voiceState = 'ended'
+      return false
+    }
     return playPreparedVoice({ ...prepared, step: { ...step, chara_id: null } })
   }
 
@@ -241,6 +257,7 @@ export function useVoicePlayer({
     ensureAudioCtx,
     unlockAudioContext,
     getVoiceVolume,
+    getVoiceState: () => voiceState,
     dispose,
   }
 }
