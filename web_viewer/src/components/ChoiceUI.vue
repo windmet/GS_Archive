@@ -9,7 +9,7 @@
         @click.stop="select(opt, i)"
       >
         <span class="choice-num">{{ i + 1 }}</span>
-        <span class="choice-text">{{ opt.detail || opt.text }}</span>
+        <span class="choice-text">{{ opt.text || opt.detail || opt.label }}</span>
       </button>
     </div>
   </div>
