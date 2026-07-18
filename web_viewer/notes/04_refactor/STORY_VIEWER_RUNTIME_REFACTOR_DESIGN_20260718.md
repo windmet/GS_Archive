@@ -1,5 +1,7 @@
 # GS_Archive 剧情预览器运行时重构技术设计
 
+> 本地化补充契约：剧情文本身份、翻译覆盖层、speaker/choice identity、Backlog 语言重算与 Preferences schema v2，统一由 [STORY_LOCALIZATION_CONTRACT_20260719.md](./STORY_LOCALIZATION_CONTRACT_20260719.md) 定义。本文中 `text_cn`、`language_mode` 和显示字符串式 Choice 仅视为迁移前示例。
+
 > 文档状态：设计提案，尚未实施
 >
 > 编写日期：2026-07-18
