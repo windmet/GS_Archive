@@ -11,7 +11,7 @@ function immediateCamera(camera) {
 
 export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStageRef, audioManager }) {
   const flags = getRuntimeCueFeatureFlags()
-  const enabled = flags.camera || flags.se
+  const enabled = flags.camera || flags.se || flags.screen
   const scheduler = new EffectScheduler({ clock: new StoryClock() })
   let normalizedSource = null
   let normalizedScenario = null
@@ -34,8 +34,19 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
     return spineStageRef.value?.manager || null
   }
 
-  function applyEntryCameraWhenReady(step, expectedGeneration) {
-    if (!flags.camera) return
+  function applyEntryScreen(manager, overlay) {
+    manager.clearScreenFade?.()
+    manager.clearScreenSlide?.()
+    if (!overlay?.visible) return
+    if (overlay.kind === 'directional-wipe') {
+      manager.setScreenSlide?.('in', overlay.color, 0, 0, overlay.direction)
+    } else if (overlay.kind === 'fade') {
+      manager.setScreenFade?.('out', overlay.color, 0, 0, overlay.alpha ?? 1)
+    }
+  }
+
+  function applyEntryStateWhenReady(step, expectedGeneration) {
+    if (!flags.camera && !flags.screen) return
     const apply = () => {
       if (expectedGeneration !== generation) return
       const manager = getManager()
@@ -44,9 +55,12 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
         return
       }
       managerFrame = null
-      const camera = immediateCamera(step.entry_snapshot?.camera_zoom)
-      if (camera) manager.setCameraZoom(camera)
-      else manager.resetCameraZoom()
+      if (flags.camera) {
+        const camera = immediateCamera(step.entry_snapshot?.camera_zoom)
+        if (camera) manager.setCameraZoom(camera)
+        else manager.resetCameraZoom()
+      }
+      if (flags.screen) applyEntryScreen(manager, step.entry_snapshot?.screen_overlay)
     }
     apply()
   }
@@ -92,9 +106,56 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
     })
   }
 
+  function createScreenHandle(cue) {
+    const isWipe = cue.action === 'screen.directional_wipe'
+    const start = duration => {
+      if (isWipe) {
+        getManager()?.setScreenSlide?.(
+          cue.payload.type,
+          cue.payload.color,
+          duration,
+          0,
+          cue.payload.direction,
+        )
+      } else {
+        getManager()?.setScreenFade?.(
+          cue.payload.type,
+          cue.payload.color,
+          duration,
+          0,
+          cue.payload.alpha ?? 1,
+        )
+      }
+    }
+    return createPerformanceHandle({
+      id: cue.cue_id,
+      channel: cue.channel,
+      skippable: cue.lifecycle.skippable,
+      blocksInput: cue.lifecycle.blocks_input,
+      blocksAuto: cue.lifecycle.blocks_auto,
+      metadata: { action: cue.action, cue },
+      onStart: () => {
+        console.debug('[StoryRuntime] cue start', cue.cue_id)
+        start(cue.duration)
+      },
+      onSettle: () => {
+        console.debug('[StoryRuntime] cue settle', cue.cue_id)
+        start(0)
+      },
+      onCancel: () => {
+        if (isWipe) getManager()?.clearScreenSlide?.()
+        else getManager()?.clearScreenFade?.()
+      },
+    })
+  }
+
   const handlers = new Map()
   if (flags.camera) handlers.set('camera.transform', createCameraHandle)
   if (flags.se) handlers.set('se.play', createSeHandle)
+  if (flags.screen) {
+    handlers.set('screen.directional_wipe', createScreenHandle)
+    handlers.set('screen.fade', createScreenHandle)
+  }
 
   function handleStepChange() {
     if (!enabled) return
@@ -106,7 +167,7 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
     scheduler.cancelAll('step-change')
     const step = getNormalizedStep()
     if (!step) return
-    applyEntryCameraWhenReady(step, generation)
+    applyEntryStateWhenReady(step, generation)
     const cues = step.cues.filter(cue => handlers.has(cue.action))
     scheduler.loadStep(cues, { handlers, context: { step } })
     scheduler.start()

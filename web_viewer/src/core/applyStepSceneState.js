@@ -32,7 +32,7 @@ export function applyStepSceneState({
     bgColorTransition.delay ?? 0,
   )
 
-  if (state.screen_slide) {
+  if (!isRuntimeCueChannelEnabled('screen') && state.screen_slide) {
     const slide = state.screen_slide
     manager.setScreenSlide?.(
       slide.type,
@@ -51,11 +51,13 @@ export function applyStepSceneState({
     }
   }
 
-  if (state.screen_fade) {
-    const sf = state.screen_fade
-    manager.setScreenFade(sf.type, sf.color, sf.duration, sf.delay || 0, sf.alpha ?? 1)
-  } else {
-    manager.clearScreenFade()
+  if (!isRuntimeCueChannelEnabled('screen')) {
+    if (state.screen_fade) {
+      const sf = state.screen_fade
+      manager.setScreenFade(sf.type, sf.color, sf.duration, sf.delay || 0, sf.alpha ?? 1)
+    } else {
+      manager.clearScreenFade()
+    }
   }
 
   const screenEffectsKey = `${step?.step_id || ''}:${JSON.stringify(state.screen_effects || [])}`

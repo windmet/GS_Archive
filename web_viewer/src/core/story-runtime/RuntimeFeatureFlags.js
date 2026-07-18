@@ -4,6 +4,7 @@ export function getRuntimeCueFeatureFlags(search = globalThis.location?.search |
   return Object.freeze({
     camera: all || params.get('runtimeCamera') === '1',
     se: all || params.get('runtimeSE') === '1',
+    screen: all || params.get('runtimeScreen') === '1',
   })
 }
 

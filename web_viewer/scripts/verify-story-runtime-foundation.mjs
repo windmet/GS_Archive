@@ -111,9 +111,10 @@ async function verifyEffectScheduler() {
   assert.deepEqual(calls, ['camera:settle', 'se:suppress'])
   assert.equal(scheduler.hasUnsettledSkippable(), false)
 
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCues=1'), { camera: true, se: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCamera=1'), { camera: true, se: false })
-  assert.deepEqual(getRuntimeCueFeatureFlags(''), { camera: false, se: false })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCues=1'), { camera: true, se: true, screen: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCamera=1'), { camera: true, se: false, screen: false })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeScreen=1'), { camera: false, se: false, screen: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags(''), { camera: false, se: false, screen: false })
   await scheduler.dispose()
 }
 
@@ -166,6 +167,21 @@ async function verifyScenarioNormalizer() {
   const compiledPath = path.join(root, 'public', 'data', 'compiled', 'episodes', '1_4_001_01_a.json')
   const compiled = JSON.parse(await readFile(compiledPath, 'utf8'))
   const normalizedCompiled = normalizeScenario(compiled)
+  const slideIn = normalizedCompiled.steps[5]
+  const coveredStage = normalizedCompiled.steps[6]
+  const slideOut = normalizedCompiled.steps[7]
+  assert.equal(slideIn.cues.find(cue => cue.action === 'screen.directional_wipe')?.payload.type, 'in')
+  assert.deepEqual(slideIn.settled_snapshot.screen_overlay, {
+    kind: 'directional-wipe',
+    visible: true,
+    color: '#000000',
+    direction: '6',
+  })
+  assert.deepEqual(coveredStage.entry_snapshot.screen_overlay, slideIn.settled_snapshot.screen_overlay)
+  assert.equal(coveredStage.entry_snapshot.bg, 'bg001_315pro_in_11')
+  assert.equal(slideOut.cues.find(cue => cue.action === 'screen.directional_wipe')?.payload.type, 'out')
+  assert.equal(slideOut.entry_snapshot.screen_overlay?.visible, true)
+  assert.equal(slideOut.settled_snapshot.screen_overlay, null)
   const authoredPassion = normalizedCompiled.steps.find(step =>
     step.dialogue?.text_jp?.includes('パパパ、パーッション！！'))
   assert.ok(authoredPassion, 'compiled anchor step for パパパ、パーッション！！ must exist')
@@ -192,4 +208,4 @@ await verifyPerformanceRegistry()
 await verifyEffectScheduler()
 await verifyScenarioNormalizer()
 
-console.log('Story runtime foundation: clock, performance lifecycle, IR v2 schema, and legacy Camera/SE normalization verified')
+console.log('Story runtime foundation: clock, lifecycle, IR v2, Camera/SE, and directional screen wipe normalization verified')
