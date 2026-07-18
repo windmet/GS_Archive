@@ -40,10 +40,6 @@
     </header>
 
     <div class="home-context" aria-label="首页偶像与服装">
-      <button type="button" aria-label="上一位偶像" title="上一位偶像" @click="stepIdol(-1)">
-        <ChevronLeft class="desktop-chevron" :size="18" />
-        <ChevronUp class="mobile-chevron" :size="18" />
-      </button>
       <img :src="getCharaIconUrl(activeIdol.id)" :alt="activeIdol.name" />
       <label class="context-select context-idol">
         <span>首页偶像</span>
@@ -66,20 +62,16 @@
           </option>
         </select>
       </label>
-      <button type="button" aria-label="下一位偶像" title="下一位偶像" @click="stepIdol(1)">
-        <ChevronRight class="desktop-chevron" :size="18" />
-        <ChevronDown class="mobile-chevron" :size="18" />
-      </button>
       <button
         class="settings-trigger"
         type="button"
+        aria-label="场景设置"
         aria-haspopup="dialog"
         :aria-expanded="settingsOpen"
         title="场景设置"
         @click="openSettings"
       >
         <SlidersHorizontal :size="17" />
-        <span>场景设置</span>
       </button>
     </div>
 
@@ -281,10 +273,8 @@ import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, r
 import {
   ArrowLeftRight,
   Check,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ChevronUp,
   RotateCcw,
   SlidersHorizontal,
   Square,
@@ -411,12 +401,6 @@ watch(preferences, value => {
   saveArchiveHomePreferences(value)
   document.documentElement.dataset.archiveHomeTheme = value.theme
 }, { deep: true })
-
-function stepIdol(direction) {
-  if (!props.idols.length) return
-  const index = Math.max(0, props.idols.findIndex(idol => idol.id === activeIdol.value?.id))
-  selectedId.value = props.idols[(index + direction + props.idols.length) % props.idols.length].id
-}
 
 function openSettings() {
   costumePickerOpen.value = false
@@ -637,7 +621,6 @@ onBeforeUnmount(() => {
 }
 .home-context > button { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 0; background: transparent; color: currentColor; cursor: pointer; }
 .home-context > button:hover { background: rgba(255,255,255,.09); }
-.mobile-chevron { display: none; }
 .home-context > img {
   width: 32px;
   height: 32px;
@@ -657,7 +640,7 @@ onBeforeUnmount(() => {
 .context-idol select { width: 116px; }
 .context-costume select { width: 144px; }
 .context-divider { width: 1px; height: 24px; background: rgba(255,255,255,.2); }
-.settings-trigger { width: auto !important; gap: 7px; margin-left: 8px; padding: 0 12px !important; border: 1px solid rgba(255,255,255,.35) !important; border-radius: 4px; font: inherit; font-size: .65rem; }
+.settings-trigger { width: 34px !important; margin-left: 8px; padding: 0 !important; border: 1px solid rgba(255,255,255,.35) !important; border-radius: 4px; }
 .settings-trigger:hover { border-color: var(--archive-cyan) !important; color: #baf8fa; }
 .mobile-costume-trigger,
 .mobile-idol-switch,
@@ -772,8 +755,7 @@ onBeforeUnmount(() => {
   .idol-heading h2 { font-size: 1.18rem; }
   .home-context { top: 16px; right: 12px; }
   .context-costume, .context-divider { display: none; }
-  .settings-trigger span { display: none; }
-  .settings-trigger { width: 34px !important; margin-left: 4px; padding: 0 !important; }
+  .settings-trigger { margin-left: 4px; }
   .home-highlight { top: 76px; right: 12px; width: 190px; }
   .highlight-copy { padding: 6px 7px 3px; }
   .highlight-copy strong { font-size: .57rem; }
