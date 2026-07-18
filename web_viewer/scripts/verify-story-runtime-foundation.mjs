@@ -7,6 +7,7 @@ import { PerformanceRegistry, createPerformanceHandle } from '../src/core/story-
 import { normalizeScenario } from '../src/core/story-runtime/ScenarioNormalizer.js'
 import { EffectScheduler } from '../src/core/story-runtime/EffectScheduler.js'
 import { getRuntimeCueFeatureFlags } from '../src/core/story-runtime/RuntimeFeatureFlags.js'
+import { SceneSnapshotStore, isReadableHistoryStep } from '../src/core/story-runtime/SceneSnapshotStore.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -121,6 +122,47 @@ async function verifyEffectScheduler() {
   await scheduler.dispose()
 }
 
+function verifySceneSnapshotStore() {
+  let now = 10
+  const store = new SceneSnapshotStore({ now: () => now++ })
+  store.beginScenario({
+    scenarioId: '1_4_001_01_a',
+    sourceHash: 'raw-hash',
+    sourceRange: { start_step: 2, end_step: 42 },
+  })
+  const first = store.record({
+    stepIndex: 10,
+    step: {
+      step_id: 11,
+      episode_index: 0,
+      type: 'adv',
+      dialogue: { speaker: 'A', text_jp: 'first', voice: 'voice-1' },
+    },
+    snapshot: { bg: 'bg-a', se_events: [] },
+  })
+  const second = store.record({
+    stepIndex: 11,
+    step: { step_id: 12, episode_index: 0, type: 'choice', dialogue: null },
+    snapshot: { bg: 'bg-b', screen_overlay: null },
+    selectedChoices: new Map([[11, 'Passion!!']]),
+    captured: true,
+  })
+  assert.equal(first.snapshot_source, 'compiled-settled')
+  assert.equal(second.snapshot_source, 'captured-runtime')
+  assert.equal(store.size, 2)
+  assert.equal(store.list({ readableOnly: true }).length, 2)
+  assert.equal(store.get(first.node_id).voice.cue, 'voice-1')
+  const detached = store.get(first.node_id)
+  detached.snapshot.bg = 'mutated'
+  assert.equal(store.get(first.node_id).snapshot.bg, 'bg-a', 'history snapshots must be detached copies')
+  assert.equal(store.truncateAfter(first.node_id), true)
+  assert.equal(store.size, 1)
+  assert.equal(store.popPrevious().node_id, first.node_id)
+  assert.equal(store.size, 0)
+  assert.equal(isReadableHistoryStep({ type: 'stage', dialogue: null }), false)
+  assert.equal(isReadableHistoryStep({ type: 'adv', dialogue: { text_jp: 'line' } }), true)
+}
+
 async function verifyScenarioNormalizer() {
   const fixturePath = path.join(root, 'fixtures', 'story-runtime', 'legacy-passion-step.json')
   const fixture = JSON.parse(await readFile(fixturePath, 'utf8'))
@@ -215,6 +257,7 @@ async function verifyScenarioNormalizer() {
 verifyStoryClock()
 await verifyPerformanceRegistry()
 await verifyEffectScheduler()
+verifySceneSnapshotStore()
 await verifyScenarioNormalizer()
 
 console.log('Story runtime foundation: clock, lifecycle, IR v2, Camera/SE, background, and directional wipe normalization verified')
