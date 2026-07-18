@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gs-archive.local/schemas/compiled-scenario-v2.schema.json",
+  "title": "GS Archive Compiled Scenario IR v2",
+  "type": "object",
+  "required": ["schema_version", "scenario_id", "steps"],
+  "properties": {
+    "schema_version": { "const": 2 },
+    "source_schema_version": { "type": "integer", "minimum": 1 },
+    "compiler_version": { "type": "string" },
+    "runtime_contract": { "type": "string" },
+    "scenario_id": { "type": "string", "minLength": 1 },
+    "source": { "$ref": "#/$defs/sourceEvidence" },
+    "capabilities": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "resource_manifest": { "type": "object" },
+    "episodes": { "type": "array", "items": { "type": "object" } },
+    "steps": { "type": "array", "items": { "$ref": "#/$defs/step" } },
+    "diagnostics": { "type": "object" }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "sourceEvidence": {
+      "type": "object",
+      "properties": {
+        "raw_path": { "type": "string" },
+        "raw_hash": { "type": "string" },
+        "masterdata_ids": { "type": "array", "items": { "type": "string" } },
+        "compiled_at": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "step": {
+      "type": "object",
+      "required": ["step_id", "type", "entry_snapshot", "settled_snapshot", "cues", "flow"],
+      "properties": {
+        "step_id": { "type": "integer", "minimum": 1 },
+        "episode_index": { "type": "integer", "minimum": 0 },
+        "type": { "type": "string", "minLength": 1 },
+        "dialogue": { "type": "object" },
+        "entry_snapshot": { "type": "object" },
+        "settled_snapshot": { "type": "object" },
+        "snapshot_format": { "type": "string" },
+        "cues": { "type": "array", "items": { "$ref": "#/$defs/cue" } },
+        "flow": { "$ref": "#/$defs/flow" },
+        "evidence": { "$ref": "#/$defs/evidence" },
+        "normalization": { "type": "object" }
+      },
+      "additionalProperties": true
+    },
+    "cue": {
+      "type": "object",
+      "required": ["cue_id", "at", "duration", "channel", "action", "payload", "lifecycle"],
+      "properties": {
+        "cue_id": { "type": "string", "minLength": 1 },
+        "at": { "type": "number", "minimum": 0 },
+        "duration": { "type": "number", "minimum": 0 },
+        "channel": { "type": "string", "minLength": 1 },
+        "action": { "type": "string", "minLength": 1 },
+        "target": { "type": ["string", "null"] },
+        "payload": { "type": "object" },
+        "lifecycle": { "$ref": "#/$defs/lifecycle" },
+        "evidence": { "$ref": "#/$defs/evidence" }
+      },
+      "additionalProperties": false
+    },
+    "lifecycle": {
+      "type": "object",
+      "required": ["persistence", "skippable", "blocks_input", "blocks_auto", "restore_policy"],
+      "properties": {
+        "persistence": { "enum": ["stateful", "transient", "hold"] },
+        "skippable": { "type": "boolean" },
+        "blocks_input": { "type": "boolean" },
+        "blocks_auto": { "type": "boolean" },
+        "restore_policy": { "enum": ["settled", "replay", "suppress", "resume"] }
+      },
+      "additionalProperties": false
+    },
+    "flow": {
+      "type": "object",
+      "required": ["advance", "blocks_skip", "choice_id"],
+      "properties": {
+        "advance": { "enum": ["user", "automatic", "choice", "blocked"] },
+        "blocks_skip": { "type": "boolean" },
+        "choice_id": { "type": ["string", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "source_file": { "type": "string" },
+        "command_index": { "type": "integer", "minimum": 0 },
+        "raw_type": { "type": "string" },
+        "raw_values": { "type": "array" },
+        "parser_rule": { "type": "string" },
+        "legacy_field": { "type": "string" },
+        "confidence": { "enum": ["exact", "derived", "approximate", "missing"] }
+      },
+      "additionalProperties": true
+    }
+  }
+}
