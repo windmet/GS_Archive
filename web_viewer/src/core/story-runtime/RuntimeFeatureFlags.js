@@ -6,6 +6,7 @@ export function getRuntimeCueFeatureFlags(search = globalThis.location?.search |
     se: all || params.get('runtimeSE') === '1',
     screen: all || params.get('runtimeScreen') === '1',
     background: all || params.get('runtimeBackground') === '1',
+    snapshot: all || params.get('runtimeSnapshots') === '1',
   })
 }
 

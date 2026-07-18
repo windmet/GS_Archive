@@ -114,11 +114,12 @@ async function verifyEffectScheduler() {
   assert.equal(scheduler.hasUnsettledSkippable(), false)
   assert.equal(scheduler.hasBlockingAuto(), false)
 
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCues=1'), { camera: true, se: true, screen: true, background: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCamera=1'), { camera: true, se: false, screen: false, background: false })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeScreen=1'), { camera: false, se: false, screen: true, background: false })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeBackground=1'), { camera: false, se: false, screen: false, background: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags(''), { camera: false, se: false, screen: false, background: false })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCues=1'), { camera: true, se: true, screen: true, background: true, snapshot: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCamera=1'), { camera: true, se: false, screen: false, background: false, snapshot: false })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeScreen=1'), { camera: false, se: false, screen: true, background: false, snapshot: false })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeBackground=1'), { camera: false, se: false, screen: false, background: true, snapshot: false })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSnapshots=1'), { camera: false, se: false, screen: false, background: false, snapshot: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags(''), { camera: false, se: false, screen: false, background: false, snapshot: false })
   await scheduler.dispose()
 }
 

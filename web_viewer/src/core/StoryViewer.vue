@@ -2,7 +2,7 @@
   <div class="story-viewer-root" :class="{ 'stage-only': HIDE_UI || uiHidden }" tabindex="0" @keydown.left="goPrev" @keydown.right="goNext">
     <div class="viewer-stage">
     <!-- Spine rendering layer (background + characters) -->
-    <SpineStage ref="spineStageRef" :step="currentStep" :fallbackBg="firstAvailableBg" />
+    <SpineStage ref="spineStageRef" :step="stageStep" :fallbackBg="firstAvailableBg" />
 
     <!-- Top bar -->
     <div class="top-bar" v-if="compiledData && !HIDE_UI && !uiHidden">
@@ -116,6 +116,7 @@ import { useTimelineRunner } from './useTimelineRunner.js'
 import { useStoryNavigation } from './useStoryNavigation.js'
 import { useStepSceneEffects } from './useStepSceneEffects.js'
 import { useStoryRuntimeCues } from './story-runtime/useStoryRuntimeCues.js'
+import { SceneSnapshotStore, isReadableHistoryStep } from './story-runtime/SceneSnapshotStore.js'
 
 const props = defineProps({
   scenarioJson: { type: Object, default: null },
@@ -145,6 +146,8 @@ const compiledData = ref(null)
 const currentStepIndex = ref(0)
 const historyStack = ref([])
 const selectedChoices = reactive(new Map())
+const restoredSceneState = ref(null)
+const sceneSnapshotStore = new SceneSnapshotStore()
 const _ready = ref(false)
 const isPlaying = ref(false)
 const menuOpen = ref(false)
@@ -216,6 +219,10 @@ const currentStep = computed(() => {
   return compiledData.value.steps[currentStepIndex.value] || {}
 })
 
+const stageStep = computed(() => restoredSceneState.value
+  ? { ...currentStep.value, state: restoredSceneState.value }
+  : currentStep.value)
+
 const showAdvDialogue = computed(() => {
   const step = currentStep.value
   return step?.type === 'adv' && step?.hide_dialogue !== true && step?.state?.text_disabled !== true
@@ -256,6 +263,7 @@ const {
   goPrev: navigatePrev,
   onChoice: navigateChoice,
   goToStep: navigateToStep,
+  restoreToStep: navigateRestore,
 } = useStoryNavigation({
   compiledData,
   currentStep,
@@ -286,25 +294,67 @@ function finishEpisode() {
   }
 }
 
+function initializeSnapshotHistory() {
+  if (!compiledData.value) return
+  sceneSnapshotStore.beginScenario({
+    scenarioId: compiledData.value.scenario_id || props.scenarioUrl || 'inline-scenario',
+    sourceHash: compiledData.value.source_hash || null,
+    sourceRange: { start_step: START_STEP, end_step: END_STEP },
+  })
+  historyStack.value = []
+  restoredSceneState.value = null
+}
+
+function recordHistoryStep(stepIndex = currentStepIndex.value) {
+  if (!storyRuntimeCues.isSnapshotEnabled()) return null
+  const step = storyRuntimeCues.getNormalizedStep(stepIndex)
+  if (!isReadableHistoryStep(step) || !step?.settled_snapshot) return null
+  return sceneSnapshotStore.record({
+    stepIndex,
+    step,
+    snapshot: step.settled_snapshot,
+    selectedChoices,
+  })
+}
+
+function leaveRestoredScene() {
+  restoredSceneState.value = null
+}
+
 function goNext() {
   if (episodeFinished.value) return
   if (storyRuntimeCues.settleCurrentStep('user-next')) return
+  recordHistoryStep()
+  leaveRestoredScene()
   if (isLastStep.value) finishEpisode()
   else advanceStep()
 }
 
 function goPrev() {
   storyRuntimeCues.cancelCurrentStep('previous')
+  const node = storyRuntimeCues.isSnapshotEnabled() ? sceneSnapshotStore.popPrevious() : null
+  if (node) {
+    const remaining = sceneSnapshotStore.list().map(candidate => candidate.step_index)
+    storyRuntimeCues.prepareRestore(node.step_index, node.snapshot)
+    restoredSceneState.value = node.snapshot
+    if (navigateRestore(node.step_index, { historyIndices: remaining })) return
+    restoredSceneState.value = null
+  }
   navigatePrev()
 }
 
 function onChoice(option) {
   storyRuntimeCues.cancelCurrentStep('choice')
+  const choiceStepIndex = currentStepIndex.value
   navigateChoice(option)
+  recordHistoryStep(choiceStepIndex)
+  leaveRestoredScene()
 }
 
 function goToStep(index) {
   storyRuntimeCues.cancelCurrentStep('go-to-step')
+  recordHistoryStep()
+  leaveRestoredScene()
   navigateToStep(index)
 }
 
@@ -325,6 +375,10 @@ const stepSceneEffects = useStepSceneEffects({
   snapshotAt: SNAPSHOT_AT,
   snapshotAction: () => { window.__SNAPSHOT__ = freezeScene('snapshotAt') },
   isAutoBlocked: () => isRuntimeAutoBlocked(),
+  beforeAutoAdvance: () => {
+    recordHistoryStep()
+    leaveRestoredScene()
+  },
 })
 
 const storyRuntimeCues = useStoryRuntimeCues({
@@ -386,6 +440,7 @@ onMounted(async () => {
   if (props.scenarioJson) {
     compiledData.value = props.scenarioJson
     applyStartStepIfNeeded()
+    initializeSnapshotHistory()
   } else if (props.scenarioUrl) {
     await loadScenario(props.scenarioUrl)
   }
@@ -449,7 +504,9 @@ onBeforeUnmount(() => {
 
 // Keep the legacy effects watcher behavior unchanged. The opt-in runtime watcher
 // is immediate so a scenario opened directly at an authored step is scheduled.
-watch(currentStep, handleStepChange)
+watch(currentStep, (newStep, oldStep) => {
+  handleStepChange(newStep, oldStep, { restore: Boolean(restoredSceneState.value) })
+})
 watch(currentStep, handleRuntimeStepChange, { immediate: true })
 
 
@@ -460,6 +517,7 @@ async function loadScenario(url) {
     const r = await fetch(`${url}${sep}v=${Date.now()}`, { cache: 'no-store' })
     compiledData.value = await r.json()
     applyStartStepIfNeeded()
+    initializeSnapshotHistory()
   } catch (err) {
     console.error('[StoryViewer] Failed to load:', err)
   }

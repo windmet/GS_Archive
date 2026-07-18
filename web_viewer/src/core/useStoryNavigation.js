@@ -154,6 +154,23 @@ export function useStoryNavigation({
     }
   }
 
+  function restoreToStep(index, { historyIndices = [] } = {}) {
+    clearFadeAutoAdvance()
+    fastForwardTimeline()
+    ensureAudioCtx()
+    if (!compiledData.value || index < navigationStartIndex.value || index > navigationEndIndex.value) {
+      return false
+    }
+    historyStack.value = historyIndices.filter(candidate =>
+      Number.isInteger(candidate)
+      && candidate >= navigationStartIndex.value
+      && candidate <= navigationEndIndex.value,
+    )
+    currentStepIndex.value = index
+    resetVoiceDedup()
+    return true
+  }
+
   return {
     isFirstStep,
     isLastStep,
@@ -170,5 +187,6 @@ export function useStoryNavigation({
     goPrev,
     onChoice,
     goToStep,
+    restoreToStep,
   }
 }

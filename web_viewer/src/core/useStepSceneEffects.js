@@ -14,6 +14,7 @@ export function useStepSceneEffects({
   snapshotAt,
   snapshotAction,
   isAutoBlocked = () => false,
+  beforeAutoAdvance = () => {},
 }) {
   let _fadeAutoTimer = null
   let _fadeAutoSeq = 0
@@ -67,7 +68,7 @@ export function useStepSceneEffects({
     }, snapshotAt * 1000)
   }
 
-  function handleStepChange(newStep, oldStep) {
+  function handleStepChange(newStep, oldStep, { restore = false } = {}) {
     console.log('[Audio] watch(currentStep) fired:', oldStep?.dialogue?.voice, '->', newStep?.dialogue?.voice)
     clearFadeAutoAdvance()
     clearSeTimers()
@@ -78,7 +79,7 @@ export function useStepSceneEffects({
       spineStageRef.value?.manager?.cancelAllSpineTweens?.()
     }
 
-    if (!isRuntimeCueChannelEnabled('se')) {
+    if (!restore && !isRuntimeCueChannelEnabled('se')) {
       const seEvents = Array.isArray(newStep?.state?.se_events) ? newStep.state.se_events : []
       if (seEvents.length > 0) {
         for (const se of seEvents) {
@@ -115,7 +116,7 @@ export function useStepSceneEffects({
       _lastBgmId = null
     }
 
-    const autoAdvance = getAutoAdvanceTiming(newStep)
+    const autoAdvance = restore ? null : getAutoAdvanceTiming(newStep)
     if (autoAdvance) {
       const autoSeq = _fadeAutoSeq
       const autoStepIndex = currentStepIndex.value
@@ -127,8 +128,10 @@ export function useStepSceneEffects({
             return
           }
           if (isLastStep.value) {
+            beforeAutoAdvance()
             onEpisodeEnd?.()
           } else {
+            beforeAutoAdvance()
             if (autoAdvance.pushHistory) {
               historyStack.value.push(currentStepIndex.value)
             }
@@ -140,9 +143,11 @@ export function useStepSceneEffects({
       _fadeAutoTimer = setTimeout(attemptAutoAdvance, autoAdvance.delayMs)
     }
 
-    voicePlayer?.playVoice?.()
-    startTimeline()
-    scheduleSnapshot()
+    if (!restore) {
+      voicePlayer?.playVoice?.()
+      startTimeline()
+      scheduleSnapshot()
+    }
   }
 
   function cleanup() {

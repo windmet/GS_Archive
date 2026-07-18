@@ -9,25 +9,30 @@ function immediateCamera(camera) {
   return { ...camera, duration: 0, delay: 0 }
 }
 
+function clone(value) {
+  return value == null ? value : JSON.parse(JSON.stringify(value))
+}
+
 export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStageRef, audioManager }) {
   const flags = getRuntimeCueFeatureFlags()
-  const enabled = flags.camera || flags.se || flags.screen || flags.background
+  const enabled = flags.camera || flags.se || flags.screen || flags.background || flags.snapshot
   const scheduler = new EffectScheduler({ clock: new StoryClock() })
   let normalizedSource = null
   let normalizedScenario = null
   let managerFrame = null
   let generation = 0
+  let pendingRestore = null
 
   if (enabled && typeof window !== 'undefined') {
     window.__STORY_RUNTIME_CUES__ = scheduler
   }
 
-  function getNormalizedStep() {
+  function getNormalizedStep(index = currentStepIndex.value) {
     if (normalizedSource !== compiledData.value) {
       normalizedSource = compiledData.value
       normalizedScenario = normalizedSource ? normalizeScenario(normalizedSource) : null
     }
-    return normalizedScenario?.steps?.[currentStepIndex.value] || null
+    return normalizedScenario?.steps?.[index] || null
   }
 
   function getManager() {
@@ -45,7 +50,7 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
     }
   }
 
-  function applyEntryStateWhenReady(step, expectedGeneration) {
+  function applySnapshotWhenReady(snapshot, expectedGeneration) {
     if (!flags.camera && !flags.screen && !flags.background) return
     const apply = () => {
       if (expectedGeneration !== generation) return
@@ -56,13 +61,13 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
       }
       managerFrame = null
       if (flags.camera) {
-        const camera = immediateCamera(step.entry_snapshot?.camera_zoom)
+        const camera = immediateCamera(snapshot?.camera_zoom)
         if (camera) manager.setCameraZoom(camera)
         else manager.resetCameraZoom()
       }
-      if (flags.screen) applyEntryScreen(manager, step.entry_snapshot?.screen_overlay)
+      if (flags.screen) applyEntryScreen(manager, snapshot?.screen_overlay)
       if (flags.background) {
-        const bg = step.entry_snapshot?.bg
+        const bg = snapshot?.bg
         if (bg) manager.setBackground?.(bg, { duration: 0, delay: 0 })
         else manager.clearBackground?.()
       }
@@ -204,11 +209,20 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
     scheduler.cancelAll('step-change')
     const step = getNormalizedStep()
     if (!step) return
-    applyEntryStateWhenReady(step, generation)
-    const cues = step.cues.filter(cue => handlers.has(cue.action))
+    const restore = pendingRestore?.stepIndex === currentStepIndex.value ? pendingRestore : null
+    pendingRestore = null
+    applySnapshotWhenReady(restore?.snapshot || step.entry_snapshot, generation)
+    const cues = restore ? [] : step.cues.filter(cue => handlers.has(cue.action))
     scheduler.loadStep(cues, { handlers, context: { step } })
     scheduler.start()
-    console.debug('[StoryRuntime] scheduled', JSON.stringify(scheduler.inspect()))
+    console.debug(restore ? '[StoryRuntime] restored' : '[StoryRuntime] scheduled', JSON.stringify(scheduler.inspect()))
+  }
+
+  function prepareRestore(stepIndex, snapshot) {
+    if (!flags.snapshot) return false
+    if (!Number.isInteger(stepIndex) || stepIndex < 0 || !snapshot) return false
+    pendingRestore = { stepIndex, snapshot: clone(snapshot) }
+    return true
   }
 
   function settleCurrentStep(reason = 'user-next') {
@@ -244,6 +258,9 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
     settleCurrentStep,
     cancelCurrentStep,
     hasBlockingAuto: () => enabled && scheduler.hasBlockingAuto(),
+    isSnapshotEnabled: () => flags.snapshot,
+    getNormalizedStep: index => clone(getNormalizedStep(index)),
+    prepareRestore,
     inspect: () => scheduler.inspect(),
     cleanup,
   }
