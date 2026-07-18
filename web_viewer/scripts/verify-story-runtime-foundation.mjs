@@ -119,12 +119,13 @@ async function verifyEffectScheduler() {
   assert.equal(scheduler.hasBlockingAuto(), false)
 
   assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCues=1'), { camera: true, se: true, screen: true, background: true, snapshot: true, spine: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCamera=1'), { camera: true, se: false, screen: false, background: false, snapshot: false, spine: false })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeScreen=1'), { camera: false, se: false, screen: true, background: false, snapshot: false, spine: false })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeBackground=1'), { camera: false, se: false, screen: false, background: true, snapshot: false, spine: false })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSnapshots=1'), { camera: false, se: false, screen: false, background: false, snapshot: true, spine: false })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCamera=1'), { camera: true, se: false, screen: false, background: false, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeScreen=1'), { camera: false, se: false, screen: true, background: false, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeBackground=1'), { camera: false, se: false, screen: false, background: true, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSnapshots=1'), { camera: false, se: false, screen: false, background: false, snapshot: true, spine: true })
   assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSpine=1'), { camera: false, se: false, screen: false, background: false, snapshot: false, spine: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags(''), { camera: false, se: false, screen: false, background: false, snapshot: false, spine: false })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSpine=0'), { camera: false, se: false, screen: false, background: false, snapshot: false, spine: false })
+  assert.deepEqual(getRuntimeCueFeatureFlags(''), { camera: false, se: false, screen: false, background: false, snapshot: false, spine: true })
   await scheduler.dispose()
 
   let releaseAsyncStart

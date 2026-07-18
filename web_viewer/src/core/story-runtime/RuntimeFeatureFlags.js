@@ -1,13 +1,16 @@
 export function getRuntimeCueFeatureFlags(search = globalThis.location?.search || '') {
   const params = new URLSearchParams(search)
   const all = params.get('runtimeCues') === '1'
+  const spineOverride = params.get('runtimeSpine')
   return Object.freeze({
     camera: all || params.get('runtimeCamera') === '1',
     se: all || params.get('runtimeSE') === '1',
     screen: all || params.get('runtimeScreen') === '1',
     background: all || params.get('runtimeBackground') === '1',
     snapshot: all || params.get('runtimeSnapshots') === '1',
-    spine: all || params.get('runtimeSpine') === '1',
+    // Spine timeline has completed channel acceptance. Keep an explicit
+    // runtimeSpine=0 escape hatch while the remaining runtime channels migrate.
+    spine: all || spineOverride !== '0',
   })
 }
 

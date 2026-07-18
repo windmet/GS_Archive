@@ -14,6 +14,16 @@ function clone(value) {
   return value == null ? value : JSON.parse(JSON.stringify(value))
 }
 
+export function settleSpineNeckCue(manager, cue) {
+  if (!manager || !cue?.target || !cue?.payload?.value) return false
+  manager.playSpineNeckAnim?.(cue.target, cue.payload.value, cue.cue_id)
+  const track = manager.spineInstances?.[cue.target]?.spine?.state?.getCurrent?.(3)
+  if (!track) return false
+  track.trackTime = track.animationEnd
+  manager.flushSpinePose?.(cue.target, 0)
+  return true
+}
+
 export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStageRef, audioManager }) {
   const flags = getRuntimeCueFeatureFlags()
   const enabled = flags.camera || flags.se || flags.screen || flags.background || flags.snapshot || flags.spine
@@ -197,7 +207,7 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
     let releasePending = null
     let neckFallbackTimer = null
     const isTransient = cue.lifecycle.persistence === 'transient'
-    const apply = (manager, duration) => {
+    const apply = (manager, duration, { settleNeck = false } = {}) => {
       const target = cue.target
       const payload = cue.payload || {}
       if (cue.action === 'spine.face.set') {
@@ -211,6 +221,12 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
         const motionSetting = getCachedMotionSetting(target, modelId, payload.value)
         manager.playSpineAnim?.(target, payload.value, false, !!payload.no_back, motionSetting, true, 0.3)
       } else if (cue.action === 'spine.neck.play') {
+        if (settleNeck) {
+          settleSpineNeckCue(manager, cue)
+          activeNeckTrack = manager.spineInstances?.[target]?.spine?.state?.getCurrent?.(3) || null
+          releasePending?.()
+          return
+        }
         manager.playSpineNeckAnim?.(target, payload.value, cue.cue_id)
         const entry = manager.spineInstances?.[target]
         const track = entry?.spine?.state?.getCurrent?.(3)
@@ -240,7 +256,7 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
         manager.setSpineColor?.(target, payload.value, duration, 0)
       }
     }
-    const performWhenReady = duration => {
+    const performWhenReady = (duration, options) => {
       const token = ++operationToken
       const expectedGeneration = generation
       const deadline = performance.now() + 5000
@@ -249,7 +265,7 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
           if (token !== operationToken || expectedGeneration !== generation) return resolve(false)
           const manager = getManager()
           if (manager?.spineInstances?.[cue.target]) {
-            Promise.resolve(apply(manager, duration)).then(() => resolve(true), () => resolve(false))
+            Promise.resolve(apply(manager, duration, options)).then(() => resolve(true), () => resolve(false))
             return
           }
           if (performance.now() >= deadline) {
@@ -275,9 +291,8 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
       onSettle: () => {
         operationToken++
         if (isTransient) {
-          if (cue.action === 'spine.neck.play' && activeNeckTrack) {
-            activeNeckTrack.trackTime = activeNeckTrack.animationEnd
-            getManager()?.flushSpinePose?.(cue.target, 0)
+          if (cue.action === 'spine.neck.play') {
+            return performWhenReady(0, { settleNeck: true })
           }
           releasePending?.()
           return

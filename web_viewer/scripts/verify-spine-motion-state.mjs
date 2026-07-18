@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { SpineManager } from '../src/core/SpineManager.js'
+import { settleSpineNeckCue } from '../src/core/story-runtime/useStoryRuntimeCues.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -122,6 +123,31 @@ function verifyNeckLifecycle() {
     'an explicit stop must retain the reset targets for one final base-pose apply')
 }
 
+function verifyScheduledNeckSettle() {
+  const track = { animationEnd: 2.1, trackTime: 0 }
+  const calls = []
+  const manager = {
+    spineInstances: {
+      idol: { spine: { state: { getCurrent: index => index === 3 ? track : null } } },
+    },
+    playSpineNeckAnim: (...args) => calls.push(['play', ...args]),
+    flushSpinePose: (...args) => calls.push(['flush', ...args]),
+  }
+  const cue = {
+    cue_id: 'step-12:001:spine-neck',
+    target: 'idol',
+    payload: { value: 'neck_question' },
+  }
+
+  assert.equal(settleSpineNeckCue(manager, cue), true)
+  assert.equal(track.trackTime, track.animationEnd,
+    'settling a not-yet-started neck cue must land on its authored final pose')
+  assert.deepEqual(calls, [
+    ['play', 'idol', 'neck_question', 'step-12:001:spine-neck'],
+    ['flush', 'idol', 0],
+  ])
+}
+
 function verifyCompiledAnchor() {
   const compiledPath = path.join(root, 'public', 'data', 'compiled', '1_1_013the_02_1_1_013_02.json')
   const scenario = JSON.parse(fs.readFileSync(compiledPath, 'utf8'))
@@ -139,5 +165,6 @@ function verifyCompiledAnchor() {
 
 verifyBodyLifecycle()
 verifyNeckLifecycle()
+verifyScheduledNeckSettle()
 verifyCompiledAnchor()
 console.log('Spine motion state verification passed.')
