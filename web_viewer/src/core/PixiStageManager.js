@@ -195,6 +195,18 @@ export class PixiStageManager {
             this._effectOverlay.width = width
             this._effectOverlay.height = height
           }
+          for (const sprite of Object.values(this._silhouetteSprites)) {
+            const layout = sprite?._silhouetteLayout
+            if (!layout) continue
+            this._layoutSilhouette(
+              sprite,
+              layout.sourceWidth,
+              layout.sourceHeight,
+              layout.posX,
+              layout.posY,
+              layout.baseY,
+            )
+          }
           // Spines stay at their current positions on resize (user may have dragged them)
         }
       }
@@ -1044,9 +1056,10 @@ export class PixiStageManager {
     const baseX = stageW / 2 + posX * (stageW / 1280)
     const baseYPos = baseY ?? Math.round(stageH * 0.62)
     sprite.x = baseX
-    sprite.y = baseYPos + 25 + posY * (stageW / 1280)
+    sprite.y = baseYPos + 15 + posY * (stageW / 1280)
     const silScale = (stageH * 1.02) / sourceHeight
     sprite.scale.set(silScale)
+    sprite._silhouetteLayout = { sourceWidth, sourceHeight, posX, posY, baseY }
   }
 
   hasSilhouetteFallback(idolId, modelId = null) {
