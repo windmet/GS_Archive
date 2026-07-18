@@ -1706,10 +1706,11 @@ class ScenarioCompiler:
                     spine = self.state.find_spine(event["chara_id"])
                     if spine:
                         spine["anim_no_back"] = True
-            elif event["type"] == "spine_neck_anim":
-                self.state.update_spine_neck_anim(event["chara_id"], event["value"])
-            elif event["type"] == "spine_neck_stop":
-                self.state.update_spine_neck_anim(event["chara_id"], None)
+            elif event["type"] in ("spine_neck_anim", "spine_neck_stop"):
+                # Neck commands are one-shot overlay events. Runtime owns the
+                # live Track 3 pose until an authored stop/replacement clears it;
+                # cumulative state must not restart the clip on later steps.
+                continue
             elif event["type"] == "spine_color":
                 spine = self.state.find_spine(event["chara_id"])
                 if spine:
@@ -1877,6 +1878,8 @@ class ScenarioCompiler:
             self._pending_bg_effect_end_ids.clear()
         for spine in self.state.spines:
             spine.pop("fade", None)
+            # Immediate neck play/stop commands belong only to this snapshot.
+            spine.pop("neck_anim", None)
             spine.pop("neck_anim_stop", None)
             spine.pop("idol_color_transition", None)
         if self._pending_fadeout_ids:
