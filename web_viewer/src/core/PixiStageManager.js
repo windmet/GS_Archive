@@ -60,7 +60,7 @@ const DEFAULT_SUB_SCALE = SUB_BASE_SCALE
 // character-specific framing here when matching the ADV portrait requires a
 // visibly different scale from the generic full-body fallback.
 const SILHOUETTE_SCALE_MULTIPLIER = {
-  '102sha_001_00': 1.45,
+  '102sha_001_00': 1.28,
 }
 
 export class PixiStageManager {
