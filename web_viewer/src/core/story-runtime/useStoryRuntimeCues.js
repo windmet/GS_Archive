@@ -258,6 +258,7 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
     settleCurrentStep,
     cancelCurrentStep,
     hasBlockingAuto: () => enabled && scheduler.hasBlockingAuto(),
+    hasNonSkippable: () => enabled && scheduler.hasNonSkippable(),
     isSnapshotEnabled: () => flags.snapshot,
     getNormalizedStep: index => clone(getNormalizedStep(index)),
     prepareRestore,

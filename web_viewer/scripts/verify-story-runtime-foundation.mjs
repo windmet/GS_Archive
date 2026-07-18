@@ -10,6 +10,7 @@ import { getRuntimeCueFeatureFlags } from '../src/core/story-runtime/RuntimeFeat
 import { SceneSnapshotStore, isReadableHistoryStep } from '../src/core/story-runtime/SceneSnapshotStore.js'
 import { PlayerPreferencesRepository } from '../src/core/story-runtime/PlayerPreferencesRepository.js'
 import { ReadProgressRepository, createReadKey } from '../src/core/story-runtime/ReadProgressRepository.js'
+import { PlaybackModeController } from '../src/core/story-runtime/PlaybackModeController.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -202,6 +203,57 @@ function verifyPlayerStateRepositories() {
   assert.equal(new ReadProgressRepository({ storage }).has(identity), true)
 }
 
+function verifyPlaybackModeController() {
+  let now = 0
+  let step = { step_id: 1, type: 'adv', dialogue: { voice: 'voice-a' } }
+  let voiceState = 'playing'
+  let blocking = true
+  let read = true
+  const advances = []
+  const modeChanges = []
+  const timers = []
+  const controller = new PlaybackModeController({
+    getStep: () => step,
+    getVoiceState: () => voiceState,
+    hasBlockingAuto: () => blocking,
+    isRead: () => read,
+    onAdvance: source => { advances.push(source); return 'advanced' },
+    onModeChange: (_, reason) => modeChanges.push(reason),
+    autoDelayMs: 800,
+    now: () => now,
+    setTimer: callback => { timers.push(callback); return callback },
+    clearTimer: timer => { const index = timers.indexOf(timer); if (index >= 0) timers.splice(index, 1) },
+  })
+  const runTimer = () => timers.shift()?.()
+  controller.setAuto(true)
+  runTimer()
+  assert.deepEqual(advances, [], 'Auto must wait for runtime blockers')
+  blocking = false
+  runTimer()
+  assert.deepEqual(advances, [], 'Auto must wait for voice completion')
+  voiceState = 'ended'
+  runTimer()
+  now = 799
+  runTimer()
+  assert.deepEqual(advances, [], 'Auto must honor its configured post-voice delay')
+  now = 800
+  runTimer()
+  assert.deepEqual(advances, ['auto'])
+
+  controller.setSkip(true, 'readOnly')
+  read = false
+  runTimer()
+  assert.equal(controller.inspect().skip_enabled, false)
+  assert.ok(modeChanges.includes('unread'))
+  read = true
+  step = { step_id: 2, type: 'choice', dialogue: null }
+  controller.setSkip(true, 'all')
+  runTimer()
+  assert.equal(controller.inspect().skip_enabled, false)
+  assert.ok(modeChanges.includes('choice'))
+  controller.dispose()
+}
+
 async function verifyScenarioNormalizer() {
   const fixturePath = path.join(root, 'fixtures', 'story-runtime', 'legacy-passion-step.json')
   const fixture = JSON.parse(await readFile(fixturePath, 'utf8'))
@@ -298,6 +350,7 @@ await verifyPerformanceRegistry()
 await verifyEffectScheduler()
 verifySceneSnapshotStore()
 verifyPlayerStateRepositories()
+verifyPlaybackModeController()
 await verifyScenarioNormalizer()
 
 console.log('Story runtime foundation: clock, lifecycle, IR v2, Camera/SE, background, and directional wipe normalization verified')

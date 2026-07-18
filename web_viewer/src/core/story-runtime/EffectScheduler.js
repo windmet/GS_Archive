@@ -99,6 +99,10 @@ export class EffectScheduler {
     return this.registry.hasBlockingAuto()
   }
 
+  hasNonSkippable() {
+    return this.registry.getActive().some(handle => !handle.skippable)
+  }
+
   settleSkippable(reason = 'scheduler-settle') {
     this._entries.forEach(entry => {
       if (entry.handle?.skippable) entry.completed = true
