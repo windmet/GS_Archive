@@ -44,6 +44,7 @@ export function useStepSceneEffects({
 
   function playStepSE(se) {
     if (!se?.cue) return
+    audioManager.preloadSE?.(se.cue)
     const rawDelay = se.delay ?? se.volume ?? 0
     const delay = Number.parseFloat(rawDelay)
     if (Number.isFinite(delay) && delay > 0) {

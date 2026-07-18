@@ -178,6 +178,7 @@ function _setTalking(on) {
  */
 function _ensureAudioCtx() {
   voicePlayer?.ensureAudioCtx?.()
+  _audioManager.ensureContext()
 }
 
 function _resetVoiceDedup() {

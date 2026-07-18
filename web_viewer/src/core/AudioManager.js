@@ -26,6 +26,7 @@ export class AudioManager {
     // Cue cache: currently playing cue names (for dedup)
     this._currentBgmCue = null
     this._currentAmbientCue = null
+    this._seBufferCache = new Map()
   }
 
   /** Create or resume AudioContext. Call on user gesture. */
@@ -43,15 +44,38 @@ export class AudioManager {
 
   // ── SE (one-shot) ──
 
+  async _loadSE(cueName) {
+    const cached = this._seBufferCache.get(cueName)
+    if (cached) return cached
+
+    const load = (async () => {
+      const resp = await fetch(getSeUrl(cueName))
+      if (!resp.ok) throw new Error(`SE not found: ${cueName}`)
+      const ab = await resp.arrayBuffer()
+      return this._ctx.decodeAudioData(ab)
+    })()
+    this._seBufferCache.set(cueName, load)
+    try {
+      return await load
+    } catch (error) {
+      this._seBufferCache.delete(cueName)
+      throw error
+    }
+  }
+
+  /** Decode a delayed cue early so its authored timestamp stays precise. */
+  preloadSE(cueName) {
+    if (!cueName) return Promise.resolve(null)
+    this.ensureContext()
+    return this._loadSE(cueName).catch(() => null)
+  }
+
   /** Play a one-shot SE. Multiple SE can overlap. */
   async playSE(cueName) {
     if (!cueName) return
     this.ensureContext()
     try {
-      const resp = await fetch(getSeUrl(cueName))
-      if (!resp.ok) return
-      const ab = await resp.arrayBuffer()
-      const audioBuf = await this._ctx.decodeAudioData(ab)
+      const audioBuf = await this._loadSE(cueName)
       const source = this._ctx.createBufferSource()
       source.buffer = audioBuf
       const gain = this._ctx.createGain()
@@ -225,6 +249,7 @@ export class AudioManager {
     this._bgmGain = null
     this._ambientGain = null
     this._masterGain = null
+    this._seBufferCache.clear()
     if (this._ctx) {
       this._ctx.close().catch(() => {})
       this._ctx = null
