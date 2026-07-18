@@ -8,6 +8,8 @@ import { normalizeScenario } from '../src/core/story-runtime/ScenarioNormalizer.
 import { EffectScheduler } from '../src/core/story-runtime/EffectScheduler.js'
 import { getRuntimeCueFeatureFlags } from '../src/core/story-runtime/RuntimeFeatureFlags.js'
 import { SceneSnapshotStore, isReadableHistoryStep } from '../src/core/story-runtime/SceneSnapshotStore.js'
+import { PlayerPreferencesRepository } from '../src/core/story-runtime/PlayerPreferencesRepository.js'
+import { ReadProgressRepository, createReadKey } from '../src/core/story-runtime/ReadProgressRepository.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -164,6 +166,42 @@ function verifySceneSnapshotStore() {
   assert.equal(isReadableHistoryStep({ type: 'adv', dialogue: { text_jp: 'line' } }), true)
 }
 
+function memoryStorage(initial = {}) {
+  const values = new Map(Object.entries(initial))
+  return {
+    getItem: key => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: key => values.delete(key),
+  }
+}
+
+function verifyPlayerStateRepositories() {
+  const storage = memoryStorage()
+  const preferences = new PlayerPreferencesRepository({ storage })
+  assert.equal(preferences.load().auto_delay_ms, 800)
+  const saved = preferences.save({
+    schema_version: 1,
+    auto_enabled: true,
+    auto_delay_ms: 99999,
+    skip_mode: 'all',
+    volumes: { master: -1, voice: 2 },
+  })
+  assert.equal(saved.auto_enabled, true)
+  assert.equal(saved.auto_delay_ms, 10000)
+  assert.equal(saved.skip_mode, 'all')
+  assert.equal(saved.volumes.master, 0)
+  assert.equal(saved.volumes.voice, 1)
+  assert.equal(new PlayerPreferencesRepository({ storage }).load().skip_mode, 'all')
+
+  const readProgress = new ReadProgressRepository({ storage })
+  const identity = { scenarioId: 'main-1', sourceHash: 'raw-a', stepId: 37 }
+  assert.equal(createReadKey(identity), 'main-1:raw-a:step-37')
+  assert.equal(readProgress.has(identity), false)
+  readProgress.mark(identity)
+  assert.equal(readProgress.has(identity), true)
+  assert.equal(new ReadProgressRepository({ storage }).has(identity), true)
+}
+
 async function verifyScenarioNormalizer() {
   const fixturePath = path.join(root, 'fixtures', 'story-runtime', 'legacy-passion-step.json')
   const fixture = JSON.parse(await readFile(fixturePath, 'utf8'))
@@ -259,6 +297,7 @@ verifyStoryClock()
 await verifyPerformanceRegistry()
 await verifyEffectScheduler()
 verifySceneSnapshotStore()
+verifyPlayerStateRepositories()
 await verifyScenarioNormalizer()
 
 console.log('Story runtime foundation: clock, lifecycle, IR v2, Camera/SE, background, and directional wipe normalization verified')
