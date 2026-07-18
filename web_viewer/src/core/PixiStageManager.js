@@ -56,6 +56,13 @@ const MODEL_BASE_SCALE_MULTIPLIER = {}
 const DEFAULT_ADULT_SCALE = ADULT_BASE_SCALE
 const DEFAULT_SUB_SCALE = SUB_BASE_SCALE
 
+// Silhouette PNGs are authored independently from the Spine rigs. Keep
+// character-specific framing here when matching the ADV portrait requires a
+// visibly different scale from the generic full-body fallback.
+const SILHOUETTE_SCALE_MULTIPLIER = {
+  '102sha_001_00': 1.45,
+}
+
 export class PixiStageManager {
   constructor(containerEl, options = {}) {
     this.container = containerEl
@@ -68,6 +75,7 @@ export class PixiStageManager {
     this._silhouetteSprites = {}  // { idolId: PIXI.Sprite } — fallback for missing Spine assets
     this._silhouettePending = {}  // { idolId: { token, modelId, posX, posY, baseY } }
     this._silhouetteLoadTokens = {}
+    this._silhouetteRelayoutJobs = {}
     this._pendingTalking = {}
     this.lipSyncController = new LipSyncController({
       getSpineEntry: idolId => this.spineInstances[idolId],
@@ -1057,9 +1065,46 @@ export class PixiStageManager {
     const baseYPos = baseY ?? Math.round(stageH * 0.62)
     sprite.x = baseX
     sprite.y = baseYPos + 15 + posY * (stageW / 1280)
-    const silScale = (stageH * 1.02) / sourceHeight
+    const modelScale = SILHOUETTE_SCALE_MULTIPLIER[sprite._silhouetteModelId] || 1
+    const silScale = ((stageH * 1.02) / sourceHeight) * modelScale
     sprite.scale.set(silScale)
     sprite._silhouetteLayout = { sourceWidth, sourceHeight, posX, posY, baseY }
+  }
+
+  _cancelSilhouetteRelayout(idolId) {
+    const job = this._silhouetteRelayoutJobs[idolId]
+    if (!job) return
+    if (job.rafId != null) cancelAnimationFrame(job.rafId)
+    for (const timerId of job.timerIds) clearTimeout(timerId)
+    delete this._silhouetteRelayoutJobs[idolId]
+  }
+
+  _scheduleSilhouetteRelayout(idolId, sprite, token) {
+    this._cancelSilhouetteRelayout(idolId)
+    const relayout = () => {
+      if (
+        this._silhouetteLoadTokens[idolId] !== token ||
+        this._silhouetteSprites[idolId] !== sprite ||
+        sprite.destroyed
+      ) return
+      const layout = sprite._silhouetteLayout
+      if (!layout) return
+      this._layoutSilhouette(
+        sprite,
+        layout.sourceWidth,
+        layout.sourceHeight,
+        layout.posX,
+        layout.posY,
+        layout.baseY,
+      )
+    }
+    this._silhouetteRelayoutJobs[idolId] = {
+      rafId: requestAnimationFrame(relayout),
+      // Edge can decode the PNG before the responsive player finishes its
+      // initial sizing. Re-check both after layout settles and after slower
+      // first-load font/CSS work, independent of ResizeObserver delivery.
+      timerIds: [setTimeout(relayout, 250), setTimeout(relayout, 1000)],
+    }
   }
 
   hasSilhouetteFallback(idolId, modelId = null) {
@@ -1120,6 +1165,7 @@ export class PixiStageManager {
       this._layoutSilhouette(sprite, img.width, img.height, latest.posX, latest.posY, latest.baseY)
       this.spineContainer.addChild(sprite)
       this._silhouetteSprites[idolId] = sprite
+      this._scheduleSilhouetteRelayout(idolId, sprite, token)
     }
     img.onerror = () => {
       const latest = this._silhouettePending[idolId]
@@ -1133,6 +1179,7 @@ export class PixiStageManager {
 
   removeSilhouette(idolId) {
     this._silhouetteLoadTokens[idolId] = (this._silhouetteLoadTokens[idolId] || 0) + 1
+    this._cancelSilhouetteRelayout(idolId)
     delete this._silhouettePending[idolId]
     const sprite = this._silhouetteSprites[idolId]
     if (sprite) {
