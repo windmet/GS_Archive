@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gs-archive.local/schemas/entity-translation-overlay-v1.schema.json",
+  "title": "GS Archive Entity Translation Overlay v1",
+  "type": "object",
+  "required": ["schema_version", "locale", "entity_type", "entries"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "locale": { "type": "string", "pattern": "^[a-z]{2,3}(?:-[A-Z][a-z]{3})?(?:-[A-Z]{2}|-[0-9]{3})?$" },
+    "entity_type": { "enum": ["idol", "npc", "unit", "card", "event", "skill", "story_collection"] },
+    "entries": {
+      "type": "object",
+      "propertyNames": { "type": "string", "minLength": 1 },
+      "additionalProperties": { "$ref": "#/$defs/entry" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "entry": {
+      "type": "object",
+      "required": ["source_hash", "name", "status"],
+      "properties": {
+        "source_hash": { "$ref": "#/$defs/sha256" },
+        "name": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "status": { "enum": ["draft", "reviewed", "final"] },
+        "translator": { "type": ["string", "null"] },
+        "reviewer": { "type": ["string", "null"] },
+        "notes": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    }
+  }
+}
