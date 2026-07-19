@@ -7,18 +7,18 @@
 
     <!-- Top bar -->
     <div class="top-bar" v-if="compiledData && !HIDE_UI && !uiHidden">
-      <button class="bar-btn" @click="$emit('back')">Back</button>
+      <button class="bar-btn" @click="$emit('back')">{{ uiText('player.back') }}</button>
       <div class="progress-counter">
         <span v-if="currentEpisodeLabel" class="episode-badge">{{ currentEpisodeLabel }}</span>
         <span class="step-counter">{{ playableStepNumber }} / {{ playableStepTotal }}</span>
       </div>
       <div class="top-bar-right">
         <button class="lang-btn" @click.stop="cycleLanguage">{{ langLabel }}</button>
-        <button class="icon-btn" title="Menu" aria-label="Menu" @click.stop="menuOpen = true"><Menu :size="19" /></button>
+        <button class="icon-btn" :title="uiText('player.menu')" :aria-label="uiText('player.menu')" @click.stop="menuOpen = true"><Menu :size="19" /></button>
       </div>
     </div>
 
-    <button v-if="uiHidden && !HIDE_UI" class="restore-ui" title="Show UI" aria-label="Show UI" @click.stop="uiHidden = false">
+    <button v-if="uiHidden && !HIDE_UI" class="restore-ui" :title="uiText('player.showUi')" :aria-label="uiText('player.showUi')" @click.stop="uiHidden = false">
       <Eye :size="20" />
     </button>
 
@@ -64,35 +64,39 @@
 
     <!-- Bottom navigation bar -->
     <div class="nav-bar" v-if="compiledData && compiledData.steps.length > 0 && !HIDE_UI && !uiHidden && !episodeFinished">
-      <button class="nav-btn" @click.stop="goPrev" :disabled="isFirstStep">Prev</button>
+      <button class="nav-btn" @click.stop="goPrev" :disabled="isFirstStep">{{ uiText('player.previous') }}</button>
       <button class="mode-btn" :class="{ active: autoEnabled }" @click.stop="toggleAuto">AUTO</button>
       <span class="nav-label">{{ currentStep.type }}</span>
       <button class="mode-btn" :class="{ active: skipEnabled }" @click.stop="toggleSkip">SKIP</button>
-      <button class="nav-btn" title="Next" aria-label="Next" @click.stop="goNext"><ChevronRight :size="21" /></button>
+      <button class="nav-btn" :title="uiText('player.next')" :aria-label="uiText('player.next')" @click.stop="goNext"><ChevronRight :size="21" /></button>
     </div>
 
     <Transition name="menu-slide">
-      <aside v-if="menuOpen && !HIDE_UI" class="playback-menu" aria-label="Playback menu">
-        <header><strong>MENU</strong><button class="icon-btn dark" title="Close" aria-label="Close" @click="menuOpen = false"><X :size="20" /></button></header>
+      <aside v-if="menuOpen && !HIDE_UI" class="playback-menu" :aria-label="uiText('player.settings.panel')">
+        <header><strong>MENU</strong><button class="icon-btn dark" :title="uiText('player.settings.close')" :aria-label="uiText('player.settings.close')" @click="menuOpen = false"><X :size="20" /></button></header>
         <label class="menu-toggle">
-          <span>连续播放</span>
+          <span>{{ uiText('player.settings.continuous') }}</span>
           <input type="checkbox" :checked="continuousPlayback" @change="emit('update:continuous-playback', $event.target.checked)" />
         </label>
-        <button :class="{ active: autoEnabled }" @click="toggleAuto"><Play :size="19" /><span>自动播放</span><b>{{ autoEnabled ? 'ON' : 'OFF' }}</b></button>
+        <button :class="{ active: autoEnabled }" @click="toggleAuto"><Play :size="19" /><span>{{ uiText('player.settings.auto') }}</span><b>{{ autoEnabled ? 'ON' : 'OFF' }}</b></button>
         <label class="menu-setting">
-          <span>自动等待</span>
+          <span>{{ uiText('player.settings.autoDelay') }}</span>
           <input v-model.number="autoDelayMs" type="number" min="0" max="10000" step="100" @change="saveAutoDelay" />
           <small>ms</small>
         </label>
-        <button :class="{ active: skipEnabled }" @click="toggleSkip"><FastForward :size="19" /><span>快进</span><b>{{ skipEnabled ? 'ON' : 'OFF' }}</b></button>
+        <button :class="{ active: skipEnabled }" @click="toggleSkip"><FastForward :size="19" /><span>{{ uiText('player.settings.skip') }}</span><b>{{ skipEnabled ? 'ON' : 'OFF' }}</b></button>
         <label class="menu-setting">
-          <span>快进范围</span>
-          <select v-model="skipMode" @change="saveSkipMode"><option value="readOnly">仅已读</option><option value="all">全部</option></select>
+          <span>{{ uiText('player.settings.skipRange') }}</span>
+          <select v-model="skipMode" @change="saveSkipMode"><option value="readOnly">{{ uiText('player.settings.readOnly') }}</option><option value="all">{{ uiText('player.settings.all') }}</option></select>
         </label>
-        <button @click="uiHidden = true; menuOpen = false"><EyeOff :size="19" /><span>隐藏 UI</span></button>
-        <button @click="openBacklog"><BookOpenText :size="19" /><span>剧情回看</span></button>
-        <button @click="skipEpisode"><SkipForward :size="19" /><span>跳过本话</span></button>
-        <button @click="emit('back')"><LogOut :size="19" /><span>返回目录</span></button>
+        <label class="menu-setting">
+          <span>{{ uiText('player.settings.uiLanguage') }}</span>
+          <select :value="uiLocale" @change="saveUiLocale"><option value="zh-CN">简体中文</option><option value="ja-JP">日本語</option></select>
+        </label>
+        <button @click="uiHidden = true; menuOpen = false"><EyeOff :size="19" /><span>{{ uiText('player.settings.hideUi') }}</span></button>
+        <button @click="openBacklog"><BookOpenText :size="19" /><span>{{ uiText('player.settings.backlog') }}</span></button>
+        <button @click="skipEpisode"><SkipForward :size="19" /><span>{{ uiText('player.settings.skipEpisode') }}</span></button>
+        <button @click="emit('back')"><LogOut :size="19" /><span>{{ uiText('player.settings.returnCatalog') }}</span></button>
       </aside>
     </Transition>
 
@@ -107,17 +111,17 @@
     <div v-if="episodeFinished && !HIDE_UI" class="episode-complete">
       <div class="complete-panel">
         <span>{{ hasNextEpisode ? 'EPISODE COMPLETE' : 'STORY COMPLETE' }}</span>
-        <strong>{{ hasNextEpisode ? '本话播放完毕' : '故事播放完毕' }}</strong>
-        <p v-if="transitioning">正在加载下一话...</p>
+        <strong>{{ hasNextEpisode ? uiText('player.complete.episode') : uiText('player.complete.story') }}</strong>
+        <p v-if="transitioning">{{ uiText('player.complete.loadingNext') }}</p>
         <div v-else>
-          <button v-if="hasNextEpisode" class="primary" @click="emit('next-episode')"><SkipForward :size="18" />下一话</button>
-          <button @click="emit('back')"><LogOut :size="18" />返回目录</button>
+          <button v-if="hasNextEpisode" class="primary" @click="emit('next-episode')"><SkipForward :size="18" />{{ uiText('player.complete.nextEpisode') }}</button>
+          <button @click="emit('back')"><LogOut :size="18" />{{ uiText('player.settings.returnCatalog') }}</button>
         </div>
       </div>
     </div>
 
     </div><!-- /viewer-stage -->
-    <div class="loading" v-if="!compiledData && !HIDE_UI">Loading story data...</div>
+    <div class="loading" v-if="!compiledData && !HIDE_UI">{{ uiText('player.loading') }}</div>
   </div>
 </template>
 
@@ -133,7 +137,12 @@ import StoryBacklog from '../components/StoryBacklog.vue'
 import { BookOpenText, ChevronRight, Eye, EyeOff, FastForward, LogOut, Menu, Play, SkipForward, X } from '@lucide/vue'
 // SpineStage is lazy-loaded so PIXI.js only loads when a story opens
 const SpineStage = defineAsyncComponent(() => import('../components/SpineStage.vue'))
-import { languageMode, setLanguageMode } from '../utils/LanguageStore.js'
+import {
+  setStoryLanguagePreferences,
+  storyLanguagePreferences,
+  uiLocale,
+} from '../utils/LanguageStore.js'
+import { resolveUiText as uiText } from '../localization/ui/UiTextResolver.js'
 import { useVoicePlayer } from './useVoicePlayer.js'
 import { AudioManager } from './AudioManager.js'
 import { useTimelineRunner } from './useTimelineRunner.js'
@@ -174,12 +183,13 @@ const SNAPSHOT_AT = SNAPSHOT_AT_VALUE == null || SNAPSHOT_AT_VALUE === '' ? null
 const preferencesRepository = new PlayerPreferencesRepository()
 const readProgressRepository = new ReadProgressRepository()
 const initialPreferences = preferencesRepository.load()
+setStoryLanguagePreferences(initialPreferences)
 
 const spineStageRef = ref(null)
 const compiledData = ref(null)
 provideStoryLocalization(createStoryLocalization({
   compiledData,
-  languageMode,
+  storyPreferences: storyLanguagePreferences,
 }))
 const currentStepIndex = ref(0)
 const historyStack = ref([])
@@ -316,8 +326,11 @@ const {
   currentStepIndex,
   historyStack,
   selectedChoices,
-  languageMode,
-  setLanguageMode,
+  storyPreferences: storyLanguagePreferences,
+  updateStoryPreferences: patch => {
+    const saved = preferencesRepository.update(patch)
+    setStoryLanguagePreferences(saved)
+  },
   startStep: START_STEP,
   endStep: END_STEP,
   clearFadeAutoAdvance: () => clearFadeAutoAdvance(),
@@ -448,6 +461,11 @@ function saveSkipMode() {
   const saved = preferencesRepository.update({ skip_mode: skipMode.value })
   skipMode.value = saved.skip_mode
   if (skipEnabled.value) playbackController?.setSkip(true, skipMode.value)
+}
+
+function saveUiLocale(event) {
+  const saved = preferencesRepository.update({ ui_locale: event.target.value })
+  setStoryLanguagePreferences(saved)
 }
 
 function stopPlaybackModes(reason = 'manual-navigation') {

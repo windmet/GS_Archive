@@ -9,6 +9,7 @@ import {
   preferencesFromLegacyLanguageMode,
 } from '../src/localization/story/LegacyDialogueAdapter.js'
 import { createStoryLocalization } from '../src/localization/story/StoryLocalizationContext.js'
+import { resolveUiText } from '../src/localization/ui/UiTextResolver.js'
 import { resolveStoryText } from '../src/localization/story/StoryTextResolver.js'
 import {
   TranslationRepository,
@@ -303,7 +304,12 @@ assert.deepEqual(normalizeChoiceSelection('legacy selected text'), {
 // Player-scoped context: overlay and language updates only recompute presentation.
 const scope = effectScope()
 const compiledData = ref(null)
-const legacyLanguageMode = ref('JP')
+const storyPreferences = ref({
+  story_content_mode: 'original',
+  story_translation_locale: overlay.locale,
+  bilingual_primary: 'original',
+  missing_translation_policy: 'fallback-source',
+})
 const runtimeSentinel = {
   stepId: 12,
   generation: 7,
@@ -313,7 +319,7 @@ const runtimeSentinel = {
 const sentinelBefore = structuredClone(runtimeSentinel)
 const context = scope.run(() => createStoryLocalization({
   compiledData,
-  languageMode: legacyLanguageMode,
+  storyPreferences,
   repository: {
     async loadScenario({ scenarioId, locale }) {
       assert.equal(scenarioId, overlay.scenario_id)
@@ -338,10 +344,20 @@ const contextDialogue = {
   text_ref: textRef,
 }
 assert.equal(context.resolveDialogue(contextDialogue).text, source)
-legacyLanguageMode.value = 'CN'
+storyPreferences.value = {
+  ...storyPreferences.value,
+  story_content_mode: 'translation',
+  bilingual_primary: 'translation',
+}
 assert.equal(context.resolveDialogue(contextDialogue).text, fixtureEntry.text)
 assert.deepEqual(runtimeSentinel, sentinelBefore)
 scope.stop()
+
+assert.equal(resolveUiText('player.settings.backlog', {}, 'zh-CN'), '剧情回看')
+assert.equal(resolveUiText('player.settings.backlog', {}, 'ja-JP'), 'ログ')
+assert.equal(resolveUiText('player.settings.close', {}, 'ja-JP'), 'メニューを閉じる')
+assert.equal(resolveUiText('backlog.choice', { text: 'Passion!' }, 'ja-JP'), '選択：Passion!')
+assert.equal(resolveUiText('unknown.key', {}, 'ja-JP'), 'unknown.key')
 
 const empty = resolveStoryText()
 assert.equal(empty.primary.text, '')

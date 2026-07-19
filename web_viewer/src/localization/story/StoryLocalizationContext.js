@@ -32,7 +32,8 @@ function sourceTextRecord(value, { detail = false } = {}) {
 
 export function createStoryLocalization({
   compiledData,
-  languageMode,
+  storyPreferences = null,
+  languageMode = null,
   repository = new TranslationRepository(),
   translationLocale = 'zh-CN',
   entityNames = null,
@@ -42,9 +43,17 @@ export function createStoryLocalization({
   let generation = 0
   let abortController = null
 
+  function currentPreferences() {
+    return storyPreferences?.value
+      || preferencesFromLegacyLanguageMode(languageMode?.value, translationLocale)
+  }
+
   const stop = watch(
-    () => compiledData?.value?.text_catalog_id || compiledData?.value?.scenario_id || '',
-    async scenarioId => {
+    () => [
+      compiledData?.value?.text_catalog_id || compiledData?.value?.scenario_id || '',
+      currentPreferences().story_translation_locale || translationLocale,
+    ],
+    async ([scenarioId, locale]) => {
       const requestGeneration = ++generation
       abortController?.abort()
       abortController = null
@@ -56,18 +65,18 @@ export function createStoryLocalization({
       try {
         const loaded = await repository.loadScenario({
           scenarioId,
-          locale: translationLocale,
+          locale,
           signal: abortController.signal,
         })
         if (requestGeneration !== generation) return
         overlay.value = loaded
-        diagnostics.value = repository.getDiagnostics({ scenarioId, locale: translationLocale })
+        diagnostics.value = repository.getDiagnostics({ scenarioId, locale })
       } catch (error) {
         if (error?.name !== 'AbortError' && requestGeneration === generation) {
           diagnostics.value = {
             code: 'translation_invalid',
             scenarioId,
-            locale: translationLocale,
+            locale,
             errors: [error?.message || String(error)],
           }
         }
@@ -77,7 +86,7 @@ export function createStoryLocalization({
   )
 
   function preferences() {
-    return preferencesFromLegacyLanguageMode(languageMode?.value, translationLocale)
+    return currentPreferences()
   }
 
   function overlayEntry(textRef, inlineEntry = null) {

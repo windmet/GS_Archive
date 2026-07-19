@@ -8,8 +8,8 @@ export function useStoryNavigation({
   currentStepIndex,
   historyStack,
   selectedChoices,
-  languageMode,
-  setLanguageMode,
+  storyPreferences,
+  updateStoryPreferences,
   startStep,
   endStep,
   clearFadeAutoAdvance,
@@ -71,15 +71,23 @@ export function useStoryNavigation({
   })
 
   const langLabel = computed(() => {
-    const labels = { JP: 'JP', CN: '中文', BILINGUAL: 'JP+CN' }
-    return labels[languageMode.value] || 'JP'
+    const preferences = storyPreferences.value
+    if (preferences.story_content_mode === 'translation') return '中文'
+    if (preferences.story_content_mode === 'bilingual') {
+      return preferences.bilingual_primary === 'translation' ? 'CN+JP' : 'JP+CN'
+    }
+    return 'JP'
   })
 
-  const LANG_CYCLE = ['JP', 'CN', 'BILINGUAL']
+  const LANG_CYCLE = ['original', 'translation', 'bilingual']
   function cycleLanguage() {
-    const cur = languageMode.value
+    const cur = storyPreferences.value.story_content_mode
     const idx = LANG_CYCLE.indexOf(cur)
-    setLanguageMode(LANG_CYCLE[(idx + 1) % LANG_CYCLE.length])
+    const storyContentMode = LANG_CYCLE[(idx + 1) % LANG_CYCLE.length]
+    updateStoryPreferences({
+      story_content_mode: storyContentMode,
+      bilingual_primary: storyContentMode === 'translation' ? 'translation' : 'original',
+    })
   }
 
   function applyStartStepIfNeeded() {

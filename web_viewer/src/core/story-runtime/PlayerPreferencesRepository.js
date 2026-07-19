@@ -1,9 +1,13 @@
 const STORAGE_KEY = 'sidem-story-player-preferences'
-const SCHEMA_VERSION = 1
+const SCHEMA_VERSION = 2
 
 export const DEFAULT_PLAYER_PREFERENCES = Object.freeze({
   schema_version: SCHEMA_VERSION,
-  language_mode: 'JP',
+  ui_locale: 'zh-CN',
+  story_content_mode: 'original',
+  story_translation_locale: 'zh-CN',
+  bilingual_primary: 'original',
+  missing_translation_policy: 'fallback-source',
   auto_enabled: false,
   auto_delay_ms: 800,
   skip_mode: 'readOnly',
@@ -34,7 +38,17 @@ function normalize(input = {}) {
   const volumes = input.volumes || {}
   return {
     schema_version: SCHEMA_VERSION,
-    language_mode: ['JP', 'CN', 'BILINGUAL'].includes(input.language_mode) ? input.language_mode : defaults.language_mode,
+    ui_locale: ['zh-CN', 'ja-JP'].includes(input.ui_locale) ? input.ui_locale : defaults.ui_locale,
+    story_content_mode: ['original', 'translation', 'bilingual'].includes(input.story_content_mode)
+      ? input.story_content_mode
+      : defaults.story_content_mode,
+    story_translation_locale: typeof input.story_translation_locale === 'string' && input.story_translation_locale
+      ? input.story_translation_locale
+      : defaults.story_translation_locale,
+    bilingual_primary: ['original', 'translation'].includes(input.bilingual_primary)
+      ? input.bilingual_primary
+      : defaults.bilingual_primary,
+    missing_translation_policy: 'fallback-source',
     auto_enabled: input.auto_enabled === true,
     auto_delay_ms: finite(input.auto_delay_ms, defaults.auto_delay_ms, { min: 0, max: 10000 }),
     skip_mode: ['readOnly', 'all'].includes(input.skip_mode) ? input.skip_mode : defaults.skip_mode,
@@ -51,6 +65,20 @@ function normalize(input = {}) {
   }
 }
 
+function migrateV1(input) {
+  const language = {
+    JP: { story_content_mode: 'original', bilingual_primary: 'original' },
+    CN: { story_content_mode: 'translation', bilingual_primary: 'translation' },
+    BILINGUAL: { story_content_mode: 'bilingual', bilingual_primary: 'original' },
+  }[input?.language_mode] || {}
+  return normalize({
+    ...input,
+    ...language,
+    ui_locale: DEFAULT_PLAYER_PREFERENCES.ui_locale,
+    story_translation_locale: DEFAULT_PLAYER_PREFERENCES.story_translation_locale,
+  })
+}
+
 export class PlayerPreferencesRepository {
   constructor({ storage, key = STORAGE_KEY } = {}) {
     if (storage === undefined) {
@@ -65,6 +93,11 @@ export class PlayerPreferencesRepository {
       const raw = this.storage?.getItem?.(this.key)
       if (!raw) return clone(DEFAULT_PLAYER_PREFERENCES)
       const parsed = JSON.parse(raw)
+      if (parsed?.schema_version === 1) {
+        const migrated = migrateV1(parsed)
+        try { this.storage?.setItem?.(this.key, JSON.stringify(migrated)) } catch (_) {}
+        return clone(migrated)
+      }
       if (parsed?.schema_version !== SCHEMA_VERSION) return clone(DEFAULT_PLAYER_PREFERENCES)
       return normalize(parsed)
     } catch (_) {
@@ -73,7 +106,9 @@ export class PlayerPreferencesRepository {
   }
 
   save(preferences) {
-    const normalized = normalize(preferences)
+    const normalized = preferences?.schema_version === 1
+      ? migrateV1(preferences)
+      : normalize(preferences)
     try {
       this.storage?.setItem?.(this.key, JSON.stringify(normalized))
     } catch (_) {
@@ -97,5 +132,5 @@ export class PlayerPreferencesRepository {
 }
 
 export function normalizePlayerPreferences(input) {
-  return normalize(input)
+  return input?.schema_version === 1 ? migrateV1(input) : normalize(input)
 }

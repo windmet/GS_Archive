@@ -1,22 +1,22 @@
 <template>
-  <section class="backlog" role="dialog" aria-modal="true" aria-label="Backlog">
+  <section class="backlog" role="dialog" aria-modal="true" :aria-label="uiText('backlog.title')">
     <header>
-      <div><small>STORY LOG</small><strong>剧情回看</strong></div>
-      <button class="close" title="关闭" aria-label="关闭" @click="emit('close')"><X :size="21" /></button>
+      <div><small>STORY LOG</small><strong>{{ uiText('backlog.title') }}</strong></div>
+      <button class="close" :title="uiText('backlog.close')" :aria-label="uiText('backlog.close')" @click="emit('close')"><X :size="21" /></button>
     </header>
     <div ref="listRef" class="entries">
-      <p v-if="nodes.length === 0" class="empty">还没有可回看的对话。</p>
+      <p v-if="nodes.length === 0" class="empty">{{ uiText('backlog.empty') }}</p>
       <article v-for="node in nodes" :key="node.node_id" class="entry" :class="{ current: node.current }">
         <div class="entry-meta">
           <span>EP{{ String((node.episode_index ?? 0) + 1).padStart(2, '0') }} · STEP {{ node.step_id }}</span>
-          <span v-if="node.current">当前</span>
+          <span v-if="node.current">{{ uiText('backlog.current') }}</span>
         </div>
         <strong v-if="displayDialogue(node.dialogue).speaker" class="speaker">{{ displayDialogue(node.dialogue).speaker }}</strong>
         <p class="text">{{ displayDialogue(node.dialogue).text }}</p>
-        <p v-if="choiceText(node)" class="choice">选择：{{ choiceText(node) }}</p>
+        <p v-if="choiceText(node)" class="choice">{{ uiText('backlog.choice', { text: choiceText(node) }) }}</p>
         <div class="actions">
-          <button v-if="node.voice?.cue" @click="emit('replay-voice', node)"><Volume2 :size="16" />重放语音</button>
-          <button v-if="!node.current" @click="emit('restore', node.node_id)"><Undo2 :size="16" />回到此处</button>
+          <button v-if="node.voice?.cue" @click="emit('replay-voice', node)"><Volume2 :size="16" />{{ uiText('backlog.replayVoice') }}</button>
+          <button v-if="!node.current" @click="emit('restore', node.node_id)"><Undo2 :size="16" />{{ uiText('backlog.restore') }}</button>
         </div>
       </article>
     </div>
@@ -28,6 +28,7 @@ import { nextTick, onMounted, ref } from 'vue'
 import { Undo2, Volume2, X } from '@lucide/vue'
 import { useStoryLocalization } from '../localization/story/StoryLocalizationContext.js'
 import { resolveText } from '../utils/TextHelper.js'
+import { resolveUiText as uiText } from '../localization/ui/UiTextResolver.js'
 
 const props = defineProps({
   nodes: { type: Array, default: () => [] },

@@ -237,7 +237,11 @@ function verifyPlayerStateRepositories() {
   const preferences = new PlayerPreferencesRepository({ storage })
   assert.equal(preferences.load().auto_delay_ms, 800)
   const saved = preferences.save({
-    schema_version: 1,
+    schema_version: 2,
+    ui_locale: 'ja-JP',
+    story_content_mode: 'bilingual',
+    story_translation_locale: 'zh-CN',
+    bilingual_primary: 'translation',
     auto_enabled: true,
     auto_delay_ms: 99999,
     skip_mode: 'all',
@@ -246,9 +250,43 @@ function verifyPlayerStateRepositories() {
   assert.equal(saved.auto_enabled, true)
   assert.equal(saved.auto_delay_ms, 10000)
   assert.equal(saved.skip_mode, 'all')
+  assert.equal(saved.schema_version, 2)
+  assert.equal(saved.ui_locale, 'ja-JP')
+  assert.equal(saved.story_content_mode, 'bilingual')
+  assert.equal(saved.bilingual_primary, 'translation')
   assert.equal(saved.volumes.master, 0)
   assert.equal(saved.volumes.voice, 1)
   assert.equal(new PlayerPreferencesRepository({ storage }).load().skip_mode, 'all')
+
+  const migrationStorage = memoryStorage({
+    'sidem-story-player-preferences': JSON.stringify({
+      schema_version: 1,
+      language_mode: 'CN',
+      auto_enabled: true,
+      auto_delay_ms: 1200,
+      skip_mode: 'readOnly',
+      volumes: { master: 0.4 },
+    }),
+  })
+  const migrated = new PlayerPreferencesRepository({ storage: migrationStorage }).load()
+  assert.equal(migrated.schema_version, 2)
+  assert.equal(migrated.ui_locale, 'zh-CN')
+  assert.equal(migrated.story_content_mode, 'translation')
+  assert.equal(migrated.story_translation_locale, 'zh-CN')
+  assert.equal(migrated.bilingual_primary, 'translation')
+  assert.equal(migrated.auto_enabled, true)
+  assert.equal(migrated.auto_delay_ms, 1200)
+  assert.equal(JSON.parse(migrationStorage.getItem('sidem-story-player-preferences')).schema_version, 2)
+
+  const savedLegacy = preferences.save({
+    schema_version: 1,
+    language_mode: 'BILINGUAL',
+    auto_delay_ms: 1400,
+  })
+  assert.equal(savedLegacy.schema_version, 2)
+  assert.equal(savedLegacy.story_content_mode, 'bilingual')
+  assert.equal(savedLegacy.bilingual_primary, 'original')
+  assert.equal(savedLegacy.auto_delay_ms, 1400)
 
   const readProgress = new ReadProgressRepository({ storage })
   const identity = { scenarioId: 'main-1', sourceHash: 'raw-a', stepId: 37 }
