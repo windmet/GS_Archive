@@ -1,10 +1,14 @@
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
+import { effectScope, nextTick, ref } from 'vue'
 
 import {
+  createChoiceSelectionRecord,
   normalizeLegacyDialogue,
+  normalizeChoiceSelection,
   preferencesFromLegacyLanguageMode,
 } from '../src/localization/story/LegacyDialogueAdapter.js'
+import { createStoryLocalization } from '../src/localization/story/StoryLocalizationContext.js'
 import { resolveStoryText } from '../src/localization/story/StoryTextResolver.js'
 import {
   TranslationRepository,
@@ -273,6 +277,71 @@ const currentShape = normalizeLegacyDialogue({
 assert.equal(currentShape.source, 'line 1\r\nline 2')
 assert.equal(currentShape.speaker.sourceName, '都築 圭')
 assert.equal(currentShape.speaker.entityId, '007kei')
+
+const selection = createChoiceSelectionRecord({
+  choice_id: 'ignored-option-choice',
+  option_id: 'choice-option:fixture',
+  source_text: 'source option',
+  text_ref: textRef,
+  detail: 'internal-detail-must-not-win',
+  step_id: 999,
+}, 'choice:fixture')
+assert.deepEqual(selection, {
+  choice_id: 'choice:fixture',
+  option_id: 'choice-option:fixture',
+  source_text: 'source option',
+  text_ref: textRef,
+})
+assert.equal(Object.hasOwn(selection, 'step_id'), false)
+assert.deepEqual(normalizeChoiceSelection('legacy selected text'), {
+  source: 'legacy selected text',
+  textRef: null,
+  optionId: null,
+  choiceId: null,
+})
+
+// Player-scoped context: overlay and language updates only recompute presentation.
+const scope = effectScope()
+const compiledData = ref(null)
+const legacyLanguageMode = ref('JP')
+const runtimeSentinel = {
+  stepId: 12,
+  generation: 7,
+  voiceHandle: { id: 'voice-1', position: 1.25 },
+  historyLength: 4,
+}
+const sentinelBefore = structuredClone(runtimeSentinel)
+const context = scope.run(() => createStoryLocalization({
+  compiledData,
+  languageMode: legacyLanguageMode,
+  repository: {
+    async loadScenario({ scenarioId, locale }) {
+      assert.equal(scenarioId, overlay.scenario_id)
+      assert.equal(locale, overlay.locale)
+      return overlay
+    },
+    getDiagnostics() { return { code: 'translation_ready' } },
+  },
+}))
+compiledData.value = { scenario_id: 'episode-slice', text_catalog_id: overlay.scenario_id }
+await nextTick()
+await new Promise(resolve => setTimeout(resolve, 0))
+const contextDialogue = {
+  speaker: '都築 圭',
+  speaker_identity: {
+    kind: 'idol',
+    entity_type: 'idol',
+    entity_id: '007kei',
+    source_name: '都築 圭',
+  },
+  source_text: source,
+  text_ref: textRef,
+}
+assert.equal(context.resolveDialogue(contextDialogue).text, source)
+legacyLanguageMode.value = 'CN'
+assert.equal(context.resolveDialogue(contextDialogue).text, fixtureEntry.text)
+assert.deepEqual(runtimeSentinel, sentinelBefore)
+scope.stop()
 
 const empty = resolveStoryText()
 assert.equal(empty.primary.text, '')

@@ -11,8 +11,8 @@
           <span>EP{{ String((node.episode_index ?? 0) + 1).padStart(2, '0') }} · STEP {{ node.step_id }}</span>
           <span v-if="node.current">当前</span>
         </div>
-        <strong v-if="node.dialogue?.speaker" class="speaker">{{ node.dialogue.speaker }}</strong>
-        <p class="text">{{ displayText(node.dialogue) }}</p>
+        <strong v-if="displayDialogue(node.dialogue).speaker" class="speaker">{{ displayDialogue(node.dialogue).speaker }}</strong>
+        <p class="text">{{ displayDialogue(node.dialogue).text }}</p>
         <p v-if="choiceText(node)" class="choice">选择：{{ choiceText(node) }}</p>
         <div class="actions">
           <button v-if="node.voice?.cue" @click="emit('replay-voice', node)"><Volume2 :size="16" />重放语音</button>
@@ -26,25 +26,34 @@
 <script setup>
 import { nextTick, onMounted, ref } from 'vue'
 import { Undo2, Volume2, X } from '@lucide/vue'
+import { useStoryLocalization } from '../localization/story/StoryLocalizationContext.js'
+import { resolveText } from '../utils/TextHelper.js'
 
 const props = defineProps({
   nodes: { type: Array, default: () => [] },
-  languageMode: { type: String, default: 'JP' },
 })
 const emit = defineEmits(['close', 'restore', 'replay-voice'])
 const listRef = ref(null)
+const localization = useStoryLocalization()
 
-function displayText(dialogue) {
-  if (!dialogue) return ''
-  if (props.languageMode === 'CN') return dialogue.text_cn || dialogue.text_jp || dialogue.text || ''
-  if (props.languageMode === 'BILINGUAL') {
-    return [dialogue.text_jp || dialogue.text, dialogue.text_cn].filter(Boolean).join('\n')
-  }
-  return dialogue.text_jp || dialogue.text || dialogue.text_cn || ''
+function displayDialogue(dialogue) {
+  if (!dialogue) return { speaker: '', text: '' }
+  return localization?.resolveDialogue(dialogue) ?? resolveText(dialogue)
 }
 
 function choiceText(node) {
-  return node.selected_choices?.[node.step_index] || ''
+  const selections = Object.entries(node.selected_choices || {})
+  let selection = node.selected_choices?.[node.step_index]
+  if (!selection && node.current && selections.length) {
+    const latest = selections
+      .filter(([stepIndex]) => Number(stepIndex) <= Number(node.step_index))
+      .sort(([left], [right]) => Number(right) - Number(left))[0]
+    selection = latest?.[1]
+  }
+  if (!selection) return ''
+  return localization?.resolveChoiceSelection(selection).text
+    || (typeof selection === 'string' ? selection : selection.source_text)
+    || ''
 }
 
 onMounted(() => nextTick(() => {

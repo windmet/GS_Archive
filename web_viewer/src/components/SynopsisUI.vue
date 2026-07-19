@@ -10,19 +10,26 @@
 <script setup>
 import { computed } from 'vue'
 import { resolveText } from '../utils/TextHelper.js'
+import { useStoryLocalization } from '../localization/story/StoryLocalizationContext.js'
 
 const props = defineProps({
   step: { type: Object, default: null },
 })
+const localization = useStoryLocalization()
+
+function display() {
+  const dialogue = props.step?.dialogue
+  return dialogue
+    ? (localization?.resolveDialogue(dialogue) ?? resolveText(dialogue))
+    : { speaker: '', text: '' }
+}
 
 const titleText = computed(() => {
-  const d = props.step?.dialogue
-  return d ? resolveText(d).speaker : ''
+  return display().speaker
 })
 
 const bodyText = computed(() => {
-  const d = props.step?.dialogue
-  return d ? resolveText(d).text : ''
+  return display().text
 })
 </script>
 

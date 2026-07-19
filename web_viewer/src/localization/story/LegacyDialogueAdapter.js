@@ -93,3 +93,28 @@ export function preferencesFromLegacyLanguageMode(mode, translationLocale = 'zh-
       }
   }
 }
+
+/** Store choice identity and source evidence, never a locale-specific display string. */
+export function createChoiceSelectionRecord(option, choiceId = null) {
+  const value = option && typeof option === 'object' ? option : {}
+  return {
+    choice_id: choiceId ?? value.choice_id ?? null,
+    option_id: value.option_id ?? null,
+    source_text: asString(value.source_text ?? value.text ?? value.detail_source_text ?? value.detail ?? value.label),
+    text_ref: value.text_ref ?? value.detail_text_ref ?? null,
+  }
+}
+
+/** Accept both v2 choice records and legacy history strings. */
+export function normalizeChoiceSelection(selection) {
+  if (typeof selection === 'string') {
+    return { source: selection, textRef: null, optionId: null, choiceId: null }
+  }
+  const value = selection && typeof selection === 'object' ? selection : {}
+  return {
+    source: asString(value.source_text ?? value.detail ?? value.text ?? value.label),
+    textRef: value.text_ref && typeof value.text_ref === 'object' ? value.text_ref : null,
+    optionId: value.option_id ?? null,
+    choiceId: value.choice_id ?? null,
+  }
+}

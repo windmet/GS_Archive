@@ -15,11 +15,11 @@
         <div v-if="hasChoices" class="phone-choices">
           <button
             v-for="opt in currentChoices"
-            :key="opt.label"
+            :key="opt.option_id || opt.label"
             class="choice-btn"
             @click.stop="$emit('select', opt)"
           >
-            {{ opt.text || opt.detail || opt.label }}
+            {{ optionText(opt) }}
           </button>
         </div>
 
@@ -38,6 +38,7 @@ import { computed } from 'vue'
 import { getMobileBgUrl, getMobileIconUrl } from '../utils/AssetResolver.js'
 import { IDOL_NAME_TO_ID } from '../utils/IdolNameMap.js'
 import { resolveText } from '../utils/TextHelper.js'
+import { useStoryLocalization } from '../localization/story/StoryLocalizationContext.js'
 
 const props = defineProps({
   dialogue: { type: Object, default: null },
@@ -45,13 +46,18 @@ const props = defineProps({
 })
 defineEmits(['select'])
 
-const speakerName = computed(() => props.dialogue?.speaker || '')
-const display = computed(() => resolveText(props.dialogue))
+const localization = useStoryLocalization()
+const display = computed(() => localization?.resolveDialogue(props.dialogue) ?? resolveText(props.dialogue))
+const speakerName = computed(() => display.value.speaker)
 const dialogueText = computed(() => display.value.text)
+
+function optionText(option) {
+  return localization?.resolveChoiceOption(option).text || option.text || option.detail || option.label || ''
+}
 
 const charaId = computed(() => {
   if (props.step?.chara_id) return props.step.chara_id
-  const name = speakerName.value
+  const name = typeof props.dialogue?.speaker === 'string' ? props.dialogue.speaker : ''
   return IDOL_NAME_TO_ID[name] || null
 })
 

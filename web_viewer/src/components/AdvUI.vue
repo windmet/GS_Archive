@@ -25,6 +25,7 @@
 <script setup>
 import { computed } from 'vue'
 import { resolveText } from '../utils/TextHelper.js'
+import { useStoryLocalization } from '../localization/story/StoryLocalizationContext.js'
 
 const props = defineProps({
   dialogue: { type: Object, default: null },
@@ -32,7 +33,8 @@ const props = defineProps({
   playing: { type: Boolean, default: false },
 })
 
-const display = computed(() => resolveText(props.dialogue))
+const localization = useStoryLocalization()
+const display = computed(() => localization?.resolveDialogue(props.dialogue) ?? resolveText(props.dialogue))
 </script>
 
 <style scoped>

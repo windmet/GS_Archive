@@ -99,7 +99,6 @@
     <StoryBacklog
       v-if="backlogOpen && !HIDE_UI"
       :nodes="backlogNodes"
-      :language-mode="languageMode"
       @close="backlogOpen = false"
       @restore="restoreFromBacklog"
       @replay-voice="replayBacklogVoice"
@@ -145,6 +144,10 @@ import { SceneSnapshotStore, isReadableHistoryStep } from './story-runtime/Scene
 import { PlayerPreferencesRepository } from './story-runtime/PlayerPreferencesRepository.js'
 import { ReadProgressRepository, createReadKey } from './story-runtime/ReadProgressRepository.js'
 import { PlaybackModeController } from './story-runtime/PlaybackModeController.js'
+import {
+  createStoryLocalization,
+  provideStoryLocalization,
+} from '../localization/story/StoryLocalizationContext.js'
 
 const props = defineProps({
   scenarioJson: { type: Object, default: null },
@@ -174,6 +177,10 @@ const initialPreferences = preferencesRepository.load()
 
 const spineStageRef = ref(null)
 const compiledData = ref(null)
+provideStoryLocalization(createStoryLocalization({
+  compiledData,
+  languageMode,
+}))
 const currentStepIndex = ref(0)
 const historyStack = ref([])
 const selectedChoices = reactive(new Map())

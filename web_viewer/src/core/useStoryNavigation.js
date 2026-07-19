@@ -1,5 +1,6 @@
 import { computed } from 'vue'
 import { isTransitionStep } from '../utils/StoryStepFlow.js'
+import { createChoiceSelectionRecord } from '../localization/story/LegacyDialogueAdapter.js'
 
 export function useStoryNavigation({
   compiledData,
@@ -135,9 +136,9 @@ export function useStoryNavigation({
     fastForwardTimeline()
     ensureAudioCtx()
     resetVoiceDedup()
-    const text = opt.detail || opt.text || opt.label || ''
-    if (text) {
-      selectedChoices.set(currentStepIndex.value, text)
+    const selection = createChoiceSelectionRecord(opt, currentStep.value?.choice_id ?? null)
+    if (selection.source_text || selection.option_id) {
+      selectedChoices.set(currentStepIndex.value, selection)
     }
     if (opt.step_id && opt.step_id - 1 >= navigationStartIndex.value && opt.step_id - 1 <= navigationEndIndex.value) {
       historyStack.value.push(currentStepIndex.value)

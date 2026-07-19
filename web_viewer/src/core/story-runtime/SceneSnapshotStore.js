@@ -8,7 +8,7 @@ function toChoiceObject(selectedChoices) {
 }
 
 function dialogueText(dialogue) {
-  return dialogue?.text_jp || dialogue?.text_cn || dialogue?.text || ''
+  return dialogue?.source_text || dialogue?.text_jp || dialogue?.text || dialogue?.text_cn || ''
 }
 
 /**

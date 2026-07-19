@@ -4,11 +4,11 @@
     <div class="choice-options">
       <button
         v-for="(opt, i) in options"
-        :key="i"
+        :key="opt.option_id || i"
         class="choice-btn"
         @click.stop="select(opt, i)"
       >
-        <span class="choice-text">{{ opt.text || opt.detail || opt.label }}</span>
+        <span class="choice-text">{{ optionText(opt) }}</span>
       </button>
     </div>
   </div>
@@ -16,14 +16,25 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useStoryLocalization } from '../localization/story/StoryLocalizationContext.js'
+import { resolveTextContent } from '../utils/TextHelper.js'
 
 const props = defineProps({
   step: { type: Object, default: null },
 })
 const emit = defineEmits(['select'])
+const localization = useStoryLocalization()
 
 const options = computed(() => props.step?.options || [])
-const prompt = computed(() => props.step?.dialogue?.text || null)
+const prompt = computed(() => {
+  const dialogue = props.step?.dialogue
+  if (!dialogue) return null
+  return localization?.resolveDialogue(dialogue).text ?? resolveTextContent(dialogue)
+})
+
+function optionText(option) {
+  return localization?.resolveChoiceOption(option).text || option.text || option.detail || option.label || ''
+}
 
 function select(opt, index) {
   emit('select', { ...opt, index })

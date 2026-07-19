@@ -6,14 +6,19 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useStoryLocalization } from '../localization/story/StoryLocalizationContext.js'
 
 const props = defineProps({
   step: { type: Object, default: null },
 })
 
 defineEmits(['next'])
+const localization = useStoryLocalization()
 
-const text = computed(() => props.step?.text_time?.text || '')
+const text = computed(() => {
+  const caption = props.step?.text_time
+  return localization?.resolveTimeCaption(caption).text || caption?.text || ''
+})
 </script>
 
 <style scoped>

@@ -17,11 +17,21 @@
             <div class="msg-body">
               <span class="chat-name">{{ msg.speaker }}</span>
               <img v-if="msg.isStamp" class="chat-stamp" :src="getStampUrl(msg.stampId)" alt="stamp" />
-              <div v-else-if="msg.text" class="bubble-idol" v-html="parseEmoji(msg.text)"></div>
+              <div v-else-if="msg.text" class="bubble-idol">
+                <template v-for="(part, partIndex) in messageParts(msg.text)" :key="partIndex">
+                  <span v-if="part.type === 'text'">{{ part.text }}</span>
+                  <img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" alt="" />
+                </template>
+              </div>
             </div>
           </template>
           <template v-else>
-            <div v-if="msg.text" class="bubble-producer" v-html="parseEmoji(msg.text)"></div>
+            <div v-if="msg.text" class="bubble-producer">
+              <template v-for="(part, partIndex) in messageParts(msg.text)" :key="partIndex">
+                <span v-if="part.type === 'text'">{{ part.text }}</span>
+                <img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" alt="" />
+              </template>
+            </div>
             <div class="producer-spacer"></div>
           </template>
         </div>
@@ -37,6 +47,7 @@ import { getMobileBgUrl, getMobileIconUrl, getUnitMobileBgUrl, getEmojiUrl, getS
 import { IDOL_NAME_TO_ID, IDOL_ID_TO_NAME } from '../utils/IdolNameMap.js'
 import { UNIT_CODE_TO_NAME, getUnitCodeByCharaId, normalizeUnitCode } from '../utils/UnitNameMap.js'
 import { resolveTextContent } from '../utils/TextHelper.js'
+import { useStoryLocalization } from '../localization/story/StoryLocalizationContext.js'
 
 const props = defineProps({
   dialogue: { type: Object, default: null },
@@ -48,6 +59,7 @@ const props = defineProps({
 })
 
 const chatScreenRef = ref(null)
+const localization = useStoryLocalization()
 
 // ── Helpers ──
 function isProducer(speaker) {
@@ -56,9 +68,20 @@ function isProducer(speaker) {
   return p === '<P>' || p === 'プロデューサー' || p === 'Producer' || p === 'producer'
 }
 
-function parseEmoji(text) {
-  if (!text) return ''
-  return text.replace(/<emoji>(.+?)<\/emoji>/g, (m, id) => `<img src="${getEmojiUrl(id)}" class="inline-emoji" alt="" />`)
+function messageParts(text) {
+  const value = typeof text === 'string' ? text : ''
+  const parts = []
+  const pattern = /<emoji>(.+?)<\/emoji>/g
+  let cursor = 0
+  let match
+  while ((match = pattern.exec(value))) {
+    if (match.index > cursor) parts.push({ type: 'text', text: value.slice(cursor, match.index) })
+    if (/^[A-Za-z0-9._-]+$/.test(match[1])) parts.push({ type: 'emoji', id: match[1] })
+    else parts.push({ type: 'text', text: match[0] })
+    cursor = match.index + match[0].length
+  }
+  if (cursor < value.length) parts.push({ type: 'text', text: value.slice(cursor) })
+  return parts
 }
 
 function cleanSpeaker(raw) {
@@ -69,13 +92,15 @@ function stepToMessage(step) {
   const d = step.dialogue || {}
   const stamp = step.stamp || null
   const rawSpeaker = d.speaker || ''
+  const display = localization?.resolveDialogue(d)
   // If speaker is a raw chara_id like "024shk", resolve to display name
-  let speaker = cleanSpeaker(stamp?.speaker || rawSpeaker)
-  const charaId = stamp?.chara_id || step.chara_id || IDOL_NAME_TO_ID[speaker] || ''
+  let speaker = cleanSpeaker(stamp?.speaker || display?.speaker || rawSpeaker)
+  const sourceSpeaker = cleanSpeaker(stamp?.speaker || rawSpeaker)
+  const charaId = stamp?.chara_id || step.chara_id || IDOL_NAME_TO_ID[sourceSpeaker] || ''
   if (/^\d{3}[a-z0-9]{3}$/.test(speaker)) {
     speaker = IDOL_ID_TO_NAME[speaker] || speaker
   }
-  const text = resolveTextContent(d)
+  const text = display?.text ?? resolveTextContent(d)
   const prod = isProducer(rawSpeaker)
   if (stamp?.id) {
     return { speaker, text: '', charaId, isProducer: prod, isStamp: true, stampId: stamp.id }
@@ -89,7 +114,7 @@ function isTalkHistoryStep(step) {
 }
 
 // ── Accumulate talk messages as they're encountered ──
-// Map<stepIndex, messageObject> — rebuilt from the path
+// Map<stepIndex, source step> — localized display is rebuilt from the path.
 const talkByIndex = ref({})
 const _acc = ref(new Set())
 
@@ -98,7 +123,7 @@ watch(() => props.stepIndex, (idx) => {
   if (!isTalkHistoryStep(step)) return
   if (_acc.value.has(idx)) return
   _acc.value = new Set([..._acc.value, idx])
-  talkByIndex.value = { ...talkByIndex.value, [idx]: stepToMessage(step) }
+  talkByIndex.value = { ...talkByIndex.value, [idx]: step }
   nextTick(scrollToBottom)
 }, { immediate: true })
 
@@ -106,7 +131,7 @@ watch(() => props.step, (step) => {
   const idx = props.stepIndex
   if (!isTalkHistoryStep(step) || _acc.value.has(idx)) return
   _acc.value = new Set([..._acc.value, idx])
-  talkByIndex.value = { ...talkByIndex.value, [idx]: stepToMessage(step) }
+  talkByIndex.value = { ...talkByIndex.value, [idx]: step }
   nextTick(scrollToBottom)
 })
 
@@ -123,12 +148,15 @@ const historyMessages = computed(() => {
     // Inject P's choice text if this index has a saved selection
     const chosenText = props.choiceTexts[idx]
     if (chosenText) {
-      msgs.push({ speaker: 'プロデューサー', text: chosenText, charaId: '', isProducer: true, isStamp: false, stampId: null })
+      const displayText = localization?.resolveChoiceSelection(chosenText).text
+        || (typeof chosenText === 'string' ? chosenText : chosenText.source_text)
+        || ''
+      msgs.push({ speaker: 'プロデューサー', text: displayText, charaId: '', isProducer: true, isStamp: false, stampId: null })
     }
     // Add talk message if one exists for this index
     const talk = talkMap[idx]
     if (talk) {
-      msgs.push(talk)
+      msgs.push(stepToMessage(talk))
     }
   }
   return msgs
