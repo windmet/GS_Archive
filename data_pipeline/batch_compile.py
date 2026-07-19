@@ -111,7 +111,12 @@ def compile_batch():
                     in_path = os.path.join(SCENARIO_ROOT, parent, fn)
                     try:
                         data = ScenarioCompiler.load_json(in_path)
-                        result = ScenarioCompiler(data, f"{parent}_{sid}").compile()
+                        result = ScenarioCompiler(
+                            data,
+                            f"{parent}_{sid}",
+                            sid,
+                            f"scenariodata/{parent}/{fn}",
+                        ).compile()
                         out_name = f"{parent}_{sid}.json"
                         out_path = os.path.join(OUTPUT_DIR, out_name)
                         ScenarioCompiler.save_json(result, out_path)
@@ -124,14 +129,21 @@ def compile_batch():
                 # ── Merge group ──
                 raw_data_list = []
                 part_ids = []
+                source_files = []
                 for fn, sid in sorted(group, key=lambda x: x[0]):
                     in_path = os.path.join(SCENARIO_ROOT, parent, fn)
                     raw_data_list.append(ScenarioCompiler.load_json(in_path))
                     part_ids.append(sid)
+                    source_files.append(f"scenariodata/{parent}/{fn}")
 
                 try:
                     merge_key = f"{parent}_{base_id}" if parent != base_id else base_id
-                    result = ScenarioCompiler.compile_group(raw_data_list, merge_key, part_ids)
+                    result = ScenarioCompiler.compile_group(
+                        raw_data_list,
+                        merge_key,
+                        part_ids,
+                        source_files,
+                    )
 
                     out_name = f"{merge_key}.json"
                     out_path = os.path.join(OUTPUT_DIR, out_name)
@@ -148,7 +160,12 @@ def compile_batch():
                 try:
                     data = ScenarioCompiler.load_json(in_path)
                     full_id = f"{parent}_{sid}"
-                    result = ScenarioCompiler(data, full_id).compile()
+                    result = ScenarioCompiler(
+                        data,
+                        full_id,
+                        sid,
+                        f"scenariodata/{parent}/{fn}",
+                    ).compile()
 
                     out_name = f"{full_id}.json"
                     out_path = os.path.join(OUTPUT_DIR, out_name)
@@ -246,6 +263,8 @@ def split_compiled_episodes():
             })
             result = {
                 "scenario_id": source_id,
+                "text_catalog_id": scenario.get("text_catalog_id", scenario.get("scenario_id", fn[:-5])),
+                "text_contract_version": scenario.get("text_contract_version", 1),
                 "total_steps": len(steps),
                 "steps": steps,
                 "jump_points": jump_points,

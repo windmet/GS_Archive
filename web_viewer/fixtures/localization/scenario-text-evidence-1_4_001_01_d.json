@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "scenario_id": "1_4_001_01",
+  "part_id": "1_4_001_01_d",
+  "source_file": "scenariodata/1_4_001_01/scenario_1_4_001_01_d.json",
+  "source_note": "Exact text-bearing command excerpts from the archived raw scenario; omitted commands are reconstructed as non-text noops by the verifier.",
+  "commands": [
+    {
+      "command_index": 0,
+      "type": "text_synopsis",
+      "values": [
+        "新たなる三つの輝きと共に！",
+        "ついに始動した315プロダクション！\n所属アイドル達を輝かせるため奮起する\nプロデューサー。そんな中、天才的な才能を\n持つ少年、天峰秀と出会う。彼は都内にいる\n『有名生徒会長』の1人らしく……。"
+      ]
+    },
+    {
+      "command_index": 27,
+      "type": "text",
+      "values": ["都築 圭", "今の鼻歌、君が歌っていたのかい？", "007kei", "d1000", "クチパク"]
+    },
+    {
+      "command_index": 30,
+      "type": "text",
+      "values": ["？？？", "……ああ、そうだけど。", "047shu", "d1001", "クチパク"]
+    },
+    {
+      "command_index": 69,
+      "type": "text",
+      "values": ["<P>", "（あの一瞬で曲を理解して、元作曲家である\n圭さんが微笑むようなアイディアを……！？）", "", ""]
+    },
+    {
+      "command_index": 118,
+      "type": "phone_text",
+      "values": ["伊瀬谷 四季", "オレっすオレっす、●●●●プロデューサーちゃん☆\n気になってた男の情報、ゲットして来たっすよ～。", "024shk", "1000"]
+    },
+    {
+      "command_index": 122,
+      "type": "phone_select",
+      "values": ["phone_01", "やっぱり有名人……？", ""]
+    },
+    {
+      "command_index": 134,
+      "type": "phone_select",
+      "values": ["phone_02", "Verse……ヴァース？", ""]
+    }
+  ],
+  "expected": [
+    {
+      "unit_id": "story-text:v1:1_4_001_01:1_4_001_01_d:cmd-000000:title:000",
+      "source_hash": "sha256:4f36418148a51328db0391690c15d518106a0ad0bc5812a3b317355e6e935f2a",
+      "field_kind": "title",
+      "field_ordinal": 0,
+      "speaker_kind": "none"
+    },
+    {
+      "unit_id": "story-text:v1:1_4_001_01:1_4_001_01_d:cmd-000000:synopsis:000",
+      "source_hash": "sha256:e7f814bdf5942b5fd025a526637fa0e2b1064c6527645cbf3092e60394160072",
+      "field_kind": "synopsis",
+      "field_ordinal": 0,
+      "speaker_kind": "none"
+    },
+    {
+      "unit_id": "story-text:v1:1_4_001_01:1_4_001_01_d:cmd-000027:dialogue:000",
+      "source_hash": "sha256:e8c23dadcfc922f1e3caf8bf5541c2ced675e404893b25ebf2add4d9c91108b1",
+      "field_kind": "dialogue",
+      "field_ordinal": 0,
+      "speaker_kind": "idol"
+    },
+    {
+      "unit_id": "story-text:v1:1_4_001_01:1_4_001_01_d:cmd-000030:dialogue:000",
+      "source_hash": "sha256:6d7b6c791e28179755b8996c72eef23d2652ca381ed6dbb0415e9d95f7a80316",
+      "field_kind": "dialogue",
+      "field_ordinal": 0,
+      "speaker_kind": "unknown"
+    },
+    {
+      "unit_id": "story-text:v1:1_4_001_01:1_4_001_01_d:cmd-000069:dialogue:000",
+      "source_hash": "sha256:c014107291057eb4184dfa8587a4289279fbe152f8e67fd01ace839d15e94cc4",
+      "field_kind": "dialogue",
+      "field_ordinal": 0,
+      "speaker_kind": "producer"
+    },
+    {
+      "unit_id": "story-text:v1:1_4_001_01:1_4_001_01_d:cmd-000118:phone_message:000",
+      "source_hash": "sha256:98932852cc88e62d125cd9db16746ee4d3b906e8cc1133d1ddd56b3ea33cc471",
+      "field_kind": "phone_message",
+      "field_ordinal": 0,
+      "speaker_kind": "idol"
+    },
+    {
+      "unit_id": "story-text:v1:1_4_001_01:1_4_001_01_d:cmd-000122:choice_short:000",
+      "source_hash": "sha256:49cf7db34ff0b21b1ebf788c2290e86811827f7fa4d983f95c6c3c0ff6591007",
+      "field_kind": "choice_short",
+      "field_ordinal": 0,
+      "choice_id": "choice:v1:1_4_001_01:1_4_001_01_d:cmd-000122",
+      "option_id": "choice-option:v1:1_4_001_01:1_4_001_01_d:cmd-000122:000"
+    },
+    {
+      "unit_id": "story-text:v1:1_4_001_01:1_4_001_01_d:cmd-000134:choice_short:000",
+      "source_hash": "sha256:619694b02e14ec5dc6f82d92813ef50f2cff54da52743d8d8ea4732641ab0fd5",
+      "field_kind": "choice_short",
+      "field_ordinal": 0,
+      "choice_id": "choice:v1:1_4_001_01:1_4_001_01_d:cmd-000134",
+      "option_id": "choice-option:v1:1_4_001_01:1_4_001_01_d:cmd-000134:000"
+    }
+  ]
+}
