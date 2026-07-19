@@ -1,4 +1,9 @@
 import { languageMode } from './LanguageStore.js'
+import {
+  normalizeLegacyDialogue,
+  preferencesFromLegacyLanguageMode,
+} from '../localization/story/LegacyDialogueAdapter.js'
+import { resolveStoryText } from '../localization/story/StoryTextResolver.js'
 
 /**
  * Resolve display text from dialogue according to current language mode.
@@ -13,22 +18,18 @@ import { languageMode } from './LanguageStore.js'
  */
 export function resolveText(dialogue, mode) {
   if (!dialogue) return { speaker: '', text: '' }
-  const speaker = dialogue.speaker || ''
   const m = mode || languageMode.value
+  const normalized = normalizeLegacyDialogue(dialogue)
+  const display = resolveStoryText({
+    ...normalized,
+    preferences: preferencesFromLegacyLanguageMode(m),
+  })
 
-  // Backward compat: if text_jp absent, treat .text as Japanese
-  const jp = dialogue.text_jp ?? dialogue.text ?? ''
-  const cn = dialogue.text_cn ?? ''
-
-  switch (m) {
-    case 'JP':
-      return { speaker, text: jp }
-    case 'CN':
-      return { speaker, text: cn || jp }
-    case 'BILINGUAL':
-      return { speaker, text: cn ? `${jp}\n${cn}` : jp }
-    default:
-      return { speaker, text: jp }
+  return {
+    speaker: display.speaker.display,
+    text: [display.primary?.text, display.secondary?.text]
+      .filter(text => typeof text === 'string' && text.length > 0)
+      .join('\n'),
   }
 }
 
