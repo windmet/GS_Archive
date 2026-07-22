@@ -26,7 +26,7 @@
     "verify:story-presentation": "node scripts/verify-story-presentation.mjs",
     "verify:story-collections": "node scripts/verify-story-collections.mjs",
     "verify:story-playback-range": "node scripts/verify-story-playback-range.mjs",
-    "verify:story-localization": "node scripts/verify-story-localization-runtime.mjs",
+    "verify:story-localization": "node scripts/verify-story-localization-runtime.mjs && node scripts/verify-story-localization-stress.mjs",
     "verify:story-translations": "node scripts/verify-story-translations.mjs && node scripts/report-story-translation-migration.mjs && node scripts/verify-entity-translations.mjs",
     "verify:story-text": "python scripts/verify-story-text-evidence.py",
     "verify:episode-artifacts": "node scripts/verify-episode-artifacts.mjs",

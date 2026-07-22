@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "scenario_id": "localization_stress",
+  "text_catalog_id": "localization_stress",
+  "text_contract_version": 1,
+  "cases": [
+    { "id": "title", "kind": "title", "source": "ローカライズ負荷試験", "source_hash": "sha256:5b77cddcf99020310b4114f43cc9a1edf11b9032a7b397c95ee00f032ab5d569", "translation": "剧情本地化压力测试" },
+    { "id": "synopsis", "kind": "synopsis", "source": "表示層だけを切り替え、演出状態を保持する検証用シナリオ。", "source_hash": "sha256:2b97ea93f4094f39a030c06f93a3d543b9e0098eb12b21cccdbb8b5742200673", "translation": "这是只切换显示层、同时保持演出状态不变的验证用剧情。" },
+    { "id": "short", "kind": "dialogue", "source": "おはようございます。", "source_hash": "sha256:bc4e77e6407e004b7c8b2f83de56da665396ef3fa2d64a5a518fd7a82fdcab61", "translation": "早上好。", "speaker_kind": "idol", "entity_id": "007kei" },
+    { "id": "long", "kind": "dialogue", "source": "これは長い台詞の表示を確認するための文章です。", "source_hash": "sha256:5c0901c54a440e56543df2ea07578dbcff34d31ba531c05618ba2d21d3780902", "translation": "这是一段专门用于检查超长中文台词布局、自动换行、行高、字号回退与窄屏可读性的压力文本；它刻意比日文原句长出两倍以上，并继续补充内容，以确认按钮、角色名和调试标记都不会挤压正文区域。\n第二行继续确认双语模式能够稳定显示四行以上内容。\n第三行用于验证字体回退与底部安全区域。", "speaker_kind": "unknown" },
+    { "id": "producer", "kind": "dialogue", "source": "（選択肢を確認しよう。）", "source_hash": "sha256:0ce344050234ddaeaa8d00b6437aa2cebb023e4e2ba4365307b47238bdd76223", "translation": "（来确认一下选项吧。）", "speaker_kind": "producer" },
+    { "id": "mobile", "kind": "mobile_message", "source": "メッセージ表示の確認です。", "source_hash": "sha256:71b2c3ce75729e9716dd9b9c2c57b24f2ec7d198efdadfcd8590532b29b44dca", "translation": "这是对手机消息显示的确认。" },
+    { "id": "phone", "kind": "phone_message", "source": "通話画面でも同じ契約を使います。", "source_hash": "sha256:28cc9fec3f2b344ad56486c88e09f0af9f5cf40520fcb19ae5c7b225b7a98e0e", "translation": "通话画面也使用同一份文本契约。" },
+    { "id": "choice_short", "kind": "choice_short", "source": "情熱を見せる", "source_hash": "sha256:278c273f4537dd27de1f1c9136823e4d99fe819938de2a21985592230de543f6", "translation": "展现热情" },
+    { "id": "choice_detail", "kind": "choice_detail", "source": "もっと強く情熱を伝える", "source_hash": "sha256:904bf82af920bb3230ba5e1515fc29f65bb23ab359780c4ebcde7301ae2a2a5b", "translation": "更加有力地传达热情" },
+    { "id": "missing", "kind": "dialogue", "source": "選択結果は表示言語に依存しない。", "source_hash": "sha256:d54b0aaab32774236beee95978bd8f3060f044694e88c5bb1dad9633a00c2be4", "translation": null },
+    { "id": "stale", "kind": "dialogue", "source": "おはようございます。", "source_hash": "sha256:bc4e77e6407e004b7c8b2f83de56da665396ef3fa2d64a5a518fd7a82fdcab61", "translation": "这条译文应当因哈希过期而回退。", "translation_source_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000" }
+  ],
+  "runtime_before": {
+    "step_id": 8,
+    "generation": 17,
+    "active_cue_ids": ["step-8:000:voice"],
+    "voice_handle": "voice-stress-1@12.5",
+    "snapshot_hash": "snapshot-stress-1",
+    "history_length": 24,
+    "selected_option_id": "choice-option:v1:localization_stress:localization_stress:cmd-000008:000"
+  }
+}
