@@ -40,7 +40,11 @@ export async function publishAuthoritativeCollection({
   const candidate = path.resolve(candidateDirectory)
   const compiled = path.resolve(compiledDirectory)
   const backup = path.resolve(backupDirectory)
-  if (backup === compiled || backup.startsWith(`${compiled}${path.sep}`)) {
+  const backupRelation = path.relative(compiled, backup);
+  const backupIsInsideCompiled =
+    backupRelation === '' ||
+    (!backupRelation.startsWith('..') && !path.isAbsolute(backupRelation));
+  if (backupIsInsideCompiled) {
     throw new Error('Backup directory must be outside the compiled corpus')
   }
   try {
