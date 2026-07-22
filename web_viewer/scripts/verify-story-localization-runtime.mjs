@@ -8,7 +8,10 @@ import {
   normalizeChoiceSelection,
   preferencesFromLegacyLanguageMode,
 } from '../src/localization/story/LegacyDialogueAdapter.js'
-import { createStoryLocalization } from '../src/localization/story/StoryLocalizationContext.js'
+import {
+  collectScenarioEntitySourceNames,
+  createStoryLocalization,
+} from '../src/localization/story/StoryLocalizationContext.js'
 import { resolveUiText } from '../src/localization/ui/UiTextResolver.js'
 import { resolveStoryText } from '../src/localization/story/StoryTextResolver.js'
 import {
@@ -328,8 +331,31 @@ const context = scope.run(() => createStoryLocalization({
     },
     getDiagnostics() { return { code: 'translation_ready' } },
   },
+  entityRepository: {
+    async loadEntity({ entityType, locale, sourceNames }) {
+      assert.equal(entityType, 'idol')
+      assert.equal(locale, overlay.locale)
+      assert.deepEqual(sourceNames, { '007kei': speaker.sourceName })
+      return { entries: { '007kei': { name: '都筑圭' } } }
+    },
+    getEntry({ entityType, entityId, locale }) {
+      return entityType === 'idol' && entityId === '007kei' && locale === overlay.locale
+        ? { name: '都筑圭' }
+        : null
+    },
+    getDiagnostics() { return { code: 'entity_translation_ready' } },
+  },
 }))
-compiledData.value = { scenario_id: 'episode-slice', text_catalog_id: overlay.scenario_id }
+compiledData.value = {
+  scenario_id: 'episode-slice',
+  text_catalog_id: overlay.scenario_id,
+  steps: [{ dialogue: { speaker_identity: {
+    kind: 'idol',
+    entity_type: 'idol',
+    entity_id: '007kei',
+    source_name: speaker.sourceName,
+  } } }],
+}
 await nextTick()
 await new Promise(resolve => setTimeout(resolve, 0))
 const contextDialogue = {
@@ -350,8 +376,13 @@ storyPreferences.value = {
   bilingual_primary: 'translation',
 }
 assert.equal(context.resolveDialogue(contextDialogue).text, fixtureEntry.text)
+assert.equal(context.resolveDialogue(contextDialogue).speaker, '都筑圭')
+assert.deepEqual(context.entityDiagnostics.value, [{ code: 'entity_translation_ready' }])
 assert.deepEqual(runtimeSentinel, sentinelBefore)
 scope.stop()
+
+const collectedEntityNames = collectScenarioEntitySourceNames(compiledData.value)
+assert.deepEqual(collectedEntityNames.get('idol'), { '007kei': speaker.sourceName })
 
 assert.equal(resolveUiText('player.settings.backlog', {}, 'zh-CN'), '剧情回看')
 assert.equal(resolveUiText('player.settings.backlog', {}, 'ja-JP'), 'ログ')

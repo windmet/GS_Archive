@@ -27,8 +27,11 @@ function normalizePreferences(preferences) {
   }
 }
 
-function entityNameForLocale(entityNames, entityId, locale) {
+function entityNameForLocale(entityNames, entityId, locale, entityType) {
   if (!entityId || !entityNames) return ''
+  if (typeof entityNames === 'function') {
+    return textValue(entityNames(entityId, locale, entityType))
+  }
   if (entityNames instanceof Map) {
     const localeBucket = entityNames.get(locale)
     if (localeBucket instanceof Map) return textValue(localeBucket.get(entityId))
@@ -56,6 +59,7 @@ function normalizeSpeaker(speaker) {
   const value = speaker && typeof speaker === 'object' ? speaker : {}
   return {
     kind: textValue(value.kind) || 'none',
+    entityType: value.entityType ?? value.entity_type ?? null,
     entityId: value.entityId ?? value.entity_id ?? null,
     source: textValue(value.sourceName ?? value.source_name ?? value.source),
   }
@@ -131,6 +135,7 @@ export function resolveStoryText({
     entityNames,
     normalizedSpeaker.entityId,
     prefs.story_translation_locale,
+    normalizedSpeaker.entityType,
   )
   const preferTranslatedSpeaker = prefs.story_content_mode === 'translation'
     || (prefs.story_content_mode === 'bilingual' && prefs.bilingual_primary === 'translation')
@@ -139,6 +144,7 @@ export function resolveStoryText({
     unitId: textValue(textRef?.unit_id) || null,
     speaker: {
       kind: normalizedSpeaker.kind,
+      entityType: normalizedSpeaker.entityType,
       entityId: normalizedSpeaker.entityId,
       source: normalizedSpeaker.source,
       display: preferTranslatedSpeaker && translatedSpeaker
