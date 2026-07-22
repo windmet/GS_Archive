@@ -1,5 +1,7 @@
 # Screen/Fade Runtime 唯一 Owner 验收
 
+> 状态更新：迁移期 rollback flag 与旧 screen writer 已在 `STORY_RUNTIME_LEGACY_OWNER_CLEANUP_20260722.md` 所记录的清理提交中退役；下文相关说明仅作为迁移历史保留。
+
 日期：2026-07-22
 
 ## 结论

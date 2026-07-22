@@ -1,5 +1,9 @@
 ﻿<template>
-  <div ref="containerRef" class="spine-stage-root"></div>
+  <div
+    ref="containerRef"
+    class="spine-stage-root"
+    :data-background-owner="manageBackground ? 'standalone' : 'external'"
+  ></div>
 
   <div v-if="sceneIcon" class="scene-icon">
     <img :src="sceneIcon.src" alt="" @error="$event.target.style.display = 'none'" />
@@ -94,6 +98,7 @@ import {
 const props = defineProps({
   step: { type: Object, default: null },
   fallbackBg: { type: String, default: null },
+  manageBackground: { type: Boolean, default: false },
   debugControls: { type: Boolean, default: true },
 })
 
@@ -116,6 +121,7 @@ const containerRef = ref(null)
 let manager = null
 let applyStateToken = 0
 let lastScreenEffectsKey = ''
+let managedBackgroundId = null
 const debugMode = ref(false)
 const prefabMetaReady = ref(false)
 const motionSettingsReady = ref(false)
@@ -134,9 +140,10 @@ onMounted(() => {
     emit('error', err)
   }
 
+  syncManagedBackground()
   if (props.step?.state) {
     applyState(props.step)
-  } else if (props.step && props.fallbackBg) {
+  } else if (!props.manageBackground && props.step && props.fallbackBg) {
     manager.setBackground(props.fallbackBg)
   }
 
@@ -145,6 +152,15 @@ onMounted(() => {
   void _loadMotionSettings()
   installDebugGlobals()
 })
+
+function syncManagedBackground() {
+  if (!manager || !props.manageBackground) return
+  const backgroundId = props.step?.state?.bg || props.fallbackBg || null
+  if (backgroundId === managedBackgroundId) return
+  managedBackgroundId = backgroundId
+  if (backgroundId) manager.setBackground(backgroundId)
+  else manager.clearBackground()
+}
 
 onBeforeUnmount(() => {
   if (manager) {
@@ -755,6 +771,7 @@ function yesNo(value) {
 
 watch(() => props.step, (step, oldStep) => {
   if (!manager) return
+  syncManagedBackground()
   applyStateToken++
   // Clear stale stage state when returning to non-story screens.
   if (!step?.state) {
@@ -784,7 +801,12 @@ watch(() => props.step, (step, oldStep) => {
 })
 
 watch(() => props.fallbackBg, () => {
-  if (!manager || props.step?.state?.bg) return
+  if (!manager) return
+  if (props.manageBackground) {
+    syncManagedBackground()
+    return
+  }
+  if (props.step?.state?.bg) return
   if (props.fallbackBg) manager.setBackground(props.fallbackBg)
   else manager.clearBackground()
 })

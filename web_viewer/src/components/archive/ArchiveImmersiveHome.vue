@@ -17,6 +17,7 @@
       ref="spineStageRef"
       :step="renderStep"
       :fallback-bg="selectedBackground"
+      :manage-background="true"
       :debug-controls="false"
       @ready="stageReady = true"
       @error="stageError = true"

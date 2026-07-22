@@ -1,5 +1,7 @@
 # Background Transition Runtime 唯一 Owner 验收
 
+> 状态更新：StoryViewer 内的迁移与旧 rollback 分支清理已完成；URL flag 说明仅作为迁移历史保留。首页 `ArchiveImmersiveHome` 是不经过 Story Runtime 的独立 `SpineStage` consumer，现已通过 opt-in `manageBackground` contract 获得 standalone background owner；没有恢复本文已删除的全局 legacy writer。
+
 日期：2026-07-22
 
 ## 结论

@@ -1,6 +1,6 @@
 # 剧情预览器：最新审计、进度与下一窗口交接（2026-07-22）
 
-> 实现审计基线：PR #1 `codex/story-localization-contract`，最后一个非文档提交 `b03b164a159f0df0063cb318bd3a0834c5e84dbf`；本文提交后分支 HEAD 会继续前进
+> 实现审计基线：PR #1 `codex/story-localization-contract`，当前已推送基线 `2677c67a47ca12f7f8cbf5212b02381f747b91c4`；本文提交后分支 HEAD 会继续前进
 > 文档用途：给新窗口提供唯一的“现在做到哪里、什么还不能宣称完成、下一步如何验证”入口。
 > 本文不是新的架构规范；发生冲突时，运行语义以 Runtime 设计文档为准，文本身份与翻译行为以 Localization Contract 为准。
 
@@ -71,11 +71,12 @@ Git 可复核事实
 
 - `ScenarioNormalizer` 能把 legacy scenario 转为 runtime v2 compatibility shape。
 - `StoryClock`、`EffectScheduler`、`PerformanceRegistry`、`SceneSnapshotStore`、`PlaybackModeController` 和 `useStoryRuntimeCues` 已落地。
-- Spine timeline channel 默认启用新调度，保留 `runtimeSpine=0` 回滚入口。
-- Camera、SE、screen、background、snapshot 已有 cue/handler 基础和 feature flag。
+- Spine timeline、Camera、SE、Screen、Background、Snapshot 均已由 `useStoryRuntimeCues` 及其 channel runtime 唯一持有。
+- `runtimeCues`、`runtimeSpine`、`runtimeCamera`、`runtimeSE`、`runtimeScreen`、`runtimeBackground`、`runtimeSnapshots` 已全部退役；Git 中各独立 owner 提交是回滚边界。
 - 回退使用 navigation snapshot，并取消当前 transient；Choice/History 保存稳定身份。
 - Auto/Skip 会询问 Runtime 的 blocking/non-skippable 状态，不再只是裸增 step index。
-- 已针对 Spine neck 动画、镜头延迟、fade overlay、背景 wipe、SE cue 等建立回归验证。
+- 已删除 `useTimelineRunner`、legacy SE timers、旧 scene background/camera/fade/wipe writers，并针对 Spine neck、镜头延迟、fade overlay、背景 wipe、SE cue 和 source-only checkout 建立回归验证。
+- 2026-07-22 后续审计曾发现：首页 `ArchiveImmersiveHome` 直接使用 `SpineStage`，但不创建 Story Runtime；旧 background writer 删除后该独立入口没有 Pixi background owner，呈现黑色画布。现已通过默认关闭、首页显式启用的 `SpineStage.manageBackground` standalone contract 修复，未恢复 StoryViewer 双 owner。
 
 ### 3.2 Localization 已完成
 
@@ -145,23 +146,11 @@ schema_version = 2             = 0
 
 禁止为了得到 `text_ref`，直接拿单个 raw part 覆盖正式 episode。
 
-### 4.3 Runtime 仍有双路径
+### 4.3 Story Runtime 双路径已清理，但独立消费者需要显式 owner
 
-`StoryViewer.vue` 当前同时创建：
+`StoryViewer.vue` 已删除 `useTimelineRunner` 和 feature flags；Screen、Background、Camera、SE、Snapshot 与 Spine cue 不再存在默认/rollback 双写路径。`useStepSceneEffects` 仅保留 voice、BGM、ambient 与 transition-step 自动推进，不再写入已迁移 channel。
 
-```text
-useTimelineRunner          旧 Spine timeline runner
-useStepSceneEffects        旧 scene/audio/auto timers
-useStoryRuntimeCues        新 Clock/Scheduler/Registry
-```
-
-默认状态：
-
-- Spine：新 Runtime 默认开启，`runtimeSpine=0` 可回退；
-- camera/SE/screen/background/snapshot：除非 query flag 开启，否则仍由旧路径或现有组件承担；
-- 两个 watcher 仍同时观察 `currentStep`，依靠 channel flag 避免重复执行。
-
-所以“Runtime 核心存在”不等于“旧执行器已删除”。
+新的边界要求是：不通过 `StoryViewer`、而是直接复用 `SpineStage` 的页面，必须显式声明自身的 Background Runtime/standalone owner。首页现已实现并验证该 contract；verifier 同时禁止通用 scene application 恢复全局 legacy background writer。
 
 ### 4.4 音频尚未统一
 
@@ -204,19 +193,11 @@ translation state
 - v2 schema 仍允许 legacy `text/text_jp/text_cn`，多个结构仍为 `additionalProperties: true`。
 - 迁移期宽容是有意行为，但正式 v2 发布前必须区分 compatibility input 与 authoritative compiler output。
 
-### 4.8 Release acceptance 尚未完成
+### 4.8 Release acceptance 已完成基础矩阵，稳定性长测尚未完成
 
-当前已有大量 verifier 与局部浏览器验收，但这个 38-commit PR 尚未完成统一发布验收：
+已完成并记录：source-only checkout 的 `npm ci`、Runtime/Localization/Translation/Text verifier 与 build；完整本机挂载 build；1280×720、1920×1080、390×844；a/d 固定锚点；退役 URL 参数与 default 行为一致。详细证据见 `STORY_RUNTIME_RELEASE_MATRIX_20260722.md`。
 
-- source-only checkout；
-- 带完整本机 public/assets 的 full build；
-- 1280×720、1920×1080、390×844；
-- Chrome/Edge 的首次音频解锁；
-- 跨 episode 连续播放；
-- default flags 与 `runtimeCues=1` 的录屏对照；
-- `runtimeSpine=0` 回滚路径；
-- 长时间 Auto/Skip/Backlog/Choice 混合操作；
-- 内存、重复 AudioContext、未释放 Spine/Timer 检查。
+仍未完成：Chrome/Edge 首次音频解锁对照、跨 episode 长时间连续播放、长时间 Auto/Skip/Backlog/Choice 混合操作、后台切换恢复、重复 AudioContext、未释放 Spine/Timer 与持续内存增长检查。首页背景修复完成前，资料馆首页也不能列为发布通过。
 
 ## 5. 进度估算
 
@@ -224,29 +205,31 @@ translation state
 
 | 工作流 | 当前估算 | 说明 |
 | --- | ---: | --- |
-| Runtime 核心抽象 | 80% | Clock/Scheduler/Registry/Snapshot/PlaybackMode 已有 |
-| Runtime channel 迁移 | 55% | Spine 已默认；其余 channel 尚未全部成为唯一 owner |
-| Runtime 旧路径清理 | 20% | `useTimelineRunner`、旧 scene timer 与双 watcher 仍存在 |
+| Runtime 核心抽象 | 90% | Clock/Scheduler/Registry/Snapshot/PlaybackMode 与 channel lifecycle 已落地 |
+| Runtime channel 迁移 | 100% | StoryViewer 内六个 channel 已唯一 owner；首页 standalone background consumer 已显式补契约 |
+| Runtime 旧路径清理 | 95% | timeline、旧 scene writers、SE timers 与 flags 已删除；保留的 voice/BGM/ambient/auto 各有实际职责 |
 | 音频统一 | 25% | voice 与 BGM/SE/ambient 仍分离 |
 | Localization 契约与基础设施 | 90% | schema/compiler/repository/resolver/verifier 已形成纵向切片 |
 | 正式剧情文本身份迁移 | <1% | 首个 `1_4_001_01` collection 已发布；其余 corpus 仍是 legacy |
 | 双语结构化 UI | 65% | ADV、Choice、Backlog 已结构化；Title/Synopsis/Mobile/Call 待迁移 |
 | 实体/门户翻译覆盖 | <10% | 仅 3 个偶像 draft 样本 |
-| PR release acceptance | 40% | 自动验证较多，统一设备/flag/跨 episode 验收未完成 |
+| PR release acceptance | 75% | source/full build、三档 viewport、a/d 锚点已完成；长时间音频/内存/后台恢复待测 |
 
-按“可安全发布基础架构、但不要求完成批量翻译”作为总目标，目前约为 **65%–70%**。最大剩余工作不是继续写新类，而是正式产物迁移、唯一 owner 收口和发布验收。
+按“可安全发布基础架构、但不要求完成批量翻译”作为总目标，目前约为 **85%**。首页 standalone background owner 已完成；之后主要剩余工作是音频统一、其余结构化双语 UI、更多正式产物迁移和长时间发布验收。
 
 ## 6. 下一窗口推荐执行顺序
 
-### P0-A：先做 PR release acceptance，不改功能
+### P0-A：修复首页 standalone background owner
 
-目标：确认 `b03b164` 可以作为后续工作的稳定基线。
+状态：已完成。首页使用 opt-in `manageBackground` contract；StoryViewer 保持 Runtime 唯一 owner；首页数据、源码 contract、桌面、切换偶像与移动端浏览器验收通过。详细证据见 `ARCHIVE_HOME_BACKGROUND_OWNER_20260722.md`。
 
-1. 从干净 source-only checkout 安装依赖并构建。
-2. 在挂载完整本机数据后运行全部 verifier。
-3. 对固定剧情锚点跑 default、`runtimeCues=1`、`runtimeSpine=0` 三组。
-4. 记录失败属于代码、生成数据、媒体挂载还是正式演出差异。
-5. 未通过前不开始批量重编。
+目标：让 `ArchiveImmersiveHome` 在不恢复 StoryViewer legacy writer 的前提下显式拥有首页背景。
+
+1. 为直接使用 `SpineStage` 的独立页面增加显式 background-owner contract。
+2. 首页使用该 contract；StoryViewer 保持 Runtime 唯一 owner。
+3. verifier 同时断言首页 consumer 声明、背景资源身份与 StoryViewer 不双写。
+4. 单标签验证桌面、移动端、切换台词/背景和 console error。
+5. 更新首页与 Runtime owner 审计记录。
 
 ### P0-B：实现“正式剧情重编差异审计”，先 dry-run
 
@@ -305,6 +288,8 @@ timeline/cue 数量与时间
 
 ### P0-C：把 Runtime channel 逐一变成唯一 owner
 
+状态：StoryViewer 范围已完成。Screen、Background、Camera、SE、Snapshot、Spine 分别通过独立提交迁移，随后删除旧 timeline/scene compatibility 分支和 URL flags。下面的顺序作为历史执行记录保留。
+
 推荐顺序：
 
 ```text
@@ -318,7 +303,7 @@ screen/fade
 
 每迁移一个 channel：
 
-1. default 与 flag-on 行为对照；
+1. default 与迁移期 flag-on 行为对照；
 2. settle/cancel/restore/resize 各测一次；
 3. 删除该 channel 的旧 timer/RAF owner；
 4. 保留一个明确回滚 commit；
@@ -357,7 +342,7 @@ screen/fade
 - 统一 voice/BGM/SE/ambient 的 unlock、pause/resume、rate 与 dispose；
 - 删除不再使用的 `text_speed` 或标记 deprecated；
 - 收紧 authoritative v2 schema；
-- 最后删除 feature flags 和 compatibility fields，而不是提前删除回滚入口。
+- feature flags 已在各 channel 默认验收后删除；剩余 compatibility fields 应随 authoritative v2 schema 收紧独立处理。
 
 ## 7. 固定演出验收锚点
 
@@ -461,7 +446,7 @@ npm run build
 | 维度 | 必测值 |
 | --- | --- |
 | Viewport | 1920×1080、1280×720、390×844 |
-| Runtime | default、`runtimeCues=1`、`runtimeSpine=0` |
+| Runtime | default；退役 query 参数必须与 default 等价；首页 standalone owner 不得写入 StoryViewer channel |
 | 导航 | Next、快速二次 Next、Prev、Backlog restore、Choice、episode end/next |
 | 播放模式 | 手动、Auto、Skip all、Skip read |
 | 音频 | 首次解锁、voice、SE、BGM、ambient、切后台、恢复、结束 dispose |
@@ -491,10 +476,10 @@ npm run build
 2. notes/04_refactor/STORY_VIEWER_RUNTIME_REFACTOR_DESIGN_20260718.md
 3. notes/04_refactor/STORY_LOCALIZATION_CONTRACT_20260719.md
 
-当前实现审计基线是 PR #1、branch codex/story-localization-contract、最后一个非文档提交 b03b164；请以实际远端 HEAD 为准。
-先核对实际 HEAD 与干净工作区，并确认 b03b164 之后是否只有交接文档提交；不要假设正式 compiled 已有 text_ref。
-优先执行 release acceptance 或正式重编 dry-run diff；不要直接覆盖 1_4_001_01_d，也不要批量翻译。
-任何 Runtime channel 修改都必须证明唯一 owner，并分别验证 settle、cancel、restore 与 runtimeSpine=0 回滚。
+当前实现审计基线是 PR #1、branch codex/story-localization-contract、已推送 HEAD 2677c67；请以实际远端 HEAD 为准。
+StoryViewer 的六个 Runtime channel 与旧路径清理已经完成；当前 P0 是首页直接复用 SpineStage 后缺少 standalone background owner 的黑屏回归。
+修复不得把背景写入重新放回 applyStepSceneState；应显式区分首页 consumer 与 StoryViewer Runtime owner。
+正式 compiled 仅迁移首个 1_4_001_01 collection；不要直接覆盖单个 episode，也不要批量翻译。
 分批提交并推送，每批说明已验证和仍未验证的内容。
 ```
 
@@ -503,12 +488,13 @@ npm run build
 下一阶段只有同时满足以下条件，才能宣称 Runtime/Localization 基础架构可合并：
 
 - PR release matrix 通过；
-- 固定 a/d 锚点在 default 与 flag matrix 下通过；
+- 固定 a/d 锚点在 default 下通过，退役 query 参数与 default 等价；
 - 正式重编 dry-run 证明非文本演出字段无未批准差异；
 - 至少一个正式 story collection 获得 text identity、overlay 与浏览器验收；
 - 双语 primary/secondary 至少在 ADV、Choice、Backlog 中结构化渲染；
 - 旧路径按 channel 删除，或明确列出仍保留的 owner 和回滚期限；
 - source-only 与完整本机 build 都通过；
+- 首页 standalone background owner 在桌面/移动端与切换场景下通过；
 - 文档、schema、fixture、verifier 与实现同步。
 
 批量翻译覆盖、完整实体翻译、Chibi 特效和翻译后台仍不属于这一完成定义。

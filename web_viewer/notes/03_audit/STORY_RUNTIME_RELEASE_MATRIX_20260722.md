@@ -90,3 +90,11 @@ http://127.0.0.1:5174/?view=player&scenario=fixtures%2Fstory_localization_stress
 - `5174` 返回 HTTP 200；验收结束后恢复 `1_4_001_01_d` step 1–48 地址，浏览器仍只有一个标签页。
 
 仍未在本轮执行长时间内存观察、后台切换和完整音频 mixer 生命周期；这些属于后续 P3 音频统一/稳定性工作，不影响本次 Runtime/Localization 基础设施 owner 收口结论。
+
+## 2026-07-22 首页 consumer 回归与修复
+
+后续首页复核发现：`ArchiveImmersiveHome` 直接使用 `SpineStage`，不经过 StoryViewer 的 `useStoryRuntimeCues`。`baf44df` 删除全局 legacy background writer 后，首页虽然正确解析 `bg001_315pro_in_01`，但没有把背景写入以黑色清屏的 Pixi stage，因此呈现黑屏。
+
+这说明“StoryViewer Background Runtime 唯一 owner”已经成立，但当时“所有直接复用 SpineStage 的 consumer 都有显式背景 owner”尚未成立。
+
+后续已增加默认关闭、仅由首页显式启用的 `SpineStage.manageBackground` standalone contract；没有恢复 `applyStepSceneState` 的背景写入。桌面、冬马→翔太切换及 `390×844` 移动端均恢复 `bg001_315pro_in_01`，DOM owner 为 `standalone`、应用级 console error 为 0、移动端无横向溢出。资料馆首页本项更新为 PASS；详细证据见 `ARCHIVE_HOME_BACKGROUND_OWNER_20260722.md`。

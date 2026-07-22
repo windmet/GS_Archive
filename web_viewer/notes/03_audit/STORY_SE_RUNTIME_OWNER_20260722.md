@@ -1,5 +1,7 @@
 # SE Runtime 唯一 Owner 验收
 
+> 状态更新：迁移期 rollback flag 与 legacy SE timers 已在 `STORY_RUNTIME_LEGACY_OWNER_CLEANUP_20260722.md` 所记录的清理提交中退役；ambient、BGM、voice 仍属于后续音频统一范围。
+
 日期：2026-07-22
 
 ## 结论
