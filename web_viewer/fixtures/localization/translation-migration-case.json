@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "old_evidence": {
+    "scenario_id": "migration_case",
+    "source_raw_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "text_units": [
+      {
+        "unit_id": "story-text:v1:migration_case:part_a:cmd-000001:dialogue:000",
+        "source_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      {
+        "unit_id": "story-text:v1:migration_case:part_a:cmd-000002:dialogue:000",
+        "source_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      {
+        "unit_id": "story-text:v1:migration_case:part_a:cmd-000003:dialogue:000",
+        "source_hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "speaker": { "kind": "idol", "entity_type": "idol", "entity_id": "001tom", "source_name": "天道 輝" },
+        "previous_source_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "next_source_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+      },
+      {
+        "unit_id": "story-text:v1:migration_case:part_a:cmd-000004:dialogue:000",
+        "source_hash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "speaker": { "kind": "named", "source_name": "店員" },
+        "previous_source_hash": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+        "next_source_hash": "sha256:4444444444444444444444444444444444444444444444444444444444444444"
+      },
+      {
+        "unit_id": "story-text:v1:migration_case:part_a:cmd-000005:dialogue:000",
+        "source_hash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+      }
+    ]
+  },
+  "old_overlay": {
+    "schema_version": 1,
+    "locale": "zh-CN",
+    "scenario_id": "migration_case",
+    "source_raw_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "entries": {
+      "story-text:v1:migration_case:part_a:cmd-000001:dialogue:000": { "source_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "text": "精确", "status": "reviewed" },
+      "story-text:v1:migration_case:part_a:cmd-000002:dialogue:000": { "source_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "text": "过期", "status": "reviewed" },
+      "story-text:v1:migration_case:part_a:cmd-000003:dialogue:000": { "source_hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "text": "移动", "status": "reviewed" },
+      "story-text:v1:migration_case:part_a:cmd-000004:dialogue:000": { "source_hash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", "text": "歧义", "status": "reviewed" },
+      "story-text:v1:migration_case:part_a:cmd-000005:dialogue:000": { "source_hash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "text": "孤儿", "status": "reviewed" }
+    }
+  },
+  "new_evidence": {
+    "scenario_id": "migration_case",
+    "source_raw_hash": "sha256:9999999999999999999999999999999999999999999999999999999999999999",
+    "text_units": [
+      {
+        "unit_id": "story-text:v1:migration_case:part_a:cmd-000001:dialogue:000",
+        "source_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      {
+        "unit_id": "story-text:v1:migration_case:part_a:cmd-000002:dialogue:000",
+        "source_hash": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      },
+      {
+        "unit_id": "story-text:v1:migration_case:part_a:cmd-000030:dialogue:000",
+        "source_hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "speaker": { "kind": "idol", "entity_type": "idol", "entity_id": "001tom", "source_name": "天道 輝" },
+        "previous_source_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "next_source_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+      },
+      {
+        "unit_id": "story-text:v1:migration_case:part_a:cmd-000040:dialogue:000",
+        "source_hash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "speaker": { "kind": "named", "source_name": "店員" },
+        "previous_source_hash": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+        "next_source_hash": "sha256:4444444444444444444444444444444444444444444444444444444444444444"
+      },
+      {
+        "unit_id": "story-text:v1:migration_case:part_a:cmd-000041:dialogue:000",
+        "source_hash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "speaker": { "kind": "named", "source_name": "店員" },
+        "previous_source_hash": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+        "next_source_hash": "sha256:4444444444444444444444444444444444444444444444444444444444444444"
+      },
+      {
+        "unit_id": "story-text:v1:migration_case:part_a:cmd-000006:dialogue:000",
+        "source_hash": "sha256:6666666666666666666666666666666666666666666666666666666666666666"
+      }
+    ]
+  },
+  "expected_counts": {
+    "matched_exact": 1,
+    "moved_high_confidence": 1,
+    "stale_same_coordinate": 1,
+    "ambiguous": 1,
+    "orphaned": 1,
+    "new": 3
+  }
+}
