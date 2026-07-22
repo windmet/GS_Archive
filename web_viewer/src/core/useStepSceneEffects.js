@@ -1,5 +1,5 @@
 import { getAutoAdvanceTiming } from '../utils/StoryStepFlow.js'
-import { isRuntimeCueChannelEnabled } from './story-runtime/RuntimeFeatureFlags.js'
+import { getRuntimeCueFeatureFlags } from './story-runtime/RuntimeFeatureFlags.js'
 
 export function useStepSceneEffects({
   currentStepIndex,
@@ -15,6 +15,7 @@ export function useStepSceneEffects({
   snapshotAction,
   isAutoBlocked = () => false,
   beforeAutoAdvance = () => {},
+  runtimeFlags = getRuntimeCueFeatureFlags(),
 }) {
   let _fadeAutoTimer = null
   let _fadeAutoSeq = 0
@@ -79,7 +80,7 @@ export function useStepSceneEffects({
       spineStageRef.value?.manager?.cancelAllSpineTweens?.()
     }
 
-    if (!restore && !isRuntimeCueChannelEnabled('se')) {
+    if (!restore && !runtimeFlags.se) {
       const seEvents = Array.isArray(newStep?.state?.se_events) ? newStep.state.se_events : []
       if (seEvents.length > 0) {
         for (const se of seEvents) {
@@ -145,7 +146,7 @@ export function useStepSceneEffects({
 
     if (!restore) {
       voicePlayer?.playVoice?.()
-      if (!isRuntimeCueChannelEnabled('spine')) startTimeline()
+      if (!runtimeFlags.spine) startTimeline()
       scheduleSnapshot()
     }
   }

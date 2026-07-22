@@ -16,6 +16,8 @@ import { applyScreenEntrySnapshot, createScreenCueHandle } from '../src/core/sto
 import { applyBackgroundEntrySnapshot, createBackgroundCueHandle } from '../src/core/story-runtime/BackgroundCueRuntime.js'
 import { applyCameraEntrySnapshot, createCameraCueHandle } from '../src/core/story-runtime/CameraCueRuntime.js'
 import { CameraController } from '../src/core/CameraController.js'
+import { createSeCueHandle } from '../src/core/story-runtime/SeCueRuntime.js'
+import { useStepSceneEffects } from '../src/core/useStepSceneEffects.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -123,19 +125,21 @@ async function verifyEffectScheduler() {
   assert.equal(scheduler.hasBlockingAuto(), false)
 
   assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCues=1'), { camera: true, se: true, screen: true, background: true, snapshot: true, spine: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCamera=1'), { camera: true, se: false, screen: true, background: true, snapshot: false, spine: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCamera=0'), { camera: false, se: false, screen: true, background: true, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCamera=1'), { camera: true, se: true, screen: true, background: true, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCamera=0'), { camera: false, se: true, screen: true, background: true, snapshot: false, spine: true })
   assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCues=1&runtimeCamera=0'), { camera: false, se: true, screen: true, background: true, snapshot: true, spine: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeScreen=1'), { camera: true, se: false, screen: true, background: true, snapshot: false, spine: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeScreen=0'), { camera: true, se: false, screen: false, background: true, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSE=0'), { camera: true, se: false, screen: true, background: true, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCues=1&runtimeSE=0'), { camera: true, se: false, screen: true, background: true, snapshot: true, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeScreen=1'), { camera: true, se: true, screen: true, background: true, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeScreen=0'), { camera: true, se: true, screen: false, background: true, snapshot: false, spine: true })
   assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCues=1&runtimeScreen=0'), { camera: true, se: true, screen: false, background: true, snapshot: true, spine: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeBackground=1'), { camera: true, se: false, screen: true, background: true, snapshot: false, spine: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeBackground=0'), { camera: true, se: false, screen: true, background: false, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeBackground=1'), { camera: true, se: true, screen: true, background: true, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeBackground=0'), { camera: true, se: true, screen: true, background: false, snapshot: false, spine: true })
   assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCues=1&runtimeBackground=0'), { camera: true, se: true, screen: true, background: false, snapshot: true, spine: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSnapshots=1'), { camera: true, se: false, screen: true, background: true, snapshot: true, spine: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSpine=1'), { camera: true, se: false, screen: true, background: true, snapshot: false, spine: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSpine=0'), { camera: true, se: false, screen: true, background: true, snapshot: false, spine: false })
-  assert.deepEqual(getRuntimeCueFeatureFlags(''), { camera: true, se: false, screen: true, background: true, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSnapshots=1'), { camera: true, se: true, screen: true, background: true, snapshot: true, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSpine=1'), { camera: true, se: true, screen: true, background: true, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSpine=0'), { camera: true, se: true, screen: true, background: true, snapshot: false, spine: false })
+  assert.deepEqual(getRuntimeCueFeatureFlags(''), { camera: true, se: true, screen: true, background: true, snapshot: false, spine: true })
   await scheduler.dispose()
 
   let releaseAsyncStart
@@ -291,6 +295,29 @@ async function verifyCameraCueOwner() {
   await cancelled.start()
   await cancelled.cancel('navigation')
   assert.deepEqual(calls.at(-1), ['camera:cancel'])
+}
+
+async function verifySeCueOwner() {
+  const calls = []
+  const audioManager = {
+    preloadSE: cue => calls.push(['se:preload', cue]),
+    playSE: cue => calls.push(['se:play', cue]),
+  }
+  const makeCue = (id, cue) => ({
+    cue_id: id, channel: 'se', action: 'se.play', duration: 0,
+    payload: { cue }, lifecycle: { skippable: true, blocks_input: false, blocks_auto: false },
+  })
+  const first = createSeCueHandle(makeCue('se-cloth', 'cloth_move_l01'), audioManager)
+  const second = createSeCueHandle(makeCue('se-vibraslap', 'vibraslap_comical'), audioManager)
+  assert.deepEqual(calls, [['se:preload', 'cloth_move_l01'], ['se:preload', 'vibraslap_comical']])
+  await first.start()
+  await second.settle('user-next')
+  assert.deepEqual(calls, [
+    ['se:preload', 'cloth_move_l01'], ['se:preload', 'vibraslap_comical'], ['se:play', 'cloth_move_l01'],
+  ], 'settling a scheduled transient SE must suppress it without affecting an earlier SE')
+  const cancelled = createSeCueHandle(makeCue('se-cancel', 'cancel_me'), audioManager)
+  await cancelled.cancel('navigation')
+  assert.equal(calls.some(call => call[0] === 'se:play' && call[1] === 'cancel_me'), false)
 }
 
 function verifyCameraResize() {
@@ -458,6 +485,28 @@ function verifyCameraOwnerSelection() {
   assert.deepEqual(calls, [], 'default scene application must leave camera writes to Runtime')
   applyStepSceneState({ ...input, runtimeFlags: getRuntimeCueFeatureFlags('?runtimeCamera=0') })
   assert.deepEqual(calls, [['camera:set', input.state.camera_zoom]])
+}
+
+function verifySeOwnerSelection() {
+  const calls = []
+  const base = {
+    currentStepIndex: { value: 0 }, isLastStep: { value: false }, historyStack: { value: [] },
+    spineStageRef: { value: null },
+    audioManager: {
+      preloadSE: cue => calls.push(['se:preload', cue]), playSE: cue => calls.push(['se:play', cue]),
+      playAmbient: () => {}, stopAmbient: () => {}, setAmbientVolume: () => {}, playBgm: () => {}, stopBgm: () => {},
+    },
+    voicePlayer: { playVoice: () => {} }, resetVoiceDedup: () => {}, startTimeline: () => {},
+  }
+  const step = { step_id: 1, type: 'adv', state: { se_events: [{ cue: 'cloth_move_l01', delay: 0 }] } }
+  const runtime = useStepSceneEffects({ ...base, runtimeFlags: getRuntimeCueFeatureFlags('') })
+  runtime.handleStepChange(step, null)
+  assert.deepEqual(calls, [], 'default step watcher must not create a legacy SE timer or playback')
+  const rollback = useStepSceneEffects({ ...base, runtimeFlags: getRuntimeCueFeatureFlags('?runtimeSE=0') })
+  rollback.handleStepChange(step, null)
+  assert.deepEqual(calls, [['se:preload', 'cloth_move_l01'], ['se:play', 'cloth_move_l01']])
+  runtime.cleanup()
+  rollback.cleanup()
 }
 
 function memoryStorage(initial = {}) {
@@ -698,14 +747,16 @@ await verifyEffectScheduler()
 await verifyScreenCueOwner()
 await verifyBackgroundCueOwner()
 await verifyCameraCueOwner()
+await verifySeCueOwner()
 verifyCameraResize()
 verifySceneSnapshotStore()
 verifyNavigationOverlayReset()
 verifyScreenOwnerSelection()
 verifyBackgroundOwnerSelection()
 verifyCameraOwnerSelection()
+verifySeOwnerSelection()
 verifyPlayerStateRepositories()
 verifyPlaybackModeController()
 await verifyScenarioNormalizer()
 
-console.log('Story runtime foundation: clock, lifecycle, IR v2, default Screen/Background/Camera owners, SE, and cue normalization verified')
+console.log('Story runtime foundation: clock, lifecycle, IR v2, default Screen/Background/Camera/SE owners and cue normalization verified')

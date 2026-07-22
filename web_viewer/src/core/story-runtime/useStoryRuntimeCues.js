@@ -6,6 +6,7 @@ import { getRuntimeCueFeatureFlags } from './RuntimeFeatureFlags.js'
 import { applyScreenEntrySnapshot, createScreenCueHandle } from './ScreenCueRuntime.js'
 import { applyBackgroundEntrySnapshot, createBackgroundCueHandle } from './BackgroundCueRuntime.js'
 import { applyCameraEntrySnapshot, createCameraCueHandle } from './CameraCueRuntime.js'
+import { createSeCueHandle } from './SeCueRuntime.js'
 import { getCachedMotionSetting } from '../../utils/IdolMotionSettingStore.js'
 
 function clone(value) {
@@ -63,25 +64,6 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
       if (flags.background) applyBackgroundEntrySnapshot(manager, snapshot?.bg)
     }
     apply()
-  }
-
-  function createSeHandle(cue) {
-    audioManager.preloadSE?.(cue.payload.cue)
-    return createPerformanceHandle({
-      id: cue.cue_id,
-      channel: cue.channel,
-      skippable: cue.lifecycle.skippable,
-      blocksInput: cue.lifecycle.blocks_input,
-      blocksAuto: cue.lifecycle.blocks_auto,
-      metadata: { action: cue.action, cue },
-      onStart: () => {
-        console.debug('[StoryRuntime] cue start', cue.cue_id)
-        audioManager.playSE(cue.payload.cue)
-      },
-      // Settling a scheduled transient cue suppresses it instead of playing it.
-      onSettle: () => console.debug('[StoryRuntime] cue suppress', cue.cue_id),
-      onCancel: () => {},
-    })
   }
 
   function createSpineHandle(cue) {
@@ -196,7 +178,7 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
 
   const handlers = new Map()
   if (flags.camera) handlers.set('camera.transform', cue => createCameraCueHandle(cue, getManager))
-  if (flags.se) handlers.set('se.play', createSeHandle)
+  if (flags.se) handlers.set('se.play', cue => createSeCueHandle(cue, audioManager))
   if (flags.screen) {
     handlers.set('screen.directional_wipe', cue => createScreenCueHandle(cue, getManager))
     handlers.set('screen.fade', cue => createScreenCueHandle(cue, getManager))
