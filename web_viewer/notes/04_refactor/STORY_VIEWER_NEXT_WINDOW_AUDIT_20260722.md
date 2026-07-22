@@ -258,6 +258,27 @@ translation state
 scripts/report-compiled-scenario-migration.mjs
 ```
 
+当前实现入口：
+
+```powershell
+npm run verify:compiled-migration
+npm run story:migration-candidate -- `
+  --raw-group-dir <raw group 目录> `
+  --group-id <group id> `
+  --expected-parts <例如 a-j> `
+  --output-dir <web_viewer 之外的空临时目录>
+node scripts/report-compiled-scenario-migration.mjs `
+  --old <旧 compiled.json> `
+  --new <临时新 compiled.json> `
+  --json-out <审计报告.json> `
+  --summary-out <摘要.txt> `
+  --check
+```
+
+`--check` 在 scenario identity、step 数量/类型、episode boundary、来源文本或任意非文本字段发生差异时返回失败。新增 `text_ref`、speaker identity、choice/option identity 作为文本证据单独报告，不计为非文本演出差异。正式迁移仍须使用真实的旧/新产物运行该命令；脚本自测通过不等于任何正式 episode 已获准替换。
+
+2026-07-22 首次正式 group dry-run 已对 `1_4_001_01` 的 aggregate 与 a–j 十个 episode 全部通过：aggregate 432→432 steps，新增 209 个文本单元，十个 episode 均为 0 个非文本差异；voice relink 为 139/139。详细证据见 [正式剧情重编差异审计：首个 group dry-run](../03_audit/STORY_COMPILED_MIGRATION_DRY_RUN_20260722.md)。这只证明该 group 的候选重编语义稳定，尚未授权覆盖正式产物。
+
 输入旧 compiled 与临时新 compiled，至少报告：
 
 ```text
