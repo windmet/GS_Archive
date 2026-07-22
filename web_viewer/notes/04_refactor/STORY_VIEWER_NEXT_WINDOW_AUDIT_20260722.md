@@ -1,6 +1,6 @@
 # 剧情预览器：最新审计、进度与下一窗口交接（2026-07-22）
 
-> 实现审计基线：PR #1 `codex/story-localization-contract`，当前实现提交 `3ecd5b54d108d5ab83ef320f99ac01b9e520df1a`；本文提交后分支 HEAD 会继续前进
+> 实现审计基线：PR #1 `codex/story-localization-contract`，当前实现提交 `816d5847e7a8066e3a3f2e90b68a3390cbc68efb`；本文提交后分支 HEAD 会继续前进
 > 文档用途：给新窗口提供唯一的“现在做到哪里、什么还不能宣称完成、下一步如何验证”入口。
 > 本文不是新的架构规范；发生冲突时，运行语义以 Runtime 设计文档为准，文本身份与翻译行为以 Localization Contract 为准。
 
@@ -19,7 +19,8 @@
 ### 1.2 补充背景
 
 - [资料门户与剧情浏览交接](./ARCHIVE_STORY_NEXT_WINDOW_HANDOFF_20260716.md)：集合页、episode 边界、门户路由与档案证据边界。
-- [Compiled Scenario v2 Schema](../../schemas/compiled-scenario-v2.schema.json)：迁移期 IR 结构；当前仍是宽容 schema，不代表正式 v2 已完成收紧。
+- [Compiled Scenario v2 Compatibility Schema](../../schemas/compiled-scenario-v2.schema.json)：迁移期输入结构，必须保持宽容以承接 legacy corpus。
+- [Authoritative Compiled Scenario v2 Schema](../../schemas/compiled-scenario-v2-authoritative.schema.json)：严格 compiler output contract；首批正式文本身份迁移尚未符合该契约。
 - [剧情翻译 Overlay Schema](../../schemas/story-translation-overlay-v1.schema.json)：剧情译文静态格式。
 - [实体翻译 Overlay Schema](../../schemas/entity-translation-overlay-v1.schema.json)：偶像/NPC/组合等实体译名格式。
 
@@ -187,11 +188,14 @@ translation state
 - 门户所有标题/简介的 overlay；
 - 术语表和人名表的正式治理流程。
 
-### 4.7 Preferences 与 schema 技术债
+### 4.7 Preferences 与 schema 契约已分层，compiler 输出切换待完成
 
-- `PlayerPreferencesRepository` 仍保留未使用的 `text_speed`；下一轮应删除，或明确标记 `reserved/deprecated` 且不暴露 UI。
-- v2 schema 仍允许 legacy `text/text_jp/text_cn`，多个结构仍为 `additionalProperties: true`。
-- 迁移期宽容是有意行为，但正式 v2 发布前必须区分 compatibility input 与 authoritative compiler output。
+- `text_speed` 已从实际 Preferences v2 输出退役；读取旧 v2 localStorage 时会保留其他字段并自动移除该键（`7c1f1b2`）。
+- 原 `compiled-scenario-v2.schema.json` 已明确命名为 compatibility input，继续允许 legacy `text/text_jp/text_cn` 与迁移期未知字段。
+- 新增严格 `compiled-scenario-v2-authoritative.schema.json`，禁止 legacy state/timeline/text 字段和未知顶层/step/dialogue/choice/flow 属性（`816d584`）。
+- `verify:story-schema` 使用 JSON Schema 2020-12 validator 覆盖正反例，并明确判定首批 `1_4_001_01` 仍是 compatibility input。详细证据见 [Authoritative v2 Schema 审计](../03_audit/STORY_AUTHORITATIVE_V2_SCHEMA_20260723.md)。
+
+仍未完成的是 compiler authoritative candidate 生成与正式 corpus 切换；schema contract 已收紧，不等于输出迁移已发布。
 
 ### 4.8 Release acceptance 已完成基础矩阵，稳定性长测尚未完成
 
@@ -209,13 +213,13 @@ translation state
 | Runtime channel 迁移 | 100% | StoryViewer 内六个 channel 已唯一 owner；首页 standalone background consumer 已显式补契约 |
 | Runtime 旧路径清理 | 95% | timeline、旧 scene writers、SE timers 与 flags 已删除；保留的 voice/BGM/ambient/auto 各有实际职责 |
 | 音频统一 | 90% | 单 AudioContext、四 bus、统一 unlock/pause/rate/dispose 与 BGM/Ambient capture/restore 已完成；长测待做 |
-| Localization 契约与基础设施 | 90% | schema/compiler/repository/resolver/verifier 已形成纵向切片 |
+| Localization 契约与基础设施 | 93% | compatibility/authoritative schema 已分层；compiler 严格输出尚待接入 |
 | 正式剧情文本身份迁移 | <1% | 首个 `1_4_001_01` collection 已发布；其余 corpus 仍是 legacy |
 | 双语结构化 UI | 100% | ADV、Choice、Backlog、Title、Synopsis、Mobile、Call 均已结构化 |
 | 实体/门户翻译覆盖 | <10% | 仅 3 个偶像 draft 样本 |
 | PR release acceptance | 80% | source/full build、三档 viewport、a/d 锚点与音频基础生命周期已完成；长时间音频/内存/后台恢复待测 |
 
-按“可安全发布基础架构、但不要求完成批量翻译”作为总目标，目前约为 **91%**。首页 standalone background owner、结构化双语 UI 与音频基础 owner/lifecycle 已完成；之后主要剩余工作是更多正式产物迁移、长时间发布验收，以及 preferences/schema 技术债收口。
+按“可安全发布基础架构、但不要求完成批量翻译”作为总目标，目前约为 **92%**。首页 standalone background owner、结构化双语 UI、音频基础 owner/lifecycle、Preferences 清理和 authoritative schema 分层已完成；之后主要剩余工作是 compiler 严格输出接入、更多正式产物迁移与长时间发布验收。
 
 ## 6. 下一窗口推荐执行顺序
 
@@ -340,11 +344,11 @@ screen/fade
 
 - AudioContext 和 mixer 唯一 owner：已完成（`3ecd5b5`）；
 - voice/BGM/SE/ambient 的 unlock、pause/resume、rate 与 dispose，以及 BGM/Ambient capture/restore：基础实现和 verifier 已完成；
-- 删除不再使用的 `text_speed` 或标记 deprecated；
-- 收紧 authoritative v2 schema；
+- 删除不再使用的 `text_speed`：已完成（`7c1f1b2`）；
+- 收紧 authoritative v2 schema：schema 与 verifier 已完成（`816d584`），compiler output 接入待完成；
 - feature flags 已在各 channel 默认验收后删除；剩余 compatibility fields 应随 authoritative v2 schema 收紧独立处理。
 
-下一步先执行音频/内存长测；实现侧随后独立处理 `text_speed` 与 authoritative v2 schema，避免把偏好迁移、schema 破坏性变更和正式 corpus 发布混在同一提交。
+下一步在临时目录为一个最小 collection 生成 authoritative compiler candidate，并执行 strict schema + migration diff；正式 corpus 发布继续独立提交。音频/内存长测也仍是合并前 release acceptance 项。
 
 ## 7. 固定演出验收锚点
 
@@ -478,9 +482,9 @@ npm run build
 2. notes/04_refactor/STORY_VIEWER_RUNTIME_REFACTOR_DESIGN_20260718.md
 3. notes/04_refactor/STORY_LOCALIZATION_CONTRACT_20260719.md
 
-当前实现审计基线是 PR #1、branch codex/story-localization-contract、音频实现提交 3ecd5b5；请以实际远端 HEAD 为准。
-StoryViewer 的六个 Runtime channel、旧路径清理、首页 standalone background owner、玩家内七类结构化双语 UI 与音频基础 owner/lifecycle 已完成。
-下一优先级是更多正式 collection 迁移、长时间 release acceptance，以及 text_speed/authoritative v2 schema 的独立收口；不要恢复 applyStepSceneState 的背景写入。
+当前实现审计基线是 PR #1、branch codex/story-localization-contract；音频实现 3ecd5b5、Preferences 清理 7c1f1b2、authoritative schema gate 816d584；请以实际远端 HEAD 为准。
+StoryViewer 的六个 Runtime channel、旧路径清理、首页 standalone background owner、玩家内七类结构化双语 UI、音频基础 owner/lifecycle、Preferences 清理与 schema 分层已完成。
+下一优先级是最小 authoritative compiler candidate、更多正式 collection 迁移和长时间 release acceptance；不要恢复 applyStepSceneState 的背景写入，也不要把 compatibility candidate 标成 authoritative v2。
 正式 compiled 仅迁移首个 1_4_001_01 collection；不要直接覆盖单个 episode，也不要批量翻译。
 分批提交并推送，每批说明已验证和仍未验证的内容。
 ```

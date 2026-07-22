@@ -99,6 +99,14 @@ http://127.0.0.1:5174/?view=player&scenario=fixtures%2Fstory_localization_stress
 
 尚未覆盖 Edge autoplay、自动化后台切换听感、真实 BGM/Ambient 长时间淡化恢复、跨 episode 长测及持续内存增长。音频 owner 阻塞已经解除，但 release stability 仍未完成。详细证据见 `STORY_AUDIO_SESSION_UNIFICATION_20260723.md`。
 
+## 2026-07-23 Preferences 与 authoritative schema follow-up
+
+- `7c1f1b2` 已退役未生效的 `text_speed`；旧 v2 localStorage 会自动清理该键并保留其他偏好，Runtime foundation 回归通过。
+- `816d584` 将原 v2 schema 明确限定为 compatibility input，并新增严格 authoritative compiler output schema、正反例 fixture 与 `npm run verify:story-schema`。
+- `verify:story-schema` 与 `verify:story-text` 均通过；本机首批 `1_4_001_01_a` 被明确判定为 compatibility input，未误报为 authoritative v2。
+
+当前仍缺 compiler 直接生成严格 v2 candidate 的实现与发布验收。因此 schema 门禁已具备，但正式 corpus 的 authoritative output 状态仍为未完成。详细证据见 `STORY_AUTHORITATIVE_V2_SCHEMA_20260723.md`。
+
 ## 2026-07-22 首页 consumer 回归与修复
 
 后续首页复核发现：`ArchiveImmersiveHome` 直接使用 `SpineStage`，不经过 StoryViewer 的 `useStoryRuntimeCues`。`baf44df` 删除全局 legacy background writer 后，首页虽然正确解析 `bg001_315pro_in_01`，但没有把背景写入以黑色清屏的 Pixi stage，因此呈现黑屏。

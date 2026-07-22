@@ -147,7 +147,7 @@ scripts/
 
 1. 本文负责文本身份、翻译覆盖、语言偏好、Choice/History 文本引用；
 2. [STORY_VIEWER_RUNTIME_REFACTOR_DESIGN_20260718.md](./STORY_VIEWER_RUNTIME_REFACTOR_DESIGN_20260718.md) 负责 step、cue、clock、scheduler、snapshot、adapter 和播放语义；
-3. [compiled-scenario-v2.schema.json](../../schemas/compiled-scenario-v2.schema.json) 是当前 Runtime IR 草案；后续必须按本文扩充 text definitions，不能只依赖 `additionalProperties`；
+3. [compiled-scenario-v2.schema.json](../../schemas/compiled-scenario-v2.schema.json) 是 Runtime compatibility input；[compiled-scenario-v2-authoritative.schema.json](../../schemas/compiled-scenario-v2-authoritative.schema.json) 是 2026-07-23 起的严格 compiler output contract。正式发布必须验证后者，不能把 compatibility input 通过误报成 authoritative v2；
 4. [ARCHIVE_STORY_NEXT_WINDOW_HANDOFF_20260716.md](./ARCHIVE_STORY_NEXT_WINDOW_HANDOFF_20260716.md) 负责门户与剧情集合后续范围；其中门户实体名称显示应改由本文的 EntityTranslationRepository 解释；
 5. [STORY_COLLECTION_INTERFACE_20260715.md](./STORY_COLLECTION_INTERFACE_20260715.md) 负责故事集合路由和边界；本地化不得改变 collection/scenario/episode identity。
 
