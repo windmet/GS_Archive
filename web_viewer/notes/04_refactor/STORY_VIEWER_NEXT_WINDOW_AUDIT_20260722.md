@@ -1,6 +1,6 @@
 # 剧情预览器：最新审计、进度与下一窗口交接（2026-07-22）
 
-> 实现审计基线：PR #1 `codex/story-localization-contract`，当前已推送基线 `2677c67a47ca12f7f8cbf5212b02381f747b91c4`；本文提交后分支 HEAD 会继续前进
+> 实现审计基线：PR #1 `codex/story-localization-contract`，当前已推送基线 `ac7b7db7d041ded3af727246d0130e184930a8ff`；本文提交后分支 HEAD 会继续前进
 > 文档用途：给新窗口提供唯一的“现在做到哪里、什么还不能宣称完成、下一步如何验证”入口。
 > 本文不是新的架构规范；发生冲突时，运行语义以 Runtime 设计文档为准，文本身份与翻译行为以 Localization Contract 为准。
 
@@ -170,13 +170,9 @@ speaker
 translation state
 ```
 
-`StoryLocalizationContext.joinDisplay()` 仍为未迁移组件保留拼接兼容字段。2026-07-22 已新增共享 `LocalizedTextBlock`，ADV、Choice、Backlog 已直接渲染 `view.primary/view.secondary`；详细证据见 [结构化双语 UI 验收](../03_audit/STORY_STRUCTURED_BILINGUAL_UI_20260722.md)。其余未完成内容包括：
+`StoryLocalizationContext.joinDisplay()` 仍作为迁移期兼容字段保留，但 2026-07-23 已完成玩家内七个入口的结构化迁移：ADV、Choice、Backlog、Title、Synopsis、Mobile、Call 均直接渲染 `view.primary/view.secondary`。`speaker_text_ref` 新增结构化 `speakerView`，Mobile inline emoji 通过 primary/secondary 插槽保留，StoryViewer 也已实际挂载 SynopsisUI。详细证据见 [结构化双语 UI 验收](../03_audit/STORY_STRUCTURED_BILINGUAL_UI_20260722.md)。
 
-- Title/Synopsis/Mobile/Call 的 primary/secondary 独立 DOM；
-- 这些未迁移组件的独立字号、颜色、字体和间距；
-- 长 speaker 名与 bilingual 的布局约束；
-- Mobile/Call 与已迁移区域的一致视觉语义；
-- missing/stale debug badge 的非侵入式布局。
+剩余 UI 工作是长 speaker 名的更多正式样本、missing/stale debug badge 的非侵入式布局和视觉微调，不再是结构化数据链阻塞项。
 
 ### 4.6 实体翻译只是最小样本
 
@@ -197,7 +193,7 @@ translation state
 
 已完成并记录：source-only checkout 的 `npm ci`、Runtime/Localization/Translation/Text verifier 与 build；完整本机挂载 build；1280×720、1920×1080、390×844；a/d 固定锚点；退役 URL 参数与 default 行为一致。详细证据见 `STORY_RUNTIME_RELEASE_MATRIX_20260722.md`。
 
-仍未完成：Chrome/Edge 首次音频解锁对照、跨 episode 长时间连续播放、长时间 Auto/Skip/Backlog/Choice 混合操作、后台切换恢复、重复 AudioContext、未释放 Spine/Timer 与持续内存增长检查。首页背景修复完成前，资料馆首页也不能列为发布通过。
+仍未完成：Chrome/Edge 首次音频解锁对照、跨 episode 长时间连续播放、长时间 Auto/Skip/Backlog/Choice 混合操作、后台切换恢复、重复 AudioContext、未释放 Spine/Timer 与持续内存增长检查。资料馆首页背景已修复并通过桌面/移动端验收。
 
 ## 5. 进度估算
 
@@ -211,11 +207,11 @@ translation state
 | 音频统一 | 25% | voice 与 BGM/SE/ambient 仍分离 |
 | Localization 契约与基础设施 | 90% | schema/compiler/repository/resolver/verifier 已形成纵向切片 |
 | 正式剧情文本身份迁移 | <1% | 首个 `1_4_001_01` collection 已发布；其余 corpus 仍是 legacy |
-| 双语结构化 UI | 65% | ADV、Choice、Backlog 已结构化；Title/Synopsis/Mobile/Call 待迁移 |
+| 双语结构化 UI | 100% | ADV、Choice、Backlog、Title、Synopsis、Mobile、Call 均已结构化 |
 | 实体/门户翻译覆盖 | <10% | 仅 3 个偶像 draft 样本 |
 | PR release acceptance | 75% | source/full build、三档 viewport、a/d 锚点已完成；长时间音频/内存/后台恢复待测 |
 
-按“可安全发布基础架构、但不要求完成批量翻译”作为总目标，目前约为 **85%**。首页 standalone background owner 已完成；之后主要剩余工作是音频统一、其余结构化双语 UI、更多正式产物迁移和长时间发布验收。
+按“可安全发布基础架构、但不要求完成批量翻译”作为总目标，目前约为 **88%**。首页 standalone background owner 与结构化双语 UI 已完成；之后主要剩余工作是音频统一、更多正式产物迁移和长时间发布验收。
 
 ## 6. 下一窗口推荐执行顺序
 
@@ -321,7 +317,7 @@ screen/fade
 
 不要在这一步同时批量写译文或重编正式 corpus。
 
-2026-07-22：第一批已完成 ADV、Choice、Backlog 与共享 localized text block，390×844、1280×720 浏览器验收及结构化 DOM verifier 通过；Title/Synopsis/Mobile/Call 留待后续独立批次。
+2026-07-22：第一批完成 ADV、Choice、Backlog 与共享 localized text block。2026-07-23：第二批完成 Title、Synopsis、Mobile、Call、结构化 `speakerView` 与富文本插槽；桌面和 390×844 浏览器验收、结构化 DOM verifier 均通过。P1 结束。
 
 ### P2：正式 compiled 迁移与小范围 overlay
 
@@ -476,9 +472,9 @@ npm run build
 2. notes/04_refactor/STORY_VIEWER_RUNTIME_REFACTOR_DESIGN_20260718.md
 3. notes/04_refactor/STORY_LOCALIZATION_CONTRACT_20260719.md
 
-当前实现审计基线是 PR #1、branch codex/story-localization-contract、已推送 HEAD 2677c67；请以实际远端 HEAD 为准。
-StoryViewer 的六个 Runtime channel 与旧路径清理已经完成；当前 P0 是首页直接复用 SpineStage 后缺少 standalone background owner 的黑屏回归。
-修复不得把背景写入重新放回 applyStepSceneState；应显式区分首页 consumer 与 StoryViewer Runtime owner。
+当前实现审计基线是 PR #1、branch codex/story-localization-contract、已推送 HEAD ac7b7db；请以实际远端 HEAD 为准。
+StoryViewer 的六个 Runtime channel、旧路径清理和首页 standalone background owner 已完成；玩家内七类结构化双语 UI 也已完成。
+下一优先级是音频统一、更多正式 collection 迁移与长时间 release acceptance；不要恢复 applyStepSceneState 的背景写入。
 正式 compiled 仅迁移首个 1_4_001_01 collection；不要直接覆盖单个 episode，也不要批量翻译。
 分批提交并推送，每批说明已验证和仍未验证的内容。
 ```

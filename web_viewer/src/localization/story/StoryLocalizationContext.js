@@ -147,13 +147,15 @@ export function createStoryLocalization({
       inlineEntry: normalized.overlayEntry,
     })
     let speakerText = view.speaker.display
+    let speakerView = null
     if (dialogue?.speaker_text_ref) {
-      speakerText = joinDisplay(resolveUnit({
+      speakerView = resolveUnit({
         source: typeof dialogue.speaker === 'string' ? dialogue.speaker : '',
         textRef: dialogue.speaker_text_ref,
-      }))
+      })
+      speakerText = joinDisplay(speakerView)
     }
-    return { speaker: speakerText, text: joinDisplay(view), view }
+    return { speaker: speakerText, speakerView, text: joinDisplay(view), view }
   }
 
   function resolveChoiceOption(option, { detail = false } = {}) {

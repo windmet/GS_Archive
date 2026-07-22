@@ -57,6 +57,9 @@
       <!-- Title (episode/chapter title card) -->
       <TitleUI v-if="currentStep.type === 'title'" :step="currentStep" />
 
+      <!-- Pre-play synopsis -->
+      <SynopsisUI v-if="currentStep.type === 'synopsis'" :step="currentStep" />
+
       <!-- Time/location caption -->
       <TextTimeUI v-if="currentStep.type === 'text_time'" :step="currentStep" @next="goNext" />
 
@@ -132,6 +135,7 @@ import MobileUI from '../components/MobileUI.vue'
 import CallUI from '../components/CallUI.vue'
 import ChoiceUI from '../components/ChoiceUI.vue'
 import TitleUI from '../components/TitleUI.vue'
+import SynopsisUI from '../components/SynopsisUI.vue'
 import TextTimeUI from '../components/TextTimeUI.vue'
 import StoryBacklog from '../components/StoryBacklog.vue'
 import { BookOpenText, ChevronRight, Eye, EyeOff, FastForward, LogOut, Menu, Play, SkipForward, X } from '@lucide/vue'

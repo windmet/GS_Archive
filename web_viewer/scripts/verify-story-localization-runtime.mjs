@@ -377,6 +377,14 @@ storyPreferences.value = {
 }
 assert.equal(context.resolveDialogue(contextDialogue).text, fixtureEntry.text)
 assert.equal(context.resolveDialogue(contextDialogue).speaker, '都筑圭')
+const structuredSpeaker = context.resolveDialogue({
+  speaker: source,
+  source_text: '',
+  speaker_text_ref: textRef,
+})
+assert.equal(structuredSpeaker.speaker, fixtureEntry.text)
+assert.equal(structuredSpeaker.speakerView.primary.text, fixtureEntry.text)
+assert.equal(structuredSpeaker.speakerView.primary.locale, 'zh-CN')
 assert.deepEqual(context.entityDiagnostics.value, [{ code: 'entity_translation_ready' }])
 assert.deepEqual(runtimeSentinel, sentinelBefore)
 scope.stop()

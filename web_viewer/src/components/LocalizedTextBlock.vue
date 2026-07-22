@@ -9,13 +9,13 @@
       class="localized-primary"
       :lang="content.primary.locale || undefined"
       :data-text-source="content.primary.source || undefined"
-    >{{ content.primary.text }}</span>
+    ><slot name="primary" :text="content.primary.text" :content="content.primary">{{ content.primary.text }}</slot></span>
     <span
       v-if="content.secondary"
       class="localized-secondary"
       :lang="content.secondary.locale || undefined"
       :data-text-source="content.secondary.source || undefined"
-    >{{ content.secondary.text }}</span>
+    ><slot name="secondary" :text="content.secondary.text" :content="content.secondary">{{ content.secondary.text }}</slot></span>
   </span>
 </template>
 

@@ -19,13 +19,13 @@
             class="choice-btn"
             @click.stop="$emit('select', opt)"
           >
-            {{ optionText(opt) }}
+            <LocalizedTextBlock class="choice-text" :display="optionDisplay(opt)" />
           </button>
         </div>
 
         <!-- Bottom: dialogue bubble -->
         <div class="call-dialogue-bubble" v-if="dialogueText">
-          <p class="dialogue-text">{{ dialogueText }}</p>
+          <LocalizedTextBlock class="dialogue-text" :display="display" />
         </div>
 
       </div>
@@ -35,6 +35,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import LocalizedTextBlock from './LocalizedTextBlock.vue'
 import { getMobileBgUrl, getMobileIconUrl } from '../utils/AssetResolver.js'
 import { IDOL_NAME_TO_ID } from '../utils/IdolNameMap.js'
 import { resolveText } from '../utils/TextHelper.js'
@@ -51,8 +52,8 @@ const display = computed(() => localization?.resolveDialogue(props.dialogue) ?? 
 const speakerName = computed(() => display.value.speaker)
 const dialogueText = computed(() => display.value.text)
 
-function optionText(option) {
-  return localization?.resolveChoiceOption(option).text || option.text || option.detail || option.label || ''
+function optionDisplay(option) {
+  return localization?.resolveChoiceOption(option) || option.text || option.detail || option.label || ''
 }
 
 const charaId = computed(() => {
@@ -144,6 +145,7 @@ const hasChoices = computed(() => currentChoices.value.length > 0)
   pointer-events: auto;
 }
 .choice-btn:hover { background: rgba(0,0,0,0.9); }
+.choice-text { --localized-primary-line-height: 1.45; --localized-secondary-color: rgba(255,255,255,.72); --localized-secondary-size: .82em; --localized-secondary-gap: .18em; }
 /* Bubble anchored to bottom */
 .call-dialogue-bubble {
   background: rgba(255, 255, 255, 0.92);
@@ -158,9 +160,11 @@ const hasChoices = computed(() => currentChoices.value.length > 0)
   flex-shrink: 0;
 }
 .dialogue-text {
-  margin: 0;
+  width: 100%;
   font-size: 0.9rem;
-  line-height: 1.6;
-  white-space: pre-wrap;
+  --localized-primary-line-height: 1.6;
+  --localized-secondary-color: #56616c;
+  --localized-secondary-size: .84em;
+  --localized-secondary-gap: .24em;
 }
 </style>
