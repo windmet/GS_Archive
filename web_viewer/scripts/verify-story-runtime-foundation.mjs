@@ -492,7 +492,22 @@ function verifyPlayerStateRepositories() {
   assert.equal(saved.bilingual_primary, 'translation')
   assert.equal(saved.volumes.master, 0)
   assert.equal(saved.volumes.voice, 1)
+  assert.equal('text_speed' in saved, false, 'retired text_speed must not survive normalization')
   assert.equal(new PlayerPreferencesRepository({ storage }).load().skip_mode, 'all')
+
+  const retiredPreferenceStorage = memoryStorage({
+    'sidem-story-player-preferences': JSON.stringify({
+      ...saved,
+      text_speed: 4,
+    }),
+  })
+  const retiredPreference = new PlayerPreferencesRepository({ storage: retiredPreferenceStorage }).load()
+  assert.equal('text_speed' in retiredPreference, false)
+  assert.equal(
+    'text_speed' in JSON.parse(retiredPreferenceStorage.getItem('sidem-story-player-preferences')),
+    false,
+    'loading an old v2 payload must rewrite the retired preference out of storage',
+  )
 
   const migrationStorage = memoryStorage({
     'sidem-story-player-preferences': JSON.stringify({

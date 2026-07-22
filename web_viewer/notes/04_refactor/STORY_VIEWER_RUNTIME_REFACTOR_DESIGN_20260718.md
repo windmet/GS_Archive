@@ -1198,7 +1198,6 @@ scenario_id + source_hash + step_id
   auto_enabled: false,
   auto_delay_ms: 800,
   skip_mode: "readOnly",
-  text_speed: 1,
   voice_on_back: false,
   ui_hidden: false,
   volumes: {
@@ -1210,6 +1209,8 @@ scenario_id + source_hash + step_id
   }
 }
 ```
+
+> 2026-07-23：`text_speed` 从实际 Preferences 契约中退役。播放器没有逐字打印运行时，保留该字段会错误暗示存在可调文本速度；repository 读取旧 v2 payload 时会保留其他偏好并移除该键。
 
 存储规则：
 

@@ -11,7 +11,6 @@ export const DEFAULT_PLAYER_PREFERENCES = Object.freeze({
   auto_enabled: false,
   auto_delay_ms: 800,
   skip_mode: 'readOnly',
-  text_speed: 1,
   voice_on_back: false,
   ui_hidden: false,
   volumes: Object.freeze({
@@ -52,7 +51,6 @@ function normalize(input = {}) {
     auto_enabled: input.auto_enabled === true,
     auto_delay_ms: finite(input.auto_delay_ms, defaults.auto_delay_ms, { min: 0, max: 10000 }),
     skip_mode: ['readOnly', 'all'].includes(input.skip_mode) ? input.skip_mode : defaults.skip_mode,
-    text_speed: finite(input.text_speed, defaults.text_speed, { min: 0.25, max: 4 }),
     voice_on_back: input.voice_on_back === true,
     ui_hidden: input.ui_hidden === true,
     volumes: {
@@ -99,7 +97,11 @@ export class PlayerPreferencesRepository {
         return clone(migrated)
       }
       if (parsed?.schema_version !== SCHEMA_VERSION) return clone(DEFAULT_PLAYER_PREFERENCES)
-      return normalize(parsed)
+      const normalized = normalize(parsed)
+      if (Object.prototype.hasOwnProperty.call(parsed, 'text_speed')) {
+        try { this.storage?.setItem?.(this.key, JSON.stringify(normalized)) } catch (_) {}
+      }
+      return normalized
     } catch (_) {
       return clone(DEFAULT_PLAYER_PREFERENCES)
     }
