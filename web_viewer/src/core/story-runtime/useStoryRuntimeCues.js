@@ -4,6 +4,7 @@ import { createPerformanceHandle } from './PerformanceRegistry.js'
 import { normalizeScenario } from './ScenarioNormalizer.js'
 import { getRuntimeCueFeatureFlags } from './RuntimeFeatureFlags.js'
 import { applyScreenEntrySnapshot, createScreenCueHandle } from './ScreenCueRuntime.js'
+import { applyBackgroundEntrySnapshot, createBackgroundCueHandle } from './BackgroundCueRuntime.js'
 import { getCachedMotionSetting } from '../../utils/IdolMotionSettingStore.js'
 
 function immediateCamera(camera) {
@@ -67,11 +68,7 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
         else manager.resetCameraZoom()
       }
       if (flags.screen) applyScreenEntrySnapshot(manager, snapshot?.screen_overlay)
-      if (flags.background) {
-        const bg = snapshot?.bg
-        if (bg) manager.setBackground?.(bg, { duration: 0, delay: 0 })
-        else manager.clearBackground?.()
-      }
+      if (flags.background) applyBackgroundEntrySnapshot(manager, snapshot?.bg)
     }
     apply()
   }
@@ -114,37 +111,6 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
       // Settling a scheduled transient cue suppresses it instead of playing it.
       onSettle: () => console.debug('[StoryRuntime] cue suppress', cue.cue_id),
       onCancel: () => {},
-    })
-  }
-
-  function createBackgroundHandle(cue) {
-    const transition = duration => ({
-      type: cue.payload.type,
-      color: cue.payload.color,
-      duration,
-      delay: 0,
-    })
-    return createPerformanceHandle({
-      id: cue.cue_id,
-      channel: cue.channel,
-      skippable: cue.lifecycle.skippable,
-      blocksInput: cue.lifecycle.blocks_input,
-      blocksAuto: cue.lifecycle.blocks_auto,
-      metadata: { action: cue.action, cue },
-      onStart: () => {
-        console.debug('[StoryRuntime] cue start', cue.cue_id)
-        getManager()?.setBackground?.(cue.payload.bg, transition(cue.duration))
-      },
-      onSettle: () => {
-        console.debug('[StoryRuntime] cue settle', cue.cue_id)
-        const manager = getManager()
-        if (!manager?.backgroundManager?.settleBackgroundTransition?.()) {
-          manager?.setBackground?.(cue.payload.bg, transition(0))
-        }
-      },
-      onCancel: () => {
-        getManager()?.backgroundManager?.cancelBackgroundTransition?.()
-      },
     })
   }
 
@@ -265,7 +231,7 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
     handlers.set('screen.directional_wipe', cue => createScreenCueHandle(cue, getManager))
     handlers.set('screen.fade', cue => createScreenCueHandle(cue, getManager))
   }
-  if (flags.background) handlers.set('background.change', createBackgroundHandle)
+  if (flags.background) handlers.set('background.change', cue => createBackgroundCueHandle(cue, getManager))
   if (flags.spine) {
     handlers.set('spine.face.set', createSpineHandle)
     handlers.set('spine.body.play', createSpineHandle)

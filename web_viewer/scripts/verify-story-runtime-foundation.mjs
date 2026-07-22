@@ -13,6 +13,7 @@ import { ReadProgressRepository, createReadKey } from '../src/core/story-runtime
 import { PlaybackModeController } from '../src/core/story-runtime/PlaybackModeController.js'
 import { applyStepSceneState } from '../src/core/applyStepSceneState.js'
 import { applyScreenEntrySnapshot, createScreenCueHandle } from '../src/core/story-runtime/ScreenCueRuntime.js'
+import { applyBackgroundEntrySnapshot, createBackgroundCueHandle } from '../src/core/story-runtime/BackgroundCueRuntime.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -120,15 +121,17 @@ async function verifyEffectScheduler() {
   assert.equal(scheduler.hasBlockingAuto(), false)
 
   assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCues=1'), { camera: true, se: true, screen: true, background: true, snapshot: true, spine: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCamera=1'), { camera: true, se: false, screen: true, background: false, snapshot: false, spine: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeScreen=1'), { camera: false, se: false, screen: true, background: false, snapshot: false, spine: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeScreen=0'), { camera: false, se: false, screen: false, background: false, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCamera=1'), { camera: true, se: false, screen: true, background: true, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeScreen=1'), { camera: false, se: false, screen: true, background: true, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeScreen=0'), { camera: false, se: false, screen: false, background: true, snapshot: false, spine: true })
   assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCues=1&runtimeScreen=0'), { camera: true, se: true, screen: false, background: true, snapshot: true, spine: true })
   assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeBackground=1'), { camera: false, se: false, screen: true, background: true, snapshot: false, spine: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSnapshots=1'), { camera: false, se: false, screen: true, background: false, snapshot: true, spine: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSpine=1'), { camera: false, se: false, screen: true, background: false, snapshot: false, spine: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSpine=0'), { camera: false, se: false, screen: true, background: false, snapshot: false, spine: false })
-  assert.deepEqual(getRuntimeCueFeatureFlags(''), { camera: false, se: false, screen: true, background: false, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeBackground=0'), { camera: false, se: false, screen: true, background: false, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCues=1&runtimeBackground=0'), { camera: true, se: true, screen: true, background: false, snapshot: true, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSnapshots=1'), { camera: false, se: false, screen: true, background: true, snapshot: true, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSpine=1'), { camera: false, se: false, screen: true, background: true, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSpine=0'), { camera: false, se: false, screen: true, background: true, snapshot: false, spine: false })
+  assert.deepEqual(getRuntimeCueFeatureFlags(''), { camera: false, se: false, screen: true, background: true, snapshot: false, spine: true })
   await scheduler.dispose()
 
   let releaseAsyncStart
@@ -205,6 +208,57 @@ async function verifyScreenCueOwner() {
     ['slide:set', 'in', '#112233', 1.2, 0, '4'],
     ['slide:clear'],
   ], 'cancel must invalidate the active wipe owner and clear its overlay')
+}
+
+async function verifyBackgroundCueOwner() {
+  const calls = []
+  let canSettle = true
+  const manager = {
+    setBackground: (bg, transition) => { calls.push(['background:set', bg, transition]) },
+    clearBackground: () => calls.push(['background:clear']),
+    backgroundManager: {
+      settleBackgroundTransition: () => { calls.push(['background:settle']); return canSettle },
+      cancelBackgroundTransition: () => calls.push(['background:cancel']),
+    },
+  }
+  applyBackgroundEntrySnapshot(manager, 'bg-entry')
+  assert.deepEqual(calls, [[
+    'background:set', 'bg-entry', { duration: 0, delay: 0 },
+  ]], 'restore must install the entry background without a transition')
+
+  calls.length = 0
+  const cue = {
+    cue_id: 'background-change',
+    channel: 'background',
+    action: 'background.change',
+    duration: 1.5,
+    payload: { bg: 'bg-next', type: 'dissolve', color: '#ffffff' },
+    lifecycle: { skippable: true, blocks_input: false, blocks_auto: true },
+  }
+  const settled = createBackgroundCueHandle(cue, () => manager)
+  await settled.start()
+  await settled.settle('user-next')
+  assert.deepEqual(calls, [
+    ['background:set', 'bg-next', { type: 'dissolve', color: '#ffffff', duration: 1.5, delay: 0 }],
+    ['background:settle'],
+  ], 'settle must finish the manager-owned transition instead of starting a second tween')
+
+  calls.length = 0
+  canSettle = false
+  const fallback = createBackgroundCueHandle({ ...cue, cue_id: 'background-fallback' }, () => manager)
+  await fallback.settle('user-next')
+  assert.deepEqual(calls, [
+    ['background:settle'],
+    ['background:clear'],
+    ['background:set', 'bg-next', { type: 'dissolve', color: '#ffffff', duration: 0, delay: 0 }],
+  ], 'settling before texture readiness must still apply the authored terminal background')
+
+  calls.length = 0
+  const cancelled = createBackgroundCueHandle({ ...cue, cue_id: 'background-cancel' }, () => manager)
+  await cancelled.start()
+  await cancelled.cancel('navigation')
+  assert.deepEqual(calls.at(-1), ['background:cancel'],
+    'cancel must return ownership to the entry snapshot before navigation applies it')
 }
 
 function verifySceneSnapshotStore() {
@@ -315,6 +369,31 @@ function verifyScreenOwnerSelection() {
     'legacy:fade',
     'legacy:effects:fadein',
   ], 'runtimeScreen=0 must retain the complete legacy screen rollback path')
+}
+
+function verifyBackgroundOwnerSelection() {
+  const calls = []
+  const manager = {
+    setCameraFilter: () => {},
+    applyBgEffects: () => {},
+    setBackground: (...args) => calls.push(['background:set', ...args]),
+    clearBackground: () => calls.push(['background:clear']),
+    setBgBlur: () => {},
+    setBgColorOverlay: () => {},
+    resetCameraZoom: () => {},
+  }
+  const input = {
+    manager,
+    step: { step_id: 4 },
+    state: { bg: 'bg030_315prodoor_in_10', bg_transition: { type: 'dissolve', duration: 1.5 } },
+  }
+  applyStepSceneState({ ...input, runtimeFlags: getRuntimeCueFeatureFlags('') })
+  assert.deepEqual(calls, [],
+    'default scene application must leave background transition writes to the Runtime owner')
+  applyStepSceneState({ ...input, runtimeFlags: getRuntimeCueFeatureFlags('?runtimeBackground=0') })
+  assert.deepEqual(calls, [[
+    'background:set', 'bg030_315prodoor_in_10', { type: 'dissolve', duration: 1.5 },
+  ]], 'runtimeBackground=0 must retain the complete legacy background path')
 }
 
 function memoryStorage(initial = {}) {
@@ -553,11 +632,13 @@ verifyStoryClock()
 await verifyPerformanceRegistry()
 await verifyEffectScheduler()
 await verifyScreenCueOwner()
+await verifyBackgroundCueOwner()
 verifySceneSnapshotStore()
 verifyNavigationOverlayReset()
 verifyScreenOwnerSelection()
+verifyBackgroundOwnerSelection()
 verifyPlayerStateRepositories()
 verifyPlaybackModeController()
 await verifyScenarioNormalizer()
 
-console.log('Story runtime foundation: clock, lifecycle, IR v2, default Screen owner, Camera/SE, background, and cue normalization verified')
+console.log('Story runtime foundation: clock, lifecycle, IR v2, default Screen/Background owners, Camera/SE, and cue normalization verified')
