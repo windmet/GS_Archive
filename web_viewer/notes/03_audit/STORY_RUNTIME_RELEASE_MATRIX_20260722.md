@@ -67,3 +67,26 @@ http://127.0.0.1:5174/?view=player&scenario=fixtures%2Fstory_localization_stress
 - 长时间内存增长观察
 
 这些项目仍应在正式合并前按 `STORY_VIEWER_NEXT_WINDOW_AUDIT_20260722.md` 的完整发布矩阵执行。
+
+## 2026-07-22 Runtime owner cleanup follow-up
+
+基线更新为 `baf44df` 后，Screen、Background、Camera、SE、Snapshot 与 Spine 已成为无 feature flag 的唯一 Runtime owner；`runtimeCues`、`runtimeScreen`、`runtimeBackground`、`runtimeCamera`、`runtimeSE`、`runtimeSnapshots`、`runtimeSpine` 均已退役。上面的 flag matrix 作为迁移历史保留，不再代表当前回滚接口。
+
+本轮在始终只有一个浏览器标签页的条件下追加验证：
+
+| 环境/模式 | 锚点 | 结果 |
+| --- | --- | --- |
+| `1280×720` default | `1_4_001_01_a` step 38 | Camera 5.5s、SE 4.0s/5.6s 均由 Runtime 调度并启动，PASS |
+| `1280×720` 全部退役参数设为 `0` | 同上 | 调度清单与 default 相同，证明旧参数被忽略，PASS |
+| `1280×720` default | `1_4_001_01_d` step 12→13→Prev | fade 与 neck cue 启动；返回通过 entry snapshot 恢复且无应用错误，PASS |
+| `390×844` default | `1_4_001_01_d` step 12 | 控件与对白可访问，无应用错误，PASS |
+| `1920×1080` default | `1_4_001_01_a` step 38 | 控件与对白可访问，无应用错误，PASS |
+
+构建与源码边界：
+
+- 完整本机挂载：`node scripts/verify-story-runtime-foundation.mjs`、`node scripts/verify-story-playback-range.mjs`、`npm run build` 通过。
+- 干净 source-only detached worktree：`npm ci`、Runtime foundation、Localization、Translation、Story Text verifier 与 `npm run build` 通过。
+- Runtime foundation 对未纳入 Git 的 a/d mounted-corpus 锚点采用显式 `ENOENT` skip；核心 Runtime 与已跟踪 fixture 在 source-only 环境仍严格验证。挂载 corpus 后 a/d 断言仍会执行。
+- `5174` 返回 HTTP 200；验收结束后恢复 `1_4_001_01_d` step 1–48 地址，浏览器仍只有一个标签页。
+
+仍未在本轮执行长时间内存观察、后台切换和完整音频 mixer 生命周期；这些属于后续 P3 音频统一/稳定性工作，不影响本次 Runtime/Localization 基础设施 owner 收口结论。
