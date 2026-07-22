@@ -1,4 +1,4 @@
-import { isRuntimeCueChannelEnabled } from './story-runtime/RuntimeFeatureFlags.js'
+import { getRuntimeCueFeatureFlags } from './story-runtime/RuntimeFeatureFlags.js'
 
 export function applyStepSceneState({
   manager,
@@ -7,6 +7,7 @@ export function applyStepSceneState({
   fallbackBg = null,
   lastScreenEffectsKey = '',
   resetScreenEffects = false,
+  runtimeFlags = getRuntimeCueFeatureFlags(),
 }) {
   if (!manager || !state) return lastScreenEffectsKey
 
@@ -19,7 +20,7 @@ export function applyStepSceneState({
   manager.applyBgEffects?.(state.bg_effects || [], state.bg_profile || null)
 
   const bg = state.bg || fallbackBg
-  if (!isRuntimeCueChannelEnabled('background')) {
+  if (!runtimeFlags.background) {
     if (bg) manager.setBackground(bg, state.bg_transition || null)
     else manager.clearBackground()
   }
@@ -40,7 +41,7 @@ export function applyStepSceneState({
     bgColorTransition.delay ?? 0,
   )
 
-  if (!isRuntimeCueChannelEnabled('screen') && state.screen_slide) {
+  if (!runtimeFlags.screen && state.screen_slide) {
     const slide = state.screen_slide
     manager.setScreenSlide?.(
       slide.type,
@@ -51,7 +52,7 @@ export function applyStepSceneState({
     )
   }
 
-  if (!isRuntimeCueChannelEnabled('camera')) {
+  if (!runtimeFlags.camera) {
     if (state.camera_zoom) {
       manager.setCameraZoom(state.camera_zoom)
     } else {
@@ -59,7 +60,7 @@ export function applyStepSceneState({
     }
   }
 
-  if (!isRuntimeCueChannelEnabled('screen')) {
+  if (!runtimeFlags.screen) {
     if (state.screen_fade) {
       const sf = state.screen_fade
       // Legacy effect_fade and screen_fade historically used separate sprites.
@@ -78,7 +79,7 @@ export function applyStepSceneState({
     }
   }
 
-  const screenEffects = isRuntimeCueChannelEnabled('screen')
+  const screenEffects = runtimeFlags.screen
     ? (state.screen_effects || []).filter(effect => effect?.type !== 'fadein' && effect?.type !== 'fadeout')
     : (state.screen_effects || [])
   const screenEffectsKey = `${step?.step_id || ''}:${JSON.stringify(screenEffects)}`

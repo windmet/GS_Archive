@@ -12,6 +12,7 @@ import { PlayerPreferencesRepository } from '../src/core/story-runtime/PlayerPre
 import { ReadProgressRepository, createReadKey } from '../src/core/story-runtime/ReadProgressRepository.js'
 import { PlaybackModeController } from '../src/core/story-runtime/PlaybackModeController.js'
 import { applyStepSceneState } from '../src/core/applyStepSceneState.js'
+import { applyScreenEntrySnapshot, createScreenCueHandle } from '../src/core/story-runtime/ScreenCueRuntime.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -119,13 +120,15 @@ async function verifyEffectScheduler() {
   assert.equal(scheduler.hasBlockingAuto(), false)
 
   assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCues=1'), { camera: true, se: true, screen: true, background: true, snapshot: true, spine: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCamera=1'), { camera: true, se: false, screen: false, background: false, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCamera=1'), { camera: true, se: false, screen: true, background: false, snapshot: false, spine: true })
   assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeScreen=1'), { camera: false, se: false, screen: true, background: false, snapshot: false, spine: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeBackground=1'), { camera: false, se: false, screen: false, background: true, snapshot: false, spine: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSnapshots=1'), { camera: false, se: false, screen: false, background: false, snapshot: true, spine: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSpine=1'), { camera: false, se: false, screen: false, background: false, snapshot: false, spine: true })
-  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSpine=0'), { camera: false, se: false, screen: false, background: false, snapshot: false, spine: false })
-  assert.deepEqual(getRuntimeCueFeatureFlags(''), { camera: false, se: false, screen: false, background: false, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeScreen=0'), { camera: false, se: false, screen: false, background: false, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeCues=1&runtimeScreen=0'), { camera: true, se: true, screen: false, background: true, snapshot: true, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeBackground=1'), { camera: false, se: false, screen: true, background: true, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSnapshots=1'), { camera: false, se: false, screen: true, background: false, snapshot: true, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSpine=1'), { camera: false, se: false, screen: true, background: false, snapshot: false, spine: true })
+  assert.deepEqual(getRuntimeCueFeatureFlags('?runtimeSpine=0'), { camera: false, se: false, screen: true, background: false, snapshot: false, spine: false })
+  assert.deepEqual(getRuntimeCueFeatureFlags(''), { camera: false, se: false, screen: true, background: false, snapshot: false, spine: true })
   await scheduler.dispose()
 
   let releaseAsyncStart
@@ -154,6 +157,54 @@ async function verifyEffectScheduler() {
   await new Promise(resolve => setTimeout(resolve, 0))
   assert.equal(asyncScheduler.hasBlockingAuto(), false)
   await asyncScheduler.dispose()
+}
+
+async function verifyScreenCueOwner() {
+  const calls = []
+  const manager = {
+    clearScreenFade: () => calls.push(['fade:clear']),
+    clearScreenSlide: () => calls.push(['slide:clear']),
+    setScreenFade: (...args) => calls.push(['fade:set', ...args]),
+    setScreenSlide: (...args) => calls.push(['slide:set', ...args]),
+  }
+  applyScreenEntrySnapshot(manager, {
+    kind: 'fade', visible: true, color: '#ffffff', alpha: 0.75,
+  })
+  assert.deepEqual(calls, [
+    ['fade:clear'],
+    ['slide:clear'],
+    ['fade:set', 'out', '#ffffff', 0, 0, 0.75],
+  ], 'restore must atomically replace transient screen state with the entry snapshot')
+
+  calls.length = 0
+  const fadeCue = {
+    cue_id: 'screen-fade',
+    channel: 'screen',
+    action: 'screen.fade',
+    duration: 1.2,
+    payload: { type: 'in', color: '#000000', alpha: 1 },
+    lifecycle: { skippable: true, blocks_input: false, blocks_auto: true },
+  }
+  const fade = createScreenCueHandle(fadeCue, () => manager)
+  await fade.start()
+  assert.deepEqual(calls, [['fade:set', 'in', '#000000', 1.2, 0, 1]])
+  await fade.settle('user-next')
+  assert.deepEqual(calls.at(-1), ['fade:set', 'in', '#000000', 0, 0, 1],
+    'settle must apply the authored terminal fade state without another timer')
+
+  calls.length = 0
+  const wipe = createScreenCueHandle({
+    ...fadeCue,
+    cue_id: 'screen-wipe',
+    action: 'screen.directional_wipe',
+    payload: { type: 'in', color: '#112233', direction: '4' },
+  }, () => manager)
+  await wipe.start()
+  await wipe.cancel('navigation')
+  assert.deepEqual(calls, [
+    ['slide:set', 'in', '#112233', 1.2, 0, '4'],
+    ['slide:clear'],
+  ], 'cancel must invalidate the active wipe owner and clear its overlay')
 }
 
 function verifySceneSnapshotStore() {
@@ -221,6 +272,49 @@ function verifyNavigationOverlayReset() {
   })
   assert.deepEqual(calls, ['clear-effects'],
     'reverse and non-contiguous navigation must discard a late overlay from the previous step')
+}
+
+function verifyScreenOwnerSelection() {
+  const makeManager = calls => ({
+    clearScreenEffects: () => calls.push('effects:clear'),
+    setCameraFilter: () => {},
+    applyBgEffects: () => {},
+    setBackground: () => {},
+    clearBackground: () => {},
+    setBgBlur: () => {},
+    setBgColorOverlay: () => {},
+    resetCameraZoom: () => {},
+    setScreenSlide: () => calls.push('legacy:slide'),
+    playScreenEffects: effects => calls.push(`legacy:effects:${effects[0]?.type}`),
+    setScreenFade: () => calls.push('legacy:fade'),
+    clearScreenFade: () => calls.push('legacy:fade-clear'),
+  })
+  const step = { step_id: 7 }
+  const state = {
+    screen_slide: { type: 'in' },
+    screen_fade: { type: 'out' },
+    screen_effects: [{ type: 'fadein' }, { type: 'single', id: 'fx_adv_punch' }],
+  }
+
+  const defaultCalls = []
+  applyStepSceneState({
+    manager: makeManager(defaultCalls), step, state,
+    runtimeFlags: getRuntimeCueFeatureFlags(''),
+  })
+  assert.deepEqual(defaultCalls, ['legacy:effects:single'],
+    'default scene application must leave every fade/wipe write to the Runtime owner')
+
+  const rollbackCalls = []
+  applyStepSceneState({
+    manager: makeManager(rollbackCalls), step, state,
+    runtimeFlags: getRuntimeCueFeatureFlags('?runtimeScreen=0'),
+  })
+  assert.deepEqual(rollbackCalls, [
+    'legacy:slide',
+    'legacy:effects:fadeout',
+    'legacy:fade',
+    'legacy:effects:fadein',
+  ], 'runtimeScreen=0 must retain the complete legacy screen rollback path')
 }
 
 function memoryStorage(initial = {}) {
@@ -458,10 +552,12 @@ async function verifyScenarioNormalizer() {
 verifyStoryClock()
 await verifyPerformanceRegistry()
 await verifyEffectScheduler()
+await verifyScreenCueOwner()
 verifySceneSnapshotStore()
 verifyNavigationOverlayReset()
+verifyScreenOwnerSelection()
 verifyPlayerStateRepositories()
 verifyPlaybackModeController()
 await verifyScenarioNormalizer()
 
-console.log('Story runtime foundation: clock, lifecycle, IR v2, Camera/SE, background, and directional wipe normalization verified')
+console.log('Story runtime foundation: clock, lifecycle, IR v2, default Screen owner, Camera/SE, background, and cue normalization verified')

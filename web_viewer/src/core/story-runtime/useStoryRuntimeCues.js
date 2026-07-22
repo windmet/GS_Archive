@@ -3,6 +3,7 @@ import { EffectScheduler } from './EffectScheduler.js'
 import { createPerformanceHandle } from './PerformanceRegistry.js'
 import { normalizeScenario } from './ScenarioNormalizer.js'
 import { getRuntimeCueFeatureFlags } from './RuntimeFeatureFlags.js'
+import { applyScreenEntrySnapshot, createScreenCueHandle } from './ScreenCueRuntime.js'
 import { getCachedMotionSetting } from '../../utils/IdolMotionSettingStore.js'
 
 function immediateCamera(camera) {
@@ -50,17 +51,6 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
     return spineStageRef.value?.manager || null
   }
 
-  function applyEntryScreen(manager, overlay) {
-    manager.clearScreenFade?.()
-    manager.clearScreenSlide?.()
-    if (!overlay?.visible) return
-    if (overlay.kind === 'directional-wipe') {
-      manager.setScreenSlide?.('in', overlay.color, 0, 0, overlay.direction)
-    } else if (overlay.kind === 'fade') {
-      manager.setScreenFade?.('out', overlay.color, 0, 0, overlay.alpha ?? 1)
-    }
-  }
-
   function applySnapshotWhenReady(snapshot, expectedGeneration) {
     if (!flags.camera && !flags.screen && !flags.background) return
     const apply = () => {
@@ -76,7 +66,7 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
         if (camera) manager.setCameraZoom(camera)
         else manager.resetCameraZoom()
       }
-      if (flags.screen) applyEntryScreen(manager, snapshot?.screen_overlay)
+      if (flags.screen) applyScreenEntrySnapshot(manager, snapshot?.screen_overlay)
       if (flags.background) {
         const bg = snapshot?.bg
         if (bg) manager.setBackground?.(bg, { duration: 0, delay: 0 })
@@ -124,49 +114,6 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
       // Settling a scheduled transient cue suppresses it instead of playing it.
       onSettle: () => console.debug('[StoryRuntime] cue suppress', cue.cue_id),
       onCancel: () => {},
-    })
-  }
-
-  function createScreenHandle(cue) {
-    const isWipe = cue.action === 'screen.directional_wipe'
-    const start = duration => {
-      if (isWipe) {
-        getManager()?.setScreenSlide?.(
-          cue.payload.type,
-          cue.payload.color,
-          duration,
-          0,
-          cue.payload.direction,
-        )
-      } else {
-        getManager()?.setScreenFade?.(
-          cue.payload.type,
-          cue.payload.color,
-          duration,
-          0,
-          cue.payload.alpha ?? 1,
-        )
-      }
-    }
-    return createPerformanceHandle({
-      id: cue.cue_id,
-      channel: cue.channel,
-      skippable: cue.lifecycle.skippable,
-      blocksInput: cue.lifecycle.blocks_input,
-      blocksAuto: cue.lifecycle.blocks_auto,
-      metadata: { action: cue.action, cue },
-      onStart: () => {
-        console.debug('[StoryRuntime] cue start', cue.cue_id)
-        start(cue.duration)
-      },
-      onSettle: () => {
-        console.debug('[StoryRuntime] cue settle', cue.cue_id)
-        start(0)
-      },
-      onCancel: () => {
-        if (isWipe) getManager()?.clearScreenSlide?.()
-        else getManager()?.clearScreenFade?.()
-      },
     })
   }
 
@@ -315,8 +262,8 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
   if (flags.camera) handlers.set('camera.transform', createCameraHandle)
   if (flags.se) handlers.set('se.play', createSeHandle)
   if (flags.screen) {
-    handlers.set('screen.directional_wipe', createScreenHandle)
-    handlers.set('screen.fade', createScreenHandle)
+    handlers.set('screen.directional_wipe', cue => createScreenCueHandle(cue, getManager))
+    handlers.set('screen.fade', cue => createScreenCueHandle(cue, getManager))
   }
   if (flags.background) handlers.set('background.change', createBackgroundHandle)
   if (flags.spine) {
