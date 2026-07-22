@@ -91,11 +91,23 @@ Authoritative dialogue 使用 `speaker_source_text + speaker_text_ref` 表示 Ti
 - 压缩加载过程中出现一次 `spine cue target unavailable` warning，因此本轮不把 step 12 neck 姿态记为完整通过，仍留给正式加载/长测；
 - 验收后浏览器恢复正式 `episodes/1_4_001_01_d.json` step 1–48 地址，标签页数量为 1。
 
+## Strict collection manifest 与原子发布门禁
+
+`2702773` / `1fb426e` 已补齐首批 a–j strict collection 的批量候选、manifest 与原子发布器，但本轮没有执行正式 corpus 覆盖：
+
+- `npm run story:authoritative-collection` 会在工作区外生成 aggregate 加 a–j 共 11 份 strict candidate，并逐文件校验 authoritative schema、Runtime/文本投影等价性及 old/candidate SHA-256；
+- 本机 mounted collection 的真实 dry-run 记录为 11 files、10 episodes、864 manifest step records、278 voice refs。后两项包含 aggregate 与 episode 两种表示的重复计数，对应唯一剧情内容仍是 432 steps、139 voice refs；
+- `npm run story:authoritative-publish` 必须收到显式 collection group 确认，并在写入前复核当前文件 hash、candidate hash、schema 和等价性；
+- 发布前完整备份至 compiled corpus 外，逐文件采用 temp + fsync + rename；中途失败会用精确备份回滚已写文件，成功后再验证最终 hash 并写 backup manifest；
+- `npm run verify:story-authoritative-publish` 已覆盖确认门禁、hash 漂移、路径穿越、备份目录污染、原子替换、第二文件故障注入及首文件精确回滚；Windows 备份边界使用 `path.relative` 判定。
+
+`1fb426e` 的 detached source-only checkout 已执行 `npm ci --ignore-scripts`、schema/publish/text/localization/structured UI/Runtime foundation 全套 verifier 与生产构建。挂载 corpus 锚点按预期显式 skip，2400 modules 构建通过，证明新门禁不依赖本机未纳管语料。
+
 ## 尚未完成
 
 - Python `ScenarioCompiler` 尚未原生生成 `runtime_contract: story-runtime-v2`；当前由独立、可审计的 post-compile stage 生成 strict candidate；
 - 正式 corpus 尚未切换严格输出；
 - snapshot/payload 内部仍需按 Runtime channel 逐项 schema 化；
-- 正式发布前仍须执行 source-only checkout、完整 neck/Spine 加载和长时间 release acceptance。
+- 正式发布前仍须执行完整 neck/Spine 加载和长时间 release acceptance；source-only checkout 已通过。
 
-下一步应为 a–j 建立可发布 manifest/atomic backup 流程，并在正式加载条件下补 neck/Spine 与 source-only 验收；通过后再决定是否发布。不得直接用 schema 变更覆盖全量 corpus。
+下一步是在正式资源加载条件下补 neck/Spine 与长时间 release acceptance，并审查 manifest 后再决定是否独立提交正式 a–j strict corpus 发布。不得因为发布器已完成就宣称 corpus 已切换，也不得直接覆盖全量 corpus。

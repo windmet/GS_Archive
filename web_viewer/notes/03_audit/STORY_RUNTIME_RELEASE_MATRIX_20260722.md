@@ -113,6 +113,10 @@ http://127.0.0.1:5174/?view=player&scenario=fixtures%2Fstory_localization_stress
 
 当前剩余项收敛为 atomic publish/backup、source-only checkout、正式 neck/Spine 加载与长时间 release acceptance；正式 corpus 仍未切换 strict v2。
 
+后续 `2702773` / `1fb426e` 已完成 atomic publish/backup 和 source-only checkout 门禁。真实 mounted `1_4_001_01` dry-run 生成 11 份 strict candidate manifest（aggregate + a–j），全部 schema 与 Runtime/文本投影等价；发布器验证 current/candidate hash、显式 group 确认、compiled 外完整备份、原子替换、最终 hash 与失败回滚。detached source-only checkout 的全部相关 verifier 和 2400-module production build 通过。
+
+本轮仍未正式发布 strict corpus。剩余发布阻塞为正式 neck/Spine 资源加载复核，以及 Edge autoplay、跨 episode、后台恢复、真实 BGM/Ambient、持续内存等长时间 release acceptance。
+
 ## 2026-07-22 首页 consumer 回归与修复
 
 后续首页复核发现：`ArchiveImmersiveHome` 直接使用 `SpineStage`，不经过 StoryViewer 的 `useStoryRuntimeCues`。`baf44df` 删除全局 legacy background writer 后，首页虽然正确解析 `bg001_315pro_in_01`，但没有把背景写入以黑色清屏的 Pixi stage，因此呈现黑屏。
