@@ -1,9 +1,11 @@
 # GS_Archive 剧情与门户本地化技术契约
 
-> 状态：设计冻结候选（implementation-ready）  
+> 2026-07-22 接续审计、正式 corpus 未迁移事实与下一窗口测试入口见 [STORY_VIEWER_NEXT_WINDOW_AUDIT_20260722.md](./STORY_VIEWER_NEXT_WINDOW_AUDIT_20260722.md)。本文继续作为文本身份与翻译行为规范，不应被误读为正式剧情已经完成批量迁移。
+
+> 状态：契约已冻结并完成基础设施纵向切片；正式剧情 corpus 与批量译文尚未迁移
 > 日期：2026-07-19  
 > 适用范围：剧情 compiler、Compiled Scenario IR v2、播放器、Backlog、Choice、门户实体与 UI 国际化  
-> 当前阶段：只冻结契约与验收标准；本文完成前后均不授权批量翻译、翻译后台或无关 Runtime 改造
+> 当前阶段：允许继续做 release acceptance、结构化双语 UI 和小范围正式迁移 dry-run；仍不授权无审计的批量翻译、翻译后台或无关 Runtime 改造
 
 ---
 

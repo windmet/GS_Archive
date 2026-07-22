@@ -1,8 +1,10 @@
 # GS_Archive 剧情预览器运行时重构技术设计
 
+> 2026-07-22 接续审计、当前完成度与下一窗口测试入口见 [STORY_VIEWER_NEXT_WINDOW_AUDIT_20260722.md](./STORY_VIEWER_NEXT_WINDOW_AUDIT_20260722.md)。本文继续作为 Runtime 语义规范，不作为当前进度表。
+
 > 本地化补充契约：剧情文本身份、翻译覆盖层、speaker/choice identity、Backlog 语言重算与 Preferences schema v2，统一由 [STORY_LOCALIZATION_CONTRACT_20260719.md](./STORY_LOCALIZATION_CONTRACT_20260719.md) 定义。本文中 `text_cn`、`language_mode` 和显示字符串式 Choice 仅视为迁移前示例。
 
-> 文档状态：设计提案，尚未实施
+> 文档状态：Runtime 语义规范；核心模块与 Spine channel 已实施，其余 channel 迁移和旧路径清理仍在进行。准确进度以 2026-07-22 接续审计为准
 >
 > 编写日期：2026-07-18
 >
