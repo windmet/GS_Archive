@@ -91,6 +91,14 @@ http://127.0.0.1:5174/?view=player&scenario=fixtures%2Fstory_localization_stress
 
 仍未在本轮执行长时间内存观察、后台切换和完整音频 mixer 生命周期；这些属于后续 P3 音频统一/稳定性工作，不影响本次 Runtime/Localization 基础设施 owner 收口结论。
 
+## 2026-07-23 Audio Session follow-up
+
+实现提交 `3ecd5b5` 已把 StoryViewer voice、BGM、Ambient 与 Runtime SE 收口到一个 AudioContext 和四条 mixer bus。自动验证 `npm run verify:story-audio` 覆盖单 owner、手势解锁、多暂停原因、rate、source release、voice onended 竞态和幂等 dispose；Runtime foundation、播放范围与生产 build 同批通过。
+
+5174 始终复用一个标签页，实测首次 Next 手势、Runtime SE、voice、菜单打开/关闭、恢复前进与返回集合后的卸载 dispose；应用级 console error 为 0。验收结束后恢复 `1_4_001_01_d` step 1–48，标签页数量仍为 1。
+
+尚未覆盖 Edge autoplay、自动化后台切换听感、真实 BGM/Ambient 长时间淡化恢复、跨 episode 长测及持续内存增长。音频 owner 阻塞已经解除，但 release stability 仍未完成。详细证据见 `STORY_AUDIO_SESSION_UNIFICATION_20260723.md`。
+
 ## 2026-07-22 首页 consumer 回归与修复
 
 后续首页复核发现：`ArchiveImmersiveHome` 直接使用 `SpineStage`，不经过 StoryViewer 的 `useStoryRuntimeCues`。`baf44df` 删除全局 legacy background writer 后，首页虽然正确解析 `bg001_315pro_in_01`，但没有把背景写入以黑色清屏的 Pixi stage，因此呈现黑屏。

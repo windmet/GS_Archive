@@ -1,6 +1,6 @@
 # 剧情预览器：最新审计、进度与下一窗口交接（2026-07-22）
 
-> 实现审计基线：PR #1 `codex/story-localization-contract`，当前已推送基线 `ac7b7db7d041ded3af727246d0130e184930a8ff`；本文提交后分支 HEAD 会继续前进
+> 实现审计基线：PR #1 `codex/story-localization-contract`，当前实现提交 `3ecd5b54d108d5ab83ef320f99ac01b9e520df1a`；本文提交后分支 HEAD 会继续前进
 > 文档用途：给新窗口提供唯一的“现在做到哪里、什么还不能宣称完成、下一步如何验证”入口。
 > 本文不是新的架构规范；发生冲突时，运行语义以 Runtime 设计文档为准，文本身份与翻译行为以 Localization Contract 为准。
 
@@ -152,12 +152,16 @@ schema_version = 2             = 0
 
 新的边界要求是：不通过 `StoryViewer`、而是直接复用 `SpineStage` 的页面，必须显式声明自身的 Background Runtime/standalone owner。首页现已实现并验证该 contract；verifier 同时禁止通用 scene application 恢复全局 legacy background writer。
 
-### 4.4 音频尚未统一
+### 4.4 音频基础 owner 与生命周期已统一，稳定性长测待完成
 
-- `useVoicePlayer` 负责 voice 与 lip-sync；
-- `AudioManager` 负责 BGM、SE、ambient；
-- 用户手势解锁仍需同时照顾两条音频路径；
-- 尚未完成统一 AudioContext/Mixer、统一暂停/倍率与统一 capture/restore。
+- `StoryViewer` 只创建一个 `StoryAudioSession`，并注入 `useVoicePlayer` 与 `AudioManager`；
+- mixer 为 `master -> bgm/ambient/voice/se`，voice、BGM、SE、ambient 不再各自持有上下文；
+- 首次手势解锁、overlay/visibility 多原因 pause/resume、rate、source release 与 dispose 已统一；
+- Runtime scheduler 与 audio session 由同一暂停原因集合协调；
+- BGM/Ambient 已提供 capture/restore，旧 voice `onended` 误释放新 source 的竞态已修复；
+- 自动 verifier、生产 build 与 5174 单标签页的 voice/SE/menu/dispose 路径通过。详细证据见 [Story Audio Session 统一审计](../03_audit/STORY_AUDIO_SESSION_UNIFICATION_20260723.md)。
+
+仍不能宣称完成的是 Edge autoplay 对照、后台切换的真实听感、BGM/Ambient 长时间淡化恢复与持续内存观察；这些属于 release stability，不再是 owner 阻塞项。
 
 ### 4.5 双语视觉层级尚未完成
 
@@ -193,7 +197,7 @@ translation state
 
 已完成并记录：source-only checkout 的 `npm ci`、Runtime/Localization/Translation/Text verifier 与 build；完整本机挂载 build；1280×720、1920×1080、390×844；a/d 固定锚点；退役 URL 参数与 default 行为一致。详细证据见 `STORY_RUNTIME_RELEASE_MATRIX_20260722.md`。
 
-仍未完成：Chrome/Edge 首次音频解锁对照、跨 episode 长时间连续播放、长时间 Auto/Skip/Backlog/Choice 混合操作、后台切换恢复、重复 AudioContext、未释放 Spine/Timer 与持续内存增长检查。资料馆首页背景已修复并通过桌面/移动端验收。
+仍未完成：Edge autoplay 对照、跨 episode 长时间连续播放、长时间 Auto/Skip/Backlog/Choice 混合操作、后台切换真实听感、BGM/Ambient 长时间恢复、未释放 Spine/Timer/source 与持续内存增长检查。Chrome 5174 单标签页已覆盖首次手势、voice、SE、菜单暂停/恢复和退出 dispose；资料馆首页背景已修复并通过桌面/移动端验收。
 
 ## 5. 进度估算
 
@@ -204,14 +208,14 @@ translation state
 | Runtime 核心抽象 | 90% | Clock/Scheduler/Registry/Snapshot/PlaybackMode 与 channel lifecycle 已落地 |
 | Runtime channel 迁移 | 100% | StoryViewer 内六个 channel 已唯一 owner；首页 standalone background consumer 已显式补契约 |
 | Runtime 旧路径清理 | 95% | timeline、旧 scene writers、SE timers 与 flags 已删除；保留的 voice/BGM/ambient/auto 各有实际职责 |
-| 音频统一 | 25% | voice 与 BGM/SE/ambient 仍分离 |
+| 音频统一 | 90% | 单 AudioContext、四 bus、统一 unlock/pause/rate/dispose 与 BGM/Ambient capture/restore 已完成；长测待做 |
 | Localization 契约与基础设施 | 90% | schema/compiler/repository/resolver/verifier 已形成纵向切片 |
 | 正式剧情文本身份迁移 | <1% | 首个 `1_4_001_01` collection 已发布；其余 corpus 仍是 legacy |
 | 双语结构化 UI | 100% | ADV、Choice、Backlog、Title、Synopsis、Mobile、Call 均已结构化 |
 | 实体/门户翻译覆盖 | <10% | 仅 3 个偶像 draft 样本 |
-| PR release acceptance | 75% | source/full build、三档 viewport、a/d 锚点已完成；长时间音频/内存/后台恢复待测 |
+| PR release acceptance | 80% | source/full build、三档 viewport、a/d 锚点与音频基础生命周期已完成；长时间音频/内存/后台恢复待测 |
 
-按“可安全发布基础架构、但不要求完成批量翻译”作为总目标，目前约为 **88%**。首页 standalone background owner 与结构化双语 UI 已完成；之后主要剩余工作是音频统一、更多正式产物迁移和长时间发布验收。
+按“可安全发布基础架构、但不要求完成批量翻译”作为总目标，目前约为 **91%**。首页 standalone background owner、结构化双语 UI 与音频基础 owner/lifecycle 已完成；之后主要剩余工作是更多正式产物迁移、长时间发布验收，以及 preferences/schema 技术债收口。
 
 ## 6. 下一窗口推荐执行顺序
 
@@ -334,11 +338,13 @@ screen/fade
 
 ### P3：音频统一与遗留清理
 
-- 明确 AudioContext 和 mixer 的唯一 owner；
-- 统一 voice/BGM/SE/ambient 的 unlock、pause/resume、rate 与 dispose；
+- AudioContext 和 mixer 唯一 owner：已完成（`3ecd5b5`）；
+- voice/BGM/SE/ambient 的 unlock、pause/resume、rate 与 dispose，以及 BGM/Ambient capture/restore：基础实现和 verifier 已完成；
 - 删除不再使用的 `text_speed` 或标记 deprecated；
 - 收紧 authoritative v2 schema；
 - feature flags 已在各 channel 默认验收后删除；剩余 compatibility fields 应随 authoritative v2 schema 收紧独立处理。
+
+下一步先执行音频/内存长测；实现侧随后独立处理 `text_speed` 与 authoritative v2 schema，避免把偏好迁移、schema 破坏性变更和正式 corpus 发布混在同一提交。
 
 ## 7. 固定演出验收锚点
 
@@ -472,9 +478,9 @@ npm run build
 2. notes/04_refactor/STORY_VIEWER_RUNTIME_REFACTOR_DESIGN_20260718.md
 3. notes/04_refactor/STORY_LOCALIZATION_CONTRACT_20260719.md
 
-当前实现审计基线是 PR #1、branch codex/story-localization-contract、已推送 HEAD ac7b7db；请以实际远端 HEAD 为准。
-StoryViewer 的六个 Runtime channel、旧路径清理和首页 standalone background owner 已完成；玩家内七类结构化双语 UI 也已完成。
-下一优先级是音频统一、更多正式 collection 迁移与长时间 release acceptance；不要恢复 applyStepSceneState 的背景写入。
+当前实现审计基线是 PR #1、branch codex/story-localization-contract、音频实现提交 3ecd5b5；请以实际远端 HEAD 为准。
+StoryViewer 的六个 Runtime channel、旧路径清理、首页 standalone background owner、玩家内七类结构化双语 UI 与音频基础 owner/lifecycle 已完成。
+下一优先级是更多正式 collection 迁移、长时间 release acceptance，以及 text_speed/authoritative v2 schema 的独立收口；不要恢复 applyStepSceneState 的背景写入。
 正式 compiled 仅迁移首个 1_4_001_01 collection；不要直接覆盖单个 episode，也不要批量翻译。
 分批提交并推送，每批说明已验证和仍未验证的内容。
 ```
