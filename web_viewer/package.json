@@ -29,6 +29,7 @@
     "verify:story-collections": "node scripts/verify-story-collections.mjs",
     "verify:story-playback-range": "node scripts/verify-story-playback-range.mjs",
     "verify:story-audio": "node scripts/verify-story-audio-session.mjs",
+    "verify:story-schema": "node scripts/verify-authoritative-story-schema.mjs",
     "verify:story-localization": "node scripts/verify-story-localization-runtime.mjs && node scripts/verify-story-localization-stress.mjs && node scripts/verify-structured-bilingual-ui.mjs",
     "verify:story-translations": "node scripts/verify-story-translations.mjs && node scripts/report-story-translation-migration.mjs && node scripts/verify-entity-translations.mjs",
     "verify:story-text": "python scripts/verify-story-text-evidence.py",
@@ -50,6 +51,8 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.0",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
     "vite": "^6.0.0"
   }
 }

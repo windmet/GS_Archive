@@ -1,7 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://gs-archive.local/schemas/compiled-scenario-v2.schema.json",
-  "title": "GS Archive Compiled Scenario IR v2",
+  "title": "GS Archive Runtime Compatibility Input v2",
+  "$comment": "Permissive migration input accepted by ScenarioNormalizer. Authoritative compiler output must validate against compiled-scenario-v2-authoritative.schema.json.",
   "type": "object",
   "required": ["schema_version", "scenario_id", "steps"],
   "properties": {

@@ -132,9 +132,15 @@ def verify_compiler_evidence():
 
 def verify_schema_contracts():
     compiled_schema = load_json(ROOT / "schemas" / "compiled-scenario-v2.schema.json")
+    authoritative_schema = load_json(ROOT / "schemas" / "compiled-scenario-v2-authoritative.schema.json")
     overlay_schema = load_json(ROOT / "schemas" / "story-translation-overlay-v1.schema.json")
     entity_schema = load_json(ROOT / "schemas" / "entity-translation-overlay-v1.schema.json")
     assert_equal(compiled_schema["$defs"]["textRef"]["additionalProperties"], False, "textRef strictness")
+    assert_equal(compiled_schema["additionalProperties"], True, "compatibility schema remains permissive")
+    assert_equal(authoritative_schema["additionalProperties"], False, "authoritative top-level strictness")
+    assert_equal(authoritative_schema["$defs"]["step"]["additionalProperties"], False, "authoritative step strictness")
+    assert_equal(authoritative_schema["$defs"]["dialogue"]["additionalProperties"], False, "authoritative dialogue strictness")
+    assert_equal(authoritative_schema["properties"]["runtime_contract"]["const"], "story-runtime-v2", "authoritative runtime contract")
     assert_equal(overlay_schema["properties"]["schema_version"]["const"], 1, "overlay schema")
     assert_equal(entity_schema["properties"]["schema_version"]["const"], 1, "entity schema")
 
