@@ -1,6 +1,6 @@
 <template>
   <div class="choice-ui">
-    <div class="choice-prompt" v-if="prompt">{{ prompt }}</div>
+    <LocalizedTextBlock v-if="promptDisplay" class="choice-prompt" :display="promptDisplay" />
     <div class="choice-options">
       <button
         v-for="(opt, i) in options"
@@ -8,7 +8,7 @@
         class="choice-btn"
         @click.stop="select(opt, i)"
       >
-        <span class="choice-text">{{ optionText(opt) }}</span>
+        <LocalizedTextBlock class="choice-text" :display="optionDisplay(opt)" />
       </button>
     </div>
   </div>
@@ -16,8 +16,9 @@
 
 <script setup>
 import { computed } from 'vue'
+import LocalizedTextBlock from './LocalizedTextBlock.vue'
 import { useStoryLocalization } from '../localization/story/StoryLocalizationContext.js'
-import { resolveTextContent } from '../utils/TextHelper.js'
+import { resolveText } from '../utils/TextHelper.js'
 
 const props = defineProps({
   step: { type: Object, default: null },
@@ -26,14 +27,16 @@ const emit = defineEmits(['select'])
 const localization = useStoryLocalization()
 
 const options = computed(() => props.step?.options || [])
-const prompt = computed(() => {
+const promptDisplay = computed(() => {
   const dialogue = props.step?.dialogue
   if (!dialogue) return null
-  return localization?.resolveDialogue(dialogue).text ?? resolveTextContent(dialogue)
+  return localization?.resolveDialogue(dialogue) ?? resolveText(dialogue)
 })
 
-function optionText(option) {
-  return localization?.resolveChoiceOption(option).text || option.text || option.detail || option.label || ''
+function optionDisplay(option) {
+  return localization?.resolveChoiceOption(option) || {
+    text: option.text || option.detail || option.label || '',
+  }
 }
 
 function select(opt, index) {
@@ -65,6 +68,9 @@ function select(opt, index) {
   -webkit-backdrop-filter: blur(4px);
   padding: 12px 20px;
   border-radius: 12px;
+  --localized-primary-line-height: 1.5;
+  --localized-secondary-color: rgba(255,255,255,0.72);
+  --localized-secondary-size: 0.86em;
 }
 .choice-options {
   display: flex; flex-direction: column; gap: 10px;
@@ -93,5 +99,15 @@ function select(opt, index) {
 .choice-text {
   flex: 1;
   text-align: center;
+  --localized-primary-line-height: 1.45;
+  --localized-secondary-color: #607086;
+  --localized-secondary-size: 0.82em;
+  --localized-secondary-gap: 0.2em;
+}
+
+@media (max-width: 520px) {
+  .choice-ui { padding: 18px 12px; }
+  .choice-options { gap: 8px; }
+  .choice-btn { padding: 12px 14px; font-size: 0.95rem; }
 }
 </style>

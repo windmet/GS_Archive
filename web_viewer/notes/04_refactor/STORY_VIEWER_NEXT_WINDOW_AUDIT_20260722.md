@@ -181,12 +181,12 @@ speaker
 translation state
 ```
 
-但 `StoryLocalizationContext.joinDisplay()` 仍把 primary/secondary 拼成换行字符串，多数组件仍只渲染 `display.text`。未完成内容包括：
+`StoryLocalizationContext.joinDisplay()` 仍为未迁移组件保留拼接兼容字段。2026-07-22 已新增共享 `LocalizedTextBlock`，ADV、Choice、Backlog 已直接渲染 `view.primary/view.secondary`；详细证据见 [结构化双语 UI 验收](../03_audit/STORY_STRUCTURED_BILINGUAL_UI_20260722.md)。其余未完成内容包括：
 
-- primary/secondary 独立 DOM；
-- 独立字号、颜色、字体和间距；
+- Title/Synopsis/Mobile/Call 的 primary/secondary 独立 DOM；
+- 这些未迁移组件的独立字号、颜色、字体和间距；
 - 长 speaker 名与 bilingual 的布局约束；
-- Backlog/Choice/Mobile/Call 的一致视觉语义；
+- Mobile/Call 与已迁移区域的一致视觉语义；
 - missing/stale debug badge 的非侵入式布局。
 
 ### 4.6 实体翻译只是最小样本
@@ -335,6 +335,8 @@ screen/fade
 5. 语言切换只改变 presentation，仍需断言 Runtime sentinel 不变。
 
 不要在这一步同时批量写译文或重编正式 corpus。
+
+2026-07-22：第一批已完成 ADV、Choice、Backlog 与共享 localized text block，390×844、1280×720 浏览器验收及结构化 DOM verifier 通过；Title/Synopsis/Mobile/Call 留待后续独立批次。
 
 ### P2：正式 compiled 迁移与小范围 overlay
 

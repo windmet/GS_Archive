@@ -1,6 +1,6 @@
 <template>
   <!-- Locked to bottom of screen, horizontally centered -->
-  <div class="adv-root">
+  <div class="adv-root" :class="{ 'is-bilingual': isBilingual }">
     <div class="adv-container">
 
       <!-- Nameplate -->
@@ -11,10 +11,8 @@
       </div>
 
       <!-- Dialog panel -->
-      <div class="dialog">
-        <div class="dialog-text">
-          {{ display.text }}
-        </div>
+      <div class="dialog" :class="{ 'is-bilingual': isBilingual }">
+        <LocalizedTextBlock class="dialog-text" :display="display" />
         <div class="dialog-next">▶</div>
       </div>
 
@@ -24,6 +22,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import LocalizedTextBlock from './LocalizedTextBlock.vue'
 import { resolveText } from '../utils/TextHelper.js'
 import { useStoryLocalization } from '../localization/story/StoryLocalizationContext.js'
 
@@ -35,6 +34,7 @@ const props = defineProps({
 
 const localization = useStoryLocalization()
 const display = computed(() => localization?.resolveDialogue(props.dialogue) ?? resolveText(props.dialogue))
+const isBilingual = computed(() => Boolean(display.value?.view?.secondary?.text))
 </script>
 
 <style scoped>
@@ -54,6 +54,10 @@ const display = computed(() => localization?.resolveDialogue(props.dialogue) ?? 
   max-width: 860px;
   padding: 0 20px;
   pointer-events: auto;
+}
+
+.adv-root.is-bilingual {
+  bottom: 52px;
 }
 
 /* ── Nameplate ── */
@@ -92,14 +96,23 @@ const display = computed(() => localization?.resolveDialogue(props.dialogue) ?? 
   flex-direction: column;
 }
 
+.dialog.is-bilingual {
+  height: 190px;
+}
+
 .dialog-text {
   flex: 1;
+  min-height: 0;
   font-size: 1.06rem;
-  line-height: 1.75;
   color: #1a1a2e;
   font-weight: 500;
-  white-space: pre-wrap;
   overflow-y: auto;
+  padding-right: 18px;
+  --localized-primary-line-height: 1.72;
+  --localized-secondary-color: #526174;
+  --localized-secondary-size: 0.86em;
+  --localized-secondary-gap: 0.28em;
+  --localized-secondary-line-height: 1.55;
 }
 
 .dialog-next {
@@ -114,5 +127,27 @@ const display = computed(() => localization?.resolveDialogue(props.dialogue) ?? 
 @keyframes adv-pulse {
   0%, 100% { opacity: 0.3; }
   50% { opacity: 1; }
+}
+
+@media (max-width: 520px) {
+  .adv-root { bottom: 52px; }
+  .adv-container { padding: 0 10px; }
+  .nameplate-outer { left: 18px; max-width: calc(100% - 36px); }
+  .nameplate {
+    max-width: 100%;
+    padding: 6px 18px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .dialog {
+    height: min(190px, 31vh);
+    border-radius: 26px;
+    padding: 30px 24px 14px;
+  }
+  .dialog-text {
+    font-size: 0.96rem;
+    --localized-secondary-size: 0.84em;
+  }
 }
 </style>
