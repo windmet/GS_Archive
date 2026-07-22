@@ -1326,6 +1326,17 @@ feat(story): separate ui and content language preferences
 
 ## 21. 验收标准
 
+### 21.0 可重复验收入口（2026-07-22）
+
+- 自动化压力矩阵：`npm run verify:story-localization`；
+- 浏览器压力话：`?view=player&scenario=fixtures%2Fstory_localization_stress.json&start_step=1&end_step=10`；
+- 压力话固定包含 11 个文本单元：9 个有效译文、1 个缺译回退、1 个 stale 回退；
+- 已在 512px 窄屏实测 title、synopsis、ADV 长文本、JP+CN 四行以上、unknown speaker、`<P>`、Mobile、Phone、choice short/detail；
+- 在第 4 步切换 `中文 → JP+CN` 后 step 仍为 4；选项后缺译与 stale 均回退来源日文；
+- 该 fixture 是独立的测试产物，不改变正式剧情的 step 编号、资源状态或演出调度。
+
+当前实现已具备 compiler 文本证据、严格 overlay、纯显示 resolver、UI/正文语言偏好分离、History/Choice 重新解析、实体译名与双语检索、诊断/迁移报告和压力 fixture。正式剧情全量重编与批量翻译仍必须作为独立发布批次执行；不得为了通过压力验收直接覆写正在逐帧校对的 compiled 产物。
+
 ### 21.1 数据契约
 
 - v2 每个 story text field 有可追溯 text_ref；

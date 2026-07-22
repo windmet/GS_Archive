@@ -2,9 +2,17 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 
 import { resolveStoryText } from '../src/localization/story/StoryTextResolver.js'
+import { diagnoseStoryTranslations } from '../src/localization/story/TranslationDiagnostics.js'
+import { validateStoryTranslationOverlay } from '../src/localization/story/TranslationRepository.js'
 
 const fixtureUrl = new URL('../fixtures/localization/story-localization-stress.json', import.meta.url)
 const fixture = JSON.parse(await readFile(fixtureUrl, 'utf8'))
+const browserScenario = JSON.parse(await readFile(new URL(
+  '../public/data/compiled/fixtures/story_localization_stress.json', import.meta.url,
+), 'utf8'))
+const browserOverlay = JSON.parse(await readFile(new URL(
+  '../public/translations/zh-CN/scenarios/localization_stress.json', import.meta.url,
+), 'utf8'))
 const unitId = item => `story-text:v1:${fixture.text_catalog_id}:${fixture.scenario_id}:cmd-${String(fixture.cases.indexOf(item) + 1).padStart(6, '0')}:${item.kind}:000`
 const prefs = (mode, primary = 'original') => ({
   story_content_mode: mode,
@@ -54,6 +62,22 @@ for (const context of ['voice-playing', 'backlog-open', 'after-rollback']) {
   assert.deepEqual(structuredClone(fixture.runtime_before), fixture.runtime_before, context)
 }
 
+assert.deepEqual(validateStoryTranslationOverlay(browserOverlay, {
+  scenarioId: browserScenario.text_catalog_id,
+  locale: 'zh-CN',
+}), { valid: true, errors: [] })
+const browserReport = diagnoseStoryTranslations({
+  evidence: browserScenario,
+  overlay: browserOverlay,
+  locale: 'zh-CN',
+})
+assert.equal(browserReport.counts.source_units, 11)
+assert.equal(browserReport.counts.valid, 9)
+assert.equal(browserReport.counts.missing, 1)
+assert.equal(browserReport.counts.stale, 1)
+assert.equal(browserReport.counts.orphaned, 0)
+
 console.log('Story localization stress verification passed')
 console.log('  long/bilingual/missing/stale/unknown/producer/title/synopsis/mobile/phone/choice cases covered')
 console.log('  language switching preserves step, generation, cue, voice, snapshot, history, and option identity sentinels')
+console.log('  browser fixture: 11 units, 9 valid, 1 missing fallback, 1 stale fallback')
