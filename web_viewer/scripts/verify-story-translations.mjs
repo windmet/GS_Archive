@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { existsSync } from 'node:fs'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -8,6 +9,7 @@ import {
   hasBlockingTranslationDiagnostics,
   renderTranslationDiagnosticsSummary,
 } from '../src/localization/story/TranslationDiagnostics.js'
+import { validateStoryTranslationOverlay } from '../src/localization/story/TranslationRepository.js'
 import { parseJsonStrict } from './lib/strict-json.mjs'
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)))
@@ -66,10 +68,31 @@ async function verifyFixtures() {
   assert.equal(realFixtureReport.counts.collision, 0)
   assert.equal(realFixtureReport.counts.invalid, 0)
 
+  const formalOverlay = await loadJson('public/translations/zh-CN/scenarios/1_4_001_01.json')
+  assert.deepEqual(validateStoryTranslationOverlay(formalOverlay, {
+    scenarioId: '1_4_001_01',
+    locale: 'zh-CN',
+  }), { valid: true, errors: [] })
+  assert.equal(Object.keys(formalOverlay.entries).length, 3)
+  const formalEvidencePath = 'public/data/compiled/episodes/1_4_001_01_d.json'
+  if (existsSync(path.resolve(ROOT, formalEvidencePath))) {
+    const formalReport = diagnoseStoryTranslations({
+      evidence: await loadJson(formalEvidencePath),
+      overlay: formalOverlay,
+      locale: 'zh-CN',
+    })
+    assert.equal(formalReport.counts.source_units, 27)
+    assert.equal(formalReport.counts.valid, 3)
+    assert.equal(formalReport.counts.missing, 24)
+    assert.equal(formalReport.counts.stale, 0)
+    assert.equal(formalReport.counts.orphaned, 0)
+  }
+
   console.log('Story translation diagnostics verification passed')
   console.log('  missing/stale/orphaned/collision/invalid/control-character cases covered')
   console.log('  duplicate JSON keys rejected before object materialization')
   console.log('  1_4_001_01_d fixture: 3 translated, 5 explicitly reported missing')
+  console.log('  formal 1_4_001_01 overlay: strict schema; 3 valid and 24 explicit fallback units when corpus is mounted')
 }
 
 async function main() {

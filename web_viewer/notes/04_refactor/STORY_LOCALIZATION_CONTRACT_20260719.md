@@ -568,6 +568,8 @@ v1 MUST NOT 默认执行：
 
 顶层 `source.raw_hash` 继续保留，用于证明整份 raw 输入；它不能替代逐 text unit hash。
 
+实现约定：单文件使用原始文件字节的 SHA-256（`sha256-raw-file-v1`）；多 part collection 使用按 canonical source path 排序的 `{ path, raw_hash }` manifest，经 UTF-8、sorted keys、紧凑 JSON 序列化后计算 SHA-256（`sha256-group-manifest-v1`）。每个 part 的原始字节 hash 同时保留在 `source.raw_files`，禁止写本机绝对路径。
+
 ---
 
 ## 10. Speaker identity

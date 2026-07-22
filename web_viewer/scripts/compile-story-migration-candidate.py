@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
 import re
 import sys
@@ -36,6 +37,39 @@ def save_json(path: Path, value: Any) -> None:
     with path.open("w", encoding="utf-8", newline="\n") as handle:
         json.dump(value, handle, ensure_ascii=False, indent=2)
         handle.write("\n")
+
+
+def sha256_bytes(value: bytes) -> str:
+    return f"sha256:{hashlib.sha256(value).hexdigest()}"
+
+
+def build_source_evidence(paths: list[Path], source_files: list[str]) -> dict[str, Any]:
+    if len(paths) != len(source_files) or not paths:
+        raise ValueError("Source evidence requires matching non-empty path and source-file lists")
+    records = sorted([
+        {"path": source_file.replace("\\", "/"), "raw_hash": sha256_bytes(path.read_bytes())}
+        for path, source_file in zip(paths, source_files, strict=True)
+    ], key=lambda record: record["path"])
+    if len(records) == 1:
+        raw_hash = records[0]["raw_hash"]
+        hash_format = "sha256-raw-file-v1"
+    else:
+        manifest = {"format": "story-raw-group-v1", "files": records}
+        canonical = json.dumps(
+            manifest,
+            ensure_ascii=False,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("utf-8")
+        raw_hash = sha256_bytes(canonical)
+        hash_format = "sha256-group-manifest-v1"
+    parent_paths = {str(Path(record["path"]).parent).replace("\\", "/") for record in records}
+    return {
+        "raw_path": parent_paths.pop() if len(parent_paths) == 1 else ".",
+        "raw_hash": raw_hash,
+        "raw_hash_format": hash_format,
+        "raw_files": records,
+    }
 
 
 def discover_parts(raw_group_dir: Path, group_id: str) -> list[tuple[Path, str]]:
@@ -179,6 +213,7 @@ def split_episodes(scenario: dict[str, Any]) -> dict[str, dict[str, Any]]:
             "steps": local_steps,
             "jump_points": jump_points,
             "episodes": [local_episode],
+            "source": copy.deepcopy(scenario.get("source")),
             "aggregate_source": {
                 "file": f"{scenario.get('scenario_id')}.json",
                 "scenario_id": scenario.get("scenario_id"),
@@ -201,6 +236,7 @@ def compile_candidate(args: argparse.Namespace) -> dict[str, Any]:
         if expected_parts:
             raise ValueError("--expected-parts is only valid with --raw-group-dir")
         raw_file = Path(args.raw_file).resolve()
+        raw_paths = [raw_file]
         part_id = raw_file.stem.removeprefix("scenario_")
         source_files = [f"scenariodata/{raw_file.parent.name}/{raw_file.name}"]
         scenario = ScenarioCompiler(
@@ -213,6 +249,7 @@ def compile_candidate(args: argparse.Namespace) -> dict[str, Any]:
     else:
         raw_group_dir = Path(args.raw_group_dir).resolve()
         parts = discover_parts(raw_group_dir, args.group_id)
+        raw_paths = [path for path, _ in parts]
         discovered_part_ids = [part_id for _, part_id in parts]
         if expected_parts and discovered_part_ids != expected_parts:
             raise ValueError(
@@ -223,6 +260,8 @@ def compile_candidate(args: argparse.Namespace) -> dict[str, Any]:
         source_files = [f"scenariodata/{raw_group_dir.name}/{path.name}" for path, _ in parts]
         scenario = ScenarioCompiler.compile_group(raw_data, args.group_id, part_ids, source_files)
         compilation_mode = "group"
+
+    scenario["source"] = build_source_evidence(raw_paths, source_files)
 
     voice_stats = {"references": 0, "resolved": 0, "unresolved": 0}
     if args.voice_index:

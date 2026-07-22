@@ -55,6 +55,16 @@ async function verifyFixture() {
     'story-text:v1:migration_case:part_a:cmd-000001:dialogue:000',
   ])
   assert.equal(report.candidate_overlay.source_raw_hash, fixture.new_evidence.source_raw_hash)
+  const nestedHashEvidence = structuredClone(fixture.new_evidence)
+  delete nestedHashEvidence.source_raw_hash
+  nestedHashEvidence.source = { raw_hash: fixture.new_evidence.source_raw_hash }
+  const nestedHashReport = createTranslationMigrationReport({
+    oldEvidence: fixture.old_evidence,
+    oldOverlay: fixture.old_overlay,
+    newEvidence: nestedHashEvidence,
+  })
+  assert.equal(nestedHashReport.new_source_raw_hash, fixture.new_evidence.source_raw_hash)
+  assert.equal(nestedHashReport.candidate_overlay.source_raw_hash, fixture.new_evidence.source_raw_hash)
   assert.equal(
     report.records.find(record => record.classification === 'moved_high_confidence')?.requires_manual_confirmation,
     true,

@@ -98,8 +98,8 @@ npm run story:migration-candidate -- `
   --output-dir <空临时目录>
 ```
 
-## 仍未完成
+## 后续状态
 
-1. 还没有把任何候选 compiled 替换为正式产物。
-2. 正式替换前仍须运行 episode、voice、story text、presentation、collection 与 archive verifier。
-3. 本机完整资源扫描仍发现 63 条标准 dialogue voice 缺失；这是媒体挂载差异，不能用局部 group voice relink 结果替代全库资源验收。
+2026-07-22 后续批次已经把 `1_4_001_01` 作为首个小范围正式 collection 发布到本机 mounted corpus，并完成 episode、voice、story text、presentation、collection 与 archive gates；详细证据见 [首个正式 Story Collection 迁移发布](./STORY_FORMAL_COLLECTION_MIGRATION_20260722.md)。其余 corpus 仍未批量迁移。
+
+本机完整资源扫描仍发现 63 条标准 dialogue voice 缺失；这是媒体挂载差异，不能用局部 group voice relink 结果替代全库资源验收。

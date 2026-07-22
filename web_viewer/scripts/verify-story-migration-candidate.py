@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import importlib.util
+import re
+import tempfile
 from pathlib import Path
 
 
@@ -36,10 +38,42 @@ voice_stats = MODULE.relink_voices(voice_scenario, {"1_4_001_01_a1000.m4a"})
 assert voice_stats == {"references": 1, "resolved": 1, "unresolved": 0}
 assert voice_scenario["steps"][0]["dialogue"]["voice"] == "1_4_001_01_a1000.m4a"
 
+with tempfile.TemporaryDirectory() as temporary_dir:
+    temporary_root = Path(temporary_dir)
+    first = temporary_root / "a.json"
+    second = temporary_root / "b.json"
+    first.write_bytes(b'{"part":"a"}\n')
+    second.write_bytes(b'{"part":"b"}\n')
+    standalone_source = MODULE.build_source_evidence(
+        [first],
+        ["scenariodata/fixture/a.json"],
+    )
+    assert standalone_source["raw_hash"] == MODULE.sha256_bytes(first.read_bytes())
+    assert standalone_source["raw_hash_format"] == "sha256-raw-file-v1"
+    grouped_source = MODULE.build_source_evidence(
+        [first, second],
+        ["scenariodata/fixture/a.json", "scenariodata/fixture/b.json"],
+    )
+    assert re.fullmatch(r"sha256:[a-f0-9]{64}", grouped_source["raw_hash"])
+    assert grouped_source["raw_hash_format"] == "sha256-group-manifest-v1"
+    assert grouped_source["raw_path"] == "scenariodata/fixture"
+    assert grouped_source["raw_files"] == [
+        {"path": "scenariodata/fixture/a.json", "raw_hash": MODULE.sha256_bytes(first.read_bytes())},
+        {"path": "scenariodata/fixture/b.json", "raw_hash": MODULE.sha256_bytes(second.read_bytes())},
+    ]
+    assert MODULE.build_source_evidence(
+        [second, first],
+        ["scenariodata/fixture/b.json", "scenariodata/fixture/a.json"],
+    )["raw_hash"] == grouped_source["raw_hash"]
+
 split_source = {
     "scenario_id": "fixture",
     "text_catalog_id": "fixture",
     "text_contract_version": 1,
+    "source": {
+        "raw_path": "scenariodata/fixture",
+        "raw_hash": f"sha256:{'1' * 64}",
+    },
     "steps": [
         {"step_id": 1, "type": "adv", "episode_index": 0},
         {"step_id": 2, "type": "adv", "episode_index": 0},
@@ -76,6 +110,7 @@ assert episodes["fixture_b"]["aggregate_source"] == {
     "start_step_index": 2,
     "end_step_index": 3,
 }
+assert episodes["fixture_b"]["source"] == split_source["source"]
 
 print("Story migration candidate verification passed")
-print("  expected part ranges, deterministic voice relink, and episode rebasing covered")
+print("  expected parts, deterministic raw hashes, voice relink, and episode rebasing covered")

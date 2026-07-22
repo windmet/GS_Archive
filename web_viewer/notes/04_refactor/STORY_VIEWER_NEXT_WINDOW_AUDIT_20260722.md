@@ -110,9 +110,9 @@ http://127.0.0.1:5174/?view=player&scenario=fixtures%2Fstory_localization_stress
 
 ## 4. 尚未完成：必须优先说明的事实
 
-### 4.1 正式剧情 corpus 尚未获得文本身份
+### 4.1 正式剧情 corpus 仅完成首个 collection
 
-本机 2026-07-22 只读扫描结果：
+以下是首次迁移前的 2026-07-22 只读基线：
 
 ```text
 public/data/compiled/**/*.json = 10,329
@@ -122,11 +122,11 @@ public/data/compiled/**/*.json = 10,329
 schema_version = 2             = 0
 ```
 
-唯一包含 `text_ref` 的文件是合成压力 fixture。换言之：
+当时唯一包含 `text_ref` 的文件是合成压力 fixture。后续已将 `1_4_001_01` aggregate 与 a–j 十个 episode 发布到本机 mounted corpus，并发布 3 条 exact-matched draft overlay；详见 [首个正式 Story Collection 迁移发布](../03_audit/STORY_FORMAL_COLLECTION_MIGRATION_20260722.md)。
 
-> Compiler 能力已经实现，但正式剧情发布产物的文本身份覆盖率仍为 0%。
+> 正式文本身份迁移已从 0% 进入首个 collection，但绝大多数 corpus 仍是 legacy 产物。
 
-因此现在不能批量制作正式 overlay，也不能宣称正式剧情已经支持稳定翻译命中。
+因此仍不能批量制作或替换全库 overlay；当前稳定命中结论只适用于已审计的 `1_4_001_01` 小范围发布。
 
 ### 4.2 不可直接单文件重编 episode
 
@@ -229,8 +229,8 @@ translation state
 | Runtime 旧路径清理 | 20% | `useTimelineRunner`、旧 scene timer 与双 watcher 仍存在 |
 | 音频统一 | 25% | voice 与 BGM/SE/ambient 仍分离 |
 | Localization 契约与基础设施 | 90% | schema/compiler/repository/resolver/verifier 已形成纵向切片 |
-| 正式剧情文本身份迁移 | 0% | 正式 corpus 无 `text_ref`；只有 fixture |
-| 双语结构化 UI | 30% | 功能可显示，仍是字符串拼接 |
+| 正式剧情文本身份迁移 | <1% | 首个 `1_4_001_01` collection 已发布；其余 corpus 仍是 legacy |
+| 双语结构化 UI | 65% | ADV、Choice、Backlog 已结构化；Title/Synopsis/Mobile/Call 待迁移 |
 | 实体/门户翻译覆盖 | <10% | 仅 3 个偶像 draft 样本 |
 | PR release acceptance | 40% | 自动验证较多，统一设备/flag/跨 episode 验收未完成 |
 
@@ -348,6 +348,8 @@ screen/fade
 4. 先发布一个固定集合，而不是 10,000 文件一次替换；
 5. 用 migration report 生成 candidate overlay；
 6. 人工确认 stale/moved/ambiguous，禁止自动写新 source hash。
+
+2026-07-22：首批 `1_4_001_01` 已完成 group compile、a–j split、139/139 voice relink、11 份零非文本差异 gate、严格 overlay 与浏览器验收。后续 collection 必须继续逐批执行相同发布流程，不能由首批通过推导全库安全。
 
 ### P3：音频统一与遗留清理
 

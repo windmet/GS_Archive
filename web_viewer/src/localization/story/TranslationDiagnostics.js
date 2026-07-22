@@ -11,6 +11,11 @@ function asString(value) {
   return typeof value === 'string' ? value : ''
 }
 
+function sourceRawHash(value) {
+  const record = asRecord(value)
+  return asString(record.source_raw_hash) || asString(asRecord(record.source).raw_hash) || null
+}
+
 export function parseStoryTextUnitId(unitId) {
   const match = UNIT_ID_PATTERN.exec(asString(unitId))
   if (!match) return null
@@ -312,14 +317,14 @@ export function createTranslationMigrationReport({ oldEvidence, oldOverlay, newE
       || newCatalog.records[0]?.scenarioId
       || '',
     old_source_raw_hash: asString(asRecord(oldOverlay).source_raw_hash) || null,
-    new_source_raw_hash: asString(asRecord(newEvidence).source_raw_hash) || null,
+    new_source_raw_hash: sourceRawHash(newEvidence),
     counts,
     records,
     candidate_overlay: {
       schema_version: 1,
       locale: asString(asRecord(oldOverlay).locale),
       scenario_id: asString(asRecord(oldOverlay).scenario_id),
-      source_raw_hash: asString(asRecord(newEvidence).source_raw_hash) || null,
+      source_raw_hash: sourceRawHash(newEvidence),
       entries: candidateEntries,
     },
   }
