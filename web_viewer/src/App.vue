@@ -365,6 +365,16 @@ import {
   writeArchiveRoute,
 } from './core/archiveRoute.js'
 import { installSpineAnimationDebug } from './debug/installSpineAnimationDebug.js'
+import { EntityTranslationRepository } from './localization/story/EntityTranslationRepository.js'
+import { PlayerPreferencesRepository } from './core/story-runtime/PlayerPreferencesRepository.js'
+import {
+  setStoryLanguagePreferences,
+  storyTranslationLocale,
+  uiLocale,
+} from './utils/LanguageStore.js'
+
+setStoryLanguagePreferences(new PlayerPreferencesRepository().load())
+const entityTranslationRepository = new EntityTranslationRepository()
 
 const storyViewerLoader = () => import('./core/StoryViewer.vue')
 const spineViewerLoader = () => import('./components/SpineViewer.vue')
@@ -400,6 +410,7 @@ const costumeDictionaryData = ref(null)
 const archiveManifestData = ref(null)
 const archiveVerificationData = ref(null)
 const uiAssetCatalogData = ref(null)
+const idolEntityTranslationRevision = ref(0)
 const currentScenario = ref(null)
 const currentScenarioFile = ref('')
 const currentScenarioStartStep = ref(null)
@@ -541,7 +552,7 @@ const searchMatchedIdols = computed(() => {
   const q = filterQuery.value.toLowerCase()
   if (!q) return idolList.value
   return idolList.value.filter(ch =>
-    ch.name.toLowerCase().includes(q) ||
+    idolEntitySearchText(ch.id, ch.name).includes(q) ||
     String(ch.unitName || '').toLowerCase().includes(q),
   )
 })
@@ -727,7 +738,9 @@ const filteredStoryCatalog = computed(() => {
     (!currentStorySection.value || entry.sectionId === currentStorySection.value) &&
     (currentStoryDomain.value !== 'event' || currentEventScope.value === 'all' || entry.eventScope === currentEventScope.value) &&
     (availability === 'all' || (availability === 'playable' ? entry.exists : !entry.exists)) &&
-    (!query || entry.searchText.includes(query)),
+    (!query || entry.searchText.includes(query) || entry.characters.some(characterId => (
+      idolEntitySearchText(characterId).includes(query)
+    ))),
   )
   const sorted = [...entries]
   if (currentStorySort.value === 'title') sorted.sort((a, b) => a.title.localeCompare(b.title, 'ja'))
@@ -977,7 +990,7 @@ const filteredGashas = computed(() => {
       [...(gasha.derived_pickup_cards || []), ...(gasha.related_pickup_cards || [])].some(card =>
         String(card.card_title || '').toLowerCase().includes(query) ||
         String(card.card_resource_id || '').toLowerCase().includes(query) ||
-        idolDisplayName(card.character_id).toLowerCase().includes(query)
+        idolEntitySearchText(card.character_id).includes(query)
       )
   })
 })
@@ -1143,12 +1156,47 @@ const archiveSearchPlaceholder = computed(() => {
 
 const archiveShowBack = computed(() => view.value !== 'home')
 
-function idolDisplayName(id) {
+function idolSourceName(id, fallback = '') {
   if (!id) return ''
   return idolUnitData.value?.by_idol_code?.[id]?.display_name ||
     IDOL_ID_TO_NAME[id] ||
     indexData.value?.characters?.[id] ||
+    fallback ||
     id
+}
+
+function idolTranslatedName(id) {
+  idolEntityTranslationRevision.value
+  return entityTranslationRepository.getEntry({
+    entityType: 'idol',
+    entityId: id,
+    locale: storyTranslationLocale.value,
+  })?.name || ''
+}
+
+function idolDisplayName(id) {
+  const sourceName = idolSourceName(id)
+  return uiLocale.value === 'ja-JP' ? sourceName : idolTranslatedName(id) || sourceName
+}
+
+function idolEntitySearchText(id, fallbackSourceName = '') {
+  idolEntityTranslationRevision.value
+  const sourceName = idolSourceName(id, fallbackSourceName)
+  return entityTranslationRepository.getSearchText({
+    entityType: 'idol',
+    entityId: id,
+    sourceName,
+    locale: storyTranslationLocale.value,
+  })
+}
+
+async function loadIdolEntityTranslations(locale = storyTranslationLocale.value) {
+  await entityTranslationRepository.loadEntity({
+    entityType: 'idol',
+    locale,
+    sourceNames: IDOL_ID_TO_NAME,
+  })
+  idolEntityTranslationRevision.value += 1
 }
 
 function currentArchiveRoute() {
@@ -2349,6 +2397,9 @@ onMounted(async () => {
   cardLayout.value = localStorage.getItem('sidem-archive-card-layout') === 'grid' ? 'grid' : 'compact'
   cardArtMode.value = localStorage.getItem('sidem-archive-card-art-mode') === 'framed' ? 'framed' : 'clean'
   const initialRoute = readArchiveRoute()
+  const entityTranslations = loadIdolEntityTranslations().catch(error => {
+    console.error('[EntityTranslations] Failed to load idols:', error)
+  })
   const { data, errors } = await loadArchiveData()
   indexData.value = data.compiledIndex
   cardIndexData.value = data.cardIndex
@@ -2366,6 +2417,7 @@ onMounted(async () => {
   for (const { key, error } of errors) {
     console.error(`[ArchiveData] Failed to load ${key}:`, error)
   }
+  await entityTranslations
 
 
   await applyArchiveRoute(initialRoute)
@@ -2401,6 +2453,12 @@ watch(cardLayout, layout => {
 
 watch(cardArtMode, mode => {
   localStorage.setItem('sidem-archive-card-art-mode', mode)
+})
+
+watch(storyTranslationLocale, locale => {
+  loadIdolEntityTranslations(locale).catch(error => {
+    console.error('[EntityTranslations] Failed to reload idols:', error)
+  })
 })
 
 onBeforeUnmount(() => {
