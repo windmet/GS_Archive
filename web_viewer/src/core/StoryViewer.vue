@@ -145,7 +145,6 @@ import {
 import { resolveUiText as uiText } from '../localization/ui/UiTextResolver.js'
 import { useVoicePlayer } from './useVoicePlayer.js'
 import { AudioManager } from './AudioManager.js'
-import { useTimelineRunner } from './useTimelineRunner.js'
 import { useStoryNavigation } from './useStoryNavigation.js'
 import { useStepSceneEffects } from './useStepSceneEffects.js'
 import { useStoryRuntimeCues } from './story-runtime/useStoryRuntimeCues.js'
@@ -215,7 +214,6 @@ const _audioManager = new AudioManager()
 
 let voicePlayer = null
 let clearFadeAutoAdvance = () => {}
-let clearSeTimers = () => {}
 let handleStepChange = () => {}
 let cleanupStepSceneEffects = () => {}
 let handleRuntimeStepChange = () => {}
@@ -252,7 +250,6 @@ function _stopCurrentVoice(reason = 'unspecified') {
 
 function freezeScene(reason = 'snapshot') {
   clearFadeAutoAdvance()
-  cancelTimeline()
   spineStageRef.value?.manager?.cancelAllSpineTweens?.()
   _stopCurrentVoice(reason)
   return spineStageRef.value?.dumpScene?.() || window.dumpScene?.() || []
@@ -295,11 +292,6 @@ if (!voicePlayer) {
   })
 }
 
-const { startTimeline, fastForwardTimeline, cancelTimeline } = useTimelineRunner({
-  spineStageRef,
-  currentStep,
-})
-
 const {
   isFirstStep,
   isLastStep,
@@ -331,7 +323,6 @@ const {
   startStep: START_STEP,
   endStep: END_STEP,
   clearFadeAutoAdvance: () => clearFadeAutoAdvance(),
-  fastForwardTimeline,
   ensureAudioCtx: _ensureAudioCtx,
   resetVoiceDedup: _resetVoiceDedup,
 })
@@ -340,7 +331,6 @@ function finishEpisode() {
   if (episodeFinished.value) return
   clearFadeAutoAdvance()
   storyRuntimeCues.cancelCurrentStep('episode-complete')
-  fastForwardTimeline()
   _stopCurrentVoice('episode-complete')
   menuOpen.value = false
   episodeFinished.value = true
@@ -589,7 +579,6 @@ const stepSceneEffects = useStepSceneEffects({
   audioManager: _audioManager,
   voicePlayer,
   resetVoiceDedup: _resetVoiceDedup,
-  startTimeline,
   onEpisodeEnd: finishEpisode,
   isAutoBlocked: () => isRuntimeAutoBlocked(),
   beforeAutoAdvance: () => {
@@ -631,7 +620,6 @@ playbackController.setAuto(autoEnabled.value)
 playbackController.setPaused('audio-lock', autoEnabled.value)
 
 clearFadeAutoAdvance = stepSceneEffects.clearFadeAutoAdvance
-clearSeTimers = stepSceneEffects.clearSeTimers
 handleStepChange = stepSceneEffects.handleStepChange
 cleanupStepSceneEffects = stepSceneEffects.cleanup
 handleRuntimeStepChange = storyRuntimeCues.handleStepChange
@@ -740,7 +728,6 @@ onBeforeUnmount(() => {
     clearTimeout(_readyTimer)
     _readyTimer = null
   }
-  fastForwardTimeline()
   _stopCurrentVoice('onBeforeUnmount')
   // Stop BGM and ambient in AudioManager
   _audioManager.dispose()

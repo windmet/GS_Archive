@@ -2,7 +2,6 @@ import { StoryClock } from './StoryClock.js'
 import { EffectScheduler } from './EffectScheduler.js'
 import { createPerformanceHandle } from './PerformanceRegistry.js'
 import { normalizeScenario } from './ScenarioNormalizer.js'
-import { getRuntimeCueFeatureFlags } from './RuntimeFeatureFlags.js'
 import { applyScreenEntrySnapshot, createScreenCueHandle } from './ScreenCueRuntime.js'
 import { applyBackgroundEntrySnapshot, createBackgroundCueHandle } from './BackgroundCueRuntime.js'
 import { applyCameraEntrySnapshot, createCameraCueHandle } from './CameraCueRuntime.js'
@@ -28,8 +27,6 @@ export function useStoryRuntimeCues({
   compiledData, currentStepIndex, spineStageRef, audioManager,
   debugSnapshotAt = null, debugSnapshotAction = null,
 }) {
-  const flags = getRuntimeCueFeatureFlags()
-  const enabled = flags.camera || flags.se || flags.screen || flags.background || flags.snapshot || flags.spine
   const scheduler = new EffectScheduler({ clock: new StoryClock() })
   let normalizedSource = null
   let normalizedScenario = null
@@ -37,7 +34,7 @@ export function useStoryRuntimeCues({
   let generation = 0
   let pendingRestore = null
 
-  if (enabled && typeof window !== 'undefined') {
+  if (typeof window !== 'undefined') {
     window.__STORY_RUNTIME_CUES__ = scheduler
   }
 
@@ -54,7 +51,6 @@ export function useStoryRuntimeCues({
   }
 
   function applySnapshotWhenReady(snapshot, expectedGeneration) {
-    if (!flags.camera && !flags.screen && !flags.background) return
     const apply = () => {
       if (expectedGeneration !== generation) return
       const manager = getManager()
@@ -63,9 +59,9 @@ export function useStoryRuntimeCues({
         return
       }
       managerFrame = null
-      if (flags.camera) applyCameraEntrySnapshot(manager, snapshot?.camera_zoom)
-      if (flags.screen) applyScreenEntrySnapshot(manager, snapshot?.screen_overlay)
-      if (flags.background) applyBackgroundEntrySnapshot(manager, snapshot?.bg)
+      applyCameraEntrySnapshot(manager, snapshot?.camera_zoom)
+      applyScreenEntrySnapshot(manager, snapshot?.screen_overlay)
+      applyBackgroundEntrySnapshot(manager, snapshot?.bg)
     }
     apply()
   }
@@ -181,24 +177,19 @@ export function useStoryRuntimeCues({
   }
 
   const handlers = new Map()
-  if (flags.camera) handlers.set('camera.transform', cue => createCameraCueHandle(cue, getManager))
-  if (flags.se) handlers.set('se.play', cue => createSeCueHandle(cue, audioManager))
-  if (flags.screen) {
-    handlers.set('screen.directional_wipe', cue => createScreenCueHandle(cue, getManager))
-    handlers.set('screen.fade', cue => createScreenCueHandle(cue, getManager))
-  }
-  if (flags.background) handlers.set('background.change', cue => createBackgroundCueHandle(cue, getManager))
-  if (flags.spine) {
-    handlers.set('spine.face.set', createSpineHandle)
-    handlers.set('spine.body.play', createSpineHandle)
-    handlers.set('spine.neck.play', createSpineHandle)
-    handlers.set('spine.neck.stop', createSpineHandle)
-    handlers.set('spine.visual.tint', createSpineHandle)
-  }
+  handlers.set('camera.transform', cue => createCameraCueHandle(cue, getManager))
+  handlers.set('se.play', cue => createSeCueHandle(cue, audioManager))
+  handlers.set('screen.directional_wipe', cue => createScreenCueHandle(cue, getManager))
+  handlers.set('screen.fade', cue => createScreenCueHandle(cue, getManager))
+  handlers.set('background.change', cue => createBackgroundCueHandle(cue, getManager))
+  handlers.set('spine.face.set', createSpineHandle)
+  handlers.set('spine.body.play', createSpineHandle)
+  handlers.set('spine.neck.play', createSpineHandle)
+  handlers.set('spine.neck.stop', createSpineHandle)
+  handlers.set('spine.visual.tint', createSpineHandle)
   handlers.set('debug.snapshot.capture', cue => createDebugSnapshotHandle(cue, debugSnapshotAction))
 
   function handleStepChange() {
-    if (!enabled) return
     generation++
     if (managerFrame != null) {
       cancelAnimationFrame(managerFrame)
@@ -219,14 +210,13 @@ export function useStoryRuntimeCues({
   }
 
   function prepareRestore(stepIndex, snapshot) {
-    if (!flags.snapshot) return false
     if (!Number.isInteger(stepIndex) || stepIndex < 0 || !snapshot) return false
     pendingRestore = { stepIndex, snapshot: clone(snapshot) }
     return true
   }
 
   function settleCurrentStep(reason = 'user-next') {
-    if (!enabled || !scheduler.hasUnsettledSkippable()) return false
+    if (!scheduler.hasUnsettledSkippable()) return false
     scheduler.settleSkippable(reason)
       .then(() => console.debug('[StoryRuntime] settled', reason, JSON.stringify(scheduler.inspect())))
       .catch(error => console.warn('[StoryRuntime] failed to settle cues:', error))
@@ -234,7 +224,6 @@ export function useStoryRuntimeCues({
   }
 
   function cancelCurrentStep(reason = 'navigation') {
-    if (!enabled) return
     generation++
     if (managerFrame != null) {
       cancelAnimationFrame(managerFrame)
@@ -252,14 +241,13 @@ export function useStoryRuntimeCues({
   }
 
   return {
-    enabled,
-    flags,
+    enabled: true,
     handleStepChange,
     settleCurrentStep,
     cancelCurrentStep,
-    hasBlockingAuto: () => enabled && scheduler.hasBlockingAuto(),
-    hasNonSkippable: () => enabled && scheduler.hasNonSkippable(),
-    isSnapshotEnabled: () => flags.snapshot,
+    hasBlockingAuto: () => scheduler.hasBlockingAuto(),
+    hasNonSkippable: () => scheduler.hasNonSkippable(),
+    isSnapshotEnabled: () => true,
     getNormalizedStep: index => clone(getNormalizedStep(index)),
     prepareRestore,
     inspect: () => scheduler.inspect(),

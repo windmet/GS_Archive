@@ -1,5 +1,4 @@
 import { getAutoAdvanceTiming } from '../utils/StoryStepFlow.js'
-import { getRuntimeCueFeatureFlags } from './story-runtime/RuntimeFeatureFlags.js'
 
 export function useStepSceneEffects({
   currentStepIndex,
@@ -9,15 +8,12 @@ export function useStepSceneEffects({
   audioManager,
   voicePlayer,
   resetVoiceDedup,
-  startTimeline,
   onEpisodeEnd,
   isAutoBlocked = () => false,
   beforeAutoAdvance = () => {},
-  runtimeFlags = getRuntimeCueFeatureFlags(),
 }) {
   let _fadeAutoTimer = null
   let _fadeAutoSeq = 0
-  let _seTimers = []
   let _lastEnvCue = null
   let _lastBgmId = null
 
@@ -29,47 +25,13 @@ export function useStepSceneEffects({
     }
   }
 
-  function clearSeTimers() {
-    for (const timer of _seTimers) {
-      clearTimeout(timer)
-    }
-    _seTimers = []
-  }
-
-  function playStepSE(se) {
-    if (!se?.cue) return
-    audioManager.preloadSE?.(se.cue)
-    const rawDelay = se.delay ?? se.volume ?? 0
-    const delay = Number.parseFloat(rawDelay)
-    if (Number.isFinite(delay) && delay > 0) {
-      const timer = setTimeout(() => {
-        audioManager.playSE(se.cue)
-      }, delay * 1000)
-      _seTimers.push(timer)
-    } else {
-      audioManager.playSE(se.cue)
-    }
-  }
-
   function handleStepChange(newStep, oldStep, { restore = false } = {}) {
     console.log('[Audio] watch(currentStep) fired:', oldStep?.dialogue?.voice, '->', newStep?.dialogue?.voice)
     clearFadeAutoAdvance()
-    clearSeTimers()
 
     const episodeChanged = oldStep && newStep && oldStep.episode_index !== newStep.episode_index
     if (episodeChanged) {
       spineStageRef.value?.manager?.cancelAllSpineTweens?.()
-    }
-
-    if (!restore && !runtimeFlags.se) {
-      const seEvents = Array.isArray(newStep?.state?.se_events) ? newStep.state.se_events : []
-      if (seEvents.length > 0) {
-        for (const se of seEvents) {
-          playStepSE(se)
-        }
-      } else {
-        playStepSE(newStep?.state?.se)
-      }
     }
 
     const env = newStep?.state?.environmental
@@ -127,18 +89,15 @@ export function useStepSceneEffects({
 
     if (!restore) {
       voicePlayer?.playVoice?.()
-      if (!runtimeFlags.spine) startTimeline()
     }
   }
 
   function cleanup() {
     clearFadeAutoAdvance()
-    clearSeTimers()
   }
 
   return {
     clearFadeAutoAdvance,
-    clearSeTimers,
     handleStepChange,
     cleanup,
   }

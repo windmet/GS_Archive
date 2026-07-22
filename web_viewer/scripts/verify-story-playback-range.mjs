@@ -25,7 +25,6 @@ function createNavigation(startStep, endStep) {
     startStep,
     endStep,
     clearFadeAutoAdvance: () => {},
-    fastForwardTimeline: () => {},
     ensureAudioCtx: () => {},
     resetVoiceDedup: () => {},
   })

@@ -800,7 +800,6 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
     manager,
     step,
     state,
-    fallbackBg: props.fallbackBg,
     lastScreenEffectsKey,
     resetScreenEffects,
   })

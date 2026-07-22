@@ -13,7 +13,6 @@ export function useStoryNavigation({
   startStep,
   endStep,
   clearFadeAutoAdvance,
-  fastForwardTimeline,
   ensureAudioCtx,
   resetVoiceDedup,
 }) {
@@ -102,7 +101,6 @@ export function useStoryNavigation({
 
   function goNext() {
     clearFadeAutoAdvance()
-    fastForwardTimeline()
     ensureAudioCtx()
     if (!isLastStep.value) {
       const step = compiledData.value?.steps?.[currentStepIndex.value]
@@ -116,7 +114,6 @@ export function useStoryNavigation({
 
   function goPrev() {
     clearFadeAutoAdvance()
-    fastForwardTimeline()
     ensureAudioCtx()
     if (historyStack.value.length > 0) {
       let target = historyStack.value.pop()
@@ -141,7 +138,6 @@ export function useStoryNavigation({
 
   function onChoice(opt) {
     clearFadeAutoAdvance()
-    fastForwardTimeline()
     ensureAudioCtx()
     resetVoiceDedup()
     const selection = createChoiceSelectionRecord(opt, currentStep.value?.choice_id ?? null)
@@ -156,7 +152,6 @@ export function useStoryNavigation({
 
   function goToStep(index) {
     clearFadeAutoAdvance()
-    fastForwardTimeline()
     if (compiledData.value && index >= navigationStartIndex.value && index <= navigationEndIndex.value) {
       historyStack.value.push(currentStepIndex.value)
       currentStepIndex.value = index
@@ -165,7 +160,6 @@ export function useStoryNavigation({
 
   function restoreToStep(index, { historyIndices = [] } = {}) {
     clearFadeAutoAdvance()
-    fastForwardTimeline()
     ensureAudioCtx()
     if (!compiledData.value || index < navigationStartIndex.value || index > navigationEndIndex.value) {
       return false
