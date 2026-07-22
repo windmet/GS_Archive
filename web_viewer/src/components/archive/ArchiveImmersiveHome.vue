@@ -498,7 +498,7 @@ async function toggleVoice() {
     return
   }
   voiceError.value = false
-  voicePlayer.ensureAudioCtx()
+  voicePlayer.unlockAudioContext()
   voicePlayer.resetVoiceDedup()
   const started = await voicePlayer.playVoice()
   if (started) lastStartedVoice.value = activeCue.value?.voice || ''

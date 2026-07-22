@@ -250,6 +250,9 @@ export function useStoryRuntimeCues({
     isSnapshotEnabled: () => true,
     getNormalizedStep: index => clone(getNormalizedStep(index)),
     prepareRestore,
+    pause: () => scheduler.pause(),
+    resume: () => scheduler.resume(),
+    setRate: rate => scheduler.setRate(rate),
     inspect: () => scheduler.inspect(),
     cleanup,
   }

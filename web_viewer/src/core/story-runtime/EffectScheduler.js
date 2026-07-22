@@ -93,6 +93,10 @@ export class EffectScheduler {
     return result
   }
 
+  setRate(rate) {
+    return this.clock.setRate(rate)
+  }
+
   hasUnsettledSkippable() {
     return this.registry.getActive().some(handle => handle.skippable)
   }

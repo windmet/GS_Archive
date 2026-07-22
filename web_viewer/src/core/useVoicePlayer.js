@@ -1,5 +1,6 @@
 import { getLipSyncUrl, getVoiceUrlCandidates } from '../utils/AssetResolver.js'
 import { deriveMainLipPathFromVoice, sampleLipCurve } from '../utils/LipSyncHelpers.js'
+import { StoryAudioSession } from './story-runtime/StoryAudioSession.js'
 
 export function useVoicePlayer({
   spineStageRef,
@@ -8,20 +9,24 @@ export function useVoicePlayer({
   compiledData,
   isPlaying,
   noVoice = false,
+  audioSession = null,
 }) {
+  const session = audioSession || new StoryAudioSession()
+  const ownsAudioSession = !audioSession
   let audioCtx = null
   let currentSource = null
+  let currentSourceRelease = null
   let lastVoiceUrl = null
   let lastVoiceStepIndex = -1
-  let voiceStartedAt = 0
+  let voiceStartedAt = null
   let currentLipCurve = null
   let voiceCharaId = null
   let voiceState = 'idle'
   const ORIGINAL_LIP_GAIN = 1.0
 
   const getVoiceVolume = () => {
-    if (!currentLipCurve || !voiceStartedAt) return 0
-    const elapsed = (performance.now() - voiceStartedAt) / 1000
+    if (!currentLipCurve || voiceStartedAt == null) return 0
+    const elapsed = Math.max(0, session.currentTime() - voiceStartedAt)
     return sampleLipCurve(currentLipCurve, elapsed)
   }
 
@@ -34,33 +39,20 @@ export function useVoicePlayer({
   }
 
   function ensureAudioCtx() {
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)()
-    }
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume()
-    }
+    audioCtx = session.ensureContext()
+    return audioCtx
   }
 
   function unlockAudioContext() {
-    ensureAudioCtx()
-    try {
-      const silentBuffer = audioCtx.createBuffer(1, 1, 22050)
-      const silentSource = audioCtx.createBufferSource()
-      silentSource.buffer = silentBuffer
-      silentSource.connect(audioCtx.destination)
-      silentSource.start(0)
-      silentSource.onended = () => {
-        try { silentSource.disconnect() } catch (_) {}
-      }
-    } catch (_) {}
+    audioCtx = session.unlockFromUserGesture()
+    return audioCtx
   }
 
   async function waitForRunningAudioContext(timeoutMs = 1800) {
     ensureAudioCtx()
     if (audioCtx.state === 'running') return
     await Promise.race([
-      audioCtx.resume(),
+      session.resume('voice-wait'),
       new Promise(resolve => setTimeout(resolve, timeoutMs)),
     ])
     if (audioCtx.state !== 'running') throw new Error('AudioContext is waiting for a user gesture')
@@ -73,13 +65,20 @@ export function useVoicePlayer({
 
   function stopCurrentVoice(reason = 'unspecified') {
     voiceState = 'idle'
-    if (!currentSource) return
+    if (!currentSource) {
+      currentLipCurve = null
+      voiceStartedAt = null
+      setTalking(false)
+      return
+    }
     console.warn('[Audio] stopCurrentVoice:', reason)
     try { currentSource.stop() } catch (_) {}
     try { currentSource.disconnect() } catch (_) {}
+    currentSourceRelease?.()
+    currentSourceRelease = null
     currentSource = null
     currentLipCurve = null
-    voiceStartedAt = 0
+    voiceStartedAt = null
     setTalking(false)
   }
 
@@ -175,21 +174,26 @@ export function useVoicePlayer({
 
     const source = audioCtx.createBufferSource()
     source.buffer = prepared.audioBuffer
-    source.connect(audioCtx.destination)
-    voiceStartedAt = performance.now()
+    source.connect(session.getBus('voice'))
+    const releaseSource = session.registerSource(source)
+    currentSourceRelease = releaseSource
+    voiceStartedAt = session.currentTime()
+    currentSource = source
+    voiceState = 'playing'
     source.start(0)
     setTalking(true)
 
-    currentSource = source
-    voiceState = 'playing'
     isPlaying.value = true
     source.onended = () => {
+      releaseSource()
+      if (currentSource !== source) return
       setTalking(false)
       currentLipCurve = null
-      voiceStartedAt = 0
+      voiceStartedAt = null
+      currentSourceRelease = null
+      currentSource = null
       isPlaying.value = false
       voiceState = 'ended'
-      if (currentSource === source) currentSource = null
     }
     return true
   }
@@ -241,8 +245,8 @@ export function useVoicePlayer({
 
   function dispose() {
     stopCurrentVoice('dispose')
-    try { audioCtx?.close?.() } catch (_) {}
     audioCtx = null
+    if (ownsAudioSession) session.dispose().catch(() => {})
     resetVoiceDedup()
   }
 
@@ -258,6 +262,7 @@ export function useVoicePlayer({
     unlockAudioContext,
     getVoiceVolume,
     getVoiceState: () => voiceState,
+    getAudioSession: () => session,
     dispose,
   }
 }

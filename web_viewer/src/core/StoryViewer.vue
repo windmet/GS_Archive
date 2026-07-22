@@ -152,6 +152,7 @@ import { AudioManager } from './AudioManager.js'
 import { useStoryNavigation } from './useStoryNavigation.js'
 import { useStepSceneEffects } from './useStepSceneEffects.js'
 import { useStoryRuntimeCues } from './story-runtime/useStoryRuntimeCues.js'
+import { StoryAudioSession } from './story-runtime/StoryAudioSession.js'
 import { SceneSnapshotStore, isReadableHistoryStep } from './story-runtime/SceneSnapshotStore.js'
 import { PlayerPreferencesRepository } from './story-runtime/PlayerPreferencesRepository.js'
 import { ReadProgressRepository, createReadKey } from './story-runtime/ReadProgressRepository.js'
@@ -214,7 +215,10 @@ const transitioning = ref(false)
 
 let _readyTimer = null
 
-const _audioManager = new AudioManager()
+const storyAudioSession = new StoryAudioSession({
+  busVolumes: { bgm: 0.7, ambient: 0.7, voice: 1, se: 0.7 },
+})
+const _audioManager = new AudioManager({ audioSession: storyAudioSession })
 
 let voicePlayer = null
 let clearFadeAutoAdvance = () => {}
@@ -239,8 +243,7 @@ function _setTalking(on) {
  * Once running, subsequent source.start(0) calls work even from async contexts.
  */
 function _ensureAudioCtx() {
-  voicePlayer?.ensureAudioCtx?.()
-  _audioManager.ensureContext()
+  storyAudioSession.unlockFromUserGesture()
   playbackController?.setPaused('audio-lock', false)
 }
 
@@ -293,6 +296,7 @@ if (!voicePlayer) {
     compiledData,
     isPlaying,
     noVoice: NO_VOICE,
+    audioSession: storyAudioSession,
   })
 }
 
@@ -601,6 +605,26 @@ const storyRuntimeCues = useStoryRuntimeCues({
   debugSnapshotAction: () => freezeScene('snapshotAt'),
 })
 
+const runtimePauseReasons = new Set()
+function setRuntimeSessionPaused(reason, paused) {
+  const wasPaused = runtimePauseReasons.size > 0
+  if (paused) runtimePauseReasons.add(reason)
+  else runtimePauseReasons.delete(reason)
+  const isPaused = runtimePauseReasons.size > 0
+  if (!wasPaused && isPaused) storyRuntimeCues.pause().catch(() => {})
+  if (wasPaused && !isPaused) storyRuntimeCues.resume().catch(() => {})
+  const audioTransition = paused
+    ? storyAudioSession.pause(reason)
+    : storyAudioSession.resume(reason)
+  audioTransition.catch(() => {})
+}
+
+function setPlaybackRate(rate) {
+  const appliedRate = storyAudioSession.setRate(rate)
+  storyRuntimeCues.setRate(appliedRate)
+  return appliedRate
+}
+
 playbackController = new PlaybackModeController({
   getStep: () => storyRuntimeCues.getNormalizedStep(),
   getVoiceState: () => voicePlayer?.getVoiceState?.() || 'idle',
@@ -632,6 +656,7 @@ isRuntimeAutoBlocked = storyRuntimeCues.hasBlockingAuto
 
 onMounted(async () => {
   window.__STORY_PLAYBACK__ = playbackController
+  window.__STORY_AUDIO__ = storyAudioSession
   document.addEventListener('visibilitychange', handleVisibilityChange)
   // 全局调试工具：在 Console 输入 showAnims("001tom") 查看角色的所有动作
   window.showAnims = window.showAnims || (async (charaId, modelIdx) => {
@@ -728,14 +753,14 @@ onBeforeUnmount(() => {
   playbackController?.dispose()
   document.removeEventListener('visibilitychange', handleVisibilityChange)
   if (window.__STORY_PLAYBACK__ === playbackController) delete window.__STORY_PLAYBACK__
+  if (window.__STORY_AUDIO__ === storyAudioSession) delete window.__STORY_AUDIO__
   if (_readyTimer) {
     clearTimeout(_readyTimer)
     _readyTimer = null
   }
-  _stopCurrentVoice('onBeforeUnmount')
-  // Stop BGM and ambient in AudioManager
+  voicePlayer?.dispose?.()
   _audioManager.dispose()
-  _resetVoiceDedup()
+  storyAudioSession.dispose().catch(() => {})
 })
 
 // Keep the legacy effects watcher behavior unchanged. The opt-in runtime watcher
@@ -748,6 +773,7 @@ watch(currentStep, handleRuntimeStepChange, { immediate: true })
 watch([menuOpen, backlogOpen, episodeFinished], ([menu, backlog, finished]) => {
   if (menu || backlog || finished) clearFadeAutoAdvance()
   playbackController?.setPaused('overlay', menu || backlog || finished)
+  setRuntimeSessionPaused('overlay', menu || backlog || finished)
 }, { immediate: true })
 watch(uiHidden, hidden => {
   preferencesRepository.update({ ui_hidden: hidden })
@@ -756,6 +782,7 @@ watch(uiHidden, hidden => {
 function handleVisibilityChange() {
   if (document.hidden) clearFadeAutoAdvance()
   playbackController?.setPaused('visibility', document.hidden)
+  setRuntimeSessionPaused('visibility', document.hidden)
 }
 
 
@@ -772,7 +799,7 @@ async function loadScenario(url) {
   }
 }
 
-defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene })
+defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlaybackRate })
 </script>
 
 <style scoped>
