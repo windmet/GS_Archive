@@ -30,7 +30,7 @@
     "verify:story-localization": "node scripts/verify-story-localization-runtime.mjs && node scripts/verify-story-localization-stress.mjs",
     "verify:story-translations": "node scripts/verify-story-translations.mjs && node scripts/report-story-translation-migration.mjs && node scripts/verify-entity-translations.mjs",
     "verify:story-text": "python scripts/verify-story-text-evidence.py",
-    "verify:compiled-migration": "node scripts/verify-compiled-scenario-migration.mjs",
+    "verify:compiled-migration": "node scripts/verify-compiled-scenario-migration.mjs && python scripts/verify-story-migration-candidate.py",
     "verify:episode-artifacts": "node scripts/verify-episode-artifacts.mjs",
     "verify:voice-cues": "node scripts/verify-compiled-voice-cues.mjs",
     "verify:spine-blink": "node scripts/verify-spine-blink-cover.mjs && node scripts/verify-spine-blink-slots.mjs",

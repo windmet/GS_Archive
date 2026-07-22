@@ -47,6 +47,18 @@ non-text differences = 0
 
 语音审计将现有短 cue、完整文件名和已知别名视为同一资源身份；例如 `_t01_` 别名折叠到同一实际 M4A 时不算演出差异。lip path 仍按结构精确比较。
 
+## 扩展代表矩阵
+
+首个 main group 通过后，继续按交接要求选择了 Card、Event 和无 Spine 简单剧情：
+
+| 类型 | 产物 | 范围 | 新增文本单元 | Voice relink | Spine entries | 非文本差异 | 结果 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
+| Card | `001tom_401_2_4_001_01_09_a` | 12 steps | 11 | 10/10 | 有 | 0 | PASS |
+| Event | `1_3_10001_01` | aggregate 312 steps，a–k 全部通过 | 171 | 116/116 | 有 | 0 | PASS |
+| 简单剧情 | `1_x_044ame_2_1_8_044_02` | 9 steps | 5 | 等价 | 0 | 0 | PASS |
+
+Event 的 a–k episode 分别为 25、20、21、20、38、21、30、54、28、29、26 steps；每个 episode 的非文本差异均为 0。由此，P0-B 首批代表矩阵已经覆盖 main、Card、Event 和无 Spine 路径。
+
 ## 可重复命令
 
 候选目录必须位于 `web_viewer` 工作区之外，且开始时为空：
@@ -77,9 +89,17 @@ npm run verify:compiled-migration
 python -m py_compile scripts/compile-story-migration-candidate.py
 ```
 
+Standalone Card/简单剧情使用 `--raw-file`，且 `--group-id` 必须与现有正式 scenario identity 完全一致：
+
+```powershell
+npm run story:migration-candidate -- `
+  --raw-file <raw scenario.json> `
+  --group-id <现有正式 scenario_id> `
+  --output-dir <空临时目录>
+```
+
 ## 仍未完成
 
-1. 还需各选择一话 Card、一话 Event 和一话无 Spine 的简单剧情执行同样审计。
-2. 还没有把任何候选 compiled 替换为正式产物。
-3. 正式替换前仍须运行 episode、voice、story text、presentation、collection 与 archive verifier。
-4. 本机完整资源扫描仍发现 63 条标准 dialogue voice 缺失；这是媒体挂载差异，不能用本次 139/139 group voice relink 结果替代全库资源验收。
+1. 还没有把任何候选 compiled 替换为正式产物。
+2. 正式替换前仍须运行 episode、voice、story text、presentation、collection 与 archive verifier。
+3. 本机完整资源扫描仍发现 63 条标准 dialogue voice 缺失；这是媒体挂载差异，不能用局部 group voice relink 结果替代全库资源验收。

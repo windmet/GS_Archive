@@ -279,6 +279,8 @@ node scripts/report-compiled-scenario-migration.mjs `
 
 2026-07-22 首次正式 group dry-run 已对 `1_4_001_01` 的 aggregate 与 a–j 十个 episode 全部通过：aggregate 432→432 steps，新增 209 个文本单元，十个 episode 均为 0 个非文本差异；voice relink 为 139/139。详细证据见 [正式剧情重编差异审计：首个 group dry-run](../03_audit/STORY_COMPILED_MIGRATION_DRY_RUN_20260722.md)。这只证明该 group 的候选重编语义稳定，尚未授权覆盖正式产物。
 
+同日代表矩阵已扩展到一话 Card、Event `1_3_10001_01` 的 aggregate/a–k，以及一话 0 Spine entries 的简单剧情，均为 0 个非文本差异。P0-B 首批样本范围已满足；下一步仍是审查并选择一个最小正式 collection，而不是直接全量替换。
+
 输入旧 compiled 与临时新 compiled，至少报告：
 
 ```text

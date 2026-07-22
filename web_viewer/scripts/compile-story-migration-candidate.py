@@ -190,24 +190,39 @@ def split_episodes(scenario: dict[str, Any]) -> dict[str, dict[str, Any]]:
 
 
 def compile_candidate(args: argparse.Namespace) -> dict[str, Any]:
-    raw_group_dir = Path(args.raw_group_dir).resolve()
     output_dir = Path(args.output_dir).resolve()
     if output_dir == PROJECT_ROOT or PROJECT_ROOT in output_dir.parents:
         raise ValueError("Candidate output must be outside the web_viewer workspace")
     if output_dir.exists() and any(output_dir.iterdir()):
         raise ValueError(f"Candidate output directory must be empty: {output_dir}")
 
-    parts = discover_parts(raw_group_dir, args.group_id)
     expected_parts = expand_expected_parts(args.expected_parts, args.group_id)
-    discovered_part_ids = [part_id for _, part_id in parts]
-    if expected_parts and discovered_part_ids != expected_parts:
-        raise ValueError(
-            f"Raw part set mismatch for {args.group_id}: expected {expected_parts}, found {discovered_part_ids}"
-        )
-    raw_data = [load_json(path) for path, _ in parts]
-    part_ids = [part_id for _, part_id in parts]
-    source_files = [f"scenariodata/{raw_group_dir.name}/{path.name}" for path, _ in parts]
-    scenario = ScenarioCompiler.compile_group(raw_data, args.group_id, part_ids, source_files)
+    if args.raw_file:
+        if expected_parts:
+            raise ValueError("--expected-parts is only valid with --raw-group-dir")
+        raw_file = Path(args.raw_file).resolve()
+        part_id = raw_file.stem.removeprefix("scenario_")
+        source_files = [f"scenariodata/{raw_file.parent.name}/{raw_file.name}"]
+        scenario = ScenarioCompiler(
+            load_json(raw_file),
+            args.group_id,
+            part_id,
+            source_files[0],
+        ).compile()
+        compilation_mode = "standalone"
+    else:
+        raw_group_dir = Path(args.raw_group_dir).resolve()
+        parts = discover_parts(raw_group_dir, args.group_id)
+        discovered_part_ids = [part_id for _, part_id in parts]
+        if expected_parts and discovered_part_ids != expected_parts:
+            raise ValueError(
+                f"Raw part set mismatch for {args.group_id}: expected {expected_parts}, found {discovered_part_ids}"
+            )
+        raw_data = [load_json(path) for path, _ in parts]
+        part_ids = [part_id for _, part_id in parts]
+        source_files = [f"scenariodata/{raw_group_dir.name}/{path.name}" for path, _ in parts]
+        scenario = ScenarioCompiler.compile_group(raw_data, args.group_id, part_ids, source_files)
+        compilation_mode = "group"
 
     voice_stats = {"references": 0, "resolved": 0, "unresolved": 0}
     if args.voice_index:
@@ -223,6 +238,7 @@ def compile_candidate(args: argparse.Namespace) -> dict[str, Any]:
     manifest = {
         "schema_version": 1,
         "group_id": args.group_id,
+        "compilation_mode": compilation_mode,
         "expected_parts": expected_parts,
         "raw_parts": source_files,
         "aggregate_file": aggregate_path.name,
@@ -237,7 +253,9 @@ def compile_candidate(args: argparse.Namespace) -> dict[str, Any]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--raw-group-dir", required=True)
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--raw-group-dir")
+    source.add_argument("--raw-file")
     parser.add_argument("--group-id", required=True)
     parser.add_argument("--output-dir", required=True)
     parser.add_argument(
