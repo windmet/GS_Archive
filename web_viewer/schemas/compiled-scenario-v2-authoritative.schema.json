@@ -63,6 +63,7 @@
       "required": ["episode_index", "start_step_id", "end_step_id"],
       "properties": {
         "episode_index": { "type": "integer", "minimum": 0 },
+        "source_scenario_id": { "$ref": "#/$defs/canonicalToken" },
         "episode_part": { "type": ["string", "null"] },
         "start_step_id": { "type": "integer", "minimum": 1 },
         "end_step_id": { "type": "integer", "minimum": 1 }
@@ -119,11 +120,16 @@
       "required": ["speaker_identity", "source_text", "text_ref"],
       "properties": {
         "speaker_identity": { "$ref": "#/$defs/speakerIdentity" },
+        "speaker_source_text": { "type": "string" },
         "speaker_text_ref": { "$ref": "#/$defs/textRef" },
         "source_text": { "type": "string" },
         "text_ref": { "$ref": "#/$defs/textRef" },
         "voice": { "type": ["string", "null"] },
         "lip": { "type": ["object", "null"] }
+      },
+      "dependentRequired": {
+        "speaker_source_text": ["speaker_text_ref"],
+        "speaker_text_ref": ["speaker_source_text"]
       },
       "additionalProperties": false
     },

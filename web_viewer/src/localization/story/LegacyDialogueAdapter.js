@@ -23,7 +23,9 @@ export function normalizeLegacySpeaker(dialogue) {
   const identity = dialogue?.speaker_identity && typeof dialogue.speaker_identity === 'object'
     ? dialogue.speaker_identity
     : structured
-  const legacyName = typeof dialogue?.speaker === 'string' ? dialogue.speaker : ''
+  const legacyName = typeof dialogue?.speaker_source_text === 'string'
+    ? dialogue.speaker_source_text
+    : (typeof dialogue?.speaker === 'string' ? dialogue.speaker : '')
   const sourceName = asString(
     identity?.source_name
       ?? identity?.sourceName

@@ -220,6 +220,7 @@ function collectTextIdentity(scenario) {
 }
 
 function sourceSpeaker(dialogue) {
+  if (typeof dialogue?.speaker_source_text === 'string') return dialogue.speaker_source_text
   if (typeof dialogue?.speaker === 'string') return dialogue.speaker
   return dialogue?.speaker?.source_name ?? dialogue?.speaker_identity?.source_name ?? ''
 }

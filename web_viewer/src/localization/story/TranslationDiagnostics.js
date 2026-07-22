@@ -79,9 +79,10 @@ function compiledEvidenceRecords(compiled) {
     const dialogue = asRecord(step.dialogue)
     add(
       dialogue.speaker_text_ref,
-      typeof dialogue.speaker === 'string'
+      dialogue.speaker_source_text
+        ?? (typeof dialogue.speaker === 'string'
         ? dialogue.speaker
-        : asRecord(dialogue.speaker).source_name,
+        : asRecord(dialogue.speaker).source_name),
       dialogue.speaker_identity,
     )
     add(

@@ -1,9 +1,13 @@
 import assert from 'node:assert/strict'
-import { readFile } from 'node:fs/promises'
+import { readFile, readdir } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import Ajv2020 from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
+import {
+  compareAuthoritativeRuntimeProjection,
+  compileAuthoritativeScenario,
+} from './lib/authoritative-scenario-compiler.mjs'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const readJson = async relativePath => JSON.parse(await readFile(path.join(root, relativePath), 'utf8'))
@@ -47,17 +51,42 @@ assert.equal(compatibilitySchema.$defs.dialogue.additionalProperties, true)
 assert.match(compatibilitySchema.$comment, /authoritative/i)
 
 try {
-  const migratedCollection = await readJson('public/data/compiled/episodes/1_4_001_01_a.json')
-  assert.equal(
-    validate(migratedCollection),
-    false,
-    'the first text-identity migration must not be mislabeled as authoritative Runtime v2 output',
-  )
-  assert.ok(
-    validate.errors.some(error => error.keyword === 'required' || error.keyword === 'additionalProperties'),
-    'mounted migration candidate must retain an explicit compatibility-schema classification',
-  )
-  console.log('Mounted 1_4_001_01 candidate classified as compatibility input (expected).')
+  const episodeDirectory = path.join(root, 'public', 'data', 'compiled', 'episodes')
+  const episodeFiles = (await readdir(episodeDirectory))
+    .filter(file => /^1_4_001_01_[a-j]\.json$/u.test(file))
+    .sort()
+  assert.equal(episodeFiles.length, 10, 'mounted 1_4_001_01 must contain the complete a-j collection')
+  let candidateSteps = 0
+  for (const episodeFile of episodeFiles) {
+    const migratedCollection = await readJson(`public/data/compiled/episodes/${episodeFile}`)
+    assert.equal(
+      validate(migratedCollection),
+      false,
+      `${episodeFile} must not be mislabeled as authoritative Runtime v2 output`,
+    )
+    assert.ok(
+      validate.errors.some(error => error.keyword === 'required' || error.keyword === 'additionalProperties'),
+      `${episodeFile} must retain an explicit compatibility-schema classification`,
+    )
+    const authoritativeCandidate = compileAuthoritativeScenario(migratedCollection, {
+      compilerVersion: 'verification-candidate-1',
+    })
+    assert.equal(
+      validate(authoritativeCandidate),
+      true,
+      `${episodeFile}: ${ajv.errorsText(validate.errors, { separator: '\n' })}`,
+    )
+    assert.deepEqual(compareAuthoritativeRuntimeProjection(migratedCollection, authoritativeCandidate), {
+      passed: true,
+      differences: [],
+    })
+    assert.equal(authoritativeCandidate.steps.some(step => 'state' in step || 'timeline' in step), false)
+    assert.equal(authoritativeCandidate.steps.some(step => (
+      'text' in (step.dialogue || {}) || 'text_jp' in (step.dialogue || {}) || 'text_cn' in (step.dialogue || {})
+    )), false)
+    candidateSteps += authoritativeCandidate.steps.length
+  }
+  console.log(`Mounted 1_4_001_01 a-j compiled to strict, runtime/text-equivalent candidates (${candidateSteps} steps).`)
 } catch (error) {
   if (error?.code !== 'ENOENT') throw error
   console.log('Mounted migration candidate classification skipped: 1_4_001_01_a is not present.')

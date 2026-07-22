@@ -150,7 +150,8 @@ export function createStoryLocalization({
     let speakerView = null
     if (dialogue?.speaker_text_ref) {
       speakerView = resolveUnit({
-        source: typeof dialogue.speaker === 'string' ? dialogue.speaker : '',
+        source: dialogue.speaker_source_text
+          ?? (typeof dialogue.speaker === 'string' ? dialogue.speaker : ''),
         textRef: dialogue.speaker_text_ref,
       })
       speakerText = joinDisplay(speakerView)
