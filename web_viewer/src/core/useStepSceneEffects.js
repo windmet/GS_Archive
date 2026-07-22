@@ -11,15 +11,12 @@ export function useStepSceneEffects({
   resetVoiceDedup,
   startTimeline,
   onEpisodeEnd,
-  snapshotAt,
-  snapshotAction,
   isAutoBlocked = () => false,
   beforeAutoAdvance = () => {},
   runtimeFlags = getRuntimeCueFeatureFlags(),
 }) {
   let _fadeAutoTimer = null
   let _fadeAutoSeq = 0
-  let _snapshotTimer = null
   let _seTimers = []
   let _lastEnvCue = null
   let _lastBgmId = null
@@ -29,13 +26,6 @@ export function useStepSceneEffects({
     if (_fadeAutoTimer) {
       clearTimeout(_fadeAutoTimer)
       _fadeAutoTimer = null
-    }
-  }
-
-  function clearSnapshotTimer() {
-    if (_snapshotTimer) {
-      clearTimeout(_snapshotTimer)
-      _snapshotTimer = null
     }
   }
 
@@ -61,19 +51,10 @@ export function useStepSceneEffects({
     }
   }
 
-  function scheduleSnapshot() {
-    clearSnapshotTimer()
-    if (!Number.isFinite(snapshotAt) || snapshotAt < 0) return
-    _snapshotTimer = setTimeout(() => {
-      snapshotAction?.()
-    }, snapshotAt * 1000)
-  }
-
   function handleStepChange(newStep, oldStep, { restore = false } = {}) {
     console.log('[Audio] watch(currentStep) fired:', oldStep?.dialogue?.voice, '->', newStep?.dialogue?.voice)
     clearFadeAutoAdvance()
     clearSeTimers()
-    clearSnapshotTimer()
 
     const episodeChanged = oldStep && newStep && oldStep.episode_index !== newStep.episode_index
     if (episodeChanged) {
@@ -147,21 +128,17 @@ export function useStepSceneEffects({
     if (!restore) {
       voicePlayer?.playVoice?.()
       if (!runtimeFlags.spine) startTimeline()
-      scheduleSnapshot()
     }
   }
 
   function cleanup() {
     clearFadeAutoAdvance()
     clearSeTimers()
-    clearSnapshotTimer()
   }
 
   return {
     clearFadeAutoAdvance,
-    clearSnapshotTimer,
     clearSeTimers,
-    scheduleSnapshot,
     handleStepChange,
     cleanup,
   }

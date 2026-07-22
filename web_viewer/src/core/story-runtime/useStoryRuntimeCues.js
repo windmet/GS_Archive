@@ -7,6 +7,7 @@ import { applyScreenEntrySnapshot, createScreenCueHandle } from './ScreenCueRunt
 import { applyBackgroundEntrySnapshot, createBackgroundCueHandle } from './BackgroundCueRuntime.js'
 import { applyCameraEntrySnapshot, createCameraCueHandle } from './CameraCueRuntime.js'
 import { createSeCueHandle } from './SeCueRuntime.js'
+import { createDebugSnapshotCue, createDebugSnapshotHandle } from './DebugSnapshotRuntime.js'
 import { getCachedMotionSetting } from '../../utils/IdolMotionSettingStore.js'
 
 function clone(value) {
@@ -23,7 +24,10 @@ export function settleSpineNeckCue(manager, cue) {
   return true
 }
 
-export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStageRef, audioManager }) {
+export function useStoryRuntimeCues({
+  compiledData, currentStepIndex, spineStageRef, audioManager,
+  debugSnapshotAt = null, debugSnapshotAction = null,
+}) {
   const flags = getRuntimeCueFeatureFlags()
   const enabled = flags.camera || flags.se || flags.screen || flags.background || flags.snapshot || flags.spine
   const scheduler = new EffectScheduler({ clock: new StoryClock() })
@@ -191,6 +195,7 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
     handlers.set('spine.neck.stop', createSpineHandle)
     handlers.set('spine.visual.tint', createSpineHandle)
   }
+  handlers.set('debug.snapshot.capture', cue => createDebugSnapshotHandle(cue, debugSnapshotAction))
 
   function handleStepChange() {
     if (!enabled) return
@@ -206,6 +211,8 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
     pendingRestore = null
     applySnapshotWhenReady(restore?.snapshot || step.entry_snapshot, generation)
     const cues = restore ? [] : step.cues.filter(cue => handlers.has(cue.action))
+    const debugSnapshotCue = restore ? null : createDebugSnapshotCue(step, debugSnapshotAt)
+    if (debugSnapshotCue) cues.push(debugSnapshotCue)
     scheduler.loadStep(cues, { handlers, context: { step } })
     scheduler.start()
     console.debug(restore ? '[StoryRuntime] restored' : '[StoryRuntime] scheduled', JSON.stringify(scheduler.inspect()))

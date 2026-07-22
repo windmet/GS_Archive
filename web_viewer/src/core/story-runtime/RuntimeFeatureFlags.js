@@ -5,6 +5,7 @@ export function getRuntimeCueFeatureFlags(search = globalThis.location?.search |
   const seOverride = params.get('runtimeSE')
   const screenOverride = params.get('runtimeScreen')
   const backgroundOverride = params.get('runtimeBackground')
+  const snapshotOverride = params.get('runtimeSnapshots')
   const spineOverride = params.get('runtimeSpine')
   return Object.freeze({
     // Camera has completed channel acceptance. Keep runtimeCamera=0 as the
@@ -19,7 +20,9 @@ export function getRuntimeCueFeatureFlags(search = globalThis.location?.search |
     // Background transition has completed channel acceptance. Keep
     // runtimeBackground=0 as the complete legacy rollback path.
     background: backgroundOverride !== '0',
-    snapshot: all || params.get('runtimeSnapshots') === '1',
+    // Snapshot-backed history/restore has completed acceptance. Keep
+    // runtimeSnapshots=0 as the index-stack rollback path.
+    snapshot: snapshotOverride !== '0',
     // Spine timeline has completed channel acceptance. Keep an explicit
     // runtimeSpine=0 escape hatch while the remaining runtime channels migrate.
     spine: all || spineOverride !== '0',

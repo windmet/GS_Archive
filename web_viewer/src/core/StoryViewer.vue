@@ -215,9 +215,7 @@ const _audioManager = new AudioManager()
 
 let voicePlayer = null
 let clearFadeAutoAdvance = () => {}
-let clearSnapshotTimer = () => {}
 let clearSeTimers = () => {}
-let scheduleSnapshot = () => {}
 let handleStepChange = () => {}
 let cleanupStepSceneEffects = () => {}
 let handleRuntimeStepChange = () => {}
@@ -254,7 +252,6 @@ function _stopCurrentVoice(reason = 'unspecified') {
 
 function freezeScene(reason = 'snapshot') {
   clearFadeAutoAdvance()
-  clearSnapshotTimer()
   cancelTimeline()
   spineStageRef.value?.manager?.cancelAllSpineTweens?.()
   _stopCurrentVoice(reason)
@@ -594,8 +591,6 @@ const stepSceneEffects = useStepSceneEffects({
   resetVoiceDedup: _resetVoiceDedup,
   startTimeline,
   onEpisodeEnd: finishEpisode,
-  snapshotAt: SNAPSHOT_AT,
-  snapshotAction: () => { window.__SNAPSHOT__ = freezeScene('snapshotAt') },
   isAutoBlocked: () => isRuntimeAutoBlocked(),
   beforeAutoAdvance: () => {
     markStepRead()
@@ -609,6 +604,8 @@ const storyRuntimeCues = useStoryRuntimeCues({
   currentStepIndex,
   spineStageRef,
   audioManager: _audioManager,
+  debugSnapshotAt: SNAPSHOT_AT,
+  debugSnapshotAction: () => freezeScene('snapshotAt'),
 })
 
 playbackController = new PlaybackModeController({
@@ -634,9 +631,7 @@ playbackController.setAuto(autoEnabled.value)
 playbackController.setPaused('audio-lock', autoEnabled.value)
 
 clearFadeAutoAdvance = stepSceneEffects.clearFadeAutoAdvance
-clearSnapshotTimer = stepSceneEffects.clearSnapshotTimer
 clearSeTimers = stepSceneEffects.clearSeTimers
-scheduleSnapshot = stepSceneEffects.scheduleSnapshot
 handleStepChange = stepSceneEffects.handleStepChange
 cleanupStepSceneEffects = stepSceneEffects.cleanup
 handleRuntimeStepChange = storyRuntimeCues.handleStepChange
