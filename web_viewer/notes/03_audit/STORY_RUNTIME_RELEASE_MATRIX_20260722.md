@@ -103,9 +103,15 @@ http://127.0.0.1:5174/?view=player&scenario=fixtures%2Fstory_localization_stress
 
 - `7c1f1b2` 已退役未生效的 `text_speed`；旧 v2 localStorage 会自动清理该键并保留其他偏好，Runtime foundation 回归通过。
 - `816d584` 将原 v2 schema 明确限定为 compatibility input，并新增严格 authoritative compiler output schema、正反例 fixture 与 `npm run verify:story-schema`。
-- `verify:story-schema` 与 `verify:story-text` 均通过；本机首批 `1_4_001_01_a` 被明确判定为 compatibility input，未误报为 authoritative v2。
+- `verify:story-schema` 与 `verify:story-text` 均通过；本机首批 `1_4_001_01` a–j 被明确判定为 compatibility input，未误报为已发布 authoritative v2。
 
-当前仍缺 compiler 直接生成严格 v2 candidate 的实现与发布验收。因此 schema 门禁已具备，但正式 corpus 的 authoritative output 状态仍为未完成。详细证据见 `STORY_AUTHORITATIVE_V2_SCHEMA_20260723.md`。
+后续 `85983ee` 已补 strict candidate compiler stage：首个 `1_4_001_01` a–j 共 432 steps 均能从 compatibility input 生成 strict v2，并通过 schema、Runtime 和文本投影等价性 gate。CLI 强制把 dry-run 输出写在工作区之外；`1_4_001_01_a` 的 42-step 文件已在系统临时目录实际生成。
+
+该阶段（实播前）仍缺 candidate 文件的浏览器固定锚点与正式发布验收，Python `ScenarioCompiler` 也尚未原生输出 strict v2。因此正式 corpus 的 authoritative output 状态仍为未完成。详细证据见 `STORY_AUTHORITATIVE_V2_SCHEMA_20260723.md`。
+
+后续使用未跟踪临时 fixture 对 strict a/d candidate 完成单标签 5174 验收：A step 38 的 Camera 与两条 SE 均按 authored timestamp 启动；D fade 链后 Prev 恢复原对白，截图无残留黑幕；应用级 error 为 0。一次压缩加载出现 neck target unavailable warning，故 neck/Spine 仍需正式加载复核。临时 fixture 已删除，浏览器恢复正式 d 地址且仍只有一个标签页。
+
+当前剩余项收敛为 atomic publish/backup、source-only checkout、正式 neck/Spine 加载与长时间 release acceptance；正式 corpus 仍未切换 strict v2。
 
 ## 2026-07-22 首页 consumer 回归与修复
 
