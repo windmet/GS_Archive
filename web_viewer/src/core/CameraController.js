@@ -107,6 +107,11 @@ export class CameraController {
     this._cameraTween = null
   }
 
+  handleResize() {
+    if (!this._cameraZoom) return
+    this.setCameraZoom({ ...this._cameraZoom, duration: 0, delay: 0 })
+  }
+
   destroy() {
     this.cancelCameraTween()
     this._cameraTween = null

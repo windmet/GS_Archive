@@ -191,6 +191,7 @@ export class PixiStageManager {
           this.height = height
           this.app.renderer.resize(width, height)
           this.backgroundManager?.handleResize()
+          this.cameraController?.handleResize()
           if (this._fadeOverlay) {
             this._fadeOverlay.width = width
             this._fadeOverlay.height = height

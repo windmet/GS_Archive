@@ -5,12 +5,8 @@ import { normalizeScenario } from './ScenarioNormalizer.js'
 import { getRuntimeCueFeatureFlags } from './RuntimeFeatureFlags.js'
 import { applyScreenEntrySnapshot, createScreenCueHandle } from './ScreenCueRuntime.js'
 import { applyBackgroundEntrySnapshot, createBackgroundCueHandle } from './BackgroundCueRuntime.js'
+import { applyCameraEntrySnapshot, createCameraCueHandle } from './CameraCueRuntime.js'
 import { getCachedMotionSetting } from '../../utils/IdolMotionSettingStore.js'
-
-function immediateCamera(camera) {
-  if (!camera) return null
-  return { ...camera, duration: 0, delay: 0 }
-}
 
 function clone(value) {
   return value == null ? value : JSON.parse(JSON.stringify(value))
@@ -62,37 +58,11 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
         return
       }
       managerFrame = null
-      if (flags.camera) {
-        const camera = immediateCamera(snapshot?.camera_zoom)
-        if (camera) manager.setCameraZoom(camera)
-        else manager.resetCameraZoom()
-      }
+      if (flags.camera) applyCameraEntrySnapshot(manager, snapshot?.camera_zoom)
       if (flags.screen) applyScreenEntrySnapshot(manager, snapshot?.screen_overlay)
       if (flags.background) applyBackgroundEntrySnapshot(manager, snapshot?.bg)
     }
     apply()
-  }
-
-  function createCameraHandle(cue) {
-    return createPerformanceHandle({
-      id: cue.cue_id,
-      channel: cue.channel,
-      skippable: cue.lifecycle.skippable,
-      blocksInput: cue.lifecycle.blocks_input,
-      blocksAuto: cue.lifecycle.blocks_auto,
-      metadata: { action: cue.action, cue },
-      onStart: () => {
-        console.debug('[StoryRuntime] cue start', cue.cue_id)
-        getManager()?.setCameraZoom({ ...cue.payload, duration: cue.duration, delay: 0 })
-      },
-      onSettle: () => {
-        console.debug('[StoryRuntime] cue settle', cue.cue_id)
-        getManager()?.setCameraZoom(immediateCamera(cue.payload))
-      },
-      onCancel: () => {
-        getManager()?.cameraController?.cancelCameraTween?.()
-      },
-    })
   }
 
   function createSeHandle(cue) {
@@ -225,7 +195,7 @@ export function useStoryRuntimeCues({ compiledData, currentStepIndex, spineStage
   }
 
   const handlers = new Map()
-  if (flags.camera) handlers.set('camera.transform', createCameraHandle)
+  if (flags.camera) handlers.set('camera.transform', cue => createCameraCueHandle(cue, getManager))
   if (flags.se) handlers.set('se.play', createSeHandle)
   if (flags.screen) {
     handlers.set('screen.directional_wipe', cue => createScreenCueHandle(cue, getManager))

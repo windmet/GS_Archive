@@ -1,11 +1,14 @@
 export function getRuntimeCueFeatureFlags(search = globalThis.location?.search || '') {
   const params = new URLSearchParams(search)
   const all = params.get('runtimeCues') === '1'
+  const cameraOverride = params.get('runtimeCamera')
   const screenOverride = params.get('runtimeScreen')
   const backgroundOverride = params.get('runtimeBackground')
   const spineOverride = params.get('runtimeSpine')
   return Object.freeze({
-    camera: all || params.get('runtimeCamera') === '1',
+    // Camera has completed channel acceptance. Keep runtimeCamera=0 as the
+    // complete legacy rollback path while the remaining channels migrate.
+    camera: cameraOverride !== '0',
     se: all || params.get('runtimeSE') === '1',
     // Screen/fade has completed channel acceptance. Keep an explicit
     // runtimeScreen=0 escape hatch while the remaining runtime channels migrate.
