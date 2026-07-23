@@ -160,3 +160,9 @@ http://127.0.0.1:5174/?view=player&scenario=fixtures%2Fstory_localization_stress
 后续 `c6d57dd` 又关闭 background profile/effect/transition、camera、screen effect/overlay/slide、environmental、image icon、Spine/fade 等 snapshot 嵌套对象的未知字段。递归门禁覆盖 488 种 nested snapshot shape，并新增 source-only 正例以及 background profile、Spine、overlay、screen effect 未知字段反例；mounted 10,326 scenarios / 315,124 snapshots / 175,600 cues 仍全部 PASS。Runtime snapshot/cue shape 至此收口，剩余 schema 债转为 `dialogue.lip`、`resource_manifest`、`diagnostics` 和 evidence `raw_values` 等外围数据结构。
 
 `498ac8b` 随后验证 mounted 48,073 个 lip 对象全部为唯一 `source/path/frames` shape，增加安全相对路径、正整数 frames 与 unknown-field contract；路径穿越、0 帧和 legacy 字段均有反例。Authoritative compiler 不输出的 `diagnostics` 从 strict schema 删除。`verify:story-schema/text`、publisher、migration 与 Runtime foundation 通过；此前同轮 2400-module build 已通过且该提交不修改应用源码。无 mounted 样本但 compiler 显式保留的 `resource_manifest/raw_values` 继续作为有证据边界的未完成项。
+
+## 2026-07-23 IDM 安全隔离与无音频 soak 前置
+
+由于外部 Edge 音频请求触发 IDM 自动嗅探，本轮不再启动外部浏览器，也不再以有声音频请求做自动化。StoryViewer 新增 `noAudio=1` 调试入口：它自动包含 `noVoice=1`，并在 AudioContext 创建及 Voice/Lip、BGM、Ambient、Runtime SE 的网络请求之前统一短路；`runtimeDebug=1` 可在 DOM 诊断中确认 session/manager 均为 disabled。自动音频 verifier 已断言禁用模式的 AudioContext factory 与 `fetch` 调用次数均为 0。
+
+该入口只用于在单个应用内标签页中安全推进黑屏、heap 与 Spine 长测，不能替代 Edge autoplay、操作系统级 document-hidden 听感或真实 BGM/Ambient 验收。若进行页面测试，固定使用一个应用内浏览器标签页并保留 `noAudio=1`；本轮代码与脚本验证期间没有打开浏览器。

@@ -190,7 +190,8 @@ const END_STEP_VALUE = URL_FLAGS.get('endStep')
 const END_STEP = Number.isFinite(props.endStep) && props.endStep > 0
   ? props.endStep
   : (END_STEP_VALUE == null || END_STEP_VALUE === '' ? null : Number(END_STEP_VALUE))
-const NO_VOICE = URL_FLAGS.get('noVoice') === '1'
+const NO_AUDIO = URL_FLAGS.get('noAudio') === '1'
+const NO_VOICE = NO_AUDIO || URL_FLAGS.get('noVoice') === '1'
 const SNAPSHOT_AT_VALUE = URL_FLAGS.get('snapshotAt')
 const SNAPSHOT_AT = SNAPSHOT_AT_VALUE == null || SNAPSHOT_AT_VALUE === '' ? null : Number(SNAPSHOT_AT_VALUE)
 const RUNTIME_DEBUG = URL_FLAGS.get('runtimeDebug') === '1'
@@ -230,6 +231,7 @@ let _runtimeDiagnosticsTimer = null
 
 const storyAudioSession = new StoryAudioSession({
   busVolumes: { bgm: 0.7, ambient: 0.7, voice: 1, se: 0.7 },
+  disabled: NO_AUDIO,
 })
 const _audioManager = new AudioManager({ audioSession: storyAudioSession })
 
@@ -256,7 +258,7 @@ function _setTalking(on) {
  * Once running, subsequent source.start(0) calls work even from async contexts.
  */
 function _ensureAudioCtx() {
-  storyAudioSession.unlockFromUserGesture()
+  if (!NO_AUDIO) storyAudioSession.unlockFromUserGesture()
   playbackController?.setPaused('audio-lock', false)
 }
 
@@ -704,7 +706,7 @@ playbackController = new PlaybackModeController({
   },
 })
 playbackController.setAuto(autoEnabled.value)
-playbackController.setPaused('audio-lock', autoEnabled.value)
+playbackController.setPaused('audio-lock', autoEnabled.value && !NO_AUDIO)
 
 clearFadeAutoAdvance = stepSceneEffects.clearFadeAutoAdvance
 handleStepChange = stepSceneEffects.handleStepChange

@@ -92,6 +92,22 @@ detached source-only checkout 已重新安装依赖并通过 audio soak、Runtim
 
 该证据可关闭“短程重复导航立即单调泄漏”和“混合 SKIP 遗留 voice”风险；它仍是受 CPU 约束的 bounded smoke，不替代数小时真实后台/听感/heap soak。
 
+## 2026-07-23 IDM 安全调试入口
+
+外部 Edge 音频请求会被本机 IDM 自动嗅探并弹出多个下载窗格，因此停止使用外部 Edge/Playwright 音频验证路径，也不由自动化关闭用户已经打开的 IDM 窗格。为安全继续排查渲染与长会话资源收敛，StoryViewer 新增仅由 URL 显式开启的 `noAudio=1` 调试模式：
+
+```text
+http://127.0.0.1:5174/?view=player&scenario=episodes%2F1_4_001_01_d.json&start_step=1&end_step=48&noAudio=1&runtimeDebug=1
+```
+
+- `noAudio=1` 自动包含 `noVoice=1`；
+- 共享 `StoryAudioSession` 标记为 disabled，手势入口不创建 `AudioContext`；
+- Voice/Lip、BGM、Ambient 与 Runtime SE 均在 `fetch` 前短路；
+- Auto 不再等待 audio-lock，便于在无音频网络请求下执行单标签页 heap/Spine soak；
+- `runtimeDebug=1` 的诊断面会显示 `audio_session.disabled` 与 `audio_manager.disabled`，便于验证当前确实处于隔离模式。
+
+`npm run verify:story-audio` 新增禁用模式反例，实际断言 AudioContext factory 与所有音频/口型 `fetch` 调用次数均为 0。该入口只证明“无音频网络请求的渲染/资源测试环境”，不能替代 Edge autoplay、真实后台听感、BGM/Ambient 淡化恢复或任何有声验收。
+
 ## 尚未覆盖
 
 - Edge 与不同 autoplay policy 的首次解锁对照；

@@ -161,6 +161,7 @@ schema_version = 2             = 0
 - Runtime scheduler 与 audio session 由同一暂停原因集合协调；
 - BGM/Ambient 已提供 capture/restore，旧 voice `onended` 误释放新 source 的竞态已修复；
 - 自动 verifier、生产 build 与 5174 单标签页的 voice/SE/menu/dispose 路径通过。详细证据见 [Story Audio Session 统一审计](../03_audit/STORY_AUDIO_SESSION_UNIFICATION_20260723.md)。
+- 外部 Edge 音频请求会触发本机 IDM 自动嗅探；后续自动化不得继续该路径。`noAudio=1&runtimeDebug=1` 可在创建 AudioContext 和请求 Voice/Lip/BGM/Ambient/SE 前统一短路，用于单标签无音频 heap/Spine soak；自动 verifier 已证明 context factory 与 `fetch` 调用均为 0。
 
 仍不能宣称完成的是 Edge autoplay 对照、后台切换的真实听感、BGM/Ambient 长时间淡化恢复与持续内存观察；这些属于 release stability，不再是 owner 阻塞项。
 
@@ -217,7 +218,7 @@ translation state
 | Runtime 核心抽象 | 90% | Clock/Scheduler/Registry/Snapshot/PlaybackMode 与 channel lifecycle 已落地 |
 | Runtime channel 迁移 | 100% | StoryViewer 内六个 channel 已唯一 owner；首页 standalone background consumer 已显式补契约 |
 | Runtime 旧路径清理 | 95% | timeline、旧 scene writers、SE timers 与 flags 已删除；保留的 voice/BGM/ambient/auto 各有实际职责 |
-| 音频统一 | 98% | 单 AudioContext、四 bus、统一 lifecycle、stale-load/voice-release guard、source 标签与 100 轮 soak 已完成；Edge/真实后台待测 |
+| 音频统一 | 98% | 单 AudioContext、四 bus、统一 lifecycle、stale-load/voice-release guard、source 标签、100 轮 soak 与 noAudio 网络隔离已完成；Edge/真实后台待测 |
 | Localization 契约与基础设施 | 100% | schema、Python-native/JS parity、atomic publish 与 source-only 已完成 |
 | 正式剧情文本身份迁移 | <1% | 首个 `1_4_001_01` collection 已发布；其余 corpus 仍是 legacy |
 | 双语结构化 UI | 100% | ADV、Choice、Backlog、Title、Synopsis、Mobile、Call 均已结构化 |
@@ -351,6 +352,7 @@ screen/fade
 - voice/BGM/SE/ambient 的 unlock、pause/resume、rate 与 dispose，以及 BGM/Ambient capture/restore：基础实现和 verifier 已完成；
 - BGM/Ambient stale async load guard 与 100 轮 source/timer soak：已完成（`7747d23`）；
 - source bus/kind/cue/age 主世界诊断、无 voice 步骤释放旧 dialogue source、混合 UI 链路与 6 轮 heap/Spine 曲线：已完成（`5d62b48`）；
+- IDM 安全隔离：`noAudio=1` 在 AudioContext 与 Voice/Lip/BGM/Ambient/SE 网络请求前短路，供单标签无音频 soak 使用；不得把它记为音频验收通过；
 - 删除不再使用的 `text_speed`：已完成（`7c1f1b2`）；
 - 收紧 authoritative v2 schema：schema/verifier（`816d584`）、strict candidate stage（`85983ee`）、atomic publish/source-only gate（`2702773`、`1fb426e`）及 Python-native output/parity（`e7a78d0`）已完成；首个 a–j strict collection 已正式发布；
 - Runtime shape schema：snapshot 顶层及全部已知嵌套对象、10 类 cue action/channel/payload 与 mounted 全库门禁已完成（`a065c22`、`c6d57dd`）；

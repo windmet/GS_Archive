@@ -217,6 +217,49 @@ try {
   globalThis.fetch = originalFetch
 }
 
+let disabledContextFactoryCalls = 0
+let disabledFetchCalls = 0
+const disabledSession = new StoryAudioSession({
+  disabled: true,
+  contextFactory: () => { disabledContextFactoryCalls++; return new FakeAudioContext() },
+})
+const disabledManager = new AudioManager({ audioSession: disabledSession })
+const disabledVoicePlayer = useVoicePlayer({
+  spineStageRef: { value: null },
+  currentStep: { value: { dialogue: { voice: 'disabled-voice' } } },
+  currentStepIndex: { value: 0 },
+  compiledData: { value: { scenario_id: 'disabled-scenario' } },
+  isPlaying: { value: false },
+  audioSession: disabledSession,
+})
+globalThis.fetch = async () => {
+  disabledFetchCalls++
+  return { ok: true, arrayBuffer: async () => new ArrayBuffer(8) }
+}
+try {
+  assert.equal(disabledSession.ensureContext(), null)
+  assert.equal(disabledSession.unlockFromUserGesture(), null)
+  assert.equal(disabledVoicePlayer.ensureAudioCtx(), null)
+  assert.equal(disabledVoicePlayer.unlockAudioContext(), null)
+  assert.equal(await disabledVoicePlayer.prepareVoice(), null)
+  assert.equal(await disabledVoicePlayer.playVoice(), false)
+  assert.equal(await disabledVoicePlayer.replayVoiceDetached({ dialogue: { voice: 'disabled-backlog' } }), false)
+  assert.equal(await disabledManager.preloadSE('disabled-se'), null)
+  await disabledManager.playSE('disabled-se')
+  await disabledManager.playBgm('disabled-bgm')
+  await disabledManager.playAmbient('disabled-ambient')
+  assert.equal(disabledContextFactoryCalls, 0, 'disabled mode must not create an AudioContext')
+  assert.equal(disabledFetchCalls, 0, 'disabled mode must not fetch voice, BGM, ambient, lip or SE assets')
+  assert.equal(disabledSession.inspect().active_sources, 0)
+  assert.equal(disabledSession.inspect().disabled, true)
+  assert.equal(disabledManager.inspect().disabled, true)
+} finally {
+  globalThis.fetch = originalFetch
+  disabledVoicePlayer.dispose()
+  disabledManager.dispose()
+  await disabledSession.dispose()
+}
+
 const [viewerSource, voicePlayerSource, audioManagerSource] = await Promise.all([
   readFile(new URL('../src/core/StoryViewer.vue', import.meta.url), 'utf8'),
   readFile(new URL('../src/core/useVoicePlayer.js', import.meta.url), 'utf8'),
@@ -225,8 +268,10 @@ const [viewerSource, voicePlayerSource, audioManagerSource] = await Promise.all(
 assert.match(viewerSource, /new StoryAudioSession/)
 assert.match(viewerSource, /new AudioManager\(\{ audioSession: storyAudioSession \}\)/)
 assert.match(viewerSource, /audioSession: storyAudioSession/)
+assert.match(viewerSource, /const NO_AUDIO = URL_FLAGS\.get\('noAudio'\) === '1'/)
+assert.match(viewerSource, /const NO_VOICE = NO_AUDIO \|\| URL_FLAGS\.get\('noVoice'\) === '1'/)
 assert.doesNotMatch(voicePlayerSource, /new \(window\.AudioContext/)
 assert.doesNotMatch(audioManagerSource, /new \(window\.AudioContext/)
 
 console.log('Story audio session verification passed.')
-console.log('  100-cycle BGM/Ambient crossfade, capture/restore, visibility/overlay pause, stale-load race, bounded sources and timer cleanup covered.')
+console.log('  100-cycle BGM/Ambient crossfade, capture/restore, visibility/overlay pause, stale-load race, bounded sources, timer cleanup and noAudio network isolation covered.')

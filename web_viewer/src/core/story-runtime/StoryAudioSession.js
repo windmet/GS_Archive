@@ -20,8 +20,9 @@ function defaultContextFactory() {
 }
 
 export class StoryAudioSession {
-  constructor({ contextFactory = defaultContextFactory, masterVolume = 1, busVolumes = {} } = {}) {
+  constructor({ contextFactory = defaultContextFactory, masterVolume = 1, busVolumes = {}, disabled = false } = {}) {
     this._contextFactory = contextFactory
+    this._disabled = Boolean(disabled)
     this._masterVolume = clampVolume(masterVolume)
     this._busVolumes = { ...DEFAULT_BUS_VOLUMES }
     for (const bus of BUS_NAMES) {
@@ -47,8 +48,13 @@ export class StoryAudioSession {
     return this._rate
   }
 
+  get disabled() {
+    return this._disabled
+  }
+
   ensureContext() {
     if (this._disposed) throw new Error('StoryAudioSession is disposed')
+    if (this._disabled) return null
     if (!this._context) {
       this._context = this._contextFactory()
       this._logicalEpoch = Number(this._context.currentTime) || 0
@@ -81,6 +87,7 @@ export class StoryAudioSession {
   }
 
   unlockFromUserGesture() {
+    if (this._disabled) return null
     const context = this.ensureContext()
     if (context.state === 'suspended' && this._pauseReasons.size === 0) {
       const resume = Promise.resolve(context.resume?.())
@@ -179,6 +186,7 @@ export class StoryAudioSession {
       active_sources: this._sources.size,
       sources: Object.freeze(sources),
       buses: Object.freeze({ ...this._busVolumes }),
+      disabled: this._disabled,
       disposed: this._disposed,
     })
   }

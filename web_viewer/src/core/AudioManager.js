@@ -41,6 +41,7 @@ export class AudioManager {
 
   /** Create or resume AudioContext. Call on user gesture. */
   ensureContext() {
+    if (this._audioSession.disabled) return null
     this._ctx = this._audioSession.ensureContext()
     return this._ctx
   }
@@ -77,14 +78,14 @@ export class AudioManager {
 
   /** Decode a delayed cue early so its authored timestamp stays precise. */
   preloadSE(cueName) {
-    if (!cueName) return Promise.resolve(null)
+    if (!cueName || this._audioSession.disabled) return Promise.resolve(null)
     this.ensureContext()
     return this._loadSE(cueName).catch(() => null)
   }
 
   /** Play a one-shot SE. Multiple SE can overlap. */
   async playSE(cueName) {
-    if (!cueName) return
+    if (!cueName || this._audioSession.disabled) return
     this.ensureContext()
     try {
       const audioBuf = await this._loadSE(cueName)
@@ -108,7 +109,7 @@ export class AudioManager {
    * @param {number} [volume] — volume level 0.0-1.0; if omitted, uses default 0.4
    */
   async playAmbient(cueName, fadeTime = 0.5, volume = null) {
-    if (!cueName || cueName === this._currentAmbientCue) return
+    if (!cueName || this._audioSession.disabled || cueName === this._currentAmbientCue) return
     this.ensureContext()
     const generation = ++this._ambientGeneration
 
@@ -203,7 +204,7 @@ export class AudioManager {
    * @param {number} [fadeTime=1.0]
    */
   async playBgm(bgmId, fadeTime = 1.0) {
-    if (!bgmId || bgmId === this._currentBgmCue) return
+    if (!bgmId || this._audioSession.disabled || bgmId === this._currentBgmCue) return
     this.ensureContext()
     const generation = ++this._bgmGeneration
 
@@ -305,6 +306,7 @@ export class AudioManager {
       has_ambient_source: Boolean(this._ambientSource),
       cleanup_timers: this._cleanupTimers.size,
       se_cache_entries: this._seBufferCache.size,
+      disabled: this._audioSession.disabled,
     })
   }
 

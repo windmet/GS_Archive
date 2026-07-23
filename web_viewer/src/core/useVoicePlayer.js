@@ -39,11 +39,13 @@ export function useVoicePlayer({
   }
 
   function ensureAudioCtx() {
+    if (session.disabled) return null
     audioCtx = session.ensureContext()
     return audioCtx
   }
 
   function unlockAudioContext() {
+    if (session.disabled) return null
     audioCtx = session.unlockFromUserGesture()
     return audioCtx
   }
@@ -117,7 +119,7 @@ export function useVoicePlayer({
 
   async function prepareVoice({ step = currentStep.value, scenarioId = compiledData.value?.scenario_id, includeLip = true } = {}) {
     const voice = step?.dialogue?.voice
-    if (!voice) return null
+    if (!voice || noVoice || session.disabled) return null
 
     ensureAudioCtx()
     try {
@@ -162,7 +164,7 @@ export function useVoicePlayer({
   }
 
   function playPreparedVoice(prepared) {
-    if (!prepared?.audioBuffer || !prepared.voice) return false
+    if (noVoice || session.disabled || !prepared?.audioBuffer || !prepared.voice) return false
 
     stopCurrentVoice('playPreparedVoice-new')
     ensureAudioCtx()
