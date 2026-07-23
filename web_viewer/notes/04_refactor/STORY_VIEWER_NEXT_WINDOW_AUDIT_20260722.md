@@ -197,8 +197,9 @@ translation state
 - `story:authoritative-candidate` 已能在工作区外把 compatibility episode 编译成 strict v2；a–j 共 432 steps 通过 schema、Runtime 与文本投影等价性 gate（`85983ee`）。
 - collection manifest/atomic publisher 已覆盖 aggregate + a–j，带 old/candidate hash、显式 group 确认、compiled 外完整备份、temp + fsync + rename、最终 hash 和失败回滚（`2702773`、`1fb426e`）。真实 dry-run 为 11 files / 10 episodes / 432 unique steps / 139 unique voice refs；未执行正式覆盖。
 - detached source-only checkout 已通过 schema/publish/text/localization/structured UI/Runtime foundation verifier 和 2400-module production build；本机语料锚点按预期显式 skip。
+- Python `ScenarioCompiler` 已支持原生 authoritative output，`story:authoritative-native` 可从 raw group 直接生成 strict aggregate/episodes；tracked fixture 与 mounted a–j 432 steps 均和 JavaScript oracle 逐字段一致，真实 raw dry-run 139/139 voice refs（`e7a78d0`）。
 
-Python compiler 原生 strict output 与正式 corpus 切换仍未完成。Candidate a/d 已通过单标签 5174 的 camera/SE、fade restore 与无黑幕锚点；一次压缩加载的 neck target warning 仍需正式加载长测。能生成、实播和安全发布 candidate 不等于已经发布。
+正式 corpus 切换仍未完成。Candidate a/d 已通过单标签 5174 的 camera/SE、fade restore 与无黑幕锚点；一次压缩加载的 neck target warning 仍需正式加载长测。能原生生成、实播和安全发布 candidate 不等于已经发布。
 
 ### 4.8 Release acceptance 已完成基础矩阵，稳定性长测尚未完成
 
@@ -216,13 +217,13 @@ Python compiler 原生 strict output 与正式 corpus 切换仍未完成。Candi
 | Runtime channel 迁移 | 100% | StoryViewer 内六个 channel 已唯一 owner；首页 standalone background consumer 已显式补契约 |
 | Runtime 旧路径清理 | 95% | timeline、旧 scene writers、SE timers 与 flags 已删除；保留的 voice/BGM/ambient/auto 各有实际职责 |
 | 音频统一 | 90% | 单 AudioContext、四 bus、统一 unlock/pause/rate/dispose 与 BGM/Ambient capture/restore 已完成；长测待做 |
-| Localization 契约与基础设施 | 99% | schema、strict candidate、atomic publish 与 source-only 已完成；正式 neck/Spine/长测待验收 |
+| Localization 契约与基础设施 | 100% | schema、Python-native/JS parity、atomic publish 与 source-only 已完成 |
 | 正式剧情文本身份迁移 | <1% | 首个 `1_4_001_01` collection 已发布；其余 corpus 仍是 legacy |
 | 双语结构化 UI | 100% | ADV、Choice、Backlog、Title、Synopsis、Mobile、Call 均已结构化 |
 | 实体/门户翻译覆盖 | <10% | 仅 3 个偶像 draft 样本 |
 | PR release acceptance | 80% | source/full build、三档 viewport、a/d 锚点与音频基础生命周期已完成；长时间音频/内存/后台恢复待测 |
 
-按“可安全发布基础架构、但不要求完成批量翻译”作为总目标，目前约为 **95%**。首页 standalone background owner、结构化双语 UI、音频基础 owner/lifecycle、Preferences 清理、authoritative schema、strict candidate stage、atomic publish/source-only 与 a/d candidate 实播已完成；之后主要剩余工作是正式 neck/Spine 与长时间稳定性验收、Python compiler 原生 strict output，以及更多正式产物迁移。
+按“可安全发布基础架构、但不要求完成批量翻译”作为总目标，目前约为 **96%**。首页 standalone background owner、结构化双语 UI、音频基础 owner/lifecycle、Preferences 清理、authoritative schema、Python-native/JS parity、atomic publish/source-only 与 a/d candidate 实播已完成；之后主要剩余工作是正式 neck/Spine 与长时间稳定性验收，以及审查后独立发布更多正式产物。
 
 ## 6. 下一窗口推荐执行顺序
 
@@ -348,7 +349,7 @@ screen/fade
 - AudioContext 和 mixer 唯一 owner：已完成（`3ecd5b5`）；
 - voice/BGM/SE/ambient 的 unlock、pause/resume、rate 与 dispose，以及 BGM/Ambient capture/restore：基础实现和 verifier 已完成；
 - 删除不再使用的 `text_speed`：已完成（`7c1f1b2`）；
-- 收紧 authoritative v2 schema：schema/verifier（`816d584`）、strict candidate stage（`85983ee`）及 atomic publish/source-only gate（`2702773`、`1fb426e`）已完成，正式发布待完成；
+- 收紧 authoritative v2 schema：schema/verifier（`816d584`）、strict candidate stage（`85983ee`）、atomic publish/source-only gate（`2702773`、`1fb426e`）及 Python-native output/parity（`e7a78d0`）已完成，正式发布待完成；
 - feature flags 已在各 channel 默认验收后删除；剩余 compatibility fields 应随 authoritative v2 schema 收紧独立处理。
 
 下一步补正式 neck/Spine 加载和音频/内存长测；通过并审查 manifest 后，首个 a–j strict corpus 发布继续使用独立提交。发布器完成不等于 corpus 已发布。
@@ -485,9 +486,9 @@ npm run build
 2. notes/04_refactor/STORY_VIEWER_RUNTIME_REFACTOR_DESIGN_20260718.md
 3. notes/04_refactor/STORY_LOCALIZATION_CONTRACT_20260719.md
 
-当前实现审计基线是 PR #1、branch codex/story-localization-contract；音频实现 3ecd5b5、Preferences 清理 7c1f1b2、authoritative schema gate 816d584、strict candidate stage 85983ee、atomic publisher 2702773、source-only/path hardening 1fb426e；请以实际远端 HEAD 为准。
+当前实现审计基线是 PR #1、branch codex/story-localization-contract；音频实现 3ecd5b5、Preferences 清理 7c1f1b2、authoritative schema gate 816d584、strict candidate stage 85983ee、atomic publisher 2702773、source-only/path hardening 1fb426e、Python-native strict output e7a78d0；请以实际远端 HEAD 为准。
 StoryViewer 的六个 Runtime channel、旧路径清理、首页 standalone background owner、玩家内七类结构化双语 UI、音频基础 owner/lifecycle、Preferences 清理与 schema 分层已完成。
-下一优先级是正式 neck/Spine 与长时间 release acceptance、Python compiler 原生 strict output，以及审查后独立发布 strict collection；不要恢复 applyStepSceneState 的背景写入，也不要把尚未发布的 candidate 说成正式 corpus 已迁移。
+下一优先级是正式 neck/Spine 与长时间 release acceptance，以及审查 Python-native/JS parity 后独立发布 strict collection；不要恢复 applyStepSceneState 的背景写入，也不要把尚未发布的 candidate 说成正式 corpus 已迁移。
 正式 compiled 仅迁移首个 1_4_001_01 collection；不要直接覆盖单个 episode，也不要批量翻译。
 分批提交并推送，每批说明已验证和仍未验证的内容。
 ```

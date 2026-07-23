@@ -103,11 +103,22 @@ Authoritative dialogue 使用 `speaker_source_text + speaker_text_ref` 表示 Ti
 
 `1fb426e` 的 detached source-only checkout 已执行 `npm ci --ignore-scripts`、schema/publish/text/localization/structured UI/Runtime foundation 全套 verifier 与生产构建。挂载 corpus 锚点按预期显式 skip，2400 modules 构建通过，证明新门禁不依赖本机未纳管语料。
 
+## Python ScenarioCompiler 原生 strict 输出
+
+`e7a78d0` 已把 authoritative v2 投影实现为 Python compiler contract，而不再要求正式编译流程依赖 Node post-compile stage：
+
+- `ScenarioCompiler.compile(..., output_contract="authoritative", source=...)` 与 `compile_group` 可直接返回 `runtime_contract: story-runtime-v2`；默认仍为 compatibility，现有调用不变；
+- `npm run story:authoritative-native -- --raw-group-dir ...` 从 raw group 经同一 Python state machine 生成 strict aggregate 与 episode 文件；
+- Python 只输出 authoritative schema 允许的 snapshot/cue/flow/evidence/text identity 字段，不写 legacy `state/timeline/text/text_jp/text_cn`；
+- tracked compatibility fixture 在 source-only checkout 中逐字段对照 JavaScript 独立实现；本机 mounted a–j 共 432 unique steps 也逐文件、逐字段一致并通过 strict schema；
+- 真实 raw `1_4_001_01` a–j native dry-run 生成 aggregate + 10 episodes，432 unique steps、139/139 voice refs，11 份文件与 JavaScript 投影完全一致；临时产物已删除，未覆盖 corpus。
+
+JavaScript candidate stage 继续作为独立 oracle 与发布器输入，而不是 Python 正式输出的唯一实现。这样跨语言 parity gate 能阻止两套规范化规则静默漂移。
+
 ## 尚未完成
 
-- Python `ScenarioCompiler` 尚未原生生成 `runtime_contract: story-runtime-v2`；当前由独立、可审计的 post-compile stage 生成 strict candidate；
 - 正式 corpus 尚未切换严格输出；
 - snapshot/payload 内部仍需按 Runtime channel 逐项 schema 化；
 - 正式发布前仍须执行完整 neck/Spine 加载和长时间 release acceptance；source-only checkout 已通过。
 
-下一步是在正式资源加载条件下补 neck/Spine 与长时间 release acceptance，并审查 manifest 后再决定是否独立提交正式 a–j strict corpus 发布。不得因为发布器已完成就宣称 corpus 已切换，也不得直接覆盖全量 corpus。
+下一步是在正式资源加载条件下补 neck/Spine 与长时间 release acceptance，并审查 Python-native/JavaScript parity manifest 后再决定是否独立提交正式 a–j strict corpus 发布。不得因为 compiler 与发布器已完成就宣称 corpus 已切换，也不得直接覆盖全量 corpus。

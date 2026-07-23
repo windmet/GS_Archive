@@ -117,6 +117,8 @@ http://127.0.0.1:5174/?view=player&scenario=fixtures%2Fstory_localization_stress
 
 本轮仍未正式发布 strict corpus。剩余发布阻塞为正式 neck/Spine 资源加载复核，以及 Edge autoplay、跨 episode、后台恢复、真实 BGM/Ambient、持续内存等长时间 release acceptance。
 
+后续 `e7a78d0` 又补齐 Python `ScenarioCompiler` 原生 authoritative contract 和 `story:authoritative-native` raw-group CLI。tracked fixture 与 mounted a–j 432 unique steps 均与 JavaScript 独立投影逐字段一致；真实 raw a–j dry-run 生成 11 文件并完成 139/139 voice relink。detached source-only checkout 的 schema parity、migration、text 和 production build 通过。本项不改变“strict corpus 尚未正式发布”的结论。
+
 ## 2026-07-22 首页 consumer 回归与修复
 
 后续首页复核发现：`ArchiveImmersiveHome` 直接使用 `SpineStage`，不经过 StoryViewer 的 `useStoryRuntimeCues`。`baf44df` 删除全局 legacy background writer 后，首页虽然正确解析 `bg001_315pro_in_01`，但没有把背景写入以黑色清屏的 Pixi stage，因此呈现黑屏。
