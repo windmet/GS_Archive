@@ -150,3 +150,9 @@ http://127.0.0.1:5174/?view=player&scenario=fixtures%2Fstory_localization_stress
 - schema/publisher、Runtime、text/localization、episode/voice、playback range、presentation、首页、100 轮 audio soak 与 2400-module production build 全部 PASS。
 
 本轮因外部 Edge 音频请求触发 IDM 自动嗅探，已停止该验证路径，并确认无 Codex 临时 Edge 进程残留。没有把纯脚本通过写成浏览器音频通过；仍未完成的 release stability 是 Edge autoplay、操作系统级真实 document-hidden/听感与数小时 heap/Spine soak。下一 collection 仍须独立执行 dry-run、parity、备份与小批发布，禁止直接覆盖全库。
+
+## 2026-07-23 Authoritative Runtime shape 收口
+
+`a065c22` 将 strict snapshot 顶层和 10 类 compiler cue action/channel/payload 写入 authoritative schema，并新增 mounted 全库 verifier。10,326 scenarios（含 tracked fixture）、315,124 snapshots、175,600 cues、1214 snapshot shapes、37 action/payload shapes 全部通过；未知 action、channel 错配、payload 缺失/多余字段、snapshot 顶层未知字段及空 `neck.play` 均有反例，1618 条空 `neck.stop` 按原语义显式保留。
+
+`verify:story-schema`、`verify:story-text`、authoritative publisher、compiled migration、Runtime foundation 与 2400-module production build 通过。该项不替代 Edge/后台/数小时浏览器稳定性验收；snapshot 的 Spine、background profile/effect、camera 与 screen overlay 等嵌套对象仍待逐 channel 收紧。
