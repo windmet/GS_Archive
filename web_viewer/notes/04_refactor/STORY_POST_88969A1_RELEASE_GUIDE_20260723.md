@@ -113,6 +113,8 @@ CI 必须明确区分：
 
 只使用一个浏览器标签。由于 IDM 会嗅探音频，普通画面调试继续使用 `noAudio=1`；该模式只证明网络隔离，不是音频验收。真实音频验收由用户明确安排后再进行。
 
+安全可执行部分已追加完成：strict episode a 的 Choice→Backlog restore→Auto→Choice→Skip All→episode complete→episode b，以及 simulated hidden/visible 均通过。过程中发现并修复 manager teardown 重复销毁 debug marker；含 Spine 的下一话退出后 marker warning 为 0。短曲线 heap 回落、AudioContext 未初始化、active source/timer 为 0。详见 release matrix。
+
 必须补齐：
 
 - Edge 首次用户手势解锁；

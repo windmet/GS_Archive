@@ -302,7 +302,7 @@ export class SpineManager {
     this._fadeOutAndDestroy(idolId, immediate)
   }
 
-  clearAllSpines() {
+  clearAllSpines({ immediate = false } = {}) {
     this.manager.lipSyncController.clearPending()
     this.manager._pendingTalking = this.manager.lipSyncController.pendingTalking
     this.manager.resetCameraZoom()
@@ -321,13 +321,15 @@ export class SpineManager {
         entry._alphaTween = null
         if (entry.marker) {
           const marker = entry.marker
+          entry.marker = null
           if (marker.parent) marker.parent.removeChild(marker)
           try {
-            marker.destroy({ children: false, texture: false, baseTexture: false })
+            if (!marker.destroyed) {
+              marker.destroy({ children: false, texture: false, baseTexture: false })
+            }
           } catch (err) {
             console.warn(`[PixiStageManager] Failed to destroy debug marker during clearAllSpines for "${idolId}":`, err?.message || err)
           }
-          entry.marker = null
         }
         this.manager._cleanupDebugRefs(idolId)
         wrappers.push(entry.wrapper || entry.spine)
@@ -335,7 +337,8 @@ export class SpineManager {
     }
 
     for (const wrapper of wrappers) {
-      this._fadeOutWrapper(wrapper)
+      if (immediate) this._destroyWrapperNow(wrapper)
+      else this._fadeOutWrapper(wrapper)
     }
   }
 

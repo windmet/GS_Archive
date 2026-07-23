@@ -2076,44 +2076,9 @@ export class PixiStageManager {
     return this.spineManager?.removeSpine(idolId, immediate)
   }
 
-  clearAllSpines() {
+  clearAllSpines(options = {}) {
     this.clearAllSilhouettes()
-    return this.spineManager?.clearAllSpines()
-    this.lipSyncController.clearPending()
-    this._pendingTalking = this.lipSyncController.pendingTalking
-    // Reset camera zoom/pan
-    this.resetCameraZoom()
-    // Collect wrappers before clearing the map to avoid stale callbacks.
-    // Prevent an older fade-out from removing a newer model with the same idolId.
-    const wrappers = []
-    for (const idolId of Object.keys(this.spineInstances)) {
-      this._spawnTokens[idolId] = (this._spawnTokens[idolId] || 0) + 1
-      const entry = this.spineInstances[idolId]
-      delete this.spineInstances[idolId]
-      if (entry) {
-        if (entry.spine) entry.spine.customIsTalking = false
-        if (entry._slideTweenRaf) {
-          cancelAnimationFrame(entry._slideTweenRaf)
-          entry._slideTweenRaf = null
-        }
-        if (entry.marker) {
-          const marker = entry.marker
-          if (marker.parent) marker.parent.removeChild(marker)
-          try {
-            marker.destroy()
-          } catch (err) {
-            console.warn(`[PixiStageManager] Failed to destroy debug marker during clearAllSpines for "${idolId}":`, err?.message || err)
-          }
-          entry.marker = null
-        }
-        this._cleanupDebugRefs(idolId)
-        wrappers.push(entry.wrapper || entry.spine)
-      }
-    }
-
-    for (const wrapper of wrappers) {
-      this._fadeOutWrapper(wrapper)
-    }
+    return this.spineManager?.clearAllSpines(options)
   }
 
   destroy() {
@@ -2128,13 +2093,13 @@ export class PixiStageManager {
       this.app.ticker.remove(this._debugMarkerUpdater)
       this._debugMarkerUpdater = null
     }
+    this.clearAllSpines({ immediate: true })
     if (this._debugOverlay) {
       this._debugOverlay.destroy({ children: true })
       this._debugOverlay = null
     }
     this._resizeObserver?.disconnect()
     this._resizeObserver = null
-    this.clearAllSpines()
     this.cameraController?.destroy()
     this.cameraController = null
     this.backgroundManager?.destroy()

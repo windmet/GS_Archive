@@ -148,6 +148,75 @@ function verifyScheduledNeckSettle() {
   ])
 }
 
+function verifyImmediateCleanup() {
+  const calls = []
+  const markerParent = {
+    removeChild(marker) {
+      calls.push(['remove-marker', marker])
+      marker.parent = null
+    },
+  }
+  const marker = {
+    destroyed: false,
+    parent: markerParent,
+    destroy(options) {
+      calls.push(['destroy-marker', options])
+      this.destroyed = true
+    },
+  }
+  const wrapperParent = {
+    removeChild(wrapper) {
+      calls.push(['remove-wrapper', wrapper])
+      wrapper.parent = null
+    },
+  }
+  const wrapper = {
+    destroyed: false,
+    parent: wrapperParent,
+    destroy(options) {
+      calls.push(['destroy-wrapper', options])
+      this.destroyed = true
+    },
+  }
+  const manager = {
+    _pendingTalking: {},
+    _spawnTokens: {},
+    lipSyncController: {
+      pendingTalking: {},
+      clearPending: () => calls.push(['clear-pending']),
+    },
+    resetCameraZoom: () => calls.push(['reset-camera']),
+    _cleanupDebugRefs: idolId => calls.push(['cleanup-debug', idolId]),
+    spineInstances: {
+      idol: {
+        marker,
+        wrapper,
+        spine: { customIsTalking: true },
+      },
+    },
+  }
+  const spineManager = new SpineManager(manager)
+
+  spineManager.clearAllSpines({ immediate: true })
+  spineManager.clearAllSpines({ immediate: true })
+
+  assert.deepEqual(Object.keys(manager.spineInstances), [])
+  assert.equal(calls.filter(call => call[0] === 'destroy-marker').length, 1,
+    'debug markers must be destroyed exactly once')
+  assert.equal(calls.filter(call => call[0] === 'destroy-wrapper').length, 1,
+    'manager teardown must destroy Spine wrappers immediately instead of leaving fade callbacks')
+  assert.deepEqual(calls.find(call => call[0] === 'destroy-marker')[1], {
+    children: false,
+    texture: false,
+    baseTexture: false,
+  })
+  assert.deepEqual(calls.find(call => call[0] === 'destroy-wrapper')[1], {
+    children: true,
+    texture: false,
+    baseTexture: false,
+  })
+}
+
 function verifyCompiledAnchor() {
   const compiledPath = path.join(root, 'public', 'data', 'compiled', '1_1_013the_02_1_1_013_02.json')
   const scenario = JSON.parse(fs.readFileSync(compiledPath, 'utf8'))
@@ -166,5 +235,6 @@ function verifyCompiledAnchor() {
 verifyBodyLifecycle()
 verifyNeckLifecycle()
 verifyScheduledNeckSettle()
+verifyImmediateCleanup()
 verifyCompiledAnchor()
 console.log('Spine motion state verification passed.')

@@ -26,5 +26,11 @@ assert.match(stageManagerSource, /_grayFilter\.multisample\s*=\s*PIXI\.MSAA_QUAL
 assert.match(stageManagerSource, /if \(this\._destroyed \|\| !this\.app\) return null/)
 assert.match(stageManagerSource, /if \(this\._destroyed \|\| !this\.app \|\| this\._spawnTokens\[idolId\] !== spawnToken\)/)
 assert.match(stageManagerSource, /if \(this\._destroyed\) return\s+this\._destroyed = true/)
+assert.match(stageManagerSource, /this\.clearAllSpines\(\{ immediate: true \}\)/)
+assert.ok(
+  stageManagerSource.indexOf('this.clearAllSpines({ immediate: true })') <
+    stageManagerSource.indexOf('this._debugOverlay.destroy({ children: true })'),
+  'manager teardown must destroy Spine markers before their debug overlay parent',
+)
 
 console.log('Spine atomic fade: hidden assembly, whole-model alpha and shared-texture disposal contracts verified')

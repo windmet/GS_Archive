@@ -115,6 +115,39 @@ workflow 通过 `actionlint v1.7.12`。独立 detached checkout 在没有 mounte
 
 远端首次 run `29976181433` 在完整 PR patch 中发现 5 个历史 whitespace 问题并失败，证明 patch gate 生效；机械清理后 run `29976275109` 的 15 个步骤全部通过，25 秒完成。Source-only GitHub CI 缺口关闭。
 
+## 2026-07-23 noAudio 混合播放与 marker teardown follow-up
+
+单个应用内标签、`noAudio=1&runtimeDebug=1` 在正式 strict `1_4_001_01_a` step 37–42 执行：
+
+```text
+Choice
+→ step 38 cue settle
+→ Menu / Backlog
+→ restore step 37 Choice
+→ Auto 跨 step 38 blocking camera cue
+→ step 40 Choice
+→ Skip All
+→ EPISODE COMPLETE
+→ 次の話进入 episode b
+→ simulated hidden / visible
+```
+
+首次从旧页面切换锚点时发现 `clearAllSpines` 在 debug overlay 已销毁后再次销毁 marker，触发 `Cannot read properties of null (reading 'refCount')`。修复后 manager teardown 先以 `immediate: true` 清理 marker/Spine wrapper，再销毁 overlay；删除了 delegate return 后的旧 dead clear implementation，并新增 exactly-once marker/wrapper verifier。
+
+同一标签 HMR/reload 后重复曲线：
+
+- Backlog 正确恢复到 step 37 的 Choice identity；
+- Auto 等待 blocking cue 后到达 step 40 Choice；
+- Skip All 到达 6/6 episode complete，下一话进入 `episodes/1_4_001_01_b.json` 并加载 `001tom`；
+- simulated hidden 增加 `visibility` pause reason 并暂停 Runtime，visible 后 reason 清空、clock 恢复；
+- AudioContext 始终 `uninitialized`，active sources、cleanup timers 始终为 0；
+- 含 1 个 Spine 的 episode b 退出后，新鲜 `debug marker` warning 为 0；
+- heap 观测约 89–108 MB，Backlog restore 后回落；这只是短曲线，不是 2–4 小时 soak。
+
+截图保存在工作区外：`C:\Users\windm\AppData\Local\Temp\sidem-noaudio-mixed-after-marker-fix.png`。日志中的 `102sha_001_00` load warning 对应已知缺失 Spine→`public/assets/silhouette/102sha_001_00.png` fallback；Codex Browser Statsig timeout 属于浏览器宿主。两者不等于 marker teardown 回归，但 fallback warning 仍应在后续 missing-resource UX/日志降噪批次处理。
+
+`verify:spine-motion`、`verify:spine-fade`、Runtime foundation、home、playback range、100-cycle audio/noAudio verifier 与 2401-module production build 均通过。本轮仍不得记作 Edge autoplay、真实 `document.hidden` 听感或有声长测。
+
 ## 2026-07-23 Preferences 与 authoritative schema follow-up
 
 - `7c1f1b2` 已退役未生效的 `text_speed`；旧 v2 localStorage 会自动清理该键并保留其他偏好，Runtime foundation 回归通过。
