@@ -2,17 +2,18 @@ export function applyStepSceneState({
   manager,
   step,
   state,
-  fallbackBg = null,
   lastScreenEffectsKey = '',
+  resetScreenEffects = false,
 }) {
   if (!manager || !state) return lastScreenEffectsKey
 
+  if (resetScreenEffects) {
+    manager.clearScreenEffects?.()
+    lastScreenEffectsKey = ''
+  }
+
   manager.setCameraFilter(null)
   manager.applyBgEffects?.(state.bg_effects || [], state.bg_profile || null)
-
-  const bg = state.bg || fallbackBg
-  if (bg) manager.setBackground(bg, state.bg_transition || null)
-  else manager.clearBackground()
 
   if (state.camera_filter) manager.setCameraFilter(state.camera_filter)
 
@@ -30,37 +31,13 @@ export function applyStepSceneState({
     bgColorTransition.delay ?? 0,
   )
 
-  if (state.screen_slide) {
-    const slide = state.screen_slide
-    manager.setScreenSlide?.(
-      slide.type,
-      slide.color || '#000000',
-      slide.duration ?? 0.5,
-      slide.delay ?? 0,
-      slide.direction || '6',
-    )
-  } else {
-    manager.clearScreenSlide?.()
-  }
-
-  if (state.camera_zoom) {
-    manager.setCameraZoom(state.camera_zoom)
-  } else {
-    manager.resetCameraZoom()
-  }
-
-  if (state.screen_fade) {
-    const sf = state.screen_fade
-    manager.setScreenFade(sf.type, sf.color, sf.duration, sf.delay || 0, sf.alpha ?? 1)
-  } else {
-    manager.clearScreenFade()
-  }
-
-  const screenEffectsKey = `${step?.step_id || ''}:${JSON.stringify(state.screen_effects || [])}`
-  if (state.screen_effects?.length && screenEffectsKey !== lastScreenEffectsKey) {
-    manager.playScreenEffects?.(state.screen_effects)
+  const screenEffects = (state.screen_effects || [])
+    .filter(effect => effect?.type !== 'fadein' && effect?.type !== 'fadeout')
+  const screenEffectsKey = `${step?.step_id || ''}:${JSON.stringify(screenEffects)}`
+  if (screenEffects.length && screenEffectsKey !== lastScreenEffectsKey) {
+    manager.playScreenEffects?.(screenEffects)
     return screenEffectsKey
   }
-  if (!state.screen_effects?.length) return ''
+  if (!screenEffects.length) return ''
   return lastScreenEffectsKey
 }

@@ -20,6 +20,7 @@ const DIST_DIR = path.resolve(__dirname, 'dist')
 // External asset roots (mirrors vite.config.js defaults)
 const LIPSYNC_ROOT = process.env.SIDEM_LIPSYNC_ROOT || 'E:/BaiduNetdiskDownload/SideM/scripts/lipsyncdata/adxlip'
 const AUDIO_ROOT = process.env.SIDEM_AUDIO_ROOT || 'E:/BaiduNetdiskDownload/SideM/GS_Res/Audio'
+const LEGACY_AUDIO_ROOT = process.env.SIDEM_LEGACY_AUDIO_ROOT || 'E:/BaiduNetdiskDownload/SideM/story_viewer/voice_ogg'
 const CARD_ART_ROOT = process.env.SIDEM_CARD_ART_ROOT || 'E:/BaiduNetdiskDownload/SideM/GS_Res/ALL_PHOTOS/assets/resources/image/image_card'
 
 function addSeAliasCandidates(candidates, fileName) {
@@ -38,6 +39,7 @@ function addSeAliasCandidates(candidates, fileName) {
     for (const dir of ['sfx', 'telephone', 'system']) {
       candidates.push(path.resolve(AUDIO_ROOT, dir, `${alias}.ogg`))
     }
+    candidates.push(path.resolve(LEGACY_AUDIO_ROOT, `${alias}.ogg`))
   }
 }
 
@@ -99,6 +101,7 @@ function handleAudio(urlPath, res) {
     for (const dir of ['sfx', 'telephone', 'system']) {
       candidates.push(path.resolve(AUDIO_ROOT, dir, fileName))
     }
+    candidates.push(path.resolve(LEGACY_AUDIO_ROOT, fileName))
     addSeAliasCandidates(candidates, fileName)
   } else if (AUDIO_DIRS.includes(type)) {
     candidates.push(path.resolve(AUDIO_ROOT, type, fileName))
@@ -109,9 +112,9 @@ function handleAudio(urlPath, res) {
     return false
   }
 
-  const rootPath = path.resolve(AUDIO_ROOT)
+  const rootPaths = [path.resolve(AUDIO_ROOT), path.resolve(LEGACY_AUDIO_ROOT)]
   for (const fp of candidates) {
-    if (!fp.startsWith(rootPath + path.sep)) continue
+    if (!rootPaths.some(rootPath => fp.startsWith(rootPath + path.sep))) continue
     if (serveFile(res, fp)) return true
   }
   return false

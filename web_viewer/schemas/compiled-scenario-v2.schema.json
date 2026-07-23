@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gs-archive.local/schemas/compiled-scenario-v2.schema.json",
+  "title": "GS Archive Runtime Compatibility Input v2",
+  "$comment": "Permissive migration input accepted by ScenarioNormalizer. Authoritative compiler output must validate against compiled-scenario-v2-authoritative.schema.json.",
+  "type": "object",
+  "required": ["schema_version", "scenario_id", "steps"],
+  "properties": {
+    "schema_version": { "const": 2 },
+    "source_schema_version": { "type": "integer", "minimum": 1 },
+    "compiler_version": { "type": "string" },
+    "runtime_contract": { "type": "string" },
+    "scenario_id": { "type": "string", "minLength": 1 },
+    "text_catalog_id": { "$ref": "#/$defs/canonicalToken" },
+    "text_contract_version": { "const": 1 },
+    "source": { "$ref": "#/$defs/sourceEvidence" },
+    "capabilities": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "resource_manifest": { "type": "object" },
+    "episodes": { "type": "array", "items": { "type": "object" } },
+    "steps": { "type": "array", "items": { "$ref": "#/$defs/step" } },
+    "diagnostics": { "type": "object" }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "sourceEvidence": {
+      "type": "object",
+      "properties": {
+        "raw_path": { "type": "string" },
+        "raw_hash": { "type": "string" },
+        "masterdata_ids": { "type": "array", "items": { "type": "string" } },
+        "compiled_at": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "step": {
+      "type": "object",
+      "required": ["step_id", "type", "entry_snapshot", "settled_snapshot", "cues", "flow"],
+      "properties": {
+        "step_id": { "type": "integer", "minimum": 1 },
+        "episode_index": { "type": "integer", "minimum": 0 },
+        "type": { "type": "string", "minLength": 1 },
+        "dialogue": { "$ref": "#/$defs/dialogue" },
+        "options": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/choiceOption" }
+        },
+        "choice_id": { "type": "string", "minLength": 1 },
+        "entry_snapshot": { "type": "object" },
+        "settled_snapshot": { "type": "object" },
+        "snapshot_format": { "type": "string" },
+        "cues": { "type": "array", "items": { "$ref": "#/$defs/cue" } },
+        "flow": { "$ref": "#/$defs/flow" },
+        "evidence": { "$ref": "#/$defs/evidence" },
+        "normalization": { "type": "object" }
+      },
+      "additionalProperties": true
+    },
+    "textSource": {
+      "type": "object",
+      "required": ["scenario_id", "part_id", "file", "command_index", "field_kind", "field_ordinal"],
+      "properties": {
+        "scenario_id": { "$ref": "#/$defs/canonicalToken" },
+        "part_id": { "$ref": "#/$defs/canonicalToken" },
+        "file": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?![A-Za-z]:)(?!/)(?!.*(?:^|/)\\.\\.?(/|$))[^\\\\]+$"
+        },
+        "command_index": { "type": "integer", "minimum": 0 },
+        "field_kind": { "$ref": "#/$defs/fieldKind" },
+        "field_ordinal": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "textRef": {
+      "type": "object",
+      "required": ["unit_id", "source", "source_hash"],
+      "properties": {
+        "unit_id": {
+          "type": "string",
+          "pattern": "^story-text:v1:[A-Za-z0-9._-]+:[A-Za-z0-9._-]+:cmd-[0-9]{6}:[A-Za-z0-9._-]+:[0-9]{3}$"
+        },
+        "source": { "$ref": "#/$defs/textSource" },
+        "source_hash": { "$ref": "#/$defs/sha256" }
+      },
+      "additionalProperties": false
+    },
+    "speakerIdentity": {
+      "type": "object",
+      "required": ["kind", "entity_type", "entity_id", "source_name"],
+      "properties": {
+        "kind": { "enum": ["idol", "producer", "named", "unknown", "narrator", "none"] },
+        "entity_type": { "type": ["string", "null"], "enum": ["idol", "npc", "system", null] },
+        "entity_id": { "type": ["string", "null"] },
+        "source_name": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "dialogue": {
+      "type": "object",
+      "properties": {
+        "speaker": {
+          "oneOf": [
+            { "type": "string" },
+            { "$ref": "#/$defs/speakerIdentity" }
+          ]
+        },
+        "speaker_identity": { "$ref": "#/$defs/speakerIdentity" },
+        "speaker_text_ref": { "$ref": "#/$defs/textRef" },
+        "source_text": { "type": "string" },
+        "text_ref": { "$ref": "#/$defs/textRef" },
+        "text": { "type": "string" },
+        "text_jp": { "type": "string" },
+        "text_cn": { "type": "string" },
+        "voice": { "type": "string" },
+        "lip": { "type": "object" }
+      },
+      "additionalProperties": true
+    },
+    "choiceOption": {
+      "type": "object",
+      "properties": {
+        "option_id": { "type": "string", "minLength": 1 },
+        "source_text": { "type": "string" },
+        "text_ref": { "$ref": "#/$defs/textRef" },
+        "detail_source_text": { "type": "string" },
+        "detail_text_ref": { "$ref": "#/$defs/textRef" },
+        "label": { "type": "string" },
+        "text": { "type": "string" },
+        "detail": { "type": "string" },
+        "step_id": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": true
+    },
+    "canonicalToken": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9._-]+$"
+    },
+    "fieldKind": {
+      "enum": [
+        "dialogue",
+        "narration",
+        "choice_short",
+        "choice_detail",
+        "title",
+        "synopsis",
+        "time_caption",
+        "mobile_message",
+        "phone_message",
+        "scene_icon_label",
+        "system_caption"
+      ]
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "cue": {
+      "type": "object",
+      "required": ["cue_id", "at", "duration", "channel", "action", "payload", "lifecycle"],
+      "properties": {
+        "cue_id": { "type": "string", "minLength": 1 },
+        "at": { "type": "number", "minimum": 0 },
+        "duration": { "type": "number", "minimum": 0 },
+        "channel": { "type": "string", "minLength": 1 },
+        "action": { "type": "string", "minLength": 1 },
+        "target": { "type": ["string", "null"] },
+        "payload": { "type": "object" },
+        "lifecycle": { "$ref": "#/$defs/lifecycle" },
+        "evidence": { "$ref": "#/$defs/evidence" }
+      },
+      "additionalProperties": false
+    },
+    "lifecycle": {
+      "type": "object",
+      "required": ["persistence", "skippable", "blocks_input", "blocks_auto", "restore_policy"],
+      "properties": {
+        "persistence": { "enum": ["stateful", "transient", "hold"] },
+        "skippable": { "type": "boolean" },
+        "blocks_input": { "type": "boolean" },
+        "blocks_auto": { "type": "boolean" },
+        "restore_policy": { "enum": ["settled", "replay", "suppress", "resume"] }
+      },
+      "additionalProperties": false
+    },
+    "flow": {
+      "type": "object",
+      "required": ["advance", "blocks_skip", "choice_id"],
+      "properties": {
+        "advance": { "enum": ["user", "automatic", "choice", "blocked"] },
+        "blocks_skip": { "type": "boolean" },
+        "choice_id": { "type": ["string", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "source_file": { "type": "string" },
+        "source_part_id": { "$ref": "#/$defs/canonicalToken" },
+        "command_index": { "type": "integer", "minimum": 0 },
+        "command_start": { "type": "integer", "minimum": 0 },
+        "command_end": { "type": "integer", "minimum": 0 },
+        "raw_type": { "type": "string" },
+        "raw_values": { "type": "array" },
+        "parser_rule": { "type": "string" },
+        "legacy_field": { "type": "string" },
+        "confidence": { "enum": ["exact", "derived", "approximate", "missing"] }
+      },
+      "additionalProperties": true
+    }
+  }
+}

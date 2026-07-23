@@ -1,0 +1,79 @@
+{
+  "scenario_id": "1_4_001_01_a_runtime_fixture",
+  "steps": [
+    {
+      "step_id": 37,
+      "type": "choice",
+      "state": {
+        "bg": "bg001_315pro_in_11",
+        "spines": [],
+        "camera_zoom": {
+          "zoom": 1,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "se": null,
+        "se_events": []
+      },
+      "options": [
+        {
+          "label": "a2000",
+          "text": "パ……パッション！",
+          "detail": "",
+          "step_id": 38
+        }
+      ]
+    },
+    {
+      "step_id": 38,
+      "type": "adv",
+      "state": {
+        "bg": "bg001_315pro_in_11",
+        "spines": [
+          {
+            "id": "102sha",
+            "model": "102sha_001_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": 0,
+            "fade": {
+              "type": "in",
+              "delay": 0,
+              "duration": 0.5
+            }
+          }
+        ],
+        "camera_zoom": {
+          "zoom": 1.2,
+          "offset_x": 0,
+          "offset_y": 20,
+          "duration": 0.2,
+          "delay": 5.5
+        },
+        "se": {
+          "cue": "vibraslap_comical",
+          "delay": 5.6
+        },
+        "se_events": [
+          {
+            "cue": "cloth_move_l01",
+            "delay": 4
+          },
+          {
+            "cue": "vibraslap_comical",
+            "delay": 5.6
+          }
+        ]
+      },
+      "chara_id": "102sha",
+      "dialogue": {
+        "speaker": "齋藤社長",
+        "text_jp": "むむっ、まだまだ！　もっと情熱を燃やして……\nパパパ、パーッション！！",
+        "voice": "a2000.m4a"
+      }
+    }
+  ]
+}

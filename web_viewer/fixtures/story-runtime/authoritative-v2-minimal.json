@@ -1,0 +1,57 @@
+{
+  "schema_version": 2,
+  "compiler_version": "fixture-1",
+  "runtime_contract": "story-runtime-v2",
+  "scenario_id": "authoritative_v2_fixture",
+  "text_catalog_id": "authoritative_v2_fixture",
+  "text_contract_version": 1,
+  "source": {
+    "raw_path": "scenariodata/authoritative_v2_fixture.json",
+    "raw_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "masterdata_ids": ["fixture"]
+  },
+  "steps": [
+    {
+      "step_id": 1,
+      "episode_index": 0,
+      "type": "adv",
+      "chara_id": "001tom",
+      "dialogue": {
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "001tom",
+          "source_name": "天ヶ瀬 冬馬"
+        },
+        "source_text": "行くぜ！",
+        "text_ref": {
+          "unit_id": "story-text:v1:authoritative_v2_fixture:part_a:cmd-000000:dialogue:000",
+          "source": {
+            "scenario_id": "authoritative_v2_fixture",
+            "part_id": "part_a",
+            "file": "scenariodata/authoritative_v2_fixture.json",
+            "command_index": 0,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        },
+        "voice": "fixture_voice.m4a",
+        "lip": null
+      },
+      "entry_snapshot": { "bg": "bg001_315pro_in_01", "screen_overlay": null },
+      "settled_snapshot": { "bg": "bg001_315pro_in_01", "screen_overlay": null },
+      "snapshot_format": "story-snapshot-v2",
+      "cues": [],
+      "flow": { "advance": "user", "blocks_skip": false, "choice_id": null },
+      "evidence": {
+        "source_file": "scenariodata/authoritative_v2_fixture.json",
+        "source_part_id": "part_a",
+        "command_start": 0,
+        "command_end": 0,
+        "raw_type": "message",
+        "confidence": "exact"
+      }
+    }
+  ]
+}

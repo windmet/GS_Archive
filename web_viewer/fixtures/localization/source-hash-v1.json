@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "algorithm": "UTF-8(SHA-256(NFC(strip-leading-BOM(normalize-newlines(input)))))",
+  "vectors": [
+    {
+      "name": "empty",
+      "input": "",
+      "normalized": "",
+      "source_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "bom-crlf",
+      "input": "﻿A\r\nB",
+      "normalized": "A\nB",
+      "source_hash": "sha256:23519a43c66b4c342f25b32e09797ec5f3fc0be388cd8243fb3449afbdce4013"
+    },
+    {
+      "name": "unicode-nfc",
+      "input": "が",
+      "normalized": "が",
+      "source_hash": "sha256:e3b21956ce958d2599e4e122f5395b8bb776552bd4ceae0c6bec80e4f73a2905"
+    },
+    {
+      "name": "anchor-dialogue",
+      "input": "今の鼻歌、君が歌っていたのかい？",
+      "normalized": "今の鼻歌、君が歌っていたのかい？",
+      "source_hash": "sha256:e8c23dadcfc922f1e3caf8bf5541c2ced675e404893b25ebf2add4d9c91108b1"
+    }
+  ]
+}

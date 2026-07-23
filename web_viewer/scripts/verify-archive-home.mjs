@@ -12,6 +12,7 @@ const cardIndex = readJson('../public/data/masterdata/card_index.json')
 const costumeDictionary = readJson('../public/data/masterdata/costume_dictionary.json')
 const manifest = readJson('../public/data/archive_manifest.json')
 const uiAssets = readJson('../public/data/assets/ui_asset_catalog.json')
+const readSource = path => fs.readFileSync(new URL(path, import.meta.url), 'utf8')
 
 const idols = buildArchiveHomeState(idolUnit, cardIndex, manifest, costumeDictionary)
 const stats = archiveHomeStateStats(idols)
@@ -21,6 +22,10 @@ assert.equal(stats.cues, 2564)
 assert.equal(stats.playable, 2564)
 assert.equal(stats.backgrounds, 1)
 assert.equal(stats.models, 57)
+
+for (const background of new Set(idols.flatMap(idol => idol.cues).map(cue => cue.background).filter(Boolean))) {
+  assert.ok(fs.existsSync(new URL(`../public/assets/bg/${background}.png`, import.meta.url)), background)
+}
 
 const toma = idols.find(idol => idol.id === '001tom')
 assert.ok(toma)
@@ -46,4 +51,16 @@ for (const highlight of highlights) {
   assert.ok(fs.existsSync(new URL(`../public${highlight.bannerUrl}`, import.meta.url)), highlight.bannerUrl)
 }
 
-console.log(`Archive home state: ${stats.idols} idols, ${stats.cues} cues, ${stats.models} models, ${highlights.length} highlights`)
+const immersiveHomeSource = readSource('../src/components/archive/ArchiveImmersiveHome.vue')
+const spineStageSource = readSource('../src/components/SpineStage.vue')
+const sceneApplicationSource = readSource('../src/core/applyStepSceneState.js')
+assert.match(immersiveHomeSource, /:manage-background="true"/,
+  'the standalone archive home must explicitly own its Pixi background')
+assert.match(spineStageSource, /manageBackground:\s*\{\s*type:\s*Boolean,\s*default:\s*false\s*\}/,
+  'SpineStage background ownership must remain opt-in')
+assert.match(spineStageSource, /data-background-owner/,
+  'the browser must expose the active SpineStage background ownership contract')
+assert.doesNotMatch(sceneApplicationSource, /manager\.(?:setBackground|clearBackground)/,
+  'generic story scene application must not regain a duplicate background owner')
+
+console.log(`Archive home state: ${stats.idols} idols, ${stats.cues} cues, ${stats.models} models, ${highlights.length} highlights; standalone background owner verified`)

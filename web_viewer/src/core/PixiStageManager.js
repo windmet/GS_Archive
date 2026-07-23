@@ -56,6 +56,13 @@ const MODEL_BASE_SCALE_MULTIPLIER = {}
 const DEFAULT_ADULT_SCALE = ADULT_BASE_SCALE
 const DEFAULT_SUB_SCALE = SUB_BASE_SCALE
 
+// Silhouette PNGs are authored independently from the Spine rigs. Keep
+// character-specific framing here when matching the ADV portrait requires a
+// visibly different scale from the generic full-body fallback.
+const SILHOUETTE_SCALE_MULTIPLIER = {
+  '102sha_001_00': 1.28,
+}
+
 export class PixiStageManager {
   constructor(containerEl, options = {}) {
     this.container = containerEl
@@ -63,11 +70,13 @@ export class PixiStageManager {
     this.height = options.height || containerEl.clientHeight || 720
 
     this.app = null
+    this._destroyed = false
     this.spineInstances = {}   // { idolId: { spine: Spine, modelId: string, marker: Graphics } }
     this._spawnTokens = {}
     this._silhouetteSprites = {}  // { idolId: PIXI.Sprite } — fallback for missing Spine assets
     this._silhouettePending = {}  // { idolId: { token, modelId, posX, posY, baseY } }
     this._silhouetteLoadTokens = {}
+    this._silhouetteRelayoutJobs = {}
     this._pendingTalking = {}
     this.lipSyncController = new LipSyncController({
       getSpineEntry: idolId => this.spineInstances[idolId],
@@ -183,6 +192,7 @@ export class PixiStageManager {
           this.height = height
           this.app.renderer.resize(width, height)
           this.backgroundManager?.handleResize()
+          this.cameraController?.handleResize()
           if (this._fadeOverlay) {
             this._fadeOverlay.width = width
             this._fadeOverlay.height = height
@@ -194,6 +204,18 @@ export class PixiStageManager {
           if (this._effectOverlay) {
             this._effectOverlay.width = width
             this._effectOverlay.height = height
+          }
+          for (const sprite of Object.values(this._silhouetteSprites)) {
+            const layout = sprite?._silhouetteLayout
+            if (!layout) continue
+            this._layoutSilhouette(
+              sprite,
+              layout.sourceWidth,
+              layout.sourceHeight,
+              layout.posX,
+              layout.posY,
+              layout.baseY,
+            )
           }
           // Spines stay at their current positions on resize (user may have dragged them)
         }
@@ -653,6 +675,13 @@ export class PixiStageManager {
     this._fadeOverlay.visible = false
   }
 
+  clearScreenEffects() {
+    this._screenEffectToken++
+    if (!this._effectOverlay || this._effectOverlay.destroyed) return
+    this._effectOverlay.alpha = 0
+    this._effectOverlay.visible = false
+  }
+
   playScreenEffects(effects = []) {
     if (!Array.isArray(effects) || effects.length === 0 || !this._effectOverlay) return
     const token = ++this._screenEffectToken
@@ -851,9 +880,13 @@ export class PixiStageManager {
     overlay.alpha = 1
     overlay.visible = true
 
-    const offscreen = this._slideOffset(direction)
-    const start = type === 'out' ? { x: 0, y: 0 } : offscreen
-    const end = type === 'out' ? offscreen : { x: 0, y: 0 }
+    const travelOffset = this._slideOffset(direction)
+    // `direction` describes the direction in which the curtain travels.
+    // An incoming curtain therefore starts at the opposite edge, while an
+    // outgoing curtain finishes at the edge named by the direction.
+    const incomingOffset = { x: -travelOffset.x, y: -travelOffset.y }
+    const start = type === 'out' ? { x: 0, y: 0 } : incomingOffset
+    const end = type === 'out' ? travelOffset : { x: 0, y: 0 }
     overlay.x = start.x
     overlay.y = start.y
 
@@ -1040,9 +1073,47 @@ export class PixiStageManager {
     const baseX = stageW / 2 + posX * (stageW / 1280)
     const baseYPos = baseY ?? Math.round(stageH * 0.62)
     sprite.x = baseX
-    sprite.y = baseYPos + 25 + posY * (stageW / 1280)
-    const silScale = (stageH * 1.02) / sourceHeight
+    sprite.y = baseYPos + 15 + posY * (stageW / 1280)
+    const modelScale = SILHOUETTE_SCALE_MULTIPLIER[sprite._silhouetteModelId] || 1
+    const silScale = ((stageH * 1.02) / sourceHeight) * modelScale
     sprite.scale.set(silScale)
+    sprite._silhouetteLayout = { sourceWidth, sourceHeight, posX, posY, baseY }
+  }
+
+  _cancelSilhouetteRelayout(idolId) {
+    const job = this._silhouetteRelayoutJobs[idolId]
+    if (!job) return
+    if (job.rafId != null) cancelAnimationFrame(job.rafId)
+    for (const timerId of job.timerIds) clearTimeout(timerId)
+    delete this._silhouetteRelayoutJobs[idolId]
+  }
+
+  _scheduleSilhouetteRelayout(idolId, sprite, token) {
+    this._cancelSilhouetteRelayout(idolId)
+    const relayout = () => {
+      if (
+        this._silhouetteLoadTokens[idolId] !== token ||
+        this._silhouetteSprites[idolId] !== sprite ||
+        sprite.destroyed
+      ) return
+      const layout = sprite._silhouetteLayout
+      if (!layout) return
+      this._layoutSilhouette(
+        sprite,
+        layout.sourceWidth,
+        layout.sourceHeight,
+        layout.posX,
+        layout.posY,
+        layout.baseY,
+      )
+    }
+    this._silhouetteRelayoutJobs[idolId] = {
+      rafId: requestAnimationFrame(relayout),
+      // Edge can decode the PNG before the responsive player finishes its
+      // initial sizing. Re-check both after layout settles and after slower
+      // first-load font/CSS work, independent of ResizeObserver delivery.
+      timerIds: [setTimeout(relayout, 250), setTimeout(relayout, 1000)],
+    }
   }
 
   hasSilhouetteFallback(idolId, modelId = null) {
@@ -1103,6 +1174,7 @@ export class PixiStageManager {
       this._layoutSilhouette(sprite, img.width, img.height, latest.posX, latest.posY, latest.baseY)
       this.spineContainer.addChild(sprite)
       this._silhouetteSprites[idolId] = sprite
+      this._scheduleSilhouetteRelayout(idolId, sprite, token)
     }
     img.onerror = () => {
       const latest = this._silhouettePending[idolId]
@@ -1116,6 +1188,7 @@ export class PixiStageManager {
 
   removeSilhouette(idolId) {
     this._silhouetteLoadTokens[idolId] = (this._silhouetteLoadTokens[idolId] || 0) + 1
+    this._cancelSilhouetteRelayout(idolId)
     delete this._silhouettePending[idolId]
     const sprite = this._silhouetteSprites[idolId]
     if (sprite) {
@@ -1138,6 +1211,7 @@ export class PixiStageManager {
   // Spine loading
 
   async spawnSpine(idolId, modelId, options = {}) {
+    if (this._destroyed || !this.app) return null
     this.removeSpine(idolId)
     const spawnToken = (this._spawnTokens[idolId] || 0) + 1
     this._spawnTokens[idolId] = spawnToken
@@ -1172,7 +1246,9 @@ export class PixiStageManager {
 
       console.log(`[DEBUG] hasMeshOrRegion: ${hasMeshOrRegion}`)
 
-      spine.stateData.defaultMix = 0.12
+      // Step snapshots and neck overlays are authored as cuts. A delayed
+      // timeline body cue opts into its own 0.3s crossfade at dispatch time.
+      spine.stateData.defaultMix = 0
 
       const origStateUpdate = spine.state.update.bind(spine.state)
       spine.state.update = (dt) => {
@@ -1198,7 +1274,27 @@ export class PixiStageManager {
 
       const origApply = spine.state.apply.bind(spine.state)
       spine.state.apply = (skeleton) => {
+        // Additive neck clips must start from a stable Track 0/1 baseline on
+        // every frame. Pixi Spine otherwise retains the prior local pose, so
+        // unkeyed controls such as chara_MIX accumulate their Y offset and the
+        // whole character drifts down. Keep the targets for one extra apply
+        // after Track 3 is cleared so its final offset cannot leak into state.
+        const neckTargets = spine._neckAdditiveTargets
+        const finishNeckCleanup = !!spine._neckAdditiveCleanupPending
+        if (neckTargets) {
+          for (const boneIndex of neckTargets.boneIndices || []) {
+            skeleton.bones?.[boneIndex]?.setToSetupPose?.()
+          }
+          for (const slotIndex of neckTargets.deformSlotIndices || []) {
+            const deform = skeleton.slots?.[slotIndex]?.deform
+            if (deform) deform.length = 0
+          }
+        }
         origApply(skeleton)
+        if (finishNeckCleanup) {
+          spine._neckAdditiveTargets = null
+          spine._neckAdditiveCleanupPending = false
+        }
 
         const blinkCfg = spine._blinkCfg
         if (blinkCfg) {
@@ -1251,31 +1347,23 @@ export class PixiStageManager {
         this._applyOptionalPartsSlots(spine)
       }
 
-      if (this._spawnTokens[idolId] !== spawnToken) {
+      if (this._destroyed || !this.app || this._spawnTokens[idolId] !== spawnToken) {
         spine.destroy({ children: true, texture: false, baseTexture: false })
         return null
       }
 
       this._applyDefaultPosition(spine, modelId, idolId, options)
-      console.warn('[SPAWN_DONE]', idolId, modelId, {
-        x: spine.x,
-        y: spine.y,
-        baseScale: spine._baseScale || spine.scale.x,
-      })
+      if (this._debugMode) {
+        console.debug('[SPAWN_DONE]', idolId, modelId, {
+          x: spine.x,
+          y: spine.y,
+          baseScale: spine._baseScale || spine.scale.x,
+        })
+      }
 
       if (!spine._baseScale) {
         spine._baseScale = spine.scale.x
       }
-
-      const marker = new PIXI.Graphics()
-      marker.beginFill(0xff0000)
-      marker.drawCircle(0, 0, 8)
-      marker.endFill()
-      marker.beginFill(0xffffff)
-      marker.drawCircle(0, 0, 3)
-      marker.endFill()
-      marker.visible = this._debugMode
-      this._debugOverlay?.addChild(marker)
 
       spine.eventMode = 'dynamic'
       spine.cursor = 'grab'
@@ -1353,6 +1441,7 @@ export class PixiStageManager {
       })
       return spine
     } catch (err) {
+      if (this._destroyed) return null
       console.warn(`[PixiStageManager] Failed to load spine "${modelId}" for "${idolId}":`, err.message)
       return null
     }
@@ -1960,40 +2049,8 @@ export class PixiStageManager {
    *   - Single-shot animations (e.g. `neck_yes`, `neck_no`) have no `_loop` variant
    *     and should fall back to `wait_loop`.
    */
-  playSpineAnim(idolId, animName, skipChain = false, noBack = false, motionSetting = null) {
-    return this.spineManager?.playSpineAnim(idolId, animName, skipChain, noBack, motionSetting)
-    const entry = this.spineInstances[idolId]
-    if (!entry) return
-    const { spine } = entry
-    try {
-      const allAnims = spine.state.data.skeletonData.animations.map(a => a.name)
-      if (spine._currentBodyAnim === animName) return
-
-      if (animName.endsWith('_loop')) {
-        // Already a loop animation é”?play directly
-        spine.state.setAnimation(0, animName, true)
-      } else if (skipChain || noBack) {
-        // Single-shot, no auto-chain é”?used when step has timeline
-        spine.state.setAnimation(0, animName, false)
-      } else {
-        // Single-shot animation: play once, then chain the official pose loop.
-        const loopVariant = animName + '_loop'
-        const officialPose = motionSetting?.pose || ''
-        const fallback = officialPose && allAnims.includes(officialPose)
-          ? officialPose
-          : allAnims.includes(loopVariant)
-            ? loopVariant
-            : 'wait_loop'
-
-        spine.state.setAnimation(0, animName, false)
-        if (allAnims.includes(fallback)) {
-          spine.state.addAnimation(0, fallback, true, 0)
-        }
-      }
-      spine._currentBodyAnim = animName
-    } catch (err) {
-      console.warn(`[PixiStageManager] Failed to play anim "${animName}" on "${idolId}":`, err.message)
-    }
+  playSpineAnim(idolId, animName, skipChain = false, noBack = false, motionSetting = null, forceRestart = false, transitionMix = null) {
+    return this.spineManager?.playSpineAnim(idolId, animName, skipChain, noBack, motionSetting, forceRestart, transitionMix)
   }
 
   /**
@@ -2002,64 +2059,14 @@ export class PixiStageManager {
    */
   switchSpineAnim(idolId, animName) {
     return this.spineManager?.switchSpineAnim(idolId, animName)
-    const entry = this.spineInstances[idolId]
-    if (!entry) return
-    const { spine } = entry
-    try {
-      const allAnims = spine.state.data.skeletonData.animations.map(a => a.name)
-      if (!allAnims.includes(animName)) {
-        console.warn(`[PixiStageManager] Anim "${animName}" not found on "${entry.modelId}"`)
-        return
-      }
-      const isLoop = animName.endsWith('_loop')
-      const savedMix = spine.stateData.defaultMix
-      spine.stateData.defaultMix = 0.3  // 300ms é”?smooth timeline anim transitions
-      spine.state.setAnimation(0, animName, isLoop)
-      spine._currentBodyAnim = animName
-      spine.stateData.defaultMix = savedMix
-    } catch (err) {
-      console.warn(`[PixiStageManager] Failed to switch anim "${animName}" on "${idolId}":`, err.message)
-    }
   }
 
-  playSpineNeckAnim(idolId, animName) {
-
-    // Disabled: neck animation on Track 3 can freeze poses; see notes below.
-    // See ADV_STATE_MACHINE_NOTES.md for the intended snap-cut behavior.
-    /* Original code preserved below for reference:
-    const entry = this.spineInstances[idolId]
-    if (!entry) return
-    const { spine } = entry
-    try {
-      const allAnims = spine.state.data.skeletonData.animations.map(a => a.name)
-      if (!allAnims.includes(animName)) {
-        console.warn(`[PixiStageManager] Neck anim "${animName}" not found on "${entry.modelId}"`)
-        return
-      }
-      if (spine._currentNeckAnim === animName) return
-      const track = spine.state.setAnimation(3, animName, false)
-      spine._currentNeckAnim = animName
-      if (track) {
-        const listener = { complete: () => { spine.state.setEmptyAnimation(3, 0.25); spine._currentNeckAnim = null } }
-        track.listener = listener
-    } catch (err) {
-      console.warn(`[PixiStageManager] Failed to play neck anim "${animName}" on "${idolId}":`, err.message)
-    }
-    */
+  playSpineNeckAnim(idolId, animName, eventKey = '') {
+    return this.spineManager?.playSpineNeckAnim(idolId, animName, eventKey)
   }
 
-  stopSpineNeckAnim(idolId) {
-    // Disabled: see playSpineNeckAnim for the reason this is not active.
-    /* original code:
-    /* original code:
-    const entry = this.spineInstances[idolId]
-    try {
-      entry.spine.state.setEmptyAnimation(3, 0.25)
-      entry.spine._currentNeckAnim = null
-    } catch (err) {
-      console.warn(`[PixiStageManager] Failed to stop neck anim on "${idolId}":`, err.message)
-    }
-    */
+  stopSpineNeckAnim(idolId, eventKey = '') {
+    return this.spineManager?.stopSpineNeckAnim(idolId, eventKey)
   }
 
   /**
@@ -2071,47 +2078,38 @@ export class PixiStageManager {
     return this.spineManager?.removeSpine(idolId, immediate)
   }
 
-  clearAllSpines() {
+  clearAllSpines(options = {}) {
     this.clearAllSilhouettes()
-    return this.spineManager?.clearAllSpines()
-    this.lipSyncController.clearPending()
-    this._pendingTalking = this.lipSyncController.pendingTalking
-    // Reset camera zoom/pan
-    this.resetCameraZoom()
-    // Collect wrappers before clearing the map to avoid stale callbacks.
-    // Prevent an older fade-out from removing a newer model with the same idolId.
-    const wrappers = []
-    for (const idolId of Object.keys(this.spineInstances)) {
-      this._spawnTokens[idolId] = (this._spawnTokens[idolId] || 0) + 1
-      const entry = this.spineInstances[idolId]
-      delete this.spineInstances[idolId]
-      if (entry) {
-        if (entry.spine) entry.spine.customIsTalking = false
-        if (entry._slideTweenRaf) {
-          cancelAnimationFrame(entry._slideTweenRaf)
-          entry._slideTweenRaf = null
-        }
-        if (entry.marker) {
-          const marker = entry.marker
-          if (marker.parent) marker.parent.removeChild(marker)
-          try {
-            marker.destroy()
-          } catch (err) {
-            console.warn(`[PixiStageManager] Failed to destroy debug marker during clearAllSpines for "${idolId}":`, err?.message || err)
-          }
-          entry.marker = null
-        }
-        this._cleanupDebugRefs(idolId)
-        wrappers.push(entry.wrapper || entry.spine)
-      }
-    }
+    return this.spineManager?.clearAllSpines(options)
+  }
 
-    for (const wrapper of wrappers) {
-      this._fadeOutWrapper(wrapper)
+  inspectReleaseState() {
+    const overlayState = overlay => ({
+      exists: Boolean(overlay && !overlay.destroyed),
+      visible: Boolean(overlay && !overlay.destroyed && overlay.visible),
+      alpha: overlay && !overlay.destroyed ? Number(overlay.alpha || 0) : 0,
+    })
+    const overlays = {
+      fade: overlayState(this._fadeOverlay),
+      slide: overlayState(this._slideOverlay),
+      effect: overlayState(this._effectOverlay),
+    }
+    return {
+      destroyed: this._destroyed,
+      stage_children: this.app?.stage?.children?.length ?? 0,
+      spine_container_children: this.spineContainer?.children?.length ?? 0,
+      debug_markers: this._debugOverlay?.children?.length ?? 0,
+      silhouette_relayout_jobs: Object.keys(this._silhouetteRelayoutJobs).length,
+      overlays: {
+        ...overlays,
+        active_count: Object.values(overlays).filter(overlay => overlay.visible && overlay.alpha > 0).length,
+      },
     }
   }
 
   destroy() {
+    if (this._destroyed) return
+    this._destroyed = true
     this._dragSpineId = null
     if (this._globalMoveHandler && this.app) {
       this.app.stage.off('globalpointermove', this._globalMoveHandler)
@@ -2121,13 +2119,13 @@ export class PixiStageManager {
       this.app.ticker.remove(this._debugMarkerUpdater)
       this._debugMarkerUpdater = null
     }
+    this.clearAllSpines({ immediate: true })
     if (this._debugOverlay) {
       this._debugOverlay.destroy({ children: true })
       this._debugOverlay = null
     }
     this._resizeObserver?.disconnect()
     this._resizeObserver = null
-    this.clearAllSpines()
     this.cameraController?.destroy()
     this.cameraController = null
     this.backgroundManager?.destroy()

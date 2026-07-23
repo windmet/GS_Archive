@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "locale": "zh-CN",
+  "evidence": {
+    "scenario_id": "diagnostics_case",
+    "text_units": [
+      {
+        "unit_id": "story-text:v1:diagnostics_case:part_a:cmd-000001:dialogue:000",
+        "source_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      {
+        "unit_id": "story-text:v1:diagnostics_case:part_a:cmd-000002:dialogue:000",
+        "source_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      {
+        "unit_id": "story-text:v1:diagnostics_case:part_a:cmd-000003:dialogue:000",
+        "source_hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "unit_id": "story-text:v1:diagnostics_case:part_a:cmd-000004:dialogue:000",
+        "source_hash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
+      {
+        "unit_id": "story-text:v1:diagnostics_case:part_a:cmd-000004:dialogue:000",
+        "source_hash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      }
+    ]
+  },
+  "overlay": {
+    "schema_version": 1,
+    "locale": "zh-CN",
+    "scenario_id": "diagnostics_case",
+    "source_raw_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "entries": {
+      "story-text:v1:diagnostics_case:part_a:cmd-000001:dialogue:000": {
+        "source_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "text": "有效译文\u202e",
+        "status": "reviewed"
+      },
+      "story-text:v1:diagnostics_case:part_a:cmd-000002:dialogue:000": {
+        "source_hash": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "text": "已经过期的译文",
+        "status": "reviewed"
+      },
+      "story-text:v1:diagnostics_case:part_a:cmd-000004:dialogue:000": {
+        "source_hash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "text": "   ",
+        "status": "draft"
+      },
+      "story-text:v1:diagnostics_case:part_a:cmd-000999:dialogue:000": {
+        "source_hash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "text": "孤儿译文",
+        "status": "draft"
+      }
+    }
+  },
+  "expected_counts": {
+    "source_units": 4,
+    "overlay_entries": 4,
+    "valid": 2,
+    "missing": 1,
+    "stale": 1,
+    "orphaned": 1,
+    "collision": 1,
+    "invalid": 1,
+    "control_character_risk": 1
+  }
+}

@@ -1,0 +1,98 @@
+name: Web Viewer Source Gate
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/web-viewer-source-gate.yml"
+      - "data_pipeline/**"
+      - "web_viewer/**"
+  push:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/web-viewer-source-gate.yml"
+      - "data_pipeline/**"
+      - "web_viewer/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-contract:
+    name: Source-only contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: web_viewer
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: web_viewer/package-lock.json
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check patch whitespace
+        working-directory: ${{ github.workspace }}
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [ -n "$BASE_SHA" ] && [ "$BASE_SHA" != "0000000000000000000000000000000000000000" ]; then
+            git diff --check "$BASE_SHA...$HEAD_SHA"
+          else
+            git show --check --format= HEAD
+          fi
+
+      - name: Verify authoritative schema
+        run: npm run verify:story-schema
+
+      - name: Verify localization runtime
+        run: npm run verify:story-localization
+
+      - name: Verify translation contracts
+        run: npm run verify:story-translations
+
+      - name: Verify text evidence
+        run: npm run verify:story-text
+
+      - name: Verify audio lifecycle
+        run: npm run verify:story-audio
+
+      - name: Verify Runtime foundation
+        run: node scripts/verify-story-runtime-foundation.mjs
+
+      - name: Verify release soak recorder
+        run: npm run verify:release-soak
+
+      - name: Verify silhouette fallback contract
+        run: npm run verify:silhouette
+
+      - name: Verify strict collection publisher
+        run: npm run verify:story-authoritative-publish
+
+      - name: Verify compiled migration
+        run: npm run verify:compiled-migration
+
+      - name: Build production bundle
+        run: npm run build

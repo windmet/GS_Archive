@@ -2,7 +2,13 @@
 
 This folder collects working notes and investigation records that were previously scattered at the repository root.
 
-Latest architecture note: `notes/04_refactor/ARCHIVE_STORY_NEXT_WINDOW_HANDOFF_20260716.md`
+Latest story runtime architecture note: `notes/04_refactor/STORY_VIEWER_RUNTIME_REFACTOR_DESIGN_20260718.md`
+
+Latest story/portal localization contract: `notes/04_refactor/STORY_LOCALIZATION_CONTRACT_20260719.md`
+
+Latest archive/story navigation handoff: `notes/04_refactor/ARCHIVE_STORY_NEXT_WINDOW_HANDOFF_20260716.md`
+
+Latest Story Runtime release closure guide: `notes/04_refactor/STORY_POST_88969A1_RELEASE_GUIDE_20260723.md`
 
 ## Layout
 
@@ -73,4 +79,7 @@ If a new note is lip or mouth related, put it in `01_lipsync/` first. If it is u
 - `04_refactor/IDOL_STORY_AND_MOBILE_INTERFACE_20260716.md` - 49-idol personal-story pages, merged SMALL TALK boundaries, normalized Mobile tabs, after-story phone links, and next-phase story collection direction.
 - `04_refactor/PRIMARY_ARCHIVE_NAVIGATION_20260716.md` - content-first Idol/Card/Interaction navigation, default Touma routes, shared idol switching, legacy URL migration, and normalized related counts.
 - `04_refactor/ARCHIVE_STORY_NEXT_WINDOW_HANDOFF_20260716.md` - next-window priorities for unified story collections, remaining Extra/Birthday/Card Story domains, player product behavior, local reading state, evidence constraints, and acceptance gates.
+- `04_refactor/STORY_VIEWER_RUNTIME_REFACTOR_DESIGN_20260718.md` - complete no-code implementation design for the story runtime refactor, including Scenario IR v2, deterministic clock, performance lifecycle, snapshots, adapters, Auto/Skip/Backlog, resource loading, migration phases, Git boundaries, and acceptance tests.
+- `04_refactor/STORY_LOCALIZATION_CONTRACT_20260719.md` - implementation-ready localization contract for deterministic text identity, source hashing, translation overlays, speaker and choice identity, unified text resolution, UI/content language separation, conservative migration, portal entities, Git phases, and acceptance tests.
+- `04_refactor/STORY_POST_88969A1_RELEASE_GUIDE_20260723.md` - fact-check of the post-88969a1 assessment, second strict collection status, feature-freeze boundary, CI/release acceptance sequence, and PR merge gates.
 - `04_refactor/STAGE_CHIBI_NEXT_WINDOW_HANDOFF_20260716.md` - current Chibi stage baseline, supported and approximate effects, missing Particle/Suspensionlight/Penlight work, validation rules, and next-window execution order.

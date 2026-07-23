@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gs-archive.local/schemas/story-translation-overlay-v1.schema.json",
+  "title": "GS Archive Story Translation Overlay v1",
+  "type": "object",
+  "required": ["schema_version", "locale", "scenario_id", "source_raw_hash", "entries"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "locale": { "type": "string", "pattern": "^[a-z]{2,3}(?:-[A-Z][a-z]{3})?(?:-[A-Z]{2}|-[0-9]{3})?$" },
+    "scenario_id": { "type": "string", "pattern": "^[A-Za-z0-9._-]+$" },
+    "source_raw_hash": { "$ref": "#/$defs/sha256" },
+    "entries": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/unitId" },
+      "additionalProperties": { "$ref": "#/$defs/entry" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "unitId": {
+      "type": "string",
+      "pattern": "^story-text:v1:[A-Za-z0-9._-]+:[A-Za-z0-9._-]+:cmd-[0-9]{6}:[A-Za-z0-9._-]+:[0-9]{3}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "entry": {
+      "type": "object",
+      "required": ["source_hash", "text", "status"],
+      "properties": {
+        "source_hash": { "$ref": "#/$defs/sha256" },
+        "text": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["draft", "reviewed", "final"] },
+        "translator": { "type": ["string", "null"] },
+        "reviewer": { "type": ["string", "null"] },
+        "notes": { "type": "array", "items": { "type": "string" } },
+        "checks": {
+          "type": "array",
+          "items": { "enum": ["terminology", "character_voice", "layout", "source_verified"] },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -17,6 +17,7 @@ This addendum supersedes the original current-status conclusions below.
 - The dialogue-step flicker was caused by fallback silhouettes not being recognized as existing character instances. Every new dialogue retried the missing Spine, removed the silhouette, then asynchronously recreated it.
 - The fallback manager now reuses an existing or pending silhouette, updates its layout in place, and cancels stale image callbacks when the character leaves.
 - Browser interaction from displayed steps `24 -> 25 -> 26 -> 27` kept `102sha` continuously present with identical layout values and no empty fallback frame.
+- On 2026-07-23, `102sha_001_00` was promoted to an explicit audited silhouette-only asset contract. `SpineStage` now goes directly to the PNG fallback instead of first requesting known-missing `comu.atlas` / `comu.skel` files. The source verifier also requires the PNG to exist and the Spine rig to remain absent; if a real rig is added later, the exception must be deliberately removed.
 - Background sampling around displayed `17 -> 18` showed unchanged `bgContainer` and `bgSprite` values. Raw command `camera_resetzoom` resets the foreground/spine container from `0.9` to `1`; the background itself does not move.
 - Production build passed on 2026-07-10. The remaining bundle-size warning is unchanged and unrelated.
 

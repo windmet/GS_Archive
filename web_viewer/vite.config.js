@@ -5,6 +5,7 @@ import path from 'node:path'
 
 const LIPSYNC_ROOT = process.env.SIDEM_LIPSYNC_ROOT || 'E:/BaiduNetdiskDownload/SideM/scripts/lipsyncdata/adxlip'
 const AUDIO_ROOT = process.env.SIDEM_AUDIO_ROOT || 'E:/BaiduNetdiskDownload/SideM/GS_Res/Audio'
+const LEGACY_AUDIO_ROOT = process.env.SIDEM_LEGACY_AUDIO_ROOT || 'E:/BaiduNetdiskDownload/SideM/story_viewer/voice_ogg'
 const CARD_ART_ROOT = process.env.SIDEM_CARD_ART_ROOT || 'E:/BaiduNetdiskDownload/SideM/GS_Res/ALL_PHOTOS/assets/resources/image/image_card'
 
 function addSeAliasCandidates(candidates, fileName) {
@@ -23,6 +24,7 @@ function addSeAliasCandidates(candidates, fileName) {
     for (const dir of ['sfx', 'telephone', 'system']) {
       candidates.push(path.resolve(AUDIO_ROOT, dir, `${alias}.ogg`))
     }
+    candidates.push(path.resolve(LEGACY_AUDIO_ROOT, `${alias}.ogg`))
   }
 }
 
@@ -80,6 +82,7 @@ function audioPlugin() {
           for (const dir of ['sfx', 'telephone', 'system']) {
             candidates.push(path.resolve(AUDIO_ROOT, dir, fileName))
           }
+          candidates.push(path.resolve(LEGACY_AUDIO_ROOT, fileName))
           addSeAliasCandidates(candidates, fileName)
         } else if (AUDIO_DIRS.includes(type)) {
           candidates.push(path.resolve(AUDIO_ROOT, type, fileName))
@@ -91,9 +94,9 @@ function audioPlugin() {
           next(); return
         }
 
-        const rootPath = path.resolve(AUDIO_ROOT)
+        const rootPaths = [path.resolve(AUDIO_ROOT), path.resolve(LEGACY_AUDIO_ROOT)]
         for (const fp of candidates) {
-          if (!fp.startsWith(rootPath + path.sep)) continue
+          if (!rootPaths.some(rootPath => fp.startsWith(rootPath + path.sep))) continue
           if (fs.existsSync(fp)) {
             res.setHeader('Content-Type', 'audio/ogg')
             const stream = fs.createReadStream(fp)

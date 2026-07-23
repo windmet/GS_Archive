@@ -1,5 +1,9 @@
 ﻿<template>
-  <div ref="containerRef" class="spine-stage-root"></div>
+  <div
+    ref="containerRef"
+    class="spine-stage-root"
+    :data-background-owner="manageBackground ? 'standalone' : 'external'"
+  ></div>
 
   <div v-if="sceneIcon" class="scene-icon">
     <img :src="sceneIcon.src" alt="" @error="$event.target.style.display = 'none'" />
@@ -78,12 +82,18 @@
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount, markRaw, reactive, onUnmounted, computed } from 'vue'
 import { PixiStageManager } from '../core/PixiStageManager.js'
-import { getBodyTypeUrl, getOtherSettingUrl, getCharaIconUrl } from '../utils/AssetResolver.js'
+import {
+  getBodyTypeUrl,
+  getOtherSettingUrl,
+  getCharaIconUrl,
+  isSilhouetteOnlyModel,
+} from '../utils/AssetResolver.js'
 import { loadCostumePrefabMeta } from '../utils/CostumePrefabMetaStore.js'
 import { loadCostumeDictionary } from '../utils/CostumeDictionaryStore.js'
 import { getCachedMotionSetting, loadIdolMotionSettings } from '../utils/IdolMotionSettingStore.js'
 import { computeVisualRootY as computeVisualRootYUtil, resolveBaseY as resolveBaseYUtil } from '../utils/YPositionResolver.js'
 import { applyStepSceneState } from '../core/applyStepSceneState.js'
+import { getStepSceneState } from '../core/story-runtime/StepSceneState.js'
 import {
   buildBoundsSnapshot,
   buildSpineDebugState,
@@ -94,13 +104,21 @@ import {
 const props = defineProps({
   step: { type: Object, default: null },
   fallbackBg: { type: String, default: null },
+  manageBackground: { type: Boolean, default: false },
   debugControls: { type: Boolean, default: true },
 })
 
 const emit = defineEmits(['ready', 'error'])
 
 const sceneIcon = computed(() => {
-  const id = props.step?.state?.image_icon?.display_id || props.step?.state?.image_icon?.id
+  const imageIcon = getStepSceneState(props.step)?.image_icon
+  // Compiled story state may retain icon metadata after the original command,
+  // but an empty layer means there is no drawable scene icon. Keep supporting
+  // the explicit string form used by standalone/smoke scenarios.
+  if (imageIcon && typeof imageIcon === 'object' && !imageIcon.layer) return null
+  const id = typeof imageIcon === 'string'
+    ? imageIcon
+    : imageIcon?.display_id || imageIcon?.id
   if (!id) return null
   return { id, src: getCharaIconUrl(id) }
 })
@@ -109,6 +127,7 @@ const containerRef = ref(null)
 let manager = null
 let applyStateToken = 0
 let lastScreenEffectsKey = ''
+let managedBackgroundId = null
 const debugMode = ref(false)
 const prefabMetaReady = ref(false)
 const motionSettingsReady = ref(false)
@@ -127,9 +146,10 @@ onMounted(() => {
     emit('error', err)
   }
 
-  if (props.step?.state) {
+  syncManagedBackground()
+  if (getStepSceneState(props.step)) {
     applyState(props.step)
-  } else if (props.step && props.fallbackBg) {
+  } else if (!props.manageBackground && props.step && props.fallbackBg) {
     manager.setBackground(props.fallbackBg)
   }
 
@@ -138,6 +158,15 @@ onMounted(() => {
   void _loadMotionSettings()
   installDebugGlobals()
 })
+
+function syncManagedBackground() {
+  if (!manager || !props.manageBackground) return
+  const backgroundId = getStepSceneState(props.step)?.bg || props.fallbackBg || null
+  if (backgroundId === managedBackgroundId) return
+  managedBackgroundId = backgroundId
+  if (backgroundId) manager.setBackground(backgroundId)
+  else manager.clearBackground()
+}
 
 onBeforeUnmount(() => {
   if (manager) {
@@ -287,6 +316,18 @@ function collectStageDebugData() {
     const spine = entry?.spine
     const skeleton = spine?.skeleton
     const slotData = skeleton?.data?.slots || []
+    const poseBones = Object.fromEntries(
+      ['root', 'chara_MIX', 'body', 'neck', 'head', 'face_control'].map(name => {
+        const bone = skeleton?.findBone?.(name)
+        return [name, bone ? {
+          x: bone.x,
+          y: bone.y,
+          rotation: bone.rotation,
+          worldX: bone.worldX,
+          worldY: bone.worldY,
+        } : null]
+      }),
+    )
     const isEyePart = value => /eye|lash|pupil|ball|close|smile/i.test(String(value || ''))
     const skinAttachments = skeleton?.data?.defaultSkin?.getAttachments?.() || []
     return {
@@ -296,6 +337,11 @@ function collectStageDebugData() {
       y: entry?.spine?.y ?? null,
       scale: entry?.spine?.scale?.x ?? null,
       alpha: entry?.spine?.alpha ?? null,
+      body: spine?._currentBodyAnim || '',
+      neck: spine?._currentNeckAnim || '',
+      lastNeckEventKey: spine?._lastNeckEventKey || '',
+      tracks: snap?.tracks || [],
+      poseBones,
       face: spine?._currentFaceAnim || '',
       blink: spine?._blinkCfg || null,
       eyeSlots: slotData.map((slot, index) => ({
@@ -430,6 +476,7 @@ function syncBoundsSnapshot(step = props.step) {
 watch(debugMode, (on) => {
   if (!manager) return
   manager.setDebugMode(on)
+  publishStageDebugData()
   if (on) {
     syncStates()
   } else {
@@ -438,12 +485,12 @@ watch(debugMode, (on) => {
 })
 
 watch(prefabMetaReady, (ready) => {
-  if (!ready || !props.step?.state || !manager) return
+  if (!ready || !getStepSceneState(props.step) || !manager) return
   applyState(props.step, { reason: 'prefab-meta-ready' })
 })
 
 watch(motionSettingsReady, (ready) => {
-  if (!ready || !props.step?.state || !manager) return
+  if (!ready || !getStepSceneState(props.step) || !manager) return
   applyState(props.step, { reason: 'motion-settings-ready' })
 })
 
@@ -730,9 +777,10 @@ function yesNo(value) {
 
 watch(() => props.step, (step, oldStep) => {
   if (!manager) return
+  syncManagedBackground()
   applyStateToken++
   // Clear stale stage state when returning to non-story screens.
-  if (!step?.state) {
+  if (!getStepSceneState(step)) {
     if (props.fallbackBg) {
       manager.setBackground(props.fallbackBg)
     } else {
@@ -750,19 +798,30 @@ watch(() => props.step, (step, oldStep) => {
     boundsSnapshot.value = null
     return
   }
-  applyState(step)
+  const newId = Number(step?.step_id)
+  const oldId = Number(oldStep?.step_id)
+  const resetScreenEffects = Number.isFinite(newId)
+    && Number.isFinite(oldId)
+    && (newId < oldId || newId > oldId + 1)
+  applyState(step, { resetScreenEffects })
 })
 
 watch(() => props.fallbackBg, () => {
-  if (!manager || props.step?.state?.bg) return
+  if (!manager) return
+  if (props.manageBackground) {
+    syncManagedBackground()
+    return
+  }
+  if (getStepSceneState(props.step)?.bg) return
   if (props.fallbackBg) manager.setBackground(props.fallbackBg)
   else manager.clearBackground()
 })
 
-async function applyState(step) {
-  if (!manager || !step?.state) return
+async function applyState(step, { resetScreenEffects = false } = {}) {
+  if (!manager) return
+  const state = getStepSceneState(step)
+  if (!state) return
   const token = ++applyStateToken
-  const state = step.state
   await _loadBodyTypes()
   if (token !== applyStateToken || !manager) return
 
@@ -770,8 +829,8 @@ async function applyState(step) {
     manager,
     step,
     state,
-    fallbackBg: props.fallbackBg,
     lastScreenEffectsKey,
+    resetScreenEffects,
   })
 
   const charaId = step.chara_id || ''
@@ -845,11 +904,12 @@ async function applyState(step) {
       store: Y_DEBUG_STORE,
     })
 
-    if (manager.hasSilhouetteFallback?.(sid, modelId)) {
+    if (isSilhouetteOnlyModel(modelId) || manager.hasSilhouetteFallback?.(sid, modelId)) {
       const posX = spineState.pos_x ?? 0
       let posY = spineState.pos_y ?? 0
       if (spineState.idol_zoom_y_offset) posY += spineState.idol_zoom_y_offset
       const rootY = computeVisualRootY(sid, resolved.finalBaseY, posY)
+      if (existing) manager.removeSpine(sid, true)
       manager.showSilhouette(sid, modelId, posX, 0, rootY)
       continue
     }
@@ -858,9 +918,9 @@ async function applyState(step) {
       existing.prefabMeta = prefabMeta
       // Same model: update face/anim and reposition.
       if (spineState.face) manager.updateSpineFace(sid, spineState.face, spineState)
-      if (spineState.anim) manager.playSpineAnim(sid, spineState.anim, !!step.timeline, !!spineState.anim_no_back, getMotionSetting(sid, modelId, spineState.anim))
-      if (spineState.neck_anim_stop) manager.stopSpineNeckAnim?.(sid)
-      else if (spineState.neck_anim) manager.playSpineNeckAnim?.(sid, spineState.neck_anim)
+      if (spineState.anim) manager.playSpineAnim(sid, spineState.anim, false, !!spineState.anim_no_back, getMotionSetting(sid, modelId, spineState.anim))
+      if (spineState.neck_anim_stop) manager.stopSpineNeckAnim?.(sid, `state:${step.step_id}:neck-stop:${sid}`)
+      else if (spineState.neck_anim) manager.playSpineNeckAnim?.(sid, spineState.neck_anim, `state:${step.step_id}:neck:${sid}:${spineState.neck_anim}`)
       manager.setSpinePartsVisible?.(sid, spineState.parts_visible !== false)
       manager.flushSpinePose?.(sid, 0)
       const posX = spineState.pos_x ?? 0
@@ -928,9 +988,9 @@ async function applyState(step) {
         let posY = spineState.pos_y ?? 0
         if (spineState.idol_zoom_y_offset) posY += spineState.idol_zoom_y_offset
         if (spineState.face) manager.updateSpineFace(sid, spineState.face, spineState)
-        if (spineState.anim) manager.playSpineAnim(sid, spineState.anim, !!step.timeline, !!spineState.anim_no_back, getMotionSetting(sid, modelId, spineState.anim))
-        if (spineState.neck_anim_stop) manager.stopSpineNeckAnim?.(sid)
-        else if (spineState.neck_anim) manager.playSpineNeckAnim?.(sid, spineState.neck_anim)
+        if (spineState.anim) manager.playSpineAnim(sid, spineState.anim, false, !!spineState.anim_no_back, getMotionSetting(sid, modelId, spineState.anim))
+        if (spineState.neck_anim_stop) manager.stopSpineNeckAnim?.(sid, `state:${step.step_id}:neck-stop:${sid}`)
+        else if (spineState.neck_anim) manager.playSpineNeckAnim?.(sid, spineState.neck_anim, `state:${step.step_id}:neck:${sid}:${spineState.neck_anim}`)
         manager.setSpinePartsVisible?.(sid, spineState.parts_visible !== false)
         manager.flushSpinePose?.(sid, 0)
         const fit = FIT_MODE === 'prefabrect' && prefabMeta

@@ -1,15 +1,14 @@
 <template>
   <div class="choice-ui">
-    <div class="choice-prompt" v-if="prompt">{{ prompt }}</div>
+    <LocalizedTextBlock v-if="promptDisplay" class="choice-prompt" :display="promptDisplay" />
     <div class="choice-options">
       <button
         v-for="(opt, i) in options"
-        :key="i"
+        :key="opt.option_id || i"
         class="choice-btn"
         @click.stop="select(opt, i)"
       >
-        <span class="choice-num">{{ i + 1 }}</span>
-        <span class="choice-text">{{ opt.detail || opt.text }}</span>
+        <LocalizedTextBlock class="choice-text" :display="optionDisplay(opt)" />
       </button>
     </div>
   </div>
@@ -17,14 +16,28 @@
 
 <script setup>
 import { computed } from 'vue'
+import LocalizedTextBlock from './LocalizedTextBlock.vue'
+import { useStoryLocalization } from '../localization/story/StoryLocalizationContext.js'
+import { resolveText } from '../utils/TextHelper.js'
 
 const props = defineProps({
   step: { type: Object, default: null },
 })
 const emit = defineEmits(['select'])
+const localization = useStoryLocalization()
 
 const options = computed(() => props.step?.options || [])
-const prompt = computed(() => props.step?.dialogue?.text || null)
+const promptDisplay = computed(() => {
+  const dialogue = props.step?.dialogue
+  if (!dialogue) return null
+  return localization?.resolveDialogue(dialogue) ?? resolveText(dialogue)
+})
+
+function optionDisplay(option) {
+  return localization?.resolveChoiceOption(option) || {
+    text: option.text || option.detail || option.label || '',
+  }
+}
 
 function select(opt, index) {
   emit('select', { ...opt, index })
@@ -34,9 +47,10 @@ function select(opt, index) {
 <style scoped>
 .choice-ui {
   position: absolute;
-  top: 48px; left: 0; right: 0; bottom: 56px;
+  top: 52%; left: 0; right: 0;
+  transform: translateY(-50%);
   display: flex; flex-direction: column;
-  justify-content: flex-end;
+  justify-content: center;
   padding: 32px;
   pointer-events: none;
   max-width: 720px;
@@ -54,48 +68,46 @@ function select(opt, index) {
   -webkit-backdrop-filter: blur(4px);
   padding: 12px 20px;
   border-radius: 12px;
+  --localized-primary-line-height: 1.5;
+  --localized-secondary-color: rgba(255,255,255,0.72);
+  --localized-secondary-size: 0.86em;
 }
 .choice-options {
   display: flex; flex-direction: column; gap: 10px;
   pointer-events: auto;
 }
 .choice-btn {
-  display: flex; align-items: center; gap: 12px;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 14px;
-  padding: 16px 20px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, 0.94);
+  color: #111936;
+  border: 3px solid #20c8e8;
+  border-radius: 10px;
+  padding: 18px 24px;
   cursor: pointer;
-  text-align: left;
-  font-size: 0.95rem;
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 700;
   line-height: 1.5;
   transition: background 0.2s, border-color 0.2s, transform 0.1s;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 0 9px rgba(32, 200, 232, 0.75), 0 2px 12px rgba(0, 0, 0, 0.24);
 }
 .choice-btn:hover {
-  background: rgba(13, 148, 136, 0.75);
-  border-color: rgba(13, 148, 136, 0.5);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 20px rgba(13, 148, 136, 0.25);
-}
-.choice-num {
-  flex-shrink: 0;
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.8rem;
-  font-weight: bold;
-  color: rgba(255, 255, 255, 0.7);
-}
-.choice-btn:hover .choice-num {
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
+  background: #fff;
+  border-color: #13b7da;
+  transform: scale(1.01);
 }
 .choice-text {
   flex: 1;
+  text-align: center;
+  --localized-primary-line-height: 1.45;
+  --localized-secondary-color: #607086;
+  --localized-secondary-size: 0.82em;
+  --localized-secondary-gap: 0.2em;
+}
+
+@media (max-width: 520px) {
+  .choice-ui { padding: 18px 12px; }
+  .choice-options { gap: 8px; }
+  .choice-btn { padding: 12px 14px; font-size: 0.95rem; }
 }
 </style>

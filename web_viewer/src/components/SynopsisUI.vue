@@ -1,29 +1,37 @@
 <template>
   <div class="synopsis-screen">
     <div class="synopsis-card">
-      <div v-if="titleText" class="synopsis-title">{{ titleText }}</div>
-      <div v-if="bodyText" class="synopsis-body">{{ bodyText }}</div>
+      <LocalizedTextBlock v-if="titleDisplay" class="synopsis-title" :display="titleDisplay" />
+      <LocalizedTextBlock v-if="bodyDisplay" class="synopsis-body" :display="bodyDisplay" />
     </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import LocalizedTextBlock from './LocalizedTextBlock.vue'
 import { resolveText } from '../utils/TextHelper.js'
+import { useStoryLocalization } from '../localization/story/StoryLocalizationContext.js'
 
 const props = defineProps({
   step: { type: Object, default: null },
 })
+const localization = useStoryLocalization()
 
-const titleText = computed(() => {
-  const d = props.step?.dialogue
-  return d ? resolveText(d).speaker : ''
+const display = computed(() => {
+  const dialogue = props.step?.dialogue
+  return dialogue
+    ? (localization?.resolveDialogue(dialogue) ?? resolveText(dialogue))
+    : { speaker: '', text: '' }
 })
 
-const bodyText = computed(() => {
-  const d = props.step?.dialogue
-  return d ? resolveText(d).text : ''
+const titleDisplay = computed(() => {
+  const resolved = display.value
+  if (!resolved?.speaker) return null
+  return resolved.speakerView ? { text: resolved.speaker, view: resolved.speakerView } : resolved.speaker
 })
+
+const bodyDisplay = computed(() => display.value?.text ? display.value : null)
 </script>
 
 <style scoped>
@@ -58,6 +66,10 @@ const bodyText = computed(() => {
   text-align: center;
   line-height: 1.5;
   white-space: pre-wrap;
+  --localized-primary-line-height: 1.5;
+  --localized-secondary-color: #596474;
+  --localized-secondary-size: .76em;
+  --localized-secondary-gap: .22em;
 }
 
 .synopsis-body {
@@ -67,5 +79,9 @@ const bodyText = computed(() => {
   white-space: pre-wrap;
   text-align: center;
   word-break: break-word;
+  --localized-primary-line-height: 2;
+  --localized-secondary-color: #66717d;
+  --localized-secondary-size: .82em;
+  --localized-secondary-gap: .3em;
 }
 </style>

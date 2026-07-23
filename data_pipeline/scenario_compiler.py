@@ -13,8 +13,10 @@ Output:
 
 import json
 import copy
+import hashlib
 import os
 import re
+import unicodedata
 from typing import Any, Optional
 
 
@@ -36,7 +38,7 @@ class ScenarioState:
         self.talk_mode: bool = False          # True inside talk_start/end block
         self.phone_mode: bool = False         # True inside phone_start/end block
         # Camera zoom/pan (dolly)
-        self.camera_zoom: Optional[dict] = None    # {"zoom": float, "offset_x": float, "offset_y": float, "duration": float}
+        self.camera_zoom: Optional[dict] = None    # {"zoom": float, "offset_x": float, "offset_y": float, "duration": float, "delay"?: float}
         # Screen fade transition (one-shot, consumed by next step)
         self.screen_fade: Optional[dict] = None    # {"type": "in"|"out", "duration": float, "color": str}
         self.screen_slide: Optional[dict] = None   # {"type": "in"|"out", "delay": float, "duration": float, "direction": str}
@@ -198,9 +200,33 @@ class ScenarioCompiler:
     _LIPSYNC_BASENAME_INDEX: Optional[dict[str, str]] = None
     _ADV_BACKGROUND_INDEX: Optional[dict[str, dict]] = None
 
-    def __init__(self, raw_data: dict, scenario_id: str = ""):
+    TEXT_ID_VERSION = 1
+    TEXT_TOKEN_PATTERN = re.compile(r"^[A-Za-z0-9._-]+$")
+    TEXT_FIELD_KINDS = frozenset({
+        "dialogue",
+        "narration",
+        "choice_short",
+        "choice_detail",
+        "title",
+        "synopsis",
+        "time_caption",
+        "mobile_message",
+        "phone_message",
+        "scene_icon_label",
+        "system_caption",
+    })
+
+    def __init__(self, raw_data: dict, scenario_id: str = "",
+                 source_part_id: Optional[str] = None,
+                 source_file: Optional[str] = None):
         self.raw = raw_data
         self.scenario_id = scenario_id or self._infer_id(raw_data)
+        self.text_catalog_id = self._canonical_text_token(self.scenario_id, "scenario_id")
+        inferred_part = source_part_id or self.scenario_id
+        self._source_part_id = self._canonical_text_token(inferred_part, "source_part_id")
+        self._source_file = self._canonical_source_file(source_file or f"{inferred_part}.json")
+        self._current_command_index = -1
+        self._current_raw_type = ""
         self.state = ScenarioState()
         self.steps: list[dict] = []
         self.episodes: list[dict] = []
@@ -251,21 +277,32 @@ class ScenarioCompiler:
     # Main entry
     # ----------------------------------------------------------------
 
-    def compile(self) -> dict:
+    def compile(self, *, output_contract: str = "compatibility",
+                source: Optional[dict] = None,
+                compiler_version: str = "scenario-compiler-python-v2") -> dict:
         commands = self.raw.get("Command", [])
-        for cmd in commands:
-            self._process(cmd)
+        for command_index, cmd in enumerate(commands):
+            self._process(cmd, command_index)
         self._flush_pending_text_disable()
-        return self._output()
+        result = self._output()
+        if source is not None:
+            result["source"] = copy.deepcopy(source)
+        return self._apply_output_contract(result, output_contract, compiler_version)
 
     @classmethod
     def compile_group(cls, raw_data_list: list[dict], group_id: str,
-                      part_ids: Optional[list[str]] = None) -> dict:
+                      part_ids: Optional[list[str]] = None,
+                      source_files: Optional[list[str]] = None,
+                      *, output_contract: str = "compatibility",
+                      source: Optional[dict] = None,
+                      compiler_version: str = "scenario-compiler-python-v2") -> dict:
         """
         Compile multiple raw files as a single continuous scenario.
         All commands from all files are fed through ONE state machine.
         """
-        compiler = cls(raw_data_list[0], group_id)
+        first_part_id = part_ids[0] if part_ids else group_id
+        first_source_file = source_files[0] if source_files else f"{first_part_id}.json"
+        compiler = cls(raw_data_list[0], group_id, first_part_id, first_source_file)
         for idx, data in enumerate(raw_data_list):
             if idx > 0:
                 # Lettered scenario files are authored as episode chunks.
@@ -281,12 +318,35 @@ class ScenarioCompiler:
                 # Always reset transient visual context at the boundary.
                 compiler.state.clear_episode_visual_context()
             source_id = part_ids[idx] if part_ids and idx < len(part_ids) else data.get("scenarioId", "")
-            compiler._begin_episode(source_id or f"episode_{idx + 1}")
-            for cmd in data.get("Command", []):
-                compiler._process(cmd)
+            source_id = source_id or f"episode_{idx + 1}"
+            source_file = source_files[idx] if source_files and idx < len(source_files) else f"{source_id}.json"
+            compiler._set_source_context(source_id, source_file)
+            compiler._begin_episode(source_id)
+            for command_index, cmd in enumerate(data.get("Command", [])):
+                compiler._process(cmd, command_index)
             compiler._flush_pending_text_disable()
             compiler._end_episode()
-        return compiler._output()
+        result = compiler._output()
+        if source is not None:
+            result["source"] = copy.deepcopy(source)
+        return cls._apply_output_contract(result, output_contract, compiler_version)
+
+    @staticmethod
+    def _apply_output_contract(result: dict, output_contract: str,
+                               compiler_version: str) -> dict:
+        if output_contract == "compatibility":
+            return result
+        if output_contract != "authoritative":
+            raise ValueError(f"Unsupported ScenarioCompiler output contract: {output_contract!r}")
+        from authoritative_scenario import compile_authoritative_scenario
+
+        return compile_authoritative_scenario(result, compiler_version=compiler_version)
+
+    @staticmethod
+    def to_authoritative(result: dict,
+                         compiler_version: str = "scenario-compiler-python-v2") -> dict:
+        """Project an already compiled compatibility result into strict v2."""
+        return ScenarioCompiler._apply_output_contract(result, "authoritative", compiler_version)
 
     @staticmethod
     def _declares_initial_spines(raw_data: dict) -> bool:
@@ -302,12 +362,129 @@ class ScenarioCompiler:
         return False
 
     # ----------------------------------------------------------------
+    # Text identity and source evidence
+    # ----------------------------------------------------------------
+
+    @classmethod
+    def _canonical_text_token(cls, value: Any, field_name: str) -> str:
+        token = str(value or "").strip()
+        if not token:
+            raise ValueError(f"{field_name} is required for story text identity")
+        if not cls.TEXT_TOKEN_PATTERN.fullmatch(token):
+            raise ValueError(f"{field_name} contains unsupported characters: {token!r}")
+        return token
+
+    @staticmethod
+    def _canonical_source_file(value: Any) -> str:
+        source_file = str(value or "").replace("\\", "/").strip()
+        while source_file.startswith("./"):
+            source_file = source_file[2:]
+        parts = source_file.split("/")
+        if not source_file or any(part in ("", ".", "..") for part in parts):
+            raise ValueError(f"source_file must be a canonical relative path: {value!r}")
+        if re.match(r"^[A-Za-z]:", source_file) or source_file.startswith("/"):
+            raise ValueError(f"source_file must not be absolute: {value!r}")
+        return source_file
+
+    @staticmethod
+    def normalize_source_text(text: Any) -> str:
+        value = str(text or "")
+        if value.startswith("\ufeff"):
+            value = value[1:]
+        value = value.replace("\r\n", "\n").replace("\r", "\n")
+        return unicodedata.normalize("NFC", value)
+
+    @classmethod
+    def source_text_hash(cls, text: Any) -> str:
+        normalized = cls.normalize_source_text(text)
+        digest = hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+        return f"sha256:{digest}"
+
+    def _set_source_context(self, part_id: str, source_file: str):
+        self._source_part_id = self._canonical_text_token(part_id, "source_part_id")
+        self._source_file = self._canonical_source_file(source_file)
+        self._current_command_index = -1
+        self._current_raw_type = ""
+
+    def _text_unit_id(self, field_kind: str, field_ordinal: int = 0,
+                      command_index: Optional[int] = None) -> str:
+        kind = self._canonical_text_token(field_kind, "field_kind")
+        if kind not in self.TEXT_FIELD_KINDS:
+            raise ValueError(f"unsupported story text field_kind: {kind!r}")
+        index = self._current_command_index if command_index is None else int(command_index)
+        ordinal = int(field_ordinal)
+        if index < 0:
+            raise ValueError("command_index is required for story text identity")
+        if ordinal < 0:
+            raise ValueError("field_ordinal must be non-negative")
+        return (
+            f"story-text:v{self.TEXT_ID_VERSION}:{self.text_catalog_id}:"
+            f"{self._source_part_id}:cmd-{index:06d}:{kind}:{ordinal:03d}"
+        )
+
+    def _text_ref(self, source_text: Any, field_kind: str, field_ordinal: int = 0,
+                  command_index: Optional[int] = None) -> dict:
+        index = self._current_command_index if command_index is None else int(command_index)
+        return {
+            "unit_id": self._text_unit_id(field_kind, field_ordinal, index),
+            "source": {
+                "scenario_id": self.text_catalog_id,
+                "part_id": self._source_part_id,
+                "file": self._source_file,
+                "command_index": index,
+                "field_kind": field_kind,
+                "field_ordinal": int(field_ordinal),
+            },
+            "source_hash": self.source_text_hash(source_text),
+        }
+
+    @staticmethod
+    def _speaker_identity(source_name: Any, chara_id: Any = None) -> dict:
+        name = str(source_name or "")
+        entity_id = str(chara_id or "") or None
+        is_idol = bool(entity_id and re.fullmatch(r"\d{3}[A-Za-z0-9]{3}", entity_id))
+
+        if not name:
+            kind = "none"
+        elif name == "<P>":
+            kind = "producer"
+        elif re.fullmatch(r"[？?]+", name):
+            kind = "unknown"
+        elif is_idol:
+            kind = "idol"
+        else:
+            kind = "named"
+
+        return {
+            "kind": kind,
+            "entity_type": "idol" if is_idol else None,
+            "entity_id": entity_id,
+            "source_name": name,
+        }
+
+    def _step_evidence(self, command_start: Optional[int] = None,
+                       command_end: Optional[int] = None) -> dict:
+        start = self._current_command_index if command_start is None else int(command_start)
+        end = start if command_end is None else int(command_end)
+        return {
+            "source_file": self._source_file,
+            "source_part_id": self._source_part_id,
+            "command_start": start,
+            "command_end": end,
+            "raw_type": self._current_raw_type,
+            "confidence": "exact",
+        }
+
+    # ----------------------------------------------------------------
     # Command dispatch
     # ----------------------------------------------------------------
 
-    def _process(self, cmd: dict):
+    def _process(self, cmd: dict, command_index: Optional[int] = None):
         ctype = cmd.get("Type", "")
         vals = cmd.get("Values", [])
+        if command_index is not None:
+            self._current_command_index = int(command_index)
+        self._current_raw_type = ctype
 
         # Flush pending selection if we're moving on to a non-select command
         if self._pending_selection and ctype not in ("text_select", "talk_select", "phone_select"):
@@ -716,16 +893,17 @@ class ScenarioCompiler:
         zoom: 1.0=default, >1=zoom in, <1=zoom out
         """
         if len(vals) >= 3:
+            delay = self._safe_float(vals[0], 0.0)
             duration = float(vals[1]) if vals[1] else 0
             offset_x = float(vals[2]) if len(vals) > 2 and vals[2] else 0
             offset_y = float(vals[3]) if len(vals) > 3 and vals[3] else 0
             zoom = float(vals[4]) if len(vals) > 4 and vals[4] else 1.0
             self.state.camera_zoom = {
                 "zoom": zoom, "offset_x": offset_x, "offset_y": offset_y,
-                "duration": duration,
+                "duration": duration, "delay": delay,
             }
             self._extend_pending_text_disable_from_vals(vals, 0, 1)
-            self._extend_stage_duration(self._safe_float(vals[0], 0.0) + duration)
+            self._extend_stage_duration(delay + duration)
             self._mark_stage_change()
 
     def _camera_resetzoom(self, vals: list):
@@ -1398,12 +1576,33 @@ class ScenarioCompiler:
                 "type": "choice",
                 "state": self.state.snapshot(),
                 "options": [],
+                "choice_id": (
+                    f"choice:v{self.TEXT_ID_VERSION}:{self.text_catalog_id}:"
+                    f"{self._source_part_id}:cmd-{self._current_command_index:06d}"
+                ),
+                "source_file": self._source_file,
+                "source_part_id": self._source_part_id,
+                "command_start": self._current_command_index,
+                "command_end": self._current_command_index,
+                "raw_type": self._current_raw_type,
             }
-        self._pending_selection["options"].append({
+        option_ordinal = len(self._pending_selection["options"])
+        option = {
             "label": label,
             "text": short_text,
             "detail": long_text,
-        })
+            "source_text": short_text,
+            "option_id": (
+                f"choice-option:v{self.TEXT_ID_VERSION}:{self.text_catalog_id}:"
+                f"{self._source_part_id}:cmd-{self._current_command_index:06d}:{option_ordinal:03d}"
+            ),
+            "text_ref": self._text_ref(short_text, "choice_short", 0),
+        }
+        if long_text:
+            option["detail_source_text"] = long_text
+            option["detail_text_ref"] = self._text_ref(long_text, "choice_detail", 0)
+        self._pending_selection["options"].append(option)
+        self._pending_selection["command_end"] = self._current_command_index
 
     def _jump_point_cmd(self, vals: list):
         """Track jump_point labels. Consecutive labels all map to the next step."""
@@ -1430,6 +1629,15 @@ class ScenarioCompiler:
             "type": "choice",
             "state": self._pending_selection["state"],
             "options": self._pending_selection["options"],
+            "choice_id": self._pending_selection["choice_id"],
+            "evidence": {
+                "source_file": self._pending_selection["source_file"],
+                "source_part_id": self._pending_selection["source_part_id"],
+                "command_start": self._pending_selection["command_start"],
+                "command_end": self._pending_selection["command_end"],
+                "raw_type": self._pending_selection["raw_type"],
+                "confidence": "exact",
+            },
         }
         self.steps.append(step)
         self._pending_selection = None
@@ -1469,7 +1677,11 @@ class ScenarioCompiler:
             return
         self._clear_stage_buffer()
         self._emit_step("text_time", None, None, None, None, duration=1.2)
-        self.steps[-1]["text_time"] = {"text": text}
+        self.steps[-1]["text_time"] = {
+            "text": text,
+            "source_text": text,
+            "text_ref": self._text_ref(text, "time_caption", 0),
+        }
         self.steps[-1]["auto_advance"] = True
 
     # ----------------------------------------------------------------
@@ -1705,10 +1917,11 @@ class ScenarioCompiler:
                     spine = self.state.find_spine(event["chara_id"])
                     if spine:
                         spine["anim_no_back"] = True
-            elif event["type"] == "spine_neck_anim":
-                self.state.update_spine_neck_anim(event["chara_id"], event["value"])
-            elif event["type"] == "spine_neck_stop":
-                self.state.update_spine_neck_anim(event["chara_id"], None)
+            elif event["type"] in ("spine_neck_anim", "spine_neck_stop"):
+                # Neck commands are one-shot overlay events. Runtime owns the
+                # live Track 3 pose until an authored stop/replacement clears it;
+                # cumulative state must not restart the clip on later steps.
+                continue
             elif event["type"] == "spine_color":
                 spine = self.state.find_spine(event["chara_id"])
                 if spine:
@@ -1838,6 +2051,7 @@ class ScenarioCompiler:
             # state snapshot = INITIAL state
             # (delayed commands with delay>0 are in _timeline_events, not applied yet)
             "state": self.state.snapshot(),
+            "evidence": self._step_evidence(),
         }
 
         if step_type == "stage":
@@ -1859,6 +2073,11 @@ class ScenarioCompiler:
         self.state.bgm_stop_fade = None
         self.state.environmental_duck_target = None
         self.state.text_disabled = False
+        # Camera delay is an authored one-shot cue relative to this emitted
+        # step. Keep the resulting zoom state, but do not replay its delay on
+        # every later cumulative-state snapshot.
+        if self.state.camera_zoom:
+            self.state.camera_zoom.pop("delay", None)
         for effect in self.state.bg_effects:
             effect.pop("action", None)
             effect.pop("delay", None)
@@ -1871,6 +2090,8 @@ class ScenarioCompiler:
             self._pending_bg_effect_end_ids.clear()
         for spine in self.state.spines:
             spine.pop("fade", None)
+            # Immediate neck play/stop commands belong only to this snapshot.
+            spine.pop("neck_anim", None)
             spine.pop("neck_anim_stop", None)
             spine.pop("idol_color_transition", None)
         if self._pending_fadeout_ids:
@@ -1894,12 +2115,29 @@ class ScenarioCompiler:
             step["lipSync"] = lipSync
 
         if speaker is not None or text is not None:
+            field_kind = {
+                "adv": "dialogue",
+                "talk": "mobile_message",
+                "call": "phone_message",
+                "synopsis": "synopsis",
+                "title": "title",
+            }.get(step_type, "dialogue")
+            text_ordinal = 1 if step_type == "title" else 0
             dialogue = {
                 "speaker": speaker or "",
                 "text": text or "",               # legacy fallback
                 "text_jp": text or "",             # Japanese (source)
                 "text_cn": "",                     # Chinese translation (to be filled)
+                "source_text": text or "",
+                "speaker_identity": self._speaker_identity(
+                    "" if step_type in ("synopsis", "title") else speaker,
+                    None if step_type in ("synopsis", "title") else chara_id,
+                ),
             }
+            if text:
+                dialogue["text_ref"] = self._text_ref(text, field_kind, text_ordinal)
+            if step_type in ("synopsis", "title") and speaker:
+                dialogue["speaker_text_ref"] = self._text_ref(speaker, "title", 0)
             if voice:
                 dialogue["voice"] = voice
             if lip:
@@ -1933,6 +2171,8 @@ class ScenarioCompiler:
 
         result = {
             "scenario_id": self.scenario_id,
+            "text_catalog_id": self.text_catalog_id,
+            "text_contract_version": self.TEXT_ID_VERSION,
             "total_steps": len(self.steps),
             "steps": self.steps,
             "jump_points": dict(self._jump_point_map),
@@ -1965,7 +2205,8 @@ class ScenarioCompiler:
         """Load, compile, optionally save."""
         data = cls.load_json(path)
         basename = os.path.splitext(os.path.basename(path))[0]
-        compiler = cls(data, basename)
+        part_id = basename.removeprefix("scenario_")
+        compiler = cls(data, basename, part_id, os.path.basename(path))
         result = compiler.compile()
         if output_dir:
             out_path = os.path.join(output_dir, f"{basename}_compiled.json")
