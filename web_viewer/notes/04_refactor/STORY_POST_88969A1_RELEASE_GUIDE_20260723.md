@@ -1,5 +1,7 @@
 # PR #1 / Story Runtime 发布收口指导（2026-07-23）
 
+> **合并后状态：** PR #1 已于 2026-07-23 合入 `master`，merge commit 为 `ef804fcb2b258979723fcf8ce62f317671b4d701`。本文保留为合并前评估、发布 gate 和 soak 规程的历史证据；新窗口应先读 `notes/04_refactor/STORY_POST_MERGE_HANDOFF_20260723.md`，不要再把本文的 draft/合并步骤当成当前待办。
+
 ## 目的
 
 本文是 `88969a18` 之后的短期执行基线。旧的 Runtime 设计、Localization contract 与 next-window audit 继续保留为架构和历史证据；后续窗口先读本文，避免把已经完成的迁移步骤再次列为“下一步”。

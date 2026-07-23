@@ -1,5 +1,7 @@
 # Story Viewer 运行时发布验收记录（2026-07-22）
 
+> **当前路由：** PR #1 已合入 `master`（`ef804fcb2b258979723fcf8ce62f317671b4d701`）。本文件继续承载浏览器验收证据；新窗口的执行顺序、剩余缺口和文档索引统一见 `notes/04_refactor/STORY_POST_MERGE_HANDOFF_20260723.md`。
+
 ## 结论
 
 本轮在 `5174` 本地服务上完成了单标签页、低负载的重点发布回归。固定剧情锚点 `1_4_001_01_d` 在 default、`runtimeCues=1`、`runtimeSpine=0` 三种模式下均可正确前进和返回；第 12 步相关黑屏过渡在返回后没有残留 overlay；浏览器应用日志中实际 `error` 数为 0。
