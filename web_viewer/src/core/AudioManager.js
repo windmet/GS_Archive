@@ -9,11 +9,13 @@ import { getSeUrl, getAmbientUrl, getBgmUrl } from '../utils/AssetResolver.js'
 import { StoryAudioSession } from './story-runtime/StoryAudioSession.js'
 
 export class AudioManager {
-  constructor({ audioSession = null } = {}) {
+  constructor({ audioSession = null, setTimer = setTimeout, clearTimer = clearTimeout } = {}) {
     this._audioSession = audioSession || new StoryAudioSession({
       busVolumes: { bgm: 0.7, ambient: 0.7, voice: 1, se: 0.7 },
     })
     this._ownsAudioSession = !audioSession
+    this._setTimer = setTimer
+    this._clearTimer = clearTimer
     /** @type {AudioContext|null} */
     this._ctx = null
 
@@ -33,6 +35,8 @@ export class AudioManager {
     this._currentAmbientVolume = 0.4
     this._seBufferCache = new Map()
     this._cleanupTimers = new Set()
+    this._bgmGeneration = 0
+    this._ambientGeneration = 0
   }
 
   /** Create or resume AudioContext. Call on user gesture. */
@@ -42,7 +46,7 @@ export class AudioManager {
   }
 
   _scheduleCleanup(callback, delayMs) {
-    const timer = setTimeout(() => {
+    const timer = this._setTimer(() => {
       this._cleanupTimers.delete(timer)
       callback()
     }, delayMs)
@@ -106,6 +110,7 @@ export class AudioManager {
   async playAmbient(cueName, fadeTime = 0.5, volume = null) {
     if (!cueName || cueName === this._currentAmbientCue) return
     this.ensureContext()
+    const generation = ++this._ambientGeneration
 
     // Fade out current ambient
     if (this._ambientSource) {
@@ -126,9 +131,15 @@ export class AudioManager {
     try {
       const url = getAmbientUrl(cueName)
       const resp = await fetch(url)
-      if (!resp.ok) { this._currentAmbientCue = null; return }
+      if (!resp.ok) {
+        if (generation === this._ambientGeneration && cueName === this._currentAmbientCue) {
+          this._currentAmbientCue = null
+        }
+        return
+      }
       const ab = await resp.arrayBuffer()
       const audioBuf = await this._ctx.decodeAudioData(ab)
+      if (generation !== this._ambientGeneration || cueName !== this._currentAmbientCue) return
 
       const source = this._ctx.createBufferSource()
       source.loop = true
@@ -148,7 +159,7 @@ export class AudioManager {
       this._ambientGain = gain
       this._ambientRelease = release
     } catch (_) {
-      this._currentAmbientCue = null
+      if (generation === this._ambientGeneration) this._currentAmbientCue = null
     }
   }
 
@@ -166,8 +177,9 @@ export class AudioManager {
 
   /** Stop ambient with optional fade. */
   stopAmbient(fadeTime = 0.5) {
-    if (!this._ambientSource) return
+    this._ambientGeneration++
     this._currentAmbientCue = null
+    if (!this._ambientSource) return
     const gain = this._ambientGain
     const source = this._ambientSource
     const release = this._ambientRelease
@@ -193,6 +205,7 @@ export class AudioManager {
   async playBgm(bgmId, fadeTime = 1.0) {
     if (!bgmId || bgmId === this._currentBgmCue) return
     this.ensureContext()
+    const generation = ++this._bgmGeneration
 
     // Fade out current BGM
     if (this._bgmSource) {
@@ -213,9 +226,15 @@ export class AudioManager {
     try {
       const url = getBgmUrl(bgmId)
       const resp = await fetch(url)
-      if (!resp.ok) { this._currentBgmCue = null; return }
+      if (!resp.ok) {
+        if (generation === this._bgmGeneration && bgmId === this._currentBgmCue) {
+          this._currentBgmCue = null
+        }
+        return
+      }
       const ab = await resp.arrayBuffer()
       const audioBuf = await this._ctx.decodeAudioData(ab)
+      if (generation !== this._bgmGeneration || bgmId !== this._currentBgmCue) return
 
       const source = this._ctx.createBufferSource()
       source.loop = true
@@ -233,14 +252,15 @@ export class AudioManager {
       this._bgmGain = gain
       this._bgmRelease = release
     } catch (_) {
-      this._currentBgmCue = null
+      if (generation === this._bgmGeneration) this._currentBgmCue = null
     }
   }
 
   /** Stop BGM with optional fade. */
   stopBgm(fadeTime = 1.0) {
-    if (!this._bgmSource) return
+    this._bgmGeneration++
     this._currentBgmCue = null
+    if (!this._bgmSource) return
     const fade = (fadeTime != null) ? fadeTime : 1.0
     const gain = this._bgmGain
     const source = this._bgmSource
@@ -276,8 +296,22 @@ export class AudioManager {
     return this.captureState()
   }
 
+  inspect() {
+    return Object.freeze({
+      bgm_cue: this._currentBgmCue,
+      ambient_cue: this._currentAmbientCue,
+      ambient_volume: this._currentAmbientVolume,
+      has_bgm_source: Boolean(this._bgmSource),
+      has_ambient_source: Boolean(this._ambientSource),
+      cleanup_timers: this._cleanupTimers.size,
+      se_cache_entries: this._seBufferCache.size,
+    })
+  }
+
   /** Dispose — stop all audio and close the AudioContext. */
   dispose() {
+    this._bgmGeneration++
+    this._ambientGeneration++
     this._currentBgmCue = null
     this._currentAmbientCue = null
     // Stop sources synchronously
@@ -289,7 +323,7 @@ export class AudioManager {
     this._ambientSource?.disconnect()
     this._bgmGain?.disconnect()
     this._ambientGain?.disconnect()
-    for (const timer of this._cleanupTimers) clearTimeout(timer)
+    for (const timer of this._cleanupTimers) this._clearTimer(timer)
     this._cleanupTimers.clear()
     this._bgmSource = null
     this._ambientSource = null

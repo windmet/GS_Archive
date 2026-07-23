@@ -2,10 +2,12 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { StoryAudioSession } from '../src/core/story-runtime/StoryAudioSession.js'
 import { useVoicePlayer } from '../src/core/useVoicePlayer.js'
+import { AudioManager } from '../src/core/AudioManager.js'
 
 class FakeAudioParam {
   constructor(value = 1) { this.value = value }
   setValueAtTime(value) { this.value = value }
+  linearRampToValueAtTime(value) { this.value = value }
 }
 
 class FakeNode {
@@ -26,8 +28,10 @@ class FakeSource extends FakeNode {
     super()
     this.playbackRate = new FakeAudioParam()
     this.started = false
+    this.stopped = false
   }
   start() { this.started = true }
+  stop() { this.stopped = true; this.onended?.() }
 }
 
 class FakeAudioContext {
@@ -42,6 +46,7 @@ class FakeAudioContext {
   createGain() { const gain = new FakeGain(); this.gains.push(gain); return gain }
   createBuffer() { return {} }
   createBufferSource() { const source = new FakeSource(); this.sources.push(source); return source }
+  async decodeAudioData() { return {} }
   async resume() { this.state = 'running' }
   async suspend() { this.state = 'suspended' }
   async close() { this.state = 'closed'; this.closeCount++ }
@@ -121,6 +126,90 @@ assert.equal(playing.value, true, 'an old onended callback must not mark the new
 voicePlayer.dispose()
 await voiceSession.dispose()
 
+class FakeTimerQueue {
+  constructor() { this.nextId = 1; this.callbacks = new Map() }
+  set(callback) { const id = this.nextId++; this.callbacks.set(id, callback); return id }
+  clear(id) { this.callbacks.delete(id) }
+  flush() {
+    const callbacks = [...this.callbacks.values()]
+    this.callbacks.clear()
+    for (const callback of callbacks) callback()
+  }
+}
+
+const originalFetch = globalThis.fetch
+globalThis.fetch = async () => ({ ok: true, arrayBuffer: async () => new ArrayBuffer(8) })
+try {
+  const soakContext = new FakeAudioContext()
+  soakContext.state = 'running'
+  const soakSession = new StoryAudioSession({ contextFactory: () => soakContext })
+  const timers = new FakeTimerQueue()
+  const audioManager = new AudioManager({
+    audioSession: soakSession,
+    setTimer: callback => timers.set(callback),
+    clearTimer: timer => timers.clear(timer),
+  })
+
+  for (let index = 0; index < 100; index++) {
+    await audioManager.playBgm(`bgm-${index % 3}`, 0.01)
+    await audioManager.playAmbient(`ambient-${index % 4}`, 0.01, (index % 10) / 10)
+    timers.flush()
+    assert.ok(soakSession.inspect().active_sources <= 2, `cycle ${index}: steady-state sources must remain bounded`)
+    assert.equal(audioManager.inspect().cleanup_timers, 0, `cycle ${index}: cleanup timers must settle`)
+
+    if (index % 10 === 0) {
+      const snapshot = audioManager.captureState()
+      audioManager.stopBgm(0.01)
+      audioManager.stopAmbient(0.01)
+      await audioManager.restoreState(snapshot, { fadeTime: 0.01 })
+      timers.flush()
+      assert.deepEqual(audioManager.captureState(), snapshot, `cycle ${index}: capture/restore must be exact`)
+      assert.ok(soakSession.inspect().active_sources <= 2, `cycle ${index}: restore sources must settle`)
+    }
+
+    await soakSession.pause('visibility')
+    await soakSession.pause('overlay')
+    await soakSession.resume('visibility')
+    assert.equal(soakContext.state, 'suspended')
+    await soakSession.resume('overlay')
+    assert.equal(soakContext.state, 'running')
+  }
+
+  const raceContext = new FakeAudioContext()
+  raceContext.state = 'running'
+  const raceSession = new StoryAudioSession({ contextFactory: () => raceContext })
+  const raceManager = new AudioManager({ audioSession: raceSession })
+  const pendingResponses = []
+  globalThis.fetch = () => new Promise(resolve => pendingResponses.push(resolve))
+  const oldBgm = raceManager.playBgm('old-bgm', 0)
+  const newBgm = raceManager.playBgm('new-bgm', 0)
+  pendingResponses[1]({ ok: true, arrayBuffer: async () => new ArrayBuffer(8) })
+  await newBgm
+  pendingResponses[0]({ ok: true, arrayBuffer: async () => new ArrayBuffer(8) })
+  await oldBgm
+  assert.equal(raceManager.captureState().bgm.cue, 'new-bgm', 'late stale BGM load must not replace the newest cue')
+  assert.equal(raceSession.inspect().active_sources, 1, 'stale BGM load must not create a source')
+
+  const oldAmbient = raceManager.playAmbient('old-ambient', 0)
+  const newAmbient = raceManager.playAmbient('new-ambient', 0)
+  pendingResponses[3]({ ok: true, arrayBuffer: async () => new ArrayBuffer(8) })
+  await newAmbient
+  pendingResponses[2]({ ok: false })
+  await oldAmbient
+  assert.equal(raceManager.captureState().ambient.cue, 'new-ambient', 'late stale Ambient load must not replace the newest cue')
+  assert.equal(raceSession.inspect().active_sources, 2, 'one BGM and one Ambient source must remain')
+
+  audioManager.dispose()
+  timers.flush()
+  await soakSession.dispose()
+  raceManager.dispose()
+  await raceSession.dispose()
+  assert.equal(soakSession.inspect().active_sources, 0)
+  assert.equal(raceSession.inspect().active_sources, 0)
+} finally {
+  globalThis.fetch = originalFetch
+}
+
 const [viewerSource, voicePlayerSource, audioManagerSource] = await Promise.all([
   readFile(new URL('../src/core/StoryViewer.vue', import.meta.url), 'utf8'),
   readFile(new URL('../src/core/useVoicePlayer.js', import.meta.url), 'utf8'),
@@ -133,3 +222,4 @@ assert.doesNotMatch(voicePlayerSource, /new \(window\.AudioContext/)
 assert.doesNotMatch(audioManagerSource, /new \(window\.AudioContext/)
 
 console.log('Story audio session verification passed.')
+console.log('  100-cycle BGM/Ambient crossfade, capture/restore, visibility/overlay pause, stale-load race, bounded sources and timer cleanup covered.')
