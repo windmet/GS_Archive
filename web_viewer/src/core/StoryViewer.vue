@@ -9,7 +9,17 @@
     <div v-if="RUNTIME_DEBUG" class="runtime-debug-actions">
       <button data-testid="story-debug-hide" @click.stop="applyDebugVisibility(true)">SIMULATE HIDDEN</button>
       <button data-testid="story-debug-show" @click.stop="applyDebugVisibility(false)">SIMULATE VISIBLE</button>
+      <button data-testid="story-soak-start" @click.stop="startReleaseSoak">START SOAK</button>
+      <button data-testid="story-soak-stop" @click.stop="stopReleaseSoak">STOP SOAK</button>
+      <button data-testid="story-soak-export" @click.stop="exportReleaseSoak">EXPORT SOAK</button>
     </div>
+    <textarea
+      v-if="RUNTIME_DEBUG && releaseSoakExport"
+      class="runtime-soak-export"
+      data-testid="story-release-soak-export"
+      :value="releaseSoakExport"
+      readonly
+    ></textarea>
     <div class="viewer-stage">
     <!-- Spine rendering layer (background + characters) -->
     <SpineStage ref="spineStageRef" :step="stageStep" :fallbackBg="firstAvailableBg" />
@@ -167,6 +177,7 @@ import { SceneSnapshotStore, isReadableHistoryStep } from './story-runtime/Scene
 import { PlayerPreferencesRepository } from './story-runtime/PlayerPreferencesRepository.js'
 import { ReadProgressRepository, createReadKey } from './story-runtime/ReadProgressRepository.js'
 import { PlaybackModeController } from './story-runtime/PlaybackModeController.js'
+import { releaseSoakRecorder } from './story-runtime/ReleaseSoakRecorder.js'
 import {
   createStoryLocalization,
   provideStoryLocalization,
@@ -225,6 +236,7 @@ const uiHidden = ref(initialPreferences.ui_hidden)
 const episodeFinished = ref(false)
 const transitioning = ref(false)
 const runtimeDiagnostics = ref(null)
+const releaseSoakExport = ref('')
 const debugVisibilityOverride = ref(null)
 
 let _readyTimer = null
@@ -640,12 +652,17 @@ function setPlaybackRate(rate) {
   return appliedRate
 }
 
-function refreshRuntimeDiagnostics() {
-  if (!RUNTIME_DEBUG) return
+function buildRuntimeDiagnostics() {
   const memory = performance.memory
-  const spineEntries = Object.entries(spineStageRef.value?.manager?.spineInstances || {})
-  runtimeDiagnostics.value = {
+  const stageManager = spineStageRef.value?.manager
+  const spineEntries = Object.entries(stageManager?.spineInstances || {})
+  const silhouetteEntries = Object.entries(stageManager?._silhouetteSprites || {})
+    .filter(([, sprite]) => Boolean(sprite))
+  const pendingSilhouettes = Object.keys(stageManager?._silhouettePending || {})
+  const runtime = storyRuntimeCues.inspect()
+  return {
     captured_at: new Date().toISOString(),
+    route: props.scenarioUrl || window.location.href,
     step: {
       index: currentStepIndex.value,
       id: currentStep.value?.step_id ?? null,
@@ -660,17 +677,51 @@ function refreshRuntimeDiagnostics() {
     audio_session: storyAudioSession.inspect(),
     audio_manager: _audioManager.inspect(),
     playback: playbackController?.inspect() || null,
-    runtime: storyRuntimeCues.inspect(),
+    runtime,
+    runtime_active_count: runtime?.active?.length || 0,
     spine: {
       instances: spineEntries.length,
       ids: spineEntries.map(([id]) => id),
+      silhouettes: silhouetteEntries.length,
+      silhouette_ids: silhouetteEntries.map(([id]) => id),
+      pending_silhouettes: pendingSilhouettes.length,
+      pending_silhouette_ids: pendingSilhouettes,
     },
+    stage: stageManager?.inspectReleaseState?.() || null,
     memory: memory ? {
       used_js_heap_size: memory.usedJSHeapSize,
       total_js_heap_size: memory.totalJSHeapSize,
       js_heap_size_limit: memory.jsHeapSizeLimit,
     } : null,
   }
+}
+
+function refreshRuntimeDiagnostics() {
+  if (!RUNTIME_DEBUG) return
+  runtimeDiagnostics.value = {
+    ...buildRuntimeDiagnostics(),
+    release_soak: releaseSoakRecorder.inspect(),
+  }
+}
+
+const collectReleaseSoakSample = () => buildRuntimeDiagnostics()
+
+function startReleaseSoak() {
+  if (!RUNTIME_DEBUG) return
+  releaseSoakExport.value = ''
+  releaseSoakRecorder.start()
+  refreshRuntimeDiagnostics()
+}
+
+function stopReleaseSoak() {
+  if (!RUNTIME_DEBUG) return
+  releaseSoakRecorder.stop()
+  refreshRuntimeDiagnostics()
+}
+
+function exportReleaseSoak() {
+  if (!RUNTIME_DEBUG) return
+  releaseSoakExport.value = JSON.stringify(releaseSoakRecorder.export(), null, 2)
 }
 
 function applyVisibilityPause(hidden) {
@@ -720,8 +771,9 @@ onMounted(async () => {
   window.__STORY_AUDIO__ = storyAudioSession
   document.addEventListener('visibilitychange', handleVisibilityChange)
   if (RUNTIME_DEBUG) {
+    releaseSoakRecorder.attachCollector(collectReleaseSoakSample)
     refreshRuntimeDiagnostics()
-    _runtimeDiagnosticsTimer = setInterval(refreshRuntimeDiagnostics, 500)
+    _runtimeDiagnosticsTimer = setInterval(refreshRuntimeDiagnostics, 2000)
   }
   // 全局调试工具：在 Console 输入 showAnims("001tom") 查看角色的所有动作
   window.showAnims = window.showAnims || (async (charaId, modelIdx) => {
@@ -827,6 +879,7 @@ onBeforeUnmount(() => {
     clearInterval(_runtimeDiagnosticsTimer)
     _runtimeDiagnosticsTimer = null
   }
+  if (RUNTIME_DEBUG) releaseSoakRecorder.detachCollector(collectReleaseSoakSample)
   voicePlayer?.dispose?.()
   _audioManager.dispose()
   storyAudioSession.dispose().catch(() => {})
@@ -927,6 +980,21 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
   color: #bfefff;
   font: 10px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
   cursor: pointer;
+}
+.runtime-soak-export {
+  position: fixed;
+  left: 12px;
+  bottom: 48px;
+  z-index: 10002;
+  width: min(560px, calc(100vw - 24px));
+  height: min(320px, calc(100vh - 96px));
+  padding: 10px;
+  resize: both;
+  border: 1px solid rgba(102, 221, 255, 0.55);
+  border-radius: 8px;
+  background: rgba(3, 12, 20, 0.94);
+  color: #bfefff;
+  font: 11px/1.35 ui-monospace, SFMono-Regular, Consolas, monospace;
 }
 .adv-dialogue-fade-enter-active,
 .adv-dialogue-fade-leave-active {

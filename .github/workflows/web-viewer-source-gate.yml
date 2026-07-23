@@ -82,6 +82,9 @@ jobs:
       - name: Verify Runtime foundation
         run: node scripts/verify-story-runtime-foundation.mjs
 
+      - name: Verify release soak recorder
+        run: npm run verify:release-soak
+
       - name: Verify silhouette fallback contract
         run: npm run verify:silhouette
 

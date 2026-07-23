@@ -161,6 +161,27 @@ Runtime 在调用 `spawnSpine` 前识别该契约，直接复用或加载 `publi
 
 `verify:silhouette`、Spine fade/motion、Runtime foundation、首页背景 owner、playback range 与 2401-module production build 均通过。本项关闭已知 fallback 请求与日志噪声，不改变剩余 Edge autoplay、真实后台听感和数小时有声 soak 的未完成状态。
 
+## 2026-07-23 Release soak recorder follow-up
+
+`runtimeDebug=1` 新增显式、默认不启动的 `story-release-soak-v1` 记录器：
+
+- 30 秒采样，481 条有界容量，覆盖起始样本与最长 4 小时；
+- 记录 route/step、heap、Spine、silhouette/pending、stage/spine-container child、debug marker、audio source、cleanup timer、Runtime active cue、screen overlay 与 silhouette relayout job；
+- 记录器由模块级诊断 owner 持有，StoryViewer 在 mount/unmount 时只 attach/detach collector，因此 SPA 内跨 episode 继续同一会话，且不会保留旧组件闭包；
+- `STOP SOAK` 后由 `EXPORT SOAK` 在页面内生成完整 JSON；不自动下载文件，避免额外下载/嗅探行为；
+- 瞬时 Runtime DOM 诊断由 500ms 降到 2 秒刷新，采样本身每 30 秒才执行。
+
+单个应用内标签、`noAudio=1&runtimeDebug=1` 的真实计时复核先发现并修复浏览器原生 `setInterval` receiver 导致的 `Illegal invocation`；新增 receiver-sensitive 回归后重新实测：
+
+- 30 秒后 sample count 从 1 增至 2，手动停止增加终点样本，总计 3 条；
+- export contract/status/stop reason/summary 均完整；
+- used heap first/last/min/max 为约 127.7/123.7/123.7/136.1 MB，记录到回落；
+- active audio source、cleanup timer、Runtime active cue、screen overlay、silhouette pending/relayout job 均为 0；
+- 本轮采样开始后的应用 warning/error 为 0；
+- 成功加载 Spine 的 `[SPAWN_DONE]` 从 `console.warn` 降为仅 debug mode 下的 `console.debug`，不再污染发布 warning 统计。
+
+`verify:release-soak` 覆盖容量停止、summary、手动停止、浏览器 timer receiver、旧 collector 释放、跨 StoryViewer 重挂载续接和 UI/manager 静态接线，并已加入 source-only GitHub Actions。该 48 秒曲线只验收工具本身，不替代文档要求的 2–4 小时曲线或真实有声音频验收。
+
 `verify:spine-motion`、`verify:spine-fade`、Runtime foundation、home、playback range、100-cycle audio/noAudio verifier 与 2401-module production build 均通过。本轮仍不得记作 Edge autoplay、真实 `document.hidden` 听感或有声长测。
 
 ## 2026-07-23 Preferences 与 authoritative schema follow-up

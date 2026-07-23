@@ -1353,11 +1353,13 @@ export class PixiStageManager {
       }
 
       this._applyDefaultPosition(spine, modelId, idolId, options)
-      console.warn('[SPAWN_DONE]', idolId, modelId, {
-        x: spine.x,
-        y: spine.y,
-        baseScale: spine._baseScale || spine.scale.x,
-      })
+      if (this._debugMode) {
+        console.debug('[SPAWN_DONE]', idolId, modelId, {
+          x: spine.x,
+          y: spine.y,
+          baseScale: spine._baseScale || spine.scale.x,
+        })
+      }
 
       if (!spine._baseScale) {
         spine._baseScale = spine.scale.x
@@ -2079,6 +2081,30 @@ export class PixiStageManager {
   clearAllSpines(options = {}) {
     this.clearAllSilhouettes()
     return this.spineManager?.clearAllSpines(options)
+  }
+
+  inspectReleaseState() {
+    const overlayState = overlay => ({
+      exists: Boolean(overlay && !overlay.destroyed),
+      visible: Boolean(overlay && !overlay.destroyed && overlay.visible),
+      alpha: overlay && !overlay.destroyed ? Number(overlay.alpha || 0) : 0,
+    })
+    const overlays = {
+      fade: overlayState(this._fadeOverlay),
+      slide: overlayState(this._slideOverlay),
+      effect: overlayState(this._effectOverlay),
+    }
+    return {
+      destroyed: this._destroyed,
+      stage_children: this.app?.stage?.children?.length ?? 0,
+      spine_container_children: this.spineContainer?.children?.length ?? 0,
+      debug_markers: this._debugOverlay?.children?.length ?? 0,
+      silhouette_relayout_jobs: Object.keys(this._silhouetteRelayoutJobs).length,
+      overlays: {
+        ...overlays,
+        active_count: Object.values(overlays).filter(overlay => overlay.visible && overlay.alpha > 0).length,
+      },
+    }
   }
 
   destroy() {

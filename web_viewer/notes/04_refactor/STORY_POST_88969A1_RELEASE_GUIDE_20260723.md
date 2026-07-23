@@ -125,6 +125,24 @@ CI 必须明确区分：
 - BGM/Ambient 淡入淡出与恢复；
 - 2–4 小时 heap、Spine instance、active source、timer、overlay 收敛。
 
+#### 2–4 小时 release soak 操作规程
+
+`runtimeDebug=1` 现在提供 `START SOAK`、`STOP SOAK`、`EXPORT SOAK` 三个按钮。记录器默认不运行；启动后每 30 秒采样一次，最多保留 481 条（起始样本 + 4 小时），不会创建额外浏览器标签或主动请求媒体。页面右侧瞬时诊断的刷新频率也由 500ms 降为 2 秒，减少长测自身的 CPU 干扰。
+
+执行顺序：
+
+1. 只保留一个应用内标签。IDM 未关闭时必须保留 `noAudio=1&runtimeDebug=1`，只能验收 heap、Spine、silhouette、Runtime cue 和 overlay；不得写成真实音频通过。
+2. 点击 `START SOAK`，按发布矩阵执行正常 Next / Auto / Skip / Backlog / Choice / episode 切换。SPA 内 StoryViewer 卸载/重挂载会继续同一记录；硬刷新、关闭标签或整个站点重新加载会清空本次内存记录。
+3. 在 2–4 小时终点停在无进行中转场、无 voice 的普通 ADV/Choice 页，等待至少 30 秒，再点击 `STOP SOAK`。
+4. 点击 `EXPORT SOAK`。左下角只读文本框给出 `story-release-soak-v1` JSON；复制后保存在工作区外，和浏览器/系统版本、是否 `noAudio`、起止 episode、实际操作曲线一起归档。
+5. 检查 `summary` 和最后 25% 样本，而不是只看单个末值：
+   - heap 应至少出现回落，且稳定场景基线不能持续单调上升；
+   - quiet endpoint 的 `active_runtime_cues`、`audio_cleanup_timers`、`active_screen_overlays`、`silhouette_pending`、`silhouette_relayout_jobs` 应为 0；
+   - `spine_instances` / `silhouette_instances` / `spine_container_children` / `debug_markers` 应与终点画面一致，`stage_children` 不应随 episode 单调累加；
+   - 有声验收时 active source 应与当时 BGM/Ambient/voice 实际所有权一致，不能机械要求全程为 0。
+
+记录器只产生观察证据，不自动把曲线判为 PASS。若 IDM 未关闭，先执行无音频 2–4 小时曲线，真实 Edge autoplay、后台听感及 BGM/Ambient 验收仍保持未完成。
+
 ### P2：PR 收口与合并
 
 1. 更新最终 release report 与 PR body；
