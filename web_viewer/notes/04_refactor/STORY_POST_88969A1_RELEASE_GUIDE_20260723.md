@@ -73,6 +73,8 @@ mounted corpus 默认不由 Git 跟踪，所以远端 PR 只会记录发布工�
 
 ### P0.5：建立 source-only GitHub Actions
 
+状态：已实现，等待推送后的 GitHub 首次 run 确认。
+
 最小 CI：
 
 ```text
@@ -86,6 +88,18 @@ npm run verify:story-audio
 node scripts/verify-story-runtime-foundation.mjs
 npm run build
 ```
+
+实际 workflow：`.github/workflows/web-viewer-source-gate.yml`。除上述最小矩阵外，还执行 strict collection publisher 与 compiled migration verifier；只在 `data_pipeline/**`、`web_viewer/**` 或 workflow 自身变化时触发。权限固定为 `contents: read`，同一 PR 的旧 run 自动取消，job timeout 为 20 分钟。
+
+`git diff --check` 不使用对干净 checkout 无效的裸命令：PR 按 base/head SHA 检查完整 patch，push 按 before/current SHA 检查；checkout 使用完整 history。workflow 经 `actionlint v1.7.12` 校验。
+
+本机 detached source-only checkout 已逐条模拟 workflow：
+
+- `npm ci`：108 packages，0 vulnerabilities；
+- schema：2 tracked scenarios / 24 snapshots / 7 cues，mounted anchor 明确 skip；
+- localization、translations、text、100-cycle audio、Runtime foundation、authoritative publisher、compiled migration：全部 PASS；
+- production build：2401 modules，PASS；
+- 两条未挂载媒体路径保留为 runtime URL 的提示符合 source-only 边界。
 
 CI 必须明确区分：
 
@@ -131,7 +145,7 @@ CI 必须明确区分：
 
 当前 PR 可以从 draft 转为 review 的最低条件：
 
-- source-only CI 存在并通过；
+- source-only CI 存在，本机 detached 模拟通过，且 GitHub 首次 run 通过；
 - mounted 发布后矩阵通过；
 - Edge/后台/长时间音频的未完成项被实测关闭，或被明确列为不阻塞且有负责人/后续 issue；
 - PR body 说明两个 strict collection 与全库仍低于 1% 的边界；

@@ -107,6 +107,12 @@ http://127.0.0.1:5174/?view=player&scenario=fixtures%2Fstory_localization_stress
 
 PR #1 在 `88969a18` 的只读 GitHub 核对为 80 commits、131 changed files、+18,514/-838、draft、mergeable、0 status checks，且仓库无 `.github/workflows`。后续执行入口改为 `notes/04_refactor/STORY_POST_88969A1_RELEASE_GUIDE_20260723.md`：冻结 feature scope，先补 source-only CI 与真实环境 release acceptance，再收口合并。
 
+## 2026-07-23 Source-only CI follow-up
+
+新增 `.github/workflows/web-viewer-source-gate.yml`，对 PR、master push 与手动触发提供只读、20 分钟、同 PR 自动取消的 source-only gate。矩阵包含 authoritative schema/shape、Localization、Translation、Text、Audio、Runtime foundation、strict publisher、compiled migration 与 production build；路径过滤覆盖 `data_pipeline/**`、`web_viewer/**` 和 workflow 自身。
+
+workflow 通过 `actionlint v1.7.12`。独立 detached checkout 在没有 mounted corpus/assets 的条件下执行 `npm ci`（108 packages，0 vulnerabilities）及全部命令，2401-module build 通过；schema 明确报告 mounted a/d anchor skip，并仍验证 tracked fixtures。push 后仍须以 GitHub 首次 run 为最终远端 CI 证据。
+
 ## 2026-07-23 Preferences 与 authoritative schema follow-up
 
 - `7c1f1b2` 已退役未生效的 `text_speed`；旧 v2 localStorage 会自动清理该键并保留其他偏好，Runtime foundation 回归通过。
