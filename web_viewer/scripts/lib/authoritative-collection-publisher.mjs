@@ -4,6 +4,7 @@ import Ajv2020 from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
 import { compareAuthoritativeRuntimeProjection } from './authoritative-scenario-compiler.mjs'
 import { hashBytes, jsonBytes, resolveInside } from './authoritative-collection-candidate.mjs'
+import { buildCompiledScenarioMigrationReport } from './compiled-scenario-migration.mjs'
 
 async function readJson(file) {
   return JSON.parse(await readFile(file, 'utf8'))
@@ -78,7 +79,21 @@ export async function publishAuthoritativeCollection({
     const sourceValue = JSON.parse(sourceBytes)
     const targetValue = JSON.parse(targetBytes)
     if (!validate(sourceValue)) throw new Error(`${record.file}: ${ajv.errorsText(validate.errors)}`)
-    const equivalence = compareAuthoritativeRuntimeProjection(targetValue, sourceValue)
+    let projectionInput = targetValue
+    if (record.compatibility_evidence) {
+      const evidencePath = resolveInside(candidate, record.compatibility_evidence.file)
+      if (!await exists(evidencePath)) throw new Error(`Compatibility evidence is missing: ${record.file}`)
+      const evidenceBytes = await readFile(evidencePath)
+      if (hashBytes(evidenceBytes) !== record.compatibility_evidence.hash) {
+        throw new Error(`Compatibility evidence hash drift: ${record.file}`)
+      }
+      projectionInput = JSON.parse(evidenceBytes)
+      const migrationAudit = buildCompiledScenarioMigrationReport(targetValue, projectionInput)
+      if (!migrationAudit.acceptance.passed) {
+        throw new Error(`${record.file}: compatibility migration audit rejected evidence`)
+      }
+    }
+    const equivalence = compareAuthoritativeRuntimeProjection(projectionInput, sourceValue)
     if (!equivalence.passed) throw new Error(`${record.file}: projection drift: ${equivalence.differences.join(', ')}`)
     records.push({ ...record, source, target, sourceBytes, targetBytes })
   }

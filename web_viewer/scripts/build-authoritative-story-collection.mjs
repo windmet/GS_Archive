@@ -16,5 +16,7 @@ const manifest = await buildAuthoritativeCollectionCandidate({
   outputDirectory: args['output-dir'],
   groupId: args['group-id'],
   compilerVersion: args['compiler-version'],
+  authoritativeDirectory: args['authoritative-dir'] || null,
+  compatibilityDirectory: args['compatibility-dir'] || null,
 })
 console.log(JSON.stringify(manifest, null, 2))

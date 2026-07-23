@@ -99,6 +99,14 @@ http://127.0.0.1:5174/?view=player&scenario=fixtures%2Fstory_localization_stress
 
 尚未覆盖 Edge autoplay、自动化后台切换听感、真实 BGM/Ambient 长时间淡化恢复、跨 episode 长测及持续内存增长。音频 owner 阻塞已经解除，但 release stability 仍未完成。详细证据见 `STORY_AUDIO_SESSION_UNIFICATION_20260723.md`。
 
+## 2026-07-23 第二 strict collection 与 PR 收口
+
+`5_01_101_22` 已按 formal→audited compatibility→Python native strict 的两段证据链发布 aggregate/a/e 三份文件。6/6 voice refs resolved，9 unique steps 的 schema、text、voice cue、playback range、presentation、home、audio isolation 与 publisher/migration verifier 均通过；旧文件和 backup manifest 位于 `C:\Users\windm\AppData\Local\Temp\sidem-authoritative-backup-5_01_101_22-e4b8592cda5943ac849ff9a4c138cd4b`。
+
+这次发布没有新增浏览器音频验收。IDM 会对媒体请求自动嗅探，后续画面调试仍只允许单个应用内标签与 `noAudio=1`；真实 Edge/后台/长时间音频必须另行安排，不能用 noAudio 结果代替。
+
+PR #1 在 `88969a18` 的只读 GitHub 核对为 80 commits、131 changed files、+18,514/-838、draft、mergeable、0 status checks，且仓库无 `.github/workflows`。后续执行入口改为 `notes/04_refactor/STORY_POST_88969A1_RELEASE_GUIDE_20260723.md`：冻结 feature scope，先补 source-only CI 与真实环境 release acceptance，再收口合并。
+
 ## 2026-07-23 Preferences 与 authoritative schema follow-up
 
 - `7c1f1b2` 已退役未生效的 `text_speed`；旧 v2 localStorage 会自动清理该键并保留其他偏好，Runtime foundation 回归通过。

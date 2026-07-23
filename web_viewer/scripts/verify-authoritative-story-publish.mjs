@@ -10,6 +10,7 @@ const workspaceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)),
 const temporaryRoot = await mkdtemp(path.join(os.tmpdir(), 'sidem-authoritative-publish-'))
 const compiled = path.join(temporaryRoot, 'compiled')
 const candidate = path.join(temporaryRoot, 'candidate')
+const nativeCandidate = path.join(temporaryRoot, 'native-candidate')
 const backup = path.join(temporaryRoot, 'backup')
 const fixture = JSON.parse(await readFile(path.join(workspaceRoot, 'fixtures', 'story-runtime', 'authoritative-v2-minimal.json'), 'utf8'))
 const compatibilityFixture = {
@@ -49,11 +50,45 @@ assert.equal(manifest.files.length, 2)
 assert.equal(manifest.totals.episodes, 1)
 assert.equal(manifest.totals.steps, 2)
 assert.ok(manifest.files.every(record => record.schema_valid && record.runtime_text_equivalent))
+const nativeManifest = await buildAuthoritativeCollectionCandidate({
+  workspaceRoot,
+  compiledDirectory: compiled,
+  authoritativeDirectory: candidate,
+  compatibilityDirectory: compiled,
+  outputDirectory: nativeCandidate,
+  groupId: 'fixture',
+  compilerVersion: 'publish-verifier-1',
+})
+assert.equal(nativeManifest.candidate_source, 'precompiled-authoritative')
+assert.equal(nativeManifest.compatibility_source, 'audited-external-recompile')
+assert.ok(nativeManifest.files.every(record => record.compatibility_evidence?.hash))
+assert.deepEqual(
+  nativeManifest.files.map(record => record.candidate_hash),
+  manifest.files.map(record => record.candidate_hash),
+  'precompiled authoritative bytes must be preserved exactly',
+)
+assert.deepEqual(
+  nativeManifest.files.map(record => record.old_hash),
+  manifest.files.map(record => record.old_hash),
+  'precompiled authoritative manifests must hash the formal corpus',
+)
+await assert.rejects(
+  buildAuthoritativeCollectionCandidate({
+    workspaceRoot,
+    compiledDirectory: compiled,
+    authoritativeDirectory: candidate,
+    compatibilityDirectory: compiled,
+    outputDirectory: path.join(temporaryRoot, 'wrong-compiler-candidate'),
+    groupId: 'fixture',
+    compilerVersion: 'wrong-compiler-version',
+  }),
+  /Authoritative compiler version mismatch/,
+)
 
 await assert.rejects(
   publishAuthoritativeCollection({
     workspaceRoot,
-    candidateDirectory: candidate,
+    candidateDirectory: nativeCandidate,
     compiledDirectory: compiled,
     backupDirectory: path.join(temporaryRoot, 'wrong-confirm-backup'),
     confirmGroup: 'wrong',
@@ -63,7 +98,7 @@ await assert.rejects(
 
 const report = await publishAuthoritativeCollection({
   workspaceRoot,
-  candidateDirectory: candidate,
+  candidateDirectory: nativeCandidate,
   compiledDirectory: compiled,
   backupDirectory: backup,
   confirmGroup: 'fixture',
@@ -77,7 +112,7 @@ assert.ok((await readFile(path.join(backup, 'authoritative_publish_backup_manife
 await assert.rejects(
   publishAuthoritativeCollection({
     workspaceRoot,
-    candidateDirectory: candidate,
+    candidateDirectory: nativeCandidate,
     compiledDirectory: compiled,
     backupDirectory: backup,
     confirmGroup: 'fixture',
@@ -88,7 +123,7 @@ await assert.rejects(
 await assert.rejects(
   publishAuthoritativeCollection({
     workspaceRoot,
-    candidateDirectory: candidate,
+    candidateDirectory: nativeCandidate,
     compiledDirectory: compiled,
     backupDirectory: path.join(temporaryRoot, 'drift-backup'),
     confirmGroup: 'fixture',

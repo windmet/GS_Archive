@@ -516,3 +516,13 @@ StoryViewer 的六个 Runtime channel、旧路径清理、首页 standalone back
 - 文档、schema、fixture、verifier 与实现同步。
 
 批量翻译覆盖、完整实体翻译、Chibi 特效和翻译后台仍不属于这一完成定义。
+
+## 13. 2026-07-23 当前执行入口
+
+本文件保留完整架构与历史矩阵，但“下一步”已由以下短期发布收口文档覆盖：
+
+```text
+notes/04_refactor/STORY_POST_88969A1_RELEASE_GUIDE_20260723.md
+```
+
+第二个 strict collection `5_01_101_22` 已完成 3 文件原子发布；接下来冻结 feature scope，优先 source-only CI、真实 Edge/后台/长时间音频 release acceptance 和 PR 收口。不得继续把“选择第二个 collection”列为未完成项。

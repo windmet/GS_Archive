@@ -158,3 +158,35 @@ JavaScript candidate stage 继续作为独立 oracle 与发布器输入，而不
 本次发布后 `verify:story-schema`、authoritative publisher、Runtime foundation、text/localization、episode/voice、playback range、presentation、首页、100 轮 audio soak 与 production build 均通过。后续使用唯一应用内标签和 `noAudio=1` 安全复核时，发现 schema 等价性没有覆盖实际舞台 consumer：SpineStage 与 BGM/Ambient watcher 仍只读 legacy `state`，strict step 6 因而为 0 Spine。统一 `entry_snapshot` 优先投影后，同一正式 d 页面恢复 `047shu`/`007kei` 两个 Spine、背景与 step 6→7，AudioContext 始终未初始化且 active source 为 0；相关 Runtime/Spine/Home/Playback/Audio verifier 与 2401-module build 通过。
 
 该发布后实播只证明 strict snapshot 的角色/背景/交互消费和无音频隔离，不得冒充 Edge autoplay、真实后台听感或长时间有声验收。下一步优先补 Edge/真实后台/数小时 soak，并为下一 collection 重复完整 manifest、备份与小批发布流程；禁止直接覆盖全量 corpus。
+
+## 2026-07-23 第二个 collection：`5_01_101_22`
+
+在 209 个仍为 compatibility 的多 part group 中，选择最小的真实 group `5_01_101_22` 重复第二轮 strict 发布。它包含 a/e 两个 episode、9 个 unique steps、6 个 dialogue voice refs、6 个 lip refs 与 8 个 Spine step entries；不是无语音或无 Spine 的“容易样本”。
+
+发布前证据：
+
+- Python native strict：aggregate 9 steps，a=7、e=2，voice relink 6/6，unresolved 0；
+- 正式旧文件 → Python compatibility 重编：aggregate/a/e 分别新增 6/5/1 个文本身份，三份均为 0 non-text differences，scene/cue/episode boundary/choice/voice-lip 等价；
+- Python native 与 JavaScript oracle 的三份 JSON 递归结构差异均为 0；
+- 旧 mounted aggregate 没有足够的 `scenario.source`，因此禁止从旧文件伪造 strict source metadata。
+
+为使 Python 原生成品可由 Node publisher 独立验收，collection candidate 增加两段式证据链：
+
+```text
+formal compatibility file
+→ audited external compatibility recompile
+→ precompiled Python authoritative file
+```
+
+candidate 会封装兼容重编证据及其 hash；publisher 在写入前重新执行 formal→compat migration audit、compat→strict Runtime projection、strict schema、compiler/scenario/episode identity、formal/candidate/evidence hash。发布器不只信任 manifest 的布尔结果。
+
+正式发布：
+
+- 目标：aggregate、episode a、episode e，共 3 files / 2 episodes；
+- manifest 双表示计数：18 step records、12 voice refs；唯一内容仍是 9 steps、6 voice refs；
+- aggregate：`94e56491…aaca7` → `21a7359e…42f1`；
+- episode a：`11a22af3…b6950` → `3b412397…215f`；
+- episode e：`b5c95722…2a0e8` → `1432b4d2…928f9`；
+- 完整旧文件与 backup manifest：`C:\Users\windm\AppData\Local\Temp\sidem-authoritative-backup-5_01_101_22-e4b8592cda5943ac849ff9a4c138cd4b`。
+
+发布后 schema、Runtime shapes、text evidence、voice cue、playback range、presentation、home、100-cycle noAudio isolation 与 publisher/migration verifier 均通过。正式 corpus 现在只有两个 collection 完成 strict 发布；这仍远低于全库 1%，其余 208 个已盘点多 part group 只是下一批候选范围，不代表整个 compatibility corpus 只有 208 组。
