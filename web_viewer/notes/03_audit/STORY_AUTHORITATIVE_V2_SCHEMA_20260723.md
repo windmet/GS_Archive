@@ -16,6 +16,7 @@ Runtime 兼容输入与 compiler authoritative output 现已拥有不同契约�
 - `8b31268`：mounted strict corpus 的 episode boundary、背景、Choice、presentation 与 verifier 消费兼容。
 - `a065c22`：authoritative snapshot 顶层与 10 类 Runtime cue action/channel/payload 严格契约，以及全 mounted corpus shape verifier。
 - `c6d57dd`：background/camera/screen/environmental/image icon/Spine snapshot 嵌套 `$defs`、递归 shape gate 与 source-only 正反例。
+- `498ac8b`：authoritative lip evidence 契约、路径/帧数反例、48,073 条 mounted lip gate，并删除 compiler 不输出的 diagnostics。
 
 ## 严格输出边界
 
@@ -43,7 +44,7 @@ choice.label / text / detail / step_id
 runtime_contract = story-runtime-v2-compat
 ```
 
-Snapshot 与 cue payload 已按 Runtime channel 收紧：snapshot 顶层及 background profile/effect/transition、camera、screen effect/overlay/slide、environmental、image icon、Spine/fade 等嵌套对象均禁止未知字段；cue 必须属于 10 个 compiler action 之一，并匹配对应 channel 与 payload `$defs`。外围 `dialogue.lip`、`resource_manifest`、`diagnostics` 与 evidence `raw_values` 仍需按各自来源契约收口，不能与 Runtime snapshot 结构混为一谈。
+Snapshot 与 cue payload 已按 Runtime channel 收紧：snapshot 顶层及 background profile/effect/transition、camera、screen effect/overlay/slide、environmental、image icon、Spine/fade 等嵌套对象均禁止未知字段；cue 必须属于 10 个 compiler action 之一，并匹配对应 channel 与 payload `$defs`。`dialogue.lip` 也已固定为安全相对路径、正整数帧数与关闭未知字段的 evidence 对象；authoritative compiler 不输出的 `diagnostics` 已从 schema 删除。只剩无 mounted 样本、但 Python/JavaScript compiler 显式保留的 `resource_manifest` 与 evidence `raw_values` 尚不能凭空封闭。
 
 ## Runtime shape 全库门禁
 
@@ -61,7 +62,7 @@ npm run verify:story-runtime-shapes
 - action-specific payload 是否缺字段、多字段或类型错误；
 - source-only 环境至少检查 tracked compatibility fixture；mounted 环境递归检查全部 scenario JSON。
 
-2026-07-23 mounted 扫描结果为 10,326 scenarios（含 tracked fixture）、315,124 snapshots、175,600 cues、1214 snapshot shapes、488 nested snapshot shapes 与 37 action/payload shapes，10 类 action 全部通过。扫描器按递归“字段/类型/约束值签名”去重执行 AJV，同时仍遍历每条 cue 并检查 channel；完整嵌套验证约 20 秒。全库发现 1618 条 `spine.neck.stop` 使用空 `value` 表示停止当前 neck 动作，因此 stop payload 明确允许空字符串；`spine.neck.play` 等启动动作仍要求非空。Tracked fixture 同时证明 `bg_transition.color` 与 Spine `position` 是合法可选字段。
+2026-07-23 mounted 扫描结果为 10,326 scenarios（含 tracked fixture）、315,124 snapshots、175,600 cues、48,073 lip records、1214 snapshot shapes、488 nested snapshot shapes 与 37 action/payload shapes，10 类 action 和唯一 lip shape 全部通过。扫描器按递归“字段/类型/约束值签名”去重执行 AJV，同时仍遍历每条 cue 并检查 channel；完整嵌套验证约 20 秒。全库发现 1618 条 `spine.neck.stop` 使用空 `value` 表示停止当前 neck 动作，因此 stop payload 明确允许空字符串；`spine.neck.play` 等启动动作仍要求非空。Tracked fixture 同时证明 `bg_transition.color` 与 Spine `position` 是合法可选字段。
 
 ## 验证门禁
 
@@ -149,7 +150,7 @@ JavaScript candidate stage 继续作为独立 oracle 与发布器输入，而不
 ## 尚未完成
 
 - 只有首个 `1_4_001_01` collection 完成严格输出，其余 corpus 尚未逐批迁移；
-- Runtime snapshot 顶层、嵌套对象与 cue payload 已收紧；剩余 schema 工作是 `dialogue.lip`、`resource_manifest`、`diagnostics`、evidence `raw_values` 等外围结构；
+- Runtime snapshot/cue 与 `dialogue.lip` 已收紧，authoritative `diagnostics` 已删除；只剩无 mounted 样本的 `resource_manifest` 与 evidence `raw_values` 需要在出现权威来源契约后收口；
 - Edge autoplay、操作系统级真实后台听感与数小时 heap/Spine soak 仍未完成；这些是应用 release stability，不是本次 11 文件 schema/text 等价发布的替代证据。
 
 2026-07-23 正式 mounted `1_4_001_01_d` 单标签复核中，`007kei_002_00` 与 `047shu_001_00` 均加载完整 neck 动画表；step 6 显示 neck 姿态，debug 层为 `spine yes` 且 root 未下坠；step 12–14 黑幕链恢复户外背景。日志无 `spine cue target unavailable`、应用 error 为 0，之前 candidate 压缩加载 warning 已在正式加载条件下关闭。

@@ -158,3 +158,5 @@ http://127.0.0.1:5174/?view=player&scenario=fixtures%2Fstory_localization_stress
 `verify:story-schema`、`verify:story-text`、authoritative publisher、compiled migration、Runtime foundation 与 2400-module production build 通过。该项不替代 Edge/后台/数小时浏览器稳定性验收。
 
 后续 `c6d57dd` 又关闭 background profile/effect/transition、camera、screen effect/overlay/slide、environmental、image icon、Spine/fade 等 snapshot 嵌套对象的未知字段。递归门禁覆盖 488 种 nested snapshot shape，并新增 source-only 正例以及 background profile、Spine、overlay、screen effect 未知字段反例；mounted 10,326 scenarios / 315,124 snapshots / 175,600 cues 仍全部 PASS。Runtime snapshot/cue shape 至此收口，剩余 schema 债转为 `dialogue.lip`、`resource_manifest`、`diagnostics` 和 evidence `raw_values` 等外围数据结构。
+
+`498ac8b` 随后验证 mounted 48,073 个 lip 对象全部为唯一 `source/path/frames` shape，增加安全相对路径、正整数 frames 与 unknown-field contract；路径穿越、0 帧和 legacy 字段均有反例。Authoritative compiler 不输出的 `diagnostics` 从 strict schema 删除。`verify:story-schema/text`、publisher、migration 与 Runtime foundation 通过；此前同轮 2400-module build 已通过且该提交不修改应用源码。无 mounted 样本但 compiler 显式保留的 `resource_manifest/raw_values` 继续作为有证据边界的未完成项。
