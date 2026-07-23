@@ -6,6 +6,8 @@ StoryViewer 的 Voice、BGM、Ambient 与 Runtime SE 已收口到单个 `StoryAu
 
 本批实现提交：`3ecd5b54d108d5ab83ef320f99ac01b9e520df1a`。
 
+长会话竞态加固提交：`7747d23`。
+
 ## Owner 与生命周期
 
 - `StoryViewer` 创建并最终销毁共享 `StoryAudioSession`。
@@ -58,12 +60,29 @@ http://127.0.0.1:5174/?view=player&story_type=main&story_section=101&scenario=ep
 
 实际操作：首次 Next 手势解锁并前进；Runtime SE 启动；进入带 voice 的对白；打开/关闭菜单；恢复后继续前进；返回故事集合触发 StoryViewer 卸载与 voice dispose。应用级 console error 为 0，退出日志包含 `StoryViewer onBeforeUnmount` 与 `stopCurrentVoice: dispose`。验收结束后恢复上述 URL，浏览器标签页数量为 1。
 
+## 2026-07-23 长会话 soak follow-up
+
+审计发现原 `playBgm()` / `playAmbient()` 缺少异步 generation guard：快速跨 episode 切换时，较早但较慢的成功或失败响应可能晚于新音轨完成，造成旧 source 启动或把新 cue 清空。`7747d23` 为 BGM/Ambient 增加 generation ownership，stop/dispose 也会使 pending load 失效，并把 timer 注入与 `AudioManager.inspect()` 纳入可重复验证边界。
+
+`npm run verify:story-audio` 现执行 100 轮确定性 soak，覆盖：
+
+- BGM/Ambient 反复 crossfade 后 steady-state active source 不超过 2；
+- cleanup timer 每轮收敛为 0；
+- 每十轮执行 capture → stop → restore，cue 与 ambient volume 精确恢复；
+- visibility/overlay 双 pause reason 反复叠加与解除；
+- 新请求先完成、旧请求后成功或后失败时，旧请求均不能覆盖/清空新 cue，也不能创建 source；
+- dispose 后 active source 清零。
+
+detached source-only checkout 已重新安装依赖并通过 audio soak、Runtime foundation 与 2400-module production build。5174 单标签实际从 d episode 完成态切换到 e，旧 StoryViewer 触发 unmount，新 episode URL/正文加载成功，应用 error 为 0；最终恢复完整 d URL，标签数为 1。
+
+这组证据关闭了“异步旧音轨复活”和“确定性 source/timer 不收敛”风险，但浏览器隔离环境未提供可信 heap/audio global 读取，因此不把它写成真实浏览器内存长测通过。
+
 ## 尚未覆盖
 
 - Edge 与不同 autoplay policy 的首次解锁对照；
-- 真实 BGM/Ambient 长时间交叉淡化与 snapshot restore；
+- 真实浏览器 BGM/Ambient 长时间听感与 heap 曲线；代码级 100 轮 crossfade/snapshot restore 已覆盖；
 - 自动化触发 `document.hidden` 的后台切换音频听感对照；
-- 跨 episode 长时间连续播放、Auto/Skip/Backlog/Choice 混合操作；
-- 长时间 active source、Timer、Spine 与内存增长观察。
+- 跨 episode 长时间连续播放、Auto/Skip/Backlog/Choice 混合操作；d→e 单次真实切换已通过；
+- 浏览器侧长时间 Spine 与 heap 增长观察；active source/timer 的确定性 soak 已通过。
 
 因此本批可以宣称“音频 owner 与基础生命周期统一完成”，但不能宣称完整 release stability 已完成。

@@ -123,6 +123,10 @@ http://127.0.0.1:5174/?view=player&scenario=fixtures%2Fstory_localization_stress
 
 因此正式 neck/Spine 加载阻塞已解除；剩余 release 阻塞为 Edge autoplay、跨 episode 长时间连续播放、后台恢复、真实 BGM/Ambient 长时淡化恢复和持续内存增长观察。
 
+后续 `7747d23` 修复 BGM/Ambient 异步加载竞态：新 cue 已取得 ownership 后，旧请求即使更晚成功或失败也不能启动旧 source 或清空新状态；stop/dispose 会使 pending load 失效。`verify:story-audio` 增加 100 轮 crossfade、capture/restore、visibility/overlay pause、source 上限和 timer 收敛 soak，source-only checkout 与 production build 通过。
+
+5174 单标签又完成一次真实 d→e episode 切换：旧 viewer unmount，新 URL 为 `episodes/1_4_001_01_e.json`，正文正常、应用 error 为 0，随后恢复完整 d URL 且仍为一个标签。浏览器 heap/audio global 因隔离边界无法取得可信样本，故剩余项进一步收敛为 Edge autoplay、真实 document-hidden 听感、长时间混合操作与浏览器 heap/Spine 曲线；不以 Node soak 替代这些真实环境项目。
+
 ## 2026-07-22 首页 consumer 回归与修复
 
 后续首页复核发现：`ArchiveImmersiveHome` 直接使用 `SpineStage`，不经过 StoryViewer 的 `useStoryRuntimeCues`。`baf44df` 删除全局 legacy background writer 后，首页虽然正确解析 `bg001_315pro_in_01`，但没有把背景写入以黑色清屏的 Pixi stage，因此呈现黑屏。

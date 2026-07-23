@@ -205,7 +205,7 @@ translation state
 
 已完成并记录：source-only checkout 的 `npm ci`、Runtime/Localization/Translation/Text verifier 与 build；完整本机挂载 build；1280×720、1920×1080、390×844；a/d 固定锚点；退役 URL 参数与 default 行为一致。详细证据见 `STORY_RUNTIME_RELEASE_MATRIX_20260722.md`。
 
-仍未完成：Edge autoplay 对照、跨 episode 长时间连续播放、长时间 Auto/Skip/Backlog/Choice 混合操作、后台切换真实听感、BGM/Ambient 长时间恢复、未释放 Spine/Timer/source 与持续内存增长检查。Chrome 5174 单标签页已覆盖首次手势、voice、SE、菜单暂停/恢复和退出 dispose；资料馆首页背景已修复并通过桌面/移动端验收。
+仍未完成：Edge autoplay 对照、跨 episode 长时间连续播放、长时间 Auto/Skip/Backlog/Choice 混合操作、后台切换真实听感、浏览器 heap/Spine 持续增长检查。Chrome 5174 单标签页已覆盖首次手势、voice、SE、菜单暂停/恢复、退出 dispose 与一次 d→e 切换；代码级 100 轮 BGM/Ambient crossfade/capture/restore/source/timer soak 已通过，并修复旧异步响应覆盖新 cue 的竞态（`7747d23`）。资料馆首页背景已修复并通过桌面/移动端验收。
 
 ## 5. 进度估算
 
@@ -216,14 +216,14 @@ translation state
 | Runtime 核心抽象 | 90% | Clock/Scheduler/Registry/Snapshot/PlaybackMode 与 channel lifecycle 已落地 |
 | Runtime channel 迁移 | 100% | StoryViewer 内六个 channel 已唯一 owner；首页 standalone background consumer 已显式补契约 |
 | Runtime 旧路径清理 | 95% | timeline、旧 scene writers、SE timers 与 flags 已删除；保留的 voice/BGM/ambient/auto 各有实际职责 |
-| 音频统一 | 90% | 单 AudioContext、四 bus、统一 unlock/pause/rate/dispose 与 BGM/Ambient capture/restore 已完成；长测待做 |
+| 音频统一 | 96% | 单 AudioContext、四 bus、统一 lifecycle、stale-load guard 与 100 轮 soak 已完成；Edge/真实后台/heap 待测 |
 | Localization 契约与基础设施 | 100% | schema、Python-native/JS parity、atomic publish 与 source-only 已完成 |
 | 正式剧情文本身份迁移 | <1% | 首个 `1_4_001_01` collection 已发布；其余 corpus 仍是 legacy |
 | 双语结构化 UI | 100% | ADV、Choice、Backlog、Title、Synopsis、Mobile、Call 均已结构化 |
 | 实体/门户翻译覆盖 | <10% | 仅 3 个偶像 draft 样本 |
-| PR release acceptance | 85% | source/full build、三档 viewport、a/d/正式 neck 锚点与音频基础生命周期已完成；长时间音频/内存/后台恢复待测 |
+| PR release acceptance | 90% | source/full build、三档 viewport、a/d/neck、音频 soak 与 d→e 切换已完成；Edge/真实后台/heap 长测待测 |
 
-按“可安全发布基础架构、但不要求完成批量翻译”作为总目标，目前约为 **97%**。首页 standalone background owner、结构化双语 UI、音频基础 owner/lifecycle、Preferences 清理、authoritative schema、Python-native/JS parity、atomic publish/source-only、a/d candidate 实播与正式 neck/Spine 复核已完成；之后主要剩余工作是长时间稳定性验收，以及审查后独立发布更多正式产物。
+按“可安全发布基础架构、但不要求完成批量翻译”作为总目标，目前约为 **98%**。首页 standalone background owner、结构化双语 UI、音频 owner/lifecycle/100 轮 soak、Preferences 清理、authoritative schema、Python-native/JS parity、atomic publish/source-only、a/d/neck 实播与 d→e 切换已完成；之后主要剩余工作是 Edge/真实后台/heap 长时间稳定性验收，以及审查后独立发布更多正式产物。
 
 ## 6. 下一窗口推荐执行顺序
 
@@ -348,11 +348,12 @@ screen/fade
 
 - AudioContext 和 mixer 唯一 owner：已完成（`3ecd5b5`）；
 - voice/BGM/SE/ambient 的 unlock、pause/resume、rate 与 dispose，以及 BGM/Ambient capture/restore：基础实现和 verifier 已完成；
+- BGM/Ambient stale async load guard 与 100 轮 source/timer soak：已完成（`7747d23`）；
 - 删除不再使用的 `text_speed`：已完成（`7c1f1b2`）；
 - 收紧 authoritative v2 schema：schema/verifier（`816d584`）、strict candidate stage（`85983ee`）、atomic publish/source-only gate（`2702773`、`1fb426e`）及 Python-native output/parity（`e7a78d0`）已完成，正式发布待完成；
 - feature flags 已在各 channel 默认验收后删除；剩余 compatibility fields 应随 authoritative v2 schema 收紧独立处理。
 
-下一步补音频/内存/后台恢复长测；通过并审查 manifest 后，首个 a–j strict corpus 发布继续使用独立提交。发布器完成不等于 corpus 已发布。
+下一步补 Edge autoplay、真实 document-hidden/听感与浏览器 heap/Spine 长测；通过并审查 manifest 后，首个 a–j strict corpus 发布继续使用独立提交。发布器完成不等于 corpus 已发布。
 
 ## 7. 固定演出验收锚点
 
