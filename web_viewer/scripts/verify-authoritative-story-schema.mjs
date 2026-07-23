@@ -85,38 +85,55 @@ try {
     .filter(file => /^1_4_001_01_[a-j]\.json$/u.test(file))
     .sort()
   assert.equal(episodeFiles.length, 10, 'mounted 1_4_001_01 must contain the complete a-j collection')
-  let candidateSteps = 0
-  for (const episodeFile of episodeFiles) {
-    const migratedCollection = await readJson(`public/data/compiled/episodes/${episodeFile}`)
+  const mountedFiles = [
+    'public/data/compiled/1_4_001_01.json',
+    ...episodeFiles.map(file => `public/data/compiled/episodes/${file}`),
+  ]
+  let mountedSteps = 0
+  let mountedContract = null
+  for (const mountedFile of mountedFiles) {
+    const mountedCollection = await readJson(mountedFile)
+    const isAuthoritative = validate(mountedCollection)
+    const contract = isAuthoritative ? 'authoritative' : 'compatibility'
+    mountedContract ??= contract
     assert.equal(
-      validate(migratedCollection),
-      false,
-      `${episodeFile} must not be mislabeled as authoritative Runtime v2 output`,
+      contract,
+      mountedContract,
+      `mounted 1_4_001_01 mixes ${mountedContract} and ${contract} files at ${mountedFile}`,
     )
-    assert.ok(
-      validate.errors.some(error => error.keyword === 'required' || error.keyword === 'additionalProperties'),
-      `${episodeFile} must retain an explicit compatibility-schema classification`,
-    )
-    const authoritativeCandidate = compileAuthoritativeScenario(migratedCollection, {
-      compilerVersion: 'verification-candidate-1',
-    })
-    assert.equal(
-      validate(authoritativeCandidate),
-      true,
-      `${episodeFile}: ${ajv.errorsText(validate.errors, { separator: '\n' })}`,
-    )
-    assert.deepEqual(compareAuthoritativeRuntimeProjection(migratedCollection, authoritativeCandidate), {
-      passed: true,
-      differences: [],
-    })
-    await verifyPythonParity(migratedCollection, episodeFile)
+
+    let authoritativeCandidate = mountedCollection
+    if (!isAuthoritative) {
+      assert.ok(
+        validate.errors.some(error => error.keyword === 'required' || error.keyword === 'additionalProperties'),
+        `${mountedFile} must retain an explicit compatibility-schema classification`,
+      )
+      authoritativeCandidate = compileAuthoritativeScenario(mountedCollection, {
+        compilerVersion: 'verification-candidate-1',
+      })
+      assert.equal(
+        validate(authoritativeCandidate),
+        true,
+        `${mountedFile}: ${ajv.errorsText(validate.errors, { separator: '\n' })}`,
+      )
+      assert.deepEqual(compareAuthoritativeRuntimeProjection(mountedCollection, authoritativeCandidate), {
+        passed: true,
+        differences: [],
+      })
+      await verifyPythonParity(mountedCollection, mountedFile)
+    }
+
     assert.equal(authoritativeCandidate.steps.some(step => 'state' in step || 'timeline' in step), false)
     assert.equal(authoritativeCandidate.steps.some(step => (
       'text' in (step.dialogue || {}) || 'text_jp' in (step.dialogue || {}) || 'text_cn' in (step.dialogue || {})
     )), false)
-    candidateSteps += authoritativeCandidate.steps.length
+    mountedSteps += authoritativeCandidate.steps.length
   }
-  console.log(`Mounted 1_4_001_01 a-j compiled to strict, runtime/text-equivalent candidates (${candidateSteps} steps).`)
+  console.log(
+    mountedContract === 'authoritative'
+      ? `Mounted 1_4_001_01 aggregate and a-j are authoritative Runtime v2 (${mountedSteps} manifest steps).`
+      : `Mounted 1_4_001_01 aggregate and a-j compiled to strict, runtime/text-equivalent candidates (${mountedSteps} manifest steps).`,
+  )
 } catch (error) {
   if (error?.code !== 'ENOENT') throw error
   console.log('Mounted migration candidate classification skipped: 1_4_001_01_a is not present.')

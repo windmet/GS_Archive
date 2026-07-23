@@ -671,7 +671,7 @@ async function verifyScenarioNormalizer() {
   assert.equal(slideOut.entry_snapshot.screen_overlay?.visible, true)
   assert.equal(slideOut.settled_snapshot.screen_overlay, null)
   const authoredPassion = normalizedCompiled.steps.find(step =>
-    step.dialogue?.text_jp?.includes('パパパ、パーッション！！'))
+    (step.dialogue?.source_text ?? step.dialogue?.text_jp ?? step.dialogue?.text)?.includes('パパパ、パーッション！！'))
   assert.ok(authoredPassion, 'compiled anchor step for パパパ、パーッション！！ must exist')
   const authoredCamera = authoredPassion.cues.find(cue => cue.action === 'camera.transform')
   const authoredVibraslap = authoredPassion.cues.find(cue => cue.payload?.cue === 'vibraslap_comical')
@@ -693,7 +693,13 @@ async function verifyScenarioNormalizer() {
   const fadeScenarioPath = path.join(root, 'public', 'data', 'compiled', 'episodes', '1_4_001_01_d.json')
   const fadeScenario = normalizeScenario(JSON.parse(await readFile(fadeScenarioPath, 'utf8')))
   const effectFadeIn = fadeScenario.steps.find(step => step.step_id === 12)
-  const effectFadeCue = effectFadeIn.cues.find(cue => cue.evidence.legacy_field === 'state.screen_effects')
+  const effectFadeCue = effectFadeIn.cues.find(cue => (
+    cue.action === 'screen.fade'
+    && (
+      cue.evidence.legacy_field === 'state.screen_effects'
+      || cue.evidence.parser_rule === 'legacy:state.screen_effects'
+    )
+  ))
   assert.equal(effectFadeCue?.action, 'screen.fade')
   assert.equal(effectFadeCue?.at, 7.3)
   assert.equal(effectFadeCue?.duration, 1)
