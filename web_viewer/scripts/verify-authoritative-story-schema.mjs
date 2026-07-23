@@ -50,6 +50,64 @@ rejects(value => { value.steps[0].dialogue.text_cn = '' }, '/steps/0/dialogue')
 rejects(value => { delete value.steps[0].dialogue.text_ref }, '/steps/0/dialogue')
 rejects(value => { value.steps[0].entry_snapshot.legacy_background = 'forbidden' }, '/steps/0/entry_snapshot')
 
+const nestedSnapshotFixture = clone(fixture)
+nestedSnapshotFixture.steps[0].entry_snapshot = {
+  bg: 'bg001_315pro_in_01',
+  bg_profile: {
+    imageId: 'bg001_315pro_in_01',
+    lightPosition: 1,
+    lightCoordinate: { x: 0, y: 0 },
+    lightAlpha: 1,
+    colorOffSet: { x: 0, y: 0, z: 0 },
+    colorScale: { x: 1, y: 1, z: 1 },
+    colorSaturation: 1,
+  },
+  camera_zoom: { zoom: 1, offset_x: 0, offset_y: 0, duration: 0 },
+  environmental: { cue: 'ambi_room', volume: 80 },
+  image_icon: { id: '102sha', display_id: '102sha', layer: '' },
+  bg_effects: [{ id: 'rain', visible: true, action: 'start', delay: 0, duration: 1 }],
+  screen_effects: [{ type: 'fadein', delay: 0, duration: 1, color: '#000000', alpha: 1 }],
+  screen_fade: { type: 'out', color: '#000000', delay: 0, duration: 1, alpha: 1 },
+  screen_overlay: { kind: 'fade', visible: true, color: '#000000', alpha: 1 },
+  screen_slide: { type: 'in', color: '#000000', direction: '6', delay: 0, duration: 1 },
+  spines: [{ id: '001tom', model: '001tom_001_00', face: 'face_smile', anim: 'idle', position: 0 }],
+}
+assert.equal(validate(nestedSnapshotFixture), true, ajv.errorsText(validate.errors, { separator: '\n' }))
+
+rejects(value => {
+  value.steps[0].entry_snapshot.bg_profile = {
+    imageId: 'bg001',
+    lightPosition: 1,
+    lightCoordinate: { x: 0, y: 0 },
+    lightAlpha: 1,
+    colorOffSet: { x: 0, y: 0, z: 0 },
+    colorScale: { x: 1, y: 1, z: 1 },
+    colorSaturation: 1,
+    legacy_light: true,
+  }
+}, '/steps/0/entry_snapshot/bg_profile')
+rejects(value => {
+  value.steps[0].entry_snapshot.spines = [{
+    id: '001tom',
+    model: '001tom_001_00',
+    face: 'face_smile',
+    anim: 'idle',
+    legacy_pose: true,
+  }]
+}, '/steps/0/entry_snapshot/spines')
+rejects(value => {
+  value.steps[0].entry_snapshot.screen_overlay = {
+    kind: 'fade',
+    visible: true,
+    color: '#000000',
+    alpha: 1,
+    legacy_alpha: 1,
+  }
+}, '/steps/0/entry_snapshot/screen_overlay')
+rejects(value => {
+  value.steps[0].entry_snapshot.screen_effects = [{ type: 'unknown', delay: 0, duration: 1 }]
+}, '/steps/0/entry_snapshot/screen_effects')
+
 const cueFixture = ({ action, channel, payload, target = null }, index = 0) => ({
   cue_id: `fixture-cue-${index}`,
   at: 0,

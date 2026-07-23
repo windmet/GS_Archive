@@ -225,42 +225,311 @@
         "system_caption"
       ]
     },
+    "vector2": {
+      "type": "object",
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "vector3": {
+      "type": "object",
+      "required": ["x", "y", "z"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "z": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "durationTransition": {
+      "type": "object",
+      "required": ["delay", "duration"],
+      "properties": {
+        "delay": { "type": "number", "minimum": 0 },
+        "duration": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "backgroundEffect": {
+      "type": "object",
+      "required": ["id", "visible"],
+      "properties": {
+        "id": { "type": "string" },
+        "visible": { "type": "boolean" },
+        "action": { "enum": ["start", "end"] },
+        "delay": { "type": "number", "minimum": 0 },
+        "duration": { "type": "number", "minimum": 0 }
+      },
+      "dependentRequired": {
+        "action": ["delay", "duration"],
+        "delay": ["action", "duration"],
+        "duration": ["action", "delay"]
+      },
+      "additionalProperties": false
+    },
+    "backgroundProfile": {
+      "type": "object",
+      "required": [
+        "imageId",
+        "lightPosition",
+        "lightCoordinate",
+        "lightAlpha",
+        "colorOffSet",
+        "colorScale",
+        "colorSaturation"
+      ],
+      "properties": {
+        "imageId": { "type": "string" },
+        "lightPosition": { "type": "number" },
+        "lightCoordinate": { "$ref": "#/$defs/vector2" },
+        "lightAlpha": { "type": "number" },
+        "colorOffSet": { "$ref": "#/$defs/vector3" },
+        "colorScale": { "$ref": "#/$defs/vector3" },
+        "colorSaturation": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "backgroundTransition": {
+      "type": "object",
+      "required": ["type", "delay", "duration"],
+      "properties": {
+        "type": { "const": "dissolve" },
+        "color": { "type": "string" },
+        "delay": { "type": "number", "minimum": 0 },
+        "duration": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "environmentalState": {
+      "type": "object",
+      "required": ["cue"],
+      "properties": {
+        "cue": { "type": "string", "minLength": 1 },
+        "volume": {
+          "anyOf": [
+            { "type": "string" },
+            { "type": "number" }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "imageIcon": {
+      "type": "object",
+      "required": ["id", "display_id", "layer"],
+      "properties": {
+        "id": { "type": "string" },
+        "display_id": { "type": "string" },
+        "layer": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "screenFadeState": {
+      "type": "object",
+      "required": ["type", "color", "duration"],
+      "properties": {
+        "type": { "enum": ["in", "out"] },
+        "color": { "type": "string" },
+        "delay": { "type": "number", "minimum": 0 },
+        "duration": { "type": "number", "minimum": 0 },
+        "alpha": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "screenSlideState": {
+      "type": "object",
+      "required": ["type", "color", "direction", "delay", "duration"],
+      "properties": {
+        "type": { "enum": ["in", "out"] },
+        "color": { "type": "string" },
+        "direction": { "type": "string" },
+        "delay": { "type": "number", "minimum": 0 },
+        "duration": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "fadeOverlay": {
+      "type": "object",
+      "required": ["kind", "visible", "color", "alpha"],
+      "properties": {
+        "kind": { "const": "fade" },
+        "visible": { "type": "boolean" },
+        "color": { "type": "string" },
+        "alpha": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "directionalWipeOverlay": {
+      "type": "object",
+      "required": ["kind", "visible", "color", "direction"],
+      "properties": {
+        "kind": { "const": "directional-wipe" },
+        "visible": { "type": "boolean" },
+        "color": { "type": "string" },
+        "direction": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "screenOverlay": {
+      "oneOf": [
+        { "$ref": "#/$defs/fadeOverlay" },
+        { "$ref": "#/$defs/directionalWipeOverlay" }
+      ]
+    },
+    "fadeScreenEffect": {
+      "type": "object",
+      "required": ["type", "delay", "duration", "color", "alpha"],
+      "properties": {
+        "type": { "enum": ["fadein", "fadeout"] },
+        "delay": { "type": "number", "minimum": 0 },
+        "duration": { "type": "number", "minimum": 0 },
+        "color": { "type": "string" },
+        "alpha": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "singleScreenEffect": {
+      "type": "object",
+      "required": ["type", "delay", "duration", "id", "x", "y", "scale"],
+      "properties": {
+        "type": { "const": "single" },
+        "delay": { "type": "number", "minimum": 0 },
+        "duration": { "type": "number", "minimum": 0 },
+        "id": { "type": "string" },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "scale": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "screenEffect": {
+      "oneOf": [
+        { "$ref": "#/$defs/fadeScreenEffect" },
+        { "$ref": "#/$defs/singleScreenEffect" }
+      ]
+    },
+    "spineFade": {
+      "type": "object",
+      "required": ["type", "delay", "duration"],
+      "properties": {
+        "type": { "enum": ["in", "out"] },
+        "delay": { "type": "number", "minimum": 0 },
+        "duration": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "spineState": {
+      "type": "object",
+      "required": ["id", "model", "face", "anim"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "model": { "type": "string", "minLength": 1 },
+        "face": { "type": "string" },
+        "anim": { "type": "string" },
+        "position": { "type": "number" },
+        "visible": { "type": "boolean" },
+        "pos_x": { "type": "number" },
+        "pos_y": { "type": "number" },
+        "anim_flag": { "type": "string" },
+        "blush_flag": { "type": "string" },
+        "sweat_flag": { "type": "string" },
+        "anim_no_back": { "type": "boolean" },
+        "fade": { "$ref": "#/$defs/spineFade" },
+        "idol_color": { "type": "string" },
+        "idol_color_transition": { "$ref": "#/$defs/durationTransition" },
+        "idol_priority": { "type": "number" },
+        "idol_zoom": { "type": "number" },
+        "idol_zoom_y_offset": { "type": "number" },
+        "neck_anim": { "type": "string" },
+        "neck_anim_stop": { "type": "boolean" },
+        "parts_visible": { "type": "boolean" },
+        "slide_duration": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
     "snapshot": {
       "type": "object",
       "properties": {
         "bg": { "type": ["string", "null"] },
         "bg_color": { "type": ["string", "null"] },
-        "bg_color_transition": { "type": ["object", "null"] },
-        "bg_dof": { "type": ["number", "null"] },
-        "bg_dof_transition": { "type": ["object", "null"] },
-        "bg_effect": {
+        "bg_color_transition": {
           "anyOf": [
-            { "type": "object" },
-            { "type": "string" },
+            { "$ref": "#/$defs/durationTransition" },
             { "type": "null" }
           ]
         },
-        "bg_effects": { "type": "array" },
-        "bg_profile": { "type": ["object", "null"] },
-        "bg_transition": { "type": ["object", "null"] },
+        "bg_dof": { "type": ["number", "null"] },
+        "bg_dof_transition": {
+          "anyOf": [
+            { "$ref": "#/$defs/durationTransition" },
+            { "type": "null" }
+          ]
+        },
+        "bg_effect": { "type": "null" },
+        "bg_effects": { "type": "array", "items": { "$ref": "#/$defs/backgroundEffect" } },
+        "bg_profile": {
+          "anyOf": [
+            { "$ref": "#/$defs/backgroundProfile" },
+            { "type": "null" }
+          ]
+        },
+        "bg_transition": {
+          "anyOf": [
+            { "$ref": "#/$defs/backgroundTransition" },
+            { "type": "null" }
+          ]
+        },
         "bg_view_type": { "type": "string" },
         "bgm": { "type": ["string", "null"] },
         "bgm_stop_fade": { "type": ["number", "null"] },
         "bgm_volume": { "type": "number" },
         "camera_filter": { "type": ["string", "null"] },
-        "camera_zoom": { "type": ["object", "null"] },
-        "environmental": { "type": ["object", "null"] },
+        "camera_zoom": {
+          "anyOf": [
+            { "$ref": "#/$defs/cameraPayload" },
+            { "type": "null" }
+          ]
+        },
+        "environmental": {
+          "anyOf": [
+            { "$ref": "#/$defs/environmentalState" },
+            { "type": "null" }
+          ]
+        },
         "environmental_duck_target": { "type": ["number", "null"] },
         "environmental_volume": { "type": ["number", "null"] },
-        "image_icon": { "type": ["object", "null"] },
+        "image_icon": {
+          "anyOf": [
+            { "$ref": "#/$defs/imageIcon" },
+            { "type": "null" }
+          ]
+        },
         "phone_mode": { "type": "boolean" },
-        "screen_effects": { "type": "array" },
-        "screen_fade": { "type": ["object", "null"] },
-        "screen_overlay": { "type": ["object", "null"] },
-        "screen_slide": { "type": ["object", "null"] },
-        "se": { "type": ["object", "null"] },
-        "se_events": { "type": "array" },
-        "spines": { "type": "array" },
+        "screen_effects": { "type": "array", "items": { "$ref": "#/$defs/screenEffect" } },
+        "screen_fade": {
+          "anyOf": [
+            { "$ref": "#/$defs/screenFadeState" },
+            { "type": "null" }
+          ]
+        },
+        "screen_overlay": {
+          "anyOf": [
+            { "$ref": "#/$defs/screenOverlay" },
+            { "type": "null" }
+          ]
+        },
+        "screen_slide": {
+          "anyOf": [
+            { "$ref": "#/$defs/screenSlideState" },
+            { "type": "null" }
+          ]
+        },
+        "se": { "type": "null" },
+        "se_events": { "type": "array", "maxItems": 0 },
+        "spines": { "type": "array", "items": { "$ref": "#/$defs/spineState" } },
         "talk_mode": { "type": "boolean" },
         "text_disabled": { "type": "boolean" }
       },

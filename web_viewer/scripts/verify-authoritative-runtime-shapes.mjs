@@ -27,6 +27,23 @@ const actionContracts = new Map([
   ['spine.neck.stop', { channel: /^spine:[^:]+:neck$/u, payload: ajv.compile(schemaRef('spineStopPayload')) }],
   ['spine.visual.tint', { channel: /^spine:[^:]+:visual:tint$/u, payload: ajv.compile(schemaRef('spineTintPayload')) }],
 ])
+const snapshotObjectContracts = new Map([
+  ['bg_color_transition', ajv.compile(schemaRef('durationTransition'))],
+  ['bg_dof_transition', ajv.compile(schemaRef('durationTransition'))],
+  ['bg_profile', ajv.compile(schemaRef('backgroundProfile'))],
+  ['bg_transition', ajv.compile(schemaRef('backgroundTransition'))],
+  ['camera_zoom', ajv.compile(schemaRef('cameraPayload'))],
+  ['environmental', ajv.compile(schemaRef('environmentalState'))],
+  ['image_icon', ajv.compile(schemaRef('imageIcon'))],
+  ['screen_fade', ajv.compile(schemaRef('screenFadeState'))],
+  ['screen_overlay', ajv.compile(schemaRef('screenOverlay'))],
+  ['screen_slide', ajv.compile(schemaRef('screenSlideState'))],
+])
+const snapshotArrayContracts = new Map([
+  ['bg_effects', ajv.compile(schemaRef('backgroundEffect'))],
+  ['screen_effects', ajv.compile(schemaRef('screenEffect'))],
+  ['spines', ajv.compile(schemaRef('spineState'))],
+])
 
 function assertChannel(contract, cue, label) {
   const passed = typeof contract.channel === 'string'
@@ -35,22 +52,58 @@ function assertChannel(contract, cue, label) {
   assert.equal(passed, true, `${label}: ${cue.action} has invalid channel ${cue.channel}`)
 }
 
-function valueCategory(key, value) {
+function valueCategory(key, value, recursive = false) {
   if (value === null) return 'null'
-  if (Array.isArray(value)) return 'array'
+  if (Array.isArray(value)) {
+    if (!recursive) return 'array'
+    const itemShapes = [...new Set(value.map(item => (
+      item && typeof item === 'object'
+        ? shapeSignature(item, true)
+        : valueCategory('', item, true)
+    )))].sort()
+    return `array:[${itemShapes.join(';')}]`
+  }
   if (typeof value === 'string') {
     if (key === 'type') return `string:${value}`
     return value.length ? 'string:nonempty' : 'string:empty'
   }
   if (typeof value === 'number') return value < 0 ? 'number:negative' : 'number:nonnegative'
+  if (typeof value === 'object') return recursive ? `object:{${shapeSignature(value, true)}}` : 'object'
   return typeof value
 }
 
-function shapeSignature(value) {
+function shapeSignature(value, recursive = false) {
   return Object.entries(value || {})
     .sort(([left], [right]) => left.localeCompare(right))
-    .map(([key, entry]) => `${key}:${valueCategory(key, entry)}`)
+    .map(([key, entry]) => `${key}:${valueCategory(key, entry, recursive)}`)
     .join('|')
+}
+
+function validateNestedSnapshot(snapshot, label, totals) {
+  for (const [field, validator] of snapshotObjectContracts) {
+    const value = snapshot?.[field]
+    if (value == null) continue
+    const signature = `${field}|${shapeSignature(value, true)}`
+    if (totals.nestedSnapshotShapes.has(signature)) continue
+    assert.equal(
+      validator(value),
+      true,
+      `${label} ${field}: ${ajv.errorsText(validator.errors, { separator: '\n' })}`,
+    )
+    totals.nestedSnapshotShapes.add(signature)
+  }
+  for (const [field, validator] of snapshotArrayContracts) {
+    for (const [itemIndex, value] of (snapshot?.[field] || []).entries()) {
+      const signature = `${field}|${shapeSignature(value, true)}`
+      if (totals.nestedSnapshotShapes.has(signature)) continue
+      assert.equal(
+        validator(value),
+        true,
+        `${label} ${field}[${itemIndex}]: ${ajv.errorsText(validator.errors, { separator: '\n' })}`,
+      )
+      totals.nestedSnapshotShapes.add(signature)
+    }
+  }
 }
 
 function verifyScenario(input, label, totals) {
@@ -70,6 +123,7 @@ function verifyScenario(input, label, totals) {
         )
         totals.snapshotShapes.add(signature)
       }
+      validateNestedSnapshot(snapshot, `${label}: step ${stepIndex + 1} ${snapshotKind}`, totals)
     }
     for (const [cueIndex, cue] of (step.cues || []).entries()) {
       const cueLabel = `${label}: step ${stepIndex + 1} cue ${cueIndex + 1}`
@@ -119,6 +173,7 @@ const totals = {
   cues: 0,
   actions: new Set(),
   snapshotShapes: new Set(),
+  nestedSnapshotShapes: new Set(),
   payloadShapes: new Set(),
 }
 verifyScenario(compatibilityFixture, 'tracked compatibility fixture', totals)
@@ -133,5 +188,6 @@ for (const file of mountedFiles) {
 
 console.log('Authoritative Runtime shape verification passed.')
 console.log(`  ${totals.scenarios} scenarios, ${totals.snapshots} snapshots, ${totals.cues} cues`)
-console.log(`  ${totals.snapshotShapes.size} snapshot shapes, ${totals.payloadShapes.size} action/payload shapes`)
+console.log(`  ${totals.snapshotShapes.size} snapshot shapes, ${totals.nestedSnapshotShapes.size} nested snapshot shapes`)
+console.log(`  ${totals.payloadShapes.size} action/payload shapes`)
 console.log(`  actions: ${[...totals.actions].sort().join(', ')}`)

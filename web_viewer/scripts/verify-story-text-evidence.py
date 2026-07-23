@@ -141,6 +141,29 @@ def verify_schema_contracts():
     assert_equal(authoritative_schema["$defs"]["step"]["additionalProperties"], False, "authoritative step strictness")
     assert_equal(authoritative_schema["$defs"]["dialogue"]["additionalProperties"], False, "authoritative dialogue strictness")
     assert_equal(authoritative_schema["$defs"]["snapshot"]["additionalProperties"], False, "authoritative snapshot top-level strictness")
+    for snapshot_def_name in (
+        "vector2",
+        "vector3",
+        "durationTransition",
+        "backgroundEffect",
+        "backgroundProfile",
+        "backgroundTransition",
+        "environmentalState",
+        "imageIcon",
+        "screenFadeState",
+        "screenSlideState",
+        "fadeOverlay",
+        "directionalWipeOverlay",
+        "fadeScreenEffect",
+        "singleScreenEffect",
+        "spineFade",
+        "spineState",
+    ):
+        assert_equal(
+            authoritative_schema["$defs"][snapshot_def_name]["additionalProperties"],
+            False,
+            f"authoritative {snapshot_def_name} strictness",
+        )
     for payload_name in (
         "cameraPayload",
         "backgroundPayload",
