@@ -147,4 +147,3 @@ if __name__ == "__main__":
     args = parse_args()
     result = publish(Path(args.candidate_dir), Path(args.compiled_dir), Path(args.backup_dir))
     print(json.dumps(result, ensure_ascii=False, indent=2))
-
