@@ -73,9 +73,13 @@ assert.equal(context.sources.length, 1, 'unlock must schedule one silent source'
 
 const voiceSource = new FakeSource()
 const seSource = new FakeSource()
-const releaseVoice = session.registerSource(voiceSource)
-session.registerSource(seSource)
+const releaseVoice = session.registerSource(voiceSource, { bus: 'voice', kind: 'dialogue', cue: 'voice-a' })
+session.registerSource(seSource, { bus: 'se', kind: 'one-shot', cue: 'cloth' })
 assert.equal(session.inspect().active_sources, 2)
+assert.deepEqual(session.inspect().sources.map(({ bus, kind, cue }) => ({ bus, kind, cue })), [
+  { bus: 'voice', kind: 'dialogue', cue: 'voice-a' },
+  { bus: 'se', kind: 'one-shot', cue: 'cloth' },
+])
 
 context.currentTime = 2
 assert.equal(session.currentTime(), 2)
@@ -123,6 +127,9 @@ voicePlayer.playPreparedVoice({ ...prepared, voice: 'voice-b' })
 firstVoiceSource.onended?.()
 assert.equal(voiceSession.inspect().active_sources, 1, 'an old onended callback must not release the new voice source')
 assert.equal(playing.value, true, 'an old onended callback must not mark the new voice as ended')
+await voicePlayer.playVoice()
+assert.equal(voiceSession.inspect().active_sources, 0, 'entering a step without voice must stop the previous dialogue source')
+assert.equal(voicePlayer.getVoiceState(), 'idle')
 voicePlayer.dispose()
 await voiceSession.dispose()
 

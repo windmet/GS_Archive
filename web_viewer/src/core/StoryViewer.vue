@@ -1,6 +1,15 @@
 <template>
   <div class="story-viewer-root" :class="{ 'stage-only': HIDE_UI || uiHidden }" tabindex="0"
     @pointerdown.capture="_ensureAudioCtx" @keydown="handlePlayerKeydown">
+    <pre
+      v-if="RUNTIME_DEBUG"
+      class="runtime-diagnostics"
+      data-testid="story-runtime-diagnostics"
+    >{{ JSON.stringify(runtimeDiagnostics, null, 2) }}</pre>
+    <div v-if="RUNTIME_DEBUG" class="runtime-debug-actions">
+      <button data-testid="story-debug-hide" @click.stop="applyDebugVisibility(true)">SIMULATE HIDDEN</button>
+      <button data-testid="story-debug-show" @click.stop="applyDebugVisibility(false)">SIMULATE VISIBLE</button>
+    </div>
     <div class="viewer-stage">
     <!-- Spine rendering layer (background + characters) -->
     <SpineStage ref="spineStageRef" :step="stageStep" :fallbackBg="firstAvailableBg" />
@@ -184,6 +193,7 @@ const END_STEP = Number.isFinite(props.endStep) && props.endStep > 0
 const NO_VOICE = URL_FLAGS.get('noVoice') === '1'
 const SNAPSHOT_AT_VALUE = URL_FLAGS.get('snapshotAt')
 const SNAPSHOT_AT = SNAPSHOT_AT_VALUE == null || SNAPSHOT_AT_VALUE === '' ? null : Number(SNAPSHOT_AT_VALUE)
+const RUNTIME_DEBUG = URL_FLAGS.get('runtimeDebug') === '1'
 const preferencesRepository = new PlayerPreferencesRepository()
 const readProgressRepository = new ReadProgressRepository()
 const initialPreferences = preferencesRepository.load()
@@ -212,8 +222,11 @@ const skipMode = ref(initialPreferences.skip_mode)
 const uiHidden = ref(initialPreferences.ui_hidden)
 const episodeFinished = ref(false)
 const transitioning = ref(false)
+const runtimeDiagnostics = ref(null)
+const debugVisibilityOverride = ref(null)
 
 let _readyTimer = null
+let _runtimeDiagnosticsTimer = null
 
 const storyAudioSession = new StoryAudioSession({
   busVolumes: { bgm: 0.7, ambient: 0.7, voice: 1, se: 0.7 },
@@ -625,6 +638,52 @@ function setPlaybackRate(rate) {
   return appliedRate
 }
 
+function refreshRuntimeDiagnostics() {
+  if (!RUNTIME_DEBUG) return
+  const memory = performance.memory
+  const spineEntries = Object.entries(spineStageRef.value?.manager?.spineInstances || {})
+  runtimeDiagnostics.value = {
+    captured_at: new Date().toISOString(),
+    step: {
+      index: currentStepIndex.value,
+      id: currentStep.value?.step_id ?? null,
+      type: currentStep.value?.type ?? null,
+    },
+    visibility: {
+      state: document.visibilityState,
+      hidden: document.hidden,
+      debug_override: debugVisibilityOverride.value,
+      pause_reasons: [...runtimePauseReasons].sort(),
+    },
+    audio_session: storyAudioSession.inspect(),
+    audio_manager: _audioManager.inspect(),
+    playback: playbackController?.inspect() || null,
+    runtime: storyRuntimeCues.inspect(),
+    spine: {
+      instances: spineEntries.length,
+      ids: spineEntries.map(([id]) => id),
+    },
+    memory: memory ? {
+      used_js_heap_size: memory.usedJSHeapSize,
+      total_js_heap_size: memory.totalJSHeapSize,
+      js_heap_size_limit: memory.jsHeapSizeLimit,
+    } : null,
+  }
+}
+
+function applyVisibilityPause(hidden) {
+  if (hidden) clearFadeAutoAdvance()
+  playbackController?.setPaused('visibility', hidden)
+  setRuntimeSessionPaused('visibility', hidden)
+  refreshRuntimeDiagnostics()
+}
+
+function applyDebugVisibility(hidden) {
+  if (!RUNTIME_DEBUG) return
+  debugVisibilityOverride.value = Boolean(hidden)
+  applyVisibilityPause(debugVisibilityOverride.value)
+}
+
 playbackController = new PlaybackModeController({
   getStep: () => storyRuntimeCues.getNormalizedStep(),
   getVoiceState: () => voicePlayer?.getVoiceState?.() || 'idle',
@@ -658,6 +717,10 @@ onMounted(async () => {
   window.__STORY_PLAYBACK__ = playbackController
   window.__STORY_AUDIO__ = storyAudioSession
   document.addEventListener('visibilitychange', handleVisibilityChange)
+  if (RUNTIME_DEBUG) {
+    refreshRuntimeDiagnostics()
+    _runtimeDiagnosticsTimer = setInterval(refreshRuntimeDiagnostics, 500)
+  }
   // 全局调试工具：在 Console 输入 showAnims("001tom") 查看角色的所有动作
   window.showAnims = window.showAnims || (async (charaId, modelIdx) => {
     const models = ['001tom_002_00','001tom_003_00','001tom_004_00','001tom_004_01','001tom_005_00','001tom_101_00','001tom_101_01','001tom_102_00','001tom_103_00','001tom_103_01',
@@ -758,6 +821,10 @@ onBeforeUnmount(() => {
     clearTimeout(_readyTimer)
     _readyTimer = null
   }
+  if (_runtimeDiagnosticsTimer) {
+    clearInterval(_runtimeDiagnosticsTimer)
+    _runtimeDiagnosticsTimer = null
+  }
   voicePlayer?.dispose?.()
   _audioManager.dispose()
   storyAudioSession.dispose().catch(() => {})
@@ -780,9 +847,8 @@ watch(uiHidden, hidden => {
 })
 
 function handleVisibilityChange() {
-  if (document.hidden) clearFadeAutoAdvance()
-  playbackController?.setPaused('visibility', document.hidden)
-  setRuntimeSessionPaused('visibility', document.hidden)
+  debugVisibilityOverride.value = null
+  applyVisibilityPause(document.hidden)
 }
 
 
@@ -824,6 +890,41 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 }
 .ui-overlay > * {
   pointer-events: auto;
+}
+.runtime-diagnostics {
+  position: fixed;
+  top: 48px;
+  right: 12px;
+  z-index: 10000;
+  width: min(420px, calc(100vw - 24px));
+  max-height: calc(100vh - 96px);
+  margin: 0;
+  padding: 10px;
+  overflow: auto;
+  border: 1px solid rgba(102, 221, 255, 0.45);
+  border-radius: 8px;
+  background: rgba(3, 12, 20, 0.88);
+  color: #bfefff;
+  font: 11px/1.35 ui-monospace, SFMono-Regular, Consolas, monospace;
+  pointer-events: none;
+  white-space: pre-wrap;
+}
+.runtime-debug-actions {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 10001;
+  display: flex;
+  gap: 6px;
+}
+.runtime-debug-actions button {
+  padding: 6px 8px;
+  border: 1px solid rgba(102, 221, 255, 0.55);
+  border-radius: 6px;
+  background: rgba(3, 12, 20, 0.9);
+  color: #bfefff;
+  font: 10px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  cursor: pointer;
 }
 .adv-dialogue-fade-enter-active,
 .adv-dialogue-fade-leave-active {

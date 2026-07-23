@@ -71,7 +71,7 @@ export function useVoicePlayer({
       setTalking(false)
       return
     }
-    console.warn('[Audio] stopCurrentVoice:', reason)
+    console.debug('[Audio] stopCurrentVoice:', reason)
     try { currentSource.stop() } catch (_) {}
     try { currentSource.disconnect() } catch (_) {}
     currentSourceRelease?.()
@@ -175,7 +175,7 @@ export function useVoicePlayer({
     const source = audioCtx.createBufferSource()
     source.buffer = prepared.audioBuffer
     source.connect(session.getBus('voice'))
-    const releaseSource = session.registerSource(source)
+    const releaseSource = session.registerSource(source, { bus: 'voice', kind: 'dialogue', cue: prepared.voice })
     currentSourceRelease = releaseSource
     voiceStartedAt = session.currentTime()
     currentSource = source
@@ -210,11 +210,13 @@ export function useVoicePlayer({
     const voice = step?.dialogue?.voice
     const scenarioId = compiledData.value?.scenario_id
     if (!voice) {
+      stopCurrentVoice('step-change-no-voice')
       voiceState = 'idle'
       return false
     }
 
     if (voice === lastVoiceUrl && currentStepIndex.value === lastVoiceStepIndex) return false
+    stopCurrentVoice('step-change-new-voice')
     lastVoiceUrl = voice
     lastVoiceStepIndex = currentStepIndex.value
 

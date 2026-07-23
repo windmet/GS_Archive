@@ -93,7 +93,7 @@ export class AudioManager {
       const gain = this._ctx.createGain()
       gain.gain.value = 0.6
       source.connect(gain).connect(this._audioSession.getBus('se'))
-      const release = this._audioSession.registerSource(source)
+      const release = this._audioSession.registerSource(source, { bus: 'se', kind: 'one-shot', cue: cueName })
       source.start(0)
       source.onended = () => { release(); source.disconnect(); gain.disconnect() }
     } catch (_) { /* unknown SE cue — silent skip */ }
@@ -152,7 +152,7 @@ export class AudioManager {
       gain.gain.linearRampToValueAtTime(this._currentAmbientVolume, this._ctx.currentTime + fadeTime)
 
       source.connect(gain).connect(this._audioSession.getBus('ambient'))
-      const release = this._audioSession.registerSource(source)
+      const release = this._audioSession.registerSource(source, { bus: 'ambient', kind: 'loop', cue: cueName })
       source.start(0)
 
       this._ambientSource = source
@@ -245,7 +245,7 @@ export class AudioManager {
       gain.gain.linearRampToValueAtTime(0.5, this._ctx.currentTime + fadeTime)
 
       source.connect(gain).connect(this._audioSession.getBus('bgm'))
-      const release = this._audioSession.registerSource(source)
+      const release = this._audioSession.registerSource(source, { bus: 'bgm', kind: 'loop', cue: bgmId })
       source.start(0)
 
       this._bgmSource = source

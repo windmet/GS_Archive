@@ -323,7 +323,7 @@ export class SpineManager {
           const marker = entry.marker
           if (marker.parent) marker.parent.removeChild(marker)
           try {
-            marker.destroy()
+            marker.destroy({ children: false, texture: false, baseTexture: false })
           } catch (err) {
             console.warn(`[PixiStageManager] Failed to destroy debug marker during clearAllSpines for "${idolId}":`, err?.message || err)
           }
@@ -380,7 +380,7 @@ export class SpineManager {
     const parent = marker.parent
     if (parent) parent.removeChild(marker)
     try {
-      marker.destroy()
+      marker.destroy({ children: false, texture: false, baseTexture: false })
     } catch (err) {
       console.warn(`[PixiStageManager] Failed to destroy debug marker for "${idolId}":`, err?.message || err)
     }

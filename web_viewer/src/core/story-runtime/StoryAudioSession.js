@@ -30,7 +30,7 @@ export class StoryAudioSession {
     this._context = null
     this._masterGain = null
     this._buses = new Map()
-    this._sources = new Set()
+    this._sources = new Map()
     this._pauseReasons = new Set()
     this._rate = 1
     this._logicalOffset = 0
@@ -141,17 +141,23 @@ export class StoryAudioSession {
       this._logicalEpoch = Number(this._context.currentTime) || 0
     }
     this._rate = rate
-    for (const source of this._sources) {
+    for (const source of this._sources.keys()) {
       if (source.playbackRate) source.playbackRate.value = rate
     }
     return rate
   }
 
-  registerSource(source) {
+  registerSource(source, { bus = 'unknown', kind = 'source', cue = null } = {}) {
     if (!source || typeof source !== 'object') throw new TypeError('source is required')
     this.ensureContext()
     if (source.playbackRate) source.playbackRate.value = this._rate
-    this._sources.add(source)
+    const registeredAt = this.currentTime()
+    this._sources.set(source, Object.freeze({
+      bus: BUS_NAMES.includes(bus) ? bus : 'unknown',
+      kind: String(kind || 'source'),
+      cue: cue == null ? null : String(cue),
+      registered_at: registeredAt,
+    }))
     let released = false
     return () => {
       if (released) return
@@ -161,11 +167,17 @@ export class StoryAudioSession {
   }
 
   inspect() {
+    const now = this.currentTime()
+    const sources = [...this._sources.values()].map(source => Object.freeze({
+      ...source,
+      age: Math.max(0, now - source.registered_at),
+    }))
     return Object.freeze({
       context_state: this._context?.state || 'uninitialized',
       pause_reasons: [...this._pauseReasons],
       rate: this._rate,
       active_sources: this._sources.size,
+      sources: Object.freeze(sources),
       buses: Object.freeze({ ...this._busVolumes }),
       disposed: this._disposed,
     })
