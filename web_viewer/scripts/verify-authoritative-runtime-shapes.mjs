@@ -15,6 +15,7 @@ ajv.addSchema(schema)
 
 const schemaRef = fragment => ({ $ref: `${schema.$id}#/$defs/${fragment}` })
 const validateSnapshot = ajv.compile(schemaRef('snapshot'))
+const validateLipEvidence = ajv.compile(schemaRef('lipEvidence'))
 const actionContracts = new Map([
   ['camera.transform', { channel: 'camera', payload: ajv.compile(schemaRef('cameraPayload')) }],
   ['background.change', { channel: 'background', payload: ajv.compile(schemaRef('backgroundPayload')) }],
@@ -109,6 +110,19 @@ function validateNestedSnapshot(snapshot, label, totals) {
 function verifyScenario(input, label, totals) {
   const scenario = normalizeScenario(input)
   for (const [stepIndex, step] of scenario.steps.entries()) {
+    const lip = step.dialogue?.lip
+    if (lip != null) {
+      totals.lips += 1
+      const signature = shapeSignature(lip, true)
+      if (!totals.lipShapes.has(signature)) {
+        assert.equal(
+          validateLipEvidence(lip),
+          true,
+          `${label}: step ${stepIndex + 1} dialogue.lip: ${ajv.errorsText(validateLipEvidence.errors, { separator: '\n' })}`,
+        )
+        totals.lipShapes.add(signature)
+      }
+    }
     for (const [snapshotKind, snapshot] of [
       ['entry_snapshot', step.entry_snapshot],
       ['settled_snapshot', step.settled_snapshot],
@@ -172,6 +186,8 @@ const totals = {
   snapshots: 0,
   cues: 0,
   actions: new Set(),
+  lips: 0,
+  lipShapes: new Set(),
   snapshotShapes: new Set(),
   nestedSnapshotShapes: new Set(),
   payloadShapes: new Set(),
@@ -188,6 +204,7 @@ for (const file of mountedFiles) {
 
 console.log('Authoritative Runtime shape verification passed.')
 console.log(`  ${totals.scenarios} scenarios, ${totals.snapshots} snapshots, ${totals.cues} cues`)
+console.log(`  ${totals.lips} lip records, ${totals.lipShapes.size} lip shapes`)
 console.log(`  ${totals.snapshotShapes.size} snapshot shapes, ${totals.nestedSnapshotShapes.size} nested snapshot shapes`)
 console.log(`  ${totals.payloadShapes.size} action/payload shapes`)
 console.log(`  actions: ${[...totals.actions].sort().join(', ')}`)

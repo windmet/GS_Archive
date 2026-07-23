@@ -140,6 +140,8 @@ def verify_schema_contracts():
     assert_equal(authoritative_schema["additionalProperties"], False, "authoritative top-level strictness")
     assert_equal(authoritative_schema["$defs"]["step"]["additionalProperties"], False, "authoritative step strictness")
     assert_equal(authoritative_schema["$defs"]["dialogue"]["additionalProperties"], False, "authoritative dialogue strictness")
+    assert_equal(authoritative_schema["$defs"]["lipEvidence"]["additionalProperties"], False, "authoritative lip strictness")
+    assert_equal("diagnostics" in authoritative_schema["properties"], False, "authoritative diagnostics must not be emitted")
     assert_equal(authoritative_schema["$defs"]["snapshot"]["additionalProperties"], False, "authoritative snapshot top-level strictness")
     for snapshot_def_name in (
         "vector2",

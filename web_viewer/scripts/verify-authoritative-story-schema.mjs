@@ -43,6 +43,7 @@ function rejects(mutator, expectedPath) {
 
 rejects(value => { value.runtime_contract = 'story-runtime-v2-compat' }, '/runtime_contract')
 rejects(value => { value.total_steps = 1 }, '')
+rejects(value => { value.diagnostics = { normalization_warnings: [] } }, '')
 rejects(value => { value.steps[0].state = {} }, '/steps/0')
 rejects(value => { value.steps[0].timeline = [] }, '/steps/0')
 rejects(value => { value.steps[0].dialogue.text_jp = value.steps[0].dialogue.source_text }, '/steps/0/dialogue')
@@ -73,6 +74,28 @@ nestedSnapshotFixture.steps[0].entry_snapshot = {
   spines: [{ id: '001tom', model: '001tom_001_00', face: 'face_smile', anim: 'idle', position: 0 }],
 }
 assert.equal(validate(nestedSnapshotFixture), true, ajv.errorsText(validate.errors, { separator: '\n' }))
+
+const lipFixture = clone(fixture)
+lipFixture.steps[0].dialogue.lip = {
+  source: 'adxlip',
+  path: 'adxlip/001tom/fixture.json',
+  frames: 120,
+}
+assert.equal(validate(lipFixture), true, ajv.errorsText(validate.errors, { separator: '\n' }))
+rejects(value => {
+  value.steps[0].dialogue.lip = {
+    source: 'adxlip',
+    path: 'adxlip/001tom/fixture.json',
+    frames: 120,
+    legacy_frames: 120,
+  }
+}, '/steps/0/dialogue/lip')
+rejects(value => {
+  value.steps[0].dialogue.lip = { source: 'adxlip', path: '../fixture.json', frames: 120 }
+}, '/steps/0/dialogue/lip')
+rejects(value => {
+  value.steps[0].dialogue.lip = { source: 'adxlip', path: 'adxlip/fixture.json', frames: 0 }
+}, '/steps/0/dialogue/lip')
 
 rejects(value => {
   value.steps[0].entry_snapshot.bg_profile = {
