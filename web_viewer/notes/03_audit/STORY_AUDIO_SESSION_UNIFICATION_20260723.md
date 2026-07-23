@@ -77,12 +77,27 @@ detached source-only checkout 已重新安装依赖并通过 audio soak、Runtim
 
 这组证据关闭了“异步旧音轨复活”和“确定性 source/timer 不收敛”风险，但浏览器隔离环境未提供可信 heap/audio global 读取，因此不把它写成真实浏览器内存长测通过。
 
+## 2026-07-23 单标签混合操作与浏览器曲线
+
+`5d62b48` 增加仅由 `runtimeDebug=1` 开启的主世界诊断面，将 audio source 的 bus/kind/cue/age、AudioManager timer、Playback pause reason、Runtime clock、Spine instance 与 Chromium `performance.memory` 输出到可测试 DOM；默认页面不创建诊断 timer，也不显示诊断 UI。调试面提供明确标为 `debug_override` 的 hidden/visible 按钮，复用真实 `visibilitychange` 的暂停函数，但不把该模拟结果表述为操作系统级后台切换。
+
+同一 5174 标签完成以下真实 UI 链路：AUTO 到 Choice 停下 → 选择 → 菜单暂停 → Backlog → 定点恢复 → SKIP all 到第一个 Choice 停下 → 选择 → SKIP all 到第二个 Choice 停下。过程中发现 SKIP 越过有 voice 的对白进入无 voice Choice 时，旧 dialogue source 仍存活；根因是 `playVoice()` 的无 voice 分支没有停止旧 source。修复后从 step 39 快速 SKIP 到 step 44 Choice，诊断只剩 BGM/Ambient 两个 loop，voice source 为 0；自动 verifier 也新增“进入无 voice 步骤必须释放上一句 dialogue source”断言。
+
+同一标签另执行 6 轮“d step 6（2 个 Spine）→ d step 39（0 个 Spine）”页面切换：
+
+- Spine instance 每轮严格为 `2 → 0`；
+- source 每轮为 `2 → 0`（未解锁页面上的 pending voice/SE 不计为持续播放通过）；
+- used JS heap 在约 102–198 MB 间随 GC 波动，第 5/6 轮普通页回落到约 102/104 MB，不呈单调累积；
+- 新增 marker destroy 参数后，6 轮卸载均未再出现 `Failed to destroy debug marker`。
+
+该证据可关闭“短程重复导航立即单调泄漏”和“混合 SKIP 遗留 voice”风险；它仍是受 CPU 约束的 bounded smoke，不替代数小时真实后台/听感/heap soak。
+
 ## 尚未覆盖
 
 - Edge 与不同 autoplay policy 的首次解锁对照；
-- 真实浏览器 BGM/Ambient 长时间听感与 heap 曲线；代码级 100 轮 crossfade/snapshot restore 已覆盖；
+- 数小时真实浏览器 BGM/Ambient 听感与 heap 曲线；代码级 100 轮 soak 和浏览器 6 轮 heap/Spine 曲线已覆盖；
 - 自动化触发 `document.hidden` 的后台切换音频听感对照；
-- 跨 episode 长时间连续播放、Auto/Skip/Backlog/Choice 混合操作；d→e 单次真实切换已通过；
-- 浏览器侧长时间 Spine 与 heap 增长观察；active source/timer 的确定性 soak 已通过。
+- 跨 episode 数小时连续播放；d→e 单次真实切换及单 episode Auto/Skip/Backlog/Choice 混合链路已通过；
+- 操作系统级真实后台恢复；debug override 已验证同一 pause 函数的 reason/clock/context 收敛。
 
 因此本批可以宣称“音频 owner 与基础生命周期统一完成”，但不能宣称完整 release stability 已完成。

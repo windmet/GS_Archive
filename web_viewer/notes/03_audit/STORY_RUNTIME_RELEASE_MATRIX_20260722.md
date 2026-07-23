@@ -127,6 +127,10 @@ http://127.0.0.1:5174/?view=player&scenario=fixtures%2Fstory_localization_stress
 
 5174 单标签又完成一次真实 d→e episode 切换：旧 viewer unmount，新 URL 为 `episodes/1_4_001_01_e.json`，正文正常、应用 error 为 0，随后恢复完整 d URL 且仍为一个标签。浏览器 heap/audio global 因隔离边界无法取得可信样本，故剩余项进一步收敛为 Edge autoplay、真实 document-hidden 听感、长时间混合操作与浏览器 heap/Spine 曲线；不以 Node soak 替代这些真实环境项目。
 
+`5d62b48` 通过 `runtimeDebug=1` 将页面主世界 audio/source、Runtime、Spine 与 Chromium heap 诊断投影到 DOM，解决浏览器隔离层无法读取页面 global 的观测缺口。单标签完成 AUTO→Choice、Choice、菜单/Backlog 暂停、Backlog 定点恢复、SKIP all→两个 Choice 的混合链路，并修复“SKIP 到无 voice Choice 后上一句 voice source 残留”。修复后 Choice 只保留 BGM/Ambient 两个 loop。
+
+6 轮真实 `2 Spine → 0 Spine` 页面切换中，实例数严格 `2→0`，source 数 `2→0`，used heap 在约 102–198 MB 间波动并于末两轮普通页回落至约 102/104 MB，没有短程单调增长；marker destroy 告警未复现。该结果将剩余项收敛为 Edge autoplay、操作系统级真实 document-hidden/听感和数小时 soak，不把 debug visibility override 或 6 轮曲线升级为这些项目的替代证据。
+
 ## 2026-07-22 首页 consumer 回归与修复
 
 后续首页复核发现：`ArchiveImmersiveHome` 直接使用 `SpineStage`，不经过 StoryViewer 的 `useStoryRuntimeCues`。`baf44df` 删除全局 legacy background writer 后，首页虽然正确解析 `bg001_315pro_in_01`，但没有把背景写入以黑色清屏的 Pixi stage，因此呈现黑屏。
