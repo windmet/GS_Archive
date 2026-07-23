@@ -138,3 +138,15 @@ http://127.0.0.1:5174/?view=player&scenario=fixtures%2Fstory_localization_stress
 这说明“StoryViewer Background Runtime 唯一 owner”已经成立，但当时“所有直接复用 SpineStage 的 consumer 都有显式背景 owner”尚未成立。
 
 后续已增加默认关闭、仅由首页显式启用的 `SpineStage.manageBackground` standalone contract；没有恢复 `applyStepSceneState` 的背景写入。桌面、冬马→翔太切换及 `390×844` 移动端均恢复 `bg001_315pro_in_01`，DOM owner 为 `standalone`、应用级 console error 为 0、移动端无横向溢出。资料馆首页本项更新为 PASS；详细证据见 `ARCHIVE_HOME_BACKGROUND_OWNER_20260722.md`。
+
+## 2026-07-23 首个 authoritative collection 正式发布
+
+前文“尚未正式发布”均是对应阶段的历史结论，当前状态由本节覆盖。`1_4_001_01` aggregate 与 a–j 十个 episode 已使用 `python-native-v1` candidate 和 atomic publisher 正式切换为 `runtime_contract: story-runtime-v2`：
+
+- 发布 11 files / 10 episodes / 432 unique steps / 139 unique voice refs；manifest 双表示计数为 864 steps / 278 voice refs；
+- aggregate old/new hash 为 `sha256:db5d33453a9a999b35455e0fa5ee9cfa242869f7d15c91e91db4d5c572379495` → `sha256:e3a4000b6af1d69ef7294320d89cb9cd725283e537b2e4f282c3199d7a7b1b06`；
+- 旧产物完整备份及 manifest 位于 `C:\Users\windm\AppData\Local\Temp\sidem-authoritative-formal-backup-4315bc2cf6454457a490aade7c9d36b2`；
+- 发布后由 `8b31268` 修复 strict episode boundary、Choice `target_step_id`、`entry_snapshot.bg`、presentation 文本读取与验证器 legacy 字段假设；
+- schema/publisher、Runtime、text/localization、episode/voice、playback range、presentation、首页、100 轮 audio soak 与 2400-module production build 全部 PASS。
+
+本轮因外部 Edge 音频请求触发 IDM 自动嗅探，已停止该验证路径，并确认无 Codex 临时 Edge 进程残留。没有把纯脚本通过写成浏览器音频通过；仍未完成的 release stability 是 Edge autoplay、操作系统级真实 document-hidden/听感与数小时 heap/Spine soak。下一 collection 仍须独立执行 dry-run、parity、备份与小批发布，禁止直接覆盖全库。

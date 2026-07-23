@@ -1,6 +1,6 @@
 # 剧情预览器：最新审计、进度与下一窗口交接（2026-07-22）
 
-> 实现审计基线：PR #1 `codex/story-localization-contract`，当前实现提交 `85983ee6e1c1e0a2d45560d093700a4f4caeae27`；本文提交后分支 HEAD 会继续前进
+> 实现审计基线：PR #1 `codex/story-localization-contract`，当前实现提交 `8b31268`；本文提交后分支 HEAD 会继续前进
 > 文档用途：给新窗口提供唯一的“现在做到哪里、什么还不能宣称完成、下一步如何验证”入口。
 > 本文不是新的架构规范；发生冲突时，运行语义以 Runtime 设计文档为准，文本身份与翻译行为以 Localization Contract 为准。
 
@@ -20,7 +20,7 @@
 
 - [资料门户与剧情浏览交接](./ARCHIVE_STORY_NEXT_WINDOW_HANDOFF_20260716.md)：集合页、episode 边界、门户路由与档案证据边界。
 - [Compiled Scenario v2 Compatibility Schema](../../schemas/compiled-scenario-v2.schema.json)：迁移期输入结构，必须保持宽容以承接 legacy corpus。
-- [Authoritative Compiled Scenario v2 Schema](../../schemas/compiled-scenario-v2-authoritative.schema.json)：严格 compiler output contract；首批正式文本身份迁移尚未符合该契约。
+- [Authoritative Compiled Scenario v2 Schema](../../schemas/compiled-scenario-v2-authoritative.schema.json)：严格 compiler output contract；首批 `1_4_001_01` aggregate + a–j 已符合并发布该契约。
 - [剧情翻译 Overlay Schema](../../schemas/story-translation-overlay-v1.schema.json)：剧情译文静态格式。
 - [实体翻译 Overlay Schema](../../schemas/entity-translation-overlay-v1.schema.json)：偶像/NPC/组合等实体译名格式。
 
@@ -44,7 +44,7 @@
 | PR 有 38 个提交、79 个文件、约 1.1 万新增行 | 正确：相对 `origin/master` 为 38 commits、79 files、+11269/-519 | 这是阶段性大 PR，下一步优先 release acceptance，不继续无边界扩功能 |
 | 8,441 份剧情 JSON、26,849/26,912 语音可解析 | 与当前基线不一致 | 已跟踪的 `archive_verification.json` 记录 10,324 个 scenario 文件、157,550 steps、26,912/26,912 标准语音引用可用；引用数字必须带生成日期与文件来源 |
 | 本地化纵向切片已经完成 | 数据/状态链成立，但只在 fixture 与少量实体上成立 | “基础设施纵向切片完成”；不等于正式剧情数据迁移或翻译覆盖完成 |
-| Compiled Scenario IR v2 已正式落地 | Compiler 与 schema 已有 v2 能力，但正式 public corpus 仍是 legacy 产物 | v2 runtime compatibility 已落地；正式 compiler output 迁移尚未发布 |
+| Compiled Scenario IR v2 已正式落地 | Compiler/schema 已有 v2 能力，且首个 `1_4_001_01` collection 已发布 strict output；其余绝大多数 public corpus 仍是 legacy | v2 runtime compatibility 与首批 formal output 已落地；不能外推为全库迁移 |
 | 双语已可用 | 当前通过 `joinDisplay()` 拼成一个字符串 | 功能可用，视觉层级未完成；组件还不能分别控制 primary/secondary |
 
 ### 2.1 GitHub 在线仓库的证据边界
@@ -193,13 +193,13 @@ translation state
 - `text_speed` 已从实际 Preferences v2 输出退役；读取旧 v2 localStorage 时会保留其他字段并自动移除该键（`7c1f1b2`）。
 - 原 `compiled-scenario-v2.schema.json` 已明确命名为 compatibility input，继续允许 legacy `text/text_jp/text_cn` 与迁移期未知字段。
 - 新增严格 `compiled-scenario-v2-authoritative.schema.json`，禁止 legacy state/timeline/text 字段和未知顶层/step/dialogue/choice/flow 属性（`816d584`）。
-- `verify:story-schema` 使用 JSON Schema 2020-12 validator 覆盖正反例，并明确判定首批 `1_4_001_01` 仍是 compatibility input。详细证据见 [Authoritative v2 Schema 审计](../03_audit/STORY_AUTHORITATIVE_V2_SCHEMA_20260723.md)。
+- `verify:story-schema` 使用 JSON Schema 2020-12 validator 覆盖正反例，并验证 mounted collection 必须全组为 compatibility 或全组为 authoritative，禁止混合契约。详细证据见 [Authoritative v2 Schema 审计](../03_audit/STORY_AUTHORITATIVE_V2_SCHEMA_20260723.md)。
 - `story:authoritative-candidate` 已能在工作区外把 compatibility episode 编译成 strict v2；a–j 共 432 steps 通过 schema、Runtime 与文本投影等价性 gate（`85983ee`）。
-- collection manifest/atomic publisher 已覆盖 aggregate + a–j，带 old/candidate hash、显式 group 确认、compiled 外完整备份、temp + fsync + rename、最终 hash 和失败回滚（`2702773`、`1fb426e`）。真实 dry-run 为 11 files / 10 episodes / 432 unique steps / 139 unique voice refs；未执行正式覆盖。
+- collection manifest/atomic publisher 已覆盖 aggregate + a–j，带 old/candidate hash、显式 group 确认、compiled 外完整备份、temp + fsync + rename、最终 hash 和失败回滚（`2702773`、`1fb426e`）。2026-07-23 已正式发布 11 files / 10 episodes / 432 unique steps / 139 unique voice refs；完整旧产物备份在工作区外。
 - detached source-only checkout 已通过 schema/publish/text/localization/structured UI/Runtime foundation verifier 和 2400-module production build；本机语料锚点按预期显式 skip。
 - Python `ScenarioCompiler` 已支持原生 authoritative output，`story:authoritative-native` 可从 raw group 直接生成 strict aggregate/episodes；tracked fixture 与 mounted a–j 432 steps 均和 JavaScript oracle 逐字段一致，真实 raw dry-run 139/139 voice refs（`e7a78d0`）。
 
-正式 corpus 切换仍未完成。Candidate a/d 已通过单标签 5174 的 camera/SE、fade restore 与无黑幕锚点；随后正式 mounted d 的 step 6 neck、Spine root、step 12–14 fade restore 也通过，日志无 neck target unavailable 或应用 error。能原生生成、实播和安全发布 candidate 不等于已经发布。
+首个 `1_4_001_01` strict corpus 切换现已完成。发布后 schema、Runtime/text/localization、episode/voice、playback range、presentation、首页、audio soak 与 production build 通过；播放器同时补齐 strict episode boundary、背景和 Choice target 消费。Candidate a/d 与发布前正式 mounted d 的单标签锚点证据仍有效，但本次发布后为避免 IDM 音频嗅探没有再次执行浏览器播放，不能把纯脚本回归升级为长时间真实环境验收。
 
 ### 4.8 Release acceptance 已完成基础矩阵，稳定性长测尚未完成
 
@@ -351,10 +351,10 @@ screen/fade
 - BGM/Ambient stale async load guard 与 100 轮 source/timer soak：已完成（`7747d23`）；
 - source bus/kind/cue/age 主世界诊断、无 voice 步骤释放旧 dialogue source、混合 UI 链路与 6 轮 heap/Spine 曲线：已完成（`5d62b48`）；
 - 删除不再使用的 `text_speed`：已完成（`7c1f1b2`）；
-- 收紧 authoritative v2 schema：schema/verifier（`816d584`）、strict candidate stage（`85983ee`）、atomic publish/source-only gate（`2702773`、`1fb426e`）及 Python-native output/parity（`e7a78d0`）已完成，正式发布待完成；
+- 收紧 authoritative v2 schema：schema/verifier（`816d584`）、strict candidate stage（`85983ee`）、atomic publish/source-only gate（`2702773`、`1fb426e`）及 Python-native output/parity（`e7a78d0`）已完成；首个 a–j strict collection 已正式发布；
 - feature flags 已在各 channel 默认验收后删除；剩余 compatibility fields 应随 authoritative v2 schema 收紧独立处理。
 
-下一步补 Edge autoplay、操作系统级真实 document-hidden/听感与数小时浏览器 soak；通过并审查 manifest 后，首个 a–j strict corpus 发布继续使用独立提交。发布器完成不等于 corpus 已发布。
+下一步补 Edge autoplay、操作系统级真实 document-hidden/听感与数小时浏览器 soak；随后选择下一最小 collection，重新执行 dry-run、parity manifest、完整备份与独立小批发布。首批通过不等于全库可直接迁移。
 
 ## 7. 固定演出验收锚点
 
@@ -488,9 +488,9 @@ npm run build
 2. notes/04_refactor/STORY_VIEWER_RUNTIME_REFACTOR_DESIGN_20260718.md
 3. notes/04_refactor/STORY_LOCALIZATION_CONTRACT_20260719.md
 
-当前实现审计基线是 PR #1、branch codex/story-localization-contract；音频实现 3ecd5b5、Preferences 清理 7c1f1b2、authoritative schema gate 816d584、strict candidate stage 85983ee、atomic publisher 2702773、source-only/path hardening 1fb426e、Python-native strict output e7a78d0；请以实际远端 HEAD 为准。
+当前实现审计基线是 PR #1、branch codex/story-localization-contract；音频实现 3ecd5b5、Preferences 清理 7c1f1b2、authoritative schema gate 816d584、strict candidate stage 85983ee、atomic publisher 2702773、source-only/path hardening 1fb426e、Python-native strict output e7a78d0、首批 mounted strict consumer 8b31268；请以实际远端 HEAD 为准。
 StoryViewer 的六个 Runtime channel、旧路径清理、首页 standalone background owner、玩家内七类结构化双语 UI、音频基础 owner/lifecycle、Preferences 清理与 schema 分层已完成。
-下一优先级是长时间音频/内存/后台恢复 release acceptance，以及审查 Python-native/JS parity 后独立发布 strict collection；不要恢复 applyStepSceneState 的背景写入，也不要把尚未发布的 candidate 说成正式 corpus 已迁移。
+下一优先级是长时间音频/内存/后台恢复 release acceptance，以及选择下一最小 collection 重复 strict 发布门禁；不要恢复 applyStepSceneState 的背景写入，也不要把首批通过推导为全库已迁移。
 正式 compiled 仅迁移首个 1_4_001_01 collection；不要直接覆盖单个 episode，也不要批量翻译。
 分批提交并推送，每批说明已验证和仍未验证的内容。
 ```
