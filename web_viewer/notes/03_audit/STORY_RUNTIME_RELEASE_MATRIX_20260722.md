@@ -111,7 +111,9 @@ PR #1 在 `88969a18` 的只读 GitHub 核对为 80 commits、131 changed files�
 
 新增 `.github/workflows/web-viewer-source-gate.yml`，对 PR、master push 与手动触发提供只读、20 分钟、同 PR 自动取消的 source-only gate。矩阵包含 authoritative schema/shape、Localization、Translation、Text、Audio、Runtime foundation、strict publisher、compiled migration 与 production build；路径过滤覆盖 `data_pipeline/**`、`web_viewer/**` 和 workflow 自身。
 
-workflow 通过 `actionlint v1.7.12`。独立 detached checkout 在没有 mounted corpus/assets 的条件下执行 `npm ci`（108 packages，0 vulnerabilities）及全部命令，2401-module build 通过；schema 明确报告 mounted a/d anchor skip，并仍验证 tracked fixtures。push 后仍须以 GitHub 首次 run 为最终远端 CI 证据。
+workflow 通过 `actionlint v1.7.12`。独立 detached checkout 在没有 mounted corpus/assets 的条件下执行 `npm ci`（108 packages，0 vulnerabilities）及全部命令，2401-module build 通过；schema 明确报告 mounted a/d anchor skip，并仍验证 tracked fixtures。
+
+远端首次 run `29976181433` 在完整 PR patch 中发现 5 个历史 whitespace 问题并失败，证明 patch gate 生效；机械清理后 run `29976275109` 的 15 个步骤全部通过，25 秒完成。Source-only GitHub CI 缺口关闭。
 
 ## 2026-07-23 Preferences 与 authoritative schema follow-up
 

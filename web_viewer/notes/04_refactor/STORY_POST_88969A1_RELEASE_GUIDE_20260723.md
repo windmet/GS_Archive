@@ -73,7 +73,7 @@ mounted corpus 默认不由 Git 跟踪，所以远端 PR 只会记录发布工�
 
 ### P0.5：建立 source-only GitHub Actions
 
-状态：已实现，等待推送后的 GitHub 首次 run 确认。
+状态：已实现，GitHub PR run 已通过。
 
 最小 CI：
 
@@ -100,6 +100,8 @@ npm run build
 - localization、translations、text、100-cycle audio、Runtime foundation、authoritative publisher、compiled migration：全部 PASS；
 - production build：2401 modules，PASS；
 - 两条未挂载媒体路径保留为 runtime URL 的提示符合 source-only 边界。
+
+远端首次 run `29976181433` 正确发现本 PR 历史中的 5 个 whitespace 问题，因此在 patch gate 失败并跳过后续步骤；这些 EOF 空行/Markdown 尾随空格已机械清理。后续 run `29976275109` 于 25 秒内完成全部 15 个 job steps，结论为 success。该结果证明 CI 实际检查完整 PR patch，而不是只检查干净 checkout。
 
 CI 必须明确区分：
 
@@ -145,7 +147,7 @@ CI 必须明确区分：
 
 当前 PR 可以从 draft 转为 review 的最低条件：
 
-- source-only CI 存在，本机 detached 模拟通过，且 GitHub 首次 run 通过；
+- source-only CI 存在，本机 detached 模拟与 GitHub PR run 均通过；
 - mounted 发布后矩阵通过；
 - Edge/后台/长时间音频的未完成项被实测关闭，或被明确列为不阻塞且有负责人/后续 issue；
 - PR body 说明两个 strict collection 与全库仍低于 1% 的边界；
