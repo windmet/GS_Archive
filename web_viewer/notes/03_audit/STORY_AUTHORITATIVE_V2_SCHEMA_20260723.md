@@ -119,6 +119,8 @@ JavaScript candidate stage 继续作为独立 oracle 与发布器输入，而不
 
 - 正式 corpus 尚未切换严格输出；
 - snapshot/payload 内部仍需按 Runtime channel 逐项 schema 化；
-- 正式发布前仍须执行完整 neck/Spine 加载和长时间 release acceptance；source-only checkout 已通过。
+- 正式发布前仍须执行长时间 release acceptance；source-only checkout 与正式 mounted neck/Spine 加载已通过。
 
-下一步是在正式资源加载条件下补 neck/Spine 与长时间 release acceptance，并审查 Python-native/JavaScript parity manifest 后再决定是否独立提交正式 a–j strict corpus 发布。不得因为 compiler 与发布器已完成就宣称 corpus 已切换，也不得直接覆盖全量 corpus。
+2026-07-23 正式 mounted `1_4_001_01_d` 单标签复核中，`007kei_002_00` 与 `047shu_001_00` 均加载完整 neck 动画表；step 6 显示 neck 姿态，debug 层为 `spine yes` 且 root 未下坠；step 12–14 黑幕链恢复户外背景。日志无 `spine cue target unavailable`、应用 error 为 0，之前 candidate 压缩加载 warning 已在正式加载条件下关闭。
+
+下一步是长时间 release acceptance，并审查 Python-native/JavaScript parity manifest 后再决定是否独立提交正式 a–j strict corpus 发布。不得因为 compiler 与发布器已完成就宣称 corpus 已切换，也不得直接覆盖全量 corpus。
