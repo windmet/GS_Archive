@@ -182,7 +182,13 @@ Runtime 在调用 `spawnSpine` 前识别该契约，直接复用或加载 `publi
 
 `verify:release-soak` 覆盖容量停止、summary、手动停止、浏览器 timer receiver、旧 collector 释放、跨 StoryViewer 重挂载续接和 UI/manager 静态接线，并已加入 source-only GitHub Actions。该 48 秒曲线只验收工具本身，不替代文档要求的 2–4 小时曲线或真实有声音频验收。
 
-`verify:spine-motion`、`verify:spine-fade`、Runtime foundation、home、playback range、100-cycle audio/noAudio verifier 与 2401-module production build 均通过。本轮仍不得记作 Edge autoplay、真实 `document.hidden` 听感或有声长测。
+## 2026-07-23 Lifecycle warning severity follow-up
+
+应用级 `console.warn` 复核确认，Story Runtime 主路径中只有 `StoryViewer onBeforeUnmount FIRED!` 是正常生命周期事件却使用 warning；资源缺失、加载失败、动画缺失、cue target unavailable、teardown 失败等其余 warning 均保留。正常 Spine spawn 已在上一提交降为 debug，本轮又将 StoryViewer unmount 改为仅 `runtimeDebug` 下的 `console.debug`，并在 `verify:release-soak` 中禁止两类成功事件回退为 warning。
+
+单个应用内标签、`noAudio=1&runtimeDebug=1` 从正式 `1_4_001_01_d` 点击“戻る”触发真实卸载并返回 `view=story_collection`；以点击前时间为日志边界，本次新增 warning/error 为 0，生命周期/SPAWN marker warning 命中为 0。随后恢复完整 `d` URL，仍只保留 1 个标签。Codex Browser 宿主 Statsig timeout 不属于页面日志。
+
+`verify:spine-motion`、`verify:spine-fade`、Runtime foundation、home、playback range、100-cycle audio/noAudio verifier 与当前 2402-module production build 均通过。本轮仍不得记作 Edge autoplay、真实 `document.hidden` 听感或有声长测。
 
 ## 2026-07-23 Preferences 与 authoritative schema follow-up
 

@@ -140,6 +140,7 @@ CI 必须明确区分：
    - quiet endpoint 的 `active_runtime_cues`、`audio_cleanup_timers`、`active_screen_overlays`、`silhouette_pending`、`silhouette_relayout_jobs` 应为 0；
    - `spine_instances` / `silhouette_instances` / `spine_container_children` / `debug_markers` 应与终点画面一致，`stage_children` 不应随 episode 单调累加；
    - 有声验收时 active source 应与当时 BGM/Ambient/voice 实际所有权一致，不能机械要求全程为 0。
+6. warning/error 只统计本次 `START SOAK` 之后的新记录。正常的 Spine spawn 与 StoryViewer unmount 已降为 debug；任何新的资源失败、动画缺失、Runtime cue target unavailable、marker teardown 或未处理异常仍应判为问题。
 
 记录器只产生观察证据，不自动把曲线判为 PASS。若 IDM 未关闭，先执行无音频 2–4 小时曲线，真实 Edge autoplay、后台听感及 BGM/Ambient 验收仍保持未完成。
 

@@ -864,7 +864,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  console.warn('[Lifecycle] StoryViewer onBeforeUnmount FIRED!')
+  if (RUNTIME_DEBUG) console.debug('[Lifecycle] StoryViewer onBeforeUnmount')
   cleanupStepSceneEffects()
   cleanupRuntimeCues()
   playbackController?.dispose()
