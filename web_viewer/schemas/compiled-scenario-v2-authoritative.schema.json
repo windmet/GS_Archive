@@ -106,8 +106,8 @@
         "duration": { "type": "number", "minimum": 0 },
         "hide_dialogue": { "type": "boolean" },
         "lipSync": { "type": "boolean" },
-        "entry_snapshot": { "type": "object" },
-        "settled_snapshot": { "type": "object" },
+        "entry_snapshot": { "$ref": "#/$defs/snapshot" },
+        "settled_snapshot": { "$ref": "#/$defs/snapshot" },
         "snapshot_format": { "const": "story-snapshot-v2" },
         "cues": { "type": "array", "items": { "$ref": "#/$defs/cue" } },
         "flow": { "$ref": "#/$defs/flow" },
@@ -225,6 +225,149 @@
         "system_caption"
       ]
     },
+    "snapshot": {
+      "type": "object",
+      "properties": {
+        "bg": { "type": ["string", "null"] },
+        "bg_color": { "type": ["string", "null"] },
+        "bg_color_transition": { "type": ["object", "null"] },
+        "bg_dof": { "type": ["number", "null"] },
+        "bg_dof_transition": { "type": ["object", "null"] },
+        "bg_effect": {
+          "anyOf": [
+            { "type": "object" },
+            { "type": "string" },
+            { "type": "null" }
+          ]
+        },
+        "bg_effects": { "type": "array" },
+        "bg_profile": { "type": ["object", "null"] },
+        "bg_transition": { "type": ["object", "null"] },
+        "bg_view_type": { "type": "string" },
+        "bgm": { "type": ["string", "null"] },
+        "bgm_stop_fade": { "type": ["number", "null"] },
+        "bgm_volume": { "type": "number" },
+        "camera_filter": { "type": ["string", "null"] },
+        "camera_zoom": { "type": ["object", "null"] },
+        "environmental": { "type": ["object", "null"] },
+        "environmental_duck_target": { "type": ["number", "null"] },
+        "environmental_volume": { "type": ["number", "null"] },
+        "image_icon": { "type": ["object", "null"] },
+        "phone_mode": { "type": "boolean" },
+        "screen_effects": { "type": "array" },
+        "screen_fade": { "type": ["object", "null"] },
+        "screen_overlay": { "type": ["object", "null"] },
+        "screen_slide": { "type": ["object", "null"] },
+        "se": { "type": ["object", "null"] },
+        "se_events": { "type": "array" },
+        "spines": { "type": "array" },
+        "talk_mode": { "type": "boolean" },
+        "text_disabled": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "cameraPayload": {
+      "type": "object",
+      "required": ["zoom", "offset_x", "offset_y", "duration"],
+      "properties": {
+        "zoom": { "type": "number" },
+        "offset_x": { "type": "number" },
+        "offset_y": { "type": "number" },
+        "duration": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "backgroundPayload": {
+      "type": "object",
+      "required": ["bg", "type", "color"],
+      "properties": {
+        "bg": { "type": "string", "minLength": 1 },
+        "type": { "type": "string", "minLength": 1 },
+        "color": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "sePayload": {
+      "type": "object",
+      "required": ["cue", "volume"],
+      "properties": {
+        "cue": { "type": "string", "minLength": 1 },
+        "volume": {
+          "anyOf": [
+            { "type": "string" },
+            { "type": "number" },
+            { "type": "null" }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "directionalWipePayload": {
+      "type": "object",
+      "required": ["type", "color", "direction"],
+      "properties": {
+        "type": { "enum": ["in", "out"] },
+        "color": { "type": "string", "minLength": 1 },
+        "direction": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "screenFadePayload": {
+      "type": "object",
+      "required": ["type", "color", "alpha"],
+      "properties": {
+        "type": { "enum": ["in", "out"] },
+        "color": { "type": "string", "minLength": 1 },
+        "alpha": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "spineMotionPayload": {
+      "type": "object",
+      "required": ["value"],
+      "properties": {
+        "value": { "type": "string", "minLength": 1 },
+        "anim_flag": { "type": "string" },
+        "blush_flag": { "type": "string" },
+        "sweat_flag": { "type": "string" },
+        "no_back": { "type": "boolean" },
+        "duration": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "spineExpressionPayload": {
+      "type": "object",
+      "required": ["value"],
+      "properties": {
+        "value": { "type": "string", "minLength": 1 },
+        "anim_flag": { "type": "string" },
+        "blush_flag": { "type": "string" },
+        "sweat_flag": { "type": "string" },
+        "duration": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "spineStopPayload": {
+      "type": "object",
+      "required": ["value"],
+      "properties": {
+        "value": { "type": "string" },
+        "anim_flag": { "type": "string" },
+        "blush_flag": { "type": "string" },
+        "sweat_flag": { "type": "string" },
+        "duration": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "spineTintPayload": {
+      "type": "object",
+      "required": ["value", "duration"],
+      "properties": {
+        "value": { "type": "string", "minLength": 1 },
+        "duration": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
     "cue": {
       "type": "object",
       "required": ["cue_id", "at", "duration", "channel", "action", "payload", "lifecycle", "evidence"],
@@ -239,7 +382,79 @@
         "lifecycle": { "$ref": "#/$defs/lifecycle" },
         "evidence": { "$ref": "#/$defs/evidence" }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "properties": {
+            "channel": { "const": "camera" },
+            "action": { "const": "camera.transform" },
+            "payload": { "$ref": "#/$defs/cameraPayload" }
+          }
+        },
+        {
+          "properties": {
+            "channel": { "const": "background" },
+            "action": { "const": "background.change" },
+            "payload": { "$ref": "#/$defs/backgroundPayload" }
+          }
+        },
+        {
+          "properties": {
+            "channel": { "const": "se" },
+            "action": { "const": "se.play" },
+            "payload": { "$ref": "#/$defs/sePayload" }
+          }
+        },
+        {
+          "properties": {
+            "channel": { "const": "screen" },
+            "action": { "const": "screen.directional_wipe" },
+            "payload": { "$ref": "#/$defs/directionalWipePayload" }
+          }
+        },
+        {
+          "properties": {
+            "channel": { "const": "screen" },
+            "action": { "const": "screen.fade" },
+            "payload": { "$ref": "#/$defs/screenFadePayload" }
+          }
+        },
+        {
+          "properties": {
+            "channel": { "type": "string", "pattern": "^spine:[^:]+:body$" },
+            "action": { "const": "spine.body.play" },
+            "payload": { "$ref": "#/$defs/spineMotionPayload" }
+          }
+        },
+        {
+          "properties": {
+            "channel": { "type": "string", "pattern": "^spine:[^:]+:face$" },
+            "action": { "const": "spine.face.set" },
+            "payload": { "$ref": "#/$defs/spineExpressionPayload" }
+          }
+        },
+        {
+          "properties": {
+            "channel": { "type": "string", "pattern": "^spine:[^:]+:neck$" },
+            "action": { "const": "spine.neck.play" },
+            "payload": { "$ref": "#/$defs/spineExpressionPayload" }
+          }
+        },
+        {
+          "properties": {
+            "channel": { "type": "string", "pattern": "^spine:[^:]+:neck$" },
+            "action": { "const": "spine.neck.stop" },
+            "payload": { "$ref": "#/$defs/spineStopPayload" }
+          }
+        },
+        {
+          "properties": {
+            "channel": { "type": "string", "pattern": "^spine:[^:]+:visual:tint$" },
+            "action": { "const": "spine.visual.tint" },
+            "payload": { "$ref": "#/$defs/spineTintPayload" }
+          }
+        }
+      ]
     },
     "lifecycle": {
       "type": "object",

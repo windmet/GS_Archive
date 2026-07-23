@@ -48,6 +48,80 @@ rejects(value => { value.steps[0].timeline = [] }, '/steps/0')
 rejects(value => { value.steps[0].dialogue.text_jp = value.steps[0].dialogue.source_text }, '/steps/0/dialogue')
 rejects(value => { value.steps[0].dialogue.text_cn = '' }, '/steps/0/dialogue')
 rejects(value => { delete value.steps[0].dialogue.text_ref }, '/steps/0/dialogue')
+rejects(value => { value.steps[0].entry_snapshot.legacy_background = 'forbidden' }, '/steps/0/entry_snapshot')
+
+const cueFixture = ({ action, channel, payload, target = null }, index = 0) => ({
+  cue_id: `fixture-cue-${index}`,
+  at: 0,
+  duration: 0,
+  channel,
+  action,
+  target,
+  payload,
+  lifecycle: {
+    persistence: 'transient',
+    skippable: true,
+    blocks_input: false,
+    blocks_auto: false,
+    restore_policy: 'suppress',
+  },
+  evidence: clone(fixture.steps[0].evidence),
+})
+
+const cueCases = [
+  { action: 'camera.transform', channel: 'camera', payload: { zoom: 1, offset_x: 0, offset_y: 0, duration: 0 } },
+  { action: 'background.change', channel: 'background', payload: { bg: 'bg001', type: 'dissolve', color: null } },
+  { action: 'se.play', channel: 'se', payload: { cue: 'cloth_move_l01', volume: null } },
+  { action: 'screen.directional_wipe', channel: 'screen', payload: { type: 'in', color: '#000000', direction: '6' } },
+  { action: 'screen.fade', channel: 'screen', payload: { type: 'out', color: '#000000', alpha: 1 } },
+  { action: 'spine.body.play', channel: 'spine:001tom:body', payload: { value: 'idle', no_back: true } },
+  { action: 'spine.face.set', channel: 'spine:001tom:face', payload: { value: 'face_smile' } },
+  { action: 'spine.neck.play', channel: 'spine:001tom:neck', payload: { value: 'neck_question', duration: 0.2 } },
+  { action: 'spine.neck.stop', channel: 'spine:001tom:neck', payload: { value: '' } },
+  { action: 'spine.visual.tint', channel: 'spine:001tom:visual:tint', payload: { value: '#ffffff', duration: 0.2 } },
+]
+
+for (const [index, cueCase] of cueCases.entries()) {
+  const candidate = clone(fixture)
+  candidate.steps[0].cues = [cueFixture(cueCase, index)]
+  assert.equal(validate(candidate), true, `${cueCase.action}: ${ajv.errorsText(validate.errors, { separator: '\n' })}`)
+}
+
+rejects(value => {
+  value.steps[0].cues = [cueFixture({
+    action: 'screen.unknown',
+    channel: 'screen',
+    payload: { type: 'in', color: '#000000', alpha: 1 },
+  })]
+}, '/steps/0/cues/0')
+rejects(value => {
+  value.steps[0].cues = [cueFixture({
+    action: 'screen.fade',
+    channel: 'camera',
+    payload: { type: 'in', color: '#000000', alpha: 1 },
+  })]
+}, '/steps/0/cues/0')
+rejects(value => {
+  value.steps[0].cues = [cueFixture({
+    action: 'screen.fade',
+    channel: 'screen',
+    payload: { type: 'in', color: '#000000', alpha: 1, legacy_delay: 1 },
+  })]
+}, '/steps/0/cues/0')
+rejects(value => {
+  value.steps[0].cues = [cueFixture({
+    action: 'camera.transform',
+    channel: 'camera',
+    payload: { zoom: 1, offset_x: 0, duration: 0 },
+  })]
+}, '/steps/0/cues/0')
+rejects(value => {
+  value.steps[0].cues = [cueFixture({
+    action: 'spine.neck.play',
+    channel: 'spine:001tom:neck',
+    payload: { value: '' },
+  })]
+}, '/steps/0/cues/0')
 
 assert.equal(compatibilitySchema.additionalProperties, true, 'compatibility input schema must remain permissive during corpus migration')
 assert.equal(compatibilitySchema.$defs.dialogue.additionalProperties, true)

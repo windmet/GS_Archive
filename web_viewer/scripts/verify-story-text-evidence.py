@@ -140,6 +140,24 @@ def verify_schema_contracts():
     assert_equal(authoritative_schema["additionalProperties"], False, "authoritative top-level strictness")
     assert_equal(authoritative_schema["$defs"]["step"]["additionalProperties"], False, "authoritative step strictness")
     assert_equal(authoritative_schema["$defs"]["dialogue"]["additionalProperties"], False, "authoritative dialogue strictness")
+    assert_equal(authoritative_schema["$defs"]["snapshot"]["additionalProperties"], False, "authoritative snapshot top-level strictness")
+    for payload_name in (
+        "cameraPayload",
+        "backgroundPayload",
+        "sePayload",
+        "directionalWipePayload",
+        "screenFadePayload",
+        "spineMotionPayload",
+        "spineExpressionPayload",
+        "spineStopPayload",
+        "spineTintPayload",
+    ):
+        assert_equal(
+            authoritative_schema["$defs"][payload_name]["additionalProperties"],
+            False,
+            f"authoritative {payload_name} strictness",
+        )
+    assert_equal(len(authoritative_schema["$defs"]["cue"]["oneOf"]), 10, "authoritative cue action contract count")
     assert_equal(authoritative_schema["properties"]["runtime_contract"]["const"], "story-runtime-v2", "authoritative runtime contract")
     assert_equal(overlay_schema["properties"]["schema_version"]["const"], 1, "overlay schema")
     assert_equal(entity_schema["properties"]["schema_version"]["const"], 1, "entity schema")
