@@ -155,4 +155,6 @@ http://127.0.0.1:5174/?view=player&scenario=fixtures%2Fstory_localization_stress
 
 `a065c22` 将 strict snapshot 顶层和 10 类 compiler cue action/channel/payload 写入 authoritative schema，并新增 mounted 全库 verifier。10,326 scenarios（含 tracked fixture）、315,124 snapshots、175,600 cues、1214 snapshot shapes、37 action/payload shapes 全部通过；未知 action、channel 错配、payload 缺失/多余字段、snapshot 顶层未知字段及空 `neck.play` 均有反例，1618 条空 `neck.stop` 按原语义显式保留。
 
-`verify:story-schema`、`verify:story-text`、authoritative publisher、compiled migration、Runtime foundation 与 2400-module production build 通过。该项不替代 Edge/后台/数小时浏览器稳定性验收；snapshot 的 Spine、background profile/effect、camera 与 screen overlay 等嵌套对象仍待逐 channel 收紧。
+`verify:story-schema`、`verify:story-text`、authoritative publisher、compiled migration、Runtime foundation 与 2400-module production build 通过。该项不替代 Edge/后台/数小时浏览器稳定性验收。
+
+后续 `c6d57dd` 又关闭 background profile/effect/transition、camera、screen effect/overlay/slide、environmental、image icon、Spine/fade 等 snapshot 嵌套对象的未知字段。递归门禁覆盖 488 种 nested snapshot shape，并新增 source-only 正例以及 background profile、Spine、overlay、screen effect 未知字段反例；mounted 10,326 scenarios / 315,124 snapshots / 175,600 cues 仍全部 PASS。Runtime snapshot/cue shape 至此收口，剩余 schema 债转为 `dialogue.lip`、`resource_manifest`、`diagnostics` 和 evidence `raw_values` 等外围数据结构。

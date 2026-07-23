@@ -1,6 +1,6 @@
 # 剧情预览器：最新审计、进度与下一窗口交接（2026-07-22）
 
-> 实现审计基线：PR #1 `codex/story-localization-contract`，当前实现提交 `a065c22`；本文提交后分支 HEAD 会继续前进
+> 实现审计基线：PR #1 `codex/story-localization-contract`，当前实现提交 `c6d57dd`；本文提交后分支 HEAD 会继续前进
 > 文档用途：给新窗口提供唯一的“现在做到哪里、什么还不能宣称完成、下一步如何验证”入口。
 > 本文不是新的架构规范；发生冲突时，运行语义以 Runtime 设计文档为准，文本身份与翻译行为以 Localization Contract 为准。
 
@@ -198,7 +198,7 @@ translation state
 - collection manifest/atomic publisher 已覆盖 aggregate + a–j，带 old/candidate hash、显式 group 确认、compiled 外完整备份、temp + fsync + rename、最终 hash 和失败回滚（`2702773`、`1fb426e`）。2026-07-23 已正式发布 11 files / 10 episodes / 432 unique steps / 139 unique voice refs；完整旧产物备份在工作区外。
 - detached source-only checkout 已通过 schema/publish/text/localization/structured UI/Runtime foundation verifier 和 2400-module production build；本机语料锚点按预期显式 skip。
 - Python `ScenarioCompiler` 已支持原生 authoritative output，`story:authoritative-native` 可从 raw group 直接生成 strict aggregate/episodes；tracked fixture 与 mounted a–j 432 steps 均和 JavaScript oracle 逐字段一致，真实 raw dry-run 139/139 voice refs（`e7a78d0`）。
-- authoritative snapshot 顶层与 10 类 Runtime cue action/channel/payload 已严格 schema 化；mounted 10,326 scenarios / 315,124 snapshots / 175,600 cues shape gate 通过（`a065c22`）。剩余 schema 工作只针对 snapshot 嵌套对象逐 channel 展开。
+- authoritative snapshot 顶层、background/camera/screen/environmental/image icon/Spine 嵌套对象与 10 类 Runtime cue action/channel/payload 已严格 schema 化；mounted 10,326 scenarios / 315,124 snapshots / 175,600 cues、488 类 nested shape gate 通过（`a065c22`、`c6d57dd`）。剩余 schema 工作转为 lip/resource manifest/diagnostics/evidence 等外围结构。
 
 首个 `1_4_001_01` strict corpus 切换现已完成。发布后 schema、Runtime/text/localization、episode/voice、playback range、presentation、首页、audio soak 与 production build 通过；播放器同时补齐 strict episode boundary、背景和 Choice target 消费。Candidate a/d 与发布前正式 mounted d 的单标签锚点证据仍有效，但本次发布后为避免 IDM 音频嗅探没有再次执行浏览器播放，不能把纯脚本回归升级为长时间真实环境验收。
 
@@ -353,7 +353,7 @@ screen/fade
 - source bus/kind/cue/age 主世界诊断、无 voice 步骤释放旧 dialogue source、混合 UI 链路与 6 轮 heap/Spine 曲线：已完成（`5d62b48`）；
 - 删除不再使用的 `text_speed`：已完成（`7c1f1b2`）；
 - 收紧 authoritative v2 schema：schema/verifier（`816d584`）、strict candidate stage（`85983ee`）、atomic publish/source-only gate（`2702773`、`1fb426e`）及 Python-native output/parity（`e7a78d0`）已完成；首个 a–j strict collection 已正式发布；
-- Runtime shape schema：snapshot 顶层、10 类 cue action/channel/payload 与 mounted 全库门禁已完成（`a065c22`）；剩余只逐 channel 关闭 snapshot 嵌套对象；
+- Runtime shape schema：snapshot 顶层及全部已知嵌套对象、10 类 cue action/channel/payload 与 mounted 全库门禁已完成（`a065c22`、`c6d57dd`）；
 - feature flags 已在各 channel 默认验收后删除；剩余 compatibility fields 应随 authoritative v2 schema 收紧独立处理。
 
 下一步补 Edge autoplay、操作系统级真实 document-hidden/听感与数小时浏览器 soak；随后选择下一最小 collection，重新执行 dry-run、parity manifest、完整备份与独立小批发布。首批通过不等于全库可直接迁移。
@@ -490,7 +490,7 @@ npm run build
 2. notes/04_refactor/STORY_VIEWER_RUNTIME_REFACTOR_DESIGN_20260718.md
 3. notes/04_refactor/STORY_LOCALIZATION_CONTRACT_20260719.md
 
-当前实现审计基线是 PR #1、branch codex/story-localization-contract；音频实现 3ecd5b5、Preferences 清理 7c1f1b2、authoritative schema gate 816d584、strict candidate stage 85983ee、atomic publisher 2702773、source-only/path hardening 1fb426e、Python-native strict output e7a78d0、首批 mounted strict consumer 8b31268、Runtime shape gate a065c22；请以实际远端 HEAD 为准。
+当前实现审计基线是 PR #1、branch codex/story-localization-contract；音频实现 3ecd5b5、Preferences 清理 7c1f1b2、authoritative schema gate 816d584、strict candidate stage 85983ee、atomic publisher 2702773、source-only/path hardening 1fb426e、Python-native strict output e7a78d0、首批 mounted strict consumer 8b31268、Runtime shape gate a065c22/c6d57dd；请以实际远端 HEAD 为准。
 StoryViewer 的六个 Runtime channel、旧路径清理、首页 standalone background owner、玩家内七类结构化双语 UI、音频基础 owner/lifecycle、Preferences 清理与 schema 分层已完成。
 下一优先级是长时间音频/内存/后台恢复 release acceptance，以及选择下一最小 collection 重复 strict 发布门禁；不要恢复 applyStepSceneState 的背景写入，也不要把首批通过推导为全库已迁移。
 正式 compiled 仅迁移首个 1_4_001_01 collection；不要直接覆盖单个 episode，也不要批量翻译。
