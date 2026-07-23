@@ -1,0 +1,75 @@
+{
+  "scenario_id": "python_authoritative_fixture",
+  "text_catalog_id": "python_authoritative_fixture",
+  "text_contract_version": 1,
+  "source": {
+    "raw_path": "scenariodata/python_authoritative_fixture.json",
+    "raw_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "steps": [
+    {
+      "step_id": 1,
+      "type": "adv",
+      "state": {
+        "bg": "bg001_315pro_in_01",
+        "bg_transition": { "type": "dissolve", "delay": 0.2, "duration": 0.5 },
+        "camera_zoom": { "zoom": 1.2, "offset_x": 5, "offset_y": 10, "delay": 0.4, "duration": 0.8 },
+        "se": null,
+        "se_events": [{ "cue": "cloth_move_l01", "delay": 0.3, "volume": 80 }],
+        "screen_fade": { "type": "out", "delay": 0, "duration": 0.4, "color": "#000000" },
+        "screen_slide": null,
+        "screen_effects": [],
+        "spines": [{ "id": "001tom", "model": "001tom_001_00", "face": "face_default", "anim": "wait_loop", "visible": true }],
+        "bg_effects": [],
+        "text_disabled": false
+      },
+      "timeline": [
+        { "type": "spine_neck_anim", "time": 0.6, "duration": 0.2, "chara_id": "001tom", "value": "neck_question" },
+        { "type": "spine_face", "time": 0.9, "chara_id": "001tom", "value": "face_smile" }
+      ],
+      "chara_id": "001tom",
+      "dialogue": {
+        "speaker": "天ヶ瀬 冬馬",
+        "source_text": "行くぜ！",
+        "speaker_identity": { "kind": "idol", "entity_type": "idol", "entity_id": "001tom", "source_name": "天ヶ瀬 冬馬" },
+        "text_ref": {
+          "unit_id": "story-text:v1:python_authoritative_fixture:part_a:cmd-000010:dialogue:000",
+          "source": { "scenario_id": "python_authoritative_fixture", "part_id": "part_a", "file": "scenariodata/python_authoritative_fixture.json", "command_index": 10, "field_kind": "dialogue", "field_ordinal": 0 },
+          "source_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        },
+        "voice": "fixture_voice.m4a",
+        "lip": null
+      },
+      "evidence": { "source_file": "scenariodata/python_authoritative_fixture.json", "source_part_id": "part_a", "command_start": 10, "command_end": 12, "raw_type": "text", "confidence": "exact" }
+    },
+    {
+      "step_id": 2,
+      "type": "choice",
+      "state": {
+        "bg": "bg001_315pro_in_01",
+        "camera_zoom": { "zoom": 1.2, "offset_x": 5, "offset_y": 10, "duration": 0 },
+        "se": null,
+        "se_events": [],
+        "screen_fade": { "type": "in", "delay": 0, "duration": 0.3, "color": "#000000" },
+        "screen_slide": null,
+        "screen_effects": [],
+        "spines": [{ "id": "001tom", "model": "001tom_001_00", "face": "face_smile", "anim": "wait_loop", "visible": true }],
+        "bg_effects": [],
+        "text_disabled": false
+      },
+      "choice_id": "choice:v1:python_authoritative_fixture:part_a:cmd-000020",
+      "options": [{
+        "option_id": "choice-option:v1:python_authoritative_fixture:part_a:cmd-000020:000",
+        "source_text": "進もう",
+        "text_ref": {
+          "unit_id": "story-text:v1:python_authoritative_fixture:part_a:cmd-000020:choice_short:000",
+          "source": { "scenario_id": "python_authoritative_fixture", "part_id": "part_a", "file": "scenariodata/python_authoritative_fixture.json", "command_index": 20, "field_kind": "choice_short", "field_ordinal": 0 },
+          "source_hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        },
+        "step_id": 2
+      }],
+      "evidence": { "source_file": "scenariodata/python_authoritative_fixture.json", "source_part_id": "part_a", "command_start": 20, "command_end": 20, "raw_type": "text_select", "confidence": "exact" }
+    }
+  ],
+  "jump_points": { "continue": 2 }
+}

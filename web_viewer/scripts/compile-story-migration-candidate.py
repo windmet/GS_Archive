@@ -267,17 +267,27 @@ def compile_candidate(args: argparse.Namespace) -> dict[str, Any]:
     if args.voice_index:
         voice_stats = relink_voices(scenario, load_voice_names(Path(args.voice_index).resolve()))
 
-    aggregate_path = output_dir / f"{args.group_id}.json"
-    save_json(aggregate_path, scenario)
-
     episodes = split_episodes(scenario)
-    for source_id, episode in episodes.items():
+    if args.output_contract == "authoritative":
+        scenario_output = ScenarioCompiler.to_authoritative(scenario, args.compiler_version)
+        episode_outputs = {
+            source_id: ScenarioCompiler.to_authoritative(episode, args.compiler_version)
+            for source_id, episode in episodes.items()
+        }
+    else:
+        scenario_output = scenario
+        episode_outputs = episodes
+
+    aggregate_path = output_dir / f"{args.group_id}.json"
+    save_json(aggregate_path, scenario_output)
+    for source_id, episode in episode_outputs.items():
         save_json(output_dir / "episodes" / f"{source_id}.json", episode)
 
     manifest = {
         "schema_version": 1,
         "group_id": args.group_id,
         "compilation_mode": compilation_mode,
+        "output_contract": args.output_contract,
         "expected_parts": expected_parts,
         "raw_parts": source_files,
         "aggregate_file": aggregate_path.name,
@@ -286,6 +296,8 @@ def compile_candidate(args: argparse.Namespace) -> dict[str, Any]:
         "episode_steps": {source_id: episode["total_steps"] for source_id, episode in sorted(episodes.items())},
         "voice_linking": voice_stats,
     }
+    if args.output_contract == "authoritative":
+        manifest["compiler_version"] = args.compiler_version
     save_json(output_dir / "migration_candidate_manifest.json", manifest)
     return manifest
 
@@ -297,6 +309,17 @@ def parse_args() -> argparse.Namespace:
     source.add_argument("--raw-file")
     parser.add_argument("--group-id", required=True)
     parser.add_argument("--output-dir", required=True)
+    parser.add_argument(
+        "--output-contract",
+        choices=("compatibility", "authoritative"),
+        default="compatibility",
+        help="Emit the legacy-compatible compiler shape or strict authoritative Runtime v2.",
+    )
+    parser.add_argument(
+        "--compiler-version",
+        default="scenario-compiler-python-v2",
+        help="Required provenance string for authoritative output.",
+    )
     parser.add_argument(
         "--expected-parts",
         default="",

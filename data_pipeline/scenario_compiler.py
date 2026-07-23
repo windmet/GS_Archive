@@ -277,17 +277,25 @@ class ScenarioCompiler:
     # Main entry
     # ----------------------------------------------------------------
 
-    def compile(self) -> dict:
+    def compile(self, *, output_contract: str = "compatibility",
+                source: Optional[dict] = None,
+                compiler_version: str = "scenario-compiler-python-v2") -> dict:
         commands = self.raw.get("Command", [])
         for command_index, cmd in enumerate(commands):
             self._process(cmd, command_index)
         self._flush_pending_text_disable()
-        return self._output()
+        result = self._output()
+        if source is not None:
+            result["source"] = copy.deepcopy(source)
+        return self._apply_output_contract(result, output_contract, compiler_version)
 
     @classmethod
     def compile_group(cls, raw_data_list: list[dict], group_id: str,
                       part_ids: Optional[list[str]] = None,
-                      source_files: Optional[list[str]] = None) -> dict:
+                      source_files: Optional[list[str]] = None,
+                      *, output_contract: str = "compatibility",
+                      source: Optional[dict] = None,
+                      compiler_version: str = "scenario-compiler-python-v2") -> dict:
         """
         Compile multiple raw files as a single continuous scenario.
         All commands from all files are fed through ONE state machine.
@@ -318,7 +326,27 @@ class ScenarioCompiler:
                 compiler._process(cmd, command_index)
             compiler._flush_pending_text_disable()
             compiler._end_episode()
-        return compiler._output()
+        result = compiler._output()
+        if source is not None:
+            result["source"] = copy.deepcopy(source)
+        return cls._apply_output_contract(result, output_contract, compiler_version)
+
+    @staticmethod
+    def _apply_output_contract(result: dict, output_contract: str,
+                               compiler_version: str) -> dict:
+        if output_contract == "compatibility":
+            return result
+        if output_contract != "authoritative":
+            raise ValueError(f"Unsupported ScenarioCompiler output contract: {output_contract!r}")
+        from authoritative_scenario import compile_authoritative_scenario
+
+        return compile_authoritative_scenario(result, compiler_version=compiler_version)
+
+    @staticmethod
+    def to_authoritative(result: dict,
+                         compiler_version: str = "scenario-compiler-python-v2") -> dict:
+        """Project an already compiled compatibility result into strict v2."""
+        return ScenarioCompiler._apply_output_contract(result, "authoritative", compiler_version)
 
     @staticmethod
     def _declares_initial_spines(raw_data: dict) -> bool:

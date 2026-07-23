@@ -6,6 +6,7 @@ import importlib.util
 import re
 import tempfile
 from pathlib import Path
+from types import SimpleNamespace
 
 
 SCRIPT_PATH = Path(__file__).with_name("compile-story-migration-candidate.py")
@@ -66,6 +67,49 @@ with tempfile.TemporaryDirectory() as temporary_dir:
         ["scenariodata/fixture/b.json", "scenariodata/fixture/a.json"],
     )["raw_hash"] == grouped_source["raw_hash"]
 
+    raw_file = temporary_root / "scenario_fixture.json"
+    MODULE.save_json(raw_file, {
+        "Command": [
+            {"Type": "image_bg", "Values": ["bg001_315pro_in_01"]},
+            {"Type": "text", "Values": ["天ヶ瀬 冬馬", "行くぜ！", "001tom", ""]},
+        ],
+    })
+    authoritative_output = temporary_root / "authoritative"
+    direct_authoritative = MODULE.ScenarioCompiler(
+        MODULE.load_json(raw_file),
+        "fixture",
+        "fixture",
+        "scenariodata/fixture/scenario_fixture.json",
+    ).compile(
+        output_contract="authoritative",
+        source=MODULE.build_source_evidence(
+            [raw_file],
+            ["scenariodata/fixture/scenario_fixture.json"],
+        ),
+        compiler_version="python-native-direct-v1",
+    )
+    assert direct_authoritative["runtime_contract"] == "story-runtime-v2"
+    assert direct_authoritative["compiler_version"] == "python-native-direct-v1"
+    manifest = MODULE.compile_candidate(SimpleNamespace(
+        output_dir=str(authoritative_output),
+        expected_parts="",
+        raw_file=str(raw_file),
+        raw_group_dir=None,
+        group_id="fixture",
+        voice_index="",
+        output_contract="authoritative",
+        compiler_version="python-native-verification-v1",
+    ))
+    authoritative = MODULE.load_json(authoritative_output / "fixture.json")
+    assert manifest["output_contract"] == "authoritative"
+    assert manifest["compiler_version"] == "python-native-verification-v1"
+    assert authoritative["runtime_contract"] == "story-runtime-v2"
+    assert authoritative["compiler_version"] == "python-native-verification-v1"
+    assert authoritative["steps"][0]["snapshot_format"] == "story-snapshot-v2"
+    assert "state" not in authoritative["steps"][0]
+    assert "timeline" not in authoritative["steps"][0]
+    assert "text" not in authoritative["steps"][0]["dialogue"]
+
 split_source = {
     "scenario_id": "fixture",
     "text_catalog_id": "fixture",
@@ -113,4 +157,4 @@ assert episodes["fixture_b"]["aggregate_source"] == {
 assert episodes["fixture_b"]["source"] == split_source["source"]
 
 print("Story migration candidate verification passed")
-print("  expected parts, deterministic raw hashes, voice relink, and episode rebasing covered")
+print("  expected parts, deterministic raw hashes, voice relink, episode rebasing, and Python-native strict output covered")

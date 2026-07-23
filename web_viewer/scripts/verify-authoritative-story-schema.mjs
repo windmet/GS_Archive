@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
-import { readFile, readdir } from 'node:fs/promises'
+import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
+import { spawnSync } from 'node:child_process'
+import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import Ajv2020 from 'ajv/dist/2020.js'
@@ -14,6 +16,7 @@ const readJson = async relativePath => JSON.parse(await readFile(path.join(root,
 const schema = await readJson('schemas/compiled-scenario-v2-authoritative.schema.json')
 const compatibilitySchema = await readJson('schemas/compiled-scenario-v2.schema.json')
 const fixture = await readJson('fixtures/story-runtime/authoritative-v2-minimal.json')
+const compatibilityFixture = await readJson('fixtures/story-runtime/compatibility-v1-authoritative-source.json')
 
 const ajv = new Ajv2020({ allErrors: true, strict: true })
 addFormats(ajv)
@@ -50,6 +53,32 @@ assert.equal(compatibilitySchema.additionalProperties, true, 'compatibility inpu
 assert.equal(compatibilitySchema.$defs.dialogue.additionalProperties, true)
 assert.match(compatibilitySchema.$comment, /authoritative/i)
 
+async function verifyPythonParity(input, label) {
+  const compilerVersion = 'python-js-parity-v1'
+  const expected = compileAuthoritativeScenario(input, { compilerVersion })
+  const temporaryDirectory = await mkdtemp(path.join(os.tmpdir(), 'sidem-python-authoritative-'))
+  const inputPath = path.join(temporaryDirectory, 'compatibility.json')
+  const outputPath = path.join(temporaryDirectory, 'authoritative.json')
+  try {
+    await writeFile(inputPath, `${JSON.stringify(input, null, 2)}\n`, 'utf8')
+    const python = process.env.PYTHON || (process.platform === 'win32' ? 'python' : 'python3')
+    const result = spawnSync(python, [
+      path.join(root, 'scripts', 'compile-authoritative-story-candidate.py'),
+      '--input', inputPath,
+      '--output', outputPath,
+      '--compiler-version', compilerVersion,
+    ], { cwd: root, encoding: 'utf8' })
+    assert.equal(result.status, 0, `${label}: Python compiler failed\n${result.stdout}\n${result.stderr}`)
+    const actual = JSON.parse(await readFile(outputPath, 'utf8'))
+    assert.deepEqual(actual, expected, `${label}: Python and JavaScript authoritative projections diverged`)
+    assert.equal(validate(actual), true, `${label}: ${ajv.errorsText(validate.errors, { separator: '\n' })}`)
+  } finally {
+    await rm(temporaryDirectory, { recursive: true, force: true })
+  }
+}
+
+await verifyPythonParity(compatibilityFixture, 'tracked compatibility fixture')
+
 try {
   const episodeDirectory = path.join(root, 'public', 'data', 'compiled', 'episodes')
   const episodeFiles = (await readdir(episodeDirectory))
@@ -80,6 +109,7 @@ try {
       passed: true,
       differences: [],
     })
+    await verifyPythonParity(migratedCollection, episodeFile)
     assert.equal(authoritativeCandidate.steps.some(step => 'state' in step || 'timeline' in step), false)
     assert.equal(authoritativeCandidate.steps.some(step => (
       'text' in (step.dialogue || {}) || 'text_jp' in (step.dialogue || {}) || 'text_cn' in (step.dialogue || {})
