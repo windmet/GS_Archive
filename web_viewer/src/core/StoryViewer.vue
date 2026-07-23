@@ -162,6 +162,7 @@ import { useStoryNavigation } from './useStoryNavigation.js'
 import { useStepSceneEffects } from './useStepSceneEffects.js'
 import { useStoryRuntimeCues } from './story-runtime/useStoryRuntimeCues.js'
 import { StoryAudioSession } from './story-runtime/StoryAudioSession.js'
+import { getStepSceneState, projectStepSceneState } from './story-runtime/StepSceneState.js'
 import { SceneSnapshotStore, isReadableHistoryStep } from './story-runtime/SceneSnapshotStore.js'
 import { PlayerPreferencesRepository } from './story-runtime/PlayerPreferencesRepository.js'
 import { ReadProgressRepository, createReadKey } from './story-runtime/ReadProgressRepository.js'
@@ -291,13 +292,12 @@ const currentStep = computed(() => {
   return compiledData.value.steps[currentStepIndex.value] || {}
 })
 
-const stageStep = computed(() => restoredSceneState.value
-  ? { ...currentStep.value, state: restoredSceneState.value }
-  : currentStep.value)
+const currentSceneState = computed(() => restoredSceneState.value || getStepSceneState(currentStep.value))
+const stageStep = computed(() => projectStepSceneState(currentStep.value, currentSceneState.value))
 
 const showAdvDialogue = computed(() => {
   const step = currentStep.value
-  return step?.type === 'adv' && step?.hide_dialogue !== true && step?.state?.text_disabled !== true
+  return step?.type === 'adv' && step?.hide_dialogue !== true && currentSceneState.value?.text_disabled !== true
 })
 
 const playableStepNumber = computed(() => Math.max(1, currentStepIndex.value - navigationStartIndex.value + 1))
@@ -784,11 +784,11 @@ onMounted(async () => {
   // PIXI.Assets.load() will resolve instantly from cache.
   const mgr = spineStageRef.value?.manager
   if (compiledData.value && mgr) {
-    const firstStep = currentStep.value
-    if (firstStep?.state) {
+    const firstState = currentSceneState.value
+    if (firstState) {
       try {
-        if (firstStep.state.bg) {
-          await mgr.preloadStepState(firstStep.state)
+        if (firstState.bg) {
+          await mgr.preloadStepState(firstState)
         }
       } catch (e) {
         console.warn('[StoryViewer] preload warmup failed:', e.message)

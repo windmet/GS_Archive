@@ -70,6 +70,7 @@ export class PixiStageManager {
     this.height = options.height || containerEl.clientHeight || 720
 
     this.app = null
+    this._destroyed = false
     this.spineInstances = {}   // { idolId: { spine: Spine, modelId: string, marker: Graphics } }
     this._spawnTokens = {}
     this._silhouetteSprites = {}  // { idolId: PIXI.Sprite } — fallback for missing Spine assets
@@ -1210,6 +1211,7 @@ export class PixiStageManager {
   // Spine loading
 
   async spawnSpine(idolId, modelId, options = {}) {
+    if (this._destroyed || !this.app) return null
     this.removeSpine(idolId)
     const spawnToken = (this._spawnTokens[idolId] || 0) + 1
     this._spawnTokens[idolId] = spawnToken
@@ -1345,7 +1347,7 @@ export class PixiStageManager {
         this._applyOptionalPartsSlots(spine)
       }
 
-      if (this._spawnTokens[idolId] !== spawnToken) {
+      if (this._destroyed || !this.app || this._spawnTokens[idolId] !== spawnToken) {
         spine.destroy({ children: true, texture: false, baseTexture: false })
         return null
       }
@@ -1360,16 +1362,6 @@ export class PixiStageManager {
       if (!spine._baseScale) {
         spine._baseScale = spine.scale.x
       }
-
-      const marker = new PIXI.Graphics()
-      marker.beginFill(0xff0000)
-      marker.drawCircle(0, 0, 8)
-      marker.endFill()
-      marker.beginFill(0xffffff)
-      marker.drawCircle(0, 0, 3)
-      marker.endFill()
-      marker.visible = this._debugMode
-      this._debugOverlay?.addChild(marker)
 
       spine.eventMode = 'dynamic'
       spine.cursor = 'grab'
@@ -1447,6 +1439,7 @@ export class PixiStageManager {
       })
       return spine
     } catch (err) {
+      if (this._destroyed) return null
       console.warn(`[PixiStageManager] Failed to load spine "${modelId}" for "${idolId}":`, err.message)
       return null
     }
@@ -2124,6 +2117,8 @@ export class PixiStageManager {
   }
 
   destroy() {
+    if (this._destroyed) return
+    this._destroyed = true
     this._dragSpineId = null
     if (this._globalMoveHandler && this.app) {
       this.app.stage.off('globalpointermove', this._globalMoveHandler)

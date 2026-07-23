@@ -18,6 +18,7 @@ import { CameraController } from '../src/core/CameraController.js'
 import { createSeCueHandle } from '../src/core/story-runtime/SeCueRuntime.js'
 import { useStepSceneEffects } from '../src/core/useStepSceneEffects.js'
 import { createDebugSnapshotCue, createDebugSnapshotHandle } from '../src/core/story-runtime/DebugSnapshotRuntime.js'
+import { getStepSceneState, projectStepSceneState } from '../src/core/story-runtime/StepSceneState.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -448,7 +449,11 @@ function verifyRetiredLegacyOwners() {
     spineStageRef: { value: null },
     audioManager: {
       preloadSE: cue => audioCalls.push(['se:preload', cue]), playSE: cue => audioCalls.push(['se:play', cue]),
-      playAmbient: () => {}, stopAmbient: () => {}, setAmbientVolume: () => {}, playBgm: () => {}, stopBgm: () => {},
+      playAmbient: (cue, fade, volume) => audioCalls.push(['ambient:play', cue, fade, volume]),
+      stopAmbient: () => audioCalls.push(['ambient:stop']),
+      setAmbientVolume: volume => audioCalls.push(['ambient:volume', volume]),
+      playBgm: cue => audioCalls.push(['bgm:play', cue]),
+      stopBgm: fade => audioCalls.push(['bgm:stop', fade]),
     },
     voicePlayer: { playVoice: () => {} }, resetVoiceDedup: () => {},
   }
@@ -456,6 +461,20 @@ function verifyRetiredLegacyOwners() {
   const sceneEffects = useStepSceneEffects(base)
   sceneEffects.handleStepChange(step, null)
   assert.deepEqual(audioCalls, [], 'step watcher must not create a retired SE timer or playback')
+  const authoritativeState = {
+    bg: 'strict-background',
+    bgm: 'strict-bgm',
+    environmental: { cue: 'strict-ambient', volume: 0.35 },
+  }
+  const authoritativeStep = { step_id: 2, type: 'adv', entry_snapshot: authoritativeState }
+  assert.equal(getStepSceneState(authoritativeStep), authoritativeState)
+  assert.equal(projectStepSceneState(authoritativeStep).state, authoritativeState)
+  sceneEffects.handleStepChange(authoritativeStep, step)
+  assert.deepEqual(audioCalls, [
+    ['ambient:play', 'strict-ambient', 0.5, 0.35],
+    ['ambient:volume', 0.35],
+    ['bgm:play', 'strict-bgm'],
+  ], 'authoritative entry_snapshot must drive persistent scene audio consumers')
   sceneEffects.cleanup()
 }
 

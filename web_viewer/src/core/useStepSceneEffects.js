@@ -1,5 +1,7 @@
 import { getAutoAdvanceTiming } from '../utils/StoryStepFlow.js'
 
+import { getStepSceneState } from './story-runtime/StepSceneState.js'
+
 export function useStepSceneEffects({
   currentStepIndex,
   isLastStep,
@@ -34,7 +36,8 @@ export function useStepSceneEffects({
       spineStageRef.value?.manager?.cancelAllSpineTweens?.()
     }
 
-    const env = newStep?.state?.environmental
+    const sceneState = getStepSceneState(newStep)
+    const env = sceneState?.environmental
     const envCue = env?.cue
     if (envCue && envCue !== _lastEnvCue) {
       audioManager.playAmbient(envCue, 0.5, env?.volume)
@@ -46,12 +49,12 @@ export function useStepSceneEffects({
     if (env?.volume != null && env.volume !== '' && envCue === _lastEnvCue) {
       audioManager.setAmbientVolume(env.volume)
     }
-    if (newStep?.state?.environmental_duck_target != null) {
-      audioManager.setAmbientVolume(newStep.state.environmental_duck_target)
+    if (sceneState?.environmental_duck_target != null) {
+      audioManager.setAmbientVolume(sceneState.environmental_duck_target)
     }
 
-    const bgmId = newStep?.state?.bgm
-    const bgmStopFade = newStep?.state?.bgm_stop_fade
+    const bgmId = sceneState?.bgm
+    const bgmStopFade = sceneState?.bgm_stop_fade
     if (bgmId && bgmId !== _lastBgmId) {
       audioManager.playBgm(bgmId)
       _lastBgmId = bgmId

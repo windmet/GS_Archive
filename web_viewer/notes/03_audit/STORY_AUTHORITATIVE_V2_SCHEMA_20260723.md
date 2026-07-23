@@ -155,4 +155,6 @@ JavaScript candidate stage 继续作为独立 oracle 与发布器输入，而不
 
 2026-07-23 正式 mounted `1_4_001_01_d` 单标签复核中，`007kei_002_00` 与 `047shu_001_00` 均加载完整 neck 动画表；step 6 显示 neck 姿态，debug 层为 `spine yes` 且 root 未下坠；step 12–14 黑幕链恢复户外背景。日志无 `spine cue target unavailable`、应用 error 为 0，之前 candidate 压缩加载 warning 已在正式加载条件下关闭。
 
-本次发布后 `verify:story-schema`、authoritative publisher、Runtime foundation、text/localization、episode/voice、playback range、presentation、首页、100 轮 audio soak 与 2400-module production build 均通过。为避免再次触发 IDM 音频嗅探，本轮没有执行发布后的浏览器播放；此前 candidate 与正式 compatibility 锚点的单标签证据仍保留，但不得冒充发布后的长时间真实环境验收。下一步优先补 Edge/真实后台/数小时 soak，并为下一 collection 重复完整 manifest、备份与小批发布流程；禁止直接覆盖全量 corpus。
+本次发布后 `verify:story-schema`、authoritative publisher、Runtime foundation、text/localization、episode/voice、playback range、presentation、首页、100 轮 audio soak 与 production build 均通过。后续使用唯一应用内标签和 `noAudio=1` 安全复核时，发现 schema 等价性没有覆盖实际舞台 consumer：SpineStage 与 BGM/Ambient watcher 仍只读 legacy `state`，strict step 6 因而为 0 Spine。统一 `entry_snapshot` 优先投影后，同一正式 d 页面恢复 `047shu`/`007kei` 两个 Spine、背景与 step 6→7，AudioContext 始终未初始化且 active source 为 0；相关 Runtime/Spine/Home/Playback/Audio verifier 与 2401-module build 通过。
+
+该发布后实播只证明 strict snapshot 的角色/背景/交互消费和无音频隔离，不得冒充 Edge autoplay、真实后台听感或长时间有声验收。下一步优先补 Edge/真实后台/数小时 soak，并为下一 collection 重复完整 manifest、备份与小批发布流程；禁止直接覆盖全量 corpus。

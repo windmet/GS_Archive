@@ -201,13 +201,13 @@ translation state
 - Python `ScenarioCompiler` 已支持原生 authoritative output，`story:authoritative-native` 可从 raw group 直接生成 strict aggregate/episodes；tracked fixture 与 mounted a–j 432 steps 均和 JavaScript oracle 逐字段一致，真实 raw dry-run 139/139 voice refs（`e7a78d0`）。
 - authoritative snapshot 顶层、全部已知嵌套对象、10 类 Runtime cue action/channel/payload 与 lip evidence 已严格 schema 化；mounted 10,326 scenarios / 315,124 snapshots / 175,600 cues / 48,073 lip、488 类 nested shape gate 通过（`a065c22`、`c6d57dd`、`498ac8b`）。Strict diagnostics 已删除；只剩无 mounted 样本的 resource manifest/raw values 待来源契约。
 
-首个 `1_4_001_01` strict corpus 切换现已完成。发布后 schema、Runtime/text/localization、episode/voice、playback range、presentation、首页、audio soak 与 production build 通过；播放器同时补齐 strict episode boundary、背景和 Choice target 消费。Candidate a/d 与发布前正式 mounted d 的单标签锚点证据仍有效，但本次发布后为避免 IDM 音频嗅探没有再次执行浏览器播放，不能把纯脚本回归升级为长时间真实环境验收。
+首个 `1_4_001_01` strict corpus 切换现已完成。发布后 schema、Runtime/text/localization、episode/voice、playback range、presentation、首页、audio soak 与 production build 通过；播放器同时补齐 strict episode boundary、背景和 Choice target 消费。后续安全实播又发现 SpineStage 与 BGM/Ambient watcher 仍只读 legacy `state`，导致 strict step 6 缺少两名角色；现已统一改为优先读取 `entry_snapshot`，并用唯一应用内标签的 `noAudio` 模式验证圭/翔太、背景与 step 6→7。该证据不升级为有声音频或长时间真实环境验收。
 
 ### 4.8 Release acceptance 已完成基础矩阵，稳定性长测尚未完成
 
 已完成并记录：source-only checkout 的 `npm ci`、Runtime/Localization/Translation/Text verifier 与 build；完整本机挂载 build；1280×720、1920×1080、390×844；a/d 固定锚点；退役 URL 参数与 default 行为一致。详细证据见 `STORY_RUNTIME_RELEASE_MATRIX_20260722.md`。
 
-仍未完成：Edge autoplay 对照、跨 episode 数小时连续播放、操作系统级后台切换真实听感和数小时 heap/Spine soak。Chrome 5174 单标签页已覆盖首次手势、voice、SE、菜单暂停/恢复、退出 dispose、一次 d→e 切换、Auto/Skip/Backlog/Choice 混合链路与 6 轮 heap/Spine 曲线；代码级 100 轮 BGM/Ambient soak 已通过，并修复旧异步响应覆盖新 cue（`7747d23`）及无 voice 步骤遗留上一句 dialogue source（`5d62b48`）。资料馆首页背景已修复并通过桌面/移动端验收。
+仍未完成：Edge autoplay 对照、跨 episode 数小时连续播放、操作系统级后台切换真实听感和数小时 heap/Spine soak。Chrome 5174 单标签页已覆盖首次手势、voice、SE、菜单暂停/恢复、退出 dispose、一次 d→e 切换、Auto/Skip/Backlog/Choice 混合链路与 6 轮 heap/Spine 曲线；应用内唯一标签另完成 strict `entry_snapshot` 的无音频角色/背景/Next 复核。代码级 100 轮 BGM/Ambient soak 已通过，并修复旧异步响应覆盖新 cue（`7747d23`）、无 voice 步骤遗留上一句 dialogue source（`5d62b48`）及 strict scene consumer 仍读取 legacy state。资料馆首页背景已修复并通过桌面/移动端验收。
 
 ## 5. 进度估算
 
@@ -353,6 +353,7 @@ screen/fade
 - BGM/Ambient stale async load guard 与 100 轮 source/timer soak：已完成（`7747d23`）；
 - source bus/kind/cue/age 主世界诊断、无 voice 步骤释放旧 dialogue source、混合 UI 链路与 6 轮 heap/Spine 曲线：已完成（`5d62b48`）；
 - IDM 安全隔离：`noAudio=1` 在 AudioContext 与 Voice/Lip/BGM/Ambient/SE 网络请求前短路，供单标签无音频 soak 使用；不得把它记为音频验收通过；
+- Strict scene consumer：SpineStage、首屏 preload、dialogue visibility 与 BGM/Ambient 统一优先读取 `entry_snapshot`；唯一应用内标签已验证正式 d 的背景、两名角色与 Next，destroyed manager 的 pending Spine load 也已封堵；
 - 删除不再使用的 `text_speed`：已完成（`7c1f1b2`）；
 - 收紧 authoritative v2 schema：schema/verifier（`816d584`）、strict candidate stage（`85983ee`）、atomic publish/source-only gate（`2702773`、`1fb426e`）及 Python-native output/parity（`e7a78d0`）已完成；首个 a–j strict collection 已正式发布；
 - Runtime shape schema：snapshot 顶层及全部已知嵌套对象、10 类 cue action/channel/payload 与 mounted 全库门禁已完成（`a065c22`、`c6d57dd`）；

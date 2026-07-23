@@ -166,3 +166,13 @@ http://127.0.0.1:5174/?view=player&scenario=fixtures%2Fstory_localization_stress
 由于外部 Edge 音频请求触发 IDM 自动嗅探，本轮不再启动外部浏览器，也不再以有声音频请求做自动化。StoryViewer 新增 `noAudio=1` 调试入口：它自动包含 `noVoice=1`，并在 AudioContext 创建及 Voice/Lip、BGM、Ambient、Runtime SE 的网络请求之前统一短路；`runtimeDebug=1` 可在 DOM 诊断中确认 session/manager 均为 disabled。自动音频 verifier 已断言禁用模式的 AudioContext factory 与 `fetch` 调用次数均为 0。
 
 该入口只用于在单个应用内标签页中安全推进黑屏、heap 与 Spine 长测，不能替代 Edge autoplay、操作系统级 document-hidden 听感或真实 BGM/Ambient 验收。若进行页面测试，固定使用一个应用内浏览器标签页并保留 `noAudio=1`；本轮代码与脚本验证期间没有打开浏览器。
+
+## 2026-07-23 Strict snapshot 实播消费修复
+
+随后使用唯一应用内标签和 `noAudio=1&runtimeDebug=1` 对正式 mounted `1_4_001_01_d` 做发布后实播，发现背景能由 Runtime snapshot 正常绘制，但 `SpineStage` 与持久 BGM/Ambient watcher 仍只读取 compatibility `state`。Strict step 只有 `entry_snapshot`，因此 step 6 诊断为 0 Spine，画面缺少圭与翔太，并出现 `spine cue target unavailable`；这证明此前 schema/publisher verifier 没有覆盖舞台 consumer 的实际渲染投影。
+
+本轮增加统一 `StepSceneState` 投影：authoritative consumer 优先读取 `entry_snapshot`，compatibility 才回退 `state`；StoryViewer、SpineStage、首屏 preload、dialogue visibility 与 BGM/Ambient 复用同一规则。另修复首页离开时 pending Spine load 在 manager destroy 后继续落地导致读取空 `app.screen` 的竞态，并删除 spawn 路径重复创建的 debug marker。
+
+同一标签重载后，背景正常，`047shu` 与 `007kei` 两个 Spine 均可见；step 6 → 7 的一次 Next 后实例数保持 2。诊断始终为 AudioContext `uninitialized`、active source 0、audio session/manager disabled；重载后的日志不再出现 destroyed manager warning 或 neck target unavailable。仅剩 Pixi 7 依赖自身 `rgb2hex/hex2rgb` 弃用提示。Runtime foundation、Spine fade、首页、playback range、100 轮 audio verifier 与 2401-module production build 通过。
+
+该结果关闭首个 strict collection 的“snapshot 已发布但角色/持久场景音频仍读 legacy state”缺口；无音频实播仍不替代 Edge autoplay、真实后台听感与数小时有声 soak。

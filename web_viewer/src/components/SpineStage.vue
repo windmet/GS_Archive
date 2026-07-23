@@ -88,6 +88,7 @@ import { loadCostumeDictionary } from '../utils/CostumeDictionaryStore.js'
 import { getCachedMotionSetting, loadIdolMotionSettings } from '../utils/IdolMotionSettingStore.js'
 import { computeVisualRootY as computeVisualRootYUtil, resolveBaseY as resolveBaseYUtil } from '../utils/YPositionResolver.js'
 import { applyStepSceneState } from '../core/applyStepSceneState.js'
+import { getStepSceneState } from '../core/story-runtime/StepSceneState.js'
 import {
   buildBoundsSnapshot,
   buildSpineDebugState,
@@ -105,7 +106,7 @@ const props = defineProps({
 const emit = defineEmits(['ready', 'error'])
 
 const sceneIcon = computed(() => {
-  const imageIcon = props.step?.state?.image_icon
+  const imageIcon = getStepSceneState(props.step)?.image_icon
   // Compiled story state may retain icon metadata after the original command,
   // but an empty layer means there is no drawable scene icon. Keep supporting
   // the explicit string form used by standalone/smoke scenarios.
@@ -141,7 +142,7 @@ onMounted(() => {
   }
 
   syncManagedBackground()
-  if (props.step?.state) {
+  if (getStepSceneState(props.step)) {
     applyState(props.step)
   } else if (!props.manageBackground && props.step && props.fallbackBg) {
     manager.setBackground(props.fallbackBg)
@@ -155,7 +156,7 @@ onMounted(() => {
 
 function syncManagedBackground() {
   if (!manager || !props.manageBackground) return
-  const backgroundId = props.step?.state?.bg || props.fallbackBg || null
+  const backgroundId = getStepSceneState(props.step)?.bg || props.fallbackBg || null
   if (backgroundId === managedBackgroundId) return
   managedBackgroundId = backgroundId
   if (backgroundId) manager.setBackground(backgroundId)
@@ -479,12 +480,12 @@ watch(debugMode, (on) => {
 })
 
 watch(prefabMetaReady, (ready) => {
-  if (!ready || !props.step?.state || !manager) return
+  if (!ready || !getStepSceneState(props.step) || !manager) return
   applyState(props.step, { reason: 'prefab-meta-ready' })
 })
 
 watch(motionSettingsReady, (ready) => {
-  if (!ready || !props.step?.state || !manager) return
+  if (!ready || !getStepSceneState(props.step) || !manager) return
   applyState(props.step, { reason: 'motion-settings-ready' })
 })
 
@@ -774,7 +775,7 @@ watch(() => props.step, (step, oldStep) => {
   syncManagedBackground()
   applyStateToken++
   // Clear stale stage state when returning to non-story screens.
-  if (!step?.state) {
+  if (!getStepSceneState(step)) {
     if (props.fallbackBg) {
       manager.setBackground(props.fallbackBg)
     } else {
@@ -806,15 +807,16 @@ watch(() => props.fallbackBg, () => {
     syncManagedBackground()
     return
   }
-  if (props.step?.state?.bg) return
+  if (getStepSceneState(props.step)?.bg) return
   if (props.fallbackBg) manager.setBackground(props.fallbackBg)
   else manager.clearBackground()
 })
 
 async function applyState(step, { resetScreenEffects = false } = {}) {
-  if (!manager || !step?.state) return
+  if (!manager) return
+  const state = getStepSceneState(step)
+  if (!state) return
   const token = ++applyStateToken
-  const state = step.state
   await _loadBodyTypes()
   if (token !== applyStateToken || !manager) return
 

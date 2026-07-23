@@ -23,5 +23,8 @@ assert.doesNotMatch(managerSource, /destroy\(\{[^}]*textures?\s*:\s*true/)
 assert.doesNotMatch(stageManagerSource, /wrapper\.destroy\(\{[^}]*textures?\s*:\s*true/)
 assert.match(stageManagerSource, /_grayFilter\.resolution\s*=\s*this\.app\.renderer\.resolution/)
 assert.match(stageManagerSource, /_grayFilter\.multisample\s*=\s*PIXI\.MSAA_QUALITY\.MEDIUM/)
+assert.match(stageManagerSource, /if \(this\._destroyed \|\| !this\.app\) return null/)
+assert.match(stageManagerSource, /if \(this\._destroyed \|\| !this\.app \|\| this\._spawnTokens\[idolId\] !== spawnToken\)/)
+assert.match(stageManagerSource, /if \(this\._destroyed\) return\s+this\._destroyed = true/)
 
 console.log('Spine atomic fade: hidden assembly, whole-model alpha and shared-texture disposal contracts verified')
