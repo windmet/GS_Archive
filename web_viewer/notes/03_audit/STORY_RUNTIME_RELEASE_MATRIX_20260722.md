@@ -146,6 +146,21 @@ Choice
 
 截图保存在工作区外：`C:\Users\windm\AppData\Local\Temp\sidem-noaudio-mixed-after-marker-fix.png`。日志中的 `102sha_001_00` load warning 对应已知缺失 Spine→`public/assets/silhouette/102sha_001_00.png` fallback；Codex Browser Statsig timeout 属于浏览器宿主。两者不等于 marker teardown 回归，但 fallback warning 仍应在后续 missing-resource UX/日志降噪批次处理。
 
+## 2026-07-23 Silhouette-only 资源契约 follow-up
+
+`102sha_001_00` 已由“失败加载后补救”改为显式 silhouette-only 契约。当前审计只证明这一项确实没有 Spine 且已有正式 PNG 舞台剪影，所以另外 4 张已跟踪 silhouette PNG 没有被无证据地加入白名单。
+
+Runtime 在调用 `spawnSpine` 前识别该契约，直接复用或加载 `public/assets/silhouette/102sha_001_00.png`；不再请求已知不存在的 `comu.atlas` / `comu.skel`。`verify:silhouette` 同时锁定白名单、PNG 存在、Spine 文件仍缺失以及 direct fallback 位于网络探测之前；source-only GitHub Actions 已纳入该门禁。
+
+单个应用内标签、`noAudio=1&runtimeDebug=1` 在正式 strict `1_4_001_01_a` displayed step 24 定点复核：
+
+- 剪影和背景均正常可见；
+- 新日志中 `102sha_001_00`、`Failed to load texture`、`Offset is outside` 命中数均为 0；
+- AudioContext 仍为 `uninitialized`，active sources 为 0，session/manager 均为 disabled；
+- 验收后恢复 `1_4_001_01_d` 完整 URL，并只保留 1 个标签。
+
+`verify:silhouette`、Spine fade/motion、Runtime foundation、首页背景 owner、playback range 与 2401-module production build 均通过。本项关闭已知 fallback 请求与日志噪声，不改变剩余 Edge autoplay、真实后台听感和数小时有声 soak 的未完成状态。
+
 `verify:spine-motion`、`verify:spine-fade`、Runtime foundation、home、playback range、100-cycle audio/noAudio verifier 与 2401-module production build 均通过。本轮仍不得记作 Edge autoplay、真实 `document.hidden` 听感或有声长测。
 
 ## 2026-07-23 Preferences 与 authoritative schema follow-up

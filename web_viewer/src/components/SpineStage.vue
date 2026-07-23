@@ -82,7 +82,12 @@
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount, markRaw, reactive, onUnmounted, computed } from 'vue'
 import { PixiStageManager } from '../core/PixiStageManager.js'
-import { getBodyTypeUrl, getOtherSettingUrl, getCharaIconUrl } from '../utils/AssetResolver.js'
+import {
+  getBodyTypeUrl,
+  getOtherSettingUrl,
+  getCharaIconUrl,
+  isSilhouetteOnlyModel,
+} from '../utils/AssetResolver.js'
 import { loadCostumePrefabMeta } from '../utils/CostumePrefabMetaStore.js'
 import { loadCostumeDictionary } from '../utils/CostumeDictionaryStore.js'
 import { getCachedMotionSetting, loadIdolMotionSettings } from '../utils/IdolMotionSettingStore.js'
@@ -899,11 +904,12 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
       store: Y_DEBUG_STORE,
     })
 
-    if (manager.hasSilhouetteFallback?.(sid, modelId)) {
+    if (isSilhouetteOnlyModel(modelId) || manager.hasSilhouetteFallback?.(sid, modelId)) {
       const posX = spineState.pos_x ?? 0
       let posY = spineState.pos_y ?? 0
       if (spineState.idol_zoom_y_offset) posY += spineState.idol_zoom_y_offset
       const rootY = computeVisualRootY(sid, resolved.finalBaseY, posY)
+      if (existing) manager.removeSpine(sid, true)
       manager.showSilhouette(sid, modelId, posX, 0, rootY)
       continue
     }

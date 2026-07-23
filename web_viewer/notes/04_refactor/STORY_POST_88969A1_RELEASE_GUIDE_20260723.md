@@ -115,6 +115,8 @@ CI 必须明确区分：
 
 安全可执行部分已追加完成：strict episode a 的 Choice→Backlog restore→Auto→Choice→Skip All→episode complete→episode b，以及 simulated hidden/visible 均通过。过程中发现并修复 manager teardown 重复销毁 debug marker；含 Spine 的下一话退出后 marker warning 为 0。短曲线 heap 回落、AudioContext 未初始化、active source/timer 为 0。详见 release matrix。
 
+已知缺失 Spine 的 `102sha_001_00` 也已完成小型发布修复：它现在是唯一有审计证据的 silhouette-only 显式契约，进入场景时直接加载 PNG，不再先请求不存在的 Spine/atlas。新增 `verify:silhouette` 并纳入 source-only CI；单标签 `noAudio` 定点复核确认剪影可见且相关失败日志为 0。这是既有 fallback 的确定性与降噪修复，不扩展 feature scope。
+
 必须补齐：
 
 - Edge 首次用户手势解锁；

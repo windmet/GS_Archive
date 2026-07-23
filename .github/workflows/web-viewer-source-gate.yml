@@ -82,6 +82,9 @@ jobs:
       - name: Verify Runtime foundation
         run: node scripts/verify-story-runtime-foundation.mjs
 
+      - name: Verify silhouette fallback contract
+        run: npm run verify:silhouette
+
       - name: Verify strict collection publisher
         run: npm run verify:story-authoritative-publish
 

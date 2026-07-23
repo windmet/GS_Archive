@@ -16,6 +16,10 @@
  */
 
 const ASSET_BASE = '/assets'
+export const SILHOUETTE_ONLY_MODEL_IDS = Object.freeze([
+  '102sha_001_00',
+])
+const SILHOUETTE_ONLY_MODELS = new Set(SILHOUETTE_ONLY_MODEL_IDS)
 
 export function getBgUrl(bgId) {
   return `${ASSET_BASE}/bg/${bgId}.png`
@@ -236,4 +240,13 @@ export function getEffectUrl(effectName, frameIndex) {
  */
 export function getSilhouetteUrl(modelId) {
   return `${ASSET_BASE}/silhouette/${modelId}.png`
+}
+
+/**
+ * Models with an audited PNG stage portrait and no corresponding Spine rig.
+ * Keep this explicit so the runtime does not probe known-missing Spine URLs
+ * before using the deliberate fallback.
+ */
+export function isSilhouetteOnlyModel(modelId) {
+  return SILHOUETTE_ONLY_MODELS.has(String(modelId || ''))
 }
