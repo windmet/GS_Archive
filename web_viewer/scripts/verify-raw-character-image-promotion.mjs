@@ -13,6 +13,7 @@ import {
 import {
   hashBytes,
   publishRawCharacterImage,
+  publishRawCharacterImageGroup,
   rollbackRawCharacterImage,
 } from './lib/raw-character-image-promotion.mjs'
 import {
@@ -62,6 +63,28 @@ const pngBytes = Buffer.from(
   'base64',
 )
 const rawBytes = Buffer.from('fixture RAW Unity Sprite bundle')
+const sharedRawBytes = Buffer.from('fixture shared RAW Unity Sprite bundle')
+const sharedCodes = ['012yus', '013kys']
+const sharedCandidateDirectories = sharedCodes.map(code => path.join(
+  workspaceRoot,
+  '.analysis',
+  'raw-migration',
+  'character-image-candidate',
+  'birthday_visual',
+  code,
+))
+const sharedRawFile = path.join(
+  temporaryRoot,
+  'RAW',
+  'asset',
+  'image_chara_birthday_visual_012yus-013kys.unity3d',
+)
+const sharedStableAsset = path.join(
+  assetsRoot,
+  'stories',
+  'birthday',
+  'image_chara_birthday_visual_012yus-013kys.png',
+)
 const baselineRegistry = {
   schema_version: 1,
   entries: [{
@@ -128,6 +151,45 @@ function candidateManifest() {
       height: 1,
       bytes: pngBytes.length,
       sha256: hashBytes(pngBytes),
+    },
+  }
+}
+
+function sharedCandidateManifest(idolCode, assetBytes = pngBytes) {
+  return {
+    schema_version: 1,
+    kind: 'birthday_visual',
+    idol_code: idolCode,
+    raw_source: {
+      relative_path: 'RAW/asset/image_chara_birthday_visual_012yus-013kys.unity3d',
+      bytes: sharedRawBytes.length,
+      sha256: hashBytes(sharedRawBytes),
+      source_manifest_equal: true,
+    },
+    unity_object: {
+      container_path: 'assets/resources/image/image_chara/image_chara_birthday/image_chara_birthday_visual_012yus-013kys.png',
+      path_id: '-12013',
+      object_type: 'Sprite',
+      asset_name: 'image_chara_birthday_visual_012yus-013kys',
+      identity_ids: sharedCodes,
+      sprite_rect: { x: 0, y: 0, width: 1, height: 1 },
+    },
+    identity_evidence: {
+      master_idol: { idol_id: Number(idolCode.slice(0, 3)), idol_code: idolCode },
+      story_master: {
+        domain: 'birthday',
+        reference_count: 1,
+        references: [{
+          compiled_file: `1_x_${idolCode}_fixture.json`,
+          compiled_exists: true,
+        }],
+      },
+    },
+    resolved_asset: {
+      width: 1,
+      height: 1,
+      bytes: assetBytes.length,
+      sha256: hashBytes(assetBytes),
     },
   }
 }
@@ -290,6 +352,159 @@ try {
     }),
     /one exact idol identity/u,
   )
+
+  await writeFile(sharedRawFile, sharedRawBytes)
+  for (const [index, directory] of sharedCandidateDirectories.entries()) {
+    const code = sharedCodes[index]
+    await mkdir(path.join(directory, 'resolved'), { recursive: true })
+    await writeFile(path.join(directory, 'resolved', `${code}.png`), pngBytes)
+    await writeJson(
+      path.join(directory, 'candidate.json'),
+      sharedCandidateManifest(code),
+    )
+  }
+
+  const missingIdentity = sharedCandidateManifest('013kys')
+  missingIdentity.unity_object.identity_ids = ['013kys']
+  await writeJson(
+    path.join(sharedCandidateDirectories[1], 'candidate.json'),
+    missingIdentity,
+  )
+  await assert.rejects(
+    publishRawCharacterImageGroup({
+      workspaceRoot,
+      candidateDirectories: sharedCandidateDirectories,
+      registryFile,
+      assetsRoot,
+      backupDirectory: path.join(workspaceRoot, '.analysis', 'shared-missing-identity'),
+      confirmKey: 'birthday_visual:012yus+013kys',
+    }),
+    /exact group identity set/u,
+  )
+
+  const alternatePngBytes = Buffer.from(pngBytes)
+  alternatePngBytes[alternatePngBytes.length - 1] ^= 1
+  await writeFile(
+    path.join(sharedCandidateDirectories[1], 'resolved', '013kys.png'),
+    alternatePngBytes,
+  )
+  await writeJson(
+    path.join(sharedCandidateDirectories[1], 'candidate.json'),
+    sharedCandidateManifest('013kys', alternatePngBytes),
+  )
+  await assert.rejects(
+    publishRawCharacterImageGroup({
+      workspaceRoot,
+      candidateDirectories: sharedCandidateDirectories,
+      registryFile,
+      assetsRoot,
+      backupDirectory: path.join(workspaceRoot, '.analysis', 'shared-output-drift'),
+      confirmKey: 'birthday_visual:012yus+013kys',
+    }),
+    /Shared candidate RAW, Unity object, or PNG evidence differs/u,
+  )
+
+  await writeFile(
+    path.join(sharedCandidateDirectories[1], 'resolved', '013kys.png'),
+    pngBytes,
+  )
+  await writeJson(
+    path.join(sharedCandidateDirectories[1], 'candidate.json'),
+    sharedCandidateManifest('013kys'),
+  )
+  await assert.rejects(
+    publishRawCharacterImageGroup({
+      workspaceRoot,
+      candidateDirectories: sharedCandidateDirectories,
+      registryFile,
+      assetsRoot,
+      backupDirectory: path.join(workspaceRoot, '.analysis', 'shared-wrong-confirm'),
+      confirmKey: 'birthday_visual:012yus',
+    }),
+    /Explicit shared promotion confirmation/u,
+  )
+
+  await assert.rejects(
+    publishRawCharacterImageGroup({
+      workspaceRoot,
+      candidateDirectories: sharedCandidateDirectories,
+      registryFile,
+      assetsRoot,
+      backupDirectory: path.join(workspaceRoot, '.analysis', 'shared-failure'),
+      confirmKey: 'birthday_visual:012yus+013kys',
+      publishRegistry: async () => {
+        throw new Error('injected shared registry failure')
+      },
+    }),
+    /injected shared registry failure/u,
+  )
+  assert.equal(await exists(sharedStableAsset), false)
+  assert.deepEqual(
+    JSON.parse(await readFile(registryFile, 'utf8')),
+    baselineRegistry,
+  )
+
+  const sharedBackup = path.join(workspaceRoot, '.analysis', 'shared-published')
+  const sharedReport = await publishRawCharacterImageGroup({
+    workspaceRoot,
+    candidateDirectories: sharedCandidateDirectories,
+    registryFile,
+    assetsRoot,
+    backupDirectory: sharedBackup,
+    confirmKey: 'birthday_visual:012yus+013kys',
+  })
+  assert.deepEqual(sharedReport.identity_ids, sharedCodes)
+  assert.equal(hashBytes(await readFile(sharedStableAsset)), hashBytes(pngBytes))
+  const sharedRegistry = JSON.parse(await readFile(registryFile, 'utf8'))
+  assert.equal(sharedRegistry.entries.length, 3)
+  const sharedEntries = sharedRegistry.entries.filter(entry =>
+    sharedCodes.includes(entry.idol_code),
+  )
+  assert.equal(sharedEntries.length, 2)
+  assert.equal(new Set(sharedEntries.map(entry => entry.asset_url)).size, 1)
+  assert.deepEqual(sharedEntries[0].shared_identity_ids, sharedCodes)
+
+  const partialSharedRegistry = {
+    ...sharedRegistry,
+    entries: sharedRegistry.entries.filter(entry => entry.idol_code !== '013kys'),
+  }
+  await writeJson(registryFile, partialSharedRegistry)
+  await assert.rejects(
+    publishRawCharacterImageGroup({
+      workspaceRoot,
+      candidateDirectories: sharedCandidateDirectories,
+      registryFile,
+      assetsRoot,
+      backupDirectory: path.join(workspaceRoot, '.analysis', 'shared-partial-registry'),
+      confirmKey: 'birthday_visual:012yus+013kys',
+    }),
+    /Shared promotion birthday_visual:012yus\+013kys is incomplete/u,
+  )
+  await writeJson(registryFile, sharedRegistry)
+
+  await assert.rejects(
+    rollbackRawCharacterImage({
+      workspaceRoot,
+      registryFile,
+      assetsRoot,
+      backupDirectory: sharedBackup,
+      confirmKey: 'birthday_visual:012yus',
+    }),
+    /Explicit rollback confirmation/u,
+  )
+  const sharedRollback = await rollbackRawCharacterImage({
+    workspaceRoot,
+    registryFile,
+    assetsRoot,
+    backupDirectory: sharedBackup,
+    confirmKey: 'birthday_visual:012yus+013kys',
+  })
+  assert.equal(sharedRollback.asset_state, 'removed')
+  assert.equal(await exists(sharedStableAsset), false)
+  assert.deepEqual(
+    JSON.parse(await readFile(registryFile, 'utf8')),
+    baselineRegistry,
+  )
 } finally {
   await rm(temporaryRoot, { recursive: true, force: true })
 }
@@ -338,6 +553,29 @@ assert.equal(
 assert.equal(
   secondStable.output.sha256,
   'edf893abdb34971e847da9c78032593618ddb932ad75a117334987c27500db67',
+)
+const committedShared = sourceRegistry.entries.filter(entry =>
+  ['012yus', '013kys'].includes(entry.idol_code),
+)
+assert.equal(committedShared.length, 2)
+assert.equal(new Set(committedShared.map(entry => entry.asset_url)).size, 1)
+assert.deepEqual(committedShared[0].shared_identity_ids, ['012yus', '013kys'])
+assert.deepEqual(committedShared[1].shared_identity_ids, ['012yus', '013kys'])
+assert.equal(
+  committedShared[0].unity_object.path_id,
+  '-2746721419655100402',
+)
+assert.equal(
+  committedShared[1].unity_object.path_id,
+  '-2746721419655100402',
+)
+assert.equal(
+  committedShared[0].output.sha256,
+  '7be1b676459a964c054b0fc5658ba69442513486b9e0d495ad3d9eab0449f99e',
+)
+assert.equal(
+  committedShared[1].output.sha256,
+  '7be1b676459a964c054b0fc5658ba69442513486b9e0d495ad3d9eab0449f99e',
 )
 
 console.log('RAW character-image promotion verification passed')

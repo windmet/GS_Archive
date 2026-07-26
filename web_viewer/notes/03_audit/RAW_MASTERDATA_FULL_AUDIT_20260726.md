@@ -349,6 +349,55 @@ without clipping. The final ignored rollback evidence is:
 
 `web_viewer/.analysis/raw-migration/character-image-candidate/birthday_visual/002sht/stable-backup-20260727-final/`
 
+### Shared birthday visual promotion
+
+The only shared birthday Sprite is now promoted through a separate group
+contract rather than being duplicated as two independent resources. The group
+confirmation is `birthday_visual:012yus+013kys`; both candidate directories are
+required, and both manifests must contain the exact identity set
+`["012yus", "013kys"]`.
+
+The group gate proves that both owner-specific manifests have identical:
+
+- RAW bundle path, byte count, and SHA-256;
+- Unity container, exact PathID, asset name, and Sprite Rect;
+- PNG byte count, dimensions, and SHA-256.
+
+Each manifest must still retain its own master ownership: three compiled files
+beginning `1_x_012yus_*` and three beginning `1_x_013kys_*`. Missing one
+identity, differing candidate output, incomplete confirmation, an interrupted
+registry write, or a partial shared registry is rejected. The single-idol
+publisher continues to reject this asset.
+
+The shared evidence is:
+
+- RAW bundle:
+  `RAW/asset/image_chara_birthday_visual_012yus-013kys.unity3d`;
+- RAW SHA-256:
+  `870a62220a98b6e8ac22b01339fbda2ea8efe4d1cf728e6a17e108a6f68a65ee`;
+- exact PathID string: `-2746721419655100402`;
+- stable PNG `1109×826`, 480,735 bytes, SHA-256
+  `7be1b676459a964c054b0fc5658ba69442513486b9e0d495ad3d9eab0449f99e`;
+- one physical stable URL:
+  `/assets/stories/birthday/image_chara_birthday_visual_012yus-013kys.png`;
+- two registry entries pointing to that URL, each carrying
+  `shared_identity_ids`.
+
+The real group sequence started from the two-entry registry SHA-256
+`9b524139be7c0df551f020c3ffa05c316d35f3087d90ed294fbf7c028d4c5ef7`.
+After publish, both owner routes loaded the same stable URL at natural
+`1109×826`. Explicit group rollback removed both mappings and the one PNG,
+restored the exact two-entry registry hash, and returned both routes to their
+fallback while `001tom` remained stable. Final republish produced four idol
+mappings backed by three physical URLs. The final registry SHA-256 is
+`becc2bb172430cfe7a017883aceab3686131f587051767e675d51b64da4a9ec2`.
+
+Final 5174 visual inspection showed the two-idol composition fully contained
+inside the existing story-detail panel. The final ignored rollback evidence
+is:
+
+`web_viewer/.analysis/raw-migration/character-image-candidate/birthday_visual/012yus-013kys-stable-backup-20260727-final/`
+
 The ignored report records each contributing bundle's path, size, and SHA-256
 from the established 13,000-file source manifest:
 
@@ -784,9 +833,10 @@ because this story has no translation overlay.
 1. Extend the proven single-story gate to multi-part aggregate collections,
    then promote another small representative batch rather than all 3,398 at
    once.
-2. Keep the other 47 birthday visuals isolated; promote another small sample
-   only after its own 5174 and rollback evidence. Treat shared
-   `012yus-013kys` as a separate multi-idol mapping case.
+2. Keep the other 46 physical birthday visuals isolated; they cover 45
+   remaining master idols plus `101ken`. Promote another small sample only
+   after its own 5174 and rollback evidence, and keep the NPC on a separate
+   identity gate.
 3. Map all 260 USM files to live-stage, card, event, and announcement semantics.
 4. Audit the remaining 1,271 general `image_*` bundles by Unity object name and
    master-data consumer.
@@ -836,6 +886,19 @@ npm run character:promotion-publish -- `
   --assets-root=public/assets `
   --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/002sht/stable-backup-20260727-final `
   --confirm=birthday_visual:002sht
+
+npm run character:promotion-publish-group -- `
+  --candidate-dirs=.analysis/raw-migration/character-image-candidate/birthday_visual/012yus,.analysis/raw-migration/character-image-candidate/birthday_visual/013kys `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/012yus-013kys-stable-backup-20260727-final `
+  --confirm=birthday_visual:012yus+013kys
+
+npm run character:promotion-rollback -- `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/012yus-013kys-stable-backup-20260727-final `
+  --confirm=birthday_visual:012yus+013kys
 
 python ..\data_pipeline\audit_raw_story_voice_gaps.py `
   --coverage .analysis\raw-migration\story\coverage.json `

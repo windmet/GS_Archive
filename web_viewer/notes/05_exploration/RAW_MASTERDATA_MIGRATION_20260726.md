@@ -367,6 +367,39 @@ Final rollback evidence:
 
 `.analysis/raw-migration/character-image-candidate/birthday_visual/002sht/stable-backup-20260727-final/`
 
+### Shared birthday visual
+
+`012yus` and `013kys` are the one birthday-image exception to the single-idol
+gate. A dedicated group publisher consumes both candidate directories,
+requires the complete confirmation
+`birthday_visual:012yus+013kys`, and proves that both manifests select the same
+RAW bundle, Unity Sprite, PathID, Sprite Rect, and PNG while retaining separate
+owner-specific master rows.
+
+The stable group uses one physical asset and two registry mappings:
+
+- stable URL:
+  `/assets/stories/birthday/image_chara_birthday_visual_012yus-013kys.png`;
+- RAW SHA-256:
+  `870a62220a98b6e8ac22b01339fbda2ea8efe4d1cf728e6a17e108a6f68a65ee`;
+- PathID: `-2746721419655100402`;
+- PNG `1109×826`, 480,735 bytes, SHA-256
+  `7be1b676459a964c054b0fc5658ba69442513486b9e0d495ad3d9eab0449f99e`.
+
+The real group publication began with two mappings. Both owner routes loaded
+the same stable URL. Explicit group rollback removed both new mappings and the
+one shared PNG, restored the exact prior registry hash, and returned both
+routes to fallback without affecting `001tom`. Final republish leaves four
+idol mappings backed by three physical image URLs; registry SHA-256 is
+`becc2bb172430cfe7a017883aceab3686131f587051767e675d51b64da4a9ec2`.
+The shared two-idol composition passed visual layout inspection.
+
+The validator also rejects incomplete shared registry groups, so future
+publication cannot silently build on only one side of this mapping. Final
+rollback evidence:
+
+`.analysis/raw-migration/character-image-candidate/birthday_visual/012yus-013kys-stable-backup-20260727-final/`
+
 ### Standalone promotion gate and first stable replacement
 
 The generic strict collection publisher requires an aggregate plus episode
@@ -449,6 +482,13 @@ npm run character:promotion-publish -- `
   --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/002sht/stable-backup-20260727-final `
   --confirm=birthday_visual:002sht
 
+npm run character:promotion-publish-group -- `
+  --candidate-dirs=.analysis/raw-migration/character-image-candidate/birthday_visual/012yus,.analysis/raw-migration/character-image-candidate/birthday_visual/013kys `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/012yus-013kys-stable-backup-20260727-final `
+  --confirm=birthday_visual:012yus+013kys
+
 python ..\data_pipeline\extract_raw_audio_candidate.py `
   --raw-root ..\RAW --kind bgm --container usual_day.awb --cue usual_day `
   --selection 1 --output-root .analysis\raw-migration\audio `
@@ -491,9 +531,9 @@ assets.
 
 1. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
-2. Keep the remaining birthday images isolated and promote another small
-   representative only after its own 5174 and rollback evidence; handle the
-   shared `012yus-013kys` mapping separately.
+2. Keep the remaining 46 physical birthday images isolated and promote another
+   small representative only after its own 5174 and rollback evidence. The 45
+   master idols and `101ken` NPC remain distinct identity scopes.
 3. Map all 260 RAW USM files to master-data consumers.
 4. Continue promoting verified domains one reversible batch at a time, with
    5174 acceptance and rollback evidence before each stable-path replacement.
