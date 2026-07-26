@@ -10,6 +10,8 @@ Latest archive/story navigation handoff: `notes/04_refactor/ARCHIVE_STORY_NEXT_W
 
 Latest Story Runtime post-merge handoff: `notes/04_refactor/STORY_POST_MERGE_HANDOFF_20260723.md`
 
+Latest RAW + master-data migration log: `notes/05_exploration/RAW_MASTERDATA_MIGRATION_20260726.md`
+
 The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_88969A1_RELEASE_GUIDE_20260723.md` for historical evidence.
 
 ## Layout

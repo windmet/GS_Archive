@@ -354,6 +354,7 @@ import {
   injectLiveChibiMotion,
   playLiveChibiMotion,
 } from '../utils/liveChibiSpine.js'
+import { getSongUrl } from '../utils/AssetResolver.js'
 
 const emit = defineEmits(['back', 'open-lab'])
 const canvasRef = ref(null)
@@ -2296,7 +2297,10 @@ async function loadSongAudio() {
   audioError.value = ''
   const audioEntry = selectedSongAudio.value
   if (!audioEntry) return
-  const audio = new Audio(`${LIVE_CHIBI_BASE}/${audioEntry.file}`)
+  const audio = new Audio(getSongUrl(
+    audioEntry.songCode,
+    `${LIVE_CHIBI_BASE}/${audioEntry.file}`,
+  ))
   audio.preload = 'auto'
   audio.playbackRate = playbackSpeed.value
   audio.addEventListener('loadedmetadata', () => {
