@@ -91,6 +91,9 @@ jobs:
       - name: Verify RAW character-image candidate contract
         run: npm run verify:raw-character-candidate
 
+      - name: Verify RAW character-image promotion contract
+        run: npm run verify:raw-character-promotion
+
       - name: Verify strict collection publisher
         run: npm run verify:story-authoritative-publish
 

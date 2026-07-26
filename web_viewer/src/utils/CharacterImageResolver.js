@@ -32,6 +32,16 @@ export function getRawCharacterImageCandidateUrl(kind, idolCode, search) {
     : ''
 }
 
+export function getPromotedCharacterImageUrl(kind, idolCode, registry) {
+  if (!CANDIDATE_KINDS.has(kind) || !IDOL_CODE.test(idolCode || '')) return ''
+  const entry = (registry?.entries || []).find(item =>
+    item?.kind === kind && item?.idol_code === idolCode,
+  )
+  return typeof entry?.asset_url === 'string' && entry.asset_url.startsWith('/assets/')
+    ? entry.asset_url
+    : ''
+}
+
 export function birthdayStoryIdolCode(story) {
   const file = String(story?.file || story?.id || '')
   const fileMatch = file.match(/^1_x_(\d{3}[a-z0-9]{3})_/i)

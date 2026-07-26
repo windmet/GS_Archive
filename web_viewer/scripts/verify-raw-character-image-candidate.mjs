@@ -4,6 +4,7 @@ import {
   RAW_CHARACTER_IMAGE_CANDIDATE_KINDS,
   birthdayStoryIdolCode,
   getRawCharacterImageCandidateUrl,
+  getPromotedCharacterImageUrl,
   hasRawCharacterImageCandidate,
 } from '../src/utils/CharacterImageResolver.js'
 
@@ -52,6 +53,20 @@ assert.equal(
   getRawCharacterImageCandidateUrl('birthday_visual', '../RAW', enabled),
   '',
 )
+assert.equal(
+  getPromotedCharacterImageUrl('birthday_visual', '001tom', {
+    entries: [{
+      kind: 'birthday_visual',
+      idol_code: '001tom',
+      asset_url: '/assets/stories/birthday/image_chara_birthday_visual_001tom.png',
+    }],
+  }),
+  '/assets/stories/birthday/image_chara_birthday_visual_001tom.png',
+)
+assert.equal(
+  getPromotedCharacterImageUrl('birthday_visual', '002sht', { entries: [] }),
+  '',
+)
 
 const appSource = await readFile(new URL('../src/App.vue', import.meta.url), 'utf8')
 assert.match(appSource, /story\.domain === 'birthday'/)
@@ -59,6 +74,7 @@ assert.match(
   appSource,
   /birthdayStoryIdolCode\(story\)/,
 )
+assert.match(appSource, /getPromotedCharacterImageUrl/)
 
 const viteSource = await readFile(new URL('../vite.config.js', import.meta.url), 'utf8')
 assert.match(viteSource, /rawCharacterImageCandidatePlugin\(\)/)

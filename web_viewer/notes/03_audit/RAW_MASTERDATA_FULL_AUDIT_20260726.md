@@ -253,6 +253,62 @@ Both candidate and control also reproduced the same pre-existing
 `decodeAudioData` error despite `noAudio=1`; that audio initialization issue is
 not caused by the image path and remains separate follow-up work.
 
+### First stable birthday-visual promotion
+
+`birthday_visual:001tom` is now the first character image promoted through a
+domain-specific registry and rollback gate. The stable pair is:
+
+- registry:
+  `public/data/assets/raw_character_image_promotions.json`;
+- asset:
+  `public/assets/stories/birthday/image_chara_birthday_visual_001tom.png`;
+- stable URL:
+  `/assets/stories/birthday/image_chara_birthday_visual_001tom.png`.
+
+Publishing re-opens the exact RAW bundle and candidate PNG and verifies their
+byte counts and SHA-256 hashes before writing either stable file. It also
+requires exact `birthday_visual:001tom` confirmation, one single-idol Sprite
+identity, birthday master rows owned by `1_x_001tom_*`, a candidate below
+ignored `.analysis`, an empty backup directory below `.analysis`, and an
+absent unregistered target. The registry records the exact Unity container and
+decimal-string PathID `1704761937170686496`; using a string is required because
+this identity exceeds JavaScript's safe integer range.
+
+The first stable publication records:
+
+- RAW bundle SHA-256:
+  `2590eb0feefa7cc23aa5ab7f16b965a42fb84103d5aff12e001621fc4ab6f6f0`;
+- output `801×875`, 355,496 bytes, SHA-256
+  `a572186d263b52c2d70f9f2598304b2c89530f491595cc6561094ad4cf20ef2a`;
+- pre-promotion registry SHA-256
+  `406e9052d7c5782d0e70febbe2a12d5a9e72046854bdac2684c4c7909900ddc3`;
+- final registry SHA-256
+  `758bfe9d1668b602e39bf032e5e190c3fc6f72513cb7dabca7547f00681413df`;
+- old stable asset state: absent.
+
+The publisher writes the asset and registry as one recoverable operation. Any
+injected asset/registry/report failure restores the previous registry and
+removes the additive asset. The explicit rollback command additionally refuses
+to act if either promoted hash drifted.
+
+The real 5174 acceptance sequence was publish, browser check, explicit
+rollback, browser check, then final republish:
+
+1. without a query parameter, `001tom` loaded the stable URL at natural
+   `801×875` with no fallback;
+2. rollback restored the empty registry hash, removed the PNG, and the same
+   route returned to zero images plus the original fallback;
+3. after final republish, the no-query route again loaded the stable URL;
+4. the explicit candidate query still selected
+   `/assets/character-candidate/birthday_visual/001tom.png`;
+5. unpromoted `002sht` still loaded zero images and retained the fallback.
+
+This browser pass accepted image association and layout only; it does not
+supersede the separately recorded `noAudio=1` audio-initialization defect.
+The final ignored rollback evidence is:
+
+`web_viewer/.analysis/raw-migration/character-image-candidate/birthday_visual/001tom/stable-backup-20260727-final-v2/`
+
 The ignored report records each contributing bundle's path, size, and SHA-256
 from the established 13,000-file source manifest:
 
@@ -688,8 +744,9 @@ because this story has no translation overlay.
 1. Extend the proven single-story gate to multi-part aggregate collections,
    then promote another small representative batch rather than all 3,398 at
    once.
-2. Add a birthday-image promotion/rollback gate and only then consider one
-   additive stable image.
+2. Keep the other 48 birthday visuals isolated; promote another small sample
+   only after its own 5174 and rollback evidence. Treat shared
+   `012yus-013kys` as a separate multi-idol mapping case.
 3. Map all 260 USM files to live-stage, card, event, and announcement semantics.
 4. Audit the remaining 1,271 general `image_*` bundles by Unity object name and
    master-data consumer.
@@ -719,6 +776,19 @@ python ..\data_pipeline\audit_raw_character_resources.py
 
 python ..\data_pipeline\extract_raw_character_image_candidate.py `
   birthday_visual 001tom
+
+npm run character:promotion-publish -- `
+  --candidate-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/001tom `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/001tom/stable-backup-20260727-final-v2 `
+  --confirm=birthday_visual:001tom
+
+npm run character:promotion-rollback -- `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/001tom/stable-backup-20260727-final-v2 `
+  --confirm=birthday_visual:001tom
 
 python ..\data_pipeline\audit_raw_story_voice_gaps.py `
   --coverage .analysis\raw-migration\story\coverage.json `

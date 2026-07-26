@@ -274,7 +274,12 @@ def audit_costumes(
         env = UnityPy.load(str(path))
         type_counts = Counter(obj.type.name for obj in env.objects)
         container_entries = [
-            {"path": name, "type": obj.type.name, "path_id": obj.path_id}
+            {
+                "path": name,
+                "type": obj.type.name,
+                # Preserve exact Unity identity for JavaScript JSON consumers.
+                "path_id": str(obj.path_id),
+            }
             for name, obj in sorted(env.container.items(), key=lambda item: item[0])
         ]
         silhouette_entries = [

@@ -291,15 +291,53 @@ four birthday rows owned by compiled filenames beginning `1_x_001tom_`.
 The shared `012yus-013kys` Sprite was also extracted through both idol
 identities; both manifests retain their own three birthday rows and resolve to
 the same `1109×826` output hash.
-The route is opt-in through
-`raw_character_candidate=birthday_visual:001tom`; without that query the
-stable page still shows its existing fallback.
+The candidate route remains opt-in through
+`raw_character_candidate=birthday_visual:001tom`. The first stable publication
+described below now supplies the no-query path for `001tom`; all other idols
+remain on the existing fallback.
 
 5174 rendered the candidate at its natural dimensions and loaded no fallback;
 the control loaded no candidate image and retained the fallback. Both pages
 also reproduced the same existing audio decode error even with `noAudio=1`,
 so that issue is recorded separately rather than attributed to this image
 candidate.
+
+### First stable birthday-visual promotion
+
+A character-image-specific publisher now promotes one registry entry and one
+PNG as a recoverable pair. It verifies the candidate manifest, current RAW
+bundle hash, PNG hash/dimensions, birthday master ownership, exact Sprite
+container, exact decimal-string Unity PathID, explicit confirmation, bounded
+paths, and an absent unregistered stable target. Shared/multi-idol Sprite
+identities are rejected by this first-batch gate.
+
+The first entry is `birthday_visual:001tom`:
+
+- stable URL:
+  `/assets/stories/birthday/image_chara_birthday_visual_001tom.png`;
+- exact PathID: `1704761937170686496`;
+- RAW SHA-256:
+  `2590eb0feefa7cc23aa5ab7f16b965a42fb84103d5aff12e001621fc4ab6f6f0`;
+- PNG `801×875`, SHA-256
+  `a572186d263b52c2d70f9f2598304b2c89530f491595cc6561094ad4cf20ef2a`;
+- final registry SHA-256
+  `758bfe9d1668b602e39bf032e5e190c3fc6f72513cb7dabca7547f00681413df`.
+
+The actual stable publication was explicitly rolled back before the final
+republish. Rollback restored the empty registry SHA-256
+`406e9052d7c5782d0e70febbe2a12d5a9e72046854bdac2684c4c7909900ddc3`,
+deleted the additive PNG, and restored the old browser fallback. The final
+republish then restored the stable image.
+
+5174 verified three bounded states: no-query `001tom` selected the stable URL;
+the explicit candidate query still selected the ignored candidate URL; and
+unpromoted `002sht` still selected no image and retained the fallback. Both
+loaded `001tom` images were complete at natural `801×875`, and the stable image
+fit the existing detail layout.
+
+The final rollback evidence is ignored at:
+
+`.analysis/raw-migration/character-image-candidate/birthday_visual/001tom/stable-backup-20260727-final-v2/`
 
 ### Standalone promotion gate and first stable replacement
 
@@ -363,6 +401,19 @@ python ..\data_pipeline\audit_raw_character_resources.py
 python ..\data_pipeline\extract_raw_character_image_candidate.py `
   birthday_visual 001tom
 
+npm run character:promotion-publish -- `
+  --candidate-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/001tom `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/001tom/stable-backup-20260727-final-v2 `
+  --confirm=birthday_visual:001tom
+
+npm run character:promotion-rollback -- `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/001tom/stable-backup-20260727-final-v2 `
+  --confirm=birthday_visual:001tom
+
 python ..\data_pipeline\extract_raw_audio_candidate.py `
   --raw-root ..\RAW --kind bgm --container usual_day.awb --cue usual_day `
   --selection 1 --output-root .analysis\raw-migration\audio `
@@ -405,8 +456,9 @@ assets.
 
 1. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
-2. Add an explicit birthday-image promotion/rollback gate before one additive
-   stable image.
+2. Keep the remaining birthday images isolated and promote another small
+   representative only after its own 5174 and rollback evidence; handle the
+   shared `012yus-013kys` mapping separately.
 3. Map all 260 RAW USM files to master-data consumers.
 4. Continue promoting verified domains one reversible batch at a time, with
    5174 acceptance and rollback evidence before each stable-path replacement.

@@ -374,6 +374,7 @@ import {
 } from './utils/LanguageStore.js'
 import {
   birthdayStoryIdolCode,
+  getPromotedCharacterImageUrl,
   getRawCharacterImageCandidateUrl,
 } from './utils/CharacterImageResolver.js'
 
@@ -414,6 +415,7 @@ const costumeDictionaryData = ref(null)
 const archiveManifestData = ref(null)
 const archiveVerificationData = ref(null)
 const uiAssetCatalogData = ref(null)
+const rawCharacterImagePromotionsData = ref(null)
 const idolEntityTranslationRevision = ref(0)
 const currentScenario = ref(null)
 const currentScenarioFile = ref('')
@@ -802,7 +804,12 @@ const currentStoryVisualUrl = computed(() => {
   if (story.domain === 'idol_story' && story.sectionId) return `/assets/idols/icons/image_chara_icon_${story.sectionId}.png`
   if (story.domain === 'birthday') {
     const idolCode = birthdayStoryIdolCode(story)
-    return getRawCharacterImageCandidateUrl('birthday_visual', idolCode)
+    return getRawCharacterImageCandidateUrl('birthday_visual', idolCode) ||
+      getPromotedCharacterImageUrl(
+        'birthday_visual',
+        idolCode,
+        rawCharacterImagePromotionsData.value,
+      )
   }
   return ''
 })
@@ -2422,6 +2429,7 @@ onMounted(async () => {
   archiveManifestData.value = data.archiveManifest
   archiveVerificationData.value = data.archiveVerification
   uiAssetCatalogData.value = data.uiAssetCatalog
+  rawCharacterImagePromotionsData.value = data.rawCharacterImagePromotions
   for (const { key, error } of errors) {
     console.error(`[ArchiveData] Failed to load ${key}:`, error)
   }

@@ -254,7 +254,9 @@ def main() -> None:
         },
         "unity_object": {
             "container_path": match["container_path"],
-            "path_id": match["object"].path_id,
+            # Unity PathIDs commonly exceed JavaScript's safe integer range.
+            # Keep the exact object identity across JSON/Node consumers.
+            "path_id": str(match["object"].path_id),
             "object_type": match["object"].type.name,
             "asset_name": match["asset_name"],
             "identity_ids": match["identities"],
