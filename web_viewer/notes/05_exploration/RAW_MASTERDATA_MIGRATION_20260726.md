@@ -515,6 +515,45 @@ Final rollback evidence:
 
 `.analysis/raw-migration/character-image-candidate/birthday_visual/batch-011min-014hid-015ryu-016sei-017kir-backup-20260727-final/`
 
+### Third five-image bounded batch
+
+`018shm`, `019kur`, `020hay`, `021jun`, and `022nat` are the next master-order
+batch. Evidence:
+
+- `018shm`: RAW
+  `99487e5ec5710c88bac7f1228ba4aa0db4cff1c6b5f399284f3ebb960e24491d`,
+  PathID `4083446340310980541`, PNG `1202×863`,
+  `5f7d1817c2f0773e7dffc4f19f9bb43980ad2b5e74e4263e84c54f72366562fc`;
+- `019kur`: RAW
+  `6180f81dade3a5a6f92d83a9ff5a24df522daaf35866fb04e05292546c7b27bb`,
+  PathID `-7541408428981436444`, PNG `874×824`,
+  `0f1ac21c5568dbbb736958038b378edc138654b583c0c199531ab8d79c71a71a`;
+- `020hay`: RAW
+  `517f28497690adf9d0fe74181ca462f03cff4ffe9b874c40791b6ed19a31ccc5`,
+  PathID `8995473977128221475`, PNG `976×827`,
+  `89a73a04f2184ea20f1d01fa9f24761fb9e133ef2c19902ac95712d3efd3b86e`;
+- `021jun`: RAW
+  `7e61df1cdac2309d3a591866ee1f274912d10b18908f997453ce15f732608a51`,
+  PathID `-1079152942904299386`, PNG `1159×801`,
+  `ecbc005484f0373aeae6ffd0399301ba5b0c254398625d03b843e6277ad6d66c`;
+- `022nat`: RAW
+  `ef846e5d2187fb459163770332cd6a0124d052fe0b87a60e04760dcce183fefd`,
+  PathID `-5858754875459902066`, PNG `983×819`,
+  `9d215b3c4fcf5ebc8a8079a68d5664a1cd33daf823582fc109ff2084f74b67c5`.
+
+The real publish/rollback/final-republish cycle restored the exact
+`ead36216820b63b7b274ad281488fbe625a3d773f6f88f684d77d24ae955547e`
+baseline during rollback, removed all five new PNGs, and preserved `017kir`.
+Final state is twenty-two idol mappings and twenty-one physical URLs, registry
+SHA-256
+`79a9d92f963049d48ce95b7e78286cc537b710c6a1f4a206811d4822fbc7e5ca`.
+All five stable routes loaded at natural dimensions; `018shm` and `019kur`
+passed visual layout inspection.
+
+Final rollback evidence:
+
+`.analysis/raw-migration/character-image-candidate/birthday_visual/batch-018shm-019kur-020hay-021jun-022nat-backup-20260727-final/`
+
 ### Standalone promotion gate and first stable replacement
 
 The generic strict collection publisher requires an aggregate plus episode
@@ -625,6 +664,13 @@ npm run character:promotion-publish-batch -- `
   --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-011min-014hid-015ryu-016sei-017kir-backup-20260727-final `
   --confirm=birthday_visual:011min+014hid+015ryu+016sei+017kir
 
+npm run character:promotion-publish-batch -- `
+  --candidate-dirs=.analysis/raw-migration/character-image-candidate/birthday_visual/018shm,.analysis/raw-migration/character-image-candidate/birthday_visual/019kur,.analysis/raw-migration/character-image-candidate/birthday_visual/020hay,.analysis/raw-migration/character-image-candidate/birthday_visual/021jun,.analysis/raw-migration/character-image-candidate/birthday_visual/022nat `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-018shm-019kur-020hay-021jun-022nat-backup-20260727-final `
+  --confirm=birthday_visual:018shm+019kur+020hay+021jun+022nat
+
 python ..\data_pipeline\extract_raw_audio_candidate.py `
   --raw-root ..\RAW --kind bgm --container usual_day.awb --cue usual_day `
   --selection 1 --output-root .analysis\raw-migration\audio `
@@ -667,8 +713,8 @@ assets.
 
 1. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
-2. Keep the remaining 33 physical birthday images isolated and promote another
-   bounded batch only after its own 5174 and rollback evidence. The 32
+2. Keep the remaining 28 physical birthday images isolated and promote another
+   bounded batch only after its own 5174 and rollback evidence. The 27
    master idols and `101ken` NPC remain distinct identity scopes.
 3. Map all 260 RAW USM files to master-data consumers.
 4. Continue promoting verified domains one reversible batch at a time, with
