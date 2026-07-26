@@ -145,6 +145,7 @@ class FakeTimerQueue {
 }
 
 const originalFetch = globalThis.fetch
+const originalWindow = globalThis.window
 globalThis.fetch = async () => ({ ok: true, arrayBuffer: async () => new ArrayBuffer(8) })
 try {
   const soakContext = new FakeAudioContext()
@@ -220,15 +221,45 @@ try {
   assert.equal(raceManager.captureState().ambient.cue, 'new-ambient', 'late stale Ambient load must not replace the newest cue')
   assert.equal(raceSession.inspect().active_sources, 2, 'one BGM and one Ambient source must remain')
 
+  const probeContext = new FakeAudioContext()
+  probeContext.state = 'running'
+  const probeSession = new StoryAudioSession({ contextFactory: () => probeContext })
+  const probeManager = new AudioManager({ audioSession: probeSession })
+  let probeUrl = null
+  globalThis.window = {
+    location: {
+      search: '?raw_audio_candidate=bgm%3Abgm_main_christmas_day_a&raw_bgm_probe=bgm_main_christmas_day_a',
+    },
+  }
+  globalThis.fetch = async url => {
+    probeUrl = url
+    return { ok: true, arrayBuffer: async () => new ArrayBuffer(8) }
+  }
+  await probeManager.playBgm('usual_day', 0)
+  assert.equal(
+    probeUrl,
+    '/assets/audio-candidate/bgm/bgm_main_christmas_day_a.m4a',
+    'the explicit BGM probe must route through the matching RAW candidate',
+  )
+  assert.equal(
+    probeManager.captureState().bgm.cue,
+    'bgm_main_christmas_day_a',
+    'runtime diagnostics must report the effective RAW probe cue',
+  )
+
   audioManager.dispose()
   timers.flush()
   await soakSession.dispose()
   raceManager.dispose()
   await raceSession.dispose()
+  probeManager.dispose()
+  await probeSession.dispose()
   assert.equal(soakSession.inspect().active_sources, 0)
   assert.equal(raceSession.inspect().active_sources, 0)
 } finally {
   globalThis.fetch = originalFetch
+  if (originalWindow === undefined) delete globalThis.window
+  else globalThis.window = originalWindow
 }
 
 let disabledContextFactoryCalls = 0

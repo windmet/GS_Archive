@@ -34,6 +34,12 @@ export function hasRawAudioCandidate(kind, cue) {
   return requested.includes(`${kind}:${cue}`)
 }
 
+export function getRawBgmProbeId() {
+  if (typeof window === 'undefined') return ''
+  const cue = new URLSearchParams(window.location.search).get('raw_bgm_probe') || ''
+  return /^[a-z0-9_]+$/i.test(cue) && hasRawAudioCandidate('bgm', cue) ? cue : ''
+}
+
 export function getBgUrl(bgId) {
   return getRawBackgroundCandidateId() === bgId
     ? `${ASSET_BASE}/bg-candidate/${bgId}.png`

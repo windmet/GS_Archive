@@ -1,6 +1,7 @@
 # RAW + Master Data Full Resource Audit
 
-Date: 2026-07-26
+Started: 2026-07-26
+Last updated: 2026-07-27
 Repository: `E:\Web_build\SideM_Archived`
 Branch: `codex/post-merge-story-handoff`
 
@@ -22,7 +23,8 @@ The authority boundary is:
 
 This is not yet a statement that every public resource has been regenerated.
 Cards, ADV backgrounds, one complete story sample, the complete RAW audio cue
-inventory, and representative browser candidates have strong evidence.
+inventory, the complete table-133 seasonal BGM relation, and representative
+browser candidates have strong evidence.
 Movies, general UI images, costumes/Spine, and full-story regeneration still
 require domain-specific audits.
 
@@ -93,7 +95,7 @@ generated data.
 | story BGM | compiled cue ID | same-stem ACB/AWB | 105/105 referenced IDs have containers | full referenced coverage proven |
 | story ambient | compiled environmental cue | same-stem ACB/AWB | 83/83 non-sentinel cues have containers | full referenced coverage proven |
 | story SE | compiled SE cue | multi-cue ACB bank | 435/435 classified | full identity coverage proven |
-| master seasonal BGM | table 133 resource/switch ID | variant cues/banks | 39/92 exact cues | relation mapping incomplete |
+| master seasonal BGM | table 133 relation + ACB action metadata | variant cues/banks | 92/92 classified; 42/42 switches resolved | full identity relation proven |
 | character/costume/Spine | costume/idol dictionaries | `costume_*`, `idol_*`, `image_*` | counts known, relation audit incomplete | pending |
 | live/chibi | song/choreography IDs | `live_*`, `song_*`, image/object layers | representative song playback proven | partial |
 | movies | event/live/card movie relations | 260 USM | filename inventory only | pending |
@@ -204,9 +206,17 @@ variants or document a deterministic selection policy.
 All 61 song codes have exact `song3_<code>` cues.
 
 Only 39 of the 92 `music_catalog.json` BGM records are exact waveform cue
-names. The remaining 53 are mainly table-133 seasonal/switch resources such as
-`bgm_main_day`, `*_sw_idol`, and `bgm_system_*`. RAW contains concrete variants
-such as:
+names. The other 53 are table-133 control or container resources rather than
+missing sound files. They are now classified as:
+
+| Resource role | Count | Physical meaning |
+| --- | ---: | --- |
+| waveform cue | 39 | directly decodable HCA stream |
+| switch ActionTrack cue | 42 | selects one of six running waveform cues |
+| base ActionTrack cue | 7 | controls the six contextual waveform cues |
+| ACB bank identifier | 4 | seasonal cue sheet/container name |
+
+The concrete waveform family includes:
 
 - `bgm_main_day_a`;
 - `bgm_main_day_a_sub`;
@@ -215,9 +225,51 @@ such as:
 - `bgm_main_day_d`;
 - `bgm_main_day_story_sub`.
 
-Therefore the 53 records must not be reported as missing audio. They are
-selector-level semantic records requiring a table-133 row/field-to-variant
-mapping.
+No BGM catalog resource remains unresolved.
+
+### Table 133 and ACB action mapping
+
+Table 133 contains 56 complete rows:
+
+- four `season_id` groups: Christmas, New Year, Valentine, and White Day;
+- 14 source states per group: day/night base plus six contextual states;
+- field 3: normal source selector;
+- field 4: seasonal ACB bank;
+- field 5: seasonal base ActionTrack cue;
+- field 6: seasonal selector.
+
+The old projection retained only `row_id` and the field number on each resource,
+which lost the four-way row relation. `music_catalog.json` schema 2 now keeps:
+
+- all 56 records in `seasonal_switch_rows`;
+- `season_id`, role, and field on every legacy `seasonal_variants` item;
+- the set of table-133 roles on every affected BGM record;
+- 61 songs and all 92 prior BGM records unchanged.
+
+The ACB `@UTF` metadata proves that base and switch names are not audio
+waveforms. Their `CueTable` rows report zero related waveforms, and their
+`SequenceTable` rows point to `ActionTrackTable` actions. Every switch has six
+targets. One target uses a command index that occurs once while the other five
+share another command index. This recovers all 42 selections:
+
+| Switch suffix | Selected concrete cue suffix |
+| --- | --- |
+| `sw_main` | `a` |
+| `sw_work` | `b` |
+| `sw_story` | `c` |
+| `sw_idol` | `d` |
+| `sw_main_sub` | `a_sub` |
+| `sw_story_sub` | `story_sub` |
+
+The rule resolves 42/42 switch cues, all selected targets exist in the full RAW
+waveform index, and the structural-anomaly count is zero. The ignored evidence
+report is:
+
+`web_viewer/.analysis/raw-migration/audio/master-bgm/selector_mapping.json`
+
+It records the master-data, catalog, cue-index and five inspected ACB hashes,
+all 56 complete relation rows, the ACB action targets, and the selected concrete
+waveform for every switch.
 
 ## 7. Browser candidate verification
 
@@ -235,6 +287,7 @@ Verified on port 5174:
 - `flash_in` from `se_commu_2022.acb`;
 - `phone_rusuden_start` from `se_telephone.acb`;
 - `2_4_003_02_09_c1900_t` from a story-specific bank;
+- `bgm_main_christmas_day_a` selected by the Christmas `sw_main` ActionTrack;
 - `DRIVE A LIVE` in the multi-character live stage.
 
 The long story-specific SE was verified with:
@@ -244,6 +297,24 @@ The long story-specific SE was verified with:
 - one registered SE source;
 - AudioContext transition from `suspended` to `running`;
 - source age advancing beyond two seconds.
+
+The seasonal BGM was extracted from
+`RAW/audio/bgm_system_christmas.awb`, selection 2:
+
+- source SHA-256:
+  `22206da46cc01500be788cf3c106f0dabee74642f821a03ccfe99bc2e77b7ad0`;
+- source cue aliases: `bgm_main_christmas_day_a` and
+  `bgm_main_christmas_day_a_sub`;
+- output duration: 79.277 seconds, stereo AAC/M4A;
+- candidate HTTP response: 200 `audio/mp4`;
+- browser AudioContext: `suspended` before the user gesture, then `running`;
+- registered runtime cue: `bgm_main_christmas_day_a`;
+- source age observed at 2.64 seconds.
+
+The opt-in browser probe requires both
+`raw_audio_candidate=bgm:<cue>` and `raw_bgm_probe=<cue>`. It replaces only the
+effective BGM requested by the bounded QA route. No default story or stable
+asset URL changes.
 
 The live stage reported audio ready and advanced from 0:00 to 0:19 while
 choreography and singer positions changed.
@@ -269,18 +340,16 @@ organizer folder layout as authority.
 
 ## 9. Remaining work in priority order
 
-1. Decode table 133 completely and map the 53 selector-level BGM records to
-   concrete RAW variants.
-2. Define and test the browser policy for genuine multi-waveform cues such as
+1. Define and test the browser policy for genuine multi-waveform cues such as
    `waribashi`.
-3. Extend RAW-only story compilation from the proven sample to all 1,435
+2. Extend RAW-only story compilation from the proven sample to all 1,435
    scenario bundles, with full voice/lipsync coverage reports.
-4. Audit `costume_*`, `idol_*`, and character-related `image_*` bundles against
+3. Audit `costume_*`, `idol_*`, and character-related `image_*` bundles against
    costume/idol dictionaries and current Spine directories.
-5. Map all 260 USM files to live-stage, card, event, and announcement semantics.
-6. Audit the remaining 1,271 general `image_*` bundles by Unity object name and
+4. Map all 260 USM files to live-stage, card, event, and announcement semantics.
+5. Audit the remaining 1,271 general `image_*` bundles by Unity object name and
    master-data consumer.
-7. Promote verified domains into stable public paths in small reversible
+6. Promote verified domains into stable public paths in small reversible
    commits, never as one bulk replacement.
 
 ## 10. Reproduction
@@ -303,6 +372,18 @@ python ..\data_pipeline\compare_raw_audio_cue_variants.py `
   --coverage .analysis\raw-migration\audio\cue-index\story_se_coverage.json `
   --vgmstream "E:\Program Files\vgmstream-win64\vgmstream-cli.exe" `
   --output .analysis\raw-migration\audio\cue-index\ambiguous_decode_comparison.json
+
+python ..\data_pipeline\masterdata_extract.py $env:SIDEM_MASTER_DATA_PATH `
+  --music-catalog-only `
+  --out-dir .analysis\raw-migration\masterdata-music-generated `
+  --public-out-dir public\data\masterdata
+
+python ..\data_pipeline\audit_master_bgm_selector_mapping.py `
+  --master-data $env:SIDEM_MASTER_DATA_PATH `
+  --music-catalog public\data\masterdata\music_catalog.json `
+  --cue-index .analysis\raw-migration\audio\cue-index\cue_index.json `
+  --raw-root ..\RAW `
+  --output .analysis\raw-migration\audio\master-bgm\selector_mapping.json
 ```
 
 Generated evidence remains ignored under `.analysis`. Reproducible scripts,

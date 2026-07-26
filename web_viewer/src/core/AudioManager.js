@@ -5,7 +5,12 @@
  * Call ensureContext() on user gesture to comply with browser autoplay policy.
  * OGG format — compatible with Chrome/Firefox/Edge; Safari skips silently.
  */
-import { getSeUrl, getAmbientUrl, getBgmUrl } from '../utils/AssetResolver.js'
+import {
+  getSeUrl,
+  getAmbientUrl,
+  getBgmUrl,
+  getRawBgmProbeId,
+} from '../utils/AssetResolver.js'
 import { StoryAudioSession } from './story-runtime/StoryAudioSession.js'
 
 export const NON_WAVEFORM_SE_CUES = Object.freeze([
@@ -216,6 +221,9 @@ export class AudioManager {
    * @param {number} [fadeTime=1.0]
    */
   async playBgm(bgmId, fadeTime = 1.0) {
+    // Opt-in development probe: preserve the authored scene while routing one
+    // BGM request through a specific RAW-derived candidate for browser QA.
+    bgmId = getRawBgmProbeId() || bgmId
     if (!bgmId || this._audioSession.disabled || bgmId === this._currentBgmCue) return
     this.ensureContext()
     const generation = ++this._bgmGeneration
