@@ -281,9 +281,9 @@ settled silhouette, no pending silhouette, and no console warning/error.
 
 The 298 non-public-basename paths are no longer an undifferentiated gap:
 birthday, event-story, Mobile bust-up, name-plate, sign, and idol-story
-categories each cover all 49 master idols. Birthday visuals are the first
-candidate because birthday story detail already has a visual slot and
-currently uses a fallback.
+categories each cover all 49 master idols. Birthday visuals were selected as
+the first candidate because birthday story detail already had a visual slot
+with a fallback.
 
 The isolated `birthday_visual:001tom` candidate comes from the exact RAW
 Sprite, is `801×875`, matches the source-manifest bundle hash, and is tied to
@@ -293,8 +293,8 @@ identities; both manifests retain their own three birthday rows and resolve to
 the same `1109×826` output hash.
 The candidate route remains opt-in through
 `raw_character_candidate=birthday_visual:001tom`. The first stable publication
-described below now supplies the no-query path for `001tom`; all other idols
-remain on the existing fallback.
+described below supplied the no-query path for `001tom`; at that stage all
+other idols remained on the existing fallback.
 
 5174 rendered the candidate at its natural dimensions and loaded no fallback;
 the control loaded no candidate image and retained the fallback. Both pages
@@ -475,6 +475,46 @@ Final rollback evidence:
 
 `.analysis/raw-migration/character-image-candidate/birthday_visual/batch-006tsu-007kei-008rei-009kyj-010pie-backup-20260727-final/`
 
+### Second five-image bounded batch
+
+`011min`, `014hid`, `015ryu`, `016sei`, and `017kir` are the next master-order
+batch. Evidence:
+
+- `011min`: RAW
+  `a951b66453de2836a3cc6fb7dcec21c16f3cfcfa285b1771262743c2b32589c8`,
+  PathID `6347870598022394189`, PNG `812×842`,
+  `08675f2afa7294b74e0d0e54f260629f16ac70c142eac589e412dce06e5cc035`;
+- `014hid`: RAW
+  `c7b8421d1d2f879b8313dc05342002647ade26a340416c4e4028c017ca7f40ef`,
+  PathID `-1827195483708291138`, PNG `956×841`,
+  `bec903356f54d601538a8447de8ad1fd63e4594704879b27e72336b088a28099`;
+- `015ryu`: RAW
+  `40d1a6c2fef42cb8086b602eece4d523a32c114df632783329d63001258fc788`,
+  PathID `-7974334565183057656`, PNG `926×839`,
+  `fd74f1543f7134ee064c300e8c643afe45fa3df907169b99d6d3b6bdce5174df`;
+- `016sei`: RAW
+  `38ee10f0e36d49f3a7f618cce9fa7cb16c4824d795486ee9479e69cb17d86cae`,
+  PathID `2109130252596898194`, PNG `858×855`,
+  `0a76da1eb25a13aa600cfdd2bf775385368260366adb71f977e003c0f6fd77bb`;
+- `017kir`: RAW
+  `e843442e9cf355c3256a903c9d7d9f862d42ae763dabb5fd847052f7959616b4`,
+  PathID `8646653807885103205`, PNG `1188×870`,
+  `f3789384dcda3e88eb6d5afd41f15b85cd7b4872c6761afcd24be38d23150632`.
+
+The real publish/rollback/final-republish cycle restored the exact
+`061f00fd8b72109f7a263fc1e3ab71a82435fe79dd153bfe60e676044cf78f79`
+baseline during rollback, removed all five new PNGs, and preserved `010pie`.
+Final state is seventeen idol mappings and sixteen physical URLs, registry
+SHA-256
+`ead36216820b63b7b274ad281488fbe625a3d773f6f88f684d77d24ae955547e`.
+All five stable routes loaded at natural dimensions; `011min` and `017kir`
+passed visual layout inspection. The remote Statsig telemetry timeout seen in
+browser control was unrelated to the successful local 5174 checks.
+
+Final rollback evidence:
+
+`.analysis/raw-migration/character-image-candidate/birthday_visual/batch-011min-014hid-015ryu-016sei-017kir-backup-20260727-final/`
+
 ### Standalone promotion gate and first stable replacement
 
 The generic strict collection publisher requires an aggregate plus episode
@@ -578,6 +618,13 @@ npm run character:promotion-publish-batch -- `
   --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-006tsu-007kei-008rei-009kyj-010pie-backup-20260727-final `
   --confirm=birthday_visual:006tsu+007kei+008rei+009kyj+010pie
 
+npm run character:promotion-publish-batch -- `
+  --candidate-dirs=.analysis/raw-migration/character-image-candidate/birthday_visual/011min,.analysis/raw-migration/character-image-candidate/birthday_visual/014hid,.analysis/raw-migration/character-image-candidate/birthday_visual/015ryu,.analysis/raw-migration/character-image-candidate/birthday_visual/016sei,.analysis/raw-migration/character-image-candidate/birthday_visual/017kir `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-011min-014hid-015ryu-016sei-017kir-backup-20260727-final `
+  --confirm=birthday_visual:011min+014hid+015ryu+016sei+017kir
+
 python ..\data_pipeline\extract_raw_audio_candidate.py `
   --raw-root ..\RAW --kind bgm --container usual_day.awb --cue usual_day `
   --selection 1 --output-root .analysis\raw-migration\audio `
@@ -620,8 +667,8 @@ assets.
 
 1. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
-2. Keep the remaining 38 physical birthday images isolated and promote another
-   bounded batch only after its own 5174 and rollback evidence. The 37
+2. Keep the remaining 33 physical birthday images isolated and promote another
+   bounded batch only after its own 5174 and rollback evidence. The 32
    master idols and `101ken` NPC remain distinct identity scopes.
 3. Map all 260 RAW USM files to master-data consumers.
 4. Continue promoting verified domains one reversible batch at a time, with

@@ -853,6 +853,36 @@ for (const [idolCode, expected] of Object.entries(committedFiveItemEvidence)) {
   assert.equal(entry.unity_object.path_id, expected.pathId)
   assert.equal(entry.output.sha256, expected.sha256)
 }
+const committedSecondFiveItemEvidence = {
+  '011min': {
+    pathId: '6347870598022394189',
+    sha256: '08675f2afa7294b74e0d0e54f260629f16ac70c142eac589e412dce06e5cc035',
+  },
+  '014hid': {
+    pathId: '-1827195483708291138',
+    sha256: 'bec903356f54d601538a8447de8ad1fd63e4594704879b27e72336b088a28099',
+  },
+  '015ryu': {
+    pathId: '-7974334565183057656',
+    sha256: 'fd74f1543f7134ee064c300e8c643afe45fa3df907169b99d6d3b6bdce5174df',
+  },
+  '016sei': {
+    pathId: '2109130252596898194',
+    sha256: '0a76da1eb25a13aa600cfdd2bf775385368260366adb71f977e003c0f6fd77bb',
+  },
+  '017kir': {
+    pathId: '8646653807885103205',
+    sha256: 'f3789384dcda3e88eb6d5afd41f15b85cd7b4872c6761afcd24be38d23150632',
+  },
+}
+for (const [idolCode, expected] of Object.entries(committedSecondFiveItemEvidence)) {
+  const entry = sourceRegistry.entries.find(candidate =>
+    candidate.kind === 'birthday_visual' && candidate.idol_code === idolCode,
+  )
+  assert.ok(entry)
+  assert.equal(entry.unity_object.path_id, expected.pathId)
+  assert.equal(entry.output.sha256, expected.sha256)
+}
 
 console.log('RAW character-image promotion verification passed')
 console.log('  exact RAW and PNG evidence, stable registry, explicit confirmation and path bounds covered')

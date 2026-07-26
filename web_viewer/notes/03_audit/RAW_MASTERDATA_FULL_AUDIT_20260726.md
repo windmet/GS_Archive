@@ -199,7 +199,7 @@ with its current archive consumer:
 
 | Category | Paths | Identity coverage | Current archive behavior |
 | --- | ---: | --- | --- |
-| birthday visual | 49 | all 49 master idols + `101ken`; `012yus`/`013kys` share one visual | birthday story detail uses generic fallback |
+| birthday visual | 49 | all 49 master idols + `101ken`; `012yus`/`013kys` share one visual | 17 idol mappings use 16 stable RAW-derived URLs; 33 physical visuals remain on fallback |
 | event-story visual | 51 | all 49 master idols + `101ken`/`102sha` | event detail uses general character icons |
 | Mobile bust-up | 51 | all 49 master idols + `101ken`/`102sha` | Mobile archive uses icon + room background |
 | name plate | 49 | all 49 master idols | ADV UI renders speaker text with CSS |
@@ -474,6 +474,39 @@ Statsig timeout, while all local DOM and 5174 resource checks completed.
 Final ignored rollback evidence:
 
 `web_viewer/.analysis/raw-migration/character-image-candidate/birthday_visual/batch-006tsu-007kei-008rei-009kyj-010pie-backup-20260727-final/`
+
+### Second five-image bounded birthday batch
+
+The next master-order batch promotes `011min`, `014hid`, `015ryu`, `016sei`,
+and `017kir`. Each candidate resolved to one exact Sprite identity and was
+generated under ignored `.analysis/` before any stable path changed.
+
+| idol | RAW SHA-256 | PathID | output | PNG SHA-256 | master rows |
+| --- | --- | --- | --- | --- | ---: |
+| `011min` | `a951b66453de2836a3cc6fb7dcec21c16f3cfcfa285b1771262743c2b32589c8` | `6347870598022394189` | `812×842`, 376,237 bytes | `08675f2afa7294b74e0d0e54f260629f16ac70c142eac589e412dce06e5cc035` | 4 |
+| `014hid` | `c7b8421d1d2f879b8313dc05342002647ade26a340416c4e4028c017ca7f40ef` | `-1827195483708291138` | `956×841`, 335,606 bytes | `bec903356f54d601538a8447de8ad1fd63e4594704879b27e72336b088a28099` | 4 |
+| `015ryu` | `40d1a6c2fef42cb8086b602eece4d523a32c114df632783329d63001258fc788` | `-7974334565183057656` | `926×839`, 304,815 bytes | `fd74f1543f7134ee064c300e8c643afe45fa3df907169b99d6d3b6bdce5174df` | 3 |
+| `016sei` | `38ee10f0e36d49f3a7f618cce9fa7cb16c4824d795486ee9479e69cb17d86cae` | `2109130252596898194` | `858×855`, 296,604 bytes | `0a76da1eb25a13aa600cfdd2bf775385368260366adb71f977e003c0f6fd77bb` | 4 |
+| `017kir` | `e843442e9cf355c3256a903c9d7d9f862d42ae763dabb5fd847052f7959616b4` | `8646653807885103205` | `1188×870`, 676,549 bytes | `f3789384dcda3e88eb6d5afd41f15b85cd7b4872c6761afcd24be38d23150632` | 4 |
+
+All five candidate routes loaded at their natural dimensions before
+publication. The real stable publish started from the twelve-mapping,
+eleven-URL registry SHA-256
+`061f00fd8b72109f7a263fc1e3ab71a82435fe79dd153bfe60e676044cf78f79`.
+All five stable routes then resolved without the candidate query parameter.
+Explicit whole-batch rollback restored that exact registry hash, removed all
+five new PNGs, returned the five routes to fallback, and left `010pie`
+available at `843×898`. Final republish leaves seventeen idol mappings backed
+by sixteen physical URLs; registry SHA-256 is
+`ead36216820b63b7b274ad281488fbe625a3d773f6f88f684d77d24ae955547e`.
+
+Final DOM checks covered all five routes. Visual inspection covered the
+narrowest new image (`011min`, 812 pixels) and widest (`017kir`, 1188 pixels);
+both fit the existing story-detail panel. The browser control surface again
+reported an unrelated Statsig timeout to `ab.chatgpt.com`; all local 5174 DOM
+and image requests completed successfully. Final ignored rollback evidence:
+
+`web_viewer/.analysis/raw-migration/character-image-candidate/birthday_visual/batch-011min-014hid-015ryu-016sei-017kir-backup-20260727-final/`
 
 The ignored report records each contributing bundle's path, size, and SHA-256
 from the established 13,000-file source manifest:
@@ -910,7 +943,7 @@ because this story has no translation overlay.
 1. Extend the proven single-story gate to multi-part aggregate collections,
    then promote another small representative batch rather than all 3,398 at
    once.
-2. Keep the other 38 physical birthday visuals isolated; they cover 37
+2. Keep the other 33 physical birthday visuals isolated; they cover 32
    remaining master idols plus `101ken`. Promote another small sample only
    after its own 5174 and rollback evidence, and keep the NPC on a separate
    identity gate.
@@ -990,6 +1023,13 @@ npm run character:promotion-publish-batch -- `
   --assets-root=public/assets `
   --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-006tsu-007kei-008rei-009kyj-010pie-backup-20260727-final `
   --confirm=birthday_visual:006tsu+007kei+008rei+009kyj+010pie
+
+npm run character:promotion-publish-batch -- `
+  --candidate-dirs=.analysis/raw-migration/character-image-candidate/birthday_visual/011min,.analysis/raw-migration/character-image-candidate/birthday_visual/014hid,.analysis/raw-migration/character-image-candidate/birthday_visual/015ryu,.analysis/raw-migration/character-image-candidate/birthday_visual/016sei,.analysis/raw-migration/character-image-candidate/birthday_visual/017kir `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-011min-014hid-015ryu-016sei-017kir-backup-20260727-final `
+  --confirm=birthday_visual:011min+014hid+015ryu+016sei+017kir
 
 npm run character:promotion-rollback -- `
   --registry=public/data/assets/raw_character_image_promotions.json `
