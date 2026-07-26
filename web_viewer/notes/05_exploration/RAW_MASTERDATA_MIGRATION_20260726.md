@@ -554,6 +554,46 @@ Final rollback evidence:
 
 `.analysis/raw-migration/character-image-candidate/birthday_visual/batch-018shm-019kur-020hay-021jun-022nat-backup-20260727-final/`
 
+### Fourth five-image bounded batch
+
+`023har`, `024shk`, `025suz`, `026gen`, and `027yuk` are the next master-order
+batch. Evidence:
+
+- `023har`: RAW
+  `da57c26c79756b6dce80c4c4de3e3644c52feb0b1426d8352d5d353ded4ac4f2`,
+  PathID `6274914879522109866`, PNG `1800×960`,
+  `f2a056e1f269e11561067379ece592ca68fe6f3d42847ff9a5f84bb32c7aafb3`;
+- `024shk`: RAW
+  `273c28c5ccc20a3fccda00ff1199860bb0561cec103cb860f7b4142d8608f069`,
+  PathID `-2665266097907987525`, PNG `765×892`,
+  `74b593a01a4cdcb7827a900ce3786f0ea061d1083b326287925e20b57250e3d4`;
+- `025suz`: RAW
+  `2cc2e0971ecdaa0fdaff8bc1f1146d7afc6437b82266605055a9373fff354710`,
+  PathID `1264523719426961948`, PNG `740×933`,
+  `f48dc2256355f95c1d8e01b41ad8fabd9e7022530f29c7480293e2f1fefab1c0`;
+- `026gen`: RAW
+  `f21536d84b81511e493dbdab3ea9fcb8a60d14cccf4d14b8d471cde08c5630c9`,
+  PathID `-1047053079907757995`, PNG `724×889`,
+  `fdb18f9597cf14fe8f1628d7190fe0c8a188f40eef840350521c4c18a62ba7d5`;
+- `027yuk`: RAW
+  `1248e6cff2dcf9a72d43ba5096c414f822537fc41b3b4a0e7a672c096da15ebe`,
+  PathID `-261943468093583930`, PNG `916×842`,
+  `d45bc2fa1a7b3cc0f3a40f789c5598d3caef9b70db5f680a705e2ec948355a07`.
+
+The real publish/rollback/final-republish cycle restored the exact
+`79a9d92f963049d48ce95b7e78286cc537b710c6a1f4a206811d4822fbc7e5ca`
+baseline during rollback, removed all five new PNGs, and preserved `022nat`.
+Final state is twenty-seven idol mappings and twenty-six physical URLs,
+registry SHA-256
+`5353936027c438cc7713cbbde3f179c0b46fa74e8b9f4288ac4e96c210d07759`.
+All five stable routes loaded at natural dimensions; the landscape `023har`
+and narrowest `026gen` outputs passed visual layout inspection. Remote Statsig
+telemetry timeouts were unrelated to the successful local 5174 checks.
+
+Final rollback evidence:
+
+`.analysis/raw-migration/character-image-candidate/birthday_visual/batch-023har-024shk-025suz-026gen-027yuk-backup-20260727-final/`
+
 ### Standalone promotion gate and first stable replacement
 
 The generic strict collection publisher requires an aggregate plus episode
@@ -671,6 +711,13 @@ npm run character:promotion-publish-batch -- `
   --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-018shm-019kur-020hay-021jun-022nat-backup-20260727-final `
   --confirm=birthday_visual:018shm+019kur+020hay+021jun+022nat
 
+npm run character:promotion-publish-batch -- `
+  --candidate-dirs=.analysis/raw-migration/character-image-candidate/birthday_visual/023har,.analysis/raw-migration/character-image-candidate/birthday_visual/024shk,.analysis/raw-migration/character-image-candidate/birthday_visual/025suz,.analysis/raw-migration/character-image-candidate/birthday_visual/026gen,.analysis/raw-migration/character-image-candidate/birthday_visual/027yuk `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-023har-024shk-025suz-026gen-027yuk-backup-20260727-final `
+  --confirm=birthday_visual:023har+024shk+025suz+026gen+027yuk
+
 python ..\data_pipeline\extract_raw_audio_candidate.py `
   --raw-root ..\RAW --kind bgm --container usual_day.awb --cue usual_day `
   --selection 1 --output-root .analysis\raw-migration\audio `
@@ -713,8 +760,8 @@ assets.
 
 1. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
-2. Keep the remaining 28 physical birthday images isolated and promote another
-   bounded batch only after its own 5174 and rollback evidence. The 27
+2. Keep the remaining 23 physical birthday images isolated and promote another
+   bounded batch only after its own 5174 and rollback evidence. The 22
    master idols and `101ken` NPC remain distinct identity scopes.
 3. Map all 260 RAW USM files to master-data consumers.
 4. Continue promoting verified domains one reversible batch at a time, with
