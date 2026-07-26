@@ -372,6 +372,10 @@ import {
   storyTranslationLocale,
   uiLocale,
 } from './utils/LanguageStore.js'
+import {
+  birthdayStoryIdolCode,
+  getRawCharacterImageCandidateUrl,
+} from './utils/CharacterImageResolver.js'
 
 setStoryLanguagePreferences(new PlayerPreferencesRepository().load())
 const entityTranslationRepository = new EntityTranslationRepository()
@@ -796,6 +800,10 @@ const currentStoryVisualUrl = computed(() => {
     if (code) return `/assets/stories/units/image_unit_story_button_${code}.png`
   }
   if (story.domain === 'idol_story' && story.sectionId) return `/assets/idols/icons/image_chara_icon_${story.sectionId}.png`
+  if (story.domain === 'birthday') {
+    const idolCode = birthdayStoryIdolCode(story)
+    return getRawCharacterImageCandidateUrl('birthday_visual', idolCode)
+  }
   return ''
 })
 

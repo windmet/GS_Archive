@@ -59,6 +59,87 @@ DEFAULT_SOURCE_MANIFEST = (
 )
 CHARACTER_IMAGE_PATTERN = "image_chara*.unity3d"
 SPINE_CORE_FILES = ("comu.atlas", "comu.png", "comu.skel")
+CHARACTER_IMAGE_CATEGORIES = {
+    "birthday_visual": {
+        "prefix": "image_chara_birthday_visual_",
+        "original_surface": "birthday_story",
+        "current_runtime_status": (
+            "opt-in RAW candidate; generic fallback without query"
+        ),
+        "current_consumer_evidence": (
+            "web_viewer/src/App.vue: currentStoryVisualUrl has no birthday branch"
+        ),
+        "recommended_target": "ArchiveStoryDetail visualUrl",
+    },
+    "event_story_visual": {
+        "prefix": "image_chara_event_story_visual_",
+        "original_surface": "event_story",
+        "current_runtime_status": "event detail uses general character icons",
+        "current_consumer_evidence": (
+            "web_viewer/src/components/archive/ArchiveEventDetail.vue"
+        ),
+        "recommended_target": "event-story character presentation",
+    },
+    "mobile_bustup": {
+        "prefix": "image_chara_mobile_bustup_",
+        "original_surface": "mobile_communication",
+        "current_runtime_status": "mobile archive uses icon and room background",
+        "current_consumer_evidence": (
+            "web_viewer/src/components/archive/ArchiveMobileArchive.vue"
+        ),
+        "recommended_target": "mobile conversation presentation",
+    },
+    "name_plate": {
+        "prefix": "image_chara_name_plate_",
+        "original_surface": "adv_dialogue",
+        "current_runtime_status": "ADV speaker plate is rendered with CSS text",
+        "current_consumer_evidence": "web_viewer/src/components/AdvUI.vue",
+        "recommended_target": "dialogue name-plate renderer after localization audit",
+    },
+    "sign": {
+        "prefix": "image_chara_sign_",
+        "original_surface": "idol_profile",
+        "current_runtime_status": "idol detail has no signature image slot",
+        "current_consumer_evidence": (
+            "web_viewer/src/components/archive/ArchiveIdolDetail.vue"
+        ),
+        "recommended_target": "idol profile evidence panel",
+    },
+    "story_visual": {
+        "prefix": "image_chara_story_visual_",
+        "original_surface": "idol_story",
+        "current_runtime_status": "idol story header uses general character icon",
+        "current_consumer_evidence": (
+            "web_viewer/src/components/archive/ArchiveIdolStory.vue"
+        ),
+        "recommended_target": "idol-story header visual",
+    },
+    "icon": {
+        "prefix": "image_chara_icon_",
+        "original_surface": "general_character_selector",
+        "current_runtime_status": "published and consumed",
+        "current_consumer_evidence": "web_viewer/src/components/archive",
+        "recommended_target": "keep current stable path",
+    },
+    "mobile_background": {
+        "prefix": "image_chara_mobile_background_",
+        "original_surface": "mobile_communication",
+        "current_runtime_status": "published and consumed",
+        "current_consumer_evidence": (
+            "web_viewer/src/components/archive/ArchiveMobileArchive.vue"
+        ),
+        "recommended_target": "keep current stable path",
+    },
+    "mobile_icon": {
+        "prefix": "image_chara_mobile_icon_",
+        "original_surface": "mobile_communication",
+        "current_runtime_status": "published and consumed",
+        "current_consumer_evidence": (
+            "web_viewer/src/components/archive/ArchiveMobileArchive.vue"
+        ),
+        "recommended_target": "keep current stable path",
+    },
+}
 
 
 def sha256_bytes(payload: bytes) -> str:
@@ -530,11 +611,28 @@ def build_public_basename_index(public_assets_root: Path) -> dict[str, list[str]
     return index
 
 
+def classify_character_image(path: str) -> tuple[str, list[str]]:
+    stem = PurePosixPath(path).stem
+    for category, evidence in CHARACTER_IMAGE_CATEGORIES.items():
+        prefix = str(evidence["prefix"])
+        if not stem.startswith(prefix):
+            continue
+        suffix = stem.removeprefix(prefix)
+        identities = [
+            value
+            for value in suffix.split("-")
+            if len(value) == 6 and value[:3].isdigit()
+        ]
+        return category, identities
+    return "unclassified", []
+
+
 def audit_character_images(
     raw_root: Path,
     raw_asset_root: Path,
     public_assets_root: Path,
     source_manifest: dict[str, dict[str, Any]],
+    idol_dictionary_path: Path,
 ) -> dict[str, Any]:
     bundle_paths = sorted(raw_asset_root.glob(CHARACTER_IMAGE_PATTERN))
     public_by_basename = build_public_basename_index(public_assets_root)
@@ -542,6 +640,12 @@ def audit_character_images(
     container_types: Counter[str] = Counter()
     container_paths = []
     unique_container_matches: dict[str, list[str]] = {}
+    master_payload = json.loads(idol_dictionary_path.read_text(encoding="utf-8"))
+    master_ids = {
+        str(row["idol_code"])
+        for row in master_payload.get("idols", [])
+        if row.get("idol_code")
+    }
     matched_container_paths = 0
     unmatched_container_paths = 0
     bundle_records = []
@@ -576,6 +680,46 @@ def audit_character_images(
                 "container_entries": entries,
             }
         )
+    category_records = {}
+    for category in [*CHARACTER_IMAGE_CATEGORIES, "unclassified"]:
+        paths = [
+            path
+            for path in unique_container_matches
+            if classify_character_image(path)[0] == category
+        ]
+        identities = sorted(
+            {
+                identity
+                for path in paths
+                for identity in classify_character_image(path)[1]
+            }
+        )
+        public_paths = [
+            path for path in paths if unique_container_matches[path]
+        ]
+        consumer = CHARACTER_IMAGE_CATEGORIES.get(category, {})
+        category_records[category] = {
+            "unique_paths": len(paths),
+            "identity_ids": identities,
+            "identity_count": len(identities),
+            "master_idol_matches": len(set(identities) & master_ids),
+            "master_idol_coverage": (
+                round(len(set(identities) & master_ids) / len(master_ids), 6)
+                if master_ids
+                else 0
+            ),
+            "identities_outside_master_idols": sorted(set(identities) - master_ids),
+            "master_idols_without_identity": sorted(master_ids - set(identities)),
+            "public_basename_matches": len(public_paths),
+            "public_basename_missing": len(paths) - len(public_paths),
+            "original_surface": consumer.get("original_surface"),
+            "current_runtime_status": consumer.get("current_runtime_status"),
+            "current_consumer_evidence": consumer.get(
+                "current_consumer_evidence"
+            ),
+            "recommended_target": consumer.get("recommended_target"),
+            "paths": paths,
+        }
     return {
         "summary": {
             "raw_character_image_bundles": len(bundle_paths),
@@ -593,6 +737,7 @@ def audit_character_images(
         },
         "object_type_counts": dict(sorted(object_types.items())),
         "container_type_counts": dict(sorted(container_types.items())),
+        "by_category": category_records,
         "unmatched_container_entries": [
             row for row in container_paths if not row["public_basename_matches"]
         ],
@@ -659,6 +804,7 @@ def main() -> None:
             raw_asset_root,
             public_assets_root,
             source_manifest,
+            args.idol_dictionary.resolve(),
         ),
     }
     output = args.output.resolve()

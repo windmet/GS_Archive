@@ -28,8 +28,8 @@ table-133 seasonal BGM relation, and representative browser candidates have
 strong evidence.
 Twelve authored story voice references have been proven to be dangling in RAW
 and are explicitly waived without replacement audio.
-Movies, general UI images, the remaining character-image consumers, and
-multi-story stable promotion still require domain-specific audits.
+Movies, general UI images, stable character-image promotion, and multi-story
+stable promotion still require domain-specific audits.
 
 ## 1. Source integrity
 
@@ -99,7 +99,7 @@ generated data.
 | story ambient | compiled environmental cue | same-stem ACB/AWB | 83/83 non-sentinel cues have containers | full referenced coverage proven |
 | story SE | compiled SE cue + ACB sequence metadata | multi-cue ACB bank | 435/435 classified; `waribashi` composite reconstructed | full identity and representative sequence semantics proven |
 | master seasonal BGM | table 133 relation + ACB action metadata | variant cues/banks | 92/92 classified; 42/42 switches resolved | full identity relation proven |
-| character/costume/Spine | costume/idol dictionaries + Unity object identity | `costume_*`, `idol_settings_*`, `image_chara*` | 690/690 master costumes; 725 full Spine + 3 RAW silhouette-only; 257/257 idol-setting JSON assets; 57 character-image bundles inventoried | costume/Spine/idol settings proven; character images partial |
+| character/costume/Spine | costume/idol dictionaries + Unity object identity | `costume_*`, `idol_settings_*`, `image_chara*` | 690/690 master costumes; 725 full Spine + 3 RAW silhouette-only; 257/257 idol-setting JSON assets; all 485 character-image paths classified | costume/Spine/idol settings proven; character-image consumers mapped, promotion partial |
 | live/chibi | song/choreography IDs | `live_*`, `song_*`, image/object layers | representative song playback proven | partial |
 | movies | event/live/card movie relations | 260 USM | filename inventory only | pending |
 | general UI images | master records + bundle object names | 1,271 `image_*` bundles | no full relation table yet | pending |
@@ -193,19 +193,65 @@ needed as the authority for these settings.
 The narrower character-image inventory covers all 57 `image_chara*` bundles:
 485 unique container paths, each represented by both a Texture2D and Sprite.
 Current public assets have exact-basename representatives for 187 paths:
-80 character icons, 52 Mobile backgrounds, and 55 Mobile icons. The remaining
-298 paths are not yet present by original basename:
+80 character icons, 52 Mobile backgrounds, and 55 Mobile icons. Every one of
+the other 298 paths is now classified by original client surface and compared
+with its current archive consumer:
 
-- 49 birthday visuals;
-- 51 event-story visuals;
-- 51 Mobile push-up images;
-- 49 name plates;
-- 49 signs;
-- 49 story visuals.
+| Category | Paths | Identity coverage | Current archive behavior |
+| --- | ---: | --- | --- |
+| birthday visual | 49 | all 49 master idols + `101ken`; `012yus`/`013kys` share one visual | birthday story detail uses generic fallback |
+| event-story visual | 51 | all 49 master idols + `101ken`/`102sha` | event detail uses general character icons |
+| Mobile bust-up | 51 | all 49 master idols + `101ken`/`102sha` | Mobile archive uses icon + room background |
+| name plate | 49 | all 49 master idols | ADV UI renders speaker text with CSS |
+| sign | 49 | all 49 master idols | idol detail has no signature slot |
+| idol-story visual | 49 | all 49 master idols | idol-story header uses general character icon |
 
-This is a physical inventory, not yet a claim that all 298 are missing from a
-user-facing route. Their master/runtime consumers must be identified before
+There are zero unclassified paths and every category covers all 49 master
+idols. This resolves physical identity and the intended consumer family, but
+it does not assert that all six original surfaces should replace the archive's
+current presentation. In particular, name plates need a localization/layout
+audit and Mobile bust-ups need a conversation-screen ownership decision before
 promotion.
+
+### First character-image candidate
+
+Birthday visuals have the strongest first consumer because
+`ArchiveStoryDetail` already owns a bounded `visualUrl`, while the birthday
+branch currently falls back to the generic story image. The isolated
+`birthday_visual:001tom` candidate records:
+
+- RAW bundle:
+  `RAW/asset/image_chara_birthday_visual_001tom.unity3d`;
+- source SHA-256:
+  `2590eb0feefa7cc23aa5ab7f16b965a42fb84103d5aff12e001621fc4ab6f6f0`,
+  equal to the 13,000-file manifest;
+- exact Sprite container path and PathID;
+- master idol `001tom`, birthday `3月3日`, and four birthday-master rows whose
+  compiled filename is owned by `1_x_001tom_*`;
+- Sprite output `801×875`, SHA-256
+  `a572186d263b52c2d70f9f2598304b2c89530f491595cc6561094ad4cf20ef2a`;
+- zero current public files with the original basename.
+
+The Vite candidate route serves only allow-listed kinds and six-character idol
+codes from ignored `.analysis`; the UI displays it only with
+`raw_character_candidate=birthday_visual:001tom`. The target idol is derived
+from the compiled filename (`1_x_<idol>_*`), not merely from the cast list, so
+Jupiter's shared 2022 birthday stories cannot select the wrong member visual.
+
+The only shared birthday asset is also explicitly proven:
+`012yus` and `013kys` both resolve to
+`image_chara_birthday_visual_012yus-013kys` from the same source bundle hash
+`870a62220a98b6e8ac22b01339fbda2ea8efe4d1cf728e6a17e108a6f68a65ee`.
+Both candidates produce the same `1109×826` PNG hash
+`7be1b676459a964c054b0fc5658ba69442513486b9e0d495ad3d9eab0449f99e`,
+while their manifests retain three distinct master birthday rows per idol.
+
+On 5174, the candidate route rendered the full RAW image at its natural
+`801×875` size inside the birthday story detail. The same route without the
+query flag retained the existing fallback and loaded no candidate image.
+Both candidate and control also reproduced the same pre-existing
+`decodeAudioData` error despite `noAudio=1`; that audio initialization issue is
+not caused by the image path and remains separate follow-up work.
 
 The ignored report records each contributing bundle's path, size, and SHA-256
 from the established 13,000-file source manifest:
@@ -642,8 +688,8 @@ because this story has no translation overlay.
 1. Extend the proven single-story gate to multi-part aggregate collections,
    then promote another small representative batch rather than all 3,398 at
    once.
-2. Resolve the 298 inventoried character-image paths to master/runtime
-   consumers and compare RAW Sprite exports before any stable image promotion.
+2. Add a birthday-image promotion/rollback gate and only then consider one
+   additive stable image.
 3. Map all 260 USM files to live-stage, card, event, and announcement semantics.
 4. Audit the remaining 1,271 general `image_*` bundles by Unity object name and
    master-data consumer.
@@ -670,6 +716,9 @@ python ..\data_pipeline\audit_raw_story_coverage.py `
 python ..\data_pipeline\verify_raw_story_identity.py
 
 python ..\data_pipeline\audit_raw_character_resources.py
+
+python ..\data_pipeline\extract_raw_character_image_candidate.py `
+  birthday_visual 001tom
 
 python ..\data_pipeline\audit_raw_story_voice_gaps.py `
   --coverage .analysis\raw-migration\story\coverage.json `

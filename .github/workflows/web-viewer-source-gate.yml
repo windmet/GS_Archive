@@ -88,6 +88,9 @@ jobs:
       - name: Verify silhouette fallback contract
         run: npm run verify:silhouette
 
+      - name: Verify RAW character-image candidate contract
+        run: npm run verify:raw-character-candidate
+
       - name: Verify strict collection publisher
         run: npm run verify:story-authoritative-publish
 

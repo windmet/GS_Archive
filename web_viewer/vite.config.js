@@ -19,6 +19,18 @@ const BACKGROUND_CANDIDATE_ROOT = path.resolve(
 const AUDIO_CANDIDATE_ROOT = path.resolve(
   process.env.SIDEM_AUDIO_CANDIDATE_ROOT || '.analysis/raw-migration/audio',
 )
+const CHARACTER_IMAGE_CANDIDATE_ROOT = path.resolve(
+  process.env.SIDEM_CHARACTER_IMAGE_CANDIDATE_ROOT ||
+    '.analysis/raw-migration/character-image-candidate',
+)
+const CHARACTER_IMAGE_CANDIDATE_KINDS = new Set([
+  'birthday_visual',
+  'event_story_visual',
+  'mobile_bustup',
+  'name_plate',
+  'sign',
+  'story_visual',
+])
 
 function addSeAliasCandidates(candidates, fileName) {
   if (!fileName.endsWith('.ogg')) return
@@ -295,6 +307,74 @@ function rawBackgroundCandidatePlugin() {
   }
 }
 
+function rawCharacterImageCandidatePlugin() {
+  return {
+    name: 'sidem-raw-character-image-candidate',
+    configureServer(server) {
+      server.middlewares.use('/assets/character-candidate', (req, res, next) => {
+        const rawUrl = decodeURIComponent((req.url || '').split('?')[0]).replace(/^\/+/, '')
+        const [kind, fileName, ...rest] = rawUrl.split('/')
+        if (
+          rest.length ||
+          !CHARACTER_IMAGE_CANDIDATE_KINDS.has(kind) ||
+          !/^\d{3}[a-z0-9]{3}\.png$/i.test(fileName || '')
+        ) {
+          next()
+          return
+        }
+        const idolCode = fileName.replace(/\.png$/i, '')
+        const filePath = path.resolve(
+          CHARACTER_IMAGE_CANDIDATE_ROOT,
+          kind,
+          idolCode,
+          'resolved',
+          fileName,
+        )
+        if (
+          !filePath.startsWith(CHARACTER_IMAGE_CANDIDATE_ROOT + path.sep) ||
+          !fs.existsSync(filePath)
+        ) {
+          next()
+          return
+        }
+        res.setHeader('Content-Type', 'image/png')
+        res.setHeader('Cache-Control', 'no-store')
+        fs.createReadStream(filePath).pipe(res)
+      })
+
+      server.middlewares.use('/data/character-candidate', (req, res, next) => {
+        const rawUrl = decodeURIComponent((req.url || '').split('?')[0]).replace(/^\/+/, '')
+        const [kind, fileName, ...rest] = rawUrl.split('/')
+        if (
+          rest.length ||
+          !CHARACTER_IMAGE_CANDIDATE_KINDS.has(kind) ||
+          !/^\d{3}[a-z0-9]{3}\.json$/i.test(fileName || '')
+        ) {
+          next()
+          return
+        }
+        const idolCode = fileName.replace(/\.json$/i, '')
+        const filePath = path.resolve(
+          CHARACTER_IMAGE_CANDIDATE_ROOT,
+          kind,
+          idolCode,
+          'candidate.json',
+        )
+        if (
+          !filePath.startsWith(CHARACTER_IMAGE_CANDIDATE_ROOT + path.sep) ||
+          !fs.existsSync(filePath)
+        ) {
+          next()
+          return
+        }
+        res.setHeader('Content-Type', 'application/json; charset=utf-8')
+        res.setHeader('Cache-Control', 'no-store')
+        fs.createReadStream(filePath).pipe(res)
+      })
+    },
+  }
+}
+
 function rawAudioCandidatePlugin() {
   return {
     name: 'sidem-raw-audio-candidate',
@@ -371,6 +451,7 @@ export default defineConfig({
     rawStoryCandidatePlugin(),
     rawCardCandidatePlugin(),
     rawBackgroundCandidatePlugin(),
+    rawCharacterImageCandidatePlugin(),
     rawAudioCandidatePlugin(),
   ],
   optimizeDeps: {

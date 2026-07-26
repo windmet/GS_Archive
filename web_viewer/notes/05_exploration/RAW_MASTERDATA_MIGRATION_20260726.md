@@ -264,8 +264,8 @@ of inferring content from filenames:
 - all 257 RAW idol-setting JSON assets are semantically equal to their current
   public projections;
 - the 57 `image_chara*` bundles contain 485 unique image paths, of which 187
-  have public exact-basename representatives and 298 still need consumer
-  mapping.
+  have public exact-basename representatives and all remaining 298 are now
+  mapped to six original/current consumer families.
 
 The three RAW-proven silhouette-only models (`104omn_001_00`,
 `231sub_001_00`, and `242sub_001_00`) are now explicit direct-fallback models.
@@ -276,6 +276,30 @@ kept as two independently reviewable steps.
 The bounded 5174 route for real story `1_4_002_00` rendered the `104omn`
 silhouette at ADV step 7. Runtime diagnostics showed zero Spine instances, one
 settled silhouette, no pending silhouette, and no console warning/error.
+
+### First birthday-visual candidate
+
+The 298 non-public-basename paths are no longer an undifferentiated gap:
+birthday, event-story, Mobile bust-up, name-plate, sign, and idol-story
+categories each cover all 49 master idols. Birthday visuals are the first
+candidate because birthday story detail already has a visual slot and
+currently uses a fallback.
+
+The isolated `birthday_visual:001tom` candidate comes from the exact RAW
+Sprite, is `801×875`, matches the source-manifest bundle hash, and is tied to
+four birthday rows owned by compiled filenames beginning `1_x_001tom_`.
+The shared `012yus-013kys` Sprite was also extracted through both idol
+identities; both manifests retain their own three birthday rows and resolve to
+the same `1109×826` output hash.
+The route is opt-in through
+`raw_character_candidate=birthday_visual:001tom`; without that query the
+stable page still shows its existing fallback.
+
+5174 rendered the candidate at its natural dimensions and loaded no fallback;
+the control loaded no candidate image and retained the fallback. Both pages
+also reproduced the same existing audio decode error even with `noAudio=1`,
+so that issue is recorded separately rather than attributed to this image
+candidate.
 
 ### Standalone promotion gate and first stable replacement
 
@@ -336,6 +360,9 @@ python ..\data_pipeline\audit_raw_background_coverage.py
 
 python ..\data_pipeline\audit_raw_character_resources.py
 
+python ..\data_pipeline\extract_raw_character_image_candidate.py `
+  birthday_visual 001tom
+
 python ..\data_pipeline\extract_raw_audio_candidate.py `
   --raw-root ..\RAW --kind bgm --container usual_day.awb --cue usual_day `
   --selection 1 --output-root .analysis\raw-migration\audio `
@@ -378,8 +405,8 @@ assets.
 
 1. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
-2. Map the 298 currently unmatched `image_chara*` paths to master/runtime
-   consumers and compare RAW Sprite exports before promotion.
+2. Add an explicit birthday-image promotion/rollback gate before one additive
+   stable image.
 3. Map all 260 RAW USM files to master-data consumers.
 4. Continue promoting verified domains one reversible batch at a time, with
    5174 acceptance and rollback evidence before each stable-path replacement.
