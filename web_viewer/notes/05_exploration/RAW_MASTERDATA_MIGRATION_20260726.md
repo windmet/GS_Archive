@@ -216,6 +216,27 @@ The full audit and remaining-domain matrix are maintained in:
 
 `notes/03_audit/RAW_MASTERDATA_FULL_AUDIT_20260726.md`
 
+### Full RAW story inventory batch
+
+All 1,435 `scenario_*.unity3d` bundles have now been inspected through their
+Unity container paths rather than TextAsset names alone. The 4,939 valid
+scenario JSON assets form 3,398 semantic story groups, and all 3,398 compile
+without error. Every group has one unique current public match.
+
+This container-path rule is essential because eleven bundles contain
+same-name, different-payload TextAssets under different semantic directories.
+The directory under `assets/resources/scenariodata/` supplies the public
+namespace; these are different stories, not duplicate revisions.
+
+Across the full compilation, 26,890/26,902 voice references resolve to RAW cue
+metadata. All 3,234 unique resolved voice banks have matching RAW lipsync
+bundles. The remaining twelve references are explicitly reported rather than
+guessed.
+
+The isolated `1_x_001tom_2_1_2_001_12` candidate proves the standalone case:
+20 steps, three voice banks, three lipsync banks, 15/15 voice references, and
+real browser playback on 5174.
+
 ## Reproduction
 
 ```powershell

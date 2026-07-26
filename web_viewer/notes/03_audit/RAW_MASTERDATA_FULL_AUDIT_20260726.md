@@ -22,11 +22,12 @@ The authority boundary is:
    time.
 
 This is not yet a statement that every public resource has been regenerated.
-Cards, ADV backgrounds, one complete story sample, the complete RAW audio cue
-inventory, the complete table-133 seasonal BGM relation, and representative
-browser candidates have strong evidence.
-Movies, general UI images, costumes/Spine, and full-story regeneration still
-require domain-specific audits.
+Cards, ADV backgrounds, the complete RAW story structural inventory, the
+complete RAW audio cue inventory, the complete table-133 seasonal BGM relation,
+and representative browser candidates have strong evidence.
+Twelve authored story voice references remain unresolved against RAW.
+Movies, general UI images, costumes/Spine, and stable full-story promotion
+still require domain-specific audits.
 
 ## 1. Source integrity
 
@@ -87,8 +88,8 @@ generated data.
 
 | Domain | Semantic authority | RAW physical source | Current evidence | Status |
 | --- | --- | --- | --- | --- |
-| stories | story master/presentation + scenario IDs | `scenario_*.unity3d` | RAW-only `1_4_001_01`, 432 steps, 139/139 voices | candidate proven |
-| lipsync | scenario dialogue identity | `lipsync_*.unity3d` | 3,437 RAW bundles; sample auxiliary parts resolved | sample proven |
+| stories | story master/presentation + Unity container namespace | `scenario_*.unity3d` | 1,435 bundles; 3,398 logical stories; 4,939/4,939 parts compile and match public identity | full structural coverage proven |
+| lipsync | resolved RAW voice-bank identity | `lipsync_*.unity3d` | 3,234/3,234 unique referenced voice banks have matching lipsync bundles | full resolved-bank coverage proven |
 | cards | card master `resource_id` | `card_<resource_id>.unity3d` | 826/826 unique resources | full physical coverage proven |
 | ADV backgrounds | catalog/story background ID | `adv_background_<id>.unity3d` | catalog 192/192; story IDs 356/356 | full referenced coverage proven |
 | songs | master song code | `song3_<code>.acb` | 61/61 master codes and exact cues | full identity coverage proven |
@@ -139,6 +140,72 @@ The RAW-only `1_4_001_01` candidate includes:
 
 Ignoring provenance-only fields, its authoritative form is semantically equal
 to the published scenario.
+
+### Full RAW story inventory
+
+The tracked all-bundle audit now reads the Unity container path and PathID for
+every TextAsset instead of relying on `m_Name` alone. This distinction is
+required: eleven bundles contain same-name, different-payload TextAssets, but
+their container paths place them under different semantic namespaces such as
+`scenariodata/001tom_301` and `scenariodata/028soi_302`. They are different
+card stories, not old/new versions from which one may be discarded.
+
+The full result is:
+
+| Metric | Count |
+| --- | ---: |
+| RAW scenario bundles | 1,435 |
+| all TextAssets | 4,942 |
+| valid `scenario_*` JSON TextAssets | 4,939 |
+| logical story groups recovered from container namespaces | 3,398 |
+| compiler successes | 3,398 |
+| compiler failures | 0 |
+| compiled steps | 70,652 |
+| RAW parts represented by the current public identity | 4,939 / 4,939 |
+| logical groups with one unique public match | 3,398 / 3,398 |
+
+The three excluded TextAssets are `chat_01`, `chat_02`, and non-JSON
+`scenario_dummy`. The current public directory has four files outside the
+3,398 RAW scenario mapping: the two chat files, `_test_se_env`, and an old
+`scenario_2_4_040_01_00_compiled` duplicate.
+
+The namespace grouping also recovers the organizer-era public filename
+relation directly from RAW. For example:
+
+- container path namespace: `scenariodata/1_x_001tom_2`;
+- physical resource: `scenario_1_2_001_12`;
+- public semantic identity:
+  `1_x_001tom_2_1_2_001_12`.
+
+No organizer directory is needed to recover that prefix.
+
+### Full story voice and lipsync coverage
+
+The 3,398 compiled groups contain 26,902 voice references:
+
+- 26,890 resolve to indexed RAW cues;
+- 12 remain unresolved;
+- 3,234 unique resolved voice ACB banks are referenced;
+- all 3,234 have same-stem RAW lipsync bundles;
+- across stories there are 4,200 story-to-bank relations, all with lipsync.
+
+The resolver records its evidence method rather than silently rewriting names:
+exact cue, source-part number, resource prefix, timed-bank letter removal,
+timed-bank regular fallback, and redundant container-bank prefix removal.
+
+The twelve unresolved references are retained as failures:
+
+- two cues (`c1004`, `b1008`) authored in `1_1_007_01_a` but absent from the
+  corresponding RAW voice banks;
+- `1_5_037_03_3009`, while the bank contains 3002, 3003, 3004, 3006, 3008,
+  and 3010 but not 3009;
+- nine `2_3_013_02_09_a*` references in
+  `013kys_302_2_3_002_01_09_a`. RAW has similarly numbered `2_4_013_02`
+  cues, but that is not enough authority to auto-correct `2_3` to `2_4`.
+
+The ignored evidence report is:
+
+`web_viewer/.analysis/raw-migration/story/coverage.json`
 
 ADV background evidence:
 
@@ -318,6 +385,8 @@ Verified on port 5174:
 - `phone_rusuden_start` from `se_telephone.acb`;
 - `2_4_003_02_09_c1900_t` from a story-specific bank;
 - reconstructed `waribashi` two-track composite from `se_commu_2022.acb`;
+- standalone RAW story `1_x_001tom_2_1_2_001_12` recovered from its Unity
+  namespace;
 - `bgm_main_christmas_day_a` selected by the Christmas `sw_main` ActionTrack;
 - `DRIVE A LIVE` in the multi-character live stage.
 
@@ -363,6 +432,26 @@ snapshot. The runtime trigger log, running context, exact candidate routing
 unit check, and independent candidate HTTP/probe evidence are therefore kept
 together instead of requiring a short-lived source to remain registered.
 
+The standalone story candidate proves that the full-inventory rules also work
+outside the original merged sample:
+
+- source: `scenario_1_2_001_12.unity3d`;
+- Unity container path:
+  `assets/resources/scenariodata/1_x_001tom_2/scenario_1_2_001_12.json`;
+- one scenario TextAsset, 20 compiled steps;
+- three voice ACB banks and three matching lipsync bundles;
+- 15/15 voice references resolved;
+- candidate JSON returned HTTP 200 on 5174;
+- browser route loaded two Spine characters and Japanese dialogue;
+- runtime registered `1_2_001_12_a1001.m4a`;
+- AudioContext was `running` and source age advanced to 0.87 seconds.
+
+The compatibility migration report confirms unchanged step identity/type
+sequence, dialogue voice/lip, cue profile, choice targets, and source
+text/speaker. Its overall acceptance remains false because the new candidate
+adds authoritative episode, evidence, and text-identity fields. It has not
+been promoted over the stable public file.
+
 The live stage reported audio ready and advanced from 0:00 to 0:19 while
 choreography and singer positions changed.
 
@@ -387,16 +476,18 @@ organizer folder layout as authority.
 
 ## 9. Remaining work in priority order
 
-1. Extend RAW-only story compilation from the proven sample to all 1,435
-   scenario bundles, with full voice/lipsync coverage reports.
-2. Audit `costume_*`, `idol_*`, and character-related `image_*` bundles against
+1. Resolve or explicitly waive the twelve authored story voice references that
+   have no exact RAW cue; do not infer `2_3` to `2_4` without stronger evidence.
+2. Define the staged promotion and localization-preservation gate for the
+   3,398 structurally compiled RAW story candidates.
+3. Audit `costume_*`, `idol_*`, and character-related `image_*` bundles against
    costume/idol dictionaries and current Spine directories.
-3. Map all 260 USM files to live-stage, card, event, and announcement semantics.
-4. Audit the remaining 1,271 general `image_*` bundles by Unity object name and
+4. Map all 260 USM files to live-stage, card, event, and announcement semantics.
+5. Audit the remaining 1,271 general `image_*` bundles by Unity object name and
    master-data consumer.
-5. Reconstruct any additional non-waveform ActionTrack, sequence, loop, or
+6. Reconstruct any additional non-waveform ActionTrack, sequence, loop, or
    switch semantics only when their ACB structure is proven.
-6. Promote verified domains into stable public paths in small reversible
+7. Promote verified domains into stable public paths in small reversible
    commits, never as one bulk replacement.
 
 ## 10. Reproduction
@@ -406,6 +497,22 @@ python ..\data_pipeline\raw_source_manifest.py `
   --raw-root ..\RAW `
   --output .analysis\raw-migration\source\files.jsonl `
   --summary .analysis\raw-migration\source\summary.json
+
+python ..\data_pipeline\audit_raw_story_coverage.py `
+  --raw-root ..\RAW `
+  --cue-index .analysis\raw-migration\audio\cue-index\cue_index.json `
+  --compiled-root public\data\compiled `
+  --source-manifest .analysis\raw-migration\source\files.jsonl `
+  --output .analysis\raw-migration\story\coverage.json
+
+python ..\data_pipeline\verify_raw_story_identity.py
+
+python ..\data_pipeline\extract_raw_story_candidate.py `
+  --raw-root ..\RAW `
+  --scenario-container ..\RAW\asset\scenario_1_2_001_12.unity3d `
+  --scenario-id 1_x_001tom_2_1_2_001_12 `
+  --output-dir .analysis\raw-migration\1_x_001tom_2_1_2_001_12 `
+  --cue-index .analysis\raw-migration\audio\cue-index\cue_index.json
 
 python ..\data_pipeline\index_raw_audio_cues.py `
   --raw-root ..\RAW `
