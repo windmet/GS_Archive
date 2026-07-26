@@ -230,8 +230,21 @@ namespace; these are different stories, not duplicate revisions.
 
 Across the full compilation, 26,890/26,902 voice references resolve to RAW cue
 metadata. All 3,234 unique resolved voice banks have matching RAW lipsync
-bundles. The remaining twelve references are explicitly reported rather than
-guessed.
+bundles. A separate gap audit proves the remaining twelve references are
+authored dangling references rather than recoverable aliases:
+
+- their surrounding RAW ACB banks exist, but the exact cues do not;
+- their surrounding RAW lipsync bundles exist, but the exact TextAssets do not;
+- neither current public M4A nor organizer-era OGG contains an exact copy;
+- the superficially similar `2_4_013_02_09_a1000` belongs to a different story
+  and is explicitly rejected as a substitute for the `2_3` phone dialogue.
+
+The runtime now skips network requests only for those exact twelve
+`scenario_id + voice` pairs, preserves the dialogue, and emits an informational
+diagnostic. Browser checks on 5174 covered a missing cat voice, a missing
+Kyosuke phone voice, and a normal control voice. Both missing lines displayed
+without a prepare failure; the normal control still registered
+`1_2_001_12_a1000.m4a` as a dialogue source.
 
 The isolated `1_x_001tom_2_1_2_001_12` candidate proves the standalone case:
 20 steps, three voice banks, three lipsync banks, 15/15 voice references, and
@@ -278,6 +291,14 @@ python ..\data_pipeline\index_raw_audio_cues.py `
   --output-root .analysis\raw-migration\audio\cue-index `
   --vgmstream "E:\Program Files\vgmstream-win64\vgmstream-cli.exe" `
   --workers 12
+
+python ..\data_pipeline\audit_raw_story_voice_gaps.py `
+  --coverage .analysis\raw-migration\story\coverage.json `
+  --cue-index .analysis\raw-migration\audio\cue-index\cue_index.json `
+  --raw-root ..\RAW `
+  --public-voice-root public\assets\voice `
+  --legacy-voice-root E:\BaiduNetdiskDownload\SideM\story_viewer\voice_ogg `
+  --output .analysis\raw-migration\story\voice_gap_audit.json
 ```
 
 Candidate outputs remain under ignored `.analysis/`; they are not production
@@ -285,14 +306,10 @@ assets.
 
 ## Next batches
 
-1. Build a resumable full cue-to-bank index for the 4,055 ACB files, beginning
-   with multi-cue SE and master-data BGM alias banks. Cue identity must come
-   from ACB metadata, not the organizer folder layout.
-2. Expand the candidate matrix by a small representative batch, compare decoded
-   duration/loop/channel behavior against the current derivative, and keep
-   verifying actual playback through 5174.
-3. Define the promotion gate that copies a verified RAW-derived asset into the
-   stable public path while preserving a manifest and rollback hash.
-4. Replace formal paths one resource domain at a time only after candidate
-   coverage, semantic comparison, browser rendering, and rollback evidence all
-   pass.
+1. Define the story promotion and localization-preservation gate for the 3,398
+   structurally compiled RAW candidates.
+2. Audit costume, idol, and character image bundles against the costume/idol
+   dictionaries and current Spine directories.
+3. Map all 260 RAW USM files to master-data consumers.
+4. Continue promoting verified domains one reversible batch at a time, with
+   5174 acceptance and rollback evidence before each stable-path replacement.

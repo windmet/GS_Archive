@@ -25,7 +25,8 @@ This is not yet a statement that every public resource has been regenerated.
 Cards, ADV backgrounds, the complete RAW story structural inventory, the
 complete RAW audio cue inventory, the complete table-133 seasonal BGM relation,
 and representative browser candidates have strong evidence.
-Twelve authored story voice references remain unresolved against RAW.
+Twelve authored story voice references have been proven to be dangling in RAW
+and are explicitly waived without replacement audio.
 Movies, general UI images, costumes/Spine, and stable full-story promotion
 still require domain-specific audits.
 
@@ -88,7 +89,7 @@ generated data.
 
 | Domain | Semantic authority | RAW physical source | Current evidence | Status |
 | --- | --- | --- | --- | --- |
-| stories | story master/presentation + Unity container namespace | `scenario_*.unity3d` | 1,435 bundles; 3,398 logical stories; 4,939/4,939 parts compile and match public identity | full structural coverage proven |
+| stories | story master/presentation + Unity container namespace | `scenario_*.unity3d` | 1,435 bundles; 3,398 logical stories; 4,939/4,939 parts compile and match public identity; 12 authored dangling voice refs explicitly waived | full structural coverage proven |
 | lipsync | resolved RAW voice-bank identity | `lipsync_*.unity3d` | 3,234/3,234 unique referenced voice banks have matching lipsync bundles | full resolved-bank coverage proven |
 | cards | card master `resource_id` | `card_<resource_id>.unity3d` | 826/826 unique resources | full physical coverage proven |
 | ADV backgrounds | catalog/story background ID | `adv_background_<id>.unity3d` | catalog 192/192; story IDs 356/356 | full referenced coverage proven |
@@ -193,7 +194,8 @@ The resolver records its evidence method rather than silently rewriting names:
 exact cue, source-part number, resource prefix, timed-bank letter removal,
 timed-bank regular fallback, and redundant container-bank prefix removal.
 
-The twelve unresolved references are retained as failures:
+The twelve unresolved references were audited separately and are now
+classified as `raw_authored_dangling`:
 
 - two cues (`c1004`, `b1008`) authored in `1_1_007_01_a` but absent from the
   corresponding RAW voice banks;
@@ -201,11 +203,45 @@ The twelve unresolved references are retained as failures:
   and 3010 but not 3009;
 - nine `2_3_013_02_09_a*` references in
   `013kys_302_2_3_002_01_09_a`. RAW has similarly numbered `2_4_013_02`
-  cues, but that is not enough authority to auto-correct `2_3` to `2_4`.
+  cues, but the two scenarios contain different dialogue and different cue
+  sequences. They must not be substituted.
 
-The ignored evidence report is:
+For all twelve:
 
-`web_viewer/.analysis/raw-migration/story/coverage.json`
+- the expected ACB bank exists, proving that the surrounding bank was not
+  omitted from the backup;
+- the exact cue is absent from the indexed ACB metadata;
+- the same-stem lipsync Unity bundle exists, but its TextAssets omit the exact
+  voice name too;
+- no exact public M4A exists;
+- no exact organizer-era `story_viewer/voice_ogg` OGG exists.
+
+Only `2_4_013_02_09_a1000` exists under the superficially similar `2_4`
+prefix. Its pajama-party-stream dialogue differs from the mountain-work phone
+dialogue in `2_3`, and the rest of the sequence is numbered
+`a2000-2004`/`a3000-3005`, not the nine missing `2_3` cues. The audit therefore
+records it as `not_equivalent_story_do_not_substitute`.
+
+The runtime keeps the authored dialogue and exact voice field but recognizes
+only these twelve `scenario_id + voice` pairs as known dangling references.
+It logs an explicit informational diagnostic and skips the guaranteed 404
+requests. It does not add aliases or silence any other missing voice.
+
+5174 browser acceptance covered:
+
+- `1_1_007sai_01_1_1_007_01`, `c1004.m4a`: the `にゃあ！` line remained
+  visible and the runtime logged the known-dangling skip with no prepare
+  failure;
+- `013kys_302_2_3_002_01_09_a`,
+  `2_3_013_02_09_a1000.m4a`: the correct Kyosuke phone dialogue remained
+  visible and the same skip policy was used;
+- normal control `1_x_001tom_2_1_2_001_12`: the runtime still registered
+  `1_2_001_12_a1000.m4a` as an active dialogue source.
+
+The ignored evidence reports are:
+
+- `web_viewer/.analysis/raw-migration/story/coverage.json`;
+- `web_viewer/.analysis/raw-migration/story/voice_gap_audit.json`.
 
 ADV background evidence:
 
@@ -476,18 +512,16 @@ organizer folder layout as authority.
 
 ## 9. Remaining work in priority order
 
-1. Resolve or explicitly waive the twelve authored story voice references that
-   have no exact RAW cue; do not infer `2_3` to `2_4` without stronger evidence.
-2. Define the staged promotion and localization-preservation gate for the
+1. Define the staged promotion and localization-preservation gate for the
    3,398 structurally compiled RAW story candidates.
-3. Audit `costume_*`, `idol_*`, and character-related `image_*` bundles against
+2. Audit `costume_*`, `idol_*`, and character-related `image_*` bundles against
    costume/idol dictionaries and current Spine directories.
-4. Map all 260 USM files to live-stage, card, event, and announcement semantics.
-5. Audit the remaining 1,271 general `image_*` bundles by Unity object name and
+3. Map all 260 USM files to live-stage, card, event, and announcement semantics.
+4. Audit the remaining 1,271 general `image_*` bundles by Unity object name and
    master-data consumer.
-6. Reconstruct any additional non-waveform ActionTrack, sequence, loop, or
+5. Reconstruct any additional non-waveform ActionTrack, sequence, loop, or
    switch semantics only when their ACB structure is proven.
-7. Promote verified domains into stable public paths in small reversible
+6. Promote verified domains into stable public paths in small reversible
    commits, never as one bulk replacement.
 
 ## 10. Reproduction
@@ -506,6 +540,14 @@ python ..\data_pipeline\audit_raw_story_coverage.py `
   --output .analysis\raw-migration\story\coverage.json
 
 python ..\data_pipeline\verify_raw_story_identity.py
+
+python ..\data_pipeline\audit_raw_story_voice_gaps.py `
+  --coverage .analysis\raw-migration\story\coverage.json `
+  --cue-index .analysis\raw-migration\audio\cue-index\cue_index.json `
+  --raw-root ..\RAW `
+  --public-voice-root public\assets\voice `
+  --legacy-voice-root E:\BaiduNetdiskDownload\SideM\story_viewer\voice_ogg `
+  --output .analysis\raw-migration\story\voice_gap_audit.json
 
 python ..\data_pipeline\extract_raw_story_candidate.py `
   --raw-root ..\RAW `

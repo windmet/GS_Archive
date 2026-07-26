@@ -3,6 +3,10 @@ import { readFile } from 'node:fs/promises'
 import { StoryAudioSession } from '../src/core/story-runtime/StoryAudioSession.js'
 import { useVoicePlayer } from '../src/core/useVoicePlayer.js'
 import { AudioManager } from '../src/core/AudioManager.js'
+import {
+  isKnownDanglingStoryVoice,
+  knownDanglingStoryVoiceCount,
+} from '../src/data/knownDanglingStoryVoices.js'
 
 class FakeAudioParam {
   constructor(value = 1) { this.value = value }
@@ -148,6 +152,27 @@ const originalFetch = globalThis.fetch
 const originalWindow = globalThis.window
 globalThis.fetch = async () => ({ ok: true, arrayBuffer: async () => new ArrayBuffer(8) })
 try {
+  assert.equal(knownDanglingStoryVoiceCount, 12)
+  assert.equal(isKnownDanglingStoryVoice('1_1_007sai_01_1_1_007_01', 'c1004'), true)
+  assert.equal(isKnownDanglingStoryVoice('1_1_007sai_01_1_1_007_01', 'c1004.m4a'), true)
+  assert.equal(isKnownDanglingStoryVoice('1_1_007sai_01_1_1_007_01', 'c1005'), false)
+  let danglingFetchCalls = 0
+  globalThis.fetch = async () => {
+    danglingFetchCalls++
+    return { ok: false, status: 404, headers: new Map(), arrayBuffer: async () => new ArrayBuffer(0) }
+  }
+  const danglingPlayer = useVoicePlayer({
+    spineStageRef: { value: null },
+    currentStep: { value: { dialogue: { voice: 'c1004.m4a' } } },
+    currentStepIndex: { value: 5 },
+    compiledData: { value: { scenario_id: '1_1_007sai_01_1_1_007_01' } },
+    isPlaying: { value: false },
+    audioSession: new StoryAudioSession({ contextFactory: () => new FakeAudioContext() }),
+  })
+  assert.equal(await danglingPlayer.prepareVoice(), null)
+  assert.equal(danglingFetchCalls, 0, 'known RAW-authored dangling voices must not make guaranteed 404 requests')
+  danglingPlayer.dispose()
+
   const soakContext = new FakeAudioContext()
   soakContext.state = 'running'
   const soakSession = new StoryAudioSession({ contextFactory: () => soakContext })
