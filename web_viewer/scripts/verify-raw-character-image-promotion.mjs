@@ -51,11 +51,32 @@ const stableAsset = path.join(
   'birthday',
   'image_chara_birthday_visual_001tom.png',
 )
+const baselineAsset = path.join(
+  assetsRoot,
+  'stories',
+  'birthday',
+  'image_chara_birthday_visual_999abc.png',
+)
 const pngBytes = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
   'base64',
 )
 const rawBytes = Buffer.from('fixture RAW Unity Sprite bundle')
+const baselineRegistry = {
+  schema_version: 1,
+  entries: [{
+    kind: 'birthday_visual',
+    idol_code: '999abc',
+    asset_url: '/assets/stories/birthday/image_chara_birthday_visual_999abc.png',
+    unity_object: { path_id: '999' },
+    output: {
+      bytes: pngBytes.length,
+      width: 1,
+      height: 1,
+      sha256: hashBytes(pngBytes),
+    },
+  }],
+}
 
 async function exists(file) {
   try {
@@ -117,8 +138,9 @@ try {
   await writeFile(rawFile, rawBytes)
   await writeFile(candidateAsset, pngBytes)
   await writeJson(path.join(candidateDirectory, 'candidate.json'), candidateManifest())
-  await writeJson(registryFile, { schema_version: 1, entries: [] })
-  await mkdir(assetsRoot, { recursive: true })
+  await writeJson(registryFile, baselineRegistry)
+  await mkdir(path.dirname(baselineAsset), { recursive: true })
+  await writeFile(baselineAsset, pngBytes)
 
   await assert.rejects(
     publishRawCharacterImage({
@@ -145,7 +167,8 @@ try {
   assert.equal(report.new_asset_sha256, hashBytes(pngBytes))
   assert.equal(hashBytes(await readFile(stableAsset)), hashBytes(pngBytes))
   const promotedRegistry = JSON.parse(await readFile(registryFile, 'utf8'))
-  assert.equal(promotedRegistry.entries.length, 1)
+  assert.equal(promotedRegistry.entries.length, 2)
+  assert.ok(promotedRegistry.entries.some(entry => entry.idol_code === '999abc'))
   assert.equal(
     getPromotedCharacterImageUrl(
       'birthday_visual',
@@ -197,7 +220,7 @@ try {
   assert.equal(await exists(stableAsset), false)
   assert.deepEqual(
     JSON.parse(await readFile(registryFile, 'utf8')),
-    { schema_version: 1, entries: [] },
+    baselineRegistry,
   )
 
   const failureBackup = path.join(workspaceRoot, '.analysis', 'failure')
@@ -218,8 +241,22 @@ try {
   assert.equal(await exists(stableAsset), false)
   assert.deepEqual(
     JSON.parse(await readFile(registryFile, 'utf8')),
-    { schema_version: 1, entries: [] },
+    baselineRegistry,
   )
+
+  await writeFile(baselineAsset, Buffer.from('injected baseline drift'))
+  await assert.rejects(
+    publishRawCharacterImage({
+      workspaceRoot,
+      candidateDirectory,
+      registryFile,
+      assetsRoot,
+      backupDirectory: path.join(workspaceRoot, '.analysis', 'baseline-drift'),
+      confirmKey: 'birthday_visual:001tom',
+    }),
+    /Existing promotion birthday_visual:999abc asset drifted/u,
+  )
+  await writeFile(baselineAsset, pngBytes)
 
   const numericPathIdManifest = candidateManifest()
   numericPathIdManifest.unity_object.path_id = 101
@@ -289,6 +326,18 @@ assert.equal(
 assert.equal(
   firstStable.output.sha256,
   'a572186d263b52c2d70f9f2598304b2c89530f491595cc6561094ad4cf20ef2a',
+)
+const secondStable = sourceRegistry.entries.find(entry =>
+  entry.kind === 'birthday_visual' && entry.idol_code === '002sht',
+)
+assert.ok(secondStable)
+assert.equal(
+  secondStable.unity_object.path_id,
+  '-5810813441337302374',
+)
+assert.equal(
+  secondStable.output.sha256,
+  'edf893abdb34971e847da9c78032593618ddb932ad75a117334987c27500db67',
 )
 
 console.log('RAW character-image promotion verification passed')

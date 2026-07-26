@@ -154,6 +154,38 @@ function stableTargetFor(candidate) {
   }
 }
 
+async function verifyExistingRegistryAssets(registry, assetsRoot) {
+  for (const entry of registry.entries) {
+    if (
+      typeof entry.unity_object?.path_id !== 'string' ||
+      !/^-?\d+$/.test(entry.unity_object.path_id)
+    ) {
+      throw new Error(
+        `Existing promotion ${entry.kind}:${entry.idol_code} has an inexact PathID`,
+      )
+    }
+    const relativeAsset = String(entry.asset_url).replace(/^\/assets\//, '')
+    const assetFile = path.resolve(assetsRoot, relativeAsset)
+    requireInside(assetsRoot, assetFile, 'Existing stable asset')
+    try {
+      const bytes = await readFile(assetFile)
+      const dimensions = pngDimensions(bytes)
+      if (
+        hashBytes(bytes) !== entry.output?.sha256 ||
+        bytes.length !== entry.output?.bytes ||
+        dimensions.width !== entry.output?.width ||
+        dimensions.height !== entry.output?.height
+      ) {
+        throw new Error('bytes, hash, or dimensions differ')
+      }
+    } catch (error) {
+      throw new Error(
+        `Existing promotion ${entry.kind}:${entry.idol_code} asset drifted: ${error.message}`,
+      )
+    }
+  }
+}
+
 async function assessCandidate({
   workspaceRoot,
   candidateDirectory,
@@ -244,6 +276,7 @@ async function assessCandidate({
   }
 
   const registry = validateRegistry(await readJson(registryFile, 'promotion registry'))
+  await verifyExistingRegistryAssets(registry, assetsRoot)
   if (registry.entries.some(entry => `${entry.kind}:${entry.idol_code}` === key)) {
     throw new Error(`${key} is already present in the stable promotion registry`)
   }

@@ -309,6 +309,46 @@ The final ignored rollback evidence is:
 
 `web_viewer/.analysis/raw-migration/character-image-candidate/birthday_visual/001tom/stable-backup-20260727-final-v2/`
 
+### Second stable birthday visual and non-empty-registry proof
+
+`birthday_visual:002sht` is the second additive promotion. Unlike the first
+publication, this run started with the committed `001tom` entry and asset.
+Before accepting a new candidate, the publisher now re-opens every existing
+registry asset and verifies its URL boundary, exact decimal-string PathID, PNG
+dimensions, byte count, and SHA-256. A damaged or missing existing asset blocks
+the new publication.
+
+The `002sht` evidence is:
+
+- RAW bundle:
+  `RAW/asset/image_chara_birthday_visual_002sht.unity3d`;
+- RAW SHA-256:
+  `d205b564b0ba27aad07558553bbf05b623b665c9a601fb37da66572354b75f74`;
+- exact Sprite PathID string: `-5810813441337302374`;
+- four birthday-master rows owned by compiled files beginning
+  `1_x_002sht_*`;
+- output `730×824`, 325,759 bytes, SHA-256
+  `edf893abdb34971e847da9c78032593618ddb932ad75a117334987c27500db67`;
+- stable URL:
+  `/assets/stories/birthday/image_chara_birthday_visual_002sht.png`.
+
+The real second-entry sequence again performed publish, browser acceptance,
+explicit rollback, browser acceptance, and final republish. The initial
+registry SHA-256 was the exact one-entry hash
+`758bfe9d1668b602e39bf032e5e190c3fc6f72513cb7dabca7547f00681413df`.
+After the first publish both `001tom` (`801×875`) and `002sht` (`730×824`)
+loaded their stable URLs. Rollback removed only `002sht`, restored the exact
+one-entry registry hash, and returned its route to the fallback while
+`001tom` remained loaded and byte-identical. The final two-entry registry
+SHA-256 is
+`9b524139be7c0df551f020c3ffa05c316d35f3087d90ed294fbf7c028d4c5ef7`.
+
+The final 5174 pass loaded both stable images without fallbacks. Visual
+inspection confirmed that `002sht` fits the existing birthday-detail panel
+without clipping. The final ignored rollback evidence is:
+
+`web_viewer/.analysis/raw-migration/character-image-candidate/birthday_visual/002sht/stable-backup-20260727-final/`
+
 The ignored report records each contributing bundle's path, size, and SHA-256
 from the established 13,000-file source manifest:
 
@@ -744,7 +784,7 @@ because this story has no translation overlay.
 1. Extend the proven single-story gate to multi-part aggregate collections,
    then promote another small representative batch rather than all 3,398 at
    once.
-2. Keep the other 48 birthday visuals isolated; promote another small sample
+2. Keep the other 47 birthday visuals isolated; promote another small sample
    only after its own 5174 and rollback evidence. Treat shared
    `012yus-013kys` as a separate multi-idol mapping case.
 3. Map all 260 USM files to live-stage, card, event, and announcement semantics.
@@ -789,6 +829,13 @@ npm run character:promotion-rollback -- `
   --assets-root=public/assets `
   --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/001tom/stable-backup-20260727-final-v2 `
   --confirm=birthday_visual:001tom
+
+npm run character:promotion-publish -- `
+  --candidate-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/002sht `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/002sht/stable-backup-20260727-final `
+  --confirm=birthday_visual:002sht
 
 python ..\data_pipeline\audit_raw_story_voice_gaps.py `
   --coverage .analysis\raw-migration\story\coverage.json `

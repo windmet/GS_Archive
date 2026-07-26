@@ -339,6 +339,34 @@ The final rollback evidence is ignored at:
 
 `.analysis/raw-migration/character-image-candidate/birthday_visual/001tom/stable-backup-20260727-final-v2/`
 
+### Second stable birthday visual
+
+`birthday_visual:002sht` proves that the same gate works against a non-empty
+registry rather than only an initial empty state. The publisher now validates
+all existing stable registry assets before adding another entry, including
+their bounded URLs, PNG bytes/dimensions, hashes, and exact string PathIDs.
+Injected corruption of the existing fixture blocks publication.
+
+The second candidate is a single-idol Sprite from
+`RAW/asset/image_chara_birthday_visual_002sht.unity3d`, RAW SHA-256
+`d205b564b0ba27aad07558553bbf05b623b665c9a601fb37da66572354b75f74`,
+PathID `-5810813441337302374`, and four owned birthday-master rows. Its stable
+PNG is `730×824`, 325,759 bytes, SHA-256
+`edf893abdb34971e847da9c78032593618ddb932ad75a117334987c27500db67`.
+
+The real second publication started from the one-entry registry hash
+`758bfe9d1668b602e39bf032e5e190c3fc6f72513cb7dabca7547f00681413df`.
+5174 then loaded both stable images. Explicit rollback removed only `002sht`,
+restored that exact registry hash and its fallback, and left `001tom`
+unchanged. Final republish produced the two-entry registry hash
+`9b524139be7c0df551f020c3ffa05c316d35f3087d90ed294fbf7c028d4c5ef7`.
+The final `002sht` stable image loaded at natural `730×824` and passed visual
+layout inspection.
+
+Final rollback evidence:
+
+`.analysis/raw-migration/character-image-candidate/birthday_visual/002sht/stable-backup-20260727-final/`
+
 ### Standalone promotion gate and first stable replacement
 
 The generic strict collection publisher requires an aggregate plus episode
@@ -413,6 +441,13 @@ npm run character:promotion-rollback -- `
   --assets-root=public/assets `
   --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/001tom/stable-backup-20260727-final-v2 `
   --confirm=birthday_visual:001tom
+
+npm run character:promotion-publish -- `
+  --candidate-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/002sht `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/002sht/stable-backup-20260727-final `
+  --confirm=birthday_visual:002sht
 
 python ..\data_pipeline\extract_raw_audio_candidate.py `
   --raw-root ..\RAW --kind bgm --container usual_day.awb --cue usual_day `
