@@ -54,7 +54,7 @@ def main() -> None:
             "classification": (
                 "equivalent_decoded_audio"
                 if len({entry["decoded_wav_sha256"] for entry in decoded}) == 1
-                else "distinct_waveform_variants"
+                else "distinct_decoded_waveforms"
             ),
             "entries": decoded,
         }
@@ -65,10 +65,10 @@ def main() -> None:
             record["classification"] == "equivalent_decoded_audio"
             for record in groups.values()
         ),
-        "distinct_waveform_variants": sorted(
+        "distinct_decoded_waveforms": sorted(
             cue
             for cue, record in groups.items()
-            if record["classification"] == "distinct_waveform_variants"
+            if record["classification"] == "distinct_decoded_waveforms"
         ),
     }
     document = {

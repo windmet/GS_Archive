@@ -196,8 +196,11 @@ The resumable index now covers all 4,055 logical ACB banks:
 - 13 same-name ambiguities.
 
 Decoded WAV hashing proves twelve ordinary/telephone duplicate groups are
-byte-identical. `waribashi` is the only distinct same-name group: its two RAW
-streams are 0.529 and 0.505 seconds, so it must remain a multi-waveform cue.
+byte-identical. `waribashi` is the only distinct same-name group. ACB sequence
+metadata proves its 0.529- and 0.505-second streams are two authored tracks:
+the second starts after a 529 ms delay, producing one approximately
+1.033-second composite cue. The organizer packages each retained a different
+half, so neither package is authoritative on its own.
 
 The second candidate batch was resolved automatically from `cue_index.json`:
 

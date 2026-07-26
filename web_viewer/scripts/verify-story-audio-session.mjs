@@ -246,6 +246,13 @@ try {
     'bgm_main_christmas_day_a',
     'runtime diagnostics must report the effective RAW probe cue',
   )
+  globalThis.window.location.search = '?raw_audio_candidate=se%3Awaribashi'
+  await probeManager.playSE('waribashi')
+  assert.equal(
+    probeUrl,
+    '/assets/audio-candidate/se/waribashi.m4a',
+    'the explicit SE candidate must route through the reconstructed RAW cue',
+  )
 
   audioManager.dispose()
   timers.flush()

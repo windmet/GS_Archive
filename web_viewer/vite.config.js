@@ -301,17 +301,27 @@ function rawAudioCandidatePlugin() {
     configureServer(server) {
       server.middlewares.use('/assets/audio-candidate', (req, res, next) => {
         const rawUrl = decodeURIComponent((req.url || '').split('?')[0]).replace(/^\/+/, '')
-        const [kind, fileName, ...rest] = rawUrl.split('/')
+        const parts = rawUrl.split('/')
+        const [kind, cueOrFile, segmentDir, segmentFile, ...rest] = parts
+        const isComposite =
+          parts.length === 2 && /^[a-z0-9_]+\.m4a$/i.test(cueOrFile || '')
+        const isSegment =
+          parts.length === 4 &&
+          /^[a-z0-9_]+$/i.test(cueOrFile || '') &&
+          segmentDir === 'segments' &&
+          /^\d{2}_selection_\d+\.m4a$/i.test(segmentFile || '')
         if (
           rest.length ||
           !['song', 'bgm', 'ambient', 'se'].includes(kind) ||
-          !/^[a-z0-9_]+\.m4a$/i.test(fileName || '')
+          (!isComposite && !isSegment)
         ) {
           next()
           return
         }
-        const cue = fileName.replace(/\.m4a$/i, '')
-        const filePath = path.resolve(AUDIO_CANDIDATE_ROOT, kind, cue, fileName)
+        const cue = isComposite ? cueOrFile.replace(/\.m4a$/i, '') : cueOrFile
+        const filePath = isComposite
+          ? path.resolve(AUDIO_CANDIDATE_ROOT, kind, cue, cueOrFile)
+          : path.resolve(AUDIO_CANDIDATE_ROOT, kind, cue, segmentDir, segmentFile)
         if (
           !filePath.startsWith(AUDIO_CANDIDATE_ROOT + path.sep) ||
           !fs.existsSync(filePath)

@@ -94,7 +94,7 @@ generated data.
 | songs | master song code | `song3_<code>.acb` | 61/61 master codes and exact cues | full identity coverage proven |
 | story BGM | compiled cue ID | same-stem ACB/AWB | 105/105 referenced IDs have containers | full referenced coverage proven |
 | story ambient | compiled environmental cue | same-stem ACB/AWB | 83/83 non-sentinel cues have containers | full referenced coverage proven |
-| story SE | compiled SE cue | multi-cue ACB bank | 435/435 classified | full identity coverage proven |
+| story SE | compiled SE cue + ACB sequence metadata | multi-cue ACB bank | 435/435 classified; `waribashi` composite reconstructed | full identity and representative sequence semantics proven |
 | master seasonal BGM | table 133 relation + ACB action metadata | variant cues/banks | 92/92 classified; 42/42 switches resolved | full identity relation proven |
 | character/costume/Spine | costume/idol dictionaries | `costume_*`, `idol_*`, `image_*` | counts known, relation audit incomplete | pending |
 | live/chibi | song/choreography IDs | `live_*`, `song_*`, image/object layers | representative song playback proven | partial |
@@ -195,11 +195,41 @@ Thirteen story SE cues have more than one indexed entry.
 - `waribashi` has two distinct streams in `se_commu_2022.acb`, with durations
   0.529 and 0.505 seconds.
 
-`waribashi` is a real multi-waveform cue, not a duplicate-file error. The
-current organizer OGG is 0.529 seconds and corresponds to the first variant,
-but organizer choice is not sufficient authority to delete the second
-variation. A production replacement should either preserve randomized
-variants or document a deterministic selection policy.
+The neutral comparison classification is `distinct_decoded_waveforms`; it does
+not assert that the cue randomly selects one waveform.
+
+`waribashi` occurs in one actual scenario, `1_1_012_03_e`. Collection,
+episode, and old compiled projections account for the repeated JSON hits. The
+two organizer packages each retained only one half:
+
+- `GS_Res/Audio/sfx/waribashi.ogg` is a 0.529-second Vorbis file matching the
+  first decoded RAW stream;
+- `story_viewer/voice_ogg/waribashi.ogg` is actually a 0.505-second PCM WAV
+  despite its suffix, and its SHA-256 exactly matches the second decoded RAW
+  stream.
+
+The ACB metadata proves temporal composition rather than random variation:
+
+- `CueTable`: cue ID 110, Sequence reference 60, length 1033 ms, two related
+  waveforms;
+- `SequenceTable`: Type 0, two tracks, indices 60 and 61;
+- track 60 starts at 0 ms and references waveform 60 / selection 159;
+- track 61 contains `0x07d1 00000211`, a 529 ms start delay, and references
+  waveform 61 / selection 160;
+- 529 ms + 505 ms is approximately the authored 1033 ms cue length.
+
+This interpretation also agrees with CRI's official Atom Craft documentation:
+Sequence Type 0 is Polyphonic, tracks may have timeline start offsets, and
+`DelayTimeMS` is the track playback start time:
+
+- <https://game.criware.jp/manual/adx2_tool_en/latest/criatom_tools_atomcraft_cue_type.html>
+- <https://game.criware.jp/manual/adx2_tool_en/latest/criatom_tools_atomcraft_atombinary_json.html>
+- <https://game.criware.jp/manual/adx2_tool_en/latest/criatom_tools_atomcraft_api_refparam_workunittree.html>
+
+The tracked sequence extractor now emits both isolated segments plus a
+1.040-second composed AAC candidate. It preserves every raw event command,
+including `0x07d5 016c`; that command's exact meaning is unknown and is not
+simulated or guessed.
 
 ### Master BGM distinction
 
@@ -287,6 +317,7 @@ Verified on port 5174:
 - `flash_in` from `se_commu_2022.acb`;
 - `phone_rusuden_start` from `se_telephone.acb`;
 - `2_4_003_02_09_c1900_t` from a story-specific bank;
+- reconstructed `waribashi` two-track composite from `se_commu_2022.acb`;
 - `bgm_main_christmas_day_a` selected by the Christmas `sw_main` ActionTrack;
 - `DRIVE A LIVE` in the multi-character live stage.
 
@@ -316,6 +347,22 @@ The opt-in browser probe requires both
 effective BGM requested by the bounded QA route. No default story or stable
 asset URL changes.
 
+The `waribashi` verification used the bounded actual episode route for
+`episodes/1_1_012_03_e.json`, steps 21-24, with
+`raw_audio_candidate=se:waribashi`:
+
+- segment selection 159: HTTP 200 `audio/mp4`, 0.529 seconds;
+- segment selection 160: HTTP 200 `audio/mp4`, 0.505 seconds;
+- composed cue: HTTP 200 `audio/mp4`, 1.040 seconds;
+- candidate manifest: HTTP 200 JSON;
+- runtime log: `step-23:000:se-waribashi`;
+- AudioContext state after the user gesture: `running`.
+
+The one-shot source had normally ended before the periodic diagnostics
+snapshot. The runtime trigger log, running context, exact candidate routing
+unit check, and independent candidate HTTP/probe evidence are therefore kept
+together instead of requiring a short-lived source to remain registered.
+
 The live stage reported audio ready and advanced from 0:00 to 0:19 while
 choreography and singer positions changed.
 
@@ -340,15 +387,15 @@ organizer folder layout as authority.
 
 ## 9. Remaining work in priority order
 
-1. Define and test the browser policy for genuine multi-waveform cues such as
-   `waribashi`.
-2. Extend RAW-only story compilation from the proven sample to all 1,435
+1. Extend RAW-only story compilation from the proven sample to all 1,435
    scenario bundles, with full voice/lipsync coverage reports.
-3. Audit `costume_*`, `idol_*`, and character-related `image_*` bundles against
+2. Audit `costume_*`, `idol_*`, and character-related `image_*` bundles against
    costume/idol dictionaries and current Spine directories.
-4. Map all 260 USM files to live-stage, card, event, and announcement semantics.
-5. Audit the remaining 1,271 general `image_*` bundles by Unity object name and
+3. Map all 260 USM files to live-stage, card, event, and announcement semantics.
+4. Audit the remaining 1,271 general `image_*` bundles by Unity object name and
    master-data consumer.
+5. Reconstruct any additional non-waveform ActionTrack, sequence, loop, or
+   switch semantics only when their ACB structure is proven.
 6. Promote verified domains into stable public paths in small reversible
    commits, never as one bulk replacement.
 
@@ -372,6 +419,16 @@ python ..\data_pipeline\compare_raw_audio_cue_variants.py `
   --coverage .analysis\raw-migration\audio\cue-index\story_se_coverage.json `
   --vgmstream "E:\Program Files\vgmstream-win64\vgmstream-cli.exe" `
   --output .analysis\raw-migration\audio\cue-index\ambiguous_decode_comparison.json
+
+python ..\data_pipeline\extract_raw_acb_sequence_candidate.py `
+  --raw-root ..\RAW `
+  --cue-index .analysis\raw-migration\audio\cue-index\cue_index.json `
+  --cue waribashi `
+  --kind se `
+  --output-root .analysis\raw-migration\audio `
+  --vgmstream "E:\Program Files\vgmstream-win64\vgmstream-cli.exe" `
+  --ffmpeg "D:\Program Files\ffmpeg\bin\ffmpeg.exe" `
+  --ffprobe "D:\Program Files\ffmpeg\bin\ffprobe.exe"
 
 python ..\data_pipeline\masterdata_extract.py $env:SIDEM_MASTER_DATA_PATH `
   --music-catalog-only `
