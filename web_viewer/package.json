@@ -8,6 +8,7 @@
     "build": "vite build --configLoader native",
     "smoke": "vite build --configLoader native",
     "chibi:scan": "node scripts/scan-live-chibi-compatibility.mjs",
+    "audit:raw-character": "python ../data_pipeline/audit_raw_character_resources.py",
     "chibi:audio": "python scripts/prepare-live-chibi-audio.py",
     "chibi:backmonitor": "python scripts/prepare-live-chibi-backmonitor.py",
     "chibi:image-layers": "python scripts/prepare-live-chibi-image-layers.py",

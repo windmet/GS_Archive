@@ -22,13 +22,14 @@ The authority boundary is:
    time.
 
 This is not yet a statement that every public resource has been regenerated.
-Cards, ADV backgrounds, the complete RAW story structural inventory, the
-complete RAW audio cue inventory, the complete table-133 seasonal BGM relation,
-and representative browser candidates have strong evidence.
+Cards, ADV backgrounds, costumes/Spine, idol settings, the complete RAW story
+structural inventory, the complete RAW audio cue inventory, the complete
+table-133 seasonal BGM relation, and representative browser candidates have
+strong evidence.
 Twelve authored story voice references have been proven to be dangling in RAW
 and are explicitly waived without replacement audio.
-Movies, general UI images, costumes/Spine, and stable full-story promotion
-still require domain-specific audits.
+Movies, general UI images, the remaining character-image consumers, and
+multi-story stable promotion still require domain-specific audits.
 
 ## 1. Source integrity
 
@@ -98,7 +99,7 @@ generated data.
 | story ambient | compiled environmental cue | same-stem ACB/AWB | 83/83 non-sentinel cues have containers | full referenced coverage proven |
 | story SE | compiled SE cue + ACB sequence metadata | multi-cue ACB bank | 435/435 classified; `waribashi` composite reconstructed | full identity and representative sequence semantics proven |
 | master seasonal BGM | table 133 relation + ACB action metadata | variant cues/banks | 92/92 classified; 42/42 switches resolved | full identity relation proven |
-| character/costume/Spine | costume/idol dictionaries | `costume_*`, `idol_*`, `image_*` | counts known, relation audit incomplete | pending |
+| character/costume/Spine | costume/idol dictionaries + Unity object identity | `costume_*`, `idol_settings_*`, `image_chara*` | 690/690 master costumes; 725 full Spine + 3 RAW silhouette-only; 257/257 idol-setting JSON assets; 57 character-image bundles inventoried | costume/Spine/idol settings proven; character images partial |
 | live/chibi | song/choreography IDs | `live_*`, `song_*`, image/object layers | representative song playback proven | partial |
 | movies | event/live/card movie relations | 260 USM | filename inventory only | pending |
 | general UI images | master records + bundle object names | 1,271 `image_*` bundles | no full relation table yet | pending |
@@ -127,6 +128,89 @@ same layer. The RAW candidate pipeline therefore preserves:
 
 N/R/SR/SSR candidates all rendered normal and awakened `640x800` portraits in
 5174. The SSR sample also rendered two `1800x960` landscape images.
+
+## 4.1 Character, costume, and Spine evidence
+
+The costume dictionary contains 690 unique `model_resource_id` values. All
+690 have an exact `RAW/asset/costume_<model>.unity3d` bundle. RAW contains 728
+costume bundles in total; the additional 38 are NPC/guest models such as
+`101ken`, `104omn`, and the `sub` series, rather than organizer-created
+duplicates.
+
+All 728 bundles have now been classified from their Unity objects:
+
+| Classification | Count | Evidence |
+| --- | ---: | --- |
+| full communication Spine | 725 | `comu.atlas`, `comu.skel`, and `comu` texture |
+| silhouette-only | 3 | only one silhouette Texture2D/Sprite pair; no TextAsset or prefab |
+| ambiguous | 0 | no unclassified costume bundle |
+
+The current public Spine directory names are exactly the same 728-model set.
+The 725 full rigs all have `comu.atlas`, `comu.png`, and `comu.skel`; the other
+three directories contain no false core files. More importantly, all 1,450
+RAW serialized TextAsset objects (`725 × atlas/skel`) are byte-identical to
+the current public files. The representative `001tom_002_00` RAW `comu`
+texture and public `1924×1924` PNG are also pixel-identical.
+
+The three RAW-proven silhouette-only costume models are:
+
+- `104omn_001_00`;
+- `231sub_001_00`;
+- `242sub_001_00`.
+
+Each has a current public silhouette PNG, and each occurs in real compiled
+stories. They now join the previously audited `102sha_001_00` runtime
+exception, so the player goes directly to the silhouette instead of requesting
+known-absent Spine files. `102sha_001_00` remains a separate legacy case: RAW
+contains no same-name costume bundle, so it is not counted among the three
+costume classifications.
+
+The 5174 acceptance route used real aggregate story `1_4_002_00`, bounded to
+steps 6–10. At ADV step 7 the screen rendered `104omn_001_00` as the intended
+black silhouette over `bg089_waitingroom_in_01`. Runtime diagnostics reported
+zero Spine instances, one silhouette with ID `104omn`, zero pending
+silhouettes, and no console warning/error.
+
+The three current public silhouette PNGs have the same cropped dimensions as
+their RAW Sprite objects but are not pixel-identical. Therefore this batch does
+not replace those PNGs. The runtime association change and a future image
+provenance comparison remain separate decisions.
+
+RAW has 85 `idol_settings_*` bundles: all 49 master idols plus 36 NPC/guest
+identities. Across them are 257 JSON TextAssets:
+
+| Setting kind | RAW assets | Current projection semantically equal |
+| --- | ---: | ---: |
+| motion | 84 | 84 |
+| mouth | 87 | 87 |
+| other | 86 | 86 |
+
+The counts exceed one-per-bundle where a bundle carries costume-specific
+variants. There are no missing, extra, or semantically different current
+setting identities. This proves that organizer directories are no longer
+needed as the authority for these settings.
+
+The narrower character-image inventory covers all 57 `image_chara*` bundles:
+485 unique container paths, each represented by both a Texture2D and Sprite.
+Current public assets have exact-basename representatives for 187 paths:
+80 character icons, 52 Mobile backgrounds, and 55 Mobile icons. The remaining
+298 paths are not yet present by original basename:
+
+- 49 birthday visuals;
+- 51 event-story visuals;
+- 51 Mobile push-up images;
+- 49 name plates;
+- 49 signs;
+- 49 story visuals.
+
+This is a physical inventory, not yet a claim that all 298 are missing from a
+user-facing route. Their master/runtime consumers must be identified before
+promotion.
+
+The ignored report records each contributing bundle's path, size, and SHA-256
+from the established 13,000-file source manifest:
+
+`web_viewer/.analysis/raw-migration/character/coverage.json`
 
 ## 5. Story and background evidence
 
@@ -558,8 +642,8 @@ because this story has no translation overlay.
 1. Extend the proven single-story gate to multi-part aggregate collections,
    then promote another small representative batch rather than all 3,398 at
    once.
-2. Audit `costume_*`, `idol_*`, and character-related `image_*` bundles against
-   costume/idol dictionaries and current Spine directories.
+2. Resolve the 298 inventoried character-image paths to master/runtime
+   consumers and compare RAW Sprite exports before any stable image promotion.
 3. Map all 260 USM files to live-stage, card, event, and announcement semantics.
 4. Audit the remaining 1,271 general `image_*` bundles by Unity object name and
    master-data consumer.
@@ -584,6 +668,8 @@ python ..\data_pipeline\audit_raw_story_coverage.py `
   --output .analysis\raw-migration\story\coverage.json
 
 python ..\data_pipeline\verify_raw_story_identity.py
+
+python ..\data_pipeline\audit_raw_character_resources.py
 
 python ..\data_pipeline\audit_raw_story_voice_gaps.py `
   --coverage .analysis\raw-migration\story\coverage.json `

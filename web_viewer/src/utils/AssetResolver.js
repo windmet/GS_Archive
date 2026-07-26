@@ -18,6 +18,9 @@
 const ASSET_BASE = '/assets'
 export const SILHOUETTE_ONLY_MODEL_IDS = Object.freeze([
   '102sha_001_00',
+  '104omn_001_00',
+  '231sub_001_00',
+  '242sub_001_00',
 ])
 const SILHOUETTE_ONLY_MODELS = new Set(SILHOUETTE_ONLY_MODEL_IDS)
 

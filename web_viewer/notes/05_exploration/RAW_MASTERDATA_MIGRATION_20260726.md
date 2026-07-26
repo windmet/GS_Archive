@@ -250,6 +250,33 @@ The isolated `1_x_001tom_2_1_2_001_12` candidate proves the standalone case:
 20 steps, three voice banks, three lipsync banks, 15/15 voice references, and
 real browser playback on 5174.
 
+### Costume, Spine, idol-setting, and character-image batch
+
+The new repeatable character audit scans every relevant Unity object instead
+of inferring content from filenames:
+
+- 690/690 master costume model IDs have RAW bundles;
+- all 728 RAW costume bundle IDs exactly equal the public Spine-directory set;
+- 725 are complete communication Spine rigs, three are silhouette-only, and
+  none are ambiguous;
+- all 1,450 RAW serialized atlas/skel TextAssets equal the public files;
+- the `001tom_002_00` representative texture is pixel-identical;
+- all 257 RAW idol-setting JSON assets are semantically equal to their current
+  public projections;
+- the 57 `image_chara*` bundles contain 485 unique image paths, of which 187
+  have public exact-basename representatives and 298 still need consumer
+  mapping.
+
+The three RAW-proven silhouette-only models (`104omn_001_00`,
+`231sub_001_00`, and `242sub_001_00`) are now explicit direct-fallback models.
+Their existing public PNGs are retained because they match RAW Sprite
+dimensions but not pixels. Asset identity and image replacement are therefore
+kept as two independently reviewable steps.
+
+The bounded 5174 route for real story `1_4_002_00` rendered the `104omn`
+silhouette at ADV step 7. Runtime diagnostics showed zero Spine instances, one
+settled silhouette, no pending silhouette, and no console warning/error.
+
 ### Standalone promotion gate and first stable replacement
 
 The generic strict collection publisher requires an aggregate plus episode
@@ -307,6 +334,8 @@ python ..\data_pipeline\extract_raw_background_candidate.py `
 
 python ..\data_pipeline\audit_raw_background_coverage.py
 
+python ..\data_pipeline\audit_raw_character_resources.py
+
 python ..\data_pipeline\extract_raw_audio_candidate.py `
   --raw-root ..\RAW --kind bgm --container usual_day.awb --cue usual_day `
   --selection 1 --output-root .analysis\raw-migration\audio `
@@ -349,8 +378,8 @@ assets.
 
 1. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
-2. Audit costume, idol, and character image bundles against the costume/idol
-   dictionaries and current Spine directories.
+2. Map the 298 currently unmatched `image_chara*` paths to master/runtime
+   consumers and compare RAW Sprite exports before promotion.
 3. Map all 260 RAW USM files to master-data consumers.
 4. Continue promoting verified domains one reversible batch at a time, with
    5174 acceptance and rollback evidence before each stable-path replacement.
