@@ -809,6 +809,318 @@ export async function publishRawCharacterImageGroup({
   }
 }
 
+export async function publishRawCharacterImageBatch({
+  workspaceRoot,
+  candidateDirectories,
+  registryFile,
+  assetsRoot,
+  backupDirectory,
+  confirmKey,
+  publishAsset = defaultAssetWrite,
+  publishRegistry = defaultRegistryWrite,
+  reportWrite = defaultReportWrite,
+}) {
+  if (!Array.isArray(candidateDirectories) || candidateDirectories.length < 2) {
+    throw new Error('Batch promotion requires at least two candidate directories')
+  }
+  const resolvedWorkspace = path.resolve(workspaceRoot)
+  const resolvedCandidates = candidateDirectories.map(value =>
+    resolveInput(resolvedWorkspace, value)
+  )
+  const resolvedRegistry = resolveInput(resolvedWorkspace, registryFile)
+  const resolvedAssets = resolveInput(resolvedWorkspace, assetsRoot)
+  const resolvedBackup = resolveInput(resolvedWorkspace, backupDirectory)
+  requireInside(
+    path.join(resolvedWorkspace, '.analysis'),
+    resolvedBackup,
+    'Promotion backup directory',
+  )
+  try {
+    if ((await readdir(resolvedBackup)).length >= 0) {
+      throw new Error(`Promotion backup directory must not already exist: ${resolvedBackup}`)
+    }
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error
+  }
+
+  const assessments = []
+  for (const candidateDirectory of resolvedCandidates) {
+    const candidate = await readJson(
+      path.join(candidateDirectory, 'candidate.json'),
+      'candidate manifest',
+    )
+    assessments.push(await assessCandidate({
+      workspaceRoot: resolvedWorkspace,
+      candidateDirectory,
+      registryFile: resolvedRegistry,
+      assetsRoot: resolvedAssets,
+      confirmKey: `${candidate.kind}:${candidate.idol_code}`,
+    }))
+  }
+  assessments.sort((a, b) =>
+    a.candidate.idol_code.localeCompare(b.candidate.idol_code)
+  )
+  const codes = assessments.map(item => item.candidate.idol_code)
+  const kinds = new Set(assessments.map(item => item.candidate.kind))
+  const targets = new Set(assessments.map(item => item.targetFile))
+  if (
+    new Set(codes).size !== codes.length ||
+    kinds.size !== 1 ||
+    targets.size !== assessments.length
+  ) {
+    throw new Error('Batch candidates must have unique identities and stable targets')
+  }
+  const kind = assessments[0].candidate.kind
+  const key = `${kind}:${codes.join('+')}`
+  if (confirmKey !== key) {
+    throw new Error(`Explicit batch promotion confirmation must equal ${key}`)
+  }
+  const registryBefore = JSON.stringify(assessments[0].registry)
+  if (assessments.some(item => JSON.stringify(item.registry) !== registryBefore)) {
+    throw new Error('Batch candidates were not assessed against one registry state')
+  }
+
+  await mkdir(resolvedBackup, { recursive: false })
+  const backupRegistryFile = path.join(resolvedBackup, 'registry.before.json')
+  const backupAssetsRoot = path.join(resolvedBackup, 'assets-before')
+  const registryBeforeBytes = await readFile(resolvedRegistry)
+  await copyFile(resolvedRegistry, backupRegistryFile)
+  const assetBackups = []
+  for (const [index, assessment] of assessments.entries()) {
+    const backupFile = assessment.targetState.exists
+      ? path.join(backupAssetsRoot, `${index}-${path.basename(assessment.targetFile)}`)
+      : null
+    if (backupFile) {
+      await mkdir(path.dirname(backupFile), { recursive: true })
+      await copyFile(assessment.targetFile, backupFile)
+    }
+    assetBackups.push(backupFile)
+  }
+
+  const promotedAt = new Date().toISOString()
+  const entries = assessments.map(assessment => ({
+    kind: assessment.candidate.kind,
+    idol_code: assessment.candidate.idol_code,
+    asset_url: assessment.stable.assetUrl,
+    promoted_at: promotedAt,
+    raw_source: {
+      relative_path: assessment.candidate.raw_source.relative_path,
+      bytes: assessment.rawState.bytes,
+      sha256: assessment.rawState.sha256,
+    },
+    unity_object: {
+      container_path: assessment.candidate.unity_object.container_path,
+      path_id: assessment.candidate.unity_object.path_id,
+      object_type: assessment.candidate.unity_object.object_type,
+      asset_name: assessment.candidate.unity_object.asset_name,
+      sprite_rect: assessment.candidate.unity_object.sprite_rect,
+    },
+    output: {
+      bytes: assessment.candidate.resolved_asset.bytes,
+      width: assessment.dimensions.width,
+      height: assessment.dimensions.height,
+      sha256: assessment.candidateHash,
+    },
+    master_evidence: {
+      idol_id: assessment.candidate.identity_evidence.master_idol?.idol_id,
+      reference_count: assessment.candidate.identity_evidence.story_master.reference_count,
+      compiled_files: assessment.candidate.identity_evidence.story_master.references
+        .map(reference => reference.compiled_file)
+        .sort(),
+    },
+  }))
+  const nextRegistry = {
+    schema_version: 1,
+    entries: [...assessments[0].registry.entries, ...entries]
+      .sort((a, b) => `${a.kind}:${a.idol_code}`.localeCompare(`${b.kind}:${b.idol_code}`)),
+  }
+  const nextRegistryBytes = Buffer.from(`${JSON.stringify(nextRegistry, null, 2)}\n`)
+  const backupManifest = {
+    schema_version: 2,
+    mode: 'batch',
+    key,
+    identity_ids: codes,
+    created_at: promotedAt,
+    registry: {
+      path: path.relative(resolvedWorkspace, resolvedRegistry).replaceAll('\\', '/'),
+      before_sha256: hashBytes(registryBeforeBytes),
+      promoted_sha256: hashBytes(nextRegistryBytes),
+      backup_file: 'registry.before.json',
+    },
+    assets: assessments.map((assessment, index) => ({
+      idol_code: assessment.candidate.idol_code,
+      path: path.relative(resolvedAssets, assessment.targetFile).replaceAll('\\', '/'),
+      existed_before: assessment.targetState.exists,
+      before_sha256: assessment.targetState.sha256,
+      promoted_sha256: assessment.candidateHash,
+      backup_file: assetBackups[index]
+        ? path.relative(resolvedBackup, assetBackups[index]).replaceAll('\\', '/')
+        : null,
+    })),
+  }
+
+  let mutationStarted = false
+  try {
+    mutationStarted = true
+    for (const assessment of assessments) {
+      await publishAsset(assessment.candidateAsset, assessment.targetFile)
+    }
+    await publishRegistry(resolvedRegistry, nextRegistryBytes)
+    const finalAssets = await Promise.all(
+      assessments.map(item => pathState(item.targetFile)),
+    )
+    const finalRegistry = await pathState(resolvedRegistry)
+    if (
+      finalRegistry.sha256 !== backupManifest.registry.promoted_sha256 ||
+      finalAssets.some((state, index) =>
+        state.sha256 !== assessments[index].candidateHash
+      )
+    ) {
+      throw new Error('Published batch images or registry failed final hash verification')
+    }
+    await reportWrite(
+      path.join(resolvedBackup, 'backup-manifest.json'),
+      Buffer.from(`${JSON.stringify(backupManifest, null, 2)}\n`),
+    )
+    return {
+      key,
+      identity_ids: codes,
+      asset_urls: assessments.map(item => item.stable.assetUrl),
+      asset_sha256: finalAssets.map(item => item.sha256),
+      old_registry_sha256: backupManifest.registry.before_sha256,
+      new_registry_sha256: finalRegistry.sha256,
+      backup_directory: resolvedBackup,
+    }
+  } catch (error) {
+    if (mutationStarted) {
+      await atomicWriteBytes(resolvedRegistry, registryBeforeBytes)
+      for (const [index, assessment] of assessments.entries()) {
+        if (assessment.targetState.exists) {
+          await atomicWriteBytes(
+            assessment.targetFile,
+            await readFile(assetBackups[index]),
+          )
+        } else {
+          await rm(assessment.targetFile, { force: true })
+        }
+      }
+    }
+    throw error
+  }
+}
+
+export async function rollbackRawCharacterImageBatch({
+  workspaceRoot,
+  registryFile,
+  assetsRoot,
+  backupDirectory,
+  confirmKey,
+}) {
+  const resolvedWorkspace = path.resolve(workspaceRoot)
+  const resolvedRegistry = resolveInput(resolvedWorkspace, registryFile)
+  const resolvedAssets = resolveInput(resolvedWorkspace, assetsRoot)
+  const resolvedBackup = resolveInput(resolvedWorkspace, backupDirectory)
+  requireInside(
+    path.join(resolvedWorkspace, '.analysis'),
+    resolvedBackup,
+    'Promotion backup directory',
+  )
+  requireInside(
+    path.join(resolvedWorkspace, 'public', 'data', 'assets'),
+    resolvedRegistry,
+    'Promotion registry',
+  )
+  requireInside(
+    path.join(resolvedWorkspace, 'public', 'assets'),
+    resolvedAssets,
+    'Stable asset root',
+  )
+  const manifest = await readJson(
+    path.join(resolvedBackup, 'backup-manifest.json'),
+    'batch promotion backup manifest',
+  )
+  if (
+    manifest.schema_version !== 2 ||
+    manifest.mode !== 'batch' ||
+    !Array.isArray(manifest.assets) ||
+    manifest.assets.length < 2 ||
+    confirmKey !== manifest.key
+  ) {
+    throw new Error(`Explicit batch rollback confirmation must equal ${manifest.key}`)
+  }
+  const expectedRegistry = path.resolve(resolvedWorkspace, manifest.registry?.path || '')
+  if (expectedRegistry !== resolvedRegistry) {
+    throw new Error('Batch rollback registry path differs from its backup')
+  }
+  const targets = manifest.assets.map(asset => {
+    const targetFile = path.resolve(resolvedAssets, asset.path || '')
+    requireInside(resolvedAssets, targetFile, 'Batch rollback asset target')
+    return { asset, targetFile }
+  })
+  const currentRegistry = await pathState(resolvedRegistry)
+  const currentAssets = await Promise.all(
+    targets.map(item => pathState(item.targetFile)),
+  )
+  if (
+    currentRegistry.sha256 !== manifest.registry.promoted_sha256 ||
+    currentAssets.some((state, index) =>
+      state.sha256 !== targets[index].asset.promoted_sha256
+    )
+  ) {
+    throw new Error('Current batch promotion state drifted; refusing rollback')
+  }
+
+  const promotedRegistryBytes = await readFile(resolvedRegistry)
+  const promotedAssetBytes = await Promise.all(
+    targets.map(item => readFile(item.targetFile)),
+  )
+  try {
+    await atomicWriteBytes(
+      resolvedRegistry,
+      await readFile(path.join(resolvedBackup, manifest.registry.backup_file)),
+    )
+    for (const { asset, targetFile } of targets) {
+      if (asset.existed_before) {
+        await atomicWriteBytes(
+          targetFile,
+          await readFile(path.join(resolvedBackup, asset.backup_file)),
+        )
+      } else {
+        await rm(targetFile, { force: true })
+      }
+    }
+    const restoredRegistry = await pathState(resolvedRegistry)
+    const restoredAssets = await Promise.all(
+      targets.map(item => pathState(item.targetFile)),
+    )
+    if (
+      restoredRegistry.sha256 !== manifest.registry.before_sha256 ||
+      restoredAssets.some((state, index) =>
+        state.exists !== targets[index].asset.existed_before ||
+        state.sha256 !== targets[index].asset.before_sha256
+      )
+    ) {
+      throw new Error('Batch rollback final-state verification failed')
+    }
+    return {
+      key: manifest.key,
+      identity_ids: manifest.identity_ids,
+      registry_sha256: restoredRegistry.sha256,
+      asset_states: restoredAssets.map((state, index) => ({
+        idol_code: targets[index].asset.idol_code,
+        state: state.exists ? 'restored' : 'removed',
+        sha256: state.sha256,
+      })),
+    }
+  } catch (error) {
+    await atomicWriteBytes(resolvedRegistry, promotedRegistryBytes)
+    for (const [index, { targetFile }] of targets.entries()) {
+      await atomicWriteBytes(targetFile, promotedAssetBytes[index])
+    }
+    throw error
+  }
+}
+
 export async function rollbackRawCharacterImage({
   workspaceRoot,
   registryFile,

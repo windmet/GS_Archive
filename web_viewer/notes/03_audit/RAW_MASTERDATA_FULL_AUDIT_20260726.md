@@ -398,6 +398,50 @@ is:
 
 `web_viewer/.analysis/raw-migration/character-image-candidate/birthday_visual/012yus-013kys-stable-backup-20260727-final/`
 
+### First atomic multi-image birthday batch
+
+The first bounded multi-image batch promotes `003hok`, `004ter`, and `005kao`
+as one transaction. Each candidate still passes the complete single-idol gate,
+including current RAW hash, exact Sprite identity, master ownership, PNG
+dimensions/hash, existing-registry validation, and an absent stable target.
+The batch then requires the full explicit confirmation
+`birthday_visual:003hok+004ter+005kao`.
+
+The three records are:
+
+| idol | RAW SHA-256 | PathID | output | PNG SHA-256 | master rows |
+| --- | --- | --- | --- | --- | ---: |
+| `003hok` | `00e7cd4a873de200c2304ee1dca39c8051f3f8d1a4f9c4eec48f8dd7757dea92` | `8982863484449506530` | `786×837`, 314,628 bytes | `a66c0fdc5bb37939a9933ddc623178ab2103a9d9e264cb447e1afabb9af63cb8` | 4 |
+| `004ter` | `c70d1b7b1e71af2c5f8b9ec8e31ec0fc51310cce0368b64161b063be60743854` | `3602356276066031871` | `975×869`, 344,689 bytes | `21b644f589631f82d7e47202e1f10e04cee51b9c5e1d41ad9f3038e596f95e30` | 4 |
+| `005kao` | `3871ceba7d3b4069f3259b78330d085de0e2b8d022517bcc730d30540d0e0c1f` | `1892783551249285074` | `609×821`, 296,127 bytes | `552546a3ad317294fadbb2d73e136e3634493165089cb2b40124051134691d0b` | 3 |
+
+The batch backup manifest records the registry once and all three asset states.
+Duplicate candidates, incomplete confirmation, failure while writing the
+second PNG, failure after all PNGs but before registry publication, current
+asset drift, and incomplete final hashes are covered. Every failure restores
+the original registry and removes all newly written PNGs. Batch rollback
+similarly verifies the current registry and all three promoted hashes before
+restoring anything; rollback failure re-applies the complete promoted state.
+
+The real publish started from the four-mapping/three-URL registry SHA-256
+`becc2bb172430cfe7a017883aceab3686131f587051767e675d51b64da4a9ec2`.
+All three candidate routes first loaded from ignored `.analysis`. After
+publication, all three no-query routes loaded their stable URLs and the
+existing shared birthday image remained available. Explicit batch rollback
+removed all three PNGs, restored the exact baseline registry hash, returned
+all three routes to fallback, and kept existing resources intact. Final
+republish leaves seven idol mappings backed by six physical URLs; registry
+SHA-256 is
+`0e6c6c738479ff496c69336b1f6accc21f78378062d02ebf5bd2301b8bfb4740`.
+
+Final 5174 visual inspection covered the widest new image (`004ter`, 975
+pixels) and narrowest (`005kao`, 609 pixels); both were contained correctly.
+The browser control surface also emitted one unrelated remote Statsig telemetry
+timeout to `ab.chatgpt.com`; it was not a 5174 application request and did not
+affect DOM or asset validation. Final ignored rollback evidence:
+
+`web_viewer/.analysis/raw-migration/character-image-candidate/birthday_visual/batch-003hok-004ter-005kao-backup-20260727-final/`
+
 The ignored report records each contributing bundle's path, size, and SHA-256
 from the established 13,000-file source manifest:
 
@@ -833,7 +877,7 @@ because this story has no translation overlay.
 1. Extend the proven single-story gate to multi-part aggregate collections,
    then promote another small representative batch rather than all 3,398 at
    once.
-2. Keep the other 46 physical birthday visuals isolated; they cover 45
+2. Keep the other 43 physical birthday visuals isolated; they cover 42
    remaining master idols plus `101ken`. Promote another small sample only
    after its own 5174 and rollback evidence, and keep the NPC on a separate
    identity gate.
@@ -893,6 +937,19 @@ npm run character:promotion-publish-group -- `
   --assets-root=public/assets `
   --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/012yus-013kys-stable-backup-20260727-final `
   --confirm=birthday_visual:012yus+013kys
+
+npm run character:promotion-publish-batch -- `
+  --candidate-dirs=.analysis/raw-migration/character-image-candidate/birthday_visual/003hok,.analysis/raw-migration/character-image-candidate/birthday_visual/004ter,.analysis/raw-migration/character-image-candidate/birthday_visual/005kao `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-003hok-004ter-005kao-backup-20260727-final `
+  --confirm=birthday_visual:003hok+004ter+005kao
+
+npm run character:promotion-rollback-batch -- `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-003hok-004ter-005kao-backup-20260727-final `
+  --confirm=birthday_visual:003hok+004ter+005kao
 
 npm run character:promotion-rollback -- `
   --registry=public/data/assets/raw_character_image_promotions.json `

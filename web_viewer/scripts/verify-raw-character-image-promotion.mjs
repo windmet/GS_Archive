@@ -13,8 +13,10 @@ import {
 import {
   hashBytes,
   publishRawCharacterImage,
+  publishRawCharacterImageBatch,
   publishRawCharacterImageGroup,
   rollbackRawCharacterImage,
+  rollbackRawCharacterImageBatch,
 } from './lib/raw-character-image-promotion.mjs'
 import {
   getPromotedCharacterImageUrl,
@@ -85,6 +87,21 @@ const sharedStableAsset = path.join(
   'birthday',
   'image_chara_birthday_visual_012yus-013kys.png',
 )
+const batchCodes = ['003hok', '004ter', '005kao']
+const batchCandidateDirectories = batchCodes.map(code => path.join(
+  workspaceRoot,
+  '.analysis',
+  'raw-migration',
+  'character-image-candidate',
+  'birthday_visual',
+  code,
+))
+const batchStableAssets = batchCodes.map(code => path.join(
+  assetsRoot,
+  'stories',
+  'birthday',
+  `image_chara_birthday_visual_${code}.png`,
+))
 const baselineRegistry = {
   schema_version: 1,
   entries: [{
@@ -190,6 +207,45 @@ function sharedCandidateManifest(idolCode, assetBytes = pngBytes) {
       height: 1,
       bytes: assetBytes.length,
       sha256: hashBytes(assetBytes),
+    },
+  }
+}
+
+function batchCandidateManifest(idolCode, rawAssetBytes) {
+  return {
+    schema_version: 1,
+    kind: 'birthday_visual',
+    idol_code: idolCode,
+    raw_source: {
+      relative_path: `RAW/asset/image_chara_birthday_visual_${idolCode}.unity3d`,
+      bytes: rawAssetBytes.length,
+      sha256: hashBytes(rawAssetBytes),
+      source_manifest_equal: true,
+    },
+    unity_object: {
+      container_path: `assets/resources/image/image_chara/image_chara_birthday/image_chara_birthday_visual_${idolCode}.png`,
+      path_id: `${Number(idolCode.slice(0, 3)) * 1000 + 13}`,
+      object_type: 'Sprite',
+      asset_name: `image_chara_birthday_visual_${idolCode}`,
+      identity_ids: [idolCode],
+      sprite_rect: { x: 0, y: 0, width: 1, height: 1 },
+    },
+    identity_evidence: {
+      master_idol: { idol_id: Number(idolCode.slice(0, 3)), idol_code: idolCode },
+      story_master: {
+        domain: 'birthday',
+        reference_count: 1,
+        references: [{
+          compiled_file: `1_x_${idolCode}_fixture.json`,
+          compiled_exists: true,
+        }],
+      },
+    },
+    resolved_asset: {
+      width: 1,
+      height: 1,
+      bytes: pngBytes.length,
+      sha256: hashBytes(pngBytes),
     },
   }
 }
@@ -505,6 +561,163 @@ try {
     JSON.parse(await readFile(registryFile, 'utf8')),
     baselineRegistry,
   )
+
+  for (const [index, directory] of batchCandidateDirectories.entries()) {
+    const code = batchCodes[index]
+    const rawAssetBytes = Buffer.from(`fixture batch RAW bundle ${code}`)
+    const rawAssetFile = path.join(
+      temporaryRoot,
+      'RAW',
+      'asset',
+      `image_chara_birthday_visual_${code}.unity3d`,
+    )
+    await writeFile(rawAssetFile, rawAssetBytes)
+    await mkdir(path.join(directory, 'resolved'), { recursive: true })
+    await writeFile(path.join(directory, 'resolved', `${code}.png`), pngBytes)
+    await writeJson(
+      path.join(directory, 'candidate.json'),
+      batchCandidateManifest(code, rawAssetBytes),
+    )
+  }
+
+  const batchConfirm = 'birthday_visual:003hok+004ter+005kao'
+  await assert.rejects(
+    publishRawCharacterImageBatch({
+      workspaceRoot,
+      candidateDirectories: batchCandidateDirectories,
+      registryFile,
+      assetsRoot,
+      backupDirectory: path.join(workspaceRoot, '.analysis', 'batch-wrong-confirm'),
+      confirmKey: 'birthday_visual:003hok+004ter',
+    }),
+    /Explicit batch promotion confirmation/u,
+  )
+  await assert.rejects(
+    publishRawCharacterImageBatch({
+      workspaceRoot,
+      candidateDirectories: [
+        batchCandidateDirectories[0],
+        batchCandidateDirectories[0],
+      ],
+      registryFile,
+      assetsRoot,
+      backupDirectory: path.join(workspaceRoot, '.analysis', 'batch-duplicate'),
+      confirmKey: 'birthday_visual:003hok+003hok',
+    }),
+    /unique identities and stable targets/u,
+  )
+
+  let batchAssetWrites = 0
+  await assert.rejects(
+    publishRawCharacterImageBatch({
+      workspaceRoot,
+      candidateDirectories: batchCandidateDirectories,
+      registryFile,
+      assetsRoot,
+      backupDirectory: path.join(workspaceRoot, '.analysis', 'batch-asset-failure'),
+      confirmKey: batchConfirm,
+      publishAsset: async (source, target) => {
+        await mkdir(path.dirname(target), { recursive: true })
+        await writeFile(target, await readFile(source))
+        batchAssetWrites += 1
+        if (batchAssetWrites === 2) {
+          throw new Error('injected second batch asset failure')
+        }
+      },
+    }),
+    /injected second batch asset failure/u,
+  )
+  assert.deepEqual(
+    JSON.parse(await readFile(registryFile, 'utf8')),
+    baselineRegistry,
+  )
+  assert.deepEqual(
+    await Promise.all(batchStableAssets.map(asset => exists(asset))),
+    [false, false, false],
+  )
+
+  await assert.rejects(
+    publishRawCharacterImageBatch({
+      workspaceRoot,
+      candidateDirectories: batchCandidateDirectories,
+      registryFile,
+      assetsRoot,
+      backupDirectory: path.join(workspaceRoot, '.analysis', 'batch-registry-failure'),
+      confirmKey: batchConfirm,
+      publishRegistry: async () => {
+        throw new Error('injected batch registry failure')
+      },
+    }),
+    /injected batch registry failure/u,
+  )
+  assert.deepEqual(
+    JSON.parse(await readFile(registryFile, 'utf8')),
+    baselineRegistry,
+  )
+  assert.deepEqual(
+    await Promise.all(batchStableAssets.map(asset => exists(asset))),
+    [false, false, false],
+  )
+
+  const batchBackup = path.join(workspaceRoot, '.analysis', 'batch-published')
+  const batchReport = await publishRawCharacterImageBatch({
+    workspaceRoot,
+    candidateDirectories: batchCandidateDirectories,
+    registryFile,
+    assetsRoot,
+    backupDirectory: batchBackup,
+    confirmKey: batchConfirm,
+  })
+  assert.deepEqual(batchReport.identity_ids, batchCodes)
+  assert.deepEqual(
+    await Promise.all(batchStableAssets.map(asset => exists(asset))),
+    [true, true, true],
+  )
+  const batchRegistry = JSON.parse(await readFile(registryFile, 'utf8'))
+  assert.equal(batchRegistry.entries.length, 4)
+  assert.ok(batchCodes.every(code =>
+    batchRegistry.entries.some(entry => entry.idol_code === code)
+  ))
+
+  await assert.rejects(
+    rollbackRawCharacterImageBatch({
+      workspaceRoot,
+      registryFile,
+      assetsRoot,
+      backupDirectory: batchBackup,
+      confirmKey: 'birthday_visual:003hok+004ter',
+    }),
+    /Explicit batch rollback confirmation/u,
+  )
+  await writeFile(batchStableAssets[1], Buffer.from('injected batch drift'))
+  await assert.rejects(
+    rollbackRawCharacterImageBatch({
+      workspaceRoot,
+      registryFile,
+      assetsRoot,
+      backupDirectory: batchBackup,
+      confirmKey: batchConfirm,
+    }),
+    /Current batch promotion state drifted/u,
+  )
+  await writeFile(batchStableAssets[1], pngBytes)
+
+  const batchRollback = await rollbackRawCharacterImageBatch({
+    workspaceRoot,
+    registryFile,
+    assetsRoot,
+    backupDirectory: batchBackup,
+    confirmKey: batchConfirm,
+  })
+  assert.deepEqual(batchRollback.identity_ids, batchCodes)
+  assert.deepEqual(
+    await Promise.all(batchStableAssets.map(asset => exists(asset))),
+    [false, false, false],
+  )
+  assert.deepEqual(
+    JSON.parse(await readFile(registryFile, 'utf8')),
+    baselineRegistry,
+  )
 } finally {
   await rm(temporaryRoot, { recursive: true, force: true })
 }
@@ -577,6 +790,28 @@ assert.equal(
   committedShared[1].output.sha256,
   '7be1b676459a964c054b0fc5658ba69442513486b9e0d495ad3d9eab0449f99e',
 )
+const committedBatchEvidence = {
+  '003hok': {
+    pathId: '8982863484449506530',
+    sha256: 'a66c0fdc5bb37939a9933ddc623178ab2103a9d9e264cb447e1afabb9af63cb8',
+  },
+  '004ter': {
+    pathId: '3602356276066031871',
+    sha256: '21b644f589631f82d7e47202e1f10e04cee51b9c5e1d41ad9f3038e596f95e30',
+  },
+  '005kao': {
+    pathId: '1892783551249285074',
+    sha256: '552546a3ad317294fadbb2d73e136e3634493165089cb2b40124051134691d0b',
+  },
+}
+for (const [idolCode, expected] of Object.entries(committedBatchEvidence)) {
+  const entry = sourceRegistry.entries.find(candidate =>
+    candidate.kind === 'birthday_visual' && candidate.idol_code === idolCode,
+  )
+  assert.ok(entry)
+  assert.equal(entry.unity_object.path_id, expected.pathId)
+  assert.equal(entry.output.sha256, expected.sha256)
+}
 
 console.log('RAW character-image promotion verification passed')
 console.log('  exact RAW and PNG evidence, stable registry, explicit confirmation and path bounds covered')

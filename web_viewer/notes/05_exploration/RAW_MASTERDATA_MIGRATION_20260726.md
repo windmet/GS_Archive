@@ -400,6 +400,41 @@ rollback evidence:
 
 `.analysis/raw-migration/character-image-candidate/birthday_visual/012yus-013kys-stable-backup-20260727-final/`
 
+### First atomic multi-image batch
+
+`003hok`, `004ter`, and `005kao` are the first small multi-image promotion.
+The batch publisher runs the full single-idol evidence gate for every
+candidate, then writes three distinct PNGs plus one registry revision as a
+recoverable transaction. Duplicate targets, partial confirmation, a failure on
+the second asset, a registry failure after asset writes, and hash drift all
+restore the complete prior state.
+
+Evidence summary:
+
+- `003hok`: RAW
+  `00e7cd4a873de200c2304ee1dca39c8051f3f8d1a4f9c4eec48f8dd7757dea92`,
+  PathID `8982863484449506530`, PNG `786×837`,
+  `a66c0fdc5bb37939a9933ddc623178ab2103a9d9e264cb447e1afabb9af63cb8`;
+- `004ter`: RAW
+  `c70d1b7b1e71af2c5f8b9ec8e31ec0fc51310cce0368b64161b063be60743854`,
+  PathID `3602356276066031871`, PNG `975×869`,
+  `21b644f589631f82d7e47202e1f10e04cee51b9c5e1d41ad9f3038e596f95e30`;
+- `005kao`: RAW
+  `3871ceba7d3b4069f3259b78330d085de0e2b8d022517bcc730d30540d0e0c1f`,
+  PathID `1892783551249285074`, PNG `609×821`,
+  `552546a3ad317294fadbb2d73e136e3634493165089cb2b40124051134691d0b`.
+
+The real publish/rollback/final-republish sequence restored the exact
+four-mapping baseline during rollback and preserved the existing shared image.
+Final state is seven idol mappings and six physical URLs, registry SHA-256
+`0e6c6c738479ff496c69336b1f6accc21f78378062d02ebf5bd2301b8bfb4740`.
+All three stable routes loaded at natural dimensions; the widest and narrowest
+outputs both passed visual layout inspection.
+
+Final rollback evidence:
+
+`.analysis/raw-migration/character-image-candidate/birthday_visual/batch-003hok-004ter-005kao-backup-20260727-final/`
+
 ### Standalone promotion gate and first stable replacement
 
 The generic strict collection publisher requires an aggregate plus episode
@@ -489,6 +524,13 @@ npm run character:promotion-publish-group -- `
   --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/012yus-013kys-stable-backup-20260727-final `
   --confirm=birthday_visual:012yus+013kys
 
+npm run character:promotion-publish-batch -- `
+  --candidate-dirs=.analysis/raw-migration/character-image-candidate/birthday_visual/003hok,.analysis/raw-migration/character-image-candidate/birthday_visual/004ter,.analysis/raw-migration/character-image-candidate/birthday_visual/005kao `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-003hok-004ter-005kao-backup-20260727-final `
+  --confirm=birthday_visual:003hok+004ter+005kao
+
 python ..\data_pipeline\extract_raw_audio_candidate.py `
   --raw-root ..\RAW --kind bgm --container usual_day.awb --cue usual_day `
   --selection 1 --output-root .analysis\raw-migration\audio `
@@ -531,8 +573,8 @@ assets.
 
 1. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
-2. Keep the remaining 46 physical birthday images isolated and promote another
-   small representative only after its own 5174 and rollback evidence. The 45
+2. Keep the remaining 43 physical birthday images isolated and promote another
+   small representative only after its own 5174 and rollback evidence. The 42
    master idols and `101ken` NPC remain distinct identity scopes.
 3. Map all 260 RAW USM files to master-data consumers.
 4. Continue promoting verified domains one reversible batch at a time, with
