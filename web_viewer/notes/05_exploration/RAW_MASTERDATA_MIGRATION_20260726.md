@@ -637,6 +637,48 @@ Final rollback evidence:
 
 `.analysis/raw-migration/character-image-candidate/birthday_visual/batch-028soi-029ass-030mak-031sak-032nao-backup-20260727-final/`
 
+### Sixth five-image bounded batch
+
+`033shr`, `034kan`, `035mco`, `036rui`, and `037jir` are the next master-order
+batch. Evidence:
+
+- `033shr`: RAW
+  `dacfa697ee625371d17a49f1225bf2fbfe88fc11cf2da21a9b0381b269348560`,
+  PathID `1393926239256617402`, PNG `783×846`,
+  `5460930fb74617eff2186d2b53067180c8e0575af91c4a595708a96a04a269b9`;
+- `034kan`: RAW
+  `46010b91ad5e36eadb287192948fec35c5999ed9bf9e516e5648742ee2f4beed`,
+  PathID `2794286035226723385`, PNG `845×921`,
+  `e2e5e8ebad8124b01245705922eace060eb36e730b6c98d04ea7f335471d25ba`;
+- `035mco`: RAW
+  `f6279f03c0d81d59d1ba6204672e8bfd508f81be1dda9f62848a440aef6bdf3d`,
+  PathID `-2091414793709629411`, PNG `674×834`,
+  `8f8b878300458efad403339a103b276e9baaaef64704d564cec799a81d8b4189`;
+- `036rui`: RAW
+  `78c6616ed90b04b469f5d26574ffdc72c8e5a9fe037601baf2484b2e63b3bf79`,
+  PathID `2576356709593939599`, PNG `726×863`,
+  `900ea42d76ca98c71270f2b9660232f6d8f5c77de6b58c1e61a6574a097b235a`;
+- `037jir`: RAW
+  `c7d6f6645b66082a6f513188aad5e571a398e45e387cc5e853d7f54ac8f7c093`,
+  PathID `494254807622901840`, PNG `913×878`,
+  `bc5648cd08277512703087b28db1655eafccf89d3152ce285789dd3960f881b2`.
+
+The real publish/rollback/final-republish cycle restored the exact
+`213b1c1c782345ff896b13b1ba69da4097f04c7f748c65527d1cdc6afa2485a8`
+baseline during rollback, removed all five new PNGs, and preserved `032nao`.
+Final state is thirty-seven idol mappings and thirty-six physical URLs,
+registry SHA-256
+`0abb01793be4d51b2a53417265a0c36782ea971e2090c92cb8c2f162b1de82df`.
+All five stable routes loaded at natural dimensions; the widest `037jir` and
+narrowest `035mco` outputs passed visual layout inspection. Page identity,
+non-empty DOM, framework-overlay, console, screenshot, and `033shr` player
+interaction checks were also recorded. Console output retained only the known
+`noAudio=1` null-context decode error.
+
+Final rollback evidence:
+
+`.analysis/raw-migration/character-image-candidate/birthday_visual/batch-033shr-034kan-035mco-036rui-037jir-backup-20260727-final/`
+
 ### Standalone promotion gate and first stable replacement
 
 The generic strict collection publisher requires an aggregate plus episode
@@ -768,6 +810,13 @@ npm run character:promotion-publish-batch -- `
   --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-028soi-029ass-030mak-031sak-032nao-backup-20260727-final `
   --confirm=birthday_visual:028soi+029ass+030mak+031sak+032nao
 
+npm run character:promotion-publish-batch -- `
+  --candidate-dirs=.analysis/raw-migration/character-image-candidate/birthday_visual/033shr,.analysis/raw-migration/character-image-candidate/birthday_visual/034kan,.analysis/raw-migration/character-image-candidate/birthday_visual/035mco,.analysis/raw-migration/character-image-candidate/birthday_visual/036rui,.analysis/raw-migration/character-image-candidate/birthday_visual/037jir `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-033shr-034kan-035mco-036rui-037jir-backup-20260727-final `
+  --confirm=birthday_visual:033shr+034kan+035mco+036rui+037jir
+
 python ..\data_pipeline\extract_raw_audio_candidate.py `
   --raw-root ..\RAW --kind bgm --container usual_day.awb --cue usual_day `
   --selection 1 --output-root .analysis\raw-migration\audio `
@@ -810,8 +859,8 @@ assets.
 
 1. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
-2. Keep the remaining 18 physical birthday images isolated and promote another
-   bounded batch only after its own 5174 and rollback evidence. The 17
+2. Keep the remaining 13 physical birthday images isolated and promote another
+   bounded batch only after its own 5174 and rollback evidence. The 12
    master idols and `101ken` NPC remain distinct identity scopes.
 3. Map all 260 RAW USM files to master-data consumers.
 4. Continue promoting verified domains one reversible batch at a time, with
