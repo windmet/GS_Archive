@@ -484,9 +484,11 @@ outside the original merged sample:
 
 The compatibility migration report confirms unchanged step identity/type
 sequence, dialogue voice/lip, cue profile, choice targets, and source
-text/speaker. Its overall acceptance remains false because the new candidate
-adds authoritative episode, evidence, and text-identity fields. It has not
-been promoted over the stable public file.
+text/speaker. The generic compatibility report remains false because the new
+candidate adds authoritative episode, evidence, and text-identity fields. A
+dedicated RAW single-story promotion gate now distinguishes the permitted
+episode metadata additions from forbidden runtime/text drift, and this sample
+has been promoted through that narrower gate.
 
 The live stage reported audio ready and advanced from 0:00 to 0:19 while
 choreography and singer positions changed.
@@ -510,10 +512,52 @@ recorded:
 Failures or ambiguity keep the candidate isolated. They do not fall back to
 organizer folder layout as authority.
 
+### First stable RAW story promotion
+
+`1_x_001tom_2_1_2_001_12.json` is the first standalone story promoted through
+the RAW-specific gate. The promotion manifest records:
+
+- current legacy hash:
+  `sha256:a0fe2085c1ad9d62998196ae29a668eaf8a7ea3061840c4872a3ce80a7d4d089`;
+- RAW compatibility hash:
+  `sha256:75ae25e331305fb77ce858d735eba2c105fad193a050b93b11b267c8b3bd7ab0`;
+- strict authoritative hash:
+  `sha256:274cbd61b618de80a3bda317cfbef7133448ca7bafad1ec3d1f196d879c8cbff`;
+- source bundle hash:
+  `sha256:ead326dc81e3b8263d3aa974614a5e5d48514fd5125283fb598caaf5a606383b`;
+- 20 steps, 15 voice references;
+- 41 accepted differences, all limited to adding the top-level episode record
+  and `episode_index`/`episode_part` to the 20 steps;
+- zero disallowed scene, cue, choice, voice/lip, or source-text differences;
+- zero non-empty inline localized fields and zero scenario overlay files.
+
+The gate rejects any non-empty legacy `*_cn` value because strict v2 moves
+localization out of compiled JSON. Existing translation overlays are hashed
+and revalidated against candidate `source.raw_hash`, unit IDs, and per-unit
+source hashes. An overlay cannot silently become stale during promotion.
+
+Candidate build cannot target `public/`. Publishing requires the exact
+scenario ID, re-runs all evidence checks against the current target, requires
+an empty backup directory outside the compiled corpus, writes atomically,
+verifies the final hash, and restores the exact backup on failure.
+
+A mirror-corpus publish was completed before the stable write. The stable
+backup and its manifest are under the ignored path:
+
+`web_viewer/.analysis/raw-migration/story-promotion/1_x_001tom_2_1_2_001_12/stable-backup-20260727/`
+
+The backup hash equals the old public hash. After stable publication, the
+formal 5174 route rendered the same Japanese dialogue and two Spine
+characters, registered `ambi_library_shop_cafe` plus
+`1_2_001_12_a1000.m4a`, and reported no voice preparation failure. Switching
+the UI to Chinese preserved the current step and used the source-text fallback
+because this story has no translation overlay.
+
 ## 9. Remaining work in priority order
 
-1. Define the staged promotion and localization-preservation gate for the
-   3,398 structurally compiled RAW story candidates.
+1. Extend the proven single-story gate to multi-part aggregate collections,
+   then promote another small representative batch rather than all 3,398 at
+   once.
 2. Audit `costume_*`, `idol_*`, and character-related `image_*` bundles against
    costume/idol dictionaries and current Spine directories.
 3. Map all 260 USM files to live-stage, card, event, and announcement semantics.
@@ -555,6 +599,19 @@ python ..\data_pipeline\extract_raw_story_candidate.py `
   --scenario-id 1_x_001tom_2_1_2_001_12 `
   --output-dir .analysis\raw-migration\1_x_001tom_2_1_2_001_12 `
   --cue-index .analysis\raw-migration\audio\cue-index\cue_index.json
+
+npm run story:raw-promotion-candidate -- `
+  --current=public/data/compiled/1_x_001tom_2_1_2_001_12.json `
+  --compatibility=.analysis/raw-migration/1_x_001tom_2_1_2_001_12/compiled/compatibility/1_x_001tom_2_1_2_001_12.json `
+  --authoritative=.analysis/raw-migration/1_x_001tom_2_1_2_001_12/compiled/authoritative/1_x_001tom_2_1_2_001_12.json `
+  --output-dir=.analysis/raw-migration/story-promotion/1_x_001tom_2_1_2_001_12 `
+  --scenario-id=1_x_001tom_2_1_2_001_12
+
+npm run story:raw-promotion-publish -- `
+  --candidate-dir=.analysis/raw-migration/story-promotion/1_x_001tom_2_1_2_001_12 `
+  --compiled-dir=public/data/compiled `
+  --backup-dir=.analysis/raw-migration/story-promotion/1_x_001tom_2_1_2_001_12/stable-backup-20260727 `
+  --confirm-scenario=1_x_001tom_2_1_2_001_12
 
 python ..\data_pipeline\index_raw_audio_cues.py `
   --raw-root ..\RAW `

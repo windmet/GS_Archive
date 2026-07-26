@@ -250,6 +250,40 @@ The isolated `1_x_001tom_2_1_2_001_12` candidate proves the standalone case:
 20 steps, three voice banks, three lipsync banks, 15/15 voice references, and
 real browser playback on 5174.
 
+### Standalone promotion gate and first stable replacement
+
+The generic strict collection publisher requires an aggregate plus episode
+files, so it cannot safely publish a one-file RAW story. A dedicated
+single-story gate now accepts only the compatibility delta actually proven for
+this class:
+
+- scenario ID, step count/type, scene state, cues, choices, dialogue audio,
+  and source text must remain unchanged;
+- the only permitted compatibility differences are an added top-level episode
+  list and added per-step `episode_index`/`episode_part`;
+- strict schema and compatibility-to-authoritative projection must pass;
+- any non-empty inline `*_cn` value blocks promotion;
+- every existing overlay must retain its file hash, RAW source hash, unit IDs,
+  and per-unit source hashes;
+- candidate output under `public/` is rejected;
+- publish requires exact scenario confirmation, current/candidate/evidence
+  hashes, an empty external backup, atomic replacement, final hash verification,
+  and rollback on injected failure.
+
+The real `1_x_001tom_2_1_2_001_12` manifest passed with 41 episode-only
+additions and zero disallowed differences. A mirror publish was accepted first,
+then the stable file changed from
+`a0fe2085c1ad9d62998196ae29a668eaf8a7ea3061840c4872a3ce80a7d4d089`
+to
+`274cbd61b618de80a3bda317cfbef7133448ca7bafad1ec3d1f196d879c8cbff`.
+The old file and backup manifest remain under the ignored promotion evidence
+directory.
+
+On the formal 5174 path, the promoted file rendered the same Japanese
+dialogue and two Spine characters and registered
+`1_2_001_12_a1000.m4a`. Chinese mode fell back to the original source text
+without resetting the story because no overlay exists for this scenario.
+
 ## Reproduction
 
 ```powershell
@@ -299,6 +333,13 @@ python ..\data_pipeline\audit_raw_story_voice_gaps.py `
   --public-voice-root public\assets\voice `
   --legacy-voice-root E:\BaiduNetdiskDownload\SideM\story_viewer\voice_ogg `
   --output .analysis\raw-migration\story\voice_gap_audit.json
+
+npm run story:raw-promotion-candidate -- `
+  --current=public/data/compiled/1_x_001tom_2_1_2_001_12.json `
+  --compatibility=.analysis/raw-migration/1_x_001tom_2_1_2_001_12/compiled/compatibility/1_x_001tom_2_1_2_001_12.json `
+  --authoritative=.analysis/raw-migration/1_x_001tom_2_1_2_001_12/compiled/authoritative/1_x_001tom_2_1_2_001_12.json `
+  --output-dir=.analysis/raw-migration/story-promotion/1_x_001tom_2_1_2_001_12 `
+  --scenario-id=1_x_001tom_2_1_2_001_12
 ```
 
 Candidate outputs remain under ignored `.analysis/`; they are not production
@@ -306,8 +347,8 @@ assets.
 
 ## Next batches
 
-1. Define the story promotion and localization-preservation gate for the 3,398
-   structurally compiled RAW candidates.
+1. Extend the proven single-story promotion gate to multi-part aggregate
+   collections and promote another small representative batch.
 2. Audit costume, idol, and character image bundles against the costume/idol
    dictionaries and current Spine directories.
 3. Map all 260 RAW USM files to master-data consumers.

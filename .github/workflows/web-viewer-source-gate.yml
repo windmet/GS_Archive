@@ -91,6 +91,9 @@ jobs:
       - name: Verify strict collection publisher
         run: npm run verify:story-authoritative-publish
 
+      - name: Verify RAW single-story publisher
+        run: npm run verify:story-raw-promotion
+
       - name: Verify compiled migration
         run: npm run verify:compiled-migration
 
