@@ -13,6 +13,7 @@ import { createHash } from 'node:crypto'
 
 const PROMOTABLE_KINDS = new Set(['birthday_visual'])
 const IDOL_CODE = /^\d{3}[a-z0-9]{3}$/i
+const MAX_BATCH_SIZE = 5
 
 export function hashBytes(bytes) {
   return createHash('sha256').update(bytes).digest('hex')
@@ -820,8 +821,14 @@ export async function publishRawCharacterImageBatch({
   publishRegistry = defaultRegistryWrite,
   reportWrite = defaultReportWrite,
 }) {
-  if (!Array.isArray(candidateDirectories) || candidateDirectories.length < 2) {
-    throw new Error('Batch promotion requires at least two candidate directories')
+  if (
+    !Array.isArray(candidateDirectories) ||
+    candidateDirectories.length < 2 ||
+    candidateDirectories.length > MAX_BATCH_SIZE
+  ) {
+    throw new Error(
+      `Batch promotion requires 2-${MAX_BATCH_SIZE} candidate directories`,
+    )
   }
   const resolvedWorkspace = path.resolve(workspaceRoot)
   const resolvedCandidates = candidateDirectories.map(value =>

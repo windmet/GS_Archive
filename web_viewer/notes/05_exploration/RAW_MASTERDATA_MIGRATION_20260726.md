@@ -435,6 +435,46 @@ Final rollback evidence:
 
 `.analysis/raw-migration/character-image-candidate/birthday_visual/batch-003hok-004ter-005kao-backup-20260727-final/`
 
+### Five-image bounded batch
+
+`006tsu`, `007kei`, `008rei`, `009kyj`, and `010pie` are the first maximum-size
+batch. The publisher now rejects more than five candidate directories, making
+the incremental replacement limit part of the source contract.
+
+Evidence:
+
+- `006tsu`: RAW
+  `fb67d1f730664d03ca41843a4db7248e14a36f4ef86e4e64e8f6282b29d8d9a5`,
+  PathID `-8280902255413043889`, PNG `1088×874`,
+  `7983ae264144a90811eba916d30073fa098bf5e213decc43ccfd9b984b3a48e7`;
+- `007kei`: RAW
+  `b98f7cbe8cb1423a3e07b4762b31642d7c6499a5fffdb3b7e36b7401b71be7e3`,
+  PathID `-126247317626979540`, PNG `1107×838`,
+  `090dd824aabb6ec94a59c16dba272553ba205787927cf7f96f1a950cff4aafb2`;
+- `008rei`: RAW
+  `cf7162fc5e63fa2aa1eb894d2fa3f54cd4b051398ffd7689c84c14645885d21c`,
+  PathID `-5985898852289501109`, PNG `746×881`,
+  `6cdfe6fd2a4ffe6a61a6af4a0c4dbc187bc23f3130334b509685cab5847e9cfb`;
+- `009kyj`: RAW
+  `87dbd965429508c48b5ef7aa92b788238b4a11262f12e0b43d45b884205c390d`,
+  PathID `-768001593005162926`, PNG `860×856`,
+  `aefd35e8fb33739dfb0b6f704254c3d6b44d4b9f4db7695fa5db56b60d2123c3`;
+- `010pie`: RAW
+  `8be74f2cf8f1a4d0c80e77039e76ec9d142b66f155174b69827a7deb7efbb667`,
+  PathID `-6635513665076385639`, PNG `843×898`,
+  `8a32d2c784f706acfb04d30cd1888e994a8fad6538ef259890f1537742363dac`.
+
+The real publish/rollback/final-republish cycle restored the exact seven-entry
+baseline during rollback and preserved all earlier assets. Final state is
+twelve idol mappings and eleven physical URLs, registry SHA-256
+`061f00fd8b72109f7a263fc1e3ab71a82435fe79dd153bfe60e676044cf78f79`.
+All five stable routes loaded at natural dimensions; width extremes passed
+visual inspection.
+
+Final rollback evidence:
+
+`.analysis/raw-migration/character-image-candidate/birthday_visual/batch-006tsu-007kei-008rei-009kyj-010pie-backup-20260727-final/`
+
 ### Standalone promotion gate and first stable replacement
 
 The generic strict collection publisher requires an aggregate plus episode
@@ -531,6 +571,13 @@ npm run character:promotion-publish-batch -- `
   --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-003hok-004ter-005kao-backup-20260727-final `
   --confirm=birthday_visual:003hok+004ter+005kao
 
+npm run character:promotion-publish-batch -- `
+  --candidate-dirs=.analysis/raw-migration/character-image-candidate/birthday_visual/006tsu,.analysis/raw-migration/character-image-candidate/birthday_visual/007kei,.analysis/raw-migration/character-image-candidate/birthday_visual/008rei,.analysis/raw-migration/character-image-candidate/birthday_visual/009kyj,.analysis/raw-migration/character-image-candidate/birthday_visual/010pie `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-006tsu-007kei-008rei-009kyj-010pie-backup-20260727-final `
+  --confirm=birthday_visual:006tsu+007kei+008rei+009kyj+010pie
+
 python ..\data_pipeline\extract_raw_audio_candidate.py `
   --raw-root ..\RAW --kind bgm --container usual_day.awb --cue usual_day `
   --selection 1 --output-root .analysis\raw-migration\audio `
@@ -573,8 +620,8 @@ assets.
 
 1. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
-2. Keep the remaining 43 physical birthday images isolated and promote another
-   small representative only after its own 5174 and rollback evidence. The 42
+2. Keep the remaining 38 physical birthday images isolated and promote another
+   bounded batch only after its own 5174 and rollback evidence. The 37
    master idols and `101ken` NPC remain distinct identity scopes.
 3. Map all 260 RAW USM files to master-data consumers.
 4. Continue promoting verified domains one reversible batch at a time, with

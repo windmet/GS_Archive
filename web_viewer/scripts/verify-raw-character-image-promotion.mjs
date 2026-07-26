@@ -584,6 +584,17 @@ try {
   await assert.rejects(
     publishRawCharacterImageBatch({
       workspaceRoot,
+      candidateDirectories: Array(6).fill(batchCandidateDirectories[0]),
+      registryFile,
+      assetsRoot,
+      backupDirectory: path.join(workspaceRoot, '.analysis', 'batch-too-large'),
+      confirmKey: 'birthday_visual:too-large',
+    }),
+    /requires 2-5 candidate directories/u,
+  )
+  await assert.rejects(
+    publishRawCharacterImageBatch({
+      workspaceRoot,
       candidateDirectories: batchCandidateDirectories,
       registryFile,
       assetsRoot,
@@ -805,6 +816,36 @@ const committedBatchEvidence = {
   },
 }
 for (const [idolCode, expected] of Object.entries(committedBatchEvidence)) {
+  const entry = sourceRegistry.entries.find(candidate =>
+    candidate.kind === 'birthday_visual' && candidate.idol_code === idolCode,
+  )
+  assert.ok(entry)
+  assert.equal(entry.unity_object.path_id, expected.pathId)
+  assert.equal(entry.output.sha256, expected.sha256)
+}
+const committedFiveItemEvidence = {
+  '006tsu': {
+    pathId: '-8280902255413043889',
+    sha256: '7983ae264144a90811eba916d30073fa098bf5e213decc43ccfd9b984b3a48e7',
+  },
+  '007kei': {
+    pathId: '-126247317626979540',
+    sha256: '090dd824aabb6ec94a59c16dba272553ba205787927cf7f96f1a950cff4aafb2',
+  },
+  '008rei': {
+    pathId: '-5985898852289501109',
+    sha256: '6cdfe6fd2a4ffe6a61a6af4a0c4dbc187bc23f3130334b509685cab5847e9cfb',
+  },
+  '009kyj': {
+    pathId: '-768001593005162926',
+    sha256: 'aefd35e8fb33739dfb0b6f704254c3d6b44d4b9f4db7695fa5db56b60d2123c3',
+  },
+  '010pie': {
+    pathId: '-6635513665076385639',
+    sha256: '8a32d2c784f706acfb04d30cd1888e994a8fad6538ef259890f1537742363dac',
+  },
+}
+for (const [idolCode, expected] of Object.entries(committedFiveItemEvidence)) {
   const entry = sourceRegistry.entries.find(candidate =>
     candidate.kind === 'birthday_visual' && candidate.idol_code === idolCode,
   )

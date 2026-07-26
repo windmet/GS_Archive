@@ -442,6 +442,39 @@ affect DOM or asset validation. Final ignored rollback evidence:
 
 `web_viewer/.analysis/raw-migration/character-image-candidate/birthday_visual/batch-003hok-004ter-005kao-backup-20260727-final/`
 
+### Five-image bounded birthday batch
+
+The next batch promotes `006tsu`, `007kei`, `008rei`, `009kyj`, and `010pie`.
+The batch API now enforces a hard maximum of five candidates; a six-item call
+is rejected before candidate assessment. This makes the repository's gradual
+migration rule executable rather than relying only on operator convention.
+
+| idol | RAW SHA-256 | PathID | output | PNG SHA-256 | master rows |
+| --- | --- | --- | --- | --- | ---: |
+| `006tsu` | `fb67d1f730664d03ca41843a4db7248e14a36f4ef86e4e64e8f6282b29d8d9a5` | `-8280902255413043889` | `1088×874`, 476,818 bytes | `7983ae264144a90811eba916d30073fa098bf5e213decc43ccfd9b984b3a48e7` | 3 |
+| `007kei` | `b98f7cbe8cb1423a3e07b4762b31642d7c6499a5fffdb3b7e36b7401b71be7e3` | `-126247317626979540` | `1107×838`, 358,940 bytes | `090dd824aabb6ec94a59c16dba272553ba205787927cf7f96f1a950cff4aafb2` | 4 |
+| `008rei` | `cf7162fc5e63fa2aa1eb894d2fa3f54cd4b051398ffd7689c84c14645885d21c` | `-5985898852289501109` | `746×881`, 283,524 bytes | `6cdfe6fd2a4ffe6a61a6af4a0c4dbc187bc23f3130334b509685cab5847e9cfb` | 3 |
+| `009kyj` | `87dbd965429508c48b5ef7aa92b788238b4a11262f12e0b43d45b884205c390d` | `-768001593005162926` | `860×856`, 385,006 bytes | `aefd35e8fb33739dfb0b6f704254c3d6b44d4b9f4db7695fa5db56b60d2123c3` | 4 |
+| `010pie` | `8be74f2cf8f1a4d0c80e77039e76ec9d142b66f155174b69827a7deb7efbb667` | `-6635513665076385639` | `843×898`, 388,437 bytes | `8a32d2c784f706acfb04d30cd1888e994a8fad6538ef259890f1537742363dac` | 3 |
+
+All five ignored candidate routes loaded first. The real batch publish started
+from the seven-mapping/six-URL registry SHA-256
+`0e6c6c738479ff496c69336b1f6accc21f78378062d02ebf5bd2301b8bfb4740`.
+All five stable routes then loaded while the earlier `003hok` asset remained
+available. Explicit whole-batch rollback removed all five PNGs, restored the
+exact baseline hash, returned all five routes to fallback, and preserved every
+previous promotion. Final republish leaves twelve idol mappings backed by
+eleven physical URLs; registry SHA-256 is
+`061f00fd8b72109f7a263fc1e3ab71a82435fe79dd153bfe60e676044cf78f79`.
+
+Final DOM checks covered every route. Visual checks covered the widest output
+(`007kei`, 1107 pixels) and narrowest (`008rei`, 746 pixels); both fit the
+existing panel. The browser control surface repeated its unrelated remote
+Statsig timeout, while all local DOM and 5174 resource checks completed.
+Final ignored rollback evidence:
+
+`web_viewer/.analysis/raw-migration/character-image-candidate/birthday_visual/batch-006tsu-007kei-008rei-009kyj-010pie-backup-20260727-final/`
+
 The ignored report records each contributing bundle's path, size, and SHA-256
 from the established 13,000-file source manifest:
 
@@ -877,7 +910,7 @@ because this story has no translation overlay.
 1. Extend the proven single-story gate to multi-part aggregate collections,
    then promote another small representative batch rather than all 3,398 at
    once.
-2. Keep the other 43 physical birthday visuals isolated; they cover 42
+2. Keep the other 38 physical birthday visuals isolated; they cover 37
    remaining master idols plus `101ken`. Promote another small sample only
    after its own 5174 and rollback evidence, and keep the NPC on a separate
    identity gate.
@@ -950,6 +983,13 @@ npm run character:promotion-rollback-batch -- `
   --assets-root=public/assets `
   --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-003hok-004ter-005kao-backup-20260727-final `
   --confirm=birthday_visual:003hok+004ter+005kao
+
+npm run character:promotion-publish-batch -- `
+  --candidate-dirs=.analysis/raw-migration/character-image-candidate/birthday_visual/006tsu,.analysis/raw-migration/character-image-candidate/birthday_visual/007kei,.analysis/raw-migration/character-image-candidate/birthday_visual/008rei,.analysis/raw-migration/character-image-candidate/birthday_visual/009kyj,.analysis/raw-migration/character-image-candidate/birthday_visual/010pie `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-006tsu-007kei-008rei-009kyj-010pie-backup-20260727-final `
+  --confirm=birthday_visual:006tsu+007kei+008rei+009kyj+010pie
 
 npm run character:promotion-rollback -- `
   --registry=public/data/assets/raw_character_image_promotions.json `
