@@ -20,7 +20,7 @@ def sha256_file(path: Path) -> str:
 
 def inspect_stream(vgmstream: Path, source: Path, selection: int) -> dict[str, Any] | None:
     result = subprocess.run(
-        [str(vgmstream), "-I", "-s", str(selection), str(source)],
+        [str(vgmstream), "-m", "-I", "-s", str(selection), str(source)],
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -147,9 +147,14 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--raw-root", type=Path, required=True)
     parser.add_argument("--kind", choices=("song", "bgm", "ambient", "se"), required=True)
-    parser.add_argument("--container", required=True, help="ACB or AWB filename below RAW/audio")
+    parser.add_argument("--container", help="ACB or AWB filename below RAW/audio")
     parser.add_argument("--cue", required=True)
     parser.add_argument("--selection", type=int)
+    parser.add_argument(
+        "--cue-index",
+        type=Path,
+        help="Aggregated cue_index.json; resolves a unique cue when container is omitted",
+    )
     parser.add_argument("--evidence", action="append", default=[])
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--vgmstream", type=Path, required=True)
@@ -161,7 +166,36 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     raw_root = args.raw_root.resolve()
-    source = raw_root / "audio" / args.container
+    resolution = None
+    container = args.container
+    selection_arg = args.selection
+    if not container:
+        if not args.cue_index:
+            raise ValueError("--container or --cue-index is required")
+        cue_index_path = args.cue_index.resolve()
+        index = json.loads(cue_index_path.read_text(encoding="utf-8"))
+        entries = (index.get("cues") or {}).get(args.cue) or []
+        if not entries:
+            raise RuntimeError(f"Cue {args.cue!r} is absent from {cue_index_path}")
+        if len(entries) != 1:
+            choices = [
+                f"{entry.get('source')}#{entry.get('selection')}"
+                for entry in entries
+            ]
+            raise RuntimeError(
+                f"Cue {args.cue!r} is ambiguous in the cue index: {choices!r}; "
+                "pass --container and --selection explicitly"
+            )
+        selected = entries[0]
+        container = Path(str(selected["source"])).name
+        selection_arg = int(selected["selection"])
+        resolution = {
+            "cue_index": str(cue_index_path),
+            "entry_count": 1,
+            "bank": selected.get("bank"),
+            "source": selected.get("source"),
+        }
+    source = raw_root / "audio" / str(container)
     output_root = args.output_root.resolve()
     vgmstream = args.vgmstream.resolve()
     ffmpeg = args.ffmpeg.resolve()
@@ -174,7 +208,7 @@ def main() -> None:
         vgmstream,
         source,
         args.cue,
-        args.selection,
+        selection_arg,
     )
     candidate_dir = output_root / args.kind / args.cue
     destination = candidate_dir / f"{args.cue}.m4a"
@@ -193,6 +227,7 @@ def main() -> None:
             "metadata": metadata,
         },
         "evidence": args.evidence,
+        "resolution": resolution,
         "output": {
             "path": str(destination),
             "size": destination.stat().st_size,

@@ -179,10 +179,39 @@ The first global audit found:
 - compiled stories reference 435 unique SE cues, which require a real
   cue-to-multi-bank membership index rather than filename guessing.
 
-The 92 master-data BGM records include 52 switch/seasonal aliases without a
-same-stem physical container. Those are not missing audio conclusions: they
-must be resolved from cue metadata or switch relations in the next inventory
-pass.
+The 92 master-data BGM records include 53 selector-level switch/seasonal names
+without an exact waveform cue match. Those are not missing audio conclusions:
+they must be resolved from cue metadata or switch relations in the next
+inventory pass.
+
+### Full cue index and second SE batch
+
+The resumable index now covers all 4,055 logical ACB banks:
+
+- 33,651 streams;
+- 33,754 unique cue aliases;
+- 435/435 story SE cues classified;
+- 433 cues with decodable audio;
+- two `se_commu_action.acb` volume controls with no waveform;
+- 13 same-name ambiguities.
+
+Decoded WAV hashing proves twelve ordinary/telephone duplicate groups are
+byte-identical. `waribashi` is the only distinct same-name group: its two RAW
+streams are 0.529 and 0.505 seconds, so it must remain a multi-waveform cue.
+
+The second candidate batch was resolved automatically from `cue_index.json`:
+
+- `flash_in` -> `se_commu_2022.acb`, selection 62;
+- `phone_rusuden_start` -> `se_telephone.acb`, selection 12;
+- `2_4_003_02_09_c1900_t` -> story-specific ACB, selection 1.
+
+All three decoded in their actual 5174 story steps. The 22.302-second
+story-specific cue entered the SE cache, registered as a one-shot source, and
+advanced beyond two seconds after AudioContext unlock.
+
+The full audit and remaining-domain matrix are maintained in:
+
+`notes/03_audit/RAW_MASTERDATA_FULL_AUDIT_20260726.md`
 
 ## Reproduction
 
@@ -218,6 +247,13 @@ python ..\data_pipeline\audit_raw_audio_coverage.py `
   --music-catalog public\data\masterdata\music_catalog.json `
   --compiled-root public\data\compiled `
   --output .analysis\raw-migration\audio\audit.json
+
+python ..\data_pipeline\index_raw_audio_cues.py `
+  --raw-root ..\RAW `
+  --compiled-root public\data\compiled `
+  --output-root .analysis\raw-migration\audio\cue-index `
+  --vgmstream "E:\Program Files\vgmstream-win64\vgmstream-cli.exe" `
+  --workers 12
 ```
 
 Candidate outputs remain under ignored `.analysis/`; they are not production

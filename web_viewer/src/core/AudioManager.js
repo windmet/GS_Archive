@@ -8,6 +8,12 @@
 import { getSeUrl, getAmbientUrl, getBgmUrl } from '../utils/AssetResolver.js'
 import { StoryAudioSession } from './story-runtime/StoryAudioSession.js'
 
+export const NON_WAVEFORM_SE_CUES = Object.freeze([
+  '00_action_volume_default_sebgm',
+  '00_action_volume_down_sebgm',
+])
+const NON_WAVEFORM_SE_CUE_SET = new Set(NON_WAVEFORM_SE_CUES)
+
 export class AudioManager {
   constructor({ audioSession = null, setTimer = setTimeout, clearTimer = clearTimeout } = {}) {
     this._audioSession = audioSession || new StoryAudioSession({
@@ -34,6 +40,7 @@ export class AudioManager {
     this._currentAmbientCue = null
     this._currentAmbientVolume = 0.4
     this._seBufferCache = new Map()
+    this._nonWaveformControlCues = new Set()
     this._cleanupTimers = new Set()
     this._bgmGeneration = 0
     this._ambientGeneration = 0
@@ -79,6 +86,7 @@ export class AudioManager {
   /** Decode a delayed cue early so its authored timestamp stays precise. */
   preloadSE(cueName) {
     if (!cueName || this._audioSession.disabled) return Promise.resolve(null)
+    if (NON_WAVEFORM_SE_CUE_SET.has(cueName)) return Promise.resolve(null)
     this.ensureContext()
     return this._loadSE(cueName).catch(() => null)
   }
@@ -86,6 +94,10 @@ export class AudioManager {
   /** Play a one-shot SE. Multiple SE can overlap. */
   async playSE(cueName) {
     if (!cueName || this._audioSession.disabled) return
+    if (NON_WAVEFORM_SE_CUE_SET.has(cueName)) {
+      this._nonWaveformControlCues.add(cueName)
+      return
+    }
     this.ensureContext()
     try {
       const audioBuf = await this._loadSE(cueName)
@@ -306,6 +318,7 @@ export class AudioManager {
       has_ambient_source: Boolean(this._ambientSource),
       cleanup_timers: this._cleanupTimers.size,
       se_cache_entries: this._seBufferCache.size,
+      non_waveform_control_cues: [...this._nonWaveformControlCues].sort(),
       disabled: this._audioSession.disabled,
     })
   }
@@ -334,6 +347,7 @@ export class AudioManager {
     this._bgmRelease = null
     this._ambientRelease = null
     this._seBufferCache.clear()
+    this._nonWaveformControlCues.clear()
     this._ctx = null
     if (this._ownsAudioSession) this._audioSession.dispose().catch(() => {})
   }

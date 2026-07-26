@@ -157,6 +157,20 @@ try {
     clearTimer: timer => timers.clear(timer),
   })
 
+  let controlFetchCalls = 0
+  globalThis.fetch = async () => {
+    controlFetchCalls++
+    return { ok: true, arrayBuffer: async () => new ArrayBuffer(8) }
+  }
+  await audioManager.preloadSE('00_action_volume_down_sebgm')
+  await audioManager.playSE('00_action_volume_down_sebgm')
+  await audioManager.playSE('00_action_volume_default_sebgm')
+  assert.equal(controlFetchCalls, 0, 'non-waveform ACB action cues must not request audio files')
+  assert.deepEqual(audioManager.inspect().non_waveform_control_cues, [
+    '00_action_volume_default_sebgm',
+    '00_action_volume_down_sebgm',
+  ])
+
   for (let index = 0; index < 100; index++) {
     await audioManager.playBgm(`bgm-${index % 3}`, 0.01)
     await audioManager.playAmbient(`ambient-${index % 4}`, 0.01, (index % 10) / 10)

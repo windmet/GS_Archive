@@ -12,6 +12,8 @@ Latest Story Runtime post-merge handoff: `notes/04_refactor/STORY_POST_MERGE_HAN
 
 Latest RAW + master-data migration log: `notes/05_exploration/RAW_MASTERDATA_MIGRATION_20260726.md`
 
+Full RAW + master-data resource audit: `notes/03_audit/RAW_MASTERDATA_FULL_AUDIT_20260726.md`
+
 The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_88969A1_RELEASE_GUIDE_20260723.md` for historical evidence.
 
 ## Layout
@@ -39,6 +41,7 @@ The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_889
   - `WEBP_R2_DEPLOYMENT_LESSONS.md`
 - `03_audit/`
   - `1_4_001_01_ICON_SILHOUETTE_BG_AUDIT_20260708.md`
+  - `RAW_MASTERDATA_FULL_AUDIT_20260726.md`
   - `SPINE_COORDINATE_ANIMATION_AUDIT.md`
   - `SPLIT_AUDIT_REPORT.md`
   - `TEXT_ASSET_AUDIT.md`
@@ -70,6 +73,7 @@ If a new note is lip or mouth related, put it in `01_lipsync/` first. If it is u
 - `03_audit/WORK_STORY_MASTERDATA_AUDIT_20260715.md` - work scene lines and short stories, category relations, compiled coverage, and page guidance.
 - `03_audit/IDOL_EPISODE_MOBILE_MASTERDATA_AUDIT_20260716.md` - idol episode hierarchy, personal/unit Mobile entities, unlock-condition reversal, random Talk metadata, local gaps, and page guidance.
 - `03_audit/MAIN_PROLOGUE_EPISODE_BOUNDARY_AUDIT_20260715.md` - raw-vs-compiled audit for `1_4_001_00`, episode range isolation, repeated phone-call diagnosis, and voice-prefix correction.
+- `03_audit/RAW_MASTERDATA_FULL_AUDIT_20260726.md` - full RAW integrity, master-data authority boundary, story/card/background/audio coverage, browser gates, unresolved domains, and promotion contract.
 - `02_debug/SPINE_EYE_BLINK_ATTACHMENT_FIX_20260715.md` - missing-eye root cause, paired `eyeclosed` detection, interrupted-transition recovery, and regression command.
 - `04_refactor/MASTERDATA_UI_RECONSTRUCTION_GUIDANCE_20260710.md` - staged plan for masterdata-backed routing, archive UI reconstruction, interaction pages, and data-quality gates.
 - `04_refactor/SEKAI_VIEWER_DIRECTION_GUIDANCE_20260713.md` - selected方案 A, Sekai Viewer comparison, licensing boundary, and archive-first implementation order.
