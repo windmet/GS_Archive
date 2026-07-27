@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import io
 import json
+import sys
 import zipfile
 from pathlib import Path
 
@@ -13,21 +14,23 @@ import UnityPy
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SIDEM_ROOT = Path(r"E:\BaiduNetdiskDownload\SideM")
-XAPK_ROOT = SIDEM_ROOT / "サイスタ - 副本"
-OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi" / "stage-effects"
+DATA_PIPELINE_ROOT = PROJECT_ROOT.parent / "data_pipeline"
+sys.path.insert(0, str(DATA_PIPELINE_ROOT))
+
+from archive_paths import add_sources_config_argument, load_archive_sources
 
 
-def find_xapk(explicit: str | None) -> Path:
-    if explicit:
-        path = Path(explicit)
-        if path.is_file():
-            return path
-        raise FileNotFoundError(f"XAPK not found: {path}")
-    candidates = sorted(XAPK_ROOT.glob("*.xapk"), key=lambda path: path.stat().st_mtime)
-    if not candidates:
-        raise FileNotFoundError(f"No XAPK found under {XAPK_ROOT}")
-    return candidates[-1]
+DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi" / "stage-effects"
+
+
+def find_xapk(explicit: Path | None, configured: Path | None) -> Path:
+    path = (explicit or configured)
+    if path is None:
+        raise ValueError("xapk_file or --xapk is required for stage effects")
+    resolved = path.resolve()
+    if not resolved.is_file():
+        raise FileNotFoundError(f"XAPK not found: {resolved}")
+    return resolved
 
 
 def read_unity_data(xapk: Path) -> bytes:
@@ -55,12 +58,16 @@ def is_stage_effect_texture(name: str) -> bool:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--xapk")
+    add_sources_config_argument(parser)
+    parser.add_argument("--xapk", type=Path)
+    parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
     args = parser.parse_args()
 
-    xapk = find_xapk(args.xapk)
+    sources = load_archive_sources(args.sources_config)
+    xapk = find_xapk(args.xapk, sources.xapk_file)
+    output_root = args.output_root.resolve()
     environment = UnityPy.load(read_unity_data(xapk))
-    OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
+    output_root.mkdir(parents=True, exist_ok=True)
     assets: dict[str, dict] = {}
     for obj in environment.objects:
         if obj.type.name != "Texture2D":
@@ -70,7 +77,7 @@ def main() -> None:
             continue
         image = texture.image.convert("RGBA")
         filename = f"{texture.m_Name}.png"
-        target = OUTPUT_ROOT / filename
+        target = output_root / filename
         temporary = target.with_name(f"{target.stem}.tmp{target.suffix}")
         temporary.unlink(missing_ok=True)
         image.save(temporary, format="PNG", optimize=True)
@@ -88,7 +95,7 @@ def main() -> None:
         "source": xapk.name,
         "assets": dict(sorted(assets.items())),
     }
-    index_target = OUTPUT_ROOT / "index.json"
+    index_target = output_root / "index.json"
     index_target.write_text(
         json.dumps(index, ensure_ascii=False, separators=(",", ":")),
         encoding="utf-8",

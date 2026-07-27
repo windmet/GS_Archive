@@ -43,11 +43,13 @@ def main() -> None:
         ffmpeg_path = root / "tools" / "ffmpeg.exe"
         ffprobe_path = root / "tools" / "ffprobe.exe"
         wannacri_root = root / "tools" / "wannacri-runtime"
+        xapk_path = root / "external" / "fixture.xapk"
         write(source_path, source_bytes)
         write(decoded_path, decoded_bytes)
         for tool_path in (vgmstream_path, ffmpeg_path, ffprobe_path):
             write(tool_path, b"fixture executable")
         write(wannacri_root / "wannacri" / "__init__.py", b"fixture package")
+        write(xapk_path, b"fixture xapk")
 
         sha = lambda value: hashlib.sha256(value).hexdigest()
         config_path = root / "archive_sources.json"
@@ -70,6 +72,7 @@ def main() -> None:
                     "ffmpeg_file": str(ffmpeg_path.relative_to(root)),
                     "ffprobe_file": str(ffprobe_path.relative_to(root)),
                     "wannacri_root": str(wannacri_root.relative_to(root)),
+                    "xapk_file": str(xapk_path.relative_to(root)),
                 }
             )
             + "\n",
@@ -84,6 +87,7 @@ def main() -> None:
         assert sources.tool_file("ffmpeg") == ffmpeg_path.resolve()
         assert sources.tool_file("ffprobe") == ffprobe_path.resolve()
         assert sources.wannacri_root == wannacri_root.resolve()
+        assert sources.xapk_file == xapk_path.resolve()
         assert sources.published_path("data", "masterdata", "card_index.json") == (
             root / "publish" / "data" / "masterdata" / "card_index.json"
         ).resolve()
