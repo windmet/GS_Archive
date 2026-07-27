@@ -1789,14 +1789,50 @@ and the lyric `今 始まるストーリー SideM` rendered. The choreography in
 and `lipsync/drvalv.json` returned HTTP 200. There was no Vite error overlay,
 and no stable artifact or URL changed.
 
-This does not yet remove every legacy CSV read. The following specialized
+This does not yet remove every legacy CSV read. Commit `f73faa7` migrated the
+Backmonitor consumer as recorded in section 6.13. The following specialized
 builders still have independent choreography-file inputs and are the next
 bounded migration work:
 
-- `prepare-live-chibi-backmonitor.py`;
 - `prepare-live-chibi-image-layers.py`;
 - `prepare-live-chibi-object-layers.py`;
 - `prepare-live-chibi-stage-backgrounds.py`.
+
+## 6.13 RAW choreography source / Backmonitor consumer
+
+Commit `f73faa7` changes only
+`scripts/prepare-live-chibi-backmonitor.py`: its default semantic input now
+uses the already-audited RAW choreography TextAsset map. `--script-root`
+remains an explicit organizer-export regression override. The physical movie
+source remains `RAW/movie`; FFmpeg, FFprobe, WannaCRI, CRI key, output schema,
+stable paths, and the other three specialized choreography consumers were not
+changed.
+
+Parsing all 119 RAW TextAssets and all 119 organizer CSVs independently
+produced the same 73 movie IDs and four alpha-transition IDs, with empty
+symmetric differences for both sets. The source-wide semantic audit remained
+119/119 choreography and 60/60 live lip-sync payloads byte-identical.
+
+A bounded ignored rebuild covered one ordinary video and one dual-stream
+transition:
+
+| Candidate artifact | Bytes | SHA-256 | Stable parity |
+| --- | ---: | --- | ---: |
+| `live_backmonitor_movie_ballade_01.mp4` | 109,246 | `2ED4F36CA90AA86AAD9C80E2BB44055F753C365AB935DF02EDAD0EC33612E31F` | identical |
+| `live_backmonitor_movie_alpha_star.color.mp4` | 6,318 | `F9205D93CB107D8A734AD327657710AF85DB48C39C18564D54F7254065C08F7B` | identical |
+| `live_backmonitor_movie_alpha_star.alpha.mp4` | 6,502 | `7AF852DA8C896A64D2D6C8B2E8FCACD6CC8E041AD6B83D2A0A4E7EEF194DB1B4` | identical |
+
+The candidate movie and transition index entries were structurally identical
+to their stable entries. The stable full index was untouched and retained
+SHA-256
+`E0E386F617700EFD5C6EF6B0511ECB344596627C2B9B9E99358A4202F6131064`.
+
+Port 5174 then replayed the actual DRIVE A LIVE consumer. At the 2,500 ms
+event it reported `live_backmonitor_movie_ballade_01` ready and
+`live_backmonitor_movie_alpha_blackout` active. After the alpha transition
+ended, `transitionActive` became false while the movie remained ready. The
+index, movie, transition color, and transition alpha URLs all returned HTTP
+200; no Vite error overlay appeared. No stable file or URL changed.
 
 ## 7. Browser candidate verification
 

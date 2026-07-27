@@ -1389,9 +1389,16 @@ then verified DRIVE A LIVE with 5/5 characters, 7,817 `drvalv` lip-sync
 frames, singer changes, the 10,800 ms camera event, and the expected lyric
 while the clock advanced to 14,600 ms. Stable assets stayed unchanged.
 
-Four specialized builders still read choreography CSV files independently:
-Backmonitor, Image_layer, Object_layer, and static-stage backgrounds. They are
-not covered by the main-builder source switch and must move one at a time.
+Commit `f73faa7` subsequently moved the Backmonitor builder to the same RAW
+TextAsset mapping. RAW and organizer parsing both resolve 73 movies and four
+alpha transitions, with no ID differences. A bounded rebuild of
+`ballade_01` plus the color/alpha streams of `alpha_star` was byte-identical
+to stable, and port 5174 replayed the 2,500 ms DRIVE A LIVE Backmonitor switch
+and transition lifecycle without an error overlay.
+
+Three specialized builders still read choreography CSV files independently:
+Image_layer, Object_layer, and static-stage backgrounds. They must move one at
+a time.
 
 The stable live inventory remains correctly bounded to 549 costumes.
 `audit:live-chibi-costume-boundary` proved that the remaining 141 master
@@ -1418,9 +1425,9 @@ groups at the current stage time. Stable assets stayed unchanged.
 
 ## Next batches
 
-1. Migrate the remaining Backmonitor, Image_layer, Object_layer, and
-   static-stage helper builders to the already-proven RAW choreography
-   TextAssets, one consumer and one 5174 regression at a time.
+1. Migrate the remaining Image_layer, Object_layer, and static-stage helper
+   builders to the already-proven RAW choreography TextAssets, one consumer
+   and one 5174 regression at a time.
 2. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
 3. Continue the proven `001tom`/`002sht` event-story visual consumer in another
