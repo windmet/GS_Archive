@@ -123,22 +123,70 @@ web_viewer/public/data/masterdata/*.json
 data_pipeline/masterdata_extract.py
 ```
 
-它接受一个外部 `client_master_data` 文件，进行 `DefaultPassPhrase` XOR
-解码，并可写出：
+它接受一个外部 XOR 状态的 `client_master_data` 文件，进行
+`DefaultPassPhrase` XOR 解码。本机原始容器是：
 
 ```text
-.analysis/masterdata/client_master_data.xor_DefaultPassPhrase.pb
+E:\BaiduNetdiskDownload\SideM\サイスタ - 副本\Container\Documents\client_master_data
 ```
+
+本机已有的解码结果是：
+
+```text
+E:\Web_build\SideM_Archived\web_viewer\.analysis\masterdata\client_master_data.xor_DefaultPassPhrase.pb
+```
+
+核对结果：
+
+| 项目 | 值 |
+| --- | --- |
+| XOR 状态原始容器大小 | 3,053,002 bytes |
+| XOR 状态原始容器 SHA-256 | `D57F76040C56C5CE0E80910C76328F528D47915C63A040516B470A538CCCDC0E` |
+| decoded PB 大小 | 3,053,002 bytes |
+| decoded PB SHA-256 | `25D48A557C50AC2429F0F55E5D0B766B490B37711EECE4BAA720CF47570F0EA1` |
+| protobuf 顶层 records | 47,204 |
+| 实际出现的顶层 table IDs | 158 |
+| table ID 范围 | 1-183，范围内并非每个 ID 都存在 |
+| decoded PB Git 状态 | 由 `web_viewer/.analysis/` 规则忽略 |
+
+该 PB 可作为本机 masterdata 语义重建的 decoded authoritative input。
+`masterdata_extract.py` 的解析结果与既有审计记录一致：47,204 条顶层记录、
+158 个实际表 ID。
+
+2026-07-27 的内存解码复核确认：
+
+```text
+XOR source --DefaultPassPhrase--> decoded PB
+decoded bytes: 3,053,002
+decoded SHA-256: 25D48A557C50AC2429F0F55E5D0B766B490B37711EECE4BAA720CF47570F0EA1
+byte-for-byte equal to the existing .analysis PB: true
+```
+
+不要直接把该 decoded PB 传给当前 `masterdata_extract.py` 命令行。该脚本
+目前会对 `input` 无条件执行一次 XOR；decoded PB 是它的输出形态，再输入
+会被二次 XOR。完整重跑 extractor 需要满足其一：
+
+1. 找到 XOR 状态的原始 `client_master_data` 并作为现有 CLI 输入；
+2. 先为脚本增加显式 `--input-state xor|decoded` 契约和 fixture，再允许
+   decoded PB 直接进入解析阶段。
+
+当前 `public/data/masterdata` 的 22 个 JSON 中：
+
+- 19 个与 `.analysis/masterdata` 中的同名输出逐字节一致；
+- `music_catalog.json` 不一致，因为公开版本后来加入了 RAW/ACB 关系扩展；
+- `story_presentation_index.json` 和
+  `ssr_portraits_migration_report.json` 没有同名 `.analysis` 初始输出，它们是
+  后续站点管线产品。
 
 重要边界：
 
-- 当前仓库与当前工作树内没有找到原始 `client_master_data`；
-- 也没有找到已解码的 `client_master_data*.pb`；
-- 不能在新配置里凭空认定
-  `sources/masterdata/client_master_data.pb` 已经存在；
-- 在实现统一源配置前，要先由只读检查找到用户实际保存的原始文件，再记录
-  路径和 SHA-256；
-- Git 中的 masterdata JSON 可以做回归基线，但不能反向伪装成原 protobuf。
+- XOR 前原始容器位于仓库外的百度网盘资料目录；
+- decoded PB 不是 RAW 物理资源，也不应放入 `RAW/`；
+- Git 中的 masterdata JSON 是站点投影，不能反向伪装成 protobuf；
+- 不需要现在移动 decoded PB。它已处于安全的 ignored 路径；
+- 原始容器也不应直接从资料目录移走。若未来固定到
+  `sources/masterdata/`，采用复制、SHA-256 复核、切换配置和回归验证，
+  完成前保留原位置副本。
 
 ### 1.3 已完成的覆盖与 promotion
 
@@ -231,7 +279,7 @@ publish/manifest.json
 | Source Gate 已通过 | 正确 | GitHub run `30232788385` 对 `0ba566f` 成功 |
 | 已有完整统一 publish manifest | 不正确 | 只有域级 registry/candidate manifest；无统一 publish manifest |
 | 已有统一 archive root 配置 | 不正确 | 多数 RAW 工具用相对路径/CLI；部分 chibi/manifest 脚本仍硬编码 `E:\BaiduNetdiskDownload\...` |
-| 原始 `client_master_data.pb` 已在建议位置 | 本地不成立 | 仓库中没有原始或 decoded PB；必须先定位真实源文件 |
+| 可用 masterdata 链 | 已完整核对 | 外部 XOR 容器 `D57F76...CDC0E` 可确定性解码为 `.analysis` PB `25D48A...F0EA1`，逐字节一致 |
 | ACB/AWB 已是整个站点唯一音频上游 | 目标合理，现状不能这样概括 | RAW 音频审计很强，但现有公开音频仍可能来自旧整理/转码链；需逐域收束 |
 | batch publisher 已存在 | 正确 | 已有 publish/rollback batch 和 fixture；下一批需补真正的三项事件视觉原子证据 |
 | `noAudio=1` 没有副作用 | 不正确 | 当前仍可触发 null AudioContext `decodeAudioData` 错误，是明确待修缺陷 |
@@ -248,7 +296,7 @@ publish manifest、统一 audio catalog”当作未来实现，不得在交接�
 | 等级 | 权限和用途 |
 | --- | --- |
 | `raw-authoritative` | `RAW/asset`、`RAW/audio`、`RAW/movie` 的原始 payload，以及三份根目录 archive metadata |
-| `master-authoritative` | 用户保存的原始 `client_master_data`；在未定位原文件前，不能宣称本级已纳入可复现配置 |
+| `master-authoritative` | 外部 XOR 容器及其逐字节验证一致的 decoded PB；两者哈希均已记录 |
 | `master-projection` | `public/data/masterdata/*.json`；用于站点和回归，保留 `_source` 证据 |
 | `legacy-reference` | 发布者整理的图片包、歌曲包、转码音频、旧 scenariodata；只做 parity、浏览器格式参考或缺口证明 |
 | `derived` | PNG、WAV、M4A、JSON、WebP、compiled scenario、candidate report |
@@ -326,7 +374,10 @@ data_pipeline/archive_paths.py
   "schema_version": 1,
   "archive_root": "E:/Web_build/SideM_Archived",
   "raw_root": "RAW",
-  "masterdata_file": null,
+  "masterdata_source_file": "E:/BaiduNetdiskDownload/SideM/サイスタ - 副本/Container/Documents/client_master_data",
+  "masterdata_source_sha256": "d57f76040c56c5ce0e80910c76328f528d47915c63a040516b470a538cccdc0e",
+  "masterdata_decoded_file": "web_viewer/.analysis/masterdata/client_master_data.xor_DefaultPassPhrase.pb",
+  "masterdata_decoded_sha256": "25d48a557c50ac2429f0f55e5d0b766b490b37711eece4baa720cf47570f0ea1",
   "legacy_root": null,
   "workspace_root": "web_viewer/.analysis/workspace",
   "derived_root": "web_viewer/.analysis/derived",
@@ -334,8 +385,12 @@ data_pipeline/archive_paths.py
 }
 ```
 
-`masterdata_file` 和 `legacy_root` 只有在找到真实路径后才填写。不要因为字段
-必填而复制或移动大文件。
+以上是本机 local 配置，不应原样写入提交的 example。example 应使用
+占位相对路径，local 文件才记录日文绝对路径。
+`masterdata_decoded_file` 指向现有 decoded PB，`masterdata_source_file`
+指向已核对的 XOR 状态原始容器。`legacy_root` 只有在找到真实整理包路径后
+才填写。路径解析层必须根据字段区分输入状态，不能把 decoded 文件交给当前
+无条件 XOR 的 extractor。不要因为目录设计而立即移动大文件。
 
 迁移脚本时按小批进行：
 
@@ -350,7 +405,11 @@ data_pipeline/archive_paths.py
 PR A 必须新增或固定：
 
 - versioned raw manifest schema；
-- masterdata 原文件 SHA-256（定位后）；
+- XOR source 与 decoded masterdata 的 SHA-256，以及各自状态字段
+  `xor-source-local` 和
+  `decoded-authoritative-local`；
+- 两者的确定性解码关系和 byte-for-byte equality；
+- masterdata 输入状态 fixture，证明 decoded 文件不会被二次 XOR；
 - manifest 内容的确定性整体哈希；
 - 三域及根 metadata 的数量/容量；
 - `.wav/.png/.json` 等派生文件进入 RAW 的违规报告；
@@ -695,13 +754,15 @@ git rev-parse origin/<当前分支>
 默认从 PR A 的只读盘点开始，不从 `003hok` 开始发布：
 
 1. 核对 `0ba566f`、PR #2、worktree、5174；
-2. 搜索原始 `client_master_data` 的实际保存位置，只读记录 hash；
-3. 列出所有硬编码个人绝对路径；
-4. 设计 `archive_sources` schema 和 fixture；
-5. 先让 `raw_source_manifest.py` 接入配置且保持原 CLI 可用；
-6. 证明新旧 manifest 对 13,000 文件、总字节和分区计数完全一致；
-7. 独立提交并推送；
-8. 再决定进入 multi-part gate，还是先完成其余 RAW 审计器的路径收束。
+2. 复核 XOR source 与 decoded PB 的两个 SHA-256 和逐字节解码一致性；
+3. 复核 decoded PB 的 47,204 records 和 158 table IDs；
+4. 列出所有硬编码个人绝对路径；
+5. 设计区分 `masterdata_source_file` 与 `masterdata_decoded_file` 的 schema；
+6. 增加 input-state fixture，防止 decoded PB 被二次 XOR；
+7. 先让 `raw_source_manifest.py` 接入配置且保持原 CLI 可用；
+8. 证明新旧 manifest 对 13,000 文件、总字节和分区计数完全一致；
+9. 独立提交并推送；
+10. 再决定进入 multi-part gate，还是先完成其余 RAW 审计器的路径收束。
 
 只有用户明确要求跳过供应链收束、继续视觉内容批次时，才直接转到
 `event_story_visual:003hok`。

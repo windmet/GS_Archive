@@ -62,6 +62,41 @@ RAW WAV count at zero.
 
 ## 2. Master-data products in scope
 
+The XOR-state source container is:
+
+`E:\BaiduNetdiskDownload\SideM\サイスタ - 副本\Container\Documents\client_master_data`
+
+The locally available decoded protobuf authority is:
+
+`web_viewer/.analysis/masterdata/client_master_data.xor_DefaultPassPhrase.pb`
+
+It is ignored through the `web_viewer/.analysis/` rule and must not be moved
+into RAW or committed to Git. The 2026-07-27 recheck established:
+
+| Evidence | Value |
+| --- | --- |
+| XOR source bytes | 3,053,002 |
+| XOR source SHA-256 | `d57f76040c56c5ce0e80910c76328f528d47915c63a040516b470a538cccdc0e` |
+| decoded bytes | 3,053,002 |
+| decoded SHA-256 | `25d48a557c50ac2429f0f55e5d0b766b490b37711eece4baa720cf47570f0ea1` |
+| protobuf top-level records | 47,204 |
+| present top-level table IDs | 158 |
+| table-ID range | 1-183, with gaps |
+
+An in-memory `DefaultPassPhrase` decode of the XOR source produced 3,053,002
+bytes with the decoded hash above and was byte-for-byte equal to the existing
+`.analysis` PB. This closes the local masterdata provenance chain. The external
+source should remain in place; a future canonical local source layout should
+copy it, verify the source hash, switch configuration, and retain the original
+until all regressions pass.
+
+The current `masterdata_extract.py` CLI always XOR-decodes its positional
+input. Therefore this decoded PB must not be passed back to that CLI without
+first adding an explicit decoded-input mode; doing so would XOR it a second
+time. It is currently suitable for direct protobuf parsing and downstream
+audits. A full extractor rerun still requires either the XOR-state source
+container or a separately tested `xor|decoded` input-state contract.
+
 The current site has normalized master-data products for:
 
 - backgrounds;
@@ -85,6 +120,15 @@ The current site has normalized master-data products for:
 These JSON files are projections, not physical-resource authorities. Their
 `_source` fields preserve table/field/offset evidence and should remain in
 generated data.
+
+Of the 22 current public masterdata JSON products, 19 are byte-identical to
+their same-name files under `.analysis/masterdata`. The exceptions have an
+explicit pipeline reason: the public `music_catalog.json` was extended after
+the base masterdata extraction with RAW/ACB relations, while
+`story_presentation_index.json` and `ssr_portraits_migration_report.json` are
+later site-pipeline products without same-name base extractor outputs. This
+does not weaken the PB authority boundary; it prevents treating every public
+JSON as a byte-for-byte direct extractor artifact.
 
 ## 3. Domain status matrix
 
