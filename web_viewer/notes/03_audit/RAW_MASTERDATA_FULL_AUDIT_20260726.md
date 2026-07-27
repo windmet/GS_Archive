@@ -1636,9 +1636,11 @@ byte-identical, with no missing stable target.
 
 This is a supply-chain replacement, not a costume expansion. Masterdata has
 690 main `model_resource_id` values while the stable live catalog intentionally
-contains 549. The other 141 main costumes require a separate consumer/content
-promotion. RAW also has 38 additional NPC/guest costume bundles outside the
-690 master set.
+contains the 549 bundles that expose live-chibi `cos` payloads. Section 6.11
+proves that the other 141 are communication-only `comu` Spine bundles already
+published under `public/assets/spines`; they must not enter the live inventory.
+RAW also has 38 additional NPC/guest costume bundles outside the 690 master
+set.
 
 The 119 `liveeffectscript` CSVs and 60 source lip-sync JSON files remain
 declared legacy semantic/derived inputs; the builder no longer hides them
@@ -1691,6 +1693,53 @@ reduced both counts to zero; turning it on restored 2 and 8 at the current
 clock. The index and representative Pinspotlight/Laserlight PNG URLs also
 returned HTTP 200. There was no framework overlay or application error; only
 the two existing Pixi Spine warnings remained. No stable artifact changed.
+
+## 6.11 Master costume consumer-boundary correction
+
+Commit `6e73eaa` adds the repeatable
+`audit:live-chibi-costume-boundary` command. It corrects the earlier working
+assumption that `690 master models - 549 live models = 141 costumes to
+expand`. The subtraction is real, but its meaning is different:
+
+- the 549-model live inventory selects bundles with `cos.atlas` and `cos`
+  Texture2D for the shared live-chibi setup skeleton;
+- all 141 models outside that inventory have no `cos.atlas` or `cos`
+  Texture2D;
+- all 141 instead contain `comu.atlas`, `comu.skel`, and `comu` Texture2D for
+  the independent communication/home Spine consumer.
+
+The 141 bundles cover all 49 idols and total 124,516,197 bytes. Their model
+suffix distribution is 35 `001_00`, 32 `002_00`, 31 `004_00`, 25 `003_00`,
+five `005_01`, four `006_00`, three `004_01`, two `108_00`, and one each of
+`001_01`, `002_01`, `107_00`, and `109_00`. Exactly 49 rows have the
+masterdata name `ベーシックウェア`; the other 92 names are blank. This is
+another reason the set cannot be treated as a normal live-stage content
+expansion.
+
+The complete ignored regression against `public/assets/spines` proved:
+
+| Check | Result |
+| --- | ---: |
+| RAW bundles with complete `comu` atlas/skeleton/texture | 141/141 |
+| stable model directories with `comu.atlas/.skel/.png` and `faces/` | 141/141 |
+| serialized `comu.atlas` object bytes identical | 141/141 |
+| serialized `comu.skel` object bytes identical | 141/141 |
+| decoded `comu` RGBA pixels identical | 141/141 |
+| decoded face textures identical | 1,655/1,655 across 141/141 models |
+| bundles with live `cos.atlas` plus `cos` Texture2D | 0/141 |
+
+The stable atlas/skeleton files intentionally match UnityPy
+`get_raw_data()` object bytes, not only the inner TextAsset payload; a
+payload-only comparison is therefore expected to be 0/141 and is not a
+regression.
+
+Port 5174 then exercised one named `ベーシックウェア` model for each body
+type: `001tom_002_00`, `006tsu_002_00`, `002sht_002_00`,
+`032nao_002_00`, and `031sak_002_00`. Each actual home consumer selected the
+requested model, rendered a non-zero Canvas without an error overlay, and
+showed the expected costume label. All 15 representative
+`comu.atlas/.skel/.png` URLs returned HTTP 200. The final 水嶋 咲 frame visibly
+rendered the full character. No stable file or manifest changed.
 
 ## 7. Browser candidate verification
 

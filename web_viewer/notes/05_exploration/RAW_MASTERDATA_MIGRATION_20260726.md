@@ -1371,9 +1371,13 @@ Port 5174 then loaded DRIVE A LIVE with 5/5 characters, completed motion
 preload, advanced the shared clock, and rendered lyrics/choreography. Stable
 assets stayed unchanged.
 
-The stable inventory remains bounded to 549 costumes. Masterdata contains 690
-main models, so 141 main costumes still require a separate content/consumer
-promotion rather than being silently added by this source migration.
+The stable live inventory remains correctly bounded to 549 costumes.
+`audit:live-chibi-costume-boundary` proved that the remaining 141 master
+models are not unpublished live costumes: all 141 have communication
+`comu.atlas/.skel` and `comu` Texture2D, while none has the live `cos` pair.
+All 141 are already complete under `public/assets/spines`. Their serialized
+atlas/skeleton objects are 141/141 byte-identical to RAW; main textures are
+141/141 pixel-identical and all 1,655 face textures are pixel-identical.
 
 ### External XAPK stage effects
 
@@ -1392,16 +1396,13 @@ groups at the current stage time. Stable assets stayed unchanged.
 
 ## Next batches
 
-1. Build a separate candidate for the 141 masterdata costumes not present in
-   the current 549-model live inventory; validate representative body types
-   before promotion.
-2. Establish provenance/reproduction contracts for the legacy choreography
+1. Establish provenance/reproduction contracts for the legacy choreography
    CSVs and 60 source lip-sync curves.
-3. Extend the proven single-story promotion gate to multi-part aggregate
+2. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
-4. Continue the proven `001tom`/`002sht` event-story visual consumer in another
+3. Continue the proven `001tom`/`002sht` event-story visual consumer in another
    bounded batch; keep the complete birthday domain unchanged.
-5. Classify the remaining 183 non-Backmonitor RAW USMs against master-data
+4. Classify the remaining 183 non-Backmonitor RAW USMs against master-data
    consumers.
-6. Continue promoting verified domains one reversible batch at a time, with
+5. Continue promoting verified domains one reversible batch at a time, with
    5174 acceptance and rollback evidence before each stable-path replacement.

@@ -368,8 +368,9 @@ Spine warning。本批未改写稳定资源或 URL。
 
 边界必须保留：
 
-- 当前 549 套是稳定兼容集合，不是 masterdata 全集；
-- masterdata 有 690 个主角色 model，另 141 套尚未加入 live 下拉框；
+- 当前 549 套是具有 `cos` payload 的 live-chibi 稳定兼容集合；
+- masterdata 的另外 141 个 model 是已发布的 `comu` 交流 Spine，不应加入
+  live 下拉框；
 - RAW 还另有 38 个 master 外的 NPC/guest costume bundle；
 - 119 份 choreography CSV 与 60 条 lip-sync 源 JSON 仍是显式 legacy
   语义/派生输入，尚未建立从 RAW/masterdata 独立再生的完整链。
@@ -404,6 +405,36 @@ ignored 候选包含十张 PNG 和一个 `index.json`，与稳定目录 11/11
 和 8 个 Laserlight（ID 1–8）；关闭“光束灯效”后两组均归零，再开启后按
 当前时刻恢复 2/8。无框架错误覆盖或应用错误，仅有两条既有 Pixi Spine
 warning。本批未改写稳定资源。
+
+### 0.13 已纠正 690/549/141 的 costume 消费域边界
+
+代码提交 `6e73eaa` 新增只读命令：
+
+```powershell
+npm run audit:live-chibi-costume-boundary
+```
+
+它证明此前“另 141 套 master costume 待扩入 live”的工作假设是错误的。
+690 与 549 的差值确为 141，但 141/141 RAW bundle 都只包含独立交流 Spine
+的 `comu.atlas`、`comu.skel`、`comu` Texture2D；0/141 包含 live-chibi
+要求的 `cos.atlas` / `cos` Texture2D。因此这 141 个 model 不得写入稳定
+live `inventory.json`。
+
+这 141 个 bundle 覆盖全部 49 位角色，总计 124,516,197 bytes。稳定
+`public/assets/spines` 已有 141/141 完整的 `comu.atlas/.skel/.png` 和
+`faces/`。全量 RAW 回归结果：
+
+- 141/141 `comu.atlas` Unity 序列化对象逐字节一致；
+- 141/141 `comu.skel` Unity 序列化对象逐字节一致；
+- 141/141 `comu` 主贴图解码像素一致；
+- 1,655/1,655 表情贴图解码像素一致。
+
+masterdata 中恰有 49 条非空名称，全部是 `ベーシックウェア`；另 92 条名称
+为空。5174 按 body type 1–5 抽查了 `001tom_002_00`、
+`006tsu_002_00`、`002sht_002_00`、`032nao_002_00`、
+`031sak_002_00`：主页均选中正确 model 和服装名、Canvas 正常、无错误覆盖，
+15 个代表性 `comu.atlas/.skel/.png` URL 全部 HTTP 200，水嶋 咲画面完整
+可见。本批没有稳定资源替换。
 
 ## 1. 当前已确认的事实
 
@@ -560,7 +591,7 @@ byte-for-byte equal to the existing .analysis PB: true
 | live 图片布景 | 101 条 CSV 事件、57 个唯一资源、24 个 RAW song bundle，已全量映射并验证 |
 | live 舞台对象 | 185 个唯一引用；181 个已定位到 77 个 RAW bundle，4 个 `tibeti` keeper 仍缺失 |
 | live 静态舞台 | 55 首稳定合成图、55 个 RAW song bundle，已全量映射并验证 |
-| live 角色核心 | 5 套 setup、当前 549 套 costume、7,135 个动作片段已直接映射 RAW；另 141 套 master 主角色服装待扩容 |
+| live 角色核心 | 5 套 setup、549 套含 `cos` payload 的 costume、7,135 个动作片段已直接映射 RAW；master 差集 141/141 是已发布 `comu` 交流 Spine，不属于 live 扩容 |
 | movie | 260 个 USM；77 个 live Backmonitor 引用已映射并验证，剩余 183 个仍为文件名级 inventory |
 | 一般 UI 图片 | 1,271 个一般 `image_*` bundle，尚无完整关系表 |
 
@@ -1116,10 +1147,9 @@ git rev-parse origin/<当前分支>
 PR A 的配置核心、RAW manifest、card/background/character 六个工具、
 RAW audio 六个工具、RAW story 三个工具、Vite/manifest JS loader，
 以及 live-chibi 音频、Backmonitor、Image_layer、Object_layer、静态舞台、
-角色核心和外部 XAPK stage-effects 构建器已经接入。下一批先对 masterdata
-存在但稳定目录尚未发布的 141 套主角色服装建立独立候选和代表性 body type
-验证；不得把内容扩展混入当前 549 套兼容集合的重建。之后再处理 legacy
-CSV/lip-sync 来源追溯，不从 `003hok` 开始发布：
+角色核心和外部 XAPK stage-effects 构建器已经接入；690/549/141 的 costume
+消费域边界也已纠正并完成全量稳定回归。下一批处理 legacy choreography
+CSV 与 60 条 lip-sync 源曲线的来源/再生契约，不从 `003hok` 开始发布：
 
 1. 核对 `0ba566f`、PR #2、worktree、5174；
 2. 复核 XOR source 与 decoded PB 的两个 SHA-256 和逐字节解码一致性；
@@ -1134,13 +1164,12 @@ CSV/lip-sync 来源追溯，不从 `003hok` 开始发布：
 
 当前仍有三个明确目标，必须继续分批：
 
-1. 141 套 master 主角色 costume：另建候选并按 body type 做消费者抽样；
-2. choreography CSV 与 60 条 lip-sync 源曲线：建立来源/再生契约；
-3. 其余 183 个非 Backmonitor USM：结合 masterdata 消费者进行分类。
+1. choreography CSV 与 60 条 lip-sync 源曲线：建立来源/再生契约；
+2. 其余 183 个非 Backmonitor USM：结合 masterdata 消费者进行分类；
+3. multi-part story promotion gate：从单剧情原子契约扩展到集合。
 
-下一批首选审计 141 套 master 主角色 costume。先建立 missing-set inventory，
-再选择覆盖 body type 的极小候选并验证 5174 消费者；不要直接把 141 套写入
-稳定 `inventory.json`，也不要与 choreography/lip-sync 追溯混在同一提交。
+下一批首选审计 choreography CSV 与 60 条 lip-sync 源曲线。先只建立
+inventory、来源身份和可再生性结论，不要顺带改写 live 编排或稳定曲线。
 
 只有用户明确要求跳过供应链收束、继续视觉内容批次时，才直接转到
 `event_story_visual:003hok`。

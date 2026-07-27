@@ -211,11 +211,22 @@ python scripts\prepare-live-chibi-assets.py `
 
 The committed stable `inventory.json` is the default `--costume-selection`;
 its 549 `modelId` rows deliberately bound this supply-chain migration to the
-existing published set. Use explicit `--raw-asset-root`,
+live-compatible `cos.atlas` / `cos` subset. Use explicit `--raw-asset-root`,
 `--effect-script-root`, `--live-lip-sync-root`, `--costume-selection`, and
-`--output-root` overrides for isolated audits. Expanding to the other
-masterdata costumes is a separate content-promotion batch, not an implicit
-side effect of rebuilding the current set.
+`--output-root` overrides for isolated audits. The other 141 master models are
+not unpublished live costumes: their RAW bundles contain the independent
+communication Spine payload `comu.atlas` / `comu.skel` / `comu`, but no
+live-chibi `cos` payload. They are already published under
+`public/assets/spines` and must not be added to the live inventory.
+
+Reproduce that consumer-boundary and stable-output regression with:
+
+```powershell
+npm run audit:live-chibi-costume-boundary
+```
+
+The ignored report is written to
+`.analysis/raw-migration/live-chibi-costume-boundary/audit.json`.
 
 The live-chibi stage-effect textures are a deliberate exception to RAW
 authority. They are embedded in the client XAPK's nested main APK
