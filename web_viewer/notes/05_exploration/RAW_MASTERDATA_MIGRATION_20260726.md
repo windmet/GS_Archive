@@ -16,6 +16,43 @@ archive contains 13,000 files: 8,639 asset bundles, 4,098 audio files, 260 movie
 files, and 3 source URL text files. Archive-to-disk verification found no
 missing, extra, or size-different members.
 
+## Source-contract first slice
+
+The first supply-chain consolidation slice is now implemented:
+
+- `data_pipeline/archive_paths.py` resolves explicit, environment, ignored
+  local, and repository-default source paths;
+- `web_viewer/config/archive_sources.example.json` is committed;
+- `archive_sources.local.json` is ignored and records this machine's verified
+  RAW, XOR masterdata, and decoded masterdata paths;
+- `raw_source_manifest.py` preserves explicit CLI overrides, refuses to write
+  inside RAW, and emits a schema-v2 summary;
+- source records now carry `raw-authoritative` or `archive-metadata` status;
+- summary evidence includes section bytes, full manifest hash, portable
+  content identity, duplicate-path detection, unexpected-file detection, and
+  masterdata hash validation;
+- `masterdata_extract.py --input-state xor|decoded` prevents decoded PB from
+  being XORed a second time;
+- `verify:archive-sources` is part of the GitHub Source Gate.
+
+The real rebuild preserved all 13,000 prior path/size/hash identities:
+
+```text
+manifest_sha256 =
+b1bcccfd89b31cf06e255ab8f65be7029ff114502b9a492e56a98cd904f60a1c
+
+content_identity_sha256 =
+911de151d6ced2259c8065047da3ea20d9f5795c2f5a09bb109174a30d256e24
+
+case-insensitive duplicates = 0
+unexpected files = 0
+RAW WAV = 0
+```
+
+The external XOR masterdata and ignored decoded PB also pass configured hash
+checks. Isolated `xor` and `decoded` CLI runs generated identical decoded PB
+and base music-catalog hashes.
+
 ## Current candidate gates
 
 ### Story sample: `1_4_001_01`

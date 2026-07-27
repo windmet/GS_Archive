@@ -54,6 +54,14 @@ def xor_decode(data: bytes, key: bytes = DEFAULT_KEY) -> bytes:
     return bytes(byte ^ key[i % len(key)] for i, byte in enumerate(data))
 
 
+def decode_masterdata_input(data: bytes, input_state: str) -> bytes:
+    if input_state == "xor":
+        return xor_decode(data)
+    if input_state == "decoded":
+        return data
+    raise ValueError("input_state must be 'xor' or 'decoded'")
+
+
 def iter_top_records(data: bytes):
     pos = 0
     end = len(data)
@@ -2790,6 +2798,15 @@ def build_card_probe(card_index: dict[str, Any], resource_id: str) -> dict[str, 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("input", type=Path)
+    parser.add_argument(
+        "--input-state",
+        choices=("xor", "decoded"),
+        default="xor",
+        help=(
+            "State of the positional input. The historical default is 'xor'; "
+            "use 'decoded' for client_master_data.xor_DefaultPassPhrase.pb."
+        ),
+    )
     parser.add_argument("--out-dir", type=Path, default=Path(".analysis/masterdata"))
     parser.add_argument("--public-out-dir", type=Path)
     parser.add_argument("--compiled-dir", type=Path)
@@ -2830,7 +2847,7 @@ def main() -> None:
     args = parser.parse_args()
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
-    decoded = xor_decode(args.input.read_bytes())
+    decoded = decode_masterdata_input(args.input.read_bytes(), args.input_state)
     decoded_path = args.out_dir / "client_master_data.xor_DefaultPassPhrase.pb"
     decoded_path.write_bytes(decoded)
 

@@ -49,6 +49,30 @@ under the ignored path:
 
 `web_viewer/.analysis/raw-migration/source/files.jsonl`
 
+The source-contract first slice upgraded this ignored inventory to summary
+schema v2 while preserving every old `(relative_path, size, SHA-256)` identity.
+The current evidence is:
+
+| Contract evidence | Value |
+| --- | --- |
+| manifest SHA-256 | `b1bcccfd89b31cf06e255ab8f65be7029ff114502b9a492e56a98cd904f60a1c` |
+| content identity SHA-256 | `911de151d6ced2259c8065047da3ea20d9f5795c2f5a09bb109174a30d256e24` |
+| case-insensitive duplicate paths | 0 |
+| derived or unsupported files inside RAW | 0 |
+| configured XOR masterdata hash match | true |
+| configured decoded masterdata hash match | true |
+
+`content_identity_sha256` excludes machine paths and mtimes and covers each
+record's relative path, section, extension, size, payload hash, and source
+status. It is the portable RAW content identity; `manifest_sha256` covers the
+full local JSONL evidence including mtimes.
+
+The committed source configuration example is
+`web_viewer/config/archive_sources.example.json`; the machine-specific
+`archive_sources.local.json` is ignored. The manifest accepts configuration
+but keeps explicit `--raw-root`, `--output`, and `--summary` overrides. Its
+writer rejects any output path inside RAW.
+
 During audio work, 268 range-enumeration WAVs and three candidate-metadata WAVs
 were detected because they were absent from the 13,000-member archive baseline.
 All 271 were moved out of `RAW/audio` into the ignored recoverable quarantine:
@@ -91,11 +115,11 @@ copy it, verify the source hash, switch configuration, and retain the original
 until all regressions pass.
 
 The current `masterdata_extract.py` CLI always XOR-decodes its positional
-input. Therefore this decoded PB must not be passed back to that CLI without
-first adding an explicit decoded-input mode; doing so would XOR it a second
-time. It is currently suitable for direct protobuf parsing and downstream
-audits. A full extractor rerun still requires either the XOR-state source
-container or a separately tested `xor|decoded` input-state contract.
+input historically. It now has a source-gated explicit
+`--input-state xor|decoded` contract while preserving `xor` as the default.
+The XOR source and decoded PB paths produced byte-identical decoded outputs
+and byte-identical base `music_catalog.json` outputs in the isolated
+input-state regression. This prevents a decoded PB from being XORed twice.
 
 The current site has normalized master-data products for:
 

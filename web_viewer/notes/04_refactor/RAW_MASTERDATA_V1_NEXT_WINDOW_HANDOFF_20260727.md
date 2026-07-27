@@ -16,7 +16,7 @@ GitHub 上，且该提交对应的 `Web Viewer Source Gate` 已于 2026-07-27
 
 但“v1 基线”目前是项目约定，不是 Git tag：
 
-- `HEAD` 与 `origin/codex/post-merge-story-handoff` 都指向 `0ba566f`；
+- `0ba566f` 是后续源契约和文档提交的祖先，不再等同于当前 HEAD；
 - 当前没有指向 `0ba566f` 的 tag；
 - Draft PR #2 仍然打开，尚未合并；
 - 不应把 `master` 当成这个迁移基线。
@@ -31,6 +31,7 @@ git rev-parse HEAD
 git rev-parse origin/codex/post-merge-story-handoff
 git log --oneline --decorate --max-count=8
 git branch --show-current
+git merge-base --is-ancestor 0ba566f HEAD
 
 try {
   $response = Invoke-WebRequest -UseBasicParsing `
@@ -49,6 +50,49 @@ try {
 3. 知道本次工作属于下面哪一个有界阶段；
 4. 如果需要浏览器验收，5174 已启动且目标页面返回 200；
 5. 如果需要真实音频验收，先确认 IDM 或其他下载接管工具不会拦截媒体。
+
+### 0.1 源契约第一小批已经落地
+
+以下能力已经实现，不再只是规划：
+
+- `data_pipeline/archive_paths.py`：统一加载 source config；
+- `web_viewer/config/archive_sources.example.json`：无个人路径的提交示例；
+- `web_viewer/config/archive_sources.local.json`：本机配置，已被 Git 忽略；
+- 配置优先级：
+  explicit tool argument -> `--sources-config` -> environment -> local ->
+  repository defaults；
+- `raw_source_manifest.py` 已接入配置，同时保留 `--raw-root` 最终覆盖；
+- manifest 输出禁止位于 RAW 内部；
+- manifest schema 升到 v2，并记录 section bytes、manifest hash、
+  content identity、大小写路径冲突、非法派生文件和 masterdata hash；
+- `masterdata_extract.py` 新增显式 `--input-state xor|decoded`，默认行为仍是
+  `xor`；
+- source-only fixture 会验证 CLI override、RAW 只读边界、两个 masterdata
+  状态、hash mismatch 拒绝和 decoded 不被二次 XOR；
+- GitHub Source Gate 已增加 `verify:archive-sources`。
+
+真实 RAW 重建结果：
+
+```text
+file_count: 13,000
+total_size: 8,232,049,221
+old/new relative_path + size + SHA-256 identity: equal
+case-insensitive duplicate paths: 0
+unexpected files: 0
+RAW WAV: 0
+manifest SHA-256:
+b1bcccfd89b31cf06e255ab8f65be7029ff114502b9a492e56a98cd904f60a1c
+content identity SHA-256:
+911de151d6ced2259c8065047da3ea20d9f5795c2f5a09bb109174a30d256e24
+```
+
+masterdata CLI 双路径回归也已通过：
+
+- XOR source + `--input-state xor`；
+- decoded PB + `--input-state decoded`；
+- 两条路径输出的 decoded PB hash 都是 `25D48A...F0EA1`；
+- 两条路径输出的 base `music_catalog.json` hash 都是
+  `4B31F278...F9E7`。
 
 ## 1. 当前已确认的事实
 
@@ -379,6 +423,7 @@ data_pipeline/archive_paths.py
   "masterdata_decoded_file": "web_viewer/.analysis/masterdata/client_master_data.xor_DefaultPassPhrase.pb",
   "masterdata_decoded_sha256": "25d48a557c50ac2429f0f55e5d0b766b490b37711eece4baa720cf47570f0ea1",
   "legacy_root": null,
+  "inventory_root": "web_viewer/.analysis/raw-migration",
   "workspace_root": "web_viewer/.analysis/workspace",
   "derived_root": "web_viewer/.analysis/derived",
   "publish_root": "web_viewer/public"
@@ -751,18 +796,19 @@ git rev-parse origin/<当前分支>
 
 ## 8. 新窗口的第一项实际工作
 
-默认从 PR A 的只读盘点开始，不从 `003hok` 开始发布：
+PR A 的配置核心和 RAW manifest 接入已经完成。新窗口默认从其余审计器的
+路径收束继续，不从 `003hok` 开始发布：
 
 1. 核对 `0ba566f`、PR #2、worktree、5174；
 2. 复核 XOR source 与 decoded PB 的两个 SHA-256 和逐字节解码一致性；
 3. 复核 decoded PB 的 47,204 records 和 158 table IDs；
 4. 列出所有硬编码个人绝对路径；
-5. 设计区分 `masterdata_source_file` 与 `masterdata_decoded_file` 的 schema；
-6. 增加 input-state fixture，防止 decoded PB 被二次 XOR；
-7. 先让 `raw_source_manifest.py` 接入配置且保持原 CLI 可用；
-8. 证明新旧 manifest 对 13,000 文件、总字节和分区计数完全一致；
-9. 独立提交并推送；
-10. 再决定进入 multi-part gate，还是先完成其余 RAW 审计器的路径收束。
+5. 以一组同类脚本为一批接入 `archive_paths.py`，保留显式 CLI 覆盖；
+6. 每批运行 fixture 和原域 audit，比较结果；
+7. 优先收束 card/background/character，再处理 audio/story；
+8. 最后单独处理仍硬编码旧整理包路径的 live/chibi 辅助脚本；
+9. 完成 PR A 的二进制政策和 source schema 文档；
+10. 再进入 multi-part story gate。
 
 只有用户明确要求跳过供应链收束、继续视觉内容批次时，才直接转到
 `event_story_visual:003hok`。
