@@ -7,7 +7,7 @@
     "dev": "vite --configLoader native",
     "build": "vite build --configLoader native",
     "smoke": "vite build --configLoader native",
-    "verify:archive-sources": "python ../data_pipeline/verify_archive_source_contract.py",
+    "verify:archive-sources": "python ../data_pipeline/verify_archive_source_contract.py && node scripts/verify-archive-js-source-config.mjs",
     "chibi:scan": "node scripts/scan-live-chibi-compatibility.mjs",
     "audit:raw-character": "python ../data_pipeline/audit_raw_character_resources.py",
     "character:candidate": "python ../data_pipeline/extract_raw_character_image_candidate.py",

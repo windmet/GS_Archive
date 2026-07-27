@@ -2,10 +2,22 @@ import { mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { countScenarioFiles } from '../src/utils/IndexStats.js'
+import { loadArchiveSources } from './lib/archive-sources.mjs'
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const publicRoot = path.join(projectRoot, 'public')
-const cardArtRoot = path.resolve(process.env.SIDEM_CARD_ART_ROOT || 'E:/BaiduNetdiskDownload/SideM/GS_Res/ALL_PHOTOS/assets/resources/image/image_card')
+const archiveSources = loadArchiveSources()
+const cardArtRoot = path.resolve(
+  process.env.SIDEM_CARD_ART_ROOT ||
+    archiveSources.legacyPath(
+      'GS_Res',
+      'ALL_PHOTOS',
+      'assets',
+      'resources',
+      'image',
+      'image_card',
+    ),
+)
 
 async function readJson(relativePath) {
   return JSON.parse(await readFile(path.join(publicRoot, relativePath), 'utf8'))

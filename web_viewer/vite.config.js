@@ -2,11 +2,32 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import fs from 'node:fs'
 import path from 'node:path'
+import { loadArchiveSources } from './scripts/lib/archive-sources.mjs'
 
-const LIPSYNC_ROOT = process.env.SIDEM_LIPSYNC_ROOT || 'E:/BaiduNetdiskDownload/SideM/scripts/lipsyncdata/adxlip'
-const AUDIO_ROOT = process.env.SIDEM_AUDIO_ROOT || 'E:/BaiduNetdiskDownload/SideM/GS_Res/Audio'
-const LEGACY_AUDIO_ROOT = process.env.SIDEM_LEGACY_AUDIO_ROOT || 'E:/BaiduNetdiskDownload/SideM/story_viewer/voice_ogg'
-const CARD_ART_ROOT = process.env.SIDEM_CARD_ART_ROOT || 'E:/BaiduNetdiskDownload/SideM/GS_Res/ALL_PHOTOS/assets/resources/image/image_card'
+const archiveSources = loadArchiveSources()
+const LIPSYNC_ROOT = path.resolve(
+  process.env.SIDEM_LIPSYNC_ROOT ||
+    archiveSources.legacyPath('scripts', 'lipsyncdata', 'adxlip'),
+)
+const AUDIO_ROOT = path.resolve(
+  process.env.SIDEM_AUDIO_ROOT ||
+    archiveSources.legacyPath('GS_Res', 'Audio'),
+)
+const LEGACY_AUDIO_ROOT = path.resolve(
+  process.env.SIDEM_LEGACY_AUDIO_ROOT ||
+    archiveSources.legacyPath('story_viewer', 'voice_ogg'),
+)
+const CARD_ART_ROOT = path.resolve(
+  process.env.SIDEM_CARD_ART_ROOT ||
+    archiveSources.legacyPath(
+      'GS_Res',
+      'ALL_PHOTOS',
+      'assets',
+      'resources',
+      'image',
+      'image_card',
+    ),
+)
 const STORY_CANDIDATE_ROOT = path.resolve(
   process.env.SIDEM_STORY_CANDIDATE_ROOT || '.analysis/raw-migration',
 )
