@@ -13,6 +13,7 @@ from typing import Any
 
 import UnityPy
 
+from archive_paths import add_sources_config_argument, load_archive_sources
 from scenario_compiler import ScenarioCompiler
 
 
@@ -224,14 +225,15 @@ def relink_voices_from_raw_cues(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--raw-root", type=Path, required=True)
+    add_sources_config_argument(parser)
+    parser.add_argument("--raw-root", type=Path)
     parser.add_argument("--scenario-id", required=True)
     parser.add_argument(
         "--scenario-container",
         type=Path,
         help="Explicit scenario bundle; required when the semantic ID is in an aggregate bundle",
     )
-    parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--vgmstream", type=Path)
     parser.add_argument(
         "--cue-index",
@@ -243,8 +245,25 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    raw_root = args.raw_root.resolve()
-    output_dir = args.output_dir.resolve()
+    sources = load_archive_sources(args.sources_config)
+    raw_root = (args.raw_root or sources.raw_root).resolve()
+    output_dir = (
+        args.output_dir or sources.inventory_path(args.scenario_id)
+    ).resolve()
+    cue_index_path = (
+        args.cue_index.resolve()
+        if args.cue_index
+        else sources.inventory_path("audio", "cue-index", "cue_index.json")
+    )
+    if not cue_index_path.is_file():
+        if args.cue_index:
+            raise FileNotFoundError(cue_index_path)
+        cue_index_path = None
+    vgmstream = (
+        args.vgmstream.resolve()
+        if args.vgmstream
+        else sources.vgmstream_file
+    )
     scenario_bundle = (
         args.scenario_container.resolve()
         if args.scenario_container
@@ -252,10 +271,12 @@ def main() -> None:
     )
     if not scenario_bundle.is_file():
         raise FileNotFoundError(scenario_bundle)
-    if args.vgmstream and not args.vgmstream.is_file():
-        raise FileNotFoundError(args.vgmstream)
-    if args.cue_index and not args.cue_index.is_file():
-        raise FileNotFoundError(args.cue_index)
+    if vgmstream is not None and not vgmstream.is_file():
+        raise FileNotFoundError(vgmstream)
+    if cue_index_path is None and vgmstream is None:
+        raise ValueError(
+            "a cue index or configured/provided vgmstream executable is required"
+        )
 
     all_groups, excluded = group_scenario_assets(
         extract_text_asset_records(scenario_bundle)
@@ -325,8 +346,8 @@ def main() -> None:
 
     cue_entries: dict[str, list[dict[str, Any]]] = {}
     cues_by_bank: dict[str, set[str]] = defaultdict(set)
-    if args.cue_index:
-        cue_document = json.loads(args.cue_index.read_text(encoding="utf-8"))
+    if cue_index_path:
+        cue_document = json.loads(cue_index_path.read_text(encoding="utf-8"))
         cue_entries = cue_document.get("cues") or {}
         for cue, entries in cue_entries.items():
             for entry in entries:
@@ -364,7 +385,7 @@ def main() -> None:
                     "cues": (
                         sorted(cues_by_bank.get(bank) or [])
                         if cue_entries
-                        else inspect_acb_cues(args.vgmstream, acb)
+                        else inspect_acb_cues(vgmstream, acb)
                     ),
                 }
             )
@@ -423,10 +444,10 @@ def main() -> None:
         },
         "cue_index": (
             {
-                "path": str(args.cue_index.resolve()),
-                "sha256": sha256_file(args.cue_index.resolve()),
+                "path": str(cue_index_path),
+                "sha256": sha256_file(cue_index_path),
             }
-            if args.cue_index
+            if cue_index_path
             else None
         ),
         "scenario_parts": scenario_records,

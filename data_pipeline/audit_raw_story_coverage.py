@@ -9,6 +9,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
+from archive_paths import add_sources_config_argument, load_archive_sources
 from extract_raw_story_candidate import (
     LETTERED_PART,
     extract_text_asset_records,
@@ -19,11 +20,12 @@ from scenario_compiler import ScenarioCompiler
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--raw-root", type=Path, required=True)
-    parser.add_argument("--cue-index", type=Path, required=True)
-    parser.add_argument("--compiled-root", type=Path, required=True)
+    add_sources_config_argument(parser)
+    parser.add_argument("--raw-root", type=Path)
+    parser.add_argument("--cue-index", type=Path)
+    parser.add_argument("--compiled-root", type=Path)
     parser.add_argument("--source-manifest", type=Path)
-    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--output", type=Path)
     return parser.parse_args()
 
 
@@ -194,13 +196,24 @@ def resolve_voice(
 
 def main() -> None:
     args = parse_args()
-    raw_root = args.raw_root.resolve()
+    sources = load_archive_sources(args.sources_config)
+    raw_root = (args.raw_root or sources.raw_root).resolve()
     raw_assets = raw_root / "asset"
-    cue_index_path = args.cue_index.resolve()
-    compiled_root = args.compiled_root.resolve()
-    source_hashes = load_source_hashes(
-        args.source_manifest.resolve() if args.source_manifest else None
-    )
+    cue_index_path = (
+        args.cue_index
+        or sources.inventory_path("audio", "cue-index", "cue_index.json")
+    ).resolve()
+    compiled_root = (
+        args.compiled_root or sources.published_path("data", "compiled")
+    ).resolve()
+    source_manifest_path = (
+        args.source_manifest
+        or sources.inventory_path("source", "files.jsonl")
+    ).resolve()
+    output = (
+        args.output or sources.inventory_path("story", "coverage.json")
+    ).resolve()
+    source_hashes = load_source_hashes(source_manifest_path)
     cue_index = json.loads(cue_index_path.read_text(encoding="utf-8"))
     entries_by_cue: dict[str, list[dict[str, Any]]] = cue_index.get("cues") or {}
     cues_by_bank: dict[str, set[str]] = defaultdict(set)
@@ -382,9 +395,7 @@ def main() -> None:
             "raw_root": str(raw_root),
             "cue_index": str(cue_index_path),
             "compiled_root": str(compiled_root),
-            "source_manifest": (
-                str(args.source_manifest.resolve()) if args.source_manifest else None
-            ),
+            "source_manifest": str(source_manifest_path),
         },
         "summary": dict(sorted(summary.items())),
         "excluded_assets": excluded_assets,
@@ -394,8 +405,8 @@ def main() -> None:
         "duplicate_group_ids": dict(sorted(duplicate_group_ids.items())),
         "groups": dict(sorted(groups_document.items())),
     }
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(
         json.dumps(document, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
