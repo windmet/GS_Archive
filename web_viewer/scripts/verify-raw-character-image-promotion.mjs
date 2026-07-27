@@ -102,6 +102,33 @@ const batchStableAssets = batchCodes.map(code => path.join(
   'birthday',
   `image_chara_birthday_visual_${code}.png`,
 ))
+const npcCode = '101ken'
+const npcRawBytes = Buffer.from('fixture NPC RAW Unity Sprite bundle')
+const npcCandidateDirectory = path.join(
+  workspaceRoot,
+  '.analysis',
+  'raw-migration',
+  'character-image-candidate',
+  'birthday_visual',
+  npcCode,
+)
+const npcRawFile = path.join(
+  temporaryRoot,
+  'RAW',
+  'asset',
+  `image_chara_birthday_visual_${npcCode}.unity3d`,
+)
+const npcCandidateAsset = path.join(
+  npcCandidateDirectory,
+  'resolved',
+  `${npcCode}.png`,
+)
+const npcStableAsset = path.join(
+  assetsRoot,
+  'stories',
+  'birthday',
+  `image_chara_birthday_visual_${npcCode}.png`,
+)
 const baselineRegistry = {
   schema_version: 1,
   entries: [{
@@ -250,6 +277,51 @@ function batchCandidateManifest(idolCode, rawAssetBytes) {
   }
 }
 
+function npcCandidateManifest() {
+  return {
+    schema_version: 1,
+    kind: 'birthday_visual',
+    idol_code: npcCode,
+    raw_source: {
+      relative_path: `RAW/asset/image_chara_birthday_visual_${npcCode}.unity3d`,
+      bytes: npcRawBytes.length,
+      sha256: hashBytes(npcRawBytes),
+      source_manifest_equal: true,
+    },
+    unity_object: {
+      container_path: `assets/resources/image/image_chara/image_chara_birthday/image_chara_birthday_visual_${npcCode}.png`,
+      path_id: '-101001',
+      object_type: 'Sprite',
+      asset_name: `image_chara_birthday_visual_${npcCode}`,
+      identity_ids: [npcCode],
+      sprite_rect: { x: 0, y: 0, width: 1, height: 1 },
+    },
+    identity_evidence: {
+      npc_speaker: {
+        speaker_id: npcCode,
+        speaker_type: 'npc',
+        npc_id: 101,
+        npc_code: npcCode,
+        display_name: '山村 賢',
+      },
+      story_master: {
+        domain: 'birthday',
+        reference_count: 1,
+        references: [{
+          compiled_file: `1_x_${npcCode}_fixture.json`,
+          compiled_exists: true,
+        }],
+      },
+    },
+    resolved_asset: {
+      width: 1,
+      height: 1,
+      bytes: pngBytes.length,
+      sha256: hashBytes(pngBytes),
+    },
+  }
+}
+
 try {
   await mkdir(path.dirname(rawFile), { recursive: true })
   await mkdir(path.dirname(candidateAsset), { recursive: true })
@@ -336,6 +408,95 @@ try {
   })
   assert.equal(rollback.asset_state, 'removed')
   assert.equal(await exists(stableAsset), false)
+  assert.deepEqual(
+    JSON.parse(await readFile(registryFile, 'utf8')),
+    baselineRegistry,
+  )
+
+  const missingIdentityScope = candidateManifest()
+  delete missingIdentityScope.identity_evidence.master_idol
+  await writeJson(
+    path.join(candidateDirectory, 'candidate.json'),
+    missingIdentityScope,
+  )
+  await assert.rejects(
+    publishRawCharacterImage({
+      workspaceRoot,
+      candidateDirectory,
+      registryFile,
+      assetsRoot,
+      backupDirectory: path.join(workspaceRoot, '.analysis', 'missing-identity-scope'),
+      confirmKey: 'birthday_visual:001tom',
+    }),
+    /exactly one master-idol or NPC identity scope/u,
+  )
+
+  const mismatchedNpcIdentity = candidateManifest()
+  delete mismatchedNpcIdentity.identity_evidence.master_idol
+  mismatchedNpcIdentity.identity_evidence.npc_speaker = {
+    speaker_id: '101ken',
+    speaker_type: 'npc',
+    npc_id: 101,
+    npc_code: '101ken',
+    display_name: '山村 賢',
+  }
+  await writeJson(
+    path.join(candidateDirectory, 'candidate.json'),
+    mismatchedNpcIdentity,
+  )
+  await assert.rejects(
+    publishRawCharacterImage({
+      workspaceRoot,
+      candidateDirectory,
+      registryFile,
+      assetsRoot,
+      backupDirectory: path.join(workspaceRoot, '.analysis', 'mismatched-npc-identity'),
+      confirmKey: 'birthday_visual:001tom',
+    }),
+    /NPC identity does not match its speaker evidence/u,
+  )
+  await writeJson(
+    path.join(candidateDirectory, 'candidate.json'),
+    candidateManifest(),
+  )
+
+  await mkdir(path.dirname(npcCandidateAsset), { recursive: true })
+  await writeFile(npcRawFile, npcRawBytes)
+  await writeFile(npcCandidateAsset, pngBytes)
+  await writeJson(
+    path.join(npcCandidateDirectory, 'candidate.json'),
+    npcCandidateManifest(),
+  )
+  const npcBackup = path.join(workspaceRoot, '.analysis', 'npc-published')
+  const npcReport = await publishRawCharacterImage({
+    workspaceRoot,
+    candidateDirectory: npcCandidateDirectory,
+    registryFile,
+    assetsRoot,
+    backupDirectory: npcBackup,
+    confirmKey: `birthday_visual:${npcCode}`,
+  })
+  assert.equal(npcReport.key, `birthday_visual:${npcCode}`)
+  assert.equal(hashBytes(await readFile(npcStableAsset)), hashBytes(pngBytes))
+  const npcRegistry = JSON.parse(await readFile(registryFile, 'utf8'))
+  const npcEntry = npcRegistry.entries.find(entry => entry.idol_code === npcCode)
+  assert.ok(npcEntry)
+  assert.equal(npcEntry.master_evidence.identity_scope, 'npc')
+  assert.equal(npcEntry.master_evidence.npc_id, 101)
+  assert.equal(npcEntry.master_evidence.speaker_id, npcCode)
+  assert.equal(
+    getPromotedCharacterImageUrl('birthday_visual', npcCode, npcRegistry),
+    `/assets/stories/birthday/image_chara_birthday_visual_${npcCode}.png`,
+  )
+  const npcRollback = await rollbackRawCharacterImage({
+    workspaceRoot,
+    registryFile,
+    assetsRoot,
+    backupDirectory: npcBackup,
+    confirmKey: `birthday_visual:${npcCode}`,
+  })
+  assert.equal(npcRollback.asset_state, 'removed')
+  assert.equal(await exists(npcStableAsset), false)
   assert.deepEqual(
     JSON.parse(await readFile(registryFile, 'utf8')),
     baselineRegistry,

@@ -797,6 +797,27 @@ Final rollback evidence:
 
 `.analysis/raw-migration/character-image-candidate/birthday_visual/batch-048mom-049eis-backup-20260727-final/`
 
+### Explicit NPC birthday gate
+
+`101ken` is deliberately excluded from the default master-idol extractor.
+`speaker_dictionary.json` instead proves it is NPC ID `101`, `山村 賢`, with
+the exact `101ken` speaker/npc code and birthday `7月2日`. Five birthday-master
+rows have compiled files beginning `1_x_101ken_` and identify only `101ken`.
+
+The new explicit `--identity-scope npc` path requires that speaker evidence and
+rejects both master idols and mismatched NPC codes. The publisher also requires
+exactly one `master_idol` or `npc_speaker` scope and records the NPC scope in
+stable registry evidence. Synthetic tests cover missing/mismatched identity,
+NPC publication, resolver lookup, and rollback.
+
+The real isolated candidate records RAW
+`a3d004e4c949c9f653997504f2d84545cac448c416f12c7fc6ff1b9d7e3dab17`,
+PathID `4948771745467967869`, PNG `778×833`,
+`5ff9f9e04a37c02dc7475674b249285e4624566e94c0171e958587fcf5799216`,
+and five compiled master references. Its 5174 candidate page and player
+interaction passed, but no stable publication is claimed in this gate-only
+batch.
+
 ### Standalone promotion gate and first stable replacement
 
 The generic strict collection publisher requires an aggregate plus episode
@@ -955,6 +976,9 @@ npm run character:promotion-publish-batch -- `
   --assets-root=public/assets `
   --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-048mom-049eis-backup-20260727-final `
   --confirm=birthday_visual:048mom+049eis
+
+python ..\data_pipeline\extract_raw_character_image_candidate.py `
+  birthday_visual 101ken --identity-scope npc
 
 python ..\data_pipeline\extract_raw_audio_candidate.py `
   --raw-root ..\RAW --kind bgm --container usual_day.awb --cue usual_day `

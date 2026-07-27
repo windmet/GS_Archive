@@ -754,6 +754,34 @@ ignored rollback evidence:
 
 `web_viewer/.analysis/raw-migration/character-image-candidate/birthday_visual/batch-048mom-049eis-backup-20260727-final/`
 
+### Explicit NPC birthday identity gate
+
+The remaining `101ken` bundle cannot pass the default extractor path: it is not
+one of the 49 entries in `idol_unit_dictionary.json`. It is instead an exact
+`speaker_dictionary.json` NPC record:
+
+- speaker/npc code `101ken`, NPC ID `101`, display name `山村 賢`;
+- category `315プロダクション`, birthday `7月2日`;
+- five birthday-master rows, all compiled, all owned by filenames beginning
+  `1_x_101ken_`, and all identifying `101ken` as their sole character.
+
+The extractor now requires `--identity-scope npc` explicitly. The NPC path
+rejects master idols, requires `speaker_type: npc`, exact `speaker_id` and
+`npc_code`, and emits `npc_speaker` rather than `master_idol` evidence. The
+publisher independently requires exactly one of those identity scopes,
+validates the NPC code/name evidence, and persists `identity_scope: npc`,
+`npc_id`, and `speaker_id` in the registry evidence. Automated tests reject a
+missing scope and a mismatched NPC code, then publish and roll back a synthetic
+NPC fixture.
+
+The isolated real candidate is not stable yet. It records RAW SHA-256
+`a3d004e4c949c9f653997504f2d84545cac448c416f12c7fc6ff1b9d7e3dab17`,
+PathID `4948771745467967869`, and a `778×833`, 235,035-byte PNG with SHA-256
+`5ff9f9e04a37c02dc7475674b249285e4624566e94c0171e958587fcf5799216`.
+Its candidate detail route passed page identity, non-empty DOM, framework
+overlay, exact URL/dimensions, and screenshot checks. Starting playback entered
+`view=player`, rendered one canvas, and exposed `前へ`, `AUTO`, and `SKIP`.
+
 The ignored report records each contributing bundle's path, size, and SHA-256
 from the established 13,000-file source manifest:
 
@@ -1323,6 +1351,9 @@ npm run character:promotion-publish-batch -- `
   --assets-root=public/assets `
   --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-048mom-049eis-backup-20260727-final `
   --confirm=birthday_visual:048mom+049eis
+
+python ..\data_pipeline\extract_raw_character_image_candidate.py `
+  birthday_visual 101ken --identity-scope npc
 
 npm run character:promotion-rollback -- `
   --registry=public/data/assets/raw_character_image_promotions.json `

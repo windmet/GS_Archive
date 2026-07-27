@@ -195,6 +195,54 @@ function stableTargetFor(candidate) {
   }
 }
 
+function validateIdentityEvidence(candidate) {
+  const masterIdol = candidate.identity_evidence?.master_idol
+  const npcSpeaker = candidate.identity_evidence?.npc_speaker
+  if (Boolean(masterIdol) === Boolean(npcSpeaker)) {
+    throw new Error(
+      'Candidate must provide exactly one master-idol or NPC identity scope',
+    )
+  }
+  if (masterIdol && masterIdol.idol_code !== candidate.idol_code) {
+    throw new Error('Candidate master-idol identity does not match its code')
+  }
+  if (
+    npcSpeaker && (
+      npcSpeaker.speaker_type !== 'npc' ||
+      npcSpeaker.speaker_id !== candidate.idol_code ||
+      npcSpeaker.npc_code !== candidate.idol_code ||
+      !String(npcSpeaker.display_name || '').trim()
+    )
+  ) {
+    throw new Error('Candidate NPC identity does not match its speaker evidence')
+  }
+}
+
+function registryIdentityEvidence(candidate) {
+  const storyMaster = candidate.identity_evidence.story_master
+  const common = {
+    reference_count: storyMaster.reference_count,
+    compiled_files: storyMaster.references
+      .map(reference => reference.compiled_file)
+      .sort(),
+  }
+  const npcSpeaker = candidate.identity_evidence.npc_speaker
+  if (npcSpeaker) {
+    return {
+      identity_scope: 'npc',
+      npc_id: npcSpeaker.npc_id,
+      speaker_id: npcSpeaker.speaker_id,
+      display_name: npcSpeaker.display_name,
+      ...common,
+    }
+  }
+  return {
+    identity_scope: 'master_idol',
+    idol_id: candidate.identity_evidence.master_idol.idol_id,
+    ...common,
+  }
+}
+
 async function verifyExistingRegistryAssets(registry, assetsRoot) {
   for (const entry of registry.entries) {
     if (
@@ -272,6 +320,7 @@ async function assessCandidate({
   if (identities.length !== 1 || identities[0] !== candidate.idol_code) {
     throw new Error('Stable first-batch promotion requires one exact idol identity')
   }
+  validateIdentityEvidence(candidate)
   const masterEvidence = candidate.identity_evidence?.story_master
   if (
     masterEvidence?.domain !== 'birthday' ||
@@ -381,6 +430,7 @@ async function assessSharedCandidates({
       throw new Error(`Invalid shared candidate ${candidate.kind}:${candidate.idol_code}`)
     }
     const masterEvidence = candidate.identity_evidence?.story_master
+    validateIdentityEvidence(candidate)
     if (
       masterEvidence?.domain !== 'birthday' ||
       !Number.isInteger(masterEvidence.reference_count) ||
@@ -587,13 +637,7 @@ export async function publishRawCharacterImage({
       height: assessment.dimensions.height,
       sha256: assessment.candidateHash,
     },
-    master_evidence: {
-      idol_id: assessment.candidate.identity_evidence.master_idol?.idol_id,
-      reference_count: assessment.candidate.identity_evidence.story_master.reference_count,
-      compiled_files: assessment.candidate.identity_evidence.story_master.references
-        .map(reference => reference.compiled_file)
-        .sort(),
-    },
+    master_evidence: registryIdentityEvidence(assessment.candidate),
   }
   const nextRegistry = {
     schema_version: 1,
@@ -732,13 +776,7 @@ export async function publishRawCharacterImageGroup({
       height: item.dimensions.height,
       sha256: item.candidateHash,
     },
-    master_evidence: {
-      idol_id: item.candidate.identity_evidence.master_idol?.idol_id,
-      reference_count: item.candidate.identity_evidence.story_master.reference_count,
-      compiled_files: item.candidate.identity_evidence.story_master.references
-        .map(reference => reference.compiled_file)
-        .sort(),
-    },
+    master_evidence: registryIdentityEvidence(item.candidate),
   }))
   const nextRegistry = {
     schema_version: 1,
@@ -928,13 +966,7 @@ export async function publishRawCharacterImageBatch({
       height: assessment.dimensions.height,
       sha256: assessment.candidateHash,
     },
-    master_evidence: {
-      idol_id: assessment.candidate.identity_evidence.master_idol?.idol_id,
-      reference_count: assessment.candidate.identity_evidence.story_master.reference_count,
-      compiled_files: assessment.candidate.identity_evidence.story_master.references
-        .map(reference => reference.compiled_file)
-        .sort(),
-    },
+    master_evidence: registryIdentityEvidence(assessment.candidate),
   }))
   const nextRegistry = {
     schema_version: 1,

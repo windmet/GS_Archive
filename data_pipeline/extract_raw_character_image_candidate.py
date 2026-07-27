@@ -22,6 +22,14 @@ DEFAULT_IDOL_DICTIONARY = (
     / "masterdata"
     / "idol_unit_dictionary.json"
 )
+DEFAULT_SPEAKER_DICTIONARY = (
+    REPO_ROOT
+    / "web_viewer"
+    / "public"
+    / "data"
+    / "masterdata"
+    / "speaker_dictionary.json"
+)
 DEFAULT_STORY_MASTER = (
     REPO_ROOT
     / "web_viewer"
@@ -151,6 +159,18 @@ def main() -> None:
     parser.add_argument(
         "--idol-dictionary", type=Path, default=DEFAULT_IDOL_DICTIONARY
     )
+    parser.add_argument(
+        "--speaker-dictionary", type=Path, default=DEFAULT_SPEAKER_DICTIONARY
+    )
+    parser.add_argument(
+        "--identity-scope",
+        choices=("master_idol", "npc"),
+        default="master_idol",
+        help=(
+            "Require either a master-idol identity or an explicit NPC speaker "
+            "identity. NPC candidates are never inferred automatically."
+        ),
+    )
     parser.add_argument("--story-master", type=Path, default=DEFAULT_STORY_MASTER)
     parser.add_argument(
         "--source-manifest", type=Path, default=DEFAULT_SOURCE_MANIFEST
@@ -171,10 +191,28 @@ def main() -> None:
         args.idol_dictionary.resolve().read_text(encoding="utf-8")
     )
     idol = (idol_payload.get("by_idol_code") or {}).get(idol_code)
-    if not idol:
+    speaker_payload = json.loads(
+        args.speaker_dictionary.resolve().read_text(encoding="utf-8")
+    )
+    speaker = (speaker_payload.get("speakers") or {}).get(idol_code)
+    if args.identity_scope == "master_idol" and not idol:
         raise ValueError(
             f"{idol_code} is not a master idol; NPC candidates require a separate gate"
         )
+    if args.identity_scope == "npc":
+        if idol:
+            raise ValueError(
+                f"{idol_code} is a master idol and cannot use the NPC identity gate"
+            )
+        if (
+            not speaker
+            or speaker.get("speaker_type") != "npc"
+            or speaker.get("speaker_id") != idol_code
+            or speaker.get("npc_code") != idol_code
+        ):
+            raise ValueError(
+                f"{idol_code} has no exact NPC identity in the speaker dictionary"
+            )
 
     matches = []
     for bundle_path in sorted(raw_asset_root.glob(str(category["bundle_glob"]))):
@@ -227,15 +265,27 @@ def main() -> None:
         )
     )
     identity_evidence: dict[str, Any] = {
-        "master_idol": {
+        "runtime_target": category["runtime_target"],
+    }
+    if args.identity_scope == "master_idol":
+        identity_evidence["master_idol"] = {
             "idol_id": idol.get("idol_id"),
             "idol_code": idol.get("idol_code"),
             "display_name": idol.get("display_name"),
             "birthday": idol.get("birthday"),
             "source": idol.get("_source"),
-        },
-        "runtime_target": category["runtime_target"],
-    }
+        }
+    else:
+        identity_evidence["npc_speaker"] = {
+            "speaker_id": speaker.get("speaker_id"),
+            "speaker_type": speaker.get("speaker_type"),
+            "npc_id": speaker.get("npc_id"),
+            "npc_code": speaker.get("npc_code"),
+            "display_name": speaker.get("display_name"),
+            "category": speaker.get("category"),
+            "birthday": speaker.get("birthday"),
+            "source": speaker.get("_source"),
+        }
     if args.kind == "birthday_visual":
         identity_evidence["story_master"] = birthday_story_evidence(
             args.story_master.resolve(), idol_code
@@ -290,6 +340,7 @@ def main() -> None:
             {
                 "kind": args.kind,
                 "idol_code": idol_code,
+                "identity_scope": args.identity_scope,
                 "source_asset": match["asset_name"],
                 "dimensions": [image.width, image.height],
                 "master_references": identity_evidence.get(
