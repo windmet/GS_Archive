@@ -6,6 +6,13 @@
 
 `scripts/prepare-live-chibi-stage-backgrounds.py` 会扫描全部 `song_*.unity3d`，排除 CSV 已引用的动态图片，按数字后缀顺序合成常驻 RGBA 舞台。输出位于 `public/assets/live-chibi/stage-backgrounds`。本轮共生成 55 首歌的底图，合计 90,760,580 bytes；另外 5 首歌的数字舞台层全部由 CSV 动态控制，因此不重复生成常驻底图。
 
+2026-07-27 来源校正：提交 `c3ff8e1` 已将脚本接入统一 archive source
+contract。CSV 排除规则继续来自显式 `legacy_root`，物理纹理改从配置的
+`RAW/asset` 读取。55 个稳定背景对应的 55 个 RAW song bundle 与整理包
+副本 SHA-256 全部一致。`bnckgy` 三层隔离强制合成与稳定 PNG 逐字节
+一致，完整 55 项镜像索引在单项重建后也保持逐字节一致；5174 的真实
+静态舞台载入及开关恢复验证通过，稳定目录未被替换。
+
 运行命令：
 
 ```powershell

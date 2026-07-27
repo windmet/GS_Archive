@@ -1322,9 +1322,32 @@ Port 5174 then crossed the 12,000 ms object event in the actual
 empty unsupported list; the 舞台物件 toggle removed all four and restored the
 same IDs. Stable sprites and index stayed unchanged.
 
+## Live static-stage background source-contract slice
+
+Commit `c3ff8e1` makes configured `RAW/asset` the physical default for the
+static-stage builder while retaining organizer-era `liveeffectscript` CSVs as
+declared semantic references for excluding dynamic image layers. The 55 stable
+composites resolve to 55 authoritative RAW song bundles; all 55 are
+byte-identical to their organizer-era duplicates.
+
+A forced isolated composition of `bnckgy` from its three numbered layers was
+byte-identical to the stable PNG. Rebuilding that selected song inside a mirror
+of the full catalog retained the exact 55-entry stable index hash:
+
+```powershell
+python scripts\prepare-live-chibi-stage-backgrounds.py `
+  --song-code bnckgy `
+  --force `
+  --output-root .analysis\raw-migration\live-chibi-stage-backgrounds\candidate
+```
+
+Port 5174 then loaded the actual バーニン・クールで輝いて static stage. The
+runtime reported ready with song `bnckgy`; the 静态舞台 toggle changed false and
+restored true. Stable PNGs and index stayed unchanged.
+
 ## Next batches
 
-1. Migrate `prepare-live-chibi-stage-backgrounds.py` alone, using an ignored output
+1. Audit and migrate `prepare-live-chibi-assets.py` alone, using an ignored output
    root and port-5174 consumer check before any stable replacement.
 2. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.

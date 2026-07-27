@@ -328,6 +328,24 @@ Backmonitor 错误。本批未改写稳定 MP4、index 或 URL。
 `fx_in_bnckgy_overlight_1..4` 对象、空 unsupported 列表；关闭舞台物件后
 计数归零，重新开启后四项恢复。本批未改写稳定 sprite、index 或 URL。
 
+### 0.10 live 静态舞台已切换到权威 RAW/asset
+
+提交 `c3ff8e1` 已将 `prepare-live-chibi-stage-backgrounds.py` 接入统一
+来源契约。119 份 CSV 仍作为排除动态 Image_layer 的语义参考；物理
+`song_*.unity3d` 默认从 `RAW/asset` 读取。
+
+稳定索引的 55 首静态舞台共 90,760,580 bytes，对应 55 个实际 RAW bundle，
+共 169,437,444 bytes；55/55 与整理包副本 SHA-256 相同。
+`bnckgy` 的 `_01/_02/_03` 三层隔离合成与稳定 PNG 哈希同为
+`E07675E0D752FA26CE3E072C859180D874D85ECA1F40CFFA364A792AA0C7FFEF`。
+完整索引镜像单项重建后仍保持稳定哈希
+`B042183DE423C67D570A21CC5AA30D39F288F28FA3275BFCCDA5B2F51356AA3D`。
+
+5174 的真实バーニン・クールで輝いて舞台报告背景 ready、song=`bnckgy`；
+关闭静态舞台后 enabled=false，再开启恢复 true。页面无框架错误覆盖或
+应用错误，仅保留两条既有 Pixi Spine warning。本批未改写稳定 PNG、index
+或 URL。
+
 ## 1. 当前已确认的事实
 
 ### 1.1 RAW 的真实边界和数量
@@ -482,6 +500,7 @@ byte-for-byte equal to the existing .analysis PB: true
 | 角色图片 | 57 个 `image_chara*` bundle、485 条逻辑路径已分类 |
 | live 图片布景 | 101 条 CSV 事件、57 个唯一资源、24 个 RAW song bundle，已全量映射并验证 |
 | live 舞台对象 | 185 个唯一引用；181 个已定位到 77 个 RAW bundle，4 个 `tibeti` keeper 仍缺失 |
+| live 静态舞台 | 55 首稳定合成图、55 个 RAW song bundle，已全量映射并验证 |
 | movie | 260 个 USM；77 个 live Backmonitor 引用已映射并验证，剩余 183 个仍为文件名级 inventory |
 | 一般 UI 图片 | 1,271 个一般 `image_*` bundle，尚无完整关系表 |
 
@@ -558,7 +577,7 @@ publish/manifest.json
 | 260 USM 和 1,271 `image_*` 待审计 | 需要更新 | USM 中 77 个 live Backmonitor 已有完整引用/转码/5174 证据，剩余 183 个待分类；一般图片仍无完整 relation table |
 | Source Gate 已通过 | 正确 | GitHub run `30232788385` 对 `0ba566f` 成功 |
 | 已有完整统一 publish manifest | 不正确 | 只有域级 registry/candidate manifest；无统一 publish manifest |
-| 已有统一 archive root 配置 | 现在正确 | Python/JS loader、RAW 审计器、Vite、live audio、Backmonitor、Image_layer 与 Object_layer 已接入；其余三个 chibi 辅助脚本仍需逐个迁移 |
+| 已有统一 archive root 配置 | 现在正确 | Python/JS loader、RAW 审计器、Vite、live audio、Backmonitor、Image_layer、Object_layer 与静态舞台已接入；其余两个 chibi 辅助脚本仍需逐个迁移 |
 | 可用 masterdata 链 | 已完整核对 | 外部 XOR 容器 `D57F76...CDC0E` 可确定性解码为 `.analysis` PB `25D48A...F0EA1`，逐字节一致 |
 | ACB/AWB 已是整个站点唯一音频上游 | 目标合理，现状不能这样概括 | RAW 音频审计很强，但现有公开音频仍可能来自旧整理/转码链；需逐域收束 |
 | batch publisher 已存在 | 正确 | 已有 publish/rollback batch 和 fixture；下一批需补真正的三项事件视觉原子证据 |
@@ -1036,7 +1055,7 @@ git rev-parse origin/<当前分支>
 
 PR A 的配置核心、RAW manifest、card/background/character 六个工具、
 RAW audio 六个工具、RAW story 三个工具、Vite/manifest JS loader，
-以及 live-chibi 音频、Backmonitor、Image_layer 与 Object_layer 构建器已经接入。新窗口默认继续其余仍硬编码旧整理包
+以及 live-chibi 音频、Backmonitor、Image_layer、Object_layer 与静态舞台构建器已经接入。新窗口默认继续其余仍硬编码旧整理包
 路径的 live/chibi Python 辅助脚本，不从 `003hok` 开始发布：
 
 1. 核对 `0ba566f`、PR #2、worktree、5174；
@@ -1050,15 +1069,14 @@ RAW audio 六个工具、RAW story 三个工具、Vite/manifest JS loader，
 9. 完成 PR A 的二进制政策和 source schema 文档；
 10. 再进入 multi-part story gate。
 
-当前仍有三个明确目标，建议按“单一 RAW 域优先、外部容器最后”的顺序：
+当前仍有两个明确目标，建议按“混合来源先审计、外部容器最后”的顺序：
 
-1. `prepare-live-chibi-stage-backgrounds.py`：`RAW/asset` + legacy liveeffectscript；
-2. `prepare-live-chibi-assets.py`：RAW、costume、live lipsync 等混合来源；
-3. `prepare-live-chibi-stage-effects.py`：XAPK/APK 外部容器，单独定义来源字段。
+1. `prepare-live-chibi-assets.py`：RAW、costume、live lipsync 等混合来源；
+2. `prepare-live-chibi-stage-effects.py`：XAPK/APK 外部容器，单独定义来源字段。
 
-下一批首选 `prepare-live-chibi-stage-backgrounds.py`。先确认已发布舞台背景
-对应的 RAW bundle/Sprite 集合，再增加 `--sources-config`、显式输入/输出
-覆盖和隔离候选验证；不要在同一提交顺带改 assets/stage-effects。
+下一批首选审计 `prepare-live-chibi-assets.py`。它混合 RAW、costume、
+live lipsync 等来源，先列出每类输入和稳定产物，再决定是否能在单批内
+安全迁移；不要在同一提交顺带改 `stage-effects`。
 
 只有用户明确要求跳过供应链收束、继续视觉内容批次时，才直接转到
 `event_story_visual:003hok`。

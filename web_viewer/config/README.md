@@ -182,3 +182,19 @@ remain final overrides. Repeat `--asset` for a bounded set. Selected records
 are replaced in place in an existing target index, preserving the full catalog
 order and its explicit missing list. Omitting `--asset` retains the established
 185-reference build.
+
+The live-chibi static-stage builder excludes stage textures dynamically
+referenced by `liveeffectscript`, then composites the remaining numbered
+textures from configured `RAW/asset/song_<songCode>.unity3d`:
+
+```powershell
+python scripts\prepare-live-chibi-stage-backgrounds.py `
+  --song-code bnckgy `
+  --force `
+  --output-root .analysis\raw-migration\live-chibi-stage-backgrounds\candidate
+```
+
+Explicit `--script-root`, `--raw-asset-root`, and `--output-root` arguments
+remain final overrides. Repeat `--song-code` for a bounded set. Selected songs
+replace their records in place in an existing target index. Omitting
+`--song-code` retains the established full 55-background build.
