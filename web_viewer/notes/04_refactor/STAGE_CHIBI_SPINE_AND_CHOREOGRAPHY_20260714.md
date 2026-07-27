@@ -260,7 +260,11 @@ npm run smoke
 
 ## ACB 歌曲提取与音频主时钟（2026-07-14）
 
-原始歌曲位于 `E:\BaiduNetdiskDownload\SideM\GS_Res\新建文件夹\RAW\audio`。`song3_<songCode>.acb` 是内嵌 `@UTF + AFS2` 的 CRI 音频包，实际音频编码为 HCA。构建使用本机 `E:\Program Files\vgmstream-win64\vgmstream-cli.exe` 解码，再由 FFmpeg 转为浏览器可播放的 AAC/M4A：
+> 2026-07-27 更新：下述旧路径是最初实现时使用的整理者副本。当前权威输入
+> 已改为本机来源配置所指向的 `RAW/audio`；转换工具也从忽略的本机配置读取。
+> 旧副本仅保留作回归证据，不再是默认 source identity。
+
+`song3_<songCode>.acb` 是内嵌 `@UTF + AFS2` 的 CRI 音频包，实际音频编码为 HCA。构建使用配置的 `vgmstream-cli` 解码，再由 FFmpeg 转为浏览器可播放的 AAC/M4A：
 
 ```powershell
 python scripts\prepare-live-chibi-audio.py --song-code drvalv --force

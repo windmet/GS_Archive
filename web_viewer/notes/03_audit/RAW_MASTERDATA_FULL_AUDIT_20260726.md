@@ -1248,6 +1248,45 @@ not organizer derivatives. `usual_day.acb`, for example, contains the cue-sheet
 metadata while the decodable HCA stream and loop points are in
 `usual_day.awb`.
 
+### 2026-07-27 live-chibi song-builder source migration
+
+Commit `4f69af1` moved `scripts/prepare-live-chibi-audio.py` from its tracked
+organizer-era absolute defaults to the same archive source contract. The
+default physical input is now configured `RAW/audio`; `vgmstream` and FFmpeg
+come from the ignored local configuration unless an explicit CLI argument or
+the existing environment override is supplied. The established stable output
+path is unchanged. A new `--output-root` permits forced extraction into ignored
+candidate space without touching public assets.
+
+The old duplicate and the authoritative RAW source were compared before the
+switch:
+
+| Source | Size | SHA-256 |
+| --- | ---: | --- |
+| organizer-era `song3_drvalv.acb` | 32,540,736 | `B655D57D8A7AEC20C73E39B823AB9296D28AAF0766CC954A026AFF7CF96450D2` |
+| `RAW/audio/song3_drvalv.acb` | 32,540,736 | `B655D57D8A7AEC20C73E39B823AB9296D28AAF0766CC954A026AFF7CF96450D2` |
+
+A no-force `drvalv` run selected 17 M4A files and retained all 108 existing
+files/118 choreography mappings. Stable files remained byte-exact:
+
+- `drvalv.m4a`: 3,112,824 bytes,
+  `40C86AD742034DEA284692E09E882653CB27736AC114F34EFF014E00FBC5D1C4`;
+- stable `index.json`: 37,122 bytes,
+  `0D86C75F546E1C442DECE8CE8C012A34140B326E4FF502100F27BEE3001DEE68`.
+
+An isolated forced `drv999` extraction produced AAC, 44.1 kHz stereo,
+130.285011 seconds, approximately 192 kb/s. Its 3,129,598-byte SHA-256
+`7BAE68F7E5033D5320BD7082FB3CC0CE6E4B7D44247123EA0B7A446FF34481E9`
+is byte-identical to the current stable `drv999.m4a`; the isolated index SHA-256
+is `EE49191B1B88731D9B58398E7594BDD4FCC1F35284F67BBC6533EE4FFB780BA7`.
+
+Port 5174 returned HTTP 200 with `audio/mp4` for stable `drv999.m4a` and HTTP
+200 for the stable music index. The real `view=chibi_stage` page reached
+Spine 3.8 `5/5 人就绪`; clicking `播放多人编排` advanced the shared audio clock
+from 0:00 to 0:02, completed motion preloading, rendered the stage and lyric,
+and paused normally at 0:07. This is browser media evidence, not only a
+source-only gate. No stable audio or index file changed in this batch.
+
 ### Story SE coverage
 
 Compiled story data references 435 unique SE cue strings:

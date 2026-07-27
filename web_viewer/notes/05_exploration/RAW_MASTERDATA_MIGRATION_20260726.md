@@ -1215,12 +1215,40 @@ npm run story:raw-promotion-candidate -- `
 Candidate outputs remain under ignored `.analysis/`; they are not production
 assets.
 
+## Live-chibi audio source-contract slice
+
+Commit `4f69af1` is the first live/chibi helper migration. The song builder now
+defaults to configured `RAW/audio` and configured media tools, while retaining
+explicit overrides and the existing stable output path. The old and new
+`song3_drvalv.acb` inputs are byte-identical
+(`B655D57D8A7AEC20C73E39B823AB9296D28AAF0766CC954A026AFF7CF96450D2`).
+
+The bounded proof used two modes:
+
+```powershell
+# Non-destructive stable regression: existing derivatives are reused.
+python scripts\prepare-live-chibi-audio.py --song-code drvalv
+
+# Forced extraction only in ignored candidate space.
+python scripts\prepare-live-chibi-audio.py `
+  --song-code drv999 --force `
+  --output-root .analysis\raw-migration\live-chibi-audio
+```
+
+The first mode left stable `drvalv.m4a` and `index.json` byte-exact. The second
+produced a `drv999.m4a` byte-identical to the stable file. Port 5174 then
+confirmed the real five-character stage could start the official audio, advance
+its shared clock, render choreography/lyrics, and pause. No stable asset was
+published or replaced.
+
 ## Next batches
 
-1. Extend the proven single-story promotion gate to multi-part aggregate
+1. Migrate one remaining live/chibi helper at a time, using an ignored output
+   root and port-5174 consumer check before any stable replacement.
+2. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
-2. Continue the proven `001tom`/`002sht` event-story visual consumer in another
+3. Continue the proven `001tom`/`002sht` event-story visual consumer in another
    bounded batch; keep the complete birthday domain unchanged.
-3. Map all 260 RAW USM files to master-data consumers.
-4. Continue promoting verified domains one reversible batch at a time, with
+4. Map all 260 RAW USM files to master-data consumers.
+5. Continue promoting verified domains one reversible batch at a time, with
    5174 acceptance and rollback evidence before each stable-path replacement.

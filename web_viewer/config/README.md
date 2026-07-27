@@ -109,3 +109,21 @@ The existing `SIDEM_LIPSYNC_ROOT`, `SIDEM_AUDIO_ROOT`,
 remain final overrides. If `legacy_root` is `null`, builds use a non-existent
 repository-local `sources/legacy_curated` placeholder and do not fall back to a
 developer's drive path.
+
+The live-chibi song builder also uses this contract. Its default input is
+`RAW/audio`, and its default `vgmstream`/FFmpeg executables come from the
+ignored local configuration. Explicit CLI arguments and the existing
+`VGMSTREAM_CLI`/`FFMPEG` environment variables remain final overrides:
+
+```powershell
+python scripts\prepare-live-chibi-audio.py --song-code drvalv
+
+# Isolated forced candidate; does not touch the stable public music directory.
+python scripts\prepare-live-chibi-audio.py `
+  --song-code drv999 --force `
+  --output-root .analysis\raw-migration\live-chibi-audio
+```
+
+Omitting `--output-root` preserves the established
+`public/assets/live-chibi/music` output. Use the isolated form for source
+identity regressions before replacing any stable derivative.

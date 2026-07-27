@@ -244,6 +244,25 @@ scripts/generate-archive-manifest.mjs
 - 未运行会重写 public manifest 的命令；
 - 未修改 public 资源或稳定 URL。
 
+### 0.6 live-chibi 音频构建器已切换到权威 RAW
+
+提交 `4f69af1` 已将 `scripts/prepare-live-chibi-audio.py` 接入统一来源契约。
+默认输入从旧整理目录改为配置中的 `RAW/audio`，`vgmstream` 与 FFmpeg
+默认从忽略的本机配置读取；显式 CLI 和原有环境变量仍可最终覆盖。
+默认稳定输出仍为 `public/assets/live-chibi/music`，新增 `--output-root`
+只用于隔离候选。
+
+`song3_drvalv.acb` 的旧副本和权威 RAW 文件均为 32,540,736 bytes，SHA-256
+同为
+`B655D57D8A7AEC20C73E39B823AB9296D28AAF0766CC954A026AFF7CF96450D2`。
+无 `--force` 回归后，稳定 `drvalv.m4a` 和 `index.json` 哈希均未变化。
+隔离强制提取的 `drv999.m4a` 与当前稳定文件逐字节相同，SHA-256 为
+`7BAE68F7E5033D5320BD7082FB3CC0CE6E4B7D44247123EA0B7A446FF34481E9`。
+
+5174 的 `view=chibi_stage` 达到 5/5 人就绪；真实点击播放后共享音频时钟
+从 0:00 前进到 0:02，动作预载完成，舞台与歌词正常显示，并可在 0:07
+暂停。本批未改写任何稳定 M4A、索引或 URL。
+
 ## 1. 当前已确认的事实
 
 ### 1.1 RAW 的真实边界和数量
@@ -947,20 +966,33 @@ git rev-parse origin/<当前分支>
 ## 8. 新窗口的第一项实际工作
 
 PR A 的配置核心、RAW manifest、card/background/character 六个工具、
-RAW audio 六个工具、RAW story 三个工具以及 Vite/manifest JS loader
-已经接入。新窗口默认继续仍硬编码旧整理包路径的 live/chibi Python 辅助脚本，
-不从 `003hok` 开始发布：
+RAW audio 六个工具、RAW story 三个工具、Vite/manifest JS loader，
+以及 live-chibi 音频构建器已经接入。新窗口默认继续其余仍硬编码旧整理包
+路径的 live/chibi Python 辅助脚本，不从 `003hok` 开始发布：
 
 1. 核对 `0ba566f`、PR #2、worktree、5174；
 2. 复核 XOR source 与 decoded PB 的两个 SHA-256 和逐字节解码一致性；
 3. 复核 decoded PB 的 47,204 records 和 158 table IDs；
 4. 列出所有硬编码个人绝对路径；
-5. 下一批逐个收束 live/chibi Python 辅助脚本的旧整理包路径；
+5. 下一批逐个收束其余 live/chibi Python 辅助脚本的旧整理包路径；
 6. 每批运行 fixture 和原域 audit，比较结果；
 7. 对其余 masterdata 专项工具继续区分 XOR source 与 decoded PB；
-8. 最后单独处理仍硬编码旧整理包路径的 live/chibi 辅助脚本；
+8. 每个脚本先用隔离 `--output-root` 或等价候选目录验证，再决定稳定输出；
 9. 完成 PR A 的二进制政策和 source schema 文档；
 10. 再进入 multi-part story gate。
+
+当前仍有六个明确目标，建议按“单一 RAW 域优先、外部容器最后”的顺序：
+
+1. `prepare-live-chibi-backmonitor.py`：`RAW/movie` + legacy liveeffectscript；
+2. `prepare-live-chibi-image-layers.py`：`RAW/asset` + legacy liveeffectscript；
+3. `prepare-live-chibi-object-layers.py`：`RAW/asset` + legacy liveeffectscript；
+4. `prepare-live-chibi-stage-backgrounds.py`：`RAW/asset` + legacy liveeffectscript；
+5. `prepare-live-chibi-assets.py`：RAW、costume、live lipsync 等混合来源；
+6. `prepare-live-chibi-stage-effects.py`：XAPK/APK 外部容器，单独定义来源字段。
+
+下一批首选 `prepare-live-chibi-backmonitor.py`。先确认 260 个 RAW USM 中该脚本
+实际消费的集合，再增加 `--sources-config`、显式输入/输出覆盖和隔离候选验证；
+不要在同一提交顺带改 image/object/stage-backgrounds。
 
 只有用户明确要求跳过供应链收束、继续视觉内容批次时，才直接转到
 `event_story_visual:003hok`。
