@@ -201,8 +201,8 @@ replace their records in place in an existing target index. Omitting
 
 The main live-chibi builder now reads body metadata, five shared setup
 skeletons, costume atlas/textures, and all animation fragments directly from
-configured `RAW/asset`. Choreography CSVs and the existing 60 Hz lip-sync JSON
-remain declared legacy semantic/derived inputs:
+configured `RAW/asset`. It also reads all 119 choreography and 60 live
+lip-sync TextAssets directly from the 61 `song_*.unity3d` bundles:
 
 ```powershell
 python scripts\prepare-live-chibi-assets.py `
@@ -227,6 +227,14 @@ npm run audit:live-chibi-costume-boundary
 
 The ignored report is written to
 `.analysis/raw-migration/live-chibi-costume-boundary/audit.json`.
+
+Use `npm run audit:live-chibi-semantic-sources` to compare the RAW TextAssets
+with the old organizer exports. The ignored report is written to
+`.analysis/raw-migration/live-chibi-semantics/audit.json`. Explicit
+`--effect-script-root` and `--live-lip-sync-root` arguments remain available
+only as regression overrides; neither is a default source for the main
+builder. The Backmonitor, image-layer, object-layer, and static-stage builders
+still have their own CSV inputs and must be migrated separately.
 
 The live-chibi stage-effect textures are a deliberate exception to RAW
 authority. They are embedded in the client XAPK's nested main APK

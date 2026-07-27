@@ -1642,13 +1642,11 @@ published under `public/assets/spines`; they must not enter the live inventory.
 RAW also has 38 additional NPC/guest costume bundles outside the 690 master
 set.
 
-The 119 `liveeffectscript` CSVs and 60 source lip-sync JSON files remain
-declared legacy semantic/derived inputs; the builder no longer hides them
-behind a personal absolute path. On port 5174, DRIVE A LIVE loaded 5/5
-characters from the unchanged stable artifacts, completed motion preload,
-advanced the shared clock to 0:03, and rendered lyrics and choreography.
-There was no framework overlay or application error; the two existing Pixi
-Spine warnings remained. No stable artifact or URL changed.
+At the time of commit `a9c8342`, the 119 `liveeffectscript` CSVs and 60 source
+lip-sync JSON files were still explicit legacy semantic/derived inputs. Commit
+`bee7970` later replaced those two inputs in the main builder with the
+corresponding RAW TextAssets; section 6.12 records that follow-up. The four
+specialized CSV consumers remain a separate migration boundary.
 
 ## 6.10 External XAPK / live-chibi stage-effect slice
 
@@ -1740,6 +1738,65 @@ requested model, rendered a non-zero Canvas without an error overlay, and
 showed the expected costume label. All 15 representative
 `comu.atlas/.skel/.png` URLs returned HTTP 200. The final 水嶋 咲 frame visibly
 rendered the full character. No stable file or manifest changed.
+
+## 6.12 RAW live choreography and lip-sync semantic sources
+
+Commit `bee7970` moves the main `prepare-live-chibi-assets.py` choreography
+and live lip-sync inputs from organizer exports to TextAssets read directly
+from the configured `RAW/asset/song_*.unity3d` bundles. Explicit
+`--effect-script-root` and `--live-lip-sync-root` arguments remain available
+only for regression comparisons; they are no longer default sources.
+
+The repeatable ignored audit
+`npm run audit:live-chibi-semantic-sources` established:
+
+| Check | Result |
+| --- | ---: |
+| RAW `song_*.unity3d` bundles | 61 |
+| RAW choreography TextAssets | 119 |
+| organizer choreography files | 119 |
+| byte-identical choreography pairs | 119/119 |
+| RAW choreography payload bytes | 21,964,117 |
+| RAW live lip-sync TextAssets | 60 |
+| organizer live lip-sync files | 60 |
+| byte-identical live lip-sync pairs | 60/60 |
+| RAW live lip-sync payload bytes | 39,549,272 |
+| RAW-only or organizer-only semantic files | 0 |
+
+All 61 song bundles expose choreography. Exactly 60 expose a
+`*_for_lipsync` TextAsset; the sole exception is `song_drv999.unity3d`, which
+accounts exactly for the 61/60 bundle-to-lip-sync count. Representative source
+identity:
+
+| TextAsset | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `anwhre_live_effect` | 178,049 | `56eed4233fd48bde400f54807710a8946a3b00a260e85d1ba0ab21910ec5d7de` |
+| `anwhre_for_lipsync` | 652,906 | `1c74d440c7c2d58bba442cae2939c5b22567803829ee7c3cc518e700502ec93f` |
+
+An isolated full rebuild still produced 49 characters, 549 costumes, 60
+common motions across five body types, five compatibility motions, 1,405
+choreography motions, and 118 effective scripts. Its 8,517 files total
+592,667,731 bytes and were 8,517/8,517 byte-identical to their stable
+counterparts. The 119-to-118 difference is unchanged behavior: one RAW
+choreography TextAsset contains no effective events.
+
+Port 5174 exercised the actual DRIVE A LIVE consumer. It reached 5/5
+characters ready, loaded positions 1–5, reported
+`data-lip-sync-ready="true"`, `lipsync/drvalv.json`, and 7,817 lip-sync
+frames. Playback advanced from 2,800 ms to 14,600 ms; the active singer
+changed from position 3 to positions 1 and 4, the 10,800 ms camera event fired,
+and the lyric `今 始まるストーリー SideM` rendered. The choreography index
+and `lipsync/drvalv.json` returned HTTP 200. There was no Vite error overlay,
+and no stable artifact or URL changed.
+
+This does not yet remove every legacy CSV read. The following specialized
+builders still have independent choreography-file inputs and are the next
+bounded migration work:
+
+- `prepare-live-chibi-backmonitor.py`;
+- `prepare-live-chibi-image-layers.py`;
+- `prepare-live-chibi-object-layers.py`;
+- `prepare-live-chibi-stage-backgrounds.py`.
 
 ## 7. Browser candidate verification
 

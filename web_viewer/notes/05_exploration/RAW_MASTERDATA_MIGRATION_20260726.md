@@ -1349,8 +1349,9 @@ restored true. Stable PNGs and index stayed unchanged.
 
 Commit `a9c8342` moves body metadata, five setup skeletons, the bounded 549
 published costumes, and 7,135 animation fragments to direct configured
-`RAW/asset` reads. Choreography CSVs and the 60 Hz lip-sync JSON remain
-explicit legacy semantic/derived inputs.
+`RAW/asset` reads. At that commit, choreography CSVs and the 60 Hz lip-sync
+JSON were still explicit legacy semantic/derived inputs; commit `bee7970`
+later replaced both defaults in the main builder with RAW TextAssets.
 
 Source regression proved:
 
@@ -1370,6 +1371,27 @@ python scripts\prepare-live-chibi-assets.py `
 Port 5174 then loaded DRIVE A LIVE with 5/5 characters, completed motion
 preload, advanced the shared clock, and rendered lyrics/choreography. Stable
 assets stayed unchanged.
+
+### RAW choreography and live lip-sync semantics
+
+Commit `bee7970` makes the main live-chibi builder read choreography and
+lip-sync TextAssets directly from all 61 configured RAW song bundles. The
+organizer directories remain optional regression overrides only.
+
+`audit:live-chibi-semantic-sources` proved all 119 choreography payloads and
+all 60 live lip-sync payloads byte-identical to the organizer exports, with no
+RAW-only or organizer-only file. The RAW payload totals are 21,964,117 and
+39,549,272 bytes respectively. `song_drv999.unity3d` is the only song bundle
+without a lip-sync TextAsset; all 61 contain choreography.
+
+The rebuilt 8,517-file candidate remained byte-identical to stable. Port 5174
+then verified DRIVE A LIVE with 5/5 characters, 7,817 `drvalv` lip-sync
+frames, singer changes, the 10,800 ms camera event, and the expected lyric
+while the clock advanced to 14,600 ms. Stable assets stayed unchanged.
+
+Four specialized builders still read choreography CSV files independently:
+Backmonitor, Image_layer, Object_layer, and static-stage backgrounds. They are
+not covered by the main-builder source switch and must move one at a time.
 
 The stable live inventory remains correctly bounded to 549 costumes.
 `audit:live-chibi-costume-boundary` proved that the remaining 141 master
@@ -1396,8 +1418,9 @@ groups at the current stage time. Stable assets stayed unchanged.
 
 ## Next batches
 
-1. Establish provenance/reproduction contracts for the legacy choreography
-   CSVs and 60 source lip-sync curves.
+1. Migrate the remaining Backmonitor, Image_layer, Object_layer, and
+   static-stage helper builders to the already-proven RAW choreography
+   TextAssets, one consumer and one 5174 regression at a time.
 2. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
 3. Continue the proven `001tom`/`002sht` event-story visual consumer in another

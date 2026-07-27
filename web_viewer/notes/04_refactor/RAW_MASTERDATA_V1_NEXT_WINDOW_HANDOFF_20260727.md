@@ -372,8 +372,9 @@ Spine warning。本批未改写稳定资源或 URL。
 - masterdata 的另外 141 个 model 是已发布的 `comu` 交流 Spine，不应加入
   live 下拉框；
 - RAW 还另有 38 个 master 外的 NPC/guest costume bundle；
-- 119 份 choreography CSV 与 60 条 lip-sync 源 JSON 仍是显式 legacy
-  语义/派生输入，尚未建立从 RAW/masterdata 独立再生的完整链。
+- `a9c8342` 当时仍使用的 119 份 choreography CSV 与 60 条 lip-sync 源
+  JSON，已由后续 `bee7970` 改为直接读取 RAW TextAsset；四个专项辅助
+  构建器的 CSV 读取仍待下一小批迁移。
 
 ### 0.12 舞台内置灯效已建立外部 XAPK 来源契约
 
@@ -435,6 +436,47 @@ masterdata 中恰有 49 条非空名称，全部是 `ベーシックウェア`�
 `031sak_002_00`：主页均选中正确 model 和服装名、Canvas 正常、无错误覆盖，
 15 个代表性 `comu.atlas/.skel/.png` URL 全部 HTTP 200，水嶋 咲画面完整
 可见。本批没有稳定资源替换。
+
+### 0.14 live 编舞与口型语义源已切换到权威 RAW
+
+代码提交 `bee7970` 新增 RAW 语义读取器与可重复审计命令：
+
+```powershell
+npm run audit:live-chibi-semantic-sources
+```
+
+主 `prepare-live-chibi-assets.py` 现在直接读取 61 个
+`RAW/asset/song_*.unity3d` 内的 choreography 和 live lip-sync
+TextAsset。显式 `--effect-script-root` / `--live-lip-sync-root` 仅保留为
+整理包回归覆盖，不再是默认源。
+
+全量来源核对结果：
+
+- 119/119 choreography TextAsset 与整理 CSV 逐字节一致，总 payload
+  21,964,117 bytes；
+- 60/60 live lip-sync TextAsset 与整理 JSON 逐字节一致，总 payload
+  39,549,272 bytes；
+- RAW-only、legacy-only 均为 0；
+- 61 个 song bundle 全有 choreography；只有 `song_drv999.unity3d`
+  不含 lip-sync TextAsset，恰好解释 61/60 差异；
+- `anwhre_live_effect`：178,049 bytes，
+  SHA-256 `56eed4233fd48bde400f54807710a8946a3b00a260e85d1ba0ab21910ec5d7de`；
+- `anwhre_for_lipsync`：652,906 bytes，
+  SHA-256 `1c74d440c7c2d58bba442cae2939c5b22567803829ee7c3cc518e700502ec93f`。
+
+隔离完整候选仍为 8,517 个文件、592,667,731 bytes，与稳定输出
+8,517/8,517 逐字节一致。5174 的 DRIVE A LIVE 达到 5/5 ready，读取
+`lipsync/drvalv.json` 的 7,817 帧；播放推进到 14,600 ms 时 singer 已从
+位置 3 切换到 1、4，10,800 ms camera event 和歌词均正常。两个语义 URL
+均 HTTP 200，无 Vite 错误覆盖，稳定资源未改写。
+
+边界：以下四个专项构建器仍各自读取 choreography CSV，必须下一批逐个迁移
+和回归，不能把本节写成“所有 CSV 消费者都已迁移”：
+
+- `prepare-live-chibi-backmonitor.py`；
+- `prepare-live-chibi-image-layers.py`；
+- `prepare-live-chibi-object-layers.py`；
+- `prepare-live-chibi-stage-backgrounds.py`。
 
 ## 1. 当前已确认的事实
 
@@ -1148,8 +1190,9 @@ PR A 的配置核心、RAW manifest、card/background/character 六个工具、
 RAW audio 六个工具、RAW story 三个工具、Vite/manifest JS loader，
 以及 live-chibi 音频、Backmonitor、Image_layer、Object_layer、静态舞台、
 角色核心和外部 XAPK stage-effects 构建器已经接入；690/549/141 的 costume
-消费域边界也已纠正并完成全量稳定回归。下一批处理 legacy choreography
-CSV 与 60 条 lip-sync 源曲线的来源/再生契约，不从 `003hok` 开始发布：
+消费域边界也已纠正并完成全量稳定回归。主 live-chibi 构建器的 choreography
+与 lip-sync 语义输入也已直接读取 RAW。下一批逐个迁移四个仍独立读取 CSV
+的专项辅助构建器，不从 `003hok` 开始发布：
 
 1. 核对 `0ba566f`、PR #2、worktree、5174；
 2. 复核 XOR source 与 decoded PB 的两个 SHA-256 和逐字节解码一致性；
@@ -1164,12 +1207,15 @@ CSV 与 60 条 lip-sync 源曲线的来源/再生契约，不从 `003hok` 开始
 
 当前仍有三个明确目标，必须继续分批：
 
-1. choreography CSV 与 60 条 lip-sync 源曲线：建立来源/再生契约；
+1. Backmonitor、Image_layer、Object_layer、静态舞台四个辅助构建器：
+   改读已验证的 RAW choreography TextAsset，并逐个做候选 parity 和 5174
+   消费者回归；
 2. 其余 183 个非 Backmonitor USM：结合 masterdata 消费者进行分类；
 3. multi-part story promotion gate：从单剧情原子契约扩展到集合。
 
-下一批首选审计 choreography CSV 与 60 条 lip-sync 源曲线。先只建立
-inventory、来源身份和可再生性结论，不要顺带改写 live 编排或稳定曲线。
+下一批首选 `prepare-live-chibi-backmonitor.py`，只替换它的 CSV 来源，
+复用已验证的 RAW TextAsset 映射；先跑隔离候选与稳定 parity，再在 5174
+复验实际 Backmonitor，不要同时修改其余三个辅助构建器。
 
 只有用户明确要求跳过供应链收束、继续视觉内容批次时，才直接转到
 `event_story_visual:003hok`。
