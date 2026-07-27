@@ -1791,10 +1791,10 @@ and no stable artifact or URL changed.
 
 This does not yet remove every legacy CSV read. Commit `f73faa7` migrated the
 Backmonitor consumer as recorded in section 6.13, and commit `4c67bd1`
-migrated Image_layer as recorded in section 6.14. The following specialized
-builders still have independent choreography-file inputs:
+migrated Image_layer as recorded in section 6.14. Commit `08be451` migrated
+Object_layer as recorded in section 6.15. Only the following specialized
+builder still has an independent choreography-file input:
 
-- `prepare-live-chibi-object-layers.py`;
 - `prepare-live-chibi-stage-backgrounds.py`.
 
 ## 6.13 RAW choreography source / Backmonitor consumer
@@ -1858,6 +1858,40 @@ and 1725. Turning 图片布景 off reduced the layer count to zero; turning it
 back on restored all four assets and depths. The index and all four PNG URLs
 returned HTTP 200, and no Vite error overlay appeared. No stable file or URL
 changed.
+
+## 6.15 RAW choreography source / Object_layer consumer
+
+Commit `08be451` changes only
+`scripts/prepare-live-chibi-object-layers.py`: its default semantic input now
+uses the audited RAW choreography TextAsset map. `--script-root` remains an
+explicit organizer-export regression override. Object prefab/SpriteRenderer
+inspection still reads configured RAW bundles; output schema, stable paths,
+and the static-stage consumer were not changed.
+
+Independent RAW and organizer parsing both produced 4,795 Object_layer events
+and 185 unique object IDs. The object-ID symmetric difference was empty, and
+all 185 object-to-song-code sets were identical. The known physical boundary
+did not move: stable remains 185 referenced, 181 located, and four missing.
+The missing IDs remain:
+
+- `fx_in_tibeti_overlight_1`;
+- `fx_in_tibeti_overlight_2`;
+- `fx_in_tibeti_water_1`;
+- `fx_in_tibeti_water_2`.
+
+A bounded ignored rebuild of `fx_in_bnckgy_overlight_1` produced one
+69,584-byte sprite with candidate/stable SHA-256
+`D29F424CCCBC84EDCC46AABF7FDAB2DF947C0B7A2450CC581CB192F72D253B75`.
+Its candidate index entry was structurally identical to stable. The untouched
+full stable index retained SHA-256
+`D0794B72D0B31C094DD557DB2B317B92A8412B1EB9D577721685B249FA3CDCE7`.
+
+Port 5174 exercised the actual バーニン・クールで輝いて consumer at
+13,000 ms. It reported four visible objects
+`fx_in_bnckgy_overlight_1` through `_4` and an empty unsupported list. Turning
+舞台物件 off reduced the count to zero; turning it back on restored all four.
+The index and four representative sprite URLs returned HTTP 200, and no Vite
+error overlay appeared. No stable file or URL changed.
 
 ## 7. Browser candidate verification
 

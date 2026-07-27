@@ -234,8 +234,8 @@ with the old organizer exports. The ignored report is written to
 `--effect-script-root` and `--live-lip-sync-root` arguments remain available
 only as regression overrides; neither is a default source for the main
 builder. The Backmonitor builder now uses the same RAW choreography mapping.
-The image-layer builder now does as well. The object-layer and static-stage
-builders still have their own CSV inputs and must be migrated separately.
+The image-layer and object-layer builders now do as well. The static-stage
+builder still has its own CSV input and must be migrated separately.
 
 The live-chibi stage-effect textures are a deliberate exception to RAW
 authority. They are embedded in the client XAPK's nested main APK

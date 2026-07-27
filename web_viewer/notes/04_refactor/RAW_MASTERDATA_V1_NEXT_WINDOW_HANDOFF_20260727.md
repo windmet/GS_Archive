@@ -314,7 +314,9 @@ Backmonitor 错误。本批未改写稳定 MP4、index 或 URL。
 ### 0.9 live Object_layer 已切换到权威 RAW/asset
 
 提交 `59a442d` 已将 `prepare-live-chibi-object-layers.py` 接入统一来源契约。
-119 份 CSV 提供 185 个唯一对象引用；物理 bundle 查找默认来自
+该提交当时仍从整理 CSV 读取语义；后续 `08be451` 已切换到 RAW song
+bundle 内的 TextAsset。两边都解析出 4,795 条事件、185 个唯一对象，且
+185 组 object-to-song 映射逐项一致。物理 bundle 查找仍默认来自
 `RAW/asset`。稳定清单定位 181 个，四个 `tibeti` ID 因候选 bundle 内没有
 预期 keeper 而继续保留为 missing，不能写成 185/185 完成。
 
@@ -375,9 +377,9 @@ Spine warning。本批未改写稳定资源或 URL。
   live 下拉框；
 - RAW 还另有 38 个 master 外的 NPC/guest costume bundle；
 - `a9c8342` 当时仍使用的 119 份 choreography CSV 与 60 条 lip-sync 源
-  JSON，已由后续 `bee7970` 改为直接读取 RAW TextAsset；Backmonitor
-  与 Image_layer 辅助构建器也已由 `f73faa7`、`4c67bd1` 跟进，剩余两个
-  CSV 消费者待后续小批迁移。
+  JSON，已由后续 `bee7970` 改为直接读取 RAW TextAsset；Backmonitor、
+  Image_layer、Object_layer 辅助构建器也已由 `f73faa7`、`4c67bd1`、
+  `08be451` 跟进，只剩静态舞台 CSV 消费者待下一小批迁移。
 
 ### 0.12 舞台内置灯效已建立外部 XAPK 来源契约
 
@@ -473,19 +475,18 @@ TextAsset。显式 `--effect-script-root` / `--live-lip-sync-root` 仅保留为
 位置 3 切换到 1、4，10,800 ms camera event 和歌词均正常。两个语义 URL
 均 HTTP 200，无 Vite 错误覆盖，稳定资源未改写。
 
-边界：Backmonitor 已由 `f73faa7` 迁移，Image_layer 已由 `4c67bd1`
-迁移。以下两个专项构建器仍各自读取 choreography CSV，必须下一批逐个
-迁移和回归，不能把本节写成“所有 CSV 消费者都已迁移”：
+边界：Backmonitor、Image_layer、Object_layer 已分别由 `f73faa7`、
+`4c67bd1`、`08be451` 迁移。只有以下专项构建器仍读取 choreography CSV，
+必须单独迁移和回归，不能把本节写成“所有 CSV 消费者都已迁移”：
 
-- `prepare-live-chibi-object-layers.py`；
 - `prepare-live-chibi-stage-backgrounds.py`。
 
 ### 0.15 Backmonitor 语义消费者已切换到 RAW TextAsset
 
 代码提交 `f73faa7` 只修改 `prepare-live-chibi-backmonitor.py`。默认输入
 复用 61 个 RAW song bundle 的 choreography TextAsset；`--script-root`
-只保留为整理 CSV 回归覆盖。物理视频仍来自 `RAW/movie`；Image_layer 已在
-后续 `4c67bd1` 迁移，其余两个专项构建器仍未动。
+只保留为整理 CSV 回归覆盖。物理视频仍来自 `RAW/movie`；Image_layer 与
+Object_layer 已在后续 `4c67bd1`、`08be451` 迁移，只剩静态舞台构建器未动。
 
 RAW 与整理包分别解析均得到 73 个主视频 ID、4 个 alpha 转场 ID，两类集合
 差异都为 0。隔离候选重建：
@@ -508,8 +509,8 @@ ready。index、主视频、color 和 alpha 四个 URL 均 HTTP 200，无 Vite
 
 代码提交 `4c67bd1` 只修改 `prepare-live-chibi-image-layers.py`。默认输入
 复用 RAW choreography TextAsset；`--script-root` 只保留为整理 CSV 回归
-覆盖。Sprite 物理来源仍是 `RAW/asset/song_<code>.unity3d`，Object_layer
-和静态舞台两个构建器未动。
+覆盖。Sprite 物理来源仍是 `RAW/asset/song_<code>.unity3d`；Object_layer
+已由后续 `08be451` 迁移，只剩静态舞台构建器未动。
 
 RAW 与整理包分别解析都得到 101 条 Image_layer 事件、57 个唯一资源，集合
 差异为 0。隔离重建 `stage_flslgt_01.png` 得到 775,367 bytes，候选与稳定
@@ -522,6 +523,27 @@ index entry 结构一致。稳定 57 项 index 未改写，SHA-256 仍为
 层，depth 为 1550/1575/1600/1725。关闭“图片布景”后计数归零，再开启后
 四层与 depth 完整恢复。index 与四张 PNG 共五个 URL 均 HTTP 200，无 Vite
 错误覆盖。
+
+### 0.17 Object_layer 语义消费者已切换到 RAW TextAsset
+
+代码提交 `08be451` 只修改 `prepare-live-chibi-object-layers.py`。默认
+语义输入复用 RAW choreography TextAsset；`--script-root` 只保留为整理
+CSV 回归覆盖，物理 prefab/SpriteRenderer 来源仍是 RAW bundle。
+
+RAW 与整理包分别解析都得到 4,795 条事件、185 个唯一对象，并且全部 185
+组 object-to-song 映射逐项一致。既有边界保持 185 referenced / 181 located /
+4 missing；四个 `fx_in_tibeti_*` 缺口没有被误补或隐藏。
+
+隔离重建 `fx_in_bnckgy_overlight_1` 得到一张 69,584-byte sprite，候选与
+稳定 SHA-256 均为
+`D29F424CCCBC84EDCC46AABF7FDAB2DF947C0B7A2450CC581CB192F72D253B75`；
+index entry 结构一致。稳定全量 index 未改写，SHA-256 仍为
+`D0794B72D0B31C094DD557DB2B317B92A8412B1EB9D577721685B249FA3CDCE7`。
+
+5174 的真实バーニン・クールで輝いて消费者在 13,000 ms 显示四个
+`fx_in_bnckgy_overlight_1..4` 对象、unsupported 为空。关闭“舞台物件”后
+计数归零，再开启后四项恢复。index 与四张代表性 sprite 共五个 URL 均
+HTTP 200，无 Vite 错误覆盖。
 
 ## 1. 当前已确认的事实
 
@@ -1236,9 +1258,9 @@ RAW audio 六个工具、RAW story 三个工具、Vite/manifest JS loader，
 以及 live-chibi 音频、Backmonitor、Image_layer、Object_layer、静态舞台、
 角色核心和外部 XAPK stage-effects 构建器已经接入；690/549/141 的 costume
 消费域边界也已纠正并完成全量稳定回归。主 live-chibi 构建器的 choreography
-与 lip-sync 语义输入、Backmonitor 和 Image_layer 辅助消费者也已直接读取
-RAW。下一批逐个迁移两个仍独立读取 CSV 的专项辅助构建器，不从 `003hok`
-开始发布：
+与 lip-sync 语义输入、Backmonitor、Image_layer 和 Object_layer 辅助
+消费者也已直接读取 RAW。下一批只迁移最后一个仍独立读取 CSV 的静态舞台
+辅助构建器，不从 `003hok` 开始发布：
 
 1. 核对 `0ba566f`、PR #2、worktree、5174；
 2. 复核 XOR source 与 decoded PB 的两个 SHA-256 和逐字节解码一致性；
@@ -1253,14 +1275,14 @@ RAW。下一批逐个迁移两个仍独立读取 CSV 的专项辅助构建器，
 
 当前仍有三个明确目标，必须继续分批：
 
-1. Object_layer、静态舞台两个辅助构建器：改读已验证的 RAW choreography
-   TextAsset，并逐个做候选 parity 和 5174 消费者回归；
+1. 静态舞台辅助构建器：改读已验证的 RAW choreography TextAsset，并做
+   候选 parity 和 5174 消费者回归；
 2. 其余 183 个非 Backmonitor USM：结合 masterdata 消费者进行分类；
 3. multi-part story promotion gate：从单剧情原子契约扩展到集合。
 
-下一批首选 `prepare-live-chibi-object-layers.py`，只替换它的 CSV 来源，
+下一批只处理 `prepare-live-chibi-stage-backgrounds.py` 的 CSV 来源，
 复用已验证的 RAW TextAsset 映射；先跑隔离候选与稳定 parity，再在 5174
-复验实际 Object_layer，不要同时修改静态舞台构建器。
+复验实际静态舞台。
 
 只有用户明确要求跳过供应链收束、继续视觉内容批次时，才直接转到
 `event_story_visual:003hok`。
