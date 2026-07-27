@@ -375,7 +375,7 @@ npm run chibi:backmonitor
 
 ## Image_layer 纹理与前后景层（2026-07-15）
 
-118 份 `liveeffectscript` 中共有 101 条 `Image_layer / Image_layer_2` 事件，精确引用 57 个 Sprite。引用素材并不在统一贴图包中，而是分别位于 `RAW/asset/song_<songCode>.unity3d`；每个 bundle 均存在与 CSV ID 同名的 Sprite，且指向一张 1900×1060、带完整透明边距的 RGBA Texture2D。旧的 `ALL_PHOTOS` 导出有的保留整张 Texture2D、有的只保留 Sprite 裁剪区域，不能稳定恢复舞台坐标，因此新脚本直接读取 Sprite 关联 Texture2D。
+119 份 `liveeffectscript` 中共有 101 条 `Image_layer / Image_layer_2` 事件，精确引用 57 个 Sprite。引用素材并不在统一贴图包中，而是分别位于 `RAW/asset/song_<songCode>.unity3d`；每个 bundle 均存在与 CSV ID 同名的 Sprite，且指向一张 1900×1060、带完整透明边距的 RGBA Texture2D。旧的 `ALL_PHOTOS` 导出有的保留整张 Texture2D、有的只保留 Sprite 裁剪区域，不能稳定恢复舞台坐标，因此新脚本直接读取 Sprite 关联 Texture2D。
 
 ```powershell
 npm run chibi:image-layers
@@ -398,3 +398,16 @@ LIGHT 四层实景开关回归通过，稳定目录未被替换。
 - OUR SONG 开场 6 层；`stage_ossshd_05` 在 16.8 秒由 1760 切到 1860，53.2 秒进一步切到 1930，其他层也按 CSV 更新深度。
 - `tibeti_live_effect` 的 `stage_tibeti_effect01` 在 78.3 秒隐藏、85.1 秒恢复、88.6 秒再次隐藏。
 - 从 FLASH LIGHT 切回 DRIVE A LIVE 后图片层计数立即归零；干净刷新后的切歌回归中没有新增 Backmonitor/Image_layer 加载错误或媒体 AbortError。
+
+## Object_layer 对象与粒子清单来源校正（2026-07-27）
+
+提交 `59a442d` 已将 `scripts/prepare-live-chibi-object-layers.py` 接入统一
+archive source contract。119 份 CSV 提供 185 个唯一对象引用；物理查找改为
+配置的 `RAW/asset`。稳定清单定位 181 个，使用 77 个实际 bundle；77/77
+与整理包副本 SHA-256 一致。四个 `tibeti` ID 的候选 bundle 中没有预期
+keeper，继续作为明确 missing，不按文件名强行关联。
+
+`fx_in_bnckgy_overlight_1` 的隔离强制导出与稳定 PNG 逐字节一致，完整
+索引镜像单项重建后仍保持 185/181/4 统计及相同 index 哈希。5174 实播
+バーニン・クールで輝いて跨过 12 秒事件后出现四个 overlight 对象；舞台
+物件开关可清零并恢复相同对象，稳定目录未被替换。

@@ -166,3 +166,19 @@ remain final overrides. Repeat `--asset` for a bounded set. A selected rebuild
 merges its records into an existing target index, so an isolated mirror of the
 57-entry stable index can be used for non-destructive regression. Omitting
 `--asset` retains the established full 57-image build.
+
+The live-chibi object-layer builder also treats `liveeffectscript` CSVs as
+semantic references and configured `RAW/asset` as physical authority:
+
+```powershell
+python scripts\prepare-live-chibi-object-layers.py `
+  --asset fx_in_bnckgy_overlight_1 `
+  --force `
+  --output-root .analysis\raw-migration\live-chibi-object-layers\candidate
+```
+
+Explicit `--script-root`, `--raw-asset-root`, and `--output-root` arguments
+remain final overrides. Repeat `--asset` for a bounded set. Selected records
+are replaced in place in an existing target index, preserving the full catalog
+order and its explicit missing list. Omitting `--asset` retains the established
+185-reference build.

@@ -1296,9 +1296,35 @@ Port 5174 then exercised the real FLASH LIGHT consumer. All four referenced
 image layers became ready at their expected depths; the 图片布景 toggle removed
 all four and restored the same set. Stable PNGs and index stayed unchanged.
 
+## Live Object_layer source-contract slice
+
+Commit `59a442d` makes configured `RAW/asset` the physical default for the
+object-layer builder while retaining organizer-era `liveeffectscript` CSVs as
+declared semantic references. There are 185 unique references: 181 are located
+and four `tibeti` IDs remain explicitly missing because their candidate bundles
+do not contain the expected keeper component.
+
+The 181 located references use 77 authoritative RAW bundles. All 77 are
+byte-identical to their organizer-era duplicates. A forced isolated extraction
+of `fx_in_bnckgy_overlight_1` was byte-identical to stable. Rebuilding that
+selected object inside a mirror of the full catalog retained the exact stable
+index hash and its 185/181/4 statistics:
+
+```powershell
+python scripts\prepare-live-chibi-object-layers.py `
+  --asset fx_in_bnckgy_overlight_1 `
+  --force `
+  --output-root .analysis\raw-migration\live-chibi-object-layers\candidate
+```
+
+Port 5174 then crossed the 12,000 ms object event in the actual
+バーニン・クールで輝いて choreography. Four overlight objects appeared with an
+empty unsupported list; the 舞台物件 toggle removed all four and restored the
+same IDs. Stable sprites and index stayed unchanged.
+
 ## Next batches
 
-1. Migrate `prepare-live-chibi-object-layers.py` alone, using an ignored output
+1. Migrate `prepare-live-chibi-stage-backgrounds.py` alone, using an ignored output
    root and port-5174 consumer check before any stable replacement.
 2. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.

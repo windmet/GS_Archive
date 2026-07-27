@@ -216,7 +216,7 @@ JSON as a byte-for-byte direct extractor artifact.
 | story SE | compiled SE cue + ACB sequence metadata | multi-cue ACB bank | 435/435 classified; `waribashi` composite reconstructed | full identity and representative sequence semantics proven |
 | master seasonal BGM | table 133 relation + ACB action metadata | variant cues/banks | 92/92 classified; 42/42 switches resolved | full identity relation proven |
 | character/costume/Spine | costume/idol dictionaries + Unity object identity | `costume_*`, `idol_settings_*`, `image_chara*` | 690/690 master costumes; 725 full Spine + 3 RAW silhouette-only; 257/257 idol-setting JSON assets; all 485 character-image paths classified | costume/Spine/idol settings proven; character-image consumers mapped, promotion partial |
-| live/chibi | song/choreography IDs | `live_*`, `song_*`, image/object layers | representative song playback, 77/77 Backmonitor mappings, and 57/57 image-layer mappings proven | partial |
+| live/chibi | song/choreography IDs | `live_*`, `song_*`, image/object layers | representative song playback, 77/77 Backmonitor mappings, 57/57 image-layer mappings, and 181/185 object-layer references proven | partial |
 | movies | event/live/card movie relations | 260 USM | 77/77 live Backmonitor references mapped to RAW; remaining 183 still filename-level | partial |
 | general UI images | master records + bundle object names | 1,271 `image_*` bundles | no full relation table yet | pending |
 
@@ -1508,6 +1508,47 @@ On port 5174, the stable index and sample PNG returned HTTP 200. In the actual
 restored the same four assets and depths. No image-layer load or synchronization
 error appeared; only the two previously recorded Pixi Spine warnings remained.
 No stable PNG, index, or URL changed.
+
+## 6.7 RAW asset / live Object_layer slice
+
+Commit `59a442d` moved `scripts/prepare-live-chibi-object-layers.py` from
+organizer-era absolute defaults to the shared source contract. The 119
+`liveeffectscript` CSVs under `legacy_root` remain the semantic-reference
+source. They contain 185 unique `Object_layer` asset references. Physical
+bundle discovery now defaults to configured `RAW/asset`.
+
+The stable inventory locates 181 references and explicitly retains four
+unresolved `tibeti` IDs:
+
+```text
+fx_in_tibeti_overlight_1
+fx_in_tibeti_overlight_2
+fx_in_tibeti_water_1
+fx_in_tibeti_water_2
+```
+
+Candidate bundles exist for those four IDs, but the expected keeper component
+is absent, so they remain `missing` rather than being promoted by filename
+guessing. The 181 located references resolve through 77 authoritative RAW
+bundles totaling 141,251,540 bytes. All 77 were SHA-256 compared with their
+organizer-era duplicates; 77/77 are byte-identical. A representative source,
+`liveobjectobjectlayer_fx_in_bnckgy_fire.unity3d`, is
+`9F2ECB399A684A9D944225D2EB712121D533FE346F8A4113B2E8284DA5FC91EC`.
+
+The builder now accepts repeatable `--asset`, explicit source overrides, and an
+isolated `--output-root`. Forced extraction of
+`fx_in_bnckgy_overlight_1` produced a 69,584-byte PNG byte-identical to stable,
+with SHA-256
+`D29F424CCCBC84EDCC46AABF7FDAB2DF947C0B7A2450CC581CB192F72D253B75`.
+An in-place selected rebuild of a full mirror retained the exact stable index
+hash `D0794B72D0B31C094DD557DB2B317B92A8412B1EB9D577721685B249FA3CDCE7`
+and the complete 185 referenced / 181 located / 4 missing statistics.
+
+On port 5174, the actual バーニン・クールで輝いて choreography crossed the
+12,000 ms event and reported four visible objects:
+`fx_in_bnckgy_overlight_1` through `_04`. The stage was ready, the unsupported
+list was empty, disabling 舞台物件 reduced the count to zero, and re-enabling it
+restored the same four IDs. No stable sprite, index, or URL changed.
 
 ## 7. Browser candidate verification
 
