@@ -198,3 +198,21 @@ Explicit `--script-root`, `--raw-asset-root`, and `--output-root` arguments
 remain final overrides. Repeat `--song-code` for a bounded set. Selected songs
 replace their records in place in an existing target index. Omitting
 `--song-code` retains the established full 55-background build.
+
+The main live-chibi builder now reads body metadata, five shared setup
+skeletons, costume atlas/textures, and all animation fragments directly from
+configured `RAW/asset`. Choreography CSVs and the existing 60 Hz lip-sync JSON
+remain declared legacy semantic/derived inputs:
+
+```powershell
+python scripts\prepare-live-chibi-assets.py `
+  --output-root .analysis\raw-migration\live-chibi-core\candidate
+```
+
+The committed stable `inventory.json` is the default `--costume-selection`;
+its 549 `modelId` rows deliberately bound this supply-chain migration to the
+existing published set. Use explicit `--raw-asset-root`,
+`--effect-script-root`, `--live-lip-sync-root`, `--costume-selection`, and
+`--output-root` overrides for isolated audits. Expanding to the other
+masterdata costumes is a separate content-promotion batch, not an implicit
+side effect of rebuilding the current set.

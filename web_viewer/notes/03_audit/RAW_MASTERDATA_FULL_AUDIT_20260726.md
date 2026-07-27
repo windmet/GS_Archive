@@ -216,7 +216,7 @@ JSON as a byte-for-byte direct extractor artifact.
 | story SE | compiled SE cue + ACB sequence metadata | multi-cue ACB bank | 435/435 classified; `waribashi` composite reconstructed | full identity and representative sequence semantics proven |
 | master seasonal BGM | table 133 relation + ACB action metadata | variant cues/banks | 92/92 classified; 42/42 switches resolved | full identity relation proven |
 | character/costume/Spine | costume/idol dictionaries + Unity object identity | `costume_*`, `idol_settings_*`, `image_chara*` | 690/690 master costumes; 725 full Spine + 3 RAW silhouette-only; 257/257 idol-setting JSON assets; all 485 character-image paths classified | costume/Spine/idol settings proven; character-image consumers mapped, promotion partial |
-| live/chibi | song/choreography IDs | `live_*`, `song_*`, image/object layers | representative song playback, 77/77 Backmonitor mappings, 57/57 image-layer mappings, 181/185 object-layer references, and 55/55 static-stage backgrounds proven | partial |
+| live/chibi | song/choreography IDs | `live_*`, `song_*`, image/object layers | representative playback plus Backmonitor, image/object, static-stage, setup, 549-costume, and 7,135-motion RAW mappings proven | partial |
 | movies | event/live/card movie relations | 260 USM | 77/77 live Backmonitor references mapped to RAW; remaining 183 still filename-level | partial |
 | general UI images | master records + bundle object names | 1,271 `image_*` bundles | no full relation table yet | pending |
 
@@ -1585,6 +1585,68 @@ changed the enabled state to false; re-enabling restored true while the same
 background remained ready. There was no framework overlay or app error. The
 two previously recorded Pixi Spine warnings remained. No stable PNG, index, or
 URL changed.
+
+## 6.9 RAW asset / live-chibi character core slice
+
+Commit `a9c8342` replaced the main
+`scripts/prepare-live-chibi-assets.py` physical inputs without changing the
+published compatibility set. The builder now reads the following directly
+from configured `RAW/asset`:
+
+- `live_character_info_data_list.unity3d` for 49 idol/body mappings;
+- five `live_costume_setup_<body>.unity3d` bundles for shared setup skeletons;
+- the 549 `costume_<model>.unity3d` bundles selected by the current stable
+  `inventory.json`;
+- 57 `live_costume_animation_*.unity3d` bundles for all body/motion fragments.
+
+The five setup skeleton payloads are byte-identical to the organizer-era
+exports. Their RAW payload hashes are:
+
+| Body | SHA-256 |
+| ---: | --- |
+| 1 | `16F51130205717AD0860DC76DBEF43DFD33CCB7537B2C1401028D019A325114D` |
+| 2 | `DD69C77801C05C009DE350115E814463BCDD2F8765192FC54A32444558F7A3B5` |
+| 3 | `2F54EB4F987135BD0FBCC1DF7160227A6EA09A0C33354C4ADCA459A9ED827935` |
+| 4 | `D6CB9DBC2435D1C57271C51510C3B18B56A38E393E9436F36668E5D216C11EED` |
+| 5 | `8E76BEFB13AA2D7B8CD1D478DAFB75775B7C407FCC6DA9FEFD46C0DDF333BEEA` |
+
+The 57 animation bundles expose 7,135 unique body/motion TextAssets. All
+7,135 are byte-identical to the organizer-era extracted `.bytes` files, with
+zero missing or conflicting payloads. The builder now indexes those RAW
+TextAssets once and writes common, compatibility, and choreography motion
+files from that authoritative map.
+
+The bounded 549-costume set uses 770,801,073 bytes of RAW bundles. All 549
+contain `cos.atlas` and `cos` Texture2D. The serialized TextAsset object bytes
+are 549/549 identical to the old `.atlas` files, and decoded RGBA pixels are
+549/549 identical to the old PNGs. UnityPy's direct PNG output was also
+byte-identical for the representative `001tom_005_00` sample:
+
+```text
+cos.atlas A7388B7D580B2CF87C17646E08FAE7EA102A68B2C99F8AE372A77E8F5F7559B6
+cos.png   87050C41A18A140E3FC16695EC7EEB6E4A98C0EC5105AA56689C810327B23F78
+```
+
+A full ignored candidate rebuilt 49 characters, 549 costumes, five setup
+skeletons, 300 common-motion files, 25 compatibility files, 7,025
+choreography-motion files, 60 lip-sync curves, and the manifest/inventory/
+choreography indexes. Its 8,517 files total 592,667,731 bytes. Every file was
+SHA-256 compared with the corresponding stable artifact: 8,517/8,517 were
+byte-identical, with no missing stable target.
+
+This is a supply-chain replacement, not a costume expansion. Masterdata has
+690 main `model_resource_id` values while the stable live catalog intentionally
+contains 549. The other 141 main costumes require a separate consumer/content
+promotion. RAW also has 38 additional NPC/guest costume bundles outside the
+690 master set.
+
+The 119 `liveeffectscript` CSVs and 60 source lip-sync JSON files remain
+declared legacy semantic/derived inputs; the builder no longer hides them
+behind a personal absolute path. On port 5174, DRIVE A LIVE loaded 5/5
+characters from the unchanged stable artifacts, completed motion preload,
+advanced the shared clock to 0:03, and rendered lyrics and choreography.
+There was no framework overlay or application error; the two existing Pixi
+Spine warnings remained. No stable artifact or URL changed.
 
 ## 7. Browser candidate verification
 

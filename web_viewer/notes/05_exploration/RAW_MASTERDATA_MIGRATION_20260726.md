@@ -1345,15 +1345,50 @@ Port 5174 then loaded the actual バーニン・クールで輝いて static sta
 runtime reported ready with song `bnckgy`; the 静态舞台 toggle changed false and
 restored true. Stable PNGs and index stayed unchanged.
 
+## Live-chibi character core source-contract slice
+
+Commit `a9c8342` moves body metadata, five setup skeletons, the bounded 549
+published costumes, and 7,135 animation fragments to direct configured
+`RAW/asset` reads. Choreography CSVs and the 60 Hz lip-sync JSON remain
+explicit legacy semantic/derived inputs.
+
+Source regression proved:
+
+- 5/5 setup skeleton payloads byte-identical;
+- 7,135/7,135 animation fragments byte-identical across 57 RAW bundles;
+- 549/549 serialized `cos.atlas` objects byte-identical;
+- 549/549 decoded `cos` textures pixel-identical.
+
+The complete ignored candidate contains 8,517 files and 592,667,731 bytes.
+All 8,517 files are SHA-256 identical to the corresponding stable artifact:
+
+```powershell
+python scripts\prepare-live-chibi-assets.py `
+  --output-root .analysis\raw-migration\live-chibi-core\candidate
+```
+
+Port 5174 then loaded DRIVE A LIVE with 5/5 characters, completed motion
+preload, advanced the shared clock, and rendered lyrics/choreography. Stable
+assets stayed unchanged.
+
+The stable inventory remains bounded to 549 costumes. Masterdata contains 690
+main models, so 141 main costumes still require a separate content/consumer
+promotion rather than being silently added by this source migration.
+
 ## Next batches
 
-1. Audit and migrate `prepare-live-chibi-assets.py` alone, using an ignored output
-   root and port-5174 consumer check before any stable replacement.
-2. Extend the proven single-story promotion gate to multi-part aggregate
+1. Audit `prepare-live-chibi-stage-effects.py` and define its external
+   XAPK/APK source field before any migration.
+2. Build a separate candidate for the 141 masterdata costumes not present in
+   the current 549-model live inventory; validate representative body types
+   before promotion.
+3. Establish provenance/reproduction contracts for the legacy choreography
+   CSVs and 60 source lip-sync curves.
+4. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
-3. Continue the proven `001tom`/`002sht` event-story visual consumer in another
+5. Continue the proven `001tom`/`002sht` event-story visual consumer in another
    bounded batch; keep the complete birthday domain unchanged.
-4. Classify the remaining 183 non-Backmonitor RAW USMs against master-data
+6. Classify the remaining 183 non-Backmonitor RAW USMs against master-data
    consumers.
-5. Continue promoting verified domains one reversible batch at a time, with
+7. Continue promoting verified domains one reversible batch at a time, with
    5174 acceptance and rollback evidence before each stable-path replacement.

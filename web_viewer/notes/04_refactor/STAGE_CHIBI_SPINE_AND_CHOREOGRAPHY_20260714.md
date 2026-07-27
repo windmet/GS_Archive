@@ -32,6 +32,14 @@
 
 `npm run chibi:scan` 会读取五套 setup skeleton 的全部 attachment path，并与每套服装 atlas 的 region 集合比较。由于 setup 是同体型所有可选附件的并集，单套服装覆盖率约 37% 是正常现象；报告以同体型中位数识别异常，而不是要求每套服装覆盖全部可选附件。本轮 549 套全部落在各自体型的正常分布内，未发现 region 数量或覆盖率异常的离群服装。报告输出为 `compatibility-report.json`。
 
+2026-07-27 来源校正：提交 `a9c8342` 已把五套 setup、现有 549 套服装的
+atlas/texture、以及 57 个 animation bundle 中的 7,135 个动作片段改为
+直接读取配置的 `RAW/asset`。完整 ignored 候选共 8,517 个生成文件、
+592,667,731 bytes，与稳定产物 8,517/8,517 逐字节一致。CSV 和 60 条
+lip-sync 源曲线仍是明确的 legacy 语义/派生输入。当前 549 套只是稳定
+兼容集合；masterdata 另有 141 套主角色服装尚未进入 live 下拉框，必须
+另开内容扩容批次验证。
+
 生成后的 Web 资源约 923 MiB（包含约 302 MiB 的歌曲音频），其中 7,340 个动作文件约 265.7 MiB，歌曲编排索引约 2.85 MiB。动作二进制按 motion ID 独立保存，浏览器按需加载，不会在页面启动时一次性下载全部动作。
 
 ## 数据生成

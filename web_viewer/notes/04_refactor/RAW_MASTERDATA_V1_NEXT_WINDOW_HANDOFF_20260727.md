@@ -346,6 +346,34 @@ Backmonitor 错误。本批未改写稳定 MP4、index 或 URL。
 应用错误，仅保留两条既有 Pixi Spine warning。本批未改写稳定 PNG、index
 或 URL。
 
+### 0.11 live-chibi 角色核心物理资源已切换到权威 RAW/asset
+
+提交 `a9c8342` 已将 `prepare-live-chibi-assets.py` 的物理资源链重新接到
+统一来源契约。现在直接读取：
+
+- `live_character_info_data_list.unity3d`；
+- 5 个 `live_costume_setup_<body>.unity3d`；
+- 当前稳定 `inventory.json` 限定的 549 个 `costume_<model>.unity3d`；
+- 57 个 `live_costume_animation_*.unity3d`。
+
+5/5 setup skeleton 与旧导出逐字节一致。57 个 animation bundle 提供的
+7,135 个动作 TextAsset 与旧 `.bytes` 为 7,135/7,135 逐字节一致、零缺失。
+549 个服装 bundle 共 770,801,073 bytes；549/549 序列化 `cos.atlas` 对象
+逐字节一致，549/549 `cos` Texture2D 解码像素一致。
+
+完整 ignored 候选重建出 8,517 个文件、592,667,731 bytes；与稳定产物逐项
+SHA-256 比较为 8,517/8,517 一致。5174 的 DRIVE A LIVE 达到 5/5 人 ready，
+动作预载完成，共享时钟前进到 0:03，歌词和编排正常；仅有两条既有 Pixi
+Spine warning。本批未改写稳定资源或 URL。
+
+边界必须保留：
+
+- 当前 549 套是稳定兼容集合，不是 masterdata 全集；
+- masterdata 有 690 个主角色 model，另 141 套尚未加入 live 下拉框；
+- RAW 还另有 38 个 master 外的 NPC/guest costume bundle；
+- 119 份 choreography CSV 与 60 条 lip-sync 源 JSON 仍是显式 legacy
+  语义/派生输入，尚未建立从 RAW/masterdata 独立再生的完整链。
+
 ## 1. 当前已确认的事实
 
 ### 1.1 RAW 的真实边界和数量
@@ -501,6 +529,7 @@ byte-for-byte equal to the existing .analysis PB: true
 | live 图片布景 | 101 条 CSV 事件、57 个唯一资源、24 个 RAW song bundle，已全量映射并验证 |
 | live 舞台对象 | 185 个唯一引用；181 个已定位到 77 个 RAW bundle，4 个 `tibeti` keeper 仍缺失 |
 | live 静态舞台 | 55 首稳定合成图、55 个 RAW song bundle，已全量映射并验证 |
+| live 角色核心 | 5 套 setup、当前 549 套 costume、7,135 个动作片段已直接映射 RAW；另 141 套 master 主角色服装待扩容 |
 | movie | 260 个 USM；77 个 live Backmonitor 引用已映射并验证，剩余 183 个仍为文件名级 inventory |
 | 一般 UI 图片 | 1,271 个一般 `image_*` bundle，尚无完整关系表 |
 
@@ -577,7 +606,7 @@ publish/manifest.json
 | 260 USM 和 1,271 `image_*` 待审计 | 需要更新 | USM 中 77 个 live Backmonitor 已有完整引用/转码/5174 证据，剩余 183 个待分类；一般图片仍无完整 relation table |
 | Source Gate 已通过 | 正确 | GitHub run `30232788385` 对 `0ba566f` 成功 |
 | 已有完整统一 publish manifest | 不正确 | 只有域级 registry/candidate manifest；无统一 publish manifest |
-| 已有统一 archive root 配置 | 现在正确 | Python/JS loader、RAW 审计器、Vite、live audio、Backmonitor、Image_layer、Object_layer 与静态舞台已接入；其余两个 chibi 辅助脚本仍需逐个迁移 |
+| 已有统一 archive root 配置 | 现在正确 | Python/JS loader、RAW 审计器、Vite、live audio、Backmonitor、Image/Object layer、静态舞台与角色核心已接入；stage-effects 仍需单独定义外部容器来源 |
 | 可用 masterdata 链 | 已完整核对 | 外部 XOR 容器 `D57F76...CDC0E` 可确定性解码为 `.analysis` PB `25D48A...F0EA1`，逐字节一致 |
 | ACB/AWB 已是整个站点唯一音频上游 | 目标合理，现状不能这样概括 | RAW 音频审计很强，但现有公开音频仍可能来自旧整理/转码链；需逐域收束 |
 | batch publisher 已存在 | 正确 | 已有 publish/rollback batch 和 fixture；下一批需补真正的三项事件视觉原子证据 |
@@ -1055,8 +1084,10 @@ git rev-parse origin/<当前分支>
 
 PR A 的配置核心、RAW manifest、card/background/character 六个工具、
 RAW audio 六个工具、RAW story 三个工具、Vite/manifest JS loader，
-以及 live-chibi 音频、Backmonitor、Image_layer、Object_layer 与静态舞台构建器已经接入。新窗口默认继续其余仍硬编码旧整理包
-路径的 live/chibi Python 辅助脚本，不从 `003hok` 开始发布：
+以及 live-chibi 音频、Backmonitor、Image_layer、Object_layer、静态舞台与
+角色核心构建器已经接入。新窗口先处理 stage-effects 外部容器来源，再分别
+处理 141 套服装扩容和 legacy CSV/lip-sync 的来源追溯，不从 `003hok`
+开始发布：
 
 1. 核对 `0ba566f`、PR #2、worktree、5174；
 2. 复核 XOR source 与 decoded PB 的两个 SHA-256 和逐字节解码一致性；
@@ -1069,14 +1100,15 @@ RAW audio 六个工具、RAW story 三个工具、Vite/manifest JS loader，
 9. 完成 PR A 的二进制政策和 source schema 文档；
 10. 再进入 multi-part story gate。
 
-当前仍有两个明确目标，建议按“混合来源先审计、外部容器最后”的顺序：
+当前仍有三个明确目标，必须继续分批：
 
-1. `prepare-live-chibi-assets.py`：RAW、costume、live lipsync 等混合来源；
-2. `prepare-live-chibi-stage-effects.py`：XAPK/APK 外部容器，单独定义来源字段。
+1. `prepare-live-chibi-stage-effects.py`：XAPK/APK 外部容器，单独定义来源字段；
+2. 141 套 master 主角色 costume：另建候选并按 body type 做消费者抽样；
+3. choreography CSV 与 60 条 lip-sync 源曲线：建立来源/再生契约。
 
-下一批首选审计 `prepare-live-chibi-assets.py`。它混合 RAW、costume、
-live lipsync 等来源，先列出每类输入和稳定产物，再决定是否能在单批内
-安全迁移；不要在同一提交顺带改 `stage-effects`。
+下一批首选审计 `prepare-live-chibi-stage-effects.py`。先确认它实际读取的
+XAPK/APK/解包目录及已发布特效，再决定需要新增哪个 archive source 字段；
+不要在同一提交顺带扩入 141 套服装。
 
 只有用户明确要求跳过供应链收束、继续视觉内容批次时，才直接转到
 `event_story_visual:003hok`。
