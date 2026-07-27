@@ -13,10 +13,11 @@ body-1 song choreography catalog.
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
-import shutil
 import csv
+import sys
 from pathlib import Path
 
 import UnityPy
@@ -24,15 +25,14 @@ from PIL import Image
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi"
+DATA_PIPELINE_ROOT = PROJECT_ROOT.parent / "data_pipeline"
+sys.path.insert(0, str(DATA_PIPELINE_ROOT))
 
-SIDEM_ROOT = Path(r"E:\BaiduNetdiskDownload\SideM")
-RESOURCE_ROOT = SIDEM_ROOT / "growing stars" / "assets" / "resources"
-RAW_ASSET_ROOT = SIDEM_ROOT / "RAW" / "asset"
-COSTUME_ROOT = SIDEM_ROOT / "story_viewer" / "extract_output" / "cos_costumes"
-ANIMATION_ROOT = RESOURCE_ROOT / "livecharacter" / "animation"
-EFFECT_SCRIPT_ROOT = RESOURCE_ROOT / "liveeffectscript"
-LIVE_LIP_SYNC_ROOT = SIDEM_ROOT / "scripts" / "lipsyncdata" / "adxlip_for_live"
+from archive_paths import add_sources_config_argument, load_archive_sources
+
+
+DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi"
+DEFAULT_COSTUME_SELECTION_PATH = DEFAULT_OUTPUT_ROOT / "inventory.json"
 MUSIC_CATALOG_PATH = PROJECT_ROOT / "public" / "data" / "masterdata" / "music_catalog.json"
 SPEAKER_DICTIONARY_PATH = PROJECT_ROOT / "public" / "data" / "masterdata" / "speaker_dictionary.json"
 COSTUME_DICTIONARY_PATH = PROJECT_ROOT / "public" / "data" / "masterdata" / "costume_dictionary.json"
@@ -101,13 +101,6 @@ def motion_slug(animation_name: str) -> str:
     return match.group(1) if match else animation_name
 
 
-def copy_required(source: Path, destination: Path) -> None:
-    if not source.is_file():
-        raise FileNotFoundError(source)
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(source, destination)
-
-
 def unity_text_payload(text_asset) -> str:
     payload = text_asset.m_Script
     if isinstance(payload, bytes):
@@ -115,8 +108,10 @@ def unity_text_payload(text_asset) -> str:
     return payload
 
 
-def load_live_character_body_types() -> dict[str, int]:
-    environment = UnityPy.load(str(RAW_ASSET_ROOT / "live_character_info_data_list.unity3d"))
+def load_live_character_body_types(raw_asset_root: Path) -> dict[str, int]:
+    environment = UnityPy.load(
+        str(raw_asset_root / "live_character_info_data_list.unity3d")
+    )
     for asset in environment.assets:
         for obj in asset.objects.values():
             if obj.type.name != "TextAsset":
@@ -129,6 +124,49 @@ def load_live_character_body_types() -> dict[str, int]:
     raise FileNotFoundError("live_character_info_data_list TextAsset")
 
 
+def text_asset_payload(text_asset) -> bytes:
+    payload = text_asset.m_Script
+    return (
+        payload
+        if isinstance(payload, bytes)
+        else payload.encode("utf-8", errors="surrogateescape")
+    )
+
+
+def raw_animation_payloads(raw_asset_root: Path) -> dict[tuple[int, int], bytes]:
+    payloads: dict[tuple[int, int], bytes] = {}
+    pattern = re.compile(r"^live_costume_animation_(\d+)_(\d+)$")
+    for bundle in sorted(raw_asset_root.glob("live_costume_animation_*.unity3d")):
+        environment = UnityPy.load(str(bundle))
+        for obj in environment.objects:
+            if obj.type.name != "TextAsset":
+                continue
+            text_asset = obj.read()
+            match = pattern.fullmatch(text_asset.m_Name)
+            if not match:
+                continue
+            key = (int(match.group(1)), int(match.group(2)))
+            payload = text_asset_payload(text_asset)
+            previous = payloads.setdefault(key, payload)
+            if previous != payload:
+                raise ValueError(f"Conflicting animation payloads for {key}")
+    return payloads
+
+
+def selected_costume_models(selection_path: Path) -> list[str]:
+    inventory = json.loads(selection_path.read_text(encoding="utf-8"))
+    models = sorted(
+        {
+            row["modelId"]
+            for row in inventory.get("costumes", [])
+            if row.get("modelId")
+        }
+    )
+    if not models:
+        raise ValueError(f"No costume model IDs in {selection_path}")
+    return models
+
+
 def atlas_stats(path: Path) -> dict[str, int]:
     lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
     return {
@@ -137,10 +175,10 @@ def atlas_stats(path: Path) -> dict[str, int]:
     }
 
 
-def export_character_shadow() -> str:
+def export_character_shadow(output_root: Path) -> str:
     """Export the game's shared 241 px character shadow from a source atlas."""
-    atlas_path = COSTUME_ROOT / "001tom_005_00" / "cos.atlas"
-    texture_path = COSTUME_ROOT / "001tom_005_00" / "cos.png"
+    atlas_path = output_root / "costumes" / "001tom_005_00" / "cos.atlas"
+    texture_path = output_root / "costumes" / "001tom_005_00" / "cos.png"
     lines = atlas_path.read_text(encoding="utf-8", errors="replace").splitlines()
     try:
         region_index = next(index for index, line in enumerate(lines) if line.strip() == "tex_chara_shadow")
@@ -152,14 +190,19 @@ def export_character_shadow() -> str:
         raise ValueError("tex_chara_shadow atlas coordinates are incomplete")
     x, y = (int(value) for value in xy_match.groups())
     width, height = (int(value) for value in size_match.groups())
-    destination = OUTPUT_ROOT / "shared" / "character-shadow.png"
+    destination = output_root / "shared" / "character-shadow.png"
     destination.parent.mkdir(parents=True, exist_ok=True)
     with Image.open(texture_path) as texture:
         texture.crop((x, y, x + width, y + height)).save(destination)
-    return destination.relative_to(OUTPUT_ROOT).as_posix()
+    return destination.relative_to(output_root).as_posix()
 
 
-def export_all_characters(body_types: dict[str, int]) -> tuple[list[dict], dict]:
+def export_all_characters(
+    body_types: dict[str, int],
+    raw_asset_root: Path,
+    output_root: Path,
+    costume_models: list[str],
+) -> tuple[list[dict], dict]:
     speaker_data = json.loads(SPEAKER_DICTIONARY_PATH.read_text(encoding="utf-8"))["speakers"]
     idol_data = json.loads(IDOL_DICTIONARY_PATH.read_text(encoding="utf-8"))["by_idol_code"]
     costume_rows = json.loads(COSTUME_DICTIONARY_PATH.read_text(encoding="utf-8"))["costumes"]
@@ -168,29 +211,36 @@ def export_all_characters(body_types: dict[str, int]) -> tuple[list[dict], dict]
         for row in costume_rows
         if row.get("model_resource_id")
     }
-    grouped: dict[str, list[Path]] = {}
+    grouped: dict[str, list[str]] = {}
     model_pattern = re.compile(r"^([0-9]{3}[a-z]{3})_(.+)$", re.I)
-    for directory in sorted(COSTUME_ROOT.iterdir()):
-        if not directory.is_dir():
-            continue
-        match = model_pattern.fullmatch(directory.name)
+    for model_id in costume_models:
+        match = model_pattern.fullmatch(model_id)
         if not match:
             continue
-        grouped.setdefault(match.group(1), []).append(directory)
+        grouped.setdefault(match.group(1), []).append(model_id)
 
     missing_body_types = sorted(set(grouped) - set(body_types))
     if missing_body_types:
         raise ValueError(f"Costume idols missing body type mappings: {missing_body_types}")
 
     for body_type in sorted(set(body_types.values())):
-        setup_source = (
-            RESOURCE_ROOT
-            / "livecharacter"
-            / "setup"
-            / str(body_type)
-            / f"live_costume_setup_{body_type}.skel.bytes"
+        bundle = raw_asset_root / f"live_costume_setup_{body_type}.unity3d"
+        environment = UnityPy.load(str(bundle))
+        expected_name = f"live_costume_setup_{body_type}.skel"
+        payload = next(
+            (
+                text_asset_payload(obj.read())
+                for obj in environment.objects
+                if obj.type.name == "TextAsset"
+                and obj.read().m_Name == expected_name
+            ),
+            None,
         )
-        copy_required(setup_source, OUTPUT_ROOT / "setup" / f"body-{body_type}.skel")
+        if payload is None:
+            raise FileNotFoundError(f"{expected_name} in {bundle}")
+        destination = output_root / "setup" / f"body-{body_type}.skel"
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(payload)
 
     characters = []
     inventory_costumes = []
@@ -198,15 +248,33 @@ def export_all_characters(body_types: dict[str, int]) -> tuple[list[dict], dict]
     for idol_id in sorted(grouped):
         body_type = body_types[idol_id]
         costumes = []
-        for source in grouped[idol_id]:
-            costume_id = source.name[len(idol_id) + 1 :]
-            relative = Path("costumes") / source.name
-            atlas_source = source / "cos.atlas"
-            texture_source = source / "cos.png"
-            copy_required(atlas_source, OUTPUT_ROOT / relative / "cos.atlas")
-            copy_required(texture_source, OUTPUT_ROOT / relative / "cos.png")
-            stats = atlas_stats(atlas_source)
-            label = costume_names.get(source.name) or f"服装 {costume_id}"
+        for model_id in grouped[idol_id]:
+            costume_id = model_id[len(idol_id) + 1 :]
+            relative = Path("costumes") / model_id
+            bundle = raw_asset_root / f"costume_{model_id}.unity3d"
+            if not bundle.is_file():
+                raise FileNotFoundError(bundle)
+            environment = UnityPy.load(str(bundle))
+            atlas_object = None
+            texture = None
+            for obj in environment.objects:
+                if obj.type.name == "TextAsset":
+                    text_asset = obj.read()
+                    if text_asset.m_Name == "cos.atlas":
+                        atlas_object = obj
+                elif obj.type.name == "Texture2D":
+                    candidate = obj.read()
+                    if candidate.m_Name == "cos":
+                        texture = candidate
+            if atlas_object is None or texture is None:
+                raise FileNotFoundError(f"cos.atlas/cos Texture2D in {bundle}")
+            atlas_target = output_root / relative / "cos.atlas"
+            texture_target = output_root / relative / "cos.png"
+            atlas_target.parent.mkdir(parents=True, exist_ok=True)
+            atlas_target.write_bytes(atlas_object.get_raw_data())
+            texture.image.save(texture_target)
+            stats = atlas_stats(atlas_target)
+            label = costume_names.get(model_id) or f"服装 {costume_id}"
             costumes.append(
                 {
                     "id": costume_id,
@@ -219,11 +287,11 @@ def export_all_characters(body_types: dict[str, int]) -> tuple[list[dict], dict]
             )
             inventory_costumes.append(
                 {
-                    "modelId": source.name,
+                    "modelId": model_id,
                     "idolId": idol_id,
                     "bodyType": body_type,
                     **stats,
-                    "textureBytes": texture_source.stat().st_size,
+                    "textureBytes": texture_target.stat().st_size,
                 }
             )
             body_costume_counts[body_type] = body_costume_counts.get(body_type, 0) + 1
@@ -258,41 +326,32 @@ def export_all_characters(body_types: dict[str, int]) -> tuple[list[dict], dict]
     return characters, inventory
 
 
-def export_common_motions(body_type: int) -> list[dict]:
-    bundle_path = RAW_ASSET_ROOT / "live_costume_animation_2.unity3d"
-    environment = UnityPy.load(str(bundle_path))
-    target_pattern = re.compile(
-        rf"live_costume_animation_{body_type}_(\d+)$"
-    )
+def export_common_motions(
+    body_type: int,
+    animation_payloads: dict[tuple[int, int], bytes],
+    output_root: Path,
+) -> list[dict]:
     motions = []
 
-    for asset in environment.assets:
-        for obj in asset.objects.values():
-            if obj.type.name != "TextAsset":
-                continue
-            text_asset = obj.read()
-            match = target_pattern.fullmatch(text_asset.m_Name)
-            if not match:
-                continue
+    for (payload_body_type, motion_id), payload in sorted(animation_payloads.items()):
+        if payload_body_type != body_type or not 2 <= motion_id <= 61:
+            continue
+        animation_count, animation_name = first_animation_name(payload)
+        slug = motion_slug(animation_name)
+        relative_path = Path("motions") / "common" / str(body_type) / f"{motion_id}.motion"
+        output_path = output_root / relative_path
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_bytes(payload)
 
-            motion_id = int(match.group(1))
-            payload = text_asset.m_Script.encode("utf-8", errors="surrogateescape")
-            animation_count, animation_name = first_animation_name(payload)
-            slug = motion_slug(animation_name)
-            relative_path = Path("motions") / "common" / str(body_type) / f"{motion_id}.motion"
-            output_path = OUTPUT_ROOT / relative_path
-            output_path.parent.mkdir(parents=True, exist_ok=True)
-            output_path.write_bytes(payload)
-
-            motions.append(
-                {
-                    "id": motion_id,
-                    "name": slug,
-                    "label": MOTION_LABELS.get(slug, slug.replace("_", " ").title()),
-                    "animationCount": animation_count,
-                    "file": relative_path.as_posix(),
-                }
-            )
+        motions.append(
+            {
+                "id": motion_id,
+                "name": slug,
+                "label": MOTION_LABELS.get(slug, slug.replace("_", " ").title()),
+                "animationCount": animation_count,
+                "file": relative_path.as_posix(),
+            }
+        )
 
     return sorted(motions, key=lambda item: item["id"])
 
@@ -377,12 +436,17 @@ def build_stage_position_map(
     return dict(zip(ordered_slots, stage_positions))
 
 
-def read_choreography_scripts() -> tuple[list[dict], set[int]]:
-    music_catalog = json.loads(MUSIC_CATALOG_PATH.read_text(encoding="utf-8")).get("songs", {})
+def read_choreography_scripts(
+    effect_script_root: Path,
+    music_catalog_path: Path,
+) -> tuple[list[dict], set[int]]:
+    music_catalog = json.loads(music_catalog_path.read_text(encoding="utf-8")).get(
+        "songs", {}
+    )
     songs = []
     referenced_motion_ids: set[int] = set()
 
-    for csv_path in sorted(EFFECT_SCRIPT_ROOT.glob("*.csv")):
+    for csv_path in sorted(effect_script_root.glob("*.csv")):
         events = []
         singer_events = []
         position_events = []
@@ -746,10 +810,13 @@ def read_choreography_scripts() -> tuple[list[dict], set[int]]:
     return songs, referenced_motion_ids
 
 
-def export_live_lip_sync() -> dict[str, dict]:
+def export_live_lip_sync(
+    live_lip_sync_root: Path,
+    output_root: Path,
+) -> dict[str, dict]:
     """Export the original 60 Hz ADX lip channel in a compact web format."""
     catalog = {}
-    for source in sorted(LIVE_LIP_SYNC_ROOT.glob("*/*_for_lipsync.json")):
+    for source in sorted(live_lip_sync_root.glob("*/*_for_lipsync.json")):
         song_code = source.parent.name
         data = json.loads(source.read_text(encoding="utf-8-sig"))
         scales = data.get("scales")
@@ -757,7 +824,7 @@ def export_live_lip_sync() -> dict[str, dict]:
             continue
         values = [float(sample.get("y", 0)) for sample in scales]
         relative_path = Path("lipsync") / f"{song_code}.json"
-        output_path = OUTPUT_ROOT / relative_path
+        output_path = output_root / relative_path
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(
             json.dumps(
@@ -778,36 +845,44 @@ def export_live_lip_sync() -> dict[str, dict]:
     return catalog
 
 
-def export_choreography(body_types: list[int]) -> dict:
-    songs, referenced_motion_ids = read_choreography_scripts()
-    lip_sync_catalog = export_live_lip_sync()
+def export_choreography(
+    body_types: list[int],
+    animation_payloads: dict[tuple[int, int], bytes],
+    effect_script_root: Path,
+    live_lip_sync_root: Path,
+    music_catalog_path: Path,
+    output_root: Path,
+) -> dict:
+    songs, referenced_motion_ids = read_choreography_scripts(
+        effect_script_root,
+        music_catalog_path,
+    )
+    lip_sync_catalog = export_live_lip_sync(live_lip_sync_root, output_root)
     for song in songs:
         if song["songCode"] in lip_sync_catalog:
             song["lipSync"] = lip_sync_catalog[song["songCode"]]
-    sources_by_body = {}
     for body_type in body_types:
-        source_by_id = {}
-        pattern = re.compile(rf"live_costume_animation_{body_type}_(\d+)\.bytes$")
-        for source in ANIMATION_ROOT.rglob(f"live_costume_animation_{body_type}_*.bytes"):
-            match = pattern.fullmatch(source.name)
-            if match:
-                source_by_id[int(match.group(1))] = source
-        missing = sorted(referenced_motion_ids - source_by_id.keys())
+        available = {
+            motion_id
+            for payload_body_type, motion_id in animation_payloads
+            if payload_body_type == body_type
+        }
+        missing = sorted(referenced_motion_ids - available)
         if missing:
             raise FileNotFoundError(f"Missing body-{body_type} motions: {missing[:20]}")
-        sources_by_body[body_type] = source_by_id
 
     catalog = []
     for motion_id in sorted(referenced_motion_ids):
-        source = sources_by_body[body_types[0]][motion_id]
-        payload = source.read_bytes()
+        payload = animation_payloads[(body_types[0], motion_id)]
         animation_count, animation_name = first_animation_name(payload)
         slug = motion_slug(animation_name)
         for body_type in body_types:
             relative_path = (
                 Path("motions") / "choreography" / str(body_type) / f"{motion_id}.motion"
             )
-            copy_required(sources_by_body[body_type][motion_id], OUTPUT_ROOT / relative_path)
+            destination = output_root / relative_path
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(animation_payloads[(body_type, motion_id)])
         catalog.append(
             {
                 "id": motion_id,
@@ -857,7 +932,7 @@ def export_choreography(body_types: list[int]) -> dict:
         "motionCatalog": catalog,
         "songs": songs,
     }
-    output_path = OUTPUT_ROOT / choreography_relative
+    output_path = output_root / choreography_relative
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(
         json.dumps(choreography, ensure_ascii=False, separators=(",", ":")) + "\n",
@@ -870,26 +945,28 @@ def export_choreography(body_types: list[int]) -> dict:
     }
 
 
-def export_compatibility_motions(body_types: list[int]) -> list[dict]:
+def export_compatibility_motions(
+    body_types: list[int],
+    animation_payloads: dict[tuple[int, int], bytes],
+    output_root: Path,
+) -> list[dict]:
     catalog = []
     for body_type in body_types:
-        pattern = re.compile(rf"live_costume_animation_{body_type}_(\d+)\.bytes$")
-        source_by_id = {}
-        for source in ANIMATION_ROOT.rglob(f"live_costume_animation_{body_type}_*.bytes"):
-            match = pattern.fullmatch(source.name)
-            if match:
-                source_by_id[int(match.group(1))] = source
-
-        missing = sorted(set(COMPATIBILITY_MOTION_IDS) - source_by_id.keys())
+        missing = sorted(
+            motion_id
+            for motion_id in COMPATIBILITY_MOTION_IDS
+            if (body_type, motion_id) not in animation_payloads
+        )
         if missing:
             raise FileNotFoundError(f"Missing body-{body_type} compatibility motions: {missing}")
 
         for motion_id in COMPATIBILITY_MOTION_IDS:
-            source = source_by_id[motion_id]
+            payload = animation_payloads[(body_type, motion_id)]
             relative_path = Path("motions") / "compatibility" / str(body_type) / f"{motion_id}.motion"
-            copy_required(source, OUTPUT_ROOT / relative_path)
+            destination = output_root / relative_path
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(payload)
             if body_type == body_types[0]:
-                payload = source.read_bytes()
                 animation_count, animation_name = first_animation_name(payload)
                 slug = motion_slug(animation_name)
                 catalog.append(
@@ -905,18 +982,101 @@ def export_compatibility_motions(body_types: list[int]) -> list[dict]:
 
 
 def main() -> None:
-    body_type_map = load_live_character_body_types()
+    parser = argparse.ArgumentParser()
+    add_sources_config_argument(parser)
+    parser.add_argument("--raw-asset-root", type=Path)
+    parser.add_argument("--effect-script-root", type=Path)
+    parser.add_argument("--live-lip-sync-root", type=Path)
+    parser.add_argument(
+        "--costume-selection",
+        type=Path,
+        default=DEFAULT_COSTUME_SELECTION_PATH,
+        help=(
+            "Existing live-chibi inventory whose modelId rows define the "
+            "bounded costume compatibility set."
+        ),
+    )
+    parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
+    args = parser.parse_args()
+
+    sources = load_archive_sources(args.sources_config)
+    raw_asset_root = (args.raw_asset_root or sources.raw_root / "asset").resolve()
+    if args.effect_script_root:
+        effect_script_root = args.effect_script_root.resolve()
+    elif sources.legacy_root:
+        effect_script_root = (
+            sources.legacy_root
+            / "growing stars"
+            / "assets"
+            / "resources"
+            / "liveeffectscript"
+        ).resolve()
+    else:
+        raise ValueError(
+            "legacy_root or --effect-script-root is required for choreography CSVs"
+        )
+    if args.live_lip_sync_root:
+        live_lip_sync_root = args.live_lip_sync_root.resolve()
+    elif sources.legacy_root:
+        live_lip_sync_root = (
+            sources.legacy_root
+            / "scripts"
+            / "lipsyncdata"
+            / "adxlip_for_live"
+        ).resolve()
+    else:
+        raise ValueError(
+            "legacy_root or --live-lip-sync-root is required for live lip-sync JSON"
+        )
+    output_root = args.output_root.resolve()
+    costume_selection = args.costume_selection.resolve()
+    for required in (
+        raw_asset_root,
+        effect_script_root,
+        live_lip_sync_root,
+    ):
+        if not required.is_dir():
+            raise FileNotFoundError(required)
+    if not costume_selection.is_file():
+        raise FileNotFoundError(costume_selection)
+
+    costume_models = selected_costume_models(costume_selection)
+    body_type_map = load_live_character_body_types(raw_asset_root)
     body_types = sorted(set(body_type_map.values()))
-    common_by_body = {body_type: export_common_motions(body_type) for body_type in body_types}
+    animation_payloads = raw_animation_payloads(raw_asset_root)
+    common_by_body = {
+        body_type: export_common_motions(
+            body_type,
+            animation_payloads,
+            output_root,
+        )
+        for body_type in body_types
+    }
     motions = common_by_body[1]
     for motion in motions:
         motion["file"] = f"motions/common/{{bodyType}}/{motion['id']}.motion"
 
-    characters, inventory = export_all_characters(body_type_map)
-    character_shadow = export_character_shadow()
+    characters, inventory = export_all_characters(
+        body_type_map,
+        raw_asset_root,
+        output_root,
+        costume_models,
+    )
+    character_shadow = export_character_shadow(output_root)
 
-    compatibility_motions = export_compatibility_motions(body_types)
-    choreography = export_choreography(body_types)
+    compatibility_motions = export_compatibility_motions(
+        body_types,
+        animation_payloads,
+        output_root,
+    )
+    choreography = export_choreography(
+        body_types,
+        animation_payloads,
+        effect_script_root,
+        live_lip_sync_root,
+        MUSIC_CATALOG_PATH,
+        output_root,
+    )
     manifest = {
         "schemaVersion": 4,
         "characters": characters,
@@ -938,12 +1098,12 @@ def main() -> None:
         ],
         "choreography": choreography,
     }
-    OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
-    (OUTPUT_ROOT / "manifest.json").write_text(
+    output_root.mkdir(parents=True, exist_ok=True)
+    (output_root / "manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
-    (OUTPUT_ROOT / "inventory.json").write_text(
+    (output_root / "inventory.json").write_text(
         json.dumps(inventory, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
@@ -952,7 +1112,7 @@ def main() -> None:
         f"{len(motions)} common motions for {len(body_types)} body types, "
         f"{len(compatibility_motions)} compatibility motions, and "
         f"{choreography['motions']} choreography motions across "
-        f"{choreography['songs']} scripts in {OUTPUT_ROOT}"
+        f"{choreography['songs']} scripts in {output_root}"
     )
 
 
