@@ -84,6 +84,36 @@ indexer no longer uses vgmstream range mode, and candidate metadata inspection
 now explicitly uses metadata-only mode. A fresh candidate extraction kept the
 RAW WAV count at zero.
 
+### 2026-07-27 Vite legacy-source contract
+
+Commit `1aab133` removed the four developer-machine paths from
+`vite.config.js` and `generate-archive-manifest.mjs`. A source-only JavaScript
+loader now applies the same config selection as the Python tools:
+
+1. `SIDEM_ARCHIVE_SOURCES_CONFIG`;
+2. ignored `archive_sources.local.json`;
+3. committed example config.
+
+The legacy organizer root derives the existing lipsync JSON, browser-format
+audio, legacy voice fallback, and card-art directories. These remain
+`legacy-reference` or current browser-format dependencies; the change does not
+promote them to RAW authority. Existing per-domain environment variables
+remain final overrides.
+
+The fixture verifies relative path resolution, explicit config selection, and
+the safe repository-local placeholder used when `legacy_root` is null. On the
+current machine all four derived directories exist. After Vite reloaded:
+
+- lipsync JSON proxy: HTTP 200, `application/json`;
+- grouped BGM proxy: HTTP 200, `audio/ogg`;
+- legacy voice fallback: HTTP 200, `audio/ogg`;
+- organizer card portrait proxy: HTTP 200, `image/png`;
+- home page: rendered normally with zero console warnings/errors;
+- interaction: event carousel advanced 1/36 to 2/36.
+
+The production build completed successfully. No public asset, manifest, or
+stable URL was regenerated in this batch.
+
 ## 2. Master-data products in scope
 
 The XOR-state source container is:

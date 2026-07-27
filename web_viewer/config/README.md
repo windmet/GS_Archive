@@ -92,3 +92,20 @@ retains its RAW SHA-256. The candidate extractor prefers the complete audio cue
 index and falls back to configured `vgmstream` only when the default index does
 not exist. An organizer-era voice directory is deliberately not a default
 source; pass `--legacy-voice-root` explicitly only for parity evidence.
+
+Vite and `generate-archive-manifest.mjs` load the same JSON through the
+source-only JavaScript loader. `legacy_root` is explicitly the organizer-era
+SideM directory, not RAW authority. The current development defaults derive:
+
+```text
+scripts/lipsyncdata/adxlip
+GS_Res/Audio
+story_viewer/voice_ogg
+GS_Res/ALL_PHOTOS/assets/resources/image/image_card
+```
+
+The existing `SIDEM_LIPSYNC_ROOT`, `SIDEM_AUDIO_ROOT`,
+`SIDEM_LEGACY_AUDIO_ROOT`, and `SIDEM_CARD_ART_ROOT` environment variables
+remain final overrides. If `legacy_root` is `null`, builds use a non-existent
+repository-local `sources/legacy_curated` placeholder and do not fall back to a
+developer's drive path.

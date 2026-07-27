@@ -212,6 +212,38 @@ extract_raw_story_candidate.py
 Shota 台词切换到 Hokuto 台词。无 blank page、无 framework overlay；
 仍只有两条既有 Pixi Spine warning。本批没有 publish，也没有修改稳定剧情。
 
+### 0.5 Vite legacy 来源路径已退出 tracked 个人盘符
+
+提交 `1aab133` 新增 JS source-config loader，并接入：
+
+```text
+vite.config.js
+scripts/generate-archive-manifest.mjs
+```
+
+过去 tracked 的四条 `E:/BaiduNetdiskDownload/SideM/...` 默认路径已经删除。
+现在从忽略配置中的 `legacy_root` 派生：
+
+- `scripts/lipsyncdata/adxlip`；
+- `GS_Res/Audio`；
+- `story_viewer/voice_ogg`；
+- `GS_Res/ALL_PHOTOS/assets/resources/image/image_card`。
+
+这些目录仍是 `legacy-reference`/当前浏览器格式依赖，不是 RAW authority。
+`SIDEM_LIPSYNC_ROOT`、`SIDEM_AUDIO_ROOT`、`SIDEM_LEGACY_AUDIO_ROOT` 和
+`SIDEM_CARD_ART_ROOT` 仍可最终覆盖。`legacy_root: null` 时只使用仓库内
+未配置占位路径，不会退回任何个人盘符。
+
+验证结果：
+
+- Python + JS source fixture 都通过；
+- 四个本机派生目录存在；
+- production build 通过；
+- lipsync、BGM、legacy voice、card portrait 四类代理均 HTTP 200；
+- 5174 首页正常渲染，控制台零 warning/error，活动轮播 1/36→2/36；
+- 未运行会重写 public manifest 的命令；
+- 未修改 public 资源或稳定 URL。
+
 ## 1. 当前已确认的事实
 
 ### 1.1 RAW 的真实边界和数量
@@ -915,14 +947,15 @@ git rev-parse origin/<当前分支>
 ## 8. 新窗口的第一项实际工作
 
 PR A 的配置核心、RAW manifest、card/background/character 六个工具、
-RAW audio 六个工具以及 RAW story 三个工具已经接入。新窗口默认继续仍硬编码
-旧整理包路径的 live/chibi 辅助脚本，不从 `003hok` 开始发布：
+RAW audio 六个工具、RAW story 三个工具以及 Vite/manifest JS loader
+已经接入。新窗口默认继续仍硬编码旧整理包路径的 live/chibi Python 辅助脚本，
+不从 `003hok` 开始发布：
 
 1. 核对 `0ba566f`、PR #2、worktree、5174；
 2. 复核 XOR source 与 decoded PB 的两个 SHA-256 和逐字节解码一致性；
 3. 复核 decoded PB 的 47,204 records 和 158 table IDs；
 4. 列出所有硬编码个人绝对路径；
-5. 下一批盘点并收束 live/chibi 辅助脚本的旧整理包路径；
+5. 下一批逐个收束 live/chibi Python 辅助脚本的旧整理包路径；
 6. 每批运行 fixture 和原域 audit，比较结果；
 7. 对其余 masterdata 专项工具继续区分 XOR source 与 decoded PB；
 8. 最后单独处理仍硬编码旧整理包路径的 live/chibi 辅助脚本；

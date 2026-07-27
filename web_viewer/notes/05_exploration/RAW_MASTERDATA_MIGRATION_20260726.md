@@ -76,6 +76,18 @@ Background coverage and identity sets also match; the only difference from
 the 2026-07-26 report is a later compiled-corpus reference-count increase for
 `bg091_315prolounge_in_01` (`6,730 -> 6,768`).
 
+### Configured Vite legacy paths
+
+Commit `1aab133` added a JavaScript reader for the same ignored source config.
+Vite's lipsync/audio/legacy-voice/card-art proxies and the archive manifest
+generator no longer contain developer drive paths. They derive from
+`legacy_root`, while per-domain environment variables remain final overrides.
+
+This is a location-contract change only. The organizer directories remain
+browser-format or regression dependencies, not RAW identity authorities. A
+null legacy root resolves to an unconfigured repository placeholder, so clean
+CI builds cannot silently inherit a developer path.
+
 ## Current candidate gates
 
 ### Story sample: `1_4_001_01`
