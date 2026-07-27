@@ -199,7 +199,7 @@ with its current archive consumer:
 
 | Category | Paths | Identity coverage | Current archive behavior |
 | --- | ---: | --- | --- |
-| birthday visual | 49 | all 49 master idols + `101ken`; `012yus`/`013kys` share one visual | all 49 master idols use 48 stable RAW-derived URLs; only the `101ken` NPC visual remains on fallback |
+| birthday visual | 49 | all 49 master idols + `101ken`; `012yus`/`013kys` share one visual | complete: 50 identity mappings use all 49 physical RAW-derived URLs |
 | event-story visual | 51 | all 49 master idols + `101ken`/`102sha` | event detail uses general character icons |
 | Mobile bust-up | 51 | all 49 master idols + `101ken`/`102sha` | Mobile archive uses icon + room background |
 | name plate | 49 | all 49 master idols | ADV UI renders speaker text with CSS |
@@ -774,13 +774,33 @@ validates the NPC code/name evidence, and persists `identity_scope: npc`,
 missing scope and a mismatched NPC code, then publish and roll back a synthetic
 NPC fixture.
 
-The isolated real candidate is not stable yet. It records RAW SHA-256
+The isolated real candidate records RAW SHA-256
 `a3d004e4c949c9f653997504f2d84545cac448c416f12c7fc6ff1b9d7e3dab17`,
 PathID `4948771745467967869`, and a `778×833`, 235,035-byte PNG with SHA-256
 `5ff9f9e04a37c02dc7475674b249285e4624566e94c0171e958587fcf5799216`.
 Its candidate detail route passed page identity, non-empty DOM, framework
 overlay, exact URL/dimensions, and screenshot checks. Starting playback entered
 `view=player`, rendered one canvas, and exposed `前へ`, `AUTO`, and `SKIP`.
+
+The real stable publish started from the forty-nine-mapping, forty-eight-URL
+registry SHA-256
+`7e6529c7ac74f658f602b7aaf7e70c1d751e45b7e5c973769cf82a4b3cd51a0c`.
+The first stable route resolved without a candidate parameter and the registry
+persisted `identity_scope: npc`, NPC ID `101`, speaker ID `101ken`, and all
+five compiled references. Explicit rollback restored that exact baseline,
+removed the PNG, returned the route to its `148×148` NPC icon fallback, and
+preserved `049eis` at `968×872`. Final republish leaves fifty identity mappings
+backed by all forty-nine physical birthday URLs; registry SHA-256 is
+`661852cf0bd631a4c82dc7be616f478a8bf49cc169164219958ead0023feb3ec`.
+
+The final stable route again loaded the exact `778×833` PNG without a candidate
+parameter. Desktop candidate inspection and narrow stable-page inspection both
+fit their layouts. Console inspection retained the pre-existing `noAudio=1`
+null-`AudioContext` decode error and player-only Pixi Spine update/tint
+warnings. Browser-control Statsig warnings remained external to local 5174.
+Final ignored rollback evidence:
+
+`web_viewer/.analysis/raw-migration/character-image-candidate/birthday_visual/101ken/stable-backup-20260727-final/`
 
 The ignored report records each contributing bundle's path, size, and SHA-256
 from the established 13,000-file source manifest:
@@ -1217,8 +1237,9 @@ because this story has no translation overlay.
 1. Extend the proven single-story gate to multi-part aggregate collections,
    then promote another small representative batch rather than all 3,398 at
    once.
-2. Audit and promote the final `101ken` birthday visual only through a separate
-   NPC identity gate; do not represent it as one of the 49 master idols.
+2. Treat the birthday-visual domain as complete: all 49 physical RAW assets are
+   stable, while the registry keeps 49 master idols and `101ken` as distinct
+   identity scopes.
 3. Map all 260 USM files to live-stage, card, event, and announcement semantics.
 4. Audit the remaining 1,271 general `image_*` bundles by Unity object name and
    master-data consumer.
@@ -1354,6 +1375,13 @@ npm run character:promotion-publish-batch -- `
 
 python ..\data_pipeline\extract_raw_character_image_candidate.py `
   birthday_visual 101ken --identity-scope npc
+
+npm run character:promotion-publish -- `
+  --candidate-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/101ken `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/101ken/stable-backup-20260727-final `
+  --confirm=birthday_visual:101ken
 
 npm run character:promotion-rollback -- `
   --registry=public/data/assets/raw_character_image_promotions.json `

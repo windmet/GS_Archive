@@ -1242,6 +1242,23 @@ for (const [idolCode, expected] of Object.entries(committedFinalMasterIdolEviden
   assert.equal(entry.unity_object.path_id, expected.pathId)
   assert.equal(entry.output.sha256, expected.sha256)
 }
+const committedNpcBirthday = sourceRegistry.entries.find(candidate =>
+  candidate.kind === 'birthday_visual' && candidate.idol_code === '101ken',
+)
+assert.ok(committedNpcBirthday)
+assert.equal(
+  committedNpcBirthday.unity_object.path_id,
+  '4948771745467967869',
+)
+assert.equal(
+  committedNpcBirthday.output.sha256,
+  '5ff9f9e04a37c02dc7475674b249285e4624566e94c0171e958587fcf5799216',
+)
+assert.equal(committedNpcBirthday.master_evidence.identity_scope, 'npc')
+assert.equal(committedNpcBirthday.master_evidence.npc_id, 101)
+assert.equal(committedNpcBirthday.master_evidence.speaker_id, '101ken')
+assert.equal(committedNpcBirthday.master_evidence.display_name, '山村 賢')
+assert.equal(committedNpcBirthday.master_evidence.reference_count, 5)
 
 console.log('RAW character-image promotion verification passed')
 console.log('  exact RAW and PNG evidence, stable registry, explicit confirmation and path bounds covered')

@@ -815,8 +815,23 @@ The real isolated candidate records RAW
 PathID `4948771745467967869`, PNG `778×833`,
 `5ff9f9e04a37c02dc7475674b249285e4624566e94c0171e958587fcf5799216`,
 and five compiled master references. Its 5174 candidate page and player
-interaction passed, but no stable publication is claimed in this gate-only
-batch.
+interaction passed.
+
+The real publish/rollback/final-republish cycle restored the exact
+`7e6529c7ac74f658f602b7aaf7e70c1d751e45b7e5c973769cf82a4b3cd51a0c`
+baseline during rollback, removed the PNG, returned `101ken` to its `148×148`
+icon fallback, and preserved `049eis` at `968×872`. Final state is fifty
+identity mappings backed by all forty-nine physical birthday URLs, registry
+SHA-256
+`661852cf0bd631a4c82dc7be616f478a8bf49cc169164219958ead0023feb3ec`.
+The stable registry retains NPC ID `101`, speaker ID `101ken`, display name
+`山村 賢`, and five references rather than presenting the entry as a master
+idol. The final stable route loaded at `778×833` without a candidate parameter;
+both desktop candidate and narrow stable-page layouts passed inspection.
+
+Final rollback evidence:
+
+`.analysis/raw-migration/character-image-candidate/birthday_visual/101ken/stable-backup-20260727-final/`
 
 ### Standalone promotion gate and first stable replacement
 
@@ -980,6 +995,13 @@ npm run character:promotion-publish-batch -- `
 python ..\data_pipeline\extract_raw_character_image_candidate.py `
   birthday_visual 101ken --identity-scope npc
 
+npm run character:promotion-publish -- `
+  --candidate-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/101ken `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/101ken/stable-backup-20260727-final `
+  --confirm=birthday_visual:101ken
+
 python ..\data_pipeline\extract_raw_audio_candidate.py `
   --raw-root ..\RAW --kind bgm --container usual_day.awb --cue usual_day `
   --selection 1 --output-root .analysis\raw-migration\audio `
@@ -1022,7 +1044,8 @@ assets.
 
 1. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
-2. Audit `101ken` and promote it only through a separate NPC identity gate.
+2. Treat the birthday-visual domain as complete and continue with the next
+   character-image consumer rather than reopening the verified stable paths.
 3. Map all 260 RAW USM files to master-data consumers.
 4. Continue promoting verified domains one reversible batch at a time, with
    5174 acceptance and rollback evidence before each stable-path replacement.
