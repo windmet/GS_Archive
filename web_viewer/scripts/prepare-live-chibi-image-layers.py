@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import io
 import json
 import sys
 from pathlib import Path
@@ -18,20 +19,30 @@ DATA_PIPELINE_ROOT = PROJECT_ROOT.parent / "data_pipeline"
 sys.path.insert(0, str(DATA_PIPELINE_ROOT))
 
 from archive_paths import add_sources_config_argument, load_archive_sources
+from live_chibi_raw_semantics import load_raw_live_semantics
 
 
 DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi" / "image-layers"
 
 
-def referenced_images(script_root: Path) -> set[str]:
+def referenced_images(effect_scripts: dict[str, bytes]) -> set[str]:
     images: set[str] = set()
-    for csv_path in sorted(script_root.glob("*.csv")):
-        with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
-            for row in csv.reader(handle):
-                if row and row[0] in {"Image_layer", "Image_layer_2"} and len(row) > 2:
-                    if row[2].strip():
-                        images.add(row[2].strip())
+    for payload in effect_scripts.values():
+        text = payload.decode("utf-8-sig", errors="surrogateescape")
+        for row in csv.reader(io.StringIO(text, newline="")):
+            if row and row[0] in {"Image_layer", "Image_layer_2"} and len(row) > 2:
+                if row[2].strip():
+                    images.add(row[2].strip())
     return images
+
+
+def legacy_effect_scripts(root: Path) -> dict[str, bytes]:
+    if not root.is_dir():
+        raise FileNotFoundError(f"Missing liveeffectscript root: {root}")
+    return {
+        path.stem: path.read_bytes()
+        for path in sorted(root.glob("*.csv"))
+    }
 
 
 def song_code(asset_name: str) -> str:
@@ -88,7 +99,11 @@ def export_texture(image, target: Path) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser()
     add_sources_config_argument(parser)
-    parser.add_argument("--script-root", type=Path)
+    parser.add_argument(
+        "--script-root",
+        type=Path,
+        help="Explicit legacy regression override; default reads RAW song bundles.",
+    )
     parser.add_argument("--raw-asset-root", type=Path)
     parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
     parser.add_argument(
@@ -101,28 +116,21 @@ def main() -> None:
     args = parser.parse_args()
 
     sources = load_archive_sources(args.sources_config)
-    if args.script_root:
-        script_root = args.script_root.resolve()
-    elif sources.legacy_root:
-        script_root = (
-            sources.legacy_root
-            / "growing stars"
-            / "assets"
-            / "resources"
-            / "liveeffectscript"
-        ).resolve()
-    else:
-        raise ValueError(
-            "legacy_root or --script-root is required for liveeffectscript CSVs"
-        )
     raw_asset_root = (args.raw_asset_root or sources.raw_root / "asset").resolve()
+    if args.script_root:
+        effect_scripts = legacy_effect_scripts(args.script_root.resolve())
+    else:
+        effect_scripts = {
+            name: record["payload"]
+            for name, record in load_raw_live_semantics(raw_asset_root)[
+                "choreography"
+            ].items()
+        }
     output_root = args.output_root.resolve()
-    if not script_root.is_dir():
-        raise FileNotFoundError(f"Missing liveeffectscript root: {script_root}")
     if not raw_asset_root.is_dir():
         raise FileNotFoundError(f"Missing RAW asset root: {raw_asset_root}")
 
-    all_assets = referenced_images(script_root)
+    all_assets = referenced_images(effect_scripts)
     selected = set(args.asset)
     unknown = sorted(selected - all_assets)
     if unknown:
