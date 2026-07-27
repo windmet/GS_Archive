@@ -1407,8 +1407,12 @@ song mappings. A bounded `fx_in_bnckgy_overlight_1` rebuild was byte-identical
 to stable, and port 5174 verified the four-object stage/toggle lifecycle.
 The existing four `tibeti` missing IDs remain explicit.
 
-Only the static-stage background builder still reads choreography CSV files
-independently.
+Commit `40b7372` finally moved static-stage dynamic-layer exclusion to the RAW
+TextAsset mapping. Both source paths resolve the same 57 dynamic IDs. A
+bounded `bnckgy` three-layer composite was byte-identical to stable, and port
+5174 verified its ready/enabled toggle lifecycle. The main builder and all
+four specialized choreography consumers now use RAW by default; organizer
+CSVs are regression overrides only.
 
 The stable live inventory remains correctly bounded to 549 costumes.
 `audit:live-chibi-costume-boundary` proved that the remaining 141 master
@@ -1435,13 +1439,11 @@ groups at the current stage time. Stable assets stayed unchanged.
 
 ## Next batches
 
-1. Migrate the remaining static-stage helper builder to the already-proven RAW
-   choreography TextAssets, then run its bounded parity and 5174 regression.
+1. Classify the remaining 183 non-Backmonitor RAW USMs against masterdata
+   consumers without bulk decoding or stable-path replacement.
 2. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
 3. Continue the proven `001tom`/`002sht` event-story visual consumer in another
    bounded batch; keep the complete birthday domain unchanged.
-4. Classify the remaining 183 non-Backmonitor RAW USMs against master-data
-   consumers.
-5. Continue promoting verified domains one reversible batch at a time, with
+4. Continue promoting verified domains one reversible batch at a time, with
    5174 acceptance and rollback evidence before each stable-path replacement.

@@ -1792,10 +1792,10 @@ and no stable artifact or URL changed.
 This does not yet remove every legacy CSV read. Commit `f73faa7` migrated the
 Backmonitor consumer as recorded in section 6.13, and commit `4c67bd1`
 migrated Image_layer as recorded in section 6.14. Commit `08be451` migrated
-Object_layer as recorded in section 6.15. Only the following specialized
-builder still has an independent choreography-file input:
-
-- `prepare-live-chibi-stage-backgrounds.py`.
+Object_layer as recorded in section 6.15, and commit `40b7372` migrated the
+static-stage consumer as recorded in section 6.16. The main builder and all
+four specialized choreography consumers now default to the same RAW TextAsset
+source; organizer CSV directories remain regression overrides only.
 
 ## 6.13 RAW choreography source / Backmonitor consumer
 
@@ -1892,6 +1892,32 @@ Port 5174 exercised the actual バーニン・クールで輝いて consumer at
 舞台物件 off reduced the count to zero; turning it back on restored all four.
 The index and four representative sprite URLs returned HTTP 200, and no Vite
 error overlay appeared. No stable file or URL changed.
+
+## 6.16 RAW choreography source / static-stage consumer
+
+Commit `40b7372` changes only
+`scripts/prepare-live-chibi-stage-backgrounds.py`: its default dynamic-layer
+exclusion input now uses the audited RAW choreography TextAsset map.
+`--script-root` remains an explicit organizer-export regression override.
+Static Texture2D extraction still reads configured RAW song bundles; output
+schema and stable paths were not changed.
+
+Independent RAW and organizer parsing both produced the same 57 unique
+dynamic-stage image IDs, with an empty symmetric difference. A bounded
+ignored rebuild of `bnckgy` composed exactly
+`stage_bnckgy_01`, `stage_bnckgy_02`, and `stage_bnckgy_03`. The
+1,658,112-byte candidate/stable PNG SHA-256 was
+`E07675E0D752FA26CE3E072C859180D874D85ECA1F40CFFA364A792AA0C7FFEF`,
+and the candidate index entry was structurally identical to stable. The
+untouched 55-song stable index retained SHA-256
+`B042183DE423C67D570A21CC5AA30D39F288F28FA3275BFCCDA5B2F51356AA3D`.
+
+Port 5174 exercised the actual バーニン・クールで輝いて consumer. It
+reported static-stage enabled, ready, and background song `bnckgy`. Turning
+静态舞台 off changed only the enabled state while the loaded background
+remained ready; turning it back on restored the enabled state. The index and
+`bnckgy.png` returned HTTP 200, and no Vite error overlay appeared. No stable
+file or URL changed.
 
 ## 7. Browser candidate verification
 
