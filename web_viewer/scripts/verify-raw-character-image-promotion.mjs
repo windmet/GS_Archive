@@ -1398,6 +1398,29 @@ assert.equal(committedNpcBirthday.master_evidence.speaker_id, '101ken')
 assert.equal(committedNpcBirthday.master_evidence.display_name, '山村 賢')
 assert.equal(committedNpcBirthday.master_evidence.reference_count, 5)
 
+const committedEventStoryVisuals = {
+  '001tom': {
+    pathId: '-7457278555292857429',
+    sha256: 'f85215af82d5d91f0fe0279ffc728b8dd89d5b272bb9af806b618e2c41c07bba',
+    eventCodes: ['10011', '30018'],
+  },
+  '002sht': {
+    pathId: '-5184400692822500854',
+    sha256: 'a83344e535e4292a8f0b1dac5d3c3b9951d0a05c32c5fc225dc5eea501fc0631',
+    eventCodes: ['10011', '30008', '30018'],
+  },
+}
+for (const [idolCode, expected] of Object.entries(committedEventStoryVisuals)) {
+  const entry = sourceRegistry.entries.find(candidate =>
+    candidate.kind === 'event_story_visual' &&
+    candidate.idol_code === idolCode
+  )
+  assert.ok(entry)
+  assert.equal(entry.unity_object.path_id, expected.pathId)
+  assert.equal(entry.output.sha256, expected.sha256)
+  assert.deepEqual(entry.master_evidence.event_codes, expected.eventCodes)
+}
+
 console.log('RAW character-image promotion verification passed')
 console.log('  exact RAW and PNG evidence, stable registry, explicit confirmation and path bounds covered')
 console.log('  additive rollback, injected-failure restoration and shared-identity rejection covered')

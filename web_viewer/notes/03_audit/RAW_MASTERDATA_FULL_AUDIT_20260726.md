@@ -200,7 +200,7 @@ with its current archive consumer:
 | Category | Paths | Identity coverage | Current archive behavior |
 | --- | ---: | --- | --- |
 | birthday visual | 49 | all 49 master idols + `101ken`; `012yus`/`013kys` share one visual | complete: 50 identity mappings use all 49 physical RAW-derived URLs |
-| event-story visual | 51 | all 49 master idols + `101ken`/`102sha` | first stable consumer proven: `001tom` uses RAW visual in event cast; 50 identities remain on icon fallback |
+| event-story visual | 51 | all 49 master idols + `101ken`/`102sha` | two stable consumers proven: `001tom`/`002sht` use RAW visuals in event cast; 49 identities remain on icon fallback |
 | Mobile bust-up | 51 | all 49 master idols + `101ken`/`102sha` | Mobile archive uses icon + room background |
 | name plate | 49 | all 49 master idols | ADV UI renders speaker text with CSS |
 | sign | 49 | all 49 master idols | idol detail has no signature slot |
@@ -858,6 +858,48 @@ Final ignored rollback evidence:
 
 `web_viewer/.analysis/raw-migration/character-image-candidate/event_story_visual/001tom/stable-backup-20260727-final/`
 
+### Second stable event-story visual
+
+`event_story_visual:002sht` is the next single-resource publication from the
+same physical RAW aggregate. It remains a distinct Unity object and output:
+
+- exact Sprite PathID string `-5184400692822500854`;
+- output `475×783`, 227,024 bytes, SHA-256
+  `a83344e535e4292a8f0b1dac5d3c3b9951d0a05c32c5fc225dc5eea501fc0631`;
+- stable URL
+  `/assets/events/characters/image_chara_event_story_visual_002sht.png`.
+
+The deduplicated master evidence contains three compiled event files:
+
+- event `410011`, code `10011`, `1_3_10011_01.json`;
+- event `430008`, code `30008`, `1_3_30008_01.json`;
+- event `430018`, code `30018`, `1_3_30018_01.json`.
+
+The candidate `410011` route rendered the existing stable `001tom` visual and
+the isolated `002sht` candidate together, while `003hok` remained an icon
+fallback. Both images loaded at their natural dimensions and the candidate
+cast card navigated to `view=idol_detail&idol=002sht`.
+
+The real publish/rollback/final-republish cycle started from the exact
+one-event-visual registry SHA-256
+`5e6d8bcedd55f2ecc00ea81489b6483788dba51355ebce4a81b7bdcaef4072c0`.
+First publish loaded both stable URLs on event `410011`. Rollback restored that
+exact hash, removed only the `002sht` PNG, retained the byte-identical
+`001tom` visual, and returned `002sht` plus `003hok` to icon fallback. Final
+republish produced registry SHA-256
+`25f631de7b5268343f83291bfef8ab8174ca536926f1e84c4d0f5f7bbf7e0471`.
+
+Final 5174 acceptance used the additional master-linked route
+`430008 / 30008`. It loaded the stable `002sht` visual at natural `475×783`,
+kept the other four cast members on icons, showed no framework overlay, and
+navigated the cast card to the correct idol detail. Candidate and stable cast
+screenshots both show the portrait fully contained. The only local console
+error remained the established `noAudio=1` null-`AudioContext` decode error.
+
+Final ignored rollback evidence:
+
+`web_viewer/.analysis/raw-migration/character-image-candidate/event_story_visual/002sht/stable-backup-20260727-final/`
+
 The ignored report records each contributing bundle's path, size, and SHA-256
 from the established 13,000-file source manifest:
 
@@ -1293,8 +1335,9 @@ because this story has no translation overlay.
 1. Extend the proven single-story gate to multi-part aggregate collections,
    then promote another small representative batch rather than all 3,398 at
    once.
-2. Continue the event-story visual domain from the proven `001tom` consumer in
-   another bounded batch; do not reopen the complete birthday domain.
+2. Continue the event-story visual domain from the proven `001tom`/`002sht`
+   consumers in another bounded batch; do not reopen the complete birthday
+   domain.
 3. Map all 260 USM files to live-stage, card, event, and announcement semantics.
 4. Audit the remaining 1,271 general `image_*` bundles by Unity object name and
    master-data consumer.
@@ -1437,6 +1480,26 @@ npm run character:promotion-publish -- `
   --assets-root=public/assets `
   --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/101ken/stable-backup-20260727-final `
   --confirm=birthday_visual:101ken
+
+python ..\data_pipeline\extract_raw_character_image_candidate.py `
+  event_story_visual 001tom
+
+npm run character:promotion-publish -- `
+  --candidate-dir=.analysis/raw-migration/character-image-candidate/event_story_visual/001tom `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/event_story_visual/001tom/stable-backup-20260727-final `
+  --confirm=event_story_visual:001tom
+
+python ..\data_pipeline\extract_raw_character_image_candidate.py `
+  event_story_visual 002sht
+
+npm run character:promotion-publish -- `
+  --candidate-dir=.analysis/raw-migration/character-image-candidate/event_story_visual/002sht `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/event_story_visual/002sht/stable-backup-20260727-final `
+  --confirm=event_story_visual:002sht
 
 npm run character:promotion-rollback -- `
   --registry=public/data/assets/raw_character_image_promotions.json `

@@ -873,6 +873,34 @@ Final rollback evidence:
 
 `.analysis/raw-migration/character-image-candidate/event_story_visual/001tom/stable-backup-20260727-final/`
 
+### Second stable event-story visual
+
+`event_story_visual:002sht` is a separate Sprite in the same verified RAW
+aggregate, with exact PathID `-5184400692822500854`. Its PNG is `475×783`,
+227,024 bytes, SHA-256
+`a83344e535e4292a8f0b1dac5d3c3b9951d0a05c32c5fc225dc5eea501fc0631`.
+
+Event master evidence resolves three unique compiled files:
+`1_3_10011_01.json`, `1_3_30008_01.json`, and `1_3_30018_01.json`, owned by
+event IDs `410011`, `430008`, and `430018`. Each compiled character list
+contains `002sht`.
+
+The candidate route rendered stable `001tom`, candidate `002sht`, and the
+`003hok` icon fallback together. Explicit rollback restored registry SHA-256
+`5e6d8bcedd55f2ecc00ea81489b6483788dba51355ebce4a81b7bdcaef4072c0`,
+removed only `002sht`, preserved stable `001tom`, and returned the other two
+Jupiter members to icons. Final republish produced registry SHA-256
+`25f631de7b5268343f83291bfef8ab8174ca536926f1e84c4d0f5f7bbf7e0471`.
+
+The additional stable route `430008 / 30008` loaded
+`/assets/events/characters/image_chara_event_story_visual_002sht.png` at
+natural `475×783` with four icon fallbacks. Its cast screenshot passed layout
+inspection, and clicking the visual opened `idol=002sht`.
+
+Final rollback evidence:
+
+`.analysis/raw-migration/character-image-candidate/event_story_visual/002sht/stable-backup-20260727-final/`
+
 ### Standalone promotion gate and first stable replacement
 
 The generic strict collection publisher requires an aggregate plus episode
@@ -1052,6 +1080,16 @@ npm run character:promotion-publish -- `
   --backup-dir=.analysis/raw-migration/character-image-candidate/event_story_visual/001tom/stable-backup-20260727-final `
   --confirm=event_story_visual:001tom
 
+python ..\data_pipeline\extract_raw_character_image_candidate.py `
+  event_story_visual 002sht
+
+npm run character:promotion-publish -- `
+  --candidate-dir=.analysis/raw-migration/character-image-candidate/event_story_visual/002sht `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/event_story_visual/002sht/stable-backup-20260727-final `
+  --confirm=event_story_visual:002sht
+
 python ..\data_pipeline\extract_raw_audio_candidate.py `
   --raw-root ..\RAW --kind bgm --container usual_day.awb --cue usual_day `
   --selection 1 --output-root .analysis\raw-migration\audio `
@@ -1094,8 +1132,8 @@ assets.
 
 1. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
-2. Continue the proven event-story visual consumer in another bounded batch;
-   keep the complete birthday domain unchanged.
+2. Continue the proven `001tom`/`002sht` event-story visual consumer in another
+   bounded batch; keep the complete birthday domain unchanged.
 3. Map all 260 RAW USM files to master-data consumers.
 4. Continue promoting verified domains one reversible batch at a time, with
    5174 acceptance and rollback evidence before each stable-path replacement.
