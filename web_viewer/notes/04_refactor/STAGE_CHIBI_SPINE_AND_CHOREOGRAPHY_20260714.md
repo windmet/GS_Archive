@@ -383,6 +383,13 @@ npm run chibi:image-layers
 
 `scripts/prepare-live-chibi-image-layers.py` 输出 `public/assets/live-chibi/image-layers/index.json` 和 57 张 PNG，总大小 29,181,796 bytes；全量检查为 57/57 bundle、57/57 Sprite、零缺失、零透明空图。导出使用 bundle mtime 缓存、临时 PNG 与原子替换，索引记录尺寸、alpha 范围、bundle、Sprite rect 和 texture rect offset。
 
+2026-07-27 来源校正：提交 `7860377` 已将脚本接入统一 archive source
+contract。CSV 语义继续来自显式 `legacy_root`，24 个
+`song_<code>.unity3d` 的物理读取改为配置的 `RAW/asset`。24/24 RAW bundle
+与整理包副本 SHA-256 一致；`stage_flslgt_01` 的隔离强制导出与稳定 PNG
+逐字节一致，57 项镜像索引在单项重建后也保持逐字节一致。5174 的 FLASH
+LIGHT 四层实景开关回归通过，稳定目录未被替换。
+
 编排索引升级为 schema 7，并为每首歌写入 `imageLayerEvents`，保留 `time / asset / layerType / depth / hide / raw19`。列 17/18 的 `1` 已由多首歌曲的显隐时序交叉确认是隐藏指令；列 3 作为 Pixi `zIndex`，允许图片层直接与角色交错，而不是强制全部放在角色前或后。运行时按当前歌曲时间重放事件得到每个 asset 的显隐和最新深度，将完整 1900×1060 画布居中并按 `2/3 × viewportScale` 映射到 1280×720 舞台。异步加载按 asset 合并；切歌会使旧请求失效并释放 Sprite、Texture 和 GPU 资源。
 
 浏览器回归验证：

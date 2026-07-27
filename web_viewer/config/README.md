@@ -149,3 +149,20 @@ WannaCRI, and output arguments remain final overrides. Repeat `--asset` for a
 bounded set; when a target index already exists, the selected records merge
 without dropping its other entries. Omitting `--asset` retains the established
 full 73-movie/4-transition build.
+
+The live-chibi image-layer builder follows the same split-source contract:
+`liveeffectscript` CSVs under `legacy_root` provide semantic references, while
+configured `RAW/asset/song_<songCode>.unity3d` is the physical authority.
+
+```powershell
+python scripts\prepare-live-chibi-image-layers.py `
+  --asset stage_flslgt_01 `
+  --force `
+  --output-root .analysis\raw-migration\live-chibi-image-layers\candidate
+```
+
+Explicit `--script-root`, `--raw-asset-root`, and `--output-root` arguments
+remain final overrides. Repeat `--asset` for a bounded set. A selected rebuild
+merges its records into an existing target index, so an isolated mirror of the
+57-entry stable index can be used for non-destructive regression. Omitting
+`--asset` retains the established full 57-image build.

@@ -216,7 +216,7 @@ JSON as a byte-for-byte direct extractor artifact.
 | story SE | compiled SE cue + ACB sequence metadata | multi-cue ACB bank | 435/435 classified; `waribashi` composite reconstructed | full identity and representative sequence semantics proven |
 | master seasonal BGM | table 133 relation + ACB action metadata | variant cues/banks | 92/92 classified; 42/42 switches resolved | full identity relation proven |
 | character/costume/Spine | costume/idol dictionaries + Unity object identity | `costume_*`, `idol_settings_*`, `image_chara*` | 690/690 master costumes; 725 full Spine + 3 RAW silhouette-only; 257/257 idol-setting JSON assets; all 485 character-image paths classified | costume/Spine/idol settings proven; character-image consumers mapped, promotion partial |
-| live/chibi | song/choreography IDs | `live_*`, `song_*`, image/object layers | representative song playback plus 77/77 Backmonitor source mappings proven | partial |
+| live/chibi | song/choreography IDs | `live_*`, `song_*`, image/object layers | representative song playback, 77/77 Backmonitor mappings, and 57/57 image-layer mappings proven | partial |
 | movies | event/live/card movie relations | 260 USM | 77/77 live Backmonitor references mapped to RAW; remaining 183 still filename-level | partial |
 | general UI images | master records + bundle object names | 1,271 `image_*` bundles | no full relation table yet | pending |
 
@@ -1474,6 +1474,40 @@ while the loop movie remained ready. The visible stage, choreography, audio,
 and lyrics continued normally. No Backmonitor error was logged; only the two
 previously recorded Pixi Spine warnings remained. No stable MP4, index, or URL
 changed.
+
+## 6.6 RAW asset / live Image_layer slice
+
+Commit `7860377` moved `scripts/prepare-live-chibi-image-layers.py` from
+organizer-era absolute defaults to the shared source contract. The 119
+`liveeffectscript` CSVs under `legacy_root` remain the semantic-reference
+source. Their 101 `Image_layer` / `Image_layer_2` events resolve to 57 unique
+asset IDs in 24 `song_<code>.unity3d` bundles. Physical bundle reads now
+default to configured `RAW/asset`.
+
+All 24 authoritative RAW bundles exist and total 88,372,604 bytes. Each was
+SHA-256 compared with the organizer-era duplicate; 24/24 are byte-identical.
+For example, `song_flslgt.unity3d` is
+`C23C1C2940A0C3032E7B6B1D2B7A3C5A42CBBAE6E0D4A52C0155A7DB52BA9BD4`.
+This proves the physical association for the complete 57-asset image-layer
+domain without treating the organizer package as identity authority.
+
+The builder now accepts repeatable `--asset`, explicit source overrides, and an
+isolated `--output-root`. A selected rebuild merges into an existing target
+index rather than collapsing it. Forced extraction of `stage_flslgt_01`
+produced a candidate byte-identical to stable:
+
+| Artifact | Stable/candidate SHA-256 | Evidence |
+| --- | --- | --- |
+| `stage_flslgt_01.png` | `748696222912908185A608F2034E01C0B38093B24F37325F796CA036316EB0C1` | 775,367 bytes; 1900×1060 RGBA; alpha range 0–255 |
+| full mirror `index.json` | `0A8FCFD6C32EDD847C327B4AF95AE9B9405BB6971CE3643DC80FE4DAAD7DB783` | byte-identical; 57 assets; 29,181,796 image bytes |
+
+On port 5174, the stable index and sample PNG returned HTTP 200. In the actual
+`view=chibi_stage` consumer, selecting `FLASH LIGHT · 1/2/3/4 号位` reached
+4/4 ready with `stage_flslgt_01` through `_04` at depths 1550, 1575, 1600, and
+1725. Disabling 图片布景 reduced the live layer count to zero; re-enabling it
+restored the same four assets and depths. No image-layer load or synchronization
+error appeared; only the two previously recorded Pixi Spine warnings remained.
+No stable PNG, index, or URL changed.
 
 ## 7. Browser candidate verification
 

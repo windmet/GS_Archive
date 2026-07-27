@@ -1272,9 +1272,33 @@ the loop became ready, the blackout transition activated and later retired,
 and no Backmonitor media error appeared. Stable videos and index stayed
 unchanged.
 
+## Live Image_layer source-contract slice
+
+Commit `7860377` makes configured `RAW/asset` the physical default for the
+image-layer builder while retaining organizer-era `liveeffectscript` CSVs as
+declared semantic references. The 101 CSV events reference 57 unique assets
+across 24 song bundles. All 24 authoritative RAW bundles exist, and all 24 are
+byte-identical to the corresponding organizer-era duplicates.
+
+A forced isolated extraction of `stage_flslgt_01` was byte-identical to the
+stable PNG. Rebuilding the selected asset inside a mirror of the full index
+retained the exact 57-entry index hash, proving the merge path does not
+collapse unrelated records:
+
+```powershell
+python scripts\prepare-live-chibi-image-layers.py `
+  --asset stage_flslgt_01 `
+  --force `
+  --output-root .analysis\raw-migration\live-chibi-image-layers\candidate
+```
+
+Port 5174 then exercised the real FLASH LIGHT consumer. All four referenced
+image layers became ready at their expected depths; the 图片布景 toggle removed
+all four and restored the same set. Stable PNGs and index stayed unchanged.
+
 ## Next batches
 
-1. Migrate `prepare-live-chibi-image-layers.py` alone, using an ignored output
+1. Migrate `prepare-live-chibi-object-layers.py` alone, using an ignored output
    root and port-5174 consumer check before any stable replacement.
 2. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
