@@ -16,17 +16,20 @@ from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SIDEM_ROOT = Path(r"E:\BaiduNetdiskDownload\SideM")
-SCRIPT_ROOT = SIDEM_ROOT / "growing stars" / "assets" / "resources" / "liveeffectscript"
-MOVIE_ROOT = SIDEM_ROOT / "RAW" / "movie"
-OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi" / "backmonitor"
+DATA_PIPELINE_ROOT = PROJECT_ROOT.parent / "data_pipeline"
+sys.path.insert(0, str(DATA_PIPELINE_ROOT))
+
+from archive_paths import add_sources_config_argument, load_archive_sources
+
+
+DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi" / "backmonitor"
 DEFAULT_CRI_KEY = "0002B875BC731A85"
 
 
-def referenced_movies() -> tuple[set[str], set[str]]:
+def referenced_movies(script_root: Path) -> tuple[set[str], set[str]]:
     movies: set[str] = set()
     transitions: set[str] = set()
-    for csv_path in sorted(SCRIPT_ROOT.glob("*.csv")):
+    for csv_path in sorted(script_root.glob("*.csv")):
         with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
             for row in csv.reader(handle):
                 if not row or row[0] != "Backmonitor":
@@ -72,15 +75,33 @@ def probe_video(ffprobe: str, path: Path) -> dict:
     }
 
 
-def locate_wannacri() -> Path | None:
-    configured = os.environ.get("SIDEM_WANNACRI_ROOT")
-    candidates = [
-        Path(configured) if configured else None,
-        Path(tempfile.gettempdir()) / "sidem-wannacri",
-    ]
-    for candidate in candidates:
-        if candidate and (candidate / "wannacri").is_dir():
-            return candidate
+def locate_wannacri(
+    explicit_root: Path | None,
+    configured_root: Path | None,
+) -> Path | None:
+    declared = (
+        ("--wannacri-root", explicit_root),
+        (
+            "SIDEM_WANNACRI_ROOT",
+            Path(os.environ["SIDEM_WANNACRI_ROOT"])
+            if os.environ.get("SIDEM_WANNACRI_ROOT")
+            else None,
+        ),
+        ("archive source configuration", configured_root),
+    )
+    for source, candidate in declared:
+        if candidate is None:
+            continue
+        resolved = candidate.resolve()
+        if not (resolved / "wannacri" / "__init__.py").is_file():
+            raise FileNotFoundError(
+                f"WannaCRI package root from {source} is invalid: {resolved}"
+            )
+        return resolved
+
+    temporary_candidate = Path(tempfile.gettempdir()) / "sidem-wannacri"
+    if (temporary_candidate / "wannacri" / "__init__.py").is_file():
+        return temporary_candidate
     return None if importlib.util.find_spec("wannacri") else Path()
 
 
@@ -92,8 +113,8 @@ def demux_usm(source: Path, output: Path, key: str, wannacri_root: Path | None) 
     result = subprocess.run(
         [
             sys.executable,
-            "-m",
-            "wannacri",
+            "-c",
+            "from wannacri import main; main()",
             "extractusm",
             str(source),
             "-k",
@@ -182,26 +203,77 @@ def demuxed_stream(root: Path, stream_type: str) -> Path:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    add_sources_config_argument(parser)
+    parser.add_argument("--script-root", type=Path)
+    parser.add_argument("--movie-root", type=Path)
+    parser.add_argument("--ffmpeg")
+    parser.add_argument("--ffprobe")
+    parser.add_argument("--wannacri-root", type=Path)
+    parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
+    parser.add_argument(
+        "--asset",
+        action="append",
+        default=[],
+        help=(
+            "Only prepare this referenced movie or transition ID. "
+            "Repeat for multiple assets."
+        ),
+    )
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--cri-key", default=DEFAULT_CRI_KEY)
     args = parser.parse_args()
 
-    ffmpeg = shutil.which("ffmpeg")
-    ffprobe = shutil.which("ffprobe")
+    sources = load_archive_sources(args.sources_config)
+    if args.script_root:
+        script_root = args.script_root.resolve()
+    elif sources.legacy_root:
+        script_root = (
+            sources.legacy_root
+            / "growing stars"
+            / "assets"
+            / "resources"
+            / "liveeffectscript"
+        ).resolve()
+    else:
+        raise ValueError(
+            "legacy_root or --script-root is required for liveeffectscript CSVs"
+        )
+    movie_root = (args.movie_root or sources.raw_root / "movie").resolve()
+    output_root = args.output_root.resolve()
+
+    ffmpeg = shutil.which(
+        args.ffmpeg
+        or os.environ.get("FFMPEG")
+        or (str(sources.ffmpeg_file) if sources.ffmpeg_file else "ffmpeg")
+    )
+    ffprobe = shutil.which(
+        args.ffprobe
+        or os.environ.get("FFPROBE")
+        or (str(sources.ffprobe_file) if sources.ffprobe_file else "ffprobe")
+    )
     if not ffmpeg or not ffprobe:
         raise FileNotFoundError("FFmpeg and FFprobe must be available on PATH")
-    if not MOVIE_ROOT.exists():
-        raise FileNotFoundError(f"Missing SideM movie root: {MOVIE_ROOT}")
-    wannacri_root = locate_wannacri()
+    if not script_root.is_dir():
+        raise FileNotFoundError(f"Missing liveeffectscript root: {script_root}")
+    if not movie_root.is_dir():
+        raise FileNotFoundError(f"Missing SideM movie root: {movie_root}")
+    wannacri_root = locate_wannacri(args.wannacri_root, sources.wannacri_root)
     if wannacri_root == Path():
         raise ModuleNotFoundError(
-            "WannaCRI is required. Install it with: "
-            "python -m pip install --target %TEMP%\\sidem-wannacri WannaCRI==0.3.1"
+            "WannaCRI is required. Install WannaCRI==0.3.1 into an ignored "
+            "directory and configure wannacri_root or pass --wannacri-root."
         )
 
-    movies, transitions = referenced_movies()
+    movies, transitions = referenced_movies(script_root)
+    selected = set(args.asset)
+    unknown = sorted(selected - movies - transitions)
+    if unknown:
+        raise ValueError(f"Unknown backmonitor asset IDs: {unknown}")
+    if selected:
+        movies &= selected
+        transitions &= selected
     requested = sorted(movies | transitions)
-    source_by_name = {path.stem.lower(): path for path in MOVIE_ROOT.glob("*.usm")}
+    source_by_name = {path.stem.lower(): path for path in movie_root.glob("*.usm")}
     missing = [name for name in requested if name.lower() not in source_by_name]
     if missing:
         raise FileNotFoundError(f"Missing backmonitor USM files: {missing}")
@@ -209,7 +281,7 @@ def main() -> None:
     entries = {}
     for index, name in enumerate(sorted(movies), start=1):
         source = source_by_name[name.lower()]
-        target = OUTPUT_ROOT / f"{name}.mp4"
+        target = output_root / f"{name}.mp4"
         metadata = cached_video(ffprobe, target, source, args.force)
         if metadata is None:
             with tempfile.TemporaryDirectory(prefix="sidem-usm-") as temporary:
@@ -233,8 +305,8 @@ def main() -> None:
     transition_entries = {}
     for index, name in enumerate(sorted(transitions), start=1):
         source = source_by_name[name.lower()]
-        color_target = OUTPUT_ROOT / f"{name}.color.mp4"
-        alpha_target = OUTPUT_ROOT / f"{name}.alpha.mp4"
+        color_target = output_root / f"{name}.color.mp4"
+        alpha_target = output_root / f"{name}.alpha.mp4"
         color_metadata = cached_video(ffprobe, color_target, source, args.force)
         alpha_metadata = cached_video(ffprobe, alpha_target, source, args.force)
         if color_metadata is None or alpha_metadata is None:
@@ -267,11 +339,21 @@ def main() -> None:
         }
         print(f"[transition {index:02d}/{len(transitions):02d}] {name}")
 
+    index_path = output_root / "index.json"
+    if selected and index_path.is_file():
+        existing = json.loads(index_path.read_text(encoding="utf-8"))
+        merged_entries = existing.get("assets", {})
+        merged_transitions = existing.get("transitions", {})
+        merged_entries.update(entries)
+        merged_transitions.update(transition_entries)
+        entries = merged_entries
+        transition_entries = merged_transitions
+
     index_data = {
         "schemaVersion": 1,
         "stats": {
-            "movies": len(movies),
-            "transitions": len(transitions),
+            "movies": len(entries),
+            "transitions": len(transition_entries),
             "files": len(entries),
             "transitionFiles": len(transition_entries) * 2,
             "bytes": sum(entry["bytes"] for entry in entries.values())
@@ -284,14 +366,14 @@ def main() -> None:
         "assets": entries,
         "transitions": transition_entries,
     }
-    OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
-    (OUTPUT_ROOT / "index.json").write_text(
+    output_root.mkdir(parents=True, exist_ok=True)
+    index_path.write_text(
         json.dumps(index_data, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
     print(
         f"Prepared {len(movies)} backmonitor movies and {len(transitions)} transitions "
-        f"in {OUTPUT_ROOT}"
+        f"in {output_root}"
     )
 
 

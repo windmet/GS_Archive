@@ -81,6 +81,7 @@ class ArchiveSources:
     vgmstream_file: Path | None
     ffmpeg_file: Path | None
     ffprobe_file: Path | None
+    wannacri_root: Path | None
 
     def published_path(self, *parts: str) -> Path:
         return self.publish_root.joinpath(*parts).resolve()
@@ -146,6 +147,7 @@ def _built_in_sources() -> ArchiveSources:
         vgmstream_file=None,
         ffmpeg_file=None,
         ffprobe_file=None,
+        wannacri_root=None,
     )
 
 
@@ -272,5 +274,10 @@ def load_archive_sources(config_path: Path | None = None) -> ArchiveSources:
             payload.get("ffprobe_file"),
             archive_root=archive_root,
             field="ffprobe_file",
+        ),
+        wannacri_root=_optional_path(
+            payload.get("wannacri_root"),
+            archive_root=archive_root,
+            field="wannacri_root",
         ),
     )
