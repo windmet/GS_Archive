@@ -1648,6 +1648,50 @@ advanced the shared clock to 0:03, and rendered lyrics and choreography.
 There was no framework overlay or application error; the two existing Pixi
 Spine warnings remained. No stable artifact or URL changed.
 
+## 6.10 External XAPK / live-chibi stage-effect slice
+
+Commit `aeeec1c` removed the organizer-machine path and newest-file scan from
+`scripts/prepare-live-chibi-stage-effects.py`. This domain is not a RAW
+replacement: the ten built-in Laserlight/Pinspotlight textures are embedded in
+the client XAPK's nested main APK `assets/bin/Data/data.unity3d`. Binary name
+searches found no matching `laserlight_1` or `pinspotlight_back` asset names in
+`RAW/asset`, and no separate organizer copy was found. The XAPK therefore
+remains an explicit external physical source, configured only by the ignored
+`xapk_file` field or the `--xapk` override.
+
+The original container was left untouched at:
+
+```text
+E:\BaiduNetdiskDownload\SideM\サイスタ - 副本\アイドルマスター+SideM+GROWING+STARS_2.6.10_APKPure.xapk
+```
+
+Source identity was pinned at all three container levels:
+
+| Container | Bytes | SHA-256 |
+| --- | ---: | --- |
+| XAPK | 122,533,902 | `517B907602C2667B6F1CAA7D1DF2623D49D082CD27F89E44163765E1EA61BDA2` |
+| `com.bandainamcoent.SideM_GROWINGSTARS.apk` | 86,094,372 | `1EA98330804F5E869C9F45F5C98897DF5A94BF6A8A2A8DDAED6B5D62E4B03CBB` |
+| `assets/bin/Data/data.unity3d` | 64,559,050 | `D35231C0B00A09F6941F47F7FFEDDE9E9B35701F5B66D6F432517DA860E1A500` |
+
+An ignored candidate generated ten PNGs plus `index.json`. All 11/11 files
+were byte-identical to the stable directory; both indexes hashed to
+`2147817434A896C4727FD08E378B389B607F18F3D339A173D58929DC5C4207F4`.
+Representative stable/candidate hashes were:
+
+| Artifact | SHA-256 |
+| --- | --- |
+| `fx_in_psblts_pinspotlight.png` | `AF239559FF31BFAB8F525F0B4979EE88F4FF90C4937324F9D4DD3EA6653C2FC6` |
+| `laserlight_1.png` | `2157E30469E1C751ADDF78805E4A301341285F05ABCB75E998198E0E504BC94C` |
+| `pinspotlight.png` | `9A243E45EEB6B66BDF95E1C5F656E4BC0AFAECF2E649F1649E66F4CF2AC76A72` |
+
+On port 5174, the real K.now O.nly stage initially exposed one Pinspotlight and
+no Laserlight. After advancing the stage clock it exposed two Pinspotlights
+with IDs 1/2 and eight Laserlights with IDs 1 through 8. Turning 光束灯效 off
+reduced both counts to zero; turning it on restored 2 and 8 at the current
+clock. The index and representative Pinspotlight/Laserlight PNG URLs also
+returned HTTP 200. There was no framework overlay or application error; only
+the two existing Pixi Spine warnings remained. No stable artifact changed.
+
 ## 7. Browser candidate verification
 
 No candidate changes a default production URL. Opt-in query parameters select

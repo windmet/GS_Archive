@@ -374,6 +374,37 @@ Spine warning。本批未改写稳定资源或 URL。
 - 119 份 choreography CSV 与 60 条 lip-sync 源 JSON 仍是显式 legacy
   语义/派生输入，尚未建立从 RAW/masterdata 独立再生的完整链。
 
+### 0.12 舞台内置灯效已建立外部 XAPK 来源契约
+
+代码提交 `aeeec1c` 已将 `prepare-live-chibi-stage-effects.py` 接入统一来源
+契约的可选 `xapk_file` 字段，并保留 `--xapk` 为最终覆盖。这个域不能写成
+RAW 迁移：十张 Laserlight/Pinspotlight 纹理来自客户端 XAPK 中主 APK 的
+`assets/bin/Data/data.unity3d`；在 `RAW/asset` 中未找到
+`laserlight_1` / `pinspotlight_back` 同名物理来源。
+
+原始 XAPK 保留在以下下载路径，未移动、未修改：
+
+```text
+E:\BaiduNetdiskDownload\SideM\サイスタ - 副本\アイドルマスター+SideM+GROWING+STARS_2.6.10_APKPure.xapk
+```
+
+三级来源身份如下：
+
+- XAPK：122,533,902 bytes，
+  SHA-256 `517B907602C2667B6F1CAA7D1DF2623D49D082CD27F89E44163765E1EA61BDA2`；
+- 主 APK：86,094,372 bytes，
+  SHA-256 `1EA98330804F5E869C9F45F5C98897DF5A94BF6A8A2A8DDAED6B5D62E4B03CBB`；
+- `assets/bin/Data/data.unity3d`：64,559,050 bytes，
+  SHA-256 `D35231C0B00A09F6941F47F7FFEDDE9E9B35701F5B66D6F432517DA860E1A500`。
+
+ignored 候选包含十张 PNG 和一个 `index.json`，与稳定目录 11/11
+逐字节一致；index SHA-256 为
+`2147817434A896C4727FD08E378B389B607F18F3D339A173D58929DC5C4207F4`。
+5174 的真实 K.now O.nly 消费者在播放后报告 2 个 Pinspotlight（ID 1/2）
+和 8 个 Laserlight（ID 1–8）；关闭“光束灯效”后两组均归零，再开启后按
+当前时刻恢复 2/8。无框架错误覆盖或应用错误，仅有两条既有 Pixi Spine
+warning。本批未改写稳定资源。
+
 ## 1. 当前已确认的事实
 
 ### 1.1 RAW 的真实边界和数量
@@ -606,7 +637,7 @@ publish/manifest.json
 | 260 USM 和 1,271 `image_*` 待审计 | 需要更新 | USM 中 77 个 live Backmonitor 已有完整引用/转码/5174 证据，剩余 183 个待分类；一般图片仍无完整 relation table |
 | Source Gate 已通过 | 正确 | GitHub run `30232788385` 对 `0ba566f` 成功 |
 | 已有完整统一 publish manifest | 不正确 | 只有域级 registry/candidate manifest；无统一 publish manifest |
-| 已有统一 archive root 配置 | 现在正确 | Python/JS loader、RAW 审计器、Vite、live audio、Backmonitor、Image/Object layer、静态舞台与角色核心已接入；stage-effects 仍需单独定义外部容器来源 |
+| 已有统一 archive root 配置 | 现在正确 | Python/JS loader、RAW 审计器、Vite、live audio、Backmonitor、Image/Object layer、静态舞台、角色核心与外部 XAPK stage-effects 均已接入；外部容器通过 ignored `xapk_file` 精确指定 |
 | 可用 masterdata 链 | 已完整核对 | 外部 XOR 容器 `D57F76...CDC0E` 可确定性解码为 `.analysis` PB `25D48A...F0EA1`，逐字节一致 |
 | ACB/AWB 已是整个站点唯一音频上游 | 目标合理，现状不能这样概括 | RAW 音频审计很强，但现有公开音频仍可能来自旧整理/转码链；需逐域收束 |
 | batch publisher 已存在 | 正确 | 已有 publish/rollback batch 和 fixture；下一批需补真正的三项事件视觉原子证据 |
@@ -1084,10 +1115,11 @@ git rev-parse origin/<当前分支>
 
 PR A 的配置核心、RAW manifest、card/background/character 六个工具、
 RAW audio 六个工具、RAW story 三个工具、Vite/manifest JS loader，
-以及 live-chibi 音频、Backmonitor、Image_layer、Object_layer、静态舞台与
-角色核心构建器已经接入。新窗口先处理 stage-effects 外部容器来源，再分别
-处理 141 套服装扩容和 legacy CSV/lip-sync 的来源追溯，不从 `003hok`
-开始发布：
+以及 live-chibi 音频、Backmonitor、Image_layer、Object_layer、静态舞台、
+角色核心和外部 XAPK stage-effects 构建器已经接入。下一批先对 masterdata
+存在但稳定目录尚未发布的 141 套主角色服装建立独立候选和代表性 body type
+验证；不得把内容扩展混入当前 549 套兼容集合的重建。之后再处理 legacy
+CSV/lip-sync 来源追溯，不从 `003hok` 开始发布：
 
 1. 核对 `0ba566f`、PR #2、worktree、5174；
 2. 复核 XOR source 与 decoded PB 的两个 SHA-256 和逐字节解码一致性；
@@ -1102,13 +1134,13 @@ RAW audio 六个工具、RAW story 三个工具、Vite/manifest JS loader，
 
 当前仍有三个明确目标，必须继续分批：
 
-1. `prepare-live-chibi-stage-effects.py`：XAPK/APK 外部容器，单独定义来源字段；
-2. 141 套 master 主角色 costume：另建候选并按 body type 做消费者抽样；
-3. choreography CSV 与 60 条 lip-sync 源曲线：建立来源/再生契约。
+1. 141 套 master 主角色 costume：另建候选并按 body type 做消费者抽样；
+2. choreography CSV 与 60 条 lip-sync 源曲线：建立来源/再生契约；
+3. 其余 183 个非 Backmonitor USM：结合 masterdata 消费者进行分类。
 
-下一批首选审计 `prepare-live-chibi-stage-effects.py`。先确认它实际读取的
-XAPK/APK/解包目录及已发布特效，再决定需要新增哪个 archive source 字段；
-不要在同一提交顺带扩入 141 套服装。
+下一批首选审计 141 套 master 主角色 costume。先建立 missing-set inventory，
+再选择覆盖 body type 的极小候选并验证 5174 消费者；不要直接把 141 套写入
+稳定 `inventory.json`，也不要与 choreography/lip-sync 追溯混在同一提交。
 
 只有用户明确要求跳过供应链收束、继续视觉内容批次时，才直接转到
 `event_story_visual:003hok`。

@@ -216,3 +216,21 @@ existing published set. Use explicit `--raw-asset-root`,
 `--output-root` overrides for isolated audits. Expanding to the other
 masterdata costumes is a separate content-promotion batch, not an implicit
 side effect of rebuilding the current set.
+
+The live-chibi stage-effect textures are a deliberate exception to RAW
+authority. They are embedded in the client XAPK's nested main APK
+`assets/bin/Data/data.unity3d`; the matching built-in Laserlight and
+Pinspotlight texture names were not found in `RAW/asset`. Configure the exact
+container through the ignored `xapk_file` field:
+
+```powershell
+python scripts\prepare-live-chibi-stage-effects.py `
+  --output-root .analysis\raw-migration\live-chibi-stage-effects\candidate
+```
+
+An explicit `--xapk` remains the final source override. Omitting
+`--output-root` preserves the established
+`public/assets/live-chibi/stage-effects` target. The script requires an exact
+configured file and never searches a personal directory for the newest XAPK.
+Like executable paths, `xapk_file` is machine-specific and must remain only in
+`archive_sources.local.json`; the committed example keeps it `null`.

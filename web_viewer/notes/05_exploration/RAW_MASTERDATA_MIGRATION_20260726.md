@@ -1375,20 +1375,33 @@ The stable inventory remains bounded to 549 costumes. Masterdata contains 690
 main models, so 141 main costumes still require a separate content/consumer
 promotion rather than being silently added by this source migration.
 
+### External XAPK stage effects
+
+Commit `aeeec1c` adds `xapk_file` to the ignored machine source contract and
+removes the hard-coded download directory from
+`prepare-live-chibi-stage-effects.py`. The ten Laserlight/Pinspotlight textures
+come from the XAPK main APK's `assets/bin/Data/data.unity3d`, not from RAW.
+The exact XAPK is required; the script no longer selects whichever XAPK has
+the newest timestamp.
+
+The ignored candidate contained ten PNGs and one index. All 11/11 files were
+SHA-256 identical to stable output. Port 5174 verified the actual K.now O.nly
+consumer: the active stage exposed two Pinspotlights and eight Laserlights,
+the 光束灯效 toggle removed both groups, and re-enabling it restored both
+groups at the current stage time. Stable assets stayed unchanged.
+
 ## Next batches
 
-1. Audit `prepare-live-chibi-stage-effects.py` and define its external
-   XAPK/APK source field before any migration.
-2. Build a separate candidate for the 141 masterdata costumes not present in
+1. Build a separate candidate for the 141 masterdata costumes not present in
    the current 549-model live inventory; validate representative body types
    before promotion.
-3. Establish provenance/reproduction contracts for the legacy choreography
+2. Establish provenance/reproduction contracts for the legacy choreography
    CSVs and 60 source lip-sync curves.
-4. Extend the proven single-story promotion gate to multi-part aggregate
+3. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
-5. Continue the proven `001tom`/`002sht` event-story visual consumer in another
+4. Continue the proven `001tom`/`002sht` event-story visual consumer in another
    bounded batch; keep the complete birthday domain unchanged.
-6. Classify the remaining 183 non-Backmonitor RAW USMs against master-data
+5. Classify the remaining 183 non-Backmonitor RAW USMs against master-data
    consumers.
-7. Continue promoting verified domains one reversible batch at a time, with
+6. Continue promoting verified domains one reversible batch at a time, with
    5174 acceptance and rollback evidence before each stable-path replacement.
