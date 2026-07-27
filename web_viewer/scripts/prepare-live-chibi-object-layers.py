@@ -8,6 +8,7 @@ import csv
 import json
 import math
 import re
+import sys
 from pathlib import Path
 
 import UnityPy
@@ -15,15 +16,18 @@ from PIL import Image
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SIDEM_ROOT = Path(r"E:\BaiduNetdiskDownload\SideM")
-SCRIPT_ROOT = SIDEM_ROOT / "growing stars" / "assets" / "resources" / "liveeffectscript"
-RAW_ASSET_ROOT = SIDEM_ROOT / "RAW" / "asset"
-OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi" / "object-layers"
+DATA_PIPELINE_ROOT = PROJECT_ROOT.parent / "data_pipeline"
+sys.path.insert(0, str(DATA_PIPELINE_ROOT))
+
+from archive_paths import add_sources_config_argument, load_archive_sources
 
 
-def object_references() -> dict[str, set[str]]:
+DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi" / "object-layers"
+
+
+def object_references(script_root: Path) -> dict[str, set[str]]:
     references: dict[str, set[str]] = {}
-    for csv_path in sorted(SCRIPT_ROOT.glob("*.csv")):
+    for csv_path in sorted(script_root.glob("*.csv")):
         song_code = csv_path.stem.split("_", 1)[0]
         with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
             for row in csv.reader(handle):
@@ -163,7 +167,12 @@ def find_keeper(environment, objects_by_id: dict[int, object], asset: str):
     return None, None, 0
 
 
-def inspect_asset(bundle: Path, asset: str, force: bool) -> dict | None:
+def inspect_asset(
+    bundle: Path,
+    asset: str,
+    output_root: Path,
+    force: bool,
+) -> dict | None:
     environment = UnityPy.load(str(bundle))
     objects_by_id = {int(obj.path_id): obj for obj in environment.objects}
     keeper, root, root_path_id = find_keeper(environment, objects_by_id, asset)
@@ -193,7 +202,7 @@ def inspect_asset(bundle: Path, asset: str, force: bool) -> dict | None:
         sprite_id = int(renderer.m_Sprite.path_id)
         if sprite_id not in textures:
             filename = f"{safe_name(asset)}__{safe_name(sprite.m_Name)}__{abs(sprite_id)}.png"
-            target = OUTPUT_ROOT / "sprites" / filename
+            target = output_root / "sprites" / filename
             metadata = save_sprite(sprite.image, target, force)
             textures[sprite_id] = {
                 "id": str(sprite_id),
@@ -266,17 +275,60 @@ def candidate_bundles(asset: str, song_codes: set[str], filenames: dict[str, Pat
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    add_sources_config_argument(parser)
+    parser.add_argument("--script-root", type=Path)
+    parser.add_argument("--raw-asset-root", type=Path)
+    parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
+    parser.add_argument(
+        "--asset",
+        action="append",
+        default=[],
+        help="Only prepare this referenced object-layer asset. Repeat for multiple assets.",
+    )
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args()
 
-    references = object_references()
-    filenames = {path.name.lower(): path for path in RAW_ASSET_ROOT.glob("*.unity3d")}
+    sources = load_archive_sources(args.sources_config)
+    if args.script_root:
+        script_root = args.script_root.resolve()
+    elif sources.legacy_root:
+        script_root = (
+            sources.legacy_root
+            / "growing stars"
+            / "assets"
+            / "resources"
+            / "liveeffectscript"
+        ).resolve()
+    else:
+        raise ValueError(
+            "legacy_root or --script-root is required for liveeffectscript CSVs"
+        )
+    raw_asset_root = (args.raw_asset_root or sources.raw_root / "asset").resolve()
+    output_root = args.output_root.resolve()
+    if not script_root.is_dir():
+        raise FileNotFoundError(f"Missing liveeffectscript root: {script_root}")
+    if not raw_asset_root.is_dir():
+        raise FileNotFoundError(f"Missing RAW asset root: {raw_asset_root}")
+
+    all_references = object_references(script_root)
+    selected = set(args.asset)
+    unknown = sorted(selected - all_references.keys())
+    if unknown:
+        raise ValueError(f"Unknown object-layer asset IDs: {unknown}")
+    references = {
+        asset: songs
+        for asset, songs in all_references.items()
+        if not selected or asset in selected
+    }
+    filenames = {
+        path.name.lower(): path for path in raw_asset_root.glob("*.unity3d")
+    }
     entries = {}
     missing = []
     for index, (asset, song_codes) in enumerate(sorted(references.items()), 1):
         entry = None
         for bundle in candidate_bundles(asset, song_codes, filenames):
-            entry = inspect_asset(bundle, asset, args.force)
+            entry = inspect_asset(bundle, asset, output_root, args.force)
             if entry is not None:
                 break
         if entry is None:
@@ -290,8 +342,22 @@ def main() -> None:
             f"({entry['spriteCount']} sprites, {entry['particleCount']} particles)"
         )
 
+    index_path = output_root / "index.json"
+    if selected and index_path.is_file():
+        existing = json.loads(index_path.read_text(encoding="utf-8"))
+        merged_entries = existing.get("assets", {})
+        for asset in selected:
+            if asset in entries:
+                merged_entries[asset] = entries[asset]
+            else:
+                merged_entries.pop(asset, None)
+        entries = merged_entries
+        missing = sorted(
+            (set(existing.get("missing", [])) - selected) | set(missing)
+        )
+
     stats = {
-        "referenced": len(references),
+        "referenced": len(entries) + len(missing),
         "located": len(entries),
         "missing": len(missing),
         "spriteObjects": sum(entry["kind"] == "sprite" for entry in entries.values()),
@@ -311,10 +377,10 @@ def main() -> None:
         "missing": missing,
         "assets": entries,
     }
-    OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
-    temporary = OUTPUT_ROOT / "index.tmp.json"
+    output_root.mkdir(parents=True, exist_ok=True)
+    temporary = output_root / "index.tmp.json"
     temporary.write_text(json.dumps(index, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    temporary.replace(OUTPUT_ROOT / "index.json")
+    temporary.replace(index_path)
     print(json.dumps(stats, ensure_ascii=False))
 
 
