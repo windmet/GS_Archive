@@ -8,6 +8,8 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Iterable
 
+from archive_paths import add_sources_config_argument, load_archive_sources
+
 
 def walk(value: Any) -> Iterable[dict[str, Any]]:
     if isinstance(value, dict):
@@ -21,16 +23,29 @@ def walk(value: Any) -> Iterable[dict[str, Any]]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--raw-root", type=Path, required=True)
-    parser.add_argument("--music-catalog", type=Path, required=True)
-    parser.add_argument("--compiled-root", type=Path, required=True)
-    parser.add_argument("--output", type=Path, required=True)
+    add_sources_config_argument(parser)
+    parser.add_argument("--raw-root", type=Path)
+    parser.add_argument("--music-catalog", type=Path)
+    parser.add_argument("--compiled-root", type=Path)
+    parser.add_argument("--output", type=Path)
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    audio_root = args.raw_root.resolve() / "audio"
+    sources = load_archive_sources(args.sources_config)
+    raw_root = (args.raw_root or sources.raw_root).resolve()
+    music_catalog_path = (
+        args.music_catalog
+        or sources.published_path("data", "masterdata", "music_catalog.json")
+    ).resolve()
+    compiled_root = (
+        args.compiled_root or sources.published_path("data", "compiled")
+    ).resolve()
+    output = (
+        args.output or sources.inventory_path("audio", "audit.json")
+    ).resolve()
+    audio_root = raw_root / "audio"
     files = sorted(path for path in audio_root.iterdir() if path.is_file())
     acb = [path for path in files if path.suffix.lower() == ".acb"]
     awb = [path for path in files if path.suffix.lower() == ".awb"]
@@ -38,7 +53,7 @@ def main() -> None:
     acb_stems = {path.stem.lower() for path in acb}
     awb_stems = {path.stem.lower() for path in awb}
 
-    catalog = json.loads(args.music_catalog.read_text(encoding="utf-8"))
+    catalog = json.loads(music_catalog_path.read_text(encoding="utf-8"))
     song_codes = sorted((catalog.get("songs") or {}).keys())
     master_bgm = sorted((catalog.get("bgm") or {}).keys())
 
@@ -49,7 +64,7 @@ def main() -> None:
     }
     json_errors = []
     parsed_files = 0
-    for path in args.compiled_root.rglob("*.json"):
+    for path in compiled_root.rglob("*.json"):
         try:
             document = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, UnicodeError, json.JSONDecodeError) as error:
@@ -134,8 +149,8 @@ def main() -> None:
             "external_awb": "when ACB has no decodable subsongs, inspect/decode the same-stem AWB",
         },
     }
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(
         json.dumps(report, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )

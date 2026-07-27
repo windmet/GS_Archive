@@ -39,8 +39,13 @@ def main() -> None:
         decoded_bytes = xor_decode(source_bytes)
         source_path = root / "masterdata" / "client_master_data"
         decoded_path = root / "work" / "client_master_data.decoded.pb"
+        vgmstream_path = root / "tools" / "vgmstream-cli.exe"
+        ffmpeg_path = root / "tools" / "ffmpeg.exe"
+        ffprobe_path = root / "tools" / "ffprobe.exe"
         write(source_path, source_bytes)
         write(decoded_path, decoded_bytes)
+        for tool_path in (vgmstream_path, ffmpeg_path, ffprobe_path):
+            write(tool_path, b"fixture executable")
 
         sha = lambda value: hashlib.sha256(value).hexdigest()
         config_path = root / "archive_sources.json"
@@ -59,6 +64,9 @@ def main() -> None:
                     "workspace_root": "work",
                     "derived_root": "derived",
                     "publish_root": "publish",
+                    "vgmstream_file": str(vgmstream_path.relative_to(root)),
+                    "ffmpeg_file": str(ffmpeg_path.relative_to(root)),
+                    "ffprobe_file": str(ffprobe_path.relative_to(root)),
                 }
             )
             + "\n",
@@ -69,6 +77,9 @@ def main() -> None:
         assert sources.raw_root == configured_raw.resolve()
         assert sources.masterdata_input("xor") == source_path.resolve()
         assert sources.masterdata_input("decoded") == decoded_path.resolve()
+        assert sources.tool_file("vgmstream") == vgmstream_path.resolve()
+        assert sources.tool_file("ffmpeg") == ffmpeg_path.resolve()
+        assert sources.tool_file("ffprobe") == ffprobe_path.resolve()
         assert sources.published_path("data", "masterdata", "card_index.json") == (
             root / "publish" / "data" / "masterdata" / "card_index.json"
         ).resolve()

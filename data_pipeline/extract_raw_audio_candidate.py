@@ -9,6 +9,8 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from archive_paths import add_sources_config_argument, load_archive_sources
+
 
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
@@ -145,7 +147,8 @@ def probe_output(ffprobe: Path, path: Path) -> dict[str, Any]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--raw-root", type=Path, required=True)
+    add_sources_config_argument(parser)
+    parser.add_argument("--raw-root", type=Path)
     parser.add_argument("--kind", choices=("song", "bgm", "ambient", "se"), required=True)
     parser.add_argument("--container", help="ACB or AWB filename below RAW/audio")
     parser.add_argument("--cue", required=True)
@@ -156,23 +159,25 @@ def parse_args() -> argparse.Namespace:
         help="Aggregated cue_index.json; resolves a unique cue when container is omitted",
     )
     parser.add_argument("--evidence", action="append", default=[])
-    parser.add_argument("--output-root", type=Path, required=True)
-    parser.add_argument("--vgmstream", type=Path, required=True)
-    parser.add_argument("--ffmpeg", type=Path, required=True)
+    parser.add_argument("--output-root", type=Path)
+    parser.add_argument("--vgmstream", type=Path)
+    parser.add_argument("--ffmpeg", type=Path)
     parser.add_argument("--ffprobe", type=Path)
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    raw_root = args.raw_root.resolve()
+    sources = load_archive_sources(args.sources_config)
+    raw_root = (args.raw_root or sources.raw_root).resolve()
+    cue_index_path = (
+        args.cue_index
+        or sources.inventory_path("audio", "cue-index", "cue_index.json")
+    ).resolve()
     resolution = None
     container = args.container
     selection_arg = args.selection
     if not container:
-        if not args.cue_index:
-            raise ValueError("--container or --cue-index is required")
-        cue_index_path = args.cue_index.resolve()
         index = json.loads(cue_index_path.read_text(encoding="utf-8"))
         entries = (index.get("cues") or {}).get(args.cue) or []
         if not entries:
@@ -196,10 +201,16 @@ def main() -> None:
             "source": selected.get("source"),
         }
     source = raw_root / "audio" / str(container)
-    output_root = args.output_root.resolve()
-    vgmstream = args.vgmstream.resolve()
-    ffmpeg = args.ffmpeg.resolve()
-    ffprobe = (args.ffprobe or ffmpeg.with_name("ffprobe.exe")).resolve()
+    output_root = (
+        args.output_root or sources.inventory_path("audio")
+    ).resolve()
+    vgmstream = (args.vgmstream or sources.tool_file("vgmstream")).resolve()
+    ffmpeg = (args.ffmpeg or sources.tool_file("ffmpeg")).resolve()
+    ffprobe = (
+        args.ffprobe
+        or sources.ffprobe_file
+        or ffmpeg.with_name("ffprobe.exe")
+    ).resolve()
     for required in (source, vgmstream, ffmpeg, ffprobe):
         if not required.is_file():
             raise FileNotFoundError(required)

@@ -9,6 +9,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from archive_paths import add_sources_config_argument, load_archive_sources
 from cri_utf import UtfTable, nested_table, parse_track_commands, table_index_list
 from extract_raw_audio_candidate import (
     decode_candidate,
@@ -21,13 +22,14 @@ from extract_raw_audio_candidate import (
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--raw-root", type=Path, required=True)
-    parser.add_argument("--cue-index", type=Path, required=True)
+    add_sources_config_argument(parser)
+    parser.add_argument("--raw-root", type=Path)
+    parser.add_argument("--cue-index", type=Path)
     parser.add_argument("--cue", required=True)
     parser.add_argument("--kind", choices=("song", "bgm", "ambient", "se"), required=True)
-    parser.add_argument("--output-root", type=Path, required=True)
-    parser.add_argument("--vgmstream", type=Path, required=True)
-    parser.add_argument("--ffmpeg", type=Path, required=True)
+    parser.add_argument("--output-root", type=Path)
+    parser.add_argument("--vgmstream", type=Path)
+    parser.add_argument("--ffmpeg", type=Path)
     parser.add_argument("--ffprobe", type=Path)
     parser.add_argument("--evidence", action="append", default=[])
     return parser.parse_args()
@@ -141,12 +143,22 @@ def compose_candidate(
 
 def main() -> None:
     args = parse_args()
-    raw_root = args.raw_root.resolve()
-    cue_index_path = args.cue_index.resolve()
-    output_root = args.output_root.resolve()
-    vgmstream = args.vgmstream.resolve()
-    ffmpeg = args.ffmpeg.resolve()
-    ffprobe = (args.ffprobe or ffmpeg.with_name("ffprobe.exe")).resolve()
+    sources = load_archive_sources(args.sources_config)
+    raw_root = (args.raw_root or sources.raw_root).resolve()
+    cue_index_path = (
+        args.cue_index
+        or sources.inventory_path("audio", "cue-index", "cue_index.json")
+    ).resolve()
+    output_root = (
+        args.output_root or sources.inventory_path("audio")
+    ).resolve()
+    vgmstream = (args.vgmstream or sources.tool_file("vgmstream")).resolve()
+    ffmpeg = (args.ffmpeg or sources.tool_file("ffmpeg")).resolve()
+    ffprobe = (
+        args.ffprobe
+        or sources.ffprobe_file
+        or ffmpeg.with_name("ffprobe.exe")
+    ).resolve()
     for required in (cue_index_path, vgmstream, ffmpeg, ffprobe):
         if not required.is_file():
             raise FileNotFoundError(required)

@@ -11,6 +11,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Iterable
 
+from archive_paths import add_sources_config_argument, load_archive_sources
+
 
 FIELD_PATTERN = re.compile(r"^(?P<key>[^:]+):\s*(?P<value>.*)$")
 
@@ -172,10 +174,11 @@ def load_record(path: Path) -> dict[str, Any] | None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--raw-root", type=Path, required=True)
-    parser.add_argument("--compiled-root", type=Path, required=True)
-    parser.add_argument("--output-root", type=Path, required=True)
-    parser.add_argument("--vgmstream", type=Path, required=True)
+    add_sources_config_argument(parser)
+    parser.add_argument("--raw-root", type=Path)
+    parser.add_argument("--compiled-root", type=Path)
+    parser.add_argument("--output-root", type=Path)
+    parser.add_argument("--vgmstream", type=Path)
     parser.add_argument("--bank-glob", action="append", default=[])
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--refresh", action="store_true")
@@ -184,11 +187,17 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    raw_audio = args.raw_root.resolve() / "audio"
-    output_root = args.output_root.resolve()
+    sources = load_archive_sources(args.sources_config)
+    raw_audio = (args.raw_root or sources.raw_root).resolve() / "audio"
+    compiled_root = (
+        args.compiled_root or sources.published_path("data", "compiled")
+    ).resolve()
+    output_root = (
+        args.output_root or sources.inventory_path("audio", "cue-index")
+    ).resolve()
     cache_root = output_root / "banks"
     cache_root.mkdir(parents=True, exist_ok=True)
-    vgmstream = args.vgmstream.resolve()
+    vgmstream = (args.vgmstream or sources.tool_file("vgmstream")).resolve()
     if not vgmstream.is_file():
         raise FileNotFoundError(vgmstream)
 
@@ -252,7 +261,7 @@ def main() -> None:
                     }
                 )
 
-    target_cues, parsed_files, json_errors = story_se_cues(args.compiled_root.resolve())
+    target_cues, parsed_files, json_errors = story_se_cues(compiled_root)
     resolved = sorted(cue for cue in target_cues if cue in cue_index)
     missing = sorted(target_cues - set(resolved))
     non_waveform_cues: dict[str, dict[str, str]] = {}

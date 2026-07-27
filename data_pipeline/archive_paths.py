@@ -78,12 +78,25 @@ class ArchiveSources:
     workspace_root: Path
     derived_root: Path
     publish_root: Path
+    vgmstream_file: Path | None
+    ffmpeg_file: Path | None
+    ffprobe_file: Path | None
 
     def published_path(self, *parts: str) -> Path:
         return self.publish_root.joinpath(*parts).resolve()
 
     def inventory_path(self, *parts: str) -> Path:
         return self.inventory_root.joinpath(*parts).resolve()
+
+    def tool_file(self, name: Literal["vgmstream", "ffmpeg", "ffprobe"]) -> Path:
+        path = {
+            "vgmstream": self.vgmstream_file,
+            "ffmpeg": self.ffmpeg_file,
+            "ffprobe": self.ffprobe_file,
+        }[name]
+        if path is None:
+            raise ValueError(f"audio tool {name!r} is not configured")
+        return path
 
     def masterdata_input(self, state: MasterdataInputState) -> Path:
         """Return the path for an explicitly declared masterdata input state."""
@@ -130,6 +143,9 @@ def _built_in_sources() -> ArchiveSources:
             archive_root / "web_viewer" / ".analysis" / "derived"
         ).resolve(),
         publish_root=(archive_root / "web_viewer" / "public").resolve(),
+        vgmstream_file=None,
+        ffmpeg_file=None,
+        ffprobe_file=None,
     )
 
 
@@ -241,5 +257,20 @@ def load_archive_sources(config_path: Path | None = None) -> ArchiveSources:
             payload.get("publish_root"),
             archive_root=archive_root,
             field="publish_root",
+        ),
+        vgmstream_file=_optional_path(
+            payload.get("vgmstream_file"),
+            archive_root=archive_root,
+            field="vgmstream_file",
+        ),
+        ffmpeg_file=_optional_path(
+            payload.get("ffmpeg_file"),
+            archive_root=archive_root,
+            field="ffmpeg_file",
+        ),
+        ffprobe_file=_optional_path(
+            payload.get("ffprobe_file"),
+            archive_root=archive_root,
+            field="ffprobe_file",
         ),
     )

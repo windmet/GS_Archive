@@ -14,8 +14,17 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
+from archive_paths import (
+    MASTERDATA_INPUT_STATES,
+    add_sources_config_argument,
+    load_archive_sources,
+)
 from cri_utf import UtfTable, nested_table
-from masterdata_extract import extract_table_rows, iter_top_records, xor_decode
+from masterdata_extract import (
+    decode_masterdata_input,
+    extract_table_rows,
+    iter_top_records,
+)
 
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
@@ -74,8 +83,10 @@ def inspect_action_cues(acb: Path) -> dict[str, dict[str, Any]]:
     return results
 
 
-def master_table_133(path: Path) -> list[dict[str, Any]]:
-    records = list(iter_top_records(xor_decode(path.read_bytes())))
+def master_table_133(path: Path, input_state: str) -> list[dict[str, Any]]:
+    records = list(
+        iter_top_records(decode_masterdata_input(path.read_bytes(), input_state))
+    )
     rows = extract_table_rows(records, {133})[133]
     return [
         {
@@ -104,19 +115,45 @@ def master_table_133(path: Path) -> list[dict[str, Any]]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--master-data", type=Path, required=True)
-    parser.add_argument("--music-catalog", type=Path, required=True)
-    parser.add_argument("--cue-index", type=Path, required=True)
-    parser.add_argument("--raw-root", type=Path, required=True)
-    parser.add_argument("--output", type=Path, required=True)
+    add_sources_config_argument(parser)
+    parser.add_argument("--master-data", type=Path)
+    parser.add_argument(
+        "--master-data-state",
+        choices=MASTERDATA_INPUT_STATES,
+        default="xor",
+    )
+    parser.add_argument("--music-catalog", type=Path)
+    parser.add_argument("--cue-index", type=Path)
+    parser.add_argument("--raw-root", type=Path)
+    parser.add_argument("--output", type=Path)
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    rows = master_table_133(args.master_data.resolve())
-    music_catalog = json.loads(args.music_catalog.read_text(encoding="utf-8"))
-    waveform_index = json.loads(args.cue_index.read_text(encoding="utf-8")).get(
+    sources = load_archive_sources(args.sources_config)
+    master_data = (
+        args.master_data or sources.masterdata_input(args.master_data_state)
+    ).resolve()
+    music_catalog_path = (
+        args.music_catalog
+        or sources.published_path("data", "masterdata", "music_catalog.json")
+    ).resolve()
+    cue_index_path = (
+        args.cue_index
+        or sources.inventory_path("audio", "cue-index", "cue_index.json")
+    ).resolve()
+    raw_root = (args.raw_root or sources.raw_root).resolve()
+    output = (
+        args.output
+        or sources.inventory_path(
+            "audio", "master-bgm", "selector_mapping.json"
+        )
+    ).resolve()
+
+    rows = master_table_133(master_data, args.master_data_state)
+    music_catalog = json.loads(music_catalog_path.read_text(encoding="utf-8"))
+    waveform_index = json.loads(cue_index_path.read_text(encoding="utf-8")).get(
         "cues", {}
     )
 
@@ -125,7 +162,7 @@ def main() -> None:
     action_cues: dict[str, list[dict[str, Any]]] = defaultdict(list)
     inspected_banks: list[dict[str, Any]] = []
     for bank in acb_names:
-        acb = args.raw_root.resolve() / "audio" / f"{bank}.acb"
+        acb = raw_root / "audio" / f"{bank}.acb"
         bank_actions = inspect_action_cues(acb)
         inspected_banks.append(
             {
@@ -158,7 +195,7 @@ def main() -> None:
     for resource in sorted(music_catalog.get("bgm", {})):
         waveform_entries = waveform_index.get(resource, [])
         action_entries = action_cues.get(resource, [])
-        bank_path = args.raw_root.resolve() / "audio" / f"{resource}.acb"
+        bank_path = raw_root / "audio" / f"{resource}.acb"
         if waveform_entries:
             classification = "waveform_cue"
         elif action_entries:
@@ -267,10 +304,11 @@ def main() -> None:
         "schema_version": 1,
         "master_table": 133,
         "source_hashes": {
-            "client_master_data": sha256_file(args.master_data.resolve()),
-            "music_catalog": sha256_file(args.music_catalog.resolve()),
-            "cue_index": sha256_file(args.cue_index.resolve()),
+            "client_master_data": sha256_file(master_data),
+            "music_catalog": sha256_file(music_catalog_path),
+            "cue_index": sha256_file(cue_index_path),
         },
+        "masterdata_input_state": args.master_data_state,
         "table_133_row_count": len(rows),
         "music_catalog_bgm_count": len(resources),
         "classification_counts": dict(sorted(classification_counts.items())),
@@ -286,7 +324,9 @@ def main() -> None:
         "structural_anomalies": structural_anomalies,
         "resources": resources,
         "method": {
-            "master": "XOR-decoded client_master_data table 133",
+            "master": (
+                f"{args.master_data_state}-state client_master_data table 133"
+            ),
             "waveforms": "vgmstream cue_index.json",
             "controls": "ACB @UTF CueName/Cue/Sequence/ActionTrack tables",
             "selected_target_rule": (
@@ -295,13 +335,13 @@ def main() -> None:
             ),
         },
     }
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(
         json.dumps(report, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
     print(json.dumps({
-        "output": str(args.output.resolve()),
+        "output": str(output),
         "table_133_rows": len(rows),
         "music_catalog_bgm": len(resources),
         "classification_counts": dict(sorted(classification_counts.items())),

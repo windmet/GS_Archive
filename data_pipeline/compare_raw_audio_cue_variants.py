@@ -9,21 +9,35 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from archive_paths import add_sources_config_argument, load_archive_sources
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--raw-root", type=Path, required=True)
-    parser.add_argument("--coverage", type=Path, required=True)
-    parser.add_argument("--vgmstream", type=Path, required=True)
-    parser.add_argument("--output", type=Path, required=True)
+    add_sources_config_argument(parser)
+    parser.add_argument("--raw-root", type=Path)
+    parser.add_argument("--coverage", type=Path)
+    parser.add_argument("--vgmstream", type=Path)
+    parser.add_argument("--output", type=Path)
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    raw_audio = args.raw_root.resolve() / "audio"
-    coverage = json.loads(args.coverage.read_text(encoding="utf-8"))
-    vgmstream = args.vgmstream.resolve()
+    sources = load_archive_sources(args.sources_config)
+    raw_audio = (args.raw_root or sources.raw_root).resolve() / "audio"
+    coverage_path = (
+        args.coverage
+        or sources.inventory_path("audio", "cue-index", "story_se_coverage.json")
+    ).resolve()
+    output = (
+        args.output
+        or sources.inventory_path(
+            "audio", "cue-index", "ambiguous_decode_comparison.json"
+        )
+    ).resolve()
+    coverage = json.loads(coverage_path.read_text(encoding="utf-8"))
+    vgmstream = (args.vgmstream or sources.tool_file("vgmstream")).resolve()
     groups: dict[str, Any] = {}
     for cue, entries in (coverage.get("ambiguous") or {}).items():
         decoded = []
@@ -76,8 +90,8 @@ def main() -> None:
         "summary": summary,
         "cues": groups,
     }
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(
         json.dumps(document, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
