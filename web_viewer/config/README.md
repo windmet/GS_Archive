@@ -127,3 +127,25 @@ python scripts\prepare-live-chibi-audio.py `
 Omitting `--output-root` preserves the established
 `public/assets/live-chibi/music` output. Use the isolated form for source
 identity regressions before replacing any stable derivative.
+
+The live-chibi Backmonitor builder uses configured `RAW/movie` as its physical
+authority and derives the choreography CSV root from `legacy_root`. FFmpeg,
+FFprobe, and the ignored WannaCRI package root are machine-specific:
+
+```powershell
+python -m pip install `
+  --target .analysis\workspace\wannacri-runtime `
+  WannaCRI==0.3.1
+
+python scripts\prepare-live-chibi-backmonitor.py `
+  --asset live_backmonitor_movie_ballade_01 `
+  --force `
+  --output-root .analysis\raw-migration\live-chibi-backmonitor\candidate
+```
+
+Configure `wannacri_root` to the directory that contains
+`wannacri/__init__.py`. Explicit `--script-root`, `--movie-root`, media-tool,
+WannaCRI, and output arguments remain final overrides. Repeat `--asset` for a
+bounded set; when a target index already exists, the selected records merge
+without dropping its other entries. Omitting `--asset` retains the established
+full 73-movie/4-transition build.

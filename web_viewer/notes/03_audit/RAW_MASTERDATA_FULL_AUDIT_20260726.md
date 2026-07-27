@@ -216,8 +216,8 @@ JSON as a byte-for-byte direct extractor artifact.
 | story SE | compiled SE cue + ACB sequence metadata | multi-cue ACB bank | 435/435 classified; `waribashi` composite reconstructed | full identity and representative sequence semantics proven |
 | master seasonal BGM | table 133 relation + ACB action metadata | variant cues/banks | 92/92 classified; 42/42 switches resolved | full identity relation proven |
 | character/costume/Spine | costume/idol dictionaries + Unity object identity | `costume_*`, `idol_settings_*`, `image_chara*` | 690/690 master costumes; 725 full Spine + 3 RAW silhouette-only; 257/257 idol-setting JSON assets; all 485 character-image paths classified | costume/Spine/idol settings proven; character-image consumers mapped, promotion partial |
-| live/chibi | song/choreography IDs | `live_*`, `song_*`, image/object layers | representative song playback proven | partial |
-| movies | event/live/card movie relations | 260 USM | filename inventory only | pending |
+| live/chibi | song/choreography IDs | `live_*`, `song_*`, image/object layers | representative song playback plus 77/77 Backmonitor source mappings proven | partial |
+| movies | event/live/card movie relations | 260 USM | 77/77 live Backmonitor references mapped to RAW; remaining 183 still filename-level | partial |
 | general UI images | master records + bundle object names | 1,271 `image_*` bundles | no full relation table yet | pending |
 
 ## 4. Card-only question
@@ -1420,6 +1420,61 @@ It records the master-data, catalog, cue-index and five inspected ACB hashes,
 all 56 complete relation rows, the ACB action targets, and the selected concrete
 waveform for every switch.
 
+## 6.5 RAW movie / live Backmonitor slice
+
+Commit `f20d014` moved `scripts/prepare-live-chibi-backmonitor.py` from its
+tracked organizer-era absolute defaults to the shared source contract. Physical
+video now defaults to configured `RAW/movie`; the 119 legacy
+`liveeffectscript` CSVs remain a declared semantic-reference source under
+`legacy_root`. FFmpeg, FFprobe, and the WannaCRI package root are configured
+machine tools. Explicit arguments remain final overrides.
+
+The full RAW movie domain contains 260 USM files, 2,143,803,200 bytes. The CSV
+Backmonitor whitelist references 73 loop movies plus four alpha transitions:
+77 unique USMs, 7,291,776 bytes, with no missing authoritative source. All
+77 referenced files were SHA-256 compared with the organizer-era duplicate;
+77/77 are byte-identical. This proves the live Backmonitor physical association,
+but does not classify the other 183 USMs as card/event/announcement content.
+
+The builder now accepts repeatable `--asset` and an isolated `--output-root`.
+It also preserves a pre-existing index when a bounded selection is rebuilt.
+A mirror-index regression retained the exact stable index hash
+`E0E386F617700EFD5C6EF6B0511ECB344596627C2B9B9E99358A4202F6131064`
+and its complete 73-movie/4-transition/81-file/11,344,349-byte statistics.
+
+Two forced candidates exercised both output shapes:
+
+| Candidate | Stable/candidate SHA-256 | Evidence |
+| --- | --- | --- |
+| `live_backmonitor_movie_ballade_01.mp4` | `2ED4F36CA90AA86AAD9C80E2BB44055F753C365AB935DF02EDAD0EC33612E31F` | byte-identical; H.264 yuv420p, 272×144, 29.97 fps, 4.971638 s, 109,246 bytes |
+| `alpha_blackout.color.mp4` | `DA7CF4629F3F8418FAAB333CB7CC99C78FE4DDE5B2A84B68833F97395E5C3610` | byte-identical, 3,190 bytes |
+| `alpha_blackout.alpha.mp4` | `0ABC9C762BF5C7339FE8E03BC3B186B4BC7A6C54173B8A873889FC2169F871DD` | byte-identical, 3,947 bytes |
+
+The current Python/WannaCRI combination exposed an old entrypoint defect:
+WannaCRI 0.3.1 supplies `wannacri:main` but no `wannacri.__main__`, so
+`python -m wannacri` fails. The builder now invokes the package's declared
+`main` function and rejects configured package directories missing
+`wannacri/__init__.py`. The ignored local runtime is recorded through the new
+optional `wannacri_root` source-contract field.
+
+On port 5174 the index, loop MP4, and both transition MP4 routes returned HTTP
+200; the video routes reported `video/mp4`. In the real `view=chibi_stage`
+consumer, DRIVE A LIVE reached 5/5 ready. After playback crossed 2,500 ms,
+runtime attributes reported:
+
+```text
+movie=live_backmonitor_movie_ballade_01
+ready=true
+transition=live_backmonitor_movie_alpha_blackout
+transitionActive=true
+```
+
+After the two-second transition completed, `transitionActive` became `false`
+while the loop movie remained ready. The visible stage, choreography, audio,
+and lyrics continued normally. No Backmonitor error was logged; only the two
+previously recorded Pixi Spine warnings remained. No stable MP4, index, or URL
+changed.
+
 ## 7. Browser candidate verification
 
 No candidate changes a default production URL. Opt-in query parameters select
@@ -1577,7 +1632,9 @@ because this story has no translation overlay.
 2. Continue the event-story visual domain from the proven `001tom`/`002sht`
    consumers in another bounded batch; do not reopen the complete birthday
    domain.
-3. Map all 260 USM files to live-stage, card, event, and announcement semantics.
+3. Build the complete 260-USM semantic catalog. Preserve the proven 77-file
+   live Backmonitor subset and classify the remaining 183 into card, event,
+   announcement, tutorial, system, or unknown consumers.
 4. Audit the remaining 1,271 general `image_*` bundles by Unity object name and
    master-data consumer.
 5. Reconstruct any additional non-waveform ActionTrack, sequence, loop, or

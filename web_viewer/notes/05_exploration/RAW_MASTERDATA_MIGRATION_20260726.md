@@ -1241,14 +1241,46 @@ confirmed the real five-character stage could start the official audio, advance
 its shared clock, render choreography/lyrics, and pause. No stable asset was
 published or replaced.
 
+## Live Backmonitor source-contract slice
+
+Commit `f20d014` makes configured `RAW/movie` the physical default for the
+Backmonitor builder while retaining organizer-era `liveeffectscript` CSVs as
+declared semantic references. The 260-file RAW movie domain is not uniformly
+classified: 77 CSV-referenced USMs are now proven live Backmonitor assets;
+183 still need card/event/announcement/tutorial/system classification.
+
+All 77 referenced old/new USM pairs are byte-identical. Bounded forced
+extraction of one loop and one color/alpha transition produced three MP4s
+byte-identical to stable. A mirror of the full index remained byte-identical
+after a selected rebuild, proving the merge path does not collapse the existing
+73-movie/4-transition catalog.
+
+```powershell
+python scripts\prepare-live-chibi-backmonitor.py `
+  --asset live_backmonitor_movie_ballade_01 `
+  --force `
+  --output-root .analysis\raw-migration\live-chibi-backmonitor\candidate
+
+python scripts\prepare-live-chibi-backmonitor.py `
+  --asset live_backmonitor_movie_alpha_blackout `
+  --force `
+  --output-root .analysis\raw-migration\live-chibi-backmonitor\candidate
+```
+
+Port 5174 then exercised the actual DRIVE A LIVE 2,500 ms Backmonitor switch:
+the loop became ready, the blackout transition activated and later retired,
+and no Backmonitor media error appeared. Stable videos and index stayed
+unchanged.
+
 ## Next batches
 
-1. Migrate one remaining live/chibi helper at a time, using an ignored output
+1. Migrate `prepare-live-chibi-image-layers.py` alone, using an ignored output
    root and port-5174 consumer check before any stable replacement.
 2. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
 3. Continue the proven `001tom`/`002sht` event-story visual consumer in another
    bounded batch; keep the complete birthday domain unchanged.
-4. Map all 260 RAW USM files to master-data consumers.
+4. Classify the remaining 183 non-Backmonitor RAW USMs against master-data
+   consumers.
 5. Continue promoting verified domains one reversible batch at a time, with
    5174 acceptance and rollback evidence before each stable-path replacement.

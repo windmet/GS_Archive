@@ -353,14 +353,19 @@ DRIVE A LIVE 还包含 `song3_drvalv_bgm.acb` 伴奏和 49 条 `song3_drvalv_<id
 
 ## Backmonitor USM 解密与舞台屏幕（2026-07-15）
 
-`RAW/movie` 是 3DMV、SSR 演出、公告和 Live 屏幕等内容混合存放的 USM 库，不能按目录整体当作舞台素材导出。当前生成器只读取 118 份 `liveeffectscript` CSV 的 `Backmonitor` 命令，并以实际引用 ID 作为白名单：共 932 条事件、73 个主视频和 4 个 alpha 转场，无缺失引用。
+`RAW/movie` 是 3DMV、SSR 演出、公告和 Live 屏幕等内容混合存放的 USM 库，不能按目录整体当作舞台素材导出。当前生成器只读取 119 份 `liveeffectscript` CSV 的 `Backmonitor` 命令，并以实际引用 ID 作为白名单：共 932 条事件、73 个主视频和 4 个 alpha 转场，无缺失引用。
 
 这些 USM 的 CRI 解密 key 为 `0002B875BC731A85`。部分主视频可以被 FFmpeg 直接识别，另一些虽然能读到容器头但没有有效帧，因此批处理统一采用 WannaCRI 0.3.1 解密和 demux，再由 FFmpeg 转为 H.264/yuv420p MP4，避免按文件碰运气。运行方式：
 
 ```powershell
-python -m pip install --target $env:TEMP\sidem-wannacri WannaCRI==0.3.1
+python -m pip install --target .analysis\workspace\wannacri-runtime WannaCRI==0.3.1
 npm run chibi:backmonitor
 ```
+
+> 2026-07-27 更新：生成器的物理输入已改为统一配置中的 `RAW/movie`，
+> CSV 从配置的 `legacy_root` 派生，WannaCRI 根目录通过忽略的
+> `wannacri_root` 配置。WannaCRI 0.3.1 没有 `__main__.py`，生成器现调用
+> 包声明的 `wannacri:main`，不再使用无效的 `python -m wannacri`。
 
 脚本 `scripts/prepare-live-chibi-backmonitor.py` 输出 `public/assets/live-chibi/backmonitor/index.json`、73 个主循环 MP4，以及 4 个转场各自的 color/alpha 双路 MP4。全量验证结果为 81 个 MP4、零空文件；主视频均为 272×144，时长约 0.968–10.010 秒，总大小约 11.3 MB。转码先写临时文件并经 FFprobe 验证后原子替换，构建被中止时不会把半截 MP4 当作缓存复用。
 
