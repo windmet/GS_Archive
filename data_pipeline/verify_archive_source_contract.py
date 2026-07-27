@@ -69,6 +69,21 @@ def main() -> None:
         assert sources.raw_root == configured_raw.resolve()
         assert sources.masterdata_input("xor") == source_path.resolve()
         assert sources.masterdata_input("decoded") == decoded_path.resolve()
+        assert sources.published_path("data", "masterdata", "card_index.json") == (
+            root / "publish" / "data" / "masterdata" / "card_index.json"
+        ).resolve()
+        assert sources.inventory_path("background", "coverage.json") == (
+            root / "inventory" / "background" / "coverage.json"
+        ).resolve()
+        assert sources.inventory_path(
+            "character-image-candidate", "event_story_visual", "002sht"
+        ) == (
+            root
+            / "inventory"
+            / "character-image-candidate"
+            / "event_story_visual"
+            / "002sht"
+        ).resolve()
         assert (
             decode_masterdata_input(source_bytes, "xor")
             == decoded_bytes

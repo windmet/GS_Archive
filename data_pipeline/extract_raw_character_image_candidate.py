@@ -11,49 +11,8 @@ from typing import Any
 
 import UnityPy
 
+from archive_paths import add_sources_config_argument, load_archive_sources
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_RAW_ROOT = REPO_ROOT / "RAW"
-DEFAULT_IDOL_DICTIONARY = (
-    REPO_ROOT
-    / "web_viewer"
-    / "public"
-    / "data"
-    / "masterdata"
-    / "idol_unit_dictionary.json"
-)
-DEFAULT_SPEAKER_DICTIONARY = (
-    REPO_ROOT
-    / "web_viewer"
-    / "public"
-    / "data"
-    / "masterdata"
-    / "speaker_dictionary.json"
-)
-DEFAULT_STORY_MASTER = (
-    REPO_ROOT
-    / "web_viewer"
-    / "public"
-    / "data"
-    / "masterdata"
-    / "story_master_index.json"
-)
-DEFAULT_SOURCE_MANIFEST = (
-    REPO_ROOT
-    / "web_viewer"
-    / ".analysis"
-    / "raw-migration"
-    / "source"
-    / "files.jsonl"
-)
-DEFAULT_PUBLIC_ASSETS = REPO_ROOT / "web_viewer" / "public" / "assets"
-DEFAULT_OUTPUT_ROOT = (
-    REPO_ROOT
-    / "web_viewer"
-    / ".analysis"
-    / "raw-migration"
-    / "character-image-candidate"
-)
 CATEGORIES = {
     "birthday_visual": {
         "prefix": "image_chara_birthday_visual_",
@@ -195,13 +154,10 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("kind", choices=sorted(CATEGORIES))
     parser.add_argument("idol_code")
-    parser.add_argument("--raw-root", type=Path, default=DEFAULT_RAW_ROOT)
-    parser.add_argument(
-        "--idol-dictionary", type=Path, default=DEFAULT_IDOL_DICTIONARY
-    )
-    parser.add_argument(
-        "--speaker-dictionary", type=Path, default=DEFAULT_SPEAKER_DICTIONARY
-    )
+    add_sources_config_argument(parser)
+    parser.add_argument("--raw-root", type=Path)
+    parser.add_argument("--idol-dictionary", type=Path)
+    parser.add_argument("--speaker-dictionary", type=Path)
     parser.add_argument(
         "--identity-scope",
         choices=("master_idol", "npc"),
@@ -211,13 +167,41 @@ def main() -> None:
             "identity. NPC candidates are never inferred automatically."
         ),
     )
-    parser.add_argument("--story-master", type=Path, default=DEFAULT_STORY_MASTER)
-    parser.add_argument(
-        "--source-manifest", type=Path, default=DEFAULT_SOURCE_MANIFEST
-    )
-    parser.add_argument("--public-assets", type=Path, default=DEFAULT_PUBLIC_ASSETS)
-    parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
+    parser.add_argument("--story-master", type=Path)
+    parser.add_argument("--source-manifest", type=Path)
+    parser.add_argument("--public-assets", type=Path)
+    parser.add_argument("--output-root", type=Path)
     args = parser.parse_args()
+    sources = load_archive_sources(args.sources_config)
+    args.raw_root = (args.raw_root or sources.raw_root).resolve()
+    args.idol_dictionary = (
+        args.idol_dictionary
+        or sources.published_path(
+            "data", "masterdata", "idol_unit_dictionary.json"
+        )
+    ).resolve()
+    args.speaker_dictionary = (
+        args.speaker_dictionary
+        or sources.published_path(
+            "data", "masterdata", "speaker_dictionary.json"
+        )
+    ).resolve()
+    args.story_master = (
+        args.story_master
+        or sources.published_path(
+            "data", "masterdata", "story_master_index.json"
+        )
+    ).resolve()
+    args.source_manifest = (
+        args.source_manifest or sources.inventory_path("source", "files.jsonl")
+    ).resolve()
+    args.public_assets = (
+        args.public_assets or sources.published_path("assets")
+    ).resolve()
+    args.output_root = (
+        args.output_root
+        or sources.inventory_path("character-image-candidate")
+    ).resolve()
 
     idol_code = args.idol_code.strip().lower()
     if len(idol_code) != 6 or not idol_code[:3].isdigit() or not idol_code.isalnum():

@@ -12,21 +12,8 @@ from typing import Any
 import UnityPy
 from PIL import Image, ImageChops, ImageStat
 
+from archive_paths import add_sources_config_argument, load_archive_sources
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_RAW_ROOT = REPO_ROOT / "RAW"
-DEFAULT_BACKGROUND_CATALOG = (
-    REPO_ROOT
-    / "web_viewer"
-    / "public"
-    / "data"
-    / "masterdata"
-    / "background_catalog.json"
-)
-DEFAULT_PUBLIC_BG_ROOT = REPO_ROOT / "web_viewer" / "public" / "assets" / "bg"
-DEFAULT_OUTPUT_ROOT = (
-    REPO_ROOT / "web_viewer" / ".analysis" / "raw-migration" / "background"
-)
 
 
 def sha256_file(path: Path) -> str:
@@ -103,16 +90,27 @@ def scenario_reference_evidence(
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("background_id")
-    parser.add_argument("--raw-root", type=Path, default=DEFAULT_RAW_ROOT)
-    parser.add_argument(
-        "--background-catalog",
-        type=Path,
-        default=DEFAULT_BACKGROUND_CATALOG,
-    )
-    parser.add_argument("--public-bg-root", type=Path, default=DEFAULT_PUBLIC_BG_ROOT)
-    parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
+    add_sources_config_argument(parser)
+    parser.add_argument("--raw-root", type=Path)
+    parser.add_argument("--background-catalog", type=Path)
+    parser.add_argument("--public-bg-root", type=Path)
+    parser.add_argument("--output-root", type=Path)
     parser.add_argument("--scenario", type=Path)
     args = parser.parse_args()
+    sources = load_archive_sources(args.sources_config)
+    args.raw_root = (args.raw_root or sources.raw_root).resolve()
+    args.background_catalog = (
+        args.background_catalog
+        or sources.published_path(
+            "data", "masterdata", "background_catalog.json"
+        )
+    ).resolve()
+    args.public_bg_root = (
+        args.public_bg_root or sources.published_path("assets", "bg")
+    ).resolve()
+    args.output_root = (
+        args.output_root or sources.inventory_path("background")
+    ).resolve()
 
     background_id = args.background_id.strip()
     if not background_id or any(

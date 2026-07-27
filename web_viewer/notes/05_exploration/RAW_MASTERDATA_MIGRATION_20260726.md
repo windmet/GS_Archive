@@ -53,6 +53,29 @@ The external XOR masterdata and ignored decoded PB also pass configured hash
 checks. Isolated `xor` and `decoded` CLI runs generated identical decoded PB
 and base music-catalog hashes.
 
+### Configured image-domain tools
+
+The next bounded source-contract slice moved the card, ADV-background, and
+character-image audit/candidate pairs onto `archive_paths.py`. Explicit
+`--raw-root`, masterdata, public, inventory, and output arguments remain final
+overrides.
+
+Real no-argument runs preserved:
+
+- card coverage: 836 rows and 826/826 unique resources;
+- background coverage: catalog 192/192 and story IDs 356/356;
+- character-image coverage: 57 bundles and 485 unique paths;
+- `001tom_r01`: 8 textures, 8 sprites and 8 resolved assets;
+- `bg001_315pro_in_01`: resolved hash
+  `a2ae5b2637082928b30da11c824c2259623aec3f07bbc4c590632b311f340d65`;
+- `002sht`: `475x783`, hash
+  `a83344e535e4292a8f0b1dac5d3c3b9951d0a05c32c5fc225dc5eea501fc0631`.
+
+The card and character reports match their pre-change semantic payloads.
+Background coverage and identity sets also match; the only difference from
+the 2026-07-26 report is a later compiled-corpus reference-count increase for
+`bg091_315prolounge_in_01` (`6,730 -> 6,768`).
+
 ## Current candidate gates
 
 ### Story sample: `1_4_001_01`

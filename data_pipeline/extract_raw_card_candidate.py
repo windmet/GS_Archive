@@ -18,15 +18,8 @@ from typing import Any
 import UnityPy
 from PIL import Image, ImageChops, ImageStat
 
+from archive_paths import add_sources_config_argument, load_archive_sources
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_RAW_ROOT = REPO_ROOT / "RAW"
-DEFAULT_CARD_INDEX = (
-    REPO_ROOT / "web_viewer" / "public" / "data" / "masterdata" / "card_index.json"
-)
-DEFAULT_OUTPUT_ROOT = (
-    REPO_ROOT / "web_viewer" / ".analysis" / "raw-migration" / "card"
-)
 
 
 def sha256_file(path: Path) -> str:
@@ -216,15 +209,25 @@ def add_comparison_evidence(
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("resource_id")
-    parser.add_argument("--raw-root", type=Path, default=DEFAULT_RAW_ROOT)
-    parser.add_argument("--card-index", type=Path, default=DEFAULT_CARD_INDEX)
-    parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
+    add_sources_config_argument(parser)
+    parser.add_argument("--raw-root", type=Path)
+    parser.add_argument("--card-index", type=Path)
+    parser.add_argument("--output-root", type=Path)
     parser.add_argument(
         "--organized-photo-root",
         type=Path,
         help="Optional ALL_PHOTOS image_card directory used only for equality evidence.",
     )
     args = parser.parse_args()
+    sources = load_archive_sources(args.sources_config)
+    args.raw_root = (args.raw_root or sources.raw_root).resolve()
+    args.card_index = (
+        args.card_index
+        or sources.published_path("data", "masterdata", "card_index.json")
+    ).resolve()
+    args.output_root = (
+        args.output_root or sources.inventory_path("card")
+    ).resolve()
 
     resource_id = args.resource_id.strip()
     if not resource_id or any(character not in "abcdefghijklmnopqrstuvwxyz0123456789_" for character in resource_id.lower()):

@@ -23,6 +23,25 @@ MASTERDATA_INPUT_STATES = ("xor", "decoded")
 MasterdataInputState = Literal["xor", "decoded"]
 
 
+def portable_path(path: Path, root: Path) -> str:
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(root.resolve()).as_posix()
+    except ValueError:
+        return str(resolved)
+
+
+def add_sources_config_argument(parser: Any) -> None:
+    parser.add_argument(
+        "--sources-config",
+        type=Path,
+        help=(
+            "Archive source JSON. Defaults to SIDEM_ARCHIVE_SOURCES_CONFIG, "
+            "then the ignored local config, then repository defaults."
+        ),
+    )
+
+
 def _optional_path(
     value: Any,
     *,
@@ -59,6 +78,12 @@ class ArchiveSources:
     workspace_root: Path
     derived_root: Path
     publish_root: Path
+
+    def published_path(self, *parts: str) -> Path:
+        return self.publish_root.joinpath(*parts).resolve()
+
+    def inventory_path(self, *parts: str) -> Path:
+        return self.inventory_root.joinpath(*parts).resolve()
 
     def masterdata_input(self, state: MasterdataInputState) -> Path:
         """Return the path for an explicitly declared masterdata input state."""

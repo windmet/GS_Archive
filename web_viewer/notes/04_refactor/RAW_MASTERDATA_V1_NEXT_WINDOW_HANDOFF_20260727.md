@@ -94,6 +94,44 @@ masterdata CLI 双路径回归也已通过：
 - 两条路径输出的 base `music_catalog.json` hash 都是
   `4B31F278...F9E7`。
 
+### 0.2 首组三个资源域也已接入
+
+以下六个工具已不再各自定义 RAW/public/inventory 默认根：
+
+```text
+audit_raw_card_coverage.py
+extract_raw_card_candidate.py
+audit_raw_background_coverage.py
+extract_raw_background_candidate.py
+audit_raw_character_resources.py
+extract_raw_character_image_candidate.py
+```
+
+它们统一通过 `archive_paths.py` 取得：
+
+- RAW root；
+- `public/data/masterdata`；
+- `public/data/compiled`；
+- `public/assets`；
+- `.analysis/raw-migration` inventory/candidate root。
+
+所有原有显式参数仍是最终覆盖。真实无参数回归结果：
+
+- card：836 master rows、826/826 唯一资源，旧/新报告除时间外相同；
+- background：394 RAW bundles，catalog 192/192、story 356/356；
+- character：57 image bundles、485 unique paths，旧/新报告除时间外相同；
+- card candidate `001tom_r01`：8 textures、8 sprites、8 resolved；
+- background candidate `bg001_315pro_in_01`：
+  2 textures、2 sprites，resolved SHA-256
+  `a2ae5b2637082928b30da11c824c2259623aec3f07bbc4c590632b311f340d65`；
+- event visual candidate `002sht`：`475x783`，SHA-256
+  `a83344e535e4292a8f0b1dac5d3c3b9951d0a05c32c5fc225dc5eea501fc0631`。
+
+旧 background 报告生成于 2026-07-26。和当前报告相比，唯一非时间差异是
+`bg091_315prolounge_in_01` 的 compiled reference count 从 6,730 变为
+6,768；所有 ID 集合、覆盖率和缺口不变。这是当前 compiled corpus 相对旧
+报告的计数变化，不是配置路径改变。
+
 ## 1. 当前已确认的事实
 
 ### 1.1 RAW 的真实边界和数量
@@ -796,16 +834,16 @@ git rev-parse origin/<当前分支>
 
 ## 8. 新窗口的第一项实际工作
 
-PR A 的配置核心和 RAW manifest 接入已经完成。新窗口默认从其余审计器的
-路径收束继续，不从 `003hok` 开始发布：
+PR A 的配置核心、RAW manifest 以及 card/background/character 六个工具
+已经接入。新窗口默认从其余审计器的路径收束继续，不从 `003hok` 开始发布：
 
 1. 核对 `0ba566f`、PR #2、worktree、5174；
 2. 复核 XOR source 与 decoded PB 的两个 SHA-256 和逐字节解码一致性；
 3. 复核 decoded PB 的 47,204 records 和 158 table IDs；
 4. 列出所有硬编码个人绝对路径；
-5. 以一组同类脚本为一批接入 `archive_paths.py`，保留显式 CLI 覆盖；
+5. 下一批接入 audio/story 的 audit、index 和 candidate 工具；
 6. 每批运行 fixture 和原域 audit，比较结果；
-7. 优先收束 card/background/character，再处理 audio/story；
+7. 对 masterdata 专项工具区分 XOR source 与 decoded PB；
 8. 最后单独处理仍硬编码旧整理包路径的 live/chibi 辅助脚本；
 9. 完成 PR A 的二进制政策和 source schema 文档；
 10. 再进入 multi-part story gate。

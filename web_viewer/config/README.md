@@ -36,3 +36,17 @@ The manifest command never writes inside RAW. Its default ignored outputs are:
 web_viewer/.analysis/raw-migration/source/files.jsonl
 web_viewer/.analysis/raw-migration/source/summary.json
 ```
+
+The card, ADV-background, and character-image audit/candidate tools also load
+this contract. Their explicit path arguments remain final overrides:
+
+```powershell
+python ..\data_pipeline\audit_raw_card_coverage.py
+python ..\data_pipeline\audit_raw_background_coverage.py
+python ..\data_pipeline\audit_raw_character_resources.py
+
+python ..\data_pipeline\extract_raw_card_candidate.py 001tom_r01
+python ..\data_pipeline\extract_raw_background_candidate.py bg001_315pro_in_01
+python ..\data_pipeline\extract_raw_character_image_candidate.py `
+  event_story_visual 002sht
+```

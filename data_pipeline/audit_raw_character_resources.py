@@ -18,45 +18,9 @@ from typing import Any
 
 import UnityPy
 
+from archive_paths import add_sources_config_argument, load_archive_sources
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_RAW_ROOT = REPO_ROOT / "RAW"
-DEFAULT_COSTUME_DICTIONARY = (
-    REPO_ROOT
-    / "web_viewer"
-    / "public"
-    / "data"
-    / "masterdata"
-    / "costume_dictionary.json"
-)
-DEFAULT_IDOL_DICTIONARY = (
-    REPO_ROOT
-    / "web_viewer"
-    / "public"
-    / "data"
-    / "masterdata"
-    / "idol_unit_dictionary.json"
-)
-DEFAULT_PUBLIC_ASSETS = REPO_ROOT / "web_viewer" / "public" / "assets"
-DEFAULT_IDOL_SETTINGS = (
-    REPO_ROOT / "web_viewer" / "public" / "data" / "idolsetting"
-)
-DEFAULT_OUTPUT = (
-    REPO_ROOT
-    / "web_viewer"
-    / ".analysis"
-    / "raw-migration"
-    / "character"
-    / "coverage.json"
-)
-DEFAULT_SOURCE_MANIFEST = (
-    REPO_ROOT
-    / "web_viewer"
-    / ".analysis"
-    / "raw-migration"
-    / "source"
-    / "files.jsonl"
-)
 CHARACTER_IMAGE_PATTERN = "image_chara*.unity3d"
 SPINE_CORE_FILES = ("comu.atlas", "comu.png", "comu.skel")
 CHARACTER_IMAGE_CATEGORIES = {
@@ -752,25 +716,44 @@ def audit_character_images(
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--raw-root", type=Path, default=DEFAULT_RAW_ROOT)
-    parser.add_argument(
-        "--costume-dictionary", type=Path, default=DEFAULT_COSTUME_DICTIONARY
-    )
-    parser.add_argument(
-        "--idol-dictionary", type=Path, default=DEFAULT_IDOL_DICTIONARY
-    )
-    parser.add_argument(
-        "--public-assets", type=Path, default=DEFAULT_PUBLIC_ASSETS
-    )
-    parser.add_argument(
-        "--public-idol-settings", type=Path, default=DEFAULT_IDOL_SETTINGS
-    )
+    add_sources_config_argument(parser)
+    parser.add_argument("--raw-root", type=Path)
+    parser.add_argument("--costume-dictionary", type=Path)
+    parser.add_argument("--idol-dictionary", type=Path)
+    parser.add_argument("--public-assets", type=Path)
+    parser.add_argument("--public-idol-settings", type=Path)
     parser.add_argument("--candidate-model", default="001tom_002_00")
     parser.add_argument(
-        "--source-manifest", type=Path, default=DEFAULT_SOURCE_MANIFEST
+        "--source-manifest", type=Path
     )
-    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--output", type=Path)
     args = parser.parse_args()
+    sources = load_archive_sources(args.sources_config)
+    args.raw_root = (args.raw_root or sources.raw_root).resolve()
+    args.costume_dictionary = (
+        args.costume_dictionary
+        or sources.published_path(
+            "data", "masterdata", "costume_dictionary.json"
+        )
+    ).resolve()
+    args.idol_dictionary = (
+        args.idol_dictionary
+        or sources.published_path(
+            "data", "masterdata", "idol_unit_dictionary.json"
+        )
+    ).resolve()
+    args.public_assets = (
+        args.public_assets or sources.published_path("assets")
+    ).resolve()
+    args.public_idol_settings = (
+        args.public_idol_settings or sources.published_path("data", "idolsetting")
+    ).resolve()
+    args.source_manifest = (
+        args.source_manifest or sources.inventory_path("source", "files.jsonl")
+    ).resolve()
+    args.output = (
+        args.output or sources.inventory_path("character", "coverage.json")
+    ).resolve()
 
     raw_root = args.raw_root.resolve()
     raw_asset_root = raw_root / "asset"

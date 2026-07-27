@@ -10,27 +10,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from archive_paths import add_sources_config_argument, load_archive_sources
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_RAW_ROOT = REPO_ROOT / "RAW"
-DEFAULT_CATALOG = (
-    REPO_ROOT
-    / "web_viewer"
-    / "public"
-    / "data"
-    / "masterdata"
-    / "background_catalog.json"
-)
-DEFAULT_COMPILED_ROOT = REPO_ROOT / "web_viewer" / "public" / "data" / "compiled"
-DEFAULT_PUBLIC_BG_ROOT = REPO_ROOT / "web_viewer" / "public" / "assets" / "bg"
-DEFAULT_OUTPUT = (
-    REPO_ROOT
-    / "web_viewer"
-    / ".analysis"
-    / "raw-migration"
-    / "background"
-    / "coverage.json"
-)
 BACKGROUND_ID = re.compile(r"^bg[a-z0-9_]+$", re.IGNORECASE)
 
 
@@ -49,14 +30,28 @@ def collect_backgrounds(value: Any, counter: Counter[str]) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--raw-root", type=Path, default=DEFAULT_RAW_ROOT)
-    parser.add_argument("--catalog", type=Path, default=DEFAULT_CATALOG)
-    parser.add_argument("--compiled-root", type=Path, default=DEFAULT_COMPILED_ROOT)
-    parser.add_argument("--public-bg-root", type=Path, default=DEFAULT_PUBLIC_BG_ROOT)
-    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    add_sources_config_argument(parser)
+    parser.add_argument("--raw-root", type=Path)
+    parser.add_argument("--catalog", type=Path)
+    parser.add_argument("--compiled-root", type=Path)
+    parser.add_argument("--public-bg-root", type=Path)
+    parser.add_argument("--output", type=Path)
     args = parser.parse_args()
 
-    raw_root = args.raw_root.resolve()
+    sources = load_archive_sources(args.sources_config)
+    raw_root = (args.raw_root or sources.raw_root).resolve()
+    catalog = (
+        args.catalog
+        or sources.published_path(
+            "data", "masterdata", "background_catalog.json"
+        )
+    ).resolve()
+    compiled_root = (
+        args.compiled_root or sources.published_path("data", "compiled")
+    ).resolve()
+    public_bg_root = (
+        args.public_bg_root or sources.published_path("assets", "bg")
+    ).resolve()
     raw_paths = sorted(
         (raw_root / "asset").glob("adv_background_*.unity3d")
     )
@@ -65,15 +60,15 @@ def main() -> None:
     }
     raw_ids = set(raw_by_id)
 
-    catalog_payload = json.loads(args.catalog.resolve().read_text(encoding="utf-8"))
+    catalog_payload = json.loads(catalog.read_text(encoding="utf-8"))
     catalog_ids = set((catalog_payload.get("backgrounds") or {}).keys())
 
     public_ids = {
-        path.stem for path in args.public_bg_root.resolve().glob("*.png")
+        path.stem for path in public_bg_root.glob("*.png")
     }
 
     story_counter: Counter[str] = Counter()
-    compiled_files = sorted(args.compiled_root.resolve().glob("*.json"))
+    compiled_files = sorted(compiled_root.glob("*.json"))
     parsed_files = 0
     parse_errors = []
     for path in compiled_files:
@@ -122,7 +117,9 @@ def main() -> None:
         "public_png_without_raw_bundle": sorted(public_ids - raw_ids),
         "parse_errors": parse_errors,
     }
-    output = args.output.resolve()
+    output = (
+        args.output or sources.inventory_path("background", "coverage.json")
+    ).resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(
         json.dumps(report, ensure_ascii=False, indent=2) + "\n",

@@ -9,31 +9,27 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
-REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_RAW_ROOT = REPO_ROOT / "RAW"
-DEFAULT_CARD_INDEX = (
-    REPO_ROOT / "web_viewer" / "public" / "data" / "masterdata" / "card_index.json"
-)
-DEFAULT_OUTPUT = (
-    REPO_ROOT
-    / "web_viewer"
-    / ".analysis"
-    / "raw-migration"
-    / "card"
-    / "coverage.json"
+from archive_paths import (
+    add_sources_config_argument,
+    load_archive_sources,
+    portable_path,
 )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--raw-root", type=Path, default=DEFAULT_RAW_ROOT)
-    parser.add_argument("--card-index", type=Path, default=DEFAULT_CARD_INDEX)
-    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    add_sources_config_argument(parser)
+    parser.add_argument("--raw-root", type=Path)
+    parser.add_argument("--card-index", type=Path)
+    parser.add_argument("--output", type=Path)
     args = parser.parse_args()
 
-    raw_root = args.raw_root.resolve()
-    card_index = args.card_index.resolve()
+    sources = load_archive_sources(args.sources_config)
+    raw_root = (args.raw_root or sources.raw_root).resolve()
+    card_index = (
+        args.card_index
+        or sources.published_path("data", "masterdata", "card_index.json")
+    ).resolve()
     cards = json.loads(card_index.read_text(encoding="utf-8")).get("cards", [])
     grouped_cards: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for card in cards:
@@ -99,7 +95,7 @@ def main() -> None:
         "schema_version": 1,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "sources": {
-            "card_index": card_index.relative_to(REPO_ROOT).as_posix(),
+            "card_index": portable_path(card_index, sources.archive_root),
             "raw_asset_root": "RAW/asset",
             "bundle_pattern": "card_<resource_id>.unity3d",
         },
@@ -146,7 +142,9 @@ def main() -> None:
             for resource_id in extra_ids
         ],
     }
-    output = args.output.resolve()
+    output = (
+        args.output or sources.inventory_path("card", "coverage.json")
+    ).resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(
         json.dumps(report, ensure_ascii=False, indent=2) + "\n",

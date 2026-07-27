@@ -121,6 +121,24 @@ The XOR source and decoded PB paths produced byte-identical decoded outputs
 and byte-identical base `music_catalog.json` outputs in the isolated
 input-state regression. This prevents a decoded PB from being XORed twice.
 
+### Configured card/background/character tool slice
+
+The first three domain pairs now consume the shared source contract while
+retaining every explicit CLI path override:
+
+| Domain | Audit | Candidate | Real-data regression |
+| --- | --- | --- | --- |
+| card | `audit_raw_card_coverage.py` | `extract_raw_card_candidate.py` | 836 rows, 826/826 resources; `001tom_r01` kept 8 textures, 8 sprites and 8 resolved assets |
+| ADV background | `audit_raw_background_coverage.py` | `extract_raw_background_candidate.py` | 394 bundles; catalog 192/192 and story 356/356; `bg001_315pro_in_01` resolved hash `a2ae5b2637082928b30da11c824c2259623aec3f07bbc4c590632b311f340d65` |
+| character image | `audit_raw_character_resources.py` | `extract_raw_character_image_candidate.py` | 57 bundles and 485 unique paths; `002sht` remained `475x783` with hash `a83344e535e4292a8f0b1dac5d3c3b9951d0a05c32c5fc225dc5eea501fc0631` |
+
+The card and character reports are equal to their pre-change reports after
+removing `generated_at`. The background identity and coverage sets are also
+unchanged. Its only older-snapshot difference is the current compiled
+reference count for `bg091_315prolounge_in_01` (`6,730 -> 6,768`); the prior
+report was generated on 2026-07-26, and no background ID, coverage, or missing
+set changed.
+
 The current site has normalized master-data products for:
 
 - backgrounds;
