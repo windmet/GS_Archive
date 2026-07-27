@@ -1396,9 +1396,13 @@ alpha transitions, with no ID differences. A bounded rebuild of
 to stable, and port 5174 replayed the 2,500 ms DRIVE A LIVE Backmonitor switch
 and transition lifecycle without an error overlay.
 
-Three specialized builders still read choreography CSV files independently:
-Image_layer, Object_layer, and static-stage backgrounds. They must move one at
-a time.
+Commit `4c67bd1` then moved Image_layer to the same RAW TextAsset mapping.
+RAW and organizer parsing both resolve 101 events and 57 unique asset IDs. A
+bounded `stage_flslgt_01` rebuild was byte-identical to stable, and port 5174
+verified all four FLASH LIGHT layers, depths, and the off/on toggle lifecycle.
+
+Two specialized builders still read choreography CSV files independently:
+Object_layer and static-stage backgrounds. They must move one at a time.
 
 The stable live inventory remains correctly bounded to 549 costumes.
 `audit:live-chibi-costume-boundary` proved that the remaining 141 master
@@ -1425,9 +1429,9 @@ groups at the current stage time. Stable assets stayed unchanged.
 
 ## Next batches
 
-1. Migrate the remaining Image_layer, Object_layer, and static-stage helper
-   builders to the already-proven RAW choreography TextAssets, one consumer
-   and one 5174 regression at a time.
+1. Migrate the remaining Object_layer and static-stage helper builders to the
+   already-proven RAW choreography TextAssets, one consumer and one 5174
+   regression at a time.
 2. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
 3. Continue the proven `001tom`/`002sht` event-story visual consumer in another

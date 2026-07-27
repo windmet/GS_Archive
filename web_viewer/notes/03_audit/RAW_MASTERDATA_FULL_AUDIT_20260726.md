@@ -1790,11 +1790,10 @@ and `lipsync/drvalv.json` returned HTTP 200. There was no Vite error overlay,
 and no stable artifact or URL changed.
 
 This does not yet remove every legacy CSV read. Commit `f73faa7` migrated the
-Backmonitor consumer as recorded in section 6.13. The following specialized
-builders still have independent choreography-file inputs and are the next
-bounded migration work:
+Backmonitor consumer as recorded in section 6.13, and commit `4c67bd1`
+migrated Image_layer as recorded in section 6.14. The following specialized
+builders still have independent choreography-file inputs:
 
-- `prepare-live-chibi-image-layers.py`;
 - `prepare-live-chibi-object-layers.py`;
 - `prepare-live-chibi-stage-backgrounds.py`.
 
@@ -1833,6 +1832,32 @@ event it reported `live_backmonitor_movie_ballade_01` ready and
 ended, `transitionActive` became false while the movie remained ready. The
 index, movie, transition color, and transition alpha URLs all returned HTTP
 200; no Vite error overlay appeared. No stable file or URL changed.
+
+## 6.14 RAW choreography source / Image_layer consumer
+
+Commit `4c67bd1` changes only
+`scripts/prepare-live-chibi-image-layers.py`: its default semantic input now
+uses the audited RAW choreography TextAsset map. `--script-root` remains an
+explicit organizer-export regression override. Sprite extraction still reads
+the configured `RAW/asset/song_<code>.unity3d`; output schema, stable paths,
+and the remaining Object_layer/static-stage consumers were not changed.
+
+Independent RAW and organizer parsing both produced 101
+`Image_layer`/`Image_layer_2` events and 57 unique asset IDs, with an empty
+asset symmetric difference. A bounded ignored rebuild of
+`stage_flslgt_01` produced a 775,367-byte PNG whose candidate and stable
+SHA-256 were both
+`748696222912908185A608F2034E01C0B38093B24F37325F796CA036316EB0C1`.
+Its candidate index entry was structurally identical to stable. The untouched
+57-entry stable index retained SHA-256
+`0A8FCFD6C32EDD847C327B4AF95AE9B9405BB6971CE3643DC80FE4DAAD7DB783`.
+
+Port 5174 then exercised the actual FLASH LIGHT consumer. It reported four
+visible assets (`stage_flslgt_01` through `_04`) at depths 1550, 1575, 1600,
+and 1725. Turning 图片布景 off reduced the layer count to zero; turning it
+back on restored all four assets and depths. The index and all four PNG URLs
+returned HTTP 200, and no Vite error overlay appeared. No stable file or URL
+changed.
 
 ## 7. Browser candidate verification
 
