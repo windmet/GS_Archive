@@ -129,6 +129,32 @@ const npcStableAsset = path.join(
   'birthday',
   `image_chara_birthday_visual_${npcCode}.png`,
 )
+const eventRawBytes = Buffer.from('fixture event-story RAW Unity Sprite bundle')
+const eventCandidateDirectory = path.join(
+  workspaceRoot,
+  '.analysis',
+  'raw-migration',
+  'character-image-candidate',
+  'event_story_visual',
+  '001tom',
+)
+const eventRawFile = path.join(
+  temporaryRoot,
+  'RAW',
+  'asset',
+  'image_chara_event_story_visuals.unity3d',
+)
+const eventCandidateAsset = path.join(
+  eventCandidateDirectory,
+  'resolved',
+  '001tom.png',
+)
+const eventStableAsset = path.join(
+  assetsRoot,
+  'events',
+  'characters',
+  'image_chara_event_story_visual_001tom.png',
+)
 const baselineRegistry = {
   schema_version: 1,
   entries: [{
@@ -322,6 +348,48 @@ function npcCandidateManifest() {
   }
 }
 
+function eventCandidateManifest() {
+  return {
+    schema_version: 1,
+    kind: 'event_story_visual',
+    idol_code: '001tom',
+    raw_source: {
+      relative_path: 'RAW/asset/image_chara_event_story_visuals.unity3d',
+      bytes: eventRawBytes.length,
+      sha256: hashBytes(eventRawBytes),
+      source_manifest_equal: true,
+    },
+    unity_object: {
+      container_path: 'assets/resources/image/image_chara/image_chara_event_story_visual/image_chara_event_story_visual_001tom.png',
+      path_id: '-1001001',
+      object_type: 'Sprite',
+      asset_name: 'image_chara_event_story_visual_001tom',
+      identity_ids: ['001tom'],
+      sprite_rect: { x: 0, y: 0, width: 1, height: 1 },
+    },
+    identity_evidence: {
+      master_idol: { idol_id: 1, idol_code: '001tom' },
+      story_master: {
+        domain: 'event',
+        reference_count: 1,
+        references: [{
+          event_id: 410011,
+          event_code: '10011',
+          compiled_file: '1_3_10011_01.json',
+          compiled_exists: true,
+          characters: ['001tom', '002sht', '003hok'],
+        }],
+      },
+    },
+    resolved_asset: {
+      width: 1,
+      height: 1,
+      bytes: pngBytes.length,
+      sha256: hashBytes(pngBytes),
+    },
+  }
+}
+
 try {
   await mkdir(path.dirname(rawFile), { recursive: true })
   await mkdir(path.dirname(candidateAsset), { recursive: true })
@@ -497,6 +565,76 @@ try {
   })
   assert.equal(npcRollback.asset_state, 'removed')
   assert.equal(await exists(npcStableAsset), false)
+  assert.deepEqual(
+    JSON.parse(await readFile(registryFile, 'utf8')),
+    baselineRegistry,
+  )
+
+  await mkdir(path.dirname(eventCandidateAsset), { recursive: true })
+  await writeFile(eventRawFile, eventRawBytes)
+  await writeFile(eventCandidateAsset, pngBytes)
+  await writeJson(
+    path.join(eventCandidateDirectory, 'candidate.json'),
+    eventCandidateManifest(),
+  )
+  const invalidEventEvidence = eventCandidateManifest()
+  invalidEventEvidence.identity_evidence.story_master.references[0].characters = [
+    '002sht',
+  ]
+  await writeJson(
+    path.join(eventCandidateDirectory, 'candidate.json'),
+    invalidEventEvidence,
+  )
+  await assert.rejects(
+    publishRawCharacterImage({
+      workspaceRoot,
+      candidateDirectory: eventCandidateDirectory,
+      registryFile,
+      assetsRoot,
+      backupDirectory: path.join(workspaceRoot, '.analysis', 'invalid-event-evidence'),
+      confirmKey: 'event_story_visual:001tom',
+    }),
+    /Event master-data ownership evidence is incomplete/u,
+  )
+  await writeJson(
+    path.join(eventCandidateDirectory, 'candidate.json'),
+    eventCandidateManifest(),
+  )
+  const eventBackup = path.join(workspaceRoot, '.analysis', 'event-published')
+  const eventReport = await publishRawCharacterImage({
+    workspaceRoot,
+    candidateDirectory: eventCandidateDirectory,
+    registryFile,
+    assetsRoot,
+    backupDirectory: eventBackup,
+    confirmKey: 'event_story_visual:001tom',
+  })
+  assert.equal(eventReport.key, 'event_story_visual:001tom')
+  assert.equal(hashBytes(await readFile(eventStableAsset)), hashBytes(pngBytes))
+  const eventRegistry = JSON.parse(await readFile(registryFile, 'utf8'))
+  const eventEntry = eventRegistry.entries.find(entry =>
+    entry.kind === 'event_story_visual' && entry.idol_code === '001tom'
+  )
+  assert.ok(eventEntry)
+  assert.deepEqual(eventEntry.master_evidence.event_ids, [410011])
+  assert.deepEqual(eventEntry.master_evidence.event_codes, ['10011'])
+  assert.equal(
+    getPromotedCharacterImageUrl(
+      'event_story_visual',
+      '001tom',
+      eventRegistry,
+    ),
+    '/assets/events/characters/image_chara_event_story_visual_001tom.png',
+  )
+  const eventRollback = await rollbackRawCharacterImage({
+    workspaceRoot,
+    registryFile,
+    assetsRoot,
+    backupDirectory: eventBackup,
+    confirmKey: 'event_story_visual:001tom',
+  })
+  assert.equal(eventRollback.asset_state, 'removed')
+  assert.equal(await exists(eventStableAsset), false)
   assert.deepEqual(
     JSON.parse(await readFile(registryFile, 'utf8')),
     baselineRegistry,

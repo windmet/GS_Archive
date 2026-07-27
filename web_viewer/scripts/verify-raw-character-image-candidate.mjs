@@ -18,6 +18,7 @@ assert.deepEqual(RAW_CHARACTER_IMAGE_CANDIDATE_KINDS, [
 ])
 
 const enabled = '?raw_character_candidate=birthday_visual%3A001tom'
+const eventEnabled = '?raw_character_candidate=event_story_visual%3A001tom'
 assert.equal(
   getRawCharacterImageCandidateUrl('birthday_visual', '001tom', enabled),
   '/assets/character-candidate/birthday_visual/001tom.png',
@@ -44,6 +45,14 @@ assert.equal(
 assert.equal(
   getRawCharacterImageCandidateUrl('birthday_visual', '002sht', enabled),
   '',
+)
+assert.equal(
+  getRawCharacterImageCandidateUrl(
+    'event_story_visual',
+    '001tom',
+    eventEnabled,
+  ),
+  '/assets/character-candidate/event_story_visual/001tom.png',
 )
 assert.equal(
   getRawCharacterImageCandidateUrl('unknown', '001tom', enabled),
@@ -75,6 +84,19 @@ assert.match(
   /birthdayStoryIdolCode\(story\)/,
 )
 assert.match(appSource, /getPromotedCharacterImageUrl/)
+assert.match(appSource, /eventStoryIdolVisualUrl/)
+assert.match(
+  appSource,
+  /getRawCharacterImageCandidateUrl\('event_story_visual', idolCode\)/,
+)
+
+const eventDetailSource = await readFile(
+  new URL('../src/components/archive/ArchiveEventDetail.vue', import.meta.url),
+  'utf8',
+)
+assert.match(eventDetailSource, /storyVisualByIdol/)
+assert.match(eventDetailSource, /class="event-story-visual"/)
+assert.match(eventDetailSource, /has-story-visuals/)
 
 const viteSource = await readFile(new URL('../vite.config.js', import.meta.url), 'utf8')
 assert.match(viteSource, /rawCharacterImageCandidatePlugin\(\)/)

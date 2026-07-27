@@ -151,6 +151,46 @@ def birthday_story_evidence(
     }
 
 
+def event_story_evidence(
+    story_master_path: Path, idol_code: str
+) -> dict[str, Any]:
+    payload = json.loads(story_master_path.read_text(encoding="utf-8"))
+    event_master = payload.get("event") or {}
+    groups_by_id = {
+        row.get("1"): row
+        for row in event_master.get("groups", [])
+        if row.get("1") is not None
+    }
+    references_by_file: dict[str, dict[str, Any]] = {}
+    for row in event_master.get("episodes", []):
+        characters = row.get("compiled_summary", {}).get("characters", [])
+        compiled_file = str(row.get("compiled_file") or "")
+        if idol_code not in characters or not compiled_file:
+            continue
+        group = groups_by_id.get(row.get("2")) or {}
+        references_by_file.setdefault(
+            compiled_file,
+            {
+                "event_id": group.get("2"),
+                "event_group_id": group.get("1"),
+                "event_code": group.get("4"),
+                "event_title": group.get("9"),
+                "compiled_file": compiled_file,
+                "compiled_exists": row.get("compiled_exists"),
+                "characters": characters,
+            },
+        )
+    rows = sorted(
+        references_by_file.values(),
+        key=lambda row: (str(row.get("event_code") or ""), row["compiled_file"]),
+    )
+    return {
+        "domain": "event",
+        "reference_count": len(rows),
+        "references": rows,
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("kind", choices=sorted(CATEGORIES))
@@ -288,6 +328,10 @@ def main() -> None:
         }
     if args.kind == "birthday_visual":
         identity_evidence["story_master"] = birthday_story_evidence(
+            args.story_master.resolve(), idol_code
+        )
+    elif args.kind == "event_story_visual":
+        identity_evidence["story_master"] = event_story_evidence(
             args.story_master.resolve(), idol_code
         )
 

@@ -200,7 +200,7 @@ with its current archive consumer:
 | Category | Paths | Identity coverage | Current archive behavior |
 | --- | ---: | --- | --- |
 | birthday visual | 49 | all 49 master idols + `101ken`; `012yus`/`013kys` share one visual | complete: 50 identity mappings use all 49 physical RAW-derived URLs |
-| event-story visual | 51 | all 49 master idols + `101ken`/`102sha` | event detail uses general character icons |
+| event-story visual | 51 | all 49 master idols + `101ken`/`102sha` | first stable consumer proven: `001tom` uses RAW visual in event cast; 50 identities remain on icon fallback |
 | Mobile bust-up | 51 | all 49 master idols + `101ken`/`102sha` | Mobile archive uses icon + room background |
 | name plate | 49 | all 49 master idols | ADV UI renders speaker text with CSS |
 | sign | 49 | all 49 master idols | idol detail has no signature slot |
@@ -802,6 +802,62 @@ Final ignored rollback evidence:
 
 `web_viewer/.analysis/raw-migration/character-image-candidate/birthday_visual/101ken/stable-backup-20260727-final/`
 
+### First stable event-story visual
+
+`event_story_visual:001tom` starts the second character-image consumer without
+reopening any verified birthday path. The physical source is the RAW aggregate
+bundle `RAW/asset/image_chara_event_story_visuals.unity3d`, not an organizer
+export. The candidate records:
+
+- RAW SHA-256
+  `b2c586614b404c0fffb6103ba331a8700f6b1f9089880d228adf5cc8fd10f8e8`;
+- exact Sprite PathID string `-7457278555292857429`;
+- output `719×820`, 296,055 bytes, SHA-256
+  `f85215af82d5d91f0fe0279ffc728b8dd89d5b272bb9af806b618e2c41c07bba`;
+- stable URL
+  `/assets/events/characters/image_chara_event_story_visual_001tom.png`.
+
+The extractor now resolves event ownership from `story_master_index.json`,
+rather than treating the filename alone as authority. It deduplicates episode
+rows by compiled file and proves that `001tom` appears in both:
+
+- event `410011`, code `10011`, compiled file `1_3_10011_01.json`;
+- event `430018`, code `30018`, compiled file `1_3_30018_01.json`.
+
+The promotion gate accepts `event_story_visual` only when the exact
+single-identity Sprite, current RAW hash, PNG hash/dimensions, master-idol or
+explicit NPC scope, unique event compiled files, event IDs/codes, and compiled
+character membership all agree. Synthetic tests reject an event reference
+whose character list omits the candidate.
+
+The runtime consumer is the event-detail cast. With no event visual available,
+the existing compact icon list is unchanged. When a candidate or stable
+registry entry exists, the cast becomes a contained portrait grid; identities
+without a promoted visual continue to use their normal icon. This preserves
+incremental publication instead of requiring all 51 images at once.
+
+The real publish/rollback/final-republish cycle started from registry SHA-256
+`661852cf0bd631a4c82dc7be616f478a8bf49cc169164219958ead0023feb3ec`.
+The first stable publish loaded at natural `719×820` on event `410011`.
+Rollback restored that exact registry hash, removed the PNG, and the same route
+returned to three icon fallbacks, zero event visuals, and the compact layout.
+Final republish produced registry SHA-256
+`5e6d8bcedd55f2ecc00ea81489b6483788dba51355ebce4a81b7bdcaef4072c0`.
+
+Both `410011 / 10011` and `430018 / 30018` then loaded the stable URL without a
+candidate parameter. The second route showed one event visual and two icon
+fallbacks; clicking the `001tom` cast card navigated to
+`view=idol_detail&idol=001tom`. Page identity, non-empty DOM, framework-overlay,
+URL, natural-dimension, fallback, and interaction checks passed. The Browser
+surface did not support its screenshot command, so no rendered screenshot is
+claimed; the source PNG itself was inspected at original resolution. The only
+local console error remained the pre-existing `noAudio=1` null-`AudioContext`
+decode error. Browser-control Statsig timeouts were external to 5174.
+
+Final ignored rollback evidence:
+
+`web_viewer/.analysis/raw-migration/character-image-candidate/event_story_visual/001tom/stable-backup-20260727-final/`
+
 The ignored report records each contributing bundle's path, size, and SHA-256
 from the established 13,000-file source manifest:
 
@@ -1237,9 +1293,8 @@ because this story has no translation overlay.
 1. Extend the proven single-story gate to multi-part aggregate collections,
    then promote another small representative batch rather than all 3,398 at
    once.
-2. Treat the birthday-visual domain as complete: all 49 physical RAW assets are
-   stable, while the registry keeps 49 master idols and `101ken` as distinct
-   identity scopes.
+2. Continue the event-story visual domain from the proven `001tom` consumer in
+   another bounded batch; do not reopen the complete birthday domain.
 3. Map all 260 USM files to live-stage, card, event, and announcement semantics.
 4. Audit the remaining 1,271 general `image_*` bundles by Unity object name and
    master-data consumer.

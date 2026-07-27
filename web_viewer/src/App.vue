@@ -126,6 +126,7 @@
         :cards="currentEventCards"
         :idols="currentEventIdols"
         :units="currentEventUnits"
+        :idol-visual-url="eventStoryIdolVisualUrl"
         @play="playCurrentEvent"
         @play-episode="playCurrentEventEpisode"
         @open-card="openEventCard"
@@ -813,6 +814,15 @@ const currentStoryVisualUrl = computed(() => {
   }
   return ''
 })
+
+function eventStoryIdolVisualUrl(idolCode) {
+  return getRawCharacterImageCandidateUrl('event_story_visual', idolCode) ||
+    getPromotedCharacterImageUrl(
+      'event_story_visual',
+      idolCode,
+      rawCharacterImagePromotionsData.value,
+    )
+}
 
 const unitCatalogEntries = computed(() => (idolUnitData.value?.units || []).map(unit => {
   const unitId = String(unit.unit_id)

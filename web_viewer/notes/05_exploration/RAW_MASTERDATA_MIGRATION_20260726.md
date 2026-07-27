@@ -833,6 +833,46 @@ Final rollback evidence:
 
 `.analysis/raw-migration/character-image-candidate/birthday_visual/101ken/stable-backup-20260727-final/`
 
+### First stable event-story visual
+
+`event_story_visual:001tom` comes directly from
+`RAW/asset/image_chara_event_story_visuals.unity3d`, SHA-256
+`b2c586614b404c0fffb6103ba331a8700f6b1f9089880d228adf5cc8fd10f8e8`.
+The exact Sprite PathID is `-7457278555292857429`; the resolved PNG is
+`719×820`, 296,055 bytes, SHA-256
+`f85215af82d5d91f0fe0279ffc728b8dd89d5b272bb9af806b618e2c41c07bba`.
+
+The candidate now carries event master ownership, not only idol identity.
+`story_master_index.json` proves `001tom` is in compiled event files
+`1_3_10011_01.json` and `1_3_30018_01.json`, corresponding to event IDs
+`410011`/`430018` and event codes `10011`/`30018`. Promotion rejects missing
+compiled membership, duplicate compiled references, mismatched event IDs or
+codes, and non-exact Sprite identity.
+
+The event-detail cast consumes the candidate or stable registry URL. The
+portrait layout activates only when at least one event visual resolves;
+unpromoted cast members keep their normal icons, and an all-fallback event
+keeps the original compact layout.
+
+The real publish/rollback/final-republish cycle restored the exact
+`661852cf0bd631a4c82dc7be616f478a8bf49cc169164219958ead0023feb3ec`
+baseline during rollback, removed the PNG, and returned event `410011` to
+three icons with no portrait layout. Final stable URL is
+`/assets/events/characters/image_chara_event_story_visual_001tom.png`, and the
+51-entry registry SHA-256 is
+`5e6d8bcedd55f2ecc00ea81489b6483788dba51355ebce4a81b7bdcaef4072c0`.
+
+Both master-linked activity routes loaded the stable image at natural
+`719×820`; the `430018` route retained two icon fallbacks and its `001tom`
+cast-card interaction navigated to the correct idol detail. Page identity,
+DOM, overlay, URL, dimensions, fallback, and interaction checks passed. The
+Browser surface lacked screenshot support, so visual evidence is limited to
+original-resolution PNG inspection plus rendered DOM/geometry checks.
+
+Final rollback evidence:
+
+`.analysis/raw-migration/character-image-candidate/event_story_visual/001tom/stable-backup-20260727-final/`
+
 ### Standalone promotion gate and first stable replacement
 
 The generic strict collection publisher requires an aggregate plus episode
@@ -1002,6 +1042,16 @@ npm run character:promotion-publish -- `
   --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/101ken/stable-backup-20260727-final `
   --confirm=birthday_visual:101ken
 
+python ..\data_pipeline\extract_raw_character_image_candidate.py `
+  event_story_visual 001tom
+
+npm run character:promotion-publish -- `
+  --candidate-dir=.analysis/raw-migration/character-image-candidate/event_story_visual/001tom `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/event_story_visual/001tom/stable-backup-20260727-final `
+  --confirm=event_story_visual:001tom
+
 python ..\data_pipeline\extract_raw_audio_candidate.py `
   --raw-root ..\RAW --kind bgm --container usual_day.awb --cue usual_day `
   --selection 1 --output-root .analysis\raw-migration\audio `
@@ -1044,8 +1094,8 @@ assets.
 
 1. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
-2. Treat the birthday-visual domain as complete and continue with the next
-   character-image consumer rather than reopening the verified stable paths.
+2. Continue the proven event-story visual consumer in another bounded batch;
+   keep the complete birthday domain unchanged.
 3. Map all 260 RAW USM files to master-data consumers.
 4. Continue promoting verified domains one reversible batch at a time, with
    5174 acceptance and rollback evidence before each stable-path replacement.

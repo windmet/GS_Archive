@@ -11,7 +11,10 @@ import {
 } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
 
-const PROMOTABLE_KINDS = new Set(['birthday_visual'])
+const PROMOTABLE_KINDS = new Set([
+  'birthday_visual',
+  'event_story_visual',
+])
 const IDOL_CODE = /^\d{3}[a-z0-9]{3}$/i
 const MAX_BATCH_SIZE = 5
 
@@ -185,13 +188,26 @@ async function restorePrePromotionState({
 
 function stableTargetFor(candidate) {
   const assetName = candidate?.unity_object?.asset_name
-  const expectedName = `image_chara_birthday_visual_${candidate.idol_code}`
+  const target = {
+    birthday_visual: {
+      prefix: 'image_chara_birthday_visual_',
+      directory: 'stories/birthday',
+    },
+    event_story_visual: {
+      prefix: 'image_chara_event_story_visual_',
+      directory: 'events/characters',
+    },
+  }[candidate.kind]
+  if (!target) {
+    throw new Error(`${candidate.kind} has no approved stable target`)
+  }
+  const expectedName = `${target.prefix}${candidate.idol_code}`
   if (assetName !== expectedName) {
     throw new Error(`Stable promotion requires exact single-idol asset ${expectedName}`)
   }
   return {
-    relativePath: `stories/birthday/${assetName}.png`,
-    assetUrl: `/assets/stories/birthday/${assetName}.png`,
+    relativePath: `${target.directory}/${assetName}.png`,
+    assetUrl: `/assets/${target.directory}/${assetName}.png`,
   }
 }
 
@@ -226,6 +242,14 @@ function registryIdentityEvidence(candidate) {
       .map(reference => reference.compiled_file)
       .sort(),
   }
+  if (storyMaster.domain === 'event') {
+    common.event_ids = storyMaster.references
+      .map(reference => reference.event_id)
+      .sort((a, b) => a - b)
+    common.event_codes = storyMaster.references
+      .map(reference => reference.event_code)
+      .sort()
+  }
   const npcSpeaker = candidate.identity_evidence.npc_speaker
   if (npcSpeaker) {
     return {
@@ -241,6 +265,55 @@ function registryIdentityEvidence(candidate) {
     idol_id: candidate.identity_evidence.master_idol.idol_id,
     ...common,
   }
+}
+
+function validateStoryMasterEvidence(candidate) {
+  const masterEvidence = candidate.identity_evidence?.story_master
+  if (
+    !Number.isInteger(masterEvidence?.reference_count) ||
+    masterEvidence.reference_count < 1 ||
+    !Array.isArray(masterEvidence.references) ||
+    masterEvidence.references.length !== masterEvidence.reference_count
+  ) {
+    throw new Error(`${candidate.kind} master-data ownership evidence is incomplete`)
+  }
+  if (candidate.kind === 'birthday_visual') {
+    if (
+      masterEvidence.domain !== 'birthday' ||
+      masterEvidence.references.some(reference =>
+        !String(reference?.compiled_file || '').startsWith(
+          `1_x_${candidate.idol_code}_`,
+        )
+      )
+    ) {
+      throw new Error('Birthday master-data ownership evidence is incomplete')
+    }
+    return masterEvidence
+  }
+  if (candidate.kind === 'event_story_visual') {
+    const compiledFiles = new Set()
+    if (
+      masterEvidence.domain !== 'event' ||
+      masterEvidence.references.some(reference => {
+        const compiledFile = String(reference?.compiled_file || '')
+        const valid = (
+          /^\d+$/.test(String(reference?.event_id || '')) &&
+          /^\d{5}$/.test(String(reference?.event_code || '')) &&
+          /^1_3_\d{5}_01\.json$/.test(compiledFile) &&
+          reference?.compiled_exists === true &&
+          Array.isArray(reference?.characters) &&
+          reference.characters.includes(candidate.idol_code) &&
+          !compiledFiles.has(compiledFile)
+        )
+        compiledFiles.add(compiledFile)
+        return !valid
+      })
+    ) {
+      throw new Error('Event master-data ownership evidence is incomplete')
+    }
+    return masterEvidence
+  }
+  throw new Error(`${candidate.kind} has no approved master-data evidence gate`)
 }
 
 async function verifyExistingRegistryAssets(registry, assetsRoot) {
@@ -321,19 +394,7 @@ async function assessCandidate({
     throw new Error('Stable first-batch promotion requires one exact idol identity')
   }
   validateIdentityEvidence(candidate)
-  const masterEvidence = candidate.identity_evidence?.story_master
-  if (
-    masterEvidence?.domain !== 'birthday' ||
-    !Number.isInteger(masterEvidence.reference_count) ||
-    masterEvidence.reference_count < 1 ||
-    !Array.isArray(masterEvidence.references) ||
-    masterEvidence.references.length !== masterEvidence.reference_count ||
-    masterEvidence.references.some(reference =>
-      !String(reference?.compiled_file || '').startsWith(`1_x_${candidate.idol_code}_`)
-    )
-  ) {
-    throw new Error('Birthday master-data ownership evidence is incomplete')
-  }
+  validateStoryMasterEvidence(candidate)
 
   const candidateAsset = path.join(
     candidateDirectory,
@@ -429,22 +490,13 @@ async function assessSharedCandidates({
     ) {
       throw new Error(`Invalid shared candidate ${candidate.kind}:${candidate.idol_code}`)
     }
-    const masterEvidence = candidate.identity_evidence?.story_master
     validateIdentityEvidence(candidate)
-    if (
-      masterEvidence?.domain !== 'birthday' ||
-      !Number.isInteger(masterEvidence.reference_count) ||
-      masterEvidence.reference_count < 1 ||
-      !Array.isArray(masterEvidence.references) ||
-      masterEvidence.references.length !== masterEvidence.reference_count ||
-      masterEvidence.references.some(reference =>
-        !String(reference?.compiled_file || '').startsWith(`1_x_${candidate.idol_code}_`)
-      )
-    ) {
+    if (candidate.kind !== 'birthday_visual') {
       throw new Error(
-        `Shared candidate ${candidate.idol_code} has incomplete master ownership`,
+        `Shared promotion is not approved for ${candidate.kind}`,
       )
     }
+    validateStoryMasterEvidence(candidate)
     const candidateAsset = path.join(
       candidateDirectory,
       'resolved',
