@@ -14,6 +14,8 @@ Latest RAW + master-data migration log: `notes/05_exploration/RAW_MASTERDATA_MIG
 
 Full RAW + master-data resource audit: `notes/03_audit/RAW_MASTERDATA_FULL_AUDIT_20260726.md`
 
+RAW + masterdata v1 next-window handoff: `notes/04_refactor/RAW_MASTERDATA_V1_NEXT_WINDOW_HANDOFF_20260727.md`
+
 The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_88969A1_RELEASE_GUIDE_20260723.md` for historical evidence.
 
 ## Layout
@@ -91,4 +93,5 @@ If a new note is lip or mouth related, put it in `01_lipsync/` first. If it is u
 - `04_refactor/STORY_LOCALIZATION_CONTRACT_20260719.md` - implementation-ready localization contract for deterministic text identity, source hashing, translation overlays, speaker and choice identity, unified text resolution, UI/content language separation, conservative migration, portal entities, Git phases, and acceptance tests.
 - `04_refactor/STORY_POST_88969A1_RELEASE_GUIDE_20260723.md` - fact-check of the post-88969a1 assessment, second strict collection status, feature-freeze boundary, CI/release acceptance sequence, and PR merge gates.
 - `04_refactor/STORY_POST_MERGE_HANDOFF_20260723.md` - primary next-window entry after PR #1 merge: exact master baseline, completed scope, missing release evidence, IDM/audio boundary, execution order, and reference index.
+- `04_refactor/RAW_MASTERDATA_V1_NEXT_WINDOW_HANDOFF_20260727.md` - fact-checked `0ba566f` RAW/masterdata v1 baseline, corrections to the web guidance, source and binary boundaries, phased execution order, exact verification gates, and the new-window checklist.
 - `04_refactor/STAGE_CHIBI_NEXT_WINDOW_HANDOFF_20260716.md` - current Chibi stage baseline, supported and approximate effects, missing Particle/Suspensionlight/Penlight work, validation rules, and next-window execution order.

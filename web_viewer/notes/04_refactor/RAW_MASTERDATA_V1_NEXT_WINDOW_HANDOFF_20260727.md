@@ -1,0 +1,763 @@
+# RAW + Masterdata v1 基线：新窗口完整交接
+
+更新时间：2026-07-27
+仓库：`E:\Web_build\SideM_Archived`
+应用目录：`E:\Web_build\SideM_Archived\web_viewer`
+基线提交：`0ba566ffa6e24442c177279f3429115846e6821c`
+当前分支：`codex/post-merge-story-handoff`
+远端：`https://github.com/windmet/GS_Archive.git`
+当前 PR：Draft PR #2，`codex/post-merge-story-handoff -> master`
+
+## 0. 新窗口先读这里
+
+`0ba566f` 可以作为 RAW + masterdata 迁移阶段的 v1 基线。它已经在
+GitHub 上，且该提交对应的 `Web Viewer Source Gate` 已于 2026-07-27
+成功完成。
+
+但“v1 基线”目前是项目约定，不是 Git tag：
+
+- `HEAD` 与 `origin/codex/post-merge-story-handoff` 都指向 `0ba566f`；
+- 当前没有指向 `0ba566f` 的 tag；
+- Draft PR #2 仍然打开，尚未合并；
+- 不应把 `master` 当成这个迁移基线。
+
+新窗口开始后，不要立即提取或发布资源。先在仓库根目录执行：
+
+```powershell
+Set-Location E:\Web_build\SideM_Archived
+
+git status -sb
+git rev-parse HEAD
+git rev-parse origin/codex/post-merge-story-handoff
+git log --oneline --decorate --max-count=8
+git branch --show-current
+
+try {
+  $response = Invoke-WebRequest -UseBasicParsing `
+    'http://127.0.0.1:5174/?view=event_detail&event=410011&noAudio=1&runtimeDebug=1' `
+    -TimeoutSec 10
+  "5174=$($response.StatusCode) bytes=$($response.RawContentLength)"
+} catch {
+  "5174 unavailable: $($_.Exception.Message)"
+}
+```
+
+接受继续工作的最低条件：
+
+1. 当前提交、远端提交和预期基线已核对；
+2. 工作区中的任何未提交文件都已辨明归属，不能覆盖用户改动；
+3. 知道本次工作属于下面哪一个有界阶段；
+4. 如果需要浏览器验收，5174 已启动且目标页面返回 200；
+5. 如果需要真实音频验收，先确认 IDM 或其他下载接管工具不会拦截媒体。
+
+## 1. 当前已确认的事实
+
+### 1.1 RAW 的真实边界和数量
+
+当前本地 RAW 根目录是：
+
+```text
+E:\Web_build\SideM_Archived\RAW
+```
+
+它来自 `RAW.7z.001`、`RAW.7z.002` 的直接解压结果，并已加入仓库根
+`.gitignore`。当前递归文件总数是 13,000：
+
+| 位置 | 文件数 | 格式 | 字节数 |
+| --- | ---: | --- | ---: |
+| `RAW/asset` | 8,639 | `.unity3d` | 3,729,824,259 |
+| `RAW/audio` | 4,098 | 4,055 `.acb` + 43 `.awb` | 2,356,781,289 |
+| `RAW/movie` | 260 | `.usm` | 2,143,803,200 |
+| `RAW/` 根目录 | 3 | `asset_url.txt`、`audio_url.txt`、`movie_url.txt` | 1,640,473 |
+| 合计 | 13,000 |  | 8,232,049,221 |
+
+因此，“RAW 只有 asset/audio/movie 三个分类”可以作为**内容域概括**，
+但不能被实现成“根目录只允许三个子目录”。三份 URL TXT 是原备份随附的
+archive metadata，也在 13,000 文件基线内。
+
+当前完整文件 manifest 位于忽略目录：
+
+```text
+web_viewer/.analysis/raw-migration/source/files.jsonl
+web_viewer/.analysis/raw-migration/source/summary.json
+```
+
+当前文件哈希：
+
+```text
+files.jsonl
+5E04D058670497A35C61DAB0EFD70B4C3C71142EF61BCD7890AE806466E7851B
+
+summary.json
+D7011E75646C223028B0752B543B85F5A3C7E6BA8686A98F31F60BCC84CB4B3D
+```
+
+manifest 是本机生成证据，不在 Git 中。`summary.json` 当前记录了本机
+绝对路径，且 `archive_volumes` 为空；它还没有 masterdata 哈希、manifest
+整体契约哈希或非法派生文件分类字段。
+
+此前误进入 `RAW/audio` 的 271 个 WAV 已被移到可恢复的忽略目录：
+
+```text
+web_viewer/.analysis/raw-migration/generated-wav-quarantine/
+```
+
+当前 RAW 内 WAV 数量为零。不要删除 quarantine，也不要把 WAV 重新写回
+RAW。
+
+### 1.2 masterdata 的真实现状
+
+站点当前提交并消费的是：
+
+```text
+web_viewer/public/data/masterdata/*.json
+```
+
+这里有 21 个规范化产品，包括背景、卡片、活动、偶像、剧情、音乐、季节
+活动等索引。这些文件是从 masterdata 生成的**语义投影**，不是原始物理
+资源，也不是原始 protobuf 的替代备份。
+
+提取器是：
+
+```text
+data_pipeline/masterdata_extract.py
+```
+
+它接受一个外部 `client_master_data` 文件，进行 `DefaultPassPhrase` XOR
+解码，并可写出：
+
+```text
+.analysis/masterdata/client_master_data.xor_DefaultPassPhrase.pb
+```
+
+重要边界：
+
+- 当前仓库与当前工作树内没有找到原始 `client_master_data`；
+- 也没有找到已解码的 `client_master_data*.pb`；
+- 不能在新配置里凭空认定
+  `sources/masterdata/client_master_data.pb` 已经存在；
+- 在实现统一源配置前，要先由只读检查找到用户实际保存的原始文件，再记录
+  路径和 SHA-256；
+- Git 中的 masterdata JSON 可以做回归基线，但不能反向伪装成原 protobuf。
+
+### 1.3 已完成的覆盖与 promotion
+
+当前全量审计确认：
+
+| 域 | 当前证据 |
+| --- | --- |
+| 剧情 | 1,435 个 RAW scenario bundle；3,398 个逻辑剧情组；4,939/4,939 部件可编译并匹配公开 identity |
+| 卡片 | 836 master 行，826 个唯一 `resource_id`，RAW 826/826 |
+| ADV 背景 | catalog 192/192；剧情引用 ID 356/356 |
+| 歌曲 | 61/61 master song code 与 cue |
+| 剧情 BGM | 105/105 引用 ID 有容器 |
+| ambient | 83/83 非 sentinel cue 有容器 |
+| 剧情 SE | 435/435 已分类，`waribashi` 组合 cue 有代表性重建证据 |
+| 角色图片 | 57 个 `image_chara*` bundle、485 条逻辑路径已分类 |
+| movie | 260 个 USM，目前只有文件名级 inventory |
+| 一般 UI 图片 | 1,271 个一般 `image_*` bundle，尚无完整关系表 |
+
+注意：3,398 是**逻辑剧情组数**，不是 RAW 文件数。相关的物理层还有
+1,435 个 Unity bundle 和 4,939 个剧情部件。后续文档和提交信息必须使用
+正确名词。
+
+当前稳定角色图片 registry：
+
+```text
+web_viewer/public/data/assets/raw_character_image_promotions.json
+```
+
+共有 52 条 identity：
+
+- 50 条 `birthday_visual` identity；
+- 其中 `012yus`、`013kys` 共用一个物理 PNG，所以生日域是 50 个身份、
+  49 个物理 URL；
+- 包含 NPC `101ken`；
+- 2 条 `event_story_visual`：`001tom`、`002sht`；
+- 事件视觉全集是 51 个身份，仍有 49 个回退到 icon。
+
+Git 当前跟踪的稳定 promoted visual 物理文件共 51 个：
+
+- 49 个生日视觉 PNG；
+- 2 个事件视觉 PNG。
+
+### 1.4 当前发布机制的边界
+
+角色图片已有：
+
+- 单 identity 发布/回滚；
+- shared group 发布；
+- 多 identity batch 发布/回滚；
+- 临时文件替换和 registry 验证；
+- Source Gate fixture；
+- 浏览器 candidate 参数；
+- 稳定 URL 消费。
+
+剧情已有：
+
+- 单剧情 RAW promotion candidate；
+- 单剧情严格发布和备份；
+- authoritative collection 的既有工具；
+- 但 RAW promotion gate 仍然是
+  `candidate_kind: raw-story-single-promotion`；
+- 尚未建立 RAW multi-part aggregate promotion contract。
+
+当前不存在统一的：
+
+```text
+publish/manifest.json
+```
+
+门户实际直接读取：
+
+```text
+/data/assets/raw_character_image_promotions.json
+```
+
+并消费 `public/assets` 下的稳定 URL。不能把“门户只读取 publish manifest”
+写成当前事实；它是下一阶段的目标。
+
+## 2. 对网页端指导的核对结论
+
+| 网页端表述 | 核对结果 | 新窗口采用的准确说法 |
+| --- | --- | --- |
+| `0ba566f` 是 v1 基线 | 可采用，但属于项目约定 | 远端分支与 Draft PR #2 指向该提交；暂无 tag，尚未合并 master |
+| RAW 约 13,000 文件 | 正确 | 精确为 13,000，总字节 8,232,049,221 |
+| RAW 只有 asset/audio/movie | 需要修正 | 三个物理资源域外，还有三份根目录 URL TXT archive metadata |
+| 3,398 个剧情文件 | 名词错误 | 应为 3,398 个逻辑剧情组；另有 1,435 bundle、4,939 parts |
+| birthday visual 完整 | 正确 | 50 个身份、49 个物理 URL，包含 `101ken` |
+| event visual 完成 2、剩 49 | 正确 | 稳定 `001tom`、`002sht`，其余 icon fallback |
+| 260 USM 和 1,271 `image_*` 待审计 | 正确 | 前者只有文件名 inventory；后者无完整 relation table |
+| Source Gate 已通过 | 正确 | GitHub run `30232788385` 对 `0ba566f` 成功 |
+| 已有完整统一 publish manifest | 不正确 | 只有域级 registry/candidate manifest；无统一 publish manifest |
+| 已有统一 archive root 配置 | 不正确 | 多数 RAW 工具用相对路径/CLI；部分 chibi/manifest 脚本仍硬编码 `E:\BaiduNetdiskDownload\...` |
+| 原始 `client_master_data.pb` 已在建议位置 | 本地不成立 | 仓库中没有原始或 decoded PB；必须先定位真实源文件 |
+| ACB/AWB 已是整个站点唯一音频上游 | 目标合理，现状不能这样概括 | RAW 音频审计很强，但现有公开音频仍可能来自旧整理/转码链；需逐域收束 |
+| batch publisher 已存在 | 正确 | 已有 publish/rollback batch 和 fixture；下一批需补真正的三项事件视觉原子证据 |
+| `noAudio=1` 没有副作用 | 不正确 | 当前仍可触发 null AudioContext `decodeAudioData` 错误，是明确待修缺陷 |
+| 门户只识别 stable URL、不识别 RAW | 基本正确 | 正式页面读 registry 和 stable URL；candidate 调试参数是有意保留的开发入口 |
+
+网页端提出的四阶段方向总体可采用，但必须把“建议创建的配置、inventory、
+publish manifest、统一 audio catalog”当作未来实现，不得在交接中写成已经
+存在。
+
+## 3. 权威层与文件政策
+
+后续统一使用以下来源等级：
+
+| 等级 | 权限和用途 |
+| --- | --- |
+| `raw-authoritative` | `RAW/asset`、`RAW/audio`、`RAW/movie` 的原始 payload，以及三份根目录 archive metadata |
+| `master-authoritative` | 用户保存的原始 `client_master_data`；在未定位原文件前，不能宣称本级已纳入可复现配置 |
+| `master-projection` | `public/data/masterdata/*.json`；用于站点和回归，保留 `_source` 证据 |
+| `legacy-reference` | 发布者整理的图片包、歌曲包、转码音频、旧 scenariodata；只做 parity、浏览器格式参考或缺口证明 |
+| `derived` | PNG、WAV、M4A、JSON、WebP、compiled scenario、candidate report |
+| `stable-published` | 已通过 gate、发布/回滚/重发布和浏览器验收的少量稳定 URL |
+
+不要删除发布者整理包。只有某一域同时满足以下条件，才能另开任务讨论冷备份：
+
+```text
+RAW 重建覆盖完整
++ 内容 parity 已验证
++ 映射关系已保存
++ 没有 supplemental-only 资源
+```
+
+Git 政策：
+
+```text
+允许跟踪
+- 源码、schema、registry、manifest
+- 小型 fixture
+- 审计和交接文档
+- 少量正式 UI 直接需要且已过 gate 的稳定资产
+
+默认不跟踪
+- RAW
+- .analysis 候选与备份
+- 全量图片导出
+- WAV 解码缓存
+- 全量转码音频
+- 大量 Spine
+- USM 或视频解码物
+- 完整发布镜像
+```
+
+注意 `web_viewer/public/assets/` 当前整体被 `.gitignore` 忽略。正式 promotion
+脚本生成的新稳定资产若要提交，需要先检查范围，再使用精确路径
+`git add -f <file>`；绝不能 `git add -f public/assets`。
+
+## 4. 下一阶段的建议拆分
+
+顺序采用：
+
+```text
+PR A：源契约与二进制政策
+  -> PR B：RAW multi-part 剧情 gate
+  -> PR C：ACB/AWB 音频来源 identity
+  -> PR D：三项 event visual 原子批次
+  -> USM 与一般 image bundle 只读 catalog
+```
+
+这些是逻辑阶段。是否真的创建四个 GitHub PR，由新窗口先核对 Draft PR #2
+的合并策略后决定。不要未经用户确认关闭、合并或重定向现有 PR #2。
+
+### 4.1 PR A：源契约与二进制政策
+
+建议分支（仅在决定拆 PR 后创建）：
+
+```text
+codex/raw-source-contract
+```
+
+建议新增：
+
+```text
+web_viewer/config/archive_sources.example.json
+web_viewer/config/archive_sources.local.json   # ignored
+data_pipeline/archive_paths.py
+```
+
+本机路径示例不能照抄网页端虚构目录。先定位真实文件，再生成 local 配置。
+建议 schema：
+
+```json
+{
+  "schema_version": 1,
+  "archive_root": "E:/Web_build/SideM_Archived",
+  "raw_root": "RAW",
+  "masterdata_file": null,
+  "legacy_root": null,
+  "workspace_root": "web_viewer/.analysis/workspace",
+  "derived_root": "web_viewer/.analysis/derived",
+  "publish_root": "web_viewer/public"
+}
+```
+
+`masterdata_file` 和 `legacy_root` 只有在找到真实路径后才填写。不要因为字段
+必填而复制或移动大文件。
+
+迁移脚本时按小批进行：
+
+1. 先给 `raw_source_manifest.py` 接入统一配置；
+2. 保留现有 `--raw-root` 显式覆盖；
+3. 加临时目录 fixture，证明相对路径和 CLI override；
+4. 运行 manifest，并比较 13,000 数量、总字节和 section counts；
+5. 再逐个迁移 RAW card/background/story/character/audio 审计器；
+6. 最后处理仍含个人绝对路径的 live/chibi 辅助脚本；
+7. 每次只迁移一组同类脚本，不做全仓机械替换。
+
+PR A 必须新增或固定：
+
+- versioned raw manifest schema；
+- masterdata 原文件 SHA-256（定位后）；
+- manifest 内容的确定性整体哈希；
+- 三域及根 metadata 的数量/容量；
+- `.wav/.png/.json` 等派生文件进入 RAW 的违规报告；
+- 重复相对路径和缺失基线检测；
+- 来源等级字段；
+- 二进制入库政策文档。
+
+完成标准：
+
+- 单一 local 配置可运行选定的全部 RAW 审计器；
+- CLI 参数仍能安全覆盖；
+- fixture 不依赖本机 `E:` 盘；
+- `0ba566f` 的 registry、稳定 PNG 和页面结果不变；
+- Source Gate 在 Linux runner 通过；
+- 不提交 local 配置、RAW、PB 或 `.analysis`。
+
+### 4.2 PR B：RAW multi-part 剧情 gate
+
+建议分支：
+
+```text
+codex/raw-story-aggregate-gate
+```
+
+目标不是重新证明“单文件能播放”，而是从 RAW 确定性构建一个完整 aggregate：
+
+```text
+RAW scenario bundle
+-> 原始 scenario JSON
+-> episode/part 聚合
+-> ScenarioCompiler
+-> authoritative Runtime v2 candidate
+-> candidate/stable 结构比较
+-> 原子发布
+-> 精确回滚
+-> 最终重发布
+```
+
+候选 manifest 至少记录：
+
+```json
+{
+  "collection_id": "1_4_001_01",
+  "raw_scenario_bundles": [],
+  "raw_lipsync_bundles": [],
+  "raw_audio_containers": [],
+  "master_records": [],
+  "compiled_outputs": [],
+  "verification": {}
+}
+```
+
+三个回归集合已在公开 compiled 目录中确认存在：
+
+| 集合 | 当前部件 | 目的 |
+| --- | ---: | --- |
+| `1_4_001_01` | A-J，10 个 | 大型多段、语音、Spine、Runtime v2、文本 identity |
+| `1_3_10011_01` | A-K，11 个 | event master、Jupiter cast、事件视觉、播放入口 |
+| `5_01_101_22` | A、E，2 个 | 小型且部件字母不连续的回归 |
+
+不要假设所有 aggregate 都是连续 A-J。`5_01_101_22` 正是防止这种错误假设的
+样本。
+
+结构验收至少比较：
+
+- source bundle SHA-256；
+- 原始命令数和顺序；
+- part/episode 边界；
+- dialogue/text identity；
+- snapshot 数；
+- cue 数；
+- voice 引用；
+- 背景和模型引用；
+- authoritative schema；
+- candidate/stable diff；
+- 浏览器 route；
+- rollback 前后文件和 registry/manifest hash。
+
+至少一个真正 multi-part collection 必须完成：
+
+```text
+candidate -> publish -> 5174 -> rollback -> exact old hash
+          -> republish -> 5174 -> commit
+```
+
+不要一次迁移 3,398 个逻辑剧情组。
+
+### 4.3 PR C：ACB/AWB 来源 identity
+
+建议分支：
+
+```text
+codex/raw-audio-source-identity
+```
+
+这一阶段先建立可追溯 catalog，不做全量转码：
+
+```text
+scenario/masterdata 引用
+-> ACB container
+-> cue
+-> selector/sequence/waveform
+-> internal/external AWB
+-> 确定源 wave
+-> 浏览器派生音频
+```
+
+先覆盖四个代表样本：
+
+- 一段 story voice；
+- 一个 BGM；
+- 一个 ambient；
+- 一个 SE。
+
+每条都保存 container hash、cue identity、selector/sequence、waveform、
+输出 hash、时长、声道和 5174 播放证据。多个候选时不得默认取第一项；不能
+确定就标为 unresolved，不发布。
+
+WAV 只允许进入忽略的 decode cache，例如：
+
+```text
+web_viewer/.analysis/workspace/audio_decode_cache/
+```
+
+同时修复：
+
+```text
+noAudio=1
+-> 不请求音频
+-> 不创建或解锁 AudioContext
+-> 不调用 decodeAudioData
+-> 控制台没有相关错误
+```
+
+不能只跑 source-only test 就宣称音频完成。必须另外保留真实浏览器、真实媒体
+时长和声道证据。
+
+### 4.4 PR D：三项 event visual 原子批次
+
+建议分支：
+
+```text
+codex/raw-promotion-batch-1
+```
+
+第一项固定为：
+
+```text
+event_story_visual:003hok
+```
+
+它会补齐 `410011 / 10011` 的 Jupiter 三人 cast。其余两项从报告中选择：
+
+- 覆盖不同事件；
+- master evidence 明确；
+- 没有 shared identity 冲突；
+- Sprite crop 正常；
+- 至少一个尺寸或布局显著不同。
+
+“一点点替换”和“三项原子批次”这样兼容：
+
+1. 三个候选逐个提取；
+2. 每个候选逐个在 5174 candidate route 验证；
+3. 每个候选都记录 PathID、尺寸、PNG hash、master 事件；
+4. 只有三者都通过，才调用一次 batch publisher；
+5. 对整批做 rollback；
+6. rollback 必须保留既有 `001tom`、`002sht`；
+7. 再整批发布并逐页验收；
+8. 最后用一个有界 commit 提交三项。
+
+`003hok` 的候选起步命令：
+
+```powershell
+Set-Location E:\Web_build\SideM_Archived\web_viewer
+
+python ..\data_pipeline\extract_raw_character_image_candidate.py `
+  event_story_visual 003hok
+
+npm run verify:raw-character-candidate
+```
+
+候选页面：
+
+```text
+http://127.0.0.1:5174/?view=event_detail&event=410011&raw_character_candidate=event_story_visual%3A003hok&noAudio=1&runtimeDebug=1
+```
+
+候选验收：
+
+- `001tom`、`002sht` 仍走 stable URL；
+- `003hok` 只走 candidate URL；
+- 三个人物完整显示、无错误裁切；
+- tall layout 正常；
+- 精确点击 `003hok` 能进入正确 idol detail；
+- 其他 fallback 不变化；
+- 除已知 `noAudio=1` 缺陷外，没有新增本地错误或 Vue overlay。
+
+不要在只验完 `003hok` 后立刻批量发布另外两个未看过的候选。
+
+## 5. 只读 catalog 工作
+
+PR A 稳定后可以开展两个只读任务：
+
+### 5.1 USM
+
+为 260 个 USM 生成 movie catalog：
+
+```text
+文件名
+-> masterdata 记录
+-> live/card/event/announcement/tutorial/system/unknown
+-> 业务消费者
+-> 置信度
+```
+
+本阶段不批量解码 USM。
+
+### 5.2 一般 `image_*`
+
+为 1,271 个一般 bundle 生成：
+
+```text
+bundle
+Unity 对象类型
+对象名
+PathID
+尺寸
+推测业务域
+masterdata 消费者
+置信度
+```
+
+本阶段不批量导出 PNG；目标是降低 unknown bucket。
+
+## 6. 每次修改后的验证顺序
+
+### 6.1 source-only
+
+根据变更域选择相关命令，最低集合：
+
+```powershell
+Set-Location E:\Web_build\SideM_Archived\web_viewer
+
+npm run verify:raw-character-candidate
+npm run verify:raw-character-promotion
+npm run verify:story-raw-promotion
+npm run verify:story-authoritative-publish
+npm run verify:story-schema
+npm run build
+```
+
+若改到剧情编译、翻译或 Runtime，再加：
+
+```powershell
+npm run verify:compiled-migration
+npm run verify:story-localization
+npm run verify:story-translations
+npm run verify:story-text
+npm run verify:story-audio
+```
+
+`npm run verify:archive` 可能刷新 mounted-data report。运行后必须先看
+`git diff`，不能把其副作用自动并入不相关提交。
+
+### 6.2 5174
+
+每一项 promotion 都要保留三段证据：
+
+1. candidate；
+2. stable publish；
+3. rollback 后旧 stable/fallback；
+4. 最终 republish。
+
+检查内容：
+
+- HTTP 200；
+- 页面标题和目标实体；
+- 图片 natural width/height；
+- 实际 URL 是 candidate、stable 还是 fallback；
+- 人物点击导航；
+- 控制台错误；
+- Vue/框架错误 overlay；
+- publish/rollback 前后 exact SHA-256。
+
+`noAudio=1` 视觉测试不能证明真实音频。真实音频验收另开步骤，并确认 IDM
+不会接管。
+
+### 6.3 Git
+
+每个提交前：
+
+```powershell
+Set-Location E:\Web_build\SideM_Archived
+
+git status -sb
+git diff --stat
+git diff --check
+git diff --cached --stat
+git diff --cached --check
+```
+
+只暂存本批文件。推荐提交拆分：
+
+1. source/config/schema/test；
+2. domain implementation；
+3. 小型稳定资源 + registry；
+4. 审计和交接文档。
+
+如果实现和文档必须同一原子变化，也可以同一提交，但要在 commit message 中
+明确域和批次。
+
+推送前：
+
+```powershell
+git status -sb
+git log --oneline --decorate --max-count=8
+git push origin <当前分支>
+git rev-parse HEAD
+git rev-parse origin/<当前分支>
+```
+
+只有两者相同才能报告“已推送”。
+
+## 7. 明确暂缓
+
+本轮不做：
+
+- 新门户大页面或视觉重构；
+- 全量 3,398 逻辑剧情迁移；
+- 全量音频转码；
+- 一次补完 49 个 event visual；
+- USM 批量解码；
+- 全量一般图片导出；
+- 删除发布者旧整理包；
+- 把全量派生二进制塞入 Git；
+- R2 正式上传或生产部署；
+- 未经确认合并/关闭 Draft PR #2；
+- 未经确认创建或推送基线 tag。
+
+## 8. 新窗口的第一项实际工作
+
+默认从 PR A 的只读盘点开始，不从 `003hok` 开始发布：
+
+1. 核对 `0ba566f`、PR #2、worktree、5174；
+2. 搜索原始 `client_master_data` 的实际保存位置，只读记录 hash；
+3. 列出所有硬编码个人绝对路径；
+4. 设计 `archive_sources` schema 和 fixture；
+5. 先让 `raw_source_manifest.py` 接入配置且保持原 CLI 可用；
+6. 证明新旧 manifest 对 13,000 文件、总字节和分区计数完全一致；
+7. 独立提交并推送；
+8. 再决定进入 multi-part gate，还是先完成其余 RAW 审计器的路径收束。
+
+只有用户明确要求跳过供应链收束、继续视觉内容批次时，才直接转到
+`event_story_visual:003hok`。
+
+## 9. 必读索引
+
+新窗口按顺序阅读：
+
+1. 本文；
+2. `notes/03_audit/RAW_MASTERDATA_FULL_AUDIT_20260726.md`；
+3. `notes/05_exploration/RAW_MASTERDATA_MIGRATION_20260726.md`；
+4. `notes/04_refactor/STORY_POST_MERGE_HANDOFF_20260723.md`；
+5. 与本次修改域直接相关的脚本和 test，不要只读文档；
+6. 若涉及 Runtime，再读
+   `notes/03_audit/STORY_AUTHORITATIVE_V2_SCHEMA_20260723.md` 和
+   `notes/03_audit/STORY_FORMAL_COLLECTION_MIGRATION_20260722.md`。
+
+## 10. 新窗口最终报告模板
+
+每个有界阶段结束时报告：
+
+```text
+基线
+- branch
+- HEAD
+- origin HEAD
+- worktree
+
+本批范围
+- 改了什么
+- 明确没改什么
+
+来源证据
+- RAW 路径与 SHA-256
+- Unity PathID / ACB cue / master table evidence
+- derived 输出 SHA-256
+
+验证
+- source-only 命令
+- build
+- 5174 candidate
+- publish
+- rollback exact hash
+- final republish
+- 真实音频（如适用）
+
+Git
+- commits
+- push 结果
+- PR/CI 状态
+
+未完成
+- 下一项
+- 风险
+- 需要用户决定的边界
+```
+
+不要用“测试都通过”替代具体命令，不要用“页面能打开”替代资源 URL、尺寸、
+点击导航和回滚 hash，也不要用 source-only CI 代替真实媒体验收。
