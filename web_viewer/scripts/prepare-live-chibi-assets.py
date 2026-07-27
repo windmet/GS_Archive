@@ -14,9 +14,10 @@ body-1 song choreography catalog.
 from __future__ import annotations
 
 import argparse
+import csv
+import io
 import json
 import re
-import csv
 import sys
 from pathlib import Path
 
@@ -29,6 +30,7 @@ DATA_PIPELINE_ROOT = PROJECT_ROOT.parent / "data_pipeline"
 sys.path.insert(0, str(DATA_PIPELINE_ROOT))
 
 from archive_paths import add_sources_config_argument, load_archive_sources
+from live_chibi_raw_semantics import load_raw_live_semantics
 
 
 DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi"
@@ -437,7 +439,7 @@ def build_stage_position_map(
 
 
 def read_choreography_scripts(
-    effect_script_root: Path,
+    effect_scripts: dict[str, bytes],
     music_catalog_path: Path,
 ) -> tuple[list[dict], set[int]]:
     music_catalog = json.loads(music_catalog_path.read_text(encoding="utf-8")).get(
@@ -446,7 +448,8 @@ def read_choreography_scripts(
     songs = []
     referenced_motion_ids: set[int] = set()
 
-    for csv_path in sorted(effect_script_root.glob("*.csv")):
+    for asset_name, payload in sorted(effect_scripts.items()):
+        csv_path = Path(f"{asset_name}.csv")
         events = []
         singer_events = []
         position_events = []
@@ -462,7 +465,7 @@ def read_choreography_scripts(
         laserlight_events = []
         motion_group_events = []
         motion_group_changes = []
-        with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
+        with io.StringIO(payload.decode("utf-8-sig"), newline="") as handle:
             for row in csv.reader(handle):
                 if not row:
                     continue
@@ -811,14 +814,15 @@ def read_choreography_scripts(
 
 
 def export_live_lip_sync(
-    live_lip_sync_root: Path,
+    live_lip_sync_sources: dict[str, bytes],
     output_root: Path,
 ) -> dict[str, dict]:
     """Export the original 60 Hz ADX lip channel in a compact web format."""
     catalog = {}
-    for source in sorted(live_lip_sync_root.glob("*/*_for_lipsync.json")):
-        song_code = source.parent.name
-        data = json.loads(source.read_text(encoding="utf-8-sig"))
+    for asset_name, payload in sorted(live_lip_sync_sources.items()):
+        song_code = asset_name.removesuffix("_for_lipsync")
+        source_name = f"{asset_name}.json"
+        data = json.loads(payload.decode("utf-8-sig"))
         scales = data.get("scales")
         if not isinstance(scales, list) or not scales:
             continue
@@ -840,7 +844,7 @@ def export_live_lip_sync(
             "sampleRate": 60,
             "frames": len(values),
             "duration": len(values) * 1000 / 60,
-            "source": source.name,
+            "source": source_name,
         }
     return catalog
 
@@ -848,16 +852,16 @@ def export_live_lip_sync(
 def export_choreography(
     body_types: list[int],
     animation_payloads: dict[tuple[int, int], bytes],
-    effect_script_root: Path,
-    live_lip_sync_root: Path,
+    effect_scripts: dict[str, bytes],
+    live_lip_sync_sources: dict[str, bytes],
     music_catalog_path: Path,
     output_root: Path,
 ) -> dict:
     songs, referenced_motion_ids = read_choreography_scripts(
-        effect_script_root,
+        effect_scripts,
         music_catalog_path,
     )
-    lip_sync_catalog = export_live_lip_sync(live_lip_sync_root, output_root)
+    lip_sync_catalog = export_live_lip_sync(live_lip_sync_sources, output_root)
     for song in songs:
         if song["songCode"] in lip_sync_catalog:
             song["lipSync"] = lip_sync_catalog[song["songCode"]]
@@ -981,12 +985,38 @@ def export_compatibility_motions(
     return catalog
 
 
+def legacy_effect_scripts(root: Path) -> dict[str, bytes]:
+    if not root.is_dir():
+        raise FileNotFoundError(root)
+    return {
+        path.stem: path.read_bytes()
+        for path in sorted(root.glob("*.csv"))
+    }
+
+
+def legacy_live_lip_sync(root: Path) -> dict[str, bytes]:
+    if not root.is_dir():
+        raise FileNotFoundError(root)
+    return {
+        path.stem: path.read_bytes()
+        for path in sorted(root.glob("*/*_for_lipsync.json"))
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     add_sources_config_argument(parser)
     parser.add_argument("--raw-asset-root", type=Path)
-    parser.add_argument("--effect-script-root", type=Path)
-    parser.add_argument("--live-lip-sync-root", type=Path)
+    parser.add_argument(
+        "--effect-script-root",
+        type=Path,
+        help="Explicit legacy regression override; default reads RAW song bundles.",
+    )
+    parser.add_argument(
+        "--live-lip-sync-root",
+        type=Path,
+        help="Explicit legacy regression override; default reads RAW song bundles.",
+    )
     parser.add_argument(
         "--costume-selection",
         type=Path,
@@ -1001,45 +1031,30 @@ def main() -> None:
 
     sources = load_archive_sources(args.sources_config)
     raw_asset_root = (args.raw_asset_root or sources.raw_root / "asset").resolve()
-    if args.effect_script_root:
-        effect_script_root = args.effect_script_root.resolve()
-    elif sources.legacy_root:
-        effect_script_root = (
-            sources.legacy_root
-            / "growing stars"
-            / "assets"
-            / "resources"
-            / "liveeffectscript"
-        ).resolve()
-    else:
-        raise ValueError(
-            "legacy_root or --effect-script-root is required for choreography CSVs"
-        )
-    if args.live_lip_sync_root:
-        live_lip_sync_root = args.live_lip_sync_root.resolve()
-    elif sources.legacy_root:
-        live_lip_sync_root = (
-            sources.legacy_root
-            / "scripts"
-            / "lipsyncdata"
-            / "adxlip_for_live"
-        ).resolve()
-    else:
-        raise ValueError(
-            "legacy_root or --live-lip-sync-root is required for live lip-sync JSON"
-        )
     output_root = args.output_root.resolve()
     costume_selection = args.costume_selection.resolve()
-    for required in (
-        raw_asset_root,
-        effect_script_root,
-        live_lip_sync_root,
-    ):
-        if not required.is_dir():
-            raise FileNotFoundError(required)
+    if not raw_asset_root.is_dir():
+        raise FileNotFoundError(raw_asset_root)
     if not costume_selection.is_file():
         raise FileNotFoundError(costume_selection)
 
+    raw_semantics = load_raw_live_semantics(raw_asset_root)
+    effect_scripts = (
+        legacy_effect_scripts(args.effect_script_root.resolve())
+        if args.effect_script_root
+        else {
+            name: record["payload"]
+            for name, record in raw_semantics["choreography"].items()
+        }
+    )
+    live_lip_sync_sources = (
+        legacy_live_lip_sync(args.live_lip_sync_root.resolve())
+        if args.live_lip_sync_root
+        else {
+            name: record["payload"]
+            for name, record in raw_semantics["lipSync"].items()
+        }
+    )
     costume_models = selected_costume_models(costume_selection)
     body_type_map = load_live_character_body_types(raw_asset_root)
     body_types = sorted(set(body_type_map.values()))
@@ -1072,8 +1087,8 @@ def main() -> None:
     choreography = export_choreography(
         body_types,
         animation_payloads,
-        effect_script_root,
-        live_lip_sync_root,
+        effect_scripts,
+        live_lip_sync_sources,
         MUSIC_CATALOG_PATH,
         output_root,
     )

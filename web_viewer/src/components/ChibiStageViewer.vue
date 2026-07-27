@@ -48,6 +48,9 @@
     :data-stage-background-ready="stageBackgroundReady"
     :data-stage-background-song="stageBackgroundSongId"
     :data-current-lyric="currentLyric?.text || ''"
+    :data-lip-sync-ready="lipSyncReady"
+    :data-lip-sync-file="selectedSong?.lipSync?.file || ''"
+    :data-lip-sync-frames="lipSyncFrameCount"
     :data-screen-color="currentWholeScreenColor.color"
     :data-screen-color-alpha="currentWholeScreenColor.alpha.toFixed(4)"
     :data-character-light="currentCharacterLight.color"
@@ -360,6 +363,8 @@ const emit = defineEmits(['back', 'open-lab'])
 const canvasRef = ref(null)
 const manifest = ref(null)
 const choreography = ref(null)
+const lipSyncReady = ref(false)
+const lipSyncFrameCount = ref(0)
 const musicIndex = ref(null)
 const backmonitorIndex = ref(null)
 const imageLayerIndex = ref(null)
@@ -2319,12 +2324,16 @@ async function loadSongLipSync() {
   const song = selectedSong.value
   const sequence = ++lipSyncSequence
   lipSyncCurve = null
+  lipSyncReady.value = false
+  lipSyncFrameCount.value = 0
   applyCurrentLipSync()
   if (!song?.lipSync?.file) return
   try {
     const curve = await fetchLiveChibiLipSync(song.lipSync.file)
     if (sequence !== lipSyncSequence || selectedSong.value?.id !== song.id) return
     lipSyncCurve = curve
+    lipSyncReady.value = true
+    lipSyncFrameCount.value = Array.isArray(curve?.values) ? curve.values.length : 0
     applyCurrentLipSync()
   } catch (error) {
     if (sequence === lipSyncSequence) console.warn('[ChibiStage] lip-sync load failed', error)
