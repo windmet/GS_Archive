@@ -172,6 +172,46 @@ example 均为 `null`，没有个人可执行文件路径。所有原显式 CLI 
 无错误 overlay。浏览器客户端阻止了把 M4A 作为顶层页面直接打开，因此媒体
 HTTP 证据与页面交互证据分开记录。本批没有 publish，也没有修改稳定音频 URL。
 
+### 0.4 RAW story 来源契约批次已接入
+
+提交 `33d84b7` 已把以下三个 story 工具接入 `archive_paths.py`：
+
+```text
+audit_raw_story_coverage.py
+audit_raw_story_voice_gaps.py
+extract_raw_story_candidate.py
+```
+
+默认来源现在是：
+
+- configured RAW；
+- `.analysis/raw-migration/source/files.jsonl`；
+- `.analysis/raw-migration/audio/cue-index/cue_index.json`；
+- `public/data/compiled`；
+- `public/assets/voice`；
+- `.analysis/raw-migration/story` 或 scenario-specific candidate 目录。
+
+旧整理 `story_viewer/voice_ogg` 不进入默认来源链，只保留显式
+`--legacy-voice-root` parity check。真实回归结果：
+
+- coverage size 4,268,890 bytes，SHA-256
+  `347d92db9aadde5205413873e8c023b05234fadee0550256147a64d006c9582b`，
+  与改前逐字节相同；
+- 1,435 bundles、4,942 TextAssets、3,398/3,398 groups、70,652 steps；
+- public identity 覆盖 4,939/4,939 valid RAW parts；
+- voice 26,890/26,902 resolved，3,234/3,234 banks 有 lipsync；
+- 12 unresolved 在不读旧包和显式读取旧包时都为
+  `raw_authored_dangling`；
+- standalone candidate `1_x_001tom_2_1_2_001_12`：20 steps、1 episode、
+  3 ACB、3 lipsync、15/15 voices；
+- candidate 与当前 public story 忽略 provenance 后语义相同，零差异；
+- RAW 最终仍为 13,000 files，WAV 0。
+
+5174 candidate JSON 为 HTTP 200。实际 player 显示 EP01、两个 Spine
+（`002sht`、`003hok`）和日文台词；点击 `次へ` 后 3/18 前进到 4/18，
+Shota 台词切换到 Hokuto 台词。无 blank page、无 framework overlay；
+仍只有两条既有 Pixi Spine warning。本批没有 publish，也没有修改稳定剧情。
+
 ## 1. 当前已确认的事实
 
 ### 1.1 RAW 的真实边界和数量
@@ -874,15 +914,15 @@ git rev-parse origin/<当前分支>
 
 ## 8. 新窗口的第一项实际工作
 
-PR A 的配置核心、RAW manifest、card/background/character 六个工具以及
-RAW audio 六个工具已经接入。新窗口默认继续 story 工具与仍硬编码旧整理包
-路径的辅助脚本，不从 `003hok` 开始发布：
+PR A 的配置核心、RAW manifest、card/background/character 六个工具、
+RAW audio 六个工具以及 RAW story 三个工具已经接入。新窗口默认继续仍硬编码
+旧整理包路径的 live/chibi 辅助脚本，不从 `003hok` 开始发布：
 
 1. 核对 `0ba566f`、PR #2、worktree、5174；
 2. 复核 XOR source 与 decoded PB 的两个 SHA-256 和逐字节解码一致性；
 3. 复核 decoded PB 的 47,204 records 和 158 table IDs；
 4. 列出所有硬编码个人绝对路径；
-5. 下一批接入 story 的 audit、index 和 candidate 工具；
+5. 下一批盘点并收束 live/chibi 辅助脚本的旧整理包路径；
 6. 每批运行 fixture 和原域 audit，比较结果；
 7. 对其余 masterdata 专项工具继续区分 XOR source 与 decoded PB；
 8. 最后单独处理仍硬编码旧整理包路径的 live/chibi 辅助脚本；

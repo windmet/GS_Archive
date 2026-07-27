@@ -318,6 +318,13 @@ The isolated `1_x_001tom_2_1_2_001_12` candidate proves the standalone case:
 20 steps, three voice banks, three lipsync banks, 15/15 voice references, and
 real browser playback on 5174.
 
+As of commit `33d84b7`, the full coverage audit, voice-gap classifier, and
+isolated candidate extractor resolve their default RAW, source manifest, cue
+index, public compiled/voice, and inventory roots through `archive_paths.py`.
+The rebuilt coverage report is byte-for-byte identical to the earlier report.
+The organizer-era voice directory remains an explicit optional comparison
+input and is not consulted by default.
+
 ### Costume, Spine, idol-setting, and character-image batch
 
 The new repeatable character audit scans every relevant Unity object instead

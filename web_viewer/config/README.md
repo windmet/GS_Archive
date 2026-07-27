@@ -75,3 +75,20 @@ python ..\data_pipeline\extract_raw_acb_sequence_candidate.py `
 source. When passing the decoded PB explicitly, also pass
 `--master-data-state decoded`. Candidate outputs remain ignored under
 `.analysis/raw-migration/audio`; these commands do not publish stable assets.
+
+The RAW story coverage, voice-gap audit, and bounded candidate extractor also
+use the shared contract:
+
+```powershell
+python ..\data_pipeline\audit_raw_story_coverage.py
+python ..\data_pipeline\audit_raw_story_voice_gaps.py
+python ..\data_pipeline\extract_raw_story_candidate.py `
+  --scenario-container ..\RAW\asset\scenario_1_2_001_12.unity3d `
+  --scenario-id 1_x_001tom_2_1_2_001_12
+```
+
+The coverage audit requires the default source manifest so every bundle record
+retains its RAW SHA-256. The candidate extractor prefers the complete audio cue
+index and falls back to configured `vgmstream` only when the default index does
+not exist. An organizer-era voice directory is deliberately not a default
+source; pass `--legacy-voice-root` explicitly only for parity evidence.

@@ -1106,6 +1106,44 @@ The ignored evidence reports are:
 - `web_viewer/.analysis/raw-migration/story/coverage.json`;
 - `web_viewer/.analysis/raw-migration/story/voice_gap_audit.json`.
 
+### 2026-07-27 story source-contract regression
+
+Commit `33d84b7` moved the full coverage audit, voice-gap audit, and bounded
+story candidate extractor onto `archive_paths.py`. Explicit CLI paths remain
+final overrides. The organizer-era `voice_ogg` directory remains an optional
+explicit parity input and is not part of the default authority chain.
+
+The no-path coverage output is byte-for-byte identical to the prior report:
+
+- size: 4,268,890 bytes;
+- SHA-256:
+  `347d92db9aadde5205413873e8c023b05234fadee0550256147a64d006c9582b`;
+- 1,435 scenario bundles and 4,942 TextAssets;
+- 3,398/3,398 logical groups compiled;
+- 70,652 steps;
+- 4,939/4,939 valid RAW parts represented in public identities;
+- 26,890/26,902 voice references resolved;
+- all 3,234 referenced voice banks have same-stem lipsync bundles.
+
+The voice-gap audit classified the same twelve references as
+`raw_authored_dangling` both without organizer data and with
+`story_viewer/voice_ogg` passed explicitly. This proves the legacy package does
+not fill or alter those source gaps.
+
+The standalone `1_x_001tom_2_1_2_001_12` candidate used only the explicit
+aggregate scenario bundle plus configured defaults for RAW, output, and the
+complete cue index. It recovered one scenario TextAsset, three voice ACBs,
+three lipsync bundles, 15/15 voices, 20 steps, and one episode. The tracked
+candidate verifier reports semantic equality with the current public story
+after provenance-only fields are ignored, with zero differences.
+
+On port 5174, the candidate JSON returned HTTP 200. The actual player route
+rendered EP01 with two Spine instances (`002sht`, `003hok`), Japanese dialogue,
+and `noAudio=1`; the `次へ` interaction advanced 3/18 to 4/18 and changed the
+speaker from Shota to Hokuto. There was no blank page or framework error
+overlay. Two pre-existing Pixi Spine warnings remained. No candidate was
+published and no stable story file changed.
+
 ADV background evidence:
 
 - 394 RAW ADV background bundles;
@@ -1486,6 +1524,12 @@ python ..\data_pipeline\raw_source_manifest.py `
   --output .analysis\raw-migration\source\files.jsonl `
   --summary .analysis\raw-migration\source\summary.json
 
+# Current no-path story audits. Requires the ignored local source config and
+# the source/audio inventories generated above.
+python ..\data_pipeline\audit_raw_story_coverage.py
+python ..\data_pipeline\audit_raw_story_voice_gaps.py
+
+# Explicit paths below remain supported as override/regression forms.
 python ..\data_pipeline\audit_raw_story_coverage.py `
   --raw-root ..\RAW `
   --cue-index .analysis\raw-migration\audio\cue-index\cue_index.json `
@@ -1647,6 +1691,13 @@ python ..\data_pipeline\audit_raw_story_voice_gaps.py `
   --legacy-voice-root E:\BaiduNetdiskDownload\SideM\story_viewer\voice_ogg `
   --output .analysis\raw-migration\story\voice_gap_audit.json
 
+# Current bounded candidate command. Aggregate bundles still require an
+# explicit container because semantic identity is not the physical filename.
+python ..\data_pipeline\extract_raw_story_candidate.py `
+  --scenario-container ..\RAW\asset\scenario_1_2_001_12.unity3d `
+  --scenario-id 1_x_001tom_2_1_2_001_12
+
+# Fully explicit override form.
 python ..\data_pipeline\extract_raw_story_candidate.py `
   --raw-root ..\RAW `
   --scenario-container ..\RAW\asset\scenario_1_2_001_12.unity3d `
