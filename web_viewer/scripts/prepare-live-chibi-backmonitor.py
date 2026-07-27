@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import importlib.util
+import io
 import json
 import os
 import shutil
@@ -20,25 +21,35 @@ DATA_PIPELINE_ROOT = PROJECT_ROOT.parent / "data_pipeline"
 sys.path.insert(0, str(DATA_PIPELINE_ROOT))
 
 from archive_paths import add_sources_config_argument, load_archive_sources
+from live_chibi_raw_semantics import load_raw_live_semantics
 
 
 DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi" / "backmonitor"
 DEFAULT_CRI_KEY = "0002B875BC731A85"
 
 
-def referenced_movies(script_root: Path) -> tuple[set[str], set[str]]:
+def referenced_movies(effect_scripts: dict[str, bytes]) -> tuple[set[str], set[str]]:
     movies: set[str] = set()
     transitions: set[str] = set()
-    for csv_path in sorted(script_root.glob("*.csv")):
-        with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
-            for row in csv.reader(handle):
-                if not row or row[0] != "Backmonitor":
-                    continue
-                if len(row) > 2 and row[2].strip():
-                    movies.add(row[2].strip())
-                if len(row) > 3 and row[3].strip():
-                    transitions.add(row[3].strip())
+    for payload in effect_scripts.values():
+        text = payload.decode("utf-8-sig", errors="surrogateescape")
+        for row in csv.reader(io.StringIO(text, newline="")):
+            if not row or row[0] != "Backmonitor":
+                continue
+            if len(row) > 2 and row[2].strip():
+                movies.add(row[2].strip())
+            if len(row) > 3 and row[3].strip():
+                transitions.add(row[3].strip())
     return movies, transitions
+
+
+def legacy_effect_scripts(root: Path) -> dict[str, bytes]:
+    if not root.is_dir():
+        raise FileNotFoundError(f"Missing liveeffectscript root: {root}")
+    return {
+        path.stem: path.read_bytes()
+        for path in sorted(root.glob("*.csv"))
+    }
 
 
 def probe_video(ffprobe: str, path: Path) -> dict:
@@ -204,7 +215,11 @@ def demuxed_stream(root: Path, stream_type: str) -> Path:
 def main() -> None:
     parser = argparse.ArgumentParser()
     add_sources_config_argument(parser)
-    parser.add_argument("--script-root", type=Path)
+    parser.add_argument(
+        "--script-root",
+        type=Path,
+        help="Explicit legacy regression override; default reads RAW song bundles.",
+    )
     parser.add_argument("--movie-root", type=Path)
     parser.add_argument("--ffmpeg")
     parser.add_argument("--ffprobe")
@@ -225,19 +240,15 @@ def main() -> None:
 
     sources = load_archive_sources(args.sources_config)
     if args.script_root:
-        script_root = args.script_root.resolve()
-    elif sources.legacy_root:
-        script_root = (
-            sources.legacy_root
-            / "growing stars"
-            / "assets"
-            / "resources"
-            / "liveeffectscript"
-        ).resolve()
+        effect_scripts = legacy_effect_scripts(args.script_root.resolve())
     else:
-        raise ValueError(
-            "legacy_root or --script-root is required for liveeffectscript CSVs"
-        )
+        raw_asset_root = (sources.raw_root / "asset").resolve()
+        effect_scripts = {
+            name: record["payload"]
+            for name, record in load_raw_live_semantics(raw_asset_root)[
+                "choreography"
+            ].items()
+        }
     movie_root = (args.movie_root or sources.raw_root / "movie").resolve()
     output_root = args.output_root.resolve()
 
@@ -253,8 +264,6 @@ def main() -> None:
     )
     if not ffmpeg or not ffprobe:
         raise FileNotFoundError("FFmpeg and FFprobe must be available on PATH")
-    if not script_root.is_dir():
-        raise FileNotFoundError(f"Missing liveeffectscript root: {script_root}")
     if not movie_root.is_dir():
         raise FileNotFoundError(f"Missing SideM movie root: {movie_root}")
     wannacri_root = locate_wannacri(args.wannacri_root, sources.wannacri_root)
@@ -264,7 +273,7 @@ def main() -> None:
             "directory and configure wannacri_root or pass --wannacri-root."
         )
 
-    movies, transitions = referenced_movies(script_root)
+    movies, transitions = referenced_movies(effect_scripts)
     selected = set(args.asset)
     unknown = sorted(selected - movies - transitions)
     if unknown:
