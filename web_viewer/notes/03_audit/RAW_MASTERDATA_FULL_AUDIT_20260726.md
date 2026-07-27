@@ -199,7 +199,7 @@ with its current archive consumer:
 
 | Category | Paths | Identity coverage | Current archive behavior |
 | --- | ---: | --- | --- |
-| birthday visual | 49 | all 49 master idols + `101ken`; `012yus`/`013kys` share one visual | 42 idol mappings use 41 stable RAW-derived URLs; 8 physical visuals remain on fallback |
+| birthday visual | 49 | all 49 master idols + `101ken`; `012yus`/`013kys` share one visual | 47 idol mappings use 46 stable RAW-derived URLs; 3 physical visuals remain on fallback |
 | event-story visual | 51 | all 49 master idols + `101ken`/`102sha` | event detail uses general character icons |
 | Mobile bust-up | 51 | all 49 master idols + `101ken`/`102sha` | Mobile archive uses icon + room background |
 | name plate | 49 | all 49 master idols | ADV UI renders speaker text with CSS |
@@ -682,6 +682,44 @@ evidence:
 
 `web_viewer/.analysis/raw-migration/character-image-candidate/birthday_visual/batch-038tak-039mcr-040ren-041ryo-042dai-backup-20260727-final/`
 
+### Eighth five-image bounded birthday batch
+
+The next master-order batch promotes `043kaz`, `044ame`, `045sor`, `046chr`,
+and `047shu`. Each candidate resolved to one exact Sprite identity, matched the
+tracked RAW source manifest, had no public exact-basename match, and retained
+four compiled birthday-master references.
+
+| idol | RAW SHA-256 | PathID | output | PNG SHA-256 | master rows |
+| --- | --- | --- | --- | --- | ---: |
+| `043kaz` | `2f83fa76d9fe3d6d5bed4cf6809492a430570b3b6d6b8d2fb81682c2a30412dc` | `-190198550445127689` | `844×849`, 315,757 bytes | `170f3b5e20e5fa0abc1dbcbb7a87012e4605f73109209a910cbe082332fb20a0` | 4 |
+| `044ame` | `84c5604d9899c79bba54c9902a5da6c51acb052f79b98c5bc674fe6fe1d8c313` | `-7434065863575947792` | `928×928`, 331,368 bytes | `6a1bf2da0cbc640ca210dcbb3c5d2f604a48b9cb4a8064d50ba0f3fb7f78d625` | 4 |
+| `045sor` | `dc8c5cb4ce2f206a3c30bca031b858acdc6a0cee0537b32196581458fdd14d2c` | `-7090070828571097385` | `622×833`, 301,881 bytes | `21d894ebb4bf2ef90e8e98cfa5d9fcf5729360d9b92edf5829e9eeb2742fd853` | 4 |
+| `046chr` | `1da1781912be848aaee0fcada119a2af8c49f98c9ae06bf27f36644710e03442` | `-388944988657992739` | `857×879`, 403,883 bytes | `02b872ff13cdbce4e9ea373bf24f73e7a32977b31439494c965c82e925bc32cd` | 4 |
+| `047shu` | `0bd0525e9918a00eeb775bc0ccc11da4ea41dd579e4001a7327969805694c099` | `-3944623707261270729` | `801×847`, 340,905 bytes | `9a6d1e74a3c1bc8ab47cdaf85b68e7196425d4bf7e25ece81b20d35b43475303` | 4 |
+
+All five candidate routes passed exact URL, title, page-identity, non-empty DOM,
+framework-overlay, and natural-dimension checks. The `043kaz` interaction
+entered `view=player`, rendered one stage canvas, and exposed `前へ`, `AUTO`,
+and `SKIP` controls. The real publish started from the forty-two-mapping,
+forty-one-URL registry SHA-256
+`dca942c5a9d6dfc741012609fd612fbf2b3e54bfbcad6227f4bf87cb9765310c`.
+All five stable routes first resolved without candidate query parameters.
+Explicit whole-batch rollback restored that exact hash, removed all five PNGs,
+returned every route to its `148×148` idol-icon fallback, and preserved
+`042dai` at `916×882`. Final republish leaves forty-seven idol mappings backed
+by forty-six physical URLs; registry SHA-256 is
+`521ef1e578675c149a5b9c54884546ff30cf645c4826791cfaeec25ecb1c41b1`.
+
+Final stable-page checks again covered all five routes. Visual inspection
+covered the widest output (`044ame`, 928 pixels) and narrowest (`045sor`, 622
+pixels); both fit the existing detail panel. Console inspection retained the
+pre-existing `noAudio=1` `useVoicePlayer` null-`AudioContext` decode error for
+`2_2_001_01_00_01.m4a`. The `043kaz` player run also emitted pre-existing Pixi
+Spine update/tint warnings, while browser-control Statsig queue warnings were
+external to local 5174. Final ignored rollback evidence:
+
+`web_viewer/.analysis/raw-migration/character-image-candidate/birthday_visual/batch-043kaz-044ame-045sor-046chr-047shu-backup-20260727-final/`
+
 The ignored report records each contributing bundle's path, size, and SHA-256
 from the established 13,000-file source manifest:
 
@@ -1117,10 +1155,9 @@ because this story has no translation overlay.
 1. Extend the proven single-story gate to multi-part aggregate collections,
    then promote another small representative batch rather than all 3,398 at
    once.
-2. Keep the other 8 physical birthday visuals isolated; they cover 7
-   remaining master idols plus `101ken`. Promote another small sample only
-   after its own 5174 and rollback evidence, and keep the NPC on a separate
-   identity gate.
+2. Promote the two remaining master-idol birthday visuals (`048mom` and
+   `049eis`) as one bounded batch after its own 5174 and rollback evidence.
+   Keep the final `101ken` NPC visual on a separate identity gate.
 3. Map all 260 USM files to live-stage, card, event, and announcement semantics.
 4. Audit the remaining 1,271 general `image_*` bundles by Unity object name and
    master-data consumer.
@@ -1239,6 +1276,13 @@ npm run character:promotion-publish-batch -- `
   --assets-root=public/assets `
   --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-038tak-039mcr-040ren-041ryo-042dai-backup-20260727-final `
   --confirm=birthday_visual:038tak+039mcr+040ren+041ryo+042dai
+
+npm run character:promotion-publish-batch -- `
+  --candidate-dirs=.analysis/raw-migration/character-image-candidate/birthday_visual/043kaz,.analysis/raw-migration/character-image-candidate/birthday_visual/044ame,.analysis/raw-migration/character-image-candidate/birthday_visual/045sor,.analysis/raw-migration/character-image-candidate/birthday_visual/046chr,.analysis/raw-migration/character-image-candidate/birthday_visual/047shu `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-043kaz-044ame-045sor-046chr-047shu-backup-20260727-final `
+  --confirm=birthday_visual:043kaz+044ame+045sor+046chr+047shu
 
 npm run character:promotion-rollback -- `
   --registry=public/data/assets/raw_character_image_promotions.json `
