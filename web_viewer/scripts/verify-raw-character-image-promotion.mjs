@@ -1063,6 +1063,24 @@ for (const [idolCode, expected] of Object.entries(committedEighthFiveItemEvidenc
   assert.equal(entry.unity_object.path_id, expected.pathId)
   assert.equal(entry.output.sha256, expected.sha256)
 }
+const committedFinalMasterIdolEvidence = {
+  '048mom': {
+    pathId: '865479516661722991',
+    sha256: 'dc43cade4dba6ffd7fea1ba8c92ba36ea0d080eb63ed2ad4377efa9da5f721a0',
+  },
+  '049eis': {
+    pathId: '-5212614188762763632',
+    sha256: '6a377a43f33c8f02d1408458d1fd40a340e76b2dbed49ab640d3c5bb59214ff5',
+  },
+}
+for (const [idolCode, expected] of Object.entries(committedFinalMasterIdolEvidence)) {
+  const entry = sourceRegistry.entries.find(candidate =>
+    candidate.kind === 'birthday_visual' && candidate.idol_code === idolCode,
+  )
+  assert.ok(entry)
+  assert.equal(entry.unity_object.path_id, expected.pathId)
+  assert.equal(entry.output.sha256, expected.sha256)
+}
 
 console.log('RAW character-image promotion verification passed')
 console.log('  exact RAW and PNG evidence, stable registry, explicit confirmation and path bounds covered')

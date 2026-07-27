@@ -767,6 +767,36 @@ Final rollback evidence:
 
 `.analysis/raw-migration/character-image-candidate/birthday_visual/batch-043kaz-044ame-045sor-046chr-047shu-backup-20260727-final/`
 
+### Final two-idol birthday batch
+
+`048mom` and `049eis` complete the master-idol portion of the birthday domain:
+
+- `048mom`: RAW
+  `548ad03cb2f7110b1d88349a13486e5ab4a3af37af8a175c91875ad0a2ed589d`,
+  PathID `865479516661722991`, PNG `720×866`,
+  `dc43cade4dba6ffd7fea1ba8c92ba36ea0d080eb63ed2ad4377efa9da5f721a0`;
+- `049eis`: RAW
+  `a1f12c26054433871acb80868d763a941af1550807426c6f858aa91cc61cb727`,
+  PathID `-5212614188762763632`, PNG `968×872`,
+  `6a377a43f33c8f02d1408458d1fd40a340e76b2dbed49ab640d3c5bb59214ff5`.
+
+The real publish/rollback/final-republish cycle restored the exact
+`521ef1e578675c149a5b9c54884546ff30cf645c4826791cfaeec25ecb1c41b1`
+baseline during rollback, removed both PNGs, returned both routes to their
+`148×148` icon fallbacks, and preserved `047shu` at `801×847`. Final state is
+all forty-nine master-idol mappings backed by forty-eight physical URLs,
+registry SHA-256
+`7e6529c7ac74f658f602b7aaf7e70c1d751e45b7e5c973769cf82a4b3cd51a0c`.
+Both candidate and stable routes passed URL, title, page-identity, non-empty
+DOM, framework-overlay, natural-dimension, and screenshot checks. The
+`048mom` player interaction rendered a canvas and exposed `前へ`, `AUTO`, and
+`SKIP`. The known `noAudio=1` null-context decode error and player-only Pixi
+Spine update/tint warnings remain unrelated to these PNGs.
+
+Final rollback evidence:
+
+`.analysis/raw-migration/character-image-candidate/birthday_visual/batch-048mom-049eis-backup-20260727-final/`
+
 ### Standalone promotion gate and first stable replacement
 
 The generic strict collection publisher requires an aggregate plus episode
@@ -919,6 +949,13 @@ npm run character:promotion-publish-batch -- `
   --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-043kaz-044ame-045sor-046chr-047shu-backup-20260727-final `
   --confirm=birthday_visual:043kaz+044ame+045sor+046chr+047shu
 
+npm run character:promotion-publish-batch -- `
+  --candidate-dirs=.analysis/raw-migration/character-image-candidate/birthday_visual/048mom,.analysis/raw-migration/character-image-candidate/birthday_visual/049eis `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-048mom-049eis-backup-20260727-final `
+  --confirm=birthday_visual:048mom+049eis
+
 python ..\data_pipeline\extract_raw_audio_candidate.py `
   --raw-root ..\RAW --kind bgm --container usual_day.awb --cue usual_day `
   --selection 1 --output-root .analysis\raw-migration\audio `
@@ -961,9 +998,7 @@ assets.
 
 1. Extend the proven single-story promotion gate to multi-part aggregate
    collections and promote another small representative batch.
-2. Promote `048mom` and `049eis` as the final master-idol birthday batch after
-   its own 5174 and rollback evidence. Keep `101ken` as a separate NPC identity
-   scope.
+2. Audit `101ken` and promote it only through a separate NPC identity gate.
 3. Map all 260 RAW USM files to master-data consumers.
 4. Continue promoting verified domains one reversible batch at a time, with
    5174 acceptance and rollback evidence before each stable-path replacement.

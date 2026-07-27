@@ -199,7 +199,7 @@ with its current archive consumer:
 
 | Category | Paths | Identity coverage | Current archive behavior |
 | --- | ---: | --- | --- |
-| birthday visual | 49 | all 49 master idols + `101ken`; `012yus`/`013kys` share one visual | 47 idol mappings use 46 stable RAW-derived URLs; 3 physical visuals remain on fallback |
+| birthday visual | 49 | all 49 master idols + `101ken`; `012yus`/`013kys` share one visual | all 49 master idols use 48 stable RAW-derived URLs; only the `101ken` NPC visual remains on fallback |
 | event-story visual | 51 | all 49 master idols + `101ken`/`102sha` | event detail uses general character icons |
 | Mobile bust-up | 51 | all 49 master idols + `101ken`/`102sha` | Mobile archive uses icon + room background |
 | name plate | 49 | all 49 master idols | ADV UI renders speaker text with CSS |
@@ -720,6 +720,40 @@ external to local 5174. Final ignored rollback evidence:
 
 `web_viewer/.analysis/raw-migration/character-image-candidate/birthday_visual/batch-043kaz-044ame-045sor-046chr-047shu-backup-20260727-final/`
 
+### Final master-idol birthday batch
+
+`048mom` and `049eis` complete the 49-idol birthday-visual mapping. Both
+candidates matched the tracked RAW source manifest, resolved to one exact
+single-idol Sprite, had no public exact-basename match, and retained three
+compiled birthday-master references.
+
+| idol | RAW SHA-256 | PathID | output | PNG SHA-256 | master rows |
+| --- | --- | --- | --- | --- | ---: |
+| `048mom` | `548ad03cb2f7110b1d88349a13486e5ab4a3af37af8a175c91875ad0a2ed589d` | `865479516661722991` | `720×866`, 361,122 bytes | `dc43cade4dba6ffd7fea1ba8c92ba36ea0d080eb63ed2ad4377efa9da5f721a0` | 3 |
+| `049eis` | `a1f12c26054433871acb80868d763a941af1550807426c6f858aa91cc61cb727` | `-5212614188762763632` | `968×872`, 312,538 bytes | `6a377a43f33c8f02d1408458d1fd40a340e76b2dbed49ab640d3c5bb59214ff5` | 3 |
+
+Both candidate routes passed exact URL, title, page-identity, non-empty DOM,
+framework-overlay, natural-dimension, and screenshot checks. The `048mom`
+interaction entered `view=player`, rendered one stage canvas, and exposed
+`前へ`, `AUTO`, and `SKIP`. The real publish started from the
+forty-seven-mapping, forty-six-URL registry SHA-256
+`521ef1e578675c149a5b9c54884546ff30cf645c4826791cfaeec25ecb1c41b1`.
+Both stable routes first resolved without candidate query parameters. Explicit
+whole-batch rollback restored that exact hash, removed both PNGs, returned both
+routes to their `148×148` idol-icon fallbacks, and preserved `047shu` at
+`801×847`. Final republish leaves all forty-nine master idols mapped to
+forty-eight physical URLs; registry SHA-256 is
+`7e6529c7ac74f658f602b7aaf7e70c1d751e45b7e5c973769cf82a4b3cd51a0c`.
+
+Final stable-page checks again covered both routes. The `049eis` 968-pixel
+output and `048mom` 720-pixel output both fit the existing detail panel.
+Console inspection retained the pre-existing `noAudio=1` `useVoicePlayer`
+null-`AudioContext` decode error for `2_2_001_01_00_01.m4a`. The player run
+also retained the previously observed Pixi Spine update/tint warnings. Final
+ignored rollback evidence:
+
+`web_viewer/.analysis/raw-migration/character-image-candidate/birthday_visual/batch-048mom-049eis-backup-20260727-final/`
+
 The ignored report records each contributing bundle's path, size, and SHA-256
 from the established 13,000-file source manifest:
 
@@ -1155,9 +1189,8 @@ because this story has no translation overlay.
 1. Extend the proven single-story gate to multi-part aggregate collections,
    then promote another small representative batch rather than all 3,398 at
    once.
-2. Promote the two remaining master-idol birthday visuals (`048mom` and
-   `049eis`) as one bounded batch after its own 5174 and rollback evidence.
-   Keep the final `101ken` NPC visual on a separate identity gate.
+2. Audit and promote the final `101ken` birthday visual only through a separate
+   NPC identity gate; do not represent it as one of the 49 master idols.
 3. Map all 260 USM files to live-stage, card, event, and announcement semantics.
 4. Audit the remaining 1,271 general `image_*` bundles by Unity object name and
    master-data consumer.
@@ -1283,6 +1316,13 @@ npm run character:promotion-publish-batch -- `
   --assets-root=public/assets `
   --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-043kaz-044ame-045sor-046chr-047shu-backup-20260727-final `
   --confirm=birthday_visual:043kaz+044ame+045sor+046chr+047shu
+
+npm run character:promotion-publish-batch -- `
+  --candidate-dirs=.analysis/raw-migration/character-image-candidate/birthday_visual/048mom,.analysis/raw-migration/character-image-candidate/birthday_visual/049eis `
+  --registry=public/data/assets/raw_character_image_promotions.json `
+  --assets-root=public/assets `
+  --backup-dir=.analysis/raw-migration/character-image-candidate/birthday_visual/batch-048mom-049eis-backup-20260727-final `
+  --confirm=birthday_visual:048mom+049eis
 
 npm run character:promotion-rollback -- `
   --registry=public/data/assets/raw_character_image_promotions.json `
