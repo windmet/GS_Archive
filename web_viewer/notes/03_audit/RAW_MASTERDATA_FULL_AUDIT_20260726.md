@@ -1129,6 +1129,52 @@ The resumable audio index covers:
 | indexed streams | 33,651 |
 | unique cue aliases | 33,754 |
 
+### 2026-07-27 source-contract regression
+
+Commit `8f94e64` moved the six audio audit/index/candidate tools onto the shared
+archive source contract. Explicit CLI paths remain final overrides. The ignored
+local configuration now supplies RAW, published catalog/compiled data,
+inventory output, `vgmstream`, `ffmpeg`, and `ffprobe` paths; the committed
+example contains no personal executable path.
+
+The no-path real-data regression produced:
+
+- RAW audio: 4,098 files, 4,055 ACB and 43 AWB;
+- songs: 61/61 `song3_<code>` container matches;
+- compiled corpus: 10,329 JSON files;
+- compiled BGM: 105/105 direct container matches;
+- compiled ambient: 83/83 direct container matches;
+- story SE: 435/435 classified, including 433 waveform cues and two
+  control-only cues;
+- indexed banks: 4,055, with zero banks re-indexed because the existing
+  per-bank cache was reusable;
+- 13 ambiguous SE aliases: 12 byte-equivalent decodes and one authored
+  two-waveform sequence (`waribashi`);
+- table 133: 56 rows; all 92 catalog BGM classified; zero unresolved resources
+  and zero structural anomalies.
+
+Both masterdata input states were exercised. The configured original
+`client_master_data` used `--master-data-state xor`; the decoded PB used
+`--master-data-state decoded`. They yielded the same table-133 counts,
+classification counts, selected-switch count, unresolved set, and anomaly set.
+
+The bounded candidate regression also corrected an important association
+assumption: `usual_day.acb` contains cue-sheet metadata, while the cue index
+selects `usual_day.awb` as the decodable source. The generated candidate is
+80.512 seconds, stereo AAC/M4A, output SHA-256
+`04c03f225747e651fd6554ad44f898241f6ca1dd43027c65f0c19439c584cbc1`.
+The reconstructed `waribashi` candidate remains 1.040 seconds with SHA-256
+`5ac8038ad35e7afd0ecf632301661c128ebf3f4d466fb5508d03dbd3942cc521`.
+
+On port 5174, both M4A routes and both candidate-manifest routes returned HTTP
+200 with `audio/mp4` and `application/json; charset=utf-8` respectively. The
+home page rendered normally and its event carousel advanced from 1/36 to 2/36.
+Two pre-existing Pixi Spine warnings were observed; no framework error overlay
+or blank page was present. Direct top-level navigation to the M4A was blocked
+by the browser client, so HTTP response evidence and rendered-page interaction
+evidence are recorded separately. This batch did not publish or replace any
+stable audio URL.
+
 All 43 AWBs have a same-stem ACB. They are original external-wave-bank pairs,
 not organizer derivatives. `usual_day.acb`, for example, contains the cue-sheet
 metadata while the decodable HCA stream and loop points are in
@@ -1621,6 +1667,15 @@ npm run story:raw-promotion-publish -- `
   --backup-dir=.analysis/raw-migration/story-promotion/1_x_001tom_2_1_2_001_12/stable-backup-20260727 `
   --confirm-scenario=1_x_001tom_2_1_2_001_12
 
+# Current no-path audio regression. Requires the ignored local source config.
+python ..\data_pipeline\audit_raw_audio_coverage.py
+python ..\data_pipeline\index_raw_audio_cues.py
+python ..\data_pipeline\compare_raw_audio_cue_variants.py
+python ..\data_pipeline\extract_raw_audio_candidate.py --kind bgm --cue usual_day
+python ..\data_pipeline\extract_raw_acb_sequence_candidate.py --kind se --cue waribashi
+python ..\data_pipeline\audit_master_bgm_selector_mapping.py
+
+# Explicit paths below remain supported as override/regression forms.
 python ..\data_pipeline\index_raw_audio_cues.py `
   --raw-root ..\RAW `
   --compiled-root public\data\compiled `

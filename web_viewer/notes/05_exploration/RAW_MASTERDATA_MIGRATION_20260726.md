@@ -213,6 +213,14 @@ output SHA-256. The 5174-only routes are:
 - `/assets/audio-candidate/<kind>/<cue>.m4a`;
 - `/data/audio-candidate/<kind>/<cue>.json`.
 
+As of commit `8f94e64`, the audio coverage audit, resumable cue index,
+ambiguity comparison, single-waveform candidate, ACB sequence candidate, and
+master-BGM selector audit all resolve their defaults through
+`archive_paths.py`. Machine-specific decoder paths live only in the ignored
+local source configuration. Explicit CLI paths remain supported as final
+overrides. This changes path ownership, not the candidate route or promotion
+policy.
+
 Runtime selection is opt-in through repeatable or comma-separated
 `raw_audio_candidate=<kind>:<cue>` values. Without the parameter, story and
 live-stage audio continue to use their current published/proxy paths.

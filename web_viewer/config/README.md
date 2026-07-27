@@ -50,3 +50,28 @@ python ..\data_pipeline\extract_raw_background_candidate.py bg001_315pro_in_01
 python ..\data_pipeline\extract_raw_character_image_candidate.py `
   event_story_visual 002sht
 ```
+
+Audio tools use the same precedence. Configure `vgmstream_file`,
+`ffmpeg_file`, and `ffprobe_file` only in the ignored local configuration.
+The committed example deliberately leaves those machine-specific executable
+paths as `null`.
+
+With the local configuration present, the complete audio inventory and bounded
+candidate regressions can run without repeating source or executable paths:
+
+```powershell
+python ..\data_pipeline\audit_raw_audio_coverage.py
+python ..\data_pipeline\index_raw_audio_cues.py
+python ..\data_pipeline\compare_raw_audio_cue_variants.py
+python ..\data_pipeline\audit_master_bgm_selector_mapping.py
+
+python ..\data_pipeline\extract_raw_audio_candidate.py `
+  --kind bgm --cue usual_day
+python ..\data_pipeline\extract_raw_acb_sequence_candidate.py `
+  --kind se --cue waribashi
+```
+
+`audit_master_bgm_selector_mapping.py` defaults to the configured XOR-state
+source. When passing the decoded PB explicitly, also pass
+`--master-data-state decoded`. Candidate outputs remain ignored under
+`.analysis/raw-migration/audio`; these commands do not publish stable assets.

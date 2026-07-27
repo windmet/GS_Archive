@@ -132,6 +132,46 @@ extract_raw_character_image_candidate.py
 6,768；所有 ID 集合、覆盖率和缺口不变。这是当前 compiled corpus 相对旧
 报告的计数变化，不是配置路径改变。
 
+### 0.3 RAW 音频来源契约批次已接入
+
+提交 `8f94e64` 已把以下六个音频工具接入 `archive_paths.py`：
+
+```text
+audit_raw_audio_coverage.py
+index_raw_audio_cues.py
+compare_raw_audio_cue_variants.py
+extract_raw_audio_candidate.py
+extract_raw_acb_sequence_candidate.py
+audit_master_bgm_selector_mapping.py
+```
+
+本机忽略配置现在同时保存 `vgmstream`、`ffmpeg`、`ffprobe` 路径；提交的
+example 均为 `null`，没有个人可执行文件路径。所有原显式 CLI 参数仍是最终
+覆盖。`audit_master_bgm_selector_mapping.py` 另外增加
+`--master-data-state xor|decoded`，默认仍是 `xor`。
+
+真实无路径回归结果：
+
+- RAW audio：4,098 files = 4,055 ACB + 43 AWB；
+- compiled JSON：10,329；
+- story SE：435/435 classified，433 waveform + 2 control-only；
+- cue index：4,055 banks，本轮复用缓存、0 newly indexed；
+- ambiguity：13 cues，12 equivalent，`waribashi` 是唯一 distinct sequence；
+- master table 133：56 rows，92 BGM 全部分类，0 unresolved，0 anomalies；
+- XOR source 和 decoded PB 显式双路得到相同的表 133 分类结论；
+- `usual_day` 必须通过 cue index 关联到 `usual_day.awb`，不能把同名
+  `usual_day.acb#1` 当成可解码波形；
+- `usual_day` candidate SHA-256：
+  `04c03f225747e651fd6554ad44f898241f6ca1dd43027c65f0c19439c584cbc1`；
+- `waribashi` composite SHA-256：
+  `5ac8038ad35e7afd0ecf632301661c128ebf3f4d466fb5508d03dbd3942cc521`；
+- RAW 最终仍为 13,000 files，WAV 0。
+
+5174 上两条 M4A candidate 与两条 JSON manifest 均为 HTTP 200。首页正常
+渲染，活动轮播从 1/36 前进到 2/36；观察到两条既有 Pixi Spine warning，
+无错误 overlay。浏览器客户端阻止了把 M4A 作为顶层页面直接打开，因此媒体
+HTTP 证据与页面交互证据分开记录。本批没有 publish，也没有修改稳定音频 URL。
+
 ## 1. 当前已确认的事实
 
 ### 1.1 RAW 的真实边界和数量
@@ -834,16 +874,17 @@ git rev-parse origin/<当前分支>
 
 ## 8. 新窗口的第一项实际工作
 
-PR A 的配置核心、RAW manifest 以及 card/background/character 六个工具
-已经接入。新窗口默认从其余审计器的路径收束继续，不从 `003hok` 开始发布：
+PR A 的配置核心、RAW manifest、card/background/character 六个工具以及
+RAW audio 六个工具已经接入。新窗口默认继续 story 工具与仍硬编码旧整理包
+路径的辅助脚本，不从 `003hok` 开始发布：
 
 1. 核对 `0ba566f`、PR #2、worktree、5174；
 2. 复核 XOR source 与 decoded PB 的两个 SHA-256 和逐字节解码一致性；
 3. 复核 decoded PB 的 47,204 records 和 158 table IDs；
 4. 列出所有硬编码个人绝对路径；
-5. 下一批接入 audio/story 的 audit、index 和 candidate 工具；
+5. 下一批接入 story 的 audit、index 和 candidate 工具；
 6. 每批运行 fixture 和原域 audit，比较结果；
-7. 对 masterdata 专项工具区分 XOR source 与 decoded PB；
+7. 对其余 masterdata 专项工具继续区分 XOR source 与 decoded PB；
 8. 最后单独处理仍硬编码旧整理包路径的 live/chibi 辅助脚本；
 9. 完成 PR A 的二进制政策和 source schema 文档；
 10. 再进入 multi-part story gate。
