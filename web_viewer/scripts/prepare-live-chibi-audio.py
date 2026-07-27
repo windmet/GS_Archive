@@ -9,20 +9,21 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi" / "music"
-CHOREOGRAPHY_PATH = (
+DATA_PIPELINE_ROOT = PROJECT_ROOT.parent / "data_pipeline"
+sys.path.insert(0, str(DATA_PIPELINE_ROOT))
+
+from archive_paths import add_sources_config_argument, load_archive_sources
+
+
+DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi" / "music"
+DEFAULT_CHOREOGRAPHY_PATH = (
     PROJECT_ROOT / "public" / "assets" / "live-chibi" / "choreography" / "index.json"
 )
-DEFAULT_AUDIO_ROOT = Path(
-    r"E:\BaiduNetdiskDownload\SideM\GS_Res\新建文件夹\RAW\audio"
-)
-DEFAULT_VGMSTREAM = Path(r"E:\Program Files\vgmstream-win64\vgmstream-cli.exe")
-
-
 def run_json(command: list[str]) -> dict:
     result = subprocess.run(command, check=True, capture_output=True, text=True, encoding="utf-8")
     return json.loads(result.stdout)
@@ -132,22 +133,51 @@ def output_name(song_code: str, stream: dict, root_stream: dict) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--audio-root", type=Path, default=DEFAULT_AUDIO_ROOT)
+    add_sources_config_argument(parser)
+    parser.add_argument("--audio-root", type=Path)
+    parser.add_argument("--vgmstream", type=Path)
+    parser.add_argument("--ffmpeg")
+    parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
     parser.add_argument(
-        "--vgmstream",
+        "--choreography-path",
         type=Path,
-        default=Path(os.environ.get("VGMSTREAM_CLI", DEFAULT_VGMSTREAM)),
+        default=DEFAULT_CHOREOGRAPHY_PATH,
     )
-    parser.add_argument("--ffmpeg", default=os.environ.get("FFMPEG", "ffmpeg"))
     parser.add_argument("--song-code", action="append", default=[])
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args()
 
-    if not args.vgmstream.is_file():
-        raise FileNotFoundError(f"vgmstream CLI not found: {args.vgmstream}")
-    if not shutil.which(args.ffmpeg):
-        raise FileNotFoundError(f"FFmpeg not found: {args.ffmpeg}")
-    choreography = json.loads(CHOREOGRAPHY_PATH.read_text(encoding="utf-8"))
+    sources = load_archive_sources(args.sources_config)
+    output_root = args.output_root.resolve()
+    choreography_path = args.choreography_path.resolve()
+    audio_root = (
+        args.audio_root or sources.raw_root / "audio"
+    ).resolve()
+    vgmstream = (
+        args.vgmstream
+        or (
+            Path(os.environ["VGMSTREAM_CLI"])
+            if os.environ.get("VGMSTREAM_CLI")
+            else sources.tool_file("vgmstream")
+        )
+    ).resolve()
+    ffmpeg = (
+        args.ffmpeg
+        or os.environ.get("FFMPEG")
+        or (
+            str(sources.ffmpeg_file)
+            if sources.ffmpeg_file
+            else "ffmpeg"
+        )
+    )
+
+    if not audio_root.is_dir():
+        raise FileNotFoundError(f"RAW audio root not found: {audio_root}")
+    if not vgmstream.is_file():
+        raise FileNotFoundError(f"vgmstream CLI not found: {vgmstream}")
+    if not shutil.which(ffmpeg):
+        raise FileNotFoundError(f"FFmpeg not found: {ffmpeg}")
+    choreography = json.loads(choreography_path.read_text(encoding="utf-8"))
     requested = set(args.song_code)
     songs = [
         song for song in choreography["songs"]
@@ -161,10 +191,10 @@ def main() -> None:
     outputs: dict[tuple[str, int], dict] = {}
     mappings = {}
     for song_code in sorted({song["songCode"] for song in songs}):
-        acb_path = args.audio_root / f"song3_{song_code}.acb"
+        acb_path = audio_root / f"song3_{song_code}.acb"
         if not acb_path.is_file():
             raise FileNotFoundError(acb_path)
-        streams = inspect_streams(args.vgmstream, acb_path)
+        streams = inspect_streams(vgmstream, acb_path)
         streams_by_code[song_code] = streams
         root_by_code[song_code] = find_root_stream(song_code, streams)
 
@@ -177,7 +207,7 @@ def main() -> None:
         key = (song_code, stream["selection"])
         file_name = output_name(song_code, stream, root_stream)
         relative_file = f"music/{file_name}"
-        destination = OUTPUT_ROOT / file_name
+        destination = output_root / file_name
         if key not in outputs:
             if args.force or not destination.is_file():
                 print(
@@ -185,7 +215,13 @@ def main() -> None:
                     f"({stream['name']}) -> {file_name}",
                     flush=True,
                 )
-                extract_m4a(args.vgmstream, args.ffmpeg, args.audio_root / f"song3_{song_code}.acb", stream, destination)
+                extract_m4a(
+                    vgmstream,
+                    ffmpeg,
+                    audio_root / f"song3_{song_code}.acb",
+                    stream,
+                    destination,
+                )
             outputs[key] = {
                 "file": relative_file,
                 "songCode": song_code,
@@ -203,7 +239,7 @@ def main() -> None:
             "variantFallback": bool(song.get("variant") and not variant_stream),
         }
 
-    index_path = OUTPUT_ROOT / "index.json"
+    index_path = output_root / "index.json"
     if requested and index_path.is_file():
         existing = json.loads(index_path.read_text(encoding="utf-8"))
         merged_mappings = existing.get("songs", {})
