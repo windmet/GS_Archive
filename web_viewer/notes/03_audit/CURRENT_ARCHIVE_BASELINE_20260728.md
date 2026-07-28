@@ -324,15 +324,51 @@ current checkout and is not a Git tag.
 
 ## 12. Immediate order
 
-1. Commit the current baseline, README metric correction, historical banners,
-   and notes index update.
-2. Commit the multidimensional status, binary policy, publication ledger, and
-   external GS translation-link contracts.
-3. Commit the new full handoff.
-4. Push the branch and rewrite Draft PR #2 metadata to match its real scope.
+The documentation and PR-metadata steps below are complete at
+`6d72aac3f2022ece739c05f72ef593d8a23d8ed1`. The first machine-executable
+governance batch is now in progress.
+
+1. Implement and commit the current archive baseline report generator and
+   verifier.
+2. Implement the tracked-binary inventory, schema, generator, and verifier.
+3. Implement the publication ledger schema, empty-manifest generator, and
+   verifier.
+4. Exercise the first multi-part RAW story publish, rollback, and republish
+   transaction.
 5. Keep Runtime release acceptance separate from resource/governance work.
 6. After PR #2 closes, create bounded branches for:
-   - a multi-part RAW story publication transaction;
    - a GS-only external translation-link pilot;
    - the 260-USM relation catalog;
    - the 1,271-image-bundle relation catalog.
+
+### 12.1 Current archive baseline reporter implementation
+
+The first P0-A implementation batch adds:
+
+```text
+scripts/report-current-archive-baseline.mjs
+scripts/verify-current-archive-baseline.mjs
+scripts/lib/archive-baseline-report.mjs
+public/data/archive_baseline_report.json
+```
+
+The report records mounted-source availability, RAW live and recorded-manifest
+statistics, masterdata hashes and record/table counts, story and voice metrics,
+compiled-artifact counts, card metrics, tracked PNG totals, BackMonitor movie
+relations, and the unresolved USM count. It contains no machine absolute paths.
+
+Source-only verification passes without requiring ignored RAW or masterdata.
+Mounted verification currently fails as designed because it detected 18 WAV
+files under `RAW/audio`:
+
+| Metric | Recorded RAW manifest | Live mounted tree |
+| --- | ---: | ---: |
+| files | 13,000 | 13,018 |
+| bytes | 8,232,049,221 | 8,645,733,285 |
+| audio files | 4,098 | 4,116 |
+| WAV | 0 | 18 |
+
+The 18 WAV files total 413,684,064 bytes and have timestamps around
+2026-07-27 21:52. They have not been deleted, moved, added to Git, or accepted
+as RAW authority. The recorded manifest remains the baseline until their
+provenance and disposition are explicitly resolved.

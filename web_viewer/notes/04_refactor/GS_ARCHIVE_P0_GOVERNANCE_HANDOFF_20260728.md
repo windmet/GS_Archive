@@ -20,7 +20,9 @@ GROWING STARS 社区熟肉绑定拆成彼此独立的工作轨道。新窗口应
 
 文档契约已经写完，但以下机器可执行部分还没有实现：
 
-1. 当前事实报告的生成器与漂移校验；
+1. 当前事实报告的生成器与漂移校验：**已实现**；source-only
+   验证通过，mounted 验证发现 `RAW/audio` 中存在 18 个未登记 WAV，按设计
+   阻止基线静默漂移；
 2. 已跟踪二进制清单、Schema 和 verifier；
 3. 发布账本 Schema、生成器和 verifier；
 4. 第一笔多 part RAW 剧情发布交易的真实演练；
@@ -356,6 +358,30 @@ FX 和文档图片。它们是待分类的 grandfathered baseline，不应为了
 - 第三方视频不进本地 publication ledger；
 - 不把外链覆盖率混入本地剧情完整率。
 
+### 5.4 P0-A 当前事实报告器
+
+当前实现批新增：
+
+```text
+scripts/report-current-archive-baseline.mjs
+scripts/verify-current-archive-baseline.mjs
+scripts/lib/archive-baseline-report.mjs
+public/data/archive_baseline_report.json
+```
+
+已确认：
+
+- 报告不写入机器绝对路径；
+- source-only verifier 不要求挂载 RAW/masterdata；
+- 报告生成对相同 capture commit 和输入保持确定性；
+- masterdata 原始与解码 SHA-256 均与配置期望一致；
+- tracked PNG、剧情、卡片、USM 和 `image_*` 指标由机器证据生成；
+- mounted verifier 检出 live RAW 与已记录 manifest 的真实漂移。
+
+当前漂移是 `RAW/audio` 多出 18 个 WAV，共 413,684,064 bytes，使 live RAW
+达到 13,018 files / 8,645,733,285 bytes。它们未被删除、移动或接受为权威
+RAW；已记录基线仍为 13,000 files / 8,232,049,221 bytes / 0 WAV。
+
 ---
 
 ## 6. P0-A 实现：机器可执行治理
@@ -364,6 +390,10 @@ FX 和文档图片。它们是待分类的 grandfathered baseline，不应为了
 `image_*` 全域审计塞入 PR #2。
 
 ### 6.1 提交 A：当前事实报告器
+
+实现状态：**已实现**。source-only gate
+通过；mounted gate 因上述 18 个未登记 WAV 正确失败。解决本地 RAW 漂移前，
+不得把 13,018 文件静默提升为新权威基线。
 
 目标：
 
