@@ -3,6 +3,15 @@
 状态：当前新窗口主交接
 日期：2026-07-28
 仓库：`E:\Web_build\SideM_Archived`
+
+> **2026-07-29 Story Runtime 更新：** 用户已确认 IDM 删除。应用内
+> Chromium 已覆盖 first gesture、Voice/SE/BGM/Ambient、跨 episode、
+> Menu pause/resume 与 debug visibility pause/resume。跨场景 timer
+> receiver 的 `Illegal invocation` 已由 `421c3b0` 修复并回归通过。
+> 详细证据见
+> `notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md`。
+> Microsoft Edge、人工听感、真实 `document.hidden` 和 2–4 小时长稳仍未
+> 执行，Story Runtime 仍不是 release-accepted。
 应用：`E:\Web_build\SideM_Archived\web_viewer`
 
 这份文档把 RAW + masterdata 迁移、Story Runtime 发布验收、二进制发布治理和

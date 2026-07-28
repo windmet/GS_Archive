@@ -252,3 +252,26 @@ Source-only contract run `30375716445` passed.
 This closes only the no-audio startup isolation defect. It does not count as
 real Edge audio, autoplay, hidden/resume, cross-episode, or long-soak
 acceptance. Existing Pixi Spine update/tint warnings remain a separate item.
+
+## 2026-07-29 真实音频阶段验收 follow-up
+
+用户已明确确认 IDM 从电脑删除，真实媒体请求前置条件已解除。Codex 应用内
+Chromium 已完成 first gesture、Voice/SE/BGM/Ambient、跨 episode、Menu
+pause/resume 和 debug visibility pause/resume 的 runtime 验证。
+
+测试发现跨场景淡出会在浏览器原生 timer 上抛出 `TypeError: Illegal
+invocation`，使 Ambient watcher 中断并阻止 BGM 切换。提交 `421c3b0`
+通过 plain-function timer wrapper 修复 receiver，并让 persistent
+BGM/Ambient watcher 与 `AudioManager.inspect()` 的实际状态对账。修复后
+`event_before / ambi_shop_shoutengai` 正确切换到
+`usual_day / ambi_room`；45 秒短记录末尾为 2 个预期持久 source、0 cleanup
+timer、0 active Runtime cue。
+
+详细矩阵与证据见：
+
+`notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md`
+
+本 follow-up 只把真实音频状态从 `not executed` 推进到 `partial
+acceptance`。Microsoft Edge 专属 autoplay、人工听感、真实
+`document.hidden` 和 2–4 小时混合长稳仍未执行，Story Runtime 仍不能写成
+release-accepted。
