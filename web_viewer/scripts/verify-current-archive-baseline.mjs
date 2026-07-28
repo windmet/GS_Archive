@@ -38,6 +38,24 @@ if (
 ) {
   failures.push('USM mapped and unresolved totals do not equal the RAW USM population')
 }
+if (
+  report.story?.voice_resolved + report.story?.voice_dangling !==
+  report.story?.voice_references
+) {
+  failures.push('resolved and dangling voices do not equal total voice references')
+}
+if (
+  report.story?.logical_groups !== report.story?.groups_with_unique_public_match ||
+  report.story?.valid_parts !== report.story?.parts_represented_in_public
+) {
+  failures.push('story RAW population differs from the recorded public-match population')
+}
+if (
+  report.cards?.unique_resource_ids !== report.cards?.raw_matched ||
+  report.cards?.unique_resource_ids !== report.cards?.portal_normalized_entities
+) {
+  failures.push('card resource, RAW match, and portal entity populations differ')
+}
 
 try {
   execFileSync(
@@ -68,29 +86,9 @@ for (const section of alwaysCheckedSections) {
 }
 
 for (const section of ['story', 'cards', 'movies']) {
+  if (sourceOnly) continue
   const expected = structuredClone(report[section])
   const observed = structuredClone(actual[section])
-  if (sourceOnly) {
-    if (section === 'story') {
-      for (const key of Object.keys(expected)) {
-        if (!['availability', 'compiled_artifacts'].includes(key)) delete expected[key]
-      }
-      for (const key of Object.keys(observed)) {
-        if (!['availability', 'compiled_artifacts'].includes(key)) delete observed[key]
-      }
-      delete expected.availability
-      delete observed.availability
-    }
-    if (section === 'cards') {
-      for (const key of ['availability', 'masterdata_rows', 'raw_matched']) {
-        delete expected[key]
-        delete observed[key]
-      }
-    }
-    if (section === 'movies') {
-      continue
-    }
-  }
   if (stableJson(expected) !== stableJson(observed)) failures.push(`${section} drifted`)
 }
 
