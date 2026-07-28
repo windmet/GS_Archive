@@ -1,5 +1,13 @@
 # RAW + Master Data Resource Migration
 
+> **Document status: historical migration log.**
+> Use `notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md` for current facts.
+> The null-`AudioContext` messages recorded during earlier `noAudio=1` browser
+> runs are historical observations and are no longer an open defect at
+> `d8d819d`. Forward-looking instructions below that still propose fixing
+> `noAudio` are superseded; the remaining real-audio release acceptance work is
+> tracked separately.
+
 Date: 2026-07-26
 
 ## Decision

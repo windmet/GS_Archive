@@ -1,5 +1,13 @@
 # RAW + Masterdata v1 基线：新窗口完整交接
 
+> **文档状态：历史交接。**
+> 当前事实入口是
+> `notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md`。
+> `0ba566f` 仍是有用的 RAW/masterdata v1 阶段提交，但当前工作树已经推进到
+> `d8d819d`，且它不是 Git tag。本文将 `noAudio=1` null AudioContext
+> 问题写成当前缺陷及未来修复项的段落已经失效；当前隔离路径已完成源码与
+> 浏览器核验。本文其余日期化来源、哈希、parity、发布和回滚证据继续保留。
+
 更新时间：2026-07-27
 仓库：`E:\Web_build\SideM_Archived`
 应用目录：`E:\Web_build\SideM_Archived\web_viewer`

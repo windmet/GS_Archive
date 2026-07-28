@@ -1,5 +1,14 @@
 # RAW + Master Data Full Resource Audit
 
+> **Document status: historical audit snapshot.**
+> The current checkout baseline is
+> `notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md`.
+> Browser observations below describe the state at the time they were
+> recorded. In particular, current-sounding claims that `noAudio=1` still
+> produces a null-`AudioContext` error are superseded: the isolation path is
+> fixed and browser-accepted at `d8d819d`. Do not delete the dated observations
+> or reinterpret them as current defects.
+
 Started: 2026-07-26
 Last updated: 2026-07-27
 Repository: `E:\Web_build\SideM_Archived`

@@ -18,6 +18,22 @@ RAW + masterdata v1 next-window handoff: `notes/04_refactor/RAW_MASTERDATA_V1_NE
 
 The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_88969A1_RELEASE_GUIDE_20260723.md` for historical evidence.
 
+## Current entry points
+
+- `notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md` - authoritative current
+  checkout, RAW/masterdata identities, metric definitions, scoped browser
+  status, unresolved domains, and superseded claims.
+- `notes/04_refactor/GS_ARCHIVE_P0_GOVERNANCE_HANDOFF_20260728.md` - current P0
+  governance completion and next-window execution order.
+- `notes/04_refactor/ARCHIVE_MULTIDIMENSIONAL_STATUS_CONTRACT_20260728.md` -
+  resource and feature status dimensions.
+- `notes/04_refactor/BINARY_AND_PUBLICATION_POLICY_20260728.md` - tracked binary
+  exceptions and promotion boundary.
+- `notes/04_refactor/PUBLICATION_LEDGER_CONTRACT_20260728.md` - append-only
+  release ledger and generated stable manifest.
+- `notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md` -
+  GROWING STARS-only Bilibili translation-link mapping.
+
 ## Layout
 
 - `notes/00_inbox/` - temporary holding area for items that are not yet classified
