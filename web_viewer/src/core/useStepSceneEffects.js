@@ -39,10 +39,13 @@ export function useStepSceneEffects({
     const sceneState = getStepSceneState(newStep)
     const env = sceneState?.environmental
     const envCue = env?.cue
-    if (envCue && envCue !== _lastEnvCue) {
+    const observedAudio = audioManager.inspect?.()
+    const activeEnvCue = observedAudio ? observedAudio.ambient_cue : _lastEnvCue
+    const hasAmbientSource = observedAudio ? observedAudio.has_ambient_source : Boolean(_lastEnvCue)
+    if (envCue && envCue !== activeEnvCue) {
       audioManager.playAmbient(envCue, 0.5, env?.volume)
       _lastEnvCue = envCue
-    } else if (!envCue && _lastEnvCue) {
+    } else if (!envCue && (activeEnvCue || hasAmbientSource)) {
       audioManager.stopAmbient()
       _lastEnvCue = null
     }
@@ -55,10 +58,12 @@ export function useStepSceneEffects({
 
     const bgmId = sceneState?.bgm
     const bgmStopFade = sceneState?.bgm_stop_fade
-    if (bgmId && bgmId !== _lastBgmId) {
+    const activeBgmId = observedAudio ? observedAudio.bgm_cue : _lastBgmId
+    const hasBgmSource = observedAudio ? observedAudio.has_bgm_source : Boolean(_lastBgmId)
+    if (bgmId && bgmId !== activeBgmId) {
       audioManager.playBgm(bgmId)
       _lastBgmId = bgmId
-    } else if (!bgmId && _lastBgmId) {
+    } else if (!bgmId && (activeBgmId || hasBgmSource)) {
       audioManager.stopBgm(bgmStopFade != null ? bgmStopFade : 1.0)
       _lastBgmId = null
     }

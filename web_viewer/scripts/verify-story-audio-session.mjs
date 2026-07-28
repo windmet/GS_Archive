@@ -330,6 +330,27 @@ try {
   assert.equal(disabledSession.inspect().active_sources, 0)
   assert.equal(disabledSession.inspect().disabled, true)
   assert.equal(disabledManager.inspect().disabled, true)
+
+  {
+    let scheduledCallback = null
+    function browserLikeSetTimer(callback) {
+      assert.equal(this, undefined, 'browser timer must be called without an AudioManager receiver')
+      scheduledCallback = callback
+      return 'browser-timer'
+    }
+    function browserLikeClearTimer() {
+      assert.equal(this, undefined, 'browser clearTimer must be called without an AudioManager receiver')
+    }
+    const timerManager = new AudioManager({
+      audioSession: disabledSession,
+      setTimer: browserLikeSetTimer,
+      clearTimer: browserLikeClearTimer,
+    })
+    const timer = timerManager._scheduleCleanup(() => {}, 10)
+    assert.equal(timer, 'browser-timer')
+    assert.equal(typeof scheduledCallback, 'function')
+    timerManager.dispose()
+  }
 } finally {
   globalThis.fetch = originalFetch
   disabledVoicePlayer.dispose()

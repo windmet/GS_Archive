@@ -25,8 +25,11 @@ export class AudioManager {
       busVolumes: { bgm: 0.7, ambient: 0.7, voice: 1, se: 0.7 },
     })
     this._ownsAudioSession = !audioSession
-    this._setTimer = setTimer
-    this._clearTimer = clearTimer
+    // Browser timer functions are Web API methods and some engines reject an
+    // AudioManager receiver (`this._setTimer(...)`) with "Illegal invocation".
+    // Keep injected timers callable as plain functions behind arrow wrappers.
+    this._setTimer = (callback, delayMs) => setTimer(callback, delayMs)
+    this._clearTimer = timer => clearTimer(timer)
     /** @type {AudioContext|null} */
     this._ctx = null
 

@@ -444,16 +444,39 @@ function verifyRetiredLegacyOwners() {
   ], 'scene application must retain non-runtime effects without invoking retired channel owners')
 
   const audioCalls = []
+  const observedAudio = {
+    ambient_cue: null,
+    bgm_cue: null,
+    has_ambient_source: false,
+    has_bgm_source: false,
+  }
   const base = {
     currentStepIndex: { value: 0 }, isLastStep: { value: false }, historyStack: { value: [] },
     spineStageRef: { value: null },
     audioManager: {
       preloadSE: cue => audioCalls.push(['se:preload', cue]), playSE: cue => audioCalls.push(['se:play', cue]),
-      playAmbient: (cue, fade, volume) => audioCalls.push(['ambient:play', cue, fade, volume]),
-      stopAmbient: () => audioCalls.push(['ambient:stop']),
+      inspect: () => ({ ...observedAudio }),
+      playAmbient: (cue, fade, volume) => {
+        audioCalls.push(['ambient:play', cue, fade, volume])
+        observedAudio.ambient_cue = cue
+        observedAudio.has_ambient_source = true
+      },
+      stopAmbient: () => {
+        audioCalls.push(['ambient:stop'])
+        observedAudio.ambient_cue = null
+        observedAudio.has_ambient_source = false
+      },
       setAmbientVolume: volume => audioCalls.push(['ambient:volume', volume]),
-      playBgm: cue => audioCalls.push(['bgm:play', cue]),
-      stopBgm: fade => audioCalls.push(['bgm:stop', fade]),
+      playBgm: cue => {
+        audioCalls.push(['bgm:play', cue])
+        observedAudio.bgm_cue = cue
+        observedAudio.has_bgm_source = true
+      },
+      stopBgm: fade => {
+        audioCalls.push(['bgm:stop', fade])
+        observedAudio.bgm_cue = null
+        observedAudio.has_bgm_source = false
+      },
     },
     voicePlayer: { playVoice: () => {} }, resetVoiceDedup: () => {},
   }
@@ -475,6 +498,25 @@ function verifyRetiredLegacyOwners() {
     ['ambient:volume', 0.35],
     ['bgm:play', 'strict-bgm'],
   ], 'authoritative entry_snapshot must drive persistent scene audio consumers')
+
+  observedAudio.ambient_cue = 'stale-ambient'
+  observedAudio.bgm_cue = 'stale-bgm'
+  sceneEffects.handleStepChange(authoritativeStep, authoritativeStep)
+  assert.deepEqual(audioCalls.slice(-3), [
+    ['ambient:play', 'strict-ambient', 0.5, 0.35],
+    ['ambient:volume', 0.35],
+    ['bgm:play', 'strict-bgm'],
+  ], 'persistent audio must reconcile the actual manager state after a stale async transition')
+
+  observedAudio.ambient_cue = null
+  observedAudio.bgm_cue = null
+  observedAudio.has_ambient_source = true
+  observedAudio.has_bgm_source = true
+  sceneEffects.handleStepChange({ step_id: 3, type: 'adv', entry_snapshot: {} }, authoritativeStep)
+  assert.deepEqual(audioCalls.slice(-2), [
+    ['ambient:stop'],
+    ['bgm:stop', 1],
+  ], 'orphaned persistent sources must stop even when their semantic cue is already null')
   sceneEffects.cleanup()
 }
 
