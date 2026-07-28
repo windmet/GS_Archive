@@ -1122,3 +1122,17 @@ rollback 工具已由 `7310ea0` 提交并推送，并作为
 `2_2_001_01_00_01.m4a` 的 null AudioContext `decodeAudioData` error。该错误
 发生于最终 republish 之前，不影响三文件 hash/rollback 事务结论，但必须留在
 P0-B 的 initial-route `noAudio` isolation 待复现范围，不能写成全程从未出现。
+
+该复现点已由 `a393bba` 修复：
+
+- `App.vue` 在异步 deep-link 恢复前使用 neutral boot view，不再短暂挂载首页；
+- `ArchiveImmersiveHome` 继承 page-level `noAudio`；
+- 首页 voice player 使用共享的 disabled AudioSession；
+- 自动化覆盖 disabled context/fetch 和 boot boundary；
+- 新建 direct-player 与 home `noAudio=1` 标签均无 audio error；
+- 首页 `noAudio` 下主动点击“播放语音”后也无 error/warn；
+- GitHub Source-only contract run `30375716445` 通过。
+
+播放器仍可见既有 Pixi Spine update/tint warning；它们不是本次 AudioContext
+缺陷，也未在本提交中扩大处理范围。真实 Edge 音频、hidden/resume、
+cross-episode 和长时曲线仍未验收。

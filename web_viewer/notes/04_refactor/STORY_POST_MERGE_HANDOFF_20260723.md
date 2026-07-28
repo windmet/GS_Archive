@@ -233,3 +233,22 @@ http://127.0.0.1:5174/?view=player&story_type=main&story_section=101&scenario=ep
 3. 保持单标签和低 CPU 边界；
 4. 产出可复查的导出文件/日志，而不是仅口头描述“看起来正常”；
 5. 将仍未执行的项目继续明确标记为未完成。
+
+## 2026-07-28 `noAudio` deep-link startup follow-up
+
+Commit `a393bba` fixed a startup-only isolation gap discovered during the first
+publication-ledger browser transaction. Before asynchronous route restoration,
+`App.vue` briefly mounted `ArchiveImmersiveHome`; its eager next-voice
+preparation used an independent enabled AudioSession even when the requested
+player route contained `noAudio=1`.
+
+The application now remains in a neutral boot view until route restoration,
+and the immersive home shares an AudioSession disabled by the page-level
+`noAudio` flag. Fresh direct-player and home tabs showed no audio error, and a
+home voice-button click in `noAudio` mode produced no error/warn. Automated
+audio, home, route, Runtime foundation, production build, and GitHub
+Source-only contract run `30375716445` passed.
+
+This closes only the no-audio startup isolation defect. It does not count as
+real Edge audio, autoplay, hidden/resume, cross-episode, or long-soak
+acceptance. Existing Pixi Spine update/tint warnings remain a separate item.

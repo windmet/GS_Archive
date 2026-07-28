@@ -94,6 +94,20 @@ was initializing. No error occurred after the final republish timestamp. This
 does not change the three-file transaction result, but it remains explicit
 P0-B evidence for initial-route `noAudio` isolation.
 
+Follow-up commit `a393bba` closed that isolation defect. Root cause was the
+application mounting `ArchiveImmersiveHome` before asynchronous deep-link
+restoration; the home component immediately prepared its next voice with an
+independent enabled AudioSession. The fix:
+
+- uses a neutral boot view until the requested route is restored;
+- passes the page-level `noAudio` flag into the immersive home;
+- gives the home voice player a shared disabled AudioSession in that mode;
+- verifies disabled home voice preparation and clicks create no audio error.
+
+Fresh direct-player and home `noAudio=1` tabs produced no audio error after the
+fix. The player still emitted the separately known Pixi Spine update/tint
+warnings. GitHub Source-only contract run `30375716445` passed.
+
 This is a no-audio batch acceptance. It does not upgrade the separate real
 Edge audio, hidden/resume, cross-episode, or long-soak acceptance state.
 
