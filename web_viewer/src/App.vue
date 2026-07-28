@@ -17,6 +17,7 @@
         v-model:selected-id="homeSelectedId"
         v-model:selected-cue="homeSelectedCue"
         v-model:selected-costume="homeSelectedCostume"
+        :no-audio="NO_AUDIO"
         :idols="archiveHomeIdols"
         :highlights="archiveHomeHighlights"
         :stats="archiveStats"
@@ -381,6 +382,8 @@ import {
 
 setStoryLanguagePreferences(new PlayerPreferencesRepository().load())
 const entityTranslationRepository = new EntityTranslationRepository()
+const URL_FLAGS = new URLSearchParams(window.location.search)
+const NO_AUDIO = URL_FLAGS.get('noAudio') === '1'
 
 const storyViewerLoader = () => import('./core/StoryViewer.vue')
 const spineViewerLoader = () => import('./components/SpineViewer.vue')
@@ -397,7 +400,7 @@ function resolveChatName(ch) {
   return ch
 }
 
-const view = ref('home')
+const view = ref('__boot__')
 const indexData = ref(null)
 const cardIndexData = ref(null)
 const gashaIndexData = ref(null)
@@ -428,7 +431,7 @@ const playbackQueueIndex = ref(-1)
 const continuousPlayback = ref(window.localStorage.getItem('sidem:continuous-playback') === '1')
 const currentPreviewCue = ref('')
 const filterQuery = ref('')
-const loading = ref(false)
+const loading = ref(true)
 const preloadProgress = ref(0)
 
 // Navigation context
@@ -1127,7 +1130,7 @@ const currentIdolEvents = computed(() => (archiveManifestData.value?.unit_event_
   .filter(event => (event.characters || []).includes(currentCharacterId.value))
   .sort((left, right) => Number(left.release_at || 0) - Number(right.release_at || 0)))
 
-const archiveShellVisible = computed(() => !['player', 'spine_lab', 'chibi_stage'].includes(view.value))
+const archiveShellVisible = computed(() => !['__boot__', 'player', 'spine_lab', 'chibi_stage'].includes(view.value))
 
 const archiveSection = computed(() => archiveSectionForRoute({
   view: view.value,
@@ -2447,6 +2450,7 @@ onMounted(async () => {
 
 
   await applyArchiveRoute(initialRoute)
+  loading.value = false
   archiveRouteReady = true
   writeArchiveRoute(currentArchiveRoute(), { replace: true })
   removeArchivePopState = onArchivePopState(route => {

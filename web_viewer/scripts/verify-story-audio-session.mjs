@@ -337,7 +337,9 @@ try {
   await disabledSession.dispose()
 }
 
-const [viewerSource, voicePlayerSource, audioManagerSource] = await Promise.all([
+const [appSource, homeSource, viewerSource, voicePlayerSource, audioManagerSource] = await Promise.all([
+  readFile(new URL('../src/App.vue', import.meta.url), 'utf8'),
+  readFile(new URL('../src/components/archive/ArchiveImmersiveHome.vue', import.meta.url), 'utf8'),
   readFile(new URL('../src/core/StoryViewer.vue', import.meta.url), 'utf8'),
   readFile(new URL('../src/core/useVoicePlayer.js', import.meta.url), 'utf8'),
   readFile(new URL('../src/core/AudioManager.js', import.meta.url), 'utf8'),
@@ -347,6 +349,12 @@ assert.match(viewerSource, /new AudioManager\(\{ audioSession: storyAudioSession
 assert.match(viewerSource, /audioSession: storyAudioSession/)
 assert.match(viewerSource, /const NO_AUDIO = URL_FLAGS\.get\('noAudio'\) === '1'/)
 assert.match(viewerSource, /const NO_VOICE = NO_AUDIO \|\| URL_FLAGS\.get\('noVoice'\) === '1'/)
+assert.match(appSource, /const NO_AUDIO = URL_FLAGS\.get\('noAudio'\) === '1'/)
+assert.match(appSource, /:no-audio="NO_AUDIO"/)
+assert.match(appSource, /const view = ref\('__boot__'\)/)
+assert.match(appSource, /const loading = ref\(true\)/)
+assert.match(homeSource, /new StoryAudioSession\(\{ disabled: props\.noAudio \}\)/)
+assert.match(homeSource, /audioSession: homeAudioSession/)
 assert.doesNotMatch(voicePlayerSource, /new \(window\.AudioContext/)
 assert.doesNotMatch(audioManagerSource, /new \(window\.AudioContext/)
 
