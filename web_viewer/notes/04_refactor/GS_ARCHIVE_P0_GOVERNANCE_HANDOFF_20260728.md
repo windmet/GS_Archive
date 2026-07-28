@@ -1116,3 +1116,9 @@ rollback 工具已由 `7310ea0` 提交并推送，并作为
 判定由 `948a2ef` 修正。GitHub run `30374641388` 已在干净 Linux checkout
 通过完整 `Source-only contract` 和 production build。PR #2 当前
 `MERGEABLE`，仍为 Draft，尚无 review decision。
+
+5174 证据边界：最终 republish 后的验收窗口 console error 为 0；但复用标签
+在首次 direct player route 初始化期间曾记录 1 次首页 voice
+`2_2_001_01_00_01.m4a` 的 null AudioContext `decodeAudioData` error。该错误
+发生于最终 republish 之前，不影响三文件 hash/rollback 事务结论，但必须留在
+P0-B 的 initial-route `noAudio` isolation 待复现范围，不能写成全程从未出现。

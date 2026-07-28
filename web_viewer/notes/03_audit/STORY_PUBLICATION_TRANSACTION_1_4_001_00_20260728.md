@@ -87,6 +87,13 @@ Player anchors:
   and active sources at zero;
 - after final republish, console errors were zero.
 
+The reused browser tab contained one earlier error at `2026-07-28T15:27:34Z`:
+the transient home surface attempted to decode voice
+`2_2_001_01_00_01.m4a` with a null AudioContext while the direct player route
+was initializing. No error occurred after the final republish timestamp. This
+does not change the three-file transaction result, but it remains explicit
+P0-B evidence for initial-route `noAudio` isolation.
+
 This is a no-audio batch acceptance. It does not upgrade the separate real
 Edge audio, hidden/resume, cross-episode, or long-soak acceptance state.
 
