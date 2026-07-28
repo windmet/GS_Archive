@@ -13,6 +13,8 @@
     "verify:archive-baseline:source-only": "node scripts/verify-current-archive-baseline.mjs --source-only",
     "generate:tracked-binary-inventory": "node scripts/generate-tracked-binary-inventory.mjs",
     "verify:tracked-binary-inventory": "node scripts/verify-tracked-binary-inventory.mjs",
+    "generate:publication-manifest": "node scripts/generate-publication-manifest.mjs",
+    "verify:publication-ledger": "node scripts/verify-publication-ledger.mjs",
     "chibi:scan": "node scripts/scan-live-chibi-compatibility.mjs",
     "audit:raw-character": "python ../data_pipeline/audit_raw_character_resources.py",
     "character:candidate": "python ../data_pipeline/extract_raw_character_image_candidate.py",

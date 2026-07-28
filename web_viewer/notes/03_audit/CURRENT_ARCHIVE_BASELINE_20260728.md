@@ -331,9 +331,9 @@ governance batch is now in progress.
 1. Implement and commit the current archive baseline report generator and
    verifier. **Complete in `b20df7c`.**
 2. Implement the tracked-binary inventory, schema, generator, and verifier.
-   **Implemented in the current batch.**
+   **Complete in `460d89f`.**
 3. Implement the publication ledger schema, empty-manifest generator, and
-   verifier.
+   verifier. **Implemented in the current batch.**
 4. Exercise the first multi-part RAW story publish, rollback, and republish
    transaction.
 5. Keep Runtime release acceptance separate from resource/governance work.
@@ -393,3 +393,19 @@ Current classification:
 All 108 entries remain `grandfathered: true`; no PNG bytes changed. Future
 non-grandfathered entries require an `owner_release` and are checked against
 the policy's per-file and per-batch size boundaries.
+
+### 12.3 Publication-ledger skeleton
+
+The append-only publication ledger now has:
+
+- a strict release JSON Schema;
+- an intentionally empty `releases/` history;
+- a deterministic empty stable manifest;
+- a generator that replays ordered immutable transactions;
+- a source-only verifier for release identity, paths, hashes, consumers,
+  previous-state chains, rollback restoration, manifest determinism, and
+  current stable-file identity.
+
+No existing PNG was backfilled, no stable output changed, and no speculative
+masterdata relation was added. The next ledger step is the first real
+multi-part RAW story transaction.

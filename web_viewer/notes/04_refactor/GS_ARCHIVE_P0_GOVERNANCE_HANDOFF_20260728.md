@@ -25,7 +25,8 @@ GROWING STARS 社区熟肉绑定拆成彼此独立的工作轨道。新窗口应
    阻止基线静默漂移；
 2. 已跟踪二进制清单、Schema 和 verifier：**已实现**；108 个 PNG 已逐项登记，
    未修改任何图片 bytes；
-3. 发布账本 Schema、生成器和 verifier；
+3. 发布账本 Schema、生成器和 verifier：**已实现空账本骨架**；第一笔真实
+   transaction 仍未执行；
 4. 第一笔多 part RAW 剧情发布交易的真实演练；
 5. PR #2 的标题、正文、检查结果和审阅顺序收口；
 6. PR #2 合并。
@@ -406,6 +407,24 @@ tracked 集合、hash/size、logical ID、ignore/force-add 边界、本地路径
 非 grandfathered 文件的 2/5 MiB 单文件和 10/25 MiB owner-release batch 边界。
 本批未修改任何 PNG bytes。
 
+### 5.6 P0-A 发布账本骨架
+
+当前实现批新增：
+
+```text
+schemas/publication-release-v1.schema.json
+public/data/publication/manifest.json
+public/data/publication/releases/
+scripts/generate-publication-manifest.mjs
+scripts/verify-publication-ledger.mjs
+```
+
+当前 release history 有意保持为空，生成 manifest 为 0 releases / 0 stable
+logical IDs。verifier 已覆盖 Schema、release ID/文件名、相对路径、hash、consumer、
+previous chain、rollback restoration、manifest 确定性和当前 stable 文件身份。
+本批没有 backfill 108 PNG，没有修改 stable 产物，也没有写入猜测性
+`master_table: 0`。
+
 ---
 
 ## 6. P0-A 实现：机器可执行治理
@@ -498,6 +517,9 @@ web_viewer/scripts/verify-tracked-binary-inventory.mjs
 不要在这一提交中改动 108 个 PNG 的 bytes。
 
 ### 6.3 提交 C：发布账本骨架
+
+实现状态：**已实现**。空 history 可确定性生成空 manifest，source-only verifier
+不要求 mounted RAW；第一笔真实多 part transaction 属于下一提交。
 
 目标：
 

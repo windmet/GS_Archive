@@ -97,6 +97,9 @@ jobs:
       - name: Verify tracked binary inventory
         run: npm run verify:tracked-binary-inventory
 
+      - name: Verify publication ledger
+        run: npm run verify:publication-ledger
+
       - name: Verify RAW character-image candidate contract
         run: npm run verify:raw-character-candidate
 

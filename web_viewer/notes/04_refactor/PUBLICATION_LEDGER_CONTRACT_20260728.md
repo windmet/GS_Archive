@@ -1,7 +1,21 @@
 # Publication Ledger Contract
 
-Status: design contract; implementation pending
+Status: contract implemented; first real transaction pending
 Date: 2026-07-28
+
+Implementation:
+
+```text
+web_viewer/schemas/publication-release-v1.schema.json
+web_viewer/public/data/publication/manifest.json
+web_viewer/public/data/publication/releases/
+web_viewer/scripts/generate-publication-manifest.mjs
+web_viewer/scripts/verify-publication-ledger.mjs
+```
+
+The current history is intentionally empty. Generator and verifier coverage is
+implemented; the first multi-part RAW story publish/rollback/republish
+transaction remains pending.
 
 ## 1. Purpose
 
