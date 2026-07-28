@@ -109,11 +109,20 @@ function publicCardStats() {
   }
 }
 
-function backmonitorStats() {
+function backmonitorStats({ sourceOnly = false } = {}) {
+  if (sourceOnly || !existsSync(publicPaths.backmonitor)) {
+    return {
+      availability: 'not-mounted',
+      mapped: null,
+      movie_relations: null,
+      transition_relations: null,
+    }
+  }
   const payload = readJson(publicPaths.backmonitor)
   const movies = Object.keys(payload.assets || {}).length
   const transitions = Object.keys(payload.transitions || {}).length
   return {
+    availability: 'mounted',
     mapped: movies + transitions,
     movie_relations: movies,
     transition_relations: transitions,
@@ -235,7 +244,7 @@ export async function collectArchiveBaseline({
   const compiled = compiledStats()
   const trackedPng = trackedPngStats()
   const cards = publicCardStats()
-  const backmonitor = backmonitorStats()
+  const backmonitor = backmonitorStats({ sourceOnly })
   const configured = resolveConfiguredSources()
   const rawMounted = !sourceOnly && existsSync(configured.rawRoot)
   const masterdataMounted = !sourceOnly &&
@@ -317,12 +326,15 @@ export async function collectArchiveBaseline({
     movies: {
       raw_usm: raw?.types.usm ?? analysis?.raw_manifest.types.usm ?? null,
       backmonitor_mapped: backmonitor.mapped,
-      unresolved: raw
+      unresolved: backmonitor.mapped == null
+        ? null
+        : raw
         ? raw.types.usm - backmonitor.mapped
         : analysis
           ? analysis.raw_manifest.types.usm - backmonitor.mapped
           : null,
       evidence: {
+        availability: backmonitor.availability,
         movie_relations: backmonitor.movie_relations,
         transition_relations: backmonitor.transition_relations,
       },

@@ -26,6 +26,19 @@ if (absolutePaths.length) {
   failures.push(`report contains machine absolute paths: ${absolutePaths.join(', ')}`)
 }
 
+if (
+  report.movies?.backmonitor_mapped !==
+  report.movies?.evidence?.movie_relations + report.movies?.evidence?.transition_relations
+) {
+  failures.push('BackMonitor mapped total differs from movie plus transition evidence')
+}
+if (
+  report.movies?.raw_usm - report.movies?.backmonitor_mapped !==
+  report.movies?.unresolved
+) {
+  failures.push('USM mapped and unresolved totals do not equal the RAW USM population')
+}
+
 try {
   execFileSync(
     'git',
@@ -75,10 +88,7 @@ for (const section of ['story', 'cards', 'movies']) {
       }
     }
     if (section === 'movies') {
-      for (const key of ['raw_usm', 'unresolved']) {
-        delete expected[key]
-        delete observed[key]
-      }
+      continue
     }
   }
   if (stableJson(expected) !== stableJson(observed)) failures.push(`${section} drifted`)
