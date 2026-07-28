@@ -17,7 +17,8 @@ web_viewer/scripts/rollback-authoritative-story-collection.mjs
 The history now contains its first real transaction. `1_4_001_00` completed
 RAW extraction, 2/2 part identity, 11/11 voice resolution, masterdata table 6
 relation, legacy-to-authoritative parity, publish, exact rollback, republish,
-and no-audio browser acceptance.
+and no-audio browser acceptance. Source-only CI run `30374641388` verified the
+tracked stable files, strict schema, ledger state, and production build.
 
 ## 1. Purpose
 

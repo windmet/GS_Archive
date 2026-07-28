@@ -1108,6 +1108,11 @@ rollback 工具已由 `7310ea0` 提交并推送，并作为
 
 下一状态仍是 pending：
 
-1. 暂存并提交首笔 transaction；
-2. source-only CI；
-3. PR checks 和审阅收口。
+1. PR 正文同步当前实现状态；
+2. Draft PR #2 审阅；
+3. 获得明确合并授权后再收口到 `master`。
+
+首笔 transaction 已由 `27d89a3` 提交并推送；source-only 的旧 mounted
+判定由 `948a2ef` 修正。GitHub run `30374641388` 已在干净 Linux checkout
+通过完整 `Source-only contract` 和 production build。PR #2 当前
+`MERGEABLE`，仍为 Draft，尚无 review decision。

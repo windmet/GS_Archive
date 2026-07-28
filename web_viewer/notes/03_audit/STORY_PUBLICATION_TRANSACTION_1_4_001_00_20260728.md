@@ -96,3 +96,15 @@ The general compiled corpus remains ignored. This transaction force-adds only
 the three stable JSON artifacts named by the ledger so source-only CI can
 verify their existence, sizes, and hashes. It does not add other compiled
 files or any RAW/media bytes.
+
+## Source-only CI
+
+GitHub `Web Viewer Source Gate` run `30374641388` passed on commit `948a2ef`.
+The clean Linux checkout verified:
+
+- all three ledger artifacts are tracked and hash-exact;
+- all three pass the strict authoritative schema;
+- mounted-only `1_4_001_01` checks remain optional when that ignored corpus is
+  absent;
+- publication manifest generation and current stable state agree;
+- the complete source-only contract and production build pass.
