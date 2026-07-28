@@ -23,7 +23,8 @@ GROWING STARS 社区熟肉绑定拆成彼此独立的工作轨道。新窗口应
 1. 当前事实报告的生成器与漂移校验：**已实现**；source-only
    验证通过，mounted 验证发现 `RAW/audio` 中存在 18 个未登记 WAV，按设计
    阻止基线静默漂移；
-2. 已跟踪二进制清单、Schema 和 verifier；
+2. 已跟踪二进制清单、Schema 和 verifier：**已实现**；108 个 PNG 已逐项登记，
+   未修改任何图片 bytes；
 3. 发布账本 Schema、生成器和 verifier；
 4. 第一笔多 part RAW 剧情发布交易的真实演练；
 5. PR #2 的标题、正文、检查结果和审阅顺序收口；
@@ -382,6 +383,29 @@ public/data/archive_baseline_report.json
 达到 13,018 files / 8,645,733,285 bytes。它们未被删除、移动或接受为权威
 RAW；已记录基线仍为 13,000 files / 8,232,049,221 bytes / 0 WAV。
 
+### 5.5 P0-A 已跟踪二进制清单
+
+当前实现批新增：
+
+```text
+schemas/tracked-binary-assets-v1.schema.json
+policies/tracked-binary-assets.v1.json
+scripts/generate-tracked-binary-inventory.mjs
+scripts/verify-tracked-binary-inventory.mjs
+```
+
+108 个 grandfathered PNG 已全部登记，合计 26,384,189 bytes：
+
+- documentation evidence：3；
+- portal asset：17；
+- stable promoted asset：83；
+- test fixture：5。
+
+generator 对相同 commit 和文件集合保持确定性；verifier 检查 Schema、Git
+tracked 集合、hash/size、logical ID、ignore/force-add 边界、本地路径，以及未来
+非 grandfathered 文件的 2/5 MiB 单文件和 10/25 MiB owner-release batch 边界。
+本批未修改任何 PNG bytes。
+
 ---
 
 ## 6. P0-A 实现：机器可执行治理
@@ -436,6 +460,9 @@ web_viewer/public/data/archive_baseline_report.json
 - 不允许为了得到“干净结果”覆盖现有稳定索引而不记录变化。
 
 ### 6.2 提交 B：二进制清单
+
+实现状态：**已实现**。108 个 PNG 全部为 `grandfathered: true`，清单生成可重复，
+验证器已与 Git tracked 集合和实际文件内容双向核对。
 
 目标：
 

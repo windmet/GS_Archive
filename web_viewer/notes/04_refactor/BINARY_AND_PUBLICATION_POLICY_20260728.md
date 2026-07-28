@@ -205,12 +205,15 @@ External GS translation links are metadata, not promoted media:
 - do not place external links in the local publication ledger;
 - validate them under the external-link contract.
 
-## 9. Machine-readable inventory plan
+## 9. Machine-readable inventory
 
-The follow-up implementation should generate:
+Implemented in the P0-A tracked-binary batch:
 
 ```text
 web_viewer/policies/tracked-binary-assets.v1.json
+web_viewer/schemas/tracked-binary-assets-v1.schema.json
+web_viewer/scripts/generate-tracked-binary-inventory.mjs
+web_viewer/scripts/verify-tracked-binary-inventory.mjs
 ```
 
 Minimum entry:
@@ -239,8 +242,20 @@ The inventory verifier should fail for:
 - a force-added stable asset without a consumer;
 - remote thumbnail URLs recorded as local portal assets.
 
-The inventory is not created in the documentation-only P0 batch. Its schema,
-generator, and verifier should be an isolated implementation commit.
+The generated inventory contains all 108 grandfathered PNG files without
+changing their bytes:
+
+| Category | Files |
+| --- | ---: |
+| `documentation-evidence` | 3 |
+| `portal-asset` | 17 |
+| `stable-promoted-asset` | 83 |
+| `test-fixture` | 5 |
+
+The verifier checks JSON Schema, Git tracked-set equality, file hash and size,
+logical-ID uniqueness, exact ignore/force-add classification, local-only paths,
+and the 2/5 MiB file plus 10/25 MiB owner-release batch boundaries for future
+non-grandfathered entries.
 
 ## 10. Commit discipline
 

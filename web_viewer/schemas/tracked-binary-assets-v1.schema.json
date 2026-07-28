@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gs-archive.local/schemas/tracked-binary-assets-v1.schema.json",
+  "title": "GS Archive Tracked Binary Assets v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "generated_from_commit",
+    "governed_extensions",
+    "summary",
+    "entries"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "generated_from_commit": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "governed_extensions": {
+      "type": "array",
+      "const": ["png"]
+    },
+    "summary": {
+      "type": "object",
+      "required": ["files", "bytes", "grandfathered_files", "new_policy_files"],
+      "properties": {
+        "files": { "type": "integer", "minimum": 0 },
+        "bytes": { "type": "integer", "minimum": 0 },
+        "grandfathered_files": { "type": "integer", "minimum": 0 },
+        "new_policy_files": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "entries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/entry" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "entry": {
+      "type": "object",
+      "required": [
+        "path",
+        "bytes",
+        "sha256",
+        "category",
+        "logical_id",
+        "consumer",
+        "reason_tracked",
+        "force_add_allowed",
+        "owner_release",
+        "grandfathered"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^web_viewer/(?:notes|public)/(?!.*(?:^|/)\\.\\.)(?!.*https?://)[A-Za-z0-9._/-]+\\.png$"
+        },
+        "bytes": { "type": "integer", "minimum": 1 },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "category": {
+          "enum": [
+            "stable-promoted-asset",
+            "portal-asset",
+            "test-fixture",
+            "documentation-evidence",
+            "exception"
+          ]
+        },
+        "logical_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._:-]+$"
+        },
+        "consumer": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "reason_tracked": { "type": "string", "minLength": 1 },
+        "force_add_allowed": { "type": "boolean" },
+        "owner_release": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9][a-z0-9-]+-[0-9]{3}$"
+        },
+        "grandfathered": { "type": "boolean" },
+        "exception_review": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "required": [
+                "approved",
+                "reason",
+                "object_storage_unsuitable",
+                "update_frequency",
+                "rollback_plan",
+                "explicit_user_approval"
+              ],
+              "properties": {
+                "approved": { "const": true },
+                "reason": { "type": "string", "minLength": 1 },
+                "object_storage_unsuitable": { "type": "string", "minLength": 1 },
+                "update_frequency": { "type": "string", "minLength": 1 },
+                "rollback_plan": { "type": "string", "minLength": 1 },
+                "explicit_user_approval": { "type": "boolean" }
+              },
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": { "grandfathered": { "const": false } },
+            "required": ["grandfathered"]
+          },
+          "then": {
+            "properties": {
+              "owner_release": { "type": "string" }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

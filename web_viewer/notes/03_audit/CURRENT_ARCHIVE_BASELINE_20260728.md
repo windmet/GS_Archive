@@ -329,8 +329,9 @@ The documentation and PR-metadata steps below are complete at
 governance batch is now in progress.
 
 1. Implement and commit the current archive baseline report generator and
-   verifier.
+   verifier. **Complete in `b20df7c`.**
 2. Implement the tracked-binary inventory, schema, generator, and verifier.
+   **Implemented in the current batch.**
 3. Implement the publication ledger schema, empty-manifest generator, and
    verifier.
 4. Exercise the first multi-part RAW story publish, rollback, and republish
@@ -372,3 +373,23 @@ The 18 WAV files total 413,684,064 bytes and have timestamps around
 2026-07-27 21:52. They have not been deleted, moved, added to Git, or accepted
 as RAW authority. The recorded manifest remains the baseline until their
 provenance and disposition are explicitly resolved.
+
+### 12.2 Tracked-binary inventory implementation
+
+The 108-PNG / 26,384,189-byte baseline now has a deterministic generated
+inventory, JSON Schema, and verifier. Every entry records its repository path,
+bytes, SHA-256, category, logical ID, consumers, tracking rationale,
+force-add permission, owner release, and grandfathered state.
+
+Current classification:
+
+| Category | Files |
+| --- | ---: |
+| documentation evidence | 3 |
+| portal assets | 17 |
+| stable promoted assets | 83 |
+| test fixtures | 5 |
+
+All 108 entries remain `grandfathered: true`; no PNG bytes changed. Future
+non-grandfathered entries require an `owner_release` and are checked against
+the policy's per-file and per-batch size boundaries.
