@@ -292,4 +292,3 @@ Every handoff and final report must list unfinished work first, then give:
 6. browser evidence;
 7. product acceptance boundary;
 8. remaining risks and next bounded action.
-

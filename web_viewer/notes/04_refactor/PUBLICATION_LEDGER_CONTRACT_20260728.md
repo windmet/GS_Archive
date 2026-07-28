@@ -296,4 +296,3 @@ The publication ledger does not contain:
 
 External GS translation links use
 `EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md`.
-

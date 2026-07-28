@@ -273,4 +273,3 @@ exports. Removing or relocating a material binary requires:
 - a replacement or archive location;
 - a recoverability statement;
 - explicit user authorization when the operation is destructive.
-
