@@ -1097,10 +1097,17 @@ worktree、Draft PR #2、5174，并完整阅读：
 - 3 个产物均为 0 non-text differences；
 - 新增显式整组 rollback 命令及 rollback -> republish verifier。
 
+rollback 工具已由 `7310ea0` 提交并推送，并作为
+`prepared_from_commit`。之后已经完成：
+
+- publish -> 5174；
+- rollback -> 3 个 exact old hashes；
+- republish -> 3 个 exact candidate hashes；
+- 第二次 5174 no-audio 验收；
+- 首笔 release、stable manifest、3 个必要稳定 JSON 和审计文档生成。
+
 下一状态仍是 pending：
 
-1. 提交并推送 rollback 工具；
-2. 以该提交记录 `prepared_from_commit`；
-3. publish -> 5174 -> rollback -> exact old hashes -> republish -> 5174；
-4. 暂存 release、生成 manifest、3 个必要稳定 JSON 和审计文档；
-5. source-only CI 与 PR 检查收口。
+1. 暂存并提交首笔 transaction；
+2. source-only CI；
+3. PR checks 和审阅收口。

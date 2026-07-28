@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "release_id": "2026-07-28-story-1-4-001-00-001",
+  "created_at": "2026-07-28T23:29:34+08:00",
+  "prepared_from_commit": "7310ea06c7fccba64d1c8cbefa6de43b50917150",
+  "transaction_kind": "publish",
+  "scope": {
+    "kind": "collection",
+    "ids": [
+      "1_4_001_00"
+    ]
+  },
+  "entries": [
+    {
+      "logical_id": "story-collection:1_4_001_00",
+      "domain": "story",
+      "source": {
+        "archive_relative_path": "asset/scenario_1_4_001_00.unity3d",
+        "sha256": "f8e3437a3626fc3fff3da0065802db70096c26b989caceca91a2495aa4f4cbc6",
+        "objects": [
+          {
+            "type": "TextAsset",
+            "name": "scenario_1_4_001_00_a",
+            "container_path": "assets/resources/scenariodata/1_4_001_00/scenario_1_4_001_00_a.json",
+            "path_id": 7072651050332240271
+          },
+          {
+            "type": "TextAsset",
+            "name": "scenario_1_4_001_00_b",
+            "container_path": "assets/resources/scenariodata/1_4_001_00/scenario_1_4_001_00_b.json",
+            "path_id": -3578250919027490954
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "story_master_index",
+          "key": "main:1_4_001_00_a",
+          "evidence": "decoded table 6 field 6 maps the prologue part to compiled collection 1_4_001_00"
+        },
+        {
+          "product": "story_master_index",
+          "key": "main:1_4_001_00_b",
+          "evidence": "decoded table 6 field 6 maps the second prologue part to compiled collection 1_4_001_00"
+        }
+      ],
+      "transform": {
+        "tool": "compile-story-migration-candidate.py + authoritative-collection-publisher.mjs",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/compiled/1_4_001_00.json",
+          "url": "/data/compiled/1_4_001_00.json",
+          "bytes": 336694,
+          "sha256": "56f871f7fc0da7d523d6eb61b25202fa8ee18c250bec304c030e3702497911d9"
+        },
+        {
+          "path": "web_viewer/public/data/compiled/episodes/1_4_001_00_a.json",
+          "url": "/data/compiled/episodes/1_4_001_00_a.json",
+          "bytes": 174502,
+          "sha256": "3da2d6f5f7d80489efdcd746fb523346d9898cc17d9634a5d81a49ca72c7c202"
+        },
+        {
+          "path": "web_viewer/public/data/compiled/episodes/1_4_001_00_b.json",
+          "url": "/data/compiled/episodes/1_4_001_00_b.json",
+          "bytes": 162250,
+          "sha256": "0e2f8caeecae7f1ce04bef7dfcfb8368192ac8111d59ed931dcbab93b1db0a46"
+        }
+      ],
+      "consumers": [
+        "StoryViewer",
+        "StoryCollection",
+        "StoryDetail"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "aggregate and episodes a/b: 60 source steps, 60 candidate steps",
+          "aggregate: 30 text identities added and 0 non-text differences",
+          "episode a: 16 text identities added and 0 non-text differences",
+          "episode b: 14 text identities added and 0 non-text differences",
+          "11/11 dialogue voice references resolved"
+        ]
+      },
+      "browser_acceptance": {
+        "state": "browser-accepted",
+        "tested_url": "http://127.0.0.1:5174/?view=player&story_type=main&story_mode=search&story_section=101&story=1_4_001_00.json&scenario=1_4_001_00.json&start_step=12&end_step=15&return=story_detail&noAudio=1&runtimeDebug=1",
+        "tested_at": "2026-07-28T23:29:09+08:00",
+        "evidence": [
+          "natural story detail entry showed title, 2 parts, 59 playable steps, and 11 voices",
+          "step 7 showed the expected Japanese producer monologue over bg066_stageside_in_10",
+          "step 12 showed the expected Japanese dialogue with one 047shu Spine instance",
+          "noAudio kept AudioContext uninitialized, both audio layers disabled, and active sources at zero",
+          "no console errors occurred after the final republish"
+        ]
+      },
+      "previous_state": {
+        "release_id": null,
+        "artifacts": []
+      },
+      "rollback_evidence": {
+        "performed": true,
+        "backup_manifest": "web_viewer/.analysis/publication/2026-07-28-story-1-4-001-00-001/authoritative_publish_backup_manifest.json",
+        "restored_artifacts": [
+          {
+            "path": "web_viewer/public/data/compiled/1_4_001_00.json",
+            "url": "/data/compiled/1_4_001_00.json",
+            "bytes": 140971,
+            "sha256": "249ff82d083a6ee746091cfe32b362c9beecfbb4d574aa8d1575defb2e59797b"
+          },
+          {
+            "path": "web_viewer/public/data/compiled/episodes/1_4_001_00_a.json",
+            "url": "/data/compiled/episodes/1_4_001_00_a.json",
+            "bytes": 69558,
+            "sha256": "a07866e0a05e6bf160b8b4a7721ac9e1c60525e65738e6b7c85200ab072eaca6"
+          },
+          {
+            "path": "web_viewer/public/data/compiled/episodes/1_4_001_00_b.json",
+            "url": "/data/compiled/episodes/1_4_001_00_b.json",
+            "bytes": 71829,
+            "sha256": "afad528fc5cc32f37d0ffc98d84e6af28b317d1edf460d357f593b20191a2a47"
+          }
+        ],
+        "final_republish_verified": true
+      }
+    }
+  ]
+}

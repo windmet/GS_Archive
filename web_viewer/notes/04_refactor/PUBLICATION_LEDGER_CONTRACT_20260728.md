@@ -1,6 +1,6 @@
 # Publication Ledger Contract
 
-Status: contract and explicit collection rollback implemented; first real transaction in progress
+Status: contract, explicit collection rollback, and first real transaction implemented
 Date: 2026-07-28
 
 Implementation:
@@ -14,11 +14,10 @@ web_viewer/scripts/verify-publication-ledger.mjs
 web_viewer/scripts/rollback-authoritative-story-collection.mjs
 ```
 
-The current history is intentionally empty. Generator and verifier coverage is
-implemented. `1_4_001_00` is the selected first multi-part transaction: its
+The history now contains its first real transaction. `1_4_001_00` completed
 RAW extraction, 2/2 part identity, 11/11 voice resolution, masterdata table 6
-relation, and legacy-to-authoritative parity candidate have passed. Stable
-publish/rollback/republish and browser acceptance remain pending.
+relation, legacy-to-authoritative parity, publish, exact rollback, republish,
+and no-audio browser acceptance.
 
 ## 1. Purpose
 
@@ -270,6 +269,7 @@ The future verifier must check:
 - rollback restoration hashes;
 - stable manifest determinism;
 - current stable manifest agrees with the release history;
+- every current stable artifact is Git tracked so source-only CI can verify it;
 - binary-policy limits and categories where applicable.
 
 The verifier must not require RAW or ignored media in a source-only CI job

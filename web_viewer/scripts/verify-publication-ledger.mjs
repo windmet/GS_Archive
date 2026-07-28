@@ -9,6 +9,7 @@ import {
   manifestPath,
   projectRoot,
   readReleaseFiles,
+  repositoryRoot,
   schemaPath,
   stableJson,
   verifyPublishedArtifact,
@@ -100,6 +101,15 @@ for (const state of Object.values(generated.by_logical_id)) {
   for (const artifact of state.artifacts) {
     const failure = verifyPublishedArtifact(artifact)
     if (failure) failures.push(failure)
+    try {
+      execFileSync(
+        'git',
+        ['ls-files', '--error-unmatch', '--', artifact.path],
+        { cwd: repositoryRoot, stdio: 'ignore' },
+      )
+    } catch {
+      failures.push(`current stable artifact is not Git tracked: ${artifact.path}`)
+    }
   }
 }
 
