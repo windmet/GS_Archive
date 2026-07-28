@@ -1076,3 +1076,31 @@ worktree、Draft PR #2、5174，并完整阅读：
 
 熟肉外链、USM 和 `image_*` 是 P0 之后的独立轨道。它们有明确优先级，但不应
 阻塞当前 PR #2 的事实治理和安全合并。
+
+---
+
+## 16. 2026-07-28 执行状态补充
+
+已完成并推送：
+
+- 当前事实报告器；
+- tracked binary inventory/schema/verifier；
+- publication ledger schema/generator/verifier 空骨架。
+
+第一笔真实事务已选定 `1_4_001_00`，不是重复登记已经 strict 发布的
+`1_4_001_01`。当前已完成：
+
+- RAW 容器和 a/b 两个 TextAsset 身份重提取；
+- 11/11 voice resolved；
+- masterdata `story_master_index` table 6 主线关系核对；
+- aggregate + a/b 的 legacy -> compatibility -> authoritative parity；
+- 3 个产物均为 0 non-text differences；
+- 新增显式整组 rollback 命令及 rollback -> republish verifier。
+
+下一状态仍是 pending：
+
+1. 提交并推送 rollback 工具；
+2. 以该提交记录 `prepared_from_commit`；
+3. publish -> 5174 -> rollback -> exact old hashes -> republish -> 5174；
+4. 暂存 release、生成 manifest、3 个必要稳定 JSON 和审计文档；
+5. source-only CI 与 PR 检查收口。

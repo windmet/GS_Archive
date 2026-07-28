@@ -1,6 +1,6 @@
 # Publication Ledger Contract
 
-Status: contract implemented; first real transaction pending
+Status: contract and explicit collection rollback implemented; first real transaction in progress
 Date: 2026-07-28
 
 Implementation:
@@ -11,11 +11,14 @@ web_viewer/public/data/publication/manifest.json
 web_viewer/public/data/publication/releases/
 web_viewer/scripts/generate-publication-manifest.mjs
 web_viewer/scripts/verify-publication-ledger.mjs
+web_viewer/scripts/rollback-authoritative-story-collection.mjs
 ```
 
 The current history is intentionally empty. Generator and verifier coverage is
-implemented; the first multi-part RAW story publish/rollback/republish
-transaction remains pending.
+implemented. `1_4_001_00` is the selected first multi-part transaction: its
+RAW extraction, 2/2 part identity, 11/11 voice resolution, masterdata table 6
+relation, and legacy-to-authoritative parity candidate have passed. Stable
+publish/rollback/republish and browser acceptance remain pending.
 
 ## 1. Purpose
 
@@ -292,6 +295,21 @@ candidate
 
 This tests collection scope, multiple artifacts, stable manifest generation,
 rollback, and republish without adding a new binary resource domain.
+
+Selected transaction:
+
+```text
+story-collection:1_4_001_00
+aggregate + episodes a/b
+60 steps
+11/11 voice references resolved
+legacy -> strict story-runtime-v2
+```
+
+The candidate is generated outside the stable corpus. The explicit rollback
+command requires the original publish backup, the exact candidate, and a
+matching group confirmation. It refuses rollback if current published,
+candidate, or backup hashes drift.
 
 After the contract is proven, backfill `001tom` and `002sht` without modifying
 their PNG bytes.
