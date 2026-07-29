@@ -41,7 +41,65 @@ PR #2 合入了：
 
 PR #3 只修正合并后的状态文档，没有扩大运行时范围。
 
-## 2. 尚未完成，按优先级排列
+## 2. 尚未完成，按独立轨道排列
+
+### P0-G：治理一致性与新发布写锁
+
+当前 authoritative v2 实际为：
+
+```text
+ledger-governed:
+- collection 1_4_001_00 / 3 artifacts
+
+pre-ledger:
+- collection 1_4_001_01 / 11 artifacts
+- collection 5_01_101_22 / 3 artifacts
+- standalone 1_x_001tom_2_1_2_001_12 / 1 artifact
+
+total:
+3 collections + 1 standalone / 18 artifacts
+```
+
+当前没有一个独立机器 registry 能同时表达以上四项及其 ledger ownership。
+publication manifest 只能发现 `1_4_001_00`，扫描所有 v2 JSON 又可能把 fixture
+或未发布候选误计为正式产物。
+
+下一实现提交应增加：
+
+```text
+schemas/authoritative-story-publications-v1.schema.json
+public/data/authoritative_story_publications.json
+```
+
+每项至少记录：
+
+- logical ID；
+- `collection` 或 `standalone`；
+- aggregate/episode artifact 路径；
+- v2 schema/runtime contract；
+- authoritative evidence；
+- `ledger-governed` 或 `pre-ledger`；
+- release ID 或 promotion registry evidence。
+
+Baseline reporter 再从这个 registry、publication manifest 和实际 tracked
+artifacts 交叉验证，输出：
+
+```text
+collection_count
+standalone_count
+artifact_count
+ledger_governed
+pre_ledger
+```
+
+治理写锁：
+
+- authoritative 数量、EOL canonical identity 和版本政策完成前，不新增
+  ledger release；
+- 不做 PNG backfill；
+- 不发布 `003hok` 或第二笔 Story transaction；
+- 不修改已合并 v1 release 的 bytes/hash；
+- Runtime 长稳和 GS 外链 metadata/UI 不受该写锁阻塞。
 
 ### P0-R：Story Runtime 2–4 小时长稳
 
@@ -140,7 +198,7 @@ extra bytes: 413,684,064
 codex/raw-audio-wav-provenance
 ```
 
-### P0-G：修复 publication ledger 的 Windows 换行门禁
+### P0-G2：修复 publication ledger 的 Windows 换行门禁
 
 合并后的 GitHub Linux gate 通过，但当前 Windows checkout：
 
@@ -165,21 +223,73 @@ canonical Git blob 的 LF bytes：
 - 本地 `npm run verify:publication-ledger` 当前 FAIL；
 - 不能把 ledger bytes/hash 改成某台 Windows 机器的 CRLF 值。
 
-推荐独立比较两种方案：
+修复必须同时覆盖四个阶段：
 
-1. 对 ledger-governed stable JSON 使用精确 `.gitattributes` `eol=lf`；
-2. 明确定义 verifier 的 canonical Git-blob identity，同时另做 runtime
-   worktree semantic verification。
+```text
+candidate:
+deterministic LF output + semantic verification
 
-优先评估方案 1，因为稳定发布 byte identity 应尽量在所有 checkout 相同。
-不要对全部历史 JSON 进行无界 `renormalize`；先只覆盖第一笔 transaction
-的三个文件，检查 Git diff、Vite 读取和 Linux/Windows verifier。
+staged pre-commit:
+index blob bytes/hash
+
+committed release:
+HEAD blob bytes/hash
+
+runtime worktree:
+file exists + JSON parse + schema + semantic equality + Vite read
+```
+
+只使用 `git show HEAD:<path>` 会漏掉尚未提交的新 release；只验证 worktree
+又会被 `core.autocrlf` 影响。Verifier 必须明确选择 HEAD 或 index canonical
+blob，并保留实际 worktree runtime 检查。
+
+同时对第一笔 transaction 的三个精确路径和 publication metadata JSON 使用
+`text eol=lf`。不要对 `public/data/compiled/**/*.json` 全域 renormalize。
 
 建议分支：
 
 ```text
 codex/publication-ledger-windows-eol
 ```
+
+### P0-G3：冻结 v1，设计 v2 与 annotation
+
+以下文件保持字节不可变：
+
+```text
+schemas/publication-release-v1.schema.json
+public/data/publication/releases/2026-07-28-story-1-4-001-00-001.json
+```
+
+仅保留文件还不足以冻结 v1。Verifier 必须使用历史 v1 release ID allowlist
+或版本 cutoff，拒绝新的 v1 release。
+
+未来新增：
+
+```text
+schemas/publication-release-v2.schema.json
+schemas/publication-annotation-v1.schema.json
+public/data/publication/annotations/
+```
+
+v2 应支持：
+
+- `previous_state.kind`: `absent`、`governed-release`、
+  `unmanaged-existing`；
+- accepted browser evidence 的 commit、browser name/version/environment、
+  非空 URL/time/evidence；
+- publish/replace/republish 的非空 `published`；
+- RAW 子资源发布的非空 `source.objects`；
+- backup manifest path、SHA-256、format/version。
+
+Annotation 必须：
+
+- 有唯一 annotation ID 和 target release ID；
+- append-only；
+- 只解释历史语义，不覆盖 release 字段；
+- 不改变 `manifest.by_logical_id` 的稳定状态重放；
+- 由独立 Schema、verifier 和审计索引管理；
+- 不提供原地删除或修改已合并 annotation 的捷径。
 
 ### P1-A：GS-only 社区熟肉外链试点
 
@@ -275,41 +385,35 @@ notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 
 不要全量导出 PNG，不要一次性替换 `public/assets`。
 
-## 3. 推荐执行顺序
+## 3. 三轨依赖图
 
 ```text
 master 4e416a6
   |
-  +-- Track 1: Story Runtime 2–4h long soak
-  |     -> acceptance report only
+  +-- Track G: governance consistency
+  |     3+1 / 18
+  |     -> authoritative registry/reporter
+  |     -> canonical EOL identity
+  |     -> freeze v1
+  |     -> v2 + annotation
   |
-  +-- Track 2: 18 WAV provenance audit
-  |     -> read-only evidence first
-  |     -> user approval before move/delete
+  +-- Track R: Runtime acceptance
+  |     fixed Runtime commit
+  |     -> 2–4h soak
+  |     -> quiet endpoint
+  |     -> PASS / FAIL
   |
-  +-- Track 3: publication ledger Windows EOL
-  |     -> canonical byte identity
-  |
-  +-- Track 4: GS external-link pilot
-  |     -> two exact events
-  |     -> 5174
-  |     -> THE KOGADO candidates
-  |
-  +-- Track 5: USM catalog
-  |
-  +-- Track 6: image bundle catalog
+  +-- Track P: portal/resource discovery
+        WAV read-only provenance
+        GS external-link pilot
+        USM relation catalog
+        image relation catalog
 ```
 
-优先建议：
-
-1. 先完成长稳，使 Story Runtime 的发布状态有确定结论；
-2. 接着审计 WAV，恢复 mounted source 的可信基线；
-3. 修复 publication ledger 的 Windows EOL 门禁；
-4. 然后做 GS 熟肉两条 exact pilot；
-5. USM 和 image 目录继续后置。
-
-如果长稳需要无人值守较长时间，可以在它运行时只读审计 WAV；不要在同一
-checkout 同时改运行时代码。
+Track G、R、P 不互相伪装成完成条件。可以并行，但必须使用独立 branch 和
+checkout。Track G 完成前禁止新的 ledger 写入；Track R 不依赖 EOL、WAV 或
+熟肉；Track P 中只有 metadata/UI 和只读 catalog 可以并行，WAV move/delete
+与任何 stable promotion 仍需另行授权或通过 Track G 门槛。
 
 ## 4. 每条轨道的 Git 边界
 
@@ -380,10 +484,10 @@ worktree、origin/master、5174，并确认 PR #2=bca7042、PR #3=4e416a6
 3. web_viewer/notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md
 4. web_viewer/notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 
-先报告事实漂移，再只选择一条有界轨道。默认优先完成 2–4 小时长稳；
-如果暂时不能占用浏览器，先修复 publication ledger 的 Windows EOL 门禁，
-或只读审计 RAW/audio 的 18 个 WAV。不得删除、移动或静默接受 WAV。GS
-熟肉试点只做 Growing Stars，并从两个 exact event 开始。
+先报告事实漂移，再只选择一条有界轨道。Track G 先修正 3+1/18 和机器
+registry；Track R 可独立执行 2–4 小时长稳；Track P 可做 GS external-link
+metadata/UI 或只读资源目录。不得新增 ledger release、回填 PNG、删除或移动
+WAV。GS 熟肉试点只做 Growing Stars，并从两个 exact event 开始。
 ```
 
 ## 7. 完成定义

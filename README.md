@@ -18,8 +18,10 @@ Current verified archive snapshot:
 - 4,939 / 4,939 valid RAW scenario parts are represented in public output.
 - 26,890 / 26,902 RAW story voice references resolve; the remaining 12 are
   authored dangling references.
-- Strict Story Runtime v2 currently contains two formal collections and one
-  standalone RAW-published scene.
+- Published authoritative Story Runtime v2 currently contains three
+  collections and one standalone RAW-published scene, for 18 JSON artifacts.
+  Collection `1_4_001_00` is ledger-governed; the other two collections and
+  the standalone scene predate the publication ledger.
 - Masterdata contains 836 card rows and 826 unique card resource IDs; RAW
   covers 826 / 826 resources, while the portal independently normalizes 826
   card entities.
@@ -63,7 +65,8 @@ Important paths:
 ## Local Development
 
 ```powershell
-cd E:\Web_build\SideM_Archived\web_viewer
+git clone https://github.com/windmet/GS_Archive.git
+cd GS_Archive\web_viewer
 npm install
 npm run dev -- --host 127.0.0.1 --port 5174
 ```

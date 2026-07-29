@@ -160,14 +160,24 @@ as separate stories.
 
 ### 5.3 Authoritative runtime-v2 publication
 
-The strict runtime-v2 surface is:
+The published authoritative runtime-v2 surface is:
 
-- two formal authoritative collections:
+- three authoritative collections:
+  - `1_4_001_00`;
   - `1_4_001_01`;
   - `5_01_101_22`;
 - one standalone RAW-published v2 scene:
   - `1_x_001tom_2_1_2_001_12`;
-- 15 JSON artifacts when aggregate and episode files are counted.
+- 18 JSON artifacts when aggregate and episode files are counted.
+
+Publication ownership is not the same as authoritative publication:
+
+| Logical ID | Artifacts | Publication ownership |
+| --- | ---: | --- |
+| collection `1_4_001_00` | 3 | ledger-governed |
+| collection `1_4_001_01` | 11 | pre-ledger authoritative |
+| collection `5_01_101_22` | 3 | pre-ledger authoritative |
+| standalone `1_x_001tom_2_1_2_001_12` | 1 | pre-ledger RAW promotion |
 
 Correct status:
 
@@ -176,7 +186,8 @@ RAW story discovery and public matching:
 source-proven, scope 3,398 / 3,398 groups
 
 strict authoritative-v2:
-2 formal collections + 1 standalone RAW-published scene
+3 published collections + 1 standalone RAW-published scene
+18 v2 JSON artifacts
 
 full authoritative-v2 promotion:
 deferred
@@ -199,8 +210,9 @@ entity normalization.
 
 ## 7. Runtime and browser status
 
-Runtime ownership, `StoryAudioSession`, strict schema, compiler, publisher, and
-the two formal collections are merged through the Story Runtime phase.
+Runtime ownership, `StoryAudioSession`, strict schema, compiler, publisher,
+three authoritative collections, and one standalone v2 scene are merged.
+Only `1_4_001_00` is currently represented in the publication ledger.
 
 The `noAudio=1` startup-isolation defect was fixed in `a393bba`. Fresh
 direct-player and home routes, including an explicit home voice-button click,
@@ -447,7 +459,7 @@ boundary. The data transaction has not semantically drifted, but local
 separate cross-platform contract commit; do not rewrite the release hashes to
 match one Windows checkout.
 
-### 12.4 Current post-merge priority
+### 12.4 Current post-merge dependency tracks
 
 The current execution entry is:
 
@@ -455,14 +467,37 @@ The current execution entry is:
 notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
 ```
 
-Priority order:
+The work is not one serial queue:
 
-1. run the remaining 2–4 hour Story Runtime mixed soak on a fixed `master`
-   commit and classify release acceptance;
-2. investigate the 18 local WAV files without deleting, moving, or promoting
-   them, then restore a trustworthy mounted-source verifier result;
-3. make publication-ledger byte identity cross-platform without weakening
-   canonical hash verification;
-4. implement the two-record exact GS translation-link pilot on a dedicated
-   branch;
-5. only then begin the 260-USM and 1,271-`image_*` relation catalogs.
+```text
+Track G / governance consistency
+3+1 / 18 status
+-> authoritative-v2 machine registry and reporter
+-> cross-platform canonical ledger bytes
+-> freeze v1
+-> compatible v2 release + append-only annotation contracts
+
+Track R / Runtime acceptance
+fixed Runtime commit
+-> 2–4 hour mixed soak
+-> final 25% resource curve
+-> quiet endpoint
+-> PASS or FAIL
+
+Track P / portal and resource discovery
+18 WAV read-only provenance
+GS-only external translation-link pilot
+260-USM relation catalog
+1,271-image-bundle relation catalog
+```
+
+Write locks:
+
+- no new ledger publication, PNG backfill, or stable binary promotion until
+  Track G fixes canonical bytes and version policy;
+- Track R is independent of Track G and Track P;
+- external-link metadata/UI does not enter the publication ledger and may use
+  its own bounded branch;
+- WAV work remains read-only until disposition receives separate approval;
+- USM and image work remains catalog-only until a bounded promotion is
+  separately authorized.

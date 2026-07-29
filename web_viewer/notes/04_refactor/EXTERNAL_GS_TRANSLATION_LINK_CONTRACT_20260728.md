@@ -316,9 +316,8 @@ Browser gate at 5174:
 
 ## 13. Git plan
 
-Do not add this pilot to Draft PR #2.
-
-After PR #2 closes:
+PR #2 is merged and intentionally contains no external-link pilot. Implement
+the pilot on a new bounded branch from the current `master`:
 
 ```text
 branch:

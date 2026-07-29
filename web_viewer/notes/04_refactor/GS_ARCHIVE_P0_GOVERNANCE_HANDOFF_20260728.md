@@ -299,11 +299,19 @@ RAW 是从 `RAW.7z.001`、`RAW.7z.002` 解出的原始三分类树。旁边的�
 | root compiled JSON | 3,405 | compiled 根目录 JSON |
 | direct episode JSON | 1,884 | episodes 直接子文件 |
 
-strict v2 当前正式范围：
+已发布 authoritative v2 当前范围：
 
-- collection `1_4_001_01`；
-- collection `5_01_101_22`；
-- standalone RAW v2 `1_x_001tom_2_1_2_001_12`。
+- ledger-governed collection `1_4_001_00`：aggregate + a/b，3 artifacts；
+- pre-ledger collection `1_4_001_01`：aggregate + a–j，11 artifacts；
+- pre-ledger collection `5_01_101_22`：aggregate + a/e，3 artifacts；
+- pre-ledger standalone RAW v2 `1_x_001tom_2_1_2_001_12`：1 artifact。
+
+合计：
+
+```text
+3 collections + 1 standalone
+18 v2 JSON artifacts
+```
 
 这不是全量 strict v2。
 
@@ -535,8 +543,10 @@ web_viewer/scripts/verify-tracked-binary-inventory.mjs
 
 ### 6.3 提交 C：发布账本骨架
 
-实现状态：**已实现**。空 history 可确定性生成空 manifest，source-only verifier
-不要求 mounted RAW；第一笔真实多 part transaction 属于下一提交。
+历史实施阶段：**已完成并被后续事务推进**。这一提交当时证明空 history 可
+确定性生成空 manifest，source-only verifier 不要求 mounted RAW。它已被
+`1_4_001_00` 第一笔真实 multi-part transaction 超越；当前 release history
+不再为空。
 
 目标：
 
@@ -548,7 +558,7 @@ web_viewer/scripts/generate-publication-manifest.mjs
 web_viewer/scripts/verify-publication-ledger.mjs
 ```
 
-首先只实现：
+该历史提交当时只实现：
 
 - Schema；
 - 空 history 生成空 manifest；
@@ -1111,7 +1121,8 @@ release-accepted。
 
 - 当前事实报告器；
 - tracked binary inventory/schema/verifier；
-- publication ledger schema/generator/verifier 空骨架。
+- publication ledger schema/generator/verifier 的初始空骨架；随后已由
+  `1_4_001_00` 第一笔真实 transaction 推进为非空账本。
 
 第一笔真实事务已选定 `1_4_001_00`，不是重复登记已经 strict 发布的
 `1_4_001_01`。当前已完成：
