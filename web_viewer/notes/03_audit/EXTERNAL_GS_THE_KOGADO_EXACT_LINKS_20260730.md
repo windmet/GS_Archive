@@ -4,6 +4,12 @@ Status: exact mapping verified
 Date: 2026-07-30
 Scope: SideM GROWING STARS / THE 虎牙道 Episode 0
 
+Merge refresh:
+
+- PR #18 merged as `7342f5a5bf3c6d3e2ea2eef35cfdfc95c530e44a`;
+- PR final-head gate `30478115572`: PASS;
+- master post-merge gate `30478199856`: PASS.
+
 ## 1. 结论
 
 三条 Bilibili 中文资源均与一个本地 GS unit-story collection 的完整边界
