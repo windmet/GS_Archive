@@ -24,6 +24,19 @@ export const reportPath = path.join(
   'archive_baseline_report.json',
 )
 
+export const authoritativeStoryRegistryPath = path.join(
+  projectRoot,
+  'public',
+  'data',
+  'authoritative_story_publications.json',
+)
+
+export const authoritativeStoryRegistrySchemaPath = path.join(
+  projectRoot,
+  'schemas',
+  'authoritative-story-publications-v1.schema.json',
+)
+
 const analysisPaths = {
   rawSummary: path.join(projectRoot, '.analysis', 'raw-source', 'raw_manifest_summary.json'),
   storyCoverage: path.join(projectRoot, '.analysis', 'raw-migration', 'story', 'coverage.json'),
@@ -36,6 +49,7 @@ const publicPaths = {
   compiled: path.join(projectRoot, 'public', 'data', 'compiled'),
   cardIndex: path.join(projectRoot, 'public', 'data', 'masterdata', 'card_index.json'),
   backmonitor: path.join(projectRoot, 'public', 'assets', 'live-chibi', 'backmonitor', 'index.json'),
+  publicationManifest: path.join(projectRoot, 'public', 'data', 'publication', 'manifest.json'),
 }
 
 function readJson(filename) {
@@ -98,6 +112,92 @@ function compiledStats() {
       path.join(publicPaths.compiled, 'episodes'),
       isJson,
     ).length,
+  }
+}
+
+export function authoritativeV2Stats() {
+  const registry = readJson(authoritativeStoryRegistryPath)
+  const publicationManifest = readJson(publicPaths.publicationManifest)
+  const logicalIds = new Set()
+  const artifactPaths = new Set()
+  const collections = []
+  const standalone = []
+  const ledgerGoverned = []
+  const preLedger = []
+
+  for (const entry of registry.entries || []) {
+    if (logicalIds.has(entry.logical_id)) {
+      throw new Error(`duplicate authoritative Story logical ID: ${entry.logical_id}`)
+    }
+    logicalIds.add(entry.logical_id)
+
+    const roles = new Set()
+    for (const artifact of entry.artifacts || []) {
+      if (artifactPaths.has(artifact.path)) {
+        throw new Error(`duplicate authoritative Story artifact: ${artifact.path}`)
+      }
+      artifactPaths.add(artifact.path)
+      roles.add(artifact.role)
+
+      const filename = path.join(projectRoot, artifact.path)
+      if (!existsSync(filename)) {
+        throw new Error(`authoritative Story artifact does not exist: ${artifact.path}`)
+      }
+      const payload = readJson(filename)
+      if (payload.schema_version !== 2 || payload.runtime_contract !== 'story-runtime-v2') {
+        throw new Error(`authoritative Story artifact is not Runtime v2: ${artifact.path}`)
+      }
+      if (
+        payload.scenario_id !== entry.scenario_id &&
+        !payload.scenario_id?.startsWith(`${entry.scenario_id}_`)
+      ) {
+        throw new Error(`authoritative Story scenario identity drifted: ${artifact.path}`)
+      }
+    }
+
+    if (entry.kind === 'collection') {
+      if (!roles.has('aggregate') || !roles.has('episode')) {
+        throw new Error(`authoritative collection lacks aggregate or episode: ${entry.logical_id}`)
+      }
+      collections.push(entry.scenario_id)
+    } else {
+      if (entry.artifacts.length !== 1 || !roles.has('standalone')) {
+        throw new Error(`authoritative standalone shape drifted: ${entry.logical_id}`)
+      }
+      standalone.push(entry.scenario_id)
+    }
+
+    const manifestState = publicationManifest.by_logical_id?.[entry.logical_id] || null
+    if (entry.ownership.state === 'ledger-governed') {
+      if (!manifestState || manifestState.release_id !== entry.ownership.release_id) {
+        throw new Error(`ledger ownership drifted: ${entry.logical_id}`)
+      }
+      const registryPublishedPaths = entry.artifacts
+        .map(artifact => `web_viewer/${artifact.path}`)
+        .sort()
+      const manifestPublishedPaths = (manifestState.artifacts || [])
+        .map(artifact => artifact.path)
+        .sort()
+      if (stableJson(registryPublishedPaths) !== stableJson(manifestPublishedPaths)) {
+        throw new Error(`ledger artifact ownership drifted: ${entry.logical_id}`)
+      }
+      ledgerGoverned.push(entry.logical_id)
+    } else {
+      if (manifestState) {
+        throw new Error(`pre-ledger Story unexpectedly appears in ledger: ${entry.logical_id}`)
+      }
+      preLedger.push(entry.logical_id)
+    }
+  }
+
+  return {
+    collection_count: collections.length,
+    standalone_count: standalone.length,
+    artifact_count: artifactPaths.size,
+    collections: collections.sort(),
+    standalone: standalone.sort(),
+    ledger_governed: ledgerGoverned.sort(),
+    pre_ledger: preLedger.sort(),
   }
 }
 
@@ -242,6 +342,7 @@ export async function collectArchiveBaseline({
   const capturedAt = generatedAt || git('show', '-s', '--format=%cI', repositoryCommit)
   const analysis = analysisStats()
   const compiled = compiledStats()
+  const authoritativeV2 = authoritativeV2Stats()
   const trackedPng = trackedPngStats()
   const cards = publicCardStats()
   const backmonitor = backmonitorStats({ sourceOnly })
@@ -311,6 +412,7 @@ export async function collectArchiveBaseline({
         voice_dangling: null,
       }),
       compiled_artifacts: compiled,
+      authoritative_v2: authoritativeV2,
     },
     cards: {
       availability: analysis ? 'mounted' : 'source-only',

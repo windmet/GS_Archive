@@ -162,6 +162,8 @@ as separate stories.
 
 The published authoritative runtime-v2 surface is:
 
+<!-- authoritative-v2-summary collections=3 standalone=1 artifacts=18 -->
+
 - three authoritative collections:
   - `1_4_001_00`;
   - `1_4_001_01`;

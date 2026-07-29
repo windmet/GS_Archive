@@ -22,6 +22,7 @@ Current verified archive snapshot:
   collections and one standalone RAW-published scene, for 18 JSON artifacts.
   Collection `1_4_001_00` is ledger-governed; the other two collections and
   the standalone scene predate the publication ledger.
+<!-- authoritative-v2-summary collections=3 standalone=1 artifacts=18 -->
 - Masterdata contains 836 card rows and 826 unique card resource IDs; RAW
   covers 826 / 826 resources, while the portal independently normalizes 826
   card entities.
