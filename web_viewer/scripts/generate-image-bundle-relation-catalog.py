@@ -235,10 +235,20 @@ def exact_event_relation(
     stem: str,
     event_index: dict[str, dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    match = re.fullmatch(r"image_item_icon_event_([0-9]+)(?:_([nr]))?", stem)
-    if match is None:
+    item_match = re.fullmatch(
+        r"image_item_icon_event_([0-9]+)(?:_([nr]))?",
+        stem,
+    )
+    honor_match = re.fullmatch(r"image_honor_event_([0-9]+)", stem)
+    if item_match is None and honor_match is None:
         return []
-    code, variant = match.groups()
+    if item_match is not None:
+        code, variant = item_match.groups()
+        asset_role = "item-icon"
+    else:
+        code = honor_match.group(1)
+        variant = None
+        asset_role = "honor"
     row = event_index.get(code)
     if row is None:
         return []
@@ -248,7 +258,7 @@ def exact_event_relation(
             "event_name": row["name"],
             "event_type": row["event_type"],
             "event_type_label": row["event_type_label"],
-            "asset_role": "item-icon",
+            "asset_role": asset_role,
             "variant_code": variant or "base",
             "relation_type": "exact_bundle_filename_event_code",
         }

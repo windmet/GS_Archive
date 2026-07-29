@@ -183,9 +183,12 @@ for (const row of eventIndex.events || []) {
   }
 }
 const expectedEventRelations = entryId => {
-  const match = /^image_item_icon_event_([0-9]+)(?:_([nr]))?$/u.exec(entryId)
-  if (!match) return []
-  const [, code, variant] = match
+  const itemMatch = /^image_item_icon_event_([0-9]+)(?:_([nr]))?$/u.exec(entryId)
+  const honorMatch = /^image_honor_event_([0-9]+)$/u.exec(entryId)
+  if (!itemMatch && !honorMatch) return []
+  const code = itemMatch ? itemMatch[1] : honorMatch[1]
+  const variant = itemMatch?.[2]
+  const assetRole = itemMatch ? 'item-icon' : 'honor'
   const row = eventsByCode.get(code)
   if (!row) return []
   return [{
@@ -193,7 +196,7 @@ const expectedEventRelations = entryId => {
     event_name: row.name,
     event_type: row.event_type,
     event_type_label: row.event_type_label,
-    asset_role: 'item-icon',
+    asset_role: assetRole,
     variant_code: variant || 'base',
     relation_type: 'exact_bundle_filename_event_code',
   }]
@@ -231,7 +234,10 @@ let stablePromotionCount = 0
 let exactGashaRelationCount = 0
 const exactGashaRoles = new Map()
 let exactEventRelationCount = 0
-const exactEventVariants = new Map()
+let exactItemRelationCount = 0
+let exactHonorRelationCount = 0
+const exactItemVariants = new Map()
+const exactHonorVariants = new Map()
 const familyCounts = {}
 const mappingCounts = {}
 
@@ -438,9 +444,17 @@ for (const entry of entries) {
   )
   exactEventRelationCount += (entry.exact_event_relations || []).length
   for (const relation of entry.exact_event_relations || []) {
-    const variants = exactEventVariants.get(relation.event_code) || new Set()
+    const variantMap = relation.asset_role === 'honor'
+      ? exactHonorVariants
+      : exactItemVariants
+    if (relation.asset_role === 'honor') {
+      exactHonorRelationCount += 1
+    } else {
+      exactItemRelationCount += 1
+    }
+    const variants = variantMap.get(relation.event_code) || new Set()
     variants.add(relation.variant_code)
-    exactEventVariants.set(relation.event_code, variants)
+    variantMap.set(relation.event_code, variants)
     const token = (entry.masterdata_tokens || []).find(candidate =>
       candidate.catalog === 'event_index.events' &&
       candidate.key === relation.event_code
@@ -485,13 +499,23 @@ for (const [code, roles] of exactGashaRoles) {
     `gasha ${code}: exact relation roles must be a banner/logo pair`,
   )
 }
-assertEqual(exactEventRelationCount, 20, 'exact event relation boundary drifted')
-assertEqual(exactEventVariants.size, 19, 'exact event code coverage drifted')
-for (const [code, variants] of exactEventVariants) {
+assertEqual(exactEventRelationCount, 60, 'exact event relation boundary drifted')
+assertEqual(exactItemRelationCount, 20, 'exact event item-icon boundary drifted')
+assertEqual(exactItemVariants.size, 19, 'exact event item-code coverage drifted')
+for (const [code, variants] of exactItemVariants) {
   assertEqual(
     [...variants].sort(),
     code === '20001' ? ['n', 'r'] : ['base'],
     `event ${code}: exact item-icon variants drifted`,
+  )
+}
+assertEqual(exactHonorRelationCount, 40, 'exact event honor boundary drifted')
+assertEqual(exactHonorVariants.size, 40, 'exact event honor-code coverage drifted')
+for (const [code, variants] of exactHonorVariants) {
+  assertEqual(
+    [...variants].sort(),
+    ['base'],
+    `event ${code}: exact honor variants drifted`,
   )
 }
 assertEqual(catalog.summary?.bundles, entries.length, 'summary bundle count drifted')

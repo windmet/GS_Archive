@@ -2,9 +2,9 @@
 
 Status: current
 Captured: 2026-07-28
-Current checkout refreshed: 2026-07-29
-Review state refreshed: 2026-07-29
-Merge state refreshed: 2026-07-29
+Current checkout refreshed: 2026-07-30
+Review state refreshed: 2026-07-30
+Merge state refreshed: 2026-07-30
 Repository: `E:\Web_build\SideM_Archived`
 Application: `E:\Web_build\SideM_Archived\web_viewer`
 
@@ -16,12 +16,14 @@ their forward-looking defect lists must not override this baseline.
 
 | Field | Value |
 | --- | --- |
-| current merged baseline | `master` = `origin/master` at `94a92c96484eea6240aa038e4bceec4e811c55f3` |
-| active track branch | `codex/event-item-icon-exact-relations`, created from `94a92c9` |
-| active track | P1-F exact event item-icon relations; 19 codes / 20 bundles |
+| current merged baseline | `master` = `origin/master` at `46467c0b050a941ebb8bdf7100d29a8acf5965e5` |
+| active track branch | `codex/honor-event-exact-relations`, created from `46467c0` |
+| active track | P1-G exact honor-event relations; 40 codes / 40 bundles |
 | active upstream | not pushed at refresh |
 | active pull request | none at refresh |
-| active validation | source-only and mounted image verifiers pass at `1,271 bundles / 7,816 image objects / 118 exact masterdata relations` |
+| active validation | source-only and mounted image verifiers pass at `1,271 bundles / 7,816 image objects / 158 exact masterdata relations` |
+| PR #13 merge commit | `46467c0b050a941ebb8bdf7100d29a8acf5965e5` |
+| PR #13 post-merge gate | run `30473202211`, PASS |
 | PR #12 merge commit | `94a92c96484eea6240aa038e4bceec4e811c55f3` |
 | PR #12 post-merge gate | run `30472488130`, PASS |
 | PR #11 merge commit | `28930e18ba13c230a4d23d4f61f135fd9a9cf1ea` |
@@ -43,7 +45,7 @@ their forward-looking defect lists must not override this baseline.
 | PR diff | `+52,090 / -627` |
 | PR checks | final-head run `30435933524` passed |
 | post-merge checks | `master` push run `30436935539` passed |
-| active-branch production build | PASS at `a68cd60`, 2404 modules, 2m30s; later commits only change verifier/Schema/CI/docs |
+| active-branch production build | P1-G PASS, 2,405 modules, 133.7 seconds |
 | PR #4 merge commit | `2a1e1ec08ae6331b82f7ac9d9719efbb3322e59e` |
 | PR #4 final-head check | Source-only contract `30450883462` passed at `9215456` |
 | PR #4 post-merge check | `master` push run `30452463385` passed at `2a1e1ec` |
@@ -435,9 +437,15 @@ gasha codes. Every covered code has one exact banner and one exact logo bundle;
 the other 335 gasha bundles remain unchanged. This is not an image publication
 and adds no binary or ledger record.
 
-The active event-item refinement proves 20 exact item-icon relations across 19
+The merged event-item refinement proves 20 exact item-icon relations across 19
 event codes. Codes `10001` through `10018` have one base icon each; code
 `20001` has the observed `n` and `r` variants. No other item bundle changes.
+
+The active honor-event refinement proves 40 exact bundle-to-event relations.
+The complete bundle ID, one unique committed event-index row, and existing
+delimiter-bounded token must agree. `image_honor_event_30026001` has no
+event-index row and remains candidate-only. No internal Sprite/Texture2D
+meaning is inferred.
 
 Source-only verification passes without requiring ignored RAW or masterdata.
 The mounted drift observed before disposition was:
@@ -558,7 +566,8 @@ GS-only external translation-link pilot complete in PR #6
 1,271-image-bundle relation catalog complete in PR #9
 50-bundle / 52-relation character promotion refinement complete in PR #10
 49-code / 98-bundle gasha banner-logo refinement complete in PR #12
-19-code / 20-bundle event item-icon refinement active
+19-code / 20-bundle event item-icon refinement complete in PR #13
+40-code / 40-bundle honor-event refinement active
 ```
 
 Current priority and write locks:
@@ -574,8 +583,9 @@ Current priority and write locks:
 - the USM catalog is merged and records 260 source identities, 77 exact
   consumers, and 183 unresolved records without decoding or publishing media;
 - the gasha banner/logo relation batch is merged in PR #12;
-- the current functional track is the bounded 19-code / 20-bundle exact event
-  item-icon relation batch;
+- the event item-icon relation batch is merged in PR #13;
+- the current functional track is the bounded 40-code / 40-bundle exact
+  honor-event relation batch;
 - the image catalog records 1,271 source identities and 7,816 image objects
   without exporting PNG or replacing stable assets;
 - 50 bundles now inherit 52 exact stable relations from the already-authoritative
@@ -585,3 +595,5 @@ Current priority and write locks:
   IDs and the committed gasha index; 335 other gasha bundles stay unchanged.
 - 20 event item-icon bundles now carry exact event-code relations; 172 other
   item bundles stay unchanged.
+- 40 honor-event bundles now carry exact event-code relations; the unmatched
+  `image_honor_event_30026001` bundle stays candidate-only.

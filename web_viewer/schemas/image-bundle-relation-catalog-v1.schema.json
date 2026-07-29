@@ -336,7 +336,7 @@
           "type": "string",
           "pattern": "^[a-z][a-z0-9_]*$"
         },
-        "asset_role": { "const": "item-icon" },
+        "asset_role": { "enum": ["item-icon", "honor"] },
         "variant_code": { "enum": ["base", "n", "r"] },
         "relation_type": {
           "const": "exact_bundle_filename_event_code"

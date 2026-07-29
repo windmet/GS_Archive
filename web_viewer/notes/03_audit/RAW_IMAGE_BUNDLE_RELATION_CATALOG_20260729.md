@@ -2,7 +2,7 @@
 
 Status: base catalog merged in PR #9; character relation refinement merged in
 PR #10; bounded gasha refinement merged in PR #12; event item-icon refinement
-active
+merged in PR #13; bounded honor-event refinement active
 
 Date: 2026-07-29
 
@@ -81,9 +81,9 @@ discovery candidates:
 | State | Bundles |
 | --- | ---: |
 | `stable-promotion` | 50 |
-| `exact-masterdata-relation` | 118 |
+| `exact-masterdata-relation` | 158 |
 | `organizer-export-candidate` | 2 |
-| `masterdata-candidate` | 142 |
+| `masterdata-candidate` | 102 |
 | `filename-candidate` | 959 |
 
 The 50 stable bundles carry 52 exact promotion relations. The difference is
@@ -118,6 +118,14 @@ The bounded event-item refinement adds 20 exact relations for 19 committed
 event codes: one base icon for `10001` through `10018`, plus the observed `n`
 and `r` variants for `20001`. Other item bundles remain unchanged.
 
+The bounded honor-event refinement adds 40 exact relations for 40 committed
+event codes. Only complete `image_honor_event_<code>` bundle IDs with one
+unique committed event-index row and existing token evidence qualify. The
+remaining bundle, `image_honor_event_30026001`, has no event-index row and
+therefore remains candidate-only. This relation identifies the bundle's event
+ownership; it does not assign semantics to individual Sprite or Texture2D
+objects inside the bundle.
+
 ## Verification
 
 Source-only verification checks:
@@ -137,6 +145,8 @@ Source-only verification checks:
 - exact reconstruction of 49 gasha banner/logo pairs from the committed
   gasha index;
 - exact reconstruction of 20 event item icons from the committed event index;
+- exact reconstruction of 40 event honor bundles from the committed event
+  index, with `image_honor_event_30026001` explicitly excluded;
 - mapping-state precedence;
 - absence of absolute paths;
 - the current `1,271 bundles / 7,816 image objects` boundary.
@@ -164,10 +174,10 @@ Archive baseline verified (mounted):
 10329 compiled JSON artifacts, 108 tracked PNG files
 ```
 
-After the character relation refinement, regenerating the catalog produced:
+After the bounded honor-event refinement, regenerating the catalog produced:
 
 ```text
-48EE2942C826521A2665E2BA8F5B9299F68EA123D7AEA414B6F34A34E9298160
+61B7D550C18153DA665B0E01A9378D0DE16BD19CEEFFBDC7140C3D9970E863D4
 ```
 
 The source-only GitHub gate now runs the catalog verifier. The archive baseline

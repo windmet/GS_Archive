@@ -15,12 +15,15 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | 项 | 当前值 |
 | --- | --- |
 | merged base branch | `master` |
-| merged base HEAD | `94a92c96484eea6240aa038e4bceec4e811c55f3` |
-| active track branch | `codex/event-item-icon-exact-relations`, created from `94a92c9` |
-| active track | P1-F exact event item-icon relations：19 codes / 20 bundles |
+| merged base HEAD | `46467c0b050a941ebb8bdf7100d29a8acf5965e5` |
+| active track branch | `codex/honor-event-exact-relations`, created from `46467c0` |
+| active track | P1-G exact honor-event relations：40 codes / 40 bundles |
 | upstream | 尚未推送 |
-| worktree | P1-F changes present at status refresh |
+| worktree | P1-G changes present at status refresh |
 | open PR | none at status refresh |
+| PR #13 | merged as `46467c0b050a941ebb8bdf7100d29a8acf5965e5` |
+| PR #13 final-head check | Source-only contract PASS，run `30473138598` |
+| PR #13 post-merge check | `master` push Source-only contract PASS，run `30473202211` |
 | PR #12 | merged as `94a92c96484eea6240aa038e4bceec4e811c55f3` |
 | PR #12 final-head check | Source-only contract PASS，run `30472410088` |
 | PR #12 post-merge check | `master` push Source-only contract PASS，run `30472488130` |
@@ -53,7 +56,7 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | PR #2 final check | Source-only contract PASS, run `30435933524` |
 | PR #3 check | Source-only contract PASS, run `30437147325` |
 | local server | `127.0.0.1:5174`, PID 27536 at refresh time |
-| production build | P1-F local Vite build PASS，2,405 modules / 147.6 seconds |
+| production build | P1-G local Vite build PASS，2,405 modules / 133.7 seconds |
 
 PR #2 合入了：
 
@@ -572,7 +575,7 @@ population 中没有 banner/logo，明确保持未覆盖。没有导出 PNG、�
 
 ### P1-F：event item-icon exact relations
 
-状态：**implemented on branch / pending review**。
+状态：**merged in PR #13**。
 
 当前分支只处理完整匹配
 `image_item_icon_event_<code>[_n|_r]` 的 bundle。committed event index
@@ -591,10 +594,29 @@ verifier 独立从 bundle ID 与 event index 重建关系，并要求 20 relatio
 19 codes、对应 token evidence，以及 `20001` 严格只有 `n/r`。其余 172 个
 item bundle 不变；没有导出或替换 PNG。
 
+### P1-G：honor-event exact relations
+
+状态：**implemented on branch / pending review**。
+
+当前分支只处理完整匹配 `image_honor_event_<code>` 的 bundle。当前 RAW
+子族共有 41 个 bundle，其中 40 个 code 同时满足：
+
+- committed event index 中有唯一记录；
+- bundle ID 完整匹配，不接受子串或近似匹配；
+- 已有 `event_index.events` delimiter-bounded token evidence。
+
+覆盖范围为 `10001–10020`、`30001–30018` 和 `40001–40002`，共 40
+codes / 40 bundles。关系固定记录 role `honor`、variant `base` 和
+`exact_bundle_filename_event_code`。
+
+`image_honor_event_30026001` 在 event index 中没有记录或 token，因此明确
+保持 `filename-candidate`。本批只证明 bundle 属于哪个 event，不解释
+bundle 内各 Sprite/Texture2D 对象的用途，也不导出 PNG。
+
 ## 3. 三轨依赖图
 
 ```text
-master 94a92c9
+master 46467c0
   |
   +-- completed Track S: PR #5
   |     18 WAV provenance complete
@@ -619,7 +641,8 @@ master 94a92c9
         completed P1-C: PR #9, 1,271 image bundle relation catalog
         completed P1-D: PR #10, 50 bundles / 52 exact character promotions
         completed P1-E: PR #12, 49 codes / 98 exact gasha banner-logo relations
-        active P1-F: 19 codes / 20 exact event item-icon relations
+        completed P1-F: PR #13, 19 codes / 20 exact event item-icon relations
+        active P1-G: 40 codes / 40 exact honor-event relations
 ```
 
 PR #4 已通过 merge commit `2a1e1ec` 合入 `master`，post-merge gate
@@ -634,8 +657,10 @@ release/annotation。P1-B 已由 PR #8 合并，post-merge gate `30462843307`
 `master`，post-merge gate `30471307383` 通过。PR #11 已通过 merge
 commit `28930e1` 合入 `master`，post-merge gate `30471575433` 通过。
 PR #12 已通过 merge commit `94a92c9` 合入 `master`，post-merge gate
-`30472488130` 通过。Track R 继续 deferred；P1-F 当前独立收口，不要未经覆盖核对就扩充
-Episode 0 候选。
+`30472488130` 通过。PR #13 已通过 merge commit `46467c0` 合入
+`master`，post-merge gate `30473202211` 通过。Track R 继续 deferred；
+P1-G 当前独立收口，不要把对象级猜测或未命中 event index 的数字升级为
+exact relation。
 
 ## 4. 每条轨道的 Git 边界
 
@@ -652,13 +677,13 @@ git rev-parse HEAD
 当前 active 功能分支是：
 
 ```text
-codex/event-item-icon-exact-relations
+codex/honor-event-exact-relations
 ```
 
-它只承载 19 个 committed event code 与 20 个 item-icon bundle 的 exact
+它只承载 40 个 committed event code 与 40 个 honor bundle 的 exact
 relation、Schema/verifier、baseline 和审计文档；不导出或提交 PNG，
 不混入 Runtime 长稳、publication transaction、USM promotion 或 Episode
-0 候选。PR #4 到 PR #12 的分支已经完成；不要继续复用：
+0 候选。PR #4 到 PR #13 的分支已经完成；不要继续复用：
 
 ```text
 codex/post-merge-next-guidance
@@ -677,6 +702,7 @@ codex/image-bundle-relation-catalog
 codex/chara-image-relation-refinement
 codex/post-p1d-handoff
 codex/gasha-image-exact-relations
+codex/event-item-icon-exact-relations
 ```
 
 Codex 管理目录中指向初始提交 `ca3a28e` 的 detached worktree 不是项目开发
@@ -724,8 +750,8 @@ git diff --cached --check
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
 worktree、origin/master，并确认当前 active branch 为
-codex/event-item-icon-exact-relations、base master=94a92c9，PR #12
-post-merge run 30472488130 通过。
+codex/honor-event-exact-relations、base master=46467c0，PR #13
+post-merge run 30473202211 通过。
 
 完整阅读：
 1. web_viewer/notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
@@ -736,6 +762,7 @@ post-merge run 30472488130 通过。
 6. web_viewer/notes/03_audit/RAW_IMAGE_BUNDLE_RELATION_CATALOG_20260729.md
 7. web_viewer/notes/03_audit/GASHA_IMAGE_EXACT_RELATIONS_20260730.md
 8. web_viewer/notes/03_audit/EVENT_ITEM_ICON_EXACT_RELATIONS_20260730.md
+9. web_viewer/notes/03_audit/HONOR_EVENT_EXACT_RELATIONS_20260730.md
 
 先确认当前分支的 image catalog 为 1,271 bundles / 263,071,090 bytes /
 9,157 Unity objects / 7,816 image objects，source-only 与 mounted verifier
@@ -749,6 +776,9 @@ stable-promotion，其余 7 个 chara 合辑仍为 candidate。P1-E 已完成
 exact-masterdata-relation，其余 335 个 gasha bundle 保持原状态；不得
 顺带扩充。P1-F 只把 event index 唯一证明的 19 codes / 20 item-icon
 bundles 升级为 exact-masterdata-relation，其余 172 个 item bundle 不变；
+P1-G 只把 event index 唯一证明的 40 codes / 40 honor-event bundle
+升级为 exact-masterdata-relation；`image_honor_event_30026001` 明确保留为
+candidate，且不推断内部对象语义；
 不得批量导出 PNG、替换 `public/assets`、新增 ledger release 或回填其他
 二进制。
 ```
