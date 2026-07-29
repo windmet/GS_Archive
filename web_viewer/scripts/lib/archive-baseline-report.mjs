@@ -115,7 +115,7 @@ function compiledStats() {
   }
 }
 
-export function authoritativeV2Stats() {
+export function authoritativeV2Stats({ sourceOnly = false } = {}) {
   const registry = readJson(authoritativeStoryRegistryPath)
   const publicationManifest = readJson(publicPaths.publicationManifest)
   const logicalIds = new Set()
@@ -139,19 +139,23 @@ export function authoritativeV2Stats() {
       artifactPaths.add(artifact.path)
       roles.add(artifact.role)
 
-      const filename = path.join(projectRoot, artifact.path)
-      if (!existsSync(filename)) {
-        throw new Error(`authoritative Story artifact does not exist: ${artifact.path}`)
-      }
-      const payload = readJson(filename)
-      if (payload.schema_version !== 2 || payload.runtime_contract !== 'story-runtime-v2') {
-        throw new Error(`authoritative Story artifact is not Runtime v2: ${artifact.path}`)
-      }
-      if (
-        payload.scenario_id !== entry.scenario_id &&
-        !payload.scenario_id?.startsWith(`${entry.scenario_id}_`)
-      ) {
-        throw new Error(`authoritative Story scenario identity drifted: ${artifact.path}`)
+      const requireMountedArtifact =
+        !sourceOnly || entry.ownership.state === 'ledger-governed'
+      if (requireMountedArtifact) {
+        const filename = path.join(projectRoot, artifact.path)
+        if (!existsSync(filename)) {
+          throw new Error(`authoritative Story artifact does not exist: ${artifact.path}`)
+        }
+        const payload = readJson(filename)
+        if (payload.schema_version !== 2 || payload.runtime_contract !== 'story-runtime-v2') {
+          throw new Error(`authoritative Story artifact is not Runtime v2: ${artifact.path}`)
+        }
+        if (
+          payload.scenario_id !== entry.scenario_id &&
+          !payload.scenario_id?.startsWith(`${entry.scenario_id}_`)
+        ) {
+          throw new Error(`authoritative Story scenario identity drifted: ${artifact.path}`)
+        }
       }
     }
 
@@ -342,7 +346,7 @@ export async function collectArchiveBaseline({
   const capturedAt = generatedAt || git('show', '-s', '--format=%cI', repositoryCommit)
   const analysis = analysisStats()
   const compiled = compiledStats()
-  const authoritativeV2 = authoritativeV2Stats()
+  const authoritativeV2 = authoritativeV2Stats({ sourceOnly })
   const trackedPng = trackedPngStats()
   const cards = publicCardStats()
   const backmonitor = backmonitorStats({ sourceOnly })

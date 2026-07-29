@@ -95,7 +95,7 @@ jobs:
         run: npm run verify:archive-baseline:source-only
 
       - name: Verify authoritative Story publications
-        run: npm run verify:authoritative-story-publications
+        run: npm run verify:authoritative-story-publications -- --source-only
 
       - name: Verify tracked binary inventory
         run: npm run verify:tracked-binary-inventory

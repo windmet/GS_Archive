@@ -11,6 +11,7 @@ const [registry, schema] = await Promise.all([
   readFile(authoritativeStoryRegistrySchemaPath, 'utf8').then(JSON.parse),
 ])
 const validate = new Ajv2020({ allErrors: true, strict: true }).compile(schema)
+const sourceOnly = process.argv.includes('--source-only')
 
 if (!validate(registry)) {
   console.error('Authoritative Story publication registry verification failed:')
@@ -20,9 +21,9 @@ if (!validate(registry)) {
   process.exitCode = 1
 } else {
   try {
-    const stats = authoritativeV2Stats()
+    const stats = authoritativeV2Stats({ sourceOnly })
     console.log(
-      'Authoritative Story publications verified: ' +
+      `Authoritative Story publications verified (${sourceOnly ? 'source-only' : 'mounted'}): ` +
       `${stats.collection_count} collections + ${stats.standalone_count} standalone / ` +
       `${stats.artifact_count} Runtime v2 artifacts; ` +
       `${stats.ledger_governed.length} ledger-governed`,
