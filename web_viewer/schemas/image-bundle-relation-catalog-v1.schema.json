@@ -308,6 +308,42 @@
       },
       "additionalProperties": false
     },
+    "exactEventRelation": {
+      "type": "object",
+      "required": [
+        "event_code",
+        "event_name",
+        "event_type",
+        "event_type_label",
+        "asset_role",
+        "variant_code",
+        "relation_type"
+      ],
+      "properties": {
+        "event_code": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "event_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "event_type": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "event_type_label": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "asset_role": { "const": "item-icon" },
+        "variant_code": { "enum": ["base", "n", "r"] },
+        "relation_type": {
+          "const": "exact_bundle_filename_event_code"
+        }
+      },
+      "additionalProperties": false
+    },
     "entry": {
       "type": "object",
       "required": [
@@ -405,6 +441,13 @@
           "maxItems": 1,
           "uniqueItems": true,
           "items": { "$ref": "#/$defs/exactGashaRelation" }
+        },
+        "exact_event_relations": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/exactEventRelation" }
         },
         "mapping": {
           "type": "object",

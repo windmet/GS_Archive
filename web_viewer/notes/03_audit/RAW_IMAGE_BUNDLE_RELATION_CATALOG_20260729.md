@@ -1,7 +1,8 @@
 # RAW Image Bundle Relation Catalog
 
 Status: base catalog merged in PR #9; character relation refinement merged in
-PR #10; bounded gasha exact-relation refinement active
+PR #10; bounded gasha refinement merged in PR #12; event item-icon refinement
+active
 
 Date: 2026-07-29
 
@@ -80,9 +81,9 @@ discovery candidates:
 | State | Bundles |
 | --- | ---: |
 | `stable-promotion` | 50 |
-| `exact-masterdata-relation` | 98 |
+| `exact-masterdata-relation` | 118 |
 | `organizer-export-candidate` | 2 |
-| `masterdata-candidate` | 162 |
+| `masterdata-candidate` | 142 |
 | `filename-candidate` | 959 |
 
 The 50 stable bundles carry 52 exact promotion relations. The difference is
@@ -113,6 +114,10 @@ codes. Each code must have one fully matching `image_gasha_banner_<code>` and
 one `image_gasha_logo_<code>` bundle. The other 335 gasha bundles remain
 unchanged.
 
+The bounded event-item refinement adds 20 exact relations for 19 committed
+event codes: one base icon for `10001` through `10018`, plus the observed `n`
+and `r` variants for `20001`. Other item bundles remain unchanged.
+
 ## Verification
 
 Source-only verification checks:
@@ -131,6 +136,7 @@ Source-only verification checks:
 - stable RAW, Unity-object, and tracked-output bytes/hash evidence;
 - exact reconstruction of 49 gasha banner/logo pairs from the committed
   gasha index;
+- exact reconstruction of 20 event item icons from the committed event index;
 - mapping-state precedence;
 - absence of absolute paths;
 - the current `1,271 bundles / 7,816 image objects` boundary.
@@ -161,7 +167,7 @@ Archive baseline verified (mounted):
 After the character relation refinement, regenerating the catalog produced:
 
 ```text
-E70FACA5381E783350E337CB13CB3F321AED014A16484ED7D5AF39BB509BB50F
+48EE2942C826521A2665E2BA8F5B9299F68EA123D7AEA414B6F34A34E9298160
 ```
 
 The source-only GitHub gate now runs the catalog verifier. The archive baseline

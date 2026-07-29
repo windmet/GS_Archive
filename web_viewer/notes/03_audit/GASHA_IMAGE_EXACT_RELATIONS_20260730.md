@@ -1,6 +1,6 @@
 # Gasha Image Exact Relations
 
-Status: implemented on `codex/gasha-image-exact-relations`; pending review
+Status: merged in PR #12
 
 Date: 2026-07-30
 
