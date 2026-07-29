@@ -15,12 +15,15 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | 项 | 当前值 |
 | --- | --- |
 | merged base branch | `master` |
-| merged base HEAD | `fdce87478044bfa1f7c9e8dfffe934dbdd2e14ef` |
-| active track branch | `codex/publication-ledger-v2-contracts`, created from `fdce874` |
-| active track | P0-G3 publication release v2 / annotation v1 contracts，已实现，等待 PR |
+| merged base HEAD | `31bac763c4abd01535842452810a75abc4bef40b` |
+| active track branch | `codex/usm-relation-catalog`, created from `31bac76` |
+| active track | P1-B 260 USM machine-readable relation catalog，已实现，等待 PR |
 | upstream | 尚未推送 |
-| worktree | clean at status refresh |
+| worktree | P1-B changes present at status refresh |
 | open PR | none at status refresh |
+| PR #7 | merged as `31bac763c4abd01535842452810a75abc4bef40b` |
+| PR #7 final-head check | Source-only contract PASS，run `30461240645` |
+| PR #7 post-merge check | `master` push Source-only contract PASS，run `30461311887` |
 | PR #6 | merged as `fdce87478044bfa1f7c9e8dfffe934dbdd2e14ef` |
 | PR #6 final-head check | Source-only contract PASS，run `30460259713` at `35121ed` |
 | PR #6 post-merge check | `master` push Source-only contract PASS，run `30460342231` at `fdce874` |
@@ -284,7 +287,8 @@ equality。第一笔 transaction 的三个精确路径和 publication metadata J
 
 ### P0-G3：冻结 v1，激活 v2 与 annotation 契约
 
-状态：**implemented on branch / pending PR**。
+状态：**merged in PR #7**。merge commit `31bac763c4abd01535842452810a75abc4bef40b`，
+post-merge source gate `30461311887` 通过。
 
 以下文件保持字节不可变：
 
@@ -435,23 +439,34 @@ notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 
 ### P1-B：260 USM 关系目录
 
-现状：
+状态：**implemented on branch / pending PR**。
 
-- 260 个 USM；
-- 77 个有 BackMonitor 关系；
-- 183 个语义未解决。
+当前目录已经记录：
 
-第一阶段只生成目录：
+- 260 个 USM / `2,143,803,200` bytes；
+- 77 个精确 BackMonitor 消费关系，其中 73 个 movie、4 个 transition；
+- 183 个语义未解决；
+- 260 个 SHA-256、CRID magic 和 ffprobe header；
+- 52 个文件命中 22 个精确 `music_catalog.songs` filename token；
+- 260 条 RAW relative path、媒体信息、consumer candidate、mapping state 和
+  evidence。
 
-- RAW relative path；
-- hash/bytes；
-- 媒体信息；
-- masterdata token；
-- consumer candidate；
-- mapping state；
-- evidence。
+机器入口：
 
-不要批量转 MP4，不要发布，不要加入 Git 媒体。
+```text
+schemas/usm-relation-catalog-v1.schema.json
+public/data/usm_relation_catalog.json
+scripts/generate-usm-relation-catalog.py
+scripts/verify-usm-relation-catalog.mjs
+notes/03_audit/RAW_USM_RELATION_CATALOG_20260729.md
+```
+
+source-only 与 mounted verifier 均通过 `260 / 77 / 183`；mounted 模式还逐文件
+复核 bytes、CRID 和 SHA-256。Archive baseline 已改为从 committed catalog
+读取 USM 与 BackMonitor 关系，因此 source-only 不再依赖某次 mounted 快照。
+
+本批没有批量转 MP4、没有发布、没有加入 Git 媒体。下一批若继续 USM，必须从
+183 个 unresolved 中选择有界 family，不能把 filename candidate 提升成精确关系。
 
 ### P1-C：1,271 个 `image_*` bundle 关系目录
 
@@ -471,7 +486,7 @@ notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 ## 3. 三轨依赖图
 
 ```text
-master fdce874
+master 31bac76
   |
   +-- completed Track S: PR #5
   |     18 WAV provenance complete
@@ -479,10 +494,10 @@ master fdce874
   |     -> recoverable quarantine complete
   |     -> mounted baseline PASS
   |
-  +-- active Track G: codex/publication-ledger-v2-contracts
+  +-- completed Track G: PR #7
   |     3+1 / 18
-  |     -> v2 + annotation contracts implemented
-  |     -> pending PR
+  |     -> v2 + annotation contracts active
+  |     -> no new production record
   |
   +-- deferred Track R: Runtime acceptance
   |     fixed Runtime commit
@@ -490,19 +505,20 @@ master fdce874
   |     -> quiet endpoint
   |     -> PASS / FAIL
   |
-  +-- completed Track P pilot: PR #6
-        two exact GS event links + UI complete
-        USM relation catalog
-        image relation catalog
+  +-- Track P
+        completed pilot: PR #6, two exact GS event links + UI
+        active: P1-B USM relation catalog
+        next independent option: P1-C image relation catalog
 ```
 
 PR #4 已通过 merge commit `2a1e1ec` 合入 `master`，post-merge gate
 `30452463385` 通过。PR #5 已通过 merge commit `9e4fd7d` 合入 `master`，
 post-merge gate `30458806049` 通过。Track R 已由用户暂缓；Track S 已完成；
 Track P 的首个 exact GS pilot 已由 PR #6 合并，post-merge gate
-`30460342231` 通过。Track G、R、P 不互相伪装成完成条件；P0-G3 当前只激活
-Schema/verifier，不包含新的 release/annotation。P0-G3 合并后可启动 P1-B
-USM relation catalog；不要未经覆盖核对就扩充 Episode 0 候选。
+`30460342231` 通过。Track G 已由 PR #7 合并，post-merge gate
+`30461311887` 通过；它只激活 Schema/verifier，不包含新的
+release/annotation。Track R 继续 deferred；P1-B 当前独立收口。不要未经覆盖
+核对就扩充 Episode 0 候选。
 
 ## 4. 每条轨道的 Git 边界
 
@@ -519,13 +535,13 @@ git rev-parse HEAD
 当前 active 开发分支是：
 
 ```text
-codex/publication-ledger-v2-contracts
+codex/usm-relation-catalog
 ```
 
-它只承载 publication v2/annotation Schema、版本分流 verifier、annotation
-index 和 append-only gate；不创建真实 release/annotation，不混入 Runtime
-长稳、USM/image catalog 或 Episode 0 候选。PR #4、PR #5、PR #6 的分支
-已经完成；不要继续复用：
+它只承载 USM relation Schema、committed catalog、只读 generator、
+source-only/mounted verifier、baseline authority 接线和审计文档；不解码或
+提交媒体，不混入 Runtime 长稳、publication transaction、image catalog 或
+Episode 0 候选。PR #4、PR #5、PR #6、PR #7 的分支已经完成；不要继续复用：
 
 ```text
 codex/post-merge-next-guidance
@@ -587,20 +603,22 @@ git diff --cached --check
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
 worktree、origin/master，并确认当前 active branch 为
-codex/publication-ledger-v2-contracts、base master=fdce874，PR #6
-post-merge run 30460342231 通过。
+codex/usm-relation-catalog、base master=31bac76，PR #7
+post-merge run 30461311887 通过。
 
 完整阅读：
 1. web_viewer/notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
 2. web_viewer/notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md
 3. web_viewer/notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md
 4. web_viewer/notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
+5. web_viewer/notes/03_audit/RAW_USM_RELATION_CATALOG_20260729.md
 
-先确认当前分支提交 dc5405d：release v2 与 annotation v1 Schema、版本分流
-verifier、空 annotation index、index generator 和 base-SHA append-only gate。
+先确认当前分支的 USM catalog 为 260 files / 2,143,803,200 bytes /
+77 exact BackMonitor / 183 unresolved，source-only 与 mounted verifier 均通过。
 真实 ledger 仍为 1 release / 1 stable logical ID，没有新增 production record。
-Story Runtime 2–4 小时长稳由用户暂缓，仍保持 NOT EXECUTED。P0-G3 合并后
-优先 P1-B USM relation catalog；不得顺带新增 ledger release 或回填 PNG。
+Story Runtime 2–4 小时长稳由用户暂缓，仍保持 NOT EXECUTED。P1-B 合并后可
+选择有界 unresolved-USM 语义批次或 P1-C image catalog；不得顺带解码媒体、
+新增 ledger release 或回填 PNG。
 ```
 
 ## 7. 完成定义
@@ -646,6 +664,9 @@ GS 熟肉 pilot：
 
 USM/image：
 
-- 先完成 machine-readable relation catalog；
-- 抽样证明关系；
-- 未进行批量解码或稳定发布。
+- USM machine-readable relation catalog 已覆盖 260/260；
+- 77 个 BackMonitor 精确关系由 RAW choreography 与现有 index 双重证明；
+- 183 个 unresolved 保持未解决，不把 filename candidate 写成 exact；
+- source-only 与 mounted verifier 通过；
+- 未进行批量解码或稳定发布；
+- image relation catalog 尚未开始。

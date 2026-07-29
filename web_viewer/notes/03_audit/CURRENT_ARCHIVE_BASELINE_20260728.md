@@ -16,12 +16,12 @@ their forward-looking defect lists must not override this baseline.
 
 | Field | Value |
 | --- | --- |
-| current merged baseline | `master` = `origin/master` at `2a1e1ec08ae6331b82f7ac9d9719efbb3322e59e` |
-| active track branch | `codex/raw-audio-wav-provenance`, created from `2a1e1ec` |
-| active track | P0-S mounted RAW WAV provenance; complete on branch, pending PR #5 merge |
-| active upstream | `origin/codex/raw-audio-wav-provenance` |
-| active pull request | PR #5, Ready |
-| active PR check | Source-only contract `30453332938` passed at `ed675f2`; disposition status commit follows |
+| current merged baseline | `master` = `origin/master` at `31bac763c4abd01535842452810a75abc4bef40b` |
+| active track branch | `codex/usm-relation-catalog`, created from `31bac76` |
+| active track | P1-B 260-USM relation catalog; complete on branch, pending PR |
+| active upstream | not pushed at refresh |
+| active pull request | none at refresh |
+| active validation | source-only and mounted USM verifiers pass at `260 / 77 / 183` |
 | PR #2 merge commit | `bca7042c1d87b261b98f21b5957a36c2eb99f6b1` |
 | merged PR head | `6a2a14e741d361dc7c09c6c395946a33782af4d9` |
 | merge parents | `ef804fcb2b258979723fcf8ce62f317671b4d701` + `6a2a14e741d361dc7c09c6c395946a33782af4d9` |
@@ -39,17 +39,22 @@ their forward-looking defect lists must not override this baseline.
 | PR #4 merge commit | `2a1e1ec08ae6331b82f7ac9d9719efbb3322e59e` |
 | PR #4 final-head check | Source-only contract `30450883462` passed at `9215456` |
 | PR #4 post-merge check | `master` push run `30452463385` passed at `2a1e1ec` |
+| PR #7 merge commit | `31bac763c4abd01535842452810a75abc4bef40b` |
+| PR #7 final-head check | Source-only contract `30461240645` passed |
+| PR #7 post-merge check | `master` push run `30461311887` passed |
 
 PR #2 is merged. Its title and body reflect its real scope: the RAW/masterdata source
 contract, resource audits and candidates, governed stable promotions, live
 semantic consumer migration, publication controls, and the bounded Story
 Runtime audio follow-up.
 
-PR #3 subsequently merged the first post-merge documentation correction, and
-PR #4 merged the authoritative registry, source-only/mounted boundary,
-publication EOL correction, and version freeze. Therefore `bca7042` remains the
-immutable PR #2 merge identity, while `2a1e1ec` is the current repository
-baseline at this refresh.
+PR #3 subsequently merged the first post-merge documentation correction. PR #4
+merged the authoritative registry, source-only/mounted boundary, publication
+EOL correction, and version freeze. PR #5 completed the WAV provenance
+disposition, PR #6 merged the bounded GS translation-link pilot, and PR #7
+activated publication v2 and annotation v1 contracts without adding a
+production record. Therefore `bca7042` remains the immutable PR #2 merge
+identity, while `31bac76` is the current repository baseline at this refresh.
 
 `stable-published` in project notes means an artifact occupies the stable path
 in the named checkout. For PR #2 artifacts, the containing commit is now merged
@@ -279,7 +284,7 @@ domain-wide browser acceptance.
 | costume/Spine | source-proven | representative and full-domain parity audits recorded | representative routes only |
 | five live semantic consumers | source-proven | default semantic source migrated to RAW and parity-verified | tested routes sample-accepted |
 | event visuals `001tom`/`002sht` | source-proven | stable-published and merged through PR #2 | item-level browser-accepted |
-| remaining USM | 77 Backmonitor mappings proven; 183 unresolved semantically | incomplete | not applicable |
+| remaining USM | 260/260 physical identities cataloged; 77 BackMonitor mappings proven; 183 unresolved semantically | catalog complete; semantic resolution incomplete | not applicable |
 | general `image_*` bundles | 1,271 physical bundles known | full relation table absent | not applicable |
 
 The five live semantic consumers already reading RAW by default are:
@@ -396,7 +401,10 @@ public/data/archive_baseline_report.json
 The report records mounted-source availability, RAW live and recorded-manifest
 statistics, masterdata hashes and record/table counts, story and voice metrics,
 compiled-artifact counts, card metrics, tracked PNG totals, BackMonitor movie
-relations, and the unresolved USM count. It contains no machine absolute paths.
+relations, and the unresolved USM count. The USM totals now come from the
+committed relation catalog, including `2,143,803,200` source bytes, so
+source-only verification does not rely on a mounted snapshot. It contains no
+machine absolute paths.
 
 Source-only verification passes without requiring ignored RAW or masterdata.
 The mounted drift observed before disposition was:
@@ -512,24 +520,23 @@ fixed Runtime commit
 
 Track P / portal and resource discovery
 18 WAV provenance + quarantine complete
-GS-only external translation-link pilot
-260-USM relation catalog
+GS-only external translation-link pilot complete in PR #6
+260-USM relation catalog complete on active branch
 1,271-image-bundle relation catalog
 ```
 
 Current priority and write locks:
 
-- PR #4 governance is merged and its post-merge gate passed;
+- PR #4 through PR #7 are merged and their post-merge gates passed;
 - the 18-WAV provenance, generator fix, recoverable quarantine, and mounted
-  baseline restoration are complete on the active branch;
-- no new ledger publication, PNG backfill, or stable binary promotion until
-  v2/annotation schemas are active;
+  baseline restoration are merged;
+- publication v2 and annotation v1 schemas are active, but no second production
+  transaction has been created;
 - Track R remains independent and is explicitly deferred by the user; it is
   still required before declaring Story Runtime `release-accepted`;
-- external-link metadata/UI does not enter the publication ledger and may use
-  its own bounded branch;
-- PR #5 should merge before the next track branches from `master`;
-- after PR #5, the recommended next active track is the bounded GS-only
-  external translation-link pilot;
-- USM and image work remains catalog-only until a bounded promotion is
-  separately authorized.
+- external-link metadata/UI remains outside the publication ledger;
+- the current active track is the bounded USM relation catalog;
+- the catalog records 260 source identities, 77 exact consumers, and 183
+  unresolved records without decoding or publishing media;
+- USM promotion and image work remain separately bounded and require their own
+  authorization.

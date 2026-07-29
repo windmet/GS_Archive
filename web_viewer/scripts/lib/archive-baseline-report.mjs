@@ -49,6 +49,7 @@ const publicPaths = {
   compiled: path.join(projectRoot, 'public', 'data', 'compiled'),
   cardIndex: path.join(projectRoot, 'public', 'data', 'masterdata', 'card_index.json'),
   backmonitor: path.join(projectRoot, 'public', 'assets', 'live-chibi', 'backmonitor', 'index.json'),
+  usmRelations: path.join(projectRoot, 'public', 'data', 'usm_relation_catalog.json'),
   publicationManifest: path.join(projectRoot, 'public', 'data', 'publication', 'manifest.json'),
 }
 
@@ -214,10 +215,29 @@ function publicCardStats() {
 }
 
 function backmonitorStats({ sourceOnly = false } = {}) {
+  if (existsSync(publicPaths.usmRelations)) {
+    const payload = readJson(publicPaths.usmRelations)
+    return {
+      availability: 'catalog',
+      raw_usm: payload.summary.total,
+      raw_usm_bytes: payload.summary.total_bytes,
+      mapped: payload.summary.exact_consumer,
+      unresolved: payload.summary.unresolved,
+      movie_relations: payload.entries.filter(
+        entry => entry.mapping.kind === 'backmonitor-movie',
+      ).length,
+      transition_relations: payload.entries.filter(
+        entry => entry.mapping.kind === 'backmonitor-transition',
+      ).length,
+    }
+  }
   if (sourceOnly || !existsSync(publicPaths.backmonitor)) {
     return {
       availability: 'not-mounted',
+      raw_usm: null,
+      raw_usm_bytes: null,
       mapped: null,
+      unresolved: null,
       movie_relations: null,
       transition_relations: null,
     }
@@ -227,7 +247,10 @@ function backmonitorStats({ sourceOnly = false } = {}) {
   const transitions = Object.keys(payload.transitions || {}).length
   return {
     availability: 'mounted',
+    raw_usm: null,
+    raw_usm_bytes: null,
     mapped: movies + transitions,
+    unresolved: null,
     movie_relations: movies,
     transition_relations: transitions,
   }
@@ -430,17 +453,22 @@ export async function collectArchiveBaseline({
       png_bytes: trackedPng.bytes,
     },
     movies: {
-      raw_usm: raw?.types.usm ?? analysis?.raw_manifest.types.usm ?? null,
+      raw_usm: backmonitor.raw_usm ??
+        raw?.types.usm ??
+        analysis?.raw_manifest.types.usm ??
+        null,
       backmonitor_mapped: backmonitor.mapped,
-      unresolved: backmonitor.mapped == null
+      unresolved: backmonitor.unresolved ??
+        (backmonitor.mapped == null
         ? null
         : raw
         ? raw.types.usm - backmonitor.mapped
         : analysis
           ? analysis.raw_manifest.types.usm - backmonitor.mapped
-          : null,
+          : null),
       evidence: {
         availability: backmonitor.availability,
+        raw_usm_bytes: backmonitor.raw_usm_bytes,
         movie_relations: backmonitor.movie_relations,
         transition_relations: backmonitor.transition_relations,
       },
