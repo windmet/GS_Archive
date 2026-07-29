@@ -1,6 +1,6 @@
 # External GROWING STARS Translation Link Contract
 
-Status: pilot merged in PR #6; THE KOGADO exact expansion merged in PR #18
+Status: exact set merged through PR #18; dedicated navigation active
 Date: 2026-07-28
 Scope: SideM GROWING STARS only
 
@@ -20,6 +20,11 @@ Implementation refresh: 2026-07-29
   exact-link, safe-anchor, no-remote-image, no-overflow, and console-error gates.
 - PR #18 merged as `7342f5a5bf3c6d3e2ea2eef35cfdfc95c530e44a`;
   final-head run `30478115572` and post-merge run `30478199856` passed.
+- 2026-07-30: the five-record exact set crossed the product threshold for a
+  dedicated `external_story_resources` route and Story portal gateway.
+- The navigation is exact-only, uses local GS visuals, preserves uploader and
+  safe-link attribution, and deep-links to the matching internal event or
+  unit-story chapter.
 - The local full Vite build reached its 183-second execution limit, so this
   was the historical PR #6 pilot result and is superseded for this expansion.
 
@@ -349,5 +354,6 @@ three Episode 0 mappings after exact coverage verification, schema/verifier
 support for exact unit-story relations, and audit/handoff refresh
 ```
 
-Only after a meaningful exact GS set exists should the portal add a dedicated
-"中文剧情导航" view or home-page entry.
+The meaningful exact GS set now exists. The dedicated “社区中文剧情” view is
+implemented on `codex/external-story-resource-navigation`; candidate and
+partial mappings remain excluded.

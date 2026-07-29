@@ -177,7 +177,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { ArrowRight, BookOpen, Briefcase, Cake, CalendarRange, ChevronDown, CreditCard, FileWarning, LayoutGrid, Search, Sparkles, UserRound, X } from '@lucide/vue'
+import { ArrowRight, BookOpen, Briefcase, Cake, CalendarRange, ChevronDown, CreditCard, FileWarning, Languages, LayoutGrid, Search, Sparkles, UserRound, X } from '@lucide/vue'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 
 const props = defineProps({
@@ -190,8 +190,9 @@ const props = defineProps({
   seasonalCampaigns: { type: Array, default: () => [] },
   workIdols: { type: Array, default: () => [] },
   idolStoryCount: { type: Number, default: 0 },
+  externalResourceCount: { type: Number, default: 0 },
 })
-const emit = defineEmits(['select', 'browse', 'open-seasonal', 'open-work', 'open-idol-story', 'load-more', 'clear-section', 'update:mode', 'update:domain', 'update:event-scope', 'update:availability', 'update:sort'])
+const emit = defineEmits(['select', 'browse', 'open-seasonal', 'open-work', 'open-idol-story', 'open-external-resources', 'load-more', 'clear-section', 'update:mode', 'update:domain', 'update:event-scope', 'update:availability', 'update:sort'])
 
 const groupEntries = domain => {
   const groups = new Map()
@@ -207,6 +208,7 @@ const mainSections = computed(() => groupEntries('main'))
 const unitGateways = computed(() => groupEntries('unit_story'))
 const featuredEvents = computed(() => props.allEntries.filter(entry => entry.domain === 'event').sort((a, b) => b.releaseAt - a.releaseAt).slice(0, 6))
 const secondaryGateways = [
+  { id: 'external_story_resources', label: '社区中文剧情', icon: Languages, unit: '条', action: 'external-resources' },
   { id: 'idol_story', label: '个人故事', icon: UserRound, action: 'idol-story' }, { id: 'card_scenarios', label: '卡片剧情', icon: CreditCard },
   { id: 'work', label: '工作剧情', icon: Briefcase, unit: '人', action: 'work' }, { id: 'birthday', label: '生日剧情', icon: Cake },
   { id: 'extra', label: '额外剧情', icon: Sparkles },
@@ -217,13 +219,15 @@ const sectionLabel = computed(() => props.allEntries.find(entry => entry.domain 
 function browse(domain, section = '') { emit('browse', { domain, section }) }
 function domainCount(domain) { return props.allEntries.filter(entry => entry.domain === domain).length }
 function gatewayCount(gateway) {
+  if (gateway.action === 'external-resources') return props.externalResourceCount
   if (gateway.action === 'seasonal') return props.seasonalCampaigns.length
   if (gateway.action === 'work') return props.workIdols.length
   if (gateway.action === 'idol-story') return props.idolStoryCount
   return domainCount(gateway.id)
 }
 function openGateway(gateway) {
-  if (gateway.action === 'seasonal') emit('open-seasonal')
+  if (gateway.action === 'external-resources') emit('open-external-resources')
+  else if (gateway.action === 'seasonal') emit('open-seasonal')
   else if (gateway.action === 'work') emit('open-work')
   else if (gateway.action === 'idol-story') emit('open-idol-story')
   else browse(gateway.id)

@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import {
+  buildExternalStoryNavigationEntries,
   externalResourcesForCollection,
   externalResourcesForEvent,
   externalResourcesForStory,
@@ -13,11 +14,21 @@ const viewerRoot = path.resolve(scriptDirectory, '..')
 const readViewerFile = relativePath =>
   readFile(path.join(viewerRoot, relativePath), 'utf8')
 
-const [registry, eventComponent, storyComponent, collectionComponent, appComponent] = await Promise.all([
+const [
+  registry,
+  eventComponent,
+  storyComponent,
+  collectionComponent,
+  navigationComponent,
+  storyCatalogComponent,
+  appComponent,
+] = await Promise.all([
   readViewerFile('public/data/external_story_resources.json').then(JSON.parse),
   readViewerFile('src/components/archive/ArchiveEventDetail.vue'),
   readViewerFile('src/components/archive/ArchiveStoryDetail.vue'),
   readViewerFile('src/components/archive/ArchiveStoryCollection.vue'),
+  readViewerFile('src/components/archive/ArchiveExternalStoryResources.vue'),
+  readViewerFile('src/components/archive/ArchiveStoryCatalog.vue'),
   readViewerFile('src/App.vue'),
 ])
 
@@ -90,6 +101,84 @@ assert.deepEqual(
     ['chapter-3', 'BV16u4y187tH'],
   ],
 )
+
+const navigationEntries = buildExternalStoryNavigationEntries(registry, {
+  events: [
+    { event_id: 410008, event_code: '10008', title: 'GROWING SIGN@L -K.now O.nly-' },
+    { event_id: 430014, event_code: '30014', title: 'GROWING SELECTION -PROOF OF ONESELF-' },
+  ],
+  collections: [{
+    title: 'THE 虎牙道',
+    domain: 'unit_story',
+    sectionId: '13',
+    visualUrl: '/assets/stories/units/image_unit_story_button_13the.png',
+    chapters: [
+      { id: 'chapter-1', label: '第1話', title: '漢たちの闘う理由', story: { file: '1_1_013the_01_1_1_013_01.json' } },
+      { id: 'chapter-2', label: '第2話', title: '新しい闘いのステージへ', story: { file: '1_1_013the_02_1_1_013_02.json' } },
+      { id: 'chapter-3', label: '第3話', title: '忘却の過去', story: { file: '1_1_013the_03_1_1_013_03.json' } },
+    ],
+  }],
+})
+
+assert.deepEqual(
+  navigationEntries.map(entry => [
+    entry.resource.platform.bvid,
+    entry.target.kind,
+    entry.target.event?.event_id || entry.target.storyFile,
+  ]),
+  [
+    ['BV1ac411S7KB', 'event', 410008],
+    ['BV1od4y1x7X6', 'event', 430014],
+    ['BV1LL411G7LD', 'collection', '1_1_013the_01_1_1_013_01.json'],
+    ['BV1xA4y1S7Cb', 'collection', '1_1_013the_02_1_1_013_02.json'],
+    ['BV16u4y187tH', 'collection', '1_1_013the_03_1_1_013_03.json'],
+  ],
+)
+assert.deepEqual(
+  buildExternalStoryNavigationEntries({
+    entries: [{
+      external_id: 'future-exact-story',
+      internal_mapping: {
+        state: 'exact-story',
+        event_id: null,
+        collection_ids: [],
+        story_resource_ids: ['1_4_001_01'],
+      },
+    }],
+  }, {
+    stories: [{
+      resourceId: '1_4_001_01',
+      file: '1_4_001_01.json',
+      title: 'Chapter story',
+      domainLabel: '主线剧情',
+    }],
+  }).map(entry => [entry.kind, entry.target.kind, entry.target.story.resourceId]),
+  [['story', 'story', '1_4_001_01']],
+  'future exact-story records must resolve through the story catalog',
+)
+assert.equal(
+  buildExternalStoryNavigationEntries({
+    entries: [
+      ...registry.entries,
+      {
+        external_id: 'candidate',
+        internal_mapping: {
+          state: 'candidate',
+          event_id: '10008',
+          collection_ids: [],
+        },
+      },
+    ],
+  }, {
+    events: [
+      { event_id: 410008, event_code: '10008', title: 'event 1' },
+      { event_id: 430014, event_code: '30014', title: 'event 2' },
+    ],
+    collections: [],
+  }).length,
+  2,
+  'dedicated navigation must exclude candidate mappings',
+)
 assert.equal(externalResourcesForEvent(registry, '10001').length, 0)
 assert.equal(
   externalResourcesForStory(registry, { resourceId: '1_4_001_01' }).length,
@@ -100,22 +189,37 @@ for (const [name, source] of [
   ['ArchiveEventDetail', eventComponent],
   ['ArchiveStoryDetail', storyComponent],
   ['ArchiveStoryCollection', collectionComponent],
+  ['ArchiveExternalStoryResources', navigationComponent],
 ]) {
-  assert.match(source, /:href="resource\.platform\.canonical_url"/, `${name} must use registry URL`)
+  assert.match(source, /:href="(?:entry\.)?resource\.platform\.canonical_url"/, `${name} must use registry URL`)
   assert.match(source, /target="_blank"/, `${name} must open an external tab`)
   assert.match(
     source,
     /rel="noopener noreferrer external"/,
     `${name} must isolate external navigation`,
   )
-  assert.match(source, /社区中文资源/, `${name} must label the link as a community resource`)
-  assert.match(source, /resource\.uploader\.name/, `${name} must show uploader attribution`)
+  assert.match(source, /社区中文(?:资源|剧情)/, `${name} must label the link as a community resource`)
+  assert.match(source, /(?:entry\.)?resource\.uploader\.name/, `${name} must show uploader attribution`)
 }
 
+assert.match(navigationComponent, /emit\('open-internal', entry\)/, 'navigation must retain an internal archive action')
+assert.match(navigationComponent, /不镜像视频、字幕、封面或头像/, 'navigation must state the mirror boundary')
+assert.match(storyCatalogComponent, /社区中文剧情/, 'story portal must expose the dedicated navigation')
+assert.match(storyCatalogComponent, /open-external-resources/, 'story portal gateway must emit a navigation action')
 assert.match(
   appComponent,
   /:external-resources="currentStoryCollectionExternalResources"/,
   'App must pass exact collection resources to ArchiveStoryCollection',
+)
+assert.match(
+  appComponent,
+  /v-if="view === 'external_story_resources'"/,
+  'App must render the dedicated external resource view',
+)
+assert.match(
+  appComponent,
+  /:initial-chapter-id="currentStoryCollectionChapter\?\.id \|\| ''"/,
+  'App must preserve exact unit-story chapter targeting',
 )
 
 console.log('External Story resource UI verified: exact mappings and safe links')

@@ -101,6 +101,7 @@ import { BookOpen, ChevronDown, ChevronUp, ExternalLink, Play } from '@lucide/vu
 const props = defineProps({
   collection: { type: Object, default: null },
   externalResources: { type: Array, default: () => [] },
+  initialChapterId: { type: String, default: '' },
 })
 const emit = defineEmits(['play-chapter', 'play-episode'])
 const expandedChapterId = ref('')
@@ -111,8 +112,13 @@ const releaseDate = computed(() => {
   return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium' }).format(new Date(timestamp * 1000))
 })
 
-watch(() => props.collection?.id, () => {
-  expandedChapterId.value = props.collection?.chapters?.find(chapter => chapter.exists)?.id || props.collection?.chapters?.[0]?.id || ''
+watch(() => [props.collection?.id, props.initialChapterId], () => {
+  const initialChapter = props.collection?.chapters?.find(chapter =>
+    chapter.id === props.initialChapterId && chapter.exists,
+  )
+  expandedChapterId.value = initialChapter?.id ||
+    props.collection?.chapters?.find(chapter => chapter.exists)?.id ||
+    props.collection?.chapters?.[0]?.id || ''
 }, { immediate: true })
 
 function toggleChapter(chapterId) {

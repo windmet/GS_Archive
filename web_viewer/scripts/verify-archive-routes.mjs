@@ -38,6 +38,7 @@ assert.equal(normalizeArchiveRoute({ view: 'gasha_detail' }).view, 'gashas')
 assert.equal(normalizeArchiveRoute({ view: 'event_detail' }).view, 'story_catalog')
 assert.equal(normalizeArchiveRoute({ view: 'story_detail' }).view, 'story_catalog')
 assert.equal(normalizeArchiveRoute({ view: 'story_collection' }).view, 'story_catalog')
+assert.equal(normalizeArchiveRoute({ view: 'external_story_resources' }).view, 'external_story_resources')
 assert.equal(normalizeArchiveRoute({ view: 'seasonal_campaign' }).view, 'seasonal_campaign')
 assert.equal(normalizeArchiveRoute({ view: 'work_archive' }).view, 'work_archive')
 assert.equal(normalizeArchiveRoute({ view: 'idol_story_archive' }).view, 'idol_story_archive')
@@ -53,6 +54,7 @@ assert.equal(archiveSectionForRoute({ view: 'archive_status' }), 'resources')
 assert.equal(archiveSectionForRoute({ view: 'event_detail', event: '410018' }), 'stories')
 assert.equal(archiveSectionForRoute({ view: 'story_detail', story: '1_4_001_01.json' }), 'stories')
 assert.equal(archiveSectionForRoute({ view: 'story_collection', storyType: 'main', storySection: '101' }), 'stories')
+assert.equal(archiveSectionForRoute({ view: 'external_story_resources' }), 'stories')
 assert.equal(archiveSectionForRoute({ view: 'seasonal_campaign', storyType: 'seasonal_campaign', storySection: 'valentine_2023' }), 'stories')
 assert.equal(archiveSectionForRoute({ view: 'work_archive', storyType: 'work', idol: '001tom' }), 'stories')
 assert.equal(archiveSectionForRoute({ view: 'idol_story_archive', idol: '001tom' }), 'stories')
@@ -102,6 +104,26 @@ const storyCollectionContext = readArchiveRoute('http://localhost/?view=story_co
 assert.equal(storyCollectionContext.view, 'story_collection')
 assert.equal(storyCollectionContext.storyType, 'unit_story')
 assert.equal(storyCollectionContext.storySection, '1')
+
+const externalStoryResourceContext = readArchiveRoute('http://localhost/?view=external_story_resources')
+assert.equal(externalStoryResourceContext.view, 'external_story_resources')
+
+const externalStoryDetailContext = readArchiveRoute(
+  'http://localhost/?view=story_detail&story=1_4_001_01.json&parent=external_story_resources',
+)
+assert.equal(externalStoryDetailContext.view, 'story_detail')
+assert.equal(externalStoryDetailContext.parentView, 'external_story_resources')
+
+const externalStoryCollectionContext = readArchiveRoute(
+  'http://localhost/?view=story_collection&story_type=unit_story&story_section=13&story=1_1_013the_02_1_1_013_02.json&parent=external_story_resources',
+)
+assert.equal(externalStoryCollectionContext.view, 'story_collection')
+assert.equal(externalStoryCollectionContext.story, '1_1_013the_02_1_1_013_02.json')
+assert.equal(externalStoryCollectionContext.parentView, 'external_story_resources')
+assert.equal(
+  buildArchiveUrl('http://localhost/', externalStoryCollectionContext).searchParams.get('story'),
+  '1_1_013the_02_1_1_013_02.json',
+)
 
 const storyCollectionPlayer = readArchiveRoute('http://localhost/?view=player&story_type=main&story_section=101&scenario=1_4_001_01.json&start_step=30&end_step=60&return=story_collection')
 assert.equal(storyCollectionPlayer.returnView, 'story_collection')
