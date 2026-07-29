@@ -4,9 +4,11 @@
 
 > **2026-07-29 follow-up：** 用户已确认 IDM 删除；应用内 Chromium
 > 的真实 WebAudio 状态矩阵已推进到 partial acceptance。跨场景 timer
-> receiver 缺陷由 `421c3b0` 修复。详情见
-> `notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md`。Edge、
-> 人工听感、真实 `document.hidden` 与 2–4 小时长稳仍未执行。
+> receiver 缺陷由 `421c3b0` 修复。用户确认短时听感无异常；Microsoft
+> Edge 首次点击、最小化暂停和恢复续播通过。Codex 应用内浏览器最小化不
+> 报告 hidden，blur fallback 会误停且已撤回。详情见
+> `notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md`。当前剩余
+> release blocker 为 2–4 小时混合长稳。
 
 ## 结论
 

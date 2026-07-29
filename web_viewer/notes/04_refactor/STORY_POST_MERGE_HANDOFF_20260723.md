@@ -271,7 +271,14 @@ timer、0 active Runtime cue。
 
 `notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md`
 
-本 follow-up 只把真实音频状态从 `not executed` 推进到 `partial
-acceptance`。Microsoft Edge 专属 autoplay、人工听感、真实
-`document.hidden` 和 2–4 小时混合长稳仍未执行，Story Runtime 仍不能写成
-release-accepted。
+本 follow-up 先把真实音频状态从 `not executed` 推进到 `partial
+acceptance`。随后用户确认短时人工听感无爆音、重叠、旧背景音残留或恢复
+失败；Microsoft Edge 中首次点击后音频可听，最小化时停止、恢复后继续。
+
+Codex 应用内浏览器另有平台差异：203.75 秒、8 个样本在整个 Codex 窗口
+最小化期间仍全部报告 `visible / hidden=false / Context running`。尝试
+`blur/focus` 后备会在真正最小化之前误停，未提交并已撤回。该容器失败不能
+覆盖 Edge PASS，也不能把 blur 作为通用 Web 策略。
+
+当前剩余 release blocker 为 2–4 小时混合长稳及其完整资源收敛曲线；
+Story Runtime 在该项完成前仍不能写成 release-accepted。

@@ -13,12 +13,11 @@
 - Menu overlay 能暂停 AudioContext，关闭后恢复。
 - debug visibility override 能暂停并恢复 AudioContext。
 - 发现并修复跨场景淡出时的浏览器定时器 receiver 错误；修复后 `event_before / ambi_shop_shoutengai` 正确切换为 `usual_day / ambi_room`。
+- 用户确认短时人工听感没有爆音、语音重叠、旧背景音残留、突然静音或菜单后恢复失败。
+- Microsoft Edge 中首次点击后真实音频可听；最小化 Edge 时停止，恢复窗口后继续。
 
 仍未完成：
 
-- Microsoft Edge 专属首次手势/autoplay 验收。
-- 人工听感（音量、爆音、淡入淡出听感、声画同步）。
-- 真实操作系统或真实标签页 `document.hidden === true` 的后台/恢复。
 - 2–4 小时 Next / Auto / Skip / Backlog / Choice / episode 混合长稳。
 
 因此不能把本记录写成完整真实音频 release acceptance。
@@ -59,9 +58,9 @@
 | cross episode | d 的持久音源退出；e 仅保留 `event_before` + `ambi_shop_shoutengai` | PASS（runtime） |
 | overlay pause/resume | Menu 打开时 pause reason=`overlay`、Context suspended；关闭后 running | PASS |
 | visibility code path | debug override hidden/visible 时 suspended/running | PASS（仅代码路径） |
-| actual hidden/resume | 未能让 `document.hidden` 真实变为 true | NOT EXECUTED |
-| Edge autoplay | 当前受控环境不是已确认的 Edge | NOT EXECUTED |
-| human listening | 自动化只能观察 WebAudio/runtime 状态 | NOT EXECUTED |
+| Edge minimize/resume | 稳定代码仅监听 `visibilitychange/document.hidden`；用户确认最小化 Edge 时停止、恢复后继续 | PASS（人工行为证据） |
+| Edge first gesture | 用户在 Edge 点击一次 `次へ` 后真实音频可听 | PASS（人工行为证据） |
+| human listening | 前几轮真实音频无爆音、重叠、旧背景音残留、突然静音或恢复失败 | PASS（短时） |
 | 2–4h mixed soak | 尚未执行 | NOT EXECUTED |
 
 ## 缺陷、根因与修复
@@ -117,6 +116,41 @@ Ambient 路径先抛错，导致 watcher 中断；BGM 切换也无法完成。�
 
 该文件保留为缺陷发现证据，不能计为 PASS。
 
+## Edge 实机与应用内浏览器差异
+
+### 应用内浏览器最小化失败样本
+
+证据摘要：
+
+`C:\Users\windm\.codex\evidence\sidem-story-runtime\2026-07-29\story-release-soak-realaudio-window-minimize-failure-20260729.summary.json`
+
+- 时长：203.750 秒
+- 样本：8
+- 用户观察：整个 Codex 窗口最小化期间音频没有中断
+- 全部样本：`visibilityState=visible`
+- 全部样本：`document.hidden=false`
+- 全部样本：AudioContext `running`
+- active sources 始终为 2
+
+因此这不是 `visibilitychange` handler 收到 hidden 后未暂停，而是 Codex
+桌面浏览器容器没有把窗口最小化映射为 Page Visibility。
+
+曾短暂尝试 `window blur/focus` 后备，但用户在最小化之前、仅从播放器移开
+焦点时音频就停止，证明该策略会误伤 Codex 内正常面板切换。该实验未提交并
+已完整撤回；稳定代码继续只响应标准 `visibilitychange/document.hidden`。
+
+### Microsoft Edge 通过样本
+
+同一真实音频 URL 在 Microsoft Edge 中由用户执行：
+
+1. 点击一次 `次へ`，确认真实音频可听；
+2. 最小化整个 Edge 窗口至少 40 秒；
+3. 恢复 Edge。
+
+用户报告：最小化时停止，恢复后继续。由于稳定代码没有 blur fallback，
+该结果可作为 Edge 的标准后台/恢复行为证据。此次没有自动导出 Edge 内部
+采样，因此记录为人工行为 PASS，不伪装成 raw diagnostics export。
+
 ## 自动门禁
 
 在 `421c3b0` 前执行并通过：
@@ -130,7 +164,6 @@ production build：2404 modules，3m06s。
 
 ## 下一步
 
-1. 用已确认的 Microsoft Edge 执行 first gesture / autoplay 和人工听感。
-2. 通过真实窗口最小化、切换应用或真实标签页切换，让 `document.hidden` 确实进入 true，再验证恢复。
-3. 执行 2–4 小时混合曲线并导出完整 `story-release-soak-v1`。
-4. 只有以上项目完成后，才评估 Story Runtime 是否 release-accepted。
+1. 执行 2–4 小时混合曲线并导出完整 `story-release-soak-v1`。
+2. 长稳期间覆盖 Next、Auto、Skip、Backlog、Choice 和跨 episode。
+3. 只有长稳资源曲线收敛后，才评估 Story Runtime 是否 release-accepted。
