@@ -34,3 +34,12 @@ export function externalResourcesForStory(registry, story) {
       .some(resourceId => resourceIds.has(resourceId))
   })
 }
+
+export function externalResourcesForCollection(registry, collection) {
+  return (collection?.chapters || []).flatMap(chapter =>
+    externalResourcesForStory(registry, chapter.story).map(resource => ({
+      chapterId: chapter.id,
+      resource,
+    })),
+  )
+}

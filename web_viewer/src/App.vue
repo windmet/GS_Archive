@@ -226,6 +226,7 @@
       <ArchiveStoryCollection
         v-if="view === 'story_collection'"
         :collection="currentStoryCollection"
+        :external-resources="currentStoryCollectionExternalResources"
         @play-chapter="playStoryCollectionChapter"
         @play-episode="playStoryCollectionEpisode"
       />
@@ -382,6 +383,7 @@ import {
   getRawCharacterImageCandidateUrl,
 } from './utils/CharacterImageResolver.js'
 import {
+  externalResourcesForCollection,
   externalResourcesForEvent,
   externalResourcesForStory,
 } from './data/externalStoryResources.js'
@@ -779,6 +781,10 @@ const storyCollections = computed(() => buildStoryCollections(storyMasterData.va
 const currentStoryCollection = computed(() => storyCollections.value.find(collection =>
   collection.domain === currentStoryDomain.value && collection.sectionId === currentStorySection.value,
 ) || null)
+
+const currentStoryCollectionExternalResources = computed(() =>
+  externalResourcesForCollection(externalStoryResourcesData.value, currentStoryCollection.value),
+)
 
 const currentStoryRelated = computed(() => {
   if (!currentStory.value) return []

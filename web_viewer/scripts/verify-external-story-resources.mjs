@@ -95,6 +95,28 @@ for (const [index, entry] of (registry.entries || []).entries()) {
       }
     }
   }
+
+  if (mapping.state === 'exact-unit-story') {
+    if (mapping.event_id !== null) {
+      errors.push(`${label} exact unit story must not carry an event ID`)
+    }
+    if ((mapping.story_resource_ids || []).length !== 0) {
+      errors.push(`${label} exact unit story must use collection IDs only`)
+    }
+    for (const collectionId of mapping.collection_ids || []) {
+      const story = storiesByScenarioId.get(collectionId)
+      if (!story) {
+        errors.push(`${label} references missing unit-story collection ${collectionId}`)
+        continue
+      }
+      if (!collectionId.startsWith('1_1_')) {
+        errors.push(`${label} collection ${collectionId} is not a unit story`)
+      }
+      if (!Array.isArray(story.episodes) || story.episodes.length < 1) {
+        errors.push(`${label} collection ${collectionId} has no episode boundary`)
+      }
+    }
+  }
 }
 
 if (errors.length > 0) {

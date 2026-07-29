@@ -15,12 +15,15 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | 项 | 当前值 |
 | --- | --- |
 | merged base branch | `master` |
-| current functional baseline | `master` includes PR #16 merge `139b9b0eef0a10df23fe3e122458c9ab13b70574` |
-| active functional branch | none |
-| active track | none selected；P1 image relation refinement 已收口 |
-| upstream | not applicable |
-| worktree | clean at functional closeout |
+| current functional baseline | `master` includes PR #17 merge `b62e050b626a11e4c5edfeba5ae2b74b125f44ca` |
+| active functional branch | `codex/external-story-links-the-kogado` |
+| active track | P1-A GS 外链扩展：THE 虎牙道三个 exact unit-story collections |
+| upstream | pending first push |
+| worktree | bounded registry/schema/verifier/documentation changes |
 | open PR | none |
+| PR #17 | merged as `b62e050b626a11e4c5edfeba5ae2b74b125f44ca` |
+| PR #17 final-head check | Source-only contract PASS，run `30475298501` |
+| PR #17 post-merge check | `master` push Source-only contract PASS，run `30475414245` |
 | PR #16 | merged as `139b9b0eef0a10df23fe3e122458c9ab13b70574` |
 | PR #16 final-head check | Source-only contract PASS，run `30475072475` |
 | PR #16 post-merge check | `master` push Source-only contract PASS，run `30475143673` |
@@ -429,25 +432,26 @@ build PASS；独立数据/UI/route verifier 均通过。
 | `BV1ac411S7KB` | event `10008` / story `1_3_10008_01` |
 | `BV1od4y1x7X6` | event `30014` / story `1_3_30014_01` |
 
-THE 虎牙道 Episode 0 三条仍是候选：
+THE 虎牙道 Episode 0 三条已完成内容边界核对并提升为精确 unit-story：
 
-| BVID | 候选 collection |
-| --- | --- |
-| `BV1LL411G7LD` | `1_1_013the_01` |
-| `BV1xA4y1S7Cb` | `1_1_013the_02` |
-| `BV16u4y187tH` | `1_1_013the_03` |
+| BVID | uploader | exact collection |
+| --- | --- | --- |
+| `BV1LL411G7LD` | HaaNaaaP (`14496860`) | `1_1_013the_01_1_1_013_01` |
+| `BV1xA4y1S7Cb` | HaaNaaaP (`14496860`) | `1_1_013the_02_1_1_013_02` |
+| `BV16u4y187tH` | 死扛桑 (`8798195`) | `1_1_013the_03_1_1_013_03` |
 
-必须观看或检查实际内容边界后，才能将候选提升为：
+三条均检查了开头/标题卡与 `j` part 最终对白，覆盖各自完整十个
+parts，登记为 `exact-unit-story + complete-collection`。注册表现为
+`5 GS records / 5 exact mappings / 5 unique BVIDs`。
 
-- `exact-story`；
-- `exact-collection`；
-- `partial-story`；
-- 或继续保持 `candidate`。
+`ArchiveStoryCollection` 已按展开 chapter 呈现各自唯一外链；生产 build
+在 2,405 modules 通过，最新 `dist` preview 的 exact link、安全 anchor、
+无远程图片、无横向溢出和无 console error 门禁通过。
 
 建议分支：
 
 ```text
-codex/external-story-links-pilot
+codex/external-story-links-the-kogado
 ```
 
 已执行顺序：
@@ -455,7 +459,7 @@ codex/external-story-links-pilot
 1. Schema + registry + 两条 exact event + verifier：完成；
 2. `ArchiveEventDetail` / `ArchiveStoryDetail` UI：完成；
 3. 5174 内部 Play 保留与外部链接呈现回归：完成；
-4. 三条 Episode 0 覆盖核对：未开始；
+4. 三条 Episode 0 覆盖核对：完成；
 5. 只有精确关系才进入内部详情页：已由 matcher 和 verifier 固定。
 
 详细契约：
@@ -694,6 +698,7 @@ master a9ea201
   |
   +-- Track P
         completed pilot: PR #6, two exact GS event links + UI
+        active P1-A expansion: three exact THE KOGADO unit-story links
         completed P1-B: PR #8, 260 USM relation catalog
         completed P1-C: PR #9, 1,271 image bundle relation catalog
         completed P1-D: PR #10, 50 bundles / 52 exact character promotions
@@ -735,9 +740,10 @@ git status -sb
 git rev-parse HEAD
 ```
 
-当前没有 active 功能分支。P1 image relation 的最终状态、剩余 90 个
-candidate 分类和下一步 write lock 已由 PR #16 合入。选择下一条独立轨道
-前先从最新 `master` 新建 `codex/*` 分支，不要复用已完成分支。
+当前 active 功能分支为 `codex/external-story-links-the-kogado`，基于
+PR #17 merge `b62e050b`。本批仅处理三个 exact unit-story 外链及其
+schema/verifier/审计，不重开已关闭的 image candidate 自动提升，也不执行
+已后置的 Runtime 长稳验收。
 
 ```text
 codex/post-merge-next-guidance
@@ -881,11 +887,12 @@ Authoritative registry：
 GS 熟肉 pilot：
 
 - Schema/verifier 通过；
-- 两条 exact event relation 存在；
+- 两条 exact event relation 与三条 exact unit-story relation 存在；
 - 不含 Mobage/drama；
 - 不含 remote thumbnail；
 - 5174 内部与外部动作均通过；
-- Episode 0 候选没有被误写成 exact。
+- Episode 0 三条已由开头/标题卡和最终对白边界证据提升为 exact，
+  不是按标题或收藏夹成员关系直接推断。
 
 USM/image：
 

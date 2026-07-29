@@ -16,12 +16,14 @@ their forward-looking defect lists must not override this baseline.
 
 | Field | Value |
 | --- | --- |
-| current functional baseline | `master` includes PR #16 merge `139b9b0eef0a10df23fe3e122458c9ab13b70574` |
-| active functional branch | none |
-| active track | none selected; P1 image relation refinement is closed |
-| active upstream | not applicable |
+| current functional baseline | `master` includes PR #17 merge `b62e050b626a11e4c5edfeba5ae2b74b125f44ca` |
+| active functional branch | `codex/external-story-links-the-kogado` |
+| active track | P1-A GS external-link expansion: three exact THE KOGADO unit-story collections |
+| active upstream | pending first push |
 | active pull request | none |
-| active validation | source-only and mounted image verifiers pass at `1,271 bundles / 7,816 image objects / 170 exact masterdata relations` |
+| active validation | external registry/UI source gates pass at `5 GS records / 5 exact mappings / 5 unique BVIDs`; production build/browser preview PASS |
+| PR #17 merge commit | `b62e050b626a11e4c5edfeba5ae2b74b125f44ca` |
+| PR #17 post-merge gate | run `30475414245`, PASS |
 | PR #16 merge commit | `139b9b0eef0a10df23fe3e122458c9ab13b70574` |
 | PR #16 post-merge gate | run `30475143673`, PASS |
 | PR #15 merge commit | `a9ea2012e1e55c158050424c146b743f17e87700` |
@@ -359,19 +361,24 @@ Project scope is restricted to SideM GROWING STARS:
 - keep external-link coverage separate from interactive-play and built-in-text
   translation coverage.
 
-The first exact pilot mappings are:
+The exact mappings are:
 
-| External subject | Internal relation |
-| --- | --- |
-| `GROWING SIGN@L -K.now O.nly-` | event `10008`, story `1_3_10008_01` |
-| `GROWING SELECTION -PROOF OF ONESELF-` | event `30014`, story `1_3_30014_01` |
+| External subject | Internal relation | Mapping |
+| --- | --- | --- |
+| `GROWING SIGN@L -K.now O.nly-` | event `10008`, story `1_3_10008_01` | exact event |
+| `GROWING SELECTION -PROOF OF ONESELF-` | event `30014`, story `1_3_30014_01` | exact event |
+| THE 虎牙道 Episode 0 第1話 | collection `1_1_013the_01_1_1_013_01` | exact unit story |
+| THE 虎牙道 Episode 0 第2話 | collection `1_1_013the_02_1_1_013_02` | exact unit story |
+| THE 虎牙道 Episode 0 第3話 | collection `1_1_013the_03_1_1_013_03` | exact unit story |
 
-The three THE KOGADO Episode 0 videos remain candidates for collections
-`1_1_013the_01`, `1_1_013the_02`, and `1_1_013the_03`. Their actual video
-coverage must be inspected before any record is promoted to an exact mapping.
+The three THE KOGADO videos passed opening/title-card and final-dialogue
+boundary checks against all ten local parts and are recorded with
+`complete-collection` coverage. Evidence is recorded in
+`notes/03_audit/EXTERNAL_GS_THE_KOGADO_EXACT_LINKS_20260730.md`.
 
-Schema, exact mapping, and UI implementation belong to a new bounded branch.
-They were intentionally excluded from the now-merged PR #2.
+The registry therefore contains five exact GS mappings. External-link
+metadata/UI remains outside the publication ledger and does not constitute
+Story Runtime release acceptance.
 
 ## 11. Superseded current-state claims
 
