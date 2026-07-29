@@ -15,6 +15,14 @@ export const releasesRoot = path.join(publicationRoot, 'releases')
 export const annotationsRoot = path.join(publicationRoot, 'annotations')
 export const manifestPath = path.join(publicationRoot, 'manifest.json')
 export const schemaPath = path.join(projectRoot, 'schemas', 'publication-release-v1.schema.json')
+export const releaseSchemaPaths = {
+  1: schemaPath,
+  2: path.join(projectRoot, 'schemas', 'publication-release-v2.schema.json'),
+}
+export const annotationSchemaPaths = {
+  1: path.join(projectRoot, 'schemas', 'publication-annotation-v1.schema.json'),
+}
+export const annotationIndexPath = path.join(publicationRoot, 'annotation_index.json')
 export const versionPolicyPath = path.join(
   projectRoot,
   'policies',
@@ -107,6 +115,46 @@ export function readAnnotationFiles() {
     .filter(entry => entry.isFile() && entry.name.endsWith('.json'))
     .map(entry => entry.name)
     .sort()
+}
+
+export function readAnnotationRecords() {
+  return readAnnotationFiles()
+    .map(filename => ({
+      filename,
+      annotation: JSON.parse(readFileSync(path.join(annotationsRoot, filename), 'utf8')),
+    }))
+    .sort((left, right) =>
+      left.annotation.created_at.localeCompare(right.annotation.created_at) ||
+      left.annotation.annotation_id.localeCompare(right.annotation.annotation_id),
+    )
+}
+
+export function buildAnnotationIndex(annotationRecords) {
+  const byReleaseId = new Map()
+  for (const { annotation } of annotationRecords) {
+    if (!byReleaseId.has(annotation.target_release_id)) {
+      byReleaseId.set(annotation.target_release_id, [])
+    }
+    byReleaseId.get(annotation.target_release_id).push(annotation.annotation_id)
+  }
+  return {
+    schema_version: 1,
+    generated_from: annotationRecords.map(({ annotation }) => annotation.annotation_id),
+    by_release_id: Object.fromEntries(
+      [...byReleaseId.entries()].sort(([left], [right]) => left.localeCompare(right)),
+    ),
+  }
+}
+
+export function appendOnlyLedgerFailures(nameStatusOutput) {
+  const failures = []
+  for (const line of String(nameStatusOutput || '').split(/\r?\n/).filter(Boolean)) {
+    const [status, ...paths] = line.split('\t')
+    if (/^[MDR]/.test(status) && paths.some(filename => filename.endsWith('.json'))) {
+      failures.push(`append-only ledger forbids ${status} of ${paths.join(' -> ')}`)
+    }
+  }
+  return failures
 }
 
 export function resolvePublishedPath(relativePath) {

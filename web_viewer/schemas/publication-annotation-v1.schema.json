@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gs-archive.local/schemas/publication-annotation-v1.schema.json",
+  "title": "GS Archive Publication Annotation v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "annotation_id",
+    "target_release_id",
+    "created_at",
+    "prepared_from_commit",
+    "kind",
+    "supersedes_annotation_id",
+    "scope",
+    "statements"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "annotation_id": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}-annotation-[a-z0-9][a-z0-9-]+-[0-9]{3}$"
+    },
+    "target_release_id": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9][a-z0-9-]+-[0-9]{3}$"
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "prepared_from_commit": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "kind": {
+      "enum": [
+        "semantic-clarification",
+        "provenance-clarification",
+        "acceptance-clarification",
+        "correction-note"
+      ]
+    },
+    "supersedes_annotation_id": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}-annotation-[a-z0-9][a-z0-9-]+-[0-9]{3}$"
+    },
+    "scope": {
+      "type": "object",
+      "required": ["logical_ids"],
+      "properties": {
+        "logical_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._:-]+$"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "statements": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["subject", "pointer", "statement", "evidence"],
+        "properties": {
+          "subject": {
+            "enum": [
+              "release",
+              "entry",
+              "source",
+              "published-artifact",
+              "browser-acceptance",
+              "rollback-evidence"
+            ]
+          },
+          "pointer": {
+            "type": "string",
+            "pattern": "^/(?:[A-Za-z0-9_~-]+/?)+$"
+          },
+          "statement": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
