@@ -125,6 +125,18 @@ function readIndexBlob(relativePath) {
   }
 }
 
+function readHeadBlob(relativePath) {
+  try {
+    return execFileSync('git', ['show', `HEAD:${relativePath}`], {
+      cwd: repositoryRoot,
+      encoding: 'buffer',
+      maxBuffer: 64 * 1024 * 1024,
+    })
+  } catch {
+    return null
+  }
+}
+
 function configuredEol(relativePath) {
   try {
     const output = execFileSync(
@@ -146,13 +158,23 @@ export function verifyPublishedArtifact(artifact) {
   const filename = resolvePublishedPath(artifact.path)
   if (!existsSync(filename)) return `published file does not exist: ${artifact.path}`
 
-  const canonicalBytes = readIndexBlob(artifact.path)
-  if (!canonicalBytes) return `published file is not present in the Git index: ${artifact.path}`
-  if (canonicalBytes.length !== artifact.bytes) {
-    return `published canonical size drifted: ${artifact.path}`
+  const indexBytes = readIndexBlob(artifact.path)
+  if (!indexBytes) return `published file is not present in the Git index: ${artifact.path}`
+  if (indexBytes.length !== artifact.bytes) {
+    return `published staged canonical size drifted: ${artifact.path}`
   }
-  if (sha256Bytes(canonicalBytes) !== artifact.sha256) {
-    return `published canonical hash drifted: ${artifact.path}`
+  if (sha256Bytes(indexBytes) !== artifact.sha256) {
+    return `published staged canonical hash drifted: ${artifact.path}`
+  }
+
+  const headBytes = readHeadBlob(artifact.path)
+  if (headBytes) {
+    if (headBytes.length !== artifact.bytes) {
+      return `published committed canonical size drifted: ${artifact.path}`
+    }
+    if (sha256Bytes(headBytes) !== artifact.sha256) {
+      return `published committed canonical hash drifted: ${artifact.path}`
+    }
   }
 
   const runtimeBytes = readFileSync(filename)
@@ -161,13 +183,13 @@ export function verifyPublishedArtifact(artifact) {
       return `published JSON must declare eol=lf: ${artifact.path}`
     }
     try {
-      if (semanticJson(runtimeBytes) !== semanticJson(canonicalBytes)) {
+      if (semanticJson(runtimeBytes) !== semanticJson(indexBytes)) {
         return `published runtime JSON differs semantically from canonical bytes: ${artifact.path}`
       }
     } catch (error) {
       return `published runtime JSON is invalid: ${artifact.path} (${error.message})`
     }
-  } else if (!runtimeBytes.equals(canonicalBytes)) {
+  } else if (!runtimeBytes.equals(indexBytes)) {
     return `published runtime bytes differ from canonical bytes: ${artifact.path}`
   }
 
