@@ -16,12 +16,14 @@ their forward-looking defect lists must not override this baseline.
 
 | Field | Value |
 | --- | --- |
-| current merged baseline | `master` = `origin/master` at `d38c52f1a27f034f6a209993109b626839ec74af` |
-| active track branch | `codex/chara-image-relation-refinement`, created from `d38c52f` |
-| active track | P1-D exact character-image relation refinement; 50 bundles / 52 stable promotions |
+| current merged baseline | `master` = `origin/master` at `6991015bf513ca27e98acd1fd7e18012c4f3c740` |
+| active track branch | none; `codex/post-p1d-handoff` is documentation-only |
+| active track | next selection: bounded `gasha` relation audit before implementation |
 | active upstream | not pushed at refresh |
 | active pull request | none at refresh |
-| active validation | source-only and mounted image verifiers pass at `1,271 bundles / 7,816 image objects / 52 stable promotions` |
+| active validation | PR #10 and post-merge Source Gate pass at `1,271 bundles / 7,816 image objects / 52 stable promotions` |
+| PR #10 merge commit | `6991015bf513ca27e98acd1fd7e18012c4f3c740` |
+| PR #10 post-merge gate | run `30471307383`, PASS |
 | PR #9 merge commit | `d38c52f1a27f034f6a209993109b626839ec74af` |
 | PR #9 post-merge gate | run `30470397679`, PASS |
 | PR #2 merge commit | `bca7042c1d87b261b98f21b5957a36c2eb99f6b1` |
@@ -541,7 +543,7 @@ Track P / portal and resource discovery
 GS-only external translation-link pilot complete in PR #6
 260-USM relation catalog complete in PR #8
 1,271-image-bundle relation catalog complete in PR #9
-50-bundle / 52-relation character promotion refinement active
+50-bundle / 52-relation character promotion refinement complete in PR #10
 ```
 
 Current priority and write locks:
@@ -556,7 +558,8 @@ Current priority and write locks:
 - external-link metadata/UI remains outside the publication ledger;
 - the USM catalog is merged and records 260 source identities, 77 exact
   consumers, and 183 unresolved records without decoding or publishing media;
-- the current active track is the bounded character-image relation refinement;
+- no functional track is active; the next step is a read-only bounded `gasha`
+  relation audit before choosing an implementation batch;
 - the image catalog records 1,271 source identities and 7,816 image objects
   without exporting PNG or replacing stable assets;
 - 50 bundles now inherit 52 exact stable relations from the already-authoritative

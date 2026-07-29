@@ -15,12 +15,15 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | 项 | 当前值 |
 | --- | --- |
 | merged base branch | `master` |
-| merged base HEAD | `d38c52f1a27f034f6a209993109b626839ec74af` |
-| active track branch | `codex/chara-image-relation-refinement`, created from `d38c52f` |
-| active track | P1-D character-image relation refinement：50 bundles / 52 stable promotions |
+| merged base HEAD | `6991015bf513ca27e98acd1fd7e18012c4f3c740` |
+| active track branch | none; post-P1-D handoff only |
+| active track | next selection: bounded `gasha` relation audit before implementation |
 | upstream | 尚未推送 |
-| worktree | P1-D changes present at status refresh |
+| worktree | documentation-only handoff changes at status refresh |
 | open PR | none at status refresh |
+| PR #10 | merged as `6991015bf513ca27e98acd1fd7e18012c4f3c740` |
+| PR #10 final-head check | Source-only contract PASS，run `30471238191` |
+| PR #10 post-merge check | `master` push Source-only contract PASS，run `30471307383` |
 | PR #9 | merged as `d38c52f1a27f034f6a209993109b626839ec74af` |
 | PR #9 final-head check | Source-only contract PASS，runs `30463989933` and `30465221234` |
 | PR #9 post-merge check | `master` push Source-only contract PASS，run `30470397679` |
@@ -187,7 +190,7 @@ IDM 已由用户确认删除。不要重新引入下载器变量。
 
 ### P0-S：解决 mounted RAW 的 18 个 WAV 漂移
 
-状态：**completed on branch / pending PR merge**。已完成逐文件归因、源缺陷
+状态：**merged in PR #5**。已完成逐文件归因、源缺陷
 修复和可恢复 quarantine；没有删除 WAV，也没有更新 recorded baseline。
 
 已记录 RAW 基线：
@@ -510,7 +513,7 @@ candidate 写成 stable relation。
 
 ### P1-D：角色图片 stable-promotion 关系细化
 
-状态：**implemented on branch / pending validation and review**。
+状态：**merged in PR #10**。
 
 P1-C 合并后的去重审计确认：57 个 `chara` bundle 中，50 个物理 bundle
 已由既有 `raw_character_image_promotions.json` 提供 52 条完整 stable
@@ -561,7 +564,8 @@ master 579df61
         completed pilot: PR #6, two exact GS event links + UI
         completed P1-B: PR #8, 260 USM relation catalog
         completed P1-C: PR #9, 1,271 image bundle relation catalog
-        active P1-D: 50 bundles / 52 exact character promotions
+        completed P1-D: PR #10, 50 bundles / 52 exact character promotions
+        next: bounded gasha relation audit
 ```
 
 PR #4 已通过 merge commit `2a1e1ec` 合入 `master`，post-merge gate
@@ -572,7 +576,9 @@ Track P 的首个 exact GS pilot 已由 PR #6 合并，post-merge gate
 `30461311887` 通过；它只激活 Schema/verifier，不包含新的
 release/annotation。P1-B 已由 PR #8 合并，post-merge gate `30462843307`
 通过。PR #9 已通过 merge commit `d38c52f` 合入 `master`，post-merge gate
-`30470397679` 通过。Track R 继续 deferred；P1-D 当前独立收口。不要未经覆盖核对就扩充
+`30470397679` 通过。PR #10 已通过 merge commit `6991015` 合入
+`master`，post-merge gate `30471307383` 通过。Track R 继续 deferred；
+下一项先只读审计有界 `gasha` 子族，不要未经覆盖核对就扩充
 Episode 0 候选。
 
 ## 4. 每条轨道的 Git 边界
@@ -587,17 +593,16 @@ git status -sb
 git rev-parse HEAD
 ```
 
-当前 active 开发分支是：
+当前没有功能开发分支；文档收口分支是：
 
 ```text
-codex/chara-image-relation-refinement
+codex/post-p1d-handoff
 ```
 
-它只承载既有 character-image promotion registry 与 image bundle catalog
-之间的精确关系接线、source-only/mounted verifier、baseline authority
-更新和审计文档；不导出或提交 PNG，不混入 Runtime 长稳、publication
-transaction、USM promotion 或 Episode 0 候选。PR #4 到 PR #9 的分支已经
-完成；不要继续复用：
+它只承载 PR #10 合并状态与下一优先级说明。下一功能分支必须先审计
+`gasha` 的有界子族和 exact masterdata 证据；不导出或提交 PNG，不混入
+Runtime 长稳、publication transaction、USM promotion 或 Episode 0
+候选。PR #4 到 PR #10 的功能分支已经完成；不要继续复用：
 
 ```text
 codex/post-merge-next-guidance
@@ -613,6 +618,7 @@ codex/post-merge-story-handoff
 codex/pr2-post-merge-status
 codex/post-merge-next-guidance
 codex/image-bundle-relation-catalog
+codex/chara-image-relation-refinement
 ```
 
 Codex 管理目录中指向初始提交 `ca3a28e` 的 detached worktree 不是项目开发
@@ -660,8 +666,8 @@ git diff --cached --check
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
 worktree、origin/master，并确认当前 active branch 为
-codex/chara-image-relation-refinement、base master=d38c52f，PR #9
-post-merge run 30470397679 通过。
+文档收口分支 codex/post-p1d-handoff、base master=6991015，PR #10
+post-merge run 30471307383 通过。
 
 完整阅读：
 1. web_viewer/notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
@@ -675,10 +681,11 @@ post-merge run 30470397679 通过。
 9,157 Unity objects / 7,816 image objects，source-only 与 mounted verifier
 均通过。
 真实 ledger 仍为 1 release / 1 stable logical ID，没有新增 production record。
-Story Runtime 2–4 小时长稳由用户暂缓，仍保持 NOT EXECUTED。P1-D 只把
+Story Runtime 2–4 小时长稳由用户暂缓，仍保持 NOT EXECUTED。P1-D 已把
 promotion registry 已证明的 50 bundles / 52 relations 升级为
-stable-promotion，其余 7 个 chara 合辑仍为 candidate；不得顺带批量导出
-PNG、替换 `public/assets`、新增 ledger release 或回填其他二进制。
+stable-promotion，其余 7 个 chara 合辑仍为 candidate。下一步先只读审计
+`gasha` 的有界子族与 exact masterdata 关系；不得顺带批量导出 PNG、替换
+`public/assets`、新增 ledger release 或回填其他二进制。
 ```
 
 ## 7. 完成定义
