@@ -1,9 +1,12 @@
 # GS 社区中文剧情导航审计
 
-Status: implementation verified; pending PR
+Status: merged and post-merge verified
 Date: 2026-07-30
-Branch: `codex/external-story-resource-navigation`
+Implementation branch: `codex/external-story-resource-navigation` (merged)
 Base: `0fbcbbc844e98b562a637fb3748680b6ba68d3d0`
+Implementation head: `9760bbbf6fb719c67edf6c983ac0075302791960`
+Merge: PR #20, `19e5fc570c1684eb8410effdd1b6cf32ac2759f6`
+Gates: final-head run `30479911302`; post-merge run `30479973771`
 
 ## 1. 决策
 
@@ -124,6 +127,10 @@ git diff --check: PASS
 - 无远程图片、无 console error。
 
 临时 preview 验证后已关闭；长期运行的 5174 未重启或改动。
+
+PR #20 随后以 merge commit `19e5fc570c1684eb8410effdd1b6cf32ac2759f6`
+合入 `master`。final-head Source-only contract run `30479911302` 与
+post-merge run `30479973771` 均通过，后者包含 production build。
 
 ## 6. 边界
 

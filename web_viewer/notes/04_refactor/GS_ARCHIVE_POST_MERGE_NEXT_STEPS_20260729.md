@@ -15,12 +15,15 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | 项 | 当前值 |
 | --- | --- |
 | merged base branch | `master` |
-| current functional baseline | `master` includes post-PR #18 handoff merge `0fbcbbc844e98b562a637fb3748680b6ba68d3d0` |
-| active functional branch | `codex/external-story-resource-navigation` |
-| active track | P1-A exact-only 社区中文剧情独立导航 |
-| upstream | pending first push |
-| worktree | bounded route/UI/verifier/documentation changes |
+| current functional baseline | `master` includes PR #20 merge `19e5fc570c1684eb8410effdd1b6cf32ac2759f6` |
+| active functional branch | none；documentation-only closeout is isolated |
+| active track | none selected；P1-A exact-only 社区中文剧情独立导航已完成 |
+| upstream | not applicable |
+| worktree | clean at PR #20 merge；documentation-only closeout follows separately |
 | open PR | none |
+| PR #20 | merged as `19e5fc570c1684eb8410effdd1b6cf32ac2759f6` |
+| PR #20 final-head check | Source-only contract PASS，run `30479911302` |
+| PR #20 post-merge check | `master` push Source-only contract PASS，run `30479973771` |
 | PR #18 | merged as `7342f5a5bf3c6d3e2ea2eef35cfdfc95c530e44a` |
 | PR #18 final-head check | Source-only contract PASS，run `30478115572` |
 | PR #18 post-merge check | `master` push Source-only contract PASS，run `30478199856` |
@@ -108,7 +111,7 @@ total:
 3 collections + 1 standalone / 18 artifacts
 ```
 
-当前分支已经增加独立机器 registry：
+PR #4 已增加独立机器 registry：
 
 ```text
 schemas/authoritative-story-publications-v1.schema.json
@@ -351,7 +354,7 @@ public/data/publication/annotations/.gitkeep
 - `active` 表示未来记录可以进入严格校验，不表示已经存在或接受第二笔
   production transaction。
 
-当前分支已新增：
+PR #7 已新增：
 
 ```text
 schemas/publication-release-v2.schema.json
@@ -451,7 +454,7 @@ parts，登记为 `exact-unit-story + complete-collection`。注册表现为
 在 2,405 modules 通过，最新 `dist` preview 的 exact link、安全 anchor、
 无远程图片、无横向溢出和无 console error 门禁通过。
 
-五条 exact relation 已达到详细契约中的独立导航门槛。当前分支增加：
+五条 exact relation 已达到详细契约中的独立导航门槛。PR #20 已增加：
 
 - stories section 稳定路由 `external_story_resources`；
 - 故事目录 `社区中文剧情 5 条` 入口；
@@ -558,7 +561,7 @@ candidate 写成 stable relation。
 P1-C 合并后的去重审计确认：57 个 `chara` bundle 中，50 个物理 bundle
 已由既有 `raw_character_image_promotions.json` 提供 52 条完整 stable
 promotion 证据；P1-C 目录此前仍把这些 bundle 降格记录为
-`organizer-export-candidate`。当前分支将它们升级为
+`organizer-export-candidate`。PR #10 将它们升级为
 `stable-promotion`，逐项交叉核对：
 
 - RAW relative path、bytes 和 SHA-256；
@@ -591,7 +594,7 @@ image_gasha_banner_<code>
 image_gasha_logo_<code>
 ```
 
-因此当前分支只为这 49 个 code 写入 98 条
+因此 PR #12 只为这 49 个 code 写入 98 条
 `exact_bundle_filename_gasha_code` 关系。verifier 独立重建并要求：
 
 - code 在 gasha index 中唯一；
@@ -608,7 +611,7 @@ population 中没有 banner/logo，明确保持未覆盖。没有导出 PNG、�
 
 状态：**merged in PR #13**。
 
-当前分支只处理完整匹配
+PR #13 只处理完整匹配
 `image_item_icon_event_<code>[_n|_r]` 的 bundle。committed event index
 有 59 个 unique code，其中 19 个出现在该有界 RAW 子族：
 
@@ -629,7 +632,7 @@ item bundle 不变；没有导出或替换 PNG。
 
 状态：**merged in PR #14**。
 
-当前分支只处理完整匹配 `image_honor_event_<code>` 的 bundle。当前 RAW
+PR #14 只处理完整匹配 `image_honor_event_<code>` 的 bundle。当前 RAW
 子族共有 41 个 bundle，其中 40 个 code 同时满足：
 
 - committed event index 中有唯一记录；
@@ -648,7 +651,7 @@ bundle 内各 Sprite/Texture2D 对象的用途，也不导出 PNG。
 
 状态：**merged in PR #15**。
 
-当前分支只处理完整匹配
+PR #15 只处理完整匹配
 `image_gasha_skill_<speaker-id>_<ssr02|ssr03>` 的 12 个 bundle。每个 bundle
 均只有一组同名 Sprite/Texture2D，每个 speaker ID 在 committed speaker
 dictionary 中唯一且类型为 `idol`，并已有 delimiter-bounded token
@@ -717,7 +720,7 @@ master a9ea201
   +-- Track P
         completed pilot: PR #6, two exact GS event links + UI
         completed P1-A expansion: PR #18, three exact THE KOGADO unit-story links
-        active P1-A navigation: exact-only community Chinese story view
+        completed P1-A navigation: PR #20, exact-only community Chinese story view
         completed P1-B: PR #8, 260 USM relation catalog
         completed P1-C: PR #9, 1,271 image bundle relation catalog
         completed P1-D: PR #10, 50 bundles / 52 exact character promotions
@@ -746,6 +749,8 @@ commit `724ec98` 合入 `master`，post-merge gate `30474109000` 通过。
 PR #15 已通过 merge commit `a9ea201` 合入 `master`，post-merge gate
 `30474870836` 通过。Track R 继续 deferred；P1 exact relation 自动细化
 已经收口，不要把剩余聚合或命名空间碰撞记录升级为 exact。
+P1-A 独立导航已由 PR #20 以 merge commit `19e5fc5` 合入 `master`，
+final-head run `30479911302` 与 post-merge run `30479973771` 均通过。
 
 ## 4. 每条轨道的 Git 边界
 
@@ -759,10 +764,10 @@ git status -sb
 git rev-parse HEAD
 ```
 
-当前 active 功能分支为 `codex/external-story-resource-navigation`，基于
-post-PR #18 handoff merge `0fbcbbc`。本批只把现有五条 exact relation
-组织为独立导航和稳定内部深链；不扩入 candidate/partial，不重开已关闭的
-image candidate 自动提升，也不执行已后置的 Runtime 长稳验收。
+当前没有 active 功能分支。`codex/external-story-resource-navigation` 已通过
+PR #20 合入 `master`；现有五条 exact relation 已组织为独立导航和稳定内部
+深链。后续不得顺带扩入 candidate/partial，不重开已关闭的 image candidate
+自动提升，也不把已后置的 Runtime 长稳验收写成完成。
 
 ```text
 codex/post-merge-next-guidance
@@ -785,6 +790,7 @@ codex/event-item-icon-exact-relations
 codex/honor-event-exact-relations
 codex/gasha-skill-exact-relations
 codex/post-p1h-relation-closeout
+codex/external-story-resource-navigation
 ```
 
 Codex 管理目录中指向初始提交 `ca3a28e` 的 detached worktree 不是项目开发
@@ -832,7 +838,7 @@ git diff --cached --check
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
 worktree、origin/master，并确认当前没有 active 功能分支，master 已包含
-PR #16 merge `139b9b0`，post-merge run `30475143673` 通过。
+PR #20 merge `19e5fc5`，post-merge run `30479973771` 通过。
 
 完整阅读：
 1. web_viewer/notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
@@ -846,8 +852,9 @@ PR #16 merge `139b9b0`，post-merge run `30475143673` 通过。
 9. web_viewer/notes/03_audit/HONOR_EVENT_EXACT_RELATIONS_20260730.md
 10. web_viewer/notes/03_audit/GASHA_SKILL_EXACT_RELATIONS_20260730.md
 11. web_viewer/notes/03_audit/IMAGE_RELATION_REFINEMENT_CLOSEOUT_20260730.md
+12. web_viewer/notes/03_audit/EXTERNAL_GS_RESOURCE_NAVIGATION_20260730.md
 
-先确认当前分支的 image catalog 为 1,271 bundles / 263,071,090 bytes /
+先确认当前 baseline 的 image catalog 为 1,271 bundles / 263,071,090 bytes /
 9,157 Unity objects / 7,816 image objects，source-only 与 mounted verifier
 均通过。
 真实 ledger 仍为 1 release / 1 stable logical ID，没有新增 production record。
