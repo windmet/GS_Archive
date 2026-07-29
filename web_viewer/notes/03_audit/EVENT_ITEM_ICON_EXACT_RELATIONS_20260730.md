@@ -1,6 +1,6 @@
 # Event Item Icon Exact Relations
 
-Status: implemented on `codex/event-item-icon-exact-relations`; pending review
+Status: merged in PR #13 as `46467c0b050a941ebb8bdf7100d29a8acf5965e5`
 
 Date: 2026-07-30
 
