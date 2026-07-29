@@ -128,6 +128,7 @@
         :idols="currentEventIdols"
         :units="currentEventUnits"
         :idol-visual-url="eventStoryIdolVisualUrl"
+        :external-resources="currentEventExternalResources"
         @play="playCurrentEvent"
         @play-episode="playCurrentEventEpisode"
         @open-card="openEventCard"
@@ -216,6 +217,7 @@
         :related="currentStoryRelated"
         :visual-url="currentStoryVisualUrl"
         :idol-name="idolDisplayName"
+        :external-resources="currentStoryExternalResources"
         @play="playStoryDetail"
         @select="openStoryDetail"
         @open-idol="openStoryIdol"
@@ -379,6 +381,10 @@ import {
   getPromotedCharacterImageUrl,
   getRawCharacterImageCandidateUrl,
 } from './utils/CharacterImageResolver.js'
+import {
+  externalResourcesForEvent,
+  externalResourcesForStory,
+} from './data/externalStoryResources.js'
 
 setStoryLanguagePreferences(new PlayerPreferencesRepository().load())
 const entityTranslationRepository = new EntityTranslationRepository()
@@ -420,6 +426,7 @@ const archiveManifestData = ref(null)
 const archiveVerificationData = ref(null)
 const uiAssetCatalogData = ref(null)
 const rawCharacterImagePromotionsData = ref(null)
+const externalStoryResourcesData = ref(null)
 const idolEntityTranslationRevision = ref(0)
 const currentScenario = ref(null)
 const currentScenarioFile = ref('')
@@ -763,6 +770,9 @@ const filteredStoryCatalog = computed(() => {
 const visibleStoryCatalogEntries = computed(() => filteredStoryCatalog.value.slice(0, storyVisibleLimit.value))
 
 const currentStory = computed(() => storyCatalog.value.find(entry => entry.file === currentStoryFile.value) || null)
+const currentStoryExternalResources = computed(() =>
+  externalResourcesForStory(externalStoryResourcesData.value, currentStory.value),
+)
 
 const storyCollections = computed(() => buildStoryCollections(storyMasterData.value, storyCatalog.value))
 
@@ -1032,6 +1042,9 @@ const currentMasterEvent = computed(() => {
   const code = String(currentEvent.value?.event_code || '')
   return eventIndexData.value?.by_code?.[code] || null
 })
+const currentEventExternalResources = computed(() =>
+  externalResourcesForEvent(externalStoryResourcesData.value, currentEvent.value?.event_code),
+)
 const currentEventCards = computed(() => (archiveManifestData.value?.event_card_relations_by_event?.[currentEventId.value] || [])
   .map(relation => {
     const card = cardMap.value.get(relation.card_resource_id)
@@ -2443,6 +2456,7 @@ onMounted(async () => {
   archiveVerificationData.value = data.archiveVerification
   uiAssetCatalogData.value = data.uiAssetCatalog
   rawCharacterImagePromotionsData.value = data.rawCharacterImagePromotions
+  externalStoryResourcesData.value = data.externalStoryResources
   for (const { key, error } of errors) {
     console.error(`[ArchiveData] Failed to load ${key}:`, error)
   }
