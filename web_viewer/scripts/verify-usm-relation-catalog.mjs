@@ -36,12 +36,17 @@ const sourceOnly = process.argv.includes('--source-only')
 const failures = []
 
 const readJson = filename => JSON.parse(readFileSync(filename, 'utf8'))
-const [catalog, schema, backmonitor, musicCatalog] = [
+const [catalog, schema, musicCatalog] = [
   catalogPath,
   schemaPath,
-  backmonitorPath,
   musicCatalogPath,
 ].map(readJson)
+const backmonitor = !sourceOnly && existsSync(backmonitorPath)
+  ? readJson(backmonitorPath)
+  : null
+if (!sourceOnly && !backmonitor) {
+  failures.push(`mounted BackMonitor index is unavailable: ${backmonitorPath}`)
+}
 
 const validate = new Ajv2020({ allErrors: true, strict: true }).compile(schema)
 if (!validate(catalog)) {
@@ -133,12 +138,6 @@ for (const entry of entries) {
     .filter(candidate => candidate.state === 'exact')
   if (entry.mapping?.state === 'exact-consumer') {
     exactCount += 1
-    const asset = backmonitor.assets?.[entry.id]
-    const transition = backmonitor.transitions?.[entry.id]
-    if ((asset ? 1 : 0) + (transition ? 1 : 0) !== 1) {
-      failures.push(`${entry.id}: exact relation must match one BackMonitor index record`)
-      continue
-    }
     if (
       exactCandidates.length !== 1 ||
       exactCandidates[0].consumer !== 'ChibiStageViewer.backmonitor'
@@ -148,34 +147,62 @@ for (const entry of entries) {
     if (!entry.mapping.raw_effect_scripts.length) {
       failures.push(`${entry.id}: exact relation must retain RAW effect-script evidence`)
     }
-    const expectedKind = asset ? 'backmonitor-movie' : 'backmonitor-transition'
-    if (entry.mapping.kind !== expectedKind) {
-      failures.push(`${entry.id}: mapping kind must be ${expectedKind}`)
+    const roles = entry.mapping.derived_assets.map(asset => asset.role)
+    if (entry.mapping.kind === 'backmonitor-movie') {
+      assertEqual(roles, ['movie'], `${entry.id}: movie derivative roles drifted`)
+      const expectedPath =
+        `web_viewer/public/assets/live-chibi/backmonitor/${entry.id}.mp4`
+      if (entry.mapping.derived_assets[0]?.path !== expectedPath) {
+        failures.push(`${entry.id}: movie derivative path does not match its identity`)
+      }
+    } else if (entry.mapping.kind === 'backmonitor-transition') {
+      assertEqual(roles, ['color', 'alpha'], `${entry.id}: transition derivative roles drifted`)
+      for (const asset of entry.mapping.derived_assets) {
+        const expectedPath =
+          `web_viewer/public/assets/live-chibi/backmonitor/${entry.id}.${asset.role}.mp4`
+        if (asset.path !== expectedPath) {
+          failures.push(`${entry.id}: ${asset.role} derivative path does not match its identity`)
+        }
+      }
+    } else {
+      failures.push(`${entry.id}: exact relation has an invalid mapping kind`)
     }
-    const expectedDerived = asset
-      ? [{
-          role: 'movie',
-          path: `web_viewer/public/assets/live-chibi/${asset.file}`,
-          width: asset.width,
-          height: asset.height,
-          frame_rate: asset.frameRate,
-          duration_ms: asset.duration,
-          bytes: asset.bytes,
-        }]
-      : ['color', 'alpha'].map(role => ({
-          role,
-          path: `web_viewer/public/assets/live-chibi/${transition[`${role}File`]}`,
-          width: transition[role].width,
-          height: transition[role].height,
-          frame_rate: transition[role].frameRate,
-          duration_ms: transition[role].duration,
-          bytes: transition[role].bytes,
-        }))
-    assertEqual(
-      entry.mapping.derived_assets,
-      expectedDerived,
-      `${entry.id}: derived BackMonitor metadata drifted`,
-    )
+    if (backmonitor) {
+      const asset = backmonitor.assets?.[entry.id]
+      const transition = backmonitor.transitions?.[entry.id]
+      if ((asset ? 1 : 0) + (transition ? 1 : 0) !== 1) {
+        failures.push(`${entry.id}: exact relation must match one BackMonitor index record`)
+        continue
+      }
+      const expectedKind = asset ? 'backmonitor-movie' : 'backmonitor-transition'
+      if (entry.mapping.kind !== expectedKind) {
+        failures.push(`${entry.id}: mapping kind must be ${expectedKind}`)
+      }
+      const expectedDerived = asset
+        ? [{
+            role: 'movie',
+            path: `web_viewer/public/assets/live-chibi/${asset.file}`,
+            width: asset.width,
+            height: asset.height,
+            frame_rate: asset.frameRate,
+            duration_ms: asset.duration,
+            bytes: asset.bytes,
+          }]
+        : ['color', 'alpha'].map(role => ({
+            role,
+            path: `web_viewer/public/assets/live-chibi/${transition[`${role}File`]}`,
+            width: transition[role].width,
+            height: transition[role].height,
+            frame_rate: transition[role].frameRate,
+            duration_ms: transition[role].duration,
+            bytes: transition[role].bytes,
+          }))
+      assertEqual(
+        entry.mapping.derived_assets,
+        expectedDerived,
+        `${entry.id}: derived BackMonitor metadata drifted`,
+      )
+    }
   } else {
     unresolvedCount += 1
     if (entry.mapping?.kind !== 'unresolved') {
@@ -187,7 +214,7 @@ for (const entry of entries) {
     if (exactCandidates.length) {
       failures.push(`${entry.id}: unresolved relation must not claim an exact consumer`)
     }
-    if (backmonitor.assets?.[entry.id] || backmonitor.transitions?.[entry.id]) {
+    if (backmonitor?.assets?.[entry.id] || backmonitor?.transitions?.[entry.id]) {
       failures.push(`${entry.id}: BackMonitor index record is incorrectly unresolved`)
     }
   }
@@ -199,15 +226,17 @@ assertEqual(catalog.summary?.exact_consumer, exactCount, 'summary exact count dr
 assertEqual(catalog.summary?.unresolved, unresolvedCount, 'summary unresolved count drifted')
 assertEqual(catalog.summary?.families, familyCounts, 'summary family counts drifted')
 
-const exactIndexIds = [
-  ...Object.keys(backmonitor.assets || {}),
-  ...Object.keys(backmonitor.transitions || {}),
-].sort()
 const exactCatalogIds = entries
   .filter(entry => entry.mapping?.state === 'exact-consumer')
   .map(entry => entry.id)
   .sort()
-assertEqual(exactCatalogIds, exactIndexIds, 'catalog and BackMonitor exact-ID populations differ')
+if (backmonitor) {
+  const exactIndexIds = [
+    ...Object.keys(backmonitor.assets || {}),
+    ...Object.keys(backmonitor.transitions || {}),
+  ].sort()
+  assertEqual(exactCatalogIds, exactIndexIds, 'catalog and BackMonitor exact-ID populations differ')
+}
 if (exactCatalogIds.length !== 77 || exactCount !== 77 || unresolvedCount !== 183) {
   failures.push('current USM relation baseline must remain 260 total / 77 exact / 183 unresolved')
 }

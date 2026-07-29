@@ -82,14 +82,16 @@ Source-only verification checks:
 - strict JSON Schema 2020-12;
 - deterministic sorted, unique IDs and relative paths;
 - summary totals, byte totals, family totals, and mapping totals;
-- exact equality with the 73 movie and 4 transition BackMonitor identities;
-- exact equality of recorded derivative metadata with the BackMonitor index;
+- exact-consumer shape, script evidence, derivative roles, and identity-bound
+  relative paths for 73 movies and 4 transitions;
 - music-token existence and filename boundary;
 - absence of absolute paths;
 - the current `260 / 77 / 183` population boundary.
 
 Mounted verification additionally checks:
 
+- exact equality with the mounted 73-movie + 4-transition BackMonitor index;
+- exact equality of recorded derivative metadata with that index;
 - exact equality with the live `RAW/movie/*.usm` filename population;
 - file byte count;
 - `CRID` magic;
