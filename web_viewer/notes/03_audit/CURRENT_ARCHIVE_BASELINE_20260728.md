@@ -407,10 +407,16 @@ files under `RAW/audio`:
 | audio files | 4,098 | 4,116 |
 | WAV | 0 | 18 |
 
-The 18 WAV files total 413,684,064 bytes and have timestamps around
-2026-07-27 21:52. They have not been deleted, moved, added to Git, or accepted
-as RAW authority. The recorded manifest remains the baseline until their
-provenance and disposition are explicitly resolved.
+The 18 WAV files total 413,684,064 bytes. Their provenance is now resolved:
+17 are exact decodes of `song3_drvalv.acb` selections 1–17 and one is the exact
+decode of `song3_drv999.acb` selection 1. The source defect was live-chibi
+metadata inspection using vgmstream `-I` without decode-suppressing `-m`; it is
+fixed by `eb44640`. During diagnosis, reproducing the CLI behavior rewrote the
+already-existing `song3_drv999.acb.wav` with identical bytes/hash and changed
+only its modification time. No WAV has been deleted, moved, added to Git, or
+accepted as RAW authority. The recorded manifest remains the baseline until
+the recommended recoverable quarantine move receives explicit authorization.
+See `notes/03_audit/RAW_AUDIO_WAV_PROVENANCE_20260729.md`.
 
 ### 12.2 Tracked-binary inventory implementation
 
@@ -507,8 +513,8 @@ GS-only external translation-link pilot
 Current priority and write locks:
 
 - PR #4 governance is merged and its post-merge gate passed;
-- the active branch is the read-only 18-WAV provenance audit; do not move,
-  delete, regenerate, track, or silently baseline those files;
+- the 18-WAV provenance is resolved and the generator is fixed; do not move,
+  delete, track, or silently baseline those files before disposition approval;
 - no new ledger publication, PNG backfill, or stable binary promotion until
   v2/annotation schemas are active;
 - Track R remains independent and is explicitly deferred by the user; it is

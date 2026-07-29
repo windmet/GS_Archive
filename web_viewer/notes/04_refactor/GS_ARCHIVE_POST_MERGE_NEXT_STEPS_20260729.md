@@ -170,8 +170,9 @@ IDM 已由用户确认删除。不要重新引入下载器变量。
 
 ### P0-S：解决 mounted RAW 的 18 个 WAV 漂移
 
-状态：**当前 active track**。第一阶段严格只读，不移动、不删除、不重新生成
-任何 WAV，也不更新 recorded baseline。
+状态：**provenance resolved / disposition pending authorization**。已完成只读
+逐文件归因和源缺陷修复；不移动、不删除任何 WAV，也不更新 recorded
+baseline。
 
 已记录 RAW 基线：
 
@@ -192,26 +193,32 @@ WAV: 18
 extra bytes: 413,684,064
 ```
 
-这 18 个 WAV 很可能是后续解码或验收产生的派生文件，但在完成来源核对前
-不能直接下结论。
+归因结论：
 
-下一步只能先只读审计：
+1. 17 个文件逐字节等于 `song3_drvalv.acb` selections 1–17 的 vgmstream
+   PCM 解码；
+2. 1 个文件逐字节等于 `song3_drv999.acb` selection 1 的解码；
+3. 全部为 44.1 kHz、双声道、130.285737 秒、22,982,448 bytes；
+4. 创建窗口与 live-chibi audio source regression 精确重合；
+5. 根因是 `prepare-live-chibi-audio.py` 用 `-I` 读取 metadata 时遗漏
+   `-m`，导致 vgmstream 同时写默认 WAV；
+6. `eb44640` 已修复并增加 source gate。
 
-1. 列出 18 个精确路径；
-2. 记录 size、SHA-256、创建/修改时间；
-3. 检查是否能映射回 ACB/AWB cue；
-4. 搜索生成脚本、命令记录和 `.analysis` 证据；
-5. 判断它们是原始 RAW、派生 cache、临时验收文件还是未知；
-6. 给出保留、迁移到 ignored derived 目录或删除的建议；
-7. 涉及移动或删除时重新取得用户授权。
+完整证据：
 
-在这一步完成前：
+```text
+notes/03_audit/RAW_AUDIO_WAV_PROVENANCE_20260729.md
+```
+
+当前只剩处置授权：
 
 - recorded manifest 仍是权威基线；
 - mounted verifier 正确失败；
 - 不把 13,018 静默更新成新基线；
 - 不删除或移动 WAV；
 - 不把 WAV 加入 Git。
+- 建议把 18 个文件移动到现有 ignored quarantine 的新子目录，避免覆盖
+  两个旧同名证据；执行前必须重新取得用户授权。
 
 建议分支：
 
