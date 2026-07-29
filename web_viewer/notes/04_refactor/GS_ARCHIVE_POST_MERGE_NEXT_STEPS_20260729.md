@@ -15,13 +15,14 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | 项 | 当前值 |
 | --- | --- |
 | merged base branch | `master` |
-| active governance branch | `codex/post-merge-next-guidance`, created from `4e416a6` |
-| base HEAD | `4e416a6731aeaf90b808b7f79a5beb47b5ee20c2` |
-| reviewed implementation HEAD | `851afb6 fix: enforce exact frozen release allowlist`；本状态文档随后 |
-| upstream | `origin/codex/post-merge-next-guidance`，implementation HEAD 已推送 |
+| merged base HEAD | `2a1e1ec08ae6331b82f7ac9d9719efbb3322e59e` |
+| active track branch | `codex/raw-audio-wav-provenance`, created from `2a1e1ec` |
+| active track | P0-S mounted RAW WAV provenance，当前只读 |
+| upstream | 首次状态提交后建立 |
 | worktree | clean at status refresh |
-| open PR | PR #4 `Establish post-merge publication governance`，Ready，未合并 |
-| PR #4 check | 上一轮 final-head Source-only contract PASS，run `30450450910` at `2167e2d`；`851afb6` 已通过本地与干净 checkout 三项门禁，等待 PR 新 run |
+| PR #4 | merged as `2a1e1ec08ae6331b82f7ac9d9719efbb3322e59e` |
+| PR #4 final-head check | Source-only contract PASS，run `30450883462` at `9215456` |
+| PR #4 post-merge check | `master` push Source-only contract PASS，run `30452463385` at `2a1e1ec` |
 | PR #2 | merged as `bca7042c1d87b261b98f21b5957a36c2eb99f6b1` |
 | PR #3 | merged as `4e416a6731aeaf90b808b7f79a5beb47b5ee20c2` |
 | PR #2 final check | Source-only contract PASS, run `30435933524` |
@@ -118,6 +119,10 @@ pre_ledger
 
 这是当前唯一仍阻止 Story Runtime 写成 `release-accepted` 的项目。
 
+2026-07-29 用户决定暂缓正式长稳，把当前工作优先级转移到其他 archive
+部分。该决定不撤销已有短时真实音频 PASS，也不把 2–4 小时矩阵伪写成完成；
+本项保持 `deferred / NOT EXECUTED`，之后仍从明确的 `master` commit 单独执行。
+
 已经通过：
 
 - Chromium first gesture；
@@ -164,6 +169,9 @@ codex/story-runtime-long-soak
 IDM 已由用户确认删除。不要重新引入下载器变量。
 
 ### P0-S：解决 mounted RAW 的 18 个 WAV 漂移
+
+状态：**当前 active track**。第一阶段严格只读，不移动、不删除、不重新生成
+任何 WAV，也不更新 recorded baseline。
 
 已记录 RAW 基线：
 
@@ -253,7 +261,8 @@ equality。第一笔 transaction 的三个精确路径和 publication metadata J
 `public/data/compiled/**/*.json` 全域 renormalize。Windows 当前 checkout 与
 `75f9cb1` 干净 checkout 的 publication verifier 均通过。
 
-该修复已包含在当前 `codex/post-merge-next-guidance`，不要再创建旧建议分支
+该修复已随 PR #4 合入 `master`；不要再复用
+`codex/post-merge-next-guidance`，也不要创建旧建议分支
 `codex/publication-ledger-windows-eol`。
 
 ### P0-G3：冻结 v1（已完成），设计 v2 与 annotation（待独立实现）
@@ -408,20 +417,19 @@ notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 ## 3. 三轨依赖图
 
 ```text
-master 4e416a6
+master 2a1e1ec
   |
-  +-- active branch codex/post-merge-next-guidance
-  |     registry + EOL + v1 freeze
-  |     -> source-only/mounted boundary
-  |     -> clean checkout PASS at 851afb6
-  |     -> documentation + PR + clean CI complete
-  |     -> explicit merge authorization pending
+  +-- active Track S: codex/raw-audio-wav-provenance
+  |     18 WAV read-only inventory
+  |     -> ACB/AWB/script provenance
+  |     -> classification + recommendation
+  |     -> no move/delete without new authorization
   |
   +-- future Track G: publication evolution
   |     3+1 / 18
   |     -> v2 + annotation
   |
-  +-- Track R: Runtime acceptance
+  +-- deferred Track R: Runtime acceptance
   |     fixed Runtime commit
   |     -> 2–4h soak
   |     -> quiet endpoint
@@ -434,12 +442,11 @@ master 4e416a6
         image relation catalog
 ```
 
-当前 governance branch 的 clean CI、文档和 PR 已完成；PR #4 只等待明确合并
-授权，不再从未合并 HEAD 继续分叉。合并后 Track G、R、P 不互相伪装成完成
-条件，可以使用独立 branch
-和 checkout。v2/annotation 激活前禁止新的 ledger 写入；Track R 不依赖 EOL、
-WAV 或熟肉；Track P 中只有 metadata/UI 和只读 catalog 可以并行，WAV
-move/delete 与任何 stable promotion 仍需另行授权或通过 Track G 门槛。
+PR #4 已通过 merge commit `2a1e1ec` 合入 `master`，post-merge gate
+`30452463385` 通过。Track R 已由用户暂缓，当前只执行 Track S 的只读来源
+审计。Track G、R、P 不互相伪装成完成条件；v2/annotation 激活前禁止新的
+ledger 写入，WAV move/delete 与任何 stable promotion 仍需另行授权或通过
+Track G 门槛。
 
 ## 4. 每条轨道的 Git 边界
 
@@ -453,27 +460,28 @@ git status -sb
 git rev-parse HEAD
 ```
 
-当前唯一未合并开发分支是：
+当前 active 开发分支是：
+
+```text
+codex/raw-audio-wav-provenance
+```
+
+它只承载 18 个 mounted WAV 的只读 provenance 审计。PR #4 的治理分支已经
+合并；不要继续复用：
 
 ```text
 codex/post-merge-next-guidance
-```
-
-它的 source-only/mounted 边界、文档、PR 与检查均已完成，只等待明确合并授权。
-合并后每条轨道从最新 `master` 单独建分支。不要继续复用：
-
-```text
 codex/post-merge-story-handoff
 codex/pr2-post-merge-status
 ```
 
-以下分支均已合入 `master`，不再承载新工作；当前 governance PR 合并后可按
-用户决定删除本地/远端引用：
+以下分支均已合入 `master`，不再承载新工作；可按用户决定删除本地/远端引用：
 
 ```text
 codex/story-localization-contract
 codex/post-merge-story-handoff
 codex/pr2-post-merge-status
+codex/post-merge-next-guidance
 ```
 
 Codex 管理目录中指向初始提交 `ca3a28e` 的 detached worktree 不是项目开发
@@ -520,8 +528,9 @@ git diff --cached --check
 
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
-worktree、origin/master、5174，并确认当前 active branch 为
-codex/post-merge-next-guidance、PR #2=bca7042、PR #3=4e416a6 均已合并。
+worktree、origin/master，并确认当前 active branch 为
+codex/raw-audio-wav-provenance、PR #4=2a1e1ec 已合并且 post-merge run
+30452463385 通过。
 
 完整阅读：
 1. web_viewer/notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
@@ -529,11 +538,11 @@ codex/post-merge-next-guidance、PR #2=bca7042、PR #3=4e416a6 均已合并。
 3. web_viewer/notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md
 4. web_viewer/notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 
-先确认 PR #4 的最新 Source-only contract 为 PASS；当前 governance branch
-通过后只等待明确合并授权。合并后 Track R 优先执行 2–4 小时长稳；Track G 可独立设计
-v2/annotation；Track P 可做 GS external-link metadata/UI 或只读资源目录。
-不得新增 ledger release、回填 PNG、删除或移动 WAV。GS 熟肉试点只做
-Growing Stars，并从两个 exact event 开始。
+当前先执行 P0-S：逐一判定 18 个 mounted WAV 的来源，严格只读。Story Runtime
+2–4 小时长稳由用户暂缓，仍保持 NOT EXECUTED；Track G 可独立设计
+v2/annotation，P1-A 后续可做 GS external-link metadata/UI。不得新增 ledger
+release、回填 PNG、删除或移动 WAV。GS 熟肉试点只做 Growing Stars，并从
+两个 exact event 开始。
 ```
 
 ## 7. 完成定义

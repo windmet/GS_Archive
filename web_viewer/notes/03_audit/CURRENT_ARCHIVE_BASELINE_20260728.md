@@ -16,10 +16,10 @@ their forward-looking defect lists must not override this baseline.
 
 | Field | Value |
 | --- | --- |
-| current merged baseline | `master` = `origin/master` at `4e416a6731aeaf90b808b7f79a5beb47b5ee20c2` |
-| active governance branch | `codex/post-merge-next-guidance`, created from `4e416a6` |
-| reviewed branch HEAD | `777f12f`; this PR status refresh follows it |
-| active upstream | `origin/codex/post-merge-next-guidance` |
+| current merged baseline | `master` = `origin/master` at `2a1e1ec08ae6331b82f7ac9d9719efbb3322e59e` |
+| active track branch | `codex/raw-audio-wav-provenance`, created from `2a1e1ec` |
+| active track | P0-S mounted RAW WAV provenance; read-only inventory first |
+| active upstream | established after the first status commit |
 | PR #2 merge commit | `bca7042c1d87b261b98f21b5957a36c2eb99f6b1` |
 | merged PR head | `6a2a14e741d361dc7c09c6c395946a33782af4d9` |
 | merge parents | `ef804fcb2b258979723fcf8ce62f317671b4d701` + `6a2a14e741d361dc7c09c6c395946a33782af4d9` |
@@ -34,17 +34,20 @@ their forward-looking defect lists must not override this baseline.
 | PR checks | final-head run `30435933524` passed |
 | post-merge checks | `master` push run `30436935539` passed |
 | active-branch production build | PASS at `a68cd60`, 2404 modules, 2m30s; later commits only change verifier/Schema/CI/docs |
-| active pull request | PR #4, Ready, unmerged |
-| active PR check | Source-only contract `30450450910` passed at `2167e2d`; implementation `851afb6` passed local and clean-checkout source-only gates, with a new PR run pending at refresh time |
+| PR #4 merge commit | `2a1e1ec08ae6331b82f7ac9d9719efbb3322e59e` |
+| PR #4 final-head check | Source-only contract `30450883462` passed at `9215456` |
+| PR #4 post-merge check | `master` push run `30452463385` passed at `2a1e1ec` |
 
 PR #2 is merged. Its title and body reflect its real scope: the RAW/masterdata source
 contract, resource audits and candidates, governed stable promotions, live
 semantic consumer migration, publication controls, and the bounded Story
 Runtime audio follow-up.
 
-PR #3 subsequently merged the first post-merge documentation correction.
-Therefore `bca7042` remains the immutable PR #2 merge identity, while
-`4e416a6` is the current repository baseline at this refresh.
+PR #3 subsequently merged the first post-merge documentation correction, and
+PR #4 merged the authoritative registry, source-only/mounted boundary,
+publication EOL correction, and version freeze. Therefore `bca7042` remains the
+immutable PR #2 merge identity, while `2a1e1ec` is the current repository
+baseline at this refresh.
 
 `stable-published` in project notes means an artifact occupies the stable path
 in the named checkout. For PR #2 artifacts, the containing commit is now merged
@@ -503,11 +506,13 @@ GS-only external translation-link pilot
 
 Current priority and write locks:
 
-- finish the active governance branch documentation, PR checks, and merge
-  before branching further;
+- PR #4 governance is merged and its post-merge gate passed;
+- the active branch is the read-only 18-WAV provenance audit; do not move,
+  delete, regenerate, track, or silently baseline those files;
 - no new ledger publication, PNG backfill, or stable binary promotion until
   v2/annotation schemas are active;
-- Track R is independent of Track G and Track P;
+- Track R remains independent and is explicitly deferred by the user; it is
+  still required before declaring Story Runtime `release-accepted`;
 - external-link metadata/UI does not enter the publication ledger and may use
   its own bounded branch;
 - WAV work remains read-only until disposition receives separate approval;

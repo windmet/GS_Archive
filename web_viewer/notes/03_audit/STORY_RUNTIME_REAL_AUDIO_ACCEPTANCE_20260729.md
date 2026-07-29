@@ -4,6 +4,10 @@
 
 当前状态是 **partial acceptance / 仍不具备 release-accepted 条件**。
 
+执行优先级：2026-07-29 用户决定暂缓 2–4 小时正式长稳，先转向其他 archive
+工作。本记录保持 `partial acceptance`；延期不是失败，也不等于
+`release-accepted`。
+
 已完成：
 
 - 用户已明确确认 IDM 从电脑删除，真实媒体请求前置条件解除。
