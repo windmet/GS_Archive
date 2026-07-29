@@ -2,6 +2,7 @@
 
 Status: current
 Captured: 2026-07-28
+Review state refreshed: 2026-07-29
 Repository: `E:\Web_build\SideM_Archived`
 Application: `E:\Web_build\SideM_Archived\web_viewer`
 
@@ -14,22 +15,24 @@ their forward-looking defect lists must not override this baseline.
 | Field | Value |
 | --- | --- |
 | branch | `codex/post-merge-story-handoff` |
-| HEAD | `d8d819dedda3ad043bd7885f82ac6f015190d2fc` |
+| reviewed implementation/evidence HEAD | `dd6252e8b61ee37ebfdb199698f5394754fac42c` (this status-only refresh follows it) |
 | upstream | `origin/codex/post-merge-story-handoff` |
 | upstream relation | identical at capture time |
 | worktree | clean at capture time |
 | local development server | `127.0.0.1:5174` listening at capture time |
-| pull request | Draft PR #2 |
+| pull request | PR #2, Ready for review, unmerged |
 | PR base | `ef804fcb2b258979723fcf8ce62f317671b4d701` |
-| PR commits | 63 |
-| PR files | 129 |
-| PR diff | `+21,432 / -591` |
+| PR commits | 83 after this status-only refresh |
+| PR files | 164 |
+| PR diff | `+52,090 / -627` after this status-only refresh |
+| PR checks | required Source-only contract passing; reviewed-head run `30435551980` passed |
+| PR merge state | `MERGEABLE / CLEAN`; no review decision |
 
-The PR title still described a documentation-only Story Runtime handoff at
-capture time. Its real scope is the RAW/masterdata source contract, resource
-audits and candidates, small stable promotions, and migration of live semantic
-consumers. PR metadata therefore needs to be rewritten after the current
-governance documentation is committed.
+The PR title and body now reflect its real scope: the RAW/masterdata source
+contract, resource audits and candidates, governed stable promotions, live
+semantic consumer migration, publication controls, and the bounded Story
+Runtime audio follow-up. It is ready for review but remains unmerged pending
+explicit authorization.
 
 `stable-published` in project notes means an artifact occupies the stable path
 in the named checkout. It does not imply that the containing commit is merged
@@ -239,7 +242,7 @@ domain-wide browser acceptance.
 | audio cue inventory | source-proven | representative song/BGM/Ambient/SE parity-verified | representative matrix sample-accepted |
 | costume/Spine | source-proven | representative and full-domain parity audits recorded | representative routes only |
 | five live semantic consumers | source-proven | default semantic source migrated to RAW and parity-verified | tested routes sample-accepted |
-| event visuals `001tom`/`002sht` | source-proven | stable-published in Draft PR #2 | item-level browser-accepted |
+| event visuals `001tom`/`002sht` | source-proven | stable-published in PR #2 (Ready, unmerged) | item-level browser-accepted |
 | remaining USM | 77 Backmonitor mappings proven; 183 unresolved semantically | incomplete | not applicable |
 | general `image_*` bundles | 1,271 physical bundles known | full relation table absent | not applicable |
 

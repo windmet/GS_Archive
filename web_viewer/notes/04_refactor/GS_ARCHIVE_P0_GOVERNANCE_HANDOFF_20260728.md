@@ -28,39 +28,30 @@ GROWING STARS 社区熟肉绑定拆成彼此独立的工作轨道。新窗口应
 
 当前最重要的未完成项按执行顺序如下。
 
-### P0-A：完成当前 Draft PR #2 的治理收口
+### P0-A：完成当前 PR #2 的合并收口
 
-文档契约已经写完，但以下机器可执行部分还没有实现：
+机器可执行治理、第一笔多 part RAW 剧情发布交易、rollback/republish、
+5174 小批验收、PR 标题/正文和最终检查均已完成。PR #2 当前为 Ready for
+review，`MERGEABLE / CLEAN`；本状态刷新前的 reviewed HEAD `dd6252e`
+对应 Source-only contract `30435551980` 已通过。
 
-1. 当前事实报告的生成器与漂移校验：**已实现**；source-only
-   验证通过，mounted 验证发现 `RAW/audio` 中存在 18 个未登记 WAV，按设计
-   阻止基线静默漂移；
-2. 已跟踪二进制清单、Schema 和 verifier：**已实现**；108 个 PNG 已逐项登记，
-   未修改任何图片 bytes；
-3. 发布账本 Schema、生成器和 verifier：**已实现空账本骨架**；第一笔真实
-   transaction 仍未执行；
-4. 第一笔多 part RAW 剧情发布交易的真实演练；
-5. PR #2 的标题、正文、检查结果和审阅顺序收口；
-6. PR #2 合并。
-
-本轮文档提交与推送不等于以上实现已经完成，也不等于 PR 已合并。
+当前唯一未完成动作是：获得用户明确授权后合并 PR #2。Ready、提交与推送均
+不等于已经合并。
 
 ### P0-B：完成 Story Runtime 真实发布验收
 
-源码门禁和 `noAudio=1` 浏览器门禁不能替代真实媒体验收。仍需：
+短时真实媒体矩阵已经覆盖 Edge 首次点击、Voice/SE/BGM/Ambient、隐藏与
+恢复、跨 episode 生命周期及人工听感。源码门禁和这些短时样本仍不能替代
+长稳验收。当前仅剩：
 
-1. Edge 首次点击与 autoplay；
-2. BGM、Ambient、Voice、SE 的真实播放；
-3. 隐藏标签页后恢复；
-4. 连续切换 episode；
-5. 跨 episode 的 BGM/Ambient 生命周期；
-6. 2–4 小时混合使用；
-7. 安静终点的 AudioContext、MediaElement、Pixi、Spine 和定时器收敛。
+1. 2–4 小时 Next / Auto / Skip / Backlog / Choice / episode 混合使用；
+2. 最后 25% 资源曲线与安静终点的 AudioContext、MediaElement、Pixi、Spine
+   和定时器收敛判断。
 
 IDM 或其他下载接管工具必须在真实音频验收前禁用。`noAudio=1` 测试时不需要
 为验证下载器而打开媒体。
 
-### P1-A：发布账本第一笔真实交易
+### P1-A：发布账本第一笔真实交易（已完成）
 
 选一个已有 RAW 权威来源、包含多个 part、已有稳定输出和浏览器入口的剧情
 collection，执行：
@@ -853,7 +844,7 @@ browser acceptance docs: ...
 - rollback 备份与最终 stable 产物；
 - 文档事实修正与无关 UI 重构。
 
-### 10.2 Draft PR #2
+### 10.2 PR #2（Ready for review）
 
 PR #2 的真实范围是：
 
@@ -877,16 +868,16 @@ PR 正文应明确：
 - USM 183 和 `image_*` 关系仍未解决；
 - 熟肉外链只是下一分支设计，不在本 PR 实现。
 
-保持 Draft，直到：
+转为 Ready 前的门槛：
 
 1. checks 通过；
 2. PR 正文与真实 diff 一致；
 3. reviewer 可按 source contract、data products、runtime consumers、
    stable binary、docs 的顺序审阅；
 4. 没有意外生成文件；
-5. 用户决定 ready/merge。
+5. 用户决定 Ready。
 
-不要自动合并。
+以上门槛已满足，PR 已转为 Ready。合并仍需用户明确授权，不要自动合并。
 
 ---
 
@@ -1043,7 +1034,7 @@ commit：
 
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
-worktree、Draft PR #2、5174，并完整阅读：
+worktree、Ready PR #2、5174，并完整阅读：
 
 1. web_viewer/notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md
 2. web_viewer/notes/04_refactor/GS_ARCHIVE_P0_GOVERNANCE_HANDOFF_20260728.md
@@ -1052,8 +1043,9 @@ worktree、Draft PR #2、5174，并完整阅读：
 5. web_viewer/notes/04_refactor/PUBLICATION_LEDGER_CONTRACT_20260728.md
 6. web_viewer/notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 
-先报告已漂移的事实，再按交接的 P0-A 从最小机器可执行治理提交开始。
-保持 5174 小批验证，不批量替换资源，不修改或删除用户未授权的本地数据。
+先报告已漂移的事实。PR #2 当前只等待明确合并授权；不得把未执行的 2–4 小时
+长稳写成 release-accepted。保持小批验证，不批量替换资源，不修改或删除用户
+未授权的本地数据。
 ```
 
 ---
@@ -1068,7 +1060,7 @@ worktree、Draft PR #2、5174，并完整阅读：
 - `git diff --check` 通过；
 - worktree clean；
 - branch 推送；
-- Draft PR #2 标题和正文反映真实范围；
+- Ready PR #2 标题和正文反映真实范围；
 - 未把设计 pending 写成已实现。
 
 ### P0 总体
@@ -1118,16 +1110,16 @@ rollback 工具已由 `7310ea0` 提交并推送，并作为
 - 第二次 5174 no-audio 验收；
 - 首笔 release、stable manifest、3 个必要稳定 JSON 和审计文档生成。
 
-下一状态仍是 pending：
+当前仅剩：
 
-1. PR 正文同步当前实现状态；
-2. Draft PR #2 审阅；
-3. 获得明确合并授权后再收口到 `master`。
+1. 获得明确合并授权后收口到 `master`；
+2. 合并后基于确定的 `master` commit 单独执行 2–4 小时长稳。
 
 首笔 transaction 已由 `27d89a3` 提交并推送；source-only 的旧 mounted
 判定由 `948a2ef` 修正。GitHub run `30374641388` 已在干净 Linux checkout
-通过完整 `Source-only contract` 和 production build。PR #2 当前
-`MERGEABLE`，仍为 Draft，尚无 review decision。
+通过完整 `Source-only contract` 和 production build。2026-07-29 本状态刷新
+前的 reviewed HEAD `dd6252e` 对应 run `30435551980` 再次通过；PR #2 当前为 Ready，
+`MERGEABLE / CLEAN`，尚无 review decision，尚未合并。
 
 5174 证据边界：最终 republish 后的验收窗口 console error 为 0；但复用标签
 在首次 direct player route 初始化期间曾记录 1 次首页 voice

@@ -25,6 +25,11 @@ The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_889
   status, unresolved domains, and superseded claims.
 - `notes/04_refactor/GS_ARCHIVE_P0_GOVERNANCE_HANDOFF_20260728.md` - current P0
   governance completion and next-window execution order.
+- `notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md` - current
+  real-audio matrix, repaired transition evidence, Edge behavior, and the
+  remaining 2–4 hour release-acceptance boundary.
+- `notes/04_refactor/STORY_POST_MERGE_HANDOFF_20260723.md` - Story Runtime
+  execution history and long-soak procedure.
 - `notes/04_refactor/ARCHIVE_MULTIDIMENSIONAL_STATUS_CONTRACT_20260728.md` -
   resource and feature status dimensions.
 - `notes/04_refactor/BINARY_AND_PUBLICATION_POLICY_20260728.md` - tracked binary
