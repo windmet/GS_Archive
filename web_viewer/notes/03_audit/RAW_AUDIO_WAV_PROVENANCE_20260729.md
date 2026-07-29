@@ -1,13 +1,13 @@
 # RAW Audio WAV Provenance Audit
 
-Status: provenance resolved; disposition requires separate authorization
+Status: provenance resolved; recoverable quarantine completed
 Captured: 2026-07-29
 Branch: `codex/raw-audio-wav-provenance`
 Base: `2a1e1ec08ae6331b82f7ac9d9719efbb3322e59e`
 
 ## Conclusion
 
-The 18 WAV files currently under `RAW/audio` are reproducible decoded
+The 18 WAV files observed under `RAW/audio` were reproducible decoded
 derivatives, not authoritative RAW inputs:
 
 - 17 files are exact PCM decodes of selections 1–17 from
@@ -21,8 +21,8 @@ derivatives, not authoritative RAW inputs:
   metadata inspection used `vgmstream -I` without `-m`.
 
 The source defect is fixed by `eb44640 fix: keep live audio inspection out of
-RAW`. No WAV has been deleted or moved, and the recorded RAW baseline has not
-been changed.
+RAW`. All 18 derived files have now been moved without deletion into an ignored,
+recoverable quarantine subdirectory. The recorded RAW baseline was not changed.
 
 ## Root cause
 
@@ -139,9 +139,10 @@ modified local: 2026-07-29 20:45:29.743
 
 The bytes and hash remained identical to the pre-reproduction inventory; only
 the modification time changed. No other WAV received a newer modification
-time. The file has not been deleted, moved, or otherwise concealed.
+time. At disclosure time the file had not been moved; it was subsequently
+included in the authorized quarantine operation below.
 
-## Disposition recommendation
+## Completed disposition
 
 The recorded manifest remains authoritative:
 
@@ -151,16 +152,23 @@ RAW/audio: 4,098 files
 WAV: 0
 ```
 
-Recommended recoverable action, pending explicit user authorization:
+The authorized recoverable action completed on 2026-07-29:
 
-1. move all 18 files together into a new subdirectory below
-   `web_viewer/.analysis/raw-migration/generated-wav-quarantine/`;
-2. avoid overwriting the two older quarantined files with the same names;
-3. retain this inventory as the content and provenance record;
-4. rerun the mounted archive baseline verifier;
-5. expect the live tree to return to `13,000 files / 8,232,049,221 bytes /
-   RAW audio 4,098 / WAV 0`;
-6. do not commit the quarantined binaries or update the recorded baseline.
+1. all 18 files moved to
+   `web_viewer/.analysis/raw-migration/generated-wav-quarantine/`
+   `20260729-live-chibi-metadata-inspection/`;
+2. the dedicated subdirectory avoided overwriting the two older quarantined
+   files with the same names;
+3. all 18 target hashes were rechecked against this inventory;
+4. `RAW/audio` contained zero WAV files after the move;
+5. real metadata inspection of both source ACBs reported 17 + 1 streams and
+   left `RAW/audio` at zero WAV files;
+6. the generated baseline report returned to `13,000 files /
+   8,232,049,221 bytes / RAW audio 4,098 / WAV 0`;
+7. mounted and source-only baseline verification both passed;
+8. the quarantined binaries remain ignored and are not committed.
 
-Until that authorization is given, the mounted verifier should continue to
-fail and the 18 files should remain untouched.
+Recovery remains possible by moving the 18 files from that dedicated directory
+back to their documented `RAW/audio` names. Such a rollback would intentionally
+restore the invalid mounted drift and should not be performed during normal
+archive work.

@@ -18,8 +18,10 @@ their forward-looking defect lists must not override this baseline.
 | --- | --- |
 | current merged baseline | `master` = `origin/master` at `2a1e1ec08ae6331b82f7ac9d9719efbb3322e59e` |
 | active track branch | `codex/raw-audio-wav-provenance`, created from `2a1e1ec` |
-| active track | P0-S mounted RAW WAV provenance; read-only inventory first |
-| active upstream | established after the first status commit |
+| active track | P0-S mounted RAW WAV provenance; complete on branch, pending PR #5 merge |
+| active upstream | `origin/codex/raw-audio-wav-provenance` |
+| active pull request | PR #5, Ready |
+| active PR check | Source-only contract `30453332938` passed at `ed675f2`; disposition status commit follows |
 | PR #2 merge commit | `bca7042c1d87b261b98f21b5957a36c2eb99f6b1` |
 | merged PR head | `6a2a14e741d361dc7c09c6c395946a33782af4d9` |
 | merge parents | `ef804fcb2b258979723fcf8ce62f317671b4d701` + `6a2a14e741d361dc7c09c6c395946a33782af4d9` |
@@ -397,8 +399,7 @@ compiled-artifact counts, card metrics, tracked PNG totals, BackMonitor movie
 relations, and the unresolved USM count. It contains no machine absolute paths.
 
 Source-only verification passes without requiring ignored RAW or masterdata.
-Mounted verification currently fails as designed because it detected 18 WAV
-files under `RAW/audio`:
+The mounted drift observed before disposition was:
 
 | Metric | Recorded RAW manifest | Live mounted tree |
 | --- | ---: | ---: |
@@ -407,16 +408,22 @@ files under `RAW/audio`:
 | audio files | 4,098 | 4,116 |
 | WAV | 0 | 18 |
 
-The 18 WAV files total 413,684,064 bytes. Their provenance is now resolved:
+The 18 WAV files totalled 413,684,064 bytes. Their provenance is now resolved:
 17 are exact decodes of `song3_drvalv.acb` selections 1–17 and one is the exact
 decode of `song3_drv999.acb` selection 1. The source defect was live-chibi
 metadata inspection using vgmstream `-I` without decode-suppressing `-m`; it is
 fixed by `eb44640`. During diagnosis, reproducing the CLI behavior rewrote the
 already-existing `song3_drv999.acb.wav` with identical bytes/hash and changed
-only its modification time. No WAV has been deleted, moved, added to Git, or
-accepted as RAW authority. The recorded manifest remains the baseline until
-the recommended recoverable quarantine move receives explicit authorization.
-See `notes/03_audit/RAW_AUDIO_WAV_PROVENANCE_20260729.md`.
+only its modification time.
+
+All 18 derived WAV files were subsequently moved without deletion to the
+ignored, recoverable quarantine subdirectory
+`20260729-live-chibi-metadata-inspection`. Target hashes remained exact, real
+metadata inspection did not recreate WAV files, and the mounted tree returned
+to `13,000 files / 8,232,049,221 bytes / audio 4,098 / WAV 0`. Mounted and
+source-only baseline verification now pass. The recorded manifest remains
+unchanged and authoritative. See
+`notes/03_audit/RAW_AUDIO_WAV_PROVENANCE_20260729.md`.
 
 ### 12.2 Tracked-binary inventory implementation
 
@@ -504,7 +511,7 @@ fixed Runtime commit
 -> PASS or FAIL
 
 Track P / portal and resource discovery
-18 WAV read-only provenance
+18 WAV provenance + quarantine complete
 GS-only external translation-link pilot
 260-USM relation catalog
 1,271-image-bundle relation catalog
@@ -513,14 +520,16 @@ GS-only external translation-link pilot
 Current priority and write locks:
 
 - PR #4 governance is merged and its post-merge gate passed;
-- the 18-WAV provenance is resolved and the generator is fixed; do not move,
-  delete, track, or silently baseline those files before disposition approval;
+- the 18-WAV provenance, generator fix, recoverable quarantine, and mounted
+  baseline restoration are complete on the active branch;
 - no new ledger publication, PNG backfill, or stable binary promotion until
   v2/annotation schemas are active;
 - Track R remains independent and is explicitly deferred by the user; it is
   still required before declaring Story Runtime `release-accepted`;
 - external-link metadata/UI does not enter the publication ledger and may use
   its own bounded branch;
-- WAV work remains read-only until disposition receives separate approval;
+- PR #5 should merge before the next track branches from `master`;
+- after PR #5, the recommended next active track is the bounded GS-only
+  external translation-link pilot;
 - USM and image work remains catalog-only until a bounded promotion is
   separately authorized.

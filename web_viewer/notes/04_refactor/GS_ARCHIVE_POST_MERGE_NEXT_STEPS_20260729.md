@@ -17,9 +17,11 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | merged base branch | `master` |
 | merged base HEAD | `2a1e1ec08ae6331b82f7ac9d9719efbb3322e59e` |
 | active track branch | `codex/raw-audio-wav-provenance`, created from `2a1e1ec` |
-| active track | P0-S mounted RAW WAV provenance，当前只读 |
-| upstream | 首次状态提交后建立 |
+| active track | P0-S mounted RAW WAV provenance，branch 内已完成，等待 PR #5 合并 |
+| upstream | `origin/codex/raw-audio-wav-provenance` |
 | worktree | clean at status refresh |
+| open PR | PR #5 `Resolve mounted RAW WAV provenance`，Ready |
+| PR #5 check | Source-only contract PASS，run `30453332938` at `ed675f2`；处置状态提交随后 |
 | PR #4 | merged as `2a1e1ec08ae6331b82f7ac9d9719efbb3322e59e` |
 | PR #4 final-head check | Source-only contract PASS，run `30450883462` at `9215456` |
 | PR #4 post-merge check | `master` push Source-only contract PASS，run `30452463385` at `2a1e1ec` |
@@ -170,9 +172,8 @@ IDM 已由用户确认删除。不要重新引入下载器变量。
 
 ### P0-S：解决 mounted RAW 的 18 个 WAV 漂移
 
-状态：**provenance resolved / disposition pending authorization**。已完成只读
-逐文件归因和源缺陷修复；不移动、不删除任何 WAV，也不更新 recorded
-baseline。
+状态：**completed on branch / pending PR merge**。已完成逐文件归因、源缺陷
+修复和可恢复 quarantine；没有删除 WAV，也没有更新 recorded baseline。
 
 已记录 RAW 基线：
 
@@ -183,7 +184,7 @@ RAW/audio: 4,098 files
 WAV: 0
 ```
 
-当前 live tree：
+处置前 live tree：
 
 ```text
 13,018 files
@@ -210,15 +211,18 @@ extra bytes: 413,684,064
 notes/03_audit/RAW_AUDIO_WAV_PROVENANCE_20260729.md
 ```
 
-当前只剩处置授权：
+已完成处置：
 
-- recorded manifest 仍是权威基线；
-- mounted verifier 正确失败；
-- 不把 13,018 静默更新成新基线；
-- 不删除或移动 WAV；
-- 不把 WAV 加入 Git。
-- 建议把 18 个文件移动到现有 ignored quarantine 的新子目录，避免覆盖
-  两个旧同名证据；执行前必须重新取得用户授权。
+- 18 个文件移动到
+  `web_viewer/.analysis/raw-migration/generated-wav-quarantine/`
+  `20260729-live-chibi-metadata-inspection/`；
+- 独立子目录没有覆盖两个旧同名 quarantine 文件；
+- 目标 18/18 SHA-256 与审计清单一致；
+- 修复后的真实 metadata 检查覆盖 17 + 1 streams，RAW 未重新产生 WAV；
+- 当前 live tree 恢复为 `13,000 files / 8,232,049,221 bytes /
+  RAW/audio 4,098 / WAV 0`；
+- mounted 与 source-only baseline verifier 均通过；
+- quarantine 仍被 `.gitignore` 排除，没有提交派生二进制。
 
 建议分支：
 
@@ -427,10 +431,10 @@ notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 master 2a1e1ec
   |
   +-- active Track S: codex/raw-audio-wav-provenance
-  |     18 WAV read-only inventory
-  |     -> ACB/AWB/script provenance
-  |     -> classification + recommendation
-  |     -> no move/delete without new authorization
+  |     18 WAV provenance complete
+  |     -> generator fixed
+  |     -> recoverable quarantine complete
+  |     -> mounted baseline PASS
   |
   +-- future Track G: publication evolution
   |     3+1 / 18
@@ -443,17 +447,16 @@ master 2a1e1ec
   |     -> PASS / FAIL
   |
   +-- Track P: portal/resource discovery
-        WAV read-only provenance
-        GS external-link pilot
+        next: GS external-link pilot
         USM relation catalog
         image relation catalog
 ```
 
 PR #4 已通过 merge commit `2a1e1ec` 合入 `master`，post-merge gate
-`30452463385` 通过。Track R 已由用户暂缓，当前只执行 Track S 的只读来源
-审计。Track G、R、P 不互相伪装成完成条件；v2/annotation 激活前禁止新的
-ledger 写入，WAV move/delete 与任何 stable promotion 仍需另行授权或通过
-Track G 门槛。
+`30452463385` 通过。Track R 已由用户暂缓；Track S 已在 PR #5 分支完成，
+等待合并。Track G、R、P 不互相伪装成完成条件；v2/annotation 激活前禁止
+新的 ledger 写入。PR #5 合并后，下一个建议 active track 是 P1-A GS-only
+external translation-link pilot。
 
 ## 4. 每条轨道的 Git 边界
 
@@ -473,8 +476,8 @@ git rev-parse HEAD
 codex/raw-audio-wav-provenance
 ```
 
-它只承载 18 个 mounted WAV 的只读 provenance 审计。PR #4 的治理分支已经
-合并；不要继续复用：
+它只承载 18 个 mounted WAV 的 provenance、源缺陷修复和可恢复 quarantine，
+当前不再添加其他功能。PR #4 的治理分支已经合并；不要继续复用：
 
 ```text
 codex/post-merge-next-guidance
@@ -545,11 +548,11 @@ codex/raw-audio-wav-provenance、PR #4=2a1e1ec 已合并且 post-merge run
 3. web_viewer/notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md
 4. web_viewer/notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 
-当前先执行 P0-S：逐一判定 18 个 mounted WAV 的来源，严格只读。Story Runtime
-2–4 小时长稳由用户暂缓，仍保持 NOT EXECUTED；Track G 可独立设计
-v2/annotation，P1-A 后续可做 GS external-link metadata/UI。不得新增 ledger
-release、回填 PNG、删除或移动 WAV。GS 熟肉试点只做 Growing Stars，并从
-两个 exact event 开始。
+先确认 PR #5 的最新 Source-only contract 为 PASS；P0-S 已完成 provenance、
+generator fix、recoverable quarantine 和 mounted baseline recovery。Story
+Runtime 2–4 小时长稳由用户暂缓，仍保持 NOT EXECUTED。PR #5 合并后优先
+P1-A GS external-link metadata/UI；只做 Growing Stars，并从两个 exact event
+开始。Track G 可独立设计 v2/annotation；不得新增 ledger release 或回填 PNG。
 ```
 
 ## 7. 完成定义
