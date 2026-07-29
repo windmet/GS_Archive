@@ -13,7 +13,7 @@
 - Menu overlay 能暂停 AudioContext，关闭后恢复。
 - debug visibility override 能暂停并恢复 AudioContext。
 - 发现并修复跨场景淡出时的浏览器定时器 receiver 错误；修复后 `event_before / ambi_shop_shoutengai` 正确切换为 `usual_day / ambi_room`。
-- 用户确认短时人工听感没有爆音、语音重叠、旧背景音残留、突然静音或菜单后恢复失败。
+- 用户确认短时人工听感没有爆音、语音重叠、旧背景音残留、突然静音或菜单后恢复失败；并抽查了开发阶段常用的多个调试片段，Voice、SE、BGM 均正常出现。
 - Microsoft Edge 中首次点击后真实音频可听；最小化 Edge 时停止，恢复窗口后继续。
 
 仍未完成：
@@ -60,7 +60,7 @@
 | visibility code path | debug override hidden/visible 时 suspended/running | PASS（仅代码路径） |
 | Edge minimize/resume | 稳定代码仅监听 `visibilitychange/document.hidden`；用户确认最小化 Edge 时停止、恢复后继续 | PASS（人工行为证据） |
 | Edge first gesture | 用户在 Edge 点击一次 `次へ` 后真实音频可听 | PASS（人工行为证据） |
-| human listening | 前几轮真实音频无爆音、重叠、旧背景音残留、突然静音或恢复失败 | PASS（短时） |
+| human listening | 前几轮真实音频无爆音、重叠、旧背景音残留、突然静音或恢复失败；多个常用调试片段中的 Voice、SE、BGM 均正常出现 | PASS（短时、多片段抽查） |
 | 2–4h mixed soak | 尚未执行 | NOT EXECUTED |
 
 ## 缺陷、根因与修复

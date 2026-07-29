@@ -8,7 +8,8 @@
 > Chromium 已覆盖 first gesture、Voice/SE/BGM/Ambient、跨 episode、
 > Menu pause/resume 与 debug visibility pause/resume。跨场景 timer
 > receiver 的 `Illegal invocation` 已由 `421c3b0` 修复并回归通过。
-> 用户确认短时人工听感无异常；Microsoft Edge 首次点击、最小化暂停和恢复
+> 用户确认短时人工听感无异常，且多个常用调试片段中的 Voice、SE、BGM 均
+> 正常出现；Microsoft Edge 首次点击、最小化暂停和恢复
 > 续播通过。Codex 应用内浏览器最小化不产生 Page Visibility，blur fallback
 > 会误停且已撤回。详细证据见
 > `notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md`。当前剩余
