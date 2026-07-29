@@ -12,8 +12,19 @@ export const projectRoot = path.resolve(
 export const repositoryRoot = path.resolve(projectRoot, '..')
 export const publicationRoot = path.join(projectRoot, 'public', 'data', 'publication')
 export const releasesRoot = path.join(publicationRoot, 'releases')
+export const annotationsRoot = path.join(publicationRoot, 'annotations')
 export const manifestPath = path.join(publicationRoot, 'manifest.json')
 export const schemaPath = path.join(projectRoot, 'schemas', 'publication-release-v1.schema.json')
+export const versionPolicyPath = path.join(
+  projectRoot,
+  'policies',
+  'publication-ledger-versions.v1.json',
+)
+export const versionPolicySchemaPath = path.join(
+  projectRoot,
+  'schemas',
+  'publication-ledger-version-policy-v1.schema.json',
+)
 
 export function readReleaseFiles() {
   if (!existsSync(releasesRoot)) return []
@@ -88,6 +99,14 @@ export function sha256Bytes(bytes) {
   const hash = createHash('sha256')
   hash.update(bytes)
   return hash.digest('hex')
+}
+
+export function readAnnotationFiles() {
+  if (!existsSync(annotationsRoot)) return []
+  return readdirSync(annotationsRoot, { withFileTypes: true })
+    .filter(entry => entry.isFile() && entry.name.endsWith('.json'))
+    .map(entry => entry.name)
+    .sort()
 }
 
 export function resolvePublishedPath(relativePath) {

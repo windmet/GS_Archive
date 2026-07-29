@@ -351,6 +351,19 @@ Future evolution must:
 5. keep annotations out of stable-state replay;
 6. validate release and annotation files with independent schemas.
 
+The machine-enforced transition state is:
+
+```text
+policies/publication-ledger-versions.v1.json
+schemas/publication-ledger-version-policy-v1.schema.json
+```
+
+Release schema v1 is frozen to the single historical release above. Release
+schema v2 and annotation schema v1 are `reserved`: their directories and
+version numbers are claimed, but files using them must be rejected until their
+schemas and replay-independent verifiers land together. `reserved` must never
+be interpreted as permission to draft production ledger records.
+
 V2 should add state-dependent requirements for non-empty published artifacts,
 RAW object identity, accepted-browser commit/environment evidence, unmanaged
 previous state, and backup-manifest identity.

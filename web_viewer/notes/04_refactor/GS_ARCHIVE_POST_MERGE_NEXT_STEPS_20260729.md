@@ -264,7 +264,21 @@ public/data/publication/releases/2026-07-28-story-1-4-001-00-001.json
 仅保留文件还不足以冻结 v1。Verifier 必须使用历史 v1 release ID allowlist
 或版本 cutoff，拒绝新的 v1 release。
 
-未来新增：
+当前分支已将这一部分机器化：
+
+```text
+policies/publication-ledger-versions.v1.json
+schemas/publication-ledger-version-policy-v1.schema.json
+public/data/publication/annotations/.gitkeep
+```
+
+- v1 为 `frozen`，allowlist 仅含既有 release；
+- v2 release 与 v1 annotation 均为 `reserved`；
+- verifier 拒绝新增 v1、未知/保留 release 版本以及尚未受 Schema 管理的
+  annotation JSON；
+- `reserved` 只占用版本号和目录，不表示已经允许写入。
+
+后续仍需新增：
 
 ```text
 schemas/publication-release-v2.schema.json

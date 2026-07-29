@@ -8,25 +8,48 @@ import {
   findAbsolutePathStrings,
   manifestPath,
   projectRoot,
+  readAnnotationFiles,
   readReleaseFiles,
   repositoryRoot,
   schemaPath,
   stableJson,
   verifyPublishedArtifact,
+  versionPolicyPath,
+  versionPolicySchemaPath,
 } from './lib/publication-ledger.mjs'
 
 const failures = []
-const [schema, committedManifest] = await Promise.all(
-  [schemaPath, manifestPath].map(filename => readFile(filename, 'utf8').then(JSON.parse)),
+const [schema, committedManifest, versionPolicy, versionPolicySchema] = await Promise.all(
+  [schemaPath, manifestPath, versionPolicyPath, versionPolicySchemaPath]
+    .map(filename => readFile(filename, 'utf8').then(JSON.parse)),
 )
 const ajv = new Ajv2020({ allErrors: true, strict: true })
 addFormats(ajv)
 const validate = ajv.compile(schema)
+const validateVersionPolicy = ajv.compile(versionPolicySchema)
+if (!validateVersionPolicy(versionPolicy)) {
+  failures.push(
+    ...validateVersionPolicy.errors.map(error =>
+      `version policy schema ${error.instancePath || '/'} ${error.message}`,
+    ),
+  )
+}
 const releases = readReleaseFiles()
 const releaseIds = new Set()
 
 for (const [releaseIndex, record] of releases.entries()) {
   const { filename, release } = record
+  const versionRule = versionPolicy.release_versions[String(release.schema_version)]
+  if (!versionRule) {
+    failures.push(`${filename} uses unsupported release schema v${release.schema_version}`)
+  } else if (versionRule.status === 'reserved') {
+    failures.push(`${filename} uses reserved release schema v${release.schema_version}`)
+  } else if (
+    versionRule.status === 'frozen' &&
+    !versionRule.allowed_release_ids.includes(release.release_id)
+  ) {
+    failures.push(`${filename} is not allowed by frozen release schema v${release.schema_version}`)
+  }
   if (!validate(release)) {
     failures.push(
       ...validate.errors.map(error =>
@@ -87,6 +110,13 @@ for (const [releaseIndex, record] of releases.entries()) {
       }
     }
   }
+}
+
+const annotationFiles = readAnnotationFiles()
+if (annotationFiles.length) {
+  failures.push(
+    `annotation schema v1 is reserved; remove ungoverned files: ${annotationFiles.join(', ')}`,
+  )
 }
 
 const generated = buildPublicationManifest(releases)
