@@ -79,6 +79,9 @@ jobs:
       - name: Verify audio lifecycle
         run: npm run verify:story-audio
 
+      - name: Verify live-chibi audio inspection
+        run: npm run verify:live-chibi-audio
+
       - name: Verify Runtime foundation
         run: node scripts/verify-story-runtime-foundation.mjs
 

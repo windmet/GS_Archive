@@ -30,12 +30,12 @@ def run_json(command: list[str]) -> dict:
 
 
 def inspect_streams(vgmstream: Path, acb_path: Path) -> list[dict]:
-    first = run_json([str(vgmstream), "-I", str(acb_path)])
+    first = run_json([str(vgmstream), "-m", "-I", str(acb_path)])
     total = int(first.get("streamInfo", {}).get("total") or 1)
     streams = []
     for selection in range(1, total + 1):
         info = first if selection == 1 else run_json(
-            [str(vgmstream), "-s", str(selection), "-I", str(acb_path)]
+            [str(vgmstream), "-m", "-s", str(selection), "-I", str(acb_path)]
         )
         sample_rate = int(info.get("sampleRate") or 0)
         samples = int(info.get("numberOfSamples") or 0)
