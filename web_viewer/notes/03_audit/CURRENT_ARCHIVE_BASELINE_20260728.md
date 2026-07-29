@@ -33,9 +33,9 @@ their forward-looking defect lists must not override this baseline.
 | PR diff | `+52,090 / -627` |
 | PR checks | final-head run `30435933524` passed |
 | post-merge checks | `master` push run `30436935539` passed |
-| active-branch production build | PASS at `a68cd60`, 2404 modules, 2m30s; later commits only change verifier/CI/docs |
+| active-branch production build | PASS at `a68cd60`, 2404 modules, 2m30s; later commits only change verifier/Schema/CI/docs |
 | active pull request | PR #4, Ready, unmerged |
-| active PR check | Source-only contract `30450348510` passed at `777f12f` |
+| active PR check | Source-only contract `30450450910` passed at `2167e2d`; implementation `851afb6` passed local and clean-checkout source-only gates, with a new PR run pending at refresh time |
 
 PR #2 is merged. Its title and body reflect its real scope: the RAW/masterdata source
 contract, resource audits and candidates, governed stable promotions, live

@@ -364,6 +364,13 @@ version numbers are claimed, but files using them must be rejected until their
 schemas and replay-independent verifiers land together. `reserved` must never
 be interpreted as permission to draft production ledger records.
 
+For every frozen release schema version, the verifier compares the sorted
+allowlist with the complete set of release IDs actually present for that
+version. The sets must match exactly in both directions: a new unlisted release,
+an omitted historical release, and an allowlisted ID without a release file all
+fail verification. `active` and `reserved` release versions must keep an empty
+allowlist.
+
 V2 should add state-dependent requirements for non-empty published artifacts,
 RAW object identity, accepted-browser commit/environment evidence, unmanaged
 previous state, and backup-manifest identity.

@@ -17,17 +17,17 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | merged base branch | `master` |
 | active governance branch | `codex/post-merge-next-guidance`, created from `4e416a6` |
 | base HEAD | `4e416a6731aeaf90b808b7f79a5beb47b5ee20c2` |
-| reviewed branch HEAD | `777f12f docs: close post-merge governance handoff`；本 PR 状态刷新随后 |
-| upstream | `origin/codex/post-merge-next-guidance`，在状态刷新前与 HEAD 一致 |
+| reviewed implementation HEAD | `851afb6 fix: enforce exact frozen release allowlist`；本状态文档随后 |
+| upstream | `origin/codex/post-merge-next-guidance`，implementation HEAD 已推送 |
 | worktree | clean at status refresh |
 | open PR | PR #4 `Establish post-merge publication governance`，Ready，未合并 |
-| PR #4 check | Source-only contract PASS，run `30450348510` at `777f12f` |
+| PR #4 check | 上一轮 final-head Source-only contract PASS，run `30450450910` at `2167e2d`；`851afb6` 已通过本地与干净 checkout 三项门禁，等待 PR 新 run |
 | PR #2 | merged as `bca7042c1d87b261b98f21b5957a36c2eb99f6b1` |
 | PR #3 | merged as `4e416a6731aeaf90b808b7f79a5beb47b5ee20c2` |
 | PR #2 final check | Source-only contract PASS, run `30435933524` |
 | PR #3 check | Source-only contract PASS, run `30437147325` |
 | local server | `127.0.0.1:5174`, PID 27536 at refresh time |
-| production build | PASS at `a68cd60`，2404 modules，2m30s；后续提交只改 verifier/CI/docs |
+| production build | PASS at `a68cd60`，2404 modules，2m30s；后续提交只改 verifier/Schema/CI/docs |
 
 PR #2 合入了：
 
@@ -276,10 +276,12 @@ schemas/publication-ledger-version-policy-v1.schema.json
 public/data/publication/annotations/.gitkeep
 ```
 
-- v1 为 `frozen`，allowlist 仅含既有 release；
+- v1 为 `frozen`，allowlist 必须与实际 v1 release ID 集合双向完全一致：
+  既不能遗漏历史 release，也不能保留没有对应 release 文件的“幽灵 ID”；
 - v2 release 与 v1 annotation 均为 `reserved`；
-- verifier 拒绝新增 v1、未知/保留 release 版本以及尚未受 Schema 管理的
-  annotation JSON；
+- verifier 拒绝新增 v1、冻结 allowlist 漂移、未知/保留 release 版本以及
+  尚未受 Schema 管理的 annotation JSON；
+- 版本策略 Schema 要求 `active` / `reserved` release 版本的 allowlist 为空；
 - `reserved` 只占用版本号和目录，不表示已经允许写入。
 
 后续仍需新增：
@@ -411,7 +413,7 @@ master 4e416a6
   +-- active branch codex/post-merge-next-guidance
   |     registry + EOL + v1 freeze
   |     -> source-only/mounted boundary
-  |     -> clean checkout PASS at 75f9cb1
+  |     -> clean checkout PASS at 851afb6
   |     -> documentation + PR + clean CI complete
   |     -> explicit merge authorization pending
   |
@@ -527,8 +529,8 @@ codex/post-merge-next-guidance、PR #2=bca7042、PR #3=4e416a6 均已合并。
 3. web_viewer/notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md
 4. web_viewer/notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 
-先确认 PR #4 和 Source-only contract run 30450348510；当前 governance branch
-只等待明确合并授权。合并后 Track R 优先执行 2–4 小时长稳；Track G 可独立设计
+先确认 PR #4 的最新 Source-only contract 为 PASS；当前 governance branch
+通过后只等待明确合并授权。合并后 Track R 优先执行 2–4 小时长稳；Track G 可独立设计
 v2/annotation；Track P 可做 GS external-link metadata/UI 或只读资源目录。
 不得新增 ledger release、回填 PNG、删除或移动 WAV。GS 熟肉试点只做
 Growing Stars，并从两个 exact event 开始。
