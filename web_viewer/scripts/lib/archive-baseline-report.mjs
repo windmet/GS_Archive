@@ -50,6 +50,12 @@ const publicPaths = {
   cardIndex: path.join(projectRoot, 'public', 'data', 'masterdata', 'card_index.json'),
   backmonitor: path.join(projectRoot, 'public', 'assets', 'live-chibi', 'backmonitor', 'index.json'),
   usmRelations: path.join(projectRoot, 'public', 'data', 'usm_relation_catalog.json'),
+  imageBundleRelations: path.join(
+    projectRoot,
+    'public',
+    'data',
+    'image_bundle_relation_catalog.json',
+  ),
   publicationManifest: path.join(projectRoot, 'public', 'data', 'publication', 'manifest.json'),
 }
 
@@ -256,6 +262,23 @@ function backmonitorStats({ sourceOnly = false } = {}) {
   }
 }
 
+function imageBundleRelationStats() {
+  if (!existsSync(publicPaths.imageBundleRelations)) return null
+  const payload = readJson(publicPaths.imageBundleRelations)
+  return {
+    schema_version: payload.schema_version,
+    bundles: payload.summary.bundles,
+    total_bytes: payload.summary.total_bytes,
+    unity_objects: payload.summary.unity_objects,
+    container_entries: payload.summary.container_entries,
+    image_objects: payload.summary.image_objects,
+    sprite_objects: payload.summary.sprite_objects,
+    texture_objects: payload.summary.texture_objects,
+    direct_sprite_texture_links: payload.summary.direct_sprite_texture_links,
+    mapping_states: payload.summary.mapping_states,
+  }
+}
+
 function resolveConfiguredSources() {
   const sources = loadArchiveSources()
   const config = readJson(sources.configPath)
@@ -373,6 +396,7 @@ export async function collectArchiveBaseline({
   const trackedPng = trackedPngStats()
   const cards = publicCardStats()
   const backmonitor = backmonitorStats({ sourceOnly })
+  const imageBundles = imageBundleRelationStats()
   const configured = resolveConfiguredSources()
   const rawMounted = !sourceOnly && existsSync(configured.rawRoot)
   const masterdataMounted = !sourceOnly &&
@@ -472,6 +496,9 @@ export async function collectArchiveBaseline({
         movie_relations: backmonitor.movie_relations,
         transition_relations: backmonitor.transition_relations,
       },
+    },
+    images: {
+      relation_catalog: imageBundles,
     },
   }
 }

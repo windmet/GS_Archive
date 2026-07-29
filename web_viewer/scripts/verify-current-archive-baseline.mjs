@@ -56,6 +56,12 @@ if (
   failures.push('USM mapped and unresolved totals do not equal the RAW USM population')
 }
 if (
+  report.images?.relation_catalog?.bundles !== 1271 ||
+  report.images?.relation_catalog?.image_objects !== 7816
+) {
+  failures.push('image relation catalog must remain 1271 bundles / 7816 image objects')
+}
+if (
   report.story?.voice_resolved + report.story?.voice_dangling !==
   report.story?.voice_references
 ) {
@@ -119,6 +125,7 @@ const alwaysCheckedSections = [
   'generated_at',
   'repository',
   'tracked_binaries',
+  'images',
 ]
 for (const section of alwaysCheckedSections) {
   if (stableJson(report[section]) !== stableJson(actual[section])) {
