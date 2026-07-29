@@ -173,6 +173,31 @@ const expectedGashaRelations = entryId => {
     relation_type: 'exact_bundle_filename_gasha_code',
   }]
 }
+const eventsByCode = new Map()
+for (const row of eventIndex.events || []) {
+  const code = String(row.event_code)
+  if (eventsByCode.has(code)) {
+    failures.push(`event_index code is not unique: ${code}`)
+  } else {
+    eventsByCode.set(code, row)
+  }
+}
+const expectedEventRelations = entryId => {
+  const match = /^image_item_icon_event_([0-9]+)(?:_([nr]))?$/u.exec(entryId)
+  if (!match) return []
+  const [, code, variant] = match
+  const row = eventsByCode.get(code)
+  if (!row) return []
+  return [{
+    event_code: code,
+    event_name: row.name,
+    event_type: row.event_type,
+    event_type_label: row.event_type_label,
+    asset_role: 'item-icon',
+    variant_code: variant || 'base',
+    relation_type: 'exact_bundle_filename_event_code',
+  }]
+}
 const trackedPngs = new Set(
   execFileSync(
     'git',
@@ -205,6 +230,8 @@ let directLinks = 0
 let stablePromotionCount = 0
 let exactGashaRelationCount = 0
 const exactGashaRoles = new Map()
+let exactEventRelationCount = 0
+const exactEventVariants = new Map()
 const familyCounts = {}
 const mappingCounts = {}
 
@@ -403,13 +430,34 @@ for (const entry of entries) {
     }
   }
 
+  const expectedEvent = expectedEventRelations(entry.id)
+  assertEqual(
+    entry.exact_event_relations || [],
+    expectedEvent,
+    `${entry.id}: exact event relations differ from event_index`,
+  )
+  exactEventRelationCount += (entry.exact_event_relations || []).length
+  for (const relation of entry.exact_event_relations || []) {
+    const variants = exactEventVariants.get(relation.event_code) || new Set()
+    variants.add(relation.variant_code)
+    exactEventVariants.set(relation.event_code, variants)
+    const token = (entry.masterdata_tokens || []).find(candidate =>
+      candidate.catalog === 'event_index.events' &&
+      candidate.key === relation.event_code
+    )
+    if (!token) {
+      failures.push(`${entry.id}: exact event relation lacks masterdata token evidence`)
+    }
+  }
+
   const hasStablePromotion = (entry.stable_promotions || []).length > 0
   const hasExactGasha = (entry.exact_gasha_relations || []).length > 0
+  const hasExactEvent = (entry.exact_event_relations || []).length > 0
   const hasOrganizer = (entry.organizer_export_candidates || []).length > 0
   const hasMasterdata = (entry.masterdata_tokens || []).length > 0
   const expectedState = hasStablePromotion
     ? 'stable-promotion'
-    : hasExactGasha
+    : hasExactGasha || hasExactEvent
       ? 'exact-masterdata-relation'
       : hasOrganizer
         ? 'organizer-export-candidate'
@@ -435,6 +483,15 @@ for (const [code, roles] of exactGashaRoles) {
     [...roles].sort(),
     ['banner', 'logo'],
     `gasha ${code}: exact relation roles must be a banner/logo pair`,
+  )
+}
+assertEqual(exactEventRelationCount, 20, 'exact event relation boundary drifted')
+assertEqual(exactEventVariants.size, 19, 'exact event code coverage drifted')
+for (const [code, variants] of exactEventVariants) {
+  assertEqual(
+    [...variants].sort(),
+    code === '20001' ? ['n', 'r'] : ['base'],
+    `event ${code}: exact item-icon variants drifted`,
   )
 }
 assertEqual(catalog.summary?.bundles, entries.length, 'summary bundle count drifted')

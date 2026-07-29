@@ -221,6 +221,40 @@ def exact_gasha_relation(
     ]
 
 
+def events_by_code() -> dict[str, dict[str, Any]]:
+    result: dict[str, dict[str, Any]] = {}
+    for row in read_json(EVENT_INDEX).get("events") or []:
+        code = str(row.get("event_code"))
+        if code in result:
+            raise ValueError(f"Event code {code} is not unique in event_index")
+        result[code] = row
+    return result
+
+
+def exact_event_relation(
+    stem: str,
+    event_index: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    match = re.fullmatch(r"image_item_icon_event_([0-9]+)(?:_([nr]))?", stem)
+    if match is None:
+        return []
+    code, variant = match.groups()
+    row = event_index.get(code)
+    if row is None:
+        return []
+    return [
+        {
+            "event_code": code,
+            "event_name": row["name"],
+            "event_type": row["event_type"],
+            "event_type_label": row["event_type_label"],
+            "asset_role": "item-icon",
+            "variant_code": variant or "base",
+            "relation_type": "exact_bundle_filename_event_code",
+        }
+    ]
+
+
 def contains_identity(context: str, key: str, boundary: str) -> bool:
     escaped = re.escape(key)
     if boundary == "numeric":
@@ -293,6 +327,7 @@ def main() -> None:
     identities = masterdata_identities()
     promotions_by_raw_path = character_promotions()
     gasha_index = gashas_by_code()
+    event_index = events_by_code()
     entries = []
 
     for index, path in enumerate(files, start=1):
@@ -384,6 +419,7 @@ def main() -> None:
         consumer = CONSUMERS.get(family, "unclassified-image-surface")
         relative_raw_path = f"asset/{path.name}"
         exact_gasha_relations = exact_gasha_relation(path.stem, gasha_index)
+        exact_event_relations = exact_event_relation(path.stem, event_index)
         stable_promotions = promotions_by_raw_path.get(relative_raw_path, [])
         images_by_path_id = {
             image_object["path_id"]: image_object
@@ -416,7 +452,7 @@ def main() -> None:
 
         if stable_promotions:
             mapping_state = "stable-promotion"
-        elif exact_gasha_relations:
+        elif exact_gasha_relations or exact_event_relations:
             mapping_state = "exact-masterdata-relation"
         elif organizer_candidates:
             mapping_state = "organizer-export-candidate"
@@ -458,6 +494,11 @@ def main() -> None:
                     if exact_gasha_relations
                     else {}
                 ),
+                **(
+                    {"exact_event_relations": exact_event_relations}
+                    if exact_event_relations
+                    else {}
+                ),
                 "mapping": {
                     "state": mapping_state,
                     "evidence": (
@@ -468,8 +509,13 @@ def main() -> None:
                             "Exact gasha relation is proven by the bundle filename code "
                             "and committed gasha index."
                             if exact_gasha_relations
-                            else "Catalog relation only; no image payload was exported "
-                            "or published."
+                            else (
+                                "Exact event relation is proven by the bundle filename "
+                                "code and committed event index."
+                                if exact_event_relations
+                                else "Catalog relation only; no image payload was "
+                                "exported or published."
+                            )
                         )
                     ),
                 },
