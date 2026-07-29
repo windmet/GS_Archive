@@ -16,12 +16,14 @@ their forward-looking defect lists must not override this baseline.
 
 | Field | Value |
 | --- | --- |
-| current merged baseline | `master` = `origin/master` at `46467c0b050a941ebb8bdf7100d29a8acf5965e5` |
-| active track branch | `codex/honor-event-exact-relations`, created from `46467c0` |
-| active track | P1-G exact honor-event relations; 40 codes / 40 bundles |
+| current merged baseline | `master` = `origin/master` at `724ec9885eee1e782aa5104d0a9809b425e221b3` |
+| active track branch | `codex/gasha-skill-exact-relations`, created from `724ec98` |
+| active track | P1-H exact gasha-skill speaker relations; 12 speakers / 12 bundles |
 | active upstream | not pushed at refresh |
 | active pull request | none at refresh |
-| active validation | source-only and mounted image verifiers pass at `1,271 bundles / 7,816 image objects / 158 exact masterdata relations` |
+| active validation | source-only and mounted image verifiers pass at `1,271 bundles / 7,816 image objects / 170 exact masterdata relations` |
+| PR #14 merge commit | `724ec9885eee1e782aa5104d0a9809b425e221b3` |
+| PR #14 post-merge gate | run `30474109000`, PASS |
 | PR #13 merge commit | `46467c0b050a941ebb8bdf7100d29a8acf5965e5` |
 | PR #13 post-merge gate | run `30473202211`, PASS |
 | PR #12 merge commit | `94a92c96484eea6240aa038e4bceec4e811c55f3` |
@@ -45,7 +47,7 @@ their forward-looking defect lists must not override this baseline.
 | PR diff | `+52,090 / -627` |
 | PR checks | final-head run `30435933524` passed |
 | post-merge checks | `master` push run `30436935539` passed |
-| active-branch production build | P1-G PASS, 2,405 modules, 133.7 seconds |
+| active-branch production build | P1-H PASS, 2,405 modules, 144.2 seconds |
 | PR #4 merge commit | `2a1e1ec08ae6331b82f7ac9d9719efbb3322e59e` |
 | PR #4 final-head check | Source-only contract `30450883462` passed at `9215456` |
 | PR #4 post-merge check | `master` push run `30452463385` passed at `2a1e1ec` |
@@ -441,11 +443,16 @@ The merged event-item refinement proves 20 exact item-icon relations across 19
 event codes. Codes `10001` through `10018` have one base icon each; code
 `20001` has the observed `n` and `r` variants. No other item bundle changes.
 
-The active honor-event refinement proves 40 exact bundle-to-event relations.
+The merged honor-event refinement proves 40 exact bundle-to-event relations.
 The complete bundle ID, one unique committed event-index row, and existing
 delimiter-bounded token must agree. `image_honor_event_30026001` has no
 event-index row and remains candidate-only. No internal Sprite/Texture2D
 meaning is inferred.
+
+The active gasha-skill refinement proves 12 exact bundle-to-idol relations.
+Every complete filename contains one unique speaker ID and one observed
+`ssr02` or `ssr03` variant, and every bundle has one Sprite plus one Texture2D
+with the same complete name. It does not infer card or skill semantics.
 
 Source-only verification passes without requiring ignored RAW or masterdata.
 The mounted drift observed before disposition was:
@@ -567,7 +574,8 @@ GS-only external translation-link pilot complete in PR #6
 50-bundle / 52-relation character promotion refinement complete in PR #10
 49-code / 98-bundle gasha banner-logo refinement complete in PR #12
 19-code / 20-bundle event item-icon refinement complete in PR #13
-40-code / 40-bundle honor-event refinement active
+40-code / 40-bundle honor-event refinement complete in PR #14
+12-speaker / 12-bundle gasha-skill refinement active
 ```
 
 Current priority and write locks:
@@ -584,8 +592,9 @@ Current priority and write locks:
   consumers, and 183 unresolved records without decoding or publishing media;
 - the gasha banner/logo relation batch is merged in PR #12;
 - the event item-icon relation batch is merged in PR #13;
-- the current functional track is the bounded 40-code / 40-bundle exact
-  honor-event relation batch;
+- the honor-event relation batch is merged in PR #14;
+- the current functional track is the bounded 12-speaker / 12-bundle exact
+  gasha-skill relation batch;
 - the image catalog records 1,271 source identities and 7,816 image objects
   without exporting PNG or replacing stable assets;
 - 50 bundles now inherit 52 exact stable relations from the already-authoritative
@@ -597,3 +606,5 @@ Current priority and write locks:
   item bundles stay unchanged.
 - 40 honor-event bundles now carry exact event-code relations; the unmatched
   `image_honor_event_30026001` bundle stays candidate-only.
+- 12 gasha-skill bundles now carry exact idol-speaker relations; their observed
+  `ssr02`/`ssr03` suffixes are not expanded into unproven card semantics.

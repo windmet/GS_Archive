@@ -198,6 +198,40 @@ def gashas_by_code() -> dict[str, dict[str, Any]]:
     return result
 
 
+def speakers_by_id() -> dict[str, dict[str, Any]]:
+    result = read_json(SPEAKER_DICTIONARY).get("speakers") or {}
+    for speaker_id, row in result.items():
+        if row.get("speaker_id") != speaker_id:
+            raise ValueError(
+                f"Speaker dictionary key/row identity differs for {speaker_id}"
+            )
+    return result
+
+
+def exact_speaker_relation(
+    stem: str,
+    speaker_index: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    match = re.fullmatch(r"image_gasha_skill_([a-z0-9]+)_(ssr0[23])", stem)
+    if match is None:
+        return []
+    speaker_id, rarity_variant = match.groups()
+    row = speaker_index.get(speaker_id)
+    if row is None or row.get("speaker_type") != "idol":
+        return []
+    return [
+        {
+            "speaker_id": speaker_id,
+            "speaker_type": row["speaker_type"],
+            "display_name": row["display_name"],
+            "idol_id": row["idol_id"],
+            "asset_role": "gasha-skill",
+            "rarity_variant": rarity_variant,
+            "relation_type": "exact_bundle_filename_speaker_code",
+        }
+    ]
+
+
 def exact_gasha_relation(
     stem: str,
     gasha_index: dict[str, dict[str, Any]],
@@ -336,6 +370,7 @@ def main() -> None:
     public_pngs = tracked_png_index()
     identities = masterdata_identities()
     promotions_by_raw_path = character_promotions()
+    speaker_index = speakers_by_id()
     gasha_index = gashas_by_code()
     event_index = events_by_code()
     entries = []
@@ -428,6 +463,7 @@ def main() -> None:
         family = family_for(path.stem)
         consumer = CONSUMERS.get(family, "unclassified-image-surface")
         relative_raw_path = f"asset/{path.name}"
+        exact_speaker_relations = exact_speaker_relation(path.stem, speaker_index)
         exact_gasha_relations = exact_gasha_relation(path.stem, gasha_index)
         exact_event_relations = exact_event_relation(path.stem, event_index)
         stable_promotions = promotions_by_raw_path.get(relative_raw_path, [])
@@ -462,7 +498,7 @@ def main() -> None:
 
         if stable_promotions:
             mapping_state = "stable-promotion"
-        elif exact_gasha_relations or exact_event_relations:
+        elif exact_speaker_relations or exact_gasha_relations or exact_event_relations:
             mapping_state = "exact-masterdata-relation"
         elif organizer_candidates:
             mapping_state = "organizer-export-candidate"
@@ -500,6 +536,11 @@ def main() -> None:
                 "organizer_export_candidates": organizer_candidates,
                 "stable_promotions": stable_promotions,
                 **(
+                    {"exact_speaker_relations": exact_speaker_relations}
+                    if exact_speaker_relations
+                    else {}
+                ),
+                **(
                     {"exact_gasha_relations": exact_gasha_relations}
                     if exact_gasha_relations
                     else {}
@@ -516,15 +557,20 @@ def main() -> None:
                         "promotion registry."
                         if stable_promotions
                         else (
-                            "Exact gasha relation is proven by the bundle filename code "
-                            "and committed gasha index."
-                            if exact_gasha_relations
+                            "Exact speaker relation is proven by the bundle filename "
+                            "code and committed speaker dictionary."
+                            if exact_speaker_relations
                             else (
-                                "Exact event relation is proven by the bundle filename "
-                                "code and committed event index."
-                                if exact_event_relations
-                                else "Catalog relation only; no image payload was "
-                                "exported or published."
+                                "Exact gasha relation is proven by the bundle filename "
+                                "code and committed gasha index."
+                                if exact_gasha_relations
+                                else (
+                                    "Exact event relation is proven by the bundle filename "
+                                    "code and committed event index."
+                                    if exact_event_relations
+                                    else "Catalog relation only; no image payload was "
+                                    "exported or published."
+                                )
                             )
                         )
                     ),
