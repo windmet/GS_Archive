@@ -15,12 +15,15 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | 项 | 当前值 |
 | --- | --- |
 | merged base branch | `master` |
-| merged base HEAD | `a9ea2012e1e55c158050424c146b743f17e87700` |
-| active track branch | `codex/post-p1h-relation-closeout`, created from `a9ea201` |
-| active track | documentation-only P1 relation boundary closeout |
-| upstream | 尚未推送 |
-| worktree | closeout documentation changes present at status refresh |
-| open PR | none at status refresh |
+| current functional baseline | `master` includes PR #16 merge `139b9b0eef0a10df23fe3e122458c9ab13b70574` |
+| active functional branch | none |
+| active track | none selected；P1 image relation refinement 已收口 |
+| upstream | not applicable |
+| worktree | clean at functional closeout |
+| open PR | none |
+| PR #16 | merged as `139b9b0eef0a10df23fe3e122458c9ab13b70574` |
+| PR #16 final-head check | Source-only contract PASS，run `30475072475` |
+| PR #16 post-merge check | `master` push Source-only contract PASS，run `30475143673` |
 | PR #15 | merged as `a9ea2012e1e55c158050424c146b743f17e87700` |
 | PR #15 final-head check | Source-only contract PASS，run `30474769111` |
 | PR #15 post-merge check | `master` push Source-only contract PASS，run `30474870836` |
@@ -732,16 +735,9 @@ git status -sb
 git rev-parse HEAD
 ```
 
-当前 active 功能分支是：
-
-```text
-codex/post-p1h-relation-closeout
-```
-
-它只承载 P1 image relation 的最终状态、剩余 90 个 candidate 分类和下一步
-write lock；不修改 generator、Schema、catalog、PNG 或其他二进制，
-不混入 Runtime 长稳、publication transaction、USM promotion 或 Episode
-0 候选。PR #4 到 PR #15 的功能分支已经完成；不要继续复用：
+当前没有 active 功能分支。P1 image relation 的最终状态、剩余 90 个
+candidate 分类和下一步 write lock 已由 PR #16 合入。选择下一条独立轨道
+前先从最新 `master` 新建 `codex/*` 分支，不要复用已完成分支。
 
 ```text
 codex/post-merge-next-guidance
@@ -763,6 +759,7 @@ codex/gasha-image-exact-relations
 codex/event-item-icon-exact-relations
 codex/honor-event-exact-relations
 codex/gasha-skill-exact-relations
+codex/post-p1h-relation-closeout
 ```
 
 Codex 管理目录中指向初始提交 `ca3a28e` 的 detached worktree 不是项目开发
@@ -809,9 +806,8 @@ git diff --cached --check
 
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
-worktree、origin/master，并确认当前 active branch 为
-codex/post-p1h-relation-closeout、base master=a9ea201，PR #15
-post-merge run 30474870836 通过。
+worktree、origin/master，并确认当前没有 active 功能分支，master 已包含
+PR #16 merge `139b9b0`，post-merge run `30475143673` 通过。
 
 完整阅读：
 1. web_viewer/notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
