@@ -15,12 +15,15 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | 项 | 当前值 |
 | --- | --- |
 | merged base branch | `master` |
-| merged base HEAD | `9e4fd7d9829979626aae26b4e256e3f97eb19f16` |
-| active track branch | `codex/external-story-links-pilot`, created from `9e4fd7d` |
-| active track | P1-A GS-only 社区熟肉外链试点，metadata/UI 已完成，等待 PR |
+| merged base HEAD | `fdce87478044bfa1f7c9e8dfffe934dbdd2e14ef` |
+| active track branch | `codex/publication-ledger-v2-contracts`, created from `fdce874` |
+| active track | P0-G3 publication release v2 / annotation v1 contracts，已实现，等待 PR |
 | upstream | 尚未推送 |
 | worktree | clean at status refresh |
 | open PR | none at status refresh |
+| PR #6 | merged as `fdce87478044bfa1f7c9e8dfffe934dbdd2e14ef` |
+| PR #6 final-head check | Source-only contract PASS，run `30460259713` at `35121ed` |
+| PR #6 post-merge check | `master` push Source-only contract PASS，run `30460342231` at `fdce874` |
 | PR #5 | merged as `9e4fd7d9829979626aae26b4e256e3f97eb19f16` |
 | PR #5 final-head check | Source-only contract PASS，run `30458635548` at `4e11510` |
 | PR #5 post-merge check | `master` push Source-only contract PASS，run `30458806049` at `9e4fd7d` |
@@ -32,7 +35,7 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | PR #2 final check | Source-only contract PASS, run `30435933524` |
 | PR #3 check | Source-only contract PASS, run `30437147325` |
 | local server | `127.0.0.1:5174`, PID 27536 at refresh time |
-| production build | last confirmed PASS at `a68cd60`，2404 modules，2m30s；P1-A 本地 build 于 183 秒有界终止，未记为 PASS |
+| production build | GitHub post-merge source gate PASS at `fdce874`；P1-A 本地 build 于 183 秒有界终止，未单独记为 PASS |
 
 PR #2 合入了：
 
@@ -112,8 +115,9 @@ pre_ledger
 
 治理写锁：
 
-- authoritative 数量、EOL canonical identity 和 v1 freeze 已完成，但 v2
-  仍为 `reserved`；v2 Schema 激活前不新增 ledger release；
+- authoritative 数量、EOL canonical identity 和 v1 freeze 已完成；v2
+  Schema/verifier 已激活，但本契约分支不新增 ledger release，未来每笔
+  transaction 仍须使用独立有界分支和完整证据；
 - 不做 PNG backfill；
 - 不发布 `003hok` 或第二笔 Story transaction；
 - 不修改已合并 v1 release 的 bytes/hash；
@@ -278,7 +282,9 @@ equality。第一笔 transaction 的三个精确路径和 publication metadata J
 `codex/post-merge-next-guidance`，也不要创建旧建议分支
 `codex/publication-ledger-windows-eol`。
 
-### P0-G3：冻结 v1（已完成），设计 v2 与 annotation（待独立实现）
+### P0-G3：冻结 v1，激活 v2 与 annotation 契约
+
+状态：**implemented on branch / pending PR**。
 
 以下文件保持字节不可变：
 
@@ -290,7 +296,7 @@ public/data/publication/releases/2026-07-28-story-1-4-001-00-001.json
 仅保留文件还不足以冻结 v1。Verifier 必须使用历史 v1 release ID allowlist
 或版本 cutoff，拒绝新的 v1 release。
 
-当前分支已将这一部分机器化：
+v1 freeze 已由以下文件机器化：
 
 ```text
 policies/publication-ledger-versions.v1.json
@@ -300,18 +306,22 @@ public/data/publication/annotations/.gitkeep
 
 - v1 为 `frozen`，allowlist 必须与实际 v1 release ID 集合双向完全一致：
   既不能遗漏历史 release，也不能保留没有对应 release 文件的“幽灵 ID”；
-- v2 release 与 v1 annotation 均为 `reserved`；
-- verifier 拒绝新增 v1、冻结 allowlist 漂移、未知/保留 release 版本以及
-  尚未受 Schema 管理的 annotation JSON；
+- v2 release 与 v1 annotation 已由 `dc5405d` 从 `reserved` 激活为
+  `active`；
+- verifier 拒绝新增 v1、冻结 allowlist 漂移、未知/保留版本以及不符合独立
+  Schema 的 release/annotation JSON；
 - 版本策略 Schema 要求 `active` / `reserved` release 版本的 allowlist 为空；
-- `reserved` 只占用版本号和目录，不表示已经允许写入。
+- `active` 表示未来记录可以进入严格校验，不表示已经存在或接受第二笔
+  production transaction。
 
-后续仍需新增：
+当前分支已新增：
 
 ```text
 schemas/publication-release-v2.schema.json
 schemas/publication-annotation-v1.schema.json
 public/data/publication/annotations/
+public/data/publication/annotation_index.json
+scripts/generate-publication-annotation-index.mjs
 ```
 
 v2 应支持：
@@ -333,10 +343,23 @@ Annotation 必须：
 - 由独立 Schema、verifier 和审计索引管理；
 - 不提供原地删除或修改已合并 annotation 的捷径。
 
+当前验证：
+
+- 真实历史保持 `1 release / 1 stable logical ID`；
+- annotation 历史和索引均为空；
+- v2 正向 fixture 覆盖 absent publish、unmanaged-existing backfill、
+  governed rollback 与 backup-manifest identity；
+- 反例覆盖空 `published`、空 `source.objects`、缺浏览器环境、空 unmanaged
+  artifacts、缺 backup identity 和 annotation 越权字段；
+- CI 将 base SHA 传给 verifier，历史 release/annotation 的 modify、delete、
+  rename 均失败，新文件允许进入后续 Schema/关系校验；
+- annotation index 可重复生成，annotation 不参与
+  `manifest.by_logical_id` replay。
+
 ### P1-A：GS-only 社区熟肉外链试点
 
-状态：**implemented on branch / pending PR**。本分支没有混入长稳或 WAV
-处置。
+状态：**merged in PR #6**。merge commit `fdce874`，post-merge source gate
+`30460342231` 通过。
 
 已完成：
 
@@ -448,7 +471,7 @@ notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 ## 3. 三轨依赖图
 
 ```text
-master 9e4fd7d
+master fdce874
   |
   +-- completed Track S: PR #5
   |     18 WAV provenance complete
@@ -456,9 +479,10 @@ master 9e4fd7d
   |     -> recoverable quarantine complete
   |     -> mounted baseline PASS
   |
-  +-- future Track G: publication evolution
+  +-- active Track G: codex/publication-ledger-v2-contracts
   |     3+1 / 18
-  |     -> v2 + annotation
+  |     -> v2 + annotation contracts implemented
+  |     -> pending PR
   |
   +-- deferred Track R: Runtime acceptance
   |     fixed Runtime commit
@@ -466,9 +490,8 @@ master 9e4fd7d
   |     -> quiet endpoint
   |     -> PASS / FAIL
   |
-  +-- active Track P: codex/external-story-links-pilot
+  +-- completed Track P pilot: PR #6
         two exact GS event links + UI complete
-        -> pending PR
         USM relation catalog
         image relation catalog
 ```
@@ -476,10 +499,10 @@ master 9e4fd7d
 PR #4 已通过 merge commit `2a1e1ec` 合入 `master`，post-merge gate
 `30452463385` 通过。PR #5 已通过 merge commit `9e4fd7d` 合入 `master`，
 post-merge gate `30458806049` 通过。Track R 已由用户暂缓；Track S 已完成；
-Track P 的首个 exact GS pilot 已在独立分支完成，等待 PR。Track G、R、P
-不互相伪装成完成条件；v2/annotation 激活前禁止新的 ledger 写入。P1-A
-合并后的优先建议是单独启动 P0-G3 publication v2/annotation Schema，
-而不是未经覆盖核对就扩充 Episode 0 候选。
+Track P 的首个 exact GS pilot 已由 PR #6 合并，post-merge gate
+`30460342231` 通过。Track G、R、P 不互相伪装成完成条件；P0-G3 当前只激活
+Schema/verifier，不包含新的 release/annotation。P0-G3 合并后可启动 P1-B
+USM relation catalog；不要未经覆盖核对就扩充 Episode 0 候选。
 
 ## 4. 每条轨道的 Git 边界
 
@@ -496,12 +519,13 @@ git rev-parse HEAD
 当前 active 开发分支是：
 
 ```text
-codex/external-story-links-pilot
+codex/publication-ledger-v2-contracts
 ```
 
-它只承载 GS 外链 Schema、两个 exact event、离线校验、详情页 UI 和对应回归；
-不混入 Runtime 长稳、publication v2/annotation、USM/image catalog 或未经核对的
-Episode 0 候选。PR #4、PR #5 的分支已经完成；不要继续复用：
+它只承载 publication v2/annotation Schema、版本分流 verifier、annotation
+index 和 append-only gate；不创建真实 release/annotation，不混入 Runtime
+长稳、USM/image catalog 或 Episode 0 候选。PR #4、PR #5、PR #6 的分支
+已经完成；不要继续复用：
 
 ```text
 codex/post-merge-next-guidance
@@ -563,8 +587,8 @@ git diff --cached --check
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
 worktree、origin/master，并确认当前 active branch 为
-codex/external-story-links-pilot、base master=9e4fd7d，PR #5 post-merge run
-30458806049 通过。
+codex/publication-ledger-v2-contracts、base master=fdce874，PR #6
+post-merge run 30460342231 通过。
 
 完整阅读：
 1. web_viewer/notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
@@ -572,11 +596,11 @@ codex/external-story-links-pilot、base master=9e4fd7d，PR #5 post-merge run
 3. web_viewer/notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md
 4. web_viewer/notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 
-先确认当前分支的两批提交：8d3d582 为 Schema/registry/verifier，09ded27
-为详情页 UI/匹配器/UI gate。两个 exact event 已在 5174 验证；完整 Vite
-build 于 183 秒有界终止，不能写成 PASS。Story Runtime 2–4 小时长稳由用户
-暂缓，仍保持 NOT EXECUTED。Episode 0 三条仍是 candidate。该 pilot 合并后
-优先单独设计 P0-G3 v2/annotation Schema；不得新增 ledger release 或回填 PNG。
+先确认当前分支提交 dc5405d：release v2 与 annotation v1 Schema、版本分流
+verifier、空 annotation index、index generator 和 base-SHA append-only gate。
+真实 ledger 仍为 1 release / 1 stable logical ID，没有新增 production record。
+Story Runtime 2–4 小时长稳由用户暂缓，仍保持 NOT EXECUTED。P0-G3 合并后
+优先 P1-B USM relation catalog；不得顺带新增 ledger release 或回填 PNG。
 ```
 
 ## 7. 完成定义
