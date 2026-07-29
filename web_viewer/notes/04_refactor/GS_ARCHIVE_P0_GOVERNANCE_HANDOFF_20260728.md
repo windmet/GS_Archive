@@ -15,6 +15,12 @@
 > `notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md`。当前剩余
 > release blocker 为 2–4 小时混合长稳，Story Runtime 仍不是
 > release-accepted。
+>
+> **2026-07-29 PR #2 合并更新：** PR #2 已以 merge commit
+> `bca7042c1d87b261b98f21b5957a36c2eb99f6b1` 合入 `master`，保留最终
+> PR head `6a2a14e741d361dc7c09c6c395946a33782af4d9` 的 83 个提交。最终
+> PR-head run `30435933524` 与合并后 `master` push run `30436935539`
+> 均通过。
 应用：`E:\Web_build\SideM_Archived\web_viewer`
 
 这份文档把 RAW + masterdata 迁移、Story Runtime 发布验收、二进制发布治理和
@@ -28,15 +34,11 @@ GROWING STARS 社区熟肉绑定拆成彼此独立的工作轨道。新窗口应
 
 当前最重要的未完成项按执行顺序如下。
 
-### P0-A：完成当前 PR #2 的合并收口
+### P0-A：PR #2 治理与合并收口（已完成）
 
 机器可执行治理、第一笔多 part RAW 剧情发布交易、rollback/republish、
-5174 小批验收、PR 标题/正文和最终检查均已完成。PR #2 当前为 Ready for
-review，`MERGEABLE / CLEAN`；本状态刷新前的 reviewed HEAD `dd6252e`
-对应 Source-only contract `30435551980` 已通过。
-
-当前唯一未完成动作是：获得用户明确授权后合并 PR #2。Ready、提交与推送均
-不等于已经合并。
+5174 小批验收、PR 标题/正文、最终检查和 merge commit 均已完成。PR #2
+已合入 `master`；合并后 push gate 也已通过。
 
 ### P0-B：完成 Story Runtime 真实发布验收
 
@@ -844,7 +846,7 @@ browser acceptance docs: ...
 - rollback 备份与最终 stable 产物；
 - 文档事实修正与无关 UI 重构。
 
-### 10.2 PR #2（Ready for review）
+### 10.2 PR #2（已合并）
 
 PR #2 的真实范围是：
 
@@ -877,7 +879,8 @@ PR 正文应明确：
 4. 没有意外生成文件；
 5. 用户决定 Ready。
 
-以上门槛已满足，PR 已转为 Ready。合并仍需用户明确授权，不要自动合并。
+以上门槛均已满足。用户随后明确授权合并，PR #2 已通过 merge commit
+`bca7042` 合入 `master`。
 
 ---
 
@@ -1034,7 +1037,7 @@ commit：
 
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
-worktree、Ready PR #2、5174，并完整阅读：
+worktree、origin/master、已合并 PR #2、5174，并完整阅读：
 
 1. web_viewer/notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md
 2. web_viewer/notes/04_refactor/GS_ARCHIVE_P0_GOVERNANCE_HANDOFF_20260728.md
@@ -1043,9 +1046,9 @@ worktree、Ready PR #2、5174，并完整阅读：
 5. web_viewer/notes/04_refactor/PUBLICATION_LEDGER_CONTRACT_20260728.md
 6. web_viewer/notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 
-先报告已漂移的事实。PR #2 当前只等待明确合并授权；不得把未执行的 2–4 小时
-长稳写成 release-accepted。保持小批验证，不批量替换资源，不修改或删除用户
-未授权的本地数据。
+先报告已漂移的事实。PR #2 已合并；不得把未执行的 2–4 小时长稳写成
+release-accepted。保持小批验证，不批量替换资源，不修改或删除用户未授权的
+本地数据。
 ```
 
 ---
@@ -1060,7 +1063,7 @@ worktree、Ready PR #2、5174，并完整阅读：
 - `git diff --check` 通过；
 - worktree clean；
 - branch 推送；
-- Ready PR #2 标题和正文反映真实范围；
+- PR #2 标题和正文反映真实范围，并已通过 merge commit 合入 `master`；
 - 未把设计 pending 写成已实现。
 
 ### P0 总体
@@ -1078,8 +1081,8 @@ worktree、Ready PR #2、5174，并完整阅读：
 只有真实 Edge 音频矩阵、hidden/resume、cross-episode 和 2–4 小时资源曲线
 完成，才能说 Story Runtime release-accepted。
 
-熟肉外链、USM 和 `image_*` 是 P0 之后的独立轨道。它们有明确优先级，但不应
-阻塞当前 PR #2 的事实治理和安全合并。
+熟肉外链、USM 和 `image_*` 是 P0 之后的独立轨道。PR #2 已完成事实治理和
+安全合并；这些轨道继续使用独立小分支。
 
 ---
 
@@ -1110,16 +1113,14 @@ rollback 工具已由 `7310ea0` 提交并推送，并作为
 - 第二次 5174 no-audio 验收；
 - 首笔 release、stable manifest、3 个必要稳定 JSON 和审计文档生成。
 
-当前仅剩：
-
-1. 获得明确合并授权后收口到 `master`；
-2. 合并后基于确定的 `master` commit 单独执行 2–4 小时长稳。
+PR #2 已完成合并。Story Runtime 当前仅剩：基于确定的 `master` commit
+单独执行 2–4 小时长稳。
 
 首笔 transaction 已由 `27d89a3` 提交并推送；source-only 的旧 mounted
 判定由 `948a2ef` 修正。GitHub run `30374641388` 已在干净 Linux checkout
-通过完整 `Source-only contract` 和 production build。2026-07-29 本状态刷新
-前的 reviewed HEAD `dd6252e` 对应 run `30435551980` 再次通过；PR #2 当前为 Ready，
-`MERGEABLE / CLEAN`，尚无 review decision，尚未合并。
+通过完整 `Source-only contract` 和 production build。最终 PR head
+`6a2a14e` 的 run `30435933524` 通过；merge commit `bca7042` 的
+`master` push run `30436935539` 也通过。PR #2 已合并。
 
 5174 证据边界：最终 republish 后的验收窗口 console error 为 0；但复用标签
 在首次 direct player route 初始化期间曾记录 1 次首页 voice
