@@ -114,6 +114,27 @@
               }
             }
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": { "const": "exact-unit-story" }
+            },
+            "required": ["state"]
+          },
+          "then": {
+            "properties": {
+              "event_id": { "type": "null" },
+              "story_resource_ids": {
+                "type": "array",
+                "maxItems": 0
+              },
+              "collection_ids": {
+                "type": "array",
+                "minItems": 1
+              }
+            }
+          }
         }
       ],
       "additionalProperties": false

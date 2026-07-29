@@ -51,6 +51,19 @@
           </div>
 
           <div v-if="expandedChapterId === chapter.id" class="chapter-panel">
+            <div v-if="externalResourcesForChapter(chapter.id).length" class="chapter-external-resources">
+              <a
+                v-for="resource in externalResourcesForChapter(chapter.id)"
+                :key="resource.external_id"
+                :href="resource.platform.canonical_url"
+                target="_blank"
+                rel="noopener noreferrer external"
+              >
+                <ExternalLink :size="16" />
+                <span><strong>社区中文资源</strong><small>{{ resource.uploader.name }} · Bilibili</small></span>
+              </a>
+            </div>
+
             <div v-if="chapter.synopsis" class="chapter-synopsis">
               <span>STORY</span>
               <strong>{{ chapter.synopsis.title || chapter.title }}</strong>
@@ -83,9 +96,12 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { BookOpen, ChevronDown, ChevronUp, Play } from '@lucide/vue'
+import { BookOpen, ChevronDown, ChevronUp, ExternalLink, Play } from '@lucide/vue'
 
-const props = defineProps({ collection: { type: Object, default: null } })
+const props = defineProps({
+  collection: { type: Object, default: null },
+  externalResources: { type: Array, default: () => [] },
+})
 const emit = defineEmits(['play-chapter', 'play-episode'])
 const expandedChapterId = ref('')
 
@@ -101,6 +117,12 @@ watch(() => props.collection?.id, () => {
 
 function toggleChapter(chapterId) {
   expandedChapterId.value = expandedChapterId.value === chapterId ? '' : chapterId
+}
+
+function externalResourcesForChapter(chapterId) {
+  return props.externalResources
+    .filter(entry => entry.chapterId === chapterId)
+    .map(entry => entry.resource)
 }
 </script>
 
@@ -132,6 +154,11 @@ function toggleChapter(chapterId) {
 .chapter-play { display: inline-flex; align-items: center; justify-content: center; gap: 6px; margin: 14px 14px 14px 0; border: 1px solid #159087; border-radius: 5px; background: #159087; color: #fff; cursor: pointer; font: inherit; font-size: .64rem; }
 .chapter-play:disabled { border-color: #d3dade; background: #e4e9eb; color: #78858b; cursor: not-allowed; }
 .chapter-panel { padding: 5px 16px 18px 72px; border-top: 1px solid #edf1f2; background: #fbfcfc; }
+.chapter-external-resources { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 14px; }
+.chapter-external-resources a { display: inline-flex; align-items: center; gap: 8px; min-width: 210px; padding: 8px 11px; border: 1px solid #b9ddd9; border-radius: 5px; background: #f0faf8; color: #126e68; text-decoration: none; }
+.chapter-external-resources a:hover { border-color: #16877f; background: #e5f6f3; }
+.chapter-external-resources a > span { display: flex; flex-direction: column; gap: 2px; }
+.chapter-external-resources strong { font-size: .64rem; }.chapter-external-resources small { color: #5f7775; font-size: .53rem; }
 .chapter-synopsis { padding: 14px 0 16px; }.chapter-synopsis strong { display: block; margin: 5px 0 6px; font-size: .75rem; }.chapter-synopsis p { max-width: 820px; margin: 0; color: #4b5d65; font-size: .66rem; line-height: 1.75; white-space: pre-line; }
 .chapter-unavailable { margin: 14px 0; color: #78858b; font-size: .65rem; }
 .episode-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: #dfe6e8; }

@@ -1,6 +1,6 @@
 # External GROWING STARS Translation Link Contract
 
-Status: pilot implemented on `codex/external-story-links-pilot`; pending PR
+Status: pilot merged in PR #6; THE KOGADO exact expansion active
 Date: 2026-07-28
 Scope: SideM GROWING STARS only
 
@@ -10,10 +10,16 @@ Implementation refresh: 2026-07-29
 - `09ded27`: Event/Story detail UI, exact-resource selectors, and UI source gate.
 - Browser-verified at 5174 for both exact events and one Story detail route.
 - 390px layout has no horizontal overflow; no remote image is requested.
-- The three THE KOGADO Episode 0 entries remain candidates and are not in the
-  registry.
+- 2026-07-30: the three THE KOGADO Episode 0 entries passed opening/title-card
+  and final-dialogue boundary checks and are now exact unit-story records.
+- The registry now contains five exact GS mappings: two events and three
+  unit-story collections.
+- `ArchiveStoryCollection` now renders the exact resource inside its matching
+  expanded chapter while retaining internal chapter and episode Play actions.
+- Current production build passed at 2,405 modules; the built preview passed
+  exact-link, safe-anchor, no-remote-image, no-overflow, and console-error gates.
 - The local full Vite build reached its 183-second execution limit, so this
-  branch does not claim a build PASS.
+  was the historical PR #6 pilot result and is superseded for this expansion.
 
 ## 1. Product decision
 
@@ -226,17 +232,19 @@ No combined "translation completion" percentage is allowed.
 These are the preferred two-record first commit because the external titles,
 masterdata events, and compiled story collections agree directly.
 
-### THE KOGADO Episode 0 candidates
+### THE KOGADO Episode 0 exact unit stories
 
-| BVID | Candidate collection |
-| --- | --- |
-| `BV1LL411G7LD` | `1_1_013the_01` |
-| `BV1xA4y1S7Cb` | `1_1_013the_02` |
-| `BV16u4y187tH` | `1_1_013the_03` |
+| BVID | Uploader | Exact collection |
+| --- | --- | --- |
+| `BV1LL411G7LD` | HaaNaaaP (`14496860`) | `1_1_013the_01_1_1_013_01` |
+| `BV1xA4y1S7Cb` | HaaNaaaP (`14496860`) | `1_1_013the_02_1_1_013_02` |
+| `BV16u4y187tH` | 死扛桑 (`8798195`) | `1_1_013the_03_1_1_013_03` |
 
-Before accepting these as exact, inspect whether each video covers the complete
-internal multi-episode collection or a narrower presentation. Record the real
-coverage rather than inferring it from "第1话/第2话/第3话" alone.
+Each video was checked against the local collection opening/title card and the
+final dialogue in part `j`. All three span their complete ten-part collection
+and are recorded as `exact-unit-story` with `complete-collection` coverage.
+Detailed evidence is in
+`notes/03_audit/EXTERNAL_GS_THE_KOGADO_EXACT_LINKS_20260730.md`.
 
 ### Deferred personal-story candidates
 
@@ -327,21 +335,16 @@ Browser gate at 5174:
 
 ## 13. Git plan
 
-PR #2 is merged and intentionally contains no external-link pilot. Implement
-the pilot on a new bounded branch from the current `master`:
+PR #2 intentionally contained no external-link pilot. PR #6 merged the first
+two exact event links. The bounded THE KOGADO expansion uses:
 
 ```text
 branch:
-codex/external-story-links-pilot
+codex/external-story-links-the-kogado
 
-commit 1:
-schema + two exact event records + verifier
-
-commit 2:
-EventDetail/StoryDetail UI + route regression
-
-commit 3:
-three Episode 0 mappings after exact coverage verification
+scope:
+three Episode 0 mappings after exact coverage verification, schema/verifier
+support for exact unit-story relations, and audit/handoff refresh
 ```
 
 Only after a meaningful exact GS set exists should the portal add a dedicated
