@@ -1,6 +1,6 @@
 # External GROWING STARS Translation Link Contract
 
-Status: pilot merged in PR #6; THE KOGADO exact expansion active
+Status: pilot merged in PR #6; THE KOGADO exact expansion merged in PR #18
 Date: 2026-07-28
 Scope: SideM GROWING STARS only
 
@@ -18,6 +18,8 @@ Implementation refresh: 2026-07-29
   expanded chapter while retaining internal chapter and episode Play actions.
 - Current production build passed at 2,405 modules; the built preview passed
   exact-link, safe-anchor, no-remote-image, no-overflow, and console-error gates.
+- PR #18 merged as `7342f5a5bf3c6d3e2ea2eef35cfdfc95c530e44a`;
+  final-head run `30478115572` and post-merge run `30478199856` passed.
 - The local full Vite build reached its 183-second execution limit, so this
   was the historical PR #6 pilot result and is superseded for this expansion.
 

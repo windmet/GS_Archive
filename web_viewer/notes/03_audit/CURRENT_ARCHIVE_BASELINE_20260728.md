@@ -16,12 +16,15 @@ their forward-looking defect lists must not override this baseline.
 
 | Field | Value |
 | --- | --- |
-| current functional baseline | `master` includes PR #17 merge `b62e050b626a11e4c5edfeba5ae2b74b125f44ca` |
-| active functional branch | `codex/external-story-links-the-kogado` |
-| active track | P1-A GS external-link expansion: three exact THE KOGADO unit-story collections |
-| active upstream | pending first push |
+| current functional baseline | `master` includes PR #18 merge `7342f5a5bf3c6d3e2ea2eef35cfdfc95c530e44a` |
+| active functional branch | none |
+| active track | none selected; THE KOGADO exact-link expansion is closed |
+| active upstream | not applicable |
 | active pull request | none |
 | active validation | external registry/UI source gates pass at `5 GS records / 5 exact mappings / 5 unique BVIDs`; production build/browser preview PASS |
+| PR #18 merge commit | `7342f5a5bf3c6d3e2ea2eef35cfdfc95c530e44a` |
+| PR #18 final-head gate | run `30478115572`, PASS |
+| PR #18 post-merge gate | run `30478199856`, PASS |
 | PR #17 merge commit | `b62e050b626a11e4c5edfeba5ae2b74b125f44ca` |
 | PR #17 post-merge gate | run `30475414245`, PASS |
 | PR #16 merge commit | `139b9b0eef0a10df23fe3e122458c9ab13b70574` |

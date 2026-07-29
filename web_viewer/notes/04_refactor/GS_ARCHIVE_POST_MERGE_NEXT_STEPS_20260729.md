@@ -15,12 +15,15 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | 项 | 当前值 |
 | --- | --- |
 | merged base branch | `master` |
-| current functional baseline | `master` includes PR #17 merge `b62e050b626a11e4c5edfeba5ae2b74b125f44ca` |
-| active functional branch | `codex/external-story-links-the-kogado` |
-| active track | P1-A GS 外链扩展：THE 虎牙道三个 exact unit-story collections |
-| upstream | pending first push |
-| worktree | bounded registry/schema/verifier/documentation changes |
+| current functional baseline | `master` includes PR #18 merge `7342f5a5bf3c6d3e2ea2eef35cfdfc95c530e44a` |
+| active functional branch | none |
+| active track | none selected；THE 虎牙道 exact-link expansion 已收口 |
+| upstream | not applicable |
+| worktree | clean at functional closeout |
 | open PR | none |
+| PR #18 | merged as `7342f5a5bf3c6d3e2ea2eef35cfdfc95c530e44a` |
+| PR #18 final-head check | Source-only contract PASS，run `30478115572` |
+| PR #18 post-merge check | `master` push Source-only contract PASS，run `30478199856` |
 | PR #17 | merged as `b62e050b626a11e4c5edfeba5ae2b74b125f44ca` |
 | PR #17 final-head check | Source-only contract PASS，run `30475298501` |
 | PR #17 post-merge check | `master` push Source-only contract PASS，run `30475414245` |
@@ -698,7 +701,7 @@ master a9ea201
   |
   +-- Track P
         completed pilot: PR #6, two exact GS event links + UI
-        active P1-A expansion: three exact THE KOGADO unit-story links
+        completed P1-A expansion: PR #18, three exact THE KOGADO unit-story links
         completed P1-B: PR #8, 260 USM relation catalog
         completed P1-C: PR #9, 1,271 image bundle relation catalog
         completed P1-D: PR #10, 50 bundles / 52 exact character promotions
@@ -740,10 +743,11 @@ git status -sb
 git rev-parse HEAD
 ```
 
-当前 active 功能分支为 `codex/external-story-links-the-kogado`，基于
-PR #17 merge `b62e050b`。本批仅处理三个 exact unit-story 外链及其
-schema/verifier/审计，不重开已关闭的 image candidate 自动提升，也不执行
-已后置的 Runtime 长稳验收。
+当前没有 active 功能分支。PR #18 已从 PR #17 后的 `master` 完成三个
+exact unit-story 外链、schema/verifier、collection UI 与审计并合入。
+选择下一条独立轨道前从最新 `master` 新建 `codex/*` 分支；不要重开已关闭
+的 image candidate 自动提升，也不要在未获新优先级决定时执行已后置的
+Runtime 长稳验收。
 
 ```text
 codex/post-merge-next-guidance
