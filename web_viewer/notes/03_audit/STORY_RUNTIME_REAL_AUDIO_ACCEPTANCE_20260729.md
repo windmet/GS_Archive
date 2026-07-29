@@ -25,8 +25,10 @@
 ## 环境与 Git
 
 - 仓库：`windmet/GS_Archive`
-- 分支：`codex/post-merge-story-handoff`
+- 验收分支：`codex/post-merge-story-handoff`
 - 修复提交：`421c3b0 fix: reconcile story audio across scene transitions`
+- 合并状态：PR #2 已通过 `bca7042` 合入 `master`；合并后 push gate
+  `30436935539` 通过
 - 服务：`http://127.0.0.1:5174/`
 - 浏览器：Codex 应用内 Chromium；**未证明是 Microsoft Edge**
 - IDM：用户在 2026-07-28 明确确认已从电脑删除

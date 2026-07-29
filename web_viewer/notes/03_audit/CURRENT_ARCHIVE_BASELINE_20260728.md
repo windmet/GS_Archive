@@ -3,6 +3,7 @@
 Status: current
 Captured: 2026-07-28
 Review state refreshed: 2026-07-29
+Merge state refreshed: 2026-07-29
 Repository: `E:\Web_build\SideM_Archived`
 Application: `E:\Web_build\SideM_Archived\web_viewer`
 
@@ -14,29 +15,27 @@ their forward-looking defect lists must not override this baseline.
 
 | Field | Value |
 | --- | --- |
-| branch | `codex/post-merge-story-handoff` |
-| reviewed implementation/evidence HEAD | `dd6252e8b61ee37ebfdb199698f5394754fac42c` (this status-only refresh follows it) |
-| upstream | `origin/codex/post-merge-story-handoff` |
-| upstream relation | identical at capture time |
-| worktree | clean at capture time |
+| merged baseline | `origin/master` at `bca7042c1d87b261b98f21b5957a36c2eb99f6b1` |
+| merged PR head | `6a2a14e741d361dc7c09c6c395946a33782af4d9` |
+| merge parents | `ef804fcb2b258979723fcf8ce62f317671b4d701` + `6a2a14e741d361dc7c09c6c395946a33782af4d9` |
+| merge method | merge commit; 83 PR commits preserved |
 | local development server | `127.0.0.1:5174` listening at capture time |
-| pull request | PR #2, Ready for review, unmerged |
+| pull request | PR #2 merged at 2026-07-29 08:47:35 UTC |
 | PR base | `ef804fcb2b258979723fcf8ce62f317671b4d701` |
-| PR commits | 83 after this status-only refresh |
+| PR commits | 83 |
 | PR files | 164 |
-| PR diff | `+52,090 / -627` after this status-only refresh |
-| PR checks | required Source-only contract passing; reviewed-head run `30435551980` passed |
-| PR merge state | `MERGEABLE / CLEAN`; no review decision |
+| PR diff | `+52,090 / -627` |
+| PR checks | final-head run `30435933524` passed |
+| post-merge checks | `master` push run `30436935539` passed |
 
-The PR title and body now reflect its real scope: the RAW/masterdata source
+PR #2 is merged. Its title and body reflect its real scope: the RAW/masterdata source
 contract, resource audits and candidates, governed stable promotions, live
 semantic consumer migration, publication controls, and the bounded Story
-Runtime audio follow-up. It is ready for review but remains unmerged pending
-explicit authorization.
+Runtime audio follow-up.
 
 `stable-published` in project notes means an artifact occupies the stable path
-in the named checkout. It does not imply that the containing commit is merged
-to `master`.
+in the named checkout. For PR #2 artifacts, the containing commit is now merged
+to `master`; this term still does not imply deployment outside the repository.
 
 ## 2. Authority boundary
 
@@ -242,7 +241,7 @@ domain-wide browser acceptance.
 | audio cue inventory | source-proven | representative song/BGM/Ambient/SE parity-verified | representative matrix sample-accepted |
 | costume/Spine | source-proven | representative and full-domain parity audits recorded | representative routes only |
 | five live semantic consumers | source-proven | default semantic source migrated to RAW and parity-verified | tested routes sample-accepted |
-| event visuals `001tom`/`002sht` | source-proven | stable-published in PR #2 (Ready, unmerged) | item-level browser-accepted |
+| event visuals `001tom`/`002sht` | source-proven | stable-published and merged through PR #2 | item-level browser-accepted |
 | remaining USM | 77 Backmonitor mappings proven; 183 unresolved semantically | incomplete | not applicable |
 | general `image_*` bundles | 1,271 physical bundles known | full relation table absent | not applicable |
 
@@ -327,20 +326,20 @@ current checkout and is not a Git tag.
 
 ## 12. Immediate order
 
-The documentation and PR-metadata steps below are complete at
-`6d72aac3f2022ece739c05f72ef593d8a23d8ed1`. The first machine-executable
-governance batch is now in progress.
+The documentation, PR metadata, and machine-executable P0 governance steps below
+are complete and merged through PR #2:
 
 1. Implement and commit the current archive baseline report generator and
    verifier. **Complete in `b20df7c`.**
 2. Implement the tracked-binary inventory, schema, generator, and verifier.
    **Complete in `460d89f`.**
-3. Implement the publication ledger schema, empty-manifest generator, and
-   verifier. **Implemented in the current batch.**
+3. Implement the publication ledger schema, manifest generator, and verifier.
+   **Complete.**
 4. Exercise the first multi-part RAW story publish, rollback, and republish
-   transaction.
+   transaction. **Complete for `1_4_001_00`.**
 5. Keep Runtime release acceptance separate from resource/governance work.
-6. After PR #2 closes, create bounded branches for:
+   **Still required: the 2–4 hour mixed soak remains separate.**
+6. PR #2 is closed; future work may use bounded branches for:
    - a GS-only external translation-link pilot;
    - the 260-USM relation catalog;
    - the 1,271-image-bundle relation catalog.

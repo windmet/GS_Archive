@@ -10,6 +10,18 @@
 
 如旧文档中的“尚未合并”“PR 仍为 draft”“strict corpus 尚未发布”等阶段性结论与本文冲突，以本文和对应文档中日期更晚的 follow-up 为准。
 
+## 2026-07-29 PR #2 合并更新
+
+- PR #2 `Migrate archive resource sources to RAW and masterdata` 已以 merge
+  commit `bca7042c1d87b261b98f21b5957a36c2eb99f6b1` 合入 `master`。
+- merge parents 为原 `master`
+  `ef804fcb2b258979723fcf8ce62f317671b4d701` 与最终 PR head
+  `6a2a14e741d361dc7c09c6c395946a33782af4d9`；83 个分批提交均保留。
+- 最终 PR-head Source-only contract `30435933524` 通过；合并后 `master`
+  push run `30436935539` 通过。
+- 短时真实音频与 Edge 行为已经 partial-accepted；2–4 小时混合长稳仍未执行，
+  因此 Story Runtime 仍不能写成 release-accepted。
+
 ## 当前 Git 基线
 
 - 仓库：`windmet/GS_Archive`
