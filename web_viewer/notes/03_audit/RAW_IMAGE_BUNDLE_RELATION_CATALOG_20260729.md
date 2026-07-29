@@ -2,7 +2,8 @@
 
 Status: base catalog merged in PR #9; character relation refinement merged in
 PR #10; bounded gasha refinement merged in PR #12; event item-icon refinement
-merged in PR #13; bounded honor-event refinement active
+merged in PR #13; bounded honor-event refinement merged in PR #14; bounded
+gasha-skill refinement active
 
 Date: 2026-07-29
 
@@ -81,9 +82,9 @@ discovery candidates:
 | State | Bundles |
 | --- | ---: |
 | `stable-promotion` | 50 |
-| `exact-masterdata-relation` | 158 |
+| `exact-masterdata-relation` | 170 |
 | `organizer-export-candidate` | 2 |
-| `masterdata-candidate` | 102 |
+| `masterdata-candidate` | 90 |
 | `filename-candidate` | 959 |
 
 The 50 stable bundles carry 52 exact promotion relations. The difference is
@@ -126,6 +127,12 @@ therefore remains candidate-only. This relation identifies the bundle's event
 ownership; it does not assign semantics to individual Sprite or Texture2D
 objects inside the bundle.
 
+The bounded gasha-skill refinement adds 12 exact relations for 12 committed
+idol speaker IDs. Only complete
+`image_gasha_skill_<speaker-id>_<ssr02|ssr03>` bundle IDs qualify. The observed
+rarity suffix is preserved without inferring a card, skill, or gasha release
+identity.
+
 ## Verification
 
 Source-only verification checks:
@@ -147,6 +154,8 @@ Source-only verification checks:
 - exact reconstruction of 20 event item icons from the committed event index;
 - exact reconstruction of 40 event honor bundles from the committed event
   index, with `image_honor_event_30026001` explicitly excluded;
+- exact reconstruction of 12 gasha-skill bundle relations from the committed
+  speaker dictionary;
 - mapping-state precedence;
 - absence of absolute paths;
 - the current `1,271 bundles / 7,816 image objects` boundary.
@@ -174,10 +183,10 @@ Archive baseline verified (mounted):
 10329 compiled JSON artifacts, 108 tracked PNG files
 ```
 
-After the bounded honor-event refinement, regenerating the catalog produced:
+After the bounded gasha-skill refinement, regenerating the catalog produced:
 
 ```text
-61B7D550C18153DA665B0E01A9378D0DE16BD19CEEFFBDC7140C3D9970E863D4
+545E5C9D760F11173BF0A3434EC25516EE4224F954A4676E7B7E8734F77A2C95
 ```
 
 The source-only GitHub gate now runs the catalog verifier. The archive baseline

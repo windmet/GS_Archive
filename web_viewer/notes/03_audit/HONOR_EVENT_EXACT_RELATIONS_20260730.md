@@ -1,6 +1,6 @@
 # Honor Event Exact Relations
 
-Status: implemented on `codex/honor-event-exact-relations`; pending review
+Status: merged in PR #14 as `724ec9885eee1e782aa5104d0a9809b425e221b3`
 
 Date: 2026-07-30
 

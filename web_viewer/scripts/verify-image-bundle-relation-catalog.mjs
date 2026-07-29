@@ -149,6 +149,27 @@ const masterdataSets = {
     (campaignIndex.campaigns || []).map(row => String(row.event_code)),
   ),
 }
+for (const [speakerId, row] of Object.entries(speakerDictionary.speakers || {})) {
+  if (row.speaker_id !== speakerId) {
+    failures.push(`speaker_dictionary key/row identity differs: ${speakerId}`)
+  }
+}
+const expectedSpeakerRelations = entryId => {
+  const match = /^image_gasha_skill_([a-z0-9]+)_(ssr0[23])$/u.exec(entryId)
+  if (!match) return []
+  const [, speakerId, rarityVariant] = match
+  const row = speakerDictionary.speakers?.[speakerId]
+  if (!row || row.speaker_type !== 'idol') return []
+  return [{
+    speaker_id: speakerId,
+    speaker_type: row.speaker_type,
+    display_name: row.display_name,
+    idol_id: row.idol_id,
+    asset_role: 'gasha-skill',
+    rarity_variant: rarityVariant,
+    relation_type: 'exact_bundle_filename_speaker_code',
+  }]
+}
 const gashasByCode = new Map()
 for (const row of gashaIndex.gashas || []) {
   const code = String(row.code)
@@ -231,6 +252,8 @@ let spriteObjects = 0
 let textureObjects = 0
 let directLinks = 0
 let stablePromotionCount = 0
+let exactSpeakerRelationCount = 0
+const exactSpeakerVariants = new Map()
 let exactGashaRelationCount = 0
 const exactGashaRoles = new Map()
 let exactEventRelationCount = 0
@@ -416,6 +439,26 @@ for (const entry of entries) {
     }
   }
 
+  const expectedSpeaker = expectedSpeakerRelations(entry.id)
+  assertEqual(
+    entry.exact_speaker_relations || [],
+    expectedSpeaker,
+    `${entry.id}: exact speaker relations differ from speaker_dictionary`,
+  )
+  exactSpeakerRelationCount += (entry.exact_speaker_relations || []).length
+  for (const relation of entry.exact_speaker_relations || []) {
+    const variants = exactSpeakerVariants.get(relation.speaker_id) || new Set()
+    variants.add(relation.rarity_variant)
+    exactSpeakerVariants.set(relation.speaker_id, variants)
+    const token = (entry.masterdata_tokens || []).find(candidate =>
+      candidate.catalog === 'speaker_dictionary.speakers' &&
+      candidate.key === relation.speaker_id
+    )
+    if (!token) {
+      failures.push(`${entry.id}: exact speaker relation lacks masterdata token evidence`)
+    }
+  }
+
   const expectedGasha = expectedGashaRelations(entry.id)
   assertEqual(
     entry.exact_gasha_relations || [],
@@ -465,13 +508,14 @@ for (const entry of entries) {
   }
 
   const hasStablePromotion = (entry.stable_promotions || []).length > 0
+  const hasExactSpeaker = (entry.exact_speaker_relations || []).length > 0
   const hasExactGasha = (entry.exact_gasha_relations || []).length > 0
   const hasExactEvent = (entry.exact_event_relations || []).length > 0
   const hasOrganizer = (entry.organizer_export_candidates || []).length > 0
   const hasMasterdata = (entry.masterdata_tokens || []).length > 0
   const expectedState = hasStablePromotion
     ? 'stable-promotion'
-    : hasExactGasha || hasExactEvent
+    : hasExactSpeaker || hasExactGasha || hasExactEvent
       ? 'exact-masterdata-relation'
       : hasOrganizer
         ? 'organizer-export-candidate'
@@ -490,6 +534,21 @@ assertEqual(
   (characterPromotions.entries || []).length,
   'stable promotion registry coverage drifted',
 )
+assertEqual(exactSpeakerRelationCount, 12, 'exact speaker relation boundary drifted')
+assertEqual(exactSpeakerVariants.size, 12, 'exact speaker code coverage drifted')
+assertEqual(
+  [...exactSpeakerVariants.values()].filter(variants => variants.has('ssr02')).length,
+  7,
+  'exact speaker ssr02 coverage drifted',
+)
+assertEqual(
+  [...exactSpeakerVariants.values()].filter(variants => variants.has('ssr03')).length,
+  5,
+  'exact speaker ssr03 coverage drifted',
+)
+for (const [speakerId, variants] of exactSpeakerVariants) {
+  assertEqual(variants.size, 1, `${speakerId}: exact speaker variant must be unique`)
+}
 assertEqual(exactGashaRelationCount, 98, 'exact gasha relation boundary drifted')
 assertEqual(exactGashaRoles.size, 49, 'exact gasha code coverage drifted')
 for (const [code, roles] of exactGashaRoles) {
