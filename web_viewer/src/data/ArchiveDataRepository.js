@@ -13,6 +13,7 @@ const ARCHIVE_SOURCES = {
   archiveVerification: '/data/archive_verification.json',
   uiAssetCatalog: '/data/assets/ui_asset_catalog.json',
   rawCharacterImagePromotions: '/data/assets/raw_character_image_promotions.json',
+  externalStoryResources: '/data/external_story_resources.json',
 }
 
 const CARD_DETAIL_SOURCE = '/data/masterdata/card_detail_index.json'
@@ -91,6 +92,12 @@ function validatePayload(key, payload) {
     )
   )) {
     throw new Error('rawCharacterImagePromotions must include valid promoted entries')
+  }
+  if (key === 'externalStoryResources' && (
+    payload.schema_version !== 1 ||
+    !Array.isArray(payload.entries)
+  )) {
+    throw new Error('externalStoryResources must include a v1 entries array')
   }
   return payload
 }

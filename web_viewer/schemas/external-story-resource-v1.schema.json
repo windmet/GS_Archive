@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gs-archive.local/schemas/external-story-resource-v1.schema.json",
+  "title": "GS Archive external translated story resources",
+  "type": "object",
+  "required": ["schema_version", "entries"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/entry" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "platform": {
+      "type": "object",
+      "required": ["name", "bvid", "canonical_url"],
+      "properties": {
+        "name": { "const": "bilibili" },
+        "bvid": {
+          "type": "string",
+          "pattern": "^BV[1-9A-HJ-NP-Za-km-z]{10}$"
+        },
+        "canonical_url": {
+          "type": "string",
+          "pattern": "^https://www\\.bilibili\\.com/video/BV[1-9A-HJ-NP-Za-km-z]{10}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "uploader": {
+      "type": "object",
+      "required": ["uid", "name"],
+      "properties": {
+        "uid": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "internal_mapping": {
+      "type": "object",
+      "required": [
+        "state",
+        "event_id",
+        "story_resource_ids",
+        "collection_ids",
+        "evidence"
+      ],
+      "properties": {
+        "state": {
+          "enum": [
+            "exact-story",
+            "exact-collection",
+            "exact-event",
+            "exact-unit-story",
+            "exact-idol-story",
+            "partial-story",
+            "candidate",
+            "unmapped"
+          ]
+        },
+        "event_id": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9]+$"
+        },
+        "story_resource_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_]+$"
+          }
+        },
+        "collection_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_]+$"
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": { "const": "exact-event" }
+            },
+            "required": ["state"]
+          },
+          "then": {
+            "properties": {
+              "event_id": { "type": "string" },
+              "story_resource_ids": {
+                "type": "array",
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "translation": {
+      "type": "object",
+      "required": ["coverage", "subtitle_kind", "notes"],
+      "properties": {
+        "coverage": {
+          "enum": [
+            "complete-story",
+            "complete-collection",
+            "partial",
+            "excerpt",
+            "unknown"
+          ]
+        },
+        "subtitle_kind": {
+          "enum": ["embedded", "closed-captions", "description", "unknown"]
+        },
+        "notes": {
+          "type": ["string", "null"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "discovery": {
+      "type": "object",
+      "required": ["kind", "curator_uid", "folder_id"],
+      "properties": {
+        "kind": {
+          "enum": ["direct", "bilibili-public-favorite-folder"]
+        },
+        "curator_uid": {
+          "type": ["string", "null"],
+          "pattern": "^[1-9][0-9]*$"
+        },
+        "folder_id": {
+          "type": ["string", "null"],
+          "pattern": "^[1-9][0-9]*$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "availability": {
+      "type": "object",
+      "required": ["state", "last_checked_at"],
+      "properties": {
+        "state": {
+          "enum": ["active", "private", "deleted", "unavailable"]
+        },
+        "last_checked_at": {
+          "type": ["string", "null"],
+          "format": "date"
+        }
+      },
+      "additionalProperties": false
+    },
+    "visual": {
+      "type": "object",
+      "required": ["policy", "url"],
+      "properties": {
+        "policy": { "const": "local-gs-archive-visual" },
+        "url": { "type": "null" }
+      },
+      "additionalProperties": false
+    },
+    "entry": {
+      "type": "object",
+      "required": [
+        "external_id",
+        "product",
+        "content_kind",
+        "language",
+        "platform",
+        "uploader",
+        "internal_mapping",
+        "translation",
+        "discovery",
+        "availability",
+        "visual"
+      ],
+      "properties": {
+        "external_id": {
+          "type": "string",
+          "pattern": "^bilibili:BV[1-9A-HJ-NP-Za-km-z]{10}$"
+        },
+        "product": { "const": "growing_stars" },
+        "content_kind": { "const": "translated_story_video" },
+        "language": { "const": "zh-CN" },
+        "platform": { "$ref": "#/$defs/platform" },
+        "uploader": { "$ref": "#/$defs/uploader" },
+        "internal_mapping": { "$ref": "#/$defs/internal_mapping" },
+        "translation": { "$ref": "#/$defs/translation" },
+        "discovery": { "$ref": "#/$defs/discovery" },
+        "availability": { "$ref": "#/$defs/availability" },
+        "visual": { "$ref": "#/$defs/visual" }
+      },
+      "additionalProperties": false
+    }
+  }
+}
