@@ -15,12 +15,15 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | 项 | 当前值 |
 | --- | --- |
 | merged base branch | `master` |
-| merged base HEAD | `724ec9885eee1e782aa5104d0a9809b425e221b3` |
-| active track branch | `codex/gasha-skill-exact-relations`, created from `724ec98` |
-| active track | P1-H exact gasha-skill relations：12 speakers / 12 bundles |
+| merged base HEAD | `a9ea2012e1e55c158050424c146b743f17e87700` |
+| active track branch | `codex/post-p1h-relation-closeout`, created from `a9ea201` |
+| active track | documentation-only P1 relation boundary closeout |
 | upstream | 尚未推送 |
-| worktree | P1-H changes present at status refresh |
+| worktree | closeout documentation changes present at status refresh |
 | open PR | none at status refresh |
+| PR #15 | merged as `a9ea2012e1e55c158050424c146b743f17e87700` |
+| PR #15 final-head check | Source-only contract PASS，run `30474769111` |
+| PR #15 post-merge check | `master` push Source-only contract PASS，run `30474870836` |
 | PR #14 | merged as `724ec9885eee1e782aa5104d0a9809b425e221b3` |
 | PR #14 final-head check | Source-only contract PASS，run `30474034791` |
 | PR #14 post-merge check | `master` push Source-only contract PASS，run `30474109000` |
@@ -59,7 +62,7 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | PR #2 final check | Source-only contract PASS, run `30435933524` |
 | PR #3 check | Source-only contract PASS, run `30437147325` |
 | local server | `127.0.0.1:5174`, PID 27536 at refresh time |
-| production build | P1-H local Vite build PASS，2,405 modules / 144.2 seconds |
+| production build | P1-H local Vite build PASS，2,405 modules / 144.2 seconds；closeout docs-only |
 
 PR #2 合入了：
 
@@ -618,7 +621,7 @@ bundle 内各 Sprite/Texture2D 对象的用途，也不导出 PNG。
 
 ### P1-H：gasha-skill exact speaker relations
 
-状态：**implemented on branch / pending review**。
+状态：**merged in PR #15**。
 
 当前分支只处理完整匹配
 `image_gasha_skill_<speaker-id>_<ssr02|ssr03>` 的 12 个 bundle。每个 bundle
@@ -643,10 +646,31 @@ evidence。
 剩余 90 个 masterdata candidate 为聚合多 speaker bundle、event/seasonal
 数字命名空间碰撞或其他非一对一关系，不能仅凭 token 批量升级。
 
+### P1 image relation closeout
+
+状态：**automatic exact refinement closed at current authority boundary**。
+
+PR #9 到 PR #15 已依次建立物理目录与 170 个 exact-masterdata bundle。
+剩余 90 个 masterdata candidate 的分类为：
+
+```text
+7 chara aggregate
+68 gasha banner/logo namespace collisions
+8 gasha background event-token candidates
+2 mobile aggregate
+1 picturestudio aggregate
+4 shop event/seasonal collisions
+```
+
+这些记录没有一对一 authority。后续只有在获得新的独立 mapping source 或
+consumer contract 时，才能另开有界分支；不得继续按 token presence 自动
+升级。完整收口见
+`notes/03_audit/IMAGE_RELATION_REFINEMENT_CLOSEOUT_20260730.md`。
+
 ## 3. 三轨依赖图
 
 ```text
-master 724ec98
+master a9ea201
   |
   +-- completed Track S: PR #5
   |     18 WAV provenance complete
@@ -673,7 +697,8 @@ master 724ec98
         completed P1-E: PR #12, 49 codes / 98 exact gasha banner-logo relations
         completed P1-F: PR #13, 19 codes / 20 exact event item-icon relations
         completed P1-G: PR #14, 40 codes / 40 exact honor-event relations
-        active P1-H: 12 speakers / 12 exact gasha-skill relations
+        completed P1-H: PR #15, 12 speakers / 12 exact gasha-skill relations
+        closed: automatic exact-relation refinement at 90 ambiguous candidates
 ```
 
 PR #4 已通过 merge commit `2a1e1ec` 合入 `master`，post-merge gate
@@ -691,8 +716,9 @@ PR #12 已通过 merge commit `94a92c9` 合入 `master`，post-merge gate
 `30472488130` 通过。PR #13 已通过 merge commit `46467c0` 合入
 `master`，post-merge gate `30473202211` 通过。PR #14 已通过 merge
 commit `724ec98` 合入 `master`，post-merge gate `30474109000` 通过。
-Track R 继续 deferred；P1-H 当前独立收口，不要把 rarity 后缀升级成
-未经证明的卡片或技能语义。
+PR #15 已通过 merge commit `a9ea201` 合入 `master`，post-merge gate
+`30474870836` 通过。Track R 继续 deferred；P1 exact relation 自动细化
+已经收口，不要把剩余聚合或命名空间碰撞记录升级为 exact。
 
 ## 4. 每条轨道的 Git 边界
 
@@ -709,13 +735,13 @@ git rev-parse HEAD
 当前 active 功能分支是：
 
 ```text
-codex/gasha-skill-exact-relations
+codex/post-p1h-relation-closeout
 ```
 
-它只承载 12 个 committed idol speaker 与 12 个 gasha-skill bundle 的
-exact relation、Schema/verifier、baseline 和审计文档；不导出或提交 PNG，
+它只承载 P1 image relation 的最终状态、剩余 90 个 candidate 分类和下一步
+write lock；不修改 generator、Schema、catalog、PNG 或其他二进制，
 不混入 Runtime 长稳、publication transaction、USM promotion 或 Episode
-0 候选。PR #4 到 PR #14 的分支已经完成；不要继续复用：
+0 候选。PR #4 到 PR #15 的功能分支已经完成；不要继续复用：
 
 ```text
 codex/post-merge-next-guidance
@@ -736,6 +762,7 @@ codex/post-p1d-handoff
 codex/gasha-image-exact-relations
 codex/event-item-icon-exact-relations
 codex/honor-event-exact-relations
+codex/gasha-skill-exact-relations
 ```
 
 Codex 管理目录中指向初始提交 `ca3a28e` 的 detached worktree 不是项目开发
@@ -783,8 +810,8 @@ git diff --cached --check
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
 worktree、origin/master，并确认当前 active branch 为
-codex/gasha-skill-exact-relations、base master=724ec98，PR #14
-post-merge run 30474109000 通过。
+codex/post-p1h-relation-closeout、base master=a9ea201，PR #15
+post-merge run 30474870836 通过。
 
 完整阅读：
 1. web_viewer/notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
@@ -797,6 +824,7 @@ post-merge run 30474109000 通过。
 8. web_viewer/notes/03_audit/EVENT_ITEM_ICON_EXACT_RELATIONS_20260730.md
 9. web_viewer/notes/03_audit/HONOR_EVENT_EXACT_RELATIONS_20260730.md
 10. web_viewer/notes/03_audit/GASHA_SKILL_EXACT_RELATIONS_20260730.md
+11. web_viewer/notes/03_audit/IMAGE_RELATION_REFINEMENT_CLOSEOUT_20260730.md
 
 先确认当前分支的 image catalog 为 1,271 bundles / 263,071,090 bytes /
 9,157 Unity objects / 7,816 image objects，source-only 与 mounted verifier
@@ -816,7 +844,8 @@ candidate，且不推断内部对象语义；
 P1-H 只把 speaker dictionary 唯一证明的 12 speakers / 12 gasha-skill
 bundle 升级为 exact-masterdata-relation，保留 `ssr02`/`ssr03` 原始后缀但
 不推断卡片或技能语义；其余 90 个 masterdata candidate 不得按 token
-存在性批量升级；
+存在性批量升级；P1 automatic exact relation refinement 已收口，只有新的
+独立 authority 或 consumer contract 才能重新开启有界子族；
 不得批量导出 PNG、替换 `public/assets`、新增 ledger release 或回填其他
 二进制。
 ```

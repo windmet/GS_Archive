@@ -1,6 +1,6 @@
 # Gasha Skill Exact Relations
 
-Status: implemented on `codex/gasha-skill-exact-relations`; pending review
+Status: merged in PR #15 as `a9ea2012e1e55c158050424c146b743f17e87700`
 
 Date: 2026-07-30
 
