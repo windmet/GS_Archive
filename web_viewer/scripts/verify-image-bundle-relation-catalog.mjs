@@ -29,11 +29,19 @@ const schemaPath = path.join(
   'image-bundle-relation-catalog-v1.schema.json',
 )
 const masterdataRoot = path.join(projectRoot, 'public', 'data', 'masterdata')
+const characterPromotionPath = path.join(
+  projectRoot,
+  'public',
+  'data',
+  'assets',
+  'raw_character_image_promotions.json',
+)
 const sourceOnly = process.argv.includes('--source-only')
 const failures = []
 const readJson = filename => JSON.parse(readFileSync(filename, 'utf8'))
 const catalog = readJson(catalogPath)
 const schema = readJson(schemaPath)
+const characterPromotions = readJson(characterPromotionPath)
 
 const validate = new Ajv2020({ allErrors: true, strict: true }).compile(schema)
 if (!validate(catalog)) {
@@ -65,10 +73,44 @@ const pathIdCompare = (left, right) => {
   const rightValue = BigInt(right)
   return leftValue < rightValue ? -1 : leftValue > rightValue ? 1 : 0
 }
+const promotionRecord = entry => ({
+  kind: entry.kind,
+  idol_code: entry.idol_code,
+  asset_url: entry.asset_url,
+  raw_source: {
+    relative_path: entry.raw_source?.relative_path,
+    bytes: entry.raw_source?.bytes,
+    sha256: entry.raw_source?.sha256,
+  },
+  unity_object: {
+    path_id: String(entry.unity_object?.path_id),
+    object_type: entry.unity_object?.object_type,
+    asset_name: entry.unity_object?.asset_name,
+    container_path: entry.unity_object?.container_path,
+  },
+  output: {
+    bytes: entry.output?.bytes,
+    width: entry.output?.width,
+    height: entry.output?.height,
+    sha256: entry.output?.sha256,
+  },
+})
+const promotionCompare = (left, right) =>
+  stringCompare(left.kind, right.kind) ||
+  stringCompare(left.idol_code, right.idol_code)
 const recursiveAbsolutePaths = []
 const findAbsolutePaths = (value, pointer = '') => {
   if (typeof value === 'string') {
-    if (/^[A-Za-z]:[\\/]/.test(value) || /^\\\\/.test(value) || value.startsWith('/')) {
+    const stableAssetUrl =
+      pointer.endsWith('/asset_url') && value.startsWith('/assets/')
+    if (
+      !stableAssetUrl &&
+      (
+        /^[A-Za-z]:[\\/]/.test(value) ||
+        /^\\\\/.test(value) ||
+        value.startsWith('/')
+      )
+    ) {
       recursiveAbsolutePaths.push(pointer || '/')
     }
   } else if (Array.isArray(value)) {
@@ -114,6 +156,14 @@ const trackedPngs = new Set(
     { cwd: repositoryRoot, encoding: 'utf8' },
   ).split(/\r?\n/u).filter(Boolean),
 )
+const promotionsByRawPath = new Map()
+for (const registryEntry of characterPromotions.entries || []) {
+  const relativePath = registryEntry.raw_source?.relative_path
+  const rows = promotionsByRawPath.get(relativePath) || []
+  rows.push(promotionRecord(registryEntry))
+  promotionsByRawPath.set(relativePath, rows)
+}
+for (const rows of promotionsByRawPath.values()) rows.sort(promotionCompare)
 
 const entries = Array.isArray(catalog.entries) ? catalog.entries : []
 const entryIds = entries.map(entry => entry.id)
@@ -128,6 +178,7 @@ let imageObjects = 0
 let spriteObjects = 0
 let textureObjects = 0
 let directLinks = 0
+let stablePromotionCount = 0
 const familyCounts = {}
 const mappingCounts = {}
 
@@ -264,20 +315,70 @@ for (const entry of entries) {
     }
   }
 
+  const expectedPromotions = promotionsByRawPath.get(
+    `RAW/${entry.raw?.relative_path}`,
+  ) || []
+  stablePromotionCount += (entry.stable_promotions || []).length
+  assertEqual(
+    entry.stable_promotions || [],
+    expectedPromotions,
+    `${entry.id}: stable promotions differ from the authoritative registry`,
+  )
+  for (const promotion of entry.stable_promotions || []) {
+    if (
+      promotion.raw_source?.relative_path !== `RAW/${entry.raw.relative_path}` ||
+      promotion.raw_source?.bytes !== entry.raw.bytes ||
+      promotion.raw_source?.sha256 !== entry.raw.sha256
+    ) {
+      failures.push(`${entry.id}: stable promotion RAW identity differs from catalog`)
+    }
+    const image = imagesByPathId.get(promotion.unity_object?.path_id)
+    if (
+      !image ||
+      image.type !== promotion.unity_object.object_type ||
+      image.name !== promotion.unity_object.asset_name ||
+      !image.container_paths.includes(promotion.unity_object.container_path)
+    ) {
+      failures.push(`${entry.id}: stable promotion Unity object evidence drifted`)
+    }
+    const publicPath = `web_viewer/public${promotion.asset_url}`
+    if (!trackedPngs.has(publicPath)) {
+      failures.push(`${entry.id}: stable promotion target is not tracked: ${publicPath}`)
+    } else {
+      const outputPath = path.join(repositoryRoot, publicPath)
+      const outputBytes = readFileSync(outputPath)
+      if (
+        outputBytes.length !== promotion.output.bytes ||
+        createHash('sha256').update(outputBytes).digest('hex') !==
+          promotion.output.sha256
+      ) {
+        failures.push(`${entry.id}: stable promotion output identity drifted`)
+      }
+    }
+  }
+
+  const hasStablePromotion = (entry.stable_promotions || []).length > 0
   const hasOrganizer = (entry.organizer_export_candidates || []).length > 0
   const hasMasterdata = (entry.masterdata_tokens || []).length > 0
-  const expectedState = hasOrganizer
-    ? 'organizer-export-candidate'
-    : hasMasterdata
-      ? 'masterdata-candidate'
-      : entry.consumer_candidates?.[0]?.consumer === 'unclassified-image-surface'
-        ? 'unresolved'
-        : 'filename-candidate'
+  const expectedState = hasStablePromotion
+    ? 'stable-promotion'
+    : hasOrganizer
+      ? 'organizer-export-candidate'
+      : hasMasterdata
+        ? 'masterdata-candidate'
+        : entry.consumer_candidates?.[0]?.consumer === 'unclassified-image-surface'
+          ? 'unresolved'
+          : 'filename-candidate'
   if (entry.mapping?.state !== expectedState) {
     failures.push(`${entry.id}: mapping-state precedence drifted`)
   }
 }
 
+assertEqual(
+  stablePromotionCount,
+  (characterPromotions.entries || []).length,
+  'stable promotion registry coverage drifted',
+)
 assertEqual(catalog.summary?.bundles, entries.length, 'summary bundle count drifted')
 assertEqual(catalog.summary?.total_bytes, totalBytes, 'summary byte count drifted')
 assertEqual(catalog.summary?.unity_objects, unityObjects, 'summary Unity object count drifted')

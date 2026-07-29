@@ -15,12 +15,15 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | 项 | 当前值 |
 | --- | --- |
 | merged base branch | `master` |
-| merged base HEAD | `579df6188063c4a34c0558cd720273e71401f888` |
-| active track branch | `codex/image-bundle-relation-catalog`, created from `579df61` |
-| active track | P1-C 1,271 image bundle machine-readable relation catalog，已实现，等待 PR |
+| merged base HEAD | `d38c52f1a27f034f6a209993109b626839ec74af` |
+| active track branch | `codex/chara-image-relation-refinement`, created from `d38c52f` |
+| active track | P1-D character-image relation refinement：50 bundles / 52 stable promotions |
 | upstream | 尚未推送 |
-| worktree | P1-C changes present at status refresh |
+| worktree | P1-D changes present at status refresh |
 | open PR | none at status refresh |
+| PR #9 | merged as `d38c52f1a27f034f6a209993109b626839ec74af` |
+| PR #9 final-head check | Source-only contract PASS，runs `30463989933` and `30465221234` |
+| PR #9 post-merge check | `master` push Source-only contract PASS，run `30470397679` |
 | PR #8 | merged as `579df6188063c4a34c0558cd720273e71401f888` |
 | PR #8 final-head check | Source-only contract PASS，run `30462761046` |
 | PR #8 post-merge check | `master` push Source-only contract PASS，run `30462843307` |
@@ -474,7 +477,7 @@ source-only 与 mounted verifier 均通过 `260 / 77 / 183`；mounted 模式还�
 
 ### P1-C：1,271 个 `image_*` bundle 关系目录
 
-状态：**implemented on branch / pending PR**。
+状态：**merged in PR #9**。
 
 当前目录已经记录：
 
@@ -505,6 +508,33 @@ baseline 已接入 committed relation summary。
 本批没有导出 PNG、没有替换 `public/assets`、没有把 basename 或 filename
 candidate 写成 stable relation。
 
+### P1-D：角色图片 stable-promotion 关系细化
+
+状态：**implemented on branch / pending validation and review**。
+
+P1-C 合并后的去重审计确认：57 个 `chara` bundle 中，50 个物理 bundle
+已由既有 `raw_character_image_promotions.json` 提供 52 条完整 stable
+promotion 证据；P1-C 目录此前仍把这些 bundle 降格记录为
+`organizer-export-candidate`。当前分支将它们升级为
+`stable-promotion`，逐项交叉核对：
+
+- RAW relative path、bytes 和 SHA-256；
+- Unity object PathID、type、name 和 container path；
+- stable PNG URL、bytes、dimensions 和 SHA-256；
+- promotion kind 与 idol code；
+- promotion registry 52/52 覆盖。
+
+剩余 7 个合辑型 `chara` bundle 保持 `masterdata-candidate`，没有新导出
+PNG、没有替换资产、没有新增 publication transaction。全目录的新
+mapping 分布为：
+
+```text
+50 stable-promotion
+2 organizer-export-candidate
+260 masterdata-candidate
+959 filename-candidate
+```
+
 ## 3. 三轨依赖图
 
 ```text
@@ -530,7 +560,8 @@ master 579df61
   +-- Track P
         completed pilot: PR #6, two exact GS event links + UI
         completed P1-B: PR #8, 260 USM relation catalog
-        active P1-C: 1,271 image bundle relation catalog
+        completed P1-C: PR #9, 1,271 image bundle relation catalog
+        active P1-D: 50 bundles / 52 exact character promotions
 ```
 
 PR #4 已通过 merge commit `2a1e1ec` 合入 `master`，post-merge gate
@@ -540,7 +571,8 @@ Track P 的首个 exact GS pilot 已由 PR #6 合并，post-merge gate
 `30460342231` 通过。Track G 已由 PR #7 合并，post-merge gate
 `30461311887` 通过；它只激活 Schema/verifier，不包含新的
 release/annotation。P1-B 已由 PR #8 合并，post-merge gate `30462843307`
-通过。Track R 继续 deferred；P1-C 当前独立收口。不要未经覆盖核对就扩充
+通过。PR #9 已通过 merge commit `d38c52f` 合入 `master`，post-merge gate
+`30470397679` 通过。Track R 继续 deferred；P1-D 当前独立收口。不要未经覆盖核对就扩充
 Episode 0 候选。
 
 ## 4. 每条轨道的 Git 边界
@@ -558,13 +590,14 @@ git rev-parse HEAD
 当前 active 开发分支是：
 
 ```text
-codex/image-bundle-relation-catalog
+codex/chara-image-relation-refinement
 ```
 
-它只承载 image bundle relation Schema、committed catalog、只读 generator、
-source-only/mounted verifier、baseline authority 接线和审计文档；不导出或
-提交 PNG，不混入 Runtime 长稳、publication transaction、USM promotion 或
-Episode 0 候选。PR #4 到 PR #8 的分支已经完成；不要继续复用：
+它只承载既有 character-image promotion registry 与 image bundle catalog
+之间的精确关系接线、source-only/mounted verifier、baseline authority
+更新和审计文档；不导出或提交 PNG，不混入 Runtime 长稳、publication
+transaction、USM promotion 或 Episode 0 候选。PR #4 到 PR #9 的分支已经
+完成；不要继续复用：
 
 ```text
 codex/post-merge-next-guidance
@@ -579,6 +612,7 @@ codex/story-localization-contract
 codex/post-merge-story-handoff
 codex/pr2-post-merge-status
 codex/post-merge-next-guidance
+codex/image-bundle-relation-catalog
 ```
 
 Codex 管理目录中指向初始提交 `ca3a28e` 的 detached worktree 不是项目开发
@@ -626,8 +660,8 @@ git diff --cached --check
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
 worktree、origin/master，并确认当前 active branch 为
-codex/image-bundle-relation-catalog、base master=579df61，PR #8
-post-merge run 30462843307 通过。
+codex/chara-image-relation-refinement、base master=d38c52f，PR #9
+post-merge run 30470397679 通过。
 
 完整阅读：
 1. web_viewer/notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
@@ -641,9 +675,10 @@ post-merge run 30462843307 通过。
 9,157 Unity objects / 7,816 image objects，source-only 与 mounted verifier
 均通过。
 真实 ledger 仍为 1 release / 1 stable logical ID，没有新增 production record。
-Story Runtime 2–4 小时长稳由用户暂缓，仍保持 NOT EXECUTED。P1-C 合并后
-若继续资源语义，必须选择有界 family；不得顺带批量导出 PNG、替换
-`public/assets`、新增 ledger release 或回填其他二进制。
+Story Runtime 2–4 小时长稳由用户暂缓，仍保持 NOT EXECUTED。P1-D 只把
+promotion registry 已证明的 50 bundles / 52 relations 升级为
+stable-promotion，其余 7 个 chara 合辑仍为 candidate；不得顺带批量导出
+PNG、替换 `public/assets`、新增 ledger release 或回填其他二进制。
 ```
 
 ## 7. 完成定义

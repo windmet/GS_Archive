@@ -30,6 +30,13 @@ SPEAKER_DICTIONARY = MASTERDATA_ROOT / "speaker_dictionary.json"
 EVENT_INDEX = MASTERDATA_ROOT / "event_index.json"
 GASHA_INDEX = MASTERDATA_ROOT / "gasha_index.json"
 SEASONAL_CAMPAIGN_INDEX = MASTERDATA_ROOT / "seasonal_campaign_index.json"
+CHARACTER_PROMOTIONS = (
+    PROJECT_ROOT
+    / "public"
+    / "data"
+    / "assets"
+    / "raw_character_image_promotions.json"
+)
 IMAGE_OBJECT_TYPES = {"Sprite", "Texture2D"}
 
 CONSUMERS = {
@@ -136,6 +143,51 @@ def masterdata_identities() -> list[tuple[str, str, str]]:
     return sorted(set(identities))
 
 
+def character_promotions() -> dict[str, list[dict[str, Any]]]:
+    registry = read_json(CHARACTER_PROMOTIONS)
+    if registry.get("schema_version") != 1:
+        raise ValueError("Character-image promotion registry must use schema_version 1")
+    by_raw_path: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for entry in registry.get("entries") or []:
+        raw_source = entry.get("raw_source") or {}
+        unity_object = entry.get("unity_object") or {}
+        output = entry.get("output") or {}
+        raw_path = str(raw_source.get("relative_path") or "")
+        if not raw_path.startswith("RAW/asset/"):
+            raise ValueError(f"Invalid promoted RAW path: {raw_path!r}")
+        by_raw_path[raw_path.removeprefix("RAW/")].append(
+            {
+                "kind": entry.get("kind"),
+                "idol_code": entry.get("idol_code"),
+                "asset_url": entry.get("asset_url"),
+                "raw_source": {
+                    "relative_path": raw_path,
+                    "bytes": raw_source.get("bytes"),
+                    "sha256": raw_source.get("sha256"),
+                },
+                "unity_object": {
+                    "path_id": str(unity_object.get("path_id")),
+                    "object_type": unity_object.get("object_type"),
+                    "asset_name": unity_object.get("asset_name"),
+                    "container_path": unity_object.get("container_path"),
+                },
+                "output": {
+                    "bytes": output.get("bytes"),
+                    "width": output.get("width"),
+                    "height": output.get("height"),
+                    "sha256": output.get("sha256"),
+                },
+            }
+        )
+    return {
+        raw_path: sorted(
+            rows,
+            key=lambda row: (str(row["kind"]), str(row["idol_code"])),
+        )
+        for raw_path, rows in sorted(by_raw_path.items())
+    }
+
+
 def contains_identity(context: str, key: str, boundary: str) -> bool:
     escaped = re.escape(key)
     if boundary == "numeric":
@@ -206,6 +258,7 @@ def main() -> None:
     )
     public_pngs = tracked_png_index()
     identities = masterdata_identities()
+    promotions_by_raw_path = character_promotions()
     entries = []
 
     for index, path in enumerate(files, start=1):
@@ -295,7 +348,40 @@ def main() -> None:
 
         family = family_for(path.stem)
         consumer = CONSUMERS.get(family, "unclassified-image-surface")
-        if organizer_candidates:
+        relative_raw_path = f"asset/{path.name}"
+        stable_promotions = promotions_by_raw_path.get(relative_raw_path, [])
+        images_by_path_id = {
+            image_object["path_id"]: image_object
+            for image_object in image_objects
+        }
+        for promotion in stable_promotions:
+            unity_object = promotion["unity_object"]
+            image_object = images_by_path_id.get(unity_object["path_id"])
+            if (
+                image_object is None
+                or image_object["type"] != unity_object["object_type"]
+                or image_object["name"] != unity_object["asset_name"]
+                or unity_object["container_path"] not in image_object["container_paths"]
+            ):
+                raise ValueError(
+                    f"Promotion registry Unity evidence drifted for "
+                    f"{path.name}:{unity_object['path_id']}"
+                )
+        stat = path.stat()
+        raw_sha256 = sha256_file(path)
+        for promotion in stable_promotions:
+            raw_source = promotion["raw_source"]
+            if (
+                raw_source.get("bytes") != stat.st_size
+                or raw_source.get("sha256") != raw_sha256
+            ):
+                raise ValueError(
+                    f"Promotion registry RAW evidence drifted for {path.name}"
+                )
+
+        if stable_promotions:
+            mapping_state = "stable-promotion"
+        elif organizer_candidates:
             mapping_state = "organizer-export-candidate"
         elif masterdata_tokens:
             mapping_state = "masterdata-candidate"
@@ -303,16 +389,15 @@ def main() -> None:
             mapping_state = "filename-candidate"
         else:
             mapping_state = "unresolved"
-        stat = path.stat()
         entries.append(
             {
                 "id": path.stem,
                 "family": family,
                 "raw": {
-                    "relative_path": f"asset/{path.name}",
+                    "relative_path": relative_raw_path,
                     "filename": path.name,
                     "bytes": stat.st_size,
-                    "sha256": sha256_file(path),
+                    "sha256": raw_sha256,
                     "container": "unityfs",
                     "magic": magic,
                 },
@@ -330,10 +415,14 @@ def main() -> None:
                     }
                 ],
                 "organizer_export_candidates": organizer_candidates,
+                "stable_promotions": stable_promotions,
                 "mapping": {
                     "state": mapping_state,
                     "evidence": (
-                        "Catalog relation only; no image payload was exported or published."
+                        "Exact stable promotion is proven by the committed character-image "
+                        "promotion registry."
+                        if stable_promotions
+                        else "Catalog relation only; no image payload was exported or published."
                     ),
                 },
             }
@@ -349,6 +438,9 @@ def main() -> None:
         "sources": {
             "raw_asset_root": "RAW/asset",
             "tracked_public_assets": "git:web_viewer/public/assets/**/*.png",
+            "stable_promotion_registry": (
+                "web_viewer/public/data/assets/raw_character_image_promotions.json"
+            ),
             "masterdata_catalogs": [
                 "web_viewer/public/data/masterdata/event_index.json",
                 "web_viewer/public/data/masterdata/gasha_index.json",
