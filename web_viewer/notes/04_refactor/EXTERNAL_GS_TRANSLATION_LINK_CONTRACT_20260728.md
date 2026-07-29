@@ -1,6 +1,6 @@
 # External GROWING STARS Translation Link Contract
 
-Status: exact set merged through PR #18; dedicated navigation active
+Status: exact set and dedicated navigation merged through PR #20
 Date: 2026-07-28
 Scope: SideM GROWING STARS only
 
@@ -25,6 +25,9 @@ Implementation refresh: 2026-07-29
 - The navigation is exact-only, uses local GS visuals, preserves uploader and
   safe-link attribution, and deep-links to the matching internal event or
   unit-story chapter.
+- PR #20 merged the dedicated navigation as
+  `19e5fc570c1684eb8410effdd1b6cf32ac2759f6`; final-head run
+  `30479911302` and post-merge run `30479973771` passed.
 - The local full Vite build reached its 183-second execution limit, so this
   was the historical PR #6 pilot result and is superseded for this expansion.
 
@@ -354,6 +357,6 @@ three Episode 0 mappings after exact coverage verification, schema/verifier
 support for exact unit-story relations, and audit/handoff refresh
 ```
 
-The meaningful exact GS set now exists. The dedicated “社区中文剧情” view is
-implemented on `codex/external-story-resource-navigation`; candidate and
-partial mappings remain excluded.
+The meaningful exact GS set now exists. PR #20 merged the dedicated
+“社区中文剧情” view from `codex/external-story-resource-navigation`;
+candidate and partial mappings remain excluded.

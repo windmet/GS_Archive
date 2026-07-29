@@ -16,12 +16,15 @@ their forward-looking defect lists must not override this baseline.
 
 | Field | Value |
 | --- | --- |
-| current functional baseline | `master` includes post-PR #18 handoff merge `0fbcbbc844e98b562a637fb3748680b6ba68d3d0` |
-| active functional branch | `codex/external-story-resource-navigation` |
-| active track | P1-A dedicated exact-only community Chinese story navigation |
-| active upstream | pending first push |
+| current functional baseline | `master` includes PR #20 merge `19e5fc570c1684eb8410effdd1b6cf32ac2759f6` |
+| active functional branch | none; documentation-only closeout is isolated |
+| active track | none selected; P1-A dedicated exact-only community Chinese story navigation is complete |
+| active upstream | not applicable |
 | active pull request | none |
-| active validation | dedicated exact-only navigation, route round-trip, 2,407-module build, desktop/390px browser preview PASS |
+| active validation | PR #20 dedicated exact-only navigation, route round-trip, 2,407-module local build, desktop/390px browser preview, and post-merge source gate PASS |
+| PR #20 merge commit | `19e5fc570c1684eb8410effdd1b6cf32ac2759f6` |
+| PR #20 final-head gate | run `30479911302`, PASS |
+| PR #20 post-merge gate | run `30479973771`, PASS |
 | PR #18 merge commit | `7342f5a5bf3c6d3e2ea2eef35cfdfc95c530e44a` |
 | PR #18 final-head gate | run `30478115572`, PASS |
 | PR #18 post-merge gate | run `30478199856`, PASS |
@@ -78,9 +81,10 @@ EOL correction, and version freeze. PR #5 completed the WAV provenance
 disposition, PR #6 merged the bounded GS translation-link pilot, and PR #7
 activated publication v2 and annotation v1 contracts without adding a
 production record. PR #8 merged the bounded 260-USM relation catalog without
-decoding or publishing media. Therefore `bca7042` remains the immutable PR #2
-merge identity, while `579df61` is the current repository baseline at this
-refresh.
+decoding or publishing media. Later bounded relation and navigation batches
+merged through PR #20. Therefore `bca7042` remains the immutable PR #2 merge
+identity, while `19e5fc5` is the current functional repository baseline at
+this refresh.
 
 `stable-published` in project notes means an artifact occupies the stable path
 in the named checkout. For PR #2 artifacts, the containing commit is now merged
@@ -384,8 +388,7 @@ metadata/UI remains outside the publication ledger and does not constitute
 Story Runtime release acceptance.
 
 The five exact mappings now support a dedicated `external_story_resources`
-route and Story portal gateway on
-`codex/external-story-resource-navigation`. The page retains original-uploader
+route and Story portal gateway merged through PR #20. The page retains original-uploader
 attribution, local-only visuals, safe external anchors, and exact internal
 event/chapter navigation. Candidate and partial mappings remain excluded.
 
