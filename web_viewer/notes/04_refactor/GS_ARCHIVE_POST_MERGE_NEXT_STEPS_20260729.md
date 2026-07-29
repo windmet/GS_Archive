@@ -15,12 +15,15 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | 项 | 当前值 |
 | --- | --- |
 | merged base branch | `master` |
-| merged base HEAD | `6991015bf513ca27e98acd1fd7e18012c4f3c740` |
-| active track branch | none; post-P1-D handoff only |
-| active track | next selection: bounded `gasha` relation audit before implementation |
+| merged base HEAD | `28930e18ba13c230a4d23d4f61f135fd9a9cf1ea` |
+| active track branch | `codex/gasha-image-exact-relations`, created from `28930e1` |
+| active track | P1-E exact gasha banner/logo relations：49 codes / 98 bundles |
 | upstream | 尚未推送 |
-| worktree | documentation-only handoff changes at status refresh |
+| worktree | P1-E changes present at status refresh |
 | open PR | none at status refresh |
+| PR #11 | merged as `28930e18ba13c230a4d23d4f61f135fd9a9cf1ea` |
+| PR #11 final-head check | Source-only contract PASS，run `30471508307` |
+| PR #11 post-merge check | `master` push Source-only contract PASS，run `30471575433` |
 | PR #10 | merged as `6991015bf513ca27e98acd1fd7e18012c4f3c740` |
 | PR #10 final-head check | Source-only contract PASS，run `30471238191` |
 | PR #10 post-merge check | `master` push Source-only contract PASS，run `30471307383` |
@@ -47,7 +50,7 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | PR #2 final check | Source-only contract PASS, run `30435933524` |
 | PR #3 check | Source-only contract PASS, run `30437147325` |
 | local server | `127.0.0.1:5174`, PID 27536 at refresh time |
-| production build | GitHub post-merge source gate PASS at `fdce874`；P1-A 本地 build 于 183 秒有界终止，未单独记为 PASS |
+| production build | P1-E local Vite build PASS，2,405 modules / 152.7 seconds |
 
 PR #2 合入了：
 
@@ -538,10 +541,36 @@ mapping 分布为：
 959 filename-candidate
 ```
 
+### P1-E：gasha banner/logo exact relations
+
+状态：**implemented on branch / pending review**。
+
+只读分层确认 433 个 `gasha` bundle 包含 195 banner、195 logo、25 bg、
+12 skill、4 balloon 和 2 button。当前 committed `gasha_index` 有 61 个
+unique code，其中 49 个 code 在 RAW 中各自严格命中一对完整文件名：
+
+```text
+image_gasha_banner_<code>
+image_gasha_logo_<code>
+```
+
+因此当前分支只为这 49 个 code 写入 98 条
+`exact_bundle_filename_gasha_code` 关系。verifier 独立重建并要求：
+
+- code 在 gasha index 中唯一；
+- bundle ID 完整匹配，不接受子串或近似匹配；
+- 每条关系仍有 `gasha_index.gashas.code` token evidence；
+- 每个覆盖 code 恰好是一条 banner + 一条 logo；
+- 总边界固定为 49 codes / 98 bundles。
+
+其余 335 个 gasha bundle 不升级。12 条 index code 在当前 RAW image
+population 中没有 banner/logo，明确保持未覆盖。没有导出 PNG、没有替换
+资产、没有新增 ledger transaction。
+
 ## 3. 三轨依赖图
 
 ```text
-master 579df61
+master 28930e1
   |
   +-- completed Track S: PR #5
   |     18 WAV provenance complete
@@ -565,7 +594,7 @@ master 579df61
         completed P1-B: PR #8, 260 USM relation catalog
         completed P1-C: PR #9, 1,271 image bundle relation catalog
         completed P1-D: PR #10, 50 bundles / 52 exact character promotions
-        next: bounded gasha relation audit
+        active P1-E: 49 codes / 98 exact gasha banner-logo relations
 ```
 
 PR #4 已通过 merge commit `2a1e1ec` 合入 `master`，post-merge gate
@@ -577,8 +606,9 @@ Track P 的首个 exact GS pilot 已由 PR #6 合并，post-merge gate
 release/annotation。P1-B 已由 PR #8 合并，post-merge gate `30462843307`
 通过。PR #9 已通过 merge commit `d38c52f` 合入 `master`，post-merge gate
 `30470397679` 通过。PR #10 已通过 merge commit `6991015` 合入
-`master`，post-merge gate `30471307383` 通过。Track R 继续 deferred；
-下一项先只读审计有界 `gasha` 子族，不要未经覆盖核对就扩充
+`master`，post-merge gate `30471307383` 通过。PR #11 已通过 merge
+commit `28930e1` 合入 `master`，post-merge gate `30471575433` 通过。
+Track R 继续 deferred；P1-E 当前独立收口，不要未经覆盖核对就扩充
 Episode 0 候选。
 
 ## 4. 每条轨道的 Git 边界
@@ -593,16 +623,16 @@ git status -sb
 git rev-parse HEAD
 ```
 
-当前没有功能开发分支；文档收口分支是：
+当前 active 功能分支是：
 
 ```text
-codex/post-p1d-handoff
+codex/gasha-image-exact-relations
 ```
 
-它只承载 PR #10 合并状态与下一优先级说明。下一功能分支必须先审计
-`gasha` 的有界子族和 exact masterdata 证据；不导出或提交 PNG，不混入
-Runtime 长稳、publication transaction、USM promotion 或 Episode 0
-候选。PR #4 到 PR #10 的功能分支已经完成；不要继续复用：
+它只承载 49 个 committed gasha code 与 98 个 banner/logo bundle 的
+exact relation、Schema/verifier、baseline 和审计文档；不导出或提交
+PNG，不混入 Runtime 长稳、publication transaction、USM promotion 或
+Episode 0 候选。PR #4 到 PR #11 的分支已经完成；不要继续复用：
 
 ```text
 codex/post-merge-next-guidance
@@ -619,6 +649,7 @@ codex/pr2-post-merge-status
 codex/post-merge-next-guidance
 codex/image-bundle-relation-catalog
 codex/chara-image-relation-refinement
+codex/post-p1d-handoff
 ```
 
 Codex 管理目录中指向初始提交 `ca3a28e` 的 detached worktree 不是项目开发
@@ -666,8 +697,8 @@ git diff --cached --check
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
 worktree、origin/master，并确认当前 active branch 为
-文档收口分支 codex/post-p1d-handoff、base master=6991015，PR #10
-post-merge run 30471307383 通过。
+codex/gasha-image-exact-relations、base master=28930e1，PR #11
+post-merge run 30471575433 通过。
 
 完整阅读：
 1. web_viewer/notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
@@ -676,6 +707,7 @@ post-merge run 30471307383 通过。
 4. web_viewer/notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 5. web_viewer/notes/03_audit/RAW_USM_RELATION_CATALOG_20260729.md
 6. web_viewer/notes/03_audit/RAW_IMAGE_BUNDLE_RELATION_CATALOG_20260729.md
+7. web_viewer/notes/03_audit/GASHA_IMAGE_EXACT_RELATIONS_20260730.md
 
 先确认当前分支的 image catalog 为 1,271 bundles / 263,071,090 bytes /
 9,157 Unity objects / 7,816 image objects，source-only 与 mounted verifier
@@ -683,9 +715,12 @@ post-merge run 30471307383 通过。
 真实 ledger 仍为 1 release / 1 stable logical ID，没有新增 production record。
 Story Runtime 2–4 小时长稳由用户暂缓，仍保持 NOT EXECUTED。P1-D 已把
 promotion registry 已证明的 50 bundles / 52 relations 升级为
-stable-promotion，其余 7 个 chara 合辑仍为 candidate。下一步先只读审计
-`gasha` 的有界子族与 exact masterdata 关系；不得顺带批量导出 PNG、替换
-`public/assets`、新增 ledger release 或回填其他二进制。
+stable-promotion，其余 7 个 chara 合辑仍为 candidate。P1-E 已完成
+`gasha` 有界子族的只读审计，只把 gasha index
+唯一证明的 49 banner/logo pairs（98 bundles）升级为
+exact-masterdata-relation，其余 335 个 gasha bundle 保持原状态；不得
+顺带批量导出 PNG、替换 `public/assets`、新增 ledger release 或回填其他
+二进制。
 ```
 
 ## 7. 完成定义

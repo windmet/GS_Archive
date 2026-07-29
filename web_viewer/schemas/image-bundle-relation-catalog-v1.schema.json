@@ -274,6 +274,40 @@
       },
       "additionalProperties": false
     },
+    "exactGashaRelation": {
+      "type": "object",
+      "required": [
+        "gasha_id",
+        "gasha_code",
+        "logical_id",
+        "phase",
+        "asset_role",
+        "relation_type"
+      ],
+      "properties": {
+        "gasha_id": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "gasha_code": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "logical_id": {
+          "type": "string",
+          "pattern": "^gasha_[0-9]+$"
+        },
+        "phase": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "asset_role": { "enum": ["banner", "logo"] },
+        "relation_type": {
+          "const": "exact_bundle_filename_gasha_code"
+        }
+      },
+      "additionalProperties": false
+    },
     "entry": {
       "type": "object",
       "required": [
@@ -365,6 +399,13 @@
           "uniqueItems": true,
           "items": { "$ref": "#/$defs/stablePromotion" }
         },
+        "exact_gasha_relations": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/exactGashaRelation" }
+        },
         "mapping": {
           "type": "object",
           "required": ["state", "evidence"],
@@ -372,6 +413,7 @@
             "state": {
               "enum": [
                 "stable-promotion",
+                "exact-masterdata-relation",
                 "organizer-export-candidate",
                 "masterdata-candidate",
                 "filename-candidate",

@@ -16,12 +16,14 @@ their forward-looking defect lists must not override this baseline.
 
 | Field | Value |
 | --- | --- |
-| current merged baseline | `master` = `origin/master` at `6991015bf513ca27e98acd1fd7e18012c4f3c740` |
-| active track branch | none; `codex/post-p1d-handoff` is documentation-only |
-| active track | next selection: bounded `gasha` relation audit before implementation |
+| current merged baseline | `master` = `origin/master` at `28930e18ba13c230a4d23d4f61f135fd9a9cf1ea` |
+| active track branch | `codex/gasha-image-exact-relations`, created from `28930e1` |
+| active track | P1-E exact gasha banner/logo relations; 49 codes / 98 bundles |
 | active upstream | not pushed at refresh |
 | active pull request | none at refresh |
-| active validation | PR #10 and post-merge Source Gate pass at `1,271 bundles / 7,816 image objects / 52 stable promotions` |
+| active validation | source-only and mounted image verifiers pass at `1,271 bundles / 7,816 image objects / 98 exact gasha relations` |
+| PR #11 merge commit | `28930e18ba13c230a4d23d4f61f135fd9a9cf1ea` |
+| PR #11 post-merge gate | run `30471575433`, PASS |
 | PR #10 merge commit | `6991015bf513ca27e98acd1fd7e18012c4f3c740` |
 | PR #10 post-merge gate | run `30471307383`, PASS |
 | PR #9 merge commit | `d38c52f1a27f034f6a209993109b626839ec74af` |
@@ -421,10 +423,15 @@ The committed image-bundle relation catalog adds 1,271 RAW identities,
 that summary without mounting RAW; mounted verification independently checks
 all bundle bytes, UnityFS headers, and SHA-256 values.
 
-The active character refinement connects that catalog to the pre-existing
+The merged character refinement connects that catalog to the pre-existing
 character-image promotion registry. It proves 52 stable promotions across 50
 physical bundles and leaves the other seven `chara` aggregate bundles at
 candidate state. It exports no new PNG and changes no stable asset.
+
+The active gasha refinement proves 98 exact semantic relations across 49
+gasha codes. Every covered code has one exact banner and one exact logo bundle;
+the other 335 gasha bundles remain unchanged. This is not an image publication
+and adds no binary or ledger record.
 
 Source-only verification passes without requiring ignored RAW or masterdata.
 The mounted drift observed before disposition was:
@@ -544,6 +551,7 @@ GS-only external translation-link pilot complete in PR #6
 260-USM relation catalog complete in PR #8
 1,271-image-bundle relation catalog complete in PR #9
 50-bundle / 52-relation character promotion refinement complete in PR #10
+49-code / 98-bundle gasha banner-logo refinement active
 ```
 
 Current priority and write locks:
@@ -558,10 +566,12 @@ Current priority and write locks:
 - external-link metadata/UI remains outside the publication ledger;
 - the USM catalog is merged and records 260 source identities, 77 exact
   consumers, and 183 unresolved records without decoding or publishing media;
-- no functional track is active; the next step is a read-only bounded `gasha`
-  relation audit before choosing an implementation batch;
+- the current functional track is the bounded 49-code / 98-bundle exact gasha
+  banner-logo relation batch;
 - the image catalog records 1,271 source identities and 7,816 image objects
   without exporting PNG or replacing stable assets;
 - 50 bundles now inherit 52 exact stable relations from the already-authoritative
   promotion registry; the remaining seven `chara` aggregate bundles stay
   candidate-only.
+- 98 gasha bundles now carry exact code relations reconstructed from bundle
+  IDs and the committed gasha index; 335 other gasha bundles stay unchanged.
