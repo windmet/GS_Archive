@@ -16,12 +16,14 @@ their forward-looking defect lists must not override this baseline.
 
 | Field | Value |
 | --- | --- |
-| current merged baseline | `master` = `origin/master` at `a9ea2012e1e55c158050424c146b743f17e87700` |
-| active track branch | `codex/post-p1h-relation-closeout`, created from `a9ea201` |
-| active track | documentation-only P1 relation boundary closeout |
-| active upstream | not pushed at refresh |
-| active pull request | none at refresh |
+| current functional baseline | `master` includes PR #16 merge `139b9b0eef0a10df23fe3e122458c9ab13b70574` |
+| active functional branch | none |
+| active track | none selected; P1 image relation refinement is closed |
+| active upstream | not applicable |
+| active pull request | none |
 | active validation | source-only and mounted image verifiers pass at `1,271 bundles / 7,816 image objects / 170 exact masterdata relations` |
+| PR #16 merge commit | `139b9b0eef0a10df23fe3e122458c9ab13b70574` |
+| PR #16 post-merge gate | run `30475143673`, PASS |
 | PR #15 merge commit | `a9ea2012e1e55c158050424c146b743f17e87700` |
 | PR #15 post-merge gate | run `30474870836`, PASS |
 | PR #14 merge commit | `724ec9885eee1e782aa5104d0a9809b425e221b3` |
