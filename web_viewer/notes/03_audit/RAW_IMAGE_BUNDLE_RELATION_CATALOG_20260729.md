@@ -1,6 +1,7 @@
 # RAW Image Bundle Relation Catalog
 
-Status: implemented on `codex/image-bundle-relation-catalog`; pending review
+Status: base catalog merged in PR #9; character relation refinement active on
+`codex/chara-image-relation-refinement`
 
 Date: 2026-07-29
 
@@ -29,7 +30,10 @@ Each bundle records:
 - exact delimiter-bounded masterdata identity candidates;
 - filename-family consumer candidates;
 - tracked public-PNG basename parity candidates;
-- a candidate-only mapping state and evidence.
+- exact stable-promotion relations when independently recorded by the existing
+  character-image promotion registry;
+- a mapping state and evidence that preserves candidates separately from exact
+  stable relations.
 
 The catalog contains no machine absolute paths.
 
@@ -70,13 +74,22 @@ Family population:
 
 ## Relation boundary
 
-Mapping states are candidates, not publication claims:
+Mapping states now distinguish pre-existing stable character promotions from
+discovery candidates:
 
 | State | Bundles |
 | --- | ---: |
-| `organizer-export-candidate` | 52 |
+| `stable-promotion` | 50 |
+| `organizer-export-candidate` | 2 |
 | `masterdata-candidate` | 260 |
 | `filename-candidate` | 959 |
+
+The 50 stable bundles carry 52 exact promotion relations. The difference is
+the shared `012yus-013kys` birthday visual and the paired event-story visual
+bundle: each has two registry identities but one physical RAW bundle. Every
+relation is cross-checked against the committed promotion registry, including
+RAW bytes/hash, exact Unity object PathID/type/name/container, target PNG
+bytes/hash, kind, idol code, and asset URL.
 
 There are 865 exact delimiter-bounded masterdata tokens across 310 bundles.
 The allowed sources are the committed speaker, event, gasha, and seasonal
@@ -84,10 +97,12 @@ campaign indexes. A numeric identity only matches at numeric boundaries, so
 `10001` does not falsely match `100001`. Idol codes use alphanumeric
 boundaries, including the paired `012yus-013kys` identity.
 
-The 52 organizer-export candidate bundles contain 136 image objects whose
+The original 52 organizer-export candidate bundles contain 136 image objects whose
 container/object basename equals at least one tracked public PNG basename.
-This is parity-discovery evidence only. It does not assert byte equality,
-semantic ownership, or authorization to replace a stable asset.
+Fifty are no longer inferred from basename alone because the promotion registry
+already proves their stable identities. The remaining two retain
+`organizer-export-candidate`; basename parity by itself does not assert byte
+equality, semantic ownership, or authorization to replace a stable asset.
 
 Consumer names are derived from the top-level `image_<family>` filename token.
 They remain `filename-candidate`, even where the family is well understood.
@@ -106,6 +121,8 @@ Source-only verification checks:
 - direct Sprite pointers target a Texture2D inside the same bundle;
 - exact masterdata identity existence and delimiter boundaries;
 - tracked public candidate existence and exact basename evidence;
+- exact parity with all 52 character-image promotion registry entries;
+- stable RAW, Unity-object, and tracked-output bytes/hash evidence;
 - mapping-state precedence;
 - absence of absolute paths;
 - the current `1,271 bundles / 7,816 image objects` boundary.
@@ -133,10 +150,10 @@ Archive baseline verified (mounted):
 10329 compiled JSON artifacts, 108 tracked PNG files
 ```
 
-Regenerating the catalog produced the same catalog SHA-256:
+After the character relation refinement, regenerating the catalog produced:
 
 ```text
-790066A9A1731DCE4223743B3BCA96F3A7ABA993F2FC187A71F1BCB2C74ADC47
+6D2C239557CC6D209868FD89288F39535E79BDA26CC3B37B99E23E79CBEF738D
 ```
 
 The source-only GitHub gate now runs the catalog verifier. The archive baseline
@@ -145,9 +162,11 @@ machine-verifiable without mounting ignored RAW.
 
 ## Next boundary
 
-This phase is complete when the branch passes review and merges. Any follow-up
-should select a bounded family and improve semantic relations without rewriting
-physical identity. It must remain separate from:
+The base physical catalog merged in PR #9 as `d38c52f`. The character
+refinement changes relation authority only; it exports no new PNG and modifies
+no stable asset. Any follow-up should select another bounded family and improve
+semantic relations without rewriting physical identity. It must remain
+separate from:
 
 - full PNG export;
 - stable asset replacement;

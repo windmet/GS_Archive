@@ -18,6 +18,9 @@
         "tracked_public_assets": {
           "const": "git:web_viewer/public/assets/**/*.png"
         },
+        "stable_promotion_registry": {
+          "const": "web_viewer/public/data/assets/raw_character_image_promotions.json"
+        },
         "masterdata_catalogs": {
           "type": "array",
           "minItems": 4,
@@ -199,6 +202,78 @@
       },
       "additionalProperties": false
     },
+    "stablePromotion": {
+      "type": "object",
+      "required": [
+        "kind",
+        "idol_code",
+        "asset_url",
+        "raw_source",
+        "unity_object",
+        "output"
+      ],
+      "properties": {
+        "kind": { "enum": ["birthday_visual", "event_story_visual"] },
+        "idol_code": {
+          "type": "string",
+          "pattern": "^[0-9]{3}[A-Za-z0-9]{3}$"
+        },
+        "asset_url": {
+          "type": "string",
+          "pattern": "^/assets/[A-Za-z0-9_./-]+\\.png$"
+        },
+        "raw_source": {
+          "type": "object",
+          "required": ["relative_path", "bytes", "sha256"],
+          "properties": {
+            "relative_path": {
+              "type": "string",
+              "pattern": "^RAW/asset/image_[A-Za-z0-9_-]+\\.unity3d$"
+            },
+            "bytes": { "type": "integer", "minimum": 1 },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "additionalProperties": false
+        },
+        "unity_object": {
+          "type": "object",
+          "required": [
+            "path_id",
+            "object_type",
+            "asset_name",
+            "container_path"
+          ],
+          "properties": {
+            "path_id": { "$ref": "#/$defs/pathId" },
+            "object_type": { "enum": ["Sprite", "Texture2D"] },
+            "asset_name": { "type": "string", "minLength": 1 },
+            "container_path": {
+              "type": "string",
+              "pattern": "^assets/resources/"
+            }
+          },
+          "additionalProperties": false
+        },
+        "output": {
+          "type": "object",
+          "required": ["bytes", "width", "height", "sha256"],
+          "properties": {
+            "bytes": { "type": "integer", "minimum": 1 },
+            "width": { "type": "integer", "minimum": 1 },
+            "height": { "type": "integer", "minimum": 1 },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
     "entry": {
       "type": "object",
       "required": [
@@ -285,12 +360,18 @@
           "uniqueItems": true,
           "items": { "$ref": "#/$defs/organizerCandidate" }
         },
+        "stable_promotions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/stablePromotion" }
+        },
         "mapping": {
           "type": "object",
           "required": ["state", "evidence"],
           "properties": {
             "state": {
               "enum": [
+                "stable-promotion",
                 "organizer-export-candidate",
                 "masterdata-candidate",
                 "filename-candidate",

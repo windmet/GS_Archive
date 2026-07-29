@@ -16,12 +16,14 @@ their forward-looking defect lists must not override this baseline.
 
 | Field | Value |
 | --- | --- |
-| current merged baseline | `master` = `origin/master` at `579df6188063c4a34c0558cd720273e71401f888` |
-| active track branch | `codex/image-bundle-relation-catalog`, created from `579df61` |
-| active track | P1-C 1,271-image-bundle relation catalog; complete on branch, pending PR |
+| current merged baseline | `master` = `origin/master` at `d38c52f1a27f034f6a209993109b626839ec74af` |
+| active track branch | `codex/chara-image-relation-refinement`, created from `d38c52f` |
+| active track | P1-D exact character-image relation refinement; 50 bundles / 52 stable promotions |
 | active upstream | not pushed at refresh |
 | active pull request | none at refresh |
-| active validation | source-only and mounted image verifiers pass at `1,271 bundles / 7,816 image objects` |
+| active validation | source-only and mounted image verifiers pass at `1,271 bundles / 7,816 image objects / 52 stable promotions` |
+| PR #9 merge commit | `d38c52f1a27f034f6a209993109b626839ec74af` |
+| PR #9 post-merge gate | run `30470397679`, PASS |
 | PR #2 merge commit | `bca7042c1d87b261b98f21b5957a36c2eb99f6b1` |
 | merged PR head | `6a2a14e741d361dc7c09c6c395946a33782af4d9` |
 | merge parents | `ef804fcb2b258979723fcf8ce62f317671b4d701` + `6a2a14e741d361dc7c09c6c395946a33782af4d9` |
@@ -417,6 +419,11 @@ The committed image-bundle relation catalog adds 1,271 RAW identities,
 that summary without mounting RAW; mounted verification independently checks
 all bundle bytes, UnityFS headers, and SHA-256 values.
 
+The active character refinement connects that catalog to the pre-existing
+character-image promotion registry. It proves 52 stable promotions across 50
+physical bundles and leaves the other seven `chara` aggregate bundles at
+candidate state. It exports no new PNG and changes no stable asset.
+
 Source-only verification passes without requiring ignored RAW or masterdata.
 The mounted drift observed before disposition was:
 
@@ -533,7 +540,8 @@ Track P / portal and resource discovery
 18 WAV provenance + quarantine complete
 GS-only external translation-link pilot complete in PR #6
 260-USM relation catalog complete in PR #8
-1,271-image-bundle relation catalog complete on active branch
+1,271-image-bundle relation catalog complete in PR #9
+50-bundle / 52-relation character promotion refinement active
 ```
 
 Current priority and write locks:
@@ -548,8 +556,9 @@ Current priority and write locks:
 - external-link metadata/UI remains outside the publication ledger;
 - the USM catalog is merged and records 260 source identities, 77 exact
   consumers, and 183 unresolved records without decoding or publishing media;
-- the current active track is the bounded image-bundle relation catalog;
+- the current active track is the bounded character-image relation refinement;
 - the image catalog records 1,271 source identities and 7,816 image objects
   without exporting PNG or replacing stable assets;
-- semantic promotion remains separately bounded and requires its own
-  authorization.
+- 50 bundles now inherit 52 exact stable relations from the already-authoritative
+  promotion registry; the remaining seven `chara` aggregate bundles stay
+  candidate-only.
