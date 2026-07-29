@@ -1,7 +1,7 @@
 # RAW Image Bundle Relation Catalog
 
-Status: base catalog merged in PR #9; character relation refinement active on
-`codex/chara-image-relation-refinement`
+Status: base catalog merged in PR #9; character relation refinement merged in
+PR #10
 
 Date: 2026-07-29
 
