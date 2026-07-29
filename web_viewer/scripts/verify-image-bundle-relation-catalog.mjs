@@ -149,6 +149,30 @@ const masterdataSets = {
     (campaignIndex.campaigns || []).map(row => String(row.event_code)),
   ),
 }
+const gashasByCode = new Map()
+for (const row of gashaIndex.gashas || []) {
+  const code = String(row.code)
+  if (gashasByCode.has(code)) {
+    failures.push(`gasha_index code is not unique: ${code}`)
+  } else {
+    gashasByCode.set(code, row)
+  }
+}
+const expectedGashaRelations = entryId => {
+  const match = /^image_gasha_(banner|logo)_([0-9]+)$/u.exec(entryId)
+  if (!match) return []
+  const [, assetRole, code] = match
+  const row = gashasByCode.get(code)
+  if (!row) return []
+  return [{
+    gasha_id: String(row.id),
+    gasha_code: code,
+    logical_id: row.logical_id,
+    phase: row.phase,
+    asset_role: assetRole,
+    relation_type: 'exact_bundle_filename_gasha_code',
+  }]
+}
 const trackedPngs = new Set(
   execFileSync(
     'git',
@@ -179,6 +203,8 @@ let spriteObjects = 0
 let textureObjects = 0
 let directLinks = 0
 let stablePromotionCount = 0
+let exactGashaRelationCount = 0
+const exactGashaRoles = new Map()
 const familyCounts = {}
 const mappingCounts = {}
 
@@ -357,18 +383,41 @@ for (const entry of entries) {
     }
   }
 
+  const expectedGasha = expectedGashaRelations(entry.id)
+  assertEqual(
+    entry.exact_gasha_relations || [],
+    expectedGasha,
+    `${entry.id}: exact gasha relations differ from gasha_index`,
+  )
+  exactGashaRelationCount += (entry.exact_gasha_relations || []).length
+  for (const relation of entry.exact_gasha_relations || []) {
+    const roles = exactGashaRoles.get(relation.gasha_code) || new Set()
+    roles.add(relation.asset_role)
+    exactGashaRoles.set(relation.gasha_code, roles)
+    const token = (entry.masterdata_tokens || []).find(candidate =>
+      candidate.catalog === 'gasha_index.gashas.code' &&
+      candidate.key === relation.gasha_code
+    )
+    if (!token) {
+      failures.push(`${entry.id}: exact gasha relation lacks masterdata token evidence`)
+    }
+  }
+
   const hasStablePromotion = (entry.stable_promotions || []).length > 0
+  const hasExactGasha = (entry.exact_gasha_relations || []).length > 0
   const hasOrganizer = (entry.organizer_export_candidates || []).length > 0
   const hasMasterdata = (entry.masterdata_tokens || []).length > 0
   const expectedState = hasStablePromotion
     ? 'stable-promotion'
-    : hasOrganizer
-      ? 'organizer-export-candidate'
-      : hasMasterdata
-        ? 'masterdata-candidate'
-        : entry.consumer_candidates?.[0]?.consumer === 'unclassified-image-surface'
-          ? 'unresolved'
-          : 'filename-candidate'
+    : hasExactGasha
+      ? 'exact-masterdata-relation'
+      : hasOrganizer
+        ? 'organizer-export-candidate'
+        : hasMasterdata
+          ? 'masterdata-candidate'
+          : entry.consumer_candidates?.[0]?.consumer === 'unclassified-image-surface'
+            ? 'unresolved'
+            : 'filename-candidate'
   if (entry.mapping?.state !== expectedState) {
     failures.push(`${entry.id}: mapping-state precedence drifted`)
   }
@@ -379,6 +428,15 @@ assertEqual(
   (characterPromotions.entries || []).length,
   'stable promotion registry coverage drifted',
 )
+assertEqual(exactGashaRelationCount, 98, 'exact gasha relation boundary drifted')
+assertEqual(exactGashaRoles.size, 49, 'exact gasha code coverage drifted')
+for (const [code, roles] of exactGashaRoles) {
+  assertEqual(
+    [...roles].sort(),
+    ['banner', 'logo'],
+    `gasha ${code}: exact relation roles must be a banner/logo pair`,
+  )
+}
 assertEqual(catalog.summary?.bundles, entries.length, 'summary bundle count drifted')
 assertEqual(catalog.summary?.total_bytes, totalBytes, 'summary byte count drifted')
 assertEqual(catalog.summary?.unity_objects, unityObjects, 'summary Unity object count drifted')

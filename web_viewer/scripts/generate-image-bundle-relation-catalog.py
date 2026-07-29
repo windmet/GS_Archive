@@ -188,6 +188,39 @@ def character_promotions() -> dict[str, list[dict[str, Any]]]:
     }
 
 
+def gashas_by_code() -> dict[str, dict[str, Any]]:
+    result: dict[str, dict[str, Any]] = {}
+    for row in read_json(GASHA_INDEX).get("gashas") or []:
+        code = str(row.get("code"))
+        if code in result:
+            raise ValueError(f"Gasha code {code} is not unique in gasha_index")
+        result[code] = row
+    return result
+
+
+def exact_gasha_relation(
+    stem: str,
+    gasha_index: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    match = re.fullmatch(r"image_gasha_(banner|logo)_([0-9]+)", stem)
+    if match is None:
+        return []
+    role, code = match.groups()
+    row = gasha_index.get(code)
+    if row is None:
+        return []
+    return [
+        {
+            "gasha_id": str(row["id"]),
+            "gasha_code": code,
+            "logical_id": row["logical_id"],
+            "phase": row["phase"],
+            "asset_role": role,
+            "relation_type": "exact_bundle_filename_gasha_code",
+        }
+    ]
+
+
 def contains_identity(context: str, key: str, boundary: str) -> bool:
     escaped = re.escape(key)
     if boundary == "numeric":
@@ -259,6 +292,7 @@ def main() -> None:
     public_pngs = tracked_png_index()
     identities = masterdata_identities()
     promotions_by_raw_path = character_promotions()
+    gasha_index = gashas_by_code()
     entries = []
 
     for index, path in enumerate(files, start=1):
@@ -349,6 +383,7 @@ def main() -> None:
         family = family_for(path.stem)
         consumer = CONSUMERS.get(family, "unclassified-image-surface")
         relative_raw_path = f"asset/{path.name}"
+        exact_gasha_relations = exact_gasha_relation(path.stem, gasha_index)
         stable_promotions = promotions_by_raw_path.get(relative_raw_path, [])
         images_by_path_id = {
             image_object["path_id"]: image_object
@@ -381,6 +416,8 @@ def main() -> None:
 
         if stable_promotions:
             mapping_state = "stable-promotion"
+        elif exact_gasha_relations:
+            mapping_state = "exact-masterdata-relation"
         elif organizer_candidates:
             mapping_state = "organizer-export-candidate"
         elif masterdata_tokens:
@@ -416,13 +453,24 @@ def main() -> None:
                 ],
                 "organizer_export_candidates": organizer_candidates,
                 "stable_promotions": stable_promotions,
+                **(
+                    {"exact_gasha_relations": exact_gasha_relations}
+                    if exact_gasha_relations
+                    else {}
+                ),
                 "mapping": {
                     "state": mapping_state,
                     "evidence": (
                         "Exact stable promotion is proven by the committed character-image "
                         "promotion registry."
                         if stable_promotions
-                        else "Catalog relation only; no image payload was exported or published."
+                        else (
+                            "Exact gasha relation is proven by the bundle filename code "
+                            "and committed gasha index."
+                            if exact_gasha_relations
+                            else "Catalog relation only; no image payload was exported "
+                            "or published."
+                        )
                     ),
                 },
             }
