@@ -107,7 +107,9 @@ jobs:
         run: npm run verify:tracked-binary-inventory
 
       - name: Verify publication ledger
-        run: npm run verify:publication-ledger
+        run: >-
+          npm run verify:publication-ledger --
+          --base-sha "${{ github.event.pull_request.base.sha || github.event.before }}"
 
       - name: Verify RAW character-image candidate contract
         run: npm run verify:raw-character-candidate

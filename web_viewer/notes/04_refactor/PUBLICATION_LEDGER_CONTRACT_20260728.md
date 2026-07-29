@@ -358,11 +358,12 @@ policies/publication-ledger-versions.v1.json
 schemas/publication-ledger-version-policy-v1.schema.json
 ```
 
-Release schema v1 is frozen to the single historical release above. Release
-schema v2 and annotation schema v1 are `reserved`: their directories and
-version numbers are claimed, but files using them must be rejected until their
-schemas and replay-independent verifiers land together. `reserved` must never
-be interpreted as permission to draft production ledger records.
+Release schema v1 remains frozen to the single historical release above.
+As of 2026-07-29, release schema v2 and annotation schema v1 are `active`
+because their schemas and replay-independent verifier landed together on
+`codex/publication-ledger-v2-contracts`. Active means that a future record may
+enter strict verification; it does not assert that a second production
+transaction or any annotation already exists.
 
 For every frozen release schema version, the verifier compares the sorted
 allowlist with the complete set of release IDs actually present for that
@@ -371,9 +372,40 @@ an omitted historical release, and an allowlisted ID without a release file all
 fail verification. `active` and `reserved` release versions must keep an empty
 allowlist.
 
-V2 should add state-dependent requirements for non-empty published artifacts,
+V2 adds state-dependent requirements for non-empty published artifacts,
 RAW object identity, accepted-browser commit/environment evidence, unmanaged
 previous state, and backup-manifest identity.
+
+Implemented contract:
+
+```text
+schemas/publication-release-v2.schema.json
+schemas/publication-annotation-v1.schema.json
+public/data/publication/annotation_index.json
+scripts/generate-publication-annotation-index.mjs
+```
+
+V2 now requires:
+
+- `previous_state.kind` to distinguish `absent`, `governed-release`, and
+  `unmanaged-existing`;
+- non-empty RAW `source.objects`;
+- non-empty `published` for publish, replace, republish, backfill, and
+  rollback transactions;
+- accepted-browser URL, time, tested commit, browser name/version, operating
+  system, viewer mode, and evidence;
+- backup manifest path, SHA-256, format, and version when rollback was
+  performed.
+
+Annotation v1 has an independent identity, target release, logical-ID scope,
+clarification statements, evidence, and optional earlier-annotation
+supersession. It has no release-state replacement fields. Its generated audit
+index is deterministic and is not an input to stable-state replay.
+
+The CI verifier receives the PR or push base SHA. Existing release and
+annotation JSON files may not be modified, deleted, or renamed; corrections
+must be new annotation records. New records still have to pass schema,
+identity, target, history, commit-ancestry, and replay checks.
 
 Canonical byte identity has four phases:
 
