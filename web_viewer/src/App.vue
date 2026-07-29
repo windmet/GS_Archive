@@ -197,8 +197,10 @@
         :seasonal-campaigns="seasonalCampaignData?.campaigns || []"
         :work-idols="workStoryData?.idols || []"
         :idol-story-count="idolEpisodeData?.meta?.section_count || 0"
+        :external-resource-count="externalStoryNavigationEntries.length"
         @select="openCatalogStory"
         @browse="browseStoryCollection"
+        @open-external-resources="openExternalStoryResources"
         @open-seasonal="openSeasonalCampaign()"
         @open-work="openWorkArchive()"
         @open-idol-story="openIdolStoryArchive()"
@@ -209,6 +211,12 @@
         @update:event-scope="currentEventScope = $event"
         @update:availability="currentStoryAvailability = $event"
         @update:sort="currentStorySort = $event"
+      />
+
+      <ArchiveExternalStoryResources
+        v-if="view === 'external_story_resources'"
+        :entries="externalStoryNavigationEntries"
+        @open-internal="openExternalStoryInternal"
       />
 
       <ArchiveStoryDetail
@@ -227,6 +235,7 @@
         v-if="view === 'story_collection'"
         :collection="currentStoryCollection"
         :external-resources="currentStoryCollectionExternalResources"
+        :initial-chapter-id="currentStoryCollectionChapter?.id || ''"
         @play-chapter="playStoryCollectionChapter"
         @play-episode="playStoryCollectionEpisode"
       />
@@ -341,6 +350,7 @@ import ArchiveUnitGrid from './components/archive/ArchiveUnitGrid.vue'
 import ArchiveEpisodeList from './components/archive/ArchiveEpisodeList.vue'
 import ArchiveStatus from './components/archive/ArchiveStatus.vue'
 import ArchiveStoryCatalog from './components/archive/ArchiveStoryCatalog.vue'
+import ArchiveExternalStoryResources from './components/archive/ArchiveExternalStoryResources.vue'
 import ArchiveStoryDetail from './components/archive/ArchiveStoryDetail.vue'
 import ArchiveStoryCollection from './components/archive/ArchiveStoryCollection.vue'
 import ArchiveSeasonalCampaign from './components/archive/ArchiveSeasonalCampaign.vue'
@@ -383,6 +393,7 @@ import {
   getRawCharacterImageCandidateUrl,
 } from './utils/CharacterImageResolver.js'
 import {
+  buildExternalStoryNavigationEntries,
   externalResourcesForCollection,
   externalResourcesForEvent,
   externalResourcesForStory,
@@ -454,6 +465,8 @@ const currentCardId = ref('')
 const currentGashaId = ref('')
 const currentEventId = ref('')
 const eventParentView = ref('')
+const storyDetailParentView = ref('')
+const storyCollectionParentView = ref('')
 const currentGashaCategory = ref('all')
 const currentCardRarity = ref('all')
 const currentCardAssetState = ref('all')
@@ -784,6 +797,20 @@ const currentStoryCollection = computed(() => storyCollections.value.find(collec
 
 const currentStoryCollectionExternalResources = computed(() =>
   externalResourcesForCollection(externalStoryResourcesData.value, currentStoryCollection.value),
+)
+
+const currentStoryCollectionChapter = computed(() =>
+  currentStoryCollection.value?.chapters?.find(chapter =>
+    chapter.story?.file === currentStoryFile.value,
+  ) || null,
+)
+
+const externalStoryNavigationEntries = computed(() =>
+  buildExternalStoryNavigationEntries(externalStoryResourcesData.value, {
+    events: archiveManifestData.value?.unit_event_relations || [],
+    collections: storyCollections.value,
+    stories: storyCatalog.value,
+  }),
 )
 
 const currentStoryRelated = computed(() => {
@@ -1167,6 +1194,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'home') return 'SideM Archive'
   if (view.value === 'archive_status') return '数据状态'
   if (view.value === 'story_catalog') return '故事目录'
+  if (view.value === 'external_story_resources') return '社区中文剧情'
   if (view.value === 'story_detail') return currentStory.value?.title || '故事详情'
   if (view.value === 'story_collection') return currentStoryCollection.value?.title || '故事章节'
   if (view.value === 'seasonal_campaign') return currentSeasonalCampaign.value?.name || '季节企划'
@@ -1249,7 +1277,10 @@ async function loadIdolEntityTranslations(locale = storyTranslationLocale.value)
 function currentArchiveRoute() {
   const returnsToEvent = view.value === 'player' && returnViewAfterPlayer.value === 'event_detail'
   const returnsToStory = view.value === 'player' && returnViewAfterPlayer.value === 'story_detail'
+  const returnsToStoryCollection = view.value === 'player' && returnViewAfterPlayer.value === 'story_collection'
   const preservesEventContext = view.value === 'event_detail' || returnsToEvent
+  const preservesStoryDetailContext = view.value === 'story_detail' || returnsToStory
+  const preservesStoryCollectionContext = view.value === 'story_collection' || returnsToStoryCollection
   const preservesArchiveUnit = view.value === 'unit_detail' ||
     view.value === 'mobile_archive' ||
     (view.value === 'player' && returnViewAfterPlayer.value === 'unit_detail') ||
@@ -1270,7 +1301,9 @@ function currentArchiveRoute() {
     storyType: currentStoryDomain.value,
     storyMode: currentStoryMode.value,
     storySection: currentStorySection.value,
-    story: (view.value === 'story_detail' || returnsToStory) ? currentStoryFile.value : '',
+    story: (view.value === 'story_detail' || returnsToStory || preservesStoryCollectionContext)
+      ? currentStoryFile.value
+      : '',
     mobileMode: currentMobileMode.value,
     mobileScenario: currentMobileScenarioId.value,
     eventScope: currentEventScope.value,
@@ -1290,7 +1323,11 @@ function currentArchiveRoute() {
     endStep: view.value === 'player' ? currentScenarioEndStep.value : 0,
     voice: view.value === 'player' ? currentPreviewCue.value : '',
     returnView: returnViewAfterPlayer.value,
-    parentView: preservesEventContext ? eventParentView.value : '',
+    parentView: preservesEventContext
+      ? eventParentView.value
+      : (preservesStoryDetailContext
+          ? storyDetailParentView.value
+          : (preservesStoryCollectionContext ? storyCollectionParentView.value : '')),
   }
 }
 
@@ -1399,6 +1436,14 @@ async function applyArchiveRoute(route) {
     currentCardId.value = route.card || ''
     currentEventId.value = route.event || ''
     eventParentView.value = route.parentView || ''
+    storyDetailParentView.value = (
+      route.view === 'story_detail' ||
+      (route.view === 'player' && route.returnView === 'story_detail')
+    ) ? (route.parentView || '') : ''
+    storyCollectionParentView.value = (
+      route.view === 'story_collection' ||
+      (route.view === 'player' && route.returnView === 'story_collection')
+    ) ? (route.parentView || '') : ''
     currentGashaId.value = route.gasha || ''
     currentGashaCategory.value = route.gashaType || 'all'
     currentCardRarity.value = route.rarity || 'all'
@@ -1501,6 +1546,8 @@ function goHome() {
   currentCardId.value = ''
   currentEventId.value = ''
   eventParentView.value = ''
+  storyDetailParentView.value = ''
+  storyCollectionParentView.value = ''
   currentGashaId.value = ''
   currentCardRarity.value = 'all'
   currentCardAssetState.value = 'all'
@@ -1560,15 +1607,21 @@ function goArchiveBack() {
     event_detail: goBackFromEvent,
     archive_status: goHome,
     story_catalog: goHome,
+    external_story_resources: () => commitView('story_catalog'),
     story_detail: () => {
+      const parent = storyDetailParentView.value
       currentStoryFile.value = ''
-      commitView('story_catalog')
+      storyDetailParentView.value = ''
+      commitView(parent === 'external_story_resources' ? 'external_story_resources' : 'story_catalog')
     },
     story_collection: () => {
+      const parent = storyCollectionParentView.value
       currentStoryDomain.value = ''
       currentStorySection.value = ''
+      currentStoryFile.value = ''
+      storyCollectionParentView.value = ''
       currentStoryMode.value = 'portal'
-      commitView('story_catalog')
+      commitView(parent === 'external_story_resources' ? 'external_story_resources' : 'story_catalog')
     },
     seasonal_campaign: () => {
       currentStoryDomain.value = ''
@@ -1648,6 +1701,8 @@ async function openStoryCatalog() {
   currentStoryMode.value = 'portal'
   currentStorySection.value = ''
   currentStoryFile.value = ''
+  storyDetailParentView.value = ''
+  storyCollectionParentView.value = ''
   currentEventScope.value = 'all'
   currentStoryAvailability.value = 'all'
   currentStorySort.value = 'domain'
@@ -1655,6 +1710,35 @@ async function openStoryCatalog() {
   currentMobileScenarioId.value = ''
   storyVisibleLimit.value = 80
   commitView('story_catalog')
+}
+
+function openExternalStoryResources() {
+  filterQuery.value = ''
+  currentStoryDomain.value = ''
+  currentStorySection.value = ''
+  currentStoryFile.value = ''
+  storyDetailParentView.value = ''
+  storyCollectionParentView.value = ''
+  commitView('external_story_resources')
+}
+
+function openExternalStoryInternal(entry) {
+  const target = entry?.target
+  if (target?.kind === 'event') {
+    openEventDetail(target.event, 'external_story_resources')
+    return
+  }
+  if (target?.kind === 'story') {
+    openStoryDetail(target.story, 'external_story_resources')
+    return
+  }
+  if (target?.kind !== 'collection') return
+  currentStoryDomain.value = target.domain
+  currentStorySection.value = target.section
+  currentStoryMode.value = 'portal'
+  currentStoryFile.value = target.storyFile
+  storyCollectionParentView.value = 'external_story_resources'
+  commitView('story_collection')
 }
 
 function setStoryDomain(domain) {
@@ -1680,6 +1764,7 @@ function browseStoryCollection({ domain, section = '' }) {
     currentStorySection.value = section
     currentStoryMode.value = 'portal'
     currentStoryFile.value = ''
+    storyCollectionParentView.value = ''
     commitView('story_collection')
     return
   }
@@ -1874,9 +1959,10 @@ function openCatalogStory(entry) {
   else openStoryDetail(entry)
 }
 
-function openStoryDetail(entry) {
+function openStoryDetail(entry, parentView = '') {
   if (!entry?.file) return
   currentStoryFile.value = entry.file
+  storyDetailParentView.value = parentView
   commitView('story_detail')
 }
 
@@ -2128,6 +2214,7 @@ function goBackFromEvent() {
   currentEventId.value = ''
   eventParentView.value = ''
   if (parent === 'home') commitView('home')
+  else if (parent === 'external_story_resources') commitView('external_story_resources')
   else if (parent === 'card_detail' && currentCard.value) commitView('card_detail')
   else if (parent === 'unit_detail' && currentArchiveUnit.value) commitView('unit_detail')
   else if (parent === 'idol_detail' && currentIdolProfile.value) commitView('idol_detail')

@@ -16,12 +16,12 @@ their forward-looking defect lists must not override this baseline.
 
 | Field | Value |
 | --- | --- |
-| current functional baseline | `master` includes PR #18 merge `7342f5a5bf3c6d3e2ea2eef35cfdfc95c530e44a` |
-| active functional branch | none |
-| active track | none selected; THE KOGADO exact-link expansion is closed |
-| active upstream | not applicable |
+| current functional baseline | `master` includes post-PR #18 handoff merge `0fbcbbc844e98b562a637fb3748680b6ba68d3d0` |
+| active functional branch | `codex/external-story-resource-navigation` |
+| active track | P1-A dedicated exact-only community Chinese story navigation |
+| active upstream | pending first push |
 | active pull request | none |
-| active validation | external registry/UI source gates pass at `5 GS records / 5 exact mappings / 5 unique BVIDs`; production build/browser preview PASS |
+| active validation | dedicated exact-only navigation, route round-trip, 2,407-module build, desktop/390px browser preview PASS |
 | PR #18 merge commit | `7342f5a5bf3c6d3e2ea2eef35cfdfc95c530e44a` |
 | PR #18 final-head gate | run `30478115572`, PASS |
 | PR #18 post-merge gate | run `30478199856`, PASS |
@@ -382,6 +382,12 @@ boundary checks against all ten local parts and are recorded with
 The registry therefore contains five exact GS mappings. External-link
 metadata/UI remains outside the publication ledger and does not constitute
 Story Runtime release acceptance.
+
+The five exact mappings now support a dedicated `external_story_resources`
+route and Story portal gateway on
+`codex/external-story-resource-navigation`. The page retains original-uploader
+attribution, local-only visuals, safe external anchors, and exact internal
+event/chapter navigation. Candidate and partial mappings remain excluded.
 
 ## 11. Superseded current-state claims
 

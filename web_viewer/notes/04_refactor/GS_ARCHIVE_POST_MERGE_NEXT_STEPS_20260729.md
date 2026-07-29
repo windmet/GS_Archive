@@ -15,11 +15,11 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | 项 | 当前值 |
 | --- | --- |
 | merged base branch | `master` |
-| current functional baseline | `master` includes PR #18 merge `7342f5a5bf3c6d3e2ea2eef35cfdfc95c530e44a` |
-| active functional branch | none |
-| active track | none selected；THE 虎牙道 exact-link expansion 已收口 |
-| upstream | not applicable |
-| worktree | clean at functional closeout |
+| current functional baseline | `master` includes post-PR #18 handoff merge `0fbcbbc844e98b562a637fb3748680b6ba68d3d0` |
+| active functional branch | `codex/external-story-resource-navigation` |
+| active track | P1-A exact-only 社区中文剧情独立导航 |
+| upstream | pending first push |
+| worktree | bounded route/UI/verifier/documentation changes |
 | open PR | none |
 | PR #18 | merged as `7342f5a5bf3c6d3e2ea2eef35cfdfc95c530e44a` |
 | PR #18 final-head check | Source-only contract PASS，run `30478115572` |
@@ -451,6 +451,21 @@ parts，登记为 `exact-unit-story + complete-collection`。注册表现为
 在 2,405 modules 通过，最新 `dist` preview 的 exact link、安全 anchor、
 无远程图片、无横向溢出和无 console error 门禁通过。
 
+五条 exact relation 已达到详细契约中的独立导航门槛。当前分支增加：
+
+- stories section 稳定路由 `external_story_resources`；
+- 故事目录 `社区中文剧情 5 条` 入口；
+- exact-only 资源卡片和 original-uploader attribution；
+- 活动详情与 unit-story exact chapter 内部深链；
+- event/collection 返回独立导航的 parent route；
+- 390px、无远程图片、safe anchor 和 console-error 浏览器门禁。
+
+详细审计：
+
+```text
+notes/03_audit/EXTERNAL_GS_RESOURCE_NAVIGATION_20260730.md
+```
+
 建议分支：
 
 ```text
@@ -702,6 +717,7 @@ master a9ea201
   +-- Track P
         completed pilot: PR #6, two exact GS event links + UI
         completed P1-A expansion: PR #18, three exact THE KOGADO unit-story links
+        active P1-A navigation: exact-only community Chinese story view
         completed P1-B: PR #8, 260 USM relation catalog
         completed P1-C: PR #9, 1,271 image bundle relation catalog
         completed P1-D: PR #10, 50 bundles / 52 exact character promotions
@@ -743,11 +759,10 @@ git status -sb
 git rev-parse HEAD
 ```
 
-当前没有 active 功能分支。PR #18 已从 PR #17 后的 `master` 完成三个
-exact unit-story 外链、schema/verifier、collection UI 与审计并合入。
-选择下一条独立轨道前从最新 `master` 新建 `codex/*` 分支；不要重开已关闭
-的 image candidate 自动提升，也不要在未获新优先级决定时执行已后置的
-Runtime 长稳验收。
+当前 active 功能分支为 `codex/external-story-resource-navigation`，基于
+post-PR #18 handoff merge `0fbcbbc`。本批只把现有五条 exact relation
+组织为独立导航和稳定内部深链；不扩入 candidate/partial，不重开已关闭的
+image candidate 自动提升，也不执行已后置的 Runtime 长稳验收。
 
 ```text
 codex/post-merge-next-guidance
