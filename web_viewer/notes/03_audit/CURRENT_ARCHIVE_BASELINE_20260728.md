@@ -18,7 +18,7 @@ their forward-looking defect lists must not override this baseline.
 | --- | --- |
 | current merged baseline | `master` = `origin/master` at `4e416a6731aeaf90b808b7f79a5beb47b5ee20c2` |
 | active governance branch | `codex/post-merge-next-guidance`, created from `4e416a6` |
-| reviewed implementation HEAD | `75f9cb1`; this status-only refresh follows it |
+| reviewed branch HEAD | `777f12f`; this PR status refresh follows it |
 | active upstream | `origin/codex/post-merge-next-guidance` |
 | PR #2 merge commit | `bca7042c1d87b261b98f21b5957a36c2eb99f6b1` |
 | merged PR head | `6a2a14e741d361dc7c09c6c395946a33782af4d9` |
@@ -34,6 +34,8 @@ their forward-looking defect lists must not override this baseline.
 | PR checks | final-head run `30435933524` passed |
 | post-merge checks | `master` push run `30436935539` passed |
 | active-branch production build | PASS at `a68cd60`, 2404 modules, 2m30s; later commits only change verifier/CI/docs |
+| active pull request | PR #4, Ready, unmerged |
+| active PR check | Source-only contract `30450348510` passed at `777f12f` |
 
 PR #2 is merged. Its title and body reflect its real scope: the RAW/masterdata source
 contract, resource audits and candidates, governed stable promotions, live

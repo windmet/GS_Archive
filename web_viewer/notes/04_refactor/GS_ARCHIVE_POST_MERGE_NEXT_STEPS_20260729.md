@@ -17,10 +17,11 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | merged base branch | `master` |
 | active governance branch | `codex/post-merge-next-guidance`, created from `4e416a6` |
 | base HEAD | `4e416a6731aeaf90b808b7f79a5beb47b5ee20c2` |
-| reviewed implementation HEAD | `75f9cb1 fix: verify committed publication identity`；本状态文档提交随后 |
+| reviewed branch HEAD | `777f12f docs: close post-merge governance handoff`；本 PR 状态刷新随后 |
 | upstream | `origin/codex/post-merge-next-guidance`，在状态刷新前与 HEAD 一致 |
 | worktree | clean at status refresh |
-| open PR | none at status refresh |
+| open PR | PR #4 `Establish post-merge publication governance`，Ready，未合并 |
+| PR #4 check | Source-only contract PASS，run `30450348510` at `777f12f` |
 | PR #2 | merged as `bca7042c1d87b261b98f21b5957a36c2eb99f6b1` |
 | PR #3 | merged as `4e416a6731aeaf90b808b7f79a5beb47b5ee20c2` |
 | PR #2 final check | Source-only contract PASS, run `30435933524` |
@@ -411,7 +412,8 @@ master 4e416a6
   |     registry + EOL + v1 freeze
   |     -> source-only/mounted boundary
   |     -> clean checkout PASS at 75f9cb1
-  |     -> documentation / PR / merge
+  |     -> documentation + PR + clean CI complete
+  |     -> explicit merge authorization pending
   |
   +-- future Track G: publication evolution
   |     3+1 / 18
@@ -430,8 +432,9 @@ master 4e416a6
         image relation catalog
 ```
 
-当前 governance branch 先完成 clean CI、文档和合并，不再从未合并 HEAD
-继续分叉。合并后 Track G、R、P 不互相伪装成完成条件，可以使用独立 branch
+当前 governance branch 的 clean CI、文档和 PR 已完成；PR #4 只等待明确合并
+授权，不再从未合并 HEAD 继续分叉。合并后 Track G、R、P 不互相伪装成完成
+条件，可以使用独立 branch
 和 checkout。v2/annotation 激活前禁止新的 ledger 写入；Track R 不依赖 EOL、
 WAV 或熟肉；Track P 中只有 metadata/UI 和只读 catalog 可以并行，WAV
 move/delete 与任何 stable promotion 仍需另行授权或通过 Track G 门槛。
@@ -454,8 +457,8 @@ git rev-parse HEAD
 codex/post-merge-next-guidance
 ```
 
-它必须先完成 source-only/mounted 边界、文档、PR 与合并。之后每条轨道从最新
-`master` 单独建分支。不要继续复用：
+它的 source-only/mounted 边界、文档、PR 与检查均已完成，只等待明确合并授权。
+合并后每条轨道从最新 `master` 单独建分支。不要继续复用：
 
 ```text
 codex/post-merge-story-handoff
@@ -524,8 +527,8 @@ codex/post-merge-next-guidance、PR #2=bca7042、PR #3=4e416a6 均已合并。
 3. web_viewer/notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md
 4. web_viewer/notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 
-先确认 `75f9cb1` 之后的状态文档与 clean-checkout gate，再完成当前 governance
-branch 的 PR/合并。合并后 Track R 优先执行 2–4 小时长稳；Track G 可独立设计
+先确认 PR #4 和 Source-only contract run 30450348510；当前 governance branch
+只等待明确合并授权。合并后 Track R 优先执行 2–4 小时长稳；Track G 可独立设计
 v2/annotation；Track P 可做 GS external-link metadata/UI 或只读资源目录。
 不得新增 ledger release、回填 PNG、删除或移动 WAV。GS 熟肉试点只做
 Growing Stars，并从两个 exact event 开始。
