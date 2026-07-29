@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -83,9 +84,9 @@ export function currentStateBefore(releaseRecords, targetReleaseIndex, logicalId
   return manifest.by_logical_id[logicalId] || null
 }
 
-export function sha256File(filename) {
+export function sha256Bytes(bytes) {
   const hash = createHash('sha256')
-  hash.update(readFileSync(filename))
+  hash.update(bytes)
   return hash.digest('hex')
 }
 
@@ -93,11 +94,63 @@ export function resolvePublishedPath(relativePath) {
   return path.resolve(repositoryRoot, relativePath)
 }
 
+function readIndexBlob(relativePath) {
+  try {
+    return execFileSync('git', ['show', `:${relativePath}`], {
+      cwd: repositoryRoot,
+      encoding: 'buffer',
+      maxBuffer: 64 * 1024 * 1024,
+    })
+  } catch {
+    return null
+  }
+}
+
+function configuredEol(relativePath) {
+  try {
+    const output = execFileSync(
+      'git',
+      ['check-attr', 'eol', '--', relativePath],
+      { cwd: repositoryRoot, encoding: 'utf8' },
+    )
+    return output.trim().split(': ').at(-1)
+  } catch {
+    return null
+  }
+}
+
+function semanticJson(bytes) {
+  return stableJson(JSON.parse(bytes.toString('utf8')))
+}
+
 export function verifyPublishedArtifact(artifact) {
   const filename = resolvePublishedPath(artifact.path)
   if (!existsSync(filename)) return `published file does not exist: ${artifact.path}`
-  const stat = statSync(filename)
-  if (stat.size !== artifact.bytes) return `published size drifted: ${artifact.path}`
-  if (sha256File(filename) !== artifact.sha256) return `published hash drifted: ${artifact.path}`
+
+  const canonicalBytes = readIndexBlob(artifact.path)
+  if (!canonicalBytes) return `published file is not present in the Git index: ${artifact.path}`
+  if (canonicalBytes.length !== artifact.bytes) {
+    return `published canonical size drifted: ${artifact.path}`
+  }
+  if (sha256Bytes(canonicalBytes) !== artifact.sha256) {
+    return `published canonical hash drifted: ${artifact.path}`
+  }
+
+  const runtimeBytes = readFileSync(filename)
+  if (artifact.path.endsWith('.json')) {
+    if (configuredEol(artifact.path) !== 'lf') {
+      return `published JSON must declare eol=lf: ${artifact.path}`
+    }
+    try {
+      if (semanticJson(runtimeBytes) !== semanticJson(canonicalBytes)) {
+        return `published runtime JSON differs semantically from canonical bytes: ${artifact.path}`
+      }
+    } catch (error) {
+      return `published runtime JSON is invalid: ${artifact.path} (${error.message})`
+    }
+  } else if (!runtimeBytes.equals(canonicalBytes)) {
+    return `published runtime bytes differ from canonical bytes: ${artifact.path}`
+  }
+
   return null
 }
