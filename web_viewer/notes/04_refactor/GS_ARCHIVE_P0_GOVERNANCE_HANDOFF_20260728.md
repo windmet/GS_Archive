@@ -21,6 +21,12 @@
 > PR head `6a2a14e741d361dc7c09c6c395946a33782af4d9` 的 83 个提交。最终
 > PR-head run `30435933524` 与合并后 `master` push run `30436935539`
 > 均通过。
+>
+> **2026-07-29 当前 checkout 更新：** PR #3 又以 merge commit
+> `4e416a6731aeaf90b808b7f79a5beb47b5ee20c2` 合并了 PR #2 的状态修正文档。
+> 当前本地 `master`、`origin/master` 与 HEAD 均为 `4e416a6`，worktree clean。
+> 本文保留 P0 的实施记录；真正的下一步入口改为
+> `notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md`。
 应用：`E:\Web_build\SideM_Archived\web_viewer`
 
 这份文档把 RAW + masterdata 迁移、Story Runtime 发布验收、二进制发布治理和
@@ -126,22 +132,23 @@ Get-NetTCPConnection -LocalPort 5174 -State Listen -ErrorAction SilentlyContinue
   Select-Object LocalAddress,LocalPort,OwningProcess
 ```
 
-预期文档提交完成后的分支是：
+合并后基线应先看到：
 
 ```text
-codex/post-merge-story-handoff
+master
+HEAD = origin/master = 4e416a6731aeaf90b808b7f79a5beb47b5ee20c2
 ```
 
-本轮文档分批提交：
+以下是已合并的历史文档提交，不是下一窗口应继续停留的分支：
 
 ```text
 4b6d3f3 docs: establish current archive baseline
 66e1f20 docs: define archive publication governance
-<handoff commit> docs: hand off P0 governance and next archive lanes
+6d72aac docs: hand off P0 governance and next archive lanes
 ```
 
-`<handoff commit>` 应由新窗口启动时用 `git log` 读取，不要在文档里猜测自包含
-commit 的最终哈希。
+PR #2 的 merge identity 是 `bca7042`；PR #3 的当前文档基线是
+`4e416a6`。开始新工作时，从最新 `master` 创建新的有界分支。
 
 如果 worktree 不干净：
 
@@ -412,7 +419,7 @@ tracked 集合、hash/size、logical ID、ignore/force-add 边界、本地路径
 非 grandfathered 文件的 2/5 MiB 单文件和 10/25 MiB owner-release batch 边界。
 本批未修改任何 PNG bytes。
 
-### 5.6 P0-A 发布账本骨架
+### 5.6 P0-A 发布账本与第一笔交易
 
 当前实现批新增：
 
@@ -424,18 +431,23 @@ scripts/generate-publication-manifest.mjs
 scripts/verify-publication-ledger.mjs
 ```
 
-当前 release history 有意保持为空，生成 manifest 为 0 releases / 0 stable
-logical IDs。verifier 已覆盖 Schema、release ID/文件名、相对路径、hash、consumer、
-previous chain、rollback restoration、manifest 确定性和当前 stable 文件身份。
-本批没有 backfill 108 PNG，没有修改 stable 产物，也没有写入猜测性
-`master_table: 0`。
+发布账本骨架、generator 和 verifier 已完成。随后 `1_4_001_00` 成为第一笔
+真实 multi-part transaction：
+
+- release：`2026-07-28-story-1-4-001-00-001`；
+- aggregate + a/b 三个稳定 JSON；
+- candidate parity 完成；
+- publish -> 5174 -> rollback -> exact old hashes -> republish -> 5174 完成；
+- stable manifest 与 release history 一致；
+- 没有 backfill 108 PNG；
+- 没有写入猜测性 `master_table: 0`。
 
 ---
 
-## 6. P0-A 实现：机器可执行治理
+## 6. P0-A 实施记录：机器可执行治理
 
-这一阶段建议留在 PR #2，且分成小提交。不要把熟肉 UI、USM 目录或
-`image_*` 全域审计塞入 PR #2。
+本节是已经通过 PR #2 合并的实施记录，不再是待执行计划。熟肉 UI、USM
+目录和 `image_*` 全域审计仍未混入 PR #2；后续继续使用独立小分支。
 
 ### 6.1 提交 A：当前事实报告器
 
@@ -846,7 +858,7 @@ browser acceptance docs: ...
 - rollback 备份与最终 stable 产物；
 - 文档事实修正与无关 UI 重构。
 
-### 10.2 PR #2（已合并）
+### 10.2 PR #2（已合并，以下为历史收口记录）
 
 PR #2 的真实范围是：
 
@@ -856,9 +868,10 @@ PR #2 的真实范围是：
 - live/chibi/static-stage semantic consumer 迁移；
 - Story/RAW 当前事实和治理文档。
 
-PR #2 不应再保持“仅 Story Runtime handoff 文档”的旧标题。
+PR #2 已使用与真实范围一致的标题
+`Migrate archive resource sources to RAW and masterdata`。
 
-PR 正文应明确：
+PR 正文最终明确了：
 
 - base `ef804fcb2b258979723fcf8ce62f317671b4d701`；
 - 本地 branch 和最新 HEAD；
@@ -870,7 +883,7 @@ PR 正文应明确：
 - USM 183 和 `image_*` 关系仍未解决；
 - 熟肉外链只是下一分支设计，不在本 PR 实现。
 
-转为 Ready 前的门槛：
+转为 Ready 前使用的门槛是：
 
 1. checks 通过；
 2. PR 正文与真实 diff 一致；
@@ -1037,18 +1050,17 @@ commit：
 
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
-worktree、origin/master、已合并 PR #2、5174，并完整阅读：
+worktree、origin/master、已合并 PR #2/PR #3、5174，并完整阅读：
 
-1. web_viewer/notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md
-2. web_viewer/notes/04_refactor/GS_ARCHIVE_P0_GOVERNANCE_HANDOFF_20260728.md
-3. web_viewer/notes/04_refactor/ARCHIVE_MULTIDIMENSIONAL_STATUS_CONTRACT_20260728.md
-4. web_viewer/notes/04_refactor/BINARY_AND_PUBLICATION_POLICY_20260728.md
-5. web_viewer/notes/04_refactor/PUBLICATION_LEDGER_CONTRACT_20260728.md
-6. web_viewer/notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
+1. web_viewer/notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
+2. web_viewer/notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md
+3. web_viewer/notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md
+4. web_viewer/notes/04_refactor/GS_ARCHIVE_P0_GOVERNANCE_HANDOFF_20260728.md
+5. web_viewer/notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 
-先报告已漂移的事实。PR #2 已合并；不得把未执行的 2–4 小时长稳写成
-release-accepted。保持小批验证，不批量替换资源，不修改或删除用户未授权的
-本地数据。
+先报告已漂移的事实。PR #2 与状态修正 PR #3 都已合并；P0 governance
+已经完成。不得把未执行的 2–4 小时长稳写成 release-accepted。保持小批
+验证，不批量替换资源，不修改或删除用户未授权的本地数据。
 ```
 
 ---
@@ -1068,7 +1080,7 @@ release-accepted。保持小批验证，不批量替换资源，不修改或删�
 
 ### P0 总体
 
-只有以下都完成，才能说 P0 governance complete：
+以下项目均已完成，因此 P0 governance 已完成：
 
 - 当前事实报告器；
 - binary inventory/schema/verifier；
@@ -1078,8 +1090,15 @@ release-accepted。保持小批验证，不批量替换资源，不修改或删�
 - 5174 batch acceptance；
 - PR checks 和审阅收口。
 
-只有真实 Edge 音频矩阵、hidden/resume、cross-episode 和 2–4 小时资源曲线
-完成，才能说 Story Runtime release-accepted。
+功能与 Linux source gate 已完成；合并后在 Windows `core.autocrlf=true`
+checkout 发现 publication ledger 的三个 JSON 会因 CRLF 产生 worktree byte-size
+差异。本地 verifier 因此失败，但 Git blob 与 ledger size 一致。这是待单独修复
+的跨平台门禁缺口，不是第一笔 transaction 的语义内容漂移，也不能通过改写
+release hash 来掩盖。
+
+真实 Edge 音频、hidden/resume 和 cross-episode 短时矩阵已经完成。只有
+2–4 小时资源曲线与安静终点也收敛，才能说 Story Runtime
+release-accepted。
 
 熟肉外链、USM 和 `image_*` 是 P0 之后的独立轨道。PR #2 已完成事实治理和
 安全合并；这些轨道继续使用独立小分支。
@@ -1139,5 +1158,5 @@ P0-B 的 initial-route `noAudio` isolation 待复现范围，不能写成全程�
 - GitHub Source-only contract run `30375716445` 通过。
 
 播放器仍可见既有 Pixi Spine update/tint warning；它们不是本次 AudioContext
-缺陷，也未在本提交中扩大处理范围。真实 Edge 音频、hidden/resume、
-cross-episode 和长时曲线仍未验收。
+缺陷，也未在本提交中扩大处理范围。真实 Edge 音频、hidden/resume 和
+cross-episode 的短时矩阵后来已通过；当前仅剩 2–4 小时长稳与最终资源收敛。

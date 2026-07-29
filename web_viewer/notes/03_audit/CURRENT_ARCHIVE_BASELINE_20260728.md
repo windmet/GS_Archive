@@ -2,6 +2,7 @@
 
 Status: current
 Captured: 2026-07-28
+Current checkout refreshed: 2026-07-29
 Review state refreshed: 2026-07-29
 Merge state refreshed: 2026-07-29
 Repository: `E:\Web_build\SideM_Archived`
@@ -15,11 +16,14 @@ their forward-looking defect lists must not override this baseline.
 
 | Field | Value |
 | --- | --- |
-| merged baseline | `origin/master` at `bca7042c1d87b261b98f21b5957a36c2eb99f6b1` |
+| current merged baseline | `master` = `origin/master` at `4e416a6731aeaf90b808b7f79a5beb47b5ee20c2` |
+| current documentation branch | `codex/post-merge-next-guidance`, created from `4e416a6` |
+| PR #2 merge commit | `bca7042c1d87b261b98f21b5957a36c2eb99f6b1` |
 | merged PR head | `6a2a14e741d361dc7c09c6c395946a33782af4d9` |
 | merge parents | `ef804fcb2b258979723fcf8ce62f317671b4d701` + `6a2a14e741d361dc7c09c6c395946a33782af4d9` |
 | merge method | merge commit; 83 PR commits preserved |
-| local development server | `127.0.0.1:5174` listening at capture time |
+| post-merge documentation | PR #3 merged as `4e416a6731aeaf90b808b7f79a5beb47b5ee20c2` |
+| local development server | `127.0.0.1:5174`, PID 27536, listening at refresh time |
 | pull request | PR #2 merged at 2026-07-29 08:47:35 UTC |
 | PR base | `ef804fcb2b258979723fcf8ce62f317671b4d701` |
 | PR commits | 83 |
@@ -32,6 +36,10 @@ PR #2 is merged. Its title and body reflect its real scope: the RAW/masterdata s
 contract, resource audits and candidates, governed stable promotions, live
 semantic consumer migration, publication controls, and the bounded Story
 Runtime audio follow-up.
+
+PR #3 subsequently merged the first post-merge documentation correction.
+Therefore `bca7042` remains the immutable PR #2 merge identity, while
+`4e416a6` is the current repository baseline at this refresh.
 
 `stable-published` in project notes means an artifact occupies the stable path
 in the named checkout. For PR #2 artifacts, the containing commit is now merged
@@ -194,7 +202,9 @@ entity normalization.
 Runtime ownership, `StoryAudioSession`, strict schema, compiler, publisher, and
 the two formal collections are merged through the Story Runtime phase.
 
-Current `noAudio=1` behavior was rechecked at HEAD `d8d819d`:
+The `noAudio=1` startup-isolation defect was fixed in `a393bba`. Fresh
+direct-player and home routes, including an explicit home voice-button click,
+produced no audio error or warning in disabled mode.
 
 ```text
 AudioContext: uninitialized
@@ -203,24 +213,27 @@ audio_manager.disabled: true
 active_sources: 0
 ```
 
-No null-`AudioContext` or audio decode error occurred. The current status is:
+Real-audio acceptance then advanced on `master`:
 
-```text
-scope: StoryViewer noAudio path
-source evidence: source-proven
-browser acceptance: browser-accepted
-product acceptance: not-accepted
-```
+- Chromium covered first gesture, Voice/SE/BGM/Ambient, cross-episode
+  transitions, Menu pause/resume, and debug visibility pause/resume;
+- `421c3b0` fixed the cross-scene native-timer `Illegal invocation`;
+- Microsoft Edge passed first-click playback and operating-system
+  minimize/pause/resume;
+- short manual listening found no audible overlap, stale background audio, or
+  resume failure.
 
-This does not prove real-audio behavior. The following remain release
-acceptance work:
+This is `partial acceptance`, not full release acceptance. The remaining
+release gate is:
 
-- Edge first-user-gesture and autoplay behavior;
-- operating-system-level hidden/resume behavior;
-- real Voice, SE, BGM, and Ambient playback;
-- cross-episode BGM/Ambient ownership;
 - a 2-4 hour mixed interaction curve;
-- quiet-endpoint heap, Spine, stage-child, timer, and active-source convergence.
+- the final 25% resource curve and quiet-endpoint heap, Spine, stage-child,
+  timer, MediaElement, AudioContext, and active-source convergence.
+
+The Codex in-app browser does not expose reliable Page Visibility while the
+whole Codex window is minimized. Its result must not override the Edge PASS.
+Detailed evidence is in
+`notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md`.
 
 A bounded mid-story route using `start_step=417` also produced two Pixi Spine
 update/tint warnings and one unavailable-target warning for `048mom`. Its state
@@ -302,12 +315,13 @@ The first exact pilot mappings are:
 | --- | --- |
 | `GROWING SIGN@L -K.now O.nly-` | event `10008`, story `1_3_10008_01` |
 | `GROWING SELECTION -PROOF OF ONESELF-` | event `30014`, story `1_3_30014_01` |
-| THE KOGADO Episode 0 part 1 | collection `1_1_013the_01` |
-| THE KOGADO Episode 0 part 2 | collection `1_1_013the_02` |
-| THE KOGADO Episode 0 part 3 | collection `1_1_013the_03` |
 
-Exact mapping and UI implementation belong to a later bounded branch. They
-must not be added to the current 63-commit migration PR.
+The three THE KOGADO Episode 0 videos remain candidates for collections
+`1_1_013the_01`, `1_1_013the_02`, and `1_1_013the_03`. Their actual video
+coverage must be inspected before any record is promoted to an exact mapping.
+
+Schema, exact mapping, and UI implementation belong to a new bounded branch.
+They were intentionally excluded from the now-merged PR #2.
 
 ## 11. Superseded current-state claims
 
@@ -396,18 +410,59 @@ All 108 entries remain `grandfathered: true`; no PNG bytes changed. Future
 non-grandfathered entries require an `owner_release` and are checked against
 the policy's per-file and per-batch size boundaries.
 
-### 12.3 Publication-ledger skeleton
+### 12.3 Publication ledger and first transaction
 
 The append-only publication ledger now has:
 
 - a strict release JSON Schema;
-- an intentionally empty `releases/` history;
-- a deterministic empty stable manifest;
+- an immutable release entry
+  `2026-07-28-story-1-4-001-00-001.json`;
+- a deterministic stable manifest;
 - a generator that replays ordered immutable transactions;
 - a source-only verifier for release identity, paths, hashes, consumers,
   previous-state chains, rollback restoration, manifest determinism, and
   current stable-file identity.
 
-No existing PNG was backfilled, no stable output changed, and no speculative
-masterdata relation was added. The next ledger step is the first real
-multi-part RAW story transaction.
+The first real transaction used multi-part story collection `1_4_001_00`.
+Candidate parity, publish, 5174 inspection, rollback to three exact old
+hashes, republish to three exact candidate hashes, and final verification all
+completed. Existing PNG files were not backfilled and no speculative
+masterdata relation was added.
+
+The GitHub Linux source gate passes the ledger verifier. The current Windows
+checkout exposes a post-merge portability defect: `core.autocrlf=true` and
+Git's `text` classification convert the three governed JSON files to CRLF in
+the worktree. Their worktree sizes exceed the canonical Git-blob/ledger sizes
+by exactly one byte per line:
+
+| Artifact | Ledger/Git blob | Windows worktree | Delta |
+| --- | ---: | ---: | ---: |
+| aggregate | 336,694 | 348,594 | 11,900 |
+| episode a | 174,502 | 180,447 | 5,945 |
+| episode b | 162,250 | 168,206 | 5,956 |
+
+Git reports these files clean because line endings normalize at the index
+boundary. The data transaction has not semantically drifted, but local
+`verify:publication-ledger` currently fails its byte-size gate. Fix this in a
+separate cross-platform contract commit; do not rewrite the release hashes to
+match one Windows checkout.
+
+### 12.4 Current post-merge priority
+
+The current execution entry is:
+
+```text
+notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
+```
+
+Priority order:
+
+1. run the remaining 2–4 hour Story Runtime mixed soak on a fixed `master`
+   commit and classify release acceptance;
+2. investigate the 18 local WAV files without deleting, moving, or promoting
+   them, then restore a trustworthy mounted-source verifier result;
+3. make publication-ledger byte identity cross-platform without weakening
+   canonical hash verification;
+4. implement the two-record exact GS translation-link pilot on a dedicated
+   branch;
+5. only then begin the 260-USM and 1,271-`image_*` relation catalogs.
