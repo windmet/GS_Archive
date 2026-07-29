@@ -15,13 +15,15 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | 项 | 当前值 |
 | --- | --- |
 | merged base branch | `master` |
-| merged base HEAD | `2a1e1ec08ae6331b82f7ac9d9719efbb3322e59e` |
-| active track branch | `codex/raw-audio-wav-provenance`, created from `2a1e1ec` |
-| active track | P0-S mounted RAW WAV provenance，branch 内已完成，等待 PR #5 合并 |
-| upstream | `origin/codex/raw-audio-wav-provenance` |
+| merged base HEAD | `9e4fd7d9829979626aae26b4e256e3f97eb19f16` |
+| active track branch | `codex/external-story-links-pilot`, created from `9e4fd7d` |
+| active track | P1-A GS-only 社区熟肉外链试点，metadata/UI 已完成，等待 PR |
+| upstream | 尚未推送 |
 | worktree | clean at status refresh |
-| open PR | PR #5 `Resolve mounted RAW WAV provenance`，Ready |
-| PR #5 check | Source-only contract PASS，run `30453332938` at `ed675f2`；处置状态提交随后 |
+| open PR | none at status refresh |
+| PR #5 | merged as `9e4fd7d9829979626aae26b4e256e3f97eb19f16` |
+| PR #5 final-head check | Source-only contract PASS，run `30458635548` at `4e11510` |
+| PR #5 post-merge check | `master` push Source-only contract PASS，run `30458806049` at `9e4fd7d` |
 | PR #4 | merged as `2a1e1ec08ae6331b82f7ac9d9719efbb3322e59e` |
 | PR #4 final-head check | Source-only contract PASS，run `30450883462` at `9215456` |
 | PR #4 post-merge check | `master` push Source-only contract PASS，run `30452463385` at `2a1e1ec` |
@@ -30,7 +32,7 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | PR #2 final check | Source-only contract PASS, run `30435933524` |
 | PR #3 check | Source-only contract PASS, run `30437147325` |
 | local server | `127.0.0.1:5174`, PID 27536 at refresh time |
-| production build | PASS at `a68cd60`，2404 modules，2m30s；后续提交只改 verifier/Schema/CI/docs |
+| production build | last confirmed PASS at `a68cd60`，2404 modules，2m30s；P1-A 本地 build 于 183 秒有界终止，未记为 PASS |
 
 PR #2 合入了：
 
@@ -333,7 +335,25 @@ Annotation 必须：
 
 ### P1-A：GS-only 社区熟肉外链试点
 
-这条工作现在可以开始，但不应与长稳或 WAV 处置混在同一分支。
+状态：**implemented on branch / pending PR**。本分支没有混入长稳或 WAV
+处置。
+
+已完成：
+
+- `8d3d582`：v1 Schema、两条 exact event registry、离线 verifier 和 CI；
+- `09ded27`：`ArchiveEventDetail` / `ArchiveStoryDetail` UI、精确匹配器和
+  UI source gate；
+- 5174 实测两个活动页分别只命中自己的 BVID 和 uploader；
+- 剧情详情保留内部 Play，同时显示同一 exact 外链；
+- 外链为 canonical Bilibili URL，使用
+  `target="_blank"` 与 `rel="noopener noreferrer external"`；
+- 390px viewport 无横向溢出；
+- 页面没有远程图片请求；
+- 无映射活动不显示外链；
+- `externalStoryResources` 没有加载错误。
+
+完整 Vite build 在 183 秒达到本地有界执行上限并终止，因此本分支不能写成
+build PASS；独立数据/UI/route verifier 均通过。
 
 产品边界：
 
@@ -348,7 +368,7 @@ Annotation 必须：
 - 不把第三方视频写入本地 publication ledger；
 - 不创建 GS masterdata 中不存在的“单卡剧情”分类。
 
-第一提交只做两个 exact event：
+当前试点只做两个 exact event：
 
 | BVID | 本地关系 |
 | --- | --- |
@@ -376,13 +396,13 @@ THE 虎牙道 Episode 0 三条仍是候选：
 codex/external-story-links-pilot
 ```
 
-提交顺序：
+已执行顺序：
 
-1. Schema + registry + 两条 exact event + verifier；
-2. `ArchiveEventDetail` / `ArchiveStoryDetail` UI；
-3. 5174 内部 Play 与外部链接回归；
-4. 三条 Episode 0 覆盖核对；
-5. 只有精确关系才进入内部详情页。
+1. Schema + registry + 两条 exact event + verifier：完成；
+2. `ArchiveEventDetail` / `ArchiveStoryDetail` UI：完成；
+3. 5174 内部 Play 保留与外部链接呈现回归：完成；
+4. 三条 Episode 0 覆盖核对：未开始；
+5. 只有精确关系才进入内部详情页：已由 matcher 和 verifier 固定。
 
 详细契约：
 
@@ -428,9 +448,9 @@ notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 ## 3. 三轨依赖图
 
 ```text
-master 2a1e1ec
+master 9e4fd7d
   |
-  +-- active Track S: codex/raw-audio-wav-provenance
+  +-- completed Track S: PR #5
   |     18 WAV provenance complete
   |     -> generator fixed
   |     -> recoverable quarantine complete
@@ -446,17 +466,20 @@ master 2a1e1ec
   |     -> quiet endpoint
   |     -> PASS / FAIL
   |
-  +-- Track P: portal/resource discovery
-        next: GS external-link pilot
+  +-- active Track P: codex/external-story-links-pilot
+        two exact GS event links + UI complete
+        -> pending PR
         USM relation catalog
         image relation catalog
 ```
 
 PR #4 已通过 merge commit `2a1e1ec` 合入 `master`，post-merge gate
-`30452463385` 通过。Track R 已由用户暂缓；Track S 已在 PR #5 分支完成，
-等待合并。Track G、R、P 不互相伪装成完成条件；v2/annotation 激活前禁止
-新的 ledger 写入。PR #5 合并后，下一个建议 active track 是 P1-A GS-only
-external translation-link pilot。
+`30452463385` 通过。PR #5 已通过 merge commit `9e4fd7d` 合入 `master`，
+post-merge gate `30458806049` 通过。Track R 已由用户暂缓；Track S 已完成；
+Track P 的首个 exact GS pilot 已在独立分支完成，等待 PR。Track G、R、P
+不互相伪装成完成条件；v2/annotation 激活前禁止新的 ledger 写入。P1-A
+合并后的优先建议是单独启动 P0-G3 publication v2/annotation Schema，
+而不是未经覆盖核对就扩充 Episode 0 候选。
 
 ## 4. 每条轨道的 Git 边界
 
@@ -473,11 +496,12 @@ git rev-parse HEAD
 当前 active 开发分支是：
 
 ```text
-codex/raw-audio-wav-provenance
+codex/external-story-links-pilot
 ```
 
-它只承载 18 个 mounted WAV 的 provenance、源缺陷修复和可恢复 quarantine，
-当前不再添加其他功能。PR #4 的治理分支已经合并；不要继续复用：
+它只承载 GS 外链 Schema、两个 exact event、离线校验、详情页 UI 和对应回归；
+不混入 Runtime 长稳、publication v2/annotation、USM/image catalog 或未经核对的
+Episode 0 候选。PR #4、PR #5 的分支已经完成；不要继续复用：
 
 ```text
 codex/post-merge-next-guidance
@@ -539,8 +563,8 @@ git diff --cached --check
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
 worktree、origin/master，并确认当前 active branch 为
-codex/raw-audio-wav-provenance、PR #4=2a1e1ec 已合并且 post-merge run
-30452463385 通过。
+codex/external-story-links-pilot、base master=9e4fd7d，PR #5 post-merge run
+30458806049 通过。
 
 完整阅读：
 1. web_viewer/notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
@@ -548,11 +572,11 @@ codex/raw-audio-wav-provenance、PR #4=2a1e1ec 已合并且 post-merge run
 3. web_viewer/notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md
 4. web_viewer/notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 
-先确认 PR #5 的最新 Source-only contract 为 PASS；P0-S 已完成 provenance、
-generator fix、recoverable quarantine 和 mounted baseline recovery。Story
-Runtime 2–4 小时长稳由用户暂缓，仍保持 NOT EXECUTED。PR #5 合并后优先
-P1-A GS external-link metadata/UI；只做 Growing Stars，并从两个 exact event
-开始。Track G 可独立设计 v2/annotation；不得新增 ledger release 或回填 PNG。
+先确认当前分支的两批提交：8d3d582 为 Schema/registry/verifier，09ded27
+为详情页 UI/匹配器/UI gate。两个 exact event 已在 5174 验证；完整 Vite
+build 于 183 秒有界终止，不能写成 PASS。Story Runtime 2–4 小时长稳由用户
+暂缓，仍保持 NOT EXECUTED。Episode 0 三条仍是 candidate。该 pilot 合并后
+优先单独设计 P0-G3 v2/annotation Schema；不得新增 ledger release 或回填 PNG。
 ```
 
 ## 7. 完成定义

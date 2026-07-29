@@ -1,8 +1,19 @@
 # External GROWING STARS Translation Link Contract
 
-Status: design contract; pilot implementation pending
+Status: pilot implemented on `codex/external-story-links-pilot`; pending PR
 Date: 2026-07-28
 Scope: SideM GROWING STARS only
+
+Implementation refresh: 2026-07-29
+
+- `8d3d582`: Schema, two exact event records, offline verifier, and CI gate.
+- `09ded27`: Event/Story detail UI, exact-resource selectors, and UI source gate.
+- Browser-verified at 5174 for both exact events and one Story detail route.
+- 390px layout has no horizontal overflow; no remote image is requested.
+- The three THE KOGADO Episode 0 entries remain candidates and are not in the
+  registry.
+- The local full Vite build reached its 183-second execution limit, so this
+  branch does not claim a build PASS.
 
 ## 1. Product decision
 
