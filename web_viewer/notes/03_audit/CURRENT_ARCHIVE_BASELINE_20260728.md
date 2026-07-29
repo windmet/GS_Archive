@@ -17,7 +17,9 @@ their forward-looking defect lists must not override this baseline.
 | Field | Value |
 | --- | --- |
 | current merged baseline | `master` = `origin/master` at `4e416a6731aeaf90b808b7f79a5beb47b5ee20c2` |
-| current documentation branch | `codex/post-merge-next-guidance`, created from `4e416a6` |
+| active governance branch | `codex/post-merge-next-guidance`, created from `4e416a6` |
+| reviewed implementation HEAD | `75f9cb1`; this status-only refresh follows it |
+| active upstream | `origin/codex/post-merge-next-guidance` |
 | PR #2 merge commit | `bca7042c1d87b261b98f21b5957a36c2eb99f6b1` |
 | merged PR head | `6a2a14e741d361dc7c09c6c395946a33782af4d9` |
 | merge parents | `ef804fcb2b258979723fcf8ce62f317671b4d701` + `6a2a14e741d361dc7c09c6c395946a33782af4d9` |
@@ -31,6 +33,7 @@ their forward-looking defect lists must not override this baseline.
 | PR diff | `+52,090 / -627` |
 | PR checks | final-head run `30435933524` passed |
 | post-merge checks | `master` push run `30436935539` passed |
+| active-branch production build | PASS at `a68cd60`, 2404 modules, 2m30s; later commits only change verifier/CI/docs |
 
 PR #2 is merged. Its title and body reflect its real scope: the RAW/masterdata source
 contract, resource audits and candidates, governed stable promotions, live
@@ -443,8 +446,8 @@ hashes, republish to three exact candidate hashes, and final verification all
 completed. Existing PNG files were not backfilled and no speculative
 masterdata relation was added.
 
-The GitHub Linux source gate passes the ledger verifier. The current Windows
-checkout exposes a post-merge portability defect: `core.autocrlf=true` and
+The GitHub Linux source gate passes the ledger verifier. The Windows
+checkout exposed a post-merge portability defect: `core.autocrlf=true` and
 Git's `text` classification convert the three governed JSON files to CRLF in
 the worktree. Their worktree sizes exceed the canonical Git-blob/ledger sizes
 by exactly one byte per line:
@@ -456,10 +459,11 @@ by exactly one byte per line:
 | episode b | 162,250 | 168,206 | 5,956 |
 
 Git reports these files clean because line endings normalize at the index
-boundary. The data transaction has not semantically drifted, but local
-`verify:publication-ledger` currently fails its byte-size gate. Fix this in a
-separate cross-platform contract commit; do not rewrite the release hashes to
-match one Windows checkout.
+boundary. The data transaction did not semantically drift. Commit `ae287b3`
+fixed the verifier to use canonical index bytes while retaining runtime JSON
+semantic checks, and added narrow `eol=lf` attributes without rewriting the
+release hashes or globally renormalizing the compiled corpus. Windows and clean
+checkout publication verification now pass.
 
 ### 12.4 Current post-merge dependency tracks
 
@@ -474,9 +478,11 @@ The work is not one serial queue:
 ```text
 Track G / governance consistency
 3+1 / 18 status
--> authoritative-v2 machine registry and reporter
--> cross-platform canonical ledger bytes
--> freeze v1
+-> authoritative-v2 machine registry and reporter complete
+-> source-only/mounted boundary complete in 06e71f7
+-> cross-platform canonical ledger bytes complete
+-> committed HEAD + staged index identity complete in 75f9cb1
+-> freeze v1 complete
 -> compatible v2 release + append-only annotation contracts
 
 Track R / Runtime acceptance
@@ -493,10 +499,12 @@ GS-only external translation-link pilot
 1,271-image-bundle relation catalog
 ```
 
-Write locks:
+Current priority and write locks:
 
+- finish the active governance branch documentation, PR checks, and merge
+  before branching further;
 - no new ledger publication, PNG backfill, or stable binary promotion until
-  Track G fixes canonical bytes and version policy;
+  v2/annotation schemas are active;
 - Track R is independent of Track G and Track P;
 - external-link metadata/UI does not enter the publication ledger and may use
   its own bounded branch;

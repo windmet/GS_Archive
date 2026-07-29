@@ -15,15 +15,18 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | 项 | 当前值 |
 | --- | --- |
 | merged base branch | `master` |
-| documentation branch | `codex/post-merge-next-guidance`, created from `4e416a6` |
+| active governance branch | `codex/post-merge-next-guidance`, created from `4e416a6` |
 | base HEAD | `4e416a6731aeaf90b808b7f79a5beb47b5ee20c2` |
-| upstream | `origin/master`，与 HEAD 一致 |
-| worktree | clean |
+| reviewed implementation HEAD | `75f9cb1 fix: verify committed publication identity`；本状态文档提交随后 |
+| upstream | `origin/codex/post-merge-next-guidance`，在状态刷新前与 HEAD 一致 |
+| worktree | clean at status refresh |
+| open PR | none at status refresh |
 | PR #2 | merged as `bca7042c1d87b261b98f21b5957a36c2eb99f6b1` |
 | PR #3 | merged as `4e416a6731aeaf90b808b7f79a5beb47b5ee20c2` |
 | PR #2 final check | Source-only contract PASS, run `30435933524` |
 | PR #3 check | Source-only contract PASS, run `30437147325` |
 | local server | `127.0.0.1:5174`, PID 27536 at refresh time |
+| production build | PASS at `a68cd60`，2404 modules，2m30s；后续提交只改 verifier/CI/docs |
 
 PR #2 合入了：
 
@@ -60,11 +63,7 @@ total:
 3 collections + 1 standalone / 18 artifacts
 ```
 
-当前没有一个独立机器 registry 能同时表达以上四项及其 ledger ownership。
-publication manifest 只能发现 `1_4_001_00`，扫描所有 v2 JSON 又可能把 fixture
-或未发布候选误计为正式产物。
-
-下一实现提交应增加：
+当前分支已经增加独立机器 registry：
 
 ```text
 schemas/authoritative-story-publications-v1.schema.json
@@ -81,8 +80,8 @@ public/data/authoritative_story_publications.json
 - `ledger-governed` 或 `pre-ledger`；
 - release ID 或 promotion registry evidence。
 
-Baseline reporter 再从这个 registry、publication manifest 和实际 tracked
-artifacts 交叉验证，输出：
+Baseline reporter 从这个 registry、publication manifest 和当前验证模式可用的
+artifact 交叉验证，输出：
 
 ```text
 collection_count
@@ -92,10 +91,23 @@ ledger_governed
 pre_ledger
 ```
 
+实现边界：
+
+- registry Schema、logical/artifact uniqueness、角色形状和 ledger ownership
+  在 source-only 与 mounted 模式都检查；
+- ledger-governed 的 3 个 tracked artifact 在两种模式都必须存在并保持
+  Runtime v2 身份；
+- 15 个 ignored pre-ledger artifact 不属于 source-only checkout，source-only
+  只验证它们的声明人口与 ownership；
+- mounted 模式才核对这 15 个文件的存在、Runtime v2 contract 和 scenario
+  identity；
+- `06e71f7` 已在不包含 ignored compiled corpus 的干净 worktree 中通过
+  authoritative registry、archive baseline source-only 和 publication ledger。
+
 治理写锁：
 
-- authoritative 数量、EOL canonical identity 和版本政策完成前，不新增
-  ledger release；
+- authoritative 数量、EOL canonical identity 和 v1 freeze 已完成，但 v2
+  仍为 `reserved`；v2 Schema 激活前不新增 ledger release；
 - 不做 PNG backfill；
 - 不发布 `003hok` 或第二笔 Story transaction；
 - 不修改已合并 v1 release 的 bytes/hash；
@@ -198,7 +210,7 @@ extra bytes: 413,684,064
 codex/raw-audio-wav-provenance
 ```
 
-### P0-G2：修复 publication ledger 的 Windows 换行门禁
+### P0-G2：publication ledger Windows 换行门禁（已完成）
 
 合并后的 GitHub Linux gate 通过，但当前 Windows checkout：
 
@@ -207,7 +219,7 @@ core.autocrlf=true
 Git attribute: text
 ```
 
-使第一笔 transaction 的三个 JSON 在 worktree 中使用 CRLF。Ledger 记录的是
+曾使第一笔 transaction 的三个 JSON 在 worktree 中使用 CRLF。Ledger 记录的是
 canonical Git blob 的 LF bytes：
 
 | Artifact | Ledger/Git blob | Windows worktree | Delta |
@@ -216,14 +228,8 @@ canonical Git blob 的 LF bytes：
 | `1_4_001_00_a.json` | 174,502 | 180,447 | 5,945 |
 | `1_4_001_00_b.json` | 162,250 | 168,206 | 5,956 |
 
-每个 delta 恰好等于文件行数；Git status 仍为 clean。因此：
-
-- transaction 内容没有语义漂移；
-- Git blob 与 ledger size 一致；
-- 本地 `npm run verify:publication-ledger` 当前 FAIL；
-- 不能把 ledger bytes/hash 改成某台 Windows 机器的 CRLF 值。
-
-修复必须同时覆盖四个阶段：
+每个 delta 恰好等于文件行数；Git status 仍为 clean。`ae287b3` 已完成修复，
+没有修改历史 release bytes/hash：
 
 ```text
 candidate:
@@ -233,26 +239,23 @@ staged pre-commit:
 index blob bytes/hash
 
 committed release:
-HEAD blob bytes/hash
+HEAD blob bytes/hash + index blob bytes/hash
 
 runtime worktree:
 file exists + JSON parse + schema + semantic equality + Vite read
 ```
 
-只使用 `git show HEAD:<path>` 会漏掉尚未提交的新 release；只验证 worktree
-又会被 `core.autocrlf` 影响。Verifier 必须明确选择 HEAD 或 index canonical
-blob，并保留实际 worktree runtime 检查。
+Verifier 对已提交 artifact 同时核对 HEAD blob 与 index blob；对尚未进入 HEAD
+的新 artifact 使用 index blob，并保留 worktree JSON parse 与 semantic
+equality。第一笔 transaction 的三个精确路径和 publication metadata JSON 使用
+`text eol=lf`。没有对
+`public/data/compiled/**/*.json` 全域 renormalize。Windows 当前 checkout 与
+`75f9cb1` 干净 checkout 的 publication verifier 均通过。
 
-同时对第一笔 transaction 的三个精确路径和 publication metadata JSON 使用
-`text eol=lf`。不要对 `public/data/compiled/**/*.json` 全域 renormalize。
+该修复已包含在当前 `codex/post-merge-next-guidance`，不要再创建旧建议分支
+`codex/publication-ledger-windows-eol`。
 
-建议分支：
-
-```text
-codex/publication-ledger-windows-eol
-```
-
-### P0-G3：冻结 v1，设计 v2 与 annotation
+### P0-G3：冻结 v1（已完成），设计 v2 与 annotation（待独立实现）
 
 以下文件保持字节不可变：
 
@@ -404,11 +407,14 @@ notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 ```text
 master 4e416a6
   |
-  +-- Track G: governance consistency
+  +-- active branch codex/post-merge-next-guidance
+  |     registry + EOL + v1 freeze
+  |     -> source-only/mounted boundary
+  |     -> clean checkout PASS at 75f9cb1
+  |     -> documentation / PR / merge
+  |
+  +-- future Track G: publication evolution
   |     3+1 / 18
-  |     -> authoritative registry/reporter
-  |     -> canonical EOL identity
-  |     -> freeze v1
   |     -> v2 + annotation
   |
   +-- Track R: Runtime acceptance
@@ -424,10 +430,11 @@ master 4e416a6
         image relation catalog
 ```
 
-Track G、R、P 不互相伪装成完成条件。可以并行，但必须使用独立 branch 和
-checkout。Track G 完成前禁止新的 ledger 写入；Track R 不依赖 EOL、WAV 或
-熟肉；Track P 中只有 metadata/UI 和只读 catalog 可以并行，WAV move/delete
-与任何 stable promotion 仍需另行授权或通过 Track G 门槛。
+当前 governance branch 先完成 clean CI、文档和合并，不再从未合并 HEAD
+继续分叉。合并后 Track G、R、P 不互相伪装成完成条件，可以使用独立 branch
+和 checkout。v2/annotation 激活前禁止新的 ledger 写入；Track R 不依赖 EOL、
+WAV 或熟肉；Track P 中只有 metadata/UI 和只读 catalog 可以并行，WAV
+move/delete 与任何 stable promotion 仍需另行授权或通过 Track G 门槛。
 
 ## 4. 每条轨道的 Git 边界
 
@@ -441,12 +448,31 @@ git status -sb
 git rev-parse HEAD
 ```
 
-每条轨道从最新 `master` 单独建分支。不要继续复用：
+当前唯一未合并开发分支是：
+
+```text
+codex/post-merge-next-guidance
+```
+
+它必须先完成 source-only/mounted 边界、文档、PR 与合并。之后每条轨道从最新
+`master` 单独建分支。不要继续复用：
 
 ```text
 codex/post-merge-story-handoff
 codex/pr2-post-merge-status
 ```
+
+以下分支均已合入 `master`，不再承载新工作；当前 governance PR 合并后可按
+用户决定删除本地/远端引用：
+
+```text
+codex/story-localization-contract
+codex/post-merge-story-handoff
+codex/pr2-post-merge-status
+```
+
+Codex 管理目录中指向初始提交 `ca3a28e` 的 detached worktree 不是项目开发
+分支，不作为基线，也不要在其他任务仍可能使用时手动删除。
 
 每个提交前：
 
@@ -489,8 +515,8 @@ git diff --cached --check
 
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
-worktree、origin/master、5174，并确认 PR #2=bca7042、PR #3=4e416a6
-均已合并。
+worktree、origin/master、5174，并确认当前 active branch 为
+codex/post-merge-next-guidance、PR #2=bca7042、PR #3=4e416a6 均已合并。
 
 完整阅读：
 1. web_viewer/notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
@@ -498,10 +524,11 @@ worktree、origin/master、5174，并确认 PR #2=bca7042、PR #3=4e416a6
 3. web_viewer/notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md
 4. web_viewer/notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 
-先报告事实漂移，再只选择一条有界轨道。Track G 先修正 3+1/18 和机器
-registry；Track R 可独立执行 2–4 小时长稳；Track P 可做 GS external-link
-metadata/UI 或只读资源目录。不得新增 ledger release、回填 PNG、删除或移动
-WAV。GS 熟肉试点只做 Growing Stars，并从两个 exact event 开始。
+先确认 `75f9cb1` 之后的状态文档与 clean-checkout gate，再完成当前 governance
+branch 的 PR/合并。合并后 Track R 优先执行 2–4 小时长稳；Track G 可独立设计
+v2/annotation；Track P 可做 GS external-link metadata/UI 或只读资源目录。
+不得新增 ledger release、回填 PNG、删除或移动 WAV。GS 熟肉试点只做
+Growing Stars，并从两个 exact event 开始。
 ```
 
 ## 7. 完成定义
@@ -528,6 +555,13 @@ Publication ledger：
 - 没有无界 renormalize 历史 JSON；
 - runtime 仍能读取三个产物；
 - release history 没有被改写。
+
+Authoritative registry：
+
+- mounted 模式验证 3 collections + 1 standalone / 18 artifacts；
+- source-only 模式不依赖 15 个 ignored pre-ledger artifact；
+- ledger-governed 3 artifacts 在两种模式均验证；
+- clean checkout registry、baseline 与 publication ledger 全部通过。
 
 GS 熟肉 pilot：
 

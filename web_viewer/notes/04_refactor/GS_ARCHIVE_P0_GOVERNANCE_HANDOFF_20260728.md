@@ -1104,9 +1104,12 @@ worktree、origin/master、已合并 PR #2/PR #3、5174，并完整阅读：
 
 功能与 Linux source gate 已完成；合并后在 Windows `core.autocrlf=true`
 checkout 发现 publication ledger 的三个 JSON 会因 CRLF 产生 worktree byte-size
-差异。本地 verifier 因此失败，但 Git blob 与 ledger size 一致。这是待单独修复
-的跨平台门禁缺口，不是第一笔 transaction 的语义内容漂移，也不能通过改写
-release hash 来掩盖。
+差异。`ae287b3` 已使用 canonical index blob + runtime semantic equality 修复，
+并只对受治理路径声明 `eol=lf`；历史 release hash 未修改。随后 `06e71f7`
+明确 authoritative registry 的 source-only/mounted 边界，并在缺少 15 个
+ignored pre-ledger artifact 的干净 checkout 中通过 registry、baseline 和
+publication ledger。`75f9cb1` 又把已提交 HEAD blob 与 staged index blob
+身份拆开核对；同一干净 checkout 三项验证继续通过。
 
 真实 Edge 音频、hidden/resume 和 cross-episode 短时矩阵已经完成。只有
 2–4 小时资源曲线与安静终点也收敛，才能说 Story Runtime
