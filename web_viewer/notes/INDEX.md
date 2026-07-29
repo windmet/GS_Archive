@@ -20,6 +20,9 @@ The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_889
 
 ## Current entry points
 
+- `notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md` - current
+  post-merge execution order: Runtime long soak, local RAW WAV drift, GS-only
+  external translation pilot, then USM and image relation catalogs.
 - `notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md` - authoritative current
   checkout, RAW/masterdata identities, metric definitions, scoped browser
   status, unresolved domains, and superseded claims.

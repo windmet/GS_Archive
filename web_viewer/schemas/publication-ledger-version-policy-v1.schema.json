@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gs-archive.local/schemas/publication-ledger-version-policy-v1.schema.json",
+  "title": "GS Archive Publication Ledger Version Policy v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "release_versions",
+    "annotation_versions"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "release_versions": {
+      "type": "object",
+      "required": [
+        "1",
+        "2"
+      ],
+      "properties": {
+        "1": {
+          "$ref": "#/$defs/releaseVersion"
+        },
+        "2": {
+          "$ref": "#/$defs/releaseVersion"
+        }
+      },
+      "additionalProperties": false
+    },
+    "annotation_versions": {
+      "type": "object",
+      "required": [
+        "1"
+      ],
+      "properties": {
+        "1": {
+          "$ref": "#/$defs/annotationVersion"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "releaseId": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9][a-z0-9-]+-[0-9]{3}$"
+    },
+    "releaseVersion": {
+      "type": "object",
+      "required": [
+        "status",
+        "allowed_release_ids"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "active",
+            "frozen",
+            "reserved"
+          ]
+        },
+        "allowed_release_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/releaseId"
+          },
+          "uniqueItems": true
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "active",
+                  "reserved"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "allowed_release_ids": {
+                "type": "array",
+                "maxItems": 0
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "annotationVersion": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "active",
+            "frozen",
+            "reserved"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

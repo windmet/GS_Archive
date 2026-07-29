@@ -2,6 +2,7 @@
 
 Status: current
 Captured: 2026-07-28
+Current checkout refreshed: 2026-07-29
 Review state refreshed: 2026-07-29
 Merge state refreshed: 2026-07-29
 Repository: `E:\Web_build\SideM_Archived`
@@ -15,11 +16,16 @@ their forward-looking defect lists must not override this baseline.
 
 | Field | Value |
 | --- | --- |
-| merged baseline | `origin/master` at `bca7042c1d87b261b98f21b5957a36c2eb99f6b1` |
+| current merged baseline | `master` = `origin/master` at `4e416a6731aeaf90b808b7f79a5beb47b5ee20c2` |
+| active governance branch | `codex/post-merge-next-guidance`, created from `4e416a6` |
+| reviewed branch HEAD | `777f12f`; this PR status refresh follows it |
+| active upstream | `origin/codex/post-merge-next-guidance` |
+| PR #2 merge commit | `bca7042c1d87b261b98f21b5957a36c2eb99f6b1` |
 | merged PR head | `6a2a14e741d361dc7c09c6c395946a33782af4d9` |
 | merge parents | `ef804fcb2b258979723fcf8ce62f317671b4d701` + `6a2a14e741d361dc7c09c6c395946a33782af4d9` |
 | merge method | merge commit; 83 PR commits preserved |
-| local development server | `127.0.0.1:5174` listening at capture time |
+| post-merge documentation | PR #3 merged as `4e416a6731aeaf90b808b7f79a5beb47b5ee20c2` |
+| local development server | `127.0.0.1:5174`, PID 27536, listening at refresh time |
 | pull request | PR #2 merged at 2026-07-29 08:47:35 UTC |
 | PR base | `ef804fcb2b258979723fcf8ce62f317671b4d701` |
 | PR commits | 83 |
@@ -27,11 +33,18 @@ their forward-looking defect lists must not override this baseline.
 | PR diff | `+52,090 / -627` |
 | PR checks | final-head run `30435933524` passed |
 | post-merge checks | `master` push run `30436935539` passed |
+| active-branch production build | PASS at `a68cd60`, 2404 modules, 2m30s; later commits only change verifier/Schema/CI/docs |
+| active pull request | PR #4, Ready, unmerged |
+| active PR check | Source-only contract `30450450910` passed at `2167e2d`; implementation `851afb6` passed local and clean-checkout source-only gates, with a new PR run pending at refresh time |
 
 PR #2 is merged. Its title and body reflect its real scope: the RAW/masterdata source
 contract, resource audits and candidates, governed stable promotions, live
 semantic consumer migration, publication controls, and the bounded Story
 Runtime audio follow-up.
+
+PR #3 subsequently merged the first post-merge documentation correction.
+Therefore `bca7042` remains the immutable PR #2 merge identity, while
+`4e416a6` is the current repository baseline at this refresh.
 
 `stable-published` in project notes means an artifact occupies the stable path
 in the named checkout. For PR #2 artifacts, the containing commit is now merged
@@ -152,14 +165,26 @@ as separate stories.
 
 ### 5.3 Authoritative runtime-v2 publication
 
-The strict runtime-v2 surface is:
+The published authoritative runtime-v2 surface is:
 
-- two formal authoritative collections:
+<!-- authoritative-v2-summary collections=3 standalone=1 artifacts=18 -->
+
+- three authoritative collections:
+  - `1_4_001_00`;
   - `1_4_001_01`;
   - `5_01_101_22`;
 - one standalone RAW-published v2 scene:
   - `1_x_001tom_2_1_2_001_12`;
-- 15 JSON artifacts when aggregate and episode files are counted.
+- 18 JSON artifacts when aggregate and episode files are counted.
+
+Publication ownership is not the same as authoritative publication:
+
+| Logical ID | Artifacts | Publication ownership |
+| --- | ---: | --- |
+| collection `1_4_001_00` | 3 | ledger-governed |
+| collection `1_4_001_01` | 11 | pre-ledger authoritative |
+| collection `5_01_101_22` | 3 | pre-ledger authoritative |
+| standalone `1_x_001tom_2_1_2_001_12` | 1 | pre-ledger RAW promotion |
 
 Correct status:
 
@@ -168,7 +193,8 @@ RAW story discovery and public matching:
 source-proven, scope 3,398 / 3,398 groups
 
 strict authoritative-v2:
-2 formal collections + 1 standalone RAW-published scene
+3 published collections + 1 standalone RAW-published scene
+18 v2 JSON artifacts
 
 full authoritative-v2 promotion:
 deferred
@@ -191,10 +217,13 @@ entity normalization.
 
 ## 7. Runtime and browser status
 
-Runtime ownership, `StoryAudioSession`, strict schema, compiler, publisher, and
-the two formal collections are merged through the Story Runtime phase.
+Runtime ownership, `StoryAudioSession`, strict schema, compiler, publisher,
+three authoritative collections, and one standalone v2 scene are merged.
+Only `1_4_001_00` is currently represented in the publication ledger.
 
-Current `noAudio=1` behavior was rechecked at HEAD `d8d819d`:
+The `noAudio=1` startup-isolation defect was fixed in `a393bba`. Fresh
+direct-player and home routes, including an explicit home voice-button click,
+produced no audio error or warning in disabled mode.
 
 ```text
 AudioContext: uninitialized
@@ -203,24 +232,27 @@ audio_manager.disabled: true
 active_sources: 0
 ```
 
-No null-`AudioContext` or audio decode error occurred. The current status is:
+Real-audio acceptance then advanced on `master`:
 
-```text
-scope: StoryViewer noAudio path
-source evidence: source-proven
-browser acceptance: browser-accepted
-product acceptance: not-accepted
-```
+- Chromium covered first gesture, Voice/SE/BGM/Ambient, cross-episode
+  transitions, Menu pause/resume, and debug visibility pause/resume;
+- `421c3b0` fixed the cross-scene native-timer `Illegal invocation`;
+- Microsoft Edge passed first-click playback and operating-system
+  minimize/pause/resume;
+- short manual listening found no audible overlap, stale background audio, or
+  resume failure.
 
-This does not prove real-audio behavior. The following remain release
-acceptance work:
+This is `partial acceptance`, not full release acceptance. The remaining
+release gate is:
 
-- Edge first-user-gesture and autoplay behavior;
-- operating-system-level hidden/resume behavior;
-- real Voice, SE, BGM, and Ambient playback;
-- cross-episode BGM/Ambient ownership;
 - a 2-4 hour mixed interaction curve;
-- quiet-endpoint heap, Spine, stage-child, timer, and active-source convergence.
+- the final 25% resource curve and quiet-endpoint heap, Spine, stage-child,
+  timer, MediaElement, AudioContext, and active-source convergence.
+
+The Codex in-app browser does not expose reliable Page Visibility while the
+whole Codex window is minimized. Its result must not override the Edge PASS.
+Detailed evidence is in
+`notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md`.
 
 A bounded mid-story route using `start_step=417` also produced two Pixi Spine
 update/tint warnings and one unavailable-target warning for `048mom`. Its state
@@ -302,12 +334,13 @@ The first exact pilot mappings are:
 | --- | --- |
 | `GROWING SIGN@L -K.now O.nly-` | event `10008`, story `1_3_10008_01` |
 | `GROWING SELECTION -PROOF OF ONESELF-` | event `30014`, story `1_3_30014_01` |
-| THE KOGADO Episode 0 part 1 | collection `1_1_013the_01` |
-| THE KOGADO Episode 0 part 2 | collection `1_1_013the_02` |
-| THE KOGADO Episode 0 part 3 | collection `1_1_013the_03` |
 
-Exact mapping and UI implementation belong to a later bounded branch. They
-must not be added to the current 63-commit migration PR.
+The three THE KOGADO Episode 0 videos remain candidates for collections
+`1_1_013the_01`, `1_1_013the_02`, and `1_1_013the_03`. Their actual video
+coverage must be inspected before any record is promoted to an exact mapping.
+
+Schema, exact mapping, and UI implementation belong to a new bounded branch.
+They were intentionally excluded from the now-merged PR #2.
 
 ## 11. Superseded current-state claims
 
@@ -396,18 +429,87 @@ All 108 entries remain `grandfathered: true`; no PNG bytes changed. Future
 non-grandfathered entries require an `owner_release` and are checked against
 the policy's per-file and per-batch size boundaries.
 
-### 12.3 Publication-ledger skeleton
+### 12.3 Publication ledger and first transaction
 
 The append-only publication ledger now has:
 
 - a strict release JSON Schema;
-- an intentionally empty `releases/` history;
-- a deterministic empty stable manifest;
+- an immutable release entry
+  `2026-07-28-story-1-4-001-00-001.json`;
+- a deterministic stable manifest;
 - a generator that replays ordered immutable transactions;
 - a source-only verifier for release identity, paths, hashes, consumers,
   previous-state chains, rollback restoration, manifest determinism, and
   current stable-file identity.
 
-No existing PNG was backfilled, no stable output changed, and no speculative
-masterdata relation was added. The next ledger step is the first real
-multi-part RAW story transaction.
+The first real transaction used multi-part story collection `1_4_001_00`.
+Candidate parity, publish, 5174 inspection, rollback to three exact old
+hashes, republish to three exact candidate hashes, and final verification all
+completed. Existing PNG files were not backfilled and no speculative
+masterdata relation was added.
+
+The GitHub Linux source gate passes the ledger verifier. The Windows
+checkout exposed a post-merge portability defect: `core.autocrlf=true` and
+Git's `text` classification convert the three governed JSON files to CRLF in
+the worktree. Their worktree sizes exceed the canonical Git-blob/ledger sizes
+by exactly one byte per line:
+
+| Artifact | Ledger/Git blob | Windows worktree | Delta |
+| --- | ---: | ---: | ---: |
+| aggregate | 336,694 | 348,594 | 11,900 |
+| episode a | 174,502 | 180,447 | 5,945 |
+| episode b | 162,250 | 168,206 | 5,956 |
+
+Git reports these files clean because line endings normalize at the index
+boundary. The data transaction did not semantically drift. Commit `ae287b3`
+fixed the verifier to use canonical index bytes while retaining runtime JSON
+semantic checks, and added narrow `eol=lf` attributes without rewriting the
+release hashes or globally renormalizing the compiled corpus. Windows and clean
+checkout publication verification now pass.
+
+### 12.4 Current post-merge dependency tracks
+
+The current execution entry is:
+
+```text
+notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
+```
+
+The work is not one serial queue:
+
+```text
+Track G / governance consistency
+3+1 / 18 status
+-> authoritative-v2 machine registry and reporter complete
+-> source-only/mounted boundary complete in 06e71f7
+-> cross-platform canonical ledger bytes complete
+-> committed HEAD + staged index identity complete in 75f9cb1
+-> freeze v1 complete
+-> compatible v2 release + append-only annotation contracts
+
+Track R / Runtime acceptance
+fixed Runtime commit
+-> 2–4 hour mixed soak
+-> final 25% resource curve
+-> quiet endpoint
+-> PASS or FAIL
+
+Track P / portal and resource discovery
+18 WAV read-only provenance
+GS-only external translation-link pilot
+260-USM relation catalog
+1,271-image-bundle relation catalog
+```
+
+Current priority and write locks:
+
+- finish the active governance branch documentation, PR checks, and merge
+  before branching further;
+- no new ledger publication, PNG backfill, or stable binary promotion until
+  v2/annotation schemas are active;
+- Track R is independent of Track G and Track P;
+- external-link metadata/UI does not enter the publication ledger and may use
+  its own bounded branch;
+- WAV work remains read-only until disposition receives separate approval;
+- USM and image work remains catalog-only until a bounded promotion is
+  separately authorized.

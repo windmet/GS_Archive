@@ -329,3 +329,61 @@ The publication ledger does not contain:
 
 External GS translation links use
 `EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md`.
+
+## 13. Post-merge version and portability evolution
+
+The first merged v1 release is immutable:
+
+```text
+2026-07-28-story-1-4-001-00-001
+```
+
+Its v1 model cannot fully describe the unmanaged stable files that existed
+before the ledger. This is a historical schema limitation, not permission to
+rewrite the release.
+
+Future evolution must:
+
+1. freeze v1 with an explicit historical release-ID allowlist or cutoff;
+2. reject newly authored v1 releases;
+3. introduce a compatible v2 release schema;
+4. introduce append-only annotations for historical semantic clarification;
+5. keep annotations out of stable-state replay;
+6. validate release and annotation files with independent schemas.
+
+The machine-enforced transition state is:
+
+```text
+policies/publication-ledger-versions.v1.json
+schemas/publication-ledger-version-policy-v1.schema.json
+```
+
+Release schema v1 is frozen to the single historical release above. Release
+schema v2 and annotation schema v1 are `reserved`: their directories and
+version numbers are claimed, but files using them must be rejected until their
+schemas and replay-independent verifiers land together. `reserved` must never
+be interpreted as permission to draft production ledger records.
+
+For every frozen release schema version, the verifier compares the sorted
+allowlist with the complete set of release IDs actually present for that
+version. The sets must match exactly in both directions: a new unlisted release,
+an omitted historical release, and an allowlisted ID without a release file all
+fail verification. `active` and `reserved` release versions must keep an empty
+allowlist.
+
+V2 should add state-dependent requirements for non-empty published artifacts,
+RAW object identity, accepted-browser commit/environment evidence, unmanaged
+previous state, and backup-manifest identity.
+
+Canonical byte identity has four phases:
+
+| Phase | Required identity |
+| --- | --- |
+| candidate | deterministic LF output and semantic validation |
+| staged | Git index blob bytes and SHA-256 |
+| committed | HEAD blob bytes and SHA-256 |
+| runtime | worktree existence, parse/schema, semantic equality, and Vite read |
+
+Ledger-governed text paths require exact `eol=lf` coverage. Do not globally
+renormalize the compiled corpus. The verifier must not change a release hash
+to match a machine-specific CRLF checkout.

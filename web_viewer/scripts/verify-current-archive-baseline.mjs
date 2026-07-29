@@ -1,6 +1,9 @@
 import { execFileSync } from 'node:child_process'
 import { readFile } from 'node:fs/promises'
+import Ajv2020 from 'ajv/dist/2020.js'
 import {
+  authoritativeStoryRegistryPath,
+  authoritativeStoryRegistrySchemaPath,
   collectArchiveBaseline,
   findAbsolutePathStrings,
   projectRoot,
@@ -12,6 +15,20 @@ const sourceOnly = process.argv.includes('--source-only') ||
   process.env.SIDEM_ARCHIVE_BASELINE_SOURCE_ONLY === '1'
 const failures = []
 const report = JSON.parse(await readFile(reportPath, 'utf8'))
+const [authoritativeRegistry, authoritativeRegistrySchema] = await Promise.all([
+  readFile(authoritativeStoryRegistryPath, 'utf8').then(JSON.parse),
+  readFile(authoritativeStoryRegistrySchemaPath, 'utf8').then(JSON.parse),
+])
+const validateAuthoritativeRegistry = new Ajv2020({ allErrors: true, strict: true })
+  .compile(authoritativeRegistrySchema)
+
+if (!validateAuthoritativeRegistry(authoritativeRegistry)) {
+  failures.push(
+    ...validateAuthoritativeRegistry.errors.map(error =>
+      `authoritative Story registry ${error.instancePath || '/'} ${error.message}`,
+    ),
+  )
+}
 
 if (report.schema_version !== 1) failures.push('schema_version must be 1')
 if (!/^[0-9a-f]{40}$/.test(report.repository?.commit || '')) {
@@ -51,6 +68,30 @@ if (
   failures.push('story RAW population differs from the recorded public-match population')
 }
 if (
+  report.story?.authoritative_v2?.collection_count !== 3 ||
+  report.story?.authoritative_v2?.standalone_count !== 1 ||
+  report.story?.authoritative_v2?.artifact_count !== 18
+) {
+  failures.push('authoritative Story v2 population must be 3 collections + 1 standalone / 18 artifacts')
+}
+
+const authoritativeSummary = report.story?.authoritative_v2
+const authoritativeSummaryMarker =
+  `<!-- authoritative-v2-summary collections=${authoritativeSummary?.collection_count} ` +
+  `standalone=${authoritativeSummary?.standalone_count} ` +
+  `artifacts=${authoritativeSummary?.artifact_count} -->`
+const authoritativeSummaryDocuments = [
+  '../README.md',
+  'notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md',
+  'notes/04_refactor/GS_ARCHIVE_P0_GOVERNANCE_HANDOFF_20260728.md',
+]
+for (const relativePath of authoritativeSummaryDocuments) {
+  const document = await readFile(new URL(relativePath, new URL('../', import.meta.url)), 'utf8')
+  if (!document.includes(authoritativeSummaryMarker)) {
+    failures.push(`${relativePath} authoritative Story v2 summary marker drifted`)
+  }
+}
+if (
   report.cards?.unique_resource_ids !== report.cards?.raw_matched ||
   report.cards?.unique_resource_ids !== report.cards?.portal_normalized_entities
 ) {
@@ -83,6 +124,13 @@ for (const section of alwaysCheckedSections) {
   if (stableJson(report[section]) !== stableJson(actual[section])) {
     failures.push(`${section} drifted`)
   }
+}
+
+if (
+  stableJson(report.story?.authoritative_v2) !==
+  stableJson(actual.story?.authoritative_v2)
+) {
+  failures.push('story.authoritative_v2 drifted')
 }
 
 for (const section of ['story', 'cards', 'movies']) {
