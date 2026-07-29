@@ -8,7 +8,36 @@ Latest story/portal localization contract: `notes/04_refactor/STORY_LOCALIZATION
 
 Latest archive/story navigation handoff: `notes/04_refactor/ARCHIVE_STORY_NEXT_WINDOW_HANDOFF_20260716.md`
 
-Latest Story Runtime release closure guide: `notes/04_refactor/STORY_POST_88969A1_RELEASE_GUIDE_20260723.md`
+Latest Story Runtime post-merge handoff: `notes/04_refactor/STORY_POST_MERGE_HANDOFF_20260723.md`
+
+Latest RAW + master-data migration log: `notes/05_exploration/RAW_MASTERDATA_MIGRATION_20260726.md`
+
+Full RAW + master-data resource audit: `notes/03_audit/RAW_MASTERDATA_FULL_AUDIT_20260726.md`
+
+RAW + masterdata v1 next-window handoff: `notes/04_refactor/RAW_MASTERDATA_V1_NEXT_WINDOW_HANDOFF_20260727.md`
+
+The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_88969A1_RELEASE_GUIDE_20260723.md` for historical evidence.
+
+## Current entry points
+
+- `notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md` - authoritative current
+  checkout, RAW/masterdata identities, metric definitions, scoped browser
+  status, unresolved domains, and superseded claims.
+- `notes/04_refactor/GS_ARCHIVE_P0_GOVERNANCE_HANDOFF_20260728.md` - current P0
+  governance completion and next-window execution order.
+- `notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md` - current
+  real-audio matrix, repaired transition evidence, Edge behavior, and the
+  remaining 2–4 hour release-acceptance boundary.
+- `notes/04_refactor/STORY_POST_MERGE_HANDOFF_20260723.md` - Story Runtime
+  execution history and long-soak procedure.
+- `notes/04_refactor/ARCHIVE_MULTIDIMENSIONAL_STATUS_CONTRACT_20260728.md` -
+  resource and feature status dimensions.
+- `notes/04_refactor/BINARY_AND_PUBLICATION_POLICY_20260728.md` - tracked binary
+  exceptions and promotion boundary.
+- `notes/04_refactor/PUBLICATION_LEDGER_CONTRACT_20260728.md` - append-only
+  release ledger and generated stable manifest.
+- `notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md` -
+  GROWING STARS-only Bilibili translation-link mapping.
 
 ## Layout
 
@@ -35,6 +64,7 @@ Latest Story Runtime release closure guide: `notes/04_refactor/STORY_POST_88969A
   - `WEBP_R2_DEPLOYMENT_LESSONS.md`
 - `03_audit/`
   - `1_4_001_01_ICON_SILHOUETTE_BG_AUDIT_20260708.md`
+  - `RAW_MASTERDATA_FULL_AUDIT_20260726.md`
   - `SPINE_COORDINATE_ANIMATION_AUDIT.md`
   - `SPLIT_AUDIT_REPORT.md`
   - `TEXT_ASSET_AUDIT.md`
@@ -66,6 +96,7 @@ If a new note is lip or mouth related, put it in `01_lipsync/` first. If it is u
 - `03_audit/WORK_STORY_MASTERDATA_AUDIT_20260715.md` - work scene lines and short stories, category relations, compiled coverage, and page guidance.
 - `03_audit/IDOL_EPISODE_MOBILE_MASTERDATA_AUDIT_20260716.md` - idol episode hierarchy, personal/unit Mobile entities, unlock-condition reversal, random Talk metadata, local gaps, and page guidance.
 - `03_audit/MAIN_PROLOGUE_EPISODE_BOUNDARY_AUDIT_20260715.md` - raw-vs-compiled audit for `1_4_001_00`, episode range isolation, repeated phone-call diagnosis, and voice-prefix correction.
+- `03_audit/RAW_MASTERDATA_FULL_AUDIT_20260726.md` - full RAW integrity, master-data authority boundary, story/card/background/audio coverage, browser gates, unresolved domains, and promotion contract.
 - `02_debug/SPINE_EYE_BLINK_ATTACHMENT_FIX_20260715.md` - missing-eye root cause, paired `eyeclosed` detection, interrupted-transition recovery, and regression command.
 - `04_refactor/MASTERDATA_UI_RECONSTRUCTION_GUIDANCE_20260710.md` - staged plan for masterdata-backed routing, archive UI reconstruction, interaction pages, and data-quality gates.
 - `04_refactor/SEKAI_VIEWER_DIRECTION_GUIDANCE_20260713.md` - selected方案 A, Sekai Viewer comparison, licensing boundary, and archive-first implementation order.
@@ -82,4 +113,6 @@ If a new note is lip or mouth related, put it in `01_lipsync/` first. If it is u
 - `04_refactor/STORY_VIEWER_RUNTIME_REFACTOR_DESIGN_20260718.md` - complete no-code implementation design for the story runtime refactor, including Scenario IR v2, deterministic clock, performance lifecycle, snapshots, adapters, Auto/Skip/Backlog, resource loading, migration phases, Git boundaries, and acceptance tests.
 - `04_refactor/STORY_LOCALIZATION_CONTRACT_20260719.md` - implementation-ready localization contract for deterministic text identity, source hashing, translation overlays, speaker and choice identity, unified text resolution, UI/content language separation, conservative migration, portal entities, Git phases, and acceptance tests.
 - `04_refactor/STORY_POST_88969A1_RELEASE_GUIDE_20260723.md` - fact-check of the post-88969a1 assessment, second strict collection status, feature-freeze boundary, CI/release acceptance sequence, and PR merge gates.
+- `04_refactor/STORY_POST_MERGE_HANDOFF_20260723.md` - primary next-window entry after PR #1 merge: exact master baseline, completed scope, missing release evidence, IDM/audio boundary, execution order, and reference index.
+- `04_refactor/RAW_MASTERDATA_V1_NEXT_WINDOW_HANDOFF_20260727.md` - fact-checked `0ba566f` RAW/masterdata v1 baseline, corrections to the web guidance, source and binary boundaries, phased execution order, exact verification gates, and the new-window checklist.
 - `04_refactor/STAGE_CHIBI_NEXT_WINDOW_HANDOFF_20260716.md` - current Chibi stage baseline, supported and approximate effects, missing Particle/Suspensionlight/Penlight work, validation rules, and next-window execution order.

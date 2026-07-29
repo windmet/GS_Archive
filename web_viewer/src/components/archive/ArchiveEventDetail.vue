@@ -95,9 +95,20 @@
     <section class="detail-section" aria-labelledby="event-cast-title">
       <div class="section-heading"><h3 id="event-cast-title">出演与归属</h3></div>
       <div class="cast-layout">
-        <div class="idol-list">
+        <div class="idol-list" :class="{ 'has-story-visuals': hasStoryVisuals }">
           <button v-for="idol in idols" :key="idol.idol_code" @click="emit('open-idol', idol)">
-            <img :src="`/assets/idols/icons/image_chara_icon_${idol.idol_code}.png`" :alt="idol.display_name || idol.idol_code" />
+            <img
+              v-if="storyVisualByIdol[idol.idol_code]"
+              class="event-story-visual"
+              :src="storyVisualByIdol[idol.idol_code]"
+              :alt="idol.display_name || idol.idol_code"
+            />
+            <img
+              v-else
+              class="idol-icon"
+              :src="`/assets/idols/icons/image_chara_icon_${idol.idol_code}.png`"
+              :alt="idol.display_name || idol.idol_code"
+            />
             <span>{{ idol.display_name || idol.idol_code }}</span>
           </button>
         </div>
@@ -147,10 +158,20 @@ const props = defineProps({
   cards: { type: Array, default: () => [] },
   idols: { type: Array, default: () => [] },
   units: { type: Array, default: () => [] },
+  idolVisualUrl: { type: Function, default: () => '' },
 })
 const emit = defineEmits(['play', 'play-episode', 'open-card', 'open-idol', 'open-unit'])
 
 const eventLogoUrl = computed(() => `/assets/events/logos/image_event_logo_${props.event?.event_code}.png`)
+const storyVisualByIdol = computed(() => Object.fromEntries(
+  props.idols.map(idol => [
+    idol.idol_code,
+    props.idolVisualUrl(idol.idol_code),
+  ]),
+))
+const hasStoryVisuals = computed(() =>
+  Object.values(storyVisualByIdol.value).some(Boolean),
+)
 const eventTypeLabel = computed(() => ({
   theater: 'THEATER 累计 PT',
   tour: 'TOUR 累计 PT',
@@ -240,7 +261,7 @@ function formatDateTime(timestamp) {
 .detail-section { padding: 22px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #e1e6e8; background: #fff; }.detail-section + .detail-section { margin-top: 12px; }.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 14px; }.section-heading h3 { margin: 0; font-size: .86rem; }.section-heading p { margin: 4px 0 0; color: #849097; font-size: .59rem; }.raw-badge,.derived-badge { flex: 0 0 auto; padding: 4px 7px; border-radius: 4px; font-size: .58rem; font-weight: 700; }.raw-badge { background: #e5f6f3; color: #177970; }.derived-badge { background: #fff2d6; color: #8b6413; }
 .episode-section { background: #f8fafb; }.episode-count { color: #6f7e85; font-size: .59rem; font-weight: 700; }.episode-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); border-top: 1px solid #dfe5e7; border-left: 1px solid #dfe5e7; }.episode-list button { display: grid; grid-template-columns: 32px minmax(0,1fr) auto 28px; align-items: center; gap: 9px; min-height: 58px; padding: 8px 10px; border: 0; border-right: 1px solid #dfe5e7; border-bottom: 1px solid #dfe5e7; background: #fff; color: #29383f; cursor: pointer; font: inherit; text-align: left; }.episode-list button:hover { background: #eff9f7; }.episode-list button:disabled { cursor: not-allowed; opacity: .55; }.episode-number { color: #17877f; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .62rem; font-weight: 800; }.episode-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }.episode-copy strong { font-size: .67rem; }.episode-copy small { overflow: hidden; color: #929ca1; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .48rem; text-overflow: ellipsis; white-space: nowrap; }.episode-stats { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; color: #7d898f; font-size: .5rem; }.episode-list button > svg { color: #168a82; }
 .reward-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }.reward-grid > button { display: grid; grid-template-columns: 72px minmax(0,1fr) 18px; align-items: center; gap: 10px; min-width: 0; min-height: 106px; padding: 8px; border: 1px solid #dfe5e7; border-radius: 6px; background: #fff; color: #28363e; cursor: pointer; font: inherit; text-align: left; }.reward-grid > button:hover { border-color: #69beb7; background: #f4fbfa; }.reward-grid > button > img { width: 72px; aspect-ratio: 1; border-radius: 4px; object-fit: contain; }.reward-copy { min-width: 0; }.reward-copy > span { color: #168078; font-size: .55rem; font-weight: 700; }.reward-copy strong { display: block; overflow: hidden; margin: 4px 0 6px; font-size: .66rem; text-overflow: ellipsis; white-space: nowrap; }.reward-copy ul { display: grid; gap: 3px; margin: 0; padding: 0; list-style: none; }.reward-copy li { display: flex; align-items: flex-start; gap: 4px; color: #69767e; font-size: .54rem; line-height: 1.35; }.reward-copy li svg { flex: 0 0 auto; margin-top: 1px; color: #248980; }.empty-copy { margin: 0; color: #7b878e; font-size: .66rem; }
-.cast-layout { display: grid; grid-template-columns: 1fr auto; gap: 18px; }.idol-list { display: grid; grid-template-columns: repeat(auto-fit,minmax(132px,1fr)); gap: 7px; }.unit-list { display: grid; gap: 7px; min-width: 180px; }.idol-list button,.unit-list button { display: flex; align-items: center; gap: 9px; min-width: 0; min-height: 52px; padding: 6px 9px; border: 1px solid #e0e5e8; border-radius: 6px; background: #fff; color: #26323b; cursor: pointer; font: inherit; text-align: left; }.idol-list img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }.unit-list img { width: 70px; height: 38px; object-fit: contain; }.idol-list span,.unit-list span { overflow: hidden; font-size: .66rem; text-overflow: ellipsis; white-space: nowrap; }
+.cast-layout { display: grid; grid-template-columns: 1fr auto; gap: 18px; }.idol-list { display: grid; grid-template-columns: repeat(auto-fit,minmax(132px,1fr)); gap: 7px; }.unit-list { display: grid; gap: 7px; min-width: 180px; }.idol-list button,.unit-list button { display: flex; align-items: center; gap: 9px; min-width: 0; min-height: 52px; padding: 6px 9px; border: 1px solid #e0e5e8; border-radius: 6px; background: #fff; color: #26323b; cursor: pointer; font: inherit; text-align: left; }.idol-list .idol-icon { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }.idol-list.has-story-visuals { grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); }.idol-list.has-story-visuals button { flex-direction: column; justify-content: flex-end; min-height: 210px; overflow: hidden; padding: 8px; text-align: center; }.idol-list.has-story-visuals .event-story-visual { width: 100%; height: 170px; object-fit: contain; object-position: center bottom; }.idol-list.has-story-visuals .idol-icon { width: 72px; height: 72px; margin: auto; }.unit-list img { width: 70px; height: 38px; object-fit: contain; }.idol-list span,.unit-list span { overflow: hidden; font-size: .66rem; text-overflow: ellipsis; white-space: nowrap; }
 .evidence-section { margin-bottom: 18px; }.evidence-section dl { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0 24px; margin: 0; }.evidence-section dl div { display: grid; grid-template-columns: 90px minmax(0,1fr); gap: 10px; padding: 8px 0; border-bottom: 1px solid #edf0f2; }.evidence-section dt { color: #7d898f; font-size: .61rem; }.evidence-section dd { margin: 0; overflow-wrap: anywhere; color: #394a52; font-size: .63rem; }
 @media (max-width: 900px) { .reward-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 @media (max-width: 760px) { .event-identity { grid-template-columns: 1fr; gap: 18px; padding: 16px; }.story-band { align-items: stretch; flex-direction: column; gap: 14px; padding: 18px 16px; }.detail-section { padding: 18px 16px; }.cast-layout { grid-template-columns: 1fr; }.unit-list { min-width: 0; }.evidence-section dl { grid-template-columns: 1fr; } }

@@ -5,8 +5,19 @@
  * Call ensureContext() on user gesture to comply with browser autoplay policy.
  * OGG format — compatible with Chrome/Firefox/Edge; Safari skips silently.
  */
-import { getSeUrl, getAmbientUrl, getBgmUrl } from '../utils/AssetResolver.js'
+import {
+  getSeUrl,
+  getAmbientUrl,
+  getBgmUrl,
+  getRawBgmProbeId,
+} from '../utils/AssetResolver.js'
 import { StoryAudioSession } from './story-runtime/StoryAudioSession.js'
+
+export const NON_WAVEFORM_SE_CUES = Object.freeze([
+  '00_action_volume_default_sebgm',
+  '00_action_volume_down_sebgm',
+])
+const NON_WAVEFORM_SE_CUE_SET = new Set(NON_WAVEFORM_SE_CUES)
 
 export class AudioManager {
   constructor({ audioSession = null, setTimer = setTimeout, clearTimer = clearTimeout } = {}) {
@@ -14,8 +25,11 @@ export class AudioManager {
       busVolumes: { bgm: 0.7, ambient: 0.7, voice: 1, se: 0.7 },
     })
     this._ownsAudioSession = !audioSession
-    this._setTimer = setTimer
-    this._clearTimer = clearTimer
+    // Browser timer functions are Web API methods and some engines reject an
+    // AudioManager receiver (`this._setTimer(...)`) with "Illegal invocation".
+    // Keep injected timers callable as plain functions behind arrow wrappers.
+    this._setTimer = (callback, delayMs) => setTimer(callback, delayMs)
+    this._clearTimer = timer => clearTimer(timer)
     /** @type {AudioContext|null} */
     this._ctx = null
 
@@ -34,6 +48,7 @@ export class AudioManager {
     this._currentAmbientCue = null
     this._currentAmbientVolume = 0.4
     this._seBufferCache = new Map()
+    this._nonWaveformControlCues = new Set()
     this._cleanupTimers = new Set()
     this._bgmGeneration = 0
     this._ambientGeneration = 0
@@ -79,6 +94,7 @@ export class AudioManager {
   /** Decode a delayed cue early so its authored timestamp stays precise. */
   preloadSE(cueName) {
     if (!cueName || this._audioSession.disabled) return Promise.resolve(null)
+    if (NON_WAVEFORM_SE_CUE_SET.has(cueName)) return Promise.resolve(null)
     this.ensureContext()
     return this._loadSE(cueName).catch(() => null)
   }
@@ -86,6 +102,10 @@ export class AudioManager {
   /** Play a one-shot SE. Multiple SE can overlap. */
   async playSE(cueName) {
     if (!cueName || this._audioSession.disabled) return
+    if (NON_WAVEFORM_SE_CUE_SET.has(cueName)) {
+      this._nonWaveformControlCues.add(cueName)
+      return
+    }
     this.ensureContext()
     try {
       const audioBuf = await this._loadSE(cueName)
@@ -204,6 +224,9 @@ export class AudioManager {
    * @param {number} [fadeTime=1.0]
    */
   async playBgm(bgmId, fadeTime = 1.0) {
+    // Opt-in development probe: preserve the authored scene while routing one
+    // BGM request through a specific RAW-derived candidate for browser QA.
+    bgmId = getRawBgmProbeId() || bgmId
     if (!bgmId || this._audioSession.disabled || bgmId === this._currentBgmCue) return
     this.ensureContext()
     const generation = ++this._bgmGeneration
@@ -306,6 +329,7 @@ export class AudioManager {
       has_ambient_source: Boolean(this._ambientSource),
       cleanup_timers: this._cleanupTimers.size,
       se_cache_entries: this._seBufferCache.size,
+      non_waveform_control_cues: [...this._nonWaveformControlCues].sort(),
       disabled: this._audioSession.disabled,
     })
   }
@@ -334,6 +358,7 @@ export class AudioManager {
     this._bgmRelease = null
     this._ambientRelease = null
     this._seBufferCache.clear()
+    this._nonWaveformControlCues.clear()
     this._ctx = null
     if (this._ownsAudioSession) this._audioSession.dispose().catch(() => {})
   }

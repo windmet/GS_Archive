@@ -18,15 +18,41 @@
 const ASSET_BASE = '/assets'
 export const SILHOUETTE_ONLY_MODEL_IDS = Object.freeze([
   '102sha_001_00',
+  '104omn_001_00',
+  '231sub_001_00',
+  '242sub_001_00',
 ])
 const SILHOUETTE_ONLY_MODELS = new Set(SILHOUETTE_ONLY_MODEL_IDS)
 
+export function getRawBackgroundCandidateId() {
+  if (typeof window === 'undefined') return ''
+  return new URLSearchParams(window.location.search).get('raw_bg_candidate') || ''
+}
+
+export function hasRawAudioCandidate(kind, cue) {
+  if (typeof window === 'undefined') return false
+  const requested = new URLSearchParams(window.location.search)
+    .getAll('raw_audio_candidate')
+    .flatMap(value => value.split(','))
+  return requested.includes(`${kind}:${cue}`)
+}
+
+export function getRawBgmProbeId() {
+  if (typeof window === 'undefined') return ''
+  const cue = new URLSearchParams(window.location.search).get('raw_bgm_probe') || ''
+  return /^[a-z0-9_]+$/i.test(cue) && hasRawAudioCandidate('bgm', cue) ? cue : ''
+}
+
 export function getBgUrl(bgId) {
-  return `${ASSET_BASE}/bg/${bgId}.png`
+  return getRawBackgroundCandidateId() === bgId
+    ? `${ASSET_BASE}/bg-candidate/${bgId}.png`
+    : `${ASSET_BASE}/bg/${bgId}.png`
 }
 
 export function getBgmUrl(bgmId) {
-  return `${ASSET_BASE}/audio/bgm/${bgmId}.ogg`
+  return hasRawAudioCandidate('bgm', bgmId)
+    ? `${ASSET_BASE}/audio-candidate/bgm/${bgmId}.m4a`
+    : `${ASSET_BASE}/audio/bgm/${bgmId}.ogg`
 }
 
 /**
@@ -34,7 +60,9 @@ export function getBgmUrl(bgmId) {
  * The dev middleware searches sfx/, telephone/, and system/ directories.
  */
 export function getSeUrl(cueName) {
-  return `${ASSET_BASE}/audio/se/${cueName}.ogg`
+  return hasRawAudioCandidate('se', cueName)
+    ? `${ASSET_BASE}/audio-candidate/se/${cueName}.m4a`
+    : `${ASSET_BASE}/audio/se/${cueName}.ogg`
 }
 
 /**
@@ -42,7 +70,16 @@ export function getSeUrl(cueName) {
  * The dev middleware handles _t suffix stripping for file lookup.
  */
 export function getAmbientUrl(cueName) {
-  return `${ASSET_BASE}/audio/ambient/${cueName}.ogg`
+  return hasRawAudioCandidate('ambient', cueName)
+    ? `${ASSET_BASE}/audio-candidate/ambient/${cueName}.m4a`
+    : `${ASSET_BASE}/audio/ambient/${cueName}.ogg`
+}
+
+export function getSongUrl(songCode, fallbackUrl) {
+  const cue = songCode ? `song3_${songCode}` : ''
+  return cue && hasRawAudioCandidate('song', cue)
+    ? `${ASSET_BASE}/audio-candidate/song/${cue}.m4a`
+    : fallbackUrl
 }
 
 export function getSpineAtlasUrl(modelId) {

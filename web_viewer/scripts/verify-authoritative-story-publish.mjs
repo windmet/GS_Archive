@@ -4,7 +4,11 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { buildAuthoritativeCollectionCandidate, resolveInside } from './lib/authoritative-collection-candidate.mjs'
-import { atomicWriteFrom, publishAuthoritativeCollection } from './lib/authoritative-collection-publisher.mjs'
+import {
+  atomicWriteFrom,
+  publishAuthoritativeCollection,
+  rollbackAuthoritativeCollection,
+} from './lib/authoritative-collection-publisher.mjs'
 
 const workspaceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const temporaryRoot = await mkdtemp(path.join(os.tmpdir(), 'sidem-authoritative-publish-'))
@@ -110,6 +114,33 @@ assert.equal(JSON.parse(await readFile(path.join(backup, 'fixture.json'), 'utf8'
 assert.ok((await readFile(path.join(backup, 'authoritative_publish_backup_manifest.json'))).length > 0)
 
 await assert.rejects(
+  rollbackAuthoritativeCollection({
+    candidateDirectory: nativeCandidate,
+    compiledDirectory: compiled,
+    backupDirectory: backup,
+    confirmGroup: 'wrong',
+  }),
+  /Explicit group confirmation/,
+)
+const rollbackReport = await rollbackAuthoritativeCollection({
+  candidateDirectory: nativeCandidate,
+  compiledDirectory: compiled,
+  backupDirectory: backup,
+  confirmGroup: 'fixture',
+})
+assert.equal(rollbackReport.files.length, 2)
+assert.ok(rollbackReport.files.every(record => record.restored_hash))
+assert.equal(JSON.parse(await readFile(path.join(compiled, 'fixture.json'), 'utf8')).runtime_contract, 'story-runtime-v2-compat')
+await publishAuthoritativeCollection({
+  workspaceRoot,
+  candidateDirectory: nativeCandidate,
+  compiledDirectory: compiled,
+  backupDirectory: path.join(temporaryRoot, 'republish-backup'),
+  confirmGroup: 'fixture',
+})
+assert.equal(JSON.parse(await readFile(path.join(compiled, 'fixture.json'), 'utf8')).runtime_contract, 'story-runtime-v2')
+
+await assert.rejects(
   publishAuthoritativeCollection({
     workspaceRoot,
     candidateDirectory: nativeCandidate,
@@ -172,4 +203,4 @@ assert.equal(
 assert.throws(() => resolveInside(compiled, '../escape.json'), /escapes collection root/)
 
 console.log('Authoritative collection publish verification passed.')
-console.log('  strict manifest, confirmation, hash preflight, atomic files, exact backups, rollback, drift and traversal rejection covered')
+console.log('  strict manifest, confirmation, hash preflight, atomic files, exact backups, explicit rollback/republish, drift and traversal rejection covered')

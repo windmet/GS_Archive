@@ -285,6 +285,7 @@ import {
 } from '@lucide/vue'
 import { getBgUrl, getCharaIconUrl } from '../../utils/AssetResolver.js'
 import { useVoicePlayer } from '../../core/useVoicePlayer.js'
+import { StoryAudioSession } from '../../core/story-runtime/StoryAudioSession.js'
 import {
   loadArchiveHomePreferences,
   resetArchiveHomePreferences,
@@ -302,6 +303,7 @@ const props = defineProps({
   selectedId: { type: String, default: '' },
   selectedCue: { type: String, default: '' },
   selectedCostume: { type: String, default: '' },
+  noAudio: { type: Boolean, default: false },
 })
 const emit = defineEmits(['open-story', 'open-cards', 'open-idol', 'open-chat', 'open-event', 'update:selectedId', 'update:selectedCue', 'update:selectedCostume'])
 
@@ -364,6 +366,7 @@ const activeHighlight = computed(() => props.highlights[highlightIndex.value] ||
 const cueIndex = computed(() => Math.max(0, activeIdol.value?.cues?.findIndex(cue => cue.cue === activeCue.value?.cue) || 0))
 const currentStep = computed(() => activeCue.value?.previewStep || {})
 const compiledData = computed(() => ({ scenario_id: activeCue.value?.scenarioId || '' }))
+const homeAudioSession = new StoryAudioSession({ disabled: props.noAudio })
 const homeStyle = computed(() => ({
   '--idol-color': activeIdol.value?.color || '#21b7c5',
   '--interface-alpha': (preferences.interfaceOpacity / 100).toFixed(2),
@@ -375,6 +378,7 @@ const voicePlayer = useVoicePlayer({
   currentStepIndex,
   compiledData,
   isPlaying: playing,
+  audioSession: homeAudioSession,
 })
 
 watch(() => activeIdol.value?.id, () => {
@@ -532,6 +536,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', syncStageLayout)
   window.removeEventListener('keydown', handleKeydown)
   voicePlayer.dispose()
+  homeAudioSession.dispose().catch(() => {})
 })
 </script>
 

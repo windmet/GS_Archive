@@ -44,6 +44,7 @@
             <span class="card-rarity">{{ card.rarity || 'CARD' }}</span>
             <span v-if="card.gameplay?.attribute?.name" class="card-attribute">{{ card.gameplay.attribute.name }}</span>
             <span>{{ card.resource_id }}</span>
+            <span v-if="rawCandidateActive" class="card-raw-candidate">RAW candidate</span>
             <span v-if="card.voice_base">{{ card.voice_base }}</span>
           </div>
           <h3>{{ card.title || card.resource_id }}</h3>
@@ -280,7 +281,12 @@ import ArchiveImageLightbox from './ArchiveImageLightbox.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import { getVoiceUrl } from '../../utils/AssetResolver.js'
-import { getCardIconUrl, getCardLandscapeUrl, getCardPortraitUrl } from '../../utils/CardAssetResolver.js'
+import {
+  getCardIconUrl,
+  getCardLandscapeUrl,
+  getCardPortraitUrl,
+  isRawCardCandidate,
+} from '../../utils/CardAssetResolver.js'
 
 const props = defineProps({
   card: { type: Object, default: null },
@@ -308,6 +314,7 @@ const lightboxOpen = ref(false)
 const lightboxIndex = ref(0)
 const selectedSkillLevel = ref(1)
 const framedPortrait = computed(() => props.artMode === 'framed')
+const rawCandidateActive = computed(() => isRawCardCandidate(props.card?.resource_id))
 const normalPortraitUrl = computed(() => getCardPortraitUrl(props.card?.resource_id, false, framedPortrait.value))
 const awakenedPortraitUrl = computed(() => getCardPortraitUrl(props.card?.resource_id, true, framedPortrait.value))
 const normalLandscapeUrl = computed(() => getCardLandscapeUrl(props.card?.resource_id, false))
@@ -508,6 +515,7 @@ function openRelation(item) {
 .art-mode-control button:last-child { border-right: 0; }
 .art-mode-control button.active { background: #e8f6f4; color: #147f77; font-weight: 700; }
 .card-detail-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: #777; font-family: monospace; font-size: 0.78rem; }
+.card-raw-candidate { color: #985f00; background: #fff4d6; border: 1px solid #f0ca72; border-radius: 999px; padding: 2px 7px; }
 .card-rarity {
   display: inline-flex; align-items: center; justify-content: center; min-width: 44px; height: 24px;
   border-radius: 6px; background: #edf2ff; color: #3157a4; font-size: 0.72rem; font-weight: 700;

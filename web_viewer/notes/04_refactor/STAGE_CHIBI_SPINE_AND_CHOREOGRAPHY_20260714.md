@@ -32,6 +32,14 @@
 
 `npm run chibi:scan` 会读取五套 setup skeleton 的全部 attachment path，并与每套服装 atlas 的 region 集合比较。由于 setup 是同体型所有可选附件的并集，单套服装覆盖率约 37% 是正常现象；报告以同体型中位数识别异常，而不是要求每套服装覆盖全部可选附件。本轮 549 套全部落在各自体型的正常分布内，未发现 region 数量或覆盖率异常的离群服装。报告输出为 `compatibility-report.json`。
 
+2026-07-27 来源校正：提交 `a9c8342` 已把五套 setup、现有 549 套服装的
+atlas/texture、以及 57 个 animation bundle 中的 7,135 个动作片段改为
+直接读取配置的 `RAW/asset`。完整 ignored 候选共 8,517 个生成文件、
+592,667,731 bytes，与稳定产物 8,517/8,517 逐字节一致。CSV 和 60 条
+lip-sync 源曲线仍是明确的 legacy 语义/派生输入。当前 549 套只是稳定
+兼容集合；masterdata 另有 141 套主角色服装尚未进入 live 下拉框，必须
+另开内容扩容批次验证。
+
 生成后的 Web 资源约 923 MiB（包含约 302 MiB 的歌曲音频），其中 7,340 个动作文件约 265.7 MiB，歌曲编排索引约 2.85 MiB。动作二进制按 motion ID 独立保存，浏览器按需加载，不会在页面启动时一次性下载全部动作。
 
 ## 数据生成
@@ -260,7 +268,11 @@ npm run smoke
 
 ## ACB 歌曲提取与音频主时钟（2026-07-14）
 
-原始歌曲位于 `E:\BaiduNetdiskDownload\SideM\GS_Res\新建文件夹\RAW\audio`。`song3_<songCode>.acb` 是内嵌 `@UTF + AFS2` 的 CRI 音频包，实际音频编码为 HCA。构建使用本机 `E:\Program Files\vgmstream-win64\vgmstream-cli.exe` 解码，再由 FFmpeg 转为浏览器可播放的 AAC/M4A：
+> 2026-07-27 更新：下述旧路径是最初实现时使用的整理者副本。当前权威输入
+> 已改为本机来源配置所指向的 `RAW/audio`；转换工具也从忽略的本机配置读取。
+> 旧副本仅保留作回归证据，不再是默认 source identity。
+
+`song3_<songCode>.acb` 是内嵌 `@UTF + AFS2` 的 CRI 音频包，实际音频编码为 HCA。构建使用配置的 `vgmstream-cli` 解码，再由 FFmpeg 转为浏览器可播放的 AAC/M4A：
 
 ```powershell
 python scripts\prepare-live-chibi-audio.py --song-code drvalv --force
@@ -349,14 +361,19 @@ DRIVE A LIVE 还包含 `song3_drvalv_bgm.acb` 伴奏和 49 条 `song3_drvalv_<id
 
 ## Backmonitor USM 解密与舞台屏幕（2026-07-15）
 
-`RAW/movie` 是 3DMV、SSR 演出、公告和 Live 屏幕等内容混合存放的 USM 库，不能按目录整体当作舞台素材导出。当前生成器只读取 118 份 `liveeffectscript` CSV 的 `Backmonitor` 命令，并以实际引用 ID 作为白名单：共 932 条事件、73 个主视频和 4 个 alpha 转场，无缺失引用。
+`RAW/movie` 是 3DMV、SSR 演出、公告和 Live 屏幕等内容混合存放的 USM 库，不能按目录整体当作舞台素材导出。当前生成器只读取 119 份 `liveeffectscript` CSV 的 `Backmonitor` 命令，并以实际引用 ID 作为白名单：共 932 条事件、73 个主视频和 4 个 alpha 转场，无缺失引用。
 
 这些 USM 的 CRI 解密 key 为 `0002B875BC731A85`。部分主视频可以被 FFmpeg 直接识别，另一些虽然能读到容器头但没有有效帧，因此批处理统一采用 WannaCRI 0.3.1 解密和 demux，再由 FFmpeg 转为 H.264/yuv420p MP4，避免按文件碰运气。运行方式：
 
 ```powershell
-python -m pip install --target $env:TEMP\sidem-wannacri WannaCRI==0.3.1
+python -m pip install --target .analysis\workspace\wannacri-runtime WannaCRI==0.3.1
 npm run chibi:backmonitor
 ```
+
+> 2026-07-27 更新：生成器的物理输入已改为统一配置中的 `RAW/movie`，
+> CSV 从配置的 `legacy_root` 派生，WannaCRI 根目录通过忽略的
+> `wannacri_root` 配置。WannaCRI 0.3.1 没有 `__main__.py`，生成器现调用
+> 包声明的 `wannacri:main`，不再使用无效的 `python -m wannacri`。
 
 脚本 `scripts/prepare-live-chibi-backmonitor.py` 输出 `public/assets/live-chibi/backmonitor/index.json`、73 个主循环 MP4，以及 4 个转场各自的 color/alpha 双路 MP4。全量验证结果为 81 个 MP4、零空文件；主视频均为 272×144，时长约 0.968–10.010 秒，总大小约 11.3 MB。转码先写临时文件并经 FFprobe 验证后原子替换，构建被中止时不会把半截 MP4 当作缓存复用。
 
@@ -366,13 +383,20 @@ npm run chibi:backmonitor
 
 ## Image_layer 纹理与前后景层（2026-07-15）
 
-118 份 `liveeffectscript` 中共有 101 条 `Image_layer / Image_layer_2` 事件，精确引用 57 个 Sprite。引用素材并不在统一贴图包中，而是分别位于 `RAW/asset/song_<songCode>.unity3d`；每个 bundle 均存在与 CSV ID 同名的 Sprite，且指向一张 1900×1060、带完整透明边距的 RGBA Texture2D。旧的 `ALL_PHOTOS` 导出有的保留整张 Texture2D、有的只保留 Sprite 裁剪区域，不能稳定恢复舞台坐标，因此新脚本直接读取 Sprite 关联 Texture2D。
+119 份 `liveeffectscript` 中共有 101 条 `Image_layer / Image_layer_2` 事件，精确引用 57 个 Sprite。引用素材并不在统一贴图包中，而是分别位于 `RAW/asset/song_<songCode>.unity3d`；每个 bundle 均存在与 CSV ID 同名的 Sprite，且指向一张 1900×1060、带完整透明边距的 RGBA Texture2D。旧的 `ALL_PHOTOS` 导出有的保留整张 Texture2D、有的只保留 Sprite 裁剪区域，不能稳定恢复舞台坐标，因此新脚本直接读取 Sprite 关联 Texture2D。
 
 ```powershell
 npm run chibi:image-layers
 ```
 
 `scripts/prepare-live-chibi-image-layers.py` 输出 `public/assets/live-chibi/image-layers/index.json` 和 57 张 PNG，总大小 29,181,796 bytes；全量检查为 57/57 bundle、57/57 Sprite、零缺失、零透明空图。导出使用 bundle mtime 缓存、临时 PNG 与原子替换，索引记录尺寸、alpha 范围、bundle、Sprite rect 和 texture rect offset。
+
+2026-07-27 来源校正：提交 `7860377` 已将脚本接入统一 archive source
+contract。CSV 语义继续来自显式 `legacy_root`，24 个
+`song_<code>.unity3d` 的物理读取改为配置的 `RAW/asset`。24/24 RAW bundle
+与整理包副本 SHA-256 一致；`stage_flslgt_01` 的隔离强制导出与稳定 PNG
+逐字节一致，57 项镜像索引在单项重建后也保持逐字节一致。5174 的 FLASH
+LIGHT 四层实景开关回归通过，稳定目录未被替换。
 
 编排索引升级为 schema 7，并为每首歌写入 `imageLayerEvents`，保留 `time / asset / layerType / depth / hide / raw19`。列 17/18 的 `1` 已由多首歌曲的显隐时序交叉确认是隐藏指令；列 3 作为 Pixi `zIndex`，允许图片层直接与角色交错，而不是强制全部放在角色前或后。运行时按当前歌曲时间重放事件得到每个 asset 的显隐和最新深度，将完整 1900×1060 画布居中并按 `2/3 × viewportScale` 映射到 1280×720 舞台。异步加载按 asset 合并；切歌会使旧请求失效并释放 Sprite、Texture 和 GPU 资源。
 
@@ -382,3 +406,16 @@ npm run chibi:image-layers
 - OUR SONG 开场 6 层；`stage_ossshd_05` 在 16.8 秒由 1760 切到 1860，53.2 秒进一步切到 1930，其他层也按 CSV 更新深度。
 - `tibeti_live_effect` 的 `stage_tibeti_effect01` 在 78.3 秒隐藏、85.1 秒恢复、88.6 秒再次隐藏。
 - 从 FLASH LIGHT 切回 DRIVE A LIVE 后图片层计数立即归零；干净刷新后的切歌回归中没有新增 Backmonitor/Image_layer 加载错误或媒体 AbortError。
+
+## Object_layer 对象与粒子清单来源校正（2026-07-27）
+
+提交 `59a442d` 已将 `scripts/prepare-live-chibi-object-layers.py` 接入统一
+archive source contract。119 份 CSV 提供 185 个唯一对象引用；物理查找改为
+配置的 `RAW/asset`。稳定清单定位 181 个，使用 77 个实际 bundle；77/77
+与整理包副本 SHA-256 一致。四个 `tibeti` ID 的候选 bundle 中没有预期
+keeper，继续作为明确 missing，不按文件名强行关联。
+
+`fx_in_bnckgy_overlight_1` 的隔离强制导出与稳定 PNG 逐字节一致，完整
+索引镜像单项重建后仍保持 185/181/4 统计及相同 index 哈希。5174 实播
+バーニン・クールで輝いて跨过 12 秒事件后出现四个 overlight 对象；舞台
+物件开关可清零并恢复相同对象，稳定目录未被替换。

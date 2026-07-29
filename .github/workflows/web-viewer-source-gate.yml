@@ -88,8 +88,29 @@ jobs:
       - name: Verify silhouette fallback contract
         run: npm run verify:silhouette
 
+      - name: Verify archive source configuration
+        run: npm run verify:archive-sources
+
+      - name: Verify current archive baseline report
+        run: npm run verify:archive-baseline:source-only
+
+      - name: Verify tracked binary inventory
+        run: npm run verify:tracked-binary-inventory
+
+      - name: Verify publication ledger
+        run: npm run verify:publication-ledger
+
+      - name: Verify RAW character-image candidate contract
+        run: npm run verify:raw-character-candidate
+
+      - name: Verify RAW character-image promotion contract
+        run: npm run verify:raw-character-promotion
+
       - name: Verify strict collection publisher
         run: npm run verify:story-authoritative-publish
+
+      - name: Verify RAW single-story publisher
+        run: npm run verify:story-raw-promotion
 
       - name: Verify compiled migration
         run: npm run verify:compiled-migration

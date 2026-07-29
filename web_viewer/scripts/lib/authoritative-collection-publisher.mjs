@@ -136,3 +136,74 @@ export async function publishAuthoritativeCollection({
   await writeFile(path.join(backup, 'authoritative_publish_backup_manifest.json'), jsonBytes(report))
   return report
 }
+
+export async function rollbackAuthoritativeCollection({
+  candidateDirectory,
+  compiledDirectory,
+  backupDirectory,
+  confirmGroup,
+  rollbackWrite = atomicWriteFrom,
+}) {
+  const candidate = path.resolve(candidateDirectory)
+  const compiled = path.resolve(compiledDirectory)
+  const backup = path.resolve(backupDirectory)
+  const manifest = await readJson(path.join(backup, 'authoritative_publish_backup_manifest.json'))
+  if (!manifest.group_id || !Array.isArray(manifest.files) || manifest.files.length < 2) {
+    throw new Error('Invalid authoritative publish backup manifest')
+  }
+  if (confirmGroup !== manifest.group_id) {
+    throw new Error(`Explicit group confirmation is required: ${manifest.group_id}`)
+  }
+
+  const records = []
+  for (const record of manifest.files) {
+    const source = resolveInside(backup, record.file)
+    const candidateSource = resolveInside(candidate, record.file)
+    const target = resolveInside(compiled, record.file)
+    if (!await exists(source) || !await exists(candidateSource) || !await exists(target)) {
+      throw new Error(`Rollback source, candidate, or formal target is missing: ${record.file}`)
+    }
+    if (record.old_hash !== record.backup_hash) {
+      throw new Error(`Backup manifest old/backup hash mismatch: ${record.file}`)
+    }
+    if (hashBytes(await readFile(source)) !== record.backup_hash) {
+      throw new Error(`Rollback backup hash drift: ${record.file}`)
+    }
+    if (hashBytes(await readFile(candidateSource)) !== record.new_hash) {
+      throw new Error(`Rollback candidate hash drift: ${record.file}`)
+    }
+    if (hashBytes(await readFile(target)) !== record.new_hash) {
+      throw new Error(`Current published state drifted; refusing rollback: ${record.file}`)
+    }
+    records.push({ ...record, source, candidateSource, target })
+  }
+
+  const restored = []
+  try {
+    for (const record of records) {
+      await rollbackWrite(record.source, record.target)
+      restored.push(record)
+    }
+    for (const record of records) {
+      if (hashBytes(await readFile(record.target)) !== record.old_hash) {
+        throw new Error(`Rolled-back hash verification failed: ${record.file}`)
+      }
+    }
+  } catch (error) {
+    for (const record of restored.reverse()) {
+      await atomicWriteFrom(record.candidateSource, record.target)
+    }
+    throw error
+  }
+
+  return {
+    schema_version: 1,
+    group_id: manifest.group_id,
+    rolled_back_at: new Date().toISOString(),
+    files: records.map(record => ({
+      file: record.file,
+      restored_hash: record.old_hash,
+      replaced_hash: record.new_hash,
+    })),
+  }
+}

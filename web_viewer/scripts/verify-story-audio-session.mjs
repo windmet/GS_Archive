@@ -3,6 +3,10 @@ import { readFile } from 'node:fs/promises'
 import { StoryAudioSession } from '../src/core/story-runtime/StoryAudioSession.js'
 import { useVoicePlayer } from '../src/core/useVoicePlayer.js'
 import { AudioManager } from '../src/core/AudioManager.js'
+import {
+  isKnownDanglingStoryVoice,
+  knownDanglingStoryVoiceCount,
+} from '../src/data/knownDanglingStoryVoices.js'
 
 class FakeAudioParam {
   constructor(value = 1) { this.value = value }
@@ -145,8 +149,30 @@ class FakeTimerQueue {
 }
 
 const originalFetch = globalThis.fetch
+const originalWindow = globalThis.window
 globalThis.fetch = async () => ({ ok: true, arrayBuffer: async () => new ArrayBuffer(8) })
 try {
+  assert.equal(knownDanglingStoryVoiceCount, 12)
+  assert.equal(isKnownDanglingStoryVoice('1_1_007sai_01_1_1_007_01', 'c1004'), true)
+  assert.equal(isKnownDanglingStoryVoice('1_1_007sai_01_1_1_007_01', 'c1004.m4a'), true)
+  assert.equal(isKnownDanglingStoryVoice('1_1_007sai_01_1_1_007_01', 'c1005'), false)
+  let danglingFetchCalls = 0
+  globalThis.fetch = async () => {
+    danglingFetchCalls++
+    return { ok: false, status: 404, headers: new Map(), arrayBuffer: async () => new ArrayBuffer(0) }
+  }
+  const danglingPlayer = useVoicePlayer({
+    spineStageRef: { value: null },
+    currentStep: { value: { dialogue: { voice: 'c1004.m4a' } } },
+    currentStepIndex: { value: 5 },
+    compiledData: { value: { scenario_id: '1_1_007sai_01_1_1_007_01' } },
+    isPlaying: { value: false },
+    audioSession: new StoryAudioSession({ contextFactory: () => new FakeAudioContext() }),
+  })
+  assert.equal(await danglingPlayer.prepareVoice(), null)
+  assert.equal(danglingFetchCalls, 0, 'known RAW-authored dangling voices must not make guaranteed 404 requests')
+  danglingPlayer.dispose()
+
   const soakContext = new FakeAudioContext()
   soakContext.state = 'running'
   const soakSession = new StoryAudioSession({ contextFactory: () => soakContext })
@@ -156,6 +182,20 @@ try {
     setTimer: callback => timers.set(callback),
     clearTimer: timer => timers.clear(timer),
   })
+
+  let controlFetchCalls = 0
+  globalThis.fetch = async () => {
+    controlFetchCalls++
+    return { ok: true, arrayBuffer: async () => new ArrayBuffer(8) }
+  }
+  await audioManager.preloadSE('00_action_volume_down_sebgm')
+  await audioManager.playSE('00_action_volume_down_sebgm')
+  await audioManager.playSE('00_action_volume_default_sebgm')
+  assert.equal(controlFetchCalls, 0, 'non-waveform ACB action cues must not request audio files')
+  assert.deepEqual(audioManager.inspect().non_waveform_control_cues, [
+    '00_action_volume_default_sebgm',
+    '00_action_volume_down_sebgm',
+  ])
 
   for (let index = 0; index < 100; index++) {
     await audioManager.playBgm(`bgm-${index % 3}`, 0.01)
@@ -206,15 +246,52 @@ try {
   assert.equal(raceManager.captureState().ambient.cue, 'new-ambient', 'late stale Ambient load must not replace the newest cue')
   assert.equal(raceSession.inspect().active_sources, 2, 'one BGM and one Ambient source must remain')
 
+  const probeContext = new FakeAudioContext()
+  probeContext.state = 'running'
+  const probeSession = new StoryAudioSession({ contextFactory: () => probeContext })
+  const probeManager = new AudioManager({ audioSession: probeSession })
+  let probeUrl = null
+  globalThis.window = {
+    location: {
+      search: '?raw_audio_candidate=bgm%3Abgm_main_christmas_day_a&raw_bgm_probe=bgm_main_christmas_day_a',
+    },
+  }
+  globalThis.fetch = async url => {
+    probeUrl = url
+    return { ok: true, arrayBuffer: async () => new ArrayBuffer(8) }
+  }
+  await probeManager.playBgm('usual_day', 0)
+  assert.equal(
+    probeUrl,
+    '/assets/audio-candidate/bgm/bgm_main_christmas_day_a.m4a',
+    'the explicit BGM probe must route through the matching RAW candidate',
+  )
+  assert.equal(
+    probeManager.captureState().bgm.cue,
+    'bgm_main_christmas_day_a',
+    'runtime diagnostics must report the effective RAW probe cue',
+  )
+  globalThis.window.location.search = '?raw_audio_candidate=se%3Awaribashi'
+  await probeManager.playSE('waribashi')
+  assert.equal(
+    probeUrl,
+    '/assets/audio-candidate/se/waribashi.m4a',
+    'the explicit SE candidate must route through the reconstructed RAW cue',
+  )
+
   audioManager.dispose()
   timers.flush()
   await soakSession.dispose()
   raceManager.dispose()
   await raceSession.dispose()
+  probeManager.dispose()
+  await probeSession.dispose()
   assert.equal(soakSession.inspect().active_sources, 0)
   assert.equal(raceSession.inspect().active_sources, 0)
 } finally {
   globalThis.fetch = originalFetch
+  if (originalWindow === undefined) delete globalThis.window
+  else globalThis.window = originalWindow
 }
 
 let disabledContextFactoryCalls = 0
@@ -253,6 +330,27 @@ try {
   assert.equal(disabledSession.inspect().active_sources, 0)
   assert.equal(disabledSession.inspect().disabled, true)
   assert.equal(disabledManager.inspect().disabled, true)
+
+  {
+    let scheduledCallback = null
+    function browserLikeSetTimer(callback) {
+      assert.equal(this, undefined, 'browser timer must be called without an AudioManager receiver')
+      scheduledCallback = callback
+      return 'browser-timer'
+    }
+    function browserLikeClearTimer() {
+      assert.equal(this, undefined, 'browser clearTimer must be called without an AudioManager receiver')
+    }
+    const timerManager = new AudioManager({
+      audioSession: disabledSession,
+      setTimer: browserLikeSetTimer,
+      clearTimer: browserLikeClearTimer,
+    })
+    const timer = timerManager._scheduleCleanup(() => {}, 10)
+    assert.equal(timer, 'browser-timer')
+    assert.equal(typeof scheduledCallback, 'function')
+    timerManager.dispose()
+  }
 } finally {
   globalThis.fetch = originalFetch
   disabledVoicePlayer.dispose()
@@ -260,7 +358,9 @@ try {
   await disabledSession.dispose()
 }
 
-const [viewerSource, voicePlayerSource, audioManagerSource] = await Promise.all([
+const [appSource, homeSource, viewerSource, voicePlayerSource, audioManagerSource] = await Promise.all([
+  readFile(new URL('../src/App.vue', import.meta.url), 'utf8'),
+  readFile(new URL('../src/components/archive/ArchiveImmersiveHome.vue', import.meta.url), 'utf8'),
   readFile(new URL('../src/core/StoryViewer.vue', import.meta.url), 'utf8'),
   readFile(new URL('../src/core/useVoicePlayer.js', import.meta.url), 'utf8'),
   readFile(new URL('../src/core/AudioManager.js', import.meta.url), 'utf8'),
@@ -270,6 +370,12 @@ assert.match(viewerSource, /new AudioManager\(\{ audioSession: storyAudioSession
 assert.match(viewerSource, /audioSession: storyAudioSession/)
 assert.match(viewerSource, /const NO_AUDIO = URL_FLAGS\.get\('noAudio'\) === '1'/)
 assert.match(viewerSource, /const NO_VOICE = NO_AUDIO \|\| URL_FLAGS\.get\('noVoice'\) === '1'/)
+assert.match(appSource, /const NO_AUDIO = URL_FLAGS\.get\('noAudio'\) === '1'/)
+assert.match(appSource, /:no-audio="NO_AUDIO"/)
+assert.match(appSource, /const view = ref\('__boot__'\)/)
+assert.match(appSource, /const loading = ref\(true\)/)
+assert.match(homeSource, /new StoryAudioSession\(\{ disabled: props\.noAudio \}\)/)
+assert.match(homeSource, /audioSession: homeAudioSession/)
 assert.doesNotMatch(voicePlayerSource, /new \(window\.AudioContext/)
 assert.doesNotMatch(audioManagerSource, /new \(window\.AudioContext/)
 

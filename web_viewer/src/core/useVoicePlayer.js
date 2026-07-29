@@ -1,5 +1,6 @@
 import { getLipSyncUrl, getVoiceUrlCandidates } from '../utils/AssetResolver.js'
 import { deriveMainLipPathFromVoice, sampleLipCurve } from '../utils/LipSyncHelpers.js'
+import { isKnownDanglingStoryVoice } from '../data/knownDanglingStoryVoices.js'
 import { StoryAudioSession } from './story-runtime/StoryAudioSession.js'
 
 export function useVoicePlayer({
@@ -120,6 +121,10 @@ export function useVoicePlayer({
   async function prepareVoice({ step = currentStep.value, scenarioId = compiledData.value?.scenario_id, includeLip = true } = {}) {
     const voice = step?.dialogue?.voice
     if (!voice || noVoice || session.disabled) return null
+    if (isKnownDanglingStoryVoice(scenarioId, voice)) {
+      console.info('[Audio] skipped RAW-authored dangling story voice:', { scenarioId, voice })
+      return null
+    }
 
     ensureAudioCtx()
     try {

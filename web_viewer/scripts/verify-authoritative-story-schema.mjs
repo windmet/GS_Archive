@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
+import { access, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { spawnSync } from 'node:child_process'
 import os from 'node:os'
 import path from 'node:path'
@@ -236,6 +236,7 @@ await verifyPythonParity(compatibilityFixture, 'tracked compatibility fixture')
 
 try {
   const episodeDirectory = path.join(root, 'public', 'data', 'compiled', 'episodes')
+  await access(path.join(episodeDirectory, '1_4_001_01_a.json'))
   const episodeFiles = (await readdir(episodeDirectory))
     .filter(file => /^1_4_001_01_[a-j]\.json$/u.test(file))
     .sort()
@@ -293,5 +294,29 @@ try {
   if (error?.code !== 'ENOENT') throw error
   console.log('Mounted migration candidate classification skipped: 1_4_001_01_a is not present.')
 }
+
+const publicationManifest = await readJson('public/data/publication/manifest.json')
+let ledgerStoryFiles = 0
+for (const [logicalId, state] of Object.entries(publicationManifest.by_logical_id || {})) {
+  if (state.domain !== 'story') continue
+  assert.ok(state.artifacts.length >= 2, `${logicalId} must publish an aggregate and at least one episode`)
+  const aggregateArtifacts = state.artifacts.filter(artifact => !artifact.path.includes('/episodes/'))
+  assert.equal(aggregateArtifacts.length, 1, `${logicalId} must publish exactly one aggregate`)
+  for (const artifact of state.artifacts) {
+    assert.ok(
+      artifact.path.startsWith('web_viewer/public/data/compiled/'),
+      `${logicalId} publishes outside the compiled story corpus`,
+    )
+    const relativePath = artifact.path.replace(/^web_viewer\//u, '')
+    const published = await readJson(relativePath)
+    assert.equal(
+      validate(published),
+      true,
+      `${relativePath}: ${ajv.errorsText(validate.errors, { separator: '\n' })}`,
+    )
+    ledgerStoryFiles++
+  }
+}
+console.log(`Publication ledger strict story artifacts verified: ${ledgerStoryFiles}.`)
 
 console.log('Authoritative story schema: strict output contract and compatibility boundary verified.')

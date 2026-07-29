@@ -1,0 +1,142 @@
+import { execFileSync } from 'node:child_process'
+import { readFile } from 'node:fs/promises'
+import {
+  collectArchiveBaseline,
+  findAbsolutePathStrings,
+  projectRoot,
+  reportPath,
+  stableJson,
+} from './lib/archive-baseline-report.mjs'
+
+const sourceOnly = process.argv.includes('--source-only') ||
+  process.env.SIDEM_ARCHIVE_BASELINE_SOURCE_ONLY === '1'
+const failures = []
+const report = JSON.parse(await readFile(reportPath, 'utf8'))
+
+if (report.schema_version !== 1) failures.push('schema_version must be 1')
+if (!/^[0-9a-f]{40}$/.test(report.repository?.commit || '')) {
+  failures.push('repository.commit must be a full Git SHA')
+}
+if (Number.isNaN(Date.parse(report.generated_at))) {
+  failures.push('generated_at must be an ISO date')
+}
+
+const absolutePaths = findAbsolutePathStrings(report)
+if (absolutePaths.length) {
+  failures.push(`report contains machine absolute paths: ${absolutePaths.join(', ')}`)
+}
+
+if (
+  report.movies?.backmonitor_mapped !==
+  report.movies?.evidence?.movie_relations + report.movies?.evidence?.transition_relations
+) {
+  failures.push('BackMonitor mapped total differs from movie plus transition evidence')
+}
+if (
+  report.movies?.raw_usm - report.movies?.backmonitor_mapped !==
+  report.movies?.unresolved
+) {
+  failures.push('USM mapped and unresolved totals do not equal the RAW USM population')
+}
+if (
+  report.story?.voice_resolved + report.story?.voice_dangling !==
+  report.story?.voice_references
+) {
+  failures.push('resolved and dangling voices do not equal total voice references')
+}
+if (
+  report.story?.logical_groups !== report.story?.groups_with_unique_public_match ||
+  report.story?.valid_parts !== report.story?.parts_represented_in_public
+) {
+  failures.push('story RAW population differs from the recorded public-match population')
+}
+if (
+  report.cards?.unique_resource_ids !== report.cards?.raw_matched ||
+  report.cards?.unique_resource_ids !== report.cards?.portal_normalized_entities
+) {
+  failures.push('card resource, RAW match, and portal entity populations differ')
+}
+
+try {
+  execFileSync(
+    'git',
+    ['merge-base', '--is-ancestor', report.repository.commit, 'HEAD'],
+    { cwd: projectRoot, stdio: 'ignore' },
+  )
+} catch {
+  failures.push('report repository.commit is not an ancestor of HEAD')
+}
+
+const actual = await collectArchiveBaseline({
+  sourceOnly,
+  captureCommit: report.repository.commit,
+  generatedAt: report.generated_at,
+})
+
+const alwaysCheckedSections = [
+  'schema_version',
+  'generated_at',
+  'repository',
+  'tracked_binaries',
+]
+for (const section of alwaysCheckedSections) {
+  if (stableJson(report[section]) !== stableJson(actual[section])) {
+    failures.push(`${section} drifted`)
+  }
+}
+
+for (const section of ['story', 'cards', 'movies']) {
+  if (sourceOnly) continue
+  const expected = structuredClone(report[section])
+  const observed = structuredClone(actual[section])
+  if (stableJson(expected) !== stableJson(observed)) failures.push(`${section} drifted`)
+}
+
+if (!sourceOnly) {
+  for (const section of ['source_availability', 'raw', 'masterdata']) {
+    if (stableJson(report[section]) !== stableJson(actual[section])) {
+      failures.push(`${section} drifted`)
+    }
+  }
+
+  const rawManifest = report.raw?.recorded_manifest
+  if (
+    report.raw?.availability === 'mounted' &&
+    rawManifest &&
+    (
+      report.raw.files !== rawManifest.files ||
+      report.raw.total_bytes !== rawManifest.total_bytes ||
+      stableJson(report.raw.sections) !== stableJson(rawManifest.sections) ||
+      stableJson(report.raw.types) !== stableJson(rawManifest.types)
+    )
+  ) {
+    failures.push('mounted RAW tree differs from recorded RAW manifest')
+  }
+
+  if (
+    report.masterdata?.availability === 'mounted' &&
+    (
+      report.masterdata.source?.sha256 !== report.masterdata.source?.expected_sha256 ||
+      report.masterdata.decoded?.sha256 !== report.masterdata.decoded?.expected_sha256
+    )
+  ) {
+    failures.push('masterdata hash differs from configured expected SHA-256')
+  }
+} else if (
+  actual.source_availability.raw !== 'not-mounted' ||
+  actual.source_availability.masterdata !== 'not-mounted'
+) {
+  failures.push('source-only verification did not mark mounted sources as not-mounted')
+}
+
+if (failures.length) {
+  console.error('Archive baseline verification failed:')
+  failures.forEach(failure => console.error(`- ${failure}`))
+  process.exitCode = 1
+} else {
+  console.log(
+    `Archive baseline verified (${sourceOnly ? 'source-only' : 'mounted'}): ` +
+    `${report.story.compiled_artifacts.recursive_json_artifacts} compiled JSON artifacts, ` +
+    `${report.tracked_binaries.png_files} tracked PNG files`,
+  )
+}

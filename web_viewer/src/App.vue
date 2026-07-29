@@ -17,6 +17,7 @@
         v-model:selected-id="homeSelectedId"
         v-model:selected-cue="homeSelectedCue"
         v-model:selected-costume="homeSelectedCostume"
+        :no-audio="NO_AUDIO"
         :idols="archiveHomeIdols"
         :highlights="archiveHomeHighlights"
         :stats="archiveStats"
@@ -126,6 +127,7 @@
         :cards="currentEventCards"
         :idols="currentEventIdols"
         :units="currentEventUnits"
+        :idol-visual-url="eventStoryIdolVisualUrl"
         @play="playCurrentEvent"
         @play-episode="playCurrentEventEpisode"
         @open-card="openEventCard"
@@ -372,9 +374,16 @@ import {
   storyTranslationLocale,
   uiLocale,
 } from './utils/LanguageStore.js'
+import {
+  birthdayStoryIdolCode,
+  getPromotedCharacterImageUrl,
+  getRawCharacterImageCandidateUrl,
+} from './utils/CharacterImageResolver.js'
 
 setStoryLanguagePreferences(new PlayerPreferencesRepository().load())
 const entityTranslationRepository = new EntityTranslationRepository()
+const URL_FLAGS = new URLSearchParams(window.location.search)
+const NO_AUDIO = URL_FLAGS.get('noAudio') === '1'
 
 const storyViewerLoader = () => import('./core/StoryViewer.vue')
 const spineViewerLoader = () => import('./components/SpineViewer.vue')
@@ -391,7 +400,7 @@ function resolveChatName(ch) {
   return ch
 }
 
-const view = ref('home')
+const view = ref('__boot__')
 const indexData = ref(null)
 const cardIndexData = ref(null)
 const gashaIndexData = ref(null)
@@ -410,6 +419,7 @@ const costumeDictionaryData = ref(null)
 const archiveManifestData = ref(null)
 const archiveVerificationData = ref(null)
 const uiAssetCatalogData = ref(null)
+const rawCharacterImagePromotionsData = ref(null)
 const idolEntityTranslationRevision = ref(0)
 const currentScenario = ref(null)
 const currentScenarioFile = ref('')
@@ -421,7 +431,7 @@ const playbackQueueIndex = ref(-1)
 const continuousPlayback = ref(window.localStorage.getItem('sidem:continuous-playback') === '1')
 const currentPreviewCue = ref('')
 const filterQuery = ref('')
-const loading = ref(false)
+const loading = ref(true)
 const preloadProgress = ref(0)
 
 // Navigation context
@@ -796,8 +806,26 @@ const currentStoryVisualUrl = computed(() => {
     if (code) return `/assets/stories/units/image_unit_story_button_${code}.png`
   }
   if (story.domain === 'idol_story' && story.sectionId) return `/assets/idols/icons/image_chara_icon_${story.sectionId}.png`
+  if (story.domain === 'birthday') {
+    const idolCode = birthdayStoryIdolCode(story)
+    return getRawCharacterImageCandidateUrl('birthday_visual', idolCode) ||
+      getPromotedCharacterImageUrl(
+        'birthday_visual',
+        idolCode,
+        rawCharacterImagePromotionsData.value,
+      )
+  }
   return ''
 })
+
+function eventStoryIdolVisualUrl(idolCode) {
+  return getRawCharacterImageCandidateUrl('event_story_visual', idolCode) ||
+    getPromotedCharacterImageUrl(
+      'event_story_visual',
+      idolCode,
+      rawCharacterImagePromotionsData.value,
+    )
+}
 
 const unitCatalogEntries = computed(() => (idolUnitData.value?.units || []).map(unit => {
   const unitId = String(unit.unit_id)
@@ -1102,7 +1130,7 @@ const currentIdolEvents = computed(() => (archiveManifestData.value?.unit_event_
   .filter(event => (event.characters || []).includes(currentCharacterId.value))
   .sort((left, right) => Number(left.release_at || 0) - Number(right.release_at || 0)))
 
-const archiveShellVisible = computed(() => !['player', 'spine_lab', 'chibi_stage'].includes(view.value))
+const archiveShellVisible = computed(() => !['__boot__', 'player', 'spine_lab', 'chibi_stage'].includes(view.value))
 
 const archiveSection = computed(() => archiveSectionForRoute({
   view: view.value,
@@ -2414,6 +2442,7 @@ onMounted(async () => {
   archiveManifestData.value = data.archiveManifest
   archiveVerificationData.value = data.archiveVerification
   uiAssetCatalogData.value = data.uiAssetCatalog
+  rawCharacterImagePromotionsData.value = data.rawCharacterImagePromotions
   for (const { key, error } of errors) {
     console.error(`[ArchiveData] Failed to load ${key}:`, error)
   }
@@ -2421,6 +2450,7 @@ onMounted(async () => {
 
 
   await applyArchiveRoute(initialRoute)
+  loading.value = false
   archiveRouteReady = true
   writeArchiveRoute(currentArchiveRoute(), { replace: true })
   removeArchivePopState = onArchivePopState(route => {

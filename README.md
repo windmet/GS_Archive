@@ -14,21 +14,39 @@ The repository is the source of truth for code, schemas, relationship rules, ver
 
 Current verified archive snapshot:
 
-- 8,441 / 8,441 scenario JSON files parse successfully.
-- 26,849 / 26,912 canonical dialogue voice references resolve (99.77%).
-- 826 normalized card entities.
-- 61 logical gasha entities.
-- 36 classified event entities.
+- 3,398 / 3,398 RAW logical story groups have a unique public match.
+- 4,939 / 4,939 valid RAW scenario parts are represented in public output.
+- 26,890 / 26,902 RAW story voice references resolve; the remaining 12 are
+  authored dangling references.
+- Strict Story Runtime v2 currently contains two formal collections and one
+  standalone RAW-published scene.
+- Masterdata contains 836 card rows and 826 unique card resource IDs; RAW
+  covers 826 / 826 resources, while the portal independently normalizes 826
+  card entities.
+- 61 logical gasha entities and 36 classified event entities are available in
+  the archive indexes.
+
+The 10,329 JSON files recursively present under `public/data/compiled` are
+compiled artifacts, not 10,329 distinct stories. Aggregate, episode, manifest,
+fixture, and per-source files are counted separately on disk.
+
+The authoritative current-state entry is
+[CURRENT_ARCHIVE_BASELINE_20260728.md](web_viewer/notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md).
 
 ## Architecture
 
-The project keeps three evidence layers separate:
+The project keeps four evidence layers separate:
 
 1. `raw/masterdata`: source evidence and decoded tables.
-2. `data_pipeline`: normalization, relationship derivation, and asset catalog generation.
-3. `web_viewer`: static indexes, Vue archive UI, and the scenario player.
+2. Unity object and CRI cue identity: subresources inside authoritative payloads.
+3. `data_pipeline`: normalization, relationship derivation, and asset catalog generation.
+4. `web_viewer`: static indexes, Vue archive UI, and the scenario player.
 
 `masterdata` defines entities and relationships. Compiled scenarios define story presentation. The UI asset catalog records visual evidence. One layer must not invent missing facts for another.
+
+Organizer-created photo, audio, and scenario exports are compatibility and
+parity references. They are not default identity authorities after the
+RAW/masterdata migration.
 
 Important paths:
 
@@ -38,24 +56,28 @@ Important paths:
 | `web_viewer/src/` | Vue application and player source |
 | `web_viewer/public/data/` | Versioned generated indexes and verification reports |
 | `web_viewer/notes/` | Architecture decisions, audits, and regression records |
-| `web_viewer/public/assets/` | Local runtime media; intentionally excluded from Git |
+| `web_viewer/config/` | Machine-local archive source contract and tracked example |
+| `web_viewer/.analysis/` | Ignored inventory, candidate, derived, and rollback workspace |
+| `web_viewer/public/assets/` | Runtime media; ignored by default with documented small-asset exceptions |
 
 ## Local Development
 
 ```powershell
-cd web_viewer
+cd E:\Web_build\SideM_Archived\web_viewer
 npm install
-npm run dev
+npm run dev -- --host 127.0.0.1 --port 5174
 ```
 
-The default development URL is `http://127.0.0.1:5173/`.
+The project verification URL used by the current migration is
+`http://127.0.0.1:5174/`.
 
-Large media remains outside the repository. The development server can mount external roots through:
+Large media remains outside the repository. Copy
+`web_viewer/config/archive_sources.example.json` to the ignored
+`archive_sources.local.json` and configure the local RAW, masterdata, legacy
+reference, workspace, derived, publish, and optional tool paths there.
 
-- `SIDEM_AUDIO_ROOT`
-- `SIDEM_LIPSYNC_ROOT`
-- `SIDEM_CARD_ART_ROOT`
-- `SIDEM_ADV_BACKGROUND_ROOT` during scenario compilation
+Legacy environment variables remain explicit compatibility overrides for
+older tools. They are not the preferred source contract.
 
 Asset synchronization scripts copy only the locally required subset into ignored runtime directories. For example, `data_pipeline/build_ui_asset_catalog.py` can synchronize confirmed unit logos, the brand mark, and manifest-listed event banners from an extracted `assets/resources` root.
 
@@ -88,13 +110,30 @@ Tracked:
 Not tracked:
 
 - IPA files, AssetBundles, ACB archives, or extraction directories.
-- Voice, card art, event banners, Spine files, and other original binary media.
+- Original RAW and masterdata files.
+- Bulk voice, card art, event media, Spine files, decoded audio, and other
+  reproducible large binary trees.
 - Machine-specific paths, temporary analysis output, and reproducible runtime copies.
+
+Documented exceptions:
+
+- approved small portal assets;
+- explicit test fixtures;
+- documentation evidence;
+- small stable promoted assets with source identity, hashes, consumers,
+  rollback evidence, and a governing manifest.
+
+At the 2026-07-28 baseline the repository tracks 108 PNG files totalling
+26,384,189 bytes. The exact boundary and `git add -f` rules are defined in
+[BINARY_AND_PUBLICATION_POLICY_20260728.md](web_viewer/notes/04_refactor/BINARY_AND_PUBLICATION_POLICY_20260728.md).
 
 The original game, characters, names, artwork, audio, and trademarks belong to their respective rights holders. This repository does not grant permission to redistribute extracted game assets.
 
 ## Development Guidance
 
-Start with [UI asset evidence and reconstruction guidance](web_viewer/notes/04_refactor/UI_ASSET_EVIDENCE_AND_RECONSTRUCTION_NEXT_PHASE_20260714.md). The notes index is available at [web_viewer/notes/INDEX.md](web_viewer/notes/INDEX.md).
+Start with the
+[current archive baseline](web_viewer/notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md)
+and [notes index](web_viewer/notes/INDEX.md). Historical migration logs remain
+useful evidence, but they do not override the current baseline.
 
 The GitHub repository can be connected to ChatGPT for code and documentation search. That view only reflects committed files; local assets, generated-but-uncommitted data, and the live browser state still require the local development environment.

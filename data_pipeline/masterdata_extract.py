@@ -54,6 +54,14 @@ def xor_decode(data: bytes, key: bytes = DEFAULT_KEY) -> bytes:
     return bytes(byte ^ key[i % len(key)] for i, byte in enumerate(data))
 
 
+def decode_masterdata_input(data: bytes, input_state: str) -> bytes:
+    if input_state == "xor":
+        return xor_decode(data)
+    if input_state == "decoded":
+        return data
+    raise ValueError("input_state must be 'xor' or 'decoded'")
+
+
 def iter_top_records(data: bytes):
     pos = 0
     end = len(data)
@@ -1733,6 +1741,7 @@ def build_background_catalog(tables: dict[int, list[dict[str, Any]]], bg_dir: Pa
 def build_music_catalog(tables: dict[int, list[dict[str, Any]]]) -> dict[str, Any]:
     songs = {}
     bgm = {}
+    seasonal_switch_rows = []
     for row in tables.get(46, []):
         code = row.get("4")
         if not isinstance(code, str):
@@ -1755,8 +1764,32 @@ def build_music_catalog(tables: dict[int, list[dict[str, Any]]]) -> dict[str, An
             "event_id": row.get("1"),
             "_source": source(112, {"event_id": 1, "title": 2, "bgm_resource_id": 14}, row.get("_offset")),
         }
+    role_fields = {
+        "source_selector": "3",
+        "seasonal_bank": "4",
+        "seasonal_base_cue": "5",
+        "seasonal_selector": "6",
+    }
     for row in tables.get(133, []):
-        for field in ("3", "4", "5", "6"):
+        relation = {
+            "row_id": row.get("1"),
+            "season_id": row.get("2"),
+            **{
+                role: row.get(field)
+                for role, field in role_fields.items()
+            },
+            "_source": source(
+                133,
+                {
+                    "row_id": 1,
+                    "season_id": 2,
+                    **{role: int(field) for role, field in role_fields.items()},
+                },
+                row.get("_offset"),
+            ),
+        }
+        seasonal_switch_rows.append(relation)
+        for role, field in role_fields.items():
             resource = row.get(field)
             if not isinstance(resource, str):
                 continue
@@ -1769,9 +1802,30 @@ def build_music_catalog(tables: dict[int, list[dict[str, Any]]]) -> dict[str, An
             bgm[resource].setdefault("seasonal_variants", []).append({
                 "table_id": 133,
                 "row_id": row.get("1"),
+                "season_id": row.get("2"),
                 "field": int(field),
+                "role": role,
             })
-    return {"songs": songs, "bgm": bgm, "meta": {"song_count": len(songs), "bgm_count": len(bgm)}}
+            roles = bgm[resource].setdefault("table_133_roles", [])
+            if role not in roles:
+                roles.append(role)
+    return {
+        "schema_version": 2,
+        "songs": songs,
+        "bgm": bgm,
+        "seasonal_switch_rows": seasonal_switch_rows,
+        "meta": {
+            "song_count": len(songs),
+            "bgm_count": len(bgm),
+            "table_133_row_count": len(seasonal_switch_rows),
+            "table_133_resource_count": len({
+                relation[role]
+                for relation in seasonal_switch_rows
+                for role in role_fields
+                if isinstance(relation.get(role), str)
+            }),
+        },
+    }
 
 
 def build_face_dictionary(tables: dict[int, list[dict[str, Any]]]) -> dict[str, Any]:
@@ -2744,6 +2798,15 @@ def build_card_probe(card_index: dict[str, Any], resource_id: str) -> dict[str, 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("input", type=Path)
+    parser.add_argument(
+        "--input-state",
+        choices=("xor", "decoded"),
+        default="xor",
+        help=(
+            "State of the positional input. The historical default is 'xor'; "
+            "use 'decoded' for client_master_data.xor_DefaultPassPhrase.pb."
+        ),
+    )
     parser.add_argument("--out-dir", type=Path, default=Path(".analysis/masterdata"))
     parser.add_argument("--public-out-dir", type=Path)
     parser.add_argument("--compiled-dir", type=Path)
@@ -2767,6 +2830,11 @@ def main() -> None:
         help="Generate only idol_episode_index.json, mobile_archive_index.json and the corrected home interaction index.",
     )
     parser.add_argument(
+        "--music-catalog-only",
+        action="store_true",
+        help="Generate only music_catalog.json, including complete table-133 relations.",
+    )
+    parser.add_argument(
         "--curated-card-voices",
         type=Path,
         default=Path(__file__).resolve().parent / "curated" / "card_voice_transcripts.json",
@@ -2779,13 +2847,30 @@ def main() -> None:
     args = parser.parse_args()
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
-    decoded = xor_decode(args.input.read_bytes())
+    decoded = decode_masterdata_input(args.input.read_bytes(), args.input_state)
     decoded_path = args.out_dir / "client_master_data.xor_DefaultPassPhrase.pb"
     decoded_path.write_bytes(decoded)
 
     records = list(iter_top_records(decoded))
     compiled_stems = collect_compiled_stems(args.compiled_dir)
     compiled_summaries = collect_compiled_summaries(args.compiled_dir)
+    if args.music_catalog_only:
+        music_tables = extract_table_rows(records, {46, 112, 133})
+        music_catalog = build_music_catalog(music_tables)
+        filename = "music_catalog.json"
+        (args.out_dir / filename).write_text(
+            json.dumps(music_catalog, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        if args.public_out_dir:
+            args.public_out_dir.mkdir(parents=True, exist_ok=True)
+            (args.public_out_dir / filename).write_text(
+                json.dumps(music_catalog, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+        print(f"decoded: {decoded_path}")
+        print(f"{filename}: {music_catalog['meta']}")
+        return
     if args.idol_communication_only:
         communication_tables = extract_table_rows(
             records,

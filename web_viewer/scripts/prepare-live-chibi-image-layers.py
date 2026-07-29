@@ -5,7 +5,9 @@ from __future__ import annotations
 
 import argparse
 import csv
+import io
 import json
+import sys
 from pathlib import Path
 
 import UnityPy
@@ -13,21 +15,34 @@ from PIL import Image
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SIDEM_ROOT = Path(r"E:\BaiduNetdiskDownload\SideM")
-SCRIPT_ROOT = SIDEM_ROOT / "growing stars" / "assets" / "resources" / "liveeffectscript"
-RAW_ASSET_ROOT = SIDEM_ROOT / "RAW" / "asset"
-OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi" / "image-layers"
+DATA_PIPELINE_ROOT = PROJECT_ROOT.parent / "data_pipeline"
+sys.path.insert(0, str(DATA_PIPELINE_ROOT))
+
+from archive_paths import add_sources_config_argument, load_archive_sources
+from live_chibi_raw_semantics import load_raw_live_semantics
 
 
-def referenced_images() -> set[str]:
+DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi" / "image-layers"
+
+
+def referenced_images(effect_scripts: dict[str, bytes]) -> set[str]:
     images: set[str] = set()
-    for csv_path in sorted(SCRIPT_ROOT.glob("*.csv")):
-        with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
-            for row in csv.reader(handle):
-                if row and row[0] in {"Image_layer", "Image_layer_2"} and len(row) > 2:
-                    if row[2].strip():
-                        images.add(row[2].strip())
+    for payload in effect_scripts.values():
+        text = payload.decode("utf-8-sig", errors="surrogateescape")
+        for row in csv.reader(io.StringIO(text, newline="")):
+            if row and row[0] in {"Image_layer", "Image_layer_2"} and len(row) > 2:
+                if row[2].strip():
+                    images.add(row[2].strip())
     return images
+
+
+def legacy_effect_scripts(root: Path) -> dict[str, bytes]:
+    if not root.is_dir():
+        raise FileNotFoundError(f"Missing liveeffectscript root: {root}")
+    return {
+        path.stem: path.read_bytes()
+        for path in sorted(root.glob("*.csv"))
+    }
 
 
 def song_code(asset_name: str) -> str:
@@ -83,10 +98,44 @@ def export_texture(image, target: Path) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    add_sources_config_argument(parser)
+    parser.add_argument(
+        "--script-root",
+        type=Path,
+        help="Explicit legacy regression override; default reads RAW song bundles.",
+    )
+    parser.add_argument("--raw-asset-root", type=Path)
+    parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
+    parser.add_argument(
+        "--asset",
+        action="append",
+        default=[],
+        help="Only prepare this referenced image-layer asset. Repeat for multiple assets.",
+    )
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args()
 
-    assets = sorted(referenced_images())
+    sources = load_archive_sources(args.sources_config)
+    raw_asset_root = (args.raw_asset_root or sources.raw_root / "asset").resolve()
+    if args.script_root:
+        effect_scripts = legacy_effect_scripts(args.script_root.resolve())
+    else:
+        effect_scripts = {
+            name: record["payload"]
+            for name, record in load_raw_live_semantics(raw_asset_root)[
+                "choreography"
+            ].items()
+        }
+    output_root = args.output_root.resolve()
+    if not raw_asset_root.is_dir():
+        raise FileNotFoundError(f"Missing RAW asset root: {raw_asset_root}")
+
+    all_assets = referenced_images(effect_scripts)
+    selected = set(args.asset)
+    unknown = sorted(selected - all_assets)
+    if unknown:
+        raise ValueError(f"Unknown image-layer asset IDs: {unknown}")
+    assets = sorted(selected or all_assets)
     by_song: dict[str, list[str]] = {}
     for asset in assets:
         by_song.setdefault(song_code(asset), []).append(asset)
@@ -94,7 +143,7 @@ def main() -> None:
     entries: dict[str, dict] = {}
     completed = 0
     for code, song_assets in sorted(by_song.items()):
-        bundle = RAW_ASSET_ROOT / f"song_{code}.unity3d"
+        bundle = raw_asset_root / f"song_{code}.unity3d"
         if not bundle.exists():
             raise FileNotFoundError(f"Missing song bundle: {bundle}")
         environment = UnityPy.load(str(bundle))
@@ -113,7 +162,7 @@ def main() -> None:
         for asset in song_assets:
             sprite = sprites[asset]
             texture = sprite.m_RD.texture.read()
-            target = OUTPUT_ROOT / f"{asset}.png"
+            target = output_root / f"{asset}.png"
             metadata = cached_metadata(target, bundle, args.force)
             if metadata is None:
                 metadata = export_texture(texture.image, target)
@@ -138,6 +187,13 @@ def main() -> None:
             completed += 1
             print(f"[{completed:02d}/{len(assets):02d}] {asset}")
 
+    index_path = output_root / "index.json"
+    if selected and index_path.is_file():
+        existing = json.loads(index_path.read_text(encoding="utf-8"))
+        merged_entries = existing.get("assets", {})
+        merged_entries.update(entries)
+        entries = merged_entries
+
     index = {
         "schemaVersion": 1,
         "stats": {
@@ -146,12 +202,12 @@ def main() -> None:
         },
         "assets": entries,
     }
-    OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
-    (OUTPUT_ROOT / "index.json").write_text(
+    output_root.mkdir(parents=True, exist_ok=True)
+    index_path.write_text(
         json.dumps(index, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
-    print(f"Prepared {len(entries)} stage image layers in {OUTPUT_ROOT}")
+    print(f"Prepared {len(assets)} selected stage image layers in {output_root}")
 
 
 if __name__ == "__main__":

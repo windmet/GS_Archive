@@ -12,23 +12,29 @@ const stageSource = await import('node:fs/promises')
 
 assert.deepEqual(
   SILHOUETTE_ONLY_MODEL_IDS,
-  ['102sha_001_00'],
+  [
+    '102sha_001_00',
+    '104omn_001_00',
+    '231sub_001_00',
+    '242sub_001_00',
+  ],
   'only audited silhouette-only models may bypass Spine loading',
 )
-assert.equal(isSilhouetteOnlyModel('102sha_001_00'), true)
+for (const modelId of SILHOUETTE_ONLY_MODEL_IDS) {
+  assert.equal(isSilhouetteOnlyModel(modelId), true)
+  assert.equal(
+    getSilhouetteUrl(modelId),
+    `/assets/silhouette/${modelId}.png`,
+  )
+  await access(sourceUrl(`../public/assets/silhouette/${modelId}.png`))
+  await assert.rejects(
+    access(sourceUrl(`../public/assets/spines/${modelId}/comu.skel`)),
+    { code: 'ENOENT' },
+    `remove the ${modelId} silhouette-only exception when a real Spine rig is added`,
+  )
+}
 assert.equal(isSilhouetteOnlyModel('101ken_001_00'), false)
 assert.equal(isSilhouetteOnlyModel(null), false)
-assert.equal(
-  getSilhouetteUrl('102sha_001_00'),
-  '/assets/silhouette/102sha_001_00.png',
-)
-
-await access(sourceUrl('../public/assets/silhouette/102sha_001_00.png'))
-await assert.rejects(
-  access(sourceUrl('../public/assets/spines/102sha_001_00/comu.skel')),
-  { code: 'ENOENT' },
-  'remove the silhouette-only exception when a real Spine rig is added',
-)
 
 const directFallback = stageSource.indexOf('isSilhouetteOnlyModel(modelId)')
 const spineProbe = stageSource.indexOf('await manager.spawnSpine(sid, modelId')

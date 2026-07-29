@@ -12,6 +12,7 @@ const ARCHIVE_SOURCES = {
   archiveManifest: '/data/archive_manifest.json',
   archiveVerification: '/data/archive_verification.json',
   uiAssetCatalog: '/data/assets/ui_asset_catalog.json',
+  rawCharacterImagePromotions: '/data/assets/raw_character_image_promotions.json',
 }
 
 const CARD_DETAIL_SOURCE = '/data/masterdata/card_detail_index.json'
@@ -79,6 +80,17 @@ function validatePayload(key, payload) {
   }
   if (key === 'uiAssetCatalog' && (!Array.isArray(payload.entries) || !payload.meta || !payload.featured_sets)) {
     throw new Error('uiAssetCatalog must include entries, meta and featured_sets')
+  }
+  if (key === 'rawCharacterImagePromotions' && (
+    payload.schema_version !== 1 ||
+    !Array.isArray(payload.entries) ||
+    payload.entries.some(entry =>
+      !entry?.kind ||
+      !/^\d{3}[a-z0-9]{3}$/i.test(entry?.idol_code || '') ||
+      !String(entry?.asset_url || '').startsWith('/assets/')
+    )
+  )) {
+    throw new Error('rawCharacterImagePromotions must include valid promoted entries')
   }
   return payload
 }
