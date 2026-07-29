@@ -3,7 +3,8 @@
 Status: base catalog merged in PR #9; character relation refinement merged in
 PR #10; bounded gasha refinement merged in PR #12; event item-icon refinement
 merged in PR #13; bounded honor-event refinement merged in PR #14; bounded
-gasha-skill refinement active
+gasha-skill refinement merged in PR #15; automatic exact-relation refinement
+closed at the current authority boundary
 
 Date: 2026-07-29
 
@@ -195,11 +196,14 @@ machine-verifiable without mounting ignored RAW.
 
 ## Next boundary
 
-The base physical catalog merged in PR #9 as `d38c52f`. The character
-refinement changes relation authority only; it exports no new PNG and modifies
-no stable asset. Any follow-up should select another bounded family and improve
-semantic relations without rewriting physical identity. It must remain
-separate from:
+The base physical catalog merged in PR #9 as `d38c52f`. Relation refinement is
+merged through PR #15. The remaining 90 masterdata candidates are aggregate or
+namespace-ambiguous records and cannot be batch-promoted from token presence.
+See `notes/03_audit/IMAGE_RELATION_REFINEMENT_CLOSEOUT_20260730.md`.
+
+Any future follow-up requires a new independent authority or consumer contract
+for one bounded family. It must improve semantic relations without rewriting
+physical identity and remain separate from:
 
 - full PNG export;
 - stable asset replacement;

@@ -16,12 +16,14 @@ their forward-looking defect lists must not override this baseline.
 
 | Field | Value |
 | --- | --- |
-| current merged baseline | `master` = `origin/master` at `724ec9885eee1e782aa5104d0a9809b425e221b3` |
-| active track branch | `codex/gasha-skill-exact-relations`, created from `724ec98` |
-| active track | P1-H exact gasha-skill speaker relations; 12 speakers / 12 bundles |
+| current merged baseline | `master` = `origin/master` at `a9ea2012e1e55c158050424c146b743f17e87700` |
+| active track branch | `codex/post-p1h-relation-closeout`, created from `a9ea201` |
+| active track | documentation-only P1 relation boundary closeout |
 | active upstream | not pushed at refresh |
 | active pull request | none at refresh |
 | active validation | source-only and mounted image verifiers pass at `1,271 bundles / 7,816 image objects / 170 exact masterdata relations` |
+| PR #15 merge commit | `a9ea2012e1e55c158050424c146b743f17e87700` |
+| PR #15 post-merge gate | run `30474870836`, PASS |
 | PR #14 merge commit | `724ec9885eee1e782aa5104d0a9809b425e221b3` |
 | PR #14 post-merge gate | run `30474109000`, PASS |
 | PR #13 merge commit | `46467c0b050a941ebb8bdf7100d29a8acf5965e5` |
@@ -449,7 +451,7 @@ delimiter-bounded token must agree. `image_honor_event_30026001` has no
 event-index row and remains candidate-only. No internal Sprite/Texture2D
 meaning is inferred.
 
-The active gasha-skill refinement proves 12 exact bundle-to-idol relations.
+The merged gasha-skill refinement proves 12 exact bundle-to-idol relations.
 Every complete filename contains one unique speaker ID and one observed
 `ssr02` or `ssr03` variant, and every bundle has one Sprite plus one Texture2D
 with the same complete name. It does not infer card or skill semantics.
@@ -575,7 +577,8 @@ GS-only external translation-link pilot complete in PR #6
 49-code / 98-bundle gasha banner-logo refinement complete in PR #12
 19-code / 20-bundle event item-icon refinement complete in PR #13
 40-code / 40-bundle honor-event refinement complete in PR #14
-12-speaker / 12-bundle gasha-skill refinement active
+12-speaker / 12-bundle gasha-skill refinement complete in PR #15
+automatic exact-relation refinement closed at 90 remaining ambiguous candidates
 ```
 
 Current priority and write locks:
@@ -593,8 +596,8 @@ Current priority and write locks:
 - the gasha banner/logo relation batch is merged in PR #12;
 - the event item-icon relation batch is merged in PR #13;
 - the honor-event relation batch is merged in PR #14;
-- the current functional track is the bounded 12-speaker / 12-bundle exact
-  gasha-skill relation batch;
+- the gasha-skill relation batch is merged in PR #15;
+- the current track is documentation-only relation-boundary closeout;
 - the image catalog records 1,271 source identities and 7,816 image objects
   without exporting PNG or replacing stable assets;
 - 50 bundles now inherit 52 exact stable relations from the already-authoritative
@@ -608,3 +611,5 @@ Current priority and write locks:
   `image_honor_event_30026001` bundle stays candidate-only.
 - 12 gasha-skill bundles now carry exact idol-speaker relations; their observed
   `ssr02`/`ssr03` suffixes are not expanded into unproven card semantics.
+- the remaining 90 masterdata candidates are aggregate or namespace-ambiguous
+  and require new independent authority before any exact promotion.
