@@ -69,6 +69,31 @@
           "uniqueItems": true
         }
       },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "active",
+                  "reserved"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "allowed_release_ids": {
+                "type": "array",
+                "maxItems": 0
+              }
+            }
+          }
+        }
+      ],
       "additionalProperties": false
     },
     "annotationVersion": {

@@ -112,6 +112,28 @@ for (const [releaseIndex, record] of releases.entries()) {
   }
 }
 
+for (const [version, versionRule] of Object.entries(versionPolicy.release_versions)) {
+  const actualReleaseIds = releases
+    .filter(({ release }) => String(release.schema_version) === version)
+    .map(({ release }) => release.release_id)
+    .sort()
+  const allowedReleaseIds = [...versionRule.allowed_release_ids].sort()
+
+  if (
+    versionRule.status === 'frozen' &&
+    stableJson(allowedReleaseIds) !== stableJson(actualReleaseIds)
+  ) {
+    failures.push(
+      `frozen release schema v${version} allowlist must exactly match actual release IDs: ` +
+      `allowed=${stableJson(allowedReleaseIds)} actual=${stableJson(actualReleaseIds)}`,
+    )
+  } else if (versionRule.status !== 'frozen' && allowedReleaseIds.length) {
+    failures.push(
+      `${versionRule.status} release schema v${version} must not define allowed release IDs`,
+    )
+  }
+}
+
 const annotationFiles = readAnnotationFiles()
 if (annotationFiles.length) {
   failures.push(
