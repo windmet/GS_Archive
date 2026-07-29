@@ -100,6 +100,9 @@ jobs:
       - name: Verify RAW USM relation catalog
         run: npm run verify:usm-relation-catalog -- --source-only
 
+      - name: Verify RAW image bundle relation catalog
+        run: npm run verify:image-bundle-relation-catalog -- --source-only
+
       - name: Verify authoritative Story publications
         run: npm run verify:authoritative-story-publications -- --source-only
 

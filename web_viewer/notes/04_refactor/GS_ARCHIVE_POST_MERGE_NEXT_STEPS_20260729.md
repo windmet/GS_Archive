@@ -15,12 +15,15 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | 项 | 当前值 |
 | --- | --- |
 | merged base branch | `master` |
-| merged base HEAD | `31bac763c4abd01535842452810a75abc4bef40b` |
-| active track branch | `codex/usm-relation-catalog`, created from `31bac76` |
-| active track | P1-B 260 USM machine-readable relation catalog，已实现，等待 PR |
+| merged base HEAD | `579df6188063c4a34c0558cd720273e71401f888` |
+| active track branch | `codex/image-bundle-relation-catalog`, created from `579df61` |
+| active track | P1-C 1,271 image bundle machine-readable relation catalog，已实现，等待 PR |
 | upstream | 尚未推送 |
-| worktree | P1-B changes present at status refresh |
+| worktree | P1-C changes present at status refresh |
 | open PR | none at status refresh |
+| PR #8 | merged as `579df6188063c4a34c0558cd720273e71401f888` |
+| PR #8 final-head check | Source-only contract PASS，run `30462761046` |
+| PR #8 post-merge check | `master` push Source-only contract PASS，run `30462843307` |
 | PR #7 | merged as `31bac763c4abd01535842452810a75abc4bef40b` |
 | PR #7 final-head check | Source-only contract PASS，run `30461240645` |
 | PR #7 post-merge check | `master` push Source-only contract PASS，run `30461311887` |
@@ -439,7 +442,8 @@ notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 
 ### P1-B：260 USM 关系目录
 
-状态：**implemented on branch / pending PR**。
+状态：**merged in PR #8**。merge commit `579df6188063c4a34c0558cd720273e71401f888`，
+post-merge source gate `30462843307` 通过。
 
 当前目录已经记录：
 
@@ -470,23 +474,41 @@ source-only 与 mounted verifier 均通过 `260 / 77 / 183`；mounted 模式还�
 
 ### P1-C：1,271 个 `image_*` bundle 关系目录
 
-第一阶段只枚举：
+状态：**implemented on branch / pending PR**。
 
-- bundle path/hash；
-- Unity object type/name；
-- container path；
-- PathID；
-- texture/sprite dimensions；
-- masterdata token；
-- consumer candidate；
-- organizer-export parity candidate。
+当前目录已经记录：
 
-不要全量导出 PNG，不要一次性替换 `public/assets`。
+- 1,271 bundles / `263,071,090` bytes；
+- 9,157 Unity objects / 7,826 container entries；
+- 7,816 image objects，其中 3,928 Sprite、3,888 Texture2D；
+- 3,885 个 direct Sprite-to-Texture2D PathID；
+- 310 个 bundle 中的 865 个 exact delimiter-bounded masterdata token；
+- 52 个 bundle / 136 个 image object 的 tracked-PNG basename parity
+  candidate；
+- bundle path/hash、object type/name、container path、十进制字符串 PathID、
+  dimensions、consumer candidate、mapping state 和 evidence。
+
+机器入口：
+
+```text
+schemas/image-bundle-relation-catalog-v1.schema.json
+public/data/image_bundle_relation_catalog.json
+scripts/generate-image-bundle-relation-catalog.py
+scripts/verify-image-bundle-relation-catalog.mjs
+notes/03_audit/RAW_IMAGE_BUNDLE_RELATION_CATALOG_20260729.md
+```
+
+source-only 与 mounted verifier 均通过 `1,271 bundles / 7,816 image
+objects`；mounted 模式还逐文件复核 bytes、UnityFS 和 SHA-256。Archive
+baseline 已接入 committed relation summary。
+
+本批没有导出 PNG、没有替换 `public/assets`、没有把 basename 或 filename
+candidate 写成 stable relation。
 
 ## 3. 三轨依赖图
 
 ```text
-master 31bac76
+master 579df61
   |
   +-- completed Track S: PR #5
   |     18 WAV provenance complete
@@ -507,8 +529,8 @@ master 31bac76
   |
   +-- Track P
         completed pilot: PR #6, two exact GS event links + UI
-        active: P1-B USM relation catalog
-        next independent option: P1-C image relation catalog
+        completed P1-B: PR #8, 260 USM relation catalog
+        active P1-C: 1,271 image bundle relation catalog
 ```
 
 PR #4 已通过 merge commit `2a1e1ec` 合入 `master`，post-merge gate
@@ -517,8 +539,9 @@ post-merge gate `30458806049` 通过。Track R 已由用户暂缓；Track S 已�
 Track P 的首个 exact GS pilot 已由 PR #6 合并，post-merge gate
 `30460342231` 通过。Track G 已由 PR #7 合并，post-merge gate
 `30461311887` 通过；它只激活 Schema/verifier，不包含新的
-release/annotation。Track R 继续 deferred；P1-B 当前独立收口。不要未经覆盖
-核对就扩充 Episode 0 候选。
+release/annotation。P1-B 已由 PR #8 合并，post-merge gate `30462843307`
+通过。Track R 继续 deferred；P1-C 当前独立收口。不要未经覆盖核对就扩充
+Episode 0 候选。
 
 ## 4. 每条轨道的 Git 边界
 
@@ -535,13 +558,13 @@ git rev-parse HEAD
 当前 active 开发分支是：
 
 ```text
-codex/usm-relation-catalog
+codex/image-bundle-relation-catalog
 ```
 
-它只承载 USM relation Schema、committed catalog、只读 generator、
-source-only/mounted verifier、baseline authority 接线和审计文档；不解码或
-提交媒体，不混入 Runtime 长稳、publication transaction、image catalog 或
-Episode 0 候选。PR #4、PR #5、PR #6、PR #7 的分支已经完成；不要继续复用：
+它只承载 image bundle relation Schema、committed catalog、只读 generator、
+source-only/mounted verifier、baseline authority 接线和审计文档；不导出或
+提交 PNG，不混入 Runtime 长稳、publication transaction、USM promotion 或
+Episode 0 候选。PR #4 到 PR #8 的分支已经完成；不要继续复用：
 
 ```text
 codex/post-merge-next-guidance
@@ -603,8 +626,8 @@ git diff --cached --check
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
 worktree、origin/master，并确认当前 active branch 为
-codex/usm-relation-catalog、base master=31bac76，PR #7
-post-merge run 30461311887 通过。
+codex/image-bundle-relation-catalog、base master=579df61，PR #8
+post-merge run 30462843307 通过。
 
 完整阅读：
 1. web_viewer/notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
@@ -612,13 +635,15 @@ post-merge run 30461311887 通过。
 3. web_viewer/notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md
 4. web_viewer/notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 5. web_viewer/notes/03_audit/RAW_USM_RELATION_CATALOG_20260729.md
+6. web_viewer/notes/03_audit/RAW_IMAGE_BUNDLE_RELATION_CATALOG_20260729.md
 
-先确认当前分支的 USM catalog 为 260 files / 2,143,803,200 bytes /
-77 exact BackMonitor / 183 unresolved，source-only 与 mounted verifier 均通过。
+先确认当前分支的 image catalog 为 1,271 bundles / 263,071,090 bytes /
+9,157 Unity objects / 7,816 image objects，source-only 与 mounted verifier
+均通过。
 真实 ledger 仍为 1 release / 1 stable logical ID，没有新增 production record。
-Story Runtime 2–4 小时长稳由用户暂缓，仍保持 NOT EXECUTED。P1-B 合并后可
-选择有界 unresolved-USM 语义批次或 P1-C image catalog；不得顺带解码媒体、
-新增 ledger release 或回填 PNG。
+Story Runtime 2–4 小时长稳由用户暂缓，仍保持 NOT EXECUTED。P1-C 合并后
+若继续资源语义，必须选择有界 family；不得顺带批量导出 PNG、替换
+`public/assets`、新增 ledger release 或回填其他二进制。
 ```
 
 ## 7. 完成定义
@@ -669,4 +694,7 @@ USM/image：
 - 183 个 unresolved 保持未解决，不把 filename candidate 写成 exact；
 - source-only 与 mounted verifier 通过；
 - 未进行批量解码或稳定发布；
-- image relation catalog 尚未开始。
+- image relation catalog 已覆盖 1,271/1,271 bundles 和 7,816 image
+  objects；
+- image source-only 与 mounted verifier 通过；
+- 未导出 PNG 或替换 stable assets。

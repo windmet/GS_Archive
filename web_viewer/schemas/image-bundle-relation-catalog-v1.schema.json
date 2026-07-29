@@ -1,0 +1,308 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gs-archive.local/schemas/image-bundle-relation-catalog-v1.schema.json",
+  "title": "GS Archive RAW image bundle relation catalog v1",
+  "type": "object",
+  "required": ["schema_version", "sources", "summary", "entries"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "sources": {
+      "type": "object",
+      "required": [
+        "raw_asset_root",
+        "tracked_public_assets",
+        "masterdata_catalogs"
+      ],
+      "properties": {
+        "raw_asset_root": { "const": "RAW/asset" },
+        "tracked_public_assets": {
+          "const": "git:web_viewer/public/assets/**/*.png"
+        },
+        "masterdata_catalogs": {
+          "type": "array",
+          "minItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^web_viewer/public/data/masterdata/[a-z_]+\\.json$"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "bundles",
+        "total_bytes",
+        "unity_objects",
+        "container_entries",
+        "image_objects",
+        "sprite_objects",
+        "texture_objects",
+        "direct_sprite_texture_links",
+        "families",
+        "mapping_states"
+      ],
+      "properties": {
+        "bundles": { "type": "integer", "minimum": 1 },
+        "total_bytes": { "type": "integer", "minimum": 1 },
+        "unity_objects": { "type": "integer", "minimum": 1 },
+        "container_entries": { "type": "integer", "minimum": 1 },
+        "image_objects": { "type": "integer", "minimum": 1 },
+        "sprite_objects": { "type": "integer", "minimum": 1 },
+        "texture_objects": { "type": "integer", "minimum": 1 },
+        "direct_sprite_texture_links": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "families": { "$ref": "#/$defs/counts" },
+        "mapping_states": { "$ref": "#/$defs/counts" }
+      },
+      "additionalProperties": false
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/entry" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "counts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "pathId": {
+      "type": "string",
+      "pattern": "^-?[0-9]+$"
+    },
+    "dimensions": {
+      "type": "object",
+      "required": ["width", "height"],
+      "properties": {
+        "width": { "type": "number", "minimum": 0 },
+        "height": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "containerEntry": {
+      "type": "object",
+      "required": ["path", "type", "path_id"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^assets/resources/"
+        },
+        "type": { "type": "string", "minLength": 1 },
+        "path_id": { "$ref": "#/$defs/pathId" }
+      },
+      "additionalProperties": false
+    },
+    "imageObject": {
+      "type": "object",
+      "required": [
+        "type",
+        "path_id",
+        "name",
+        "container_paths",
+        "dimensions",
+        "texture_path_id",
+        "probe_state"
+      ],
+      "properties": {
+        "type": { "enum": ["Sprite", "Texture2D"] },
+        "path_id": { "$ref": "#/$defs/pathId" },
+        "name": { "type": ["string", "null"], "minLength": 1 },
+        "container_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^assets/resources/"
+          }
+        },
+        "dimensions": {
+          "oneOf": [
+            { "$ref": "#/$defs/dimensions" },
+            { "type": "null" }
+          ]
+        },
+        "texture_path_id": {
+          "oneOf": [
+            { "$ref": "#/$defs/pathId" },
+            { "type": "null" }
+          ]
+        },
+        "probe_state": { "enum": ["read", "read-failed"] }
+      },
+      "additionalProperties": false
+    },
+    "masterdataToken": {
+      "type": "object",
+      "required": ["catalog", "key", "evidence"],
+      "properties": {
+        "catalog": {
+          "enum": [
+            "speaker_dictionary.speakers",
+            "event_index.events",
+            "gasha_index.gashas.id",
+            "gasha_index.gashas.code",
+            "seasonal_campaign_index.campaigns"
+          ]
+        },
+        "key": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_]+$"
+        },
+        "evidence": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "consumerCandidate": {
+      "type": "object",
+      "required": ["consumer", "state", "evidence"],
+      "properties": {
+        "consumer": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]+$"
+        },
+        "state": { "const": "filename-candidate" },
+        "evidence": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "organizerCandidate": {
+      "type": "object",
+      "required": [
+        "object_path_id",
+        "object_name",
+        "tracked_public_paths",
+        "state"
+      ],
+      "properties": {
+        "object_path_id": { "$ref": "#/$defs/pathId" },
+        "object_name": { "type": ["string", "null"], "minLength": 1 },
+        "tracked_public_paths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^web_viewer/public/assets/[A-Za-z0-9_./-]+\\.png$"
+          }
+        },
+        "state": { "const": "basename-candidate" }
+      },
+      "additionalProperties": false
+    },
+    "entry": {
+      "type": "object",
+      "required": [
+        "id",
+        "family",
+        "raw",
+        "unity",
+        "masterdata_tokens",
+        "consumer_candidates",
+        "organizer_export_candidates",
+        "mapping"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^image_[A-Za-z0-9_-]+$"
+        },
+        "family": {
+          "type": "string",
+          "pattern": "^[a-z]+$"
+        },
+        "raw": {
+          "type": "object",
+          "required": [
+            "relative_path",
+            "filename",
+            "bytes",
+            "sha256",
+            "container",
+            "magic"
+          ],
+          "properties": {
+            "relative_path": {
+              "type": "string",
+              "pattern": "^asset/image_[A-Za-z0-9_-]+\\.unity3d$"
+            },
+            "filename": {
+              "type": "string",
+              "pattern": "^image_[A-Za-z0-9_-]+\\.unity3d$"
+            },
+            "bytes": { "type": "integer", "minimum": 1 },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "container": { "const": "unityfs" },
+            "magic": { "const": "UnityFS" }
+          },
+          "additionalProperties": false
+        },
+        "unity": {
+          "type": "object",
+          "required": [
+            "object_type_counts",
+            "container_entries",
+            "image_objects"
+          ],
+          "properties": {
+            "object_type_counts": { "$ref": "#/$defs/counts" },
+            "container_entries": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/containerEntry" }
+            },
+            "image_objects": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/imageObject" }
+            }
+          },
+          "additionalProperties": false
+        },
+        "masterdata_tokens": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/masterdataToken" }
+        },
+        "consumer_candidates": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/consumerCandidate" }
+        },
+        "organizer_export_candidates": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/organizerCandidate" }
+        },
+        "mapping": {
+          "type": "object",
+          "required": ["state", "evidence"],
+          "properties": {
+            "state": {
+              "enum": [
+                "organizer-export-candidate",
+                "masterdata-candidate",
+                "filename-candidate",
+                "unresolved"
+              ]
+            },
+            "evidence": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

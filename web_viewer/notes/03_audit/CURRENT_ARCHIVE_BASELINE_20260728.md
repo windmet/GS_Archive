@@ -16,12 +16,12 @@ their forward-looking defect lists must not override this baseline.
 
 | Field | Value |
 | --- | --- |
-| current merged baseline | `master` = `origin/master` at `31bac763c4abd01535842452810a75abc4bef40b` |
-| active track branch | `codex/usm-relation-catalog`, created from `31bac76` |
-| active track | P1-B 260-USM relation catalog; complete on branch, pending PR |
+| current merged baseline | `master` = `origin/master` at `579df6188063c4a34c0558cd720273e71401f888` |
+| active track branch | `codex/image-bundle-relation-catalog`, created from `579df61` |
+| active track | P1-C 1,271-image-bundle relation catalog; complete on branch, pending PR |
 | active upstream | not pushed at refresh |
 | active pull request | none at refresh |
-| active validation | source-only and mounted USM verifiers pass at `260 / 77 / 183` |
+| active validation | source-only and mounted image verifiers pass at `1,271 bundles / 7,816 image objects` |
 | PR #2 merge commit | `bca7042c1d87b261b98f21b5957a36c2eb99f6b1` |
 | merged PR head | `6a2a14e741d361dc7c09c6c395946a33782af4d9` |
 | merge parents | `ef804fcb2b258979723fcf8ce62f317671b4d701` + `6a2a14e741d361dc7c09c6c395946a33782af4d9` |
@@ -42,6 +42,9 @@ their forward-looking defect lists must not override this baseline.
 | PR #7 merge commit | `31bac763c4abd01535842452810a75abc4bef40b` |
 | PR #7 final-head check | Source-only contract `30461240645` passed |
 | PR #7 post-merge check | `master` push run `30461311887` passed |
+| PR #8 merge commit | `579df6188063c4a34c0558cd720273e71401f888` |
+| PR #8 final-head check | Source-only contract `30462761046` passed |
+| PR #8 post-merge check | `master` push run `30462843307` passed |
 
 PR #2 is merged. Its title and body reflect its real scope: the RAW/masterdata source
 contract, resource audits and candidates, governed stable promotions, live
@@ -53,8 +56,10 @@ merged the authoritative registry, source-only/mounted boundary, publication
 EOL correction, and version freeze. PR #5 completed the WAV provenance
 disposition, PR #6 merged the bounded GS translation-link pilot, and PR #7
 activated publication v2 and annotation v1 contracts without adding a
-production record. Therefore `bca7042` remains the immutable PR #2 merge
-identity, while `31bac76` is the current repository baseline at this refresh.
+production record. PR #8 merged the bounded 260-USM relation catalog without
+decoding or publishing media. Therefore `bca7042` remains the immutable PR #2
+merge identity, while `579df61` is the current repository baseline at this
+refresh.
 
 `stable-published` in project notes means an artifact occupies the stable path
 in the named checkout. For PR #2 artifacts, the containing commit is now merged
@@ -285,7 +290,7 @@ domain-wide browser acceptance.
 | five live semantic consumers | source-proven | default semantic source migrated to RAW and parity-verified | tested routes sample-accepted |
 | event visuals `001tom`/`002sht` | source-proven | stable-published and merged through PR #2 | item-level browser-accepted |
 | remaining USM | 260/260 physical identities cataloged; 77 BackMonitor mappings proven; 183 unresolved semantically | catalog complete; semantic resolution incomplete | not applicable |
-| general `image_*` bundles | 1,271 physical bundles known | full relation table absent | not applicable |
+| general `image_*` bundles | 1,271/1,271 physical identities and 7,816 image objects cataloged | catalog complete; semantic promotion incomplete | not applicable |
 
 The five live semantic consumers already reading RAW by default are:
 
@@ -406,6 +411,12 @@ committed relation catalog, including `2,143,803,200` source bytes, so
 source-only verification does not rely on a mounted snapshot. It contains no
 machine absolute paths.
 
+The committed image-bundle relation catalog adds 1,271 RAW identities,
+263,071,090 source bytes, 9,157 Unity objects, 7,826 container entries, and
+7,816 Sprite/Texture2D records to the report. Source-only verification checks
+that summary without mounting RAW; mounted verification independently checks
+all bundle bytes, UnityFS headers, and SHA-256 values.
+
 Source-only verification passes without requiring ignored RAW or masterdata.
 The mounted drift observed before disposition was:
 
@@ -521,8 +532,8 @@ fixed Runtime commit
 Track P / portal and resource discovery
 18 WAV provenance + quarantine complete
 GS-only external translation-link pilot complete in PR #6
-260-USM relation catalog complete on active branch
-1,271-image-bundle relation catalog
+260-USM relation catalog complete in PR #8
+1,271-image-bundle relation catalog complete on active branch
 ```
 
 Current priority and write locks:
@@ -535,8 +546,10 @@ Current priority and write locks:
 - Track R remains independent and is explicitly deferred by the user; it is
   still required before declaring Story Runtime `release-accepted`;
 - external-link metadata/UI remains outside the publication ledger;
-- the current active track is the bounded USM relation catalog;
-- the catalog records 260 source identities, 77 exact consumers, and 183
-  unresolved records without decoding or publishing media;
-- USM promotion and image work remain separately bounded and require their own
+- the USM catalog is merged and records 260 source identities, 77 exact
+  consumers, and 183 unresolved records without decoding or publishing media;
+- the current active track is the bounded image-bundle relation catalog;
+- the image catalog records 1,271 source identities and 7,816 image objects
+  without exporting PNG or replacing stable assets;
+- semantic promotion remains separately bounded and requires its own
   authorization.
