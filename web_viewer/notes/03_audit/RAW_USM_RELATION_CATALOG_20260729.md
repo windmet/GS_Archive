@@ -1,7 +1,7 @@
 # RAW USM Relation Catalog
 
 Status: v1 merged in PR #8; v2 MovieAnnounce refinement merged in PR #22;
-v3 CardData skill-movie refinement pending review
+v3 CardData skill-movie refinement merged in PR #24
 
 Date: 2026-07-29
 

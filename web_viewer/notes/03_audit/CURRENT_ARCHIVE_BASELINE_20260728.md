@@ -16,12 +16,16 @@ their forward-looking defect lists must not override this baseline.
 
 | Field | Value |
 | --- | --- |
-| current functional baseline | `master` includes PR #22 merge `0f858d036a377d4013a3345c85e8fba6acaf73fe` |
-| active functional branch | `codex/usm-skill-movie-exact-relations` |
-| active track | bounded CardData skill-movie exact-masterdata refinement |
-| active upstream | pending first push |
-| active pull request | pending |
-| active validation | CardData table 1 and 124 skill-movie USMs exact 124/124; source-only and mounted relation gates PASS |
+| current functional baseline | `master` includes PR #24 merge `66a0e1dd41fe560388e0ff408619c8f3a2c15c56` |
+| active functional branch | none; documentation-only closeout is isolated |
+| active track | none selected; CardData skill-movie exact-masterdata refinement is complete |
+| active upstream | not applicable |
+| active pull request | none |
+| active validation | PR #24 table 1 and 124 skill-movie USMs exact 124/124; source-only/mounted gates, production build, and post-merge source gate PASS |
+| PR #24 merge commit | `66a0e1dd41fe560388e0ff408619c8f3a2c15c56` |
+| PR #24 functional head | `168af27312a8949cedbec3788dfad4741c216ad1` |
+| PR #24 final-head gate | run `30511853325`, PASS |
+| PR #24 post-merge gate | run `30511892344`, PASS |
 | PR #22 merge commit | `0f858d036a377d4013a3345c85e8fba6acaf73fe` |
 | PR #22 final-head gate | run `30511081519`, PASS |
 | PR #22 post-merge gate | run `30511111063`, PASS |
@@ -85,8 +89,8 @@ disposition, PR #6 merged the bounded GS translation-link pilot, and PR #7
 activated publication v2 and annotation v1 contracts without adding a
 production record. PR #8 merged the bounded 260-USM relation catalog without
 decoding or publishing media. Later bounded relation and navigation batches
-merged through PR #20. Therefore `bca7042` remains the immutable PR #2 merge
-identity, while `19e5fc5` is the current functional repository baseline at
+merged through PR #24. Therefore `bca7042` remains the immutable PR #2 merge
+identity, while `66a0e1d` is the current functional repository baseline at
 this refresh.
 
 `stable-published` in project notes means an artifact occupies the stable path
