@@ -16,12 +16,14 @@ their forward-looking defect lists must not override this baseline.
 
 | Field | Value |
 | --- | --- |
-| current functional baseline | `master` includes PR #28 merge `5c21658ac63ac5d158024a83cdaeb086b7dcc30a` |
-| active functional branch | none; documentation-only closeout is isolated |
-| active track | none selected; gasha USM exact-client refinement is complete |
-| active upstream | not applicable |
-| active pull request | none |
-| active validation | PR #28 client contract and 12 gasha USMs exact 12/12; source-only/mounted gates, production build, and post-merge source gate PASS |
+| current functional baseline | `master` includes PR #30 merge `721c58b29e0eb953e8ba6138521d825d98e1cc63` |
+| active functional branch | `codex/reconcile-product-history-p2`; documentation/operational-entry-only P0 closeout |
+| active track | P0 current-architecture and Agent-entry closeout; no P1 implementation selected in this branch |
+| active upstream | `origin/codex/reconcile-product-history-p2` |
+| P0 closeout pull request | PR #31; recheck live state before claiming repository-level completion |
+| active validation | P0 Runtime foundation, audio, routes, playback range, soak instrumentation, archive sources, source-only baseline, authoritative registry, publication ledger, external resources and local production build PASS |
+| PR #30 merge commit | `721c58b29e0eb953e8ba6138521d825d98e1cc63` |
+| PR #30 functional head | `1c10537` (`feat(archive): add exact personal story links`) |
 | PR #28 merge commit | `5c21658ac63ac5d158024a83cdaeb086b7dcc30a` |
 | PR #28 functional head | `b6202a4c70f6b571837171ef2a11a63a6f8ff93f` |
 | PR #28 final-head gate | run `30513723245`, PASS |
@@ -74,7 +76,7 @@ their forward-looking defect lists must not override this baseline.
 | PR diff | `+52,090 / -627` |
 | PR checks | final-head run `30435933524` passed |
 | post-merge checks | `master` push run `30436935539` passed |
-| active-branch production build | PR #28 PASS, 2,407 modules, 89.2 seconds |
+| active-branch production build | P0 closeout branch PASS, 2,407 modules, 1 minute 56 seconds |
 | PR #4 merge commit | `2a1e1ec08ae6331b82f7ac9d9719efbb3322e59e` |
 | PR #4 final-head check | Source-only contract `30450883462` passed at `9215456` |
 | PR #4 post-merge check | `master` push run `30452463385` passed at `2a1e1ec` |
@@ -97,9 +99,10 @@ disposition, PR #6 merged the bounded GS translation-link pilot, and PR #7
 activated publication v2 and annotation v1 contracts without adding a
 production record. PR #8 merged the bounded 260-USM relation catalog without
 decoding or publishing media. Later bounded relation and navigation batches
-merged through PR #28. Therefore `bca7042` remains the immutable PR #2 merge
-identity, while `5c21658` is the current functional repository baseline at
-this refresh.
+merged through PR #28. PR #29 closed out that bounded track, and PR #30 added
+the exact personal-story external-link batch. Therefore `bca7042` remains the
+immutable PR #2 merge identity, while `721c58b` is the current functional
+repository baseline at this refresh.
 
 `stable-published` in project notes means an artifact occupies the stable path
 in the named checkout. For PR #2 artifacts, the containing commit is now merged
@@ -606,7 +609,7 @@ Track G / governance consistency
 -> freeze v1 complete
 -> compatible v2 release + append-only annotation contracts
 
-Track R / Runtime acceptance
+Track P2-B / Runtime acceptance (historical Track R)
 fixed Runtime commit
 -> 2–4 hour mixed soak
 -> final 25% resource curve
@@ -633,7 +636,7 @@ Current priority and write locks:
   baseline restoration are merged;
 - publication v2 and annotation v1 schemas are active, but no second production
   transaction has been created;
-- Track R remains independent and is explicitly deferred by the user; it is
+- Track P2-B remains independent and is explicitly deferred by the user; it is
   still required before declaring Story Runtime `release-accepted`;
 - external-link metadata/UI remains outside the publication ledger;
 - the USM v5 catalog records 260 source identities, 89 exact consumers (77

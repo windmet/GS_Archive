@@ -1,103 +1,116 @@
 # AGENT_START_HERE
 
-本项目是本地 SideM 剧情浏览器，前端基于 Vue + Vite + PixiJS + Spine。当前工程已经进入稳定排查期，不再处于大规模探索阶段。
+本项目是 local-first 的 GROWING STARS 档案门户与 Story Runtime，不再只是
+“本地 SideM 剧情浏览器”。当前工作原则是小批、可证明、可回滚，并严格区分
+本地资源存在、关系证明、稳定发布、浏览器验收和产品完成度。
 
-## 一、优先阅读顺序
+## 一、开始任务前
 
-每次开始任务前，请按顺序阅读：
+按以下顺序读取：
 
 1. `docs/PROJECT_MAP.md`
-2. `docs/SMOKE_CASES.md`
-3. `docs/SMOKE_EXPECTATIONS.md`
-4. `docs/DO_NOT_REOPEN.md`
-5. 用户本次明确点名的文件
+2. `notes/03_audit/GS_ARCHIVE_P0_ARCHITECTURE_CLOSEOUT_20260730.md`
+3. `notes/03_audit/GS_ARCHIVE_PRODUCT_HISTORY_RECONCILIATION_20260730.md`
+4. `notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md`
+5. `notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md`
+6. `notes/INDEX.md`
+7. 用户本次明确点名的文件
 
-除非用户明确要求，不要全仓库扫描。
+只有任务涉及 Pixi/Spine 舞台时再读 `docs/SMOKE_CASES.md`、
+`docs/SMOKE_EXPECTATIONS.md` 和 `docs/DO_NOT_REOPEN.md`。前两者是人工兼容
+样例，不是自动化 Story Runtime 门禁。
 
-## 二、默认禁止扫描目录
+然后只读核对：
 
-不要默认读取、搜索或分析以下目录：
+```powershell
+git status -sb
+git rev-parse HEAD
+git rev-parse origin/master
+Get-NetTCPConnection -LocalPort 5174 -State Listen
+```
 
-* `node_modules/`
-* `dist/`
-* `_archive/`
-* `_migration_backup*/`
-* `_encoding_review/`
-* `_archived_volume_lipsync/`
-* `external_raw/`
-* `raw/`
-* `public/raw/`
-* 大体积 `.unity3d`
-* `.acb`
-* `.awb`
-* `.usm`
-* 大量未索引 scenario 原始目录
+交接文档中的 branch、PID、PR 和计数都可能漂移，必须以当前 checkout 和机器
+报告为准。
 
-这些目录只在用户明确要求"查 raw 资产 / 查历史备份 / 查音频视频包 / 查 Unity 包"时读取。
+## 二、当前优先级
 
-## 三、当前工程分层
+- **P0：当前架构认知。** 保持 owner、adapter、route 和文档入口准确。
+- **P1：用户可见门户与有界内容整合。** 优先可搜索、可跳转、可理解的产品
+  能力；不得在 UI 批次中顺带创建 publication transaction。
+- **P2-A：代表性 strict-v2 promotion。** 继续采用独立小批证据。
+- **P2-B：2–4 小时 Runtime 长稳。** 状态仍是 `NOT EXECUTED`。它只阻止
+  `release-accepted` 宣称，不阻止 P0/P1 工作。
 
-### `src/components/`
+不得因为长稳降为 P2 就写成已经通过，也不得在普通门户批次中顺手执行或伪造
+长稳结论。
 
-Vue 组件层。
-`SpineStage.vue` 是舞台容器和 step 编排入口，不应继续堆积底层 Pixi 或资源解析细节。
+## 三、权威边界
 
-### `src/core/`
+1. masterdata 定义实体、标题、分组和关系语义。
+2. RAW `asset/audio/movie` 提供物理载荷。
+3. Unity object、container、PathID 和 CRI cue 选择包内子资源。
+4. 整理者导出只作 parity、发现或兼容参考。
+5. external GS translation links 是社区发现层，不进入本地 publication ledger。
 
-运行时核心层。
-包括 Pixi 舞台、背景、镜头、Spine 管理、step scene 应用、动画/过渡等。
+文件名相似、token 出现、浏览器能显示或本地存在，都不能单独证明 exact relation
+或 stable publication。
 
-### `src/utils/`
+## 四、Runtime 定位
 
-资源索引、字典、坐标解析、文本处理等工具层。
+- `StoryViewer.vue` 协调播放会话、导航、历史恢复和诊断。
+- `story-runtime/useStoryRuntimeCues.js` 是正式 cue 调度入口。
+- `StoryAudioSession.js` 拥有统一音频会话；`useVoicePlayer.js` 是其 Voice
+  适配器，不是独立音频系统。
+- `SpineStage.vue` 是 Pixi 舞台的 Vue 适配层，不是整个 step timeline owner。
+- `useStoryNavigation.js`、`useStepSceneEffects.js`、`AudioManager.js` 和
+  `applyStepSceneState.js` 是 active adapter/compatibility modules，不是第二套
+  Runtime owner。
+- `DebugSnapshotRuntime.js` 和 `ReleaseSoakRecorder.js` 属于 debug/release
+  instrumentation；后者的自动测试不证明真实长稳已经完成。
+- `useTimelineRunner.js` 已不存在，不得作为当前核心模块引用。
 
-### `tools/`
+修改 Runtime 前必须先读 `docs/PROJECT_MAP.md` 的 owner 表及对应 verifier。
 
-离线抽取、审计、生成索引、资源分析脚本。
-不要把 tools 逻辑搬进前端运行时。
+标准命令：
 
-### `docs/`
+```powershell
+npm run verify:story-runtime-foundation
+npm run verify:story-audio
+npm run verify:routes
+```
 
-给人和 agent 看的工程说明、决策记录、smoke 样例、排查边界。
+## 五、默认禁止扫描
 
-## 四、当前稳定原则
+不要默认读取：
 
-1. 不要把已经解决的问题当成未解决问题重新展开。
-2. 不要因为某个文件超过 1000 行就机械建议大重构。
-3. 优先给出小步、可回滚、可 smoke test 的修改。
-4. 涉及资源路径时，优先查 manifest / index / store，不要直接扫 raw 全目录。
-5. 涉及舞台显示时，优先使用 `docs/SMOKE_CASES.md` 里的固定样例。
-6. 涉及历史结论时，先看 `docs/DO_NOT_REOPEN.md`。
+- `node_modules/`、`dist/`
+- `_archive/`、`_migration_backup*/`、`_encoding_review/`
+- `_archived_volume_lipsync/`
+- `external_raw/`、`raw/`、`public/raw/`
+- 大体积 `.unity3d`、`.acb`、`.awb`、`.usm`
+- 大量未索引 scenario
 
-## 五、SpineStage.vue 当前定位
+资源路径问题优先查 manifest、index、registry、catalog 和 store。只有任务明确
+需要物理证据时才进入挂载 RAW。
 
-`SpineStage.vue` 当前是舞台编排层，允许保留以下职责：
+## 六、修改与验收
 
-* 创建和销毁 `PixiStageManager`
-* 监听 `props.step`
-* 监听 `props.fallbackBg`
-* 调用 `applyStepSceneState`
-* 同步当前 step 的角色显示
-* 暴露轻量 debug 面板
-* 调用已有 core/utils 模块
+1. 使用独立 `codex/` 分支。
+2. 一个批次只处理一个产品域或一个治理边界。
+3. 保持 5174 可用；页面修改从自然入口验证，并记录完整 URL 和 console。
+4. source-only PASS 不替代 mounted、真实媒体或浏览器证据。
+5. candidate 不得批量提升为 exact；不得一次替换整个 `public/assets`。
+6. publication release 与 annotation 必须走独立 Schema、verifier 和 append-only
+   规则。
+7. 提交前执行相关 verifier、`git diff --check` 并检查生成报告 diff。
 
-不建议在 `SpineStage.vue` 中继续新增：
+## 七、交付说明
 
-* 新的资源扫描逻辑
-* 新的 raw 文件路径猜测
-* 新的 Unity 包解析逻辑
-* 大量临时实验参数
-* 与 smoke case 无关的历史 debug 逻辑
+每次交付至少说明：
 
-## 六、回答格式要求
-
-每次给建议时，请分为：
-
-1. 当前判断
-2. 是否需要改代码
-3. 涉及文件
-4. 最小修改范围
-5. smoke 验证方式
-6. 风险与回滚方式
-
-不要只给笼统架构建议。
+1. 当前判断和实际修改；
+2. 涉及文件；
+3. 验证范围和结果；
+4. 未验证或仍 deferred 的范围；
+5. 风险与回滚入口；
+6. 下一批从哪个文档或命令开始。
