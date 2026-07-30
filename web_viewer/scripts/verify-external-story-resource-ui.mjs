@@ -6,6 +6,7 @@ import {
   buildExternalStoryNavigationEntries,
   externalResourcesForCollection,
   externalResourcesForEvent,
+  externalResourcesForIdolStory,
   externalResourcesForStory,
 } from '../src/data/externalStoryResources.js'
 
@@ -19,17 +20,21 @@ const [
   eventComponent,
   storyComponent,
   collectionComponent,
+  idolStoryComponent,
   navigationComponent,
   storyCatalogComponent,
   appComponent,
+  idolEpisodeIndex,
 ] = await Promise.all([
   readViewerFile('public/data/external_story_resources.json').then(JSON.parse),
   readViewerFile('src/components/archive/ArchiveEventDetail.vue'),
   readViewerFile('src/components/archive/ArchiveStoryDetail.vue'),
   readViewerFile('src/components/archive/ArchiveStoryCollection.vue'),
+  readViewerFile('src/components/archive/ArchiveIdolStory.vue'),
   readViewerFile('src/components/archive/ArchiveExternalStoryResources.vue'),
   readViewerFile('src/components/archive/ArchiveStoryCatalog.vue'),
   readViewerFile('src/App.vue'),
+  readViewerFile('public/data/masterdata/idol_episode_index.json').then(JSON.parse),
 ])
 
 assert.deepEqual(
@@ -101,6 +106,28 @@ assert.deepEqual(
     ['chapter-3', 'BV16u4y187tH'],
   ],
 )
+assert.deepEqual(
+  externalResourcesForIdolStory(registry, {
+    sections: [{
+      id: 23901,
+      episodes: ['a', 'b', 'c', 'd', 'e'].map(part => ({
+        resource_id: `1_2_039_01_${part}`,
+      })),
+    }],
+  }).map(entry => [entry.sectionId, entry.resource.platform.bvid]),
+  [[23901, 'BV1HPKDz5E2u']],
+)
+assert.deepEqual(
+  externalResourcesForIdolStory(registry, {
+    sections: [{
+      id: 24001,
+      episodes: ['a', 'b', 'c', 'd', 'e'].map(part => ({
+        resource_id: `1_2_040_01_${part}`,
+      })),
+    }],
+  }).map(entry => [entry.sectionId, entry.resource.platform.bvid]),
+  [[24001, 'BV113KfzrEHj']],
+)
 
 const navigationEntries = buildExternalStoryNavigationEntries(registry, {
   events: [
@@ -132,6 +159,21 @@ assert.deepEqual(
     ['BV1LL411G7LD', 'collection', '1_1_013the_01_1_1_013_01.json'],
     ['BV1xA4y1S7Cb', 'collection', '1_1_013the_02_1_1_013_02.json'],
     ['BV16u4y187tH', 'collection', '1_1_013the_03_1_1_013_03.json'],
+  ],
+)
+assert.deepEqual(
+  buildExternalStoryNavigationEntries(registry, {
+    idolEpisodes: idolEpisodeIndex,
+  }).map(entry => [
+    entry.resource.platform.bvid,
+    entry.target.kind,
+    entry.target.idolCode,
+    entry.target.sectionId,
+  ]),
+  [
+    ['BV1ZM411S7bV', 'idol-story', '038tak', 23801],
+    ['BV1HPKDz5E2u', 'idol-story', '039mcr', 23901],
+    ['BV113KfzrEHj', 'idol-story', '040ren', 24001],
   ],
 )
 assert.deepEqual(
@@ -189,6 +231,7 @@ for (const [name, source] of [
   ['ArchiveEventDetail', eventComponent],
   ['ArchiveStoryDetail', storyComponent],
   ['ArchiveStoryCollection', collectionComponent],
+  ['ArchiveIdolStory', idolStoryComponent],
   ['ArchiveExternalStoryResources', navigationComponent],
 ]) {
   assert.match(source, /:href="(?:entry\.)?resource\.platform\.canonical_url"/, `${name} must use registry URL`)
@@ -220,6 +263,26 @@ assert.match(
   appComponent,
   /:initial-chapter-id="currentStoryCollectionChapter\?\.id \|\| ''"/,
   'App must preserve exact unit-story chapter targeting',
+)
+assert.match(
+  appComponent,
+  /:external-resources="currentIdolStoryExternalResources"/,
+  'App must pass exact personal-story resources to ArchiveIdolStory',
+)
+assert.match(
+  appComponent,
+  /idolEpisodes: idolEpisodeData\.value/,
+  'dedicated navigation must resolve exact personal stories through idol_episode_index',
+)
+assert.match(
+  appComponent,
+  /'external_story_resources',[\s\S]*await ensureIdolCommunicationData\(\)/,
+  'direct external-resource routes must load idol_episode_index before rendering',
+)
+assert.match(
+  appComponent,
+  /target\?\.kind === 'idol-story'/,
+  'dedicated navigation must retain an internal personal-story action',
 )
 
 console.log('External Story resource UI verified: exact mappings and safe links')

@@ -11,10 +11,11 @@ const paths = {
   schema: path.join(viewerRoot, 'schemas', 'external-story-resource-v1.schema.json'),
   events: path.join(viewerRoot, 'public', 'data', 'masterdata', 'event_index.json'),
   stories: path.join(viewerRoot, 'public', 'data', 'masterdata', 'story_presentation_index.json'),
+  idolEpisodes: path.join(viewerRoot, 'public', 'data', 'masterdata', 'idol_episode_index.json'),
 }
 
 const readJson = filePath => readFile(filePath, 'utf8').then(JSON.parse)
-const [registry, schema, eventIndex, storyIndex] = await Promise.all(
+const [registry, schema, eventIndex, storyIndex, idolEpisodeIndex] = await Promise.all(
   Object.values(paths).map(readJson),
 )
 
@@ -35,6 +36,14 @@ const eventByCode = new Map(
 const storiesByScenarioId = new Map(
   Object.values(storyIndex.by_file || {}).map(story => [story.scenario_id, story]),
 )
+const idolEpisodeByResourceId = new Map()
+for (const chapter of idolEpisodeIndex.chapters || []) {
+  for (const section of chapter.sections || []) {
+    for (const episode of section.episodes || []) {
+      idolEpisodeByResourceId.set(episode.resource_id, { chapter, section, episode })
+    }
+  }
+}
 const externalIds = new Set()
 const bvids = new Set()
 const forbiddenEvidence = /\b(?:mobage|cd drama|live-event|anime|unknown-product)\b/i
@@ -115,6 +124,38 @@ for (const [index, entry] of (registry.entries || []).entries()) {
       if (!Array.isArray(story.episodes) || story.episodes.length < 1) {
         errors.push(`${label} collection ${collectionId} has no episode boundary`)
       }
+    }
+  }
+
+  if (mapping.state === 'exact-idol-story') {
+    if (mapping.event_id !== null) {
+      errors.push(`${label} exact idol story must not carry an event ID`)
+    }
+    if ((mapping.collection_ids || []).length !== 0) {
+      errors.push(`${label} exact idol story must use episode resource IDs only`)
+    }
+
+    const targets = (mapping.story_resource_ids || []).map(resourceId => {
+      const target = idolEpisodeByResourceId.get(resourceId)
+      if (!target) errors.push(`${label} references missing idol episode ${resourceId}`)
+      return target
+    }).filter(Boolean)
+    const target = targets[0]
+    if (target && targets.some(candidate =>
+      candidate.chapter.idol_code !== target.chapter.idol_code ||
+      candidate.section.id !== target.section.id
+    )) {
+      errors.push(`${label} exact idol story spans multiple idols or sections`)
+    }
+    if (target) {
+      const expectedIds = target.section.episodes.map(episode => episode.resource_id).sort()
+      const actualIds = [...mapping.story_resource_ids].sort()
+      if (JSON.stringify(actualIds) !== JSON.stringify(expectedIds)) {
+        errors.push(`${label} exact idol story must cover the complete section boundary`)
+      }
+    }
+    if (entry.translation?.coverage !== 'complete-story') {
+      errors.push(`${label} exact idol story must use complete-story coverage`)
     }
   }
 }
