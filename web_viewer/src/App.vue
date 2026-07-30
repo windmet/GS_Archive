@@ -9,6 +9,7 @@
       :searchable="archiveSearchable"
       :search-placeholder="archiveSearchPlaceholder"
       :show-back="archiveShowBack"
+      :breadcrumbs="archiveBreadcrumbs"
       @navigate="navigateArchiveSection"
       @back="goArchiveBack"
     >
@@ -384,6 +385,7 @@ import {
 import { buildIdolStoryOptions, buildIdolStoryPage } from './data/idolCommunicationSelectors.js'
 import {
   archiveSectionForRoute,
+  buildArchiveBreadcrumbs,
   onArchivePopState,
   readArchiveRoute,
   writeArchiveRoute,
@@ -1269,6 +1271,61 @@ const archiveSearchPlaceholder = computed(() => {
 })
 
 const archiveShowBack = computed(() => view.value !== 'home')
+
+const archiveBreadcrumbs = computed(() => {
+  const route = currentArchiveRoute()
+  const entityByView = {
+    idol_detail: {
+      title: currentIdolProfile.value?.display_name,
+      id: currentCharacterId.value,
+    },
+    unit_detail: {
+      title: currentArchiveUnit.value?.unit_name,
+      id: currentArchiveUnitCode.value,
+    },
+    card_detail: {
+      title: currentCard.value?.title,
+      id: currentCardId.value,
+    },
+    gasha_detail: {
+      title: currentGasha.value?.display_name,
+      id: currentGashaId.value,
+    },
+    event_detail: {
+      title: currentEvent.value?.title,
+      id: currentEventId.value,
+    },
+    story_collection: {
+      title: currentStoryCollection.value?.title,
+      id: currentStorySection.value,
+      domainLabel: currentStoryCollection.value?.domainLabel,
+    },
+    story_detail: {
+      title: currentStory.value?.title,
+      id: currentStoryFile.value,
+      domainLabel: currentStory.value?.domainLabel,
+    },
+    seasonal_campaign: {
+      title: currentSeasonalCampaign.value?.name,
+      id: currentStorySection.value,
+    },
+    work_archive: {
+      title: archiveTitle.value,
+      id: currentCharacterId.value,
+    },
+    idol_story_archive: {
+      title: archiveTitle.value,
+      id: currentCharacterId.value,
+    },
+    mobile_archive: {
+      title: archiveTitle.value,
+      id: currentCharacterId.value,
+    },
+  }
+  return buildArchiveBreadcrumbs(route, entityByView[view.value] || {
+    title: archiveTitle.value,
+  })
+})
 
 function idolSourceName(id, fallback = '') {
   if (!id) return ''

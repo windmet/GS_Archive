@@ -418,7 +418,7 @@ Annotation 必须：
 
 ### P1-UI：门户统一面包屑
 
-状态：**approved for a future bounded UI batch；尚未实现**。
+状态：**implemented locally on `codex/archive-breadcrumb-p1-ui`；尚未提交或合并**。
 
 产品目标：
 
@@ -462,6 +462,90 @@ resource 五类页面。该批只新增 breadcrumb model/component 与必要样�
 ```text
 notes/03_audit/GS_ARCHIVE_PRODUCT_HISTORY_RECONCILIATION_20260730.md
 ```
+
+### P1-Story-IA：剧情分类正式入口与 masterdata 建档
+
+状态：**approved as a bounded follow-up P1 track；不得混入 P1-UI breadcrumb
+首批**。
+
+#### 问题定义
+
+P1-UI 实测暴露出 breadcrumb 层级与现有剧情产品面的断层：
+
+- `view=story_collection&story_type=main&story_section=101` 已是有效的第 1 章
+  collection；缺失的是 `story_type=main` 的正式 domain landing；
+- `view=story_catalog&story_type=main` 当前仍渲染整个故事门户，不能视为主线剧情
+  专属页面；
+- `story_type=birthday` 与 `story_type=extra` 当前进入
+  `story_mode=search`，只是预选分类的搜索结果，不是正式剧情档案；
+- 在 domain landing 实现前，breadcrumb 不得把不存在的页面伪装成 canonical
+  上级；domain 项应暂时返回真实故事门户。
+
+#### 已核对的 masterdata 边界
+
+语义身份与父子关系以 masterdata 为准，编译 JSON 仅作为可共享的播放载体：
+
+| domain | masterdata 事实 | 当前产品风险 |
+| --- | --- | --- |
+| `main` | table 4 / 5 / 6；3 groups、22 chapters、204 episode rows | 已有 collection model，但没有 domain landing；第 3 group 当前没有 chapter |
+| `birthday` | table 78；181 episode rows、181 distinct compiled files | 29 个文件同时属于 `idol_story` 与 `birthday`，全局按文件去重会把生日域压成 152 条 |
+| `extra` | table 144 / 145；47 groups、47 episode rows、45 resource IDs、44 compiled files | 一个播放文件可承载多条 master 关系，不能用 `compiled_file` 代替档案 ID |
+
+因此后续模型必须区分：
+
+1. master 逻辑条目和 collection 身份；
+2. domain membership；
+3. 可共享的 resource / compiled playback target。
+
+不得从文件名或 `compiled_summary.characters` 单独推定生日剧情归属；需要通过
+master row、偶像索引和已验证的资源关系建立可审计映射。
+
+#### 推荐小批顺序
+
+1. **P1-Story-IA-A：只读审计与 index/verifier**
+   - 固化 main / birthday / extra 的逻辑条目、父子关系、共享播放文件和计数口径；
+   - 输出独立 Schema / generator / verifier；
+   - 不扫描未索引 RAW，不创建 publication transaction。
+2. **P1-Story-IA-B：main domain landing**
+   - 复用 `story_catalog` 与既有 route builder；
+   - `view=story_catalog&story_type=main` 才在本批后成为真实 canonical landing；
+   - 继续复用现有 `story_collection` 页面，不重写播放器。
+3. **P1-Story-IA-C：extra 正式档案**
+   - 以 table 144 group 和 table 145 episode 的 master ID 为档案身份；
+   - 明确显示逻辑条目数与共享播放载体数，不把 44 个文件伪写成 47 个独立文件。
+4. **P1-Story-IA-D：birthday 正式档案**
+   - 建立按偶像进入的 collection，并在页面内部表达制作人生日、偶像生日和批次；
+   - 29 个 `idol_story` / `birthday` 共享文件必须保留双重 domain membership；
+   - 不在 breadcrumb 中增加超过四层的批次节点。
+
+建议沿用现有 view，而不是新增第二套路由：
+
+```text
+view=story_catalog
+  -> 故事总入口
+
+view=story_catalog&story_type=main|birthday|extra
+  -> domain landing
+
+view=story_catalog&story_type=...&story_mode=search
+  -> 传统检索面
+
+view=story_collection&story_type=...&story_section=...
+  -> 正式 collection
+```
+
+#### 验收和非目标
+
+- breadcrumb 最多四层，domain landing 完成后再把 domain crumb 指向该 landing；
+- 稳定保留 `q`、`unit_filter`、`event_scope`、`rarity` 等既有筛选；
+- 验收自然入口、深链、刷新、浏览器 Back、现有返回按钮、桌面、窄屏和无障碍语义；
+- legacy 搜索的全局去重问题记录为已知债务，不在 landing 小批中顺带重写全局搜索；
+- 不重写关系数据总线、播放器、publication、strict-v2 promotion 或 Runtime 长稳。
+
+该轨属于 P1 门户信息架构，不改变以下状态：
+
+- strict-v2 promotion 仍属于 P2-A；
+- 2–4 小时长稳仍属于 P2-B，状态仍为 **NOT EXECUTED**。
 
 ### P1-A：GS-only 社区熟肉外链试点
 
