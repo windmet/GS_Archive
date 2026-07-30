@@ -1,5 +1,11 @@
 # GS Archive P0 治理与后续执行交接
 
+> 历史优先级说明（2026-07-30）：本文中的 `P0-B` 是 2026-07-28 阶段的
+> 实施编号，不再代表当前优先级。2–4 小时 Runtime 长稳现为 **P2-R**，
+> 仍保持 `NOT EXECUTED`，只约束 `release-accepted` 宣称，不阻塞当前
+> P0 架构文档和 P1 门户产品批次。当前入口见
+> `GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md`。
+
 状态：当前新窗口主交接
 日期：2026-07-28
 仓库：`E:\Web_build\SideM_Archived`

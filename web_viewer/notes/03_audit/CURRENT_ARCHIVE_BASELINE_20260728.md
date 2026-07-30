@@ -606,7 +606,7 @@ Track G / governance consistency
 -> freeze v1 complete
 -> compatible v2 release + append-only annotation contracts
 
-Track R / Runtime acceptance
+Track P2-R / Runtime acceptance
 fixed Runtime commit
 -> 2–4 hour mixed soak
 -> final 25% resource curve
@@ -633,7 +633,7 @@ Current priority and write locks:
   baseline restoration are merged;
 - publication v2 and annotation v1 schemas are active, but no second production
   transaction has been created;
-- Track R remains independent and is explicitly deferred by the user; it is
+- Track P2-R remains independent and is explicitly deferred by the user; it is
   still required before declaring Story Runtime `release-accepted`;
 - external-link metadata/UI remains outside the publication ledger;
 - the USM v5 catalog records 260 source identities, 89 exact consumers (77

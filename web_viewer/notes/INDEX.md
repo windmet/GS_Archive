@@ -20,10 +20,14 @@ The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_889
 
 ## Current entry points
 
+- `notes/03_audit/GS_ARCHIVE_PRODUCT_HISTORY_RECONCILIATION_20260730.md` -
+  current product-history reconciliation, local fact check, corrected
+  architecture-document drift, and the 2026-07-30 priority decision that moves
+  the 2–4 hour Runtime soak to P2.
 - `notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md` - current
   post-merge execution order and live Git boundary: no selected functional
-  track, deferred Runtime long soak, and completed governance, external-link,
-  USM MovieAnnounce, and image relation tracks.
+  track, P2-deferred Runtime long soak, and completed governance, external-link,
+  USM, and image relation tracks.
 - `notes/03_audit/RAW_USM_MOVIE_ANNOUNCE_EXACT_RELATIONS_20260730.md` -
   table-175 authority, 30/30 MovieAnnounce-to-USM exact relations, v2 catalog
   contract, mounted/source-only gates, and no-media-publication boundary.

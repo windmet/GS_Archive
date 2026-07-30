@@ -5,6 +5,13 @@
 仓库：`E:\Web_build\SideM_Archived`
 应用：`E:\Web_build\SideM_Archived\web_viewer`
 
+> 2026-07-30 优先级覆盖：Story Runtime 2–4 小时长稳由 P0-R 降为
+> **P2-R**。它仍是宣称 Runtime `release-accepted` 的必要证据，但不再
+> 阻塞 P0 架构文档收口或 P1 用户可见门户/有界内容批次。本文更早章节中的
+> P0/P1 标签同时承担历史实施编号；与当前优先级冲突时，以本段和
+> `notes/03_audit/GS_ARCHIVE_PRODUCT_HISTORY_RECONCILIATION_20260730.md`
+> 为准。
+
 ## 1. 当前结论
 
 RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #2
@@ -15,12 +22,13 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | 项 | 当前值 |
 | --- | --- |
 | merged base branch | `master` |
-| current functional baseline | `master` includes PR #28 merge `5c21658ac63ac5d158024a83cdaeb086b7dcc30a` |
-| active functional branch | none；documentation-only closeout is isolated |
-| active track | none selected；gasha USM exact-client 细化已完成 |
+| current functional baseline | `master` includes PR #30 merge `721c58b29e0eb953e8ba6138521d825d98e1cc63` |
+| active functional branch | `codex/reconcile-product-history-p2`；documentation-only |
+| active track | P0 current-architecture documentation reconciliation |
 | upstream | not applicable |
-| worktree | clean at PR #28 merge；documentation-only closeout follows separately |
+| worktree | clean at branch start from PR #30 merge；documentation edits follow |
 | open PR | none |
+| PR #30 | merged as `721c58b29e0eb953e8ba6138521d825d98e1cc63` |
 | PR #28 | merged as `5c21658ac63ac5d158024a83cdaeb086b7dcc30a` |
 | PR #28 final-head check | Source-only contract PASS，run `30513723245` |
 | PR #28 post-merge check | `master` push Source-only contract PASS，run `30513761773` |
@@ -104,7 +112,7 @@ PR #2 合入了：
 
 PR #3 只修正合并后的状态文档，没有扩大运行时范围。
 
-## 2. 尚未完成，按独立轨道排列
+## 2. 当前与历史轨道
 
 ### P0-G：治理一致性与新发布写锁
 
@@ -174,7 +182,7 @@ pre_ledger
 - 不修改已合并 v1 release 的 bytes/hash；
 - Runtime 长稳和 GS 外链 metadata/UI 不受该写锁阻塞。
 
-### P0-R：Story Runtime 2–4 小时长稳
+### P2-R：Story Runtime 2–4 小时长稳
 
 这是当前唯一仍阻止 Story Runtime 写成 `release-accepted` 的项目。
 
@@ -799,7 +807,7 @@ consumer contract 时，才能另开有界分支；不得继续按 token presenc
 ## 3. 三轨依赖图
 
 ```text
-master 5c21658
+master 721c58b
   |
   +-- completed Track S: PR #5
   |     18 WAV provenance complete
@@ -812,7 +820,7 @@ master 5c21658
   |     -> v2 + annotation contracts active
   |     -> no new production record
   |
-  +-- deferred Track R: Runtime acceptance
+  +-- deferred P2-R: Runtime acceptance
   |     fixed Runtime commit
   |     -> 2–4h soak
   |     -> quiet endpoint
@@ -839,7 +847,8 @@ master 5c21658
 
 PR #4 已通过 merge commit `2a1e1ec` 合入 `master`，post-merge gate
 `30452463385` 通过。PR #5 已通过 merge commit `9e4fd7d` 合入 `master`，
-post-merge gate `30458806049` 通过。Track R 已由用户暂缓；Track S 已完成；
+post-merge gate `30458806049` 通过。Track R 已由用户暂缓，并在
+2026-07-30 降为 P2；Track S 已完成；
 Track P 的首个 exact GS pilot 已由 PR #6 合并，post-merge gate
 `30460342231` 通过。Track G 已由 PR #7 合并，post-merge gate
 `30461311887` 通过；它只激活 Schema/verifier，不包含新的
@@ -958,8 +967,8 @@ git diff --cached --check
 
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
-worktree、origin/master，并确认当前没有 active 功能分支，master 已包含
-PR #28 merge `5c21658`，post-merge run `30513761773` 通过。
+worktree、origin/master。当前产品史复核基线为 master 已包含 PR #30 merge
+`721c58b`；若 checkout 已继续前移，以实时 Git 事实为准，不复用旧 branch/PID。
 
 完整阅读：
 1. web_viewer/notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
@@ -989,7 +998,7 @@ USM v5 必须保持 260 total / 89 exact consumer / 166 exact masterdata /
 table 175、124 条由 CardData table 1、12 条由 SongData table 46 独立证明。
 后两类 masterdata 关系不代表已有浏览器 consumer 或衍生媒体。
 真实 ledger 仍为 1 release / 1 stable logical ID，没有新增 production record。
-Story Runtime 2–4 小时长稳由用户暂缓，仍保持 NOT EXECUTED。P1-D 已把
+Story Runtime 2–4 小时长稳由用户降为 P2，仍保持 NOT EXECUTED。P1-D 已把
 promotion registry 已证明的 50 bundles / 52 relations 升级为
 stable-promotion，其余 7 个 chara 合辑仍为 candidate。P1-E 已完成
 `gasha` 有界子族的只读审计，只把 gasha index
@@ -1009,7 +1018,10 @@ bundle 升级为 exact-masterdata-relation，保留 `ssr02`/`ssr03` 原始后缀
 二进制。
 ```
 
-## 7. 完成定义
+## 7. P2-R 长稳验收的完成定义
+
+以下条件只定义未来何时可以称为 Story Runtime `release-accepted`。它们不是
+当前 P0 架构文档或 P1 门户产品批次的完成条件。
 
 Story Runtime：
 
