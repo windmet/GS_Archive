@@ -45,8 +45,8 @@ spine_lab / chibi_stage
 | 播放会话与导航协调 | `src/core/StoryViewer.vue` | 当前 step、历史恢复、Auto/Skip、暂停原因和诊断 |
 | cue 归一化与调度 | `src/core/story-runtime/useStoryRuntimeCues.js` | 调度 Screen、Background、Camera、SE、Snapshot 和 Spine cue |
 | 逻辑时间 | `src/core/story-runtime/StoryClock.js` | pause/resume/rate 和逻辑时间 |
-| 场景历史 | `SceneSnapshotStore.js`、`StepSceneState.js` | settled/entry snapshot 与导航恢复 |
-| 音频会话 | `StoryAudioSession.js` | Voice、SE、BGM、Ambient 的共享生命周期和 mixer |
+| 场景历史 | `src/core/story-runtime/SceneSnapshotStore.js`、`src/core/story-runtime/StepSceneState.js` | settled/entry snapshot 与导航恢复 |
+| 音频会话 | `src/core/story-runtime/StoryAudioSession.js` | Voice、SE、BGM、Ambient 的共享生命周期和 mixer |
 | Voice 适配 | `src/core/useVoicePlayer.js` | 仍在使用，但依附共享 `StoryAudioSession`，不是第二套音频 owner |
 | Pixi 舞台实现 | `PixiStageManager.js` 及各 Manager | 背景、镜头、Spine、屏幕效果的渲染执行 |
 | Vue 舞台适配 | `src/components/SpineStage.vue` | manager 生命周期、runtime scene/snapshot 应用、诊断桥接 |
@@ -54,6 +54,39 @@ spine_lab / chibi_stage
 `useTimelineRunner.js` 已不在当前源码中，不得再把它列为正式 Runtime。
 `SpineStage.vue` 也不是整个剧情 step 的权威调度器；正式 cue 调度属于
 `useStoryRuntimeCues.js`。它仍可保留局部舞台同步和兼容适配职责。
+
+### Active adapter 与辅助模块
+
+以下模块仍在生产路径中，但不取代上表的 authoritative owner：
+
+- `src/core/useStoryNavigation.js`：episode 范围、Next/Prev、Choice 和恢复入口；
+- `src/core/useStepSceneEffects.js`：BGM、Ambient、Voice 触发和 legacy Auto
+  适配；Screen、Background、Camera 和 SE 的 cue ownership 不在这里；
+- `src/core/AudioManager.js`：在共享 `StoryAudioSession` 上实现 BGM、Ambient
+  和 SE source；
+- `src/core/applyStepSceneState.js`：应用仍未迁入 cue runtime 的局部视觉状态；
+  不再拥有 `screen_slide`、`screen_fade`、Background 或 Camera transition；
+- `src/components/SpineStage.vue`：将稳定 scene/snapshot 投影到 Pixi manager，
+  不是另一套 timeline。
+
+### Debug-only、release instrumentation 与 retired
+
+- `src/core/story-runtime/DebugSnapshotRuntime.js` 只服务 `snapshotAt` 调试 cue；
+- `src/core/story-runtime/ReleaseSoakRecorder.js` 只在 `runtimeDebug=1` 下暴露
+  recorder UI/collector；它通过机器测试不等于 2–4 小时长稳已经执行；
+- `src/debug/installSpineAnimationDebug.js` 是诊断桥，不是产品 route 或 Runtime
+  owner；
+- `useTimelineRunner.js` 已 retired 且不在 tracked source 中；
+- 本地若存在 ignored 的 `src/core/PixiStageManager_4_guided_fix.js`，它是早期
+  工作副本，不属于 Git 权威源码；正式实现只有 tracked
+  `src/core/PixiStageManager.js`。
+
+Runtime ownership 的标准机器入口是：
+
+```powershell
+npm run verify:story-runtime-foundation
+npm run verify:story-audio
+```
 
 ## 3. 工程分层
 
@@ -126,17 +159,23 @@ parity 或兼容参考。
 - 在 `ArchiveShell` 中增加由 route/entity 派生的统一面包屑，帮助用户理解
   “资料馆域 → 列表/集合 → 当前实体”的位置；
 - 外部熟肉继续 exact-only、GS-only，并与本地 publication ledger 分离；
-- 严格 v2 只做代表性小批，不进行 3,398 group 一键迁移。
+- P1 不等待 strict-v2 promotion 或 Runtime 长稳；P1 批次也不得顺带创建
+  publication transaction。
 
 面包屑不是浏览器 history 的可视化，也不替代现有 Back。`player`、
 `spine_lab` 和 `chibi_stage` 保持全屏；它们只继续使用明确的
 `return`/`parent` 返回契约。
 
-### P2：Runtime 长时验收
+### P2-A：代表性 strict-v2 promotion
+
+只选择 Main、Unit、Idol、Event、Mobile/Call 等代表性 collection 小批推进，
+不进行 3,398 group 一键迁移。P2-A 与 P1 产品 UI 使用独立分支和证据。
+
+### P2-B：Runtime 长时验收
 
 2–4 小时混合长稳、最后 25% 资源曲线和 quiet endpoint 尚未执行。它仍是
 宣称 Story Runtime `release-accepted` 的必要证据，但不再是门户开发、
-资源关系审计或代表性 v2 小批的 P0/P1 阻塞条件。
+资源关系审计或代表性 v2 小批的阻塞条件。
 
 ## 6. 禁止默认扫描目录
 

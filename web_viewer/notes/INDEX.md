@@ -1,16 +1,30 @@
 ﻿# Notes Index
 
-This folder collects working notes and investigation records that were previously scattered at the repository root.
+This folder collects current entry points and historical investigation records
+that were previously scattered at the repository root. “Latest” is reserved for
+the current-state section below; older design and handoff notes remain evidence
+for their captured date, not present-tense execution guidance.
 
-Latest story runtime architecture note: `notes/04_refactor/STORY_VIEWER_RUNTIME_REFACTOR_DESIGN_20260718.md`
+Current P0 architecture closeout:
+`notes/03_audit/GS_ARCHIVE_P0_ARCHITECTURE_CLOSEOUT_20260730.md`
 
-Latest story/portal localization contract: `notes/04_refactor/STORY_LOCALIZATION_CONTRACT_20260719.md`
+Current product and priority reconciliation:
+`notes/03_audit/GS_ARCHIVE_PRODUCT_HISTORY_RECONCILIATION_20260730.md`
 
-Latest archive/story navigation handoff: `notes/04_refactor/ARCHIVE_STORY_NEXT_WINDOW_HANDOFF_20260716.md`
+Historical Story Runtime design:
+`notes/04_refactor/STORY_VIEWER_RUNTIME_REFACTOR_DESIGN_20260718.md`
 
-Latest Story Runtime post-merge handoff: `notes/04_refactor/STORY_POST_MERGE_HANDOFF_20260723.md`
+Historical story/portal localization contract:
+`notes/04_refactor/STORY_LOCALIZATION_CONTRACT_20260719.md`
 
-Latest RAW + master-data migration log: `notes/05_exploration/RAW_MASTERDATA_MIGRATION_20260726.md`
+Historical archive/story navigation handoff:
+`notes/04_refactor/ARCHIVE_STORY_NEXT_WINDOW_HANDOFF_20260716.md`
+
+Historical Story Runtime post-merge handoff:
+`notes/04_refactor/STORY_POST_MERGE_HANDOFF_20260723.md`
+
+Historical RAW + master-data migration log:
+`notes/05_exploration/RAW_MASTERDATA_MIGRATION_20260726.md`
 
 Full RAW + master-data resource audit: `notes/03_audit/RAW_MASTERDATA_FULL_AUDIT_20260726.md`
 
@@ -20,14 +34,17 @@ The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_889
 
 ## Current entry points
 
+- `notes/03_audit/GS_ARCHIVE_P0_ARCHITECTURE_CLOSEOUT_20260730.md` -
+  current code-owner, adapter, debug/retired, 26-route and machine-gate closeout;
+  use this before opening a P1 product batch.
 - `notes/03_audit/GS_ARCHIVE_PRODUCT_HISTORY_RECONCILIATION_20260730.md` -
   current product-history reconciliation, local fact check, corrected
   architecture-document drift, and the 2026-07-30 priority decision that moves
   the 2–4 hour Runtime soak to P2.
 - `notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md` - current
-  post-merge execution order and live Git boundary: no selected functional
-  track, P2-deferred Runtime long soak, and completed governance, external-link,
-  USM, and image relation tracks.
+  post-merge execution order and live Git boundary: P0 architecture closeout,
+  P1 portal handoff, P2-deferred Runtime long soak, and completed governance,
+  external-link, USM, and image relation tracks.
 - `notes/03_audit/RAW_USM_MOVIE_ANNOUNCE_EXACT_RELATIONS_20260730.md` -
   table-175 authority, 30/30 MovieAnnounce-to-USM exact relations, v2 catalog
   contract, mounted/source-only gates, and no-media-publication boundary.

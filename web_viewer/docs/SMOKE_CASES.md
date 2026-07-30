@@ -1,6 +1,15 @@
 # SMOKE_CASES
 
-本文件定义 SpineStage 的固定 smoke 样例。覆盖核心显示状态机而非全量资源。
+状态：人工兼容样例目录，不是自动化 Story Runtime 门禁。
+
+本文件定义 SpineStage 的固定 smoke 样例，覆盖核心显示状态机而非全量资源。
+`npm run smoke` 当前只执行 production build；自动化 Runtime owner/lifecycle
+验证使用 `npm run verify:story-runtime-foundation`。
+
+样例中的 legacy `step.state` 只描述输入兼容形态。Screen、Background、
+Camera 和 SE transition 必须先由 `ScenarioNormalizer` 归一化，再由
+`useStoryRuntimeCues` 调度；`SpineStage` 与 `applyStepSceneState` 不拥有这些
+transition channel。
 
 ## 样例清单
 
@@ -260,7 +269,9 @@
 
 ## Smoke 10 — Screen slide / fade
 
-验证：画面过渡效果正常
+验证：legacy `state.screen_slide` 经 ScenarioNormalizer 归一化为
+`screen.directional_wipe` cue 后，画面过渡效果正常。不要把此样例直接传给
+`applyStepSceneState` 并期待它播放 transition。
 
 ```json
 {

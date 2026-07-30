@@ -1,6 +1,10 @@
 # SMOKE_EXPECTATIONS
 
-每个 smoke case 的预期行为和断言。
+状态：人工兼容预期，不是自动化 Story Runtime 门禁。
+
+每个 smoke case 的预期行为和断言。`npm run smoke` 当前只证明 production
+build；Runtime transition ownership 由
+`npm run verify:story-runtime-foundation` 验证。
 
 ## Smoke 01 — 单人立绘
 
@@ -171,6 +175,10 @@
 ```
 
 ## Smoke 10 — Screen slide / fade
+
+前置条件：输入必须经过 `ScenarioNormalizer`，并由
+`useStoryRuntimeCues` 调度生成的 `screen.directional_wipe` cue；直接调用
+`SpineStage`/`applyStepSceneState` 不属于该 transition 的验收路径。
 
 ```json
 {

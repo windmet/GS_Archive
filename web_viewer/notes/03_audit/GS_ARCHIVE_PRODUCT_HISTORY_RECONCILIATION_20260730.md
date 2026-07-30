@@ -113,7 +113,8 @@ SemVer tag。对外使用前应明确标注为 retrospective phase labels。
 - 角色、组合、卡牌、卡池、活动、剧情之间的明确跳转；
 - 原文、内置翻译、外部熟肉三种覆盖状态；
 - 阅读历史、继续观看和移动端信息密度；
-- strict-v2 只选代表性 collection 小批推进，不做全量一键迁移。
+- P1 不等待 strict-v2 promotion，也不得在 UI 批次中顺带创建 publication
+  transaction。
 
 P1 产品批次和资源证据批次仍应分支隔离，不能为了 UI 便利降低 exact relation
 门槛。
@@ -166,10 +167,10 @@ stack 或页面关系数据。
 - 5174 至少抽查 Idol、Card、Event、Story collection、External resource
   五类详情页。
 
-### P2：Runtime 长时验收与扩大代表性 v2 覆盖
+### P2：扩大代表性 v2 覆盖与 Runtime 长时验收
 
 P2-A 可选取多 Episode Main、Unit、Idol、Event、Mobile/Call 和复杂
-Choice/多音频场景，逐类完成 strict-v2 小批。
+Choice/多音频场景，逐类完成 strict-v2 小批；不进行全量一键迁移。
 
 P2-B 在固定 commit 上独立执行 2–4 小时长稳，记录资源曲线和 quiet endpoint。
 长稳不得与功能开发混在同一提交或浏览器会话中。
@@ -182,7 +183,8 @@ capability matrix。Git commit 数不能直接当成功能数量。
 ## 5. 下一批入口
 
 ```text
-P0 文档完成
+P0 分支级复核和文档完成
+  -> 合并 P0 closeout 到 master
   -> 选择一个 P1 用户可见产品批次
   -> 固定输入、自然入口和 5174 验收 URL
   -> 小提交、独立 verifier/browser evidence
@@ -194,3 +196,9 @@ P2 长稳
 
 本报告不修改 Runtime、资源、publication release、external mapping 或
 baseline 数字。
+
+P0 的最终 owner/adapter/debug/retired 分类、26-route 对照和本地门禁结果见：
+
+```text
+notes/03_audit/GS_ARCHIVE_P0_ARCHITECTURE_CLOSEOUT_20260730.md
+```

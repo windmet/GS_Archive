@@ -5,8 +5,8 @@
 仓库：`E:\Web_build\SideM_Archived`
 应用：`E:\Web_build\SideM_Archived\web_viewer`
 
-> 2026-07-30 优先级覆盖：Story Runtime 2–4 小时长稳由 P0-R 降为
-> **P2-R**。它仍是宣称 Runtime `release-accepted` 的必要证据，但不再
+> 2026-07-30 优先级覆盖：Story Runtime 2–4 小时长稳由历史 Track R 降为
+> **P2-B**。它仍是宣称 Runtime `release-accepted` 的必要证据，但不再
 > 阻塞 P0 架构文档收口或 P1 用户可见门户/有界内容批次。本文更早章节中的
 > P0/P1 标签同时承担历史实施编号；与当前优先级冲突时，以本段和
 > `notes/03_audit/GS_ARCHIVE_PRODUCT_HISTORY_RECONCILIATION_20260730.md`
@@ -25,8 +25,8 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | current functional baseline | `master` includes PR #30 merge `721c58b29e0eb953e8ba6138521d825d98e1cc63` |
 | active functional branch | `codex/reconcile-product-history-p2`；documentation-only |
 | active track | P0 current-architecture documentation reconciliation |
-| upstream | not applicable |
-| worktree | clean at branch start from PR #30 merge；documentation edits follow |
+| upstream | `origin/codex/reconcile-product-history-p2` |
+| worktree | P0 closeout edits only；提交前必须重新核对 |
 | open PR | none |
 | PR #30 | merged as `721c58b29e0eb953e8ba6138521d825d98e1cc63` |
 | PR #28 | merged as `5c21658ac63ac5d158024a83cdaeb086b7dcc30a` |
@@ -182,7 +182,7 @@ pre_ledger
 - 不修改已合并 v1 release 的 bytes/hash；
 - Runtime 长稳和 GS 外链 metadata/UI 不受该写锁阻塞。
 
-### P2-R：Story Runtime 2–4 小时长稳
+### P2-B：Story Runtime 2–4 小时长稳（历史 Track R）
 
 这是当前唯一仍阻止 Story Runtime 写成 `release-accepted` 的项目。
 
@@ -515,7 +515,8 @@ THE 虎牙道 Episode 0 三条已完成内容边界核对并提升为精确 unit
 
 三条均检查了开头/标题卡与 `j` part 最终对白，覆盖各自完整十个
 parts，登记为 `exact-unit-story + complete-collection`。注册表现为
-`5 GS records / 5 exact mappings / 5 unique BVIDs`。
+PR #20 时点为 `5 GS records / 5 exact mappings / 5 unique BVIDs`；PR #30
+个人剧情小批合并后，当前基线为 8/8/8。
 
 `ArchiveStoryCollection` 已按展开 chapter 呈现各自唯一外链；生产 build
 在 2,405 modules 通过，最新 `dist` preview 的 exact link、安全 anchor、
@@ -524,7 +525,8 @@ parts，登记为 `exact-unit-story + complete-collection`。注册表现为
 五条 exact relation 已达到详细契约中的独立导航门槛。PR #20 已增加：
 
 - stories section 稳定路由 `external_story_resources`；
-- 故事目录 `社区中文剧情 5 条` 入口；
+- PR #20 时点的故事目录 `社区中文剧情 5 条` 入口；当前 PR #30 基线显示
+  8 条；
 - exact-only 资源卡片和 original-uploader attribution；
 - 活动详情与 unit-story exact chapter 内部深链；
 - event/collection 返回独立导航的 parent route；
@@ -867,7 +869,7 @@ master 721c58b
   |     -> v2 + annotation contracts active
   |     -> no new production record
   |
-  +-- deferred P2-R: Runtime acceptance
+  +-- deferred P2-B (historical Track R): Runtime acceptance
   |     fixed Runtime commit
   |     -> 2–4h soak
   |     -> quiet endpoint
@@ -1014,58 +1016,30 @@ git diff --cached --check
 
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
-worktree、origin/master。当前产品史复核基线为 master 已包含 PR #30 merge
-`721c58b`；若 checkout 已继续前移，以实时 Git 事实为准，不复用旧 branch/PID。
+worktree、origin/master。P0 合并基线必须包含
+`GS_ARCHIVE_P0_ARCHITECTURE_CLOSEOUT_20260730.md`；若 checkout 已继续前移，
+以实时 Git 事实为准，不复用旧 branch/PID。
 
-完整阅读：
-1. web_viewer/notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
-2. web_viewer/notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md
-3. web_viewer/notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md
-4. web_viewer/notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
-5. web_viewer/notes/03_audit/RAW_USM_RELATION_CATALOG_20260729.md
-6. web_viewer/notes/03_audit/RAW_IMAGE_BUNDLE_RELATION_CATALOG_20260729.md
-7. web_viewer/notes/03_audit/GASHA_IMAGE_EXACT_RELATIONS_20260730.md
-8. web_viewer/notes/03_audit/EVENT_ITEM_ICON_EXACT_RELATIONS_20260730.md
-9. web_viewer/notes/03_audit/HONOR_EVENT_EXACT_RELATIONS_20260730.md
-10. web_viewer/notes/03_audit/GASHA_SKILL_EXACT_RELATIONS_20260730.md
-11. web_viewer/notes/03_audit/IMAGE_RELATION_REFINEMENT_CLOSEOUT_20260730.md
-12. web_viewer/notes/03_audit/EXTERNAL_GS_RESOURCE_NAVIGATION_20260730.md
-13. web_viewer/notes/03_audit/RAW_USM_MOVIE_ANNOUNCE_EXACT_RELATIONS_20260730.md
-14. web_viewer/notes/03_audit/RAW_USM_CARD_SKILL_EXACT_RELATIONS_20260730.md
-15. web_viewer/notes/03_audit/RAW_USM_SONG_MOVIE_EXACT_RELATIONS_20260730.md
-16. web_viewer/notes/03_audit/RAW_USM_GASHA_CLIENT_EXACT_RELATIONS_20260730.md
-17. web_viewer/notes/03_audit/EXTERNAL_GS_PERSONAL_STORY_EXACT_LINKS_20260730.md
+P1 门户批次只需先完整阅读：
+1. web_viewer/docs/AGENT_START_HERE.md
+2. web_viewer/docs/PROJECT_MAP.md
+3. web_viewer/notes/03_audit/GS_ARCHIVE_P0_ARCHITECTURE_CLOSEOUT_20260730.md
+4. web_viewer/notes/03_audit/GS_ARCHIVE_PRODUCT_HISTORY_RECONCILIATION_20260730.md
+5. web_viewer/notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
 
-先确认当前 baseline 的 image catalog 为 1,271 bundles / 263,071,090 bytes /
-9,157 Unity objects / 7,816 image objects，source-only 与 mounted verifier
-均通过。
-USM v5 必须保持 260 total / 89 exact consumer / 166 exact masterdata /
-5 unresolved；77 条来自 BackMonitor consumer，12 条来自 IL2CPP v27
-证明的 GashaAnimationMovieManager client contract，30 条由 MovieAnnounce
-table 175、124 条由 CardData table 1、12 条由 SongData table 46 独立证明。
-后两类 masterdata 关系不代表已有浏览器 consumer 或衍生媒体。
-真实 ledger 仍为 1 release / 1 stable logical ID，没有新增 production record。
-Story Runtime 2–4 小时长稳由用户降为 P2，仍保持 NOT EXECUTED。P1-D 已把
-promotion registry 已证明的 50 bundles / 52 relations 升级为
-stable-promotion，其余 7 个 chara 合辑仍为 candidate。P1-E 已完成
-`gasha` 有界子族的只读审计，只把 gasha index
-唯一证明的 49 banner/logo pairs（98 bundles）升级为
-exact-masterdata-relation，其余 335 个 gasha bundle 保持原状态；不得
-顺带扩充。P1-F 只把 event index 唯一证明的 19 codes / 20 item-icon
-bundles 升级为 exact-masterdata-relation，其余 172 个 item bundle 不变；
-P1-G 只把 event index 唯一证明的 40 codes / 40 honor-event bundle
-升级为 exact-masterdata-relation；`image_honor_event_30026001` 明确保留为
-candidate，且不推断内部对象语义；
-P1-H 只把 speaker dictionary 唯一证明的 12 speakers / 12 gasha-skill
-bundle 升级为 exact-masterdata-relation，保留 `ssr02`/`ssr03` 原始后缀但
-不推断卡片或技能语义；其余 90 个 masterdata candidate 不得按 token
-存在性批量升级；P1 automatic exact relation refinement 已收口，只有新的
-独立 authority 或 consumer contract 才能重新开启有界子族；
-不得批量导出 PNG、替换 `public/assets`、新增 ledger release 或回填其他
-二进制。
+首批 P1-UI 只实现由 archiveRoute.js 和当前 entity 派生的 breadcrumb
+model/component/style；保留筛选、parent/return 和现有 Back，不重写搜索、
+关系数据或播放器。player、spine_lab、chibi_stage 不显示 breadcrumb。
+5174 覆盖 Idol、Card、Event、Story collection、External resource 的自然入口、
+深链、刷新、Back、窄屏和无障碍语义。
+
+strict-v2 promotion 属于 P2-A；2–4 小时长稳属于 P2-B，仍为 NOT EXECUTED。
+P1 分支不得新增 publication transaction、批量资源或长稳结论。只有任务明确
+进入某个资源证据域时，才从 notes/INDEX.md 选择对应历史审计，不要默认通读
+全部 relation note。
 ```
 
-## 7. P2-R 长稳验收的完成定义
+## 7. P2-B 长稳验收的完成定义
 
 以下条件只定义未来何时可以称为 Story Runtime `release-accepted`。它们不是
 当前 P0 架构文档或 P1 门户产品批次的完成条件。

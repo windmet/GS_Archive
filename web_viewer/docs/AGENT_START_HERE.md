@@ -9,13 +9,16 @@
 按以下顺序读取：
 
 1. `docs/PROJECT_MAP.md`
-2. `notes/INDEX.md`
-3. `notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md`
-4. `notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md`
-5. `docs/SMOKE_CASES.md`
-6. `docs/SMOKE_EXPECTATIONS.md`
-7. `docs/DO_NOT_REOPEN.md`
-8. 用户本次明确点名的文件
+2. `notes/03_audit/GS_ARCHIVE_P0_ARCHITECTURE_CLOSEOUT_20260730.md`
+3. `notes/03_audit/GS_ARCHIVE_PRODUCT_HISTORY_RECONCILIATION_20260730.md`
+4. `notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md`
+5. `notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md`
+6. `notes/INDEX.md`
+7. 用户本次明确点名的文件
+
+只有任务涉及 Pixi/Spine 舞台时再读 `docs/SMOKE_CASES.md`、
+`docs/SMOKE_EXPECTATIONS.md` 和 `docs/DO_NOT_REOPEN.md`。前两者是人工兼容
+样例，不是自动化 Story Runtime 门禁。
 
 然后只读核对：
 
@@ -33,8 +36,9 @@ Get-NetTCPConnection -LocalPort 5174 -State Listen
 
 - **P0：当前架构认知。** 保持 owner、adapter、route 和文档入口准确。
 - **P1：用户可见门户与有界内容整合。** 优先可搜索、可跳转、可理解的产品
-  能力；资源关系和 strict-v2 promotion 继续采用小批证据。
-- **P2：2–4 小时 Runtime 长稳。** 状态仍是 `NOT EXECUTED`。它只阻止
+  能力；不得在 UI 批次中顺带创建 publication transaction。
+- **P2-A：代表性 strict-v2 promotion。** 继续采用独立小批证据。
+- **P2-B：2–4 小时 Runtime 长稳。** 状态仍是 `NOT EXECUTED`。它只阻止
   `release-accepted` 宣称，不阻止 P0/P1 工作。
 
 不得因为长稳降为 P2 就写成已经通过，也不得在普通门户批次中顺手执行或伪造
@@ -58,9 +62,22 @@ Get-NetTCPConnection -LocalPort 5174 -State Listen
 - `StoryAudioSession.js` 拥有统一音频会话；`useVoicePlayer.js` 是其 Voice
   适配器，不是独立音频系统。
 - `SpineStage.vue` 是 Pixi 舞台的 Vue 适配层，不是整个 step timeline owner。
+- `useStoryNavigation.js`、`useStepSceneEffects.js`、`AudioManager.js` 和
+  `applyStepSceneState.js` 是 active adapter/compatibility modules，不是第二套
+  Runtime owner。
+- `DebugSnapshotRuntime.js` 和 `ReleaseSoakRecorder.js` 属于 debug/release
+  instrumentation；后者的自动测试不证明真实长稳已经完成。
 - `useTimelineRunner.js` 已不存在，不得作为当前核心模块引用。
 
 修改 Runtime 前必须先读 `docs/PROJECT_MAP.md` 的 owner 表及对应 verifier。
+
+标准命令：
+
+```powershell
+npm run verify:story-runtime-foundation
+npm run verify:story-audio
+npm run verify:routes
+```
 
 ## 五、默认禁止扫描
 
