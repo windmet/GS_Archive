@@ -105,6 +105,11 @@ assert.equal(storyCollectionContext.view, 'story_collection')
 assert.equal(storyCollectionContext.storyType, 'unit_story')
 assert.equal(storyCollectionContext.storySection, '1')
 
+const mainStoryLandingContext = readArchiveRoute('http://localhost/?view=story_catalog&story_type=main')
+assert.equal(mainStoryLandingContext.view, 'story_catalog')
+assert.equal(mainStoryLandingContext.storyType, 'main')
+assert.equal(mainStoryLandingContext.storyMode, 'portal')
+
 const externalStoryResourceContext = readArchiveRoute('http://localhost/?view=external_story_resources')
 assert.equal(externalStoryResourceContext.view, 'external_story_resources')
 

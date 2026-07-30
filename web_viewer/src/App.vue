@@ -198,6 +198,7 @@
         :work-idols="workStoryData?.idols || []"
         :idol-story-count="idolEpisodeData?.meta?.section_count || 0"
         :external-resource-count="externalStoryNavigationEntries.length"
+        :main-domain="mainStoryDomain"
         @select="openCatalogStory"
         @browse="browseStoryCollection"
         @open-external-resources="openExternalStoryResources"
@@ -373,6 +374,7 @@ import {
 import { buildArchiveHomeHighlights, buildArchiveHomeState } from './data/archiveHomeState.js'
 import { buildEventStoryEpisodes } from './data/eventStoryEpisodes.js'
 import { buildStoryCollections } from './data/storyCollections.js'
+import { buildMainStoryDomainIdentity } from './data/storyDomainIdentityIndex.js'
 import { buildIdolStoryOptions, buildIdolStoryPage } from './data/idolCommunicationSelectors.js'
 import {
   archiveSectionForRoute,
@@ -707,6 +709,10 @@ const storyCatalog = computed(() => buildStoryCatalog(storyMasterData.value, sto
     rewardCardIds: masterEvent?.reward_card_ids || [],
   }
 }))
+
+const mainStoryDomain = computed(() => (
+  storyMasterData.value ? buildMainStoryDomainIdentity(storyMasterData.value) : null
+))
 
 const currentSeasonalCampaign = computed(() => {
   const campaigns = seasonalCampaignData.value?.campaigns || []
@@ -1203,7 +1209,11 @@ const archiveSection = computed(() => archiveSectionForRoute({
 const archiveTitle = computed(() => {
   if (view.value === 'home') return 'SideM Archive'
   if (view.value === 'archive_status') return '数据状态'
-  if (view.value === 'story_catalog') return '故事目录'
+  if (view.value === 'story_catalog') {
+    return currentStoryMode.value === 'portal' && currentStoryDomain.value === 'main'
+      ? '主线剧情'
+      : '故事目录'
+  }
   if (view.value === 'external_story_resources') return '社区中文剧情'
   if (view.value === 'story_detail') return currentStory.value?.title || '故事详情'
   if (view.value === 'story_collection') return currentStoryCollection.value?.title || '故事章节'
@@ -1622,7 +1632,15 @@ function goArchiveBack() {
     },
     event_detail: goBackFromEvent,
     archive_status: goHome,
-    story_catalog: goHome,
+    story_catalog: () => {
+      if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'main') {
+        currentStoryDomain.value = ''
+        currentStorySection.value = ''
+        commitView('story_catalog')
+        return
+      }
+      goHome()
+    },
     external_story_resources: () => commitView('story_catalog'),
     story_detail: () => {
       const parent = storyDetailParentView.value
@@ -1632,7 +1650,8 @@ function goArchiveBack() {
     },
     story_collection: () => {
       const parent = storyCollectionParentView.value
-      currentStoryDomain.value = ''
+      const domain = currentStoryDomain.value
+      currentStoryDomain.value = domain === 'main' ? 'main' : ''
       currentStorySection.value = ''
       currentStoryFile.value = ''
       storyCollectionParentView.value = ''
@@ -1778,7 +1797,7 @@ function setStoryMode(mode) {
   }
 }
 
-function browseStoryCollection({ domain, section = '' }) {
+function browseStoryCollection({ domain, section = '', mode = '' }) {
   if (section && ['main', 'unit_story'].includes(domain)) {
     currentStoryDomain.value = domain
     currentStorySection.value = section
@@ -1786,6 +1805,16 @@ function browseStoryCollection({ domain, section = '' }) {
     currentStoryFile.value = ''
     storyCollectionParentView.value = ''
     commitView('story_collection')
+    return
+  }
+  if (mode === 'portal' && domain === 'main') {
+    filterQuery.value = ''
+    currentStoryDomain.value = 'main'
+    currentStorySection.value = ''
+    currentStoryMode.value = 'portal'
+    currentStoryFile.value = ''
+    storyCollectionParentView.value = ''
+    commitView('story_catalog')
     return
   }
   filterQuery.value = ''
