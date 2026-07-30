@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import {
   archiveSectionForRoute,
+  buildArchiveBreadcrumbs,
   buildArchiveUrl,
   normalizeArchiveRoute,
   readArchiveRoute,
@@ -59,6 +60,77 @@ assert.equal(archiveSectionForRoute({ view: 'seasonal_campaign', storyType: 'sea
 assert.equal(archiveSectionForRoute({ view: 'work_archive', storyType: 'work', idol: '001tom' }), 'stories')
 assert.equal(archiveSectionForRoute({ view: 'idol_story_archive', idol: '001tom' }), 'stories')
 assert.equal(archiveSectionForRoute({ view: 'mobile_archive', idol: '001tom', mobileMode: 'phone' }), 'interactions')
+
+const idolBreadcrumbs = buildArchiveBreadcrumbs(
+  { view: 'idol_detail', idol: '001tom', parentView: 'home' },
+  { title: '天道 輝', id: '001tom' },
+)
+assert.deepEqual(idolBreadcrumbs.map(item => item.label), ['资料馆', '偶像', '天道 輝'])
+assert.equal(idolBreadcrumbs.at(-1).route, undefined)
+assert.equal(idolBreadcrumbs[1].route.view, 'idols')
+assert.equal(idolBreadcrumbs[1].route.parentView, '')
+
+const cardBreadcrumbs = buildArchiveBreadcrumbs(
+  {
+    view: 'card_detail',
+    idol: '001tom',
+    card: '001tom_ssr01',
+    query: 'Jupiter',
+    unitFilter: '1',
+    rarity: 'SSR',
+    parentView: 'event_detail',
+  },
+  { title: '', id: '001tom_ssr01' },
+)
+assert.deepEqual(cardBreadcrumbs.map(item => item.label), ['资料馆', '卡牌', '001tom_ssr01'])
+assert.equal(cardBreadcrumbs[1].route.query, 'Jupiter')
+assert.equal(cardBreadcrumbs[1].route.unitFilter, '1')
+assert.equal(cardBreadcrumbs[1].route.rarity, 'SSR')
+assert.equal(cardBreadcrumbs[1].route.parentView, '')
+
+const eventBreadcrumbs = buildArchiveBreadcrumbs(
+  {
+    view: 'event_detail',
+    event: '410018',
+    storyType: 'event',
+    eventScope: 'fixed_unit_event',
+    query: 'Cafe',
+  },
+  { title: '活动标题' },
+)
+assert.deepEqual(eventBreadcrumbs.map(item => item.label), ['资料馆', '活动', '活动标题'])
+assert.equal(eventBreadcrumbs[1].route.view, 'story_catalog')
+assert.equal(eventBreadcrumbs[1].route.storyType, 'event')
+assert.equal(eventBreadcrumbs[1].route.eventScope, 'fixed_unit_event')
+
+const collectionBreadcrumbs = buildArchiveBreadcrumbs(
+  {
+    view: 'story_collection',
+    storyType: 'unit_story',
+    storySection: '13',
+    story: '1_1_013the_01_1_1_013_01.json',
+    parentView: 'external_story_resources',
+  },
+  { title: 'THE 虎牙道', domainLabel: '组合前传' },
+)
+assert.deepEqual(
+  collectionBreadcrumbs.map(item => item.label),
+  ['资料馆', '剧情', '组合前传', 'THE 虎牙道'],
+)
+assert.equal(collectionBreadcrumbs.length, 4)
+assert.equal(collectionBreadcrumbs.at(-1).route, undefined)
+assert.equal(collectionBreadcrumbs[2].route.parentView, '')
+assert.equal(collectionBreadcrumbs[2].route.view, 'story_catalog')
+assert.equal(collectionBreadcrumbs[2].route.storyType, '')
+assert.equal(collectionBreadcrumbs[2].route.storyMode, 'portal')
+
+assert.deepEqual(
+  buildArchiveBreadcrumbs({ view: 'external_story_resources' }).map(item => item.label),
+  ['资料馆', '社区熟肉'],
+)
+assert.deepEqual(buildArchiveBreadcrumbs({ view: 'player', scenario: '1_4_001_01.json' }), [])
+assert.deepEqual(buildArchiveBreadcrumbs({ view: 'spine_lab' }), [])
+assert.deepEqual(buildArchiveBreadcrumbs({ view: 'chibi_stage' }), [])
 
 const legacyIdolRoot = readArchiveRoute('http://localhost/?view=idols&category=idol')
 assert.equal(legacyIdolRoot.view, 'idol_detail')

@@ -28,7 +28,10 @@
         <img :src="getBrandMarkUrl()" alt="" />
         <span>SideM Archive</span>
       </div>
-      <h1>{{ title }}</h1>
+      <div class="archive-heading">
+        <ArchiveBreadcrumb :items="breadcrumbs" />
+        <h1>{{ title }}</h1>
+      </div>
       <label v-if="searchable" class="archive-search">
         <Search :size="17" aria-hidden="true" />
         <input
@@ -74,6 +77,7 @@ import {
   Sparkles,
   Users,
 } from '@lucide/vue'
+import ArchiveBreadcrumb from './ArchiveBreadcrumb.vue'
 import { ARCHIVE_NAVIGATION } from '../../core/archiveRoute.js'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
 
@@ -85,6 +89,7 @@ defineProps({
   modelValue: { type: String, default: '' },
   showBack: { type: Boolean, default: false },
   hasInspector: { type: Boolean, default: false },
+  breadcrumbs: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['navigate', 'back', 'update:modelValue'])
@@ -98,7 +103,7 @@ const mobileNavigation = navigation
 .archive-shell {
   --archive-sidebar: 156px;
   --archive-inspector: 0px;
-  --archive-topbar: 60px;
+  --archive-topbar: 76px;
   --archive-accent: #18a79d;
   --archive-accent-soft: #eaf8f6;
   --archive-ink: #18212b;
@@ -191,6 +196,13 @@ const mobileNavigation = navigation
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.archive-heading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+}
 .archive-back {
   display: inline-flex;
   align-items: center;
@@ -243,7 +255,7 @@ const mobileNavigation = navigation
   .archive-shell, .archive-shell.has-inspector {
     --archive-sidebar: 0px;
     --archive-inspector: 0px;
-    --archive-topbar: 112px;
+    --archive-topbar: 124px;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: var(--archive-topbar) minmax(0, 1fr) 66px;
@@ -254,7 +266,7 @@ const mobileNavigation = navigation
     grid-column: 1;
     grid-row: 1;
     grid-template-columns: auto minmax(0, 1fr);
-    grid-template-rows: 52px 48px;
+    grid-template-rows: 52px 60px;
     gap: 0 10px;
     padding: 0 16px 8px;
   }
@@ -269,9 +281,10 @@ const mobileNavigation = navigation
   .archive-mobile-brand img { width: 31px; height: 24px; object-fit: contain; }
   .archive-back { grid-row: 1; grid-column: 1; }
   .archive-back + .archive-mobile-brand { grid-column: 2; }
-  .archive-topbar h1 { grid-row: 2; grid-column: 1; font-size: 1.25rem; }
+  .archive-heading { grid-row: 2; grid-column: 1; gap: 4px; }
+  .archive-topbar h1 { font-size: 1.15rem; }
   .archive-search { grid-row: 2; grid-column: 2; height: 36px; }
-  .archive-topbar:not(:has(.archive-search)) h1 { grid-column: 1 / -1; }
+  .archive-topbar:not(:has(.archive-search)) .archive-heading { grid-column: 1 / -1; }
   .archive-content { grid-column: 1; grid-row: 2; padding-bottom: 0; }
   .archive-inspector { display: none; }
   .archive-mobile-nav {
