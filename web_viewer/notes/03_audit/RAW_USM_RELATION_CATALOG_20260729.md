@@ -1,7 +1,8 @@
 # RAW USM Relation Catalog
 
 Status: v1 merged in PR #8; v2 MovieAnnounce refinement merged in PR #22;
-v3 CardData skill-movie refinement merged in PR #24
+v3 CardData skill-movie refinement merged in PR #24; v4 SongData movie
+refinement pending review
 
 Date: 2026-07-29
 
@@ -14,10 +15,11 @@ transcode, copy, publish, or add any media payload to Git.
 The committed authority surface is:
 
 ```text
-schemas/usm-relation-catalog-v3.schema.json
+schemas/usm-relation-catalog-v4.schema.json
 public/data/usm_relation_catalog.json
 public/data/masterdata/movie_announce_index.json
 public/data/masterdata/card_skill_movie_index.json
+public/data/masterdata/song_movie_index.json
 scripts/generate-usm-relation-catalog.py
 scripts/verify-card-skill-movie-index.py
 scripts/verify-usm-relation-catalog.mjs
@@ -39,8 +41,9 @@ machine paths.
 | BackMonitor transition relations | 4 |
 | exact MovieAnnounce masterdata relations | 30 |
 | exact CardData skill-movie masterdata relations | 124 |
-| exact masterdata relations total | 154 |
-| unresolved relations | 29 |
+| exact SongData movie masterdata relations | 12 |
+| exact masterdata relations total | 166 |
+| unresolved relations | 17 |
 | successful ffprobe header reads | 260 |
 | entries with an exact music-catalog filename token | 52 |
 | distinct exact music tokens | 22 |
@@ -85,7 +88,15 @@ intentionally shared by a normal card and a tutorial card. All six records
 explicitly set `HasSkillCutinResource`; the catalog therefore records the
 one-to-many card IDs instead of selecting an arbitrary card.
 
-The other 29 records remain `unresolved`; a family-shaped consumer is recorded only as
+The v4 refinement independently parses SongData table 46. Eleven distinct
+ResourceIds with a concrete `MovieOffset` exactly equal all 11
+`3dmv_<ResourceId>` identities. The only song with an enabled
+`MvliveOpenAt` earlier than the table's 2100-01-01 disabled sentinel is
+`reason`, exactly matching `mvlive_reason`. One 3dmv resource, `pl1gdd`, is
+shared by two qualifying SongData records; both song IDs and source offsets are
+preserved.
+
+The other 17 records remain `unresolved`; a family-shaped consumer is recorded only as
 `filename-candidate`. A candidate does not authorize a derivative or a stable
 publication.
 
@@ -111,7 +122,9 @@ Source-only verification checks:
 - exact equality with the 30-record committed MovieAnnounce table-175 index;
 - exact equality with the 124-resource / 127-record committed CardData
   skill-movie index;
-- the current `260 / 77 / 154 / 29` population boundary.
+- exact equality with the 11-3dmv + 1-mvlive / 13-record committed SongData
+  movie index;
+- the current `260 / 77 / 166 / 17` population boundary.
 
 Mounted verification additionally checks:
 
@@ -121,6 +134,8 @@ Mounted verification additionally checks:
 - exact reparse parity with mounted masterdata table 175;
 - exact reparse parity with mounted CardData table 1, including field 31
   `HasSkillCutinResource`;
+- exact reparse parity with mounted SongData table 46, including `MovieOffset`
+  and enabled `MvliveOpenAt`;
 - file byte count;
 - `CRID` magic;
 - SHA-256 for all 260 files.
@@ -129,10 +144,10 @@ Validated locally on 2026-07-30:
 
 ```text
 RAW USM relation catalog verified (source-only):
-260 total / 77 exact consumer / 154 exact masterdata / 29 unresolved
+260 total / 77 exact consumer / 166 exact masterdata / 17 unresolved
 
 RAW USM relation catalog verified (mounted):
-260 total / 77 exact consumer / 154 exact masterdata / 29 unresolved
+260 total / 77 exact consumer / 166 exact masterdata / 17 unresolved
 
 Archive baseline verified (source-only):
 10329 compiled JSON artifacts, 108 tracked PNG files

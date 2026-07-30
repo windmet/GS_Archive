@@ -59,10 +59,10 @@ if (
     'USM consumer, masterdata, and unresolved totals do not equal the RAW USM population',
   )
 }
-if (report.movies?.exact_masterdata_relations !== 154) {
+if (report.movies?.exact_masterdata_relations !== 166) {
   failures.push(
     'USM exact masterdata population must remain 30 MovieAnnounce + ' +
-    '124 CardData skill-movie relations',
+    '124 CardData skill-movie + 12 SongData movie relations',
   )
 }
 if (

@@ -1,18 +1,19 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "sources": {
     "raw_movie_root": "RAW/movie",
     "backmonitor_index": "web_viewer/public/assets/live-chibi/backmonitor/index.json",
     "music_catalog": "web_viewer/public/data/masterdata/music_catalog.json",
     "movie_announce_index": "web_viewer/public/data/masterdata/movie_announce_index.json",
-    "card_skill_movie_index": "web_viewer/public/data/masterdata/card_skill_movie_index.json"
+    "card_skill_movie_index": "web_viewer/public/data/masterdata/card_skill_movie_index.json",
+    "song_movie_index": "web_viewer/public/data/masterdata/song_movie_index.json"
   },
   "summary": {
     "total": 260,
     "total_bytes": 2143803200,
     "exact_consumer": 77,
-    "exact_masterdata": 154,
-    "unresolved": 29,
+    "exact_masterdata": 166,
+    "unresolved": 17,
     "families": {
       "3dmv": 11,
       "card-rarity": 11,
@@ -67,13 +68,21 @@
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-masterdata",
+        "kind": "song-3dmv",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "masterdata_relation": {
+          "catalog": "song_movie_index.song_movies",
+          "resource_id": "hrkzbn",
+          "song_ids": [
+            42
+          ],
+          "evidence": "SongData table 46 ResourceId and MovieOffset resolve to this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact SongData table 46 ResourceId, MovieOffset, and RAW USM identity agree."
       ]
     },
     {
@@ -119,13 +128,21 @@
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-masterdata",
+        "kind": "song-3dmv",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "masterdata_relation": {
+          "catalog": "song_movie_index.song_movies",
+          "resource_id": "infoct",
+          "song_ids": [
+            46
+          ],
+          "evidence": "SongData table 46 ResourceId and MovieOffset resolve to this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact SongData table 46 ResourceId, MovieOffset, and RAW USM identity agree."
       ]
     },
     {
@@ -171,13 +188,21 @@
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-masterdata",
+        "kind": "song-3dmv",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "masterdata_relation": {
+          "catalog": "song_movie_index.song_movies",
+          "resource_id": "inndgn",
+          "song_ids": [
+            64
+          ],
+          "evidence": "SongData table 46 ResourceId and MovieOffset resolve to this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact SongData table 46 ResourceId, MovieOffset, and RAW USM identity agree."
       ]
     },
     {
@@ -223,13 +248,21 @@
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-masterdata",
+        "kind": "song-3dmv",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "masterdata_relation": {
+          "catalog": "song_movie_index.song_movies",
+          "resource_id": "itowks",
+          "song_ids": [
+            37
+          ],
+          "evidence": "SongData table 46 ResourceId and MovieOffset resolve to this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact SongData table 46 ResourceId, MovieOffset, and RAW USM identity agree."
       ]
     },
     {
@@ -275,13 +308,21 @@
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-masterdata",
+        "kind": "song-3dmv",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "masterdata_relation": {
+          "catalog": "song_movie_index.song_movies",
+          "resource_id": "knwonl",
+          "song_ids": [
+            51
+          ],
+          "evidence": "SongData table 46 ResourceId and MovieOffset resolve to this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact SongData table 46 ResourceId, MovieOffset, and RAW USM identity agree."
       ]
     },
     {
@@ -327,13 +368,21 @@
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-masterdata",
+        "kind": "song-3dmv",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "masterdata_relation": {
+          "catalog": "song_movie_index.song_movies",
+          "resource_id": "mainha",
+          "song_ids": [
+            55
+          ],
+          "evidence": "SongData table 46 ResourceId and MovieOffset resolve to this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact SongData table 46 ResourceId, MovieOffset, and RAW USM identity agree."
       ]
     },
     {
@@ -379,13 +428,21 @@
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-masterdata",
+        "kind": "song-3dmv",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "masterdata_relation": {
+          "catalog": "song_movie_index.song_movies",
+          "resource_id": "pavetl",
+          "song_ids": [
+            29
+          ],
+          "evidence": "SongData table 46 ResourceId and MovieOffset resolve to this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact SongData table 46 ResourceId, MovieOffset, and RAW USM identity agree."
       ]
     },
     {
@@ -431,13 +488,22 @@
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-masterdata",
+        "kind": "song-3dmv",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "masterdata_relation": {
+          "catalog": "song_movie_index.song_movies",
+          "resource_id": "pl1gdd",
+          "song_ids": [
+            25,
+            99
+          ],
+          "evidence": "SongData table 46 ResourceId and MovieOffset resolve to this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact SongData table 46 ResourceId, MovieOffset, and RAW USM identity agree."
       ]
     },
     {
@@ -483,13 +549,21 @@
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-masterdata",
+        "kind": "song-3dmv",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "masterdata_relation": {
+          "catalog": "song_movie_index.song_movies",
+          "resource_id": "rote77",
+          "song_ids": [
+            59
+          ],
+          "evidence": "SongData table 46 ResourceId and MovieOffset resolve to this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact SongData table 46 ResourceId, MovieOffset, and RAW USM identity agree."
       ]
     },
     {
@@ -535,13 +609,21 @@
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-masterdata",
+        "kind": "song-3dmv",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "masterdata_relation": {
+          "catalog": "song_movie_index.song_movies",
+          "resource_id": "tibeti",
+          "song_ids": [
+            33
+          ],
+          "evidence": "SongData table 46 ResourceId and MovieOffset resolve to this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact SongData table 46 ResourceId, MovieOffset, and RAW USM identity agree."
       ]
     },
     {
@@ -587,13 +669,21 @@
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-masterdata",
+        "kind": "song-3dmv",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "masterdata_relation": {
+          "catalog": "song_movie_index.song_movies",
+          "resource_id": "wathon",
+          "song_ids": [
+            19
+          ],
+          "evidence": "SongData table 46 ResourceId and MovieOffset resolve to this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact SongData table 46 ResourceId, MovieOffset, and RAW USM identity agree."
       ]
     },
     {
@@ -8874,13 +8964,21 @@
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-masterdata",
+        "kind": "song-mvlive",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "masterdata_relation": {
+          "catalog": "song_movie_index.song_movies",
+          "resource_id": "reason",
+          "song_ids": [
+            62
+          ],
+          "evidence": "SongData table 46 ResourceId and enabled MvliveOpenAt resolve to this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact SongData table 46 ResourceId, enabled MvliveOpenAt, and RAW USM identity agree."
       ]
     },
     {

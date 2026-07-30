@@ -16,10 +16,10 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | --- | --- |
 | merged base branch | `master` |
 | current functional baseline | `master` includes PR #24 merge `66a0e1dd41fe560388e0ff408619c8f3a2c15c56` |
-| active functional branch | none；documentation-only closeout is isolated |
-| active track | none selected；CardData skill-movie exact-masterdata 细化已完成 |
+| active functional branch | `codex/usm-song-movie-exact-relations` |
+| active track | SongData 3dmv/mvlive exact-masterdata 有界细化 |
 | upstream | not applicable |
-| worktree | clean at PR #24 merge；documentation-only closeout follows separately |
+| worktree | active functional changes pending commit |
 | open PR | none |
 | PR #24 | merged as `66a0e1dd41fe560388e0ff408619c8f3a2c15c56` |
 | PR #24 final-head check | Source-only contract PASS，run `30511853325` |
@@ -561,6 +561,31 @@ notes/03_audit/RAW_USM_CARD_SKILL_EXACT_RELATIONS_20260730.md
 当前边界为 `260 / 77 / 154 / 29`。本批不声明浏览器 consumer，不生成或发布
 衍生媒体，也不改 publication ledger。
 
+### P1-B3：SongData 3dmv / mvlive 精确关系
+
+状态：**active，pending review**。
+
+SongData table 46 的 `ResourceId`、`MovieOffset` 与 `MvliveOpenAt` 提供独立
+authority。11 个具有具体 MovieOffset 的唯一 ResourceId 与全部 11 个
+`3dmv_*` 完整相等；唯一早于 2100-01-01 disabled sentinel 的 MvliveOpenAt
+记录为 `reason`，与唯一 `mvlive_reason` 相等。索引保留 13 条 SongData
+record，其中 `pl1gdd` 被两条记录共享。
+
+机器入口：
+
+```text
+schemas/usm-relation-catalog-v4.schema.json
+public/data/masterdata/song_movie_index.json
+public/data/usm_relation_catalog.json
+scripts/verify-song-movie-index.py
+scripts/generate-usm-relation-catalog.py
+scripts/verify-usm-relation-catalog.mjs
+notes/03_audit/RAW_USM_SONG_MOVIE_EXACT_RELATIONS_20260730.md
+```
+
+当前边界为 `260 / 77 / 166 / 17`。本批不声明浏览器 consumer，不生成或发布
+衍生媒体，也不改 publication ledger。
+
 ### P1-C：1,271 个 `image_*` bundle 关系目录
 
 状态：**merged in PR #9**。
@@ -805,7 +830,8 @@ git status -sb
 git rev-parse HEAD
 ```
 
-当前没有 active 功能分支。`codex/usm-skill-movie-exact-relations` 已通过
+当前 active 功能分支为 `codex/usm-song-movie-exact-relations`。
+`codex/usm-skill-movie-exact-relations` 已通过
 PR #24 合入 `master`。
 `codex/usm-movie-announce-exact-relations` 已通过
 PR #22 合入 `master`。table 175 独立证明的 30 条
@@ -905,10 +931,9 @@ PR #24 merge `66a0e1d`，post-merge run `30511892344` 通过。
 先确认当前 baseline 的 image catalog 为 1,271 bundles / 263,071,090 bytes /
 9,157 Unity objects / 7,816 image objects，source-only 与 mounted verifier
 均通过。
-USM v3 必须保持 260 total / 77 exact consumer / 154 exact masterdata /
-29 unresolved；30 条 exact-masterdata 由 MovieAnnounce table 175 独立证明，
-124 条由 CardData table 1 的 ResourceId 与 HasSkillCutinResource 独立证明，
-均不代表已有浏览器 consumer 或衍生媒体。
+USM v4 必须保持 260 total / 77 exact consumer / 166 exact masterdata /
+17 unresolved；30 条由 MovieAnnounce table 175、124 条由 CardData table 1、
+12 条由 SongData table 46 独立证明，均不代表已有浏览器 consumer 或衍生媒体。
 真实 ledger 仍为 1 release / 1 stable logical ID，没有新增 production record。
 Story Runtime 2–4 小时长稳由用户暂缓，仍保持 NOT EXECUTED。P1-D 已把
 promotion registry 已证明的 50 bundles / 52 relations 升级为
@@ -979,7 +1004,9 @@ USM/image：
 - 30 个 MovieAnnounce 关系由 table 175 ResourceId 独立证明；
 - 124 个 skill-movie 关系由 CardData table 1 ResourceId 与
   HasSkillCutinResource 独立证明，并保留 3 个共享资源的一对多 card IDs；
-- 29 个 unresolved 保持未解决，不把 filename candidate 写成 exact；
+- 11 个 3dmv 与 1 个 mvlive 关系由 SongData table 46 的 MovieOffset 与
+  enabled MvliveOpenAt 独立证明，并保留 `pl1gdd` 的两条 song IDs；
+- 17 个 unresolved 保持未解决，不把 filename candidate 写成 exact；
 - source-only 与 mounted verifier 通过；
 - 未进行批量解码或稳定发布；
 - image relation catalog 已覆盖 1,271/1,271 bundles 和 7,816 image

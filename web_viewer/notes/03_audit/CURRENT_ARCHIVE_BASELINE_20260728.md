@@ -17,11 +17,11 @@ their forward-looking defect lists must not override this baseline.
 | Field | Value |
 | --- | --- |
 | current functional baseline | `master` includes PR #24 merge `66a0e1dd41fe560388e0ff408619c8f3a2c15c56` |
-| active functional branch | none; documentation-only closeout is isolated |
-| active track | none selected; CardData skill-movie exact-masterdata refinement is complete |
-| active upstream | not applicable |
-| active pull request | none |
-| active validation | PR #24 table 1 and 124 skill-movie USMs exact 124/124; source-only/mounted gates, production build, and post-merge source gate PASS |
+| active functional branch | `codex/usm-song-movie-exact-relations` |
+| active track | bounded SongData 3dmv/mvlive exact-masterdata refinement |
+| active upstream | pending first push |
+| active pull request | pending |
+| active validation | SongData table 46 and 12 song-movie USMs exact 12/12; source-only and mounted relation gates PASS |
 | PR #24 merge commit | `66a0e1dd41fe560388e0ff408619c8f3a2c15c56` |
 | PR #24 functional head | `168af27312a8949cedbec3788dfad4741c216ad1` |
 | PR #24 final-head gate | run `30511853325`, PASS |
@@ -321,7 +321,7 @@ domain-wide browser acceptance.
 | costume/Spine | source-proven | representative and full-domain parity audits recorded | representative routes only |
 | five live semantic consumers | source-proven | default semantic source migrated to RAW and parity-verified | tested routes sample-accepted |
 | event visuals `001tom`/`002sht` | source-proven | stable-published and merged through PR #2 | item-level browser-accepted |
-| remaining USM | 260/260 physical identities cataloged; 77 BackMonitor consumer mappings + 154 masterdata relations proven; 29 unresolved semantically | bounded MovieAnnounce and CardData skill-movie refinements complete; no media publication | not applicable |
+| remaining USM | 260/260 physical identities cataloged; 77 BackMonitor consumer mappings + 166 masterdata relations proven; 17 unresolved semantically | bounded MovieAnnounce, CardData skill-movie, and SongData movie refinements complete; no media publication | not applicable |
 | general `image_*` bundles | 1,271/1,271 physical identities and 7,816 image objects cataloged | catalog complete; semantic promotion incomplete | not applicable |
 
 The five live semantic consumers already reading RAW by default are:
@@ -619,9 +619,10 @@ Current priority and write locks:
 - Track R remains independent and is explicitly deferred by the user; it is
   still required before declaring Story Runtime `release-accepted`;
 - external-link metadata/UI remains outside the publication ledger;
-- the USM v3 catalog records 260 source identities, 77 exact consumers, 30
+- the USM v4 catalog records 260 source identities, 77 exact consumers, 30
   exact MovieAnnounce plus 124 exact CardData skill-movie masterdata relations,
-  and 29 unresolved records without decoding or publishing media;
+  12 exact SongData movie relations, and 17 unresolved records without
+  decoding or publishing media;
 - the gasha banner/logo relation batch is merged in PR #12;
 - the event item-icon relation batch is merged in PR #13;
 - the honor-event relation batch is merged in PR #14;
@@ -629,8 +630,11 @@ Current priority and write locks:
 - the bounded 30-record MovieAnnounce exact-masterdata refinement is complete
   in PR #22; it does not create a consumer or publish media;
 - the bounded 124-resource / 127-card-record CardData skill-movie refinement is
-  active; it preserves three shared resource identities and does not create a
+  complete in PR #24; it preserves three shared resource identities and does not create a
   consumer or publish media;
+- the bounded 11-3dmv + 1-mvlive / 13-SongData-record refinement is active;
+  it preserves the shared `pl1gdd` resource and does not create a consumer or
+  publish media;
 - the image catalog records 1,271 source identities and 7,816 image objects
   without exporting PNG or replacing stable assets;
 - 50 bundles now inherit 52 exact stable relations from the already-authoritative
