@@ -56,7 +56,7 @@ function allDomainMemberships(storyMaster) {
   return memberships
 }
 
-function buildMainDomain(storyMaster) {
+export function buildMainStoryDomainIdentity(storyMaster) {
   const groups = sortedRows(storyMaster.main?.groups)
   const chapters = sortedRows(storyMaster.main?.chapters)
   const episodeRows = sortedRows(storyMaster.main?.episodes)
@@ -294,7 +294,7 @@ export function buildStoryDomainIdentityIndex({
   if (!storyMaster) return null
   const memberships = allDomainMemberships(storyMaster)
   const domains = {
-    main: buildMainDomain(storyMaster),
+    main: buildMainStoryDomainIdentity(storyMaster),
     birthday: buildBirthdayDomain(storyMaster, idolUnit, speakerDictionary, memberships),
     extra: buildExtraDomain(storyMaster),
   }
