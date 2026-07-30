@@ -33,6 +33,9 @@ MUSIC_CATALOG = PROJECT_ROOT / "public" / "data" / "masterdata" / "music_catalog
 MOVIE_ANNOUNCE_INDEX = (
     PROJECT_ROOT / "public" / "data" / "masterdata" / "movie_announce_index.json"
 )
+CARD_SKILL_MOVIE_INDEX = (
+    PROJECT_ROOT / "public" / "data" / "masterdata" / "card_skill_movie_index.json"
+)
 
 
 def sha256_file(path: Path) -> str:
@@ -216,9 +219,16 @@ def main() -> None:
     movie_announces = json.loads(
         MOVIE_ANNOUNCE_INDEX.read_text(encoding="utf-8")
     )
+    card_skill_movies = json.loads(
+        CARD_SKILL_MOVIE_INDEX.read_text(encoding="utf-8")
+    )
     movie_announce_by_usm = {
         f"movie_home_announce_{entry['resource_id']}": entry
         for entry in movie_announces.get("movie_announces", [])
+    }
+    card_skill_movie_by_usm = {
+        f"skill_movie_{entry['resource_id']}": entry
+        for entry in card_skill_movies.get("skill_movies", [])
     }
     song_codes = sorted((music.get("songs") or {}).keys())
     relations = choreography_relations((sources.raw_root / "asset").resolve())
@@ -234,6 +244,16 @@ def main() -> None:
             f"missing={sorted(expected_movie_announce_ids - actual_movie_announce_ids)}, "
             f"extra={sorted(actual_movie_announce_ids - expected_movie_announce_ids)}"
         )
+    actual_card_skill_movie_ids = {
+        stem for stem in file_stems if stem.startswith("skill_movie_")
+    }
+    expected_card_skill_movie_ids = set(card_skill_movie_by_usm)
+    if actual_card_skill_movie_ids != expected_card_skill_movie_ids:
+        raise ValueError(
+            "CardData HasSkillCutinResource and RAW skill-movie populations differ: "
+            f"missing={sorted(expected_card_skill_movie_ids - actual_card_skill_movie_ids)}, "
+            f"extra={sorted(actual_card_skill_movie_ids - expected_card_skill_movie_ids)}"
+        )
     entries = []
 
     for index, path in enumerate(files, start=1):
@@ -242,7 +262,10 @@ def main() -> None:
         relation = relations.get(stem)
         exact = relation is not None
         movie_announce = movie_announce_by_usm.get(stem)
-        exact_masterdata = movie_announce is not None
+        card_skill_movie = card_skill_movie_by_usm.get(stem)
+        exact_masterdata = movie_announce is not None or card_skill_movie is not None
+        if movie_announce is not None and card_skill_movie is not None:
+            raise ValueError(f"USM has conflicting masterdata relations: {stem}")
         if exact and exact_masterdata:
             raise ValueError(
                 f"USM cannot be both an exact Backmonitor and MovieAnnounce relation: {stem}"
@@ -319,22 +342,40 @@ def main() -> None:
                         kinds[0]
                         if exact
                         else "movie-announce"
-                        if exact_masterdata
+                        if movie_announce is not None
+                        else "card-skill-movie"
+                        if card_skill_movie is not None
                         else "unresolved"
                     ),
                     "raw_effect_scripts": scripts,
                     "derived_assets": derived,
                     **(
                         {
-                            "masterdata_relation": {
-                                "catalog": "movie_announce_index.movie_announces",
-                                "resource_id": movie_announce["resource_id"],
-                                "record_id": movie_announce["id"],
-                                "evidence": (
-                                    "MovieAnnounceData table 175 ResourceId resolves "
-                                    "to this complete movie_home_announce USM identity"
-                                ),
-                            }
+                            "masterdata_relation": (
+                                {
+                                    "catalog": "movie_announce_index.movie_announces",
+                                    "resource_id": movie_announce["resource_id"],
+                                    "record_id": movie_announce["id"],
+                                    "evidence": (
+                                        "MovieAnnounceData table 175 ResourceId resolves "
+                                        "to this complete movie_home_announce USM identity"
+                                    ),
+                                }
+                                if movie_announce is not None
+                                else {
+                                    "catalog": "card_skill_movie_index.skill_movies",
+                                    "resource_id": card_skill_movie["resource_id"],
+                                    "card_ids": [
+                                        card["card_id"]
+                                        for card in card_skill_movie["cards"]
+                                    ],
+                                    "evidence": (
+                                        "Every CardData table 1 record for this ResourceId "
+                                        "declares HasSkillCutinResource and resolves to this "
+                                        "complete skill_movie USM identity"
+                                    ),
+                                }
+                            )
                         }
                         if exact_masterdata
                         else {}
@@ -348,7 +389,11 @@ def main() -> None:
                     else [
                         "Exact MovieAnnounceData table 175 ResourceId and RAW USM identity agree."
                     ]
-                    if exact_masterdata
+                    if movie_announce is not None
+                    else [
+                        "Exact CardData table 1 ResourceId, HasSkillCutinResource, and RAW USM identity agree."
+                    ]
+                    if card_skill_movie is not None
                     else [
                         "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
                     ]
@@ -365,7 +410,7 @@ def main() -> None:
         entry["mapping"]["state"] == "exact-masterdata" for entry in entries
     )
     payload = {
-        "schema_version": 2,
+        "schema_version": 3,
         "sources": {
             "raw_movie_root": "RAW/movie",
             "backmonitor_index": (
@@ -376,6 +421,9 @@ def main() -> None:
             ),
             "movie_announce_index": (
                 "web_viewer/public/data/masterdata/movie_announce_index.json"
+            ),
+            "card_skill_movie_index": (
+                "web_viewer/public/data/masterdata/card_skill_movie_index.json"
             ),
         },
         "summary": {
