@@ -109,6 +109,7 @@ SemVer tag。对外使用前应明确标注为 retrospective phase labels。
 ### P1：用户可见门户与有界内容整合
 
 - 全局或跨域搜索；
+- 统一面包屑，让深层详情页显示稳定的档案层级；
 - 角色、组合、卡牌、卡池、活动、剧情之间的明确跳转；
 - 原文、内置翻译、外部熟肉三种覆盖状态；
 - 阅读历史、继续观看和移动端信息密度；
@@ -116,6 +117,54 @@ SemVer tag。对外使用前应明确标注为 retrospective phase labels。
 
 P1 产品批次和资源证据批次仍应分支隔离，不能为了 UI 便利降低 exact relation
 门槛。
+
+#### P1-UI：统一面包屑
+
+面包屑适合成为下一批门户基础能力。当前已有 26 个正式 view，且角色、组合、
+卡牌、卡池、活动、剧情和外部熟肉之间存在多种深链；只依赖侧栏高亮、零散
+返回按钮或浏览器 Back，无法稳定表达用户当前处于哪个档案层级。
+
+建议契约：
+
+1. 面包屑由当前 route 和已加载 entity 派生，不直接回放浏览器 history。
+2. 第一级固定为“资料馆”；第二级为“偶像 / 组合 / 卡牌 / 卡池 / 活动 /
+   剧情 / 社区熟肉 / 资源”等正式域。
+3. 第三级以后只放当前列表、collection 或 entity；总层级默认不超过四级。
+4. 当前项不可点击并使用 `aria-current="page"`；其余项只调用既有 archive
+   route builder，不手写第二套路由字符串。
+5. 返回上级时保留能稳定复现的筛选条件，例如 `q`、`unit_filter`、
+   `event_scope`、`rarity`；临时来源链仍由 `parent/return` 负责。
+6. 面包屑不承担来源证明：从卡牌跳到活动后，层级应显示活动的 canonical
+   hierarchy，而不是伪造“卡牌是活动的父节点”。
+7. 桌面端放在 `ArchiveShell` 内容标题上方；移动端允许折叠中间层，但必须
+   保留可操作的上一级和完整 `aria-label`。
+8. `player`、`spine_lab`、`chibi_stage` 继续全屏，不渲染 archive
+   breadcrumb；播放器退出仍遵守明确的 `return` route。
+
+代表路径：
+
+```text
+资料馆 > 偶像 > 牙崎漣
+资料馆 > 组合 > THE 虎牙道
+资料馆 > 卡牌 > 当前卡牌
+资料馆 > 卡池 > 当前卡池
+资料馆 > 活动 > 当前活动
+资料馆 > 剧情 > 组合剧情 > 当前 collection
+资料馆 > 社区熟肉
+```
+
+首批实现只应覆盖 route hierarchy 和视觉组件，不同时重写全局搜索、Back
+stack 或页面关系数据。
+
+验收条件：
+
+- 从自然入口、直接深链和刷新恢复进入同一页面时，breadcrumb 一致；
+- 每个可点击层级返回正确 canonical view，且不会形成路由循环；
+- 当前实体标题缺失时有稳定 ID fallback，不显示 `undefined`；
+- desktop、窄屏和键盘/屏幕阅读器语义通过；
+- 浏览器 Back、现有返回按钮和播放器 `return` 行为不回归；
+- 5174 至少抽查 Idol、Card、Event、Story collection、External resource
+  五类详情页。
 
 ### P2：Runtime 长时验收与扩大代表性 v2 覆盖
 

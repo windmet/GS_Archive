@@ -123,8 +123,14 @@ parity 或兼容参考。
 ### P1：用户可见门户与有界内容整合
 
 - 改善搜索、关系跳转、观看入口、覆盖状态和移动端信息密度；
+- 在 `ArchiveShell` 中增加由 route/entity 派生的统一面包屑，帮助用户理解
+  “资料馆域 → 列表/集合 → 当前实体”的位置；
 - 外部熟肉继续 exact-only、GS-only，并与本地 publication ledger 分离；
 - 严格 v2 只做代表性小批，不进行 3,398 group 一键迁移。
+
+面包屑不是浏览器 history 的可视化，也不替代现有 Back。`player`、
+`spine_lab` 和 `chibi_stage` 保持全屏；它们只继续使用明确的
+`return`/`parent` 返回契约。
 
 ### P2：Runtime 长时验收
 

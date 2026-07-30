@@ -416,6 +416,53 @@ Annotation 必须：
 - annotation index 可重复生成，annotation 不参与
   `manifest.by_logical_id` replay。
 
+### P1-UI：门户统一面包屑
+
+状态：**approved for a future bounded UI batch；尚未实现**。
+
+产品目标：
+
+- 在 `ArchiveShell` 中表达稳定的“资料馆域 → 列表/集合 → 当前实体”层级；
+- 让直接深链、刷新恢复和跨域跳转后的当前位置可理解；
+- 补充而不是替代现有 Back、`parent` 和 `return` 行为。
+
+实现边界：
+
+- breadcrumb model 必须从 `archiveRoute.js` 和当前 entity 派生；
+- 不读取或序列化浏览器 history stack；
+- 不建立第二套路由表，不在每个详情组件手写 URL；
+- 当前项不可点击，其余层级使用既有 route navigation；
+- canonical hierarchy 与“用户从哪里点进来”分离，避免把关联实体伪造成父子；
+- 最多四层；移动端可折叠中间层；
+- 使用 `<nav aria-label="面包屑">`、有序列表和
+  `aria-current="page"`；
+- `player`、`spine_lab`、`chibi_stage` 保持全屏，不添加 archive
+  breadcrumb。
+
+首批建议覆盖：
+
+```text
+idol_detail
+unit_detail
+card_detail
+gasha_detail
+event_detail
+story_collection
+story_detail
+external_story_resources
+```
+
+验收必须同时覆盖自然入口、复制深链、刷新恢复、浏览器 Back、窄屏和标题缺失
+fallback。5174 最少抽查 Idol、Card、Event、Story collection、External
+resource 五类页面。该批只新增 breadcrumb model/component 与必要样式，不
+顺带重写搜索、关系数据、Back stack 或播放器导航。
+
+完整产品理由与代表路径见：
+
+```text
+notes/03_audit/GS_ARCHIVE_PRODUCT_HISTORY_RECONCILIATION_20260730.md
+```
+
 ### P1-A：GS-only 社区熟肉外链试点
 
 状态：**merged in PR #6**。merge commit `fdce874`，post-merge source gate
