@@ -26,8 +26,8 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | active functional branch | `codex/reconcile-product-history-p2`；documentation-only |
 | active track | P0 current-architecture documentation reconciliation |
 | upstream | `origin/codex/reconcile-product-history-p2` |
-| worktree | P0 closeout only；clean at committed HEAD |
-| open PR | PR #31；draft P0 architecture closeout |
+| worktree | recheck live checkout；P0 branch contains no P1 implementation |
+| P0 closeout PR | PR #31；recheck live state |
 | PR #30 | merged as `721c58b29e0eb953e8ba6138521d825d98e1cc63` |
 | PR #28 | merged as `5c21658ac63ac5d158024a83cdaeb086b7dcc30a` |
 | PR #28 final-head check | Source-only contract PASS，run `30513723245` |

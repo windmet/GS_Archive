@@ -20,7 +20,7 @@ their forward-looking defect lists must not override this baseline.
 | active functional branch | `codex/reconcile-product-history-p2`; documentation/operational-entry-only P0 closeout |
 | active track | P0 current-architecture and Agent-entry closeout; no P1 implementation selected in this branch |
 | active upstream | `origin/codex/reconcile-product-history-p2` |
-| active pull request | PR #31, draft P0 architecture closeout |
+| P0 closeout pull request | PR #31; recheck live state before claiming repository-level completion |
 | active validation | P0 Runtime foundation, audio, routes, playback range, soak instrumentation, archive sources, source-only baseline, authoritative registry, publication ledger, external resources and local production build PASS |
 | PR #30 merge commit | `721c58b29e0eb953e8ba6138521d825d98e1cc63` |
 | PR #30 functional head | `1c10537` (`feat(archive): add exact personal story links`) |

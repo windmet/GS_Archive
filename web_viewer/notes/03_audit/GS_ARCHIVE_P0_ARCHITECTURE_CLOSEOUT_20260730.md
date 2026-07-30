@@ -1,10 +1,10 @@
 # GS Archive P0 Architecture Closeout
 
-Status: branch-level P0 closeout verified; merge to `master` required before P1
+Status: P0 closeout evidence; verify PR #31 merge and current `master` before P1
 Date: 2026-07-30
 Functional baseline: `master@721c58b29e0eb953e8ba6138521d825d98e1cc63`
 Closeout branch: `codex/reconcile-product-history-p2`
-Pull request: #31 (draft)
+Pull request: #31
 
 ## 1. P0 scope
 
