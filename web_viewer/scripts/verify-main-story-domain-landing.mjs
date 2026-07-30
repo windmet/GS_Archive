@@ -37,7 +37,7 @@ assert.match(
   appSource,
   /currentStoryMode\.value === 'portal' && currentStoryDomain\.value === 'main'[\s\S]+currentStoryDomain\.value = ''[\s\S]+commitView\('story_catalog'\)/,
 )
-assert.match(appSource, /returnsToDomainLanding = \['main', 'extra'\]\.includes\(domain\)/)
+assert.match(appSource, /returnsToDomainLanding = \['main', 'extra', 'birthday'\]\.includes\(domain\)/)
 
 assert.match(catalogSource, /class="main-domain-landing"/)
 assert.match(catalogSource, /openDomain\('main'\)/)

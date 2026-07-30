@@ -106,6 +106,45 @@
       </section>
     </div>
 
+    <div v-else-if="mode === 'portal' && domain === 'birthday'" class="birthday-domain-landing">
+      <header class="birthday-domain-hero">
+        <div>
+          <span>BIRTHDAY STORY ARCHIVE</span>
+          <h2>生日剧情</h2>
+          <p>按角色主体归档三类 masterdata 系列，并保留与个人剧情共享文件的双重身份。</p>
+        </div>
+        <dl aria-label="生日剧情归档统计">
+          <div><dt>角色主体</dt><dd>{{ birthdayDomain?.meta?.collectionCount || 0 }}</dd></div>
+          <div><dt>逻辑记录</dt><dd>{{ birthdayDomain?.meta?.logicalEntryCount || 0 }}</dd></div>
+          <div><dt>跨域共享</dt><dd>{{ birthdayDomain?.meta?.crossDomainSharedFileCount || 0 }}</dd></div>
+        </dl>
+      </header>
+
+      <section class="birthday-domain-section" aria-labelledby="birthday-domain-heading">
+        <div class="section-heading">
+          <div><span>SUBJECT COLLECTIONS</span><h3 id="birthday-domain-heading">角色生日档案</h3></div>
+          <strong>{{ birthdayCards.length }} subjects</strong>
+        </div>
+        <div class="birthday-card-grid">
+          <button
+            v-for="card in birthdayCards"
+            :key="card.id"
+            class="birthday-card"
+            @click="browse('birthday', card.subject.code)"
+          >
+            <span class="birthday-subject-code">{{ card.subject.numericId }}</span>
+            <span class="birthday-card-copy">
+              <small>{{ card.subject.kind === 'npc' ? 'STAFF' : 'IDOL' }} · {{ card.subject.code }}</small>
+              <strong>{{ card.subject.displayName }}</strong>
+              <span>{{ card.logicalEntryCount }} 篇 · {{ card.seriesIds.length }} 个 master 系列</span>
+            </span>
+            <span v-if="card.sharedCount" class="birthday-shared">{{ card.sharedCount }} 篇跨域共享</span>
+            <ArrowRight :size="17" aria-hidden="true" />
+          </button>
+        </div>
+      </section>
+    </div>
+
     <div v-else-if="mode === 'portal'" class="story-portal">
       <section class="main-story-band">
         <div class="band-heading">
@@ -291,6 +330,7 @@ const props = defineProps({
   externalResourceCount: { type: Number, default: 0 },
   mainDomain: { type: Object, default: null },
   extraDomain: { type: Object, default: null },
+  birthdayDomain: { type: Object, default: null },
 })
 const emit = defineEmits(['select', 'browse', 'open-seasonal', 'open-work', 'open-idol-story', 'open-external-resources', 'load-more', 'clear-section', 'update:mode', 'update:domain', 'update:event-scope', 'update:availability', 'update:sort'])
 
@@ -323,6 +363,16 @@ const extraCards = computed(() => {
       sharedPlayback: (playbackUse.get(entry?.compiledFile) || 0) > 1,
     }
   })
+})
+const birthdayCards = computed(() => {
+  const entries = new Map((props.birthdayDomain?.logicalEntries || []).map(entry => [entry.id, entry]))
+  return (props.birthdayDomain?.collections || []).map(collection => ({
+    ...collection,
+    sharedCount: collection.logicalEntryIds
+      .map(id => entries.get(id))
+      .filter(entry => entry?.domainMemberships?.length > 1)
+      .length,
+  }))
 })
 const secondaryGateways = [
   { id: 'external_story_resources', label: '社区中文剧情', icon: Languages, unit: '条', action: 'external-resources' },
@@ -401,6 +451,19 @@ function formatExtraDate(timestamp) {
 .extra-card-copy span { overflow: hidden; color: #53666e; font-size: .61rem; text-overflow: ellipsis; white-space: nowrap; }
 .extra-card-copy code { overflow: hidden; color: #8a969b; font-size: .51rem; text-overflow: ellipsis; white-space: nowrap; }
 .shared-playback { position: absolute; top: 8px; right: 9px; padding: 2px 5px; border-radius: 3px; background: #fff2d9; color: #8a641d; font-size: .49rem; }
+.birthday-domain-landing { min-height: calc(100% - 51px); background: #fff9fa; }
+.birthday-domain-hero { display: flex; align-items: end; justify-content: space-between; gap: 28px; padding: 34px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #eadfe2; background: linear-gradient(120deg, #fff0f4, #fff 62%); }
+.birthday-domain-hero > div > span, .birthday-domain-section .section-heading span { color: #b45570; font-size: .6rem; font-weight: 800; letter-spacing: .08em; }
+.birthday-domain-hero h2 { margin: 5px 0 8px; font-size: 1.45rem; }.birthday-domain-hero p { max-width: 640px; margin: 0; color: #65575c; font-size: .7rem; line-height: 1.7; }
+.birthday-domain-hero dl { display: grid; grid-template-columns: repeat(3,minmax(74px,1fr)); min-width: 300px; margin: 0; border: 1px solid #eadde1; border-radius: 6px; background: rgba(255,255,255,.88); }
+.birthday-domain-hero dl div { padding: 12px 14px; border-right: 1px solid #eee3e6; text-align: center; }.birthday-domain-hero dl div:last-child { border-right: 0; }
+.birthday-domain-hero dt { color: #8b7b80; font-size: .56rem; }.birthday-domain-hero dd { margin: 4px 0 0; color: #a64762; font-size: 1rem; font-weight: 800; }
+.birthday-domain-section { padding: 25px max(24px, calc((100% - 1120px) / 2)) 42px; }.birthday-domain-section .section-heading h3 { margin: 3px 0 0; font-size: 1rem; }.birthday-domain-section .section-heading > strong { color: #8a7b80; font-size: .61rem; }
+.birthday-card-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 9px; }
+.birthday-card { position: relative; display: grid; grid-template-columns: 42px minmax(0,1fr) 18px; align-items: center; gap: 10px; min-height: 94px; padding: 12px; border: 1px solid #e7dfe2; border-radius: 6px; background: #fff; color: #3f3438; cursor: pointer; font: inherit; text-align: left; }
+.birthday-card:hover { border-color: #d58ca0; box-shadow: 0 4px 14px rgba(100,52,66,.08); }.birthday-subject-code { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: #fbe8ed; color: #a84964; font-size: .61rem; font-weight: 800; }
+.birthday-card-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }.birthday-card-copy small { color: #b05b73; font-size: .51rem; }.birthday-card-copy strong { overflow: hidden; font-size: .75rem; text-overflow: ellipsis; white-space: nowrap; }.birthday-card-copy span { color: #76666b; font-size: .57rem; }
+.birthday-shared { position: absolute; top: 7px; right: 8px; padding: 2px 5px; border-radius: 3px; background: #f0eafa; color: #6e5591; font-size: .48rem; }
 .story-portal { background: #fff; }
 .main-domain-landing { min-height: 100%; background: #f5f7f8; }
 .main-domain-hero { display: flex; align-items: end; justify-content: space-between; gap: 32px; padding: 34px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #dfe6e7; background-color: rgba(255,255,255,.82); background-image: url('/assets/stories/story_background.png'); background-position: center; background-size: cover; background-blend-mode: screen; }
@@ -482,7 +545,7 @@ function formatExtraDate(timestamp) {
 .story-synopsis { display: -webkit-box; overflow: hidden; color: #69777f; font-size: .63rem; line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 2; white-space: pre-line; }.story-resource { color: #99a2a7; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .55rem; }
 .story-stats { display: flex; flex-direction: column; gap: 3px; color: #73808a; font-size: .6rem; text-align: right; }.row-arrow { color: #819097; }
 .empty-state { margin: 32px 0; color: #7a858e; font-size: .75rem; text-align: center; }.load-more { display: flex; align-items: center; justify-content: center; gap: 6px; width: calc(100% - 32px); min-height: 38px; margin: 0 16px 20px; border: 1px solid #d4dcdf; border-radius: 6px; background: #fff; color: #4f5c65; cursor: pointer; font: inherit; font-size: .69rem; }
-@media (max-width: 850px) { .main-domain-hero { align-items: start; flex-direction: column; }.main-domain-hero dl { width: 100%; }.main-domain-grid, .extra-card-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.extra-domain-hero { align-items: stretch; flex-direction: column; }.extra-domain-hero dl { min-width: 0; width: 100%; }.event-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }.unit-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }.domain-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 850px) { .main-domain-hero { align-items: start; flex-direction: column; }.main-domain-hero dl { width: 100%; }.main-domain-grid, .extra-card-grid, .birthday-card-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.extra-domain-hero, .birthday-domain-hero { align-items: stretch; flex-direction: column; }.extra-domain-hero dl, .birthday-domain-hero dl { min-width: 0; width: 100%; }.event-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }.unit-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }.domain-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 @media (max-width: 980px) { .event-entity-grid { grid-template-columns: 1fr; } }
-@media (max-width: 620px) { .main-domain-hero, .main-domain-collections, .main-story-band, .portal-section { padding: 18px 12px; }.main-domain-hero { gap: 18px; }.main-domain-hero h2 { font-size: 1.3rem; }.main-domain-hero dl { min-width: 0; }.main-domain-hero dl > div { padding: 9px; }.main-domain-grid { grid-template-columns: 1fr; }.main-domain-card { grid-template-rows: 136px minmax(92px,auto) 38px; }.extra-domain-hero { padding: 22px 12px; }.extra-domain-section { padding: 18px 10px 30px; }.extra-card-grid { grid-template-columns: 1fr; }.extra-domain-hero dl div { padding: 10px 6px; }.band-heading { align-items: start; }.band-actions { align-items: end; flex-direction: column; gap: 5px; }.main-chapters { grid-template-columns: 1fr; }.event-strip { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }.event-strip button { flex: 0 0 78%; scroll-snap-align: start; }.unit-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.catalog-toolbar { top: 51px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); padding: 8px 10px; }.catalog-toolbar label { min-width: 0; }.catalog-count { justify-self: end; margin: 0; }.story-list { padding: 9px; }.story-row { grid-template-columns: 25px 64px minmax(0,1fr) 16px; gap: 7px; }.story-stats { grid-column: 3; flex-direction: row; gap: 8px; text-align: left; }.row-arrow { grid-column: 4; grid-row: 1 / span 2; }.story-synopsis { -webkit-line-clamp: 3; }.event-entity-grid { padding: 9px; }.event-entity-grid > button { grid-template-columns: 116px minmax(0,1fr) 16px; min-height: 92px; padding-right: 8px; }.event-reward-icons { display: none; }.event-entity-copy > strong { white-space: normal; }.event-entity-copy > span { -webkit-line-clamp: 1; } }
+@media (max-width: 620px) { .main-domain-hero, .main-domain-collections, .main-story-band, .portal-section { padding: 18px 12px; }.main-domain-hero { gap: 18px; }.main-domain-hero h2 { font-size: 1.3rem; }.main-domain-hero dl { min-width: 0; }.main-domain-hero dl > div { padding: 9px; }.main-domain-grid { grid-template-columns: 1fr; }.main-domain-card { grid-template-rows: 136px minmax(92px,auto) 38px; }.extra-domain-hero, .birthday-domain-hero { padding: 22px 12px; }.extra-domain-section, .birthday-domain-section { padding: 18px 10px 30px; }.extra-card-grid, .birthday-card-grid { grid-template-columns: 1fr; }.extra-domain-hero dl div, .birthday-domain-hero dl div { padding: 10px 6px; }.band-heading { align-items: start; }.band-actions { align-items: end; flex-direction: column; gap: 5px; }.main-chapters { grid-template-columns: 1fr; }.event-strip { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }.event-strip button { flex: 0 0 78%; scroll-snap-align: start; }.unit-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.catalog-toolbar { top: 51px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); padding: 8px 10px; }.catalog-toolbar label { min-width: 0; }.catalog-count { justify-self: end; margin: 0; }.story-list { padding: 9px; }.story-row { grid-template-columns: 25px 64px minmax(0,1fr) 16px; gap: 7px; }.story-stats { grid-column: 3; flex-direction: row; gap: 8px; text-align: left; }.row-arrow { grid-column: 4; grid-row: 1 / span 2; }.story-synopsis { -webkit-line-clamp: 3; }.event-entity-grid { padding: 9px; }.event-entity-grid > button { grid-template-columns: 116px minmax(0,1fr) 16px; min-height: 92px; padding-right: 8px; }.event-reward-icons { display: none; }.event-entity-copy > strong { white-space: normal; }.event-entity-copy > span { -webkit-line-clamp: 1; } }
 </style>

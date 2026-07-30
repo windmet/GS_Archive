@@ -200,6 +200,7 @@
         :external-resource-count="externalStoryNavigationEntries.length"
         :main-domain="mainStoryDomain"
         :extra-domain="extraStoryDomain"
+        :birthday-domain="birthdayStoryDomain"
         @select="openCatalogStory"
         @browse="browseStoryCollection"
         @open-external-resources="openExternalStoryResources"
@@ -376,6 +377,7 @@ import { buildArchiveHomeHighlights, buildArchiveHomeState } from './data/archiv
 import { buildEventStoryEpisodes } from './data/eventStoryEpisodes.js'
 import { buildStoryCollections } from './data/storyCollections.js'
 import {
+  buildBirthdayStoryDomainIdentity,
   buildExtraStoryDomainIdentity,
   buildMainStoryDomainIdentity,
 } from './data/storyDomainIdentityIndex.js'
@@ -442,6 +444,7 @@ const idolEpisodeData = ref(null)
 const mobileArchiveData = ref(null)
 const idolCommunicationLoadPromise = ref(null)
 const idolUnitData = ref(null)
+const speakerDictionaryData = ref(null)
 const costumeDictionaryData = ref(null)
 const archiveManifestData = ref(null)
 const archiveVerificationData = ref(null)
@@ -808,8 +811,18 @@ const currentStoryExternalResources = computed(() =>
   externalResourcesForStory(externalStoryResourcesData.value, currentStory.value),
 )
 
-const storyCollections = computed(() => buildStoryCollections(storyMasterData.value, storyCatalog.value))
 const extraStoryDomain = computed(() => buildExtraStoryDomainIdentity(storyMasterData.value))
+const birthdayStoryDomain = computed(() => buildBirthdayStoryDomainIdentity(
+  storyMasterData.value,
+  idolUnitData.value,
+  speakerDictionaryData.value,
+))
+
+const storyCollections = computed(() => buildStoryCollections(
+  storyMasterData.value,
+  storyCatalog.value,
+  { birthdayDomain: birthdayStoryDomain.value },
+))
 
 const currentStoryCollection = computed(() => storyCollections.value.find(collection =>
   collection.domain === currentStoryDomain.value && collection.sectionId === currentStorySection.value,
@@ -1217,6 +1230,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'story_catalog') {
     if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'main') return '主线剧情'
     if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'extra') return '额外剧情'
+    if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'birthday') return '生日剧情'
     return '故事目录'
   }
   if (view.value === 'external_story_resources') return '社区中文剧情'
@@ -1656,7 +1670,7 @@ function goArchiveBack() {
     story_collection: () => {
       const parent = storyCollectionParentView.value
       const domain = currentStoryDomain.value
-      const returnsToDomainLanding = ['main', 'extra'].includes(domain) && parent !== 'external_story_resources'
+      const returnsToDomainLanding = ['main', 'extra', 'birthday'].includes(domain) && parent !== 'external_story_resources'
       currentStoryDomain.value = returnsToDomainLanding ? domain : ''
       currentStorySection.value = ''
       currentStoryFile.value = ''
@@ -1804,7 +1818,7 @@ function setStoryMode(mode) {
 }
 
 function browseStoryCollection({ domain, section = '', mode = '' }) {
-  if (section && ['main', 'unit_story', 'extra'].includes(domain)) {
+  if (section && ['main', 'unit_story', 'extra', 'birthday'].includes(domain)) {
     currentStoryDomain.value = domain
     currentStorySection.value = section
     currentStoryMode.value = 'portal'
@@ -1813,20 +1827,14 @@ function browseStoryCollection({ domain, section = '', mode = '' }) {
     commitView('story_collection')
     return
   }
-  if (mode === 'portal' && domain === 'main') {
+  const opensFormalDomain = (mode === 'portal' && domain === 'main') ||
+    ['extra', 'birthday'].includes(domain)
+  if (opensFormalDomain) {
     currentStoryDomain.value = domain
     currentStorySection.value = ''
     currentStoryMode.value = 'portal'
     currentStoryFile.value = ''
     storyCollectionParentView.value = ''
-    storyVisibleLimit.value = 80
-    commitView('story_catalog')
-    return
-  }
-  if (domain === 'extra') {
-    currentStoryDomain.value = domain
-    currentStorySection.value = ''
-    currentStoryMode.value = 'portal'
     currentEventScope.value = 'all'
     storyVisibleLimit.value = 80
     commitView('story_catalog')
@@ -2608,6 +2616,7 @@ onMounted(async () => {
   seasonalCampaignData.value = data.seasonalCampaign
   workStoryData.value = data.workStory
   idolUnitData.value = data.idolUnit
+  speakerDictionaryData.value = data.speakerDictionary
   costumeDictionaryData.value = data.costumeDictionary
   archiveManifestData.value = data.archiveManifest
   archiveVerificationData.value = data.archiveVerification

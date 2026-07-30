@@ -142,6 +142,7 @@ function externalResourcesForChapter(chapterId) {
 .collection-visual.domain-main { aspect-ratio: 906 / 210; }
 .collection-visual.domain-unit_story { aspect-ratio: 446 / 150; }
 .collection-visual.domain-extra { min-height: 210px; }
+.collection-visual.domain-birthday { min-height: 210px; }
 .collection-visual img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .visual-fallback { display: grid; place-items: center; width: 100%; height: 100%; background: url('/assets/stories/story_background.png') center / cover; color: #16877f; }
 .collection-copy { align-self: center; min-width: 0; }

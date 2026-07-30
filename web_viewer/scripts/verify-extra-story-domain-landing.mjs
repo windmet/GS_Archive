@@ -53,10 +53,10 @@ assert.deepEqual(
 )
 
 assert.match(appSource, /:extra-domain="extraStoryDomain"/)
-assert.match(appSource, /\['main', 'unit_story', 'extra'\]\.includes\(domain\)/)
-assert.match(appSource, /returnsToDomainLanding = \['main', 'extra'\]\.includes\(domain\)/)
+assert.match(appSource, /\['main', 'unit_story', 'extra', 'birthday'\]\.includes\(domain\)/)
+assert.match(appSource, /returnsToDomainLanding = \['main', 'extra', 'birthday'\]\.includes\(domain\)/)
 assert.match(catalogSource, /mode === 'portal' && domain === 'extra'/)
 assert.match(catalogSource, /共享编译文件不会合并目录身份/)
-assert.match(catalogSource, /@media \(max-width: 620px\).*extra-card-grid \{ grid-template-columns: 1fr;/s)
+assert.match(catalogSource, /@media \(max-width: 620px\).*\.extra-card-grid, \.birthday-card-grid \{ grid-template-columns: 1fr;/s)
 
 console.log('Extra story domain landing: 47 logical collections, 45 resource identities, 44 playback files verified')
