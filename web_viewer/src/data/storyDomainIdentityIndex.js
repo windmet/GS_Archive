@@ -262,6 +262,11 @@ function buildExtraDomain(storyMaster) {
   }
 }
 
+export function buildExtraStoryDomainIdentity(storyMaster) {
+  if (!storyMaster) return null
+  return buildExtraDomain(storyMaster)
+}
+
 function buildPlaybackIndex(domains) {
   const byCompiledFile = {}
   for (const domain of Object.values(domains)) {

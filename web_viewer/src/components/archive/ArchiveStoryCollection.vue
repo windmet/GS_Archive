@@ -109,7 +109,10 @@ const expandedChapterId = ref('')
 const releaseDate = computed(() => {
   const timestamp = Number(props.collection?.releaseAt || 0)
   if (timestamp < 1577836800) return ''
-  return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium' }).format(new Date(timestamp * 1000))
+  return new Intl.DateTimeFormat('zh-CN', {
+    dateStyle: 'medium',
+    timeZone: 'Asia/Tokyo',
+  }).format(new Date(timestamp * 1000))
 })
 
 watch(() => [props.collection?.id, props.initialChapterId], () => {
@@ -138,6 +141,7 @@ function externalResourcesForChapter(chapterId) {
 .collection-visual { align-self: start; overflow: hidden; border: 1px solid #dce3e5; border-radius: 6px; background: #eef2f3; }
 .collection-visual.domain-main { aspect-ratio: 906 / 210; }
 .collection-visual.domain-unit_story { aspect-ratio: 446 / 150; }
+.collection-visual.domain-extra { min-height: 210px; }
 .collection-visual img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .visual-fallback { display: grid; place-items: center; width: 100%; height: 100%; background: url('/assets/stories/story_background.png') center / cover; color: #16877f; }
 .collection-copy { align-self: center; min-width: 0; }

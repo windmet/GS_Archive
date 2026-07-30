@@ -198,6 +198,7 @@
         :work-idols="workStoryData?.idols || []"
         :idol-story-count="idolEpisodeData?.meta?.section_count || 0"
         :external-resource-count="externalStoryNavigationEntries.length"
+        :extra-domain="extraStoryDomain"
         @select="openCatalogStory"
         @browse="browseStoryCollection"
         @open-external-resources="openExternalStoryResources"
@@ -373,6 +374,7 @@ import {
 import { buildArchiveHomeHighlights, buildArchiveHomeState } from './data/archiveHomeState.js'
 import { buildEventStoryEpisodes } from './data/eventStoryEpisodes.js'
 import { buildStoryCollections } from './data/storyCollections.js'
+import { buildExtraStoryDomainIdentity } from './data/storyDomainIdentityIndex.js'
 import { buildIdolStoryOptions, buildIdolStoryPage } from './data/idolCommunicationSelectors.js'
 import {
   archiveSectionForRoute,
@@ -799,6 +801,7 @@ const currentStoryExternalResources = computed(() =>
 )
 
 const storyCollections = computed(() => buildStoryCollections(storyMasterData.value, storyCatalog.value))
+const extraStoryDomain = computed(() => buildExtraStoryDomainIdentity(storyMasterData.value))
 
 const currentStoryCollection = computed(() => storyCollections.value.find(collection =>
   collection.domain === currentStoryDomain.value && collection.sectionId === currentStorySection.value,
@@ -1203,6 +1206,7 @@ const archiveSection = computed(() => archiveSectionForRoute({
 const archiveTitle = computed(() => {
   if (view.value === 'home') return 'SideM Archive'
   if (view.value === 'archive_status') return '数据状态'
+  if (view.value === 'story_catalog' && currentStoryMode.value === 'portal' && currentStoryDomain.value === 'extra') return '额外剧情'
   if (view.value === 'story_catalog') return '故事目录'
   if (view.value === 'external_story_resources') return '社区中文剧情'
   if (view.value === 'story_detail') return currentStory.value?.title || '故事详情'
@@ -1632,7 +1636,8 @@ function goArchiveBack() {
     },
     story_collection: () => {
       const parent = storyCollectionParentView.value
-      currentStoryDomain.value = ''
+      const returnsToExtraLanding = currentStoryDomain.value === 'extra' && parent !== 'external_story_resources'
+      currentStoryDomain.value = returnsToExtraLanding ? 'extra' : ''
       currentStorySection.value = ''
       currentStoryFile.value = ''
       storyCollectionParentView.value = ''
@@ -1779,13 +1784,22 @@ function setStoryMode(mode) {
 }
 
 function browseStoryCollection({ domain, section = '' }) {
-  if (section && ['main', 'unit_story'].includes(domain)) {
+  if (section && ['main', 'unit_story', 'extra'].includes(domain)) {
     currentStoryDomain.value = domain
     currentStorySection.value = section
     currentStoryMode.value = 'portal'
     currentStoryFile.value = ''
     storyCollectionParentView.value = ''
     commitView('story_collection')
+    return
+  }
+  if (domain === 'extra') {
+    currentStoryDomain.value = 'extra'
+    currentStorySection.value = ''
+    currentStoryMode.value = 'portal'
+    currentEventScope.value = 'all'
+    storyVisibleLimit.value = 80
+    commitView('story_catalog')
     return
   }
   filterQuery.value = ''
