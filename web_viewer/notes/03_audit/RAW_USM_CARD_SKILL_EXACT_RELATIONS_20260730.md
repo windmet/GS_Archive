@@ -1,6 +1,6 @@
 # RAW USM Card Skill Exact Relations
 
-Status: pending review
+Status: merged in PR #24
 
 Date: 2026-07-30
 
@@ -56,6 +56,8 @@ RAW USM relation catalog:
 
 Both source-only and mounted verification pass. Mounted verification reparses
 CardData table 1 and requires byte-for-byte equality with the committed index.
+PR #24 final-head source gate `30511853325` and post-merge source gate
+`30511892344` both passed. The merge commit is `66a0e1d`.
 
 ## Boundary
 

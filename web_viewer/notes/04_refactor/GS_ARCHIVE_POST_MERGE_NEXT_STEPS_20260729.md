@@ -15,12 +15,15 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | 项 | 当前值 |
 | --- | --- |
 | merged base branch | `master` |
-| current functional baseline | `master` includes PR #22 merge `0f858d036a377d4013a3345c85e8fba6acaf73fe` |
-| active functional branch | `codex/usm-skill-movie-exact-relations` |
-| active track | CardData skill-movie exact-masterdata 有界细化 |
+| current functional baseline | `master` includes PR #24 merge `66a0e1dd41fe560388e0ff408619c8f3a2c15c56` |
+| active functional branch | none；documentation-only closeout is isolated |
+| active track | none selected；CardData skill-movie exact-masterdata 细化已完成 |
 | upstream | not applicable |
-| worktree | active functional changes pending commit |
+| worktree | clean at PR #24 merge；documentation-only closeout follows separately |
 | open PR | none |
+| PR #24 | merged as `66a0e1dd41fe560388e0ff408619c8f3a2c15c56` |
+| PR #24 final-head check | Source-only contract PASS，run `30511853325` |
+| PR #24 post-merge check | `master` push Source-only contract PASS，run `30511892344` |
 | PR #22 | merged as `0f858d036a377d4013a3345c85e8fba6acaf73fe` |
 | PR #22 final-head check | Source-only contract PASS，run `30511081519` |
 | PR #22 post-merge check | `master` push Source-only contract PASS，run `30511111063` |
@@ -534,7 +537,8 @@ verifier 均通过 `260 / 77 / 30 / 153`；mounted 模式还重解析 table 175�
 
 ### P1-B2：CardData skill-movie 精确关系
 
-状态：**active，pending review**。
+状态：**merged in PR #24**。merge commit `66a0e1d`，final-head gate
+`30511853325` 与 post-merge gate `30511892344` 均通过。
 
 CardData table 1 的字段 14 `ResourceId` 与字段 31
 `HasSkillCutinResource` 共同提供独立 authority。124 个 field 31 为 true 的
@@ -801,7 +805,8 @@ git status -sb
 git rev-parse HEAD
 ```
 
-当前 active 功能分支为 `codex/usm-skill-movie-exact-relations`。
+当前没有 active 功能分支。`codex/usm-skill-movie-exact-relations` 已通过
+PR #24 合入 `master`。
 `codex/usm-movie-announce-exact-relations` 已通过
 PR #22 合入 `master`。table 175 独立证明的 30 条
 `movie_home_announce_*` 已提升为 exact-masterdata；后续不得把 `3dmv`、
@@ -830,6 +835,8 @@ codex/honor-event-exact-relations
 codex/gasha-skill-exact-relations
 codex/post-p1h-relation-closeout
 codex/external-story-resource-navigation
+codex/usm-movie-announce-exact-relations
+codex/usm-skill-movie-exact-relations
 ```
 
 Codex 管理目录中指向初始提交 `ca3a28e` 的 detached worktree 不是项目开发
@@ -877,7 +884,7 @@ git diff --cached --check
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
 worktree、origin/master，并确认当前没有 active 功能分支，master 已包含
-PR #22 merge `0f858d0`，post-merge run `30511111063` 通过。
+PR #24 merge `66a0e1d`，post-merge run `30511892344` 通过。
 
 完整阅读：
 1. web_viewer/notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
@@ -893,6 +900,7 @@ PR #22 merge `0f858d0`，post-merge run `30511111063` 通过。
 11. web_viewer/notes/03_audit/IMAGE_RELATION_REFINEMENT_CLOSEOUT_20260730.md
 12. web_viewer/notes/03_audit/EXTERNAL_GS_RESOURCE_NAVIGATION_20260730.md
 13. web_viewer/notes/03_audit/RAW_USM_MOVIE_ANNOUNCE_EXACT_RELATIONS_20260730.md
+14. web_viewer/notes/03_audit/RAW_USM_CARD_SKILL_EXACT_RELATIONS_20260730.md
 
 先确认当前 baseline 的 image catalog 为 1,271 bundles / 263,071,090 bytes /
 9,157 Unity objects / 7,816 image objects，source-only 与 mounted verifier
