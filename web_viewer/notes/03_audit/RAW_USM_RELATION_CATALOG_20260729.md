@@ -1,6 +1,6 @@
 # RAW USM Relation Catalog
 
-Status: v1 merged in PR #8; v2 MovieAnnounce refinement active
+Status: v1 merged in PR #8; v2 MovieAnnounce refinement merged in PR #22
 
 Date: 2026-07-29
 
