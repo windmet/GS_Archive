@@ -66,6 +66,46 @@
       </section>
     </div>
 
+    <div v-else-if="mode === 'portal' && domain === 'extra'" class="extra-domain-landing">
+      <header class="extra-domain-hero">
+        <div>
+          <span>EXTRA STORY ARCHIVE</span>
+          <h2>额外剧情</h2>
+          <p>按 masterdata 的正式逻辑条目归档；共享编译文件不会合并目录身份。</p>
+        </div>
+        <dl aria-label="额外剧情归档统计">
+          <div><dt>正式条目</dt><dd>{{ extraDomain?.meta?.collectionCount || 0 }}</dd></div>
+          <div><dt>资源身份</dt><dd>{{ extraDomain?.meta?.resourceIdCount || 0 }}</dd></div>
+          <div><dt>播放文件</dt><dd>{{ extraDomain?.meta?.compiledFileCount || 0 }}</dd></div>
+        </dl>
+      </header>
+
+      <section class="extra-domain-section" aria-labelledby="extra-domain-heading">
+        <div class="section-heading">
+          <div><span>MASTERDATA COLLECTIONS</span><h3 id="extra-domain-heading">正式剧情目录</h3></div>
+          <strong>{{ extraCards.length }} collections</strong>
+        </div>
+        <div class="extra-card-grid">
+          <button
+            v-for="card in extraCards"
+            :key="card.id"
+            class="extra-card"
+            @click="browse('extra', card.masterId)"
+          >
+            <span class="extra-card-index">{{ card.parentSeriesId }}</span>
+            <span class="extra-card-copy">
+              <small>{{ formatExtraDate(card.releaseAt) }}</small>
+              <strong>{{ card.title }}</strong>
+              <span>{{ card.entry?.title || card.entry?.resourceId }}</span>
+              <code>{{ card.entry?.resourceId }}</code>
+            </span>
+            <span v-if="card.sharedPlayback" class="shared-playback">共享播放文件</span>
+            <ArrowRight :size="17" aria-hidden="true" />
+          </button>
+        </div>
+      </section>
+    </div>
+
     <div v-else-if="mode === 'portal'" class="story-portal">
       <section class="main-story-band">
         <div class="band-heading">
@@ -250,6 +290,7 @@ const props = defineProps({
   idolStoryCount: { type: Number, default: 0 },
   externalResourceCount: { type: Number, default: 0 },
   mainDomain: { type: Object, default: null },
+  extraDomain: { type: Object, default: null },
 })
 const emit = defineEmits(['select', 'browse', 'open-seasonal', 'open-work', 'open-idol-story', 'open-external-resources', 'load-more', 'clear-section', 'update:mode', 'update:domain', 'update:event-scope', 'update:availability', 'update:sort'])
 
@@ -266,6 +307,23 @@ const groupEntries = domain => {
 const mainSections = computed(() => groupEntries('main'))
 const unitGateways = computed(() => groupEntries('unit_story'))
 const featuredEvents = computed(() => props.allEntries.filter(entry => entry.domain === 'event').sort((a, b) => b.releaseAt - a.releaseAt).slice(0, 6))
+const extraCards = computed(() => {
+  const entries = new Map((props.extraDomain?.logicalEntries || []).map(entry => [entry.id, entry]))
+  const playbackUse = new Map()
+  for (const entry of props.extraDomain?.logicalEntries || []) {
+    if (!entry.compiledFile) continue
+    playbackUse.set(entry.compiledFile, (playbackUse.get(entry.compiledFile) || 0) + 1)
+  }
+  return (props.extraDomain?.collections || []).map(collection => {
+    const entry = entries.get(collection.logicalEntryIds?.[0]) || null
+    return {
+      ...collection,
+      entry,
+      releaseAt: entry?.releaseAt || 0,
+      sharedPlayback: (playbackUse.get(entry?.compiledFile) || 0) > 1,
+    }
+  })
+})
 const secondaryGateways = [
   { id: 'external_story_resources', label: '社区中文剧情', icon: Languages, unit: '条', action: 'external-resources' },
   { id: 'idol_story', label: '个人故事', icon: UserRound, action: 'idol-story' }, { id: 'card_scenarios', label: '卡片剧情', icon: CreditCard },
@@ -309,6 +367,12 @@ function unitVisual(id) {
   return `/assets/stories/units/image_unit_story_button_${codes[Number(id) - 1] || codes[0]}.png`
 }
 function hierarchyLabel(entry) { return [entry.sectionLabel, entry.episodeLabel].filter(Boolean).join(' · ') || entry.domainLabel }
+function formatExtraDate(timestamp) {
+  if (!Number(timestamp)) return '开放日期未记录'
+  return new Intl.DateTimeFormat('zh-CN', {
+    year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Asia/Tokyo',
+  }).format(new Date(Number(timestamp) * 1000))
+}
 </script>
 
 <style scoped>
@@ -316,6 +380,27 @@ function hierarchyLabel(entry) { return [entry.sectionLabel, entry.episodeLabel]
 .catalog-switcher { position: sticky; top: 0; z-index: 4; display: flex; justify-content: center; gap: 2px; padding: 8px 16px; border-bottom: 1px solid #e0e5e7; background: rgba(255,255,255,.96); }
 .catalog-switcher button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-width: 120px; height: 34px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #718089; cursor: pointer; font: inherit; font-size: .7rem; }
 .catalog-switcher button.active { border-color: #15978e; color: #126f69; font-weight: 800; }
+.extra-domain-landing { min-height: calc(100% - 51px); background: #f7f9fa; }
+.extra-domain-hero { display: flex; align-items: end; justify-content: space-between; gap: 28px; padding: 34px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #dce4e6; background: linear-gradient(120deg, #f0faf8, #fff 62%); }
+.extra-domain-hero > div > span, .extra-domain-section .section-heading span { color: #168a82; font-size: .6rem; font-weight: 800; letter-spacing: .08em; }
+.extra-domain-hero h2 { margin: 5px 0 8px; font-size: 1.45rem; }
+.extra-domain-hero p { max-width: 620px; margin: 0; color: #52636b; font-size: .7rem; line-height: 1.7; }
+.extra-domain-hero dl { display: grid; grid-template-columns: repeat(3, minmax(74px, 1fr)); min-width: 300px; margin: 0; border: 1px solid #d8e5e4; border-radius: 6px; background: rgba(255,255,255,.86); }
+.extra-domain-hero dl div { padding: 12px 14px; border-right: 1px solid #e1e9e9; text-align: center; }
+.extra-domain-hero dl div:last-child { border-right: 0; }
+.extra-domain-hero dt { color: #7a898f; font-size: .56rem; }.extra-domain-hero dd { margin: 4px 0 0; color: #176f69; font-size: 1rem; font-weight: 800; }
+.extra-domain-section { padding: 25px max(24px, calc((100% - 1120px) / 2)) 42px; }
+.extra-domain-section .section-heading h3 { margin: 3px 0 0; font-size: 1rem; }
+.extra-domain-section .section-heading > strong { color: #7d8b92; font-size: .61rem; }
+.extra-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 9px; }
+.extra-card { position: relative; display: grid; grid-template-columns: 42px minmax(0,1fr) 18px; align-items: center; gap: 10px; min-height: 112px; padding: 13px 12px; border: 1px solid #dce4e6; border-radius: 6px; background: #fff; color: #293a42; cursor: pointer; font: inherit; text-align: left; }
+.extra-card:hover { border-color: #65bbb5; box-shadow: 0 4px 14px rgba(28,66,66,.08); }
+.extra-card-index { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: #e8f6f4; color: #147c75; font-size: .61rem; font-weight: 800; }
+.extra-card-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.extra-card-copy small { color: #849298; font-size: .53rem; }.extra-card-copy strong { overflow: hidden; font-size: .72rem; text-overflow: ellipsis; white-space: nowrap; }
+.extra-card-copy span { overflow: hidden; color: #53666e; font-size: .61rem; text-overflow: ellipsis; white-space: nowrap; }
+.extra-card-copy code { overflow: hidden; color: #8a969b; font-size: .51rem; text-overflow: ellipsis; white-space: nowrap; }
+.shared-playback { position: absolute; top: 8px; right: 9px; padding: 2px 5px; border-radius: 3px; background: #fff2d9; color: #8a641d; font-size: .49rem; }
 .story-portal { background: #fff; }
 .main-domain-landing { min-height: 100%; background: #f5f7f8; }
 .main-domain-hero { display: flex; align-items: end; justify-content: space-between; gap: 32px; padding: 34px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #dfe6e7; background-color: rgba(255,255,255,.82); background-image: url('/assets/stories/story_background.png'); background-position: center; background-size: cover; background-blend-mode: screen; }
@@ -397,7 +482,7 @@ function hierarchyLabel(entry) { return [entry.sectionLabel, entry.episodeLabel]
 .story-synopsis { display: -webkit-box; overflow: hidden; color: #69777f; font-size: .63rem; line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 2; white-space: pre-line; }.story-resource { color: #99a2a7; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .55rem; }
 .story-stats { display: flex; flex-direction: column; gap: 3px; color: #73808a; font-size: .6rem; text-align: right; }.row-arrow { color: #819097; }
 .empty-state { margin: 32px 0; color: #7a858e; font-size: .75rem; text-align: center; }.load-more { display: flex; align-items: center; justify-content: center; gap: 6px; width: calc(100% - 32px); min-height: 38px; margin: 0 16px 20px; border: 1px solid #d4dcdf; border-radius: 6px; background: #fff; color: #4f5c65; cursor: pointer; font: inherit; font-size: .69rem; }
-@media (max-width: 850px) { .main-domain-hero { align-items: start; flex-direction: column; }.main-domain-hero dl { width: 100%; }.main-domain-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.event-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }.unit-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }.domain-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 850px) { .main-domain-hero { align-items: start; flex-direction: column; }.main-domain-hero dl { width: 100%; }.main-domain-grid, .extra-card-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.extra-domain-hero { align-items: stretch; flex-direction: column; }.extra-domain-hero dl { min-width: 0; width: 100%; }.event-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }.unit-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }.domain-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 @media (max-width: 980px) { .event-entity-grid { grid-template-columns: 1fr; } }
-@media (max-width: 620px) { .main-domain-hero, .main-domain-collections, .main-story-band, .portal-section { padding: 18px 12px; }.main-domain-hero { gap: 18px; }.main-domain-hero h2 { font-size: 1.3rem; }.main-domain-hero dl { min-width: 0; }.main-domain-hero dl > div { padding: 9px; }.main-domain-grid { grid-template-columns: 1fr; }.main-domain-card { grid-template-rows: 136px minmax(92px,auto) 38px; }.band-heading { align-items: start; }.band-actions { align-items: end; flex-direction: column; gap: 5px; }.main-chapters { grid-template-columns: 1fr; }.event-strip { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }.event-strip button { flex: 0 0 78%; scroll-snap-align: start; }.unit-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.catalog-toolbar { top: 51px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); padding: 8px 10px; }.catalog-toolbar label { min-width: 0; }.catalog-count { justify-self: end; margin: 0; }.story-list { padding: 9px; }.story-row { grid-template-columns: 25px 64px minmax(0,1fr) 16px; gap: 7px; }.story-stats { grid-column: 3; flex-direction: row; gap: 8px; text-align: left; }.row-arrow { grid-column: 4; grid-row: 1 / span 2; }.story-synopsis { -webkit-line-clamp: 3; }.event-entity-grid { padding: 9px; }.event-entity-grid > button { grid-template-columns: 116px minmax(0,1fr) 16px; min-height: 92px; padding-right: 8px; }.event-reward-icons { display: none; }.event-entity-copy > strong { white-space: normal; }.event-entity-copy > span { -webkit-line-clamp: 1; } }
+@media (max-width: 620px) { .main-domain-hero, .main-domain-collections, .main-story-band, .portal-section { padding: 18px 12px; }.main-domain-hero { gap: 18px; }.main-domain-hero h2 { font-size: 1.3rem; }.main-domain-hero dl { min-width: 0; }.main-domain-hero dl > div { padding: 9px; }.main-domain-grid { grid-template-columns: 1fr; }.main-domain-card { grid-template-rows: 136px minmax(92px,auto) 38px; }.extra-domain-hero { padding: 22px 12px; }.extra-domain-section { padding: 18px 10px 30px; }.extra-card-grid { grid-template-columns: 1fr; }.extra-domain-hero dl div { padding: 10px 6px; }.band-heading { align-items: start; }.band-actions { align-items: end; flex-direction: column; gap: 5px; }.main-chapters { grid-template-columns: 1fr; }.event-strip { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }.event-strip button { flex: 0 0 78%; scroll-snap-align: start; }.unit-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.catalog-toolbar { top: 51px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); padding: 8px 10px; }.catalog-toolbar label { min-width: 0; }.catalog-count { justify-self: end; margin: 0; }.story-list { padding: 9px; }.story-row { grid-template-columns: 25px 64px minmax(0,1fr) 16px; gap: 7px; }.story-stats { grid-column: 3; flex-direction: row; gap: 8px; text-align: left; }.row-arrow { grid-column: 4; grid-row: 1 / span 2; }.story-synopsis { -webkit-line-clamp: 3; }.event-entity-grid { padding: 9px; }.event-entity-grid > button { grid-template-columns: 116px minmax(0,1fr) 16px; min-height: 92px; padding-right: 8px; }.event-reward-icons { display: none; }.event-entity-copy > strong { white-space: normal; }.event-entity-copy > span { -webkit-line-clamp: 1; } }
 </style>

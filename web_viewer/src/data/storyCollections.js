@@ -94,6 +94,74 @@ function buildCollection(domain, group, chapters, episodeRows, catalog) {
   }
 }
 
+function buildExtraCollection(group, episodeRows, catalog) {
+  const groupId = String(group['1'])
+  const rows = sortedRows(episodeRows.filter(row => String(row['2']) === groupId))
+  const chapters = rows.map(row => {
+    const file = row.compiled_file || ''
+    const story = file
+      ? catalog.find(entry => entry.domain === 'extra' && entry.file === file) || null
+      : null
+    const resourceId = row.resource_id || row['5'] || ''
+    const part = resourceId.match(/_([a-z])$/i)?.[1] || ''
+    const boundary = story?.episodes?.find(item => item.episode_part === part) || null
+    const episodeFile = boundary?.episode_file || story?.file || ''
+    const startStep = boundary
+      ? Number(boundary.local_playable_start_index || 0) + 1
+      : Number(story?.playableStartIndex || 0) + 1
+    const endStep = boundary
+      ? Number(boundary.step_count || 0)
+      : Number(story?.playableStepCount || story?.summary?.step_count || 0)
+    const exists = Boolean(story?.exists && episodeFile)
+    const episode = {
+      id: String(row['1']),
+      label: row['3'] || group['3'] || '额外剧情',
+      resourceId,
+      part,
+      exists,
+      file: episodeFile,
+      startStep: exists ? startStep : 0,
+      endStep: exists ? endStep : 0,
+      stepCount: boundary?.step_count || story?.playableStepCount || story?.summary?.step_count || 0,
+      dialogueCount: boundary?.dialogue_count || 0,
+      voiceCount: boundary?.voice_count ?? story?.summary?.voice_count ?? 0,
+    }
+    return {
+      id: String(row['1']),
+      label: `ID ${row['1']}`,
+      title: row['3'] || group['3'] || story?.title || '额外剧情',
+      releaseAt: Number(row['4'] || 0),
+      backgroundId: '',
+      file,
+      exists,
+      story,
+      synopsis: story?.preplaySynopsis || null,
+      episodes: [episode],
+      episodeCount: 1,
+      playableEpisodeCount: exists ? 1 : 0,
+      dialogueCount: episode.dialogueCount,
+      voiceCount: episode.voiceCount,
+    }
+  })
+
+  return {
+    id: `extra:${groupId}`,
+    domain: 'extra',
+    domainLabel: '额外剧情',
+    sectionId: groupId,
+    title: group['3'] || `额外剧情 ${groupId}`,
+    eyebrow: 'EXTRA STORY',
+    description: '依据 masterdata 的正式逻辑条目整理；播放仍复用既有编译剧情与分段边界。',
+    releaseAt: Number(chapters[0]?.releaseAt || 0),
+    visualUrl: '',
+    chapters,
+    chapterCount: chapters.length,
+    playableChapterCount: chapters.filter(chapter => chapter.exists).length,
+    episodeCount: chapters.reduce((sum, chapter) => sum + chapter.episodeCount, 0),
+    playableEpisodeCount: chapters.reduce((sum, chapter) => sum + chapter.playableEpisodeCount, 0),
+  }
+}
+
 export function buildStoryCollections(data, catalog) {
   if (!data) return []
   const collections = []
@@ -102,6 +170,9 @@ export function buildStoryCollections(data, catalog) {
   }
   for (const group of data.unit_story?.groups || []) {
     collections.push(buildCollection('unit_story', group, data.unit_story?.chapters || [], data.unit_story?.episodes || [], catalog || []))
+  }
+  for (const group of data.extra?.groups || []) {
+    collections.push(buildExtraCollection(group, data.extra?.episodes || [], catalog || []))
   }
   return collections
 }
