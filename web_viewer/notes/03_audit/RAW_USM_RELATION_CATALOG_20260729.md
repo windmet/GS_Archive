@@ -2,8 +2,7 @@
 
 Status: v1 merged in PR #8; v2 MovieAnnounce refinement merged in PR #22;
 v3 CardData skill-movie refinement merged in PR #24; v4 SongData movie
-refinement merged in PR #26; v5 gasha client refinement implemented on
-`codex/usm-gasha-client-exact-relations`
+refinement merged in PR #26; v5 gasha client refinement merged in PR #28
 
 Date: 2026-07-29
 
@@ -151,6 +150,8 @@ Mounted verification additionally checks:
   `HasSkillCutinResource`;
 - exact reparse parity with mounted SongData table 46, including `MovieOffset`
   and enabled `MvliveOpenAt`;
+- exact regeneration parity with the mounted IL2CPP metadata v27 gasha client
+  contract;
 - file byte count;
 - `CRID` magic;
 - SHA-256 for all 260 files.
@@ -159,10 +160,10 @@ Validated locally on 2026-07-30:
 
 ```text
 RAW USM relation catalog verified (source-only):
-260 total / 77 exact consumer / 166 exact masterdata / 17 unresolved
+260 total / 89 exact consumer / 166 exact masterdata / 5 unresolved
 
 RAW USM relation catalog verified (mounted):
-260 total / 77 exact consumer / 166 exact masterdata / 17 unresolved
+260 total / 89 exact consumer / 166 exact masterdata / 5 unresolved
 
 Archive baseline verified (source-only):
 10329 compiled JSON artifacts, 108 tracked PNG files

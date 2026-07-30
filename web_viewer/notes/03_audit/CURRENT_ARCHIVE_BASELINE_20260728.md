@@ -16,12 +16,16 @@ their forward-looking defect lists must not override this baseline.
 
 | Field | Value |
 | --- | --- |
-| current functional baseline | `master` includes PR #26 merge `52eb37d19082e979f5132357845626b73e4e5940` |
+| current functional baseline | `master` includes PR #28 merge `5c21658ac63ac5d158024a83cdaeb086b7dcc30a` |
 | active functional branch | none; documentation-only closeout is isolated |
-| active track | none selected; SongData 3dmv/mvlive exact-masterdata refinement is complete |
+| active track | none selected; gasha USM exact-client refinement is complete |
 | active upstream | not applicable |
 | active pull request | none |
-| active validation | PR #26 table 46 and 12 song-movie USMs exact 12/12; source-only/mounted gates, production build, and post-merge source gate PASS |
+| active validation | PR #28 client contract and 12 gasha USMs exact 12/12; source-only/mounted gates, production build, and post-merge source gate PASS |
+| PR #28 merge commit | `5c21658ac63ac5d158024a83cdaeb086b7dcc30a` |
+| PR #28 functional head | `b6202a4c70f6b571837171ef2a11a63a6f8ff93f` |
+| PR #28 final-head gate | run `30513723245`, PASS |
+| PR #28 post-merge gate | run `30513761773`, PASS |
 | PR #26 merge commit | `52eb37d19082e979f5132357845626b73e4e5940` |
 | PR #26 functional head | `c7be3d01ac388b3f09cd8a3b79e83fcef1123b2f` |
 | PR #26 final-head gate | run `30512461712`, PASS |
@@ -70,7 +74,7 @@ their forward-looking defect lists must not override this baseline.
 | PR diff | `+52,090 / -627` |
 | PR checks | final-head run `30435933524` passed |
 | post-merge checks | `master` push run `30436935539` passed |
-| active-branch production build | P1-H PASS, 2,405 modules, 144.2 seconds |
+| active-branch production build | PR #28 PASS, 2,407 modules, 89.2 seconds |
 | PR #4 merge commit | `2a1e1ec08ae6331b82f7ac9d9719efbb3322e59e` |
 | PR #4 final-head check | Source-only contract `30450883462` passed at `9215456` |
 | PR #4 post-merge check | `master` push run `30452463385` passed at `2a1e1ec` |
@@ -93,8 +97,8 @@ disposition, PR #6 merged the bounded GS translation-link pilot, and PR #7
 activated publication v2 and annotation v1 contracts without adding a
 production record. PR #8 merged the bounded 260-USM relation catalog without
 decoding or publishing media. Later bounded relation and navigation batches
-merged through PR #26. Therefore `bca7042` remains the immutable PR #2 merge
-identity, while `52eb37d` is the current functional repository baseline at
+merged through PR #28. Therefore `bca7042` remains the immutable PR #2 merge
+identity, while `5c21658` is the current functional repository baseline at
 this refresh.
 
 `stable-published` in project notes means an artifact occupies the stable path
@@ -325,7 +329,7 @@ domain-wide browser acceptance.
 | costume/Spine | source-proven | representative and full-domain parity audits recorded | representative routes only |
 | five live semantic consumers | source-proven | default semantic source migrated to RAW and parity-verified | tested routes sample-accepted |
 | event visuals `001tom`/`002sht` | source-proven | stable-published and merged through PR #2 | item-level browser-accepted |
-| remaining USM | 260/260 physical identities cataloged; 77 BackMonitor consumer mappings + 166 masterdata relations proven; 17 unresolved semantically | bounded MovieAnnounce, CardData skill-movie, and SongData movie refinements complete; no media publication | not applicable |
+| remaining USM | 260/260 physical identities cataloged; 77 BackMonitor + 12 gasha client consumer mappings + 166 masterdata relations proven; 5 unresolved semantically | bounded MovieAnnounce, CardData skill-movie, SongData movie, and gasha client refinements complete; no media publication | not applicable |
 | general `image_*` bundles | 1,271/1,271 physical identities and 7,816 image objects cataloged | catalog complete; semantic promotion incomplete | not applicable |
 
 The five live semantic consumers already reading RAW by default are:
@@ -623,9 +627,11 @@ Current priority and write locks:
 - Track R remains independent and is explicitly deferred by the user; it is
   still required before declaring Story Runtime `release-accepted`;
 - external-link metadata/UI remains outside the publication ledger;
-- the USM v4 catalog records 260 source identities, 77 exact consumers, 30
+- the USM v5 catalog records 260 source identities, 89 exact consumers (77
+  BackMonitor plus 12 gasha client relations), 30
   exact MovieAnnounce plus 124 exact CardData skill-movie masterdata relations,
-  12 exact SongData movie relations, and 17 unresolved records without
+  12 exact SongData movie relations, and 5 unresolved BackMonitor-family
+  records without
   decoding or publishing media;
 - the gasha banner/logo relation batch is merged in PR #12;
 - the event item-icon relation batch is merged in PR #13;
@@ -639,6 +645,9 @@ Current priority and write locks:
 - the bounded 11-3dmv + 1-mvlive / 13-SongData-record refinement is complete
   in PR #26; it preserves the shared `pl1gdd` resource and does not create a
   consumer or publish media;
+- the bounded 11-start + 1-SSR gasha client refinement is complete in PR #28;
+  it is regenerated from IL2CPP metadata v27 and does not decode or publish
+  media;
 - the image catalog records 1,271 source identities and 7,816 image objects
   without exporting PNG or replacing stable assets;
 - 50 bundles now inherit 52 exact stable relations from the already-authoritative
