@@ -256,11 +256,22 @@ and are recorded as `exact-unit-story` with `complete-collection` coverage.
 Detailed evidence is in
 `notes/03_audit/EXTERNAL_GS_THE_KOGADO_EXACT_LINKS_20260730.md`.
 
-### Deferred personal-story candidates
+### Exact personal stories
 
-Broad titles such as "圆城寺道流个人剧情" may contain more than one internal
-story identity. They remain candidates until the video boundary is compared
-with `idol_episode_index` and compiled resources.
+The first bounded personal-story batch is exact after comparing the external
+video boundaries with `idol_episode_index` and compiled dialogue:
+
+| BVID | Uploader | Exact section |
+| --- | --- | --- |
+| `BV1ZM411S7bV` | 死扛桑 (`8798195`) | 大河タケル `23801`, `1_2_038_01_a`–`e` |
+| `BV1HPKDz5E2u` | 叶絵理奈 (`16493529`) | 円城寺道流 `23901`, `1_2_039_01_a`–`e` |
+| `BV113KfzrEHj` | 叶絵理奈 (`16493529`) | 牙崎漣 `24001`, `1_2_040_01_a`–`e` |
+
+`BV1Na4y1S7R7` (大河タケル 第2話) remains deferred because local section
+`23802` contains three small talks and five main episodes, while the audit copy
+did not pass complete decode. Do not infer its exact boundary from title or
+duration. Detailed evidence is in
+`notes/03_audit/EXTERNAL_GS_PERSONAL_STORY_EXACT_LINKS_20260730.md`.
 
 ## 10. Visual policy
 

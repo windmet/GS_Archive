@@ -260,6 +260,7 @@
         v-if="view === 'idol_story_archive'"
         :story="currentIdolStoryPage"
         :idols="idolStoryOptions"
+        :external-resources="currentIdolStoryExternalResources"
         @select-idol="selectIdolStory"
         @play-section="playIdolStorySection"
         @play-episode="playIdolStoryEpisode"
@@ -396,6 +397,7 @@ import {
   buildExternalStoryNavigationEntries,
   externalResourcesForCollection,
   externalResourcesForEvent,
+  externalResourcesForIdolStory,
   externalResourcesForStory,
 } from './data/externalStoryResources.js'
 
@@ -739,6 +741,13 @@ const currentIdolStoryPage = computed(() => {
   return { ...page, unitName: membership?.unit_name || page.unitName }
 })
 
+const currentIdolStoryExternalResources = computed(() =>
+  externalResourcesForIdolStory(
+    externalStoryResourcesData.value,
+    currentIdolStoryPage.value,
+  ),
+)
+
 const storyDomainOptions = computed(() => {
   const counts = new Map()
   const labels = new Map()
@@ -810,6 +819,7 @@ const externalStoryNavigationEntries = computed(() =>
     events: archiveManifestData.value?.unit_event_relations || [],
     collections: storyCollections.value,
     stories: storyCatalog.value,
+    idolEpisodes: idolEpisodeData.value,
   }),
 )
 
@@ -1427,7 +1437,13 @@ async function applyArchiveRoute(route) {
   applyingArchiveRoute = true
   try {
     if (route.card && route.voice) await ensureCardDetailData()
-    if (['story_catalog', 'idol_story_archive', 'mobile_archive', 'idol_detail'].includes(route.view)) {
+    if ([
+      'story_catalog',
+      'external_story_resources',
+      'idol_story_archive',
+      'mobile_archive',
+      'idol_detail',
+    ].includes(route.view)) {
       await ensureIdolCommunicationData()
     }
     filterQuery.value = route.query || ''
@@ -1730,6 +1746,10 @@ function openExternalStoryInternal(entry) {
   }
   if (target?.kind === 'story') {
     openStoryDetail(target.story, 'external_story_resources')
+    return
+  }
+  if (target?.kind === 'idol-story') {
+    openIdolStoryArchive(target.idolCode)
     return
   }
   if (target?.kind !== 'collection') return

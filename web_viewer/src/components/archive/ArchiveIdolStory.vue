@@ -53,6 +53,19 @@
             </button>
           </header>
 
+          <div v-if="externalResourcesForSection(section.id).length" class="section-external-resources">
+            <a
+              v-for="resource in externalResourcesForSection(section.id)"
+              :key="resource.external_id"
+              :href="resource.platform.canonical_url"
+              target="_blank"
+              rel="noopener noreferrer external"
+            >
+              <ExternalLink :size="16" />
+              <span><strong>社区中文资源</strong><small>{{ resource.uploader.name }} · Bilibili</small></span>
+            </a>
+          </div>
+
           <p v-if="section.synopsis?.text" class="synopsis">{{ section.synopsis.text }}</p>
 
           <div class="section-meta">
@@ -97,12 +110,13 @@
 </template>
 
 <script setup>
-import { ArrowRight, ChevronLeft, ChevronRight, FileWarning, PhoneCall, Play } from '@lucide/vue'
+import { ArrowRight, ChevronLeft, ChevronRight, ExternalLink, FileWarning, PhoneCall, Play } from '@lucide/vue'
 import { formatArchiveDate } from '../../data/idolCommunicationSelectors.js'
 
 const props = defineProps({
   story: { type: Object, default: null },
   idols: { type: Array, default: () => [] },
+  externalResources: { type: Array, default: () => [] },
 })
 const emit = defineEmits(['select-idol', 'play-section', 'play-episode', 'open-communication'])
 
@@ -118,6 +132,11 @@ function finalEpisodeName(section) {
   const target = section.communications[0]?.release_condition?.param_a
   return section.episodes.find(episode => Number(episode.id) === Number(target))?.name || '最终分段'
 }
+function externalResourcesForSection(sectionId) {
+  return props.externalResources
+    .filter(entry => Number(entry.sectionId) === Number(sectionId))
+    .map(entry => entry.resource)
+}
 </script>
 
 <style scoped>
@@ -128,6 +147,7 @@ function finalEpisodeName(section) {
 .story-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 1100px; margin: 18px auto 0; border: 1px solid #dce3e5; border-radius: 6px; background: #fff; }.story-summary div { display: flex; flex-direction: column; gap: 2px; padding: 12px 15px; border-right: 1px solid #e4e9eb; }.story-summary div:last-child { border-right: 0; }.story-summary strong { font-size: .9rem; }.story-summary span { color: #7b888e; font-size: .56rem; }
 .section-list { max-width: 1100px; margin: 18px auto 40px; border-top: 1px solid #dbe2e4; }.story-section { display: grid; grid-template-columns: 230px minmax(0, 1fr); border-right: 1px solid #dbe2e4; border-bottom: 1px solid #dbe2e4; border-left: 1px solid #dbe2e4; background: #fff; }.section-visual { position: relative; min-height: 260px; overflow: hidden; background: #dfe5e7; }.section-visual img { width: 100%; height: 100%; object-fit: cover; }.section-visual > span { position: absolute; top: 14px; left: 14px; display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid rgba(255,255,255,.78); border-radius: 50%; background: rgba(24,36,42,.78); color: #fff; font-size: .7rem; font-weight: 800; }
 .section-content { min-width: 0; padding: 18px 20px 20px; }.section-content > header { display: flex; align-items: start; justify-content: space-between; gap: 18px; }.section-content header small { color: var(--idol-accent); font-size: .57rem; font-weight: 700; }.section-content h3 { margin: 4px 0 0; font-size: 1rem; }.play-section { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 11px; border: 1px solid var(--idol-accent); border-radius: 5px; background: var(--idol-accent); color: #fff; cursor: pointer; font: inherit; font-size: .62rem; }.play-section:disabled { border-color: #d0d8db; background: #e3e8ea; color: #7f8b91; cursor: not-allowed; }
+.section-external-resources { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }.section-external-resources a { display: inline-flex; align-items: center; gap: 7px; padding: 8px 10px; border: 1px solid color-mix(in srgb, var(--idol-accent) 35%, #dfe6e8); border-radius: 5px; background: #f4faf9; color: var(--idol-accent); text-decoration: none; }.section-external-resources a:hover { background: #eaf7f5; }.section-external-resources span { display: flex; flex-direction: column; gap: 1px; }.section-external-resources strong { font-size: .59rem; }.section-external-resources small { color: #718187; font-size: .49rem; }
 .synopsis { max-width: 760px; margin: 12px 0 0; color: #52636b; font-size: .65rem; line-height: 1.75; white-space: pre-line; }.section-meta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; color: #839096; font-size: .55rem; }
 .episode-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin-top: 15px; background: #dfe5e7; }.episode-list button { display: grid; grid-template-columns: 30px minmax(0, 1fr) 18px; align-items: center; gap: 8px; min-height: 55px; padding: 8px 10px; border: 0; background: #fff; color: #2c3c44; cursor: pointer; font: inherit; text-align: left; }.episode-list button:hover:not(:disabled) { background: #edf8f7; }.episode-list button:disabled { background: #f4f6f7; color: #909ba0; cursor: not-allowed; }.episode-index { color: var(--idol-accent); font-size: .58rem; font-weight: 800; }.episode-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }.episode-copy strong { font-size: .65rem; }.episode-copy small { color: #859299; font-size: .51rem; }.episode-list svg { color: var(--idol-accent); }
 .communication-strip { display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; align-items: center; gap: 11px; margin-top: 15px; padding: 11px 12px; border-top: 1px solid #dfe6e8; border-bottom: 1px solid #dfe6e8; background: #f4faf9; }.communication-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: var(--idol-accent); color: #fff; }.communication-strip > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }.communication-strip small { color: var(--idol-accent); font-size: .5rem; font-weight: 800; }.communication-strip strong { font-size: .67rem; }.communication-strip div span { color: #7c898f; font-size: .52rem; }.communication-strip > button { display: inline-flex; align-items: center; gap: 5px; border: 0; background: transparent; color: var(--idol-accent); cursor: pointer; font: inherit; font-size: .61rem; font-weight: 700; }

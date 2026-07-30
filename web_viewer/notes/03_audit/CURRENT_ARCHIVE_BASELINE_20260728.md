@@ -392,20 +392,29 @@ The exact mappings are:
 | THE 虎牙道 Episode 0 第1話 | collection `1_1_013the_01_1_1_013_01` | exact unit story |
 | THE 虎牙道 Episode 0 第2話 | collection `1_1_013the_02_1_1_013_02` | exact unit story |
 | THE 虎牙道 Episode 0 第3話 | collection `1_1_013the_03_1_1_013_03` | exact unit story |
+| 大河タケル 第1話 | section `23801`, episodes `1_2_038_01_a`–`e` | exact idol story |
+| 円城寺道流 第1話 | section `23901`, episodes `1_2_039_01_a`–`e` | exact idol story |
+| 牙崎漣 第1話 | section `24001`, episodes `1_2_040_01_a`–`e` | exact idol story |
 
 The three THE KOGADO videos passed opening/title-card and final-dialogue
 boundary checks against all ten local parts and are recorded with
 `complete-collection` coverage. Evidence is recorded in
 `notes/03_audit/EXTERNAL_GS_THE_KOGADO_EXACT_LINKS_20260730.md`.
 
-The registry therefore contains five exact GS mappings. External-link
+Three personal-story mappings additionally passed compiled opening/final
+dialogue checks; for the two five-part anthologies, every part boundary was
+checked. Evidence is recorded in
+`notes/03_audit/EXTERNAL_GS_PERSONAL_STORY_EXACT_LINKS_20260730.md`.
+
+The registry therefore contains eight exact GS mappings. External-link
 metadata/UI remains outside the publication ledger and does not constitute
 Story Runtime release acceptance.
 
 The five exact mappings now support a dedicated `external_story_resources`
 route and Story portal gateway merged through PR #20. The page retains original-uploader
 attribution, local-only visuals, safe external anchors, and exact internal
-event/chapter navigation. Candidate and partial mappings remain excluded.
+event/chapter/personal-story navigation. Candidate and partial mappings remain
+excluded.
 
 ## 11. Superseded current-state claims
 

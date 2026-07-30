@@ -911,6 +911,7 @@ codex/usm-movie-announce-exact-relations
 codex/usm-skill-movie-exact-relations
 codex/usm-song-movie-exact-relations
 codex/usm-gasha-client-exact-relations
+codex/external-story-links-personal
 ```
 
 Codex 管理目录中指向初始提交 `ca3a28e` 的 detached worktree 不是项目开发
@@ -977,6 +978,7 @@ PR #28 merge `5c21658`，post-merge run `30513761773` 通过。
 14. web_viewer/notes/03_audit/RAW_USM_CARD_SKILL_EXACT_RELATIONS_20260730.md
 15. web_viewer/notes/03_audit/RAW_USM_SONG_MOVIE_EXACT_RELATIONS_20260730.md
 16. web_viewer/notes/03_audit/RAW_USM_GASHA_CLIENT_EXACT_RELATIONS_20260730.md
+17. web_viewer/notes/03_audit/EXTERNAL_GS_PERSONAL_STORY_EXACT_LINKS_20260730.md
 
 先确认当前 baseline 的 image catalog 为 1,271 bundles / 263,071,090 bytes /
 9,157 Unity objects / 7,816 image objects，source-only 与 mounted verifier
@@ -1042,12 +1044,19 @@ Authoritative registry：
 GS 熟肉 pilot：
 
 - Schema/verifier 通过；
-- 两条 exact event relation 与三条 exact unit-story relation 存在；
+- 两条 exact event、三条 exact unit-story 与三条 exact idol-story relation 存在；
 - 不含 Mobage/drama；
 - 不含 remote thumbnail；
 - 5174 内部与外部动作均通过；
 - Episode 0 三条已由开头/标题卡和最终对白边界证据提升为 exact，
   不是按标题或收藏夹成员关系直接推断。
+- 大河タケル第1話、円城寺道流第1話与牙崎漣第1話已由
+  `idol_episode_index` 和编译对白边界提升为 exact；大河タケル第2話仍因
+  本地 3 个 small talk + 5 个 main episode 的边界未完成可靠解码而延期。
+- 个人故事扩展的 source verifier、UI verifier、idol-story interface、
+  routes、home 与完整 Vite build 均通过；5174 直接路由显示 8 条，円城寺
+  道流站内跳转、canonical 外链和 390 × 844 单列布局通过。控制台仍只有
+  已知的 ignored `raw_character_image_promotions.json` 挂载缺失。
 
 USM/image：
 
