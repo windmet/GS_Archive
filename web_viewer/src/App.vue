@@ -440,6 +440,7 @@ const eventIndexData = ref(null)
 const cardDetailData = ref(null)
 const cardDetailLoadPromise = ref(null)
 const storyMasterData = ref(null)
+const extraStoryVisualIndexData = ref(null)
 const storyPresentationData = ref(null)
 const seasonalCampaignData = ref(null)
 const workStoryData = ref(null)
@@ -817,6 +818,7 @@ const currentStoryExternalResources = computed(() =>
 const extraStoryDomain = computed(() => buildExtraStoryDomainIdentity(
   storyMasterData.value,
   gashaIndexData.value,
+  extraStoryVisualIndexData.value,
 ))
 const birthdayStoryDomain = computed(() => buildBirthdayStoryDomainIdentity(
   storyMasterData.value,
@@ -2683,6 +2685,7 @@ onMounted(async () => {
   gashaIndexData.value = data.gashaIndex
   eventIndexData.value = data.eventIndex
   storyMasterData.value = data.storyMaster
+  extraStoryVisualIndexData.value = data.extraStoryVisualIndex
   storyPresentationData.value = data.storyPresentation
   seasonalCampaignData.value = data.seasonalCampaign
   workStoryData.value = data.workStory

@@ -4,6 +4,7 @@ const ARCHIVE_SOURCES = {
   gashaIndex: '/data/masterdata/gasha_index.json',
   eventIndex: '/data/masterdata/event_index.json',
   storyMaster: '/data/masterdata/story_master_index.json',
+  extraStoryVisualIndex: '/data/masterdata/extra_story_visual_index.json',
   storyPresentation: '/data/masterdata/story_presentation_index.json',
   seasonalCampaign: '/data/masterdata/seasonal_campaign_index.json',
   workStory: '/data/masterdata/work_story_index.json',
@@ -52,6 +53,14 @@ function validatePayload(key, payload) {
   }
   if (key === 'storyMaster' && !payload.main && !payload.idol_story) {
     throw new Error('storyMaster has no recognized story families')
+  }
+  if (key === 'extraStoryVisualIndex' && (
+    payload.schema_version !== 1 ||
+    !Array.isArray(payload.entries) ||
+    payload.entries.length !== 7 ||
+    !payload.by_chapter_id
+  )) {
+    throw new Error('extraStoryVisualIndex must include seven table-178 relations')
   }
   if (key === 'storyPresentation' && (!payload.by_file || payload.schema_version < 1)) {
     throw new Error('storyPresentation must include normalized display metadata')

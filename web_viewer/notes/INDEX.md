@@ -43,8 +43,12 @@ The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_889
   the 2–4 hour Runtime soak to P2.
 - `notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md` - current
   post-merge execution order and live Git boundary: P0 architecture closeout,
-  P1 portal handoff, P2-deferred Runtime long soak, and completed governance,
-  external-link, USM, and image relation tracks.
+  P1 portal/Story IA/Song/mobile-launcher handoff, P2-deferred Runtime long
+  soak, and completed governance, external-link, USM, and image relation tracks.
+- `notes/04_refactor/GS_ARCHIVE_EXTRA_OFFICIAL_TAXONOMY_20260730.md` -
+  table-178 Extra authority, seven formal works plus three special Home Story
+  supplements, exact RAW banner/KV mapping, New Year 2023 grouping, and FES
+  gasha relations.
 - `notes/03_audit/RAW_USM_MOVIE_ANNOUNCE_EXACT_RELATIONS_20260730.md` -
   table-175 authority, 30/30 MovieAnnounce-to-USM exact relations, v2 catalog
   contract, mounted/source-only gates, and no-media-publication boundary.

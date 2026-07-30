@@ -513,6 +513,12 @@ master row、偶像索引和已验证的资源关系建立可审计映射。
 3. **P1-Story-IA-C：extra 正式档案**
    - 以 table 144 group 和 table 145 episode 的 master ID 为档案身份；
    - 明确显示逻辑条目数与共享播放载体数，不把 44 个文件伪写成 47 个独立文件。
+   - 正式入口以 table 178 的 7 个 `ExtraStoryChapterData` 为准；table 143
+     中未进入 table 178 的 `602 / 603 / 610` 保留为
+     `special_home_story` 补充记录。
+   - table 178 的 `ResourceId` / `LogoResourceId` 是视觉关系权威；特别注意
+     entry `1010050` 明确使用视觉资源 `1010070`，不得按条目 ID 猜图。
+   - 从 RAW 小批发布 7 张 banner 与 7 张 KV；logo 仍为 `catalog_only`。
 4. **P1-Story-IA-D：birthday 正式档案**
    - 建立按偶像进入的 collection，并在页面内部表达制作人生日、偶像生日和批次；
    - 29 个 `idol_story` / `birthday` 共享文件必须保留双重 domain membership；
@@ -541,6 +547,48 @@ view=story_collection&story_type=...&story_section=...
 - 验收自然入口、深链、刷新、浏览器 Back、现有返回按钮、桌面、窄屏和无障碍语义；
 - legacy 搜索的全局去重问题记录为已知债务，不在 landing 小批中顺带重写全局搜索；
 - 不重写关系数据总线、播放器、publication、strict-v2 promotion 或 Runtime 长稳。
+
+#### P1-Song：歌曲档案提前
+
+歌曲档案提升为 P1 的相邻内容轨，但不混入 Extra 页面提交。现有 table 46
+已经给出 61 个正式 song code，RAW 的 61 个 `song_*.unity3d` 提供编舞，
+`song3_<code>` 提供音频实体。模型必须分成：
+
+```text
+歌曲作品
+  -> 演唱 / 演出版本
+    -> 完整混音 / 伴奏层 / 偶像声部层
+    -> 编舞 / 口型 / MV
+```
+
+`DRIVE A LIVE` 的 `drvalv`、49 个偶像声部、`drvalv_bgm` 与愚人节
+`drv999` 不得平铺为互不相关的歌曲。`Beyond The Dream` 的组合版本也应
+作为同一作品的 performance variant。文件名只能发现候选；“solo 声部与伴奏
+由游戏同步叠加”必须由 ACB Cue/Sequence 或运行时行为另行证明。
+
+执行顺序：
+
+1. **P1-Song-A**：身份、版本、音频层、编舞、口型、MV exact relation 审计；
+2. **P1-Song-B**：61 首歌曲的 metadata-only 目录与详情；
+3. **P1-Song-C**：只有通过关系和 publication gate 后，才增加版本切换或
+   分层播放。
+
+#### P1-Mobile-Nav：应用启动器
+
+移动端底栏后续收敛为少量稳定入口，并新增 route-backed 的“应用启动器”
+门户。建议使用 `view=portal_hub`，不得复用已有游戏内通信语义
+`mobile_archive`。
+
+- 移动底栏目标为“首页 / 故事 / 偶像 / 应用”四项；
+- 应用页以游戏手机桌面式图标网格承载卡牌、活动、歌曲、Chibi Stage、
+  外部资源等门户；
+- 视觉可以模拟弹出的手机 UI，但必须是可深链、可刷新、支持浏览器 Back 的
+  正式 route；
+- 使用既有 route builder，不复制 history，也不改变桌面端主导航；
+- 使用 `<nav>` / 列表语义、可见焦点和至少 44 px 触控目标。
+
+推荐后续次序为：完成 Extra 视觉小批 → P1-Song-A → P1-Mobile-Nav →
+P1-Song-B。歌曲与移动导航各自保持独立提交边界。
 
 该轨属于 P1 门户信息架构，不改变以下状态：
 

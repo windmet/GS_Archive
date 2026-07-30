@@ -24,7 +24,7 @@ navigation uses the series ID (`608`) as the canonical collection route.
 
 ## Source reconciliation
 
-The checked Extra Story index lists six official works:
+The checked Wiki Extra Story index lists six works:
 
 - 謹賀新年2022;
 - GROWING FES -夜陰のルミネセンス-;
@@ -37,10 +37,31 @@ Source:
 
 - https://wikiwiki.jp/sidem-gstars/エクストラストーリー
 
-Four additional series exist in Extra masterdata but are not listed by that
-checked index. They remain visible under a separate masterdata supplement
-heading rather than being discarded or silently promoted into the official
-list.
+Table 178 is the stronger local archive authority. It exposes seven explicit
+`ExtraStoryChapterData` entries and adds the March 2023 GROWING FES series
+`609`, which the checked Wiki index omits. The product therefore presents seven
+formal Extra works. The remaining three table-143 Home Story families
+(`602`, `603`, `610`) stay under a separate supplement heading.
+
+## Table-178 visual relation
+
+The seven formal works have exact masterdata-to-RAW navigation visuals:
+
+| chapter | work | table-178 ResourceId |
+| ---: | --- | ---: |
+| 601 | 謹賀新年2022 | `1010010` |
+| 604 | GROWING FES -夜陰のルミネセンス- | `1010040` |
+| 605 | 1st Anniversary | `1010070` |
+| 606 | GROWING FES -終夜のアストロロジー- | `1010060` |
+| 607 | GROWING FES -窮月のグロリアスナイト- | `1010080` |
+| 608 | 謹賀新年2023 | `1010090` |
+| 609 | GROWING FES -光彩のポートレート- | `1010100` |
+
+The `605` relation is deliberately not inferred from the entry ID:
+table 178 entry `1010050` explicitly points to visual ResourceId `1010070`.
+Each declared RAW bundle contains one 300 x 150 banner, one 1456 x 548 key
+visual and one logo. P1 publishes only the banner and key visual used by
+`ArchiveStoryCatalog` and `ArchiveStoryCollection`; logos remain catalog-only.
 
 ## 謹賀新年2023
 
@@ -77,11 +98,12 @@ Source:
 ## Counts
 
 - 10 work-level collections;
-- 6 works in the checked official index;
-- 4 masterdata supplement works;
+- 7 formal table-178 works;
+- 3 special Home Story supplement works;
 - 47 logical chapters;
 - 45 resource identities;
 - 44 compiled playback files.
+- 14 bounded RAW-derived navigation PNGs.
 
 The work count is a presentation hierarchy. It does not change or collapse
 the 47 masterdata chapter identities.

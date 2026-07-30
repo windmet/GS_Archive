@@ -81,8 +81,8 @@ assert.ok(sharedBirthdayFiles.every(entry => entry.domainMemberships.includes('b
 
 const extra = index.domains.extra
 assert.equal(extra.meta.collectionCount, 10)
-assert.equal(extra.meta.officialCollectionCount, 6)
-assert.equal(extra.meta.supplementaryCollectionCount, 4)
+assert.equal(extra.meta.officialCollectionCount, 7)
+assert.equal(extra.meta.supplementaryCollectionCount, 3)
 assert.equal(extra.meta.masterGroupCount, 47)
 assert.equal(extra.meta.logicalEntryCount, 47)
 assert.equal(extra.meta.resourceIdCount, 45)

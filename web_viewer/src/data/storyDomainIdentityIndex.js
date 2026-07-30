@@ -235,8 +235,10 @@ export function buildBirthdayStoryDomainIdentity(storyMaster, idolUnit, speakerD
   )
 }
 
-function buildExtraDomain(storyMaster, gashaIndex = null) {
+function buildExtraDomain(storyMaster, gashaIndex = null, visualIndex = null) {
   const groups = sortedRows(storyMaster.extra?.groups)
+  const visualsByChapter = new Map((visualIndex?.entries || [])
+    .map(entry => [String(entry.chapter_id || ''), entry]))
   const logicalEntries = sortedRows(storyMaster.extra?.episodes)
     .map(row => {
       const entry = logicalEntry('extra', row, '4')
@@ -255,6 +257,7 @@ function buildExtraDomain(storyMaster, gashaIndex = null) {
     const masterGroupIds = masterGroups.map(group => String(group['1']))
     const entries = logicalEntries.filter(entry => entry.seriesId === seriesId)
     const gasha = resolveExtraStoryGasha(gashaIndex, definition.gashaCode)
+    const visual = visualsByChapter.get(seriesId) || null
     return {
       id: `extra:${seriesId}`,
       masterId: seriesId,
@@ -266,6 +269,9 @@ function buildExtraDomain(storyMaster, gashaIndex = null) {
       sourceUrl: definition.sourceUrl,
       gashaCode: definition.gashaCode,
       gasha,
+      visual,
+      bannerUrl: String(visual?.assets?.banner?.url || ''),
+      keyVisualUrl: String(visual?.assets?.key_visual?.url || ''),
       logicalEntryIds: entries.map(entry => entry.id),
       logicalEntryCount: entries.length,
       resourceIdCount: new Set(entries.map(entry => entry.resourceId).filter(Boolean)).size,
@@ -299,9 +305,9 @@ function buildExtraDomain(storyMaster, gashaIndex = null) {
   }
 }
 
-export function buildExtraStoryDomainIdentity(storyMaster, gashaIndex = null) {
+export function buildExtraStoryDomainIdentity(storyMaster, gashaIndex = null, visualIndex = null) {
   if (!storyMaster) return null
-  return buildExtraDomain(storyMaster, gashaIndex)
+  return buildExtraDomain(storyMaster, gashaIndex, visualIndex)
 }
 
 function buildPlaybackIndex(domains) {

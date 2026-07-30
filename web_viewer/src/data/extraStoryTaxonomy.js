@@ -49,8 +49,9 @@ const SERIES = Object.freeze({
   '609': {
     title: 'GROWING FES -光彩のポートレート-',
     description: 'アーティスティックな仕事へ臨むアイドルたちのGROWING FES連動ストーリー。',
-    official: false,
+    official: true,
     gashaCode: '300091',
+    sourceUrl: '',
   },
   '610': {
     title: '2023年エイプリルフール',
@@ -65,7 +66,9 @@ export function extraStorySeriesDefinition(seriesId) {
     title: definition.title || `Extra Story ${seriesId}`,
     description: definition.description || 'masterdata に収録された特別ストーリー。',
     official: definition.official === true,
-    sourceUrl: definition.sourceUrl || EXTRA_STORY_WIKI_URL,
+    sourceUrl: Object.hasOwn(definition, 'sourceUrl')
+      ? definition.sourceUrl
+      : EXTRA_STORY_WIKI_URL,
     gashaCode: definition.gashaCode || '',
   }
 }

@@ -92,7 +92,10 @@
             class="extra-card"
             @click="browse('extra', card.masterId)"
           >
-            <span class="extra-card-index">{{ card.parentSeriesId }}</span>
+            <span class="extra-card-visual">
+              <img v-if="card.bannerUrl" :src="card.bannerUrl" alt="" />
+              <span v-else class="extra-card-index">{{ card.parentSeriesId }}</span>
+            </span>
             <span class="extra-card-copy">
               <small>{{ formatExtraDate(card.releaseAt) }}</small>
               <strong>{{ card.title }}</strong>
@@ -118,7 +121,10 @@
             class="extra-card"
             @click="browse('extra', card.masterId)"
           >
-            <span class="extra-card-index">{{ card.parentSeriesId }}</span>
+            <span class="extra-card-visual">
+              <img v-if="card.bannerUrl" :src="card.bannerUrl" alt="" />
+              <span v-else class="extra-card-index">{{ card.parentSeriesId }}</span>
+            </span>
             <span class="extra-card-copy">
               <small>{{ formatExtraDate(card.releaseAt) }}</small>
               <strong>{{ card.title }}</strong>
@@ -458,8 +464,10 @@ function formatExtraDate(timestamp) {
 .extra-domain-section .section-heading h3 { margin: 3px 0 0; font-size: 1rem; }
 .extra-domain-section .section-heading > strong { color: #7d8b92; font-size: .61rem; }
 .extra-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 9px; }
-.extra-card { position: relative; display: grid; grid-template-columns: 42px minmax(0,1fr) 18px; align-items: center; gap: 10px; min-height: 112px; padding: 13px 12px; border: 1px solid #dce4e6; border-radius: 6px; background: #fff; color: #293a42; cursor: pointer; font: inherit; text-align: left; }
+.extra-card { position: relative; display: grid; grid-template-columns: 104px minmax(0,1fr) 18px; align-items: center; gap: 10px; min-height: 112px; padding: 13px 12px; border: 1px solid #dce4e6; border-radius: 6px; background: #fff; color: #293a42; cursor: pointer; font: inherit; text-align: left; }
 .extra-card:hover { border-color: #65bbb5; box-shadow: 0 4px 14px rgba(28,66,66,.08); }
+.extra-card-visual { display: grid; place-items: center; overflow: hidden; width: 104px; height: 58px; border-radius: 4px; background: #e8f6f4; }
+.extra-card-visual img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .extra-card-index { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: #e8f6f4; color: #147c75; font-size: .61rem; font-weight: 800; }
 .extra-card-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .extra-card-copy small { color: #849298; font-size: .53rem; }.extra-card-copy strong { overflow: hidden; font-size: .72rem; text-overflow: ellipsis; white-space: nowrap; }
