@@ -2,7 +2,7 @@
 
 Status: v1 merged in PR #8; v2 MovieAnnounce refinement merged in PR #22;
 v3 CardData skill-movie refinement merged in PR #24; v4 SongData movie
-refinement pending review
+refinement merged in PR #26
 
 Date: 2026-07-29
 
