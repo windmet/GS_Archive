@@ -1,6 +1,6 @@
 # RAW USM Gasha Client Exact Relations
 
-Status: implemented on `codex/usm-gasha-client-exact-relations`
+Status: merged in PR #28
 
 Date: 2026-07-30
 

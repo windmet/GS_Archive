@@ -15,12 +15,15 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | 项 | 当前值 |
 | --- | --- |
 | merged base branch | `master` |
-| current functional baseline | `master` includes PR #26 merge `52eb37d19082e979f5132357845626b73e4e5940` |
+| current functional baseline | `master` includes PR #28 merge `5c21658ac63ac5d158024a83cdaeb086b7dcc30a` |
 | active functional branch | none；documentation-only closeout is isolated |
-| active track | none selected；SongData 3dmv/mvlive exact-masterdata 细化已完成 |
+| active track | none selected；gasha USM exact-client 细化已完成 |
 | upstream | not applicable |
-| worktree | clean at PR #26 merge；documentation-only closeout follows separately |
+| worktree | clean at PR #28 merge；documentation-only closeout follows separately |
 | open PR | none |
+| PR #28 | merged as `5c21658ac63ac5d158024a83cdaeb086b7dcc30a` |
+| PR #28 final-head check | Source-only contract PASS，run `30513723245` |
+| PR #28 post-merge check | `master` push Source-only contract PASS，run `30513761773` |
 | PR #26 | merged as `52eb37d19082e979f5132357845626b73e4e5940` |
 | PR #26 final-head check | Source-only contract PASS，run `30512461712` |
 | PR #26 post-merge check | `master` push Source-only contract PASS，run `30512491644` |
@@ -590,6 +593,35 @@ notes/03_audit/RAW_USM_SONG_MOVIE_EXACT_RELATIONS_20260730.md
 当前边界为 `260 / 77 / 166 / 17`。本批不声明浏览器 consumer，不生成或发布
 衍生媒体，也不改 publication ledger。
 
+### P1-B4：GashaAnimationMovieManager 客户端精确关系
+
+状态：**merged in PR #28**。merge commit `5c21658`，final-head gate
+`30513723245` 与 post-merge gate `30513761773` 均通过。
+
+归档客户端 IL2CPP metadata v27 独立提供
+`Growing.Theater.GashaAnimationMovieManager`、`_startMovieList`、
+`_ssrMovie`、对应播放方法，以及 `c0{0}_{1}.usm` 与
+`ssr_motion.usm` 精确字面量。再生成契约覆盖全部 11 个 card-rarity
+start movie 与一个固定 SSR movie，和 mounted RAW population 双向相等。
+
+机器入口：
+
+```text
+schemas/usm-relation-catalog-v5.schema.json
+public/data/client/gasha_movie_contract.json
+public/data/usm_relation_catalog.json
+scripts/generate-gasha-movie-client-contract.py
+scripts/verify-gasha-movie-client-contract.py
+scripts/generate-usm-relation-catalog.py
+scripts/verify-usm-relation-catalog.mjs
+notes/03_audit/RAW_USM_GASHA_CLIENT_EXACT_RELATIONS_20260730.md
+```
+
+当前边界为 `260 / 89 / 166 / 5`。剩余五项均为无 119 份编舞脚本引用、
+且没有其他独立 consumer contract 的 BackMonitor 物理变体，保持
+unresolved。本批未解码、转码、复制或发布媒体，也未执行已后置的 Runtime
+长稳验收。
+
 ### P1-C：1,271 个 `image_*` bundle 关系目录
 
 状态：**merged in PR #9**。
@@ -767,7 +799,7 @@ consumer contract 时，才能另开有界分支；不得继续按 token presenc
 ## 3. 三轨依赖图
 
 ```text
-master a9ea201
+master 5c21658
   |
   +-- completed Track S: PR #5
   |     18 WAV provenance complete
@@ -792,6 +824,10 @@ master a9ea201
         completed P1-A navigation: PR #20, exact-only community Chinese story view
         completed P1-B base: PR #8, 260 USM relation catalog
         completed P1-B refinement: PR #22, 30 MovieAnnounce exact-masterdata relations
+        completed P1-B2: PR #24, 124 skill-movie exact-masterdata relations
+        completed P1-B3: PR #26, 12 SongData movie exact-masterdata relations
+        completed P1-B4: PR #28, 12 gasha exact-client relations
+        bounded remainder: 5 unreferenced BackMonitor variants stay unresolved
         completed P1-C: PR #9, 1,271 image bundle relation catalog
         completed P1-D: PR #10, 50 bundles / 52 exact character promotions
         completed P1-E: PR #12, 49 codes / 98 exact gasha banner-logo relations
@@ -821,6 +857,10 @@ PR #15 已通过 merge commit `a9ea201` 合入 `master`，post-merge gate
 已经收口，不要把剩余聚合或命名空间碰撞记录升级为 exact。
 P1-A 独立导航已由 PR #20 以 merge commit `19e5fc5` 合入 `master`，
 final-head run `30479911302` 与 post-merge run `30479973771` 均通过。
+USM gasha client 精确关系已由 PR #28 以 merge commit `5c21658` 合入
+`master`，final-head run `30513723245` 与 post-merge run `30513761773`
+均通过；12 条 client relation 已提升，5 条无编舞引用的 BackMonitor
+物理变体继续保持 unresolved。
 
 ## 4. 每条轨道的 Git 边界
 
@@ -836,6 +876,7 @@ git rev-parse HEAD
 
 当前没有 active 功能分支。`codex/usm-song-movie-exact-relations` 已通过
 PR #26 合入 `master`。
+`codex/usm-gasha-client-exact-relations` 已通过 PR #28 合入 `master`。
 `codex/usm-skill-movie-exact-relations` 已通过
 PR #24 合入 `master`。
 `codex/usm-movie-announce-exact-relations` 已通过
@@ -869,6 +910,7 @@ codex/external-story-resource-navigation
 codex/usm-movie-announce-exact-relations
 codex/usm-skill-movie-exact-relations
 codex/usm-song-movie-exact-relations
+codex/usm-gasha-client-exact-relations
 ```
 
 Codex 管理目录中指向初始提交 `ca3a28e` 的 detached worktree 不是项目开发
@@ -916,7 +958,7 @@ git diff --cached --check
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
 worktree、origin/master，并确认当前没有 active 功能分支，master 已包含
-PR #26 merge `52eb37d`，post-merge run `30512491644` 通过。
+PR #28 merge `5c21658`，post-merge run `30513761773` 通过。
 
 完整阅读：
 1. web_viewer/notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
@@ -934,13 +976,16 @@ PR #26 merge `52eb37d`，post-merge run `30512491644` 通过。
 13. web_viewer/notes/03_audit/RAW_USM_MOVIE_ANNOUNCE_EXACT_RELATIONS_20260730.md
 14. web_viewer/notes/03_audit/RAW_USM_CARD_SKILL_EXACT_RELATIONS_20260730.md
 15. web_viewer/notes/03_audit/RAW_USM_SONG_MOVIE_EXACT_RELATIONS_20260730.md
+16. web_viewer/notes/03_audit/RAW_USM_GASHA_CLIENT_EXACT_RELATIONS_20260730.md
 
 先确认当前 baseline 的 image catalog 为 1,271 bundles / 263,071,090 bytes /
 9,157 Unity objects / 7,816 image objects，source-only 与 mounted verifier
 均通过。
-USM v4 必须保持 260 total / 77 exact consumer / 166 exact masterdata /
-17 unresolved；30 条由 MovieAnnounce table 175、124 条由 CardData table 1、
-12 条由 SongData table 46 独立证明，均不代表已有浏览器 consumer 或衍生媒体。
+USM v5 必须保持 260 total / 89 exact consumer / 166 exact masterdata /
+5 unresolved；77 条来自 BackMonitor consumer，12 条来自 IL2CPP v27
+证明的 GashaAnimationMovieManager client contract，30 条由 MovieAnnounce
+table 175、124 条由 CardData table 1、12 条由 SongData table 46 独立证明。
+后两类 masterdata 关系不代表已有浏览器 consumer 或衍生媒体。
 真实 ledger 仍为 1 release / 1 stable logical ID，没有新增 production record。
 Story Runtime 2–4 小时长稳由用户暂缓，仍保持 NOT EXECUTED。P1-D 已把
 promotion registry 已证明的 50 bundles / 52 relations 升级为
@@ -1013,7 +1058,10 @@ USM/image：
   HasSkillCutinResource 独立证明，并保留 3 个共享资源的一对多 card IDs；
 - 11 个 3dmv 与 1 个 mvlive 关系由 SongData table 46 的 MovieOffset 与
   enabled MvliveOpenAt 独立证明，并保留 `pl1gdd` 的两条 song IDs；
-- 17 个 unresolved 保持未解决，不把 filename candidate 写成 exact；
+- 11 个 gasha start movie 与 `ssr_motion` 由 IL2CPP v27 的类、字段、方法
+  与精确 filename literal 共同证明；
+- 5 个无编舞引用的 BackMonitor 变体保持 unresolved，不把 filename
+  candidate 写成 exact；
 - source-only 与 mounted verifier 通过；
 - 未进行批量解码或稳定发布；
 - image relation catalog 已覆盖 1,271/1,271 bundles 和 7,816 image
