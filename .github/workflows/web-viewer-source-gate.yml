@@ -100,6 +100,9 @@ jobs:
       - name: Verify MovieAnnounce masterdata index
         run: npm run verify:movie-announce-index -- --source-only
 
+      - name: Verify card skill-movie masterdata index
+        run: npm run verify:card-skill-movie-index -- --source-only
+
       - name: Verify RAW USM relation catalog
         run: npm run verify:usm-relation-catalog -- --source-only
 

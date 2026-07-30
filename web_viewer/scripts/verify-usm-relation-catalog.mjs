@@ -16,7 +16,7 @@ import { loadArchiveSources } from './lib/archive-sources.mjs'
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const catalogPath = path.join(projectRoot, 'public', 'data', 'usm_relation_catalog.json')
-const schemaPath = path.join(projectRoot, 'schemas', 'usm-relation-catalog-v2.schema.json')
+const schemaPath = path.join(projectRoot, 'schemas', 'usm-relation-catalog-v3.schema.json')
 const backmonitorPath = path.join(
   projectRoot,
   'public',
@@ -39,15 +39,23 @@ const movieAnnounceIndexPath = path.join(
   'masterdata',
   'movie_announce_index.json',
 )
+const cardSkillMovieIndexPath = path.join(
+  projectRoot,
+  'public',
+  'data',
+  'masterdata',
+  'card_skill_movie_index.json',
+)
 const sourceOnly = process.argv.includes('--source-only')
 const failures = []
 
 const readJson = filename => JSON.parse(readFileSync(filename, 'utf8'))
-const [catalog, schema, musicCatalog, movieAnnounceIndex] = [
+const [catalog, schema, musicCatalog, movieAnnounceIndex, cardSkillMovieIndex] = [
   catalogPath,
   schemaPath,
   musicCatalogPath,
   movieAnnounceIndexPath,
+  cardSkillMovieIndexPath,
 ].map(readJson)
 const backmonitor = !sourceOnly && existsSync(backmonitorPath)
   ? readJson(backmonitorPath)
@@ -122,6 +130,17 @@ const movieAnnounceById = new Map(
     entry,
   ]),
 )
+const exactCardSkillMovieIds = new Set(
+  (cardSkillMovieIndex.skill_movies || []).map(
+    entry => `skill_movie_${entry.resource_id}`,
+  ),
+)
+const cardSkillMovieById = new Map(
+  (cardSkillMovieIndex.skill_movies || []).map(entry => [
+    `skill_movie_${entry.resource_id}`,
+    entry,
+  ]),
+)
 if (
   movieAnnounceIndex.schema_version !== 1 ||
   movieAnnounceIndex.meta?.source_table !== 175 ||
@@ -130,6 +149,20 @@ if (
   exactMovieAnnounceIds.size !== 30
 ) {
   failures.push('MovieAnnounce index must contain 30 unique table-175 resource IDs')
+}
+if (
+  cardSkillMovieIndex.schema_version !== 1 ||
+  cardSkillMovieIndex.meta?.source_table !== 1 ||
+  cardSkillMovieIndex.meta?.resource_count !== 124 ||
+  cardSkillMovieIndex.meta?.card_record_count !== 127 ||
+  cardSkillMovieIndex.meta?.shared_resource_count !== 3 ||
+  cardSkillMovieIndex.meta?.predicate !== 'CardData.HasSkillCutinResource == true' ||
+  exactCardSkillMovieIds.size !== 124
+) {
+  failures.push(
+    'card skill-movie index must contain 124 CardData resource IDs / ' +
+    '127 card records / 3 shared resources',
+  )
 }
 for (const entry of entries) {
   addCount(familyCounts, entry.family)
@@ -238,23 +271,50 @@ for (const entry of entries) {
   } else if (entry.mapping?.state === 'exact-masterdata') {
     exactMasterdataCount += 1
     const relation = entry.mapping.masterdata_relation
-    const source = movieAnnounceById.get(entry.id)
-    if (
-      entry.family !== 'movie-home' ||
-      entry.mapping.kind !== 'movie-announce' ||
-      !source ||
-      relation?.catalog !== 'movie_announce_index.movie_announces' ||
-      relation?.resource_id !== source.resource_id ||
-      relation?.record_id !== source.id
-    ) {
-      failures.push(`${entry.id}: exact MovieAnnounce relation differs from table 175`)
+    if (entry.mapping.kind === 'movie-announce') {
+      const source = movieAnnounceById.get(entry.id)
+      if (
+        entry.family !== 'movie-home' ||
+        !source ||
+        relation?.catalog !== 'movie_announce_index.movie_announces' ||
+        relation?.resource_id !== source.resource_id ||
+        relation?.record_id !== source.id
+      ) {
+        failures.push(`${entry.id}: exact MovieAnnounce relation differs from table 175`)
+      }
+      if (entry.id !== `movie_home_announce_${relation?.resource_id}`) {
+        failures.push(`${entry.id}: exact MovieAnnounce relation shape drifted`)
+      }
+    } else if (entry.mapping.kind === 'card-skill-movie') {
+      const source = cardSkillMovieById.get(entry.id)
+      const expectedCardIds = source?.cards?.map(card => card.card_id)
+      if (
+        entry.family !== 'skill-movie' ||
+        !source ||
+        relation?.catalog !== 'card_skill_movie_index.skill_movies' ||
+        relation?.resource_id !== source.resource_id
+      ) {
+        failures.push(`${entry.id}: exact card skill-movie relation differs from table 1`)
+      }
+      assertEqual(
+        relation?.card_ids,
+        expectedCardIds,
+        `${entry.id}: CardData card IDs drifted`,
+      )
+      if (
+        entry.id !== `skill_movie_${relation?.resource_id}` ||
+        !sortedUnique(relation?.card_ids || [])
+      ) {
+        failures.push(`${entry.id}: exact card skill-movie relation shape drifted`)
+      }
+    } else {
+      failures.push(`${entry.id}: exact masterdata relation has an invalid mapping kind`)
     }
     if (
-      entry.id !== `movie_home_announce_${relation?.resource_id}` ||
       entry.mapping.raw_effect_scripts.length ||
       entry.mapping.derived_assets.length
     ) {
-      failures.push(`${entry.id}: exact MovieAnnounce relation shape drifted`)
+      failures.push(`${entry.id}: exact masterdata relation must not claim consumer assets`)
     }
     if (exactCandidates.length) {
       failures.push(`${entry.id}: exact masterdata relation must not claim an exact consumer`)
@@ -303,8 +363,8 @@ const exactMasterdataCatalogIds = entries
   .sort()
 assertEqual(
   exactMasterdataCatalogIds,
-  [...exactMovieAnnounceIds].sort(),
-  'catalog and MovieAnnounce table-175 populations differ',
+  [...exactMovieAnnounceIds, ...exactCardSkillMovieIds].sort(),
+  'catalog and exact masterdata populations differ',
 )
 if (backmonitor) {
   const exactIndexIds = [
@@ -316,12 +376,12 @@ if (backmonitor) {
 if (
   exactCatalogIds.length !== 77 ||
   exactCount !== 77 ||
-  exactMasterdataCount !== 30 ||
-  unresolvedCount !== 153
+  exactMasterdataCount !== 154 ||
+  unresolvedCount !== 29
 ) {
   failures.push(
     'current USM relation baseline must remain ' +
-    '260 total / 77 exact consumer / 30 exact masterdata / 153 unresolved',
+    '260 total / 77 exact consumer / 154 exact masterdata / 29 unresolved',
   )
 }
 

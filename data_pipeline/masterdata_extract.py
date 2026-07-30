@@ -1887,6 +1887,67 @@ def build_movie_announce_index(
     }
 
 
+def build_card_skill_movie_index(
+    tables: dict[int, list[dict[str, Any]]],
+) -> dict[str, Any]:
+    """Build the exact CardData skill-cutin resource identity index."""
+    by_resource: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    card_ids = set()
+    for row in tables.get(1, []):
+        card_id = row.get("1")
+        resource_id = row.get("14")
+        has_skill_cutin_resource = row.get("31")
+        if (
+            not isinstance(card_id, int)
+            or not isinstance(resource_id, str)
+            or has_skill_cutin_resource != 1
+        ):
+            continue
+        if card_id in card_ids:
+            raise ValueError(f"duplicate CardData ID: {card_id}")
+        card_ids.add(card_id)
+        by_resource[resource_id].append(
+            {
+                "card_id": card_id,
+                "title": row.get("40") or row.get("13"),
+                "_source": source(
+                    1,
+                    {
+                        "card_id": 1,
+                        "resource_id": 14,
+                        "has_skill_cutin_resource": 31,
+                        "title": 40,
+                    },
+                    row.get("_offset"),
+                ),
+            }
+        )
+
+    entries = []
+    shared_resource_count = 0
+    for resource_id, records in sorted(by_resource.items()):
+        records.sort(key=lambda entry: entry["card_id"])
+        if len(records) > 1:
+            shared_resource_count += 1
+        entries.append(
+            {
+                "resource_id": resource_id,
+                "cards": records,
+            }
+        )
+    return {
+        "schema_version": 1,
+        "skill_movies": entries,
+        "meta": {
+            "resource_count": len(entries),
+            "card_record_count": sum(len(entry["cards"]) for entry in entries),
+            "shared_resource_count": shared_resource_count,
+            "source_table": 1,
+            "predicate": "CardData.HasSkillCutinResource == true",
+        },
+    }
+
+
 def build_face_dictionary(tables: dict[int, list[dict[str, Any]]]) -> dict[str, Any]:
     faces = {}
     for row in tables.get(176, []):
@@ -2899,6 +2960,14 @@ def main() -> None:
         help="Generate only movie_announce_index.json from table 175.",
     )
     parser.add_argument(
+        "--card-skill-movie-only",
+        action="store_true",
+        help=(
+            "Generate only card_skill_movie_index.json from CardData table 1 "
+            "records whose HasSkillCutinResource field is true."
+        ),
+    )
+    parser.add_argument(
         "--curated-card-voices",
         type=Path,
         default=Path(__file__).resolve().parent / "curated" / "card_voice_transcripts.json",
@@ -2934,6 +3003,23 @@ def main() -> None:
             )
         print(f"decoded: {decoded_path}")
         print(f"{filename}: {movie_announce_index['meta']}")
+        return
+    if args.card_skill_movie_only:
+        card_tables = extract_table_rows(records, {1})
+        card_skill_movie_index = build_card_skill_movie_index(card_tables)
+        filename = "card_skill_movie_index.json"
+        (args.out_dir / filename).write_text(
+            json.dumps(card_skill_movie_index, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        if args.public_out_dir:
+            args.public_out_dir.mkdir(parents=True, exist_ok=True)
+            (args.public_out_dir / filename).write_text(
+                json.dumps(card_skill_movie_index, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+        print(f"decoded: {decoded_path}")
+        print(f"{filename}: {card_skill_movie_index['meta']}")
         return
     if args.music_catalog_only:
         music_tables = extract_table_rows(records, {46, 112, 133})
@@ -3097,6 +3183,7 @@ def main() -> None:
     )
     music_catalog = build_music_catalog(catalog_tables)
     movie_announce_index = build_movie_announce_index(catalog_tables)
+    card_skill_movie_index = build_card_skill_movie_index(catalog_tables)
     face_dictionary = build_face_dictionary(catalog_tables)
     story_master_index = build_story_master_index(story_tables, compiled_stems, compiled_summaries)
     card_index = build_card_index(
@@ -3145,6 +3232,7 @@ def main() -> None:
         "background_catalog.json": background_catalog,
         "music_catalog.json": music_catalog,
         "movie_announce_index.json": movie_announce_index,
+        "card_skill_movie_index.json": card_skill_movie_index,
         "face_dictionary.json": face_dictionary,
         "masterdata_validation_report.json": validation_report,
         "archive_summary.json": build_archive_summary(
@@ -3180,6 +3268,7 @@ def main() -> None:
             "background_catalog.json",
             "music_catalog.json",
             "movie_announce_index.json",
+            "card_skill_movie_index.json",
             "face_dictionary.json",
             "masterdata_validation_report.json",
         ):

@@ -16,10 +16,10 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | --- | --- |
 | merged base branch | `master` |
 | current functional baseline | `master` includes PR #22 merge `0f858d036a377d4013a3345c85e8fba6acaf73fe` |
-| active functional branch | none；documentation-only closeout is isolated |
-| active track | none selected；P1-B MovieAnnounce exact-masterdata 细化已完成 |
+| active functional branch | `codex/usm-skill-movie-exact-relations` |
+| active track | CardData skill-movie exact-masterdata 有界细化 |
 | upstream | not applicable |
-| worktree | clean at PR #22 merge；documentation-only closeout follows separately |
+| worktree | active functional changes pending commit |
 | open PR | none |
 | PR #22 | merged as `0f858d036a377d4013a3345c85e8fba6acaf73fe` |
 | PR #22 final-head check | Source-only contract PASS，run `30511081519` |
@@ -503,7 +503,7 @@ notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 - 260 个 USM / `2,143,803,200` bytes；
 - 77 个精确 BackMonitor 消费关系，其中 73 个 movie、4 个 transition；
 - 30 个精确 MovieAnnounce masterdata 关系；
-- 153 个语义未解决；
+- 153 个语义未解决（PR #22 时点；P1-B2 完成后降至 29）；
 - 260 个 SHA-256、CRID magic 和 ffprobe header；
 - 52 个文件命中 22 个精确 `music_catalog.songs` filename token；
 - 260 条 RAW relative path、媒体信息、consumer candidate、mapping state 和
@@ -528,9 +528,34 @@ verifier 均通过 `260 / 77 / 30 / 153`；mounted 模式还重解析 table 175�
 逐文件复核 bytes、CRID 和 SHA-256。Archive baseline 从 committed catalog
 读取三种人口，因此 source-only 不依赖某次 mounted 快照。
 
-本批没有批量转 MP4、没有发布、没有加入 Git 媒体。剩余 153 个 unresolved
+本批没有批量转 MP4、没有发布、没有加入 Git 媒体。该批结束时剩余 153 个 unresolved
 若继续细化，仍须选择有独立 authority 的有界 family；11 个 `3dmv_*` 与
 `mvlive_reason` 只有 song-code filename token，本批明确不升级。
+
+### P1-B2：CardData skill-movie 精确关系
+
+状态：**active，pending review**。
+
+CardData table 1 的字段 14 `ResourceId` 与字段 31
+`HasSkillCutinResource` 共同提供独立 authority。124 个 field 31 为 true 的
+唯一 ResourceId 与 124 个 `skill_movie_<ResourceId>` RAW USM 完整双向相等。
+其中三个 ResourceId 同时被普通卡与教程卡共享，索引保留全部 127 条 card
+record，不任意选择单一卡片。
+
+机器入口：
+
+```text
+schemas/usm-relation-catalog-v3.schema.json
+public/data/masterdata/card_skill_movie_index.json
+public/data/usm_relation_catalog.json
+scripts/verify-card-skill-movie-index.py
+scripts/generate-usm-relation-catalog.py
+scripts/verify-usm-relation-catalog.mjs
+notes/03_audit/RAW_USM_CARD_SKILL_EXACT_RELATIONS_20260730.md
+```
+
+当前边界为 `260 / 77 / 154 / 29`。本批不声明浏览器 consumer，不生成或发布
+衍生媒体，也不改 publication ledger。
 
 ### P1-C：1,271 个 `image_*` bundle 关系目录
 
@@ -776,7 +801,8 @@ git status -sb
 git rev-parse HEAD
 ```
 
-当前没有 active 功能分支。`codex/usm-movie-announce-exact-relations` 已通过
+当前 active 功能分支为 `codex/usm-skill-movie-exact-relations`。
+`codex/usm-movie-announce-exact-relations` 已通过
 PR #22 合入 `master`。table 175 独立证明的 30 条
 `movie_home_announce_*` 已提升为 exact-masterdata；后续不得把 `3dmv`、
 `mvlive` 或其他 filename candidate 顺带升级，不创建衍生媒体或 publication
@@ -871,9 +897,10 @@ PR #22 merge `0f858d0`，post-merge run `30511111063` 通过。
 先确认当前 baseline 的 image catalog 为 1,271 bundles / 263,071,090 bytes /
 9,157 Unity objects / 7,816 image objects，source-only 与 mounted verifier
 均通过。
-USM v2 必须保持 260 total / 77 exact consumer / 30 exact masterdata /
-153 unresolved；30 条 exact-masterdata 由 MovieAnnounce table 175 独立证明，
-不代表已有浏览器 consumer 或衍生媒体。
+USM v3 必须保持 260 total / 77 exact consumer / 154 exact masterdata /
+29 unresolved；30 条 exact-masterdata 由 MovieAnnounce table 175 独立证明，
+124 条由 CardData table 1 的 ResourceId 与 HasSkillCutinResource 独立证明，
+均不代表已有浏览器 consumer 或衍生媒体。
 真实 ledger 仍为 1 release / 1 stable logical ID，没有新增 production record。
 Story Runtime 2–4 小时长稳由用户暂缓，仍保持 NOT EXECUTED。P1-D 已把
 promotion registry 已证明的 50 bundles / 52 relations 升级为
@@ -942,7 +969,9 @@ USM/image：
 - USM machine-readable relation catalog 已覆盖 260/260；
 - 77 个 BackMonitor 精确关系由 RAW choreography 与现有 index 双重证明；
 - 30 个 MovieAnnounce 关系由 table 175 ResourceId 独立证明；
-- 153 个 unresolved 保持未解决，不把 filename candidate 写成 exact；
+- 124 个 skill-movie 关系由 CardData table 1 ResourceId 与
+  HasSkillCutinResource 独立证明，并保留 3 个共享资源的一对多 card IDs；
+- 29 个 unresolved 保持未解决，不把 filename candidate 写成 exact；
 - source-only 与 mounted verifier 通过；
 - 未进行批量解码或稳定发布；
 - image relation catalog 已覆盖 1,271/1,271 bundles 和 7,816 image
