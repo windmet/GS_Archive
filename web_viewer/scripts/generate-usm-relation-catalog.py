@@ -30,6 +30,9 @@ BACKMONITOR_INDEX = (
     PROJECT_ROOT / "public" / "assets" / "live-chibi" / "backmonitor" / "index.json"
 )
 MUSIC_CATALOG = PROJECT_ROOT / "public" / "data" / "masterdata" / "music_catalog.json"
+MOVIE_ANNOUNCE_INDEX = (
+    PROJECT_ROOT / "public" / "data" / "masterdata" / "movie_announce_index.json"
+)
 
 
 def sha256_file(path: Path) -> str:
@@ -210,9 +213,27 @@ def main() -> None:
 
     backmonitor = json.loads(BACKMONITOR_INDEX.read_text(encoding="utf-8"))
     music = json.loads(MUSIC_CATALOG.read_text(encoding="utf-8"))
+    movie_announces = json.loads(
+        MOVIE_ANNOUNCE_INDEX.read_text(encoding="utf-8")
+    )
+    movie_announce_by_usm = {
+        f"movie_home_announce_{entry['resource_id']}": entry
+        for entry in movie_announces.get("movie_announces", [])
+    }
     song_codes = sorted((music.get("songs") or {}).keys())
     relations = choreography_relations((sources.raw_root / "asset").resolve())
     files = sorted(movie_root.glob("*.usm"), key=lambda path: path.name.lower())
+    file_stems = {path.stem for path in files}
+    actual_movie_announce_ids = {
+        stem for stem in file_stems if stem.startswith("movie_home_announce_")
+    }
+    expected_movie_announce_ids = set(movie_announce_by_usm)
+    if actual_movie_announce_ids != expected_movie_announce_ids:
+        raise ValueError(
+            "MovieAnnounceData and RAW movie-home populations differ: "
+            f"missing={sorted(expected_movie_announce_ids - actual_movie_announce_ids)}, "
+            f"extra={sorted(actual_movie_announce_ids - expected_movie_announce_ids)}"
+        )
     entries = []
 
     for index, path in enumerate(files, start=1):
@@ -220,6 +241,12 @@ def main() -> None:
         family = family_for(stem)
         relation = relations.get(stem)
         exact = relation is not None
+        movie_announce = movie_announce_by_usm.get(stem)
+        exact_masterdata = movie_announce is not None
+        if exact and exact_masterdata:
+            raise ValueError(
+                f"USM cannot be both an exact Backmonitor and MovieAnnounce relation: {stem}"
+            )
         kinds = sorted(relation["kinds"]) if relation else []
         if len(kinds) > 1:
             raise ValueError(f"USM has conflicting Backmonitor relation kinds: {stem}")
@@ -281,16 +308,47 @@ def main() -> None:
                 "masterdata_tokens": masterdata_tokens,
                 "consumer_candidates": candidates,
                 "mapping": {
-                    "state": "exact-consumer" if exact else "unresolved",
-                    "kind": kinds[0] if exact else "unresolved",
+                    "state": (
+                        "exact-consumer"
+                        if exact
+                        else "exact-masterdata"
+                        if exact_masterdata
+                        else "unresolved"
+                    ),
+                    "kind": (
+                        kinds[0]
+                        if exact
+                        else "movie-announce"
+                        if exact_masterdata
+                        else "unresolved"
+                    ),
                     "raw_effect_scripts": scripts,
                     "derived_assets": derived,
+                    **(
+                        {
+                            "masterdata_relation": {
+                                "catalog": "movie_announce_index.movie_announces",
+                                "resource_id": movie_announce["resource_id"],
+                                "record_id": movie_announce["id"],
+                                "evidence": (
+                                    "MovieAnnounceData table 175 ResourceId resolves "
+                                    "to this complete movie_home_announce USM identity"
+                                ),
+                            }
+                        }
+                        if exact_masterdata
+                        else {}
+                    ),
                 },
                 "evidence": (
                     [
                         "Exact RAW Backmonitor command identity and prepared browser asset agree."
                     ]
                     if exact
+                    else [
+                        "Exact MovieAnnounceData table 175 ResourceId and RAW USM identity agree."
+                    ]
+                    if exact_masterdata
                     else [
                         "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
                     ]
@@ -303,8 +361,11 @@ def main() -> None:
     exact_count = sum(
         entry["mapping"]["state"] == "exact-consumer" for entry in entries
     )
+    exact_masterdata_count = sum(
+        entry["mapping"]["state"] == "exact-masterdata" for entry in entries
+    )
     payload = {
-        "schema_version": 1,
+        "schema_version": 2,
         "sources": {
             "raw_movie_root": "RAW/movie",
             "backmonitor_index": (
@@ -313,12 +374,16 @@ def main() -> None:
             "music_catalog": (
                 "web_viewer/public/data/masterdata/music_catalog.json"
             ),
+            "movie_announce_index": (
+                "web_viewer/public/data/masterdata/movie_announce_index.json"
+            ),
         },
         "summary": {
             "total": len(entries),
             "total_bytes": sum(entry["raw"]["bytes"] for entry in entries),
             "exact_consumer": exact_count,
-            "unresolved": len(entries) - exact_count,
+            "exact_masterdata": exact_masterdata_count,
+            "unresolved": len(entries) - exact_count - exact_masterdata_count,
             "families": dict(sorted(family_counts.items())),
         },
         "entries": entries,
@@ -332,7 +397,8 @@ def main() -> None:
     )
     print(
         f"USM relation catalog written: {len(entries)} total / "
-        f"{exact_count} exact / {len(entries) - exact_count} unresolved"
+        f"{exact_count} exact consumer / {exact_masterdata_count} exact masterdata / "
+        f"{len(entries) - exact_count - exact_masterdata_count} unresolved"
     )
 
 

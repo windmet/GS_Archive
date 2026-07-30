@@ -97,6 +97,9 @@ jobs:
       - name: Verify current archive baseline report
         run: npm run verify:archive-baseline:source-only
 
+      - name: Verify MovieAnnounce masterdata index
+        run: npm run verify:movie-announce-index -- --source-only
+
       - name: Verify RAW USM relation catalog
         run: npm run verify:usm-relation-catalog -- --source-only
 

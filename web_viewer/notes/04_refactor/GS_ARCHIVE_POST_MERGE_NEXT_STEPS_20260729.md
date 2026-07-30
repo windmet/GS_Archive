@@ -16,10 +16,10 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | --- | --- |
 | merged base branch | `master` |
 | current functional baseline | `master` includes PR #20 merge `19e5fc570c1684eb8410effdd1b6cf32ac2759f6` |
-| active functional branch | none；documentation-only closeout is isolated |
-| active track | none selected；P1-A exact-only 社区中文剧情独立导航已完成 |
-| upstream | not applicable |
-| worktree | clean at PR #20 merge；documentation-only closeout follows separately |
+| active functional branch | `codex/usm-movie-announce-exact-relations` |
+| active track | P1-B 30 条 MovieAnnounce exact-masterdata 关系 |
+| upstream | pending first push |
+| worktree | bounded masterdata index / USM v2 / verifier / baseline / documentation changes |
 | open PR | none |
 | PR #20 | merged as `19e5fc570c1684eb8410effdd1b6cf32ac2759f6` |
 | PR #20 final-head check | Source-only contract PASS，run `30479911302` |
@@ -491,14 +491,15 @@ notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 
 ### P1-B：260 USM 关系目录
 
-状态：**merged in PR #8**。merge commit `579df6188063c4a34c0558cd720273e71401f888`，
-post-merge source gate `30462843307` 通过。
+状态：基础目录 **merged in PR #8**；30 条 MovieAnnounce v2 细化正在
+`codex/usm-movie-announce-exact-relations` 实现。
 
 当前目录已经记录：
 
 - 260 个 USM / `2,143,803,200` bytes；
 - 77 个精确 BackMonitor 消费关系，其中 73 个 movie、4 个 transition；
-- 183 个语义未解决；
+- 30 个精确 MovieAnnounce masterdata 关系；
+- 153 个语义未解决；
 - 260 个 SHA-256、CRID magic 和 ffprobe header；
 - 52 个文件命中 22 个精确 `music_catalog.songs` filename token；
 - 260 条 RAW relative path、媒体信息、consumer candidate、mapping state 和
@@ -507,19 +508,25 @@ post-merge source gate `30462843307` 通过。
 机器入口：
 
 ```text
-schemas/usm-relation-catalog-v1.schema.json
+schemas/usm-relation-catalog-v2.schema.json
 public/data/usm_relation_catalog.json
+public/data/masterdata/movie_announce_index.json
 scripts/generate-usm-relation-catalog.py
+scripts/verify-movie-announce-index.py
 scripts/verify-usm-relation-catalog.mjs
 notes/03_audit/RAW_USM_RELATION_CATALOG_20260729.md
+notes/03_audit/RAW_USM_MOVIE_ANNOUNCE_EXACT_RELATIONS_20260730.md
 ```
 
-source-only 与 mounted verifier 均通过 `260 / 77 / 183`；mounted 模式还逐文件
-复核 bytes、CRID 和 SHA-256。Archive baseline 已改为从 committed catalog
-读取 USM 与 BackMonitor 关系，因此 source-only 不再依赖某次 mounted 快照。
+masterdata table 175 含 30 个唯一 `MovieAnnounceData.ResourceId`，与 30 个
+`movie_home_announce_<ResourceId>` USM 严格一一对应。source-only 与 mounted
+verifier 均通过 `260 / 77 / 30 / 153`；mounted 模式还重解析 table 175，并
+逐文件复核 bytes、CRID 和 SHA-256。Archive baseline 从 committed catalog
+读取三种人口，因此 source-only 不依赖某次 mounted 快照。
 
-本批没有批量转 MP4、没有发布、没有加入 Git 媒体。下一批若继续 USM，必须从
-183 个 unresolved 中选择有界 family，不能把 filename candidate 提升成精确关系。
+本批没有批量转 MP4、没有发布、没有加入 Git 媒体。剩余 153 个 unresolved
+若继续细化，仍须选择有独立 authority 的有界 family；11 个 `3dmv_*` 与
+`mvlive_reason` 只有 song-code filename token，本批明确不升级。
 
 ### P1-C：1,271 个 `image_*` bundle 关系目录
 
@@ -721,7 +728,8 @@ master a9ea201
         completed pilot: PR #6, two exact GS event links + UI
         completed P1-A expansion: PR #18, three exact THE KOGADO unit-story links
         completed P1-A navigation: PR #20, exact-only community Chinese story view
-        completed P1-B: PR #8, 260 USM relation catalog
+        completed P1-B base: PR #8, 260 USM relation catalog
+        active P1-B refinement: 30 MovieAnnounce exact-masterdata relations
         completed P1-C: PR #9, 1,271 image bundle relation catalog
         completed P1-D: PR #10, 50 bundles / 52 exact character promotions
         completed P1-E: PR #12, 49 codes / 98 exact gasha banner-logo relations
@@ -764,10 +772,11 @@ git status -sb
 git rev-parse HEAD
 ```
 
-当前没有 active 功能分支。`codex/external-story-resource-navigation` 已通过
-PR #20 合入 `master`；现有五条 exact relation 已组织为独立导航和稳定内部
-深链。后续不得顺带扩入 candidate/partial，不重开已关闭的 image candidate
-自动提升，也不把已后置的 Runtime 长稳验收写成完成。
+当前 active 功能分支为 `codex/usm-movie-announce-exact-relations`，基于
+PR #21 merge `968c80b`。本批只把 table 175 独立证明的 30 条
+`movie_home_announce_*` 提升为 exact-masterdata；不把 `3dmv`、`mvlive` 或
+其他 filename candidate 顺带升级，不创建衍生媒体或 publication transaction，
+也不把已后置的 Runtime 长稳验收写成完成。
 
 ```text
 codex/post-merge-next-guidance
@@ -837,8 +846,9 @@ git diff --cached --check
 
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
-worktree、origin/master，并确认当前没有 active 功能分支，master 已包含
-PR #20 merge `19e5fc5`，post-merge run `30479973771` 通过。
+worktree、origin/master，并确认 active 功能分支为
+`codex/usm-movie-announce-exact-relations`，基于 PR #21 merge
+`968c80b`；本批只处理 table 175 证明的 30 条 MovieAnnounce 关系。
 
 完整阅读：
 1. web_viewer/notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
@@ -853,10 +863,14 @@ PR #20 merge `19e5fc5`，post-merge run `30479973771` 通过。
 10. web_viewer/notes/03_audit/GASHA_SKILL_EXACT_RELATIONS_20260730.md
 11. web_viewer/notes/03_audit/IMAGE_RELATION_REFINEMENT_CLOSEOUT_20260730.md
 12. web_viewer/notes/03_audit/EXTERNAL_GS_RESOURCE_NAVIGATION_20260730.md
+13. web_viewer/notes/03_audit/RAW_USM_MOVIE_ANNOUNCE_EXACT_RELATIONS_20260730.md
 
 先确认当前 baseline 的 image catalog 为 1,271 bundles / 263,071,090 bytes /
 9,157 Unity objects / 7,816 image objects，source-only 与 mounted verifier
 均通过。
+USM v2 必须保持 260 total / 77 exact consumer / 30 exact masterdata /
+153 unresolved；30 条 exact-masterdata 由 MovieAnnounce table 175 独立证明，
+不代表已有浏览器 consumer 或衍生媒体。
 真实 ledger 仍为 1 release / 1 stable logical ID，没有新增 production record。
 Story Runtime 2–4 小时长稳由用户暂缓，仍保持 NOT EXECUTED。P1-D 已把
 promotion registry 已证明的 50 bundles / 52 relations 升级为
@@ -924,7 +938,8 @@ USM/image：
 
 - USM machine-readable relation catalog 已覆盖 260/260；
 - 77 个 BackMonitor 精确关系由 RAW choreography 与现有 index 双重证明；
-- 183 个 unresolved 保持未解决，不把 filename candidate 写成 exact；
+- 30 个 MovieAnnounce 关系由 table 175 ResourceId 独立证明；
+- 153 个 unresolved 保持未解决，不把 filename candidate 写成 exact；
 - source-only 与 mounted verifier 通过；
 - 未进行批量解码或稳定发布；
 - image relation catalog 已覆盖 1,271/1,271 bundles 和 7,816 image

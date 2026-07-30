@@ -228,6 +228,7 @@ function backmonitorStats({ sourceOnly = false } = {}) {
       raw_usm: payload.summary.total,
       raw_usm_bytes: payload.summary.total_bytes,
       mapped: payload.summary.exact_consumer,
+      exact_masterdata: payload.summary.exact_masterdata,
       unresolved: payload.summary.unresolved,
       movie_relations: payload.entries.filter(
         entry => entry.mapping.kind === 'backmonitor-movie',
@@ -243,6 +244,7 @@ function backmonitorStats({ sourceOnly = false } = {}) {
       raw_usm: null,
       raw_usm_bytes: null,
       mapped: null,
+      exact_masterdata: null,
       unresolved: null,
       movie_relations: null,
       transition_relations: null,
@@ -256,6 +258,7 @@ function backmonitorStats({ sourceOnly = false } = {}) {
     raw_usm: null,
     raw_usm_bytes: null,
     mapped: movies + transitions,
+    exact_masterdata: null,
     unresolved: null,
     movie_relations: movies,
     transition_relations: transitions,
@@ -482,6 +485,7 @@ export async function collectArchiveBaseline({
         analysis?.raw_manifest.types.usm ??
         null,
       backmonitor_mapped: backmonitor.mapped,
+      exact_masterdata_relations: backmonitor.exact_masterdata,
       unresolved: backmonitor.unresolved ??
         (backmonitor.mapped == null
         ? null

@@ -1,6 +1,6 @@
 # RAW USM Relation Catalog
 
-Status: implemented on `codex/usm-relation-catalog`; pending review
+Status: v1 merged in PR #8; v2 MovieAnnounce refinement active
 
 Date: 2026-07-29
 
@@ -13,8 +13,9 @@ transcode, copy, publish, or add any media payload to Git.
 The committed authority surface is:
 
 ```text
-schemas/usm-relation-catalog-v1.schema.json
+schemas/usm-relation-catalog-v2.schema.json
 public/data/usm_relation_catalog.json
+public/data/masterdata/movie_announce_index.json
 scripts/generate-usm-relation-catalog.py
 scripts/verify-usm-relation-catalog.mjs
 ```
@@ -33,7 +34,8 @@ machine paths.
 | exact consumer relations | 77 |
 | BackMonitor movie relations | 73 |
 | BackMonitor transition relations | 4 |
-| unresolved relations | 183 |
+| exact MovieAnnounce masterdata relations | 30 |
+| unresolved relations | 153 |
 | successful ffprobe header reads | 260 |
 | entries with an exact music-catalog filename token | 52 |
 | distinct exact music tokens | 22 |
@@ -61,9 +63,16 @@ referenced by 119 mounted RAW choreography scripts:
 73 BackMonitor movies + 4 alpha transitions = 77 exact consumers
 ```
 
-Each exact record retains the referencing RAW effect-script IDs and the
-existing browser derivative metadata. The other 183 records remain
-`unresolved`; a family-shaped consumer is recorded only as
+Each exact consumer record retains the referencing RAW effect-script IDs and
+the existing browser derivative metadata.
+
+The v2 refinement independently parses masterdata table 175
+`MovieAnnounces`. Its 30 unique `ResourceId` values exactly equal the 30
+`movie_home_announce_<ResourceId>` RAW identities, so those records are
+`exact-masterdata / movie-announce`. They do not claim a browser consumer or
+derivative.
+
+The other 153 records remain `unresolved`; a family-shaped consumer is recorded only as
 `filename-candidate`. A candidate does not authorize a derivative or a stable
 publication.
 
@@ -86,13 +95,15 @@ Source-only verification checks:
   relative paths for 73 movies and 4 transitions;
 - music-token existence and filename boundary;
 - absence of absolute paths;
-- the current `260 / 77 / 183` population boundary.
+- exact equality with the 30-record committed MovieAnnounce table-175 index;
+- the current `260 / 77 / 30 / 153` population boundary.
 
 Mounted verification additionally checks:
 
 - exact equality with the mounted 73-movie + 4-transition BackMonitor index;
 - exact equality of recorded derivative metadata with that index;
 - exact equality with the live `RAW/movie/*.usm` filename population;
+- exact reparse parity with mounted masterdata table 175;
 - file byte count;
 - `CRID` magic;
 - SHA-256 for all 260 files.
@@ -101,10 +112,10 @@ Validated locally on 2026-07-29:
 
 ```text
 RAW USM relation catalog verified (source-only):
-260 total / 77 exact / 183 unresolved
+260 total / 77 exact consumer / 30 exact masterdata / 153 unresolved
 
 RAW USM relation catalog verified (mounted):
-260 total / 77 exact / 183 unresolved
+260 total / 77 exact consumer / 30 exact masterdata / 153 unresolved
 
 Archive baseline verified (source-only):
 10329 compiled JSON artifacts, 108 tracked PNG files

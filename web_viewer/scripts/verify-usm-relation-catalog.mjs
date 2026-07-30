@@ -16,7 +16,7 @@ import { loadArchiveSources } from './lib/archive-sources.mjs'
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const catalogPath = path.join(projectRoot, 'public', 'data', 'usm_relation_catalog.json')
-const schemaPath = path.join(projectRoot, 'schemas', 'usm-relation-catalog-v1.schema.json')
+const schemaPath = path.join(projectRoot, 'schemas', 'usm-relation-catalog-v2.schema.json')
 const backmonitorPath = path.join(
   projectRoot,
   'public',
@@ -32,14 +32,22 @@ const musicCatalogPath = path.join(
   'masterdata',
   'music_catalog.json',
 )
+const movieAnnounceIndexPath = path.join(
+  projectRoot,
+  'public',
+  'data',
+  'masterdata',
+  'movie_announce_index.json',
+)
 const sourceOnly = process.argv.includes('--source-only')
 const failures = []
 
 const readJson = filename => JSON.parse(readFileSync(filename, 'utf8'))
-const [catalog, schema, musicCatalog] = [
+const [catalog, schema, musicCatalog, movieAnnounceIndex] = [
   catalogPath,
   schemaPath,
   musicCatalogPath,
+  movieAnnounceIndexPath,
 ].map(readJson)
 const backmonitor = !sourceOnly && existsSync(backmonitorPath)
   ? readJson(backmonitorPath)
@@ -101,7 +109,28 @@ if (hashes.length !== new Set(hashes).size) failures.push('RAW SHA-256 values mu
 const familyCounts = {}
 let totalBytes = 0
 let exactCount = 0
+let exactMasterdataCount = 0
 let unresolvedCount = 0
+const exactMovieAnnounceIds = new Set(
+  (movieAnnounceIndex.movie_announces || []).map(
+    entry => `movie_home_announce_${entry.resource_id}`,
+  ),
+)
+const movieAnnounceById = new Map(
+  (movieAnnounceIndex.movie_announces || []).map(entry => [
+    `movie_home_announce_${entry.resource_id}`,
+    entry,
+  ]),
+)
+if (
+  movieAnnounceIndex.schema_version !== 1 ||
+  movieAnnounceIndex.meta?.source_table !== 175 ||
+  movieAnnounceIndex.meta?.record_count !== 30 ||
+  movieAnnounceIndex.meta?.unique_resource_ids !== 30 ||
+  exactMovieAnnounceIds.size !== 30
+) {
+  failures.push('MovieAnnounce index must contain 30 unique table-175 resource IDs')
+}
 for (const entry of entries) {
   addCount(familyCounts, entry.family)
   totalBytes += entry.raw?.bytes || 0
@@ -138,6 +167,9 @@ for (const entry of entries) {
     .filter(candidate => candidate.state === 'exact')
   if (entry.mapping?.state === 'exact-consumer') {
     exactCount += 1
+    if (entry.mapping.masterdata_relation != null) {
+      failures.push(`${entry.id}: exact consumer must not claim MovieAnnounce evidence`)
+    }
     if (
       exactCandidates.length !== 1 ||
       exactCandidates[0].consumer !== 'ChibiStageViewer.backmonitor'
@@ -203,6 +235,33 @@ for (const entry of entries) {
         `${entry.id}: derived BackMonitor metadata drifted`,
       )
     }
+  } else if (entry.mapping?.state === 'exact-masterdata') {
+    exactMasterdataCount += 1
+    const relation = entry.mapping.masterdata_relation
+    const source = movieAnnounceById.get(entry.id)
+    if (
+      entry.family !== 'movie-home' ||
+      entry.mapping.kind !== 'movie-announce' ||
+      !source ||
+      relation?.catalog !== 'movie_announce_index.movie_announces' ||
+      relation?.resource_id !== source.resource_id ||
+      relation?.record_id !== source.id
+    ) {
+      failures.push(`${entry.id}: exact MovieAnnounce relation differs from table 175`)
+    }
+    if (
+      entry.id !== `movie_home_announce_${relation?.resource_id}` ||
+      entry.mapping.raw_effect_scripts.length ||
+      entry.mapping.derived_assets.length
+    ) {
+      failures.push(`${entry.id}: exact MovieAnnounce relation shape drifted`)
+    }
+    if (exactCandidates.length) {
+      failures.push(`${entry.id}: exact masterdata relation must not claim an exact consumer`)
+    }
+    if (backmonitor?.assets?.[entry.id] || backmonitor?.transitions?.[entry.id]) {
+      failures.push(`${entry.id}: MovieAnnounce relation overlaps BackMonitor`)
+    }
   } else {
     unresolvedCount += 1
     if (entry.mapping?.kind !== 'unresolved') {
@@ -210,6 +269,9 @@ for (const entry of entries) {
     }
     if (entry.mapping?.raw_effect_scripts?.length || entry.mapping?.derived_assets?.length) {
       failures.push(`${entry.id}: unresolved relation must not claim exact evidence or assets`)
+    }
+    if (entry.mapping?.masterdata_relation != null) {
+      failures.push(`${entry.id}: unresolved relation must not claim exact masterdata evidence`)
     }
     if (exactCandidates.length) {
       failures.push(`${entry.id}: unresolved relation must not claim an exact consumer`)
@@ -223,6 +285,11 @@ for (const entry of entries) {
 assertEqual(catalog.summary?.total, entries.length, 'summary total drifted')
 assertEqual(catalog.summary?.total_bytes, totalBytes, 'summary byte count drifted')
 assertEqual(catalog.summary?.exact_consumer, exactCount, 'summary exact count drifted')
+assertEqual(
+  catalog.summary?.exact_masterdata,
+  exactMasterdataCount,
+  'summary exact masterdata count drifted',
+)
 assertEqual(catalog.summary?.unresolved, unresolvedCount, 'summary unresolved count drifted')
 assertEqual(catalog.summary?.families, familyCounts, 'summary family counts drifted')
 
@@ -230,6 +297,15 @@ const exactCatalogIds = entries
   .filter(entry => entry.mapping?.state === 'exact-consumer')
   .map(entry => entry.id)
   .sort()
+const exactMasterdataCatalogIds = entries
+  .filter(entry => entry.mapping?.state === 'exact-masterdata')
+  .map(entry => entry.id)
+  .sort()
+assertEqual(
+  exactMasterdataCatalogIds,
+  [...exactMovieAnnounceIds].sort(),
+  'catalog and MovieAnnounce table-175 populations differ',
+)
 if (backmonitor) {
   const exactIndexIds = [
     ...Object.keys(backmonitor.assets || {}),
@@ -237,8 +313,16 @@ if (backmonitor) {
   ].sort()
   assertEqual(exactCatalogIds, exactIndexIds, 'catalog and BackMonitor exact-ID populations differ')
 }
-if (exactCatalogIds.length !== 77 || exactCount !== 77 || unresolvedCount !== 183) {
-  failures.push('current USM relation baseline must remain 260 total / 77 exact / 183 unresolved')
+if (
+  exactCatalogIds.length !== 77 ||
+  exactCount !== 77 ||
+  exactMasterdataCount !== 30 ||
+  unresolvedCount !== 153
+) {
+  failures.push(
+    'current USM relation baseline must remain ' +
+    '260 total / 77 exact consumer / 30 exact masterdata / 153 unresolved',
+  )
 }
 
 async function sha256(filename) {
@@ -293,6 +377,7 @@ if (failures.length) {
 } else {
   console.log(
     `RAW USM relation catalog verified (${sourceOnly ? 'source-only' : 'mounted'}): ` +
-    `${entries.length} total / ${exactCount} exact / ${unresolvedCount} unresolved`,
+    `${entries.length} total / ${exactCount} exact consumer / ` +
+    `${exactMasterdataCount} exact masterdata / ${unresolvedCount} unresolved`,
   )
 }
