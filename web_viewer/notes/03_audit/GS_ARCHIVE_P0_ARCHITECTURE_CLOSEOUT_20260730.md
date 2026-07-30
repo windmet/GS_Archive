@@ -4,6 +4,7 @@ Status: branch-level P0 closeout verified; merge to `master` required before P1
 Date: 2026-07-30
 Functional baseline: `master@721c58b29e0eb953e8ba6138521d825d98e1cc63`
 Closeout branch: `codex/reconcile-product-history-p2`
+Pull request: #31 (draft)
 
 ## 1. P0 scope
 
