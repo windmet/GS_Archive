@@ -1,3 +1,5 @@
+import { buildExtraStoryDomainIdentity } from './storyDomainIdentityIndex.js'
+
 const UNIT_VISUAL_CODES = [
   '01jup', '02dra', '03alt', '04bei', '05w00', '06fra', '07sai', '08hig',
   '09shi', '10caf', '11mof', '12sem', '13the', '14fla', '15leg', '16cfi',
@@ -94,15 +96,18 @@ function buildCollection(domain, group, chapters, episodeRows, catalog) {
   }
 }
 
-function buildExtraCollection(group, episodeRows, catalog) {
-  const groupId = String(group['1'])
-  const rows = sortedRows(episodeRows.filter(row => String(row['2']) === groupId))
-  const chapters = rows.map(row => {
-    const file = row.compiled_file || ''
+function buildExtraCollection(series, extraDomain, catalog) {
+  const entryById = new Map((extraDomain?.logicalEntries || []).map(entry => [entry.id, entry]))
+  const entries = (series.logicalEntryIds || [])
+    .map(id => entryById.get(id))
+    .filter(Boolean)
+    .sort((left, right) => left.releaseAt - right.releaseAt || left.masterId.localeCompare(right.masterId))
+  const chapters = entries.map(entry => {
+    const file = entry.compiledFile || ''
     const story = file
-      ? catalog.find(entry => entry.domain === 'extra' && entry.file === file) || null
+      ? catalog.find(item => item.domain === 'extra' && item.file === file) || null
       : null
-    const resourceId = row.resource_id || row['5'] || ''
+    const resourceId = entry.resourceId
     const part = resourceId.match(/_([a-z])$/i)?.[1] || ''
     const boundary = story?.episodes?.find(item => item.episode_part === part) || null
     const episodeFile = boundary?.episode_file || story?.file || ''
@@ -114,8 +119,8 @@ function buildExtraCollection(group, episodeRows, catalog) {
       : Number(story?.playableStepCount || story?.summary?.step_count || 0)
     const exists = Boolean(story?.exists && episodeFile)
     const episode = {
-      id: String(row['1']),
-      label: row['3'] || group['3'] || '额外剧情',
+      id: entry.masterId,
+      label: entry.title || entry.masterGroupTitle || '额外剧情',
       resourceId,
       part,
       exists,
@@ -127,10 +132,10 @@ function buildExtraCollection(group, episodeRows, catalog) {
       voiceCount: boundary?.voice_count ?? story?.summary?.voice_count ?? 0,
     }
     return {
-      id: String(row['1']),
-      label: `ID ${row['1']}`,
-      title: row['3'] || group['3'] || story?.title || '额外剧情',
-      releaseAt: Number(row['4'] || 0),
+      id: entry.masterId,
+      label: entry.masterGroupTitle || `ID ${entry.parentId}`,
+      title: entry.title || entry.masterGroupTitle || story?.title || '额外剧情',
+      releaseAt: entry.releaseAt,
       backgroundId: '',
       file,
       exists,
@@ -145,15 +150,19 @@ function buildExtraCollection(group, episodeRows, catalog) {
   })
 
   return {
-    id: `extra:${groupId}`,
+    id: series.id,
     domain: 'extra',
     domainLabel: '额外剧情',
-    sectionId: groupId,
-    title: group['3'] || `额外剧情 ${groupId}`,
+    sectionId: series.masterId,
+    legacySectionIds: series.legacySectionIds || [],
+    title: series.title,
     eyebrow: 'EXTRA STORY',
-    description: '依据 masterdata 的正式逻辑条目整理；播放仍复用既有编译剧情与分段边界。',
-    releaseAt: Number(chapters[0]?.releaseAt || 0),
+    description: series.description,
+    releaseAt: Number(series.releaseAt || chapters[0]?.releaseAt || 0),
     visualUrl: '',
+    official: series.official,
+    sourceUrl: series.sourceUrl,
+    gasha: series.gasha,
     chapters,
     chapterCount: chapters.length,
     playableChapterCount: chapters.filter(chapter => chapter.exists).length,
@@ -233,17 +242,21 @@ function buildBirthdayCollections(birthdayDomain, catalog) {
   })
 }
 
-export function buildStoryCollections(data, catalog, { birthdayDomain = null } = {}) {
+export function buildStoryCollections(data, catalog, {
+  birthdayDomain = null,
+  extraDomain = null,
+} = {}) {
   if (!data) return []
   const collections = []
+  const resolvedExtraDomain = extraDomain || buildExtraStoryDomainIdentity(data)
   for (const group of data.main?.groups || []) {
     collections.push(buildCollection('main', group, data.main?.chapters || [], data.main?.episodes || [], catalog || []))
   }
   for (const group of data.unit_story?.groups || []) {
     collections.push(buildCollection('unit_story', group, data.unit_story?.chapters || [], data.unit_story?.episodes || [], catalog || []))
   }
-  for (const group of data.extra?.groups || []) {
-    collections.push(buildExtraCollection(group, data.extra?.episodes || [], catalog || []))
+  for (const series of resolvedExtraDomain?.collections || []) {
+    collections.push(buildExtraCollection(series, resolvedExtraDomain, catalog || []))
   }
   collections.push(...buildBirthdayCollections(birthdayDomain, catalog || []))
   return collections

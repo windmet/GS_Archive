@@ -13,8 +13,8 @@ than an implicit search result page.
 The landing and collection routes use the masterdata identity model from
 `storyDomainIdentityIndex.js`:
 
-- 47 formal collections;
-- 47 logical entries;
+- 47 masterdata groups (later reconciled into 10 work-level collections);
+- 47 logical chapters;
 - 45 distinct resource IDs;
 - 44 compiled playback files.
 
@@ -30,7 +30,7 @@ semantic story identity.
 - 2023 April Fools opening;
 - 2023 April Fools ending.
 
-All four remain separate archive collections. Playback uses the existing
+All four remain separate logical chapters. Playback uses the existing
 presentation boundaries and resolves to:
 
 - `episodes/5_03_000_22_a.json` for opening entries;

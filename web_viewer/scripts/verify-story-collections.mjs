@@ -4,6 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { buildStoryCatalog } from '../src/data/archiveSelectors.js'
 import { buildStoryCollections } from '../src/data/storyCollections.js'
+import { buildExtraStoryDomainIdentity } from '../src/data/storyDomainIdentityIndex.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const readJson = relative => readFile(path.join(root, relative), 'utf8').then(JSON.parse)
@@ -13,14 +14,15 @@ const [master, presentation] = await Promise.all([
 ])
 
 const catalog = buildStoryCatalog(master, presentation)
-const collections = buildStoryCollections(master, catalog)
+const extraDomain = buildExtraStoryDomainIdentity(master)
+const collections = buildStoryCollections(master, catalog, { extraDomain })
 const mainCollections = collections.filter(collection => collection.domain === 'main')
 const unitCollections = collections.filter(collection => collection.domain === 'unit_story')
 const extraCollections = collections.filter(collection => collection.domain === 'extra')
 
 assert.equal(mainCollections.length, 3)
 assert.equal(unitCollections.length, 16)
-assert.equal(extraCollections.length, 47)
+assert.equal(extraCollections.length, 10)
 assert.equal(mainCollections.reduce((sum, collection) => sum + collection.chapterCount, 0), 22)
 assert.equal(unitCollections.reduce((sum, collection) => sum + collection.chapterCount, 0), 64)
 assert.equal(mainCollections.reduce((sum, collection) => sum + collection.episodeCount, 0), 204)
@@ -45,12 +47,17 @@ assert.equal(extraCollections.reduce((sum, collection) => sum + collection.playa
 assert.ok(extraCollections.every(collection => collection.chapters.every(chapter =>
   chapter.file && chapter.episodes.length === 1 && chapter.episodes[0].file)))
 
-const aprilFoolsOpening = extraCollections.find(collection => collection.sectionId === '60201')
-const aprilFoolsEnding = extraCollections.find(collection => collection.sectionId === '60202')
-assert.equal(aprilFoolsOpening.chapters[0].episodes[0].resourceId, '5_03_000_22_a')
-assert.equal(aprilFoolsOpening.chapters[0].episodes[0].file, 'episodes/5_03_000_22_a.json')
-assert.equal(aprilFoolsEnding.chapters[0].episodes[0].resourceId, '5_03_000_22_b')
-assert.equal(aprilFoolsEnding.chapters[0].episodes[0].file, 'episodes/5_03_000_22_b.json')
+const aprilFools2022 = extraCollections.find(collection => collection.sectionId === '602')
+assert.deepEqual(aprilFools2022.legacySectionIds, ['60201', '60202'])
+assert.equal(aprilFools2022.chapters[0].episodes[0].resourceId, '5_03_000_22_a')
+assert.equal(aprilFools2022.chapters[0].episodes[0].file, 'episodes/5_03_000_22_a.json')
+assert.equal(aprilFools2022.chapters[1].episodes[0].resourceId, '5_03_000_22_b')
+assert.equal(aprilFools2022.chapters[1].episodes[0].file, 'episodes/5_03_000_22_b.json')
+
+const newYear2023 = extraCollections.find(collection => collection.sectionId === '608')
+assert.equal(newYear2023.title, '謹賀新年2023')
+assert.equal(newYear2023.chapterCount, 17)
+assert.equal(newYear2023.chapters[0].title, '初日の出を拝んで')
 
 const mainChapterOne = mainCollections.find(collection => collection.sectionId === '101')
 const mainPrologue = mainChapterOne.chapters.find(chapter => chapter.id === '10100')
@@ -73,4 +80,4 @@ assert.equal(jupiter.title, 'Jupiter')
 assert.equal(jupiter.chapters.length, 4)
 assert.equal(jupiter.chapters[0].episodes.length, 10)
 
-console.log('Story collections: main 3, unit 16, extra 47; logical extra identity and shared playback boundaries verified')
+console.log('Story collections: main 3, unit 16, extra 10 works/47 chapters; official taxonomy and shared playback boundaries verified')

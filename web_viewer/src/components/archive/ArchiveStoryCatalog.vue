@@ -71,23 +71,23 @@
         <div>
           <span>EXTRA STORY ARCHIVE</span>
           <h2>额外剧情</h2>
-          <p>按 masterdata 的正式逻辑条目归档；共享编译文件不会合并目录身份。</p>
+          <p>按官方 Extra Story 作品归档；masterdata 逻辑记录作为章节保留，关联企划可直接前往卡池资料。</p>
         </div>
         <dl aria-label="额外剧情归档统计">
-          <div><dt>正式条目</dt><dd>{{ extraDomain?.meta?.collectionCount || 0 }}</dd></div>
-          <div><dt>资源身份</dt><dd>{{ extraDomain?.meta?.resourceIdCount || 0 }}</dd></div>
+          <div><dt>官方作品</dt><dd>{{ extraDomain?.meta?.officialCollectionCount || 0 }}</dd></div>
+          <div><dt>剧情章节</dt><dd>{{ extraDomain?.meta?.logicalEntryCount || 0 }}</dd></div>
           <div><dt>播放文件</dt><dd>{{ extraDomain?.meta?.compiledFileCount || 0 }}</dd></div>
         </dl>
       </header>
 
       <section class="extra-domain-section" aria-labelledby="extra-domain-heading">
         <div class="section-heading">
-          <div><span>MASTERDATA COLLECTIONS</span><h3 id="extra-domain-heading">正式剧情目录</h3></div>
-          <strong>{{ extraCards.length }} collections</strong>
+          <div><span>OFFICIAL CLASSIFICATION</span><h3 id="extra-domain-heading">官方 Extra Story</h3></div>
+          <strong>{{ officialExtraCards.length }} works</strong>
         </div>
         <div class="extra-card-grid">
           <button
-            v-for="card in extraCards"
+            v-for="card in officialExtraCards"
             :key="card.id"
             class="extra-card"
             @click="browse('extra', card.masterId)"
@@ -96,10 +96,36 @@
             <span class="extra-card-copy">
               <small>{{ formatExtraDate(card.releaseAt) }}</small>
               <strong>{{ card.title }}</strong>
-              <span>{{ card.entry?.title || card.entry?.resourceId }}</span>
-              <code>{{ card.entry?.resourceId }}</code>
+              <span>{{ card.logicalEntryCount }} chapters</span>
+              <code v-if="card.gasha">{{ card.gasha.code }} · {{ card.gasha.title }}</code>
             </span>
-            <span v-if="card.sharedPlayback" class="shared-playback">共享播放文件</span>
+            <span v-if="card.gasha" class="shared-playback">关联卡池</span>
+            <ArrowRight :size="17" aria-hidden="true" />
+          </button>
+        </div>
+      </section>
+
+      <section v-if="supplementaryExtraCards.length" class="extra-domain-section extra-supplementary" aria-labelledby="extra-supplementary-heading">
+        <div class="section-heading">
+          <div><span>MASTERDATA SUPPLEMENT</span><h3 id="extra-supplementary-heading">其他特别剧情记录</h3></div>
+          <strong>{{ supplementaryExtraCards.length }} works</strong>
+        </div>
+        <p class="extra-section-note">以下条目存在于 Extra masterdata，但未列入所核对 Wiki 的官方 Extra Story 清单；为避免丢失档案，单独保留。</p>
+        <div class="extra-card-grid">
+          <button
+            v-for="card in supplementaryExtraCards"
+            :key="card.id"
+            class="extra-card"
+            @click="browse('extra', card.masterId)"
+          >
+            <span class="extra-card-index">{{ card.parentSeriesId }}</span>
+            <span class="extra-card-copy">
+              <small>{{ formatExtraDate(card.releaseAt) }}</small>
+              <strong>{{ card.title }}</strong>
+              <span>{{ card.logicalEntryCount }} chapters</span>
+              <code v-if="card.gasha">{{ card.gasha.code }} · {{ card.gasha.title }}</code>
+            </span>
+            <span v-if="card.gasha" class="shared-playback">关联卡池</span>
             <ArrowRight :size="17" aria-hidden="true" />
           </button>
         </div>
@@ -347,23 +373,10 @@ const groupEntries = domain => {
 const mainSections = computed(() => groupEntries('main'))
 const unitGateways = computed(() => groupEntries('unit_story'))
 const featuredEvents = computed(() => props.allEntries.filter(entry => entry.domain === 'event').sort((a, b) => b.releaseAt - a.releaseAt).slice(0, 6))
-const extraCards = computed(() => {
-  const entries = new Map((props.extraDomain?.logicalEntries || []).map(entry => [entry.id, entry]))
-  const playbackUse = new Map()
-  for (const entry of props.extraDomain?.logicalEntries || []) {
-    if (!entry.compiledFile) continue
-    playbackUse.set(entry.compiledFile, (playbackUse.get(entry.compiledFile) || 0) + 1)
-  }
-  return (props.extraDomain?.collections || []).map(collection => {
-    const entry = entries.get(collection.logicalEntryIds?.[0]) || null
-    return {
-      ...collection,
-      entry,
-      releaseAt: entry?.releaseAt || 0,
-      sharedPlayback: (playbackUse.get(entry?.compiledFile) || 0) > 1,
-    }
-  })
-})
+const extraCards = computed(() => [...(props.extraDomain?.collections || [])]
+  .sort((left, right) => left.releaseAt - right.releaseAt || left.masterId.localeCompare(right.masterId)))
+const officialExtraCards = computed(() => extraCards.value.filter(card => card.official))
+const supplementaryExtraCards = computed(() => extraCards.value.filter(card => !card.official))
 const birthdayCards = computed(() => {
   const entries = new Map((props.birthdayDomain?.logicalEntries || []).map(entry => [entry.id, entry]))
   return (props.birthdayDomain?.collections || []).map(collection => ({
@@ -440,6 +453,8 @@ function formatExtraDate(timestamp) {
 .extra-domain-hero dl div:last-child { border-right: 0; }
 .extra-domain-hero dt { color: #7a898f; font-size: .56rem; }.extra-domain-hero dd { margin: 4px 0 0; color: #176f69; font-size: 1rem; font-weight: 800; }
 .extra-domain-section { padding: 25px max(24px, calc((100% - 1120px) / 2)) 42px; }
+.extra-domain-section.extra-supplementary { padding-top: 0; }
+.extra-section-note { max-width: 820px; margin: -4px 0 14px; color: #6f7f86; font-size: .62rem; line-height: 1.7; }
 .extra-domain-section .section-heading h3 { margin: 3px 0 0; font-size: 1rem; }
 .extra-domain-section .section-heading > strong { color: #7d8b92; font-size: .61rem; }
 .extra-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 9px; }

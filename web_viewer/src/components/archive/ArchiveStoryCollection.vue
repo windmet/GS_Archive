@@ -14,6 +14,21 @@
           <div><dt>剧情分段</dt><dd>{{ collection.playableEpisodeCount }} / {{ collection.episodeCount }}</dd></div>
           <div v-if="releaseDate"><dt>开放时间</dt><dd>{{ releaseDate }}</dd></div>
         </dl>
+        <div v-if="collection.gasha || collection.sourceUrl" class="collection-relations">
+          <button v-if="collection.gasha" type="button" @click="emit('open-gasha', collection.gasha)">
+            <img v-if="collection.gasha.banner_url" :src="collection.gasha.banner_url" alt="" />
+            <span>
+              <small>RELATED GASHA · {{ collection.gasha.code }}</small>
+              <strong>{{ collection.gasha.display_name }}</strong>
+              <em>{{ collection.gasha.derived_pickup_cards?.length || 0 }} pickup SSR</em>
+            </span>
+            <ChevronRight :size="18" />
+          </button>
+          <a v-if="collection.sourceUrl" :href="collection.sourceUrl" target="_blank" rel="noopener noreferrer external">
+            <ExternalLink :size="15" />
+            分类核对来源
+          </a>
+        </div>
       </div>
     </header>
 
@@ -96,14 +111,14 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { BookOpen, ChevronDown, ChevronUp, ExternalLink, Play } from '@lucide/vue'
+import { BookOpen, ChevronDown, ChevronRight, ChevronUp, ExternalLink, Play } from '@lucide/vue'
 
 const props = defineProps({
   collection: { type: Object, default: null },
   externalResources: { type: Array, default: () => [] },
   initialChapterId: { type: String, default: '' },
 })
-const emit = defineEmits(['play-chapter', 'play-episode'])
+const emit = defineEmits(['play-chapter', 'play-episode', 'open-gasha'])
 const expandedChapterId = ref('')
 
 const releaseDate = computed(() => {
@@ -152,6 +167,15 @@ function externalResourcesForChapter(chapterId) {
 .collection-copy dl { margin: 0; }
 .collection-copy dl div { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 10px; padding: 7px 0; border-bottom: 1px solid #edf0f1; font-size: .64rem; }
 .collection-copy dt { color: #89959b; }.collection-copy dd { margin: 0; color: #33464f; }
+.collection-relations { display: grid; gap: 7px; margin-top: 15px; }
+.collection-relations button { display: grid; grid-template-columns: 78px minmax(0,1fr) 18px; align-items: center; gap: 10px; overflow: hidden; padding: 0 10px 0 0; border: 1px solid #cfe1df; border-radius: 5px; background: #f3faf9; color: #28443f; cursor: pointer; font: inherit; text-align: left; }
+.collection-relations button:hover { border-color: #52aaa3; background: #ebf7f5; }
+.collection-relations button img { width: 78px; height: 52px; object-fit: cover; }
+.collection-relations button span { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 7px 0; }
+.collection-relations button small { color: #188078; font-size: .52rem; font-weight: 800; }
+.collection-relations button strong { overflow: hidden; font-size: .64rem; text-overflow: ellipsis; white-space: nowrap; }
+.collection-relations button em { color: #78898e; font-size: .52rem; font-style: normal; }
+.collection-relations > a { display: inline-flex; align-items: center; gap: 6px; width: max-content; color: #357c77; font-size: .58rem; text-decoration: none; }
 .chapter-section { padding: 24px max(24px, calc((100% - 1120px) / 2)) 40px; background: #f7f9fa; }
 .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin-bottom: 13px; }
 .section-heading h3 { margin: 3px 0 0; font-size: 1rem; }.section-heading > strong { color: #7d8b92; font-size: .61rem; }

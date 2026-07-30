@@ -1,3 +1,8 @@
+import {
+  extraStorySeriesDefinition,
+  resolveExtraStoryGasha,
+} from './extraStoryTaxonomy.js'
+
 const DOMAIN_ROWS = Object.freeze([
   ['main', data => data.main?.episodes],
   ['event', data => data.event?.episodes],
@@ -230,24 +235,43 @@ export function buildBirthdayStoryDomainIdentity(storyMaster, idolUnit, speakerD
   )
 }
 
-function buildExtraDomain(storyMaster) {
+function buildExtraDomain(storyMaster, gashaIndex = null) {
   const groups = sortedRows(storyMaster.extra?.groups)
   const logicalEntries = sortedRows(storyMaster.extra?.episodes)
-    .map(row => logicalEntry('extra', row, '4'))
+    .map(row => {
+      const entry = logicalEntry('extra', row, '4')
+      const group = groups.find(candidate => String(candidate['1']) === entry.parentId)
+      return {
+        ...entry,
+        masterGroupTitle: String(group?.['3'] || ''),
+        seriesId: String(group?.['2'] || ''),
+      }
+    })
 
-  const collections = groups.map(group => {
-    const groupId = String(group['1'])
-    const entries = logicalEntries.filter(entry => entry.parentId === groupId)
+  const seriesIds = [...new Set(groups.map(group => String(group['2'] || '')).filter(Boolean))]
+  const collections = seriesIds.map(seriesId => {
+    const definition = extraStorySeriesDefinition(seriesId)
+    const masterGroups = groups.filter(group => String(group['2']) === seriesId)
+    const masterGroupIds = masterGroups.map(group => String(group['1']))
+    const entries = logicalEntries.filter(entry => entry.seriesId === seriesId)
+    const gasha = resolveExtraStoryGasha(gashaIndex, definition.gashaCode)
     return {
-      id: `extra:${groupId}`,
-      masterId: groupId,
-      parentSeriesId: String(group['2'] || ''),
-      title: String(group['3'] || ''),
+      id: `extra:${seriesId}`,
+      masterId: seriesId,
+      parentSeriesId: seriesId,
+      legacySectionIds: masterGroupIds,
+      title: gasha?.display_name || definition.title,
+      description: definition.description,
+      official: definition.official,
+      sourceUrl: definition.sourceUrl,
+      gashaCode: definition.gashaCode,
+      gasha,
       logicalEntryIds: entries.map(entry => entry.id),
       logicalEntryCount: entries.length,
       resourceIdCount: new Set(entries.map(entry => entry.resourceId).filter(Boolean)).size,
       compiledFileCount: new Set(entries.map(entry => entry.compiledFile).filter(Boolean)).size,
-      source: sourceEvidence(group),
+      releaseAt: Math.min(...entries.map(entry => entry.releaseAt).filter(Boolean)),
+      source: sourceEvidence(masterGroups[0]),
     }
   })
 
@@ -263,6 +287,9 @@ function buildExtraDomain(storyMaster) {
     logicalEntries,
     meta: {
       collectionCount: collections.length,
+      officialCollectionCount: collections.filter(collection => collection.official).length,
+      supplementaryCollectionCount: collections.filter(collection => !collection.official).length,
+      masterGroupCount: groups.length,
       logicalEntryCount: logicalEntries.length,
       resourceIdCount: new Set(logicalEntries.map(entry => entry.resourceId).filter(Boolean)).size,
       compiledFileCount: playbackUsage.size,
@@ -272,9 +299,9 @@ function buildExtraDomain(storyMaster) {
   }
 }
 
-export function buildExtraStoryDomainIdentity(storyMaster) {
+export function buildExtraStoryDomainIdentity(storyMaster, gashaIndex = null) {
   if (!storyMaster) return null
-  return buildExtraDomain(storyMaster)
+  return buildExtraDomain(storyMaster, gashaIndex)
 }
 
 function buildPlaybackIndex(domains) {

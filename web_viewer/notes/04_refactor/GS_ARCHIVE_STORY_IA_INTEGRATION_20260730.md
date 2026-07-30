@@ -52,7 +52,8 @@ navigation mechanisms.
 ## Combined authority counts
 
 - main: 3 chapter collections, 22 formal chapters, 204 logical segments;
-- Extra: 47 logical collections, 45 resource IDs, 44 playback files;
+- Extra: 10 work-level collections, 47 logical chapters, 45 resource IDs,
+  44 playback files;
 - Birthday: 50 subjects, 181 logical records, 29 files shared with
   `idol_story`.
 

@@ -80,7 +80,10 @@ assert.equal(sharedBirthdayFiles.length, 29)
 assert.ok(sharedBirthdayFiles.every(entry => entry.domainMemberships.includes('birthday')))
 
 const extra = index.domains.extra
-assert.equal(extra.meta.collectionCount, 47)
+assert.equal(extra.meta.collectionCount, 10)
+assert.equal(extra.meta.officialCollectionCount, 6)
+assert.equal(extra.meta.supplementaryCollectionCount, 4)
+assert.equal(extra.meta.masterGroupCount, 47)
 assert.equal(extra.meta.logicalEntryCount, 47)
 assert.equal(extra.meta.resourceIdCount, 45)
 assert.equal(extra.meta.compiledFileCount, 44)
@@ -89,7 +92,8 @@ assert.equal(extra.meta.maxLogicalEntriesPerPlaybackFile, 4)
 assert.ok(extra.collections.every(collection => collection.source.table === 144))
 assert.ok(extra.logicalEntries.every(entry => entry.source.table === 145))
 assert.ok(extra.logicalEntries.every(entry => entry.compiledExists))
-assert.ok(extra.collections.every(collection => collection.logicalEntryCount === 1))
+assert.equal(extra.collections.find(collection => collection.masterId === '608').logicalEntryCount, 17)
+assert.equal(extra.collections.find(collection => collection.masterId === '605').logicalEntryCount, 20)
 assert.ok(extra.logicalEntries.every(entry =>
   extra.collections.some(collection => collection.logicalEntryIds.includes(entry.id))))
 
@@ -100,5 +104,5 @@ assert.equal(sharedExtraTarget.logicalEntryIds.length, 4)
 console.log(
   'Story domain identity: '
   + 'main 3/22/204, birthday 50 collections/181 entries/29 cross-domain files, '
-  + 'extra 47 entries/44 playback files verified',
+  + 'extra 10 works/47 entries/44 playback files verified',
 )

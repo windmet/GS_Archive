@@ -242,6 +242,7 @@
         :initial-chapter-id="currentStoryCollectionChapter?.id || ''"
         @play-chapter="playStoryCollectionChapter"
         @play-episode="playStoryCollectionEpisode"
+        @open-gasha="openGasha"
       />
 
       <ArchiveSeasonalCampaign
@@ -813,7 +814,10 @@ const currentStoryExternalResources = computed(() =>
   externalResourcesForStory(externalStoryResourcesData.value, currentStory.value),
 )
 
-const extraStoryDomain = computed(() => buildExtraStoryDomainIdentity(storyMasterData.value))
+const extraStoryDomain = computed(() => buildExtraStoryDomainIdentity(
+  storyMasterData.value,
+  gashaIndexData.value,
+))
 const birthdayStoryDomain = computed(() => buildBirthdayStoryDomainIdentity(
   storyMasterData.value,
   idolUnitData.value,
@@ -823,11 +827,18 @@ const birthdayStoryDomain = computed(() => buildBirthdayStoryDomainIdentity(
 const storyCollections = computed(() => buildStoryCollections(
   storyMasterData.value,
   storyCatalog.value,
-  { birthdayDomain: birthdayStoryDomain.value },
+  {
+    birthdayDomain: birthdayStoryDomain.value,
+    extraDomain: extraStoryDomain.value,
+  },
 ))
 
 const currentStoryCollection = computed(() => storyCollections.value.find(collection =>
-  collection.domain === currentStoryDomain.value && collection.sectionId === currentStorySection.value,
+  collection.domain === currentStoryDomain.value &&
+  (
+    collection.sectionId === currentStorySection.value ||
+    collection.legacySectionIds?.includes(currentStorySection.value)
+  ),
 ) || null)
 
 const currentStoryCollectionExternalResources = computed(() =>
