@@ -220,6 +220,16 @@ function buildBirthdayDomain(storyMaster, idolUnit, speakerDictionary, membershi
   }
 }
 
+export function buildBirthdayStoryDomainIdentity(storyMaster, idolUnit, speakerDictionary) {
+  if (!storyMaster) return null
+  return buildBirthdayDomain(
+    storyMaster,
+    idolUnit,
+    speakerDictionary,
+    allDomainMemberships(storyMaster),
+  )
+}
+
 function buildExtraDomain(storyMaster) {
   const groups = sortedRows(storyMaster.extra?.groups)
   const logicalEntries = sortedRows(storyMaster.extra?.episodes)

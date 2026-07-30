@@ -94,7 +94,78 @@ function buildCollection(domain, group, chapters, episodeRows, catalog) {
   }
 }
 
-export function buildStoryCollections(data, catalog) {
+function birthdaySeriesLabel(resourceId) {
+  if (String(resourceId).startsWith('1_8_')) return '制作人生日问候'
+  if (String(resourceId).startsWith('1_7_')) return '偶像生日祝福'
+  if (String(resourceId).startsWith('1_2_')) return '生日短篇'
+  return '生日剧情'
+}
+
+function buildBirthdayCollections(birthdayDomain, catalog) {
+  const entries = new Map((birthdayDomain?.logicalEntries || []).map(entry => [entry.id, entry]))
+  return (birthdayDomain?.collections || []).map(subjectCollection => {
+    const logicalEntries = subjectCollection.logicalEntryIds
+      .map(id => entries.get(id))
+      .filter(Boolean)
+      .sort((left, right) => left.releaseAt - right.releaseAt || left.masterId.localeCompare(right.masterId))
+    const chapters = logicalEntries.map(entry => {
+      const story = catalog.find(item => item.file === entry.compiledFile) || null
+      const startStep = Number(story?.playableStartIndex || 0) + 1
+      const endStep = Number(story?.playableStepCount || story?.summary?.step_count || 0)
+      const exists = Boolean(entry.compiledExists && story?.exists && entry.compiledFile)
+      const episode = {
+        id: entry.masterId,
+        label: entry.title || birthdaySeriesLabel(entry.resourceId),
+        resourceId: entry.resourceId,
+        part: '',
+        exists,
+        file: entry.compiledFile,
+        startStep: exists ? startStep : 0,
+        endStep: exists ? endStep : 0,
+        stepCount: story?.playableStepCount || story?.summary?.step_count || 0,
+        dialogueCount: 0,
+        voiceCount: story?.summary?.voice_count || 0,
+      }
+      return {
+        id: entry.masterId,
+        label: birthdaySeriesLabel(entry.resourceId),
+        title: story?.preplaySynopsis?.title || story?.title || entry.title || '生日剧情',
+        releaseAt: entry.releaseAt,
+        backgroundId: '',
+        file: entry.compiledFile,
+        exists,
+        story,
+        synopsis: story?.preplaySynopsis || null,
+        episodes: [episode],
+        episodeCount: 1,
+        playableEpisodeCount: exists ? 1 : 0,
+        dialogueCount: 0,
+        voiceCount: episode.voiceCount,
+        domainMemberships: entry.domainMemberships,
+      }
+    })
+    const subject = subjectCollection.subject
+    return {
+      id: subjectCollection.id,
+      domain: 'birthday',
+      domainLabel: '生日剧情',
+      sectionId: subject.code,
+      title: `${subject.displayName || subject.code} 生日剧情`,
+      eyebrow: subject.kind === 'npc' ? 'STAFF BIRTHDAY STORY' : 'IDOL BIRTHDAY STORY',
+      description: '按角色主体与 masterdata 系列整理，保留制作人生日问候、偶像生日祝福和生日短篇的独立逻辑身份。',
+      releaseAt: Math.max(0, ...chapters.map(chapter => chapter.releaseAt)),
+      visualUrl: '',
+      subject,
+      chapters,
+      chapterCount: chapters.length,
+      playableChapterCount: chapters.filter(chapter => chapter.exists).length,
+      episodeCount: chapters.length,
+      playableEpisodeCount: chapters.filter(chapter => chapter.exists).length,
+    }
+  })
+}
+
+export function buildStoryCollections(data, catalog, { birthdayDomain = null } = {}) {
   if (!data) return []
   const collections = []
   for (const group of data.main?.groups || []) {
@@ -103,5 +174,6 @@ export function buildStoryCollections(data, catalog) {
   for (const group of data.unit_story?.groups || []) {
     collections.push(buildCollection('unit_story', group, data.unit_story?.chapters || [], data.unit_story?.episodes || [], catalog || []))
   }
+  collections.push(...buildBirthdayCollections(birthdayDomain, catalog || []))
   return collections
 }

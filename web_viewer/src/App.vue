@@ -198,6 +198,7 @@
         :work-idols="workStoryData?.idols || []"
         :idol-story-count="idolEpisodeData?.meta?.section_count || 0"
         :external-resource-count="externalStoryNavigationEntries.length"
+        :birthday-domain="birthdayStoryDomain"
         @select="openCatalogStory"
         @browse="browseStoryCollection"
         @open-external-resources="openExternalStoryResources"
@@ -373,6 +374,7 @@ import {
 import { buildArchiveHomeHighlights, buildArchiveHomeState } from './data/archiveHomeState.js'
 import { buildEventStoryEpisodes } from './data/eventStoryEpisodes.js'
 import { buildStoryCollections } from './data/storyCollections.js'
+import { buildBirthdayStoryDomainIdentity } from './data/storyDomainIdentityIndex.js'
 import { buildIdolStoryOptions, buildIdolStoryPage } from './data/idolCommunicationSelectors.js'
 import {
   archiveSectionForRoute,
@@ -436,6 +438,7 @@ const idolEpisodeData = ref(null)
 const mobileArchiveData = ref(null)
 const idolCommunicationLoadPromise = ref(null)
 const idolUnitData = ref(null)
+const speakerDictionaryData = ref(null)
 const costumeDictionaryData = ref(null)
 const archiveManifestData = ref(null)
 const archiveVerificationData = ref(null)
@@ -798,7 +801,17 @@ const currentStoryExternalResources = computed(() =>
   externalResourcesForStory(externalStoryResourcesData.value, currentStory.value),
 )
 
-const storyCollections = computed(() => buildStoryCollections(storyMasterData.value, storyCatalog.value))
+const birthdayStoryDomain = computed(() => buildBirthdayStoryDomainIdentity(
+  storyMasterData.value,
+  idolUnitData.value,
+  speakerDictionaryData.value,
+))
+
+const storyCollections = computed(() => buildStoryCollections(
+  storyMasterData.value,
+  storyCatalog.value,
+  { birthdayDomain: birthdayStoryDomain.value },
+))
 
 const currentStoryCollection = computed(() => storyCollections.value.find(collection =>
   collection.domain === currentStoryDomain.value && collection.sectionId === currentStorySection.value,
@@ -1203,6 +1216,7 @@ const archiveSection = computed(() => archiveSectionForRoute({
 const archiveTitle = computed(() => {
   if (view.value === 'home') return 'SideM Archive'
   if (view.value === 'archive_status') return '数据状态'
+  if (view.value === 'story_catalog' && currentStoryMode.value === 'portal' && currentStoryDomain.value === 'birthday') return '生日剧情'
   if (view.value === 'story_catalog') return '故事目录'
   if (view.value === 'external_story_resources') return '社区中文剧情'
   if (view.value === 'story_detail') return currentStory.value?.title || '故事详情'
@@ -1632,7 +1646,8 @@ function goArchiveBack() {
     },
     story_collection: () => {
       const parent = storyCollectionParentView.value
-      currentStoryDomain.value = ''
+      const returnsToBirthdayLanding = currentStoryDomain.value === 'birthday' && parent !== 'external_story_resources'
+      currentStoryDomain.value = returnsToBirthdayLanding ? 'birthday' : ''
       currentStorySection.value = ''
       currentStoryFile.value = ''
       storyCollectionParentView.value = ''
@@ -1779,13 +1794,22 @@ function setStoryMode(mode) {
 }
 
 function browseStoryCollection({ domain, section = '' }) {
-  if (section && ['main', 'unit_story'].includes(domain)) {
+  if (section && ['main', 'unit_story', 'birthday'].includes(domain)) {
     currentStoryDomain.value = domain
     currentStorySection.value = section
     currentStoryMode.value = 'portal'
     currentStoryFile.value = ''
     storyCollectionParentView.value = ''
     commitView('story_collection')
+    return
+  }
+  if (domain === 'birthday') {
+    currentStoryDomain.value = 'birthday'
+    currentStorySection.value = ''
+    currentStoryMode.value = 'portal'
+    currentEventScope.value = 'all'
+    storyVisibleLimit.value = 80
+    commitView('story_catalog')
     return
   }
   filterQuery.value = ''
@@ -2564,6 +2588,7 @@ onMounted(async () => {
   seasonalCampaignData.value = data.seasonalCampaign
   workStoryData.value = data.workStory
   idolUnitData.value = data.idolUnit
+  speakerDictionaryData.value = data.speakerDictionary
   costumeDictionaryData.value = data.costumeDictionary
   archiveManifestData.value = data.archiveManifest
   archiveVerificationData.value = data.archiveVerification
