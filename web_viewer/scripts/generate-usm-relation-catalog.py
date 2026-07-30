@@ -36,6 +36,9 @@ MOVIE_ANNOUNCE_INDEX = (
 CARD_SKILL_MOVIE_INDEX = (
     PROJECT_ROOT / "public" / "data" / "masterdata" / "card_skill_movie_index.json"
 )
+SONG_MOVIE_INDEX = (
+    PROJECT_ROOT / "public" / "data" / "masterdata" / "song_movie_index.json"
+)
 
 
 def sha256_file(path: Path) -> str:
@@ -222,6 +225,7 @@ def main() -> None:
     card_skill_movies = json.loads(
         CARD_SKILL_MOVIE_INDEX.read_text(encoding="utf-8")
     )
+    song_movies = json.loads(SONG_MOVIE_INDEX.read_text(encoding="utf-8"))
     movie_announce_by_usm = {
         f"movie_home_announce_{entry['resource_id']}": entry
         for entry in movie_announces.get("movie_announces", [])
@@ -229,6 +233,10 @@ def main() -> None:
     card_skill_movie_by_usm = {
         f"skill_movie_{entry['resource_id']}": entry
         for entry in card_skill_movies.get("skill_movies", [])
+    }
+    song_movie_by_usm = {
+        f"{entry['kind']}_{entry['resource_id']}": entry
+        for entry in song_movies.get("song_movies", [])
     }
     song_codes = sorted((music.get("songs") or {}).keys())
     relations = choreography_relations((sources.raw_root / "asset").resolve())
@@ -254,6 +262,18 @@ def main() -> None:
             f"missing={sorted(expected_card_skill_movie_ids - actual_card_skill_movie_ids)}, "
             f"extra={sorted(actual_card_skill_movie_ids - expected_card_skill_movie_ids)}"
         )
+    actual_song_movie_ids = {
+        stem
+        for stem in file_stems
+        if stem.startswith("3dmv_") or stem.startswith("mvlive_")
+    }
+    expected_song_movie_ids = set(song_movie_by_usm)
+    if actual_song_movie_ids != expected_song_movie_ids:
+        raise ValueError(
+            "SongData movie fields and RAW song-movie populations differ: "
+            f"missing={sorted(expected_song_movie_ids - actual_song_movie_ids)}, "
+            f"extra={sorted(actual_song_movie_ids - expected_song_movie_ids)}"
+        )
     entries = []
 
     for index, path in enumerate(files, start=1):
@@ -263,8 +283,13 @@ def main() -> None:
         exact = relation is not None
         movie_announce = movie_announce_by_usm.get(stem)
         card_skill_movie = card_skill_movie_by_usm.get(stem)
-        exact_masterdata = movie_announce is not None or card_skill_movie is not None
-        if movie_announce is not None and card_skill_movie is not None:
+        song_movie = song_movie_by_usm.get(stem)
+        masterdata_relation_count = sum(
+            item is not None
+            for item in (movie_announce, card_skill_movie, song_movie)
+        )
+        exact_masterdata = masterdata_relation_count == 1
+        if masterdata_relation_count > 1:
             raise ValueError(f"USM has conflicting masterdata relations: {stem}")
         if exact and exact_masterdata:
             raise ValueError(
@@ -345,6 +370,8 @@ def main() -> None:
                         if movie_announce is not None
                         else "card-skill-movie"
                         if card_skill_movie is not None
+                        else f"song-{song_movie['kind']}"
+                        if song_movie is not None
                         else "unresolved"
                     ),
                     "raw_effect_scripts": scripts,
@@ -375,6 +402,24 @@ def main() -> None:
                                         "complete skill_movie USM identity"
                                     ),
                                 }
+                                if card_skill_movie is not None
+                                else {
+                                    "catalog": "song_movie_index.song_movies",
+                                    "resource_id": song_movie["resource_id"],
+                                    "song_ids": [
+                                        song["song_id"]
+                                        for song in song_movie["songs"]
+                                    ],
+                                    "evidence": (
+                                        "SongData table 46 ResourceId and "
+                                        + (
+                                            "MovieOffset"
+                                            if song_movie["kind"] == "3dmv"
+                                            else "enabled MvliveOpenAt"
+                                        )
+                                        + " resolve to this complete RAW USM identity"
+                                    ),
+                                }
                             )
                         }
                         if exact_masterdata
@@ -395,6 +440,18 @@ def main() -> None:
                     ]
                     if card_skill_movie is not None
                     else [
+                        (
+                            "Exact SongData table 46 ResourceId, "
+                            + (
+                                "MovieOffset"
+                                if song_movie["kind"] == "3dmv"
+                                else "enabled MvliveOpenAt"
+                            )
+                            + ", and RAW USM identity agree."
+                        )
+                    ]
+                    if song_movie is not None
+                    else [
                         "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
                     ]
                 ),
@@ -410,7 +467,7 @@ def main() -> None:
         entry["mapping"]["state"] == "exact-masterdata" for entry in entries
     )
     payload = {
-        "schema_version": 3,
+        "schema_version": 4,
         "sources": {
             "raw_movie_root": "RAW/movie",
             "backmonitor_index": (
@@ -424,6 +481,9 @@ def main() -> None:
             ),
             "card_skill_movie_index": (
                 "web_viewer/public/data/masterdata/card_skill_movie_index.json"
+            ),
+            "song_movie_index": (
+                "web_viewer/public/data/masterdata/song_movie_index.json"
             ),
         },
         "summary": {

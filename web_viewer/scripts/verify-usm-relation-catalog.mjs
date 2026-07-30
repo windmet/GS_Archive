@@ -16,7 +16,7 @@ import { loadArchiveSources } from './lib/archive-sources.mjs'
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const catalogPath = path.join(projectRoot, 'public', 'data', 'usm_relation_catalog.json')
-const schemaPath = path.join(projectRoot, 'schemas', 'usm-relation-catalog-v3.schema.json')
+const schemaPath = path.join(projectRoot, 'schemas', 'usm-relation-catalog-v4.schema.json')
 const backmonitorPath = path.join(
   projectRoot,
   'public',
@@ -46,16 +46,31 @@ const cardSkillMovieIndexPath = path.join(
   'masterdata',
   'card_skill_movie_index.json',
 )
+const songMovieIndexPath = path.join(
+  projectRoot,
+  'public',
+  'data',
+  'masterdata',
+  'song_movie_index.json',
+)
 const sourceOnly = process.argv.includes('--source-only')
 const failures = []
 
 const readJson = filename => JSON.parse(readFileSync(filename, 'utf8'))
-const [catalog, schema, musicCatalog, movieAnnounceIndex, cardSkillMovieIndex] = [
+const [
+  catalog,
+  schema,
+  musicCatalog,
+  movieAnnounceIndex,
+  cardSkillMovieIndex,
+  songMovieIndex,
+] = [
   catalogPath,
   schemaPath,
   musicCatalogPath,
   movieAnnounceIndexPath,
   cardSkillMovieIndexPath,
+  songMovieIndexPath,
 ].map(readJson)
 const backmonitor = !sourceOnly && existsSync(backmonitorPath)
   ? readJson(backmonitorPath)
@@ -141,6 +156,17 @@ const cardSkillMovieById = new Map(
     entry,
   ]),
 )
+const exactSongMovieIds = new Set(
+  (songMovieIndex.song_movies || []).map(
+    entry => `${entry.kind}_${entry.resource_id}`,
+  ),
+)
+const songMovieById = new Map(
+  (songMovieIndex.song_movies || []).map(entry => [
+    `${entry.kind}_${entry.resource_id}`,
+    entry,
+  ]),
+)
 if (
   movieAnnounceIndex.schema_version !== 1 ||
   movieAnnounceIndex.meta?.source_table !== 175 ||
@@ -162,6 +188,22 @@ if (
   failures.push(
     'card skill-movie index must contain 124 CardData resource IDs / ' +
     '127 card records / 3 shared resources',
+  )
+}
+if (
+  songMovieIndex.schema_version !== 1 ||
+  songMovieIndex.meta?.source_table !== 46 ||
+  songMovieIndex.meta?.resource_count !== 12 ||
+  songMovieIndex.meta?.song_record_count !== 13 ||
+  songMovieIndex.meta?.shared_resource_count !== 1 ||
+  songMovieIndex.meta?.three_d_movie_count !== 11 ||
+  songMovieIndex.meta?.mvlive_count !== 1 ||
+  songMovieIndex.meta?.disabled_open_at !== 4102412400 ||
+  exactSongMovieIds.size !== 12
+) {
+  failures.push(
+    'SongData movie index must contain 11 3dmv + 1 mvlive resources / ' +
+    '13 song records / 1 shared resource',
   )
 }
 for (const entry of entries) {
@@ -307,6 +349,32 @@ for (const entry of entries) {
       ) {
         failures.push(`${entry.id}: exact card skill-movie relation shape drifted`)
       }
+    } else if (
+      entry.mapping.kind === 'song-3dmv' ||
+      entry.mapping.kind === 'song-mvlive'
+    ) {
+      const source = songMovieById.get(entry.id)
+      const expectedKind = `song-${source?.kind}`
+      const expectedSongIds = source?.songs?.map(song => song.song_id)
+      if (
+        !source ||
+        entry.mapping.kind !== expectedKind ||
+        relation?.catalog !== 'song_movie_index.song_movies' ||
+        relation?.resource_id !== source.resource_id
+      ) {
+        failures.push(`${entry.id}: exact SongData movie relation differs from table 46`)
+      }
+      assertEqual(
+        relation?.song_ids,
+        expectedSongIds,
+        `${entry.id}: SongData song IDs drifted`,
+      )
+      if (
+        entry.id !== `${source?.kind}_${relation?.resource_id}` ||
+        !sortedUnique(relation?.song_ids || [])
+      ) {
+        failures.push(`${entry.id}: exact SongData movie relation shape drifted`)
+      }
     } else {
       failures.push(`${entry.id}: exact masterdata relation has an invalid mapping kind`)
     }
@@ -363,7 +431,11 @@ const exactMasterdataCatalogIds = entries
   .sort()
 assertEqual(
   exactMasterdataCatalogIds,
-  [...exactMovieAnnounceIds, ...exactCardSkillMovieIds].sort(),
+  [
+    ...exactMovieAnnounceIds,
+    ...exactCardSkillMovieIds,
+    ...exactSongMovieIds,
+  ].sort(),
   'catalog and exact masterdata populations differ',
 )
 if (backmonitor) {
@@ -376,12 +448,12 @@ if (backmonitor) {
 if (
   exactCatalogIds.length !== 77 ||
   exactCount !== 77 ||
-  exactMasterdataCount !== 154 ||
-  unresolvedCount !== 29
+  exactMasterdataCount !== 166 ||
+  unresolvedCount !== 17
 ) {
   failures.push(
     'current USM relation baseline must remain ' +
-    '260 total / 77 exact consumer / 154 exact masterdata / 29 unresolved',
+    '260 total / 77 exact consumer / 166 exact masterdata / 17 unresolved',
   )
 }
 

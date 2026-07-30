@@ -1948,6 +1948,90 @@ def build_card_skill_movie_index(
     }
 
 
+def build_song_movie_index(
+    tables: dict[int, list[dict[str, Any]]],
+) -> dict[str, Any]:
+    """Build exact SongData 3D-movie and MV-live resource identities."""
+    disabled_open_at = 4102412400  # 2100-01-01 UTC sentinel in this snapshot.
+    grouped: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    record_keys = set()
+    for row in tables.get(46, []):
+        record_id = row.get("1")
+        resource_id = row.get("4")
+        if not isinstance(record_id, int) or not isinstance(resource_id, str):
+            continue
+        kinds = []
+        if isinstance(row.get("24"), int):
+            kinds.append("3dmv")
+        mvlive_open_at = row.get("38")
+        if (
+            isinstance(mvlive_open_at, int)
+            and 0 < mvlive_open_at < disabled_open_at
+        ):
+            kinds.append("mvlive")
+        for kind in kinds:
+            key = (kind, record_id)
+            if key in record_keys:
+                raise ValueError(f"duplicate SongData {kind} record ID: {record_id}")
+            record_keys.add(key)
+            grouped[(kind, resource_id)].append(
+                {
+                    "song_id": record_id,
+                    "title": row.get("5"),
+                    "movie_open_at": row.get("23"),
+                    "movie_offset": row.get("24"),
+                    "movie_finish_offset": row.get("36"),
+                    "mvlive_open_at": row.get("38"),
+                    "mvlive_offset": row.get("39"),
+                    "mvlive_finish_offset": row.get("40"),
+                    "_source": source(
+                        46,
+                        {
+                            "song_id": 1,
+                            "resource_id": 4,
+                            "title": 5,
+                            "movie_open_at": 23,
+                            "movie_offset": 24,
+                            "movie_finish_offset": 36,
+                            "mvlive_open_at": 38,
+                            "mvlive_offset": 39,
+                            "mvlive_finish_offset": 40,
+                        },
+                        row.get("_offset"),
+                    ),
+                }
+            )
+
+    entries = []
+    shared_resource_count = 0
+    for (kind, resource_id), records in sorted(grouped.items()):
+        records.sort(key=lambda entry: entry["song_id"])
+        if len(records) > 1:
+            shared_resource_count += 1
+        entries.append(
+            {
+                "kind": kind,
+                "resource_id": resource_id,
+                "songs": records,
+            }
+        )
+    return {
+        "schema_version": 1,
+        "song_movies": entries,
+        "meta": {
+            "resource_count": len(entries),
+            "song_record_count": sum(len(entry["songs"]) for entry in entries),
+            "shared_resource_count": shared_resource_count,
+            "three_d_movie_count": sum(
+                entry["kind"] == "3dmv" for entry in entries
+            ),
+            "mvlive_count": sum(entry["kind"] == "mvlive" for entry in entries),
+            "source_table": 46,
+            "disabled_open_at": disabled_open_at,
+        },
+    }
+
+
 def build_face_dictionary(tables: dict[int, list[dict[str, Any]]]) -> dict[str, Any]:
     faces = {}
     for row in tables.get(176, []):
@@ -2968,6 +3052,14 @@ def main() -> None:
         ),
     )
     parser.add_argument(
+        "--song-movie-only",
+        action="store_true",
+        help=(
+            "Generate only song_movie_index.json from SongData table 46 "
+            "MovieOffset and enabled MvliveOpenAt records."
+        ),
+    )
+    parser.add_argument(
         "--curated-card-voices",
         type=Path,
         default=Path(__file__).resolve().parent / "curated" / "card_voice_transcripts.json",
@@ -3020,6 +3112,23 @@ def main() -> None:
             )
         print(f"decoded: {decoded_path}")
         print(f"{filename}: {card_skill_movie_index['meta']}")
+        return
+    if args.song_movie_only:
+        song_tables = extract_table_rows(records, {46})
+        song_movie_index = build_song_movie_index(song_tables)
+        filename = "song_movie_index.json"
+        (args.out_dir / filename).write_text(
+            json.dumps(song_movie_index, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        if args.public_out_dir:
+            args.public_out_dir.mkdir(parents=True, exist_ok=True)
+            (args.public_out_dir / filename).write_text(
+                json.dumps(song_movie_index, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+        print(f"decoded: {decoded_path}")
+        print(f"{filename}: {song_movie_index['meta']}")
         return
     if args.music_catalog_only:
         music_tables = extract_table_rows(records, {46, 112, 133})
@@ -3184,6 +3293,7 @@ def main() -> None:
     music_catalog = build_music_catalog(catalog_tables)
     movie_announce_index = build_movie_announce_index(catalog_tables)
     card_skill_movie_index = build_card_skill_movie_index(catalog_tables)
+    song_movie_index = build_song_movie_index(catalog_tables)
     face_dictionary = build_face_dictionary(catalog_tables)
     story_master_index = build_story_master_index(story_tables, compiled_stems, compiled_summaries)
     card_index = build_card_index(
@@ -3233,6 +3343,7 @@ def main() -> None:
         "music_catalog.json": music_catalog,
         "movie_announce_index.json": movie_announce_index,
         "card_skill_movie_index.json": card_skill_movie_index,
+        "song_movie_index.json": song_movie_index,
         "face_dictionary.json": face_dictionary,
         "masterdata_validation_report.json": validation_report,
         "archive_summary.json": build_archive_summary(
@@ -3269,6 +3380,7 @@ def main() -> None:
             "music_catalog.json",
             "movie_announce_index.json",
             "card_skill_movie_index.json",
+            "song_movie_index.json",
             "face_dictionary.json",
             "masterdata_validation_report.json",
         ):
