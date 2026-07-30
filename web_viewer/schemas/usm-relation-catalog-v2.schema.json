@@ -1,0 +1,290 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gs-archive.local/schemas/usm-relation-catalog-v2.schema.json",
+  "title": "GS Archive RAW USM relation catalog v2",
+  "type": "object",
+  "required": ["schema_version", "sources", "summary", "entries"],
+  "properties": {
+    "schema_version": { "const": 2 },
+    "sources": {
+      "type": "object",
+      "required": [
+        "raw_movie_root",
+        "backmonitor_index",
+        "music_catalog",
+        "movie_announce_index"
+      ],
+      "properties": {
+        "raw_movie_root": { "const": "RAW/movie" },
+        "backmonitor_index": {
+          "const": "web_viewer/public/assets/live-chibi/backmonitor/index.json"
+        },
+        "music_catalog": {
+          "const": "web_viewer/public/data/masterdata/music_catalog.json"
+        },
+        "movie_announce_index": {
+          "const": "web_viewer/public/data/masterdata/movie_announce_index.json"
+        }
+      },
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "total",
+        "total_bytes",
+        "exact_consumer",
+        "exact_masterdata",
+        "unresolved",
+        "families"
+      ],
+      "properties": {
+        "total": { "type": "integer", "minimum": 1 },
+        "total_bytes": { "type": "integer", "minimum": 1 },
+        "exact_consumer": { "type": "integer", "minimum": 0 },
+        "exact_masterdata": { "type": "integer", "minimum": 0 },
+        "unresolved": { "type": "integer", "minimum": 0 },
+        "families": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/entry" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "stream": {
+      "type": "object",
+      "required": [
+        "index",
+        "codec_type",
+        "codec_name",
+        "width",
+        "height",
+        "frame_rate",
+        "duration_ms"
+      ],
+      "properties": {
+        "index": { "type": "integer", "minimum": 0 },
+        "codec_type": { "type": "string", "minLength": 1 },
+        "codec_name": { "type": ["string", "null"] },
+        "width": { "type": ["integer", "null"], "minimum": 0 },
+        "height": { "type": ["integer", "null"], "minimum": 0 },
+        "frame_rate": { "type": ["string", "null"] },
+        "duration_ms": { "type": ["integer", "null"], "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "probe": {
+      "type": "object",
+      "required": ["state", "format", "duration_ms", "streams", "evidence"],
+      "properties": {
+        "state": { "enum": ["ffprobe-header", "probe-failed"] },
+        "format": { "type": ["string", "null"] },
+        "duration_ms": { "type": ["integer", "null"], "minimum": 0 },
+        "streams": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/stream" }
+        },
+        "evidence": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "derivedAsset": {
+      "type": "object",
+      "required": [
+        "role",
+        "path",
+        "width",
+        "height",
+        "frame_rate",
+        "duration_ms",
+        "bytes"
+      ],
+      "properties": {
+        "role": { "enum": ["movie", "color", "alpha"] },
+        "path": {
+          "type": "string",
+          "pattern": "^web_viewer/public/assets/live-chibi/backmonitor/[A-Za-z0-9._-]+\\.mp4$"
+        },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "frame_rate": { "type": "string", "minLength": 1 },
+        "duration_ms": { "type": "integer", "minimum": 1 },
+        "bytes": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "masterdataToken": {
+      "type": "object",
+      "required": ["catalog", "key", "evidence"],
+      "properties": {
+        "catalog": { "const": "music_catalog.songs" },
+        "key": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+$"
+        },
+        "evidence": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "masterdataRelation": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": [
+            "catalog",
+            "resource_id",
+            "record_id",
+            "evidence"
+          ],
+          "properties": {
+            "catalog": {
+              "const": "movie_announce_index.movie_announces"
+            },
+            "resource_id": {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            },
+            "record_id": { "type": "integer", "minimum": 1 },
+            "evidence": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "consumerCandidate": {
+      "type": "object",
+      "required": ["consumer", "state", "evidence"],
+      "properties": {
+        "consumer": { "type": "string", "minLength": 1 },
+        "state": { "enum": ["exact", "filename-candidate"] },
+        "evidence": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "mapping": {
+      "type": "object",
+      "required": [
+        "state",
+        "kind",
+        "raw_effect_scripts",
+        "derived_assets"
+      ],
+      "properties": {
+        "state": {
+          "enum": ["exact-consumer", "exact-masterdata", "unresolved"]
+        },
+        "kind": {
+          "enum": [
+            "backmonitor-movie",
+            "backmonitor-transition",
+            "movie-announce",
+            "unresolved"
+          ]
+        },
+        "raw_effect_scripts": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "derived_assets": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/derivedAsset" }
+        },
+        "masterdata_relation": { "$ref": "#/$defs/masterdataRelation" }
+      },
+      "additionalProperties": false
+    },
+    "entry": {
+      "type": "object",
+      "required": [
+        "id",
+        "family",
+        "raw",
+        "media_probe",
+        "masterdata_tokens",
+        "consumer_candidates",
+        "mapping",
+        "evidence"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_]+$"
+        },
+        "family": {
+          "enum": [
+            "3dmv",
+            "card-rarity",
+            "live-backmonitor",
+            "movie-home",
+            "mvlive",
+            "skill-movie",
+            "ssr-motion",
+            "other"
+          ]
+        },
+        "raw": {
+          "type": "object",
+          "required": [
+            "relative_path",
+            "filename",
+            "bytes",
+            "sha256",
+            "container",
+            "magic"
+          ],
+          "properties": {
+            "relative_path": {
+              "type": "string",
+              "pattern": "^movie/[A-Za-z0-9_]+\\.usm$"
+            },
+            "filename": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_]+\\.usm$"
+            },
+            "bytes": { "type": "integer", "minimum": 1 },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "container": { "const": "cri-usm" },
+            "magic": { "const": "CRID" }
+          },
+          "additionalProperties": false
+        },
+        "media_probe": { "$ref": "#/$defs/probe" },
+        "masterdata_tokens": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/masterdataToken" }
+        },
+        "consumer_candidates": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/consumerCandidate" }
+        },
+        "mapping": { "$ref": "#/$defs/mapping" },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

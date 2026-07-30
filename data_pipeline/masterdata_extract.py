@@ -1828,6 +1828,65 @@ def build_music_catalog(tables: dict[int, list[dict[str, Any]]]) -> dict[str, An
     }
 
 
+def build_movie_announce_index(
+    tables: dict[int, list[dict[str, Any]]],
+) -> dict[str, Any]:
+    entries = []
+    resource_ids = set()
+    ids = set()
+    for row in tables.get(175, []):
+        record_id = row.get("1")
+        resource_id = row.get("6")
+        if not isinstance(record_id, int) or not isinstance(resource_id, str):
+            continue
+        if record_id in ids:
+            raise ValueError(f"duplicate MovieAnnounceData ID: {record_id}")
+        if resource_id in resource_ids:
+            raise ValueError(
+                f"duplicate MovieAnnounceData ResourceId: {resource_id}"
+            )
+        ids.add(record_id)
+        resource_ids.add(resource_id)
+        term = row.get("5") if isinstance(row.get("5"), dict) else {}
+        entries.append(
+            {
+                "id": record_id,
+                "type": row.get("2"),
+                "sort_order": row.get("3"),
+                "short_skip_time": row.get("4"),
+                "term": {
+                    "start_at": term.get("1"),
+                    "end_at": term.get("2"),
+                },
+                "resource_id": resource_id,
+                "skip_type": row.get("7"),
+                "_source": source(
+                    175,
+                    {
+                        "id": 1,
+                        "type": 2,
+                        "sort_order": 3,
+                        "short_skip_time": 4,
+                        "term": 5,
+                        "resource_id": 6,
+                        "skip_type": 7,
+                    },
+                    row.get("_offset"),
+                ),
+            }
+        )
+    entries.sort(key=lambda entry: entry["resource_id"])
+    return {
+        "schema_version": 1,
+        "movie_announces": entries,
+        "meta": {
+            "record_count": len(entries),
+            "unique_resource_ids": len(resource_ids),
+            "source_table": 175,
+        },
+    }
+
+
 def build_face_dictionary(tables: dict[int, list[dict[str, Any]]]) -> dict[str, Any]:
     faces = {}
     for row in tables.get(176, []):
@@ -2835,6 +2894,11 @@ def main() -> None:
         help="Generate only music_catalog.json, including complete table-133 relations.",
     )
     parser.add_argument(
+        "--movie-announce-only",
+        action="store_true",
+        help="Generate only movie_announce_index.json from table 175.",
+    )
+    parser.add_argument(
         "--curated-card-voices",
         type=Path,
         default=Path(__file__).resolve().parent / "curated" / "card_voice_transcripts.json",
@@ -2854,6 +2918,23 @@ def main() -> None:
     records = list(iter_top_records(decoded))
     compiled_stems = collect_compiled_stems(args.compiled_dir)
     compiled_summaries = collect_compiled_summaries(args.compiled_dir)
+    if args.movie_announce_only:
+        movie_tables = extract_table_rows(records, {175})
+        movie_announce_index = build_movie_announce_index(movie_tables)
+        filename = "movie_announce_index.json"
+        (args.out_dir / filename).write_text(
+            json.dumps(movie_announce_index, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        if args.public_out_dir:
+            args.public_out_dir.mkdir(parents=True, exist_ok=True)
+            (args.public_out_dir / filename).write_text(
+                json.dumps(movie_announce_index, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+        print(f"decoded: {decoded_path}")
+        print(f"{filename}: {movie_announce_index['meta']}")
+        return
     if args.music_catalog_only:
         music_tables = extract_table_rows(records, {46, 112, 133})
         music_catalog = build_music_catalog(music_tables)
@@ -2977,7 +3058,7 @@ def main() -> None:
             2, 7, 8, 9, 20, 21, 23, 24, 27, 28, 29, 32, 34, 36, 40, 43, 44,
             46, 53, 54, 55, 63, 68, 90, 94, 96, 98, 100, 101, 103, 104,
             105, 106, 107, 108, 110, 112, 133, 146, 147, 148, 149, 150,
-            153, 159, 162, 165, 168, 176, 180,
+            153, 159, 162, 165, 168, 175, 176, 180,
         },
     )
     idol_unit_dictionary = build_idol_unit_dictionary(catalog_tables)
@@ -3015,6 +3096,7 @@ def main() -> None:
         background_catalog,
     )
     music_catalog = build_music_catalog(catalog_tables)
+    movie_announce_index = build_movie_announce_index(catalog_tables)
     face_dictionary = build_face_dictionary(catalog_tables)
     story_master_index = build_story_master_index(story_tables, compiled_stems, compiled_summaries)
     card_index = build_card_index(
@@ -3062,6 +3144,7 @@ def main() -> None:
         "work_story_index.json": work_story_index,
         "background_catalog.json": background_catalog,
         "music_catalog.json": music_catalog,
+        "movie_announce_index.json": movie_announce_index,
         "face_dictionary.json": face_dictionary,
         "masterdata_validation_report.json": validation_report,
         "archive_summary.json": build_archive_summary(
@@ -3096,6 +3179,7 @@ def main() -> None:
             "work_story_index.json",
             "background_catalog.json",
             "music_catalog.json",
+            "movie_announce_index.json",
             "face_dictionary.json",
             "masterdata_validation_report.json",
         ):
