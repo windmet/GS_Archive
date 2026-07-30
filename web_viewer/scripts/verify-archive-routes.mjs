@@ -124,6 +124,40 @@ assert.equal(collectionBreadcrumbs[2].route.view, 'story_catalog')
 assert.equal(collectionBreadcrumbs[2].route.storyType, '')
 assert.equal(collectionBreadcrumbs[2].route.storyMode, 'portal')
 
+for (const [storyType, label, section] of [
+  ['main', '主线剧情', '101'],
+  ['extra', '额外剧情', '60201'],
+  ['birthday', '生日剧情', '001tom'],
+]) {
+  const landingBreadcrumbs = buildArchiveBreadcrumbs({
+    view: 'story_catalog',
+    storyType,
+    query: 'stable',
+    unitFilter: '01jup',
+    rarity: 'SSR',
+  })
+  assert.deepEqual(landingBreadcrumbs.map(item => item.label), ['资料馆', '剧情', label])
+  assert.equal(landingBreadcrumbs[1].route.storyType, '')
+  assert.equal(landingBreadcrumbs[1].route.query, 'stable')
+
+  const formalCollectionBreadcrumbs = buildArchiveBreadcrumbs(
+    {
+      view: 'story_collection',
+      storyType,
+      storySection: section,
+      query: 'stable',
+      unitFilter: '01jup',
+      rarity: 'SSR',
+    },
+    { title: `${label} collection`, domainLabel: label },
+  )
+  assert.equal(formalCollectionBreadcrumbs[2].route.storyType, storyType)
+  assert.equal(formalCollectionBreadcrumbs[2].route.storyMode, 'portal')
+  assert.equal(formalCollectionBreadcrumbs[2].route.query, 'stable')
+  assert.equal(formalCollectionBreadcrumbs[2].route.unitFilter, '01jup')
+  assert.equal(formalCollectionBreadcrumbs[2].route.rarity, 'SSR')
+}
+
 assert.deepEqual(
   buildArchiveBreadcrumbs({ view: 'external_story_resources' }).map(item => item.label),
   ['资料馆', '社区熟肉'],

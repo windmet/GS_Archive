@@ -321,6 +321,12 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   }
 
   if (['story_catalog', 'story_collection', 'story_detail'].includes(route.view)) {
+    const formalDomainLabels = {
+      main: '主线剧情',
+      extra: '额外剧情',
+      birthday: '生日剧情',
+    }
+    const formalDomainLabel = formalDomainLabels[route.storyType] || ''
     const stories = {
       label: '剧情',
       route: breadcrumbRoute(route, 'story_catalog', {
@@ -329,7 +335,11 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
         story: '',
       }),
     }
-    if (route.view === 'story_catalog') return [home, { label: stories.label }]
+    if (route.view === 'story_catalog') {
+      return formalDomainLabel
+        ? [home, stories, { label: formalDomainLabel }]
+        : [home, { label: stories.label }]
+    }
 
     const items = [home, stories]
     const domainLabel = clean(entity.domainLabel)
@@ -337,7 +347,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
       items.push({
         label: domainLabel,
         route: breadcrumbRoute(route, 'story_catalog', {
-          storyType: '',
+          storyType: formalDomainLabel ? route.storyType : '',
           storySection: '',
           story: '',
           storyMode: 'portal',

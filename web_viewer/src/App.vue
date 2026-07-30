@@ -1709,7 +1709,10 @@ function goArchiveBack() {
     event_detail: goBackFromEvent,
     archive_status: goHome,
     story_catalog: () => {
-      if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'main') {
+      if (
+        currentStoryMode.value === 'portal' &&
+        ['main', 'extra', 'birthday'].includes(currentStoryDomain.value)
+      ) {
         currentStoryDomain.value = ''
         currentStorySection.value = ''
         commitView('story_catalog')
