@@ -2,7 +2,8 @@
 
 Status: v1 merged in PR #8; v2 MovieAnnounce refinement merged in PR #22;
 v3 CardData skill-movie refinement merged in PR #24; v4 SongData movie
-refinement merged in PR #26
+refinement merged in PR #26; v5 gasha client refinement implemented on
+`codex/usm-gasha-client-exact-relations`
 
 Date: 2026-07-29
 
@@ -15,12 +16,15 @@ transcode, copy, publish, or add any media payload to Git.
 The committed authority surface is:
 
 ```text
-schemas/usm-relation-catalog-v4.schema.json
+schemas/usm-relation-catalog-v5.schema.json
 public/data/usm_relation_catalog.json
+public/data/client/gasha_movie_contract.json
 public/data/masterdata/movie_announce_index.json
 public/data/masterdata/card_skill_movie_index.json
 public/data/masterdata/song_movie_index.json
 scripts/generate-usm-relation-catalog.py
+scripts/generate-gasha-movie-client-contract.py
+scripts/verify-gasha-movie-client-contract.py
 scripts/verify-card-skill-movie-index.py
 scripts/verify-usm-relation-catalog.mjs
 ```
@@ -36,14 +40,15 @@ machine paths.
 | --- | ---: |
 | RAW USM files | 260 |
 | RAW USM bytes | 2,143,803,200 |
-| exact consumer relations | 77 |
+| exact consumer relations | 89 |
 | BackMonitor movie relations | 73 |
 | BackMonitor transition relations | 4 |
+| exact gasha client relations | 12 |
 | exact MovieAnnounce masterdata relations | 30 |
 | exact CardData skill-movie masterdata relations | 124 |
 | exact SongData movie masterdata relations | 12 |
 | exact masterdata relations total | 166 |
-| unresolved relations | 17 |
+| unresolved relations | 5 |
 | successful ffprobe header reads | 260 |
 | entries with an exact music-catalog filename token | 52 |
 | distinct exact music tokens | 22 |
@@ -96,9 +101,18 @@ ResourceIds with a concrete `MovieOffset` exactly equal all 11
 shared by two qualifying SongData records; both song IDs and source offsets are
 preserved.
 
-The other 17 records remain `unresolved`; a family-shaped consumer is recorded only as
-`filename-candidate`. A candidate does not authorize a derivative or a stable
-publication.
+The v5 refinement parses the archived IL2CPP metadata v27 snapshot into a
+deterministic client contract. `GashaAnimationMovieManager` exposes distinct
+start/SSR movie fields and playback methods, while the literal table exposes
+`c0{0}_{1}.usm`, all five rarity keys, and `ssr_motion.usm`. The resulting
+11 start movies plus one fixed SSR movie exactly equal the complete mounted
+RAW population selected by that contract, so those 12 records are
+`exact-consumer / gasha-animation-movie`.
+
+The other five records remain `unresolved`; all are BackMonitor-family physical
+variants absent from the 119 archived choreography scripts. A family-shaped
+consumer is recorded only as `filename-candidate`. A candidate does not
+authorize a derivative or a stable publication.
 
 Music relations are also bounded: a token is recorded only when an underscore
 delimited filename token exactly equals a key in
@@ -124,7 +138,8 @@ Source-only verification checks:
   skill-movie index;
 - exact equality with the 11-3dmv + 1-mvlive / 13-record committed SongData
   movie index;
-- the current `260 / 77 / 166 / 17` population boundary.
+- exact equality with the 11-start + 1-SSR committed gasha client contract;
+- the current `260 / 89 / 166 / 5` population boundary.
 
 Mounted verification additionally checks:
 

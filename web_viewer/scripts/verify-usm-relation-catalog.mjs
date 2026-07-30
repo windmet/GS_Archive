@@ -16,7 +16,7 @@ import { loadArchiveSources } from './lib/archive-sources.mjs'
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const catalogPath = path.join(projectRoot, 'public', 'data', 'usm_relation_catalog.json')
-const schemaPath = path.join(projectRoot, 'schemas', 'usm-relation-catalog-v4.schema.json')
+const schemaPath = path.join(projectRoot, 'schemas', 'usm-relation-catalog-v5.schema.json')
 const backmonitorPath = path.join(
   projectRoot,
   'public',
@@ -53,6 +53,13 @@ const songMovieIndexPath = path.join(
   'masterdata',
   'song_movie_index.json',
 )
+const gashaMovieContractPath = path.join(
+  projectRoot,
+  'public',
+  'data',
+  'client',
+  'gasha_movie_contract.json',
+)
 const sourceOnly = process.argv.includes('--source-only')
 const failures = []
 
@@ -64,6 +71,7 @@ const [
   movieAnnounceIndex,
   cardSkillMovieIndex,
   songMovieIndex,
+  gashaMovieContract,
 ] = [
   catalogPath,
   schemaPath,
@@ -71,6 +79,7 @@ const [
   movieAnnounceIndexPath,
   cardSkillMovieIndexPath,
   songMovieIndexPath,
+  gashaMovieContractPath,
 ].map(readJson)
 const backmonitor = !sourceOnly && existsSync(backmonitorPath)
   ? readJson(backmonitorPath)
@@ -167,6 +176,12 @@ const songMovieById = new Map(
     entry,
   ]),
 )
+const exactGashaMovieIds = new Set(
+  (gashaMovieContract.resources || []).map(entry => entry.id),
+)
+const gashaMovieById = new Map(
+  (gashaMovieContract.resources || []).map(entry => [entry.id, entry]),
+)
 if (
   movieAnnounceIndex.schema_version !== 1 ||
   movieAnnounceIndex.meta?.source_table !== 175 ||
@@ -175,6 +190,20 @@ if (
   exactMovieAnnounceIds.size !== 30
 ) {
   failures.push('MovieAnnounce index must contain 30 unique table-175 resource IDs')
+}
+if (
+  gashaMovieContract.schema_version !== 1 ||
+  gashaMovieContract.meta?.source_kind !== 'il2cpp-global-metadata-v27' ||
+  gashaMovieContract.meta?.resource_count !== 12 ||
+  gashaMovieContract.meta?.start_movie_count !== 11 ||
+  gashaMovieContract.meta?.ssr_movie_count !== 1 ||
+  gashaMovieContract.consumer?.namespace !== 'Growing.Theater' ||
+  gashaMovieContract.consumer?.class !== 'GashaAnimationMovieManager' ||
+  exactGashaMovieIds.size !== 12
+) {
+  failures.push(
+    'gasha movie client contract must contain 11 start movies + 1 SSR movie',
+  )
 }
 if (
   cardSkillMovieIndex.schema_version !== 1 ||
@@ -245,70 +274,107 @@ for (const entry of entries) {
     if (entry.mapping.masterdata_relation != null) {
       failures.push(`${entry.id}: exact consumer must not claim MovieAnnounce evidence`)
     }
-    if (
-      exactCandidates.length !== 1 ||
-      exactCandidates[0].consumer !== 'ChibiStageViewer.backmonitor'
-    ) {
-      failures.push(`${entry.id}: exact relation must name ChibiStageViewer.backmonitor`)
+    const exactConsumer = exactCandidates[0]?.consumer
+    if (exactCandidates.length !== 1) {
+      failures.push(`${entry.id}: exact relation must name exactly one consumer`)
     }
-    if (!entry.mapping.raw_effect_scripts.length) {
-      failures.push(`${entry.id}: exact relation must retain RAW effect-script evidence`)
-    }
-    const roles = entry.mapping.derived_assets.map(asset => asset.role)
-    if (entry.mapping.kind === 'backmonitor-movie') {
-      assertEqual(roles, ['movie'], `${entry.id}: movie derivative roles drifted`)
-      const expectedPath =
-        `web_viewer/public/assets/live-chibi/backmonitor/${entry.id}.mp4`
-      if (entry.mapping.derived_assets[0]?.path !== expectedPath) {
-        failures.push(`${entry.id}: movie derivative path does not match its identity`)
+    if (entry.mapping.kind === 'gasha-animation-movie') {
+      const source = gashaMovieById.get(entry.id)
+      const relation = entry.mapping.client_relation
+      if (
+        exactConsumer !== 'Growing.Theater.GashaAnimationMovieManager' ||
+        !source ||
+        relation?.catalog !== 'gasha_movie_contract.resources' ||
+        relation?.resource_id !== source.id ||
+        relation?.role !== source.role
+      ) {
+        failures.push(`${entry.id}: exact gasha relation differs from client contract`)
       }
-    } else if (entry.mapping.kind === 'backmonitor-transition') {
-      assertEqual(roles, ['color', 'alpha'], `${entry.id}: transition derivative roles drifted`)
-      for (const asset of entry.mapping.derived_assets) {
-        const expectedPath =
-          `web_viewer/public/assets/live-chibi/backmonitor/${entry.id}.${asset.role}.mp4`
-        if (asset.path !== expectedPath) {
-          failures.push(`${entry.id}: ${asset.role} derivative path does not match its identity`)
-        }
+      assertEqual(
+        relation?.format_arguments,
+        source?.format_arguments,
+        `${entry.id}: gasha format arguments drifted`,
+      )
+      if (
+        entry.raw.filename !== source?.filename ||
+        entry.mapping.raw_effect_scripts.length ||
+        entry.mapping.derived_assets.length
+      ) {
+        failures.push(`${entry.id}: exact gasha relation claims invalid RAW or browser evidence`)
+      }
+      if (entry.mapping.masterdata_relation != null) {
+        failures.push(`${entry.id}: exact gasha relation must not claim masterdata evidence`)
       }
     } else {
-      failures.push(`${entry.id}: exact relation has an invalid mapping kind`)
-    }
-    if (backmonitor) {
-      const asset = backmonitor.assets?.[entry.id]
-      const transition = backmonitor.transitions?.[entry.id]
-      if ((asset ? 1 : 0) + (transition ? 1 : 0) !== 1) {
-        failures.push(`${entry.id}: exact relation must match one BackMonitor index record`)
-        continue
+      if (exactConsumer !== 'ChibiStageViewer.backmonitor') {
+        failures.push(`${entry.id}: exact BackMonitor relation names the wrong consumer`)
       }
-      const expectedKind = asset ? 'backmonitor-movie' : 'backmonitor-transition'
-      if (entry.mapping.kind !== expectedKind) {
-        failures.push(`${entry.id}: mapping kind must be ${expectedKind}`)
+      if (entry.mapping.client_relation != null) {
+        failures.push(`${entry.id}: BackMonitor relation must not claim client metadata evidence`)
       }
-      const expectedDerived = asset
-        ? [{
-            role: 'movie',
-            path: `web_viewer/public/assets/live-chibi/${asset.file}`,
-            width: asset.width,
-            height: asset.height,
-            frame_rate: asset.frameRate,
-            duration_ms: asset.duration,
-            bytes: asset.bytes,
-          }]
-        : ['color', 'alpha'].map(role => ({
-            role,
-            path: `web_viewer/public/assets/live-chibi/${transition[`${role}File`]}`,
-            width: transition[role].width,
-            height: transition[role].height,
-            frame_rate: transition[role].frameRate,
-            duration_ms: transition[role].duration,
-            bytes: transition[role].bytes,
-          }))
-      assertEqual(
-        entry.mapping.derived_assets,
-        expectedDerived,
-        `${entry.id}: derived BackMonitor metadata drifted`,
-      )
+      if (!entry.mapping.raw_effect_scripts.length) {
+        failures.push(`${entry.id}: exact relation must retain RAW effect-script evidence`)
+      }
+      const roles = entry.mapping.derived_assets.map(asset => asset.role)
+      if (entry.mapping.kind === 'backmonitor-movie') {
+        assertEqual(roles, ['movie'], `${entry.id}: movie derivative roles drifted`)
+        const expectedPath =
+          `web_viewer/public/assets/live-chibi/backmonitor/${entry.id}.mp4`
+        if (entry.mapping.derived_assets[0]?.path !== expectedPath) {
+          failures.push(`${entry.id}: movie derivative path does not match its identity`)
+        }
+      } else if (entry.mapping.kind === 'backmonitor-transition') {
+        assertEqual(
+          roles,
+          ['color', 'alpha'],
+          `${entry.id}: transition derivative roles drifted`,
+        )
+        for (const asset of entry.mapping.derived_assets) {
+          const expectedPath =
+            `web_viewer/public/assets/live-chibi/backmonitor/${entry.id}.${asset.role}.mp4`
+          if (asset.path !== expectedPath) {
+            failures.push(`${entry.id}: ${asset.role} derivative path does not match its identity`)
+          }
+        }
+      } else {
+        failures.push(`${entry.id}: exact relation has an invalid mapping kind`)
+      }
+      if (backmonitor) {
+        const asset = backmonitor.assets?.[entry.id]
+        const transition = backmonitor.transitions?.[entry.id]
+        if ((asset ? 1 : 0) + (transition ? 1 : 0) !== 1) {
+          failures.push(`${entry.id}: exact relation must match one BackMonitor index record`)
+          continue
+        }
+        const expectedKind = asset ? 'backmonitor-movie' : 'backmonitor-transition'
+        if (entry.mapping.kind !== expectedKind) {
+          failures.push(`${entry.id}: mapping kind must be ${expectedKind}`)
+        }
+        const expectedDerived = asset
+          ? [{
+              role: 'movie',
+              path: `web_viewer/public/assets/live-chibi/${asset.file}`,
+              width: asset.width,
+              height: asset.height,
+              frame_rate: asset.frameRate,
+              duration_ms: asset.duration,
+              bytes: asset.bytes,
+            }]
+          : ['color', 'alpha'].map(role => ({
+              role,
+              path: `web_viewer/public/assets/live-chibi/${transition[`${role}File`]}`,
+              width: transition[role].width,
+              height: transition[role].height,
+              frame_rate: transition[role].frameRate,
+              duration_ms: transition[role].duration,
+              bytes: transition[role].bytes,
+            }))
+        assertEqual(
+          entry.mapping.derived_assets,
+          expectedDerived,
+          `${entry.id}: derived BackMonitor metadata drifted`,
+        )
+      }
     }
   } else if (entry.mapping?.state === 'exact-masterdata') {
     exactMasterdataCount += 1
@@ -387,6 +453,9 @@ for (const entry of entries) {
     if (exactCandidates.length) {
       failures.push(`${entry.id}: exact masterdata relation must not claim an exact consumer`)
     }
+    if (entry.mapping.client_relation != null) {
+      failures.push(`${entry.id}: exact masterdata relation must not claim client metadata evidence`)
+    }
     if (backmonitor?.assets?.[entry.id] || backmonitor?.transitions?.[entry.id]) {
       failures.push(`${entry.id}: MovieAnnounce relation overlaps BackMonitor`)
     }
@@ -400,6 +469,9 @@ for (const entry of entries) {
     }
     if (entry.mapping?.masterdata_relation != null) {
       failures.push(`${entry.id}: unresolved relation must not claim exact masterdata evidence`)
+    }
+    if (entry.mapping?.client_relation != null) {
+      failures.push(`${entry.id}: unresolved relation must not claim client metadata evidence`)
     }
     if (exactCandidates.length) {
       failures.push(`${entry.id}: unresolved relation must not claim an exact consumer`)
@@ -425,6 +497,18 @@ const exactCatalogIds = entries
   .filter(entry => entry.mapping?.state === 'exact-consumer')
   .map(entry => entry.id)
   .sort()
+const exactBackmonitorCatalogIds = entries
+  .filter(
+    entry =>
+      entry.mapping?.state === 'exact-consumer' &&
+      entry.consumer_candidates?.[0]?.consumer === 'ChibiStageViewer.backmonitor',
+  )
+  .map(entry => entry.id)
+  .sort()
+const exactGashaCatalogIds = entries
+  .filter(entry => entry.mapping?.kind === 'gasha-animation-movie')
+  .map(entry => entry.id)
+  .sort()
 const exactMasterdataCatalogIds = entries
   .filter(entry => entry.mapping?.state === 'exact-masterdata')
   .map(entry => entry.id)
@@ -438,22 +522,31 @@ assertEqual(
   ].sort(),
   'catalog and exact masterdata populations differ',
 )
+assertEqual(
+  exactGashaCatalogIds,
+  [...exactGashaMovieIds].sort(),
+  'catalog and gasha client-contract populations differ',
+)
 if (backmonitor) {
   const exactIndexIds = [
     ...Object.keys(backmonitor.assets || {}),
     ...Object.keys(backmonitor.transitions || {}),
   ].sort()
-  assertEqual(exactCatalogIds, exactIndexIds, 'catalog and BackMonitor exact-ID populations differ')
+  assertEqual(
+    exactBackmonitorCatalogIds,
+    exactIndexIds,
+    'catalog and BackMonitor exact-ID populations differ',
+  )
 }
 if (
-  exactCatalogIds.length !== 77 ||
-  exactCount !== 77 ||
+  exactCatalogIds.length !== 89 ||
+  exactCount !== 89 ||
   exactMasterdataCount !== 166 ||
-  unresolvedCount !== 17
+  unresolvedCount !== 5
 ) {
   failures.push(
     'current USM relation baseline must remain ' +
-    '260 total / 77 exact consumer / 166 exact masterdata / 17 unresolved',
+    '260 total / 89 exact consumer / 166 exact masterdata / 5 unresolved',
   )
 }
 

@@ -39,6 +39,9 @@ CARD_SKILL_MOVIE_INDEX = (
 SONG_MOVIE_INDEX = (
     PROJECT_ROOT / "public" / "data" / "masterdata" / "song_movie_index.json"
 )
+GASHA_MOVIE_CLIENT_CONTRACT = (
+    PROJECT_ROOT / "public" / "data" / "client" / "gasha_movie_contract.json"
+)
 
 
 def sha256_file(path: Path) -> str:
@@ -226,6 +229,9 @@ def main() -> None:
         CARD_SKILL_MOVIE_INDEX.read_text(encoding="utf-8")
     )
     song_movies = json.loads(SONG_MOVIE_INDEX.read_text(encoding="utf-8"))
+    gasha_movies = json.loads(
+        GASHA_MOVIE_CLIENT_CONTRACT.read_text(encoding="utf-8")
+    )
     movie_announce_by_usm = {
         f"movie_home_announce_{entry['resource_id']}": entry
         for entry in movie_announces.get("movie_announces", [])
@@ -237,6 +243,9 @@ def main() -> None:
     song_movie_by_usm = {
         f"{entry['kind']}_{entry['resource_id']}": entry
         for entry in song_movies.get("song_movies", [])
+    }
+    gasha_movie_by_usm = {
+        entry["id"]: entry for entry in gasha_movies.get("resources", [])
     }
     song_codes = sorted((music.get("songs") or {}).keys())
     relations = choreography_relations((sources.raw_root / "asset").resolve())
@@ -274,6 +283,18 @@ def main() -> None:
             f"missing={sorted(expected_song_movie_ids - actual_song_movie_ids)}, "
             f"extra={sorted(actual_song_movie_ids - expected_song_movie_ids)}"
         )
+    actual_gasha_movie_ids = {
+        stem
+        for stem in file_stems
+        if stem == "ssr_motion" or stem.startswith("c0")
+    }
+    expected_gasha_movie_ids = set(gasha_movie_by_usm)
+    if actual_gasha_movie_ids != expected_gasha_movie_ids:
+        raise ValueError(
+            "Gasha client contract and RAW movie populations differ: "
+            f"missing={sorted(expected_gasha_movie_ids - actual_gasha_movie_ids)}, "
+            f"extra={sorted(actual_gasha_movie_ids - expected_gasha_movie_ids)}"
+        )
     entries = []
 
     for index, path in enumerate(files, start=1):
@@ -284,6 +305,7 @@ def main() -> None:
         movie_announce = movie_announce_by_usm.get(stem)
         card_skill_movie = card_skill_movie_by_usm.get(stem)
         song_movie = song_movie_by_usm.get(stem)
+        gasha_movie = gasha_movie_by_usm.get(stem)
         masterdata_relation_count = sum(
             item is not None
             for item in (movie_announce, card_skill_movie, song_movie)
@@ -291,9 +313,10 @@ def main() -> None:
         exact_masterdata = masterdata_relation_count == 1
         if masterdata_relation_count > 1:
             raise ValueError(f"USM has conflicting masterdata relations: {stem}")
-        if exact and exact_masterdata:
+        exact_client = gasha_movie is not None
+        if sum((exact, exact_masterdata, exact_client)) > 1:
             raise ValueError(
-                f"USM cannot be both an exact Backmonitor and MovieAnnounce relation: {stem}"
+                f"USM has conflicting exact relation authorities: {stem}"
             )
         kinds = sorted(relation["kinds"]) if relation else []
         if len(kinds) > 1:
@@ -321,6 +344,17 @@ def main() -> None:
                     "evidence": (
                         f"{len(scripts)} RAW choreography scripts contain a "
                         "Backmonitor command for this exact USM ID"
+                    ),
+                }
+            )
+        elif exact_client:
+            candidates.append(
+                {
+                    "consumer": "Growing.Theater.GashaAnimationMovieManager",
+                    "state": "exact",
+                    "evidence": (
+                        "IL2CPP metadata exposes the exact gasha filename contract, "
+                        "manager fields, and playback methods for this resource"
                     ),
                 }
             )
@@ -358,7 +392,7 @@ def main() -> None:
                 "mapping": {
                     "state": (
                         "exact-consumer"
-                        if exact
+                        if exact or exact_client
                         else "exact-masterdata"
                         if exact_masterdata
                         else "unresolved"
@@ -366,6 +400,8 @@ def main() -> None:
                     "kind": (
                         kinds[0]
                         if exact
+                        else "gasha-animation-movie"
+                        if exact_client
                         else "movie-announce"
                         if movie_announce is not None
                         else "card-skill-movie"
@@ -376,6 +412,23 @@ def main() -> None:
                     ),
                     "raw_effect_scripts": scripts,
                     "derived_assets": derived,
+                    **(
+                        {
+                            "client_relation": {
+                                "catalog": "gasha_movie_contract.resources",
+                                "resource_id": gasha_movie["id"],
+                                "role": gasha_movie["role"],
+                                "format_arguments": gasha_movie["format_arguments"],
+                                "evidence": (
+                                    "IL2CPP metadata v27, the exact filename literal, "
+                                    "and GashaAnimationMovieManager members resolve "
+                                    "this complete RAW USM identity"
+                                ),
+                            }
+                        }
+                        if exact_client
+                        else {}
+                    ),
                     **(
                         {
                             "masterdata_relation": (
@@ -432,6 +485,10 @@ def main() -> None:
                     ]
                     if exact
                     else [
+                        "Exact IL2CPP gasha filename contract and RAW USM identity agree."
+                    ]
+                    if exact_client
+                    else [
                         "Exact MovieAnnounceData table 175 ResourceId and RAW USM identity agree."
                     ]
                     if movie_announce is not None
@@ -467,7 +524,7 @@ def main() -> None:
         entry["mapping"]["state"] == "exact-masterdata" for entry in entries
     )
     payload = {
-        "schema_version": 4,
+        "schema_version": 5,
         "sources": {
             "raw_movie_root": "RAW/movie",
             "backmonitor_index": (
@@ -484,6 +541,9 @@ def main() -> None:
             ),
             "song_movie_index": (
                 "web_viewer/public/data/masterdata/song_movie_index.json"
+            ),
+            "gasha_movie_client_contract": (
+                "web_viewer/public/data/client/gasha_movie_contract.json"
             ),
         },
         "summary": {
