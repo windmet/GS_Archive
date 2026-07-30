@@ -15,12 +15,15 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | 项 | 当前值 |
 | --- | --- |
 | merged base branch | `master` |
-| current functional baseline | `master` includes PR #20 merge `19e5fc570c1684eb8410effdd1b6cf32ac2759f6` |
-| active functional branch | `codex/usm-movie-announce-exact-relations` |
-| active track | P1-B 30 条 MovieAnnounce exact-masterdata 关系 |
-| upstream | pending first push |
-| worktree | bounded masterdata index / USM v2 / verifier / baseline / documentation changes |
+| current functional baseline | `master` includes PR #22 merge `0f858d036a377d4013a3345c85e8fba6acaf73fe` |
+| active functional branch | none；documentation-only closeout is isolated |
+| active track | none selected；P1-B MovieAnnounce exact-masterdata 细化已完成 |
+| upstream | not applicable |
+| worktree | clean at PR #22 merge；documentation-only closeout follows separately |
 | open PR | none |
+| PR #22 | merged as `0f858d036a377d4013a3345c85e8fba6acaf73fe` |
+| PR #22 final-head check | Source-only contract PASS，run `30511081519` |
+| PR #22 post-merge check | `master` push Source-only contract PASS，run `30511111063` |
 | PR #20 | merged as `19e5fc570c1684eb8410effdd1b6cf32ac2759f6` |
 | PR #20 final-head check | Source-only contract PASS，run `30479911302` |
 | PR #20 post-merge check | `master` push Source-only contract PASS，run `30479973771` |
@@ -491,8 +494,9 @@ notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md
 
 ### P1-B：260 USM 关系目录
 
-状态：基础目录 **merged in PR #8**；30 条 MovieAnnounce v2 细化正在
-`codex/usm-movie-announce-exact-relations` 实现。
+状态：基础目录 **merged in PR #8**；30 条 MovieAnnounce v2 细化
+**merged in PR #22**，merge commit `0f858d0`，post-merge source gate
+`30511111063` 通过。
 
 当前目录已经记录：
 
@@ -729,7 +733,7 @@ master a9ea201
         completed P1-A expansion: PR #18, three exact THE KOGADO unit-story links
         completed P1-A navigation: PR #20, exact-only community Chinese story view
         completed P1-B base: PR #8, 260 USM relation catalog
-        active P1-B refinement: 30 MovieAnnounce exact-masterdata relations
+        completed P1-B refinement: PR #22, 30 MovieAnnounce exact-masterdata relations
         completed P1-C: PR #9, 1,271 image bundle relation catalog
         completed P1-D: PR #10, 50 bundles / 52 exact character promotions
         completed P1-E: PR #12, 49 codes / 98 exact gasha banner-logo relations
@@ -772,11 +776,11 @@ git status -sb
 git rev-parse HEAD
 ```
 
-当前 active 功能分支为 `codex/usm-movie-announce-exact-relations`，基于
-PR #21 merge `968c80b`。本批只把 table 175 独立证明的 30 条
-`movie_home_announce_*` 提升为 exact-masterdata；不把 `3dmv`、`mvlive` 或
-其他 filename candidate 顺带升级，不创建衍生媒体或 publication transaction，
-也不把已后置的 Runtime 长稳验收写成完成。
+当前没有 active 功能分支。`codex/usm-movie-announce-exact-relations` 已通过
+PR #22 合入 `master`。table 175 独立证明的 30 条
+`movie_home_announce_*` 已提升为 exact-masterdata；后续不得把 `3dmv`、
+`mvlive` 或其他 filename candidate 顺带升级，不创建衍生媒体或 publication
+transaction，也不把已后置的 Runtime 长稳验收写成完成。
 
 ```text
 codex/post-merge-next-guidance
@@ -846,9 +850,8 @@ git diff --cached --check
 
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
-worktree、origin/master，并确认 active 功能分支为
-`codex/usm-movie-announce-exact-relations`，基于 PR #21 merge
-`968c80b`；本批只处理 table 175 证明的 30 条 MovieAnnounce 关系。
+worktree、origin/master，并确认当前没有 active 功能分支，master 已包含
+PR #22 merge `0f858d0`，post-merge run `30511111063` 通过。
 
 完整阅读：
 1. web_viewer/notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md

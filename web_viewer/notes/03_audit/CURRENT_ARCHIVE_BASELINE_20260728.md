@@ -16,12 +16,15 @@ their forward-looking defect lists must not override this baseline.
 
 | Field | Value |
 | --- | --- |
-| current functional baseline | `master` includes PR #20 merge `19e5fc570c1684eb8410effdd1b6cf32ac2759f6` |
-| active functional branch | `codex/usm-movie-announce-exact-relations` |
-| active track | P1-B bounded MovieAnnounce exact-masterdata refinement |
-| active upstream | pending first push |
+| current functional baseline | `master` includes PR #22 merge `0f858d036a377d4013a3345c85e8fba6acaf73fe` |
+| active functional branch | none; documentation-only closeout is isolated |
+| active track | none selected; P1-B MovieAnnounce exact-masterdata refinement is complete |
+| active upstream | not applicable |
 | active pull request | none |
-| active validation | table 175 and 30 movie-home USMs are exact 30/30; source-only and mounted index, USM, and archive-baseline gates PASS |
+| active validation | PR #22 table 175 and 30 movie-home USMs exact 30/30; source-only/mounted gates, production build, and post-merge source gate PASS |
+| PR #22 merge commit | `0f858d036a377d4013a3345c85e8fba6acaf73fe` |
+| PR #22 final-head gate | run `30511081519`, PASS |
+| PR #22 post-merge gate | run `30511111063`, PASS |
 | PR #20 merge commit | `19e5fc570c1684eb8410effdd1b6cf32ac2759f6` |
 | PR #20 final-head gate | run `30479911302`, PASS |
 | PR #20 post-merge gate | run `30479973771`, PASS |
@@ -314,7 +317,7 @@ domain-wide browser acceptance.
 | costume/Spine | source-proven | representative and full-domain parity audits recorded | representative routes only |
 | five live semantic consumers | source-proven | default semantic source migrated to RAW and parity-verified | tested routes sample-accepted |
 | event visuals `001tom`/`002sht` | source-proven | stable-published and merged through PR #2 | item-level browser-accepted |
-| remaining USM | 260/260 physical identities cataloged; 77 BackMonitor consumer mappings + 30 MovieAnnounce masterdata relations proven; 153 unresolved semantically | bounded semantic refinement active; no media publication | not applicable |
+| remaining USM | 260/260 physical identities cataloged; 77 BackMonitor consumer mappings + 30 MovieAnnounce masterdata relations proven; 153 unresolved semantically | bounded MovieAnnounce refinement complete; no media publication | not applicable |
 | general `image_*` bundles | 1,271/1,271 physical identities and 7,816 image objects cataloged | catalog complete; semantic promotion incomplete | not applicable |
 
 The five live semantic consumers already reading RAW by default are:
@@ -619,8 +622,8 @@ Current priority and write locks:
 - the event item-icon relation batch is merged in PR #13;
 - the honor-event relation batch is merged in PR #14;
 - the gasha-skill relation batch is merged in PR #15;
-- the current track is the bounded 30-record MovieAnnounce exact-masterdata
-  refinement; it does not create a consumer or publish media;
+- the bounded 30-record MovieAnnounce exact-masterdata refinement is complete
+  in PR #22; it does not create a consumer or publish media;
 - the image catalog records 1,271 source identities and 7,816 image objects
   without exporting PNG or replacing stable assets;
 - 50 bundles now inherit 52 exact stable relations from the already-authoritative

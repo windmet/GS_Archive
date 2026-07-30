@@ -1,10 +1,13 @@
 # RAW USM MovieAnnounce Exact Relations
 
-Status: implementation verified; pending PR
+Status: merged and post-merge verified
 
 Date: 2026-07-30
-Branch: `codex/usm-movie-announce-exact-relations`
+Implementation branch: `codex/usm-movie-announce-exact-relations` (merged)
 Base: `968c80bb33a03307ead911c93407e8ca3b107366`
+Implementation head: `32a8f61986d1e157df8a43660f443650af607954`
+Merge: PR #22, `0f858d036a377d4013a3345c85e8fba6acaf73fe`
+Gates: final-head run `30511081519`; post-merge run `30511111063`
 
 ## Scope
 
@@ -130,6 +133,12 @@ Archive baseline mounted: PASS, 10329 JSON / 108 PNG
 Vite production build: PASS, 2,407 modules / 2m 16s
 git diff --check: PASS
 ```
+
+PR #22 then merged the implementation as
+`0f858d036a377d4013a3345c85e8fba6acaf73fe`. Final-head source gate
+`30511081519` and post-merge source gate `30511111063` both passed; both
+included the new MovieAnnounce gate, USM v2 verifier, archive baseline, and
+production build.
 
 ## Boundary
 
