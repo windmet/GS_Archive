@@ -227,7 +227,14 @@ function backmonitorStats({ sourceOnly = false } = {}) {
       availability: 'catalog',
       raw_usm: payload.summary.total,
       raw_usm_bytes: payload.summary.total_bytes,
-      mapped: payload.summary.exact_consumer,
+      mapped: payload.entries.filter(
+        entry =>
+          entry.mapping.kind === 'backmonitor-movie' ||
+          entry.mapping.kind === 'backmonitor-transition',
+      ).length,
+      exact_client: payload.entries.filter(
+        entry => entry.mapping.kind === 'gasha-animation-movie',
+      ).length,
       exact_masterdata: payload.summary.exact_masterdata,
       unresolved: payload.summary.unresolved,
       movie_relations: payload.entries.filter(
@@ -244,6 +251,7 @@ function backmonitorStats({ sourceOnly = false } = {}) {
       raw_usm: null,
       raw_usm_bytes: null,
       mapped: null,
+      exact_client: null,
       exact_masterdata: null,
       unresolved: null,
       movie_relations: null,
@@ -258,6 +266,7 @@ function backmonitorStats({ sourceOnly = false } = {}) {
     raw_usm: null,
     raw_usm_bytes: null,
     mapped: movies + transitions,
+    exact_client: null,
     exact_masterdata: null,
     unresolved: null,
     movie_relations: movies,
@@ -485,6 +494,7 @@ export async function collectArchiveBaseline({
         analysis?.raw_manifest.types.usm ??
         null,
       backmonitor_mapped: backmonitor.mapped,
+      exact_client_relations: backmonitor.exact_client,
       exact_masterdata_relations: backmonitor.exact_masterdata,
       unresolved: backmonitor.unresolved ??
         (backmonitor.mapped == null

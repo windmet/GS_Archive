@@ -52,11 +52,17 @@ if (
 if (
   report.movies?.raw_usm -
     report.movies?.backmonitor_mapped -
+    report.movies?.exact_client_relations -
     report.movies?.exact_masterdata_relations !==
   report.movies?.unresolved
 ) {
   failures.push(
     'USM consumer, masterdata, and unresolved totals do not equal the RAW USM population',
+  )
+}
+if (report.movies?.exact_client_relations !== 12) {
+  failures.push(
+    'USM exact client population must remain 11 gasha start movies + 1 SSR movie',
   )
 }
 if (report.movies?.exact_masterdata_relations !== 166) {

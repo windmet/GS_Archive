@@ -1,19 +1,20 @@
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "sources": {
     "raw_movie_root": "RAW/movie",
     "backmonitor_index": "web_viewer/public/assets/live-chibi/backmonitor/index.json",
     "music_catalog": "web_viewer/public/data/masterdata/music_catalog.json",
     "movie_announce_index": "web_viewer/public/data/masterdata/movie_announce_index.json",
     "card_skill_movie_index": "web_viewer/public/data/masterdata/card_skill_movie_index.json",
-    "song_movie_index": "web_viewer/public/data/masterdata/song_movie_index.json"
+    "song_movie_index": "web_viewer/public/data/masterdata/song_movie_index.json",
+    "gasha_movie_client_contract": "web_viewer/public/data/client/gasha_movie_contract.json"
   },
   "summary": {
     "total": 260,
     "total_bytes": 2143803200,
-    "exact_consumer": 77,
+    "exact_consumer": 89,
     "exact_masterdata": 166,
-    "unresolved": 17,
+    "unresolved": 5,
     "families": {
       "3dmv": 11,
       "card-rarity": 11,
@@ -717,19 +718,29 @@
       "masterdata_tokens": [],
       "consumer_candidates": [
         {
-          "consumer": "card-rarity-animation",
-          "state": "filename-candidate",
-          "evidence": "card/rarity filename family"
+          "consumer": "Growing.Theater.GashaAnimationMovieManager",
+          "state": "exact",
+          "evidence": "IL2CPP metadata exposes the exact gasha filename contract, manager fields, and playback methods for this resource"
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-consumer",
+        "kind": "gasha-animation-movie",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "client_relation": {
+          "catalog": "gasha_movie_contract.resources",
+          "resource_id": "c01_r",
+          "role": "start-movie",
+          "format_arguments": [
+            1,
+            "r"
+          ],
+          "evidence": "IL2CPP metadata v27, the exact filename literal, and GashaAnimationMovieManager members resolve this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact IL2CPP gasha filename contract and RAW USM identity agree."
       ]
     },
     {
@@ -763,19 +774,29 @@
       "masterdata_tokens": [],
       "consumer_candidates": [
         {
-          "consumer": "card-rarity-animation",
-          "state": "filename-candidate",
-          "evidence": "card/rarity filename family"
+          "consumer": "Growing.Theater.GashaAnimationMovieManager",
+          "state": "exact",
+          "evidence": "IL2CPP metadata exposes the exact gasha filename contract, manager fields, and playback methods for this resource"
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-consumer",
+        "kind": "gasha-animation-movie",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "client_relation": {
+          "catalog": "gasha_movie_contract.resources",
+          "resource_id": "c01_sr",
+          "role": "start-movie",
+          "format_arguments": [
+            1,
+            "sr"
+          ],
+          "evidence": "IL2CPP metadata v27, the exact filename literal, and GashaAnimationMovieManager members resolve this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact IL2CPP gasha filename contract and RAW USM identity agree."
       ]
     },
     {
@@ -809,19 +830,29 @@
       "masterdata_tokens": [],
       "consumer_candidates": [
         {
-          "consumer": "card-rarity-animation",
-          "state": "filename-candidate",
-          "evidence": "card/rarity filename family"
+          "consumer": "Growing.Theater.GashaAnimationMovieManager",
+          "state": "exact",
+          "evidence": "IL2CPP metadata exposes the exact gasha filename contract, manager fields, and playback methods for this resource"
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-consumer",
+        "kind": "gasha-animation-movie",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "client_relation": {
+          "catalog": "gasha_movie_contract.resources",
+          "resource_id": "c01_ssr",
+          "role": "start-movie",
+          "format_arguments": [
+            1,
+            "ssr"
+          ],
+          "evidence": "IL2CPP metadata v27, the exact filename literal, and GashaAnimationMovieManager members resolve this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact IL2CPP gasha filename contract and RAW USM identity agree."
       ]
     },
     {
@@ -855,19 +886,29 @@
       "masterdata_tokens": [],
       "consumer_candidates": [
         {
-          "consumer": "card-rarity-animation",
-          "state": "filename-candidate",
-          "evidence": "card/rarity filename family"
+          "consumer": "Growing.Theater.GashaAnimationMovieManager",
+          "state": "exact",
+          "evidence": "IL2CPP metadata exposes the exact gasha filename contract, manager fields, and playback methods for this resource"
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-consumer",
+        "kind": "gasha-animation-movie",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "client_relation": {
+          "catalog": "gasha_movie_contract.resources",
+          "resource_id": "c02_r",
+          "role": "start-movie",
+          "format_arguments": [
+            2,
+            "r"
+          ],
+          "evidence": "IL2CPP metadata v27, the exact filename literal, and GashaAnimationMovieManager members resolve this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact IL2CPP gasha filename contract and RAW USM identity agree."
       ]
     },
     {
@@ -901,19 +942,29 @@
       "masterdata_tokens": [],
       "consumer_candidates": [
         {
-          "consumer": "card-rarity-animation",
-          "state": "filename-candidate",
-          "evidence": "card/rarity filename family"
+          "consumer": "Growing.Theater.GashaAnimationMovieManager",
+          "state": "exact",
+          "evidence": "IL2CPP metadata exposes the exact gasha filename contract, manager fields, and playback methods for this resource"
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-consumer",
+        "kind": "gasha-animation-movie",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "client_relation": {
+          "catalog": "gasha_movie_contract.resources",
+          "resource_id": "c02_sr",
+          "role": "start-movie",
+          "format_arguments": [
+            2,
+            "sr"
+          ],
+          "evidence": "IL2CPP metadata v27, the exact filename literal, and GashaAnimationMovieManager members resolve this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact IL2CPP gasha filename contract and RAW USM identity agree."
       ]
     },
     {
@@ -947,19 +998,29 @@
       "masterdata_tokens": [],
       "consumer_candidates": [
         {
-          "consumer": "card-rarity-animation",
-          "state": "filename-candidate",
-          "evidence": "card/rarity filename family"
+          "consumer": "Growing.Theater.GashaAnimationMovieManager",
+          "state": "exact",
+          "evidence": "IL2CPP metadata exposes the exact gasha filename contract, manager fields, and playback methods for this resource"
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-consumer",
+        "kind": "gasha-animation-movie",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "client_relation": {
+          "catalog": "gasha_movie_contract.resources",
+          "resource_id": "c02_ssr",
+          "role": "start-movie",
+          "format_arguments": [
+            2,
+            "ssr"
+          ],
+          "evidence": "IL2CPP metadata v27, the exact filename literal, and GashaAnimationMovieManager members resolve this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact IL2CPP gasha filename contract and RAW USM identity agree."
       ]
     },
     {
@@ -993,19 +1054,29 @@
       "masterdata_tokens": [],
       "consumer_candidates": [
         {
-          "consumer": "card-rarity-animation",
-          "state": "filename-candidate",
-          "evidence": "card/rarity filename family"
+          "consumer": "Growing.Theater.GashaAnimationMovieManager",
+          "state": "exact",
+          "evidence": "IL2CPP metadata exposes the exact gasha filename contract, manager fields, and playback methods for this resource"
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-consumer",
+        "kind": "gasha-animation-movie",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "client_relation": {
+          "catalog": "gasha_movie_contract.resources",
+          "resource_id": "c03_r",
+          "role": "start-movie",
+          "format_arguments": [
+            3,
+            "r"
+          ],
+          "evidence": "IL2CPP metadata v27, the exact filename literal, and GashaAnimationMovieManager members resolve this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact IL2CPP gasha filename contract and RAW USM identity agree."
       ]
     },
     {
@@ -1039,19 +1110,29 @@
       "masterdata_tokens": [],
       "consumer_candidates": [
         {
-          "consumer": "card-rarity-animation",
-          "state": "filename-candidate",
-          "evidence": "card/rarity filename family"
+          "consumer": "Growing.Theater.GashaAnimationMovieManager",
+          "state": "exact",
+          "evidence": "IL2CPP metadata exposes the exact gasha filename contract, manager fields, and playback methods for this resource"
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-consumer",
+        "kind": "gasha-animation-movie",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "client_relation": {
+          "catalog": "gasha_movie_contract.resources",
+          "resource_id": "c03_r_ssr",
+          "role": "start-movie",
+          "format_arguments": [
+            3,
+            "r_ssr"
+          ],
+          "evidence": "IL2CPP metadata v27, the exact filename literal, and GashaAnimationMovieManager members resolve this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact IL2CPP gasha filename contract and RAW USM identity agree."
       ]
     },
     {
@@ -1085,19 +1166,29 @@
       "masterdata_tokens": [],
       "consumer_candidates": [
         {
-          "consumer": "card-rarity-animation",
-          "state": "filename-candidate",
-          "evidence": "card/rarity filename family"
+          "consumer": "Growing.Theater.GashaAnimationMovieManager",
+          "state": "exact",
+          "evidence": "IL2CPP metadata exposes the exact gasha filename contract, manager fields, and playback methods for this resource"
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-consumer",
+        "kind": "gasha-animation-movie",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "client_relation": {
+          "catalog": "gasha_movie_contract.resources",
+          "resource_id": "c03_sr",
+          "role": "start-movie",
+          "format_arguments": [
+            3,
+            "sr"
+          ],
+          "evidence": "IL2CPP metadata v27, the exact filename literal, and GashaAnimationMovieManager members resolve this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact IL2CPP gasha filename contract and RAW USM identity agree."
       ]
     },
     {
@@ -1131,19 +1222,29 @@
       "masterdata_tokens": [],
       "consumer_candidates": [
         {
-          "consumer": "card-rarity-animation",
-          "state": "filename-candidate",
-          "evidence": "card/rarity filename family"
+          "consumer": "Growing.Theater.GashaAnimationMovieManager",
+          "state": "exact",
+          "evidence": "IL2CPP metadata exposes the exact gasha filename contract, manager fields, and playback methods for this resource"
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-consumer",
+        "kind": "gasha-animation-movie",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "client_relation": {
+          "catalog": "gasha_movie_contract.resources",
+          "resource_id": "c03_sr_ssr",
+          "role": "start-movie",
+          "format_arguments": [
+            3,
+            "sr_ssr"
+          ],
+          "evidence": "IL2CPP metadata v27, the exact filename literal, and GashaAnimationMovieManager members resolve this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact IL2CPP gasha filename contract and RAW USM identity agree."
       ]
     },
     {
@@ -1177,19 +1278,29 @@
       "masterdata_tokens": [],
       "consumer_candidates": [
         {
-          "consumer": "card-rarity-animation",
-          "state": "filename-candidate",
-          "evidence": "card/rarity filename family"
+          "consumer": "Growing.Theater.GashaAnimationMovieManager",
+          "state": "exact",
+          "evidence": "IL2CPP metadata exposes the exact gasha filename contract, manager fields, and playback methods for this resource"
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-consumer",
+        "kind": "gasha-animation-movie",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "client_relation": {
+          "catalog": "gasha_movie_contract.resources",
+          "resource_id": "c03_ssr",
+          "role": "start-movie",
+          "format_arguments": [
+            3,
+            "ssr"
+          ],
+          "evidence": "IL2CPP metadata v27, the exact filename literal, and GashaAnimationMovieManager members resolve this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact IL2CPP gasha filename contract and RAW USM identity agree."
       ]
     },
     {
@@ -15720,19 +15831,26 @@
       "masterdata_tokens": [],
       "consumer_candidates": [
         {
-          "consumer": "ssr-card-animation",
-          "state": "filename-candidate",
-          "evidence": "ssr_motion filename family"
+          "consumer": "Growing.Theater.GashaAnimationMovieManager",
+          "state": "exact",
+          "evidence": "IL2CPP metadata exposes the exact gasha filename contract, manager fields, and playback methods for this resource"
         }
       ],
       "mapping": {
-        "state": "unresolved",
-        "kind": "unresolved",
+        "state": "exact-consumer",
+        "kind": "gasha-animation-movie",
         "raw_effect_scripts": [],
-        "derived_assets": []
+        "derived_assets": [],
+        "client_relation": {
+          "catalog": "gasha_movie_contract.resources",
+          "resource_id": "ssr_motion",
+          "role": "ssr-movie",
+          "format_arguments": null,
+          "evidence": "IL2CPP metadata v27, the exact filename literal, and GashaAnimationMovieManager members resolve this complete RAW USM identity"
+        }
       },
       "evidence": [
-        "No direct Backmonitor relation exists in the 119 RAW choreography scripts."
+        "Exact IL2CPP gasha filename contract and RAW USM identity agree."
       ]
     }
   ]

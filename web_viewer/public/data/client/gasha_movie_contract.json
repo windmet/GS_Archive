@@ -1,0 +1,227 @@
+{
+  "schema_version": 1,
+  "meta": {
+    "source_kind": "il2cpp-global-metadata-v27",
+    "source_sha256": "658f966af11aef965b541e093889056cafa61a7f7fcd4bbf38e1ca2eab6d6e00",
+    "source_bytes": 12431328,
+    "resource_count": 12,
+    "start_movie_count": 11,
+    "ssr_movie_count": 1
+  },
+  "consumer": {
+    "namespace": "Growing.Theater",
+    "class": "GashaAnimationMovieManager",
+    "type_token": "0x02000fcd",
+    "fields": [
+      {
+        "name": "_startMovieList",
+        "token": "0x040041e2"
+      },
+      {
+        "name": "_ssrMovie",
+        "token": "0x040041e3"
+      }
+    ],
+    "methods": [
+      {
+        "name": "Setup",
+        "token": "0x0600549d",
+        "parameters": [
+          "endMovieAction",
+          "mostRarity",
+          "showSpeechAction"
+        ]
+      },
+      {
+        "name": "CreateAnimation",
+        "token": "0x0600549e",
+        "parameters": [
+          "mostRarity"
+        ]
+      },
+      {
+        "name": "GetProbabilityKey",
+        "token": "0x0600549f",
+        "parameters": [
+          "dictionary"
+        ]
+      },
+      {
+        "name": "StartAnimePlay",
+        "token": "0x060054a0",
+        "parameters": [
+          "_currentStartMovieOrder"
+        ]
+      },
+      {
+        "name": "SsrAnimePlay",
+        "token": "0x060054a1",
+        "parameters": [
+          "showSsrCount"
+        ]
+      }
+    ],
+    "movie_class": {
+      "namespace": "Growing.Theater",
+      "class": "GashaAnimationMovie",
+      "type_token": "0x02000fcb",
+      "setup_method": {
+        "name": "Setup",
+        "token": "0x06005493",
+        "parameters": [
+          "filePath",
+          "trimEndSeconds",
+          "controllType"
+        ]
+      }
+    }
+  },
+  "filename_contract": {
+    "start_movie_template": "c0{0}_{1}.usm",
+    "fixed_ssr_movie": "ssr_motion.usm",
+    "literals": [
+      {
+        "value": "c0{0}_{1}.usm",
+        "literal_index": 13444
+      },
+      {
+        "value": "r",
+        "literal_index": 16767
+      },
+      {
+        "value": "r_ssr",
+        "literal_index": 16771
+      },
+      {
+        "value": "sr",
+        "literal_index": 17212
+      },
+      {
+        "value": "sr_ssr",
+        "literal_index": 17219
+      },
+      {
+        "value": "ssr",
+        "literal_index": 17223
+      },
+      {
+        "value": "ssr_motion.usm",
+        "literal_index": 17225
+      }
+    ]
+  },
+  "resources": [
+    {
+      "id": "c01_r",
+      "filename": "c01_r.usm",
+      "role": "start-movie",
+      "format_arguments": [
+        1,
+        "r"
+      ]
+    },
+    {
+      "id": "c01_sr",
+      "filename": "c01_sr.usm",
+      "role": "start-movie",
+      "format_arguments": [
+        1,
+        "sr"
+      ]
+    },
+    {
+      "id": "c01_ssr",
+      "filename": "c01_ssr.usm",
+      "role": "start-movie",
+      "format_arguments": [
+        1,
+        "ssr"
+      ]
+    },
+    {
+      "id": "c02_r",
+      "filename": "c02_r.usm",
+      "role": "start-movie",
+      "format_arguments": [
+        2,
+        "r"
+      ]
+    },
+    {
+      "id": "c02_sr",
+      "filename": "c02_sr.usm",
+      "role": "start-movie",
+      "format_arguments": [
+        2,
+        "sr"
+      ]
+    },
+    {
+      "id": "c02_ssr",
+      "filename": "c02_ssr.usm",
+      "role": "start-movie",
+      "format_arguments": [
+        2,
+        "ssr"
+      ]
+    },
+    {
+      "id": "c03_r",
+      "filename": "c03_r.usm",
+      "role": "start-movie",
+      "format_arguments": [
+        3,
+        "r"
+      ]
+    },
+    {
+      "id": "c03_r_ssr",
+      "filename": "c03_r_ssr.usm",
+      "role": "start-movie",
+      "format_arguments": [
+        3,
+        "r_ssr"
+      ]
+    },
+    {
+      "id": "c03_sr",
+      "filename": "c03_sr.usm",
+      "role": "start-movie",
+      "format_arguments": [
+        3,
+        "sr"
+      ]
+    },
+    {
+      "id": "c03_sr_ssr",
+      "filename": "c03_sr_ssr.usm",
+      "role": "start-movie",
+      "format_arguments": [
+        3,
+        "sr_ssr"
+      ]
+    },
+    {
+      "id": "c03_ssr",
+      "filename": "c03_ssr.usm",
+      "role": "start-movie",
+      "format_arguments": [
+        3,
+        "ssr"
+      ]
+    },
+    {
+      "id": "ssr_motion",
+      "filename": "ssr_motion.usm",
+      "role": "ssr-movie",
+      "format_arguments": null
+    }
+  ],
+  "evidence": [
+    "GashaAnimationMovie.Setup accepts filePath and movie playback controls.",
+    "GashaAnimationMovieManager constructs animations from mostRarity and a probability-key dictionary.",
+    "The manager has distinct _startMovieList and _ssrMovie fields plus StartAnimePlay and SsrAnimePlay methods.",
+    "The IL2CPP literal table contains the exact start-movie format and fixed SSR movie filename.",
+    "The complete RAW c0*/ssr_motion population is exactly the set generated by this client filename contract."
+  ]
+}
