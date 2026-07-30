@@ -1,6 +1,6 @@
 # RAW USM Song Movie Exact Relations
 
-Status: pending review
+Status: merged in PR #26
 
 Date: 2026-07-30
 
@@ -49,6 +49,8 @@ RAW USM relation catalog:
 Source-only and mounted verification both pass. Mounted verification reparses
 SongData table 46 and requires byte-for-byte equality with the committed
 index.
+PR #26 final-head source gate `30512461712` and post-merge source gate
+`30512491644` both passed. The merge commit is `52eb37d`.
 
 ## Boundary
 

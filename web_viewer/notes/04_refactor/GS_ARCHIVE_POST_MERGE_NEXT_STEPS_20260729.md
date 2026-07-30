@@ -15,12 +15,15 @@ RAW/masterdata 迁移和 P0 governance 已经合并，不应继续按 Draft PR #
 | 项 | 当前值 |
 | --- | --- |
 | merged base branch | `master` |
-| current functional baseline | `master` includes PR #24 merge `66a0e1dd41fe560388e0ff408619c8f3a2c15c56` |
-| active functional branch | `codex/usm-song-movie-exact-relations` |
-| active track | SongData 3dmv/mvlive exact-masterdata 有界细化 |
+| current functional baseline | `master` includes PR #26 merge `52eb37d19082e979f5132357845626b73e4e5940` |
+| active functional branch | none；documentation-only closeout is isolated |
+| active track | none selected；SongData 3dmv/mvlive exact-masterdata 细化已完成 |
 | upstream | not applicable |
-| worktree | active functional changes pending commit |
+| worktree | clean at PR #26 merge；documentation-only closeout follows separately |
 | open PR | none |
+| PR #26 | merged as `52eb37d19082e979f5132357845626b73e4e5940` |
+| PR #26 final-head check | Source-only contract PASS，run `30512461712` |
+| PR #26 post-merge check | `master` push Source-only contract PASS，run `30512491644` |
 | PR #24 | merged as `66a0e1dd41fe560388e0ff408619c8f3a2c15c56` |
 | PR #24 final-head check | Source-only contract PASS，run `30511853325` |
 | PR #24 post-merge check | `master` push Source-only contract PASS，run `30511892344` |
@@ -563,7 +566,8 @@ notes/03_audit/RAW_USM_CARD_SKILL_EXACT_RELATIONS_20260730.md
 
 ### P1-B3：SongData 3dmv / mvlive 精确关系
 
-状态：**active，pending review**。
+状态：**merged in PR #26**。merge commit `52eb37d`，final-head gate
+`30512461712` 与 post-merge gate `30512491644` 均通过。
 
 SongData table 46 的 `ResourceId`、`MovieOffset` 与 `MvliveOpenAt` 提供独立
 authority。11 个具有具体 MovieOffset 的唯一 ResourceId 与全部 11 个
@@ -830,7 +834,8 @@ git status -sb
 git rev-parse HEAD
 ```
 
-当前 active 功能分支为 `codex/usm-song-movie-exact-relations`。
+当前没有 active 功能分支。`codex/usm-song-movie-exact-relations` 已通过
+PR #26 合入 `master`。
 `codex/usm-skill-movie-exact-relations` 已通过
 PR #24 合入 `master`。
 `codex/usm-movie-announce-exact-relations` 已通过
@@ -863,6 +868,7 @@ codex/post-p1h-relation-closeout
 codex/external-story-resource-navigation
 codex/usm-movie-announce-exact-relations
 codex/usm-skill-movie-exact-relations
+codex/usm-song-movie-exact-relations
 ```
 
 Codex 管理目录中指向初始提交 `ca3a28e` 的 detached worktree 不是项目开发
@@ -910,7 +916,7 @@ git diff --cached --check
 ```text
 请先只读核验 E:\Web_build\SideM_Archived 的 branch、HEAD、upstream、
 worktree、origin/master，并确认当前没有 active 功能分支，master 已包含
-PR #24 merge `66a0e1d`，post-merge run `30511892344` 通过。
+PR #26 merge `52eb37d`，post-merge run `30512491644` 通过。
 
 完整阅读：
 1. web_viewer/notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md
@@ -927,6 +933,7 @@ PR #24 merge `66a0e1d`，post-merge run `30511892344` 通过。
 12. web_viewer/notes/03_audit/EXTERNAL_GS_RESOURCE_NAVIGATION_20260730.md
 13. web_viewer/notes/03_audit/RAW_USM_MOVIE_ANNOUNCE_EXACT_RELATIONS_20260730.md
 14. web_viewer/notes/03_audit/RAW_USM_CARD_SKILL_EXACT_RELATIONS_20260730.md
+15. web_viewer/notes/03_audit/RAW_USM_SONG_MOVIE_EXACT_RELATIONS_20260730.md
 
 先确认当前 baseline 的 image catalog 为 1,271 bundles / 263,071,090 bytes /
 9,157 Unity objects / 7,816 image objects，source-only 与 mounted verifier

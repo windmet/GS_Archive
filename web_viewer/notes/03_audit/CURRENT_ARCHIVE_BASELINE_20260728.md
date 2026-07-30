@@ -16,12 +16,16 @@ their forward-looking defect lists must not override this baseline.
 
 | Field | Value |
 | --- | --- |
-| current functional baseline | `master` includes PR #24 merge `66a0e1dd41fe560388e0ff408619c8f3a2c15c56` |
-| active functional branch | `codex/usm-song-movie-exact-relations` |
-| active track | bounded SongData 3dmv/mvlive exact-masterdata refinement |
-| active upstream | pending first push |
-| active pull request | pending |
-| active validation | SongData table 46 and 12 song-movie USMs exact 12/12; source-only and mounted relation gates PASS |
+| current functional baseline | `master` includes PR #26 merge `52eb37d19082e979f5132357845626b73e4e5940` |
+| active functional branch | none; documentation-only closeout is isolated |
+| active track | none selected; SongData 3dmv/mvlive exact-masterdata refinement is complete |
+| active upstream | not applicable |
+| active pull request | none |
+| active validation | PR #26 table 46 and 12 song-movie USMs exact 12/12; source-only/mounted gates, production build, and post-merge source gate PASS |
+| PR #26 merge commit | `52eb37d19082e979f5132357845626b73e4e5940` |
+| PR #26 functional head | `c7be3d01ac388b3f09cd8a3b79e83fcef1123b2f` |
+| PR #26 final-head gate | run `30512461712`, PASS |
+| PR #26 post-merge gate | run `30512491644`, PASS |
 | PR #24 merge commit | `66a0e1dd41fe560388e0ff408619c8f3a2c15c56` |
 | PR #24 functional head | `168af27312a8949cedbec3788dfad4741c216ad1` |
 | PR #24 final-head gate | run `30511853325`, PASS |
@@ -89,8 +93,8 @@ disposition, PR #6 merged the bounded GS translation-link pilot, and PR #7
 activated publication v2 and annotation v1 contracts without adding a
 production record. PR #8 merged the bounded 260-USM relation catalog without
 decoding or publishing media. Later bounded relation and navigation batches
-merged through PR #24. Therefore `bca7042` remains the immutable PR #2 merge
-identity, while `66a0e1d` is the current functional repository baseline at
+merged through PR #26. Therefore `bca7042` remains the immutable PR #2 merge
+identity, while `52eb37d` is the current functional repository baseline at
 this refresh.
 
 `stable-published` in project notes means an artifact occupies the stable path
@@ -630,11 +634,11 @@ Current priority and write locks:
 - the bounded 30-record MovieAnnounce exact-masterdata refinement is complete
   in PR #22; it does not create a consumer or publish media;
 - the bounded 124-resource / 127-card-record CardData skill-movie refinement is
-  complete in PR #24; it preserves three shared resource identities and does not create a
+  complete in PR #24; it preserves three shared resource identities and does
+  not create a consumer or publish media;
+- the bounded 11-3dmv + 1-mvlive / 13-SongData-record refinement is complete
+  in PR #26; it preserves the shared `pl1gdd` resource and does not create a
   consumer or publish media;
-- the bounded 11-3dmv + 1-mvlive / 13-SongData-record refinement is active;
-  it preserves the shared `pl1gdd` resource and does not create a consumer or
-  publish media;
 - the image catalog records 1,271 source identities and 7,816 image objects
   without exporting PNG or replacing stable assets;
 - 50 bundles now inherit 52 exact stable relations from the already-authoritative
