@@ -17,7 +17,7 @@
             {{ movie.kind === '3dmv' ? '3DMV' : 'MV LIVE' }} · {{ movie.resource_id }}
           </span>
           <span v-if="song.audio_form === 'layered'" class="badge badge-layered">分层演出</span>
-          <span v-if="song.audio_form === 'oneshot'" class="badge badge-oneshot">声部版</span>
+          <span v-if="song.audio_form === 'oneshot'" class="badge badge-oneshot">演出语音</span>
         </div>
       </div>
       <dl class="song-detail-stats" aria-label="歌曲档案统计">
@@ -47,7 +47,7 @@
         <dl class="audio-stats">
           <div><dt>完整混音</dt><dd>{{ song.audio.has_full_mix ? '有' : '无' }}</dd></div>
           <div><dt>组合声部 cue</dt><dd>{{ song.audio.unit_cue_count }}</dd></div>
-          <div><dt>偶像声部 cue</dt><dd>{{ song.audio.oneshot_cue_count }}</dd></div>
+          <div><dt>演出语音 cue</dt><dd>{{ song.audio.oneshot_cue_count }}</dd></div>
           <div><dt>偶像声部文件</dt><dd>{{ song.audio.idol_vocal_file_count }}</dd></div>
           <div><dt>伴奏文件</dt><dd>{{ song.audio.backing_file_count }}</dd></div>
         </dl>
@@ -62,7 +62,8 @@
         </div>
 
         <div v-if="oneshotEntries.length" class="song-subsection">
-          <h4>偶像声部 cue（{{ oneshotEntries.length }}）</h4>
+          <h4>全员演出语音（{{ oneshotEntries.length }}）</h4>
+          <p class="song-block-note">每个偶像各一句话的演出语音（约 4 秒），非个人独唱。</p>
           <ul class="chip-list">
             <li v-for="entry in oneshotEntries" :key="entry.code">
               <code>{{ entry.code }}</code>{{ entry.name }}
@@ -72,6 +73,7 @@
 
         <div v-if="idolVocalEntries.length" class="song-subsection">
           <h4>偶像声部文件（{{ idolVocalEntries.length }}）</h4>
+          <p class="song-block-note">每个偶像的完整个人独唱（独立 ACB 文件）。</p>
           <ul class="chip-list">
             <li v-for="entry in idolVocalEntries" :key="entry.code">
               <code>{{ entry.code }}</code>{{ entry.name }}
@@ -146,7 +148,7 @@ const props = defineProps({
 
 const formLabel = computed(() => ({
   layered: '分层演出',
-  oneshot: '声部版',
+  oneshot: '演出语音',
   'single-cue': '单曲',
 }[props.song.audio_form] || props.song.audio_form))
 
