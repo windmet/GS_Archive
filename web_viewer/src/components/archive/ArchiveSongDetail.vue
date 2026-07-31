@@ -162,7 +162,7 @@ const creditLines = computed(() => (props.song.credits || '').split('\n').filter
 
 function unitName(code) {
   const normalized = code.replace(/^0(\d{2}[a-z0-9]{3})/, '$1')
-  const unit = props.units?.by_unit_code?.[normalized]
+  const unit = (props.units?.units || []).find(unit => unit.unit_code === normalized)
   if (unit) return unit.unit_name
   if (/^(solo|solo_multi|solo_single|tutorial)$/.test(code)) {
     return { solo: '独唱', solo_multi: '多人独唱', solo_single: '单人独唱', tutorial: '教程' }[code]

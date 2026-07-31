@@ -8,7 +8,7 @@ const scriptDirectory = path.dirname(fileURLToPath(import.meta.url))
 const viewerRoot = path.resolve(scriptDirectory, '..')
 const readViewerFile = relativePath => readFile(path.join(viewerRoot, relativePath), 'utf8')
 
-const [catalog, appComponent, catalogComponent, detailComponent, routeSource, shellComponent, repositorySource, jacketIndex] =
+const [catalog, appComponent, catalogComponent, detailComponent, routeSource, shellComponent, repositorySource, jacketIndex, unitDictionary] =
   await Promise.all([
     readViewerFile('public/data/song_catalog.json').then(JSON.parse),
     readViewerFile('src/App.vue'),
@@ -18,6 +18,7 @@ const [catalog, appComponent, catalogComponent, detailComponent, routeSource, sh
     readViewerFile('src/components/archive/ArchiveShell.vue'),
     readViewerFile('src/data/ArchiveDataRepository.js'),
     readViewerFile('public/data/song_jacket_index.json').then(JSON.parse),
+    readViewerFile('public/data/masterdata/idol_unit_dictionary.json').then(JSON.parse),
   ])
 
 // Route contract: song_catalog and song_detail views with the song query key
@@ -120,6 +121,24 @@ assert.match(catalogComponent, /hasMovie\(song, '3dmv'\)/)
 assert.match(catalogComponent, /song\.jacket_url/)
 assert.match(catalogComponent, /loading="lazy"/)
 
+// Unit-name reverse lookup: every catalog unit code must resolve through
+// idol_unit_dictionary.units (table 24 UnitMaster), which the detail page
+// queries by unit_code after stripping the leading zero of ACB cue codes.
+const unitByCode = new Map(unitDictionary.units.map(unit => [unit.unit_code, unit.unit_name]))
+const unitCodeOf = code => code.replace(/^0(\d{2}[a-z0-9]{3})/, '$1')
+const allUnitCodes = songs.flatMap(song => [
+  ...(song.audio.unit_codes || []),
+  ...(song.choreography.live_effect_variants || []),
+]).map(unitCodeOf)
+const uniqueUnitCodes = [...new Set(allUnitCodes)].filter(code => !/^(solo|solo_multi|solo_single|tutorial)$/.test(code))
+assert.equal(uniqueUnitCodes.length, 16, 'layered songs must cover exactly the 16 masterdata units')
+for (const code of uniqueUnitCodes) {
+  const name = unitByCode.get(code)
+  assert.ok(name, `unit code ${code} must resolve to a unit_name in idol_unit_dictionary`)
+}
+assert.equal(unitByCode.get('01jup'), 'Jupiter')
+assert.equal(unitByCode.get('02dra'), 'DRAMATIC STARS')
+
 // Detail page: jacket hero, audio layers, choreography flags, external links
 assert.match(detailComponent, /song\.jacket_url/)
 assert.match(detailComponent, /song-detail-jacket/)
@@ -136,6 +155,7 @@ assert.match(detailComponent, /封面/)
 assert.match(detailComponent, /舞台背景/)
 assert.match(detailComponent, /IDOL_ID_TO_NAME/)
 assert.match(detailComponent, /function unitName\(code\)/)
+assert.match(detailComponent, /props\.units\?\.units \|\| \[\]/, 'unitName must resolve through the masterdata units array')
 assert.match(detailComponent, /rel="noopener noreferrer external"/)
 assert.match(detailComponent, /movie\.kind === '3dmv' \? '3DMV' : 'MV LIVE'/)
 assert.match(detailComponent, /openAt >= 4102412400/)
