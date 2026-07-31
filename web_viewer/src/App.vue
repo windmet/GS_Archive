@@ -119,6 +119,18 @@
         @open-card="openGashaCard"
       />
 
+      <ArchiveSongCatalog
+        v-if="view === 'song_catalog'"
+        :catalog="songCatalogData"
+        @open="openSong"
+      />
+
+      <ArchiveSongDetail
+        v-if="view === 'song_detail'"
+        :song="currentSong"
+        :units="idolUnitData"
+      />
+
       <ArchiveEventDetail
         v-if="view === 'event_detail'"
         :event="currentEvent"
@@ -347,6 +359,8 @@ import ArchiveCardList from './components/archive/ArchiveCardList.vue'
 import ArchiveCardDetail from './components/archive/ArchiveCardDetail.vue'
 import ArchiveGashaCatalog from './components/archive/ArchiveGashaCatalog.vue'
 import ArchiveGashaDetail from './components/archive/ArchiveGashaDetail.vue'
+import ArchiveSongCatalog from './components/archive/ArchiveSongCatalog.vue'
+import ArchiveSongDetail from './components/archive/ArchiveSongDetail.vue'
 import ArchiveEventDetail from './components/archive/ArchiveEventDetail.vue'
 import ArchiveIdolGrid from './components/archive/ArchiveIdolGrid.vue'
 import ArchiveIdolDetail from './components/archive/ArchiveIdolDetail.vue'
@@ -455,6 +469,8 @@ const archiveVerificationData = ref(null)
 const uiAssetCatalogData = ref(null)
 const rawCharacterImagePromotionsData = ref(null)
 const externalStoryResourcesData = ref(null)
+const songCatalogData = ref(null)
+const currentSongId = ref('')
 const idolEntityTranslationRevision = ref(0)
 const currentScenario = ref(null)
 const currentScenarioFile = ref('')
@@ -1227,11 +1243,14 @@ const currentIdolEvents = computed(() => (archiveManifestData.value?.unit_event_
 
 const archiveShellVisible = computed(() => !['__boot__', 'player', 'spine_lab', 'chibi_stage'].includes(view.value))
 
+const currentSong = computed(() => songCatalogData.value?.songs?.[currentSongId.value] || null)
+
 const archiveSection = computed(() => archiveSectionForRoute({
   view: view.value,
   category: currentCategoryId.value,
   idol: currentCharacterId.value,
   card: currentCardId.value,
+  song: currentSongId.value,
   gasha: currentGashaId.value,
   unit: currentArchiveUnitCode.value || currentUnit.value?.unit_code || currentUnit.value?.id || '',
   group: currentGroup.value?.id || '',
@@ -1257,6 +1276,8 @@ const archiveTitle = computed(() => {
   if (view.value === 'mobile_archive') return 'Mobile 通信'
   if (view.value === 'gashas') return '卡池档案'
   if (view.value === 'gasha_detail') return currentGasha.value?.display_name || '卡池详情'
+  if (view.value === 'song_catalog') return '歌曲档案'
+  if (view.value === 'song_detail') return currentSong.value?.title || '歌曲详情'
   if (view.value === 'event_detail') return currentEvent.value?.title || '活动详情'
   if (view.value === 'unit_catalog') return '组合资料'
   if (view.value === 'unit_detail') return currentArchiveUnit.value?.unit_name || '组合详情'
@@ -1420,6 +1441,7 @@ function currentArchiveRoute() {
     sort: currentStorySort.value,
     episode: currentEpisodeId.value,
     card: currentCardId.value,
+    song: view.value === 'song_detail' ? currentSongId.value : '',
     event: currentEventId.value,
     gasha: view.value === 'gasha_detail' ? currentGashaId.value : '',
     gashaType: ['gashas', 'gasha_detail'].includes(view.value) ? currentGashaCategory.value : 'all',
@@ -1561,6 +1583,7 @@ async function applyArchiveRoute(route) {
     ) ? (route.parentView || '') : ''
     currentGashaId.value = route.gasha || ''
     currentGashaCategory.value = route.gashaType || 'all'
+    currentSongId.value = route.song || ''
     currentCardRarity.value = route.rarity || 'all'
     currentCardAssetState.value = route.assetState || 'all'
     currentCardRelationState.value = route.relationState || 'all'
@@ -1634,6 +1657,7 @@ async function applyArchiveRoute(route) {
     else if (route.view === 'idol_detail' && !currentIdolProfile.value) view.value = 'idols'
     else if (route.view === 'card_detail' && !currentCard.value) view.value = 'cards'
     else if (route.view === 'gasha_detail' && !currentGasha.value) view.value = 'gashas'
+    else if (route.view === 'song_detail' && !currentSong.value) view.value = 'song_catalog'
     else if (route.view === 'event_detail' && !currentEvent.value) view.value = 'story_catalog'
     else if (route.view === 'story_detail' && !currentStory.value) view.value = 'story_catalog'
     else if (route.view === 'story_collection' && !currentStoryCollection.value) view.value = 'story_catalog'
@@ -1683,11 +1707,24 @@ function goHome() {
 function navigateArchiveSection(section) {
   if (section === 'home') goHome()
   else if (section === 'stories') openStoryCatalog()
+  else if (section === 'songs') openSongCatalog()
   else if (section === 'idols') openPrimaryIdol(currentCharacterId.value)
   else if (section === 'cards') openPrimaryCards(currentCharacterId.value)
   else if (section === 'interactions') openMobileArchive({ idolCode: currentCharacterId.value || '001tom', mode: 'personal' })
   else if (section === 'gashas') openGashaCatalog()
   else if (section === 'resources') openArchiveStatus()
+}
+
+function openSongCatalog() {
+  currentSongId.value = ''
+  currentCategoryId.value = ''
+  commitView('song_catalog')
+}
+
+function openSong(songCode) {
+  if (!songCatalogData.value?.songs?.[songCode]) return
+  currentSongId.value = songCode
+  commitView('song_detail')
 }
 
 function openHomeIdol(idolId) {
@@ -1718,6 +1755,11 @@ function goArchiveBack() {
     gasha_detail: () => {
       currentGashaId.value = ''
       commitView('gashas')
+    },
+    song_catalog: goHome,
+    song_detail: () => {
+      currentSongId.value = ''
+      commitView('song_catalog')
     },
     event_detail: goBackFromEvent,
     archive_status: goHome,
@@ -2697,6 +2739,7 @@ onMounted(async () => {
   uiAssetCatalogData.value = data.uiAssetCatalog
   rawCharacterImagePromotionsData.value = data.rawCharacterImagePromotions
   externalStoryResourcesData.value = data.externalStoryResources
+  songCatalogData.value = data.songCatalog
   for (const { key, error } of errors) {
     console.error(`[ArchiveData] Failed to load ${key}:`, error)
   }

@@ -16,6 +16,8 @@ const ARCHIVE_SOURCES = {
   uiAssetCatalog: '/data/assets/ui_asset_catalog.json',
   rawCharacterImagePromotions: '/data/assets/raw_character_image_promotions.json',
   externalStoryResources: '/data/external_story_resources.json',
+  songCatalog: '/data/song_catalog.json',
+  songJacketIndex: '/data/song_jacket_index.json',
 }
 
 const CARD_DETAIL_SOURCE = '/data/masterdata/card_detail_index.json'
@@ -111,6 +113,21 @@ function validatePayload(key, payload) {
     !Array.isArray(payload.entries)
   )) {
     throw new Error('externalStoryResources must include a v1 entries array')
+  }
+  if (key === 'songCatalog' && (
+    payload.schema_version !== 1 ||
+    !payload.songs ||
+    !payload.summary ||
+    typeof payload.songs !== 'object'
+  )) {
+    throw new Error('songCatalog must include a v1 songs map and summary')
+  }
+  if (key === 'songJacketIndex' && (
+    payload.schema_version !== 1 ||
+    !payload.entries ||
+    typeof payload.entries !== 'object'
+  )) {
+    throw new Error('songJacketIndex must include a v1 entries map')
   }
   return payload
 }

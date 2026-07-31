@@ -19,6 +19,7 @@ const ROUTE_QUERY_KEYS = [
   'sort',
   'episode',
   'card',
+  'song',
   'event',
   'gasha',
   'gasha_type',
@@ -47,6 +48,8 @@ const VALID_VIEWS = new Set([
   'event_detail',
   'gashas',
   'gasha_detail',
+  'song_catalog',
+  'song_detail',
   'archive_status',
   'story_catalog',
   'external_story_resources',
@@ -99,6 +102,8 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   event_detail: { section: 'stories', required: ['event'], fallback: 'story_catalog' },
   gashas: { section: 'gashas', required: [] },
   gasha_detail: { section: 'gashas', required: ['gasha'], fallback: 'gashas' },
+  song_catalog: { section: 'songs', required: [] },
+  song_detail: { section: 'songs', required: ['song'], fallback: 'song_catalog' },
   player: { section: 'player', required: [], fallback: 'home' },
   spine_lab: { section: 'resources', required: [] },
   chibi_stage: { section: 'resources', required: [] },
@@ -107,6 +112,7 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
 const ARCHIVE_NAVIGATION = Object.freeze([
   { id: 'home', label: '首页' },
   { id: 'stories', label: '故事' },
+  { id: 'songs', label: '歌曲' },
   { id: 'idols', label: '偶像' },
   { id: 'cards', label: '卡片' },
   { id: 'gashas', label: '卡池' },
@@ -180,6 +186,7 @@ export function normalizeArchiveRoute(input = {}) {
     sort: allowed(clean(input.sort), VALID_STORY_SORTS, 'domain'),
     episode: clean(input.episode),
     card,
+    song: clean(input.song),
     event: clean(input.event),
     gasha: clean(input.gasha),
     gashaType: allowed(clean(input.gashaType), VALID_GASHA_TYPES, 'all'),
@@ -300,6 +307,15 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
     ]
   }
 
+  if (['song_catalog', 'song_detail'].includes(route.view)) {
+    const songs = { label: '歌曲', route: breadcrumbRoute(route, 'song_catalog', { song: '' }) }
+    return route.view === 'song_catalog' ? [home, { label: songs.label }] : [
+      home,
+      songs,
+      current('歌曲详情', route.song),
+    ]
+  }
+
   if (route.view === 'event_detail') {
     return [
       home,
@@ -399,6 +415,7 @@ export function readArchiveRoute(input = null) {
     sort: params.get('sort'),
     episode: clean(params.get('episode')),
     card: clean(params.get('card')),
+    song: clean(params.get('song')),
     event: clean(params.get('event')),
     gasha: clean(params.get('gasha')),
     gashaType: params.get('gasha_type'),
@@ -441,6 +458,7 @@ export function buildArchiveUrl(input, route) {
   if (normalized.sort !== 'domain') url.searchParams.set('sort', normalized.sort)
   if (normalized.episode) url.searchParams.set('episode', normalized.episode)
   if (normalized.card) url.searchParams.set('card', normalized.card)
+  if (normalized.song) url.searchParams.set('song', normalized.song)
   if (normalized.event) url.searchParams.set('event', normalized.event)
   if (normalized.gasha) url.searchParams.set('gasha', normalized.gasha)
   if (normalized.gashaType !== 'all') url.searchParams.set('gasha_type', normalized.gashaType)
