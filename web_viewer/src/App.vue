@@ -122,13 +122,21 @@
       <ArchiveSongCatalog
         v-if="view === 'song_catalog'"
         :catalog="songCatalogData"
+        :scope="currentSongScope"
+        :query="filterQuery"
         @open="openSong"
+        @update:scope="currentSongScope = $event"
+        @update:query="filterQuery = $event"
       />
 
       <ArchiveSongDetail
         v-if="view === 'song_detail'"
         :song="currentSong"
         :units="idolUnitData"
+        @open-song="openSong"
+        @open-unit="openSongUnit"
+        @open-idol="openSongIdol"
+        @open-related-story="openSongRelatedStory"
       />
 
       <ArchiveEventDetail
@@ -471,6 +479,7 @@ const rawCharacterImagePromotionsData = ref(null)
 const externalStoryResourcesData = ref(null)
 const songCatalogData = ref(null)
 const currentSongId = ref('')
+const currentSongScope = ref('all')
 const idolEntityTranslationRevision = ref(0)
 const currentScenario = ref(null)
 const currentScenarioFile = ref('')
@@ -1411,6 +1420,8 @@ function currentArchiveRoute() {
   const preservesEventContext = view.value === 'event_detail' || returnsToEvent
   const preservesStoryDetailContext = view.value === 'story_detail' || returnsToStory
   const preservesStoryCollectionContext = view.value === 'story_collection' || returnsToStoryCollection
+  const preservesSongContext = view.value === 'song_detail' ||
+    (preservesStoryCollectionContext && storyCollectionParentView.value === 'song_detail')
   const preservesArchiveUnit = view.value === 'unit_detail' ||
     view.value === 'mobile_archive' ||
     (view.value === 'player' && returnViewAfterPlayer.value === 'unit_detail') ||
@@ -1441,7 +1452,8 @@ function currentArchiveRoute() {
     sort: currentStorySort.value,
     episode: currentEpisodeId.value,
     card: currentCardId.value,
-    song: view.value === 'song_detail' ? currentSongId.value : '',
+    song: preservesSongContext ? currentSongId.value : '',
+    songScope: (view.value === 'song_catalog' || preservesSongContext) ? currentSongScope.value : 'all',
     event: currentEventId.value,
     gasha: view.value === 'gasha_detail' ? currentGashaId.value : '',
     gashaType: ['gashas', 'gasha_detail'].includes(view.value) ? currentGashaCategory.value : 'all',
@@ -1584,6 +1596,7 @@ async function applyArchiveRoute(route) {
     currentGashaId.value = route.gasha || ''
     currentGashaCategory.value = route.gashaType || 'all'
     currentSongId.value = route.song || ''
+    currentSongScope.value = route.songScope || 'all'
     currentCardRarity.value = route.rarity || 'all'
     currentCardAssetState.value = route.assetState || 'all'
     currentCardRelationState.value = route.relationState || 'all'
@@ -1688,6 +1701,8 @@ function goHome() {
   storyDetailParentView.value = ''
   storyCollectionParentView.value = ''
   currentGashaId.value = ''
+  currentSongId.value = ''
+  currentSongScope.value = 'all'
   currentCardRarity.value = 'all'
   currentCardAssetState.value = 'all'
   currentCardRelationState.value = 'all'
@@ -1717,6 +1732,8 @@ function navigateArchiveSection(section) {
 
 function openSongCatalog() {
   currentSongId.value = ''
+  currentSongScope.value = 'all'
+  filterQuery.value = ''
   currentCategoryId.value = ''
   commitView('song_catalog')
 }
@@ -1725,6 +1742,29 @@ function openSong(songCode) {
   if (!songCatalogData.value?.songs?.[songCode]) return
   currentSongId.value = songCode
   commitView('song_detail')
+}
+
+function openSongUnit(unitCode) {
+  const unit = (idolUnitData.value?.units || []).find(entry => String(entry.unit_code) === String(unitCode))
+  if (unit) {
+    filterQuery.value = ''
+    openArchiveUnit(unit)
+  }
+}
+
+function openSongIdol(idolCode) {
+  filterQuery.value = ''
+  openPrimaryIdol(idolCode)
+}
+
+function openSongRelatedStory(relation) {
+  if (relation?.entity_type !== 'story_collection') return
+  currentStoryDomain.value = relation.story_type || 'extra'
+  currentStorySection.value = relation.story_section || ''
+  currentStoryMode.value = 'portal'
+  currentStoryFile.value = ''
+  storyCollectionParentView.value = 'song_detail'
+  commitView('story_collection')
 }
 
 function openHomeIdol(idolId) {
@@ -1784,6 +1824,14 @@ function goArchiveBack() {
     },
     story_collection: () => {
       const parent = storyCollectionParentView.value
+      if (parent === 'song_detail' && currentSong.value) {
+        currentStoryDomain.value = ''
+        currentStorySection.value = ''
+        currentStoryFile.value = ''
+        storyCollectionParentView.value = ''
+        commitView('song_detail')
+        return
+      }
       const domain = currentStoryDomain.value
       const returnsToDomainLanding = ['main', 'extra', 'birthday'].includes(domain) && parent !== 'external_story_resources'
       currentStoryDomain.value = returnsToDomainLanding ? domain : ''
@@ -2758,7 +2806,7 @@ onMounted(async () => {
   removeSpineAnimationDebug = installSpineAnimationDebug()
 })
 
-watch([filterQuery, currentCardRarity, currentCardAssetState, currentCardRelationState, currentGashaCategory, currentIdolUnitFilter, currentStoryDomain, currentStoryMode, currentStorySection, currentEventScope, currentStoryAvailability, currentStorySort, currentMobileMode, currentMobileScenarioId], () => {
+watch([filterQuery, currentSongScope, currentCardRarity, currentCardAssetState, currentCardRelationState, currentGashaCategory, currentIdolUnitFilter, currentStoryDomain, currentStoryMode, currentStorySection, currentEventScope, currentStoryAvailability, currentStorySort, currentMobileMode, currentMobileScenarioId], () => {
   syncArchiveRoute({ replace: true })
 })
 

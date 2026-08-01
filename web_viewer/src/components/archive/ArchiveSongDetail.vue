@@ -11,8 +11,15 @@
         <span>SONG · {{ song.song_id }}</span>
         <h2>{{ song.title }}</h2>
         <p v-if="song.kana" class="song-detail-kana">{{ song.kana }}</p>
+        <button
+          v-if="song.parent_song_code"
+          class="song-parent-link"
+          @click="emit('open-song', song.parent_song_code)"
+        >
+          DRIVE A LIVE 作品页へ戻る
+        </button>
         <div class="song-detail-badges">
-          <span v-if="!song.available" class="badge badge-muted">未开放</span>
+          <span v-if="song.archive_status === 'special'" class="badge badge-special">特殊版本</span>
           <span v-for="movie in song.movies" :key="movie.kind + movie.resource_id" class="badge badge-movie">
             {{ movie.kind === '3dmv' ? '3DMV' : 'MV LIVE' }} · {{ movie.resource_id }}
           </span>
@@ -38,6 +45,26 @@
         </ul>
       </section>
 
+      <section v-if="song.variants.length" class="song-block" aria-labelledby="song-variants-title">
+        <div class="song-block-heading">
+          <span>PERFORMANCE VARIANTS</span>
+          <h3 id="song-variants-title">关联演出版本</h3>
+        </div>
+        <div class="variant-list">
+          <button
+            v-for="variant in song.variants"
+            :key="variant.song_code"
+            @click="emit('open-song', variant.song_code)"
+          >
+            <span>
+              <strong>{{ variant.title }}</strong>
+              <small>{{ variant.song_code }} · 特殊版本</small>
+            </span>
+            <ChevronRight :size="16" aria-hidden="true" />
+          </button>
+        </div>
+      </section>
+
       <section class="song-block" aria-labelledby="song-audio-title">
         <div class="song-block-heading">
           <span>AUDIO LAYERS</span>
@@ -56,7 +83,9 @@
           <h4>组合演出版本（{{ unitEntries.length }}）</h4>
           <ul class="chip-list">
             <li v-for="entry in unitEntries" :key="entry.code">
-              <code>{{ entry.code }}</code>{{ entry.name }}
+              <button @click="emit('open-unit', entry.normalizedCode)">
+                <code>{{ entry.code }}</code>{{ entry.name }}
+              </button>
             </li>
           </ul>
         </div>
@@ -66,7 +95,9 @@
           <p class="song-block-note">每个偶像各一句话的演出语音（约 4 秒），非个人独唱。</p>
           <ul class="chip-list">
             <li v-for="entry in oneshotEntries" :key="entry.code">
-              <code>{{ entry.code }}</code>{{ entry.name }}
+              <button @click="emit('open-idol', entry.code)">
+                <code>{{ entry.code }}</code>{{ entry.name }}
+              </button>
             </li>
           </ul>
         </div>
@@ -76,7 +107,9 @@
           <p class="song-block-note">每个偶像的完整个人独唱（独立 ACB 文件）。</p>
           <ul class="chip-list">
             <li v-for="entry in idolVocalEntries" :key="entry.code">
-              <code>{{ entry.code }}</code>{{ entry.name }}
+              <button @click="emit('open-idol', entry.code)">
+                <code>{{ entry.code }}</code>{{ entry.name }}
+              </button>
             </li>
           </ul>
         </div>
@@ -98,9 +131,34 @@
           <h4>特效变体（{{ effectEntries.length }}）</h4>
           <ul class="chip-list">
             <li v-for="entry in effectEntries" :key="entry.code">
-              <code>{{ entry.code }}</code>{{ entry.name }}
+              <button
+                :disabled="!entry.unitCode"
+                @click="entry.unitCode && emit('open-unit', entry.unitCode)"
+              >
+                <code>{{ entry.code }}</code>{{ entry.name }}
+              </button>
             </li>
           </ul>
+        </div>
+      </section>
+
+      <section v-if="song.related_entities.length" class="song-block" aria-labelledby="song-related-title">
+        <div class="song-block-heading">
+          <span>RELATED ARCHIVE</span>
+          <h3 id="song-related-title">关联档案</h3>
+        </div>
+        <div class="variant-list">
+          <button
+            v-for="relation in song.related_entities"
+            :key="`${relation.entity_type}:${relation.story_section}`"
+            @click="emit('open-related-story', relation)"
+          >
+            <span>
+              <strong>{{ relation.title }}</strong>
+              <small>官方企划关联 · Extra Story {{ relation.story_section }}</small>
+            </span>
+            <ChevronRight :size="16" aria-hidden="true" />
+          </button>
         </div>
       </section>
 
@@ -138,13 +196,14 @@
 
 <script setup>
 import { computed } from 'vue'
-import { ExternalLink } from '@lucide/vue'
+import { ChevronRight, ExternalLink } from '@lucide/vue'
 import { IDOL_ID_TO_NAME } from '../../utils/IdolNameMap.js'
 
 const props = defineProps({
   song: { type: Object, required: true },
   units: { type: Object, default: null },
 })
+const emit = defineEmits(['open-song', 'open-unit', 'open-idol', 'open-related-story'])
 
 const formLabel = computed(() => ({
   layered: '分层演出',
@@ -154,8 +213,13 @@ const formLabel = computed(() => ({
 
 const openDate = computed(() => {
   const openAt = props.song.open_at
-  if (openAt == null || openAt >= 4102412400) return '未开放'
-  return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium' }).format(new Date(openAt * 1000))
+  if (props.song.archive_status === 'special') return '特殊版本'
+  if (props.song.archive_status === 'initial') return '初始收录'
+  if (openAt == null) return '—'
+  return new Intl.DateTimeFormat('zh-CN', {
+    dateStyle: 'medium',
+    timeZone: 'Asia/Tokyo',
+  }).format(new Date(openAt * 1000))
 })
 
 const creditLines = computed(() => (props.song.credits || '').split('\n').filter(Boolean))
@@ -171,7 +235,11 @@ function unitName(code) {
 }
 
 const unitEntries = computed(() =>
-  (props.song.audio.unit_codes || []).map(code => ({ code, name: unitName(code) })),
+  (props.song.audio.unit_codes || []).map(code => ({
+    code,
+    normalizedCode: code.replace(/^0(\d{2}[a-z0-9]{3})/, '$1'),
+    name: unitName(code),
+  })),
 )
 const oneshotEntries = computed(() =>
   (props.song.audio.oneshot_idol_codes || []).map(code => ({ code, name: IDOL_ID_TO_NAME[code] || code })),
@@ -180,7 +248,11 @@ const idolVocalEntries = computed(() =>
   (props.song.audio.idol_vocal_codes || []).map(code => ({ code, name: IDOL_ID_TO_NAME[code] || code })),
 )
 const effectEntries = computed(() =>
-  (props.song.choreography.live_effect_variants || []).map(code => ({ code, name: unitName(code) })),
+  (props.song.choreography.live_effect_variants || []).map(code => ({
+    code,
+    name: unitName(code),
+    unitCode: /^\d{2}[a-z0-9]{3}$/.test(code) ? code : '',
+  })),
 )
 </script>
 
@@ -206,11 +278,14 @@ const effectEntries = computed(() =>
 .song-detail-title > span { color: #56d0c7; font-size: 0.68rem; font-weight: 800; }
 .song-detail-title h2 { margin: 7px 0 0; font-size: 1.5rem; }
 .song-detail-kana { margin: 5px 0 0; color: #aeb9c2; font-size: 0.78rem; }
+.song-parent-link { margin-top: 10px; padding: 0; border: 0; background: transparent; color: #76d9d1; cursor: pointer; font: inherit; font-size: 0.72rem; }
+.song-parent-link:hover { text-decoration: underline; }
 .song-detail-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
 .badge { padding: 3px 10px; border-radius: 999px; font-size: 0.64rem; font-weight: 700; }
 .badge-movie { background: #fff3e0; color: #b26a00; }
 .badge-layered { background: #e8f0fe; color: #2f5fd0; }
 .badge-oneshot { background: #f3e8fd; color: #7a3fd0; }
+.badge-special { background: #f3e8fd; color: #7136a5; }
 .badge-muted { background: #3a4752; color: #b6c0c9; }
 .song-detail-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; }
 .song-detail-stats div { min-width: 0; padding: 7px 14px; border-left: 1px solid #34414c; }
@@ -234,17 +309,45 @@ const effectEntries = computed(() =>
 .song-subsection { margin-top: 16px; }
 .song-subsection h4 { margin: 0 0 8px; font-size: 0.78rem; color: #5c6771; }
 .chip-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.chip-list li {
+.chip-list li { display: inline-flex; }
+.chip-list button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
+  border: 0;
   border-radius: 999px;
   background: #f0fbfa;
   color: #36636b;
+  cursor: pointer;
+  font: inherit;
   font-size: 0.7rem;
 }
+.chip-list button:hover:not(:disabled) { background: #dff5f2; }
+.chip-list button:focus-visible { outline: 2px solid #158f87; outline-offset: 2px; }
+.chip-list button:disabled { cursor: default; opacity: 0.78; }
 .chip-list code { color: #158f87; font-weight: 700; }
+.variant-list { display: grid; gap: 8px; margin-top: 12px; }
+.variant-list button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 12px;
+  border: 1px solid #dfe4e8;
+  border-radius: 6px;
+  background: #f8fafb;
+  color: #26313a;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+.variant-list button:hover { border-color: #7bcfc9; background: #f0fbfa; }
+.variant-list button > span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.variant-list strong { font-size: 0.78rem; }
+.variant-list small { color: #7a858e; font-size: 0.66rem; }
 .movie-list { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
 .movie-list li { display: flex; align-items: center; gap: 10px; font-size: 0.78rem; }
 .movie-list code { color: #158f87; font-weight: 700; }

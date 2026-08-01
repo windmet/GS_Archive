@@ -25,7 +25,7 @@ assert.deepEqual(
   {
     view: 'idol_detail', homeIdol: '', homeCue: '', homeCostume: '', category: 'idol', idol: '001tom', group: '', unit: '', unitFilter: '',
     storyType: '', storyMode: 'portal', storySection: '', story: '', mobileMode: 'personal', mobileScenario: '', eventScope: 'all', availability: 'all', sort: 'domain', episode: '', card: '',
-    gasha: '', gashaType: 'all', rarity: 'all', assetState: 'all', relationState: 'all', query: '', song: '',
+    gasha: '', gashaType: 'all', rarity: 'all', assetState: 'all', relationState: 'all', query: '', song: '', songScope: 'all',
     event: '', scenario: '', startStep: 0, endStep: 0, voice: '', returnView: '', parentView: '',
   },
 )
@@ -314,6 +314,12 @@ assert.equal(readArchiveRoute('http://localhost/?view=player&scenario=1_3_10001_
 
 const songCatalogContext = readArchiveRoute('http://localhost/?view=song_catalog')
 assert.equal(songCatalogContext.view, 'song_catalog')
+assert.equal(songCatalogContext.songScope, 'all')
+
+const filteredSongCatalogContext = readArchiveRoute('http://localhost/?view=song_catalog&song_scope=layered&q=drive')
+assert.equal(filteredSongCatalogContext.songScope, 'layered')
+assert.equal(filteredSongCatalogContext.query, 'drive')
+assert.equal(buildArchiveUrl('http://localhost/', filteredSongCatalogContext).searchParams.get('song_scope'), 'layered')
 assert.equal(songCatalogContext.song, '')
 const songDetailContext = readArchiveRoute('http://localhost/?view=song_detail&song=drvalv')
 assert.equal(songDetailContext.view, 'song_detail')
