@@ -19,21 +19,24 @@ const entry = manifest.songs?.drvalv
 if (!entry) fail('drvalv sample is missing')
 if (!entry.single_tracks?.full_mix?.url) fail('full-mix single track is missing')
 if (!entry.backing?.url) fail('backing track is missing')
-if (!entry.solo_tracks?.['001tom']?.vocal?.url) fail('001tom vocal track is missing')
-if (!entry.solo_tracks?.['001tom']?.backing?.url) fail('001tom backing relation is missing')
-if (entry.solo_tracks['001tom'].sync?.sample_delta > 1 || entry.solo_tracks['001tom'].sync?.sample_delta < -1) {
-  fail('solo/backing metadata delta exceeds one sample')
+const soloEntries = Object.entries(entry.solo_tracks || {})
+if (soloEntries.length !== 49) fail(`expected all 49 idol vocal candidates, found ${soloEntries.length}`)
+for (const [idolCode, solo] of soloEntries) {
+  if (!solo.vocal?.url) fail(`${idolCode} vocal track is missing`)
+  if (!solo.backing?.url) fail(`${idolCode} backing relation is missing`)
+  if (solo.sync?.sample_delta > 1 || solo.sync?.sample_delta < -1) {
+    fail(`${idolCode} solo/backing metadata delta exceeds one sample`)
+  }
 }
 if (!Array.isArray(entry.unit_tracks) || entry.unit_tracks.length < 1) fail('no unit single-track candidate is listed')
 
 if (mounted) {
   const base = process.env.SONG_EXPERIMENTAL_BASE_URL || 'http://127.0.0.1:5174'
-  const urls = [
+  const urls = new Set([
     entry.single_tracks.full_mix.url,
     entry.backing.url,
-    entry.solo_tracks['001tom'].vocal.url,
-    entry.solo_tracks['001tom'].backing.url,
-  ]
+    ...soloEntries.flatMap(([, solo]) => [solo.vocal.url, solo.backing.url]),
+  ])
   for (const path of urls) {
     const response = await fetch(new URL(path, base))
     if (!response.ok) fail(`${path} returned HTTP ${response.status}`)
