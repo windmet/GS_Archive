@@ -2,10 +2,10 @@
   <section v-if="audioExperiment" class="song-block experimental-player" aria-labelledby="song-experimental-player-title">
     <div class="song-block-heading">
       <span>EXPERIMENTAL PLAYER</span>
-      <h3 id="song-experimental-player-title">单轨与 Solo＋伴奏实验</h3>
+      <h3 id="song-experimental-player-title">单轨、Solo 与五槽演唱实验</h3>
     </div>
     <p class="song-block-note">
-      这是歌曲详情页的实验播放器，不复用故事播放器。单轨模式播放已有单文件；Solo 模式同步个人声部与伴奏，当前仅作试听验证。
+      这是歌曲详情页的实验播放器，不复用故事播放器。单轨模式播放已有单文件；Solo 模式同步一条个人声部与伴奏；五槽模式按演唱切换表组织自定义编组。
     </p>
 
     <div class="experimental-controls">
@@ -14,6 +14,7 @@
         <select v-model="mode">
           <option value="single">单轨模式</option>
           <option value="solo" :disabled="!soloEntries.length">Solo＋伴奏（实验）</option>
+          <option value="lineup" :disabled="!audioExperiment?.stage_vocal">五槽演唱编组（实验）</option>
         </select>
       </label>
       <label v-if="mode === 'single'">
@@ -24,7 +25,7 @@
           </option>
         </select>
       </label>
-      <label v-else>
+      <label v-else-if="mode === 'solo'">
         Solo 偶像
         <select v-model="selectedIdolCode">
           <option v-for="entry in soloEntries" :key="entry.idol_code" :value="entry.idol_code">
@@ -34,7 +35,12 @@
       </label>
     </div>
 
-    <div class="experimental-player-panel" :class="{ 'is-solo': mode === 'solo' }">
+    <ArchiveSongLineupPlayer
+      v-if="mode === 'lineup'"
+      :audio-experiment="audioExperiment"
+    />
+
+    <div v-else class="experimental-player-panel" :class="{ 'is-solo': mode === 'solo' }">
       <audio
         ref="singleAudio"
         v-if="mode === 'single'"
@@ -97,7 +103,7 @@
       </div>
     </div>
 
-    <p class="experimental-evidence">
+    <p v-if="mode !== 'lineup'" class="experimental-evidence">
       对齐证据：{{ syncLabel }}。实验状态：未完成完整听感校准；若出现偏移，请以“归零”后重新播放为准。
     </p>
     <p v-if="audioError" class="experimental-error" role="alert">{{ audioError }}</p>
@@ -107,6 +113,7 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { IDOL_ID_TO_NAME } from '../../utils/IdolNameMap.js'
+import ArchiveSongLineupPlayer from './ArchiveSongLineupPlayer.vue'
 
 const props = defineProps({
   song: { type: Object, required: true },
@@ -156,6 +163,7 @@ const syncLabel = computed(() => {
 })
 
 function audioElements() {
+  if (mode.value === 'lineup') return []
   return mode.value === 'solo'
     ? [vocalAudio.value, backingAudio.value].filter(Boolean)
     : [singleAudio.value].filter(Boolean)

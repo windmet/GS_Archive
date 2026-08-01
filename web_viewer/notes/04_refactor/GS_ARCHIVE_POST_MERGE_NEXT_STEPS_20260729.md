@@ -648,11 +648,22 @@ view=story_collection&story_type=...&story_section=...
   12,315ms 为 stage positions `4,5`（反推 performer slots `3,5`）；此前网页的
   `4` 与 `1,5` 均属 double mapping，现由 RAW 定点门禁纠正。三首实验媒体各
   50 个 M4A，共 150 个；这不是长稳、publication 或 release acceptance。
-- 下一独立小批将把五槽 transport/session 从 Chibi 视图抽离，供歌曲详情复用；
-  门户播放器显示五个 performer slot、空位与当前演唱偶像。重复偶像只能作为
-  自定义实验编组：按 idol code 只加载/播放一条声部，并对其多个槽的活动状态
-  取 OR；禁止用同一波形叠放制造“多人”假象。该批不得与官方混音参数恢复、
-  MV 或 publication promotion 合并。
+- 歌曲详情已接入独立于画面的五槽 performance session，显示 performer slot、
+  空位与当前演唱偶像。重复偶像按 idol code 只加载/播放一条声部，并对其多个
+  槽的活动状态取 OR；不会用同一波形叠放制造“多人”假象。为避免多元素播放
+  在浏览器压力或网络波动下产生单轨 layback，门户与 Chibi 五槽实验都改为
+  播放前完整 fetch/decode 伴奏与所选唯一声部；所有
+  `AudioBufferSourceNode` 使用同一个 `AudioContext.currentTime` 与同一
+  `startAt`，`SwitchSinger` gate 也提前排入音频线程。播放期不再依赖网络，
+  也不再用 80ms 阈值追赶多个 `HTMLAudio` 时钟；暂停、seek、恢复及变速会从
+  统一逻辑 offset 重建整组 source。5174 门户验收中默认
+  5 条声部在重复冬馬后降为 4，清空第三槽后降为 3；8.0 秒显示 performer
+  slot 1 的冬馬，12.5 秒活动槽 `3,5` 中空槽 3 被排除，只剩槽 5 的桜庭薫。
+  统一时钟改造后又验证了 7.8 秒与 12.4 秒定位恢复，分别重建槽 `1` 与 `3,5`。
+  390px 窄屏无横向溢出。门户用轻量缓存 JSON loader，不引入 Pixi/Spine；
+  Chibi 只复用音频 session，不改变既有编舞、口型、镜头或场景数据。本批不与
+  官方混音参数、MV 或 publication promotion 合并，短实播也不是 2–4 小时
+  长稳；P2-B 仍为 **NOT EXECUTED**。
 - 供应包与 RAW 的逐文件 hash 对照已固化为
   `scripts/audit-song-package-raw-match.py`（`npm run audit:song-package-match --
   --ipa <path> --xapk <path> --raw-audio ..\\RAW\\audio --output <report>`）；
