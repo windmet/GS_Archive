@@ -590,6 +590,28 @@ view=story_collection&story_type=...&story_section=...
 - 播放器、solo+伴奏同步、MV 播放和 Chibi Stage 预选仍属于 Song-C，状态
   为 **NOT EXECUTED**，等待下一步产品与音频同步讨论。
 
+2026-08-01 supplied package metadata checkpoint（只读）：
+
+- 提供的 2.6.10 IPA/XAPK 可作为 Song-C 的 Unity/CRI 参照样本；IPA 内的
+  `TutorialAssets` 含 `song3_drvalv_bgm`、5 个偶像声部和一个含 16 个组合
+  cue 的 `song3_grwsml`。`drvalv` BGM 为 `master/song_option/song_submix`，
+  偶像声部为 `master/vocal_option/vocal_prog/vocal_submix`；两类音频同为
+  44.1 kHz、130.285 s，但 ACB sequence selector 不同，不能只按文件名判断；
+- `glowing.acf` 解出 19 张 CRI UTF 表、23 个 category、7 个 stage snapshot、
+  9 个 bus，并包含 limiter、reverb、bandpass、32-band EQ 等 DSP。`song_submix`
+  与 `vocal_submix` 走不同 category，但共享一组 submix command；这证明存在
+  CRI mixer 边界，不足以单独证明浏览器端应如何重建其参数；
+- iOS IL2CPP metadata v27 命中 `SwitchSingerUtil.SwitchSingers`、
+  `SetCategoryVolumeForParallelSong`、`SingerNumVolumeList`、
+  `singerCountPanDict`，以及 `SoundManager.ReserveTracks/PlaySong`、
+  `LiveSoundDirector.songPlaybacks/SetMuteSong/SetPan3dAngleSong`、
+  `SongData` 的 singer/cue/BGM 字段和 `VocalSettingPopupContent` 的切换控件；
+  因此 solo 可能是多 track、音量、声像和 category 控制的组合，当前实验的
+  两个 HTML 音频源只能作为听感原型，不能写成官方运行时等价实现；
+- 当前只保留证据与哈希，不复制或修改原始 IPA/XAPK；下一步应先把 Unity
+  data/metadata 字段与 track index、pan、volume、cue-sheet 选择做可复核映射，
+  再决定播放器是否支持可选声部与伴奏叠加。Song-C 仍为 **NOT EXECUTED**。
+
 2026-08-01 P1-Mobile-Nav implementation checkpoint：
 
 - `view=portal_hub` 已接入 archive route contract、breadcrumb 和既有
