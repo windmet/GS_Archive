@@ -732,6 +732,12 @@ def read_choreography_scripts(
         stage_position_map = build_stage_position_map(
             performer_slots, position_events, singer_events
         )
+        for singer_event in singer_events:
+            performer_slot_ids = list(singer_event["singers"])
+            singer_event["performerSlots"] = performer_slot_ids
+            singer_event["stagePositions"] = sorted(
+                stage_position_map.get(slot, slot) for slot in performer_slot_ids
+            )
         for event in events:
             event["stagePosition"] = stage_position_map.get(event["position"], event["position"])
         for event in camera_events:

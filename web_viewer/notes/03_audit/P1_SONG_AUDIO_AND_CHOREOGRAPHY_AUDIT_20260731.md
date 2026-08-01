@@ -69,7 +69,38 @@ mix.
 
 `tkstp1` and `tkstp2` each have 51 files (1 base + 49 idol + 1 backing) but
 their base ACB exposes a single full-mix cue; they are single-cue songs with
-idol-vocal and backing files, not unit-layered.
+idol-vocal and backing files, not unit-cue-layered. “Single-cue” here describes
+only the base ACB cue shape; it does not mean that the live vocal selection is
+one fixed solo track.
+
+### 4c2. Take a StuMp! five-slot vocal selection
+
+The five-person grouping observed in the recording is supported by three
+independent local sources:
+
+1. table 46 rows for `tkstp1` and `tkstp2` carry `OnStageCount=5` and
+   `HasSwitchSinger=1`; their field-37 `HasSoloSinging` is not enabled and
+   field-42 remains the disabled sentinel. This separates the five-slot live
+   vocal selector from the table-46 “solo singing” feature flag.
+2. Each song has 49 per-idol ACBs (`song3_<code>_<idol-code>.acb`) plus one
+   backing ACB. The per-idol files are one-cue, mono `vocal_*` assets; the
+   backing is one-cue stereo `song_*` audio. There are no `<code>_<unit-code>`
+   base cues, so this is not the 16-unit-cue format used by `byndtd`, `drvalv`,
+   and `grwsml`.
+3. The Unity bundles contain one `<code>_live_effect` CSV. It has 47
+   (`tkstp1`) / 48 (`tkstp2`) `SwitchSinger` events, and every event carries
+   five binary state columns (`value1`–`value5`). The generated Chibi relation
+   consequently resolves five performer slots and a stable stage-position map
+   (performer slots `1..5` -> stage positions `3,2,4,1,5`).
+
+The correct model is therefore: choose/assign five idols to the live
+performance slots, then use the `SwitchSinger` timeline to select which slot
+or slots sing at each moment. The 49 ACB files are the selectable idol voice
+pool, not 49 simultaneously active channels; the base full-mix cue remains a
+separate playback option. The supplied recording’s “编组五人各自有 solo”
+observation is consistent with this slot-based model and with the IPA runtime
+symbols `SwitchSingerUtil`, `InitParallelSongs`, `SetMuteSong`, and
+`SetPan3dAngleSong`.
 
 ### 4a2. Unit-cue / choreography-effect consistency
 
@@ -162,6 +193,11 @@ re-scans file existence.
   the shared ACB layer lengths and naming. A stronger proof would come from
   ACB sequence/Cue configuration or runtime behaviour; this batch does not
   claim to have decoded the ACB mix graph.
+- Chibi now preserves both the source performer slot and its mapped stage
+  position for every `SwitchSinger` event; `tkstp1/2` validate as five
+  position-identical motion timelines with singer-order-only changes. This is
+  a position/lipsync mapping, not yet proof of the browser mixer’s gain/pan
+  policy.
 - `song_drv999` has no `_for_lipsync` TextAsset and no idol/backing layers;
   it is the April Fools variant.
 - `00test` / `02test` base files are test entities; they are excluded from
