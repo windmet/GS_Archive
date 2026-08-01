@@ -683,6 +683,23 @@ view=story_collection&story_type=...&story_section=...
   196 个歌词事件显示 ASCII `,` 并在 `rawText` 保留来源。`<<Kick Off!>>`、
   `きっと<きっと>叶えるよ` 等真实尖括号歌词继续按纯文本保留，禁止用
   `v-html` 或泛化的“去 HTML 标签”规则处理。
+- 2026-08-02 游戏内说明截图补全了正式产品词汇：部分歌曲可从
+  `編成アイドル / ユニット / 315 ALL STARS / センター` 选择演唱指定，Center
+  时只有编入 `CENTER` 的偶像登场。该截图只证明功能和名称；具体映射必须继续
+  由 table 46 与 RAW 交叉约束。`byndtd / drvalv / grwsml` 均同时满足
+  `OnStageCount=5`、`HasSwitchSinger=1`、`HasSoloSinging=1`、49 人声部、1 伴奏、
+  16 Unit cue、base 五人编舞、16 Unit 编舞和 3 个中心 `solo*` 候选，因此门户
+  与 Chibi 可按四类正式名称组织。`tkstp1/2` 只保留 Formation 为演唱指定；
+  完整混音只作为普通单轨候选，不得显示 Center、Unit 或 315 ALL STARS 为
+  已证明的官方可选项。
+- 实验 manifest 现覆盖 `byndtd / drvalv / grwsml / tkstp1 / tkstp2`；前三首各
+  有 49 人声部、伴奏和 16 Unit 单轨。门户 Formation 只读取无 variant 的 base
+  `SwitchSinger`，避免五人 Unit 与 GRWSML tutorial 混入自定义编成。Chibi 的
+  base、Unit、Center 候选使用相同标签，并继续显示 raw variant 名供审计。
+- GRWSML 是时长例外：伴奏 5,569,571 samples；46 条人声 5,603,271，另 3 条
+  5,603,295，delta 为 `-33,700/-33,724`。代表性人声末尾有超过 13 秒静音，
+  因此记录为 `extra-vocal-tail-experimental`，不能沿用“±1 sample 对齐”结论；
+  网页仍从统一时钟同时起播，并以伴奏结束 session，不声称恢复官方 offset。
 - 供应包与 RAW 的逐文件 hash 对照已固化为
   `scripts/audit-song-package-raw-match.py`（`npm run audit:song-package-match --
   --ipa <path> --xapk <path> --raw-audio ..\\RAW\\audio --output <report>`）；

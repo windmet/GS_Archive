@@ -12,6 +12,7 @@
     :data-stage-vocal-slots="stageVocalLoadedIdolCodes.length"
     :data-stage-vocal-clock="stageVocalEnabled ? 'audio-context-scheduled' : 'media-element'"
     :data-stage-vocal-mode="stageVocalMode"
+    :data-vocal-setting="selectedSong?.vocalSetting?.mode || ''"
     :data-position-tween-ms="POSITION_TWEEN_MS"
     :data-stage-base-zoom="STAGE_BASE_ZOOM"
     :data-stage-view-scale="stageViewScale.toFixed(3)"
@@ -173,7 +174,7 @@
               <span>{{ selectedSong?.backmonitorEvents?.length || 0 }} 条屏幕</span>
               <span>{{ selectedSong?.imageLayerEvents?.length || 0 }} 条布景</span>
               <span>{{ selectedSong?.lyricEvents?.length || 0 }} 条歌词</span>
-              <span>{{ stageVocalEnabled ? stageVocalFactLabel : (selectedSongAudio ? '官方混音音频' : '无音频') }}</span>
+              <span>{{ selectedVocalSettingFact }}</span>
             </div>
             <fieldset v-if="stageVocalAvailable" class="stage-vocal-controls">
               <legend>{{ stageVocalLegend }}</legend>
@@ -544,6 +545,9 @@ const selectedStageVocalExperiment = computed(() => {
   return entry?.stage_vocal?.mode === 'parallel-performer-slots' ? entry : null
 })
 const isSoloChoreography = computed(() => /^solo(?:_|$)/.test(selectedSong.value?.variant || ''))
+const isOfficialFormationSetting = computed(() => (
+  selectedSong.value?.vocalSetting?.mode === 'formation-or-all-stars'
+))
 const stageVocalMode = computed(() => isSoloChoreography.value ? 'center-solo' : 'switch-singer')
 const stageVocalAvailable = computed(() => Boolean(
   selectedStageVocalExperiment.value
@@ -551,17 +555,27 @@ const stageVocalAvailable = computed(() => Boolean(
     ? activePositions.value.length === 1
     : activePositions.value.length === selectedStageVocalExperiment.value.stage_vocal.slot_count),
 ))
-const stageVocalFactLabel = computed(() => isSoloChoreography.value ? '中心 Solo 实验音频' : '五槽实验音频')
-const stageVocalLegend = computed(() => isSoloChoreography.value ? '中心 Solo 声部实验' : '五人声部实验')
+const stageVocalFactLabel = computed(() => isSoloChoreography.value ? 'Center 实验音频' : '编成偶像实验音频')
+const stageVocalLegend = computed(() => isSoloChoreography.value ? 'Center 声部实验' : '编成偶像声部实验')
 const stageVocalToggleLabel = computed(() => isSoloChoreography.value
-  ? '出场中心偶像 Solo＋伴奏'
-  : '按编组位与 SwitchSinger 切换')
+  ? 'Center：中心偶像声部＋伴奏'
+  : (isOfficialFormationSetting.value
+    ? '编成偶像：五人声部＋伴奏'
+    : '按编组位与 SwitchSinger 切换'))
 const stageVocalReadyLabel = computed(() => isSoloChoreography.value
   ? '统一音频时钟与中心 Solo 声部已就绪'
   : '统一音频时钟与五个编组位声部已就绪')
 const stageVocalLoadingLabel = computed(() => isSoloChoreography.value
   ? '正在预解码中心 Solo 声部…'
   : '正在预解码五个声部…')
+const selectedVocalSettingFact = computed(() => {
+  if (stageVocalEnabled.value) return stageVocalFactLabel.value
+  if (selectedSong.value?.vocalSetting?.mode === 'formation-or-all-stars') {
+    return '315 ALL STARS 完整混音候选'
+  }
+  if (selectedSong.value?.vocalSetting?.label) return selectedSong.value.vocalSetting.label
+  return selectedSongAudio.value ? '官方混音音频' : '无音频'
+})
 const stageDuration = computed(() => Math.max(
   selectedSong.value?.duration || 0,
   selectedSong.value?.lipSync?.duration || 0,
@@ -764,8 +778,22 @@ function costumeForSlot(slot) {
 }
 
 function songOptionLabel(song) {
-  if (!/^solo(?:_|$)/.test(song?.variant || '')) return song?.title || song?.id || ''
-  return `${song.title} · 中心一人演出（raw: ${song.variant}）`
+  const fallback = song?.title || song?.id || ''
+  const setting = song?.vocalSetting
+  if (!setting) {
+    if (!/^solo(?:_|$)/.test(song?.variant || '')) return fallback
+    return `${song.title} · 中心一人演出（raw: ${song.variant}）`
+  }
+  const suffix = song.variant ? ` · ${song.variant}` : ''
+  const baseTitle = suffix && fallback.endsWith(suffix)
+    ? fallback.slice(0, -suffix.length)
+    : fallback
+  if (setting.mode === 'formation-or-all-stars') {
+    return `${baseTitle} · 编成偶像 / 315 ALL STARS`
+  }
+  if (setting.mode === 'unit') return `${baseTitle} · ${setting.label}（raw: ${song.variant}）`
+  if (setting.mode === 'center') return `${baseTitle} · Center（中心一人 / raw: ${song.variant}）`
+  return fallback
 }
 
 function ensureCharacterShadowTexture() {
