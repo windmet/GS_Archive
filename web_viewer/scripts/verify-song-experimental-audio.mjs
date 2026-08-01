@@ -9,6 +9,15 @@ const manifestPath = new URL('public/data/song_experimental_audio.json', root)
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
 const appSource = fs.readFileSync(new URL('src/App.vue', root), 'utf8')
 const stageSource = fs.readFileSync(new URL('src/components/ChibiStageViewer.vue', root), 'utf8')
+const detailPlayerSource = fs.readFileSync(new URL('src/components/archive/ArchiveSongExperimentalPlayer.vue', root), 'utf8')
+const lineupPlayerSource = fs.readFileSync(new URL('src/components/archive/ArchiveSongLineupPlayer.vue', root), 'utf8')
+const performanceSessionSource = fs.readFileSync(new URL('src/composables/useSongPerformanceSession.js', root), 'utf8')
+const performanceDataSource = fs.readFileSync(new URL('src/utils/songPerformanceData.js', root), 'utf8')
+const {
+  activeLineupIdolCodes,
+  buildSingerGateSchedule,
+  uniqueLineupIdolCodes,
+} = await import(new URL('src/composables/useSongPerformanceSession.js', root))
 
 function fail(message) {
   throw new Error(`[song-experimental-audio] ${message}`)
@@ -57,16 +66,76 @@ for (const [label, source, needles] of [
   ['Chibi stage', stageSource, [
     "currentSingerEvent.value?.performerSlots",
     'stagePositionForPerformerSlot',
-    'stageVocalBusGain.value / Math.sqrt(activeSlots.size)',
     '(!stageVocalEnabled.value || stageVocalReady.value)',
-    'Math.abs(item.audio.currentTime - clockAudio.currentTime) > 0.08',
+    'useSongPerformanceSession()',
+    'stageVocalSession.configure({',
+    'stageVocalSession.currentTime.value * 1000',
+    'if (wasPlaying && stageVocalEnabled.value && stageVocalReady.value)',
+    'data-stage-vocal-clock="stageVocalEnabled ? \'audio-context-scheduled\' : \'media-element\'"',
     'releaseStageVocalAudio()',
     '浏览器近似，不代表游戏官方混音参数',
+  ]],
+  ['song detail player', detailPlayerSource, [
+    'ArchiveSongLineupPlayer',
+    '五槽演唱编组（实验）',
+  ]],
+  ['portal lineup player', lineupPlayerSource, [
+    '<option value="">空位</option>',
+    '重复偶像只播放一条声部',
+    'activeSingerEntries',
+    '当前演唱',
+    'fetchSongPerformanceChoreography',
+    'data-clock-mode="audio-context-scheduled"',
+    '播放前完整解码',
+  ]],
+  ['shared performance session', performanceSessionSource, [
+    'uniqueLineupIdolCodes(lineup.value)',
+    'activeLineupIdolCodes(',
+    '1 / Math.sqrt(active.size)',
+    'currentSingerEvent.value?.performerSlots',
+    'decodeAudioData(bytes)',
+    'const startAt = ctx.currentTime + START_LEAD_SECONDS',
+    'source.start(startAt, offset)',
+    'gate.gain.setValueAtTime(',
+    'source.playbackRate.value = playbackRate.value',
+    'Math.max(0, entry.timeSeconds - offset) / playbackRate.value',
+  ]],
+  ['lightweight performance data loader', performanceDataSource, [
+    '/assets/live-chibi/choreography/index.json',
+    'choreographyPromise',
   ]],
 ]) {
   for (const needle of needles) {
     if (!source.includes(needle)) fail(`${label} integration is missing: ${needle}`)
   }
+}
+if (lineupPlayerSource.includes('liveChibiSpine')) {
+  fail('portal lineup player must not pull Pixi/Spine runtime into the archive bundle')
+}
+const duplicateAndEmptyLineup = ['001tom', '001tom', '', '004ter', '005kao']
+if (JSON.stringify(uniqueLineupIdolCodes(duplicateAndEmptyLineup)) !==
+    JSON.stringify(['001tom', '004ter', '005kao'])) {
+  fail('duplicate/empty lineup must create exactly one media element per unique idol')
+}
+if (JSON.stringify(activeLineupIdolCodes(duplicateAndEmptyLineup, [1, 2, 3, 5])) !==
+    JSON.stringify(['001tom', '005kao'])) {
+  fail('active slots must OR duplicate idols and exclude empty slots')
+}
+const gateSchedule = buildSingerGateSchedule(duplicateAndEmptyLineup, [
+  { time: 1000, performerSlots: [1, 2] },
+  { time: 3000, performerSlots: [3, 5] },
+  { time: 5000, performerSlots: [4, 5] },
+], 2)
+if (JSON.stringify(gateSchedule) !== JSON.stringify([
+  { timeSeconds: 2, idolCodes: ['001tom'] },
+  { timeSeconds: 3, idolCodes: ['005kao'] },
+  { timeSeconds: 5, idolCodes: ['004ter', '005kao'] },
+])) {
+  fail('gate schedule must restore the state at seek time and preserve future switch times')
+}
+if (/new Audio\s*\(/.test(performanceSessionSource) || performanceSessionSource.includes('DRIFT_LIMIT_SECONDS') ||
+    stageSource.includes('Math.abs(item.audio.currentTime - clockAudio.currentTime) > 0.08')) {
+  fail('portal lineup session must not use independently clocked HTMLAudio tracks or drift repair')
 }
 
 if (mounted) {

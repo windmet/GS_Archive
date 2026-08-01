@@ -248,15 +248,28 @@ duplicating choreography:
 
 - the five selected idols are bound to performer slots `1..5` through the
   authored `stagePositionMap`, rather than by left-to-right screen order;
-- one backing element and five continuously synchronized idol-vocal elements
-  share the backing clock; RAW `SwitchSinger` columns directly drive
-  `stagePositions` for mouth/highlight state, while the inverse
-  `stagePositionMap` derives `performerSlots` for the matching vocal elements;
+- one decoded backing buffer and the unique selected idol-vocal buffers share
+  one `AudioContext` clock and scheduled start deadline; RAW `SwitchSinger`
+  columns directly drive `stagePositions` for mouth/highlight state, while the
+  inverse `stagePositionMap` derives `performerSlots` for scheduled vocal gates;
 - multiple active slots use `1 / sqrt(active singer count)` vocal normalization,
   centered pan, and an independently adjustable backing gain. These values are
   labelled **browser approximation**, not recovered game constants;
 - changing a lineup idol releases and rebuilds all five vocal bindings; changing
   songs disables the experiment and returns to the existing full-mix audio.
+
+The portal song-detail player and the Chibi five-slot experiment now share a
+view-independent performance session. It fetches and fully decodes the backing
+plus each unique selected idol vocal before becoming ready, then starts every
+`AudioBufferSourceNode` at one shared `AudioContext.currentTime` deadline.
+`SwitchSinger` gain gates are also scheduled against that audio clock in
+advance. Playback therefore has no per-track network dependency and no
+independently advancing HTML media clocks; pause, seek, resume, and rate changes
+rebuild the whole source set from one logical offset. The 5174 portal acceptance
+restored the expected active performer slots after seeks at 7.8 s (`1`) and
+12.4 s (`3,5`). Chibi retains its existing choreography, lip, camera, and stage
+data paths while consuming the shared audio session. These are bounded short
+playback checks, not the 2–4 hour P2-B soak, which remains **NOT EXECUTED**.
 
 A recording comparison exposed and corrected a double-mapping defect in the
 first prototype. The authoritative `song_tkstp1.unity3d` TextAsset has SHA-256
@@ -288,20 +301,32 @@ Before promoting beyond this experiment, decide and verify:
 
 No solo or layered-player claim is release evidence until those checks pass.
 
-### Next bounded UI batch: portal performance lineup
+### Portal performance lineup — bounded implementation
 
-The five-slot transport must be extracted from the Chibi component before the
-song detail page adopts it. The shared session owns backing/vocal elements,
-performer-slot selections, `SwitchSinger` timing, seeking, gain normalization,
-drift correction, and cleanup. Chibi Stage and the song-detail player become
-separate visual consumers of that same state.
+The song detail page now has a view-independent `useSongPerformanceSession`
+transport. It owns backing/vocal elements, performer-slot selections,
+`SwitchSinger` timing, seeking, gain normalization, drift correction, and
+cleanup. The portal reads the lightweight choreography JSON through a cached
+loader and does not import Pixi/Spine. Chibi Stage still uses its existing
+transport and is a later migration target; no visual/runtime dependency was
+introduced from the archive portal back to the Chibi component.
 
-The portal UI should expose five performer slots, an explicit empty-slot choice,
-and a live “currently singing” list with idol identity and source slot. Repeated
-idol selection is allowed only as a labelled custom arrangement: identical
-vocal media must be deduplicated by idol code, and the repeated slots' active
-intervals are combined with logical OR. Playing the same sample-aligned file
-twice would only create a phase-coherent level increase, not a distinct choir.
-This gives experimental one-to-four-person arrangements without presenting
-duplicate waveforms as additional singers or claiming that the original game
-allowed duplicate formation members.
+The portal UI exposes five performer slots, an explicit empty-slot choice, and a
+live “currently singing” list with idol identity and source slot. Repeated idol
+selection is a labelled custom arrangement: identical vocal media is
+deduplicated by idol code, and the repeated slots' active intervals are combined
+with logical OR. Playing the same sample-aligned file twice would only create a
+phase-coherent level increase, not a distinct choir. This gives experimental
+one-to-four-person arrangements without presenting duplicate waveforms as
+additional singers or claiming that the original game allowed duplicate
+formation members.
+
+5174 acceptance on `view=song_detail&song=tkstp1` proved the media-level
+behavior. Five unique default selections loaded five vocals; assigning Touma to
+slots 1 and 2 reduced the loaded set to four and displayed him once with
+`slot 1/2`; clearing slot 3 reduced it to three. At 8.0 seconds the corrected
+performer slot 1 displayed Touma once. At 12.5 seconds active performer slots
+were `3,5`, but empty slot 3 left only Kaoru in the active-idol list. Playback,
+pause, seek, and ready state worked with no page errors. At a 390 px viewport the
+slot grid collapsed to one column and the document retained a 390 px scroll
+width.

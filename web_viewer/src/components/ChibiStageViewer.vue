@@ -9,7 +9,8 @@
     :data-current-performer-singers="currentSingerPerformerSlots.join(',')"
     :data-stage-vocal-enabled="stageVocalEnabled"
     :data-stage-vocal-ready="stageVocalReady"
-    :data-stage-vocal-slots="stageVocalAudios.length"
+    :data-stage-vocal-slots="stageVocalLoadedIdolCodes.length"
+    :data-stage-vocal-clock="stageVocalEnabled ? 'audio-context-scheduled' : 'media-element'"
     :data-position-tween-ms="POSITION_TWEEN_MS"
     :data-stage-base-zoom="STAGE_BASE_ZOOM"
     :data-stage-view-scale="stageViewScale.toFixed(3)"
@@ -190,7 +191,7 @@
                   <input v-model.number="stageVocalBackingGain" type="range" min="0" max="1" step="0.05" @input="syncStageVocalMix" />
                   <output>{{ stageVocalBackingGain.toFixed(2) }}</output>
                 </label>
-                <small>{{ stageVocalReady ? '五个编组位声部已就绪' : '正在载入五个声部…' }}</small>
+                <small>{{ stageVocalReady ? '统一音频时钟与五个编组位声部已就绪' : '正在预解码五个声部…' }}</small>
               </template>
               <small>均衡归一化与居中声像是浏览器近似，不代表游戏官方混音参数。</small>
             </fieldset>
@@ -383,6 +384,7 @@ import {
   playLiveChibiMotion,
 } from '../utils/liveChibiSpine.js'
 import { getSongUrl } from '../utils/AssetResolver.js'
+import { useSongPerformanceSession } from '../composables/useSongPerformanceSession.js'
 
 const emit = defineEmits(['back', 'open-lab'])
 const props = defineProps({
@@ -413,9 +415,11 @@ const errorText = ref('')
 const audioReady = ref(false)
 const audioError = ref('')
 const stageVocalEnabled = ref(false)
-const stageVocalReady = ref(false)
-const stageVocalBusGain = ref(1)
-const stageVocalBackingGain = ref(1)
+const stageVocalSession = useSongPerformanceSession()
+const stageVocalReady = stageVocalSession.ready
+const stageVocalBusGain = stageVocalSession.vocalGain
+const stageVocalBackingGain = stageVocalSession.backingGain
+const stageVocalLoadedIdolCodes = stageVocalSession.loadedIdolCodes
 const stageTime = ref(0)
 const playbackSpeed = ref(1)
 const playing = ref(false)
@@ -508,9 +512,6 @@ let animationFrame = 0
 let playbackStartedAt = 0
 let playbackStartOffset = 0
 let songAudio = null
-let stageVocalBackingAudio = null
-let stageVocalAudios = shallowReactive([])
-let stageVocalLoadSequence = 0
 let lipSyncCurve = null
 let lipSyncSequence = 0
 let stageBuildSequence = 0
@@ -2368,73 +2369,32 @@ function stagePositionForPerformerSlot(performerSlot) {
 }
 
 function releaseStageVocalAudio() {
-  stageVocalLoadSequence += 1
-  stageVocalReady.value = false
-  const audios = [stageVocalBackingAudio, ...stageVocalAudios.map(item => item.audio)].filter(Boolean)
-  for (const audio of audios) {
-    audio.pause()
-    audio.removeAttribute('src')
-    audio.load()
-  }
-  stageVocalBackingAudio = null
-  stageVocalAudios.splice(0)
-}
-
-function waitForAudioMetadata(audio) {
-  if (audio.readyState >= HTMLMediaElement.HAVE_METADATA) return Promise.resolve()
-  return new Promise((resolve, reject) => {
-    const cleanup = () => {
-      audio.removeEventListener('loadedmetadata', onReady)
-      audio.removeEventListener('error', onError)
-    }
-    const onReady = () => {
-      cleanup()
-      resolve()
-    }
-    const onError = () => {
-      cleanup()
-      reject(new Error('实验声部音频加载失败'))
-    }
-    audio.addEventListener('loadedmetadata', onReady, { once: true })
-    audio.addEventListener('error', onError, { once: true })
-  })
+  stageVocalSession.release()
 }
 
 async function loadStageVocalAudio() {
   releaseStageVocalAudio()
   if (!stageVocalEnabled.value || !stageVocalAvailable.value) return
-  const sequence = ++stageVocalLoadSequence
   const experiment = selectedStageVocalExperiment.value
   const slotCount = experiment.stage_vocal.slot_count
-  const nextAudios = []
   try {
-    const backing = new Audio(experiment.backing.url)
-    backing.preload = 'auto'
-    backing.playbackRate = playbackSpeed.value
-    stageVocalBackingAudio = backing
-
+    const performerLineup = []
     for (let performerSlot = 1; performerSlot <= slotCount; performerSlot += 1) {
       const stagePosition = stagePositionForPerformerSlot(performerSlot)
       const idolCode = slotByPosition(stagePosition)?.characterId
       const vocal = experiment.solo_tracks?.[idolCode]?.vocal
       if (!vocal?.url) throw new Error(`${stagePosition}号位偶像缺少 ${experiment.song_code} 声部`)
-      const audio = new Audio(vocal.url)
-      audio.preload = 'auto'
-      audio.playbackRate = playbackSpeed.value
-      audio.volume = 0
-      nextAudios.push({ performerSlot, stagePosition, idolCode, audio })
+      performerLineup.push(idolCode)
     }
-    stageVocalAudios.push(...nextAudios)
-    const allAudios = [backing, ...nextAudios.map(item => item.audio)]
-    const metadataLoads = allAudios.map(audio => waitForAudioMetadata(audio))
-    allAudios.forEach(audio => audio.load())
-    await Promise.all(metadataLoads)
-    if (sequence !== stageVocalLoadSequence || !stageVocalEnabled.value) return
-    stageVocalReady.value = true
-    audioError.value = ''
-    syncStageVocalMix()
+    stageVocalSession.setPlaybackRate(playbackSpeed.value)
+    await stageVocalSession.configure({
+      experiment,
+      events: selectedSong.value?.singerEvents || [],
+      performerLineup,
+    })
+    if (!stageVocalEnabled.value) return
+    audioError.value = stageVocalSession.error.value
   } catch (error) {
-    if (sequence !== stageVocalLoadSequence) return
     releaseStageVocalAudio()
     audioError.value = error.message
   }
@@ -2449,31 +2409,24 @@ async function handleStageVocalToggle() {
 }
 
 function syncStageVocalMix() {
-  if (!stageVocalEnabled.value || !stageVocalReady.value) return
-  const activeSlots = new Set(currentSingerPerformerSlots.value)
-  const vocalGain = activeSlots.size
-    ? Math.min(1, stageVocalBusGain.value / Math.sqrt(activeSlots.size))
-    : 0
-  if (stageVocalBackingAudio) stageVocalBackingAudio.volume = stageVocalBackingGain.value
-  for (const item of stageVocalAudios) {
-    item.audio.volume = activeSlots.has(item.performerSlot) ? vocalGain : 0
-  }
+  // Gain refs are watched by the shared AudioContext session. Singer gates are
+  // scheduled on its audio clock rather than being updated by animation frames.
 }
 
 function stagePlaybackAudios() {
-  if (stageVocalEnabled.value && stageVocalReady.value) {
-    return [stageVocalBackingAudio, ...stageVocalAudios.map(item => item.audio)].filter(Boolean)
-  }
+  if (stageVocalEnabled.value && stageVocalReady.value) return []
   return songAudio ? [songAudio] : []
 }
 
 function stageClockAudio() {
-  return stageVocalEnabled.value && stageVocalReady.value
-    ? stageVocalBackingAudio
-    : songAudio
+  return stageVocalEnabled.value && stageVocalReady.value ? null : songAudio
 }
 
 function syncStagePlaybackTime(seconds) {
+  if (stageVocalEnabled.value && stageVocalReady.value) {
+    stageVocalSession.seek(seconds)
+    return
+  }
   for (const audio of stagePlaybackAudios()) {
     if (Number.isFinite(audio.duration)) audio.currentTime = Math.min(seconds, audio.duration)
   }
@@ -2637,18 +2590,26 @@ async function toggleStage() {
   resetEventIndices()
   playbackStartOffset = stageTime.value
   playbackStartedAt = performance.now()
-  const playbackAudios = stagePlaybackAudios()
-  if (playbackAudios.length) {
-    syncStagePlaybackTime(stageTime.value / 1000)
-    playbackAudios.forEach(audio => { audio.playbackRate = playbackSpeed.value })
-    syncStageVocalMix()
-    try {
-      await Promise.all(playbackAudios.map(audio => audio.play()))
-      audioError.value = ''
-    } catch (error) {
-      playbackAudios.forEach(audio => audio.pause())
-      audioError.value = `歌曲音频无法播放：${error.message}`
+  if (stageVocalEnabled.value && stageVocalReady.value) {
+    stageVocalSession.seek(stageTime.value / 1000)
+    if (!await stageVocalSession.play()) {
+      audioError.value = stageVocalSession.error.value
       return
+    }
+    audioError.value = ''
+  } else {
+    const playbackAudios = stagePlaybackAudios()
+    if (playbackAudios.length) {
+      syncStagePlaybackTime(stageTime.value / 1000)
+      playbackAudios.forEach(audio => { audio.playbackRate = playbackSpeed.value })
+      try {
+        await Promise.all(playbackAudios.map(audio => audio.play()))
+        audioError.value = ''
+      } catch (error) {
+        playbackAudios.forEach(audio => audio.pause())
+        audioError.value = `歌曲音频无法播放：${error.message}`
+        return
+      }
     }
   }
   playing.value = true
@@ -2661,18 +2622,12 @@ function updateStage(now) {
   const clockAudio = stageClockAudio()
   stageTime.value = Math.min(
     stageDuration.value,
-    clockAudio && !clockAudio.paused
+    stageVocalEnabled.value && stageVocalReady.value
+      ? stageVocalSession.currentTime.value * 1000
+      : clockAudio && !clockAudio.paused
       ? clockAudio.currentTime * 1000
       : playbackStartOffset + (now - playbackStartedAt) * playbackSpeed.value,
   )
-  if (stageVocalEnabled.value && stageVocalReady.value && clockAudio) {
-    for (const item of stageVocalAudios) {
-      if (Math.abs(item.audio.currentTime - clockAudio.currentTime) > 0.08) {
-        item.audio.currentTime = clockAudio.currentTime
-      }
-    }
-    syncStageVocalMix()
-  }
   if (!stageTransportReady.value) return
   for (const slot of activeSlots.value) {
     const events = eventsForPosition(slot.position)
@@ -2701,9 +2656,14 @@ function updateStage(now) {
 }
 
 function stopStage(reset = false) {
+  const wasPlaying = playing.value
   if (animationFrame) cancelAnimationFrame(animationFrame)
   animationFrame = 0
   playing.value = false
+  stageVocalSession.pause()
+  if (wasPlaying && stageVocalEnabled.value && stageVocalReady.value) {
+    stageTime.value = stageVocalSession.currentTime.value * 1000
+  }
   stagePlaybackAudios().forEach(audio => audio.pause())
   backmonitorVideo?.pause()
   backmonitorTransitionVideo?.pause()
@@ -2720,6 +2680,7 @@ async function resetStage() {
 }
 
 function applyPlaybackSpeed() {
+  stageVocalSession.setPlaybackRate(playbackSpeed.value)
   stagePlaybackAudios().forEach(audio => { audio.playbackRate = playbackSpeed.value })
   if (backmonitorVideo) backmonitorVideo.playbackRate = playbackSpeed.value
   if (backmonitorTransitionVideo) backmonitorTransitionVideo.playbackRate = playbackSpeed.value
