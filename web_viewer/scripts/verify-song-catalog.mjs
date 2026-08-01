@@ -3,6 +3,7 @@ import { readdirSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import Ajv2020 from 'ajv/dist/2020.js'
+import addFormats from 'ajv-formats'
 import { loadArchiveSources } from './lib/archive-sources.mjs'
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -11,6 +12,7 @@ const schemaPath = path.join(projectRoot, 'schemas', 'song-catalog-v1.schema.jso
 const musicCatalogPath = path.join(projectRoot, 'public', 'data', 'masterdata', 'music_catalog.json')
 const songMovieIndexPath = path.join(projectRoot, 'public', 'data', 'masterdata', 'song_movie_index.json')
 const songAudioCatalogPath = path.join(projectRoot, 'public', 'data', 'song_audio_relation_catalog.json')
+const songRelatedEntityIndexPath = path.join(projectRoot, 'public', 'data', 'song_related_entity_index.json')
 
 const sourceOnly = process.argv.includes('--source-only')
 const sources = loadArchiveSources()
@@ -28,8 +30,10 @@ const schema = JSON.parse(readFileSync(schemaPath, 'utf8'))
 const musicCatalog = JSON.parse(readFileSync(musicCatalogPath, 'utf8'))
 const songMovieIndex = JSON.parse(readFileSync(songMovieIndexPath, 'utf8'))
 const songAudioCatalog = JSON.parse(readFileSync(songAudioCatalogPath, 'utf8'))
+const songRelatedEntityIndex = JSON.parse(readFileSync(songRelatedEntityIndexPath, 'utf8'))
 
 const ajv = new Ajv2020({ allErrors: true })
+addFormats(ajv)
 const validate = ajv.compile(schema)
 if (!validate(catalog)) {
   fail(`catalog schema invalid: ${JSON.stringify(validate.errors, null, 1)}`)
@@ -60,6 +64,16 @@ for (const code of catalogSongs) {
   seenSongIds.add(song.song_id)
   if (song.available !== (song.open_at != null && song.open_at !== 4102412400)) {
     fail(`song ${code}: available does not match open_at`)
+  }
+  const expectedStatus = song.open_at === 4102412400
+    ? 'special'
+    : (song.open_at === 946652400 ? 'initial' : 'released')
+  if (song.archive_status !== expectedStatus) fail(`song ${code}: archive_status mismatch`)
+  const family = songRelatedEntityIndex.families?.[code]
+  const expectedWorkCode = family?.work_code || code
+  if (song.work_code !== expectedWorkCode) fail(`song ${code}: work_code mismatch`)
+  if (song.parent_song_code !== (expectedWorkCode === code ? null : expectedWorkCode)) {
+    fail(`song ${code}: parent_song_code mismatch`)
   }
 
   const layers = songAudioCatalog.songs[code]?.audio_layers || []
@@ -98,6 +112,12 @@ for (const entry of movieEntries) {
 
 const s = catalog.summary
 if (s.song_count !== expectedSongs.length) fail(`song_count ${s.song_count} != music catalog ${expectedSongs.length}`)
+if (s.work_count !== Object.values(catalog.songs).filter(song => song.variant_kind === 'primary').length) fail(`work_count mismatch`)
+if (s.special_variant_count !== Object.values(catalog.songs).filter(song => song.archive_status === 'special').length) fail(`special_variant_count mismatch`)
+
+const driveVariant = catalog.songs.drvalv.variants.find(variant => variant.song_code === 'drv999')
+if (!driveVariant || driveVariant.variant_kind !== 'april_fools') fail('DRIVE A LIVE April Fools variant missing')
+if (catalog.songs.drv999.related_entities?.[0]?.story_section !== '602') fail('drv999 Extra 602 relation missing')
 if (s.available_song_count !== Object.values(catalog.songs).filter(song => song.available).length) {
   fail(`available_song_count mismatch`)
 }

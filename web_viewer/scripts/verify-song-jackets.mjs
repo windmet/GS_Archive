@@ -45,7 +45,8 @@ for (const [code, entry] of Object.entries(index.entries)) {
   const filename = path.join(root, 'public', entry.url.replace(/^\//, ''))
   const bytes = await readFile(filename)
   assert.equal(sha256(bytes), entry.sha256)
-  assert.deepEqual(pngDimensions(bytes), { width: 730, height: 720 })
+  assert.deepEqual(pngDimensions(bytes), { width: 365, height: 360 })
+  assert.deepEqual(entry.raw_texture, { width: 730, height: 720 })
   assert.equal((await stat(filename)).size, entry.bytes)
   assert.equal(filename, path.join(root, `public/assets/songs/jacket_${code}.png`))
   publishedBytes += entry.bytes

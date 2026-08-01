@@ -16,6 +16,7 @@ import sys
 from pathlib import Path
 
 import UnityPy
+from PIL import Image
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_PIPELINE_ROOT = PROJECT_ROOT.parent / "data_pipeline"
@@ -32,6 +33,7 @@ DEFAULT_INDEX_OUTPUT = (
 )
 MUSIC_CATALOG = PROJECT_ROOT / "public" / "data" / "masterdata" / "music_catalog.json"
 PUBLIC_URL_ROOT = "/assets/songs"
+PUBLISHED_SIZE = (365, 360)
 
 
 def sha256_file(path: Path) -> str:
@@ -53,17 +55,24 @@ def extract_jacket(bundle_path: Path, code: str, output_path: Path) -> dict:
         if data.m_Name != target_name:
             continue
         image = data.image
+        source_width = int(image.width)
+        source_height = int(image.height)
+        published = image.resize(PUBLISHED_SIZE, Image.Resampling.LANCZOS)
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        image.save(output_path)
+        published.save(output_path, optimize=True, compress_level=9)
         return {
             "filename": output_path.name,
             "url": f"{PUBLIC_URL_ROOT}/{output_path.name}",
-            "width": int(image.width),
-            "height": int(image.height),
+            "width": int(published.width),
+            "height": int(published.height),
             "bytes": output_path.stat().st_size,
             "sha256": sha256_file(output_path),
             "texture_name": str(data.m_Name),
             "path_id": str(obj.path_id),
+            "raw_texture": {
+                "width": source_width,
+                "height": source_height,
+            },
         }
     raise ValueError(f"{bundle_path.name} has no Texture2D named {target_name}")
 

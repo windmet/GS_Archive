@@ -34,6 +34,8 @@ assert.equal(readArchiveRoute('http://localhost/?view=song_detail&song=byndtd').
 // Catalog data: 61 metadata-only entries, 60 available
 assert.equal(catalog.schema_version, 1)
 assert.equal(catalog.summary.song_count, 61)
+assert.equal(catalog.summary.work_count, 60)
+assert.equal(catalog.summary.special_variant_count, 1)
 assert.equal(catalog.summary.available_song_count, 60)
 assert.equal(catalog.summary.mv_resource_count, 12)
 assert.equal(catalog.summary.three_d_movie_count, 11)
@@ -62,6 +64,11 @@ for (const code of ['byndtd', 'drvalv', 'grwsml']) {
 }
 const drv999 = catalog.songs.drv999
 assert.equal(drv999.available, false)
+assert.equal(drv999.archive_status, 'special')
+assert.equal(drv999.parent_song_code, 'drvalv')
+assert.equal(drv999.variant_kind, 'april_fools')
+assert.equal(drv999.related_entities[0].story_section, '602')
+assert.equal(catalog.songs.drvalv.variants[0].song_code, 'drv999')
 assert.equal(drv999.choreography.has_for_lipsync, false)
 assert.equal(drv999.audio_form, 'single-cue')
 for (const code of ['flslgt', 'pcuslv']) {
@@ -94,7 +101,9 @@ assert.match(appComponent, /@open="openSong"/)
 assert.match(appComponent, /function openSongCatalog\(\)/)
 assert.match(appComponent, /function openSong\(songCode\)/)
 assert.match(appComponent, /currentSongId\.value = route\.song \|\| ''/)
-assert.match(appComponent, /song: currentSongId\.value/)
+assert.match(appComponent, /song: preservesSongContext \? currentSongId\.value : ''/)
+assert.match(appComponent, /songScope: \(view\.value === 'song_catalog' \|\| preservesSongContext\) \? currentSongScope\.value : 'all'/)
+assert.match(appComponent, /function openSongRelatedStory\(relation\)/)
 assert.match(appComponent, /songCatalogData\.value = data\.songCatalog/)
 assert.match(appComponent, /else if \(section === 'songs'\) openSongCatalog\(\)/)
 assert.match(appComponent, /song_detail: \(\) => \{[\s\S]*?currentSongId\.value = ''[\s\S]*?commitView\('song_catalog'\)/)
@@ -112,11 +121,13 @@ assert.match(
 )
 
 // Catalog page: filter pills, search, song_id ordering, jacket thumbnail, open emit
-assert.match(catalogComponent, /song-filters[\s\S]*3DMV[\s\S]*MV LIVE[\s\S]*分层演出[\s\S]*演出语音[\s\S]*未开放/)
+assert.match(catalogComponent, /song-filters[\s\S]*3DMV[\s\S]*MV LIVE[\s\S]*分层演出[\s\S]*演出语音[\s\S]*特殊版本/)
 assert.match(catalogComponent, /placeholder="搜索曲名、读音或曲目代码"/)
 assert.match(catalogComponent, /emit\('open', song\.song_code\)/)
 assert.match(catalogComponent, /\.sort\(\(a, b\) => \(a\.song_id \|\| 0\) - \(b\.song_id \|\| 0\)\)/)
-assert.match(catalogComponent, /未开放/)
+assert.match(catalogComponent, /song\.variant_kind === 'primary'/)
+assert.match(catalogComponent, /aria-pressed/)
+assert.match(catalogComponent, /aria-label="搜索歌曲"/)
 assert.match(catalogComponent, /hasMovie\(song, '3dmv'\)/)
 assert.match(catalogComponent, /song\.jacket_url/)
 assert.match(catalogComponent, /loading="lazy"/)
@@ -156,9 +167,13 @@ assert.match(detailComponent, /舞台背景/)
 assert.match(detailComponent, /IDOL_ID_TO_NAME/)
 assert.match(detailComponent, /function unitName\(code\)/)
 assert.match(detailComponent, /props\.units\?\.units \|\| \[\]/, 'unitName must resolve through the masterdata units array')
+assert.match(detailComponent, /song\.archive_status === 'initial'/)
+assert.match(detailComponent, /timeZone: 'Asia\/Tokyo'/)
+assert.match(detailComponent, /emit\('open-related-story', relation\)/)
+assert.match(detailComponent, /emit\('open-unit', entry\.normalizedCode\)/)
+assert.match(detailComponent, /emit\('open-idol', entry\.code\)/)
 assert.match(detailComponent, /rel="noopener noreferrer external"/)
 assert.match(detailComponent, /movie\.kind === '3dmv' \? '3DMV' : 'MV LIVE'/)
-assert.match(detailComponent, /openAt >= 4102412400/)
 
 // Route module: contracts, navigation entry, breadcrumbs, query serialization
 assert.match(routeSource, /song_catalog: \{ section: 'songs', required: \[\] \}/)
@@ -167,6 +182,7 @@ assert.match(routeSource, /\{ id: 'songs', label: '歌曲' \}/)
 assert.match(routeSource, /\{ label: '歌曲', route: breadcrumbRoute\(route, 'song_catalog', \{ song: '' \}\) \}/)
 assert.match(routeSource, /if \(normalized\.song\) url\.searchParams\.set\('song', normalized\.song\)/)
 assert.match(routeSource, /song: clean\(params\.get\('song'\)\)/)
+assert.match(routeSource, /songScope: params\.get\('song_scope'\)/)
 
 // Shell: songs entry on sidebar and mobile nav
 assert.match(shellComponent, /songs: Music/)
@@ -178,4 +194,4 @@ assert.match(repositorySource, /songJacketIndex: '\/data\/song_jacket_index\.jso
 assert.match(repositorySource, /key === 'songCatalog' && \([\s\S]*?payload\.schema_version !== 1/)
 assert.match(repositorySource, /key === 'songJacketIndex' && \([\s\S]*?payload\.schema_version !== 1/)
 
-console.log('Song domain landing: 61-song catalog, 12 movie relations, 61 RAW jacket covers and full UI wiring verified')
+console.log('Song domain landing: 60 works / 61 song entities, exact April Fools family, 12 movie relations and 61 RAW jacket covers verified')

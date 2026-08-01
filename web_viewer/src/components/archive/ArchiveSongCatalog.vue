@@ -4,10 +4,10 @@
       <div>
         <span>SONG ARCHIVE</span>
         <h2>歌曲档案</h2>
-        <p>按 masterdata 正式曲目归档歌曲与演出版本。档案只展示元数据与原始资源关系，不提供媒体播放。</p>
+        <p>按 masterdata 正式曲目归档歌曲作品与演出版本。档案只展示元数据与原始资源关系，不提供媒体播放。</p>
       </div>
       <dl aria-label="歌曲档案统计">
-        <div><dt>正式曲目</dt><dd>{{ songs.length }}</dd></div>
+        <div><dt>歌曲作品</dt><dd>{{ songs.length }}</dd></div>
         <div><dt>3DMV</dt><dd>{{ summary.three_d_movie_count }}</dd></div>
         <div><dt>MV LIVE</dt><dd>{{ summary.mvlive_count }}</dd></div>
         <div><dt>分层演出</dt><dd>{{ summary.layered_song_count }}</dd></div>
@@ -20,6 +20,7 @@
           v-for="filter in filters"
           :key="filter.id"
           :class="{ active: activeFilter === filter.id }"
+          :aria-pressed="activeFilter === filter.id"
           @click="activeFilter = filter.id"
         >
           {{ filter.label }}
@@ -28,7 +29,13 @@
       </div>
       <label class="song-search">
         <Search :size="16" aria-hidden="true" />
-        <input v-model="query" type="search" placeholder="搜索曲名、读音或曲目代码" />
+        <input
+          :value="query"
+          type="search"
+          aria-label="搜索歌曲"
+          placeholder="搜索曲名、读音或曲目代码"
+          @input="query = $event.target.value"
+        />
       </label>
     </div>
 
@@ -37,7 +44,7 @@
         v-for="song in filteredSongs"
         :key="song.song_code"
         class="song-card"
-        :class="{ unavailable: !song.available }"
+        :class="{ special: hasSpecialVariant(song) }"
         @click="$emit('open', song.song_code)"
       >
         <span v-if="song.jacket_url" class="song-card-jacket">
@@ -50,7 +57,7 @@
           <span v-if="song.credits" class="song-credits">{{ song.credits }}</span>
         </span>
         <span class="song-badges">
-          <span v-if="!song.available" class="badge badge-muted">未开放</span>
+          <span v-if="hasSpecialVariant(song)" class="badge badge-special">含特殊版本</span>
           <span v-if="hasMovie(song, '3dmv')" class="badge badge-movie">3DMV</span>
           <span v-if="hasMovie(song, 'mvlive')" class="badge badge-movie">MV LIVE</span>
           <span v-if="song.audio_form === 'layered'" class="badge badge-layered">分层演出</span>
@@ -64,20 +71,30 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { ChevronRight, Search } from '@lucide/vue'
 
 const props = defineProps({
   catalog: { type: Object, default: null },
+  scope: { type: String, default: 'all' },
+  query: { type: String, default: '' },
 })
-defineEmits(['open'])
+const emit = defineEmits(['open', 'update:scope', 'update:query'])
 
-const activeFilter = ref('all')
-const query = ref('')
+const activeFilter = computed({
+  get: () => props.scope,
+  set: value => emit('update:scope', value),
+})
+const query = computed({
+  get: () => props.query,
+  set: value => emit('update:query', value),
+})
 
 const songs = computed(() => {
   const map = props.catalog?.songs || {}
-  return Object.values(map).sort((a, b) => (a.song_id || 0) - (b.song_id || 0))
+  return Object.values(map)
+    .filter(song => song.variant_kind === 'primary')
+    .sort((a, b) => (a.song_id || 0) - (b.song_id || 0))
 })
 const summary = computed(() => props.catalog?.summary || {})
 
@@ -87,11 +104,15 @@ const filters = [
   { id: 'mvlive', label: 'MV LIVE' },
   { id: 'layered', label: '分层演出' },
   { id: 'oneshot', label: '演出语音' },
-  { id: 'unavailable', label: '未开放' },
+  { id: 'special', label: '特殊版本' },
 ]
 
 function hasMovie(song, kind) {
   return (song.movies || []).some(movie => movie.kind === kind)
+}
+
+function hasSpecialVariant(song) {
+  return (song.variants || []).some(variant => variant.archive_status === 'special')
 }
 
 function filterCount(id) {
@@ -100,7 +121,7 @@ function filterCount(id) {
   if (id === 'mvlive') return songs.value.filter(song => hasMovie(song, 'mvlive')).length
   if (id === 'layered') return songs.value.filter(song => song.audio_form === 'layered').length
   if (id === 'oneshot') return songs.value.filter(song => song.audio_form === 'oneshot').length
-  if (id === 'unavailable') return songs.value.filter(song => !song.available).length
+  if (id === 'special') return songs.value.filter(hasSpecialVariant).length
   return 0
 }
 
@@ -111,11 +132,16 @@ const filteredSongs = computed(() => {
     if (activeFilter.value === 'mvlive' && !hasMovie(song, 'mvlive')) return false
     if (activeFilter.value === 'layered' && song.audio_form !== 'layered') return false
     if (activeFilter.value === 'oneshot' && song.audio_form !== 'oneshot') return false
-    if (activeFilter.value === 'unavailable' && song.available) return false
+    if (activeFilter.value === 'special' && !hasSpecialVariant(song)) return false
+    const variants = song.variants || []
     if (q && !(
       song.title?.toLowerCase().includes(q) ||
       song.kana?.toLowerCase().includes(q) ||
-      song.song_code.toLowerCase().includes(q)
+      song.song_code.toLowerCase().includes(q) ||
+      variants.some(variant => (
+        variant.title?.toLowerCase().includes(q) ||
+        variant.song_code?.toLowerCase().includes(q)
+      ))
     )) return false
     return true
   })
@@ -190,7 +216,7 @@ const filteredSongs = computed(() => {
   transition: border-color 0.15s, background 0.15s;
 }
 .song-card:hover { border-color: #7bcfc9; background: #f0fbfa; }
-.song-card.unavailable { opacity: 0.62; }
+.song-card.special { border-left: 3px solid #a86bd8; }
 .song-card-code {
   display: grid;
   place-items: center;
@@ -220,6 +246,7 @@ const filteredSongs = computed(() => {
 .badge-movie { background: #fff3e0; color: #b26a00; }
 .badge-layered { background: #e8f0fe; color: #2f5fd0; }
 .badge-oneshot { background: #f3e8fd; color: #7a3fd0; }
+.badge-special { background: #f3e8fd; color: #7136a5; }
 .badge-muted { background: #eef1f4; color: #68727d; }
 .song-card > svg { color: #9aa4ad; }
 .song-empty { color: #7a858e; font-size: 0.8rem; padding: 22px 4px; }

@@ -95,6 +95,27 @@ function classify(relativePath) {
     }
   }
 
+  const songJacketMatch = stem.match(/^jacket_([a-z0-9]+)$/)
+  if (songJacketMatch && relativePath.includes('/assets/songs/')) {
+    return {
+      category: 'stable-promoted-asset',
+      logical_id: `song-jacket:${songJacketMatch[1]}`,
+      consumer: ['ArchiveSongCatalog', 'ArchiveSongDetail'],
+      reason_tracked: 'bounded RAW-derived song navigation cover with exact Unity relation index',
+      force_add_allowed: true,
+      owner_release: '2026-08-01-song-jackets-001',
+      grandfathered: false,
+      exception_review: {
+        approved: true,
+        reason: 'the complete 61-work navigation set is reviewed as one atomic offline archive batch',
+        object_storage_unsuitable: 'the archive is local-first and the covers are required for stable offline navigation',
+        update_frequency: 'one-time snapshot-derived publication',
+        rollback_plan: 'remove the owner release assets and regenerate the jacket index and binary inventory',
+        explicit_user_approval: false,
+      },
+    }
+  }
+
   if (relativePath.includes('/assets/silhouette/')) {
     return {
       category: 'test-fixture',

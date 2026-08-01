@@ -573,6 +573,19 @@ view=story_collection&story_type=...&story_section=...
 3. **P1-Song-C**：只有通过关系和 publication gate 后，才增加版本切换或
    分层播放。
 
+2026-08-01 Song-B closeout：
+
+- 当前模型为 60 个歌曲作品 / 61 个 song entity；`drv999` 已归入
+  `drvalv` 的 2022 愚人节特殊版本，不再作为无关作品平铺；
+- table-46 初始/隐藏时间哨兵已与真实 JST 开放日期分开显示；
+- `song_scope` 与 `q` 已进入 route，组合、偶像声部及 Extra 602 使用正式
+  关联入口；
+- 61 张 RAW 封面发布为 365x360 导航派生图，保留 bundle、Texture2D、
+  PathID、原尺寸与 published hash，owner release 为
+  `2026-08-01-song-jackets-001`；
+- 播放器、solo+伴奏同步、MV 播放和 Chibi Stage 预选仍属于 Song-C，状态
+  为 **NOT EXECUTED**，等待下一步产品与音频同步讨论。
+
 #### P1-Mobile-Nav：应用启动器
 
 移动端底栏后续收敛为少量稳定入口，并新增 route-backed 的“应用启动器”

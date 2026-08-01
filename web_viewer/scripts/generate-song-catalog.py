@@ -12,6 +12,7 @@ import argparse
 import json
 import re
 import sys
+from collections import defaultdict
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -33,8 +34,10 @@ MUSIC_CATALOG = PROJECT_ROOT / "public" / "data" / "masterdata" / "music_catalog
 SONG_MOVIE_INDEX = PROJECT_ROOT / "public" / "data" / "masterdata" / "song_movie_index.json"
 SONG_AUDIO_CATALOG = PROJECT_ROOT / "public" / "data" / "song_audio_relation_catalog.json"
 SONG_JACKET_INDEX = PROJECT_ROOT / "public" / "data" / "song_jacket_index.json"
+SONG_RELATED_ENTITY_INDEX = PROJECT_ROOT / "public" / "data" / "song_related_entity_index.json"
 
 DISABLED_OPEN_AT = 4102412400  # 2100-01-01 UTC sentinel in this snapshot.
+INITIAL_OPEN_AT = 946652400  # 2000-01-01 JST baseline sentinel in this snapshot.
 
 IDOL_SUFFIX_RE = re.compile(r"^\d{3}[a-z]{3}$")
 SONG3_PREFIX = "song3_"
@@ -141,6 +144,7 @@ def build_catalog(
     song_movie_index: dict,
     song_audio_catalog: dict,
     song_jacket_index: dict,
+    song_related_entity_index: dict,
     identities: dict[str, dict],
     asset_root: Path,
 ) -> dict:
@@ -158,6 +162,10 @@ def build_catalog(
             movies_by_song_id.setdefault(song["song_id"], []).append(movie)
 
     jacket_by_code = song_jacket_index.get("entries") or {}
+    family_by_code = song_related_entity_index.get("families") or {}
+    relations_by_code: dict[str, list[dict]] = defaultdict(list)
+    for relation in song_related_entity_index.get("relations") or []:
+        relations_by_code[relation["song_code"]].append(relation)
 
     for code, meta in sorted(music_catalog["songs"].items()):
         identity = identities.get(code, {})
@@ -193,6 +201,13 @@ def build_catalog(
             movies = movies_by_song_id.get(song_id, [])
 
         jacket = jacket_by_code.get(code)
+        family = family_by_code.get(code) or {}
+        work_code = family.get("work_code") or code
+        archive_status = (
+            "special"
+            if open_at == DISABLED_OPEN_AT
+            else ("initial" if open_at == INITIAL_OPEN_AT else "released")
+        )
         songs[code] = {
             "song_id": song_id,
             "song_code": code,
@@ -202,6 +217,12 @@ def build_catalog(
             "links": list(dict.fromkeys(meta.get("links") or [])),
             "open_at": open_at,
             "available": open_at is not None and open_at != DISABLED_OPEN_AT,
+            "archive_status": archive_status,
+            "work_code": work_code,
+            "parent_song_code": work_code if work_code != code else None,
+            "variant_kind": family.get("variant_kind") or "primary",
+            "variants": [],
+            "related_entities": relations_by_code.get(code, []),
             "jacket_url": jacket.get("url") if jacket else None,
             "audio_form": audio_form,
             "audio": audio,
@@ -209,8 +230,23 @@ def build_catalog(
             "movies": movies,
         }
 
+    for code, song in songs.items():
+        if song["parent_song_code"] is None:
+            song["variants"] = [
+                {
+                    "song_code": candidate_code,
+                    "title": candidate["title"],
+                    "variant_kind": candidate["variant_kind"],
+                    "archive_status": candidate["archive_status"],
+                }
+                for candidate_code, candidate in songs.items()
+                if candidate["parent_song_code"] == code
+            ]
+
     summary = {
         "song_count": len(songs),
+        "work_count": sum(1 for song in songs.values() if song["variant_kind"] == "primary"),
+        "special_variant_count": sum(1 for song in songs.values() if song["archive_status"] == "special"),
         "available_song_count": sum(1 for song in songs.values() if song["available"]),
         "mv_resource_count": len(song_movie_index.get("song_movies", [])),
         "three_d_movie_count": sum(
@@ -244,6 +280,7 @@ def build_catalog(
             "song_movie_index": "public/data/masterdata/song_movie_index.json",
             "song_audio_relation_catalog": "public/data/song_audio_relation_catalog.json",
             "song_jacket_index": "public/data/song_jacket_index.json",
+            "song_related_entity_index": "public/data/song_related_entity_index.json",
             "masterdata_table": 46,
             "choreography_root": "RAW/asset",
         },
@@ -271,6 +308,7 @@ def main() -> None:
     song_movie_index = json.loads(SONG_MOVIE_INDEX.read_text(encoding="utf-8"))
     song_audio_catalog = json.loads(SONG_AUDIO_CATALOG.read_text(encoding="utf-8"))
     song_jacket_index = json.loads(SONG_JACKET_INDEX.read_text(encoding="utf-8"))
+    song_related_entity_index = json.loads(SONG_RELATED_ENTITY_INDEX.read_text(encoding="utf-8"))
     identities = load_table46_song_identities(sources.masterdata_decoded_file)
 
     catalog = build_catalog(
@@ -278,6 +316,7 @@ def main() -> None:
         song_movie_index,
         song_audio_catalog,
         song_jacket_index,
+        song_related_entity_index,
         identities,
         asset_root,
     )

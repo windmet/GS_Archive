@@ -20,6 +20,7 @@ const ROUTE_QUERY_KEYS = [
   'episode',
   'card',
   'song',
+  'song_scope',
   'event',
   'gasha',
   'gasha_type',
@@ -75,6 +76,7 @@ const VALID_GASHA_TYPES = new Set(['all', 'standard_pickup', 'growing_fes', 'sta
 const VALID_STORY_AVAILABILITY = new Set(['all', 'playable', 'missing'])
 const VALID_STORY_SORTS = new Set(['domain', 'title', 'resource', 'steps_desc'])
 const VALID_STORY_MODES = new Set(['portal', 'search'])
+const VALID_SONG_SCOPES = new Set(['all', 'movie', 'mvlive', 'layered', 'oneshot', 'special'])
 const VALID_MOBILE_MODES = new Set(['personal', 'phone', 'unit', 'random'])
 const VALID_RETURN_VIEWS = new Set([...VALID_VIEWS].filter(view => !['player', 'spine_lab', 'chibi_stage'].includes(view)))
 
@@ -187,6 +189,7 @@ export function normalizeArchiveRoute(input = {}) {
     episode: clean(input.episode),
     card,
     song: clean(input.song),
+    songScope: allowed(clean(input.songScope), VALID_SONG_SCOPES, 'all'),
     event: clean(input.event),
     gasha: clean(input.gasha),
     gashaType: allowed(clean(input.gashaType), VALID_GASHA_TYPES, 'all'),
@@ -235,6 +238,7 @@ function breadcrumbFilters(route) {
     availability: route.availability,
     sort: route.sort,
     storyMode: route.storyMode,
+    songScope: route.songScope,
   }
 }
 
@@ -416,6 +420,7 @@ export function readArchiveRoute(input = null) {
     episode: clean(params.get('episode')),
     card: clean(params.get('card')),
     song: clean(params.get('song')),
+    songScope: params.get('song_scope'),
     event: clean(params.get('event')),
     gasha: clean(params.get('gasha')),
     gashaType: params.get('gasha_type'),
@@ -459,6 +464,7 @@ export function buildArchiveUrl(input, route) {
   if (normalized.episode) url.searchParams.set('episode', normalized.episode)
   if (normalized.card) url.searchParams.set('card', normalized.card)
   if (normalized.song) url.searchParams.set('song', normalized.song)
+  if (normalized.songScope !== 'all') url.searchParams.set('song_scope', normalized.songScope)
   if (normalized.event) url.searchParams.set('event', normalized.event)
   if (normalized.gasha) url.searchParams.set('gasha', normalized.gasha)
   if (normalized.gashaType !== 'all') url.searchParams.set('gasha_type', normalized.gashaType)
