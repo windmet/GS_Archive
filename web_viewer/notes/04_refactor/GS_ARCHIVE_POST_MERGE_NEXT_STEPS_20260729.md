@@ -625,6 +625,10 @@ view=story_collection&story_type=...&story_section=...
 - 全量 ACB 形成 83 个 sequence/track-event 签名；命令 payload 继续按 opaque
   证据保存，未把 `0x0041`、`0x0057` 或 `0x07d0` 擅自解释为音量、声像或
   时间参数；播放器仍不得据此宣称已重建官方混音。
+- 供应包与 RAW 的逐文件 hash 对照已固化为
+  `scripts/audit-song-package-raw-match.py`（`npm run audit:song-package-match --
+  --ipa <path> --xapk <path> --raw-audio ..\\RAW\\audio --output <report>`）；
+  当前样本的 7 个 `song3_*.acb` 均存在于 RAW 且 SHA-256 全部一致。
 
 2026-08-01 P1-Mobile-Nav implementation checkpoint：
 
