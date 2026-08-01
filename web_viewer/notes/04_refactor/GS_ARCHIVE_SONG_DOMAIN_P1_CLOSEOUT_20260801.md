@@ -227,7 +227,7 @@ ACBs plus one stereo backing ACB. The base ACB remains a single full-mix cue,
 so the catalog’s `audio_form=single-cue` describes the base cue and not the
 live vocal selector.
 
-Both Unity `*_live_effect` assets carry five-position `SwitchSinger` state
+Both Unity `*_live_effect` assets carry five-stage-position `SwitchSinger` state
 columns (47 events for `tkstp1`, 48 for `tkstp2`). The Chibi export confirms
 that all five positions use the same motion timeline; only the active singing
 positions change. Its stable slot map is performer slots `1..5` to stage
@@ -236,7 +236,7 @@ positions `3,2,4,1,5`. This gives a safe future binding contract:
 ```text
 selected five idols -> performer slots 1..5
 performer slot -> Chibi stage position (3,2,4,1,5)
-SwitchSinger state -> which selected idol vocal ACB(s) are active
+SwitchSinger state -> authored stage positions -> inverse map to active performer slots
 ```
 
 This is distinct from the table-46 `HasSoloSinging` flag, which remains
@@ -249,23 +249,26 @@ duplicating choreography:
 - the five selected idols are bound to performer slots `1..5` through the
   authored `stagePositionMap`, rather than by left-to-right screen order;
 - one backing element and five continuously synchronized idol-vocal elements
-  share the backing clock; `SwitchSinger.performerSlots` mutes/unmutes the
-  matching vocal elements and the same event’s `stagePositions` drives the
-  existing mouth/highlight state;
+  share the backing clock; RAW `SwitchSinger` columns directly drive
+  `stagePositions` for mouth/highlight state, while the inverse
+  `stagePositionMap` derives `performerSlots` for the matching vocal elements;
 - multiple active slots use `1 / sqrt(active singer count)` vocal normalization,
   centered pan, and an independently adjustable backing gain. These values are
   labelled **browser approximation**, not recovered game constants;
 - changing a lineup idol releases and rebuilds all five vocal bindings; changing
   songs disables the experiment and returns to the existing full-mix audio.
 
-The 5174 acceptance check covered both arrangements. At 8.0 seconds `tkstp1`
-reported performer slot `3` / stage position `4`; `tkstp2` reported performer
-slots `1,3` / stage positions `3,4`. A lineup replacement rebuilt five ready
-vocal elements. The three experimental songs each have 49 vocal derivatives
-plus one backing derivative (150 M4A files total); all passed `ffprobe`, and the
-mounted verifier returned HTTP success for every declared URL. This is suitable
-for Chibi slot/audio experimentation, while Song-C promotion remains
-**NOT EXECUTED**.
+A recording comparison exposed and corrected a double-mapping defect in the
+first prototype. The authoritative `song_tkstp1.unity3d` TextAsset has SHA-256
+`585444e00736bb249d9305b1c60564330c3928f1ee01d4f4322e747744af6479`.
+At 7,717 ms its raw row is `0,0,1,0,0`, meaning center stage position `3`
+(inverse-mapped performer slot `1`), not stage position `4`. At 12,315 ms the
+raw row is `0,0,0,1,1`, meaning stage positions `4,5` (performer slots `3,5`),
+not stage positions `1,5`. The verifier pins both recording-aligned cases so
+the stage-position columns cannot be remapped a second time. The three
+experimental songs still each have 49 vocal derivatives plus one backing
+derivative (150 M4A files total); these remain ignored local media. Song-C
+promotion remains **NOT EXECUTED**.
 
 ## Deferred Song-C discussion
 

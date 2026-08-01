@@ -20,19 +20,24 @@ try {
 const songs = index.songs || []
 let singerEvents = 0
 for (const song of songs) {
-  const stageMap = new Map((song.stagePositionMap || [])
-    .map(item => [Number(item.performerSlot), Number(item.stagePosition)]))
+  const performerByStage = new Map((song.stagePositionMap || [])
+    .map(item => [Number(item.stagePosition), Number(item.performerSlot)]))
   for (const event of song.singerEvents || []) {
     singerEvents += 1
     if (!Array.isArray(event.performerSlots) || !Array.isArray(event.stagePositions)) {
       fail(`${song.id}: singer event must preserve performerSlots and stagePositions`)
     }
-    const expected = event.performerSlots
-      .map(slot => stageMap.get(Number(slot)) ?? Number(slot))
+    const rawStagePositions = (event.singers || []).map(Number)
+    const actualStagePositions = event.stagePositions.map(Number)
+    if (JSON.stringify(rawStagePositions) !== JSON.stringify(actualStagePositions)) {
+      fail(`${song.id} @ ${event.time}: SwitchSinger must remain authored stage positions`)
+    }
+    const expected = actualStagePositions
+      .map(position => performerByStage.get(position) ?? position)
       .sort((left, right) => left - right)
-    const actual = event.stagePositions.map(Number).sort((left, right) => left - right)
+    const actual = event.performerSlots.map(Number).sort((left, right) => left - right)
     if (JSON.stringify(expected) !== JSON.stringify(actual)) {
-      fail(`${song.id} @ ${event.time}: singer slot/stage mapping mismatch`)
+      fail(`${song.id} @ ${event.time}: stage-position/performer-slot inverse mismatch`)
     }
   }
 }
@@ -43,6 +48,18 @@ for (const code of ['tkstp1', 'tkstp2']) {
   const map = (song.stagePositionMap || []).map(item => Number(item.stagePosition))
   if (JSON.stringify(map) !== JSON.stringify([3, 2, 4, 1, 5])) {
     fail(`${code}: expected five-slot stage map [3,2,4,1,5]`)
+  }
+  if (code === 'tkstp1') {
+    const secondLine = song.singerEvents.find(event => Number(event.time) === 7717)
+    const victoryLine = song.singerEvents.find(event => Number(event.time) === 12315)
+    if (JSON.stringify(secondLine?.stagePositions) !== JSON.stringify([3]) ||
+        JSON.stringify(secondLine?.performerSlots) !== JSON.stringify([1])) {
+      fail('tkstp1 @ 7717: expected RAW stage 3 / center performer slot 1')
+    }
+    if (JSON.stringify(victoryLine?.stagePositions) !== JSON.stringify([4, 5]) ||
+        JSON.stringify(victoryLine?.performerSlots) !== JSON.stringify([3, 5])) {
+      fail('tkstp1 @ 12315: expected RAW stages 4+5 / performer slots 3+5')
+    }
   }
   const timelines = new Map()
   for (const event of song.events || []) {

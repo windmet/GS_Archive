@@ -636,16 +636,17 @@ view=story_collection&story_type=...&story_section=...
   当前演唱位；49 个 ACB 是可选声部池，不等于 49 路同时播放。这个选择器
   与 `HasSoloSinging`（两行仍为禁用 sentinel）是不同语义，不能再把
   `audio_form=single-cue` 写成“没有个人声部选择”。Chibi 导出现在同时保留
-  `performerSlots` 与映射后的 `stagePositions`，`verify:live-chibi-singer-slots`
-  固化这一关系。Chibi Stage 的可选实验模式现沿 performer slot 选择五个
+  RAW `SwitchSinger` 的原始 `stagePositions` 与反向推导的 `performerSlots`，
+  `verify:live-chibi-singer-slots` 固化这一关系。Chibi Stage 的可选实验模式现沿 performer slot 选择五个
   偶像 ACB，以伴奏为共享时钟，并用同一 `SwitchSinger` 事件同时驱动声部
   mute 与舞台口型/演唱标记，不复制五套编舞动作。多人声部采用 `1/sqrt(n)`
   归一化、居中声像和独立伴奏增益，界面与 manifest 均明确标记为浏览器近似；
   这不构成官方 `SingerNumVolumeList` / `singerCountPanDict` 的还原。
-- 5174 短时验收：`tkstp1` 8.0 秒为 performer slot `3` -> stage position `4`；
-  `tkstp2` 同时为 performer slots `1,3` -> stage positions `3,4`。换人后五槽
-  声部重新绑定并恢复 ready。三首实验媒体各 50 个 M4A，共 150 个，容器探测
-  与 mounted URL 门禁通过；这不是长稳、publication 或 release acceptance。
+- 录屏复核发现首版把本来就是舞台编号的 `SwitchSinger` 又套了一次演员槽映射。
+  RAW `tkstp1` 在 7,717ms 为 stage position `3`（反推 performer slot `1`），
+  12,315ms 为 stage positions `4,5`（反推 performer slots `3,5`）；此前网页的
+  `4` 与 `1,5` 均属 double mapping，现由 RAW 定点门禁纠正。三首实验媒体各
+  50 个 M4A，共 150 个；这不是长稳、publication 或 release acceptance。
 - 下一独立小批将把五槽 transport/session 从 Chibi 视图抽离，供歌曲详情复用；
   门户播放器显示五个 performer slot、空位与当前演唱偶像。重复偶像只能作为
   自定义实验编组：按 idol code 只加载/播放一条声部，并对其多个槽的活动状态
