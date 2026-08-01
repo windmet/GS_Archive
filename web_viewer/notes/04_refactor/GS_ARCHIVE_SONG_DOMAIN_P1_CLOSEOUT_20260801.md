@@ -203,6 +203,45 @@ implementation cross-check. Until those numeric values or a runtime capture
 are recovered, the all-49 solo-plus-backing player remains an explicitly
 experimental approximation and no official mix claim is permitted.
 
+### RAW ACB sequence audit — 2026-08-01
+
+The next read-only pass covers the RAW authority rather than the supplied
+install packages. Re-run it with:
+
+```powershell
+npm run audit:song-acb-sequence -- `
+  --raw-audio "<archive root>\RAW\audio" `
+  --output .analysis\song-acb-sequence-audit.json
+```
+
+The audit found 313 `song3_*.acb` files, 83 sequence/category signatures,
+245 idol-variant files, five backing files, and 63 base-or-special files. The
+solo ACBs are normally one cue, one waveform, and one track event; the track
+event contains the `0x07d0` waveform reference command. This matches the
+public ACB parser's documented waveform-event handling, while the sequence
+command stream remains deliberately opaque in our report. CRI's sequence
+documentation describes sequences as timed playback-parameter/event data and
+allows multiple tracks, so the ACB layer can contain more than “play these two
+raw files”, but that general capability is not a mapping of these opcodes to
+our game's mixer fields.
+
+The audit also shows per-cue differences that must not be discarded:
+
+- `song3_byndtd_001tom.acb` carries sequence payloads `0x0044=3f800000`
+  (float interpretation `1.0`) and `0x0045=43fa0000` (float interpretation
+  `500.0`), alongside `0x0057` and `0x006f` commands;
+- DRVALV idol variants have different `0x0057` payloads (and one observed
+  variant has no `0x0057` command); GRWSML has its own small set of values;
+- `vocal_submix` and `song_submix` remain distinct ACF categories, but the
+  ACB sequence audit does not recover a singer-count gain table, pan table,
+  offset, or fade policy.
+
+The numeric interpretations above are candidates only. Until a primary runtime
+mapping or controlled capture identifies their meaning, no opcode may be
+labelled “volume”, “pan”, “fade”, or “timing” in the player. Keep the all-49
+solo-plus-backing catalog and independent-gain controls as an experiment, and
+keep Song-C **NOT EXECUTED**.
+
 ## Deferred Song-C discussion
 
 Status: **NOT EXECUTED**.
