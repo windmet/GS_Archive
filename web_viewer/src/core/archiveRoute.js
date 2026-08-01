@@ -60,6 +60,7 @@ const VALID_VIEWS = new Set([
   'work_archive',
   'idol_story_archive',
   'mobile_archive',
+  'portal_hub',
   'unit_catalog',
   'unit_detail',
   'player',
@@ -91,6 +92,7 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   work_archive: { section: 'stories', required: [], fallback: 'story_catalog' },
   idol_story_archive: { section: 'stories', required: [], fallback: 'story_catalog' },
   mobile_archive: { section: 'interactions', required: [], fallback: 'home' },
+  portal_hub: { section: 'apps', required: [] },
   unit_catalog: { section: 'idols', required: [] },
   unit_detail: { section: 'idols', required: ['unit'], fallback: 'unit_catalog' },
   idols: { section: 'category', required: [] },
@@ -216,6 +218,7 @@ export function archiveSectionForRoute(route) {
   const normalized = normalizeArchiveRoute(route)
   const section = ARCHIVE_ROUTE_CONTRACTS[normalized.view]?.section || 'stories'
   if (section !== 'category') return section
+  if (normalized.view === 'idols' && !normalized.category) return 'idols'
   if (normalized.category === 'cards') return 'cards'
   if (['idol_chat', 'idol_phone'].includes(normalized.category)) return 'interactions'
   if (normalized.category === 'idol') return 'idols'
@@ -383,6 +386,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   if (route.view === 'work_archive') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('工作档案', route.idol)]
   if (route.view === 'idol_story_archive') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('个人故事', route.idol)]
   if (route.view === 'mobile_archive') return [home, current('Mobile 通信', route.idol)]
+  if (route.view === 'portal_hub') return [home, { label: '应用' }]
 
   const fallbackDomains = {
     groups: '剧情',

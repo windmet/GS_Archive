@@ -72,6 +72,7 @@ import {
   FolderOpen,
   Home,
   Images,
+  LayoutGrid,
   MessageSquare,
   Music,
   Search,
@@ -97,7 +98,10 @@ const emit = defineEmits(['navigate', 'back', 'update:modelValue'])
 
 const iconBySection = { home: Home, stories: BookMarked, songs: Music, idols: Users, cards: Images, gashas: Sparkles, interactions: MessageSquare, resources: FolderOpen }
 const navigation = ARCHIVE_NAVIGATION.map(item => ({ ...item, icon: iconBySection[item.id] }))
-const mobileNavigation = navigation
+const mobileNavigation = [
+  ...navigation.filter(item => ['home', 'stories', 'idols'].includes(item.id)),
+  { id: 'apps', label: '应用', icon: LayoutGrid },
+]
 </script>
 
 <style scoped>

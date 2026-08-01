@@ -312,6 +312,11 @@
         @open-card="openMobileCard"
       />
 
+      <ArchivePortalHub
+        v-if="view === 'portal_hub'"
+        @open="openPortalApp"
+      />
+
       <ArchiveUnitCatalog
         v-if="view === 'unit_catalog'"
         :entries="unitCatalogEntries"
@@ -390,6 +395,7 @@ import ArchiveSeasonalCampaign from './components/archive/ArchiveSeasonalCampaig
 import ArchiveWorkStory from './components/archive/ArchiveWorkStory.vue'
 import ArchiveIdolStory from './components/archive/ArchiveIdolStory.vue'
 import ArchiveMobileArchive from './components/archive/ArchiveMobileArchive.vue'
+import ArchivePortalHub from './components/archive/ArchivePortalHub.vue'
 import ArchiveUnitCatalog from './components/archive/ArchiveUnitCatalog.vue'
 import ArchiveUnitDetail from './components/archive/ArchiveUnitDetail.vue'
 import { loadArchiveData, loadCardDetailData, loadIdolCommunicationData } from './data/ArchiveDataRepository.js'
@@ -414,6 +420,7 @@ import { buildIdolStoryOptions, buildIdolStoryPage } from './data/idolCommunicat
 import {
   archiveSectionForRoute,
   buildArchiveBreadcrumbs,
+  buildArchiveUrl,
   onArchivePopState,
   readArchiveRoute,
   writeArchiveRoute,
@@ -1306,6 +1313,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'work_archive') return `${currentWorkIdol.value?.display_name || ''} 工作档案`.trim()
   if (view.value === 'idol_story_archive') return `${currentIdolStoryPage.value?.idol_name || ''} 个人故事`.trim()
   if (view.value === 'mobile_archive') return 'Mobile 通信'
+  if (view.value === 'portal_hub') return '应用启动器'
   if (view.value === 'gashas') return '卡池档案'
   if (view.value === 'gasha_detail') return currentGasha.value?.display_name || '卡池详情'
   if (view.value === 'song_catalog') return '歌曲档案'
@@ -1757,6 +1765,47 @@ function navigateArchiveSection(section) {
   else if (section === 'interactions') openMobileArchive({ idolCode: currentCharacterId.value || '001tom', mode: 'personal' })
   else if (section === 'gashas') openGashaCatalog()
   else if (section === 'resources') openArchiveStatus()
+  else if (section === 'apps') openPortalHub()
+}
+
+function openPortalHub() {
+  filterQuery.value = ''
+  currentCategoryId.value = ''
+  currentCharacterId.value = ''
+  currentGroup.value = null
+  currentUnit.value = null
+  currentArchiveUnitCode.value = ''
+  currentEpisodeId.value = ''
+  currentEventId.value = ''
+  eventParentView.value = ''
+  storyDetailParentView.value = ''
+  storyCollectionParentView.value = ''
+  currentCardId.value = ''
+  currentGashaId.value = ''
+  currentSongId.value = ''
+  currentSongScope.value = 'all'
+  songParentView.value = ''
+  currentCardRarity.value = 'all'
+  currentCardAssetState.value = 'all'
+  currentCardRelationState.value = 'all'
+  currentIdolUnitFilter.value = ''
+  currentStoryDomain.value = ''
+  currentStoryMode.value = 'portal'
+  currentStorySection.value = ''
+  currentStoryFile.value = ''
+  currentEventScope.value = 'all'
+  currentStoryAvailability.value = 'all'
+  currentStorySort.value = 'domain'
+  currentMobileMode.value = 'personal'
+  currentMobileScenarioId.value = ''
+  commitView('portal_hub')
+}
+
+async function openPortalApp(targetRoute) {
+  const href = buildArchiveUrl(window.location.href, targetRoute).href
+  const nextRoute = readArchiveRoute(href)
+  await applyArchiveRoute(nextRoute)
+  syncArchiveRoute()
 }
 
 function openSongCatalog() {
@@ -1898,6 +1947,7 @@ function goArchiveBack() {
       currentMobileScenarioId.value = ''
       goHome()
     },
+    portal_hub: goHome,
     unit_catalog: () => commitView('idols'),
     unit_detail: () => {
       currentArchiveUnitCode.value = ''

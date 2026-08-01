@@ -590,6 +590,20 @@ view=story_collection&story_type=...&story_section=...
 - 播放器、solo+伴奏同步、MV 播放和 Chibi Stage 预选仍属于 Song-C，状态
   为 **NOT EXECUTED**，等待下一步产品与音频同步讨论。
 
+2026-08-01 P1-Mobile-Nav implementation checkpoint：
+
+- `view=portal_hub` 已接入 archive route contract、breadcrumb 和既有
+  `buildArchiveUrl`；门户卡片使用真实 href，点击后由 route state 驱动，支持
+  深链、刷新和浏览器 Back；
+- 移动底栏已收敛为“首页 / 故事 / 偶像 / 应用”，桌面端原八项导航保持不变；
+- 应用门户当前收录故事、歌曲、偶像、卡片、卡池、活动、Chibi Stage、互动、
+  外部资源和资源状态十个入口，使用 `<nav>` / link 语义、可见焦点和窄屏
+  单列布局；375px 实测无横向溢出；
+- `archiveSectionForRoute({ view: 'idols' })` 已修正为偶像入口，避免应用门户
+  的偶像卡片错误高亮到故事；
+- 本批不改变播放器、歌曲 solo+伴奏同步、关系数据或 publication gate；
+  Song-C、strict-v2 P2-A 和 2–4 小时长稳 P2-B 仍保持 **NOT EXECUTED**。
+
 #### P1-Mobile-Nav：应用启动器
 
 移动端底栏后续收敛为少量稳定入口，并新增 route-backed 的“应用启动器”
@@ -604,8 +618,9 @@ view=story_collection&story_type=...&story_section=...
 - 使用既有 route builder，不复制 history，也不改变桌面端主导航；
 - 使用 `<nav>` / 列表语义、可见焦点和至少 44 px 触控目标。
 
-推荐后续次序为：完成 Extra 视觉小批 → P1-Song-A → P1-Mobile-Nav →
-P1-Song-B。歌曲与移动导航各自保持独立提交边界。
+原推荐次序为：完成 Extra 视觉小批 → P1-Song-A → P1-Mobile-Nav →
+P1-Song-B；当前歌曲 metadata 小批和本次 Mobile-Nav route 小批均已落地，
+后续应继续保持歌曲播放器实验与门户增强的独立提交边界。
 
 该轨属于 P1 门户信息架构，不改变以下状态：
 
