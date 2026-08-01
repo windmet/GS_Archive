@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Prepare a small, explicitly experimental song player audio sample.
+"""Prepare an explicitly experimental song player audio sample.
 
-This script decodes only the requested idol vocal ACB and its backing ACB to
-browser-readable M4A files.  It does not modify RAW and never publishes the
-whole song corpus.  The generated media is intentionally ignored by the
-repository's binary-asset boundary; the tracked manifest records the source
-and metadata contract used by the UI experiment.
+This script decodes the requested idol vocal ACB (or all available idol vocal
+ACBs) and its backing ACB to browser-readable M4A files. It does not modify
+RAW and never publishes the whole song corpus. The generated media is
+intentionally ignored by the repository's binary-asset boundary; the tracked
+manifest records the source and metadata contract used by the UI experiment.
 """
 
 from __future__ import annotations
@@ -130,11 +130,32 @@ def find_unit_assets(output_root: Path, song_code: str, unit_dictionary: dict) -
     return entries
 
 
+def find_idol_sources(raw_audio: Path, song_code: str) -> list[tuple[str, Path]]:
+    """Return the per-idol ACB files in numeric order.
+
+    The filename suffix is the stable 49-idol code used by table 46 and the
+    CRI cue names. This deliberately excludes the unit cues in the base ACB
+    and the separate backing ACB.
+    """
+    entries = []
+    prefix = f"song3_{song_code}_"
+    for path in sorted(raw_audio.glob(f"{prefix}*.acb")):
+        idol_code = path.stem.removeprefix(prefix)
+        if re.fullmatch(r"\d{3}[a-z0-9]{3}", idol_code):
+            entries.append((idol_code, path))
+    return entries
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     add_sources_config_argument(parser)
     parser.add_argument("--song-code", default="drvalv")
     parser.add_argument("--idol-code", default="001tom")
+    parser.add_argument(
+        "--all-idols",
+        action="store_true",
+        help="Decode every per-idol vocal ACB found for the song",
+    )
     parser.add_argument("--ffmpeg")
     parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
@@ -161,15 +182,41 @@ def main() -> None:
 
     output_root = args.output_root.resolve()
     manifest_path = args.manifest.resolve()
-    vocal_source = raw_audio / f"song3_{args.song_code}_{args.idol_code}.acb"
     backing_source = raw_audio / f"song3_{args.song_code}_bgm.acb"
-    if not vocal_source.is_file() or not backing_source.is_file():
-        raise FileNotFoundError(f"Missing solo/backing pair for {args.song_code}/{args.idol_code}")
+    idol_sources = find_idol_sources(raw_audio, args.song_code) if args.all_idols else [
+        (args.idol_code, raw_audio / f"song3_{args.song_code}_{args.idol_code}.acb")
+    ]
+    if not idol_sources or any(not source.is_file() for _, source in idol_sources):
+        raise FileNotFoundError(f"Missing solo vocal source(s) for {args.song_code}")
+    if not backing_source.is_file():
+        raise FileNotFoundError(f"Missing backing source for {args.song_code}")
 
-    vocal_destination = output_root / f"{args.song_code}_{args.idol_code}.m4a"
     backing_destination = output_root / f"{args.song_code}_bgm.m4a"
-    vocal_meta = ensure_asset(vgmstream, ffmpeg, vocal_source, vocal_destination, args.force)
     backing_meta = ensure_asset(vgmstream, ffmpeg, backing_source, backing_destination, args.force)
+    solo_tracks = {}
+    for idol_code, vocal_source in idol_sources:
+        vocal_destination = output_root / f"{args.song_code}_{idol_code}.m4a"
+        vocal_meta = ensure_asset(vgmstream, ffmpeg, vocal_source, vocal_destination, args.force)
+        solo_tracks[idol_code] = {
+            "idol_code": idol_code,
+            "vocal": {
+                "url": public_asset_url(PROJECT_ROOT / "public", vocal_destination),
+                "source": f"RAW/audio/song3_{args.song_code}_{idol_code}.acb",
+                "kind": "solo-vocal",
+                "metadata": vocal_meta,
+            },
+            "backing": {
+                "url": public_asset_url(PROJECT_ROOT / "public", backing_destination),
+                "source": f"RAW/audio/song3_{args.song_code}_bgm.acb",
+                "kind": "backing",
+                "metadata": backing_meta,
+            },
+            "sync": {
+                "sample_rate": vocal_meta["sample_rate"],
+                "sample_delta": backing_meta["samples"] - vocal_meta["samples"],
+                "status": "metadata-aligned-experimental",
+            },
+        }
 
     catalog = json.loads(MUSIC_CATALOG.read_text(encoding="utf-8"))
     song = catalog["songs"].get(args.song_code)
@@ -206,7 +253,8 @@ def main() -> None:
         "scope": "song_detail_only",
         "notes": [
             "Single-track modes use existing browser-readable live-chibi M4A candidates.",
-            "Solo mode mixes one idol vocal M4A with one backing M4A in the browser.",
+            "Solo mode mixes one selected idol vocal M4A with one backing M4A in the browser.",
+            "When --all-idols is used, every available per-idol vocal ACB is listed with the same backing candidate.",
             "Metadata confirms sample alignment within one sample; no full listening calibration is claimed.",
         ],
         "songs": {
@@ -222,28 +270,7 @@ def main() -> None:
                     "kind": "single-track",
                     "metadata": backing_meta,
                 },
-                "solo_tracks": {
-                    args.idol_code: {
-                        "idol_code": args.idol_code,
-                        "vocal": {
-                            "url": public_asset_url(PROJECT_ROOT / "public", vocal_destination),
-                            "source": f"RAW/audio/song3_{args.song_code}_{args.idol_code}.acb",
-                            "kind": "solo-vocal",
-                            "metadata": vocal_meta,
-                        },
-                        "backing": {
-                            "url": public_asset_url(PROJECT_ROOT / "public", backing_destination),
-                            "source": f"RAW/audio/song3_{args.song_code}_bgm.acb",
-                            "kind": "backing",
-                            "metadata": backing_meta,
-                        },
-                        "sync": {
-                            "sample_rate": vocal_meta["sample_rate"],
-                            "sample_delta": backing_meta["samples"] - vocal_meta["samples"],
-                            "status": "metadata-aligned-experimental",
-                        },
-                    }
-                },
+                "solo_tracks": solo_tracks,
             }
         },
     }
