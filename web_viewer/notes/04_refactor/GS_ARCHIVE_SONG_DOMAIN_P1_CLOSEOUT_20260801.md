@@ -168,14 +168,26 @@ keeps opaque data references as raw offset/size pairs. Current evidence is:
   The DSP table also contains limiter, reverb, bandpass, and 32-band EQ
   chains. These are real runtime mix controls, but they are global/category
   infrastructure rather than the missing per-singer gain/pan preset;
+- the category/command/bus-link join is now decoded without interpreting the
+  command payload as a guessed formula: `song_submix` and `vocal_submix` both
+  point to command index `2` (`0057020058`), while the 49 bus links carry
+  stage-snapshot send levels (including `0.2`, `0.3`, `0.4`, `0.5`, `0.7`, and
+  `1.0`). This proves category and snapshot routing, not singer-specific
+  values;
 - iOS IL2CPP metadata contains `Song3BGM`, `Song3Vocal`,
   `SwitchSingerUtil`, `SetCategoryVolumeForParallelSong`,
   `singerCountPanDict`, `SingerNumVolumeList`, `ReserveTracks`,
   `StopSongChannel`, `PauseSongChannel`, `SetMuteSong`,
   `SetPan3dAngleSong`, and `SetEnvelopeTime`. This is strong evidence for
   singer-count/category/bus handling beyond an unparameterized two-track
-  browser mix, but the metadata string heap does not contain the numeric
-  preset values;
+  browser mix. The targeted v27 type audit also resolves
+  `Growing.Live.SwitchSingerUtil.SwitchSingers(singingIndexs)` (two overloads)
+  and `SetCategoryVolumeForParallelSong(num)`, plus
+  `Growing.Live.LiveSoundDirector.InitParallelSongs(num)`,
+  `SetMuteSong(idolPosIndex, isMute)`, and
+  `SetPan3dAngleSong(idolPosIndex, pan3dAngle)`. This confirms an indexed
+  parallel-song path and per-position pan/mute calls, but the metadata tables
+  do not contain the numeric `SingerNumVolumeList`/`singerCountPanDict` values;
 - `SetSubAudioTrack`/`SetExtraAudioTrack` also appear in the metadata, but
   those belong to CRI Mana movie playback and must not be treated as song
   mixer parameters;
