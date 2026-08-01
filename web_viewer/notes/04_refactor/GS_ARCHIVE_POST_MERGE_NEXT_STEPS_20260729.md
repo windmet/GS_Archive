@@ -612,6 +612,20 @@ view=story_collection&story_type=...&story_section=...
   data/metadata 字段与 track index、pan、volume、cue-sheet 选择做可复核映射，
   再决定播放器是否支持可选声部与伴奏叠加。Song-C 仍为 **NOT EXECUTED**。
 
+同日 RAW 全量 ACB 交叉核验：
+
+- `song3_*.acb` 共 313 个：63 个 base/special、245 个偶像声部、5 个独立
+  伴奏；61 首正式歌曲的主 ACB 均出现 `song_option/song_submix` 与
+  `bgm_option/bgm_submix`，245 个偶像声部均出现
+  `vocal_option/vocal_prog/vocal_submix`；
+- 同时具备 49 个偶像声部文件和独立 `_bgm.acb` 的歌曲只有
+  `byndtd`、`drvalv`、`grwsml`、`tkstp1`、`tkstp2` 五首。当前实验 manifest
+  只发布 `drvalv` 的 49 个声部，属于有意的单样本边界，不代表其余 56 首已
+  具备可直接播放的 solo+伴奏素材；
+- 全量 ACB 形成 83 个 sequence/track-event 签名；命令 payload 继续按 opaque
+  证据保存，未把 `0x0041`、`0x0057` 或 `0x07d0` 擅自解释为音量、声像或
+  时间参数；播放器仍不得据此宣称已重建官方混音。
+
 2026-08-01 P1-Mobile-Nav implementation checkpoint：
 
 - `view=portal_hub` 已接入 archive route contract、breadcrumb 和既有
