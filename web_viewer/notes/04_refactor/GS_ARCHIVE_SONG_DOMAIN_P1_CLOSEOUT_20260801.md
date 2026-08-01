@@ -136,6 +136,55 @@ or ducking instructions before treating two-track playback as an official mix.
 Until that evidence is found, the current player intentionally exposes only
 independent vocal/backing gains and labels the result experimental.
 
+### IPA/XAPK runtime audit — 2026-08-01
+
+The supplied `サイスタ 2.6.10.ipa` and
+`アイドルマスター+SideM+GROWING+STARS_2.6.10_APKPure.xapk` were audited
+read-only. The reproducible command is:
+
+```powershell
+python scripts/audit-cri-acf-mixer.py `
+  --ipa "<SideM source>\サイスタ 2.6.10.ipa" `
+  --xapk "<SideM source>\アイドルマスター+SideM+GROWING+STARS_2.6.10_APKPure.xapk" `
+  --output .analysis\cri-acf-mixer-audit.json
+```
+
+The script does not extract or modify either archive. It records the source
+hashes, parses CRI `@UTF` headers/columns, and keeps raw row bytes when a
+field-aware numeric decoder is not yet verified. Current evidence is:
+
+- the iOS IPA is bundle `jp.co.bandainamcoent.BNEI0395`, version `2.6.10`,
+  with 239 ZIP entries, `global-metadata.dat`, `glowing.acf`, and seven
+  relevant `song3` ACBs (DRIVE A LIVE backing, five tutorial solo vocals, and
+  `song3_grwsml.acb`);
+- `glowing.acf` contains 19 valid nested UTF tables, including `DspSetting`,
+  `Bus`, `Category`, `DspSettingSnapshot`, `AisacControl*`, and
+  `VoiceLimitGroup*`. Its string data includes separate `song_option`,
+  `song_submix`, `vocal_option`, `vocal_prog`, `vocal_submix`,
+  `voice_submix`, `bus_reverb`, `stage_master`, and stage snapshot names;
+- iOS IL2CPP metadata contains `Song3BGM`, `Song3Vocal`,
+  `SwitchSingerUtil`, `SetCategoryVolumeForParallelSong`,
+  `singerCountPanDict`, `SingerNumVolumeList`, `ReserveTracks`,
+  `StopSongChannel`, `PauseSongChannel`, `SetMuteSong`,
+  `SetPan3dAngleSong`, and `SetEnvelopeTime`. This is strong evidence for
+  singer-count/category/bus handling beyond an unparameterized two-track
+  browser mix, but the metadata string heap does not contain the numeric
+  preset values;
+- `SetSubAudioTrack`/`SetExtraAudioTrack` also appear in the metadata, but
+  those belong to CRI Mana movie playback and must not be treated as song
+  mixer parameters;
+- the Android XAPK is version `2.6.10` / version code `143`. Its base APK has
+  an obfuscated metadata magic and no song ACBs; the arm64 split contains
+  stripped `libil2cpp.so` and `libcri_ware_unity.so`. It is useful as a native
+  implementation cross-check, not as the primary source for managed field
+  names.
+
+This audit upgrades the next target from “guess a gain/pan” to a bounded
+field-aware CRI UTF decoder plus a targeted `SwitchSingerUtil`/Android
+implementation cross-check. Until those numeric values or a runtime capture
+are recovered, the all-49 solo-plus-backing player remains an explicitly
+experimental approximation and no official mix claim is permitted.
+
 ## Deferred Song-C discussion
 
 Status: **NOT EXECUTED**.
