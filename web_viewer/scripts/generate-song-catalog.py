@@ -35,6 +35,8 @@ SONG_MOVIE_INDEX = PROJECT_ROOT / "public" / "data" / "masterdata" / "song_movie
 SONG_AUDIO_CATALOG = PROJECT_ROOT / "public" / "data" / "song_audio_relation_catalog.json"
 SONG_JACKET_INDEX = PROJECT_ROOT / "public" / "data" / "song_jacket_index.json"
 SONG_RELATED_ENTITY_INDEX = PROJECT_ROOT / "public" / "data" / "song_related_entity_index.json"
+IDOL_UNIT_DICTIONARY = PROJECT_ROOT / "public" / "data" / "masterdata" / "idol_unit_dictionary.json"
+ARCHIVE_MANIFEST = PROJECT_ROOT / "public" / "data" / "archive_manifest.json"
 
 DISABLED_OPEN_AT = 4102412400  # 2100-01-01 UTC sentinel in this snapshot.
 INITIAL_OPEN_AT = 946652400  # 2000-01-01 JST baseline sentinel in this snapshot.
@@ -145,6 +147,8 @@ def build_catalog(
     song_audio_catalog: dict,
     song_jacket_index: dict,
     song_related_entity_index: dict,
+    idol_unit_dictionary: dict,
+    archive_manifest: dict,
     identities: dict[str, dict],
     asset_root: Path,
 ) -> dict:
@@ -166,6 +170,15 @@ def build_catalog(
     relations_by_code: dict[str, list[dict]] = defaultdict(list)
     for relation in song_related_entity_index.get("relations") or []:
         relations_by_code[relation["song_code"]].append(relation)
+
+    idols_by_numeric_id = idol_unit_dictionary.get("by_numeric_id") or {}
+    units_by_id = idol_unit_dictionary.get("by_unit_id") or {}
+    membership_by_idol = archive_manifest.get("unit_membership_by_idol") or {}
+    members_by_unit: dict[str, list[str]] = defaultdict(list)
+    for idol_code, membership in membership_by_idol.items():
+        members_by_unit[str(membership.get("unit_id"))].append(idol_code)
+    for members in members_by_unit.values():
+        members.sort(key=lambda code: int(code[:3]))
 
     for code, meta in sorted(music_catalog["songs"].items()):
         identity = identities.get(code, {})
@@ -208,6 +221,32 @@ def build_catalog(
             if open_at == DISABLED_OPEN_AT
             else ("initial" if open_at == INITIAL_OPEN_AT else "released")
         )
+        raw_unit_mapping = meta.get("unit_mapping") or {}
+        mapping_category = raw_unit_mapping.get("category")
+        raw_unit_id = raw_unit_mapping.get("unit_id")
+        confirmed_unit = None
+        if raw_unit_mapping.get("status") == "confirmed_unit_relation":
+            unit = units_by_id.get(str(raw_unit_id))
+            if unit:
+                confirmed_unit = {
+                    "unit_id": unit["unit_id"],
+                    "unit_code": unit["unit_code"],
+                    "unit_name": unit["unit_name"],
+                }
+        explicit_idol_codes = []
+        for idol_id in meta.get("performer_idol_ids") or []:
+            idol = idols_by_numeric_id.get(str(idol_id))
+            if idol and idol.get("idol_code"):
+                explicit_idol_codes.append(idol["idol_code"])
+        if explicit_idol_codes:
+            performer_idol_codes = explicit_idol_codes
+            performer_basis = "table46_explicit"
+        elif confirmed_unit:
+            performer_idol_codes = members_by_unit.get(str(confirmed_unit["unit_id"]), [])
+            performer_basis = "confirmed_unit_roster"
+        else:
+            performer_idol_codes = []
+            performer_basis = "none"
         songs[code] = {
             "song_id": song_id,
             "song_code": code,
@@ -223,6 +262,17 @@ def build_catalog(
             "variant_kind": family.get("variant_kind") or "primary",
             "variants": [],
             "related_entities": relations_by_code.get(code, []),
+            "performance_mapping": {
+                "category": mapping_category,
+                "raw_unit_id": raw_unit_id,
+                "status": raw_unit_mapping.get("status"),
+                "confirmed_unit": confirmed_unit,
+                "explicit_performer_idol_ids": meta.get("performer_idol_ids") or [],
+                "explicit_performer_idol_codes": explicit_idol_codes,
+                "performer_idol_codes": performer_idol_codes,
+                "performer_basis": performer_basis,
+                "table_46_row_count": meta.get("table_46_row_count") or 0,
+            },
             "jacket_url": jacket.get("url") if jacket else None,
             "audio_form": audio_form,
             "audio": audio,
@@ -257,6 +307,18 @@ def build_catalog(
         ),
         "layered_song_count": sum(1 for song in songs.values() if song["audio_form"] == "layered"),
         "oneshot_song_count": sum(1 for song in songs.values() if song["audio_form"] == "oneshot"),
+        "confirmed_unit_song_count": sum(
+            song["performance_mapping"]["confirmed_unit"] is not None
+            for song in songs.values()
+        ),
+        "explicit_performer_song_count": sum(
+            bool(song["performance_mapping"]["explicit_performer_idol_codes"])
+            for song in songs.values()
+        ),
+        "resolved_performer_song_count": sum(
+            bool(song["performance_mapping"]["performer_idol_codes"])
+            for song in songs.values()
+        ),
         "choreography_bundle_count": sum(
             1 for song in songs.values() if song["choreography"]["has_fumen"]
         ),
@@ -281,6 +343,8 @@ def build_catalog(
             "song_audio_relation_catalog": "public/data/song_audio_relation_catalog.json",
             "song_jacket_index": "public/data/song_jacket_index.json",
             "song_related_entity_index": "public/data/song_related_entity_index.json",
+            "idol_unit_dictionary": "public/data/masterdata/idol_unit_dictionary.json",
+            "archive_manifest": "public/data/archive_manifest.json",
             "masterdata_table": 46,
             "choreography_root": "RAW/asset",
         },
@@ -309,6 +373,8 @@ def main() -> None:
     song_audio_catalog = json.loads(SONG_AUDIO_CATALOG.read_text(encoding="utf-8"))
     song_jacket_index = json.loads(SONG_JACKET_INDEX.read_text(encoding="utf-8"))
     song_related_entity_index = json.loads(SONG_RELATED_ENTITY_INDEX.read_text(encoding="utf-8"))
+    idol_unit_dictionary = json.loads(IDOL_UNIT_DICTIONARY.read_text(encoding="utf-8"))
+    archive_manifest = json.loads(ARCHIVE_MANIFEST.read_text(encoding="utf-8"))
     identities = load_table46_song_identities(sources.masterdata_decoded_file)
 
     catalog = build_catalog(
@@ -317,6 +383,8 @@ def main() -> None:
         song_audio_catalog,
         song_jacket_index,
         song_related_entity_index,
+        idol_unit_dictionary,
+        archive_manifest,
         identities,
         asset_root,
     )

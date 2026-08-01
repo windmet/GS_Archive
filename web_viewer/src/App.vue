@@ -71,11 +71,13 @@
         :idol="currentIdolProfile"
         :stats="currentIdolStats"
         :events="currentIdolEvents"
+        :songs="currentIdolSongs"
         :idols="idolUnitData?.idols || []"
         :selected-idol="currentCharacterId"
         @open-domain="openIdolDomain"
         @open-unit="openUnitFromIdol"
         @open-event="openIdolEvent"
+        @open-song="openSong"
         @select-idol="selectPrimaryIdol"
       />
 
@@ -320,12 +322,14 @@
         :unit="currentArchiveUnit"
         :members="currentArchiveUnitMembers"
         :stories="currentArchiveUnitStories"
+        :songs="currentArchiveUnitSongs"
         :card-stats="currentArchiveUnitEntry?.cardStats"
         :event-relations="currentArchiveUnitEntry?.eventRelations"
         @open-idol="openUnitMember"
         @open-story="openUnitStory"
         @open-event="openUnitEvent"
         @open-cards="openUnitCards"
+        @open-song="openSong"
       />
     </ArchiveShell>
 
@@ -480,6 +484,7 @@ const externalStoryResourcesData = ref(null)
 const songCatalogData = ref(null)
 const currentSongId = ref('')
 const currentSongScope = ref('all')
+const songParentView = ref('')
 const idolEntityTranslationRevision = ref(0)
 const currentScenario = ref(null)
 const currentScenarioFile = ref('')
@@ -986,6 +991,13 @@ const currentArchiveUnitStories = computed(() => {
     .sort((a, b) => a.resourceId.localeCompare(b.resourceId))
 })
 
+const currentArchiveUnitSongs = computed(() => {
+  const unitId = Number(currentArchiveUnit.value?.unit_id || 0)
+  return Object.values(songCatalogData.value?.songs || {})
+    .filter(song => song.performance_mapping?.confirmed_unit?.unit_id === unitId)
+    .sort((left, right) => Number(left.song_id || 0) - Number(right.song_id || 0))
+})
+
 function displayTitleForMeta(meta, fallbackFile) {
   const titles = meta?.titles?.filter(Boolean) || []
   if (!titles.length) return formatFileName(fallbackFile || meta?.resourceIds?.[0] || '')
@@ -1249,6 +1261,15 @@ const currentIdolStats = computed(() => {
 const currentIdolEvents = computed(() => (archiveManifestData.value?.unit_event_relations || [])
   .filter(event => (event.characters || []).includes(currentCharacterId.value))
   .sort((left, right) => Number(left.release_at || 0) - Number(right.release_at || 0)))
+const currentIdolSongs = computed(() => Object.values(songCatalogData.value?.songs || {})
+  .filter(song => (song.performance_mapping?.performer_idol_codes || []).includes(currentCharacterId.value))
+  .map(song => ({
+    song,
+    evidenceLabel: song.performance_mapping.performer_basis === 'table46_explicit'
+      ? '表 46 明确演唱／参演'
+      : '由正式组合归属补全',
+  }))
+  .sort((left, right) => Number(left.song.song_id || 0) - Number(right.song.song_id || 0)))
 
 const archiveShellVisible = computed(() => !['__boot__', 'player', 'spine_lab', 'chibi_stage'].includes(view.value))
 
@@ -1424,6 +1445,7 @@ function currentArchiveRoute() {
     (preservesStoryCollectionContext && storyCollectionParentView.value === 'song_detail')
   const preservesArchiveUnit = view.value === 'unit_detail' ||
     view.value === 'mobile_archive' ||
+    (view.value === 'song_detail' && songParentView.value === 'unit_detail') ||
     (view.value === 'player' && returnViewAfterPlayer.value === 'unit_detail') ||
     (view.value === 'player' && returnViewAfterPlayer.value === 'mobile_archive') ||
     (preservesEventContext && eventParentView.value === 'unit_detail')
@@ -1470,7 +1492,9 @@ function currentArchiveRoute() {
       ? eventParentView.value
       : (preservesStoryDetailContext
           ? storyDetailParentView.value
-          : (preservesStoryCollectionContext ? storyCollectionParentView.value : '')),
+          : (preservesStoryCollectionContext
+              ? storyCollectionParentView.value
+              : (view.value === 'song_detail' ? songParentView.value : ''))),
   }
 }
 
@@ -1597,6 +1621,7 @@ async function applyArchiveRoute(route) {
     currentGashaCategory.value = route.gashaType || 'all'
     currentSongId.value = route.song || ''
     currentSongScope.value = route.songScope || 'all'
+    songParentView.value = route.view === 'song_detail' ? (route.parentView || '') : ''
     currentCardRarity.value = route.rarity || 'all'
     currentCardAssetState.value = route.assetState || 'all'
     currentCardRelationState.value = route.relationState || 'all'
@@ -1628,6 +1653,7 @@ async function applyArchiveRoute(route) {
       (route.view === 'player' && route.returnView === 'event_detail')
     currentArchiveUnitCode.value = (
       ['unit_catalog', 'unit_detail', 'mobile_archive'].includes(route.view) ||
+      (route.view === 'song_detail' && route.parentView === 'unit_detail') ||
       (route.view === 'player' && route.returnView === 'unit_detail') ||
       (restoresEventContext && route.parentView === 'unit_detail')
     ) ? (route.unit || (route.view === 'mobile_archive' ? (idolUnitData.value?.units?.[0]?.unit_code || '01jup') : '')) : ''
@@ -1703,6 +1729,7 @@ function goHome() {
   currentGashaId.value = ''
   currentSongId.value = ''
   currentSongScope.value = 'all'
+  songParentView.value = ''
   currentCardRarity.value = 'all'
   currentCardAssetState.value = 'all'
   currentCardRelationState.value = 'all'
@@ -1733,6 +1760,7 @@ function navigateArchiveSection(section) {
 function openSongCatalog() {
   currentSongId.value = ''
   currentSongScope.value = 'all'
+  songParentView.value = ''
   filterQuery.value = ''
   currentCategoryId.value = ''
   commitView('song_catalog')
@@ -1740,6 +1768,9 @@ function openSongCatalog() {
 
 function openSong(songCode) {
   if (!songCatalogData.value?.songs?.[songCode]) return
+  if (view.value === 'idol_detail') songParentView.value = 'idol_detail'
+  else if (view.value === 'unit_detail') songParentView.value = 'unit_detail'
+  else if (view.value !== 'song_detail') songParentView.value = ''
   currentSongId.value = songCode
   commitView('song_detail')
 }
@@ -1798,8 +1829,12 @@ function goArchiveBack() {
     },
     song_catalog: goHome,
     song_detail: () => {
+      const parent = songParentView.value
       currentSongId.value = ''
-      commitView('song_catalog')
+      songParentView.value = ''
+      if (parent === 'idol_detail' && currentIdolProfile.value) commitView('idol_detail')
+      else if (parent === 'unit_detail' && currentArchiveUnit.value) commitView('unit_detail')
+      else commitView('song_catalog')
     },
     event_detail: goBackFromEvent,
     archive_status: goHome,

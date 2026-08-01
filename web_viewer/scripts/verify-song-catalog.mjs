@@ -13,6 +13,8 @@ const musicCatalogPath = path.join(projectRoot, 'public', 'data', 'masterdata', 
 const songMovieIndexPath = path.join(projectRoot, 'public', 'data', 'masterdata', 'song_movie_index.json')
 const songAudioCatalogPath = path.join(projectRoot, 'public', 'data', 'song_audio_relation_catalog.json')
 const songRelatedEntityIndexPath = path.join(projectRoot, 'public', 'data', 'song_related_entity_index.json')
+const idolUnitDictionaryPath = path.join(projectRoot, 'public', 'data', 'masterdata', 'idol_unit_dictionary.json')
+const archiveManifestPath = path.join(projectRoot, 'public', 'data', 'archive_manifest.json')
 
 const sourceOnly = process.argv.includes('--source-only')
 const sources = loadArchiveSources()
@@ -31,6 +33,8 @@ const musicCatalog = JSON.parse(readFileSync(musicCatalogPath, 'utf8'))
 const songMovieIndex = JSON.parse(readFileSync(songMovieIndexPath, 'utf8'))
 const songAudioCatalog = JSON.parse(readFileSync(songAudioCatalogPath, 'utf8'))
 const songRelatedEntityIndex = JSON.parse(readFileSync(songRelatedEntityIndexPath, 'utf8'))
+const idolUnitDictionary = JSON.parse(readFileSync(idolUnitDictionaryPath, 'utf8'))
+const archiveManifest = JSON.parse(readFileSync(archiveManifestPath, 'utf8'))
 
 const ajv = new Ajv2020({ allErrors: true })
 addFormats(ajv)
@@ -74,6 +78,29 @@ for (const code of catalogSongs) {
   if (song.work_code !== expectedWorkCode) fail(`song ${code}: work_code mismatch`)
   if (song.parent_song_code !== (expectedWorkCode === code ? null : expectedWorkCode)) {
     fail(`song ${code}: parent_song_code mismatch`)
+  }
+  const rawMapping = meta.unit_mapping
+  const performance = song.performance_mapping
+  if (performance.category !== rawMapping.category || performance.raw_unit_id !== rawMapping.unit_id) {
+    fail(`song ${code}: table 46 unit mapping mismatch`)
+  }
+  if (performance.status !== rawMapping.status) fail(`song ${code}: mapping status mismatch`)
+  if (performance.table_46_row_count !== meta.table_46_row_count) {
+    fail(`song ${code}: table 46 row count mismatch`)
+  }
+  const expectedExplicitCodes = (meta.performer_idol_ids || []).map(id =>
+    idolUnitDictionary.by_numeric_id?.[String(id)]?.idol_code,
+  ).filter(Boolean)
+  if (JSON.stringify(performance.explicit_performer_idol_codes) !== JSON.stringify(expectedExplicitCodes)) {
+    fail(`song ${code}: explicit performer mapping mismatch`)
+  }
+  if (rawMapping.status === 'confirmed_unit_relation') {
+    const unit = idolUnitDictionary.by_unit_id?.[String(rawMapping.unit_id)]
+    if (!performance.confirmed_unit || performance.confirmed_unit.unit_code !== unit?.unit_code) {
+      fail(`song ${code}: confirmed unit relation missing`)
+    }
+  } else if (performance.confirmed_unit !== null) {
+    fail(`song ${code}: category 3 selector must not become a confirmed unit relation`)
   }
 
   const layers = songAudioCatalog.songs[code]?.audio_layers || []
@@ -126,6 +153,26 @@ if (s.three_d_movie_count !== movieEntries.filter(e => e.kind === '3dmv').length
 if (s.mvlive_count !== movieEntries.filter(e => e.kind === 'mvlive').length) fail(`mvlive_count mismatch`)
 if (s.layered_song_count !== Object.values(catalog.songs).filter(song => song.audio_form === 'layered').length) fail(`layered_song_count mismatch`)
 if (s.oneshot_song_count !== Object.values(catalog.songs).filter(song => song.audio_form === 'oneshot').length) fail(`oneshot_song_count mismatch`)
+if (s.confirmed_unit_song_count !== 47) fail(`confirmed_unit_song_count must be 47`)
+if (s.explicit_performer_song_count !== 13) fail(`explicit_performer_song_count must be 13 unique songs`)
+if (musicCatalog.meta.table_46_row_count !== 99) fail(`music_catalog table_46_row_count must be 99`)
+if (musicCatalog.meta.explicit_performer_row_count !== 20) fail(`music_catalog explicit performer row count must be 20`)
+if (musicCatalog.meta.explicit_performer_song_count !== 13) fail(`music_catalog explicit performer song count must be 13`)
+if (musicCatalog.songs.brndnf.unit_mapping?.unit_id !== 1) fail(`BRAND NEW FIELD must map to Jupiter`)
+if (musicCatalog.songs.psblts.unit_mapping?.unit_id !== 12) fail(`Possibilities must map to S.E.M`)
+if (JSON.stringify(musicCatalog.songs.flslgt.performer_idol_ids) !== JSON.stringify([7, 9, 22, 48])) {
+  fail(`FLASH LIGHT explicit performers mismatch`)
+}
+if (catalog.songs.drvalv.performance_mapping.confirmed_unit !== null) {
+  fail(`DRIVE A LIVE category 3 selector must remain unresolved`)
+}
+const semMembers = Object.entries(archiveManifest.unit_membership_by_idol || {})
+  .filter(([, membership]) => Number(membership.unit_id) === 12)
+  .map(([idolCode]) => idolCode)
+  .sort()
+if (JSON.stringify([...catalog.songs.psblts.performance_mapping.performer_idol_codes].sort()) !== JSON.stringify(semMembers)) {
+  fail(`Possibilities performer roster must resolve to all S.E.M members`)
+}
 if (s.choreography_bundle_count !== Object.values(catalog.songs).filter(song => song.choreography.has_fumen).length) fail(`choreography_bundle_count mismatch`)
 if (s.lipsync_coverage !== Object.values(catalog.songs).filter(song => song.choreography.has_for_lipsync).length) fail(`lipsync_coverage mismatch`)
 if (s.unit_effect_song_count !== Object.values(catalog.songs).filter(song => song.choreography.live_effect_variants.length).length) fail(`unit_effect_song_count mismatch`)

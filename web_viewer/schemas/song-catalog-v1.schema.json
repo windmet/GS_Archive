@@ -14,6 +14,8 @@
         "song_audio_relation_catalog",
         "song_jacket_index",
         "song_related_entity_index",
+        "idol_unit_dictionary",
+        "archive_manifest",
         "masterdata_table",
         "choreography_root"
       ],
@@ -23,6 +25,8 @@
         "song_audio_relation_catalog": { "const": "public/data/song_audio_relation_catalog.json" },
         "song_jacket_index": { "const": "public/data/song_jacket_index.json" },
         "song_related_entity_index": { "const": "public/data/song_related_entity_index.json" },
+        "idol_unit_dictionary": { "const": "public/data/masterdata/idol_unit_dictionary.json" },
+        "archive_manifest": { "const": "public/data/archive_manifest.json" },
         "masterdata_table": { "const": 46 },
         "choreography_root": { "const": "RAW/asset" }
       },
@@ -40,6 +44,9 @@
         "mvlive_count",
         "layered_song_count",
         "oneshot_song_count",
+        "confirmed_unit_song_count",
+        "explicit_performer_song_count",
+        "resolved_performer_song_count",
         "choreography_bundle_count",
         "lipsync_coverage",
         "unit_effect_song_count",
@@ -57,6 +64,9 @@
         "mvlive_count": { "type": "integer" },
         "layered_song_count": { "type": "integer" },
         "oneshot_song_count": { "type": "integer" },
+        "confirmed_unit_song_count": { "type": "integer" },
+        "explicit_performer_song_count": { "type": "integer" },
+        "resolved_performer_song_count": { "type": "integer" },
         "choreography_bundle_count": { "type": "integer" },
         "lipsync_coverage": { "type": "integer" },
         "unit_effect_song_count": { "type": "integer" },
@@ -85,6 +95,7 @@
           "variant_kind",
           "variants",
           "related_entities",
+          "performance_mapping",
           "audio_form",
           "audio",
           "choreography",
@@ -139,6 +150,58 @@
               },
               "additionalProperties": false
             }
+          },
+          "performance_mapping": {
+            "type": "object",
+            "required": [
+              "category",
+              "raw_unit_id",
+              "status",
+              "confirmed_unit",
+              "explicit_performer_idol_ids",
+              "explicit_performer_idol_codes",
+              "performer_idol_codes",
+              "performer_basis",
+              "table_46_row_count"
+            ],
+            "properties": {
+              "category": { "enum": [2, 3] },
+              "raw_unit_id": { "type": "integer", "minimum": 1, "maximum": 16 },
+              "status": { "enum": ["confirmed_unit_relation", "unresolved_special_selector"] },
+              "confirmed_unit": {
+                "oneOf": [
+                  { "type": "null" },
+                  {
+                    "type": "object",
+                    "required": ["unit_id", "unit_code", "unit_name"],
+                    "properties": {
+                      "unit_id": { "type": "integer", "minimum": 1, "maximum": 16 },
+                      "unit_code": { "type": "string" },
+                      "unit_name": { "type": "string" }
+                    },
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "explicit_performer_idol_ids": {
+                "type": "array",
+                "items": { "type": "integer", "minimum": 1, "maximum": 49 },
+                "uniqueItems": true
+              },
+              "explicit_performer_idol_codes": {
+                "type": "array",
+                "items": { "type": "string", "pattern": "^[0-9]{3}[a-z0-9]{3}$" },
+                "uniqueItems": true
+              },
+              "performer_idol_codes": {
+                "type": "array",
+                "items": { "type": "string", "pattern": "^[0-9]{3}[a-z0-9]{3}$" },
+                "uniqueItems": true
+              },
+              "performer_basis": { "enum": ["table46_explicit", "confirmed_unit_roster", "none"] },
+              "table_46_row_count": { "type": "integer", "minimum": 1 }
+            },
+            "additionalProperties": false
           },
           "jacket_url": { "type": "string" },
           "audio_form": { "enum": ["layered", "oneshot", "single-cue"] },
