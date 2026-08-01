@@ -150,8 +150,8 @@ python scripts/audit-cri-acf-mixer.py `
 ```
 
 The script does not extract or modify either archive. It records the source
-hashes, parses CRI `@UTF` headers/columns, and keeps raw row bytes when a
-field-aware numeric decoder is not yet verified. Current evidence is:
+hashes, parses CRI `@UTF` headers/columns, decodes standard scalar fields, and
+keeps opaque data references as raw offset/size pairs. Current evidence is:
 
 - the iOS IPA is bundle `jp.co.bandainamcoent.BNEI0395`, version `2.6.10`,
   with 239 ZIP entries, `global-metadata.dat`, `glowing.acf`, and seven
@@ -162,6 +162,12 @@ field-aware numeric decoder is not yet verified. Current evidence is:
   `VoiceLimitGroup*`. Its string data includes separate `song_option`,
   `song_submix`, `vocal_option`, `vocal_prog`, `vocal_submix`,
   `voice_submix`, `bus_reverb`, `stage_master`, and stage snapshot names;
+- field-aware ACF decoding yields `DspBusSetting_0` with eight buses and seven
+  stage snapshots, a 56-row bus table, 23 named categories, and concrete bus
+  defaults such as `MasterOut=1.0`, `bus_reverb=0.5`, and `bus_phone=0.8`.
+  The DSP table also contains limiter, reverb, bandpass, and 32-band EQ
+  chains. These are real runtime mix controls, but they are global/category
+  infrastructure rather than the missing per-singer gain/pan preset;
 - iOS IL2CPP metadata contains `Song3BGM`, `Song3Vocal`,
   `SwitchSingerUtil`, `SetCategoryVolumeForParallelSong`,
   `singerCountPanDict`, `SingerNumVolumeList`, `ReserveTracks`,
