@@ -217,6 +217,34 @@ labelled “volume”, “pan”, “fade”, or “timing” in the player. Kee
 solo-plus-backing catalog and independent-gain controls as an experiment, and
 keep Song-C **NOT EXECUTED**.
 
+### Take a StuMp! five-slot correction
+
+The recording review and a RAW/Chibi cross-check show that `tkstp1` and
+`tkstp2` are not “one fixed solo track” songs. Their table-46 rows set
+`OnStageCount=5` and `HasSwitchSinger=1`; each has 49 one-cue mono idol-vocal
+ACBs plus one stereo backing ACB. The base ACB remains a single full-mix cue,
+so the catalog’s `audio_form=single-cue` describes the base cue and not the
+live vocal selector.
+
+Both Unity `*_live_effect` assets carry five-position `SwitchSinger` state
+columns (47 events for `tkstp1`, 48 for `tkstp2`). The Chibi export confirms
+that all five positions use the same motion timeline; only the active singing
+positions change. Its stable slot map is performer slots `1..5` to stage
+positions `3,2,4,1,5`. This gives a safe future binding contract:
+
+```text
+selected five idols -> performer slots 1..5
+performer slot -> Chibi stage position (3,2,4,1,5)
+SwitchSinger state -> which selected idol vocal ACB(s) are active
+```
+
+This is distinct from the table-46 `HasSoloSinging` flag, which remains
+disabled for these two rows. It is also distinct from the 16 unit-cue format
+used by `byndtd`, `drvalv`, and `grwsml`. The browser player must not infer the
+runtime’s exact gain/pan/ducking policy from the slot states alone; the mapping
+is suitable for Chibi singer highlighting and future per-slot audio selection,
+while Song-C remains **NOT EXECUTED**.
+
 ## Deferred Song-C discussion
 
 Status: **NOT EXECUTED**.

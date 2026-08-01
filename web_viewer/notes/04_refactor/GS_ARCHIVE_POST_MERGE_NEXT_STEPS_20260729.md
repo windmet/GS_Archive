@@ -618,13 +618,25 @@ view=story_collection&story_type=...&story_section=...
   伴奏；61 首正式歌曲的主 ACB 均出现 `song_option/song_submix` 与
   `bgm_option/bgm_submix`，245 个偶像声部均出现
   `vocal_option/vocal_prog/vocal_submix`；
-- 同时具备 49 个偶像声部文件和独立 `_bgm.acb` 的歌曲只有
-  `byndtd`、`drvalv`、`grwsml`、`tkstp1`、`tkstp2` 五首。当前实验 manifest
-  只发布 `drvalv` 的 49 个声部，属于有意的单样本边界，不代表其余 56 首已
-  具备可直接播放的 solo+伴奏素材；
+- 同时具备 49 个偶像声部文件和独立 `_bgm.acb` 的物理候选只有
+  `byndtd`、`drvalv`、`grwsml`、`tkstp1`、`tkstp2` 五首；但 table 46 的
+  `HasSoloSinging`/`SoloSingingOpenAt` 仅对前三首正式开启，`tkstp1/2` 的
+  solo 开放时间仍是禁用 sentinel。当前实验 manifest 只发布 `drvalv` 的
+  49 个声部，属于有意的单样本边界，不把另外四首物理候选自动当成官方
+  播放选项；
 - 全量 ACB 形成 83 个 sequence/track-event 签名；命令 payload 继续按 opaque
   证据保存，未把 `0x0041`、`0x0057` 或 `0x07d0` 擅自解释为音量、声像或
   时间参数；播放器仍不得据此宣称已重建官方混音。
+- `tkstp1`/`tkstp2` 的“49 个偶像声部”需要单独纠正为五人编组模型：table 46
+  两行均为 `OnStageCount=5`、`HasSwitchSinger=1`，Unity `*_live_effect`
+  分别含 47/48 个 `SwitchSinger` 事件，每个事件都有五个站位状态位。它们
+  没有 16 个组合 cue，但确实支持把偶像分配到五个舞台位置并按事件切换
+  当前演唱位；49 个 ACB 是可选声部池，不等于 49 路同时播放。这个选择器
+  与 `HasSoloSinging`（两行仍为禁用 sentinel）是不同语义，不能再把
+  `audio_form=single-cue` 写成“没有个人声部选择”。Chibi 导出现在同时保留
+  `performerSlots` 与映射后的 `stagePositions`，`verify:live-chibi-singer-slots`
+  固化这一关系；播放器未来可沿 performer slot 选择对应的偶像 ACB，而不需
+  复制五套编舞动作。
 - 供应包与 RAW 的逐文件 hash 对照已固化为
   `scripts/audit-song-package-raw-match.py`（`npm run audit:song-package-match --
   --ipa <path> --xapk <path> --raw-audio ..\\RAW\\audio --output <report>`）；

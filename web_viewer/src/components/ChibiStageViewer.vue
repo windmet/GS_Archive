@@ -503,7 +503,11 @@ const motionCatalog = computed(() => new Map(
 const currentSingerEvent = computed(() => [...(selectedSong.value?.singerEvents || [])]
   .reverse()
   .find(event => event.time <= stageTime.value))
-const currentSingerPositions = computed(() => currentSingerEvent.value?.singers || [])
+const currentSingerPositions = computed(() => (
+  currentSingerEvent.value?.stagePositions
+  || currentSingerEvent.value?.singers
+  || []
+))
 const currentSingerLabel = computed(() => currentSingerPositions.value.length
   ? currentSingerPositions.value.map(position => `${position}号位`).join('、')
   : '无人')

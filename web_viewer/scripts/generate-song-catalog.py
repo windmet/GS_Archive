@@ -46,7 +46,7 @@ SONG3_PREFIX = "song3_"
 
 
 def load_table46_song_identities(masterdata_decoded: Path) -> dict[str, dict]:
-    """Extract song_id / open_at / close_at for every song_code in table 46."""
+    """Extract identity and SongData selection flags for every table-46 song."""
     records = list(iter_top_records(masterdata_decoded.read_bytes()))
     rows = extract_table_rows(records, {46})
     identities: dict[str, dict] = {}
@@ -57,6 +57,12 @@ def load_table46_song_identities(masterdata_decoded: Path) -> dict[str, dict]:
         identities[code] = {
             "song_id": row.get("1"),
             "open_at": row.get("29"),
+            "on_stage_count": row.get("16"),
+            "has_switch_singer": bool(row.get("17", 0)),
+            "has_original_member": bool(row.get("35", 0)),
+            "has_solo_singing": bool(row.get("37", 0)),
+            "solo_singing_open_at": row.get("42"),
+            "original_song_id": row.get("43"),
         }
     return identities
 
@@ -257,6 +263,14 @@ def build_catalog(
             "open_at": open_at,
             "available": open_at is not None and open_at != DISABLED_OPEN_AT,
             "archive_status": archive_status,
+            "song_data": {
+                "on_stage_count": identity.get("on_stage_count"),
+                "has_switch_singer": identity.get("has_switch_singer", False),
+                "has_original_member": identity.get("has_original_member", False),
+                "has_solo_singing": identity.get("has_solo_singing", False),
+                "solo_singing_open_at": identity.get("solo_singing_open_at"),
+                "original_song_id": identity.get("original_song_id"),
+            },
             "work_code": work_code,
             "parent_song_code": work_code if work_code != code else None,
             "variant_kind": family.get("variant_kind") or "primary",
@@ -307,6 +321,12 @@ def build_catalog(
         ),
         "layered_song_count": sum(1 for song in songs.values() if song["audio_form"] == "layered"),
         "oneshot_song_count": sum(1 for song in songs.values() if song["audio_form"] == "oneshot"),
+        "switch_singer_song_count": sum(
+            1 for song in songs.values() if song["song_data"]["has_switch_singer"]
+        ),
+        "solo_singing_song_count": sum(
+            1 for song in songs.values() if song["song_data"]["has_solo_singing"]
+        ),
         "confirmed_unit_song_count": sum(
             song["performance_mapping"]["confirmed_unit"] is not None
             for song in songs.values()
