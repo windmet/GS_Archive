@@ -19,6 +19,8 @@ try {
 
 const songs = index.songs || []
 let singerEvents = 0
+let decodedCommaLyrics = 0
+let preservedAngleLyrics = 0
 for (const song of songs) {
   const performerByStage = new Map((song.stagePositionMap || [])
     .map(item => [Number(item.stagePosition), Number(item.performerSlot)]))
@@ -40,7 +42,45 @@ for (const song of songs) {
       fail(`${song.id} @ ${event.time}: stage-position/performer-slot inverse mismatch`)
     }
   }
+  for (const event of song.lyricEvents || []) {
+    if (event.text.includes('<comma>')) fail(`${song.id}: decoded lyric still contains <comma>`)
+    if (event.rawText !== undefined) {
+      decodedCommaLyrics += 1
+      if (!event.rawText.includes('<comma>') ||
+          event.text !== event.rawText.replaceAll('<comma>', ',')) {
+        fail(`${song.id} @ ${event.time}: rawText must preserve only the decoded <comma> source`)
+      }
+    }
+    if (/[<>]/.test(event.text)) preservedAngleLyrics += 1
+  }
 }
+
+for (const code of ['drvalv', 'byndtd', 'grwsml']) {
+  for (const variant of ['solo', 'solo_multi', 'solo_single']) {
+    const song = songs.find(item => item.songCode === code && item.variant === variant)
+    if (!song) fail(`${code}/${variant}: Solo choreography is missing`)
+    if (JSON.stringify(song.positions) !== JSON.stringify([3])) {
+      fail(`${code}/${variant}: only canonical center stage position 3 may be visible`)
+    }
+    if (JSON.stringify(song.onStagePerformerSlots) !== JSON.stringify([1])) {
+      fail(`${code}/${variant}: RAW performer slot 1 must be the sole on-stage performer`)
+    }
+    const centerMap = (song.stagePositionMap || [])
+      .find(item => Number(item.performerSlot) === 1)
+    if (Number(centerMap?.stagePosition) !== 3) {
+      fail(`${code}/${variant}: RAW performer slot 1 must map to canonical stage position 3`)
+    }
+    for (const event of song.singerEvents || []) {
+      if (JSON.stringify(event.stagePositions) !== JSON.stringify([3]) ||
+          JSON.stringify(event.performerSlots) !== JSON.stringify([1])) {
+        fail(`${code}/${variant} @ ${event.time}: Solo singer must remain center performer slot 1`)
+      }
+    }
+  }
+}
+
+if (!decodedCommaLyrics) fail('no <comma> lyric placeholders were decoded')
+if (!preservedAngleLyrics) fail('authored angle-bracket lyric text was not preserved')
 
 for (const code of ['tkstp1', 'tkstp2']) {
   const song = songs.find(item => item.songCode === code && !item.variant)
@@ -74,4 +114,4 @@ for (const code of ['tkstp1', 'tkstp2']) {
   }
 }
 
-console.log(`Chibi singer-slot mapping verified: ${songs.length} scripts, ${singerEvents} singer events`)
+console.log(`Chibi singer-slot mapping verified: ${songs.length} scripts, ${singerEvents} singer events, ${decodedCommaLyrics} decoded <comma> lyrics`)

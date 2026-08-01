@@ -11,6 +11,7 @@
     :data-stage-vocal-ready="stageVocalReady"
     :data-stage-vocal-slots="stageVocalLoadedIdolCodes.length"
     :data-stage-vocal-clock="stageVocalEnabled ? 'audio-context-scheduled' : 'media-element'"
+    :data-stage-vocal-mode="stageVocalMode"
     :data-position-tween-ms="POSITION_TWEEN_MS"
     :data-stage-base-zoom="STAGE_BASE_ZOOM"
     :data-stage-view-scale="stageViewScale.toFixed(3)"
@@ -162,7 +163,7 @@
             </div>
             <select v-model="selectedSongId" aria-label="多人舞台歌曲" @change="handleSongChange">
               <option v-for="song in songs" :key="song.id" :value="song.id">
-                {{ song.title }} · {{ song.positions.join('/') }} 号位
+                {{ songOptionLabel(song) }} · {{ song.positions.join('/') }} 号位
               </option>
             </select>
             <div class="song-facts">
@@ -172,13 +173,13 @@
               <span>{{ selectedSong?.backmonitorEvents?.length || 0 }} 条屏幕</span>
               <span>{{ selectedSong?.imageLayerEvents?.length || 0 }} 条布景</span>
               <span>{{ selectedSong?.lyricEvents?.length || 0 }} 条歌词</span>
-              <span>{{ stageVocalEnabled ? '五槽实验音频' : (selectedSongAudio ? '官方混音音频' : '无音频') }}</span>
+              <span>{{ stageVocalEnabled ? stageVocalFactLabel : (selectedSongAudio ? '官方混音音频' : '无音频') }}</span>
             </div>
             <fieldset v-if="stageVocalAvailable" class="stage-vocal-controls">
-              <legend>五人声部实验</legend>
+              <legend>{{ stageVocalLegend }}</legend>
               <label class="camera-toggle">
                 <input v-model="stageVocalEnabled" type="checkbox" @change="handleStageVocalToggle" />
-                <span>按编组位与 SwitchSinger 切换</span>
+                <span>{{ stageVocalToggleLabel }}</span>
               </label>
               <template v-if="stageVocalEnabled">
                 <label class="range-control">
@@ -191,8 +192,11 @@
                   <input v-model.number="stageVocalBackingGain" type="range" min="0" max="1" step="0.05" @input="syncStageVocalMix" />
                   <output>{{ stageVocalBackingGain.toFixed(2) }}</output>
                 </label>
-                <small>{{ stageVocalReady ? '统一音频时钟与五个编组位声部已就绪' : '正在预解码五个声部…' }}</small>
+                <small>{{ stageVocalReady ? stageVocalReadyLabel : stageVocalLoadingLabel }}</small>
               </template>
+              <small v-if="isSoloChoreography">
+                RAW 三个 Solo 候选均为中心一人演出；solo 与 solo_single 脚本相同，solo_multi 仅确认存在舞台效果差异，名称不作为声轨机制结论。
+              </small>
               <small>均衡归一化与居中声像是浏览器近似，不代表游戏官方混音参数。</small>
             </fieldset>
           </section>
@@ -539,10 +543,25 @@ const selectedStageVocalExperiment = computed(() => {
     : null
   return entry?.stage_vocal?.mode === 'parallel-performer-slots' ? entry : null
 })
+const isSoloChoreography = computed(() => /^solo(?:_|$)/.test(selectedSong.value?.variant || ''))
+const stageVocalMode = computed(() => isSoloChoreography.value ? 'center-solo' : 'switch-singer')
 const stageVocalAvailable = computed(() => Boolean(
   selectedStageVocalExperiment.value
-  && activePositions.value.length === selectedStageVocalExperiment.value.stage_vocal.slot_count,
+  && (isSoloChoreography.value
+    ? activePositions.value.length === 1
+    : activePositions.value.length === selectedStageVocalExperiment.value.stage_vocal.slot_count),
 ))
+const stageVocalFactLabel = computed(() => isSoloChoreography.value ? '中心 Solo 实验音频' : '五槽实验音频')
+const stageVocalLegend = computed(() => isSoloChoreography.value ? '中心 Solo 声部实验' : '五人声部实验')
+const stageVocalToggleLabel = computed(() => isSoloChoreography.value
+  ? '出场中心偶像 Solo＋伴奏'
+  : '按编组位与 SwitchSinger 切换')
+const stageVocalReadyLabel = computed(() => isSoloChoreography.value
+  ? '统一音频时钟与中心 Solo 声部已就绪'
+  : '统一音频时钟与五个编组位声部已就绪')
+const stageVocalLoadingLabel = computed(() => isSoloChoreography.value
+  ? '正在预解码中心 Solo 声部…'
+  : '正在预解码五个声部…')
 const stageDuration = computed(() => Math.max(
   selectedSong.value?.duration || 0,
   selectedSong.value?.lipSync?.duration || 0,
@@ -742,6 +761,11 @@ function costumesForSlot(slot) {
 
 function costumeForSlot(slot) {
   return costumesForSlot(slot).find(costume => costume.id === slot.costumeId) || null
+}
+
+function songOptionLabel(song) {
+  if (!/^solo(?:_|$)/.test(song?.variant || '')) return song?.title || song?.id || ''
+  return `${song.title} · 中心一人演出（raw: ${song.variant}）`
 }
 
 function ensureCharacterShadowTexture() {
@@ -2378,19 +2402,23 @@ async function loadStageVocalAudio() {
   const experiment = selectedStageVocalExperiment.value
   const slotCount = experiment.stage_vocal.slot_count
   try {
-    const performerLineup = []
-    for (let performerSlot = 1; performerSlot <= slotCount; performerSlot += 1) {
+    const performerSlots = isSoloChoreography.value
+      ? (selectedSong.value?.onStagePerformerSlots || [1])
+      : Array.from({ length: slotCount }, (_, index) => index + 1)
+    const performerLineup = Array(slotCount).fill('')
+    for (const performerSlot of performerSlots) {
       const stagePosition = stagePositionForPerformerSlot(performerSlot)
       const idolCode = slotByPosition(stagePosition)?.characterId
       const vocal = experiment.solo_tracks?.[idolCode]?.vocal
       if (!vocal?.url) throw new Error(`${stagePosition}号位偶像缺少 ${experiment.song_code} 声部`)
-      performerLineup.push(idolCode)
+      performerLineup[performerSlot - 1] = idolCode
     }
     stageVocalSession.setPlaybackRate(playbackSpeed.value)
     await stageVocalSession.configure({
       experiment,
-      events: selectedSong.value?.singerEvents || [],
+      events: isSoloChoreography.value ? [] : (selectedSong.value?.singerEvents || []),
       performerLineup,
+      continuous: isSoloChoreography.value,
     })
     if (!stageVocalEnabled.value) return
     audioError.value = stageVocalSession.error.value
