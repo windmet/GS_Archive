@@ -3,10 +3,9 @@
 
 The script deliberately does not extract or modify the supplied archives. It
 reads the IPA's ``glowing.acf`` CRI UTF tables and IL2CPP metadata directly
-from the ZIP, then inventories the corresponding Android split APKs. Numeric
-CRI values are kept as raw row bytes until a field-aware decoder is verified;
-this prevents a guessed UTF storage type from being presented as an official
-mixer preset.
+from the ZIP, then inventories the corresponding Android split APKs. Standard
+CRI scalar fields are decoded, while opaque data references retain their raw
+offset/size so they cannot be mistaken for an official singer preset.
 """
 
 from __future__ import annotations
@@ -63,6 +62,10 @@ def read_u32(data: bytes, offset: int) -> int:
     return struct.unpack_from(">I", data, offset)[0]
 
 
+def read_f32(data: bytes, offset: int) -> float:
+    return struct.unpack_from(">f", data, offset)[0]
+
+
 def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
@@ -87,15 +90,77 @@ def iter_ascii_strings(data: bytes) -> Iterable[tuple[int, str]]:
             continue
 
 
-def parse_utf_table(data: bytes, base: int) -> dict[str, Any] | None:
-    """Parse a CRI ``@UTF`` header and column descriptors.
+UTF_TYPE_SIZE = {
+    0x0: 1,
+    0x1: 1,
+    0x2: 2,
+    0x3: 2,
+    0x4: 4,
+    0x5: 4,
+    0x6: 8,
+    0x7: 8,
+    0x8: 4,
+    0x9: 8,
+    0xA: 4,
+    0xB: 8,
+}
 
-    CRI offsets are relative to the table's eight-byte prefix (the magic and
-    table-size fields). The row bytes are intentionally retained as a digest
-    rather than decoded: storage flags 0x50/0x5a/0x5b in this ACF mix scalar,
-    string-offset, and reference columns, and interpreting them without a
-    field-aware decoder would create false gain/pan claims.
-    """
+
+def decode_utf_value(
+    data: bytes, offset: int, value_type: int, strings_base: int
+) -> Any:
+    if value_type == 0x0:
+        return data[offset]
+    if value_type == 0x1:
+        return struct.unpack_from(">b", data, offset)[0]
+    if value_type == 0x2:
+        return read_u16(data, offset)
+    if value_type == 0x3:
+        return struct.unpack_from(">h", data, offset)[0]
+    if value_type == 0x4:
+        return read_u32(data, offset)
+    if value_type == 0x5:
+        return struct.unpack_from(">i", data, offset)[0]
+    if value_type == 0x6:
+        return struct.unpack_from(">Q", data, offset)[0]
+    if value_type == 0x7:
+        return struct.unpack_from(">q", data, offset)[0]
+    if value_type == 0x8:
+        return read_f32(data, offset)
+    if value_type == 0x9:
+        return struct.unpack_from(">d", data, offset)[0]
+    if value_type == 0xA:
+        return c_string(data, strings_base + read_u32(data, offset))
+    if value_type == 0xB:
+        return {
+            "offset": read_u32(data, offset),
+            "size": read_u32(data, offset + 4),
+        }
+    raise ValueError(f"unsupported CRI UTF value type 0x{value_type:x}")
+
+
+def decode_utf_row(data: bytes, table: dict[str, Any], row: int) -> dict[str, Any]:
+    values: dict[str, Any] = {}
+    row_base = table["row_base"] + row * table["row_length"]
+    for column in table["columns"]:
+        name = column["name"] or f"__column_{column['index']}"
+        if column["has_default"]:
+            value = column["default_value"]
+        elif column["row_offset"] is not None:
+            value = decode_utf_value(
+                data,
+                row_base + column["row_offset"],
+                column["value_type"],
+                table["strings_base"],
+            )
+        else:
+            value = None
+        values[name] = value
+    return values
+
+
+def parse_utf_table(data: bytes, base: int) -> dict[str, Any] | None:
+    """Parse one CRI ``@UTF`` table, including defaults and row values."""
 
     if base < 0 or base + 0x20 > len(data) or data[base : base + 4] != UTF_MAGIC:
         return None
@@ -115,29 +180,63 @@ def parse_utf_table(data: bytes, base: int) -> dict[str, Any] | None:
     string_base = prefix + strings_offset
     row_base = prefix + rows_offset
     column_base = base + 0x20
-    column_end = column_base + column_count * 5
-    row_end = row_base + row_length * row_count
-    if string_base >= len(data) or column_end > len(data) or row_end > len(data):
-        return None
-    if column_end > row_base:
+    if string_base >= len(data) or row_base > len(data):
         return None
 
     columns: list[dict[str, Any]] = []
+    cursor = column_base
+    row_cursor = 0
     for index in range(column_count):
-        offset = column_base + index * 5
-        storage = data[offset]
-        column_name_offset = read_u32(data, offset + 1)
+        if cursor >= len(data):
+            return None
+        flags = data[cursor]
+        cursor += 1
+        value_type = flags & 0x0F
+        if value_type not in UTF_TYPE_SIZE:
+            return None
+        has_name = bool(flags & 0x10)
+        has_default = bool(flags & 0x20)
+        has_row = bool(flags & 0x40)
+        column_name_offset = None
+        name = ""
+        if has_name:
+            if cursor + 4 > len(data):
+                return None
+            column_name_offset = read_u32(data, cursor)
+            cursor += 4
+            name = c_string(data, string_base + column_name_offset)
+        default_value = None
+        if has_default:
+            size = UTF_TYPE_SIZE[value_type]
+            if cursor + size > len(data):
+                return None
+            default_value = decode_utf_value(data, cursor, value_type, string_base)
+            cursor += size
+        row_offset = None
+        if has_row and not has_default:
+            row_offset = row_cursor
+            row_cursor += UTF_TYPE_SIZE[value_type]
         columns.append(
             {
                 "index": index,
-                "storage": f"0x{storage:02x}",
+                "flags": f"0x{flags:02x}",
+                "value_type": value_type,
+                "storage": f"0x{flags:02x}",
+                "has_name": has_name,
+                "has_default": has_default,
+                "has_row": has_row,
                 "name_offset": column_name_offset,
-                "name": c_string(data, string_base + column_name_offset),
+                "name": name,
+                "default_value": default_value,
+                "row_offset": row_offset,
             }
         )
 
+    row_end = row_base + row_length * row_count
+    if cursor > row_base or row_cursor > row_length or row_end > len(data):
+        return None
     row_bytes = data[row_base:row_end]
-    return {
+    table = {
         "offset": base,
         "table_size": table_size,
         "version": version,
@@ -149,9 +248,18 @@ def parse_utf_table(data: bytes, base: int) -> dict[str, Any] | None:
         "column_count": column_count,
         "row_length": row_length,
         "row_count": row_count,
+        "strings_base": string_base,
+        "data_base": prefix + data_offset,
+        "row_base": row_base,
         "columns": columns,
         "row_bytes_sha256": sha256(row_bytes),
         "row_bytes_sample": row_bytes[:96].hex(),
+    }
+    table["rows"] = [decode_utf_row(data, table, row) for row in range(row_count)]
+    return {
+        key: value
+        for key, value in table.items()
+        if key not in {"strings_base", "data_base", "row_base"}
     }
 
 
@@ -164,6 +272,79 @@ def parse_all_utf_tables(data: bytes) -> list[dict[str, Any]]:
         if table is not None:
             tables.append(table)
     return tables
+
+
+def build_mixer_summary(tables: list[dict[str, Any]]) -> dict[str, Any]:
+    by_name = {table["name"]: table for table in tables if table["name"]}
+    root = by_name.get("Header")
+    dsp_setting = by_name.get("DspSetting")
+    bus = by_name.get("Bus")
+    bus_name = by_name.get("BusName")
+    snapshots = by_name.get("DspSettingSnapshot")
+    categories = by_name.get("CategoryName")
+    dsp_fx = by_name.get("DspFx")
+
+    def values(table: dict[str, Any] | None, keys: Iterable[str]) -> list[dict[str, Any]]:
+        if not table:
+            return []
+        wanted = tuple(keys)
+        return [
+            {key: row.get(key) for key in wanted if key in row}
+            for row in table["rows"]
+        ]
+
+    bus_names = {
+        index: row.get("StringValue", "")
+        for index, row in enumerate(bus_name["rows"] if bus_name else [])
+    }
+    bus_rows: list[dict[str, Any]] = []
+    if bus:
+        for index, row in enumerate(bus["rows"]):
+            bus_rows.append(
+                {
+                    "row": index,
+                    "bus_no": row.get("BusNo"),
+                    "name": bus_names.get(row.get("BusNameIndex"), ""),
+                    "volume": row.get("Volume"),
+                    "pan3d_volume": row.get("Pan3dVolume"),
+                    "pan3d_angle": row.get("Pan3dAngle"),
+                    "pan3d_distance": row.get("Pan3dDistance"),
+                    "start_fx_index": row.get("StartFxIndex"),
+                    "num_fxs": row.get("NumFxs"),
+                    "start_bus_link_index": row.get("StartBusLinkIndex"),
+                    "num_bus_links": row.get("NumBusLinks"),
+                }
+            )
+    return {
+        "status": "field_aware_partial",
+        "decoder": "CRI UTF flags and scalar types; opaque data refs remain offset/size",
+        "root": values(
+            root,
+            (
+                "Name",
+                "VersionString",
+                "CategoriesParPlayback",
+                "CharacterEncodingType",
+                "LinkedCueCategoryLimitFlag",
+                "PreReadTime",
+            ),
+        ),
+        "dsp_settings": values(
+            dsp_setting,
+            ("Name", "StartIndex", "NumBuses", "SnapshotStartIndex", "NumSnapshots"),
+        ),
+        "snapshots": values(
+            snapshots,
+            ("Name", "StartIndex", "NumBuses", "StartExtendBusIndex", "NumExtendBuses"),
+        ),
+        "bus_names": bus_names,
+        "buses": bus_rows,
+        "categories": values(categories, ("Name", "Index")),
+        "dsp_effects": values(
+            dsp_fx,
+            ("FxType", "DspName", "NumParameters", "Bypass", "Parameters"),
+        ),
+    }
 
 
 def relevant_strings(data: bytes) -> list[str]:
@@ -251,10 +432,7 @@ def audit_ipa(path: Path) -> dict[str, Any]:
                 "tables": tables,
                 "table_names": sorted({table["name"] for table in tables if table["name"]}),
                 "relevant_strings": relevant_strings(acf),
-                "numeric_values": {
-                    "status": "not_decoded",
-                    "reason": "CRI storage flags are retained with raw row bytes until field-aware decoding is verified",
-                },
+                "mixer_summary": build_mixer_summary(tables),
             },
             "il2cpp_metadata": {
                 "size": len(metadata),
