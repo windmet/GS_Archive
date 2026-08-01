@@ -135,6 +135,7 @@
         v-if="view === 'song_detail'"
         :song="currentSong"
         :units="idolUnitData"
+        :audio-experiment="songExperimentalAudioData?.songs?.[currentSongId] || null"
         @open-song="openSong"
         @open-unit="openSongUnit"
         @open-idol="openSongIdol"
@@ -482,6 +483,7 @@ const uiAssetCatalogData = ref(null)
 const rawCharacterImagePromotionsData = ref(null)
 const externalStoryResourcesData = ref(null)
 const songCatalogData = ref(null)
+const songExperimentalAudioData = ref(null)
 const currentSongId = ref('')
 const currentSongScope = ref('all')
 const songParentView = ref('')
@@ -2823,6 +2825,7 @@ onMounted(async () => {
   rawCharacterImagePromotionsData.value = data.rawCharacterImagePromotions
   externalStoryResourcesData.value = data.externalStoryResources
   songCatalogData.value = data.songCatalog
+  songExperimentalAudioData.value = data.songExperimentalAudio
   for (const { key, error } of errors) {
     console.error(`[ArchiveData] Failed to load ${key}:`, error)
   }
