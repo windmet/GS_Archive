@@ -350,13 +350,43 @@ single-track candidate: table 46 does not enable Center, they have no 16-Unit
 cue set, and the capture does not prove 315 ALL STARS as their available label,
 so the UI must not claim any of those three modes.
 
-The portal now calls the controls `演唱指定`: Formation is the five-stage
-lineup player, Center is the single center vocal plus backing, and the single
-track selector contains the 315 ALL STARS full-mix candidate and all Unit
-versions. Formation arrangements accept only the base choreography; five-person
-Unit variants and the GRWSML tutorial variant cannot leak into the Formation
-timeline selector. Chibi labels base, Unit, and Center variants in the same
-vocabulary while retaining every RAW variant name for audit.
+The portal now calls the controls `演唱指定` and exposes Formation, Unit,
+315 ALL STARS, and Center as peer choices rather than hiding Unit and ALL STARS
+inside a generic single-track selector. Formation is the five-stage lineup
+player; Unit has its own 16-entry selector; 315 ALL STARS is the full-mix
+candidate; Center is the single center vocal plus backing. Backing and special
+tracks remain in a separate `其他音轨（审计）` entry. Formation arrangements
+accept only the base choreography; five-person Unit variants and the GRWSML
+tutorial variant cannot leak into the Formation timeline selector. Chibi labels
+base, Unit, and Center variants in the same vocabulary while retaining every
+RAW variant name for audit.
+
+### Complete full-mix playback coverage — 2026-08-02
+
+The ordinary song player is deliberately separate from the five-song layered
+experiment. All 61 `music_catalog` identities have one exact full-mix relation:
+the matching `RAW/audio/song3_<code>.acb` contains exactly one cue alias equal
+to `song3_<code>`. A tracked `song_playback_audio.json` records the ACB and
+derived hashes, CRI selection, cue aliases, sample metadata, and browser URL for
+all 61. It does not carry `vocal_settings`, `solo_tracks`, or `unit_tracks`.
+
+The ignored browser derivatives are shared with the existing Chibi music
+directory instead of creating a second roughly 300 MB copy. Sixty catalog root
+mixes already existed there; the preparation command added the previously
+missing `Reason!!` root mix. The five explicitly experimental songs continue to
+render the vocal-setting player. The other 56 render a native, accessible
+single-track control labelled `歌曲播放`, plus the exact RAW path, cue aliases,
+and duration. The copy states that a full mix does not prove Formation, Unit,
+or Center support.
+
+At `390 x 844`, `ANYWHERE` loaded its 121.972-second M4A with no horizontal
+overflow, exposed meaningful audio and evidence semantics, and showed no page
+error. `Reason!!` independently loaded the newly completed 116.624-second
+derivative. A deep link back to `Beyond The Dream` still rendered only the
+four-way experimental player, proving that the ordinary player does not mask or
+duplicate the bounded layered flow. Mounted verification returned HTTP success
+for all 61 URLs. These files remain local-derived and ignored; this is playback
+coverage, not publication promotion.
 
 Duration evidence needs one explicit exception. BYNDTD, DRVALV, TKSTP1, and
 TKSTP2 vocal/backing pairs are sample-identical in length. GRWSML backing is
