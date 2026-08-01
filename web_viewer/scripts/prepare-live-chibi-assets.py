@@ -732,11 +732,20 @@ def read_choreography_scripts(
         stage_position_map = build_stage_position_map(
             performer_slots, position_events, singer_events
         )
+        performer_slot_by_stage_position = {
+            stage_position: performer_slot
+            for performer_slot, stage_position in stage_position_map.items()
+        }
         for singer_event in singer_events:
-            performer_slot_ids = list(singer_event["singers"])
-            singer_event["performerSlots"] = performer_slot_ids
-            singer_event["stagePositions"] = sorted(
-                stage_position_map.get(slot, slot) for slot in performer_slot_ids
+            # SwitchSinger's five state columns are authored stage positions,
+            # not Livechara_motion performer slots. Preserve those positions
+            # directly for mouth/highlight state, then invert the X-derived
+            # stage map only for per-performer audio binding.
+            stage_position_ids = list(singer_event["singers"])
+            singer_event["stagePositions"] = stage_position_ids
+            singer_event["performerSlots"] = sorted(
+                performer_slot_by_stage_position.get(position, position)
+                for position in stage_position_ids
             )
         for event in events:
             event["stagePosition"] = stage_position_map.get(event["position"], event["position"])
