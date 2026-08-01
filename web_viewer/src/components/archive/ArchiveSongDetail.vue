@@ -65,6 +65,40 @@
         </div>
       </section>
 
+      <section class="song-block" aria-labelledby="song-performance-title">
+        <div class="song-block-heading">
+          <span>PERFORMERS</span>
+          <h3 id="song-performance-title">演唱与组合归属</h3>
+        </div>
+        <p class="song-block-note">来自 masterdata 表 46 的字段 7 与字段 30–34；音频 cue 关系另列于下方。</p>
+        <div v-if="confirmedUnit" class="song-subsection">
+          <h4>正式组合归属</h4>
+          <ul class="chip-list">
+            <li>
+              <button @click="emit('open-unit', confirmedUnit.unit_code)">
+                <code>{{ confirmedUnit.unit_code }}</code>{{ confirmedUnit.unit_name }}
+              </button>
+            </li>
+          </ul>
+        </div>
+        <p v-else class="mapping-caution">
+          字段 7 为类别 3 selector（值 {{ song.performance_mapping.raw_unit_id }}），语义尚未确认，不作为组合归属。
+        </p>
+        <div v-if="performerEntries.length" class="song-subsection">
+          <h4>{{ performerHeading }}（{{ performerEntries.length }}）</h4>
+          <p v-if="song.performance_mapping.performer_basis === 'confirmed_unit_roster'" class="song-block-note">
+            表 46 未逐人列出；此处由已确认组合归属和组合完整成员表补全。
+          </p>
+          <ul class="chip-list">
+            <li v-for="entry in performerEntries" :key="entry.code">
+              <button @click="emit('open-idol', entry.code)">
+                <code>{{ entry.code }}</code>{{ entry.name }}
+              </button>
+            </li>
+          </ul>
+        </div>
+      </section>
+
       <section class="song-block" aria-labelledby="song-audio-title">
         <div class="song-block-heading">
           <span>AUDIO LAYERS</span>
@@ -223,6 +257,18 @@ const openDate = computed(() => {
 })
 
 const creditLines = computed(() => (props.song.credits || '').split('\n').filter(Boolean))
+const confirmedUnit = computed(() => props.song.performance_mapping?.confirmed_unit || null)
+const performerEntries = computed(() =>
+  (props.song.performance_mapping?.performer_idol_codes || []).map(code => ({
+    code,
+    name: IDOL_ID_TO_NAME[code] || code,
+  })),
+)
+const performerHeading = computed(() =>
+  props.song.performance_mapping?.performer_basis === 'table46_explicit'
+    ? '表 46 明确演唱／参演偶像'
+    : '组合演唱成员',
+)
 
 function unitName(code) {
   const normalized = code.replace(/^0(\d{2}[a-z0-9]{3})/, '$1')
@@ -301,6 +347,7 @@ const effectEntries = computed(() =>
 .song-block-heading span { color: #2bb3aa; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.05em; }
 .song-block-heading h3 { margin: 4px 0 0; font-size: 0.94rem; }
 .song-block-note { margin: 8px 0 0; color: #7a858e; font-size: 0.72rem; }
+.mapping-caution { margin: 12px 0 0; padding: 9px 11px; border-left: 3px solid #b08a4b; background: #fff8e9; color: #775f35; font-size: 0.72rem; line-height: 1.6; }
 .credit-list { margin: 10px 0 0; padding: 0; list-style: none; color: #4a545e; font-size: 0.78rem; line-height: 1.7; }
 .audio-stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 12px 0 0; }
 .audio-stats div { padding: 10px 12px; border-radius: 6px; background: #f4f7f8; }

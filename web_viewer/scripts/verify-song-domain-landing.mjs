@@ -8,12 +8,14 @@ const scriptDirectory = path.dirname(fileURLToPath(import.meta.url))
 const viewerRoot = path.resolve(scriptDirectory, '..')
 const readViewerFile = relativePath => readFile(path.join(viewerRoot, relativePath), 'utf8')
 
-const [catalog, appComponent, catalogComponent, detailComponent, routeSource, shellComponent, repositorySource, jacketIndex, unitDictionary] =
+const [catalog, appComponent, catalogComponent, detailComponent, idolDetailComponent, unitDetailComponent, routeSource, shellComponent, repositorySource, jacketIndex, unitDictionary] =
   await Promise.all([
     readViewerFile('public/data/song_catalog.json').then(JSON.parse),
     readViewerFile('src/App.vue'),
     readViewerFile('src/components/archive/ArchiveSongCatalog.vue'),
     readViewerFile('src/components/archive/ArchiveSongDetail.vue'),
+    readViewerFile('src/components/archive/ArchiveIdolDetail.vue'),
+    readViewerFile('src/components/archive/ArchiveUnitDetail.vue'),
     readViewerFile('src/core/archiveRoute.js'),
     readViewerFile('src/components/archive/ArchiveShell.vue'),
     readViewerFile('src/data/ArchiveDataRepository.js'),
@@ -44,6 +46,8 @@ assert.equal(catalog.summary.layered_song_count, 3)
 assert.equal(catalog.summary.oneshot_song_count, 2)
 assert.equal(catalog.summary.lipsync_coverage, 60)
 assert.equal(catalog.summary.unit_effect_song_count, 3)
+assert.equal(catalog.summary.confirmed_unit_song_count, 47)
+assert.equal(catalog.summary.explicit_performer_song_count, 13)
 
 const songs = Object.values(catalog.songs)
 assert.equal(songs.length, 61)
@@ -71,6 +75,7 @@ assert.equal(drv999.related_entities[0].story_section, '602')
 assert.equal(catalog.songs.drvalv.variants[0].song_code, 'drv999')
 assert.equal(drv999.choreography.has_for_lipsync, false)
 assert.equal(drv999.audio_form, 'single-cue')
+assert.equal(drv999.performance_mapping.confirmed_unit, null)
 for (const code of ['flslgt', 'pcuslv']) {
   assert.equal(catalog.songs[code].audio_form, 'oneshot')
   assert.equal(catalog.songs[code].audio.oneshot_cue_count, 49)
@@ -106,7 +111,11 @@ assert.match(appComponent, /songScope: \(view\.value === 'song_catalog' \|\| pre
 assert.match(appComponent, /function openSongRelatedStory\(relation\)/)
 assert.match(appComponent, /songCatalogData\.value = data\.songCatalog/)
 assert.match(appComponent, /else if \(section === 'songs'\) openSongCatalog\(\)/)
-assert.match(appComponent, /song_detail: \(\) => \{[\s\S]*?currentSongId\.value = ''[\s\S]*?commitView\('song_catalog'\)/)
+assert.match(appComponent, /song_detail: \(\) => \{[\s\S]*?const parent = songParentView\.value[\s\S]*?commitView\('song_catalog'\)/)
+assert.match(appComponent, /const currentIdolSongs = computed/)
+assert.match(appComponent, /const currentArchiveUnitSongs = computed/)
+assert.match(appComponent, /songParentView\.value = 'idol_detail'/)
+assert.match(appComponent, /songParentView\.value = 'unit_detail'/)
 
 // Jacket relation: every catalog song carries a published RAW cover URL
 assert.equal(Object.keys(jacketIndex.entries).length, 61)
@@ -149,6 +158,9 @@ for (const code of uniqueUnitCodes) {
 }
 assert.equal(unitByCode.get('01jup'), 'Jupiter')
 assert.equal(unitByCode.get('02dra'), 'DRAMATIC STARS')
+assert.equal(catalog.songs.brndnf.performance_mapping.confirmed_unit.unit_code, '01jup')
+assert.equal(catalog.songs.psblts.performance_mapping.confirmed_unit.unit_code, '12sem')
+assert.deepEqual(catalog.songs.flslgt.performance_mapping.explicit_performer_idol_codes, ['007kei', '009kyj', '022nat', '048mom'])
 
 // Detail page: jacket hero, audio layers, choreography flags, external links
 assert.match(detailComponent, /song\.jacket_url/)
@@ -174,6 +186,18 @@ assert.match(detailComponent, /emit\('open-unit', entry\.normalizedCode\)/)
 assert.match(detailComponent, /emit\('open-idol', entry\.code\)/)
 assert.match(detailComponent, /rel="noopener noreferrer external"/)
 assert.match(detailComponent, /movie\.kind === '3dmv' \? '3DMV' : 'MV LIVE'/)
+assert.match(detailComponent, /演唱与组合归属/)
+assert.match(detailComponent, /confirmedUnit\.unit_code/)
+assert.match(detailComponent, /performer_idol_codes/)
+assert.match(detailComponent, /类别 3 selector/)
+
+// Reverse navigation: idol and unit pages expose the semantic table-46 song relations.
+assert.match(idolDetailComponent, /演唱歌曲/)
+assert.match(idolDetailComponent, /entry\.evidenceLabel/)
+assert.match(idolDetailComponent, /emit\('open-song', entry\.song\.song_code\)/)
+assert.match(unitDetailComponent, /组合歌曲/)
+assert.match(unitDetailComponent, /表 46 类别 2/)
+assert.match(unitDetailComponent, /emit\('open-song', song\.song_code\)/)
 
 // Route module: contracts, navigation entry, breadcrumbs, query serialization
 assert.match(routeSource, /song_catalog: \{ section: 'songs', required: \[\] \}/)
@@ -194,4 +218,4 @@ assert.match(repositorySource, /songJacketIndex: '\/data\/song_jacket_index\.jso
 assert.match(repositorySource, /key === 'songCatalog' && \([\s\S]*?payload\.schema_version !== 1/)
 assert.match(repositorySource, /key === 'songJacketIndex' && \([\s\S]*?payload\.schema_version !== 1/)
 
-console.log('Song domain landing: 60 works / 61 song entities, exact April Fools family, 12 movie relations and 61 RAW jacket covers verified')
+console.log('Song domain landing: 60 works / 61 song entities, 47 confirmed unit mappings, 13 explicit performer songs and bidirectional entity links verified')

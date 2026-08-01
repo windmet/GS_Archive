@@ -52,6 +52,24 @@
       </div>
     </section>
 
+    <section v-if="songs.length" class="idol-songs" aria-labelledby="idol-songs-title">
+      <div class="section-heading">
+        <h3 id="idol-songs-title">演唱歌曲</h3>
+        <span>{{ songs.length }} songs · 表 46 映射</span>
+      </div>
+      <div class="song-links">
+        <button v-for="entry in songs" :key="entry.song.song_code" @click="emit('open-song', entry.song.song_code)">
+          <img v-if="entry.song.jacket_url" :src="entry.song.jacket_url" :alt="`${entry.song.title} 封面`" />
+          <Music v-else :size="20" aria-hidden="true" />
+          <span>
+            <strong>{{ entry.song.title }}</strong>
+            <small>{{ entry.evidenceLabel }}</small>
+          </span>
+          <ChevronRight :size="16" aria-hidden="true" />
+        </button>
+      </div>
+    </section>
+
     <section v-if="events.length" class="idol-events" aria-labelledby="idol-events-title">
       <div class="section-heading">
         <h3 id="idol-events-title">相关活动</h3>
@@ -75,7 +93,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { BookOpenText, ChevronRight, Images, MessageSquareText, Phone, UsersRound } from '@lucide/vue'
+import { BookOpenText, ChevronRight, Images, MessageSquareText, Music, Phone, UsersRound } from '@lucide/vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
 
@@ -83,11 +101,12 @@ const props = defineProps({
   idol: { type: Object, default: null },
   stats: { type: Object, default: () => ({}) },
   events: { type: Array, default: () => [] },
+  songs: { type: Array, default: () => [] },
   idols: { type: Array, default: () => [] },
   selectedIdol: { type: String, default: '' },
 })
 
-const emit = defineEmits(['open-domain', 'open-unit', 'open-event', 'select-idol'])
+const emit = defineEmits(['open-domain', 'open-unit', 'open-event', 'open-song', 'select-idol'])
 
 const facts = computed(() => [
   { label: '年龄', value: props.idol?.age ? `${props.idol.age}岁` : '' },
@@ -159,7 +178,7 @@ function formatDate(timestamp) {
 .idol-unit-link:hover { border-color: #58cec5; }
 .idol-color { position: absolute; right: 26px; top: 24px; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.8); border-radius: 50%; }
 .profile-switcher { width: min(360px, 38vw); margin-left: auto; margin-right: 34px; }
-.idol-facts, .idol-related, .idol-events, .idol-notes { margin-top: 18px; padding: 20px; border: 1px solid #dfe4e8; background: #fff; }
+.idol-facts, .idol-related, .idol-songs, .idol-events, .idol-notes { margin-top: 18px; padding: 20px; border: 1px solid #dfe4e8; background: #fff; }
 .idol-facts dl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; }
 .idol-facts dl div { min-width: 0; padding: 10px 16px; border-left: 1px solid #e5e9ec; }
 .idol-facts dl div:nth-child(4n + 1) { border-left: 0; }
@@ -189,6 +208,15 @@ function formatDate(timestamp) {
 .related-grid span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .related-grid strong { font-size: 0.78rem; }
 .related-grid small { color: #7b858e; font-size: 0.66rem; }
+.song-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.song-links button { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 58px; padding: 7px 10px; border: 1px solid #dfe4e8; border-radius: 6px; background: #fff; color: #26313a; cursor: pointer; text-align: left; }
+.song-links button:hover { border-color: #75cbc5; background: #f0fbfa; }
+.song-links img { width: 44px; height: 44px; border-radius: 5px; object-fit: cover; }
+.song-links button > svg:first-child { margin: auto; color: #16978e; }
+.song-links button > svg:last-child { color: #9ca5ad; }
+.song-links span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.song-links strong { overflow: hidden; font-size: 0.76rem; text-overflow: ellipsis; white-space: nowrap; }
+.song-links small { color: #7b858e; font-size: 0.64rem; }
 .idol-notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
 .idol-notes p { margin: 8px 0 0; color: #4f5b64; font-size: 0.78rem; line-height: 1.7; }
 
@@ -206,10 +234,11 @@ function formatDate(timestamp) {
   .idol-portrait { width: 78px; height: 78px; }
   .idol-identity h2 { font-size: 1.2rem; }
   .idol-color { right: 16px; top: 16px; }
-  .idol-facts, .idol-related, .idol-events, .idol-notes { margin-top: 10px; padding: 14px; }
+  .idol-facts, .idol-related, .idol-songs, .idol-events, .idol-notes { margin-top: 10px; padding: 14px; }
   .idol-facts dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .idol-facts dl div { padding: 9px 8px; }
   .related-grid { grid-template-columns: 1fr; }
+  .song-links { grid-template-columns: 1fr; }
   .idol-notes { grid-template-columns: 1fr; gap: 16px; }
 }
 </style>

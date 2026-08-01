@@ -20,6 +20,31 @@ The curated `drv999 -> Extra 602` relation is stored outside masterdata in
 `public/data/song_related_entity_index.json` with its external evidence URL.
 It must not be generalized into Story/Event relations by title matching.
 
+## Table 46 performer-mapping correction
+
+The earlier statement that table 46 had no performer mapping was incorrect.
+The old `music_catalog` projection omitted fields 7 and 30–34:
+
+- all 61 unique song codes have field 7; category 2 covers 47 unit songs and
+  resolves exactly to the 16 table-24 units;
+- category 3 covers 14 all-roster or special songs. Its numeric field-7 value
+  is retained as an unresolved selector and must not be presented as unit
+  ownership;
+- fields 30–34 are populated on 20 of the 99 table rows, but duplicate live
+  rows reduce this to 13 unique songs. Both counts are retained explicitly;
+- category-2 songs without explicit fields 30–34 obtain their display roster
+  from the already confirmed unit-membership index and carry
+  `performer_basis=confirmed_unit_roster`, rather than pretending the idol
+  list came directly from table 46;
+- category-3 songs only gain Idol links when fields 30–34 explicitly identify
+  performers.
+
+The song detail page now separates this semantic performer mapping from the
+RAW ACB layer mapping. Unit and Idol pages expose the reverse song relations,
+and entity-to-song navigation preserves an explicit `parent` return path.
+`verify:song-masterdata-mappings:mounted` rechecks the committed projection
+against the decoded table 46 and the confirmed unit roster.
+
 ## Navigation
 
 - `song_scope` and `q` are route-backed and survive detail navigation, refresh,
