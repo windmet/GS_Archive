@@ -52,6 +52,49 @@ METADATA_TERMS = (
     "SetSubAudioVolume",
     "SetExtraAudioVolume",
 )
+IL2CPP_HEADER_KEYS = (
+    "sanity", "version", "stringLiteralOffset", "stringLiteralSize",
+    "stringLiteralDataOffset", "stringLiteralDataSize", "stringOffset",
+    "stringSize", "eventsOffset", "eventsSize", "propertiesOffset",
+    "propertiesSize", "methodsOffset", "methodsSize",
+    "parameterDefaultValuesOffset", "parameterDefaultValuesSize",
+    "fieldDefaultValuesOffset", "fieldDefaultValuesSize",
+    "fieldAndParameterDefaultValueDataOffset",
+    "fieldAndParameterDefaultValueDataSize", "fieldMarshaledSizesOffset",
+    "fieldMarshaledSizesSize", "parametersOffset", "parametersSize",
+    "fieldsOffset", "fieldsSize", "genericParametersOffset",
+    "genericParametersSize", "genericParameterConstraintsOffset",
+    "genericParameterConstraintsSize", "genericContainersOffset",
+    "genericContainersSize", "nestedTypesOffset", "nestedTypesSize",
+    "interfacesOffset", "interfacesSize", "vtableMethodsOffset",
+    "vtableMethodsSize", "interfaceOffsetsOffset", "interfaceOffsetsSize",
+    "typeDefinitionsOffset", "typeDefinitionsSize", "imagesOffset",
+    "imagesSize", "assembliesOffset", "assembliesSize", "fieldRefsOffset",
+    "fieldRefsSize", "referencedAssembliesOffset", "referencedAssembliesSize",
+    "attributesInfoOffset", "attributesInfoCount", "attributeTypesOffset",
+    "attributeTypesCount", "unresolvedVirtualCallParameterTypesOffset",
+    "unresolvedVirtualCallParameterTypesSize",
+    "unresolvedVirtualCallParameterRangesOffset",
+    "unresolvedVirtualCallParameterRangesSize", "windowsRuntimeTypeNamesOffset",
+    "windowsRuntimeTypeNamesSize", "windowsRuntimeStringsOffset",
+    "windowsRuntimeStringsSize", "exportedTypeDefinitionsOffset",
+    "exportedTypeDefinitionsSize",
+)
+METADATA_TARGETS = (
+    ("Growing.Live", "SwitchSingerUtil"),
+    ("Growing", "SoundManager"),
+    ("Growing.Live", "LiveSoundDirector"),
+    ("Growing.Live", "LiveStage"),
+    ("Growing.Models.Data", "SongData"),
+    ("Growing.Theater", "SongVisualizer"),
+    ("Growing.Theater", "VocalSettingPopupContent"),
+    ("CriWare.CriMana", "Player"),
+)
+METADATA_MEMBER_RE = re.compile(
+    r"(?:song|vocal|singer|track|parallel|category|reserve|stop|pause|mute|"
+    r"volume|pan|play|switch|cue|audio|envelope)",
+    re.IGNORECASE,
+)
 
 
 def read_u16(data: bytes, offset: int) -> int:
@@ -274,7 +317,19 @@ def parse_all_utf_tables(data: bytes) -> list[dict[str, Any]]:
     return tables
 
 
-def build_mixer_summary(tables: list[dict[str, Any]]) -> dict[str, Any]:
+def _data_ref_hex(data: bytes, table: dict[str, Any], value: Any) -> str:
+    """Resolve a CRI UTF data reference without interpreting its payload."""
+
+    if not isinstance(value, dict) or not {"offset", "size"}.issubset(value):
+        return ""
+    start = table["offset"] + 8 + table["data_offset"] + int(value["offset"])
+    end = start + int(value["size"])
+    if start < 0 or end > len(data):
+        return ""
+    return data[start:end].hex()
+
+
+def build_mixer_summary(data: bytes, tables: list[dict[str, Any]]) -> dict[str, Any]:
     by_name = {table["name"]: table for table in tables if table["name"]}
     root = by_name.get("Header")
     dsp_setting = by_name.get("DspSetting")
@@ -282,6 +337,9 @@ def build_mixer_summary(tables: list[dict[str, Any]]) -> dict[str, Any]:
     bus_name = by_name.get("BusName")
     snapshots = by_name.get("DspSettingSnapshot")
     categories = by_name.get("CategoryName")
+    category_rows = by_name.get("Category")
+    commands = by_name.get("Command")
+    bus_links_table = by_name.get("BusLink")
     dsp_fx = by_name.get("DspFx")
 
     def values(table: dict[str, Any] | None, keys: Iterable[str]) -> list[dict[str, Any]]:
@@ -315,6 +373,51 @@ def build_mixer_summary(tables: list[dict[str, Any]]) -> dict[str, Any]:
                     "num_bus_links": row.get("NumBusLinks"),
                 }
             )
+    bus_links = [
+        {
+            "row": index,
+            "type": row.get("Type"),
+            "send_level": row.get("SendLevel"),
+            "send_bus_no": row.get("SendBusNo"),
+            "bus_name": bus_names.get(row.get("BusNameIndex"), ""),
+            "backup_work_offset": row.get("BackupWorkOffset"),
+        }
+        for index, row in enumerate(bus_links_table["rows"] if bus_links_table else [])
+    ]
+    command_rows = []
+    if commands:
+        for index, row in enumerate(commands["rows"]):
+            reference = row.get("Command")
+            command_rows.append(
+                {
+                    "row": index,
+                    "reference": reference,
+                    "raw_hex": _data_ref_hex(data, commands, reference),
+                }
+            )
+    category_name_by_id = {
+        row.get("Index"): row.get("Name", "")
+        for row in (categories["rows"] if categories else [])
+    }
+    category_command_map = []
+    if category_rows:
+        for row in category_rows["rows"]:
+            category_id = row.get("Id")
+            command_index = row.get("CommandIndex")
+            category_command_map.append(
+                {
+                    "id": category_id,
+                    "name": category_name_by_id.get(category_id, ""),
+                    "group_index": row.get("GroupIndex"),
+                    "command_index": command_index,
+                    "command_raw_hex": (
+                        command_rows[command_index]["raw_hex"]
+                        if isinstance(command_index, int)
+                        and 0 <= command_index < len(command_rows)
+                        else ""
+                    ),
+                }
+            )
     return {
         "status": "field_aware_partial",
         "decoder": "CRI UTF flags and scalar types; opaque data refs remain offset/size",
@@ -340,6 +443,9 @@ def build_mixer_summary(tables: list[dict[str, Any]]) -> dict[str, Any]:
         "bus_names": bus_names,
         "buses": bus_rows,
         "categories": values(categories, ("Name", "Index")),
+        "category_command_map": category_command_map,
+        "commands": command_rows,
+        "bus_links": bus_links,
         "dsp_effects": values(
             dsp_fx,
             ("FxType", "DspName", "NumParameters", "Bypass", "Parameters"),
@@ -363,6 +469,116 @@ def metadata_term_hits(data: bytes) -> list[dict[str, Any]]:
         for term in matched:
             hits.append({"term": term, "offset": offset, "text": text})
     return hits
+
+
+def audit_il2cpp_metadata(data: bytes) -> dict[str, Any]:
+    """Describe the small set of managed song/mixer types we can prove.
+
+    This intentionally reads names, tokens, and parameter names only.  IL2CPP
+    metadata does not contain method bodies or the runtime values assigned by
+    ``SwitchSingerUtil``'s static initializer.
+    """
+
+    if len(data) < 64 * 4:
+        return {"status": "unsupported", "reason": "metadata header is truncated"}
+    header_values = struct.unpack_from("<64I", data, 0)
+    header = dict(zip(IL2CPP_HEADER_KEYS, header_values, strict=True))
+    if header["sanity"] != 0xFAB11BAF:
+        return {
+            "status": "unsupported",
+            "reason": "unexpected metadata magic",
+            "magic": data[:4].hex(),
+        }
+    if header["version"] != 27:
+        return {
+            "status": "unsupported",
+            "reason": f"unsupported metadata version {header['version']}",
+            "version": header["version"],
+        }
+
+    def records(name: str, size: int, fmt: str) -> list[tuple[Any, ...]]:
+        offset = header[f"{name}Offset"]
+        byte_size = header[f"{name}Size"]
+        if byte_size % size or offset + byte_size > len(data):
+            raise ValueError(f"invalid {name} table bounds")
+        return [
+            struct.unpack_from(fmt, data, offset + index * size)
+            for index in range(byte_size // size)
+        ]
+
+    types = records("typeDefinitions", 88, "<16i8H2I")
+    methods = records("methods", 32, "<5iI4H")
+    fields = records("fields", 12, "<IiI")
+    parameters = records("parameters", 12, "<IIi")
+
+    def string(index: int) -> str:
+        start = header["stringOffset"] + index
+        limit = header["stringOffset"] + header["stringSize"]
+        if start < header["stringOffset"] or start >= limit:
+            return ""
+        end = data.find(b"\0", start, limit)
+        if end < 0:
+            return ""
+        return data[start:end].decode("utf-8", "replace")
+
+    def describe(namespace: str, name: str) -> dict[str, Any] | None:
+        matches = [
+            (index, record)
+            for index, record in enumerate(types)
+            if string(record[0]) == name and string(record[1]) == namespace
+        ]
+        if len(matches) != 1:
+            return None
+        index, record = matches[0]
+        field_start, method_start = record[8], record[9]
+        method_count, field_count = record[16], record[18]
+        all_fields = [
+            string(fields[field_index][0])
+            for field_index in range(field_start, field_start + field_count)
+        ]
+        selected_fields = {
+            field_name
+            for field_name in all_fields
+            if METADATA_MEMBER_RE.search(field_name)
+            or name == "SwitchSingerUtil"
+        }
+        selected_methods: list[dict[str, Any]] = []
+        for method_index in range(method_start, method_start + method_count):
+            method = methods[method_index]
+            method_name = string(method[0])
+            if not METADATA_MEMBER_RE.search(method_name):
+                continue
+            parameter_names = [
+                string(parameters[param_index][0])
+                for param_index in range(method[3], method[3] + method[9])
+            ]
+            selected_methods.append(
+                {
+                    "name": method_name,
+                    "token": f"0x{method[5]:08x}",
+                    "parameters": parameter_names,
+                }
+            )
+        return {
+            "metadata_index": index,
+            "namespace": namespace,
+            "name": name,
+            "token": f"0x{record[25]:08x}",
+            "fields": sorted(selected_fields),
+            "methods": selected_methods,
+        }
+
+    targets: list[dict[str, Any]] = []
+    for namespace, name in METADATA_TARGETS:
+        description = describe(namespace, name)
+        if description is not None:
+            targets.append(description)
+    return {
+        "status": "v27_targeted",
+        "header": {"version": header["version"], "sanity": data[:4].hex()},
+        "targets": targets,
+        "numeric_preset_values": "not present in metadata string/type tables",
+    }
 
 
 def find_entry(names: Iterable[str], suffix: str) -> str:
@@ -432,13 +648,14 @@ def audit_ipa(path: Path) -> dict[str, Any]:
                 "tables": tables,
                 "table_names": sorted({table["name"] for table in tables if table["name"]}),
                 "relevant_strings": relevant_strings(acf),
-                "mixer_summary": build_mixer_summary(tables),
+                "mixer_summary": build_mixer_summary(acf, tables),
             },
             "il2cpp_metadata": {
                 "size": len(metadata),
                 "sha256": sha256(metadata),
                 "magic": metadata[:4].hex(),
                 "metadata_terms": metadata_term_hits(metadata),
+                "targeted_types": audit_il2cpp_metadata(metadata),
             },
         }
 
