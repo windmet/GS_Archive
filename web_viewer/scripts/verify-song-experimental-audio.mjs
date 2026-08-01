@@ -69,6 +69,9 @@ for (const [label, source, needles] of [
     '(!stageVocalEnabled.value || stageVocalReady.value)',
     'useSongPerformanceSession()',
     'stageVocalSession.configure({',
+    "const stageVocalMode = computed(() => isSoloChoreography.value ? 'center-solo' : 'switch-singer')",
+    'onStagePerformerSlots || [1]',
+    'continuous: isSoloChoreography.value',
     'stageVocalSession.currentTime.value * 1000',
     'if (wasPlaying && stageVocalEnabled.value && stageVocalReady.value)',
     'data-stage-vocal-clock="stageVocalEnabled ? \'audio-context-scheduled\' : \'media-element\'"',
@@ -78,10 +81,22 @@ for (const [label, source, needles] of [
   ['song detail player', detailPlayerSource, [
     'ArchiveSongLineupPlayer',
     '五槽演唱编组（实验）',
+    'useSongPerformanceSession()',
+    'soloSession.configure({',
+    'continuous: true',
+    'data-solo-clock="mode === \'solo\' ? \'audio-context-scheduled\' : undefined"',
+    '声部与伴奏已在播放前完整解码',
   ]],
   ['portal lineup player', lineupPlayerSource, [
     '<option value="">空位</option>',
     '重复偶像只播放一条声部',
+    '五个选择位与 Chibi 舞台位置 1–5 完全对应',
+    'stagePositionForSlot(slot)',
+    'performerSlotForStagePosition(stagePosition)',
+    'stageLineup.value[Number(stagePosition) - 1] = idolCode',
+    'stageLineup.value[Number(stagePositionForSlot(performerSlot)) - 1]',
+    ':data-active-stage-positions="activeStagePositions.join(\',\')"',
+    "entry.positions?.length === props.audioExperiment.stage_vocal.slot_count",
     'activeSingerEntries',
     '当前演唱',
     'fetchSongPerformanceChoreography',
@@ -99,6 +114,8 @@ for (const [label, source, needles] of [
     'gate.gain.setValueAtTime(',
     'source.playbackRate.value = playbackRate.value',
     'Math.max(0, entry.timeSeconds - offset) / playbackRate.value',
+    'if (continuousVocals)',
+    'gate.gain.setValueAtTime(1, startAt)',
   ]],
   ['lightweight performance data loader', performanceDataSource, [
     '/assets/live-chibi/choreography/index.json',
@@ -134,8 +151,10 @@ if (JSON.stringify(gateSchedule) !== JSON.stringify([
   fail('gate schedule must restore the state at seek time and preserve future switch times')
 }
 if (/new Audio\s*\(/.test(performanceSessionSource) || performanceSessionSource.includes('DRIFT_LIMIT_SECONDS') ||
-    stageSource.includes('Math.abs(item.audio.currentTime - clockAudio.currentTime) > 0.08')) {
-  fail('portal lineup session must not use independently clocked HTMLAudio tracks or drift repair')
+    stageSource.includes('Math.abs(item.audio.currentTime - clockAudio.currentTime) > 0.08') ||
+    detailPlayerSource.includes('Math.abs(backingAudio.value.currentTime - primary.currentTime) > 0.08') ||
+    detailPlayerSource.includes('ref="vocalAudio"') || detailPlayerSource.includes('ref="backingAudio"')) {
+  fail('layered portal and Chibi modes must not use independently clocked HTMLAudio tracks or drift repair')
 }
 
 if (mounted) {

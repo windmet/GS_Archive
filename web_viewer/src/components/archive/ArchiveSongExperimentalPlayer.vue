@@ -40,7 +40,13 @@
       :audio-experiment="audioExperiment"
     />
 
-    <div v-else class="experimental-player-panel" :class="{ 'is-solo': mode === 'solo' }">
+    <div
+      v-else
+      class="experimental-player-panel"
+      :class="{ 'is-solo': mode === 'solo' }"
+      :data-solo-ready="mode === 'solo' ? soloSession.ready.value : undefined"
+      :data-solo-clock="mode === 'solo' ? 'audio-context-scheduled' : undefined"
+    >
       <audio
         ref="singleAudio"
         v-if="mode === 'single'"
@@ -52,43 +58,24 @@
         @ended="onEnded"
         @error="onAudioError"
       />
-      <template v-else>
-        <audio
-          ref="vocalAudio"
-          preload="metadata"
-          :src="currentSoloTrack?.vocal?.url || ''"
-          :aria-label="`${song.title} ${selectedIdolName} Solo 声部`"
-          @loadedmetadata="updateDuration"
-          @timeupdate="onTimeUpdate"
-          @ended="onEnded"
-          @error="onAudioError"
-        />
-        <audio
-          ref="backingAudio"
-          preload="metadata"
-          :src="currentSoloTrack?.backing?.url || ''"
-          :aria-label="`${song.title} 伴奏`"
-          @loadedmetadata="updateDuration"
-          @error="onAudioError"
-        />
-      </template>
 
       <div class="experimental-transport">
-        <button type="button" class="experimental-play" @click="togglePlayback">
-          {{ isPlaying ? '暂停' : '播放' }}
+        <button type="button" class="experimental-play" :disabled="!transportReady" @click="togglePlayback">
+          {{ transportPlaying ? '暂停' : '播放' }}
         </button>
-        <button type="button" class="experimental-reset" @click="resetPlayback">归零</button>
+        <button type="button" class="experimental-reset" :disabled="!transportReady" @click="resetPlayback">归零</button>
         <input
           class="experimental-seek"
           type="range"
           min="0"
-          :max="duration || 0"
+          :max="transportDuration || 0"
           step="0.01"
-          :value="currentTime"
+          :value="transportCurrentTime"
           aria-label="播放进度"
+          :disabled="!transportReady"
           @input="seekPlayback"
         />
-        <span class="experimental-time">{{ formatTime(currentTime) }} / {{ formatTime(duration) }}</span>
+        <span class="experimental-time">{{ formatTime(transportCurrentTime) }} / {{ formatTime(transportDuration) }}</span>
       </div>
 
       <div v-if="mode === 'solo'" class="experimental-mix-controls">
@@ -104,15 +91,16 @@
     </div>
 
     <p v-if="mode !== 'lineup'" class="experimental-evidence">
-      对齐证据：{{ syncLabel }}。实验状态：未完成完整听感校准；若出现偏移，请以“归零”后重新播放为准。
+      对齐证据：{{ syncLabel }}。{{ playbackEvidence }}
     </p>
     <p v-if="audioError" class="experimental-error" role="alert">{{ audioError }}</p>
   </section>
 </template>
 
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { IDOL_ID_TO_NAME } from '../../utils/IdolNameMap.js'
+import { useSongPerformanceSession } from '../../composables/useSongPerformanceSession.js'
 import ArchiveSongLineupPlayer from './ArchiveSongLineupPlayer.vue'
 
 const props = defineProps({
@@ -124,18 +112,16 @@ const mode = ref('single')
 const selectedSingleKey = ref('full_mix')
 const selectedIdolCode = ref('')
 const singleAudio = ref(null)
-const vocalAudio = ref(null)
-const backingAudio = ref(null)
 const isPlaying = ref(false)
 const currentTime = ref(0)
 const duration = ref(0)
-const vocalVolume = ref(1)
-const backingVolume = ref(1)
 const audioError = ref('')
+const soloSession = useSongPerformanceSession()
+const vocalVolume = soloSession.vocalGain
+const backingVolume = soloSession.backingGain
 
 const soloEntries = computed(() => Object.values(props.audioExperiment?.solo_tracks || {})
   .map(entry => ({ ...entry, name: IDOL_ID_TO_NAME[entry.idol_code] || entry.name || entry.idol_code })))
-const selectedIdolName = computed(() => IDOL_ID_TO_NAME[selectedIdolCode.value] || selectedIdolCode.value)
 const currentSoloTrack = computed(() => props.audioExperiment?.solo_tracks?.[selectedIdolCode.value] || null)
 const singleOptions = computed(() => {
   const experiment = props.audioExperiment || {}
@@ -161,17 +147,18 @@ const syncLabel = computed(() => {
   if (delta == null) return '未提供双轨元数据'
   return `44.1 kHz，声部与伴奏差 ${delta} sample`
 })
+const transportCurrentTime = computed(() => mode.value === 'solo' ? soloSession.currentTime.value : currentTime.value)
+const transportDuration = computed(() => mode.value === 'solo' ? soloSession.duration.value : duration.value)
+const transportPlaying = computed(() => mode.value === 'solo' ? soloSession.playing.value : isPlaying.value)
+const transportReady = computed(() => mode.value === 'solo'
+  ? soloSession.ready.value
+  : Boolean(currentSingleTrack.value?.url))
+const playbackEvidence = computed(() => mode.value === 'solo'
+  ? '声部与伴奏已在播放前完整解码，并由同一个 AudioContext 时钟同步启动。混音仍为浏览器实验值。'
+  : '单轨不存在跨轨时钟漂移；实验状态仍未完成完整听感校准。')
 
 function audioElements() {
-  if (mode.value === 'lineup') return []
-  return mode.value === 'solo'
-    ? [vocalAudio.value, backingAudio.value].filter(Boolean)
-    : [singleAudio.value].filter(Boolean)
-}
-
-function setVolumes() {
-  if (vocalAudio.value) vocalAudio.value.volume = vocalVolume.value
-  if (backingAudio.value) backingAudio.value.volume = backingVolume.value
+  return mode.value === 'single' && singleAudio.value ? [singleAudio.value] : []
 }
 
 function updateDuration() {
@@ -180,16 +167,16 @@ function updateDuration() {
 }
 
 function onTimeUpdate() {
-  const primary = mode.value === 'solo' ? vocalAudio.value : singleAudio.value
-  if (!primary) return
-  currentTime.value = primary.currentTime
-  if (mode.value === 'solo' && backingAudio.value && Math.abs(backingAudio.value.currentTime - primary.currentTime) > 0.08) {
-    backingAudio.value.currentTime = primary.currentTime
-  }
+  if (singleAudio.value) currentTime.value = singleAudio.value.currentTime
 }
 
 async function togglePlayback() {
   audioError.value = ''
+  if (mode.value === 'solo') {
+    if (soloSession.playing.value) soloSession.pause()
+    else if (!await soloSession.play()) audioError.value = soloSession.error.value
+    return
+  }
   const elements = audioElements()
   if (!elements.length || elements.some(audio => !audio.src)) {
     audioError.value = '实验音频尚未准备，无法播放。'
@@ -200,7 +187,6 @@ async function togglePlayback() {
     isPlaying.value = false
     return
   }
-  setVolumes()
   try {
     const startAt = currentTime.value
     elements.forEach(audio => { audio.currentTime = startAt })
@@ -213,16 +199,21 @@ async function togglePlayback() {
 }
 
 function resetPlayback() {
-  audioElements().forEach(audio => {
-    audio.pause()
-    audio.currentTime = 0
-  })
+  soloSession.reset()
+  if (singleAudio.value) {
+    singleAudio.value.pause()
+    singleAudio.value.currentTime = 0
+  }
   isPlaying.value = false
   currentTime.value = 0
 }
 
 function seekPlayback(event) {
   const nextTime = Number(event.target.value)
+  if (mode.value === 'solo') {
+    soloSession.seek(nextTime)
+    return
+  }
   audioElements().forEach(audio => { audio.currentTime = nextTime })
   currentTime.value = nextTime
 }
@@ -243,13 +234,28 @@ function formatTime(value) {
 async function reloadSources() {
   resetPlayback()
   audioError.value = ''
+  if (mode.value === 'solo') {
+    const experiment = props.audioExperiment
+    if (!experiment || !currentSoloTrack.value?.vocal?.url) {
+      soloSession.release()
+      audioError.value = '当前偶像缺少 Solo 声部或伴奏资源。'
+      return
+    }
+    await soloSession.configure({
+      experiment,
+      events: [],
+      performerLineup: [selectedIdolCode.value],
+      continuous: true,
+    })
+    audioError.value = soloSession.error.value
+    return
+  }
+  soloSession.release()
   await nextTick()
   audioElements().forEach(audio => audio.load())
-  setVolumes()
 }
 
 watch([mode, selectedSingleKey, selectedIdolCode], reloadSources)
-watch([vocalVolume, backingVolume], setVolumes)
 watch(() => props.audioExperiment, async experiment => {
   selectedIdolCode.value = Object.keys(experiment?.solo_tracks || {})[0] || ''
   selectedSingleKey.value = 'full_mix'
@@ -257,7 +263,6 @@ watch(() => props.audioExperiment, async experiment => {
   await reloadSources()
 }, { immediate: true })
 
-onMounted(() => setVolumes())
 onBeforeUnmount(() => resetPlayback())
 </script>
 

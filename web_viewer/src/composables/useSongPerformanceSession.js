@@ -74,6 +74,7 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext 
   let loadAbortController = null
   let logicalOffset = 0
   let logicalEpoch = 0
+  let continuousVocals = false
 
   const currentSingerEvent = computed(() => [...singerEvents.value]
     .reverse()
@@ -155,11 +156,12 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext 
     return ensureContext().decodeAudioData(bytes)
   }
 
-  async function configure({ experiment, events, performerLineup }) {
+  async function configure({ experiment, events, performerLineup, continuous = false }) {
     const resumeAt = logicalOffset
     release({ resetTime: false })
     lineup.value = [...performerLineup]
     singerEvents.value = [...(events || [])].sort((a, b) => Number(a.time) - Number(b.time))
+    continuousVocals = Boolean(continuous)
     error.value = ''
     if (!experiment?.backing?.url) {
       error.value = '当前歌曲没有实验伴奏资源。'
@@ -198,6 +200,10 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext 
   }
 
   function scheduleSingerGates(gates, startAt, offset) {
+    if (continuousVocals) {
+      for (const gate of gates.values()) gate.gain.setValueAtTime(1, startAt)
+      return
+    }
     const schedule = buildSingerGateSchedule(lineup.value, singerEvents.value, offset)
     for (const entry of schedule) {
       const active = new Set(entry.idolCodes)
@@ -262,7 +268,7 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext 
   async function play() {
     error.value = ''
     if (!ready.value || !backingBuffer) {
-      error.value = '五槽实验音频尚未准备。'
+      error.value = '实验叠轨音频尚未准备。'
       return false
     }
     if (logicalOffset >= duration.value) logicalOffset = 0

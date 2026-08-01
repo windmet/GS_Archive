@@ -4,11 +4,12 @@
     :data-lineup-ready="session.ready.value"
     :data-loaded-vocals="session.loadedIdolCodes.value.join(',')"
     :data-active-performer-slots="session.activePerformerSlots.value.join(',')"
+    :data-active-stage-positions="activeStagePositions.join(',')"
     :data-active-idols="session.activeIdolCodes.value.join(',')"
     data-clock-mode="audio-context-scheduled"
   >
     <p class="lineup-note">
-      五个演出槽按 SwitchSinger 时间线切换。空位会静音；重复偶像只播放一条声部，并合并其多个槽的演唱区间。
+      五个选择位与 Chibi 舞台位置 1–5 完全对应；网页会在内部反查 RAW 编组槽。空位会静音；重复偶像只播放一条声部，并合并其多个位置的演唱区间。
     </p>
 
     <label v-if="arrangements.length > 1" class="arrangement-select">
@@ -19,28 +20,34 @@
     </label>
 
     <fieldset class="performer-lineup">
-      <legend>五槽演唱编组</legend>
+      <legend>五个舞台位置（与 Chibi 一致）</legend>
       <label
-        v-for="slot in slotNumbers"
-        :key="slot"
+        v-for="stagePosition in stagePositions"
+        :key="stagePosition"
         class="performer-slot"
-        :class="{ active: session.activePerformerSlots.value.includes(slot) }"
+        :class="{ active: activeStagePositions.includes(stagePosition) }"
       >
-        <span>槽 {{ slot }}</span>
-        <select v-model="performerLineup[slot - 1]" :aria-label="`演唱槽 ${slot}`" @change="reloadSession">
+        <span>槽 {{ stagePosition }} · 舞台位 {{ stagePosition }}{{ stagePosition === 3 ? '（中心）' : '' }}</span>
+        <select
+          :value="idolForStagePosition(stagePosition)"
+          :aria-label="`舞台位置 ${stagePosition}${stagePosition === 3 ? '，中心' : ''}`"
+          @change="handleStagePositionChange(stagePosition, $event.target.value)"
+        >
           <option value="">空位</option>
           <option v-for="entry in soloEntries" :key="entry.idol_code" :value="entry.idol_code">
             {{ entry.name }}（{{ entry.idol_code }}）
           </option>
         </select>
-        <small>{{ session.activePerformerSlots.value.includes(slot) ? '当前演唱槽' : '等待' }}</small>
+        <small>
+          {{ activeStagePositions.includes(stagePosition) ? '当前演唱' : '等待' }} · RAW 编组槽 {{ performerSlotForStagePosition(stagePosition) }}
+        </small>
       </label>
     </fieldset>
 
     <div class="current-singers" aria-live="polite">
       <span>当前演唱</span>
       <strong v-if="activeSingerEntries.length">
-        {{ activeSingerEntries.map(entry => `${entry.name}（槽 ${entry.slots.join('/')}）`).join('、') }}
+        {{ activeSingerEntries.map(entry => `${entry.name}（舞台位 ${entry.stagePositions.join('/')}）`).join('、') }}
       </strong>
       <strong v-else>无人 / 当前槽为空</strong>
     </div>
@@ -94,9 +101,10 @@ const props = defineProps({
 
 const session = useSongPerformanceSession()
 const slotNumbers = [1, 2, 3, 4, 5]
+const stagePositions = [1, 2, 3, 4, 5]
 const arrangements = ref([])
 const selectedArrangementId = ref('')
-const performerLineup = ref([])
+const stageLineup = ref([])
 const loadingTimeline = ref(false)
 
 const soloEntries = computed(() => Object.values(props.audioExperiment?.solo_tracks || {})
@@ -106,24 +114,51 @@ const soloEntries = computed(() => Object.values(props.audioExperiment?.solo_tra
   })))
 const selectedArrangement = computed(() => arrangements.value
   .find(entry => entry.id === selectedArrangementId.value) || null)
+const activeStagePositions = computed(() => session.activePerformerSlots.value
+  .map(stagePositionForSlot)
+  .sort((left, right) => left - right))
 const activeSingerEntries = computed(() => {
   const byIdol = new Map()
   for (const slot of session.activePerformerSlots.value) {
-    const idolCode = performerLineup.value[Number(slot) - 1]
+    const stagePosition = stagePositionForSlot(slot)
+    const idolCode = stageLineup.value[Number(stagePosition) - 1]
     if (!idolCode) continue
     if (!byIdol.has(idolCode)) byIdol.set(idolCode, {
       idolCode,
       name: IDOL_ID_TO_NAME[idolCode] || idolCode,
       slots: [],
+      stagePositions: [],
     })
     byIdol.get(idolCode).slots.push(slot)
+    byIdol.get(idolCode).stagePositions.push(stagePosition)
   }
   return [...byIdol.values()]
 })
 
+function stagePositionForSlot(performerSlot) {
+  return selectedArrangement.value?.stagePositionMap
+    ?.find(item => Number(item.performerSlot) === Number(performerSlot))?.stagePosition
+    || performerSlot
+}
+
+function performerSlotForStagePosition(stagePosition) {
+  return selectedArrangement.value?.stagePositionMap
+    ?.find(item => Number(item.stagePosition) === Number(stagePosition))?.performerSlot
+    || stagePosition
+}
+
+function idolForStagePosition(stagePosition) {
+  return stageLineup.value[Number(stagePosition) - 1] || ''
+}
+
+async function handleStagePositionChange(stagePosition, idolCode) {
+  stageLineup.value[Number(stagePosition) - 1] = idolCode
+  await reloadSession()
+}
+
 function initializeLineup() {
   const candidates = soloEntries.value.map(entry => entry.idol_code)
-  performerLineup.value = slotNumbers.map((_, index) => candidates[index] || '')
+  stageLineup.value = stagePositions.map((_, index) => candidates[index] || '')
 }
 
 async function loadArrangements() {
@@ -136,6 +171,7 @@ async function loadArrangements() {
       && Array.isArray(entry.singerEvents)
       && entry.singerEvents.length > 0
       && entry.performerSlots?.length === props.audioExperiment.stage_vocal.slot_count
+      && entry.positions?.length === props.audioExperiment.stage_vocal.slot_count
     ))
     selectedArrangementId.value = arrangements.value[0]?.id || ''
     initializeLineup()
@@ -157,7 +193,9 @@ async function reloadSession() {
   await session.configure({
     experiment: props.audioExperiment,
     events: arrangement.singerEvents,
-    performerLineup: performerLineup.value,
+    performerLineup: slotNumbers.map(performerSlot => (
+      stageLineup.value[Number(stagePositionForSlot(performerSlot)) - 1] || ''
+    )),
   })
 }
 

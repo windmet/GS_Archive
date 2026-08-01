@@ -648,10 +648,12 @@ view=story_collection&story_type=...&story_section=...
   12,315ms 为 stage positions `4,5`（反推 performer slots `3,5`）；此前网页的
   `4` 与 `1,5` 均属 double mapping，现由 RAW 定点门禁纠正。三首实验媒体各
   50 个 M4A，共 150 个；这不是长稳、publication 或 release acceptance。
-- 歌曲详情已接入独立于画面的五槽 performance session，显示 performer slot、
-  空位与当前演唱偶像。重复偶像按 idol code 只加载/播放一条声部，并对其多个
+- 歌曲详情已接入独立于画面的五槽 performance session；内部保留 performer
+  slot 证据，用户界面则显示统一的舞台槽、空位与当前演唱偶像。重复偶像按
+  idol code 只加载/播放一条声部，并对其多个
   槽的活动状态取 OR；不会用同一波形叠放制造“多人”假象。为避免多元素播放
-  在浏览器压力或网络波动下产生单轨 layback，门户与 Chibi 五槽实验都改为
+  在浏览器压力或网络波动下产生单轨 layback，门户 Solo＋伴奏、门户五槽与
+  Chibi 五槽实验都改为
   播放前完整 fetch/decode 伴奏与所选唯一声部；所有
   `AudioBufferSourceNode` 使用同一个 `AudioContext.currentTime` 与同一
   `startAt`，`SwitchSinger` gate 也提前排入音频线程。播放期不再依赖网络，
@@ -664,6 +666,23 @@ view=story_collection&story_type=...&story_section=...
   Chibi 只复用音频 session，不改变既有编舞、口型、镜头或场景数据。本批不与
   官方混音参数、MV 或 publication promotion 合并，短实播也不是 2–4 小时
   长稳；P2-B 仍为 **NOT EXECUTED**。
+- 门户五槽的用户可见编号已统一为 Chibi canonical 舞台位置 `1..5`，因此
+  `槽 3 = 舞台位 3 = 中心`。选择状态按舞台位保存；只有送入共享音频 session
+  时才根据 `stagePositionMap` 反查 RAW performer slot。当前演唱提示也显示
+  舞台位，界面不再要求用户记忆 `1→3, 2→2, 3→4, 4→1, 5→5` 的内部映射。
+- Chibi 编舞候选中的 `solo`、`solo_multi`、`solo_single` 必须保留为 RAW 名称，
+  不按英文名猜测音轨机制。`song_drvalv.unity3d` 中 `solo` 与 `solo_single`
+  byte-identical（SHA-256 `79d33c6a3ea2c87938bc83a9d2e0a164432d635e3db7f5a7e295008d8326e0a0`）；
+  `solo_multi` 动作与唯一 `SwitchSinger` 状态相同，75 行差异集中在 72 行
+  `Penlight_unit_color`/`Penlight` 与 3 行注释指令。三者均只有 performer
+  slot 1 位于中心，slot 2–5 是 `(5000,5000)` 离场哨兵。派生层现将 slot 1
+  映射为 canonical stage position 3；DRVALV 的 Chibi Solo 实验只加载中心
+  3 号位所选偶像声部与伴奏，并使用统一 `AudioContext` 时钟连续播放，不能把
+  `multi/single` 写成已恢复的官方声轨选择器。
+- 118 份编舞的歌词 token 审计只确认精确小写 `<comma>` 是占位符；重建后
+  196 个歌词事件显示 ASCII `,` 并在 `rawText` 保留来源。`<<Kick Off!>>`、
+  `きっと<きっと>叶えるよ` 等真实尖括号歌词继续按纯文本保留，禁止用
+  `v-html` 或泛化的“去 HTML 标签”规则处理。
 - 供应包与 RAW 的逐文件 hash 对照已固化为
   `scripts/audit-song-package-raw-match.py`（`npm run audit:song-package-match --
   --ipa <path> --xapk <path> --raw-audio ..\\RAW\\audio --output <report>`）；

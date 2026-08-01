@@ -46,6 +46,7 @@ IDOL_DICTIONARY_PATH = PROJECT_ROOT / "public" / "data" / "masterdata" / "idol_u
 TOUMA_HEIGHT_CM = 175
 BODY_PREVIEW_BASE_SCALES = {1: 0.3053, 2: 0.2904, 3: 0.3176, 4: 0.3712, 5: 0.3144}
 PREVIEW_SCALE_CAPS = {5: 0.28}
+OFFSTAGE_COORDINATE_LIMIT = 2000
 COMPATIBILITY_MOTION_IDS = [4001, 12001, 16004, 32005, 56011]
 MOTION_LABELS = {
     "armup1": "抬手 1",
@@ -373,6 +374,35 @@ def parse_optional_number(value: str) -> int | None:
         return None
 
 
+def decode_live_lyric_text(value: str) -> str:
+    """Decode authored lyric placeholders without treating lyrics as HTML."""
+    return value.replace("<comma>", ",")
+
+
+def initial_position_events(
+    performer_slots: list[int], position_events: list[dict]
+) -> dict[int, dict]:
+    result = {}
+    for event in sorted(position_events, key=lambda item: (item["time"], item["position"])):
+        slot = event["position"]
+        if slot in performer_slots and slot not in result:
+            result[slot] = event
+    return result
+
+
+def on_stage_performer_slots(
+    performer_slots: list[int], position_events: list[dict]
+) -> list[int]:
+    initial = initial_position_events(performer_slots, position_events)
+    visible = [
+        slot
+        for slot in performer_slots
+        if abs(initial.get(slot, {}).get("x", 0)) < OFFSTAGE_COORDINATE_LIMIT
+        and abs(initial.get(slot, {}).get("y", 0)) < OFFSTAGE_COORDINATE_LIMIT
+    ]
+    return visible or performer_slots
+
+
 def parse_hide_transition(row: list[str], show_duration: int = 1) -> tuple[bool, int]:
     """Read both live-effect CSV layouts used by hide commands.
 
@@ -421,16 +451,29 @@ def build_stage_position_map(
             if 1 <= position <= 5
         }
     )
+    initial_by_slot = initial_position_events(performer_slots, position_events)
+    visible_slots = on_stage_performer_slots(performer_slots, position_events)
+    if len(visible_slots) < len(performer_slots):
+        visible_positions = (
+            singer_positions
+            if len(singer_positions) == len(visible_slots)
+            else canonical_positions.get(len(visible_slots), visible_slots)
+        )
+        ordered_visible = sorted(
+            visible_slots,
+            key=lambda slot: (initial_by_slot.get(slot, {}).get("x", slot), slot),
+        )
+        result = dict(zip(ordered_visible, visible_positions))
+        remaining_slots = [slot for slot in performer_slots if slot not in result]
+        remaining_positions = [position for position in range(1, 6) if position not in result.values()]
+        result.update(zip(remaining_slots, remaining_positions))
+        return result
+
     stage_positions = (
         singer_positions
         if len(singer_positions) == len(performer_slots)
         else canonical_positions.get(len(performer_slots), performer_slots)
     )
-
-    initial_by_slot = {}
-    for event in sorted(position_events, key=lambda item: (item["time"], item["position"])):
-        if event["position"] in performer_slots and event["position"] not in initial_by_slot:
-            initial_by_slot[event["position"]] = event
     ordered_slots = sorted(
         performer_slots,
         key=lambda slot: (initial_by_slot.get(slot, {}).get("x", slot), slot),
@@ -571,15 +614,16 @@ def read_choreography_scripts(
                     continue
                 if row[0] == "Lyric" and len(row) >= 4:
                     event_time = parse_optional_number(row[1])
-                    text = row[2].strip()
-                    if event_time is not None and text:
-                        lyric_events.append(
-                            {
-                                "time": event_time,
-                                "text": text,
-                                "duration": parse_number(row[3], 10000),
-                            }
-                        )
+                    raw_text = row[2].strip()
+                    if event_time is not None and raw_text:
+                        lyric_event = {
+                            "time": event_time,
+                            "text": decode_live_lyric_text(raw_text),
+                            "duration": parse_number(row[3], 10000),
+                        }
+                        if lyric_event["text"] != raw_text:
+                            lyric_event["rawText"] = raw_text
+                        lyric_events.append(lyric_event)
                     continue
                 if row[0] == "Whole_screen_color" and len(row) >= 6:
                     event_time = parse_optional_number(row[1])
@@ -729,6 +773,7 @@ def read_choreography_scripts(
         if variant:
             title = f"{title} · {variant}"
         performer_slots = sorted({event["position"] for event in events if event["position"] > 0})
+        visible_performer_slots = on_stage_performer_slots(performer_slots, position_events)
         stage_position_map = build_stage_position_map(
             performer_slots, position_events, singer_events
         )
@@ -762,7 +807,7 @@ def read_choreography_scripts(
                     if target_slot and target_slot > 0
                     else None
                 )
-        positions = sorted(stage_position_map.values())
+        positions = sorted(stage_position_map[slot] for slot in visible_performer_slots)
         songs.append(
             {
                 "id": csv_path.stem,
@@ -774,6 +819,7 @@ def read_choreography_scripts(
                 "duration": max(event["time"] for event in events) + 2000,
                 "positions": positions,
                 "performerSlots": performer_slots,
+                "onStagePerformerSlots": visible_performer_slots,
                 "stagePositionMap": [
                     {"performerSlot": slot, "stagePosition": stage_position_map[slot]}
                     for slot in performer_slots
