@@ -587,8 +587,9 @@ view=story_collection&story_type=...&story_section=...
 - 61 张 RAW 封面发布为 365x360 导航派生图，保留 bundle、Texture2D、
   PathID、原尺寸与 published hash，owner release 为
   `2026-08-01-song-jackets-001`；
-- 播放器、solo+伴奏同步、MV 播放和 Chibi Stage 预选仍属于 Song-C，状态
-  为 **NOT EXECUTED**，等待下一步产品与音频同步讨论。
+- 歌曲详情播放器和 Chibi Stage 已各有明确标注的有界音频原型；MV 播放、共享
+  route-backed performance selection、官方 gain/pan/ducking 还原与 publication
+  promotion 仍属于 Song-C，整体状态仍为 **NOT EXECUTED**。
 
 2026-08-01 supplied package metadata checkpoint（只读）：
 
@@ -621,9 +622,10 @@ view=story_collection&story_type=...&story_section=...
 - 同时具备 49 个偶像声部文件和独立 `_bgm.acb` 的物理候选只有
   `byndtd`、`drvalv`、`grwsml`、`tkstp1`、`tkstp2` 五首；但 table 46 的
   `HasSoloSinging`/`SoloSingingOpenAt` 仅对前三首正式开启，`tkstp1/2` 的
-  solo 开放时间仍是禁用 sentinel。当前实验 manifest 只发布 `drvalv` 的
-  49 个声部，属于有意的单样本边界，不把另外四首物理候选自动当成官方
-  播放选项；
+  solo 开放时间仍是禁用 sentinel。实验 manifest v2 现发布 `drvalv`、
+  `tkstp1`、`tkstp2` 各 49 个声部与伴奏；其中 `tkstp1/2` 只作为五人编组
+  `SwitchSinger` 原型，不据此改写 table-46 的官方 `HasSoloSinging` 状态，
+  `byndtd/grwsml` 也未被自动提升为正式分层播放选项；
 - 全量 ACB 形成 83 个 sequence/track-event 签名；命令 payload 继续按 opaque
   证据保存，未把 `0x0041`、`0x0057` 或 `0x07d0` 擅自解释为音量、声像或
   时间参数；播放器仍不得据此宣称已重建官方混音。
@@ -635,8 +637,20 @@ view=story_collection&story_type=...&story_section=...
   与 `HasSoloSinging`（两行仍为禁用 sentinel）是不同语义，不能再把
   `audio_form=single-cue` 写成“没有个人声部选择”。Chibi 导出现在同时保留
   `performerSlots` 与映射后的 `stagePositions`，`verify:live-chibi-singer-slots`
-  固化这一关系；播放器未来可沿 performer slot 选择对应的偶像 ACB，而不需
-  复制五套编舞动作。
+  固化这一关系。Chibi Stage 的可选实验模式现沿 performer slot 选择五个
+  偶像 ACB，以伴奏为共享时钟，并用同一 `SwitchSinger` 事件同时驱动声部
+  mute 与舞台口型/演唱标记，不复制五套编舞动作。多人声部采用 `1/sqrt(n)`
+  归一化、居中声像和独立伴奏增益，界面与 manifest 均明确标记为浏览器近似；
+  这不构成官方 `SingerNumVolumeList` / `singerCountPanDict` 的还原。
+- 5174 短时验收：`tkstp1` 8.0 秒为 performer slot `3` -> stage position `4`；
+  `tkstp2` 同时为 performer slots `1,3` -> stage positions `3,4`。换人后五槽
+  声部重新绑定并恢复 ready。三首实验媒体各 50 个 M4A，共 150 个，容器探测
+  与 mounted URL 门禁通过；这不是长稳、publication 或 release acceptance。
+- 下一独立小批将把五槽 transport/session 从 Chibi 视图抽离，供歌曲详情复用；
+  门户播放器显示五个 performer slot、空位与当前演唱偶像。重复偶像只能作为
+  自定义实验编组：按 idol code 只加载/播放一条声部，并对其多个槽的活动状态
+  取 OR；禁止用同一波形叠放制造“多人”假象。该批不得与官方混音参数恢复、
+  MV 或 publication promotion 合并。
 - 供应包与 RAW 的逐文件 hash 对照已固化为
   `scripts/audit-song-package-raw-match.py`（`npm run audit:song-package-match --
   --ipa <path> --xapk <path> --raw-audio ..\\RAW\\audio --output <report>`）；

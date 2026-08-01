@@ -6,6 +6,10 @@
     :data-active-positions="activePositions.join(',')"
     :data-loaded-positions="loadedPositions.join(',')"
     :data-current-singers="currentSingerPositions.join(',')"
+    :data-current-performer-singers="currentSingerPerformerSlots.join(',')"
+    :data-stage-vocal-enabled="stageVocalEnabled"
+    :data-stage-vocal-ready="stageVocalReady"
+    :data-stage-vocal-slots="stageVocalAudios.length"
     :data-position-tween-ms="POSITION_TWEEN_MS"
     :data-stage-base-zoom="STAGE_BASE_ZOOM"
     :data-stage-view-scale="stageViewScale.toFixed(3)"
@@ -115,7 +119,7 @@
           <span>{{ errorText }}</span>
         </div>
 
-        <div class="transport" :class="{ disabled: !stageReady || preloading }">
+        <div class="transport" :class="{ disabled: !stageTransportReady || preloading }">
           <button type="button" aria-label="回到开头" @click="resetStage">
             <RotateCcw :size="19" />
           </button>
@@ -123,7 +127,7 @@
             class="primary-transport"
             type="button"
             :aria-label="playing ? '暂停多人编排' : '播放多人编排'"
-            :disabled="!stageReady || preloading"
+            :disabled="!stageTransportReady || preloading"
             @click="toggleStage"
           >
             <Pause v-if="playing" :size="22" fill="currentColor" />
@@ -167,8 +171,29 @@
               <span>{{ selectedSong?.backmonitorEvents?.length || 0 }} 条屏幕</span>
               <span>{{ selectedSong?.imageLayerEvents?.length || 0 }} 条布景</span>
               <span>{{ selectedSong?.lyricEvents?.length || 0 }} 条歌词</span>
-              <span>{{ selectedSongAudio ? '官方音频' : '无音频' }}</span>
+              <span>{{ stageVocalEnabled ? '五槽实验音频' : (selectedSongAudio ? '官方混音音频' : '无音频') }}</span>
             </div>
+            <fieldset v-if="stageVocalAvailable" class="stage-vocal-controls">
+              <legend>五人声部实验</legend>
+              <label class="camera-toggle">
+                <input v-model="stageVocalEnabled" type="checkbox" @change="handleStageVocalToggle" />
+                <span>按编组位与 SwitchSinger 切换</span>
+              </label>
+              <template v-if="stageVocalEnabled">
+                <label class="range-control">
+                  <span>声部</span>
+                  <input v-model.number="stageVocalBusGain" type="range" min="0" max="1" step="0.05" @input="syncStageVocalMix" />
+                  <output>{{ stageVocalBusGain.toFixed(2) }}</output>
+                </label>
+                <label class="range-control">
+                  <span>伴奏</span>
+                  <input v-model.number="stageVocalBackingGain" type="range" min="0" max="1" step="0.05" @input="syncStageVocalMix" />
+                  <output>{{ stageVocalBackingGain.toFixed(2) }}</output>
+                </label>
+                <small>{{ stageVocalReady ? '五个编组位声部已就绪' : '正在载入五个声部…' }}</small>
+              </template>
+              <small>均衡归一化与居中声像是浏览器近似，不代表游戏官方混音参数。</small>
+            </fieldset>
           </section>
 
           <section class="control-section lineup-section">
@@ -307,7 +332,7 @@
               <div><dt>活动站位</dt><dd>{{ activePositions.join(' / ') || '—' }}</dd></div>
               <div><dt>当前演唱</dt><dd>{{ currentSingerLabel }}</dd></div>
               <div><dt>动作预载</dt><dd>{{ preloading ? `${preloadProgress}%` : (songMotionsReady ? '已完成' : '播放时载入') }}</dd></div>
-              <div><dt>音频时钟</dt><dd>{{ audioReady ? '已就绪' : '等待加载' }}</dd></div>
+              <div><dt>音频时钟</dt><dd>{{ stageVocalEnabled ? (stageVocalReady ? '实验伴奏' : '实验声部加载中') : (audioReady ? '官方混音' : '等待加载') }}</dd></div>
               <div><dt>位置过渡</dt><dd>{{ POSITION_TWEEN_MS }}ms 平滑插值</dd></div>
               <div><dt>动作组补位</dt><dd>{{ derivedGroupEventCount }} 处</dd></div>
               <div><dt>当前镜头</dt><dd>{{ currentCameraLabel }}</dd></div>
@@ -360,6 +385,12 @@ import {
 import { getSongUrl } from '../utils/AssetResolver.js'
 
 const emit = defineEmits(['back', 'open-lab'])
+const props = defineProps({
+  audioExperiments: {
+    type: Object,
+    default: () => ({}),
+  },
+})
 const canvasRef = ref(null)
 const manifest = ref(null)
 const choreography = ref(null)
@@ -381,6 +412,10 @@ const statusText = ref('正在读取多人舞台资源…')
 const errorText = ref('')
 const audioReady = ref(false)
 const audioError = ref('')
+const stageVocalEnabled = ref(false)
+const stageVocalReady = ref(false)
+const stageVocalBusGain = ref(1)
+const stageVocalBackingGain = ref(1)
 const stageTime = ref(0)
 const playbackSpeed = ref(1)
 const playing = ref(false)
@@ -473,6 +508,9 @@ let animationFrame = 0
 let playbackStartedAt = 0
 let playbackStartOffset = 0
 let songAudio = null
+let stageVocalBackingAudio = null
+let stageVocalAudios = shallowReactive([])
+let stageVocalLoadSequence = 0
 let lipSyncCurve = null
 let lipSyncSequence = 0
 let stageBuildSequence = 0
@@ -489,13 +527,26 @@ const stageReady = computed(() => Boolean(selectedSong.value)
   && activePositions.value.length > 0
   && loadedPositions.value.length === activePositions.value.length
   && !booting.value)
+const stageTransportReady = computed(() => stageReady.value
+  && (!stageVocalEnabled.value || stageVocalReady.value))
 const selectedSongAudio = computed(() => selectedSong.value
   ? musicIndex.value?.songs?.[selectedSong.value.id] || null
   : null)
+const selectedStageVocalExperiment = computed(() => {
+  const entry = selectedSong.value?.songCode
+    ? props.audioExperiments?.[selectedSong.value.songCode]
+    : null
+  return entry?.stage_vocal?.mode === 'parallel-performer-slots' ? entry : null
+})
+const stageVocalAvailable = computed(() => Boolean(
+  selectedStageVocalExperiment.value
+  && activePositions.value.length === selectedStageVocalExperiment.value.stage_vocal.slot_count,
+))
 const stageDuration = computed(() => Math.max(
   selectedSong.value?.duration || 0,
   selectedSong.value?.lipSync?.duration || 0,
   selectedSongAudio.value?.duration || 0,
+  (selectedStageVocalExperiment.value?.backing?.metadata?.duration_seconds || 0) * 1000,
 ))
 const motionCatalog = computed(() => new Map(
   (choreography.value?.motionCatalog || []).map(motion => [motion.id, motion]),
@@ -505,6 +556,11 @@ const currentSingerEvent = computed(() => [...(selectedSong.value?.singerEvents 
   .find(event => event.time <= stageTime.value))
 const currentSingerPositions = computed(() => (
   currentSingerEvent.value?.stagePositions
+  || currentSingerEvent.value?.singers
+  || []
+))
+const currentSingerPerformerSlots = computed(() => (
+  currentSingerEvent.value?.performerSlots
   || currentSingerEvent.value?.singers
   || []
 ))
@@ -605,6 +661,7 @@ onBeforeUnmount(() => {
   stopStage()
   resizeObserver?.disconnect()
   releaseAudio()
+  releaseStageVocalAudio()
   releaseBackmonitor()
   releaseImageLayers()
   releaseObjectLayers()
@@ -705,9 +762,12 @@ function destroyStageRuntime(runtime) {
 }
 
 async function handleCharacterChange(slot) {
+  const reloadStageVocals = stageVocalEnabled.value
+  if (reloadStageVocals) stopStage(true)
   const character = characterForSlot(slot)
   slot.costumeId = character?.defaultCostume || character?.costumes?.[0]?.id || ''
   await loadSlot(slot)
+  if (reloadStageVocals) await loadStageVocalAudio()
 }
 
 async function loadSlot(slot) {
@@ -2274,6 +2334,8 @@ function resizeStage() {
 
 async function handleSongChange() {
   stopStage(true)
+  stageVocalEnabled.value = false
+  releaseStageVocalAudio()
   songMotionsReady.value = false
   errorText.value = ''
   await Promise.all([loadSongLipSync(), loadSongAudio()])
@@ -2298,6 +2360,123 @@ function releaseAudio() {
   songAudio.removeAttribute('src')
   songAudio.load()
   songAudio = null
+}
+
+function stagePositionForPerformerSlot(performerSlot) {
+  return selectedSong.value?.stagePositionMap
+    ?.find(item => item.performerSlot === performerSlot)?.stagePosition || performerSlot
+}
+
+function releaseStageVocalAudio() {
+  stageVocalLoadSequence += 1
+  stageVocalReady.value = false
+  const audios = [stageVocalBackingAudio, ...stageVocalAudios.map(item => item.audio)].filter(Boolean)
+  for (const audio of audios) {
+    audio.pause()
+    audio.removeAttribute('src')
+    audio.load()
+  }
+  stageVocalBackingAudio = null
+  stageVocalAudios.splice(0)
+}
+
+function waitForAudioMetadata(audio) {
+  if (audio.readyState >= HTMLMediaElement.HAVE_METADATA) return Promise.resolve()
+  return new Promise((resolve, reject) => {
+    const cleanup = () => {
+      audio.removeEventListener('loadedmetadata', onReady)
+      audio.removeEventListener('error', onError)
+    }
+    const onReady = () => {
+      cleanup()
+      resolve()
+    }
+    const onError = () => {
+      cleanup()
+      reject(new Error('实验声部音频加载失败'))
+    }
+    audio.addEventListener('loadedmetadata', onReady, { once: true })
+    audio.addEventListener('error', onError, { once: true })
+  })
+}
+
+async function loadStageVocalAudio() {
+  releaseStageVocalAudio()
+  if (!stageVocalEnabled.value || !stageVocalAvailable.value) return
+  const sequence = ++stageVocalLoadSequence
+  const experiment = selectedStageVocalExperiment.value
+  const slotCount = experiment.stage_vocal.slot_count
+  const nextAudios = []
+  try {
+    const backing = new Audio(experiment.backing.url)
+    backing.preload = 'auto'
+    backing.playbackRate = playbackSpeed.value
+    stageVocalBackingAudio = backing
+
+    for (let performerSlot = 1; performerSlot <= slotCount; performerSlot += 1) {
+      const stagePosition = stagePositionForPerformerSlot(performerSlot)
+      const idolCode = slotByPosition(stagePosition)?.characterId
+      const vocal = experiment.solo_tracks?.[idolCode]?.vocal
+      if (!vocal?.url) throw new Error(`${stagePosition}号位偶像缺少 ${experiment.song_code} 声部`)
+      const audio = new Audio(vocal.url)
+      audio.preload = 'auto'
+      audio.playbackRate = playbackSpeed.value
+      audio.volume = 0
+      nextAudios.push({ performerSlot, stagePosition, idolCode, audio })
+    }
+    stageVocalAudios.push(...nextAudios)
+    const allAudios = [backing, ...nextAudios.map(item => item.audio)]
+    const metadataLoads = allAudios.map(audio => waitForAudioMetadata(audio))
+    allAudios.forEach(audio => audio.load())
+    await Promise.all(metadataLoads)
+    if (sequence !== stageVocalLoadSequence || !stageVocalEnabled.value) return
+    stageVocalReady.value = true
+    audioError.value = ''
+    syncStageVocalMix()
+  } catch (error) {
+    if (sequence !== stageVocalLoadSequence) return
+    releaseStageVocalAudio()
+    audioError.value = error.message
+  }
+}
+
+async function handleStageVocalToggle() {
+  stopStage(true)
+  audioError.value = ''
+  if (stageVocalEnabled.value) await loadStageVocalAudio()
+  else releaseStageVocalAudio()
+  await seekStage()
+}
+
+function syncStageVocalMix() {
+  if (!stageVocalEnabled.value || !stageVocalReady.value) return
+  const activeSlots = new Set(currentSingerPerformerSlots.value)
+  const vocalGain = activeSlots.size
+    ? Math.min(1, stageVocalBusGain.value / Math.sqrt(activeSlots.size))
+    : 0
+  if (stageVocalBackingAudio) stageVocalBackingAudio.volume = stageVocalBackingGain.value
+  for (const item of stageVocalAudios) {
+    item.audio.volume = activeSlots.has(item.performerSlot) ? vocalGain : 0
+  }
+}
+
+function stagePlaybackAudios() {
+  if (stageVocalEnabled.value && stageVocalReady.value) {
+    return [stageVocalBackingAudio, ...stageVocalAudios.map(item => item.audio)].filter(Boolean)
+  }
+  return songAudio ? [songAudio] : []
+}
+
+function stageClockAudio() {
+  return stageVocalEnabled.value && stageVocalReady.value
+    ? stageVocalBackingAudio
+    : songAudio
+}
+
+function syncStagePlaybackTime(seconds) {
+  for (const audio of stagePlaybackAudios()) {
+    if (Number.isFinite(audio.duration)) audio.currentTime = Math.min(seconds, audio.duration)
+  }
 }
 
 async function loadSongAudio() {
@@ -2422,10 +2601,11 @@ async function syncSlotAtTime(slot, milliseconds, reset = true) {
 
 async function seekStage() {
   stopStage()
-  if (songAudio && Number.isFinite(songAudio.duration)) songAudio.currentTime = stageTime.value / 1000
+  syncStagePlaybackTime(stageTime.value / 1000)
   await Promise.all(activeSlots.value.map(slot => syncSlotAtTime(slot, stageTime.value, true)))
   resetEventIndices()
   applyCurrentLipSync()
+  syncStageVocalMix()
   await syncStageBackground()
   syncSpotlights()
   syncLaserlights()
@@ -2457,13 +2637,16 @@ async function toggleStage() {
   resetEventIndices()
   playbackStartOffset = stageTime.value
   playbackStartedAt = performance.now()
-  if (songAudio && selectedSongAudio.value) {
-    songAudio.currentTime = stageTime.value / 1000
-    songAudio.playbackRate = playbackSpeed.value
+  const playbackAudios = stagePlaybackAudios()
+  if (playbackAudios.length) {
+    syncStagePlaybackTime(stageTime.value / 1000)
+    playbackAudios.forEach(audio => { audio.playbackRate = playbackSpeed.value })
+    syncStageVocalMix()
     try {
-      await songAudio.play()
+      await Promise.all(playbackAudios.map(audio => audio.play()))
       audioError.value = ''
     } catch (error) {
+      playbackAudios.forEach(audio => audio.pause())
       audioError.value = `歌曲音频无法播放：${error.message}`
       return
     }
@@ -2475,12 +2658,22 @@ async function toggleStage() {
 
 function updateStage(now) {
   if (!playing.value || !selectedSong.value) return
+  const clockAudio = stageClockAudio()
   stageTime.value = Math.min(
     stageDuration.value,
-    songAudio && !songAudio.paused
-      ? songAudio.currentTime * 1000
+    clockAudio && !clockAudio.paused
+      ? clockAudio.currentTime * 1000
       : playbackStartOffset + (now - playbackStartedAt) * playbackSpeed.value,
   )
+  if (stageVocalEnabled.value && stageVocalReady.value && clockAudio) {
+    for (const item of stageVocalAudios) {
+      if (Math.abs(item.audio.currentTime - clockAudio.currentTime) > 0.08) {
+        item.audio.currentTime = clockAudio.currentTime
+      }
+    }
+    syncStageVocalMix()
+  }
+  if (!stageTransportReady.value) return
   for (const slot of activeSlots.value) {
     const events = eventsForPosition(slot.position)
     let index = eventIndices.get(slot.position) || 0
@@ -2511,13 +2704,13 @@ function stopStage(reset = false) {
   if (animationFrame) cancelAnimationFrame(animationFrame)
   animationFrame = 0
   playing.value = false
-  songAudio?.pause()
+  stagePlaybackAudios().forEach(audio => audio.pause())
   backmonitorVideo?.pause()
   backmonitorTransitionVideo?.pause()
   backmonitorTransitionAlphaVideo?.pause()
   if (reset) {
     stageTime.value = 0
-    if (songAudio) songAudio.currentTime = 0
+    syncStagePlaybackTime(0)
   }
 }
 
@@ -2527,7 +2720,7 @@ async function resetStage() {
 }
 
 function applyPlaybackSpeed() {
-  if (songAudio) songAudio.playbackRate = playbackSpeed.value
+  stagePlaybackAudios().forEach(audio => { audio.playbackRate = playbackSpeed.value })
   if (backmonitorVideo) backmonitorVideo.playbackRate = playbackSpeed.value
   if (backmonitorTransitionVideo) backmonitorTransitionVideo.playbackRate = playbackSpeed.value
   if (backmonitorTransitionAlphaVideo) backmonitorTransitionAlphaVideo.playbackRate = playbackSpeed.value
@@ -2655,6 +2848,9 @@ select { width: 100%; height: 39px; padding: 0 10px; color: #edf5fc; background:
 select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(65, 165, 255, 0.12); }
 .song-facts { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
 .song-facts span { padding: 5px 7px; color: #9eb4c8; background: rgba(4, 14, 25, 0.42); border-radius: 5px; font-size: 9px; }
+.stage-vocal-controls { display: grid; gap: 10px; margin: 13px 0 0; padding: 11px 12px 12px; border: 1px solid rgba(65, 165, 255, 0.3); border-radius: 9px; background: rgba(18, 67, 108, 0.16); }
+.stage-vocal-controls legend { padding: 0 5px; color: #8ecbff; font-size: 10px; letter-spacing: 0.06em; }
+.stage-vocal-controls small { color: var(--muted); font-size: 9px; line-height: 1.5; }
 
 .lineup-section { display: grid; gap: 9px; }
 .lineup-card { position: relative; display: grid; grid-template-columns: 46px minmax(0, 1fr) 18px; gap: 9px; align-items: center; padding: 9px; border: 1px solid rgba(151, 185, 215, 0.17); border-radius: 9px; background: rgba(5, 16, 29, 0.34); transition: opacity 160ms ease, border-color 160ms ease; }
