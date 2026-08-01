@@ -146,68 +146,53 @@ def find_idol_sources(raw_audio: Path, song_code: str) -> list[tuple[str, Path]]
     return entries
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    add_sources_config_argument(parser)
-    parser.add_argument("--song-code", default="drvalv")
-    parser.add_argument("--idol-code", default="001tom")
-    parser.add_argument(
-        "--all-idols",
-        action="store_true",
-        help="Decode every per-idol vocal ACB found for the song",
-    )
-    parser.add_argument("--ffmpeg")
-    parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
-    parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
-    parser.add_argument("--force", action="store_true")
-    args = parser.parse_args()
-
-    if not re.fullmatch(r"[a-z0-9]{6}", args.song_code):
-        raise ValueError("song code must be six lowercase alphanumeric characters")
-    if not re.fullmatch(r"\d{3}[a-z0-9]{3}", args.idol_code):
-        raise ValueError("idol code must match 000xxx")
-
-    sources = load_archive_sources(args.sources_config)
-    raw_audio = (sources.raw_root / "audio").resolve()
-    vgmstream = sources.vgmstream_file
-    ffmpeg = args.ffmpeg or os.environ.get("FFMPEG")
-    if not ffmpeg:
-        ffmpeg = str(sources.ffmpeg_file) if sources.ffmpeg_file else "ffmpeg"
-    if not raw_audio.is_dir():
-        raise FileNotFoundError(raw_audio)
-    if not vgmstream.is_file():
-        raise FileNotFoundError(vgmstream)
-    if not shutil.which(ffmpeg):
-        raise FileNotFoundError(ffmpeg)
-
-    output_root = args.output_root.resolve()
-    manifest_path = args.manifest.resolve()
-    backing_source = raw_audio / f"song3_{args.song_code}_bgm.acb"
-    idol_sources = find_idol_sources(raw_audio, args.song_code) if args.all_idols else [
-        (args.idol_code, raw_audio / f"song3_{args.song_code}_{args.idol_code}.acb")
+def build_song_entry(
+    song_code: str,
+    idol_code: str,
+    all_idols: bool,
+    *,
+    raw_audio: Path,
+    vgmstream: Path,
+    ffmpeg: str,
+    output_root: Path,
+    force: bool,
+    catalog: dict,
+    units: dict,
+) -> dict:
+    backing_source = raw_audio / f"song3_{song_code}_bgm.acb"
+    idol_sources = find_idol_sources(raw_audio, song_code) if all_idols else [
+        (idol_code, raw_audio / f"song3_{song_code}_{idol_code}.acb")
     ]
     if not idol_sources or any(not source.is_file() for _, source in idol_sources):
-        raise FileNotFoundError(f"Missing solo vocal source(s) for {args.song_code}")
+        raise FileNotFoundError(f"Missing solo vocal source(s) for {song_code}")
     if not backing_source.is_file():
-        raise FileNotFoundError(f"Missing backing source for {args.song_code}")
+        raise FileNotFoundError(f"Missing backing source for {song_code}")
 
-    backing_destination = output_root / f"{args.song_code}_bgm.m4a"
-    backing_meta = ensure_asset(vgmstream, ffmpeg, backing_source, backing_destination, args.force)
+    song = catalog["songs"].get(song_code)
+    if not song:
+        raise KeyError(song_code)
+
+    backing_destination = output_root / f"{song_code}_bgm.m4a"
+    backing_meta = ensure_asset(
+        vgmstream, ffmpeg, backing_source, backing_destination, force
+    )
     solo_tracks = {}
-    for idol_code, vocal_source in idol_sources:
-        vocal_destination = output_root / f"{args.song_code}_{idol_code}.m4a"
-        vocal_meta = ensure_asset(vgmstream, ffmpeg, vocal_source, vocal_destination, args.force)
-        solo_tracks[idol_code] = {
-            "idol_code": idol_code,
+    for current_idol_code, vocal_source in idol_sources:
+        vocal_destination = output_root / f"{song_code}_{current_idol_code}.m4a"
+        vocal_meta = ensure_asset(
+            vgmstream, ffmpeg, vocal_source, vocal_destination, force
+        )
+        solo_tracks[current_idol_code] = {
+            "idol_code": current_idol_code,
             "vocal": {
                 "url": public_asset_url(PROJECT_ROOT / "public", vocal_destination),
-                "source": f"RAW/audio/song3_{args.song_code}_{idol_code}.acb",
+                "source": f"RAW/audio/song3_{song_code}_{current_idol_code}.acb",
                 "kind": "solo-vocal",
                 "metadata": vocal_meta,
             },
             "backing": {
                 "url": public_asset_url(PROJECT_ROOT / "public", backing_destination),
-                "source": f"RAW/audio/song3_{args.song_code}_bgm.acb",
+                "source": f"RAW/audio/song3_{song_code}_bgm.acb",
                 "kind": "backing",
                 "metadata": backing_meta,
             },
@@ -218,14 +203,9 @@ def main() -> None:
             },
         }
 
-    catalog = json.loads(MUSIC_CATALOG.read_text(encoding="utf-8"))
-    song = catalog["songs"].get(args.song_code)
-    if not song:
-        raise KeyError(args.song_code)
-    units = json.loads(UNIT_DICTIONARY.read_text(encoding="utf-8"))
     live_music_root = PROJECT_ROOT / "public" / "assets" / "live-chibi" / "music"
     single_tracks = {}
-    full_mix = live_music_root / f"{args.song_code}.m4a"
+    full_mix = live_music_root / f"{song_code}.m4a"
     if full_mix.is_file():
         single_tracks["full_mix"] = {
             "label": "原版",
@@ -247,32 +227,113 @@ def main() -> None:
                 }
             )
 
+    song_data = song.get("song_data") or {}
+    stage_vocal = None
+    if song_data.get("has_switch_singer") and song_data.get("on_stage_count"):
+        stage_vocal = {
+            "mode": "parallel-performer-slots",
+            "slot_count": song_data["on_stage_count"],
+            "switch_source": f"RAW/asset/song_{song_code}.unity3d:{song_code}_live_effect/SwitchSinger",
+            "mix_policy": {
+                "status": "browser-approximation",
+                "active_slot_gain": "equal-power-normalized",
+                "pan": "center",
+                "backing_gain": 1.0,
+            },
+        }
+
+    return {
+        "song_code": song_code,
+        "single_tracks": single_tracks,
+        "special_tracks": special_tracks,
+        "unit_tracks": find_unit_assets(output_root, song_code, units),
+        "backing": {
+            "label": "伴奏",
+            "url": public_asset_url(PROJECT_ROOT / "public", backing_destination),
+            "source": f"RAW/audio/song3_{song_code}_bgm.acb",
+            "kind": "single-track",
+            "metadata": backing_meta,
+        },
+        "solo_tracks": solo_tracks,
+        "stage_vocal": stage_vocal,
+    }
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    add_sources_config_argument(parser)
+    parser.add_argument(
+        "--song-code",
+        action="append",
+        dest="song_codes",
+        help="Song code to include; repeat for a multi-song manifest",
+    )
+    parser.add_argument("--idol-code", default="001tom")
+    parser.add_argument(
+        "--all-idols",
+        action="store_true",
+        help="Decode every per-idol vocal ACB found for the song",
+    )
+    parser.add_argument("--ffmpeg")
+    parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
+    parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
+    parser.add_argument("--force", action="store_true")
+    args = parser.parse_args()
+
+    song_codes = args.song_codes or ["drvalv"]
+    if any(not re.fullmatch(r"[a-z0-9]{6}", code) for code in song_codes):
+        raise ValueError("song codes must be six lowercase alphanumeric characters")
+    if len(song_codes) != len(set(song_codes)):
+        raise ValueError("song codes must be unique")
+    if not re.fullmatch(r"\d{3}[a-z0-9]{3}", args.idol_code):
+        raise ValueError("idol code must match 000xxx")
+
+    sources = load_archive_sources(args.sources_config)
+    raw_audio = (sources.raw_root / "audio").resolve()
+    vgmstream = sources.vgmstream_file
+    ffmpeg = args.ffmpeg or os.environ.get("FFMPEG")
+    if not ffmpeg:
+        ffmpeg = str(sources.ffmpeg_file) if sources.ffmpeg_file else "ffmpeg"
+    if not raw_audio.is_dir():
+        raise FileNotFoundError(raw_audio)
+    if not vgmstream.is_file():
+        raise FileNotFoundError(vgmstream)
+    if not shutil.which(ffmpeg):
+        raise FileNotFoundError(ffmpeg)
+
+    output_root = args.output_root.resolve()
+    manifest_path = args.manifest.resolve()
+    catalog = json.loads(MUSIC_CATALOG.read_text(encoding="utf-8"))
+    units = json.loads(UNIT_DICTIONARY.read_text(encoding="utf-8"))
+    songs = {
+        song_code: build_song_entry(
+            song_code,
+            args.idol_code,
+            args.all_idols,
+            raw_audio=raw_audio,
+            vgmstream=vgmstream,
+            ffmpeg=ffmpeg,
+            output_root=output_root,
+            force=args.force,
+            catalog=catalog,
+            units=units,
+        )
+        for song_code in song_codes
+    }
+
     manifest = {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": "experimental",
-        "scope": "song_detail_only",
+        "scope": ["song_detail", "chibi_stage"],
         "notes": [
             "Single-track modes use existing browser-readable live-chibi M4A candidates.",
             "Solo mode mixes one selected idol vocal M4A with one backing M4A in the browser.",
             "When --all-idols is used, every available per-idol vocal ACB is listed with the same backing candidate.",
             "Metadata confirms sample alignment within one sample; no full listening calibration is claimed.",
+            "Chibi stage mode binds selected idols to performer slots and follows SwitchSinger events.",
+            "Equal-power active-slot normalization and centered pan are browser approximations, not recovered game constants.",
         ],
-        "songs": {
-            args.song_code: {
-                "song_code": args.song_code,
-                "single_tracks": single_tracks,
-                "special_tracks": special_tracks,
-                "unit_tracks": find_unit_assets(output_root, args.song_code, units),
-                "backing": {
-                    "label": "伴奏",
-                    "url": public_asset_url(PROJECT_ROOT / "public", backing_destination),
-                    "source": f"RAW/audio/song3_{args.song_code}_bgm.acb",
-                    "kind": "single-track",
-                    "metadata": backing_meta,
-                },
-                "solo_tracks": solo_tracks,
-            }
-        },
+        "songs": songs,
     }
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

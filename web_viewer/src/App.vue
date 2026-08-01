@@ -351,7 +351,12 @@
 
     <!-- ====== SPINE LAB ====== -->
     <SpineViewer v-if="view === 'spine_lab'" @back="goHome" @open-stage="openChibiStage" />
-    <ChibiStageViewer v-if="view === 'chibi_stage'" @back="goHome" @open-lab="openSpineLab" />
+    <ChibiStageViewer
+      v-if="view === 'chibi_stage'"
+      :audio-experiments="songExperimentalAudioData?.songs || {}"
+      @back="goHome"
+      @open-lab="openSpineLab"
+    />
 
     <!-- ====== PRELOADER LOADING SCREEN ====== -->
     <LoadingScreen :visible="loading" :progress="preloadProgress" />

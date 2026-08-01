@@ -124,13 +124,15 @@ function validatePayload(key, payload) {
     throw new Error('songCatalog must include a v1 songs map and summary')
   }
   if (key === 'songExperimentalAudio' && (
-    payload.schema_version !== 1 ||
+    payload.schema_version !== 2 ||
     payload.status !== 'experimental' ||
-    payload.scope !== 'song_detail_only' ||
+    !Array.isArray(payload.scope) ||
+    !payload.scope.includes('song_detail') ||
+    !payload.scope.includes('chibi_stage') ||
     !payload.songs ||
     typeof payload.songs !== 'object'
   )) {
-    throw new Error('songExperimentalAudio must include the v1 song-detail-only experimental contract')
+    throw new Error('songExperimentalAudio must include the v2 song-detail and Chibi-stage experimental contract')
   }
   if (key === 'songJacketIndex' && (
     payload.schema_version !== 1 ||
