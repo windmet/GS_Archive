@@ -17,6 +17,7 @@ const ARCHIVE_SOURCES = {
   rawCharacterImagePromotions: '/data/assets/raw_character_image_promotions.json',
   externalStoryResources: '/data/external_story_resources.json',
   songCatalog: '/data/song_catalog.json',
+  songExperimentalAudio: '/data/song_experimental_audio.json',
   songJacketIndex: '/data/song_jacket_index.json',
 }
 
@@ -121,6 +122,15 @@ function validatePayload(key, payload) {
     typeof payload.songs !== 'object'
   )) {
     throw new Error('songCatalog must include a v1 songs map and summary')
+  }
+  if (key === 'songExperimentalAudio' && (
+    payload.schema_version !== 1 ||
+    payload.status !== 'experimental' ||
+    payload.scope !== 'song_detail_only' ||
+    !payload.songs ||
+    typeof payload.songs !== 'object'
+  )) {
+    throw new Error('songExperimentalAudio must include the v1 song-detail-only experimental contract')
   }
   if (key === 'songJacketIndex' && (
     payload.schema_version !== 1 ||
