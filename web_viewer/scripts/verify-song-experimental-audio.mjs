@@ -28,7 +28,8 @@ if (manifest.schema_version !== 2 || manifest.status !== 'experimental' ||
     !manifest.scope.includes('chibi_stage')) {
   fail('manifest must be the v2 song-detail and Chibi-stage experimental contract')
 }
-const expectedSongCodes = ['drvalv', 'tkstp1', 'tkstp2']
+const fullVocalSettingSongCodes = ['byndtd', 'drvalv', 'grwsml']
+const expectedSongCodes = [...fullVocalSettingSongCodes, 'tkstp1', 'tkstp2']
 const mountedUrls = new Set()
 for (const songCode of expectedSongCodes) {
   const entry = manifest.songs?.[songCode]
@@ -50,11 +51,35 @@ for (const songCode of expectedSongCodes) {
   for (const [idolCode, solo] of soloEntries) {
     if (!solo.vocal?.url) fail(`${songCode}/${idolCode} vocal track is missing`)
     if (!solo.backing?.url) fail(`${songCode}/${idolCode} backing relation is missing`)
-    if (solo.sync?.sample_delta > 1 || solo.sync?.sample_delta < -1) {
-      fail(`${songCode}/${idolCode} solo/backing metadata delta exceeds one sample`)
+    const delta = Number(solo.sync?.sample_delta)
+    if (songCode === 'grwsml') {
+      if (![-33700, -33724].includes(delta) || solo.sync?.status !== 'extra-vocal-tail-experimental') {
+        fail(`${songCode}/${idolCode}: expected the audited bounded extra vocal tail`)
+      }
+    } else if (Math.abs(delta) > 1 || solo.sync?.status !== 'sample-aligned-experimental') {
+      fail(`${songCode}/${idolCode}: solo/backing metadata must remain sample-aligned`)
     }
     mountedUrls.add(solo.vocal.url)
     mountedUrls.add(solo.backing.url)
+  }
+}
+for (const songCode of fullVocalSettingSongCodes) {
+  const entry = manifest.songs[songCode]
+  const modeIds = new Set(entry.vocal_settings?.modes?.map(mode => mode.id) || [])
+  for (const expectedMode of ['formation', 'unit', 'all_stars', 'center']) {
+    if (!modeIds.has(expectedMode)) fail(`${songCode}: vocal setting ${expectedMode} is missing`)
+  }
+  if (entry.vocal_settings.status !== 'game-help-and-raw-convergent') {
+    fail(`${songCode}: four-way vocal settings must retain convergent evidence status`)
+  }
+  if (!Array.isArray(entry.unit_tracks) || entry.unit_tracks.length !== 16) {
+    fail(`${songCode}: expected all 16 Unit single-track candidates`)
+  }
+}
+for (const songCode of ['tkstp1', 'tkstp2']) {
+  const modeIds = new Set(manifest.songs[songCode].vocal_settings?.modes?.map(mode => mode.id) || [])
+  if (JSON.stringify([...modeIds]) !== JSON.stringify(['formation'])) {
+    fail(`${songCode}: must expose only Formation without claiming Center, Unit, or 315 ALL STARS settings`)
   }
 }
 if (!Array.isArray(manifest.songs.drvalv.unit_tracks) || manifest.songs.drvalv.unit_tracks.length < 1) {
@@ -72,6 +97,8 @@ for (const [label, source, needles] of [
     "const stageVocalMode = computed(() => isSoloChoreography.value ? 'center-solo' : 'switch-singer')",
     'onStagePerformerSlots || [1]',
     'continuous: isSoloChoreography.value',
+    "selectedSong.value?.vocalSetting?.mode === 'formation-or-all-stars'",
+    '编成偶像：五人声部＋伴奏',
     'stageVocalSession.currentTime.value * 1000',
     'if (wasPlaying && stageVocalEnabled.value && stageVocalReady.value)',
     'data-stage-vocal-clock="stageVocalEnabled ? \'audio-context-scheduled\' : \'media-element\'"',
@@ -80,7 +107,10 @@ for (const [label, source, needles] of [
   ]],
   ['song detail player', detailPlayerSource, [
     'ArchiveSongLineupPlayer',
-    '五槽演唱编组（实验）',
+    '编成偶像（五槽合唱）',
+    'Center（中心偶像＋伴奏）',
+    '315 ALL STARS（完整混音候选）',
+    "return '单轨 / 审计'",
     'useSongPerformanceSession()',
     'soloSession.configure({',
     'continuous: true',
@@ -97,6 +127,7 @@ for (const [label, source, needles] of [
     'stageLineup.value[Number(stagePositionForSlot(performerSlot)) - 1]',
     ':data-active-stage-positions="activeStagePositions.join(\',\')"',
     "entry.positions?.length === props.audioExperiment.stage_vocal.slot_count",
+    '&& !entry.variant',
     'activeSingerEntries',
     '当前演唱',
     'fetchSongPerformanceChoreography',

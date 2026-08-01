@@ -182,6 +182,13 @@ def build_song_entry(
         vocal_meta = ensure_asset(
             vgmstream, ffmpeg, vocal_source, vocal_destination, force
         )
+        sample_delta = backing_meta["samples"] - vocal_meta["samples"]
+        if abs(sample_delta) <= 1:
+            sync_status = "sample-aligned-experimental"
+        elif sample_delta < 0 and abs(sample_delta) <= vocal_meta["sample_rate"]:
+            sync_status = "extra-vocal-tail-experimental"
+        else:
+            sync_status = "duration-mismatch-unresolved"
         solo_tracks[current_idol_code] = {
             "idol_code": current_idol_code,
             "vocal": {
@@ -198,8 +205,8 @@ def build_song_entry(
             },
             "sync": {
                 "sample_rate": vocal_meta["sample_rate"],
-                "sample_delta": backing_meta["samples"] - vocal_meta["samples"],
-                "status": "metadata-aligned-experimental",
+                "sample_delta": sample_delta,
+                "status": sync_status,
             },
         }
 
@@ -228,6 +235,7 @@ def build_song_entry(
             )
 
     song_data = song.get("song_data") or {}
+    unit_tracks = find_unit_assets(output_root, song_code, units)
     stage_vocal = None
     if song_data.get("has_switch_singer") and song_data.get("on_stage_count"):
         stage_vocal = {
@@ -242,11 +250,53 @@ def build_song_entry(
             },
         }
 
+    has_center_setting = bool(song_data.get("has_solo_singing"))
+    has_unit_setting = len(unit_tracks) == 16
+    vocal_settings = {
+        "status": (
+            "game-help-and-raw-convergent"
+            if has_center_setting and has_unit_setting and stage_vocal
+            else "raw-derived-experimental"
+        ),
+        "modes": [
+            {
+                "id": "formation",
+                "label": "编成偶像",
+                "audio": "selected-idol-vocals-plus-backing",
+                "choreography_variant": "base",
+            },
+        ],
+    }
+    if has_center_setting and has_unit_setting:
+        vocal_settings["modes"].extend(
+            [
+                {
+                    "id": "all_stars",
+                    "label": "315 ALL STARS",
+                    "audio": "full-mix-candidate",
+                    "choreography_variant": "base",
+                },
+            {
+                "id": "unit",
+                "label": "ユニット / Unit",
+                "audio": "unit-single-track",
+                "choreography_variant": "unit-code",
+                "variant_count": len(unit_tracks),
+                },
+                {
+                    "id": "center",
+                    "label": "センター / Center",
+                    "audio": "selected-idol-vocal-plus-backing",
+                    "choreography_variant": "solo-candidate",
+                },
+            ]
+        )
+
     return {
         "song_code": song_code,
         "single_tracks": single_tracks,
         "special_tracks": special_tracks,
-        "unit_tracks": find_unit_assets(output_root, song_code, units),
+        "unit_tracks": unit_tracks,
         "backing": {
             "label": "伴奏",
             "url": public_asset_url(PROJECT_ROOT / "public", backing_destination),
@@ -256,6 +306,7 @@ def build_song_entry(
         },
         "solo_tracks": solo_tracks,
         "stage_vocal": stage_vocal,
+        "vocal_settings": vocal_settings,
     }
 
 
@@ -329,9 +380,11 @@ def main() -> None:
             "Single-track modes use existing browser-readable live-chibi M4A candidates.",
             "Solo mode mixes one selected idol vocal M4A with one backing M4A in the browser.",
             "When --all-idols is used, every available per-idol vocal ACB is listed with the same backing candidate.",
-            "Metadata confirms sample alignment within one sample; no full listening calibration is claimed.",
+            "Per-track sync status distinguishes sample-aligned files, a bounded extra vocal tail, and unresolved duration mismatches.",
             "Chibi stage mode binds selected idols to performer slots and follows SwitchSinger events.",
             "Equal-power active-slot normalization and centered pan are browser approximations, not recovered game constants.",
+            "Game help names Formation Idols, Unit, 315 ALL STARS, and Center as song-dependent vocal settings.",
+            "The manifest maps those labels only where table 46 flags, unit tracks, per-idol vocals, backing, and choreography variants converge.",
         ],
         "songs": songs,
     }

@@ -168,6 +168,7 @@ async function loadArrangements() {
     const choreography = await fetchSongPerformanceChoreography()
     arrangements.value = (choreography?.songs || []).filter(entry => (
       entry.songCode === props.audioExperiment.song_code
+      && !entry.variant
       && Array.isArray(entry.singerEvents)
       && entry.singerEvents.length > 0
       && entry.performerSlots?.length === props.audioExperiment.stage_vocal.slot_count

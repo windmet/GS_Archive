@@ -56,9 +56,20 @@ for (const song of songs) {
 }
 
 for (const code of ['drvalv', 'byndtd', 'grwsml']) {
+  const base = songs.find(item => item.songCode === code && !item.variant)
+  if (base?.vocalSetting?.mode !== 'formation-or-all-stars') {
+    fail(`${code}: base choreography must expose Formation / 315 ALL STARS setting`)
+  }
+  const units = songs.filter(item => item.songCode === code && item.vocalSetting?.mode === 'unit')
+  if (units.length !== 16 || units.some(item => !item.vocalSetting?.unitCode)) {
+    fail(`${code}: expected 16 labelled Unit choreography variants`)
+  }
   for (const variant of ['solo', 'solo_multi', 'solo_single']) {
     const song = songs.find(item => item.songCode === code && item.variant === variant)
     if (!song) fail(`${code}/${variant}: Solo choreography is missing`)
+    if (song.vocalSetting?.mode !== 'center' || song.vocalSetting?.rawVariant !== variant) {
+      fail(`${code}/${variant}: Solo candidate must be labelled as Center with its RAW name`)
+    }
     if (JSON.stringify(song.positions) !== JSON.stringify([3])) {
       fail(`${code}/${variant}: only canonical center stage position 3 may be visible`)
     }

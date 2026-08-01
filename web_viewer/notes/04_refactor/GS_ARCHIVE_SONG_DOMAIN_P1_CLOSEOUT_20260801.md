@@ -326,6 +326,50 @@ events where it is decoded to ASCII `,` and the original value is retained as
 `きっと<きっと>叶えるよ` remains literal lyric content. Rendering continues
 through Vue text interpolation; no `v-html` interpretation was introduced.
 
+### Four-way vocal setting reconciliation — 2026-08-02
+
+A captured in-game help panel supplies the missing product-language contract.
+It says that some songs allow their vocal setting to be chosen from
+`編成アイドル`, `ユニット`, `315 ALL STARS`, or `センター`, depending on the
+song; choosing Center makes only the idol assigned to `CENTER` appear in the
+live. The capture is UI evidence, not by itself a filename or field mapping.
+The mapping below is promoted only because it converges with table 46 and RAW:
+
+| Game setting | RAW/masterdata convergence | Browser representation |
+| --- | --- | --- |
+| Formation Idols | `OnStageCount=5`, `HasSwitchSinger=1`, 49 idol vocals, backing, base five-position `SwitchSinger` | five stage-position selections, parallel vocals plus backing |
+| Unit | 16 unit cues and `_01jup` through `_16cfi` choreography variants | 16 labelled single-track Unit choices and matching Chibi variants |
+| 315 ALL STARS | base full-mix cue plus base five-position choreography | full-mix candidate; no layered reconstruction |
+| Center | `HasSoloSinging=1`, 49 idol vocals, backing, and three center-only `solo*` choreography candidates | one selected center vocal plus backing; only canonical stage position 3 appears |
+
+`byndtd`, `drvalv`, and `grwsml` each satisfy all four rows. The experimental
+manifest now covers all three, each with 49 idol vocals, one backing track, 16
+Unit tracks, and the four labelled settings. `tkstp1` and `tkstp2` retain only
+the RAW-derived Formation experiment. Their full mix remains an ordinary
+single-track candidate: table 46 does not enable Center, they have no 16-Unit
+cue set, and the capture does not prove 315 ALL STARS as their available label,
+so the UI must not claim any of those three modes.
+
+The portal now calls the controls `演唱指定`: Formation is the five-stage
+lineup player, Center is the single center vocal plus backing, and the single
+track selector contains the 315 ALL STARS full-mix candidate and all Unit
+versions. Formation arrangements accept only the base choreography; five-person
+Unit variants and the GRWSML tutorial variant cannot leak into the Formation
+timeline selector. Chibi labels base, Unit, and Center variants in the same
+vocabulary while retaining every RAW variant name for audit.
+
+Duration evidence needs one explicit exception. BYNDTD, DRVALV, TKSTP1, and
+TKSTP2 vocal/backing pairs are sample-identical in length. GRWSML backing is
+5,569,571 samples, while 46 vocals are 5,603,271 samples and three are
+5,603,295: deltas are `-33,700` or `-33,724` samples (about 0.764 seconds).
+Silence detection on representative GRWSML vocals finds their final audible
+material ending around 113.5–113.7 seconds followed by more than 13 seconds of
+silence; the backing continues until about 124 seconds and then has its own
+tail silence. The manifest therefore records `extra-vocal-tail-experimental`,
+not `sample-aligned`. The shared audio clock still starts both at one deadline
+and ends the browser session with the backing; this is not proof of recovered
+official offsets or mixer constants.
+
 ## Deferred Song-C discussion
 
 Status: **NOT EXECUTED**.

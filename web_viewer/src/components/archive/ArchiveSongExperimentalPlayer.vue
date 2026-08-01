@@ -2,23 +2,23 @@
   <section v-if="audioExperiment" class="song-block experimental-player" aria-labelledby="song-experimental-player-title">
     <div class="song-block-heading">
       <span>EXPERIMENTAL PLAYER</span>
-      <h3 id="song-experimental-player-title">单轨、Solo 与五槽演唱实验</h3>
+      <h3 id="song-experimental-player-title">演唱指定与实验播放器</h3>
     </div>
     <p class="song-block-note">
-      这是歌曲详情页的实验播放器，不复用故事播放器。单轨模式播放已有单文件；Solo 模式同步一条个人声部与伴奏；五槽模式按演唱切换表组织自定义编组。
+      游戏说明将部分歌曲的演唱指定分为「编成偶像」「Unit」「315 ALL STARS」「Center」。这里按 masterdata、RAW 音频层和编舞变体的交叉证据还原入口；分层混音仍是浏览器实验值。
     </p>
 
     <div class="experimental-controls">
       <label>
-        播放模式
+        演唱指定
         <select v-model="mode">
-          <option value="single">单轨模式</option>
-          <option value="solo" :disabled="!soloEntries.length">Solo＋伴奏（实验）</option>
-          <option value="lineup" :disabled="!audioExperiment?.stage_vocal">五槽演唱编组（实验）</option>
+          <option value="single">{{ singleModeLabel }}</option>
+          <option value="solo" :disabled="!hasVocalSetting('center')">Center（中心偶像＋伴奏）</option>
+          <option value="lineup" :disabled="!hasVocalSetting('formation')">编成偶像（五槽合唱）</option>
         </select>
       </label>
       <label v-if="mode === 'single'">
-        版本
+        版本 / Unit
         <select v-model="selectedSingleKey">
           <option v-for="option in singleOptions" :key="option.key" :value="option.key">
             {{ option.label }}
@@ -26,7 +26,7 @@
         </select>
       </label>
       <label v-else-if="mode === 'solo'">
-        Solo 偶像
+        Center 偶像
         <select v-model="selectedIdolCode">
           <option v-for="entry in soloEntries" :key="entry.idol_code" :value="entry.idol_code">
             {{ entry.name }}（{{ entry.idol_code }}）
@@ -119,6 +119,19 @@ const audioError = ref('')
 const soloSession = useSongPerformanceSession()
 const vocalVolume = soloSession.vocalGain
 const backingVolume = soloSession.backingGain
+const vocalSettingModes = computed(() => props.audioExperiment?.vocal_settings?.modes || [])
+const singleModeLabel = computed(() => {
+  const allStars = hasVocalSetting('all_stars')
+  const unit = hasVocalSetting('unit')
+  if (allStars && unit) return '315 ALL STARS / Unit / 单轨'
+  if (allStars) return '315 ALL STARS / 单轨'
+  if (unit) return 'Unit / 单轨'
+  return '单轨 / 审计'
+})
+
+function hasVocalSetting(id) {
+  return vocalSettingModes.value.some(entry => entry.id === id)
+}
 
 const soloEntries = computed(() => Object.values(props.audioExperiment?.solo_tracks || {})
   .map(entry => ({ ...entry, name: IDOL_ID_TO_NAME[entry.idol_code] || entry.name || entry.idol_code })))
@@ -126,17 +139,21 @@ const currentSoloTrack = computed(() => props.audioExperiment?.solo_tracks?.[sel
 const singleOptions = computed(() => {
   const experiment = props.audioExperiment || {}
   const options = []
-  if (experiment.single_tracks?.full_mix) options.push({ key: 'full_mix', ...experiment.single_tracks.full_mix })
-  if (experiment.backing) options.push({ key: 'backing', ...experiment.backing })
+  if (experiment.single_tracks?.full_mix) options.push({
+    key: 'full_mix',
+    ...experiment.single_tracks.full_mix,
+    label: hasVocalSetting('all_stars') ? '315 ALL STARS（完整混音候选）' : experiment.single_tracks.full_mix.label,
+  })
+  if (experiment.backing) options.push({ key: 'backing', ...experiment.backing, label: '伴奏（审计）' })
   for (const track of experiment.special_tracks || []) options.push({
     key: `special:${track.song_code}`,
-    label: `特殊版：${track.label}`,
     ...track,
+    label: `特殊版：${track.label}`,
   })
   for (const track of experiment.unit_tracks || []) options.push({
     key: `unit:${track.unit_code}`,
-    label: `组合版：${track.label}`,
     ...track,
+    label: `Unit：${track.label}`,
   })
   return options
 })

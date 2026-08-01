@@ -488,6 +488,21 @@ def read_choreography_scripts(
     music_catalog = json.loads(music_catalog_path.read_text(encoding="utf-8")).get(
         "songs", {}
     )
+    unit_names = {
+        str(entry["unit_code"]): entry["unit_name"]
+        for entry in json.loads(IDOL_DICTIONARY_PATH.read_text(encoding="utf-8")).get("units", [])
+    }
+    variants_by_song: dict[str, set[str]] = {}
+    for source_name in effect_scripts:
+        source_code, source_variant = choreography_identity(Path(source_name))
+        variants_by_song.setdefault(source_code, set()).add(source_variant)
+    selector_song_codes = {
+        code
+        for code, variants in variants_by_song.items()
+        if "" in variants
+        and set(unit_names).issubset(variants)
+        and {"solo", "solo_multi", "solo_single"}.issubset(variants)
+    }
     songs = []
     referenced_motion_ids: set[int] = set()
 
@@ -808,8 +823,26 @@ def read_choreography_scripts(
                     else None
                 )
         positions = sorted(stage_position_map[slot] for slot in visible_performer_slots)
-        songs.append(
-            {
+        vocal_setting = None
+        if song_code in selector_song_codes:
+            if not variant:
+                vocal_setting = {
+                    "mode": "formation-or-all-stars",
+                    "label": "编成偶像 / 315 ALL STARS",
+                }
+            elif variant in unit_names:
+                vocal_setting = {
+                    "mode": "unit",
+                    "label": f"Unit：{unit_names[variant]}",
+                    "unitCode": variant,
+                }
+            elif re.fullmatch(r"solo(?:_|$).*", variant):
+                vocal_setting = {
+                    "mode": "center",
+                    "label": "Center（中心一人）",
+                    "rawVariant": variant,
+                }
+        song_entry = {
                 "id": csv_path.stem,
                 "songCode": song_code,
                 "variant": variant,
@@ -869,7 +902,9 @@ def read_choreography_scripts(
                     motion_group_changes, key=lambda event: event["time"]
                 ),
             }
-        )
+        if vocal_setting:
+            song_entry["vocalSetting"] = vocal_setting
+        songs.append(song_entry)
 
     return songs, referenced_motion_ids
 
