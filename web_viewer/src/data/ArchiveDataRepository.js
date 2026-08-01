@@ -17,6 +17,7 @@ const ARCHIVE_SOURCES = {
   rawCharacterImagePromotions: '/data/assets/raw_character_image_promotions.json',
   externalStoryResources: '/data/external_story_resources.json',
   songCatalog: '/data/song_catalog.json',
+  songPlaybackAudio: '/data/song_playback_audio.json',
   songExperimentalAudio: '/data/song_experimental_audio.json',
   songJacketIndex: '/data/song_jacket_index.json',
 }
@@ -133,6 +134,18 @@ function validatePayload(key, payload) {
     typeof payload.songs !== 'object'
   )) {
     throw new Error('songExperimentalAudio must include the v2 song-detail and Chibi-stage experimental contract')
+  }
+  if (key === 'songPlaybackAudio' && (
+    payload.schema_version !== 1 ||
+    payload.status !== 'local-derived' ||
+    !Array.isArray(payload.scope) ||
+    !payload.scope.includes('song_detail') ||
+    payload.summary?.catalog_songs !== 61 ||
+    payload.summary?.full_mix_tracks !== 61 ||
+    !payload.songs ||
+    typeof payload.songs !== 'object'
+  )) {
+    throw new Error('songPlaybackAudio must include the 61-song local full-mix contract')
   }
   if (key === 'songJacketIndex' && (
     payload.schema_version !== 1 ||

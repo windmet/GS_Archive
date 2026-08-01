@@ -11,16 +11,26 @@
     <div class="experimental-controls">
       <label>
         演唱指定
-        <select v-model="mode">
-          <option value="single">{{ singleModeLabel }}</option>
-          <option value="solo" :disabled="!hasVocalSetting('center')">Center（中心偶像＋伴奏）</option>
-          <option value="lineup" :disabled="!hasVocalSetting('formation')">编成偶像（五槽合唱）</option>
+        <select v-model="mode" data-vocal-setting-selector>
+          <option v-if="hasVocalSetting('formation')" value="lineup">编成偶像（五槽合唱）</option>
+          <option v-if="hasVocalSetting('unit')" value="unit">Unit（组合单轨）</option>
+          <option v-if="hasVocalSetting('all_stars')" value="all_stars">315 ALL STARS（完整混音候选）</option>
+          <option v-if="hasVocalSetting('center')" value="solo">Center（中心偶像＋伴奏）</option>
+          <option v-if="auditedOptions.length" value="single">其他音轨（审计）</option>
         </select>
       </label>
-      <label v-if="mode === 'single'">
-        版本 / Unit
+      <label v-if="mode === 'unit'">
+        Unit
+        <select v-model="selectedUnitKey">
+          <option v-for="option in unitOptions" :key="option.key" :value="option.key">
+            {{ option.label }}
+          </option>
+        </select>
+      </label>
+      <label v-else-if="mode === 'single'">
+        审计音轨
         <select v-model="selectedSingleKey">
-          <option v-for="option in singleOptions" :key="option.key" :value="option.key">
+          <option v-for="option in auditedOptions" :key="option.key" :value="option.key">
             {{ option.label }}
           </option>
         </select>
@@ -44,12 +54,13 @@
       v-else
       class="experimental-player-panel"
       :class="{ 'is-solo': mode === 'solo' }"
+      :data-vocal-setting="mode"
       :data-solo-ready="mode === 'solo' ? soloSession.ready.value : undefined"
       :data-solo-clock="mode === 'solo' ? 'audio-context-scheduled' : undefined"
     >
       <audio
         ref="singleAudio"
-        v-if="mode === 'single'"
+        v-if="isSingleTrackMode"
         preload="metadata"
         :src="currentSingleTrack?.url || ''"
         :aria-label="`${song.title} ${currentSingleTrack?.label || '单轨'}`"
@@ -120,14 +131,7 @@ const soloSession = useSongPerformanceSession()
 const vocalVolume = soloSession.vocalGain
 const backingVolume = soloSession.backingGain
 const vocalSettingModes = computed(() => props.audioExperiment?.vocal_settings?.modes || [])
-const singleModeLabel = computed(() => {
-  const allStars = hasVocalSetting('all_stars')
-  const unit = hasVocalSetting('unit')
-  if (allStars && unit) return '315 ALL STARS / Unit / 单轨'
-  if (allStars) return '315 ALL STARS / 单轨'
-  if (unit) return 'Unit / 单轨'
-  return '单轨 / 审计'
-})
+const selectedUnitKey = ref('')
 
 function hasVocalSetting(id) {
   return vocalSettingModes.value.some(entry => entry.id === id)
@@ -136,13 +140,18 @@ function hasVocalSetting(id) {
 const soloEntries = computed(() => Object.values(props.audioExperiment?.solo_tracks || {})
   .map(entry => ({ ...entry, name: IDOL_ID_TO_NAME[entry.idol_code] || entry.name || entry.idol_code })))
 const currentSoloTrack = computed(() => props.audioExperiment?.solo_tracks?.[selectedIdolCode.value] || null)
-const singleOptions = computed(() => {
+const unitOptions = computed(() => (props.audioExperiment?.unit_tracks || []).map(track => ({
+  key: `unit:${track.unit_code}`,
+  ...track,
+  label: track.label,
+})))
+const auditedOptions = computed(() => {
   const experiment = props.audioExperiment || {}
   const options = []
-  if (experiment.single_tracks?.full_mix) options.push({
+  if (experiment.single_tracks?.full_mix && !hasVocalSetting('all_stars')) options.push({
     key: 'full_mix',
     ...experiment.single_tracks.full_mix,
-    label: hasVocalSetting('all_stars') ? '315 ALL STARS（完整混音候选）' : experiment.single_tracks.full_mix.label,
+    label: experiment.single_tracks.full_mix.label,
   })
   if (experiment.backing) options.push({ key: 'backing', ...experiment.backing, label: '伴奏（审计）' })
   for (const track of experiment.special_tracks || []) options.push({
@@ -150,14 +159,16 @@ const singleOptions = computed(() => {
     ...track,
     label: `特殊版：${track.label}`,
   })
-  for (const track of experiment.unit_tracks || []) options.push({
-    key: `unit:${track.unit_code}`,
-    ...track,
-    label: `Unit：${track.label}`,
-  })
   return options
 })
-const currentSingleTrack = computed(() => singleOptions.value.find(option => option.key === selectedSingleKey.value) || singleOptions.value[0] || null)
+const isSingleTrackMode = computed(() => ['all_stars', 'unit', 'single'].includes(mode.value))
+const currentSingleTrack = computed(() => {
+  if (mode.value === 'all_stars') return props.audioExperiment?.single_tracks?.full_mix || null
+  if (mode.value === 'unit') {
+    return unitOptions.value.find(option => option.key === selectedUnitKey.value) || unitOptions.value[0] || null
+  }
+  return auditedOptions.value.find(option => option.key === selectedSingleKey.value) || auditedOptions.value[0] || null
+})
 const syncLabel = computed(() => {
   if (mode.value !== 'solo') return '单轨，无需双轨同步'
   const delta = currentSoloTrack.value?.sync?.sample_delta
@@ -175,7 +186,7 @@ const playbackEvidence = computed(() => mode.value === 'solo'
   : '单轨不存在跨轨时钟漂移；实验状态仍未完成完整听感校准。')
 
 function audioElements() {
-  return mode.value === 'single' && singleAudio.value ? [singleAudio.value] : []
+  return isSingleTrackMode.value && singleAudio.value ? [singleAudio.value] : []
 }
 
 function updateDuration() {
@@ -272,11 +283,12 @@ async function reloadSources() {
   audioElements().forEach(audio => audio.load())
 }
 
-watch([mode, selectedSingleKey, selectedIdolCode], reloadSources)
+watch([mode, selectedSingleKey, selectedUnitKey, selectedIdolCode], reloadSources)
 watch(() => props.audioExperiment, async experiment => {
   selectedIdolCode.value = Object.keys(experiment?.solo_tracks || {})[0] || ''
-  selectedSingleKey.value = 'full_mix'
-  mode.value = 'single'
+  selectedUnitKey.value = unitOptions.value[0]?.key || ''
+  selectedSingleKey.value = auditedOptions.value[0]?.key || ''
+  mode.value = hasVocalSetting('all_stars') ? 'all_stars' : 'single'
   await reloadSources()
 }, { immediate: true })
 

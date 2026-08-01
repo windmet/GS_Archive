@@ -179,8 +179,14 @@
       </section>
 
       <ArchiveSongExperimentalPlayer
+        v-if="audioExperiment"
         :song="song"
         :audio-experiment="audioExperiment"
+      />
+      <ArchiveSongSinglePlayer
+        v-else-if="playbackTrack"
+        :song="song"
+        :track="playbackTrack"
       />
 
       <section v-if="song.related_entities.length" class="song-block" aria-labelledby="song-related-title">
@@ -240,10 +246,12 @@ import { computed } from 'vue'
 import { ChevronRight, ExternalLink } from '@lucide/vue'
 import { IDOL_ID_TO_NAME } from '../../utils/IdolNameMap.js'
 import ArchiveSongExperimentalPlayer from './ArchiveSongExperimentalPlayer.vue'
+import ArchiveSongSinglePlayer from './ArchiveSongSinglePlayer.vue'
 
 const props = defineProps({
   song: { type: Object, required: true },
   units: { type: Object, default: null },
+  playbackTrack: { type: Object, default: null },
   audioExperiment: { type: Object, default: null },
 })
 const emit = defineEmits(['open-song', 'open-unit', 'open-idol', 'open-related-story'])

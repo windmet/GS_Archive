@@ -694,8 +694,17 @@ view=story_collection&story_type=...&story_section=...
   已证明的官方可选项。
 - 实验 manifest 现覆盖 `byndtd / drvalv / grwsml / tkstp1 / tkstp2`；前三首各
   有 49 人声部、伴奏和 16 Unit 单轨。门户 Formation 只读取无 variant 的 base
-  `SwitchSinger`，避免五人 Unit 与 GRWSML tutorial 混入自定义编成。Chibi 的
-  base、Unit、Center 候选使用相同标签，并继续显示 raw variant 名供审计。
+  `SwitchSinger`，避免五人 Unit 与 GRWSML tutorial 混入自定义编成。门户已将
+  Formation、Unit、315 ALL STARS、Center 提升为同级“演唱指定”，伴奏与特殊版
+  单独留在“其他音轨（审计）”；Chibi 的 base、Unit、Center 候选使用相同标签，
+  并继续显示 raw variant 名供审计。
+- 普通歌曲完整混音已形成独立的 61 曲本地派生 contract：每首都必须在
+  `RAW/audio/song3_<code>.acb` 中唯一命中精确同名 cue `song3_<code>`，manifest
+  记录 RAW/派生 SHA-256、selection、sample 元数据与 URL，不包含声部或演唱指定
+  字段。五首实验歌曲继续显示实验播放器，其余 56 首显示原生单轨“歌曲播放”。
+  复用既有 Chibi 派生目录避免再复制约 300 MB；原缺失的 `Reason!!` 已补出。
+  390×844 下 `ANYWHERE` 与 `Reason!!` 均加载成功、无横向溢出；mounted 验证
+  覆盖 61/61。媒体仍是 ignored/local-derived，不构成 publication promotion。
 - GRWSML 是时长例外：伴奏 5,569,571 samples；46 条人声 5,603,271，另 3 条
   5,603,295，delta 为 `-33,700/-33,724`。代表性人声末尾有超过 13 秒静音，
   因此记录为 `extra-vocal-tail-experimental`，不能沿用“±1 sample 对齐”结论；
