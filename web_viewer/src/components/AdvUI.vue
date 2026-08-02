@@ -40,7 +40,7 @@ const isBilingual = computed(() => Boolean(display.value?.view?.secondary?.text)
 <style scoped>
 .adv-root {
   position: absolute;
-  bottom: 24px;
+  bottom: var(--player-dialogue-bottom);
   left: 0;
   right: 0;
   display: flex;
@@ -50,61 +50,52 @@ const isBilingual = computed(() => Boolean(display.value?.view?.secondary?.text)
 
 .adv-container {
   position: relative;
-  width: 100%;
-  max-width: 860px;
-  padding: 0 20px;
+  width: min(1040px, calc(100vw - 72px));
   pointer-events: auto;
-}
-
-.adv-root.is-bilingual {
-  bottom: 52px;
 }
 
 /* ── Nameplate ── */
 .nameplate-outer {
   position: absolute;
-  top: -16px;
-  left: 28px;
+  top: -21px;
+  left: 34px;
   z-index: 10;
 }
 .nameplate {
-  background: #14b8a6;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  background: var(--player-accent-strong);
   color: #fff;
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   font-weight: 700;
-  padding: 7px 28px;
-  border-radius: 16px 16px 6px 16px;
+  padding: 0 28px;
+  border-radius: var(--player-radius-control);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  border-bottom: 4px solid #0d9488;
 }
 
 /* ── Dialog panel ── */
 .dialog {
   position: relative;
   width: 100%;
-  height: 144px;
-  background: rgba(255, 255, 255, 0.95);
+  min-height: 142px;
+  max-height: 34vh;
+  background: var(--player-paper-glass);
   backdrop-filter: blur(8px);
-  border-radius: 40px;
-  padding: 34px 40px 18px;
+  border-radius: var(--player-radius-dialogue);
+  padding: 34px 44px 26px;
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow:
-    0 0 40px rgba(255, 255, 255, 0.35),
-    0 4px 24px rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--player-border-light);
+  box-shadow: var(--player-shadow-dialogue);
   display: flex;
   flex-direction: column;
-}
-
-.dialog.is-bilingual {
-  height: 190px;
 }
 
 .dialog-text {
   flex: 1;
   min-height: 0;
-  font-size: 1.06rem;
-  color: #1a1a2e;
+  font-size: var(--player-font-dialogue);
+  color: var(--player-ink-900);
   font-weight: 500;
   overflow-y: auto;
   padding-right: 18px;
@@ -117,9 +108,9 @@ const isBilingual = computed(() => Boolean(display.value?.view?.secondary?.text)
 
 .dialog-next {
   position: absolute;
-  bottom: 18px;
+  bottom: 14px;
   right: 28px;
-  color: #aaa;
+  color: var(--player-ink-500);
   font-size: 1.05rem;
   animation: adv-pulse 1.2s ease-in-out infinite;
 }
@@ -129,24 +120,27 @@ const isBilingual = computed(() => Boolean(display.value?.view?.secondary?.text)
   50% { opacity: 1; }
 }
 
-@media (max-width: 520px) {
-  .adv-root { bottom: 52px; }
-  .adv-container { padding: 0 10px; }
-  .nameplate-outer { left: 18px; max-width: calc(100% - 36px); }
+@media (max-width: 699px) {
+  .nameplate-outer { left: 16px; max-width: calc(100% - 32px); }
   .nameplate {
+    height: 36px;
     max-width: 100%;
-    padding: 6px 18px;
+    padding: 0 18px;
+    border-radius: 12px;
+    font-size: 0.92rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  .adv-container { width: calc(100vw - 20px); }
   .dialog {
-    height: min(190px, 31vh);
-    border-radius: 26px;
-    padding: 30px 24px 14px;
+    min-height: 120px;
+    max-height: 42vh;
+    border-radius: 20px;
+    padding: 28px 18px 18px;
   }
   .dialog-text {
-    font-size: 0.96rem;
+    font-size: var(--player-font-dialogue-mobile);
     --localized-secondary-size: 0.84em;
   }
 }
