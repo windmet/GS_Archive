@@ -55,11 +55,18 @@
         />
       </Transition>
 
-      <!-- Talk / chat mode: keep the component mounted across choice steps -->
-      <MobileUI v-show="currentStep.type === 'talk' || currentStep.type === 'talk_stamp'"
-        :dialogue="currentStep.dialogue" :step="currentStep"
-        :stepIndex="currentStepIndex" :scenarioId="compiledData?.scenario_id"
-        :historyStack="historyStack" :choiceTexts="choiceTexts" />
+      <!-- Talk / chat scene: stays mounted across choice steps via context inheritance -->
+      <MobileChatScene
+        v-if="communicationContext.mode === 'talk'"
+        :dialogue="currentStep.dialogue"
+        :step="currentStep"
+        :stepIndex="currentStepIndex"
+        :scenarioId="compiledData?.scenario_id"
+        :historyStack="historyStack"
+        :choiceTexts="choiceTexts"
+        :steps="compiledData?.steps || []"
+        @select="onChoice"
+      />
 
       <!-- Phone call -->
       <CallUI v-if="currentStep.type === 'call'" :dialogue="currentStep.dialogue" :step="currentStep" @select="onChoice" />
@@ -152,7 +159,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount, reactive, nextTick, defineAsyncComponent } from 'vue'
 import AdvUI from '../components/AdvUI.vue'
-import MobileUI from '../components/MobileUI.vue'
+import MobileChatScene from '../components/mobile/MobileChatScene.vue'
 import CallUI from '../components/CallUI.vue'
 import ChoiceUI from '../components/ChoiceUI.vue'
 import TitleUI from '../components/TitleUI.vue'
@@ -170,6 +177,7 @@ import {
   uiLocale,
 } from '../utils/LanguageStore.js'
 import { resolveUiText as uiText } from '../localization/ui/UiTextResolver.js'
+import { resolveCommunicationContext } from './story-runtime/CommunicationPresentationContext.js'
 import { useVoicePlayer } from './useVoicePlayer.js'
 import { AudioManager } from './AudioManager.js'
 import { useStoryNavigation } from './useStoryNavigation.js'
@@ -294,7 +302,7 @@ function freezeScene(reason = 'snapshot') {
   return spineStageRef.value?.dumpScene?.() || window.dumpScene?.() || []
 }
 
-// Computed: expose selectedChoices as plain object for MobileUI prop reactivity
+// Computed: expose selectedChoices as plain object for mobile scene prop reactivity
 const choiceTexts = computed(() => {
   const obj = {}
   for (const [k, v] of selectedChoices.entries()) {
@@ -315,6 +323,14 @@ const showAdvDialogue = computed(() => {
   const step = currentStep.value
   return step?.type === 'adv' && step?.hide_dialogue !== true && currentSceneState.value?.text_disabled !== true
 })
+
+const communicationContext = computed(() => resolveCommunicationContext({
+  step: currentStep.value,
+  stepIndex: currentStepIndex.value,
+  historyStack: historyStack.value,
+  steps: compiledData.value?.steps || [],
+  scenarioId: compiledData.value?.scenario_id || '',
+}))
 
 const playableStepNumber = computed(() => Math.max(1, currentStepIndex.value - navigationStartIndex.value + 1))
 const playableStepTotal = computed(() => Math.max(0, navigationEndIndex.value - navigationStartIndex.value + 1))
