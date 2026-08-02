@@ -221,12 +221,12 @@ def build_catalog(
             if open_at == DISABLED_OPEN_AT
             else ("initial" if open_at == INITIAL_OPEN_AT else "released")
         )
-        raw_unit_mapping = meta.get("unit_mapping") or {}
-        mapping_category = raw_unit_mapping.get("category")
-        raw_unit_id = raw_unit_mapping.get("unit_id")
+        raw_selector = meta.get("performance_selector") or {}
+        mapping_category = raw_selector.get("category")
+        raw_selector_id = raw_selector.get("selector_id")
         confirmed_unit = None
-        if raw_unit_mapping.get("status") == "confirmed_unit_relation":
-            unit = units_by_id.get(str(raw_unit_id))
+        if raw_selector.get("kind") == "unit":
+            unit = units_by_id.get(str(raw_selector.get("unit_id")))
             if unit:
                 confirmed_unit = {
                     "unit_id": unit["unit_id"],
@@ -247,6 +247,14 @@ def build_catalog(
         else:
             performer_idol_codes = []
             performer_basis = "none"
+        if confirmed_unit:
+            performer_scope = "fixed_unit"
+        elif explicit_idol_codes:
+            performer_scope = "fixed_special_lineup"
+        elif identity.get("has_switch_singer", False):
+            performer_scope = "configurable_formation"
+        else:
+            performer_scope = "unspecified_special"
         songs[code] = {
             "song_id": song_id,
             "song_code": code,
@@ -263,9 +271,10 @@ def build_catalog(
             "variants": [],
             "related_entities": relations_by_code.get(code, []),
             "performance_mapping": {
-                "category": mapping_category,
-                "raw_unit_id": raw_unit_id,
-                "status": raw_unit_mapping.get("status"),
+                "raw_category": mapping_category,
+                "raw_selector_id": raw_selector_id,
+                "affiliation_kind": raw_selector.get("kind"),
+                "performer_scope": performer_scope,
                 "confirmed_unit": confirmed_unit,
                 "explicit_performer_idol_ids": meta.get("performer_idol_ids") or [],
                 "explicit_performer_idol_codes": explicit_idol_codes,

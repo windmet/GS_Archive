@@ -79,12 +79,12 @@ for (const code of catalogSongs) {
   if (song.parent_song_code !== (expectedWorkCode === code ? null : expectedWorkCode)) {
     fail(`song ${code}: parent_song_code mismatch`)
   }
-  const rawMapping = meta.unit_mapping
+  const rawMapping = meta.performance_selector
   const performance = song.performance_mapping
-  if (performance.category !== rawMapping.category || performance.raw_unit_id !== rawMapping.unit_id) {
-    fail(`song ${code}: table 46 unit mapping mismatch`)
+  if (performance.raw_category !== rawMapping.category || performance.raw_selector_id !== rawMapping.selector_id) {
+    fail(`song ${code}: table 46 selector mismatch`)
   }
-  if (performance.status !== rawMapping.status) fail(`song ${code}: mapping status mismatch`)
+  if (performance.affiliation_kind !== rawMapping.kind) fail(`song ${code}: affiliation kind mismatch`)
   if (performance.table_46_row_count !== meta.table_46_row_count) {
     fail(`song ${code}: table 46 row count mismatch`)
   }
@@ -94,13 +94,23 @@ for (const code of catalogSongs) {
   if (JSON.stringify(performance.explicit_performer_idol_codes) !== JSON.stringify(expectedExplicitCodes)) {
     fail(`song ${code}: explicit performer mapping mismatch`)
   }
-  if (rawMapping.status === 'confirmed_unit_relation') {
+  if (rawMapping.kind === 'unit') {
     const unit = idolUnitDictionary.by_unit_id?.[String(rawMapping.unit_id)]
     if (!performance.confirmed_unit || performance.confirmed_unit.unit_code !== unit?.unit_code) {
       fail(`song ${code}: confirmed unit relation missing`)
     }
   } else if (performance.confirmed_unit !== null) {
-    fail(`song ${code}: category 3 selector must not become a confirmed unit relation`)
+    fail(`song ${code}: collective-or-special selector must not become a confirmed unit relation`)
+  }
+  const expectedPerformerScope = performance.confirmed_unit
+    ? 'fixed_unit'
+    : expectedExplicitCodes.length
+      ? 'fixed_special_lineup'
+      : song.song_data.has_switch_singer
+        ? 'configurable_formation'
+        : 'unspecified_special'
+  if (performance.performer_scope !== expectedPerformerScope) {
+    fail(`song ${code}: performer_scope mismatch`)
   }
 
   const layers = songAudioCatalog.songs[code]?.audio_layers || []
@@ -158,13 +168,19 @@ if (s.explicit_performer_song_count !== 13) fail(`explicit_performer_song_count 
 if (musicCatalog.meta.table_46_row_count !== 99) fail(`music_catalog table_46_row_count must be 99`)
 if (musicCatalog.meta.explicit_performer_row_count !== 20) fail(`music_catalog explicit performer row count must be 20`)
 if (musicCatalog.meta.explicit_performer_song_count !== 13) fail(`music_catalog explicit performer song count must be 13`)
-if (musicCatalog.songs.brndnf.unit_mapping?.unit_id !== 1) fail(`BRAND NEW FIELD must map to Jupiter`)
-if (musicCatalog.songs.psblts.unit_mapping?.unit_id !== 12) fail(`Possibilities must map to S.E.M`)
+if (musicCatalog.songs.brndnf.performance_selector?.unit_id !== 1) fail(`BRAND NEW FIELD must map to Jupiter`)
+if (musicCatalog.songs.psblts.performance_selector?.unit_id !== 12) fail(`Possibilities must map to S.E.M`)
 if (JSON.stringify(musicCatalog.songs.flslgt.performer_idol_ids) !== JSON.stringify([7, 9, 22, 48])) {
   fail(`FLASH LIGHT explicit performers mismatch`)
 }
-if (catalog.songs.drvalv.performance_mapping.confirmed_unit !== null) {
-  fail(`DRIVE A LIVE category 3 selector must remain unresolved`)
+if (catalog.songs.drvalv.performance_mapping.performer_scope !== 'configurable_formation') {
+  fail(`DRIVE A LIVE must resolve to configurable formation scope`)
+}
+if (catalog.songs.flslgt.performance_mapping.performer_scope !== 'fixed_special_lineup') {
+  fail(`FLASH LIGHT must resolve to fixed special lineup scope`)
+}
+if (catalog.songs.drv999.performance_mapping.performer_scope !== 'unspecified_special') {
+  fail(`DRIVE A LIVE April Fools version must remain unspecified special scope`)
 }
 const semMembers = Object.entries(archiveManifest.unit_membership_by_idol || {})
   .filter(([, membership]) => Number(membership.unit_id) === 12)

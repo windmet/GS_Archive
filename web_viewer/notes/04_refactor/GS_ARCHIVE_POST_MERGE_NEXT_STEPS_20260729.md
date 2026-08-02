@@ -581,8 +581,9 @@ view=story_collection&story_type=...&story_section=...
 - `song_scope` 与 `q` 已进入 route，组合、偶像声部及 Extra 602 使用正式
   关联入口；
 - 后续核验修正了“table 46 无演唱者字段”的旧结论：字段 7 覆盖 61 首，
-  其中类别 2 的 47 首可正式映射 table 24 组合；类别 3 的 14 首只保留
-  unresolved selector。字段 30–34 在 20/99 行出现，去重后是 13 首歌曲，
+  其中类别 2 的 47 首可正式映射 table 24 组合；类别 3 的 14 首统一为
+  `collective_or_special` selector，不解释为 Unit ID，也不自动解释为 49 人
+  同时合唱。字段 30–34 在 20/99 行出现，去重后是 13 首歌曲，
   不能误写成 20 首；歌曲、组合和偶像详情现已建立双向资料入口；
 - 61 张 RAW 封面发布为 365x360 导航派生图，保留 bundle、Texture2D、
   PathID、原尺寸与 published hash，owner release 为
