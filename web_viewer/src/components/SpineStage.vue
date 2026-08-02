@@ -105,7 +105,7 @@ const props = defineProps({
   step: { type: Object, default: null },
   fallbackBg: { type: String, default: null },
   manageBackground: { type: Boolean, default: false },
-  debugControls: { type: Boolean, default: true },
+  debugControls: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['ready', 'error'])

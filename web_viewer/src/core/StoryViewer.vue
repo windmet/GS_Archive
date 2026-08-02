@@ -22,7 +22,7 @@
     ></textarea>
     <div class="viewer-stage">
     <!-- Spine rendering layer (background + characters) -->
-    <SpineStage ref="spineStageRef" :step="stageStep" :fallbackBg="firstAvailableBg" />
+    <SpineStage ref="spineStageRef" :step="stageStep" :fallbackBg="firstAvailableBg" :debug-controls="RUNTIME_DEBUG" />
 
     <!-- Top bar -->
     <div class="top-bar" v-if="compiledData && !HIDE_UI && !uiHidden">
@@ -88,7 +88,6 @@
     <div class="nav-bar" v-if="compiledData && compiledData.steps.length > 0 && !HIDE_UI && !uiHidden && !episodeFinished">
       <button class="nav-btn" @click.stop="goPrev" :disabled="isFirstStep">{{ uiText('player.previous') }}</button>
       <button class="mode-btn" :class="{ active: autoEnabled }" @click.stop="toggleAuto">AUTO</button>
-      <span class="nav-label">{{ currentStep.type }}</span>
       <button class="mode-btn" :class="{ active: skipEnabled }" @click.stop="toggleSkip">SKIP</button>
       <button class="nav-btn" :title="uiText('player.next')" :aria-label="uiText('player.next')" @click.stop="goNext"><ChevronRight :size="21" /></button>
     </div>
@@ -1068,7 +1067,6 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 .nav-btn:hover { background: rgba(255,255,255,0.15); }
 .nav-btn:disabled { opacity: 0.3; cursor: default; }
 .nav-btn svg { display: block; margin: auto; }
-.nav-label { color: rgba(255,255,255,0.5); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; }
 .mode-btn { min-width: 48px; height: 28px; border: 1px solid rgba(255,255,255,.2); border-radius: 5px; background: rgba(0,0,0,.16); color: rgba(255,255,255,.48); cursor: pointer; font-size: .58rem; font-weight: 800; letter-spacing: .08em; }
 .mode-btn.active { border-color: #69d9c7; background: rgba(48,177,157,.24); color: #bff8ef; box-shadow: 0 0 10px rgba(105,217,199,.18); }
 
