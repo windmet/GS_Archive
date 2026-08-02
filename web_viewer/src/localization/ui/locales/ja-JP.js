@@ -1,6 +1,9 @@
 export default Object.freeze({
   'player.back': '戻る',
   'player.menu': 'メニュー',
+  'player.progress': '進行状況',
+  'player.controls': '再生コントロール',
+  'player.language': '言語',
   'player.showUi': 'UIを表示',
   'player.previous': '前へ',
   'player.next': '次へ',
