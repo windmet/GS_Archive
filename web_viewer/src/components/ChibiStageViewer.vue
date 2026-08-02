@@ -6,6 +6,13 @@
     :data-active-positions="activePositions.join(',')"
     :data-loaded-positions="loadedPositions.join(',')"
     :data-current-singers="currentSingerPositions.join(',')"
+    :data-current-performer-singers="currentSingerPerformerSlots.join(',')"
+    :data-stage-vocal-enabled="stageVocalEnabled"
+    :data-stage-vocal-ready="stageVocalReady"
+    :data-stage-vocal-slots="stageVocalLoadedIdolCodes.length"
+    :data-stage-vocal-clock="stageVocalEnabled ? 'audio-context-scheduled' : 'media-element'"
+    :data-stage-vocal-mode="stageVocalMode"
+    :data-vocal-setting="selectedSong?.vocalSetting?.mode || ''"
     :data-position-tween-ms="POSITION_TWEEN_MS"
     :data-stage-base-zoom="STAGE_BASE_ZOOM"
     :data-stage-view-scale="stageViewScale.toFixed(3)"
@@ -115,7 +122,7 @@
           <span>{{ errorText }}</span>
         </div>
 
-        <div class="transport" :class="{ disabled: !stageReady || preloading }">
+        <div class="transport" :class="{ disabled: !stageTransportReady || preloading }">
           <button type="button" aria-label="回到开头" @click="resetStage">
             <RotateCcw :size="19" />
           </button>
@@ -123,7 +130,7 @@
             class="primary-transport"
             type="button"
             :aria-label="playing ? '暂停多人编排' : '播放多人编排'"
-            :disabled="!stageReady || preloading"
+            :disabled="!stageTransportReady || preloading"
             @click="toggleStage"
           >
             <Pause v-if="playing" :size="22" fill="currentColor" />
@@ -157,7 +164,7 @@
             </div>
             <select v-model="selectedSongId" aria-label="多人舞台歌曲" @change="handleSongChange">
               <option v-for="song in songs" :key="song.id" :value="song.id">
-                {{ song.title }} · {{ song.positions.join('/') }} 号位
+                {{ songOptionLabel(song) }} · {{ song.positions.join('/') }} 号位
               </option>
             </select>
             <div class="song-facts">
@@ -167,8 +174,32 @@
               <span>{{ selectedSong?.backmonitorEvents?.length || 0 }} 条屏幕</span>
               <span>{{ selectedSong?.imageLayerEvents?.length || 0 }} 条布景</span>
               <span>{{ selectedSong?.lyricEvents?.length || 0 }} 条歌词</span>
-              <span>{{ selectedSongAudio ? '官方音频' : '无音频' }}</span>
+              <span>{{ selectedVocalSettingFact }}</span>
             </div>
+            <fieldset v-if="stageVocalAvailable" class="stage-vocal-controls">
+              <legend>{{ stageVocalLegend }}</legend>
+              <label class="camera-toggle">
+                <input v-model="stageVocalEnabled" type="checkbox" @change="handleStageVocalToggle" />
+                <span>{{ stageVocalToggleLabel }}</span>
+              </label>
+              <template v-if="stageVocalEnabled">
+                <label class="range-control">
+                  <span>声部</span>
+                  <input v-model.number="stageVocalBusGain" type="range" min="0" max="1" step="0.05" @input="syncStageVocalMix" />
+                  <output>{{ stageVocalBusGain.toFixed(2) }}</output>
+                </label>
+                <label class="range-control">
+                  <span>伴奏</span>
+                  <input v-model.number="stageVocalBackingGain" type="range" min="0" max="1" step="0.05" @input="syncStageVocalMix" />
+                  <output>{{ stageVocalBackingGain.toFixed(2) }}</output>
+                </label>
+                <small>{{ stageVocalReady ? stageVocalReadyLabel : stageVocalLoadingLabel }}</small>
+              </template>
+              <small v-if="isSoloChoreography">
+                RAW 三个 Solo 候选均为中心一人演出；solo 与 solo_single 脚本相同，solo_multi 仅确认存在舞台效果差异，名称不作为声轨机制结论。
+              </small>
+              <small>均衡归一化与居中声像是浏览器近似，不代表游戏官方混音参数。</small>
+            </fieldset>
           </section>
 
           <section class="control-section lineup-section">
@@ -307,7 +338,7 @@
               <div><dt>活动站位</dt><dd>{{ activePositions.join(' / ') || '—' }}</dd></div>
               <div><dt>当前演唱</dt><dd>{{ currentSingerLabel }}</dd></div>
               <div><dt>动作预载</dt><dd>{{ preloading ? `${preloadProgress}%` : (songMotionsReady ? '已完成' : '播放时载入') }}</dd></div>
-              <div><dt>音频时钟</dt><dd>{{ audioReady ? '已就绪' : '等待加载' }}</dd></div>
+              <div><dt>音频时钟</dt><dd>{{ stageVocalEnabled ? (stageVocalReady ? '实验伴奏' : '实验声部加载中') : (audioReady ? '官方混音' : '等待加载') }}</dd></div>
               <div><dt>位置过渡</dt><dd>{{ POSITION_TWEEN_MS }}ms 平滑插值</dd></div>
               <div><dt>动作组补位</dt><dd>{{ derivedGroupEventCount }} 处</dd></div>
               <div><dt>当前镜头</dt><dd>{{ currentCameraLabel }}</dd></div>
@@ -358,8 +389,15 @@ import {
   playLiveChibiMotion,
 } from '../utils/liveChibiSpine.js'
 import { getSongUrl } from '../utils/AssetResolver.js'
+import { useSongPerformanceSession } from '../composables/useSongPerformanceSession.js'
 
 const emit = defineEmits(['back', 'open-lab'])
+const props = defineProps({
+  audioExperiments: {
+    type: Object,
+    default: () => ({}),
+  },
+})
 const canvasRef = ref(null)
 const manifest = ref(null)
 const choreography = ref(null)
@@ -381,6 +419,12 @@ const statusText = ref('正在读取多人舞台资源…')
 const errorText = ref('')
 const audioReady = ref(false)
 const audioError = ref('')
+const stageVocalEnabled = ref(false)
+const stageVocalSession = useSongPerformanceSession()
+const stageVocalReady = stageVocalSession.ready
+const stageVocalBusGain = stageVocalSession.vocalGain
+const stageVocalBackingGain = stageVocalSession.backingGain
+const stageVocalLoadedIdolCodes = stageVocalSession.loadedIdolCodes
 const stageTime = ref(0)
 const playbackSpeed = ref(1)
 const playing = ref(false)
@@ -489,13 +533,54 @@ const stageReady = computed(() => Boolean(selectedSong.value)
   && activePositions.value.length > 0
   && loadedPositions.value.length === activePositions.value.length
   && !booting.value)
+const stageTransportReady = computed(() => stageReady.value
+  && (!stageVocalEnabled.value || stageVocalReady.value))
 const selectedSongAudio = computed(() => selectedSong.value
   ? musicIndex.value?.songs?.[selectedSong.value.id] || null
   : null)
+const selectedStageVocalExperiment = computed(() => {
+  const entry = selectedSong.value?.songCode
+    ? props.audioExperiments?.[selectedSong.value.songCode]
+    : null
+  return entry?.stage_vocal?.mode === 'parallel-performer-slots' ? entry : null
+})
+const isSoloChoreography = computed(() => /^solo(?:_|$)/.test(selectedSong.value?.variant || ''))
+const isOfficialFormationSetting = computed(() => (
+  selectedSong.value?.vocalSetting?.mode === 'formation-or-all-stars'
+))
+const stageVocalMode = computed(() => isSoloChoreography.value ? 'center-solo' : 'switch-singer')
+const stageVocalAvailable = computed(() => Boolean(
+  selectedStageVocalExperiment.value
+  && (isSoloChoreography.value
+    ? activePositions.value.length === 1
+    : activePositions.value.length === selectedStageVocalExperiment.value.stage_vocal.slot_count),
+))
+const stageVocalFactLabel = computed(() => isSoloChoreography.value ? 'Center 实验音频' : '编成偶像实验音频')
+const stageVocalLegend = computed(() => isSoloChoreography.value ? 'Center 声部实验' : '编成偶像声部实验')
+const stageVocalToggleLabel = computed(() => isSoloChoreography.value
+  ? 'Center：中心偶像声部＋伴奏'
+  : (isOfficialFormationSetting.value
+    ? '编成偶像：五人声部＋伴奏'
+    : '按编组位与 SwitchSinger 切换'))
+const stageVocalReadyLabel = computed(() => isSoloChoreography.value
+  ? '统一音频时钟与中心 Solo 声部已就绪'
+  : '统一音频时钟与五个编组位声部已就绪')
+const stageVocalLoadingLabel = computed(() => isSoloChoreography.value
+  ? '正在预解码中心 Solo 声部…'
+  : '正在预解码五个声部…')
+const selectedVocalSettingFact = computed(() => {
+  if (stageVocalEnabled.value) return stageVocalFactLabel.value
+  if (selectedSong.value?.vocalSetting?.mode === 'formation-or-all-stars') {
+    return '315 ALL STARS 完整混音候选'
+  }
+  if (selectedSong.value?.vocalSetting?.label) return selectedSong.value.vocalSetting.label
+  return selectedSongAudio.value ? '官方混音音频' : '无音频'
+})
 const stageDuration = computed(() => Math.max(
   selectedSong.value?.duration || 0,
   selectedSong.value?.lipSync?.duration || 0,
   selectedSongAudio.value?.duration || 0,
+  (selectedStageVocalExperiment.value?.backing?.metadata?.duration_seconds || 0) * 1000,
 ))
 const motionCatalog = computed(() => new Map(
   (choreography.value?.motionCatalog || []).map(motion => [motion.id, motion]),
@@ -503,7 +588,16 @@ const motionCatalog = computed(() => new Map(
 const currentSingerEvent = computed(() => [...(selectedSong.value?.singerEvents || [])]
   .reverse()
   .find(event => event.time <= stageTime.value))
-const currentSingerPositions = computed(() => currentSingerEvent.value?.singers || [])
+const currentSingerPositions = computed(() => (
+  currentSingerEvent.value?.stagePositions
+  || currentSingerEvent.value?.singers
+  || []
+))
+const currentSingerPerformerSlots = computed(() => (
+  currentSingerEvent.value?.performerSlots
+  || currentSingerEvent.value?.singers
+  || []
+))
 const currentSingerLabel = computed(() => currentSingerPositions.value.length
   ? currentSingerPositions.value.map(position => `${position}号位`).join('、')
   : '无人')
@@ -601,6 +695,7 @@ onBeforeUnmount(() => {
   stopStage()
   resizeObserver?.disconnect()
   releaseAudio()
+  releaseStageVocalAudio()
   releaseBackmonitor()
   releaseImageLayers()
   releaseObjectLayers()
@@ -682,6 +777,25 @@ function costumeForSlot(slot) {
   return costumesForSlot(slot).find(costume => costume.id === slot.costumeId) || null
 }
 
+function songOptionLabel(song) {
+  const fallback = song?.title || song?.id || ''
+  const setting = song?.vocalSetting
+  if (!setting) {
+    if (!/^solo(?:_|$)/.test(song?.variant || '')) return fallback
+    return `${song.title} · 中心一人演出（raw: ${song.variant}）`
+  }
+  const suffix = song.variant ? ` · ${song.variant}` : ''
+  const baseTitle = suffix && fallback.endsWith(suffix)
+    ? fallback.slice(0, -suffix.length)
+    : fallback
+  if (setting.mode === 'formation-or-all-stars') {
+    return `${baseTitle} · 编成偶像 / 315 ALL STARS`
+  }
+  if (setting.mode === 'unit') return `${baseTitle} · ${setting.label}（raw: ${song.variant}）`
+  if (setting.mode === 'center') return `${baseTitle} · Center（中心一人 / raw: ${song.variant}）`
+  return fallback
+}
+
 function ensureCharacterShadowTexture() {
   if (characterShadowTexture) return Promise.resolve(characterShadowTexture)
   if (!characterShadowLoad) {
@@ -701,9 +815,12 @@ function destroyStageRuntime(runtime) {
 }
 
 async function handleCharacterChange(slot) {
+  const reloadStageVocals = stageVocalEnabled.value
+  if (reloadStageVocals) stopStage(true)
   const character = characterForSlot(slot)
   slot.costumeId = character?.defaultCostume || character?.costumes?.[0]?.id || ''
   await loadSlot(slot)
+  if (reloadStageVocals) await loadStageVocalAudio()
 }
 
 async function loadSlot(slot) {
@@ -2270,6 +2387,8 @@ function resizeStage() {
 
 async function handleSongChange() {
   stopStage(true)
+  stageVocalEnabled.value = false
+  releaseStageVocalAudio()
   songMotionsReady.value = false
   errorText.value = ''
   await Promise.all([loadSongLipSync(), loadSongAudio()])
@@ -2294,6 +2413,79 @@ function releaseAudio() {
   songAudio.removeAttribute('src')
   songAudio.load()
   songAudio = null
+}
+
+function stagePositionForPerformerSlot(performerSlot) {
+  return selectedSong.value?.stagePositionMap
+    ?.find(item => item.performerSlot === performerSlot)?.stagePosition || performerSlot
+}
+
+function releaseStageVocalAudio() {
+  stageVocalSession.release()
+}
+
+async function loadStageVocalAudio() {
+  releaseStageVocalAudio()
+  if (!stageVocalEnabled.value || !stageVocalAvailable.value) return
+  const experiment = selectedStageVocalExperiment.value
+  const slotCount = experiment.stage_vocal.slot_count
+  try {
+    const performerSlots = isSoloChoreography.value
+      ? (selectedSong.value?.onStagePerformerSlots || [1])
+      : Array.from({ length: slotCount }, (_, index) => index + 1)
+    const performerLineup = Array(slotCount).fill('')
+    for (const performerSlot of performerSlots) {
+      const stagePosition = stagePositionForPerformerSlot(performerSlot)
+      const idolCode = slotByPosition(stagePosition)?.characterId
+      const vocal = experiment.solo_tracks?.[idolCode]?.vocal
+      if (!vocal?.url) throw new Error(`${stagePosition}号位偶像缺少 ${experiment.song_code} 声部`)
+      performerLineup[performerSlot - 1] = idolCode
+    }
+    stageVocalSession.setPlaybackRate(playbackSpeed.value)
+    await stageVocalSession.configure({
+      experiment,
+      events: isSoloChoreography.value ? [] : (selectedSong.value?.singerEvents || []),
+      performerLineup,
+      continuous: isSoloChoreography.value,
+    })
+    if (!stageVocalEnabled.value) return
+    audioError.value = stageVocalSession.error.value
+  } catch (error) {
+    releaseStageVocalAudio()
+    audioError.value = error.message
+  }
+}
+
+async function handleStageVocalToggle() {
+  stopStage(true)
+  audioError.value = ''
+  if (stageVocalEnabled.value) await loadStageVocalAudio()
+  else releaseStageVocalAudio()
+  await seekStage()
+}
+
+function syncStageVocalMix() {
+  // Gain refs are watched by the shared AudioContext session. Singer gates are
+  // scheduled on its audio clock rather than being updated by animation frames.
+}
+
+function stagePlaybackAudios() {
+  if (stageVocalEnabled.value && stageVocalReady.value) return []
+  return songAudio ? [songAudio] : []
+}
+
+function stageClockAudio() {
+  return stageVocalEnabled.value && stageVocalReady.value ? null : songAudio
+}
+
+function syncStagePlaybackTime(seconds) {
+  if (stageVocalEnabled.value && stageVocalReady.value) {
+    stageVocalSession.seek(seconds)
+    return
+  }
+  for (const audio of stagePlaybackAudios()) {
+    if (Number.isFinite(audio.duration)) audio.currentTime = Math.min(seconds, audio.duration)
+  }
 }
 
 async function loadSongAudio() {
@@ -2418,10 +2610,11 @@ async function syncSlotAtTime(slot, milliseconds, reset = true) {
 
 async function seekStage() {
   stopStage()
-  if (songAudio && Number.isFinite(songAudio.duration)) songAudio.currentTime = stageTime.value / 1000
+  syncStagePlaybackTime(stageTime.value / 1000)
   await Promise.all(activeSlots.value.map(slot => syncSlotAtTime(slot, stageTime.value, true)))
   resetEventIndices()
   applyCurrentLipSync()
+  syncStageVocalMix()
   await syncStageBackground()
   syncSpotlights()
   syncLaserlights()
@@ -2453,15 +2646,26 @@ async function toggleStage() {
   resetEventIndices()
   playbackStartOffset = stageTime.value
   playbackStartedAt = performance.now()
-  if (songAudio && selectedSongAudio.value) {
-    songAudio.currentTime = stageTime.value / 1000
-    songAudio.playbackRate = playbackSpeed.value
-    try {
-      await songAudio.play()
-      audioError.value = ''
-    } catch (error) {
-      audioError.value = `歌曲音频无法播放：${error.message}`
+  if (stageVocalEnabled.value && stageVocalReady.value) {
+    stageVocalSession.seek(stageTime.value / 1000)
+    if (!await stageVocalSession.play()) {
+      audioError.value = stageVocalSession.error.value
       return
+    }
+    audioError.value = ''
+  } else {
+    const playbackAudios = stagePlaybackAudios()
+    if (playbackAudios.length) {
+      syncStagePlaybackTime(stageTime.value / 1000)
+      playbackAudios.forEach(audio => { audio.playbackRate = playbackSpeed.value })
+      try {
+        await Promise.all(playbackAudios.map(audio => audio.play()))
+        audioError.value = ''
+      } catch (error) {
+        playbackAudios.forEach(audio => audio.pause())
+        audioError.value = `歌曲音频无法播放：${error.message}`
+        return
+      }
     }
   }
   playing.value = true
@@ -2471,12 +2675,16 @@ async function toggleStage() {
 
 function updateStage(now) {
   if (!playing.value || !selectedSong.value) return
+  const clockAudio = stageClockAudio()
   stageTime.value = Math.min(
     stageDuration.value,
-    songAudio && !songAudio.paused
-      ? songAudio.currentTime * 1000
+    stageVocalEnabled.value && stageVocalReady.value
+      ? stageVocalSession.currentTime.value * 1000
+      : clockAudio && !clockAudio.paused
+      ? clockAudio.currentTime * 1000
       : playbackStartOffset + (now - playbackStartedAt) * playbackSpeed.value,
   )
+  if (!stageTransportReady.value) return
   for (const slot of activeSlots.value) {
     const events = eventsForPosition(slot.position)
     let index = eventIndices.get(slot.position) || 0
@@ -2504,16 +2712,21 @@ function updateStage(now) {
 }
 
 function stopStage(reset = false) {
+  const wasPlaying = playing.value
   if (animationFrame) cancelAnimationFrame(animationFrame)
   animationFrame = 0
   playing.value = false
-  songAudio?.pause()
+  stageVocalSession.pause()
+  if (wasPlaying && stageVocalEnabled.value && stageVocalReady.value) {
+    stageTime.value = stageVocalSession.currentTime.value * 1000
+  }
+  stagePlaybackAudios().forEach(audio => audio.pause())
   backmonitorVideo?.pause()
   backmonitorTransitionVideo?.pause()
   backmonitorTransitionAlphaVideo?.pause()
   if (reset) {
     stageTime.value = 0
-    if (songAudio) songAudio.currentTime = 0
+    syncStagePlaybackTime(0)
   }
 }
 
@@ -2523,7 +2736,8 @@ async function resetStage() {
 }
 
 function applyPlaybackSpeed() {
-  if (songAudio) songAudio.playbackRate = playbackSpeed.value
+  stageVocalSession.setPlaybackRate(playbackSpeed.value)
+  stagePlaybackAudios().forEach(audio => { audio.playbackRate = playbackSpeed.value })
   if (backmonitorVideo) backmonitorVideo.playbackRate = playbackSpeed.value
   if (backmonitorTransitionVideo) backmonitorTransitionVideo.playbackRate = playbackSpeed.value
   if (backmonitorTransitionAlphaVideo) backmonitorTransitionAlphaVideo.playbackRate = playbackSpeed.value
@@ -2651,6 +2865,9 @@ select { width: 100%; height: 39px; padding: 0 10px; color: #edf5fc; background:
 select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(65, 165, 255, 0.12); }
 .song-facts { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
 .song-facts span { padding: 5px 7px; color: #9eb4c8; background: rgba(4, 14, 25, 0.42); border-radius: 5px; font-size: 9px; }
+.stage-vocal-controls { display: grid; gap: 10px; margin: 13px 0 0; padding: 11px 12px 12px; border: 1px solid rgba(65, 165, 255, 0.3); border-radius: 9px; background: rgba(18, 67, 108, 0.16); }
+.stage-vocal-controls legend { padding: 0 5px; color: #8ecbff; font-size: 10px; letter-spacing: 0.06em; }
+.stage-vocal-controls small { color: var(--muted); font-size: 9px; line-height: 1.5; }
 
 .lineup-section { display: grid; gap: 9px; }
 .lineup-card { position: relative; display: grid; grid-template-columns: 46px minmax(0, 1fr) 18px; gap: 9px; align-items: center; padding: 9px; border: 1px solid rgba(151, 185, 215, 0.17); border-radius: 9px; background: rgba(5, 16, 29, 0.34); transition: opacity 160ms ease, border-color 160ms ease; }

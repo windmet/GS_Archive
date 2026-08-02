@@ -11,7 +11,173 @@
       </button>
     </div>
 
-    <div v-if="mode === 'portal'" class="story-portal">
+    <div v-if="mode === 'portal' && domain === 'main'" class="main-domain-landing">
+      <header class="main-domain-hero">
+        <div>
+          <span>MAIN STORY ARCHIVE</span>
+          <h2>主线剧情</h2>
+          <p>按 masterdata 的正式章节与话目结构浏览主线。未公开章节保留档案位置，但不提供播放入口。</p>
+        </div>
+        <dl>
+          <div><dt>章节</dt><dd>{{ mainDomain?.meta?.collectionCount || 0 }}</dd></div>
+          <div><dt>正式话目</dt><dd>{{ mainDomain?.meta?.chapterCount || 0 }}</dd></div>
+          <div><dt>剧情分段</dt><dd>{{ mainDomain?.meta?.logicalEntryCount || 0 }}</dd></div>
+        </dl>
+      </header>
+
+      <section class="main-domain-collections" aria-labelledby="main-domain-collections-title">
+        <div class="section-heading">
+          <div>
+            <span>CHAPTER COLLECTIONS</span>
+            <h2 id="main-domain-collections-title">章节目录</h2>
+          </div>
+        </div>
+        <div class="main-domain-grid">
+          <button
+            v-for="(collection, index) in mainDomain?.collections || []"
+            :key="collection.id"
+            class="main-domain-card"
+            :class="{ placeholder: collection.isPlaceholder }"
+            :disabled="collection.isPlaceholder"
+            @click="browse('main', collection.masterId)"
+          >
+            <span class="main-domain-visual">
+              <img
+                v-if="!collection.isPlaceholder && index < 2"
+                :src="mainVisual(index)"
+                :alt="collection.title"
+              />
+              <span v-else aria-hidden="true">{{ String(index + 1).padStart(2, '0') }}</span>
+            </span>
+            <span class="main-domain-copy">
+              <small>{{ collection.isPlaceholder ? 'MASTER PLACEHOLDER' : 'MAIN STORY' }}</small>
+              <strong>{{ collection.title }}</strong>
+              <span v-if="collection.chapterCount">
+                {{ collection.chapterCount }} 话目 · {{ collection.logicalEntryCount }} 分段
+              </span>
+              <span v-else>尚无已发布话目</span>
+            </span>
+            <span class="main-domain-status">
+              {{ collection.isPlaceholder ? '未公开' : '查看章节' }}
+              <ArrowRight v-if="!collection.isPlaceholder" :size="16" />
+            </span>
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <div v-else-if="mode === 'portal' && domain === 'extra'" class="extra-domain-landing">
+      <header class="extra-domain-hero">
+        <div>
+          <span>EXTRA STORY ARCHIVE</span>
+          <h2>额外剧情</h2>
+          <p>按官方 Extra Story 作品归档；masterdata 逻辑记录作为章节保留，关联企划可直接前往卡池资料。</p>
+        </div>
+        <dl aria-label="额外剧情归档统计">
+          <div><dt>官方作品</dt><dd>{{ extraDomain?.meta?.officialCollectionCount || 0 }}</dd></div>
+          <div><dt>剧情章节</dt><dd>{{ extraDomain?.meta?.logicalEntryCount || 0 }}</dd></div>
+          <div><dt>播放文件</dt><dd>{{ extraDomain?.meta?.compiledFileCount || 0 }}</dd></div>
+        </dl>
+      </header>
+
+      <section class="extra-domain-section" aria-labelledby="extra-domain-heading">
+        <div class="section-heading">
+          <div><span>OFFICIAL CLASSIFICATION</span><h3 id="extra-domain-heading">官方 Extra Story</h3></div>
+          <strong>{{ officialExtraCards.length }} works</strong>
+        </div>
+        <div class="extra-card-grid">
+          <button
+            v-for="card in officialExtraCards"
+            :key="card.id"
+            class="extra-card"
+            @click="browse('extra', card.masterId)"
+          >
+            <span class="extra-card-visual">
+              <img v-if="card.bannerUrl" :src="card.bannerUrl" alt="" />
+              <span v-else class="extra-card-index">{{ card.parentSeriesId }}</span>
+            </span>
+            <span class="extra-card-copy">
+              <small>{{ formatExtraDate(card.releaseAt) }}</small>
+              <strong>{{ card.title }}</strong>
+              <span>{{ card.logicalEntryCount }} chapters</span>
+              <code v-if="card.gasha">{{ card.gasha.code }} · {{ card.gasha.title }}</code>
+            </span>
+            <span v-if="card.gasha" class="shared-playback">关联卡池</span>
+            <ArrowRight :size="17" aria-hidden="true" />
+          </button>
+        </div>
+      </section>
+
+      <section v-if="supplementaryExtraCards.length" class="extra-domain-section extra-supplementary" aria-labelledby="extra-supplementary-heading">
+        <div class="section-heading">
+          <div><span>MASTERDATA SUPPLEMENT</span><h3 id="extra-supplementary-heading">其他特别剧情记录</h3></div>
+          <strong>{{ supplementaryExtraCards.length }} works</strong>
+        </div>
+        <p class="extra-section-note">以下条目存在于 Extra masterdata，但未列入所核对 Wiki 的官方 Extra Story 清单；为避免丢失档案，单独保留。</p>
+        <div class="extra-card-grid">
+          <button
+            v-for="card in supplementaryExtraCards"
+            :key="card.id"
+            class="extra-card"
+            @click="browse('extra', card.masterId)"
+          >
+            <span class="extra-card-visual">
+              <img v-if="card.bannerUrl" :src="card.bannerUrl" alt="" />
+              <span v-else class="extra-card-index">{{ card.parentSeriesId }}</span>
+            </span>
+            <span class="extra-card-copy">
+              <small>{{ formatExtraDate(card.releaseAt) }}</small>
+              <strong>{{ card.title }}</strong>
+              <span>{{ card.logicalEntryCount }} chapters</span>
+              <code v-if="card.gasha">{{ card.gasha.code }} · {{ card.gasha.title }}</code>
+            </span>
+            <span v-if="card.gasha" class="shared-playback">关联卡池</span>
+            <ArrowRight :size="17" aria-hidden="true" />
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <div v-else-if="mode === 'portal' && domain === 'birthday'" class="birthday-domain-landing">
+      <header class="birthday-domain-hero">
+        <div>
+          <span>BIRTHDAY STORY ARCHIVE</span>
+          <h2>生日剧情</h2>
+          <p>按角色主体归档三类 masterdata 系列，并保留与个人剧情共享文件的双重身份。</p>
+        </div>
+        <dl aria-label="生日剧情归档统计">
+          <div><dt>角色主体</dt><dd>{{ birthdayDomain?.meta?.collectionCount || 0 }}</dd></div>
+          <div><dt>逻辑记录</dt><dd>{{ birthdayDomain?.meta?.logicalEntryCount || 0 }}</dd></div>
+          <div><dt>跨域共享</dt><dd>{{ birthdayDomain?.meta?.crossDomainSharedFileCount || 0 }}</dd></div>
+        </dl>
+      </header>
+
+      <section class="birthday-domain-section" aria-labelledby="birthday-domain-heading">
+        <div class="section-heading">
+          <div><span>SUBJECT COLLECTIONS</span><h3 id="birthday-domain-heading">角色生日档案</h3></div>
+          <strong>{{ birthdayCards.length }} subjects</strong>
+        </div>
+        <div class="birthday-card-grid">
+          <button
+            v-for="card in birthdayCards"
+            :key="card.id"
+            class="birthday-card"
+            @click="browse('birthday', card.subject.code)"
+          >
+            <span class="birthday-subject-code">{{ card.subject.numericId }}</span>
+            <span class="birthday-card-copy">
+              <small>{{ card.subject.kind === 'npc' ? 'STAFF' : 'IDOL' }} · {{ card.subject.code }}</small>
+              <strong>{{ card.subject.displayName }}</strong>
+              <span>{{ card.logicalEntryCount }} 篇 · {{ card.seriesIds.length }} 个 master 系列</span>
+            </span>
+            <span v-if="card.sharedCount" class="birthday-shared">{{ card.sharedCount }} 篇跨域共享</span>
+            <ArrowRight :size="17" aria-hidden="true" />
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <div v-else-if="mode === 'portal'" class="story-portal">
       <section class="main-story-band">
         <div class="band-heading">
           <div>
@@ -19,7 +185,10 @@
             <h2>主线剧情</h2>
             <p>从 315 Production 启程，按章节阅读完整故事。</p>
           </div>
-          <strong>{{ domainCount('main') }} 篇</strong>
+          <div class="band-actions">
+            <strong>{{ domainCount('main') }} 篇</strong>
+            <button @click="openDomain('main')">查看全部 <ArrowRight :size="15" /></button>
+          </div>
         </div>
         <div class="main-chapters">
           <button
@@ -191,6 +360,9 @@ const props = defineProps({
   workIdols: { type: Array, default: () => [] },
   idolStoryCount: { type: Number, default: 0 },
   externalResourceCount: { type: Number, default: 0 },
+  mainDomain: { type: Object, default: null },
+  extraDomain: { type: Object, default: null },
+  birthdayDomain: { type: Object, default: null },
 })
 const emit = defineEmits(['select', 'browse', 'open-seasonal', 'open-work', 'open-idol-story', 'open-external-resources', 'load-more', 'clear-section', 'update:mode', 'update:domain', 'update:event-scope', 'update:availability', 'update:sort'])
 
@@ -207,6 +379,20 @@ const groupEntries = domain => {
 const mainSections = computed(() => groupEntries('main'))
 const unitGateways = computed(() => groupEntries('unit_story'))
 const featuredEvents = computed(() => props.allEntries.filter(entry => entry.domain === 'event').sort((a, b) => b.releaseAt - a.releaseAt).slice(0, 6))
+const extraCards = computed(() => [...(props.extraDomain?.collections || [])]
+  .sort((left, right) => left.releaseAt - right.releaseAt || left.masterId.localeCompare(right.masterId)))
+const officialExtraCards = computed(() => extraCards.value.filter(card => card.official))
+const supplementaryExtraCards = computed(() => extraCards.value.filter(card => !card.official))
+const birthdayCards = computed(() => {
+  const entries = new Map((props.birthdayDomain?.logicalEntries || []).map(entry => [entry.id, entry]))
+  return (props.birthdayDomain?.collections || []).map(collection => ({
+    ...collection,
+    sharedCount: collection.logicalEntryIds
+      .map(id => entries.get(id))
+      .filter(entry => entry?.domainMemberships?.length > 1)
+      .length,
+  }))
+})
 const secondaryGateways = [
   { id: 'external_story_resources', label: '社区中文剧情', icon: Languages, unit: '条', action: 'external-resources' },
   { id: 'idol_story', label: '个人故事', icon: UserRound, action: 'idol-story' }, { id: 'card_scenarios', label: '卡片剧情', icon: CreditCard },
@@ -217,6 +403,7 @@ const secondaryGateways = [
 const sectionLabel = computed(() => props.allEntries.find(entry => entry.domain === props.domain && entry.sectionId === props.section)?.sectionLabel || props.section)
 
 function browse(domain, section = '') { emit('browse', { domain, section }) }
+function openDomain(domain) { emit('browse', { domain, section: '', mode: 'portal' }) }
 function domainCount(domain) { return props.allEntries.filter(entry => entry.domain === domain).length }
 function gatewayCount(gateway) {
   if (gateway.action === 'external-resources') return props.externalResourceCount
@@ -249,6 +436,12 @@ function unitVisual(id) {
   return `/assets/stories/units/image_unit_story_button_${codes[Number(id) - 1] || codes[0]}.png`
 }
 function hierarchyLabel(entry) { return [entry.sectionLabel, entry.episodeLabel].filter(Boolean).join(' · ') || entry.domainLabel }
+function formatExtraDate(timestamp) {
+  if (!Number(timestamp)) return '开放日期未记录'
+  return new Intl.DateTimeFormat('zh-CN', {
+    year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Asia/Tokyo',
+  }).format(new Date(Number(timestamp) * 1000))
+}
 </script>
 
 <style scoped>
@@ -256,13 +449,79 @@ function hierarchyLabel(entry) { return [entry.sectionLabel, entry.episodeLabel]
 .catalog-switcher { position: sticky; top: 0; z-index: 4; display: flex; justify-content: center; gap: 2px; padding: 8px 16px; border-bottom: 1px solid #e0e5e7; background: rgba(255,255,255,.96); }
 .catalog-switcher button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-width: 120px; height: 34px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #718089; cursor: pointer; font: inherit; font-size: .7rem; }
 .catalog-switcher button.active { border-color: #15978e; color: #126f69; font-weight: 800; }
+.extra-domain-landing { min-height: calc(100% - 51px); background: #f7f9fa; }
+.extra-domain-hero { display: flex; align-items: end; justify-content: space-between; gap: 28px; padding: 34px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #dce4e6; background: linear-gradient(120deg, #f0faf8, #fff 62%); }
+.extra-domain-hero > div > span, .extra-domain-section .section-heading span { color: #168a82; font-size: .6rem; font-weight: 800; letter-spacing: .08em; }
+.extra-domain-hero h2 { margin: 5px 0 8px; font-size: 1.45rem; }
+.extra-domain-hero p { max-width: 620px; margin: 0; color: #52636b; font-size: .7rem; line-height: 1.7; }
+.extra-domain-hero dl { display: grid; grid-template-columns: repeat(3, minmax(74px, 1fr)); min-width: 300px; margin: 0; border: 1px solid #d8e5e4; border-radius: 6px; background: rgba(255,255,255,.86); }
+.extra-domain-hero dl div { padding: 12px 14px; border-right: 1px solid #e1e9e9; text-align: center; }
+.extra-domain-hero dl div:last-child { border-right: 0; }
+.extra-domain-hero dt { color: #7a898f; font-size: .56rem; }.extra-domain-hero dd { margin: 4px 0 0; color: #176f69; font-size: 1rem; font-weight: 800; }
+.extra-domain-section { padding: 25px max(24px, calc((100% - 1120px) / 2)) 42px; }
+.extra-domain-section.extra-supplementary { padding-top: 0; }
+.extra-section-note { max-width: 820px; margin: -4px 0 14px; color: #6f7f86; font-size: .62rem; line-height: 1.7; }
+.extra-domain-section .section-heading h3 { margin: 3px 0 0; font-size: 1rem; }
+.extra-domain-section .section-heading > strong { color: #7d8b92; font-size: .61rem; }
+.extra-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 9px; }
+.extra-card { position: relative; display: grid; grid-template-columns: 104px minmax(0,1fr) 18px; align-items: center; gap: 10px; min-height: 112px; padding: 13px 12px; border: 1px solid #dce4e6; border-radius: 6px; background: #fff; color: #293a42; cursor: pointer; font: inherit; text-align: left; }
+.extra-card:hover { border-color: #65bbb5; box-shadow: 0 4px 14px rgba(28,66,66,.08); }
+.extra-card-visual { display: grid; place-items: center; overflow: hidden; width: 104px; height: 58px; border-radius: 4px; background: #e8f6f4; }
+.extra-card-visual img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.extra-card-index { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: #e8f6f4; color: #147c75; font-size: .61rem; font-weight: 800; }
+.extra-card-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.extra-card-copy small { color: #849298; font-size: .53rem; }.extra-card-copy strong { overflow: hidden; font-size: .72rem; text-overflow: ellipsis; white-space: nowrap; }
+.extra-card-copy span { overflow: hidden; color: #53666e; font-size: .61rem; text-overflow: ellipsis; white-space: nowrap; }
+.extra-card-copy code { overflow: hidden; color: #8a969b; font-size: .51rem; text-overflow: ellipsis; white-space: nowrap; }
+.shared-playback { position: absolute; top: 8px; right: 9px; padding: 2px 5px; border-radius: 3px; background: #fff2d9; color: #8a641d; font-size: .49rem; }
+.birthday-domain-landing { min-height: calc(100% - 51px); background: #fff9fa; }
+.birthday-domain-hero { display: flex; align-items: end; justify-content: space-between; gap: 28px; padding: 34px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #eadfe2; background: linear-gradient(120deg, #fff0f4, #fff 62%); }
+.birthday-domain-hero > div > span, .birthday-domain-section .section-heading span { color: #b45570; font-size: .6rem; font-weight: 800; letter-spacing: .08em; }
+.birthday-domain-hero h2 { margin: 5px 0 8px; font-size: 1.45rem; }.birthday-domain-hero p { max-width: 640px; margin: 0; color: #65575c; font-size: .7rem; line-height: 1.7; }
+.birthday-domain-hero dl { display: grid; grid-template-columns: repeat(3,minmax(74px,1fr)); min-width: 300px; margin: 0; border: 1px solid #eadde1; border-radius: 6px; background: rgba(255,255,255,.88); }
+.birthday-domain-hero dl div { padding: 12px 14px; border-right: 1px solid #eee3e6; text-align: center; }.birthday-domain-hero dl div:last-child { border-right: 0; }
+.birthday-domain-hero dt { color: #8b7b80; font-size: .56rem; }.birthday-domain-hero dd { margin: 4px 0 0; color: #a64762; font-size: 1rem; font-weight: 800; }
+.birthday-domain-section { padding: 25px max(24px, calc((100% - 1120px) / 2)) 42px; }.birthday-domain-section .section-heading h3 { margin: 3px 0 0; font-size: 1rem; }.birthday-domain-section .section-heading > strong { color: #8a7b80; font-size: .61rem; }
+.birthday-card-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 9px; }
+.birthday-card { position: relative; display: grid; grid-template-columns: 42px minmax(0,1fr) 18px; align-items: center; gap: 10px; min-height: 94px; padding: 12px; border: 1px solid #e7dfe2; border-radius: 6px; background: #fff; color: #3f3438; cursor: pointer; font: inherit; text-align: left; }
+.birthday-card:hover { border-color: #d58ca0; box-shadow: 0 4px 14px rgba(100,52,66,.08); }.birthday-subject-code { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: #fbe8ed; color: #a84964; font-size: .61rem; font-weight: 800; }
+.birthday-card-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }.birthday-card-copy small { color: #b05b73; font-size: .51rem; }.birthday-card-copy strong { overflow: hidden; font-size: .75rem; text-overflow: ellipsis; white-space: nowrap; }.birthday-card-copy span { color: #76666b; font-size: .57rem; }
+.birthday-shared { position: absolute; top: 7px; right: 8px; padding: 2px 5px; border-radius: 3px; background: #f0eafa; color: #6e5591; font-size: .48rem; }
 .story-portal { background: #fff; }
+.main-domain-landing { min-height: 100%; background: #f5f7f8; }
+.main-domain-hero { display: flex; align-items: end; justify-content: space-between; gap: 32px; padding: 34px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #dfe6e7; background-color: rgba(255,255,255,.82); background-image: url('/assets/stories/story_background.png'); background-position: center; background-size: cover; background-blend-mode: screen; }
+.main-domain-hero > div { max-width: 660px; }
+.main-domain-hero span, .main-domain-collections .section-heading span { color: #168d85; font-size: .6rem; font-weight: 800; letter-spacing: .06em; }
+.main-domain-hero h2 { margin: 5px 0 8px; font-size: 1.5rem; }
+.main-domain-hero p { margin: 0; color: #52636b; font-size: .72rem; line-height: 1.7; }
+.main-domain-hero dl { display: grid; grid-template-columns: repeat(3, minmax(76px,1fr)); gap: 1px; min-width: 300px; margin: 0; overflow: hidden; border: 1px solid #dbe3e5; border-radius: 7px; background: #dbe3e5; }
+.main-domain-hero dl > div { padding: 11px 14px; background: rgba(255,255,255,.94); }
+.main-domain-hero dt { color: #7a888f; font-size: .56rem; }
+.main-domain-hero dd { margin: 4px 0 0; color: #25353d; font-size: 1.15rem; font-weight: 800; }
+.main-domain-collections { padding: 28px max(24px, calc((100% - 1120px) / 2)) 40px; }
+.main-domain-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
+.main-domain-card { display: grid; grid-template-rows: 155px minmax(104px,auto) 38px; overflow: hidden; padding: 0; border: 1px solid #d8e0e2; border-radius: 7px; background: #fff; color: #293840; cursor: pointer; font: inherit; text-align: left; }
+.main-domain-card:hover { border-color: #5db7b0; box-shadow: 0 7px 22px rgba(28,66,66,.11); transform: translateY(-1px); }
+.main-domain-card:focus-visible { outline: 3px solid rgba(21,151,142,.35); outline-offset: 2px; }
+.main-domain-card:disabled { cursor: not-allowed; opacity: .72; }
+.main-domain-card:disabled:hover { border-color: #d8e0e2; box-shadow: none; transform: none; }
+.main-domain-visual { display: grid; place-items: center; overflow: hidden; background: #172126; color: rgba(255,255,255,.5); font-size: 2rem; font-weight: 800; letter-spacing: .08em; }
+.main-domain-visual img { width: 100%; height: 100%; object-fit: cover; }
+.main-domain-copy { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px 12px; }
+.main-domain-copy small { color: #168a82; font-size: .55rem; font-weight: 800; letter-spacing: .05em; }
+.main-domain-copy strong { font-size: 1rem; }
+.main-domain-copy > span { color: #75838a; font-size: .64rem; }
+.main-domain-status { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-top: 1px solid #e5eaec; color: #167e77; font-size: .62rem; font-weight: 700; }
+.main-domain-card.placeholder .main-domain-status { color: #7f8b91; }
 .main-story-band { padding: 28px max(24px, calc((100% - 1120px) / 2)) 32px; background-color: rgba(255,255,255,.76); background-image: url('/assets/stories/story_background.png'); background-position: center top; background-size: cover; background-blend-mode: screen; border-bottom: 1px solid #dfe6e7; }
 .band-heading, .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 16px; }
 .band-heading span, .section-heading span { color: #168d85; font-size: .6rem; font-weight: 800; }
 .band-heading h2, .section-heading h2 { margin: 3px 0 0; font-size: 1.15rem; }
 .band-heading p { margin: 5px 0 0; color: #4f5f67; font-size: .68rem; }
 .band-heading > strong { color: #43545c; font-size: .68rem; }
+.band-actions { display: flex; align-items: center; gap: 12px; }
+.band-actions > strong { color: #43545c; font-size: .68rem; }
+.band-actions > button { display: inline-flex; align-items: center; gap: 5px; border: 0; background: transparent; color: #167e77; cursor: pointer; font: inherit; font-size: .66rem; }
 .main-chapters { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
 .chapter-entry { position: relative; overflow: hidden; min-height: 150px; padding: 0; border: 1px solid #d7dfe2; border-radius: 6px; background: #172126; color: #fff; cursor: pointer; text-align: left; }
 .chapter-entry > img { display: block; width: 100%; height: 100%; min-height: 150px; object-fit: cover; opacity: .86; }
@@ -309,7 +568,7 @@ function hierarchyLabel(entry) { return [entry.sectionLabel, entry.episodeLabel]
 .story-synopsis { display: -webkit-box; overflow: hidden; color: #69777f; font-size: .63rem; line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 2; white-space: pre-line; }.story-resource { color: #99a2a7; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .55rem; }
 .story-stats { display: flex; flex-direction: column; gap: 3px; color: #73808a; font-size: .6rem; text-align: right; }.row-arrow { color: #819097; }
 .empty-state { margin: 32px 0; color: #7a858e; font-size: .75rem; text-align: center; }.load-more { display: flex; align-items: center; justify-content: center; gap: 6px; width: calc(100% - 32px); min-height: 38px; margin: 0 16px 20px; border: 1px solid #d4dcdf; border-radius: 6px; background: #fff; color: #4f5c65; cursor: pointer; font: inherit; font-size: .69rem; }
-@media (max-width: 850px) { .event-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }.unit-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }.domain-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 850px) { .main-domain-hero { align-items: start; flex-direction: column; }.main-domain-hero dl { width: 100%; }.main-domain-grid, .extra-card-grid, .birthday-card-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.extra-domain-hero, .birthday-domain-hero { align-items: stretch; flex-direction: column; }.extra-domain-hero dl, .birthday-domain-hero dl { min-width: 0; width: 100%; }.event-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }.unit-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }.domain-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 @media (max-width: 980px) { .event-entity-grid { grid-template-columns: 1fr; } }
-@media (max-width: 620px) { .main-story-band, .portal-section { padding: 18px 12px; }.band-heading { align-items: start; }.main-chapters { grid-template-columns: 1fr; }.event-strip { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }.event-strip button { flex: 0 0 78%; scroll-snap-align: start; }.unit-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.catalog-toolbar { top: 51px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); padding: 8px 10px; }.catalog-toolbar label { min-width: 0; }.catalog-count { justify-self: end; margin: 0; }.story-list { padding: 9px; }.story-row { grid-template-columns: 25px 64px minmax(0,1fr) 16px; gap: 7px; }.story-stats { grid-column: 3; flex-direction: row; gap: 8px; text-align: left; }.row-arrow { grid-column: 4; grid-row: 1 / span 2; }.story-synopsis { -webkit-line-clamp: 3; }.event-entity-grid { padding: 9px; }.event-entity-grid > button { grid-template-columns: 116px minmax(0,1fr) 16px; min-height: 92px; padding-right: 8px; }.event-reward-icons { display: none; }.event-entity-copy > strong { white-space: normal; }.event-entity-copy > span { -webkit-line-clamp: 1; } }
+@media (max-width: 620px) { .main-domain-hero, .main-domain-collections, .main-story-band, .portal-section { padding: 18px 12px; }.main-domain-hero { gap: 18px; }.main-domain-hero h2 { font-size: 1.3rem; }.main-domain-hero dl { min-width: 0; }.main-domain-hero dl > div { padding: 9px; }.main-domain-grid { grid-template-columns: 1fr; }.main-domain-card { grid-template-rows: 136px minmax(92px,auto) 38px; }.extra-domain-hero, .birthday-domain-hero { padding: 22px 12px; }.extra-domain-section, .birthday-domain-section { padding: 18px 10px 30px; }.extra-card-grid, .birthday-card-grid { grid-template-columns: 1fr; }.extra-domain-hero dl div, .birthday-domain-hero dl div { padding: 10px 6px; }.band-heading { align-items: start; }.band-actions { align-items: end; flex-direction: column; gap: 5px; }.main-chapters { grid-template-columns: 1fr; }.event-strip { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }.event-strip button { flex: 0 0 78%; scroll-snap-align: start; }.unit-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.catalog-toolbar { top: 51px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); padding: 8px 10px; }.catalog-toolbar label { min-width: 0; }.catalog-count { justify-self: end; margin: 0; }.story-list { padding: 9px; }.story-row { grid-template-columns: 25px 64px minmax(0,1fr) 16px; gap: 7px; }.story-stats { grid-column: 3; flex-direction: row; gap: 8px; text-align: left; }.row-arrow { grid-column: 4; grid-row: 1 / span 2; }.story-synopsis { -webkit-line-clamp: 3; }.event-entity-grid { padding: 9px; }.event-entity-grid > button { grid-template-columns: 116px minmax(0,1fr) 16px; min-height: 92px; padding-right: 8px; }.event-reward-icons { display: none; }.event-entity-copy > strong { white-space: normal; }.event-entity-copy > span { -webkit-line-clamp: 1; } }
 </style>

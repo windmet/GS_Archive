@@ -72,7 +72,9 @@ import {
   FolderOpen,
   Home,
   Images,
+  LayoutGrid,
   MessageSquare,
+  Music,
   Search,
   Sparkles,
   Users,
@@ -94,9 +96,12 @@ defineProps({
 
 const emit = defineEmits(['navigate', 'back', 'update:modelValue'])
 
-const iconBySection = { home: Home, stories: BookMarked, idols: Users, cards: Images, gashas: Sparkles, interactions: MessageSquare, resources: FolderOpen }
+const iconBySection = { home: Home, stories: BookMarked, songs: Music, idols: Users, cards: Images, gashas: Sparkles, interactions: MessageSquare, resources: FolderOpen }
 const navigation = ARCHIVE_NAVIGATION.map(item => ({ ...item, icon: iconBySection[item.id] }))
-const mobileNavigation = navigation
+const mobileNavigation = [
+  ...navigation.filter(item => ['home', 'stories', 'idols'].includes(item.id)),
+  { id: 'apps', label: '应用', icon: LayoutGrid },
+]
 </script>
 
 <style scoped>
@@ -291,7 +296,7 @@ const mobileNavigation = navigation
     grid-column: 1;
     grid-row: 3;
     display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-columns: repeat(8, minmax(0, 1fr));
     border-top: 1px solid var(--archive-border);
     background: #fff;
     z-index: 20;

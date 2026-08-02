@@ -25,7 +25,7 @@ assert.deepEqual(
   {
     view: 'idol_detail', homeIdol: '', homeCue: '', homeCostume: '', category: 'idol', idol: '001tom', group: '', unit: '', unitFilter: '',
     storyType: '', storyMode: 'portal', storySection: '', story: '', mobileMode: 'personal', mobileScenario: '', eventScope: 'all', availability: 'all', sort: 'domain', episode: '', card: '',
-    gasha: '', gashaType: 'all', rarity: 'all', assetState: 'all', relationState: 'all', query: '',
+    gasha: '', gashaType: 'all', rarity: 'all', assetState: 'all', relationState: 'all', query: '', song: '', songScope: 'all',
     event: '', scenario: '', startStep: 0, endStep: 0, voice: '', returnView: '', parentView: '',
   },
 )
@@ -49,6 +49,7 @@ assert.equal(normalizeArchiveRoute({ view: 'player' }).view, 'home')
 assert.equal(normalizeArchiveRoute({ view: 'player', card: '001tom_n01', voice: '2_1_001_01_01_01' }).view, 'player')
 
 assert.equal(archiveSectionForRoute({ view: 'idol_detail', idol: '001tom' }), 'idols')
+assert.equal(archiveSectionForRoute({ view: 'idols' }), 'idols')
 assert.equal(archiveSectionForRoute({ view: 'groups', category: 'idol_chat', group: 'chat-1' }), 'interactions')
 assert.equal(archiveSectionForRoute({ view: 'card_detail', card: '001tom_n01' }), 'cards')
 assert.equal(archiveSectionForRoute({ view: 'archive_status' }), 'resources')
@@ -124,6 +125,40 @@ assert.equal(collectionBreadcrumbs[2].route.view, 'story_catalog')
 assert.equal(collectionBreadcrumbs[2].route.storyType, '')
 assert.equal(collectionBreadcrumbs[2].route.storyMode, 'portal')
 
+for (const [storyType, label, section] of [
+  ['main', '主线剧情', '101'],
+  ['extra', '额外剧情', '60201'],
+  ['birthday', '生日剧情', '001tom'],
+]) {
+  const landingBreadcrumbs = buildArchiveBreadcrumbs({
+    view: 'story_catalog',
+    storyType,
+    query: 'stable',
+    unitFilter: '01jup',
+    rarity: 'SSR',
+  })
+  assert.deepEqual(landingBreadcrumbs.map(item => item.label), ['资料馆', '剧情', label])
+  assert.equal(landingBreadcrumbs[1].route.storyType, '')
+  assert.equal(landingBreadcrumbs[1].route.query, 'stable')
+
+  const formalCollectionBreadcrumbs = buildArchiveBreadcrumbs(
+    {
+      view: 'story_collection',
+      storyType,
+      storySection: section,
+      query: 'stable',
+      unitFilter: '01jup',
+      rarity: 'SSR',
+    },
+    { title: `${label} collection`, domainLabel: label },
+  )
+  assert.equal(formalCollectionBreadcrumbs[2].route.storyType, storyType)
+  assert.equal(formalCollectionBreadcrumbs[2].route.storyMode, 'portal')
+  assert.equal(formalCollectionBreadcrumbs[2].route.query, 'stable')
+  assert.equal(formalCollectionBreadcrumbs[2].route.unitFilter, '01jup')
+  assert.equal(formalCollectionBreadcrumbs[2].route.rarity, 'SSR')
+}
+
 assert.deepEqual(
   buildArchiveBreadcrumbs({ view: 'external_story_resources' }).map(item => item.label),
   ['资料馆', '社区熟肉'],
@@ -176,6 +211,11 @@ const storyCollectionContext = readArchiveRoute('http://localhost/?view=story_co
 assert.equal(storyCollectionContext.view, 'story_collection')
 assert.equal(storyCollectionContext.storyType, 'unit_story')
 assert.equal(storyCollectionContext.storySection, '1')
+
+const mainStoryLandingContext = readArchiveRoute('http://localhost/?view=story_catalog&story_type=main')
+assert.equal(mainStoryLandingContext.view, 'story_catalog')
+assert.equal(mainStoryLandingContext.storyType, 'main')
+assert.equal(mainStoryLandingContext.storyMode, 'portal')
 
 const externalStoryResourceContext = readArchiveRoute('http://localhost/?view=external_story_resources')
 assert.equal(externalStoryResourceContext.view, 'external_story_resources')
@@ -272,5 +312,36 @@ assert.equal(eventEpisodeContext.endStep, 0)
 assert.equal(buildArchiveUrl('http://localhost/', eventEpisodeContext).searchParams.get('start_step'), '31')
 assert.equal(readArchiveRoute('http://localhost/?view=player&scenario=1_3_10001_01.json&start_step=nope').startStep, 0)
 assert.equal(readArchiveRoute('http://localhost/?view=player&scenario=1_3_10001_01.json&end_step=nope').endStep, 0)
+
+const songCatalogContext = readArchiveRoute('http://localhost/?view=song_catalog')
+assert.equal(songCatalogContext.view, 'song_catalog')
+assert.equal(songCatalogContext.songScope, 'all')
+
+const filteredSongCatalogContext = readArchiveRoute('http://localhost/?view=song_catalog&song_scope=layered&q=drive')
+assert.equal(filteredSongCatalogContext.songScope, 'layered')
+assert.equal(filteredSongCatalogContext.query, 'drive')
+assert.equal(buildArchiveUrl('http://localhost/', filteredSongCatalogContext).searchParams.get('song_scope'), 'layered')
+assert.equal(songCatalogContext.song, '')
+const songDetailContext = readArchiveRoute('http://localhost/?view=song_detail&song=drvalv')
+assert.equal(songDetailContext.view, 'song_detail')
+assert.equal(songDetailContext.song, 'drvalv')
+assert.equal(archiveSectionForRoute(songDetailContext), 'songs')
+assert.equal(normalizeArchiveRoute({ view: 'song_detail' }).view, 'song_catalog')
+assert.equal(buildArchiveUrl('http://localhost/', songDetailContext).searchParams.get('song'), 'drvalv')
+const songBreadcrumbs = buildArchiveBreadcrumbs({ view: 'song_detail', song: 'byndtd' }, { title: 'Beyond The Dream' })
+assert.deepEqual(songBreadcrumbs.map(item => item.label), ['资料馆', '歌曲', 'Beyond The Dream'])
+assert.equal(songBreadcrumbs[1].route.view, 'song_catalog')
+assert.equal(songBreadcrumbs[1].route.song, '')
+const songCatalogBreadcrumbs = buildArchiveBreadcrumbs({ view: 'song_catalog', song: '' })
+assert.deepEqual(songCatalogBreadcrumbs.map(item => item.label), ['资料馆', '歌曲'])
+assert.equal(songCatalogBreadcrumbs.length, 2)
+
+const portalHubContext = readArchiveRoute('http://localhost/?view=portal_hub')
+assert.equal(portalHubContext.view, 'portal_hub')
+assert.equal(archiveSectionForRoute(portalHubContext), 'apps')
+assert.deepEqual(buildArchiveBreadcrumbs(portalHubContext).map(item => item.label), ['资料馆', '应用'])
+const portalSongUrl = buildArchiveUrl('http://localhost/?view=portal_hub', { view: 'song_catalog' })
+assert.equal(portalSongUrl.searchParams.get('view'), 'song_catalog')
+assert.equal(portalSongUrl.searchParams.has('story_type'), false)
 
 console.log('Archive route contract: story portal and detail routes verified')

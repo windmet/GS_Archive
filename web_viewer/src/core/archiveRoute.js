@@ -19,6 +19,8 @@ const ROUTE_QUERY_KEYS = [
   'sort',
   'episode',
   'card',
+  'song',
+  'song_scope',
   'event',
   'gasha',
   'gasha_type',
@@ -47,6 +49,8 @@ const VALID_VIEWS = new Set([
   'event_detail',
   'gashas',
   'gasha_detail',
+  'song_catalog',
+  'song_detail',
   'archive_status',
   'story_catalog',
   'external_story_resources',
@@ -56,6 +60,7 @@ const VALID_VIEWS = new Set([
   'work_archive',
   'idol_story_archive',
   'mobile_archive',
+  'portal_hub',
   'unit_catalog',
   'unit_detail',
   'player',
@@ -72,6 +77,7 @@ const VALID_GASHA_TYPES = new Set(['all', 'standard_pickup', 'growing_fes', 'sta
 const VALID_STORY_AVAILABILITY = new Set(['all', 'playable', 'missing'])
 const VALID_STORY_SORTS = new Set(['domain', 'title', 'resource', 'steps_desc'])
 const VALID_STORY_MODES = new Set(['portal', 'search'])
+const VALID_SONG_SCOPES = new Set(['all', 'movie', 'mvlive', 'layered', 'oneshot', 'special'])
 const VALID_MOBILE_MODES = new Set(['personal', 'phone', 'unit', 'random'])
 const VALID_RETURN_VIEWS = new Set([...VALID_VIEWS].filter(view => !['player', 'spine_lab', 'chibi_stage'].includes(view)))
 
@@ -86,6 +92,7 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   work_archive: { section: 'stories', required: [], fallback: 'story_catalog' },
   idol_story_archive: { section: 'stories', required: [], fallback: 'story_catalog' },
   mobile_archive: { section: 'interactions', required: [], fallback: 'home' },
+  portal_hub: { section: 'apps', required: [] },
   unit_catalog: { section: 'idols', required: [] },
   unit_detail: { section: 'idols', required: ['unit'], fallback: 'unit_catalog' },
   idols: { section: 'category', required: [] },
@@ -99,6 +106,8 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   event_detail: { section: 'stories', required: ['event'], fallback: 'story_catalog' },
   gashas: { section: 'gashas', required: [] },
   gasha_detail: { section: 'gashas', required: ['gasha'], fallback: 'gashas' },
+  song_catalog: { section: 'songs', required: [] },
+  song_detail: { section: 'songs', required: ['song'], fallback: 'song_catalog' },
   player: { section: 'player', required: [], fallback: 'home' },
   spine_lab: { section: 'resources', required: [] },
   chibi_stage: { section: 'resources', required: [] },
@@ -107,6 +116,7 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
 const ARCHIVE_NAVIGATION = Object.freeze([
   { id: 'home', label: '首页' },
   { id: 'stories', label: '故事' },
+  { id: 'songs', label: '歌曲' },
   { id: 'idols', label: '偶像' },
   { id: 'cards', label: '卡片' },
   { id: 'gashas', label: '卡池' },
@@ -180,6 +190,8 @@ export function normalizeArchiveRoute(input = {}) {
     sort: allowed(clean(input.sort), VALID_STORY_SORTS, 'domain'),
     episode: clean(input.episode),
     card,
+    song: clean(input.song),
+    songScope: allowed(clean(input.songScope), VALID_SONG_SCOPES, 'all'),
     event: clean(input.event),
     gasha: clean(input.gasha),
     gashaType: allowed(clean(input.gashaType), VALID_GASHA_TYPES, 'all'),
@@ -206,6 +218,7 @@ export function archiveSectionForRoute(route) {
   const normalized = normalizeArchiveRoute(route)
   const section = ARCHIVE_ROUTE_CONTRACTS[normalized.view]?.section || 'stories'
   if (section !== 'category') return section
+  if (normalized.view === 'idols' && !normalized.category) return 'idols'
   if (normalized.category === 'cards') return 'cards'
   if (['idol_chat', 'idol_phone'].includes(normalized.category)) return 'interactions'
   if (normalized.category === 'idol') return 'idols'
@@ -228,6 +241,7 @@ function breadcrumbFilters(route) {
     availability: route.availability,
     sort: route.sort,
     storyMode: route.storyMode,
+    songScope: route.songScope,
   }
 }
 
@@ -300,6 +314,15 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
     ]
   }
 
+  if (['song_catalog', 'song_detail'].includes(route.view)) {
+    const songs = { label: '歌曲', route: breadcrumbRoute(route, 'song_catalog', { song: '' }) }
+    return route.view === 'song_catalog' ? [home, { label: songs.label }] : [
+      home,
+      songs,
+      current('歌曲详情', route.song),
+    ]
+  }
+
   if (route.view === 'event_detail') {
     return [
       home,
@@ -321,6 +344,12 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   }
 
   if (['story_catalog', 'story_collection', 'story_detail'].includes(route.view)) {
+    const formalDomainLabels = {
+      main: '主线剧情',
+      extra: '额外剧情',
+      birthday: '生日剧情',
+    }
+    const formalDomainLabel = formalDomainLabels[route.storyType] || ''
     const stories = {
       label: '剧情',
       route: breadcrumbRoute(route, 'story_catalog', {
@@ -329,7 +358,11 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
         story: '',
       }),
     }
-    if (route.view === 'story_catalog') return [home, { label: stories.label }]
+    if (route.view === 'story_catalog') {
+      return formalDomainLabel
+        ? [home, stories, { label: formalDomainLabel }]
+        : [home, { label: stories.label }]
+    }
 
     const items = [home, stories]
     const domainLabel = clean(entity.domainLabel)
@@ -337,7 +370,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
       items.push({
         label: domainLabel,
         route: breadcrumbRoute(route, 'story_catalog', {
-          storyType: '',
+          storyType: formalDomainLabel ? route.storyType : '',
           storySection: '',
           story: '',
           storyMode: 'portal',
@@ -353,6 +386,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   if (route.view === 'work_archive') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('工作档案', route.idol)]
   if (route.view === 'idol_story_archive') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('个人故事', route.idol)]
   if (route.view === 'mobile_archive') return [home, current('Mobile 通信', route.idol)]
+  if (route.view === 'portal_hub') return [home, { label: '应用' }]
 
   const fallbackDomains = {
     groups: '剧情',
@@ -389,6 +423,8 @@ export function readArchiveRoute(input = null) {
     sort: params.get('sort'),
     episode: clean(params.get('episode')),
     card: clean(params.get('card')),
+    song: clean(params.get('song')),
+    songScope: params.get('song_scope'),
     event: clean(params.get('event')),
     gasha: clean(params.get('gasha')),
     gashaType: params.get('gasha_type'),
@@ -431,6 +467,8 @@ export function buildArchiveUrl(input, route) {
   if (normalized.sort !== 'domain') url.searchParams.set('sort', normalized.sort)
   if (normalized.episode) url.searchParams.set('episode', normalized.episode)
   if (normalized.card) url.searchParams.set('card', normalized.card)
+  if (normalized.song) url.searchParams.set('song', normalized.song)
+  if (normalized.songScope !== 'all') url.searchParams.set('song_scope', normalized.songScope)
   if (normalized.event) url.searchParams.set('event', normalized.event)
   if (normalized.gasha) url.searchParams.set('gasha', normalized.gasha)
   if (normalized.gashaType !== 'all') url.searchParams.set('gasha_type', normalized.gashaType)

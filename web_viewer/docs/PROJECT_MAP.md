@@ -142,7 +142,9 @@ parity 或兼容参考。
   18 artifacts；
 - publication ledger 为 1 release / 1 stable logical ID；
 - external GS translation registry 当前有 8 条 exact mapping；
-- tracked PNG 为 108 个，约 26.4 MB；
+- tracked PNG 为 183 个，约 49.1 MB；其中 108 个为 grandfathered，
+  14 个为 P1 Extra Story 导航视觉，61 个为 P1 Song 的有界 RAW-derived
+  365x360 封面；
 - USM 为 260 个，当前 89 exact consumer、166 exact masterdata、5 unresolved。
 
 ## 5. 当前优先级（2026-07-30）

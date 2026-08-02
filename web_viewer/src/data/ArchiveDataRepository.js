@@ -4,16 +4,22 @@ const ARCHIVE_SOURCES = {
   gashaIndex: '/data/masterdata/gasha_index.json',
   eventIndex: '/data/masterdata/event_index.json',
   storyMaster: '/data/masterdata/story_master_index.json',
+  extraStoryVisualIndex: '/data/masterdata/extra_story_visual_index.json',
   storyPresentation: '/data/masterdata/story_presentation_index.json',
   seasonalCampaign: '/data/masterdata/seasonal_campaign_index.json',
   workStory: '/data/masterdata/work_story_index.json',
   idolUnit: '/data/masterdata/idol_unit_dictionary.json',
+  speakerDictionary: '/data/masterdata/speaker_dictionary.json',
   costumeDictionary: '/data/masterdata/costume_dictionary.json',
   archiveManifest: '/data/archive_manifest.json',
   archiveVerification: '/data/archive_verification.json',
   uiAssetCatalog: '/data/assets/ui_asset_catalog.json',
   rawCharacterImagePromotions: '/data/assets/raw_character_image_promotions.json',
   externalStoryResources: '/data/external_story_resources.json',
+  songCatalog: '/data/song_catalog.json',
+  songPlaybackAudio: '/data/song_playback_audio.json',
+  songExperimentalAudio: '/data/song_experimental_audio.json',
+  songJacketIndex: '/data/song_jacket_index.json',
 }
 
 const CARD_DETAIL_SOURCE = '/data/masterdata/card_detail_index.json'
@@ -52,6 +58,14 @@ function validatePayload(key, payload) {
   if (key === 'storyMaster' && !payload.main && !payload.idol_story) {
     throw new Error('storyMaster has no recognized story families')
   }
+  if (key === 'extraStoryVisualIndex' && (
+    payload.schema_version !== 1 ||
+    !Array.isArray(payload.entries) ||
+    payload.entries.length !== 7 ||
+    !payload.by_chapter_id
+  )) {
+    throw new Error('extraStoryVisualIndex must include seven table-178 relations')
+  }
   if (key === 'storyPresentation' && (!payload.by_file || payload.schema_version < 1)) {
     throw new Error('storyPresentation must include normalized display metadata')
   }
@@ -69,6 +83,9 @@ function validatePayload(key, payload) {
   }
   if (key === 'idolUnit' && !payload.by_idol_code) {
     throw new Error('idolUnit.by_idol_code is missing')
+  }
+  if (key === 'speakerDictionary' && !payload.speakers) {
+    throw new Error('speakerDictionary.speakers is missing')
   }
   if (key === 'costumeDictionary' && (!Array.isArray(payload.costumes) || !payload.by_model_resource_id)) {
     throw new Error('costumeDictionary must include costumes and by_model_resource_id')
@@ -98,6 +115,44 @@ function validatePayload(key, payload) {
     !Array.isArray(payload.entries)
   )) {
     throw new Error('externalStoryResources must include a v1 entries array')
+  }
+  if (key === 'songCatalog' && (
+    payload.schema_version !== 1 ||
+    !payload.songs ||
+    !payload.summary ||
+    typeof payload.songs !== 'object'
+  )) {
+    throw new Error('songCatalog must include a v1 songs map and summary')
+  }
+  if (key === 'songExperimentalAudio' && (
+    payload.schema_version !== 2 ||
+    payload.status !== 'experimental' ||
+    !Array.isArray(payload.scope) ||
+    !payload.scope.includes('song_detail') ||
+    !payload.scope.includes('chibi_stage') ||
+    !payload.songs ||
+    typeof payload.songs !== 'object'
+  )) {
+    throw new Error('songExperimentalAudio must include the v2 song-detail and Chibi-stage experimental contract')
+  }
+  if (key === 'songPlaybackAudio' && (
+    payload.schema_version !== 1 ||
+    payload.status !== 'local-derived' ||
+    !Array.isArray(payload.scope) ||
+    !payload.scope.includes('song_detail') ||
+    payload.summary?.catalog_songs !== 61 ||
+    payload.summary?.full_mix_tracks !== 61 ||
+    !payload.songs ||
+    typeof payload.songs !== 'object'
+  )) {
+    throw new Error('songPlaybackAudio must include the 61-song local full-mix contract')
+  }
+  if (key === 'songJacketIndex' && (
+    payload.schema_version !== 1 ||
+    !payload.entries ||
+    typeof payload.entries !== 'object'
+  )) {
+    throw new Error('songJacketIndex must include a v1 entries map')
   }
   return payload
 }
