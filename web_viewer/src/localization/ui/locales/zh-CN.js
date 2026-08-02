@@ -1,6 +1,9 @@
 export default Object.freeze({
   'player.back': '返回',
   'player.menu': '菜单',
+  'player.progress': '剧情进度',
+  'player.controls': '播放控制',
+  'player.language': '语言',
   'player.showUi': '显示界面',
   'player.previous': '上一段',
   'player.next': '下一段',

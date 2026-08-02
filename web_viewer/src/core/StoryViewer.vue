@@ -25,17 +25,16 @@
     <SpineStage ref="spineStageRef" :step="stageStep" :fallbackBg="firstAvailableBg" :debug-controls="RUNTIME_DEBUG" />
 
     <!-- Top bar -->
-    <div class="top-bar" v-if="compiledData && !HIDE_UI && !uiHidden">
-      <button class="bar-btn" @click="$emit('back')">{{ uiText('player.back') }}</button>
-      <div class="progress-counter">
-        <span v-if="currentEpisodeLabel" class="episode-badge">{{ currentEpisodeLabel }}</span>
-        <span class="step-counter">{{ playableStepNumber }} / {{ playableStepTotal }}</span>
-      </div>
-      <div class="top-bar-right">
-        <button class="lang-btn" @click.stop="cycleLanguage">{{ langLabel }}</button>
-        <button class="icon-btn" :title="uiText('player.menu')" :aria-label="uiText('player.menu')" @click.stop="menuOpen = true"><Menu :size="19" /></button>
-      </div>
-    </div>
+    <PlayerTopBar
+      v-if="compiledData && !HIDE_UI && !uiHidden"
+      :episode-label="currentEpisodeLabel"
+      :current="playableStepNumber"
+      :total="playableStepTotal"
+      :language="langLabel"
+      @back="$emit('back')"
+      @language="cycleLanguage"
+      @menu="menuOpen = true"
+    />
 
     <button v-if="uiHidden && !HIDE_UI" class="restore-ui" :title="uiText('player.showUi')" :aria-label="uiText('player.showUi')" @click.stop="uiHidden = false">
       <Eye :size="20" />
@@ -84,13 +83,18 @@
 
     </div>
 
-    <!-- Bottom navigation bar -->
-    <div class="nav-bar" v-if="compiledData && compiledData.steps.length > 0 && !HIDE_UI && !uiHidden && !episodeFinished">
-      <button class="nav-btn" @click.stop="goPrev" :disabled="isFirstStep">{{ uiText('player.previous') }}</button>
-      <button class="mode-btn" :class="{ active: autoEnabled }" @click.stop="toggleAuto">AUTO</button>
-      <button class="mode-btn" :class="{ active: skipEnabled }" @click.stop="toggleSkip">SKIP</button>
-      <button class="nav-btn" :title="uiText('player.next')" :aria-label="uiText('player.next')" @click.stop="goNext"><ChevronRight :size="21" /></button>
-    </div>
+    <!-- Bottom control dock -->
+    <PlayerControlDock
+      v-if="compiledData && compiledData.steps.length > 0 && !HIDE_UI && !uiHidden && !episodeFinished"
+      :auto-enabled="autoEnabled"
+      :skip-enabled="skipEnabled"
+      :previous-disabled="isFirstStep"
+      @previous="goPrev"
+      @auto="toggleAuto"
+      @skip="toggleSkip"
+      @backlog="openBacklog"
+      @next="goNext"
+    />
 
     <Transition name="menu-slide">
       <aside v-if="menuOpen && !HIDE_UI" class="playback-menu" :aria-label="uiText('player.settings.panel')">
@@ -156,7 +160,9 @@ import TitleUI from '../components/TitleUI.vue'
 import SynopsisUI from '../components/SynopsisUI.vue'
 import TextTimeUI from '../components/TextTimeUI.vue'
 import StoryBacklog from '../components/StoryBacklog.vue'
-import { BookOpenText, ChevronRight, Eye, EyeOff, FastForward, LogOut, Menu, Play, SkipForward, X } from '@lucide/vue'
+import { BookOpenText, Eye, EyeOff, FastForward, LogOut, Play, SkipForward, X } from '@lucide/vue'
+import PlayerTopBar from '../components/player/PlayerTopBar.vue'
+import PlayerControlDock from '../components/player/PlayerControlDock.vue'
 // SpineStage is lazy-loaded so PIXI.js only loads when a story opens
 const SpineStage = defineAsyncComponent(() => import('../components/SpineStage.vue'))
 import {
@@ -1014,62 +1020,6 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
   transform: translateY(0);
   filter: blur(0);
 }
-.top-bar {
-  position: absolute; top: 0; left: 0; right: 0; z-index: 10;
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 6px 12px; background: rgba(0,0,0,0.35);
-}
-.bar-btn {
-  background: rgba(255,255,255,0.15); color: #fff; border: none; padding: 4px 10px;
-  border-radius: 4px; cursor: pointer; font-size: 0.75rem;
-}
-.bar-btn:hover { background: rgba(255,255,255,0.25); }
-.progress-counter {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  pointer-events: none;
-}
-.step-counter { color: rgba(255,255,255,0.78); font-size: 0.75rem; }
-.episode-badge {
-  color: #061521;
-  background: rgba(136, 221, 255, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  border-radius: 4px;
-  padding: 2px 7px;
-  font-size: 0.68rem;
-  font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: 0;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
-}
-.top-bar-right { display: flex; align-items: center; gap: 6px; }
-.lang-btn {
-  background: rgba(255,255,255,0.12); color: #88ddff; border: 1px solid rgba(136,221,255,0.3);
-  padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;
-  font-weight: bold; letter-spacing: 0.5px;
-}
-.lang-btn:hover { background: rgba(136,221,255,0.2); }
-.nav-bar {
-  position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;
-  display: flex; justify-content: center; align-items: center; gap: 24px;
-  padding: 6px 16px; background: rgba(0,0,0,0.25);
-}
-.nav-btn {
-  background: transparent; color: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.25);
-  border-radius: 50%; width: 36px; height: 36px;
-  cursor: pointer; font-size: 1rem; line-height: 1;
-}
-.nav-btn:hover { background: rgba(255,255,255,0.15); }
-.nav-btn:disabled { opacity: 0.3; cursor: default; }
-.nav-btn svg { display: block; margin: auto; }
-.mode-btn { min-width: 48px; height: 28px; border: 1px solid rgba(255,255,255,.2); border-radius: 5px; background: rgba(0,0,0,.16); color: rgba(255,255,255,.48); cursor: pointer; font-size: .58rem; font-weight: 800; letter-spacing: .08em; }
-.mode-btn.active { border-color: #69d9c7; background: rgba(48,177,157,.24); color: #bff8ef; box-shadow: 0 0 10px rgba(105,217,199,.18); }
-
 .icon-btn { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 1px solid rgba(255,255,255,.3); border-radius: 4px; background: rgba(255,255,255,.12); color: #fff; cursor: pointer; }
 .icon-btn.dark { border-color: #d8e0e3; background: #fff; color: #26343c; }
 .restore-ui { position: absolute; top: 12px; right: 12px; z-index: 30; display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid rgba(255,255,255,.55); border-radius: 5px; background: rgba(15,25,30,.58); color: #fff; cursor: pointer; }
