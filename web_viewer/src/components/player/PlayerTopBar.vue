@@ -171,6 +171,12 @@ const progressPercent = computed(() => {
   .progress-capsule {
     height: 40px;
     padding: 0 var(--player-space-3);
+    gap: 6px;
+  }
+  .episode-badge {
+    max-width: 96px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 </style>
