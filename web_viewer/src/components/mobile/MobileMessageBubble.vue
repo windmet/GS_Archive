@@ -94,9 +94,14 @@ function messageParts(text) {
 
 .chat-name {
   font-size: 0.72rem;
-  color: var(--player-ink-700);
+  color: #526174;
+  align-self: flex-start;
+  /* Translucent label keeps names readable over dark unit backgrounds */
+  background: rgba(244, 247, 247, 0.78);
+  padding: 1px 8px;
+  border-radius: 999px;
   margin-left: 4px;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
 }
 
 .bubble-idol {
@@ -140,9 +145,12 @@ function messageParts(text) {
   border-radius: 12px;
 }
 
-/* The THE 虎牙道 dark background needs a readable name label */
-:deep(.msg-row) .chat-name {
-  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9);
+.inline-emoji {
+  display: inline-block;
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: -0.2em;
+  object-fit: contain;
 }
 
 @media (min-width: 700px) and (max-width: 1099px) {

@@ -38,4 +38,11 @@ defineProps({
   0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
   30% { transform: translateY(-4px); opacity: 1; }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .dot {
+    animation: none;
+    opacity: 0.55;
+  }
+}
 </style>

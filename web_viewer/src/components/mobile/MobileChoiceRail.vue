@@ -4,7 +4,9 @@
       v-for="(opt, i) in options"
       :key="opt.option_id || opt.label || i"
       class="choice-bubble"
-      :class="{ 'is-bilingual': isBilingualOption(opt) }"
+      :class="{ 'is-bilingual': isBilingualOption(opt), 'is-selected': selectedIndex === i }"
+      :aria-pressed="selectedIndex === i"
+      :disabled="locked && selectedIndex !== i"
       @click="select(opt, i)"
     >
       <LocalizedTextBlock class="choice-text" :display="optionDisplay(opt)" />
@@ -14,7 +16,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import LocalizedTextBlock from '../LocalizedTextBlock.vue'
 import { useStoryLocalization } from '../../localization/story/StoryLocalizationContext.js'
 import { resolveText } from '../../utils/TextHelper.js'
@@ -36,7 +38,19 @@ function isBilingualOption(option) {
   return Boolean(optionDisplay(option)?.view?.secondary?.text)
 }
 
+// Lock once selected to prevent double submission; unlock on the next step's options.
+const locked = ref(false)
+const selectedIndex = ref(-1)
+
+watch(() => props.options, () => {
+  locked.value = false
+  selectedIndex.value = -1
+})
+
 function select(opt, index) {
+  if (locked.value) return
+  locked.value = true
+  selectedIndex.value = index
   emit('select', { ...opt, index })
 }
 
@@ -95,6 +109,22 @@ const countClass = computed(() => {
   transform: scale(0.98);
 }
 
+.choice-bubble:disabled {
+  cursor: default;
+  opacity: 0.75;
+  transform: none;
+}
+
+.choice-bubble.is-selected {
+  background: var(--mobile-choice-lime);
+  color: var(--mobile-choice-lime-text);
+  box-shadow: 0 0 0 3px var(--mobile-choice-glow), 0 8px 22px rgba(3, 12, 20, 0.3);
+}
+
+.choice-bubble.is-selected .choice-text {
+  --localized-secondary-color: rgba(23, 51, 31, 0.72);
+}
+
 .choice-bubble:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 0;
@@ -132,6 +162,18 @@ const countClass = computed(() => {
 
 .rail-count-many .choice-bubble {
   flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .choice-bubble {
+    transition: none;
+  }
+  .choice-bubble:hover {
+    transform: none;
+  }
+  .choice-bubble:active {
+    transform: none;
+  }
 }
 
 @media (max-width: 699px) {

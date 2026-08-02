@@ -96,7 +96,8 @@ const backdropStyle = computed(() =>
   .scene-rail-slot {
     align-items: flex-end;
     justify-content: center;
-    padding: 0 16px calc(14px + env(safe-area-inset-bottom));
+    /* Clear the floating control dock above the safe area */
+    padding: 0 16px calc(80px + env(safe-area-inset-bottom));
   }
 }
 </style>
