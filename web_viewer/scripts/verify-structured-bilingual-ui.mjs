@@ -37,7 +37,7 @@ const targets = [
   ['Backlog', new URL('../src/components/StoryBacklog.vue', import.meta.url)],
   ['Title', new URL('../src/components/TitleUI.vue', import.meta.url)],
   ['Synopsis', new URL('../src/components/SynopsisUI.vue', import.meta.url)],
-  ['Mobile', new URL('../src/components/MobileUI.vue', import.meta.url)],
+  ['Mobile', new URL('../src/components/mobile/MobileMessageBubble.vue', import.meta.url)],
   ['Call', new URL('../src/components/CallUI.vue', import.meta.url)],
 ]
 const componentSource = await readFile(componentUrl, 'utf8')
