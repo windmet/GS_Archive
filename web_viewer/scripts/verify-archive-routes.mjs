@@ -4,8 +4,64 @@ import {
   buildArchiveBreadcrumbs,
   buildArchiveUrl,
   normalizeArchiveRoute,
+  onArchivePopState,
   readArchiveRoute,
+  shouldNavigateArchiveLinkInApp,
+  writeArchiveRoute,
 } from '../src/core/archiveRoute.js'
+
+assert.equal(shouldNavigateArchiveLinkInApp({ button: 0 }), true)
+assert.equal(shouldNavigateArchiveLinkInApp({ button: 0, ctrlKey: true }), false)
+assert.equal(shouldNavigateArchiveLinkInApp({ button: 0, metaKey: true }), false)
+assert.equal(shouldNavigateArchiveLinkInApp({ button: 0, shiftKey: true }), false)
+assert.equal(shouldNavigateArchiveLinkInApp({ button: 0, altKey: true }), false)
+assert.equal(shouldNavigateArchiveLinkInApp({ button: 1 }), false)
+assert.equal(shouldNavigateArchiveLinkInApp({ button: 0, defaultPrevented: true }), false)
+
+const browserHistoryCalls = []
+let popstateListener = null
+const originalWindow = globalThis.window
+globalThis.window = {
+  location: {
+    href: 'http://localhost/?view=story_detail&story=1_4_001_01.json',
+    origin: 'http://localhost',
+  },
+  history: {
+    state: { preserved: true },
+    pushState: (...args) => browserHistoryCalls.push(['pushState', ...args]),
+    replaceState: (...args) => browserHistoryCalls.push(['replaceState', ...args]),
+  },
+  addEventListener: (type, listener) => {
+    if (type === 'popstate') popstateListener = listener
+  },
+  removeEventListener: (type, listener) => {
+    if (type === 'popstate' && popstateListener === listener) popstateListener = null
+  },
+}
+try {
+  writeArchiveRoute({ view: 'story_catalog', storyType: 'main', query: 'stable' })
+  assert.equal(browserHistoryCalls[0][0], 'pushState')
+  assert.equal(browserHistoryCalls[0][1].preserved, true)
+  assert.equal(browserHistoryCalls[0][1].archiveRoute, true)
+  assert.equal(browserHistoryCalls[0][3].searchParams.get('story_type'), 'main')
+  assert.equal(browserHistoryCalls[0][3].searchParams.get('q'), 'stable')
+
+  writeArchiveRoute({ view: 'story_catalog' }, { replace: true })
+  assert.equal(browserHistoryCalls[1][0], 'replaceState')
+
+  let restoredRoute = null
+  const removePopstate = onArchivePopState(route => { restoredRoute = route })
+  globalThis.window.location.href = 'http://localhost/?view=story_catalog&story_type=main&q=stable'
+  popstateListener()
+  assert.equal(restoredRoute.view, 'story_catalog')
+  assert.equal(restoredRoute.storyType, 'main')
+  assert.equal(restoredRoute.query, 'stable')
+  removePopstate()
+  assert.equal(popstateListener, null)
+} finally {
+  if (originalWindow === undefined) delete globalThis.window
+  else globalThis.window = originalWindow
+}
 
 const legacyScenario = readArchiveRoute('http://localhost/?file=1_4_001_01')
 assert.equal(legacyScenario.view, 'player')

@@ -12,6 +12,7 @@
       :breadcrumbs="archiveBreadcrumbs"
       @navigate="navigateArchiveSection"
       @back="goArchiveBack"
+      @breadcrumb-navigate="navigateArchiveRoute"
     >
       <ArchiveImmersiveHome
         v-if="view === 'home'"
@@ -1808,11 +1809,15 @@ function openPortalHub() {
   commitView('portal_hub')
 }
 
-async function openPortalApp(targetRoute) {
+async function navigateArchiveRoute(targetRoute) {
   const href = buildArchiveUrl(window.location.href, targetRoute).href
   const nextRoute = readArchiveRoute(href)
   await applyArchiveRoute(nextRoute)
   syncArchiveRoute()
+}
+
+async function openPortalApp(targetRoute) {
+  await navigateArchiveRoute(targetRoute)
 }
 
 function openSongCatalog() {

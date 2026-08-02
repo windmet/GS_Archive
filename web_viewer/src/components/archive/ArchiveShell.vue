@@ -29,7 +29,10 @@
         <span>SideM Archive</span>
       </div>
       <div class="archive-heading">
-        <ArchiveBreadcrumb :items="breadcrumbs" />
+        <ArchiveBreadcrumb
+          :items="breadcrumbs"
+          @navigate="emit('breadcrumb-navigate', $event)"
+        />
         <h1>{{ title }}</h1>
       </div>
       <label v-if="searchable" class="archive-search">
@@ -94,7 +97,7 @@ defineProps({
   breadcrumbs: { type: Array, default: () => [] },
 })
 
-const emit = defineEmits(['navigate', 'back', 'update:modelValue'])
+const emit = defineEmits(['navigate', 'back', 'breadcrumb-navigate', 'update:modelValue'])
 
 const iconBySection = { home: Home, stories: BookMarked, songs: Music, idols: Users, cards: Images, gashas: Sparkles, interactions: MessageSquare, resources: FolderOpen }
 const navigation = ARCHIVE_NAVIGATION.map(item => ({ ...item, icon: iconBySection[item.id] }))

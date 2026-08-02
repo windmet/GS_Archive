@@ -418,7 +418,8 @@ Annotation 必须：
 
 ### P1-UI：门户统一面包屑
 
-状态：**implemented locally on `codex/archive-breadcrumb-p1-ui`；尚未提交或合并**。
+状态：**原始 UI 已在 `codex/archive-breadcrumb-p1-ui` 完成；
+`codex/archive-breadcrumb-spa-p1` 补齐站内 SPA 导航，仍待 PR/merge**。
 
 产品目标：
 
@@ -432,6 +433,12 @@ Annotation 必须：
 - 不读取或序列化浏览器 history stack；
 - 不建立第二套路由表，不在每个详情组件手写 URL；
 - 当前项不可点击，其余层级使用既有 route navigation；
+- breadcrumb 必须保留真实 `href` 供复制链接、新标签和修饰键点击使用；
+  但无修饰的主键/键盘激活必须阻止默认文档导航，交由现有
+  `applyArchiveRoute`、`writeArchiveRoute` 与 History API 完成站内切换；
+- 每次 breadcrumb 站内切换只新增一条 archive history entry，浏览器
+  Back/Forward 继续通过既有 `popstate` 恢复，不得调用 `location.assign`、
+  `location.replace` 或复制第二套状态恢复逻辑；
 - canonical hierarchy 与“用户从哪里点进来”分离，避免把关联实体伪造成父子；
 - 最多四层；移动端可折叠中间层；
 - 使用 `<nav aria-label="面包屑">`、有序列表和
@@ -452,10 +459,11 @@ story_detail
 external_story_resources
 ```
 
-验收必须同时覆盖自然入口、复制深链、刷新恢复、浏览器 Back、窄屏和标题缺失
-fallback。5174 最少抽查 Idol、Card、Event、Story collection、External
-resource 五类页面。该批只新增 breadcrumb model/component 与必要样式，不
-顺带重写搜索、关系数据、Back stack 或播放器导航。
+验收必须同时覆盖自然入口、复制深链、刷新恢复、浏览器 Back/Forward、窄屏、
+标题缺失 fallback，以及“普通点击不产生 document navigation、修饰键点击仍
+保持浏览器原生语义”。5174 最少抽查 Idol、Card、Event、Story collection、
+External resource 五类页面。该批只新增 breadcrumb model/component、站内
+导航接线与必要样式，不顺带重写搜索、关系数据、Back stack 或播放器导航。
 
 完整产品理由与代表路径见：
 

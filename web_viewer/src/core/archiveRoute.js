@@ -485,6 +485,15 @@ export function buildArchiveUrl(input, route) {
   return url
 }
 
+export function shouldNavigateArchiveLinkInApp(event = {}) {
+  return !event.defaultPrevented &&
+    (event.button == null || event.button === 0) &&
+    !event.altKey &&
+    !event.ctrlKey &&
+    !event.metaKey &&
+    !event.shiftKey
+}
+
 export function writeArchiveRoute(route, { replace = false } = {}) {
   const url = buildArchiveUrl(window.location.href, route)
   const state = { ...window.history.state, archiveRoute: true }

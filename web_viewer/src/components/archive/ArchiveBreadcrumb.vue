@@ -18,6 +18,7 @@
           <a
             v-if="item.route"
             :href="itemHref(item)"
+            @click="navigateInApp(item, $event)"
           >{{ item.label }}</a>
           <span v-else aria-current="page">{{ item.label }}</span>
         </li>
@@ -28,11 +29,15 @@
 
 <script setup>
 import { computed } from 'vue'
-import { buildArchiveUrl } from '../../core/archiveRoute.js'
+import {
+  buildArchiveUrl,
+  shouldNavigateArchiveLinkInApp,
+} from '../../core/archiveRoute.js'
 
 const props = defineProps({
   items: { type: Array, default: () => [] },
 })
+const emit = defineEmits(['navigate'])
 
 const accessibleLabel = computed(() => (
   `面包屑：${props.items.map(item => item.label).join('，')}`
@@ -40,6 +45,12 @@ const accessibleLabel = computed(() => (
 
 function itemHref(item) {
   return buildArchiveUrl(window.location.href, item.route).href
+}
+
+function navigateInApp(item, event) {
+  if (!shouldNavigateArchiveLinkInApp(event)) return
+  event.preventDefault()
+  emit('navigate', item.route)
 }
 </script>
 
