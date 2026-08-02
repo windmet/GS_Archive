@@ -173,15 +173,56 @@ function buildExtraCollection(series, extraDomain, catalog) {
   }
 }
 
-function birthdaySeriesLabel(resourceId) {
-  if (String(resourceId).startsWith('1_8_')) return '制作人生日问候'
-  if (String(resourceId).startsWith('1_7_')) return '偶像生日祝福'
-  if (String(resourceId).startsWith('1_2_')) return '生日短篇'
+function birthdayReleaseYear(releaseAt) {
+  if (Number(releaseAt) < 1577836800) return ''
+  return new Intl.DateTimeFormat('en', { year: 'numeric', timeZone: 'Asia/Tokyo' })
+    .format(new Date(Number(releaseAt) * 1000))
+}
+
+function birthdaySeriesLabel(resourceId, releaseAt, canonicalRelation = null) {
+  const resource = String(resourceId)
+  const year = birthdayReleaseYear(releaseAt)
+  if (canonicalRelation) return `${year ? `${year} · ` : ''}个人故事共享入口`
+  if (resource.startsWith('1_8_')) {
+    const batch = Number(resource.match(/_(\d{2})$/)?.[1] || 0)
+    return year ? `${year} · 制作人生日问候` : `制作人生日问候 · 第${batch || '?'}期`
+  }
+  if (resource.startsWith('1_7_')) return `${year ? `${year} · ` : ''}偶像生日祝福`
+  if (resource.startsWith('1_2_')) return `${year ? `${year} · ` : ''}生日短篇`
   return '生日剧情'
 }
 
-function buildBirthdayCollections(birthdayDomain, catalog) {
+function idolStoryRelationsByFile(idolEpisodes) {
+  const relations = new Map()
+  for (const chapter of idolEpisodes?.chapters || []) {
+    for (const section of chapter.sections || []) {
+      const episodesByFile = new Map()
+      for (const episode of section.episodes || []) {
+        const file = String(episode.compiled_file || '')
+        if (!file) continue
+        if (!episodesByFile.has(file)) episodesByFile.set(file, [])
+        episodesByFile.get(file).push(episode)
+      }
+      for (const [file, episodes] of episodesByFile) {
+        relations.set(file, {
+          idolCode: chapter.idol_code,
+          idolName: chapter.idol_name,
+          sectionId: section.id,
+          sectionName: section.name,
+          sectionTitle: section.scenario_title,
+          episodeId: episodes[0]?.id || '',
+          episodeNames: episodes.map(episode => episode.name),
+          openAt: Number(section.open_at || 0),
+        })
+      }
+    }
+  }
+  return relations
+}
+
+function buildBirthdayCollections(birthdayDomain, catalog, idolEpisodes) {
   const entries = new Map((birthdayDomain?.logicalEntries || []).map(entry => [entry.id, entry]))
+  const idolStoryRelations = idolStoryRelationsByFile(idolEpisodes)
   return (birthdayDomain?.collections || []).map(subjectCollection => {
     const logicalEntries = subjectCollection.logicalEntryIds
       .map(id => entries.get(id))
@@ -189,12 +230,13 @@ function buildBirthdayCollections(birthdayDomain, catalog) {
       .sort((left, right) => left.releaseAt - right.releaseAt || left.masterId.localeCompare(right.masterId))
     const chapters = logicalEntries.map(entry => {
       const story = catalog.find(item => item.file === entry.compiledFile) || null
+      const canonicalRelation = idolStoryRelations.get(entry.compiledFile) || null
       const startStep = Number(story?.playableStartIndex || 0) + 1
       const endStep = Number(story?.playableStepCount || story?.summary?.step_count || 0)
       const exists = Boolean(entry.compiledExists && story?.exists && entry.compiledFile)
       const episode = {
         id: entry.masterId,
-        label: entry.title || birthdaySeriesLabel(entry.resourceId),
+        label: entry.title || birthdaySeriesLabel(entry.resourceId, entry.releaseAt, canonicalRelation),
         resourceId: entry.resourceId,
         part: '',
         exists,
@@ -207,7 +249,7 @@ function buildBirthdayCollections(birthdayDomain, catalog) {
       }
       return {
         id: entry.masterId,
-        label: birthdaySeriesLabel(entry.resourceId),
+        label: birthdaySeriesLabel(entry.resourceId, entry.releaseAt, canonicalRelation),
         title: story?.preplaySynopsis?.title || story?.title || entry.title || '生日剧情',
         releaseAt: entry.releaseAt,
         backgroundId: '',
@@ -221,6 +263,7 @@ function buildBirthdayCollections(birthdayDomain, catalog) {
         dialogueCount: 0,
         voiceCount: episode.voiceCount,
         domainMemberships: entry.domainMemberships,
+        canonicalRelation,
       }
     })
     const subject = subjectCollection.subject
@@ -231,7 +274,7 @@ function buildBirthdayCollections(birthdayDomain, catalog) {
       sectionId: subject.code,
       title: `${subject.displayName || subject.code} 生日剧情`,
       eyebrow: subject.kind === 'npc' ? 'STAFF BIRTHDAY STORY' : 'IDOL BIRTHDAY STORY',
-      description: '按角色主体与 masterdata 系列整理，保留制作人生日问候、偶像生日祝福和生日短篇的独立逻辑身份。',
+      description: '生日档案收录独立的制作人生日问候与偶像生日祝福；若文件同时属于正式个人故事，本页只保留关系入口，完整章节以 Idol Episode 为准。',
       releaseAt: Math.max(0, ...chapters.map(chapter => chapter.releaseAt)),
       visualUrl: '',
       subject,
@@ -240,6 +283,8 @@ function buildBirthdayCollections(birthdayDomain, catalog) {
       playableChapterCount: chapters.filter(chapter => chapter.exists).length,
       episodeCount: chapters.length,
       playableEpisodeCount: chapters.filter(chapter => chapter.exists).length,
+      independentChapterCount: chapters.filter(chapter => !chapter.canonicalRelation).length,
+      sharedChapterCount: chapters.filter(chapter => chapter.canonicalRelation).length,
     }
   })
 }
@@ -247,6 +292,7 @@ function buildBirthdayCollections(birthdayDomain, catalog) {
 export function buildStoryCollections(data, catalog, {
   birthdayDomain = null,
   extraDomain = null,
+  idolEpisodes = null,
 } = {}) {
   if (!data) return []
   const collections = []
@@ -260,6 +306,6 @@ export function buildStoryCollections(data, catalog, {
   for (const series of resolvedExtraDomain?.collections || []) {
     collections.push(buildExtraCollection(series, resolvedExtraDomain, catalog || []))
   }
-  collections.push(...buildBirthdayCollections(birthdayDomain, catalog || []))
+  collections.push(...buildBirthdayCollections(birthdayDomain, catalog || [], idolEpisodes))
   return collections
 }

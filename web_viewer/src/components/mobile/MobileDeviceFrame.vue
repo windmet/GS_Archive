@@ -1,6 +1,6 @@
 <template>
   <div class="mobile-device-frame" :class="`variant-${variant}`">
-    <div class="device-inner">
+    <div class="device-inner" :style="surfaceStyle">
       <slot />
     </div>
   </div>
@@ -9,14 +9,19 @@
 <script setup>
 defineProps({
   variant: { type: String, default: 'chat' },
+  surfaceStyle: { type: Object, default: null },
 })
 </script>
 
 <style scoped>
 .mobile-device-frame {
   position: relative;
-  width: clamp(390px, 52vw, 720px);
-  height: min(92vh, 900px);
+  width: auto;
+  max-width: 100%;
+  height: min(760px, calc(100dvh - var(--player-content-top) - var(--player-content-bottom)));
+  max-height: 760px;
+  aspect-ratio: 0.78;
+  flex: 0 0 auto;
   background: #111;
   border-radius: 34px;
   border: 8px solid #222;
@@ -25,7 +30,7 @@ defineProps({
   display: flex;
   flex-direction: column;
   pointer-events: auto;
-  transform: translate(-4%, 1%) rotate(-3.5deg);
+  transform: rotate(-1.5deg);
   transform-origin: center;
 }
 
@@ -35,32 +40,34 @@ defineProps({
   min-height: 0;
   display: flex;
   flex-direction: column;
+  background: #eef1ef;
+  background-position: center;
+  background-size: cover;
 }
 
 /* Call variant sizing (handoff §5.7) */
 .variant-call {
-  width: clamp(380px, 48vw, 650px);
-  height: min(90vh, 860px);
+  aspect-ratio: 0.72;
 }
 
 @media (min-width: 700px) and (max-width: 1099px) {
   .mobile-device-frame {
-    width: min(60vw, 560px);
-    height: min(88vh, 760px);
+    width: auto;
     border-radius: 28px;
     border-width: 6px;
     transform: translate(0, 0) rotate(-1.5deg);
   }
   .variant-call {
-    width: min(58vw, 540px);
-    height: min(88vh, 780px);
+    aspect-ratio: 0.72;
   }
 }
 
 @media (max-width: 699px) {
   .mobile-device-frame {
     width: 100%;
-    height: 100dvh;
+    height: calc(100dvh - var(--player-content-top) - var(--player-content-bottom));
+    max-height: none;
+    aspect-ratio: auto;
     border-radius: 0;
     border-width: 0;
     box-shadow: none;
@@ -70,7 +77,7 @@ defineProps({
 
 @media (max-height: 760px) and (min-width: 700px) {
   .mobile-device-frame {
-    height: min(94vh, 720px);
+    max-height: 100%;
   }
 }
 </style>

@@ -56,9 +56,9 @@ const progressPercent = computed(() => {
 <style scoped>
 .player-top-bar {
   position: absolute;
-  top: var(--player-space-4);
-  left: var(--player-space-5);
-  right: var(--player-space-5);
+  top: var(--player-edge, var(--player-space-4));
+  left: var(--player-edge, var(--player-space-5));
+  right: var(--player-edge, var(--player-space-5));
   z-index: 20;
   display: flex;
   align-items: flex-start;

@@ -26,6 +26,7 @@ const CARD_DETAIL_SOURCE = '/data/masterdata/card_detail_index.json'
 const IDOL_COMMUNICATION_SOURCES = {
   idolEpisode: '/data/masterdata/idol_episode_index.json',
   mobileArchive: '/data/masterdata/mobile_archive_index.json',
+  randomTalkPresentation: '/data/masterdata/random_talk_presentation_index.json',
 }
 
 const payloadCache = new Map()
@@ -203,11 +204,12 @@ export function loadCardDetailData(options = {}) {
 }
 
 export async function loadIdolCommunicationData(options = {}) {
-  const [idolEpisode, mobileArchive] = await Promise.all([
+  const [idolEpisode, mobileArchive, randomTalkPresentation] = await Promise.all([
     fetchJson('idolEpisode', IDOL_COMMUNICATION_SOURCES.idolEpisode, options),
     fetchJson('mobileArchive', IDOL_COMMUNICATION_SOURCES.mobileArchive, options),
+    fetchJson('randomTalkPresentation', IDOL_COMMUNICATION_SOURCES.randomTalkPresentation, options),
   ])
-  return { idolEpisode, mobileArchive }
+  return { idolEpisode, mobileArchive, randomTalkPresentation }
 }
 
 export function clearArchiveDataCache() {

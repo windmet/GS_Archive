@@ -68,10 +68,15 @@ const countClass = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 18px;
-  width: clamp(220px, 26vw, 360px);
+  width: min(100%, 380px);
   max-height: min(62vh, 520px);
   overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  padding: 8px 20px 8px 8px;
   pointer-events: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.44) transparent;
 }
 
 .choice-bubble {
@@ -79,21 +84,39 @@ const countClass = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 64px;
-  padding: 14px 22px 14px 20px;
-  border: none;
-  border-radius: 18px;
-  background: var(--mobile-choice-teal);
+  width: 100%;
+  min-height: 72px;
+  padding: 16px 24px 16px 20px;
+  border: 3px solid rgba(105, 217, 199, 0.72);
+  border-radius: 28px 28px 10px 28px;
+  background: linear-gradient(145deg, #008D82, var(--mobile-choice-teal));
   color: var(--mobile-choice-teal-text);
   font-size: 0.95rem;
   font-weight: 600;
   line-height: 1.5;
   text-align: center;
   cursor: pointer;
-  box-shadow: 0 6px 18px rgba(3, 12, 20, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 0 0 3px rgba(0, 122, 114, 0.18),
+    0 10px 28px rgba(3, 12, 20, 0.34);
   transition:
     transform var(--player-motion-fast) var(--player-ease-standard),
     box-shadow var(--player-motion-fast) var(--player-ease-standard);
+}
+
+.choice-bubble:nth-child(even) {
+  border-color: rgba(183, 219, 59, 0.82);
+  background: linear-gradient(145deg, #8DD947, #66B936);
+  color: #17331f;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    0 0 0 3px rgba(183, 219, 59, 0.18),
+    0 10px 28px rgba(3, 12, 20, 0.34);
+}
+
+.choice-bubble:nth-child(even) .choice-text {
+  --localized-secondary-color: rgba(23, 51, 31, 0.72);
 }
 
 .choice-bubble.is-bilingual {
@@ -116,9 +139,8 @@ const countClass = computed(() => {
 }
 
 .choice-bubble.is-selected {
-  background: var(--mobile-choice-lime);
-  color: var(--mobile-choice-lime-text);
-  box-shadow: 0 0 0 3px var(--mobile-choice-glow), 0 8px 22px rgba(3, 12, 20, 0.3);
+  filter: brightness(1.08) saturate(1.08);
+  box-shadow: 0 0 0 5px var(--mobile-choice-glow), 0 12px 30px rgba(3, 12, 20, 0.38);
 }
 
 .choice-bubble.is-selected .choice-text {
@@ -133,14 +155,14 @@ const countClass = computed(() => {
 
 .choice-tail {
   position: absolute;
-  right: -14px;
+  right: -13px;
   top: 50%;
   width: 18px;
   height: 24px;
   transform: translateY(-50%);
   clip-path: polygon(0 0, 100% 50%, 0 100%);
   background: inherit;
-  border-left: none;
+  filter: drop-shadow(3px 1px 0 rgba(105, 217, 199, 0.72));
 }
 
 .choice-text {
@@ -182,15 +204,15 @@ const countClass = computed(() => {
     max-width: 420px;
     gap: 12px;
     max-height: min(42vh, 380px);
+    padding: 8px;
   }
   .choice-tail {
-    right: auto;
-    left: 50%;
-    top: -14px;
-    width: 24px;
-    height: 18px;
-    transform: translateX(-50%);
-    clip-path: polygon(0 0, 50% 100%, 100% 0);
+    display: none;
+  }
+  .choice-bubble {
+    min-height: 60px;
+    border-radius: 22px;
+    padding: 13px 18px;
   }
   .rail-count-one .choice-bubble {
     margin-top: 0;

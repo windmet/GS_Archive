@@ -12,7 +12,7 @@
     <PlayerIconButton class="mode-btn" :title="uiText('player.settings.skip')" :aria-label="uiText('player.settings.skip')" :active="skipEnabled" toggle @click="$emit('skip')">
       <FastForward :size="18" /><span>SKIP</span>
     </PlayerIconButton>
-    <PlayerIconButton :title="uiText('player.next')" :aria-label="uiText('player.next')" @click="$emit('next')">
+    <PlayerIconButton :title="uiText('player.next')" :aria-label="uiText('player.next')" :disabled="nextDisabled" @click="$emit('next')">
       <ChevronRight :size="22" />
     </PlayerIconButton>
   </div>
@@ -27,6 +27,7 @@ defineProps({
   autoEnabled: { type: Boolean, default: false },
   skipEnabled: { type: Boolean, default: false },
   previousDisabled: { type: Boolean, default: false },
+  nextDisabled: { type: Boolean, default: false },
 })
 
 defineEmits(['previous', 'auto', 'backlog', 'skip', 'next'])
