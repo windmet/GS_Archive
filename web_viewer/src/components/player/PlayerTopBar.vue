@@ -86,10 +86,11 @@ const progressPercent = computed(() => {
   gap: 10px;
   height: var(--player-hit-min);
   padding: 0 var(--player-space-4);
-  border: 1px solid var(--player-border-dark);
+  border: 1px solid var(--player-control-border);
   border-radius: var(--player-radius-pill);
-  background: var(--player-panel-dark);
-  color: var(--player-paper);
+  background: var(--player-control-surface);
+  color: var(--player-control-ink);
+  box-shadow: 0 4px 16px rgba(3, 12, 20, 0.16);
 }
 
 .step-counter {
@@ -113,9 +114,10 @@ const progressPercent = computed(() => {
 
 .progress-track {
   width: 100%;
-  height: 3px;
+  height: 4px;
   border-radius: var(--player-radius-pill);
-  background: rgba(250, 252, 252, 0.18);
+  background: rgba(15, 111, 104, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(15, 111, 104, 0.14);
   overflow: hidden;
 }
 
@@ -123,6 +125,7 @@ const progressPercent = computed(() => {
   height: 100%;
   border-radius: inherit;
   background: var(--player-accent);
+  box-shadow: 0 0 8px rgba(56, 184, 167, 0.32);
   transition: width var(--player-motion-base) var(--player-ease-standard);
 }
 
@@ -138,10 +141,11 @@ const progressPercent = computed(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--player-border-dark);
+  border: 1px solid var(--player-control-border);
   border-radius: var(--player-radius-control);
-  background: var(--player-panel-dark);
-  color: var(--player-accent-soft);
+  background: var(--player-control-surface);
+  color: var(--player-accent-strong);
+  box-shadow: 0 4px 16px rgba(3, 12, 20, 0.16);
   font-size: var(--player-font-ui-sm);
   font-weight: 700;
   letter-spacing: 0.03em;
@@ -151,7 +155,7 @@ const progressPercent = computed(() => {
     transform var(--player-motion-fast) var(--player-ease-standard);
 }
 .lang-btn:hover {
-  background: var(--player-panel-dark-hover);
+  background: var(--player-control-surface-hover);
   transform: translateY(-2px);
 }
 .lang-btn:active {

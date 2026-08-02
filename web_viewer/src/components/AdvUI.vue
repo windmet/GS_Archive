@@ -65,13 +65,21 @@ const isBilingual = computed(() => Boolean(display.value?.view?.secondary?.text)
   height: 42px;
   display: flex;
   align-items: center;
-  background: var(--player-accent-strong);
-  color: #fff;
+  background: linear-gradient(
+    100deg,
+    var(--player-nameplate-surface),
+    var(--player-nameplate-surface-end)
+  );
+  color: var(--player-nameplate-ink);
   font-size: 1.02rem;
   font-weight: 700;
   padding: 0 28px;
   border-radius: var(--player-radius-control);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  box-shadow:
+    0 5px 16px var(--player-nameplate-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  text-shadow: 0 1px 2px rgba(3, 64, 47, 0.28);
 }
 
 /* ── Dialog panel ── */

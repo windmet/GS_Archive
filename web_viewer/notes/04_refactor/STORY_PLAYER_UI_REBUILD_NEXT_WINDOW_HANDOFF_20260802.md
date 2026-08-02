@@ -139,7 +139,7 @@ getUnitMobileBgUrl(unitId)
 
 采用 **70% 原游戏辨识度 + 30% GS Archive 档案品牌**：
 
-- 保留全屏舞台、姓名牌、大对白框、EP 编号、AUTO/SKIP 与 SideM 青蓝强调；
+- 保留全屏舞台、姓名牌、大对白框、区间进度、AUTO/SKIP 与 SideM 青蓝强调；
 - 使用更轻的玻璃表面、统一圆角/阴影/间距和悬浮控制坞；
 - 不把原作截图直接作为 UI 背景；
 - 不做普通视频网站播放器；
@@ -195,6 +195,16 @@ ADV、Choice、Talk、Call、Spine 人物安全区域和移动端底部控件都
 
 禁止把 `I` 写成“原作精确参数”。如果后续获得无压缩截图或原始 UI 纹理，应把色号、取样文件、像素区域和日期写回主题目录。
 
+2026-08-02 补充核验：XAPK 主包 `assets/bin/Data/data.unity3d` 内可直接确认
+`StoryNovelView`、`StoryLogOnlyTextElement`、`StoryLogTextElement`、
+`StoryLogStampElement` 等对象，以及 `element_background_name_1/2/3`、
+`element_novel_text_ balloon`、`element_log_title`、`story_icon_log` 等 Sprite。
+这些资源可作为形状、原始像素尺寸和职责划分的 `A` 级证据，但最终画面还叠加
+Unity `Image.color`、材质、9-slice 与 prefab 布局；不得把单张导出 Sprite 的母版色
+直接等同于游戏最终色。网页继续使用 CSS 重建响应式表面，Unity 资源用于定标和回归。
+用户提供的实机截图姓名牌实色区域取样为约 `#10D583`，作为姓名牌专用色，
+不替换需要满足正文/按钮对比度的 `--player-accent-strong`。
+
 #### 3.2.2 Player 基础色板初值
 
 以下色板综合现有 Archive 青绿色、当前 Story UI 和截图所示青蓝强调，作为 UI PR 1 的实现初值：
@@ -210,10 +220,26 @@ ADV、Choice、Talk、Call、Spine 人物安全区域和移动端底部控件都
   --player-stage-scrim: rgba(3, 12, 20, 0.28);
   --player-panel-dark: rgba(6, 21, 33, 0.72);
   --player-panel-dark-hover: rgba(6, 21, 33, 0.84);
+  --player-control-surface: rgba(250, 252, 252, 0.92);
+  --player-control-surface-hover: rgba(255, 255, 255, 0.98);
+  --player-control-border: rgba(24, 36, 43, 0.18);
+  --player-control-ink: #18242b;
+  --player-control-muted: #526174;
   --player-accent: #38b8a7;
-  --player-accent-strong: #0f6f68;
+  --player-accent-strong: #147f77;
   --player-accent-soft: #bff8ef;
   --player-accent-line: rgba(56, 184, 167, 0.48);
+  --player-nameplate-surface: #10d583;
+  --player-nameplate-surface-end: #16cfa0;
+  --player-nameplate-ink: #ffffff;
+  --player-log-surface: rgba(248, 253, 252, 0.97);
+  --player-log-header: rgba(228, 250, 244, 0.96);
+  --player-log-entry: rgba(255, 255, 255, 0.86);
+  --player-log-entry-current: rgba(226, 250, 242, 0.94);
+  --player-log-accent: #087a57;
+  --player-active-surface: rgba(223, 245, 241, 0.98);
+  --player-active-border: #38b8a7;
+  --player-active-text: #0f6f68;
   --player-border-light: rgba(255, 255, 255, 0.62);
   --player-border-dark: rgba(255, 255, 255, 0.28);
   --player-focus-inner: #ffffff;
@@ -225,7 +251,10 @@ ADV、Choice、Talk、Call、Spine 人物安全区域和移动端底部控件都
 }
 ```
 
-对比度基线：`#FAFCFC / #18242B` 约 `15.38:1`；白字放在 `#0F6F68` 上约 `6.01:1`。`#159087` 可以继续用于浅底文字/边框，但不作为小号白字的实心按钮底色，因为白字对比约 `3.91:1`。
+对比度基线：`#FAFCFC / #18242B` 约 `15.38:1`；白字放在 `#147F77` 上约 `4.85:1`。`#159087` 可以继续用于浅底文字/边框，但不作为小号白字的实心按钮底色，因为白字对比约 `3.91:1`。播放器普通控件采用半透明浅色表面与深色图标；启用态使用 `rgba(223, 245, 241, 0.98)`、青绿边框和 `#0F6F68` 文字，避免 AUTO/SKIP 只靠细边框表达状态。
+姓名牌按用户确认保留实机风格白字；白字与 `#10D583` 约 `1.93:1`，属于明确接受的
+原作视觉还原例外。不要把这一例外扩散到正文、按钮或小号工具文字；这些区域仍必须
+遵守前述对比度基线，并依靠 `aria-label`、焦点态和语义结构提供完整无障碍信息。
 
 #### 3.2.3 尺寸、圆角和间距初值
 
@@ -756,7 +785,9 @@ feat(player): unify story player panels, backlog, and motion
 - `prefers-reduced-motion`；
 - 移动端面板交互。
 
-Backlog 仍使用现有 restore/replay action，不重写历史模型。菜单和 Backlog 可以一深一浅，但共享相同设计系统。
+Backlog 仍使用现有 restore/replay action，不重写历史模型。已确认的视觉方向为
+乳白主体、浅青标题带、白色记录卡和淡青当前态；菜单与 Backlog 共享同一浅色设计系统，
+不再保留旧版近黑色 Story Log 面板。
 
 ## 7. 推荐提交顺序
 
@@ -952,6 +983,29 @@ P2-A strict-v2 promotion 与 P2-B 2–4 小时长稳继续遵守既有独立轨�
 - 目标 viewport、双语和长文本通过；
 - 自动验证与 build 通过；
 - 没有 Runtime owner 变化。
+
+#### 2026-08-02 收尾状态
+
+当前实现已经满足 UI PR 1 的源码边界：正式界面不显示 raw step type/DBG，
+`runtimeDebug=1` 保留显式诊断；顶栏、浅色控制坞、亮青白字姓名牌、响应式 ADV
+和浅色 Story Log 已接入共享 token。AUTO/SKIP、语言、Backlog restore、返回目录
+与浏览器导航仍由原 owner 持有，没有迁移状态机、timer、音频或 history。
+
+顶部进度只展示当前播放区间内的 `current / total`。现有 compiled `episodes`
+主要保存 `start/end` 边界；1869 个旧投影中的 `episode_no` 全部为 `1`，另有 14 个
+authoritative 文件根本没有该字段，不能据此声称真实 `EP01`。因此 UI PR 1 删除了
+由 `episode_index + 1` 或该旧字段生成的 EP 标签，只保留原有导航边界。未来只有在
+masterdata/故事索引提供带 provenance 的正式 episode display label 后，才允许恢复
+顶部 EP 标签；不得从文件 part、数组顺序或播放区间反推。
+
+已通过 P1 专项验证、story presentation、playback range、runtime foundation、
+localization、routes、story audio、production build 与 `git diff --check`；5174 桌面
+真实链路已覆盖深链、自然入口、单语/双语、菜单、Backlog 打开与 restore。
+
+因此该批次可进入提交/推送和 PR 收尾。仍需在最终 PR 验收记录中明确：当前浏览器
+控制接口未执行真实 `390x844` 视口截图，移动端只有既有结构化 UI verifier 和 CSS
+断点证据；若团队将真实 390px 截图视为硬 merge gate，则在合并前补一轮人工验收。
+该缺口不允许被写成已执行，也不改变 P2-B 2–4 小时长稳仍为 **NOT EXECUTED**。
 
 ### UI PR 2 完成
 
