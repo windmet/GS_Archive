@@ -241,9 +241,25 @@ for (const [name, source] of [
     /rel="noopener noreferrer external"/,
     `${name} must isolate external navigation`,
   )
-  assert.match(source, /社区中文(?:资源|剧情)/, `${name} must label the link as a community resource`)
+  assert.match(source, /社区中文(?:资源|剧情)?/, `${name} must label the link as a community resource`)
   assert.match(source, /(?:entry\.)?resource\.uploader\.name/, `${name} must show uploader attribution`)
 }
+
+assert.match(
+  collectionComponent,
+  /<div class="chapter-actions" aria-label="章节观看方式">[\s\S]*class="chapter-community"[\s\S]*class="chapter-play"/,
+  'collection chapters must present community Chinese and the story player in one action group',
+)
+assert.match(
+  collectionComponent,
+  /剧情播放器[\s\S]*<small>实验功能<\/small>/,
+  'collection chapters must identify the internal player as experimental',
+)
+assert.doesNotMatch(
+  collectionComponent,
+  /chapter-external-resources/,
+  'collection community links must not remain hidden in the expanded detail panel',
+)
 
 assert.match(navigationComponent, /emit\('open-internal', entry\)/, 'navigation must retain an internal archive action')
 assert.match(navigationComponent, /不镜像视频、字幕、封面或头像/, 'navigation must state the mirror boundary')
