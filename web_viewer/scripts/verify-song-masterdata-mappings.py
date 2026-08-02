@@ -32,6 +32,9 @@ def main() -> None:
             encoding="utf-8"
         )
     )
+    song_catalog = json.loads(
+        (PROJECT_ROOT / "public/data/song_catalog.json").read_text(encoding="utf-8")
+    )
     units = json.loads(
         (PROJECT_ROOT / "public/data/masterdata/idol_unit_dictionary.json").read_text(
             encoding="utf-8"
@@ -76,6 +79,20 @@ def main() -> None:
         committed = music["songs"].get(code)
         if not committed:
             fail(f"{code}: missing from music_catalog")
+        published = song_catalog["songs"].get(code)
+        if not published:
+            fail(f"{code}: missing from song_catalog")
+        effective_row = song_rows[-1]
+        expected_song_data = {
+            "on_stage_count": effective_row.get("16"),
+            "has_switch_singer": bool(effective_row.get("17", 0)),
+            "has_original_member": bool(effective_row.get("35", 0)),
+            "has_solo_singing": bool(effective_row.get("37", 0)),
+            "solo_singing_open_at": effective_row.get("42"),
+            "original_song_id": effective_row.get("43"),
+        }
+        if published.get("song_data") != expected_song_data:
+            fail(f"{code}: SongData selection flags mismatch")
         selector = committed.get("performance_selector", {})
         if selector.get("category") != category:
             fail(f"{code}: category mismatch")
@@ -114,6 +131,11 @@ def main() -> None:
             f"expected 20 performer rows / 13 unique songs, got "
             f"{performer_rows} / {explicit_song_count}"
         )
+    if sum(
+        bool(song.get("song_data", {}).get("has_switch_singer"))
+        for song in song_catalog["songs"].values()
+    ) != 5:
+        fail("expected five songs to carry HasSwitchSinger")
     if music["songs"]["brndnf"]["performance_selector"]["unit_id"] != 1:
         fail("BRAND NEW FIELD must resolve to Jupiter")
     if music["songs"]["psblts"]["performance_selector"]["unit_id"] != 12:
