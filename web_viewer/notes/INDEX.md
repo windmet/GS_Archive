@@ -34,6 +34,11 @@ The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_889
 
 ## Current entry points
 
+- `notes/04_refactor/STORY_PLAYER_UI_REBUILD_NEXT_WINDOW_HANDOFF_20260802.md` -
+  current Story Player UI rebuild entry point: UI PR 1 player shell/ADV/debug
+  cleanup, UI PR 2 mobile Talk/Call/contextual Choice system, UI PR 3 panels and
+  motion, evidence-sampled color/size/motion tokens, corrected unit-background
+  ownership, exact Runtime boundary, fixture plan, and browser acceptance matrix.
 - `notes/03_audit/GS_ARCHIVE_P0_ARCHITECTURE_CLOSEOUT_20260730.md` -
   current code-owner, adapter, debug/retired, 26-route and machine-gate closeout;
   use this before opening a P1 product batch.
