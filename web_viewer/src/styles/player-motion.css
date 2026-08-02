@@ -1,0 +1,22 @@
+/* Player motion tokens and reduced-motion rules (UI PR 1)
+ * Per STORY_PLAYER_UI_REBUILD_NEXT_WINDOW_HANDOFF_20260802 §3.2.4:
+ * hover translate max -2px, active scale >= 0.98, panel enter <= 240ms,
+ * reduced motion keeps only an 80-120ms opacity fade.
+ */
+:root {
+  --player-motion-fast: 120ms;
+  --player-motion-base: 180ms;
+  --player-motion-panel: 240ms;
+  --player-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --player-ease-emphasized: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #story-viewer *,
+  #story-viewer *::before,
+  #story-viewer *::after {
+    transition-duration: 80ms !important;
+    animation-duration: 80ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
