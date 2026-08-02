@@ -33,12 +33,12 @@ assert.equal(missing.secondary, null)
 const componentUrl = new URL('../src/components/LocalizedTextBlock.vue', import.meta.url)
 const targets = [
   ['ADV', new URL('../src/components/AdvUI.vue', import.meta.url)],
-  ['Choice', new URL('../src/components/ChoiceUI.vue', import.meta.url)],
+  ['Choice', new URL('../src/components/choices/StageChoiceUI.vue', import.meta.url)],
   ['Backlog', new URL('../src/components/StoryBacklog.vue', import.meta.url)],
   ['Title', new URL('../src/components/TitleUI.vue', import.meta.url)],
   ['Synopsis', new URL('../src/components/SynopsisUI.vue', import.meta.url)],
   ['Mobile', new URL('../src/components/mobile/MobileMessageBubble.vue', import.meta.url)],
-  ['Call', new URL('../src/components/CallUI.vue', import.meta.url)],
+  ['Call', new URL('../src/components/mobile/MobileCallScene.vue', import.meta.url)],
 ]
 const componentSource = await readFile(componentUrl, 'utf8')
 assert.match(componentSource, /class="localized-primary"/)

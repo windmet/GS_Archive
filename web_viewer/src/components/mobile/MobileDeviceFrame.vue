@@ -1,10 +1,16 @@
 <template>
-  <div class="mobile-device-frame">
+  <div class="mobile-device-frame" :class="`variant-${variant}`">
     <div class="device-inner">
       <slot />
     </div>
   </div>
 </template>
+
+<script setup>
+defineProps({
+  variant: { type: String, default: 'chat' },
+})
+</script>
 
 <style scoped>
 .mobile-device-frame {
@@ -31,6 +37,12 @@
   flex-direction: column;
 }
 
+/* Call variant sizing (handoff §5.7) */
+.variant-call {
+  width: clamp(380px, 48vw, 650px);
+  height: min(90vh, 860px);
+}
+
 @media (min-width: 700px) and (max-width: 1099px) {
   .mobile-device-frame {
     width: min(60vw, 560px);
@@ -38,6 +50,10 @@
     border-radius: 28px;
     border-width: 6px;
     transform: translate(0, 0) rotate(-1.5deg);
+  }
+  .variant-call {
+    width: min(58vw, 540px);
+    height: min(88vh, 780px);
   }
 }
 
