@@ -1,0 +1,106 @@
+# GS Archive Extra Story Domain Landing
+
+Date: 2026-07-30
+Phase: P1-Story-IA-C
+Branch: `codex/story-extra-domain-landing-p1`
+Stacked base: `codex/story-domain-ia-a` (`cc8043b`)
+
+## Outcome
+
+`view=story_catalog&story_type=extra` is now a formal archive landing rather
+than an implicit search result page.
+
+The landing and collection routes use the masterdata identity model from
+`storyDomainIdentityIndex.js`:
+
+- 47 masterdata groups (later reconciled into 10 work-level collections);
+- 47 logical chapters;
+- 45 distinct resource IDs;
+- 44 compiled playback files.
+
+The counts intentionally differ. A compiled file is a playback target, not a
+semantic story identity.
+
+The 7 banners and 7 key visuals under `assets/stories/extra` are classified as
+bounded `portal-asset` navigation images. Their inventory `owner_release` value
+is the tracked-binary owner batch `2026-07-30-extra-story-visuals-001`, not a
+publication ledger transaction. This P1 batch does not claim strict-v2
+promotion; that remains P2-A.
+
+## Shared playback boundary
+
+`5_03_000_22.json` is shared by four masterdata entries:
+
+- 2022 April Fools opening;
+- 2022 April Fools ending;
+- 2023 April Fools opening;
+- 2023 April Fools ending.
+
+All four remain separate logical chapters. Playback uses the existing
+presentation boundaries and resolves to:
+
+- `episodes/5_03_000_22_a.json` for opening entries;
+- `episodes/5_03_000_22_b.json` for ending entries.
+
+This preserves logical identity without duplicating compiled media.
+
+## Routes and navigation
+
+- Domain landing:
+  `?view=story_catalog&story_type=extra`
+- Formal collection:
+  `?view=story_collection&story_type=extra&story_section=<master_group_id>`
+- Player:
+  keeps `story_type=extra`, `story_section`, `return=story_collection`, and
+  the selected episode file/range.
+
+Natural entry, direct deep link, refresh, browser Back, and the existing Back
+button return to the formal Extra landing. Stable query state such as `q`,
+`unit_filter`, and `rarity` remains in the route.
+
+## Responsive and accessibility contract
+
+- desktop: three-column collection grid;
+- medium viewport: two columns;
+- narrow viewport at 620 px or below: one column;
+- the statistics use `dl` semantics;
+- the collection list is a labelled region;
+- each collection is a native button with a complete accessible name.
+
+Desktop behavior was live-tested at 1280 by 720. The merge-gate follow-up on
+2026-08-02 also tested the Extra landing at a real 390 by 844 viewport: cards
+formed one column, the page had no horizontal overflow, and all seven banners
+loaded at their 300 by 150 natural size.
+
+## Verification
+
+Run:
+
+```powershell
+npm run verify:extra-story-domain-landing
+npm run verify:story-domain-identity
+npm run verify:story-collections
+npm run verify:story-presentation
+npm run verify:routes
+npm run verify:archive-baseline:source-only
+npm run build
+git diff --check
+```
+
+5174 acceptance covers:
+
+- natural entry from the story portal;
+- direct domain and collection deep links;
+- refresh;
+- browser Back and existing Back;
+- stable route filters;
+- shared a/b playback boundaries.
+
+## Explicit exclusions
+
+- birthday formal archive work remains P1-Story-IA-D;
+- breadcrumb integration across the independent P1 branches remains a small
+  merge-order patch;
+- search, relationship data, player internals, and publication are unchanged;
+- strict-v2 promotion remains P2-A;
+- 2–4 hour soak remains P2-B and is still **NOT EXECUTED**.

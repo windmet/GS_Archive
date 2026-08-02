@@ -9,6 +9,7 @@
       :searchable="archiveSearchable"
       :search-placeholder="archiveSearchPlaceholder"
       :show-back="archiveShowBack"
+      :breadcrumbs="archiveBreadcrumbs"
       @navigate="navigateArchiveSection"
       @back="goArchiveBack"
     >
@@ -198,6 +199,9 @@
         :work-idols="workStoryData?.idols || []"
         :idol-story-count="idolEpisodeData?.meta?.section_count || 0"
         :external-resource-count="externalStoryNavigationEntries.length"
+        :main-domain="mainStoryDomain"
+        :extra-domain="extraStoryDomain"
+        :birthday-domain="birthdayStoryDomain"
         @select="openCatalogStory"
         @browse="browseStoryCollection"
         @open-external-resources="openExternalStoryResources"
@@ -238,6 +242,7 @@
         :initial-chapter-id="currentStoryCollectionChapter?.id || ''"
         @play-chapter="playStoryCollectionChapter"
         @play-episode="playStoryCollectionEpisode"
+        @open-gasha="openGasha"
       />
 
       <ArchiveSeasonalCampaign
@@ -373,9 +378,15 @@ import {
 import { buildArchiveHomeHighlights, buildArchiveHomeState } from './data/archiveHomeState.js'
 import { buildEventStoryEpisodes } from './data/eventStoryEpisodes.js'
 import { buildStoryCollections } from './data/storyCollections.js'
+import {
+  buildBirthdayStoryDomainIdentity,
+  buildExtraStoryDomainIdentity,
+  buildMainStoryDomainIdentity,
+} from './data/storyDomainIdentityIndex.js'
 import { buildIdolStoryOptions, buildIdolStoryPage } from './data/idolCommunicationSelectors.js'
 import {
   archiveSectionForRoute,
+  buildArchiveBreadcrumbs,
   onArchivePopState,
   readArchiveRoute,
   writeArchiveRoute,
@@ -429,6 +440,7 @@ const eventIndexData = ref(null)
 const cardDetailData = ref(null)
 const cardDetailLoadPromise = ref(null)
 const storyMasterData = ref(null)
+const extraStoryVisualIndexData = ref(null)
 const storyPresentationData = ref(null)
 const seasonalCampaignData = ref(null)
 const workStoryData = ref(null)
@@ -436,6 +448,7 @@ const idolEpisodeData = ref(null)
 const mobileArchiveData = ref(null)
 const idolCommunicationLoadPromise = ref(null)
 const idolUnitData = ref(null)
+const speakerDictionaryData = ref(null)
 const costumeDictionaryData = ref(null)
 const archiveManifestData = ref(null)
 const archiveVerificationData = ref(null)
@@ -708,6 +721,10 @@ const storyCatalog = computed(() => buildStoryCatalog(storyMasterData.value, sto
   }
 }))
 
+const mainStoryDomain = computed(() => (
+  storyMasterData.value ? buildMainStoryDomainIdentity(storyMasterData.value) : null
+))
+
 const currentSeasonalCampaign = computed(() => {
   const campaigns = seasonalCampaignData.value?.campaigns || []
   return seasonalCampaignData.value?.by_id?.[currentStorySection.value] ||
@@ -798,10 +815,32 @@ const currentStoryExternalResources = computed(() =>
   externalResourcesForStory(externalStoryResourcesData.value, currentStory.value),
 )
 
-const storyCollections = computed(() => buildStoryCollections(storyMasterData.value, storyCatalog.value))
+const extraStoryDomain = computed(() => buildExtraStoryDomainIdentity(
+  storyMasterData.value,
+  gashaIndexData.value,
+  extraStoryVisualIndexData.value,
+))
+const birthdayStoryDomain = computed(() => buildBirthdayStoryDomainIdentity(
+  storyMasterData.value,
+  idolUnitData.value,
+  speakerDictionaryData.value,
+))
+
+const storyCollections = computed(() => buildStoryCollections(
+  storyMasterData.value,
+  storyCatalog.value,
+  {
+    birthdayDomain: birthdayStoryDomain.value,
+    extraDomain: extraStoryDomain.value,
+  },
+))
 
 const currentStoryCollection = computed(() => storyCollections.value.find(collection =>
-  collection.domain === currentStoryDomain.value && collection.sectionId === currentStorySection.value,
+  collection.domain === currentStoryDomain.value &&
+  (
+    collection.sectionId === currentStorySection.value ||
+    collection.legacySectionIds?.includes(currentStorySection.value)
+  ),
 ) || null)
 
 const currentStoryCollectionExternalResources = computed(() =>
@@ -1203,7 +1242,12 @@ const archiveSection = computed(() => archiveSectionForRoute({
 const archiveTitle = computed(() => {
   if (view.value === 'home') return 'SideM Archive'
   if (view.value === 'archive_status') return '数据状态'
-  if (view.value === 'story_catalog') return '故事目录'
+  if (view.value === 'story_catalog') {
+    if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'main') return '主线剧情'
+    if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'extra') return '额外剧情'
+    if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'birthday') return '生日剧情'
+    return '故事目录'
+  }
   if (view.value === 'external_story_resources') return '社区中文剧情'
   if (view.value === 'story_detail') return currentStory.value?.title || '故事详情'
   if (view.value === 'story_collection') return currentStoryCollection.value?.title || '故事章节'
@@ -1240,6 +1284,61 @@ const archiveSearchPlaceholder = computed(() => {
 })
 
 const archiveShowBack = computed(() => view.value !== 'home')
+
+const archiveBreadcrumbs = computed(() => {
+  const route = currentArchiveRoute()
+  const entityByView = {
+    idol_detail: {
+      title: currentIdolProfile.value?.display_name,
+      id: currentCharacterId.value,
+    },
+    unit_detail: {
+      title: currentArchiveUnit.value?.unit_name,
+      id: currentArchiveUnitCode.value,
+    },
+    card_detail: {
+      title: currentCard.value?.title,
+      id: currentCardId.value,
+    },
+    gasha_detail: {
+      title: currentGasha.value?.display_name,
+      id: currentGashaId.value,
+    },
+    event_detail: {
+      title: currentEvent.value?.title,
+      id: currentEventId.value,
+    },
+    story_collection: {
+      title: currentStoryCollection.value?.title,
+      id: currentStorySection.value,
+      domainLabel: currentStoryCollection.value?.domainLabel,
+    },
+    story_detail: {
+      title: currentStory.value?.title,
+      id: currentStoryFile.value,
+      domainLabel: currentStory.value?.domainLabel,
+    },
+    seasonal_campaign: {
+      title: currentSeasonalCampaign.value?.name,
+      id: currentStorySection.value,
+    },
+    work_archive: {
+      title: archiveTitle.value,
+      id: currentCharacterId.value,
+    },
+    idol_story_archive: {
+      title: archiveTitle.value,
+      id: currentCharacterId.value,
+    },
+    mobile_archive: {
+      title: archiveTitle.value,
+      id: currentCharacterId.value,
+    },
+  }
+  return buildArchiveBreadcrumbs(route, entityByView[view.value] || {
+    title: archiveTitle.value,
+  })
+})
 
 function idolSourceName(id, fallback = '') {
   if (!id) return ''
@@ -1622,7 +1721,18 @@ function goArchiveBack() {
     },
     event_detail: goBackFromEvent,
     archive_status: goHome,
-    story_catalog: goHome,
+    story_catalog: () => {
+      if (
+        currentStoryMode.value === 'portal' &&
+        ['main', 'extra', 'birthday'].includes(currentStoryDomain.value)
+      ) {
+        currentStoryDomain.value = ''
+        currentStorySection.value = ''
+        commitView('story_catalog')
+        return
+      }
+      goHome()
+    },
     external_story_resources: () => commitView('story_catalog'),
     story_detail: () => {
       const parent = storyDetailParentView.value
@@ -1632,7 +1742,9 @@ function goArchiveBack() {
     },
     story_collection: () => {
       const parent = storyCollectionParentView.value
-      currentStoryDomain.value = ''
+      const domain = currentStoryDomain.value
+      const returnsToDomainLanding = ['main', 'extra', 'birthday'].includes(domain) && parent !== 'external_story_resources'
+      currentStoryDomain.value = returnsToDomainLanding ? domain : ''
       currentStorySection.value = ''
       currentStoryFile.value = ''
       storyCollectionParentView.value = ''
@@ -1778,14 +1890,27 @@ function setStoryMode(mode) {
   }
 }
 
-function browseStoryCollection({ domain, section = '' }) {
-  if (section && ['main', 'unit_story'].includes(domain)) {
+function browseStoryCollection({ domain, section = '', mode = '' }) {
+  if (section && ['main', 'unit_story', 'extra', 'birthday'].includes(domain)) {
     currentStoryDomain.value = domain
     currentStorySection.value = section
     currentStoryMode.value = 'portal'
     currentStoryFile.value = ''
     storyCollectionParentView.value = ''
     commitView('story_collection')
+    return
+  }
+  const opensFormalDomain = (mode === 'portal' && domain === 'main') ||
+    ['extra', 'birthday'].includes(domain)
+  if (opensFormalDomain) {
+    currentStoryDomain.value = domain
+    currentStorySection.value = ''
+    currentStoryMode.value = 'portal'
+    currentStoryFile.value = ''
+    storyCollectionParentView.value = ''
+    currentEventScope.value = 'all'
+    storyVisibleLimit.value = 80
+    commitView('story_catalog')
     return
   }
   filterQuery.value = ''
@@ -2560,10 +2685,12 @@ onMounted(async () => {
   gashaIndexData.value = data.gashaIndex
   eventIndexData.value = data.eventIndex
   storyMasterData.value = data.storyMaster
+  extraStoryVisualIndexData.value = data.extraStoryVisualIndex
   storyPresentationData.value = data.storyPresentation
   seasonalCampaignData.value = data.seasonalCampaign
   workStoryData.value = data.workStory
   idolUnitData.value = data.idolUnit
+  speakerDictionaryData.value = data.speakerDictionary
   costumeDictionaryData.value = data.costumeDictionary
   archiveManifestData.value = data.archiveManifest
   archiveVerificationData.value = data.archiveVerification

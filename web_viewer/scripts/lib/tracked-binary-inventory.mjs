@@ -82,6 +82,19 @@ function classify(relativePath) {
     }
   }
 
+  const extraStoryMatch = stem.match(/^image_extra_(banner|kv_story)_(\d+)$/)
+  if (extraStoryMatch && relativePath.includes('/assets/stories/extra/')) {
+    return {
+      category: 'portal-asset',
+      logical_id: `extra-story-${extraStoryMatch[1]}:${extraStoryMatch[2]}`,
+      consumer: ['ArchiveStoryCatalog', 'ArchiveStoryCollection'],
+      reason_tracked: 'bounded RAW-derived Extra Story portal navigation visual',
+      force_add_allowed: true,
+      owner_release: '2026-07-30-extra-story-visuals-001',
+      grandfathered: false,
+    }
+  }
+
   if (relativePath.includes('/assets/silhouette/')) {
     return {
       category: 'test-fixture',
@@ -143,8 +156,8 @@ export async function generateTrackedBinaryInventory({
       bytes: statSync(filename).size,
       sha256: await sha256(filename),
       ...classification,
-      owner_release: null,
-      grandfathered: true,
+      owner_release: classification.owner_release ?? null,
+      grandfathered: classification.grandfathered ?? true,
     })
   }
 

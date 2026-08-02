@@ -114,6 +114,8 @@ const ARCHIVE_NAVIGATION = Object.freeze([
   { id: 'resources', label: '资源' },
 ])
 
+const BREADCRUMB_HIDDEN_VIEWS = new Set(['home', 'player', 'spine_lab', 'chibi_stage'])
+
 function clean(value) {
   return typeof value === 'string' ? value.trim() : ''
 }
@@ -208,6 +210,167 @@ export function archiveSectionForRoute(route) {
   if (['idol_chat', 'idol_phone'].includes(normalized.category)) return 'interactions'
   if (normalized.category === 'idol') return 'idols'
   return 'stories'
+}
+
+function breadcrumbTitle(entity, fallback) {
+  return clean(entity?.title) || clean(entity?.id) || fallback
+}
+
+function breadcrumbFilters(route) {
+  return {
+    query: route.query,
+    unitFilter: route.unitFilter,
+    eventScope: route.eventScope,
+    rarity: route.rarity,
+    assetState: route.assetState,
+    relationState: route.relationState,
+    gashaType: route.gashaType,
+    availability: route.availability,
+    sort: route.sort,
+    storyMode: route.storyMode,
+  }
+}
+
+function breadcrumbRoute(route, view, overrides = {}) {
+  return {
+    ...breadcrumbFilters(route),
+    view,
+    ...overrides,
+    parentView: '',
+    returnView: '',
+  }
+}
+
+/**
+ * Build the canonical archive hierarchy for the active query route.
+ * Browsing provenance (`parent` / `return`) is intentionally excluded.
+ */
+export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
+  const route = normalizeArchiveRoute(inputRoute)
+  if (BREADCRUMB_HIDDEN_VIEWS.has(route.view)) return []
+
+  const home = { label: '资料馆', route: { view: 'home' } }
+  const current = (fallback, id = '') => ({
+    label: breadcrumbTitle({ title: entity.title, id: entity.id || id }, fallback),
+  })
+
+  if (['idols', 'idol_detail'].includes(route.view)) {
+    const idols = {
+      label: '偶像',
+      route: breadcrumbRoute(route, 'idols', { idol: '', category: '' }),
+    }
+    return route.view === 'idols' ? [home, { label: idols.label }] : [
+      home,
+      idols,
+      current('偶像详情', route.idol),
+    ]
+  }
+
+  if (['unit_catalog', 'unit_detail'].includes(route.view)) {
+    const units = { label: '组合', route: breadcrumbRoute(route, 'unit_catalog', { unit: '' }) }
+    return route.view === 'unit_catalog' ? [home, { label: units.label }] : [
+      home,
+      units,
+      current('组合详情', route.unit),
+    ]
+  }
+
+  if (['cards', 'card_detail'].includes(route.view)) {
+    const cards = {
+      label: '卡牌',
+      route: breadcrumbRoute(route, 'cards', {
+        idol: route.idol,
+        card: '',
+        category: 'cards',
+      }),
+    }
+    return route.view === 'cards' ? [home, { label: cards.label }] : [
+      home,
+      cards,
+      current('卡牌详情', route.card),
+    ]
+  }
+
+  if (['gashas', 'gasha_detail'].includes(route.view)) {
+    const gashas = { label: '卡池', route: breadcrumbRoute(route, 'gashas', { gasha: '' }) }
+    return route.view === 'gashas' ? [home, { label: gashas.label }] : [
+      home,
+      gashas,
+      current('卡池详情', route.gasha),
+    ]
+  }
+
+  if (route.view === 'event_detail') {
+    return [
+      home,
+      {
+        label: '活动',
+        route: breadcrumbRoute(route, 'story_catalog', {
+          storyType: 'event',
+          storySection: '',
+          story: '',
+          event: '',
+        }),
+      },
+      current('活动详情', route.event),
+    ]
+  }
+
+  if (route.view === 'external_story_resources') {
+    return [home, { label: '社区熟肉' }]
+  }
+
+  if (['story_catalog', 'story_collection', 'story_detail'].includes(route.view)) {
+    const formalDomainLabels = {
+      main: '主线剧情',
+      extra: '额外剧情',
+      birthday: '生日剧情',
+    }
+    const formalDomainLabel = formalDomainLabels[route.storyType] || ''
+    const stories = {
+      label: '剧情',
+      route: breadcrumbRoute(route, 'story_catalog', {
+        storyType: '',
+        storySection: '',
+        story: '',
+      }),
+    }
+    if (route.view === 'story_catalog') {
+      return formalDomainLabel
+        ? [home, stories, { label: formalDomainLabel }]
+        : [home, { label: stories.label }]
+    }
+
+    const items = [home, stories]
+    const domainLabel = clean(entity.domainLabel)
+    if (domainLabel) {
+      items.push({
+        label: domainLabel,
+        route: breadcrumbRoute(route, 'story_catalog', {
+          storyType: formalDomainLabel ? route.storyType : '',
+          storySection: '',
+          story: '',
+          storyMode: 'portal',
+        }),
+      })
+    }
+    items.push(current(route.view === 'story_collection' ? '故事章节' : '故事详情', route.story || route.storySection))
+    return items.length <= 4 ? items : [items[0], ...items.slice(-3)]
+  }
+
+  if (route.view === 'archive_status') return [home, { label: '资源' }]
+  if (route.view === 'seasonal_campaign') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('季节企划', route.storySection)]
+  if (route.view === 'work_archive') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('工作档案', route.idol)]
+  if (route.view === 'idol_story_archive') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('个人故事', route.idol)]
+  if (route.view === 'mobile_archive') return [home, current('Mobile 通信', route.idol)]
+
+  const fallbackDomains = {
+    groups: '剧情',
+    episode_zero_units: '剧情',
+    episodes: '剧情',
+    files: '剧情',
+  }
+  return [home, current(fallbackDomains[route.view] || '资料')]
 }
 
 export function readArchiveRoute(input = null) {

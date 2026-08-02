@@ -418,7 +418,7 @@ Annotation 必须：
 
 ### P1-UI：门户统一面包屑
 
-状态：**approved for a future bounded UI batch；尚未实现**。
+状态：**implemented locally on `codex/archive-breadcrumb-p1-ui`；尚未提交或合并**。
 
 产品目标：
 
@@ -462,6 +462,138 @@ resource 五类页面。该批只新增 breadcrumb model/component 与必要样�
 ```text
 notes/03_audit/GS_ARCHIVE_PRODUCT_HISTORY_RECONCILIATION_20260730.md
 ```
+
+### P1-Story-IA：剧情分类正式入口与 masterdata 建档
+
+状态：**approved as a bounded follow-up P1 track；不得混入 P1-UI breadcrumb
+首批**。
+
+#### 问题定义
+
+P1-UI 实测暴露出 breadcrumb 层级与现有剧情产品面的断层：
+
+- `view=story_collection&story_type=main&story_section=101` 已是有效的第 1 章
+  collection；缺失的是 `story_type=main` 的正式 domain landing；
+- `view=story_catalog&story_type=main` 当前仍渲染整个故事门户，不能视为主线剧情
+  专属页面；
+- `story_type=birthday` 与 `story_type=extra` 当前进入
+  `story_mode=search`，只是预选分类的搜索结果，不是正式剧情档案；
+- 在 domain landing 实现前，breadcrumb 不得把不存在的页面伪装成 canonical
+  上级；domain 项应暂时返回真实故事门户。
+
+#### 已核对的 masterdata 边界
+
+语义身份与父子关系以 masterdata 为准，编译 JSON 仅作为可共享的播放载体：
+
+| domain | masterdata 事实 | 当前产品风险 |
+| --- | --- | --- |
+| `main` | table 4 / 5 / 6；3 groups、22 chapters、204 episode rows | 已有 collection model，但没有 domain landing；第 3 group 当前没有 chapter |
+| `birthday` | table 78；181 episode rows、181 distinct compiled files | 29 个文件同时属于 `idol_story` 与 `birthday`，全局按文件去重会把生日域压成 152 条 |
+| `extra` | table 144 / 145；47 groups、47 episode rows、45 resource IDs、44 compiled files | 一个播放文件可承载多条 master 关系，不能用 `compiled_file` 代替档案 ID |
+
+因此后续模型必须区分：
+
+1. master 逻辑条目和 collection 身份；
+2. domain membership；
+3. 可共享的 resource / compiled playback target。
+
+不得从文件名或 `compiled_summary.characters` 单独推定生日剧情归属；需要通过
+master row、偶像索引和已验证的资源关系建立可审计映射。
+
+#### 推荐小批顺序
+
+1. **P1-Story-IA-A：只读审计与 index/verifier**
+   - 固化 main / birthday / extra 的逻辑条目、父子关系、共享播放文件和计数口径；
+   - 输出独立 Schema / generator / verifier；
+   - 不扫描未索引 RAW，不创建 publication transaction。
+2. **P1-Story-IA-B：main domain landing**
+   - 复用 `story_catalog` 与既有 route builder；
+   - `view=story_catalog&story_type=main` 才在本批后成为真实 canonical landing；
+   - 继续复用现有 `story_collection` 页面，不重写播放器。
+3. **P1-Story-IA-C：extra 正式档案**
+   - 以 table 144 group 和 table 145 episode 的 master ID 为档案身份；
+   - 明确显示逻辑条目数与共享播放载体数，不把 44 个文件伪写成 47 个独立文件。
+   - 正式入口以 table 178 的 7 个 `ExtraStoryChapterData` 为准；table 143
+     中未进入 table 178 的 `602 / 603 / 610` 保留为
+     `special_home_story` 补充记录。
+   - table 178 的 `ResourceId` / `LogoResourceId` 是视觉关系权威；特别注意
+     entry `1010050` 明确使用视觉资源 `1010070`，不得按条目 ID 猜图。
+   - 从 RAW 小批发布 7 张 banner 与 7 张 KV；logo 仍为 `catalog_only`。
+4. **P1-Story-IA-D：birthday 正式档案**
+   - 建立按偶像进入的 collection，并在页面内部表达制作人生日、偶像生日和批次；
+   - 29 个 `idol_story` / `birthday` 共享文件必须保留双重 domain membership；
+   - 不在 breadcrumb 中增加超过四层的批次节点。
+
+建议沿用现有 view，而不是新增第二套路由：
+
+```text
+view=story_catalog
+  -> 故事总入口
+
+view=story_catalog&story_type=main|birthday|extra
+  -> domain landing
+
+view=story_catalog&story_type=...&story_mode=search
+  -> 传统检索面
+
+view=story_collection&story_type=...&story_section=...
+  -> 正式 collection
+```
+
+#### 验收和非目标
+
+- breadcrumb 最多四层，domain landing 完成后再把 domain crumb 指向该 landing；
+- 稳定保留 `q`、`unit_filter`、`event_scope`、`rarity` 等既有筛选；
+- 验收自然入口、深链、刷新、浏览器 Back、现有返回按钮、桌面、窄屏和无障碍语义；
+- legacy 搜索的全局去重问题记录为已知债务，不在 landing 小批中顺带重写全局搜索；
+- 不重写关系数据总线、播放器、publication、strict-v2 promotion 或 Runtime 长稳。
+
+#### P1-Song：歌曲档案提前
+
+歌曲档案提升为 P1 的相邻内容轨，但不混入 Extra 页面提交。现有 table 46
+已经给出 61 个正式 song code，RAW 的 61 个 `song_*.unity3d` 提供编舞，
+`song3_<code>` 提供音频实体。模型必须分成：
+
+```text
+歌曲作品
+  -> 演唱 / 演出版本
+    -> 完整混音 / 伴奏层 / 偶像声部层
+    -> 编舞 / 口型 / MV
+```
+
+`DRIVE A LIVE` 的 `drvalv`、49 个偶像声部、`drvalv_bgm` 与愚人节
+`drv999` 不得平铺为互不相关的歌曲。`Beyond The Dream` 的组合版本也应
+作为同一作品的 performance variant。文件名只能发现候选；“solo 声部与伴奏
+由游戏同步叠加”必须由 ACB Cue/Sequence 或运行时行为另行证明。
+
+执行顺序：
+
+1. **P1-Song-A**：身份、版本、音频层、编舞、口型、MV exact relation 审计；
+2. **P1-Song-B**：61 首歌曲的 metadata-only 目录与详情；
+3. **P1-Song-C**：只有通过关系和 publication gate 后，才增加版本切换或
+   分层播放。
+
+#### P1-Mobile-Nav：应用启动器
+
+移动端底栏后续收敛为少量稳定入口，并新增 route-backed 的“应用启动器”
+门户。建议使用 `view=portal_hub`，不得复用已有游戏内通信语义
+`mobile_archive`。
+
+- 移动底栏目标为“首页 / 故事 / 偶像 / 应用”四项；
+- 应用页以游戏手机桌面式图标网格承载卡牌、活动、歌曲、Chibi Stage、
+  外部资源等门户；
+- 视觉可以模拟弹出的手机 UI，但必须是可深链、可刷新、支持浏览器 Back 的
+  正式 route；
+- 使用既有 route builder，不复制 history，也不改变桌面端主导航；
+- 使用 `<nav>` / 列表语义、可见焦点和至少 44 px 触控目标。
+
+推荐后续次序为：完成 Extra 视觉小批 → P1-Song-A → P1-Mobile-Nav →
+P1-Song-B。歌曲与移动导航各自保持独立提交边界。
+
+该轨属于 P1 门户信息架构，不改变以下状态：
+
+- strict-v2 promotion 仍属于 P2-A；
+- 2–4 小时长稳仍属于 P2-B，状态仍为 **NOT EXECUTED**。
 
 ### P1-A：GS-only 社区熟肉外链试点
 
