@@ -1022,7 +1022,32 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 }
 .icon-btn { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 1px solid rgba(255,255,255,.3); border-radius: 4px; background: rgba(255,255,255,.12); color: #fff; cursor: pointer; }
 .icon-btn.dark { border-color: #d8e0e3; background: #fff; color: #26343c; }
-.restore-ui { position: absolute; top: 12px; right: 12px; z-index: 30; display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid rgba(255,255,255,.55); border-radius: 5px; background: rgba(15,25,30,.58); color: #fff; cursor: pointer; }
+.restore-ui {
+  position: absolute;
+  top: var(--player-space-4);
+  right: var(--player-space-5);
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  width: var(--player-hit-min);
+  height: var(--player-hit-min);
+  border: 1px solid var(--player-border-dark);
+  border-radius: var(--player-radius-control);
+  background: var(--player-panel-dark);
+  color: var(--player-paper);
+  cursor: pointer;
+  transition:
+    background var(--player-motion-fast) var(--player-ease-standard),
+    transform var(--player-motion-fast) var(--player-ease-standard);
+}
+.restore-ui:hover {
+  background: var(--player-panel-dark-hover);
+  transform: translateY(-2px);
+}
+.restore-ui:focus-visible {
+  outline: 2px solid var(--player-focus-outer);
+  outline-offset: 2px;
+}
 .playback-menu { position: absolute; top: 0; right: 0; z-index: 40; display: flex; flex-direction: column; gap: 8px; width: min(320px, 86vw); height: 100%; padding: 18px; border-left: 1px solid #dfe5e7; background: rgba(248,250,251,.97); color: #26343c; box-shadow: -10px 0 30px rgba(0,0,0,.22); }
 .playback-menu header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 1.25rem; }
 .playback-menu > button, .menu-toggle { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 13px; border: 1px solid #dce3e6; border-radius: 5px; background: #fff; color: #26343c; font: inherit; cursor: pointer; }
