@@ -1,21 +1,37 @@
 <template>
   <div class="msg-row" :class="message.isProducer ? 'row-producer' : 'row-idol'">
     <template v-if="!message.isProducer">
-      <img v-if="message.charaId" class="chat-avatar" :src="getMobileIconUrl(message.charaId)" alt="" />
+      <img
+        v-if="message.charaId && !avatarFailed"
+        class="chat-avatar"
+        :src="getMobileIconUrl(message.charaId)"
+        alt=""
+        @error="avatarFailed = true"
+      />
+      <span v-else class="chat-avatar chat-avatar-placeholder" aria-hidden="true"></span>
       <div class="msg-body">
         <span v-if="message.speaker" class="chat-name">{{ message.speaker }}</span>
-        <img v-if="message.isStamp" class="chat-stamp" :src="getStampUrl(message.stampId)" alt="stamp" />
+        <img
+          v-if="message.isStamp && !stampFailed"
+          class="chat-stamp"
+          :src="getStampUrl(message.stampId)"
+          alt="スタンプ"
+          @error="stampFailed = true"
+        />
+        <span v-else-if="message.isStamp" class="chat-stamp-fallback" role="img" aria-label="スタンプ">STAMP</span>
         <LocalizedTextBlock v-else-if="message.display" class="bubble-idol" :display="message.display">
           <template #primary="{ text }">
             <template v-for="(part, partIndex) in messageParts(text)" :key="`primary-${partIndex}`">
               <span v-if="part.type === 'text'">{{ part.text }}</span>
-              <img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" alt="" />
+              <img v-else-if="!emojiFailed(part.id)" class="inline-emoji" :src="getEmojiUrl(part.id)" alt="" @error="markEmojiFailed(part.id)" />
+              <span v-else class="inline-emoji inline-emoji-fallback" aria-hidden="true">◆</span>
             </template>
           </template>
           <template #secondary="{ text }">
             <template v-for="(part, partIndex) in messageParts(text)" :key="`secondary-${partIndex}`">
               <span v-if="part.type === 'text'">{{ part.text }}</span>
-              <img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" alt="" />
+              <img v-else-if="!emojiFailed(part.id)" class="inline-emoji" :src="getEmojiUrl(part.id)" alt="" @error="markEmojiFailed(part.id)" />
+              <span v-else class="inline-emoji inline-emoji-fallback" aria-hidden="true">◆</span>
             </template>
           </template>
         </LocalizedTextBlock>
@@ -26,13 +42,15 @@
         <template #primary="{ text }">
           <template v-for="(part, partIndex) in messageParts(text)" :key="`primary-${partIndex}`">
             <span v-if="part.type === 'text'">{{ part.text }}</span>
-            <img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" alt="" />
+            <img v-else-if="!emojiFailed(part.id)" class="inline-emoji" :src="getEmojiUrl(part.id)" alt="" @error="markEmojiFailed(part.id)" />
+            <span v-else class="inline-emoji inline-emoji-fallback" aria-hidden="true">◆</span>
           </template>
         </template>
         <template #secondary="{ text }">
           <template v-for="(part, partIndex) in messageParts(text)" :key="`secondary-${partIndex}`">
             <span v-if="part.type === 'text'">{{ part.text }}</span>
-            <img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" alt="" />
+            <img v-else-if="!emojiFailed(part.id)" class="inline-emoji" :src="getEmojiUrl(part.id)" alt="" @error="markEmojiFailed(part.id)" />
+            <span v-else class="inline-emoji inline-emoji-fallback" aria-hidden="true">◆</span>
           </template>
         </template>
       </LocalizedTextBlock>
@@ -42,12 +60,34 @@
 </template>
 
 <script setup>
+import { ref, watch } from 'vue'
 import LocalizedTextBlock from '../LocalizedTextBlock.vue'
 import { getEmojiUrl, getMobileIconUrl, getStampUrl } from '../../utils/AssetResolver.js'
 
-defineProps({
+const props = defineProps({
   message: { type: Object, required: true },
 })
+
+const avatarFailed = ref(false)
+const stampFailed = ref(false)
+const failedEmojiIds = ref(new Set())
+
+watch(
+  () => [props.message.charaId, props.message.stampId],
+  () => {
+    avatarFailed.value = false
+    stampFailed.value = false
+    failedEmojiIds.value = new Set()
+  },
+)
+
+function emojiFailed(id) {
+  return failedEmojiIds.value.has(id)
+}
+
+function markEmojiFailed(id) {
+  failedEmojiIds.value = new Set([...failedEmojiIds.value, id])
+}
 
 function messageParts(text) {
   const value = typeof text === 'string' ? text : ''
@@ -90,6 +130,35 @@ function messageParts(text) {
   background: #ddd;
   flex-shrink: 0;
   border: 2px solid rgba(255, 255, 255, 0.9);
+}
+
+.chat-avatar-placeholder {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(150deg, #d8dddf, #aeb8bc);
+}
+
+.chat-avatar-placeholder::before,
+.chat-avatar-placeholder::after {
+  position: absolute;
+  left: 50%;
+  content: '';
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.chat-avatar-placeholder::before {
+  top: 21%;
+  width: 34%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+
+.chat-avatar-placeholder::after {
+  bottom: -12%;
+  width: 72%;
+  height: 48%;
+  border-radius: 50% 50% 0 0;
 }
 
 .chat-name {
@@ -145,6 +214,21 @@ function messageParts(text) {
   border-radius: 12px;
 }
 
+.chat-stamp-fallback {
+  display: grid;
+  place-items: center;
+  width: 180px;
+  max-width: 100%;
+  aspect-ratio: 1.25;
+  border: 1px dashed rgba(82, 97, 116, 0.45);
+  border-radius: 12px;
+  background: rgba(244, 247, 247, 0.72);
+  color: #66757c;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
 .inline-emoji {
   display: inline-block;
   width: 1.15em;
@@ -153,17 +237,23 @@ function messageParts(text) {
   object-fit: contain;
 }
 
+.inline-emoji-fallback {
+  color: currentColor;
+  font-size: 0.72em;
+  text-align: center;
+}
+
 @media (min-width: 700px) and (max-width: 1099px) {
   .msg-body { max-width: 74%; }
   .chat-avatar { width: 38px; height: 38px; }
   .bubble-idol, .bubble-producer { padding: 10px 13px; border-radius: 15px; }
-  .chat-stamp { width: 156px; }
+  .chat-stamp, .chat-stamp-fallback { width: 156px; }
 }
 
 @media (max-width: 699px) {
   .msg-body, .bubble-producer { max-width: 82%; }
   .chat-avatar { width: 36px; height: 36px; }
   .bubble-idol, .bubble-producer { padding: 9px 12px; border-radius: 14px; }
-  .chat-stamp { width: 42vw; max-width: 148px; }
+  .chat-stamp, .chat-stamp-fallback { width: 42vw; max-width: 148px; }
 }
 </style>

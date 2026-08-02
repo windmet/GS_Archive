@@ -14,6 +14,7 @@
  *   5. future explicit presentation_context fields win over inference.
  */
 import { getUnitCodeByCharaId, normalizeUnitCode } from '../../utils/UnitNameMap.js'
+import { IDOL_ID_TO_NAME } from '../../utils/IdolNameMap.js'
 
 const COMMUNICATION_TYPES = new Set(['talk', 'talk_stamp', 'call'])
 const MODE_BOUNDARIES = new Set(['adv', 'title', 'synopsis', 'text_time'])
@@ -29,12 +30,24 @@ function modeFromStep(step) {
 }
 
 function charaIdFromStep(step) {
-  return step?.chara_id || step?.stamp?.chara_id || ''
+  return step?.presentation_context?.primary_chara_id
+    || step?.presentation_context?.primaryCharaId
+    || step?.chara_id
+    || step?.stamp?.chara_id
+    || step?.dialogue?.speaker_identity?.entity_id
+    || ''
 }
 
 function unitCodeFromScenario(scenarioId) {
   const m = String(scenarioId || '').match(/8_2_x_(\d{3}[a-z]{3})/)
   return m ? normalizeUnitCode(m[1]) : null
+}
+
+function charaIdFromScenario(scenarioId) {
+  const candidates = String(scenarioId || '').match(/(?:^|_)(\d{3}[a-z]{3})(?=_|$)/gi) || []
+  return candidates
+    .map(candidate => candidate.replace(/^_/, ''))
+    .find(candidate => IDOL_ID_TO_NAME[candidate] && getUnitCodeByCharaId(candidate)) || ''
 }
 
 /**
@@ -84,7 +97,11 @@ export function resolveCommunicationContext({ step, stepIndex, historyStack, ste
   const mode = explicitMode || (source ? modeFromStep(source) : null)
 
   let unitCode = unitCodeFromScenario(scenarioId)
-  const primaryCharaId = charaStep ? charaIdFromStep(charaStep) : (source ? charaIdFromStep(source) : '')
+  const rawPrimaryCharaId = charaStep ? charaIdFromStep(charaStep) : (source ? charaIdFromStep(source) : '')
+  const scenarioCharaId = charaIdFromScenario(scenarioId)
+  const primaryCharaId = IDOL_ID_TO_NAME[rawPrimaryCharaId]
+    ? rawPrimaryCharaId
+    : (scenarioCharaId || rawPrimaryCharaId)
   if (!unitCode && primaryCharaId) {
     unitCode = getUnitCodeByCharaId(primaryCharaId) || null
   }

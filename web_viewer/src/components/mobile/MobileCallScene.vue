@@ -1,15 +1,18 @@
 <template>
-  <MobileSceneLayout :bg-url="bgUrl" :phase="phase">
-    <MobileDeviceFrame variant="call">
-      <div class="call-visual-area" :class="{ 'is-neutral': !bgUrl }" :style="visualAreaStyle">
-        <MobileCallProfile :chara-id="charaId" :name="speakerName" :theme="theme" />
-      </div>
-      <div class="call-content-panel">
-        <div v-if="dialogueText" class="dialogue-card">
-          <LocalizedTextBlock class="dialogue-text" :display="display" />
+  <MobileSceneLayout :phase="phase" :background-url="sceneBackgroundUrl">
+    <MobileDeviceFrame variant="call" :surface-style="callSurfaceStyle">
+      <div class="call-screen" :class="{ 'is-neutral': !bgUrl }">
+        <div class="call-profile-layer">
+          <MobileCallProfile :chara-id="charaId" :name="speakerName" :theme="theme" />
         </div>
-        <div v-if="externalReplyText" class="external-reply">
-          <span class="external-reply-label">{{ replyLabel }}</span>{{ externalReplyText }}
+        <div class="call-content-panel">
+          <div v-if="dialogueText" class="dialogue-card">
+            <LocalizedTextBlock class="dialogue-text" :display="display" />
+          </div>
+          <div v-if="externalReplyDisplay" class="external-reply">
+            <span class="external-reply-label">{{ replyLabel }}</span>
+            <LocalizedTextBlock class="external-reply-text" :display="externalReplyDisplay" />
+          </div>
         </div>
       </div>
     </MobileDeviceFrame>
@@ -31,7 +34,7 @@ import MobileCallProfile from './MobileCallProfile.vue'
 import MobileChoiceRail from './MobileChoiceRail.vue'
 import LocalizedTextBlock from '../LocalizedTextBlock.vue'
 import { getMobileBgUrl } from '../../utils/AssetResolver.js'
-import { IDOL_NAME_TO_ID } from '../../utils/IdolNameMap.js'
+import { IDOL_ID_TO_NAME, IDOL_NAME_TO_ID } from '../../utils/IdolNameMap.js'
 import { getUnitCodeByCharaId } from '../../utils/UnitNameMap.js'
 import { resolveText } from '../../utils/TextHelper.js'
 import { useStoryLocalization } from '../../localization/story/StoryLocalizationContext.js'
@@ -44,8 +47,10 @@ const props = defineProps({
   stepIndex: { type: Number, default: -1 },
   scenarioId: { type: String, default: '' },
   historyStack: { type: Array, default: () => [] },
+  choiceTexts: { type: Object, default: () => ({}) },
   steps: { type: Array, default: () => [] },
   externalReplyText: { type: String, default: '' },
+  sceneBackgroundUrl: { type: String, default: '' },
 })
 
 defineEmits(['select'])
@@ -66,13 +71,29 @@ const currentChoices = computed(() => props.step?.options || [])
 
 // ── Speaker / caller ──
 const display = computed(() => localization?.resolveDialogue(props.dialogue) ?? resolveText(props.dialogue))
-const speakerName = computed(() => display.value.speaker || '')
+const speakerName = computed(() => display.value.speaker || IDOL_ID_TO_NAME[charaId.value] || '')
 const dialogueText = computed(() => display.value.text || '')
+
+const latestChoiceSelection = computed(() => {
+  const path = [...(props.historyStack || [])].reverse()
+  for (const index of path) {
+    if (props.choiceTexts?.[index]) return props.choiceTexts[index]
+  }
+  return null
+})
+
+const externalReplyDisplay = computed(() => {
+  if (latestChoiceSelection.value) {
+    return localization?.resolveChoiceSelection(latestChoiceSelection.value)
+      || resolveText(latestChoiceSelection.value?.source_text || '')
+  }
+  return props.externalReplyText ? resolveText(props.externalReplyText) : null
+})
 
 const charaId = computed(() => {
   if (props.step?.chara_id) return props.step.chara_id
   const raw = typeof props.dialogue?.speaker === 'string' ? props.dialogue.speaker : ''
-  return IDOL_NAME_TO_ID[raw] || ''
+  return IDOL_NAME_TO_ID[raw] || context.value.primaryCharaId || ''
 })
 
 // ── Theme / visual (resource fallback: chara mobile bg → neutral placeholder) ──
@@ -81,72 +102,55 @@ const theme = computed(() => getMobileUnitTheme(unitCode.value))
 
 const bgUrl = computed(() => (charaId.value ? getMobileBgUrl(charaId.value) : null))
 
-const visualAreaStyle = computed(() => {
-  // Photo first, theme-tinted fade layered under the content panel edge.
-  const photo = bgUrl.value ? `url(${bgUrl.value})` : ''
-  const fade = theme.value?.primary
-    ? `linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.18) 55%, ${theme.value.primary} 140%)`
-    : ''
-  const layers = [fade, photo].filter(Boolean)
-  return layers.length ? { backgroundImage: layers.join(', ') } : null
-})
+const callSurfaceStyle = computed(() => bgUrl.value ? {
+  backgroundImage: `url(${bgUrl.value})`,
+  backgroundSize: '100% 100%',
+  backgroundPosition: 'center',
+} : null)
 
 const replyLabel = 'プロデューサー：'
 </script>
 
 <style scoped>
-.call-visual-area {
+.call-screen {
   position: relative;
-  flex-shrink: 0;
-  height: 46%;
-  min-height: 180px;
-  background-size: cover;
-  background-position: center;
-  background-color: #2c323c;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-top: env(safe-area-inset-top);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
-.call-visual-area.is-neutral {
-  background-image: linear-gradient(160deg, #5b6472, #2c323c);
+.call-screen.is-neutral {
+  background: linear-gradient(180deg, #5b6472 0 44%, #c4babd 44% 100%);
 }
 
-.call-visual-area::after {
-  content: '';
+.call-profile-layer {
   position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: rgba(0, 0, 0, 0.12);
-}
-
-.call-visual-area > * {
-  position: relative;
-  z-index: 1;
+  top: 14%;
+  left: 50%;
+  z-index: 2;
+  transform: translateX(-50%);
 }
 
 .call-content-panel {
-  flex: 1;
-  min-height: 0;
+  position: absolute;
+  inset: 50% 0 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 14px;
-  padding: 22px 20px calc(20px + env(safe-area-inset-bottom));
-  background: #c4babd;
+  padding: 12% 7% calc(24px + env(safe-area-inset-bottom));
   overflow-y: auto;
 }
 
 .dialogue-card {
   width: 88%;
-  max-width: 540px;
-  background: #ffffff;
+  max-width: 620px;
+  background: rgba(255, 255, 255, 0.96);
   color: #18242b;
-  border-radius: 16px;
-  padding: 18px 20px;
-  box-shadow: 0 6px 20px rgba(70, 55, 55, 0.22);
+  border-radius: 20px;
+  padding: 22px 26px;
+  box-shadow: 0 12px 30px rgba(30, 24, 28, 0.16);
   flex-shrink: 0;
 }
 
@@ -173,19 +177,26 @@ const replyLabel = 'プロデューサー：'
 }
 
 .external-reply-label {
+  display: block;
   opacity: 0.82;
-  margin-right: 0.4em;
+  margin-bottom: 0.2em;
   font-size: 0.85em;
 }
 
+.external-reply-text {
+  --localized-primary-line-height: 1.45;
+  --localized-secondary-color: rgba(255, 255, 255, 0.82);
+  --localized-secondary-size: 0.84em;
+  --localized-secondary-gap: 0.18em;
+}
+
 @media (max-width: 699px) {
-  .call-visual-area {
-    height: 42%;
-    min-height: 150px;
+  .call-profile-layer {
+    top: 12%;
   }
   .call-content-panel {
-    /* Clear the floating control dock above the safe area */
-    padding: 16px 12px calc(80px + env(safe-area-inset-bottom));
+    inset: 48% 0 0;
+    padding: 12% 12px 18px;
   }
   .dialogue-card {
     width: calc(100% - 24px);
@@ -196,7 +207,7 @@ const replyLabel = 'プロデューサー：'
 
 @media (max-height: 760px) and (min-width: 700px) {
   .call-content-panel {
-    padding: 14px 20px;
+    padding-top: 9%;
   }
 }
 </style>

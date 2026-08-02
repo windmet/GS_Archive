@@ -33,6 +33,11 @@
 deep link（示例）：
 `?view=player&story_type=idol_story&story_section=016&scenario=016sei_301_2_3_016_01_09_a.json&start_step=2&end_step=12&return=story_collection`
 
+卡片条件语义 fixture：`038tak_301_2_3_038_01_09_a.json` 必须显示
+`【燃え盛る蒼き闘志】 突破 4 次`，并可进入卡片 `1338001` 资料页；
+同卡 `09_b` 是 `card_awakened`（特训完成），不可与 `09_a` 对调。映射来自
+`mobile_archive_index.json` 的表 32/63/180 派生链，卡名来自 `card_index.json`。
+
 ### 2.2 组合群聊
 
 | 场景 | 预期视觉 |
@@ -63,6 +68,12 @@ deep link：`?view=player&story_type=unit_story&scenario=8_2_x_006fra_8_2_1_006.
 | `001tom_307_2_3_001_07_09_a.json`（call:8 choice:1） | Call 场景在 choice 时保持连续，选项在设备外 |
 | `001tom_312_2_3_001_12_09_a.json`（stage:2 call:9 choice:2） | stage+call 混合 + 连续 choice |
 
+个人故事条件语义 fixture：`1_x_038tak_2_1_2_038_22_t01.json` 必须显示
+`「誰がための誕生日パーティ」エピソード5 完成`。其
+`release_condition.param_a = 2380208`，点击后进入大河タケル个人故事的
+`story_section=23802&episode=2380208`，并高亮对应章节与分段；浏览器 Back
+返回原 Mobile 通信列表。
+
 deep link：`?view=player&story_type=main&scenario=001tom_307_2_3_001_07_09_a.json&start_step=1&end_step=10&return=story_collection`
 
 ### 2.6 3 选项 Choice
@@ -82,9 +93,12 @@ deep link：`?view=player&story_type=main&scenario=001tom_307_2_3_001_07_09_a.js
 
 ### 2.9 NPC / 缺图
 
-无 charaId 且非偶像 speaker 的 talk step 走中性 fallback。corpus 中
-`step.chara_id` 缺失 + `IDOL_NAME_TO_ID` 解析失败时，背景/头像使用中性
-占位，不破图。
+未知或缺失的角色资源走中性 fallback，头像、stamp、行内 emoji 都不得出现
+浏览器破图图标。corpus 中唯一缺少个人头像文件的引用是 `001jup`；它不是
+未知 NPC，而是 Jupiter 组合代码。fixture
+`1_x_001tom_8_2_2_001_01.json` 必须从 scenario authority 恢复
+`primaryCharaId=001tom`、保留 `unitCode=01jup`，并按冬马消息而非制作人回复
+呈现。
 
 ## 3. 现状核对结论（改造前）
 
@@ -92,3 +106,39 @@ deep link：`?view=player&story_type=main&scenario=001tom_307_2_3_001_07_09_a.js
   用 `#22c55e`（将改 `#167A43`）、无响应式倾斜构图；
 - CallUI：chara bg + 手机内 choice（将移到设备外 rail）；
 - ChoiceUI：通用弹层，不区分 Stage/Mobile。
+
+## 4. UI PR2 浏览器验收记录（2026-08-02）
+
+以下均在 5174 当前 checkout 实际执行，使用 `noAudio=1`；不是只读 source/CSS
+推断。
+
+| 项目 | fixture / 结果 |
+| --- | --- |
+| FRAME 个人 Talk | `016sei_301_2_3_016_01_09_a.json`：`06fra` 背景，`#087A2C → #00C814` 顶栏 |
+| THE 虎牙道个人 Talk | `038tak_301_2_3_038_01_09_a.json`：`13the` 背景，`#242843` 顶栏 |
+| C.FIRST 个人 Talk | `048mom_301_2_3_048_01_09_a.json`：`16cfi` 背景，`#007C73 → #00C7B7` 顶栏 |
+| FRAME 群聊 | `8_2_x_006fra_8_2_1_006.json`：标题 `FRAME`，组合背景与主题色一致 |
+| unit-coded speaker | `1_x_001tom_8_2_2_001_01.json`：`001jup` 恢复为 `001tom`，冬马头像 160px 原图，`row-idol` |
+| emoji | `002sht_301_2_3_002_01_09_a.json`：`image_talk_emoji_05` 原图 160px，渲染高约 15.8px，小于 22px 行高 |
+| stamp 完成态 | `001tom_301_2_3_001_01_09_b.json`：236×160 原图；完成后仍显示，Next disabled，非阻断完成提示 |
+| 双语 Talk | `fixtures/story_localization_stress.json` step 6：JP/zh-CN 独立 DOM，390px 消息框自然增高，无横向溢出 |
+| 双语 Mobile Choice | 同 fixture step 8：JP/zh-CN 独立 DOM，选项高约 78px，rail `scrollWidth = clientWidth = 362px` |
+| goPrev 上下文恢复 | `001tom_301_2_3_001_01_09_a.json` 选择制作人回复后退回 step 4：冬马身份、Jupiter 语境与已选回复均保留 |
+| Backlog restore | 同 fixture 从 step 4 的 Story Log 恢复到 step 2：返回 Talk，进度为 `2 / 11`，URL 的 `start_step=1&end_step=11` 不变 |
+| Call choice 深链 | `001tom_307_2_3_001_07_09_a.json&start_step=8&end_step=10`：初始 `1 / 3`，选项在设备外；选择后冬马来电与制作人回复在设备内连续呈现 |
+
+三选项 fixture `039mcr_301_2_3_039_01_09_b.json` 在以下视口均无 body
+横向溢出，rail 的 `scrollWidth === clientWidth`：
+
+- `1650×900`
+- `1366×768`
+- `1024×768`
+- `390×844`
+
+资源覆盖审计：compiled corpus 引用 14 个 stamp、38 个 emoji，全部有本地 PNG；
+52 个 talk `chara_id` 中唯一没有个人头像文件的是组合代码 `001jup`，已按上文
+恢复到冬马身份。未知头像、stamp、emoji 和 Call portrait 均有 `error` 回退，
+不显示浏览器破图。
+
+本轮没有修改运行时分支、音频、publication 或真实用户解锁状态。P2-B 2–4 小时
+长稳仍为 **NOT EXECUTED**。

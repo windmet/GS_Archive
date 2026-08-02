@@ -1,6 +1,6 @@
 <template>
-  <MobileSceneLayout :bg-url="bgUrl" :phase="phase">
-    <MobileDeviceFrame>
+  <MobileSceneLayout :phase="phase" :background-url="sceneBackgroundUrl">
+    <MobileDeviceFrame :surface-style="deviceSurfaceStyle">
       <MobileChatHeader :title="chatTitle" :theme="theme" :is-group="context.isGroup" />
       <MobileMessageList
         :messages="historyMessages"
@@ -42,6 +42,7 @@ const props = defineProps({
   choiceTexts: { type: Object, default: () => {} },
   steps: { type: Array, default: () => [] },
   showTyping: { type: Boolean, default: false },
+  sceneBackgroundUrl: { type: String, default: '' },
 })
 
 defineEmits(['select'])
@@ -61,8 +62,8 @@ const phase = computed(() => context.value.phase)
 const currentChoices = computed(() => props.step?.options || [])
 
 // ── Helpers (ported from MobileUI) ──
-function isProducer(speaker) {
-  if (!speaker) return true
+function isProducer(speaker, charaId = '') {
+  if (!speaker) return !charaId
   const p = speaker.replace(/\s/g, '').replace(' ', '').trim()
   return p === '<P>' || p === 'プロデューサー' || p === 'Producer' || p === 'producer'
 }
@@ -78,12 +79,22 @@ function stepToMessage(step) {
   const display = localization?.resolveDialogue(d) || { text: resolveTextContent(d), view: null }
   let speaker = cleanSpeaker(stamp?.speaker || display?.speaker || rawSpeaker)
   const sourceSpeaker = cleanSpeaker(stamp?.speaker || rawSpeaker)
-  const charaId = stamp?.chara_id || step.chara_id || IDOL_NAME_TO_ID[sourceSpeaker] || ''
+  const sourceCharaId = step.presentation_context?.primary_chara_id
+    || step.presentation_context?.primaryCharaId
+    || stamp?.chara_id
+    || step.chara_id
+    || d.speaker_identity?.entity_id
+    || IDOL_NAME_TO_ID[sourceSpeaker]
+    || ''
+  const inheritedCharaId = context.value.primaryCharaId || ''
+  const charaId = IDOL_ID_TO_NAME[sourceCharaId]
+    ? sourceCharaId
+    : (sourceCharaId && IDOL_ID_TO_NAME[inheritedCharaId] ? inheritedCharaId : sourceCharaId)
   if (/^\d{3}[a-z0-9]{3}$/.test(speaker)) {
     speaker = IDOL_ID_TO_NAME[speaker] || speaker
   }
   const text = display.text
-  const prod = isProducer(rawSpeaker)
+  const prod = isProducer(rawSpeaker, charaId)
   if (stamp?.id) {
     return { speaker, display: null, charaId, isProducer: prod, isStamp: true, stampId: stamp.id }
   }
@@ -153,6 +164,13 @@ const bgUrl = computed(() => {
   return uc ? getUnitMobileBgUrl(uc) : null
 })
 
+const deviceSurfaceStyle = computed(() => {
+  if (!bgUrl.value) return null
+  return {
+    backgroundImage: `linear-gradient(rgba(246, 248, 247, 0.08), rgba(246, 248, 247, 0.08)), url(${bgUrl.value})`,
+  }
+})
+
 const chatTitle = computed(() => {
   const sid = props.scenarioId || ''
   if (sid.startsWith('8_2_')) {
@@ -164,7 +182,10 @@ const chatTitle = computed(() => {
     if (!msg.isProducer && msg.speaker) names.add(cleanSpeaker(msg.speaker))
   }
   const arr = Array.from(names)
-  if (arr.length === 0) return 'トーク'
+  if (arr.length === 0) {
+    const inheritedName = IDOL_ID_TO_NAME[context.value.primaryCharaId]
+    return inheritedName || 'トーク'
+  }
   if (arr.length === 1) return arr[0]
   if (arr.length === 2) return arr.join('、')
   return arr[0] + ' 他'

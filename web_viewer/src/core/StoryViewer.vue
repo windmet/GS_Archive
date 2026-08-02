@@ -42,7 +42,7 @@
     <!-- Voice audio player: handled by the Web Audio API to avoid IDM sniffing -->
 
     <!-- UI overlay for step-specific screens -->
-    <div class="ui-overlay" v-if="compiledData && !HIDE_UI && !uiHidden && !episodeFinished">
+    <div class="ui-overlay" v-if="compiledData && !HIDE_UI && !uiHidden && (!episodeFinished || communicationCompleted)">
 
       <!-- ADV dialogue -->
       <Transition name="adv-dialogue-fade" appear>
@@ -65,6 +65,7 @@
         :historyStack="historyStack"
         :choiceTexts="choiceTexts"
         :steps="compiledData?.steps || []"
+        :sceneBackgroundUrl="mobileBackdropUrl"
         @select="onChoice"
       />
 
@@ -76,7 +77,9 @@
         :stepIndex="currentStepIndex"
         :scenarioId="compiledData?.scenario_id"
         :historyStack="historyStack"
+        :choiceTexts="choiceTexts"
         :steps="compiledData?.steps || []"
+        :sceneBackgroundUrl="mobileBackdropUrl"
         @select="onChoice"
       />
 
@@ -100,10 +103,11 @@
 
     <!-- Bottom control dock -->
     <PlayerControlDock
-      v-if="compiledData && compiledData.steps.length > 0 && !HIDE_UI && !uiHidden && !episodeFinished"
+      v-if="compiledData && compiledData.steps.length > 0 && !HIDE_UI && !uiHidden && (!episodeFinished || communicationCompleted)"
       :auto-enabled="autoEnabled"
       :skip-enabled="skipEnabled"
       :previous-disabled="isFirstStep"
+      :next-disabled="episodeFinished"
       @previous="goPrev"
       @auto="toggleAuto"
       @skip="toggleSkip"
@@ -148,7 +152,13 @@
       @replay-voice="replayBacklogVoice"
     />
 
-    <div v-if="episodeFinished && !HIDE_UI" class="episode-complete">
+    <Transition name="communication-complete-fade">
+      <div v-if="communicationCompleted && !HIDE_UI" class="communication-complete-toast" role="status" aria-live="polite">
+        <span aria-hidden="true">✓</span>{{ uiText('player.complete.communication') }}
+      </div>
+    </Transition>
+
+    <div v-if="episodeFinished && !communicationCompleted && !HIDE_UI" class="episode-complete">
       <div class="complete-panel">
         <span>{{ hasNextEpisode ? 'EPISODE COMPLETE' : 'STORY COMPLETE' }}</span>
         <strong>{{ hasNextEpisode ? uiText('player.complete.episode') : uiText('player.complete.story') }}</strong>
@@ -187,6 +197,7 @@ import {
 } from '../utils/LanguageStore.js'
 import { resolveUiText as uiText } from '../localization/ui/UiTextResolver.js'
 import { resolveCommunicationContext } from './story-runtime/CommunicationPresentationContext.js'
+import { getBgUrl } from '../utils/AssetResolver.js'
 import { useVoicePlayer } from './useVoicePlayer.js'
 import { AudioManager } from './AudioManager.js'
 import { useStoryNavigation } from './useStoryNavigation.js'
@@ -390,6 +401,15 @@ const {
   resetVoiceDedup: _resetVoiceDedup,
 })
 
+const mobileBackdropUrl = computed(() => {
+  const backgroundId = currentSceneState.value?.bg || firstAvailableBg.value || ''
+  return backgroundId ? getBgUrl(backgroundId) : ''
+})
+
+const communicationCompleted = computed(() => (
+  episodeFinished.value && (communicationContext.value.mode === 'talk' || communicationContext.value.mode === 'call')
+))
+
 function finishEpisode() {
   if (episodeFinished.value) return
   clearFadeAutoAdvance()
@@ -569,6 +589,7 @@ function restoreFromBacklog(nodeId) {
   if (!node || !sceneSnapshotStore.truncateAfter(nodeId)) return
   sceneSnapshotStore.popPrevious()
   backlogOpen.value = false
+  if (communicationCompleted.value) episodeFinished.value = false
   stopPlaybackModes('backlog-restore')
   if (!restoreHistoryNode(node)) restoredSceneState.value = null
 }
@@ -598,6 +619,10 @@ function goNext(source = 'user') {
 
 function goPrev() {
   if (backlogOpen.value || menuOpen.value) return
+  if (communicationCompleted.value) {
+    episodeFinished.value = false
+    transitioning.value = false
+  }
   stopPlaybackModes('previous')
   storyRuntimeCues.cancelCurrentStep('previous')
   const node = storyRuntimeCues.isSnapshotEnabled() ? sceneSnapshotStore.popPrevious() : null
@@ -955,6 +980,12 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 .story-viewer-root {
   position: fixed; inset: 0;
   outline: none; background: #000;
+  --player-edge: 20px;
+  --player-topbar-height: 52px;
+  --player-topbar-gap: 14px;
+  --player-dock-gap: 18px;
+  --player-content-top: calc(var(--player-edge) + var(--player-topbar-height) + var(--player-topbar-gap));
+  --player-content-bottom: calc(var(--player-dock-bottom) + var(--player-dock-height) + var(--player-dock-gap) + env(safe-area-inset-bottom));
 }
 .viewer-stage {
   position: relative;
@@ -973,6 +1004,14 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 }
 .ui-overlay > * {
   pointer-events: auto;
+}
+@media (max-width: 699px) {
+  .story-viewer-root {
+    --player-edge: 10px;
+    --player-topbar-height: 48px;
+    --player-topbar-gap: 8px;
+    --player-dock-gap: 10px;
+  }
 }
 .runtime-diagnostics {
   position: fixed;
@@ -1085,6 +1124,10 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 .menu-setting select, .menu-setting input { min-height: 28px; border: 1px solid #ccd5d9; border-radius: 4px; background: #fff; color: #26343c; }
 .menu-setting small { color: #839096; }
 .episode-complete { position: absolute; inset: 0; z-index: 35; display: grid; place-items: center; background: rgba(0,0,0,.5); }
+.communication-complete-toast { position: absolute; right: var(--player-edge); bottom: var(--player-content-bottom); z-index: 24; display: inline-flex; align-items: center; gap: 7px; max-width: min(320px, calc(100vw - 32px)); min-height: 38px; padding: 0 14px; border: 1px solid rgba(255,255,255,.72); border-radius: 999px; background: rgba(250,252,252,.94); color: #2c4545; box-shadow: 0 10px 28px rgba(0,0,0,.2); font-size: .78rem; font-weight: 700; pointer-events: none; }
+.communication-complete-toast span { color: #0d9c75; font-size: 1rem; }
+.communication-complete-fade-enter-active, .communication-complete-fade-leave-active { transition: opacity var(--player-motion-fast) var(--player-ease-standard), transform var(--player-motion-fast) var(--player-ease-standard); }
+.communication-complete-fade-enter-from, .communication-complete-fade-leave-to { opacity: 0; transform: translateY(6px); }
 .complete-panel { width: min(390px, calc(100vw - 32px)); padding: 24px; border: 1px solid rgba(255,255,255,.6); border-radius: 6px; background: rgba(250,252,252,.97); color: #26343c; text-align: center; box-shadow: 0 18px 45px rgba(0,0,0,.28); }
 .complete-panel > span { color: #0d9c75; font-size: .66rem; font-weight: 800; }
 .complete-panel > strong { display: block; margin: 6px 0 18px; font-size: 1.05rem; }
@@ -1092,6 +1135,11 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 .complete-panel div { display: flex; justify-content: center; gap: 8px; }
 .complete-panel button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 0 14px; border: 1px solid #d6dfe2; border-radius: 5px; background: #fff; color: #26343c; cursor: pointer; font: inherit; }
 .complete-panel button.primary { border-color: #0d9c75; background: #0d9c75; color: #fff; }
+
+@media (max-width: 699px) {
+  .communication-complete-toast { right: 50%; bottom: var(--player-content-bottom); transform: translateX(50%); white-space: nowrap; }
+  .communication-complete-fade-enter-from, .communication-complete-fade-leave-to { opacity: 0; transform: translate(50%, 6px); }
+}
 .menu-slide-enter-active, .menu-slide-leave-active { transition: transform 180ms ease, opacity 180ms ease; }
 .menu-slide-enter-from, .menu-slide-leave-to { transform: translateX(100%); opacity: 0; }
 

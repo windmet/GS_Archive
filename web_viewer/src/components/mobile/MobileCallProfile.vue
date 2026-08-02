@@ -1,13 +1,13 @@
 <template>
   <div class="call-profile">
-    <img v-if="avatarUrl" class="call-avatar" :src="avatarUrl" alt="" />
+    <img v-if="avatarUrl && !avatarFailed" class="call-avatar" :src="avatarUrl" alt="" @error="avatarFailed = true" />
     <span v-else class="call-avatar call-avatar-placeholder" aria-hidden="true"></span>
     <span v-if="name" class="call-name-capsule" :style="capsuleStyle">{{ name }}</span>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { getMobileIconUrl } from '../../utils/AssetResolver.js'
 
 const props = defineProps({
@@ -17,6 +17,9 @@ const props = defineProps({
 })
 
 const avatarUrl = computed(() => (props.charaId ? getMobileIconUrl(props.charaId) : null))
+const avatarFailed = ref(false)
+
+watch(avatarUrl, () => { avatarFailed.value = false })
 
 const capsuleStyle = computed(() => ({
   background: props.theme?.primary || 'var(--player-accent-strong)',
@@ -46,7 +49,32 @@ const capsuleStyle = computed(() => ({
 }
 
 .call-avatar-placeholder {
+  position: relative;
+  overflow: hidden;
   background: linear-gradient(150deg, #c9c4c0, #9a938e);
+}
+
+.call-avatar-placeholder::before,
+.call-avatar-placeholder::after {
+  position: absolute;
+  left: 50%;
+  content: '';
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.call-avatar-placeholder::before {
+  top: 20%;
+  width: 34%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+
+.call-avatar-placeholder::after {
+  bottom: -10%;
+  width: 72%;
+  height: 48%;
+  border-radius: 50% 50% 0 0;
 }
 
 .call-name-capsule {

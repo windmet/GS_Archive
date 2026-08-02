@@ -1,6 +1,6 @@
 # Idol Story And Mobile Interface
 
-Last checked: 2026-07-16
+Last checked: 2026-08-02
 
 ## Purpose
 
@@ -81,6 +81,43 @@ Example:
 - `mobile_scenario` focuses an exact normalized record after crossing from a story page.
 - Static masterdata does not provide user read, favorite, received, or actual unlock state; those states must remain local-only when implemented.
 
+### Random topic pool semantics
+
+`random` is not a fourth authored conversation history. It is a client
+selection pool reconstructed from two masterdata authorities:
+
+- table 104: topic label, active time window, selection weight and
+  `interval_day` before repeat appearance;
+- table 105: time-windowed intro labels and join probability.
+
+The archive therefore labels this surface **随机话题池** and reports topic and
+intro counts separately. Playback is an archival, sequential preview of the
+compiled script file; it does not claim to reproduce the live server/client
+selection result. Actual received/read state remains outside static
+masterdata.
+
+`random_talk_presentation_index.json` adds a reproducible derived presentation
+layer without changing either authority. Its generator resolves every table
+104/105 `script_label` through the compiled scenario `jump_points`, then stores
+the exact one-based `start_step`/`end_step`, first authored dialogue, dialogue
+count and choice count. Current coverage is 245/245 topics and 343/343 intros
+across 49 compiled files, with zero missing labels. The UI uses the first
+dialogue as the readable topic title and opens an exact playback range; the
+technical label remains secondary evidence.
+
+Regenerate and verify with:
+
+```powershell
+npm run generate:random-talk-presentation
+npm run verify:random-talk-presentation
+```
+
+For `017kir`, table 104 contains five candidate topics in one compiled script,
+and table 105 contains seven possible intros. Three topics are all-day and two
+open from 18:00 until midnight; each topic has weight 1000 and a 14-day repeat
+interval. The topic playback ranges are `2–7`, `8–12`, `13–17`, `18–22` and
+`23–27`.
+
 Example:
 
 ```text
@@ -100,7 +137,7 @@ npm run verify:routes
 npm run build
 ```
 
-Browser QA covered the Touma personal-story page and focused phone archive at 1280x720 and 390x844. Both views had no broken images, page-level horizontal overflow, or console errors. Mobile tabs intentionally scroll within their own tab strip at narrow widths.
+Browser QA covered the Touma personal-story page and focused phone archive at 1280x720 and 390x844. Both views had no broken images, page-level horizontal overflow, or console errors. Mobile tabs intentionally scroll within their own tab strip at narrow widths. The `017kir` Random Talk page additionally showed five readable topic cards; selecting the second card opened the exact `start_step=8&end_step=12` range at `1 / 5`, and browser Back returned to `mobile_mode=random`. Profile text emoji markup rendered as the local emoji asset instead of exposing raw tags.
 
 ## Next Direction
 
@@ -109,4 +146,3 @@ Browser QA covered the Touma personal-story page and focused phone archive at 12
 3. Add previous/next navigation between formal sections while keeping the player queue boundary explicit.
 4. Normalize card-story collections only after choosing an authoritative grouping rule for card series, release source, and event reward relations.
 5. Add localized synopsis text as an overlay index. Preserve Japanese master text as the source-of-truth field.
-

@@ -25,6 +25,7 @@ export default Object.freeze({
   'player.complete.story': '故事播放完毕',
   'player.complete.loadingNext': '正在加载下一话…',
   'player.complete.nextEpisode': '下一话',
+  'player.complete.communication': '通信已读完，可继续回看',
   'player.loading': '正在加载剧情数据…',
   'backlog.title': '剧情回看',
   'backlog.close': '关闭',

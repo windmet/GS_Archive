@@ -1002,10 +1002,11 @@ masterdata/故事索引提供带 provenance 的正式 episode display label 后�
 localization、routes、story audio、production build 与 `git diff --check`；5174 桌面
 真实链路已覆盖深链、自然入口、单语/双语、菜单、Backlog 打开与 restore。
 
-因此该批次可进入提交/推送和 PR 收尾。仍需在最终 PR 验收记录中明确：当前浏览器
-控制接口未执行真实 `390x844` 视口截图，移动端只有既有结构化 UI verifier 和 CSS
-断点证据；若团队将真实 390px 截图视为硬 merge gate，则在合并前补一轮人工验收。
-该缺口不允许被写成已执行，也不改变 P2-B 2–4 小时长稳仍为 **NOT EXECUTED**。
+因此该批次可进入提交/推送和 PR 收尾。最终浏览器验收已补齐真实 `390x844`
+视口：双语 Talk、Mobile Choice、三选项 rail 与 Mobile Archive 随机话题页均无
+页面级横向溢出或破图。桌面端另实测了 goPrev、Backlog restore 和 Call choice
+深链；恢复后通信身份、组合上下文与显式播放区间保持不变。该短时 UI 验收不等于
+长稳，也不改变 P2-B 2–4 小时长稳仍为 **NOT EXECUTED**。
 
 ### UI PR 2 完成
 

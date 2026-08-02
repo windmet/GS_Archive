@@ -25,6 +25,7 @@ export default Object.freeze({
   'player.complete.story': 'ストーリー再生完了',
   'player.complete.loadingNext': '次のエピソードを読み込み中…',
   'player.complete.nextEpisode': '次の話',
+  'player.complete.communication': '通信を読み終えました。履歴を確認できます',
   'player.loading': 'ストーリーデータを読み込み中…',
   'backlog.title': 'ログ',
   'backlog.close': '閉じる',
