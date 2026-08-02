@@ -21,6 +21,12 @@ The landing and collection routes use the masterdata identity model from
 The counts intentionally differ. A compiled file is a playback target, not a
 semantic story identity.
 
+The 7 banners and 7 key visuals under `assets/stories/extra` are classified as
+bounded `portal-asset` navigation images. Their inventory `owner_release` value
+is the tracked-binary owner batch `2026-07-30-extra-story-visuals-001`, not a
+publication ledger transaction. This P1 batch does not claim strict-v2
+promotion; that remains P2-A.
+
 ## Shared playback boundary
 
 `5_03_000_22.json` is shared by four masterdata entries:
@@ -61,9 +67,10 @@ button return to the formal Extra landing. Stable query state such as `q`,
 - the collection list is a labelled region;
 - each collection is a native button with a complete accessible name.
 
-The in-app browser session was fixed at 1280 by 720, so desktop behavior was
-live-tested. Narrow-screen behavior is covered by the source verifier and CSS
-gate; a live resizable narrow viewport remains a separate acceptance step.
+Desktop behavior was live-tested at 1280 by 720. The merge-gate follow-up on
+2026-08-02 also tested the Extra landing at a real 390 by 844 viewport: cards
+formed one column, the page had no horizontal overflow, and all seven banners
+loaded at their 300 by 150 natural size.
 
 ## Verification
 

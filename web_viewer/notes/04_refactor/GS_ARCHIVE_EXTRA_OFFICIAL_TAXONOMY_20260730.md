@@ -63,6 +63,11 @@ Each declared RAW bundle contains one 300 x 150 banner, one 1456 x 548 key
 visual and one logo. P1 publishes only the banner and key visual used by
 `ArchiveStoryCatalog` and `ArchiveStoryCollection`; logos remain catalog-only.
 
+These 14 files are bounded `portal-asset` navigation images, not
+`stable-promoted-asset` publication transactions. Their inventory
+`owner_release` value identifies the tracked-binary owner batch only; strict-v2
+promotion and a publication ledger transaction remain a separate P2-A decision.
+
 ## 謹賀新年2023
 
 Series `608` is one work with 17 chapters, not 17 unrelated collections.
@@ -107,3 +112,17 @@ Source:
 
 The work count is a presentation hierarchy. It does not change or collapse
 the 47 masterdata chapter identities.
+
+## PR #32 browser acceptance
+
+On 2026-08-02, branch `codex/extra-official-taxonomy-p1` at `ea87ab0` was
+tested on port 5174 before the documentation-only closeout patch:
+
+- the Extra landing loaded all 7 banners at natural size 300 x 150;
+- the 7 formal collection routes (`601`, `604`-`609`) loaded the exact expected
+  key visual at natural size 1456 x 548;
+- `605` loaded `1010070`, confirming the non-inferred table-178 relation;
+- the formal `601` collection, supplement `602`, direct deep link, refresh,
+  browser Back and the page Return button all preserved the canonical route;
+- desktop and 390 x 844 had no page-level horizontal overflow or broken image;
+- the application console contained no errors.

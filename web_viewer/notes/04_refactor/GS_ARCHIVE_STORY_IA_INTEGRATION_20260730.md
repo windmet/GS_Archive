@@ -77,11 +77,14 @@ npm run build
 git diff --check
 ```
 
-Port 5174 acceptance covers all three formal domain crumbs, direct collection
-deep links, stable-filter preservation, formal landing Back, and the existing
-collection/player paths. The in-app browser remains fixed at 1280 by 720;
-narrow-screen CSS gates pass, while live narrow-screen acceptance remains
-unexecuted.
+Port 5174 acceptance on 2026-08-02 covered natural entry to Main, Extra and
+Birthday, direct collection deep links, refresh, browser Back, the page Return
+button, one formal Extra collection, one supplement collection and the Birthday
+subject page. A real 390 by 844 viewport verified the four-level breadcrumb
+collapse (`资料馆 / … / domain / current`), `aria-current="page"`, no broken
+images, no page-level horizontal overflow and no application console errors.
+The 7 Extra banners and 7 key visuals also matched their declared natural
+dimensions and exact ResourceIds.
 
 ## Remaining phase boundary
 

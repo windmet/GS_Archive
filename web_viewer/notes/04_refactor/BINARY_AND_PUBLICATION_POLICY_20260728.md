@@ -108,6 +108,23 @@ directory. A screenshot is not runtime acceptance by itself. Its note must
 identify the tested commit, route, purpose, and whether the image is current or
 historical.
 
+### 3.6 Inventory owner batch versus publication release
+
+The v1 inventory field is historically named `owner_release`, but its enforced
+meaning is a **tracked-binary owner batch**: it groups new files for size limits,
+exception review, consumer ownership, and rollback planning. It is a separate
+namespace from `public/data/publication/releases/*.json` and must not be used as
+evidence that a publication transaction exists.
+
+- `portal-asset` entries may have an inventory owner batch without a publication
+  ledger transaction;
+- `stable-promoted-asset` entries still require an explicit publication ledger
+  entry after all publication gates pass;
+- adding a matching string to `owner_release` never promotes an asset by itself.
+
+A future inventory schema may rename this field to `owner_batch`; v1 keeps the
+existing key to avoid rewriting the established inventory contract.
+
 ## 4. Size policy
 
 These limits apply to new tracked binary changes, not retroactively to the

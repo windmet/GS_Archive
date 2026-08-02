@@ -85,10 +85,10 @@ function classify(relativePath) {
   const extraStoryMatch = stem.match(/^image_extra_(banner|kv_story)_(\d+)$/)
   if (extraStoryMatch && relativePath.includes('/assets/stories/extra/')) {
     return {
-      category: 'stable-promoted-asset',
+      category: 'portal-asset',
       logical_id: `extra-story-${extraStoryMatch[1]}:${extraStoryMatch[2]}`,
       consumer: ['ArchiveStoryCatalog', 'ArchiveStoryCollection'],
-      reason_tracked: 'bounded RAW-derived Extra Story navigation visual',
+      reason_tracked: 'bounded RAW-derived Extra Story portal navigation visual',
       force_add_allowed: true,
       owner_release: '2026-07-30-extra-story-visuals-001',
       grandfathered: false,

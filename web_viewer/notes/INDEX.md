@@ -73,6 +73,8 @@ The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_889
   release ledger and generated stable manifest.
 - `notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md` -
   GROWING STARS-only Bilibili translation-link mapping.
+- `notes/04_refactor/GS_ARCHIVE_P1_STACK_CLOSEOUT_20260802.md` - ordered PR #32,
+  Song, Player PR1 and Mobile PR2 merge/absorption plan.
 
 ## Layout
 
