@@ -68,6 +68,19 @@ const backdropStyle = computed(() =>
   .scene-device-slot {
     justify-content: center;
   }
+  .scene-rail-slot {
+    justify-content: flex-end;
+    align-items: center;
+    padding-right: 8vw;
+  }
+}
+
+@media (min-width: 700px) and (max-width: 1099px) {
+  .scene-rail-slot {
+    justify-content: flex-end;
+    align-items: center;
+    padding-right: 3vw;
+  }
 }
 
 @media (max-width: 699px) {
@@ -79,6 +92,11 @@ const backdropStyle = computed(() =>
   }
   .scene-device-slot {
     align-items: stretch;
+  }
+  .scene-rail-slot {
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0 16px calc(14px + env(safe-area-inset-bottom));
   }
 }
 </style>

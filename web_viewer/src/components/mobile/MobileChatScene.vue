@@ -4,6 +4,13 @@
       <MobileChatHeader :title="chatTitle" :theme="theme" :is-group="context.isGroup" />
       <MobileMessageList :messages="historyMessages" :show-typing="showTyping" />
     </MobileDeviceFrame>
+    <template #rail>
+      <MobileChoiceRail
+        v-if="context.phase === 'choice'"
+        :options="currentChoices"
+        @select="$emit('select', $event)"
+      />
+    </template>
   </MobileSceneLayout>
 </template>
 
@@ -13,6 +20,7 @@ import MobileSceneLayout from './MobileSceneLayout.vue'
 import MobileDeviceFrame from './MobileDeviceFrame.vue'
 import MobileChatHeader from './MobileChatHeader.vue'
 import MobileMessageList from './MobileMessageList.vue'
+import MobileChoiceRail from './MobileChoiceRail.vue'
 import { getUnitMobileBgUrl } from '../../utils/AssetResolver.js'
 import { UNIT_CODE_TO_NAME, normalizeUnitCode } from '../../utils/UnitNameMap.js'
 import { IDOL_NAME_TO_ID, IDOL_ID_TO_NAME } from '../../utils/IdolNameMap.js'
@@ -46,6 +54,7 @@ const context = computed(() => resolveCommunicationContext({
 }))
 
 const phase = computed(() => context.value.phase)
+const currentChoices = computed(() => props.step?.options || [])
 
 // ── Helpers (ported from MobileUI) ──
 function isProducer(speaker) {
