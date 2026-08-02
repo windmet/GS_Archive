@@ -184,12 +184,19 @@ const replyLabel = 'プロデューサー：'
     min-height: 150px;
   }
   .call-content-panel {
-    padding: 16px 12px calc(14px + env(safe-area-inset-bottom));
+    /* Clear the floating control dock above the safe area */
+    padding: 16px 12px calc(80px + env(safe-area-inset-bottom));
   }
   .dialogue-card {
     width: calc(100% - 24px);
     border-radius: 14px;
     padding: 15px 14px;
+  }
+}
+
+@media (max-height: 760px) and (min-width: 700px) {
+  .call-content-panel {
+    padding: 14px 20px;
   }
 }
 </style>

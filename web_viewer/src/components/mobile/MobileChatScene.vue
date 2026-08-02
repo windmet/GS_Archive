@@ -2,7 +2,11 @@
   <MobileSceneLayout :bg-url="bgUrl" :phase="phase">
     <MobileDeviceFrame>
       <MobileChatHeader :title="chatTitle" :theme="theme" :is-group="context.isGroup" />
-      <MobileMessageList :messages="historyMessages" :show-typing="showTyping" />
+      <MobileMessageList
+        :messages="historyMessages"
+        :show-typing="showTyping"
+        :reserve-choice-space="context.phase === 'choice'"
+      />
     </MobileDeviceFrame>
     <template #rail>
       <MobileChoiceRail

@@ -59,4 +59,10 @@ const titleStyle = computed(() => {
     padding-top: env(safe-area-inset-top);
   }
 }
+
+@media (max-height: 760px) and (min-width: 700px) {
+  .mobile-chat-header {
+    height: 56px;
+  }
+}
 </style>
