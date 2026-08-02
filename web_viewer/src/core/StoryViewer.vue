@@ -68,8 +68,17 @@
         @select="onChoice"
       />
 
-      <!-- Phone call -->
-      <CallUI v-else-if="currentStep.type === 'call'" :dialogue="currentStep.dialogue" :step="currentStep" @select="onChoice" />
+      <!-- Phone call scene: stays mounted across choice steps via context inheritance -->
+      <MobileCallScene
+        v-else-if="communicationContext.mode === 'call'"
+        :dialogue="currentStep.dialogue"
+        :step="currentStep"
+        :stepIndex="currentStepIndex"
+        :scenarioId="compiledData?.scenario_id"
+        :historyStack="historyStack"
+        :steps="compiledData?.steps || []"
+        @select="onChoice"
+      />
 
       <!-- Choice / selection (standalone; communication choices render in-scene via the rail) -->
       <StageChoiceUI
@@ -160,7 +169,7 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount, reactive, nextTick, defineAsyncComponent } from 'vue'
 import AdvUI from '../components/AdvUI.vue'
 import MobileChatScene from '../components/mobile/MobileChatScene.vue'
-import CallUI from '../components/CallUI.vue'
+import MobileCallScene from '../components/mobile/MobileCallScene.vue'
 import StageChoiceUI from '../components/choices/StageChoiceUI.vue'
 import TitleUI from '../components/TitleUI.vue'
 import SynopsisUI from '../components/SynopsisUI.vue'
