@@ -172,9 +172,10 @@
           "performance_mapping": {
             "type": "object",
             "required": [
-              "category",
-              "raw_unit_id",
-              "status",
+              "raw_category",
+              "raw_selector_id",
+              "affiliation_kind",
+              "performer_scope",
               "confirmed_unit",
               "explicit_performer_idol_ids",
               "explicit_performer_idol_codes",
@@ -183,9 +184,10 @@
               "table_46_row_count"
             ],
             "properties": {
-              "category": { "enum": [2, 3] },
-              "raw_unit_id": { "type": "integer", "minimum": 1, "maximum": 16 },
-              "status": { "enum": ["confirmed_unit_relation", "unresolved_special_selector"] },
+              "raw_category": { "enum": [2, 3] },
+              "raw_selector_id": { "type": "integer", "minimum": 1, "maximum": 16 },
+              "affiliation_kind": { "enum": ["unit", "collective_or_special"] },
+              "performer_scope": { "enum": ["fixed_unit", "configurable_formation", "fixed_special_lineup", "unspecified_special"] },
               "confirmed_unit": {
                 "oneOf": [
                   { "type": "null" },

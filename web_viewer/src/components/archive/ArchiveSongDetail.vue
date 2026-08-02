@@ -68,9 +68,9 @@
       <section class="song-block" aria-labelledby="song-performance-title">
         <div class="song-block-heading">
           <span>PERFORMERS</span>
-          <h3 id="song-performance-title">演唱与组合归属</h3>
+          <h3 id="song-performance-title">演唱类别与演唱者</h3>
         </div>
-        <p class="song-block-note">来自 masterdata 表 46 的字段 7 与字段 30–34；音频 cue 关系另列于下方。</p>
+        <p class="song-block-note">字段 7 决定固定 Unit 或全体／合同／特别编成类别；字段 30–34 与 RAW 演唱机制决定实际演唱范围。</p>
         <div v-if="confirmedUnit" class="song-subsection">
           <h4>正式组合归属</h4>
           <ul class="chip-list">
@@ -81,9 +81,11 @@
             </li>
           </ul>
         </div>
-        <p v-else class="mapping-caution">
-          字段 7 为类别 3 selector（值 {{ song.performance_mapping.raw_unit_id }}），语义尚未确认，不作为组合归属。
-        </p>
+        <div v-else class="performance-scope-card" :data-performer-scope="performerScope">
+          <strong>{{ performerScopeLabel }}</strong>
+          <p>{{ performerScopeDescription }}</p>
+          <small>表 46 category {{ song.performance_mapping.raw_category }} · raw selector {{ song.performance_mapping.raw_selector_id }}；selector 不解释为 Unit ID。</small>
+        </div>
         <div v-if="performerEntries.length" class="song-subsection">
           <h4>{{ performerHeading }}（{{ performerEntries.length }}）</h4>
           <p v-if="song.performance_mapping.performer_basis === 'confirmed_unit_roster'" class="song-block-note">
@@ -273,6 +275,17 @@ const openDate = computed(() => {
 
 const creditLines = computed(() => (props.song.credits || '').split('\n').filter(Boolean))
 const confirmedUnit = computed(() => props.song.performance_mapping?.confirmed_unit || null)
+const performerScope = computed(() => props.song.performance_mapping?.performer_scope || 'unspecified_special')
+const performerScopeLabel = computed(() => ({
+  configurable_formation: '全体／可变编成',
+  fixed_special_lineup: '合同／特别编成',
+  unspecified_special: '全体／合同／特别编成（成员未明记）',
+}[performerScope.value] || '固定 Unit'))
+const performerScopeDescription = computed(() => ({
+  configurable_formation: '表 46 的五槽切换演唱与 RAW 声部证据支持由编成偶像决定演唱者；不等同于 49 人同时合唱。',
+  fixed_special_lineup: '不归属于单一 Unit；下列成员由表 46 字段 30–34 明确记录。',
+  unspecified_special: '不归属于单一 Unit；表 46 未逐人列出演唱者，不能仅凭类别 3 推定为全员合唱。',
+}[performerScope.value] || ''))
 const performerEntries = computed(() =>
   (props.song.performance_mapping?.performer_idol_codes || []).map(code => ({
     code,
@@ -348,6 +361,10 @@ const effectEntries = computed(() =>
 .badge-oneshot { background: #f3e8fd; color: #7a3fd0; }
 .badge-special { background: #f3e8fd; color: #7136a5; }
 .badge-muted { background: #3a4752; color: #b6c0c9; }
+.performance-scope-card { margin-top: 12px; padding: 11px 13px; border-left: 3px solid #3aa89f; border-radius: 4px; background: #eef8f7; }
+.performance-scope-card strong { color: #246d67; font-size: 0.78rem; }
+.performance-scope-card p { margin: 5px 0 0; color: #526a68; font-size: 0.7rem; line-height: 1.55; }
+.performance-scope-card small { display: block; margin-top: 6px; color: #778786; font-size: 0.62rem; line-height: 1.45; }
 .song-detail-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; }
 .song-detail-stats div { min-width: 0; padding: 7px 14px; border-left: 1px solid #34414c; }
 .song-detail-stats dt { color: #98a6b1; font-size: 0.64rem; white-space: nowrap; }

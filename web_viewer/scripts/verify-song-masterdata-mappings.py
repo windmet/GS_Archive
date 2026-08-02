@@ -95,10 +95,17 @@ def main() -> None:
         }
         if published.get("song_data") != expected_song_data:
             fail(f"{code}: SongData selection flags mismatch")
-        if committed.get("unit_mapping", {}).get("category") != category:
+        selector = committed.get("performance_selector", {})
+        if selector.get("category") != category:
             fail(f"{code}: category mismatch")
-        if committed.get("unit_mapping", {}).get("unit_id") != unit_id:
-            fail(f"{code}: unit/selector value mismatch")
+        if selector.get("selector_id") != unit_id:
+            fail(f"{code}: selector value mismatch")
+        expected_kind = "unit" if category == 2 else "collective_or_special"
+        if selector.get("kind") != expected_kind:
+            fail(f"{code}: selector kind mismatch")
+        expected_unit_id = unit_id if category == 2 else None
+        if selector.get("unit_id") != expected_unit_id:
+            fail(f"{code}: discriminated unit id mismatch")
         if committed.get("performer_idol_ids") != performer_ids:
             fail(f"{code}: performer ids mismatch")
         if committed.get("table_46_row_count") != len(song_rows):
@@ -131,16 +138,16 @@ def main() -> None:
         for song in song_catalog["songs"].values()
     ) != 5:
         fail("expected five songs to carry HasSwitchSinger")
-    if music["songs"]["brndnf"]["unit_mapping"]["unit_id"] != 1:
+    if music["songs"]["brndnf"]["performance_selector"]["unit_id"] != 1:
         fail("BRAND NEW FIELD must resolve to Jupiter")
-    if music["songs"]["psblts"]["unit_mapping"]["unit_id"] != 12:
+    if music["songs"]["psblts"]["performance_selector"]["unit_id"] != 12:
         fail("Possibilities must resolve to S.E.M")
     if music["songs"]["flslgt"]["performer_idol_ids"] != [7, 9, 22, 48]:
         fail("FLASH LIGHT performer ids mismatch")
 
     print(
         "Song masterdata mappings verified: 99 rows / 61 songs, "
-        "47 confirmed unit songs, 14 unresolved selectors, "
+        "47 unit selectors, 14 collective-or-special selectors, "
         "20 performer rows / 13 unique songs"
     )
 

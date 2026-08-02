@@ -28,9 +28,9 @@ The old `music_catalog` projection omitted fields 7 and 30–34:
 
 - all 61 unique song codes have field 7; category 2 covers 47 unit songs and
   resolves exactly to the 16 table-24 units;
-- category 3 covers 14 all-roster or special songs. Its numeric field-7 value
-  is retained as an unresolved selector and must not be presented as unit
-  ownership;
+- category 3 covers 14 collective-or-special songs. Its numeric field-7 value
+  is retained as a raw selector and must not be presented as unit ownership or
+  as proof that all 49 idols sing simultaneously;
 - fields 30–34 are populated on 20 of the 99 table rows, but duplicate live
   rows reduce this to 13 unique songs. Both counts are retained explicitly;
 - category-2 songs without explicit fields 30–34 obtain their display roster
@@ -399,6 +399,33 @@ tail silence. The manifest therefore records `extra-vocal-tail-experimental`,
 not `sample-aligned`. The shared audio clock still starts both at one deadline
 and ends the browser session with the backing; this is not proof of recovered
 official offsets or mixer constants.
+
+### Field-7 performer semantics normalization — 2026-08-02
+
+The former `unit_mapping` / `raw_unit_id` names were semantically wrong for
+category 3. Field 7 is now projected as a discriminated `performance_selector`:
+category 2 is `kind=unit` and may expose its exact table-24 `unit_id`; category
+3 is `kind=collective_or_special`, keeps only `selector_id`, and always exposes
+`unit_id=null`. The derived song catalog mirrors the raw pair as
+`raw_category` / `raw_selector_id` and adds a separate `performer_scope`.
+
+The 14 category-3 songs are not uniformly all-idol recordings. The scope is
+derived without guessing:
+
+- `configurable_formation`: no fixed fields 30–34 and table 46 enables
+  `HasSwitchSinger` (DRVALV, BYNDTD, GRWSML, TKSTP1, TKSTP2);
+- `fixed_special_lineup`: fields 30–34 explicitly name a cross-unit cast
+  (including TRUE HORIZON, ANYWHERE, FLASH LIGHT, and precious love);
+- `unspecified_special`: neither an explicit cast nor SwitchSinger evidence is
+  present (including the president April Fools variant and Reason!!).
+
+Category-2 songs remain `fixed_unit`. The UI therefore calls the section
+`演唱类别与演唱者`: it shows the confirmed unit when one exists, otherwise a
+scope card explaining configurable formation, fixed special lineup, or an
+unspecified special category. The raw selector stays visible only as audit
+evidence and is explicitly not interpreted as a unit id. This replaces the
+old generic “semantics unresolved” warning without overstating an all-roster
+performance.
 
 ## Deferred Song-C discussion
 
