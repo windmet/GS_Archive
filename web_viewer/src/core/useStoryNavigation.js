@@ -70,17 +70,6 @@ export function useStoryNavigation({
     }) || null
   })
 
-  const currentEpisodeLabel = computed(() => {
-    const ep = currentEpisode.value
-    if (!ep) {
-      const idx = currentStep.value?.episode_index
-      if (idx == null) return ''
-      return `EP${String(Number(idx) + 1).padStart(2, '0')}`
-    }
-    const no = String(ep.episode_no || ep.episode_index + 1).padStart(2, '0')
-    return `EP${no}`
-  })
-
   const firstAvailableBg = computed(() => {
     if (!compiledData.value?.steps) return null
     for (const step of compiledData.value.steps.slice(navigationStartIndex.value, navigationEndIndex.value + 1)) {
@@ -203,7 +192,6 @@ export function useStoryNavigation({
     navigationStartIndex,
     navigationEndIndex,
     currentEpisode,
-    currentEpisodeLabel,
     firstAvailableBg,
     langLabel,
     cycleLanguage,

@@ -27,7 +27,6 @@
     <!-- Top bar -->
     <PlayerTopBar
       v-if="compiledData && !HIDE_UI && !uiHidden"
-      :episode-label="currentEpisodeLabel"
       :current="playableStepNumber"
       :total="playableStepTotal"
       :language="langLabel"
@@ -339,7 +338,6 @@ const {
   navigationStartIndex,
   navigationEndIndex,
   currentEpisode,
-  currentEpisodeLabel,
   firstAvailableBg,
   langLabel,
   cycleLanguage,
@@ -1031,17 +1029,18 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
   place-items: center;
   width: var(--player-hit-min);
   height: var(--player-hit-min);
-  border: 1px solid var(--player-border-dark);
+  border: 1px solid var(--player-control-border);
   border-radius: var(--player-radius-control);
-  background: var(--player-panel-dark);
-  color: var(--player-paper);
+  background: var(--player-control-surface);
+  color: var(--player-control-ink);
+  box-shadow: 0 4px 16px rgba(3, 12, 20, 0.16);
   cursor: pointer;
   transition:
     background var(--player-motion-fast) var(--player-ease-standard),
     transform var(--player-motion-fast) var(--player-ease-standard);
 }
 .restore-ui:hover {
-  background: var(--player-panel-dark-hover);
+  background: var(--player-control-surface-hover);
   transform: translateY(-2px);
 }
 .restore-ui:focus-visible {
