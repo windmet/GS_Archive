@@ -69,11 +69,11 @@
       />
 
       <!-- Phone call -->
-      <CallUI v-if="currentStep.type === 'call'" :dialogue="currentStep.dialogue" :step="currentStep" @select="onChoice" />
+      <CallUI v-else-if="currentStep.type === 'call'" :dialogue="currentStep.dialogue" :step="currentStep" @select="onChoice" />
 
-      <!-- Choice / selection -->
-      <ChoiceUI
-        v-if="currentStep.type === 'choice'"
+      <!-- Choice / selection (standalone; communication choices render in-scene via the rail) -->
+      <StageChoiceUI
+        v-else-if="currentStep.type === 'choice'"
         :step="currentStep"
         @select="onChoice"
       />
@@ -161,7 +161,7 @@ import { ref, computed, watch, onMounted, onBeforeUnmount, reactive, nextTick, d
 import AdvUI from '../components/AdvUI.vue'
 import MobileChatScene from '../components/mobile/MobileChatScene.vue'
 import CallUI from '../components/CallUI.vue'
-import ChoiceUI from '../components/ChoiceUI.vue'
+import StageChoiceUI from '../components/choices/StageChoiceUI.vue'
 import TitleUI from '../components/TitleUI.vue'
 import SynopsisUI from '../components/SynopsisUI.vue'
 import TextTimeUI from '../components/TextTimeUI.vue'
