@@ -2621,6 +2621,13 @@ def build_card_reference_maps(tables: dict[int, list[dict[str, Any]]]) -> dict[s
         "idols": {row.get("1"): row for row in tables.get(2, []) if isinstance(row.get("1"), int)},
         "skills": {row.get("1"): row for row in tables.get(20, []) if isinstance(row.get("1"), int)},
         "centers": {row.get("1"): row for row in tables.get(23, []) if isinstance(row.get("1"), int)},
+        "items": {row.get("1"): row for row in tables.get(16, []) if isinstance(row.get("1"), int)},
+        "skill_categories": {
+            row.get("1"): row for row in tables.get(75, []) if isinstance(row.get("1"), int)
+        },
+        "center_skill_categories": {
+            row.get("1"): row for row in tables.get(130, []) if isinstance(row.get("1"), int)
+        },
         "skill_levels": skill_levels,
         "skill_effects": skill_effects,
         "live_costumes": {row.get("1"): row for row in tables.get(27, []) if isinstance(row.get("1"), int)},
@@ -2634,6 +2641,8 @@ def build_card_gameplay(card: dict[str, Any], references: dict[str, Any]) -> dic
     center_rows = references["centers"]
     skill_levels = references["skill_levels"]
     skill_effects = references["skill_effects"]
+    skill_categories = references["skill_categories"]
+    center_skill_categories = references["center_skill_categories"]
 
     idol = idol_rows.get(card.get("2"), {})
     idol_type = idol.get("7")
@@ -2649,6 +2658,8 @@ def build_card_gameplay(card: dict[str, Any], references: dict[str, Any]) -> dic
 
     skill_id = card.get("5")
     skill_row = skill_rows.get(skill_id, {})
+    skill_category_id = skill_row.get("8")
+    skill_category = skill_categories.get(skill_category_id, {})
     level_entries = []
     for level in sorted(skill_levels.get(skill_id, []), key=lambda item: item.get("3") or 0):
         effect_group_id = level.get("8")
@@ -2696,6 +2707,18 @@ def build_card_gameplay(card: dict[str, Any], references: dict[str, Any]) -> dic
             "id": skill_id,
             "name": skill_row.get("2"),
             "description_template": skill_row.get("3"),
+            "category": {
+                "id": skill_category_id,
+                "name": skill_category.get("2"),
+                "color": skill_category.get("3"),
+                "icon": skill_category.get("4"),
+                "_source": source(75, {
+                    "category_id": 1,
+                    "name": 2,
+                    "color": 3,
+                    "icon": 4,
+                }, skill_category.get("_offset")),
+            },
             "levels": level_entries,
             "_source": source(20, {
                 "skill_id": 1,
@@ -2703,13 +2726,27 @@ def build_card_gameplay(card: dict[str, Any], references: dict[str, Any]) -> dic
                 "description_template": 3,
                 "skill_level_group_id": 4,
                 "skill_detail_group_id": 5,
+                "category_id": 8,
             }, skill_row.get("_offset")),
         },
         "center_skill": {
             "id": center_id,
             "name": center.get("2"),
             "description": center.get("3"),
-            "_source": source(23, {"center_skill_id": 1, "name": 2, "description": 3}, center.get("_offset")),
+            "category": {
+                "id": center.get("9"),
+                "name": center_skill_categories.get(center.get("9"), {}).get("2"),
+                "_source": source(130, {
+                    "category_id": 1,
+                    "name": 2,
+                }, center_skill_categories.get(center.get("9"), {}).get("_offset")),
+            },
+            "_source": source(23, {
+                "center_skill_id": 1,
+                "name": 2,
+                "description": 3,
+                "category_id": 9,
+            }, center.get("_offset")),
         },
         "_source": source(1, {
             "skill_id": 5,
@@ -2999,6 +3036,7 @@ def build_card_index(
             "title": card.get("40") or card.get("13"),
             "release_at": card.get("18"),
             "limitbreak_item_id": card.get("23"),
+            "limitbreak_item": None,
             "release_series": release_series_by_card_id.get(card_id),
             "gameplay": build_card_gameplay(card, card_references),
             "costume_relations": build_card_costume_relations(card, card_references),
@@ -3029,6 +3067,22 @@ def build_card_index(
                 "title": 40,
             }, card.get("_offset")),
         }
+        limitbreak_item = card_references["items"].get(card.get("23"), {})
+        if limitbreak_item:
+            entry["limitbreak_item"] = {
+                "id": limitbreak_item.get("1"),
+                "name": limitbreak_item.get("6"),
+                "description": limitbreak_item.get("7"),
+                "resource_id": limitbreak_item.get("4"),
+                "short_name": limitbreak_item.get("12"),
+                "_source": source(16, {
+                    "item_id": 1,
+                    "resource_id": 4,
+                    "name": 6,
+                    "description": 7,
+                    "short_name": 12,
+                }, limitbreak_item.get("_offset")),
+            }
         indexed_cards.append(entry)
         by_character[character_id].append(resource_id)
 
@@ -3058,12 +3112,16 @@ def build_card_detail_index(card_index: dict[str, Any]) -> dict[str, Any]:
     skills: dict[str, dict[str, Any]] = {}
     center_skills: dict[str, dict[str, Any]] = {}
     costumes: dict[str, dict[str, Any]] = {}
+    items: dict[str, dict[str, Any]] = {}
 
     for card in card_index.get("cards", []):
         resource_id = card.get("resource_id")
         if not isinstance(resource_id, str):
             continue
         gameplay = card.pop("gameplay", {})
+        limitbreak_item = card.pop("limitbreak_item", None)
+        if isinstance(limitbreak_item, dict) and isinstance(limitbreak_item.get("id"), int):
+            items[str(limitbreak_item["id"])] = limitbreak_item
         skill = gameplay.pop("skill", {}) if isinstance(gameplay, dict) else {}
         center_skill = gameplay.pop("center_skill", {}) if isinstance(gameplay, dict) else {}
         skill_id = skill.get("id") if isinstance(skill, dict) else None
@@ -3107,11 +3165,13 @@ def build_card_detail_index(card_index: dict[str, Any]) -> dict[str, Any]:
         "cards_by_resource_id": details,
         "skills_by_id": skills,
         "center_skills_by_id": center_skills,
+        "items_by_id": items,
         "costumes_by_key": costumes,
         "meta": {
             "card_count": len(details),
             "skill_count": len(skills),
             "center_skill_count": len(center_skills),
+            "item_count": len(items),
             "costume_count": len(costumes),
             "operational_voice_count": sum(
                 len(item.get("operational_voice_cues", [])) for item in details.values()
@@ -3551,9 +3611,9 @@ def main() -> None:
     catalog_tables = extract_table_rows(
         records,
         {
-            2, 7, 8, 9, 20, 21, 23, 24, 27, 28, 29, 32, 34, 36, 40, 43, 44,
+            2, 7, 8, 9, 16, 20, 21, 23, 24, 27, 28, 29, 32, 34, 36, 40, 43, 44,
             46, 53, 54, 55, 63, 68, 90, 94, 96, 98, 100, 101, 103, 104,
-            105, 106, 107, 108, 110, 112, 133, 146, 147, 148, 149, 150,
+            75, 105, 106, 107, 108, 110, 112, 130, 133, 146, 147, 148, 149, 150,
             153, 159, 162, 165, 168, 175, 176, 180,
         },
     )

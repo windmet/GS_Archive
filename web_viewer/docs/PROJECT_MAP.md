@@ -120,6 +120,11 @@ artifact 不等于一篇剧情。
 `public/data/masterdata/birthday_story_semantic_index.json` 为准；该索引由表
 76/77/78/80/86 生成。表 80 未指定角色的记录不得仅按资源名归入某位角色。
 
+卡片突破素材及技能分类以 `card_detail_index.json` 的去重字典为准：卡片表 1
+字段 23 硬关联道具表 16，技能表 20 字段 8 硬关联分类表 75，中心技能表 23
+字段 9 硬关联中心分类表 130。组件只通过 `archiveSelectors.js` 组装这些关系，
+不得在 UI 内按稀有度或技能名称猜测。
+
 ### `scripts/`、`tools/`、`data_pipeline/`
 
 离线生成、审计、candidate/parity/publish/rollback 和 verifier。它们不进入
