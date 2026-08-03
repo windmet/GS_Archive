@@ -54,7 +54,12 @@ assert.equal(toma.title, '天ヶ瀬 冬馬 生日剧情')
 assert.equal(toma.chapterCount, 4)
 assert.deepEqual(
   [...new Set(toma.chapters.map(chapter => chapter.label))].sort(),
-  ['偶像生日祝福', '制作人生日问候', '生日短篇'].sort(),
+  [
+    '2022 · 偶像生日祝福',
+    '2023 · 生日短篇',
+    '制作人生日问候 · 第1期',
+    '制作人生日问候 · 第2期',
+  ].sort(),
 )
 const ken = collections.find(collection => collection.sectionId === '101ken')
 assert.equal(ken.subject.kind, 'npc')
