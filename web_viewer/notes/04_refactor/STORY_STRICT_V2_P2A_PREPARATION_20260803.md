@@ -276,7 +276,7 @@ The bounded transaction was executed on 2026-08-03:
 | final republish | 12/12 candidate hashes restored and verified |
 | publication release | `2026-08-03-story-1-3-10001-01-001` schema v2 `replace` |
 | ledger ownership | `story-collection:1_3_10001_01`, ledger-governed |
-| browser acceptance | **NOT EXECUTED**; immutable release says `not-tested` |
+| browser acceptance | Commit A sample-accepted; immutable release remains `not-tested`, append-only annotation records evidence |
 
 Machine consumers verified after initial publish and/or final republish:
 
@@ -292,8 +292,9 @@ Machine consumers verified after initial publish and/or final republish:
 
 Unconsumed or incompletely consumed surfaces stay explicit TODOs:
 
-- **TODO / browser:** execute the anchors above on exact Commit A and add only
-  an append-only acceptance annotation in Commit B;
+- **TODO / browser transient:** machine verification covers directional wipes at
+  aggregate steps 114/117, but the transient was not visually isolated in a
+  browser screenshot;
 - **TODO / real audio:** `noAudio=1` or machine voice-link checks do not prove
   audible playback; record real-audio acceptance separately if performed;
 - **TODO / long soak:** P2-B 2-4 hour Runtime stability is **NOT EXECUTED**;
@@ -302,18 +303,16 @@ Unconsumed or incompletely consumed surfaces stay explicit TODOs:
 
 ## TODO before publication authorization
 
-1. Commit A: run the final full gate set, commit, push, and wait for Source Gate.
-2. Complete one-browser-tab acceptance with application console errors at zero.
-   Real audio status must be reported separately from `noAudio=1` checks.
-3. Commit B: append the acceptance annotation and regenerated annotation index;
+1. Commit B: append the acceptance annotation and regenerated annotation index;
    do not rewrite Commit A's release JSON.
-4. Keep temporary candidate and backup directories ignored and outside the
+2. Keep temporary candidate and backup directories ignored and outside the
    committed repository surface.
 
 Until items 1-7 are complete, the only valid claim is:
 
 ```text
 Event 1_3_10001_01 strict-v2 replace / rollback / republish: VERIFIED
-browser acceptance: NOT EXECUTED
+browser acceptance: SAMPLE-ACCEPTED on Commit A (`noAudio=1`)
+real audio and visually isolated directional-wipe transient: NOT EXECUTED
 P2-B 2-4 hour Runtime stability: NOT EXECUTED
 ```
