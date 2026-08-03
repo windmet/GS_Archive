@@ -178,7 +178,8 @@ Machine-local roots (ephemeral evidence only):
 - `C:\Users\windm\AppData\Local\Temp\sidem-p2a-determinism-a-64622e10428b4456a2013f9e00067c66`;
 - `C:\Users\windm\AppData\Local\Temp\sidem-p2a-determinism-b-b02893e75bb343758fa65be79f03baeb`.
 
-Publication still requires one final fresh run from the committed fix.
+The final `PYTHONHASHSEED=314159` run from committed fix `6a71578` matched the
+same manifest and every recorded hash, satisfying this gate.
 
 ## Authoritative source identity
 
@@ -264,26 +265,55 @@ After Commit A passes Source Gate, run the browser anchors on that SHA. Commit B
 may only append an `acceptance-clarification` annotation targeting this release;
 it must not alter release JSON.
 
+## Commit A execution record
+
+The bounded transaction was executed on 2026-08-03:
+
+| State | Evidence |
+| --- | --- |
+| initial replace | 12/12 candidate hashes verified |
+| rollback | 12/12 old hashes restored and verified |
+| final republish | 12/12 candidate hashes restored and verified |
+| publication release | `2026-08-03-story-1-3-10001-01-001` schema v2 `replace` |
+| ledger ownership | `story-collection:1_3_10001_01`, ledger-governed |
+| browser acceptance | **NOT EXECUTED**; immutable release says `not-tested` |
+
+Machine consumers verified after initial publish and/or final republish:
+
+- strict schema and Runtime shapes;
+- voice cues;
+- playback ranges and episode boundaries;
+- story presentation;
+- Event story navigation;
+- archive route contract;
+- publication ledger and authoritative publication inventory;
+- source-only archive baseline;
+- production build.
+
+Unconsumed or incompletely consumed surfaces stay explicit TODOs:
+
+- **TODO / browser:** execute the anchors above on exact Commit A and add only
+  an append-only acceptance annotation in Commit B;
+- **TODO / real audio:** `noAudio=1` or machine voice-link checks do not prove
+  audible playback; record real-audio acceptance separately if performed;
+- **TODO / long soak:** P2-B 2-4 hour Runtime stability is **NOT EXECUTED**;
+- **TODO / downstream external consumers:** no deployed site, crawler, export,
+  or third-party consumer was exercised by this batch.
+
 ## TODO before publication authorization
 
-1. Commit and push the deterministic compiler fix plus this handoff update.
-2. Re-run candidate generation on that exact commit and compare all manifest,
-   old, candidate and compatibility-evidence hashes with the two-seed result.
-3. Construct the collection-scoped v2 `replace` release described above.
-4. Execute explicit-confirmation atomic publish only after the manifest review;
-   then run schema, Runtime, text, voice, playback range, presentation, Event
-   navigation, source-only and production-build gates.
-5. Complete one-browser-tab acceptance with application console errors at zero.
+1. Commit A: run the final full gate set, commit, push, and wait for Source Gate.
+2. Complete one-browser-tab acceptance with application console errors at zero.
    Real audio status must be reported separately from `noAudio=1` checks.
-6. Execute explicit rollback and verify all 12 exact old hashes, then republish
-   and verify all 12 candidate hashes and final browser state.
-7. Commit only the bounded stable corpus, ledger/manifest and evidence updates.
-   Temporary candidate and backup directories remain ignored and outside the
-   repository.
+3. Commit B: append the acceptance annotation and regenerated annotation index;
+   do not rewrite Commit A's release JSON.
+4. Keep temporary candidate and backup directories ignored and outside the
+   committed repository surface.
 
 Until items 1-7 are complete, the only valid claim is:
 
 ```text
-Event 1_3_10001_01 strict-v2 candidate-prepared / parity-verified
-publication, rollback, republish and browser acceptance: NOT EXECUTED
+Event 1_3_10001_01 strict-v2 replace / rollback / republish: VERIFIED
+browser acceptance: NOT EXECUTED
+P2-B 2-4 hour Runtime stability: NOT EXECUTED
 ```
