@@ -1,0 +1,304 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gs-archive.local/schemas/song-catalog-v1.schema.json",
+  "title": "GS Archive song catalog v1",
+  "type": "object",
+  "required": ["schema_version", "sources", "summary", "songs"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "sources": {
+      "type": "object",
+      "required": [
+        "music_catalog",
+        "song_movie_index",
+        "song_audio_relation_catalog",
+        "song_jacket_index",
+        "song_related_entity_index",
+        "idol_unit_dictionary",
+        "archive_manifest",
+        "masterdata_table",
+        "choreography_root"
+      ],
+      "properties": {
+        "music_catalog": { "const": "public/data/masterdata/music_catalog.json" },
+        "song_movie_index": { "const": "public/data/masterdata/song_movie_index.json" },
+        "song_audio_relation_catalog": { "const": "public/data/song_audio_relation_catalog.json" },
+        "song_jacket_index": { "const": "public/data/song_jacket_index.json" },
+        "song_related_entity_index": { "const": "public/data/song_related_entity_index.json" },
+        "idol_unit_dictionary": { "const": "public/data/masterdata/idol_unit_dictionary.json" },
+        "archive_manifest": { "const": "public/data/archive_manifest.json" },
+        "masterdata_table": { "const": 46 },
+        "choreography_root": { "const": "RAW/asset" }
+      },
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "song_count",
+        "work_count",
+        "special_variant_count",
+        "available_song_count",
+        "mv_resource_count",
+        "three_d_movie_count",
+        "mvlive_count",
+        "layered_song_count",
+        "oneshot_song_count",
+        "switch_singer_song_count",
+        "solo_singing_song_count",
+        "confirmed_unit_song_count",
+        "explicit_performer_song_count",
+        "resolved_performer_song_count",
+        "choreography_bundle_count",
+        "lipsync_coverage",
+        "unit_effect_song_count",
+        "jacket_coverage",
+        "song_bg_coverage",
+        "jacket_url_coverage"
+      ],
+      "properties": {
+        "song_count": { "type": "integer" },
+        "work_count": { "type": "integer" },
+        "special_variant_count": { "type": "integer" },
+        "available_song_count": { "type": "integer" },
+        "mv_resource_count": { "type": "integer" },
+        "three_d_movie_count": { "type": "integer" },
+        "mvlive_count": { "type": "integer" },
+        "layered_song_count": { "type": "integer" },
+        "oneshot_song_count": { "type": "integer" },
+        "switch_singer_song_count": { "type": "integer" },
+        "solo_singing_song_count": { "type": "integer" },
+        "confirmed_unit_song_count": { "type": "integer" },
+        "explicit_performer_song_count": { "type": "integer" },
+        "resolved_performer_song_count": { "type": "integer" },
+        "choreography_bundle_count": { "type": "integer" },
+        "lipsync_coverage": { "type": "integer" },
+        "unit_effect_song_count": { "type": "integer" },
+        "jacket_coverage": { "type": "integer" },
+        "song_bg_coverage": { "type": "integer" },
+        "jacket_url_coverage": { "type": "integer" }
+      },
+      "additionalProperties": false
+    },
+    "songs": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "song_id",
+          "song_code",
+          "title",
+          "kana",
+          "credits",
+          "links",
+          "open_at",
+          "available",
+          "archive_status",
+          "song_data",
+          "work_code",
+          "parent_song_code",
+          "variant_kind",
+          "variants",
+          "related_entities",
+          "performance_mapping",
+          "audio_form",
+          "audio",
+          "choreography",
+          "movies"
+        ],
+        "dependentRequired": {
+          "jacket_url": ["available"]
+        },
+        "properties": {
+          "song_id": { "type": "integer" },
+          "song_code": { "type": "string" },
+          "title": { "type": "string" },
+          "kana": { "type": "string" },
+          "credits": { "type": "string" },
+          "links": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "open_at": { "type": "integer" },
+          "available": { "type": "boolean" },
+          "archive_status": { "enum": ["initial", "released", "special"] },
+          "song_data": {
+            "type": "object",
+            "required": ["on_stage_count", "has_switch_singer", "has_original_member", "has_solo_singing", "solo_singing_open_at", "original_song_id"],
+            "properties": {
+              "on_stage_count": { "type": ["integer", "null"] },
+              "has_switch_singer": { "type": "boolean" },
+              "has_original_member": { "type": "boolean" },
+              "has_solo_singing": { "type": "boolean" },
+              "solo_singing_open_at": { "type": ["integer", "null"] },
+              "original_song_id": { "type": ["integer", "null"] }
+            },
+            "additionalProperties": false
+          },
+          "work_code": { "type": "string" },
+          "parent_song_code": { "type": ["string", "null"] },
+          "variant_kind": { "enum": ["primary", "april_fools"] },
+          "variants": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["song_code", "title", "variant_kind", "archive_status"],
+              "properties": {
+                "song_code": { "type": "string" },
+                "title": { "type": "string" },
+                "variant_kind": { "enum": ["april_fools"] },
+                "archive_status": { "enum": ["special"] }
+              },
+              "additionalProperties": false
+            }
+          },
+          "related_entities": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["song_code", "entity_type", "story_type", "story_section", "title", "relation_type", "evidence_url"],
+              "properties": {
+                "song_code": { "type": "string" },
+                "entity_type": { "const": "story_collection" },
+                "story_type": { "const": "extra" },
+                "story_section": { "type": "string" },
+                "title": { "type": "string" },
+                "relation_type": { "const": "official_campaign" },
+                "evidence_url": { "type": "string", "format": "uri" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "performance_mapping": {
+            "type": "object",
+            "required": [
+              "raw_category",
+              "raw_selector_id",
+              "affiliation_kind",
+              "performer_scope",
+              "confirmed_unit",
+              "explicit_performer_idol_ids",
+              "explicit_performer_idol_codes",
+              "performer_idol_codes",
+              "performer_basis",
+              "table_46_row_count"
+            ],
+            "properties": {
+              "raw_category": { "enum": [2, 3] },
+              "raw_selector_id": { "type": "integer", "minimum": 1, "maximum": 16 },
+              "affiliation_kind": { "enum": ["unit", "collective_or_special"] },
+              "performer_scope": { "enum": ["fixed_unit", "configurable_formation", "fixed_special_lineup", "unspecified_special"] },
+              "confirmed_unit": {
+                "oneOf": [
+                  { "type": "null" },
+                  {
+                    "type": "object",
+                    "required": ["unit_id", "unit_code", "unit_name"],
+                    "properties": {
+                      "unit_id": { "type": "integer", "minimum": 1, "maximum": 16 },
+                      "unit_code": { "type": "string" },
+                      "unit_name": { "type": "string" }
+                    },
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "explicit_performer_idol_ids": {
+                "type": "array",
+                "items": { "type": "integer", "minimum": 1, "maximum": 49 },
+                "uniqueItems": true
+              },
+              "explicit_performer_idol_codes": {
+                "type": "array",
+                "items": { "type": "string", "pattern": "^[0-9]{3}[a-z0-9]{3}$" },
+                "uniqueItems": true
+              },
+              "performer_idol_codes": {
+                "type": "array",
+                "items": { "type": "string", "pattern": "^[0-9]{3}[a-z0-9]{3}$" },
+                "uniqueItems": true
+              },
+              "performer_basis": { "enum": ["table46_explicit", "confirmed_unit_roster", "none"] },
+              "table_46_row_count": { "type": "integer", "minimum": 1 }
+            },
+            "additionalProperties": false
+          },
+          "jacket_url": { "type": "string" },
+          "audio_form": { "enum": ["layered", "oneshot", "single-cue"] },
+          "audio": {
+            "type": "object",
+            "required": [
+              "unit_cue_count",
+              "unit_codes",
+              "oneshot_cue_count",
+              "oneshot_idol_codes",
+              "idol_vocal_file_count",
+              "idol_vocal_codes",
+              "backing_file_count",
+              "has_full_mix"
+            ],
+            "properties": {
+              "unit_cue_count": { "type": "integer" },
+              "unit_codes": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "oneshot_cue_count": { "type": "integer" },
+              "oneshot_idol_codes": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "idol_vocal_file_count": { "type": "integer" },
+              "idol_vocal_codes": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "backing_file_count": { "type": "integer" },
+              "has_full_mix": { "type": "boolean" }
+            },
+            "additionalProperties": false
+          },
+          "choreography": {
+            "type": "object",
+            "required": [
+              "has_fumen",
+              "has_for_lipsync",
+              "has_live_effect",
+              "live_effect_variants",
+              "has_jacket",
+              "has_song_bg"
+            ],
+            "properties": {
+              "has_fumen": { "type": "boolean" },
+              "has_for_lipsync": { "type": "boolean" },
+              "has_live_effect": { "type": "boolean" },
+              "live_effect_variants": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "has_jacket": { "type": "boolean" },
+              "has_song_bg": { "type": "boolean" }
+            },
+            "additionalProperties": false
+          },
+          "movies": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["kind", "resource_id", "movie_offset", "movie_finish_offset"],
+              "properties": {
+                "kind": { "enum": ["3dmv", "mvlive"] },
+                "resource_id": { "type": "string" },
+                "movie_offset": { "type": ["integer", "null"] },
+                "movie_finish_offset": { "type": ["integer", "null"] }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1742,9 +1742,50 @@ def build_music_catalog(tables: dict[int, list[dict[str, Any]]]) -> dict[str, An
     songs = {}
     bgm = {}
     seasonal_switch_rows = []
+    table_46_performer_row_count = 0
     for row in tables.get(46, []):
         code = row.get("4")
         if not isinstance(code, str):
+            continue
+        unit_mapping = row.get("7") if isinstance(row.get("7"), dict) else {}
+        category = unit_mapping.get("1")
+        unit_id = unit_mapping.get("2")
+        performer_ids = [
+            row.get(str(field))
+            for field in range(30, 35)
+            if isinstance(row.get(str(field)), int)
+        ]
+        if performer_ids:
+            table_46_performer_row_count += 1
+        previous = songs.get(code)
+        if previous:
+            previous_mapping = previous["unit_mapping"]
+            if (
+                previous_mapping["category"] != category
+                or previous_mapping["unit_id"] != unit_id
+            ):
+                raise ValueError(f"conflicting table 46 unit mapping for {code}")
+            previous["performer_idol_ids"] = sorted(set(
+                previous["performer_idol_ids"] + performer_ids
+            ))
+            previous["table_46_row_count"] += 1
+            previous["_source"] = source(
+                46,
+                {
+                    "song_code": 4,
+                    "title": 5,
+                    "kana": 6,
+                    "unit_mapping": 7,
+                    "credits": 8,
+                    "links": 9,
+                    "performer_idol_id_1": 30,
+                    "performer_idol_id_2": 31,
+                    "performer_idol_id_3": 32,
+                    "performer_idol_id_4": 33,
+                    "performer_idol_id_5": 34,
+                },
+                row.get("_offset"),
+            )
             continue
         songs[code] = {
             "song_code": code,
@@ -1752,7 +1793,34 @@ def build_music_catalog(tables: dict[int, list[dict[str, Any]]]) -> dict[str, An
             "kana": row.get("6"),
             "credits": row.get("8"),
             "links": [value for value in (row.get("9"), row.get("10")) if isinstance(value, str)],
-            "_source": source(46, {"song_code": 4, "title": 5, "kana": 6, "credits": 8, "links": 9}, row.get("_offset")),
+            "unit_mapping": {
+                "category": category,
+                "unit_id": unit_id,
+                "status": (
+                    "confirmed_unit_relation"
+                    if category == 2
+                    else "unresolved_special_selector"
+                ),
+            },
+            "performer_idol_ids": sorted(set(performer_ids)),
+            "table_46_row_count": 1,
+            "_source": source(
+                46,
+                {
+                    "song_code": 4,
+                    "title": 5,
+                    "kana": 6,
+                    "unit_mapping": 7,
+                    "credits": 8,
+                    "links": 9,
+                    "performer_idol_id_1": 30,
+                    "performer_idol_id_2": 31,
+                    "performer_idol_id_3": 32,
+                    "performer_idol_id_4": 33,
+                    "performer_idol_id_5": 34,
+                },
+                row.get("_offset"),
+            ),
         }
     for row in tables.get(112, []):
         resource = row.get("14")
@@ -1816,6 +1884,20 @@ def build_music_catalog(tables: dict[int, list[dict[str, Any]]]) -> dict[str, An
         "seasonal_switch_rows": seasonal_switch_rows,
         "meta": {
             "song_count": len(songs),
+            "table_46_row_count": len(tables.get(46, [])),
+            "confirmed_unit_song_count": sum(
+                song["unit_mapping"]["status"] == "confirmed_unit_relation"
+                for song in songs.values()
+            ),
+            "unresolved_special_selector_song_count": sum(
+                song["unit_mapping"]["status"] == "unresolved_special_selector"
+                for song in songs.values()
+            ),
+            "explicit_performer_song_count": sum(
+                bool(song["performer_idol_ids"])
+                for song in songs.values()
+            ),
+            "explicit_performer_row_count": table_46_performer_row_count,
             "bgm_count": len(bgm),
             "table_133_row_count": len(seasonal_switch_rows),
             "table_133_resource_count": len({

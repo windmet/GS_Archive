@@ -57,6 +57,24 @@
       </div>
     </section>
 
+    <section v-if="songs.length" class="unit-section" aria-labelledby="unit-songs-title">
+      <div class="section-heading">
+        <h3 id="unit-songs-title">组合歌曲</h3>
+        <span>{{ songs.length }} · 表 46 类别 2</span>
+      </div>
+      <div class="unit-songs">
+        <button v-for="song in songs" :key="song.song_code" @click="emit('open-song', song.song_code)">
+          <img v-if="song.jacket_url" :src="song.jacket_url" :alt="`${song.title} 封面`" />
+          <Music v-else :size="20" aria-hidden="true" />
+          <span>
+            <strong>{{ song.title }}</strong>
+            <small>{{ song.song_code }}</small>
+          </span>
+          <ChevronRight :size="16" aria-hidden="true" />
+        </button>
+      </div>
+    </section>
+
     <section class="unit-section" aria-labelledby="unit-events-title">
       <div class="section-heading">
         <h3 id="unit-events-title">固定组合团活</h3>
@@ -102,7 +120,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { ChevronRight, Images, Play } from '@lucide/vue'
+import { ChevronRight, Images, Music, Play } from '@lucide/vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import { getBgUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 
@@ -110,13 +128,14 @@ const props = defineProps({
   unit: { type: Object, default: null },
   members: { type: Array, default: () => [] },
   stories: { type: Array, default: () => [] },
+  songs: { type: Array, default: () => [] },
   cardStats: { type: Object, default: () => ({}) },
   eventRelations: {
     type: Object,
     default: () => ({ team_events: [], attribute_event_appearances: [], mixed_unit_appearances: [] }),
   },
 })
-const emit = defineEmits(['open-idol', 'open-story', 'open-event', 'open-cards'])
+const emit = defineEmits(['open-idol', 'open-story', 'open-event', 'open-cards', 'open-song'])
 
 function matchingMemberNames(event) {
   const names = new Map(props.members.map(member => [member.idol_code, member.display_name]))
@@ -186,6 +205,15 @@ const mixedEventItems = computed(() => relationItems(
 .unit-members button:hover { border-color: #73c9c2; background: #f2fbfa; }
 .unit-members img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }
 .unit-members span { overflow: hidden; font-size: 0.72rem; text-overflow: ellipsis; white-space: nowrap; }
+.unit-songs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.unit-songs button { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 58px; padding: 7px 10px; border: 1px solid #e0e5e8; border-radius: 6px; background: #fff; color: #26313a; cursor: pointer; text-align: left; }
+.unit-songs button:hover { border-color: #73c9c2; background: #f2fbfa; }
+.unit-songs img { width: 44px; height: 44px; border-radius: 5px; object-fit: cover; }
+.unit-songs button > svg:first-child { margin: auto; color: #15978e; }
+.unit-songs button > svg:last-child { color: #9ca5ad; }
+.unit-songs span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.unit-songs strong { overflow: hidden; font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; }
+.unit-songs small { color: #7a858e; font-size: 0.63rem; }
 .unit-stories { display: flex; flex-direction: column; gap: 6px; }
 .unit-stories button { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; align-items: center; gap: 8px; min-height: 52px; padding: 7px 10px; border: 1px solid #e0e5e8; border-radius: 6px; background: #fff; color: #26313a; cursor: pointer; text-align: left; }
 .unit-stories button:hover { border-color: #73c9c2; background: #f2fbfa; }
@@ -200,6 +228,7 @@ const mixedEventItems = computed(() => relationItems(
   .unit-hero h2 { font-size: 1.45rem; }
   .unit-description, .unit-section { margin-top: 8px; padding: 14px; }
   .unit-members { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .unit-songs { grid-template-columns: 1fr; }
   .unit-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .unit-stories button { grid-template-columns: 20px minmax(0, 1fr); }
   .unit-stories button > small { grid-column: 2; }

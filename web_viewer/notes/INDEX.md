@@ -49,6 +49,10 @@ The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_889
   table-178 Extra authority, seven formal works plus three special Home Story
   supplements, exact RAW banner/KV mapping, New Year 2023 grouping, and FES
   gasha relations.
+- `notes/04_refactor/GS_ARCHIVE_SONG_DOMAIN_P1_CLOSEOUT_20260801.md` -
+  60-work/61-entity Song-B closeout, DRIVE A LIVE April Fools family,
+  route-backed filters, exact archive relations, governed RAW jackets, and the
+  still-NOT-EXECUTED Song-C player boundary.
 - `notes/03_audit/RAW_USM_MOVIE_ANNOUNCE_EXACT_RELATIONS_20260730.md` -
   table-175 authority, 30/30 MovieAnnounce-to-USM exact relations, v2 catalog
   contract, mounted/source-only gates, and no-media-publication boundary.

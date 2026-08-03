@@ -1,0 +1,443 @@
+<template>
+  <section class="song-detail">
+    <header class="song-detail-hero">
+      <img
+        v-if="song.jacket_url"
+        class="song-detail-jacket"
+        :src="song.jacket_url"
+        :alt="`${song.title} 封面`"
+      />
+      <div class="song-detail-title">
+        <span>SONG · {{ song.song_id }}</span>
+        <h2>{{ song.title }}</h2>
+        <p v-if="song.kana" class="song-detail-kana">{{ song.kana }}</p>
+        <button
+          v-if="song.parent_song_code"
+          class="song-parent-link"
+          @click="emit('open-song', song.parent_song_code)"
+        >
+          DRIVE A LIVE 作品页へ戻る
+        </button>
+        <div class="song-detail-badges">
+          <span v-if="song.archive_status === 'special'" class="badge badge-special">特殊版本</span>
+          <span v-for="movie in song.movies" :key="movie.kind + movie.resource_id" class="badge badge-movie">
+            {{ movie.kind === '3dmv' ? '3DMV' : 'MV LIVE' }} · {{ movie.resource_id }}
+          </span>
+          <span v-if="song.audio_form === 'layered'" class="badge badge-layered">分层演出</span>
+          <span v-if="song.audio_form === 'oneshot'" class="badge badge-oneshot">演出语音</span>
+        </div>
+      </div>
+      <dl class="song-detail-stats" aria-label="歌曲档案统计">
+        <div><dt>曲目 ID</dt><dd>{{ song.song_id }}</dd></div>
+        <div><dt>音频形态</dt><dd>{{ formLabel }}</dd></div>
+        <div><dt>开放时间</dt><dd>{{ openDate }}</dd></div>
+      </dl>
+    </header>
+
+    <div class="song-detail-body">
+      <section v-if="creditLines.length" class="song-block" aria-labelledby="song-credits-title">
+        <div class="song-block-heading">
+          <span>CREDITS</span>
+          <h3 id="song-credits-title">制作信息</h3>
+        </div>
+        <ul class="credit-list">
+          <li v-for="line in creditLines" :key="line">{{ line }}</li>
+        </ul>
+      </section>
+
+      <section v-if="song.variants.length" class="song-block" aria-labelledby="song-variants-title">
+        <div class="song-block-heading">
+          <span>PERFORMANCE VARIANTS</span>
+          <h3 id="song-variants-title">关联演出版本</h3>
+        </div>
+        <div class="variant-list">
+          <button
+            v-for="variant in song.variants"
+            :key="variant.song_code"
+            @click="emit('open-song', variant.song_code)"
+          >
+            <span>
+              <strong>{{ variant.title }}</strong>
+              <small>{{ variant.song_code }} · 特殊版本</small>
+            </span>
+            <ChevronRight :size="16" aria-hidden="true" />
+          </button>
+        </div>
+      </section>
+
+      <section class="song-block" aria-labelledby="song-performance-title">
+        <div class="song-block-heading">
+          <span>PERFORMERS</span>
+          <h3 id="song-performance-title">演唱类别与演唱者</h3>
+        </div>
+        <p class="song-block-note">字段 7 决定固定 Unit 或全体／合同／特别编成类别；字段 30–34 与 RAW 演唱机制决定实际演唱范围。</p>
+        <div v-if="confirmedUnit" class="song-subsection">
+          <h4>正式组合归属</h4>
+          <ul class="chip-list">
+            <li>
+              <button @click="emit('open-unit', confirmedUnit.unit_code)">
+                <code>{{ confirmedUnit.unit_code }}</code>{{ confirmedUnit.unit_name }}
+              </button>
+            </li>
+          </ul>
+        </div>
+        <div v-else class="performance-scope-card" :data-performer-scope="performerScope">
+          <strong>{{ performerScopeLabel }}</strong>
+          <p>{{ performerScopeDescription }}</p>
+          <small>表 46 category {{ song.performance_mapping.raw_category }} · raw selector {{ song.performance_mapping.raw_selector_id }}；selector 不解释为 Unit ID。</small>
+        </div>
+        <div v-if="performerEntries.length" class="song-subsection">
+          <h4>{{ performerHeading }}（{{ performerEntries.length }}）</h4>
+          <p v-if="song.performance_mapping.performer_basis === 'confirmed_unit_roster'" class="song-block-note">
+            表 46 未逐人列出；此处由已确认组合归属和组合完整成员表补全。
+          </p>
+          <ul class="chip-list">
+            <li v-for="entry in performerEntries" :key="entry.code">
+              <button @click="emit('open-idol', entry.code)">
+                <code>{{ entry.code }}</code>{{ entry.name }}
+              </button>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="song-block" aria-labelledby="song-audio-title">
+        <div class="song-block-heading">
+          <span>AUDIO LAYERS</span>
+          <h3 id="song-audio-title">音频层</h3>
+        </div>
+        <p class="song-block-note">原始 ACB 资源层结构（cue 与文件名证据见音频关系目录）。</p>
+        <dl class="audio-stats">
+          <div><dt>完整混音</dt><dd>{{ song.audio.has_full_mix ? '有' : '无' }}</dd></div>
+          <div><dt>组合声部 cue</dt><dd>{{ song.audio.unit_cue_count }}</dd></div>
+          <div><dt>演出语音 cue</dt><dd>{{ song.audio.oneshot_cue_count }}</dd></div>
+          <div><dt>偶像声部文件</dt><dd>{{ song.audio.idol_vocal_file_count }}</dd></div>
+          <div><dt>伴奏文件</dt><dd>{{ song.audio.backing_file_count }}</dd></div>
+        </dl>
+
+        <div v-if="unitEntries.length" class="song-subsection">
+          <h4>组合演出版本（{{ unitEntries.length }}）</h4>
+          <ul class="chip-list">
+            <li v-for="entry in unitEntries" :key="entry.code">
+              <button @click="emit('open-unit', entry.normalizedCode)">
+                <code>{{ entry.code }}</code>{{ entry.name }}
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <div v-if="oneshotEntries.length" class="song-subsection">
+          <h4>全员演出语音（{{ oneshotEntries.length }}）</h4>
+          <p class="song-block-note">每个偶像各一句话的演出语音（约 4 秒），非个人独唱。</p>
+          <ul class="chip-list">
+            <li v-for="entry in oneshotEntries" :key="entry.code">
+              <button @click="emit('open-idol', entry.code)">
+                <code>{{ entry.code }}</code>{{ entry.name }}
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <div v-if="idolVocalEntries.length" class="song-subsection">
+          <h4>偶像声部文件（{{ idolVocalEntries.length }}）</h4>
+          <p class="song-block-note">每个偶像的完整个人独唱（独立 ACB 文件）。</p>
+          <ul class="chip-list">
+            <li v-for="entry in idolVocalEntries" :key="entry.code">
+              <button @click="emit('open-idol', entry.code)">
+                <code>{{ entry.code }}</code>{{ entry.name }}
+              </button>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="song-block" aria-labelledby="song-choreography-title">
+        <div class="song-block-heading">
+          <span>CHOREOGRAPHY</span>
+          <h3 id="song-choreography-title">编舞与演出</h3>
+        </div>
+        <dl class="audio-stats">
+          <div><dt>编舞数据</dt><dd>{{ song.choreography.has_fumen ? '有' : '无' }}</dd></div>
+          <div><dt>口型数据</dt><dd>{{ song.choreography.has_for_lipsync ? '有' : '无' }}</dd></div>
+          <div><dt>舞台特效</dt><dd>{{ song.choreography.has_live_effect ? '有' : '无' }}</dd></div>
+          <div><dt>封面</dt><dd>{{ song.choreography.has_jacket ? '有' : '无' }}</dd></div>
+          <div><dt>舞台背景</dt><dd>{{ song.choreography.has_song_bg ? '有' : '无' }}</dd></div>
+        </dl>
+        <div v-if="effectEntries.length" class="song-subsection">
+          <h4>特效变体（{{ effectEntries.length }}）</h4>
+          <ul class="chip-list">
+            <li v-for="entry in effectEntries" :key="entry.code">
+              <button
+                :disabled="!entry.unitCode"
+                @click="entry.unitCode && emit('open-unit', entry.unitCode)"
+              >
+                <code>{{ entry.code }}</code>{{ entry.name }}
+              </button>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section v-if="song.related_entities.length" class="song-block" aria-labelledby="song-related-title">
+        <div class="song-block-heading">
+          <span>RELATED ARCHIVE</span>
+          <h3 id="song-related-title">关联档案</h3>
+        </div>
+        <div class="variant-list">
+          <button
+            v-for="relation in song.related_entities"
+            :key="`${relation.entity_type}:${relation.story_section}`"
+            @click="emit('open-related-story', relation)"
+          >
+            <span>
+              <strong>{{ relation.title }}</strong>
+              <small>官方企划关联 · Extra Story {{ relation.story_section }}</small>
+            </span>
+            <ChevronRight :size="16" aria-hidden="true" />
+          </button>
+        </div>
+      </section>
+
+      <section v-if="song.movies.length" class="song-block" aria-labelledby="song-movie-title">
+        <div class="song-block-heading">
+          <span>MOVIES</span>
+          <h3 id="song-movie-title">MV 关系</h3>
+        </div>
+        <ul class="movie-list">
+          <li v-for="movie in song.movies" :key="movie.kind + movie.resource_id">
+            <strong>{{ movie.kind === '3dmv' ? '3DMV' : 'MV LIVE' }}</strong>
+            <code>{{ movie.resource_id }}</code>
+            <span v-if="movie.movie_offset != null">
+              offset {{ movie.movie_offset }}ms
+              <template v-if="movie.movie_finish_offset != null">– {{ movie.movie_finish_offset }}ms</template>
+            </span>
+          </li>
+        </ul>
+      </section>
+
+      <section v-if="song.links.length" class="song-block" aria-labelledby="song-links-title">
+        <div class="song-block-heading">
+          <span>RELEASES</span>
+          <h3 id="song-links-title">专辑链接</h3>
+        </div>
+        <ul class="link-list">
+          <li v-for="link in song.links" :key="link">
+            <a :href="link" target="_blank" rel="noopener noreferrer external">前往专辑页面 <ExternalLink :size="14" /></a>
+          </li>
+        </ul>
+      </section>
+    </div>
+  </section>
+</template>
+
+<script setup>
+import { computed } from 'vue'
+import { ChevronRight, ExternalLink } from '@lucide/vue'
+import { IDOL_ID_TO_NAME } from '../../utils/IdolNameMap.js'
+
+const props = defineProps({
+  song: { type: Object, required: true },
+  units: { type: Object, default: null },
+})
+const emit = defineEmits(['open-song', 'open-unit', 'open-idol', 'open-related-story'])
+
+const formLabel = computed(() => ({
+  layered: '分层演出',
+  oneshot: '演出语音',
+  'single-cue': '单曲',
+}[props.song.audio_form] || props.song.audio_form))
+
+const openDate = computed(() => {
+  const openAt = props.song.open_at
+  if (props.song.archive_status === 'special') return '特殊版本'
+  if (props.song.archive_status === 'initial') return '初始收录'
+  if (openAt == null) return '—'
+  return new Intl.DateTimeFormat('zh-CN', {
+    dateStyle: 'medium',
+    timeZone: 'Asia/Tokyo',
+  }).format(new Date(openAt * 1000))
+})
+
+const creditLines = computed(() => (props.song.credits || '').split('\n').filter(Boolean))
+const confirmedUnit = computed(() => props.song.performance_mapping?.confirmed_unit || null)
+const performerScope = computed(() => props.song.performance_mapping?.performer_scope || 'unspecified_special')
+const performerScopeLabel = computed(() => ({
+  configurable_formation: '全体／可变编成',
+  fixed_special_lineup: '合同／特别编成',
+  unspecified_special: '全体／合同／特别编成（成员未明记）',
+}[performerScope.value] || '固定 Unit'))
+const performerScopeDescription = computed(() => ({
+  configurable_formation: '表 46 的五槽切换演唱与 RAW 声部证据支持由编成偶像决定演唱者；不等同于 49 人同时合唱。',
+  fixed_special_lineup: '不归属于单一 Unit；下列成员由表 46 字段 30–34 明确记录。',
+  unspecified_special: '不归属于单一 Unit；表 46 未逐人列出演唱者，不能仅凭类别 3 推定为全员合唱。',
+}[performerScope.value] || ''))
+const performerEntries = computed(() =>
+  (props.song.performance_mapping?.performer_idol_codes || []).map(code => ({
+    code,
+    name: IDOL_ID_TO_NAME[code] || code,
+  })),
+)
+const performerHeading = computed(() =>
+  props.song.performance_mapping?.performer_basis === 'table46_explicit'
+    ? '表 46 明确演唱／参演偶像'
+    : '组合演唱成员',
+)
+
+function unitName(code) {
+  const normalized = code.replace(/^0(\d{2}[a-z0-9]{3})/, '$1')
+  const unit = (props.units?.units || []).find(unit => unit.unit_code === normalized)
+  if (unit) return unit.unit_name
+  if (/^(solo|solo_multi|solo_single|tutorial)$/.test(code)) {
+    return { solo: '独唱', solo_multi: '多人独唱', solo_single: '单人独唱', tutorial: '教程' }[code]
+  }
+  return '未知组合'
+}
+
+const unitEntries = computed(() =>
+  (props.song.audio.unit_codes || []).map(code => ({
+    code,
+    normalizedCode: code.replace(/^0(\d{2}[a-z0-9]{3})/, '$1'),
+    name: unitName(code),
+  })),
+)
+const oneshotEntries = computed(() =>
+  (props.song.audio.oneshot_idol_codes || []).map(code => ({ code, name: IDOL_ID_TO_NAME[code] || code })),
+)
+const idolVocalEntries = computed(() =>
+  (props.song.audio.idol_vocal_codes || []).map(code => ({ code, name: IDOL_ID_TO_NAME[code] || code })),
+)
+const effectEntries = computed(() =>
+  (props.song.choreography.live_effect_variants || []).map(code => ({
+    code,
+    name: unitName(code),
+    unitCode: /^\d{2}[a-z0-9]{3}$/.test(code) ? code : '',
+  })),
+)
+</script>
+
+<style scoped>
+.song-detail { height: 100%; padding: 24px; overflow-y: auto; background: #f7f9fa; }
+.song-detail-hero {
+  display: grid;
+  grid-template-columns: 172px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  padding: 24px 28px;
+  border-bottom: 3px solid #28b6ac;
+  background: #17212b;
+  color: #fff;
+}
+.song-detail-jacket {
+  width: 172px;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.song-detail-title > span { color: #56d0c7; font-size: 0.68rem; font-weight: 800; }
+.song-detail-title h2 { margin: 7px 0 0; font-size: 1.5rem; }
+.song-detail-kana { margin: 5px 0 0; color: #aeb9c2; font-size: 0.78rem; }
+.song-parent-link { margin-top: 10px; padding: 0; border: 0; background: transparent; color: #76d9d1; cursor: pointer; font: inherit; font-size: 0.72rem; }
+.song-parent-link:hover { text-decoration: underline; }
+.song-detail-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+.badge { padding: 3px 10px; border-radius: 999px; font-size: 0.64rem; font-weight: 700; }
+.badge-movie { background: #fff3e0; color: #b26a00; }
+.badge-layered { background: #e8f0fe; color: #2f5fd0; }
+.badge-oneshot { background: #f3e8fd; color: #7a3fd0; }
+.badge-special { background: #f3e8fd; color: #7136a5; }
+.badge-muted { background: #3a4752; color: #b6c0c9; }
+.performance-scope-card { margin-top: 12px; padding: 11px 13px; border-left: 3px solid #3aa89f; border-radius: 4px; background: #eef8f7; }
+.performance-scope-card strong { color: #246d67; font-size: 0.78rem; }
+.performance-scope-card p { margin: 5px 0 0; color: #526a68; font-size: 0.7rem; line-height: 1.55; }
+.performance-scope-card small { display: block; margin-top: 6px; color: #778786; font-size: 0.62rem; line-height: 1.45; }
+.song-detail-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; }
+.song-detail-stats div { min-width: 0; padding: 7px 14px; border-left: 1px solid #34414c; }
+.song-detail-stats dt { color: #98a6b1; font-size: 0.64rem; white-space: nowrap; }
+.song-detail-stats dd { margin: 5px 0 0; font-size: 1rem; font-weight: 700; }
+.song-detail-body { padding-top: 20px; display: flex; flex-direction: column; gap: 16px; }
+.song-block {
+  padding: 16px 18px;
+  border: 1px solid #dfe4e8;
+  border-radius: 6px;
+  background: #fff;
+}
+.song-block-heading span { color: #2bb3aa; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.05em; }
+.song-block-heading h3 { margin: 4px 0 0; font-size: 0.94rem; }
+.song-block-note { margin: 8px 0 0; color: #7a858e; font-size: 0.72rem; }
+.mapping-caution { margin: 12px 0 0; padding: 9px 11px; border-left: 3px solid #b08a4b; background: #fff8e9; color: #775f35; font-size: 0.72rem; line-height: 1.6; }
+.credit-list { margin: 10px 0 0; padding: 0; list-style: none; color: #4a545e; font-size: 0.78rem; line-height: 1.7; }
+.audio-stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 12px 0 0; }
+.audio-stats div { padding: 10px 12px; border-radius: 6px; background: #f4f7f8; }
+.audio-stats dt { color: #7a858e; font-size: 0.64rem; }
+.audio-stats dd { margin: 5px 0 0; font-size: 0.9rem; font-weight: 700; }
+.song-subsection { margin-top: 16px; }
+.song-subsection h4 { margin: 0 0 8px; font-size: 0.78rem; color: #5c6771; }
+.chip-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.chip-list li { display: inline-flex; }
+.chip-list button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: #f0fbfa;
+  color: #36636b;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.7rem;
+}
+.chip-list button:hover:not(:disabled) { background: #dff5f2; }
+.chip-list button:focus-visible { outline: 2px solid #158f87; outline-offset: 2px; }
+.chip-list button:disabled { cursor: default; opacity: 0.78; }
+.chip-list code { color: #158f87; font-weight: 700; }
+.variant-list { display: grid; gap: 8px; margin-top: 12px; }
+.variant-list button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 12px;
+  border: 1px solid #dfe4e8;
+  border-radius: 6px;
+  background: #f8fafb;
+  color: #26313a;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+.variant-list button:hover { border-color: #7bcfc9; background: #f0fbfa; }
+.variant-list button > span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.variant-list strong { font-size: 0.78rem; }
+.variant-list small { color: #7a858e; font-size: 0.66rem; }
+.movie-list { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.movie-list li { display: flex; align-items: center; gap: 10px; font-size: 0.78rem; }
+.movie-list code { color: #158f87; font-weight: 700; }
+.movie-list span { color: #7a858e; }
+.link-list { margin: 10px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.link-list a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #158f87;
+  font-size: 0.78rem;
+  text-decoration: none;
+}
+.link-list a:hover { text-decoration: underline; }
+
+@media (max-width: 980px) {
+  .song-detail-hero { grid-template-columns: 1fr; }
+  .song-detail-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .audio-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 560px) {
+  .song-detail { padding: 12px; }
+  .song-detail-hero { padding: 18px; }
+  .song-detail-jacket { width: 140px; }
+  .audio-stats { grid-template-columns: 1fr; }
+  .song-detail-stats div:nth-child(3) { border-left: 0; }
+}
+</style>

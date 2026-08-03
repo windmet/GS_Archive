@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gs-archive.local/schemas/song-audio-relation-catalog-v1.schema.json",
+  "title": "GS Archive RAW song3 ACB audio relation catalog v1",
+  "type": "object",
+  "required": ["schema_version", "sources", "summary", "songs", "extra_entities"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "sources": {
+      "type": "object",
+      "required": ["raw_audio_root", "music_catalog"],
+      "properties": {
+        "raw_audio_root": { "const": "RAW/audio" },
+        "music_catalog": {
+          "const": "web_viewer/public/data/masterdata/music_catalog.json"
+        }
+      },
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "acb_file_count",
+        "base_file_count",
+        "idol_vocal_file_count",
+        "bgm_backing_file_count",
+        "catalog_song_count",
+        "layered_song_count",
+        "oneshot_song_count",
+        "test_entity_count"
+      ],
+      "properties": {
+        "acb_file_count": { "type": "integer" },
+        "base_file_count": { "type": "integer" },
+        "idol_vocal_file_count": { "type": "integer" },
+        "bgm_backing_file_count": { "type": "integer" },
+        "catalog_song_count": { "type": "integer" },
+        "layered_song_count": { "type": "integer" },
+        "oneshot_song_count": { "type": "integer" },
+        "test_entity_count": { "type": "integer" }
+      },
+      "additionalProperties": false
+    },
+    "songs": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "song_code",
+          "title",
+          "base_file",
+          "audio_layers"
+        ],
+        "properties": {
+          "song_code": { "type": "string" },
+          "title": { "type": "string" },
+          "base_file": { "type": "string" },
+          "audio_layers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["kind", "files", "cue_names", "evidence"],
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "full-mix",
+                    "unit-cue",
+                    "idol-vocal",
+                    "backing",
+                    "oneshot-cue",
+                    "preview",
+                    "soundcheck"
+                  ]
+                },
+                "files": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "cue_names": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "evidence": {
+                  "type": "object",
+                  "required": ["source", "note"],
+                  "properties": {
+                    "source": { "type": "string" },
+                    "note": { "type": "string" }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "extra_entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "kind", "file"],
+        "properties": {
+          "code": { "type": "string" },
+          "kind": { "enum": ["test"] },
+          "file": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
