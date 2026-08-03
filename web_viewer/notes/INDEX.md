@@ -75,6 +75,9 @@ The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_889
   exceptions and promotion boundary.
 - `notes/04_refactor/PUBLICATION_LEDGER_CONTRACT_20260728.md` - append-only
   release ledger and generated stable manifest.
+- `notes/04_refactor/STORY_STRICT_V2_P2A_PREPARATION_20260803.md` - bounded Event
+  `1_3_10001_01` strict-v2 candidate preparation, two-stage parity evidence,
+  non-publishing gates and explicit publish/browser/rollback TODO boundary.
 - `notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md` -
   GROWING STARS-only Bilibili translation-link mapping.
 - `notes/04_refactor/GS_ARCHIVE_P1_STACK_CLOSEOUT_20260802.md` - ordered PR #32,
