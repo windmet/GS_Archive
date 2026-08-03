@@ -33,8 +33,30 @@ The birthday records retain their masterdata families:
 - `1_7`: idol-birthday greetings, 50 records;
 - `1_2`: birthday short stories, 29 records.
 
-The 29 `1_2` files also belong to `idol_story`. Birthday pages reuse those
-playback files but do not erase either semantic identity.
+The 29 `1_2` files also belong to `idol_story`. The two domain memberships are
+preserved in the index, but the product surfaces no longer present them as two
+independent chapters:
+
+- `birthday` is canonical for producer-birthday and idol-birthday greetings;
+- `idol_story_archive` is canonical for the formal Idol Episode section,
+  including its birthday Small Talk segments;
+- the birthday subject page keeps the `1_2` row as a labelled relationship
+  entry and routes to the exact personal-story section/episode;
+- the personal-story page marks birthday-aligned release dates and the exact
+  file shared by the birthday domain, with a reciprocal link to the birthday
+  subject archive.
+
+For `017kir`, four birthday logical rows therefore render as three independent
+birthday records plus one relationship entry. Only
+`1_x_017kir_2_1_2_017_12.json` is shared; the two producer greetings and the
+idol-birthday greeting remain independent birthday content.
+
+The subject page must not expose opaque duplicate labels. A trustworthy year
+is derived only from a non-sentinel `releaseAt`; producer-birthday rows whose
+masterdata date is the sentinel are labelled by explicit resource batch
+(`第1期`, `第2期`) instead of inventing a calendar year. For `017kir` the visible
+sequence is therefore producer greeting batch 1, producer greeting batch 2,
+2021 idol-birthday greeting, and the 2022 personal-story relationship entry.
 
 ## Routes and navigation
 

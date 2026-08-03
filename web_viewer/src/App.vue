@@ -267,6 +267,7 @@
         @play-chapter="playStoryCollectionChapter"
         @play-episode="playStoryCollectionEpisode"
         @open-gasha="openGasha"
+        @open-idol-story="openBirthdayIdolStory"
       />
 
       <ArchiveSeasonalCampaign
@@ -290,16 +291,22 @@
         :story="currentIdolStoryPage"
         :idols="idolStoryOptions"
         :external-resources="currentIdolStoryExternalResources"
+        :focused-section-id="currentStorySection"
+        :focused-episode-id="currentEpisodeId"
         @select-idol="selectIdolStory"
         @play-section="playIdolStorySection"
         @play-episode="playIdolStoryEpisode"
         @open-communication="openStoryCommunication"
+        @open-birthday="openIdolBirthdayArchive"
       />
 
       <ArchiveMobileArchive
         v-if="view === 'mobile_archive'"
         :archive="mobileArchiveData"
         :compiled-index="indexData"
+        :cards="cardIndexData?.cards || []"
+        :idol-episodes="idolEpisodeData"
+        :random-talk-presentation="randomTalkPresentationData"
         :idols="idolUnitData?.idols || []"
         :units="idolUnitData?.units || []"
         :selected-idol="currentCharacterId"
@@ -310,7 +317,9 @@
         @select-unit="selectMobileUnit"
         @update:mode="setMobileMode"
         @play="playMobileScenario"
+        @play-random-topic="playRandomTalkTopic"
         @open-card="openMobileCard"
+        @open-idol-story="openMobileIdolStory"
       />
 
       <ArchiveUnitCatalog
@@ -479,6 +488,7 @@ const seasonalCampaignData = ref(null)
 const workStoryData = ref(null)
 const idolEpisodeData = ref(null)
 const mobileArchiveData = ref(null)
+const randomTalkPresentationData = ref(null)
 const idolCommunicationLoadPromise = ref(null)
 const idolUnitData = ref(null)
 const speakerDictionaryData = ref(null)
@@ -791,6 +801,7 @@ const currentIdolStoryPage = computed(() => {
     storyCatalog.value,
     idolUnitData.value,
     idolCode,
+    birthdayStoryDomain.value,
   )
   if (!page) return null
   const membership = archiveManifestData.value?.unit_membership_by_idol?.[idolCode]
@@ -871,6 +882,7 @@ const storyCollections = computed(() => buildStoryCollections(
   {
     birthdayDomain: birthdayStoryDomain.value,
     extraDomain: extraStoryDomain.value,
+    idolEpisodes: idolEpisodeData.value,
   },
 ))
 
@@ -1564,13 +1576,18 @@ async function ensureCardDetailData() {
 }
 
 async function ensureIdolCommunicationData() {
-  if (idolEpisodeData.value && mobileArchiveData.value) {
-    return { idolEpisode: idolEpisodeData.value, mobileArchive: mobileArchiveData.value }
+  if (idolEpisodeData.value && mobileArchiveData.value && randomTalkPresentationData.value) {
+    return {
+      idolEpisode: idolEpisodeData.value,
+      mobileArchive: mobileArchiveData.value,
+      randomTalkPresentation: randomTalkPresentationData.value,
+    }
   }
   if (!idolCommunicationLoadPromise.value) {
     idolCommunicationLoadPromise.value = loadIdolCommunicationData().then(data => {
       idolEpisodeData.value = data.idolEpisode
       mobileArchiveData.value = data.mobileArchive
+      randomTalkPresentationData.value = data.randomTalkPresentation
       return data
     }).catch(error => {
       console.error('[ArchiveData] Failed to load idol communication indexes:', error)
@@ -1605,6 +1622,7 @@ async function applyArchiveRoute(route) {
     if (route.card && route.voice) await ensureCardDetailData()
     if ([
       'story_catalog',
+      'story_collection',
       'external_story_resources',
       'idol_story_archive',
       'mobile_archive',
@@ -1868,6 +1886,14 @@ function goArchiveBack() {
     },
     story_collection: () => {
       const parent = storyCollectionParentView.value
+      if (parent === 'idol_story_archive' && currentCharacterId.value) {
+        currentStoryDomain.value = 'idol_story'
+        currentStorySection.value = ''
+        currentStoryFile.value = ''
+        storyCollectionParentView.value = ''
+        commitView('idol_story_archive')
+        return
+      }
       if (parent === 'song_detail' && currentSong.value) {
         currentStoryDomain.value = ''
         currentStorySection.value = ''
@@ -2103,6 +2129,7 @@ async function openIdolStoryArchive(idolCode = '001tom') {
   currentStoryDomain.value = 'idol_story'
   currentStoryMode.value = 'portal'
   currentStorySection.value = ''
+  currentEpisodeId.value = ''
   currentCharacterId.value = selected
   currentMobileScenarioId.value = ''
   commitView('idol_story_archive')
@@ -2111,8 +2138,33 @@ async function openIdolStoryArchive(idolCode = '001tom') {
 function selectIdolStory(idolCode) {
   if (!idolEpisodeData.value?.by_idol_code?.[idolCode]) return
   currentCharacterId.value = idolCode
+  currentStorySection.value = ''
+  currentEpisodeId.value = ''
   currentMobileScenarioId.value = ''
   syncArchiveRoute()
+}
+
+async function openBirthdayIdolStory(relation) {
+  await ensureIdolCommunicationData()
+  if (!relation?.idolCode || !idolEpisodeData.value?.by_idol_code?.[relation.idolCode]) return
+  currentStoryDomain.value = 'idol_story'
+  currentStoryMode.value = 'portal'
+  currentCharacterId.value = relation.idolCode
+  currentStorySection.value = String(relation.sectionId || '')
+  currentEpisodeId.value = String(relation.episodeId || '')
+  currentStoryFile.value = ''
+  storyCollectionParentView.value = ''
+  commitView('idol_story_archive')
+}
+
+function openIdolBirthdayArchive() {
+  if (!currentCharacterId.value) return
+  currentStoryDomain.value = 'birthday'
+  currentStorySection.value = currentCharacterId.value
+  currentStoryMode.value = 'portal'
+  currentStoryFile.value = ''
+  storyCollectionParentView.value = 'idol_story_archive'
+  commitView('story_collection')
 }
 
 function playIdolStorySection(section) {
@@ -2174,6 +2226,14 @@ function playMobileScenario(file) {
   if (file) loadScenario(file, 'mobile_archive')
 }
 
+function playRandomTalkTopic(topic) {
+  if (!topic?.file || !Number(topic.startStep)) return
+  loadScenario(topic.file, 'mobile_archive', {
+    startStep: topic.startStep,
+    endStep: topic.endStep,
+  })
+}
+
 function openMobileCard(cardId) {
   const card = (cardIndexData.value?.cards || []).find(entry => Number(entry.card_id) === Number(cardId))
   if (!card) return
@@ -2181,6 +2241,22 @@ function openMobileCard(cardId) {
   currentCharacterId.value = card.character_id
   currentCardId.value = card.resource_id
   commitView('card_detail')
+}
+
+function openMobileIdolStory(episodeId) {
+  const relation = idolEpisodeData.value?.by_episode_id?.[String(episodeId)]
+  if (!relation) return
+  const chapter = (idolEpisodeData.value?.chapters || []).find(entry =>
+    (entry.sections || []).some(section => Number(section.id) === Number(relation.section_id)),
+  )
+  if (!chapter?.idol_code) return
+  currentStoryDomain.value = 'idol_story'
+  currentStoryMode.value = 'portal'
+  currentCharacterId.value = chapter.idol_code
+  currentStorySection.value = String(relation.section_id)
+  currentEpisodeId.value = String(episodeId)
+  currentMobileScenarioId.value = ''
+  commitView('idol_story_archive')
 }
 
 function openUnitCatalog() {

@@ -22,20 +22,18 @@
     ></textarea>
     <div class="viewer-stage">
     <!-- Spine rendering layer (background + characters) -->
-    <SpineStage ref="spineStageRef" :step="stageStep" :fallbackBg="firstAvailableBg" />
+    <SpineStage ref="spineStageRef" :step="stageStep" :fallbackBg="firstAvailableBg" :debug-controls="RUNTIME_DEBUG" />
 
     <!-- Top bar -->
-    <div class="top-bar" v-if="compiledData && !HIDE_UI && !uiHidden">
-      <button class="bar-btn" @click="$emit('back')">{{ uiText('player.back') }}</button>
-      <div class="progress-counter">
-        <span v-if="currentEpisodeLabel" class="episode-badge">{{ currentEpisodeLabel }}</span>
-        <span class="step-counter">{{ playableStepNumber }} / {{ playableStepTotal }}</span>
-      </div>
-      <div class="top-bar-right">
-        <button class="lang-btn" @click.stop="cycleLanguage">{{ langLabel }}</button>
-        <button class="icon-btn" :title="uiText('player.menu')" :aria-label="uiText('player.menu')" @click.stop="menuOpen = true"><Menu :size="19" /></button>
-      </div>
-    </div>
+    <PlayerTopBar
+      v-if="compiledData && !HIDE_UI && !uiHidden"
+      :current="playableStepNumber"
+      :total="playableStepTotal"
+      :language="langLabel"
+      @back="$emit('back')"
+      @language="cycleLanguage"
+      @menu="menuOpen = true"
+    />
 
     <button v-if="uiHidden && !HIDE_UI" class="restore-ui" :title="uiText('player.showUi')" :aria-label="uiText('player.showUi')" @click.stop="uiHidden = false">
       <Eye :size="20" />
@@ -44,7 +42,7 @@
     <!-- Voice audio player: handled by the Web Audio API to avoid IDM sniffing -->
 
     <!-- UI overlay for step-specific screens -->
-    <div class="ui-overlay" v-if="compiledData && !HIDE_UI && !uiHidden && !episodeFinished">
+    <div class="ui-overlay" v-if="compiledData && !HIDE_UI && !uiHidden && (!episodeFinished || communicationCompleted)">
 
       <!-- ADV dialogue -->
       <Transition name="adv-dialogue-fade" appear>
@@ -57,18 +55,37 @@
         />
       </Transition>
 
-      <!-- Talk / chat mode: keep the component mounted across choice steps -->
-      <MobileUI v-show="currentStep.type === 'talk' || currentStep.type === 'talk_stamp'"
-        :dialogue="currentStep.dialogue" :step="currentStep"
-        :stepIndex="currentStepIndex" :scenarioId="compiledData?.scenario_id"
-        :historyStack="historyStack" :choiceTexts="choiceTexts" />
+      <!-- Talk / chat scene: stays mounted across choice steps via context inheritance -->
+      <MobileChatScene
+        v-if="communicationContext.mode === 'talk'"
+        :dialogue="currentStep.dialogue"
+        :step="currentStep"
+        :stepIndex="currentStepIndex"
+        :scenarioId="compiledData?.scenario_id"
+        :historyStack="historyStack"
+        :choiceTexts="choiceTexts"
+        :steps="compiledData?.steps || []"
+        :sceneBackgroundUrl="mobileBackdropUrl"
+        @select="onChoice"
+      />
 
-      <!-- Phone call -->
-      <CallUI v-if="currentStep.type === 'call'" :dialogue="currentStep.dialogue" :step="currentStep" @select="onChoice" />
+      <!-- Phone call scene: stays mounted across choice steps via context inheritance -->
+      <MobileCallScene
+        v-else-if="communicationContext.mode === 'call'"
+        :dialogue="currentStep.dialogue"
+        :step="currentStep"
+        :stepIndex="currentStepIndex"
+        :scenarioId="compiledData?.scenario_id"
+        :historyStack="historyStack"
+        :choiceTexts="choiceTexts"
+        :steps="compiledData?.steps || []"
+        :sceneBackgroundUrl="mobileBackdropUrl"
+        @select="onChoice"
+      />
 
-      <!-- Choice / selection -->
-      <ChoiceUI
-        v-if="currentStep.type === 'choice'"
+      <!-- Choice / selection (standalone; communication choices render in-scene via the rail) -->
+      <StageChoiceUI
+        v-else-if="currentStep.type === 'choice'"
         :step="currentStep"
         @select="onChoice"
       />
@@ -84,14 +101,19 @@
 
     </div>
 
-    <!-- Bottom navigation bar -->
-    <div class="nav-bar" v-if="compiledData && compiledData.steps.length > 0 && !HIDE_UI && !uiHidden && !episodeFinished">
-      <button class="nav-btn" @click.stop="goPrev" :disabled="isFirstStep">{{ uiText('player.previous') }}</button>
-      <button class="mode-btn" :class="{ active: autoEnabled }" @click.stop="toggleAuto">AUTO</button>
-      <span class="nav-label">{{ currentStep.type }}</span>
-      <button class="mode-btn" :class="{ active: skipEnabled }" @click.stop="toggleSkip">SKIP</button>
-      <button class="nav-btn" :title="uiText('player.next')" :aria-label="uiText('player.next')" @click.stop="goNext"><ChevronRight :size="21" /></button>
-    </div>
+    <!-- Bottom control dock -->
+    <PlayerControlDock
+      v-if="compiledData && compiledData.steps.length > 0 && !HIDE_UI && !uiHidden && (!episodeFinished || communicationCompleted)"
+      :auto-enabled="autoEnabled"
+      :skip-enabled="skipEnabled"
+      :previous-disabled="isFirstStep"
+      :next-disabled="episodeFinished"
+      @previous="goPrev"
+      @auto="toggleAuto"
+      @skip="toggleSkip"
+      @backlog="openBacklog"
+      @next="goNext"
+    />
 
     <Transition name="menu-slide">
       <aside v-if="menuOpen && !HIDE_UI" class="playback-menu" :aria-label="uiText('player.settings.panel')">
@@ -130,7 +152,13 @@
       @replay-voice="replayBacklogVoice"
     />
 
-    <div v-if="episodeFinished && !HIDE_UI" class="episode-complete">
+    <Transition name="communication-complete-fade">
+      <div v-if="communicationCompleted && !HIDE_UI" class="communication-complete-toast" role="status" aria-live="polite">
+        <span aria-hidden="true">✓</span>{{ uiText('player.complete.communication') }}
+      </div>
+    </Transition>
+
+    <div v-if="episodeFinished && !communicationCompleted && !HIDE_UI" class="episode-complete">
       <div class="complete-panel">
         <span>{{ hasNextEpisode ? 'EPISODE COMPLETE' : 'STORY COMPLETE' }}</span>
         <strong>{{ hasNextEpisode ? uiText('player.complete.episode') : uiText('player.complete.story') }}</strong>
@@ -150,14 +178,16 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount, reactive, nextTick, defineAsyncComponent } from 'vue'
 import AdvUI from '../components/AdvUI.vue'
-import MobileUI from '../components/MobileUI.vue'
-import CallUI from '../components/CallUI.vue'
-import ChoiceUI from '../components/ChoiceUI.vue'
+import MobileChatScene from '../components/mobile/MobileChatScene.vue'
+import MobileCallScene from '../components/mobile/MobileCallScene.vue'
+import StageChoiceUI from '../components/choices/StageChoiceUI.vue'
 import TitleUI from '../components/TitleUI.vue'
 import SynopsisUI from '../components/SynopsisUI.vue'
 import TextTimeUI from '../components/TextTimeUI.vue'
 import StoryBacklog from '../components/StoryBacklog.vue'
-import { BookOpenText, ChevronRight, Eye, EyeOff, FastForward, LogOut, Menu, Play, SkipForward, X } from '@lucide/vue'
+import { BookOpenText, Eye, EyeOff, FastForward, LogOut, Play, SkipForward, X } from '@lucide/vue'
+import PlayerTopBar from '../components/player/PlayerTopBar.vue'
+import PlayerControlDock from '../components/player/PlayerControlDock.vue'
 // SpineStage is lazy-loaded so PIXI.js only loads when a story opens
 const SpineStage = defineAsyncComponent(() => import('../components/SpineStage.vue'))
 import {
@@ -166,6 +196,8 @@ import {
   uiLocale,
 } from '../utils/LanguageStore.js'
 import { resolveUiText as uiText } from '../localization/ui/UiTextResolver.js'
+import { resolveCommunicationContext } from './story-runtime/CommunicationPresentationContext.js'
+import { getBgUrl } from '../utils/AssetResolver.js'
 import { useVoicePlayer } from './useVoicePlayer.js'
 import { AudioManager } from './AudioManager.js'
 import { useStoryNavigation } from './useStoryNavigation.js'
@@ -290,7 +322,7 @@ function freezeScene(reason = 'snapshot') {
   return spineStageRef.value?.dumpScene?.() || window.dumpScene?.() || []
 }
 
-// Computed: expose selectedChoices as plain object for MobileUI prop reactivity
+// Computed: expose selectedChoices as plain object for mobile scene prop reactivity
 const choiceTexts = computed(() => {
   const obj = {}
   for (const [k, v] of selectedChoices.entries()) {
@@ -311,6 +343,14 @@ const showAdvDialogue = computed(() => {
   const step = currentStep.value
   return step?.type === 'adv' && step?.hide_dialogue !== true && currentSceneState.value?.text_disabled !== true
 })
+
+const communicationContext = computed(() => resolveCommunicationContext({
+  step: currentStep.value,
+  stepIndex: currentStepIndex.value,
+  historyStack: historyStack.value,
+  steps: compiledData.value?.steps || [],
+  scenarioId: compiledData.value?.scenario_id || '',
+}))
 
 const playableStepNumber = computed(() => Math.max(1, currentStepIndex.value - navigationStartIndex.value + 1))
 const playableStepTotal = computed(() => Math.max(0, navigationEndIndex.value - navigationStartIndex.value + 1))
@@ -334,7 +374,6 @@ const {
   navigationStartIndex,
   navigationEndIndex,
   currentEpisode,
-  currentEpisodeLabel,
   firstAvailableBg,
   langLabel,
   cycleLanguage,
@@ -361,6 +400,15 @@ const {
   ensureAudioCtx: _ensureAudioCtx,
   resetVoiceDedup: _resetVoiceDedup,
 })
+
+const mobileBackdropUrl = computed(() => {
+  const backgroundId = currentSceneState.value?.bg || firstAvailableBg.value || ''
+  return backgroundId ? getBgUrl(backgroundId) : ''
+})
+
+const communicationCompleted = computed(() => (
+  episodeFinished.value && (communicationContext.value.mode === 'talk' || communicationContext.value.mode === 'call')
+))
 
 function finishEpisode() {
   if (episodeFinished.value) return
@@ -541,6 +589,7 @@ function restoreFromBacklog(nodeId) {
   if (!node || !sceneSnapshotStore.truncateAfter(nodeId)) return
   sceneSnapshotStore.popPrevious()
   backlogOpen.value = false
+  if (communicationCompleted.value) episodeFinished.value = false
   stopPlaybackModes('backlog-restore')
   if (!restoreHistoryNode(node)) restoredSceneState.value = null
 }
@@ -570,6 +619,10 @@ function goNext(source = 'user') {
 
 function goPrev() {
   if (backlogOpen.value || menuOpen.value) return
+  if (communicationCompleted.value) {
+    episodeFinished.value = false
+    transitioning.value = false
+  }
   stopPlaybackModes('previous')
   storyRuntimeCues.cancelCurrentStep('previous')
   const node = storyRuntimeCues.isSnapshotEnabled() ? sceneSnapshotStore.popPrevious() : null
@@ -927,6 +980,12 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 .story-viewer-root {
   position: fixed; inset: 0;
   outline: none; background: #000;
+  --player-edge: 20px;
+  --player-topbar-height: 52px;
+  --player-topbar-gap: 14px;
+  --player-dock-gap: 18px;
+  --player-content-top: calc(var(--player-edge) + var(--player-topbar-height) + var(--player-topbar-gap));
+  --player-content-bottom: calc(var(--player-dock-bottom) + var(--player-dock-height) + var(--player-dock-gap) + env(safe-area-inset-bottom));
 }
 .viewer-stage {
   position: relative;
@@ -945,6 +1004,14 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 }
 .ui-overlay > * {
   pointer-events: auto;
+}
+@media (max-width: 699px) {
+  .story-viewer-root {
+    --player-edge: 10px;
+    --player-topbar-height: 48px;
+    --player-topbar-gap: 8px;
+    --player-dock-gap: 10px;
+  }
 }
 .runtime-diagnostics {
   position: fixed;
@@ -1015,66 +1082,35 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
   transform: translateY(0);
   filter: blur(0);
 }
-.top-bar {
-  position: absolute; top: 0; left: 0; right: 0; z-index: 10;
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 6px 12px; background: rgba(0,0,0,0.35);
-}
-.bar-btn {
-  background: rgba(255,255,255,0.15); color: #fff; border: none; padding: 4px 10px;
-  border-radius: 4px; cursor: pointer; font-size: 0.75rem;
-}
-.bar-btn:hover { background: rgba(255,255,255,0.25); }
-.progress-counter {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  pointer-events: none;
-}
-.step-counter { color: rgba(255,255,255,0.78); font-size: 0.75rem; }
-.episode-badge {
-  color: #061521;
-  background: rgba(136, 221, 255, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  border-radius: 4px;
-  padding: 2px 7px;
-  font-size: 0.68rem;
-  font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: 0;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
-}
-.top-bar-right { display: flex; align-items: center; gap: 6px; }
-.lang-btn {
-  background: rgba(255,255,255,0.12); color: #88ddff; border: 1px solid rgba(136,221,255,0.3);
-  padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;
-  font-weight: bold; letter-spacing: 0.5px;
-}
-.lang-btn:hover { background: rgba(136,221,255,0.2); }
-.nav-bar {
-  position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;
-  display: flex; justify-content: center; align-items: center; gap: 24px;
-  padding: 6px 16px; background: rgba(0,0,0,0.25);
-}
-.nav-btn {
-  background: transparent; color: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.25);
-  border-radius: 50%; width: 36px; height: 36px;
-  cursor: pointer; font-size: 1rem; line-height: 1;
-}
-.nav-btn:hover { background: rgba(255,255,255,0.15); }
-.nav-btn:disabled { opacity: 0.3; cursor: default; }
-.nav-btn svg { display: block; margin: auto; }
-.nav-label { color: rgba(255,255,255,0.5); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; }
-.mode-btn { min-width: 48px; height: 28px; border: 1px solid rgba(255,255,255,.2); border-radius: 5px; background: rgba(0,0,0,.16); color: rgba(255,255,255,.48); cursor: pointer; font-size: .58rem; font-weight: 800; letter-spacing: .08em; }
-.mode-btn.active { border-color: #69d9c7; background: rgba(48,177,157,.24); color: #bff8ef; box-shadow: 0 0 10px rgba(105,217,199,.18); }
-
 .icon-btn { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 1px solid rgba(255,255,255,.3); border-radius: 4px; background: rgba(255,255,255,.12); color: #fff; cursor: pointer; }
 .icon-btn.dark { border-color: #d8e0e3; background: #fff; color: #26343c; }
-.restore-ui { position: absolute; top: 12px; right: 12px; z-index: 30; display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid rgba(255,255,255,.55); border-radius: 5px; background: rgba(15,25,30,.58); color: #fff; cursor: pointer; }
+.restore-ui {
+  position: absolute;
+  top: var(--player-space-4);
+  right: var(--player-space-5);
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  width: var(--player-hit-min);
+  height: var(--player-hit-min);
+  border: 1px solid var(--player-control-border);
+  border-radius: var(--player-radius-control);
+  background: var(--player-control-surface);
+  color: var(--player-control-ink);
+  box-shadow: 0 4px 16px rgba(3, 12, 20, 0.16);
+  cursor: pointer;
+  transition:
+    background var(--player-motion-fast) var(--player-ease-standard),
+    transform var(--player-motion-fast) var(--player-ease-standard);
+}
+.restore-ui:hover {
+  background: var(--player-control-surface-hover);
+  transform: translateY(-2px);
+}
+.restore-ui:focus-visible {
+  outline: 2px solid var(--player-focus-outer);
+  outline-offset: 2px;
+}
 .playback-menu { position: absolute; top: 0; right: 0; z-index: 40; display: flex; flex-direction: column; gap: 8px; width: min(320px, 86vw); height: 100%; padding: 18px; border-left: 1px solid #dfe5e7; background: rgba(248,250,251,.97); color: #26343c; box-shadow: -10px 0 30px rgba(0,0,0,.22); }
 .playback-menu header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 1.25rem; }
 .playback-menu > button, .menu-toggle { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 13px; border: 1px solid #dce3e6; border-radius: 5px; background: #fff; color: #26343c; font: inherit; cursor: pointer; }
@@ -1088,6 +1124,10 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 .menu-setting select, .menu-setting input { min-height: 28px; border: 1px solid #ccd5d9; border-radius: 4px; background: #fff; color: #26343c; }
 .menu-setting small { color: #839096; }
 .episode-complete { position: absolute; inset: 0; z-index: 35; display: grid; place-items: center; background: rgba(0,0,0,.5); }
+.communication-complete-toast { position: absolute; right: var(--player-edge); bottom: var(--player-content-bottom); z-index: 24; display: inline-flex; align-items: center; gap: 7px; max-width: min(320px, calc(100vw - 32px)); min-height: 38px; padding: 0 14px; border: 1px solid rgba(255,255,255,.72); border-radius: 999px; background: rgba(250,252,252,.94); color: #2c4545; box-shadow: 0 10px 28px rgba(0,0,0,.2); font-size: .78rem; font-weight: 700; pointer-events: none; }
+.communication-complete-toast span { color: #0d9c75; font-size: 1rem; }
+.communication-complete-fade-enter-active, .communication-complete-fade-leave-active { transition: opacity var(--player-motion-fast) var(--player-ease-standard), transform var(--player-motion-fast) var(--player-ease-standard); }
+.communication-complete-fade-enter-from, .communication-complete-fade-leave-to { opacity: 0; transform: translateY(6px); }
 .complete-panel { width: min(390px, calc(100vw - 32px)); padding: 24px; border: 1px solid rgba(255,255,255,.6); border-radius: 6px; background: rgba(250,252,252,.97); color: #26343c; text-align: center; box-shadow: 0 18px 45px rgba(0,0,0,.28); }
 .complete-panel > span { color: #0d9c75; font-size: .66rem; font-weight: 800; }
 .complete-panel > strong { display: block; margin: 6px 0 18px; font-size: 1.05rem; }
@@ -1095,6 +1135,11 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 .complete-panel div { display: flex; justify-content: center; gap: 8px; }
 .complete-panel button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 0 14px; border: 1px solid #d6dfe2; border-radius: 5px; background: #fff; color: #26343c; cursor: pointer; font: inherit; }
 .complete-panel button.primary { border-color: #0d9c75; background: #0d9c75; color: #fff; }
+
+@media (max-width: 699px) {
+  .communication-complete-toast { right: 50%; bottom: var(--player-content-bottom); transform: translateX(50%); white-space: nowrap; }
+  .communication-complete-fade-enter-from, .communication-complete-fade-leave-to { opacity: 0; transform: translate(50%, 6px); }
+}
 .menu-slide-enter-active, .menu-slide-leave-active { transition: transform 180ms ease, opacity 180ms ease; }
 .menu-slide-enter-from, .menu-slide-leave-to { transform: translateX(100%); opacity: 0; }
 

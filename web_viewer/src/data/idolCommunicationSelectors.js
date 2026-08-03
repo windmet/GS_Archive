@@ -53,11 +53,21 @@ function episodePlayback(episode, story, episodeIndex) {
   }
 }
 
-export function buildIdolStoryPage(episodeIndex, mobileArchive, storyCatalog, idolDictionary, idolCode) {
+export function buildIdolStoryPage(
+  episodeIndex,
+  mobileArchive,
+  storyCatalog,
+  idolDictionary,
+  idolCode,
+  birthdayDomain = null,
+) {
   const chapter = episodeIndex?.by_idol_code?.[idolCode]?.[0]
   if (!chapter) return null
   const idol = idolDictionary?.by_idol_code?.[idolCode] || {}
   const mobileScenarios = mobileArchive?.scenarios || []
+  const birthdayEntries = (birthdayDomain?.logicalEntries || []).filter(entry =>
+    entry.subject?.code === idolCode,
+  )
   const sections = (chapter.sections || []).map(section => {
     const storiesByFile = new Map()
     for (const episode of section.episodes || []) {
@@ -76,6 +86,8 @@ export function buildIdolStoryPage(episodeIndex, mobileArchive, storyCatalog, id
     })
     const stories = [...storiesByFile.values()].filter(Boolean)
     const story = stories.find(entry => entry.preplaySynopsis?.text) || stories[0] || null
+    const compiledFiles = new Set((section.episodes || []).map(episode => episode.compiled_file).filter(Boolean))
+    const sharedBirthdayEntries = birthdayEntries.filter(entry => compiledFiles.has(entry.compiledFile))
     const episodeIds = new Set(episodes.map(episode => numeric(episode.id)))
     const communications = mobileScenarios.filter(scenario =>
       scenario.kind === 'idol_phone' &&
@@ -100,18 +112,26 @@ export function buildIdolStoryPage(episodeIndex, mobileArchive, storyCatalog, id
       playableEpisodeCount: episodes.filter(episode => episode.exists).length,
       dialogueCount: episodes.reduce((sum, episode) => sum + episode.dialogueCount, 0),
       voiceCount: episodes.reduce((sum, episode) => sum + episode.voiceCount, 0),
+      sharedBirthdayEntries,
     }
   })
 
   return {
     ...chapter,
     color: idol.color || '#168f87',
+    birthday: idol.birthday || '',
     unitName: idol.unit_name || '',
     sections,
     sectionCount: sections.length,
     episodeCount: sections.reduce((sum, section) => sum + section.episodes.length, 0),
     playableEpisodeCount: sections.reduce((sum, section) => sum + section.playableEpisodeCount, 0),
     communicationCount: sections.reduce((sum, section) => sum + section.communications.length, 0),
+    birthdayArchive: {
+      entryCount: birthdayEntries.length,
+      sharedEntryCount: birthdayEntries.filter(entry =>
+        sections.some(section => section.sharedBirthdayEntries.includes(entry)),
+      ).length,
+    },
   }
 }
 
@@ -180,7 +200,12 @@ export function groupMobileScenarios(scenarios, titleMap = new Map()) {
   })).sort((a, b) => a.releaseAt - b.releaseAt || a.title.localeCompare(b.title, 'ja'))
 }
 
-export function buildRandomTalkBundles(mobileArchive, idolCode, titleMap = new Map()) {
+export function buildRandomTalkBundles(
+  mobileArchive,
+  idolCode,
+  titleMap = new Map(),
+  presentationIndex = null,
+) {
   const topics = (mobileArchive?.random_talk?.topics || []).filter(topic => topic.idol_code === idolCode)
   const groups = new Map()
   for (const topic of topics) {
@@ -192,7 +217,10 @@ export function buildRandomTalkBundles(mobileArchive, idolCode, titleMap = new M
       title: titleMap.get(topic.compiled_file) || '随机 Talk',
       topics: [],
     }
-    group.topics.push(topic)
+    group.topics.push({
+      ...topic,
+      presentation: presentationIndex?.by_topic_id?.[String(topic.id)] || null,
+    })
     groups.set(key, group)
   }
   return [...groups.values()]

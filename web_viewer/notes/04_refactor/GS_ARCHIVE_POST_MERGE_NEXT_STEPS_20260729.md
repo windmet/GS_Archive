@@ -522,7 +522,22 @@ master row、偶像索引和已验证的资源关系建立可审计映射。
 4. **P1-Story-IA-D：birthday 正式档案**
    - 建立按偶像进入的 collection，并在页面内部表达制作人生日、偶像生日和批次；
    - 29 个 `idol_story` / `birthday` 共享文件必须保留双重 domain membership；
+   - 产品 canonical 不等于抹除数据 membership：独立生日问候由 birthday
+     页承担，`1_2` Small Talk 的完整章节由 `idol_story_archive` 承担；birthday
+     页只保留 exact relation，双方提供互链；
+   - Idol Episode 的生日同期开放应显示为 release context，不应把整套个人故事
+     再命名为“生日剧情”；
    - 不在 breadcrumb 中增加超过四层的批次节点。
+
+5. **P1-Mobile-IA：Random Talk 语义收口**
+   - table 104 是候选话题池，保留时间窗、抽选权重与 `interval_day`；
+   - table 105 是开场语候选，保留时间窗和 join probability；
+   - UI 使用“随机话题池”，不得伪装成按时间排序的聊天记录；
+   - 静态播放器仅做脚本顺序预览，不宣称复现实际随机抽选、已读或领取状态。
+   - `random_talk_presentation_index.json` 必须从 compiled `jump_points`
+     生成可读首句和 exact step range；不得把 `script_label` 当作用户标题；
+   - 当前覆盖口径为 245 topics / 343 intros / 49 compiled files / 0 missing
+     labels，单话题播放返回时必须保留 `mobile_mode=random`。
 
 建议沿用现有 view，而不是新增第二套路由：
 

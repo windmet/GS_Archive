@@ -1,5 +1,5 @@
 <template>
-  <div class="choice-ui">
+  <div class="stage-choice-ui">
     <LocalizedTextBlock v-if="promptDisplay" class="choice-prompt" :display="promptDisplay" />
     <div class="choice-options">
       <button
@@ -16,9 +16,9 @@
 
 <script setup>
 import { computed } from 'vue'
-import LocalizedTextBlock from './LocalizedTextBlock.vue'
-import { useStoryLocalization } from '../localization/story/StoryLocalizationContext.js'
-import { resolveText } from '../utils/TextHelper.js'
+import LocalizedTextBlock from '../LocalizedTextBlock.vue'
+import { useStoryLocalization } from '../../localization/story/StoryLocalizationContext.js'
+import { resolveText } from '../../utils/TextHelper.js'
 
 const props = defineProps({
   step: { type: Object, default: null },
@@ -45,7 +45,7 @@ function select(opt, index) {
 </script>
 
 <style scoped>
-.choice-ui {
+.stage-choice-ui {
   position: absolute;
   top: 52%; left: 0; right: 0;
   transform: translateY(-50%);
@@ -106,7 +106,7 @@ function select(opt, index) {
 }
 
 @media (max-width: 520px) {
-  .choice-ui { padding: 18px 12px; }
+  .stage-choice-ui { padding: 18px 12px; }
   .choice-options { gap: 8px; }
   .choice-btn { padding: 12px 14px; font-size: 0.95rem; }
 }

@@ -1,0 +1,100 @@
+/* Player shared design tokens (UI PR 1)
+ * Values per STORY_PLAYER_UI_REBUILD_NEXT_WINDOW_HANDOFF_20260802 §3.2.
+ * Levels: S = screenshot-confirmed, A = sampled from committed assets,
+ * I = engineering first-pass that must be validated across the four
+ * target viewports. I values are NOT "original game exact parameters".
+ */
+:root {
+  /* ── Shared safe areas ── */
+  --player-top-safe: 68px;
+  --player-dock-height: 52px;
+  --player-dock-bottom: 14px;
+  --player-dialogue-gap: 14px;
+  --player-dialogue-bottom: calc(
+    var(--player-dock-bottom)
+    + var(--player-dock-height)
+    + var(--player-dialogue-gap)
+    + env(safe-area-inset-bottom)
+  );
+
+  /* ── Base palette (I) ── */
+  --player-ink-950: #061521;
+  --player-ink-900: #18242b;
+  --player-ink-700: #526174;
+  --player-ink-500: #7b8993;
+  --player-paper: #fafcfc;
+  --player-paper-glass: rgba(250, 252, 252, 0.96);
+  --player-stage-scrim: rgba(3, 12, 20, 0.28);
+  --player-panel-dark: rgba(6, 21, 33, 0.72);
+  --player-panel-dark-hover: rgba(6, 21, 33, 0.84);
+  --player-control-surface: rgba(250, 252, 252, 0.92);
+  --player-control-surface-hover: rgba(255, 255, 255, 0.98);
+  --player-control-border: rgba(24, 36, 43, 0.18);
+  --player-control-ink: #18242b;
+  --player-control-muted: #526174;
+  --player-accent: #38b8a7;
+  --player-accent-strong: #147f77;
+  --player-accent-soft: #bff8ef;
+  --player-accent-line: rgba(56, 184, 167, 0.48);
+  /* Sampled from the in-game ADV nameplate reference supplied for P1. */
+  --player-nameplate-surface: #10d583;
+  --player-nameplate-surface-end: #16cfa0;
+  --player-nameplate-ink: #ffffff;
+  --player-nameplate-shadow: rgba(4, 88, 62, 0.24);
+  --player-log-surface: rgba(248, 253, 252, 0.97);
+  --player-log-header: rgba(228, 250, 244, 0.96);
+  --player-log-entry: rgba(255, 255, 255, 0.86);
+  --player-log-entry-current: rgba(226, 250, 242, 0.94);
+  --player-log-border: rgba(16, 213, 131, 0.24);
+  --player-log-accent: #087a57;
+  --player-active-surface: rgba(223, 245, 241, 0.98);
+  --player-active-border: #38b8a7;
+  --player-active-text: #0f6f68;
+  --player-border-light: rgba(255, 255, 255, 0.62);
+  --player-border-dark: rgba(255, 255, 255, 0.28);
+  --player-focus-inner: #ffffff;
+  --player-focus-outer: #38b8a7;
+  --mobile-choice-teal: #007a72;
+  --mobile-choice-teal-text: #ffffff;
+  --mobile-choice-lime: #b7db3b;
+  --mobile-choice-lime-text: #17331f;
+  --mobile-choice-glow: rgba(105, 217, 199, 0.28);
+  --player-shadow-dialogue:
+    0 18px 48px rgba(3, 12, 20, 0.22),
+    0 2px 10px rgba(3, 12, 20, 0.10);
+  --player-shadow-control:
+    0 10px 30px rgba(3, 12, 20, 0.24),
+    0 1px 4px rgba(3, 12, 20, 0.12);
+
+  /* ── Spacing (I) ── */
+  --player-space-1: 4px;
+  --player-space-2: 8px;
+  --player-space-3: 12px;
+  --player-space-4: 16px;
+  --player-space-5: 20px;
+  --player-space-6: 24px;
+  --player-space-8: 32px;
+  --player-space-10: 40px;
+
+  /* ── Radii (I) ── */
+  --player-radius-control: 14px;
+  --player-radius-surface: 22px;
+  --player-radius-dialogue: 28px;
+  --player-radius-pill: 999px;
+
+  /* ── Sizes (I) ── */
+  --player-control-sm: 40px;
+  --player-control-md: 48px;
+  --player-control-lg: 52px;
+  --player-hit-min: 44px;
+
+  /* ── Typography (I) ── */
+  --player-font-ui-xs: 11px;
+  --player-font-ui-sm: 13px;
+  --player-font-ui-md: 15px;
+  --player-font-dialogue: clamp(18px, 1.35vw, 22px);
+  --player-font-dialogue-mobile: clamp(16px, 4.2vw, 19px);
+  --player-font-secondary: 0.82em;
+  --player-line-dialogue: 1.7;
+  --player-line-secondary: 1.6;
+}

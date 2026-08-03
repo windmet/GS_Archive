@@ -4,18 +4,22 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { buildStoryCatalog } from '../src/data/archiveSelectors.js'
 import { buildStoryCollections } from '../src/data/storyCollections.js'
-import { buildExtraStoryDomainIdentity } from '../src/data/storyDomainIdentityIndex.js'
+import { buildBirthdayStoryDomainIdentity, buildExtraStoryDomainIdentity } from '../src/data/storyDomainIdentityIndex.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const readJson = relative => readFile(path.join(root, relative), 'utf8').then(JSON.parse)
-const [master, presentation] = await Promise.all([
+const [master, presentation, idolEpisodes, idols, speakers] = await Promise.all([
   readJson('public/data/masterdata/story_master_index.json'),
   readJson('public/data/masterdata/story_presentation_index.json'),
+  readJson('public/data/masterdata/idol_episode_index.json'),
+  readJson('public/data/masterdata/idol_unit_dictionary.json'),
+  readJson('public/data/masterdata/speaker_dictionary.json'),
 ])
 
 const catalog = buildStoryCatalog(master, presentation)
 const extraDomain = buildExtraStoryDomainIdentity(master)
-const collections = buildStoryCollections(master, catalog, { extraDomain })
+const birthdayDomain = buildBirthdayStoryDomainIdentity(master, idols, speakers)
+const collections = buildStoryCollections(master, catalog, { extraDomain, birthdayDomain, idolEpisodes })
 const mainCollections = collections.filter(collection => collection.domain === 'main')
 const unitCollections = collections.filter(collection => collection.domain === 'unit_story')
 const extraCollections = collections.filter(collection => collection.domain === 'extra')
@@ -80,4 +84,14 @@ assert.equal(jupiter.title, 'Jupiter')
 assert.equal(jupiter.chapters.length, 4)
 assert.equal(jupiter.chapters[0].episodes.length, 10)
 
-console.log('Story collections: main 3, unit 16, extra 10 works/47 chapters; official taxonomy and shared playback boundaries verified')
+const kirioBirthday = collections.find(collection =>
+  collection.domain === 'birthday' && collection.sectionId === '017kir')
+assert.equal(kirioBirthday.chapterCount, 4)
+assert.equal(kirioBirthday.independentChapterCount, 3)
+assert.equal(kirioBirthday.sharedChapterCount, 1)
+const kirioShared = kirioBirthday.chapters.find(chapter => chapter.canonicalRelation)
+assert.equal(kirioShared.file, '1_x_017kir_2_1_2_017_12.json')
+assert.equal(kirioShared.canonicalRelation.sectionId, 21702)
+assert.deepEqual(kirioShared.canonicalRelation.episodeNames, ['スモールトーク1', 'スモールトーク2', 'スモールトーク3'])
+
+console.log('Story collections: main 3, unit 16, extra 10 works/47 chapters; birthday canonical relations and shared playback boundaries verified')

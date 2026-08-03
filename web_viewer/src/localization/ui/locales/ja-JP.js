@@ -1,6 +1,9 @@
 export default Object.freeze({
   'player.back': '戻る',
   'player.menu': 'メニュー',
+  'player.progress': '進行状況',
+  'player.controls': '再生コントロール',
+  'player.language': '言語',
   'player.showUi': 'UIを表示',
   'player.previous': '前へ',
   'player.next': '次へ',
@@ -22,6 +25,7 @@ export default Object.freeze({
   'player.complete.story': 'ストーリー再生完了',
   'player.complete.loadingNext': '次のエピソードを読み込み中…',
   'player.complete.nextEpisode': '次の話',
+  'player.complete.communication': '通信を読み終えました。履歴を確認できます',
   'player.loading': 'ストーリーデータを読み込み中…',
   'backlog.title': 'ログ',
   'backlog.close': '閉じる',

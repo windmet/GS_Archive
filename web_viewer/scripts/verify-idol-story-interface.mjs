@@ -4,18 +4,21 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { buildStoryCatalog } from '../src/data/archiveSelectors.js'
 import { buildIdolStoryOptions, buildIdolStoryPage, groupMobileScenarios } from '../src/data/idolCommunicationSelectors.js'
+import { buildBirthdayStoryDomainIdentity } from '../src/data/storyDomainIdentityIndex.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const readJson = relative => readFile(path.join(root, relative), 'utf8').then(JSON.parse)
-const [episodes, mobile, master, presentation, idols] = await Promise.all([
+const [episodes, mobile, master, presentation, idols, speakers] = await Promise.all([
   readJson('public/data/masterdata/idol_episode_index.json'),
   readJson('public/data/masterdata/mobile_archive_index.json'),
   readJson('public/data/masterdata/story_master_index.json'),
   readJson('public/data/masterdata/story_presentation_index.json'),
   readJson('public/data/masterdata/idol_unit_dictionary.json'),
+  readJson('public/data/masterdata/speaker_dictionary.json'),
 ])
 
 const catalog = buildStoryCatalog(master, presentation)
+const birthdayDomain = buildBirthdayStoryDomainIdentity(master, idols, speakers)
 const options = buildIdolStoryOptions(episodes, idols)
 assert.equal(options.length, 49, 'the personal-story selector must expose all 49 idols')
 
@@ -23,7 +26,7 @@ let episodeCount = 0
 let playableCount = 0
 let communicationCount = 0
 for (const option of options) {
-  const page = buildIdolStoryPage(episodes, mobile, catalog, idols, option.idolCode)
+  const page = buildIdolStoryPage(episodes, mobile, catalog, idols, option.idolCode, birthdayDomain)
   assert.ok(page, `${option.idolCode} has no personal-story page`)
   for (const section of page.sections) {
     assert.ok(section.episodes.length > 0, `${option.idolCode} section ${section.id} is empty`)
@@ -41,6 +44,12 @@ for (const option of options) {
 
 assert.equal(episodeCount, episodes.meta.episode_count)
 assert.equal(playableCount, episodes.meta.compiled_episode_count)
+
+const kirio = buildIdolStoryPage(episodes, mobile, catalog, idols, '017kir', birthdayDomain)
+assert.equal(kirio.birthdayArchive.entryCount, 4)
+assert.equal(kirio.birthdayArchive.sharedEntryCount, 1)
+assert.equal(kirio.sections.find(section => section.id === 21702).sharedBirthdayEntries[0].compiledFile,
+  '1_x_017kir_2_1_2_017_12.json')
 
 const scenarioById = new Map(mobile.scenarios.map(scenario => [scenario.id, scenario]))
 for (const [idolCode, ids] of Object.entries(mobile.by_idol_code)) {
