@@ -1975,7 +1975,11 @@ class ScenarioCompiler:
         # Forward dedup: track current value per (type, chara_id)
         result = []
         current = {}  # (type, chara_id) → value
-        FLAG_KEYS = {"anim_flag", "sweat_flag", "blush_flag"}
+        # Preserve one canonical insertion order. A set here made emitted JSON
+        # hashes depend on Python's per-process hash seed even though the
+        # compiled semantics were identical, which breaks publication
+        # candidate determinism.
+        FLAG_KEYS = ("anim_flag", "sweat_flag", "blush_flag")
 
         for e in merged:
             key = (e["type"], e["chara_id"])

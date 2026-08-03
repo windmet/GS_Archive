@@ -225,20 +225,22 @@ as separate stories.
 
 The published authoritative runtime-v2 surface is:
 
-<!-- authoritative-v2-summary collections=3 standalone=1 artifacts=18 -->
+<!-- authoritative-v2-summary collections=4 standalone=1 artifacts=30 -->
 
-- three authoritative collections:
+- four authoritative collections:
+  - `1_3_10001_01`;
   - `1_4_001_00`;
   - `1_4_001_01`;
   - `5_01_101_22`;
 - one standalone RAW-published v2 scene:
   - `1_x_001tom_2_1_2_001_12`;
-- 18 JSON artifacts when aggregate and episode files are counted.
+- 30 JSON artifacts when aggregate and episode files are counted.
 
 Publication ownership is not the same as authoritative publication:
 
 | Logical ID | Artifacts | Publication ownership |
 | --- | ---: | --- |
+| collection `1_3_10001_01` | 12 | ledger-governed |
 | collection `1_4_001_00` | 3 | ledger-governed |
 | collection `1_4_001_01` | 11 | pre-ledger authoritative |
 | collection `5_01_101_22` | 3 | pre-ledger authoritative |
@@ -251,8 +253,8 @@ RAW story discovery and public matching:
 source-proven, scope 3,398 / 3,398 groups
 
 strict authoritative-v2:
-3 published collections + 1 standalone RAW-published scene
-18 v2 JSON artifacts
+4 published collections + 1 standalone RAW-published scene
+30 v2 JSON artifacts
 
 full authoritative-v2 promotion:
 deferred

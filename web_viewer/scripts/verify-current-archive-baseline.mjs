@@ -90,11 +90,11 @@ if (
   failures.push('story RAW population differs from the recorded public-match population')
 }
 if (
-  report.story?.authoritative_v2?.collection_count !== 3 ||
+  report.story?.authoritative_v2?.collection_count !== 4 ||
   report.story?.authoritative_v2?.standalone_count !== 1 ||
-  report.story?.authoritative_v2?.artifact_count !== 18
+  report.story?.authoritative_v2?.artifact_count !== 30
 ) {
-  failures.push('authoritative Story v2 population must be 3 collections + 1 standalone / 18 artifacts')
+  failures.push('authoritative Story v2 population must be 4 collections + 1 standalone / 30 artifacts')
 }
 
 const authoritativeSummary = report.story?.authoritative_v2

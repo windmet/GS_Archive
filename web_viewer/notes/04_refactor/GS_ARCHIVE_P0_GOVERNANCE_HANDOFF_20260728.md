@@ -307,7 +307,9 @@ RAW 是从 `RAW.7z.001`、`RAW.7z.002` 解出的原始三分类树。旁边的�
 
 已发布 authoritative v2 当前范围：
 
-<!-- authoritative-v2-summary collections=3 standalone=1 artifacts=18 -->
+<!-- authoritative-v2-summary collections=4 standalone=1 artifacts=30 -->
+
+- ledger-governed Event collection `1_3_10001_01`: aggregate + a-k, 12 artifacts;
 
 - ledger-governed collection `1_4_001_00`：aggregate + a/b，3 artifacts；
 - pre-ledger collection `1_4_001_01`：aggregate + a–j，11 artifacts；
@@ -317,8 +319,8 @@ RAW 是从 `RAW.7z.001`、`RAW.7z.002` 解出的原始三分类树。旁边的�
 合计：
 
 ```text
-3 collections + 1 standalone
-18 v2 JSON artifacts
+4 collections + 1 standalone
+30 v2 JSON artifacts
 ```
 
 这不是全量 strict v2。
