@@ -174,13 +174,33 @@ function buildExtraCollection(series, extraDomain, catalog) {
 }
 
 function birthdayReleaseYear(releaseAt) {
-  if (Number(releaseAt) < 1577836800) return ''
+  if (!Number.isFinite(Number(releaseAt)) || Number(releaseAt) < 1577836800) return ''
   return new Intl.DateTimeFormat('en', { year: 'numeric', timeZone: 'Asia/Tokyo' })
     .format(new Date(Number(releaseAt) * 1000))
 }
 
-function birthdaySeriesLabel(resourceId, releaseAt, canonicalRelation = null) {
-  const resource = String(resourceId)
+function birthdayMonthDay(releaseAt) {
+  if (!Number.isFinite(Number(releaseAt)) || Number(releaseAt) < 1577836800) return ''
+  const parts = new Intl.DateTimeFormat('zh-CN', {
+    month: 'numeric',
+    day: 'numeric',
+    timeZone: 'Asia/Tokyo',
+  }).formatToParts(new Date(Number(releaseAt) * 1000))
+  const month = parts.find(part => part.type === 'month')?.value
+  const day = parts.find(part => part.type === 'day')?.value
+  return month && day ? `${month}月${day}日` : ''
+}
+
+function birthdaySeriesLabel(entry, canonicalRelation = null) {
+  const resource = String(entry?.resourceId || '')
+  const seriesNumber = Number(entry?.series?.seriesNumber || 0)
+  const target = String(entry?.series?.target || '')
+  if (seriesNumber && target) {
+    if (canonicalRelation) return `第${seriesNumber}期 · 个人故事共享入口`
+    if (target === 'producer') return `制作人生日问候 · 第${seriesNumber}期`
+    if (target === 'idol') return `第${seriesNumber}期 · 偶像生日祝福`
+  }
+  const releaseAt = entry?.releaseAt
   const year = birthdayReleaseYear(releaseAt)
   if (canonicalRelation) return `${year ? `${year} · ` : ''}个人故事共享入口`
   if (resource.startsWith('1_8_')) {
@@ -236,7 +256,7 @@ function buildBirthdayCollections(birthdayDomain, catalog, idolEpisodes) {
       const exists = Boolean(entry.compiledExists && story?.exists && entry.compiledFile)
       const episode = {
         id: entry.masterId,
-        label: entry.title || birthdaySeriesLabel(entry.resourceId, entry.releaseAt, canonicalRelation),
+        label: entry.title || birthdaySeriesLabel(entry, canonicalRelation),
         resourceId: entry.resourceId,
         part: '',
         exists,
@@ -249,7 +269,7 @@ function buildBirthdayCollections(birthdayDomain, catalog, idolEpisodes) {
       }
       return {
         id: entry.masterId,
-        label: birthdaySeriesLabel(entry.resourceId, entry.releaseAt, canonicalRelation),
+        label: birthdaySeriesLabel(entry, canonicalRelation),
         title: story?.preplaySynopsis?.title || story?.title || entry.title || '生日剧情',
         releaseAt: entry.releaseAt,
         backgroundId: '',
@@ -267,17 +287,40 @@ function buildBirthdayCollections(birthdayDomain, catalog, idolEpisodes) {
       }
     })
     const subject = subjectCollection.subject
+    const announcements = logicalEntries
+      .flatMap(entry => entry.announcements || [])
+      .filter((announcement, index, rows) => rows.findIndex(candidate =>
+        candidate.month === announcement.month &&
+        candidate.day === announcement.day &&
+        candidate.text === announcement.text,
+      ) === index)
+    const datedAnnouncement = announcements.find(announcement => announcement.month && announcement.day)
+    const isSharedProducerEntry = subject.kind === 'shared'
+    const scheduledIdolBirthday = logicalEntries.find(entry =>
+      entry.series?.target === 'idol' && Number(entry.releaseAt) >= 1577836800,
+    )
     return {
       id: subjectCollection.id,
       domain: 'birthday',
       domainLabel: '生日剧情',
       sectionId: subject.code,
-      title: `${subject.displayName || subject.code} 生日剧情`,
-      eyebrow: subject.kind === 'npc' ? 'STAFF BIRTHDAY STORY' : 'IDOL BIRTHDAY STORY',
-      description: '生日档案收录独立的制作人生日问候与偶像生日祝福；若文件同时属于正式个人故事，本页只保留关系入口，完整章节以 Idol Episode 为准。',
+      title: isSharedProducerEntry ? subject.displayName : `${subject.displayName || subject.code} 生日剧情`,
+      eyebrow: isSharedProducerEntry
+        ? 'PRODUCER BIRTHDAY COMMON STORY'
+        : (subject.kind === 'npc' ? 'STAFF BIRTHDAY STORY' : 'IDOL BIRTHDAY STORY'),
+      description: isSharedProducerEntry
+        ? '未绑定单一偶像的制作人生日公共篇；由山村贤引导，但 masterdata 的角色集合保持未指定，因此不并入山村贤个人生日档案。'
+        : '生日档案收录独立的制作人生日问候与偶像生日祝福；若文件同时属于正式个人故事，本页只保留关系入口，完整章节以 Idol Episode 为准。',
       releaseAt: Math.max(0, ...chapters.map(chapter => chapter.releaseAt)),
       visualUrl: '',
       subject,
+      birthdayAnnouncements: announcements,
+      officialBirthdayLabel: datedAnnouncement
+        ? `${datedAnnouncement.month}月${datedAnnouncement.day}日`
+        : birthdayMonthDay(scheduledIdolBirthday?.releaseAt),
+      officialBirthdayEvidence: datedAnnouncement
+        ? 'table_86_announcement'
+        : (scheduledIdolBirthday ? 'table_78_schedule' : ''),
       chapters,
       chapterCount: chapters.length,
       playableChapterCount: chapters.filter(chapter => chapter.exists).length,

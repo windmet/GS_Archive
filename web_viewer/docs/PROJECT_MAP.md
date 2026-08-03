@@ -116,6 +116,10 @@ public data，不扫描 RAW。
 external story resources 和各类可再生关系 catalog。一个 compiled JSON
 artifact 不等于一篇剧情。
 
+生日域的章节、期次、角色与官方日期以
+`public/data/masterdata/birthday_story_semantic_index.json` 为准；该索引由表
+76/77/78/80/86 生成。表 80 未指定角色的记录不得仅按资源名归入某位角色。
+
 ### `scripts/`、`tools/`、`data_pipeline/`
 
 离线生成、审计、candidate/parity/publish/rollback 和 verifier。它们不进入

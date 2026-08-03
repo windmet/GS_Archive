@@ -166,7 +166,7 @@
           >
             <span class="birthday-subject-code">{{ card.subject.numericId }}</span>
             <span class="birthday-card-copy">
-              <small>{{ card.subject.kind === 'npc' ? 'STAFF' : 'IDOL' }} · {{ card.subject.code }}</small>
+              <small>{{ card.subject.kind === 'npc' ? 'STAFF' : (card.subject.kind === 'shared' ? 'COMMON' : 'IDOL') }} · {{ card.subject.code }}</small>
               <strong>{{ card.subject.displayName }}</strong>
               <span>{{ card.logicalEntryCount }} 篇 · {{ card.seriesIds.length }} 个 master 系列</span>
             </span>
