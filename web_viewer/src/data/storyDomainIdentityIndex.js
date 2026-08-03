@@ -127,9 +127,13 @@ function speakerByNumericId(speakerDictionary) {
 }
 
 function birthdaySubject(row, idolUnit, speakersByNumericId) {
+  const semantics = row?.birthday_semantics
+  const hasAuthoritativeSubject = semantics && Object.hasOwn(semantics, 'subject_numeric_id')
   const resourceId = String(row?.resource_id || '')
   const match = resourceId.match(/^1_(?:2|7|8)_(\d{3})_/)
-  const numericId = match ? String(Number(match[1])) : ''
+  const numericId = hasAuthoritativeSubject
+    ? (Number.isInteger(semantics.subject_numeric_id) ? String(semantics.subject_numeric_id) : '')
+    : (match ? String(Number(match[1])) : '')
   const idol = numericId ? idolUnit?.by_numeric_id?.[numericId] : null
   if (idol) {
     return {
@@ -138,7 +142,9 @@ function birthdaySubject(row, idolUnit, speakersByNumericId) {
       code: String(idol.idol_code || ''),
       displayName: String(idol.display_name || idol.idol_code || ''),
       source: sourceEvidence(idol),
-      resolution: 'master_resource_id+idol_dictionary',
+      resolution: hasAuthoritativeSubject
+        ? 'table_80_character_set+idol_dictionary'
+        : 'master_resource_id+idol_dictionary',
     }
   }
 
@@ -150,7 +156,23 @@ function birthdaySubject(row, idolUnit, speakersByNumericId) {
       code: String(speaker.npc_code || speaker.speaker_id || ''),
       displayName: String(speaker.display_name || speaker.npc_code || ''),
       source: sourceEvidence(speaker),
-      resolution: 'master_resource_id+speaker_dictionary',
+      resolution: hasAuthoritativeSubject
+        ? 'table_80_character_set+speaker_dictionary'
+        : 'master_resource_id+speaker_dictionary',
+    }
+  }
+
+  if (hasAuthoritativeSubject && !numericId) {
+    return {
+      kind: 'shared',
+      numericId: '',
+      code: 'producer_birthday_common',
+      displayName: '制作人生日公共篇',
+      source: {
+        table: numeric(semantics?.sources?.character?.table),
+        offset: numeric(semantics?.sources?.character?.offset),
+      },
+      resolution: 'table_80_character_set_unassigned',
     }
   }
 
@@ -165,23 +187,37 @@ function birthdaySubject(row, idolUnit, speakersByNumericId) {
 }
 
 function birthdaySeries(row) {
+  const semantics = row?.birthday_semantics || {}
   const parentId = String(row?.['2'] || '')
   const resourceId = String(row?.resource_id || '')
+  const chapterId = String(semantics.chapter_id || parentId.slice(0, 3))
   return {
-    id: `birthday-series:${parentId.slice(0, 3)}:${resourceId.split('_').slice(0, 2).join('_')}`,
-    masterParentFamily: parentId.slice(0, 3),
+    id: `birthday-series:${chapterId}:${resourceId.split('_').slice(0, 2).join('_')}`,
+    masterParentFamily: chapterId,
     resourceFamily: resourceId.split('_').slice(0, 2).join('_'),
+    chapterId,
+    chapterTitle: String(semantics.chapter_title || ''),
+    sectionTitle: String(semantics.section_title || ''),
+    seriesNumber: numeric(semantics.series_number),
+    target: String(semantics.target || ''),
   }
 }
 
-function buildBirthdayDomain(storyMaster, idolUnit, speakerDictionary, memberships) {
+function buildBirthdayDomain(storyMaster, idolUnit, speakerDictionary, memberships, semanticIndex = null) {
   const speakersByNumericId = speakerByNumericId(speakerDictionary)
+  const announcementsById = new Map((semanticIndex?.announcements || [])
+    .map(announcement => [Number(announcement.id), announcement]))
   const logicalEntries = sortedRows(storyMaster.birthday).map(row => {
-    const entry = logicalEntry('birthday', row, '4')
+    const semantics = semanticIndex?.by_episode_id?.[String(row?.['1'] || '')] || null
+    const semanticRow = semantics ? { ...row, birthday_semantics: semantics } : row
+    const entry = logicalEntry('birthday', semanticRow, '4')
     return {
       ...entry,
-      subject: birthdaySubject(row, idolUnit, speakersByNumericId),
-      series: birthdaySeries(row),
+      subject: birthdaySubject(semanticRow, idolUnit, speakersByNumericId),
+      series: birthdaySeries(semanticRow),
+      announcements: (semantics?.announcement_ids || [])
+        .map(id => announcementsById.get(Number(id)))
+        .filter(Boolean),
       domainMemberships: [...(memberships.get(entry.compiledFile) || [])].sort(),
     }
   })
@@ -214,6 +250,7 @@ function buildBirthdayDomain(storyMaster, idolUnit, speakerDictionary, membershi
       logicalEntryCount: logicalEntries.length,
       resolvedIdolEntryCount: logicalEntries.filter(entry => entry.subject.kind === 'idol').length,
       resolvedNpcEntryCount: logicalEntries.filter(entry => entry.subject.kind === 'npc').length,
+      sharedSubjectEntryCount: logicalEntries.filter(entry => entry.subject.kind === 'shared').length,
       unresolvedEntryCount: logicalEntries.filter(entry => entry.subject.kind === 'unresolved').length,
       seriesCount: new Set(logicalEntries.map(entry => entry.series.id)).size,
       resourceIdCount: new Set(logicalEntries.map(entry => entry.resourceId).filter(Boolean)).size,
@@ -225,13 +262,14 @@ function buildBirthdayDomain(storyMaster, idolUnit, speakerDictionary, membershi
   }
 }
 
-export function buildBirthdayStoryDomainIdentity(storyMaster, idolUnit, speakerDictionary) {
+export function buildBirthdayStoryDomainIdentity(storyMaster, idolUnit, speakerDictionary, semanticIndex = null) {
   if (!storyMaster) return null
   return buildBirthdayDomain(
     storyMaster,
     idolUnit,
     speakerDictionary,
     allDomainMemberships(storyMaster),
+    semanticIndex,
   )
 }
 
@@ -338,18 +376,20 @@ export function buildStoryDomainIdentityIndex({
   storyMaster,
   idolUnit,
   speakerDictionary,
+  birthdayStorySemantic,
 } = {}) {
   if (!storyMaster) return null
   const memberships = allDomainMemberships(storyMaster)
   const domains = {
     main: buildMainStoryDomainIdentity(storyMaster),
-    birthday: buildBirthdayDomain(storyMaster, idolUnit, speakerDictionary, memberships),
+    birthday: buildBirthdayDomain(storyMaster, idolUnit, speakerDictionary, memberships, birthdayStorySemantic),
     extra: buildExtraDomain(storyMaster),
   }
   return {
     schemaVersion: 1,
     authority: {
       semanticIdentity: 'story_master_index',
+      birthdaySemantic: 'birthday_story_semantic_index',
       idolIdentity: 'idol_unit_dictionary',
       npcIdentity: 'speaker_dictionary',
       playbackTarget: 'compiled_file',

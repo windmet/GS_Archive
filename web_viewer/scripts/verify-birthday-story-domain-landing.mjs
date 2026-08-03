@@ -10,9 +10,11 @@ import { readArchiveRoute } from '../src/core/archiveRoute.js'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const readText = relative => readFile(path.join(root, relative), 'utf8')
 const readJson = relative => readText(relative).then(JSON.parse)
-const [master, presentation, idolUnit, speakerDictionary, repositorySource, appSource, catalogSource] = await Promise.all([
+const [master, birthdaySemantic, presentation, idolEpisodes, idolUnit, speakerDictionary, repositorySource, appSource, catalogSource] = await Promise.all([
   readJson('public/data/masterdata/story_master_index.json'),
+  readJson('public/data/masterdata/birthday_story_semantic_index.json'),
   readJson('public/data/masterdata/story_presentation_index.json'),
+  readJson('public/data/masterdata/idol_episode_index.json'),
   readJson('public/data/masterdata/idol_unit_dictionary.json'),
   readJson('public/data/masterdata/speaker_dictionary.json'),
   readText('src/data/ArchiveDataRepository.js'),
@@ -34,18 +36,19 @@ assert.equal(collectionRoute.storyType, 'birthday')
 assert.equal(collectionRoute.storySection, '001tom')
 assert.equal(collectionRoute.query, '冬馬')
 
-const birthday = buildBirthdayStoryDomainIdentity(master, idolUnit, speakerDictionary)
-assert.equal(birthday.meta.collectionCount, 50)
+const birthday = buildBirthdayStoryDomainIdentity(master, idolUnit, speakerDictionary, birthdaySemantic)
+assert.equal(birthday.meta.collectionCount, 51)
 assert.equal(birthday.meta.logicalEntryCount, 181)
 assert.equal(birthday.meta.resolvedIdolEntryCount, 176)
-assert.equal(birthday.meta.resolvedNpcEntryCount, 5)
+assert.equal(birthday.meta.resolvedNpcEntryCount, 3)
+assert.equal(birthday.meta.sharedSubjectEntryCount, 2)
 assert.equal(birthday.meta.unresolvedEntryCount, 0)
 assert.equal(birthday.meta.crossDomainSharedFileCount, 29)
 
 const catalog = buildStoryCatalog(master, presentation)
-const collections = buildStoryCollections(master, catalog, { birthdayDomain: birthday })
+const collections = buildStoryCollections(master, catalog, { birthdayDomain: birthday, idolEpisodes })
   .filter(collection => collection.domain === 'birthday')
-assert.equal(collections.length, 50)
+assert.equal(collections.length, 51)
 assert.equal(collections.reduce((sum, collection) => sum + collection.chapterCount, 0), 181)
 assert.equal(collections.reduce((sum, collection) => sum + collection.playableChapterCount, 0), 181)
 
@@ -55,16 +58,26 @@ assert.equal(toma.chapterCount, 4)
 assert.deepEqual(
   [...new Set(toma.chapters.map(chapter => chapter.label))].sort(),
   [
-    '2022 · 偶像生日祝福',
-    '2023 · 生日短篇',
+    '第1期 · 偶像生日祝福',
+    '第2期 · 个人故事共享入口',
     '制作人生日问候 · 第1期',
     '制作人生日问候 · 第2期',
   ].sort(),
 )
+assert.equal(toma.officialBirthdayLabel, '3月3日')
+assert.equal(toma.officialBirthdayEvidence, 'table_86_announcement')
+const kyosuke = collections.find(collection => collection.sectionId === '013kys')
+assert.equal(kyosuke.officialBirthdayLabel, '7月7日')
+assert.equal(kyosuke.officialBirthdayEvidence, 'table_78_schedule')
 const ken = collections.find(collection => collection.sectionId === '101ken')
 assert.equal(ken.subject.kind, 'npc')
 assert.equal(ken.title, '山村 賢 生日剧情')
-assert.equal(ken.chapterCount, 5)
+assert.equal(ken.chapterCount, 3)
+assert.equal(ken.officialBirthdayLabel, '7月2日')
+const commonProducerBirthday = collections.find(collection => collection.sectionId === 'producer_birthday_common')
+assert.equal(commonProducerBirthday.title, '制作人生日公共篇')
+assert.equal(commonProducerBirthday.chapterCount, 2)
+assert.equal(commonProducerBirthday.subject.resolution, 'table_80_character_set_unassigned')
 
 const sharedChapters = collections.flatMap(collection => collection.chapters)
   .filter(chapter => chapter.domainMemberships.length > 1)
@@ -73,10 +86,12 @@ assert.ok(sharedChapters.every(chapter => chapter.domainMemberships.includes('id
 assert.ok(sharedChapters.every(chapter => chapter.file && chapter.episodes[0].file === chapter.file))
 
 assert.match(repositorySource, /speakerDictionary: '\/data\/masterdata\/speaker_dictionary\.json'/)
+assert.match(repositorySource, /birthdayStorySemantic: '\/data\/masterdata\/birthday_story_semantic_index\.json'/)
 assert.match(appSource, /:birthday-domain="birthdayStoryDomain"/)
 assert.match(appSource, /\['main', 'unit_story', 'extra', 'birthday'\]\.includes\(domain\)/)
 assert.match(appSource, /returnsToDomainLanding = \['main', 'extra', 'birthday'\]\.includes\(domain\)/)
 assert.match(catalogSource, /mode === 'portal' && domain === 'birthday'/)
+assert.match(catalogSource, /card\.subject\.kind === 'shared' \? 'COMMON'/)
 assert.match(catalogSource, /@media \(max-width: 620px\).*\.extra-card-grid, \.birthday-card-grid \{ grid-template-columns: 1fr;/s)
 
-console.log('Birthday story domain landing: 50 subjects, 181 logical records, 29 cross-domain playback files verified')
+console.log('Birthday story domain landing: 51 collections, 181 logical records, 2 unassigned producer-birthday entries and 29 cross-domain files verified')

@@ -4,6 +4,7 @@ const ARCHIVE_SOURCES = {
   gashaIndex: '/data/masterdata/gasha_index.json',
   eventIndex: '/data/masterdata/event_index.json',
   storyMaster: '/data/masterdata/story_master_index.json',
+  birthdayStorySemantic: '/data/masterdata/birthday_story_semantic_index.json',
   extraStoryVisualIndex: '/data/masterdata/extra_story_visual_index.json',
   storyPresentation: '/data/masterdata/story_presentation_index.json',
   seasonalCampaign: '/data/masterdata/seasonal_campaign_index.json',
@@ -58,6 +59,15 @@ function validatePayload(key, payload) {
   }
   if (key === 'storyMaster' && !payload.main && !payload.idol_story) {
     throw new Error('storyMaster has no recognized story families')
+  }
+  if (key === 'birthdayStorySemantic' && (
+    payload.schema_version !== 1 ||
+    payload.meta?.chapter_count !== 4 ||
+    payload.meta?.episode_count !== 181 ||
+    payload.meta?.announcement_count !== 78 ||
+    !payload.by_episode_id
+  )) {
+    throw new Error('birthdayStorySemantic must include the complete tables 76/77/78/80/86 contract')
   }
   if (key === 'extraStoryVisualIndex' && (
     payload.schema_version !== 1 ||

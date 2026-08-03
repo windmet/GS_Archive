@@ -147,6 +147,37 @@ def parse_message(data: bytes, nested: bool = False) -> dict[str, Any]:
     return out
 
 
+def length_delimited_field_bytes(data: bytes, target_field: int) -> bytes | None:
+    """Return an exact length-delimited payload without guessing whether it is text.
+
+    Some client tables store numeric identifiers in protobuf bytes fields.  The
+    generic parser intentionally decodes printable one-byte values as text, so
+    table 80 character ids such as 45 (``-``) would otherwise lose their
+    numeric identity.
+    """
+    pos = 0
+    end = len(data)
+    while pos < end:
+        tag, pos = read_varint(data, pos, end)
+        field_no = tag >> 3
+        wire_type = tag & 7
+        if wire_type == 0:
+            _, pos = read_varint(data, pos, end)
+        elif wire_type == 1:
+            pos += 8
+        elif wire_type == 2:
+            length, pos = read_varint(data, pos, end)
+            raw = data[pos : pos + length]
+            pos += length
+            if field_no == target_field:
+                return raw
+        elif wire_type == 5:
+            pos += 4
+        else:
+            return None
+    return None
+
+
 PATTERNS = {
     "card_resource": re.compile(r"\b\d{3}[a-z]{3}_(?:n|r|sr|ssr)\d+\b"),
     "costume_or_card": re.compile(r"\b\d{3}[a-z]{3}_\d{3}_\d{2}\b"),
@@ -240,7 +271,11 @@ def extract_scenario_titles(records: list[tuple[int, int, int, int, Any]]) -> di
         "idol_story_episodes": [],
         "card_scenarios": [],
         "work_story_resources": [],
+        "birthday_chapters": [],
+        "birthday_sections": [],
         "birthday_episodes": [],
+        "birthday_characters": [],
+        "birthday_announcements": [],
         "extra_story_groups": [],
         "extra_story_episodes": [],
     }
@@ -258,7 +293,11 @@ def extract_scenario_titles(records: list[tuple[int, int, int, int, Any]]) -> di
         43: "card_scenarios",
         54: "work_story_resources",
         55: "work_story_resources",
+        76: "birthday_chapters",
+        77: "birthday_sections",
         78: "birthday_episodes",
+        80: "birthday_characters",
+        86: "birthday_announcements",
         144: "extra_story_groups",
         145: "extra_story_episodes",
     }
@@ -267,6 +306,10 @@ def extract_scenario_titles(records: list[tuple[int, int, int, int, Any]]) -> di
         if not name or not isinstance(payload, bytes):
             continue
         parsed = parse_message(payload)
+        if top_field == 80:
+            character_bytes = length_delimited_field_bytes(payload, 2)
+            if character_bytes:
+                parsed["2"] = int.from_bytes(character_bytes, byteorder="little")
         parsed["_top_field"] = top_field
         parsed["_offset"] = start
         tables[name].append(parsed)
@@ -2325,6 +2368,157 @@ def compiled_filename(resource_id: str, compiled_stems: set[str]) -> str | None:
     return f"{matches[0]}.json" if matches else None
 
 
+def build_birthday_semantic_catalog(
+    story_tables: dict[str, list[dict[str, Any]]],
+) -> dict[str, Any]:
+    chapter_rows = {
+        row.get("1"): row
+        for row in story_tables.get("birthday_chapters", [])
+        if isinstance(row.get("1"), int)
+    }
+    section_rows = {
+        row.get("1"): row
+        for row in story_tables.get("birthday_sections", [])
+        if isinstance(row.get("1"), int)
+    }
+    character_rows = {
+        row.get("1"): row
+        for row in story_tables.get("birthday_characters", [])
+        if isinstance(row.get("1"), int)
+    }
+
+    announcements = []
+    announcements_by_subject: dict[int, list[dict[str, Any]]] = defaultdict(list)
+    for row in story_tables.get("birthday_announcements", []):
+        subject_id = row.get("2")
+        if not isinstance(subject_id, int) and isinstance(row.get("8"), str):
+            try:
+                image_reference = parse_message(bytes.fromhex(row["8"]))
+                subject_id = image_reference.get("2")
+            except (ValueError, EOFError):
+                subject_id = None
+        text = row.get("4") if isinstance(row.get("4"), str) else ""
+        date_match = re.search(r"(\d{1,2})月(\d{1,2})日", text)
+        announcement = {
+            "id": row.get("1"),
+            "subject_numeric_id": subject_id,
+            "edition": 2 if isinstance(row.get("1"), int) and row["1"] >= 50 else 1,
+            "romanized_name": row.get("3") if isinstance(row.get("3"), str) else "",
+            "text": text,
+            "month": int(date_match.group(1)) if date_match else None,
+            "day": int(date_match.group(2)) if date_match else None,
+            "image_reference": row.get("8") if isinstance(row.get("8"), str) else "",
+            "_source": source(86, {
+                "id": 1,
+                "subject_numeric_id": 2,
+                "romanized_name": 3,
+                "text": 4,
+                "image_reference": 8,
+            }, row.get("_offset")),
+        }
+        announcements.append(announcement)
+        if isinstance(subject_id, int):
+            announcements_by_subject[subject_id].append(announcement)
+
+    normalized_chapters = []
+    for row in sorted(chapter_rows.values(), key=lambda item: item.get("1") or 0):
+        normalized_chapters.append({
+            "id": row.get("1"),
+            "series_number": row.get("2"),
+            "title": row.get("3") if isinstance(row.get("3"), str) else "",
+            "target": "producer" if row.get("7") == 1 else "idol",
+            "_source": source(76, {
+                "id": 1,
+                "series_number": 2,
+                "title": 3,
+                "target": 7,
+            }, row.get("_offset")),
+        })
+
+    normalized_sections = []
+    for row in sorted(section_rows.values(), key=lambda item: item.get("1") or 0):
+        normalized_sections.append({
+            "id": row.get("1"),
+            "chapter_id": row.get("2"),
+            "title": row.get("3") if isinstance(row.get("3"), str) else "",
+            "_source": source(77, {
+                "id": 1,
+                "chapter_id": 2,
+                "title": 3,
+            }, row.get("_offset")),
+        })
+
+    by_episode_id: dict[str, dict[str, Any]] = {}
+    missing_section_ids = []
+    missing_chapter_ids = []
+    missing_character_ids = []
+    unassigned_episode_ids = []
+    for episode in story_tables.get("birthday_episodes", []):
+        episode_id = episode.get("1")
+        section_id = episode.get("2")
+        section = section_rows.get(section_id, {})
+        chapter_id = section.get("2")
+        chapter = chapter_rows.get(chapter_id, {})
+        character = character_rows.get(episode_id, {})
+        subject_id = character.get("2")
+        if not section:
+            missing_section_ids.append(episode_id)
+        if not chapter:
+            missing_chapter_ids.append(episode_id)
+        if not character:
+            missing_character_ids.append(episode_id)
+        elif not isinstance(subject_id, int):
+            unassigned_episode_ids.append(episode_id)
+        semantics = {
+            "episode_id": episode_id,
+            "section_id": section_id,
+            "section_title": section.get("3") if isinstance(section.get("3"), str) else "",
+            "chapter_id": chapter_id,
+            "chapter_title": chapter.get("3") if isinstance(chapter.get("3"), str) else "",
+            "series_number": chapter.get("2"),
+            "target": "producer" if chapter.get("7") == 1 else "idol",
+            "subject_numeric_id": subject_id,
+            "scheduled_at": episode.get("4"),
+            "announcement_ids": [
+                announcement["id"]
+                for announcement in announcements_by_subject.get(subject_id, [])
+            ],
+            "sources": {
+                "chapter": source(76, {"id": 1, "series_number": 2, "title": 3, "target": 7}, chapter.get("_offset")),
+                "section": source(77, {"id": 1, "chapter_id": 2, "title": 3}, section.get("_offset")),
+                "episode": source(78, {"id": 1, "section_id": 2, "scheduled_at": 4, "resource_id": 5}, episode.get("_offset")),
+                "character": source(80, {"episode_id": 1, "subject_numeric_id": 2}, character.get("_offset")),
+            },
+        }
+        if isinstance(episode_id, int):
+            by_episode_id[str(episode_id)] = semantics
+
+    return {
+        "schema_version": 1,
+        "authority": {
+            "chapter": "client masterdata table 76 BirthdayStoryChapterData",
+            "section": "client masterdata table 77 BirthdayStorySectionData",
+            "episode": "client masterdata table 78 BirthdayStoryEpisodeData",
+            "subject": "client masterdata table 80 BirthdayStoryCharacterSetData",
+            "announcement": "client masterdata table 86",
+        },
+        "chapters": normalized_chapters,
+        "sections": normalized_sections,
+        "announcements": announcements,
+        "by_episode_id": by_episode_id,
+        "meta": {
+            "chapter_count": len(normalized_chapters),
+            "section_count": len(normalized_sections),
+            "episode_count": len(by_episode_id),
+            "announcement_count": len(announcements),
+            "missing_section_ids": missing_section_ids,
+            "missing_chapter_ids": missing_chapter_ids,
+            "missing_character_ids": missing_character_ids,
+            "unassigned_episode_ids": unassigned_episode_ids,
+        },
+    }
+
+
 def build_story_master_index(
     story_tables: dict[str, list[dict[str, Any]]],
     compiled_stems: set[str],
@@ -3116,6 +3310,14 @@ def main() -> None:
         help="Generate only idol_episode_index.json, mobile_archive_index.json and the corrected home interaction index.",
     )
     parser.add_argument(
+        "--birthday-semantic-only",
+        action="store_true",
+        help=(
+            "Generate only birthday_story_semantic_index.json from tables "
+            "76/77/78/80/86."
+        ),
+    )
+    parser.add_argument(
         "--music-catalog-only",
         action="store_true",
         help="Generate only music_catalog.json, including complete table-133 relations.",
@@ -3161,6 +3363,23 @@ def main() -> None:
     records = list(iter_top_records(decoded))
     compiled_stems = collect_compiled_stems(args.compiled_dir)
     compiled_summaries = collect_compiled_summaries(args.compiled_dir)
+    if args.birthday_semantic_only:
+        birthday_tables = extract_scenario_titles(records)
+        birthday_semantic_index = build_birthday_semantic_catalog(birthday_tables)
+        filename = "birthday_story_semantic_index.json"
+        (args.out_dir / filename).write_text(
+            json.dumps(birthday_semantic_index, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        if args.public_out_dir:
+            args.public_out_dir.mkdir(parents=True, exist_ok=True)
+            (args.public_out_dir / filename).write_text(
+                json.dumps(birthday_semantic_index, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+        print(f"decoded: {decoded_path}")
+        print(f"{filename}: {birthday_semantic_index.get('meta', {})}")
+        return
     if args.movie_announce_only:
         movie_tables = extract_table_rows(records, {175})
         movie_announce_index = build_movie_announce_index(movie_tables)
@@ -3378,6 +3597,7 @@ def main() -> None:
     song_movie_index = build_song_movie_index(catalog_tables)
     face_dictionary = build_face_dictionary(catalog_tables)
     story_master_index = build_story_master_index(story_tables, compiled_stems, compiled_summaries)
+    birthday_story_semantic_index = build_birthday_semantic_catalog(story_tables)
     card_index = build_card_index(
         card_parameters,
         card_voice_cues,
@@ -3406,6 +3626,7 @@ def main() -> None:
         "card_voice_cue_field91_extract.json": card_voice_cues,
         "card_home_voice_preview_extract.json": card_home_voice_previews,
         "story_master_index.json": story_master_index,
+        "birthday_story_semantic_index.json": birthday_story_semantic_index,
         "gasha_announcement_index.json": gasha_announcement_index,
         "gasha_index.json": gasha_index,
         "event_index.json": event_index,

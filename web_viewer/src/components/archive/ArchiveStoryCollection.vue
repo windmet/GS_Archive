@@ -12,11 +12,13 @@
         <dl>
           <div><dt>{{ collection.domain === 'birthday' ? '独立生日档案' : '正式话目' }}</dt><dd>{{ collection.domain === 'birthday' ? collection.independentChapterCount : `${collection.playableChapterCount} / ${collection.chapterCount}` }}</dd></div>
           <div><dt>{{ collection.domain === 'birthday' ? '个人故事共享' : '剧情分段' }}</dt><dd>{{ collection.domain === 'birthday' ? collection.sharedChapterCount : `${collection.playableEpisodeCount} / ${collection.episodeCount}` }}</dd></div>
+          <div v-if="collection.domain === 'birthday' && collection.officialBirthdayLabel"><dt>官方生日</dt><dd>{{ collection.officialBirthdayLabel }}</dd></div>
           <div v-if="releaseDate"><dt>开放时间</dt><dd>{{ releaseDate }}</dd></div>
         </dl>
         <aside v-if="collection.domain === 'birthday'" class="domain-boundary-note">
           <BookOpen :size="17" />
-          <p><strong>归档边界</strong><span>生日问候属于本页；生日同期开放的正式个人章节归入 Idol Episode。共享文件只保留一个关系入口，不重复定义章节。</span></p>
+          <p v-if="collection.subject?.kind === 'shared'"><strong>归档边界</strong><span>该篇由山村贤登场引导，但表 80 没有绑定角色；因此按制作人生日公共篇建档，不复制到山村贤的个人生日集合。</span></p>
+          <p v-else><strong>归档边界</strong><span>生日问候属于本页；生日同期开放的正式个人章节归入 Idol Episode。共享文件只保留一个关系入口，不重复定义章节。</span></p>
         </aside>
         <div v-if="collection.gasha || collection.sourceUrl" class="collection-relations">
           <button v-if="collection.gasha" type="button" @click="emit('open-gasha', collection.gasha)">

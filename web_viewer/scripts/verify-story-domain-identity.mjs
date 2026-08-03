@@ -6,14 +6,16 @@ import { buildStoryDomainIdentityIndex } from '../src/data/storyDomainIdentityIn
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const readJson = relative => readFile(path.join(root, relative), 'utf8').then(JSON.parse)
-const [storyMaster, idolUnit, speakerDictionary] = await Promise.all([
+const [storyMaster, birthdayStorySemantic, idolUnit, speakerDictionary] = await Promise.all([
   readJson('public/data/masterdata/story_master_index.json'),
+  readJson('public/data/masterdata/birthday_story_semantic_index.json'),
   readJson('public/data/masterdata/idol_unit_dictionary.json'),
   readJson('public/data/masterdata/speaker_dictionary.json'),
 ])
 
 const index = buildStoryDomainIdentityIndex({
   storyMaster,
+  birthdayStorySemantic,
   idolUnit,
   speakerDictionary,
 })
@@ -21,6 +23,7 @@ const index = buildStoryDomainIdentityIndex({
 assert.equal(index.schemaVersion, 1)
 assert.deepEqual(index.authority, {
   semanticIdentity: 'story_master_index',
+  birthdaySemantic: 'birthday_story_semantic_index',
   idolIdentity: 'idol_unit_dictionary',
   npcIdentity: 'speaker_dictionary',
   playbackTarget: 'compiled_file',
@@ -43,10 +46,11 @@ assert.equal(main.collections.find(collection => collection.masterId === '102').
 assert.equal(main.collections.find(collection => collection.masterId === '103').isPlaceholder, true)
 
 const birthday = index.domains.birthday
-assert.equal(birthday.meta.collectionCount, 50)
+assert.equal(birthday.meta.collectionCount, 51)
 assert.equal(birthday.meta.logicalEntryCount, 181)
 assert.equal(birthday.meta.resolvedIdolEntryCount, 176)
-assert.equal(birthday.meta.resolvedNpcEntryCount, 5)
+assert.equal(birthday.meta.resolvedNpcEntryCount, 3)
+assert.equal(birthday.meta.sharedSubjectEntryCount, 2)
 assert.equal(birthday.meta.unresolvedEntryCount, 0)
 assert.equal(birthday.meta.seriesCount, 4)
 assert.equal(birthday.meta.resourceIdCount, 181)
@@ -66,13 +70,16 @@ assert.deepEqual(
 
 const toumaBirthday = birthday.collections.find(collection => collection.subject.code === '001tom')
 assert.equal(toumaBirthday.subject.displayName, '天ヶ瀬 冬馬')
-assert.equal(toumaBirthday.subject.resolution, 'master_resource_id+idol_dictionary')
+assert.equal(toumaBirthday.subject.resolution, 'table_80_character_set+idol_dictionary')
 assert.equal(toumaBirthday.logicalEntryCount, 4)
 const kenBirthday = birthday.collections.find(collection => collection.subject.code === '101ken')
 assert.equal(kenBirthday.subject.kind, 'npc')
 assert.equal(kenBirthday.subject.displayName, '山村 賢')
-assert.equal(kenBirthday.subject.resolution, 'master_resource_id+speaker_dictionary')
-assert.equal(kenBirthday.logicalEntryCount, 5)
+assert.equal(kenBirthday.subject.resolution, 'table_80_character_set+speaker_dictionary')
+assert.equal(kenBirthday.logicalEntryCount, 3)
+const commonProducerBirthday = birthday.collections.find(collection => collection.subject.code === 'producer_birthday_common')
+assert.equal(commonProducerBirthday.subject.kind, 'shared')
+assert.equal(commonProducerBirthday.logicalEntryCount, 2)
 
 const sharedBirthdayFiles = birthday.logicalEntries
   .filter(entry => entry.domainMemberships.includes('idol_story'))
@@ -103,6 +110,6 @@ assert.equal(sharedExtraTarget.logicalEntryIds.length, 4)
 
 console.log(
   'Story domain identity: '
-  + 'main 3/22/204, birthday 50 collections/181 entries/29 cross-domain files, '
+  + 'main 3/22/204, birthday 51 collections/181 entries/2 common/29 cross-domain files, '
   + 'extra 10 works/47 entries/44 playback files verified',
 )

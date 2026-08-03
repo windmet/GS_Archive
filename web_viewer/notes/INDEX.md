@@ -79,6 +79,9 @@ The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_889
   GROWING STARS-only Bilibili translation-link mapping.
 - `notes/04_refactor/GS_ARCHIVE_P1_STACK_CLOSEOUT_20260802.md` - ordered PR #32,
   Song, Player PR1 and Mobile PR2 merge/absorption plan.
+- `notes/04_refactor/GS_ARCHIVE_BIRTHDAY_SEMANTIC_BACKFILL_P1_20260803.md` - tables
+  76/77/78/80/86 birthday hierarchy, official dates, and the two unassigned
+  producer-birthday common episodes separated from Yamamura Ken.
 
 ## Layout
 
