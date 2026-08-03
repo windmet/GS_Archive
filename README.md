@@ -7,7 +7,7 @@ The repository is the source of truth for code, schemas, relationship rules, ver
 ## Current Scope
 
 - Vue archive shell with stable, shareable URL state.
-- Idol, unit, card, gasha, event, story, interaction, and resource views.
+- Idol, unit, card, gasha, event, story, song, interaction, and resource views.
 - Compiled scenario player with local voice, lip-sync, background, and Spine support.
 - Evidence-based card/event/gasha/unit relations derived from masterdata and confirmed research.
 - Reproducible data pipelines and archive verification reports.
@@ -28,6 +28,12 @@ Current verified archive snapshot:
   card entities.
 - 61 logical gasha entities and 36 classified event entities are available in
   the archive indexes.
+- 61 routable song entities have bounded RAW-derived jackets and exact main-audio
+  relations; experimental layered playback remains explicitly separate from the
+  archive catalog contract.
+- Birthday Story currently resolves 4 chapters, 181 sections and 181 episodes;
+  179 episodes have an explicit subject and 2 producer-birthday common episodes
+  remain intentionally unassigned.
 
 The 10,329 JSON files recursively present under `public/data/compiled` are
 compiled artifacts, not 10,329 distinct stories. Aggregate, episode, manifest,
@@ -127,8 +133,10 @@ Documented exceptions:
 - small stable promoted assets with source identity, hashes, consumers,
   rollback evidence, and a governing manifest.
 
-At the 2026-07-28 baseline the repository tracks 108 PNG files totalling
-26,384,189 bytes. The exact boundary and `git add -f` rules are defined in
+The 2026-07-28 baseline tracked 108 PNG files totalling 26,384,189 bytes. After
+the bounded Extra Story and Song portal batches, the current repository boundary
+is 183 tracked PNG files totalling 49,123,497 bytes. The exact boundary and
+`git add -f` rules are defined in
 [BINARY_AND_PUBLICATION_POLICY_20260728.md](web_viewer/notes/04_refactor/BINARY_AND_PUBLICATION_POLICY_20260728.md).
 
 The original game, characters, names, artwork, audio, and trademarks belong to their respective rights holders. This repository does not grant permission to redistribute extracted game assets.

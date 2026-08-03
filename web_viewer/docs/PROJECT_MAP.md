@@ -23,6 +23,7 @@ unit_catalog / unit_detail
 cards / card_detail
 gashas / gasha_detail
 event_detail
+song_catalog / song_detail
 story_catalog / story_collection / story_detail
 external_story_resources
 seasonal_campaign

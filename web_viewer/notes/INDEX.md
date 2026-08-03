@@ -82,6 +82,12 @@ The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_889
 - `notes/04_refactor/GS_ARCHIVE_BIRTHDAY_SEMANTIC_BACKFILL_P1_20260803.md` - tables
   76/77/78/80/86 birthday hierarchy, official dates, and the two unassigned
   producer-birthday common episodes separated from Yamamura Ken.
+- `notes/04_refactor/GS_ARCHIVE_CARD_SEMANTIC_DICTIONARIES_P1_20260803.md` -
+  consumer-verified table 16/75/130 joins for card limit-break items and skill
+  categories; other decoded masterdata tables remain explicit TODOs.
+- `notes/05_exploration/MASTERDATA_UNUSED_TABLES_AUDIT_20260802.md` - historical
+  158-table exploration with a 2026-08-03 consumer-status correction and TODO
+  markers for entries that lack downstream consumption evidence.
 
 ## Layout
 
