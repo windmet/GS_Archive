@@ -588,8 +588,131 @@ view=story_collection&story_type=...&story_section=...
 - 61 张 RAW 封面发布为 365x360 导航派生图，保留 bundle、Texture2D、
   PathID、原尺寸与 published hash，owner release 为
   `2026-08-01-song-jackets-001`；
-- 播放器、solo+伴奏同步、MV 播放和 Chibi Stage 预选仍属于 Song-C，状态
-  为 **NOT EXECUTED**，等待下一步产品与音频同步讨论。
+- 歌曲详情播放器和 Chibi Stage 已各有明确标注的有界音频原型；MV 播放、共享
+  route-backed performance selection、官方 gain/pan/ducking 还原与 publication
+  promotion 仍属于 Song-C，整体状态仍为 **NOT EXECUTED**。
+
+2026-08-01 supplied package metadata checkpoint（只读）：
+
+- 提供的 2.6.10 IPA/XAPK 可作为 Song-C 的 Unity/CRI 参照样本；IPA 内的
+  `TutorialAssets` 含 `song3_drvalv_bgm`、5 个偶像声部和一个含 16 个组合
+  cue 的 `song3_grwsml`。`drvalv` BGM 为 `master/song_option/song_submix`，
+  偶像声部为 `master/vocal_option/vocal_prog/vocal_submix`；两类音频同为
+  44.1 kHz、130.285 s，但 ACB sequence selector 不同，不能只按文件名判断；
+- `glowing.acf` 解出 19 张 CRI UTF 表、23 个 category、7 个 stage snapshot、
+  9 个 bus，并包含 limiter、reverb、bandpass、32-band EQ 等 DSP。`song_submix`
+  与 `vocal_submix` 走不同 category，但共享一组 submix command；这证明存在
+  CRI mixer 边界，不足以单独证明浏览器端应如何重建其参数；
+- iOS IL2CPP metadata v27 命中 `SwitchSingerUtil.SwitchSingers`、
+  `SetCategoryVolumeForParallelSong`、`SingerNumVolumeList`、
+  `singerCountPanDict`，以及 `SoundManager.ReserveTracks/PlaySong`、
+  `LiveSoundDirector.songPlaybacks/SetMuteSong/SetPan3dAngleSong`、
+  `SongData` 的 singer/cue/BGM 字段和 `VocalSettingPopupContent` 的切换控件；
+  因此 solo 可能是多 track、音量、声像和 category 控制的组合，当前实验只能
+  作为听感原型，不能写成官方运行时等价实现；
+- 当前只保留证据与哈希，不复制或修改原始 IPA/XAPK；下一步应先把 Unity
+  data/metadata 字段与 track index、pan、volume、cue-sheet 选择做可复核映射，
+  再决定播放器是否支持可选声部与伴奏叠加。Song-C 仍为 **NOT EXECUTED**。
+
+同日 RAW 全量 ACB 交叉核验：
+
+- `song3_*.acb` 共 313 个：63 个 base/special、245 个偶像声部、5 个独立
+  伴奏；61 首正式歌曲的主 ACB 均出现 `song_option/song_submix` 与
+  `bgm_option/bgm_submix`，245 个偶像声部均出现
+  `vocal_option/vocal_prog/vocal_submix`；
+- 同时具备 49 个偶像声部文件和独立 `_bgm.acb` 的物理候选只有
+  `byndtd`、`drvalv`、`grwsml`、`tkstp1`、`tkstp2` 五首；但 table 46 的
+  `HasSoloSinging`/`SoloSingingOpenAt` 仅对前三首正式开启，`tkstp1/2` 的
+  solo 开放时间仍是禁用 sentinel。实验 manifest v2 现发布 `drvalv`、
+  `tkstp1`、`tkstp2` 各 49 个声部与伴奏；其中 `tkstp1/2` 只作为五人编组
+  `SwitchSinger` 原型，不据此改写 table-46 的官方 `HasSoloSinging` 状态，
+  `byndtd/grwsml` 也未被自动提升为正式分层播放选项；
+- 全量 ACB 形成 83 个 sequence/track-event 签名；命令 payload 继续按 opaque
+  证据保存，未把 `0x0041`、`0x0057` 或 `0x07d0` 擅自解释为音量、声像或
+  时间参数；播放器仍不得据此宣称已重建官方混音。
+- `tkstp1`/`tkstp2` 的“49 个偶像声部”需要单独纠正为五人编组模型：table 46
+  两行均为 `OnStageCount=5`、`HasSwitchSinger=1`，Unity `*_live_effect`
+  分别含 47/48 个 `SwitchSinger` 事件，每个事件都有五个站位状态位。它们
+  没有 16 个组合 cue，但确实支持把偶像分配到五个舞台位置并按事件切换
+  当前演唱位；49 个 ACB 是可选声部池，不等于 49 路同时播放。这个选择器
+  与 `HasSoloSinging`（两行仍为禁用 sentinel）是不同语义，不能再把
+  `audio_form=single-cue` 写成“没有个人声部选择”。Chibi 导出现在同时保留
+  RAW `SwitchSinger` 的原始 `stagePositions` 与反向推导的 `performerSlots`，
+  `verify:live-chibi-singer-slots` 固化这一关系。Chibi Stage 的可选实验模式现沿 performer slot 选择五个
+  偶像 ACB，以伴奏为共享时钟，并用同一 `SwitchSinger` 事件同时驱动声部
+  mute 与舞台口型/演唱标记，不复制五套编舞动作。多人声部采用 `1/sqrt(n)`
+  归一化、居中声像和独立伴奏增益，界面与 manifest 均明确标记为浏览器近似；
+  这不构成官方 `SingerNumVolumeList` / `singerCountPanDict` 的还原。
+- 录屏复核发现首版把本来就是舞台编号的 `SwitchSinger` 又套了一次演员槽映射。
+  RAW `tkstp1` 在 7,717ms 为 stage position `3`（反推 performer slot `1`），
+  12,315ms 为 stage positions `4,5`（反推 performer slots `3,5`）；此前网页的
+  `4` 与 `1,5` 均属 double mapping，现由 RAW 定点门禁纠正。三首实验媒体各
+  50 个 M4A，共 150 个；这不是长稳、publication 或 release acceptance。
+- 歌曲详情已接入独立于画面的五槽 performance session；内部保留 performer
+  slot 证据，用户界面则显示统一的舞台槽、空位与当前演唱偶像。重复偶像按
+  idol code 只加载/播放一条声部，并对其多个
+  槽的活动状态取 OR；不会用同一波形叠放制造“多人”假象。为避免多元素播放
+  在浏览器压力或网络波动下产生单轨 layback，门户 Solo＋伴奏、门户五槽与
+  Chibi 五槽实验都改为
+  播放前完整 fetch/decode 伴奏与所选唯一声部；所有
+  `AudioBufferSourceNode` 使用同一个 `AudioContext.currentTime` 与同一
+  `startAt`，`SwitchSinger` gate 也提前排入音频线程。播放期不再依赖网络，
+  也不再用 80ms 阈值追赶多个 `HTMLAudio` 时钟；暂停、seek、恢复及变速会从
+  统一逻辑 offset 重建整组 source。5174 门户验收中默认
+  5 条声部在重复冬馬后降为 4，清空第三槽后降为 3；8.0 秒显示 performer
+  slot 1 的冬馬，12.5 秒活动槽 `3,5` 中空槽 3 被排除，只剩槽 5 的桜庭薫。
+  统一时钟改造后又验证了 7.8 秒与 12.4 秒定位恢复，分别重建槽 `1` 与 `3,5`。
+  390px 窄屏无横向溢出。门户用轻量缓存 JSON loader，不引入 Pixi/Spine；
+  Chibi 只复用音频 session，不改变既有编舞、口型、镜头或场景数据。本批不与
+  官方混音参数、MV 或 publication promotion 合并，短实播也不是 2–4 小时
+  长稳；P2-B 仍为 **NOT EXECUTED**。
+- 门户五槽的用户可见编号已统一为 Chibi canonical 舞台位置 `1..5`，因此
+  `槽 3 = 舞台位 3 = 中心`。选择状态按舞台位保存；只有送入共享音频 session
+  时才根据 `stagePositionMap` 反查 RAW performer slot。当前演唱提示也显示
+  舞台位，界面不再要求用户记忆 `1→3, 2→2, 3→4, 4→1, 5→5` 的内部映射。
+- Chibi 编舞候选中的 `solo`、`solo_multi`、`solo_single` 必须保留为 RAW 名称，
+  不按英文名猜测音轨机制。`song_drvalv.unity3d` 中 `solo` 与 `solo_single`
+  byte-identical（SHA-256 `79d33c6a3ea2c87938bc83a9d2e0a164432d635e3db7f5a7e295008d8326e0a0`）；
+  `solo_multi` 动作与唯一 `SwitchSinger` 状态相同，75 行差异集中在 72 行
+  `Penlight_unit_color`/`Penlight` 与 3 行注释指令。三者均只有 performer
+  slot 1 位于中心，slot 2–5 是 `(5000,5000)` 离场哨兵。派生层现将 slot 1
+  映射为 canonical stage position 3；DRVALV 的 Chibi Solo 实验只加载中心
+  3 号位所选偶像声部与伴奏，并使用统一 `AudioContext` 时钟连续播放，不能把
+  `multi/single` 写成已恢复的官方声轨选择器。
+- 118 份编舞的歌词 token 审计只确认精确小写 `<comma>` 是占位符；重建后
+  196 个歌词事件显示 ASCII `,` 并在 `rawText` 保留来源。`<<Kick Off!>>`、
+  `きっと<きっと>叶えるよ` 等真实尖括号歌词继续按纯文本保留，禁止用
+  `v-html` 或泛化的“去 HTML 标签”规则处理。
+- 2026-08-02 游戏内说明截图补全了正式产品词汇：部分歌曲可从
+  `編成アイドル / ユニット / 315 ALL STARS / センター` 选择演唱指定，Center
+  时只有编入 `CENTER` 的偶像登场。该截图只证明功能和名称；具体映射必须继续
+  由 table 46 与 RAW 交叉约束。`byndtd / drvalv / grwsml` 均同时满足
+  `OnStageCount=5`、`HasSwitchSinger=1`、`HasSoloSinging=1`、49 人声部、1 伴奏、
+  16 Unit cue、base 五人编舞、16 Unit 编舞和 3 个中心 `solo*` 候选，因此门户
+  与 Chibi 可按四类正式名称组织。`tkstp1/2` 只保留 Formation 为演唱指定；
+  完整混音只作为普通单轨候选，不得显示 Center、Unit 或 315 ALL STARS 为
+  已证明的官方可选项。
+- 实验 manifest 现覆盖 `byndtd / drvalv / grwsml / tkstp1 / tkstp2`；前三首各
+  有 49 人声部、伴奏和 16 Unit 单轨。门户 Formation 只读取无 variant 的 base
+  `SwitchSinger`，避免五人 Unit 与 GRWSML tutorial 混入自定义编成。门户已将
+  Formation、Unit、315 ALL STARS、Center 提升为同级“演唱指定”，伴奏与特殊版
+  单独留在“其他音轨（审计）”；Chibi 的 base、Unit、Center 候选使用相同标签，
+  并继续显示 raw variant 名供审计。
+- 普通歌曲完整混音已形成独立的 61 曲本地派生 contract：每首都必须在
+  `RAW/audio/song3_<code>.acb` 中唯一命中精确同名 cue `song3_<code>`，manifest
+  记录 RAW/派生 SHA-256、selection、sample 元数据与 URL，不包含声部或演唱指定
+  字段。五首实验歌曲继续显示实验播放器，其余 56 首显示原生单轨“歌曲播放”。
+  复用既有 Chibi 派生目录避免再复制约 300 MB；原缺失的 `Reason!!` 已补出。
+  390×844 下 `ANYWHERE` 与 `Reason!!` 均加载成功、无横向溢出；mounted 验证
+  覆盖 61/61。媒体仍是 ignored/local-derived，不构成 publication promotion。
+- GRWSML 是时长例外：伴奏 5,569,571 samples；46 条人声 5,603,271，另 3 条
+  5,603,295，delta 为 `-33,700/-33,724`。代表性人声末尾有超过 13 秒静音，
+  因此记录为 `extra-vocal-tail-experimental`，不能沿用“±1 sample 对齐”结论；
+  网页仍从统一时钟同时起播，并以伴奏结束 session，不声称恢复官方 offset。
+- 供应包与 RAW 的逐文件 hash 对照已固化为
+  `scripts/audit-song-package-raw-match.py`（`npm run audit:song-package-match --
+  --ipa <path> --xapk <path> --raw-audio ..\\RAW\\audio --output <report>`）；
+  当前样本的 7 个 `song3_*.acb` 均存在于 RAW 且 SHA-256 全部一致。
 
 #### P1-Mobile-Nav：应用启动器
 

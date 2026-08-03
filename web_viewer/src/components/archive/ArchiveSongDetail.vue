@@ -178,6 +178,17 @@
         </div>
       </section>
 
+      <ArchiveSongExperimentalPlayer
+        v-if="audioExperiment"
+        :song="song"
+        :audio-experiment="audioExperiment"
+      />
+      <ArchiveSongSinglePlayer
+        v-else-if="playbackTrack"
+        :song="song"
+        :track="playbackTrack"
+      />
+
       <section v-if="song.related_entities.length" class="song-block" aria-labelledby="song-related-title">
         <div class="song-block-heading">
           <span>RELATED ARCHIVE</span>
@@ -234,10 +245,14 @@
 import { computed } from 'vue'
 import { ChevronRight, ExternalLink } from '@lucide/vue'
 import { IDOL_ID_TO_NAME } from '../../utils/IdolNameMap.js'
+import ArchiveSongExperimentalPlayer from './ArchiveSongExperimentalPlayer.vue'
+import ArchiveSongSinglePlayer from './ArchiveSongSinglePlayer.vue'
 
 const props = defineProps({
   song: { type: Object, required: true },
   units: { type: Object, default: null },
+  playbackTrack: { type: Object, default: null },
+  audioExperiment: { type: Object, default: null },
 })
 const emit = defineEmits(['open-song', 'open-unit', 'open-idol', 'open-related-story'])
 
@@ -351,7 +366,7 @@ const effectEntries = computed(() =>
 .performance-scope-card p { margin: 5px 0 0; color: #526a68; font-size: 0.7rem; line-height: 1.55; }
 .performance-scope-card small { display: block; margin-top: 6px; color: #778786; font-size: 0.62rem; line-height: 1.45; }
 .song-detail-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; }
-.song-detail-stats div { min-width: 0; padding: 7px 14px; border-left: 1px solid #34414c; }
+.song-detail-stats div { box-sizing: border-box; min-width: 0; padding: 7px 14px; border-left: 1px solid #34414c; }
 .song-detail-stats dt { color: #98a6b1; font-size: 0.64rem; white-space: nowrap; }
 .song-detail-stats dd { margin: 5px 0 0; font-size: 1rem; font-weight: 700; }
 .song-detail-body { padding-top: 20px; display: flex; flex-direction: column; gap: 16px; }
@@ -438,6 +453,14 @@ const effectEntries = computed(() =>
   .song-detail-hero { padding: 18px; }
   .song-detail-jacket { width: 140px; }
   .audio-stats { grid-template-columns: 1fr; }
-  .song-detail-stats div:nth-child(3) { border-left: 0; }
+  .song-detail-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .song-detail-stats div { padding: 7px 10px; }
+  .song-detail-stats div:nth-child(3) {
+    grid-column: 1 / -1;
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px solid #34414c;
+    border-left: 0;
+  }
 }
 </style>

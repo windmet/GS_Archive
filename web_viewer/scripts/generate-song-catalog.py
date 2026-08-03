@@ -46,7 +46,7 @@ SONG3_PREFIX = "song3_"
 
 
 def load_table46_song_identities(masterdata_decoded: Path) -> dict[str, dict]:
-    """Extract song_id / open_at / close_at for every song_code in table 46."""
+    """Extract identity and SongData selection flags for every table-46 song."""
     records = list(iter_top_records(masterdata_decoded.read_bytes()))
     rows = extract_table_rows(records, {46})
     identities: dict[str, dict] = {}

@@ -73,6 +73,14 @@ for (const code of catalogSongs) {
     ? 'special'
     : (song.open_at === 946652400 ? 'initial' : 'released')
   if (song.archive_status !== expectedStatus) fail(`song ${code}: archive_status mismatch`)
+  if (!song.song_data || typeof song.song_data.has_switch_singer !== 'boolean' ||
+      (song.song_data.on_stage_count !== null && typeof song.song_data.on_stage_count !== 'number') ||
+      typeof song.song_data.has_solo_singing !== 'boolean') {
+    fail(`song ${code}: SongData selection flags missing`)
+  }
+  if (song.song_data.has_solo_singing && song.song_data.solo_singing_open_at === 4102412400) {
+    fail(`song ${code}: solo singing cannot be enabled at the disabled sentinel`)
+  }
   const family = songRelatedEntityIndex.families?.[code]
   const expectedWorkCode = family?.work_code || code
   if (song.work_code !== expectedWorkCode) fail(`song ${code}: work_code mismatch`)
@@ -163,6 +171,16 @@ if (s.three_d_movie_count !== movieEntries.filter(e => e.kind === '3dmv').length
 if (s.mvlive_count !== movieEntries.filter(e => e.kind === 'mvlive').length) fail(`mvlive_count mismatch`)
 if (s.layered_song_count !== Object.values(catalog.songs).filter(song => song.audio_form === 'layered').length) fail(`layered_song_count mismatch`)
 if (s.oneshot_song_count !== Object.values(catalog.songs).filter(song => song.audio_form === 'oneshot').length) fail(`oneshot_song_count mismatch`)
+if (s.switch_singer_song_count !== Object.values(catalog.songs).filter(song => song.song_data.has_switch_singer).length) fail(`switch_singer_song_count mismatch`)
+if (s.switch_singer_song_count !== 5) fail(`switch_singer_song_count must be 5`)
+if (s.solo_singing_song_count !== Object.values(catalog.songs).filter(song => song.song_data.has_solo_singing).length) fail(`solo_singing_song_count mismatch`)
+if (s.solo_singing_song_count !== 3) fail(`solo_singing_song_count must be 3`)
+for (const code of ['tkstp1', 'tkstp2']) {
+  const songData = catalog.songs[code]?.song_data
+  if (songData?.on_stage_count !== 5 || songData?.has_switch_singer !== true) {
+    fail(`${code}: five-slot SwitchSinger contract missing`)
+  }
+}
 if (s.confirmed_unit_song_count !== 47) fail(`confirmed_unit_song_count must be 47`)
 if (s.explicit_performer_song_count !== 13) fail(`explicit_performer_song_count must be 13 unique songs`)
 if (musicCatalog.meta.table_46_row_count !== 99) fail(`music_catalog table_46_row_count must be 99`)

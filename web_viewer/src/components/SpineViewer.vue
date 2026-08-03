@@ -308,7 +308,11 @@ const selectedTimelineEvents = computed(() => (selectedSong.value?.events || [])
 const currentSingerEvent = computed(() => [...(selectedSong.value?.singerEvents || [])]
   .reverse()
   .find(event => event.time <= choreographyTime.value))
-const currentSingerPositions = computed(() => currentSingerEvent.value?.singers || [])
+const currentSingerPositions = computed(() => (
+  currentSingerEvent.value?.stagePositions
+  || currentSingerEvent.value?.singers
+  || []
+))
 const selectedPositionIsSinging = computed(() => currentSingerPositions.value.includes(selectedPosition.value))
 const currentSingerLabel = computed(() => currentSingerPositions.value.length
   ? currentSingerPositions.value.map(position => `${position} 号位`).join('、')
