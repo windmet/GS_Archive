@@ -18,11 +18,12 @@ Current verified archive snapshot:
 - 4,939 / 4,939 valid RAW scenario parts are represented in public output.
 - 26,890 / 26,902 RAW story voice references resolve; the remaining 12 are
   authored dangling references.
-- Published authoritative Story Runtime v2 currently contains three
-  collections and one standalone RAW-published scene, for 18 JSON artifacts.
-  Collection `1_4_001_00` is ledger-governed; the other two collections and
-  the standalone scene predate the publication ledger.
-<!-- authoritative-v2-summary collections=3 standalone=1 artifacts=18 -->
+- Published authoritative Story Runtime v2 currently contains four
+  collections and one standalone RAW-published scene, for 30 JSON artifacts.
+  Collections `1_4_001_00` and `1_3_10001_01` are ledger-governed; the other
+  two collections and the standalone scene predate the publication ledger.
+<!-- authoritative-v2-summary collections=4 standalone=1 artifacts=30 -->
+<!-- publication-ledger-summary releases=3 stable_logical_ids=2 -->
 - Masterdata contains 836 card rows and 826 unique card resource IDs; RAW
   covers 826 / 826 resources, while the portal independently normalizes 826
   card entities.
@@ -33,7 +34,9 @@ The 10,329 JSON files recursively present under `public/data/compiled` are
 compiled artifacts, not 10,329 distinct stories. Aggregate, episode, manifest,
 fixture, and per-source files are counted separately on disk.
 
-The authoritative current-state entry is
+The active development sequence is maintained in
+[GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md](web_viewer/notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md).
+The dated metric baseline remains available in
 [CURRENT_ARCHIVE_BASELINE_20260728.md](web_viewer/notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md).
 
 ## Architecture
@@ -136,8 +139,10 @@ The original game, characters, names, artwork, audio, and trademarks belong to t
 ## Development Guidance
 
 Start with the
-[current archive baseline](web_viewer/notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md)
+[active workflow closeout](web_viewer/notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md),
+then the [project map](web_viewer/docs/PROJECT_MAP.md), dated
+[archive baseline](web_viewer/notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md),
 and [notes index](web_viewer/notes/INDEX.md). Historical migration logs remain
-useful evidence, but they do not override the current baseline.
+useful evidence, but they do not override the active workflow entry.
 
 The GitHub repository can be connected to ChatGPT for code and documentation search. That view only reflects committed files; local assets, generated-but-uncommitted data, and the live browser state still require the local development environment.

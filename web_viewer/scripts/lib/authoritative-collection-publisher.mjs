@@ -3,7 +3,13 @@ import path from 'node:path'
 import Ajv2020 from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
 import { compareAuthoritativeRuntimeProjection } from './authoritative-scenario-compiler.mjs'
-import { hashBytes, jsonBytes, resolveInside } from './authoritative-collection-candidate.mjs'
+import {
+  assessMigrationAudit,
+  hashBytes,
+  jsonBytes,
+  normalizeApprovedNonTextPaths,
+  resolveInside,
+} from './authoritative-collection-candidate.mjs'
 import { buildCompiledScenarioMigrationReport } from './compiled-scenario-migration.mjs'
 
 async function readJson(file) {
@@ -59,6 +65,7 @@ export async function publishAuthoritativeCollection({
   }
   if (confirmGroup !== manifest.group_id) throw new Error(`Explicit group confirmation is required: ${manifest.group_id}`)
   if (!Array.isArray(manifest.files) || manifest.files.length < 2) throw new Error('Candidate manifest file set is incomplete')
+  const approvedNonTextPaths = normalizeApprovedNonTextPaths(manifest.approved_non_text_paths)
 
   const schema = await readJson(path.join(workspace, 'schemas', 'compiled-scenario-v2-authoritative.schema.json'))
   const ajv = new Ajv2020({ allErrors: true, strict: true })
@@ -89,7 +96,8 @@ export async function publishAuthoritativeCollection({
       }
       projectionInput = JSON.parse(evidenceBytes)
       const migrationAudit = buildCompiledScenarioMigrationReport(targetValue, projectionInput)
-      if (!migrationAudit.acceptance.passed) {
+      const migrationGate = assessMigrationAudit(migrationAudit, record.file, approvedNonTextPaths)
+      if (!migrationGate.accepted) {
         throw new Error(`${record.file}: compatibility migration audit rejected evidence`)
       }
     }

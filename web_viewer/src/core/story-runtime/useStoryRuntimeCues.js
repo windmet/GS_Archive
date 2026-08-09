@@ -66,12 +66,18 @@ export function useStoryRuntimeCues({
     apply()
   }
 
-  function createSpineHandle(cue) {
+  function createSpineHandle(cue, context = {}) {
     let operationToken = 0
     let activeNeckTrack = null
     let releasePending = null
     let neckFallbackTimer = null
     const isTransient = cue.lifecycle.persistence === 'transient'
+    const expectedSpineIds = new Set(
+      (context.step?.entry_snapshot?.spines || [])
+        .map(spine => spine?.id)
+        .filter(Boolean),
+    )
+    const targetExpectedInEntry = expectedSpineIds.has(cue.target)
     const apply = (manager, duration, { settleNeck = false } = {}) => {
       const target = cue.target
       const payload = cue.payload || {}
@@ -124,6 +130,10 @@ export function useStoryRuntimeCues({
     const performWhenReady = (duration, options) => {
       const token = ++operationToken
       const expectedGeneration = generation
+      if (!targetExpectedInEntry) {
+        console.debug('[StoryRuntime] spine cue target absent from entry snapshot; skipped', cue.cue_id, cue.target)
+        return Promise.resolve(false)
+      }
       const deadline = performance.now() + 5000
       return new Promise(resolve => {
         const attempt = () => {
@@ -147,7 +157,7 @@ export function useStoryRuntimeCues({
       channel: cue.channel,
       skippable: cue.lifecycle.skippable,
       blocksInput: cue.lifecycle.blocks_input,
-      blocksAuto: cue.lifecycle.blocks_auto,
+      blocksAuto: cue.lifecycle.blocks_auto && targetExpectedInEntry,
       metadata: { action: cue.action, cue },
       onStart: () => {
         console.debug('[StoryRuntime] cue start', cue.cue_id)

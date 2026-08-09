@@ -8,13 +8,17 @@
 
 按以下顺序读取：
 
-1. `docs/PROJECT_MAP.md`
-2. `notes/03_audit/GS_ARCHIVE_P0_ARCHITECTURE_CLOSEOUT_20260730.md`
-3. `notes/03_audit/GS_ARCHIVE_PRODUCT_HISTORY_RECONCILIATION_20260730.md`
-4. `notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md`
-5. `notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md`
-6. `notes/INDEX.md`
-7. 用户本次明确点名的文件
+1. `notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md`
+2. `docs/PROJECT_MAP.md`
+3. `notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md`
+4. `notes/INDEX.md`
+5. 用户本次明确点名的文件
+
+只有任务涉及架构历史或旧优先级来源时，再读：
+
+- `notes/03_audit/GS_ARCHIVE_P0_ARCHITECTURE_CLOSEOUT_20260730.md`；
+- `notes/03_audit/GS_ARCHIVE_PRODUCT_HISTORY_RECONCILIATION_20260730.md`；
+- `notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md`。
 
 只有任务涉及 Pixi/Spine 舞台时再读 `docs/SMOKE_CASES.md`、
 `docs/SMOKE_EXPECTATIONS.md` 和 `docs/DO_NOT_REOPEN.md`。前两者是人工兼容
@@ -34,12 +38,15 @@ Get-NetTCPConnection -LocalPort 5174 -State Listen
 
 ## 二、当前优先级
 
-- **P0：当前架构认知。** 保持 owner、adapter、route 和文档入口准确。
-- **P1：用户可见门户与有界内容整合。** 优先可搜索、可跳转、可理解的产品
-  能力；不得在 UI 批次中顺带创建 publication transaction。
-- **P2-A：代表性 strict-v2 promotion。** 继续采用独立小批证据。
-- **P2-B：2–4 小时 Runtime 长稳。** 状态仍是 `NOT EXECUTED`。它只阻止
-  `release-accepted` 宣称，不阻止 P0/P1 工作。
+截至 2026-08-10，按以下顺序执行：
+
+1. 收口 PR #37 的 current-release registry、Source Gate、PR 描述与合并证据；
+   在它全绿并合并前不开始新功能或第二个 Event promotion。
+2. PR #37 合并后单独整合 `codex/card-skill-semantic-backfill-p1`，不得并入
+   publication PR。
+3. 两批进入 `master` 后重建无日期的稳定 current-state 入口。
+4. 建立 timing-semantics regression matrix，再执行 P2-B 2–4 小时 Runtime
+   长稳；P2-B 仍是 `NOT EXECUTED`。
 
 不得因为长稳降为 P2 就写成已经通过，也不得在普通门户批次中顺手执行或伪造
 长稳结论。
@@ -75,6 +82,7 @@ Get-NetTCPConnection -LocalPort 5174 -State Listen
 
 ```powershell
 npm run verify:story-runtime-foundation
+npm run verify:story-step9-timing
 npm run verify:story-audio
 npm run verify:routes
 ```
@@ -102,7 +110,9 @@ npm run verify:routes
 5. candidate 不得批量提升为 exact；不得一次替换整个 `public/assets`。
 6. publication release 与 annotation 必须走独立 Schema、verifier 和 append-only
    规则。
-7. 提交前执行相关 verifier、`git diff --check` 并检查生成报告 diff。
+7. publication 记录引用具体 commit 时，合并必须保留这些 commit 的 ancestry；
+   PR #37 禁止 squash 或 rebase-merge。
+8. 提交前执行相关 verifier、`git diff --check` 并检查生成报告 diff。
 
 ## 七、交付说明
 

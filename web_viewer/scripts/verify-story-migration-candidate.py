@@ -39,6 +39,26 @@ voice_stats = MODULE.relink_voices(voice_scenario, {"1_4_001_01_a1000.m4a"})
 assert voice_stats == {"references": 1, "resolved": 1, "unresolved": 0}
 assert voice_scenario["steps"][0]["dialogue"]["voice"] == "1_4_001_01_a1000.m4a"
 
+timeline = MODULE.ScenarioCompiler._process_timeline([
+    {
+        "time": 0.0,
+        "type": "spine_face",
+        "chara_id": "001tom",
+        "value": "sad",
+    },
+    {
+        "time": 0.1,
+        "type": "spine_face",
+        "chara_id": "001tom",
+        "value": "sad",
+        "blush_flag": "off",
+        "anim_flag": "目",
+        "sweat_flag": "off",
+    },
+])
+assert len(timeline) == 1
+assert list(timeline[0])[-3:] == ["anim_flag", "sweat_flag", "blush_flag"]
+
 with tempfile.TemporaryDirectory() as temporary_dir:
     temporary_root = Path(temporary_dir)
     first = temporary_root / "a.json"
