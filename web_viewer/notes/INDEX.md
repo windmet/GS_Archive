@@ -64,7 +64,7 @@ The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_889
   status, unresolved domains, and superseded claims; active execution order is
   maintained in the 2026-08-10 workflow entry below.
 - `notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md` - single active
-  recovery entry for PR #37 registry/CI closeout, merge-ancestry requirements,
+  recovery entry recording PR #37's completed merge/provenance proof, the
   separate Card semantic integration, current-baseline rebuild, timing matrix,
   and P2-B ordering.
 - `notes/04_refactor/GS_ARCHIVE_P0_GOVERNANCE_HANDOFF_20260728.md` - current P0

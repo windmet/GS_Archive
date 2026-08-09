@@ -158,6 +158,9 @@ const sourceGate = await readFile(
 if (!sourceGate.includes('npm run verify:story-step9-timing -- --source-only')) {
   failures.push('Web Viewer Source Gate no longer runs the source-only step-9 timing regression')
 }
+if (!sourceGate.includes('npm run verify:card-semantic-dictionaries')) {
+  failures.push('Web Viewer Source Gate no longer runs the card semantic dictionary verifier')
+}
 if (
   report.cards?.unique_resource_ids !== report.cards?.raw_matched ||
   report.cards?.unique_resource_ids !== report.cards?.portal_normalized_entities

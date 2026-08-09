@@ -77,3 +77,24 @@ SHA-256 完全一致，证明本批没有夹带卡片数值、衣装或音频候
 其他 masterdata 表。全表消费状态的旧盘点不能因“表已解码”就写成“产品已消费”；
 后续从 `MASTERDATA_UNUSED_TABLES_AUDIT_20260802.md` 的 TODO consumer-check
 清单开始，逐项补齐生成物、selector/组件或 verifier 证据后才能升级状态。
+
+## 2026-08-10 新 master 整合复验
+
+PR #37 以普通 merge commit 进入 `master@09e1ec0` 后，Card 分支通过
+`811f316` 合入新 `master`，没有改写原始功能提交 `8742e1e` 与文档提交
+`327b87c`。四个共享文件自动合并后又按当前 workflow 逐项复核，Card 批次
+仍只包含表 16/75/130 的既有消费投影。
+
+本次重新执行：
+
+- `npm run verify:card-semantic-dictionaries`：836 cards / 5 items / 160
+  skills / 53 center skills；
+- `npm run verify:archive-baseline:source-only`：通过；
+- 应用内浏览器桌面 1366×768 与窄屏 390×844：页面 identity、真实语义、
+  框架错误层、console 与横向 overflow 均通过；
+- 技能等级再次从 Lv.1 切换到 Lv.10，说明由 27％更新为 45％；
+- `verify:card-semantic-dictionaries` 已加入 GitHub Source Gate；仍需以独立
+  Card PR 的完整最新-head Actions run 作为合并门禁。
+
+因此表 16/75/130 可继续标为 **consumer-verified**。其他未逐项复核的
+masterdata 条目仍保持 **TODO consumer-check**；本次复验不升级它们的状态。

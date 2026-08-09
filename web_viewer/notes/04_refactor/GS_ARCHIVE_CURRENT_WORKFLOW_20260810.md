@@ -10,24 +10,22 @@ future gates so that dated audits are not mistaken for today's queue.
 
 | Surface | Verified state |
 | --- | --- |
-| `master` | `17d8c1a88df3f3a0b0ebce127775473a903068b2`; PR #36 is the latest merge |
-| PR #37 | Draft, branch `codex/story-strict-v2-compilation-p2a`; audited pre-closeout head `acff9be` |
+| `master` | `09e1ec02b65a9717c3687a6daa5d98f4ec8d9a75`; PR #37 merged with a normal merge commit |
+| PR #37 final evidence | head `1d4974c`; post-merge Source Gate run `31327297546` PASS |
 | PR #37 initial publication | release `2026-08-03-story-1-3-10001-01-001` |
 | PR #37 timing repair | release `2026-08-09-story-1-3-10001-01-002`; current stable owner |
-| authoritative v2 surface on PR #37 | 4 collections + 1 standalone / 30 artifacts |
-| publication ledger on PR #37 | 3 release records / 2 stable logical IDs |
+| authoritative v2 surface on `master` | 4 collections + 1 standalone / 30 artifacts |
+| publication ledger on `master` | 3 release records / 2 stable logical IDs |
 | bounded playback evidence | displayed step 8 and one real-audio sample are consumer-verified |
-| Card semantic branch | `codex/card-skill-semantic-backfill-p1@327b87c`; two commits above `master`, no open PR |
+| Card semantic branch | `codex/card-skill-semantic-backfill-p1`; original commits `8742e1e` + `327b87c`, refreshed from `master` by merge commit `811f316` |
 | P2-B long soak | **NOT EXECUTED** |
 
 <!-- authoritative-v2-summary collections=4 standalone=1 artifacts=30 -->
 <!-- publication-ledger-summary releases=3 stable_logical_ids=2 -->
 
-The pre-closeout PR #37 Source Gate run `31322649377` failed at
-`verify:archive-baseline:source-only` because the authoritative registry still
-named release `001` while the generated publication manifest correctly named
-release `002`. This is a registry ownership drift, not a failed publication or
-an artifact-hash mismatch.
+The pre-closeout PR #37 registry drift is closed. Release `002` is now the
+registry and publication-manifest owner; PR-head run `31325277234` and
+post-merge `master` run `31327297546` both passed the complete Source Gate.
 
 ## 2. Non-negotiable boundaries
 
@@ -46,28 +44,26 @@ an artifact-hash mismatch.
 
 ## 3. Ordered execution
 
-### A. Close PR #37 before new feature work
+### A. PR #37 closeout — complete
 
-1. Point `story-collection:1_3_10001_01` registry ownership to release `002`
-   and update its evidence text.
-2. Add `verify:story-step9-timing` to the GitHub Source Gate beside the Runtime
-   foundation check. The gate must use a committed minimal RAW-command fixture;
-   the mounted full Event RAW is an additional local check, not a CI dependency.
-3. Synchronize `PROJECT_MAP`, the current baseline, Agent entry, notes index,
-   README entry point, and PR body with the initial publication plus repair.
-4. Run the complete source-only gate locally, push, and inspect the new Actions
-   run to completion. A fix to the first failing step does not prove later
-   skipped steps pass.
-5. When the latest head is green, move PR #37 out of Draft only when ready for
-   review, then merge with a merge commit and verify the post-merge `master`
-   workflow.
+The registry owner, committed timing fixture, source gate, documentation and PR
+body were synchronized at `1d4974c`. PR #37 was merged as `09e1ec0`; its two
+parents are `17d8c1a` and `1d4974c`, and the publication commits remain
+ancestors of `master`.
 
 ### B. Integrate Card semantic P1 separately
 
-After PR #37 is merged, refresh `codex/card-skill-semantic-backfill-p1` from the
-new `master`, preserve its two-commit boundary, resolve README/PROJECT_MAP
-documentation overlap, repeat its machine and desktop/390px browser evidence,
-and open a separate P1 PR. It must not be folded into PR #37.
+The branch has now been refreshed from the new `master` without rewriting its
+two original commits. Before opening its separate P1 PR:
+
+1. keep the table 16/75/130 joins bounded to the existing Card detail consumer;
+2. run its dedicated verifier, source-only baseline, production build and
+   `git diff --check`;
+3. run renewed desktop and 390px browser checks on `038tak_sr01`, including the
+   Lv.1 -> Lv.10 interaction, console and overflow;
+4. put `verify:card-semantic-dictionaries` in the Source Gate so the committed
+   projection cannot silently drift;
+5. push and inspect the complete PR-head Source Gate before merge.
 
 ### C. Rebuild the stable current-state entry
 
@@ -91,28 +87,22 @@ Then execute the P2-B 2–4 hour mixed Runtime soak with real audio, final-quart
 resource-curve evidence, and a quiet endpoint. Only after those gates should a
 new strict-v2 representative collection be selected.
 
-## 4. PR #37 closeout gates
+## 4. Current Card semantic integration gates
 
 Run from `web_viewer` unless noted:
 
 ```powershell
+npm run verify:card-semantic-dictionaries
 npm run verify:archive-baseline:source-only
-npm run verify:authoritative-story-publications -- --source-only
-npm run verify:publication-ledger
-npm run verify:story-step9-timing -- --source-only
-# With the full Event RAW mounted, also run without --source-only.
-npm run verify:story-runtime-foundation
-npm run verify:compiled-migration
-npm run verify:story-schema
-npm run verify:story-authoritative-publish
 npm run build
 git diff --check
-gh pr checks 37 --watch
+# After the separate Card PR exists:
+gh pr checks <card-pr-number> --watch
 ```
 
-The full GitHub Source Gate remains the acceptance authority for the PR head.
-Local individual commands are diagnostic evidence, not a substitute for the
-latest complete Actions run.
+The full GitHub Source Gate remains the acceptance authority for the Card PR
+head. Local individual commands and the 2026-08-03 browser record are diagnostic
+evidence, not a substitute for renewed post-`master` browser and Actions proof.
 
 ## 5. Remaining consumer checks
 
@@ -121,5 +111,6 @@ latest complete Actions run.
   consumer-check**;
 - deployed/crawler/export/third-party consumers: **TODO consumer-check**;
 - P2-B 2–4 hour Runtime soak: **NOT EXECUTED**;
-- Card semantic P1 on post-PR-#37 `master`: rebase/conflict and renewed browser
-  verification pending.
+- Card semantic P1: post-PR-#37 refresh, local machine gates and renewed
+  desktop/390px browser verification are complete; the independent PR-head
+  Source Gate remains pending.

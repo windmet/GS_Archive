@@ -100,6 +100,9 @@ jobs:
       - name: Verify current archive baseline report
         run: npm run verify:archive-baseline:source-only
 
+      - name: Verify card semantic dictionaries
+        run: npm run verify:card-semantic-dictionaries
+
       - name: Verify MovieAnnounce masterdata index
         run: npm run verify:movie-announce-index -- --source-only
 

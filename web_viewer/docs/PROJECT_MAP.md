@@ -165,9 +165,9 @@ parity 或兼容参考。
 ## 5. 当前优先级（2026-08-10）
 
 当前执行入口是
-`notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md`。先收口并合并
-PR #37，再单独整合 Card semantic P1；两者进入 `master` 前不开始新功能或
-下一个 Event promotion。
+`notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md`。PR #37 已合入
+`master@09e1ec0`；当前只整合 Card semantic P1，并重复真实页面与 PR-head
+验证。在 Card P1 进入 `master` 前不开始新功能或下一个 Event promotion。
 
 ### P0：收口当前架构认知
 
@@ -191,13 +191,12 @@ PR #37，再单独整合 Card semantic P1；两者进入 `master` 前不开始�
 ### P2-A：代表性 strict-v2 promotion
 
 Event `1_3_10001_01` 已在 PR #37 完成首次 strict-v2 publication 与 bounded
-timing repair 的第二笔 publication。当前先完成 registry/CI/PR 描述收口，
-并建立长、短 stage 双向 timing regression；不得立即选择第二个 Event，
+timing repair 的第二笔 publication，并以普通 merge commit 进入 `master`。
+下一步是建立长、短 stage 双向 timing regression；不得立即选择第二个 Event，
 也不进行 3,398 group 一键迁移。P2-A 与 P1 产品 UI 使用独立分支和证据。
 
-PR #37 的 release/annotation 引用了具体 commit identity，必须使用普通 merge
-commit 合并；禁止 squash 或 rebase-merge，以保留 publication provenance 的
-祖先关系。
+PR #37 的 release/annotation 所引用 commit identity 已验证为 `master` 的祖先；
+后续不得通过历史改写破坏这条 publication provenance。
 
 ### P2-B：Runtime 长时验收
 
