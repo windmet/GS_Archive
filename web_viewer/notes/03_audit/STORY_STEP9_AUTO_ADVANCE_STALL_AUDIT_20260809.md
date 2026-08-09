@@ -1,8 +1,8 @@
 # Story step 9 auto-advance stall audit: `1_3_10001_01_a`
 
 Date: 2026-08-09
-Status: **REPAIR CANDIDATE IMPLEMENTED; NOT PUBLISHED; BATCH ROLLOUT ON HOLD**
-Observed checkout: `codex/story-strict-v2-compilation-p2a@2cde7f7fcd84a7db5a7c03bb216dcaabb444a00e`
+Status: **REPAIR PUBLISHED; BROWSER-SAMPLE ACCEPTED; REAL-AUDIO/LONG-SOAK TODO**
+Observed checkout: `codex/story-strict-v2-compilation-p2a@e0a1eb487f16ddc71fee2bb91f45509ab4f94516`
 
 ## Decision summary
 
@@ -21,10 +21,10 @@ quickly. That comparison is directionally consistent with the RAW `wait=0.5`
 command, but the external video itself was not captured as repository evidence
 in this audit.
 
-The initial diagnosis was recorded before any code change. A bounded repair
-candidate was subsequently implemented in this same work window; it remains
-outside the published JSON and release ledger until the candidate gates and
-publication authorization are complete.
+The initial diagnosis was recorded before any code change. The bounded repair
+candidate was subsequently regenerated from RAW, published as release
+`2026-08-09-story-1-3-10001-01-002`, rolled back exactly once, and finally
+republished after the old and candidate hashes were verified.
 
 ## Reproduction identity
 
@@ -183,9 +183,23 @@ Candidate facts:
 | browser application errors | 0 relevant errors; 6 existing Pixi warning records were not attributed to this fix |
 | screenshot | not captured; current in-app Browser runtime reports screenshot command unsupported |
 
-The browser sample temporarily overlaid only episode-a, then restored the
-original published file and verified its old SHA-256
-`43EA8FF9FEE429A794B9835A2C92E843241B3D45CB8C6A71894002D2C7990B49`.
+The temporary browser overlay was followed by a real publish transaction. The
+final published episode-a SHA-256 is
+`5339FE7D5F652F20BFE4374B95D7BC4FA56C92BCC34302D7C1780DA1355825F0`; the
+aggregate SHA-256 is
+`11EB9C6CC88E1734E2E5A97BDE8C2387AFEB6A29E0ABD4068B9C999BF00A9EE9`.
+
+Publication record:
+
+| Gate | Result |
+| --- | --- |
+| release | `2026-08-09-story-1-3-10001-01-002` |
+| candidate manifest | `sha256:0f8ade01030f2f5b697b7a66d6967df3d25561988c811a87c13bc114dceb9341` |
+| approved non-text paths | `1_3_10001_01.json#/steps/8/duration`; `episodes/1_3_10001_01_a.json#/steps/8/duration` |
+| exact rollback | PASS; prior 12-file hashes restored |
+| final republish | PASS; candidate hashes verified |
+| browser sample | PASS with `noAudio=1`; `2/5 -> 3/5` in about 652ms |
+| real audio / long soak | **TODO consumer-check** |
 
 Validation completed:
 
@@ -197,9 +211,10 @@ npm run verify:story-runtime-foundation          PASS
 npm run build                                     PASS
 ```
 
-No `public/data/compiled` replacement, publication transaction, rollback,
-republish, or PR push was performed. The repair candidate is ready for a
-separate review/authorization decision, not yet a released strict-v2 batch.
+The published JSON, release ledger, append-only annotation, exact rollback
+backup, and final republish evidence are now present. No PR push was performed
+in this turn. The repair is a released strict-v2 batch, while real-audio,
+long-soak, and broader batch rollout remain outside this acceptance claim.
 
 ## Hold boundary for further strict-v2 rollout
 
@@ -222,6 +237,6 @@ work item will:
 5. verify representative stories with legitimate long stage performances so a
    narrow fix does not shorten authored choreography.
 
-The implementation portion is now present as the bounded candidate above.
-Publication of that candidate, expansion to additional strict-v2 batches, and
-any broader timing semantics remain pending authorization.
+The implementation and publication portions are complete for this bounded
+repair. Expansion to additional strict-v2 batches and broader timing semantics
+remain pending a separate authorization and consumer-check plan.

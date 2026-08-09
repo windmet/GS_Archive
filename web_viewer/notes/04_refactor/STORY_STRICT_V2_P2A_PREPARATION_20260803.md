@@ -1,16 +1,17 @@
 # Story strict-v2 P2-A preparation: Event `1_3_10001_01`
 
 Date: 2026-08-03
-Status: deterministic candidate and provenance verified; **NOT PUBLISHED**
+Status: deterministic candidate and provenance verified; **REPAIR PUBLISHED / REAL-AUDIO TODO**
 Branch: `codex/story-strict-v2-compilation-p2a`
 Base: `master@17d8c1a88df3f3a0b0ebce127775473a903068b2`
 
-Post-publication exception and repair-candidate record (2026-08-09):
+Post-publication exception and repair record (2026-08-09):
 `notes/03_audit/STORY_STEP9_AUTO_ADVANCE_STALL_AUDIT_20260809.md`. The browser
 step-8/source-step-9 delay is recorded as a parity-preserved compiler plus
-Runtime blocking defect. A bounded repair candidate has been implemented and
-browser-sampled, but its publication and further strict-v2 batch rollout remain
-on hold pending explicit authorization.
+Runtime blocking defect. A bounded repair candidate has been regenerated from
+RAW, published as `2026-08-09-story-1-3-10001-01-002`, exactly rolled back, and
+finally republished. The browser sample is `noAudio=1`; real-audio and long-soak
+acceptance remain TODO.
 
 ## Scope
 
@@ -28,10 +29,19 @@ multi-episode Event sample, while the current run can repeat the stronger
 two-stage Python-native plus Node-oracle evidence chain used by later strict
 publications.
 
-This preparation does not modify `public/data/compiled`, create a publication
-ledger transaction, publish, roll back, republish, or claim browser acceptance.
-P2-B 2-4 hour Runtime stability remains **NOT EXECUTED** and is outside this
-batch.
+The bounded repair transaction now modifies only aggregate and episode-a
+`/steps/8/duration` (`5.2 -> 0.5`); the other ten episode artifacts remain
+byte-identical. P2-B 2-4 hour Runtime stability remains **NOT EXECUTED** and is
+outside this batch.
+
+Published repair evidence:
+
+- release: `2026-08-09-story-1-3-10001-01-002`;
+- candidate manifest: `sha256:0f8ade01030f2f5b697b7a66d6967df3d25561988c811a87c13bc114dceb9341`;
+- exact publish -> rollback -> republish: PASS;
+- browser sample: `noAudio=1`, fresh `2/5 -> 3/5` in about `652ms`, no error-level
+  console entries;
+- real audio, long soak, and broad P2-A rollout: **TODO consumer-check**.
 
 ## Inputs
 
