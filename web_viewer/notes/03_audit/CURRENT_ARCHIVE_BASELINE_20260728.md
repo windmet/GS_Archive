@@ -1,27 +1,28 @@
 # GS Archive Current Baseline
 
-Status: current
+Status: current branch metrics; active execution order is maintained separately
 Captured: 2026-07-28
-Current checkout refreshed: 2026-07-30
-Review state refreshed: 2026-07-30
-Merge state refreshed: 2026-07-30
+Current checkout refreshed: 2026-08-10
+Review state refreshed: 2026-08-10
+Merge state refreshed: 2026-08-10
 Repository: `E:\Web_build\SideM_Archived`
 Application: `E:\Web_build\SideM_Archived\web_viewer`
 
-This document is the current-state entry point for the archive. Older audit
-and migration notes remain evidence of what was observed at the time, but
-their forward-looking defect lists must not override this baseline.
+This document retains the metric definitions and dated evidence baseline. The
+active branch/PR order is maintained in
+`notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md`; older audit and
+migration notes must not override that coordination entry.
 
 ## 1. Checkout and review state
 
 | Field | Value |
 | --- | --- |
-| current functional baseline | `master` includes PR #30 merge `721c58b29e0eb953e8ba6138521d825d98e1cc63` |
-| active functional branch | `codex/reconcile-product-history-p2`; documentation/operational-entry-only P0 closeout |
-| active track | P0 current-architecture and Agent-entry closeout; no P1 implementation selected in this branch |
-| active upstream | `origin/codex/reconcile-product-history-p2` |
-| P0 closeout pull request | PR #31; recheck live state before claiming repository-level completion |
-| active validation | P0 Runtime foundation, audio, routes, playback range, soak instrumentation, archive sources, source-only baseline, authoritative registry, publication ledger, external resources and local production build PASS |
+| current functional baseline | `master@17d8c1a88df3f3a0b0ebce127775473a903068b2`; PR #36 merged |
+| active functional branch | `codex/story-strict-v2-compilation-p2a`; PR #37 Draft |
+| active track | close PR #37 registry/CI/documentation drift before new feature work |
+| active upstream | `origin/codex/story-strict-v2-compilation-p2a` |
+| PR #37 audited pre-closeout head | `acff9be7145f585062a05360745dcf7472b02549`; Source Gate run `31322649377` failed at registry ownership drift |
+| active validation | require the complete latest-head Source Gate; local source-only baseline, authoritative registry and publication ledger must all pass after owner repair |
 | PR #30 merge commit | `721c58b29e0eb953e8ba6138521d825d98e1cc63` |
 | PR #30 functional head | `1c10537` (`feat(archive): add exact personal story links`) |
 | PR #28 merge commit | `5c21658ac63ac5d158024a83cdaeb086b7dcc30a` |
@@ -68,7 +69,7 @@ their forward-looking defect lists must not override this baseline.
 | merge parents | `ef804fcb2b258979723fcf8ce62f317671b4d701` + `6a2a14e741d361dc7c09c6c395946a33782af4d9` |
 | merge method | merge commit; 83 PR commits preserved |
 | post-merge documentation | PR #3 merged as `4e416a6731aeaf90b808b7f79a5beb47b5ee20c2` |
-| local development server | `127.0.0.1:5174`, PID 27536, listening at refresh time |
+| local development server | `127.0.0.1:5174`; PID/listener state must be checked live and is not persisted as a baseline fact |
 | pull request | PR #2 merged at 2026-07-29 08:47:35 UTC |
 | PR base | `ef804fcb2b258979723fcf8ce62f317671b4d701` |
 | PR commits | 83 |
@@ -99,10 +100,11 @@ disposition, PR #6 merged the bounded GS translation-link pilot, and PR #7
 activated publication v2 and annotation v1 contracts without adding a
 production record. PR #8 merged the bounded 260-USM relation catalog without
 decoding or publishing media. Later bounded relation and navigation batches
-merged through PR #28. PR #29 closed out that bounded track, and PR #30 added
-the exact personal-story external-link batch. Therefore `bca7042` remains the
-immutable PR #2 merge identity, while `721c58b` is the current functional
-repository baseline at this refresh.
+merged through PR #28. PR #29 closed out that bounded track, PR #30 added the
+exact personal-story external-link batch, PR #31 closed the P0 architecture
+entry, and PR #32 through #36 delivered the bounded P1 portal/Song/player/
+Birthday stack. Therefore `bca7042` remains the immutable PR #2 merge identity,
+while `17d8c1a` is the current `master` baseline at this refresh.
 
 `stable-published` in project notes means an artifact occupies the stable path
 in the named checkout. For PR #2 artifacts, the containing commit is now merged
@@ -277,9 +279,15 @@ entity normalization.
 
 ## 7. Runtime and browser status
 
-Runtime ownership, `StoryAudioSession`, strict schema, compiler, publisher,
-three authoritative collections, and one standalone v2 scene are merged.
-Only `1_4_001_00` is currently represented in the publication ledger.
+Runtime ownership, `StoryAudioSession`, strict schema, compiler, and publisher
+are merged on `master`. The active PR #37 branch contains four authoritative
+collections plus one standalone v2 scene / 30 artifacts. Collections
+`1_4_001_00` and `1_3_10001_01` are ledger-governed; the Event collection's
+current owner is repair release `2026-08-09-story-1-3-10001-01-002`.
+
+The displayed step-8 transition and one bounded real-audio sample are
+consumer-verified on PR #37. Full-collection audio, directional-wipe visual
+isolation, deployed consumers, and P2-B long soak remain TODO consumer checks.
 
 The `noAudio=1` startup-isolation defect was fixed in `a393bba`. Fresh
 direct-player and home routes, including an explicit home voice-button click,
@@ -436,7 +444,11 @@ describe. Current-sounding claims that `noAudio=1` still produces a null
 `0ba566f` remains a useful RAW/masterdata v1 milestone commit. It is not the
 current checkout and is not a Git tag.
 
-## 12. Immediate order
+## 12. Historical implementation sequence
+
+This section records the 2026-07-28 implementation sequence. It is not the
+current task queue. Use
+`notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md` for active ordering.
 
 The documentation, PR metadata, and machine-executable P0 governance steps below
 are complete and merged through PR #2:
@@ -591,9 +603,9 @@ semantic checks, and added narrow `eol=lf` attributes without rewriting the
 release hashes or globally renormalizing the compiled corpus. Windows and clean
 checkout publication verification now pass.
 
-### 12.4 Current post-merge dependency tracks
+### 12.4 Historical post-merge dependency tracks
 
-The current execution entry is:
+The execution entry used for that dated phase was:
 
 ```text
 notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md

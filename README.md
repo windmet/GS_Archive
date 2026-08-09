@@ -33,7 +33,9 @@ The 10,329 JSON files recursively present under `public/data/compiled` are
 compiled artifacts, not 10,329 distinct stories. Aggregate, episode, manifest,
 fixture, and per-source files are counted separately on disk.
 
-The authoritative current-state entry is
+The active development sequence is maintained in
+[GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md](web_viewer/notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md).
+The dated metric baseline remains available in
 [CURRENT_ARCHIVE_BASELINE_20260728.md](web_viewer/notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md).
 
 ## Architecture
@@ -136,8 +138,10 @@ The original game, characters, names, artwork, audio, and trademarks belong to t
 ## Development Guidance
 
 Start with the
-[current archive baseline](web_viewer/notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md)
+[active workflow closeout](web_viewer/notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md),
+then the [project map](web_viewer/docs/PROJECT_MAP.md), dated
+[archive baseline](web_viewer/notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md),
 and [notes index](web_viewer/notes/INDEX.md). Historical migration logs remain
-useful evidence, but they do not override the current baseline.
+useful evidence, but they do not override the active workflow entry.
 
 The GitHub repository can be connected to ChatGPT for code and documentation search. That view only reflects committed files; local assets, generated-but-uncommitted data, and the live browser state still require the local development environment.

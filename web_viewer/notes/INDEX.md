@@ -59,9 +59,14 @@ The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_889
 - `notes/03_audit/RAW_AUDIO_WAV_PROVENANCE_20260729.md` - exact 18-WAV
   inventory, ACB-selection byte proof, live-chibi metadata-inspection root
   cause, fix, and authorization-gated quarantine recommendation.
-- `notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md` - authoritative current
-  checkout, RAW/masterdata identities, metric definitions, scoped browser
-  status, unresolved domains, and superseded claims.
+- `notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md` - current branch
+  metrics, RAW/masterdata identities, metric definitions, scoped browser
+  status, unresolved domains, and superseded claims; active execution order is
+  maintained in the 2026-08-10 workflow entry below.
+- `notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md` - single active
+  recovery entry for PR #37 registry/CI closeout, merge-ancestry requirements,
+  separate Card semantic integration, current-baseline rebuild, timing matrix,
+  and P2-B ordering.
 - `notes/04_refactor/GS_ARCHIVE_P0_GOVERNANCE_HANDOFF_20260728.md` - current P0
   governance completion and next-window execution order.
 - `notes/03_audit/STORY_RUNTIME_REAL_AUDIO_ACCEPTANCE_20260729.md` - current

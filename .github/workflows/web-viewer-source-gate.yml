@@ -85,6 +85,9 @@ jobs:
       - name: Verify Runtime foundation
         run: node scripts/verify-story-runtime-foundation.mjs
 
+      - name: Verify strict-v2 step-9 timing regression
+        run: npm run verify:story-step9-timing
+
       - name: Verify release soak recorder
         run: npm run verify:release-soak
 
