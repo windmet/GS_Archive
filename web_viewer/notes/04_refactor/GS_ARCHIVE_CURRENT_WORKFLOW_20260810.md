@@ -17,7 +17,7 @@ future gates so that dated audits are not mistaken for today's queue.
 | authoritative v2 surface on `master` | 4 collections + 1 standalone / 30 artifacts |
 | publication ledger on `master` | 3 release records / 2 stable logical IDs |
 | bounded playback evidence | displayed step 8 and one real-audio sample are consumer-verified |
-| Card semantic branch | `codex/card-skill-semantic-backfill-p1`; original commits `8742e1e` + `327b87c`, refreshed from `master` by merge commit `811f316` |
+| Card semantic PR | Draft PR #38, branch `codex/card-skill-semantic-backfill-p1`; original commits `8742e1e` + `327b87c`, refreshed from `master` by merge commit `811f316` |
 | P2-B long soak | **NOT EXECUTED** |
 
 <!-- authoritative-v2-summary collections=4 standalone=1 artifacts=30 -->
@@ -96,8 +96,7 @@ npm run verify:card-semantic-dictionaries
 npm run verify:archive-baseline:source-only
 npm run build
 git diff --check
-# After the separate Card PR exists:
-gh pr checks <card-pr-number> --watch
+gh pr checks 38 --watch
 ```
 
 The full GitHub Source Gate remains the acceptance authority for the Card PR

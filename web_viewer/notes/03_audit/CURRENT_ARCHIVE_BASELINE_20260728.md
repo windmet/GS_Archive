@@ -18,9 +18,9 @@ migration notes must not override that coordination entry.
 | Field | Value |
 | --- | --- |
 | current functional baseline | `master@09e1ec02b65a9717c3687a6daa5d98f4ec8d9a75`; PR #37 merged |
-| active functional branch | `codex/card-skill-semantic-backfill-p1`; refreshed from new `master` by `811f316` |
+| active functional branch | `codex/card-skill-semantic-backfill-p1`; Draft PR #38; refreshed from new `master` by `811f316` |
 | active track | revalidate and publish the bounded table 16/75/130 Card semantic consumer |
-| active upstream | `origin/codex/card-skill-semantic-backfill-p1`; refresh commit not yet pushed at this checkpoint |
+| active upstream | `origin/codex/card-skill-semantic-backfill-p1`; refresh and local gate commit pushed |
 | PR #37 final evidence | head `1d4974c9fede9aba44e6c940ecf5e5b35bfc6937`; merge `09e1ec0`; post-merge Source Gate run `31327297546` PASS |
 | active validation | dedicated Card verifier + source-only baseline + build + renewed desktop/390px browser evidence + complete Card PR-head Source Gate |
 | PR #30 merge commit | `721c58b29e0eb953e8ba6138521d825d98e1cc63` |
