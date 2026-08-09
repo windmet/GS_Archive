@@ -18,5 +18,6 @@ const manifest = await buildAuthoritativeCollectionCandidate({
   compilerVersion: args['compiler-version'],
   authoritativeDirectory: args['authoritative-dir'] || null,
   compatibilityDirectory: args['compatibility-dir'] || null,
+  approvedNonTextPaths: args['approved-non-text-paths'] || '',
 })
 console.log(JSON.stringify(manifest, null, 2))

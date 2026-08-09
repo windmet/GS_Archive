@@ -12,6 +12,40 @@ import { buildCompiledScenarioMigrationReport } from './compiled-scenario-migrat
 const hashBytes = bytes => `sha256:${createHash('sha256').update(bytes).digest('hex')}`
 const jsonBytes = value => Buffer.from(`${JSON.stringify(value, null, 2)}\n`, 'utf8')
 
+function normalizeApprovedNonTextPaths(paths = []) {
+  return new Set(
+    (Array.isArray(paths) ? paths : String(paths || '').split(','))
+      .map(value => String(value).trim())
+      .filter(Boolean),
+  )
+}
+
+function assessMigrationAudit(migrationAudit, relative, approvedPaths) {
+  if (migrationAudit.acceptance.passed) {
+    return { accepted: true, approvedDifferences: [] }
+  }
+  const differences = migrationAudit.non_text_differences.records
+  const approvedDifferences = differences.filter(record =>
+    approvedPaths.has(`${relative}#${record.path}`),
+  )
+  const onlyApprovedDifferences = !migrationAudit.non_text_differences.truncated
+    && differences.length > 0
+    && differences.every(record => record.kind === 'changed'
+      && approvedPaths.has(`${relative}#${record.path}`))
+  const coreUnchanged = migrationAudit.identity.unchanged
+    && migrationAudit.step_structure.count_unchanged
+    && migrationAudit.step_structure.type_sequence_unchanged
+    && migrationAudit.episode_boundaries.unchanged
+    && migrationAudit.choice_targets.unchanged
+    && migrationAudit.dialogue_audio.unchanged
+    && migrationAudit.cue_profile.unchanged
+    && migrationAudit.text_content.unchanged
+  return {
+    accepted: coreUnchanged && onlyApprovedDifferences,
+    approvedDifferences,
+  }
+}
+
 async function readJson(file) {
   return JSON.parse(await readFile(file, 'utf8'))
 }
@@ -40,12 +74,14 @@ export async function buildAuthoritativeCollectionCandidate({
   compilerVersion,
   authoritativeDirectory = null,
   compatibilityDirectory = null,
+  approvedNonTextPaths = [],
 }) {
   const workspace = path.resolve(workspaceRoot)
   const compiled = path.resolve(compiledDirectory)
   const output = path.resolve(outputDirectory)
   const authoritative = authoritativeDirectory ? path.resolve(authoritativeDirectory) : null
   const compatibility = compatibilityDirectory ? path.resolve(compatibilityDirectory) : null
+  const approvedPaths = normalizeApprovedNonTextPaths(approvedNonTextPaths)
   assertOutsideWorkspace(workspace, output)
   if (authoritative) assertOutsideWorkspace(workspace, authoritative)
   if (compatibility) assertOutsideWorkspace(workspace, compatibility)
@@ -87,7 +123,10 @@ export async function buildAuthoritativeCollectionCandidate({
     const migrationAudit = compatibility
       ? buildCompiledScenarioMigrationReport(input.formalValue, value)
       : null
-    if (migrationAudit && !migrationAudit.acceptance.passed) {
+    const migrationGate = migrationAudit
+      ? assessMigrationAudit(migrationAudit, input.relative, approvedPaths)
+      : { accepted: true, approvedDifferences: [] }
+    if (migrationAudit && !migrationGate.accepted) {
       throw new Error(`${input.relative}: compatibility migration audit rejected intermediate input`)
     }
     const authoritativePath = authoritative ? resolveInside(authoritative, input.relative) : null
@@ -149,6 +188,7 @@ export async function buildAuthoritativeCollectionCandidate({
               dialogue_audio_unchanged: migrationAudit.dialogue_audio.unchanged,
               choice_targets_unchanged: migrationAudit.choice_targets.unchanged,
               episode_boundaries_unchanged: migrationAudit.episode_boundaries.unchanged,
+              approved_non_text_paths: migrationGate.approvedDifferences.map(record => record.path),
             }
           : null,
       },
@@ -174,6 +214,7 @@ export async function buildAuthoritativeCollectionCandidate({
     runtime_contract: 'story-runtime-v2',
     candidate_source: authoritative ? 'precompiled-authoritative' : 'compatibility-projection',
     compatibility_source: compatibility ? 'audited-external-recompile' : 'formal-corpus',
+    approved_non_text_paths: [...approvedPaths].sort(),
     files: artifacts.map(artifact => artifact.record),
     totals: {
       files: artifacts.length,
@@ -186,4 +227,10 @@ export async function buildAuthoritativeCollectionCandidate({
   return manifest
 }
 
-export { hashBytes, jsonBytes, resolveInside }
+export {
+  assessMigrationAudit,
+  hashBytes,
+  jsonBytes,
+  normalizeApprovedNonTextPaths,
+  resolveInside,
+}

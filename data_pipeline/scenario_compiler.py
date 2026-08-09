@@ -652,7 +652,27 @@ class ScenarioCompiler:
     def _emit_stage(self, duration: float):
         timeline_tail = 0.0
         if self._timeline_events:
-            timeline_tail = max(self._safe_float(e.get("time"), 0.0) for e in self._timeline_events)
+            # A delayed timeline cue can extend a silent stage only when its
+            # target will still be present in that stage's entry snapshot.
+            # Fade-out commands are applied after the snapshot is captured,
+            # so exclude their pending targets here as well.  Otherwise a
+            # late animation for a character already leaving the scene turns
+            # an authored short wait into a long blank step.
+            active_spine_ids = {
+                spine.get("id")
+                for spine in self.state.spines
+                if spine.get("visible", False)
+                and spine.get("id") not in self._pending_fadeout_ids
+            }
+            eligible_timeline = [
+                event for event in self._timeline_events
+                if event.get("chara_id") in active_spine_ids
+            ]
+            if eligible_timeline:
+                timeline_tail = max(
+                    self._safe_float(event.get("time"), 0.0)
+                    for event in eligible_timeline
+                )
         self._emit_step("stage", None, None, None, None, duration=max(0.05, duration, self._stage_duration_hint, timeline_tail + 0.2))
 
     @classmethod

@@ -5,6 +5,13 @@ Status: deterministic candidate and provenance verified; **NOT PUBLISHED**
 Branch: `codex/story-strict-v2-compilation-p2a`
 Base: `master@17d8c1a88df3f3a0b0ebce127775473a903068b2`
 
+Post-publication exception and repair-candidate record (2026-08-09):
+`notes/03_audit/STORY_STEP9_AUTO_ADVANCE_STALL_AUDIT_20260809.md`. The browser
+step-8/source-step-9 delay is recorded as a parity-preserved compiler plus
+Runtime blocking defect. A bounded repair candidate has been implemented and
+browser-sampled, but its publication and further strict-v2 batch rollout remain
+on hold pending explicit authorization.
+
 ## Scope
 
 This batch prepares one representative Event collection for a future strict-v2
