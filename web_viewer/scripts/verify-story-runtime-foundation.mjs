@@ -16,6 +16,7 @@ import { applyBackgroundEntrySnapshot, createBackgroundCueHandle } from '../src/
 import { applyCameraEntrySnapshot, createCameraCueHandle } from '../src/core/story-runtime/CameraCueRuntime.js'
 import { CameraController } from '../src/core/CameraController.js'
 import { createSeCueHandle } from '../src/core/story-runtime/SeCueRuntime.js'
+import { useStoryRuntimeCues } from '../src/core/story-runtime/useStoryRuntimeCues.js'
 import { useStepSceneEffects } from '../src/core/useStepSceneEffects.js'
 import { createDebugSnapshotCue, createDebugSnapshotHandle } from '../src/core/story-runtime/DebugSnapshotRuntime.js'
 import { getStepSceneState, projectStepSceneState } from '../src/core/story-runtime/StepSceneState.js'
@@ -153,6 +154,63 @@ async function verifyEffectScheduler() {
   await new Promise(resolve => setTimeout(resolve, 0))
   assert.equal(asyncScheduler.hasBlockingAuto(), false)
   await asyncScheduler.dispose()
+}
+
+async function verifyMissingSpineTargetDoesNotBlockAuto() {
+  const previousWindow = globalThis.window
+  const previousRequestFrame = globalThis.requestAnimationFrame
+  const previousCancelFrame = globalThis.cancelAnimationFrame
+  globalThis.window = {}
+  globalThis.requestAnimationFrame = callback => setTimeout(callback, 0)
+  globalThis.cancelAnimationFrame = timer => clearTimeout(timer)
+  try {
+    const runtime = useStoryRuntimeCues({
+      compiledData: { value: {
+        schema_version: 2,
+        scenario_id: 'missing-spine-target-fixture',
+        steps: [{
+          step_id: 1,
+          type: 'stage',
+          entry_snapshot: { spines: [] },
+          settled_snapshot: { spines: [] },
+          cues: [{
+            cue_id: 'step-1:000:spine-body',
+            at: 0,
+            duration: 0,
+            channel: 'spine:048mom:body',
+            action: 'spine.body.play',
+            target: '048mom',
+            payload: { value: 'wait_loop' },
+            lifecycle: {
+              persistence: 'stateful',
+              skippable: true,
+              blocks_input: false,
+              blocks_auto: true,
+              restore_policy: 'settled',
+            },
+          }],
+        }],
+      } },
+      currentStepIndex: { value: 0 },
+      spineStageRef: { value: { manager: null } },
+      audioManager: {},
+    })
+    runtime.handleStepChange()
+    await new Promise(resolve => setTimeout(resolve, 0))
+    await Promise.resolve()
+    assert.equal(runtime.hasBlockingAuto(), false,
+      'a Spine cue whose target is absent from the entry snapshot must not block Auto')
+    assert.equal(runtime.inspect().active.length, 0,
+      'an absent-target Spine cue must settle immediately instead of waiting for the timeout')
+    runtime.cleanup()
+  } finally {
+    if (previousWindow === undefined) delete globalThis.window
+    else globalThis.window = previousWindow
+    if (previousRequestFrame === undefined) delete globalThis.requestAnimationFrame
+    else globalThis.requestAnimationFrame = previousRequestFrame
+    if (previousCancelFrame === undefined) delete globalThis.cancelAnimationFrame
+    else globalThis.cancelAnimationFrame = previousCancelFrame
+  }
 }
 
 async function verifyScreenCueOwner() {
@@ -781,6 +839,7 @@ async function verifyScenarioNormalizer() {
 verifyStoryClock()
 await verifyPerformanceRegistry()
 await verifyEffectScheduler()
+await verifyMissingSpineTargetDoesNotBlockAuto()
 await verifyScreenCueOwner()
 await verifyBackgroundCueOwner()
 await verifyCameraCueOwner()
