@@ -76,13 +76,14 @@ The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_889
 - `notes/04_refactor/PUBLICATION_LEDGER_CONTRACT_20260728.md` - append-only
   release ledger and generated stable manifest.
 - `notes/04_refactor/STORY_STRICT_V2_P2A_PREPARATION_20260803.md` - bounded Event
-  `1_3_10001_01` strict-v2 candidate preparation, two-stage parity evidence,
-  non-publishing gates and explicit publish/browser/rollback TODO boundary.
+  `1_3_10001_01` strict-v2 candidate preparation, published repair release,
+  parity evidence, exact rollback/republish, and explicit post-publication
+  consumer-check TODO boundaries.
 - `notes/03_audit/STORY_STEP9_AUTO_ADVANCE_STALL_AUDIT_20260809.md` - isolated
   browser step-8/source-step-9 stall record for Event `1_3_10001_01`: measured
   timing, RAW/compiler/Runtime causal chain, parity-preserved-defect
-  classification, bounded repair candidate, and the remaining authorization
-  hold before publication or further strict-v2 batches.
+  classification, bounded repair candidate, published release, user consumer
+  confirmation, and the remaining real-audio/long-soak/downstream TODOs.
 - `notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md` -
   GROWING STARS-only Bilibili translation-link mapping.
 - `notes/04_refactor/GS_ARCHIVE_P1_STACK_CLOSEOUT_20260802.md` - ordered PR #32,

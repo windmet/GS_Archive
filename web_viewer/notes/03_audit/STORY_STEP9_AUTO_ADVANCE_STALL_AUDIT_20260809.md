@@ -1,7 +1,7 @@
 # Story step 9 auto-advance stall audit: `1_3_10001_01_a`
 
 Date: 2026-08-09
-Status: **REPAIR PUBLISHED; BROWSER-SAMPLE ACCEPTED; REAL-AUDIO/LONG-SOAK TODO**
+Status: **REPAIR PUBLISHED; STEP-8 AND BOUNDED REAL-AUDIO SAMPLE CONSUMER-VERIFIED; LONG-SOAK TODO**
 Observed checkout: `codex/story-strict-v2-compilation-p2a@e0a1eb487f16ddc71fee2bb91f45509ab4f94516`
 
 ## Decision summary
@@ -60,6 +60,14 @@ Both runs produced this application warning:
 The near-identical `noAudio=1` timing excludes voice playback and audio loading
 as the primary cause. Two Pixi warning stack traces were also present, but this
 audit did not establish them as part of the auto-advance delay.
+
+User consumer check (2026-08-09): after refreshing the final published route,
+the user retested the displayed step 8 and confirmed that it now transitions
+correctly; the user also confirmed that the audio in the narrow real-audio
+retest was audible. This closes the bounded step-8 auto-advance and bounded
+real-audio sample checks. It does not establish full-collection audio coverage,
+directional-wipe visual isolation, long-soak, or downstream-consumer
+acceptance.
 
 ## Published strict-v2 evidence
 
@@ -199,7 +207,8 @@ Publication record:
 | exact rollback | PASS; prior 12-file hashes restored |
 | final republish | PASS; candidate hashes verified |
 | browser sample | PASS with `noAudio=1`; `2/5 -> 3/5` in about 652ms |
-| real audio / long soak | **TODO consumer-check** |
+| bounded real-audio sample | consumer-verified by the user |
+| full-collection real audio / long soak | **TODO consumer-check** |
 
 Validation completed:
 
@@ -212,8 +221,9 @@ npm run build                                     PASS
 ```
 
 The published JSON, release ledger, append-only annotation, exact rollback
-backup, and final republish evidence are now present. No PR push was performed
-in this turn. The repair is a released strict-v2 batch, while real-audio,
+backup, and final republish evidence are now present. The repair branch was
+pushed after publication. It is a released strict-v2 batch with a
+consumer-verified bounded real-audio sample; full-collection audio coverage,
 long-soak, and broader batch rollout remain outside this acceptance claim.
 
 ## Hold boundary for further strict-v2 rollout

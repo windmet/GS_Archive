@@ -1,7 +1,7 @@
 # Story strict-v2 P2-A preparation: Event `1_3_10001_01`
 
 Date: 2026-08-03
-Status: deterministic candidate and provenance verified; **REPAIR PUBLISHED / REAL-AUDIO TODO**
+Status: deterministic candidate and provenance verified; **REPAIR PUBLISHED / BOUNDED REAL-AUDIO SAMPLE CONSUMER-VERIFIED / LONG-SOAK TODO**
 Branch: `codex/story-strict-v2-compilation-p2a`
 Base: `master@17d8c1a88df3f3a0b0ebce127775473a903068b2`
 
@@ -10,8 +10,9 @@ Post-publication exception and repair record (2026-08-09):
 step-8/source-step-9 delay is recorded as a parity-preserved compiler plus
 Runtime blocking defect. A bounded repair candidate has been regenerated from
 RAW, published as `2026-08-09-story-1-3-10001-01-002`, exactly rolled back, and
-finally republished. The browser sample is `noAudio=1`; real-audio and long-soak
-acceptance remain TODO.
+finally republished. The browser timing sample is `noAudio=1`; the user then
+confirmed audible playback in the bounded real-audio retest. Long-soak and
+broader audio coverage remain TODO.
 
 ## Scope
 
@@ -41,7 +42,8 @@ Published repair evidence:
 - exact publish -> rollback -> republish: PASS;
 - browser sample: `noAudio=1`, fresh `2/5 -> 3/5` in about `652ms`, no error-level
   console entries;
-- real audio, long soak, and broad P2-A rollout: **TODO consumer-check**.
+- bounded real-audio sample: **consumer-verified by the user**;
+- long soak, broad audio coverage, and broad P2-A rollout: **TODO consumer-check**.
 
 ## Inputs
 
@@ -318,18 +320,35 @@ Unconsumed or incompletely consumed surfaces stay explicit TODOs:
 - **TODO / downstream external consumers:** no deployed site, crawler, export,
   or third-party consumer was exercised by this batch.
 
-## TODO before publication authorization
+## Post-publication TODO / next authorization
 
-1. Commit B: append the acceptance annotation and regenerated annotation index;
-   do not rewrite Commit A's release JSON.
-2. Keep temporary candidate and backup directories ignored and outside the
-   committed repository surface.
+The publication items that were previously held are complete:
 
-Until items 1-7 are complete, the only valid claim is:
+- Commit B's append-only acceptance annotation and regenerated annotation
+  index are present in `6dd93b1`.
+- The temporary candidate and backup directories remain ignored and outside
+  the committed repository surface.
+- The repair release was replaced, rolled back exactly once, and republished;
+  the final hashes and parity evidence are recorded in the audit linked above.
+
+Remaining consumer checks stay explicit and must not be inferred from the
+published artifact or the no-audio sample:
+
+1. **Bounded real-audio sample: CONSUMER-VERIFIED:** the user confirmed that
+   the displayed step 8 transitions correctly after refresh and that the audio
+   in the narrow retest was audible. Full-collection audio coverage and long
+   soak remain separate TODOs.
+2. **TODO / browser transient:** directional wipes at aggregate steps 114/117
+   were machine-verified but not visually isolated in a browser screenshot.
+3. **TODO / long soak:** P2-B 2-4 hour Runtime stability is **NOT EXECUTED**.
+4. **TODO / downstream external consumers:** no deployed site, crawler, export,
+   or third-party consumer was exercised by this batch.
+
+Current bounded claim:
 
 ```text
 Event 1_3_10001_01 strict-v2 replace / rollback / republish: VERIFIED
-browser acceptance: SAMPLE-ACCEPTED on Commit A (`noAudio=1`)
-real audio and visually isolated directional-wipe transient: NOT EXECUTED
-P2-B 2-4 hour Runtime stability: NOT EXECUTED
+step-8 browser transition and bounded real-audio sample: CONSUMER-VERIFIED
+directional-wipe visual isolation, P2-B long soak, broad audio coverage, and
+downstream consumers: TODO consumer-check
 ```
