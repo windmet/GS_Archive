@@ -18,6 +18,7 @@ future gates so that dated audits are not mistaken for today's queue.
 | publication ledger on `master` | 3 release records / 2 stable logical IDs |
 | bounded playback evidence | displayed step 8 and one real-audio sample are consumer-verified |
 | Card semantic PR | Draft PR #38, branch `codex/card-skill-semantic-backfill-p1`; original commits `8742e1e` + `327b87c`, refreshed from `master` by merge commit `811f316` |
+| Card PR validation | head `3236f71`; complete Source Gate run `31328156404` PASS, including the Card verifier |
 | P2-B long soak | **NOT EXECUTED** |
 
 <!-- authoritative-v2-summary collections=4 standalone=1 artifacts=30 -->
@@ -110,6 +111,6 @@ evidence, not a substitute for renewed post-`master` browser and Actions proof.
   consumer-check**;
 - deployed/crawler/export/third-party consumers: **TODO consumer-check**;
 - P2-B 2–4 hour Runtime soak: **NOT EXECUTED**;
-- Card semantic P1: post-PR-#37 refresh, local machine gates and renewed
-  desktop/390px browser verification are complete; the independent PR-head
-  Source Gate remains pending.
+- Card semantic P1: post-PR-#37 refresh, local machine gates, renewed
+  desktop/390px browser verification and complete PR-head Source Gate are
+  verified. PR #38 remains Draft pending review/merge authorization.

@@ -93,8 +93,8 @@ PR #37 以普通 merge commit 进入 `master@09e1ec0` 后，Card 分支通过
 - 应用内浏览器桌面 1366×768 与窄屏 390×844：页面 identity、真实语义、
   框架错误层、console 与横向 overflow 均通过；
 - 技能等级再次从 Lv.1 切换到 Lv.10，说明由 27％更新为 45％；
-- `verify:card-semantic-dictionaries` 已加入 GitHub Source Gate；仍需以独立
-  Card PR 的完整最新-head Actions run 作为合并门禁。
+- `verify:card-semantic-dictionaries` 已加入 GitHub Source Gate；Draft PR #38
+  head `3236f71` 的完整 run `31328156404` 通过，包含该专用步骤。
 
 因此表 16/75/130 可继续标为 **consumer-verified**。其他未逐项复核的
 masterdata 条目仍保持 **TODO consumer-check**；本次复验不升级它们的状态。

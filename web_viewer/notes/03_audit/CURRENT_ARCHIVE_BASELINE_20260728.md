@@ -22,7 +22,7 @@ migration notes must not override that coordination entry.
 | active track | revalidate and publish the bounded table 16/75/130 Card semantic consumer |
 | active upstream | `origin/codex/card-skill-semantic-backfill-p1`; refresh and local gate commit pushed |
 | PR #37 final evidence | head `1d4974c9fede9aba44e6c940ecf5e5b35bfc6937`; merge `09e1ec0`; post-merge Source Gate run `31327297546` PASS |
-| active validation | dedicated Card verifier + source-only baseline + build + renewed desktop/390px browser evidence + complete Card PR-head Source Gate |
+| active validation | local verifier/baseline/build and renewed desktop/390px browser PASS; PR #38 head `3236f71` complete Source Gate run `31328156404` PASS |
 | PR #30 merge commit | `721c58b29e0eb953e8ba6138521d825d98e1cc63` |
 | PR #30 functional head | `1c10537` (`feat(archive): add exact personal story links`) |
 | PR #28 merge commit | `5c21658ac63ac5d158024a83cdaeb086b7dcc30a` |
