@@ -104,14 +104,59 @@ const authoritativeSummaryMarker =
   `artifacts=${authoritativeSummary?.artifact_count} -->`
 const authoritativeSummaryDocuments = [
   '../README.md',
+  'docs/PROJECT_MAP.md',
   'notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md',
   'notes/04_refactor/GS_ARCHIVE_P0_GOVERNANCE_HANDOFF_20260728.md',
+  'notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md',
 ]
 for (const relativePath of authoritativeSummaryDocuments) {
   const document = await readFile(new URL(relativePath, new URL('../', import.meta.url)), 'utf8')
   if (!document.includes(authoritativeSummaryMarker)) {
     failures.push(`${relativePath} authoritative Story v2 summary marker drifted`)
   }
+}
+
+const publicationManifest = JSON.parse(await readFile(
+  new URL('../public/data/publication/manifest.json', import.meta.url),
+  'utf8',
+))
+const publicationSummaryMarker =
+  `<!-- publication-ledger-summary releases=${publicationManifest.generated_from?.length} ` +
+  `stable_logical_ids=${Object.keys(publicationManifest.by_logical_id || {}).length} -->`
+const publicationSummaryDocuments = [
+  '../README.md',
+  'docs/PROJECT_MAP.md',
+  'notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md',
+  'notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md',
+]
+for (const relativePath of publicationSummaryDocuments) {
+  const document = await readFile(new URL(relativePath, new URL('../', import.meta.url)), 'utf8')
+  if (!document.includes(publicationSummaryMarker)) {
+    failures.push(`${relativePath} publication ledger summary marker drifted`)
+  }
+}
+
+const activeWorkflowFilename = 'GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md'
+const activeWorkflowEntryDocuments = [
+  '../README.md',
+  'docs/AGENT_START_HERE.md',
+  'docs/PROJECT_MAP.md',
+  'notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md',
+  'notes/INDEX.md',
+]
+for (const relativePath of activeWorkflowEntryDocuments) {
+  const document = await readFile(new URL(relativePath, new URL('../', import.meta.url)), 'utf8')
+  if (!document.includes(activeWorkflowFilename)) {
+    failures.push(`${relativePath} active workflow entry drifted`)
+  }
+}
+
+const sourceGate = await readFile(
+  new URL('../../.github/workflows/web-viewer-source-gate.yml', import.meta.url),
+  'utf8',
+)
+if (!sourceGate.includes('npm run verify:story-step9-timing -- --source-only')) {
+  failures.push('Web Viewer Source Gate no longer runs the source-only step-9 timing regression')
 }
 if (
   report.cards?.unique_resource_ids !== report.cards?.raw_matched ||

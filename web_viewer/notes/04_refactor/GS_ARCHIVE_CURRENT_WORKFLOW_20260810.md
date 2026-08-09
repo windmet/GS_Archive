@@ -20,6 +20,9 @@ future gates so that dated audits are not mistaken for today's queue.
 | Card semantic branch | `codex/card-skill-semantic-backfill-p1@327b87c`; two commits above `master`, no open PR |
 | P2-B long soak | **NOT EXECUTED** |
 
+<!-- authoritative-v2-summary collections=4 standalone=1 artifacts=30 -->
+<!-- publication-ledger-summary releases=3 stable_logical_ids=2 -->
+
 The pre-closeout PR #37 Source Gate run `31322649377` failed at
 `verify:archive-baseline:source-only` because the authoritative registry still
 named release `001` while the generated publication manifest correctly named

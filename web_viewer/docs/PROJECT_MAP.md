@@ -148,6 +148,8 @@ parity 或兼容参考。
 - strict authoritative Runtime v2 为 4 collections + 1 standalone /
   30 artifacts；
 - publication ledger 为 3 releases / 2 stable logical IDs；
+<!-- authoritative-v2-summary collections=4 standalone=1 artifacts=30 -->
+<!-- publication-ledger-summary releases=3 stable_logical_ids=2 -->
 - external GS translation registry 当前有 8 条 exact mapping；
 - tracked PNG 为 183 个，约 49.1 MB；其中 108 个为 grandfathered，
   14 个为 P1 Extra Story 导航视觉，61 个为 P1 Song 的有界 RAW-derived
