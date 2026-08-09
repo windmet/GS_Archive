@@ -48,7 +48,8 @@ an artifact-hash mismatch.
 1. Point `story-collection:1_3_10001_01` registry ownership to release `002`
    and update its evidence text.
 2. Add `verify:story-step9-timing` to the GitHub Source Gate beside the Runtime
-   foundation check.
+   foundation check. The gate must use a committed minimal RAW-command fixture;
+   the mounted full Event RAW is an additional local check, not a CI dependency.
 3. Synchronize `PROJECT_MAP`, the current baseline, Agent entry, notes index,
    README entry point, and PR body with the initial publication plus repair.
 4. Run the complete source-only gate locally, push, and inspect the new Actions
@@ -95,7 +96,8 @@ Run from `web_viewer` unless noted:
 npm run verify:archive-baseline:source-only
 npm run verify:authoritative-story-publications -- --source-only
 npm run verify:publication-ledger
-npm run verify:story-step9-timing
+npm run verify:story-step9-timing -- --source-only
+# With the full Event RAW mounted, also run without --source-only.
 npm run verify:story-runtime-foundation
 npm run verify:compiled-migration
 npm run verify:story-schema

@@ -168,7 +168,9 @@ The repair is intentionally limited to the two owners identified above:
 - `src/core/story-runtime/useStoryRuntimeCues.js` derives an expected target set
   from `entry_snapshot.spines`, skips an absent target immediately, and removes
   that cue's Auto-blocking capability;
-- `scripts/verify-story-step9-timing.py` covers the RAW step-9 fixture;
+- `scripts/verify-story-step9-timing.py` runs a committed minimal RAW-command
+  fixture in clean source checkouts and additionally covers the mounted Event
+  RAW step 9 when that source is available;
 - `scripts/verify-story-runtime-foundation.mjs` covers the Runtime no-block
   behavior; `package.json` exposes it as `verify:story-step9-timing`.
 
