@@ -105,6 +105,7 @@ const authoritativeSummaryMarker =
 const authoritativeSummaryDocuments = [
   '../README.md',
   'docs/PROJECT_MAP.md',
+  'notes/03_audit/CURRENT_ARCHIVE_BASELINE.md',
   'notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md',
   'notes/04_refactor/GS_ARCHIVE_P0_GOVERNANCE_HANDOFF_20260728.md',
   'notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md',
@@ -126,6 +127,7 @@ const publicationSummaryMarker =
 const publicationSummaryDocuments = [
   '../README.md',
   'docs/PROJECT_MAP.md',
+  'notes/03_audit/CURRENT_ARCHIVE_BASELINE.md',
   'notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md',
   'notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md',
 ]
@@ -136,19 +138,63 @@ for (const relativePath of publicationSummaryDocuments) {
   }
 }
 
-const activeWorkflowFilename = 'GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md'
-const activeWorkflowEntryDocuments = [
+const currentBaselineFilename = 'CURRENT_ARCHIVE_BASELINE.md'
+const currentBaselineEntryDocuments = [
   '../README.md',
   'docs/AGENT_START_HERE.md',
   'docs/PROJECT_MAP.md',
   'notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md',
+  'notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md',
   'notes/INDEX.md',
 ]
-for (const relativePath of activeWorkflowEntryDocuments) {
+for (const relativePath of currentBaselineEntryDocuments) {
   const document = await readFile(new URL(relativePath, new URL('../', import.meta.url)), 'utf8')
-  if (!document.includes(activeWorkflowFilename)) {
-    failures.push(`${relativePath} active workflow entry drifted`)
+  if (!document.includes(currentBaselineFilename)) {
+    failures.push(`${relativePath} current baseline entry drifted`)
   }
+}
+
+const currentBaseline = await readFile(
+  new URL('../notes/03_audit/CURRENT_ARCHIVE_BASELINE.md', import.meta.url),
+  'utf8',
+)
+const currentProductMatch = currentBaseline.match(
+  /<!-- current-product-baseline merge=([0-9a-f]{40}) pr=(\d+) -->/,
+)
+if (!currentProductMatch) {
+  failures.push('current baseline product merge marker is missing')
+} else {
+  try {
+    execFileSync(
+      'git',
+      ['merge-base', '--is-ancestor', currentProductMatch[1], 'HEAD'],
+      { cwd: projectRoot, stdio: 'ignore' },
+    )
+  } catch {
+    failures.push('current baseline product merge is not an ancestor of HEAD')
+  }
+}
+for (const marker of [
+  '<!-- next-authorized-batch timing-semantics-regression-matrix -->',
+  '<!-- p2-b-status NOT_EXECUTED -->',
+  '<!-- consumer-todo full-collection-real-audio directional-wipe deployed-consumers masterdata-audit -->',
+]) {
+  if (!currentBaseline.includes(marker)) failures.push(`current baseline marker drifted: ${marker}`)
+}
+
+const datedBaseline = await readFile(
+  new URL('../notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md', import.meta.url),
+  'utf8',
+)
+if (!datedBaseline.includes('not the current task entry')) {
+  failures.push('dated archive baseline is no longer marked as historical evidence')
+}
+const closedWorkflow = await readFile(
+  new URL('../notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md', import.meta.url),
+  'utf8',
+)
+if (!closedWorkflow.includes('CLOSED COORDINATION RECORD')) {
+  failures.push('2026-08-10 workflow is no longer marked closed')
 }
 
 const sourceGate = await readFile(

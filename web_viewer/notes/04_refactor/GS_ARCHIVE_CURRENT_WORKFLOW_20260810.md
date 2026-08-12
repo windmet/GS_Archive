@@ -1,12 +1,16 @@
 # GS Archive current workflow closeout — 2026-08-10
 
-Status: **ACTIVE COORDINATION ENTRY**
+Status: **CLOSED COORDINATION RECORD — SUPERSEDED BY `CURRENT_ARCHIVE_BASELINE.md`**
 
-This note is the single recovery point for the current development sequence.
-It separates repository state, branch-complete work, consumer evidence, and
-future gates so that dated audits are not mistaken for today's queue.
+This note records the PR #37/#38 closeout sequence. Its ordered work is complete;
+use `notes/03_audit/CURRENT_ARCHIVE_BASELINE.md` for current repository state
+and the next authorized queue.
 
-## 1. Verified repository topology
+Completion outcome (2026-08-13): PR #38 merged as `8d43405`; `master` Source
+Gate run `31624876473` passed, including the Card semantic verifier. The stable
+current-state entry requested by this workflow now exists.
+
+## 1. Pre-closeout repository topology snapshot
 
 | Surface | Verified state |
 | --- | --- |
@@ -17,7 +21,7 @@ future gates so that dated audits are not mistaken for today's queue.
 | authoritative v2 surface on `master` | 4 collections + 1 standalone / 30 artifacts |
 | publication ledger on `master` | 3 release records / 2 stable logical IDs |
 | bounded playback evidence | displayed step 8 and one real-audio sample are consumer-verified |
-| Card semantic PR | Draft PR #38, branch `codex/card-skill-semantic-backfill-p1`; original commits `8742e1e` + `327b87c`, refreshed from `master` by merge commit `811f316` |
+| Card semantic PR at snapshot | Draft PR #38, branch `codex/card-skill-semantic-backfill-p1`; original commits `8742e1e` + `327b87c`, refreshed from `master` by merge commit `811f316` |
 | Card PR validation | head `3236f71`; complete Source Gate run `31328156404` PASS, including the Card verifier |
 | P2-B long soak | **NOT EXECUTED** |
 
@@ -111,6 +115,5 @@ evidence, not a substitute for renewed post-`master` browser and Actions proof.
   consumer-check**;
 - deployed/crawler/export/third-party consumers: **TODO consumer-check**;
 - P2-B 2–4 hour Runtime soak: **NOT EXECUTED**;
-- Card semantic P1: post-PR-#37 refresh, local machine gates, renewed
-  desktop/390px browser verification and complete PR-head Source Gate are
-  verified. PR #38 remains Draft pending review/merge authorization.
+- Card semantic P1: **complete**; PR #38 merged as `8d43405` and post-merge
+  Source Gate run `31624876473` passed.

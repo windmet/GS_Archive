@@ -136,7 +136,7 @@ parity 或兼容参考。
 ### `schemas/`、`policies/`
 
 机器契约和治理策略。publication v1 已冻结；publication v2 和 annotation v1
-已激活。当前分支有 3 笔 release record、2 个 stable logical ID；
+已激活。当前 `master` 有 3 笔 release record、2 个 stable logical ID；
 `story-collection:1_3_10001_01` 的 current owner 是 repair release
 `2026-08-09-story-1-3-10001-01-002`。
 
@@ -162,12 +162,12 @@ parity 或兼容参考。
   365x360 封面；
 - USM 为 260 个，当前 89 exact consumer、166 exact masterdata、5 unresolved。
 
-## 5. 当前优先级（2026-08-10）
+## 5. 当前优先级（2026-08-13）
 
 当前执行入口是
-`notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md`。PR #37 已合入
-`master@09e1ec0`；当前只整合 Card semantic P1，并重复真实页面与 PR-head
-验证。在 Card P1 进入 `master` 前不开始新功能或下一个 Event promotion。
+`notes/03_audit/CURRENT_ARCHIVE_BASELINE.md`。PR #37 与 #38 已合入
+`master@8d43405`，两者 post-merge Source Gate 均通过。当前先建立长/短 stage
+双向 timing regression，再执行 P2-B；此前不开始下一个 Event promotion。
 
 ### P0：收口当前架构认知
 

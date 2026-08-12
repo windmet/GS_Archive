@@ -8,11 +8,10 @@
 
 按以下顺序读取：
 
-1. `notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md`
+1. `notes/03_audit/CURRENT_ARCHIVE_BASELINE.md`
 2. `docs/PROJECT_MAP.md`
-3. `notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md`
-4. `notes/INDEX.md`
-5. 用户本次明确点名的文件
+3. `notes/INDEX.md`
+4. 用户本次明确点名的文件
 
 只有任务涉及架构历史或旧优先级来源时，再读：
 
@@ -38,15 +37,13 @@ Get-NetTCPConnection -LocalPort 5174 -State Listen
 
 ## 二、当前优先级
 
-截至 2026-08-10，按以下顺序执行：
+截至 2026-08-13，PR #37 与 #38 均已进入 `master` 并通过 post-merge Source
+Gate。按以下顺序执行：
 
-1. PR #37 已用普通 merge commit 合入 `master@09e1ec0`，post-merge Source
-   Gate 已通过；不要重新打开或改写既有 publication history。
-2. 当前只单独整合 `codex/card-skill-semantic-backfill-p1`，重复 machine、桌面、
-   390px 和 PR-head gate，不得把它扩成新的 masterdata 或 publication 批次。
-3. Card P1 进入 `master` 后重建无日期的稳定 `CURRENT_ARCHIVE_BASELINE.md`。
-4. 建立 timing-semantics regression matrix，再执行 P2-B 2–4 小时 Runtime
-   长稳；P2-B 仍是 `NOT EXECUTED`。
+1. 建立 timing-semantics regression matrix，同时覆盖 missing-target fail-open
+   与合法长 choreography 保留；
+2. 再执行 P2-B 2–4 小时 Runtime 长稳；P2-B 仍是 `NOT EXECUTED`；
+3. 上述两项完成前不选择下一个 strict-v2 collection。
 
 不得因为长稳降为 P2 就写成已经通过，也不得在普通门户批次中顺手执行或伪造
 长稳结论。
