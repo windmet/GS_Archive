@@ -9,20 +9,10 @@
     <div v-if="RUNTIME_DEBUG" class="runtime-debug-actions">
       <button data-testid="story-debug-hide" @click.stop="applyDebugVisibility(true)">SIMULATE HIDDEN</button>
       <button data-testid="story-debug-show" @click.stop="applyDebugVisibility(false)">SIMULATE VISIBLE</button>
-      <button data-testid="story-soak-start" @click.stop="startReleaseSoak">START SOAK</button>
-      <button data-testid="story-soak-stop" @click.stop="stopReleaseSoak">STOP SOAK</button>
-      <button data-testid="story-soak-export" @click.stop="exportReleaseSoak">EXPORT SOAK</button>
     </div>
-    <textarea
-      v-if="RUNTIME_DEBUG && releaseSoakExport"
-      class="runtime-soak-export"
-      data-testid="story-release-soak-export"
-      :value="releaseSoakExport"
-      readonly
-    ></textarea>
     <div class="viewer-stage">
     <!-- Spine rendering layer (background + characters) -->
-    <SpineStage ref="spineStageRef" :step="stageStep" :fallbackBg="firstAvailableBg" :debug-controls="RUNTIME_DEBUG" />
+    <SpineStage ref="spineStageRef" :step="stageStep" :fallbackBg="firstAvailableBg" :debug-controls="RUNTIME_DEBUG" release-owner="story-player" />
 
     <!-- Top bar -->
     <PlayerTopBar
@@ -176,7 +166,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount, reactive, nextTick, defineAsyncComponent } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount, onUnmounted, reactive, nextTick, defineAsyncComponent } from 'vue'
 import AdvUI from '../components/AdvUI.vue'
 import MobileChatScene from '../components/mobile/MobileChatScene.vue'
 import MobileCallScene from '../components/mobile/MobileCallScene.vue'
@@ -210,6 +200,7 @@ import { PlayerPreferencesRepository } from './story-runtime/PlayerPreferencesRe
 import { ReadProgressRepository, createReadKey } from './story-runtime/ReadProgressRepository.js'
 import { PlaybackModeController } from './story-runtime/PlaybackModeController.js'
 import { releaseSoakRecorder } from './story-runtime/ReleaseSoakRecorder.js'
+import { storyReleaseProbe } from './story-runtime/StoryReleaseProbe.js'
 import {
   createStoryLocalization,
   provideStoryLocalization,
@@ -268,15 +259,16 @@ const uiHidden = ref(initialPreferences.ui_hidden)
 const episodeFinished = ref(false)
 const transitioning = ref(false)
 const runtimeDiagnostics = ref(null)
-const releaseSoakExport = ref('')
 const debugVisibilityOverride = ref(null)
 
 let _readyTimer = null
 let _runtimeDiagnosticsTimer = null
+let unregisterReleaseViewer = null
 
 const storyAudioSession = new StoryAudioSession({
   busVolumes: { bgm: 0.7, ambient: 0.7, voice: 1, se: 0.7 },
   disabled: NO_AUDIO,
+  releaseOwner: 'story-player',
 })
 const _audioManager = new AudioManager({ audioSession: storyAudioSession })
 
@@ -284,6 +276,7 @@ let voicePlayer = null
 let clearFadeAutoAdvance = () => {}
 let handleStepChange = () => {}
 let cleanupStepSceneEffects = () => {}
+let inspectStepSceneEffects = () => ({ timer_pending: 0 })
 let handleRuntimeStepChange = () => {}
 let cleanupRuntimeCues = () => {}
 let isRuntimeAutoBlocked = () => false
@@ -494,6 +487,7 @@ function currentBacklogNode() {
 }
 
 function openBacklog() {
+  if (RUNTIME_DEBUG) releaseSoakRecorder.record('backlog-open')
   menuOpen.value = false
   clearFadeAutoAdvance()
   storyRuntimeCues.cancelCurrentStep('backlog-open')
@@ -639,6 +633,7 @@ function goPrev() {
 }
 
 function onChoice(option) {
+  if (RUNTIME_DEBUG) releaseSoakRecorder.record('choice-selected')
   storyRuntimeCues.cancelCurrentStep('choice')
   const choiceStepIndex = currentStepIndex.value
   markStepRead(choiceStepIndex)
@@ -730,8 +725,10 @@ function buildRuntimeDiagnostics() {
     audio_session: storyAudioSession.inspect(),
     audio_manager: _audioManager.inspect(),
     playback: playbackController?.inspect() || null,
+    step_effects: inspectStepSceneEffects(),
     runtime,
     runtime_active_count: runtime?.active?.length || 0,
+    runtime_frame_pending: Number(Boolean(runtime?.frame_pending)),
     spine: {
       instances: spineEntries.length,
       ids: spineEntries.map(([id]) => id),
@@ -753,34 +750,16 @@ function refreshRuntimeDiagnostics() {
   if (!RUNTIME_DEBUG) return
   runtimeDiagnostics.value = {
     ...buildRuntimeDiagnostics(),
-    release_soak: releaseSoakRecorder.inspect(),
   }
 }
 
 const collectReleaseSoakSample = () => buildRuntimeDiagnostics()
 
-function startReleaseSoak() {
-  if (!RUNTIME_DEBUG) return
-  releaseSoakExport.value = ''
-  releaseSoakRecorder.start()
-  refreshRuntimeDiagnostics()
-}
-
-function stopReleaseSoak() {
-  if (!RUNTIME_DEBUG) return
-  releaseSoakRecorder.stop()
-  refreshRuntimeDiagnostics()
-}
-
-function exportReleaseSoak() {
-  if (!RUNTIME_DEBUG) return
-  releaseSoakExport.value = JSON.stringify(releaseSoakRecorder.export(), null, 2)
-}
-
 function applyVisibilityPause(hidden) {
   if (hidden) clearFadeAutoAdvance()
   playbackController?.setPaused('visibility', hidden)
   setRuntimeSessionPaused('visibility', hidden)
+  if (RUNTIME_DEBUG) releaseSoakRecorder.record(hidden ? 'visibility-hidden' : 'visibility-visible')
   refreshRuntimeDiagnostics()
 }
 
@@ -807,6 +786,11 @@ playbackController = new PlaybackModeController({
       auto_delay_ms: autoDelayMs.value,
       skip_mode: state.skip_mode,
     })
+    if (RUNTIME_DEBUG) {
+      releaseSoakRecorder.record(
+        state.auto_enabled ? 'auto-enabled' : state.skip_enabled ? 'skip-enabled' : 'playback-manual',
+      )
+    }
   },
 })
 playbackController.setAuto(autoEnabled.value)
@@ -815,6 +799,7 @@ playbackController.setPaused('audio-lock', autoEnabled.value && !NO_AUDIO)
 clearFadeAutoAdvance = stepSceneEffects.clearFadeAutoAdvance
 handleStepChange = stepSceneEffects.handleStepChange
 cleanupStepSceneEffects = stepSceneEffects.cleanup
+inspectStepSceneEffects = stepSceneEffects.inspect
 handleRuntimeStepChange = storyRuntimeCues.handleStepChange
 cleanupRuntimeCues = storyRuntimeCues.cleanup
 isRuntimeAutoBlocked = storyRuntimeCues.hasBlockingAuto
@@ -824,7 +809,8 @@ onMounted(async () => {
   window.__STORY_AUDIO__ = storyAudioSession
   document.addEventListener('visibilitychange', handleVisibilityChange)
   if (RUNTIME_DEBUG) {
-    releaseSoakRecorder.attachCollector(collectReleaseSoakSample)
+    unregisterReleaseViewer = storyReleaseProbe.registerViewer(collectReleaseSoakSample)
+    releaseSoakRecorder.record('viewer-attached')
     refreshRuntimeDiagnostics()
     _runtimeDiagnosticsTimer = setInterval(refreshRuntimeDiagnostics, 2000)
   }
@@ -932,10 +918,15 @@ onBeforeUnmount(() => {
     clearInterval(_runtimeDiagnosticsTimer)
     _runtimeDiagnosticsTimer = null
   }
-  if (RUNTIME_DEBUG) releaseSoakRecorder.detachCollector(collectReleaseSoakSample)
   voicePlayer?.dispose?.()
   _audioManager.dispose()
   storyAudioSession.dispose().catch(() => {})
+})
+
+onUnmounted(() => {
+  unregisterReleaseViewer?.()
+  unregisterReleaseViewer = null
+  if (RUNTIME_DEBUG) releaseSoakRecorder.record('viewer-detached')
 })
 
 // Keep the legacy effects watcher behavior unchanged. The opt-in runtime watcher
@@ -1047,21 +1038,6 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
   color: #bfefff;
   font: 10px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
   cursor: pointer;
-}
-.runtime-soak-export {
-  position: fixed;
-  left: 12px;
-  bottom: 48px;
-  z-index: 10002;
-  width: min(560px, calc(100vw - 24px));
-  height: min(320px, calc(100vh - 96px));
-  padding: 10px;
-  resize: both;
-  border: 1px solid rgba(102, 221, 255, 0.55);
-  border-radius: 8px;
-  background: rgba(3, 12, 20, 0.94);
-  color: #bfefff;
-  font: 11px/1.35 ui-monospace, SFMono-Regular, Consolas, monospace;
 }
 .adv-dialogue-fade-enter-active,
 .adv-dialogue-fade-leave-active {

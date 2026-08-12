@@ -40,10 +40,11 @@ Get-NetTCPConnection -LocalPort 5174 -State Listen
 截至 2026-08-13，PR #37 与 #38 均已进入 `master` 并通过 post-merge Source
 Gate。按以下顺序执行：
 
-1. 建立 timing-semantics regression matrix，同时覆盖 missing-target fail-open
-   与合法长 choreography 保留；
-2. 再执行 P2-B 2–4 小时 Runtime 长稳；P2-B 仍是 `NOT EXECUTED`；
-3. 上述两项完成前不选择下一个 strict-v2 collection。
+1. timing-semantics regression matrix 已完成；
+2. P2-B preflight 已提供跨播放器卸载的 v2 recorder、Story lifecycle/timer
+   指标、quiet endpoint 和 analyzer；
+3. 下一步执行 P2-B 2–4 小时 Runtime 长稳；P2-B 仍是 `NOT EXECUTED`；
+4. P2-B 完成前不选择下一个 strict-v2 collection。
 
 不得因为长稳降为 P2 就写成已经通过，也不得在普通门户批次中顺手执行或伪造
 长稳结论。
@@ -71,6 +72,9 @@ Gate。按以下顺序执行：
   Runtime owner。
 - `DebugSnapshotRuntime.js` 和 `ReleaseSoakRecorder.js` 属于 debug/release
   instrumentation；后者的自动测试不证明真实长稳已经完成。
+- `StoryReleaseProbe.js` 与 `StoryReleaseSoakPanel.vue` 只在
+  `runtimeDebug=1` 下提供跨 StoryViewer 卸载的 lifecycle/quiet-endpoint
+  证据；它们不改变播放语义。
 - `useTimelineRunner.js` 已不存在，不得作为当前核心模块引用。
 
 修改 Runtime 前必须先读 `docs/PROJECT_MAP.md` 的 owner 表及对应 verifier。

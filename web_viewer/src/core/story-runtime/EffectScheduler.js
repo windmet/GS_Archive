@@ -131,6 +131,7 @@ export class EffectScheduler {
       generation: this._generation,
       clock: this.clock.snapshot(),
       running: this._running,
+      frame_pending: Number(this._frameId != null),
       entries: this._entries.map(entry => ({
         cue_id: entry.cue.cue_id,
         action: entry.cue.action,

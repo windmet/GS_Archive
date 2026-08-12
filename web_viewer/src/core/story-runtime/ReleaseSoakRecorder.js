@@ -1,5 +1,6 @@
 const DEFAULT_SAMPLE_INTERVAL_MS = 30_000
-const DEFAULT_MAX_SAMPLES = 481
+const DEFAULT_MAX_SAMPLES = 1024
+const DEFAULT_MAX_DURATION_MS = 4 * 60 * 60 * 1000
 
 const getPath = (value, path) => path.reduce(
   (current, key) => current == null ? null : current[key],
@@ -25,12 +26,14 @@ export class ReleaseSoakRecorder {
   constructor({
     sampleIntervalMs = DEFAULT_SAMPLE_INTERVAL_MS,
     maxSamples = DEFAULT_MAX_SAMPLES,
+    maxDurationMs = DEFAULT_MAX_DURATION_MS,
     now = () => Date.now(),
     setIntervalFn = setInterval,
     clearIntervalFn = clearInterval,
   } = {}) {
     this.sampleIntervalMs = sampleIntervalMs
     this.maxSamples = maxSamples
+    this.maxDurationMs = maxDurationMs
     this._now = now
     // Browser timer functions can reject a non-Window receiver. Wrapping them
     // prevents `this._setInterval(...)` from forwarding the recorder as `this`.
@@ -96,8 +99,7 @@ export class ReleaseSoakRecorder {
   record(reason = 'manual') {
     if (this._status !== 'running') return null
     const capturedAt = this._now()
-    const reachedDuration = capturedAt - this._startedAt >=
-      this.sampleIntervalMs * (this.maxSamples - 1)
+    const reachedDuration = capturedAt - this._startedAt >= this.maxDurationMs
     if (!this._collector) {
       if (reachedDuration) this._finishStop(capturedAt, 'duration')
       return null
@@ -123,6 +125,7 @@ export class ReleaseSoakRecorder {
       status: this._status,
       sample_interval_ms: this.sampleIntervalMs,
       max_samples: this.maxSamples,
+      max_duration_ms: this.maxDurationMs,
       sample_count: this._samples.length,
       started_at: this._startedAt == null ? null : new Date(this._startedAt).toISOString(),
       stopped_at: this._stoppedAt == null ? null : new Date(this._stoppedAt).toISOString(),
@@ -134,7 +137,7 @@ export class ReleaseSoakRecorder {
   export() {
     const samples = this._samples.map(sample => structuredClone(sample))
     return {
-      contract: 'story-release-soak-v1',
+      contract: 'story-release-soak-v2',
       ...this.inspect(),
       summary: {
         heap_used_js_bytes: summarizeMetric(samples, ['memory', 'used_js_heap_size']),
@@ -143,12 +146,20 @@ export class ReleaseSoakRecorder {
         silhouette_pending: summarizeMetric(samples, ['spine', 'pending_silhouettes']),
         active_audio_sources: summarizeMetric(samples, ['audio_session', 'active_sources']),
         audio_cleanup_timers: summarizeMetric(samples, ['audio_manager', 'cleanup_timers']),
+        playback_timer_pending: summarizeMetric(samples, ['playback', 'timer_pending']),
+        step_effect_timer_pending: summarizeMetric(samples, ['step_effects', 'timer_pending']),
+        runtime_frame_pending: summarizeMetric(samples, ['runtime_frame_pending']),
         active_runtime_cues: summarizeMetric(samples, ['runtime_active_count']),
         active_screen_overlays: summarizeMetric(samples, ['stage', 'overlays', 'active_count']),
         stage_children: summarizeMetric(samples, ['stage', 'stage_children']),
         spine_container_children: summarizeMetric(samples, ['stage', 'spine_container_children']),
         debug_markers: summarizeMetric(samples, ['stage', 'debug_markers']),
         silhouette_relayout_jobs: summarizeMetric(samples, ['stage', 'silhouette_relayout_jobs']),
+        story_viewers_live: summarizeMetric(samples, ['lifecycle', 'story_viewers_live']),
+        pixi_stage_managers_live: summarizeMetric(samples, ['lifecycle', 'pixi_stage_managers_live']),
+        story_audio_sessions_live: summarizeMetric(samples, ['lifecycle', 'story_audio_sessions_live']),
+        audio_contexts_live: summarizeMetric(samples, ['lifecycle', 'audio_contexts_live']),
+        audio_context_close_failures: summarizeMetric(samples, ['lifecycle', 'audio_context_close_failures']),
       },
       samples,
     }

@@ -1,6 +1,8 @@
 ﻿<template>
   <div id="story-viewer">
 
+    <StoryReleaseSoakPanel v-if="RUNTIME_DEBUG" />
+
     <ArchiveShell
       v-if="archiveShellVisible"
       v-model="filterQuery"
@@ -381,6 +383,7 @@ import { groupFileList } from './utils/IndexNormalizer.js'
 import { countScenarioFiles, getCategoryCountText } from './utils/IndexStats.js'
 import { Preloader } from './utils/Preloader.js'
 import LoadingScreen from './components/LoadingScreen.vue'
+import StoryReleaseSoakPanel from './components/player/StoryReleaseSoakPanel.vue'
 import ArchiveImmersiveHome from './components/archive/ArchiveImmersiveHome.vue'
 import ArchiveShell from './components/archive/ArchiveShell.vue'
 import ArchiveCardList from './components/archive/ArchiveCardList.vue'
@@ -458,6 +461,7 @@ setStoryLanguagePreferences(new PlayerPreferencesRepository().load())
 const entityTranslationRepository = new EntityTranslationRepository()
 const URL_FLAGS = new URLSearchParams(window.location.search)
 const NO_AUDIO = URL_FLAGS.get('noAudio') === '1'
+const RUNTIME_DEBUG = URL_FLAGS.get('runtimeDebug') === '1'
 
 const storyViewerLoader = () => import('./core/StoryViewer.vue')
 const spineViewerLoader = () => import('./components/SpineViewer.vue')

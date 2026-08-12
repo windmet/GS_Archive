@@ -1,3 +1,5 @@
+import { storyReleaseProbe } from './StoryReleaseProbe.js'
+
 const BUS_NAMES = Object.freeze(['bgm', 'ambient', 'voice', 'se'])
 const DEFAULT_BUS_VOLUMES = Object.freeze({ bgm: 1, ambient: 1, voice: 1, se: 1 })
 
@@ -20,7 +22,13 @@ function defaultContextFactory() {
 }
 
 export class StoryAudioSession {
-  constructor({ contextFactory = defaultContextFactory, masterVolume = 1, busVolumes = {}, disabled = false } = {}) {
+  constructor({
+    contextFactory = defaultContextFactory,
+    masterVolume = 1,
+    busVolumes = {},
+    disabled = false,
+    releaseOwner = null,
+  } = {}) {
     this._contextFactory = contextFactory
     this._disabled = Boolean(disabled)
     this._masterVolume = clampVolume(masterVolume)
@@ -38,6 +46,10 @@ export class StoryAudioSession {
     this._logicalEpoch = 0
     this._stateTransition = Promise.resolve()
     this._disposed = false
+    this._releaseOwner = releaseOwner
+    this._releaseSession = releaseOwner === 'story-player'
+      ? storyReleaseProbe.registerAudioSession(this)
+      : null
   }
 
   get context() {
@@ -57,6 +69,7 @@ export class StoryAudioSession {
     if (this._disabled) return null
     if (!this._context) {
       this._context = this._contextFactory()
+      if (this._releaseOwner === 'story-player') storyReleaseProbe.audioContextCreated()
       this._logicalEpoch = Number(this._context.currentTime) || 0
       this._masterGain = this._context.createGain()
       this._masterGain.gain.value = this._masterVolume
@@ -188,6 +201,7 @@ export class StoryAudioSession {
       buses: Object.freeze({ ...this._busVolumes }),
       disabled: this._disabled,
       disposed: this._disposed,
+      release_owner: this._releaseOwner,
     })
   }
 
@@ -205,7 +219,16 @@ export class StoryAudioSession {
     const context = this._context
     this._context = null
     await this._stateTransition.catch(() => {})
-    if (context && context.state !== 'closed') await context.close?.()
+    try {
+      if (context && context.state !== 'closed') await context.close?.()
+      if (context && this._releaseOwner === 'story-player') storyReleaseProbe.audioContextClosed()
+    } catch (error) {
+      if (context && this._releaseOwner === 'story-player') storyReleaseProbe.audioContextCloseFailed()
+      throw error
+    } finally {
+      this._releaseSession?.()
+      this._releaseSession = null
+    }
   }
 }
 

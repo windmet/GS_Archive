@@ -94,6 +94,7 @@ import { getCachedMotionSetting, loadIdolMotionSettings } from '../utils/IdolMot
 import { computeVisualRootY as computeVisualRootYUtil, resolveBaseY as resolveBaseYUtil } from '../utils/YPositionResolver.js'
 import { applyStepSceneState } from '../core/applyStepSceneState.js'
 import { getStepSceneState } from '../core/story-runtime/StepSceneState.js'
+import { storyReleaseProbe } from '../core/story-runtime/StoryReleaseProbe.js'
 import {
   buildBoundsSnapshot,
   buildSpineDebugState,
@@ -106,6 +107,7 @@ const props = defineProps({
   fallbackBg: { type: String, default: null },
   manageBackground: { type: Boolean, default: false },
   debugControls: { type: Boolean, default: false },
+  releaseOwner: { type: String, default: '' },
 })
 
 const emit = defineEmits(['ready', 'error'])
@@ -125,6 +127,7 @@ const sceneIcon = computed(() => {
 
 const containerRef = ref(null)
 let manager = null
+let unregisterReleaseStage = null
 let applyStateToken = 0
 let lastScreenEffectsKey = ''
 let managedBackgroundId = null
@@ -140,6 +143,9 @@ onMounted(() => {
   if (!containerRef.value) return
   try {
     manager = markRaw(new PixiStageManager(containerRef.value))
+    if (props.releaseOwner === 'story-player') {
+      unregisterReleaseStage = storyReleaseProbe.registerStageManager(manager)
+    }
     emit('ready')
   } catch (err) {
     console.error('[SpineStage] Init failed:', err)
@@ -173,6 +179,8 @@ onBeforeUnmount(() => {
     manager.destroy()
     manager = null
   }
+  unregisterReleaseStage?.()
+  unregisterReleaseStage = null
 })
 
 function installDebugGlobals() {

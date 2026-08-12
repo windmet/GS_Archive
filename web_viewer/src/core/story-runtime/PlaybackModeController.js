@@ -78,6 +78,7 @@ export class PlaybackModeController {
       skip_mode: this.skipMode,
       paused: [...this.pausedReasons],
       auto_ready_at: this.autoReadyAt,
+      timer_pending: Number(this.timer != null),
     }
   }
 
