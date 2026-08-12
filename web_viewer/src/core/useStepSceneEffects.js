@@ -104,9 +104,14 @@ export function useStepSceneEffects({
     clearFadeAutoAdvance()
   }
 
+  function inspect() {
+    return { timer_pending: Number(_fadeAutoTimer != null) }
+  }
+
   return {
     clearFadeAutoAdvance,
     handleStepChange,
+    inspect,
     cleanup,
   }
 }

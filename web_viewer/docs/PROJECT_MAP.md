@@ -24,7 +24,6 @@ cards / card_detail
 gashas / gasha_detail
 song_catalog / song_detail
 event_detail
-song_catalog / song_detail
 story_catalog / story_collection / story_detail
 external_story_resources
 seasonal_campaign
@@ -75,7 +74,9 @@ spine_lab / chibi_stage
 
 - `src/core/story-runtime/DebugSnapshotRuntime.js` 只服务 `snapshotAt` 调试 cue；
 - `src/core/story-runtime/ReleaseSoakRecorder.js` 只在 `runtimeDebug=1` 下暴露
-  recorder UI/collector；它通过机器测试不等于 2–4 小时长稳已经执行；
+  v2 recorder；`StoryReleaseProbe.js` 与常驻的
+  `StoryReleaseSoakPanel.vue` 让 collector/STOP/EXPORT 在 StoryViewer 卸载后
+  继续可用；机器测试不等于 2–4 小时长稳已经执行；
 - `src/debug/installSpineAnimationDebug.js` 是诊断桥，不是产品 route 或 Runtime
   owner；
 - `useTimelineRunner.js` 已 retired 且不在 tracked source 中；
@@ -166,8 +167,9 @@ parity 或兼容参考。
 
 当前执行入口是
 `notes/03_audit/CURRENT_ARCHIVE_BASELINE.md`。PR #37 与 #38 已合入
-`master@8d43405`，两者 post-merge Source Gate 均通过。当前先建立长/短 stage
-双向 timing regression，再执行 P2-B；此前不开始下一个 Event promotion。
+`master@8d43405`，两者 post-merge Source Gate 均通过。长/短 stage 双向 timing
+regression 与 P2-B preflight 已完成；当前下一步是执行真实音频 P2-B。在它完成
+前不开始下一个 Event promotion。
 
 ### P0：收口当前架构认知
 
@@ -192,8 +194,8 @@ parity 或兼容参考。
 
 Event `1_3_10001_01` 已在 PR #37 完成首次 strict-v2 publication 与 bounded
 timing repair 的第二笔 publication，并以普通 merge commit 进入 `master`。
-下一步是建立长、短 stage 双向 timing regression；不得立即选择第二个 Event，
-也不进行 3,398 group 一键迁移。P2-A 与 P1 产品 UI 使用独立分支和证据。
+长、短 stage 双向 timing regression 已完成；不得立即选择第二个 Event，也不
+进行 3,398 group 一键迁移。P2-A 与 P1 产品 UI 使用独立分支和证据。
 
 PR #37 的 release/annotation 所引用 commit identity 已验证为 `master` 的祖先；
 后续不得通过历史改写破坏这条 publication provenance。
@@ -201,8 +203,9 @@ PR #37 的 release/annotation 所引用 commit identity 已验证为 `master` �
 ### P2-B：Runtime 长时验收
 
 2–4 小时混合长稳、最后 25% 资源曲线和 quiet endpoint 尚未执行。它仍是
-宣称 Story Runtime `release-accepted` 的必要证据，但不再是门户开发、
-资源关系审计或代表性 v2 小批的阻塞条件。
+宣称 Story Runtime `release-accepted` 的必要证据；按当前 authoritative
+baseline，它也是选择下一批代表性 strict-v2 collection 前的明确门禁。它不
+阻塞无关的门户开发或资源关系审计。
 
 ## 6. 禁止默认扫描目录
 

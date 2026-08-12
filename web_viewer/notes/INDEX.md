@@ -92,6 +92,9 @@ The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_889
 - `notes/03_audit/STORY_TIMING_SEMANTICS_MATRIX_20260813.md` - bidirectional
   missing/pending-fade/visible-target/legitimate-long-stage compiler matrix,
   with published Event c/f positive invariants and explicit browser/P2-B limits.
+- `notes/03_audit/STORY_P2B_SOAK_PREFLIGHT_20260813.md` - Story-scoped v2 soak
+  instrumentation, post-unmount quiet endpoint, analyzer contract and the
+  remaining 2–4 hour real-audio acceptance procedure.
 - `notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md` -
   GROWING STARS-only Bilibili translation-link mapping.
 - `notes/04_refactor/GS_ARCHIVE_P1_STACK_CLOSEOUT_20260802.md` - ordered PR #32,
