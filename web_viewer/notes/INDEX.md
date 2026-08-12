@@ -64,7 +64,7 @@ The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_889
   status, unresolved domains, and superseded claims; active execution order is
   maintained in the 2026-08-10 workflow entry below.
 - `notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md` - single active
-  recovery entry for PR #37 registry/CI closeout, merge-ancestry requirements,
+  recovery entry recording PR #37's completed merge/provenance proof, the
   separate Card semantic integration, current-baseline rebuild, timing matrix,
   and P2-B ordering.
 - `notes/04_refactor/GS_ARCHIVE_P0_GOVERNANCE_HANDOFF_20260728.md` - current P0
@@ -96,6 +96,12 @@ The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_889
 - `notes/04_refactor/GS_ARCHIVE_BIRTHDAY_SEMANTIC_BACKFILL_P1_20260803.md` - tables
   76/77/78/80/86 birthday hierarchy, official dates, and the two unassigned
   producer-birthday common episodes separated from Yamamura Ken.
+- `notes/04_refactor/GS_ARCHIVE_CARD_SEMANTIC_DICTIONARIES_P1_20260803.md` -
+  consumer-verified table 16/75/130 joins for card limit-break items and skill
+  categories; other decoded masterdata tables remain explicit TODOs.
+- `notes/05_exploration/MASTERDATA_UNUSED_TABLES_AUDIT_20260802.md` - historical
+  158-table exploration with a 2026-08-03 consumer-status correction and TODO
+  markers for entries that lack downstream consumption evidence.
 
 ## Layout
 
@@ -168,6 +174,7 @@ If a new note is lip or mouth related, put it in `01_lipsync/` first. If it is u
 - `04_refactor/IDOL_STORY_AND_MOBILE_INTERFACE_20260716.md` - 49-idol personal-story pages, merged SMALL TALK boundaries, normalized Mobile tabs, after-story phone links, and next-phase story collection direction.
 - `04_refactor/PRIMARY_ARCHIVE_NAVIGATION_20260716.md` - content-first Idol/Card/Interaction navigation, default Touma routes, shared idol switching, legacy URL migration, and normalized related counts.
 - `04_refactor/ARCHIVE_STORY_NEXT_WINDOW_HANDOFF_20260716.md` - next-window priorities for unified story collections, remaining Extra/Birthday/Card Story domains, player product behavior, local reading state, evidence constraints, and acceptance gates.
+- `04_refactor/GS_ARCHIVE_CARD_SEMANTIC_DICTIONARIES_P1_20260803.md` - table 16/75/130 hard joins for card limitbreak items and normal/center skill categories, with bounded UI and verification scope.
 - `04_refactor/STORY_VIEWER_RUNTIME_REFACTOR_DESIGN_20260718.md` - complete no-code implementation design for the story runtime refactor, including Scenario IR v2, deterministic clock, performance lifecycle, snapshots, adapters, Auto/Skip/Backlog, resource loading, migration phases, Git boundaries, and acceptance tests.
 - `04_refactor/STORY_LOCALIZATION_CONTRACT_20260719.md` - implementation-ready localization contract for deterministic text identity, source hashing, translation overlays, speaker and choice identity, unified text resolution, UI/content language separation, conservative migration, portal entities, Git phases, and acceptance tests.
 - `04_refactor/STORY_POST_88969A1_RELEASE_GUIDE_20260723.md` - fact-check of the post-88969a1 assessment, second strict collection status, feature-freeze boundary, CI/release acceptance sequence, and PR merge gates.

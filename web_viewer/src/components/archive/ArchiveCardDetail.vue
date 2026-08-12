@@ -125,17 +125,39 @@
           </div>
           <div class="skill-panel">
             <div v-if="card.gameplay.center_skill?.name" class="skill-row">
-              <strong>中心效果 · {{ card.gameplay.center_skill.name }}</strong>
+              <div class="skill-heading">
+                <strong>中心效果 · {{ card.gameplay.center_skill.name }}</strong>
+                <span v-if="card.gameplay.center_skill.category?.name" class="skill-category">
+                  {{ card.gameplay.center_skill.category.name }}
+                </span>
+              </div>
               <p>{{ card.gameplay.center_skill.description }}</p>
             </div>
             <div v-if="card.gameplay.skill?.name" class="skill-row">
               <div class="skill-heading">
-                <strong>技能 · {{ card.gameplay.skill.name }}</strong>
+                <div class="skill-title">
+                  <strong>技能 · {{ card.gameplay.skill.name }}</strong>
+                  <span
+                    v-if="card.gameplay.skill.category?.name"
+                    class="skill-category"
+                    :style="{ '--skill-category-color': card.gameplay.skill.category.color || '#168b83' }"
+                  >
+                    {{ card.gameplay.skill.category.name }}
+                  </span>
+                </div>
                 <select v-if="card.gameplay.skill.levels?.length" v-model.number="selectedSkillLevel" aria-label="技能等级">
                   <option v-for="level in card.gameplay.skill.levels" :key="level.level" :value="level.level">Lv.{{ level.level }}</option>
                 </select>
               </div>
               <p>{{ selectedSkill?.description || card.gameplay.skill.description_template }}</p>
+            </div>
+            <div v-if="card.limitbreak_item?.name" class="limitbreak-item-row">
+              <PackageOpen :size="19" />
+              <div>
+                <small>突破素材 · {{ card.limitbreak_item.resource_id }}</small>
+                <strong>{{ card.limitbreak_item.name }}</strong>
+                <p>{{ card.limitbreak_item.description }}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -276,7 +298,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { Activity, CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, HeartPulse, ImageOff, Shirt } from '@lucide/vue'
+import { Activity, CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, HeartPulse, ImageOff, PackageOpen, Shirt } from '@lucide/vue'
 import ArchiveImageLightbox from './ArchiveImageLightbox.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
@@ -451,7 +473,7 @@ const relationItems = computed(() => {
       kind: 'gasha',
       label: '卡池 Pickup',
       title: props.gashaRelation.title || `ガシャ ${props.gashaRelation.gasha_code}`,
-      meta: `ガシャ ${props.gashaRelation.gasha_code} · 突破道具 ${props.gashaRelation.limitbreak_item_id} · ${formatDate(props.gashaRelation.start_at)}`,
+      meta: `ガシャ ${props.gashaRelation.gasha_code} · 突破道具 ${props.card?.limitbreak_item?.name || props.gashaRelation.limitbreak_item_id} · ${formatDate(props.gashaRelation.start_at)}`,
       evidenceLabel: props.gashaRelation.evidence_level === 'curated' ? 'Confirmed' : 'Derived',
       evidenceTone: props.gashaRelation.evidence_level === 'curated' ? 'confirmed' : 'derived',
       evidence: props.gashaRelation.relation_type,
@@ -548,7 +570,19 @@ function openRelation(item) {
 .skill-row strong { color: #2d4551; font-size: 0.75rem; }
 .skill-row p { margin: 7px 0 0; color: #4c5c64; font-size: 0.72rem; line-height: 1.6; }
 .skill-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.skill-title { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+.skill-category {
+  display: inline-flex; align-items: center; min-height: 20px; padding: 2px 7px;
+  border: 1px solid color-mix(in srgb, var(--skill-category-color, #168b83) 45%, white);
+  border-radius: 999px; background: color-mix(in srgb, var(--skill-category-color, #168b83) 10%, white);
+  color: color-mix(in srgb, var(--skill-category-color, #168b83) 75%, #263941);
+  font-size: 0.58rem; font-weight: 700; line-height: 1.2;
+}
 .skill-heading select { height: 28px; padding: 0 26px 0 8px; border: 1px solid #d7dfe3; border-radius: 4px; background: #fff; color: #40515a; font-size: 0.68rem; }
+.limitbreak-item-row { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 9px; padding-top: 10px; border-top: 1px solid #edf0f2; color: #4d8d88; }
+.limitbreak-item-row small { display: block; margin-bottom: 2px; color: #78878e; font-family: monospace; font-size: 0.58rem; }
+.limitbreak-item-row strong { color: #2d4551; font-size: 0.75rem; }
+.limitbreak-item-row p { margin: 5px 0 0; white-space: pre-wrap; color: #4c5c64; font-size: 0.68rem; line-height: 1.5; }
 .costume-list { display: flex; flex-direction: column; }
 .costume-row { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; padding: 11px 0; border-bottom: 1px solid #edf0f2; color: #58718a; }
 .costume-row:last-child { border-bottom: 0; }

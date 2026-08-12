@@ -17,12 +17,12 @@ migration notes must not override that coordination entry.
 
 | Field | Value |
 | --- | --- |
-| current functional baseline | `master@17d8c1a88df3f3a0b0ebce127775473a903068b2`; PR #36 merged |
-| active functional branch | `codex/story-strict-v2-compilation-p2a`; PR #37 Draft |
-| active track | close PR #37 registry/CI/documentation drift before new feature work |
-| active upstream | `origin/codex/story-strict-v2-compilation-p2a` |
-| PR #37 audited pre-closeout head | `acff9be7145f585062a05360745dcf7472b02549`; Source Gate run `31322649377` failed at registry ownership drift |
-| active validation | require the complete latest-head Source Gate; local source-only baseline, authoritative registry and publication ledger must all pass after owner repair |
+| current functional baseline | `master@09e1ec02b65a9717c3687a6daa5d98f4ec8d9a75`; PR #37 merged |
+| active functional branch | `codex/card-skill-semantic-backfill-p1`; Draft PR #38; refreshed from new `master` by `811f316` |
+| active track | revalidate and publish the bounded table 16/75/130 Card semantic consumer |
+| active upstream | `origin/codex/card-skill-semantic-backfill-p1`; refresh and local gate commit pushed |
+| PR #37 final evidence | head `1d4974c9fede9aba44e6c940ecf5e5b35bfc6937`; merge `09e1ec0`; post-merge Source Gate run `31327297546` PASS |
+| active validation | local verifier/baseline/build and renewed desktop/390px browser PASS; PR #38 head `3236f71` complete Source Gate run `31328156404` PASS |
 | PR #30 merge commit | `721c58b29e0eb953e8ba6138521d825d98e1cc63` |
 | PR #30 functional head | `1c10537` (`feat(archive): add exact personal story links`) |
 | PR #28 merge commit | `5c21658ac63ac5d158024a83cdaeb086b7dcc30a` |

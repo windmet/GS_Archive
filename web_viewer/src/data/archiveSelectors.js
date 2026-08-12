@@ -313,6 +313,7 @@ export function mergeCardDetail(card, cardDetailIndex) {
   }))
   return {
     ...card,
+    limitbreak_item: cardDetailIndex.items_by_id?.[card.limitbreak_item_id] || null,
     gameplay,
     costume_relations: costumeRelations,
     operational_voice_cues: detail.operational_voice_cues || [],

@@ -40,11 +40,11 @@ Get-NetTCPConnection -LocalPort 5174 -State Listen
 
 截至 2026-08-10，按以下顺序执行：
 
-1. 收口 PR #37 的 current-release registry、Source Gate、PR 描述与合并证据；
-   在它全绿并合并前不开始新功能或第二个 Event promotion。
-2. PR #37 合并后单独整合 `codex/card-skill-semantic-backfill-p1`，不得并入
-   publication PR。
-3. 两批进入 `master` 后重建无日期的稳定 current-state 入口。
+1. PR #37 已用普通 merge commit 合入 `master@09e1ec0`，post-merge Source
+   Gate 已通过；不要重新打开或改写既有 publication history。
+2. 当前只单独整合 `codex/card-skill-semantic-backfill-p1`，重复 machine、桌面、
+   390px 和 PR-head gate，不得把它扩成新的 masterdata 或 publication 批次。
+3. Card P1 进入 `master` 后重建无日期的稳定 `CURRENT_ARCHIVE_BASELINE.md`。
 4. 建立 timing-semantics regression matrix，再执行 P2-B 2–4 小时 Runtime
    长稳；P2-B 仍是 `NOT EXECUTED`。
 

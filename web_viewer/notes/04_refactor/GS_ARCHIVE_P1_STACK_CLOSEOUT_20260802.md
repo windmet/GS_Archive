@@ -1,8 +1,34 @@
 # GS Archive P1 Stack Closeout
 
 Date: 2026-08-02
-Status: active merge-order contract
+Status: closed on 2026-08-03; historical merge-order contract
 Stable base: `master@f82647ad7402b1f51dfdbd7674b1a15fb70abf35`
+
+## Closeout update (2026-08-03)
+
+The ordered stack described below has reached `master` in the intended order:
+
+| PR | Merge commit | Result |
+| --- | --- | --- |
+| #32 | `1ceee803` | Story IA, Main/Extra/Birthday domains and breadcrumb contract |
+| #33 | `2064f947` | 61-song archive catalog and semantic relations |
+| #34 | `34526920` | bounded experimental Song playback and Chibi singer work |
+| #35 | `a2f3ed46` | Story Player UI and mobile Talk/Call/Choice presentation |
+| #36 | `17d8c1a8` | Birthday masterdata semantic backfill |
+
+Current development must start from `master@17d8c1a8` or a descendant. The
+merged Song catalog/playback branches are historical read-only branches. The
+older mixed `codex/song-domain-audit-p1` branch is archaeological evidence only:
+do not merge or rebase it wholesale; extract a bounded Portal Hub change onto a
+fresh branch if that work is later authorized.
+
+This closes the stack ordering, not every acceptance boundary. The independent
+Story Player browser matrix, local Song media availability state, portal
+relationship UX, a clean-master Mobile Portal Hub rebuild and P2-B 2-4 hour
+Runtime stability remain follow-up work. P2-B is still **NOT EXECUTED**.
+
+The sections below preserve the merge-order contract as historical evidence;
+their pre-merge imperative wording is not the current branch status.
 
 ## Product direction
 
