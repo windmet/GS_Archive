@@ -15,10 +15,11 @@ they do not override this file.
 | latest product merge | PR #38, Card item/skill semantic backfill |
 | preceding publication merge | PR #37, Event strict-v2 publication plus bounded timing repair |
 | open product PRs at capture | none |
-| latest `master` Source Gate | run `31624876473`, PASS |
-| active documentation closeout | `codex/current-archive-baseline-20260813` |
+| product-baseline `master` Source Gate | run `31624876473`, PASS |
+| current-state governance | stable entry enforced by the source-only baseline verifier |
 
 <!-- current-product-baseline merge=8d434051026f5deffffaa5591b1f35010022514d pr=38 -->
+<!-- current-state-governance source-only-verifier -->
 
 The archive baseline report was generated at commit `6a71578`; its recorded
 metrics remain accepted only because the current source-only baseline verifier
