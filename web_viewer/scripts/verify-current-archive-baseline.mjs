@@ -175,6 +175,7 @@ if (!currentProductMatch) {
   }
 }
 for (const marker of [
+  '<!-- current-state-governance source-only-verifier -->',
   '<!-- next-authorized-batch timing-semantics-regression-matrix -->',
   '<!-- p2-b-status NOT_EXECUTED -->',
   '<!-- consumer-todo full-collection-real-audio directional-wipe deployed-consumers masterdata-audit -->',
