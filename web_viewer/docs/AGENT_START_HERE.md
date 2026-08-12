@@ -79,7 +79,7 @@ Gate。按以下顺序执行：
 
 ```powershell
 npm run verify:story-runtime-foundation
-npm run verify:story-step9-timing
+npm run verify:story-timing-semantics
 npm run verify:story-audio
 npm run verify:routes
 ```

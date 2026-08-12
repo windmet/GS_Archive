@@ -89,6 +89,9 @@ The pre-merge release closure guide remains at `notes/04_refactor/STORY_POST_889
   timing, RAW/compiler/Runtime causal chain, parity-preserved-defect
   classification, bounded repair candidate, published release, user consumer
   confirmation, and the remaining real-audio/long-soak/downstream TODOs.
+- `notes/03_audit/STORY_TIMING_SEMANTICS_MATRIX_20260813.md` - bidirectional
+  missing/pending-fade/visible-target/legitimate-long-stage compiler matrix,
+  with published Event c/f positive invariants and explicit browser/P2-B limits.
 - `notes/04_refactor/EXTERNAL_GS_TRANSLATION_LINK_CONTRACT_20260728.md` -
   GROWING STARS-only Bilibili translation-link mapping.
 - `notes/04_refactor/GS_ARCHIVE_P1_STACK_CLOSEOUT_20260802.md` - ordered PR #32,

@@ -75,17 +75,17 @@ only their stated contract.
 
 ## 4. Open gates and next authorized order
 
-1. Build a timing-semantics regression matrix with both missing/pending-fade
-   targets that must fail open and legitimate long choreography that must remain
-   long.
-2. Execute the P2-B 2–4 hour mixed Runtime soak with real audio, final-quarter
+1. The timing-semantics regression matrix is implemented: missing/pending-fade
+   targets fail open, visible delayed cues can extend a short stage, and the
+   published 7.5s/6.0s choreography remains long.
+2. Next, execute the P2-B 2–4 hour mixed Runtime soak with real audio, final-quarter
    resource-curve evidence and a quiet endpoint.
 3. Only after those gates, select another representative strict-v2 collection.
 
 P2-B is **NOT EXECUTED**. A source-only gate, a short browser sample or a
 `noAudio` run must not be upgraded to Runtime `release-accepted` evidence.
 
-<!-- next-authorized-batch timing-semantics-regression-matrix -->
+<!-- next-authorized-batch p2-b-runtime-soak -->
 <!-- p2-b-status NOT_EXECUTED -->
 
 ## 5. Verification entry
@@ -95,7 +95,7 @@ Run from `web_viewer`:
 ```powershell
 npm run verify:archive-baseline:source-only
 npm run verify:card-semantic-dictionaries
-npm run verify:story-step9-timing -- --source-only
+npm run verify:story-timing-semantics -- --source-only
 npm run build
 git diff --check
 ```

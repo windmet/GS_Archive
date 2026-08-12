@@ -176,7 +176,7 @@ if (!currentProductMatch) {
 }
 for (const marker of [
   '<!-- current-state-governance source-only-verifier -->',
-  '<!-- next-authorized-batch timing-semantics-regression-matrix -->',
+  '<!-- next-authorized-batch p2-b-runtime-soak -->',
   '<!-- p2-b-status NOT_EXECUTED -->',
   '<!-- consumer-todo full-collection-real-audio directional-wipe deployed-consumers masterdata-audit -->',
 ]) {
@@ -202,8 +202,8 @@ const sourceGate = await readFile(
   new URL('../../.github/workflows/web-viewer-source-gate.yml', import.meta.url),
   'utf8',
 )
-if (!sourceGate.includes('npm run verify:story-step9-timing -- --source-only')) {
-  failures.push('Web Viewer Source Gate no longer runs the source-only step-9 timing regression')
+if (!sourceGate.includes('npm run verify:story-timing-semantics -- --source-only')) {
+  failures.push('Web Viewer Source Gate no longer runs the source-only timing semantics matrix')
 }
 if (!sourceGate.includes('npm run verify:card-semantic-dictionaries')) {
   failures.push('Web Viewer Source Gate no longer runs the card semantic dictionary verifier')
