@@ -40,10 +40,10 @@ The 10,329 JSON files recursively present under `public/data/compiled` are
 compiled artifacts, not 10,329 distinct stories. Aggregate, episode, manifest,
 fixture, and per-source files are counted separately on disk.
 
-The active development sequence is maintained in
-[GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md](web_viewer/notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md).
-The dated metric baseline remains available in
-[CURRENT_ARCHIVE_BASELINE_20260728.md](web_viewer/notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md).
+The current repository state and next authorized sequence are maintained in
+[CURRENT_ARCHIVE_BASELINE.md](web_viewer/notes/03_audit/CURRENT_ARCHIVE_BASELINE.md).
+The 2026-07-28 metric baseline and 2026-08-10 workflow closeout remain dated
+historical evidence.
 
 ## Architecture
 
@@ -146,11 +146,10 @@ The original game, characters, names, artwork, audio, and trademarks belong to t
 
 ## Development Guidance
 
-Start with the
-[active workflow closeout](web_viewer/notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md),
-then the [project map](web_viewer/docs/PROJECT_MAP.md), dated
-[archive baseline](web_viewer/notes/03_audit/CURRENT_ARCHIVE_BASELINE_20260728.md),
-and [notes index](web_viewer/notes/INDEX.md). Historical migration logs remain
-useful evidence, but they do not override the active workflow entry.
+Start with the stable
+[current archive baseline](web_viewer/notes/03_audit/CURRENT_ARCHIVE_BASELINE.md),
+then the [project map](web_viewer/docs/PROJECT_MAP.md) and
+[notes index](web_viewer/notes/INDEX.md). Historical migration logs remain
+useful evidence, but they do not override the stable current-state entry.
 
 The GitHub repository can be connected to ChatGPT for code and documentation search. That view only reflects committed files; local assets, generated-but-uncommitted data, and the live browser state still require the local development environment.

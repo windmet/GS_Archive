@@ -1,6 +1,6 @@
 # GS Archive Current Baseline
 
-Status: current branch metrics; active execution order is maintained separately
+Status: dated metric and chronology evidence; not the current task entry
 Captured: 2026-07-28
 Current checkout refreshed: 2026-08-10
 Review state refreshed: 2026-08-10
@@ -8,12 +8,12 @@ Merge state refreshed: 2026-08-10
 Repository: `E:\Web_build\SideM_Archived`
 Application: `E:\Web_build\SideM_Archived\web_viewer`
 
-This document retains the metric definitions and dated evidence baseline. The
-active branch/PR order is maintained in
-`notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md`; older audit and
-migration notes must not override that coordination entry.
+This document retains metric definitions and dated evidence. Current repository
+state and task order are maintained in
+`notes/03_audit/CURRENT_ARCHIVE_BASELINE.md`; older audit and migration notes
+must not override that stable entry.
 
-## 1. Checkout and review state
+## 1. Checkout and review state (historical closeout snapshot)
 
 | Field | Value |
 | --- | --- |
@@ -449,7 +449,7 @@ current checkout and is not a Git tag.
 
 This section records the 2026-07-28 implementation sequence. It is not the
 current task queue. Use
-`notes/04_refactor/GS_ARCHIVE_CURRENT_WORKFLOW_20260810.md` for active ordering.
+`notes/03_audit/CURRENT_ARCHIVE_BASELINE.md` for active ordering.
 
 The documentation, PR metadata, and machine-executable P0 governance steps below
 are complete and merged through PR #2:
