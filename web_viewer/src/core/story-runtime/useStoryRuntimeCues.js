@@ -74,8 +74,11 @@ export function useStoryRuntimeCues({
     nowMilliseconds: () => scheduler.clock.now() * 1000,
   }))
   handlers.set('se.play', cue => createSeCueHandle(cue, audioManager))
-  handlers.set('screen.directional_wipe', cue => createScreenCueHandle(cue, getManager))
-  handlers.set('screen.fade', cue => createScreenCueHandle(cue, getManager))
+  const createScreenHandle = cue => createScreenCueHandle(cue, getManager, {
+    nowMilliseconds: () => scheduler.clock.now() * 1000,
+  })
+  handlers.set('screen.directional_wipe', createScreenHandle)
+  handlers.set('screen.fade', createScreenHandle)
   handlers.set('background.change', cue => createBackgroundCueHandle(cue, getManager, {
     nowMilliseconds: () => scheduler.clock.now() * 1000,
   }))

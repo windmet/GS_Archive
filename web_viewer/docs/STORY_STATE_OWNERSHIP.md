@@ -185,3 +185,22 @@ publicDir:false 构建通过。其他 runRafTween 调用仍保留默认时间源
 
 浏览器 noAudio 集成冒烟完成 C.FIRST 剧情 2→3→4，对白正常并可返回集合 16。
 该路径只验证播放集成；镜头缓动数值与暂停/倍速结论来自可控 RAF 回归。
+
+## B7：屏幕淡入淡出与擦除读取剧情时钟
+
+ScreenCueRuntime 将 scheduler.clock 的毫秒时间源通过 PixiStageManager 传给
+tweenOverlayFade/Slide，复用 runRafTween 的注入入口。保留原来的颜色、alpha、
+四向坐标、缓动曲线与遮罩显隐语义；没有时间源的独立调用保留实际时间默认值。
+entry/settle 的零时长操作不受暂停限制，取消仍通过 token 阻止下一帧更新。
+
+verify:story-screen-clock 导入生产 PixiStageManager 方法、ScreenCueRuntime、
+StoryClock 和真实 Pixi Sprite，跳过 GPU 初始化，用可控 RAF 验证 fade in/out
+以及四方向 wipe in/out。旧实现先复现 1 秒时 alpha 不等于 0.1；修复后覆盖
+中间 alpha/位置、暂停恢复、2x/0.5x、终态显隐、暂停中 settle、取消后的帧清理。
+新增 CI gate，foundation、camera-clock、background-loading、source-only timing
+semantics 与 publicDir:false 构建通过。粒子、punch 等其他屏幕效果以及真实音频
+长稳不在此批证据范围内。
+
+浏览器 noAudio 集成冒烟完成 C.FIRST 剧情 2→3→4，显示预期对白并返回集合 16。
+此项验证实际播放流程；遮罩数值与暂停/倍速结论来自上述可控 RAF 测试，未执行
+像素级四向录屏或窄屏矩阵。

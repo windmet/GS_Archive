@@ -625,7 +625,7 @@ export class PixiStageManager {
    * @param {number} duration - animation duration in seconds
    * @returns {Promise} resolves when animation completes
    */
-  setScreenFade(type, color, duration, delay = 0, maxAlpha = 1) {
+  setScreenFade(type, color, duration, delay = 0, maxAlpha = 1, nowMilliseconds) {
     const token = ++this._screenFadeToken
     return new Promise(resolve => {
       if (!this._fadeOverlay || this._fadeOverlay.destroyed) {
@@ -658,6 +658,7 @@ export class PixiStageManager {
         delayMs,
         startAlpha,
         endAlpha,
+        nowMilliseconds,
         onFinish: () => {
           if (type === 'in' && this._fadeOverlay && !this._fadeOverlay.destroyed) {
             this._fadeOverlay.visible = false
@@ -870,7 +871,7 @@ export class PixiStageManager {
     }
   }
 
-  setScreenSlide(type, color = '#000000', duration = 0.5, delay = 0, direction = '6') {
+  setScreenSlide(type, color = '#000000', duration = 0.5, delay = 0, direction = '6', nowMilliseconds) {
     const token = ++this._screenSlideToken
     if (!this._slideOverlay || this._slideOverlay.destroyed) return
     const overlay = this._slideOverlay
@@ -900,6 +901,7 @@ export class PixiStageManager {
       delayMs,
       start,
       end,
+      nowMilliseconds,
       onFinish: () => {
         overlay.x = end.x
         overlay.y = end.y

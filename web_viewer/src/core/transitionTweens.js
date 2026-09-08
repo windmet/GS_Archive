@@ -9,12 +9,14 @@ export function tweenOverlayFade({
   startAlpha,
   endAlpha,
   onFinish,
+  nowMilliseconds,
 }) {
   if (!overlay || overlay.destroyed) return null
   return runRafTween({
     durationMs,
     delayMs,
     startValue: startAlpha,
+    nowMilliseconds,
     endValue: endAlpha,
     ease: easeOutCubic,
     shouldStop: () => !isCurrent(token) || !overlay || overlay.destroyed,
@@ -36,12 +38,14 @@ export function tweenOverlaySlide({
   start,
   end,
   onFinish,
+  nowMilliseconds,
 }) {
   if (!overlay || overlay.destroyed) return null
   return runRafTween({
     durationMs,
     delayMs,
     startValue: 0,
+    nowMilliseconds,
     endValue: 1,
     ease: easeOutCubic,
     shouldStop: () => !isCurrent(token) || !overlay || overlay.destroyed,
