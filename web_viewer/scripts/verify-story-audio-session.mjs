@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises'
 import { StoryAudioSession } from '../src/core/story-runtime/StoryAudioSession.js'
 import { useVoicePlayer } from '../src/core/useVoicePlayer.js'
 import { AudioManager } from '../src/core/AudioManager.js'
+import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import {
   isKnownDanglingStoryVoice,
   knownDanglingStoryVoiceCount,
@@ -372,7 +373,8 @@ assert.match(viewerSource, /const NO_AUDIO = URL_FLAGS\.get\('noAudio'\) === '1'
 assert.match(viewerSource, /const NO_VOICE = NO_AUDIO \|\| URL_FLAGS\.get\('noVoice'\) === '1'/)
 assert.match(appSource, /const NO_AUDIO = URL_FLAGS\.get\('noAudio'\) === '1'/)
 assert.match(appSource, /:no-audio="NO_AUDIO"/)
-assert.match(appSource, /const view = ref\('__boot__'\)/)
+assert.match(appSource, /const\s*\{[^}]*\bview\b[^}]*\}\s*=\s*useArchiveNavigationState\(\)/)
+assert.equal(useArchiveNavigationState().view.value, '__boot__', 'startup must not mount audible home before route restoration')
 assert.match(appSource, /const loading = ref\(true\)/)
 assert.match(homeSource, /new StoryAudioSession\(\{ disabled: props\.noAudio \}\)/)
 assert.match(homeSource, /audioSession: homeAudioSession/)

@@ -401,3 +401,40 @@ foundation、背景门禁与 publicDir:false 构建通过。
 
 B20 补充：foundation 的缺失角色夹具将 manager:null 改为已挂载的空 manager，
 将角色缺失与舞台未挂载分开验证；缺失角色仍不阻塞 Auto，基础门禁复跑通过。
+
+## B1–B20 整合回归（代码基线 414697c）
+
+按 source gate 选取与近期播放器/导航改动相关的 20 项，逐项记录退出码，
+本地原始日志与初次汇总在 `.analysis/integration-414697c/`（不提交临时日志）。
+初次 19 项通过，story-audio 的旧源码断言仍要求 App 内声明 view；修正为
+验证 App 使用导航模块的 view，且实际初值为 __boot__ 后重跑通过。未改动
+音频实现或弱化启动静音约束。下面“通过”包含这一项单独复跑的结果。
+
+| 门禁 | 结果 |
+| --- | --- |
+| verify:story-schema | 通过 |
+| verify:story-audio | 通过（断言迁移后复跑） |
+| verify:story-runtime-foundation | 通过 |
+| verify:story-background-loading | 通过 |
+| verify:story-camera-clock | 通过 |
+| verify:story-screen-clock | 通过 |
+| verify:story-step-playback-state | 通过 |
+| verify:story-registry-handoff | 通过 |
+| verify:story-partial-settlement | 通过 |
+| verify:story-timing-semantics -- --source-only | 通过 |
+| verify:story-spine-cues | 通过 |
+| verify:story-stage-loading | 通过 |
+| verify:archive-data | 通过 |
+| verify:archive-navigation-state | 通过 |
+| verify:archive-async-navigation | 通过 |
+| verify:archive-startup-route | 通过 |
+| verify:episode-queue | 通过 |
+| verify:release-soak | 通过 |
+| verify:silhouette | 通过 |
+| verify:external-story-resource-ui | 通过 |
+
+全量 runtime shape 覆盖 10,326 scenarios、315,124 snapshots、175,600 cues、
+48,073 lip records；音频门禁含 100-cycle 的可控 BGM/Ambient 生命周期。
+release-soak 仅证明记录器/分析器用例，不是实际长稳数据；timing 使用 source-only，
+未运行 mounted Event RAW。此轮也未执行整个 CI 的 masterdata/publisher 门禁、
+完整媒体 build/copy、实音长稳或发布。只修改测试断言，不重复生产构建。
