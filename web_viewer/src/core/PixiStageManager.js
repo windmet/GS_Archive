@@ -92,6 +92,7 @@ export class PixiStageManager {
     this._screenSlideToken = 0
     this._effectOverlay = null
     this._screenEffectToken = 0
+    this._screenEffectTimers = new Set()
 
     // Visual filters
     this._grayFilter = null     // PIXI.ColorMatrixFilter for grayscale
@@ -678,6 +679,8 @@ export class PixiStageManager {
 
   clearScreenEffects() {
     this._screenEffectToken++
+    for (const timer of this._screenEffectTimers) clearTimeout(timer)
+    this._screenEffectTimers.clear()
     if (!this._effectOverlay || this._effectOverlay.destroyed) return
     this._effectOverlay.alpha = 0
     this._effectOverlay.visible = false
@@ -685,14 +688,17 @@ export class PixiStageManager {
 
   playScreenEffects(effects = []) {
     if (!Array.isArray(effects) || effects.length === 0 || !this._effectOverlay) return
-    const token = ++this._screenEffectToken
+    this.clearScreenEffects()
+    const token = this._screenEffectToken
     for (const effect of effects) {
       const delayMs = Math.max(0, Number(effect?.delay || 0)) * 1000
-      setTimeout(() => {
+      const timer = setTimeout(() => {
+        this._screenEffectTimers.delete(timer)
         if (token !== this._screenEffectToken) return
         if (effect?.type === 'single') this._playSingleScreenEffect(effect)
         else this._playFadeScreenEffect(effect)
       }, delayMs)
+      this._screenEffectTimers.add(timer)
     }
   }
 
@@ -2126,6 +2132,7 @@ export class PixiStageManager {
   destroy() {
     if (this._destroyed) return
     this._destroyed = true
+    this.clearScreenEffects()
     this._dragSpineId = null
     if (this._globalMoveHandler && this.app) {
       this.app.stage.off('globalpointermove', this._globalMoveHandler)

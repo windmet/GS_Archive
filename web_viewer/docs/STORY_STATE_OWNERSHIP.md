@@ -286,3 +286,16 @@ BackgroundManager 色值转换和 StoryClock，在不创建 GPU renderer 的情�
 单模型/全部模型移除后的零 RAF。Spine、foundation、screen-clock 与
 publicDir:false 构建通过。两个已知背景路径提示保留。未据此宣称浏览器
 像素/实音长稳通过，粒子及其他舞台属性仍需检查。
+
+## B13：屏幕特效延迟回调和销毁归属
+
+playScreenEffects 现在保存延迟启动计时器，替换/clearScreenEffects 时逐一取消，
+执行时从集合移除；token 仍抑制已经排队的旧回调。清理在检查 overlay 前执行，
+因此 overlay 丢失不会泄漏计时器。destroy 首先使效果 token 失效并清理计时器，
+迟到的 punch/落花纹理结果沿用 token 检查退出。
+
+verify:story-screen-clock 纳入生命周期 verifier，实际执行 stage 方法，覆盖
+替换只剩新计时器、已排队旧回调、正常执行释放记录、缺失 overlay 清理、销毁
+中的纹理完成不被消费，以及重复 destroy。屏幕时钟、foundation 和
+publicDir:false 构建通过，两个已知背景路径解析提示保留。本批只完成上述
+资源归属，粒子更新/延迟启动仍使用实际时间，未宣称暂停/倍速和浏览器长稳通过。
