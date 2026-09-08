@@ -100,3 +100,33 @@ file/key 不一致和非法计数。归档数据、路由、source-only baseline
 产物从 1,549,728 增至 2,263,684 bytes；本地 gzip 对照从 103,943 增至
 154,750 bytes（不是实测 HTTP 压缩传输）。这是迁移期增加的约 714 KB 原始数据，
 后续其他旧索引消费者迁移完成后再处理重复加载；未重编译剧情或修改 publication ledger。
+
+## C3：主线与组合前传集合关系
+
+`collectionStructure` 增加 19 个命名集合：domain/sectionId/title/releaseAt/assetCode、
+chapters 及其 episodes。Python 解释组、章、分段的数字字段、归属、排序、资源后缀
+和视觉资源编号；浏览器 `storyCollections.js` 只组合这些字段与 presentation。
+空或无效来源日期由 JSON null 表示，消费者恢复原 NaN 语义。组保持来源顺序，
+章和分段保持原数字 ID 稳定排序；章文件仍在分段排序前选择第一个有文件的来源行。
+
+播放 boundary 匹配、首段 playableStart、episode 本地/共享文件坐标、标题 fallback、
+中文展示文本和汇总计数继续留在消费者。Extra 和 birthday 显式使用 App 已构建的域
+模型；移除了集合模块偷偷从 raw master 构造 extra 域的 fallback。所有仓内调用已
+改为传命名目录，误传旧 master 会明确报错。storyDomainIdentityIndex 等其他旧数据
+消费者仍存在，不代表整个前端已停止读取 masterdata。
+
+验证：冻结 `0fe4993` 的集合构建器，对真实 19 个主线/前传集合在有/无 presentation
+两种情况下逐字段比较，连同 extra 投影一并保持；86 话、744 段的关系与所有结果
+字段一致。合成输入覆盖乱序、零 ID、空章节、无效日期、字段 5 资源 fallback，
+以及“排序前选文件”的行为。契约检查缺结构、非法分段后缀和错误日期类型。
+story-catalog、story-collections、episode-queue、extra/birthday 域入口和 archive-data
+门禁通过，源代码生产构建通过（2471 modules，原有两个背景路径提示仍在）。
+
+浏览器 1280×720：C.FIRST 集合 4/4 话、40/40 段；进入第二分段，URL 指向
+`episodes/1_1_016_01_b.json`、start_step=1/end_step=18。截图确认两角色、对话及
+控制条，点击返回恢复同一集合。本次使用 noAudio=1；不替代实音、窄屏或长稳验收。
+
+新增结构随目录一起生成和交付，不增加 HTTP 请求。相对 Git 中 C2 的 LF 产物，
+本轮原始 JSON 从 2,177,114 增至 2,426,176 bytes，本地 gzip 从 153,425 增至
+164,764 bytes。C2 上节记录的是当时工作树字节，受换行影响，不能直接作本轮差值。
+未运行 RAW 全量提取、剧情编译或发布。

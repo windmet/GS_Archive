@@ -20,7 +20,7 @@ const [master, birthdaySemantic, presentation, idolEpisodes, idols, speakers] = 
 const catalog = buildStoryCatalog(await readJson('public/data/masterdata/story_catalog.json'), presentation)
 const extraDomain = buildExtraStoryDomainIdentity(master)
 const birthdayDomain = buildBirthdayStoryDomainIdentity(master, idols, speakers, birthdaySemantic)
-const collections = buildStoryCollections(master, catalog, { extraDomain, birthdayDomain, idolEpisodes })
+const collections = buildStoryCollections(await readJson('public/data/masterdata/story_catalog.json'), catalog, { extraDomain, birthdayDomain, idolEpisodes })
 const mainCollections = collections.filter(collection => collection.domain === 'main')
 const unitCollections = collections.filter(collection => collection.domain === 'unit_story')
 const extraCollections = collections.filter(collection => collection.domain === 'extra')

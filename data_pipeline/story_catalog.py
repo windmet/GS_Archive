@@ -82,6 +82,44 @@ def build_file_metadata(data):
     return {"entries": list(entries.values()), "missingExtra": missing_extra}
 
 
+def build_collection_structure(data):
+    """Masterdata relationships only; playable boundaries remain presentation-owned."""
+    unit_visual_codes = ("01jup", "02dra", "03alt", "04bei", "05w00", "06fra", "07sai", "08hig",
+                         "09shi", "10caf", "11mof", "12sem", "13the", "14fla", "15leg", "16cfi")
+    collections = []
+    for domain in ("main", "unit_story"):
+        source = data.get(domain) or {}
+        for group in source.get("groups", []):
+            group_id = str(group.get("1"))
+            section_id = group_id if domain == "main" else str(group.get("2"))
+            chapters = []
+            matching = [chapter for chapter in source.get("chapters", []) if str(chapter.get("2")) == group_id]
+            for chapter in sorted(matching, key=lambda row: release_number(row.get("1")) or 0):
+                chapter_id = str(chapter.get("1"))
+                rows = [row for row in source.get("episodes", []) if str(row.get("2")) == chapter_id]
+                # The old consumer chooses the file before sorting the episode rows.
+                file = next((row["compiled_file"] for row in rows if row.get("compiled_file")), "")
+                episodes = []
+                for row in sorted(rows, key=lambda row: release_number(row.get("1")) or 0):
+                    resource = row.get("resource_id") or row.get("5") or ""
+                    part = re.search(r"_([a-z])$", resource, re.I)
+                    episodes.append({"id": str(row.get("1") or ""), "label": row.get("3") or "",
+                                     "resourceId": resource, "part": part.group(1) if part else ""})
+                chapters.append({"id": chapter_id, "label": chapter.get("3") or "",
+                                 "title": (chapter.get("9") or "").strip(),
+                                 "releaseAt": release_number(chapter.get("5")),
+                                 "backgroundId": chapter.get("6") or "", "file": file, "episodes": episodes})
+            unit_number = release_number(group.get("2"))
+            asset_code = (str(group.get("5") or "").zfill(2) if domain == "main" else
+                          unit_visual_codes[int(unit_number) - 1] if unit_number is not None
+                          and unit_number == int(unit_number) and 1 <= unit_number <= len(unit_visual_codes) else "")
+            collections.append({"domain": domain, "sectionId": section_id,
+                                "title": group.get("2" if domain == "main" else "3") or "",
+                                "releaseAt": release_number(group.get("4") or group.get("5")),
+                                "assetCode": asset_code, "chapters": chapters})
+    return collections
+
+
 def build_story_catalog(data):
     def rows(domain, kind):
         return (data.get(domain) or {}).get(kind, [])
@@ -167,7 +205,7 @@ def build_story_catalog(data):
                 entry["exists"] = False
             entry["rowCount"] += 1
     return {"schema_version": 1, "source_digest": source_digest(data), "entries": list(entries.values()),
-            "fileMetadata": build_file_metadata(data)}
+            "fileMetadata": build_file_metadata(data), "collectionStructure": build_collection_structure(data)}
 
 
 def main():

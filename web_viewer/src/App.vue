@@ -901,7 +901,7 @@ const birthdayStoryDomain = computed(() => buildBirthdayStoryDomainIdentity(
 ))
 
 const storyCollections = computed(() => buildStoryCollections(
-  storyMasterData.value,
+  storyCatalogData.value,
   storyCatalog.value,
   {
     birthdayDomain: birthdayStoryDomain.value,

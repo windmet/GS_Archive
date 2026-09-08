@@ -44,7 +44,7 @@ assert.equal(extra.meta.resourceIdCount, 45)
 assert.equal(extra.meta.compiledFileCount, 44)
 
 const catalog = buildStoryCatalog(await readJson('public/data/masterdata/story_catalog.json'), presentation)
-const collections = buildStoryCollections(master, catalog, { extraDomain: extra })
+const collections = buildStoryCollections(await readJson('public/data/masterdata/story_catalog.json'), catalog, { extraDomain: extra })
   .filter(collection => collection.domain === 'extra')
 assert.equal(collections.length, 10)
 assert.equal(collections.reduce((sum, collection) => sum + collection.chapterCount, 0), 47)

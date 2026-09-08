@@ -1,7 +1,20 @@
+// Frozen from 0fe4993; test-only collection parity oracle.
+import { buildExtraStoryDomainIdentity } from '../../src/data/storyDomainIdentityIndex.js'
+
+const UNIT_VISUAL_CODES = [
+  '01jup', '02dra', '03alt', '04bei', '05w00', '06fra', '07sai', '08hig',
+  '09shi', '10caf', '11mof', '12sem', '13the', '14fla', '15leg', '16cfi',
+]
+
+function sortedRows(rows) {
+  return [...rows].sort((a, b) => Number(a['1'] || 0) - Number(b['1'] || 0))
+}
+
 export function buildStoryChapterEpisodes(story, rows) {
   const boundaries = story?.episodes || []
-  return rows.map((row, index) => {
-    const { resourceId, part } = row
+  return sortedRows(rows).map((row, index) => {
+    const resourceId = row.resource_id || row['5'] || ''
+    const part = resourceId.match(/_([a-z])$/i)?.[1] || ''
     const boundary = boundaries.find(item => item.episode_part === part) || boundaries[index] || null
     const episodeFile = boundary?.episode_file || ''
     const rawStart = Number(boundary?.start_step_index || 0)
@@ -10,8 +23,8 @@ export function buildStoryChapterEpisodes(story, rows) {
       : (index === 0 ? Math.max(rawStart, Number(story?.playableStartIndex || 0)) : rawStart)
 
     return {
-      id: row.id || `${story?.file || 'missing'}-${index}`,
-      label: row.label || `エピソード${index + 1}`,
+      id: String(row['1'] || `${story?.file || 'missing'}-${index}`),
+      label: row['3'] || `エピソード${index + 1}`,
       resourceId,
       part,
       exists: Boolean(story?.exists && boundary),
@@ -25,21 +38,26 @@ export function buildStoryChapterEpisodes(story, rows) {
   })
 }
 
-function buildCollection(structure, catalog) {
-  const { domain, sectionId, assetCode } = structure
-  const chapterModels = structure.chapters
+function buildCollection(domain, group, chapters, episodeRows, catalog) {
+  const groupId = String(group['1'])
+  const sectionId = domain === 'main' ? groupId : String(group['2'])
+  const chapterModels = chapters
+    .filter(chapter => String(chapter['2']) === groupId)
+    .sort((a, b) => Number(a['1'] || 0) - Number(b['1'] || 0))
     .map(chapter => {
-      const { file } = chapter
+      const chapterId = String(chapter['1'])
+      const rows = episodeRows.filter(row => String(row['2']) === chapterId)
+      const file = rows.find(row => row.compiled_file)?.compiled_file || ''
       const story = file
         ? catalog.find(entry => entry.domain === domain && entry.file === file) || null
         : null
-      const episodes = buildStoryChapterEpisodes(story, chapter.episodes)
+      const episodes = buildStoryChapterEpisodes(story, rows)
       return {
-        id: chapter.id,
-        label: chapter.label,
-        title: chapter.title || story?.title || '未公开',
-        releaseAt: chapter.releaseAt === null ? Number.NaN : chapter.releaseAt,
-        backgroundId: chapter.backgroundId,
+        id: chapterId,
+        label: chapter['3'] || '',
+        title: chapter['9']?.trim() || story?.title || '未公开',
+        releaseAt: Number(chapter['5'] || 0),
+        backgroundId: chapter['6'] || '',
         file,
         exists: Boolean(story?.exists),
         story,
@@ -52,6 +70,9 @@ function buildCollection(structure, catalog) {
       }
     })
 
+  const assetCode = domain === 'main'
+    ? String(group['5'] || '').padStart(2, '0')
+    : UNIT_VISUAL_CODES[Number(group['2']) - 1]
   const visualUrl = domain === 'main'
     ? (['01', '02'].includes(assetCode) ? `/assets/stories/main/main_chapter_banner_${assetCode}.png` : '')
     : (assetCode ? `/assets/stories/units/image_unit_story_button_${assetCode}.png` : '')
@@ -61,12 +82,12 @@ function buildCollection(structure, catalog) {
     domain,
     domainLabel: domain === 'main' ? '主线剧情' : '组合前传',
     sectionId,
-    title: structure.title || (domain === 'main' ? `第${sectionId}章` : sectionId),
+    title: domain === 'main' ? (group['2'] || `第${sectionId}章`) : (group['3'] || sectionId),
     eyebrow: domain === 'main' ? 'MAIN STORY' : 'UNIT EPISODE ZERO',
     description: domain === 'main'
       ? '从 315 Production 启程，按正式话目与分段浏览完整主线。'
       : '按组合整理的前传故事，记录成员相遇、磨合与共同启程。',
-    releaseAt: structure.releaseAt === null ? Number.NaN : structure.releaseAt,
+    releaseAt: Number(group['4'] || group['5'] || 0),
     visualUrl,
     chapters: chapterModels,
     chapterCount: chapterModels.length,
@@ -318,10 +339,16 @@ export function buildStoryCollections(data, catalog, {
   idolEpisodes = null,
 } = {}) {
   if (!data) return []
-  if (!Array.isArray(data.collectionStructure)) throw new Error('Story collections require the named catalog structure')
-  const collections = data.collectionStructure.map(structure => buildCollection(structure, catalog || []))
-  for (const series of extraDomain?.collections || []) {
-    collections.push(buildExtraCollection(series, extraDomain, catalog || []))
+  const collections = []
+  const resolvedExtraDomain = extraDomain || buildExtraStoryDomainIdentity(data)
+  for (const group of data.main?.groups || []) {
+    collections.push(buildCollection('main', group, data.main?.chapters || [], data.main?.episodes || [], catalog || []))
+  }
+  for (const group of data.unit_story?.groups || []) {
+    collections.push(buildCollection('unit_story', group, data.unit_story?.chapters || [], data.unit_story?.episodes || [], catalog || []))
+  }
+  for (const series of resolvedExtraDomain?.collections || []) {
+    collections.push(buildExtraCollection(series, resolvedExtraDomain, catalog || []))
   }
   collections.push(...buildBirthdayCollections(birthdayDomain, catalog || [], idolEpisodes))
   return collections

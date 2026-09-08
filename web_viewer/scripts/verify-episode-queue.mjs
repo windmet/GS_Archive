@@ -5,7 +5,7 @@ import { buildStoryCatalog } from '../src/data/storyCatalog.js'
 import { buildStoryCollections } from '../src/data/storyCollections.js'
 
 const read = name => JSON.parse(readFileSync(new URL(`../public/data/masterdata/${name}.json`, import.meta.url), 'utf8'))
-const collections = buildStoryCollections(read('story_master_index'), buildStoryCatalog(read('story_catalog'), read('story_presentation_index')))
+const collections = buildStoryCollections(read('story_catalog'), buildStoryCatalog(read('story_catalog'), read('story_presentation_index')))
 let checked = 0, sharedFileRanges = 0
 for (const collection of collections.filter(item => ['main', 'unit_story'].includes(item.domain))) {
   const episodes = collection.chapters.flatMap(chapter => chapter.episodes || [])

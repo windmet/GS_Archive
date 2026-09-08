@@ -1,4 +1,5 @@
 import { validateStoryFileMetadata } from './storyFileMetadata.js'
+import { validateStoryCollectionStructure } from './storyCollectionStructure.js'
 
 export const STORY_DOMAIN_LABELS = {
   main: '主线剧情', event: '活动剧情', unit_story: '组合前传', idol_story: '个人剧情',
@@ -24,6 +25,7 @@ export function validateStoryCatalog(data) {
     ids.add(entry.id)
   }
   validateStoryFileMetadata(data.fileMetadata)
+  validateStoryCollectionStructure(data.collectionStructure)
   return data
 }
 
