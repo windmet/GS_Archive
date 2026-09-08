@@ -97,6 +97,9 @@ jobs:
       - name: Verify screen transition playback clock
         run: npm run verify:story-screen-clock
 
+      - name: Verify playback state across story steps
+        run: npm run verify:story-step-playback-state
+
       - name: Verify Story timing semantics matrix
         run: npm run verify:story-timing-semantics -- --source-only
 

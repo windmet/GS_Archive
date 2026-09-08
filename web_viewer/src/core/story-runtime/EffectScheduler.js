@@ -46,8 +46,14 @@ export class EffectScheduler {
     }
   }
 
-  start({ offset = 0, rate = 1 } = {}) {
+  start({ offset = 0, rate = this.clock.rate, paused = false } = {}) {
     this.clock.start({ offset, rate })
+    if (paused) {
+      this.clock.pause()
+      this.clock.seek(offset)
+      this._stopTicker()
+      return
+    }
     this._running = true
     this.tick()
     this._scheduleFrame()

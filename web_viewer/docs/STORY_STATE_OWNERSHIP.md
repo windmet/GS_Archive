@@ -204,3 +204,24 @@ semantics 与 publicDir:false 构建通过。粒子、punch 等其他屏幕效�
 浏览器 noAudio 集成冒烟完成 C.FIRST 剧情 2→3→4，显示预期对白并返回集合 16。
 此项验证实际播放流程；遮罩数值与暂停/倍速结论来自上述可控 RAF 测试，未执行
 像素级四向录屏或窄屏矩阵。
+
+## B8：切步保留倍速与暂停意图
+
+EffectScheduler.start 原先每次默认 rate=1，切步会丢失已选倍速。现默认复用
+StoryClock.rate，显式 rate 参数仍可覆盖。新增 paused 启动入口，暂停时将逻辑
+时间固定在 offset，不执行 tick，不启动 at=0 cue 或申请 scheduler RAF。
+
+StoryViewer 通过 isPaused 回调提供现有 runtimePauseReasons，runtime 在新分段
+和快照恢复时读取该意图；没有再持有一份暂停标记。不能从 clock.state 推断意图，
+因为切步前 cancelAll 会将 clock 停止。暂停时允许应用 entry/恢复快照，演出在
+最后一个暂停原因解除后由原有 resume 流程启动。
+
+新增 verify:story-step-playback-state，直接运行 useStoryRuntimeCues 与 scheduler，
+旧实现先复现首段 rate 1 !== 2。修复后验证预设/切步倍速、多暂停原因下导航、
+at=0 cue 不提前执行、解除后执行一次、暂停中改速、历史快照不重播及 RAF 清理。
+此测试不构造 Vue DOM 或音频设备。foundation、background/camera/screen clock
+回归与 publicDir:false 构建通过，新增 CI gate。
+
+浏览器 noAudio 冒烟：C.FIRST 第 2 段打开/关闭菜单后，前进经 3 到 4 显示预期
+对白，再返回集合 16。浏览器没有注入倍速或强制后台切步，不将此项冒烟替代
+生产 runtime 的切步状态回归，也不作为真实音频长稳证据。

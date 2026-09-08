@@ -671,6 +671,7 @@ const stepSceneEffects = useStepSceneEffects({
   },
 })
 
+const runtimePauseReasons = new Set()
 const storyRuntimeCues = useStoryRuntimeCues({
   compiledData,
   getStageStep: () => stageStep.value,
@@ -678,10 +679,10 @@ const storyRuntimeCues = useStoryRuntimeCues({
   spineStageRef,
   audioManager: _audioManager,
   debugSnapshotAt: SNAPSHOT_AT,
+  isPaused: () => runtimePauseReasons.size > 0,
   debugSnapshotAction: () => freezeScene('snapshotAt'),
 })
 
-const runtimePauseReasons = new Set()
 function setRuntimeSessionPaused(reason, paused) {
   const wasPaused = runtimePauseReasons.size > 0
   if (paused) runtimePauseReasons.add(reason)

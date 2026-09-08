@@ -19,6 +19,7 @@ export function useStoryRuntimeCues({
   compiledData, currentStepIndex, spineStageRef, audioManager,
   getStageStep = () => compiledData.value?.steps?.[currentStepIndex.value],
   debugSnapshotAt = null, debugSnapshotAction = null,
+  isPaused = () => false,
 }) {
   const scheduler = new EffectScheduler({ clock: new StoryClock() })
   let normalizedSource = null
@@ -105,7 +106,7 @@ export function useStoryRuntimeCues({
     const debugSnapshotCue = restore ? null : createDebugSnapshotCue(step, debugSnapshotAt)
     if (debugSnapshotCue) cues.push(debugSnapshotCue)
     scheduler.loadStep(cues, { handlers, context: { step } })
-    scheduler.start()
+    scheduler.start({ paused: isPaused() })
     console.debug(restore ? '[StoryRuntime] restored' : '[StoryRuntime] scheduled', JSON.stringify(scheduler.inspect()))
   }
 
