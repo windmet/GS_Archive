@@ -4,6 +4,25 @@ import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { buildStoryCatalog as legacy } from '../fixtures/story-catalog/legacy-catalog-v0.mjs'
 import { buildStoryCatalog, validateStoryCatalog } from '../src/data/storyCatalog.js'
+import { buildScenarioMetaByFile as legacyMetadata } from '../fixtures/story-catalog/legacy-file-metadata-v0.mjs'
+import { buildScenarioMetaByFile, missingExtraFileEntries } from '../src/data/storyFileMetadata.js'
+
+function verifyFileMetadata(master, catalog) {
+  const expected = [...legacyMetadata(master)].map(([key, { rows, ...entry }]) => {
+    if (entry.summary) entry.summary = Object.fromEntries(['voice_count', 'lip_count', 'step_count']
+      .filter(name => name in entry.summary).map(name => [name, entry.summary[name]]))
+    return [key, entry]
+  })
+  // An absent file is serialized by omission, while the legacy object has undefined.
+  const actual = [...buildScenarioMetaByFile(catalog)].map(([key, entry]) => [key, { file: undefined, ...entry }])
+  assert.deepEqual(actual, expected, 'file metadata titles, summaries, order and missing identity parity')
+  const missing = (master.extra?.episodes || []).filter(row => row.compiled_exists === false).map(row => {
+    const resourceId = row.resource_id || row['5']
+    const title = row['3'] || resourceId
+    return { file: null, title, subtitle: `${resourceId} · missing compiled`, resourceId, missing: true, searchText: `${title} ${resourceId}` }
+  })
+  assert.deepEqual(missingExtraFileEntries(catalog), missing)
+}
 
 const masterPath = fileURLToPath(new URL('../public/data/masterdata/story_master_index.json', import.meta.url))
 const pipeline = fileURLToPath(new URL('../../data_pipeline/story_catalog.py', import.meta.url))
@@ -12,6 +31,7 @@ const master = read('story_master_index'), presentation = read('story_presentati
 const generated = JSON.parse(execFileSync('python', [pipeline, '--input', masterPath], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, env: { ...process.env, PYTHONIOENCODING: 'utf-8' } }))
 const artifact = read('story_catalog')
 assert.deepEqual(artifact, generated, 'committed catalog must match the production pipeline')
+verifyFileMetadata(master, generated)
 for (const overlay of [null, presentation]) {
   const expected = legacy(master, overlay)
   const actual = buildStoryCatalog(generated, overlay)
@@ -26,6 +46,12 @@ for (const mutate of [
   value => { value.entries.push(value.entries[0]) },
   value => { value.entries[0].file = null },
   value => { value.entries[0].resourceIds = 'invalid' },
+  value => { delete value.fileMetadata },
+  value => { value.fileMetadata.entries.push(value.fileMetadata.entries[0]) },
+  value => { value.fileMetadata.entries[0].titles = 1 },
+  value => { value.fileMetadata.entries[0].key = 'wrong-file.json' },
+  value => { value.fileMetadata.entries[0].summary = { step_count: -1 } },
+  value => { value.fileMetadata.missingExtra = [{ resourceId: null, title: 'bad' }] },
 ]) {
   const bad = structuredClone(generated); mutate(bad)
   assert.throws(() => validateStoryCatalog(bad))
@@ -37,7 +63,9 @@ const fixture = JSON.parse(readFileSync(fixturePath, 'utf8'))
 const edge = JSON.parse(execFileSync('python', [pipeline, '--input', fixturePath], { encoding: 'utf8', env: { ...process.env, PYTHONIOENCODING: 'utf-8' } }))
 const overlay = { by_file: { 'shared.json': { preplay_synopsis: { title: 'Overlay', text: 'Search overlay' }, playable_step_count: 0, playable_start_index: 3 } } }
 const edgeActual = buildStoryCatalog(edge, overlay)
+verifyFileMetadata(fixture, edge)
 assert.deepEqual(edgeActual, legacy(fixture, overlay))
 assert.equal(edgeActual.find(entry => entry.file === 'shared.json').exists, false)
 assert.ok(edgeActual.some(entry => entry.id === 'missing:main:missing'))
 console.log('Story catalog edge cases: duplicates, cross-domain aliases, missing parents/files, late summaries, numeric titles and resource-like dates passed')
+console.log(`File metadata: ${generated.fileMetadata.entries.length} files and ${generated.fileMetadata.missingExtra.length} missing-extra rows match the legacy consumer`)

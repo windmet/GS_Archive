@@ -398,6 +398,7 @@ import { countScenarioFiles, getCategoryCountText } from './utils/IndexStats.js'
 import { Preloader } from './utils/Preloader.js'
 import LoadingScreen from './components/LoadingScreen.vue'
 import StoryReleaseSoakPanel from './components/player/StoryReleaseSoakPanel.vue'
+import { missingExtraFileEntries } from './data/storyFileMetadata.js'
 import ArchiveImmersiveHome from './components/archive/ArchiveImmersiveHome.vue'
 import ArchiveShell from './components/archive/ArchiveShell.vue'
 import ArchiveCardList from './components/archive/ArchiveCardList.vue'
@@ -765,7 +766,7 @@ const episodeZeroUnits = computed(() => {
   return cat?.units || []
 })
 
-const scenarioMetaByFile = computed(() => buildScenarioMetaByFile(storyMasterData.value))
+const scenarioMetaByFile = computed(() => buildScenarioMetaByFile(storyCatalogData.value))
 
 const eventRelationByFile = computed(() => new Map(
   (archiveManifestData.value?.unit_event_relations || []).map(relation => [relation.file, relation]),
@@ -1090,20 +1091,7 @@ const filteredFileEntries = computed(() => {
 
   if (currentCategoryId.value === 'extra') {
     const existingFiles = new Set(files)
-    const missingExtra = (storyMasterData.value?.extra?.episodes || [])
-      .filter(row => row.compiled_exists === false)
-      .map(row => {
-        const resourceId = row.resource_id || row['5']
-        const title = row['3'] || resourceId
-        return {
-          file: null,
-          title,
-          subtitle: `${resourceId} · missing compiled`,
-          resourceId,
-          missing: true,
-          searchText: `${title} ${resourceId}`,
-        }
-      })
+    const missingExtra = missingExtraFileEntries(storyCatalogData.value)
       .filter(entry => !existingFiles.has(entry.file))
     entries = [...entries, ...missingExtra]
   }

@@ -68,3 +68,35 @@ archive-baseline:source-only、source-only Vite 构建；完整提取器的 --he
 `?view=story_collection&story_type=unit_story&story_section=16` 正常，截图可见正式标题、
 概要与分段入口，无 error 日志。本批没有改 UI 布局，未跑完整移动端矩阵或实音播放。
 阅读模式、其他域 selector、App 拆分和 Python package 迁移继续按总体计划推进。
+
+## C2：文件列表消费命名元数据
+
+2026-09-08，`story_catalog.json` 增加必需的 `fileMetadata`，仍保留 v1 的原有
+目录行字段。生成器、产物和消费者需要一起交付；旧产物缺少此字段会在 repository
+契约校验处被拒绝，不会回退到浏览器重新解析数字字段。现有生成命令和完整
+masterdata generation job 都调用同一个 builder，本批仅运行独立目录生成。
+
+`fileMetadata.entries` 由 pipeline 按原文件元数据遍历顺序生成：key、可选 file、
+resourceIds、titles、exists，以及可选 summary。summary 仅保留文件列表消费的
+voice_count/lip_count/step_count，不复制场景资源清单。原先无人消费的 rows 已删除。
+文件标题保持旧 rowDisplayTitle 语义，不能复用包含父章节标题的目录检索 titles。
+无文件的 key 仍为 `missing:<resourceId>`，保留其跨域合并行为。
+
+`fileMetadata.missingExtra` 保存原缺失 extra 行的 resourceId/title，保留顺序和重复。
+`src/data/storyFileMetadata.js` 只投影命名字段及中文缺失提示；`App.vue` 的文件列表
+不再解释该路径中的数字字段，也不再用 storyMasterData 构建 scenarioMetaByFile。
+旧 story master 仍有 storyCollections 等消费者，本批不能移除其加载。
+
+测试冻结 `14af6e4` 的旧文件 metadata builder，逐字段对照 1,394 份文件的实际
+消费字段；另测缺失资源、跨域同名 missing key、重复缺失 extra、字段 5 fallback、
+晚到 summary、数字标题。原目录全属性 parity 继续通过；契约拒绝缺字段、重复 key、
+file/key 不一致和非法计数。归档数据、路由、source-only baseline 门禁均通过。
+源代码构建通过（2470 modules）；仍有原先两个运行时背景路径提示。
+
+浏览器 1280×720：extra → 1st Anniversary 展示 20 个文件，标题及 voice/lip
+计数正常；搜索 `5_06_018_22` 收敛为“ライブが終わって”，显示 `13 steps`。
+本批未改变布局，没有以此替代窄屏完整矩阵或实音长稳。
+
+产物从 1,549,728 增至 2,263,684 bytes；本地 gzip 对照从 103,943 增至
+154,750 bytes（不是实测 HTTP 压缩传输）。这是迁移期增加的约 714 KB 原始数据，
+后续其他旧索引消费者迁移完成后再处理重复加载；未重编译剧情或修改 publication ledger。

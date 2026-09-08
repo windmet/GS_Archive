@@ -46,6 +46,42 @@ def release_number(value):
         return None
 
 
+def build_file_metadata(data):
+    """File-list metadata, separate from catalog titles containing parent names."""
+    entries = {}
+    for domain in DOMAINS:
+        rows = data.get(domain, []) if domain in ("card_scenarios", "work", "birthday") else (data.get(domain) or {}).get("episodes", [])
+        for row in rows or []:
+            file = row.get("compiled_file")
+            resource = row.get("resource_id")
+            if not file and not resource:
+                continue
+            key = file or f"missing:{resource}"
+            if key not in entries:
+                entries[key] = {"key": key, "resourceIds": [], "titles": [], "exists": row.get("compiled_exists") is not False}
+                if "compiled_file" in row:
+                    entries[key]["file"] = file
+            entry = entries[key]
+            if resource and resource not in entry["resourceIds"]:
+                entry["resourceIds"].append(resource)
+            title = display_title(row)
+            if title and title not in entry["titles"]:
+                entry["titles"].append(title)
+            if "summary" not in entry and row.get("compiled_summary") is not None:
+                # The file list needs counts only, not another copy of scene assets.
+                entry["summary"] = {name: row["compiled_summary"][name]
+                                    for name in ("voice_count", "lip_count", "step_count")
+                                    if name in row["compiled_summary"]}
+            if row.get("compiled_exists") is False:
+                entry["exists"] = False
+    missing_extra = []
+    for row in (data.get("extra") or {}).get("episodes", []):
+        if row.get("compiled_exists") is False:
+            resource = row.get("resource_id") or row.get("5")
+            missing_extra.append({"resourceId": resource, "title": row.get("3") or resource})
+    return {"entries": list(entries.values()), "missingExtra": missing_extra}
+
+
 def build_story_catalog(data):
     def rows(domain, kind):
         return (data.get(domain) or {}).get(kind, [])
@@ -130,7 +166,8 @@ def build_story_catalog(data):
             if row.get("compiled_exists") is False or not file:
                 entry["exists"] = False
             entry["rowCount"] += 1
-    return {"schema_version": 1, "source_digest": source_digest(data), "entries": list(entries.values())}
+    return {"schema_version": 1, "source_digest": source_digest(data), "entries": list(entries.values()),
+            "fileMetadata": build_file_metadata(data)}
 
 
 def main():

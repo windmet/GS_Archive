@@ -1,3 +1,5 @@
+import { validateStoryFileMetadata } from './storyFileMetadata.js'
+
 export const STORY_DOMAIN_LABELS = {
   main: '主线剧情', event: '活动剧情', unit_story: '组合前传', idol_story: '个人剧情',
   card_scenarios: '卡片剧情', work: '工作剧情', birthday: '生日剧情', extra: '额外剧情',
@@ -21,6 +23,7 @@ export function validateStoryCatalog(data) {
     }
     ids.add(entry.id)
   }
+  validateStoryFileMetadata(data.fileMetadata)
   return data
 }
 
