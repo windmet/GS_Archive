@@ -16,6 +16,7 @@ try {
   const manager = Object.assign(Object.create(BackgroundManager.prototype), {
     bgContainer: container, bgSprite: bg, _blurFilter: { blur: 0 },
     _bgBlurAmount: 0, _bgOverlayColor: 0xFFFFFF, _bgOverlaySprite: overlay,
+    _bgEffectEntries: {}, _bgTransitionToken: 0,
     getWidth: () => 1280, getHeight: () => 720,
   })
   const stage = Object.assign(Object.create(PixiStageManager.prototype), {
@@ -52,7 +53,23 @@ try {
   oldFrames.forEach(fn => fn())
   assert.equal(manager._bgBlurAmount, 3); assert.equal(overlay.tint, 0x123456)
   assert.equal(frames.size, 0)
-  overlay.destroy(); bg.destroy(); container.destroy(); texture.destroy(true)
+  let filterDisposals = 0
+  manager._blurFilter.destroy = () => { filterDisposals++ }
+  // Isolate the manager-owned overlay from the independent background sprite
+  // in this fixture; the overlay's shared texture must survive disposal.
+  manager.bgSprite = null
+  apply('#000000', 2)
+  assert.equal(frames.size, 2)
+  manager.destroy()
+  assert.equal(frames.size, 0)
+  assert.equal(overlay.destroyed, true)
+  assert.equal(texture.destroyed, false)
+  assert.equal(filterDisposals, 1)
+  assert.equal(manager._bgOverlaySprite, null)
+  assert.equal(manager._blurFilter, null)
+  assert.equal(manager._bgBlurTween, null); assert.equal(manager._bgColorTween, null)
+  manager.destroy(); assert.equal(filterDisposals, 1)
+  bg.destroy(); container.destroy(); texture.destroy(true)
   console.log('Background properties: scene-to-renderer delay, pause/rate, color reset and replacement passed')
 } finally {
   [globalThis.requestAnimationFrame, globalThis.cancelAnimationFrame] = saved

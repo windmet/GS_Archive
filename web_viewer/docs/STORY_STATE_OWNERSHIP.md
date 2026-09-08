@@ -438,3 +438,14 @@ B20 补充：foundation 的缺失角色夹具将 manager:null 改为已挂载的
 release-soak 仅证明记录器/分析器用例，不是实际长稳数据；timing 使用 source-only，
 未运行 mounted Event RAW。此轮也未执行整个 CI 的 masterdata/publisher 门禁、
 完整媒体 build/copy、实音长稳或发布。只修改测试断言，不重复生产构建。
+
+## B21：背景叠层与滤镜销毁
+
+BackgroundManager.destroy 原来只将颜色叠层移出容器，仍保留 sprite/filter
+和已取消 tween 引用。现在取消后清空 tween，销毁自有 overlay sprite（不销毁
+共享 texture/baseTexture），释放 blur filter 并置空。重复 destroy 不重复释放。
+
+背景属性回归验证活动双 tween 销毁后零 RAF、实际 Pixi overlay 已销毁、
+共享纹理有效、滤镜 destroy 调用一次和所有引用清空；滤镜使用 disposal spy，
+不声称无 GPU 测试证明 GPU 内存回收。背景三项门禁及 publicDir:false 构建
+通过，两个已知背景路径提示保留。实音长稳仍未执行。

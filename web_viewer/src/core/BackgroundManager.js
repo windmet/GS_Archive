@@ -774,9 +774,15 @@ export class BackgroundManager {
   destroy() {
     this._bgBlurTween?.cancel?.()
     this._bgColorTween?.cancel?.()
+    this._bgBlurTween = null
+    this._bgColorTween = null
     this.clearBackground()
     this.clearBgBlur()
     this.clearBgColorOverlay()
+    this._bgOverlaySprite?.destroy({ texture: false, baseTexture: false })
+    this._bgOverlaySprite = null
+    this._blurFilter?.destroy?.()
+    this._blurFilter = null
     for (const id of Object.keys(this._bgEffectEntries)) {
       this._removeBgEffect(id)
     }
