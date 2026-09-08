@@ -1,27 +1,19 @@
 import { StoryClock } from './StoryClock.js'
 import { EffectScheduler } from './EffectScheduler.js'
-import { createPerformanceHandle } from './PerformanceRegistry.js'
 import { normalizeScenario } from './ScenarioNormalizer.js'
 import { applyScreenEntrySnapshot, createScreenCueHandle } from './ScreenCueRuntime.js'
 import { applyBackgroundEntrySnapshot, createBackgroundCueHandle } from './BackgroundCueRuntime.js'
 import { applyCameraEntrySnapshot, createCameraCueHandle } from './CameraCueRuntime.js'
 import { createSeCueHandle } from './SeCueRuntime.js'
 import { createDebugSnapshotCue, createDebugSnapshotHandle } from './DebugSnapshotRuntime.js'
-import { getCachedMotionSetting } from '../../utils/IdolMotionSettingStore.js'
+import { createSpineCueHandle } from './SpineCueRuntime.js'
 
 function clone(value) {
   return value == null ? value : JSON.parse(JSON.stringify(value))
 }
 
-export function settleSpineNeckCue(manager, cue) {
-  if (!manager || !cue?.target || !cue?.payload?.value) return false
-  manager.playSpineNeckAnim?.(cue.target, cue.payload.value, cue.cue_id)
-  const track = manager.spineInstances?.[cue.target]?.spine?.state?.getCurrent?.(3)
-  if (!track) return false
-  track.trackTime = track.animationEnd
-  manager.flushSpinePose?.(cue.target, 0)
-  return true
-}
+// Keep the existing public helper import stable during the module migration.
+export { settleSpineNeckCue } from './SpineCueRuntime.js'
 
 export function useStoryRuntimeCues({
   compiledData, currentStepIndex, spineStageRef, audioManager,
@@ -66,125 +58,9 @@ export function useStoryRuntimeCues({
     apply()
   }
 
-  function createSpineHandle(cue, context = {}) {
-    let operationToken = 0
-    let activeNeckTrack = null
-    let releasePending = null
-    let neckFallbackTimer = null
-    const isTransient = cue.lifecycle.persistence === 'transient'
-    const expectedSpineIds = new Set(
-      (context.step?.entry_snapshot?.spines || [])
-        .map(spine => spine?.id)
-        .filter(Boolean),
-    )
-    const targetExpectedInEntry = expectedSpineIds.has(cue.target)
-    const apply = (manager, duration, { settleNeck = false } = {}) => {
-      const target = cue.target
-      const payload = cue.payload || {}
-      if (cue.action === 'spine.face.set') {
-        manager.updateSpineFace?.(target, payload.value, {
-          anim_flag: payload.anim_flag,
-          blush_flag: payload.blush_flag,
-          sweat_flag: payload.sweat_flag,
-        })
-      } else if (cue.action === 'spine.body.play') {
-        const modelId = manager.spineInstances?.[target]?.modelId || ''
-        const motionSetting = getCachedMotionSetting(target, modelId, payload.value)
-        manager.playSpineAnim?.(target, payload.value, false, !!payload.no_back, motionSetting, true, 0.3)
-      } else if (cue.action === 'spine.neck.play') {
-        if (settleNeck) {
-          settleSpineNeckCue(manager, cue)
-          activeNeckTrack = manager.spineInstances?.[target]?.spine?.state?.getCurrent?.(3) || null
-          releasePending?.()
-          return
-        }
-        manager.playSpineNeckAnim?.(target, payload.value, cue.cue_id)
-        const entry = manager.spineInstances?.[target]
-        const track = entry?.spine?.state?.getCurrent?.(3)
-        activeNeckTrack = track || null
-        if (track) {
-          return new Promise(resolve => {
-            let completed = false
-            const finish = () => {
-              if (completed) return
-              completed = true
-              if (neckFallbackTimer != null) clearTimeout(neckFallbackTimer)
-              neckFallbackTimer = null
-              releasePending = null
-              resolve()
-            }
-            releasePending = finish
-            // Keep Track 3 clamped at its final pose. The step transition or an
-            // explicit neck.stop cue owns clearing it.
-            track.listener = { complete: finish }
-            const durationMs = Math.max(0, Number(track.animationEnd || 0) - Number(track.animationStart || 0)) * 1000
-            neckFallbackTimer = setTimeout(finish, durationMs + 250)
-          })
-        }
-      } else if (cue.action === 'spine.neck.stop') {
-        manager.stopSpineNeckAnim?.(target, cue.cue_id)
-      } else if (cue.action === 'spine.visual.tint') {
-        manager.setSpineColor?.(target, payload.value, duration, 0)
-      }
-    }
-    const performWhenReady = (duration, options) => {
-      const token = ++operationToken
-      const expectedGeneration = generation
-      if (!targetExpectedInEntry) {
-        console.debug('[StoryRuntime] spine cue target absent from entry snapshot; skipped', cue.cue_id, cue.target)
-        return Promise.resolve(false)
-      }
-      const deadline = performance.now() + 5000
-      return new Promise(resolve => {
-        const attempt = () => {
-          if (token !== operationToken || expectedGeneration !== generation) return resolve(false)
-          const manager = getManager()
-          if (manager?.spineInstances?.[cue.target]) {
-            Promise.resolve(apply(manager, duration, options)).then(() => resolve(true), () => resolve(false))
-            return
-          }
-          if (performance.now() >= deadline) {
-            console.warn('[StoryRuntime] spine cue target unavailable', cue.cue_id, cue.target)
-            return resolve(false)
-          }
-          requestAnimationFrame(attempt)
-        }
-        attempt()
-      })
-    }
-    return createPerformanceHandle({
-      id: cue.cue_id,
-      channel: cue.channel,
-      skippable: cue.lifecycle.skippable,
-      blocksInput: cue.lifecycle.blocks_input,
-      blocksAuto: cue.lifecycle.blocks_auto && targetExpectedInEntry,
-      metadata: { action: cue.action, cue },
-      onStart: () => {
-        console.debug('[StoryRuntime] cue start', cue.cue_id)
-        return performWhenReady(cue.duration)
-      },
-      onSettle: () => {
-        operationToken++
-        if (isTransient) {
-          if (cue.action === 'spine.neck.play') {
-            return performWhenReady(0, { settleNeck: true })
-          }
-          releasePending?.()
-          return
-        }
-        console.debug('[StoryRuntime] cue settle', cue.cue_id)
-        return performWhenReady(0)
-      },
-      onCancel: reason => {
-        operationToken++
-        releasePending?.()
-        const preservesAuthoredPose = reason === 'step-change' || reason === 'load-step'
-        if (cue.action === 'spine.neck.play' && !preservesAuthoredPose) {
-          getManager()?.stopSpineNeckAnim?.(cue.target, `${cue.cue_id}:cancel`)
-        }
-      },
-    })
-  }
+  const createSpineHandle = (cue, context) => createSpineCueHandle(cue, context, {
+    getManager, getGeneration: () => generation,
+  })
 
   const handlers = new Map()
   handlers.set('camera.transform', cue => createCameraCueHandle(cue, getManager))

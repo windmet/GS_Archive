@@ -88,6 +88,9 @@ jobs:
       - name: Verify Story timing semantics matrix
         run: npm run verify:story-timing-semantics -- --source-only
 
+      - name: Verify Spine cue lifecycle and compiler parity
+        run: npm run verify:story-spine-cues
+
       - name: Verify release soak recorder
         run: npm run verify:release-soak
 

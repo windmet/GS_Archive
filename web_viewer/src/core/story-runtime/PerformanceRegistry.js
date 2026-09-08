@@ -26,17 +26,25 @@ export function createPerformanceHandle({
 
   let currentStatus = status
   let operation = null
+  let operationKind = null
+  let operationGeneration = 0
   let resolveFinished
   const finished = new Promise(resolve => { resolveFinished = resolve })
 
   async function transition(finalStatus, callback, reason) {
     if (!ACTIVE_STATUSES.has(currentStatus)) return currentStatus
-    if (operation) return operation
+    // Navigation/disposal must be able to interrupt an asynchronous Skip
+    // settlement (for example, a Spine cue waiting for its model to load).
+    if (operation && (finalStatus !== 'cancelled' || operationKind === 'cancelled')) return operation
+    const generation = ++operationGeneration
+    operationKind = finalStatus
     operation = (async () => {
       try {
         await callback?.(reason)
+        if (generation !== operationGeneration) return currentStatus
         currentStatus = finalStatus
       } catch (error) {
+        if (generation !== operationGeneration) return currentStatus
         currentStatus = 'failed'
         resolveFinished({ status: currentStatus, reason, error })
         throw error
@@ -58,11 +66,12 @@ export function createPerformanceHandle({
     get status() { return currentStatus },
     get active() { return ACTIVE_STATUSES.has(currentStatus) },
     async start() {
-      if (currentStatus !== 'scheduled') return currentStatus
+      if (currentStatus !== 'scheduled' || operationKind !== null) return currentStatus
       currentStatus = 'running'
       try {
         await onStart?.()
       } catch (error) {
+        if (operationKind === 'cancelled' || !ACTIVE_STATUSES.has(currentStatus)) return currentStatus
         currentStatus = 'failed'
         resolveFinished({ status: currentStatus, reason: 'start-failed', error })
         throw error
@@ -76,15 +85,15 @@ export function createPerformanceHandle({
       return transition('cancelled', onCancel, reason)
     },
     async pause() {
-      if (currentStatus !== 'running') return currentStatus
+      if (currentStatus !== 'running' || operationKind !== null) return currentStatus
       await onPause?.()
-      currentStatus = 'paused'
+      if (currentStatus === 'running' && operationKind !== 'cancelled') currentStatus = 'paused'
       return currentStatus
     },
     async resume() {
-      if (currentStatus !== 'paused') return currentStatus
+      if (currentStatus !== 'paused' || operationKind !== null) return currentStatus
       await onResume?.()
-      currentStatus = 'running'
+      if (currentStatus === 'paused' && operationKind !== 'cancelled') currentStatus = 'running'
       return currentStatus
     },
     complete(reason = 'natural-completion') {

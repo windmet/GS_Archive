@@ -45,6 +45,7 @@ spine_lab / chibi_stage
 | --- | --- | --- |
 | 播放会话与导航协调 | `src/core/StoryViewer.vue` | 当前 step、历史恢复、Auto/Skip、暂停原因和诊断 |
 | cue 归一化与调度 | `src/core/story-runtime/useStoryRuntimeCues.js` | 调度 Screen、Background、Camera、SE、Snapshot 和 Spine cue |
+| Spine cue 执行与等待生命周期 | `src/core/story-runtime/SpineCueRuntime.js` | 角色就绪、face/body/neck/tint 执行、RAF/timer/listener 释放；不拥有 cue 时间 |
 | 逻辑时间 | `src/core/story-runtime/StoryClock.js` | pause/resume/rate 和逻辑时间 |
 | 场景历史 | `src/core/story-runtime/SceneSnapshotStore.js`、`src/core/story-runtime/StepSceneState.js` | settled/entry snapshot 与导航恢复 |
 | 音频会话 | `src/core/story-runtime/StoryAudioSession.js` | Voice、SE、BGM、Ambient 的共享生命周期和 mixer |
@@ -98,6 +99,9 @@ npm run verify:story-audio
 Node 端 `scripts/lib/archive-assets.mjs` 统一 Vite/standalone 的外部资源路径与
 别名策略；浏览器 `src/utils/AssetResolver.js` 只负责 URL。验证入口是
 `npm run verify:archive-assets`。
+
+剧情属性与异步生命周期边界见 [`STORY_STATE_OWNERSHIP.md`](STORY_STATE_OWNERSHIP.md)，
+Spine cue/RAW fixture 回归入口为 `npm run verify:story-spine-cues`。
 
 ### `src/components/archive/`
 

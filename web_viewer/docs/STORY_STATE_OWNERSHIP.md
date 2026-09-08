@@ -1,0 +1,75 @@
+# Story 状态与生命周期边界
+
+2026-09-08，重构 B1。此表描述现行代码，不宣称完整任意时间重建或真实画面验收。
+
+## 从来源到执行
+
+| 状态/动作 | 生成与兼容解释 | 运行时 owner | renderer 执行 |
+| --- | --- | --- | --- |
+| 背景 entry/transition | Python `ScenarioState` / `authoritative_scenario`；legacy 经 `ScenarioNormalizer` | `useStoryRuntimeCues` 应用 entry，`BackgroundCueRuntime` 执行 cue | BackgroundManager |
+| 镜头 entry/transform | 同上，`camera_zoom` → `camera.transform` | `CameraCueRuntime` | CameraController |
+| 黑幕/fade/wipe | `screen_*` → snapshot/cue | `ScreenCueRuntime` | ScreenEffectManager |
+| 角色实例、位置、模型、基础姿态 | entry snapshot（legacy 回退 state） | `SpineStage.applyState`：模型加载与场景投影 | PixiStageManager / SpineManager |
+| delayed face/body/neck/tint | RAW idol 命令 → timeline → v2 Spine cue | `SpineCueRuntime`：目标就绪、执行、结束/取消 | manager 的 updateSpineFace/playSpineAnim/playSpineNeckAnim/setSpineColor |
+| 背景 filter/blur/color、非 fade 屏幕效果 | 现有 step scene state | `applyStepSceneState`，由 SpineStage 调用 | 相应 manager |
+| SE | `se_events` → cue | `SeCueRuntime` | 共享 StoryAudioSession 上的 AudioManager |
+| Voice/BGM/Ambient | dialogue/state/音频引用 | useStepSceneEffects/useVoicePlayer adapter | StoryAudioSession 生命周期 |
+| cue 时间、暂停/速率 | v2 cue 的 at/duration/lifecycle | EffectScheduler + StoryClock | adapter 不另建 step 时间线 |
+| 历史/分支/恢复 | entry/settled snapshot、choice identity | StoryViewer + SceneSnapshotStore + useStoryNavigation | prepareRestore 路径应用快照并抑制 cue 重播 |
+
+`SpineCueRuntime` 只接收 cue、step、manager accessor 和当前导航 generation；
+它不解析 RAW、不创建调度器、不拥有下一步导航。显式可注入 RAF、时钟、timeout
+和 motion lookup，以便测试慢加载和取消，生产默认仍使用现有浏览器 API。
+原 `useStoryRuntimeCues` 的 `settleSpineNeckCue` 导出保留兼容转发。
+
+## 本批实际复现与修复
+
+旧版总调度器内的 `performWhenReady` 请求 RAF，却不保存返回句柄。
+当 entry 预期有角色而模型尚未就绪时，cleanup 后仍有 1 个 callback；
+只有下一次动画帧检查 generation 时才退出。新测试在原代码和仅机械提取后
+均以 `1 !== 0` 失败，修复后无需下一帧即可释放。
+
+第二个失败场景为“模型未就绪 → Skip settlement → cleanup”。原
+`createPerformanceHandle.transition` 遇到已有 settlement Promise 会直接复用，
+使取消不能执行。现在 cancellation 可抢占 settlement，过期完成/失败不能再
+将句柄改回 settled/failed；重复取消只执行一次回调。异步 start/pause/resume
+也不得在取消后恢复活动状态。
+
+Spine adapter 负责释放自己的 readiness RAF、等待 Promise、颈部 fallback
+timeout 和临时 complete listener。step-change/load-step 继续保留颈部最终姿态；
+cleanup 等取消仍清理 neck track；Skip 仍将 neck track 定格在 animationEnd。
+不改变 body 动画参数、motion lookup、5 秒模型等待上限或颈部 250ms 容差。
+
+## 可重跑证据
+
+`npm run verify:story-spine-cues` 使用真实生产模块、可控帧/计时器与 renderer test
+double，覆盖：
+
+- 四个 committed RAW timing fixtures：实际 Python 编译 compatibility/strict，
+  与 JS normalizer 的目标、动作值和 stage 时长对照；cue 保留 command_start；
+  严格 cue 进入新 Spine adapter 并核对 renderer 调用。
+- 角色未加载时退出、Skip 后退出、切到下一步后旧模型迟到、缺失目标 fail-open。
+- future cue 不在 entry 执行、stateful Skip 落地、history restore 不重播 cue。
+- face/body/tint/neck-play/neck-stop 参数与正常执行；颈部 natural/fallback/Skip/
+  step-change/cleanup 释放计时器和 listener；模型超时不虚构目标。
+- pending settlement 被取消后迟到 resolve/reject、异步 start/pause/resume 结束后
+  不复活句柄、cancel-before-start。
+
+相关现有门禁：`verify:story-runtime-foundation`（含 clock/snapshot/choice/播放模式）、
+`verify:story-playback-range`（导航范围）、`verify:story-timing-semantics -- --source-only`、
+`verify:story-audio`、`verify:story-schema`、`verify:release-soak`。
+
+这不是像素、真实 Spine 资产加载或实音长稳测试。没有证据说明此前用户遇到的
+所有显示错误均由这两个生命周期问题引起。
+
+## 后续仍需完成
+
+1. 按属性继续核对模型加载后的 entry 投影与 delayed cue 的顺序；尤其是同一步
+   慢加载、换模型、暂停后恢复、图片/镜头等异步资源。当前测试只证明旧 step
+   的 cue 被取消，未覆盖所有真实 SpineStage watcher 时序。
+2. 将未知 RAW/legacy 字段的诊断连接到稳定来源位置，逐类扩展语义回归；不要
+   把当前 compatibility normalization 的存在等同于所有命令已正确支持。
+3. 建立统一 state plan / renderAt 之前，对 background、camera、screen 和
+   Spine 的过渡中间态分别建立证据；现有 entry/settled 尚不等于任意时刻状态。
+4. 独立 reading model、named catalog、App 导航拆分和 Python package 迁移仍按
+   `ARCHITECTURE_REFACTOR_20260908.md` 推进。P2-B 实音长稳仍未完成。

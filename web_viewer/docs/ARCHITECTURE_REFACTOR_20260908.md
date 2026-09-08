@@ -104,7 +104,7 @@ query、编码文件名、口型、卡图 MIME/cache，另测越界与 standalon
 | 批次 | 具体结果 | 验收要求 |
 | --- | --- | --- |
 | A，已实现 | 共享资源解析，独立 HTTP 回归 | 配置、查找顺序、Vite/standalone 请求等价；保留 transport 差异 |
-| B，下一批 | 剧情语义与状态 ownership characterization | 从现有 fixture 开始列 RAW command → 编译状态 → cue → renderer owner；涵盖 delayed cue、模型加载、前后跳、choice、restore、skip；先复现再修改 |
+| B，推进中 | 剧情语义与状态 ownership characterization；B1 已拆 Spine cue 执行并修复取消等待，见 `STORY_STATE_OWNERSHIP.md` | RAW fixture → 两种编译路径 → Spine adapter 已接通；其余真实舞台属性时序与跨 channel 状态仍需推进 |
 | C | 有命名字段的 Story catalog contract | pipeline 单一生成；与旧 selector 全量输出逐字段 parity；URL、分组、标题、缺失记录保留；然后切消费者 |
 | D | 独立 reading artifact/consumer（功能扩展） | 复用 speaker/text_ref/overlay；choice 与来源 step 保真；浏览器请求证明无 Pixi/Spine/audio 初始化；桌面/窄屏交互验收 |
 | E | Runtime 单一状态计划与 renderer adapter | 在 B 的证据上逐 channel 迁移；兼容留在显式边界；不要先删 normalizer；行为变化需真实媒体回归及长稳证据 |
