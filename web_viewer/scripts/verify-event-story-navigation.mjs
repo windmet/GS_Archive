@@ -13,7 +13,7 @@ const [master, presentation, manifest] = await Promise.all([
   readJson('public/data/archive_manifest.json'),
 ])
 
-const catalogByFile = new Map(buildStoryCatalog(master, presentation).map(story => [story.file, story]))
+const catalogByFile = new Map(buildStoryCatalog(await readJson('public/data/masterdata/story_catalog.json'), presentation).map(story => [story.file, story]))
 const events = manifest.unit_event_relations || []
 let episodeCount = 0
 

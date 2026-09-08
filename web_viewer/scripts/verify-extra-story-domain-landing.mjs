@@ -43,7 +43,7 @@ assert.equal(extra.meta.logicalEntryCount, 47)
 assert.equal(extra.meta.resourceIdCount, 45)
 assert.equal(extra.meta.compiledFileCount, 44)
 
-const catalog = buildStoryCatalog(master, presentation)
+const catalog = buildStoryCatalog(await readJson('public/data/masterdata/story_catalog.json'), presentation)
 const collections = buildStoryCollections(master, catalog, { extraDomain: extra })
   .filter(collection => collection.domain === 'extra')
 assert.equal(collections.length, 10)

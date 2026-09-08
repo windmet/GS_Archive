@@ -18,7 +18,7 @@ const [episodes, mobile, master, birthdaySemantic, presentation, idols, speakers
   readJson('public/data/masterdata/speaker_dictionary.json'),
 ])
 
-const catalog = buildStoryCatalog(master, presentation)
+const catalog = buildStoryCatalog(await readJson('public/data/masterdata/story_catalog.json'), presentation)
 const birthdayDomain = buildBirthdayStoryDomainIdentity(master, idols, speakers, birthdaySemantic)
 const options = buildIdolStoryOptions(episodes, idols)
 assert.equal(options.length, 49, 'the personal-story selector must expose all 49 idols')

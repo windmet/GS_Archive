@@ -486,6 +486,7 @@ const eventIndexData = ref(null)
 const cardDetailData = ref(null)
 const cardDetailLoadPromise = ref(null)
 const storyMasterData = ref(null)
+const storyCatalogData = ref(null)
 const birthdayStorySemanticData = ref(null)
 const extraStoryVisualIndexData = ref(null)
 const storyPresentationData = ref(null)
@@ -754,7 +755,7 @@ const eventRelationByFile = computed(() => new Map(
   (archiveManifestData.value?.unit_event_relations || []).map(relation => [relation.file, relation]),
 ))
 
-const storyCatalog = computed(() => buildStoryCatalog(storyMasterData.value, storyPresentationData.value).map(entry => {
+const storyCatalog = computed(() => buildStoryCatalog(storyCatalogData.value, storyPresentationData.value).map(entry => {
   if (entry.domain !== 'event') return entry
   const relation = eventRelationByFile.value.get(entry.file)
   if (!relation) return { ...entry, eventScope: 'unclassified', eventScopeLabel: '活动' }
@@ -2901,6 +2902,7 @@ onMounted(async () => {
   gashaIndexData.value = data.gashaIndex
   eventIndexData.value = data.eventIndex
   storyMasterData.value = data.storyMaster
+  storyCatalogData.value = data.storyCatalog
   birthdayStorySemanticData.value = data.birthdayStorySemantic
   extraStoryVisualIndexData.value = data.extraStoryVisualIndex
   storyPresentationData.value = data.storyPresentation

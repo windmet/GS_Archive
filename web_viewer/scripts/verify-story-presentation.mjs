@@ -46,7 +46,7 @@ for (const [file, metadata] of Object.entries(presentation.by_file)) {
   if (metadata.preplay_synopsis) assert.ok(metadata.playable_start_index > 0, `${file} does not skip its synopsis`)
 }
 
-const catalog = buildStoryCatalog(master, presentation)
+const catalog = buildStoryCatalog(await readJson('public/data/masterdata/story_catalog.json'), presentation)
 assert.equal(catalog.length, 1394)
 const mainStory = catalog.find(entry => entry.file === '1_4_001_01.json')
 assert.equal(mainStory.title, '新たなる三つの輝きと共に！')

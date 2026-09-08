@@ -1,9 +1,12 @@
+import { validateStoryCatalog } from './storyCatalog.js'
+
 const ARCHIVE_SOURCES = {
   compiledIndex: '/data/compiled/index.json',
   cardIndex: '/data/masterdata/card_index.json',
   gashaIndex: '/data/masterdata/gasha_index.json',
   eventIndex: '/data/masterdata/event_index.json',
   storyMaster: '/data/masterdata/story_master_index.json',
+  storyCatalog: '/data/masterdata/story_catalog.json',
   birthdayStorySemantic: '/data/masterdata/birthday_story_semantic_index.json',
   extraStoryVisualIndex: '/data/masterdata/extra_story_visual_index.json',
   storyPresentation: '/data/masterdata/story_presentation_index.json',
@@ -33,6 +36,7 @@ const IDOL_COMMUNICATION_SOURCES = {
 const payloadCache = new Map()
 
 function validatePayload(key, payload) {
+  if (key === 'storyCatalog') validateStoryCatalog(payload)
   if (!payload || typeof payload !== 'object') {
     throw new Error(`${key} must be a JSON object`)
   }

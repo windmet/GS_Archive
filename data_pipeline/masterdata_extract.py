@@ -15,6 +15,11 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
+if __package__:
+    from .story_catalog import build_story_catalog
+else:
+    from story_catalog import build_story_catalog
+
 
 DEFAULT_KEY = b"DefaultPassPhrase"
 
@@ -3680,6 +3685,7 @@ def main() -> None:
         voice_stems,
     )
     outputs = {
+        "story_catalog.json": build_story_catalog(story_master_index),
         "masterdata_table_scan.json": build_table_scan(records),
         "card_parameter_field1_extract.json": card_parameters,
         "story_related_tables_extract.json": story_tables,
@@ -3724,6 +3730,7 @@ def main() -> None:
         args.public_out_dir.mkdir(parents=True, exist_ok=True)
         for filename in (
             "story_master_index.json",
+            "story_catalog.json",
             "gasha_announcement_index.json",
             "gasha_index.json",
             "event_index.json",

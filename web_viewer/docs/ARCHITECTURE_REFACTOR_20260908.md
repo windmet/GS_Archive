@@ -105,7 +105,7 @@ query、编码文件名、口型、卡图 MIME/cache，另测越界与 standalon
 | --- | --- | --- |
 | A，已实现 | 共享资源解析，独立 HTTP 回归 | 配置、查找顺序、Vite/standalone 请求等价；保留 transport 差异 |
 | B，推进中 | 剧情语义与状态 ownership characterization；B1 拆 Spine cue 执行，B2 补模型发布归属，B3 统一元数据等待与 entry readiness，见 `STORY_STATE_OWNERSHIP.md` | RAW fixture → 两种编译路径 → Spine adapter 已接通；模型替换/离场/慢元数据竞态回归及三角色浏览器冒烟通过；其余舞台属性中间态与跨 channel 状态仍需推进 |
-| C | 有命名字段的 Story catalog contract | pipeline 单一生成；与旧 selector 全量输出逐字段 parity；URL、分组、标题、缺失记录保留；然后切消费者 |
+| C，已实现 | Python 单一生成命名 Story catalog；浏览器目录消费者已迁移，见 `STORY_CATALOG_CONTRACT.md` | 1,394 条目录有/无 presentation 的全部属性 parity、缺失/合并 fixture、域门禁与桌面分类→前传入口通过；旧索引仍供其他 selector 使用 |
 | D | 独立 reading artifact/consumer（功能扩展） | 复用 speaker/text_ref/overlay；choice 与来源 step 保真；浏览器请求证明无 Pixi/Spine/audio 初始化；桌面/窄屏交互验收 |
 | E | Runtime 单一状态计划与 renderer adapter | 在 B 的证据上逐 channel 迁移；兼容留在显式边界；不要先删 normalizer；行为变化需真实媒体回归及长稳证据 |
 | F | App 导航、feature 与 repository validation 分离 | 保留 query contract、Back/parent/player return；自然入口、浏览器历史、桌面/平板/390px、console 验证 |

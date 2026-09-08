@@ -14,7 +14,14 @@ src/main.js
         -> src/components/SpineStage.vue
 ```
 
-`src/core/archiveRoute.js` 是 query route 契约。当前正式视图包括：
+`src/core/archiveRoute.js` 是 query route 契约。
+
+剧情目录的命名输入为 `public/data/masterdata/story_catalog.json`，由
+`data_pipeline/story_catalog.py` 单一生成，消费者为 `src/data/storyCatalog.js`。
+旧 `story_master_index.json` 暂保留供其他域 selector 使用，生成与迁移边界见
+`docs/STORY_CATALOG_CONTRACT.md`。
+
+当前正式视图包括：
 
 ```text
 home

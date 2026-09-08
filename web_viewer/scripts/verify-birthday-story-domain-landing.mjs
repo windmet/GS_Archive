@@ -45,7 +45,7 @@ assert.equal(birthday.meta.sharedSubjectEntryCount, 2)
 assert.equal(birthday.meta.unresolvedEntryCount, 0)
 assert.equal(birthday.meta.crossDomainSharedFileCount, 29)
 
-const catalog = buildStoryCatalog(master, presentation)
+const catalog = buildStoryCatalog(await readJson('public/data/masterdata/story_catalog.json'), presentation)
 const collections = buildStoryCollections(master, catalog, { birthdayDomain: birthday, idolEpisodes })
   .filter(collection => collection.domain === 'birthday')
 assert.equal(collections.length, 51)

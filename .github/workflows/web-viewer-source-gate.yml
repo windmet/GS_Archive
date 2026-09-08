@@ -94,6 +94,9 @@ jobs:
       - name: Verify story stage loading ownership
         run: npm run verify:story-stage-loading
 
+      - name: Verify named story catalog and full consumer parity
+        run: npm run verify:story-catalog
+
       - name: Verify release soak recorder
         run: npm run verify:release-soak
 
