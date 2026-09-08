@@ -180,7 +180,7 @@ print(json.dumps(result))
   }
   assert.deepEqual(direct.calls, [
     ['body', 'fixture', 'value-1', false, true, 'motion-fixture', true, 0.3],
-    ['tint', 'fixture', 'value-1', 0.7, 0],
+    ['tint', 'fixture', 'value-1', 0.7, 0, dependencies.now],
     ['neck-stop', 'fixture', 'step-1:spine.neck.stop'],
   ])
   direct.calls.length = 0

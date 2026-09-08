@@ -29,7 +29,10 @@ export function createSpineCueHandle(cue, { step } = {}, {
   let neckFallbackFrame = null
   let readinessFrame = null
   let releaseReadiness = null
+  let tintTween = null
   function invalidateOperation() {
+    tintTween?.cancel?.()
+    tintTween = null
     operationToken++
     if (readinessFrame != null) cancelFrame(readinessFrame)
     readinessFrame = null
@@ -98,7 +101,7 @@ export function createSpineCueHandle(cue, { step } = {}, {
     } else if (cue.action === 'spine.neck.stop') {
       manager.stopSpineNeckAnim?.(target, cue.cue_id)
     } else if (cue.action === 'spine.visual.tint') {
-      manager.setSpineColor?.(target, payload.value, duration, 0)
+      tintTween = manager.setSpineColor?.(target, payload.value, duration, 0, nowMilliseconds)
     }
   }
   const performWhenReady = (duration, options) => {

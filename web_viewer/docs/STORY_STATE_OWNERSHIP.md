@@ -272,3 +272,17 @@ Spine cue verifier 使用真实 StoryClock 与可控 RAF 验证非零起始偏�
 暂停/倍速回归及 publicDir:false 构建通过，保留两个背景路径解析提示。
 本批只统一完成兜底的时间，不证明所有 Spine 渲染动画和粒子已使用统一时钟，
 也不替代真实浏览器的实音长稳验收。
+
+## B12：Spine tint 的时间与取消归属
+
+setSpineColor 接受可选剧情时钟并返回本次 RAF tween。SpineCueRuntime 保存该
+句柄，失效/跳过/取消仅停止自己的过渡；旧 tween 的清理按对象身份检查，不能
+删除后来注册的过渡。模型移除或全部清空也释放颜色帧。即时设色清除旧记录，
+现有非剧情调用仍默认实际时间，颜色插值继续使用原 easeOutCubic。
+
+verify:story-spine-cues 纳入新的 tint verifier，以实际 PixiStageManager 方法、
+BackgroundManager 色值转换和 StoryClock，在不创建 GPU renderer 的情况下
+验证中间色、暂停、2 倍速、取消保持中间色、旧句柄不删除新句柄、跳过终态、
+单模型/全部模型移除后的零 RAF。Spine、foundation、screen-clock 与
+publicDir:false 构建通过。两个已知背景路径提示保留。未据此宣称浏览器
+像素/实音长稳通过，粒子及其他舞台属性仍需检查。

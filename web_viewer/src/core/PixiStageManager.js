@@ -988,18 +988,20 @@ export class PixiStageManager {
    * @param {string} idolId
    * @param {string|null} hexColor - "#FFFFFF" (normal), "#AAAAAA" (dim), null (reset)
    */
-  setSpineColor(idolId, hexColor, duration = 0, delay = 0) {
+  setSpineColor(idolId, hexColor, duration = 0, delay = 0, nowMilliseconds) {
     const entry = this.spineInstances[idolId]
     if (!entry) return
     const target = hexColor ? parseInt(hexColor.replace('#', ''), 16) : 0xFFFFFF
     const durationMs = Math.max(0, Number(duration || 0)) * 1000
     const delayMs = Math.max(0, Number(delay || 0)) * 1000
     this._spineColorTweens[idolId]?.cancel?.()
+    delete this._spineColorTweens[idolId]
     const start = entry.spine.tint ?? 0xFFFFFF
     const startRgb = this._hexToRgb(start)
     const targetRgb = this._hexToRgb(target)
     if (durationMs > 0 || delayMs > 0) {
-      this._spineColorTweens[idolId] = runRafTween({
+      const tween = runRafTween({
+        nowMilliseconds,
         durationMs,
         delayMs,
         startValue: 0,
@@ -1013,9 +1015,16 @@ export class PixiStageManager {
           })
         },
         onComplete: () => {
-          delete this._spineColorTweens[idolId]
+          if (this._spineColorTweens[idolId] === tween) delete this._spineColorTweens[idolId]
         },
       })
+      const cancel = tween.cancel
+      tween.cancel = () => {
+        cancel()
+        if (this._spineColorTweens[idolId] === tween) delete this._spineColorTweens[idolId]
+      }
+      this._spineColorTweens[idolId] = tween
+      return tween
     } else {
       entry.spine.tint = target
     }
@@ -2079,11 +2088,13 @@ export class PixiStageManager {
    * The model fades out over ~12 frames then destroys itself.
    */
   removeSpine(idolId, immediate = false) {
+    this._spineColorTweens[idolId]?.cancel?.()
     this.removeSilhouette(idolId)
     return this.spineManager?.removeSpine(idolId, immediate)
   }
 
   clearAllSpines(options = {}) {
+    Object.values(this._spineColorTweens).forEach(tween => tween.cancel?.())
     this.clearAllSilhouettes()
     return this.spineManager?.clearAllSpines(options)
   }
