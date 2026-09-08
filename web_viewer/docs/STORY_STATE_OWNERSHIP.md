@@ -299,3 +299,16 @@ verify:story-screen-clock 纳入生命周期 verifier，实际执行 stage 方�
 中的纹理完成不被消费，以及重复 destroy。屏幕时钟、foundation 和
 publicDir:false 构建通过，两个已知背景路径解析提示保留。本批只完成上述
 资源归属，粒子更新/延迟启动仍使用实际时间，未宣称暂停/倍速和浏览器长稳通过。
+
+## B14：活跃屏幕粒子的即时释放
+
+拳击贴图与落花/红叶/星形组合原先依赖下一次 ticker 检查 token 后自毁，
+停帧时无法及时释放。现在 _ownScreenEffect 持有创建时的 ticker 与显示对象，
+clearScreenEffects/destroy 立即取消登记并销毁对象；正常结束和旧排队回调
+复用幂等 cleanup，释放过程不销毁共享 texture/baseTexture。
+
+生命周期 verifier 使用实际 Pixi Sprite/Container/Texture 和生产舞台方法，
+覆盖四种效果的切步清理或 destroy 后零 ticker、零登记、显示对象已销毁、
+根容器无残留、重复清理/旧回调安全及缓存纹理保留。screen-clock、foundation
+和 publicDir:false 构建通过，两个已知背景路径提示保留。这是无 GPU 的
+资源归属验证，尚不覆盖粒子视觉、抖动/overlay 缓动清理和暂停/倍速迁移。

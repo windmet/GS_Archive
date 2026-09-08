@@ -93,6 +93,7 @@ export class PixiStageManager {
     this._effectOverlay = null
     this._screenEffectToken = 0
     this._screenEffectTimers = new Set()
+    this._screenEffectCleanups = new Set()
 
     // Visual filters
     this._grayFilter = null     // PIXI.ColorMatrixFilter for grayscale
@@ -681,6 +682,7 @@ export class PixiStageManager {
     this._screenEffectToken++
     for (const timer of this._screenEffectTimers) clearTimeout(timer)
     this._screenEffectTimers.clear()
+    for (const cleanup of [...this._screenEffectCleanups]) cleanup()
     if (!this._effectOverlay || this._effectOverlay.destroyed) return
     this._effectOverlay.alpha = 0
     this._effectOverlay.visible = false
@@ -766,6 +768,21 @@ export class PixiStageManager {
     return this._effectTextureCache[name]
   }
 
+  _ownScreenEffect(display, tick) {
+    const ticker = this.app.ticker
+    let released = false
+    const cleanup = () => {
+      if (released) return
+      released = true
+      ticker.remove(tick)
+      this._screenEffectCleanups.delete(cleanup)
+      if (!display.destroyed) display.destroy({ children: true, texture: false, baseTexture: false })
+    }
+    this._screenEffectCleanups.add(cleanup)
+    ticker.add(tick)
+    return cleanup
+  }
+
   async _playPunchTexture(effect) {
     const token = this._screenEffectToken
     try {
@@ -789,8 +806,7 @@ export class PixiStageManager {
       const start = performance.now()
       const tick = () => {
         if (token !== this._screenEffectToken || sprite.destroyed) {
-          this.app?.ticker?.remove(tick)
-          if (!sprite.destroyed) sprite.destroy()
+          cleanup()
           return
         }
         const t = Math.min((performance.now() - start) / durationMs, 1)
@@ -801,11 +817,10 @@ export class PixiStageManager {
         sprite.alpha = 1 - Math.max(0, t - 0.25) / 0.75
         sprite.scale.set(scale * (0.92 + t * 0.18))
         if (t >= 1) {
-          this.app.ticker.remove(tick)
-          sprite.destroy()
+          cleanup()
         }
       }
-      this.app.ticker.add(tick)
+      const cleanup = this._ownScreenEffect(sprite, tick)
     } catch (err) {
       console.warn('[PixiStageManager] Failed to load punch texture:', err?.message || err)
     }
@@ -852,8 +867,7 @@ export class PixiStageManager {
       const start = performance.now()
       const tick = () => {
         if (token !== this._screenEffectToken || container.destroyed) {
-          this.app?.ticker?.remove(tick)
-          if (!container.destroyed) container.destroy({ children: true })
+          cleanup()
           return
         }
         const elapsed = performance.now() - start
@@ -867,11 +881,10 @@ export class PixiStageManager {
           sprite.alpha = (0.72 - progress * 0.42) * (0.75 + ((seed % 17) / 50))
         }
         if (progress >= 1) {
-          this.app.ticker.remove(tick)
-          container.destroy({ children: true })
+          cleanup()
         }
       }
-      this.app.ticker.add(tick)
+      const cleanup = this._ownScreenEffect(container, tick)
     } catch (err) {
       console.warn(`[PixiStageManager] Failed to load screen effect "${id}":`, err?.message || err)
     }

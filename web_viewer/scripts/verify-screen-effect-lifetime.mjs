@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { PixiStageManager } from '../src/core/PixiStageManager.js'
+import { BaseTexture, Container, Texture } from 'pixi.js'
 
 const saved = [globalThis.setTimeout, globalThis.clearTimeout]
 const timers = new Map()
@@ -10,6 +11,7 @@ function create() {
   const calls = []
   const stage = Object.assign(Object.create(PixiStageManager.prototype), {
     _screenEffectToken: 0, _screenEffectTimers: new Set(),
+    _screenEffectCleanups: new Set(),
     _effectOverlay: { alpha: 0, visible: false },
     _playSingleScreenEffect: effect => calls.push(effect),
     _playFadeScreenEffect: effect => calls.push(effect),
@@ -57,7 +59,33 @@ try {
   disposed.app = null
   disposed.destroy()
   assert.equal(timers.size, 0)
-  console.log('Screen effect lifetime: replacement, queued callbacks, missing overlay and pending texture disposal passed')
+  for (const kind of ['punch', 'sakura', 'momiji', 'stars']) {
+    const active = create().stage
+    const ticks = new Set()
+    const root = new Container()
+    const base = new BaseTexture(null, { width: 30, height: 20 })
+    const texture = new Texture(base)
+    active.width = 1280; active.height = 720
+    active.app = { stage: root, ticker: { add: fn => ticks.add(fn), remove: fn => ticks.delete(fn) }, destroy: () => {} }
+    active._loadEffectTexture = async () => texture
+    if (kind === 'punch') await active._playPunchTexture({ duration: 2 })
+    else await active._playFallingScreenTexture(kind === 'momiji' ? 'fx_adv_momiji' : 'fx_adv_sakura', {}, { useStar: kind === 'stars' })
+    assert.equal(ticks.size, 1)
+    assert.equal(active._screenEffectCleanups.size, 1)
+    const display = root.children[0]
+    assert.ok(display)
+    const queuedTick = [...ticks][0]
+    if (kind === 'punch' || kind === 'stars') active.destroy()
+    else active.clearScreenEffects()
+    assert.equal(ticks.size, 0, `${kind} must release its ticker without waiting for a frame`)
+    assert.equal(display.destroyed, true)
+    assert.equal(root.children.length, 0)
+    assert.equal(active._screenEffectCleanups.size, 0)
+    queuedTick(); active.clearScreenEffects()
+    assert.equal(base.destroyed, false, 'shared cached texture must survive effect cleanup')
+    root.destroy(); texture.destroy(true)
+  }
+  console.log('Screen effect lifetime: delayed replacement, pending textures, active particle cleanup and shared texture retention passed')
 } finally {
   [globalThis.setTimeout, globalThis.clearTimeout] = saved
 }
