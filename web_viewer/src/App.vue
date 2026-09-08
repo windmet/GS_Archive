@@ -377,6 +377,7 @@
 </template>
 
 <script setup>
+import { buildIdolProfile, buildIdolStats, eventsForIdol, songsForIdol } from './data/idolPage.js'
 import { buildGashaCatalog, buildGashaCategoryOptions, filterGashaCatalog, resolveGashaRelatedCards } from './data/gashaCatalog.js'
 import { filterArchiveCards } from './data/cardFilters.js'
 import { useEpisodeQueue } from './core/useEpisodeQueue.js'
@@ -1190,45 +1191,13 @@ const currentCardCharacterName = computed(() => {
   return idolDisplayName(id) || 'Cards'
 })
 
-const currentIdolProfile = computed(() => {
-  const profile = idolUnitData.value?.by_idol_code?.[currentCharacterId.value]
-  if (!profile) return null
-  const unit = archiveManifestData.value?.unit_membership_by_idol?.[currentCharacterId.value]
-  return {
-    ...profile,
-    idol_code: currentCharacterId.value,
-    unit_id: unit?.unit_id || profile.unit_id,
-    unit_code: unit?.unit_code || profile.unit_code,
-    unit_name: unit?.unit_name || profile.unit_name,
-  }
-})
-
-const currentIdolStats = computed(() => {
-  const id = currentCharacterId.value
-  const chapter = idolEpisodeData.value?.by_idol_code?.[id]?.[0]
-  const mobileById = new Map((mobileArchiveData.value?.scenarios || []).map(scenario => [scenario.id, scenario]))
-  const mobileScenarios = (mobileArchiveData.value?.by_idol_code?.[id] || [])
-    .map(scenarioId => mobileById.get(scenarioId))
-    .filter(Boolean)
-  return {
-    cards: cardsForCharacter(cardIndexData.value, cardMap.value, id).length,
-    stories: (chapter?.sections || []).reduce((sum, section) => sum + (section.episodes?.length || 0), 0),
-    chats: mobileScenarios.filter(scenario => scenario.kind === 'idol_talk').length,
-    phones: mobileScenarios.filter(scenario => scenario.kind === 'idol_phone').length,
-  }
-})
-const currentIdolEvents = computed(() => (archiveManifestData.value?.unit_event_relations || [])
-  .filter(event => (event.characters || []).includes(currentCharacterId.value))
-  .sort((left, right) => Number(left.release_at || 0) - Number(right.release_at || 0)))
-const currentIdolSongs = computed(() => Object.values(songCatalogData.value?.songs || {})
-  .filter(song => (song.performance_mapping?.performer_idol_codes || []).includes(currentCharacterId.value))
-  .map(song => ({
-    song,
-    evidenceLabel: song.performance_mapping.performer_basis === 'table46_explicit'
-      ? '表 46 明确演唱／参演'
-      : '由正式组合归属补全',
-  }))
-  .sort((left, right) => Number(left.song.song_id || 0) - Number(right.song.song_id || 0)))
+const currentIdolProfile = computed(() => buildIdolProfile(currentCharacterId.value, idolUnitData.value, archiveManifestData.value))
+const currentIdolStats = computed(() => buildIdolStats(currentCharacterId.value, {
+  cardIndex: cardIndexData.value, cardMap: cardMap.value,
+  episodes: idolEpisodeData.value, mobile: mobileArchiveData.value,
+}))
+const currentIdolEvents = computed(() => eventsForIdol(currentCharacterId.value, archiveManifestData.value))
+const currentIdolSongs = computed(() => songsForIdol(currentCharacterId.value, songCatalogData.value))
 
 const archiveShellVisible = computed(() => !['__boot__', 'player', 'spine_lab', 'chibi_stage'].includes(view.value))
 

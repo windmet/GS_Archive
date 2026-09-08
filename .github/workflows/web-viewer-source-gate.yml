@@ -136,6 +136,9 @@ jobs:
       - name: Verify gasha catalog boundary
         run: npm run verify:gasha-catalog
 
+      - name: Verify idol page projections
+        run: npm run verify:idol-page
+
       - name: Verify episode queue ownership and range restoration
         run: npm run verify:episode-queue
 
