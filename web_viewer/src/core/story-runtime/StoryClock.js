@@ -27,6 +27,7 @@ export class StoryClock {
     this._nowMilliseconds = nowMilliseconds
     this._state = 'idle'
     this._offsetSeconds = 0
+    this._elapsedSeconds = 0
     this._startedAtMilliseconds = 0
     this._rate = 1
     this._listeners = new Set()
@@ -43,6 +44,7 @@ export class StoryClock {
   start({ offset = 0, rate = 1 } = {}) {
     assertFiniteNonNegative(offset, 'offset')
     assertRate(rate)
+    this._elapsedSeconds = this.elapsed()
     this._offsetSeconds = offset
     this._rate = rate
     this._startedAtMilliseconds = this._nowMilliseconds()
@@ -57,8 +59,15 @@ export class StoryClock {
     return this._offsetSeconds + (elapsedMilliseconds / 1000) * this._rate
   }
 
+  /** Played time across step resets/seeks, using this clock's pause and rate. */
+  elapsed() {
+    if (this._state !== 'running') return this._elapsedSeconds
+    return this._elapsedSeconds + Math.max(0, this._nowMilliseconds() - this._startedAtMilliseconds) / 1000 * this._rate
+  }
+
   pause() {
     if (this._state !== 'running') return this.now()
+    this._elapsedSeconds = this.elapsed()
     this._offsetSeconds = this.now()
     this._state = 'paused'
     this._emit('pause')
@@ -74,6 +83,7 @@ export class StoryClock {
   }
 
   stop() {
+    this._elapsedSeconds = this.elapsed()
     if (this._state === 'running') this._offsetSeconds = this.now()
     this._state = 'stopped'
     this._emit('stop')
@@ -82,6 +92,7 @@ export class StoryClock {
 
   seek(seconds) {
     assertFiniteNonNegative(seconds, 'seconds')
+    this._elapsedSeconds = this.elapsed()
     this._offsetSeconds = seconds
     if (this._state === 'running') this._startedAtMilliseconds = this._nowMilliseconds()
     this._emit('seek')
@@ -90,6 +101,7 @@ export class StoryClock {
 
   setRate(rate) {
     assertRate(rate)
+    this._elapsedSeconds = this.elapsed()
     if (this._state === 'running') {
       this._offsetSeconds = this.now()
       this._startedAtMilliseconds = this._nowMilliseconds()

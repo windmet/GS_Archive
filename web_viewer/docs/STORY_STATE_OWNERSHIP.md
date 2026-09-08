@@ -366,3 +366,17 @@ adapter 到 BackgroundManager/Pixi 对象，检查延迟暂停、2 倍速中间�
 替换只留一个 RAF、移除/销毁后零资源，以及旧帧不复活。背景加载/属性门禁
 与 publicDir:false 构建通过，两个已知背景路径提示保留。持续背景粒子的
 跨步时钟连续性与实际画面/实音长稳仍待验收。
+
+## B19：持续背景跨步时间连续性
+
+StoryClock 新增 elapsed() 累计实际播放的逻辑秒数，复用同一暂停/倍速状态；
+start/seek 改变步内时间但不回退累计时长。舞台 nowMilliseconds 改读累计值，
+剧情 cue 仍读步内 now()。背景效果创建时保存该时间源，雨/暴雨/落花按已过
+时间定位，alpha 和 pendingEndUntil 也使用相同时间。独立舞台默认实际时间，
+cameraflare 仍按原策略禁用。雨纹理降级动画按原 60fps 速度/循环长度投影。
+
+背景门禁覆盖累计时钟的非零 offset、seek、暂停、倍速、stop，以及四类真实
+Pixi 背景效果在步内时钟 reset 后位置不跳、暂停冻结、倍速继续、重复 tick
+不累加运动、跨步省略 end 效果仍等候剩余淡出，最终零 ticker/RAF。背景、
+foundation、切步状态、屏幕特效门禁与 publicDir:false 构建通过。两个已知
+背景路径提示保留。实际粒子视觉/刷新率与实音长稳仍未完成。

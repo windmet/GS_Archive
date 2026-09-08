@@ -144,7 +144,7 @@ export function useStoryRuntimeCues({
 
   return {
     enabled: true,
-    nowMilliseconds: () => scheduler.clock.now() * 1000,
+    nowMilliseconds: () => scheduler.clock.elapsed() * 1000,
     handleStepChange,
     settleCurrentStep,
     cancelCurrentStep,

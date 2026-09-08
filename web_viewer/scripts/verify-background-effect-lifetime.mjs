@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { BaseTexture, Container, Texture } from 'pixi.js'
 import { BackgroundManager } from '../src/core/BackgroundManager.js'
+import { StoryClock } from '../src/core/story-runtime/StoryClock.js'
 
 const frames = new Map(), ticks = new Set()
 let sequence = 0, wall = 0
@@ -18,12 +19,23 @@ function setup() {
     bgContainer: new Container(), bgEffectContainer: new Container(),
     getWidth: () => 100, getHeight: () => 100,
   })
-  const entry = { id: 'fx_adv_rain', container: new Container(), token: 0, loadToken: 0, graphics: [], sprites: [] }
+  const entry = { id: 'fx_adv_rain', container: new Container(), token: 0, loadToken: 0, nowMilliseconds: () => wall, graphics: [], sprites: [] }
   manager._bgEffectEntries[entry.id] = entry
   manager.bgEffectContainer.addChild(entry.container)
   return { manager, entry }
 }
 try {
+  {
+    const clock = new StoryClock({ nowMilliseconds: () => wall })
+    clock.start({ offset: 99 }); assert.equal(clock.elapsed(), 0)
+    wall += 1000; clock.setRate(2); wall += 500
+    assert.equal(clock.elapsed(), 2)
+    clock.seek(200); assert.equal(clock.now(), 200); assert.equal(clock.elapsed(), 2)
+    clock.pause(); wall += 10000; assert.equal(clock.elapsed(), 2)
+    clock.start({ offset: 0, rate: 0.5 }); wall += 2000
+    assert.equal(clock.now(), 1); assert.equal(clock.elapsed(), 3)
+    clock.stop(); clock.stop(); wall += 1000; assert.equal(clock.elapsed(), 3)
+  }
   for (const removal of ['remove', 'destroy']) {
     const { manager, entry } = setup()
     let rejectTexture
@@ -64,7 +76,40 @@ try {
     manager.destroy(); assert.equal(ticks.size, 0)
     manager.bgContainer.destroy(); manager.bgEffectContainer.destroy()
   }
-  console.log('Background effect lifetime: late failure suppression, current fallback, alpha replacement and immediate cleanup passed')
+  for (const id of ['fx_adv_rain', 'fx_adv_rain_heavy', 'fx_adv_sakura', 'fx_adv_momiji']) {
+    const { manager, entry: unused } = setup()
+    manager._removeBgEffect(unused.id)
+    manager._loadEffectTexture = async () => white
+    const clock = new StoryClock({ nowMilliseconds: () => wall }); clock.start()
+    const now = () => clock.elapsed() * 1000
+    manager.applyBgEffects([{ id, duration: 2 }], null, now)
+    for (let i = 0; i < 8; i++) await Promise.resolve()
+    const entry = manager._bgEffectEntries[id]
+    assert.ok(entry.sprites.length > 0, id)
+    const tick = () => { frame(); [...ticks].forEach(fn => fn(1000)) }
+    const snapshot = () => JSON.stringify({ alpha: entry.container.alpha,
+      sprites: entry.sprites.map(sprite => [sprite.x, sprite.y, sprite.rotation, sprite.tilePosition?.x, sprite.tilePosition?.y]) })
+    wall += 1000; tick()
+    const beforeReset = snapshot()
+    clock.start({ offset: 0 }); tick()
+    assert.equal(snapshot(), beforeReset, `${id} cannot jump at a step reset`)
+    clock.pause(); wall += 10000; tick(); assert.equal(snapshot(), beforeReset)
+    clock.setRate(2); clock.resume(); wall += 500; tick()
+    assert.notEqual(snapshot(), beforeReset)
+    assert.equal(entry.container.alpha, manager._bgEffectTargetAlpha(id))
+    const beforeRepeat = snapshot(); tick(); tick(); assert.equal(snapshot(), beforeRepeat)
+    manager.applyBgEffects([{ id, action: 'end', duration: 2, delay: 1 }], null, now)
+    clock.start({ offset: 0, rate: 2 })
+    manager.applyBgEffects([], null, now)
+    assert.equal(manager._bgEffectEntries[id], entry, 'ending effect persists across step omission until its logical fade finishes')
+    clock.pause(); wall += 10000; tick()
+    assert.equal(manager._bgEffectEntries[id], entry)
+    clock.resume(); wall += 1500; tick()
+    assert.equal(manager._bgEffectEntries[id], undefined)
+    assert.equal(frames.size, 0); assert.equal(ticks.size, 0)
+    manager.destroy(); manager.bgContainer.destroy(); manager.bgEffectContainer.destroy()
+  }
+  console.log('Background effects: lifecycle, continuous clock, step resets, pause/rate and logical retirement passed')
 } finally {
   Object.defineProperty(Texture, 'WHITE', whiteDescriptor)
   white.destroy(true)

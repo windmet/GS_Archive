@@ -14,7 +14,7 @@ export function applyStepSceneState({
   }
 
   manager.setCameraFilter(null)
-  manager.applyBgEffects?.(state.bg_effects || [], state.bg_profile || null)
+  manager.applyBgEffects?.(state.bg_effects || [], state.bg_profile || null, nowMilliseconds)
 
   if (state.camera_filter) manager.setCameraFilter(state.camera_filter)
 

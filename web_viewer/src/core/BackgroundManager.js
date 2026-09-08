@@ -348,7 +348,7 @@ export class BackgroundManager {
     return ((Math.round(r) & 255) << 16) | ((Math.round(g) & 255) << 8) | (Math.round(b) & 255)
   }
 
-  applyBgEffects(effects = [], bgProfile = null) {
+  applyBgEffects(effects = [], bgProfile = null, nowMilliseconds = () => performance.now()) {
     const normalizedEffects = (effects || []).filter(effect => {
       const id = effect?.id
       return id && !this._shouldDisableBgEffect(id)
@@ -366,7 +366,7 @@ export class BackgroundManager {
         }
       }
       if (!entry) {
-        entry = this._createBgEffect(id, bgProfile)
+        entry = this._createBgEffect(id, bgProfile, nowMilliseconds)
         this._bgEffectEntries[id] = entry
         if (entry.container) this.bgEffectContainer.addChild(entry.container)
       }
@@ -376,7 +376,7 @@ export class BackgroundManager {
       if (ending) {
         const delayMs = Math.max(0, Number(effect.delay || 0)) * 1000
         const durationMs = Math.max(0, Number(effect.duration || 0)) * 1000
-        entry.pendingEndUntil = performance.now() + delayMs + durationMs + 80
+        entry.pendingEndUntil = entry.nowMilliseconds() + delayMs + durationMs + 80
       } else {
         entry.pendingEndUntil = null
       }
@@ -389,7 +389,7 @@ export class BackgroundManager {
     for (const id of Object.keys(this._bgEffectEntries)) {
       if (!desired.has(id)) {
         const entry = this._bgEffectEntries[id]
-        if (entry?.pendingEndUntil && performance.now() < entry.pendingEndUntil) continue
+        if (entry?.pendingEndUntil && entry.nowMilliseconds() < entry.pendingEndUntil) continue
         this._removeBgEffect(id)
       }
     }
@@ -406,11 +406,11 @@ export class BackgroundManager {
     return false
   }
 
-  _createBgEffect(id, bgProfile = null) {
+  _createBgEffect(id, bgProfile = null, nowMilliseconds = () => performance.now()) {
     const container = new PIXI.Container()
     container.eventMode = 'none'
     container.alpha = 0
-    const entry = { id, container, ticker: null, graphics: [], sprites: [], token: 0, loadToken: 0, bgProfile }
+    const entry = { id, container, ticker: null, graphics: [], sprites: [], token: 0, loadToken: 0, bgProfile, nowMilliseconds }
 
     if (id === 'cameraflare') {
       this._createCameraflareEffect(entry)
@@ -451,9 +451,9 @@ export class BackgroundManager {
         emitter.particles.forEach(sprite => entry.container.addChild(sprite))
       })
 
-      let elapsed = 0
-      entry.ticker = (delta) => {
-        elapsed += delta / 60
+      const startedAt = entry.nowMilliseconds()
+      entry.ticker = () => {
+        const elapsed = Math.max(0, entry.nowMilliseconds() - startedAt) / 1000
         this._tickCameraflareEmitters(entry, elapsed)
       }
       this.app.ticker.add(entry.ticker)
@@ -619,11 +619,13 @@ export class BackgroundManager {
         entry.sprites.push(tile)
       }
       const speed = heavy ? 15 : 9
-      entry.ticker = (delta) => {
+      const startedAt = entry.nowMilliseconds()
+      entry.ticker = () => {
+        const delta = Math.max(0, entry.nowMilliseconds() - startedAt) / 1000 * 60
         for (let i = 0; i < entry.sprites.length; i++) {
           const tile = entry.sprites[i]
-          tile.tilePosition.x -= (speed * 0.45 + i * 1.4) * delta
-          tile.tilePosition.y += (speed + i * 2.5) * delta
+          tile.tilePosition.x = - (speed * 0.45 + i * 1.4) * delta
+          tile.tilePosition.y = (speed + i * 2.5) * delta
         }
       }
       this.app.ticker.add(entry.ticker)
@@ -635,9 +637,10 @@ export class BackgroundManager {
       entry.container.addChild(rain)
       entry.graphics.push(rain)
       const speed = entry.id.includes('heavy') ? 9 : 5
+      const startedAt = entry.nowMilliseconds()
       entry.ticker = () => {
-        rain.y += speed
-        if (rain.y > 28) rain.y = 0
+        const frames = Math.max(0, entry.nowMilliseconds() - startedAt) / 1000 * 60
+        rain.y = (frames * speed) % ((Math.floor(28 / speed) + 1) * speed)
       }
       this.app.ticker.add(entry.ticker)
     }
@@ -661,9 +664,9 @@ export class BackgroundManager {
         entry.container.addChild(sprite)
         entry.sprites.push(sprite)
       }
-      let elapsed = 0
-      entry.ticker = (delta) => {
-        elapsed += delta / 60
+      const startedAt = entry.nowMilliseconds()
+      entry.ticker = () => {
+        const elapsed = Math.max(0, entry.nowMilliseconds() - startedAt) / 1000
         const width = this.getWidth()
         const height = this.getHeight()
         for (const sprite of entry.sprites) {
@@ -742,6 +745,7 @@ export class BackgroundManager {
     const durationMs = Math.max(0, Number(duration || 0)) * 1000
     entry.alphaTween = runRafTween({
       durationMs, delayMs, startValue: startAlpha, endValue: targetAlpha,
+      nowMilliseconds: entry.nowMilliseconds,
       ease: t => t,
       shouldStop: () => entry.token !== token || !entry.container || entry.container.destroyed,
       onUpdate: alpha => { entry.container.alpha = alpha },

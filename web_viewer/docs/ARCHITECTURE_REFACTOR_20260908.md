@@ -106,7 +106,7 @@ query、编码文件名、口型、卡图 MIME/cache，另测越界与 standalon
 | 批次 | 具体结果 | 验收要求 |
 | --- | --- | --- |
 | A，已实现 | 共享资源解析，独立 HTTP 回归 | 配置、查找顺序、Vite/standalone 请求等价；保留 transport 差异 |
-| B，推进中 | 剧情语义与状态 ownership characterization；B1 拆 Spine cue 执行，B2 补模型发布归属，B3 统一元数据等待与 entry readiness；B4 统一背景加载/过渡取消记录，B5 背景渐变、B6 镜头缓动、B7 屏幕转场读取剧情时钟，B8 切步保留倍速/暂停，B9 注册表归属移交、B10 部分 settle 保留剩余事件、B11 颈部完成兜底读取剧情时钟、B12 tint 时钟/取消归属、B13 屏幕特效延迟/销毁清理、B14 活跃粒子即时释放、B15 overlay/抖动缓动清理、B16 屏幕特效延迟/运动统一剧情时钟、B17 背景 blur/color 时钟、B18 持续背景失败/alpha 清理，见 `STORY_STATE_OWNERSHIP.md` | RAW fixture → 两种编译路径 → Spine adapter 已接通；模型替换/离场/慢元数据竞态回归及三角色浏览器冒烟通过；背景 pending 取消、连续请求回退、暂停/恢复/倍速测试通过；其余舞台属性中间态与跨 channel 状态仍需推进 |
+| B，推进中 | 剧情语义与状态 ownership characterization；B1 拆 Spine cue 执行，B2 补模型发布归属，B3 统一元数据等待与 entry readiness；B4 统一背景加载/过渡取消记录，B5 背景渐变、B6 镜头缓动、B7 屏幕转场读取剧情时钟，B8 切步保留倍速/暂停，B9 注册表归属移交、B10 部分 settle 保留剩余事件、B11 颈部完成兜底读取剧情时钟、B12 tint 时钟/取消归属、B13 屏幕特效延迟/销毁清理、B14 活跃粒子即时释放、B15 overlay/抖动缓动清理、B16 屏幕特效延迟/运动统一剧情时钟、B17 背景 blur/color 时钟、B18 持续背景失败/alpha 清理、B19 累计播放时长与持续背景跨步时钟，见 `STORY_STATE_OWNERSHIP.md` | RAW fixture → 两种编译路径 → Spine adapter 已接通；模型替换/离场/慢元数据竞态回归及三角色浏览器冒烟通过；背景 pending 取消、连续请求回退、暂停/恢复/倍速测试通过；其余舞台属性中间态与跨 channel 状态仍需推进 |
 | C，已实现 | Python 单一生成命名 Story catalog；浏览器目录消费者已迁移，见 `STORY_CATALOG_CONTRACT.md` | 1,394 条目录有/无 presentation 的全部属性 parity、缺失/合并 fixture、域门禁与桌面分类→前传入口通过；旧索引仍供其他 selector 使用 |
 | D | 独立 reading artifact/consumer（功能扩展） | 复用 speaker/text_ref/overlay；choice 与来源 step 保真；浏览器请求证明无 Pixi/Spine/audio 初始化；桌面/窄屏交互验收 |
 | E | Runtime 单一状态计划与 renderer adapter | 在 B 的证据上逐 channel 迁移；兼容留在显式边界；不要先删 normalizer；行为变化需真实媒体回归及长稳证据 |

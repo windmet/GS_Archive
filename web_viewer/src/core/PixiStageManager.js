@@ -529,8 +529,8 @@ export class PixiStageManager {
     return this.backgroundManager?._rgbToHex(rgb)
   }
 
-  applyBgEffects(effects = [], bgProfile = null) {
-    return this.backgroundManager?.applyBgEffects(effects, bgProfile)
+  applyBgEffects(effects = [], bgProfile = null, nowMilliseconds) {
+    return this.backgroundManager?.applyBgEffects(effects, bgProfile, nowMilliseconds)
   }
 
   _createBgEffect(id) {
