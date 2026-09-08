@@ -312,3 +312,15 @@ clearScreenEffects/destroy 立即取消登记并销毁对象；正常结束和�
 根容器无残留、重复清理/旧回调安全及缓存纹理保留。screen-clock、foundation
 和 publicDir:false 构建通过，两个已知背景路径提示保留。这是无 GPU 的
 资源归属验证，尚不覆盖粒子视觉、抖动/overlay 缓动清理和暂停/倍速迁移。
+
+## B15：屏幕 overlay/拳击抖动缓动清理
+
+闪光与拳击抖动现在通过 _ownScreenTween 登记取消句柄，自然结束移除登记，
+clear/destroy 立即停止 RAF。拳击取消复原容器起点并隐藏 overlay；共享
+runRafTween 增加取消标记，已排队的回调在取消后不再更新或重新排帧。
+
+生命周期回归使用生产 stage/tween 和可控 RAF，覆盖两种效果的 clear、destroy、
+自然结束，检查零 RAF/登记、位置复原；取消后模拟新镜头位置再执行旧回调，
+新位置与 overlay alpha 不被覆盖。screen-clock、camera-clock、Spine（含 tint）
+及 publicDir:false 构建通过。两个已知背景路径提示保留。上述回归不证明
+粒子暂停/倍速、同时叠加镜头与抖动的合成关系或浏览器实音长稳已完成。

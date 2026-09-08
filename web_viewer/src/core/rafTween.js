@@ -20,9 +20,10 @@ export function runRafTween({
   nowMilliseconds = () => performance.now(),
 }) {
   const state = { rafId: null }
+  let cancelled = false
   const startAt = nowMilliseconds()
   const tick = () => {
-    if (shouldStop()) return
+    if (cancelled || shouldStop()) return
     const elapsed = Math.max(0, nowMilliseconds() - startAt)
     if (elapsed < delayMs) {
       state.rafId = requestAnimationFrame(tick)
@@ -40,6 +41,7 @@ export function runRafTween({
   }
   state.rafId = requestAnimationFrame(tick)
   state.cancel = () => {
+    cancelled = true
     if (state.rafId != null) {
       cancelAnimationFrame(state.rafId)
       state.rafId = null

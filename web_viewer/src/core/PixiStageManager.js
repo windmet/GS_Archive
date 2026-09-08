@@ -718,7 +718,7 @@ export class PixiStageManager {
     const endAlpha = type === 'fadein' ? maxAlpha : 0
     overlay.alpha = startAlpha
     const durationMs = Math.max(0, Number(effect?.duration || 0)) * 1000
-    tweenOverlayFade({
+    this._ownScreenTween(finish => tweenOverlayFade({
       overlay,
       token: this._screenEffectToken,
       isCurrent: token => token === this._screenEffectToken,
@@ -727,8 +727,9 @@ export class PixiStageManager {
       endAlpha,
       onFinish: () => {
         if (endAlpha <= 0 && overlay && !overlay.destroyed) overlay.visible = false
+        finish()
       },
-    })
+    }))
   }
 
   _playSingleScreenEffect(effect) {
@@ -753,12 +754,13 @@ export class PixiStageManager {
     overlay.visible = true
     const dir = Math.sign(Number(effect?.x || 0))
     const durationMs = Math.max(120, Number(effect?.duration || 0.35) * 1000)
-    tweenOverlayPunch({
+    this._ownScreenTween(finish => tweenOverlayPunch({
       overlay,
       spineContainer: this.spineContainer,
       durationMs,
       dir: dir || 1,
-    })
+      onFinish: finish,
+    }))
   }
 
   _loadEffectTexture(name) {
@@ -781,6 +783,14 @@ export class PixiStageManager {
     this._screenEffectCleanups.add(cleanup)
     ticker.add(tick)
     return cleanup
+  }
+
+  _ownScreenTween(start) {
+    let tween
+    const finish = () => this._screenEffectCleanups.delete(cleanup)
+    const cleanup = () => { tween?.cancel?.(); finish() }
+    tween = start(finish)
+    if (tween) this._screenEffectCleanups.add(cleanup)
   }
 
   async _playPunchTexture(effect) {

@@ -2,11 +2,17 @@ import assert from 'node:assert/strict'
 import { PixiStageManager } from '../src/core/PixiStageManager.js'
 import { BaseTexture, Container, Texture } from 'pixi.js'
 
-const saved = [globalThis.setTimeout, globalThis.clearTimeout]
+const saved = [globalThis.setTimeout, globalThis.clearTimeout, globalThis.requestAnimationFrame, globalThis.cancelAnimationFrame, globalThis.performance]
 const timers = new Map()
+const frames = new Map()
+let wall = 0
 let sequence = 0
 globalThis.setTimeout = (fn, delay) => { timers.set(++sequence, { fn, delay }); return sequence }
 globalThis.clearTimeout = id => timers.delete(id)
+globalThis.requestAnimationFrame = fn => { frames.set(++sequence, fn); return sequence }
+globalThis.cancelAnimationFrame = id => frames.delete(id)
+globalThis.performance = { now: () => wall }
+const frame = () => { const pending = [...frames.values()]; frames.clear(); pending.forEach(fn => fn()) }
 function create() {
   const calls = []
   const stage = Object.assign(Object.create(PixiStageManager.prototype), {
@@ -85,7 +91,38 @@ try {
     assert.equal(base.destroyed, false, 'shared cached texture must survive effect cleanup')
     root.destroy(); texture.destroy(true)
   }
-  console.log('Screen effect lifetime: delayed replacement, pending textures, active particle cleanup and shared texture retention passed')
+  for (const kind of ['punch', 'fade']) {
+    for (const end of ['clear', 'destroy', 'natural']) {
+      const active = create().stage
+      active.spineContainer = { x: 123, y: 456 }
+      active._playPunchTexture = () => {}
+      active.width = 1280; active.height = 720
+      if (kind === 'punch') active._playPunchEffect({ duration: 2 })
+      else PixiStageManager.prototype._playFadeScreenEffect.call(active, { duration: 2, type: 'fadeout' })
+      wall += 200; frame()
+      assert.equal(frames.size, 1)
+      assert.equal(active._screenEffectCleanups.size, 1)
+      if (kind === 'punch') assert.notEqual(active.spineContainer.x, 123)
+      const queued = [...frames.values()][0]
+      if (end === 'natural') { wall += 2000; frame() }
+      else if (end === 'clear') active.clearScreenEffects()
+      else active.destroy()
+      assert.equal(frames.size, 0)
+      assert.equal(active._screenEffectCleanups.size, 0)
+      assert.equal(active.spineContainer.x, 123)
+      assert.equal(active.spineContainer.y, 456)
+      assert.equal(active._effectOverlay.visible, false)
+      if (end !== 'natural') {
+        active.spineContainer.x = 900
+        active._effectOverlay.alpha = 0.7
+        queued()
+        assert.equal(active.spineContainer.x, 900, 'queued cancelled shake cannot overwrite the next camera position')
+        assert.equal(active._effectOverlay.alpha, 0.7)
+        assert.equal(frames.size, 0)
+      }
+    }
+  }
+  console.log('Screen effect lifetime: delayed/active cleanup, shared textures, overlay completion and cancelled shake isolation passed')
 } finally {
-  [globalThis.setTimeout, globalThis.clearTimeout] = saved
+  [globalThis.setTimeout, globalThis.clearTimeout, globalThis.requestAnimationFrame, globalThis.cancelAnimationFrame, globalThis.performance] = saved
 }
