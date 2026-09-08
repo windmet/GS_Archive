@@ -382,6 +382,7 @@
 </template>
 
 <script setup>
+import { createLazyArchiveResource } from './data/lazyArchiveResource.js'
 import { prepareScenario } from './data/prepareScenario.js'
 import { buildIdolProfile, buildIdolStats, eventsForIdol, songsForIdol } from './data/idolPage.js'
 import { buildGashaCatalog, buildGashaCategoryOptions, filterGashaCatalog, resolveGashaRelatedCards } from './data/gashaCatalog.js'
@@ -539,7 +540,6 @@ const cardIndexData = ref(null)
 const gashaIndexData = ref(null)
 const eventIndexData = ref(null)
 const cardDetailData = ref(null)
-const cardDetailLoadPromise = ref(null)
 const storyMasterData = ref(null)
 const storyCatalogData = ref(null)
 const birthdayStorySemanticData = ref(null)
@@ -550,7 +550,6 @@ const workStoryData = ref(null)
 const idolEpisodeData = ref(null)
 const mobileArchiveData = ref(null)
 const randomTalkPresentationData = ref(null)
-const idolCommunicationLoadPromise = ref(null)
 const idolUnitData = ref(null)
 const speakerDictionaryData = ref(null)
 const costumeDictionaryData = ref(null)
@@ -1429,43 +1428,27 @@ function resolveRouteEpisode(unit, route) {
   return (unit.episodes || []).find(episode => String(episode.id) === route.episode) || null
 }
 
-async function ensureCardDetailData() {
-  if (cardDetailData.value) return cardDetailData.value
-  if (!cardDetailLoadPromise.value) {
-    cardDetailLoadPromise.value = loadCardDetailData().then(data => {
-      cardDetailData.value = data
-      return data
-    }).catch(error => {
-      console.error('[ArchiveData] Failed to load cardDetailIndex:', error)
-      cardDetailLoadPromise.value = null
-      return null
-    })
-  }
-  return cardDetailLoadPromise.value
-}
+const ensureCardDetailData = createLazyArchiveResource({
+  read: () => cardDetailData.value,
+  load: loadCardDetailData,
+  publish: data => { cardDetailData.value = data },
+  isDisposed: navigation.isDisposed,
+  onError: error => console.error('[ArchiveData] Failed to load cardDetailIndex:', error),
+})
 
-async function ensureIdolCommunicationData() {
-  if (idolEpisodeData.value && mobileArchiveData.value && randomTalkPresentationData.value) {
-    return {
-      idolEpisode: idolEpisodeData.value,
-      mobileArchive: mobileArchiveData.value,
-      randomTalkPresentation: randomTalkPresentationData.value,
-    }
-  }
-  if (!idolCommunicationLoadPromise.value) {
-    idolCommunicationLoadPromise.value = loadIdolCommunicationData().then(data => {
-      idolEpisodeData.value = data.idolEpisode
-      mobileArchiveData.value = data.mobileArchive
-      randomTalkPresentationData.value = data.randomTalkPresentation
-      return data
-    }).catch(error => {
-      console.error('[ArchiveData] Failed to load idol communication indexes:', error)
-      idolCommunicationLoadPromise.value = null
-      return null
-    })
-  }
-  return idolCommunicationLoadPromise.value
-}
+const ensureIdolCommunicationData = createLazyArchiveResource({
+  read: () => idolEpisodeData.value && mobileArchiveData.value && randomTalkPresentationData.value
+    ? { idolEpisode: idolEpisodeData.value, mobileArchive: mobileArchiveData.value, randomTalkPresentation: randomTalkPresentationData.value }
+    : null,
+  load: loadIdolCommunicationData,
+  publish: data => {
+    idolEpisodeData.value = data.idolEpisode
+    mobileArchiveData.value = data.mobileArchive
+    randomTalkPresentationData.value = data.randomTalkPresentation
+  },
+  isDisposed: navigation.isDisposed,
+  onError: error => console.error('[ArchiveData] Failed to load idol communication indexes:', error),
+})
 
 function restoreVoicePreview(route) {
   const card = cardMap.value.get(route.card)
