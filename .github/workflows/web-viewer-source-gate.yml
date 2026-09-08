@@ -91,6 +91,9 @@ jobs:
       - name: Verify background loading lifecycle
         run: npm run verify:story-background-loading
 
+      - name: Verify camera playback clock
+        run: npm run verify:story-camera-clock
+
       - name: Verify Story timing semantics matrix
         run: npm run verify:story-timing-semantics -- --source-only
 

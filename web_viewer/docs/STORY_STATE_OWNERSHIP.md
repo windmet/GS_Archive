@@ -167,3 +167,21 @@ publicDir:false 构建通过。此改动只覆盖背景切换渐变，镜头及�
 
 实际浏览器 noAudio 冒烟：同一 C.FIRST 剧情 2→3→4→5 显示预期对白，返回恢复
 集合 16。此项只验证路由与播放操作，暂停/倍速的 alpha 证据来自上述可控时钟测试。
+
+## B6：镜头缓动读取剧情时钟
+
+CameraCueRuntime 与背景使用同一个 scheduler.clock，向 CameraController 传入
+可选 nowMilliseconds。通用 runRafTween 接受时间源，默认仍为 performance.now；
+镜头的渐变与延迟瞬时变换均使用注入值。保持 easeOutCubic、坐标转换、背景边缘
+约束以及取消停留在中间态、settle 立即到终态的既有行为。
+
+新增 verify:story-camera-clock，直接运行生产 CameraController、cue handle、
+StoryClock 与真实 Pixi Container，可控 RAF 和实际时间。旧实现先复现 1 秒时
+scale 不等于 1.875；修复后覆盖中间位置/缩放、长暂停、恢复、2x/0.5x 切换、
+取消后无迟到更新、暂停中 settle、带延迟的瞬时变换及 RAF 清理。已接入 CI。
+runtime foundation、background-loading、source-only timing semantics 和
+publicDir:false 构建通过。其他 runRafTween 调用仍保留默认时间源，屏幕特效、
+角色动作与 resize 中间态恢复等不属于本批完成证据。
+
+浏览器 noAudio 集成冒烟完成 C.FIRST 剧情 2→3→4，对白正常并可返回集合 16。
+该路径只验证播放集成；镜头缓动数值与暂停/倍速结论来自可控 RAF 回归。

@@ -70,7 +70,9 @@ export function useStoryRuntimeCues({
   }
 
   const handlers = new Map()
-  handlers.set('camera.transform', cue => createCameraCueHandle(cue, getManager))
+  handlers.set('camera.transform', cue => createCameraCueHandle(cue, getManager, {
+    nowMilliseconds: () => scheduler.clock.now() * 1000,
+  }))
   handlers.set('se.play', cue => createSeCueHandle(cue, audioManager))
   handlers.set('screen.directional_wipe', cue => createScreenCueHandle(cue, getManager))
   handlers.set('screen.fade', cue => createScreenCueHandle(cue, getManager))

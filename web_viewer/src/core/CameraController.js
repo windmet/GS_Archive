@@ -69,6 +69,7 @@ export class CameraController {
       this._cameraTween = runRafTween({
         durationMs: animDuration,
         delayMs,
+        nowMilliseconds: zoomData.nowMilliseconds,
         startValue: 0,
         endValue: 1,
         ease: easeOutCubic,
@@ -84,6 +85,7 @@ export class CameraController {
       this._cameraTween = runRafTween({
         durationMs: 0,
         delayMs,
+        nowMilliseconds: zoomData.nowMilliseconds,
         onUpdate: () => this._applyCameraTransform(targetScale, targetX, targetY),
       })
     } else {

@@ -12,7 +12,7 @@ export function applyCameraEntrySnapshot(manager, camera) {
   else manager.resetCameraZoom?.()
 }
 
-export function createCameraCueHandle(cue, getManager) {
+export function createCameraCueHandle(cue, getManager, { nowMilliseconds } = {}) {
   return createPerformanceHandle({
     id: cue.cue_id,
     channel: cue.channel,
@@ -22,7 +22,10 @@ export function createCameraCueHandle(cue, getManager) {
     metadata: { action: cue.action, cue },
     onStart: () => {
       console.debug('[StoryRuntime] cue start', cue.cue_id)
-      getManager()?.setCameraZoom?.({ ...cue.payload, duration: cue.duration, delay: 0 })
+      getManager()?.setCameraZoom?.({
+        ...cue.payload, duration: cue.duration, delay: 0,
+        ...(nowMilliseconds ? { nowMilliseconds } : {}),
+      })
     },
     onSettle: () => {
       console.debug('[StoryRuntime] cue settle', cue.cue_id)

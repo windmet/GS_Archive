@@ -17,12 +17,13 @@ export function runRafTween({
   onUpdate,
   onComplete,
   shouldStop = () => false,
+  nowMilliseconds = () => performance.now(),
 }) {
   const state = { rafId: null }
-  const startAt = performance.now()
+  const startAt = nowMilliseconds()
   const tick = () => {
     if (shouldStop()) return
-    const elapsed = performance.now() - startAt
+    const elapsed = Math.max(0, nowMilliseconds() - startAt)
     if (elapsed < delayMs) {
       state.rafId = requestAnimationFrame(tick)
       return
