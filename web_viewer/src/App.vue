@@ -2627,8 +2627,13 @@ async function loadScenario(name, returnView = 'files', options = {}) {
     preloadProgress.value = 0
     try {
       const r = await fetch(`/data/compiled/${name}?v=${Date.now()}`, { cache: 'no-store' })
+      if (!intent.isCurrent()) return
+      if (!r.ok) throw new Error(`Failed to fetch scenario ${name}: HTTP ${r.status}`)
       const scenario = await r.json()
       if (!intent.isCurrent()) return
+      if (!scenario || typeof scenario !== 'object' || !Array.isArray(scenario.steps)) {
+        throw new Error(`Invalid scenario ${name}: steps must be an array`)
+      }
 
       // Preload all scenario assets before switching to player
       await Promise.all([

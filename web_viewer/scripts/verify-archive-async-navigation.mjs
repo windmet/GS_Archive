@@ -215,4 +215,34 @@ for (const key of ['currentIdolUnitFilter', 'currentCardRarity', 'currentCardAss
   assert.equal(t.state.view.value, 'cards')
   assert.equal(t.state.currentScenarioFile.value, '')
 }
-console.log('Archive async navigation: scenario, preload, history, lazy feature, voice preview, explicit filters, failure and disposal races passed')
+for (const response of [
+  { ok: false, status: 404, json: async () => ({ error: 'not found' }) },
+  { ok: true, status: 200, json: async () => ({ error: 'invalid scenario' }) },
+  { ok: true, status: 200, json: async () => ({ steps: {} }) },
+  { ok: true, status: 200, json: async () => null },
+]) {
+  const t = setup()
+  t.state.view.value = 'cards'
+  let preloads = 0
+  t.context.Preloader.preloadScenario = async () => { preloads++ }
+  const pending = t.load('invalid.json')
+  t.requests[0].resolve(response)
+  await pending
+  assert.equal(t.state.view.value, 'cards', 'failed or malformed response must not enter player')
+  assert.equal(t.state.currentScenarioFile.value, '')
+  assert.equal(t.writes.length, 0)
+  assert.equal(preloads, 0)
+  assert.equal(t.errors.length, 1)
+  assert.equal(t.context.loading.value, false)
+}
+{
+  const t = setup()
+  const pending = t.load('obsolete.json')
+  t.commit('home')
+  let parsed = false
+  t.requests[0].resolve({ ok: false, status: 500, json: async () => { parsed = true; return {} } })
+  await pending
+  assert.equal(parsed, false, 'superseded response must not be parsed')
+  assert.equal(t.errors.length, 0)
+}
+console.log('Archive async navigation: intent races, explicit filters, HTTP/shape failures and obsolete response suppression passed')
