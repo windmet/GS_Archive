@@ -108,7 +108,7 @@ query、编码文件名、口型、卡图 MIME/cache，另测越界与 standalon
 | C，已实现 | Python 单一生成命名 Story catalog；浏览器目录消费者已迁移，见 `STORY_CATALOG_CONTRACT.md` | 1,394 条目录有/无 presentation 的全部属性 parity、缺失/合并 fixture、域门禁与桌面分类→前传入口通过；旧索引仍供其他 selector 使用 |
 | D | 独立 reading artifact/consumer（功能扩展） | 复用 speaker/text_ref/overlay；choice 与来源 step 保真；浏览器请求证明无 Pixi/Spine/audio 初始化；桌面/窄屏交互验收 |
 | E | Runtime 单一状态计划与 renderer adapter | 在 B 的证据上逐 channel 迁移；兼容留在显式边界；不要先删 normalizer；行为变化需真实媒体回归及长稳证据 |
-| F，推进中 | F1 分离 repository 请求/契约；F2 移出导航状态与投影，见 `ARCHIVE_DATA_BOUNDARIES.md`、`ARCHIVE_NAVIGATION_BOUNDARY.md`；异步路由/feature 仍待拆分 | 数据/请求回归与 1,792 组导航投影 parity、域门禁和桌面历史恢复通过；异步加载及桌面/平板/390px 完整矩阵仍待完成 |
+| F，推进中 | F1 分离 repository 请求/契约；F2 移出导航状态与投影；F3 统一异步导航有效性和恢复生命周期，见 `ARCHIVE_DATA_BOUNDARIES.md`、`ARCHIVE_NAVIGATION_BOUNDARY.md`；feature 组合仍待拆分 | 数据/请求回归、1,792 组导航投影 parity、可控异步竞态、域门禁及真实剧情进入/返回通过；桌面/平板/390px、慢网络和启动/过滤完整矩阵仍待完成 |
 | G | Python package 分层与旧 CLI 兼容壳 | parser/domain/compiler/publish 分开；旧入口可用；候选输出、hash、source provenance parity |
 
 B 优先服务反复反查 RAW 的维护痛点；不急于引入新 schema v3 或把所有已有 v2

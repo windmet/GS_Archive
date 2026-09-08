@@ -34,8 +34,33 @@ idol-story-interface 与 source-only Vite 构建通过；歌曲测试已由检�
 collection 参数、4 章/40 段和截图均恢复，无 error。此为一次真实历史恢复冒烟，
 不是所有视图、快速连续后退、慢网络或完整响应式矩阵验证。
 
+## F3：异步导航生命周期
+
+`ArchiveNavigationCoordinator.js` 统一拥有当前异步导航的有效性和历史恢复期间的
+URL 写入抑制。剧情 fetch/preload、历史恢复和异步功能入口在等待后检查同一
+intent；普通切页与详情选择使旧 intent 失效。旧请求可以完成共享资源加载，
+但不能覆盖新页面、进度或清除新导航的 loading。没有中止底层网络 I/O。
+
+历史恢复内的剧情加载继承外层 intent，因此旧恢复结束不会提前解除新恢复的
+URL 写入抑制。卸载使未完成动作失效并拒绝新动作；当前失败仍按原路径报告，
+已失效动作的失败不再影响当前页面。App 保留产品选择规则、缺失数据回退和
+加载动作本身，F2 的 ref 与路由投影不变。
+
+`npm run verify:archive-async-navigation` 执行 App 的实际导航函数与生产控制器，
+用可控的异步依赖复现旧剧情晚到、新旧预加载交错、并发历史恢复、功能模块晚到、
+用户切页/选择、当前失败和卸载；验证页面、范围、返回上下文、history、进度和
+loading 的归属。依赖为测试替身，不等于真实网络竞态或音频长稳验证。CI 已接入。
+
+F3 验证：上述时序回归、1,792 组投影、routes、story-collections、
+idol-story-interface、song-domain-landing、story-playback-range 与 source-only
+Vite 构建通过。Browser 实际执行 C.FIRST 合集 → 第一段剧情 → 返回合集，
+并验证浏览器后退恢复合集、前进恢复剧情，error 日志为空；剧情 URL 为 `episodes/1_1_016_01_a.json`，
+start=2/end=26/return=story_collection，合集恢复 4/4 章、40/40 段。
+使用 noAudio=1；不计作 P2-B 真实音频长稳验收。
+
 ## 后续
 
-继续把异步路由恢复和功能打开动作从 App 的共享布尔开关中分离，先验证并发
-restore、慢剧情加载、用户中途切页的时序，再调整生命周期 owner；不能仅凭这批
-投影 parity 推定异步路径正确。其他 feature 的数据派生与展示组合仍留在 App。
+其他 feature 的数据派生与展示组合仍留在 App；后续继续提取功能边界。
+完整桌面/平板/390px、快速历史连续操作与真实慢网络矩阵仍未覆盖。
+被动过滤 watcher 与启动数据加载尚未纳入完整的用户意图模型，不把本批
+显式导航时序回归外推为所有输入/启动竞态均已解决。

@@ -377,6 +377,7 @@
 </template>
 
 <script setup>
+import { createArchiveNavigationCoordinator } from './core/ArchiveNavigationCoordinator.js'
 import { useArchiveNavigationState } from './core/useArchiveNavigationState.js'
 import { ref, computed, defineAsyncComponent, onMounted, onBeforeUnmount, watch } from 'vue'
 import { IDOL_ID_TO_NAME } from './utils/IdolNameMap.js'
@@ -564,7 +565,7 @@ const cardLayout = ref('compact')
 const cardArtMode = ref('clean')
 const storyVisibleLimit = ref(80)
 let archiveRouteReady = false
-let applyingArchiveRoute = false
+const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loading.value = false } })
 let removeArchivePopState = null
 let removeSpineAnimationDebug = null
 
@@ -1468,13 +1469,21 @@ async function loadIdolEntityTranslations(locale = storyTranslationLocale.value)
 }
 
 function syncArchiveRoute({ replace = false } = {}) {
-  if (!archiveRouteReady || applyingArchiveRoute) return
+  if (!archiveRouteReady || navigation.isRestoring()) return
   writeArchiveRoute(currentArchiveRoute(), { replace })
 }
 
 function commitView(nextView, options = {}) {
+  navigation.invalidate()
+  loading.value = false
   view.value = nextView
   syncArchiveRoute(options)
+}
+
+function commitArchiveSelection() {
+  navigation.invalidate()
+  loading.value = false
+  syncArchiveRoute()
 }
 
 function groupsForRoute(categoryId, idolId) {
@@ -1565,9 +1574,9 @@ function restoreVoicePreview(route) {
 }
 
 async function applyArchiveRoute(route) {
-  applyingArchiveRoute = true
-  try {
+  return navigation.run(async intent => {
     if (route.card && route.voice) await ensureCardDetailData()
+    if (!intent.isCurrent()) return
     if ([
       'story_catalog',
       'story_collection',
@@ -1578,6 +1587,7 @@ async function applyArchiveRoute(route) {
     ].includes(route.view)) {
       await ensureIdolCommunicationData()
     }
+    if (!intent.isCurrent()) return
     filterQuery.value = route.query || ''
     currentCategoryId.value = route.category || ''
     currentCharacterId.value = route.idol || ''
@@ -1654,6 +1664,7 @@ async function applyArchiveRoute(route) {
       const restoredQueue = restoreEpisodeQueue(route.scenario, route.returnView)
       await loadScenario(route.scenario, route.returnView || 'home', {
         syncRoute: false,
+        intent,
         startStep: route.startStep,
         endStep: route.endStep,
         preserveQueue: restoredQueue,
@@ -1662,11 +1673,13 @@ async function applyArchiveRoute(route) {
     }
     if (route.view === 'player' && route.voice) {
       await storyViewerLoader()
+      if (!intent.isCurrent()) return
       if (restoreVoicePreview(route)) return
     }
     if (route.view === 'spine_lab') await spineViewerLoader()
     if (route.view === 'chibi_stage') await chibiStageViewerLoader()
 
+    if (!intent.isCurrent()) return
     if (route.view === 'unit_detail' && !currentArchiveUnit.value) view.value = 'unit_catalog'
     else if (route.view === 'idol_detail' && !currentIdolProfile.value) view.value = 'idols'
     else if (route.view === 'card_detail' && !currentCard.value) view.value = 'cards'
@@ -1683,9 +1696,7 @@ async function applyArchiveRoute(route) {
     else if (route.view === 'files' && !currentGroup.value) view.value = currentCharacterId.value ? 'groups' : 'home'
     else if (route.view === 'episodes' && !currentUnit.value) view.value = 'episode_zero_units'
     else view.value = route.view || 'home'
-  } finally {
-    applyingArchiveRoute = false
-  }
+  }, { restoring: true })
 }
 
 function goHome() {
@@ -1890,25 +1901,23 @@ function goArchiveBack() {
 }
 
 async function openSpineLab() {
-  loading.value = true
-  preloadProgress.value = 100
-  try {
+  return navigation.run(async intent => {
+    loading.value = true
+    preloadProgress.value = 100
     await spineViewerLoader()
+    if (!intent.isCurrent()) return
     commitView('spine_lab')
-  } finally {
-    loading.value = false
-  }
+  })
 }
 
 async function openChibiStage() {
-  loading.value = true
-  preloadProgress.value = 100
-  try {
+  return navigation.run(async intent => {
+    loading.value = true
+    preloadProgress.value = 100
     await chibiStageViewerLoader()
+    if (!intent.isCurrent()) return
     commitView('chibi_stage')
-  } finally {
-    loading.value = false
-  }
+  })
 }
 
 function openArchiveStatus() {
@@ -1931,21 +1940,24 @@ function openGashaCatalog() {
 }
 
 async function openStoryCatalog() {
-  await ensureIdolCommunicationData()
-  filterQuery.value = ''
-  currentStoryDomain.value = ''
-  currentStoryMode.value = 'portal'
-  currentStorySection.value = ''
-  currentStoryFile.value = ''
-  storyDetailParentView.value = ''
-  storyCollectionParentView.value = ''
-  currentEventScope.value = 'all'
-  currentStoryAvailability.value = 'all'
-  currentStorySort.value = 'domain'
-  currentMobileMode.value = 'personal'
-  currentMobileScenarioId.value = ''
-  storyVisibleLimit.value = 80
-  commitView('story_catalog')
+  return navigation.run(async intent => {
+    await ensureIdolCommunicationData()
+    if (!intent.isCurrent()) return
+    filterQuery.value = ''
+    currentStoryDomain.value = ''
+    currentStoryMode.value = 'portal'
+    currentStorySection.value = ''
+    currentStoryFile.value = ''
+    storyDetailParentView.value = ''
+    storyCollectionParentView.value = ''
+    currentEventScope.value = 'all'
+    currentStoryAvailability.value = 'all'
+    currentStorySort.value = 'domain'
+    currentMobileMode.value = 'personal'
+    currentMobileScenarioId.value = ''
+    storyVisibleLimit.value = 80
+    commitView('story_catalog')
+  })
 }
 
 function openExternalStoryResources() {
@@ -2040,7 +2052,7 @@ function openSeasonalCampaign(campaignId = 'valentine_2023') {
 function selectSeasonalCampaign(campaignId) {
   if (!seasonalCampaignData.value?.by_id?.[campaignId]) return
   currentStorySection.value = campaignId
-  syncArchiveRoute()
+  commitArchiveSelection()
 }
 
 function playSeasonalCampaignStory(file) {
@@ -2061,7 +2073,7 @@ function openWorkArchive(idolCode = '001tom') {
 function selectWorkIdol(idolCode) {
   if (!workStoryData.value?.by_idol_code?.[idolCode]) return
   currentCharacterId.value = idolCode
-  syncArchiveRoute()
+  commitArchiveSelection()
 }
 
 function playWorkStory(file) {
@@ -2069,18 +2081,21 @@ function playWorkStory(file) {
 }
 
 async function openIdolStoryArchive(idolCode = '001tom') {
-  await ensureIdolCommunicationData()
-  const fallback = idolEpisodeData.value?.chapters?.[0]?.idol_code || ''
-  const selected = idolEpisodeData.value?.by_idol_code?.[idolCode] ? idolCode : fallback
-  if (!selected) return
-  filterQuery.value = ''
-  currentStoryDomain.value = 'idol_story'
-  currentStoryMode.value = 'portal'
-  currentStorySection.value = ''
-  currentEpisodeId.value = ''
-  currentCharacterId.value = selected
-  currentMobileScenarioId.value = ''
-  commitView('idol_story_archive')
+  return navigation.run(async intent => {
+    await ensureIdolCommunicationData()
+    if (!intent.isCurrent()) return
+    const fallback = idolEpisodeData.value?.chapters?.[0]?.idol_code || ''
+    const selected = idolEpisodeData.value?.by_idol_code?.[idolCode] ? idolCode : fallback
+    if (!selected) return
+    filterQuery.value = ''
+    currentStoryDomain.value = 'idol_story'
+    currentStoryMode.value = 'portal'
+    currentStorySection.value = ''
+    currentEpisodeId.value = ''
+    currentCharacterId.value = selected
+    currentMobileScenarioId.value = ''
+    commitView('idol_story_archive')
+  })
 }
 
 function selectIdolStory(idolCode) {
@@ -2089,20 +2104,23 @@ function selectIdolStory(idolCode) {
   currentStorySection.value = ''
   currentEpisodeId.value = ''
   currentMobileScenarioId.value = ''
-  syncArchiveRoute()
+  commitArchiveSelection()
 }
 
 async function openBirthdayIdolStory(relation) {
-  await ensureIdolCommunicationData()
-  if (!relation?.idolCode || !idolEpisodeData.value?.by_idol_code?.[relation.idolCode]) return
-  currentStoryDomain.value = 'idol_story'
-  currentStoryMode.value = 'portal'
-  currentCharacterId.value = relation.idolCode
-  currentStorySection.value = String(relation.sectionId || '')
-  currentEpisodeId.value = String(relation.episodeId || '')
-  currentStoryFile.value = ''
-  storyCollectionParentView.value = ''
-  commitView('idol_story_archive')
+  return navigation.run(async intent => {
+    await ensureIdolCommunicationData()
+    if (!intent.isCurrent()) return
+    if (!relation?.idolCode || !idolEpisodeData.value?.by_idol_code?.[relation.idolCode]) return
+    currentStoryDomain.value = 'idol_story'
+    currentStoryMode.value = 'portal'
+    currentCharacterId.value = relation.idolCode
+    currentStorySection.value = String(relation.sectionId || '')
+    currentEpisodeId.value = String(relation.episodeId || '')
+    currentStoryFile.value = ''
+    storyCollectionParentView.value = ''
+    commitView('idol_story_archive')
+  })
 }
 
 function openIdolBirthdayArchive() {
@@ -2127,18 +2145,21 @@ function playIdolStoryEpisode({ section, episode }) {
 }
 
 async function openMobileArchive({ idolCode = '001tom', mode = 'personal', scenarioId = '' } = {}) {
-  await ensureIdolCommunicationData()
-  const fallbackIdol = idolEpisodeData.value?.chapters?.[0]?.idol_code || '001tom'
-  const fallbackUnit = idolUnitData.value?.units?.[0]?.unit_code || '01jup'
-  currentCharacterId.value = idolEpisodeData.value?.by_idol_code?.[idolCode] ? idolCode : fallbackIdol
-  currentArchiveUnitCode.value = mobileArchiveData.value?.by_unit_code?.[currentArchiveUnitCode.value]
-    ? currentArchiveUnitCode.value
-    : fallbackUnit
-  currentMobileMode.value = ['personal', 'phone', 'unit', 'random'].includes(mode) ? mode : 'personal'
-  currentMobileScenarioId.value = scenarioId ? String(scenarioId) : ''
-  currentStoryDomain.value = 'mobile_archive'
-  currentStoryMode.value = 'portal'
-  commitView('mobile_archive')
+  return navigation.run(async intent => {
+    await ensureIdolCommunicationData()
+    if (!intent.isCurrent()) return
+    const fallbackIdol = idolEpisodeData.value?.chapters?.[0]?.idol_code || '001tom'
+    const fallbackUnit = idolUnitData.value?.units?.[0]?.unit_code || '01jup'
+    currentCharacterId.value = idolEpisodeData.value?.by_idol_code?.[idolCode] ? idolCode : fallbackIdol
+    currentArchiveUnitCode.value = mobileArchiveData.value?.by_unit_code?.[currentArchiveUnitCode.value]
+      ? currentArchiveUnitCode.value
+      : fallbackUnit
+    currentMobileMode.value = ['personal', 'phone', 'unit', 'random'].includes(mode) ? mode : 'personal'
+    currentMobileScenarioId.value = scenarioId ? String(scenarioId) : ''
+    currentStoryDomain.value = 'mobile_archive'
+    currentStoryMode.value = 'portal'
+    commitView('mobile_archive')
+  })
 }
 
 function openStoryCommunication(scenario) {
@@ -2153,21 +2174,21 @@ function selectMobileIdol(idolCode) {
   if (!idolEpisodeData.value?.by_idol_code?.[idolCode]) return
   currentCharacterId.value = idolCode
   currentMobileScenarioId.value = ''
-  syncArchiveRoute()
+  commitArchiveSelection()
 }
 
 function selectMobileUnit(unitCode) {
   if (!mobileArchiveData.value?.by_unit_code?.[unitCode]) return
   currentArchiveUnitCode.value = unitCode
   currentMobileScenarioId.value = ''
-  syncArchiveRoute()
+  commitArchiveSelection()
 }
 
 function setMobileMode(mode) {
   if (!['personal', 'phone', 'unit', 'random'].includes(mode)) return
   currentMobileMode.value = mode
   currentMobileScenarioId.value = ''
-  syncArchiveRoute()
+  commitArchiveSelection()
 }
 
 function playMobileScenario(file) {
@@ -2370,7 +2391,7 @@ function selectPrimaryIdol(idolCode) {
   currentCharacterId.value = idolCode
   currentCardId.value = ''
   filterQuery.value = ''
-  syncArchiveRoute()
+  commitArchiveSelection()
 }
 
 function openIdol(entry) {
@@ -2615,10 +2636,11 @@ function openEventUnit(unit) {
 }
 
 async function openVoicePreview(card, cue, returnView) {
-  loading.value = true
-  preloadProgress.value = 100
-  try {
+  return navigation.run(async intent => {
+    loading.value = true
+    preloadProgress.value = 100
     await storyViewerLoader()
+    if (!intent.isCurrent()) return
     currentScenario.value = buildCardVoicePreviewScenario(card, cue)
     currentScenarioFile.value = ''
     currentScenarioStartStep.value = null
@@ -2626,9 +2648,7 @@ async function openVoicePreview(card, cue, returnView) {
     currentPreviewCue.value = typeof cue === 'string' ? cue : cue.cue
     returnViewAfterPlayer.value = returnView
     commitView('player')
-  } finally {
-    loading.value = false
-  }
+  })
 }
 
 function buildCardVoicePreviewScenario(card, cue) {
@@ -2788,7 +2808,7 @@ function closePlayer() {
 }
 
 function onPlayerReady() {
-  loading.value = false
+  if (!navigation.isPending()) loading.value = false
 }
 
 function formatFileName(fn) {
@@ -2796,38 +2816,43 @@ function formatFileName(fn) {
 }
 
 async function loadScenario(name, returnView = 'files', options = {}) {
-  loading.value = true
-  preloadProgress.value = 0
-  try {
-    const r = await fetch(`/data/compiled/${name}?v=${Date.now()}`, { cache: 'no-store' })
-    const scenario = await r.json()
+  return navigation.run(async intent => {
+    loading.value = true
+    preloadProgress.value = 0
+    try {
+      const r = await fetch(`/data/compiled/${name}?v=${Date.now()}`, { cache: 'no-store' })
+      const scenario = await r.json()
+      if (!intent.isCurrent()) return
 
-    // Preload all scenario assets before switching to player
-    await Promise.all([
-      storyViewerLoader(),
-      Preloader.preloadScenario(scenario.steps || [], (pct) => {
-        preloadProgress.value = pct
-      }),
-    ])
+      // Preload all scenario assets before switching to player
+      await Promise.all([
+        storyViewerLoader(),
+        Preloader.preloadScenario(scenario.steps || [], (pct) => {
+          if (intent.isCurrent()) preloadProgress.value = pct
+        }),
+      ])
 
-    currentScenario.value = scenario
-    currentScenarioFile.value = name
-    currentScenarioStartStep.value = Number(options.startStep) > 0 ? Number(options.startStep) : null
-    currentScenarioEndStep.value = Number(options.endStep) > 0 ? Number(options.endStep) : null
-    if (!options.preserveQueue) {
-      playbackQueue.value = []
-      playbackQueueIndex.value = -1
+      if (!intent.isCurrent()) return
+      currentScenario.value = scenario
+      currentScenarioFile.value = name
+      currentScenarioStartStep.value = Number(options.startStep) > 0 ? Number(options.startStep) : null
+      currentScenarioEndStep.value = Number(options.endStep) > 0 ? Number(options.endStep) : null
+      if (!options.preserveQueue) {
+        playbackQueue.value = []
+        playbackQueueIndex.value = -1
+      }
+      currentScenarioInstance.value += 1
+      currentPreviewCue.value = ''
+      returnViewAfterPlayer.value = returnView
+      view.value = 'player'
+      loading.value = false
+      if (options.syncRoute !== false) syncArchiveRoute()
+    } catch (err) {
+      if (!intent.isCurrent()) return
+      console.error('Failed to load:', err)
+      loading.value = false
     }
-    currentScenarioInstance.value += 1
-    currentPreviewCue.value = ''
-    returnViewAfterPlayer.value = returnView
-    view.value = 'player'
-    loading.value = false
-    if (options.syncRoute !== false) syncArchiveRoute()
-  } catch (err) {
-    console.error('Failed to load:', err)
-    loading.value = false
-  }
+  }, { intent: options.intent })
 }
 
 onMounted(async () => {
@@ -2838,6 +2863,7 @@ onMounted(async () => {
     console.error('[EntityTranslations] Failed to load idols:', error)
   })
   const { data, errors } = await loadArchiveData()
+  if (navigation.isDisposed()) return
   indexData.value = data.compiledIndex
   cardIndexData.value = data.cardIndex
   gashaIndexData.value = data.gashaIndex
@@ -2864,9 +2890,11 @@ onMounted(async () => {
     console.error(`[ArchiveData] Failed to load ${key}:`, error)
   }
   await entityTranslations
+  if (navigation.isDisposed()) return
 
 
   await applyArchiveRoute(initialRoute)
+  if (navigation.isDisposed()) return
   loading.value = false
   archiveRouteReady = true
   writeArchiveRoute(currentArchiveRoute(), { replace: true })
@@ -2909,6 +2937,7 @@ watch(storyTranslationLocale, locale => {
 })
 
 onBeforeUnmount(() => {
+  navigation.dispose()
   removeArchivePopState?.()
   removeSpineAnimationDebug?.()
 })

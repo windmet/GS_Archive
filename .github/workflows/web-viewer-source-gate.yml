@@ -103,6 +103,9 @@ jobs:
       - name: Verify navigation state and route projection
         run: npm run verify:archive-navigation-state
 
+      - name: Verify asynchronous navigation ownership
+        run: npm run verify:archive-async-navigation
+
       - name: Verify release soak recorder
         run: npm run verify:release-soak
 
