@@ -23,6 +23,7 @@ sys.path.insert(0, str(DATA_PIPELINE_ROOT))
 
 from scenario_compiler import ScenarioCompiler  # noqa: E402
 from sidem_scenario import LocalScenarioResources  # noqa: E402
+from archive_paths import add_sources_config_argument, load_archive_sources  # noqa: E402
 
 
 PART_PATTERN = re.compile(r"^scenario_(?P<part>.+_[a-z])\.json$")
@@ -233,7 +234,7 @@ def compile_candidate(args: argparse.Namespace) -> dict[str, Any]:
         raise ValueError(f"Candidate output directory must be empty: {output_dir}")
 
     expected_parts = expand_expected_parts(args.expected_parts, args.group_id)
-    resources = LocalScenarioResources.from_compiler_defaults(ScenarioCompiler)
+    resources = LocalScenarioResources.from_archive_sources(load_archive_sources(getattr(args, 'sources_config', None)))
     if args.raw_file:
         if expected_parts:
             raise ValueError("--expected-parts is only valid with --raw-group-dir")
@@ -307,6 +308,7 @@ def compile_candidate(args: argparse.Namespace) -> dict[str, Any]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
+    add_sources_config_argument(parser)
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--raw-group-dir")
     source.add_argument("--raw-file")

@@ -1,6 +1,7 @@
 """Filesystem resource lookup for compilation, with explicitly scoped caches."""
 import json
 import os
+from pathlib import Path
 from typing import Optional, Protocol
 
 
@@ -12,6 +13,19 @@ class ScenarioResources(Protocol):
 
 
 class LocalScenarioResources:
+    @classmethod
+    def from_archive_sources(cls, sources, *, environment=None):
+        """Use archive_paths configuration, with per-resource environment overrides."""
+        environment = os.environ if environment is None else environment
+        legacy = sources.legacy_root or sources.archive_root / 'sources' / 'legacy_curated'
+        def root(variable, *parts):
+            return Path(environment.get(variable) or legacy.joinpath(*parts)).resolve()
+        return cls(
+            lipsync_root=root('SIDEM_LIPSYNC_ROOT', 'scripts', 'lipsyncdata', 'adxlip'),
+            background_root=root('SIDEM_ADV_BACKGROUND_ROOT', 'scripts', 'advbackground', 'json'),
+            audio_root=root('SIDEM_AUDIO_ROOT', 'GS_Res', 'Audio'),
+        )
+
     @classmethod
     def from_compiler_defaults(cls, compiler_class):
         """Capture legacy-configured roots with fresh, job-local caches."""

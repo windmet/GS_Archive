@@ -118,6 +118,9 @@ jobs:
       - name: Verify isolated scenario resource providers
         run: npm run verify:scenario-resources
 
+      - name: Verify candidate resource source configuration
+        run: npm run verify:scenario-source-config
+
       - name: Verify release soak recorder
         run: npm run verify:release-soak
 

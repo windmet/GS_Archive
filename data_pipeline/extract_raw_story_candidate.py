@@ -343,7 +343,7 @@ def main() -> None:
         scenario_id,
         part_ids,
         source_files,
-        resources=LocalScenarioResources.from_compiler_defaults(ScenarioCompiler),
+        resources=LocalScenarioResources.from_archive_sources(sources),
     )
 
     cue_entries: dict[str, list[dict[str, Any]]] = {}

@@ -53,7 +53,26 @@ builtins.open 下完成单份/合并编译。音频样例仅验证存在性，�
 10 组冻结编译 hash、文本/时序回归与 migration-candidate 回归也通过；后者
 覆盖 RAW hash、voice relink、episode rebasing 和 strict 输出，未发布任何候选。
 
-未完成边界：旧默认接口仍使用类缓存；配置来源还需与 archive_paths 进一步
-统一。authoritative_scenario、RAW 提取、
+## G3：候选资源来源统一
+
+两个候选编译入口现在使用 `LocalScenarioResources.from_archive_sources`。
+RAW 提取入口复用已加载的 ArchiveSources；migration-candidate 新增
+`--sources-config`，由 archive_paths 按显式参数 → SIDEM_ARCHIVE_SOURCES_CONFIG
+→ ignored 本地配置 → 仓库默认值加载。资源根再由 SIDEM_LIPSYNC_ROOT、
+SIDEM_ADV_BACKGROUND_ROOT、SIDEM_AUDIO_ROOT 分别优先覆盖。
+
+未覆盖的根按 legacy_root 下 scripts/lipsyncdata/adxlip、
+scripts/advbackground/json、GS_Res/Audio 解析；legacy_root 未配置时用
+archive_root/sources/legacy_curated。这与 JS serving 的口型/音频根规则一致。
+候选入口不再回退到编译器类中的机器盘符。依赖旧盘符的使用者应提供配置或
+资源环境变量；直接使用旧 ScenarioCompiler API 的兼容默认暂时保留。
+
+`verify:scenario-source-config` 使用临时配置验证覆盖与默认根、Python/JS
+路径一致，并运行真正的候选 CLI，确认配置的背景音频参与编译。显式配置
+优先于环境配置；显式文件缺失时失败且不生成候选目录。资源存在性样例不是
+真实音频。archive-sources、资源接口、冻结输出和 candidate 回归全部通过。
+当前本地配置 legacy_root 与迁移前机器默认位置一致；没有重编译 public。
+
+未完成边界：旧默认接口仍使用类缓存和兼容盘符；authoritative_scenario、RAW 提取、
 masterdata 和发布脚本仍在包外，G 整体未完成。此批按职责移动既有实现，
 没有引入新 IR/schema 或修改 RAW 语义。
