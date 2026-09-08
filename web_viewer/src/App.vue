@@ -5,7 +5,8 @@
 
     <ArchiveShell
       v-if="archiveShellVisible"
-      v-model="filterQuery"
+      :model-value="filterQuery"
+      @update:model-value="updateArchiveFilter('filterQuery', $event)"
       :active-section="archiveSection"
       :title="archiveTitle"
       :searchable="archiveSearchable"
@@ -34,7 +35,8 @@
       <ArchiveIdolGrid
         v-if="view === 'idols'"
         embedded
-        v-model="filterQuery"
+        :model-value="filterQuery"
+        @update:model-value="updateArchiveFilter('filterQuery', $event)"
         :title="categoryHeaderText"
         :filter-placeholder="categoryFilterPlaceholder"
         :idols="filteredIdols"
@@ -43,14 +45,15 @@
         :idols-before-unit-filter="searchMatchedIdols.length"
         @back="goHome"
         @select="openIdol"
-        @select-unit="currentIdolUnitFilter = $event"
+        @select-unit="updateArchiveFilter('currentIdolUnitFilter', $event)"
         @open-units="openUnitCatalog"
       />
 
       <ArchiveCardList
         v-if="view === 'cards'"
         embedded
-        v-model="filterQuery"
+        :model-value="filterQuery"
+        @update:model-value="updateArchiveFilter('filterQuery', $event)"
         :title="currentCardCharacterName"
         :cards="filteredCards"
         :rarity-tabs="cardRarityTabs"
@@ -62,9 +65,9 @@
         v-model:layout="cardLayout"
         @back="goBackFromCards"
         @select-card="openCard"
-        @select-rarity="currentCardRarity = $event"
-        @select-asset-state="currentCardAssetState = $event"
-        @select-relation-state="currentCardRelationState = $event"
+        @select-rarity="updateArchiveFilter('currentCardRarity', $event)"
+        @select-asset-state="updateArchiveFilter('currentCardAssetState', $event)"
+        @select-relation-state="updateArchiveFilter('currentCardRelationState', $event)"
         @select-idol="selectPrimaryIdol"
       />
 
@@ -113,7 +116,7 @@
         :announcement-count="gashaIndexData?.meta?.gasha_count || 0"
         :pickup-count="gashaIndexData?.meta?.derived_pickup_count || 0"
         @select="openGasha"
-        @update:category="currentGashaCategory = $event"
+        @update:category="updateArchiveFilter('currentGashaCategory', $event)"
       />
 
       <ArchiveGashaDetail
@@ -129,8 +132,8 @@
         :scope="currentSongScope"
         :query="filterQuery"
         @open="openSong"
-        @update:scope="currentSongScope = $event"
-        @update:query="filterQuery = $event"
+        @update:scope="updateArchiveFilter('currentSongScope', $event)"
+        @update:query="updateArchiveFilter('filterQuery', $event)"
       />
 
       <ArchiveSongDetail
@@ -166,7 +169,8 @@
       <ArchiveGroupList
         v-if="view === 'groups'"
         embedded
-        v-model="filterQuery"
+        :model-value="filterQuery"
+        @update:model-value="updateArchiveFilter('filterQuery', $event)"
         :title="groupTitle"
         :groups="filteredGroups"
         @back="goBackFromGroups"
@@ -192,7 +196,8 @@
       <ArchiveFileList
         v-if="view === 'files'"
         embedded
-        v-model="filterQuery"
+        :model-value="filterQuery"
+        @update:model-value="updateArchiveFilter('filterQuery', $event)"
         :title="currentGroup?.title || 'Scenarios'"
         :entries="filteredFileEntries"
         @back="goBackToFiles"
@@ -235,12 +240,12 @@
         @open-work="openWorkArchive()"
         @open-idol-story="openIdolStoryArchive()"
         @load-more="storyVisibleLimit += 80"
-        @clear-section="currentStorySection = ''"
+        @clear-section="updateArchiveFilter('currentStorySection', '')"
         @update:mode="setStoryMode"
         @update:domain="setStoryDomain"
-        @update:event-scope="currentEventScope = $event"
-        @update:availability="currentStoryAvailability = $event"
-        @update:sort="currentStorySort = $event"
+        @update:event-scope="updateArchiveFilter('currentEventScope', $event)"
+        @update:availability="updateArchiveFilter('currentStoryAvailability', $event)"
+        @update:sort="updateArchiveFilter('currentStorySort', $event)"
       />
 
       <ArchiveExternalStoryResources
@@ -1378,6 +1383,18 @@ function commitArchiveSelection() {
   navigation.invalidate()
   loading.value = false
   syncArchiveRoute()
+}
+
+function updateArchiveFilter(key, value) {
+  const target = {
+    filterQuery, currentIdolUnitFilter, currentCardRarity, currentCardAssetState,
+    currentCardRelationState, currentGashaCategory, currentSongScope,
+    currentStorySection, currentEventScope, currentStoryAvailability, currentStorySort,
+  }[key]
+  if (!target || Object.is(target.value, value)) return
+  navigation.invalidate()
+  loading.value = false
+  target.value = value
 }
 
 function groupsForRoute(categoryId, idolId) {

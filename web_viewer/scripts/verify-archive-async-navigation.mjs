@@ -47,7 +47,7 @@ function setup() {
     functionSource('async function openVoicePreview(', 'function openGroup('),
     functionSource('function onPlayerReady(', 'function formatFileName('),
     scenarioSource,
-    '({ load: loadScenario, restore: applyArchiveRoute, commit: commitView, select: commitArchiveSelection, onPlayerReady, openStoryCatalog, openSpineLab, openVoicePreview, sync: syncArchiveRoute })',
+    '({ load: loadScenario, restore: applyArchiveRoute, commit: commitView, select: commitArchiveSelection, onPlayerReady, openStoryCatalog, openSpineLab, openVoicePreview, sync: syncArchiveRoute, filter: updateArchiveFilter })',
   ].join('\n'), context)
   const respond = (index, name) => requests[index].resolve({ ok: true, json: async () => ({ name, steps: [] }) })
   return { context, state, ...production, requests, respond, writes, errors }
@@ -183,4 +183,36 @@ function setup() {
   assert.equal(t.state.returnViewAfterPlayer.value, 'card_detail')
   assert.equal(t.context.episodeQueue.hasNext.value, false)
 }
-console.log('Archive async navigation: scenario, preload, history, lazy feature, voice preview, failure and disposal races passed')
+{
+  const t = setup(), detail = deferred()
+  t.state.view.value = 'cards'
+  t.context.ensureIdolCommunicationData = () => detail.promise
+  const pending = t.restore({ view: 'idol_detail', query: 'old route' })
+  await flush()
+  t.filter('filterQuery', 'new search')
+  assert.equal(t.context.navigation.isPending(), false, 'explicit user filtering supersedes pending route restoration')
+  detail.resolve()
+  await pending
+  assert.equal(t.state.view.value, 'cards')
+  assert.equal(t.state.filterQuery.value, 'new search')
+  assert.equal(t.context.loading.value, false)
+}
+{
+  const t = setup()
+  const pending = t.load('keep.json')
+  t.filter('filterQuery', t.state.filterQuery.value)
+  assert.equal(t.context.navigation.isPending(), true, 'unchanged input must not cancel navigation')
+  t.respond(0, 'keep'); await pending
+  assert.equal(t.state.currentScenarioFile.value, 'keep.json')
+}
+for (const key of ['currentIdolUnitFilter', 'currentCardRarity', 'currentCardAssetState', 'currentCardRelationState', 'currentGashaCategory', 'currentSongScope', 'currentStorySection', 'currentEventScope', 'currentStoryAvailability', 'currentStorySort']) {
+  const t = setup()
+  t.state.view.value = 'cards'
+  const pending = t.load('stale.json')
+  t.filter(key, 'new-selection')
+  t.respond(0, 'stale'); await pending
+  assert.equal(t.state[key].value, 'new-selection')
+  assert.equal(t.state.view.value, 'cards')
+  assert.equal(t.state.currentScenarioFile.value, '')
+}
+console.log('Archive async navigation: scenario, preload, history, lazy feature, voice preview, explicit filters, failure and disposal races passed')
