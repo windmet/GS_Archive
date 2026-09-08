@@ -217,6 +217,23 @@ subject 优先、producer target、版次/日期、缺失关系与资源来源�
 story catalog 验证分别检查既有公共索引与消费者，不能替代生成器全数据对照。
 没有写出公共产物或执行发布。
 
+## G11：卡片数值、技能与衣装关系
+
+`sidem_masterdata/card_gameplay.py` 拥有参数计算、技能等级/effect/category 关联、
+描述模板替换和八种衣装 slot。它只接收表行与 reference maps，不读资源、不写产物，
+原入口保留同一函数和属性名常量导出。主卡片索引仍通过旧导出调用这些规则。
+
+`verify:masterdata-card-gameplay` 验证数值 0、无效/缺失参数、技能等级和 effect
+顺序、未解析占位符保留、center category、live/story 同 ID 分离、未知衣装关系
+及来源偏移，检查输入不变。使用 `--decoded-masterdata
+.analysis/masterdata/client_master_data.xor_DefaultPassPhrase.pb` 对照 `cad9777`：
+836 条卡片的完整 gameplay 和 2,672 条衣装关系逐值一致，hash 在
+fixtures/masterdata-wire/card-gameplay-baseline.json；无资源存在性或发布声明。
+
+仍需处理：主卡片索引/语音分类未迁移，旧 `build_card_detail_index` 会 pop 输入
+字段并在原索引上设置 detail_available；后续应将目录/详情拆分改为显式返回，
+迁移调用端后再取消对隐式副作用的依赖。该问题不在本批纯数值领域中修补。
+
 未完成边界：旧默认接口仍使用类缓存和兼容盘符；authoritative_scenario、RAW 候选写出、
 masterdata 和发布脚本仍在包外，G 整体未完成。此批按职责移动既有实现，
 没有引入新 IR/schema 或修改 RAW 语义。

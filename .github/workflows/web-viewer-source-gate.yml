@@ -142,6 +142,9 @@ jobs:
       - name: Verify story masterdata domains
         run: npm run verify:masterdata-story-domains
 
+      - name: Verify card gameplay domain
+        run: npm run verify:masterdata-card-gameplay
+
       - name: Verify release soak recorder
         run: npm run verify:release-soak
 
