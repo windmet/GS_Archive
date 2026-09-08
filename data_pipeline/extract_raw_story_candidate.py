@@ -15,6 +15,7 @@ import UnityPy
 
 from archive_paths import add_sources_config_argument, load_archive_sources
 from scenario_compiler import ScenarioCompiler
+from sidem_scenario import LocalScenarioResources
 
 
 LETTERED_PART = re.compile(r"^(?P<base>.+)_(?P<letter>[a-z])$")
@@ -342,6 +343,7 @@ def main() -> None:
         scenario_id,
         part_ids,
         source_files,
+        resources=LocalScenarioResources.from_compiler_defaults(ScenarioCompiler),
     )
 
     cue_entries: dict[str, list[dict[str, Any]]] = {}

@@ -29,8 +29,31 @@ episode 结构。资源根设为空临时目录，避免测试依赖某台机器
 现有 story-text-evidence、source-only timing matrix、RAW→两种编译路径→
 前端 Spine cue 集成回归通过。新验证已加入 CI。
 
-未完成边界：compiler 仍直接解析口型文件和背景配置，查询音频资源，保留
-原有环境变量、默认路径和类缓存；这不是纯函数编译核心。后续应把资源查找
-作为显式依赖迁移并以有/无资源样例验证。authoritative_scenario、RAW 提取、
+## G2：资源接口
+
+`resources.py` 拥有背景 JSON 解析、音频存在性与口型文件读取/索引。
+ScenarioResources 协议提供 background_index/audio_exists/lip_info/lip_index；
+构造编译器和 compile_group 均接受显式 resources，命令到资源路径的语义规则
+仍归 compiler。compiler 不再直接 open/listdir/walk 或判断资源文件存在。
+
+LocalScenarioResources 的资源根与缓存归实例，每个候选任务创建一次并在其
+合并编译中复用。compile-story-migration-candidate 和 extract_raw_story_candidate
+已接入；from_compiler_defaults 捕获既有根配置，不继承旧类缓存。
+未传 resources 的旧 API 通过 LegacyCompilerResources 继续读取编译器类根和
+缓存，保留旧脚本设置类属性的行为。环境默认路径及 file_io 兼容方法尚未删除，
+不能将所有调用方式称为无文件系统副作用。
+
+查找语义保留：背景接受 BOM、坏 JSON 跳过；ambient `_t` 可查无后缀文件；
+口型先按命令推导路径，再按精确 basename 回退；损坏口型文件仍返回路径但
+不附 frames。重复 basename 仍保留遍历中先遇到者，此批没有改变冲突策略。
+
+`verify:scenario-resources` 在临时目录验证上述规则、资源存在时的编译结果、
+旧类接口与独立 provider 一致、不同资源根缓存隔离；内存 provider 在禁止
+builtins.open 下完成单份/合并编译。音频样例仅验证存在性，不是可解码媒体。
+10 组冻结编译 hash、文本/时序回归与 migration-candidate 回归也通过；后者
+覆盖 RAW hash、voice relink、episode rebasing 和 strict 输出，未发布任何候选。
+
+未完成边界：旧默认接口仍使用类缓存；配置来源还需与 archive_paths 进一步
+统一。authoritative_scenario、RAW 提取、
 masterdata 和发布脚本仍在包外，G 整体未完成。此批按职责移动既有实现，
 没有引入新 IR/schema 或修改 RAW 语义。

@@ -115,6 +115,9 @@ jobs:
       - name: Verify scenario compiler package compatibility
         run: npm run verify:scenario-package
 
+      - name: Verify isolated scenario resource providers
+        run: npm run verify:scenario-resources
+
       - name: Verify release soak recorder
         run: npm run verify:release-soak
 

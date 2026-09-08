@@ -11,7 +11,6 @@ Output:
   Compatibility Step JSON, or authoritative v2 via the output adapter.
 """
 
-import json
 import copy
 import hashlib
 import os
@@ -20,6 +19,7 @@ import unicodedata
 from typing import Any, Optional
 from .state import ScenarioState
 from .file_io import ScenarioFileIO
+from .resources import ScenarioResources, LegacyCompilerResources
 
 
 class ScenarioCompiler(ScenarioFileIO):
@@ -61,7 +61,9 @@ class ScenarioCompiler(ScenarioFileIO):
 
     def __init__(self, raw_data: dict, scenario_id: str = "",
                  source_part_id: Optional[str] = None,
-                 source_file: Optional[str] = None):
+                 source_file: Optional[str] = None, *,
+                 resources: Optional[ScenarioResources] = None):
+        self.resources = resources if resources is not None else LegacyCompilerResources(type(self))
         self.raw = raw_data
         self.scenario_id = scenario_id or self._infer_id(raw_data)
         self.text_catalog_id = self._canonical_text_token(self.scenario_id, "scenario_id")
@@ -136,7 +138,8 @@ class ScenarioCompiler(ScenarioFileIO):
     def compile_group(cls, raw_data_list: list[dict], group_id: str,
                       part_ids: Optional[list[str]] = None,
                       source_files: Optional[list[str]] = None,
-                      *, output_contract: str = "compatibility",
+                      *, resources: Optional[ScenarioResources] = None,
+                      output_contract: str = "compatibility",
                       source: Optional[dict] = None,
                       compiler_version: str = "scenario-compiler-python-v2") -> dict:
         """
@@ -145,7 +148,7 @@ class ScenarioCompiler(ScenarioFileIO):
         """
         first_part_id = part_ids[0] if part_ids else group_id
         first_source_file = source_files[0] if source_files else f"{first_part_id}.json"
-        compiler = cls(raw_data_list[0], group_id, first_part_id, first_source_file)
+        compiler = cls(raw_data_list[0], group_id, first_part_id, first_source_file, resources=resources)
         for idx, data in enumerate(raw_data_list):
             if idx > 0:
                 # Lettered scenario files are authored as episode chunks.
@@ -518,49 +521,8 @@ class ScenarioCompiler(ScenarioFileIO):
                 )
         self._emit_step("stage", None, None, None, None, duration=max(0.05, duration, self._stage_duration_hint, timeline_tail + 0.2))
 
-    @classmethod
-    def _load_adv_background_index(cls) -> dict[str, dict]:
-        if cls._ADV_BACKGROUND_INDEX is not None:
-            return cls._ADV_BACKGROUND_INDEX
-
-        index: dict[str, dict] = {}
-        root = cls.ADV_BACKGROUND_ROOT
-        if os.path.isdir(root):
-            for name in os.listdir(root):
-                if not name.startswith("advbg_data_") or not name.endswith(".json"):
-                    continue
-                path = os.path.join(root, name)
-                try:
-                    with open(path, "r", encoding="utf-8-sig") as f:
-                        data = json.load(f)
-                except Exception:
-                    continue
-                image_id = data.get("imageId")
-                if image_id:
-                    index[image_id] = data
-
-        cls._ADV_BACKGROUND_INDEX = index
-        return index
-
-    @classmethod
-    def _default_audio_exists(cls, audio_type: str, cue: Optional[str]) -> bool:
-        if not cue or cue in ("-", "no_bgm"):
-            return False
-
-        if audio_type == "bgm":
-            return os.path.isfile(os.path.join(cls.AUDIO_ROOT, "bgm", f"{cue}.ogg"))
-
-        if audio_type == "ambient":
-            path = os.path.join(cls.AUDIO_ROOT, "ambient", f"{cue}.ogg")
-            if os.path.isfile(path):
-                return True
-            if cue.endswith("_t"):
-                return os.path.isfile(os.path.join(cls.AUDIO_ROOT, "ambient", f"{cue[:-2]}.ogg"))
-
-        return False
-
     def _apply_adv_background_defaults(self, bg_id: str):
-        meta = self._load_adv_background_index().get(bg_id)
+        meta = self.resources.background_index().get(bg_id)
         if not meta:
             self.state.bg_profile = None
             return
@@ -576,18 +538,18 @@ class ScenarioCompiler(ScenarioFileIO):
         }
 
         bgm_cue = meta.get("bgmCueName")
-        if self._default_audio_exists("bgm", bgm_cue) and (not self.state.bgm or self._bgm_from_advbackground):
+        if self.resources.audio_exists("bgm", bgm_cue) and (not self.state.bgm or self._bgm_from_advbackground):
             self.state.set_bgm(bgm_cue)
             self._bgm_from_advbackground = True
-        elif self._bgm_from_advbackground and not self._default_audio_exists("bgm", bgm_cue):
+        elif self._bgm_from_advbackground and not self.resources.audio_exists("bgm", bgm_cue):
             self.state.stop_bgm()
             self._bgm_from_advbackground = False
 
         ambience_cue = meta.get("ambienceCueName")
-        if self._default_audio_exists("ambient", ambience_cue) and (not self.state.environmental or self._environmental_from_advbackground):
+        if self.resources.audio_exists("ambient", ambience_cue) and (not self.state.environmental or self._environmental_from_advbackground):
             self.state.environmental = {"cue": ambience_cue}
             self._environmental_from_advbackground = True
-        elif self._environmental_from_advbackground and not self._default_audio_exists("ambient", ambience_cue):
+        elif self._environmental_from_advbackground and not self.resources.audio_exists("ambient", ambience_cue):
             self.state.environmental = None
             self._environmental_from_advbackground = False
 
@@ -1596,40 +1558,6 @@ class ScenarioCompiler(ScenarioFileIO):
         m = re.search(r"(?<!\d)([1-9]_\d+_\d{3})(?!\d)", scenario_id or "")
         return m.group(1) if m else None
 
-    def _lip_json_info(self, rel_path: str) -> Optional[dict]:
-        abs_path = os.path.join(self.LIPSYNC_ROOT, rel_path)
-        if not os.path.exists(abs_path):
-            return None
-        info = {
-            "source": "adxlip",
-            "path": "adxlip/" + rel_path.replace(os.sep, "/"),
-        }
-        try:
-            with open(abs_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            scales = data.get("scales")
-            if isinstance(scales, list):
-                info["frames"] = len(scales)
-        except Exception:
-            pass
-        return info
-
-    @classmethod
-    def _ensure_lipsync_basename_index(cls) -> dict[str, str]:
-        if cls._LIPSYNC_BASENAME_INDEX is not None:
-            return cls._LIPSYNC_BASENAME_INDEX
-
-        index: dict[str, str] = {}
-        if os.path.isdir(cls.LIPSYNC_ROOT):
-            for root, _dirs, files in os.walk(cls.LIPSYNC_ROOT):
-                for name in files:
-                    if not name.endswith(".json"):
-                        continue
-                    rel = os.path.relpath(os.path.join(root, name), cls.LIPSYNC_ROOT)
-                    index.setdefault(name, rel)
-        cls._LIPSYNC_BASENAME_INDEX = index
-        return index
-
     def _resolve_lip_sync(self, chara_id: str, voice_suffix: str,
                           lipSync: Optional[bool]) -> Optional[dict]:
         """Find original game lip-scale JSON for the current voice cue.
@@ -1738,7 +1666,7 @@ class ScenarioCompiler(ScenarioFileIO):
             if rel in seen:
                 continue
             seen.add(rel)
-            info = self._lip_json_info(rel)
+            info = self.resources.lip_info(rel)
             if info:
                 return info
 
@@ -1753,12 +1681,12 @@ class ScenarioCompiler(ScenarioFileIO):
             basename_candidates.append(f"{self._lip_base_id}.json")
         basename_candidates.append(f"{voice_suffix}.json")
 
-        basename_index = self._ensure_lipsync_basename_index()
+        basename_index = self.resources.lip_index()
         for name in basename_candidates:
             rel = basename_index.get(name)
             if not rel:
                 continue
-            info = self._lip_json_info(rel)
+            info = self.resources.lip_info(rel)
             if info:
                 return info
         return None
