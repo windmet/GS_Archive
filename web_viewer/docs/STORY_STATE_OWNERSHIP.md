@@ -244,3 +244,17 @@ Spine cue 回归通过；此批是可控异步生命周期验收，不声称浏�
 或真实音频长稳通过。
 
 本批 publicDir:false 生产构建通过，保留已有两个背景资源构建期解析警告。
+
+## B10：部分 settle 不停止剩余不可跳过事件
+
+EffectScheduler.settleSkippable 原来无条件停止 scheduler RAF。若当前同时存在
+延迟的不可跳过事件，跳过其他演出后该事件永远不再启动。现仅在没有活跃的
+不可跳过事件时停止 ticker；暂停状态继续保持，恢复仍由原 resume 入口负责。
+
+verify:story-partial-settlement 使用生产 scheduler、registry、clock 和可控 RAF，
+旧实现先复现剩余事件没有调度帧（0 !== 1）。修复后验证运行中及暂停中 settle，
+延迟事件只启动一次，完成后释放 blocker 和 RAF。foundation、切步状态回归
+通过，新增 CI gate。这是调度层混合生命周期回归，不代表浏览器中所有入口
+都允许跳过不可跳过事件，也不替代真实音频长稳验收。
+
+本批 publicDir:false 生产构建通过；没有改动公共剧情产物。

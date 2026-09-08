@@ -120,7 +120,9 @@ export class EffectScheduler {
       if (entry.handle?.skippable) entry.completed = true
     })
     const result = this.registry.settleSkippable(reason)
-    this._stopTicker()
+    // Skip retires only skippable cues. A delayed non-skippable event still
+    // needs scheduler frames; leave a paused scheduler paused as well.
+    if (!this.hasNonSkippable()) this._stopTicker()
     return result
   }
 

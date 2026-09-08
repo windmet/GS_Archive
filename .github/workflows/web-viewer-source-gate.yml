@@ -103,6 +103,9 @@ jobs:
       - name: Verify performance registry handoff
         run: npm run verify:story-registry-handoff
 
+      - name: Verify partial performance settlement
+        run: npm run verify:story-partial-settlement
+
       - name: Verify Story timing semantics matrix
         run: npm run verify:story-timing-semantics -- --source-only
 
