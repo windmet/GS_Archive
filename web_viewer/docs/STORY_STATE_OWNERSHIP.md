@@ -380,3 +380,21 @@ Pixi 背景效果在步内时钟 reset 后位置不跳、暂停冻结、倍速�
 不累加运动、跨步省略 end 效果仍等候剩余淡出，最终零 ticker/RAF。背景、
 foundation、切步状态、屏幕特效门禁与 publicDir:false 构建通过。两个已知
 背景路径提示保留。实际粒子视觉/刷新率与实音长稳仍未完成。
+
+## B20：首段调度等待异步舞台
+
+实际浏览器验收 episodes/1_1_002_02_a.json、start_step=13/end_step=20，
+修复前停留首段仍为晴天，前进后才出现阴雨背景。源产物该段明确包含 at=0、
+duration=4 的 background.change（bg004_townst_out_01 → _05）。原因是
+runtime 在异步 SpineStage manager 可用前启动 cue，背景 handler 的可选调用
+无操作完成，之后仅补入场快照。
+
+现先等待 manager 并应用入场快照，再 loadStep/start；等待期间阻止自动推进，
+使用现有 generation 取消过期等待。就绪时读取当前暂停状态，暂停挂载不执行
+事件。新增 stage-readiness verifier 纳入切步状态门禁，覆盖首 cue 发布顺序、
+暂停后恢复、等待中切步只执行新段、卸载无迟到写入及零 RAF。切步、Spine、
+foundation、背景门禁与 publicDir:false 构建通过。
+
+浏览器复验仍停留首段即呈阴雨背景；本次截图窄窗口约 319×542，对白和
+播放控件可见。此前菜单打开/关闭与前进正常。该证据证明真实首段背景问题
+已修复，不是完整视口矩阵，未证明雨滴运动/暂停视觉或实音长稳通过。

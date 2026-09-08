@@ -44,7 +44,7 @@ export function useStoryRuntimeCues({
     return spineStageRef.value?.manager || null
   }
 
-  function applySnapshotWhenReady(snapshot, expectedGeneration) {
+  function applySnapshotWhenReady(snapshot, expectedGeneration, onReady) {
     const apply = () => {
       if (expectedGeneration !== generation) return
       const manager = getManager()
@@ -56,6 +56,7 @@ export function useStoryRuntimeCues({
       applyCameraEntrySnapshot(manager, snapshot?.camera_zoom)
       applyScreenEntrySnapshot(manager, snapshot?.screen_overlay)
       applyBackgroundEntrySnapshot(manager, snapshot?.bg)
+      onReady?.()
     }
     apply()
   }
@@ -102,13 +103,14 @@ export function useStoryRuntimeCues({
     if (!step) return
     const restore = pendingRestore?.stepIndex === currentStepIndex.value ? pendingRestore : null
     pendingRestore = null
-    applySnapshotWhenReady(restore?.snapshot || step.entry_snapshot, generation)
     const cues = restore ? [] : step.cues.filter(cue => handlers.has(cue.action))
     const debugSnapshotCue = restore ? null : createDebugSnapshotCue(step, debugSnapshotAt)
     if (debugSnapshotCue) cues.push(debugSnapshotCue)
-    scheduler.loadStep(cues, { handlers, context: { step } })
-    scheduler.start({ paused: isPaused() })
-    console.debug(restore ? '[StoryRuntime] restored' : '[StoryRuntime] scheduled', JSON.stringify(scheduler.inspect()))
+    applySnapshotWhenReady(restore?.snapshot || step.entry_snapshot, generation, () => {
+      scheduler.loadStep(cues, { handlers, context: { step } })
+      scheduler.start({ paused: isPaused() })
+      console.debug(restore ? '[StoryRuntime] restored' : '[StoryRuntime] scheduled', JSON.stringify(scheduler.inspect()))
+    })
   }
 
   function prepareRestore(stepIndex, snapshot) {
@@ -148,7 +150,7 @@ export function useStoryRuntimeCues({
     handleStepChange,
     settleCurrentStep,
     cancelCurrentStep,
-    hasBlockingAuto: () => scheduler.hasBlockingAuto(),
+    hasBlockingAuto: () => managerFrame != null || scheduler.hasBlockingAuto(),
     hasNonSkippable: () => scheduler.hasNonSkippable(),
     isSnapshotEnabled: () => true,
     getNormalizedStep: index => clone(getNormalizedStep(index)),
