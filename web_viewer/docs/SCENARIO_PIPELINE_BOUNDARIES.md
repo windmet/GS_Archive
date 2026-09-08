@@ -138,6 +138,24 @@ NPC 没有 code 时使用 npc:id；同模型先 table 28、后 table 27，后者
 资源索引与固定单模型索引，不能把该测试当作真实全资源存在性验收。
 wire 回归与旧 CLI help 检查通过；不执行全量写出或 public 复制。
 
+## G7：Masterdata music/movie 领域
+
+`sidem_masterdata/music.py` 生成歌曲/明确 performer 与 BGM selector 关系；
+`movies.py` 生成 MovieAnnounce、Card skill cutin、Song 3dmv/mvlive 资源身份。
+这四个 builder 只依赖表行和 provenance，不读资源、不写产物。旧入口继续
+导出；三条影像索引 verifier 直接依赖新领域模块与 wire 层。
+
+保持原规则：歌曲多行合并 performers，组合映射冲突时报错；特殊 selector
+保留 unresolved；table-133 同资源可有多个角色；同资源的多张卡/歌曲保留；
+重复记录 ID 报错；MV-live 的 2100 年禁用 sentinel 不当作已开放内容。
+
+`verify:masterdata-media` 覆盖这些规则和输入不变、旧导出身份。用
+`--decoded-masterdata .analysis/masterdata/client_master_data.xor_DefaultPassPhrase.pb`
+对照 `91bb22e` 的四组完整输出，逐值相同，hash 冻结在 media-baseline.json：
+61 歌曲/92 BGM/56 seasonal selector 行、30 MovieAnnounce、124 skill movie
+资源（127 卡片行）、12 song movie 资源（13 歌曲行）。三个既有影像 verifier
+也以 mounted 模式通过，与已提交索引相符；没有复制 public 或转码媒体。
+
 未完成边界：旧默认接口仍使用类缓存和兼容盘符；authoritative_scenario、RAW 候选写出、
 masterdata 和发布脚本仍在包外，G 整体未完成。此批按职责移动既有实现，
 没有引入新 IR/schema 或修改 RAW 语义。
