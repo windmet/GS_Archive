@@ -129,11 +129,10 @@ const containerRef = ref(null)
 let manager = null
 let unregisterReleaseStage = null
 let applyStateToken = 0
+let projectedStep = null
 let lastScreenEffectsKey = ''
 let managedBackgroundId = null
 const debugMode = ref(false)
-const prefabMetaReady = ref(false)
-const motionSettingsReady = ref(false)
 const spineStates = reactive({})
 const boundsSnapshot = ref(null)
 let costumePrefabMeta = {}
@@ -492,16 +491,6 @@ watch(debugMode, (on) => {
   }
 })
 
-watch(prefabMetaReady, (ready) => {
-  if (!ready || !getStepSceneState(props.step) || !manager) return
-  applyState(props.step, { reason: 'prefab-meta-ready' })
-})
-
-watch(motionSettingsReady, (ready) => {
-  if (!ready || !getStepSceneState(props.step) || !manager) return
-  applyState(props.step, { reason: 'motion-settings-ready' })
-})
-
 // Listen for custom event from PixiStageManager drag
 onMounted(() => {
   window.addEventListener('spine-dragged', onSpineDragged)
@@ -679,12 +668,10 @@ async function _loadPrefabMeta() {
   _prefabMetaPromise = loadCostumePrefabMeta()
     .then(models => {
       costumePrefabMeta = models || {}
-      prefabMetaReady.value = true
       return costumePrefabMeta
     })
     .catch(() => {
       costumePrefabMeta = {}
-      prefabMetaReady.value = true
       return costumePrefabMeta
     })
   return _prefabMetaPromise
@@ -708,12 +695,7 @@ async function _loadCostumeDictionary() {
 async function _loadMotionSettings() {
   if (_motionSettingsPromise) return _motionSettingsPromise
   _motionSettingsPromise = loadIdolMotionSettings()
-    .then(() => {
-      motionSettingsReady.value = true
-    })
-    .catch(() => {
-      motionSettingsReady.value = true
-    })
+    .catch(() => {})
   return _motionSettingsPromise
 }
 
@@ -830,7 +812,10 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
   const state = getStepSceneState(step)
   if (!state) return
   const token = ++applyStateToken
-  await _loadBodyTypes()
+  projectedStep = null
+  // Entry positioning and motion selection must use one resolved metadata set.
+  // Reapplying entry after a late metadata fetch can overwrite settled cues.
+  await Promise.all([_loadBodyTypes(), _loadPrefabMeta(), _loadMotionSettings()])
   if (token !== applyStateToken || !manager) return
 
   lastScreenEffectsKey = applyStepSceneState({
@@ -1052,13 +1037,22 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
   // 鈹€鈹€ Apply per-character URL overrides after all positioning logic 鈹€鈹€
   applyCharaOverrides(manager)
 
+  projectedStep = step
+
   syncBoundsSnapshot(step)
   if (debugMode.value) syncStates()
   scheduleStageDebugPublish()
 }
 
+function isSpineReady(target, expectedStep) {
+  return !!manager?.spineInstances?.[target]
+    && projectedStep === expectedStep
+    && props.step === expectedStep
+}
+
 defineExpose({
   get manager() { return manager },
+  isSpineReady,
 })
 </script>
 

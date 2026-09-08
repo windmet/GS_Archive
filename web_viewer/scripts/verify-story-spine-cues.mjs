@@ -31,7 +31,7 @@ function makeStep(id, { target = 'fixture', action = 'spine.face.set', at = 0, t
   }
 }
 
-function setup(steps, { ready = true } = {}) {
+function setup(steps, { ready = true, sceneReady = null } = {}) {
   const calls = []
   const manager = {
     spineInstances: ready ? { fixture: { modelId: 'fixture_model' } } : {},
@@ -43,7 +43,9 @@ function setup(steps, { ready = true } = {}) {
     flushSpinePose: (...args) => calls.push(['flush', ...args]),
   }
   const currentStepIndex = { value: 0 }
-  const runtime = useStoryRuntimeCues({ compiledData: { value: { schema_version: 2, steps } }, currentStepIndex, spineStageRef: { value: { manager } }, audioManager: {} })
+  const stage = { manager }
+  if (sceneReady) stage.isSpineReady = (target, step) => sceneReady.value && step === steps[currentStepIndex.value]
+  const runtime = useStoryRuntimeCues({ compiledData: { value: { schema_version: 2, steps } }, currentStepIndex, spineStageRef: { value: stage }, audioManager: {} })
   return { runtime, manager, calls, currentStepIndex }
 }
 
@@ -88,6 +90,16 @@ print(json.dumps(result))
   }
 
   // A mounted stage may still be loading a model when a cue starts.
+  const sceneReady = { value: false }
+  const existingButUnprojected = create([makeStep(1)], { sceneReady })
+  existingButUnprojected.runtime.handleStepChange()
+  await flush()
+  assert.equal(existingButUnprojected.calls.length, 0, 'an existing model is not proof that the current entry pose is applied')
+  sceneReady.value = true
+  await frame()
+  assert.equal(existingButUnprojected.calls.length, 1)
+  existingButUnprojected.runtime.cleanup()
+
   const loading = create([makeStep(1)], { ready: false })
   loading.runtime.handleStepChange()
   assert.equal(loading.runtime.hasBlockingAuto(), true)

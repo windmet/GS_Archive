@@ -17,6 +17,7 @@ export function settleSpineNeckCue(manager, cue) {
  */
 export function createSpineCueHandle(cue, { step } = {}, {
   getManager, getGeneration,
+  isTargetReady = () => true,
   motionSettingFor = getCachedMotionSetting,
   requestFrame = callback => globalThis.requestAnimationFrame(callback),
   cancelFrame = id => globalThis.cancelAnimationFrame(id),
@@ -113,7 +114,7 @@ export function createSpineCueHandle(cue, { step } = {}, {
         readinessFrame = null
         if (token !== operationToken || expectedGeneration !== getGeneration()) return finish(false)
         const manager = getManager()
-        if (manager?.spineInstances?.[cue.target]) {
+        if (manager?.spineInstances?.[cue.target] && isTargetReady(cue.target)) {
           Promise.resolve(apply(manager, duration, options)).then(() => finish(true), () => finish(false))
           return
         }

@@ -17,6 +17,7 @@ export { settleSpineNeckCue } from './SpineCueRuntime.js'
 
 export function useStoryRuntimeCues({
   compiledData, currentStepIndex, spineStageRef, audioManager,
+  getStageStep = () => compiledData.value?.steps?.[currentStepIndex.value],
   debugSnapshotAt = null, debugSnapshotAction = null,
 }) {
   const scheduler = new EffectScheduler({ clock: new StoryClock() })
@@ -58,9 +59,15 @@ export function useStoryRuntimeCues({
     apply()
   }
 
-  const createSpineHandle = (cue, context) => createSpineCueHandle(cue, context, {
-    getManager, getGeneration: () => generation,
-  })
+  const createSpineHandle = (cue, context) => {
+    // The stage consumes a projected source step, not the normalizer's copy.
+    // Capture its identity now so readiness cannot silently follow navigation.
+    const expectedStep = getStageStep()
+    return createSpineCueHandle(cue, context, {
+      getManager, getGeneration: () => generation,
+      isTargetReady: target => spineStageRef.value?.isSpineReady?.(target, expectedStep) ?? true,
+    })
+  }
 
   const handlers = new Map()
   handlers.set('camera.transform', cue => createCameraCueHandle(cue, getManager))

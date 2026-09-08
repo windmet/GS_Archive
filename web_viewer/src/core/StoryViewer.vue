@@ -673,6 +673,7 @@ const stepSceneEffects = useStepSceneEffects({
 
 const storyRuntimeCues = useStoryRuntimeCues({
   compiledData,
+  getStageStep: () => stageStep.value,
   currentStepIndex,
   spineStageRef,
   audioManager: _audioManager,

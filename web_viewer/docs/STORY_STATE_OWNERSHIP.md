@@ -1,6 +1,6 @@
 # Story 状态与生命周期边界
 
-2026-09-08，重构 B1/B2。此表描述现行代码，不宣称完整任意时间重建或全量真实画面验收。
+2026-09-08，重构 B1–B3。此表描述现行代码，不宣称完整任意时间重建或全量真实画面验收。
 
 ## 从来源到执行
 
@@ -64,12 +64,12 @@ double，覆盖：
 
 ## 后续仍需完成
 
-B2 已补充模型发布的场景归属检查，见下节；metadata watcher 与 delayed cue
-的完整先后关系仍未解决，不能由本次加载取消回归推定为完成。
+B2 已补充模型发布的场景归属检查，B3 已移除 metadata 完成后重复投影并接入
+entry readiness，见下节；跨 channel 的中间态与完整长稳仍未完成。
 
-1. 按属性继续核对模型加载后的 entry 投影与 delayed cue 的顺序；尤其是同一步
-   慢加载、换模型、暂停后恢复、图片/镜头等异步资源。当前测试只证明旧 step
-   的 cue 被取消，未覆盖所有真实 SpineStage watcher 时序。
+1. 按属性继续核对 entry 与 delayed cue 的中间态；B3 已覆盖 Spine 慢元数据、
+   复用模型、换步和 entry-ready 后动作顺序。仍需扩展暂停后恢复及图片/镜头等
+   异步资源，现有测试不覆盖所有 channel 的真实组合时序。
 2. 将未知 RAW/legacy 字段的诊断连接到稳定来源位置，逐类扩展语义回归；不要
    把当前 compatibility normalization 的存在等同于所有命令已正确支持。
 3. 建立统一 state plan / renderAt 之前，对 background、camera、screen 和
@@ -101,3 +101,32 @@ CI 加入 stage-loading。内置浏览器对 `1_3_10001_01.json` 做了真实资
 没有 error 日志或框架错误层。检查为窄面板、`noAudio=1`；不是桌面/移动端完整矩阵，
 也未在浏览器中人为延迟资源来复现竞态。保留 Pixi Spine 调用 rgb2hex/hex2rgb 的
 弃用警告；构建的两条背景路径仍由运行时挂载解析。P2-B 实音长稳没有执行。
+
+## B3：entry readiness 与元数据
+
+原 prefab/motion ready watcher 会再次调用整个 `applyState`，包括 face/body/neck/
+color 的初始值。现将 body type、prefab、motion 三组元数据并行等待后一次应用
+entry，移除两个 ready ref/watcher。加载器继续 memoize，失败继续使用原有空值
+回退；用于诊断名称的 costume dictionary 仍独立加载，不阻塞剧情。
+
+`SpineStage.isSpineReady(target, expectedStep)` 要求该角色存在、该 step 的投影
+已完成、当前 props 仍是同一个 step 对象。`projectedStep` 只是完成结果标记，
+不调度时间或持有第二份状态；异步取消仍由已有 applyStateToken 管理。
+`StoryViewer` 提供实际 `stageStep`，runtime 在创建 cue 时捕获它；不能拿 normalizer
+生成的副本做对象身份比较，也不能仅比较可能跨剧情重复的 step_id。
+
+Spine cue 在执行前同时检查实例和 stage readiness，避免复用旧实例时提前落地动作。
+未提供 stage readiness 的独立 adapter 调用保持原有实例检测契约。现行 5 秒等待
+上限与超时跳过行为保留；首次投影会等待元数据，极慢/不返回的网络仍可能触发超时，
+本批没有把它声称为完整资源失败恢复策略或任意时刻重建。
+
+新增回归先在旧执行器复现 `1 !== 0`（entry 尚未就绪已调用 face）。stage-loading
+将生产 `applyState`、`isSpineReady` 与真实 `SpineCueRuntime` 接起来，验证慢元数据时
+没有初始/延迟 face 调用，全部就绪后调用顺序恰为 entry-face → cue-face；复用模型、
+相同 step_id 的不同对象、props 先于 watcher 更新、等待元数据时切步均有覆盖。
+
+本批 stage-loading、spine-cues、runtime-foundation、playback-range、audio verifier
+及 source-only Vite 构建通过。内置浏览器对同一三角色剧情观察到 1.4/2/5 秒三个
+Spine cue settled、无 target unavailable/error，正常界面前进与回退文本正确。
+本批稳定截图为 1280×720，三角色与对白正常；此为 noAudio 桌面冒烟与可控时序
+测试，保留 Pixi 弃用警告，未执行本批窄屏矩阵或实音长稳。
