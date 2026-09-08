@@ -156,6 +156,28 @@ wire 回归与旧 CLI help 检查通过；不执行全量写出或 public 复制
 资源（127 卡片行）、12 song movie 资源（13 歌曲行）。三个既有影像 verifier
 也以 mounted 模式通过，与已提交索引相符；没有复制 public 或转码媒体。
 
+## G8：Masterdata 剧情与互动领域
+
+`sidem_masterdata/episodes.py` 拥有偶像 chapter/section/episode/product 关联；
+`mobile.py` 拥有手机房间、关系、随机话题、home interaction 与 short profile；
+`seasonal.py` 拥有季节通信和 campaign/participant/cycle 关系。
+`story_resources.py` 集中现有资源归一化、文件名匹配、来源补充和条件投影。
+这些模块只接收表行、身份字典与编译资源证据，不回调入口、不扫描目录。
+原 masterdata_extract 保留同一函数导出，支持脚本和 namespace 两种导入。
+
+保留精确资源优先、前缀匹配排序、缺失资源字段与 false 的区别、未知条件 raw、
+静态手机数据不等于用户已读/实际解锁状态，以及季节 102 对应 president NPC 901
+的身份规则。工作剧情仍读取编译文件，未混入本批纯领域拆分。
+
+`verify:masterdata-interactions` 检查上述边界、关联、顺序、来源偏移和输入不变；
+CI 执行无需本地数据的语义用例。额外以 `--decoded-masterdata
+.analysis/masterdata/client_master_data.xor_DefaultPassPhrase.pb` 验证本地完整相关表：
+六组输出在空资源集及确定性模拟资源集两种情况下，与 `13cd46e` 逐值一致，
+hash 存于 fixtures/masterdata-wire/interactions-baseline.json。
+覆盖 49 chapter/78 section/491 episode、1,269 手机场景、1,515 home interactions、
+1,421 profile、306 季节通信、4 campaign/2 cycle/208 playback entities。
+模拟资源集只验证生成器，不证明 mounted 文件存在；没有重写公共索引或发布。
+
 未完成边界：旧默认接口仍使用类缓存和兼容盘符；authoritative_scenario、RAW 候选写出、
 masterdata 和发布脚本仍在包外，G 整体未完成。此批按职责移动既有实现，
 没有引入新 IR/schema 或修改 RAW 语义。

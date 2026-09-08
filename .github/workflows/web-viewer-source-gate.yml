@@ -133,6 +133,9 @@ jobs:
       - name: Verify masterdata media domains
         run: npm run verify:masterdata-media
 
+      - name: Verify masterdata interaction domains
+        run: npm run verify:masterdata-interactions
+
       - name: Verify release soak recorder
         run: npm run verify:release-soak
 
