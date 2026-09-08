@@ -188,7 +188,7 @@ export class BackgroundManager {
     }
   }
 
-  setBgBlur(amount, duration = 0, delay = 0) {
+  setBgBlur(amount, duration = 0, delay = 0, nowMilliseconds) {
     const target = Math.max(0, Number(amount || 0))
     const durationMs = Math.max(0, Number(duration || 0)) * 1000
     const delayMs = Math.max(0, Number(delay || 0)) * 1000
@@ -205,6 +205,7 @@ export class BackgroundManager {
     }
     if (durationMs > 0 || delayMs > 0) {
       this._bgBlurTween = runRafTween({
+        nowMilliseconds,
         durationMs,
         delayMs,
         startValue: this._bgBlurAmount || 0,
@@ -262,7 +263,7 @@ export class BackgroundManager {
     }
   }
 
-  setBgColorOverlay(hexColor, duration = 0, delay = 0) {
+  setBgColorOverlay(hexColor, duration = 0, delay = 0, nowMilliseconds) {
     this._bgColorTween?.cancel?.()
 
     if (!hexColor || (typeof hexColor === 'string' && hexColor.toUpperCase() === '#FFFFFF')) {
@@ -271,6 +272,7 @@ export class BackgroundManager {
         const delayMs = Math.max(0, Number(delay)) * 1000
         const startAlpha = this._bgOverlaySprite.alpha
         this._bgColorTween = runRafTween({
+          nowMilliseconds,
           durationMs,
           delayMs,
           startValue: startAlpha,
@@ -312,6 +314,7 @@ export class BackgroundManager {
     }
     if (durationMs > 0 || delayMs > 0) {
       this._bgColorTween = runRafTween({
+        nowMilliseconds,
         durationMs,
         delayMs,
         startValue: 0,

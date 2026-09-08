@@ -339,3 +339,17 @@ StoryClock/Pixi 对象和可控 RAF/ticker，覆盖非零时钟偏移、暂停�
 时间完成及零资源残留。screen-clock、foundation、publicDir:false 构建通过。
 浏览器 noAudio 剧情进入、前进和返回 C.FIRST 集合正常；这只是播放器接入
 冒烟，不是实际粒子画面/刷新率视觉验收，也未执行实音长稳。
+
+## B17：背景模糊与颜色叠层共用剧情时钟
+
+applyStepSceneState 将舞台已有 nowMilliseconds 回调传给背景 blur/color
+接口；PixiStageManager 透传，BackgroundManager 的模糊、色值插值和恢复
+白色的 alpha 淡出均读取该时钟。强度、配色和 easeOutCubic 保持不变，
+未提供时钟的独立调用仍使用实际时间。
+
+verify:story-background-loading 纳入属性回归，从实际场景应用入口经舞台
+adapter 到 BackgroundManager/Pixi 对象，检查延迟暂停、2 倍速中间值、
+暂停保持颜色/模糊、恢复原色后移除 overlay/filter、新状态替换后迟到回调
+不覆盖。背景加载、foundation 和 publicDir:false 构建通过，两个已知背景
+路径提示保留。此为无 GPU 的属性/时间验收，未完成实际背景滤镜画面与
+实音长稳，也不代表持续背景粒子通道已迁移。

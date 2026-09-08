@@ -497,8 +497,8 @@ export class PixiStageManager {
     return this.backgroundManager?.clearBackground()
   }
 
-  setBgBlur(amount, duration = 0, delay = 0) {
-    return this.backgroundManager?.setBgBlur(amount, duration, delay)
+  setBgBlur(amount, duration = 0, delay = 0, nowMilliseconds) {
+    return this.backgroundManager?.setBgBlur(amount, duration, delay, nowMilliseconds)
   }
 
   _ensureBgBlurFilter() {
@@ -513,8 +513,8 @@ export class PixiStageManager {
     return this.backgroundManager?.clearBgBlur()
   }
 
-  setBgColorOverlay(hexColor, duration = 0, delay = 0) {
-    return this.backgroundManager?.setBgColorOverlay(hexColor, duration, delay)
+  setBgColorOverlay(hexColor, duration = 0, delay = 0, nowMilliseconds) {
+    return this.backgroundManager?.setBgColorOverlay(hexColor, duration, delay, nowMilliseconds)
   }
 
   clearBgColorOverlay() {

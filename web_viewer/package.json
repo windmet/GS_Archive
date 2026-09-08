@@ -9,7 +9,7 @@
     "smoke": "vite build --configLoader native",
     "verify:archive-assets": "node scripts/verify-archive-assets.mjs",
     "verify:story-stage-loading": "node scripts/verify-story-stage-loading.mjs",
-    "verify:story-background-loading": "node scripts/verify-story-background-loading.mjs",
+    "verify:story-background-loading": "node scripts/verify-story-background-loading.mjs && node scripts/verify-background-properties-clock.mjs",
     "verify:story-camera-clock": "node scripts/verify-story-camera-clock.mjs",
     "verify:story-screen-clock": "node scripts/verify-story-screen-clock.mjs && node scripts/verify-screen-effect-lifetime.mjs",
     "verify:story-step-playback-state": "node scripts/verify-story-step-playback-state.mjs",

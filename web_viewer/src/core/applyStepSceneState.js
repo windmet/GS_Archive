@@ -25,11 +25,13 @@ export function applyStepSceneState({
     keepHeartVoiceBlur && state.bg_dof ? state.bg_dof * 6 : 0,
     bgDofTransition.duration ?? 0,
     bgDofTransition.delay ?? 0,
+    nowMilliseconds,
   )
   manager.setBgColorOverlay(
     state.bg_color || null,
     bgColorTransition.duration ?? 0,
     bgColorTransition.delay ?? 0,
+    nowMilliseconds,
   )
 
   const screenEffects = (state.screen_effects || [])
