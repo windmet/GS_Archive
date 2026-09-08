@@ -296,6 +296,21 @@ JSON、来源/输入不变及预览规则。使用 `--decoded-masterdata
 语音预览逐值相同，基线 hash 在 fixtures/masterdata-wire/resource-inputs-baseline.json。
 这是编译 JSON 与目录读取验证，不是音频解码或 P2-B 长时验收。公共产物未改写。
 
+## G15：JSON 写出与公共输出选择
+
+`sidem_masterdata/output_io.py` 集中九处重复 JSON 写出，主入口继续负责 decoded
+二进制，writer 不会把它复制到公共目录。完整模式使用 `FULL_PUBLIC_OUTPUTS`
+显式名单；专项模式仅写出各自生成的输出集合。编码、缩进、文件名和模式顺序
+不变；不删除已有无关文件，也不替调用端扩大公共输出范围。
+
+`verify:masterdata-output-io` 使用空 decoded wire 和临时目录跑 20 组真实 CLI
+写出：完整/八种专项/冲突标志优先级 × 是否指定公共目录，与 `3cfee8b` 的文件
+字节 hash、名单和 stdout 全部一致，冻结 output-io-baseline.json。另验 Unicode、
+数值 0、无关文件保留和明确子集复制。完整模式原本不复制 birthday semantic
+index，专项模式会复制；本批保留这一既有范围差异，未借去重改变发布合约。
+这是传输/选择边界验证，领域数据完整性由 G5–G14 的独立全数据对照负责。
+没有运行本地全量 masterdata 重建或复制当前 public。
+
 未完成边界：旧默认接口仍使用类缓存和兼容盘符；authoritative_scenario、RAW 候选写出、
 masterdata 和发布脚本仍在包外，G 整体未完成。此批按职责移动既有实现，
 没有引入新 IR/schema 或修改 RAW 语义。

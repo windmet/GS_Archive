@@ -17,6 +17,7 @@ from typing import Any
 if __package__:
     from .story_catalog import build_story_catalog
     from .sidem_masterdata.provenance import source
+    from .sidem_masterdata.output_io import write_json_outputs, FULL_PUBLIC_OUTPUTS
     from .sidem_masterdata.backgrounds import build_background_catalog as project_background_catalog
     from .sidem_masterdata.resource_inputs import (load_json_file, load_spine_ids, load_prefab_models, collect_compiled_stems, summarize_compiled_scenario, collect_compiled_summaries, collect_card_home_voice_previews, collect_voice_stems, collect_background_stems)
     from .sidem_masterdata.gasha import extract_gasha_announcements, build_gasha_index
@@ -40,6 +41,7 @@ if __package__:
 else:
     from story_catalog import build_story_catalog
     from sidem_masterdata.provenance import source
+    from sidem_masterdata.output_io import write_json_outputs, FULL_PUBLIC_OUTPUTS
     from sidem_masterdata.backgrounds import build_background_catalog as project_background_catalog
     from sidem_masterdata.resource_inputs import (load_json_file, load_spine_ids, load_prefab_models, collect_compiled_stems, summarize_compiled_scenario, collect_compiled_summaries, collect_card_home_voice_previews, collect_voice_stems, collect_background_stems)
     from sidem_masterdata.gasha import extract_gasha_announcements, build_gasha_index
@@ -451,16 +453,7 @@ def main() -> None:
         birthday_tables = extract_scenario_titles(records)
         birthday_semantic_index = build_birthday_semantic_catalog(birthday_tables)
         filename = "birthday_story_semantic_index.json"
-        (args.out_dir / filename).write_text(
-            json.dumps(birthday_semantic_index, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
-        if args.public_out_dir:
-            args.public_out_dir.mkdir(parents=True, exist_ok=True)
-            (args.public_out_dir / filename).write_text(
-                json.dumps(birthday_semantic_index, ensure_ascii=False, indent=2),
-                encoding="utf-8",
-            )
+        write_json_outputs({filename: birthday_semantic_index}, args.out_dir, args.public_out_dir)
         print(f"decoded: {decoded_path}")
         print(f"{filename}: {birthday_semantic_index.get('meta', {})}")
         return
@@ -468,16 +461,7 @@ def main() -> None:
         movie_tables = extract_table_rows(records, {175})
         movie_announce_index = build_movie_announce_index(movie_tables)
         filename = "movie_announce_index.json"
-        (args.out_dir / filename).write_text(
-            json.dumps(movie_announce_index, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
-        if args.public_out_dir:
-            args.public_out_dir.mkdir(parents=True, exist_ok=True)
-            (args.public_out_dir / filename).write_text(
-                json.dumps(movie_announce_index, ensure_ascii=False, indent=2),
-                encoding="utf-8",
-            )
+        write_json_outputs({filename: movie_announce_index}, args.out_dir, args.public_out_dir)
         print(f"decoded: {decoded_path}")
         print(f"{filename}: {movie_announce_index['meta']}")
         return
@@ -485,16 +469,7 @@ def main() -> None:
         card_tables = extract_table_rows(records, {1})
         card_skill_movie_index = build_card_skill_movie_index(card_tables)
         filename = "card_skill_movie_index.json"
-        (args.out_dir / filename).write_text(
-            json.dumps(card_skill_movie_index, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
-        if args.public_out_dir:
-            args.public_out_dir.mkdir(parents=True, exist_ok=True)
-            (args.public_out_dir / filename).write_text(
-                json.dumps(card_skill_movie_index, ensure_ascii=False, indent=2),
-                encoding="utf-8",
-            )
+        write_json_outputs({filename: card_skill_movie_index}, args.out_dir, args.public_out_dir)
         print(f"decoded: {decoded_path}")
         print(f"{filename}: {card_skill_movie_index['meta']}")
         return
@@ -502,16 +477,7 @@ def main() -> None:
         song_tables = extract_table_rows(records, {46})
         song_movie_index = build_song_movie_index(song_tables)
         filename = "song_movie_index.json"
-        (args.out_dir / filename).write_text(
-            json.dumps(song_movie_index, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
-        if args.public_out_dir:
-            args.public_out_dir.mkdir(parents=True, exist_ok=True)
-            (args.public_out_dir / filename).write_text(
-                json.dumps(song_movie_index, ensure_ascii=False, indent=2),
-                encoding="utf-8",
-            )
+        write_json_outputs({filename: song_movie_index}, args.out_dir, args.public_out_dir)
         print(f"decoded: {decoded_path}")
         print(f"{filename}: {song_movie_index['meta']}")
         return
@@ -519,16 +485,7 @@ def main() -> None:
         music_tables = extract_table_rows(records, {46, 112, 133})
         music_catalog = build_music_catalog(music_tables)
         filename = "music_catalog.json"
-        (args.out_dir / filename).write_text(
-            json.dumps(music_catalog, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
-        if args.public_out_dir:
-            args.public_out_dir.mkdir(parents=True, exist_ok=True)
-            (args.public_out_dir / filename).write_text(
-                json.dumps(music_catalog, ensure_ascii=False, indent=2),
-                encoding="utf-8",
-            )
+        write_json_outputs({filename: music_catalog}, args.out_dir, args.public_out_dir)
         print(f"decoded: {decoded_path}")
         print(f"{filename}: {music_catalog['meta']}")
         return
@@ -552,16 +509,7 @@ def main() -> None:
                 communication_tables, compiled_stems, compiled_summaries
             ),
         }
-        for filename, data in selected_outputs.items():
-            (args.out_dir / filename).write_text(
-                json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
-            )
-        if args.public_out_dir:
-            args.public_out_dir.mkdir(parents=True, exist_ok=True)
-            for filename, data in selected_outputs.items():
-                (args.public_out_dir / filename).write_text(
-                    json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
-                )
+        write_json_outputs(selected_outputs, args.out_dir, args.public_out_dir)
         print(f"decoded: {decoded_path}")
         for filename, data in selected_outputs.items():
             print(f"{filename}: {data.get('meta', {})}")
@@ -581,16 +529,7 @@ def main() -> None:
             seasonal_speakers,
         )
         filename = "seasonal_campaign_index.json"
-        (args.out_dir / filename).write_text(
-            json.dumps(seasonal_campaign_index, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
-        if args.public_out_dir:
-            args.public_out_dir.mkdir(parents=True, exist_ok=True)
-            (args.public_out_dir / filename).write_text(
-                json.dumps(seasonal_campaign_index, ensure_ascii=False, indent=2),
-                encoding="utf-8",
-            )
+        write_json_outputs({filename: seasonal_campaign_index}, args.out_dir, args.public_out_dir)
         print(f"decoded: {decoded_path}")
         print(f"{filename}: {len(seasonal_campaign_index['campaigns'])} campaigns")
         return
@@ -607,14 +546,7 @@ def main() -> None:
             work_backgrounds,
         )
         filename = "work_story_index.json"
-        (args.out_dir / filename).write_text(
-            json.dumps(work_story_index, ensure_ascii=False, indent=2), encoding="utf-8"
-        )
-        if args.public_out_dir:
-            args.public_out_dir.mkdir(parents=True, exist_ok=True)
-            (args.public_out_dir / filename).write_text(
-                json.dumps(work_story_index, ensure_ascii=False, indent=2), encoding="utf-8"
-            )
+        write_json_outputs({filename: work_story_index}, args.out_dir, args.public_out_dir)
         print(f"decoded: {decoded_path}")
         print(f"{filename}: {len(work_story_index['idols'])} idols")
         return
@@ -741,42 +673,7 @@ def main() -> None:
         ),
         "040ren_ssr03_probe.json": build_card_probe(card_index, "040ren_ssr03"),
     }
-    for filename, data in outputs.items():
-        (args.out_dir / filename).write_text(
-            json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
-        )
-    if args.public_out_dir:
-        args.public_out_dir.mkdir(parents=True, exist_ok=True)
-        for filename in (
-            "story_master_index.json",
-            "story_catalog.json",
-            "gasha_announcement_index.json",
-            "gasha_index.json",
-            "event_index.json",
-            "card_index.json",
-            "card_detail_index.json",
-            "idol_unit_dictionary.json",
-            "speaker_dictionary.json",
-            "costume_dictionary.json",
-            "idol_episode_index.json",
-            "mobile_archive_index.json",
-            "home_interaction_index.json",
-            "short_adv_profile_index.json",
-            "seasonal_communication_index.json",
-            "seasonal_campaign_index.json",
-            "work_story_index.json",
-            "background_catalog.json",
-            "music_catalog.json",
-            "movie_announce_index.json",
-            "card_skill_movie_index.json",
-            "song_movie_index.json",
-            "face_dictionary.json",
-            "masterdata_validation_report.json",
-        ):
-            (args.public_out_dir / filename).write_text(
-                json.dumps(outputs[filename], ensure_ascii=False, indent=2),
-                encoding="utf-8",
-            )
+    write_json_outputs(outputs, args.out_dir, args.public_out_dir, FULL_PUBLIC_OUTPUTS)
 
     print(f"decoded: {decoded_path}")
     for filename, data in outputs.items():
