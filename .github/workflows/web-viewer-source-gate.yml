@@ -112,6 +112,9 @@ jobs:
       - name: Verify episode queue ownership and range restoration
         run: npm run verify:episode-queue
 
+      - name: Verify scenario compiler package compatibility
+        run: npm run verify:scenario-package
+
       - name: Verify release soak recorder
         run: npm run verify:release-soak
 
