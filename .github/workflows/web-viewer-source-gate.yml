@@ -109,6 +109,9 @@ jobs:
       - name: Verify card voice preview adapter
         run: npm run verify:card-voice-preview
 
+      - name: Verify episode queue ownership and range restoration
+        run: npm run verify:episode-queue
+
       - name: Verify release soak recorder
         run: npm run verify:release-soak
 

@@ -377,6 +377,7 @@
 </template>
 
 <script setup>
+import { useEpisodeQueue } from './core/useEpisodeQueue.js'
 import { buildCardVoicePreviewScenario, findCardVoiceCue } from './data/cardVoicePreview.js'
 import { createArchiveNavigationCoordinator } from './core/ArchiveNavigationCoordinator.js'
 import { useArchiveNavigationState } from './core/useArchiveNavigationState.js'
@@ -555,8 +556,8 @@ const songExperimentalAudioData = ref(null)
 const idolEntityTranslationRevision = ref(0)
 const currentScenario = ref(null)
 const currentScenarioInstance = ref(0)
-const playbackQueue = ref([])
-const playbackQueueIndex = ref(-1)
+const episodeQueue = useEpisodeQueue()
+const hasNextPlaybackEpisode = episodeQueue.hasNext
 const continuousPlayback = ref(window.localStorage.getItem('sidem:continuous-playback') === '1')
 const loading = ref(true)
 const preloadProgress = ref(0)
@@ -941,10 +942,6 @@ const currentEventStory = computed(() => storyCatalog.value.find(entry => entry.
 const currentEventEpisodes = computed(() => {
   return buildEventStoryEpisodes(currentEvent.value, currentEventStory.value, storyMasterData.value)
 })
-
-const hasNextPlaybackEpisode = computed(() =>
-  playbackQueueIndex.value >= 0 && playbackQueueIndex.value < playbackQueue.value.length - 1,
-)
 
 watch(continuousPlayback, enabled => {
   window.localStorage.setItem('sidem:continuous-playback', enabled ? '1' : '0')
@@ -1562,6 +1559,7 @@ function restoreVoicePreview(route) {
   const cue = findCardVoiceCue(card, route.voice,
     mergeCardDetail(card, cardDetailData.value)?.operational_voice_cues || [])
   if (!cue) return false
+  episodeQueue.clear()
   currentScenario.value = buildCardVoicePreviewScenario(card, cue, idolDisplayName)
   currentScenarioFile.value = ''
   currentScenarioStartStep.value = null
@@ -1660,7 +1658,7 @@ async function applyArchiveRoute(route) {
     }
 
     if (route.view === 'player' && route.scenario) {
-      const restoredQueue = restoreEpisodeQueue(route.scenario, route.returnView)
+      const restoredQueue = restoreEpisodeQueue(route.scenario, route.returnView, route)
       await loadScenario(route.scenario, route.returnView || 'home', {
         syncRoute: false,
         intent,
@@ -2557,18 +2555,10 @@ function playCurrentEventEpisode(episode) {
 }
 
 function startEpisodeQueue(episodes, index, returnView) {
-  playbackQueue.value = episodes.map(episode => ({
-    file: episode.file,
-    startStep: episode.startStep,
-    endStep: episode.endStep,
-    id: episode.id,
-    label: episode.label,
-  }))
-  playbackQueueIndex.value = index
-  loadPlaybackEpisode(playbackQueue.value[index], returnView)
+  loadPlaybackEpisode(episodeQueue.start(episodes, index), returnView)
 }
 
-function restoreEpisodeQueue(scenarioFile, returnView) {
+function restoreEpisodeQueue(scenarioFile, returnView, range = {}) {
   let episodes = []
   if (returnView === 'story_collection') {
     episodes = (currentStoryCollection.value?.chapters || []).flatMap(chapter => chapter.episodes || [])
@@ -2577,18 +2567,7 @@ function restoreEpisodeQueue(scenarioFile, returnView) {
   } else if (returnView === 'idol_story_archive') {
     episodes = (currentIdolStoryPage.value?.sections || []).flatMap(section => section.episodes || [])
   }
-  const queue = episodes.filter(episode => episode.exists !== false && episode.file)
-  const index = queue.findIndex(episode => episode.file === scenarioFile)
-  if (index < 0) return false
-  playbackQueue.value = queue.map(episode => ({
-    file: episode.file,
-    startStep: episode.startStep,
-    endStep: episode.endStep,
-    id: episode.id,
-    label: episode.label,
-  }))
-  playbackQueueIndex.value = index
-  return true
+  return episodeQueue.restore(episodes, scenarioFile, range)
 }
 
 function loadPlaybackEpisode(episode, returnView = returnViewAfterPlayer.value) {
@@ -2601,9 +2580,7 @@ function loadPlaybackEpisode(episode, returnView = returnViewAfterPlayer.value) 
 }
 
 function playNextEpisode() {
-  if (!hasNextPlaybackEpisode.value) return
-  playbackQueueIndex.value += 1
-  loadPlaybackEpisode(playbackQueue.value[playbackQueueIndex.value])
+  loadPlaybackEpisode(episodeQueue.next())
 }
 
 function openEventCard(relation) {
@@ -2640,6 +2617,7 @@ async function openVoicePreview(card, cue, returnView) {
     preloadProgress.value = 100
     await storyViewerLoader()
     if (!intent.isCurrent()) return
+    episodeQueue.clear()
     currentScenario.value = buildCardVoicePreviewScenario(card, cue, idolDisplayName)
     currentScenarioFile.value = ''
     currentScenarioStartStep.value = null
@@ -2716,8 +2694,7 @@ function closePlayer() {
   currentScenarioStartStep.value = null
   currentScenarioEndStep.value = null
   currentPreviewCue.value = ''
-  playbackQueue.value = []
-  playbackQueueIndex.value = -1
+  episodeQueue.clear()
   const returnView = returnViewAfterPlayer.value || 'files'
   returnViewAfterPlayer.value = 'files'
   commitView(returnView)
@@ -2754,8 +2731,7 @@ async function loadScenario(name, returnView = 'files', options = {}) {
       currentScenarioStartStep.value = Number(options.startStep) > 0 ? Number(options.startStep) : null
       currentScenarioEndStep.value = Number(options.endStep) > 0 ? Number(options.endStep) : null
       if (!options.preserveQueue) {
-        playbackQueue.value = []
-        playbackQueueIndex.value = -1
+        episodeQueue.clear()
       }
       currentScenarioInstance.value += 1
       currentPreviewCue.value = ''

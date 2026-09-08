@@ -4,6 +4,7 @@ import vm from 'node:vm'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 import { buildCardVoicePreviewScenario } from '../src/data/cardVoicePreview.js'
+import { useEpisodeQueue } from '../src/core/useEpisodeQueue.js'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const functionSource = (start, end) => app.slice(app.indexOf(start), app.indexOf(end, app.indexOf(start)))
@@ -27,10 +28,10 @@ function setup() {
     mobileArchiveData: { value: {} }, idolUnitData: { value: {} },
     ensureCardDetailData: async () => {}, ensureIdolCommunicationData: async () => {},
     resolveRouteGroup: () => null, resolveRouteUnit: () => null, resolveRouteEpisode: () => null,
-    restoreEpisodeQueue: () => false,
+    currentStoryCollection: { value: null }, currentEventEpisodes: { value: [] }, currentIdolStoryPage: { value: null },
     spineViewerLoader: async () => {}, chibiStageViewerLoader: async () => {},
     currentScenario: { value: null }, currentScenarioInstance: { value: 0 },
-    playbackQueue: { value: [] }, playbackQueueIndex: { value: -1 },
+    episodeQueue: useEpisodeQueue(),
     storyViewerLoader: async () => {},
     Preloader: { preloadScenario: async () => {} },
     fetch: () => { const request = deferred(); requests.push(request); return request.promise },
@@ -40,6 +41,7 @@ function setup() {
   const production = vm.runInContext([
     functionSource('function syncArchiveRoute(', 'function groupsForRoute('),
     functionSource('async function applyArchiveRoute(', 'function goHome('),
+    functionSource('function restoreEpisodeQueue(', 'function loadPlaybackEpisode('),
     functionSource('async function openStoryCatalog(', 'function openExternalStoryResources('),
     functionSource('async function openSpineLab(', 'async function openChibiStage('),
     functionSource('async function openVoicePreview(', 'function openGroup('),
@@ -125,6 +127,17 @@ function setup() {
 }
 // Lazy feature openers also lose ownership when another view is selected.
 {
+  const t = setup()
+  t.context.currentStoryCollection.value = { chapters: [{ episodes: [
+    { id: 'first', file: 'shared.json', startStep: 2, endStep: 10 },
+    { id: 'second', file: 'shared.json', startStep: 12, endStep: 20 },
+  ] }] }
+  const restored = t.restore({ view: 'player', scenario: 'shared.json', returnView: 'story_collection', startStep: 12, endStep: 20 })
+  t.respond(0, 'shared'); await restored
+  assert.equal(t.context.episodeQueue.current.value.id, 'second')
+  assert.equal(t.context.episodeQueue.hasNext.value, false)
+}
+{
   const t = setup(), data = deferred()
   t.context.ensureIdolCommunicationData = () => data.promise
   const old = t.openStoryCatalog()
@@ -162,10 +175,12 @@ function setup() {
   t.commit('home'); module.resolve(); await old
   assert.equal(t.context.currentScenario.value, null)
   t.state.currentCharacterId.value = '001tom'
+  t.context.episodeQueue.start([{ file: 'old-a.json' }, { file: 'old-b.json' }], 0)
   await t.openVoicePreview({ resource_id: '002kao_card', character_id: '002kao' }, 'current', 'card_detail')
   assert.equal(t.state.view.value, 'player')
   assert.equal(t.context.currentScenario.value.steps[0].dialogue.speaker, 'speaker:002kao')
   assert.equal(t.state.currentPreviewCue.value, 'current')
   assert.equal(t.state.returnViewAfterPlayer.value, 'card_detail')
+  assert.equal(t.context.episodeQueue.hasNext.value, false)
 }
 console.log('Archive async navigation: scenario, preload, history, lazy feature, voice preview, failure and disposal races passed')
