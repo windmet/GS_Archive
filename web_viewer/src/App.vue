@@ -2680,18 +2680,26 @@ onMounted(async () => {
   if (navigation.isDisposed()) return
 
 
-  // Browser history can move while the initial data/translation loads await.
-  await applyArchiveRoute(readArchiveRoute())
-  if (navigation.isDisposed()) return
-  loading.value = false
-  archiveRouteReady = true
-  writeArchiveRoute(currentArchiveRoute(), { replace: true })
+  let restoreGeneration = 0
+  const restoreRoute = async route => {
+    const expected = ++restoreGeneration
+    await applyArchiveRoute(route)
+    if (navigation.isDisposed() || expected !== restoreGeneration) return
+    if (!archiveRouteReady) {
+      loading.value = false
+      archiveRouteReady = true
+      writeArchiveRoute(currentArchiveRoute(), { replace: true })
+    }
+  }
+  // Listen before restoration: a newer history entry may finish before the
+  // initial route's assets. Only its completion may finalize startup.
   removeArchivePopState = onArchivePopState(route => {
-    applyArchiveRoute(route).catch(error => {
+    restoreRoute(route).catch(error => {
       console.error('[ArchiveRoute] Failed to restore browser history:', error)
     })
   })
   removeSpineAnimationDebug = installSpineAnimationDebug()
+  await restoreRoute(readArchiveRoute())
 })
 
 watch([filterQuery, currentSongScope, currentCardRarity, currentCardAssetState, currentCardRelationState, currentGashaCategory, currentIdolUnitFilter, currentStoryDomain, currentStoryMode, currentStorySection, currentEventScope, currentStoryAvailability, currentStorySort, currentMobileMode, currentMobileScenarioId], () => {

@@ -27,7 +27,7 @@ for (const disposed of [false, true]) {
     writeArchiveRoute: value => written.push(value),
     onArchivePopState: () => () => {},
     installSpineAnimationDebug: () => () => {},
-    console,
+    console, archiveRouteReady: false,
   }
   // Supply refs used by the actual startup callback; execute its production
   // control flow rather than reproducing the order of awaits in a fixture.
@@ -48,4 +48,33 @@ for (const disposed of [false, true]) {
     assert.deepEqual(written[0], route)
   }
 }
-console.log('Archive startup: browser route changes during data/translation loads use latest URL; disposed startup publishes nothing')
+{
+  const firstRestore = deferred()
+  let mount, popState
+  let route = { view: 'player', scenario: 'slow.json' }
+  const applied = [], written = []
+  const context = {
+    onMounted: callback => { mount = callback }, localStorage: { getItem: () => null },
+    readArchiveRoute: () => ({ ...route }), loadArchiveData: async () => ({ data: {}, errors: [] }),
+    loadIdolEntityTranslations: async () => {}, navigation: { isDisposed: () => false },
+    applyArchiveRoute: async value => { applied.push(value); if (value.view === 'player') await firstRestore.promise },
+    currentArchiveRoute: () => applied.at(-1), writeArchiveRoute: value => written.push(value),
+    onArchivePopState: callback => { popState = callback; return () => {} },
+    installSpineAnimationDebug: () => () => {}, console, archiveRouteReady: false,
+  }
+  for (const match of source.matchAll(/\b(\w+)\.value\s*=/g)) context[match[1]] = { value: null }
+  vm.runInNewContext(source, context)
+  const pending = mount()
+  await new Promise(resolve => setImmediate(resolve))
+  assert.equal(applied.length, 1)
+  assert.equal(typeof popState, 'function', 'history listener must be active during initial route restoration')
+  route = { view: 'gashas' }
+  popState(route)
+  await new Promise(resolve => setImmediate(resolve))
+  assert.equal(written.length, 1, 'latest completed restoration must finalize startup without waiting for obsolete load')
+  assert.deepEqual(written[0], route)
+  firstRestore.resolve()
+  await pending
+  assert.equal(written.length, 1, 'late initial restoration must not finalize startup twice')
+}
+console.log('Archive startup: latest URL after data loads, history during restore, obsolete completion and disposal passed')

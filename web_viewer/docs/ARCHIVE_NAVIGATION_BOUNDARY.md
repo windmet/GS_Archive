@@ -183,3 +183,19 @@ idol_detail/002sht；修复后恢复并写回最新地址，卸载后无恢复�
 该测试没有启动真实浏览器或注入真实慢网络。applyArchiveRoute 自身异步恢复
 期间的历史变化、初始化前页面内交互、被动筛选 watcher 仍需进一步审计；
 本批只关闭初始数据/翻译加载窗口中的过期地址问题，不视为 F 完成。
+
+## F9：初始路由恢复期间接收历史导航
+
+F8 后仍有第二个窗口：applyArchiveRoute 可能等待剧情或 feature 资源，此时
+popstate listener 尚未安装。现在在首次恢复前安装监听；每次恢复分配本地
+generation，仅最新一次恢复完成后设置 archiveRouteReady 并写回规范化地址。
+旧恢复仍交给已有 navigation coordinator 取消发布，启动完成归属单独校验；
+新页面无需等待旧资源请求返回即可完成启动。
+
+扩展 verify:archive-startup-route，执行生产 onMounted，暂停首次 player 恢复，
+在此期间触发 gashas 历史导航。旧实现先复现 listener 为 undefined；修复后
+新恢复先完成并写回一次，旧恢复随后结束不重复写入。F8 的加载期地址变化与
+销毁用例仍通过。异步导航和 routes 回归通过；测试没有真实浏览器网络注入，
+尚不能据此声称全部启动/页面内交互/筛选竞态已覆盖。
+
+本批 publicDir:false 生产构建通过，保留已有背景路径构建警告。
