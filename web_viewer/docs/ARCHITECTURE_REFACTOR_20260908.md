@@ -64,6 +64,8 @@ scenario_compiler 2,283 / 101,555。体量用于定位责任集中处，不单�
    `authoritative_scenario` 从 compatibility result 投影严格产物，Node
    `scripts/lib/authoritative-scenario-compiler.mjs` 又依赖浏览器 normalizer。
    因此不仅是两个文件大，还存在生成工具对前端实现的反向依赖。
+   G18 已将该纯模块归属移至 shared/story，消除 Node 编译器到 src 的依赖；
+   Python/Node 两条产物投影的职责协调仍需继续。
 4. `SpineStage.applyState` 使用 `getStepSceneState`，后者优先 entry snapshot；
    `applyStepSceneState` 当前只处理 filter、背景模糊/颜色及非 fade 屏幕效果。
    `useStoryRuntimeCues` 管 background/camera/screen entry 和 cue。
@@ -109,7 +111,7 @@ query、编码文件名、口型、卡图 MIME/cache，另测越界与 standalon
 | D | 独立 reading artifact/consumer（功能扩展） | 复用 speaker/text_ref/overlay；choice 与来源 step 保真；浏览器请求证明无 Pixi/Spine/audio 初始化；桌面/窄屏交互验收 |
 | E | Runtime 单一状态计划与 renderer adapter | 在 B 的证据上逐 channel 迁移；兼容留在显式边界；不要先删 normalizer；行为变化需真实媒体回归及长稳证据 |
 | F，推进中 | F1 分离 repository 请求/契约；F2 移出导航状态与投影；F3 统一异步导航有效性和恢复生命周期，见 `ARCHIVE_DATA_BOUNDARIES.md`、`ARCHIVE_NAVIGATION_BOUNDARY.md`；feature 组合仍待拆分 | 数据/请求回归、1,792 组导航投影 parity、可控异步竞态、域门禁及真实剧情进入/返回通过；桌面/平板/390px、慢网络和启动/过滤完整矩阵仍待完成 |
-| G，推进中 | 已完成 G1–G17：scenario 包与资源输入、RAW 证据分层、masterdata wire 和身份/故事/卡片/活动领域拆分；主卡片流程显式返回目录与详情。逐批边界见 `SCENARIO_PIPELINE_BOUNDARIES.md` | 旧新完整输出对照、语义测试及消费者回归证据见 G1–G17；资源扫描与纯投影已分层；JSON 写出与公共选择已集中；CLI/编排已分层；生成任务已独立并按需读取资源；上游 publish 与 compiler 内部边界仍待推进，不能视为 G 完成 |
+| G，推进中 | 已完成 G1–G18：scenario 包与资源输入、RAW 证据分层、masterdata wire 和身份/故事/卡片/活动领域拆分；主卡片流程显式返回目录与详情。逐批边界见 `SCENARIO_PIPELINE_BOUNDARIES.md` | 旧新完整输出对照、语义测试及消费者回归证据见 G1–G18；资源扫描与纯投影已分层；JSON 写出与公共选择已集中；CLI/编排已分层；生成任务已独立并按需读取资源；Node 编译工具已依赖 shared normalization；上游 publish 与 compiler 内部边界仍待推进，不能视为 G 完成 |
 
 B 优先服务反复反查 RAW 的维护痛点；不急于引入新 schema v3 或把所有已有 v2
 产物重编译。D 是参考文档提出的功能方向，尚未实现，不应和行为保持的重构混为一谈。

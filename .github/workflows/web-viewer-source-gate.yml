@@ -85,6 +85,9 @@ jobs:
       - name: Verify Runtime foundation
         run: node scripts/verify-story-runtime-foundation.mjs
 
+      - name: Verify shared scenario normalization boundary
+        run: npm run verify:shared-scenario-normalizer
+
       - name: Verify Story timing semantics matrix
         run: npm run verify:story-timing-semantics -- --source-only
 

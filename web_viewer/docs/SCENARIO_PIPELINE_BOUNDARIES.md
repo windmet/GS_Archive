@@ -354,6 +354,25 @@ curated 默认路径仍指向 data_pipeline/curated，而非迁移后的包目�
 G16 所记任务选择与生成耦合已拆开；完整任务仍有较多数据准备步骤，尚未据此
 宣称整个 G 结束，authoritative/发布层和 compiler 内部语义边界仍需继续处理。
 
+## G18：编译工具与 Runtime 共用 normalization
+
+`web_viewer/shared/story/ScenarioNormalizer.js` 现在拥有 legacy→compat-v2 和
+v2 clone 的纯数据归一化。它不依赖浏览器、Vue、Pixi 或 Node 文件系统。
+`src/core/story-runtime/ScenarioNormalizer.js` 保留同一函数导出的兼容入口；
+`authoritative-scenario-compiler.mjs` 直接依赖 shared，不再反向导入前端 src。
+这只是确定共享 owner，没有改变兼容投影语义，也没有移除 normalizer。
+
+迁移实现与 `08e6956` 原文件（统一换行后）相同。新增
+`verify:shared-scenario-normalizer` 以独立 data URL 导入证明它不依赖仓库路径，
+检查 Runtime 函数身份、输入隔离、schema 错误和编译端无 src 依赖。
+Runtime foundation、Spine cue 回归及全部 10,326 剧情的 Runtime shape 验证通过
+（315,124 snapshots、175,600 cues）；publicDir:false 生产构建通过。
+
+实际浏览器从故事目录进入 C.FIRST 前传，再打开
+`episodes/1_1_016_01_a.json` 播放器（start=2/end=26），推进 2→3 并返回
+story_collection/unit_story/16，集合上下文保留。此为短流程冒烟，不代表所有
+舞台过渡、窄屏矩阵或真实音频 P2-B soak。未重编译、发布或改写公共剧情。
+
 未完成边界：旧默认接口仍使用类缓存和兼容盘符；authoritative_scenario、RAW 候选写出、
 masterdata 已入包，authoritative/发布脚本仍在包外，G 整体未完成。此批按职责移动既有实现，
 没有引入新 IR/schema 或修改 RAW 语义。

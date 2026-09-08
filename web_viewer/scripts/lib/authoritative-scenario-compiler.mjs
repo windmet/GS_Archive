@@ -1,4 +1,4 @@
-import { normalizeScenario } from '../../src/core/story-runtime/ScenarioNormalizer.js'
+import { normalizeScenario } from '../../shared/story/ScenarioNormalizer.js'
 import { isDeepStrictEqual } from 'node:util'
 
 function clone(value) {
