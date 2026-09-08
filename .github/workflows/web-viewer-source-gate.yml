@@ -157,6 +157,9 @@ jobs:
       - name: Verify masterdata output transport
         run: npm run verify:masterdata-output-io
 
+      - name: Verify masterdata package entrypoint
+        run: npm run verify:masterdata-entrypoint
+
       - name: Verify release soak recorder
         run: npm run verify:release-soak
 

@@ -311,6 +311,27 @@ index，专项模式会复制；本批保留这一既有范围差异，未借去
 这是传输/选择边界验证，领域数据完整性由 G5–G14 的独立全数据对照负责。
 没有运行本地全量 masterdata 重建或复制当前 public。
 
+## G16：Masterdata CLI 与生成编排
+
+`masterdata_extract.py` 现在只保留历史 API 导出和 main 启动调用。
+`sidem_masterdata/cli.py` 负责参数解析，`pipeline.run(args)` 负责生成编排；
+`card_tables.py` 抽取原始卡片与 cue，`diagnostics.py` 生成扫描/覆盖/计数报告，
+`adapters.py` 保留少数目录参数和原地详情 API 的兼容组合，`patterns.py` 拥有
+启发式识别表达式。包内模块不反向导入旧入口。
+
+从仓库根可运行 `python -m data_pipeline.sidem_masterdata`；原脚本路径继续可用。
+curated 默认路径仍指向 data_pipeline/curated，而非迁移后的包目录。
+模式优先级、decoded 写出和公共输出选择保持 G15 合约。
+
+`verify:masterdata-entrypoint` 以两个真实子进程入口运行 help 与临时音乐模式，
+检查相同文件字节、默认路径、卡片原始偏移、诊断 unknown/zero 区别和无入口反向
+依赖。G15 的 20 组真实临时 CLI 输出基线继续通过；12 项 masterdata source
+回归全部通过。10 个迁移 helper 的 AST 与 `8f7fcf4` 相同，没有改动其领域语义。
+卡片 writer 检查已跟随实际 pipeline.run 迁移，继续要求显式接收目录/详情。
+
+尚未完成：pipeline.run 仍集中完整/专项任务的数据准备与选择，需要继续形成
+可独立调用的生成任务；没有宣称全量真实输入 CLI rebuild 或 public 发布验收。
+
 未完成边界：旧默认接口仍使用类缓存和兼容盘符；authoritative_scenario、RAW 候选写出、
-masterdata 和发布脚本仍在包外，G 整体未完成。此批按职责移动既有实现，
+masterdata 已入包，authoritative/发布脚本仍在包外，G 整体未完成。此批按职责移动既有实现，
 没有引入新 IR/schema 或修改 RAW 语义。
