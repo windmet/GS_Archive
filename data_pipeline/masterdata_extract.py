@@ -17,6 +17,8 @@ from typing import Any
 if __package__:
     from .story_catalog import build_story_catalog
     from .sidem_masterdata.provenance import source
+    from .sidem_masterdata.backgrounds import build_background_catalog as project_background_catalog
+    from .sidem_masterdata.resource_inputs import (load_json_file, load_spine_ids, load_prefab_models, collect_compiled_stems, summarize_compiled_scenario, collect_compiled_summaries, collect_card_home_voice_previews, collect_voice_stems, collect_background_stems)
     from .sidem_masterdata.gasha import extract_gasha_announcements, build_gasha_index
     from .sidem_masterdata.events import extract_event_tables, build_event_index as project_event_index
     from .sidem_masterdata.cards import canonical_cards, build_card_index
@@ -38,6 +40,8 @@ if __package__:
 else:
     from story_catalog import build_story_catalog
     from sidem_masterdata.provenance import source
+    from sidem_masterdata.backgrounds import build_background_catalog as project_background_catalog
+    from sidem_masterdata.resource_inputs import (load_json_file, load_spine_ids, load_prefab_models, collect_compiled_stems, summarize_compiled_scenario, collect_compiled_summaries, collect_card_home_voice_previews, collect_voice_stems, collect_background_stems)
     from sidem_masterdata.gasha import extract_gasha_announcements, build_gasha_index
     from sidem_masterdata.events import extract_event_tables, build_event_index as project_event_index
     from sidem_masterdata.cards import canonical_cards, build_card_index
@@ -157,36 +161,6 @@ def build_event_index(
     return project_event_index(extract_event_tables(records), story_tables, card_index)
 
 
-def load_json_file(path: Path | None) -> Any:
-    if not path or not path.exists():
-        return None
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError, UnicodeDecodeError):
-        return None
-
-
-def load_spine_ids(path: Path | None) -> set[str]:
-    data = load_json_file(path)
-    if isinstance(data, list):
-        return {item for item in data if isinstance(item, str)}
-    if isinstance(data, dict):
-        for key in ("models", "spines", "items"):
-            value = data.get(key)
-            if isinstance(value, list):
-                return {item for item in value if isinstance(item, str)}
-            if isinstance(value, dict):
-                return set(value)
-    return set()
-
-
-def load_prefab_models(path: Path | None) -> dict[str, Any]:
-    data = load_json_file(path)
-    if isinstance(data, dict) and isinstance(data.get("models"), dict):
-        return data["models"]
-    return {}
-
-
 def build_work_story_index(
     tables: dict[int, list[dict[str, Any]]],
     compiled_dir: Path | None,
@@ -203,62 +177,8 @@ def build_work_story_index(
 
 
 def build_background_catalog(tables: dict[int, list[dict[str, Any]]], bg_dir: Path | None = None) -> dict[str, Any]:
-    bg_files = {path.stem for path in bg_dir.glob("*.png")} if bg_dir and bg_dir.exists() else set()
-    backgrounds: dict[str, dict[str, Any]] = {}
-    for row in tables.get(107, []):
-        bg_id = row.get("5")
-        if not isinstance(bg_id, str):
-            continue
-        backgrounds.setdefault(bg_id, {
-            "bg_resource_id": bg_id,
-            "names": [],
-            "descriptions": [],
-            "picture_studio_spots": [],
-            "asset_exists": bg_id in bg_files if bg_files else None,
-            "_sources": [],
-        })
-        entry = backgrounds[bg_id]
-        if row.get("2") not in entry["names"]:
-            entry["names"].append(row.get("2"))
-        if row.get("7") not in entry["descriptions"]:
-            entry["descriptions"].append(row.get("7"))
-        entry["picture_studio_spots"].append(row.get("1"))
-        entry["_sources"].append(source(107, {"spot_name": 2, "bg_resource_id": 5, "description": 7}, row.get("_offset")))
-    for row in tables.get(108, []):
-        bg_id = row.get("6")
-        if not isinstance(bg_id, str):
-            continue
-        backgrounds.setdefault(bg_id, {
-            "bg_resource_id": bg_id,
-            "names": [],
-            "descriptions": [],
-            "picture_studio_scenes": [],
-            "effects": [],
-            "asset_exists": bg_id in bg_files if bg_files else None,
-            "_sources": [],
-        })
-        entry = backgrounds[bg_id]
-        entry.setdefault("picture_studio_scenes", []).append({"id": row.get("1"), "variant": row.get("3")})
-        if row.get("8") not in entry["descriptions"]:
-            entry["descriptions"].append(row.get("8"))
-        if isinstance(row.get("7"), str):
-            entry.setdefault("effects", []).append(row.get("7"))
-        entry["_sources"].append(source(108, {"scene_variant": 3, "bg_resource_id": 6, "effect": 7, "description": 8}, row.get("_offset")))
-    for row in tables.get(110, []):
-        bg_id = row.get("2")
-        if not isinstance(bg_id, str):
-            continue
-        backgrounds.setdefault(bg_id, {
-            "bg_resource_id": bg_id,
-            "names": [],
-            "descriptions": [],
-            "asset_exists": bg_id in bg_files if bg_files else None,
-            "_sources": [],
-        })
-        backgrounds[bg_id]["_sources"].append(source(110, {"bg_resource_id": 2}, row.get("_offset")))
-    for entry in backgrounds.values():
-        entry["_source"] = entry["_sources"][0] if entry["_sources"] else None
-    return {"backgrounds": backgrounds, "meta": {"background_count": len(backgrounds), "asset_probe_available": bool(bg_files)}}
+    """Compatibility adapter for callers supplying a background directory."""
+    return project_background_catalog(tables, collect_background_stems(bg_dir))
 
 
 def extract_card_voice_cues(records: list[tuple[int, int, int, int, Any]]) -> list[dict[str, Any]]:
@@ -280,149 +200,6 @@ def extract_card_voice_cues(records: list[tuple[int, int, int, int, Any]]) -> li
                 }
             )
     return cues
-
-
-def collect_compiled_stems(compiled_dir: Path | None) -> set[str]:
-    if not compiled_dir or not compiled_dir.exists():
-        return set()
-    excluded = {"index", "manifest", "voice_index"}
-    return {path.stem for path in compiled_dir.glob("*.json") if path.stem not in excluded}
-
-
-def summarize_compiled_scenario(path: Path) -> dict[str, Any]:
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError, UnicodeDecodeError):
-        return {}
-
-    steps = data.get("steps") or []
-    step_types: Counter[str] = Counter()
-    chara_ids: set[str] = set()
-    title = None
-    voice_count = 0
-    lip_count = 0
-
-    for step in steps:
-        if not isinstance(step, dict):
-            continue
-        step_type = step.get("type")
-        if isinstance(step_type, str):
-            step_types[step_type] += 1
-
-        dialogue = step.get("dialogue") if isinstance(step.get("dialogue"), dict) else {}
-        text = dialogue.get("text")
-        if not title and step_type == "title" and isinstance(text, str):
-            title = text
-        if dialogue.get("voice"):
-            voice_count += 1
-        if isinstance(dialogue.get("lip"), dict) and dialogue["lip"].get("path"):
-            lip_count += 1
-
-        chara_id = step.get("chara_id")
-        if isinstance(chara_id, str):
-            chara_ids.add(chara_id)
-        state = step.get("state") if isinstance(step.get("state"), dict) else {}
-        for spine in state.get("spines") or []:
-            if isinstance(spine, dict) and isinstance(spine.get("id"), str):
-                chara_ids.add(spine["id"])
-
-    if not title:
-        for step in steps:
-            if not isinstance(step, dict):
-                continue
-            dialogue = step.get("dialogue") if isinstance(step.get("dialogue"), dict) else {}
-            text = dialogue.get("text")
-            if isinstance(text, str) and text and text != "【あらすじ】":
-                title = text.splitlines()[0]
-                break
-
-    return {
-        "scenario_id": data.get("scenario_id"),
-        "title": title,
-        "step_count": len(steps),
-        "step_types": dict(sorted(step_types.items())),
-        "voice_count": voice_count,
-        "lip_count": lip_count,
-        "characters": sorted(chara_ids),
-    }
-
-
-def collect_compiled_summaries(compiled_dir: Path | None) -> dict[str, dict[str, Any]]:
-    if not compiled_dir or not compiled_dir.exists():
-        return {}
-    excluded = {"index", "manifest", "voice_index"}
-    summaries = {}
-    for path in compiled_dir.glob("*.json"):
-        if path.stem in excluded:
-            continue
-        summary = summarize_compiled_scenario(path)
-        if summary:
-            summaries[path.stem] = summary
-    return summaries
-
-
-def collect_card_home_voice_previews(
-    card_voice_cues: list[dict[str, Any]],
-    compiled_dir: Path | None,
-    compiled_stems: set[str],
-) -> dict[str, dict[str, Any]]:
-    if not compiled_dir or not compiled_dir.exists():
-        return {}
-
-    bases = {
-        cue.get("scenario_base")
-        for cue in card_voice_cues
-        if isinstance(cue.get("scenario_base"), str)
-    }
-    base_to_file: dict[str, str] = {}
-    for base in sorted(bases):
-        file_name = compiled_filename(base, compiled_stems)
-        if file_name:
-            base_to_file[base] = file_name
-
-    previews: dict[str, dict[str, Any]] = {}
-    for base, file_name in base_to_file.items():
-        path = compiled_dir / file_name
-        try:
-            data = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError, UnicodeDecodeError):
-            continue
-
-        for step in data.get("steps") or []:
-            if not isinstance(step, dict):
-                continue
-            dialogue = step.get("dialogue") if isinstance(step.get("dialogue"), dict) else {}
-            voice = dialogue.get("voice")
-            if not isinstance(voice, str):
-                continue
-            cue_id = Path(voice).stem
-            if not cue_id.startswith(f"{base}_"):
-                continue
-            previews[cue_id] = {
-                "compiled_file": file_name,
-                "scenario_id": data.get("scenario_id"),
-                "step_id": step.get("step_id"),
-                "step_type": step.get("type"),
-                "speaker": dialogue.get("speaker"),
-                "text": dialogue.get("text"),
-                "voice": voice,
-                "lip": dialogue.get("lip"),
-                "spines": (step.get("state") or {}).get("spines") or [],
-                "preview_step": step,
-                "_source": {
-                    "compiled_file": file_name,
-                    "scenario_base": base,
-                    "cue": cue_id,
-                },
-            }
-
-    return previews
-
-
-def collect_voice_stems(voice_dir: Path | None) -> set[str]:
-    if not voice_dir or not voice_dir.exists():
-        return set()
-    return {path.stem for path in voice_dir.rglob("*.m4a")}
 
 
 def build_card_detail_index(card_index: dict[str, Any]) -> dict[str, Any]:

@@ -275,6 +275,27 @@ fixtures/masterdata-wire/cards-baseline.json。836 卡片记录对应 826 资源
 推导卡片关联。输入 decoded、卡片目录、curated 内容均记录 hash，输出基线位于
 fixtures/masterdata-wire/events-gasha-baseline.json。没有写公共数据或发布。
 
+## G14：背景与编译资源输入层
+
+`sidem_masterdata/resource_inputs.py` 集中 metadata JSON、spine/prefab 索引、编译
+JSON stems/summaries、卡片预览、递归 M4A 和平面 PNG 扫描。它使用
+`compiled_projection.py` 的纯摘要、base→file 选择及完整 preview step 投影；
+`backgrounds.py` 只接受背景 stems 与表行。旧入口重新导出资源适配器，背景旧
+目录参数保留薄包装；领域模块不回调入口。共享预览文件在一批中只读取一次。
+
+保留原语义：摘要 title step 优先、否则跳过あらすじ取首个文本首行；坏文件
+不生成摘要；JSON 根形状错误不会静默隐去；manifest/index/voice_index 排除；
+编译文件只扫描一层、M4A 递归；预览 cue 需匹配 base 前缀，重复 cue 后 step
+覆盖，preview_step 和 provenance 原样保留。背景空 stems 继续为 unknown，
+不把空扫描误当负面存在性证据。
+
+`verify:masterdata-resource-inputs` 覆盖纯投影无 IO、临时输入目录边界、损坏
+JSON、来源/输入不变及预览规则。使用 `--decoded-masterdata
+.analysis/masterdata/client_master_data.xor_DefaultPassPhrase.pb --compiled-dir public/data/compiled`
+与 `b259518` 比较全量本地输出：192 背景、3,402 compiled stems/摘要、2,356 个
+语音预览逐值相同，基线 hash 在 fixtures/masterdata-wire/resource-inputs-baseline.json。
+这是编译 JSON 与目录读取验证，不是音频解码或 P2-B 长时验收。公共产物未改写。
+
 未完成边界：旧默认接口仍使用类缓存和兼容盘符；authoritative_scenario、RAW 候选写出、
 masterdata 和发布脚本仍在包外，G 整体未完成。此批按职责移动既有实现，
 没有引入新 IR/schema 或修改 RAW 语义。
