@@ -106,6 +106,9 @@ jobs:
       - name: Verify asynchronous navigation ownership
         run: npm run verify:archive-async-navigation
 
+      - name: Verify card voice preview adapter
+        run: npm run verify:card-voice-preview
+
       - name: Verify release soak recorder
         run: npm run verify:release-soak
 

@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
+import { buildCardVoicePreviewScenario } from '../src/data/cardVoicePreview.js'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const functionSource = (start, end) => app.slice(app.indexOf(start), app.indexOf(end, app.indexOf(start)))
@@ -20,6 +21,7 @@ function setup() {
   const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loading.value = false } })
   const context = vm.createContext({
     ...state, navigation, loading, preloadProgress: { value: 0 },
+    buildCardVoicePreviewScenario, idolDisplayName: id => `speaker:${id}`,
     archiveRouteReady: true,
     archiveHomeIdols: { value: [] }, idolEpisodeData: { value: {} },
     mobileArchiveData: { value: {} }, idolUnitData: { value: {} },
@@ -40,9 +42,10 @@ function setup() {
     functionSource('async function applyArchiveRoute(', 'function goHome('),
     functionSource('async function openStoryCatalog(', 'function openExternalStoryResources('),
     functionSource('async function openSpineLab(', 'async function openChibiStage('),
+    functionSource('async function openVoicePreview(', 'function openGroup('),
     functionSource('function onPlayerReady(', 'function formatFileName('),
     scenarioSource,
-    '({ load: loadScenario, restore: applyArchiveRoute, commit: commitView, select: commitArchiveSelection, onPlayerReady, openStoryCatalog, openSpineLab, sync: syncArchiveRoute })',
+    '({ load: loadScenario, restore: applyArchiveRoute, commit: commitView, select: commitArchiveSelection, onPlayerReady, openStoryCatalog, openSpineLab, openVoicePreview, sync: syncArchiveRoute })',
   ].join('\n'), context)
   const respond = (index, name) => requests[index].resolve({ ok: true, json: async () => ({ name, steps: [] }) })
   return { context, state, ...production, requests, respond, writes, errors }
@@ -152,4 +155,17 @@ function setup() {
   assert.equal(t.context.navigation.isPending(), false)
   assert.equal(t.context.navigation.isRestoring(), false)
 }
-console.log('Archive async navigation: scenario, preload, history, lazy feature, failure and disposal races passed')
+{
+  const t = setup(), module = deferred()
+  t.context.storyViewerLoader = () => module.promise
+  const old = t.openVoicePreview({ resource_id: '001tom_card', character_id: '001tom' }, 'old', 'cards')
+  t.commit('home'); module.resolve(); await old
+  assert.equal(t.context.currentScenario.value, null)
+  t.state.currentCharacterId.value = '001tom'
+  await t.openVoicePreview({ resource_id: '002kao_card', character_id: '002kao' }, 'current', 'card_detail')
+  assert.equal(t.state.view.value, 'player')
+  assert.equal(t.context.currentScenario.value.steps[0].dialogue.speaker, 'speaker:002kao')
+  assert.equal(t.state.currentPreviewCue.value, 'current')
+  assert.equal(t.state.returnViewAfterPlayer.value, 'card_detail')
+}
+console.log('Archive async navigation: scenario, preload, history, lazy feature, voice preview, failure and disposal races passed')

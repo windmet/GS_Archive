@@ -60,6 +60,21 @@ start=2/end=26/return=story_collection，合集恢复 4/4 章、40/40 段。
 
 ## 后续
 
+F4 的首个功能适配边界为 `src/data/cardVoicePreview.js`：卡片已有 cue 查找和
+单步预览 payload 组装已移出 App。它不导入 Vue 或播放器；调用方显式传入
+显示名解析函数，兜底 speaker 按传入卡片的 character_id（缺失时 resource_id
+前缀）解析，不再取当前页面选中的偶像。来源 preview_step 深拷贝，只把
+step_id 设为 1，并保留 source_scenario_id/source_compiled_file。
+既有默认舞台、文本和口型路径保留；没有将兜底预览升级为正式编译剧情。
+
+`verify:card-voice-preview` 遍历提交的 836 张卡片，覆盖 2,564 个来源 step 和
+3,457 个兜底项，验证来源保真、深拷贝隔离、cue 查找优先级、未知 cue 拒绝、
+说话人和口型归属。异步导航回归额外执行 App 实际语音打开函数，覆盖过期
+预览和另一偶像被选中时的预览。卡片语义字典验证与源码构建通过。
+Browser 用 noAudio=1 直达 `001tom_r01` / `2_2_001_01_02_00`，显示天濑冬马，
+再返回同一卡片详情，error 日志为空；来源文本 `0` 原样保留。此为导航与
+内容组装冒烟，没有验证真实音频播放或长稳。
+
 其他 feature 的数据派生与展示组合仍留在 App；后续继续提取功能边界。
 完整桌面/平板/390px、快速历史连续操作与真实慢网络矩阵仍未覆盖。
 被动过滤 watcher 与启动数据加载尚未纳入完整的用户意图模型，不把本批
