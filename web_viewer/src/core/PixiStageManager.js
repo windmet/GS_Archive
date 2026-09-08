@@ -688,23 +688,30 @@ export class PixiStageManager {
     this._effectOverlay.visible = false
   }
 
-  playScreenEffects(effects = []) {
+  playScreenEffects(effects = [], { nowMilliseconds } = {}) {
     if (!Array.isArray(effects) || effects.length === 0 || !this._effectOverlay) return
     this.clearScreenEffects()
     const token = this._screenEffectToken
     for (const effect of effects) {
       const delayMs = Math.max(0, Number(effect?.delay || 0)) * 1000
-      const timer = setTimeout(() => {
-        this._screenEffectTimers.delete(timer)
+      const dispatch = () => {
         if (token !== this._screenEffectToken) return
-        if (effect?.type === 'single') this._playSingleScreenEffect(effect)
-        else this._playFadeScreenEffect(effect)
-      }, delayMs)
-      this._screenEffectTimers.add(timer)
+        if (effect?.type === 'single') this._playSingleScreenEffect(effect, nowMilliseconds)
+        else this._playFadeScreenEffect(effect, nowMilliseconds)
+      }
+      if (nowMilliseconds) {
+        this._ownScreenTween(finish => runRafTween({
+          durationMs: 0, delayMs, nowMilliseconds, onUpdate: () => {},
+          onComplete: () => { finish(); dispatch() },
+        }))
+      } else {
+        const timer = setTimeout(() => { this._screenEffectTimers.delete(timer); dispatch() }, delayMs)
+        this._screenEffectTimers.add(timer)
+      }
     }
   }
 
-  _playFadeScreenEffect(effect) {
+  _playFadeScreenEffect(effect, nowMilliseconds) {
     const overlay = this._effectOverlay
     if (!overlay || overlay.destroyed) return
     const type = effect?.type || 'fadeout'
@@ -723,6 +730,7 @@ export class PixiStageManager {
       token: this._screenEffectToken,
       isCurrent: token => token === this._screenEffectToken,
       durationMs,
+      nowMilliseconds,
       startAlpha,
       endAlpha,
       onFinish: () => {
@@ -732,21 +740,21 @@ export class PixiStageManager {
     }))
   }
 
-  _playSingleScreenEffect(effect) {
+  _playSingleScreenEffect(effect, nowMilliseconds) {
     const id = effect?.id || ''
     if (id === 'fx_adv_punch') {
-      this._playPunchEffect(effect)
+      this._playPunchEffect(effect, nowMilliseconds)
     } else if (id === 'fx_adv_kamifubuki') {
-      this._playKamifubukiEffect(effect)
+      this._playKamifubukiEffect(effect, nowMilliseconds)
     } else if (id === 'fx_adv_sakura' || id === 'fx_adv_momiji') {
-      this._playFallingScreenTexture(id, effect)
+      this._playFallingScreenTexture(id, effect, {}, nowMilliseconds)
     }
   }
 
-  _playPunchEffect(effect) {
+  _playPunchEffect(effect, nowMilliseconds) {
     const overlay = this._effectOverlay
     if (!overlay || overlay.destroyed) return
-    this._playPunchTexture(effect)
+    this._playPunchTexture(effect, nowMilliseconds)
     overlay.tint = 0xffffff
     overlay.width = this.width
     overlay.height = this.height
@@ -759,6 +767,7 @@ export class PixiStageManager {
       spineContainer: this.spineContainer,
       durationMs,
       dir: dir || 1,
+      nowMilliseconds,
       onFinish: finish,
     }))
   }
@@ -793,7 +802,7 @@ export class PixiStageManager {
     if (tween) this._screenEffectCleanups.add(cleanup)
   }
 
-  async _playPunchTexture(effect) {
+  async _playPunchTexture(effect, nowMilliseconds = () => performance.now()) {
     const token = this._screenEffectToken
     try {
       const texture = await this._loadEffectTexture('fx_adv_punch')
@@ -813,13 +822,13 @@ export class PixiStageManager {
       this.app.stage.addChild(sprite)
 
       const durationMs = Math.max(180, Number(effect?.duration || 0.35) * 1000)
-      const start = performance.now()
+      const start = nowMilliseconds()
       const tick = () => {
         if (token !== this._screenEffectToken || sprite.destroyed) {
           cleanup()
           return
         }
-        const t = Math.min((performance.now() - start) / durationMs, 1)
+        const t = Math.min((nowMilliseconds() - start) / durationMs, 1)
         const frame = Math.min(5, Math.floor(t * 6))
         const fx = frame % 3
         const fy = Math.floor(frame / 3)
@@ -836,17 +845,17 @@ export class PixiStageManager {
     }
   }
 
-  _playKamifubukiEffect(effect) {
+  _playKamifubukiEffect(effect, nowMilliseconds) {
     this._playFallingScreenTexture('fx_adv_sakura', effect, {
       count: 48,
       duration: Math.max(0.8, Number(effect?.duration || 1.1)),
       useStar: true,
-    })
-    this._playFadeScreenEffect({ type: 'fadein', color: '#FFFFFF', alpha: 0.18, duration: 0.1 })
-    this._playFadeScreenEffect({ type: 'fadeout', color: '#FFFFFF', alpha: 0.18, duration: 0.28 })
+    }, nowMilliseconds)
+    this._playFadeScreenEffect({ type: 'fadein', color: '#FFFFFF', alpha: 0.18, duration: 0.1 }, nowMilliseconds)
+    this._playFadeScreenEffect({ type: 'fadeout', color: '#FFFFFF', alpha: 0.18, duration: 0.28 }, nowMilliseconds)
   }
 
-  async _playFallingScreenTexture(id, effect, options = {}) {
+  async _playFallingScreenTexture(id, effect, options = {}, nowMilliseconds = () => performance.now()) {
     const token = this._screenEffectToken
     const textureName = id === 'fx_adv_momiji' ? 'fx_adv_momiji' : 'fx_adv_sakura'
     try {
@@ -867,27 +876,28 @@ export class PixiStageManager {
         sprite.anchor.set(0.5)
         sprite.alpha = 0.58 + ((i * 19) % 30) / 100
         sprite.scale.set(0.035 + ((i * 7) % 28) / 1000)
-        sprite.rotation = (i * 0.77) % Math.PI
+        sprite._fxInitialRotation = (i * 0.77) % Math.PI
+        sprite.rotation = sprite._fxInitialRotation
         sprite._fxSeed = i * 131
         sprite._fxSpeed = 0.7 + ((i * 11) % 30) / 20
         container.addChild(sprite)
         sprites.push(sprite)
       }
       const durationMs = Math.max(300, Number(options.duration || effect?.duration || 1) * 1000)
-      const start = performance.now()
+      const start = nowMilliseconds()
       const tick = () => {
         if (token !== this._screenEffectToken || container.destroyed) {
           cleanup()
           return
         }
-        const elapsed = performance.now() - start
+        const elapsed = nowMilliseconds() - start
         const progress = Math.min(elapsed / durationMs, 1)
         for (const sprite of sprites) {
           const seed = sprite._fxSeed || 0
           const drift = elapsed / 1000 * sprite._fxSpeed
           sprite.x = ((seed * 17 + drift * 260) % (this.width + 180)) - 90 + Math.sin(drift * 4 + seed) * 28
           sprite.y = ((seed * 9 + drift * 390) % (this.height + 180)) - 120
-          sprite.rotation += 0.035 * sprite._fxSpeed
+          sprite.rotation = sprite._fxInitialRotation + elapsed / 1000 * 60 * 0.035 * sprite._fxSpeed
           sprite.alpha = (0.72 - progress * 0.42) * (0.75 + ((seed % 17) / 50))
         }
         if (progress >= 1) {

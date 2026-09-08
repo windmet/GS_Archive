@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import { PixiStageManager } from '../src/core/PixiStageManager.js'
 import { BaseTexture, Container, Texture } from 'pixi.js'
+import { StoryClock } from '../src/core/story-runtime/StoryClock.js'
+import { applyStepSceneState } from '../src/core/applyStepSceneState.js'
 
 const saved = [globalThis.setTimeout, globalThis.clearTimeout, globalThis.requestAnimationFrame, globalThis.cancelAnimationFrame, globalThis.performance]
 const timers = new Map()
@@ -122,7 +124,45 @@ try {
       }
     }
   }
-  console.log('Screen effect lifetime: delayed/active cleanup, shared textures, overlay completion and cancelled shake isolation passed')
+  for (const id of ['fx_adv_punch', 'fx_adv_sakura', 'fx_adv_momiji', 'fx_adv_kamifubuki']) {
+    const active = create().stage
+    delete active._playSingleScreenEffect; delete active._playFadeScreenEffect
+    const ticks = new Set(), root = new Container()
+    const texture = new Texture(new BaseTexture(null, { width: 30, height: 20 }))
+    active.width = 1280; active.height = 720; active.spineContainer = { x: 0, y: 0 }
+    active.app = { stage: root, ticker: { add: fn => ticks.add(fn), remove: fn => ticks.delete(fn) } }
+    active._loadEffectTexture = async () => texture
+    active.setCameraFilter = active.setBgBlur = active.setBgColorOverlay = () => {}
+    active.applyBgEffects = () => {}
+    const clock = new StoryClock({ nowMilliseconds: () => wall }); clock.start({ offset: 18 })
+    applyStepSceneState({ manager: active, step: { step_id: id },
+      state: { screen_effects: [{ type: 'single', id, delay: 1, duration: 2 }] },
+      nowMilliseconds: () => clock.now() * 1000,
+    })
+    assert.equal(timers.size, 0, 'story effects must not schedule wall-time timers')
+    wall += 500; frame(); clock.pause(); wall += 20000; frame()
+    assert.equal(root.children.length, 0, 'paused authored delay cannot dispatch')
+    clock.setRate(2); clock.resume(); wall += 250; frame()
+    for (let i = 0; i < 8; i++) await Promise.resolve()
+    assert.equal(root.children.length, 1, `${id} must dispatch through production scene state`)
+    const tick = () => { frame(); [...ticks].forEach(fn => fn()) }
+    wall += 250; tick()
+    const snapshot = () => JSON.stringify({
+      spine: active.spineContainer, overlay: active._effectOverlay,
+      particles: root.children.flatMap(child => child.children?.length ? child.children : [child])
+        .map(sprite => [sprite.x, sprite.y, sprite.rotation, sprite.alpha, sprite.scale.x]),
+    })
+    const moving = snapshot()
+    // Repeated frames at the same logical time must not accumulate rotation.
+    tick(); tick(); assert.equal(snapshot(), moving)
+    clock.pause(); wall += 20000; tick(); assert.equal(snapshot(), moving, `${id} must freeze all effects`)
+    clock.resume(); wall += 750; tick()
+    assert.equal(root.children.length, 0)
+    assert.equal(ticks.size, 0); assert.equal(frames.size, 0)
+    assert.equal(active._screenEffectCleanups.size, 0)
+    active.clearScreenEffects(); root.destroy(); texture.destroy(true)
+  }
+  console.log('Screen effects: lifetime, authored delay, pause/rate and frame-independent particles passed')
 } finally {
   [globalThis.setTimeout, globalThis.clearTimeout, globalThis.requestAnimationFrame, globalThis.cancelAnimationFrame, globalThis.performance] = saved
 }

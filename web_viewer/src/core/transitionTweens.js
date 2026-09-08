@@ -65,6 +65,7 @@ export function tweenOverlayPunch({
   durationMs,
   dir,
   onFinish,
+  nowMilliseconds,
 }) {
   if (!overlay || overlay.destroyed || !spineContainer) return null
   const baseX = spineContainer.x || 0
@@ -80,6 +81,7 @@ export function tweenOverlayPunch({
     }
   }
   const tween = runRafTween({
+    nowMilliseconds,
     durationMs,
     startValue: 0,
     endValue: 1,

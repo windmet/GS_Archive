@@ -108,6 +108,7 @@ const props = defineProps({
   manageBackground: { type: Boolean, default: false },
   debugControls: { type: Boolean, default: false },
   releaseOwner: { type: String, default: '' },
+  nowMilliseconds: { type: Function, default: undefined },
 })
 
 const emit = defineEmits(['ready', 'error'])
@@ -824,6 +825,7 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
     state,
     lastScreenEffectsKey,
     resetScreenEffects,
+    nowMilliseconds: props.nowMilliseconds,
   })
 
   const charaId = step.chara_id || ''

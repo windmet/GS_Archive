@@ -4,6 +4,7 @@ export function applyStepSceneState({
   state,
   lastScreenEffectsKey = '',
   resetScreenEffects = false,
+  nowMilliseconds,
 }) {
   if (!manager || !state) return lastScreenEffectsKey
 
@@ -35,7 +36,7 @@ export function applyStepSceneState({
     .filter(effect => effect?.type !== 'fadein' && effect?.type !== 'fadeout')
   const screenEffectsKey = `${step?.step_id || ''}:${JSON.stringify(screenEffects)}`
   if (screenEffects.length && screenEffectsKey !== lastScreenEffectsKey) {
-    manager.playScreenEffects?.(screenEffects)
+    manager.playScreenEffects?.(screenEffects, { nowMilliseconds })
     return screenEffectsKey
   }
   if (!screenEffects.length) return ''

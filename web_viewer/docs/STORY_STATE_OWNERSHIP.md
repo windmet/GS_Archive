@@ -324,3 +324,18 @@ runRafTween 增加取消标记，已排队的回调在取消后不再更新或�
 新位置与 overlay alpha 不被覆盖。screen-clock、camera-clock、Spine（含 tint）
 及 publicDir:false 构建通过。两个已知背景路径提示保留。上述回归不证明
 粒子暂停/倍速、同时叠加镜头与抖动的合成关系或浏览器实音长稳已完成。
+
+## B16：屏幕特效共用剧情时钟
+
+StoryViewer 将 runtime 的只读 nowMilliseconds 回调传给 SpineStage，再经
+applyStepSceneState 传入屏幕特效。剧情内延迟以受清理管理的 RAF 检查逻辑
+时间，punch 贴图/抖动、闪光及落花/红叶/星形运动沿用同一回调；独立舞台
+未传时钟时仍保持实际时间入口。落花旋转从逐帧累加改为起始角 + 已过秒数
+× 60 × 原每帧增量，以原 60fps 速度为基准，避免刷新率改变旋转速度。
+
+生命周期 verifier 从实际 applyStepSceneState 发起四类效果，使用真实
+StoryClock/Pixi 对象和可控 RAF/ticker，覆盖非零时钟偏移、暂停延迟不触发、
+2 倍速启动、运动/旋转/抖动暂停冻结、相同时间多次 tick 不累加旋转、按剩余
+时间完成及零资源残留。screen-clock、foundation、publicDir:false 构建通过。
+浏览器 noAudio 剧情进入、前进和返回 C.FIRST 集合正常；这只是播放器接入
+冒烟，不是实际粒子画面/刷新率视觉验收，也未执行实音长稳。
