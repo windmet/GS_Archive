@@ -449,3 +449,16 @@ BackgroundManager.destroy 原来只将颜色叠层移出容器，仍保留 sprit
 共享纹理有效、滤镜 destroy 调用一次和所有引用清空；滤镜使用 disposal spy，
 不声称无 GPU 测试证明 GPU 内存回收。背景三项门禁及 publicDir:false 构建
 通过，两个已知背景路径提示保留。实音长稳仍未执行。
+
+## B22：持续背景效果独立管理器
+
+新增 BackgroundEffectManager，独立持有持续粒子条目、纹理请求缓存、ticker、
+alpha 与退场。依赖限于 app/ticker、bgEffectContainer、尺寸读取和纹理加载器，
+不依赖背景图片、模糊或颜色叠层。BackgroundManager 创建/销毁该管理器，保留
+applyBgEffects 和原舞台使用的薄转发接口，图片与滤镜职责留在自身。
+
+从 395ce37 迁出 423 行方法体，与旧文件按换行归一后逐行相同；原
+BackgroundManager 缩至 397 行。效果生命周期门禁改直接验证新类，另补父
+管理器真实创建→转发→resize→destroy 的组合检查，确认末尾零 ticker/RAF/
+容器子对象并清空引用。背景三项、foundation、stage-loading 与 publicDir:false
+构建通过。未修改公开剧情/纹理产物，也未将源码等价性当作视觉/实音长稳验收。

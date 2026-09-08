@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { BaseTexture, Container, Texture } from 'pixi.js'
+import { BackgroundEffectManager } from '../src/core/BackgroundEffectManager.js'
 import { BackgroundManager } from '../src/core/BackgroundManager.js'
 import { StoryClock } from '../src/core/story-runtime/StoryClock.js'
 
@@ -14,9 +15,9 @@ globalThis.cancelAnimationFrame = id => frames.delete(id)
 globalThis.performance = { now: () => wall }
 const frame = () => { const pending = [...frames.values()]; frames.clear(); pending.forEach(fn => fn()) }
 function setup() {
-  const manager = new BackgroundManager({
+  const manager = new BackgroundEffectManager({
     app: { ticker: { add: fn => ticks.add(fn), remove: fn => ticks.delete(fn) } },
-    bgContainer: new Container(), bgEffectContainer: new Container(),
+    bgEffectContainer: new Container(),
     getWidth: () => 100, getHeight: () => 100,
   })
   const entry = { id: 'fx_adv_rain', container: new Container(), token: 0, loadToken: 0, nowMilliseconds: () => wall, graphics: [], sprites: [] }
@@ -25,6 +26,24 @@ function setup() {
   return { manager, entry }
 }
 try {
+  {
+    const images = new Container(), particles = new Container()
+    const owner = new BackgroundManager({ app: { ticker: { add: fn => ticks.add(fn), remove: fn => ticks.delete(fn) } },
+      bgContainer: images, bgEffectContainer: particles, getWidth: () => 100, getHeight: () => 100,
+      loadTextureFromUrl: async () => white })
+    assert.ok(owner.effects instanceof BackgroundEffectManager)
+    owner.applyBgEffects([{ id: 'fx_adv_rain', duration: 1 }])
+    for (let i = 0; i < 8; i++) await Promise.resolve()
+    owner.handleResize()
+    assert.equal(particles.children.length, 1)
+    assert.equal(ticks.size, 1)
+    assert.equal(owner._bgEffectTargetAlpha('fx_adv_rain'), 0.85)
+    owner.destroy()
+    assert.equal(owner.effects, null)
+    assert.equal(particles.children.length, 0)
+    assert.equal(frames.size, 0); assert.equal(ticks.size, 0)
+    owner.destroy(); images.destroy(); particles.destroy()
+  }
   {
     const clock = new StoryClock({ nowMilliseconds: () => wall })
     clock.start({ offset: 99 }); assert.equal(clock.elapsed(), 0)
@@ -53,7 +72,7 @@ try {
     assert.equal(entry.graphics.length, 0)
     assert.equal(entry.container.destroyed, true)
     assert.equal(manager.bgEffectContainer.children.length, 0)
-    manager.bgContainer.destroy(); manager.bgEffectContainer.destroy()
+    manager.bgEffectContainer.destroy()
   }
   {
     const { manager, entry } = setup()
@@ -74,7 +93,7 @@ try {
     wall += 1000; frame(); assert.equal(entry.container.alpha, 0.8)
     assert.equal(entry.alphaTween, null); assert.equal(frames.size, 0)
     manager.destroy(); assert.equal(ticks.size, 0)
-    manager.bgContainer.destroy(); manager.bgEffectContainer.destroy()
+    manager.bgEffectContainer.destroy()
   }
   for (const id of ['fx_adv_rain', 'fx_adv_rain_heavy', 'fx_adv_sakura', 'fx_adv_momiji']) {
     const { manager, entry: unused } = setup()
@@ -107,7 +126,7 @@ try {
     clock.resume(); wall += 1500; tick()
     assert.equal(manager._bgEffectEntries[id], undefined)
     assert.equal(frames.size, 0); assert.equal(ticks.size, 0)
-    manager.destroy(); manager.bgContainer.destroy(); manager.bgEffectContainer.destroy()
+    manager.destroy(); manager.bgEffectContainer.destroy()
   }
   console.log('Background effects: lifecycle, continuous clock, step resets, pause/rate and logical retirement passed')
 } finally {
