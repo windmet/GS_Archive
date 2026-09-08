@@ -377,6 +377,7 @@
 </template>
 
 <script setup>
+import { filterArchiveCards } from './data/cardFilters.js'
 import { useEpisodeQueue } from './core/useEpisodeQueue.js'
 import { buildCardVoicePreviewScenario, findCardVoiceCue } from './data/cardVoicePreview.js'
 import { createArchiveNavigationCoordinator } from './core/ArchiveNavigationCoordinator.js'
@@ -1115,21 +1116,15 @@ const currentCards = computed(() => cardsForCharacter(
 
 const cardRarityTabs = computed(() => buildCardRarityTabs(currentCards.value))
 
-const filteredCards = computed(() => {
-  const q = filterQuery.value.toLowerCase()
-  const rarity = currentCardRarity.value
-  const assetState = currentCardAssetState.value
-  const relationState = currentCardRelationState.value
-  return currentCards.value.filter(card =>
-    (rarity === 'all' || card.rarity === rarity) &&
-    matchesCardAssetState(archiveManifestData.value?.card_assets_by_id?.[card.resource_id], assetState) &&
-    matchesCardRelationState(card, relationState) &&
-    (!q ||
-    String(card.title || '').toLowerCase().includes(q) ||
-    String(card.resource_id || '').toLowerCase().includes(q) ||
-    String(card.rarity || '').toLowerCase().includes(q))
-  )
-})
+const filteredCards = computed(() => filterArchiveCards(currentCards.value, {
+  query: filterQuery.value,
+  rarity: currentCardRarity.value,
+  assetState: currentCardAssetState.value,
+  relationState: currentCardRelationState.value,
+  assets: archiveManifestData.value?.card_assets_by_id,
+  eventRelations: archiveManifestData.value?.event_card_relations_by_card,
+  gashaRelations: gashaIndexData.value?.relations_by_card,
+}))
 
 const currentCardBase = computed(() => cardMap.value.get(currentCardId.value) || null)
 const currentCard = computed(() => mergeCardDetail(currentCardBase.value, cardDetailData.value))
@@ -1232,36 +1227,6 @@ const currentCardCharacterName = computed(() => {
   const id = currentCharacterId.value
   return idolDisplayName(id) || 'Cards'
 })
-
-function matchesCardAssetState(status, state) {
-  if (state === 'all') return true
-  if (!status) return false
-  if (state === 'visible_icon') return status.awakened_icon || status.normal_icon
-  if (state === 'complete_icons') return status.awakened_icon && status.normal_icon
-  if (state === 'single_state') return status.single_state
-  if (state === 'has_large') {
-    return status.awakened_portrait || status.normal_portrait ||
-      status.awakened_landscape || status.normal_landscape ||
-      status.awakened_large || status.normal_large
-  }
-  if (state === 'missing_normal') return !status.normal_icon && !status.single_state
-  return true
-}
-
-function matchesCardRelationState(card, state) {
-  if (state === 'all') return true
-  if (state === 'card_story') return Boolean(card?.scenario_entries?.length)
-  if (state === 'event_card') return Boolean(archiveManifestData.value?.event_card_relations_by_card?.[card?.resource_id])
-  if (state === 'gasha_card') return Boolean(gashaIndexData.value?.relations_by_card?.[card?.resource_id])
-  if (state === 'release_series') return Boolean(card?.release_series)
-  if (state === 'unrelated') {
-    return !card?.scenario_entries?.length &&
-      !card?.release_series &&
-      !archiveManifestData.value?.event_card_relations_by_card?.[card?.resource_id] &&
-      !gashaIndexData.value?.relations_by_card?.[card?.resource_id]
-  }
-  return true
-}
 
 const currentIdolProfile = computed(() => {
   const profile = idolUnitData.value?.by_idol_code?.[currentCharacterId.value]

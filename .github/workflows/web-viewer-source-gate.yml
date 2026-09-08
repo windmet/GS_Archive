@@ -130,6 +130,9 @@ jobs:
       - name: Verify card voice preview adapter
         run: npm run verify:card-voice-preview
 
+      - name: Verify card filtering boundary
+        run: npm run verify:card-filters
+
       - name: Verify episode queue ownership and range restoration
         run: npm run verify:episode-queue
 
