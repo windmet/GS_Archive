@@ -489,3 +489,16 @@ screen-clock 纳入两种真实管理器的并发、失败重试、成功复用�
 背景、screen、stage-loading 与 publicDir:false 构建通过。未做浏览器断网
 注入；当前已存在的雨层降级会保留到效果重建，再次加载可重试，不会自动
 在同一条目中后台替换纹理。两个已知构建路径提示保留，实音长稳未执行。
+
+## B25：图片纹理加载终态清理
+
+舞台的图片解码/Pixi readiness 移入 loadImageTexture。先绑定 Image 回调再
+设置 src；成功、失败、就绪超时或工厂异常统一清除 Image 回调、BaseTexture
+update 监听和 timeout，并以 settled 阻止迟到回调重复创建纹理。无效 update
+继续等待有效纹理，不消耗一次性监听。保留普通图片占位与特效严格失败策略。
+
+新增门禁覆盖立即完成、有效/无效 update、成功取消 timeout、两种超时策略、
+错误与构造异常、迟到/重复回调。特效重试、stage-loading、背景门禁和
+publicDir:false 构建通过，两个已知背景路径提示保留。10 秒超时仍仅针对
+Image.onload 之后的 Pixi 就绪，不是图片网络总超时；未做浏览器故障注入或
+实音长稳验收。

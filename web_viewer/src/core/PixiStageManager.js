@@ -23,6 +23,7 @@ import { loadAndCreateSpine } from './spineSpawnPipeline.js'
 import { finalizeSpawnedSpine } from './spineSpawnFinalize.js'
 import { BackgroundManager } from './BackgroundManager.js'
 import { ScreenEffectManager } from './ScreenEffectManager.js'
+import { loadImageTexture } from './loadImageTexture.js'
 import { CameraController } from './CameraController.js'
 import { SpineManager } from './SpineManager.js'
 import { fitSpineToPrefabRect as fitSpineToPrefabRectUtil, getPrefabRectMetrics as getPrefabRectMetricsUtil } from './spinePrefabFit.js'
@@ -1555,33 +1556,7 @@ export class PixiStageManager {
   }
 
   _loadTextureFromUrl(url, { allowFallback = true } = {}) {
-    return new Promise((resolve, reject) => {
-      const img = new Image()
-      img.crossOrigin = 'anonymous'
-      img.src = url
-      img.onload = () => {
-        const bt = PIXI.BaseTexture.from(img)
-        bt.alphaMode = PIXI.ALPHA_MODES.PMA
-        const onReady = () => resolve(PIXI.Texture.from(bt))
-        if (bt.valid) {
-          onReady()
-        } else {
-          bt.once('update', onReady)
-          setTimeout(() => {
-            if (!bt.valid) {
-              console.warn(`[PixiStageManager] Texture timeout: ${url}`)
-              if (allowFallback) resolve(PIXI.Texture.from(bt))
-              else reject(new Error(`Texture timeout: ${url}`))
-            }
-          }, 10000)
-        }
-      }
-      img.onerror = () => {
-        console.warn(`[PixiStageManager] Failed to load texture: ${url}`)
-        if (allowFallback) resolve(this._getFallbackTexture())
-        else reject(new Error(`Failed to load texture: ${url}`))
-      }
-    })
+    return loadImageTexture(url, { allowFallback, fallbackTexture: () => this._getFallbackTexture() })
   }
 
   _getFallbackTexture() {
