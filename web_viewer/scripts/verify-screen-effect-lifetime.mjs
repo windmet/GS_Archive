@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { ScreenEffectManager } from '../src/core/ScreenEffectManager.js'
 import { PixiStageManager } from '../src/core/PixiStageManager.js'
 import { BaseTexture, Container, Texture } from 'pixi.js'
 import { StoryClock } from '../src/core/story-runtime/StoryClock.js'
@@ -17,7 +18,7 @@ globalThis.performance = { now: () => wall }
 const frame = () => { const pending = [...frames.values()]; frames.clear(); pending.forEach(fn => fn()) }
 function create() {
   const calls = []
-  const stage = Object.assign(Object.create(PixiStageManager.prototype), {
+  const stage = Object.assign(Object.create(ScreenEffectManager.prototype), {
     _screenEffectToken: 0, _screenEffectTimers: new Set(),
     _screenEffectCleanups: new Set(),
     _effectOverlay: { alpha: 0, visible: false },
@@ -28,6 +29,22 @@ function create() {
   return { stage, calls }
 }
 try {
+  {
+    const owner = Object.assign(Object.create(PixiStageManager.prototype), {
+      _spineColorTweens: {}, clearAllSilhouettes: () => {},
+    })
+    const effects = new ScreenEffectManager({ app: {}, overlay: { visible: false, alpha: 0 },
+      spineContainer: {}, getWidth: () => 1280, getHeight: () => 720, loadTextureFromUrl: () => {} })
+    owner.screenEffects = effects
+    assert.equal(effects.width, 1280); assert.equal(effects.height, 720)
+    owner.playScreenEffects([{ type: 'single', delay: 10 }])
+    assert.equal(timers.size, 1)
+    owner.clearScreenEffects(); assert.equal(timers.size, 0)
+    owner.playScreenEffects([{ type: 'single', delay: 10 }])
+    owner.destroy()
+    assert.equal(timers.size, 0); assert.equal(owner.screenEffects, null)
+    owner.destroy()
+  }
   const { stage, calls } = create()
   stage.playScreenEffects([{ type: 'single', id: 'old', delay: 10 }, { type: 'fadein', delay: 20 }])
   assert.equal(timers.size, 2)
@@ -73,7 +90,7 @@ try {
     const root = new Container()
     const base = new BaseTexture(null, { width: 30, height: 20 })
     const texture = new Texture(base)
-    active.width = 1280; active.height = 720
+    active.getWidth = () => 1280; active.getHeight = () => 720
     active.app = { stage: root, ticker: { add: fn => ticks.add(fn), remove: fn => ticks.delete(fn) }, destroy: () => {} }
     active._loadEffectTexture = async () => texture
     if (kind === 'punch') await active._playPunchTexture({ duration: 2 })
@@ -98,9 +115,9 @@ try {
       const active = create().stage
       active.spineContainer = { x: 123, y: 456 }
       active._playPunchTexture = () => {}
-      active.width = 1280; active.height = 720
+      active.getWidth = () => 1280; active.getHeight = () => 720
       if (kind === 'punch') active._playPunchEffect({ duration: 2 })
-      else PixiStageManager.prototype._playFadeScreenEffect.call(active, { duration: 2, type: 'fadeout' })
+      else ScreenEffectManager.prototype._playFadeScreenEffect.call(active, { duration: 2, type: 'fadeout' })
       wall += 200; frame()
       assert.equal(frames.size, 1)
       assert.equal(active._screenEffectCleanups.size, 1)
@@ -129,7 +146,7 @@ try {
     delete active._playSingleScreenEffect; delete active._playFadeScreenEffect
     const ticks = new Set(), root = new Container()
     const texture = new Texture(new BaseTexture(null, { width: 30, height: 20 }))
-    active.width = 1280; active.height = 720; active.spineContainer = { x: 0, y: 0 }
+    active.getWidth = () => 1280; active.getHeight = () => 720; active.spineContainer = { x: 0, y: 0 }
     active.app = { stage: root, ticker: { add: fn => ticks.add(fn), remove: fn => ticks.delete(fn) } }
     active._loadEffectTexture = async () => texture
     active.setCameraFilter = active.setBgBlur = active.setBgColorOverlay = () => {}

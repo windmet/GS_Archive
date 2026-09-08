@@ -462,3 +462,16 @@ BackgroundManager 缩至 397 行。效果生命周期门禁改直接验证新类
 管理器真实创建→转发→resize→destroy 的组合检查，确认末尾零 ticker/RAF/
 容器子对象并清空引用。背景三项、foundation、stage-loading 与 publicDir:false
 构建通过。未修改公开剧情/纹理产物，也未将源码等价性当作视觉/实音长稳验收。
+
+## B23：屏幕特效独立管理器
+
+新增 ScreenEffectManager，拥有瞬时粒子、延迟任务、overlay/抖动缓动及纹理
+请求缓存。构造依赖为 app、现有 overlay/角色容器、尺寸 getter 和加载器；
+PixiStageManager 在 overlay 创建后组合管理器，继续拥有舞台图与 resize，
+只转发 play/clear 并在退出时 destroy、清空管理器引用。持续背景效果仍由
+BackgroundEffectManager 独立负责。
+
+从 acaacf8 迁出的 232 行方法体按换行归一逐行相同。生命周期测试改直接
+验证新类，另测真实舞台方法转发、构造尺寸读取、取消延迟和销毁后引用清空。
+screen-clock（含四种效果）、foundation、stage-loading 与 publicDir:false
+构建通过；两个已知背景路径提示保留。未声称新的浏览器画面或实音长稳验收。
