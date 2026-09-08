@@ -225,3 +225,22 @@ at=0 cue 不提前执行、解除后执行一次、暂停中改速、历史快�
 浏览器 noAudio 冒烟：C.FIRST 第 2 段打开/关闭菜单后，前进经 3 到 4 显示预期
 对白，再返回集合 16。浏览器没有注入倍速或强制后台切步，不将此项冒烟替代
 生产 runtime 的切步状态回归，也不作为真实音频长稳证据。
+
+## B9：切步先移交注册表归属，再等待取消清理
+
+PerformanceRegistry.cancelAll 原先等待 handle.cancel 后才由 finished 回调移除
+条目。切步立即注册新 cue 时，旧条目仍阻塞 Auto/输入，同 ID 重载还会抛 duplicate
+performance id。现同步移除本次取消的 active 条目，再执行异步清理。原 finished
+回调的对象身份检查保留，旧完成结果不能删除新同 ID 条目，完成记录仍收集。
+
+注册表用 _cancelling 跟踪尚未完成的清理 Promise，dispose 等待这些已经移交
+归属的操作。取消批次等待所有清理完成后聚合错误，单个失败不会提前放弃其他
+清理。该集合只跟踪清理任务，不持有第二份演出状态。
+
+新增 verify:story-registry-handoff，旧实现先复现退役 cue 仍阻塞 Auto。覆盖
+延迟取消时注册同 ID、旧完成不删除新条目、dispose 等待退役清理、部分失败
+仍等待其他清理、同步连续三次 loadStep/start 同一 cue。foundation、切步状态、
+Spine cue 回归通过；此批是可控异步生命周期验收，不声称浏览器时序故障注入
+或真实音频长稳通过。
+
+本批 publicDir:false 生产构建通过，保留已有两个背景资源构建期解析警告。

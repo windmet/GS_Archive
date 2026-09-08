@@ -109,6 +109,7 @@ export class PerformanceRegistry {
   constructor() {
     this._active = new Map()
     this._completed = []
+    this._cancelling = new Set()
   }
 
   register(handle) {
@@ -167,8 +168,22 @@ export class PerformanceRegistry {
 
   async cancelAll(reason = 'cancel-all') {
     const targets = this.getActive()
-    await Promise.all(targets.map(handle => handle.cancel(reason)))
-    return targets.length
+    // Retire ownership before async cleanup so the next step can reuse cue IDs
+    // and cannot inherit the previous step's input/Auto blockers.
+    for (const handle of targets) {
+      if (this._active.get(handle.id) === handle) this._active.delete(handle.id)
+    }
+    const cleanup = Promise.allSettled(targets.map(handle => handle.cancel(reason))).then(results => {
+      const failures = results.filter(result => result.status === 'rejected').map(result => result.reason)
+      if (failures.length) throw new AggregateError(failures, 'performance cancellation failed')
+    })
+    this._cancelling.add(cleanup)
+    try {
+      await cleanup
+      return targets.length
+    } finally {
+      this._cancelling.delete(cleanup)
+    }
   }
 
   clearCompleted() {
@@ -177,6 +192,7 @@ export class PerformanceRegistry {
 
   async dispose() {
     await this.cancelAll('registry-dispose')
+    await Promise.all([...this._cancelling])
     this._active.clear()
   }
 
