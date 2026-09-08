@@ -12,6 +12,7 @@
     "generate:story-catalog": "python ../data_pipeline/story_catalog.py --input public/data/masterdata/story_master_index.json --output public/data/masterdata/story_catalog.json",
     "verify:story-catalog": "node scripts/verify-story-catalog.mjs",
     "verify:archive-data": "node scripts/verify-archive-data-contracts.mjs && node scripts/verify-archive-data-repository.mjs",
+    "verify:archive-navigation-state": "node scripts/verify-archive-navigation-state.mjs",
     "verify:archive-sources": "python ../data_pipeline/verify_archive_source_contract.py && node scripts/verify-archive-js-source-config.mjs",
     "report:archive-baseline": "node scripts/report-current-archive-baseline.mjs",
     "verify:archive-baseline": "node scripts/verify-current-archive-baseline.mjs",

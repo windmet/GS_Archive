@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { validateArchivePayload } from '../src/data/archiveDataContracts.js'
+import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -108,8 +109,15 @@ assert.match(appComponent, /@open="openSong"/)
 assert.match(appComponent, /function openSongCatalog\(\)/)
 assert.match(appComponent, /function openSong\(songCode\)/)
 assert.match(appComponent, /currentSongId\.value = route\.song \|\| ''/)
-assert.match(appComponent, /song: preservesSongContext \? currentSongId\.value : ''/)
-assert.match(appComponent, /songScope: \(view\.value === 'song_catalog' \|\| preservesSongContext\) \? currentSongScope\.value : 'all'/)
+const songNavigation = useArchiveNavigationState()
+songNavigation.view.value = 'song_detail'
+songNavigation.currentSongId.value = 'drvalv'
+songNavigation.currentSongScope.value = '3dmv'
+assert.equal(songNavigation.currentArchiveRoute().song, 'drvalv')
+assert.equal(songNavigation.currentArchiveRoute().songScope, '3dmv')
+songNavigation.view.value = 'cards'
+assert.equal(songNavigation.currentArchiveRoute().song, '')
+assert.equal(songNavigation.currentArchiveRoute().songScope, 'all')
 assert.match(appComponent, /function openSongRelatedStory\(relation\)/)
 assert.match(appComponent, /songCatalogData\.value = data\.songCatalog/)
 assert.match(appComponent, /else if \(section === 'songs'\) openSongCatalog\(\)/)

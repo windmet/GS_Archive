@@ -100,6 +100,9 @@ jobs:
       - name: Verify archive contracts and repository lifecycle
         run: npm run verify:archive-data
 
+      - name: Verify navigation state and route projection
+        run: npm run verify:archive-navigation-state
+
       - name: Verify release soak recorder
         run: npm run verify:release-soak
 
