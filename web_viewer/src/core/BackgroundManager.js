@@ -64,11 +64,26 @@ export class BackgroundManager {
       return
     }
     this.settleBackgroundTransition()
+    // A request still waiting for its texture has no settled sprite. Supersede
+    // it before capturing the background that a later cancellation restores.
+    this.cancelBackgroundTransition()
     const oldBgId = this.currentBgId
     this.currentBgId = bgId
 
     const oldSprite = this.bgSprite
     const token = ++this._bgTransitionToken
+    let resolveTransition
+    const finished = new Promise(resolve => { resolveTransition = resolve })
+    const record = {
+      token,
+      oldBgId,
+      newBgId: bgId,
+      oldSprite,
+      newSprite: null,
+      tickerFn: null,
+      resolve: resolveTransition,
+    }
+    this._bgTransition = record
     try {
       const url = this.getBgUrl(bgId)
       const texture = await this.loadTextureFromUrl(url)
@@ -79,22 +94,12 @@ export class BackgroundManager {
       newSprite.alpha = 0
       this.bgContainer.addChild(newSprite)
       this.bgSprite = newSprite
+      record.newSprite = newSprite
 
       const delayMs = Math.max(0, Number(transition?.delay || 0)) * 1000
       const durationSeconds = transition?.duration == null ? 0.5 : Number(transition.duration)
       const durationMs = Math.max(0, Number.isFinite(durationSeconds) ? durationSeconds : 0.5) * 1000
-      let resolveTransition
-      const finished = new Promise(resolve => { resolveTransition = resolve })
       const start = performance.now()
-      const record = {
-        token,
-        oldBgId,
-        newBgId: bgId,
-        oldSprite,
-        newSprite,
-        tickerFn: null,
-        resolve: resolveTransition,
-      }
       const tickerFn = () => {
         if (token !== this._bgTransitionToken) {
           this.app.ticker.remove(tickerFn)
@@ -118,14 +123,17 @@ export class BackgroundManager {
       this.app.ticker.add(tickerFn)
       return finished
     } catch (err) {
-      if (this.currentBgId === bgId) this.currentBgId = oldBgId
+      if (token !== this._bgTransitionToken) return
+      this.currentBgId = oldBgId
+      this._bgTransition = null
+      record.resolve?.({ status: 'failed', bgId })
       console.warn(`[PixiStageManager] Failed to load bg "${bgId}":`, err?.message || err)
     }
   }
 
   settleBackgroundTransition() {
     const record = this._bgTransition
-    if (!record) return false
+    if (!record?.newSprite) return false
     this._finishBackgroundTransition(record, 'settled')
     return true
   }

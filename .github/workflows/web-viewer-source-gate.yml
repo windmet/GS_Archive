@@ -88,6 +88,9 @@ jobs:
       - name: Verify shared scenario normalization boundary
         run: npm run verify:shared-scenario-normalizer
 
+      - name: Verify background loading lifecycle
+        run: npm run verify:story-background-loading
+
       - name: Verify Story timing semantics matrix
         run: npm run verify:story-timing-semantics -- --source-only
 

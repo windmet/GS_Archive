@@ -9,6 +9,7 @@
     "smoke": "vite build --configLoader native",
     "verify:archive-assets": "node scripts/verify-archive-assets.mjs",
     "verify:story-stage-loading": "node scripts/verify-story-stage-loading.mjs",
+    "verify:story-background-loading": "node scripts/verify-story-background-loading.mjs",
     "generate:story-catalog": "python ../data_pipeline/story_catalog.py --input public/data/masterdata/story_master_index.json --output public/data/masterdata/story_catalog.json",
     "verify:story-catalog": "node scripts/verify-story-catalog.mjs",
     "verify:archive-data": "node scripts/verify-archive-data-contracts.mjs && node scripts/verify-archive-data-repository.mjs",

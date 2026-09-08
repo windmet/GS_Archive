@@ -130,3 +130,22 @@ Spine cue 在执行前同时检查实例和 stage readiness，避免复用旧实
 Spine cue settled、无 target unavailable/error，正常界面前进与回退文本正确。
 本批稳定截图为 1280×720，三角色与对白正常；此为 noAudio 桌面冒烟与可控时序
 测试，保留 Pixi 弃用警告，未执行本批窄屏矩阵或实音长稳。
+
+## B4：背景加载与过渡共用生命周期
+
+`BackgroundManager` 原来在 texture await 后才创建过渡记录，加载期间 cancel
+直接返回 false，迟到纹理仍可能发布。现在从请求开始就建立同一 `_bgTransition`
+记录；pending 状态没有 newSprite，不能 settle，但可以 cancel。新背景请求先
+取消尚未安装的请求，再捕获实际旧背景，避免 C 取消后回到从未显示的 B。
+加载失败只允许当前 token 回退 ID，旧同 ID 请求的迟到失败不能覆盖新请求。
+
+`verify:story-background-loading` 直接导入生产 BackgroundManager 和真实 Pixi
+Container/Sprite/Texture，使用可控纹理 Promise 和 ticker。旧实现先复现
+pending load must be cancellable（false !== true）。修复后覆盖加载取消、
+B→C 后取消、同 ID 迟到失败、clear 后加载完成、已开始的过渡取消/settle、
+当前加载失败；检查 sprite 归属、旧背景恢复和 ticker 清理。
+
+Runtime foundation 与 publicDir:false 生产构建通过。实际浏览器使用 noAudio，
+进入 C.FIRST `episodes/1_1_016_01_a.json`，2→3→5 显示天峰秀对白，再返回集合。
+该浏览器检查没有人为延迟纹理，也不是像素级渐变/窄屏矩阵或真实音频长稳；
+竞态证据来自可控 Promise 测试。未修改转场时长或公共剧情产物。
