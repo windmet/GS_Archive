@@ -382,6 +382,7 @@
 </template>
 
 <script setup>
+import { prepareScenario } from './data/prepareScenario.js'
 import { buildIdolProfile, buildIdolStats, eventsForIdol, songsForIdol } from './data/idolPage.js'
 import { buildGashaCatalog, buildGashaCategoryOptions, filterGashaCatalog, resolveGashaRelatedCards } from './data/gashaCatalog.js'
 import { filterArchiveCards } from './data/cardFilters.js'
@@ -2626,24 +2627,13 @@ async function loadScenario(name, returnView = 'files', options = {}) {
     loading.value = true
     preloadProgress.value = 0
     try {
-      const r = await fetch(`/data/compiled/${name}?v=${Date.now()}`, { cache: 'no-store' })
-      if (!intent.isCurrent()) return
-      if (!r.ok) throw new Error(`Failed to fetch scenario ${name}: HTTP ${r.status}`)
-      const scenario = await r.json()
-      if (!intent.isCurrent()) return
-      if (!scenario || typeof scenario !== 'object' || !Array.isArray(scenario.steps)) {
-        throw new Error(`Invalid scenario ${name}: steps must be an array`)
-      }
-
-      // Preload all scenario assets before switching to player
-      await Promise.all([
-        storyViewerLoader(),
-        Preloader.preloadScenario(scenario.steps || [], (pct) => {
-          if (intent.isCurrent()) preloadProgress.value = pct
-        }),
-      ])
-
-      if (!intent.isCurrent()) return
+      const scenario = await prepareScenario(name, {
+        isCurrent: intent.isCurrent,
+        loadPlayer: storyViewerLoader,
+        preloadAssets: (steps, progress) => Preloader.preloadScenario(steps, progress),
+        onProgress: pct => { preloadProgress.value = pct },
+      })
+      if (!scenario || !intent.isCurrent()) return
       currentScenario.value = scenario
       currentScenarioFile.value = name
       currentScenarioStartStep.value = Number(options.startStep) > 0 ? Number(options.startStep) : null

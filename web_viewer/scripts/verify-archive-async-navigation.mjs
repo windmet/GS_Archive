@@ -5,6 +5,7 @@ import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 import { buildCardVoicePreviewScenario } from '../src/data/cardVoicePreview.js'
 import { useEpisodeQueue } from '../src/core/useEpisodeQueue.js'
+import { prepareScenario } from '../src/data/prepareScenario.js'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const functionSource = (start, end) => app.slice(app.indexOf(start), app.indexOf(end, app.indexOf(start)))
@@ -38,6 +39,7 @@ function setup() {
     writeArchiveRoute: route => writes.push(route),
     console: { error: (...args) => errors.push(args) },
   })
+  context.prepareScenario = (name, options) => prepareScenario(name, { ...options, fetchImpl: (...args) => context.fetch(...args) })
   const production = vm.runInContext([
     functionSource('function syncArchiveRoute(', 'function groupsForRoute('),
     functionSource('async function applyArchiveRoute(', 'function goHome('),
@@ -245,4 +247,27 @@ for (const response of [
   assert.equal(parsed, false, 'superseded response must not be parsed')
   assert.equal(t.errors.length, 0)
 }
-console.log('Archive async navigation: intent races, explicit filters, HTTP/shape failures and obsolete response suppression passed')
+{
+  const player = deferred(), assets = deferred()
+  const scenario = { steps: [{ step_id: 1 }], title: 'fixture' }
+  const requests = [], progress = []
+  let report, ready = false, playerStarted = false, assetsStarted = false
+  const pending = prepareScenario('episodes/fixture.json', {
+    isCurrent: () => true, now: () => 123,
+    fetchImpl: async (...args) => { requests.push(args); return { ok: true, json: async () => scenario } },
+    loadPlayer: () => { playerStarted = true; return player.promise },
+    preloadAssets: (steps, callback) => { assert.equal(steps, scenario.steps); assetsStarted = true; report = callback; return assets.promise },
+    onProgress: value => progress.push(value),
+  }).then(value => { ready = true; return value })
+  await flush()
+  assert.deepEqual(requests, [['/data/compiled/episodes/fixture.json?v=123', { cache: 'no-store' }]])
+  assert.equal(playerStarted && assetsStarted, true)
+  report(50)
+  assert.deepEqual(progress, [50])
+  assets.resolve()
+  await flush()
+  assert.equal(ready, false, 'asset completion alone must not publish an unready player')
+  player.resolve()
+  assert.equal(await pending, scenario, 'preparation preserves the decoded scenario object')
+}
+console.log('Archive async navigation: preparation boundary, intent races, explicit filters, HTTP/shape failures and obsolete response suppression passed')

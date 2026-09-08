@@ -232,3 +232,19 @@ loadScenario 在 HTTP 响应后先检查 intent 是否仍有效，再检查 resp
 
 publicDir:false 生产构建通过。本批错误注入采用生产 App 函数与可控响应，
 未在浏览器代理层注入 HTTP 故障，不将该证据外推为真实网络矩阵验收。
+
+## F12：剧情准备与页面发布分离
+
+`src/data/prepareScenario.js` 负责 no-store 请求、HTTP/steps 基本校验、并行等待
+播放器模块与剧情资源、有效请求的进度通知；它不导入 Vue、Preloader 或播放器，
+通过回调传入这些依赖。成功返回原剧情对象，过期返回 null，当前错误交给调用方。
+App 保留 navigation.run、loading ref、队列、分段范围、当前剧情及路由发布。
+没有新建共享缓存或改变请求时间戳、加载顺序和 F11 错误处理语义。
+
+原异步导航 verifier 现在将生产 App 与真实 prepareScenario 接通，既有请求/
+预加载/历史/失效进度/错误回归通过；新增独立调用验证 URL/cache 参数、两项
+加载并行启动、只完成资源时不能返回、进度转发和返回对象身份。启动恢复、
+routes 与 publicDir:false 构建通过。
+
+浏览器 noAudio C.FIRST 剧情加载完成后进入第 2 段，前进到第 4 段显示预期
+天峰秀对白，再返回集合 16。此为正常加载集成冒烟，不替代慢网络或实音长稳。
