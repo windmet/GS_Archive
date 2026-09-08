@@ -6,12 +6,13 @@ export function applyBackgroundEntrySnapshot(manager, bg) {
   else manager.clearBackground?.()
 }
 
-export function createBackgroundCueHandle(cue, getManager) {
+export function createBackgroundCueHandle(cue, getManager, { nowMilliseconds } = {}) {
   const transition = duration => ({
     type: cue.payload.type,
     color: cue.payload.color,
     duration,
     delay: 0,
+    ...(nowMilliseconds ? { nowMilliseconds } : {}),
   })
   return createPerformanceHandle({
     id: cue.cue_id,

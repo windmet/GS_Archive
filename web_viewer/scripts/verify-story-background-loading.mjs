@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict'
 import { BaseTexture, Container, Texture } from 'pixi.js'
 import { BackgroundManager } from '../src/core/BackgroundManager.js'
+import { StoryClock } from '../src/core/story-runtime/StoryClock.js'
+import { EffectScheduler } from '../src/core/story-runtime/EffectScheduler.js'
+import { createBackgroundCueHandle } from '../src/core/story-runtime/BackgroundCueRuntime.js'
 
 function deferred() {
   let resolve, reject
@@ -122,4 +125,55 @@ async function install(state, id) {
   assert.equal(state.container.children.length, 1)
   state.manager.clearBackground()
 }
-console.log('Background loading: pending cancellation, successor rollback, same-ID stale failure and clear-before-load passed')
+for (const pauseBeforeLoad of [false, true]) {
+  const state = setup()
+  await install(state, 'A')
+  let wallTime = 0
+  const clock = new StoryClock({ nowMilliseconds: () => wallTime })
+  const scheduler = new EffectScheduler({ clock, requestFrame: () => 1, cancelFrame: () => {} })
+  const cue = {
+    cue_id: 'background-clock', action: 'background.change', channel: 'background',
+    at: 0, duration: 2, payload: { bg: 'B' }, lifecycle: { skippable: true },
+  }
+  const stage = { backgroundManager: state.manager, setBackground: (...args) => state.manager.setBackground(...args) }
+  scheduler.loadStep([cue], { handlers: new Map([
+    ['background.change', item => createBackgroundCueHandle(item, () => stage, {
+      nowMilliseconds: () => clock.now() * 1000,
+    })],
+  ]) })
+  scheduler.start()
+  if (pauseBeforeLoad) await scheduler.pause()
+  state.requests.at(-1).resolve(texture())
+  await Promise.resolve()
+  const tick = () => { for (const fn of state.tickers) fn() }
+  const oldSprite = state.container.children[0]
+  const newSprite = state.manager.bgSprite
+  if (pauseBeforeLoad) {
+    wallTime += 10000
+    tick()
+    assert.equal(newSprite.alpha, 0, 'texture loaded during pause must not advance')
+    await scheduler.resume()
+  }
+  wallTime += 500
+  tick()
+  assert.equal(newSprite.alpha, 0.25, 'background must use logical elapsed time')
+  assert.equal(oldSprite.alpha, 0.75)
+  await scheduler.pause()
+  wallTime += 10000
+  tick()
+  assert.equal(newSprite.alpha, 0.25, 'paused background must hold its intermediate alpha')
+  scheduler.setRate(2)
+  await scheduler.resume()
+  wallTime += 250
+  tick()
+  assert.equal(newSprite.alpha, 0.5, 'resumed background must follow 2x rate without a jump')
+  scheduler.setRate(0.5)
+  wallTime += 2000
+  tick()
+  assert.equal(newSprite.alpha, 1)
+  assert.equal(state.tickers.size, 0)
+  assert.equal(state.container.children.length, 1)
+  await scheduler.dispose()
+  state.manager.clearBackground()
+}
+console.log('Background loading: ownership, cancellation, pause during loading/fade, resume and playback rates passed')

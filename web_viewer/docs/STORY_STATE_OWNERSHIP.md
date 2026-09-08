@@ -149,3 +149,21 @@ Runtime foundation 与 publicDir:false 生产构建通过。实际浏览器使�
 进入 C.FIRST `episodes/1_1_016_01_a.json`，2→3→5 显示天峰秀对白，再返回集合。
 该浏览器检查没有人为延迟纹理，也不是像素级渐变/窄屏矩阵或真实音频长稳；
 竞态证据来自可控 Promise 测试。未修改转场时长或公共剧情产物。
+
+## B5：背景渐变读取剧情时钟
+
+背景渐变原来直接读取 performance.now，scheduler 暂停或调整 rate 不会改变
+Pixi ticker 的 alpha 插值。现在 BackgroundCueRuntime 接收可选 nowMilliseconds，
+useStoryRuntimeCues 将现有 StoryClock.now 的秒值转换为毫秒传入；BackgroundManager
+用这一时间源计算渐变。独立 stage 调用继续默认使用实际时间，没有增加第二个时钟。
+保留纹理加载完成后开始计时的行为；此批不改变慢加载的追赶策略。
+
+background-loading verifier 将真实 StoryClock、EffectScheduler、背景 cue handle
+和 Pixi BackgroundManager 接通，可控实际时间先在旧实现复现 alpha 不等于 0.25。
+修复后验证渐变中暂停、暂停期间纹理完成、恢复无跳变、2x 与 0.5x 动态切换，
+以及完成后旧 sprite 和 ticker 清理。原取消/settle 回归、runtime foundation 与
+publicDir:false 构建通过。此改动只覆盖背景切换渐变，镜头及其他特效的时间源
+仍需独立审计；不能据此声称所有 channel 已支持统一暂停或真实音频长稳通过。
+
+实际浏览器 noAudio 冒烟：同一 C.FIRST 剧情 2→3→4→5 显示预期对白，返回恢复
+集合 16。此项只验证路由与播放操作，暂停/倍速的 alpha 证据来自上述可控时钟测试。

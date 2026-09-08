@@ -99,13 +99,16 @@ export class BackgroundManager {
       const delayMs = Math.max(0, Number(transition?.delay || 0)) * 1000
       const durationSeconds = transition?.duration == null ? 0.5 : Number(transition.duration)
       const durationMs = Math.max(0, Number.isFinite(durationSeconds) ? durationSeconds : 0.5) * 1000
-      const start = performance.now()
+      // Runtime cues share the scheduler's paused/rated logical clock. Direct
+      // stage callers retain wall-clock timing; loading still precedes fading.
+      const nowMilliseconds = transition?.nowMilliseconds ?? (() => performance.now())
+      const start = nowMilliseconds()
       const tickerFn = () => {
         if (token !== this._bgTransitionToken) {
           this.app.ticker.remove(tickerFn)
           return
         }
-        const elapsed = performance.now() - start
+        const elapsed = Math.max(0, nowMilliseconds() - start)
         if (elapsed < delayMs) return
         const t = durationMs <= 0 ? 1 : Math.min((elapsed - delayMs) / durationMs, 1)
         if (oldSprite) oldSprite.alpha = 1 - t
