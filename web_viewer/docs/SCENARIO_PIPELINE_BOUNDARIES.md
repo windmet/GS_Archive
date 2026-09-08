@@ -198,6 +198,25 @@ compiled_resource_only；对白只取 adv/talk/call，优先日文并保留 spea
 637 资源、444 个有名称背景；基线 hash 在 fixtures/masterdata-wire/work-baseline.json。
 此为真实编译 JSON 的索引验收，不是音频播放或 P2-B 长时验收，未写公共产物。
 
+## G10：故事表、生日关系与主目录投影
+
+`sidem_masterdata/story_tables.py` 将 wire 记录映射到 19 组故事表，并保持 table-80
+subject 的原始 little-endian bytes 解码，避免数字 45 被解释为可打印字符 `-`。
+`birthday.py` 拥有 chapter/section/episode/subject/announcement 关联与诊断；
+`story_index.py` 使用显式编译资源证据生成原 master index。三者均不读取文件，
+旧入口继续重新导出。没有将旧原始字段目录改成新 schema，前端命名 catalog
+仍由既有 story_catalog consumer 生成。
+
+`verify:masterdata-story-domains` 覆盖数字身份、公告 image-reference 回退、显式
+subject 优先、producer target、版次/日期、缺失关系与资源来源字段；输入不变。
+额外用 `--decoded-masterdata .analysis/masterdata/client_master_data.xor_DefaultPassPhrase.pb`
+与 `c692860` 比较 19 组完整解码表、生日关系、两种编译证据下的主目录，逐值一致，
+冻结 hash 在 fixtures/masterdata-wire/story-domains-baseline.json。
+生日有 4 chapter、181 section/episode、78 公告；两个既有未分配 subject 的条目
+51110001/52110002 保留诊断，不猜测具体偶像。前端生日语义、domain landing 和
+story catalog 验证分别检查既有公共索引与消费者，不能替代生成器全数据对照。
+没有写出公共产物或执行发布。
+
 未完成边界：旧默认接口仍使用类缓存和兼容盘符；authoritative_scenario、RAW 候选写出、
 masterdata 和发布脚本仍在包外，G 整体未完成。此批按职责移动既有实现，
 没有引入新 IR/schema 或修改 RAW 语义。
