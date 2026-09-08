@@ -5,7 +5,9 @@
 export function createArchiveNavigationCoordinator({ onFinish = () => {} } = {}) {
   let active = null
   let disposed = false
+  let revision = 0
   function begin({ restoring = false } = {}) {
+    revision++
     const intent = { restoring, pending: true, isCurrent: () => !disposed && active === intent }
     active = intent
     return intent
@@ -29,9 +31,10 @@ export function createArchiveNavigationCoordinator({ onFinish = () => {} } = {})
   return {
     run,
     isDisposed: () => disposed,
+    getRevision: () => revision,
     isPending: () => !!active?.pending,
     isRestoring: () => !!(active?.pending && active.restoring),
-    invalidate: () => { active = null },
-    dispose: () => { disposed = true; active = null },
+    invalidate: () => { revision++; active = null },
+    dispose: () => { revision++; disposed = true; active = null },
   }
 }

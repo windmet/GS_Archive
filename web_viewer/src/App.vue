@@ -2675,14 +2675,18 @@ onMounted(async () => {
   if (navigation.isDisposed()) return
 
 
-  let restoreGeneration = 0
+  // Base data is ready. The coordinator suppresses route writes while a
+  // restoration owns navigation; newer page actions may publish immediately.
+  archiveRouteReady = true
+  let startupRouteNormalized = false
   const restoreRoute = async route => {
-    const expected = ++restoreGeneration
-    await applyArchiveRoute(route)
-    if (navigation.isDisposed() || expected !== restoreGeneration) return
-    if (!archiveRouteReady) {
+    const pending = applyArchiveRoute(route)
+    const expected = navigation.getRevision()
+    await pending
+    if (navigation.isDisposed() || expected !== navigation.getRevision()) return
+    if (!startupRouteNormalized) {
       loading.value = false
-      archiveRouteReady = true
+      startupRouteNormalized = true
       writeArchiveRoute(currentArchiveRoute(), { replace: true })
     }
   }
