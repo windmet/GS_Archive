@@ -230,9 +230,31 @@ story catalog 验证分别检查既有公共索引与消费者，不能替代生
 836 条卡片的完整 gameplay 和 2,672 条衣装关系逐值一致，hash 在
 fixtures/masterdata-wire/card-gameplay-baseline.json；无资源存在性或发布声明。
 
-仍需处理：主卡片索引/语音分类未迁移，旧 `build_card_detail_index` 会 pop 输入
+G11 时待处理（已由 G12 迁移主流程）：旧 `build_card_detail_index` 会 pop 输入
 字段并在原索引上设置 detail_available；后续应将目录/详情拆分改为显式返回，
 迁移调用端后再取消对隐式副作用的依赖。该问题不在本批纯数值领域中修补。
+
+## G12：卡片目录与详情的显式拆分
+
+`sidem_masterdata/cards.py` 拥有卡片组装与 canonical 选择；`card_voices.py` 拥有
+操作语音分类和 masterdata/curated/audio-only 来源优先级。两者只消费显式输入。
+`card_details.split_card_index` 返回 `(summary, details)`，在私有深拷贝上分离字段，
+保留完整输入供重复使用；`masterdata_extract.main` 已接收两个结果再生成活动、
+gasha 和最终输出，不再依赖详情函数修改输入。
+
+旧 `build_card_detail_index` 仅作兼容委托到明确命名的
+`extract_card_details_in_place`，保留原有 destructive 合约；仓库主流程没有调用。
+共享 resource 的后记录覆盖、skill/center 去重、live/story 衣装域和 tutorial
+canonical 优先级均未改变。以复制成本换取明确所有权，当前范围是一次离线生成。
+
+`verify:masterdata-cards` 验证重复调用、输入/结果隔离、兼容输出、真实 writer 的
+双结果绑定、语音来源优先级及 canonical 规则。加 `--decoded-masterdata
+.analysis/masterdata/client_master_data.xor_DefaultPassPhrase.pb` 对照 `02de25e`：
+完整组装索引、拆分后的目录/详情、canonical 列表逐值一致，hash 在
+fixtures/masterdata-wire/cards-baseline.json。836 卡片记录对应 826 资源详情，
+160 skills、53 center skills、1,098 衣装资源；受控语音/编译证据用于触发映射分支，
+不作为实际音频存在性验收。已有卡片字典与语音预览 consumer 检查另行通过。
+公共产物未重写，未执行全量发布。
 
 未完成边界：旧默认接口仍使用类缓存和兼容盘符；authoritative_scenario、RAW 候选写出、
 masterdata 和发布脚本仍在包外，G 整体未完成。此批按职责移动既有实现，

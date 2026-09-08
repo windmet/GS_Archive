@@ -145,6 +145,9 @@ jobs:
       - name: Verify card gameplay domain
         run: npm run verify:masterdata-card-gameplay
 
+      - name: Verify card index split
+        run: npm run verify:masterdata-cards
+
       - name: Verify release soak recorder
         run: npm run verify:release-soak
 
