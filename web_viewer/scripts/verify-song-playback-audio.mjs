@@ -2,6 +2,8 @@
 
 import fs from 'node:fs'
 import process from 'node:process'
+import assert from 'node:assert/strict'
+import { validateArchivePayload } from '../src/data/archiveDataContracts.js'
 
 const root = new URL('..', import.meta.url)
 const mounted = process.argv.includes('--mounted')
@@ -13,6 +15,9 @@ const appSource = read('src/App.vue')
 const detailSource = read('src/components/archive/ArchiveSongDetail.vue')
 const playerSource = read('src/components/archive/ArchiveSongSinglePlayer.vue')
 const repositorySource = read('src/data/ArchiveDataRepository.js')
+
+validateArchivePayload('songPlaybackAudio', manifest)
+assert.throws(() => validateArchivePayload('songPlaybackAudio', { ...manifest, status: 'experimental' }))
 
 function fail(message) {
   throw new Error(`[song-playback-audio] ${message}`)
@@ -92,8 +97,6 @@ for (const [label, source, needles] of [
   ]],
   ['data repository', repositorySource, [
     "songPlaybackAudio: '/data/song_playback_audio.json'",
-    "payload.status !== 'local-derived'",
-    "throw new Error('songPlaybackAudio must include the 61-song local full-mix contract')",
   ]],
 ]) {
   for (const needle of needles) {

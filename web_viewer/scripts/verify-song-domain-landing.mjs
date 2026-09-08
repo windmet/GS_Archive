@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { validateArchivePayload } from '../src/data/archiveDataContracts.js'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -222,7 +223,9 @@ assert.match(shellComponent, /repeat\(8, minmax\(0, 1fr\)\)/)
 // Repository: song catalog and jacket index registered with payload validation
 assert.match(repositorySource, /songCatalog: '\/data\/song_catalog\.json'/)
 assert.match(repositorySource, /songJacketIndex: '\/data\/song_jacket_index\.json'/)
-assert.match(repositorySource, /key === 'songCatalog' && \([\s\S]*?payload\.schema_version !== 1/)
-assert.match(repositorySource, /key === 'songJacketIndex' && \([\s\S]*?payload\.schema_version !== 1/)
+validateArchivePayload('songCatalog', catalog)
+validateArchivePayload('songJacketIndex', jacketIndex)
+assert.throws(() => validateArchivePayload('songCatalog', { ...catalog, schema_version: 0 }))
+assert.throws(() => validateArchivePayload('songJacketIndex', { ...jacketIndex, schema_version: 0 }))
 
 console.log('Song domain landing: 60 works / 61 song entities, 47 confirmed unit mappings, 13 explicit performer songs and bidirectional entity links verified')

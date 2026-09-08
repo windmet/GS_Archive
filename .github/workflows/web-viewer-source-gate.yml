@@ -97,6 +97,9 @@ jobs:
       - name: Verify named story catalog and full consumer parity
         run: npm run verify:story-catalog
 
+      - name: Verify archive contracts and repository lifecycle
+        run: npm run verify:archive-data
+
       - name: Verify release soak recorder
         run: npm run verify:release-soak
 

@@ -1,4 +1,4 @@
-import { validateStoryCatalog } from './storyCatalog.js'
+import { validateArchivePayload } from './archiveDataContracts.js'
 
 const ARCHIVE_SOURCES = {
   compiledIndex: '/data/compiled/index.json',
@@ -33,201 +33,74 @@ const IDOL_COMMUNICATION_SOURCES = {
   randomTalkPresentation: '/data/masterdata/random_talk_presentation_index.json',
 }
 
-const payloadCache = new Map()
+// Each repository owns its cache. The default instance preserves the public API;
+// isolated instances allow transport behavior to be exercised without global fetch.
+export function createArchiveDataRepository({ fetchImpl = (...args) => globalThis.fetch(...args) } = {}) {
+  const payloadCache = new Map()
 
-function validatePayload(key, payload) {
-  if (key === 'storyCatalog') validateStoryCatalog(payload)
-  if (!payload || typeof payload !== 'object') {
-    throw new Error(`${key} must be a JSON object`)
+  async function fetchJson(key, url, { fresh = false } = {}) {
+    if (!fresh && payloadCache.has(key)) return payloadCache.get(key)
+
+    const request = fetchImpl(url, { cache: fresh ? 'no-store' : 'default' })
+      .then(async response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        const contentType = response.headers.get('content-type') || ''
+        if (contentType.includes('text/html')) {
+          throw new Error('received HTML instead of JSON')
+        }
+        return validateArchivePayload(key, await response.json())
+      })
+      .catch(error => {
+        // Only this request owns its cache entry. An older failure may arrive
+        // after a fresh load or after clear+reload has installed a replacement.
+        if (payloadCache.get(key) === request) payloadCache.delete(key)
+        throw new Error(`${key} (${url}): ${error.message}`)
+      })
+
+    payloadCache.set(key, request)
+    return request
   }
-  if (key === 'compiledIndex' && !Array.isArray(payload.categories)) {
-    throw new Error('compiledIndex.categories must be an array')
-  }
-  if (key === 'cardIndex' && (!Array.isArray(payload.cards) || !payload.by_character)) {
-    throw new Error('cardIndex must include cards and by_character')
-  }
-  if (key === 'gashaIndex' && (
-    payload.schema_version < 2 ||
-    !Array.isArray(payload.gashas) ||
-    !payload.by_id ||
-    !payload.by_logical_id ||
-    !payload.relations_by_card
-  )) {
-    throw new Error('gashaIndex must include normalized announcement and logical-gasha indexes')
-  }
-  if (key === 'eventIndex' && (payload.schema_version < 1 || !Array.isArray(payload.events) || !payload.by_code)) {
-    throw new Error('eventIndex must include normalized event and reward indexes')
-  }
-  if (key === 'cardDetailIndex' && (!payload.cards_by_resource_id || !payload.skills_by_id || !payload.costumes_by_key)) {
-    throw new Error('cardDetailIndex is missing normalized card detail dictionaries')
-  }
-  if (key === 'storyMaster' && !payload.main && !payload.idol_story) {
-    throw new Error('storyMaster has no recognized story families')
-  }
-  if (key === 'birthdayStorySemantic' && (
-    payload.schema_version !== 1 ||
-    payload.meta?.chapter_count !== 4 ||
-    payload.meta?.episode_count !== 181 ||
-    payload.meta?.announcement_count !== 78 ||
-    !payload.by_episode_id
-  )) {
-    throw new Error('birthdayStorySemantic must include the complete tables 76/77/78/80/86 contract')
-  }
-  if (key === 'extraStoryVisualIndex' && (
-    payload.schema_version !== 1 ||
-    !Array.isArray(payload.entries) ||
-    payload.entries.length !== 7 ||
-    !payload.by_chapter_id
-  )) {
-    throw new Error('extraStoryVisualIndex must include seven table-178 relations')
-  }
-  if (key === 'storyPresentation' && (!payload.by_file || payload.schema_version < 1)) {
-    throw new Error('storyPresentation must include normalized display metadata')
-  }
-  if (key === 'seasonalCampaign' && (payload.schema_version < 1 || !Array.isArray(payload.campaigns) || !payload.by_id)) {
-    throw new Error('seasonalCampaign must include normalized campaign entities')
-  }
-  if (key === 'workStory' && (payload.schema_version < 1 || !Array.isArray(payload.idols) || !payload.by_idol_code)) {
-    throw new Error('workStory must include idol work-story entities')
-  }
-  if (key === 'idolEpisode' && (payload.schema_version < 1 || !Array.isArray(payload.chapters) || !payload.by_idol_code)) {
-    throw new Error('idolEpisode must include normalized chapters and idol indexes')
-  }
-  if (key === 'mobileArchive' && (payload.schema_version < 1 || !Array.isArray(payload.scenarios) || !payload.by_kind)) {
-    throw new Error('mobileArchive must include normalized scenarios and kind indexes')
-  }
-  if (key === 'idolUnit' && !payload.by_idol_code) {
-    throw new Error('idolUnit.by_idol_code is missing')
-  }
-  if (key === 'speakerDictionary' && !payload.speakers) {
-    throw new Error('speakerDictionary.speakers is missing')
-  }
-  if (key === 'costumeDictionary' && (!Array.isArray(payload.costumes) || !payload.by_model_resource_id)) {
-    throw new Error('costumeDictionary must include costumes and by_model_resource_id')
-  }
-  if (key === 'archiveManifest' && (!payload.counts || !payload.schema_version)) {
-    throw new Error('archiveManifest must include schema_version and counts')
-  }
-  if (key === 'archiveVerification' && (!payload.scenarios || !payload.dialogue_voices)) {
-    throw new Error('archiveVerification must include scenarios and dialogue_voices')
-  }
-  if (key === 'uiAssetCatalog' && (!Array.isArray(payload.entries) || !payload.meta || !payload.featured_sets)) {
-    throw new Error('uiAssetCatalog must include entries, meta and featured_sets')
-  }
-  if (key === 'rawCharacterImagePromotions' && (
-    payload.schema_version !== 1 ||
-    !Array.isArray(payload.entries) ||
-    payload.entries.some(entry =>
-      !entry?.kind ||
-      !/^\d{3}[a-z0-9]{3}$/i.test(entry?.idol_code || '') ||
-      !String(entry?.asset_url || '').startsWith('/assets/')
+
+  async function loadArchiveData(options = {}) {
+    const entries = Object.entries(ARCHIVE_SOURCES)
+    const settled = await Promise.allSettled(
+      entries.map(([key, url]) => fetchJson(key, url, options)),
     )
-  )) {
-    throw new Error('rawCharacterImagePromotions must include valid promoted entries')
-  }
-  if (key === 'externalStoryResources' && (
-    payload.schema_version !== 1 ||
-    !Array.isArray(payload.entries)
-  )) {
-    throw new Error('externalStoryResources must include a v1 entries array')
-  }
-  if (key === 'songCatalog' && (
-    payload.schema_version !== 1 ||
-    !payload.songs ||
-    !payload.summary ||
-    typeof payload.songs !== 'object'
-  )) {
-    throw new Error('songCatalog must include a v1 songs map and summary')
-  }
-  if (key === 'songExperimentalAudio' && (
-    payload.schema_version !== 2 ||
-    payload.status !== 'experimental' ||
-    !Array.isArray(payload.scope) ||
-    !payload.scope.includes('song_detail') ||
-    !payload.scope.includes('chibi_stage') ||
-    !payload.songs ||
-    typeof payload.songs !== 'object'
-  )) {
-    throw new Error('songExperimentalAudio must include the v2 song-detail and Chibi-stage experimental contract')
-  }
-  if (key === 'songPlaybackAudio' && (
-    payload.schema_version !== 1 ||
-    payload.status !== 'local-derived' ||
-    !Array.isArray(payload.scope) ||
-    !payload.scope.includes('song_detail') ||
-    payload.summary?.catalog_songs !== 61 ||
-    payload.summary?.full_mix_tracks !== 61 ||
-    !payload.songs ||
-    typeof payload.songs !== 'object'
-  )) {
-    throw new Error('songPlaybackAudio must include the 61-song local full-mix contract')
-  }
-  if (key === 'songJacketIndex' && (
-    payload.schema_version !== 1 ||
-    !payload.entries ||
-    typeof payload.entries !== 'object'
-  )) {
-    throw new Error('songJacketIndex must include a v1 entries map')
-  }
-  return payload
-}
+    const data = {}
+    const errors = []
 
-async function fetchJson(key, url, { fresh = false } = {}) {
-  if (!fresh && payloadCache.has(key)) return payloadCache.get(key)
-
-  const request = fetch(url, { cache: fresh ? 'no-store' : 'default' })
-    .then(async response => {
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const contentType = response.headers.get('content-type') || ''
-      if (contentType.includes('text/html')) {
-        throw new Error('received HTML instead of JSON')
+    settled.forEach((result, index) => {
+      const [key] = entries[index]
+      if (result.status === 'fulfilled') data[key] = result.value
+      else {
+        data[key] = null
+        errors.push({ key, error: result.reason })
       }
-      return validatePayload(key, await response.json())
-    })
-    .catch(error => {
-      payloadCache.delete(key)
-      throw new Error(`${key} (${url}): ${error.message}`)
     })
 
-  payloadCache.set(key, request)
-  return request
+    return { data, errors }
+  }
+
+  function loadCardDetailData(options = {}) {
+    return fetchJson('cardDetailIndex', CARD_DETAIL_SOURCE, options)
+  }
+
+  async function loadIdolCommunicationData(options = {}) {
+    const [idolEpisode, mobileArchive, randomTalkPresentation] = await Promise.all([
+      fetchJson('idolEpisode', IDOL_COMMUNICATION_SOURCES.idolEpisode, options),
+      fetchJson('mobileArchive', IDOL_COMMUNICATION_SOURCES.mobileArchive, options),
+      fetchJson('randomTalkPresentation', IDOL_COMMUNICATION_SOURCES.randomTalkPresentation, options),
+    ])
+    return { idolEpisode, mobileArchive, randomTalkPresentation }
+  }
+
+  function clearArchiveDataCache() {
+    payloadCache.clear()
+  }
+
+  return { loadArchiveData, loadCardDetailData, loadIdolCommunicationData, clearArchiveDataCache }
 }
 
-export async function loadArchiveData(options = {}) {
-  const entries = Object.entries(ARCHIVE_SOURCES)
-  const settled = await Promise.allSettled(
-    entries.map(([key, url]) => fetchJson(key, url, options)),
-  )
-  const data = {}
-  const errors = []
-
-  settled.forEach((result, index) => {
-    const [key] = entries[index]
-    if (result.status === 'fulfilled') data[key] = result.value
-    else {
-      data[key] = null
-      errors.push({ key, error: result.reason })
-    }
-  })
-
-  return { data, errors }
-}
-
-export function loadCardDetailData(options = {}) {
-  return fetchJson('cardDetailIndex', CARD_DETAIL_SOURCE, options)
-}
-
-export async function loadIdolCommunicationData(options = {}) {
-  const [idolEpisode, mobileArchive, randomTalkPresentation] = await Promise.all([
-    fetchJson('idolEpisode', IDOL_COMMUNICATION_SOURCES.idolEpisode, options),
-    fetchJson('mobileArchive', IDOL_COMMUNICATION_SOURCES.mobileArchive, options),
-    fetchJson('randomTalkPresentation', IDOL_COMMUNICATION_SOURCES.randomTalkPresentation, options),
-  ])
-  return { idolEpisode, mobileArchive, randomTalkPresentation }
-}
-
-export function clearArchiveDataCache() {
-  payloadCache.clear()
-}
+export const { loadArchiveData, loadCardDetailData, loadIdolCommunicationData, clearArchiveDataCache } = createArchiveDataRepository()
 
 export { ARCHIVE_SOURCES, CARD_DETAIL_SOURCE, IDOL_COMMUNICATION_SOURCES }

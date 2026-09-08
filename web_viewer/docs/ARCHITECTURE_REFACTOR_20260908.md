@@ -33,7 +33,7 @@ schemas 19、public/data 279、notes 127、tools 11。它们是各目录 tracked
 | masterdata 解码与域推导 | `data_pipeline/masterdata_extract.py` | `public/data/masterdata` 中字典与索引 | wire parser、表扫描、各实体 builder、CLI 同文件 |
 | 剧情编译 | `scenario_compiler.py` → `authoritative_scenario.py` | compatibility steps 或严格 v2 artifact | 命令解释、累计状态、文本证据、timeline、口型定位集中 |
 | 候选/发布 | `scripts/lib/authoritative-collection-*`、`raw-story-promotion.mjs`、`publication-ledger.mjs` | candidate、校验、发布、rollback、append-only ledger | 不能用普通批量重编译绕过 provenance |
-| 门户数据访问 | `src/data/ArchiveDataRepository.js` | 按 key fetch/cache/validate，供 App/selector 使用 | 网络、形状验证、固定快照数量耦合 |
+| 门户数据访问 | `src/data/ArchiveDataRepository.js`、`archiveDataContracts.js` | 按 key fetch/cache 与独立契约检查，供 App/selector 使用 | F1 已分离请求/契约并移出三类固定数量；其他产品仍待更完整深层契约 |
 | 门户域模型 | `archiveSelectors.js`、`storyCollections.js`、`idolCommunicationSelectors.js` 等 | 卡牌、剧情、角色与集合页面模型 | story selector 仍解释数字字段 |
 | 导航与组合 | `src/App.vue`、`src/core/archiveRoute.js` | query URL、页面、返回/父级上下文 | root 持有实体、过滤、加载、播放器队列和导航状态 |
 | 剧情调度 | `StoryViewer.vue`、`useStoryRuntimeCues.js`、`StoryClock.js`、`SceneSnapshotStore.js` | entry/settled 状态、cue、历史和播放模式 | legacy 兼容与正式调度同处产品路径 |
@@ -108,7 +108,7 @@ query、编码文件名、口型、卡图 MIME/cache，另测越界与 standalon
 | C，已实现 | Python 单一生成命名 Story catalog；浏览器目录消费者已迁移，见 `STORY_CATALOG_CONTRACT.md` | 1,394 条目录有/无 presentation 的全部属性 parity、缺失/合并 fixture、域门禁与桌面分类→前传入口通过；旧索引仍供其他 selector 使用 |
 | D | 独立 reading artifact/consumer（功能扩展） | 复用 speaker/text_ref/overlay；choice 与来源 step 保真；浏览器请求证明无 Pixi/Spine/audio 初始化；桌面/窄屏交互验收 |
 | E | Runtime 单一状态计划与 renderer adapter | 在 B 的证据上逐 channel 迁移；兼容留在显式边界；不要先删 normalizer；行为变化需真实媒体回归及长稳证据 |
-| F | App 导航、feature 与 repository validation 分离 | 保留 query contract、Back/parent/player return；自然入口、浏览器历史、桌面/平板/390px、console 验证 |
+| F，推进中 | F1 已分离 repository 请求/契约，修复缓存刷新竞态，见 `ARCHIVE_DATA_BOUNDARIES.md`；App 导航/feature 仍待拆分 | 数据契约/请求回归、域覆盖和生日→歌曲浏览器入口通过；后续保留 query、Back/parent/player return 并完成桌面/平板/390px 验证 |
 | G | Python package 分层与旧 CLI 兼容壳 | parser/domain/compiler/publish 分开；旧入口可用；候选输出、hash、source provenance parity |
 
 B 优先服务反复反查 RAW 的维护痛点；不急于引入新 schema v3 或把所有已有 v2
