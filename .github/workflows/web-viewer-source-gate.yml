@@ -148,6 +148,9 @@ jobs:
       - name: Verify card index split
         run: npm run verify:masterdata-cards
 
+      - name: Verify event and gasha evidence
+        run: npm run verify:masterdata-events-gasha
+
       - name: Verify release soak recorder
         run: npm run verify:release-soak
 

@@ -256,6 +256,25 @@ fixtures/masterdata-wire/cards-baseline.json。836 卡片记录对应 826 资源
 不作为实际音频存在性验收。已有卡片字典与语音预览 consumer 检查另行通过。
 公共产物未重写，未执行全量发布。
 
+## G13：活动奖励与招募推导
+
+`sidem_masterdata/events.py` 将限定表解码和活动奖励投影分开，纯 builder 接收表行；
+主流程显式传入解码结果。旧 `build_event_index(records, ...)` 委托保留。
+`gasha.py` 拥有公告抽取、curated 标题来源、精确时间匹配和逻辑组/复刻关系。
+领域不读文件，也不导入入口脚本。
+
+招募 pickup 关系仍是推导：要求整数 LimitbreakItemId、精确 start_at 且候选公告
+唯一，不将相近时间或多个候选当作确认。logical_primary/reprint 只填 related
+关系；缺失 GashaListReply 的事实继续保留。活动奖励区分 card/card_fragment，
+积分与读剧情来源、archive/in_event_term 两种可用期及 table/offset 不变。
+
+`verify:masterdata-events-gasha` 覆盖歧义拒绝、字段缺失、间接关系、来源与输入
+不变；加 `--decoded-masterdata .analysis/masterdata/client_master_data.xor_DefaultPassPhrase.pb`
+使用当前卡片目录与 curated 标题对照 `af0ea47`，三组完整输出逐值一致：
+59 活动（38 有积分奖励卡、30 有剧情奖励卡）、61 公告/57 逻辑招募组、336 条
+推导卡片关联。输入 decoded、卡片目录、curated 内容均记录 hash，输出基线位于
+fixtures/masterdata-wire/events-gasha-baseline.json。没有写公共数据或发布。
+
 未完成边界：旧默认接口仍使用类缓存和兼容盘符；authoritative_scenario、RAW 候选写出、
 masterdata 和发布脚本仍在包外，G 整体未完成。此批按职责移动既有实现，
 没有引入新 IR/schema 或修改 RAW 语义。
