@@ -168,3 +168,18 @@ deepEqual；verify:idol-page 固定结果摘要，并验证组合资料优先级
 2 events；点击下一位到翔太，资料更新为 002sht，统计为 17 cards / 18 chats /
 6 phones，歌曲明确映射变为リトルハピネス，活动更新为 3 条。此为实际响应式
 切换冒烟，未覆盖窄屏布局或全部偶像的浏览器逐页验收。
+
+## F8：启动数据加载后读取当前浏览器路由
+
+App 原来在 loadArchiveData/实体翻译 await 之前捕获 initialRoute，加载期间
+浏览器历史变化后仍恢复旧地址。现将 readArchiveRoute 移到实际 applyArchiveRoute
+调用处，使用两组初始化加载结束时的最新地址。既有销毁检查保留。
+
+verify:archive-startup-route 在 VM 中执行 App 的实际 onMounted 回调，以可控
+数据/翻译 Promise 模拟两次地址变化。旧实现先复现恢复 cards/001tom 而不是
+idol_detail/002sht；修复后恢复并写回最新地址，卸载后无恢复或地址写入。
+已加入 CI，异步导航、routes 与 publicDir:false 构建通过。
+
+该测试没有启动真实浏览器或注入真实慢网络。applyArchiveRoute 自身异步恢复
+期间的历史变化、初始化前页面内交互、被动筛选 watcher 仍需进一步审计；
+本批只关闭初始数据/翻译加载窗口中的过期地址问题，不视为 F 完成。

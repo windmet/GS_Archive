@@ -2646,7 +2646,6 @@ async function loadScenario(name, returnView = 'files', options = {}) {
 onMounted(async () => {
   cardLayout.value = localStorage.getItem('sidem-archive-card-layout') === 'grid' ? 'grid' : 'compact'
   cardArtMode.value = localStorage.getItem('sidem-archive-card-art-mode') === 'framed' ? 'framed' : 'clean'
-  const initialRoute = readArchiveRoute()
   const entityTranslations = loadIdolEntityTranslations().catch(error => {
     console.error('[EntityTranslations] Failed to load idols:', error)
   })
@@ -2681,7 +2680,8 @@ onMounted(async () => {
   if (navigation.isDisposed()) return
 
 
-  await applyArchiveRoute(initialRoute)
+  // Browser history can move while the initial data/translation loads await.
+  await applyArchiveRoute(readArchiveRoute())
   if (navigation.isDisposed()) return
   loading.value = false
   archiveRouteReady = true
