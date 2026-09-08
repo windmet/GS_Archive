@@ -136,6 +136,9 @@ jobs:
       - name: Verify masterdata interaction domains
         run: npm run verify:masterdata-interactions
 
+      - name: Verify work story input boundary
+        run: npm run verify:masterdata-work
+
       - name: Verify release soak recorder
         run: npm run verify:release-soak
 

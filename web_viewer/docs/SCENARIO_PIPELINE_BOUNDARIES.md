@@ -178,6 +178,26 @@ hash 存于 fixtures/masterdata-wire/interactions-baseline.json。
 1,421 profile、306 季节通信、4 campaign/2 cycle/208 playback entities。
 模拟资源集只验证生成器，不证明 mounted 文件存在；没有重写公共索引或发布。
 
+## G9：工作剧情编译输入边界
+
+`sidem_masterdata/work.py` 根据表 53/54/55、身份、背景、编译摘要及显式 payload map
+生成工作剧情索引，不读取文件。`work_story_files` 只选择有效工作条目引用的文件；
+`compiled_inputs.py` 负责读取选定 JSON，同一次生成内去重读取，没有跨任务缓存。
+旧 `masterdata_extract.build_work_story_index` 保留原参数，作为读取与投影的兼容编排。
+
+缺失文件、IO/编码/JSON 解析失败继续产生无详情条目；成功解码但根形状错误的
+JSON 不被静默当成缺失。背景名称仍来自 picture studio masterdata，未命名时保留
+compiled_resource_only；对白只取 adv/talk/call，优先日文并保留 speaker 首次顺序。
+资源匹配仍不等价于可读性：matched 但损坏的文件继续保留 compiled_exists=true，
+与旧输出一致。没有在这次拆分中重新定义现有 availability 字段。
+
+`verify:masterdata-work` 在 CI 验证纯投影、选择性读取、损坏/缺失证据、输入不变、
+背景来源和兼容入口。使用本地 decoded masterdata 与 `public/data/compiled` 运行
+`python scripts/verify-masterdata-work.py --decoded-masterdata .analysis/masterdata/client_master_data.xor_DefaultPassPhrase.pb --compiled-dir public/data/compiled`
+对照 `7992085`：49 偶像、441 scene line、196 short story 的完整输出逐值一致，
+637 资源、444 个有名称背景；基线 hash 在 fixtures/masterdata-wire/work-baseline.json。
+此为真实编译 JSON 的索引验收，不是音频播放或 P2-B 长时验收，未写公共产物。
+
 未完成边界：旧默认接口仍使用类缓存和兼容盘符；authoritative_scenario、RAW 候选写出、
 masterdata 和发布脚本仍在包外，G 整体未完成。此批按职责移动既有实现，
 没有引入新 IR/schema 或修改 RAW 语义。
