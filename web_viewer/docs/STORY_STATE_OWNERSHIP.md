@@ -353,3 +353,16 @@ adapter 到 BackgroundManager/Pixi 对象，检查延迟暂停、2 倍速中间�
 不覆盖。背景加载、foundation 和 publicDir:false 构建通过，两个已知背景
 路径提示保留。此为无 GPU 的属性/时间验收，未完成实际背景滤镜画面与
 实音长稳，也不代表持续背景粒子通道已迁移。
+
+## B18：持续背景效果失败与 alpha 归属
+
+雨纹理失败的 catch 分支补充 loadToken/容器有效性检查，移除或销毁后的失败
+不再创建降级 Graphics/ticker，当前失败仍保留降级雨层。背景效果 alpha 使用
+已有 runRafTween 保存取消句柄，保持原线性曲线和 delay；替换/移除立即取消，
+自然完成清空句柄，旧排队帧不能再执行。
+
+背景门禁纳入真实 BackgroundManager/Graphics 的生命周期回归，以无 GPU
+白纹理替代浏览器 canvas 初始化；验证迟到失败、当前降级、线性中间 alpha、
+替换只留一个 RAF、移除/销毁后零资源，以及旧帧不复活。背景加载/属性门禁
+与 publicDir:false 构建通过，两个已知背景路径提示保留。持续背景粒子的
+跨步时钟连续性与实际画面/实音长稳仍待验收。

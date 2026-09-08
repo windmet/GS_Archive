@@ -629,6 +629,7 @@ export class BackgroundManager {
       this.app.ticker.add(entry.ticker)
       this._resizeBgEffect(entry)
     } catch (err) {
+      if (entry.loadToken !== token || !entry.container || entry.container.destroyed) return
       const rain = new PIXI.Graphics()
       this._drawRain(rain, entry.id)
       entry.container.addChild(rain)
@@ -733,34 +734,30 @@ export class BackgroundManager {
 
   _animateBgEffectAlpha(entry, targetAlpha, duration = 0, delay = 0, onDone = null) {
     if (!entry?.container) return
+    entry.alphaTween?.cancel?.()
     const token = (entry.token || 0) + 1
     entry.token = token
     const startAlpha = entry.container.alpha
     const delayMs = Math.max(0, Number(delay || 0)) * 1000
     const durationMs = Math.max(0, Number(duration || 0)) * 1000
-    const t0 = performance.now()
-    const tick = () => {
-      if (entry.token !== token || !entry.container || entry.container.destroyed) return
-      const elapsed = performance.now() - t0
-      if (elapsed < delayMs) {
-        requestAnimationFrame(tick)
-        return
-      }
-      const t = durationMs <= 0 ? 1 : Math.min((elapsed - delayMs) / durationMs, 1)
-      entry.container.alpha = startAlpha + (targetAlpha - startAlpha) * t
-      if (t >= 1) {
+    entry.alphaTween = runRafTween({
+      durationMs, delayMs, startValue: startAlpha, endValue: targetAlpha,
+      ease: t => t,
+      shouldStop: () => entry.token !== token || !entry.container || entry.container.destroyed,
+      onUpdate: alpha => { entry.container.alpha = alpha },
+      onComplete: () => {
+        entry.alphaTween = null
         entry.container.visible = targetAlpha > 0
         if (onDone) onDone()
-      } else {
-        requestAnimationFrame(tick)
-      }
-    }
-    requestAnimationFrame(tick)
+      },
+    })
   }
 
   _removeBgEffect(id) {
     const entry = this._bgEffectEntries[id]
     if (!entry) return
+    entry.alphaTween?.cancel?.()
+    entry.alphaTween = null
     entry.token = (entry.token || 0) + 1
     entry.loadToken = (entry.loadToken || 0) + 1
     entry.pendingEndUntil = null
