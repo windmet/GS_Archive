@@ -124,6 +124,9 @@ jobs:
       - name: Verify RAW evidence boundaries
         run: npm run verify:raw-evidence-boundaries
 
+      - name: Verify masterdata wire boundary
+        run: npm run verify:masterdata-wire
+
       - name: Verify release soak recorder
         run: npm run verify:release-soak
 

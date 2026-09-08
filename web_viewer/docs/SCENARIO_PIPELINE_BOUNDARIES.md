@@ -95,6 +95,30 @@ extract_raw_story_candidate 模块仍重新导出原辅助函数，CLI 参数与
 11 个记录、一个语义组、无排除项，原始 bytes、解析结果与 provenance 完全一致。
 此为单 bundle 读验，不是全库重新审计或候选发布。
 
+## G5：Masterdata wire 边界
+
+`data_pipeline/sidem_masterdata/wire.py` 拥有 XOR/decoded 输入选择、varint、
+顶层记录、启发式字段解析、原始 length-delimited bytes 与 table rows 偏移。
+该层不导入领域生成、文件写出或发布模块。旧 masterdata_extract 导出保留，
+既支持原脚本路径导入，也支持 data_pipeline namespace 导入。
+歌曲生成、歌曲映射验证、extra visuals 准备和 BGM selector 审计直接使用新 API。
+
+没有把启发式解码器改成完整 protobuf schema/严格验证器：重复字段、可打印
+文本识别、nested 一层解析、固定宽度 hex、截短长度容忍和不支持 wire 的行为
+均保持。精确 bytes API 继续防止 table-80 等数字身份被可打印字符误解释。
+
+`verify:masterdata-wire` 覆盖这些语义和导出身份。额外运行
+`python scripts/verify-masterdata-wire.py --decoded-masterdata .analysis/masterdata/client_master_data.xor_DefaultPassPhrase.pb`
+对本地已解码输入全量验证：47,204 个顶层记录、158 张表，原始载荷/偏移与
+两种解析模式的完整结果 hash 对照 `0f16def` 旧实现一致。冻结输入与结果
+SHA-256 在 fixtures/masterdata-wire/decoded-baseline.json；不提交 decoded 数据。
+任意载荷两种解析模式合计 83 次异常同样逐项一致，不将其计作领域提取失败，
+也不将结果升级为全量领域产物验证。
+
+已通过实际歌曲 masterdata 映射检查（99 行/61 首），以及 movie announce、
+card skill movie、song movie 的 source-only 检查和 namespace 导入检查。
+未运行 masterdata 全量写出、public 复制或重新发布。
+
 未完成边界：旧默认接口仍使用类缓存和兼容盘符；authoritative_scenario、RAW 候选写出、
 masterdata 和发布脚本仍在包外，G 整体未完成。此批按职责移动既有实现，
 没有引入新 IR/schema 或修改 RAW 语义。

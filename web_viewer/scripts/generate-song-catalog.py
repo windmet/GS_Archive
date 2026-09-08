@@ -22,7 +22,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 
 from archive_paths import add_sources_config_argument, load_archive_sources
 
-from masterdata_extract import extract_table_rows, iter_top_records
+from sidem_masterdata import extract_table_rows, iter_top_records
 
 try:
     import UnityPy

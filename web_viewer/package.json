@@ -20,6 +20,7 @@
     "verify:scenario-resources": "python scripts/verify-scenario-resources.py",
     "verify:scenario-source-config": "python scripts/verify-scenario-source-config.py",
     "verify:raw-evidence-boundaries": "python scripts/verify-raw-evidence-boundaries.py && python ../data_pipeline/verify_raw_story_identity.py",
+    "verify:masterdata-wire": "python scripts/verify-masterdata-wire.py",
     "verify:archive-sources": "python ../data_pipeline/verify_archive_source_contract.py && node scripts/verify-archive-js-source-config.mjs",
     "report:archive-baseline": "node scripts/report-current-archive-baseline.mjs",
     "verify:archive-baseline": "node scripts/verify-current-archive-baseline.mjs",
