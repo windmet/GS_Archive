@@ -968,6 +968,7 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
       if (existing) manager.removeSpine(sid, true)
       try {
         await manager.spawnSpine(sid, modelId, {
+          isCurrent: () => token === applyStateToken && !!manager,
           bodyType: getBodyType(sid),
           prefabMeta,
           bodyScaleEnabled: BODY_SCALE_ENABLED,
@@ -978,7 +979,6 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
           fadeInDuration: spineState.fade?.type === 'in' ? spineState.fade.duration : undefined,
         })
         if (token !== applyStateToken || !manager) {
-          manager?.removeSpine(sid, true)
           return
         }
         const entry = manager.spineInstances[sid]

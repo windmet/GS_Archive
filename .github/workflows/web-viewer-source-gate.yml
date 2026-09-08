@@ -91,6 +91,9 @@ jobs:
       - name: Verify Spine cue lifecycle and compiler parity
         run: npm run verify:story-spine-cues
 
+      - name: Verify story stage loading ownership
+        run: npm run verify:story-stage-loading
+
       - name: Verify release soak recorder
         run: npm run verify:release-soak
 

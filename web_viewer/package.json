@@ -8,6 +8,7 @@
     "build": "vite build --configLoader native",
     "smoke": "vite build --configLoader native",
     "verify:archive-assets": "node scripts/verify-archive-assets.mjs",
+    "verify:story-stage-loading": "node scripts/verify-story-stage-loading.mjs",
     "verify:archive-sources": "python ../data_pipeline/verify_archive_source_contract.py && node scripts/verify-archive-js-source-config.mjs",
     "report:archive-baseline": "node scripts/report-current-archive-baseline.mjs",
     "verify:archive-baseline": "node scripts/verify-current-archive-baseline.mjs",

@@ -1211,7 +1211,7 @@ export class PixiStageManager {
   // Spine loading
 
   async spawnSpine(idolId, modelId, options = {}) {
-    if (this._destroyed || !this.app) return null
+    if (this._destroyed || !this.app || options.isCurrent?.() === false) return null
     this.removeSpine(idolId)
     const spawnToken = (this._spawnTokens[idolId] || 0) + 1
     this._spawnTokens[idolId] = spawnToken
@@ -1243,6 +1243,14 @@ export class PixiStageManager {
         AtlasAttachmentLoader,
         TextureAtlas,
       }))
+
+      // Asset completion does not confer ownership of the current scene.
+      // Dispose this unpublished object only; the idol ID may already belong
+      // to a newer scene/model. Other callers can omit the scene predicate.
+      if (this._destroyed || !this.app || this._spawnTokens[idolId] !== spawnToken || options.isCurrent?.() === false) {
+        spine.destroy({ children: true, texture: false, baseTexture: false })
+        return null
+      }
 
       console.log(`[DEBUG] hasMeshOrRegion: ${hasMeshOrRegion}`)
 
@@ -1345,11 +1353,6 @@ export class PixiStageManager {
           }
         }
         this._applyOptionalPartsSlots(spine)
-      }
-
-      if (this._destroyed || !this.app || this._spawnTokens[idolId] !== spawnToken) {
-        spine.destroy({ children: true, texture: false, baseTexture: false })
-        return null
       }
 
       this._applyDefaultPosition(spine, modelId, idolId, options)

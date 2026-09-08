@@ -1,6 +1,6 @@
 # Story 状态与生命周期边界
 
-2026-09-08，重构 B1。此表描述现行代码，不宣称完整任意时间重建或真实画面验收。
+2026-09-08，重构 B1/B2。此表描述现行代码，不宣称完整任意时间重建或全量真实画面验收。
 
 ## 从来源到执行
 
@@ -64,6 +64,9 @@ double，覆盖：
 
 ## 后续仍需完成
 
+B2 已补充模型发布的场景归属检查，见下节；metadata watcher 与 delayed cue
+的完整先后关系仍未解决，不能由本次加载取消回归推定为完成。
+
 1. 按属性继续核对模型加载后的 entry 投影与 delayed cue 的顺序；尤其是同一步
    慢加载、换模型、暂停后恢复、图片/镜头等异步资源。当前测试只证明旧 step
    的 cue 被取消，未覆盖所有真实 SpineStage watcher 时序。
@@ -73,3 +76,28 @@ double，覆盖：
    Spine 的过渡中间态分别建立证据；现有 entry/settled 尚不等于任意时刻状态。
 4. 独立 reading model、named catalog、App 导航拆分和 Python package 迁移仍按
    `ARCHITECTURE_REFACTOR_20260908.md` 推进。P2-B 实音长稳仍未完成。
+
+## B2：异步模型发布归属
+
+`SpineStage` 将已有 `applyStateToken` 的有效性以 `isCurrent` predicate 传给
+`PixiStageManager.spawnSpine`，没有新增另一份导航状态。manager 在开始前与资产
+加载结束后检查它；过期对象只销毁自身，不进入舞台或调试实例表。未传 predicate
+的独立模型查看器保持原有调用契约。
+
+旧 `applyState` 在 await 返回后发现过期，会调用 `removeSpine(sid)`。如果新步骤
+的同角色模型先完成，这会删掉新实例。该清理已移除：未发布对象归 manager 释放，
+当前场景实例归当前投影管理。仅靠 manager 的 per-id spawn token 仍不够，因为
+切到空场景时不会发生下一次同 ID spawn，旧加载也必须被场景 generation 拒绝。
+
+`npm run verify:story-stage-loading` 从生产 Vue 源码提取 `applyState`、从 manager
+提取 `spawnSpine` 执行，以可控资产 Promise 和 renderer double 验证以下路径：
+新模型先完成、旧模型先完成、导航到空场景、离开剧情、旧加载失败、直接调用、
+开始前即过期。恢复旧按 ID 清理后测试报 current model 被删除；去掉加载后场景
+检查后测试报 departed character 被发布。测试不复制两段生产实现，也不验证像素。
+
+本批 stage-loading、spine-cues、runtime-foundation 与 source-only Vite 构建通过。
+CI 加入 stage-loading。内置浏览器对 `1_3_10001_01.json` 做了真实资产冒烟：
+标题推进至三角色场景、下一段文本更新、上一段文本恢复，稳定截图中三角色均存在，
+没有 error 日志或框架错误层。检查为窄面板、`noAudio=1`；不是桌面/移动端完整矩阵，
+也未在浏览器中人为延迟资源来复现竞态。保留 Pixi Spine 调用 rgb2hex/hex2rgb 的
+弃用警告；构建的两条背景路径仍由运行时挂载解析。P2-B 实音长稳没有执行。
