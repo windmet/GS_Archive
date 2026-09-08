@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js'
+import { loadEffectTexture } from './effectTextureCache.js'
 import { runRafTween } from './rafTween.js'
 import { tweenOverlayFade, tweenOverlayPunch } from './transitionTweens.js'
 
@@ -112,10 +113,7 @@ export class ScreenEffectManager {
   }
 
   _loadEffectTexture(name) {
-    if (!this._effectTextureCache[name]) {
-      this._effectTextureCache[name] = this._loadTextureFromUrl(`/data/fx_extracted/unity_${name}.png`)
-    }
-    return this._effectTextureCache[name]
+    return loadEffectTexture(this._effectTextureCache, name, url => this._loadTextureFromUrl(url))
   }
 
   _ownScreenEffect(display, tick) {

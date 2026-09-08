@@ -131,7 +131,7 @@ export class PixiStageManager {
       getWidth: () => this.width,
       getHeight: () => this.height,
       getBgUrl,
-      loadTextureFromUrl: url => this._loadTextureFromUrl(url),
+      loadTextureFromUrl: (url, options) => this._loadTextureFromUrl(url, options),
     })
     this.cameraController = new CameraController({
       bgContainer: this.bgContainer,
@@ -170,7 +170,7 @@ export class PixiStageManager {
     this.screenEffects = new ScreenEffectManager({
       app: this.app, overlay: this._effectOverlay, spineContainer: this.spineContainer,
       getWidth: () => this.width, getHeight: () => this.height,
-      loadTextureFromUrl: url => this._loadTextureFromUrl(url),
+      loadTextureFromUrl: url => this._loadTextureFromUrl(url, { allowFallback: false }),
     })
     this._debugMarkerUpdater = () => {
       for (const entry of Object.values(this.spineInstances)) {
@@ -1554,8 +1554,8 @@ export class PixiStageManager {
     }
   }
 
-  _loadTextureFromUrl(url) {
-    return new Promise(resolve => {
+  _loadTextureFromUrl(url, { allowFallback = true } = {}) {
+    return new Promise((resolve, reject) => {
       const img = new Image()
       img.crossOrigin = 'anonymous'
       img.src = url
@@ -1570,14 +1570,16 @@ export class PixiStageManager {
           setTimeout(() => {
             if (!bt.valid) {
               console.warn(`[PixiStageManager] Texture timeout: ${url}`)
-              resolve(PIXI.Texture.from(bt))
+              if (allowFallback) resolve(PIXI.Texture.from(bt))
+              else reject(new Error(`Texture timeout: ${url}`))
             }
           }, 10000)
         }
       }
       img.onerror = () => {
         console.warn(`[PixiStageManager] Failed to load texture: ${url}`)
-        resolve(this._getFallbackTexture())
+        if (allowFallback) resolve(this._getFallbackTexture())
+        else reject(new Error(`Failed to load texture: ${url}`))
       }
     })
   }

@@ -31,7 +31,9 @@ export class BackgroundManager {
     this._bgColorTween = null
     this._bgOverlaySprite = null
     this._bgOverlayColor = 0xFFFFFF
-    this.effects = new BackgroundEffectManager({ app, bgEffectContainer, getWidth, getHeight, loadTextureFromUrl })
+    this.effects = new BackgroundEffectManager({ app, bgEffectContainer, getWidth, getHeight,
+      loadTextureFromUrl: url => loadTextureFromUrl(url, { allowFallback: false }),
+    })
   }
 
   handleResize() {

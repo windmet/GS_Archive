@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js'
+import { loadEffectTexture } from './effectTextureCache.js'
 import { runRafTween } from './rafTween.js'
 
 /** Owns persistent background particles, alpha transitions and their resources. */
@@ -86,10 +87,7 @@ export class BackgroundEffectManager {
   }
 
   _loadEffectTexture(name) {
-    if (!this._effectTextureCache[name]) {
-      this._effectTextureCache[name] = this.loadTextureFromUrl(`/data/fx_extracted/unity_${name}.png`)
-    }
-    return this._effectTextureCache[name]
+    return loadEffectTexture(this._effectTextureCache, name, url => this.loadTextureFromUrl(url))
   }
 
   async _createCameraflareEffect(entry) {
