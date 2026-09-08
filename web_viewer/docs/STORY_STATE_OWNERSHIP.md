@@ -258,3 +258,17 @@ verify:story-partial-settlement 使用生产 scheduler、registry、clock 和可
 都允许跳过不可跳过事件，也不替代真实音频长稳验收。
 
 本批 publicDir:false 生产构建通过；没有改动公共剧情产物。
+
+## B11：颈部动画完成兜底使用剧情时钟
+
+SpineCueRuntime 的 Track 3 完成监听原有 duration + 250ms setTimeout 兜底，
+暂停期间仍会解除自动播放阻塞。现改为受归属管理的 RAF 检查，由 runtime 注入
+StoryClock 毫秒时间，保留动画长度和 250ms 余量。自然完成、settle、cancel 均
+取消检查帧并恢复原监听器。模型 readiness 的 5 秒实际时间上限保持独立。
+
+Spine cue verifier 使用真实 StoryClock 与可控 RAF 验证非零起始偏移、暂停经过
+9.5 秒实际时间仍未完成、2 倍速恢复后按剩余逻辑时间完成；既有自然完成、
+兜底、跳过、切步保留姿势、cleanup 与模型超时检查通过。foundation、切步
+暂停/倍速回归及 publicDir:false 构建通过，保留两个背景路径解析提示。
+本批只统一完成兜底的时间，不证明所有 Spine 渲染动画和粒子已使用统一时钟，
+也不替代真实浏览器的实音长稳验收。

@@ -66,6 +66,7 @@ export function useStoryRuntimeCues({
     const expectedStep = getStageStep()
     return createSpineCueHandle(cue, context, {
       getManager, getGeneration: () => generation,
+      nowMilliseconds: () => scheduler.clock.now() * 1000,
       isTargetReady: target => spineStageRef.value?.isSpineReady?.(target, expectedStep) ?? true,
     })
   }

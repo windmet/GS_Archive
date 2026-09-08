@@ -22,12 +22,11 @@ export function createSpineCueHandle(cue, { step } = {}, {
   requestFrame = callback => globalThis.requestAnimationFrame(callback),
   cancelFrame = id => globalThis.cancelAnimationFrame(id),
   now = () => performance.now(),
-  scheduleTimeout = (callback, delay) => setTimeout(callback, delay),
-  cancelTimeout = id => clearTimeout(id),
+  nowMilliseconds = now,
 }) {
   let operationToken = 0
   let releasePending = null
-  let neckFallbackTimer = null
+  let neckFallbackFrame = null
   let readinessFrame = null
   let releaseReadiness = null
   function invalidateOperation() {
@@ -75,8 +74,8 @@ export function createSpineCueHandle(cue, { step } = {}, {
           const finish = () => {
             if (completed) return
             completed = true
-            if (neckFallbackTimer != null) cancelTimeout(neckFallbackTimer)
-            neckFallbackTimer = null
+            if (neckFallbackFrame != null) cancelFrame(neckFallbackFrame)
+            neckFallbackFrame = null
             releasePending = null
             if (track.listener === listener) track.listener = previousListener
             resolve()
@@ -86,7 +85,14 @@ export function createSpineCueHandle(cue, { step } = {}, {
           // explicit neck.stop cue owns clearing it.
           track.listener = listener
           const durationMs = Math.max(0, Number(track.animationEnd || 0) - Number(track.animationStart || 0)) * 1000
-          neckFallbackTimer = scheduleTimeout(finish, durationMs + 250)
+          const deadline = nowMilliseconds() + durationMs + 250
+          const checkCompletion = () => {
+            neckFallbackFrame = null
+            if (completed) return
+            if (nowMilliseconds() >= deadline) finish()
+            else neckFallbackFrame = requestFrame(checkCompletion)
+          }
+          neckFallbackFrame = requestFrame(checkCompletion)
         })
       }
     } else if (cue.action === 'spine.neck.stop') {

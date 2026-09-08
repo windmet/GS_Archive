@@ -5,6 +5,7 @@ import { createPerformanceHandle } from '../src/core/story-runtime/PerformanceRe
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { normalizeScenario } from '../src/core/story-runtime/ScenarioNormalizer.js'
+import { StoryClock } from '../src/core/story-runtime/StoryClock.js'
 
 const saved = Object.fromEntries(['window', 'requestAnimationFrame', 'cancelAnimationFrame'].map(key => [key, globalThis[key]]))
 let sequence = 0
@@ -160,8 +161,7 @@ print(json.dumps(result))
   await flush()
   assert.equal(frames.size, 0)
 
-  // Exercise renderer arguments and owned timers without wall-clock sleeps.
-  const timers = new Map()
+  // Exercise renderer arguments and owned completion frames without wall-clock sleeps.
   const track = { animationStart: 0, animationEnd: 2, trackTime: 0, listener: null }
   const direct = create([])
   direct.manager.spineInstances.fixture.spine = { state: { getCurrent: () => track } }
@@ -169,8 +169,6 @@ print(json.dumps(result))
   const dependencies = {
     getManager: () => direct.manager, getGeneration: () => 1,
     motionSettingFor: () => 'motion-fixture', now: () => now,
-    scheduleTimeout: (callback, delay) => { timers.set(++sequence, { callback, delay }); return sequence },
-    cancelTimeout: id => timers.delete(id),
   }
   for (const action of ['spine.body.play', 'spine.visual.tint', 'spine.neck.stop']) {
     const step = makeStep(1, { action })
@@ -191,24 +189,48 @@ print(json.dumps(result))
     const step = makeStep(1, { action: 'spine.neck.play', transient: true })
     const handle = createSpineCueHandle(step.cues[0], { step }, dependencies)
     const start = handle.start()
-    assert.equal(timers.size, 1)
-    assert.equal([...timers.values()][0].delay, 2250)
+    assert.equal(frames.size, 1)
     if (completion === 'natural') { track.listener.complete(); await start; await handle.complete() }
-    else if (completion === 'fallback') { [...timers.values()][0].callback(); await start; await handle.complete() }
+    else if (completion === 'fallback') { now += 2250; await frame(); await start; await handle.complete() }
     else if (completion === 'skip') { await handle.settle('skip'); await start; assert.equal(track.trackTime, 2) }
     else { await handle.cancel(completion); await start }
-    assert.equal(timers.size, 0, `${completion} releases the neck fallback timer`)
+    assert.equal(frames.size, 0, `${completion} releases the neck fallback frame`)
     assert.equal(track.listener, null, `${completion} releases the owned completion listener`)
     if (completion === 'step-change') assert.equal(direct.calls.some(call => call[0] === 'neck-stop'), false, 'step change preserves the authored pose')
     if (completion === 'cleanup') assert.equal(direct.calls.at(-1)[0], 'neck-stop')
     direct.calls.length = 0
   }
 
+  // Missing renderer completion must respect paused and accelerated story time.
+  {
+    let wall = 0, completed = false
+    const clock = new StoryClock({ nowMilliseconds: () => wall })
+    clock.start({ offset: 12 })
+    const step = makeStep(1, { action: 'spine.neck.play', transient: true })
+    const handle = createSpineCueHandle(step.cues[0], { step }, {
+      ...dependencies, nowMilliseconds: () => clock.now() * 1000,
+    })
+    const pending = handle.start().then(() => { completed = true })
+    wall = 500; await frame()
+    clock.pause(); wall = 10000; await frame()
+    assert.equal(completed, false, 'wall time during pause cannot release neck completion')
+    assert.equal(frames.size, 1)
+    clock.setRate(2); clock.resume()
+    wall += 874; await frame()
+    assert.equal(completed, false, 'fallback must retain the remaining logical duration')
+    wall += 1; await frame(); await pending
+    assert.equal(completed, true)
+    assert.equal(track.listener, null)
+    assert.equal(frames.size, 0)
+    await handle.complete()
+  }
+
+  direct.calls.length = 0
   direct.manager.spineInstances = {}
   const timeoutStep = makeStep(1)
   const timeoutHandle = createSpineCueHandle(timeoutStep.cues[0], { step: timeoutStep }, dependencies)
   const waiting = timeoutHandle.start()
-  now = 5001
+  now += 5001
   await frame()
   await waiting
   await timeoutHandle.complete()
@@ -250,7 +272,7 @@ print(json.dumps(result))
   await cancelledBeforeStart.start()
   await cancellation
   assert.equal(starts, 0, 'cancellation must take effect before its Promise continuation')
-  console.log('Story Spine cue integration: model readiness, delayed stateful skip, navigation invalidation, restore suppression and cleanup verified.')
+  console.log('Story Spine cue integration: model readiness, delayed stateful skip, navigation invalidation, restore suppression, logical neck fallback and cleanup verified.')
 } finally {
   for (const runtime of runtimes) runtime.cleanup()
   await flush()
