@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from archive_paths import add_sources_config_argument, load_archive_sources
-from extract_raw_story_candidate import extract_text_assets
+from sidem_raw import extract_text_assets
 
 
 SHORT_VOICE = re.compile(r"^(?P<letter>[a-z])\d+$")

@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from archive_paths import add_sources_config_argument, load_archive_sources
-from extract_raw_story_candidate import (
+from sidem_raw import (
     LETTERED_PART,
     extract_text_asset_records,
     group_scenario_assets,

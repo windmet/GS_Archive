@@ -121,6 +121,9 @@ jobs:
       - name: Verify candidate resource source configuration
         run: npm run verify:scenario-source-config
 
+      - name: Verify RAW evidence boundaries
+        run: npm run verify:raw-evidence-boundaries
+
       - name: Verify release soak recorder
         run: npm run verify:release-soak
 

@@ -73,6 +73,28 @@ archive_root/sources/legacy_curated。这与 JS serving 的口型/音频根规�
 真实音频。archive-sources、资源接口、冻结输出和 candidate 回归全部通过。
 当前本地配置 legacy_root 与迁移前机器默认位置一致；没有重编译 public。
 
-未完成边界：旧默认接口仍使用类缓存和兼容盘符；authoritative_scenario、RAW 提取、
+## G4：RAW transport 与身份规则
+
+`data_pipeline/sidem_raw` 分离四种职责：unity_assets 读取 TextAsset 及原始字节、
+container path/path_id；identity 仅从记录恢复语义分组；voice_links 仅依据
+传入的 per-part cue 证据关联语音；audio_probe 封装 vgmstream 子进程。
+UnityPy 只在实际打开 bundle 时导入，身份回归无需 Unity 环境或候选输出目录。
+逻辑 container 路径用 PurePosixPath；Unity 读取端先把反斜杠规范化为斜杠。
+
+两个 RAW 审计入口直接依赖 sidem_raw，不再导入候选 CLI。旧
+extract_raw_story_candidate 模块仍重新导出原辅助函数，CLI 参数与写出逻辑
+保留。分组不修改输入记录；voice relink 的原有就地更新语义保留，歧义及
+缺失语音只统计、不猜测替换。
+
+`verify:raw-evidence-boundaries` 包括原身份回归，以及不加载 UnityPy 的导入、
+注入读取器的 transport、BOM/坏 JSON/坏字节、排序、重复语义 ID 和 per-part
+语音歧义测试。候选/覆盖审计/语音审计三条 CLI 的 --help 均可用。
+另与迁移前 `b46e3c7` 的旧实现逐值对照真实 bundle
+`RAW/asset/scenario_1_3_10001_01.unity3d`：SHA-256
+`45cdbee9a3196b2abb4f5c9f2125dc37a1e98e77a22f4f2a8c6bd883fe077e3e`，
+11 个记录、一个语义组、无排除项，原始 bytes、解析结果与 provenance 完全一致。
+此为单 bundle 读验，不是全库重新审计或候选发布。
+
+未完成边界：旧默认接口仍使用类缓存和兼容盘符；authoritative_scenario、RAW 候选写出、
 masterdata 和发布脚本仍在包外，G 整体未完成。此批按职责移动既有实现，
 没有引入新 IR/schema 或修改 RAW 语义。
