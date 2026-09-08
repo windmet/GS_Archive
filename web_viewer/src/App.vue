@@ -949,7 +949,7 @@ const currentStoryRelated = computed(() => {
 const currentEventStory = computed(() => storyCatalog.value.find(entry => entry.file === currentEvent.value?.file) || null)
 
 const currentEventEpisodes = computed(() => {
-  return buildEventStoryEpisodes(currentEvent.value, currentEventStory.value, storyMasterData.value)
+  return buildEventStoryEpisodes(currentEvent.value, currentEventStory.value, storyCatalogData.value)
 })
 
 watch(continuousPlayback, enabled => {

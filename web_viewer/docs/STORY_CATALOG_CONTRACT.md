@@ -127,6 +127,29 @@ story-catalog、story-collections、episode-queue、extra/birthday 域入口和 
 控制条，点击返回恢复同一集合。本次使用 noAudio=1；不替代实音、窄屏或长稳验收。
 
 新增结构随目录一起生成和交付，不增加 HTTP 请求。相对 Git 中 C2 的 LF 产物，
-本轮原始 JSON 从 2,177,114 增至 2,426,176 bytes，本地 gzip 从 153,425 增至
-164,764 bytes。C2 上节记录的是当时工作树字节，受换行影响，不能直接作本轮差值。
+本轮原始 JSON 从 2,177,114 增至 2,334,120 bytes，本地 gzip 从 153,425 增至
+163,284 bytes（C4 复核时统一按 Git LF 更正；原记录误将 CRLF 工作树作为后一项）。
+C2 上节记录的是当时工作树字节，受换行影响，不能直接作本轮差值。
 未运行 RAW 全量提取、剧情编译或发布。
+
+## C4：活动分段关系
+
+新增 `eventEpisodeStructure`，按活动组 ID 分组存放已排序的命名 episodes。
+组归属、数字 ID 稳定排序、资源 ID fallback、分段后缀解析由 Python 负责；
+与 C3 复用 `named_episode`，避免重复解释同类来源字段。事件消费者只选择组，
+保留原默认序章/章节标签、缺省 ID、presentation 匹配和播放边界算法。
+App 的活动分段不再读 storyMasterData；仍有主线域身份、extra 和 birthday
+三条旧索引消费者，旧资源暂不能移除。新产物字段必须与消费者一起交付。
+
+冻结 `1b26d77` 的旧活动消费者，对全部 36 个活动、396 个分段逐字段比较；
+有、无 presentation 均通过。合成输入验证乱序、零 ID、字段 5 fallback、大写
+后缀、缺组、本地文件和共享文件边界。契约拒绝缺字段、重复组和非法资源字段，
+误传 raw master 明确报错。story-catalog、event-story、story-collections、
+archive-data 与源代码构建通过（2471 modules，原有两个背景路径提示保留）。
+
+浏览器 1280×720、noAudio=1：活动 410001 展示 11 个分段；点击第六个入口
+进入 `episodes/1_3_10001_01_f.json`，start_step=1/end_step=21。可见正文推进，
+截图显示角色、背景及控制条，返回后恢复同一活动。此回归不代表实音长稳完成。
+
+统一 LF 后，JSON 从 2,334,120 增至 2,397,621 bytes，本地 gzip 从 163,284
+增至 166,545 bytes。不新增请求，不重编译剧情，不修改 publication ledger。

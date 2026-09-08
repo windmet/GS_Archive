@@ -9,6 +9,8 @@ import { buildScenarioMetaByFile, missingExtraFileEntries } from '../src/data/st
 import { buildStoryCollections as legacyCollections } from '../fixtures/story-catalog/legacy-collections-v0.mjs'
 import { buildStoryCollections } from '../src/data/storyCollections.js'
 import { buildExtraStoryDomainIdentity } from '../src/data/storyDomainIdentityIndex.js'
+import { buildEventStoryEpisodes } from '../src/data/eventStoryEpisodes.js'
+import { buildEventStoryEpisodes as legacyEventEpisodes } from '../fixtures/story-catalog/legacy-event-episodes-v0.mjs'
 
 function verifyCollections(master, artifact, catalog) {
   const options = { extraDomain: buildExtraStoryDomainIdentity(master) }
@@ -66,6 +68,9 @@ for (const mutate of [
   value => { delete value.collectionStructure },
   value => { value.collectionStructure[0].chapters[0].episodes[0].part = 'bad-part' },
   value => { value.collectionStructure[0].chapters[0].releaseAt = 'bad-date' },
+  value => { delete value.eventEpisodeStructure },
+  value => { value.eventEpisodeStructure.push(value.eventEpisodeStructure[0]) },
+  value => { value.eventEpisodeStructure[0].episodes[0].resourceId = null },
 ]) {
   const bad = structuredClone(generated); mutate(bad)
   assert.throws(() => validateStoryCatalog(bad))
@@ -85,3 +90,28 @@ assert.ok(edgeActual.some(entry => entry.id === 'missing:main:missing'))
 console.log('Story catalog edge cases: duplicates, cross-domain aliases, missing parents/files, late summaries, numeric titles and resource-like dates passed')
 console.log(`File metadata: ${generated.fileMetadata.entries.length} files and ${generated.fileMetadata.missingExtra.length} missing-extra rows match the legacy consumer`)
 console.log(`Collection structure: ${generated.collectionStructure.length} main/unit collections match legacy with and without presentation`)
+
+const eventFixture = { event_group_id: '8', event_id: 'fixture-event' }
+const eventStory = {
+  file: 'shared-event.json', playableStartIndex: 3,
+  episodes: [
+    { episode_part: 'B', start_step_index: 0, end_step_index: 5, step_count: 6, voice_count: 2 },
+    { episode_part: 'a', episode_file: 'episodes/event_a.json', local_playable_start_index: 2, step_count: 9 },
+  ],
+}
+for (const story of [eventStory, { ...eventStory, episodes: [] }]) {
+  assert.deepEqual(buildEventStoryEpisodes(eventFixture, story, edge), legacyEventEpisodes(eventFixture, story, fixture))
+}
+const fixtureEpisodes = buildEventStoryEpisodes(eventFixture, eventStory, edge)
+assert.equal(fixtureEpisodes[0].id, 'fixture-event-0')
+assert.equal(fixtureEpisodes[0].label, 'プロローグ')
+assert.equal(fixtureEpisodes[0].startStep, 4)
+assert.equal(fixtureEpisodes[0].endStep, 6)
+assert.equal(fixtureEpisodes[1].file, 'episodes/event_a.json')
+assert.equal(fixtureEpisodes[1].startStep, 3)
+assert.equal(fixtureEpisodes[1].endStep, 9)
+assert.equal(fixtureEpisodes[2].endStep, 0)
+assert.deepEqual(buildEventStoryEpisodes({ event_group_id: 'absent' }, eventStory, edge), [])
+assert.deepEqual(buildEventStoryEpisodes(null, eventStory, null), [])
+assert.throws(() => buildEventStoryEpisodes(eventFixture, eventStory, fixture), /named catalog structure/)
+console.log('Event projection: local/shared boundaries, absent boundary/group, default labels and IDs preserve legacy behavior')
