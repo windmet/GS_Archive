@@ -332,6 +332,28 @@ curated 默认路径仍指向 data_pipeline/curated，而非迁移后的包目�
 尚未完成：pipeline.run 仍集中完整/专项任务的数据准备与选择，需要继续形成
 可独立调用的生成任务；没有宣称全量真实输入 CLI rebuild 或 public 发布验收。
 
+## G17：独立生成任务与按需资源输入
+
+`generation_jobs.py` 提供八个专项函数与 `generate_full`，接收 GenerationInputs，
+返回文件名→数据的输出集合。它们不接收输出目录、不调用 writer；pipeline 仅
+负责读 decoded 输入、按既有优先级选任务、写结果和打印兼容统计。
+`generation_inputs.py` 固定本次任务的输入路径，compiled stems/摘要首次使用时
+读取并在实例内复用，没有跨任务缓存。
+
+歌曲、三种影像和生日语义任务不需要编译资源，现已跳过此前无条件的全目录
+扫描；即使给出不可访问/损坏的无关编译目录，也不应影响这些独立任务。
+需要资源的任务仍保留既有读取和错误语义。完整任务继续显式拆分卡片双输出。
+
+`verify:masterdata-generation-jobs` 覆盖九个任务无写出、五种独立任务不扫描、
+缓存一次读取和跨实例隔离。加 `--decoded-masterdata
+.analysis/masterdata/client_master_data.xor_DefaultPassPhrase.pb` 对照 `5fffae3`，八个
+实际专项任务完整输出一致，冻结 generation-jobs-baseline.json；旧 JSON 写出
+被截获，decoded 临时文件只落在临时目录，未运行全量真实生成/发布。
+13 项 masterdata source 回归、20 组 CLI 输出及两个真实启动入口继续通过。
+
+G16 所记任务选择与生成耦合已拆开；完整任务仍有较多数据准备步骤，尚未据此
+宣称整个 G 结束，authoritative/发布层和 compiler 内部语义边界仍需继续处理。
+
 未完成边界：旧默认接口仍使用类缓存和兼容盘符；authoritative_scenario、RAW 候选写出、
 masterdata 已入包，authoritative/发布脚本仍在包外，G 整体未完成。此批按职责移动既有实现，
 没有引入新 IR/schema 或修改 RAW 语义。

@@ -84,8 +84,8 @@ def verify():
     assert rows[0]['_source']['offset'] == 9 and rows[1]['source_url'] == 'source'
     assert classify_card_operational_voices({}, 'card', None, set(), curated) == []
     # The actual writer must bind both returned outputs, never rely on compatibility mutation.
-    tree = ast.parse((ROOT.parent / 'data_pipeline/sidem_masterdata/pipeline.py').read_text(encoding='utf-8'))
-    main = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == 'run')
+    tree = ast.parse((ROOT.parent / 'data_pipeline/sidem_masterdata/generation_jobs.py').read_text(encoding='utf-8'))
+    main = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == 'generate_full')
     calls = [node for node in ast.walk(main) if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)]
     assert not any(node.func.id == 'build_card_detail_index' for node in calls)
     assert any(isinstance(node, ast.Assign) and isinstance(node.value, ast.Call)

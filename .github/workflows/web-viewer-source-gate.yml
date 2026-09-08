@@ -160,6 +160,9 @@ jobs:
       - name: Verify masterdata package entrypoint
         run: npm run verify:masterdata-entrypoint
 
+      - name: Verify independent masterdata jobs
+        run: npm run verify:masterdata-generation-jobs
+
       - name: Verify release soak recorder
         run: npm run verify:release-soak
 
