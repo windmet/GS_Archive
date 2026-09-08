@@ -93,6 +93,12 @@ npm run verify:story-audio
 
 ## 3. 工程分层
 
+2026-09-08 全仓结构核对与重构批次见
+[`ARCHITECTURE_REFACTOR_20260908.md`](ARCHITECTURE_REFACTOR_20260908.md)。
+Node 端 `scripts/lib/archive-assets.mjs` 统一 Vite/standalone 的外部资源路径与
+别名策略；浏览器 `src/utils/AssetResolver.js` 只负责 URL。验证入口是
+`npm run verify:archive-assets`。
+
 ### `src/components/archive/`
 
 门户页面和详情组件。包括角色、组合、卡牌、卡池、活动、剧情、移动端档案、

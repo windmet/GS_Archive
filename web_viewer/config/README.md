@@ -14,6 +14,14 @@ Resolution precedence is:
 Copy the example only when a new machine does not already have a local file.
 Do not commit the local file.
 
+Vite and `node server.js` both use `scripts/lib/archive-assets.mjs` for external
+audio, lipsync and card-art roots. `SIDEM_AUDIO_ROOT`, `SIDEM_LEGACY_AUDIO_ROOT`,
+`SIDEM_LIPSYNC_ROOT` and `SIDEM_CARD_ART_ROOT` override the corresponding path
+derived from `legacy_root`. Without a configured legacy root, the source
+contract uses `sources/legacy_curated` under the archive root; the standalone
+server no longer assumes an old machine's drive path. Verify both HTTP adapters
+with `npm run verify:archive-assets` (temporary fixtures, no mounted media needed).
+
 Masterdata has two deliberately separate inputs:
 
 - `masterdata_source_file`: XOR-state `client_master_data`;
