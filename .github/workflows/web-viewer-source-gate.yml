@@ -133,6 +133,9 @@ jobs:
       - name: Verify card filtering boundary
         run: npm run verify:card-filters
 
+      - name: Verify gasha catalog boundary
+        run: npm run verify:gasha-catalog
+
       - name: Verify episode queue ownership and range restoration
         run: npm run verify:episode-queue
 

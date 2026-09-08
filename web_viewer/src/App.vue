@@ -377,6 +377,7 @@
 </template>
 
 <script setup>
+import { buildGashaCatalog, buildGashaCategoryOptions, filterGashaCatalog, resolveGashaRelatedCards } from './data/gashaCatalog.js'
 import { filterArchiveCards } from './data/cardFilters.js'
 import { useEpisodeQueue } from './core/useEpisodeQueue.js'
 import { buildCardVoicePreviewScenario, findCardVoiceCue } from './data/cardVoicePreview.js'
@@ -1131,55 +1132,16 @@ const currentCard = computed(() => mergeCardDetail(currentCardBase.value, cardDe
 const currentCardAssetStatus = computed(() => archiveManifestData.value?.card_assets_by_id?.[currentCardId.value] || null)
 const currentCardEventRelation = computed(() => archiveManifestData.value?.event_card_relations_by_card?.[currentCardId.value] || null)
 const currentCardGashaRelation = computed(() => gashaIndexData.value?.relations_by_card?.[currentCardId.value] || null)
-const GASHA_CATEGORY_LABELS = {
-  standard_pickup: '通常',
-  growing_fes: 'GROWING FES',
-  stage_step_up: 'STAGE',
-  full_roster_series: '全员系列',
-}
-function resolveGashaRelatedCards(gasha) {
-  if (!gasha || !gasha.related_pickup_count) return gasha
-  const sourceCode = gasha.related_pickup_source === 'reprint'
-    ? gasha.reprint_of
-    : gasha.primary_code
-  const sourceCards = gashaIndexData.value?.by_code?.[sourceCode]?.derived_pickup_cards || []
-  const relatedIds = new Set(gasha.related_pickup_card_ids || [])
-  return {
-    ...gasha,
-    related_pickup_cards: sourceCards.filter(card => relatedIds.has(card.card_resource_id)),
-  }
-}
-const gashaCatalog = computed(() => [...(gashaIndexData.value?.gashas || [])]
-  .filter(gasha => gasha.phase === 'primary')
-  .map(resolveGashaRelatedCards)
-  .reverse())
-const gashaCategoryOptions = computed(() => {
-  const counts = gashaIndexData.value?.meta?.category_counts || {}
-  return [
-    { value: 'all', label: '全部', count: gashaCatalog.value.length },
-    ...Object.entries(GASHA_CATEGORY_LABELS).map(([value, label]) => ({
-      value,
-      label,
-      count: counts[value] || 0,
-    })),
-  ]
-})
-const filteredGashas = computed(() => {
-  const query = filterQuery.value.trim().toLowerCase()
-  return gashaCatalog.value.filter(gasha => {
-    if (currentGashaCategory.value !== 'all' && gasha.category !== currentGashaCategory.value) return false
-    if (!query) return true
-    return String(gasha.display_name || '').toLowerCase().includes(query) ||
-      String(gasha.code || '').toLowerCase().includes(query) ||
-      [...(gasha.derived_pickup_cards || []), ...(gasha.related_pickup_cards || [])].some(card =>
-        String(card.card_title || '').toLowerCase().includes(query) ||
-        String(card.card_resource_id || '').toLowerCase().includes(query) ||
-        idolEntitySearchText(card.character_id).includes(query)
-      )
-  })
-})
+const gashaCatalog = computed(() => buildGashaCatalog(gashaIndexData.value))
+const gashaCategoryOptions = computed(() => buildGashaCategoryOptions(gashaIndexData.value, gashaCatalog.value))
+const filteredGashas = computed(() => filterGashaCatalog(gashaCatalog.value, {
+  query: filterQuery.value,
+  category: currentGashaCategory.value,
+  idolSearchText: idolEntitySearchText,
+}))
 const currentGasha = computed(() => resolveGashaRelatedCards(
   gashaIndexData.value?.by_id?.[currentGashaId.value] || null,
+  gashaIndexData.value,
 ))
 const eventMap = computed(() => new Map((archiveManifestData.value?.unit_event_relations || [])
   .map(event => [String(event.event_id), event])))
