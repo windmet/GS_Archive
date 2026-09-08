@@ -117,7 +117,7 @@ B 优先服务反复反查 RAW 的维护痛点；不急于引入新 schema v3 �
 产物重编译。D 是参考文档提出的功能方向，尚未实现，不应和行为保持的重构混为一谈。
 每批可以独立提交/回滚；不得通过重写历史破坏已发布记录的 ancestry。
 
-## 6. 本批验证记录
+## 6. 第一批共享资源解析验证记录（历史）
 
 修改前：archive-sources、archive-baseline:source-only、routes 通过。
 修改后：archive-assets、archive-sources、archive-baseline:source-only、routes、

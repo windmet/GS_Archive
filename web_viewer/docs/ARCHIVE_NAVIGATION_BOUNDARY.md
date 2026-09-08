@@ -126,3 +126,27 @@ publicDir:false 生产构建通过，保留原有两个背景路径构建警告�
 浏览器目录显示 57 条，GROWING FES 筛选显示 4 / 57；进入 13000911 详情，
 显示三张 Derived 关联卡片，返回保留 growing_fes 分类。该项为桌面功能冒烟，
 未覆盖窄屏矩阵；复刻分支由可控样例与全详情对照验证。
+
+## F1–F6 综合回归：代码基线 9a0ed64
+
+卡片与卡池提取完成后，在干净工作区重新执行以下关联门禁，全部 exit 0：
+
+| 命令 | 此次证据 |
+| --- | --- |
+| `npm run verify:archive-data` | 27 个当前产物契约；请求去重、刷新/清理竞态、重试、部分结果与延迟加载错误 |
+| `npm run verify:archive-navigation-state` | 39 个导航 ref，1,792 组视图/返回/父级投影及 URL 用例 |
+| `npm run verify:archive-async-navigation` | 剧情加载、预加载、历史恢复、延迟 feature、语音预览、失败及销毁竞态 |
+| `npm run verify:archive-baseline:source-only` | 10,329 个 compiled JSON 与 183 个已跟踪 PNG 的源码基线 |
+| `npm run verify:routes` | 故事入口与详情路由契约 |
+| `npm run verify:card-semantic-dictionaries` | 836 张卡片，160 个技能与 53 个中心技能 |
+| `npm run verify:song-domain-landing` | 60 部作品/61 个歌曲实体、47 个正式组合映射、13 个明确演唱者歌曲与双向链接 |
+| `npm run verify:story-domain-identity` | 主线 3/22/204、生日 51 集合/181 条目及额外剧情 10 作品/47 条目的域身份 |
+
+这些检查补足独立 selector 对照之外的跨页面契约证据。该批没有发现需要修复
+的集成回归，不修改运行时代码。它不是所有 CI 门禁或浏览器矩阵的通过记录。
+
+F 仍未完成：App 中偶像资料/统计/歌曲及活动关系派生仍直接组合索引；被动过滤
+watcher 与启动加载仍待审计；平板/390px、快速历史连续操作及真实慢网络完整
+矩阵尚未验收。下一项架构工作从偶像页面的数据派生边界继续，不重复已通过
+的卡片/卡池等价迁移。E 的逐 channel 状态计划、G 的 publish/compiler 边界与
+真实音频长稳也不能由此综合回归推定完成。
