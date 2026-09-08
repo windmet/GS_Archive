@@ -119,6 +119,25 @@ SHA-256 在 fixtures/masterdata-wire/decoded-baseline.json；不提交 decoded �
 card skill movie、song movie 的 source-only 检查和 namespace 导入检查。
 未运行 masterdata 全量写出、public 复制或重新发布。
 
+## G6：Masterdata identity 领域
+
+`sidem_masterdata/identities.py` 负责偶像/组合、speaker、衣装、表情字典，
+`provenance.py` 负责 table/field/offset 引用。原入口重新导出函数；领域模块
+不读取文件、不导入原入口、不写产物。文件资源列表作为 set/map 显式传入。
+其余领域仍可复用 provenance，不形成依赖入口脚本的环。
+
+保留既有语义：偶像 f32 只是 unit_relation_candidate，不能据此确认组合；
+NPC 没有 code 时使用 npc:id；同模型先 table 28、后 table 27，后者覆盖显示
+字段但 _sources 保留两表记录；资源索引为空时 availability 为 null，而非 false。
+
+`verify:masterdata-identities` 覆盖上述规则、输入不变与旧导出身份；加上
+`--decoded-masterdata .analysis/masterdata/client_master_data.xor_DefaultPassPhrase.pb`
+可重验本地全数据基线。与 `6798165` 的五组完整输出逐值比较一致，冻结 hash
+在 fixtures/masterdata-wire/identity-baseline.json：49 偶像/16 组合、91 speaker、
+690 衣装（表 27 的 549 行与表 28 的 714 行合并）及 5 表情。衣装分别使用空
+资源索引与固定单模型索引，不能把该测试当作真实全资源存在性验收。
+wire 回归与旧 CLI help 检查通过；不执行全量写出或 public 复制。
+
 未完成边界：旧默认接口仍使用类缓存和兼容盘符；authoritative_scenario、RAW 候选写出、
 masterdata 和发布脚本仍在包外，G 整体未完成。此批按职责移动既有实现，
 没有引入新 IR/schema 或修改 RAW 语义。

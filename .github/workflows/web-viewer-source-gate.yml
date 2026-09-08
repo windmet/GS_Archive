@@ -127,6 +127,9 @@ jobs:
       - name: Verify masterdata wire boundary
         run: npm run verify:masterdata-wire
 
+      - name: Verify masterdata identity domain
+        run: npm run verify:masterdata-identities
+
       - name: Verify release soak recorder
         run: npm run verify:release-soak
 
