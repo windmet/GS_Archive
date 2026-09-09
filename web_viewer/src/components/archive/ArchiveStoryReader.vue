@@ -18,6 +18,12 @@
       <p v-else-if="state.status === 'empty'" role="status">这个分段没有可显示的正文。</p>
       <div v-else-if="state.status === 'unsupported'" class="reader-feedback" role="status"><h2>这个分段暂不支持完整阅读</h2><p>部分分支或贴图消息无法可靠还原，正文尚未开放。</p><details><summary>分支与来源说明</summary><ul><li v-for="(control, i) in state.document.controls" :key="i">选项：<span v-for="(option, j) in choiceRows(control)" :key="j">{{ option.source_text }}{{ j < choiceRows(control).length - 1 ? ' ／ ' : '' }}</span></li></ul><p>选项目标已保留，分支结束位置未确认。</p></details></div>
       <template v-else-if="state.status === 'ready'">
+        <div v-if="bookmark" class="reader-bookmark">
+          <p>{{ bookmarkValid ? '此分段有本机保存的阅读位置。' : '正文已更新，或原位置已不存在，请重新保存阅读位置。' }}</p>
+          <button :disabled="!bookmarkValid" @click="resumeBookmark">继续上次位置</button>
+          <button @click="removeBookmark">清除此分段记录</button>
+        </div>
+        <p v-if="bookmarkNotice" role="status">{{ bookmarkNotice }}</p>
         <form class="reader-search" role="search" aria-label="篇内查找" @submit.prevent="moveMatch(1)">
           <label>篇内查找<input v-model="searchQuery" type="search" placeholder="查找当前显示的正文或说话人" /></label>
           <div class="reader-search-actions">
@@ -38,6 +44,7 @@
             <p class="reader-primary" :lang="item.view.primary.locale">{{ item.view.primary.text }}</p>
             <p v-if="item.view.secondary" class="reader-secondary" :lang="item.view.secondary.locale">{{ item.view.secondary.text }}</p>
             <button v-if="!['title', 'synopsis'].includes(item.row.kind)" class="reader-play" :disabled="busy" @click="emit('play', item.row.anchor.row_id)">{{ busy && anchor === item.row.anchor.row_id ? '正在准备演出…' : '从这里演出' }}</button>
+            <button class="reader-save" @click="saveBookmark(item.row.anchor.row_id)">{{ bookmarkValid && bookmark.rowId === item.row.anchor.row_id ? '已记住此处' : '记住此处' }}</button>
             <span v-if="mode !== 'original' && item.view.translation.stale" class="reader-kind">译文待更新</span>
           </section>
         </article>
@@ -47,15 +54,43 @@
 </template>
 
 <script setup>
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { ArrowLeft } from '@lucide/vue'
 import { createStoryLocalization } from '../../localization/story/StoryLocalizationContext.js'
 import { readingAvatarEntity, readingPresentationSpeaker } from '../../../shared/reading/ReadingDocument.js'
 import { getCharaIconUrl } from '../../utils/AssetResolver.js'
+import { ReadingProgressStore, isReadingProgressCurrent } from '../../data/ReadingProgressStore.js'
 
 const props = defineProps({ state: { type: Object, required: true }, documentId: String, mode: String, anchor: String, notice: String, busy: Boolean })
 const emit = defineEmits(['select', 'mode', 'back', 'retry', 'play', 'refresh', 'locate'])
 const searchQuery = ref('')
+const progressStore = new ReadingProgressStore()
+const bookmark = ref(null)
+const bookmarkNotice = ref('')
+let mounted = false
+const documentVersion = computed(() => props.state.entries.find(e => e.document_id === props.documentId)?.sha256)
+const bookmarkValid = computed(() => isReadingProgressCurrent(bookmark.value, props.documentId, documentVersion.value, props.state.document?.rows))
+function loadBookmark() {
+  bookmarkNotice.value = ''
+  bookmark.value = mounted ? progressStore.read(props.documentId).entry : null
+}
+onMounted(() => { mounted = true; loadBookmark() })
+watch(() => props.documentId, loadBookmark)
+function saveBookmark(rowId) {
+  if (props.state.status !== 'ready' || !props.state.document.rows.some(row => row.anchor.row_id === rowId)) return
+  const result = progressStore.save({ documentId: props.documentId, version: documentVersion.value, rowId, mode: props.mode })
+  if (result.ok) bookmark.value = result.entry
+  bookmarkNotice.value = result.ok ? '已在本机记住此处。' : '无法保存到本机；仍可使用当前阅读链接。'
+}
+function resumeBookmark() {
+  if (!bookmarkValid.value) return
+  emit('mode', bookmark.value.mode)
+  emit('locate', bookmark.value.rowId)
+}
+function removeBookmark() {
+  if (progressStore.remove(props.documentId).ok) { bookmark.value = null; bookmarkNotice.value = '已清除此分段的阅读记录。' }
+  else bookmarkNotice.value = '无法清除本机记录，请稍后重试。'
+}
 const heading = ref(null)
 const readerRoot = ref(null)
 const playbackNotice = ref(null)
@@ -111,6 +146,10 @@ watch(() => [props.state.status, props.documentId, props.anchor, props.notice], 
 </script>
 
 <style scoped>
+.reader-bookmark { padding: 10px 0; font-size: 14px; }
+.reader-bookmark p { margin: 0; }
+.reader-bookmark button:disabled { opacity: .45; cursor: default; }
+.reader-save { margin-left: 10px; font-size: 13px; }
 .reader-search { position: sticky; top: 0; z-index: 2; padding: 10px 0; background: #fff; border-bottom: 1px solid #cbd8df; }
 .reader-search label { display: flex; align-items: center; gap: 12px; font-size: 14px; white-space: nowrap; }
 .reader-search input { min-width: 0; width: 100%; min-height: 44px; padding: 8px; font: inherit; border: 1px solid #becdd5; border-radius: 6px; }
