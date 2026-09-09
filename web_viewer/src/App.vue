@@ -889,7 +889,7 @@ const currentStoryExternalResources = computed(() =>
 )
 
 const extraStoryDomain = computed(() => buildExtraStoryDomainIdentity(
-  storyMasterData.value,
+  storyCatalogData.value,
   gashaIndexData.value,
   extraStoryVisualIndexData.value,
 ))

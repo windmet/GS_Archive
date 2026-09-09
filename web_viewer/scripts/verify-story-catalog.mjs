@@ -14,9 +14,12 @@ import { buildEventStoryEpisodes as legacyEventEpisodes } from '../fixtures/stor
 import { buildMainStoryDomainIdentity as legacyMainIdentity } from '../fixtures/story-catalog/legacy-main-identity-v0.mjs'
 import { buildMainStoryDomainIdentity } from '../src/data/storyDomainIdentityIndex.js'
 import { reactive } from 'vue'
+import { buildExtraStoryDomainIdentity as legacyExtraIdentity } from '../fixtures/story-catalog/legacy-domain-identity-v0.mjs'
 
 function verifyCollections(master, artifact, catalog) {
-  const options = { extraDomain: buildExtraStoryDomainIdentity(master) }
+  const options = { extraDomain: buildExtraStoryDomainIdentity(artifact) }
+  assert.deepEqual(options.extraDomain, legacyExtraIdentity(master))
+  assert.deepEqual(buildExtraStoryDomainIdentity(reactive(artifact)), legacyExtraIdentity(master))
   assert.throws(() => buildStoryCollections(master, catalog, options), /named catalog structure/)
   assert.deepEqual(buildStoryCollections(artifact, catalog, options), legacyCollections(master, catalog, options),
     'collection order, relationships, presentation fallback, episode boundaries and counts must remain identical')
@@ -82,6 +85,9 @@ for (const mutate of [
   value => { value.mainIdentity.collections[0].isPlaceholder = true },
   value => { value.mainIdentity.collections[0].chapterIds[0] = 'unknown-chapter' },
   value => { value.mainIdentity.collections[0].chapters[0].logicalEntryIds[0] = 'unknown-entry' },
+  value => { delete value.extraIdentity },
+  value => { value.extraIdentity.groups[0].source = null },
+  value => { value.extraIdentity.logicalEntries[0].seriesId = 1 },
 ]) {
   const bad = structuredClone(generated); mutate(bad)
   assert.throws(() => validateStoryCatalog(bad))
@@ -106,6 +112,11 @@ console.log('Story catalog edge cases: duplicates, cross-domain aliases, missing
 console.log(`File metadata: ${generated.fileMetadata.entries.length} files and ${generated.fileMetadata.missingExtra.length} missing-extra rows match the legacy consumer`)
 console.log(`Collection structure: ${generated.collectionStructure.length} main/unit collections match legacy with and without presentation`)
 console.log('Main identity: full corpus and edge parity, source evidence, placeholders, reactive input and copy isolation passed')
+const extraCopy = buildExtraStoryDomainIdentity(edge)
+extraCopy.logicalEntries[0].source.table = -1
+assert.deepEqual(buildExtraStoryDomainIdentity(edge), legacyExtraIdentity(fixture))
+assert.throws(() => buildExtraStoryDomainIdentity(fixture), /named catalog/)
+console.log('Extra identity: corpus, shared files, orphan rows, sources, reactive input and copy isolation passed')
 
 const eventFixture = { event_group_id: '8', event_id: 'fixture-event' }
 const eventStory = {

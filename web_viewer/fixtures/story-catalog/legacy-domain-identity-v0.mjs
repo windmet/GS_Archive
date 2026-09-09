@@ -1,7 +1,8 @@
+// Frozen from d58d4a0; test-only domain identity oracle.
 import {
   extraStorySeriesDefinition,
   resolveExtraStoryGasha,
-} from './extraStoryTaxonomy.js'
+} from '../../src/data/extraStoryTaxonomy.js'
 
 const DOMAIN_ROWS = Object.freeze([
   ['main', data => data.main?.episodes],
@@ -223,16 +224,26 @@ export function buildBirthdayStoryDomainIdentity(storyMaster, idolUnit, speakerD
   )
 }
 
-function buildExtraDomain(catalog, gashaIndex = null, visualIndex = null) {
-  if (!catalog?.extraIdentity) throw new Error('Extra identity requires the named catalog')
-  const { groups, logicalEntries } = JSON.parse(JSON.stringify(catalog.extraIdentity))
+function buildExtraDomain(storyMaster, gashaIndex = null, visualIndex = null) {
+  const groups = sortedRows(storyMaster.extra?.groups)
   const visualsByChapter = new Map((visualIndex?.entries || [])
     .map(entry => [String(entry.chapter_id || ''), entry]))
-  const seriesIds = [...new Set(groups.map(group => group.seriesId).filter(Boolean))]
+  const logicalEntries = sortedRows(storyMaster.extra?.episodes)
+    .map(row => {
+      const entry = logicalEntry('extra', row, '4')
+      const group = groups.find(candidate => String(candidate['1']) === entry.parentId)
+      return {
+        ...entry,
+        masterGroupTitle: String(group?.['3'] || ''),
+        seriesId: String(group?.['2'] || ''),
+      }
+    })
+
+  const seriesIds = [...new Set(groups.map(group => String(group['2'] || '')).filter(Boolean))]
   const collections = seriesIds.map(seriesId => {
     const definition = extraStorySeriesDefinition(seriesId)
-    const masterGroups = groups.filter(group => group.seriesId === seriesId)
-    const masterGroupIds = masterGroups.map(group => group.masterId)
+    const masterGroups = groups.filter(group => String(group['2']) === seriesId)
+    const masterGroupIds = masterGroups.map(group => String(group['1']))
     const entries = logicalEntries.filter(entry => entry.seriesId === seriesId)
     const gasha = resolveExtraStoryGasha(gashaIndex, definition.gashaCode)
     const visual = visualsByChapter.get(seriesId) || null
@@ -255,7 +266,7 @@ function buildExtraDomain(catalog, gashaIndex = null, visualIndex = null) {
       resourceIdCount: new Set(entries.map(entry => entry.resourceId).filter(Boolean)).size,
       compiledFileCount: new Set(entries.map(entry => entry.compiledFile).filter(Boolean)).size,
       releaseAt: Math.min(...entries.map(entry => entry.releaseAt).filter(Boolean)),
-      source: masterGroups[0].source,
+      source: sourceEvidence(masterGroups[0]),
     }
   })
 
@@ -283,9 +294,9 @@ function buildExtraDomain(catalog, gashaIndex = null, visualIndex = null) {
   }
 }
 
-export function buildExtraStoryDomainIdentity(catalog, gashaIndex = null, visualIndex = null) {
-  if (!catalog) return null
-  return buildExtraDomain(catalog, gashaIndex, visualIndex)
+export function buildExtraStoryDomainIdentity(storyMaster, gashaIndex = null, visualIndex = null) {
+  if (!storyMaster) return null
+  return buildExtraDomain(storyMaster, gashaIndex, visualIndex)
 }
 
 function buildPlaybackIndex(domains) {
@@ -324,14 +335,13 @@ export function buildStoryDomainIdentityIndex({
   const domains = {
     main: buildMainStoryDomainIdentity(storyCatalog),
     birthday: buildBirthdayDomain(storyMaster, idolUnit, speakerDictionary, memberships, birthdayStorySemantic),
-    extra: buildExtraDomain(storyCatalog),
+    extra: buildExtraDomain(storyMaster),
   }
   return {
     schemaVersion: 1,
     authority: {
       semanticIdentity: 'story_master_index',
       mainIdentity: 'story_catalog.mainIdentity',
-      extraIdentity: 'story_catalog.extraIdentity',
       birthdaySemantic: 'birthday_story_semantic_index',
       idolIdentity: 'idol_unit_dictionary',
       npcIdentity: 'speaker_dictionary',

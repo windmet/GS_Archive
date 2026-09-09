@@ -25,6 +25,7 @@ assert.equal(index.schemaVersion, 1)
 assert.deepEqual(index.authority, {
   semanticIdentity: 'story_master_index',
   mainIdentity: 'story_catalog.mainIdentity',
+  extraIdentity: 'story_catalog.extraIdentity',
   birthdaySemantic: 'birthday_story_semantic_index',
   idolIdentity: 'idol_unit_dictionary',
   npcIdentity: 'speaker_dictionary',

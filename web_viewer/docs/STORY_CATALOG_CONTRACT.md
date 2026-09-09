@@ -176,3 +176,28 @@ story-collections 通过；源代码构建通过（2472 modules，两个原有�
 LF JSON 从 2,397,621 增至 2,497,495 bytes，本地 gzip 从 166,545 增至
 173,611 bytes。旧剧情索引在 App 中仍供 extra/birthday 使用，暂不移除；没有新
 网络请求、剧情重编译、RAW 全量提取或 publication 修改。
+
+## C6：额外剧情来源身份（2026-09-09）
+
+新增 `extraIdentity.groups/logicalEntries`。来源排序、组归属、系列 ID、标题、
+releaseAt、compiledFile/compiledExists 和 provenance 由 pipeline 解释；与主线
+复用 identity_rows/identity_source/logical_identity_entry，原主线全属性 parity 保持。
+浏览器保留 extraStoryTaxonomy、卡池和视觉索引组合、日期展示与共享播放文件统计，
+使用命名身份副本，不再读 extra 的数字字段。App 旧 storyMasterData 只剩 birthday
+消费者；聚合 identity authority 增加 `story_catalog.extraIdentity`。
+
+冻结 `d58d4a0` 的域身份实现，对 10 个作品、47 条剧情、44 个播放文件逐字段比较。
+有/无真实 gasha 和 visual 资料均保持一致，覆盖来源、官方/补充分类与关联资产。
+合成输入补共享文件、同系列多组、乱序、未知父组、缺失文件及两种 source 字段；
+Vue reactive 输入和副本修改隔离通过。命名契约检查字段和来源类型，误传 raw master
+会明确报错。story-catalog、extra-story-domain-landing、story-domain-identity、
+story-collections、archive-data 及源代码构建通过（2473 modules；原两个背景路径提示）。
+
+浏览器 1280×720、noAudio=1：Extra 目录展示 7 个官方作品和 3 个补充作品；
+进入 604（夜陰のルミネセンス）后，截图确认封面、1 话/1 段和关联卡池 300011；
+点击进入 announcement 1300011 的卡池详情，目标正确。返回按钮回到 gashas，
+未恢复作品：App 既有 gasha_detail 返回逻辑固定如此，C6 未改变它。这是后续导航
+工作需处理的上下文缺口，不将本次浏览器检查写成“卡池返回作品通过”。
+
+LF JSON 从 2,497,495 增至 2,531,628 bytes，本地 gzip 从 173,611 增至
+177,346 bytes。不新增请求，不重编译或发布剧情；实音长稳和完整窄屏矩阵仍未完成。

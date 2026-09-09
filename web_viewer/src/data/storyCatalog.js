@@ -1,5 +1,6 @@
 import { validateStoryFileMetadata } from './storyFileMetadata.js'
 import { validateMainIdentity } from './storyMainIdentity.js'
+import { validateExtraIdentity } from './storyExtraIdentity.js'
 import { validateStoryCollectionStructure, validateEventEpisodeStructure } from './storyCollectionStructure.js'
 
 export const STORY_DOMAIN_LABELS = {
@@ -29,6 +30,7 @@ export function validateStoryCatalog(data) {
   validateStoryCollectionStructure(data.collectionStructure)
   validateEventEpisodeStructure(data.eventEpisodeStructure)
   validateMainIdentity(data.mainIdentity)
+  validateExtraIdentity(data.extraIdentity)
   return data
 }
 

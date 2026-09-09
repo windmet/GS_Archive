@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { buildStoryCatalog } from '../src/data/archiveSelectors.js'
 import { buildStoryCollections } from '../src/data/storyCollections.js'
 import { buildExtraStoryDomainIdentity } from '../src/data/storyDomainIdentityIndex.js'
+import { buildExtraStoryDomainIdentity as legacyExtra } from '../fixtures/story-catalog/legacy-domain-identity-v0.mjs'
 import { readArchiveRoute } from '../src/core/archiveRoute.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -34,7 +35,8 @@ assert.equal(collectionRoute.storyType, 'extra')
 assert.equal(collectionRoute.storySection, '60201')
 assert.equal(collectionRoute.query, '315')
 
-const extra = buildExtraStoryDomainIdentity(master, gashaIndex, visualIndex)
+const extra = buildExtraStoryDomainIdentity(await readJson('public/data/masterdata/story_catalog.json'), gashaIndex, visualIndex)
+assert.deepEqual(extra, legacyExtra(master, gashaIndex, visualIndex), 'all extra fields including gasha and visual evidence remain unchanged')
 assert.equal(extra.meta.collectionCount, 10)
 assert.equal(extra.meta.officialCollectionCount, 7)
 assert.equal(extra.meta.supplementaryCollectionCount, 3)

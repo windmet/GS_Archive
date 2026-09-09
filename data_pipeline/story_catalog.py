@@ -134,31 +134,54 @@ def build_collection_structure(data):
     return collections
 
 
+def identity_number(value):
+    return release_number(value) or 0
+
+
+def identity_source(row):
+    provenance = row.get("_source") or {}
+    return {"table": identity_number(provenance.get("table") or row.get("_top_field")),
+            "offset": identity_number(provenance.get("offset") or row.get("_offset"))}
+
+
+def identity_rows(rows):
+    def key(row):
+        resource = str(row.get("resource_id") or "")
+        # Archive resource IDs use ASCII names; equal names sort lower-case first.
+        return identity_number(row.get("1")), resource.lower(), tuple(char.isupper() for char in resource)
+    return sorted(rows, key=key)
+
+
+def logical_identity_entry(domain, row, release_field):
+    return {"id": f'{domain}:{row.get("1") or row.get("resource_id") or "missing"}', "domain": domain,
+            "masterId": str(row.get("1") or ""), "parentId": str(row.get("2") or ""),
+            "title": str(row.get("3") or ""), "releaseAt": identity_number(row.get(release_field)),
+            "resourceId": str(row.get("resource_id") or ""), "compiledFile": str(row.get("compiled_file") or ""),
+            "compiledExists": row.get("compiled_exists") is not False and bool(row.get("compiled_file")),
+            "source": identity_source(row)}
+
+
+def build_extra_identity(data):
+    extra = data.get("extra") or {}
+    groups = [{"masterId": str(row.get("1")), "seriesId": str(row.get("2") or ""),
+               "title": str(row.get("3") or ""), "source": identity_source(row)}
+              for row in identity_rows(extra.get("groups", []))]
+    entries = []
+    for row in identity_rows(extra.get("episodes", [])):
+        entry = logical_identity_entry("extra", row, "4")
+        group = next((item for item in groups if item["masterId"] == entry["parentId"]), {})
+        entry.update(masterGroupTitle=group.get("title", ""), seriesId=group.get("seriesId", ""))
+        entries.append(entry)
+    return {"groups": groups, "logicalEntries": entries}
+
+
 def build_main_identity(data):
-    def number(value):
-        return release_number(value) or 0
-
-    def source(row):
-        provenance = row.get("_source") or {}
-        return {"table": number(provenance.get("table") or row.get("_top_field")),
-                "offset": number(provenance.get("offset") or row.get("_offset"))}
-
-    def ordered(rows):
-        def key(row):
-            resource = str(row.get("resource_id") or "")
-            # Archive resource IDs use ASCII names; equal names sort lower-case first.
-            return number(row.get("1")), resource.lower(), tuple(char.isupper() for char in resource)
-        return sorted(rows, key=key)
+    number, source, ordered = identity_number, identity_source, identity_rows
 
     main = data.get("main") or {}
     groups = ordered(main.get("groups", []))
     chapters = ordered(main.get("chapters", []))
-    entries = [{"id": f'main:{row.get("1") or row.get("resource_id") or "missing"}', "domain": "main",
-                "masterId": str(row.get("1") or ""), "parentId": str(row.get("2") or ""),
-                "title": str(row.get("3") or ""), "releaseAt": number(row.get("5")),
-                "resourceId": str(row.get("resource_id") or ""), "compiledFile": str(row.get("compiled_file") or ""),
-                "compiledExists": row.get("compiled_exists") is not False and bool(row.get("compiled_file")),
-                "source": source(row)} for row in ordered(main.get("episodes", []))]
+    entries = [logical_identity_entry("main", row, "5") for row in ordered(main.get("episodes", []))]
     entry_by_id = {entry["id"]: entry for entry in entries}
     collections = []
     for group in groups:
@@ -274,7 +297,8 @@ def build_story_catalog(data):
             entry["rowCount"] += 1
     return {"schema_version": 1, "source_digest": source_digest(data), "entries": list(entries.values()),
             "fileMetadata": build_file_metadata(data), "collectionStructure": build_collection_structure(data),
-            "eventEpisodeStructure": build_event_episode_structure(data), "mainIdentity": build_main_identity(data)}
+            "eventEpisodeStructure": build_event_episode_structure(data), "mainIdentity": build_main_identity(data),
+            "extraIdentity": build_extra_identity(data)}
 
 
 def main():
