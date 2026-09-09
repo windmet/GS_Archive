@@ -454,3 +454,17 @@ compile_directory 原先逐文件打印错误后返回 None，CLI 在部分失�
 所有命令终态 exit 0。此为本地针对重构影响范围的跨层回归，并非完整 CI 任务，
 更非 GitHub Actions 已运行。shape 扫描、临时发布测试不证明真实媒体呈现或正式
 发布。没有扩大 strict-v2 promotion，P2-B 实音长稳仍未完成。
+
+## G23：命令词表与状态机分派分离
+
+sidem_scenario/commands.py 提供只读 COMMAND_HANDLERS 和 SELECTION_COMMANDS，
+只记录 RAW 名称到方法名，不依赖编译状态。compiler._process 保留来源位置记录、
+待完成选择刷新与调用顺序，按需要绑定当前实例的方法，不再每条命令创建完整
+bound-method 字典。重复 image_icon 的早期 None 项被有效后项 _image_icon 取代，
+image_Icon 别名和三个 slide 别名保持原行为；未知和显式 no-op 仍兼容跳过。
+
+冻结 cbc50fc 的 73 个有效映射作独立基线。新增命令门禁逐条检查处理器存在、
+选择刷新顺序、来源位置、原参数对象传递、默认 Values、运行时覆写/禁用和
+注册表不可变，并接入 scenario-package。10 个冻结输出、旧/新 CLI、批量错误、
+文本 evidence 和 source-only 时序回归通过。没有引入新的 RAW 解释、未知命令
+报错政策或重编译公共产物；剩余 handler 状态变换仍需按领域继续解耦。

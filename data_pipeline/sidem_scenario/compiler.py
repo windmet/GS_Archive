@@ -16,6 +16,7 @@ import os
 import re
 from typing import Any, Optional
 from .state import ScenarioState
+from .commands import COMMAND_HANDLERS, SELECTION_COMMANDS
 from . import text_identity
 from .file_io import ScenarioFileIO
 from .resources import ScenarioResources, LegacyCompilerResources
@@ -287,102 +288,11 @@ class ScenarioCompiler(ScenarioFileIO):
         self._current_raw_type = ctype
 
         # Flush pending selection if we're moving on to a non-select command
-        if self._pending_selection and ctype not in ("text_select", "talk_select", "phone_select"):
+        if self._pending_selection and ctype not in SELECTION_COMMANDS:
             self._flush_selection()
 
-        dispatch = {
-            # Background / effects
-            "image_bg":             self._image_bg,
-            "change_bg_effect":     self._change_bg_effect,
-            "screen_fadeout":       self._screen_fade,
-            "screen_fadein":        self._screen_fadein,
-            "screen_fadecolor":     self._screen_fadecolor,
-            "screen_slidein":       self._screen_slidein,
-            "screen_slideout":      self._screen_slideout,
-            "image_bg_dissolve":    self._image_bg_dissolve,
-            "image_bg_dof":         self._image_bg_dof,
-            "image_bg_color":       self._image_bg_color,
-            "image_bg_view_type":   self._image_bg_view_type,
-            "effect_bgstart":       self._effect_bgstart,
-            "effect_bgend":         self._effect_bgend,
-            "effect_fadein":        self._effect_fadein,
-            "effect_fadeout":       self._effect_fadeout,
-            "effect_single":        self._effect_single,
-
-            # Camera / visual filters
-            "camera_color":         self._camera_color,
-            "camera_defaultcolor":  self._camera_defaultcolor,
-            "camera_zoom":          self._camera_zoom,
-            "camera_resetzoom":     self._camera_resetzoom,
-
-            # Audio
-            "bgm":                  self._bgm,
-            "bgm_stop":             self._bgm_stop,
-            "se":                   self._se,
-            "se_stop":              self._se_stop,
-            "voice_file":           self._voice_file,
-            "voice_noLip":          self._voice_noLip,
-            "voice":                self._voice_bare,
-            "text_se_off":          self._text_se_off,
-
-            # Character (idol) management
-            "idol_model":           self._idol_model,
-            "idol_position":        self._idol_position,
-            "idol_slide":           self._idol_slide,
-            "idol_slidein":         self._idol_slide,
-            "idol_slideout":        self._idol_slide,
-            "idol_fadein":          self._idol_fadein,
-            "idol_fadeout":         self._idol_fadeout,
-            "idol_delete":          self._idol_delete,
-            "idol_face":            self._idol_face,
-            "idol_animation":       self._idol_animation,
-            "idol_nobackanimation": self._idol_nobackanimation,
-            "idol_neckanimation":   self._idol_neckanimation,
-            "idol_neckanimation_stop": self._idol_neckanimation_stop,
-            "idol_parts_on":        self._idol_parts_on,
-            "idol_parts_off":       self._idol_parts_off,
-            "idol_color":           self._idol_color,
-            "idol_priority":        self._idol_priority,
-            "idol_zoom":            self._idol_zoom,
-            "idol_zoom_reset":      self._idol_zoom_reset,
-            "image_icon":           None,  # icon for mob chars — skip
-
-            "image_icon":           self._image_icon,
-            "image_Icon":           self._image_icon,
-
-            # Dialogue-producing
-            "text":                 self._text,
-            "talk_text":            self._talk_text,
-            "talk_start":           self._talk_start,
-            "talk_end":             None,
-            "talk_stamp":           self._talk_stamp,
-            "phone_text":           self._phone_text,
-            "phone_start":          self._phone_start,
-            "phone_end":            None,
-            "text_disable":         self._text_disable,
-
-            # Branching / choices
-            "text_select":          self._select,
-            "talk_select":          self._select,
-            "phone_select":         self._select,
-            "jump_point":           self._jump_point_cmd,
-            "jump":                 None,  # skip — flow control handled by step index
-
-            "cut_end":              self._cut_end,
-            "lounge_end":           self._cut_end,
-
-            # Meta
-            "text_synopsis":        self._text_synopsis,
-            "text_title":           self._text_title,
-            "text_time":            self._text_time,
-            "wait":                 self._wait,
-            "environmental":            self._environmental,
-            "environmental_stop":       self._environmental_stop,
-            "environmental_volume":     self._environmental_volume,
-            "environmental_ducking":    self._environmental_ducking,
-        }
-
-        handler = dispatch.get(ctype)
+        handler_name = COMMAND_HANDLERS.get(ctype)
+        handler = getattr(self, handler_name) if handler_name else None
         if handler:
             handler(vals)
         # else: silently skip unknown / no-op commands
