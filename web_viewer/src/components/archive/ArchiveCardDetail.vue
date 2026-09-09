@@ -266,7 +266,7 @@
             :disabled="!entry.compiled_file"
             @click="emit('open-scenario', entry)"
           >
-            <span>{{ entry.display_title || '剧情标题待确认' }}</span>
+            <span>{{ cardScenarioTitle(entry) }}</span>
             <small>{{ [entry.communication_label, scenarioSubtitle(entry)].filter(Boolean).join(' · ') }}</small>
           </button>
         </div>
@@ -300,6 +300,7 @@ import { Activity, CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand,
 import ArchiveImageLightbox from './ArchiveImageLightbox.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
+import { cardScenarioTitle } from '../../presentation/CardPresentation.js'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import { getVoiceUrl } from '../../utils/AssetResolver.js'
 import {

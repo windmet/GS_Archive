@@ -7,6 +7,7 @@ import { createServer } from 'vite'
 import { createSSRApp } from 'vue'
 import { renderToString } from '@vue/server-renderer'
 import { buildSongPresentation } from '../src/presentation/SongPresentation.js'
+import { cardScenarioTitle } from '../src/presentation/CardPresentation.js'
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
 const json = path => JSON.parse(read(`public/data/${path}`))
@@ -131,6 +132,17 @@ try {
   assert.ok(projectedGasha.html.includes('data-technical-details'))
   const { mergeCardDetail } = await import('../src/data/archiveSelectors.js')
   const cards = json('masterdata/card_index.json').cards
+  const originalCards = JSON.stringify(cards)
+  const scenarios = cards.flatMap(card => card.scenario_entries || [])
+  for (const entry of scenarios) {
+    assert.equal(cardScenarioTitle(entry), entry.display_title || entry['3'], `preserve published scenario title: ${entry.resource_id}`)
+  }
+  assert.equal(scenarios.filter(entry => !entry.display_title && entry._top_field === 43).length, 313)
+  assert.equal(cardScenarioTitle({ _top_field: 32, '3': '[恒常SSR] INTERNAL_LABEL' }), '剧情标题待确认')
+  assert.equal(cardScenarioTitle({ _top_field: 43, '3': 'known_resource', resource_id: 'known_resource' }), '剧情标题待确认')
+  assert.equal(cardScenarioTitle({ _top_field: 43, '3': '正式标题', display_title: '展示标题' }), '展示标题')
+  assert.equal(cardScenarioTitle({ compiled_summary: { title: '对白不是标题' } }), '剧情标题待确认')
+  assert.equal(JSON.stringify(cards), originalCards, 'presentation must not rewrite raw evidence')
   const details = json('masterdata/card_detail_index.json')
   const merged = cards.map(card => mergeCardDetail(card, details))
   const cardSamples = [...new Set([
