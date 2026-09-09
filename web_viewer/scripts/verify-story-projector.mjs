@@ -18,6 +18,22 @@ const frozen = JSON.stringify(input)
 function freeze(x) { Object.values(x).forEach(v => { if (v && typeof v === 'object') freeze(v) }); return Object.freeze(x) }
 freeze(input)
 const samples = [0, .4999, .5, 1.5, 2.5, 8]
+const tintScenario = scenario([{ ...cue('spine.visual.tint', { value: '#2050A0' }), target: '001tom' }])
+tintScenario.steps[0].entry_snapshot.spines = [{ id: '001tom', idol_color: '#F0C080' }]
+const tintOutput = (source, time, context) => projectStoryState(source, { stepIndex: 0, time, viewport, context }).spineTints.entries[0]
+assert.equal(tintOutput(tintScenario, 0).tint, 0xF0C080)
+assert.equal(tintOutput(tintScenario, 2.5).tint, 0x2050A0)
+const blockedTint = structuredClone(tintScenario)
+blockedTint.steps[0].normalization = { unmapped_legacy_fields: ['state.spines.001tom.idol_color_transition'] }
+assert.equal(tintOutput(blockedTint, 1.5).status, 'not-projected')
+const invalidTint = structuredClone(tintScenario)
+invalidTint.steps[0].cues[0].payload.value = 'not-a-color'
+assert.equal(tintOutput(invalidTint, 1.5).tint, null)
+const missingTint = structuredClone(tintScenario)
+missingTint.steps[0].entry_snapshot.spines = []
+assert.ok(query(missingTint, 1.5).coverage.unsupported_cues.includes('spine.visual.tint'))
+assert.equal(tintOutput(tintScenario, 1.5, { startedAt: { 'spine.visual.tint': 2 } }).tint, 0xF0C080)
+assert.equal(tintOutput(tintScenario, 99, { entrySnapshot: tintScenario.steps[0].entry_snapshot, historyId: 'restored', cuePolicy: 'suppressed' }).tint, 0xF0C080)
 const expected = samples.map(time => query(input, time))
 for (let i = samples.length - 1; i >= 0; i--) assert.deepEqual(query(input, samples[i]), expected[i])
 assert.equal(JSON.stringify(input), frozen)
@@ -66,6 +82,19 @@ let comparisons = 0
 try {
   for (const time of samples) {
     now = 0
+    const tintManager = Object.assign(Object.create(PixiStageManager.prototype), {
+      spineInstances: { '001tom': { spine: { tint: 0xF0C080 } } }, _spineColorTweens: {},
+      backgroundManager: Object.create(BackgroundManager.prototype),
+    })
+    if (time >= .5) {
+      now = 500
+      tintManager.setSpineColor('001tom', '#2050A0', 2, 0, () => now)
+    }
+    now = time * 1000; tick()
+    assert.equal(tintOutput(tintScenario, time).tint, tintManager.spineInstances['001tom'].spine.tint)
+    tintManager._spineColorTweens['001tom']?.cancel()
+    comparisons++
+    now = 0
     const spine = new Container(), bg = new Container()
     const camera = new CameraController({ bgContainer: bg, spineContainer: spine,
       getWidth: () => viewport.width, getHeight: () => viewport.height, getBgSprite: () => null })
@@ -111,6 +140,20 @@ try {
     container.children.forEach((sprite, i) => close(sprite.alpha, layers[i].alpha))
     background.clearBackground(); comparisons++
   }
+  const overlappingTints = structuredClone(tintScenario)
+  overlappingTints.steps[0].cues.push({ ...cue('spine.visual.tint', { value: '#112233' }, 1.5, 1, 'tint-override'), target: '001tom' })
+  for (const time of [1.5, 2, 2.5]) {
+    const manager = Object.assign(Object.create(PixiStageManager.prototype), {
+      spineInstances: { '001tom': { spine: { tint: 0xF0C080 } } }, _spineColorTweens: {},
+      backgroundManager: Object.create(BackgroundManager.prototype),
+    })
+    now = 500; manager.setSpineColor('001tom', '#2050A0', 2, 0, () => now)
+    now = 1500; tick()
+    manager.setSpineColor('001tom', '#112233', 1, 0, () => now)
+    now = time * 1000; tick()
+    assert.equal(tintOutput(overlappingTints, time).tint, manager.spineInstances['001tom'].spine.tint)
+    manager._spineColorTweens['001tom']?.cancel(); comparisons++
+  }
 } finally { [globalThis.requestAnimationFrame, globalThis.cancelAnimationFrame] = saved }
 if (process.argv.includes('--local-sources')) {
   const catalog = JSON.parse(readFileSync(new URL('../public/data/masterdata/story_catalog.json', import.meta.url)))
@@ -140,6 +183,10 @@ if (process.argv.includes('--local-sources')) {
       }
       for (const time of [...times].reverse()) assert.deepEqual(projectStoryState(source, { stepIndex, time, viewport }), outputs.get(time), `${name}:${step.step_id}: query order`)
       const final = projectStoryState(source, { stepIndex, time: Math.max(0, ...step.cues.map(c => c.at + c.duration)), viewport })
+      for (const tint of final.spineTints.entries.filter(tint => tint.status === 'projected')) {
+        const settled = step.settled_snapshot.spines?.find(spine => spine.id === tint.id)
+        if (settled) assert.equal(tint.tint, settled.idol_color ? parseInt(settled.idol_color.replace('#', ''), 16) : 0xFFFFFF, `${name}:${step.step_id}:${tint.id}: settled tint`)
+      }
       for (const id of new Set(final.coverage.unsupported_cues)) {
         const action = step.cues.find(cue => cue.cue_id === id)?.action
         assert.ok(action, `${name}:${step.step_id}: unsupported cue must resolve to its source`)

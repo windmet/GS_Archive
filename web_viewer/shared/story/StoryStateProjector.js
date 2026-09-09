@@ -3,7 +3,16 @@ const clamp = value => Math.min(1, Math.max(0, value))
 const ease = value => 1 - (1 - value) ** 3
 const mix = (a, b, t) => a + (b - a) * t
 const progress = (cue, time) => cue.duration === 0 ? 1 : clamp((time - cue.start) / cue.duration)
-const supported = new Set(['camera.transform', 'background.change', 'screen.fade', 'screen.directional_wipe'])
+const supported = new Set(['camera.transform', 'background.change', 'screen.fade', 'screen.directional_wipe', 'spine.visual.tint'])
+function tintValue(value) {
+  if (!value) return 0xFFFFFF
+  return typeof value === 'string' && /^#?[a-fA-F0-9]{6}$/.test(value) ? parseInt(value.replace('#', ''), 16) : null
+}
+function tintAt(motion, time) {
+  if (!motion.cue) return motion.to
+  const t = ease(progress(motion.cue, time))
+  return [16, 8, 0].reduce((color, shift) => color | (Math.round(mix((motion.from >> shift) & 255, (motion.to >> shift) & 255, t)) << shift), 0)
+}
 function finite(value, name, minimum = 0) {
   if (!Number.isFinite(value) || value < minimum) throw new TypeError(`Invalid projector ${name}`)
   return value
@@ -59,10 +68,20 @@ export function projectStoryState(scenario, { stepIndex, time, viewport, context
   let background = { status: 'projected', layers: entry.bg ? [{ bg: entry.bg, alpha: 1 }] : [] }
   let backgroundCue = null, backgroundFrom = entry.bg || null
   const screen = initialScreen(entry.screen_overlay)
+  const tintMotions = new Map((entry.spines || []).map(spine => [spine.id, { to: tintValue(spine.idol_color),
+    blocked: coverage.unmapped_fields.includes(`state.spines.${spine.id}.idol_color_transition`) }]))
   for (const cue of cues) {
     if (context.cuePolicy === 'suppressed' || cue.start > time || !supported.has(cue.action)) continue
     const p = cue.payload || {}
-    if (cue.action === 'camera.transform') {
+    if (cue.action === 'spine.visual.tint') {
+      const motion = tintMotions.get(cue.target), to = tintValue(p.value)
+      if (!motion || motion.blocked || motion.to === null || to === null) {
+        coverage.unsupported_cues.push(cue.cue_id)
+        if (motion) motion.blocked = true
+        continue
+      }
+      tintMotions.set(cue.target, { from: tintAt(motion, cue.start), to, cue })
+    } else if (cue.action === 'camera.transform') {
       camera = { from: cameraAt(camera, cue.start), to: cameraTransform(p, viewport), cue }
     } else if (cue.action === 'background.change') {
       if (p.type && p.type !== 'dissolve') {
@@ -97,6 +116,9 @@ export function projectStoryState(scenario, { stepIndex, time, viewport, context
       timing: Object.keys(context.startedAt || {}).length ? 'explicit-starts' : 'asset-ready-semantic' },
     background, camera: { status: 'projected', ...cameraAt(camera, time) }, screen: { status: 'projected', ...screen },
     spines: { status: 'not-projected', entry: clone(entry.spines || []) },
+    spineTints: { status: [...tintMotions.values()].some(m => m.blocked || m.to === null) ? 'partial' : 'projected',
+      entries: [...tintMotions].map(([id, motion]) => ({ id, status: motion.blocked || motion.to === null ? 'not-projected' : 'projected',
+        tint: motion.blocked || motion.to === null ? null : tintAt(motion, time) })) },
     filters: { status: 'not-projected', entry: { bg_color: clone(entry.bg_color), bg_dof: clone(entry.bg_dof) } },
     effects: { status: 'not-projected', entry: { bg: clone(entry.bg_effects || []), screen: clone(entry.screen_effects || []) } },
     coverage,

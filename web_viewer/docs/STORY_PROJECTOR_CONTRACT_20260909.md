@@ -83,3 +83,27 @@ filters、particles、background geometry 与 audio side effects 的 partial 限
 下一步优先核对角色 fade/tint 的源字段、管理器语义与只读可观察状态，再决定
 投影扩展；不先删除 unmapped 标记。音频仍是副作用，不纳入纯状态执行。
 本批只扩验证覆盖和报告，未更改播放器行为，未启动长稳或 E2。
+
+## E1 角色 tint 纯查询
+
+起点 `7029540`。新增独立输出 `spineTints.entries`，包含角色 id、status 和整数 RGB
+tint；原 `spines` 仍为 not-projected，不能把颜色结果称为骨骼姿势或整角色情况。
+此增量不修改 normalizer、SpineStage 或管理器执行路径。运行时 shadow 面板仍只
+比较原三个通道，新 tint 输出尚未完成浏览器实际帧对照。
+
+初始颜色来自显式 entry 的 idol_color；仅接受六位 RGB 或默认白色。标准化
+spine.visual.tint 使用生产方法的 easeOutCubic 与逐通道整数四舍五入。
+同刻保持 cue 顺序，覆盖时从覆盖时间的已计算颜色开始；实测起点沿用 startedAt，
+suppressed 恢复不重放。未知角色、非法颜色保持 unsupported cue；已有角色的
+非法颜色或 unmapped idol_color_transition 使该角色输出 not-projected/null。
+不删除或假装消费那 48 条未标准化颜色过渡。
+
+验证新增生产 setSpineColor 方法的 6 个边界/中间时间点和 3 个覆盖时间点，
+连同原通道共 45 组无 GPU 对照通过。覆盖未知目标、非法颜色、未映射过渡、
+延迟与禁止重放；全主线正序/逆序查询及可投影角色的最终 tint 与 settled snapshot
+一致。主线 6 个标准化 tint cue 已不再列为 unsupported，其他限制计数不变。
+
+透明度暂不投影：生产方法使用整体 AlphaFilter，起点取决于新建/复用模型、
+可见性与资源就绪；零 duration 实际也使用默认淡入时间。不能直接按剧情中的
+fade duration 当作线性透明度输入。后续须补显式视觉 entry/实际开始时刻的
+读取契约与浏览器对照；这不影响当前播放器继续工作。
