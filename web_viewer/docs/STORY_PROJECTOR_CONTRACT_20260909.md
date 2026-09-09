@@ -139,3 +139,29 @@ step_id=3、纹理 bg083_ringstage_out_03（1800×960）：桌面 1280.453125×7
 两份完整报告保存在 `C:/Users/windm/.codex/evidence/sidem-background-geometry/2026-09-09/`。
 未启动 START/长稳；未声称真实浏览器背景过渡中途或所有纹理已验证。
 source-only Vite build 通过，既有主包超过 500kB 提示仍在。
+
+## E1 静态背景滤镜参数（接续 `513f458`）
+
+新增独立 `backgroundFilters`，投影静态 blur 数值及背景乘色叠层的可见性、
+RGB tint、alpha=0.85 和 multiply 模式。沿用生产场景适配器规则：非空且不等于
+`#FFFFFF` 的颜色才保留 dof×6 模糊，非正及不大于 0.01 的值归零；白色叠层清除。
+生产代码对白色大小写的 blur/overlay 判断不同，测试保留这一实际差异，不暗中修 renderer。
+
+`bg_color_transition/bg_dof_transition` 仍通过 applyStepSceneState 直接调用管理器，
+缺少标准 cue 和初始视觉值。因此任一字段含正 delay/duration 时，即使查询时间很大，
+也返回 unresolved-filter-transition；不能假设历史起点、将目标冒充中途样本。
+非法颜色和非有限 blur 返回 invalid-filter-state。shadow 只读管理器 blur 参数和
+真实 overlay 的 tint/alpha/blendMode；尚存活动滤镜 tween 时不可比较。
+这是参数对照，不证明 BlurFilter 挂载、GPU 像素、滤镜顺序或 camera filter 完整性；
+总 coverage 的 filters limitation 与原 filters.entry 输出继续保留。
+
+6 组生产 applyStepSceneState/BackgroundManager 静态对照、过渡拒绝、非法输入、
+故意偏移与活动 tween 排除通过。原 projector/shadow 检查及全主线查询回归通过；
+6817 步中 6609 步可投影静态参数，208 步未支持。没有修改 normalizer 或执行路径。
+
+真实浏览器沿用上述主线 URL，step_id=3：blur=4.800000000000001，tint=11184810，
+alpha=0.85，backgroundFilters match，error 日志为空。完整报告位于
+`C:/Users/windm/.codex/evidence/sidem-background-filters/2026-09-09/static-step3.json`。
+尝试 start_step=2 时自动前进到 3，第二份报告按实际步骤命名为 second-static-step3；
+没有得到真实过渡中途采样，不将其写成过渡通过。source-only build 通过，既有大包提示保留。
+下一步需解决滤镜过渡的显式起始视觉状态及读取契约，再扩展这 208 步；长稳继续后移。

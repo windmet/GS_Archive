@@ -6,6 +6,7 @@ import { BackgroundManager } from '../src/core/BackgroundManager.js'
 import { PixiStageManager } from '../src/core/PixiStageManager.js'
 import { projectStoryState } from '../shared/story/StoryStateProjector.js'
 import { normalizeScenario } from '../shared/story/ScenarioNormalizer.js'
+import { applyStepSceneState } from '../src/core/applyStepSceneState.js'
 
 const viewport = { width: 1280, height: 720 }
 const cue = (action, payload, at = .5, duration = 2, id = action) => ({ cue_id: id, action, payload, at, duration })
@@ -34,6 +35,35 @@ for (const size of [undefined, { width: 0, height: 1 }, { width: 1, height: Infi
 }
 assert.equal(query({ schema_version: 2, steps: [{ entry_snapshot: {}, cues: [] }] }, 0).backgroundGeometry.status, 'projected')
 console.log(`Background geometry: ${geometryComparisons} production Sprite comparisons across aspect ratios and resized viewports`)
+for (const state of [{}, { bg_color: '#AAAAAA', bg_dof: .8 }, { bg_color: '#FFFFFF', bg_dof: 2 },
+  { bg_color: '#ffffff', bg_dof: .8 }, { bg_color: '#112233', bg_dof: .001 }, { bg_color: '#000000', bg_dof: -1 }]) {
+  const sprite = new Sprite(new Texture(new BaseTexture(null, { width: 4, height: 4 })))
+  const manager = Object.assign(Object.create(BackgroundManager.prototype), {
+    bgContainer: new Container(), bgSprite: sprite, _bgBlurAmount: 0, _blurFilter: { blur: 0 },
+    _bgOverlaySprite: new Sprite(sprite.texture), getWidth: () => 1280, getHeight: () => 720,
+    setCameraFilter() {}, applyBgEffects() {},
+  })
+  manager._bgOverlaySprite.blendMode = 2
+  applyStepSceneState({ manager, state })
+  const projected = query({ schema_version: 2, steps: [{ entry_snapshot: state, cues: [] }] }, 0).backgroundFilters
+  assert.equal(projected.status, 'projected'); close(projected.blur, manager._bgBlurAmount)
+  assert.equal(projected.overlay.visible, !!manager._bgOverlaySprite.parent)
+  if (projected.overlay.visible) {
+    assert.equal(projected.overlay.tint, manager._bgOverlaySprite.tint)
+    close(projected.overlay.alpha, manager._bgOverlaySprite.alpha)
+    assert.equal(manager._bgOverlaySprite.blendMode, 2)
+  }
+  manager.clearBgColorOverlay(); manager._bgOverlaySprite.destroy(); sprite.destroy({ texture: true, baseTexture: true })
+}
+for (const key of ['bg_color_transition', 'bg_dof_transition']) {
+  const state = { bg_color: '#AAAAAA', bg_dof: .8, [key]: { delay: .1, duration: .4 } }
+  assert.equal(query({ schema_version: 2, steps: [{ entry_snapshot: state, cues: [] }] }, 100).backgroundFilters.reason, 'unresolved-filter-transition')
+}
+for (const state of [{ bg_color: 'bad-color' }, { bg_color: '#AAAAAA', bg_dof: Infinity },
+  { bg_color: '#AAAAAA', bg_dof: 1e308 }]) {
+  assert.equal(query({ schema_version: 2, steps: [{ entry_snapshot: state, cues: [] }] }, 0).backgroundFilters.reason, 'invalid-filter-state')
+}
+console.log('Background filters: 6 scene-adapter/manager static cases; unresolved transitions and invalid inputs rejected')
 const input = scenario([cue('camera.transform', { zoom: 2, offset_x: 30, offset_y: -20 }),
   cue('screen.fade', { type: 'out', alpha: .8 }), cue('background.change', { bg: 'B', type: 'dissolve' })])
 const frozen = JSON.stringify(input)
@@ -182,7 +212,7 @@ if (process.argv.includes('--local-sources')) {
   const names = [...new Set(catalog.collectionStructure.filter(c => c.domain === 'main')
     .flatMap(c => c.chapters.flatMap(chapter => chapter.episodes.map(e => e.resourceId))))]
   assert.ok(names.length, 'published main corpus must not be empty')
-  const coverage = { documents: names.length, steps: 0, queries: 0, unsupportedCueActions: {}, unmappedFields: {}, limitations: {}, notProjectedSteps: { background: 0, screen: 0 } }
+  const coverage = { documents: names.length, steps: 0, queries: 0, unsupportedCueActions: {}, unmappedFields: {}, limitations: {}, notProjectedSteps: { background: 0, screen: 0, backgroundFilters: 0 } }
   for (const name of names) {
     assert.match(name, /^[A-Za-z0-9_-]+$/)
     const source = normalizeScenario(JSON.parse(readFileSync(new URL(`../public/data/compiled/episodes/${name}.json`, import.meta.url))))
@@ -219,7 +249,7 @@ if (process.argv.includes('--local-sources')) {
         const path = field.replace(/^state\.spines\.[^.]+\./, 'state.spines.*.')
         coverage.unmappedFields[path] = (coverage.unmappedFields[path] || 0) + 1
       }
-      for (const channel of ['background', 'screen']) if (final[channel].status !== 'projected') coverage.notProjectedSteps[channel]++
+      for (const channel of ['background', 'screen', 'backgroundFilters']) if (final[channel].status !== 'projected') coverage.notProjectedSteps[channel]++
     }
     assert.equal(JSON.stringify(source), original, `${name}: projection cannot mutate normalized input`)
   }

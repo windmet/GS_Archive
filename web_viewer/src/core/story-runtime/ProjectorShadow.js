@@ -26,6 +26,11 @@ export function readProjectorActual(manager) {
   const timing = handle => !handle || handle.cancelled ? null : { started_at: handle.startedAtMilliseconds / 1000, sampled_at: handle.sampledAtMilliseconds == null ? null : handle.sampledAtMilliseconds / 1000 }
   return {
     backgroundTextures, backgroundGeometry,
+    backgroundFilters: background ? { blur: background._bgBlurAmount ?? 0,
+      overlay: background._bgOverlaySprite?.parent ? { visible: true,
+        tint: background._bgOverlaySprite.tint, alpha: background._bgOverlaySprite.alpha,
+        blendMode: background._bgOverlaySprite.blendMode === 2 ? 'multiply' : background._bgOverlaySprite.blendMode } : { visible: false } } : null,
+    backgroundFilterTransitionActive: [background?._bgBlurTween, background?._bgColorTween].some(tween => tween?.rafId != null && !tween.cancelled),
     timing: { camera: timing(manager.cameraController?._cameraTween), fade: timing(manager._screenFadeTween), wipe: timing(manager._screenSlideTween) },
     background: background ? { layers, pending_texture: !!transition && !transition.newSprite,
       started_at: transition?.startedAtMilliseconds == null ? null : transition.startedAtMilliseconds / 1000,
@@ -112,6 +117,15 @@ export function captureProjectorShadow({ scenario, stepIndex, runtime, manager, 
     const delta = differences(expected.backgroundGeometry.layers, actual.backgroundGeometry)
     samples.backgroundGeometry = { status: delta.length ? 'difference' : 'match', differences: delta }
   }
+  const filterReason = expected.backgroundFilters.status !== 'projected' ? expected.backgroundFilters.reason
+    : !actual.backgroundFilters ? 'background-manager-not-ready'
+    : actual.backgroundFilterTransitionActive ? 'filter-transition-active' : null
+  if (filterReason) samples.backgroundFilters = { status: 'not-comparable', reason: filterReason }
+  else {
+    const { blur, overlay } = expected.backgroundFilters
+    const delta = differences({ blur, overlay }, actual.backgroundFilters)
+    samples.backgroundFilters = { status: delta.length ? 'difference' : 'match', differences: delta }
+  }
   const tintSamples = expected.spineTints.entries.map(tint => {
     const observed = actual.spineTints[tint.id]
     const related = entries.filter(e => e.action === 'spine.visual.tint' && step.cues.find(c => c.cue_id === e.cue_id)?.target === tint.id)
@@ -130,7 +144,7 @@ export function captureProjectorShadow({ scenario, stepIndex, runtime, manager, 
   return {
     shadow_version: 1, scenario_id: scenario.scenario_id || null,
     viewport: { width: manager.width, height: manager.height },
-    scope: ['background-mix', 'background-local-geometry', 'camera-stage', 'screen-overlays', 'spine-rgb-tint'], status: Object.values(samples).some(s => s.status === 'difference') ? 'difference'
+    scope: ['background-mix', 'background-local-geometry', 'background-static-filter-parameters', 'camera-stage', 'screen-overlays', 'spine-rgb-tint'], status: Object.values(samples).some(s => s.status === 'difference') ? 'difference'
       : Object.values(samples).some(s => s.status === 'not-comparable') ? 'partial' : 'match',
     step_index: stepIndex, step_id: step.step_id, time, clock_state: runtime.clock.state,
     numeric_tolerance: .001, sampling: 'read-only-between-frames',

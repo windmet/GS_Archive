@@ -62,6 +62,11 @@ assert.deepEqual(capture({ manager: shiftedBg }).channels.backgroundGeometry.dif
   [{ path: '0.x', expected: 0, actual: 7, delta: 7 }])
 assert.equal(capture({ manager: pending }).channels.backgroundGeometry.reason, 'texture-pending')
 assert.equal(midway.channels.backgroundGeometry.status, 'match')
+const filterShift = structuredClone(manager)
+filterShift.backgroundManager._bgBlurAmount = 2
+assert.equal(capture({ manager: filterShift }).channels.backgroundFilters.status, 'difference')
+filterShift.backgroundManager._bgBlurTween = { rafId: 1 }
+assert.equal(capture({ manager: filterShift }).channels.backgroundFilters.reason, 'filter-transition-active')
 
 const tintScenario = structuredClone(scenario)
 tintScenario.steps[0].entry_snapshot.spines = [{ id: '001tom', idol_color: '#FFFFFF' }]
