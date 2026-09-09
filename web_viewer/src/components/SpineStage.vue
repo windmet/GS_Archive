@@ -943,10 +943,11 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
         spineState.idol_color || null,
         colorTransition.duration ?? 0,
         colorTransition.delay ?? 0,
+        props.nowMilliseconds,
       )
       if (spineState.fade?.type) {
         const targetAlpha = spineState.fade.type === 'out' ? 0 : 1
-        manager.animateSpineAlpha?.(sid, targetAlpha, spineState.fade.duration, spineState.fade.delay)
+        manager.animateSpineAlpha?.(sid, targetAlpha, spineState.fade.duration, spineState.fade.delay, props.nowMilliseconds)
       } else {
         manager.setSpineAlpha?.(sid, 1)
       }
@@ -998,12 +999,13 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
           spineState.idol_color || null,
           colorTransition.duration ?? 0,
           colorTransition.delay ?? 0,
+          props.nowMilliseconds,
         )
         manager.setSpineZoom(sid, spineState.idol_zoom)
         positionSpine(sid, posX, posY, baseY)
         if (spineState.fade?.type) {
           const targetAlpha = spineState.fade.type === 'out' ? 0 : 1
-          manager.animateSpineAlpha?.(sid, targetAlpha, spineState.fade.duration, spineState.fade.delay)
+          manager.animateSpineAlpha?.(sid, targetAlpha, spineState.fade.duration, spineState.fade.delay, props.nowMilliseconds)
         } else {
           manager.setSpineAlpha?.(sid, 1)
         }

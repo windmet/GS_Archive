@@ -101,7 +101,7 @@ export class SpineManager {
     this.manager.app.ticker.add(ticker)
   }
 
-  animateSpineAlpha(idolId, targetAlpha, duration = 0.2, delay = 0) {
+  animateSpineAlpha(idolId, targetAlpha, duration = 0.2, delay = 0, nowMilliseconds) {
     const entry = this.manager.spineInstances[idolId]
     if (!entry) return
     const target = entry.wrapper || entry.spine
@@ -113,6 +113,7 @@ export class SpineManager {
     const delayMs = Math.max(0, Number(delay) || 0) * 1000
     const durMs = Math.max(0.01, Number(duration) || 0.2) * 1000
     entry._alphaTween = runRafTween({
+      nowMilliseconds,
       durationMs: durMs,
       delayMs,
       startValue: startAlpha,

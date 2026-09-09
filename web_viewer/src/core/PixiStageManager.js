@@ -1648,8 +1648,8 @@ export class PixiStageManager {
     return this.spineManager?._fadeIn(spine, duration)
   }
 
-  animateSpineAlpha(idolId, targetAlpha, duration = 0.2, delay = 0) {
-    return this.spineManager?.animateSpineAlpha(idolId, targetAlpha, duration, delay)
+  animateSpineAlpha(idolId, targetAlpha, duration = 0.2, delay = 0, nowMilliseconds) {
+    return this.spineManager?.animateSpineAlpha(idolId, targetAlpha, duration, delay, nowMilliseconds)
   }
 
   /**

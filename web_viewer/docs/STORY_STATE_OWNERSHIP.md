@@ -516,3 +516,17 @@ stage-loading verifier 执行真实 applyState，确认 duration 与时钟函数
 两者通过同一 CI 命令执行。screen-clock、foundation、publicDir:false 构建通过，
 保留两个背景路径运行时解析提示。本批依据可控时钟验证，未声称浏览器实际
 剧情已触发该兼容分支，也未完成实音长稳。
+
+## B27：兼容入场颜色与透明度时钟透传
+
+SpineStage 的复用角色和新加载角色分支，均将 props.nowMilliseconds 传入颜色
+渐变及透明度渐变。颜色管理器已有可注入时钟；透明度通过 PixiStageManager
+转发至 SpineManager，再交给现有 runRafTween。未提供时钟的工具调用继续使用
+默认墙钟；未改变 fade 默认时长、曲线、滤镜和终态可见性规则。
+
+stage-loading 执行真实 applyState 的两条分支，核对颜色、duration、delay 和
+时钟函数身份。manager 回归验证延迟中暂停、恢复、2 倍速、淡出隐藏、淡入显示、
+替换与立即设置的取消；foundation、step-playback-state/readiness 和
+publicDir:false 构建通过。两个已知背景路径运行时解析提示保留。本批未做真实
+剧情视觉/实音回归；非剧情默认装饰性 fadeIn/fadeOut 与眨眼墙钟不在本次范围，
+不能据此宣称全部 Spine 动效时钟已统一。

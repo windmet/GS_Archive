@@ -230,3 +230,25 @@ const step = model => ({ step_id: model, entry_snapshot: { spines: model ? [{ id
   assert.equal(received?.[4], now)
 }
 console.log('Story stage loading: scene replacement, departure, late failure, direct spawn and slide clock forwarding passed')
+
+for (const reused of [false, true]) {
+  const t = setup()
+  const current = step('same')
+  Object.assign(current.entry_snapshot.spines[0], {
+    idol_color: '#808080', idol_color_transition: { duration: 2, delay: 1 },
+    fade: { type: 'out', duration: 3, delay: 0.5 },
+  })
+  if (reused) t.manager.spineInstances.idol = { modelId: 'same', spine: fakeSpine() }
+  const now = () => 1234
+  t.context.props.nowMilliseconds = now
+  let color, alpha
+  t.manager.setSpineColor = (...args) => { color = args }
+  t.manager.animateSpineAlpha = (...args) => { alpha = args }
+  const pending = t.apply(current)
+  await flush()
+  if (!reused) t.finish(0)
+  await pending
+  assert.deepEqual(color, ['idol', '#808080', 2, 1, now])
+  assert.deepEqual(alpha, ['idol', 0, 3, 0.5, now])
+}
+console.log('Stage entry tint/alpha: reused and newly loaded model clock forwarding passed')

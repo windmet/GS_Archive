@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { PixiStageManager } from '../src/core/PixiStageManager.js'
+import { SpineManager } from '../src/core/SpineManager.js'
 import { StoryClock } from '../src/core/story-runtime/StoryClock.js'
 
 let wall = 0, next = 0
@@ -48,8 +49,43 @@ try {
   animate(10, 20, 0)
   close(spine.x, 10); close(spine.y, 20)
   assert.equal(frames.size, 0)
+
+  // Exercise the actual stage -> SpineManager -> RAF alpha path without a GPU.
+  stage.spineManager = new SpineManager(stage)
+  const filter = { alpha: 1, enabled: false }
+  stage.spineManager._wholeModelAlphaFilter = () => filter
+  spine.visible = true
+  clock.setRate(1)
+  const alpha = (value, duration, delay) => stage.animateSpineAlpha('idol', value, duration, delay, () => clock.elapsed() * 1000)
+  alpha(0, 2, 1)
+  wall += 500; tick()
+  close(filter.alpha, 1)
+  clock.pause()
+  wall += 5000; tick()
+  close(filter.alpha, 1)
+  clock.resume()
+  wall += 1000; tick()
+  close(filter.alpha, 0.421875)
+  clock.setRate(2)
+  wall += 750; tick()
+  close(filter.alpha, 0)
+  assert.equal(spine.visible, false)
+  assert.equal(entry._alphaTween, null)
+  assert.equal(frames.size, 0)
+  alpha(1, 2, 0)
+  assert.equal(spine.visible, true)
+  wall += 500; tick()
+  close(filter.alpha, 0.875)
+  alpha(0, 1, 0)
+  assert.equal(frames.size, 1)
+  stage.spineManager.setSpineAlpha('idol', 1)
+  wall += 1000; tick()
+  close(filter.alpha, 1)
+  assert.equal(filter.enabled, false)
+  assert.equal(frames.size, 0)
 } finally {
   globalThis.requestAnimationFrame = savedRequest
   globalThis.cancelAnimationFrame = savedCancel
 }
 console.log('Spine position: logical clock, pause/resume, rate, step reset, replacement, cancellation and immediate completion passed')
+console.log('Spine alpha: stage forwarding, delayed pause/resume, rate, terminal visibility, replacement and immediate cancellation passed')
