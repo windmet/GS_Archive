@@ -1,24 +1,32 @@
 # 移动门户与 Reading 后续路线
 
 日期：2026-09-09。核对起点：a523db1，codex/archive-architecture-refactor。
-本批为路线整合，不代表页面、Reading 或 projector 已实现。
+本文保留原始设计依据，并在下方汇总已交付状态。
 
 后续进展：M 首批已实现并完成本地浏览器验收，见
-[移动门户交付记录](MOBILE_PORTAL_ACCEPTANCE_20260909.md)。D/E 尚未完成。
+[移动门户交付记录](MOBILE_PORTAL_ACCEPTANCE_20260909.md)。
 
 D1 首批已完成：五份 ReadingDocument 样本、独立页面与语言展示、按篇请求、
 来源校验、导航竞态及真实浏览器验收，见 [D1 验收](READING_D1_ACCEPTANCE_20260909.md)。
-其中四份可读、一份多选样本显式未支持；不代表全库支持。D2/F 进展见下文；E 尚未实现。
+其中四份可读、一份多选样本显式未支持；不代表全库支持。D2/F 与 E1 进展见下文。
 
 D2/F进展：既有播放器进入/退出/预览/队列/范围/恢复已统一到controller，见
 [所有权接管验收](PLAYBACK_CONTROLLER_ACCEPTANCE_20260909.md)。现有主线入口和
 指定句演出往返现已完成首批接线与验收，见 [D2 验收](READING_D2_ACCEPTANCE_20260909.md)。
-仅覆盖既定四份可读样本；E 未实现。
+仅覆盖既定四份可读样本。
 
 E1 进展：已交付纯状态投影与无 GPU 管理器对照，见
 [投影契约与首批证据](STORY_PROJECTOR_CONTRACT_20260909.md)。实际运行时 shadow
 采样/差异记录现已接入，见 [E1 只读对照验收](PROJECTOR_SHADOW_ACCEPTANCE_20260909.md)。
 首批三通道闭环已有实测，未覆盖范围继续显式保留；E2 未接管。
+
+当前恢复点：代码基线 `dea4132` 已推送，M、D1、D2/F、E1 首批均已交付。
+2026-09-09 再次检查浏览器提供方，仅有 Codex In-app Browser；连接 external
+extension 返回 `Browser is not available: extension`。pre-E 正式两小时真实音频
+录制尚未开始，不能把应用内短回归或用户日常稳定使用反馈合并为协议通过。
+连接正常 Edge/Chrome 后，先重新核对 HEAD、工作区与服务归属，再按
+[pre-E 协议](../notes/03_audit/STORY_P2B_SOAK_PREFLIGHT_20260813.md)冻结版本录制。
+机器门槛通过后仍需画面、资源曲线与人工听感审阅；完成该门槛后才进入 E2。
 
 ## 决策与参考来源
 
@@ -35,9 +43,9 @@ E1 进展：已交付纯状态投影与无 GPU 管理器对照，见
 
 ## M：移动端迷你手机入口
 
-当前 ArchiveShell 的 mobileNavigation 直接等于 navigation，移动 CSS 固定
+实施前 ArchiveShell 的 mobileNavigation 直接等于 navigation，移动 CSS 固定
 repeat(8, minmax(0, 1fr))。全量桌面入口投影为一行是拥挤的直接结构因素；
-本批核对源码，尚未进行实际屏幕测量。
+以上为原始诊断；实施后的实际屏幕测量与验收见顶部移动门户交付记录。
 
 迷你手机采用应用图标网格承载各门户入口。ARCHIVE_NAVIGATION 继续提供现有
 section 身份，必要的移动分组/排序只是展示配置；图标触发已有 navigateArchiveSection，
