@@ -12,6 +12,8 @@ PIPELINE = ROOT.parent / 'data_pipeline'
 sys.path.insert(0, str(PIPELINE))
 from scenario_compiler import ScenarioCompiler, ScenarioState, compile_directory
 from sidem_scenario import ScenarioCompiler as PackageCompiler, ScenarioState as PackageState
+from sidem_scenario.authoritative import compile_authoritative_scenario
+from authoritative_scenario import compile_authoritative_scenario as legacy_projection
 
 FIXTURES = [
     'step9-missing-target-timing-raw.json',
@@ -46,9 +48,34 @@ def outputs(compiler, empty_root):
 def main():
     baseline = json.loads((ROOT / 'fixtures' / 'story-runtime' / 'scenario-package-baseline.json').read_text())
     assert ScenarioCompiler is PackageCompiler and ScenarioState is PackageState
+    assert legacy_projection is compile_authoritative_scenario
     with tempfile.TemporaryDirectory() as temp:
         root = Path(temp)
         assert outputs(ScenarioCompiler, root) == baseline['hashes'], 'compiler output/provenance changed'
+        # Root-package import must compile strict output with no top-level
+        # data_pipeline path injected. Test in a fresh process, not this one.
+        code = '''
+import json, sys
+from pathlib import Path
+from data_pipeline.sidem_scenario import ScenarioCompiler, LocalScenarioResources
+from data_pipeline.sidem_scenario.authoritative import compile_authoritative_scenario
+from data_pipeline.authoritative_scenario import compile_authoritative_scenario as old
+assert old is compile_authoritative_scenario
+root = Path(sys.argv[1])
+raw = json.loads(Path(sys.argv[2]).read_text(encoding='utf-8-sig'))
+resources = LocalScenarioResources(lipsync_root=root/'lip', background_root=root/'bg', audio_root=root/'audio')
+result = ScenarioCompiler(raw, 'fixture', resources=resources).compile(
+    output_contract='authoritative', source={'raw_path': 'fixture.json', 'raw_hash': 'sha256:' + '0'*64})
+assert 'authoritative_scenario' not in sys.modules
+print(json.dumps(result))
+'''
+        clean_env = {key: value for key, value in os.environ.items() if key != 'PYTHONPATH'}
+        run = subprocess.run([sys.executable, '-c', code, str(root), str(ROOT/'fixtures/story-runtime'/FIXTURES[0])],
+                             cwd=ROOT.parent, env=clean_env, capture_output=True, text=True, encoding='utf-8', check=True)
+        raw_root = json.loads((ROOT/'fixtures/story-runtime'/FIXTURES[0]).read_text(encoding='utf-8-sig'))
+        expected_root = ScenarioCompiler(raw_root, 'fixture').compile(output_contract='authoritative',
+            source={'raw_path': 'fixture.json', 'raw_hash': 'sha256:' + '0'*64})
+        assert json.loads(run.stdout) == expected_root
         # Existing class-level file helpers and both CLI names remain usable.
         source = ROOT / 'fixtures' / 'story-runtime' / FIXTURES[0]
         raw = ScenarioCompiler.load_json(str(source))

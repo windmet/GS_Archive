@@ -183,7 +183,7 @@ class ScenarioCompiler(ScenarioFileIO):
             return result
         if output_contract != "authoritative":
             raise ValueError(f"Unsupported ScenarioCompiler output contract: {output_contract!r}")
-        from authoritative_scenario import compile_authoritative_scenario
+        from .authoritative import compile_authoritative_scenario
 
         return compile_authoritative_scenario(result, compiler_version=compiler_version)
 

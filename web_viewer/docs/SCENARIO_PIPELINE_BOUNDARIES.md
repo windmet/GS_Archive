@@ -391,3 +391,18 @@ BOM/换行哈希、非规范路径拒绝、说话人分类优先级、方法身�
 10 组冻结完整输出/provenance 哈希、旧/新入口和临时 batch，以及 resources 的
 无文件系统注入编译回归通过。没有重新生成 public、候选或发布产物；本批不改
 浏览器源码，因此未重复浏览器验收或前端构建。
+
+## G20：严格输出投影归入 scenario 包
+
+从仓库根使用 data_pipeline.sidem_scenario 导入时，严格编译原先因绝对导入
+顶层 authoritative_scenario 而抛 ModuleNotFoundError。投影实现现归属
+sidem_scenario/authoritative.py；compiler 使用包内相对导入。原
+ data_pipeline/authoritative_scenario.py 保留函数兼容导出，同时支持历史顶层
+导入与仓库根包导入。包内部不再依赖旧入口；投影函数体与 55ed708 按换行
+归一后一致，没有修改 strict-v2 语义。
+
+verify:scenario-package 新增清除 PYTHONPATH 的真实子进程，从仓库根导入并
+编译严格 fixture，完整结果与原入口一致，同时验证 shim 函数身份且未加载
+顶层 authoritative_scenario。原 10 组冻结产物/provenance、双 CLI 和临时 batch
+保持通过；story-text、scenario-resources、scenario-source-config（含实际候选
+CLI 临时输出）通过。未修改 public/candidate 发布目录，不需要前端构建。
