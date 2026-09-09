@@ -50,3 +50,36 @@ strict-v2 与 compatibility 经原 normalizer 输入；共 215 步的 cue 前/�
 
 后续已接只读的运行时 shadow 采样及差异报告，显式记录纹理等待/派发起点、
 snapshot restore 和 settle 的适用范围。E2 前仍需独立 pre-E 基线。
+
+## 主线全量离线对照扩展
+
+起点 `7fea50a`。`--local-sources` 现从 Story Catalog 的 main 集合枚举全部已发布
+分段，不再硬编码五个样本，也不依赖阅读 manifest。未公开章节没有分段，不生成
+虚拟输入。验证读取真实 compiled，经生产 normalizer 后执行纯查询，不修改运行时。
+
+本机实测 204 个分段、6,817 步、17,973 个时间点；每个时间点重复查询并按逆序
+重查，结果一致，输入保持不变。结束点的 camera scale 与可投影 background
+标识均与 settled snapshot 一致。原 36 组生产管理器对照及 shadow 验证仍通过。
+时间点数量不含重复和逆序重查；这不是 17,973 次浏览器帧验收。
+
+最终时间点查询中 background/screen 的 not-projected 步数均为 0。该数值不表示
+整个场景完整投影，也不表示已验证背景裁切或全部 screen 像素。
+未支持 cue 按实际 action 汇总（每步去重 cue_id 后计数）：
+
+| 动作 | 数量 |
+| --- | ---: |
+| se.play | 1047 |
+| spine.face.set | 3368 |
+| spine.body.play | 1615 |
+| spine.neck.play | 314 |
+| spine.visual.tint | 6 |
+| spine.neck.stop | 66 |
+
+normalizer 尚未映射字段按角色路径合并：`state.spines.*.fade` 2790 条，
+`state.spines.*.idol_color_transition` 48 条，`state.screen_effects` 6 条。
+它们是字段出现次数，不是不同动作或受影响步骤数。全体步骤仍保留 animation、
+filters、particles、background geometry 与 audio side effects 的 partial 限制。
+
+下一步优先核对角色 fade/tint 的源字段、管理器语义与只读可观察状态，再决定
+投影扩展；不先删除 unmapped 标记。音频仍是副作用，不纳入纯状态执行。
+本批只扩验证覆盖和报告，未更改播放器行为，未启动长稳或 E2。

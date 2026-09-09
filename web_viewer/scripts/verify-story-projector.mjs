@@ -113,13 +113,24 @@ try {
   }
 } finally { [globalThis.requestAnimationFrame, globalThis.cancelAnimationFrame] = saved }
 if (process.argv.includes('--local-sources')) {
-  for (const name of ['1_4_001_00_a', '1_4_001_01_a', '1_4_001_01_d', '1_4_001_02_a', '1_4_001_03_h']) {
+  const catalog = JSON.parse(readFileSync(new URL('../public/data/masterdata/story_catalog.json', import.meta.url)))
+  const names = [...new Set(catalog.collectionStructure.filter(c => c.domain === 'main')
+    .flatMap(c => c.chapters.flatMap(chapter => chapter.episodes.map(e => e.resourceId))))]
+  assert.ok(names.length, 'published main corpus must not be empty')
+  const coverage = { documents: names.length, steps: 0, queries: 0, unsupportedCueActions: {}, unmappedFields: {}, limitations: {}, notProjectedSteps: { background: 0, screen: 0 } }
+  for (const name of names) {
+    assert.match(name, /^[A-Za-z0-9_-]+$/)
     const source = normalizeScenario(JSON.parse(readFileSync(new URL(`../public/data/compiled/episodes/${name}.json`, import.meta.url))))
+    const original = JSON.stringify(source)
+    coverage.steps += source.steps.length
     for (let stepIndex = 0; stepIndex < source.steps.length; stepIndex++) {
       const step = source.steps[stepIndex]
       const times = new Set([0, ...step.cues.flatMap(c => [Math.max(0, c.at - .001), c.at, c.at + c.duration / 2, c.at + c.duration])])
+      const outputs = new Map()
       for (const time of times) {
+        coverage.queries++
         const output = projectStoryState(source, { stepIndex, time, viewport })
+        outputs.set(time, output)
         assert.deepEqual(projectStoryState(source, { stepIndex, time, viewport }), output)
         assert.equal(output.step_id, step.step_id)
         if (time >= Math.max(0, ...step.cues.map(c => c.at + c.duration))) {
@@ -127,8 +138,22 @@ if (process.argv.includes('--local-sources')) {
           if (output.background.status === 'projected') assert.equal(output.background.layers.at(-1)?.bg ?? null, step.settled_snapshot.bg || null, `${name}:${step.step_id} background settled`)
         }
       }
+      for (const time of [...times].reverse()) assert.deepEqual(projectStoryState(source, { stepIndex, time, viewport }), outputs.get(time), `${name}:${step.step_id}: query order`)
+      const final = projectStoryState(source, { stepIndex, time: Math.max(0, ...step.cues.map(c => c.at + c.duration)), viewport })
+      for (const id of new Set(final.coverage.unsupported_cues)) {
+        const action = step.cues.find(cue => cue.cue_id === id)?.action
+        assert.ok(action, `${name}:${step.step_id}: unsupported cue must resolve to its source`)
+        coverage.unsupportedCueActions[action] = (coverage.unsupportedCueActions[action] || 0) + 1
+      }
+      for (const limitation of new Set(final.coverage.limitations)) coverage.limitations[limitation] = (coverage.limitations[limitation] || 0) + 1
+      for (const field of new Set(final.coverage.unmapped_fields)) {
+        const path = field.replace(/^state\.spines\.[^.]+\./, 'state.spines.*.')
+        coverage.unmappedFields[path] = (coverage.unmappedFields[path] || 0) + 1
+      }
+      for (const channel of ['background', 'screen']) if (final[channel].status !== 'projected') coverage.notProjectedSteps[channel]++
     }
-    console.log(`Local normalized story queried: ${name}, ${source.steps.length} steps`)
+    assert.equal(JSON.stringify(source), original, `${name}: projection cannot mutate normalized input`)
   }
+  console.log(`Local main corpus coverage: ${JSON.stringify(coverage)}`)
 }
 console.log(`Projector verified: pure/order-independent queries, resolved history, boundaries and ${comparisons} production-manager shadow comparisons`)
