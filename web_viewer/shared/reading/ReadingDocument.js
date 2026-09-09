@@ -100,3 +100,12 @@ export function readingAvatarEntity(row) {
   return ['named', 'idol'].includes(s?.kind) && s.entityType === 'idol' && /^[0-9]{3}[a-z]{3}$/.test(s.entityId || '')
     ? s.entityId : null
 }
+
+export function readingPresentationSpeaker(row) {
+  const speaker = { ...row.speaker }
+  // Keep canonical identity on the row, but do not reveal an unknown speaker
+  // through translated entity names. Producer markup is a display token.
+  if (speaker.kind === 'unknown') { speaker.entityId = null; speaker.entityType = null }
+  if (speaker.kind === 'producer' && speaker.sourceName === '<P>') speaker.sourceName = 'プロデューサー'
+  return speaker
+}

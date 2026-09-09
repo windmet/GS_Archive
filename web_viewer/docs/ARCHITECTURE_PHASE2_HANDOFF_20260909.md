@@ -7,6 +7,9 @@
 
 ## 最新执行调整（2026-09-09 用户补充）
 
+实施进展：M 移动门户与 D1 小样本独立 Reader 已完成本地验收；下一批为 D2/F。
+见 [D1 验收记录](READING_D1_ACCEPTANCE_20260909.md)。下文现状表保留本交接起点的历史状态。
+
 用户已明确将 pre-E 正式长稳后移。当前执行顺序为移动迷你手机门户 → D1 Reading →
 D2/F 阅读与演出往返 → E1 shadow；pre-E 在 E2 接管前补齐，不阻塞上述开发。
 完整边界与 Sekai 审计吸收见 [移动门户与 Reading 路线](MOBILE_PORTAL_READING_ROADMAP_20260909.md)。

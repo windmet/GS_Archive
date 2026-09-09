@@ -5,6 +5,9 @@ import { ref } from 'vue'
 export function useArchiveNavigationState() {
   const view = ref('__boot__')
   const portalFrom = ref('')
+  const readingDocumentId = ref('')
+  const readingRowId = ref('')
+  const readingMode = ref('original')
   const returnViewAfterPlayer = ref('files')
   const storyCollectionParentView = ref('')
   const songParentView = ref('')
@@ -46,6 +49,7 @@ export function useArchiveNavigationState() {
   const storyDetailParentView = ref('')
 
   function currentArchiveRoute() {
+    if (view.value === 'reader') return { view: 'reader', reading: readingDocumentId.value, readingRow: readingRowId.value, readingMode: readingMode.value }
     if (view.value === 'portal') return { view: 'portal', portalFrom: portalFrom.value }
     const returnsToEvent = view.value === 'player' && returnViewAfterPlayer.value === 'event_detail'
     const returnsToStory = view.value === 'player' && returnViewAfterPlayer.value === 'story_detail'
@@ -115,6 +119,9 @@ export function useArchiveNavigationState() {
   return {
     view,
     portalFrom,
+    readingDocumentId,
+    readingRowId,
+    readingMode,
     returnViewAfterPlayer,
     storyCollectionParentView,
     songParentView,

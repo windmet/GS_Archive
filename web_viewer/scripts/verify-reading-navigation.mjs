@@ -1,0 +1,71 @@
+import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import vm from 'node:vm'
+import { createReadingSession } from '../src/core/ReadingSession.js'
+import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
+import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
+import { buildArchiveUrl, readArchiveRoute, readPortalReturnRoute, buildPortalReturnQuery } from '../src/core/archiveRoute.js'
+import { readingPresentationSpeaker } from '../shared/reading/ReadingDocument.js'
+import { resolveStoryText } from '../src/localization/story/StoryTextResolver.js'
+
+const route = readArchiveRoute('http://localhost/?view=reader&reading=1_4_001_01_d&reading_mode=bilingual&reading_row=1_4_001_01_d:step-9:text')
+assert.equal(route.view, 'reader')
+assert.deepEqual(readArchiveRoute(buildArchiveUrl('http://localhost/?scenario=old&reading_row=stale', route)), route)
+assert.deepEqual(readPortalReturnRoute(buildPortalReturnQuery(route)), route)
+assert.equal(buildArchiveUrl('http://localhost/?reading=x&reading_mode=translation', { view: 'home' }).search, '')
+assert.equal(readArchiveRoute('http://localhost/?view=reader&reading=../../RAW').view, 'story_catalog')
+assert.equal(readArchiveRoute('http://localhost/?view=reader&reading=x&reading_mode=bad').readingMode, 'original')
+
+let state
+let resolveSlow
+let rejectSlow
+const navigation = createArchiveNavigationCoordinator()
+const repository = { manifest: async () => ({ entries: [{ document_id: 'fast' }] }), load: async id => {
+  if (id === 'slow') return new Promise((resolve, reject) => { resolveSlow = resolve; rejectSlow = reject })
+  if (id === 'error') throw Error('controlled failure')
+  return { status: id === 'fast' ? 'ready' : id, document: id === 'fast' ? { document_id: id } : null }
+} }
+const session = createReadingSession({ repository, publish: next => { state = next } })
+const open = id => navigation.run(intent => session.open(id, intent))
+const slow = open('slow')
+await Promise.resolve(); await Promise.resolve()
+assert.equal(state.status, 'loading')
+await open('fast')
+const fastState = state
+resolveSlow({ status: 'ready', document: { document_id: 'slow' } })
+await slow
+assert.equal(state, fastState)
+const staleError = open('slow')
+await Promise.resolve(); await Promise.resolve()
+navigation.invalidate()
+state = { status: 'outside-reader' }
+rejectSlow(Error('obsolete'))
+await staleError
+assert.equal(state.status, 'outside-reader')
+for (const status of ['empty', 'unsupported', 'not-generated', 'error']) {
+  await open(status)
+  assert.equal(state.status, status)
+  assert.equal(state.document, null)
+}
+// Exercise the actual App route branch with no player/preloader globals present.
+const context = { ...useArchiveNavigationState(), navigation, readingSession: session,
+  currentScenario: { value: { old: true } }, loading: { value: true } }
+const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
+vm.runInNewContext(app.match(/async function applyArchiveRoute\([^]*?\n\}/)[0], context)
+await context.applyArchiveRoute(route)
+assert.equal(context.view.value, 'reader')
+assert.equal(context.currentScenario.value, null)
+assert.equal(context.readingMode.value, 'bilingual')
+assert.equal(context.readingDocumentId.value, '1_4_001_01_d')
+assert.equal(readArchiveRoute(buildArchiveUrl('http://localhost/', context.currentArchiveRoute())).readingRow, route.readingRow)
+let syncDuringPending = false
+context.syncArchiveRoute = () => { syncDuringPending = navigation.isPending() && !navigation.isRestoring() }
+vm.runInNewContext(app.match(/async function openStoryReader\([^]*?\n\}/)[0], context)
+await context.openStoryReader('fast')
+assert.equal(syncDuringPending, true, 'explicit selection publishes its URL while loading')
+const unknown = { speaker: { kind: 'unknown', entityType: 'idol', entityId: '047shu', sourceName: '？？？' } }
+const display = resolveStoryText({ source: 'text', speaker: readingPresentationSpeaker(unknown),
+  entityNames: { 'zh-CN': { '047shu': 'must not reveal' } }, preferences: { story_content_mode: 'translation' } })
+assert.equal(display.speaker.display, '？？？')
+assert.equal(unknown.speaker.entityId, '047shu')
+console.log('Reading navigation verified: route round trips, portal return, stale success/error, page states and identity privacy')

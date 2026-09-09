@@ -1,5 +1,5 @@
 <template>
-  <div class="archive-shell" :class="{ 'has-inspector': hasInspector, 'is-home': activeSection === 'home', 'is-portal': activeSection === 'portal' }">
+  <div class="archive-shell" :class="{ 'has-inspector': hasInspector, 'is-home': activeSection === 'home', 'is-portal': activeSection === 'portal' || activeSection === 'reader' }">
     <aside class="archive-sidebar" aria-label="资料馆导航">
       <div class="archive-brand">
         <img :src="getBrandMarkUrl()" alt="" />
@@ -9,8 +9,8 @@
         <button
           v-for="item in navigation"
           :key="item.id"
-          :class="{ active: activeSection === item.id }"
-          :aria-current="activeSection === item.id ? 'page' : undefined"
+          :class="{ active: (activeSection === item.id || (activeSection === 'reader' && item.id === 'stories')) }"
+          :aria-current="(activeSection === item.id || (activeSection === 'reader' && item.id === 'stories')) ? 'page' : undefined"
           @click="emit('navigate', item.id)"
         >
           <component :is="item.icon" :size="19" :stroke-width="1.8" />
@@ -19,7 +19,7 @@
       </nav>
     </aside>
 
-    <header v-if="activeSection !== 'portal'" class="archive-topbar">
+    <header v-if="!['portal', 'reader'].includes(activeSection)" class="archive-topbar">
       <button v-if="showBack" class="archive-back" title="返回" @click="emit('back')">
         <ArrowLeft :size="18" />
         <span>返回</span>
@@ -54,8 +54,8 @@
       <button
         v-for="item in mobileNavigation"
         :key="item.id"
-        :class="{ active: activeSection === item.id }"
-        :aria-current="activeSection === item.id ? 'page' : undefined"
+        :class="{ active: (activeSection === item.id || (activeSection === 'reader' && item.id === 'stories')) }"
+        :aria-current="(activeSection === item.id || (activeSection === 'reader' && item.id === 'stories')) ? 'page' : undefined"
         @click="emit('navigate', item.id)"
       >
         <component :is="item.icon" :size="21" :stroke-width="1.8" />

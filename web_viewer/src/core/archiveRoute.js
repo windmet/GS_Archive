@@ -1,5 +1,8 @@
 const ROUTE_QUERY_KEYS = [
   'portal_from',
+  'reading',
+  'reading_row',
+  'reading_mode',
   'view',
   'home_idol',
   'home_cue',
@@ -39,6 +42,7 @@ const ROUTE_QUERY_KEYS = [
 
 const VALID_VIEWS = new Set([
   'portal',
+  'reader',
   'home',
   'idols',
   'idol_detail',
@@ -80,9 +84,10 @@ const VALID_STORY_SORTS = new Set(['domain', 'title', 'resource', 'steps_desc'])
 const VALID_STORY_MODES = new Set(['portal', 'search'])
 const VALID_SONG_SCOPES = new Set(['all', 'movie', 'mvlive', 'layered', 'oneshot', 'special'])
 const VALID_MOBILE_MODES = new Set(['personal', 'phone', 'unit', 'random'])
-const VALID_RETURN_VIEWS = new Set([...VALID_VIEWS].filter(view => !['player', 'spine_lab', 'chibi_stage'].includes(view)))
+const VALID_RETURN_VIEWS = new Set([...VALID_VIEWS].filter(view => !['player', 'spine_lab', 'chibi_stage', 'reader'].includes(view)))
 
 const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
+  reader: { section: 'reader', required: [], fallback: 'story_catalog' },
   portal: { section: 'portal', required: [] },
   home: { section: 'home', required: [] },
   archive_status: { section: 'resources', required: [] },
@@ -125,7 +130,7 @@ const ARCHIVE_NAVIGATION = Object.freeze([
   { id: 'resources', label: '资源' },
 ])
 
-const BREADCRUMB_HIDDEN_VIEWS = new Set(['home', 'portal', 'player', 'spine_lab', 'chibi_stage'])
+const BREADCRUMB_HIDDEN_VIEWS = new Set(['home', 'portal', 'reader', 'player', 'spine_lab', 'chibi_stage'])
 
 // A launcher return is a bounded, local archive query, never an external URL.
 // Strip nesting before normalization so a shared portal URL cannot recurse.
@@ -228,6 +233,12 @@ export function normalizeArchiveRoute(input = {}) {
   if (view === 'player' && !scenario && !(voice && card)) view = contract.fallback
   else if (contract?.required.some(key => !route[key])) view = contract.fallback
   route.view = view || 'home'
+  if (route.view === 'reader') {
+    route.reading = /^[A-Za-z0-9_-]+$/.test(input.reading || '') ? input.reading : ''
+    route.readingRow = typeof input.readingRow === 'string' && input.readingRow.length <= 240 ? input.readingRow : ''
+    route.readingMode = ['original', 'translation', 'bilingual'].includes(input.readingMode) ? input.readingMode : 'original'
+    if (!route.reading) route.view = 'story_catalog'
+  }
   if (route.view === 'portal') route.portalFrom = buildPortalReturnQuery(readPortalReturnRoute(input.portalFrom))
   return route
 }
@@ -421,6 +432,9 @@ export function readArchiveRoute(input = null) {
   return normalizeArchiveRoute({
     view: params.get('view'),
     portalFrom: params.get('portal_from'),
+    reading: params.get('reading'),
+    readingRow: params.get('reading_row'),
+    readingMode: params.get('reading_mode'),
     homeIdol: clean(params.get('home_idol')),
     homeCue: clean(params.get('home_cue')),
     homeCostume: clean(params.get('home_costume')),
@@ -465,6 +479,12 @@ export function buildArchiveUrl(input, route) {
   url.searchParams.delete('file')
 
   if (normalized.view !== 'home') url.searchParams.set('view', normalized.view)
+  if (normalized.view === 'reader') {
+    url.searchParams.set('reading', normalized.reading)
+    if (normalized.readingRow) url.searchParams.set('reading_row', normalized.readingRow)
+    if (normalized.readingMode !== 'original') url.searchParams.set('reading_mode', normalized.readingMode)
+    return url
+  }
   if (normalized.view === 'portal') {
     if (normalized.portalFrom) url.searchParams.set('portal_from', normalized.portalFrom)
     return url

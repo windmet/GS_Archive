@@ -29,6 +29,10 @@ for (const sample of samples) {
     || compiled.schema_version === 2 || compiled.scenario_id !== sample.document_id)) throw Error(`Unrecognized published episode: ${sample.file}`)
   const document = createReadingDocument(compiled, { documentId: sample.document_id,
     logicalId: sample.logical_id, file: sample.file, sha256: hash(bytes) })
+  const displayChapter = catalog.collectionStructure.flatMap(s => s.chapters).find(c =>
+    `story-collection:${c.file.replace(/\.json$/, '')}` === sample.logical_id)
+  const displayEpisode = displayChapter?.episodes.find(e => e.resourceId === sample.document_id)
+  document.presentation = { title: displayChapter?.title ?? null, episode_label: displayEpisode?.label ?? null }
   document.source.publication = publication ? { kind: 'authoritative-registry', ownership: publication.ownership }
     : { kind: 'catalog-compatibility', aggregate_file: aggregate.file }
   const output = serialize(document)

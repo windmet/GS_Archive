@@ -16,6 +16,8 @@
       @navigate="navigateArchiveSection"
       @back="goArchiveBack"
     >
+      <ArchiveStoryReader v-if="view === 'reader'" :state="readingState" :document-id="readingDocumentId" :mode="readingMode" :anchor="readingRowId"
+        @select="openStoryReader" @mode="updateReadingMode" @back="openStoryCatalog" @retry="openStoryReader(readingDocumentId)" />
       <ArchivePortalLauncher
         v-if="view === 'portal'"
         @navigate="navigateArchiveSection"
@@ -407,6 +409,9 @@ import StoryReleaseSoakPanel from './components/player/StoryReleaseSoakPanel.vue
 import { missingExtraFileEntries } from './data/storyFileMetadata.js'
 import ArchiveImmersiveHome from './components/archive/ArchiveImmersiveHome.vue'
 import ArchiveShell from './components/archive/ArchiveShell.vue'
+import { createReadingRepository } from './data/ReadingRepository.js'
+import { createReadingSession } from './core/ReadingSession.js'
+import ArchiveStoryReader from './components/archive/ArchiveStoryReader.vue'
 import ArchivePortalLauncher from './components/archive/ArchivePortalLauncher.vue'
 import ArchiveCardList from './components/archive/ArchiveCardList.vue'
 import ArchiveCardDetail from './components/archive/ArchiveCardDetail.vue'
@@ -504,6 +509,9 @@ function resolveChatName(ch) {
 const {
   view,
   portalFrom,
+  readingDocumentId,
+  readingRowId,
+  readingMode,
   returnViewAfterPlayer,
   storyCollectionParentView,
   songParentView,
@@ -1163,12 +1171,16 @@ const currentIdolStats = computed(() => buildIdolStats(currentCharacterId.value,
 const currentIdolEvents = computed(() => eventsForIdol(currentCharacterId.value, archiveManifestData.value))
 const currentIdolSongs = computed(() => songsForIdol(currentCharacterId.value, songCatalogData.value))
 
+const readingState = ref({ status: 'idle', document: null, entries: [], error: '' })
+const readingSession = createReadingSession({ repository: createReadingRepository(), publish: state => { readingState.value = state } })
+
 const archiveShellVisible = computed(() => !['__boot__', 'player', 'spine_lab', 'chibi_stage'].includes(view.value))
 
 const currentSong = computed(() => songCatalogData.value?.songs?.[currentSongId.value] || null)
 
 const archiveSection = computed(() => archiveSectionForRoute({
   view: view.value,
+  reading: readingDocumentId.value,
   category: currentCategoryId.value,
   idol: currentCharacterId.value,
   card: currentCardId.value,
@@ -1181,6 +1193,7 @@ const archiveSection = computed(() => archiveSectionForRoute({
 }))
 
 const archiveTitle = computed(() => {
+  if (view.value === 'reader') return '剧情阅读'
   if (view.value === 'portal') return '我的资料馆'
   if (view.value === 'home') return 'SideM Archive'
   if (view.value === 'archive_status') return '数据状态'
@@ -1427,8 +1440,18 @@ function restoreVoicePreview(route) {
   return true
 }
 
-async function applyArchiveRoute(route) {
+async function applyArchiveRoute(route, { restoring = true } = {}) {
   return navigation.run(async intent => {
+    if (route.view === 'reader') {
+      readingDocumentId.value = route.reading
+      readingRowId.value = route.readingRow || ''
+      readingMode.value = route.readingMode || 'original'
+      currentScenario.value = null
+      view.value = 'reader'
+      loading.value = false
+      await readingSession.open(route.reading, intent)
+      return
+    }
     if (route.view === 'portal') {
       portalFrom.value = route.portalFrom || ''
       currentScenario.value = null
@@ -1558,7 +1581,7 @@ async function applyArchiveRoute(route) {
     else if (route.view === 'files' && !currentGroup.value) view.value = currentCharacterId.value ? 'groups' : 'home'
     else if (route.view === 'episodes' && !currentUnit.value) view.value = 'episode_zero_units'
     else view.value = route.view || 'home'
-  }, { restoring: true })
+  }, { restoring })
 }
 
 function goHome() {
@@ -1604,6 +1627,18 @@ function navigateArchiveSection(section) {
   else if (section === 'interactions') openMobileArchive({ idolCode: currentCharacterId.value || '001tom', mode: 'personal' })
   else if (section === 'gashas') openGashaCatalog()
   else if (section === 'resources') openArchiveStatus()
+}
+
+async function openStoryReader(documentId) {
+  const pending = applyArchiveRoute({ view: 'reader', reading: documentId, readingMode: readingMode.value }, { restoring: false })
+  // Publish the requested route immediately, including while text is loading.
+  syncArchiveRoute()
+  await pending
+}
+
+function updateReadingMode(mode) {
+  readingMode.value = mode
+  syncArchiveRoute({ replace: true })
 }
 
 function openArchivePortal() {
