@@ -107,3 +107,35 @@ suppressed 恢复不重放。未知角色、非法颜色保持 unsupported cue�
 可见性与资源就绪；零 duration 实际也使用默认淡入时间。不能直接按剧情中的
 fade duration 当作线性透明度输入。后续须补显式视觉 entry/实际开始时刻的
 读取契约与浏览器对照；这不影响当前播放器继续工作。
+
+## E1 背景局部几何（接续 `7a06913`）
+
+新增 `backgroundGeometry`，显式标注 `space: background-container-local`。
+调用方通过 `context.backgroundTextures[bg] = {width, height}` 提供纹理原始尺寸；
+纯投影不加载纹理，不读取 renderer。输出各混合层的 x/y、width/height、
+scaleX/scaleY、anchorX/anchorY，背景层身份仍由原背景状态投影决定。
+
+生产 `_applyBgCover` 实际按视口高度等比缩放，水平居中且 x 四舍五入、y=0、
+anchor=0；不能替换成常见的 max(widthRatio,heightRatio) cover 公式。
+这里只投影局部 Sprite 几何，不宣称滤镜、相机叠加后的屏幕像素或完整画面 parity。
+缺失/无效尺寸、不可投影的背景切换仍返回 not-projected；无背景时为空列表。
+只有尺寸充分时才移除本次查询的 background-geometry limitation。
+
+只读 shadow 从当前及过渡 Sprite 的 `texture.orig` 读取尺寸作为输入，并独立
+读取 Sprite 的实际变换作对照。不会将实际 x/scale 当作预期值；人为偏移 x 的
+测试能报告差异。纹理等待、显式 settlement、失败/取消等沿用背景通道的不可比较规则。
+旧 renderer、normalizer、背景加载与 resize 执行逻辑均未改变，E2 仍未接管。
+
+验证：12 组真实 PIXI Sprite / 生产 `_applyBgCover` 比较，包含四种纹理比例及
+桌面、390×844、非整比例视口的重复 resize；已有 45 组生产管理器对照通过。
+缺尺寸、无效尺寸、空背景、过渡双层、只读不变及故意几何偏差验证通过。
+全主线 204 分段/6817 步/17973 查询回归通过；离线未提供纹理尺寸，因此
+6795 步仍有 background-geometry 限制，另 22 步为空背景，不能称全库几何验收。
+
+浏览器实际 URL：
+`http://127.0.0.1:5175/?view=player&scenario=episodes%2F1_4_001_05_j.json&start_step=3&runtimeDebug=1`。
+step_id=3、纹理 bg083_ringstage_out_03（1800×960）：桌面 1280.453125×720.453125
+及手机 390.34375×844.125 均得到 backgroundGeometry match，error 日志为空。
+两份完整报告保存在 `C:/Users/windm/.codex/evidence/sidem-background-geometry/2026-09-09/`。
+未启动 START/长稳；未声称真实浏览器背景过渡中途或所有纹理已验证。
+source-only Vite build 通过，既有主包超过 500kB 提示仍在。

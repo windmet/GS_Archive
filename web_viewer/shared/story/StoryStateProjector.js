@@ -110,11 +110,22 @@ export function projectStoryState(scenario, { stepIndex, time, viewport, context
     background.layers = backgroundFrom === bg ? [{ bg, alpha: 1 }]
       : [...(backgroundFrom && t < 1 ? [{ bg: backgroundFrom, alpha: 1 - t }] : []), ...(bg ? [{ bg, alpha: t }] : [])]
   } else if (background.status !== 'projected') background.layers = null
+  const geometry = background.layers?.map(({ bg }) => {
+    const size = context.backgroundTextures?.[bg]
+    if (!(Number.isFinite(size?.width) && size.width > 0 && Number.isFinite(size?.height) && size.height > 0)) return null
+    const scale = viewport.height / size.height, width = size.width * scale
+    return { bg, x: Math.round((viewport.width - width) / 2), y: 0,
+      width, height: size.height * scale, scaleX: scale, scaleY: scale, anchorX: 0, anchorY: 0 }
+  })
+  const geometryReady = !!geometry && geometry.every(Boolean)
+  if (geometryReady) coverage.limitations = coverage.limitations.filter(item => item !== 'background-geometry')
   return {
     projector_version: 1, step_index: stepIndex, step_id: step.step_id, time,
     basis: { cue_policy: context.cuePolicy || 'replay', entry: context.entrySnapshot ? 'resolved-entry' : 'compiled-entry', history_id: context.historyId || null,
       timing: Object.keys(context.startedAt || {}).length ? 'explicit-starts' : 'asset-ready-semantic' },
     background, camera: { status: 'projected', ...cameraAt(camera, time) }, screen: { status: 'projected', ...screen },
+    backgroundGeometry: { status: geometryReady ? 'projected' : 'not-projected',
+      space: 'background-container-local', layers: geometryReady ? geometry : null },
     spines: { status: 'not-projected', entry: clone(entry.spines || []) },
     spineTints: { status: [...tintMotions.values()].some(m => m.blocked || m.to === null) ? 'partial' : 'projected',
       entries: [...tintMotions].map(([id, motion]) => ({ id, status: motion.blocked || motion.to === null ? 'not-projected' : 'projected',

@@ -12,6 +12,28 @@ const cue = (action, payload, at = .5, duration = 2, id = action) => ({ cue_id: 
 const scenario = cues => ({ schema_version: 2, steps: [{ step_id: 713, entry_snapshot: { bg: 'A' }, cues }] })
 const query = (input, time, context) => projectStoryState(input, { stepIndex: 0, time, viewport, context })
 const close = (a, b) => assert.ok(Math.abs(a - b) < 1e-8, `${a} != ${b}`)
+let geometryComparisons = 0
+for (const [width, height] of [[1920, 1080], [1000, 1000], [500, 1500], [2561, 720]]) {
+  const sprite = new Sprite(new Texture(new BaseTexture(null, { width, height })))
+  for (const view of [viewport, { width: 390, height: 844 }, { width: 1001, height: 563 }]) {
+    BackgroundManager.prototype._applyBgCover.call({ getWidth: () => view.width, getHeight: () => view.height }, sprite)
+    const context = freeze({ backgroundTextures: { A: { width, height } } })
+    const args = { stepIndex: 0, time: 0, viewport: view, context }
+    const projected = projectStoryState(scenario([]), args).backgroundGeometry
+    assert.equal(projected.status, 'projected')
+    for (const key of ['x', 'y', 'width', 'height']) close(projected.layers[0][key], sprite[key])
+    close(projected.layers[0].scaleX, sprite.scale.x); close(projected.layers[0].scaleY, sprite.scale.y)
+    close(projected.layers[0].anchorX, sprite.anchor.x); close(projected.layers[0].anchorY, sprite.anchor.y)
+    assert.deepEqual(projectStoryState(scenario([]), args).backgroundGeometry, projected)
+    geometryComparisons++
+  }
+  sprite.destroy({ texture: true, baseTexture: true })
+}
+for (const size of [undefined, { width: 0, height: 1 }, { width: 1, height: Infinity }]) {
+  assert.equal(query(scenario([]), 0, { backgroundTextures: { A: size } }).backgroundGeometry.status, 'not-projected')
+}
+assert.equal(query({ schema_version: 2, steps: [{ entry_snapshot: {}, cues: [] }] }, 0).backgroundGeometry.status, 'projected')
+console.log(`Background geometry: ${geometryComparisons} production Sprite comparisons across aspect ratios and resized viewports`)
 const input = scenario([cue('camera.transform', { zoom: 2, offset_x: 30, offset_y: -20 }),
   cue('screen.fade', { type: 'out', alpha: .8 }), cue('background.change', { bg: 'B', type: 'dissolve' })])
 const frozen = JSON.stringify(input)

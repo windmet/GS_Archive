@@ -13,8 +13,10 @@ const cues = [
 ].map((c, index) => ({ ...c, cue_id: `c${index}`, at: .5, duration: 2 }))
 const scenario = { schema_version: 2, steps: [{ step_id: 91, entry_snapshot: { bg: 'A' }, cues }] }
 const runtime = { clock: { time: 3, state: 'paused' }, entries: cues.map(c => ({ ...c, started_at: .5, status: 'settled', completion_mode: 'natural' })) }
+const bgSprite = alpha => ({ alpha, texture: { orig: { width: 1280, height: 720 } },
+  width: 1280, height: 720, x: 0, y: 0, scale: { x: 1, y: 1 }, anchor: { x: 0, y: 0 } })
 const manager = { width: 1280, height: 720,
-  backgroundManager: { bgSprite: { alpha: 1 }, currentBgId: 'B' },
+  backgroundManager: { bgSprite: bgSprite(1), currentBgId: 'B' },
   spineContainer: { scale: { x: 2 }, x: -640, y: -360 },
   _fadeOverlay: { visible: true, tint: 0xFFFFFF, alpha: .8 },
   _slideOverlay: { visible: false, tint: 0xFFFFFF, x: 0, y: 0 },
@@ -34,7 +36,7 @@ assert.equal(capture({ manager: pending }).channels.background.reason, 'texture-
 const settled = structuredClone(runtime); settled.entries[0].completion_mode = 'explicit-settlement'
 assert.equal(capture({ runtime: settled }).channels.background.reason, 'explicit-settlement-requires-resolved-entry')
 const delayed = structuredClone(manager)
-delayed.backgroundManager._bgTransition = { oldBgId: 'A', newBgId: 'B', oldSprite: { alpha: .5 }, newSprite: { alpha: .5 }, startedAtMilliseconds: 1500 }
+delayed.backgroundManager._bgTransition = { oldBgId: 'A', newBgId: 'B', oldSprite: bgSprite(.5), newSprite: bgSprite(.5), startedAtMilliseconds: 1500 }
 const midway = capture({ manager: delayed, runtime: { ...runtime, clock: { time: 2.5, state: 'paused' } } })
 assert.equal(midway.channels.background.status, 'match', 'texture-ready clock must replace dispatch time for a live background transition')
 const tweenTimed = structuredClone(manager)
@@ -51,6 +53,15 @@ const restored = capture({ scenario: { schema_version: 2, steps: [{ ...scenario.
     entrySnapshot: { bg: 'B', camera_zoom: { zoom: 2 }, screen_overlay: { visible: true, kind: 'fade', color: '#FFFFFF', alpha: .8 } } } })
 assert.equal(restored.status, 'match')
 assert.equal(capture({ manager: null }).reason, 'runtime-not-ready')
+const missingTexture = structuredClone(manager)
+delete missingTexture.backgroundManager.bgSprite.texture
+assert.equal(capture({ manager: missingTexture }).channels.backgroundGeometry.reason, 'texture-dimensions-unavailable')
+const shiftedBg = structuredClone(manager)
+shiftedBg.backgroundManager.bgSprite.x = 7
+assert.deepEqual(capture({ manager: shiftedBg }).channels.backgroundGeometry.differences,
+  [{ path: '0.x', expected: 0, actual: 7, delta: 7 }])
+assert.equal(capture({ manager: pending }).channels.backgroundGeometry.reason, 'texture-pending')
+assert.equal(midway.channels.backgroundGeometry.status, 'match')
 
 const tintScenario = structuredClone(scenario)
 tintScenario.steps[0].entry_snapshot.spines = [{ id: '001tom', idol_color: '#FFFFFF' }]

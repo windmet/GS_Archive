@@ -13,7 +13,8 @@
   [本机版本化阅读位置](READING_PROGRESS_20260909.md)均已实现。不能称为全库 Reading 完成。
 - E1 已有全主线离线投影审计与 Spine tint 的运行时只读 shadow；
   [契约](STORY_PROJECTOR_CONTRACT_20260909.md)、[shadow 验收](PROJECTOR_SHADOW_ACCEPTANCE_20260909.md)。
-  动画、滤镜、粒子、背景几何及音频副作用等仍有未覆盖范围；中途 tint 的实际帧差异保留。
+  背景局部几何现已增加显式纹理尺寸投影与桌面/手机真实 shadow，详见同一投影契约；
+  尚无全库纹理尺寸验收。动画、滤镜、粒子及音频副作用等仍有未覆盖范围；中途 tint 的实际帧差异保留。
   下一步继续处理明确的 E1 未覆盖状态通道，不能把 partial 改写为完整确定性投影。
 - F 播放 controller 已接管既有会话入口，详见 [验收](PLAYBACK_CONTROLLER_ACCEPTANCE_20260909.md)；
   G 后续仍只针对实际编译领域边界，不重启全仓 helper 拆分。

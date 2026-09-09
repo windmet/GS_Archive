@@ -9,6 +9,15 @@ function readPlane(plane, kind) {
 }
 export function readProjectorActual(manager) {
   const background = manager.backgroundManager, transition = background?._bgTransition
+  const sprites = transition?.newSprite ? [
+    ...(usable(transition.oldSprite) ? [[transition.oldBgId, transition.oldSprite]] : []),
+    [transition.newBgId, transition.newSprite],
+  ] : usable(background?.bgSprite) ? [[background.currentBgId, background.bgSprite]] : []
+  const backgroundTextures = Object.fromEntries(sprites.map(([bg, sprite]) => [bg,
+    { width: sprite.texture?.orig?.width, height: sprite.texture?.orig?.height }]))
+  const backgroundGeometry = sprites.map(([bg, sprite]) => ({ bg, x: sprite.x, y: sprite.y,
+    width: sprite.width, height: sprite.height, scaleX: sprite.scale?.x, scaleY: sprite.scale?.y,
+    anchorX: sprite.anchor?.x, anchorY: sprite.anchor?.y }))
   const layers = transition?.newSprite ? [
     ...(usable(transition.oldSprite) ? [{ bg: transition.oldBgId, alpha: transition.oldSprite.alpha }] : []),
     { bg: transition.newBgId, alpha: transition.newSprite.alpha },
@@ -16,6 +25,7 @@ export function readProjectorActual(manager) {
   const container = manager.spineContainer
   const timing = handle => !handle || handle.cancelled ? null : { started_at: handle.startedAtMilliseconds / 1000, sampled_at: handle.sampledAtMilliseconds == null ? null : handle.sampledAtMilliseconds / 1000 }
   return {
+    backgroundTextures, backgroundGeometry,
     timing: { camera: timing(manager.cameraController?._cameraTween), fade: timing(manager._screenFadeTween), wipe: timing(manager._screenSlideTween) },
     background: background ? { layers, pending_texture: !!transition && !transition.newSprite,
       started_at: transition?.startedAtMilliseconds == null ? null : transition.startedAtMilliseconds / 1000,
@@ -67,7 +77,8 @@ export function captureProjectorShadow({ scenario, stepIndex, runtime, manager, 
     const start = observed.timing?.started_at
     if (dispatched && knownIds.has(dispatched.cue_id) && Number.isFinite(dispatched.started_at) && Number.isFinite(start) && start >= dispatched.started_at) starts[dispatched.cue_id] = start
   }
-  const basis = { ...context, ...(context.cuePolicy !== 'suppressed' ? { startedAt: starts } : {}) }
+  const basis = { ...context, backgroundTextures: actual.backgroundTextures,
+    ...(context.cuePolicy !== 'suppressed' ? { startedAt: starts } : {}) }
   let expected
   try { expected = projectStoryState(scenario, { stepIndex, time, viewport: { width: manager.width, height: manager.height }, context: basis }) }
   catch (error) { return { status: 'not-comparable', reason: 'projection-input', detail: error.message, step_index: stepIndex, time, actual } }
@@ -93,6 +104,14 @@ export function captureProjectorShadow({ scenario, stepIndex, runtime, manager, 
     const delta = differences(wanted, observed)
     samples[channel] = { status: delta.length ? 'difference' : 'match', differences: delta }
   }
+  if (samples.background.status === 'not-comparable') {
+    samples.backgroundGeometry = { status: 'not-comparable', reason: samples.background.reason }
+  } else if (expected.backgroundGeometry.status !== 'projected') {
+    samples.backgroundGeometry = { status: 'not-comparable', reason: 'texture-dimensions-unavailable' }
+  } else {
+    const delta = differences(expected.backgroundGeometry.layers, actual.backgroundGeometry)
+    samples.backgroundGeometry = { status: delta.length ? 'difference' : 'match', differences: delta }
+  }
   const tintSamples = expected.spineTints.entries.map(tint => {
     const observed = actual.spineTints[tint.id]
     const related = entries.filter(e => e.action === 'spine.visual.tint' && step.cues.find(c => c.cue_id === e.cue_id)?.target === tint.id)
@@ -111,7 +130,7 @@ export function captureProjectorShadow({ scenario, stepIndex, runtime, manager, 
   return {
     shadow_version: 1, scenario_id: scenario.scenario_id || null,
     viewport: { width: manager.width, height: manager.height },
-    scope: ['background-mix', 'camera-stage', 'screen-overlays', 'spine-rgb-tint'], status: Object.values(samples).some(s => s.status === 'difference') ? 'difference'
+    scope: ['background-mix', 'background-local-geometry', 'camera-stage', 'screen-overlays', 'spine-rgb-tint'], status: Object.values(samples).some(s => s.status === 'difference') ? 'difference'
       : Object.values(samples).some(s => s.status === 'not-comparable') ? 'partial' : 'match',
     step_index: stepIndex, step_id: step.step_id, time, clock_state: runtime.clock.state,
     numeric_tolerance: .001, sampling: 'read-only-between-frames',
