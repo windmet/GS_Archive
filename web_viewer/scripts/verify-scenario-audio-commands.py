@@ -1,0 +1,50 @@
+"""Compare audio transitions, exceptions and session effects to the old handlers."""
+import copy
+from pathlib import Path
+import runpy
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT.parent/'data_pipeline'))
+from sidem_scenario import ScenarioCompiler, ScenarioState
+from sidem_scenario.audio_commands import apply_audio_state_command, AudioCommandEffect
+
+Legacy = runpy.run_path(str(ROOT/'fixtures/story-runtime/legacy-audio-commands.py'))['LegacyAudioCommands']
+names = ['bgm', 'bgm_stop', 'se', 'se_stop', 'environmental', 'environmental_stop',
+         'environmental_volume', 'environmental_ducking']
+inputs = [[], [''], [None], ['cue'], ['no_bgm'], ['0'], [0], ['0.5'], ['bad'],
+          ['cue', '0.2'], ['cue', 'invalid'], ['cue', '', '', '0.25'], ['cue', '', '', 'invalid'],
+          ['cue', '', '', {}]]
+count = 0
+for name in names:
+    for values in inputs:
+        for ambient in [None, {'cue': 'prior', 'volume': 0.7}]:
+            observations = []
+            for cls in [Legacy, ScenarioCompiler]:
+                compiler = object.__new__(cls)
+                compiler.state = ScenarioState()
+                compiler.state.environmental = copy.deepcopy(ambient)
+                compiler._bgm_from_advbackground = True
+                compiler._environmental_from_advbackground = True
+                marked = []
+                compiler._mark_stage_change = lambda: marked.append(True)
+                compiler._safe_float = ScenarioCompiler._safe_float
+                arguments = copy.deepcopy(values)
+                error = None
+                try:
+                    getattr(compiler, '_' + name)(arguments)
+                except Exception as exc:
+                    error = (type(exc).__name__, str(exc))
+                observations.append((copy.deepcopy(vars(compiler.state)), marked,
+                                     compiler._bgm_from_advbackground,
+                                     compiler._environmental_from_advbackground, error))
+                assert arguments == values
+            assert observations[0] == observations[1], (name, values, ambient)
+            count += 1
+
+# The state module can run without constructing a compiler or loading resources.
+state = ScenarioState()
+effect = apply_audio_state_command(state, 'se', ['cue', '0.2'], lambda value, fallback: float(value))
+assert effect == AudioCommandEffect(changed=True)
+assert state.se == {'cue': 'cue', 'delay': 0.2}
+print(f'Audio command boundary: {count} complete state/session/error parity cases and direct state-only application passed')

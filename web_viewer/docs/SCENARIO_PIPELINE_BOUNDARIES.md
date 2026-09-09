@@ -468,3 +468,17 @@ image_Icon 别名和三个 slide 别名保持原行为；未知和显式 no-op �
 注册表不可变，并接入 scenario-package。10 个冻结输出、旧/新 CLI、批量错误、
 文本 evidence 和 source-only 时序回归通过。没有引入新的 RAW 解释、未知命令
 报错政策或重编译公共产物；剩余 handler 状态变换仍需按领域继续解耦。
+
+## G24：音频状态变换与编译会话分离
+
+sidem_scenario/audio_commands.py 独立处理 BGM、SE、environmental 的八种状态
+命令，仅接收 state、Values 和显式数值解析器。返回不可变 AudioCommandEffect，
+说明舞台变化及是否清除背景默认 BGM/ambient 继承。compiler 的原处理器保留
+方法名，统一将 effect 应用到会话标记；资源查找、voice/口型与文本消费保持各自
+既有边界。没有改动零值/坏值处理、淡出默认或音频事件顺序。
+
+冻结 f80f5aa 原八个方法作为对照。verify-scenario-audio-commands 比较 224 组
+完整 state、舞台标记、继承标记和异常，同时检查输入不变和不构建编译器的
+直接状态调用；接入 scenario-package CI。原 10 组冻结输出、CLI/批量/分派测试、
+source-only 时序和 scenario-resources 通过。没有重编译公开剧情或声称实音
+验收；handler 状态与会话 owner 已分开，语音文本链路不在本次迁移范围。
