@@ -2,10 +2,10 @@
   <section v-if="audioExperiment" class="song-block experimental-player" aria-labelledby="song-experimental-player-title">
     <div class="song-block-heading">
       <span>EXPERIMENTAL PLAYER</span>
-      <h3 id="song-experimental-player-title">演唱指定与实验播放器</h3>
+      <h3 id="song-experimental-player-title">演唱试听（实验）</h3>
     </div>
     <p class="song-block-note">
-      游戏说明将部分歌曲的演唱指定分为「编成偶像」「Unit」「315 ALL STARS」「Center」。这里按 masterdata、RAW 音频层和编舞变体的交叉证据还原入口；分层混音仍是浏览器实验值。
+      选择组合、中心偶像或自由编成试听。分轨混音为浏览器近似，尚未完成听感校准。
     </p>
 
     <div class="experimental-controls">
@@ -16,7 +16,7 @@
           <option v-if="hasVocalSetting('unit')" value="unit">Unit（组合单轨）</option>
           <option v-if="hasVocalSetting('all_stars')" value="all_stars">315 ALL STARS（完整混音候选）</option>
           <option v-if="hasVocalSetting('center')" value="solo">Center（中心偶像＋伴奏）</option>
-          <option v-if="auditedOptions.length" value="single">其他音轨（审计）</option>
+          <option v-if="auditedOptions.length" value="single">其他收录音轨</option>
         </select>
       </label>
       <label v-if="mode === 'unit'">
@@ -28,7 +28,7 @@
         </select>
       </label>
       <label v-else-if="mode === 'single'">
-        审计音轨
+        收录音轨
         <select v-model="selectedSingleKey">
           <option v-for="option in auditedOptions" :key="option.key" :value="option.key">
             {{ option.label }}
@@ -39,7 +39,7 @@
         Center 偶像
         <select v-model="selectedIdolCode">
           <option v-for="entry in soloEntries" :key="entry.idol_code" :value="entry.idol_code">
-            {{ entry.name }}（{{ entry.idol_code }}）
+            {{ entry.displayName }}
           </option>
         </select>
       </label>
@@ -101,17 +101,19 @@
       </div>
     </div>
 
-    <p v-if="mode !== 'lineup'" class="experimental-evidence">
-      对齐证据：{{ syncLabel }}。{{ playbackEvidence }}
-    </p>
+    <ArchiveTechnicalDetails v-if="mode !== 'lineup'" label="试听技术信息">
+      <p class="experimental-evidence">
+        对齐证据：{{ syncLabel }}。{{ playbackEvidence }}
+      </p>
+    </ArchiveTechnicalDetails>
     <p v-if="audioError" class="experimental-error" role="alert">{{ audioError }}</p>
   </section>
 </template>
 
 <script setup>
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
-import { IDOL_ID_TO_NAME } from '../../utils/IdolNameMap.js'
 import { useSongPerformanceSession } from '../../composables/useSongPerformanceSession.js'
+import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveSongLineupPlayer from './ArchiveSongLineupPlayer.vue'
 
 const props = defineProps({
@@ -137,8 +139,7 @@ function hasVocalSetting(id) {
   return vocalSettingModes.value.some(entry => entry.id === id)
 }
 
-const soloEntries = computed(() => Object.values(props.audioExperiment?.solo_tracks || {})
-  .map(entry => ({ ...entry, name: IDOL_ID_TO_NAME[entry.idol_code] || entry.name || entry.idol_code })))
+const soloEntries = computed(() => Object.values(props.audioExperiment?.solo_tracks || {}))
 const currentSoloTrack = computed(() => props.audioExperiment?.solo_tracks?.[selectedIdolCode.value] || null)
 const unitOptions = computed(() => (props.audioExperiment?.unit_tracks || []).map(track => ({
   key: `unit:${track.unit_code}`,
@@ -153,7 +154,7 @@ const auditedOptions = computed(() => {
     ...experiment.single_tracks.full_mix,
     label: experiment.single_tracks.full_mix.label,
   })
-  if (experiment.backing) options.push({ key: 'backing', ...experiment.backing, label: '伴奏（审计）' })
+  if (experiment.backing) options.push({ key: 'backing', ...experiment.backing, label: '伴奏' })
   for (const track of experiment.special_tracks || []) options.push({
     key: `special:${track.song_code}`,
     ...track,

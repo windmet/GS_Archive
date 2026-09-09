@@ -9,7 +9,7 @@
     data-clock-mode="audio-context-scheduled"
   >
     <p class="lineup-note">
-      五个选择位与 Chibi 舞台位置 1–5 完全对应；网页会在内部反查 RAW 编组槽。空位会静音；重复偶像只播放一条声部，并合并其多个位置的演唱区间。
+      五个选择位与 Chibi 舞台位置 1–5 完全对应。空位会静音；重复偶像只播放一条声部，并合并其多个位置的演唱区间。
     </p>
 
     <label v-if="arrangements.length > 1" class="arrangement-select">
@@ -35,11 +35,11 @@
         >
           <option value="">空位</option>
           <option v-for="entry in soloEntries" :key="entry.idol_code" :value="entry.idol_code">
-            {{ entry.name }}（{{ entry.idol_code }}）
+            {{ entry.displayName }}
           </option>
         </select>
         <small>
-          {{ activeStagePositions.includes(stagePosition) ? '当前演唱' : '等待' }} · RAW 编组槽 {{ performerSlotForStagePosition(stagePosition) }}
+          {{ activeStagePositions.includes(stagePosition) ? '当前演唱' : '等待' }}
         </small>
       </label>
     </fieldset>
@@ -72,7 +72,7 @@
 
     <div class="lineup-gains">
       <label>
-        声部总线
+        演唱音量
         <input v-model.number="session.vocalGain.value" type="range" min="0" max="1" step="0.01" aria-label="五槽声部音量" />
       </label>
       <label>
@@ -81,10 +81,12 @@
       </label>
     </div>
 
-    <p class="lineup-evidence">
-      所有轨道会在播放前完整解码，并由同一个音频时钟同步启动、预排演唱切换；当前混音采用活动偶像数的 1/√n 归一化与居中声像，仅为浏览器近似。重复选择不代表原游戏允许重复成员编组。
-    </p>
-    <p v-if="loadingTimeline" class="lineup-status">正在读取演唱切换表并预解码所选轨道…</p>
+    <ArchiveTechnicalDetails label="编成试听技术信息" :evidence="{ stagePositions: stagePositions.map(stagePosition => ({ stagePosition, performerSlot: performerSlotForStagePosition(stagePosition) })) }">
+      <p class="lineup-evidence">
+        所有轨道会在播放前完整解码，并由同一个音频时钟同步启动、预排演唱切换；当前混音采用活动偶像数的 1/√n 归一化与居中声像，仅为浏览器近似。重复选择不代表原游戏允许重复成员编组。
+      </p>
+    </ArchiveTechnicalDetails>
+    <p v-if="loadingTimeline" class="lineup-status">正在准备所选演唱成员的音频…</p>
     <p v-else-if="session.error.value" class="lineup-error" role="alert">{{ session.error.value }}</p>
   </div>
 </template>
@@ -92,7 +94,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useSongPerformanceSession } from '../../composables/useSongPerformanceSession.js'
-import { IDOL_ID_TO_NAME } from '../../utils/IdolNameMap.js'
+import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { fetchSongPerformanceChoreography } from '../../utils/songPerformanceData.js'
 
 const props = defineProps({
@@ -107,11 +109,7 @@ const selectedArrangementId = ref('')
 const stageLineup = ref([])
 const loadingTimeline = ref(false)
 
-const soloEntries = computed(() => Object.values(props.audioExperiment?.solo_tracks || {})
-  .map(entry => ({
-    ...entry,
-    name: IDOL_ID_TO_NAME[entry.idol_code] || entry.name || entry.idol_code,
-  })))
+const soloEntries = computed(() => Object.values(props.audioExperiment?.solo_tracks || {}))
 const selectedArrangement = computed(() => arrangements.value
   .find(entry => entry.id === selectedArrangementId.value) || null)
 const activeStagePositions = computed(() => session.activePerformerSlots.value
@@ -125,7 +123,7 @@ const activeSingerEntries = computed(() => {
     if (!idolCode) continue
     if (!byIdol.has(idolCode)) byIdol.set(idolCode, {
       idolCode,
-      name: IDOL_ID_TO_NAME[idolCode] || idolCode,
+      name: props.audioExperiment.solo_tracks?.[idolCode]?.displayName || '姓名待确认',
       slots: [],
       stagePositions: [],
     })

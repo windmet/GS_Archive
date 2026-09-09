@@ -4,13 +4,13 @@
       <div>
         <span>SONG ARCHIVE</span>
         <h2>歌曲档案</h2>
-        <p>按 masterdata 正式曲目归档歌曲作品与演出版本。档案只展示元数据与原始资源关系，不提供媒体播放。</p>
+        <p>浏览歌曲作品、演唱成员与不同演出版本；进入歌曲详情查看收录资料和可用试听。</p>
       </div>
       <dl aria-label="歌曲档案统计">
         <div><dt>歌曲作品</dt><dd>{{ songs.length }}</dd></div>
         <div><dt>3DMV</dt><dd>{{ summary.three_d_movie_count }}</dd></div>
         <div><dt>MV LIVE</dt><dd>{{ summary.mvlive_count }}</dd></div>
-        <div><dt>分层演出</dt><dd>{{ summary.layered_song_count }}</dd></div>
+        <div><dt>分轨演唱</dt><dd>{{ summary.layered_song_count }}</dd></div>
       </dl>
     </header>
 
@@ -33,7 +33,7 @@
           :value="query"
           type="search"
           aria-label="搜索歌曲"
-          placeholder="搜索曲名、读音或曲目代码"
+          placeholder="搜索曲名或读音"
           @input="query = $event.target.value"
         />
       </label>
@@ -50,7 +50,7 @@
         <span v-if="song.jacket_url" class="song-card-jacket">
           <img :src="song.jacket_url" :alt="`${song.title} 封面`" loading="lazy" />
         </span>
-        <span v-else class="song-card-code">{{ song.song_code }}</span>
+        <span v-else class="song-card-code">封面未收录</span>
         <span class="song-card-copy">
           <small>{{ song.kana }}</small>
           <strong>{{ song.title }}</strong>
@@ -60,7 +60,7 @@
           <span v-if="hasSpecialVariant(song)" class="badge badge-special">含特殊版本</span>
           <span v-if="hasMovie(song, '3dmv')" class="badge badge-movie">3DMV</span>
           <span v-if="hasMovie(song, 'mvlive')" class="badge badge-movie">MV LIVE</span>
-          <span v-if="song.audio_form === 'layered'" class="badge badge-layered">分层演出</span>
+          <span v-if="song.audio_form === 'layered'" class="badge badge-layered">分轨演唱</span>
           <span v-if="song.audio_form === 'oneshot'" class="badge badge-oneshot">演出语音</span>
         </span>
         <ChevronRight :size="17" aria-hidden="true" />
@@ -102,7 +102,7 @@ const filters = [
   { id: 'all', label: '全部' },
   { id: 'movie', label: '3DMV' },
   { id: 'mvlive', label: 'MV LIVE' },
-  { id: 'layered', label: '分层演出' },
+  { id: 'layered', label: '分轨演唱' },
   { id: 'oneshot', label: '演出语音' },
   { id: 'special', label: '特殊版本' },
 ]

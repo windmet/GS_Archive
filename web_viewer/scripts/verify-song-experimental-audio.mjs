@@ -112,7 +112,7 @@ for (const [label, source, needles] of [
     'Unit（组合单轨）',
     'Center（中心偶像＋伴奏）',
     '315 ALL STARS（完整混音候选）',
-    '其他音轨（审计）',
+    '其他收录音轨',
     "if (mode.value === 'all_stars')",
     "if (mode.value === 'unit')",
     'useSongPerformanceSession()',

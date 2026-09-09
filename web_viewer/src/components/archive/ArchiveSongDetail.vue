@@ -1,333 +1,78 @@
 <template>
   <section class="song-detail">
     <header class="song-detail-hero">
-      <img
-        v-if="song.jacket_url"
-        class="song-detail-jacket"
-        :src="song.jacket_url"
-        :alt="`${song.title} 封面`"
-      />
+      <img v-if="song.jacketUrl" class="song-detail-jacket" :src="song.jacketUrl" :alt="`${song.title} 封面`" />
       <div class="song-detail-title">
-        <span>SONG · {{ song.song_id }}</span>
+        <span>SONG ARCHIVE</span>
         <h2>{{ song.title }}</h2>
         <p v-if="song.kana" class="song-detail-kana">{{ song.kana }}</p>
-        <button
-          v-if="song.parent_song_code"
-          class="song-parent-link"
-          @click="emit('open-song', song.parent_song_code)"
-        >
-          DRIVE A LIVE 作品页へ戻る
-        </button>
+        <button v-if="song.parentId" class="song-parent-link" @click="emit('open-song', song.parentId)">返回歌曲作品</button>
         <div class="song-detail-badges">
-          <span v-if="song.archive_status === 'special'" class="badge badge-special">特殊版本</span>
-          <span v-for="movie in song.movies" :key="movie.kind + movie.resource_id" class="badge badge-movie">
-            {{ movie.kind === '3dmv' ? '3DMV' : 'MV LIVE' }} · {{ movie.resource_id }}
-          </span>
-          <span v-if="song.audio_form === 'layered'" class="badge badge-layered">分层演出</span>
-          <span v-if="song.audio_form === 'oneshot'" class="badge badge-oneshot">演出语音</span>
+          <span v-if="song.special" class="badge badge-special">特殊版本</span>
+          <span class="badge badge-layered">{{ song.formLabel }}</span>
         </div>
       </div>
       <dl class="song-detail-stats" aria-label="歌曲档案统计">
-        <div><dt>曲目 ID</dt><dd>{{ song.song_id }}</dd></div>
-        <div><dt>音频形态</dt><dd>{{ formLabel }}</dd></div>
-        <div><dt>开放时间</dt><dd>{{ openDate }}</dd></div>
+        <div><dt>试听</dt><dd>{{ song.playbackLabel }}</dd></div>
+        <div><dt>音频形态</dt><dd>{{ song.formLabel }}</dd></div>
+        <div><dt>开放时间</dt><dd>{{ song.openDate }}</dd></div>
       </dl>
     </header>
-
     <div class="song-detail-body">
-      <section v-if="creditLines.length" class="song-block" aria-labelledby="song-credits-title">
-        <div class="song-block-heading">
-          <span>CREDITS</span>
-          <h3 id="song-credits-title">制作信息</h3>
-        </div>
-        <ul class="credit-list">
-          <li v-for="line in creditLines" :key="line">{{ line }}</li>
-        </ul>
+      <section v-if="song.credits.length" class="song-block">
+        <div class="song-block-heading"><span>CREDITS</span><h3>制作信息</h3></div>
+        <ul class="credit-list"><li v-for="line in song.credits" :key="line">{{ line }}</li></ul>
       </section>
-
-      <section v-if="song.variants.length" class="song-block" aria-labelledby="song-variants-title">
-        <div class="song-block-heading">
-          <span>PERFORMANCE VARIANTS</span>
-          <h3 id="song-variants-title">关联演出版本</h3>
+      <section class="song-block">
+        <div class="song-block-heading"><span>PERFORMERS</span><h3>演唱者</h3></div>
+        <div v-if="song.unit" class="song-subsection">
+          <h4>演唱组合</h4>
+          <ul class="chip-list"><li><button :disabled="!song.unit.actionable" @click="emit('open-unit', song.unit.id)">{{ song.unit.displayName }}</button></li></ul>
         </div>
-        <div class="variant-list">
-          <button
-            v-for="variant in song.variants"
-            :key="variant.song_code"
-            @click="emit('open-song', variant.song_code)"
-          >
-            <span>
-              <strong>{{ variant.title }}</strong>
-              <small>{{ variant.song_code }} · 特殊版本</small>
-            </span>
-            <ChevronRight :size="16" aria-hidden="true" />
-          </button>
+        <div v-else class="performance-scope-card"><strong>{{ song.scopeLabel }}</strong><p>{{ song.scopeDescription }}</p></div>
+        <div v-if="song.performers.length" class="song-subsection">
+          <h4>演唱成员</h4><p v-if="song.performerNote" class="song-block-note">{{ song.performerNote }}</p>
+          <ul class="chip-list"><li v-for="entry in song.performers" :key="entry.id"><button :disabled="!entry.actionable" @click="emit('open-idol', entry.id)">{{ entry.displayName }}</button></li></ul>
         </div>
       </section>
-
-      <section class="song-block" aria-labelledby="song-performance-title">
-        <div class="song-block-heading">
-          <span>PERFORMERS</span>
-          <h3 id="song-performance-title">演唱类别与演唱者</h3>
-        </div>
-        <p class="song-block-note">字段 7 决定固定 Unit 或全体／合同／特别编成类别；字段 30–34 与 RAW 演唱机制决定实际演唱范围。</p>
-        <div v-if="confirmedUnit" class="song-subsection">
-          <h4>正式组合归属</h4>
-          <ul class="chip-list">
-            <li>
-              <button @click="emit('open-unit', confirmedUnit.unit_code)">
-                <code>{{ confirmedUnit.unit_code }}</code>{{ confirmedUnit.unit_name }}
-              </button>
-            </li>
-          </ul>
-        </div>
-        <div v-else class="performance-scope-card" :data-performer-scope="performerScope">
-          <strong>{{ performerScopeLabel }}</strong>
-          <p>{{ performerScopeDescription }}</p>
-          <small>表 46 category {{ song.performance_mapping.raw_category }} · raw selector {{ song.performance_mapping.raw_selector_id }}；selector 不解释为 Unit ID。</small>
-        </div>
-        <div v-if="performerEntries.length" class="song-subsection">
-          <h4>{{ performerHeading }}（{{ performerEntries.length }}）</h4>
-          <p v-if="song.performance_mapping.performer_basis === 'confirmed_unit_roster'" class="song-block-note">
-            表 46 未逐人列出；此处由已确认组合归属和组合完整成员表补全。
-          </p>
-          <ul class="chip-list">
-            <li v-for="entry in performerEntries" :key="entry.code">
-              <button @click="emit('open-idol', entry.code)">
-                <code>{{ entry.code }}</code>{{ entry.name }}
-              </button>
-            </li>
-          </ul>
+      <ArchiveSongExperimentalPlayer v-if="song.playback.experiment" :song="song" :audio-experiment="song.playback.experiment" />
+      <ArchiveSongSinglePlayer v-else-if="song.playback.track" :song="song" :track="song.playback.track" />
+      <section class="song-block">
+        <div class="song-block-heading"><span>AUDIO</span><h3>收录音频</h3></div>
+        <p class="song-block-note">完整混音：{{ song.fullMixCollected ? '已收录' : '未收录' }}。{{ song.playbackLabel }}。</p>
+        <div v-for="group in song.audioGroups" :key="group.title" class="song-subsection">
+          <h4>{{ group.title }}（{{ group.entries.length }}）</h4><p v-if="group.note" class="song-block-note">{{ group.note }}</p>
+          <ul class="chip-list"><li v-for="entry in group.entries" :key="entry.id"><button :disabled="!entry.actionable" @click="emit(group.kind === 'unit' ? 'open-unit' : 'open-idol', entry.id)">{{ entry.displayName }}</button></li></ul>
         </div>
       </section>
-
-      <section class="song-block" aria-labelledby="song-audio-title">
-        <div class="song-block-heading">
-          <span>AUDIO LAYERS</span>
-          <h3 id="song-audio-title">音频层</h3>
-        </div>
-        <p class="song-block-note">原始 ACB 资源层结构（cue 与文件名证据见音频关系目录）。</p>
-        <dl class="audio-stats">
-          <div><dt>完整混音</dt><dd>{{ song.audio.has_full_mix ? '有' : '无' }}</dd></div>
-          <div><dt>组合声部 cue</dt><dd>{{ song.audio.unit_cue_count }}</dd></div>
-          <div><dt>演出语音 cue</dt><dd>{{ song.audio.oneshot_cue_count }}</dd></div>
-          <div><dt>偶像声部文件</dt><dd>{{ song.audio.idol_vocal_file_count }}</dd></div>
-          <div><dt>伴奏文件</dt><dd>{{ song.audio.backing_file_count }}</dd></div>
-        </dl>
-
-        <div v-if="unitEntries.length" class="song-subsection">
-          <h4>组合演出版本（{{ unitEntries.length }}）</h4>
-          <ul class="chip-list">
-            <li v-for="entry in unitEntries" :key="entry.code">
-              <button @click="emit('open-unit', entry.normalizedCode)">
-                <code>{{ entry.code }}</code>{{ entry.name }}
-              </button>
-            </li>
-          </ul>
-        </div>
-
-        <div v-if="oneshotEntries.length" class="song-subsection">
-          <h4>全员演出语音（{{ oneshotEntries.length }}）</h4>
-          <p class="song-block-note">每个偶像各一句话的演出语音（约 4 秒），非个人独唱。</p>
-          <ul class="chip-list">
-            <li v-for="entry in oneshotEntries" :key="entry.code">
-              <button @click="emit('open-idol', entry.code)">
-                <code>{{ entry.code }}</code>{{ entry.name }}
-              </button>
-            </li>
-          </ul>
-        </div>
-
-        <div v-if="idolVocalEntries.length" class="song-subsection">
-          <h4>偶像声部文件（{{ idolVocalEntries.length }}）</h4>
-          <p class="song-block-note">每个偶像的完整个人独唱（独立 ACB 文件）。</p>
-          <ul class="chip-list">
-            <li v-for="entry in idolVocalEntries" :key="entry.code">
-              <button @click="emit('open-idol', entry.code)">
-                <code>{{ entry.code }}</code>{{ entry.name }}
-              </button>
-            </li>
-          </ul>
-        </div>
+      <section v-if="song.variants.length" class="song-block">
+        <div class="song-block-heading"><span>VERSIONS</span><h3>关联演出版本</h3></div>
+        <div class="variant-list"><button v-for="variant in song.variants" :key="variant.id" @click="emit('open-song', variant.id)"><strong>{{ variant.title }}</strong><ChevronRight :size="16" /></button></div>
       </section>
-
-      <section class="song-block" aria-labelledby="song-choreography-title">
-        <div class="song-block-heading">
-          <span>CHOREOGRAPHY</span>
-          <h3 id="song-choreography-title">编舞与演出</h3>
-        </div>
-        <dl class="audio-stats">
-          <div><dt>编舞数据</dt><dd>{{ song.choreography.has_fumen ? '有' : '无' }}</dd></div>
-          <div><dt>口型数据</dt><dd>{{ song.choreography.has_for_lipsync ? '有' : '无' }}</dd></div>
-          <div><dt>舞台特效</dt><dd>{{ song.choreography.has_live_effect ? '有' : '无' }}</dd></div>
-          <div><dt>封面</dt><dd>{{ song.choreography.has_jacket ? '有' : '无' }}</dd></div>
-          <div><dt>舞台背景</dt><dd>{{ song.choreography.has_song_bg ? '有' : '无' }}</dd></div>
-        </dl>
-        <div v-if="effectEntries.length" class="song-subsection">
-          <h4>特效变体（{{ effectEntries.length }}）</h4>
-          <ul class="chip-list">
-            <li v-for="entry in effectEntries" :key="entry.code">
-              <button
-                :disabled="!entry.unitCode"
-                @click="entry.unitCode && emit('open-unit', entry.unitCode)"
-              >
-                <code>{{ entry.code }}</code>{{ entry.name }}
-              </button>
-            </li>
-          </ul>
-        </div>
+      <section v-if="song.related.length" class="song-block">
+        <div class="song-block-heading"><span>RELATED ARCHIVE</span><h3>关联档案</h3></div>
+        <div class="variant-list"><button v-for="(entry, index) in song.related" :key="index" @click="emit('open-related-story', entry.payload)"><strong>{{ entry.title }}</strong><ChevronRight :size="16" /></button></div>
       </section>
-
-      <ArchiveSongExperimentalPlayer
-        v-if="audioExperiment"
-        :song="song"
-        :audio-experiment="audioExperiment"
-      />
-      <ArchiveSongSinglePlayer
-        v-else-if="playbackTrack"
-        :song="song"
-        :track="playbackTrack"
-      />
-
-      <section v-if="song.related_entities.length" class="song-block" aria-labelledby="song-related-title">
-        <div class="song-block-heading">
-          <span>RELATED ARCHIVE</span>
-          <h3 id="song-related-title">关联档案</h3>
-        </div>
-        <div class="variant-list">
-          <button
-            v-for="relation in song.related_entities"
-            :key="`${relation.entity_type}:${relation.story_section}`"
-            @click="emit('open-related-story', relation)"
-          >
-            <span>
-              <strong>{{ relation.title }}</strong>
-              <small>官方企划关联 · Extra Story {{ relation.story_section }}</small>
-            </span>
-            <ChevronRight :size="16" aria-hidden="true" />
-          </button>
-        </div>
+      <section v-if="song.movies.length" class="song-block">
+        <div class="song-block-heading"><span>MOVIES</span><h3>影像资料</h3></div>
+        <ul class="movie-list"><li v-for="movie in song.movies" :key="movie.id"><strong>{{ movie.title }}</strong><span>{{ movie.status }}</span></li></ul>
       </section>
-
-      <section v-if="song.movies.length" class="song-block" aria-labelledby="song-movie-title">
-        <div class="song-block-heading">
-          <span>MOVIES</span>
-          <h3 id="song-movie-title">MV 关系</h3>
-        </div>
-        <ul class="movie-list">
-          <li v-for="movie in song.movies" :key="movie.kind + movie.resource_id">
-            <strong>{{ movie.kind === '3dmv' ? '3DMV' : 'MV LIVE' }}</strong>
-            <code>{{ movie.resource_id }}</code>
-            <span v-if="movie.movie_offset != null">
-              offset {{ movie.movie_offset }}ms
-              <template v-if="movie.movie_finish_offset != null">– {{ movie.movie_finish_offset }}ms</template>
-            </span>
-          </li>
-        </ul>
+      <section v-if="song.links.length" class="song-block">
+        <div class="song-block-heading"><span>RELEASES</span><h3>专辑链接</h3></div>
+        <ul class="link-list"><li v-for="link in song.links" :key="link"><a :href="link" target="_blank" rel="noopener noreferrer external">前往专辑页面 <ExternalLink :size="14" /></a></li></ul>
       </section>
-
-      <section v-if="song.links.length" class="song-block" aria-labelledby="song-links-title">
-        <div class="song-block-heading">
-          <span>RELEASES</span>
-          <h3 id="song-links-title">专辑链接</h3>
-        </div>
-        <ul class="link-list">
-          <li v-for="link in song.links" :key="link">
-            <a :href="link" target="_blank" rel="noopener noreferrer external">前往专辑页面 <ExternalLink :size="14" /></a>
-          </li>
-        </ul>
-      </section>
+      <ArchiveTechnicalDetails :key="song.id" :evidence="song.technicalEvidence" />
     </div>
   </section>
 </template>
 
 <script setup>
-import { computed } from 'vue'
 import { ChevronRight, ExternalLink } from '@lucide/vue'
-import { IDOL_ID_TO_NAME } from '../../utils/IdolNameMap.js'
+import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveSongExperimentalPlayer from './ArchiveSongExperimentalPlayer.vue'
 import ArchiveSongSinglePlayer from './ArchiveSongSinglePlayer.vue'
-
-const props = defineProps({
-  song: { type: Object, required: true },
-  units: { type: Object, default: null },
-  playbackTrack: { type: Object, default: null },
-  audioExperiment: { type: Object, default: null },
-})
+defineProps({ song: { type: Object, required: true } })
 const emit = defineEmits(['open-song', 'open-unit', 'open-idol', 'open-related-story'])
-
-const formLabel = computed(() => ({
-  layered: '分层演出',
-  oneshot: '演出语音',
-  'single-cue': '单曲',
-}[props.song.audio_form] || props.song.audio_form))
-
-const openDate = computed(() => {
-  const openAt = props.song.open_at
-  if (props.song.archive_status === 'special') return '特殊版本'
-  if (props.song.archive_status === 'initial') return '初始收录'
-  if (openAt == null) return '—'
-  return new Intl.DateTimeFormat('zh-CN', {
-    dateStyle: 'medium',
-    timeZone: 'Asia/Tokyo',
-  }).format(new Date(openAt * 1000))
-})
-
-const creditLines = computed(() => (props.song.credits || '').split('\n').filter(Boolean))
-const confirmedUnit = computed(() => props.song.performance_mapping?.confirmed_unit || null)
-const performerScope = computed(() => props.song.performance_mapping?.performer_scope || 'unspecified_special')
-const performerScopeLabel = computed(() => ({
-  configurable_formation: '全体／可变编成',
-  fixed_special_lineup: '合同／特别编成',
-  unspecified_special: '全体／合同／特别编成（成员未明记）',
-}[performerScope.value] || '固定 Unit'))
-const performerScopeDescription = computed(() => ({
-  configurable_formation: '表 46 的五槽切换演唱与 RAW 声部证据支持由编成偶像决定演唱者；不等同于 49 人同时合唱。',
-  fixed_special_lineup: '不归属于单一 Unit；下列成员由表 46 字段 30–34 明确记录。',
-  unspecified_special: '不归属于单一 Unit；表 46 未逐人列出演唱者，不能仅凭类别 3 推定为全员合唱。',
-}[performerScope.value] || ''))
-const performerEntries = computed(() =>
-  (props.song.performance_mapping?.performer_idol_codes || []).map(code => ({
-    code,
-    name: IDOL_ID_TO_NAME[code] || code,
-  })),
-)
-const performerHeading = computed(() =>
-  props.song.performance_mapping?.performer_basis === 'table46_explicit'
-    ? '表 46 明确演唱／参演偶像'
-    : '组合演唱成员',
-)
-
-function unitName(code) {
-  const normalized = code.replace(/^0(\d{2}[a-z0-9]{3})/, '$1')
-  const unit = (props.units?.units || []).find(unit => unit.unit_code === normalized)
-  if (unit) return unit.unit_name
-  if (/^(solo|solo_multi|solo_single|tutorial)$/.test(code)) {
-    return { solo: '独唱', solo_multi: '多人独唱', solo_single: '单人独唱', tutorial: '教程' }[code]
-  }
-  return '未知组合'
-}
-
-const unitEntries = computed(() =>
-  (props.song.audio.unit_codes || []).map(code => ({
-    code,
-    normalizedCode: code.replace(/^0(\d{2}[a-z0-9]{3})/, '$1'),
-    name: unitName(code),
-  })),
-)
-const oneshotEntries = computed(() =>
-  (props.song.audio.oneshot_idol_codes || []).map(code => ({ code, name: IDOL_ID_TO_NAME[code] || code })),
-)
-const idolVocalEntries = computed(() =>
-  (props.song.audio.idol_vocal_codes || []).map(code => ({ code, name: IDOL_ID_TO_NAME[code] || code })),
-)
-const effectEntries = computed(() =>
-  (props.song.choreography.live_effect_variants || []).map(code => ({
-    code,
-    name: unitName(code),
-    unitCode: /^\d{2}[a-z0-9]{3}$/.test(code) ? code : '',
-  })),
-)
 </script>
 
 <style scoped>
@@ -463,4 +208,10 @@ const effectEntries = computed(() =>
     border-left: 0;
   }
 }
+</style>
+
+<style scoped>
+.chip-list button { min-height: 44px; }
+.song-block-note { margin-bottom: 10px; line-height: 1.6; }
+.song-detail-stats dd { font-size: .82rem; line-height: 1.5; }
 </style>

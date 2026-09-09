@@ -4,7 +4,7 @@
       <span class="unit-hero-shade" aria-hidden="true"></span>
       <div class="unit-hero-copy">
         <img class="unit-hero-logo" :src="getUnitLogoUrl(unit.unit_code)" alt="" />
-        <span>{{ unit.unit_code }}</span>
+        <span>UNIT ARCHIVE</span>
         <h2>{{ unit.unit_name }}</h2>
         <p>{{ unit.unit_kana }}</p>
       </div>
@@ -60,7 +60,7 @@
     <section v-if="songs.length" class="unit-section" aria-labelledby="unit-songs-title">
       <div class="section-heading">
         <h3 id="unit-songs-title">组合歌曲</h3>
-        <span>{{ songs.length }} · 表 46 类别 2</span>
+        <span>{{ songs.length }} 首</span>
       </div>
       <div class="unit-songs">
         <button v-for="song in songs" :key="song.song_code" @click="emit('open-song', song.song_code)">
@@ -68,7 +68,7 @@
           <Music v-else :size="20" aria-hidden="true" />
           <span>
             <strong>{{ song.title }}</strong>
-            <small>{{ song.song_code }}</small>
+
           </span>
           <ChevronRight :size="16" aria-hidden="true" />
         </button>
@@ -109,18 +109,20 @@
           <Play :size="15" fill="currentColor" />
           <span>
             <strong>{{ story.title }}</strong>
-            <small>{{ story.resourceId }}</small>
+
           </span>
-          <small>{{ story.summary?.step_count || 0 }} steps</small>
+          <small>查看剧情</small>
         </button>
       </div>
     </section>
+    <ArchiveTechnicalDetails :key="unit.unit_code" :evidence="{ unit, songs: songs.map(song => ({ song_code: song.song_code, title: song.title, performance_mapping: song.performance_mapping })), stories: stories.map(story => ({ title: story.title, resourceId: story.resourceId, file: story.file, summary: story.summary })) }" />
   </article>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { ChevronRight, Images, Music, Play } from '@lucide/vue'
+import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import { getBgUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 
@@ -139,7 +141,7 @@ const emit = defineEmits(['open-idol', 'open-story', 'open-event', 'open-cards',
 
 function matchingMemberNames(event) {
   const names = new Map(props.members.map(member => [member.idol_code, member.display_name]))
-  return (event.matching_character_ids || []).map(idolCode => names.get(idolCode) || idolCode).join('、')
+  return (event.matching_character_ids || []).map(idolCode => names.get(idolCode) || '姓名待确认').join('、')
 }
 
 function relationItems(events, label, meta) {
@@ -165,7 +167,7 @@ function relationItems(events, label, meta) {
 const teamEventItems = computed(() => relationItems(
   props.eventRelations.team_events,
   '固定组合团活',
-  event => [event.series, `${event.characters?.length || 0} members`].filter(Boolean).join(' · '),
+  event => [event.series, `${event.characters?.length || 0} 位成员`].filter(Boolean).join(' · '),
 ))
 const attributeEventItems = computed(() => relationItems(
   props.eventRelations.attribute_event_appearances,

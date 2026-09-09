@@ -3,6 +3,11 @@
 日期：2026-09-09。核对起点：a523db1，codex/archive-architecture-refactor。
 本文保留原始设计依据，并在下方汇总已交付状态。
 
+最新优先级：用户按 `f343dda` 提供展示语义指导，并再次要求长稳继续后移。
+先推进 H（Songs → RelationList → Idol/Unit → Event/Gasha → Card → 其他资料页），
+继而扩大 D 与 E1；不再将外部浏览器连接作为其他开发工作的阻塞项。
+H 的契约和进展见 [档案展示契约](ARCHIVE_PRESENTATION_CONTRACT_20260909.md)。
+
 后续进展：M 首批已实现并完成本地浏览器验收，见
 [移动门户交付记录](MOBILE_PORTAL_ACCEPTANCE_20260909.md)。
 
@@ -20,7 +25,7 @@ E1 进展：已交付纯状态投影与无 GPU 管理器对照，见
 采样/差异记录现已接入，见 [E1 只读对照验收](PROJECTOR_SHADOW_ACCEPTANCE_20260909.md)。
 首批三通道闭环已有实测，未覆盖范围继续显式保留；E2 未接管。
 
-当前恢复点：代码基线 `dea4132` 已推送，M、D1、D2/F、E1 首批均已交付。
+此前 E1 恢复点：代码基线 `dea4132` 已推送，M、D1、D2/F、E1 首批均已交付。
 2026-09-09 再次检查浏览器提供方，仅有 Codex In-app Browser；连接 external
 extension 返回 `Browser is not available: extension`。pre-E 正式两小时真实音频
 录制尚未开始，不能把应用内短回归或用户日常稳定使用反馈合并为协议通过。

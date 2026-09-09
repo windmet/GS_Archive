@@ -154,6 +154,9 @@ jobs:
       - name: Verify unit page projections
         run: npm run verify:unit-page
 
+      - name: Verify archive presentation and technical evidence boundaries
+        run: npm run verify:archive-presentation
+
       - name: Verify archive startup route freshness
         run: npm run verify:archive-startup-route
 

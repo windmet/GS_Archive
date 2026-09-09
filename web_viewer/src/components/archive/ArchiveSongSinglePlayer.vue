@@ -4,21 +4,15 @@
       <span>FULL MIX</span>
       <h3 id="song-single-player-title">歌曲播放</h3>
     </div>
-    <p class="song-block-note">
-      播放 RAW <code>song3_{{ song.song_code }}</code> 中与歌曲代码同名的完整混音 cue；这是普通单轨播放，不代表存在编成偶像、Unit 或 Center 声部。
-    </p>
+    <p class="song-block-note">完整混音试听</p>
     <audio
       controls
       preload="metadata"
       :src="track.url"
       :aria-label="`${song.title} 完整混音`"
-      @error="audioError = '本地派生音频不可用；请先运行歌曲播放音频准备脚本。'"
+      @error="audioError = '暂时无法播放，请稍后重试。'"
     />
-    <dl class="single-song-evidence" aria-label="完整混音来源">
-      <div><dt>RAW</dt><dd><code>{{ track.source.path }}</code></dd></div>
-      <div><dt>Cue</dt><dd><code>{{ track.source.cue_name }}</code></dd></div>
-      <div><dt>时长</dt><dd>{{ formatDuration(track.source.duration_seconds) }}</dd></div>
-    </dl>
+    <p class="song-block-note">时长 {{ formatDuration(track.source?.duration_seconds) }}</p>
     <p v-if="audioError" class="single-song-error" role="alert">{{ audioError }}</p>
   </section>
 </template>

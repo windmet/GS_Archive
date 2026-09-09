@@ -104,7 +104,7 @@ assert.equal(catalog.songs.grwsml.choreography.live_effect_variants.includes('tu
 assert.match(appComponent, /v-if="view === 'song_catalog'"/)
 assert.match(appComponent, /v-if="view === 'song_detail'"/)
 assert.match(appComponent, /:catalog="songCatalogData"/)
-assert.match(appComponent, /:song="currentSong"/)
+assert.match(appComponent, /:song="currentSongPresentation"/)
 assert.match(appComponent, /@open="openSong"/)
 assert.match(appComponent, /function openSongCatalog\(\)/)
 assert.match(appComponent, /function openSong\(songCode\)/)
@@ -140,8 +140,8 @@ assert.match(
 )
 
 // Catalog page: filter pills, search, song_id ordering, jacket thumbnail, open emit
-assert.match(catalogComponent, /song-filters[\s\S]*3DMV[\s\S]*MV LIVE[\s\S]*分层演出[\s\S]*演出语音[\s\S]*特殊版本/)
-assert.match(catalogComponent, /placeholder="搜索曲名、读音或曲目代码"/)
+assert.match(catalogComponent, /song-filters[\s\S]*3DMV[\s\S]*MV LIVE[\s\S]*分轨演唱[\s\S]*演出语音[\s\S]*特殊版本/)
+assert.match(catalogComponent, /placeholder="搜索曲名或读音"/)
 assert.match(catalogComponent, /emit\('open', song\.song_code\)/)
 assert.match(catalogComponent, /\.sort\(\(a, b\) => \(a\.song_id \|\| 0\) - \(b\.song_id \|\| 0\)\)/)
 assert.match(catalogComponent, /song\.variant_kind === 'primary'/)
@@ -175,44 +175,23 @@ assert.equal(catalog.songs.flslgt.performance_mapping.performer_scope, 'fixed_sp
 assert.equal(catalog.songs.drvalv.performance_mapping.performer_scope, 'configurable_formation')
 assert.equal(catalog.songs.brndnf.performance_mapping.performer_scope, 'fixed_unit')
 
-// Detail page: jacket hero, audio layers, choreography flags, external links
-assert.match(detailComponent, /song\.jacket_url/)
+// Detail consumes the presentation contract. Identity, media/evidence and rendered boundary
+// assertions live in verify-archive-presentation.mjs, using all production song records.
+assert.match(detailComponent, /song\.jacketUrl/)
 assert.match(detailComponent, /song-detail-jacket/)
-assert.match(detailComponent, /完整混音/)
-assert.match(detailComponent, /组合声部 cue/)
-assert.match(detailComponent, /演出语音 cue/)
-assert.match(detailComponent, /全员演出语音/)
-assert.match(detailComponent, /非个人独唱/)
-assert.match(detailComponent, /完整个人独唱/)
-assert.match(detailComponent, /编舞数据/)
-assert.match(detailComponent, /口型数据/)
-assert.match(detailComponent, /舞台特效/)
-assert.match(detailComponent, /封面/)
-assert.match(detailComponent, /舞台背景/)
-assert.match(detailComponent, /IDOL_ID_TO_NAME/)
-assert.match(detailComponent, /function unitName\(code\)/)
-assert.match(detailComponent, /props\.units\?\.units \|\| \[\]/, 'unitName must resolve through the masterdata units array')
-assert.match(detailComponent, /song\.archive_status === 'initial'/)
-assert.match(detailComponent, /timeZone: 'Asia\/Tokyo'/)
-assert.match(detailComponent, /emit\('open-related-story', relation\)/)
-assert.match(detailComponent, /emit\('open-unit', entry\.normalizedCode\)/)
-assert.match(detailComponent, /emit\('open-idol', entry\.code\)/)
+assert.match(detailComponent, /ArchiveTechnicalDetails/)
+assert.doesNotMatch(detailComponent, /IdolNameMap|function unitName/)
+assert.match(detailComponent, /emit\('open-related-story', entry\.payload\)/)
+assert.match(detailComponent, /emit\('open-unit', song\.unit\.id\)/)
+assert.match(detailComponent, /emit\('open-idol', entry\.id\)/)
 assert.match(detailComponent, /rel="noopener noreferrer external"/)
-assert.match(detailComponent, /movie\.kind === '3dmv' \? '3DMV' : 'MV LIVE'/)
-assert.match(detailComponent, /演唱类别与演唱者/)
-assert.match(detailComponent, /全体／可变编成/)
-assert.match(detailComponent, /合同／特别编成/)
-assert.match(detailComponent, /selector 不解释为 Unit ID/)
-assert.match(detailComponent, /confirmedUnit\.unit_code/)
-assert.match(detailComponent, /performer_idol_codes/)
-assert.match(detailComponent, /raw selector/)
 
 // Reverse navigation: idol and unit pages expose the semantic table-46 song relations.
 assert.match(idolDetailComponent, /演唱歌曲/)
 assert.match(idolDetailComponent, /entry\.evidenceLabel/)
 assert.match(idolDetailComponent, /emit\('open-song', entry\.song\.song_code\)/)
 assert.match(unitDetailComponent, /组合歌曲/)
-assert.match(unitDetailComponent, /表 46 类别 2/)
+assert.match(unitDetailComponent, /ArchiveTechnicalDetails/)
 assert.match(unitDetailComponent, /emit\('open-song', song\.song_code\)/)
 
 // Route module: contracts, navigation entry, breadcrumbs, query serialization
@@ -226,7 +205,7 @@ assert.match(routeSource, /songScope: params\.get\('song_scope'\)/)
 
 // Shell: songs entry on sidebar and mobile nav
 assert.match(shellComponent, /songs: Music/)
-assert.match(shellComponent, /repeat\(8, minmax\(0, 1fr\)\)/)
+assert.match(shellComponent, /id: 'portal', label: '门户'/)
 
 // Repository: song catalog and jacket index registered with payload validation
 assert.match(repositorySource, /songCatalog: '\/data\/song_catalog\.json'/)

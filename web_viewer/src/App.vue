@@ -145,10 +145,7 @@
 
       <ArchiveSongDetail
         v-if="view === 'song_detail'"
-        :song="currentSong"
-        :units="idolUnitData"
-        :playback-track="songPlaybackAudioData?.songs?.[currentSongId] || null"
-        :audio-experiment="songExperimentalAudioData?.songs?.[currentSongId] || null"
+        :song="currentSongPresentation"
         @open-song="openSong"
         @open-unit="openSongUnit"
         @open-idol="openSongIdol"
@@ -423,6 +420,7 @@ import ArchiveCardDetail from './components/archive/ArchiveCardDetail.vue'
 import ArchiveGashaCatalog from './components/archive/ArchiveGashaCatalog.vue'
 import ArchiveGashaDetail from './components/archive/ArchiveGashaDetail.vue'
 import ArchiveSongCatalog from './components/archive/ArchiveSongCatalog.vue'
+import { buildSongPresentation } from './presentation/SongPresentation.js'
 import ArchiveSongDetail from './components/archive/ArchiveSongDetail.vue'
 import ArchiveEventDetail from './components/archive/ArchiveEventDetail.vue'
 import ArchiveIdolGrid from './components/archive/ArchiveIdolGrid.vue'
@@ -1200,6 +1198,10 @@ const readingSession = createReadingSession({ repository: readingRepository, pub
 const archiveShellVisible = computed(() => !['__boot__', 'player', 'spine_lab', 'chibi_stage'].includes(view.value))
 
 const currentSong = computed(() => songCatalogData.value?.songs?.[currentSongId.value] || null)
+const currentSongPresentation = computed(() => buildSongPresentation(currentSong.value, idolUnitData.value, {
+  playbackTrack: songPlaybackAudioData.value?.songs?.[currentSongId.value] || null,
+  audioExperiment: songExperimentalAudioData.value?.songs?.[currentSongId.value] || null,
+}))
 
 const archiveSection = computed(() => archiveSectionForRoute({
   view: view.value,

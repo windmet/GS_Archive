@@ -7,7 +7,7 @@
         class="idol-portrait"
       />
       <div class="idol-identity">
-        <span class="idol-code">{{ idol.idol_code }}</span>
+        <span class="idol-code">偶像档案</span>
         <h2>{{ idol.display_name }}</h2>
         <p>{{ idol.name_fields?.kana || idol.cv || '' }}</p>
         <button v-if="idol.unit_code" class="idol-unit-link" @click="emit('open-unit', idol)">
@@ -38,7 +38,7 @@
     <section class="idol-related" aria-labelledby="idol-related-title">
       <div class="section-heading">
         <h3 id="idol-related-title">关联资料</h3>
-        <span>按现有索引统计</span>
+        <span>已收录</span>
       </div>
       <div class="related-grid">
         <button v-for="item in related" :key="item.id" @click="emit('open-domain', item.id)">
@@ -55,7 +55,7 @@
     <section v-if="songs.length" class="idol-songs" aria-labelledby="idol-songs-title">
       <div class="section-heading">
         <h3 id="idol-songs-title">演唱歌曲</h3>
-        <span>{{ songs.length }} songs · 表 46 映射</span>
+        <span>{{ songs.length }} 首</span>
       </div>
       <div class="song-links">
         <button v-for="entry in songs" :key="entry.song.song_code" @click="emit('open-song', entry.song.song_code)">
@@ -63,7 +63,7 @@
           <Music v-else :size="20" aria-hidden="true" />
           <span>
             <strong>{{ entry.song.title }}</strong>
-            <small>{{ entry.evidenceLabel }}</small>
+
           </span>
           <ChevronRight :size="16" aria-hidden="true" />
         </button>
@@ -73,7 +73,7 @@
     <section v-if="events.length" class="idol-events" aria-labelledby="idol-events-title">
       <div class="section-heading">
         <h3 id="idol-events-title">相关活动</h3>
-        <span>{{ events.length }} events · 按出演阵容</span>
+        <span>{{ events.length }} 场 · 参演活动</span>
       </div>
       <ArchiveRelationList :items="eventItems" @select="emit('open-event', $event.payload)" />
     </section>
@@ -88,12 +88,14 @@
         <p>{{ idol.specialty }}</p>
       </div>
     </section>
+    <ArchiveTechnicalDetails :key="idol.idol_code" :evidence="{ idol, songs: songs.map(entry => ({ song_code: entry.song.song_code, title: entry.song.title, evidenceLabel: entry.evidenceLabel, performance_mapping: entry.song.performance_mapping })) }" />
   </article>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { BookOpenText, ChevronRight, Images, MessageSquareText, Music, Phone, UsersRound } from '@lucide/vue'
+import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
 
@@ -120,10 +122,10 @@ const facts = computed(() => [
 ])
 
 const related = computed(() => [
-  { id: 'stories', label: '个人故事', count: `${props.stats.stories || 0} segments`, icon: BookOpenText },
-  { id: 'cards', label: '卡片', count: `${props.stats.cards || 0} cards`, icon: Images },
-  { id: 'chat', label: '个人聊天', count: `${props.stats.chats || 0} records`, icon: MessageSquareText },
-  { id: 'phone', label: '电话通信', count: `${props.stats.phones || 0} records`, icon: Phone },
+  { id: 'stories', label: '个人故事', count: `${props.stats.stories || 0} 篇`, icon: BookOpenText },
+  { id: 'cards', label: '卡片', count: `${props.stats.cards || 0} 张`, icon: Images },
+  { id: 'chat', label: '个人聊天', count: `${props.stats.chats || 0} 条`, icon: MessageSquareText },
+  { id: 'phone', label: '电话通信', count: `${props.stats.phones || 0} 条`, icon: Phone },
 ])
 
 const eventItems = computed(() => props.events.map(event => {

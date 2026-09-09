@@ -75,24 +75,24 @@ if (ordinaryCodes.length !== 56) fail(`expected 56 ordinary single-player songs,
 
 for (const [label, source, needles] of [
   ['App', appSource, [
-    ':playback-track="songPlaybackAudioData?.songs?.[currentSongId] || null"',
+    'playbackTrack: songPlaybackAudioData.value?.songs?.[currentSongId.value] || null',
     'const songPlaybackAudioData = ref(null)',
     'songPlaybackAudioData.value = data.songPlaybackAudio',
   ]],
   ['ArchiveSongDetail', detailSource, [
     '<ArchiveSongExperimentalPlayer',
-    'v-if="audioExperiment"',
+    'v-if="song.playback.experiment"',
     '<ArchiveSongSinglePlayer',
-    'v-else-if="playbackTrack"',
-    'playbackTrack: { type: Object, default: null }',
+    'v-else-if="song.playback.track"',
+    ':track="song.playback.track"',
   ]],
   ['ordinary player', playerSource, [
     '<h3 id="song-single-player-title">歌曲播放</h3>',
-    '这是普通单轨播放，不代表存在编成偶像、Unit 或 Center 声部',
+    '完整混音试听',
     ':src="track.url"',
     'controls',
     'preload="metadata"',
-    'aria-label="完整混音来源"',
+
     '@media (max-width: 560px)',
   ]],
   ['data repository', repositorySource, [
