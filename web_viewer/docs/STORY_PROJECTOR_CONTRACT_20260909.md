@@ -165,3 +165,34 @@ alpha=0.85，backgroundFilters match，error 日志为空。完整报告位于
 尝试 start_step=2 时自动前进到 3，第二份报告按实际步骤命名为 second-static-step3；
 没有得到真实过渡中途采样，不将其写成过渡通过。source-only build 通过，既有大包提示保留。
 下一步需解决滤镜过渡的显式起始视觉状态及读取契约，再扩展这 208 步；长稳继续后移。
+
+## E1 滤镜过渡的显式起点契约（接续 `961b7ea`）
+
+纯查询现可接收 `context.backgroundFilterOrigins`，每个通道必须属于本次实际调用：
+
+```js
+{
+  blur: { from: 2.4, startedAt: 0.5 },
+  overlay: { from: { visible: true, tint: 0xAA4422, alpha: 0.85 }, startedAt: 0.6 }
+}
+```
+
+startedAt 使用当前步骤逻辑秒，表示 setter 调用/tween 开始，尚未加源字段 delay。
+from 表示调用前的实际状态；未挂载 overlay 用 `{visible:false}`，新建乘色层从白色
+开始。不接受用目标值、任意前一步 settled 或采样时当前值充当起点。blur 与 overlay
+可以不同步开始。非法起点拒绝，缺失记录保留 unresolved-filter-transition。
+
+延迟前保留 blur 初值；有色 overlay 在调用时立即变为 alpha=0.85，delay 后颜色
+按 easeOutCubic/整数 RGB 插值。白色目标以原 tint 淡出 alpha，完成后清除；没有
+初始 overlay 则始终为空。白色目标且 duration=0 时，生产 setter 忽略 delay 并立即
+清除；已用实际管理器确认，不能统一套用所有过渡的 delay。零时长颜色切换仍等待 delay。
+
+30 个生产 applyStepSceneState/BackgroundManager/runRafTween 对照点通过，覆盖新建、
+已有彩色层切换、白色淡出、空层、零 duration 和 delay；输入冻结、重复/逆序查询、
+开始前查询、两个独立起点、非法起点拒绝通过。原静态/几何/45 组管理器对照和
+204 分段/6817 步/17973 查询回归保持通过。
+
+本批仅补纯计算契约，未增加生产起点采集；runtime shadow 仍拒绝活动滤镜过渡，
+离线真实主线的 208 步仍未支持。未重编译/发布剧情，未新增浏览器过渡或长稳证据。
+下一批将实际调用前状态与开始时刻绑定到当前步骤/恢复上下文，再接只读 shadow；
+不能跨步复用旧 tween 的起点记录。

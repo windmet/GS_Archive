@@ -39,22 +39,48 @@ function initialScreen(overlay) {
   }
 }
 
-function backgroundFilters(entry) {
-  // These state transitions still run through the scene adapter, without a
-  // normalized cue/initial visual value. Never substitute their target as a sample.
-  for (const name of ['bg_color_transition', 'bg_dof_transition']) {
-    const transition = entry[name]
-    if (transition && ['delay', 'duration'].some(key => !Number.isFinite(Number(transition[key] ?? 0)) || Number(transition[key] ?? 0) > 0)) {
-      return { status: 'not-projected', reason: 'unresolved-filter-transition' }
-    }
-  }
+function backgroundFilters(entry, time, origins = {}) {
   const color = tintValue(entry.bg_color), dof = Number(entry.bg_dof || 0)
   if (color === null || !Number.isFinite(dof)) return { status: 'not-projected', reason: 'invalid-filter-state' }
   const requestedBlur = entry.bg_color && entry.bg_color !== '#FFFFFF' ? Math.max(0, dof * 6) : 0
   if (!Number.isFinite(requestedBlur)) return { status: 'not-projected', reason: 'invalid-filter-state' }
   const visible = !!entry.bg_color && entry.bg_color.toUpperCase() !== '#FFFFFF'
-  return { status: 'projected', blur: requestedBlur > .01 ? requestedBlur : 0,
-    overlay: visible ? { visible: true, tint: color, alpha: .85, blendMode: 'multiply' } : { visible: false } }
+  let blur = requestedBlur > .01 ? requestedBlur : 0
+  let overlay = visible ? { visible: true, tint: color, alpha: .85, blendMode: 'multiply' } : { visible: false }
+  for (const [channel, field] of [['blur', 'bg_dof_transition'], ['overlay', 'bg_color_transition']]) {
+    const transition = entry[field] || {}
+    const delay = Math.max(0, Number(transition.delay || 0)), duration = Math.max(0, Number(transition.duration || 0))
+    if (!Number.isFinite(delay) || !Number.isFinite(duration)) return { status: 'not-projected', reason: 'invalid-filter-transition' }
+    if (!delay && !duration) continue
+    // Clearing a white overlay with zero duration ignores delay in the renderer.
+    if (channel === 'overlay' && !visible && !duration) continue
+    const origin = origins[channel]
+    if (!origin || !Number.isFinite(origin.startedAt) || origin.startedAt < 0) return { status: 'not-projected', reason: 'unresolved-filter-transition' }
+    const from = origin.from
+    if (channel === 'blur' ? !Number.isFinite(from) || from < 0
+      : !from || typeof from.visible !== 'boolean' || (from.visible &&
+        (!Number.isInteger(from.tint) || from.tint < 0 || from.tint > 0xFFFFFF || !Number.isFinite(from.alpha) || from.alpha < 0))) {
+      return { status: 'not-projected', reason: 'invalid-filter-origin' }
+    }
+    const elapsed = time - origin.startedAt, beforeDelay = elapsed < delay
+    const t = duration ? ease(clamp((elapsed - delay) / duration)) : 1
+    if (channel === 'blur') {
+      const value = beforeDelay ? from : mix(from, requestedBlur, t)
+      blur = beforeDelay ? value : value > .01 ? value : 0
+    } else {
+      const initial = from.visible ? { visible: true, tint: from.tint, alpha: from.alpha, blendMode: 'multiply' } : { visible: false }
+      if (elapsed < 0) overlay = initial
+      else if (!visible) overlay = !from.visible || (!beforeDelay && t >= 1) ? { visible: false }
+        : { ...initial, alpha: beforeDelay ? from.alpha : from.alpha * (1 - t) }
+      else {
+        const startColor = from.visible ? from.tint : 0xFFFFFF
+        const tint = beforeDelay ? startColor : tintAt({ from: startColor, to: color,
+          cue: { start: origin.startedAt + delay, duration } }, time)
+        overlay = { visible: true, tint, alpha: .85, blendMode: 'multiply' }
+      }
+    }
+  }
+  return { status: 'projected', blur, overlay }
 }
 
 /** Pure, stateless semantic query. No renderer/runtime imports or external clock. */
@@ -144,7 +170,7 @@ export function projectStoryState(scenario, { stepIndex, time, viewport, context
     background, camera: { status: 'projected', ...cameraAt(camera, time) }, screen: { status: 'projected', ...screen },
     backgroundGeometry: { status: geometryReady ? 'projected' : 'not-projected',
       space: 'background-container-local', layers: geometryReady ? geometry : null },
-    backgroundFilters: backgroundFilters(entry),
+    backgroundFilters: backgroundFilters(entry, time, context.backgroundFilterOrigins),
     spines: { status: 'not-projected', entry: clone(entry.spines || []) },
     spineTints: { status: [...tintMotions.values()].some(m => m.blocked || m.to === null) ? 'partial' : 'projected',
       entries: [...tintMotions].map(([id, motion]) => ({ id, status: motion.blocked || motion.to === null ? 'not-projected' : 'projected',
