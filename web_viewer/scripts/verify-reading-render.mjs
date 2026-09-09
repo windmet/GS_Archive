@@ -28,6 +28,16 @@ try {
   assert.ok(!html.includes('从这里演出') && !html.includes('记住此处'))
   assert.ok(!html.includes('role="search"'), 'search starts collapsed')
   for (const row of document.rows) assert.ok(html.includes(`id="reading-${row.anchor.row_id}"`), 'all source row anchors survive')
+  const prologue = JSON.parse(readFileSync(new URL('../public/data/reading/1_4_001_00_a.json', import.meta.url)))
+  for (const mode of ['original', 'translation', 'bilingual']) {
+    const rendered = await renderToString(createSSRApp(Reader, {
+      state: { status: 'ready', entries: [], document: prologue }, documentId: prologue.document_id, mode, anchor: '',
+    }))
+    const shu = rendered.split('id="reading-1_4_001_00_a:step-12:text"')[1].split('</section>')[0]
+    assert.ok(shu.includes('image_chara_icon_047shu.png'), mode)
+    assert.ok(shu.includes('？？？') && !shu.includes('天峰'), mode)
+    assert.ok(shu.includes('alt=""') && !shu.includes('aria-label=') && !shu.includes('title='), 'no auxiliary name disclosure')
+  }
   console.log('Reader Vue rendering verified: status branches, episode action, collapsed search and retained row anchors')
 } finally {
   await server.close()

@@ -40,15 +40,18 @@ for (const entry of manifest.entries) {
     assert.equal(typeof row.source_text, 'string')
     if (row.text_ref) assert.equal(hash(row.source_text), row.text_ref.source_hash)
     assert.ok(row.anchor.step_index >= 0 && row.anchor.step_index < doc.source.step_count)
-    assert.equal(row.anchor.playback.target_step_index, row.anchor.step_index)
-    assert.equal(row.anchor.playback.file, doc.source.file)
-    assert.equal(row.anchor.playback.end_step_index, doc.source.step_count - 1)
-    if (row.speaker.kind === 'unknown') assert.equal(readingAvatarEntity(row), null)
+    assert.equal(row.anchor.playback, undefined)
+    assert.equal(doc.playback.file, doc.source.file)
+    assert.equal(doc.playback.end_step_index, doc.source.step_count - 1)
+    if (readingAvatarEntity(row)) assert.equal(row.visual.presence, 'visible')
   }
   documents.push(doc)
 }
 const prologue = documents.find(d => d.document_id === '1_4_001_00_a')
 assert.equal(prologue.status, 'ready')
+const shu12 = prologue.rows.find(row => row.anchor.step_id === 12 && row.kind === 'dialogue')
+assert.equal(shu12.speaker.kind, 'unknown')
+assert.equal(readingAvatarEntity(shu12), '047shu')
 assert.ok(prologue.rows.some(r => r.kind === 'synopsis'))
 assert.ok(prologue.rows.some(r => readingAvatarEntity(r) === '001tom'))
 assert.ok(prologue.rows.some(r => r.speaker.kind === 'unknown' && r.speaker.sourceName === '？？？'))
@@ -70,7 +73,8 @@ const input = { scenario_id: 'test', steps: [
   { step_id: 80, type: 'adv', dialogue: { text: 'end' } },
 ] }
 const sourceBefore = JSON.stringify(input)
-const args = { documentId: 'test', logicalId: 'story:test', file: 'test.json', sha256: hash(sourceBefore) }
+const knownIdolIds = new Set((await read('public/data/masterdata/idol_unit_dictionary.json')).idols.map(idol => idol.idol_code))
+const args = { knownIdolIds, documentId: 'test', logicalId: 'story:test', file: 'test.json', sha256: hash(sourceBefore) }
 const project = value => createReadingDocument(value, args)
 const result = project(input)
 assert.equal(JSON.stringify(input), sourceBefore)

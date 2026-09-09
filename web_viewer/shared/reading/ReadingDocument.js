@@ -1,6 +1,8 @@
 import { normalizeLegacyDialogue } from '../../src/localization/story/LegacyDialogueAdapter.js'
+import { normalizeScenario } from '../story/ScenarioNormalizer.js'
+import { projectReadingIdentity, readingVisualAvatarEntity } from './ReadingVisualIdentity.js'
 
-export const READING_SCHEMA_VERSION = 1
+export const READING_SCHEMA_VERSION = 2
 const clone = value => value == null ? null : JSON.parse(JSON.stringify(value))
 const none = () => ({ kind: 'none', entityType: null, entityId: null, sourceName: '' })
 const text = value => typeof value === 'string' ? value : ''
@@ -8,13 +10,14 @@ const TEXT_TYPES = new Set(['adv', 'talk', 'call', 'synopsis', 'title', 'text_ti
 const VISUAL_TYPES = new Set(['stage', 'fadein', 'fadeout', 'slidein', 'slideout', 'text_disable'])
 
 /** A text projection of published compiled input. No RAW interpretation or media loading. */
-export function createReadingDocument(input, { documentId, logicalId, file, sha256 }) {
+export function createReadingDocument(input, { documentId, logicalId, file, sha256, knownIdolIds }) {
   const version = input?.schema_version ?? 1
   if (![1, 2].includes(version) || !Array.isArray(input?.steps)) throw new TypeError('Unsupported compiled scenario')
   if (version === 2 && !['story-runtime-v2', 'story-runtime-v2-compat'].includes(input.runtime_contract)) {
     throw new TypeError('Unknown compiled runtime contract')
   }
   const steps = input.steps
+  const normalized = normalizeScenario(input)
   const ids = new Map()
   for (const [index, step] of steps.entries()) {
     if (!Number.isInteger(step.step_id) || ids.has(step.step_id)) throw new TypeError('Steps require unique integer IDs')
@@ -44,12 +47,12 @@ export function createReadingDocument(input, { documentId, logicalId, file, sha2
       source_file: step.evidence?.source_file ?? null,
       command_start: step.evidence?.command_start ?? null,
       command_end: step.evidence?.command_end ?? null,
-      playback: { file, start_step_index: 0, end_step_index: steps.length - 1, target_step_index: stepIndex },
     })
     const append = ({ kind, source, textRef, speaker = none(), inline = null, slot, option = null }) => {
       if (!source) return
       if (!textRef) diagnose('missing-text-ref', stepIndex)
       rows.push({ kind, source_text: source, text_ref: clone(textRef), speaker: clone(speaker),
+        ...projectReadingIdentity({ step: normalized.steps[stepIndex], rowKind: kind, speaker, knownIdolIds }),
         inline_translation: clone(inline), has_voice: Boolean(step.dialogue?.voice),
         anchor: anchor(slot), option: clone(option) })
     }
@@ -87,6 +90,7 @@ export function createReadingDocument(input, { documentId, logicalId, file, sha2
   return {
     schema_version: READING_SCHEMA_VERSION, document_id: documentId, logical_id: logicalId,
     scenario_id: input.scenario_id, text_catalog_id: input.text_catalog_id ?? input.scenario_id,
+    playback: { file, start_step_index: 0, end_step_index: steps.length - 1 },
     source: { file, sha256, schema_version: version, runtime_contract: input.runtime_contract ?? null,
       raw_hash: input.source?.raw_hash ?? null, aggregate_source: clone(input.aggregate_source), step_count: steps.length },
     status: diagnostics.some(d => d.severity === 'unsupported') ? 'unsupported' : (rows.length ? 'ready' : 'empty'),
@@ -94,12 +98,8 @@ export function createReadingDocument(input, { documentId, logicalId, file, sha2
   }
 }
 
-/** Only a confirmed, publicly named single idol can have a portrait. */
-export function readingAvatarEntity(row) {
-  const s = row?.speaker
-  return ['named', 'idol'].includes(s?.kind) && s.entityType === 'idol' && /^[0-9]{3}[a-z]{3}$/.test(s.entityId || '')
-    ? s.entityId : null
-}
+/** v2 portraits follow visual evidence, independently of the public label. */
+export const readingAvatarEntity = readingVisualAvatarEntity
 
 export function readingPresentationSpeaker(row) {
   const speaker = { ...row.speaker }

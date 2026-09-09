@@ -61,13 +61,18 @@ await oldFailure
 await race.manifest()
 assert.equal(count, 2)
 
-for (const mutate of [d => { d.schema_version = 3 }, d => { d.rows[0].anchor.step_index = -1 },
-  d => { d.rows[0].anchor.playback.file = '../../RAW/secret' }, d => { d.document_id = 'other' },
+for (const mutate of [d => { d.schema_version = 1 }, d => { d.schema_version = 3 },
+  d => { d.rows[0].visual.stepId = -1 }, d => { d.rows[0].visual.presence = 'guessed' },
+  d => { delete d.rows[0].performance }, d => { d.rows[0].anchor.playback = {} }, d => { d.rows[0].anchor.step_index = -1 },
+  d => { d.playback.file = '../../RAW/secret' }, d => { d.document_id = 'other' },
   d => { d.rows[0].text_ref.source_hash = 'bad' }, d => { d.rows.push(d.rows[0]) }]) {
   const invalid = JSON.parse(text)
   mutate(invalid)
   assert.throws(() => validateReadingDocument(invalid, entry), /Invalid reading/)
 }
+const retiredManifest = structuredClone(initial)
+retiredManifest.entries[0].schema_version = 1
+assert.throws(() => validateReadingManifest(retiredManifest), /v2 required/)
 const invalidManifest = structuredClone(initial)
 invalidManifest.entries[0].file = '../compiled/large.json'
 assert.throws(() => validateReadingManifest(invalidManifest), /file/)

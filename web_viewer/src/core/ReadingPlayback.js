@@ -6,10 +6,12 @@ export function readingPlaybackTarget(document, rowId, revision, entry, { fullDo
     throw Error('这一行暂时不能定位演出，请选择正文台词。')
   }
   // Full playback includes opening steps; the reading row remains a return anchor only.
-  const range = fullDocument ? {
-    file: document.source.file, start_step_index: 0,
-    end_step_index: document.source.step_count - 1, target_step_index: 0,
-  } : row.anchor.playback
+  if (document.schema_version !== 2 || document.playback?.file !== document.source.file ||
+      document.playback.start_step_index !== 0 || document.playback.end_step_index !== document.source.step_count - 1) {
+    throw Error('阅读格式已变化，请重新载入正文。')
+  }
+  const range = { ...document.playback,
+    target_step_index: fullDocument ? document.playback.start_step_index : row.anchor.step_index }
   if (!Number.isInteger(document.source.step_count) || document.source.step_count < 1) throw Error('正文与演出定位不一致，已停止载入。')
   return {
     file: range.file, startStep: range.start_step_index + 1,

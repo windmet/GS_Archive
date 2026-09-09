@@ -12,6 +12,7 @@ const check = process.argv.includes('--check')
 const selection = await read('config/reading-samples.v1.json')
 const publications = (await read('public/data/authoritative_story_publications.json')).entries
 const catalog = await read('public/data/masterdata/story_catalog.json')
+const knownIdolIds = new Set((await read('public/data/masterdata/idol_unit_dictionary.json')).idols.map(idol => idol.idol_code))
 const selected = new Map(selection.samples.map(sample => [sample.document_id, sample]))
 for (const sectionId of selection.main_collection_sections || []) {
   const collection = catalog.collectionStructure.find(s => s.domain === 'main' && s.sectionId === sectionId)
@@ -40,7 +41,7 @@ for (const sample of samples) {
   if (!publication && (!chapter || sample.logical_id !== `story-collection:${aggregate?.scenario_id}`
     || compiled.schema_version === 2 || compiled.scenario_id !== sample.document_id)) throw Error(`Unrecognized published episode: ${sample.file}`)
   const document = createReadingDocument(compiled, { documentId: sample.document_id,
-    logicalId: sample.logical_id, file: sample.file, sha256: hash(bytes) })
+    logicalId: sample.logical_id, file: sample.file, sha256: hash(bytes), knownIdolIds })
   const displayChapter = catalog.collectionStructure.flatMap(s => s.chapters).find(c =>
     `story-collection:${c.file.replace(/\.json$/, '')}` === sample.logical_id)
   const displayEpisode = displayChapter?.episodes.find(e => e.resourceId === sample.document_id)
