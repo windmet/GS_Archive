@@ -55,7 +55,7 @@ function backgroundFilters(entry, time, origins = {}) {
     // Clearing a white overlay with zero duration ignores delay in the renderer.
     if (channel === 'overlay' && !visible && !duration) continue
     const origin = origins[channel]
-    if (!origin || !Number.isFinite(origin.startedAt) || origin.startedAt < 0) return { status: 'not-projected', reason: 'unresolved-filter-transition' }
+    if (!origin || !Number.isFinite(origin.startedAt)) return { status: 'not-projected', reason: 'unresolved-filter-transition' }
     const from = origin.from
     if (channel === 'blur' ? !Number.isFinite(from) || from < 0
       : !from || typeof from.visible !== 'boolean' || (from.visible &&

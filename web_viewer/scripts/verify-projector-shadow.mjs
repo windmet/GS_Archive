@@ -6,6 +6,16 @@ import { createPerformanceHandle } from '../src/core/story-runtime/PerformanceRe
 import { useStoryRuntimeCues } from '../src/core/story-runtime/useStoryRuntimeCues.js'
 import { StoryReleaseProbe } from '../src/core/story-runtime/StoryReleaseProbe.js'
 
+let originWall = 0
+const originClock = new StoryClock({ nowMilliseconds: () => originWall })
+originClock.start(); originWall = 1000; originClock.start()
+assert.equal(originClock.elapsedOffset, 1)
+originWall = 1500; originClock.pause()
+assert.equal(originClock.elapsed() - originClock.now(), originClock.elapsedOffset)
+originClock.seek(2); originClock.setRate(2); originClock.resume(); originWall = 2000
+assert.equal(originClock.elapsed() - originClock.now(), originClock.elapsedOffset)
+originClock.stop()
+
 const cues = [
   { action: 'background.change', payload: { bg: 'B', type: 'dissolve' } },
   { action: 'camera.transform', payload: { zoom: 2 } },

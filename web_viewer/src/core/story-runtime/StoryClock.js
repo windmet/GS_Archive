@@ -41,6 +41,11 @@ export class StoryClock {
     return this._rate
   }
 
+  /** Exact origin conversion; avoids subtracting two separately sampled clocks. */
+  get elapsedOffset() {
+    return this._elapsedSeconds - this._offsetSeconds
+  }
+
   start({ offset = 0, rate = 1 } = {}) {
     assertFiniteNonNegative(offset, 'offset')
     assertRate(rate)

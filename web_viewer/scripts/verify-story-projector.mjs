@@ -7,6 +7,7 @@ import { PixiStageManager } from '../src/core/PixiStageManager.js'
 import { projectStoryState } from '../shared/story/StoryStateProjector.js'
 import { normalizeScenario } from '../shared/story/ScenarioNormalizer.js'
 import { applyStepSceneState } from '../src/core/applyStepSceneState.js'
+import { captureProjectorShadow } from '../src/core/story-runtime/ProjectorShadow.js'
 
 const viewport = { width: 1280, height: 720 }
 const cue = (action, payload, at = .5, duration = 2, id = action) => ({ cue_id: id, action, payload, at, duration })
@@ -171,7 +172,11 @@ try {
         overlay: { from: fromOverlay, startedAt: .5 } } })
       const state = freeze({ ...target, bg_dof_transition: { delay: .4, duration }, bg_color_transition: { delay: .4, duration } })
       const input = freeze({ schema_version: 2, steps: [{ entry_snapshot: state, cues: [] }] })
-      now = 500; applyStepSceneState({ manager, state, nowMilliseconds: () => now })
+      const stageStep = { step_id: 713, state }
+      const adapter = { backgroundManager: manager, width: 1280, height: 720,
+        setCameraFilter() {}, applyBgEffects() {},
+        setBgBlur: manager.setBgBlur.bind(manager), setBgColorOverlay: manager.setBgColorOverlay.bind(manager) }
+      now = 500; applyStepSceneState({ manager: adapter, step: stageStep, state, nowMilliseconds: () => now })
       now = time * 1000; tick()
       const projected = query(input, time, context).backgroundFilters
       assert.equal(projected.status, 'projected'); close(projected.blur, manager._bgBlurAmount)
@@ -180,9 +185,20 @@ try {
         assert.equal(projected.overlay.tint, manager._bgOverlaySprite.tint)
         close(projected.overlay.alpha, manager._bgOverlaySprite.alpha)
       }
+      const capture = (overrides = {}) => captureProjectorShadow({ scenario: input, stepIndex: 0,
+        stageStep, manager: adapter, runtime: { clock: { time }, entries: [] }, ...overrides })
+      assert.equal(capture().channels.backgroundFilters.status, 'match')
+      assert.equal(capture({ sceneTimeOffset: .25, runtime: { clock: { time: time - .25 }, entries: [] } }).channels.backgroundFilters.status, 'match', 'session elapsed origin must be translated into step time')
+      assert.deepEqual(capture(), capture(), 'filter shadow must be read-only and repeatable')
+      assert.equal(capture({ stageStep: { ...stageStep } }).channels.backgroundFilters.status, 'not-comparable', 'matching numeric step ID cannot authorize stale visual origins')
+      const oldState = manager._projectorFilterInvocation.state
+      manager._projectorFilterInvocation.state = { ...oldState, bg_dof: 99 }
+      assert.equal(capture().channels.backgroundFilters.status, 'not-comparable', 'changed target invalidates origins')
+      manager._projectorFilterInvocation.state = oldState
       query(input, 100, context); query(input, 0, context)
       assert.deepEqual(query(input, time, context).backgroundFilters, projected)
       manager._bgBlurTween?.cancel(); manager._bgColorTween?.cancel()
+      assert.equal(capture().channels.backgroundFilters.status, 'not-comparable', 'cancelled invocation cannot remain a valid source')
       manager.clearBgColorOverlay(); manager._bgOverlaySprite.destroy(); sprite.destroy({ texture: true, baseTexture: true })
       filterComparisons++
     }

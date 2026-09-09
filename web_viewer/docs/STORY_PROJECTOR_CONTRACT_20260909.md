@@ -196,3 +196,27 @@ from 表示调用前的实际状态；未挂载 overlay 用 `{visible:false}`，
 离线真实主线的 208 步仍未支持。未重编译/发布剧情，未新增浏览器过渡或长稳证据。
 下一批将实际调用前状态与开始时刻绑定到当前步骤/恢复上下文，再接只读 shadow；
 不能跨步复用旧 tween 的起点记录。
+
+## E1 运行时滤镜起点采集（接续 `d2a5d40`）
+
+applyStepSceneState 在两个 setter 调用前读取 blur/overlay 实值，调用后保留新 tween
+及其 startedAtMilliseconds；没有创建 tween 的白色空层路径保留调用时刻。每个管理器
+仅保存当前一次记录，与实际 stage step 对象绑定，不按 numeric step_id 猜测归属。
+shadow 要求当前对象、四个源状态字段及当前 handle 均匹配；已取消、被替换、跨步骤、
+目标变化或 suppressed restore 不沿用过渡起点。采集不修改 setter、tween 或调度行为。
+
+真实舞台传入的是 StoryClock.elapsed 累计时间，E1 使用 clock.now 步骤时间。
+新增只读 elapsedOffset getter，直接由时钟已有累计值与步骤偏移计算，无额外跟踪状态；
+shadow 用它换算滤镜起点。不能直接把累计秒当作本步秒，也不能相减两次独立时钟采样。
+若场景调用早于当前步骤零点，换算后的起点可以为负数；纯契约现接受有限负起点，
+表示明确发生于本步之前，不做零截断。
+
+原 30 个生产 tween 样例现在同时验证实际采集 → 纯投影 → shadow 通路，并检查
+跨对象、目标变化、取消拒绝；累计/步骤时间平移对照、时钟跨步/暂停/seek/倍速通过。
+projector、runtime-foundation、全主线离线回归通过；无运行时起点的离线 208 步仍不投影。
+
+浏览器使用同一主线来源，暂停并自然导航后实际采到 step_id=3（短过渡被导航跳过），
+累计偏移 26.569099999904633 秒映射起点为本步 0，静态滤镜 match，error 日志为空。
+报告 `C:/Users/windm/.codex/evidence/sidem-filter-origins/2026-09-09/paused-entry.json`。
+这证明真实起点接线和时钟换算；不是过渡中途浏览器帧验收。已解除模拟隐藏状态，
+没有启动长稳。source-only build 通过，既有大包提示保留。E2 未接管。

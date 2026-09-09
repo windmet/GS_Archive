@@ -59,7 +59,7 @@ function comparablePlane(plane, kind) {
 }
 
 /** Read-only diagnostic adapter. It samples, never advances, settles or restores Runtime. */
-export function captureProjectorShadow({ scenario, stepIndex, runtime, manager, context = {}, isSpineReady = () => false }) {
+export function captureProjectorShadow({ scenario, stepIndex, runtime, manager, context = {}, stageStep = null, sceneTimeOffset = 0, isSpineReady = () => false }) {
   if (!manager || manager._destroyed || !runtime?.clock || !scenario?.steps?.[stepIndex]) return { status: 'not-comparable', reason: 'runtime-not-ready' }
   const time = runtime.clock.time
   const actual = readProjectorActual(manager)
@@ -84,6 +84,25 @@ export function captureProjectorShadow({ scenario, stepIndex, runtime, manager, 
   }
   const basis = { ...context, backgroundTextures: actual.backgroundTextures,
     ...(context.cuePolicy !== 'suppressed' ? { startedAt: starts } : {}) }
+  const filterRecord = manager.backgroundManager?._projectorFilterInvocation
+  const filterEntry = context.entrySnapshot || step.entry_snapshot
+  const filterOriginMatches = !!stageStep && filterRecord?.step === stageStep &&
+    Object.keys(filterRecord.state).every(key => JSON.stringify(filterRecord.state[key]) === JSON.stringify(filterEntry?.[key] ?? null))
+  // Caller-provided origins are for pure queries only; runtime comparison requires
+  // the invocation captured by this manager for this exact projected step.
+  delete basis.backgroundFilterOrigins
+  if (filterOriginMatches && Number.isFinite(sceneTimeOffset) && context.cuePolicy !== 'suppressed') {
+    basis.backgroundFilterOrigins = {}
+    for (const [channel, name] of [['blur', '_bgBlurTween'], ['overlay', '_bgColorTween']]) {
+      const handle = filterRecord.handles[channel]
+      if (handle && handle === manager.backgroundManager[name] && !handle.cancelled) {
+        basis.backgroundFilterOrigins[channel] = { from: structuredClone(filterRecord.from[channel]), startedAt: handle.startedAtMilliseconds / 1000 - sceneTimeOffset }
+      } else if (!handle && manager.backgroundManager[name] === filterRecord.observedHandles[channel] && Number.isFinite(filterRecord.calledAt[channel])) {
+        // A white target with no existing overlay creates no tween at all.
+        basis.backgroundFilterOrigins[channel] = { from: structuredClone(filterRecord.from[channel]), startedAt: filterRecord.calledAt[channel] / 1000 - sceneTimeOffset }
+      }
+    }
+  }
   let expected
   try { expected = projectStoryState(scenario, { stepIndex, time, viewport: { width: manager.width, height: manager.height }, context: basis }) }
   catch (error) { return { status: 'not-comparable', reason: 'projection-input', detail: error.message, step_index: stepIndex, time, actual } }
@@ -117,9 +136,14 @@ export function captureProjectorShadow({ scenario, stepIndex, runtime, manager, 
     const delta = differences(expected.backgroundGeometry.layers, actual.backgroundGeometry)
     samples.backgroundGeometry = { status: delta.length ? 'difference' : 'match', differences: delta }
   }
+  const activeFilterOriginsOwned = filterOriginMatches && [['blur', '_bgBlurTween'], ['overlay', '_bgColorTween']].every(([channel, name]) => {
+    const handle = manager.backgroundManager?.[name]
+    return !handle || handle.rafId == null || handle.cancelled ||
+      (filterRecord.handles[channel] === handle && !!basis.backgroundFilterOrigins?.[channel])
+  })
   const filterReason = expected.backgroundFilters.status !== 'projected' ? expected.backgroundFilters.reason
     : !actual.backgroundFilters ? 'background-manager-not-ready'
-    : actual.backgroundFilterTransitionActive ? 'filter-transition-active' : null
+    : actual.backgroundFilterTransitionActive && !activeFilterOriginsOwned ? 'filter-transition-active' : null
   if (filterReason) samples.backgroundFilters = { status: 'not-comparable', reason: filterReason }
   else {
     const { blur, overlay } = expected.backgroundFilters
@@ -149,6 +173,6 @@ export function captureProjectorShadow({ scenario, stepIndex, runtime, manager, 
     step_index: stepIndex, step_id: step.step_id, time, clock_state: runtime.clock.state,
     numeric_tolerance: .001, sampling: 'read-only-between-frames',
     note: 'Active animation differences may include frame sampling lag; no tolerance window is treated as a pass.',
-    context: basis, expected, actual, channels: samples,
+    scene_time_offset: sceneTimeOffset, context: basis, expected, actual, channels: samples,
   }
 }
