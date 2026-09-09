@@ -406,3 +406,17 @@ verify:scenario-package 新增清除 PYTHONPATH 的真实子进程，从仓库�
 顶层 authoritative_scenario。原 10 组冻结产物/provenance、双 CLI 和临时 batch
 保持通过；story-text、scenario-resources、scenario-source-config（含实际候选
 CLI 临时输出）通过。未修改 public/candidate 发布目录，不需要前端构建。
+
+## G21：仓库根模块启动与历史 CLI 对齐
+
+scenario_compiler.py 兼容层按 __package__ 选择相对/历史顶层导入，修复仓库根
+`python -m data_pipeline.scenario_compiler` 的 ModuleNotFoundError。新增
+sidem_scenario/__main__.py，允许 `python -m data_pipeline.sidem_scenario`；
+二者与 sidem_scenario.cli 共用 main。帮助文本将原本误写的 output.json
+改为 output_dir，与 compile_file 的实际目录写出行为一致。
+
+verify:scenario-package 在不含 PYTHONPATH 的新进程测试三个仓库根模块入口：
+stdout 完整 JSON、指定临时输出目录与无参数帮助。它们与原结果一致，旧脚本/
+顶层模块入口、10 个冻结输出哈希、严格包导入及临时 batch 回归保持通过。
+scenario-source-config（含实际临时候选 CLI）也通过。没有对真实输入全库
+编译，没有更改公共产物和发布目录。本批仅为启动边界，无前端修改。

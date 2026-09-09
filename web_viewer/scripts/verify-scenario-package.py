@@ -89,6 +89,21 @@ print(json.dumps(result))
             assert json.loads(run.stdout) == expected
             missing = subprocess.run([sys.executable, *command], env=env, capture_output=True, text=True, encoding='utf-8')
             assert missing.returncode == 1 and 'Usage:' in missing.stdout
+        # All root-package CLI entry points share the same public contract.
+        root_env = {key: value for key, value in env.items() if key != 'PYTHONPATH'}
+        for module in ('data_pipeline.scenario_compiler', 'data_pipeline.sidem_scenario',
+                       'data_pipeline.sidem_scenario.cli'):
+            command = [sys.executable, '-m', module]
+            run = subprocess.run([*command, str(input_path)], cwd=ROOT.parent, env=root_env,
+                                 capture_output=True, text=True, encoding='utf-8', check=True)
+            assert json.loads(run.stdout) == expected
+            destination = root / module
+            subprocess.run([*command, str(input_path), str(destination)], cwd=ROOT.parent,
+                           env=root_env, capture_output=True, text=True, encoding='utf-8', check=True)
+            assert ScenarioCompiler.load_json(str(destination/'scenario_fixture_compiled.json')) == expected
+            missing = subprocess.run(command, cwd=ROOT.parent, env=root_env,
+                                     capture_output=True, text=True, encoding='utf-8')
+            assert missing.returncode == 1 and '[output_dir]' in missing.stdout
         compile_directory(str(input_path.parent), str(root / 'batch'))
         assert ScenarioCompiler.load_json(str(root / 'batch' / 'scenario_fixture_compiled.json')) == expected
     print('Scenario package: 10 frozen output/provenance hashes, API identity, file helpers, legacy/package CLI and isolated batch passed')

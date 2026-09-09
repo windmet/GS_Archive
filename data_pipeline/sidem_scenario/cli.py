@@ -30,7 +30,7 @@ def compile_directory(scenario_root: str, output_root: str):
 def main():
     if len(sys.argv) < 2:
         print("Usage:")
-        print("  Single file:  python scenario_compiler.py <input.json> [output.json]")
+        print("  Single file:  python scenario_compiler.py <input.json> [output_dir]")
         print("  Batch:        python scenario_compiler.py --batch <input_dir> <output_dir>")
         sys.exit(1)
 
