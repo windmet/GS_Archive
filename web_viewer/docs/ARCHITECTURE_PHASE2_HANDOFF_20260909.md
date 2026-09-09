@@ -7,7 +7,8 @@
 R2/R3 主迁移及 404/有效译文补验已完成，接下来做 P1–P5 加载契约。**
 暂不继续以 E1 零散通道增量替代这两条产品主线；E1 既有成果和未支持范围保留。
 逐句播放能力保留但已退出普通 UI，显式书签 UI 与 Reader 存储调用已撤下；reading_row/返回定位保留。
-见 [R1 验收](READING_R1_ACCEPTANCE_20260909.md)。ReadingDocument v2 已交付，StoryAssetPlan 未实现；长稳仍后移。
+见 [R1 验收](READING_R1_ACCEPTANCE_20260909.md)。ReadingDocument v2 已交付；长稳仍后移。
+P1 首批已完成 [资源需求发现](STORY_ASSET_PLAN_P1_20260909.md)，依赖闭包与执行器仍待接入。
 R2 规则、真实第 12 步和 204 份源数据验算见 [投影记录](READING_R2_PROJECTION_20260909.md)；
 Reader 已接入新头像策略；真实 unknown 秀头像、v2 迁移与剩余验收见 [R3 记录](READING_R3_MIGRATION_20260909.md)。
 

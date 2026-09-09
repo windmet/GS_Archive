@@ -1,10 +1,11 @@
 /**
- * Preloader — scan scenario steps for required assets and preload them
- * into the browser's HTTP cache so that PIXI.Assets.load() resolves instantly.
+ * Legacy best-effort background/skeleton cache warming. This scans step.state,
+ * so it does not enumerate authoritative v2 snapshots or complete Spine bundles.
  *
  * Key principle: NEVER dynamically import pixi.js here. Use native Image/fetch
- * to warm the browser cache, then PIXI.Assets.load() in PixiStageManager will
- * be a cache hit (near-zero latency).
+ * to attempt cache warming. Cache reuse, decoding and render readiness are not
+ * guaranteed. The percentage currently counts settled attempts, including failures.
+ * StoryAssetPlan is being developed separately before replacing this executor.
  *
  * This runs ONLY when user clicks a scenario file (in App.vue loadScenario).
  * Home screen / list views never touch this code.
