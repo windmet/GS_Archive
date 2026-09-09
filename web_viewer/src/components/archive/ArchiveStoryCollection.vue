@@ -17,16 +17,16 @@
         </dl>
         <aside v-if="collection.domain === 'birthday'" class="domain-boundary-note">
           <BookOpen :size="17" />
-          <p v-if="collection.subject?.kind === 'shared'"><strong>归档边界</strong><span>该篇由山村贤登场引导，但表 80 没有绑定角色；因此按制作人生日公共篇建档，不复制到山村贤的个人生日集合。</span></p>
+          <p v-if="collection.subject?.kind === 'shared'"><strong>归档边界</strong><span>该篇由山村贤登场引导，内容为制作人生日问候，归入公共篇。</span></p>
           <p v-else><strong>归档边界</strong><span>生日问候属于本页；生日同期开放的正式个人章节归入 Idol Episode。共享文件只保留一个关系入口，不重复定义章节。</span></p>
         </aside>
         <div v-if="collection.gasha || collection.sourceUrl" class="collection-relations">
           <button v-if="collection.gasha" type="button" @click="emit('open-gasha', collection.gasha)">
             <img v-if="collection.gasha.banner_url" :src="collection.gasha.banner_url" alt="" />
             <span>
-              <small>RELATED GASHA · {{ collection.gasha.code }}</small>
+              <small>关联卡池</small>
               <strong>{{ collection.gasha.display_name }}</strong>
-              <em>{{ collection.gasha.derived_pickup_cards?.length || 0 }} pickup SSR</em>
+              <em>{{ collection.gasha.derived_pickup_cards?.length || 0 }} 张推定关联卡</em>
             </span>
             <ChevronRight :size="18" />
           </button>
@@ -41,7 +41,7 @@
     <section class="chapter-section">
       <div class="section-heading">
         <div><span>CHAPTERS</span><h3>{{ collection.domainLabel }}</h3></div>
-        <strong>{{ collection.chapterCount }} chapters</strong>
+        <strong>{{ collection.chapterCount }} 章</strong>
       </div>
 
       <div class="chapter-list">
@@ -59,8 +59,8 @@
                 <strong>{{ chapter.title }}</strong>
               </span>
               <span class="chapter-stats">
-                <small>{{ chapter.episodeCount }} episodes</small>
-                <small>{{ chapter.voiceCount }} voices</small>
+                <small>{{ chapter.episodeCount }} 段剧情</small>
+                <small>{{ chapter.voiceCount }} 段语音</small>
               </span>
               <ChevronUp v-if="expandedChapterId === chapter.id" :size="18" />
               <ChevronDown v-else :size="18" />
@@ -114,7 +114,7 @@
               <strong>{{ chapter.synopsis.title || chapter.title }}</strong>
               <p>{{ chapter.synopsis.text }}</p>
             </div>
-            <p v-else-if="!chapter.exists" class="chapter-unavailable">该话目保留于 masterdata，但没有可播放的编译剧情。</p>
+            <p v-else-if="!chapter.exists" class="chapter-unavailable">此章节已建档，剧情暂未收录。</p>
 
             <p v-if="readingError" role="status">{{ readingError }} <button @click="emit('retry-reading')">重试阅读目录</button></p>
             <div v-if="!chapter.canonicalRelation" class="episode-grid">
@@ -126,7 +126,7 @@
                 <span class="episode-number">{{ String(episodeIndex + 1).padStart(2, '0') }}</span>
                 <span class="episode-copy">
                   <strong>{{ episode.label }}</strong>
-                  <small>{{ episode.dialogueCount }} dialogues · {{ episode.voiceCount }} voices</small>
+                  <small>{{ episode.dialogueCount }} 段对白 · {{ episode.voiceCount }} 段语音</small>
                 </span>
                 <Play v-if="episode.exists" :size="15" fill="currentColor" />
                 <span v-else class="episode-lock">－</span>
@@ -138,11 +138,13 @@
         </section>
       </div>
     </section>
+    <ArchiveTechnicalDetails :key="collection.id" :evidence="collection" />
   </article>
 </template>
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { BookOpen, ChevronDown, ChevronRight, ChevronUp, ExternalLink, Play } from '@lucide/vue'
 
 const props = defineProps({

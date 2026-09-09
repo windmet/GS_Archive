@@ -95,7 +95,7 @@ assert.match(catalogSource, /官方 Extra Story/)
 assert.match(catalogSource, /card\.bannerUrl/)
 assert.match(catalogSource, /其他特别剧情记录/)
 assert.match(catalogSource, /@media \(max-width: 620px\).*\.extra-card-grid, \.birthday-card-grid \{ grid-template-columns: 1fr;/s)
-assert.match(collectionSource, /RELATED GASHA/)
+assert.match(collectionSource, /关联卡池/)
 assert.match(collectionSource, /分类核对来源/)
 
 console.log('Extra story domain landing: 7 table-178 works + 3 supplements, 47 chapters, exact RAW visuals and FES gasha relation verified')

@@ -1257,11 +1257,11 @@ const archiveSearchable = computed(() => ['idols', 'groups', 'cards', 'gashas', 
 
 const archiveSearchPlaceholder = computed(() => {
   if (view.value === 'idols') return categoryFilterPlaceholder.value
-  if (view.value === 'cards') return '搜索卡片标题、稀有度或资源 ID'
+  if (view.value === 'cards') return '搜索卡片标题或稀有度'
   if (view.value === 'gashas') return '搜索卡池名称、卡片或偶像'
-  if (view.value === 'groups') return '搜索章节标题或资源 ID'
-  if (view.value === 'files') return '搜索剧情标题或资源 ID'
-  if (view.value === 'story_catalog') return '搜索标题、资源 ID 或角色代码'
+  if (view.value === 'groups') return '搜索章节标题'
+  if (view.value === 'files') return '搜索剧情标题'
+  if (view.value === 'story_catalog') return '搜索剧情标题或角色'
   return '搜索资料'
 })
 

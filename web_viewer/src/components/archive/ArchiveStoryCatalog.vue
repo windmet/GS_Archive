@@ -16,7 +16,7 @@
         <div>
           <span>MAIN STORY ARCHIVE</span>
           <h2>主线剧情</h2>
-          <p>按 masterdata 的正式章节与话目结构浏览主线。未公开章节保留档案位置，但不提供播放入口。</p>
+          <p>按正式章节与话目浏览主线。未公开章节保留档案位置，但不提供播放入口。</p>
         </div>
         <dl>
           <div><dt>章节</dt><dd>{{ mainDomain?.meta?.collectionCount || 0 }}</dd></div>
@@ -50,7 +50,7 @@
               <span v-else aria-hidden="true">{{ String(index + 1).padStart(2, '0') }}</span>
             </span>
             <span class="main-domain-copy">
-              <small>{{ collection.isPlaceholder ? 'MASTER PLACEHOLDER' : 'MAIN STORY' }}</small>
+              <small>{{ collection.isPlaceholder ? '未公开章节' : 'MAIN STORY' }}</small>
               <strong>{{ collection.title }}</strong>
               <span v-if="collection.chapterCount">
                 {{ collection.chapterCount }} 话目 · {{ collection.logicalEntryCount }} 分段
@@ -71,19 +71,19 @@
         <div>
           <span>EXTRA STORY ARCHIVE</span>
           <h2>额外剧情</h2>
-          <p>按官方 Extra Story 作品归档；masterdata 逻辑记录作为章节保留，关联企划可直接前往卡池资料。</p>
+          <p>按作品浏览额外剧情，也可前往相关卡池查看关联资料。</p>
         </div>
         <dl aria-label="额外剧情归档统计">
           <div><dt>官方作品</dt><dd>{{ extraDomain?.meta?.officialCollectionCount || 0 }}</dd></div>
           <div><dt>剧情章节</dt><dd>{{ extraDomain?.meta?.logicalEntryCount || 0 }}</dd></div>
-          <div><dt>播放文件</dt><dd>{{ extraDomain?.meta?.compiledFileCount || 0 }}</dd></div>
+          <div><dt>收录分段</dt><dd>{{ extraDomain?.meta?.compiledFileCount || 0 }}</dd></div>
         </dl>
       </header>
 
       <section class="extra-domain-section" aria-labelledby="extra-domain-heading">
         <div class="section-heading">
           <div><span>OFFICIAL CLASSIFICATION</span><h3 id="extra-domain-heading">官方 Extra Story</h3></div>
-          <strong>{{ officialExtraCards.length }} works</strong>
+          <strong>{{ officialExtraCards.length }} 部作品</strong>
         </div>
         <div class="extra-card-grid">
           <button
@@ -94,13 +94,13 @@
           >
             <span class="extra-card-visual">
               <img v-if="card.bannerUrl" :src="card.bannerUrl" alt="" />
-              <span v-else class="extra-card-index">{{ card.parentSeriesId }}</span>
+              <span v-else class="extra-card-index">待补图</span>
             </span>
             <span class="extra-card-copy">
               <small>{{ formatExtraDate(card.releaseAt) }}</small>
               <strong>{{ card.title }}</strong>
-              <span>{{ card.logicalEntryCount }} chapters</span>
-              <code v-if="card.gasha">{{ card.gasha.code }} · {{ card.gasha.title }}</code>
+              <span>{{ card.logicalEntryCount }} 章</span>
+              <span v-if="card.gasha">{{ card.gasha.title }}</span>
             </span>
             <span v-if="card.gasha" class="shared-playback">关联卡池</span>
             <ArrowRight :size="17" aria-hidden="true" />
@@ -110,10 +110,10 @@
 
       <section v-if="supplementaryExtraCards.length" class="extra-domain-section extra-supplementary" aria-labelledby="extra-supplementary-heading">
         <div class="section-heading">
-          <div><span>MASTERDATA SUPPLEMENT</span><h3 id="extra-supplementary-heading">其他特别剧情记录</h3></div>
-          <strong>{{ supplementaryExtraCards.length }} works</strong>
+          <div><span>SUPPLEMENTARY STORIES</span><h3 id="extra-supplementary-heading">其他特别剧情记录</h3></div>
+          <strong>{{ supplementaryExtraCards.length }} 部作品</strong>
         </div>
-        <p class="extra-section-note">以下条目存在于 Extra masterdata，但未列入所核对 Wiki 的官方 Extra Story 清单；为避免丢失档案，单独保留。</p>
+        <p class="extra-section-note">以下特别剧情尚未在所核对的作品清单中确认分类，作为补充资料保留。</p>
         <div class="extra-card-grid">
           <button
             v-for="card in supplementaryExtraCards"
@@ -123,13 +123,13 @@
           >
             <span class="extra-card-visual">
               <img v-if="card.bannerUrl" :src="card.bannerUrl" alt="" />
-              <span v-else class="extra-card-index">{{ card.parentSeriesId }}</span>
+              <span v-else class="extra-card-index">待补图</span>
             </span>
             <span class="extra-card-copy">
               <small>{{ formatExtraDate(card.releaseAt) }}</small>
               <strong>{{ card.title }}</strong>
-              <span>{{ card.logicalEntryCount }} chapters</span>
-              <code v-if="card.gasha">{{ card.gasha.code }} · {{ card.gasha.title }}</code>
+              <span>{{ card.logicalEntryCount }} 章</span>
+              <span v-if="card.gasha">{{ card.gasha.title }}</span>
             </span>
             <span v-if="card.gasha" class="shared-playback">关联卡池</span>
             <ArrowRight :size="17" aria-hidden="true" />
@@ -143,19 +143,19 @@
         <div>
           <span>BIRTHDAY STORY ARCHIVE</span>
           <h2>生日剧情</h2>
-          <p>按角色主体归档三类 masterdata 系列，并保留与个人剧情共享文件的双重身份。</p>
+          <p>按角色浏览生日问候，也可查看同期开放的个人故事。</p>
         </div>
         <dl aria-label="生日剧情归档统计">
-          <div><dt>角色主体</dt><dd>{{ birthdayDomain?.meta?.collectionCount || 0 }}</dd></div>
-          <div><dt>逻辑记录</dt><dd>{{ birthdayDomain?.meta?.logicalEntryCount || 0 }}</dd></div>
-          <div><dt>跨域共享</dt><dd>{{ birthdayDomain?.meta?.crossDomainSharedFileCount || 0 }}</dd></div>
+          <div><dt>档案组</dt><dd>{{ birthdayDomain?.meta?.collectionCount || 0 }}</dd></div>
+          <div><dt>剧情记录</dt><dd>{{ birthdayDomain?.meta?.logicalEntryCount || 0 }}</dd></div>
+          <div><dt>关联个人故事</dt><dd>{{ birthdayDomain?.meta?.crossDomainSharedFileCount || 0 }}</dd></div>
         </dl>
       </header>
 
       <section class="birthday-domain-section" aria-labelledby="birthday-domain-heading">
         <div class="section-heading">
           <div><span>SUBJECT COLLECTIONS</span><h3 id="birthday-domain-heading">角色生日档案</h3></div>
-          <strong>{{ birthdayCards.length }} subjects</strong>
+          <strong>{{ birthdayCards.length }} 组档案</strong>
         </div>
         <div class="birthday-card-grid">
           <button
@@ -164,13 +164,12 @@
             class="birthday-card"
             @click="browse('birthday', card.subject.code)"
           >
-            <span class="birthday-subject-code">{{ card.subject.numericId }}</span>
             <span class="birthday-card-copy">
-              <small>{{ card.subject.kind === 'npc' ? 'STAFF' : (card.subject.kind === 'shared' ? 'COMMON' : 'IDOL') }} · {{ card.subject.code }}</small>
+              <small>{{ card.subject.kind === 'npc' ? '事务所' : (card.subject.kind === 'shared' ? '公共篇' : '偶像') }}</small>
               <strong>{{ card.subject.displayName }}</strong>
-              <span>{{ card.logicalEntryCount }} 篇 · {{ card.seriesIds.length }} 个 master 系列</span>
+              <span>{{ card.logicalEntryCount }} 篇</span>
             </span>
-            <span v-if="card.sharedCount" class="birthday-shared">{{ card.sharedCount }} 篇跨域共享</span>
+            <span v-if="card.sharedCount" class="birthday-shared">{{ card.sharedCount }} 篇关联个人故事</span>
             <ArrowRight :size="17" aria-hidden="true" />
           </button>
         </div>
@@ -282,7 +281,7 @@
         <button v-if="section" class="section-filter" @click="emit('clear-section')">
           {{ sectionLabel }} <X :size="14" />
         </button>
-        <span class="catalog-count">{{ filteredTotal }} results</span>
+        <span class="catalog-count">{{ filteredTotal }} 条结果</span>
       </div>
 
       <p v-if="!entries.length" class="empty-state">没有符合当前条件的故事</p>
@@ -296,14 +295,14 @@
           <span class="event-entity-copy">
             <small>{{ eventTypeLabel(entry) }} · {{ formatEventDate(entry) }}</small>
             <strong>{{ entry.masterEvent?.name || entry.title }}</strong>
-            <span>{{ entry.preplaySynopsis?.text || '已收录完整活动剧情与关联资料。' }}</span>
+            <span>{{ entry.preplaySynopsis?.text || '查看活动剧情与关联资料。' }}</span>
           </span>
           <span class="event-reward-icons">
             <img
               v-for="cardId in entry.rewardCardIds?.slice(0, 3)"
               :key="cardId"
               :src="getCardIconUrl(cardId, true)"
-              :alt="cardId"
+              alt="活动报酬卡"
             />
             <small v-if="!entry.rewardCardIds?.length">无卡片报酬记录</small>
           </span>
@@ -330,9 +329,8 @@
             <small class="story-hierarchy">{{ hierarchyLabel(entry) }}</small>
             <strong>{{ entry.title }}</strong>
             <span v-if="entry.preplaySynopsis?.text" class="story-synopsis">{{ entry.preplaySynopsis.text }}</span>
-            <small class="story-resource">{{ entry.resourceId }}</small>
           </span>
-          <span class="story-stats"><span>{{ entry.playableStepCount || 0 }} steps</span><span>{{ entry.summary?.voice_count || 0 }} voices</span></span>
+          <span class="story-stats">{{ entry.exists ? '已收录' : '暂未收录' }}</span>
           <ArrowRight class="row-arrow" :size="17" />
         </button>
       </div>
@@ -341,11 +339,13 @@
         <ChevronDown :size="17" /><span>显示更多</span>
       </button>
     </div>
+    <ArchiveTechnicalDetails :key="`${mode}:${domain}:${section}`" :evidence="mode === 'portal' ? { mainDomain, extraDomain, birthdayDomain } : { entries, filteredTotal }" />
   </section>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { ArrowRight, BookOpen, Briefcase, Cake, CalendarRange, ChevronDown, CreditCard, FileWarning, Languages, LayoutGrid, Search, Sparkles, UserRound, X } from '@lucide/vue'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 
@@ -483,7 +483,7 @@ function formatExtraDate(timestamp) {
 .birthday-domain-hero dt { color: #8b7b80; font-size: .56rem; }.birthday-domain-hero dd { margin: 4px 0 0; color: #a64762; font-size: 1rem; font-weight: 800; }
 .birthday-domain-section { padding: 25px max(24px, calc((100% - 1120px) / 2)) 42px; }.birthday-domain-section .section-heading h3 { margin: 3px 0 0; font-size: 1rem; }.birthday-domain-section .section-heading > strong { color: #8a7b80; font-size: .61rem; }
 .birthday-card-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 9px; }
-.birthday-card { position: relative; display: grid; grid-template-columns: 42px minmax(0,1fr) 18px; align-items: center; gap: 10px; min-height: 94px; padding: 12px; border: 1px solid #e7dfe2; border-radius: 6px; background: #fff; color: #3f3438; cursor: pointer; font: inherit; text-align: left; }
+.birthday-card { position: relative; display: grid; grid-template-columns: minmax(0,1fr) 18px; align-items: center; gap: 10px; min-height: 94px; padding: 12px; border: 1px solid #e7dfe2; border-radius: 6px; background: #fff; color: #3f3438; cursor: pointer; font: inherit; text-align: left; }
 .birthday-card:hover { border-color: #d58ca0; box-shadow: 0 4px 14px rgba(100,52,66,.08); }.birthday-subject-code { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: #fbe8ed; color: #a84964; font-size: .61rem; font-weight: 800; }
 .birthday-card-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }.birthday-card-copy small { color: #b05b73; font-size: .51rem; }.birthday-card-copy strong { overflow: hidden; font-size: .75rem; text-overflow: ellipsis; white-space: nowrap; }.birthday-card-copy span { color: #76666b; font-size: .57rem; }
 .birthday-shared { position: absolute; top: 7px; right: 8px; padding: 2px 5px; border-radius: 3px; background: #f0eafa; color: #6e5591; font-size: .48rem; }

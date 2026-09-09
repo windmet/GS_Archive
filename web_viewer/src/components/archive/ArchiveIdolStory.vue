@@ -109,7 +109,7 @@
               <span class="episode-index">{{ String(episodeIndex + 1).padStart(2, '0') }}</span>
               <span class="episode-copy">
                 <strong>{{ episode.name }}</strong>
-                <small>{{ episode.dialogueCount }} dialogues · {{ episode.voiceCount }} voices</small>
+                <small>{{ episode.dialogueCount }} 段对白 · {{ episode.voiceCount }} 段语音</small>
               </span>
               <Play v-if="episode.exists" :size="15" fill="currentColor" />
               <FileWarning v-else :size="15" />

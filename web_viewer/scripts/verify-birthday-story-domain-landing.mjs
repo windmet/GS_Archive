@@ -95,7 +95,7 @@ assert.match(appSource, /:birthday-domain="birthdayStoryDomain"/)
 assert.match(appSource, /\['main', 'unit_story', 'extra', 'birthday'\]\.includes\(domain\)/)
 assert.match(appSource, /returnsToDomainLanding = \['main', 'extra', 'birthday'\]\.includes\(domain\)/)
 assert.match(catalogSource, /mode === 'portal' && domain === 'birthday'/)
-assert.match(catalogSource, /card\.subject\.kind === 'shared' \? 'COMMON'/)
+assert.match(catalogSource, /card\.subject\.kind === 'shared' \? '公共篇'/)
 assert.match(catalogSource, /@media \(max-width: 620px\).*\.extra-card-grid, \.birthday-card-grid \{ grid-template-columns: 1fr;/s)
 
 console.log('Birthday story domain landing: 51 collections, 181 logical records, 2 unassigned producer-birthday entries and 29 cross-domain files verified')

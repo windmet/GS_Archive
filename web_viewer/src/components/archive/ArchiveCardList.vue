@@ -4,7 +4,7 @@
       <template #filters>
         <input
           :value="modelValue"
-          placeholder="Search card..."
+          placeholder="搜索卡片标题或稀有度"
           class="filter-input"
           @input="emit('update:modelValue', $event.target.value)"
         />
@@ -84,18 +84,17 @@
       >
         <img
           :src="getCardIconUrl(card.resource_id, true)"
-          :alt="card.title || card.resource_id"
+          :alt="card.title || '卡名待确认'"
           class="card-thumb"
           loading="lazy"
           @error="fallbackCardIcon($event, card.resource_id)"
         />
         <span class="card-rarity">{{ card.rarity || 'CARD' }}</span>
         <span class="card-main">
-          <span class="card-title">{{ card.title || card.resource_id }}</span>
-          <span class="card-resource">{{ card.resource_id }}</span>
+          <span class="card-title">{{ card.title || '卡名待确认' }}</span>
         </span>
         <span class="card-counts">
-          {{ card.home_voice_cues?.length || 0 }} voices · {{ card.scenario_entries?.length || 0 }} stories
+          {{ card.home_voice_cues?.length || 0 }} 段触摸语音 · {{ card.scenario_entries?.length || 0 }} 篇剧情
         </span>
       </button>
     </div>
