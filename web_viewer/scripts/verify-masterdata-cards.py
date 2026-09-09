@@ -40,6 +40,12 @@ def corpus(data, api=legacy, split=split_card_index):
     saved = copy.deepcopy(full)
     summary, details = split(full)
     assert full == saved
+    for card in canonical_cards(full['cards']):
+        # Source offset ties the whole detail back to the selected CardData row.
+        detail = details['cards_by_resource_id'][card['resource_id']]
+        assert detail['gameplay']['_source'] == card['gameplay']['_source']
+        assert detail['gameplay'].get('skill_id') == card['gameplay'].get('skill', {}).get('id')
+        assert detail['operational_voice_cues'] == card['operational_voice_cues']
     return {'full': full, 'summary': summary, 'details': details,
             'canonical': api.canonical_cards(summary['cards'])}
 
@@ -76,6 +82,20 @@ def verify():
     normal = {'resource_id': 'same', 'card_id': 1, 'title': 'Normal'}
     assert canonical_cards([tutorial, normal]) == [normal]
     assert canonical_cards([normal, {**normal, 'title': 'tie'}]) == [normal]
+    normal_detail = {**normal, 'gameplay': {'skill': {'id': 10}},
+                     'operational_voice_cues': [{'cue': 'normal'}]}
+    tutorial_detail = {**tutorial, 'gameplay': {'skill': {'id': 3}},
+                       'operational_voice_cues': [{'cue': 'tutorial'}]}
+    for rows in ([normal_detail, tutorial_detail], [tutorial_detail, normal_detail]):
+        original = copy.deepcopy(rows)
+        summary, detail = split_card_index({'cards': rows})
+        assert rows == original and len(summary['cards']) == 2
+        assert detail['cards_by_resource_id']['same']['gameplay']['skill_id'] == 10
+        assert detail['cards_by_resource_id']['same']['operational_voice_cues'] == [{'cue': 'normal'}]
+        assert set(detail['skills_by_id']) == {'10', '3'}
+    _, detail = split_card_index({'cards': [normal_detail, {**normal_detail,
+        'gameplay': {'skill': {'id': 20}}}]})
+    assert detail['cards_by_resource_id']['same']['gameplay']['skill_id'] == 10
     curated = {'card': {'source_url': 'source', 'verified_at': 'date', 'mapping_basis': 'manual',
                         'voices': {'base_02_00': {'text': 'curated'}, 'base_03_01': {'text': 'unit'}}}}
     rows = classify_card_operational_voices({'36': '0', '_offset': 9}, 'card', 'base',

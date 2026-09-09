@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from typing import Any
+from .cards import card_preference_score
 
 
 def split_card_index(card_index: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -15,6 +16,7 @@ def split_card_index(card_index: dict[str, Any]) -> tuple[dict[str, Any], dict[s
 def extract_card_details_in_place(card_index: dict[str, Any]) -> dict[str, Any]:
     """Legacy destructive split; new callers should use split_card_index."""
     details: dict[str, dict[str, Any]] = {}
+    selected_scores: dict[str, int] = {}
     skills: dict[str, dict[str, Any]] = {}
     center_skills: dict[str, dict[str, Any]] = {}
     costumes: dict[str, dict[str, Any]] = {}
@@ -24,6 +26,7 @@ def extract_card_details_in_place(card_index: dict[str, Any]) -> dict[str, Any]:
         resource_id = card.get("resource_id")
         if not isinstance(resource_id, str):
             continue
+        score = card_preference_score(card)
         gameplay = card.pop("gameplay", {})
         limitbreak_item = card.pop("limitbreak_item", None)
         if isinstance(limitbreak_item, dict) and isinstance(limitbreak_item.get("id"), int):
@@ -60,11 +63,15 @@ def extract_card_details_in_place(card_index: dict[str, Any]) -> dict[str, Any]:
             })
 
         operational_voices = card.pop("operational_voice_cues", [])
-        details[resource_id] = {
-            "gameplay": gameplay,
-            "costume_relations": costume_refs,
-            "operational_voice_cues": operational_voices,
-        }
+        # Preserve every source row and reference dictionary, but project the
+        # same preferred card as the list. Equal scores keep the first row.
+        if resource_id not in selected_scores or score > selected_scores[resource_id]:
+            selected_scores[resource_id] = score
+            details[resource_id] = {
+                "gameplay": gameplay,
+                "costume_relations": costume_refs,
+                "operational_voice_cues": operational_voices,
+            }
         card["detail_available"] = True
 
     return {

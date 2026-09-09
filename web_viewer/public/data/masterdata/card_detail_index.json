@@ -14,7 +14,7 @@
             "offset": 565488
           }
         },
-        "life": 250,
+        "life": 25,
         "parameters": {
           "visual": {
             "initial": 1260,
@@ -56,7 +56,7 @@
             "dance": 11,
             "life": 12
           },
-          "offset": 558035
+          "offset": 0
         }
       },
       "costume_relations": [
@@ -69,7 +69,7 @@
             "fields": {
               "costume_id": 51
             },
-            "offset": 558035
+            "offset": 0
           }
         },
         {
@@ -81,11 +81,51 @@
             "fields": {
               "costume_id": 52
             },
-            "offset": 558035
+            "offset": 0
           }
         }
       ],
-      "operational_voice_cues": []
+      "operational_voice_cues": [
+        {
+          "cue": "2_1_001_01_02_00",
+          "category": "gasha_change",
+          "label": "スカウト・チェンジ！",
+          "text": "0",
+          "text_source": "masterdata",
+          "audio_exists": true,
+          "_source": {
+            "table": 1,
+            "fields": {
+              "gasha_voice_text": 36
+            },
+            "offset": 0
+          }
+        },
+        {
+          "cue": "2_1_001_01_03_01",
+          "category": "unit_formation",
+          "label": "ユニット編成 1",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_1_001_01_03_02",
+          "category": "unit_formation",
+          "label": "ユニット編成 2",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_1_001_01_03_03",
+          "category": "unit_formation",
+          "label": "ユニット編成 3",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        }
+      ]
     },
     "001tom_r01": {
       "gameplay": {
@@ -2084,38 +2124,158 @@
             "dance": 11,
             "life": 12
           },
-          "offset": 563169
+          "offset": 445978
         },
-        "skill_id": 3,
-        "center_skill_id": 53
+        "skill_id": 33,
+        "center_skill_id": 101001
       },
       "costume_relations": [
         {
+          "slot": "live_initial",
+          "label": "Live 普通",
+          "costume_key": "live:201001",
+          "_source": {
+            "table": 1,
+            "fields": {
+              "costume_id": 45
+            },
+            "offset": 445978
+          }
+        },
+        {
+          "slot": "live_limitbreak",
+          "label": "Live 突破",
+          "costume_key": "live:301001",
+          "_source": {
+            "table": 1,
+            "fields": {
+              "costume_id": 47
+            },
+            "offset": 445978
+          }
+        },
+        {
+          "slot": "story_awakened",
+          "label": "剧情特训",
+          "costume_key": "story:301001",
+          "_source": {
+            "table": 1,
+            "fields": {
+              "costume_id": 49
+            },
+            "offset": 445978
+          }
+        },
+        {
+          "slot": "story_limitbreak",
+          "label": "剧情突破",
+          "costume_key": "story:401001",
+          "_source": {
+            "table": 1,
+            "fields": {
+              "costume_id": 50
+            },
+            "offset": 445978
+          }
+        },
+        {
           "slot": "home_initial",
           "label": "主页默认",
-          "costume_key": "story:201001",
+          "costume_key": "story:101001",
           "_source": {
             "table": 1,
             "fields": {
               "costume_id": 51
             },
-            "offset": 563169
+            "offset": 445978
           }
         },
         {
           "slot": "home_awakened",
           "label": "主页特训",
-          "costume_key": "story:201001",
+          "costume_key": "story:301001",
           "_source": {
             "table": 1,
             "fields": {
               "costume_id": 52
             },
-            "offset": 563169
+            "offset": 445978
           }
         }
       ],
-      "operational_voice_cues": []
+      "operational_voice_cues": [
+        {
+          "cue": "2_4_001_01_02_00",
+          "category": "gasha_change",
+          "label": "スカウト・チェンジ！",
+          "text": "新しいステージの幕開けだぜっ！",
+          "text_source": "masterdata",
+          "audio_exists": true,
+          "_source": {
+            "table": 1,
+            "fields": {
+              "gasha_voice_text": 36
+            },
+            "offset": 445978
+          }
+        },
+        {
+          "cue": "2_4_001_01_03_01",
+          "category": "unit_formation",
+          "label": "ユニット編成 1",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_4_001_01_03_02",
+          "category": "unit_formation",
+          "label": "ユニット編成 2",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_4_001_01_03_03",
+          "category": "unit_formation",
+          "label": "ユニット編成 3",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_4_001_01_04_01",
+          "category": "live_start",
+          "label": "ライブ開始",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_4_001_01_04_02",
+          "category": "special_appeal_normal",
+          "label": "スペシャルアピール（通常）",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_4_001_01_04_03",
+          "category": "special_appeal_unit",
+          "label": "スペシャルアピール（ユニット）",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_4_001_01_04_04",
+          "category": "skill_activation",
+          "label": "スキル発動",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        }
+      ]
     },
     "001tom_ssr02": {
       "gameplay": {
@@ -7230,7 +7390,7 @@
             "offset": 566531
           }
         },
-        "life": 250,
+        "life": 25,
         "parameters": {
           "visual": {
             "initial": 1120,
@@ -7272,7 +7432,7 @@
             "dance": 11,
             "life": 12
           },
-          "offset": 558795
+          "offset": 2190
         }
       },
       "costume_relations": [
@@ -7285,7 +7445,7 @@
             "fields": {
               "costume_id": 51
             },
-            "offset": 558795
+            "offset": 2190
           }
         },
         {
@@ -7297,11 +7457,51 @@
             "fields": {
               "costume_id": 52
             },
-            "offset": 558795
+            "offset": 2190
           }
         }
       ],
-      "operational_voice_cues": []
+      "operational_voice_cues": [
+        {
+          "cue": "2_1_004_01_02_00",
+          "category": "gasha_change",
+          "label": "スカウト・チェンジ！",
+          "text": "0",
+          "text_source": "masterdata",
+          "audio_exists": true,
+          "_source": {
+            "table": 1,
+            "fields": {
+              "gasha_voice_text": 36
+            },
+            "offset": 2190
+          }
+        },
+        {
+          "cue": "2_1_004_01_03_01",
+          "category": "unit_formation",
+          "label": "ユニット編成 1",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_1_004_01_03_02",
+          "category": "unit_formation",
+          "label": "ユニット編成 2",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_1_004_01_03_03",
+          "category": "unit_formation",
+          "label": "ユニット編成 3",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        }
+      ]
     },
     "004ter_r01": {
       "gameplay": {
@@ -9195,38 +9395,158 @@
             "dance": 11,
             "life": 12
           },
-          "offset": 563909
+          "offset": 452255
         },
-        "skill_id": 2,
-        "center_skill_id": 53
+        "skill_id": 69,
+        "center_skill_id": 501001
       },
       "costume_relations": [
         {
+          "slot": "live_initial",
+          "label": "Live 普通",
+          "costume_key": "live:204001",
+          "_source": {
+            "table": 1,
+            "fields": {
+              "costume_id": 45
+            },
+            "offset": 452255
+          }
+        },
+        {
+          "slot": "live_limitbreak",
+          "label": "Live 突破",
+          "costume_key": "live:304001",
+          "_source": {
+            "table": 1,
+            "fields": {
+              "costume_id": 47
+            },
+            "offset": 452255
+          }
+        },
+        {
+          "slot": "story_awakened",
+          "label": "剧情特训",
+          "costume_key": "story:304001",
+          "_source": {
+            "table": 1,
+            "fields": {
+              "costume_id": 49
+            },
+            "offset": 452255
+          }
+        },
+        {
+          "slot": "story_limitbreak",
+          "label": "剧情突破",
+          "costume_key": "story:404001",
+          "_source": {
+            "table": 1,
+            "fields": {
+              "costume_id": 50
+            },
+            "offset": 452255
+          }
+        },
+        {
           "slot": "home_initial",
           "label": "主页默认",
-          "costume_key": "story:204001",
+          "costume_key": "story:104001",
           "_source": {
             "table": 1,
             "fields": {
               "costume_id": 51
             },
-            "offset": 563909
+            "offset": 452255
           }
         },
         {
           "slot": "home_awakened",
           "label": "主页特训",
-          "costume_key": "story:204001",
+          "costume_key": "story:304001",
           "_source": {
             "table": 1,
             "fields": {
               "costume_id": 52
             },
-            "offset": 563909
+            "offset": 452255
           }
         }
       ],
-      "operational_voice_cues": []
+      "operational_voice_cues": [
+        {
+          "cue": "2_4_004_01_02_00",
+          "category": "gasha_change",
+          "label": "スカウト・チェンジ！",
+          "text": "いつか必ず、一番星を掴んでみせる！",
+          "text_source": "masterdata",
+          "audio_exists": true,
+          "_source": {
+            "table": 1,
+            "fields": {
+              "gasha_voice_text": 36
+            },
+            "offset": 452255
+          }
+        },
+        {
+          "cue": "2_4_004_01_03_01",
+          "category": "unit_formation",
+          "label": "ユニット編成 1",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_4_004_01_03_02",
+          "category": "unit_formation",
+          "label": "ユニット編成 2",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_4_004_01_03_03",
+          "category": "unit_formation",
+          "label": "ユニット編成 3",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_4_004_01_04_01",
+          "category": "live_start",
+          "label": "ライブ開始",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_4_004_01_04_02",
+          "category": "special_appeal_normal",
+          "label": "スペシャルアピール（通常）",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_4_004_01_04_03",
+          "category": "special_appeal_unit",
+          "label": "スペシャルアピール（ユニット）",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_4_004_01_04_04",
+          "category": "skill_activation",
+          "label": "スキル発動",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        }
+      ]
     },
     "004ter_ssr02": {
       "gameplay": {
@@ -22265,7 +22585,7 @@
             "offset": 568345
           }
         },
-        "life": 250,
+        "life": 25,
         "parameters": {
           "visual": {
             "initial": 1820,
@@ -22307,7 +22627,7 @@
             "dance": 11,
             "life": 12
           },
-          "offset": 559476
+          "offset": 6535
         }
       },
       "costume_relations": [
@@ -22320,7 +22640,7 @@
             "fields": {
               "costume_id": 51
             },
-            "offset": 559476
+            "offset": 6535
           }
         },
         {
@@ -22332,11 +22652,51 @@
             "fields": {
               "costume_id": 52
             },
-            "offset": 559476
+            "offset": 6535
           }
         }
       ],
-      "operational_voice_cues": []
+      "operational_voice_cues": [
+        {
+          "cue": "2_1_010_01_02_00",
+          "category": "gasha_change",
+          "label": "スカウト・チェンジ！",
+          "text": "0",
+          "text_source": "masterdata",
+          "audio_exists": true,
+          "_source": {
+            "table": 1,
+            "fields": {
+              "gasha_voice_text": 36
+            },
+            "offset": 6535
+          }
+        },
+        {
+          "cue": "2_1_010_01_03_01",
+          "category": "unit_formation",
+          "label": "ユニット編成 1",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_1_010_01_03_02",
+          "category": "unit_formation",
+          "label": "ユニット編成 2",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_1_010_01_03_03",
+          "category": "unit_formation",
+          "label": "ユニット編成 3",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        }
+      ]
     },
     "010pie_r01": {
       "gameplay": {
@@ -22805,38 +23165,78 @@
             "dance": 11,
             "life": 12
           },
-          "offset": 561626
+          "offset": 205401
         },
-        "skill_id": 5,
-        "center_skill_id": 53
+        "skill_id": 102,
+        "center_skill_id": 503002
       },
       "costume_relations": [
         {
           "slot": "home_initial",
           "label": "主页默认",
-          "costume_key": "story:210001",
+          "costume_key": "story:110001",
           "_source": {
             "table": 1,
             "fields": {
               "costume_id": 51
             },
-            "offset": 561626
+            "offset": 205401
           }
         },
         {
           "slot": "home_awakened",
           "label": "主页特训",
-          "costume_key": "story:210001",
+          "costume_key": "story:110001",
           "_source": {
             "table": 1,
             "fields": {
               "costume_id": 52
             },
-            "offset": 561626
+            "offset": 205401
           }
         }
       ],
-      "operational_voice_cues": []
+      "operational_voice_cues": [
+        {
+          "cue": "2_3_010_01_02_00",
+          "category": "gasha_change",
+          "label": "スカウト・チェンジ！",
+          "text": "0",
+          "text_source": "masterdata",
+          "audio_exists": true,
+          "_source": {
+            "table": 1,
+            "fields": {
+              "gasha_voice_text": 36
+            },
+            "offset": 205401
+          }
+        },
+        {
+          "cue": "2_3_010_01_03_01",
+          "category": "unit_formation",
+          "label": "ユニット編成 1",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_3_010_01_03_02",
+          "category": "unit_formation",
+          "label": "ユニット編成 2",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_3_010_01_03_03",
+          "category": "unit_formation",
+          "label": "ユニット編成 3",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        }
+      ]
     },
     "010pie_sr02": {
       "gameplay": {
@@ -104259,7 +104659,7 @@
             "offset": 579238
           }
         },
-        "life": 250,
+        "life": 25,
         "parameters": {
           "visual": {
             "initial": 1120,
@@ -104301,7 +104701,7 @@
             "dance": 11,
             "life": 12
           },
-          "offset": 560238
+          "offset": 32271
         }
       },
       "costume_relations": [
@@ -104314,7 +104714,7 @@
             "fields": {
               "costume_id": 51
             },
-            "offset": 560238
+            "offset": 32271
           }
         },
         {
@@ -104326,11 +104726,51 @@
             "fields": {
               "costume_id": 52
             },
-            "offset": 560238
+            "offset": 32271
           }
         }
       ],
-      "operational_voice_cues": []
+      "operational_voice_cues": [
+        {
+          "cue": "2_1_044_01_02_00",
+          "category": "gasha_change",
+          "label": "スカウト・チェンジ！",
+          "text": "0",
+          "text_source": "masterdata",
+          "audio_exists": true,
+          "_source": {
+            "table": 1,
+            "fields": {
+              "gasha_voice_text": 36
+            },
+            "offset": 32271
+          }
+        },
+        {
+          "cue": "2_1_044_01_03_01",
+          "category": "unit_formation",
+          "label": "ユニット編成 1",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_1_044_01_03_02",
+          "category": "unit_formation",
+          "label": "ユニット編成 2",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_1_044_01_03_03",
+          "category": "unit_formation",
+          "label": "ユニット編成 3",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        }
+      ]
     },
     "044ame_r01": {
       "gameplay": {
@@ -104952,38 +105392,78 @@
             "dance": 11,
             "life": 12
           },
-          "offset": 562423
+          "offset": 410231
         },
-        "skill_id": 4,
-        "center_skill_id": 53
+        "skill_id": 38,
+        "center_skill_id": 202002
       },
       "costume_relations": [
         {
           "slot": "home_initial",
           "label": "主页默认",
-          "costume_key": "story:244001",
+          "costume_key": "story:144001",
           "_source": {
             "table": 1,
             "fields": {
               "costume_id": 51
             },
-            "offset": 562423
+            "offset": 410231
           }
         },
         {
           "slot": "home_awakened",
           "label": "主页特训",
-          "costume_key": "story:244001",
+          "costume_key": "story:144001",
           "_source": {
             "table": 1,
             "fields": {
               "costume_id": 52
             },
-            "offset": 562423
+            "offset": 410231
           }
         }
       ],
-      "operational_voice_cues": []
+      "operational_voice_cues": [
+        {
+          "cue": "2_3_044_01_02_00",
+          "category": "gasha_change",
+          "label": "スカウト・チェンジ！",
+          "text": "0",
+          "text_source": "masterdata",
+          "audio_exists": true,
+          "_source": {
+            "table": 1,
+            "fields": {
+              "gasha_voice_text": 36
+            },
+            "offset": 410231
+          }
+        },
+        {
+          "cue": "2_3_044_01_03_01",
+          "category": "unit_formation",
+          "label": "ユニット編成 1",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_3_044_01_03_02",
+          "category": "unit_formation",
+          "label": "ユニット編成 2",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_3_044_01_03_03",
+          "category": "unit_formation",
+          "label": "ユニット編成 3",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        }
+      ]
     },
     "044ame_sr02": {
       "gameplay": {
@@ -110957,7 +111437,7 @@
             "offset": 580126
           }
         },
-        "life": 250,
+        "life": 30,
         "parameters": {
           "visual": {
             "initial": 1455,
@@ -110999,7 +111479,7 @@
             "dance": 11,
             "life": 12
           },
-          "offset": 560910
+          "offset": 140809
         },
         "skill_id": 62,
         "center_skill_id": 402003
@@ -111008,29 +111488,69 @@
         {
           "slot": "home_initial",
           "label": "主页默认",
-          "costume_key": "story:247001",
+          "costume_key": "story:147001",
           "_source": {
             "table": 1,
             "fields": {
               "costume_id": 51
             },
-            "offset": 560910
+            "offset": 140809
           }
         },
         {
           "slot": "home_awakened",
           "label": "主页特训",
-          "costume_key": "story:247001",
+          "costume_key": "story:147001",
           "_source": {
             "table": 1,
             "fields": {
               "costume_id": 52
             },
-            "offset": 560910
+            "offset": 140809
           }
         }
       ],
-      "operational_voice_cues": []
+      "operational_voice_cues": [
+        {
+          "cue": "2_2_047_01_02_00",
+          "category": "gasha_change",
+          "label": "スカウト・チェンジ！",
+          "text": "0",
+          "text_source": "masterdata",
+          "audio_exists": true,
+          "_source": {
+            "table": 1,
+            "fields": {
+              "gasha_voice_text": 36
+            },
+            "offset": 140809
+          }
+        },
+        {
+          "cue": "2_2_047_01_03_01",
+          "category": "unit_formation",
+          "label": "ユニット編成 1",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_2_047_01_03_02",
+          "category": "unit_formation",
+          "label": "ユニット編成 2",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_2_047_01_03_03",
+          "category": "unit_formation",
+          "label": "ユニット編成 3",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        }
+      ]
     },
     "047shu_r02": {
       "gameplay": {
@@ -112486,7 +113006,7 @@
             "offset": 580126
           }
         },
-        "life": 950,
+        "life": 40,
         "parameters": {
           "visual": {
             "initial": 1943,
@@ -112528,38 +113048,158 @@
             "dance": 11,
             "life": 12
           },
-          "offset": 564654
+          "offset": 550878
         },
-        "skill_id": 1,
-        "center_skill_id": 53
+        "skill_id": 52,
+        "center_skill_id": 402001
       },
       "costume_relations": [
         {
+          "slot": "live_initial",
+          "label": "Live 普通",
+          "costume_key": "live:247001",
+          "_source": {
+            "table": 1,
+            "fields": {
+              "costume_id": 45
+            },
+            "offset": 550878
+          }
+        },
+        {
+          "slot": "live_limitbreak",
+          "label": "Live 突破",
+          "costume_key": "live:347001",
+          "_source": {
+            "table": 1,
+            "fields": {
+              "costume_id": 47
+            },
+            "offset": 550878
+          }
+        },
+        {
+          "slot": "story_awakened",
+          "label": "剧情特训",
+          "costume_key": "story:347001",
+          "_source": {
+            "table": 1,
+            "fields": {
+              "costume_id": 49
+            },
+            "offset": 550878
+          }
+        },
+        {
+          "slot": "story_limitbreak",
+          "label": "剧情突破",
+          "costume_key": "story:447001",
+          "_source": {
+            "table": 1,
+            "fields": {
+              "costume_id": 50
+            },
+            "offset": 550878
+          }
+        },
+        {
           "slot": "home_initial",
           "label": "主页默认",
-          "costume_key": "story:247001",
+          "costume_key": "story:147001",
           "_source": {
             "table": 1,
             "fields": {
               "costume_id": 51
             },
-            "offset": 564654
+            "offset": 550878
           }
         },
         {
           "slot": "home_awakened",
           "label": "主页特训",
-          "costume_key": "story:247001",
+          "costume_key": "story:347001",
           "_source": {
             "table": 1,
             "fields": {
               "costume_id": 52
             },
-            "offset": 564654
+            "offset": 550878
           }
         }
       ],
-      "operational_voice_cues": []
+      "operational_voice_cues": [
+        {
+          "cue": "2_4_047_01_02_00",
+          "category": "gasha_change",
+          "label": "スカウト・チェンジ！",
+          "text": "ねえ。俺の音楽、最高だったでしょ？",
+          "text_source": "masterdata",
+          "audio_exists": true,
+          "_source": {
+            "table": 1,
+            "fields": {
+              "gasha_voice_text": 36
+            },
+            "offset": 550878
+          }
+        },
+        {
+          "cue": "2_4_047_01_03_01",
+          "category": "unit_formation",
+          "label": "ユニット編成 1",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_4_047_01_03_02",
+          "category": "unit_formation",
+          "label": "ユニット編成 2",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_4_047_01_03_03",
+          "category": "unit_formation",
+          "label": "ユニット編成 3",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_4_047_01_04_01",
+          "category": "live_start",
+          "label": "ライブ開始",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_4_047_01_04_02",
+          "category": "special_appeal_normal",
+          "label": "スペシャルアピール（通常）",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_4_047_01_04_03",
+          "category": "special_appeal_unit",
+          "label": "スペシャルアピール（ユニット）",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        },
+        {
+          "cue": "2_4_047_01_04_04",
+          "category": "skill_activation",
+          "label": "スキル発動",
+          "text": "",
+          "text_source": "audio_only",
+          "audio_exists": true
+        }
+      ]
     },
     "047shu_ssr02": {
       "gameplay": {
@@ -186255,7 +186895,7 @@
     "center_skill_count": 53,
     "item_count": 5,
     "costume_count": 1098,
-    "operational_voice_count": 3457,
-    "costume_relation_count": 2640
+    "operational_voice_count": 3509,
+    "costume_relation_count": 2652
   }
 }

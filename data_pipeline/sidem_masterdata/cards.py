@@ -12,14 +12,19 @@ from .card_gameplay import build_card_reference_maps, build_card_gameplay, build
 from .card_voices import classify_card_operational_voices
 
 
+def card_preference_score(card: dict[str, Any]) -> int:
+    """Shared selection policy for resource-keyed summaries and details."""
+    tutorial = bool(re.match(r"^チュートリアル", str(card.get("title") or ""))) or int(card.get("card_id") or 0) >= 90000000
+    return (0 if tutorial else 100) + len(card.get("home_voice_cues") or []) + len(card.get("scenario_entries") or [])
+
+
 def canonical_cards(cards: list[dict[str, Any]]) -> list[dict[str, Any]]:
     by_resource_id: dict[str, dict[str, Any]] = {}
     for card in cards:
         resource_id = card.get("resource_id")
         if not isinstance(resource_id, str) or not resource_id:
             continue
-        tutorial = bool(re.match(r"^チュートリアル", str(card.get("title") or ""))) or int(card.get("card_id") or 0) >= 90000000
-        score = (0 if tutorial else 100) + len(card.get("home_voice_cues") or []) + len(card.get("scenario_entries") or [])
+        score = card_preference_score(card)
         current = by_resource_id.get(resource_id)
         if not current or score > current["_canonical_score"]:
             by_resource_id[resource_id] = {**card, "_canonical_score": score}

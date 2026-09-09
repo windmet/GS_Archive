@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { buildCardMap, mergeCardDetail } from '../src/data/archiveSelectors.js'
 
 const root = process.cwd()
 const readJson = relative => JSON.parse(fs.readFileSync(path.join(root, relative), 'utf8'))
@@ -9,6 +10,13 @@ const detailIndex = readJson('public/data/masterdata/card_detail_index.json')
 const failures = []
 const check = (condition, message) => {
   if (!condition) failures.push(message)
+}
+
+for (const card of buildCardMap(cardIndex).values()) {
+  const merged = mergeCardDetail(card, detailIndex)
+  check(card._source?.table === 1 && merged.gameplay?._source?.table === 1 &&
+    Number.isInteger(card._source?.offset) && merged.gameplay._source.offset === card._source.offset,
+    `card ${card.resource_id} detail must cite the same CardData row as its canonical summary`)
 }
 
 const expectedItems = new Map([
