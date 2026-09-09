@@ -761,7 +761,7 @@ export class PixiStageManager {
    * @param {number} targetY - target screen Y
    * @param {number} duration - animation duration in seconds
    */
-  animateSpinePosition(idolId, targetX, targetY, duration) {
+  animateSpinePosition(idolId, targetX, targetY, duration, nowMilliseconds = () => performance.now()) {
     const entry = this.spineInstances[idolId]
     if (!entry) return
     const { spine } = entry
@@ -784,9 +784,9 @@ export class PixiStageManager {
       return
     }
 
-    const t0 = performance.now()
+    const t0 = nowMilliseconds()
     const tick = () => {
-      const elapsed = performance.now() - t0
+      const elapsed = Math.max(0, nowMilliseconds() - t0)
       const t = Math.min(elapsed / durMs, 1)
       const ease = 1 - Math.pow(1 - t, 3)  // easeOutCubic
       spine.x = startX + dx * ease

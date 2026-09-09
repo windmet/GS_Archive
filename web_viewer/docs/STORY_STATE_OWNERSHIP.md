@@ -502,3 +502,17 @@ update 监听和 timeout，并以 settled 阻止迟到回调重复创建纹理�
 publicDir:false 构建通过，两个已知背景路径提示保留。10 秒超时仍仅针对
 Image.onload 之后的 Pixi 就绪，不是图片网络总超时；未做浏览器故障注入或
 实音长稳验收。
+
+## B26：兼容角色滑动读取剧情时钟
+
+SpineStage 对已有角色的 slide_duration 入口原先调用墙钟驱动的
+animateSpinePosition，未接收剧情暂停/倍速。现在显式传入舞台的累计剧情时钟，
+保留 easeOutCubic、起终点、RAF 取消和非剧情调用默认墙钟。elapsed 下限为零，
+避免时钟回退产生反向插值；不修改 normalized cue 的位置适配器或公开剧情产物。
+
+新增生产 manager 回归先在旧实现失败，再验证逻辑 0.5 秒位置、暂停不移动、
+恢复、2 倍速、跨 step clock reset、替换仅一帧任务、取消和立即完成。既有
+stage-loading verifier 执行真实 applyState，确认 duration 与时钟函数透传；
+两者通过同一 CI 命令执行。screen-clock、foundation、publicDir:false 构建通过，
+保留两个背景路径运行时解析提示。本批依据可控时钟验证，未声称浏览器实际
+剧情已触发该兼容分支，也未完成实音长稳。

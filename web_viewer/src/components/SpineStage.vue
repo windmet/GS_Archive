@@ -932,7 +932,7 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
       // Slide animation: use animateSpinePosition if slide_duration present
       if (spineState.slide_duration && spineState.slide_duration > 0) {
         const targetX = manager.width / 2 + posX * (manager.width / 1280)
-        manager.animateSpinePosition(sid, targetX, targetY, spineState.slide_duration)
+        manager.animateSpinePosition(sid, targetX, targetY, spineState.slide_duration, props.nowMilliseconds)
       } else {
         manager.setSpineZoom(sid, spineState.idol_zoom)
         positionSpine(sid, posX, posY, baseY)

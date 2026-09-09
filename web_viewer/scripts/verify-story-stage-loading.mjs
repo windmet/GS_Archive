@@ -215,4 +215,18 @@ const step = model => ({ step_id: model, entry_snapshot: { spines: model ? [{ id
   assert.deepEqual(t.published, ['current'])
   assert.equal(t.isReady('idol', currentStep), true)
 }
-console.log('Story stage loading: scene replacement, departure, late failure and direct spawn passed')
+// Legacy entry slides must receive the same cumulative story clock as the stage.
+{
+  const t = setup()
+  const current = step('same')
+  current.entry_snapshot.spines[0].slide_duration = 2
+  t.manager.spineInstances.idol = { modelId: 'same', spine: fakeSpine() }
+  const now = () => 1234
+  t.context.props.nowMilliseconds = now
+  let received
+  t.manager.animateSpinePosition = (...args) => { received = args }
+  await t.apply(current)
+  assert.equal(received?.[3], 2)
+  assert.equal(received?.[4], now)
+}
+console.log('Story stage loading: scene replacement, departure, late failure, direct spawn and slide clock forwarding passed')
