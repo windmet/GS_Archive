@@ -7,7 +7,7 @@
       </div>
       <div class="event-summary">
         <div class="event-kicker">
-          <span>EVENT {{ event.event_code }}</span>
+          <span>EVENT ARCHIVE</span>
           <small>{{ eventTypeLabel }}</small>
           <small>{{ scopeLabel }}</small>
         </div>
@@ -17,8 +17,7 @@
           <div><dt>活动结束</dt><dd>{{ formatDateTime(masterEvent?.end_at) }}</dd></div>
           <div><dt>展示结束</dt><dd>{{ formatDateTime(masterEvent?.display_end_at) }}</dd></div>
           <div><dt>活动形式</dt><dd>{{ eventTypeLabel }}</dd></div>
-          <div v-if="masterEvent?.bgm_resource_id"><dt>活动 BGM</dt><dd>{{ masterEvent.bgm_resource_id }}</dd></div>
-          <div><dt>故事章节</dt><dd>{{ masterEvent?.story_chapter_id || event.event_id }}</dd></div>
+
         </dl>
       </div>
     </section>
@@ -27,7 +26,7 @@
       <div>
         <span>故事简介</span>
         <h3 id="event-synopsis-title">{{ story?.preplaySynopsis?.title || event.title }}</h3>
-        <p>{{ story?.preplaySynopsis?.text || '本地剧情文件已收录，可直接进入正式播放。' }}</p>
+        <p>{{ story?.preplaySynopsis?.text || (event.exists ? '剧情已收录，可选择章节观看。' : '剧情暂未收录。') }}</p>
       </div>
       <div class="story-actions">
         <button :disabled="!event.exists" @click="emit('play')">
@@ -51,9 +50,9 @@
       <div class="section-heading">
         <div>
           <h3 id="event-episodes-title">活动剧情</h3>
-          <p>从序章或指定 Episode 的正式剧情边界开始播放。</p>
+          <p>选择章节开始观看剧情。</p>
         </div>
-        <span class="episode-count">{{ episodes.length }} episodes</span>
+        <span class="episode-count">{{ episodes.length }} 章</span>
       </div>
       <div class="episode-list">
         <button
@@ -65,11 +64,10 @@
           <span class="episode-number">{{ String(index + 1).padStart(2, '0') }}</span>
           <span class="episode-copy">
             <strong>{{ episode.label }}</strong>
-            <small>{{ episode.resourceId }}</small>
           </span>
           <span class="episode-stats">
-            <span>{{ episode.dialogueCount }} dialogues</span>
-            <span>{{ episode.voiceCount }} voices</span>
+            <span>{{ episode.dialogueCount }} 段对白</span>
+            <span>{{ episode.voiceCount }} 段语音</span>
           </span>
           <Play :size="16" fill="currentColor" />
         </button>
@@ -80,9 +78,9 @@
       <div class="section-heading">
         <div>
           <h3 id="event-rewards-title">活动报酬卡</h3>
-          <p>读取 masterdata 的剧情阅读报酬与累计 PT 报酬，不以同期发布时间代替获得方式。</p>
+          <p>通过阅读剧情或累计活动点数获得的报酬卡。</p>
         </div>
-        <span class="raw-badge">Raw · {{ rewardCards.length }}</span>
+        <span class="raw-badge">{{ rewardCards.length }} 张</span>
       </div>
       <div v-if="rewardCards.length" class="reward-grid">
         <button v-for="card in rewardCards" :key="card.card_resource_id" @click="emit('open-card', card)">
@@ -101,7 +99,7 @@
           <ChevronRight :size="17" />
         </button>
       </div>
-      <p v-else class="empty-copy">当前活动类型未在本地静态报酬表中检出卡片报酬。</p>
+      <p v-else class="empty-copy">尚未收录此活动的卡片报酬信息。</p>
     </section>
 
     <section class="detail-section" aria-labelledby="event-cast-title">
@@ -113,15 +111,15 @@
               v-if="storyVisualByIdol[idol.idol_code]"
               class="event-story-visual"
               :src="storyVisualByIdol[idol.idol_code]"
-              :alt="idol.display_name || idol.idol_code"
+              :alt="idol.display_name || '姓名待确认'"
             />
             <img
               v-else
               class="idol-icon"
               :src="`/assets/idols/icons/image_chara_icon_${idol.idol_code}.png`"
-              :alt="idol.display_name || idol.idol_code"
+              :alt="idol.display_name || '姓名待确认'"
             />
-            <span>{{ idol.display_name || idol.idol_code }}</span>
+            <span>{{ idol.display_name || '姓名待确认' }}</span>
           </button>
         </div>
         <div class="unit-list">
@@ -136,28 +134,31 @@
     <section v-if="derivedOnlyCards.length" class="detail-section" aria-labelledby="event-related-title">
       <div class="section-heading">
         <div><h3 id="event-related-title">其他同期关联</h3><p>仅由开放时间与出演阵容推导，尚未在报酬表中确认获得方式。</p></div>
-        <span class="derived-badge">Derived · {{ derivedOnlyCards.length }}</span>
+        <span class="derived-badge">{{ derivedOnlyCards.length }} 张</span>
       </div>
       <ArchiveRelationList layout="grid" :items="derivedRelationItems" @select="emit('open-card', $event.payload)" />
     </section>
 
-    <section class="detail-section evidence-section" aria-labelledby="event-evidence-title">
-      <div class="section-heading"><h3 id="event-evidence-title">资料来源</h3></div>
-      <dl>
-        <div><dt>活动实体</dt><dd>Raw · table 112</dd></div>
-        <div><dt>活动详情</dt><dd>Raw · table {{ masterEvent?.event_type === 3 ? 124 : 113 }}</dd></div>
-        <div><dt>累计 PT 报酬</dt><dd>Raw · table {{ masterEvent?.event_type === 3 ? 126 : 114 }}</dd></div>
-        <div><dt>剧情阅读报酬</dt><dd>Raw · table 10 / 11 / 12 / 70</dd></div>
-        <div><dt>剧情文件</dt><dd>{{ event.file }}</dd></div>
-        <div><dt>归属判定</dt><dd>{{ event.classification_source }}</dd></div>
-      </dl>
-    </section>
+    <ArchiveTechnicalDetails :key="event.event_id" :evidence="{ event, masterEvent, episodes }">
+      <section class="detail-section evidence-section" aria-labelledby="event-evidence-title">
+        <div class="section-heading"><h3 id="event-evidence-title">资料来源</h3></div>
+        <dl>
+          <div><dt>活动实体</dt><dd>Raw · table 112</dd></div>
+          <div><dt>活动详情</dt><dd>Raw · table {{ masterEvent?.event_type === 3 ? 124 : 113 }}</dd></div>
+          <div><dt>累计 PT 报酬</dt><dd>Raw · table {{ masterEvent?.event_type === 3 ? 126 : 114 }}</dd></div>
+          <div><dt>剧情阅读报酬</dt><dd>Raw · table 10 / 11 / 12 / 70</dd></div>
+          <div><dt>剧情文件</dt><dd>{{ event.file }}</dd></div>
+          <div><dt>归属判定</dt><dd>{{ event.classification_source }}</dd></div>
+        </dl>
+      </section>
+    </ArchiveTechnicalDetails>
   </article>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { BookOpen, ChevronRight, ExternalLink, Gauge, Play } from '@lucide/vue'
+import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import { getEventBannerUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
@@ -251,7 +252,7 @@ const derivedRelationItems = computed(() => derivedOnlyCards.value.map(card => (
 })))
 
 function idolName(id) {
-  return props.idols.find(idol => idol.idol_code === id)?.display_name || id
+  return props.idols.find(idol => idol.idol_code === id)?.display_name || '姓名待确认'
 }
 function formatNumber(value) {
   return new Intl.NumberFormat('zh-CN').format(Number(value || 0))

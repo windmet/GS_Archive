@@ -48,11 +48,10 @@
               <span>{{ locationLabel(story) }}</span>
             </div>
             <div class="story-copy">
-              <small>{{ story.resource_id }}</small>
               <h4>{{ story.title }}</h4>
               <p>{{ story.dialogue_preview }}</p>
               <div class="story-footer">
-                <span>{{ story.dialogue_count }} dialogues · {{ story.voice_count }} voices</span>
+                <span>{{ story.dialogue_count }} 段对白 · {{ story.voice_count }} 段语音</span>
                 <button :disabled="!story.compiled_exists" title="播放工作短剧情" @click="emit('play', story.compiled_file)"><Play :size="17" fill="currentColor" /></button>
               </div>
             </div>
@@ -71,18 +70,19 @@
             <div class="line-copy">
               <span>{{ locationLabel(line) }}</span>
               <p>{{ line.dialogue_preview }}</p>
-              <small>{{ line.resource_id }} · {{ line.model_resource_id }}</small>
             </div>
             <button :disabled="!line.compiled_exists" title="播放场景台词" @click="emit('play', line.compiled_file)"><Play :size="16" fill="currentColor" /></button>
           </article>
         </div>
       </section>
+      <ArchiveTechnicalDetails :key="idol.idol_code" :evidence="idol" />
     </div>
   </section>
 </template>
 
 <script setup>
 import { computed, ref } from 'vue'
+import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { BookOpen, ChevronLeft, ChevronRight, MessageSquareText, Play } from '@lucide/vue'
 
 const props = defineProps({ idol: { type: Object, default: null }, idols: { type: Array, default: () => [] } })
@@ -100,7 +100,7 @@ function moveIdol(delta) {
 function shortType(name = '') { return name.replace('のお仕事', '') }
 function idolIcon(code) { return `/assets/idols/icons/image_chara_icon_${code}.png` }
 function backgroundUrl(id) { return id ? `/assets/bg/${id}.png` : '' }
-function locationLabel(entry) { return entry.background_name || entry.background_resource_id || '场景未记录' }
+function locationLabel(entry) { return entry.background_name || '场景名称未收录' }
 </script>
 
 <style scoped>

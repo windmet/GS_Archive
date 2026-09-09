@@ -56,7 +56,7 @@
         <Info :size="19" />
         <div>
           <strong>这是游戏的随机话题候选池，不是连续剧情或聊天记录</strong>
-          <p>masterdata 表 104 记录候选话题、时间窗、抽选权重与再次出现间隔；表 105 另有按时段抽取的开场语。档案播放器只按脚本文件顺序预览，不模拟服务器抽选，也不推定玩家实际看过的内容。</p>
+          <p>游戏会按时间与条件随机选择话题和开场语。这里按收录顺序预览，不代表玩家实际经历的聊天顺序。</p>
         </div>
         <dl>
           <div><dt>候选话题</dt><dd>{{ randomTopicCount }}</dd></div>
@@ -96,8 +96,8 @@
             </div>
           </div>
           <div class="conversation-meta">
-            <code>{{ bundle.file || bundle.scenarios[0]?.base_resource_id }}</code>
-            <span>{{ bundle.scenarios.length }} unlocks</span>
+            <span>{{ bundle.exists ? '已收录' : '暂未收录' }}</span>
+            <span>{{ bundle.scenarios.length }} 项解锁记录</span>
           </div>
           <button class="conversation-play" :disabled="!bundle.exists" :title="bundle.exists ? '播放通信' : '本地脚本缺失'" @click="emit('play', bundle.file)">
             <Play v-if="bundle.exists" :size="17" fill="currentColor" />
@@ -117,14 +117,13 @@
               v-for="(topic, index) in bundle.topics"
               :key="topic.id"
               :disabled="!topic.presentation"
-              :title="topic.presentation ? `精确预览 ${topic.presentation.start_step}–${topic.presentation.end_step}` : '未解析话题边界'"
+              :title="topic.presentation ? '预览此话题' : '未解析话题边界'"
               @click="playRandomTopic(bundle, topic)"
             >
               <span>{{ String(index + 1).padStart(2, '0') }}</span>
               <span class="topic-copy">
-                <strong>{{ topic.presentation?.title || topic.script_label }}</strong>
-                <small>{{ timeWindow(topic) }} · 抽选权重 {{ topic.weight }} · 再登场间隔 {{ topic.interval_day }} 天</small>
-                <code>{{ topic.script_label }} · {{ topic.presentation?.dialogue_count || 0 }} messages</code>
+                <strong>{{ topic.presentation?.title || `话题 ${index + 1}` }}</strong>
+                <small>{{ timeWindow(topic) }} · 再登场间隔 {{ topic.interval_day }} 天</small>
               </span>
               <Play v-if="topic.presentation" :size="15" fill="currentColor" />
               <FileWarning v-else :size="15" />
@@ -134,12 +133,14 @@
       </div>
 
       <p v-if="!contentCount" class="empty-state">当前分类没有可展示记录。</p>
+      <ArchiveTechnicalDetails :key="`${mode}:${selectedIdol}:${selectedUnit}`" :evidence="{ bundles, randomBundles: mode === 'random' ? randomBundles : [], sourceTables: mode === 'random' ? [104, 105] : undefined, randomIntros: mode === 'random' ? (archive.random_talk?.intros || []).filter(intro => randomRoomIds.has(Number(intro.talk_room_id))) : [] }" />
     </main>
   </article>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { BookOpen, ChevronLeft, ChevronRight, CreditCard, FileWarning, Info, MessageSquareText, Phone, Play, Shuffle, Unlock, Users } from '@lucide/vue'
 import { buildCompiledGroupTitleMap, buildRandomTalkBundles, formatArchiveDate, groupMobileScenarios } from '../../data/idolCommunicationSelectors.js'
 import { getEmojiUrl } from '../../utils/AssetResolver.js'
@@ -203,12 +204,12 @@ const randomIntroCount = computed(() => (props.archive?.random_talk?.intros || [
   randomRoomIds.value.has(Number(intro.talk_room_id)),
 ).length)
 const contentSummary = computed(() => props.mode === 'random'
-  ? `${randomTopicCount.value} topics · ${contentCount.value} script`
-  : `${contentCount.value} records`)
+  ? `${randomTopicCount.value} 个话题 · ${contentCount.value} 组`
+  : `${contentCount.value} 条记录`)
 const idol = computed(() => props.idols.find(entry => entry.idol_code === props.selectedIdol) || props.idols[0] || {})
 const unit = computed(() => props.units.find(entry => entry.unit_code === props.selectedUnit) || props.units[0] || {})
-const idolName = computed(() => idol.value.display_name || props.selectedIdol)
-const unitName = computed(() => unit.value.unit_name || props.selectedUnit)
+const idolName = computed(() => idol.value.display_name || '姓名待确认')
+const unitName = computed(() => unit.value.unit_name || '组合待确认')
 const accentColor = computed(() => props.mode === 'unit' ? (unit.value.unit_color || '#168f87') : (idol.value.color || '#168f87'))
 const personalRoom = computed(() => props.archive?.rooms?.personal?.find(room => room.idol_code === props.selectedIdol))
 const unitRoom = computed(() => props.archive?.rooms?.unit?.find(room => room.unit_code === props.selectedUnit))
@@ -264,21 +265,25 @@ function unlockAction(unlock) {
   if (condition.kind === 'card_acquired') return '获得'
   if (condition.kind === 'card_awakened') return '特训完成'
   if (condition.kind === 'card_limit_break') return `突破 ${condition.param_b || 4} 次`
-  return unlock.text
+  return '开放条件待确认'
 }
 function unlockText(unlock) {
   const card = unlockCard(unlock)
-  if (card) return `${card.title_full || `【${card.title || card.card_id}】`} ${unlockAction(unlock)}`
+  if (card) return `${card.title_full || `【${card.title || '卡名待确认'}】`} ${unlockAction(unlock)}`
   const story = storyByEpisodeId.value.get(Number(unlock.condition?.param_a || 0))
   if (story) return `「${story.section.scenario_title}」${story.episode.name} 完成`
-  return unlock.text
+  if (unlock.kind.startsWith('card_')) return '关联卡片待确认'
+  if (unlock.kind === 'idol_story_episode_finished') return '个人故事章节待确认'
+  return ['scenario_title_mission', 'term_or_default_release'].includes(unlock.kind) ? unlock.text : '开放条件待确认'
 }
 function unlockTitle(unlock) {
   const card = unlockCard(unlock)
-  if (card) return `卡片 ${card.card_id} · ${card.title_full || card.title} · ${unlockAction(unlock)} · 点击查看卡片资料`
+  if (card) return `卡片 · ${card.title_full || card.title} · ${unlockAction(unlock)} · 点击查看卡片资料`
   const story = storyByEpisodeId.value.get(Number(unlock.condition?.param_a || 0))
-  if (story) return `个人故事 ${story.episode.id} · ${story.section.name}「${story.section.scenario_title}」${story.episode.name} · 点击查看个人故事`
-  return unlock.text
+  if (story) return `个人故事 · ${story.section.name}「${story.section.scenario_title}」${story.episode.name} · 点击查看个人故事`
+  if (unlock.kind.startsWith('card_')) return '关联卡片待确认'
+  if (unlock.kind === 'idol_story_episode_finished') return '个人故事章节待确认'
+  return ['scenario_title_mission', 'term_or_default_release'].includes(unlock.kind) ? unlock.text : '开放条件待确认'
 }
 function kindLabel(kind) { return kind === 'unit_talk' ? 'UNIT TALK' : kind === 'idol_phone' ? 'PHONE CALL' : 'IDOL TALK' }
 function playRandomTopic(bundle, topic) {

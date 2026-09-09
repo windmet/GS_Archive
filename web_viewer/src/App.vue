@@ -1246,7 +1246,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'idol_detail') return currentIdolProfile.value?.display_name || '偶像详情'
   if (view.value === 'groups') return groupTitle.value
   if (view.value === 'cards') return currentCardCharacterName.value
-  if (view.value === 'card_detail') return currentCard.value?.title || currentCard.value?.resource_id || '卡片详情'
+  if (view.value === 'card_detail') return currentCard.value?.title || '卡片详情'
   if (view.value === 'episode_zero_units') return '第零话'
   if (view.value === 'episodes') return currentUnit.value?.unit_name || '章节'
   if (view.value === 'files') return currentGroup.value?.title || '剧情文件'
@@ -1258,7 +1258,7 @@ const archiveSearchable = computed(() => ['idols', 'groups', 'cards', 'gashas', 
 const archiveSearchPlaceholder = computed(() => {
   if (view.value === 'idols') return categoryFilterPlaceholder.value
   if (view.value === 'cards') return '搜索卡片标题、稀有度或资源 ID'
-  if (view.value === 'gashas') return '搜索卡池编号、名称、卡片或偶像'
+  if (view.value === 'gashas') return '搜索卡池名称、卡片或偶像'
   if (view.value === 'groups') return '搜索章节标题或资源 ID'
   if (view.value === 'files') return '搜索剧情标题或资源 ID'
   if (view.value === 'story_catalog') return '搜索标题、资源 ID 或角色代码'

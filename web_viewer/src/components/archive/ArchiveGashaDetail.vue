@@ -6,7 +6,7 @@
       </div>
       <div class="gasha-summary">
         <div class="gasha-kicker">
-          <span>GASHA {{ gasha.code }}</span>
+          <span>GASHA ARCHIVE</span>
           <small class="curated">{{ categoryLabel(gasha.category) }}</small>
           <small v-if="gasha.is_reprint" class="reprint">复刻</small>
         </div>
@@ -14,10 +14,7 @@
         <dl>
           <div><dt>开放</dt><dd>{{ formatDateTime(gasha.start_at) }}</dd></div>
           <div><dt>结束</dt><dd>{{ formatDateTime(gasha.end_at) }}</dd></div>
-          <div><dt>公告 ID</dt><dd>{{ gasha.announcement_id }}</dd></div>
-          <div><dt>目标 ID</dt><dd>{{ gasha.destination_id }}</dd></div>
           <div><dt>公告阶段</dt><dd>{{ phaseLabel(gasha.phase) }}</dd></div>
-          <div v-if="gasha.logical_member_codes?.length > 1"><dt>同期记录</dt><dd>{{ gasha.logical_member_codes.join(' / ') }}</dd></div>
         </dl>
         <a
           v-if="gasha.name_source?.source_url"
@@ -46,22 +43,25 @@
       />
     </section>
 
-    <section class="detail-section evidence-section">
-      <div class="section-heading"><h3>资料来源</h3></div>
-      <dl class="evidence-grid">
-        <div><dt>公告</dt><dd>Raw · client_master_data table 173</dd></div>
-        <div><dt>卡片关系</dt><dd>{{ relationEvidence }}</dd></div>
-        <div><dt>名称</dt><dd>Curated · {{ gasha.name_source?.source_label || 'wiki / banner 核对' }}</dd></div>
-        <div><dt>逻辑卡池</dt><dd>{{ gasha.logical_id }}</dd></div>
-        <div><dt>服务实例</dt><dd>Missing · GashaListReply 未留存</dd></div>
-      </dl>
-    </section>
+    <ArchiveTechnicalDetails :key="gasha.code" :evidence="gasha">
+      <section class="detail-section evidence-section">
+        <div class="section-heading"><h3>资料来源</h3></div>
+        <dl class="evidence-grid">
+          <div><dt>公告</dt><dd>Raw · client_master_data table 173</dd></div>
+          <div><dt>卡片关系</dt><dd>{{ relationEvidence }}</dd></div>
+          <div><dt>名称</dt><dd>Curated · {{ gasha.name_source?.source_label || 'wiki / banner 核对' }}</dd></div>
+          <div><dt>逻辑卡池</dt><dd>{{ gasha.logical_id }}</dd></div>
+          <div><dt>服务实例</dt><dd>Missing · GashaListReply 未留存</dd></div>
+        </dl>
+      </section>
+    </ArchiveTechnicalDetails>
   </section>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { ExternalLink } from '@lucide/vue'
+import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 
@@ -90,13 +90,13 @@ const isReprintRelation = computed(() =>
 )
 const relationBadge = computed(() => {
   if (isReprintRelation.value) return '复刻卡片'
-  return usesRelatedCards.value ? '同期卡片' : 'Derived'
+  return usesRelatedCards.value ? '同期卡片' : '推定关联'
 })
 const relationDescription = computed(() => {
-  if (isReprintRelation.value) return `继承自原卡池 ${props.gasha?.reprint_of || ''} 的复刻内容`
+  if (isReprintRelation.value) return '已确认对应原卡池的复刻内容'
   return usesRelatedCards.value
-    ? `继承自主公告 ${props.gasha?.primary_code || ''} 的同一卡池卡片`
-    : 'LimitbreakItemId + 卡池开放时间'
+    ? '同一卡池其他公告中收录的关联卡片'
+    : '根据突破素材与开放时间推定的关联，尚未确认实际招募内容。'
 })
 const relationEvidence = computed(() => {
   if (isReprintRelation.value) return `Curated · 外部公告确认复刻自 ${props.gasha?.reprint_of || ''}`
@@ -108,7 +108,7 @@ const pickupRelationItems = computed(() => pickupCards.value.map(card => ({
   id: `card-${card.card_resource_id}`,
   kind: 'card',
   label: usesRelatedCards.value ? relationBadge.value : '卡池 Pickup',
-  title: card.card_title || card.card_resource_id,
+  title: card.card_title || '卡名待确认',
   meta: `${props.idolName(card.character_id)} · ${card.rarity}`,
   evidenceLabel: isReprintRelation.value ? 'Confirmed' : (usesRelatedCards.value ? 'Grouped' : 'Derived'),
   evidenceTone: isReprintRelation.value ? 'confirmed' : (usesRelatedCards.value ? 'grouped' : 'derived'),
@@ -117,12 +117,12 @@ const pickupRelationItems = computed(() => pickupCards.value.map(card => ({
   statusTone: 'available',
   resource: card.card_resource_id,
   imageUrl: getCardIconUrl(card.card_resource_id, true),
-  imageAlt: card.card_title || card.card_resource_id,
+  imageAlt: card.card_title || '卡名待确认',
   payload: card,
 })))
 
 function categoryLabel(category) {
-  return CATEGORY_LABELS[category] || category || '未分类'
+  return CATEGORY_LABELS[category] || '未分类'
 }
 
 function phaseLabel(phase) {
@@ -130,7 +130,7 @@ function phaseLabel(phase) {
 }
 
 function formatDateTime(timestamp) {
-  if (!Number.isFinite(timestamp)) return 'unknown'
+  if (!Number.isFinite(timestamp)) return '未记录'
   return new Intl.DateTimeFormat('zh-CN', {
     dateStyle: 'medium',
     timeStyle: 'short',

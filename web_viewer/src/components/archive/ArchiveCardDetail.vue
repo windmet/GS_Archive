@@ -1,6 +1,6 @@
 <template>
   <section class="screen list-screen">
-    <ArchiveListHeader v-if="!embedded" :title="card?.title || card?.resource_id || 'Card'" @back="emit('back')" />
+    <ArchiveListHeader v-if="!embedded" :title="card?.title || '卡片详情'" @back="emit('back')" />
     <div v-if="card" class="card-detail">
       <section class="card-detail-head">
         <div class="card-art-comparison" :class="{ single: card.single_state }">
@@ -14,7 +14,7 @@
             >
               <img
                 :src="assetStatus?.normal_portrait ? normalPortraitUrl : getCardIconUrl(card.resource_id, false)"
-                :alt="`${card.title || card.resource_id} 普通`"
+                :alt="`${card.title || '卡名待确认'} 普通`"
               />
               <Expand v-if="assetStatus?.normal_portrait" :size="17" />
             </button>
@@ -31,7 +31,7 @@
             >
               <img
                 :src="assetStatus?.awakened_portrait ? awakenedPortraitUrl : getCardIconUrl(card.resource_id, true)"
-                :alt="`${card.title || card.resource_id} 特训后`"
+                :alt="`${card.title || '卡名待确认'} 特训后`"
               />
               <Expand v-if="assetStatus?.awakened_portrait" :size="17" />
             </button>
@@ -41,18 +41,16 @@
         </div>
         <div class="card-head-copy">
           <div class="card-detail-meta">
+            <span v-if="rawCandidateActive" class="card-raw-candidate">待核对卡面</span>
             <span class="card-rarity">{{ card.rarity || 'CARD' }}</span>
             <span v-if="card.gameplay?.attribute?.name" class="card-attribute">{{ card.gameplay.attribute.name }}</span>
-            <span>{{ card.resource_id }}</span>
-            <span v-if="rawCandidateActive" class="card-raw-candidate">RAW candidate</span>
-            <span v-if="card.voice_base">{{ card.voice_base }}</span>
           </div>
-          <h3>{{ card.title || card.resource_id }}</h3>
+          <h3>{{ card.title || '卡名待确认' }}</h3>
           <div class="card-detail-controls">
             <button
               class="card-nav-button"
               :disabled="!previousCard"
-              :title="previousCard ? `上一张：${previousCard.title || previousCard.resource_id}` : '已经是第一张'"
+              :title="previousCard ? `上一张：${previousCard.title || '卡片'}` : '已经是第一张'"
               @click="emit('navigate-card', previousCard)"
             >
               <ChevronLeft :size="18" />
@@ -64,7 +62,7 @@
             <button
               class="card-nav-button"
               :disabled="!nextCard"
-              :title="nextCard ? `下一张：${nextCard.title || nextCard.resource_id}` : '已经是最后一张'"
+              :title="nextCard ? `下一张：${nextCard.title || '卡片'}` : '已经是最后一张'"
               @click="emit('navigate-card', nextCard)"
             >
               <ChevronRight :size="18" />
@@ -74,7 +72,7 @@
             <div v-for="item in assetRows" :key="item.label" :class="{ missing: !item.available }">
               <component :is="item.available ? CheckCircle2 : CircleSlash" :size="15" />
               <dt>{{ item.label }}</dt>
-              <dd>{{ item.available ? 'available' : 'missing' }}</dd>
+              <dd>{{ item.available ? '已收录' : '未收录' }}</dd>
             </div>
           </dl>
         </div>
@@ -90,11 +88,11 @@
               :key="seriesCard.resource_id"
               :class="{ current: seriesCard.resource_id === card.resource_id }"
               :disabled="seriesCard.resource_id === card.resource_id"
-              :title="seriesCard.character_name || seriesCard.resource_id"
+              :title="seriesCard.character_name || '姓名待确认'"
               @click="emit('navigate-related-card', seriesCard)"
             >
-              <img :src="getCardIconUrl(seriesCard.resource_id, true)" :alt="seriesCard.character_name || seriesCard.resource_id" loading="lazy" />
-              <span>{{ seriesCard.character_name || seriesCard.character_id }}</span>
+              <img :src="getCardIconUrl(seriesCard.resource_id, true)" :alt="seriesCard.character_name || '姓名待确认'" loading="lazy" />
+              <span>{{ seriesCard.character_name || '姓名待确认' }}</span>
             </button>
           </div>
         </div>
@@ -149,12 +147,12 @@
                   <option v-for="level in card.gameplay.skill.levels" :key="level.level" :value="level.level">Lv.{{ level.level }}</option>
                 </select>
               </div>
-              <p>{{ selectedSkill?.description || card.gameplay.skill.description_template }}</p>
+              <p>{{ selectedSkill?.description || '技能数值说明暂未收录。' }}</p>
             </div>
             <div v-if="card.limitbreak_item?.name" class="limitbreak-item-row">
               <PackageOpen :size="19" />
               <div>
-                <small>突破素材 · {{ card.limitbreak_item.resource_id }}</small>
+                <small>突破素材</small>
                 <strong>{{ card.limitbreak_item.name }}</strong>
                 <p>{{ card.limitbreak_item.description }}</p>
               </div>
@@ -170,10 +168,9 @@
             <Shirt :size="20" />
             <div>
               <div class="costume-heading">
-                <strong>{{ costume.name || `Costume ${costume.costume_id}` }}</strong>
+                <strong>{{ costume.name || '衣装名称待确认' }}</strong>
                 <span>{{ costume.labels.join(' · ') }}</span>
               </div>
-              <small>{{ costume.model_resource_id || costume.key }}</small>
               <p v-if="costume.description">{{ costume.description }}</p>
             </div>
           </div>
@@ -185,14 +182,14 @@
         <div class="card-landscape-comparison">
           <figure v-if="assetStatus?.normal_landscape">
             <button class="card-art-open landscape" title="查看普通横图原图" @click="openLightbox(normalLandscapeUrl)">
-              <img :src="normalLandscapeUrl" :alt="`${card.title || card.resource_id} 普通横图`" loading="lazy" />
+              <img :src="normalLandscapeUrl" :alt="`${card.title || '卡名待确认'} 普通横图`" loading="lazy" />
               <Expand :size="17" />
             </button>
             <figcaption>普通</figcaption>
           </figure>
           <figure v-if="assetStatus?.awakened_landscape">
             <button class="card-art-open landscape" title="查看特训后横图原图" @click="openLightbox(awakenedLandscapeUrl)">
-              <img :src="awakenedLandscapeUrl" :alt="`${card.title || card.resource_id} 特训后横图`" loading="lazy" />
+              <img :src="awakenedLandscapeUrl" :alt="`${card.title || '卡名待确认'} 特训后横图`" loading="lazy" />
               <Expand :size="17" />
             </button>
             <figcaption>特训后</figcaption>
@@ -207,7 +204,7 @@
             <strong>普通</strong>
             <div v-if="card.card_text_voices?.normal" class="card-text-voice">
               <audio controls preload="none" :src="voiceUrl(card.card_text_voices.normal)"></audio>
-              <button class="voice-preview-btn" @click="emit('preview-voice', card.card_text_voices.normal)">Preview</button>
+              <button class="voice-preview-btn" @click="emit('preview-voice', card.card_text_voices.normal)">演出预览</button>
             </div>
           </div>
           <p>{{ card.texts.normal }}</p>
@@ -217,7 +214,7 @@
             <strong>{{ card.single_state ? '卡面台词' : '特训后' }}</strong>
             <div v-if="card.card_text_voices?.awakened" class="card-text-voice">
               <audio controls preload="none" :src="voiceUrl(card.card_text_voices.awakened)"></audio>
-              <button class="voice-preview-btn" @click="emit('preview-voice', card.card_text_voices.awakened)">Preview</button>
+              <button class="voice-preview-btn" @click="emit('preview-voice', card.card_text_voices.awakened)">演出预览</button>
             </div>
           </div>
           <p>{{ card.texts.awakened }}</p>
@@ -231,13 +228,13 @@
       <section v-if="card.home_voice_cues?.length" class="card-detail-section">
         <h4>首页触摸语音</h4>
         <div class="voice-list">
-          <div v-for="cue in card.home_voice_cues" :key="cue.cue" class="voice-row">
+          <div v-for="(cue, index) in card.home_voice_cues" :key="cue.cue" class="voice-row">
             <div class="voice-copy">
-              <strong>{{ cue.cue }}</strong>
+              <strong>触摸语音 {{ index + 1 }}</strong>
               <p v-if="cue.preview?.text">{{ cue.preview.text }}</p>
             </div>
             <audio controls preload="none" :src="voiceUrl(cue.cue)"></audio>
-            <button class="voice-preview-btn" @click="emit('preview-voice', cue)">Preview</button>
+            <button class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
           </div>
         </div>
       </section>
@@ -249,13 +246,12 @@
             <div class="voice-copy">
               <div class="voice-label">
                 <strong>{{ cue.label }}</strong>
-                <small :class="`source-${cue.text_source}`">{{ voiceSourceLabel(cue.text_source) }}</small>
+                <small :class="`source-${cue.text_source}`">{{ cue.text?.trim() && cue.text.trim() !== '0' ? voiceSourceLabel(cue.text_source) : '仅音频' }}</small>
               </div>
-              <p v-if="cue.text">{{ cue.text }}</p>
-              <code>{{ cue.cue }}</code>
+              <p v-if="cue.text?.trim() && cue.text.trim() !== '0'">{{ cue.text }}</p>
             </div>
             <audio controls preload="none" :src="voiceUrl(cue.cue)"></audio>
-            <button class="voice-preview-btn" @click="emit('preview-voice', cue)">Preview</button>
+            <button class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
           </div>
         </div>
       </section>
@@ -270,22 +266,24 @@
             :disabled="!entry.compiled_file"
             @click="emit('open-scenario', entry)"
           >
-            <span>{{ entry.display_title || entry['3'] || entry.resource_id }}</span>
+            <span>{{ entry.display_title || '剧情标题待确认' }}</span>
             <small>{{ [entry.communication_label, scenarioSubtitle(entry)].filter(Boolean).join(' · ') }}</small>
           </button>
         </div>
       </section>
 
-      <section v-if="card.voice_candidates?.unmapped_card_only?.length" class="card-detail-section">
-        <h4>未归类卡面语音候选</h4>
-        <div class="voice-list">
-          <div v-for="cue in card.voice_candidates.unmapped_card_only" :key="cue" class="voice-row">
-            <span>{{ cue }}</span>
-            <audio controls preload="none" :src="voiceUrl(cue)"></audio>
-            <button class="voice-preview-btn" @click="emit('preview-voice', cue)">Preview</button>
+      <ArchiveTechnicalDetails :key="card.resource_id" :evidence="{ card, assetStatus, rawCandidateActive, eventRelation, gashaRelation }">
+        <section v-if="card.voice_candidates?.unmapped_card_only?.length" class="card-detail-section">
+          <h4>未归类卡面语音候选</h4>
+          <div class="voice-list">
+            <div v-for="cue in card.voice_candidates.unmapped_card_only" :key="cue" class="voice-row">
+              <span>{{ cue }}</span>
+              <audio controls preload="none" :src="voiceUrl(cue)"></audio>
+              <button class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </ArchiveTechnicalDetails>
     </div>
     <ArchiveImageLightbox
       :open="lightboxOpen"
@@ -301,6 +299,7 @@ import { computed, ref, watch } from 'vue'
 import { Activity, CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, HeartPulse, ImageOff, PackageOpen, Shirt } from '@lucide/vue'
 import ArchiveImageLightbox from './ArchiveImageLightbox.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
+import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import { getVoiceUrl } from '../../utils/AssetResolver.js'
 import {
@@ -436,11 +435,7 @@ function openLightbox(src) {
 }
 
 function scenarioSubtitle(entry) {
-  const parts = [entry?.resource_id].filter(Boolean)
-  const summary = entry?.compiled_summary
-  if (summary?.voice_count) parts.push(`${summary.voice_count} voices`)
-  if (summary?.lip_count) parts.push(`${summary.lip_count} lips`)
-  return parts.join(' · ')
+  return entry?.compiled_file ? '可观看' : '暂未收录剧情'
 }
 
 function eventScopeLabel(event) {
@@ -457,7 +452,7 @@ const relationItems = computed(() => {
       kind: 'event',
       label: eventScopeLabel(props.eventRelation),
       title: props.eventRelation.title,
-      meta: `发布时间一致 · ${props.card?.character_id || ''} 在活动阵容中`,
+      meta: '同期发布且角色参演；获得方式待确认',
       evidenceLabel: 'Derived',
       evidenceTone: 'derived',
       evidence: props.eventRelation.relation_type,
@@ -472,8 +467,8 @@ const relationItems = computed(() => {
       id: `gasha-${props.gashaRelation.announcement_id}`,
       kind: 'gasha',
       label: '卡池 Pickup',
-      title: props.gashaRelation.title || `ガシャ ${props.gashaRelation.gasha_code}`,
-      meta: `ガシャ ${props.gashaRelation.gasha_code} · 突破道具 ${props.card?.limitbreak_item?.name || props.gashaRelation.limitbreak_item_id} · ${formatDate(props.gashaRelation.start_at)}`,
+      title: props.gashaRelation.title || '卡池名称待确认',
+      meta: `${formatDate(props.gashaRelation.start_at)} · ${props.gashaRelation.evidence_level === 'curated' ? '已核对关联' : '推定关联，获得方式待确认'}`,
       evidenceLabel: props.gashaRelation.evidence_level === 'curated' ? 'Confirmed' : 'Derived',
       evidenceTone: props.gashaRelation.evidence_level === 'curated' ? 'confirmed' : 'derived',
       evidence: props.gashaRelation.relation_type,

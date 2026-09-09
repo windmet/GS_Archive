@@ -24,13 +24,30 @@ evidenceLabel/evidence/resource 进入独立折叠区；显式 showEvidence 模�
 的 title/meta，不能认为共享组件已自动清理所有旧调用方的动态文案。
 Idol/Unit 的身份、歌曲映射与剧情资源统计也移入技术区，页面保留原有关系导航。
 
+## 第二批：Event / Gasha / Card 与通信、季节、工作、故事详情
+
+活动和卡池页面以标题、日期、报酬与关联卡片为主；原始表号、公告编号、
+资源标识与推导证据集中到默认收起的技术区。卡池列表也不再逐行显示编号。
+推定关联、获得方式待确认与复刻关系仍分别说明，不能因折叠证据而升级事实。
+
+卡片保留卡面切换、数值与技能、分类语音试听、演出预览和剧情入口。
+未归类语音候选进入技术区；未核对卡面仍有可见标识。空文本/占位值 0
+显示仅音频，缺失的技能数值说明显示未收录，原始模板和候选完整保留在证据中。
+
+通信随机话题仍说明随机候选与真实聊天顺序的区别；默认使用话题标题、时间
+和解锁条件，技术区保留表 104/105、抽选权重及脚本边界。季节、工作与通用
+故事详情展示人物、剧情和收录状态，原始资源保留在各自技术区。
+这批没有改变媒体 URL、导航 payload、编译产物、主数据或播放器控制逻辑。
+
 ## 验证范围
 
 `npm run verify:archive-presentation` 检查全部 61 个现有歌曲记录：canonical 名称、
 别名路由、固定/特别/自由编成、未知身份、可试听边界、证据完整性和输入不变性。
-真实 Vue SSR 覆盖全部歌曲与 RelationList 两种模式；模板 AST 门禁覆盖已迁移的
-八个组件。禁止直接将技术身份插值到普通正文，允许 key、URL、事件参数与明确
-技术区；计数投影有单独允许规则。该门禁已接入 source CI，不能声称覆盖未迁移页。
+真实 Vue SSR 覆盖全部歌曲、61 个卡池、4 个季节企划、49 个工作角色、4 种通信
+模式及卡片代表样本、缺失活动/故事样本、RelationList 两种模式。模板 AST 门禁
+覆盖 16 个已迁移组件，结合表达式 AST 检查正文与 title/alt/aria-label 的直接
+技术身份输出，允许 key、URL、事件参数、明确技术区及具名展示/计数投影。
+该门禁已接入 source CI，是有边界的回归保护，不是整个仓库的完整数据流审计。
 
 既有 song playback、experimental audio、song landing、idol/unit、navigation state、
 async navigation 门禁通过。source-only Vite 构建通过，仍有大于 500 kB 分块提示；
@@ -42,9 +59,16 @@ async navigation 门禁通过。source-only Vite 构建通过，仍有大于 500
 截图位于仓库外 `C:/Users/windm/.codex/evidence/sidem-presentation/2026-09-09/`。
 这是 UI/交互验证，不是混音听感或正式长稳验收。
 
+第二批通过 card voice preview、gasha catalog、event story、seasonal、work story、
+external story resource UI 与 story player UI PR2 门禁，以及更新后的展示门禁和
+source-only 构建。Browser 在 390×844 验证活动报酬卡导航、卡池列表和推定关联、
+卡面边框切换、默认隐藏占位文本、证据展开/收起、随机话题、工作场景台词、
+季节年份/节日/事务所切换及检索到故事详情；所测页面无横向溢出，日志无应用错误。
+新增截图 `card-mobile.png`、`mobile-topics.png` 与第一批截图位于同一证据目录。
+
 ## 后续顺序
 
-1. Event / Gasha：普通活动与卡池信息、获得关系说明、折叠 provenance。
-2. Card：分类语音、未分类候选、资源可用性分层，候选明确进入技术区域。
-3. Mobile / Seasonal / Work / Story：清理资源身份与工程统计的默认展示。
-4. D 按实际剧情入口扩展；E1 扩充只读覆盖。P2-B 继续后移，E2 仍未开工。
+1. 已完成 H1–H3 和上述第二批。验收发现的剩余展示范围：故事全部检索列表、
+   主线/生日/额外故事集合页、个人故事及卡片列表；这些尚未纳入 16 组件门禁。
+   此处仅安排展示收尾，不扩建 Story Catalog。
+2. D 按实际剧情入口扩展；E1 扩充只读覆盖。P2-B 继续后移，E2 仍未开工。

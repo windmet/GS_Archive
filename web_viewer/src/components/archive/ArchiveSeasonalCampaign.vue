@@ -19,14 +19,14 @@
 
     <div v-if="campaign" class="campaign-body">
       <section class="campaign-summary">
-        <div><strong>{{ campaign.playback_entity_count }}</strong><span>播放实体</span></div>
+        <div><strong>{{ campaign.playback_entity_count }}</strong><span>段剧情</span></div>
         <div><strong>{{ idolParticipants.length }}</strong><span>偶像</span></div>
         <div><strong>{{ supportParticipants.length }}</strong><span>工作人员</span></div>
-        <div><strong>{{ campaign.bgm_resource_id || '—' }}</strong><span>BGM</span></div>
+        <div><strong>{{ campaign.bgm_resource_id ? '已收录' : '未收录' }}</strong><span>背景音乐资料</span></div>
       </section>
 
       <section v-if="campaign.introduction?.length" class="intro-band">
-        <div><span>COMMON INTRODUCTION</span><strong>{{ campaign.introduction[0].title }}</strong><small>{{ campaign.introduction[0].resource_id }}</small></div>
+        <div><span>COMMON INTRODUCTION</span><strong>{{ campaign.introduction[0].title }}</strong></div>
         <button title="播放共通导入" @click="play(campaign.introduction[0])"><Play :size="17" fill="currentColor" /></button>
       </section>
 
@@ -41,8 +41,7 @@
       <div class="participant-list">
         <article v-for="participant in visibleParticipants" :key="`${participant.participant_type}-${participant.participant_numeric_id}`" class="participant-row">
           <div class="participant-id">
-            <span>{{ participant.participant_code || participant.participant_numeric_id }}</span>
-            <strong>{{ participant.display_name || `角色 ${participant.participant_numeric_id}` }}</strong>
+            <strong>{{ participant.display_name || '姓名待确认' }}</strong>
           </div>
           <div class="episode-titles">
             <span v-for="episode in participant.episodes" :key="episode.id">
@@ -50,7 +49,7 @@
             </span>
           </div>
           <div class="episode-meta">
-            <span>{{ participant.playback_entity_count }} file</span>
+            <span>{{ participant.playback_entity_count }} 段剧情</span>
             <span v-if="participant.episodes[0]?.reward">阅读奖励</span>
           </div>
           <button class="play-button" :disabled="!participant.episodes[0]?.compiled_exists" title="播放角色剧情" @click="play(participant.episodes[0])">
@@ -58,12 +57,14 @@
           </button>
         </article>
       </div>
+      <ArchiveTechnicalDetails :key="campaign.id" :evidence="campaign" />
     </div>
   </section>
 </template>
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { Gift, Heart, Play } from '@lucide/vue'
 
 const props = defineProps({ campaign: { type: Object, default: null }, campaigns: { type: Array, default: () => [] } })

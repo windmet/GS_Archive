@@ -10,9 +10,8 @@
         <p class="hierarchy">{{ hierarchyLabel }}</p>
         <h2>{{ story.title }}</h2>
         <dl>
-          <div><dt>资源</dt><dd>{{ story.resourceId }}</dd></div>
-          <div><dt>演出</dt><dd>{{ story.playableStepCount }} steps · {{ story.summary?.voice_count || 0 }} voices</dd></div>
-          <div v-if="story.rowCount > 1"><dt>段落</dt><dd>{{ story.rowCount }} parts</dd></div>
+          <div><dt>剧情</dt><dd>{{ story.exists ? '已收录' : '暂未收录' }}</dd></div>
+          <div v-if="story.rowCount > 1"><dt>段落</dt><dd>{{ story.rowCount }} 段</dd></div>
           <div v-if="releaseDate"><dt>开放</dt><dd>{{ releaseDate }}</dd></div>
         </dl>
       </div>
@@ -58,9 +57,9 @@
       <div class="section-heading"><div><span>CAST</span><h3>登场角色</h3></div><strong>{{ characters.length }}</strong></div>
       <div class="character-list">
         <button v-for="character in characters" :key="character" :disabled="!isIdol(character)" @click="emit('open-idol', character)">
-          <img v-if="isIdol(character)" :src="`/assets/idols/icons/image_chara_icon_${character}.png`" :alt="idolName(character)" />
-          <span v-else class="character-placeholder">{{ character.slice(0, 1).toUpperCase() }}</span>
-          <strong>{{ idolName(character) }}</strong>
+          <img v-if="isIdol(character)" :src="`/assets/idols/icons/image_chara_icon_${character}.png`" :alt="characterName(character)" />
+          <span v-else class="character-placeholder">?</span>
+          <strong>{{ characterName(character) }}</strong>
         </button>
       </div>
     </section>
@@ -76,15 +75,18 @@
       </div>
     </section>
 
-    <section class="source-strip">
-      <span>Raw masterdata + compiled scenario</span>
-      <code>{{ story.file }}</code>
-    </section>
+    <ArchiveTechnicalDetails :key="story.id" :evidence="story">
+      <section class="source-strip">
+        <span>Raw masterdata + compiled scenario</span>
+        <code>{{ story.file }}</code>
+      </section>
+    </ArchiveTechnicalDetails>
   </article>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { AlignLeft, ArrowRight, BookOpen, ExternalLink, Play } from '@lucide/vue'
 
 const props = defineProps({
@@ -98,6 +100,10 @@ const releaseDate = computed(() => props.story?.releaseAt >= 1577836800 ? new In
 const characters = computed(() => (props.story?.characters || []).filter(character => /^\d{3}[a-z0-9]{3}$/i.test(character)))
 const relatedStories = computed(() => props.related.slice(0, 24))
 const collectionTitle = computed(() => props.story?.sectionLabel ? `${props.story.sectionLabel}的故事` : '同类故事')
+function characterName(character) {
+  const name = props.idolName(character)
+  return name && name !== character ? name : '姓名待确认'
+}
 function isIdol(character) { return /^\d{3}[a-z0-9]{3}$/i.test(character) }
 </script>
 

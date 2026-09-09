@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { parse } from '@vue/compiler-sfc'
+import { parseExpression } from '@babel/parser'
 import { baseParse, parserOptions } from '@vue/compiler-dom'
 import { createServer } from 'vite'
 import { createSSRApp } from 'vue'
@@ -49,15 +50,34 @@ assert.equal(before, JSON.stringify([catalog, identity, playback, experiments]),
 
 // Guard rendered text, not keys, URLs or event payloads. Explicit technical slots are exempt.
 // This is a bounded migrated-surface gate, not a claim about every archive page.
-const sensitive = /\b(?:\w+_(?:id|code)|resourceId|classification_source|_source|raw_category|raw_selector|evidenceLabel|evidence|resource|cue)\b|\.id\b/
+const technicalField = /(?:_(?:id|code)$|^(?:id|code|resourceId|classification_source|_source|raw_category|raw_selector|script_label|evidenceLabel|evidence|resource|cue)$)/
+const namedProjections = new Set(['filterCount', 'tabCount', 'idolName', 'characterName', 'formatDate', 'formatDateTime', 'formatNumber', 'formatDuration', 'formatTime', 'locationLabel', 'unlockText', 'unlockTitle', 'timeWindow', 'shortType', 'voiceSourceLabel', 'scenarioSubtitle'])
+function technicalOutput(node) {
+  if (!node) return false
+  if (node.type === 'MemberExpression' || node.type === 'OptionalMemberExpression') return technicalField.test(node.property.name || node.property.value || '')
+  if (node.type === 'Identifier') return technicalField.test(node.name)
+  if (node.type === 'ConditionalExpression') return technicalOutput(node.consequent) || technicalOutput(node.alternate)
+  if (node.type === 'LogicalExpression' || node.type === 'BinaryExpression') return technicalOutput(node.left) || technicalOutput(node.right)
+  if (node.type === 'TemplateLiteral') return node.expressions.some(technicalOutput)
+  if (node.type === 'CallExpression' || node.type === 'OptionalCallExpression') {
+    // Named formatting/identity projections return user text or counts; their inputs are not outputs.
+    if (namedProjections.has(node.callee.name)) return false
+    return technicalOutput(node.callee.object) || node.arguments.some(technicalOutput)
+  }
+  if (node.type === 'ArrowFunctionExpression') return technicalOutput(node.body)
+  if (node.type === 'ArrayExpression') return node.elements.some(technicalOutput)
+  if (node.type === 'ObjectExpression') return node.properties.some(property => technicalOutput(property.value))
+  return false
+}
 function leaks(template) {
   const failures = []
   function walk(node, technical = false) {
     const evidenceGuard = node.props?.some(prop => prop.name === 'if' && /^showEvidence\s*&&/.test(prop.exp?.content || ''))
     technical ||= node.tag === 'ArchiveTechnicalDetails' || evidenceGuard
-    // Known numeric projection: filter identity is an input, never the rendered output.
-    const countProjection = node.type === 5 && /^filterCount\(filter\.id\)$/.test(node.content.content)
-    if (!technical && node.type === 5 && !countProjection && sensitive.test(node.content.content)) failures.push(node.content.content)
+    if (!technical && node.type === 5 && technicalOutput(parseExpression(node.content.content))) failures.push(node.content.content)
+    for (const prop of node.props || []) {
+      if (!technical && prop.name === 'bind' && ['title', 'alt', 'aria-label'].includes(prop.arg?.content) && prop.exp && technicalOutput(parseExpression(prop.exp.content))) failures.push(prop.exp.content)
+    }
     if (!technical && node.type === 2 && /\b(?:RAW|ACB|cue|Confirmed|Derived)\b|表\s*46|字段\s*\d/.test(node.content)) failures.push(node.content)
     for (const child of node.children || []) walk(child, technical)
   }
@@ -66,9 +86,12 @@ function leaks(template) {
 }
 assert.ok(leaks('<p>{{ item.resource_id }}</p>').length)
 assert.ok(leaks('<p>{{ item.id }}</p>').length)
+assert.ok(leaks('<img :alt="item.resource_id" />').length)
+assert.equal(leaks('<p>{{ resource.uploader.name }}</p>').length, 0)
+assert.equal(leaks("<p>{{ item.resource_id ? '已收录' : '未收录' }}</p>").length, 0)
 assert.equal(leaks('<button :key="item.id" @click="open(item.id)">{{ item.title }}</button>').length, 0)
 assert.equal(leaks('<ArchiveTechnicalDetails><code>{{ item.resource_id }}</code></ArchiveTechnicalDetails>').length, 0)
-const migrated = ['ArchiveSongDetail', 'ArchiveSongCatalog', 'ArchiveSongSinglePlayer', 'ArchiveSongExperimentalPlayer', 'ArchiveSongLineupPlayer', 'ArchiveRelationList', 'ArchiveUnitDetail', 'ArchiveIdolDetail']
+const migrated = ['ArchiveSongDetail', 'ArchiveSongCatalog', 'ArchiveSongSinglePlayer', 'ArchiveSongExperimentalPlayer', 'ArchiveSongLineupPlayer', 'ArchiveRelationList', 'ArchiveUnitDetail', 'ArchiveIdolDetail', 'ArchiveEventDetail', 'ArchiveGashaDetail', 'ArchiveGashaCatalog', 'ArchiveCardDetail', 'ArchiveMobileArchive', 'ArchiveSeasonalCampaign', 'ArchiveWorkStory', 'ArchiveStoryDetail']
 for (const name of migrated) {
   const source = read(`src/components/archive/${name}.vue`)
   assert.deepEqual(leaks(parse(source).descriptor.template.content), [], name)
@@ -92,6 +115,43 @@ try {
     assert.ok(html.includes('data-technical-details'), song.id)
     assert.ok(!/<details[^>]*\sopen(?:[\s=>])/.test(html), 'evidence is closed by default')
   }
+  async function checkPage(name, props, expected = []) {
+    const { default: Component } = await server.ssrLoadModule(`/src/components/archive/${name}.vue`)
+    const html = await renderToString(createSSRApp(Component, props))
+    const visible = publicText(html)
+    assert.ok(!/\b\d{3}[a-z]{3}\b|\bRAW\b|\bACB\b|Raw ·|\bDerived\b|\bConfirmed\b|LimitbreakItemId|resource_id|model_resource_id/.test(visible), `${name}: ${visible.slice(0, 200)}`)
+    for (const text of expected) assert.ok(visible.includes(text), `${name}: ${text}`)
+    assert.ok(!/<details[^>]*\sopen(?:[\s=>])/.test(html), `${name}: evidence closed by default`)
+    return { html, visible }
+  }
+  const gashas = json('masterdata/gasha_index.json').gashas
+  const idolName = code => identity.by_idol_code[code]?.display_name || '姓名待确认'
+  for (const gasha of gashas) await checkPage('ArchiveGashaDetail', { gasha, idolName })
+  const projectedGasha = await checkPage('ArchiveGashaDetail', { gasha: gashas.find(gasha => gasha.derived_pickup_cards?.length), idolName }, ['推定的关联'])
+  assert.ok(projectedGasha.html.includes('data-technical-details'))
+  const { mergeCardDetail } = await import('../src/data/archiveSelectors.js')
+  const cards = json('masterdata/card_index.json').cards
+  const details = json('masterdata/card_detail_index.json')
+  const merged = cards.map(card => mergeCardDetail(card, details))
+  const cardSamples = [...new Set([
+    merged[0], merged.find(card => card.single_state),
+    merged.find(card => card.home_voice_cues?.length),
+    merged.find(card => card.operational_voice_cues?.length),
+    merged.find(card => card.voice_candidates?.unmapped_card_only?.length),
+    merged.find(card => card.scenario_entries?.length),
+  ].filter(Boolean))]
+  for (const card of cardSamples) {
+    const { html, visible } = await checkPage('ArchiveCardDetail', { card })
+    assert.ok(!visible.includes('未归类卡面语音候选'))
+    if (card.voice_candidates?.unmapped_card_only?.length) assert.ok(html.includes(card.voice_candidates.unmapped_card_only[0]))
+  }
+  const sourceEvent = json('masterdata/event_index.json').events[0]
+  await checkPage('ArchiveEventDetail', { event: { event_id: 'test', event_code: 'test', title: '测试活动', exists: false }, masterEvent: sourceEvent, idols: identity.idols }, ['剧情暂未收录'])
+  for (const campaign of json('masterdata/seasonal_campaign_index.json').campaigns) await checkPage('ArchiveSeasonalCampaign', { campaign })
+  for (const idol of json('masterdata/work_story_index.json').idols) await checkPage('ArchiveWorkStory', { idol })
+  const archive = json('masterdata/mobile_archive_index.json')
+  for (const mode of ['personal', 'phone', 'unit', 'random']) await checkPage('ArchiveMobileArchive', { archive, mode, selectedIdol: '001tom', selectedUnit: '01jup', idols: identity.idols, units: identity.units, cards, idolEpisodes: json('masterdata/idol_episode_index.json') })
+  await checkPage('ArchiveStoryDetail', { story: { id: 'sample', title: '测试剧情', resourceId: '1_1_resource', file: 'sample.json', exists: false }, idolName }, ['暂未收录'])
   const { default: Relations } = await server.ssrLoadModule('/src/components/archive/ArchiveRelationList.vue')
   const items = [{ id: 'r', title: '测试活动', label: '活动', statusLabel: '可播放', evidenceLabel: 'Derived', evidence: 'relation_basis', resource: '1_3_source', payload: { preserved: true } }]
   const normal = await renderToString(createSSRApp(Relations, { items }))
