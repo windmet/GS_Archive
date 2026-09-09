@@ -13,6 +13,7 @@ export function validateReadingManifest(value) {
     ids.add(e.document_id)
     requireValue(e.file === `${e.document_id}.json` && e.schema_version === 1, 'document file/version')
     requireValue(HASH.test(e.sha256) && HASH.test(e.source_sha256), 'document hashes')
+    requireValue(e.source_file == null || /^episodes\/[A-Za-z0-9_-]+\.json$/.test(e.source_file), 'source file')
     requireValue(STATUS.has(e.status) && Number.isInteger(e.row_count) && e.row_count >= 0, 'document status/count')
     requireValue(typeof e.logical_id === 'string' && typeof e.scenario_id === 'string', 'story identity')
   }
@@ -24,6 +25,7 @@ export function validateReadingDocument(d, entry) {
   requireValue(d.logical_id === entry.logical_id && d.scenario_id === entry.scenario_id, 'story identity')
   requireValue(d.source?.sha256 === entry.source_sha256 && d.status === entry.status, 'source/status')
   requireValue(/^episodes\/[A-Za-z0-9_-]+\.json$/.test(d.source?.file || ''), 'source file')
+  requireValue(entry.source_file == null || d.source.file === entry.source_file, 'source discovery identity')
   requireValue(Number.isInteger(d.source.step_count) && d.source.step_count >= 0, 'source step count')
   requireValue(Array.isArray(d.rows) && d.rows.length === entry.row_count, 'rows')
   requireValue(Array.isArray(d.diagnostics) && Array.isArray(d.controls), 'diagnostics/controls')

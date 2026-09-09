@@ -40,7 +40,7 @@ for (const sample of samples) {
   outputs.push([`public/data/reading/${file}`, output])
   entries.push({ document_id: document.document_id, logical_id: document.logical_id,
     scenario_id: document.scenario_id, file, schema_version: document.schema_version,
-    sha256: hash(output), source_sha256: document.source.sha256, status: document.status, row_count: document.rows.length })
+    sha256: hash(output), source_sha256: document.source.sha256, source_file: document.source.file, status: document.status, row_count: document.rows.length })
 }
 outputs.push(['public/data/reading/manifest.json', serialize({ schema_version: 1, entries })])
 for (const [file, content] of outputs) await emit(file, content)

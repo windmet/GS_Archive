@@ -19,6 +19,8 @@ for (const key of fields) {
 }
 navigation.currentGroup.value = { id: 'group-1' }
 navigation.currentUnit.value = { unit_code: 'legacy-unit', id: 'unit-fallback' }
+// New independent entry position is tested in verify-reading-playback; legacy projection stays unchanged.
+navigation.currentScenarioInitialStep.value = null
 navigation.currentScenarioStartStep.value = 7
 navigation.currentScenarioEndStep.value = 12
 const contexts = ['home', 'unit_detail', 'mobile_archive', 'event_detail', 'story_detail', 'story_collection', 'song_detail', 'files']

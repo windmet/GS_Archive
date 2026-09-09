@@ -5,7 +5,7 @@ import { useStoryNavigation } from '../src/core/useStoryNavigation.js'
 
 const scenario = JSON.parse(await readFile(new URL('../public/data/compiled/1_4_001_00.json', import.meta.url), 'utf8'))
 
-function createNavigation(startStep, endStep, scenarioData = scenario) {
+function createNavigation(startStep, endStep, scenarioData = scenario, initialStep = null) {
   const compiledData = ref(scenarioData)
   const currentStepIndex = ref(0)
   const currentStep = computed(() => compiledData.value.steps[currentStepIndex.value] || {})
@@ -22,6 +22,7 @@ function createNavigation(startStep, endStep, scenarioData = scenario) {
       bilingual_primary: 'original',
     }),
     updateStoryPreferences: () => {},
+    initialStep,
     startStep,
     endStep,
     clearFadeAutoAdvance: () => {},
@@ -83,3 +84,12 @@ assert.equal(strict.currentStepIndex.value, 2)
 assert.deepEqual(strict.historyStack.value, [1])
 
 console.log('Story playback range: compatibility and authoritative episode boundaries, backgrounds and choices verified')
+
+const fromMiddle = createNavigation(2, 6, { steps: Array.from({length: 8}, (_, i) => ({ step_id: 100 + i * 10, type: 'dialogue' })) }, 4)
+assert.equal(fromMiddle.currentStepIndex.value, 3)
+assert.equal(fromMiddle.navigationStartIndex.value, 1)
+assert.equal(fromMiddle.navigationEndIndex.value, 5)
+fromMiddle.goPrev()
+assert.equal(fromMiddle.currentStepIndex.value, 2, 'initial position must not become the range floor')
+fromMiddle.goNext()
+assert.equal(fromMiddle.currentStepIndex.value, 3)

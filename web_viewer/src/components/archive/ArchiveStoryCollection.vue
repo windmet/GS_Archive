@@ -116,10 +116,10 @@
             </div>
             <p v-else-if="!chapter.exists" class="chapter-unavailable">该话目保留于 masterdata，但没有可播放的编译剧情。</p>
 
+            <p v-if="readingError" role="status">{{ readingError }} <button @click="emit('retry-reading')">重试阅读目录</button></p>
             <div v-if="!chapter.canonicalRelation" class="episode-grid">
+              <div v-for="(episode, episodeIndex) in chapter.episodes" :key="episode.id" class="episode-entry">
               <button
-                v-for="(episode, episodeIndex) in chapter.episodes"
-                :key="episode.id"
                 :disabled="!episode.exists"
                 @click="emit('play-episode', { chapter, episode })"
               >
@@ -131,6 +131,8 @@
                 <Play v-if="episode.exists" :size="15" fill="currentColor" />
                 <span v-else class="episode-lock">－</span>
               </button>
+              <button v-if="readingEntry(episode)" class="episode-reading" :aria-label="`阅读 ${episode.label}`" @click="emit('read-episode', { chapter, documentId: readingEntry(episode).document_id })"><BookOpen :size="16" />阅读</button>
+              </div>
             </div>
           </div>
         </section>
@@ -147,9 +149,13 @@ const props = defineProps({
   collection: { type: Object, default: null },
   externalResources: { type: Array, default: () => [] },
   initialChapterId: { type: String, default: '' },
+  readingEntries: { type: Array, default: () => [] },
+  readingError: { type: String, default: '' },
 })
-const emit = defineEmits(['play-chapter', 'play-episode', 'open-gasha', 'open-idol-story'])
+const emit = defineEmits(['read-episode', 'retry-reading', 'play-chapter', 'play-episode', 'open-gasha', 'open-idol-story'])
 const expandedChapterId = ref('')
+const readingByFile = computed(() => new Map(props.readingEntries.filter(e => e.status === 'ready' && e.source_file).map(e => [e.source_file, e])))
+const readingEntry = episode => readingByFile.value.get(episode.file)
 
 const releaseDate = computed(() => {
   const timestamp = Number(props.collection?.releaseAt || 0)
@@ -234,6 +240,9 @@ function externalResourcesForChapter(chapterId) {
 .episode-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: #dfe6e8; }
 .episode-grid button { display: grid; grid-template-columns: 34px minmax(0, 1fr) 18px; align-items: center; gap: 8px; min-height: 54px; padding: 8px 11px; border: 0; background: #fff; color: #2d3d45; cursor: pointer; font: inherit; text-align: left; }
 .episode-grid button:hover:not(:disabled) { background: #edf8f7; }.episode-grid button:disabled { background: #f4f6f7; color: #929da2; cursor: not-allowed; }
+.episode-entry { display: flex; min-width: 0; background: #fff; }
+.episode-entry > button:first-child { flex: 1; min-width: 0; }
+.episode-grid .episode-reading { display: flex; flex: 0 0 auto; justify-content: center; min-width: 66px; min-height: 44px; border-left: 1px solid #e2ecef; color: #157c78; font-size: 13px; }
 .episode-number { color: #16877f; font-size: .59rem; font-weight: 800; font-variant-numeric: tabular-nums; }.episode-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }.episode-copy strong { font-size: .67rem; }.episode-copy small { color: #87949a; font-size: .53rem; }.episode-grid svg { color: #159087; }.episode-lock { text-align: center; }
 @media (max-width: 840px) { .collection-hero { grid-template-columns: 1fr; gap: 18px; }.collection-visual { max-width: 720px; }.chapter-toggle { grid-template-columns: 38px minmax(0, 1fr) 22px; }.chapter-stats { display: none; } }
 @media (max-width: 620px) { .collection-hero { padding: 15px 12px 18px; }.collection-copy h2 { font-size: 1.14rem; }.chapter-section { padding: 18px 10px 30px; }.chapter-summary { grid-template-columns: 1fr; }.chapter-toggle { grid-template-columns: 30px minmax(0, 1fr) 18px; gap: 7px; padding: 9px 8px; }.chapter-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); margin: 0 8px 12px; }.chapter-actions > a,.chapter-actions > button { min-width: 0; }.chapter-panel { padding: 4px 8px 12px; }.canonical-note { grid-template-columns: 1fr; }.canonical-note button { justify-content: center; }.episode-grid { grid-template-columns: 1fr; }.section-heading > strong { display: none; } }

@@ -13,6 +13,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
   const currentScenario = state.currentScenario || ref(null)
   const currentScenarioInstance = state.currentScenarioInstance || ref(0)
   const error = ref('')
+  const currentScenarioInitialStep = state.currentScenarioInitialStep || ref(null)
   const { view, loading, preloadProgress, currentScenarioFile, currentScenarioStartStep,
     currentScenarioEndStep, currentPreviewCue, returnViewAfterPlayer } = state
 
@@ -20,6 +21,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
     currentScenario.value = null
     currentScenarioFile.value = ''
     currentScenarioStartStep.value = null
+    currentScenarioInitialStep.value = null
     currentScenarioEndStep.value = null
     currentPreviewCue.value = ''
     returnViewAfterPlayer.value = 'files'
@@ -30,6 +32,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
     currentScenario.value = scenario
     currentScenarioFile.value = file
     currentScenarioStartStep.value = boundary(options.startStep)
+    currentScenarioInitialStep.value = boundary(options.initialStep)
     currentScenarioEndStep.value = boundary(options.endStep)
     currentScenarioInstance.value += 1
     currentPreviewCue.value = options.previewCue || ''
@@ -47,7 +50,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
       error.value = ''
       try {
         const scenario = await prepare(name, {
-          isCurrent: intent.isCurrent, loadPlayer, preloadAssets,
+          isCurrent: intent.isCurrent, loadPlayer, preloadAssets, readScenario: options.readScenario,
           onProgress: pct => { if (intent.isCurrent()) preloadProgress.value = pct },
         })
         if (!scenario || !intent.isCurrent()) return false
@@ -109,6 +112,6 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
   }
   function ready() { if (!navigation.isPending()) loading.value = false }
   function dispose() { navigation.invalidate(); reset(); loading.value = false }
-  return { currentScenario, currentScenarioInstance, error, queue, hasNext: queue.hasNext,
+  return { currentScenario, currentScenarioInstance, currentScenarioInitialStep, error, queue, hasNext: queue.hasNext,
     load, preview, startQueue, restore, next, close, ready, reset, dispose }
 }

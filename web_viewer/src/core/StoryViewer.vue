@@ -210,6 +210,7 @@ const props = defineProps({
   scenarioJson: { type: Object, default: null },
   scenarioUrl: { type: String, default: null },
   startStep: { type: Number, default: null },
+  initialStep: { type: Number, default: null },
   endStep: { type: Number, default: null },
   hasNextEpisode: { type: Boolean, default: false },
   continuousPlayback: { type: Boolean, default: false },
@@ -388,6 +389,7 @@ const {
     setStoryLanguagePreferences(saved)
   },
   startStep: START_STEP,
+  initialStep: props.initialStep,
   endStep: END_STEP,
   clearFadeAutoAdvance: () => clearFadeAutoAdvance(),
   ensureAudioCtx: _ensureAudioCtx,

@@ -17,7 +17,7 @@
       @back="goArchiveBack"
     >
       <ArchiveStoryReader v-if="view === 'reader'" :state="readingState" :document-id="readingDocumentId" :mode="readingMode" :anchor="readingRowId"
-        @select="openStoryReader" @mode="updateReadingMode" @back="openStoryCatalog" @retry="openStoryReader(readingDocumentId)" />
+        :notice="readingPlaybackNotice" :busy="loading" @refresh="refreshStoryReader" @play="openReaderPlayback" @select="openStoryReader" @mode="updateReadingMode" @back="closeStoryReader" @retry="openStoryReader(readingDocumentId)" />
       <ArchivePortalLauncher
         v-if="view === 'portal'"
         @navigate="navigateArchiveSection"
@@ -278,6 +278,9 @@
         :collection="currentStoryCollection"
         :external-resources="currentStoryCollectionExternalResources"
         :initial-chapter-id="currentStoryCollectionChapter?.id || ''"
+        :reading-entries="currentStoryCollection?.domain === 'main' ? readingCatalogEntries : []"
+        :reading-error="currentStoryCollection?.domain === 'main' ? readingCatalogError : ''"
+        @read-episode="openCollectionReader" @retry-reading="loadReadingCatalog"
         @play-chapter="playStoryCollectionChapter"
         @play-episode="playStoryCollectionEpisode"
         @open-gasha="openGasha"
@@ -359,13 +362,14 @@
     </ArchiveShell>
 
     <!-- ====== STORY PLAYER ====== -->
-    <p v-if="playbackError" class="playback-failure" role="alert">演出暂时无法载入，请从目录重新打开。</p>
+    <p v-if="playbackError && view !== 'reader'" class="playback-failure" role="alert">演出暂时无法载入，请从目录重新打开。</p>
     <StoryViewer
       v-if="view === 'player' && currentScenario"
       :key="currentScenarioInstance"
       :scenario-json="currentScenario"
       :start-step="currentScenarioStartStep"
       :end-step="currentScenarioEndStep"
+      :initial-step="currentScenarioInitialStep"
       :has-next-episode="hasNextPlaybackEpisode"
       :continuous-playback="continuousPlayback"
       @back="closePlayer"
@@ -384,7 +388,7 @@
     />
 
     <!-- ====== PRELOADER LOADING SCREEN ====== -->
-    <LoadingScreen :visible="loading" :progress="preloadProgress" />
+    <LoadingScreen :visible="loading && view !== 'reader'" :progress="preloadProgress" />
 
   </div>
 </template>
@@ -409,6 +413,7 @@ import StoryReleaseSoakPanel from './components/player/StoryReleaseSoakPanel.vue
 import { missingExtraFileEntries } from './data/storyFileMetadata.js'
 import ArchiveImmersiveHome from './components/archive/ArchiveImmersiveHome.vue'
 import ArchiveShell from './components/archive/ArchiveShell.vue'
+import { readingPlaybackTarget } from './core/ReadingPlayback.js'
 import { createReadingRepository } from './data/ReadingRepository.js'
 import { createReadingSession } from './core/ReadingSession.js'
 import ArchiveStoryReader from './components/archive/ArchiveStoryReader.vue'
@@ -512,6 +517,8 @@ const {
   readingDocumentId,
   readingRowId,
   readingMode,
+  readingRevision,
+  currentScenarioInitialStep,
   returnViewAfterPlayer,
   storyCollectionParentView,
   songParentView,
@@ -591,10 +598,10 @@ const storyVisibleLimit = ref(80)
 let archiveRouteReady = false
 const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loading.value = false } })
 const playbackController = useStoryPlaybackController({
-  state: { view, loading, preloadProgress, currentScenarioFile, currentScenarioStartStep, currentScenarioEndStep, currentPreviewCue, returnViewAfterPlayer },
+  state: { view, loading, preloadProgress, currentScenarioFile, currentScenarioStartStep, currentScenarioEndStep, currentScenarioInitialStep, currentPreviewCue, returnViewAfterPlayer },
   navigation, loadPlayer: storyViewerLoader,
   preloadAssets: (steps, progress) => Preloader.preloadScenario(steps, progress),
-  syncRoute: () => syncArchiveRoute(), returnTo: destination => commitView(destination),
+  syncRoute: () => syncArchiveRoute(), returnTo: destination => destination === 'reader' ? returnToReader() : commitView(destination),
 })
 const { currentScenario, currentScenarioInstance, hasNext: hasNextPlaybackEpisode, error: playbackError } = playbackController
 let removeArchivePopState = null
@@ -1175,7 +1182,20 @@ const currentIdolEvents = computed(() => eventsForIdol(currentCharacterId.value,
 const currentIdolSongs = computed(() => songsForIdol(currentCharacterId.value, songCatalogData.value))
 
 const readingState = ref({ status: 'idle', document: null, entries: [], error: '' })
-const readingSession = createReadingSession({ repository: createReadingRepository(), publish: state => { readingState.value = state } })
+const readingPlaybackNotice = ref('')
+const readingRepository = createReadingRepository()
+const readingCatalogEntries = ref([])
+const readingCatalogError = ref('')
+async function loadReadingCatalog() {
+  try {
+    readingCatalogEntries.value = (await readingRepository.manifest()).entries
+    readingCatalogError.value = ''
+  } catch { readingCatalogError.value = '阅读目录暂时无法载入。' }
+}
+watch(() => view.value === 'story_collection' && currentStoryCollection.value?.domain === 'main', active => {
+  if (active) loadReadingCatalog()
+})
+const readingSession = createReadingSession({ repository: readingRepository, publish: state => { readingState.value = state } })
 
 const archiveShellVisible = computed(() => !['__boot__', 'player', 'spine_lab', 'chibi_stage'].includes(view.value))
 
@@ -1439,14 +1459,24 @@ async function restoreVoicePreview(route, intent) {
 
 async function applyArchiveRoute(route, { restoring = true } = {}) {
   return navigation.run(async intent => {
-    if (route.view === 'reader') {
+    if (route.view === 'reader' || (route.view === 'player' && route.returnView === 'reader')) {
       readingDocumentId.value = route.reading
       readingRowId.value = route.readingRow || ''
       readingMode.value = route.readingMode || 'original'
+      readingRevision.value = route.readingRev || ''
+      currentStoryDomain.value = route.storyType === 'main' && route.storySection ? 'main' : ''
+      currentStorySection.value = currentStoryDomain.value ? route.storySection : ''
+      currentStoryFile.value = currentStoryDomain.value ? (route.story || '') : ''
+      readingPlaybackNotice.value = ''
       playbackController.reset()
       view.value = 'reader'
       loading.value = false
       await readingSession.open(route.reading, intent)
+      if (!intent.isCurrent()) return
+      if (route.view === 'player') await openReaderPlayback(route.readingRow, { intent, route })
+      else if (readingRevision.value && readingRevision.value !== readingState.value.entries.find(e => e.document_id === route.reading)?.sha256) {
+        readingPlaybackNotice.value = '阅读版本已变化。请重新选择本篇分段，确认最新正文后再演出。'
+      }
       return
     }
     if (route.view === 'portal') {
@@ -1539,7 +1569,7 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
 
     if (route.view === 'player' && route.scenario) {
       const restored = await playbackController.restore(route.scenario, route.returnView || 'home',
-        { startStep: route.startStep, endStep: route.endStep }, playbackEpisodes(route.returnView), intent)
+        { startStep: route.startStep, endStep: route.endStep, initialStep: route.initialStep }, playbackEpisodes(route.returnView), intent)
       if (!restored && intent.isCurrent()) view.value = 'story_catalog'
       return
     }
@@ -1617,11 +1647,68 @@ function navigateArchiveSection(section) {
   else if (section === 'resources') openArchiveStatus()
 }
 
-async function openStoryReader(documentId) {
-  const pending = applyArchiveRoute({ view: 'reader', reading: documentId, readingMode: readingMode.value }, { restoring: false })
+async function openStoryReader(documentId, source = {}) {
+  const context = view.value === 'reader' ? currentArchiveRoute() : source
+  const pending = applyArchiveRoute({ ...context, view: 'reader', reading: documentId, readingRow: '', readingRev: '', readingMode: readingMode.value }, { restoring: false })
   // Publish the requested route immediately, including while text is loading.
   syncArchiveRoute()
   await pending
+}
+
+async function refreshStoryReader() {
+  return navigation.run(async intent => {
+    loading.value = true
+    try {
+      await readingRepository.manifest({ fresh: true })
+      if (intent.isCurrent()) await openStoryReader(readingDocumentId.value)
+    } catch (error) {
+      if (intent.isCurrent()) readingPlaybackNotice.value = `正文刷新失败：${error.message}`
+    }
+  })
+}
+
+function openCollectionReader({ chapter, documentId }) {
+  return openStoryReader(documentId, { storyType: currentStoryDomain.value,
+    storySection: currentStorySection.value, story: chapter.story?.file || '' })
+}
+
+function closeStoryReader() {
+  if (currentStoryDomain.value !== 'main' || !currentStorySection.value) return openStoryCatalog()
+  const pending = applyArchiveRoute({ view: 'story_collection', storyType: 'main',
+    storySection: currentStorySection.value, story: currentStoryFile.value }, { restoring: false })
+  const revision = navigation.getRevision()
+  return pending.then(() => { if (navigation.getRevision() === revision) syncArchiveRoute() })
+}
+
+function returnToReader() {
+  const route = { ...currentArchiveRoute(), view: 'reader', story: currentStoryFile.value, reading: readingDocumentId.value, readingRow: readingRowId.value,
+    readingMode: readingMode.value, readingRev: readingRevision.value }
+  const pending = applyArchiveRoute(route, { restoring: false })
+  syncArchiveRoute()
+  return pending
+}
+
+async function openReaderPlayback(rowId, { intent: inherited, route } = {}) {
+  return navigation.run(async intent => {
+    readingPlaybackNotice.value = ''
+    try {
+      const entry = readingState.value.entries.find(e => e.document_id === readingDocumentId.value)
+      const revision = route ? route.readingRev : (readingRevision.value || entry?.sha256)
+      const target = readingPlaybackTarget(readingState.value.document, rowId, revision, entry)
+      if (route && (route.scenario !== target.file || route.startStep !== target.startStep ||
+          route.endStep !== target.endStep || route.initialStep !== target.initialStep)) {
+        throw Error('链接中的演出范围与正文定位不一致，请从正文重新打开演出。')
+      }
+      readingRevision.value = revision
+      readingRowId.value = rowId
+      // Pin the requested text version/row even if media preparation subsequently fails.
+      if (!route) syncArchiveRoute({ replace: true })
+      const loaded = await playbackController.load(target.file, 'reader', { ...target, intent, syncRoute: !route })
+      if (!loaded && intent.isCurrent()) readingPlaybackNotice.value = playbackError.value
+    } catch (error) {
+      if (intent.isCurrent()) readingPlaybackNotice.value = error.message
+    }
+  }, { intent: inherited })
 }
 
 function updateReadingMode(mode) {

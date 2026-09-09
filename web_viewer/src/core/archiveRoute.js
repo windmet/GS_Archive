@@ -3,6 +3,8 @@ const ROUTE_QUERY_KEYS = [
   'reading',
   'reading_row',
   'reading_mode',
+  'reading_rev',
+  'at_step',
   'view',
   'home_idol',
   'home_cue',
@@ -84,7 +86,7 @@ const VALID_STORY_SORTS = new Set(['domain', 'title', 'resource', 'steps_desc'])
 const VALID_STORY_MODES = new Set(['portal', 'search'])
 const VALID_SONG_SCOPES = new Set(['all', 'movie', 'mvlive', 'layered', 'oneshot', 'special'])
 const VALID_MOBILE_MODES = new Set(['personal', 'phone', 'unit', 'random'])
-const VALID_RETURN_VIEWS = new Set([...VALID_VIEWS].filter(view => !['player', 'spine_lab', 'chibi_stage', 'reader'].includes(view)))
+const VALID_RETURN_VIEWS = new Set([...VALID_VIEWS].filter(view => !['player', 'spine_lab', 'chibi_stage'].includes(view)))
 
 const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   reader: { section: 'reader', required: [], fallback: 'story_catalog' },
@@ -233,12 +235,14 @@ export function normalizeArchiveRoute(input = {}) {
   if (view === 'player' && !scenario && !(voice && card)) view = contract.fallback
   else if (contract?.required.some(key => !route[key])) view = contract.fallback
   route.view = view || 'home'
-  if (route.view === 'reader') {
+  if (route.view === 'reader' || (route.view === 'player' && route.returnView === 'reader')) {
     route.reading = /^[A-Za-z0-9_-]+$/.test(input.reading || '') ? input.reading : ''
     route.readingRow = typeof input.readingRow === 'string' && input.readingRow.length <= 240 ? input.readingRow : ''
     route.readingMode = ['original', 'translation', 'bilingual'].includes(input.readingMode) ? input.readingMode : 'original'
+    route.readingRev = /^sha256:[a-f0-9]{64}$/.test(input.readingRev || '') ? input.readingRev : ''
     if (!route.reading) route.view = 'story_catalog'
   }
+  if (route.view === 'player' && positiveInteger(input.initialStep)) route.initialStep = positiveInteger(input.initialStep)
   if (route.view === 'portal') route.portalFrom = buildPortalReturnQuery(readPortalReturnRoute(input.portalFrom))
   return route
 }
@@ -435,6 +439,8 @@ export function readArchiveRoute(input = null) {
     reading: params.get('reading'),
     readingRow: params.get('reading_row'),
     readingMode: params.get('reading_mode'),
+    readingRev: params.get('reading_rev'),
+    initialStep: params.get('at_step'),
     homeIdol: clean(params.get('home_idol')),
     homeCue: clean(params.get('home_cue')),
     homeCostume: clean(params.get('home_costume')),
@@ -479,12 +485,21 @@ export function buildArchiveUrl(input, route) {
   url.searchParams.delete('file')
 
   if (normalized.view !== 'home') url.searchParams.set('view', normalized.view)
-  if (normalized.view === 'reader') {
+  if (normalized.view === 'reader' || (normalized.view === 'player' && normalized.returnView === 'reader')) {
     url.searchParams.set('reading', normalized.reading)
     if (normalized.readingRow) url.searchParams.set('reading_row', normalized.readingRow)
     if (normalized.readingMode !== 'original') url.searchParams.set('reading_mode', normalized.readingMode)
-    return url
+    if (normalized.readingRev) url.searchParams.set('reading_rev', normalized.readingRev)
+    if (normalized.view === 'reader') {
+      if (normalized.storyType === 'main' && normalized.storySection) {
+        url.searchParams.set('story_type', 'main')
+        url.searchParams.set('story_section', normalized.storySection)
+        if (normalized.story) url.searchParams.set('story', normalized.story)
+      }
+      return url
+    }
   }
+  if (normalized.view === 'player' && normalized.initialStep) url.searchParams.set('at_step', String(normalized.initialStep))
   if (normalized.view === 'portal') {
     if (normalized.portalFrom) url.searchParams.set('portal_from', normalized.portalFrom)
     return url

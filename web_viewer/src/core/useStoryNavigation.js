@@ -25,6 +25,7 @@ export function useStoryNavigation({
   storyPreferences,
   updateStoryPreferences,
   startStep,
+  initialStep,
   endStep,
   clearFadeAutoAdvance,
   ensureAudioCtx,
@@ -101,11 +102,12 @@ export function useStoryNavigation({
 
   function applyStartStepIfNeeded() {
     if (!compiledData.value?.steps?.length) return
-    if (!Number.isFinite(startStep)) {
+    const requested = Number.isFinite(initialStep) ? initialStep : startStep
+    if (!Number.isFinite(requested)) {
       currentStepIndex.value = navigationStartIndex.value
       return
     }
-    const target = Math.max(navigationStartIndex.value, Math.min(navigationEndIndex.value, startStep - 1))
+    const target = Math.max(navigationStartIndex.value, Math.min(navigationEndIndex.value, requested - 1))
     currentStepIndex.value = target
   }
 

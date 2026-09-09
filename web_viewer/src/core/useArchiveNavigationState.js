@@ -8,6 +8,8 @@ export function useArchiveNavigationState() {
   const readingDocumentId = ref('')
   const readingRowId = ref('')
   const readingMode = ref('original')
+  const readingRevision = ref('')
+  const currentScenarioInitialStep = ref(null)
   const returnViewAfterPlayer = ref('files')
   const storyCollectionParentView = ref('')
   const songParentView = ref('')
@@ -49,7 +51,17 @@ export function useArchiveNavigationState() {
   const storyDetailParentView = ref('')
 
   function currentArchiveRoute() {
-    if (view.value === 'reader') return { view: 'reader', reading: readingDocumentId.value, readingRow: readingRowId.value, readingMode: readingMode.value }
+    if (view.value === 'reader' || (view.value === 'player' && returnViewAfterPlayer.value === 'reader')) {
+      return {
+        view: view.value, reading: readingDocumentId.value, readingRow: readingRowId.value,
+        readingMode: readingMode.value, readingRev: readingRevision.value,
+        ...(currentStoryDomain.value === 'main' && currentStorySection.value
+          ? { storyType: 'main', storySection: currentStorySection.value, story: currentStoryFile.value } : {}),
+        ...(view.value === 'player' ? { scenario: currentScenarioFile.value,
+          startStep: currentScenarioStartStep.value, endStep: currentScenarioEndStep.value,
+          initialStep: currentScenarioInitialStep.value, returnView: 'reader' } : {}),
+      }
+    }
     if (view.value === 'portal') return { view: 'portal', portalFrom: portalFrom.value }
     const returnsToEvent = view.value === 'player' && returnViewAfterPlayer.value === 'event_detail'
     const returnsToStory = view.value === 'player' && returnViewAfterPlayer.value === 'story_detail'
@@ -67,6 +79,7 @@ export function useArchiveNavigationState() {
       (preservesEventContext && eventParentView.value === 'unit_detail')
     return {
       view: view.value,
+      ...(view.value === 'player' && currentScenarioInitialStep.value ? { initialStep: currentScenarioInitialStep.value } : {}),
       homeIdol: view.value === 'home' ? homeSelectedId.value : '',
       homeCue: view.value === 'home' ? homeSelectedCue.value : '',
       homeCostume: view.value === 'home' ? homeSelectedCostume.value : '',
@@ -122,6 +135,8 @@ export function useArchiveNavigationState() {
     readingDocumentId,
     readingRowId,
     readingMode,
+    readingRevision,
+    currentScenarioInitialStep,
     returnViewAfterPlayer,
     storyCollectionParentView,
     songParentView,

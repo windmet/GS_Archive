@@ -1,5 +1,5 @@
 <template>
-  <section ref="readerRoot" class="story-reader" aria-labelledby="reading-heading">
+  <section ref="readerRoot" class="story-reader" :aria-busy="busy" aria-labelledby="reading-heading">
     <header class="reader-top"><button @click="emit('back')"><ArrowLeft :size="18" />返回</button><span>剧情阅读</span></header>
     <div class="reader-body">
       <h1 id="reading-heading" ref="heading" tabindex="-1">{{ title }}</h1>
@@ -11,6 +11,7 @@
       <div class="reader-languages" role="group" aria-label="正文语言">
         <button v-for="item in modes" :key="item.id" :aria-pressed="mode === item.id" @click="emit('mode', item.id)">{{ item.label }}</button>
       </div>
+      <p v-if="notice" ref="playbackNotice" tabindex="-1" class="reader-notice" role="alert">{{ notice }} <button class="reader-play" :disabled="busy" @click="emit('refresh')">重新载入正文</button></p>
       <p v-if="state.status === 'loading'" role="status">正在载入正文…</p>
       <div v-else-if="state.status === 'error'" class="reader-feedback" role="alert"><h2>正文暂时无法载入</h2><p>请重试，或选择其他分段。</p><button @click="emit('retry')">重试</button><details><summary>加载详情</summary><p>{{ state.error }}</p></details></div>
       <p v-else-if="state.status === 'not-generated'" role="status">这个分段尚未生成阅读正文，请选择已有分段。</p>
@@ -28,6 +29,7 @@
             <span v-if="item.row.kind === 'choice_detail'" class="reader-kind">选项附文</span>
             <p class="reader-primary" :lang="item.view.primary.locale">{{ item.view.primary.text }}</p>
             <p v-if="item.view.secondary" class="reader-secondary" :lang="item.view.secondary.locale">{{ item.view.secondary.text }}</p>
+            <button v-if="!['title', 'synopsis'].includes(item.row.kind)" class="reader-play" :disabled="busy" @click="emit('play', item.row.anchor.row_id)">{{ busy && anchor === item.row.anchor.row_id ? '正在准备演出…' : '从这里演出' }}</button>
             <span v-if="mode !== 'original' && item.view.translation.stale" class="reader-kind">译文待更新</span>
           </section>
         </article>
@@ -43,10 +45,11 @@ import { createStoryLocalization } from '../../localization/story/StoryLocalizat
 import { readingAvatarEntity, readingPresentationSpeaker } from '../../../shared/reading/ReadingDocument.js'
 import { getCharaIconUrl } from '../../utils/AssetResolver.js'
 
-const props = defineProps({ state: { type: Object, required: true }, documentId: String, mode: String, anchor: String })
-const emit = defineEmits(['select', 'mode', 'back', 'retry'])
+const props = defineProps({ state: { type: Object, required: true }, documentId: String, mode: String, anchor: String, notice: String, busy: Boolean })
+const emit = defineEmits(['select', 'mode', 'back', 'retry', 'play', 'refresh'])
 const heading = ref(null)
 const readerRoot = ref(null)
+const playbackNotice = ref(null)
 const modes = [{ id: 'original', label: '原文' }, { id: 'translation', label: '译文' }, { id: 'bilingual', label: '双语' }]
 const document = computed(() => props.state.document)
 // The localization context consumes text identities only, never compiled media.
@@ -68,8 +71,13 @@ const presentedRows = computed(() => (document.value?.rows || []).map(row => ({ 
 const fallbackCount = computed(() => presentedRows.value.filter(item => item.view.translation.fallbackUsed).length)
 const missingAnchor = computed(() => props.anchor && !document.value?.rows.some(r => r.anchor.row_id === props.anchor))
 const choiceRows = control => document.value.rows.filter(r => r.kind === 'choice' && r.anchor.step_index === control.step_index)
-watch(() => [props.state.status, props.documentId, props.anchor], async () => {
+watch(() => [props.state.status, props.documentId, props.anchor, props.notice], async () => {
   await nextTick()
+  if (props.notice && playbackNotice.value) {
+    playbackNotice.value.focus({ preventScroll: true })
+    playbackNotice.value.scrollIntoView({ block: 'start' })
+    return
+  }
   if (props.state.status !== 'ready') return
   const target = props.anchor && globalThis.document.getElementById(`reading-${props.anchor}`)
   if (target) { target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'start' }) }
@@ -78,6 +86,10 @@ watch(() => [props.state.status, props.documentId, props.anchor], async () => {
 </script>
 
 <style scoped>
+.reader-notice[role="alert"] { scroll-margin-top: 20px; padding: 12px; border: 1px solid #d3dfe4; border-radius: 8px; outline: none; }
+.reader-play { min-height: 44px; padding: 8px 12px; margin-top: 8px; border: 1px solid #cddde4; border-radius: 8px; background: #f5f9fb; color: #315a6b; font: inherit; font-size: 13px; cursor: pointer; }
+.reader-play:disabled { opacity: .5; cursor: wait; }
+.reader-play:focus-visible { outline: 2px solid #168f98; outline-offset: 3px; }
 .story-reader { height: 100%; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #cbd8df transparent; background: #fff; color: #183846; font-family: Inter, "Noto Sans JP", "Noto Sans SC", system-ui, sans-serif; }
 .reader-top { height: 64px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #d7e1e6; position: relative; font-size: 17px; font-weight: 700; }
 .reader-top button { position: absolute; left: 20px; display: flex; align-items: center; gap: 6px; }

@@ -1,5 +1,9 @@
 # ReadingDocument v1：首批产物与加载契约
 
+D2 扩展：manifest v1 现可含显式 source_file，缺省时不推断目录关联。
+逐句演出采用独立 at_step 与 reading_rev；来源校验、返回和验收见
+[READING_D2_ACCEPTANCE_20260909.md](READING_D2_ACCEPTANCE_20260909.md)。
+
 日期：2026-09-09；实现起点 ea1135e。本文件记录 60b141f 数据批次。
 后续页面及第五份译文样本已接入，当前状态见 [D1 验收](READING_D1_ACCEPTANCE_20260909.md)。
 以下为数据批次当时的边界：本批交付 D1 的数据与请求层。
