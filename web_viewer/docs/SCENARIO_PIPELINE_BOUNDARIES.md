@@ -482,3 +482,17 @@ sidem_scenario/audio_commands.py 独立处理 BGM、SE、environmental 的八种
 直接状态调用；接入 scenario-package CI。原 10 组冻结输出、CLI/批量/分派测试、
 source-only 时序和 scenario-resources 通过。没有重编译公开剧情或声称实音
 验收；handler 状态与会话 owner 已分开，语音文本链路不在本次迁移范围。
+
+## G25：背景音频继承归音频状态模块
+
+背景资料读取和 bg_profile 仍由 compiler 的背景入口负责；BGM/ambient 默认值
+是否覆盖、停止或保留改由 audio_commands 的两个状态函数处理，并返回更新后的
+继承标记。资源存在性通过已有 provider 回调传入，不新增文件扫描、缓存或隐式
+依赖。显式音频保留其值/音量，背景继承音频随资源可用性替换或停止；缺失背景
+资料仍只清 profile，不改变音频。保留原查询次数和顺序。
+
+音频 verifier 冻结 ffb5b80 的背景方法，128 种 metadata/current/ownership/
+availability 组合逐项比较完整状态、两项继承标记与查询序列，全部通过。
+scenario-package 的 10 组冻结编译输出、CLI/批量/词表及 224 音频命令回归，
+以及 scenario-resources 的实际临时文件/无文件系统 provider 编译均通过。
+本批没有重编译或发布公共产物，不代表运行时音频听感验收。

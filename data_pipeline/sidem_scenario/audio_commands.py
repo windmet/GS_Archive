@@ -135,3 +135,25 @@ _HANDLERS = {
 
 def apply_audio_state_command(state, command, values, safe_float):
     return _HANDLERS[command](state, values, safe_float)
+
+
+def apply_background_bgm(state, cue, inherited, audio_exists):
+    """Preserve explicit music; replace or stop background-owned music."""
+    if audio_exists('bgm', cue) and (not state.bgm or inherited):
+        state.set_bgm(cue)
+        return True
+    if inherited and not audio_exists('bgm', cue):
+        state.stop_bgm()
+        return False
+    return inherited
+
+
+def apply_background_ambient(state, cue, inherited, audio_exists):
+    """Preserve explicit ambience and its volume until background-owned."""
+    if audio_exists('ambient', cue) and (not state.environmental or inherited):
+        state.environmental = {'cue': cue}
+        return True
+    if inherited and not audio_exists('ambient', cue):
+        state.environmental = None
+        return False
+    return inherited

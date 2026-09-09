@@ -3,6 +3,8 @@ import copy
 from pathlib import Path
 import runpy
 import sys
+from itertools import product
+from types import SimpleNamespace
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT.parent/'data_pipeline'))
@@ -48,3 +50,28 @@ effect = apply_audio_state_command(state, 'se', ['cue', '0.2'], lambda value, fa
 assert effect == AudioCommandEffect(changed=True)
 assert state.se == {'cue': 'cue', 'delay': 0.2}
 print(f'Audio command boundary: {count} complete state/session/error parity cases and direct state-only application passed')
+
+LegacyBackground = runpy.run_path(str(ROOT/'fixtures/story-runtime/legacy-audio-commands.py'))['LegacyBackgroundDefaults']
+background_cases = 0
+for has_metadata, has_bgm, has_ambient, bgm_owned, ambient_owned, bgm_available, ambient_available in product([False, True], repeat=7):
+    outcomes = []
+    for cls in [LegacyBackground, ScenarioCompiler]:
+        compiler = object.__new__(cls)
+        compiler.state = ScenarioState()
+        compiler.state.bgm = 'prior-music' if has_bgm else None
+        compiler.state.bgm_volume = 0.7
+        compiler.state.environmental = {'cue': 'prior-rain', 'volume': 0.3} if has_ambient else None
+        compiler._bgm_from_advbackground = bgm_owned
+        compiler._environmental_from_advbackground = ambient_owned
+        requests = []
+        def available(kind, cue):
+            requests.append((kind, cue))
+            return bgm_available if kind == 'bgm' else ambient_available
+        metadata = {'imageId': 'bg', 'bgmCueName': 'new-music', 'ambienceCueName': 'new-rain'}
+        compiler.resources = SimpleNamespace(background_index=lambda: {'bg': metadata} if has_metadata else {}, audio_exists=available)
+        compiler._apply_adv_background_defaults('bg')
+        outcomes.append((copy.deepcopy(vars(compiler.state)), compiler._bgm_from_advbackground,
+                         compiler._environmental_from_advbackground, requests))
+    assert outcomes[0] == outcomes[1]
+    background_cases += 1
+print(f'Background audio: {background_cases} metadata/current/ownership/availability combinations preserve full state and lookup sequence')

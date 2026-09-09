@@ -16,7 +16,7 @@ import os
 import re
 from typing import Any, Optional
 from .state import ScenarioState
-from .audio_commands import apply_audio_state_command
+from .audio_commands import apply_audio_state_command, apply_background_bgm, apply_background_ambient
 from .commands import COMMAND_HANDLERS, SELECTION_COMMANDS
 from . import text_identity
 from .file_io import ScenarioFileIO
@@ -402,21 +402,12 @@ class ScenarioCompiler(ScenarioFileIO):
             "colorSaturation": meta.get("colorSaturation"),
         }
 
-        bgm_cue = meta.get("bgmCueName")
-        if self.resources.audio_exists("bgm", bgm_cue) and (not self.state.bgm or self._bgm_from_advbackground):
-            self.state.set_bgm(bgm_cue)
-            self._bgm_from_advbackground = True
-        elif self._bgm_from_advbackground and not self.resources.audio_exists("bgm", bgm_cue):
-            self.state.stop_bgm()
-            self._bgm_from_advbackground = False
-
-        ambience_cue = meta.get("ambienceCueName")
-        if self.resources.audio_exists("ambient", ambience_cue) and (not self.state.environmental or self._environmental_from_advbackground):
-            self.state.environmental = {"cue": ambience_cue}
-            self._environmental_from_advbackground = True
-        elif self._environmental_from_advbackground and not self.resources.audio_exists("ambient", ambience_cue):
-            self.state.environmental = None
-            self._environmental_from_advbackground = False
+        self._bgm_from_advbackground = apply_background_bgm(
+            self.state, meta.get("bgmCueName"), self._bgm_from_advbackground, self.resources.audio_exists,
+        )
+        self._environmental_from_advbackground = apply_background_ambient(
+            self.state, meta.get("ambienceCueName"), self._environmental_from_advbackground, self.resources.audio_exists,
+        )
 
     def _image_bg(self, vals: list):
         """Values: [bg_id, ...]"""

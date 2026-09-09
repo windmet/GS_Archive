@@ -88,3 +88,37 @@ class LegacyAudioCommands:
                 self._mark_stage_change()
             except ValueError:
                 pass
+
+# Background defaults frozen from ffb5b80.
+class LegacyBackgroundDefaults:
+    def _apply_adv_background_defaults(self, bg_id: str):
+        meta = self.resources.background_index().get(bg_id)
+        if not meta:
+            self.state.bg_profile = None
+            return
+
+        self.state.bg_profile = {
+            "imageId": meta.get("imageId"),
+            "lightPosition": meta.get("lightPosition"),
+            "lightCoordinate": meta.get("lightCoordinate"),
+            "lightAlpha": meta.get("lightAlpha"),
+            "colorOffSet": meta.get("colorOffSet"),
+            "colorScale": meta.get("colorScale"),
+            "colorSaturation": meta.get("colorSaturation"),
+        }
+
+        bgm_cue = meta.get("bgmCueName")
+        if self.resources.audio_exists("bgm", bgm_cue) and (not self.state.bgm or self._bgm_from_advbackground):
+            self.state.set_bgm(bgm_cue)
+            self._bgm_from_advbackground = True
+        elif self._bgm_from_advbackground and not self.resources.audio_exists("bgm", bgm_cue):
+            self.state.stop_bgm()
+            self._bgm_from_advbackground = False
+
+        ambience_cue = meta.get("ambienceCueName")
+        if self.resources.audio_exists("ambient", ambience_cue) and (not self.state.environmental or self._environmental_from_advbackground):
+            self.state.environmental = {"cue": ambience_cue}
+            self._environmental_from_advbackground = True
+        elif self._environmental_from_advbackground and not self.resources.audio_exists("ambient", ambience_cue):
+            self.state.environmental = None
+            self._environmental_from_advbackground = False
