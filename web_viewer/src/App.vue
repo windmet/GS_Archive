@@ -17,7 +17,7 @@
       @back="goArchiveBack"
     >
       <ArchiveStoryReader v-if="view === 'reader'" :state="readingState" :document-id="readingDocumentId" :mode="readingMode" :anchor="readingRowId"
-        :notice="readingPlaybackNotice" :busy="loading" @refresh="refreshStoryReader" @play="openReaderPlayback" @select="openStoryReader" @mode="updateReadingMode" @locate="locateReadingRow" @back="closeStoryReader" @retry="openStoryReader(readingDocumentId)" />
+        :notice="readingPlaybackNotice" :busy="loading" @refresh="refreshStoryReader" @play-document="openReaderPlayback(readingRowId, { fullDocument: true })" @select="openStoryReader" @mode="updateReadingMode" @locate="locateReadingRow" @back="closeStoryReader" @retry="openStoryReader(readingDocumentId)" />
       <ArchivePortalLauncher
         v-if="view === 'portal'"
         @navigate="navigateArchiveSection"
@@ -1690,13 +1690,15 @@ function returnToReader() {
   return pending
 }
 
-async function openReaderPlayback(rowId, { intent: inherited, route } = {}) {
+async function openReaderPlayback(rowId, { intent: inherited, route, fullDocument = false } = {}) {
   return navigation.run(async intent => {
     readingPlaybackNotice.value = ''
     try {
       const entry = readingState.value.entries.find(e => e.document_id === readingDocumentId.value)
       const revision = route ? route.readingRev : (readingRevision.value || entry?.sha256)
-      const target = readingPlaybackTarget(readingState.value.document, rowId, revision, entry)
+      // An initial index of 1 denotes the full episode; row remains the return location.
+      const target = readingPlaybackTarget(readingState.value.document, rowId, revision, entry,
+        { fullDocument: route ? route.initialStep === 1 : fullDocument })
       if (route && (route.scenario !== target.file || route.startStep !== target.startStep ||
           route.endStep !== target.endStep || route.initialStep !== target.initialStep)) {
         throw Error('链接中的演出范围与正文定位不一致，请从正文重新打开演出。')

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { createServer } from 'vite'
 import { createSSRApp } from 'vue'
 import { renderToString } from '@vue/server-renderer'
+import { readFileSync } from 'node:fs'
 
 // Exercise the actual Vue template's uncommon states without publishing fake stories.
 const server = await createServer({ configLoader: 'native', server: { middlewareMode: true }, appType: 'custom' })
@@ -19,7 +20,15 @@ try {
     assert.ok(!html.includes('aria-label="剧情正文"'), `${status} must not expose a continuous transcript`)
     if (status === 'error') assert.ok(html.includes('重试'))
   }
-  console.log('Reader Vue rendering verified: loading, empty, not-generated, error/retry and unsupported')
+  const document = JSON.parse(readFileSync(new URL('../public/data/reading/1_4_001_01_d.json', import.meta.url)))
+  const html = await renderToString(createSSRApp(Reader, {
+    state: { status: 'ready', entries: [], document }, documentId: document.document_id, mode: 'original', anchor: '',
+  }))
+  assert.equal(html.split('播放完整剧情（实验）').length - 1, 1)
+  assert.ok(!html.includes('从这里演出') && !html.includes('记住此处'))
+  assert.ok(!html.includes('role="search"'), 'search starts collapsed')
+  for (const row of document.rows) assert.ok(html.includes(`id="reading-${row.anchor.row_id}"`), 'all source row anchors survive')
+  console.log('Reader Vue rendering verified: status branches, episode action, collapsed search and retained row anchors')
 } finally {
   await server.close()
 }

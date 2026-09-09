@@ -3,11 +3,11 @@
 ## 最新开发优先级：Reader 与 Full Player 产品契约
 
 用户在 `9097cd8` 后提供 Reader/Full Player 审阅及“名字保密与视觉呈现分离”的补充。
-已核对源码并形成 [下一阶段计划](READER_PLAYER_NEXT_PHASE_20260909.md)。**下一批从 R1
-Reader 产品收口开始，再做 R2/R3 身份投影与文档迁移，随后 P1–P5 加载契约。**
+已核对源码并形成 [下一阶段计划](READER_PLAYER_NEXT_PHASE_20260909.md)。**R1 首批已交付，
+接下来做 R2/R3 身份投影与文档迁移，随后 P1–P5 加载契约。**
 暂不继续以 E1 零散通道增量替代这两条产品主线；E1 既有成果和未支持范围保留。
-逐句播放能力保留但退出普通 UI，显式书签产品计划撤下；reading_row/返回定位保留。
-本节是计划更新，不表示 UI、ReadingDocument v2 或 StoryAssetPlan 已实现；长稳仍后移。
+逐句播放能力保留但已退出普通 UI，显式书签 UI 与 Reader 存储调用已撤下；reading_row/返回定位保留。
+见 [R1 验收](READING_R1_ACCEPTANCE_20260909.md)。ReadingDocument v2 与 StoryAssetPlan 未实现；长稳仍后移。
 
 ## 当前恢复入口（2026-09-09，接续 `24e1cea`）
 

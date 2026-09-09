@@ -4,13 +4,16 @@
     <div class="reader-body">
       <h1 id="reading-heading" ref="heading" tabindex="-1">{{ title }}</h1>
       <p class="reader-subtitle">{{ episodeLabel }}</p>
-      <label class="reader-picker">分段<select :value="documentId" :disabled="state.status === 'loading'" @change="emit('select', $event.target.value)">
+      <details class="reader-segments"><summary>选择其他分段</summary><label class="reader-picker">分段<select :value="documentId" :disabled="state.status === 'loading'" @change="emit('select', $event.target.value)">
         <option v-if="!state.entries.some(e => e.document_id === documentId)" :value="documentId">{{ state.status === 'loading' ? '正在载入分段…' : '当前分段尚未收录' }}</option>
         <option v-for="entry in state.entries" :key="entry.document_id" :value="entry.document_id">{{ [entry.title || '剧情标题待确认', entry.episode_label].filter(Boolean).join(' · ') }}{{ entry.status === 'ready' ? '' : '（暂不支持阅读）' }}</option>
-      </select></label>
-      <div class="reader-languages" role="group" aria-label="正文语言">
+      </select></label></details>
+      <div class="reader-toolbar"><div class="reader-languages" role="group" aria-label="正文语言">
         <button v-for="item in modes" :key="item.id" :aria-pressed="mode === item.id" @click="emit('mode', item.id)">{{ item.label }}</button>
       </div>
+        <button v-if="state.status === 'ready'" ref="searchToggle" :aria-expanded="searchOpen" aria-controls="reader-search" @click="toggleSearch">篇内查找</button>
+      </div>
+      <button v-if="state.status === 'ready'" class="reader-full-play" :disabled="busy" @click="emit('play-document')">{{ busy ? '正在准备演出…' : '播放完整剧情（实验）' }}</button>
       <p v-if="notice" ref="playbackNotice" tabindex="-1" class="reader-notice" role="alert">{{ notice }} <button class="reader-play" :disabled="busy" @click="emit('refresh')">重新载入正文</button></p>
       <p v-if="state.status === 'loading'" role="status">正在载入正文…</p>
       <div v-else-if="state.status === 'error'" class="reader-feedback" role="alert"><h2>正文暂时无法载入</h2><p>请重试，或选择其他分段。</p><button @click="emit('retry')">重试</button><details><summary>加载详情</summary><p>{{ state.error }}</p></details></div>
@@ -18,18 +21,13 @@
       <p v-else-if="state.status === 'empty'" role="status">这个分段没有可显示的正文。</p>
       <div v-else-if="state.status === 'unsupported'" class="reader-feedback" role="status"><h2>这个分段暂不支持完整阅读</h2><p>部分分支或贴图消息无法可靠还原，正文尚未开放。</p><details><summary>分支与来源说明</summary><ul><li v-for="(control, i) in state.document.controls" :key="i">选项：<span v-for="(option, j) in choiceRows(control)" :key="j">{{ option.source_text }}{{ j < choiceRows(control).length - 1 ? ' ／ ' : '' }}</span></li></ul><p>选项目标已保留，分支结束位置未确认。</p></details></div>
       <template v-else-if="state.status === 'ready'">
-        <div v-if="bookmark" class="reader-bookmark">
-          <p>{{ bookmarkValid ? '此分段有本机保存的阅读位置。' : '正文已更新，或原位置已不存在，请重新保存阅读位置。' }}</p>
-          <button :disabled="!bookmarkValid" @click="resumeBookmark">继续上次位置</button>
-          <button @click="removeBookmark">清除此分段记录</button>
-        </div>
-        <p v-if="bookmarkNotice" role="status">{{ bookmarkNotice }}</p>
-        <form class="reader-search" role="search" aria-label="篇内查找" @submit.prevent="moveMatch(1)">
-          <label>篇内查找<input v-model="searchQuery" type="search" placeholder="查找当前显示的正文或说话人" /></label>
+        <form v-if="searchOpen" id="reader-search" class="reader-search" role="search" aria-label="篇内查找" @submit.prevent="moveMatch(1)" @keydown.esc.prevent="closeSearch">
+          <label>篇内查找<input ref="searchInput" v-model="searchQuery" type="search" placeholder="查找当前显示的正文或说话人" /></label>
           <div class="reader-search-actions">
             <span role="status">{{ searchQuery.trim() ? (searchMatches.length ? `${matchIndex >= 0 ? `${matchIndex + 1} / ` : ''}${searchMatches.length} 处匹配` : '未找到匹配内容') : '仅查找当前分段' }}</span>
             <button type="button" :disabled="!searchMatches.length" @click="moveMatch(-1)">上一处</button>
             <button type="submit" :disabled="!searchMatches.length">下一处</button>
+            <button type="button" @click="closeSearch">关闭查找</button>
           </div>
         </form>
         <p v-if="missingAnchor" class="reader-notice" role="status">原定位行已不存在，现显示本篇正文。</p>
@@ -43,8 +41,6 @@
             <span v-if="item.row.kind === 'choice_detail'" class="reader-kind">选项附文</span>
             <p class="reader-primary" :lang="item.view.primary.locale">{{ item.view.primary.text }}</p>
             <p v-if="item.view.secondary" class="reader-secondary" :lang="item.view.secondary.locale">{{ item.view.secondary.text }}</p>
-            <button v-if="!['title', 'synopsis'].includes(item.row.kind)" class="reader-play" :disabled="busy" @click="emit('play', item.row.anchor.row_id)">{{ busy && anchor === item.row.anchor.row_id ? '正在准备演出…' : '从这里演出' }}</button>
-            <button class="reader-save" @click="saveBookmark(item.row.anchor.row_id)">{{ bookmarkValid && bookmark.rowId === item.row.anchor.row_id ? '已记住此处' : '记住此处' }}</button>
             <span v-if="mode !== 'original' && item.view.translation.stale" class="reader-kind">译文待更新</span>
           </section>
         </article>
@@ -54,42 +50,29 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { ArrowLeft } from '@lucide/vue'
 import { createStoryLocalization } from '../../localization/story/StoryLocalizationContext.js'
 import { readingAvatarEntity, readingPresentationSpeaker } from '../../../shared/reading/ReadingDocument.js'
 import { getCharaIconUrl } from '../../utils/AssetResolver.js'
-import { ReadingProgressStore, isReadingProgressCurrent } from '../../data/ReadingProgressStore.js'
 
 const props = defineProps({ state: { type: Object, required: true }, documentId: String, mode: String, anchor: String, notice: String, busy: Boolean })
-const emit = defineEmits(['select', 'mode', 'back', 'retry', 'play', 'refresh', 'locate'])
+const emit = defineEmits(['select', 'mode', 'back', 'retry', 'play-document', 'refresh', 'locate'])
 const searchQuery = ref('')
-const progressStore = new ReadingProgressStore()
-const bookmark = ref(null)
-const bookmarkNotice = ref('')
-let mounted = false
-const documentVersion = computed(() => props.state.entries.find(e => e.document_id === props.documentId)?.sha256)
-const bookmarkValid = computed(() => isReadingProgressCurrent(bookmark.value, props.documentId, documentVersion.value, props.state.document?.rows))
-function loadBookmark() {
-  bookmarkNotice.value = ''
-  bookmark.value = mounted ? progressStore.read(props.documentId).entry : null
+const searchOpen = ref(false)
+const searchInput = ref(null)
+const searchToggle = ref(null)
+async function closeSearch() {
+  searchOpen.value = false
+  searchQuery.value = ''
+  await nextTick()
+  searchToggle.value?.focus()
 }
-onMounted(() => { mounted = true; loadBookmark() })
-watch(() => props.documentId, loadBookmark)
-function saveBookmark(rowId) {
-  if (props.state.status !== 'ready' || !props.state.document.rows.some(row => row.anchor.row_id === rowId)) return
-  const result = progressStore.save({ documentId: props.documentId, version: documentVersion.value, rowId, mode: props.mode })
-  if (result.ok) bookmark.value = result.entry
-  bookmarkNotice.value = result.ok ? '已在本机记住此处。' : '无法保存到本机；仍可使用当前阅读链接。'
-}
-function resumeBookmark() {
-  if (!bookmarkValid.value) return
-  emit('mode', bookmark.value.mode)
-  emit('locate', bookmark.value.rowId)
-}
-function removeBookmark() {
-  if (progressStore.remove(props.documentId).ok) { bookmark.value = null; bookmarkNotice.value = '已清除此分段的阅读记录。' }
-  else bookmarkNotice.value = '无法清除本机记录，请稍后重试。'
+async function toggleSearch() {
+  if (searchOpen.value) return closeSearch()
+  searchOpen.value = true
+  await nextTick()
+  searchInput.value?.focus()
 }
 const heading = ref(null)
 const readerRoot = ref(null)
@@ -128,7 +111,7 @@ function moveMatch(direction) {
   const index = matchIndex.value < 0 ? (direction > 0 ? 0 : count - 1) : (matchIndex.value + direction + count) % count
   emit('locate', searchMatches.value[index].row.anchor.row_id)
 }
-watch(() => props.documentId, () => { searchQuery.value = '' })
+watch(() => props.documentId, () => { searchQuery.value = ''; searchOpen.value = false })
 const missingAnchor = computed(() => props.anchor && !document.value?.rows.some(r => r.anchor.row_id === props.anchor))
 const choiceRows = control => document.value.rows.filter(r => r.kind === 'choice' && r.anchor.step_index === control.step_index)
 watch(() => [props.state.status, props.documentId, props.anchor, props.notice], async () => {
@@ -146,14 +129,10 @@ watch(() => [props.state.status, props.documentId, props.anchor, props.notice], 
 </script>
 
 <style scoped>
-.reader-bookmark { padding: 10px 0; font-size: 14px; }
-.reader-bookmark p { margin: 0; }
-.reader-bookmark button:disabled { opacity: .45; cursor: default; }
-.reader-save { margin-left: 10px; font-size: 13px; }
-.reader-search { position: sticky; top: 0; z-index: 2; padding: 10px 0; background: #fff; border-bottom: 1px solid #cbd8df; }
+.reader-search { margin: 20px 0; padding: 16px; background: #fff; border: 1px solid #cbd8df; border-radius: 12px; }
 .reader-search label { display: flex; align-items: center; gap: 12px; font-size: 14px; white-space: nowrap; }
 .reader-search input { min-width: 0; width: 100%; min-height: 44px; padding: 8px; font: inherit; border: 1px solid #becdd5; border-radius: 6px; }
-.reader-search-actions { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+.reader-search-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font-size: 13px; }
 .reader-search-actions span { margin-right: auto; }
 .reader-search-actions button:disabled { opacity: .45; cursor: default; }
 .reader-row.search-match { background: #f0faf8; border-radius: 4px; }
@@ -161,34 +140,39 @@ watch(() => [props.state.status, props.documentId, props.anchor, props.notice], 
 .reader-play { min-height: 44px; padding: 8px 12px; margin-top: 8px; border: 1px solid #cddde4; border-radius: 8px; background: #f5f9fb; color: #315a6b; font: inherit; font-size: 13px; cursor: pointer; }
 .reader-play:disabled { opacity: .5; cursor: wait; }
 .reader-play:focus-visible { outline: 2px solid #168f98; outline-offset: 3px; }
-.story-reader { height: 100%; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #cbd8df transparent; background: #fff; color: #183846; font-family: Inter, "Noto Sans JP", "Noto Sans SC", system-ui, sans-serif; }
+.story-reader { height: 100%; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #cbd8df transparent; background: #f3f7f7; color: #183846; font-family: Inter, "Noto Sans JP", "Noto Sans SC", system-ui, sans-serif; }
 .reader-top { height: 64px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #d7e1e6; position: relative; font-size: 17px; font-weight: 700; }
 .reader-top button { position: absolute; left: 20px; display: flex; align-items: center; gap: 6px; }
 button, select { font: inherit; font-size: 15px; color: inherit; cursor: pointer; }
 button { min-height: 44px; border: 0; background: none; color: #16838d; }
 button:focus-visible, select:focus-visible { outline: 3px solid #168f98; outline-offset: 3px; }
-.reader-body { max-width: 720px; margin: 0 auto; padding: 28px 24px 60px; }
+.reader-body { max-width: 1000px; margin: 0 auto; padding: 28px 24px 60px; }
 h1 { margin: 0; font-size: 26px; line-height: 1.5; letter-spacing: -.5px; outline: none; }
 .reader-subtitle { font-size: 14px; color: #6e808a; margin: 4px 0 22px; }
 .reader-picker { display: flex; align-items: center; gap: 22px; white-space: nowrap; font-size: 15px; font-weight: 600; }
 .reader-picker select { min-height: 44px; width: min(100%, 310px); min-width: 0; border: 1px solid #becdd5; border-radius: 6px; padding: 10px; background: #fff; font-weight: 400; }
-.reader-languages { display: grid; grid-template-columns: repeat(3, 1fr); margin: 14px 0 20px; border-radius: 6px; overflow: hidden; background: #edf1f4; }
+.reader-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 18px 0 10px; }
+.reader-languages { min-width: 210px; display: grid; grid-template-columns: repeat(3, 1fr); margin: 0; border-radius: 6px; overflow: hidden; background: #edf1f4; }
 .reader-languages button { font-size: 15px; border-right: 1px solid white; color: #183846; }
 .reader-languages button[aria-pressed="true"] { background: #168f98; color: #fff; font-weight: 700; }
-.reader-transcript { border-top: 1px solid #cbd8df; padding-top: 12px; }
-.reader-row { position: relative; margin: 22px 0; scroll-margin-top: 125px; outline: none; }
-.reader-row.selected { border-left: 3px solid #168f98; padding-left: 12px; }
-.reader-primary, .reader-secondary { margin: 5px 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 17px; line-height: 1.9; }
+.reader-transcript { margin-top: 32px; }
+.reader-segments { font-size: 14px; color: #60727e; }
+.reader-segments summary { cursor: pointer; padding: 10px 0; }
+.reader-full-play { padding: 10px 20px; border-radius: 8px; background: #16838d; color: white; }
+.reader-full-play:disabled { opacity: .5; cursor: wait; }
+.reader-row { position: relative; margin: 14px 0; padding: 24px 32px; background: #fff; border: 1px solid #e1eaea; border-radius: 12px; scroll-margin-top: 20px; outline: none; }
+.reader-row.selected { border-color: #168f98; box-shadow: inset 3px 0 #168f98; }
+.reader-primary, .reader-secondary { max-width: 42em; margin: 5px 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 17px; line-height: 1.9; }
 .reader-secondary { color: #657986; font-size: 16px; }
 .reader-speaker { color: #167e89; font-size: 15px; font-weight: 700; margin: 0 0 4px; }
 .kind-title .reader-primary { font-weight: 700; font-size: 21px; line-height: 1.6; }
-.kind-caption { padding: 15px 0; border-block: 1px solid #e3e9ed; color: #607a88; }
-.kind-choice, .kind-choice_detail { border-left: 2px solid #9acbd0; padding-left: 14px; }
+.kind-caption, .kind-narration, .kind-synopsis { background: #edf3f3; padding: 24px 32px; border-block: 1px solid #e3e9ed; color: #607a88; }
+.kind-choice, .kind-choice_detail { border-left: 2px solid #9acbd0; padding-left: 32px; }
 .reader-kind { font-size: 12px; color: #607a88; }
 .reader-avatar { width: 36px; height: 36px; border-radius: 50%; float: left; margin: 0 12px 4px 0; object-fit: cover; }
 .reader-notice, .reader-feedback { font-size: 14px; line-height: 1.8; color: #60727e; }
 .reader-feedback h2 { font-size: 18px; color: #183846; }
 .reader-feedback details { margin-top: 18px; overflow-wrap: anywhere; }
 .reader-feedback summary { cursor: pointer; }
-@media (max-width: 760px) { .reader-body { padding: 24px 20px 40px; } h1 { font-size: 24px; } .reader-primary { font-size: 16px; } .reader-secondary { font-size: 15px; } .kind-title .reader-primary { font-size: 19px; } }
+@media (max-width: 760px) { .reader-row { padding: 20px 18px; } .reader-search { padding: 12px; } .reader-search label { display: block; white-space: normal; } .reader-search input { box-sizing: border-box; margin-top: 8px; } .reader-languages { flex: 1; } .reader-body { padding: 24px 20px 40px; } h1 { font-size: 24px; } .reader-primary { font-size: 16px; } .reader-secondary { font-size: 15px; } .kind-title .reader-primary { font-size: 19px; } }
 </style>
