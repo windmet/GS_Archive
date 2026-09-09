@@ -704,7 +704,7 @@ function setPlaybackRate(rate) {
   return appliedRate
 }
 
-function buildRuntimeDiagnostics() {
+function buildRuntimeDiagnostics({ includeProjector = false } = {}) {
   const memory = performance.memory
   const stageManager = spineStageRef.value?.manager
   const spineEntries = Object.entries(stageManager?.spineInstances || {})
@@ -731,6 +731,7 @@ function buildRuntimeDiagnostics() {
     playback: playbackController?.inspect() || null,
     step_effects: inspectStepSceneEffects(),
     runtime,
+    ...(includeProjector ? { projector_shadow: storyRuntimeCues.inspectProjectorShadow() } : {}),
     runtime_active_count: runtime?.active?.length || 0,
     runtime_frame_pending: Number(Boolean(runtime?.frame_pending)),
     spine: {
@@ -757,7 +758,7 @@ function refreshRuntimeDiagnostics() {
   }
 }
 
-const collectReleaseSoakSample = () => buildRuntimeDiagnostics()
+const collectReleaseSoakSample = options => buildRuntimeDiagnostics(options)
 
 function applyVisibilityPause(hidden) {
   if (hidden) clearFadeAutoAdvance()

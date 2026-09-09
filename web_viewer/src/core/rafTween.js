@@ -22,9 +22,14 @@ export function runRafTween({
   const state = { rafId: null }
   let cancelled = false
   const startAt = nowMilliseconds()
+  // Timing metadata for read-only shadow diagnostics; this handle remains the tween owner.
+  state.startedAtMilliseconds = startAt
+  state.cancelled = false
   const tick = () => {
     if (cancelled || shouldStop()) return
-    const elapsed = Math.max(0, nowMilliseconds() - startAt)
+    const sampledAt = nowMilliseconds()
+    state.sampledAtMilliseconds = sampledAt
+    const elapsed = Math.max(0, sampledAt - startAt)
     if (elapsed < delayMs) {
       state.rafId = requestAnimationFrame(tick)
       return
@@ -42,6 +47,7 @@ export function runRafTween({
   state.rafId = requestAnimationFrame(tick)
   state.cancel = () => {
     cancelled = true
+    state.cancelled = true
     if (state.rafId != null) {
       cancelAnimationFrame(state.rafId)
       state.rafId = null

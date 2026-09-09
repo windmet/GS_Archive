@@ -1,7 +1,8 @@
 # E1 纯状态投影契约
 
 状态：纯函数与无 GPU 管理器对照已实现；不接管 renderer，不替代 scheduler。
-E1 的实际运行时采样/差异记录仍待接入，本批不能宣布 E1 全部验收。
+实际运行时按需采样和差异记录现已接入，见
+[只读对照验收](PROJECTOR_SHADOW_ACCEPTANCE_20260909.md)。仍保留本文的首批范围限制。
 
 `projectStoryState(normalizedScenario, { stepIndex, time, viewport, context })`：
 输入须为 normalized schema v2；stepIndex 是数组位置，time 是当前访问本 step
@@ -47,5 +48,5 @@ strict-v2 与 compatibility 经原 normalizer 输入；共 215 步的 cue 前/�
 与最终 camera/bg snapshot 核对通过。没有重编译、写入或发布这些源文件。
 这些真实源查询证明输入适配和快照边界，不能冒充浏览器真实帧比较。
 
-下一批接只读的运行时 shadow 采样及差异报告，显式记录纹理等待/派发起点、
+后续已接只读的运行时 shadow 采样及差异报告，显式记录纹理等待/派发起点、
 snapshot restore 和 settle 的适用范围。E2 前仍需独立 pre-E 基线。

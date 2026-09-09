@@ -91,9 +91,9 @@ export class StoryReleaseProbe {
     })
   }
 
-  collectSnapshot() {
+  collectSnapshot({ includeProjector = false } = {}) {
     const collector = [...this._viewerCollectors].at(-1)
-    const current = collector?.() || {}
+    const current = collector?.({ includeProjector }) || {}
     const viewerAttached = Boolean(collector)
     return {
       captured_at: new Date().toISOString(),
@@ -110,6 +110,7 @@ export class StoryReleaseProbe {
       playback: current.playback || emptyPlayback(),
       step_effects: current.step_effects || { timer_pending: 0 },
       runtime: current.runtime || null,
+      ...(includeProjector ? { projector_shadow: current.projector_shadow || { status: 'not-comparable', reason: 'viewer-not-mounted' } } : {}),
       runtime_active_count: current.runtime_active_count || 0,
       runtime_frame_pending: Number(Boolean(current.runtime_frame_pending)),
       spine: current.spine || {

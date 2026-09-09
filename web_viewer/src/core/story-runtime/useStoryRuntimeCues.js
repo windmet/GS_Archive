@@ -1,3 +1,4 @@
+import { captureProjectorShadow } from './ProjectorShadow.js'
 import { StoryClock } from './StoryClock.js'
 import { EffectScheduler } from './EffectScheduler.js'
 import { normalizeScenario } from './ScenarioNormalizer.js'
@@ -27,6 +28,8 @@ export function useStoryRuntimeCues({
   let managerFrame = null
   let generation = 0
   let pendingRestore = null
+  let shadowBasis = null
+  let shadowUnavailableReason = 'not-started'
 
   if (typeof window !== 'undefined') {
     window.__STORY_RUNTIME_CUES__ = scheduler
@@ -56,7 +59,7 @@ export function useStoryRuntimeCues({
       applyCameraEntrySnapshot(manager, snapshot?.camera_zoom)
       applyScreenEntrySnapshot(manager, snapshot?.screen_overlay)
       applyBackgroundEntrySnapshot(manager, snapshot?.bg)
-      onReady?.()
+      onReady?.(manager)
     }
     apply()
   }
@@ -103,10 +106,12 @@ export function useStoryRuntimeCues({
     if (!step) return
     const restore = pendingRestore?.stepIndex === currentStepIndex.value ? pendingRestore : null
     pendingRestore = null
+    shadowBasis = { source: compiledData.value, stepIndex: currentStepIndex.value, context: restore ? { entrySnapshot: clone(restore.snapshot), historyId: `runtime-restore:${generation}`, cuePolicy: 'suppressed' } : {} }
     const cues = restore ? [] : step.cues.filter(cue => handlers.has(cue.action))
     const debugSnapshotCue = restore ? null : createDebugSnapshotCue(step, debugSnapshotAt)
     if (debugSnapshotCue) cues.push(debugSnapshotCue)
-    applySnapshotWhenReady(restore?.snapshot || step.entry_snapshot, generation, () => {
+    applySnapshotWhenReady(restore?.snapshot || step.entry_snapshot, generation, manager => {
+      shadowBasis.manager = manager
       scheduler.loadStep(cues, { handlers, context: { step } })
       scheduler.start({ paused: isPaused() })
       console.debug(restore ? '[StoryRuntime] restored' : '[StoryRuntime] scheduled', JSON.stringify(scheduler.inspect()))
@@ -127,7 +132,19 @@ export function useStoryRuntimeCues({
     return true
   }
 
+  function inspectProjectorShadow() {
+    if (!shadowBasis) return { status: 'not-comparable', reason: shadowUnavailableReason }
+    if (shadowBasis.source !== compiledData.value || shadowBasis.stepIndex !== currentStepIndex.value || managerFrame != null) return { status: 'not-comparable', reason: 'navigation-pending' }
+    getNormalizedStep()
+    const manager = getManager()
+    const report = captureProjectorShadow({ scenario: normalizedScenario, stepIndex: currentStepIndex.value, runtime: scheduler.inspect(), manager, context: shadowBasis.context })
+    return manager !== shadowBasis.manager
+      ? { ...report, status: 'not-comparable', reason: 'stage-manager-replaced', observed_comparison: report.status } : report
+  }
+
   function cancelCurrentStep(reason = 'navigation') {
+    shadowBasis = null
+    shadowUnavailableReason = reason
     generation++
     if (managerFrame != null) {
       cancelAnimationFrame(managerFrame)
@@ -159,6 +176,7 @@ export function useStoryRuntimeCues({
     resume: () => scheduler.resume(),
     setRate: rate => scheduler.setRate(rate),
     inspect: () => scheduler.inspect(),
+    inspectProjectorShadow,
     cleanup,
   }
 }

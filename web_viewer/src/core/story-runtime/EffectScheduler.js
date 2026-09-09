@@ -67,18 +67,21 @@ export class EffectScheduler {
       const endTime = entry.cue.at + entry.cue.duration
       if (!entry.started && logicalTime >= entry.cue.at) {
         entry.started = true
+        entry.startedAt = logicalTime
         entry.startPending = true
         Promise.resolve(entry.handle.start()).then(() => {
           entry.startPending = false
           if (entry.completed || !entry.handle.active) return
           if (entry.cue.duration <= 0 || this.clock.now() >= endTime) {
             entry.completed = true
+            entry.completionMode = 'natural'
             return entry.handle.complete('natural-completion')
           }
         }).catch(() => { entry.startPending = false })
       }
       if (entry.started && !entry.startPending && !entry.completed && logicalTime >= endTime && entry.handle.status === 'running') {
         entry.completed = true
+        entry.completionMode = 'natural'
         Promise.resolve(entry.handle.complete('natural-completion')).catch(() => {})
       }
     }
@@ -117,7 +120,7 @@ export class EffectScheduler {
 
   settleSkippable(reason = 'scheduler-settle') {
     this._entries.forEach(entry => {
-      if (entry.handle?.skippable) entry.completed = true
+      if (entry.handle?.skippable && !entry.completed) { entry.completed = true; entry.completionMode = 'explicit-settlement' }
     })
     const result = this.registry.settleSkippable(reason)
     // Skip retires only skippable cues. A delayed non-skippable event still
@@ -144,6 +147,8 @@ export class EffectScheduler {
         cue_id: entry.cue.cue_id,
         action: entry.cue.action,
         at: entry.cue.at,
+        started_at: entry.startedAt ?? null,
+        completion_mode: entry.completionMode || null,
         duration: entry.cue.duration,
         status: entry.handle?.status || 'unsupported',
       })),

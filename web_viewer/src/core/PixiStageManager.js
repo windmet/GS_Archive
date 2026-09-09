@@ -632,6 +632,7 @@ export class PixiStageManager {
    */
   setScreenFade(type, color, duration, delay = 0, maxAlpha = 1, nowMilliseconds) {
     const token = ++this._screenFadeToken
+    this._screenFadeTween = null
     return new Promise(resolve => {
       if (!this._fadeOverlay || this._fadeOverlay.destroyed) {
         resolve()
@@ -655,7 +656,8 @@ export class PixiStageManager {
         resolve()
         return
       }
-      tweenOverlayFade({
+      // Retain timing for inspection; existing tokens still control cancellation.
+      this._screenFadeTween = tweenOverlayFade({
         overlay: this._fadeOverlay,
         token,
         isCurrent: t => t === this._screenFadeToken,
@@ -676,6 +678,7 @@ export class PixiStageManager {
 
   clearScreenFade() {
     this._screenFadeToken++
+    this._screenFadeTween = null
     if (!this._fadeOverlay || this._fadeOverlay.destroyed) return
     this._fadeOverlay.alpha = 0
     this._fadeOverlay.visible = false
@@ -711,7 +714,7 @@ export class PixiStageManager {
 
     const delayMs = Math.max(0, Number(delay || 0)) * 1000
     const durationMs = Math.max(0, Number(duration || 0)) * 1000
-    tweenOverlaySlide({
+    this._screenSlideTween = tweenOverlaySlide({
       overlay,
       token,
       isCurrent: t => t === this._screenSlideToken,
@@ -738,6 +741,7 @@ export class PixiStageManager {
 
   clearScreenSlide() {
     this._screenSlideToken++
+    this._screenSlideTween = null
     if (!this._slideOverlay || this._slideOverlay.destroyed) return
     this._slideOverlay.visible = false
     this._slideOverlay.x = 0

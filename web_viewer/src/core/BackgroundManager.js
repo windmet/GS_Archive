@@ -104,6 +104,7 @@ export class BackgroundManager {
       // stage callers retain wall-clock timing; loading still precedes fading.
       const nowMilliseconds = transition?.nowMilliseconds ?? (() => performance.now())
       const start = nowMilliseconds()
+      record.startedAtMilliseconds = start
       const tickerFn = () => {
         if (token !== this._bgTransitionToken) {
           this.app.ticker.remove(tickerFn)
