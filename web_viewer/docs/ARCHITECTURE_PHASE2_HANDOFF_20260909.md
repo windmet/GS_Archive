@@ -5,6 +5,13 @@
 本批仅核对现状、调整路线和保存交接，不启动长稳、不实现 D/E、不重编译或发布产物。
 用户将在新窗口继续；从本文件进入，不必重新开展全仓微修审计。
 
+## 最新执行调整（2026-09-09 用户补充）
+
+用户已明确将 pre-E 正式长稳后移。当前执行顺序为移动迷你手机门户 → D1 Reading →
+D2/F 阅读与演出往返 → E1 shadow；pre-E 在 E2 接管前补齐，不阻塞上述开发。
+完整边界与 Sekai 审计吸收见 [移动门户与 Reading 路线](MOBILE_PORTAL_READING_ROADMAP_20260909.md)。
+用户长期使用稳定的观察不改写正式长稳验收状态。以下长稳 protocol 保留，时序按本节更新。
+
 ## 1. 本次转向与历史文档的关系
 
 用户提供了以 `876816e` 为基线的新指导，并明确要求梳理现状、准备下一阶段。
@@ -21,7 +28,7 @@
 | E 状态投影 | entry/settled、clock、history 已有；无完整 projectStoryState/renderAt | 最高架构优先级：E1 纯 shadow projector，E2 再接管 renderer |
 | F feature ownership | 已到 F16；播放器进入/退出/准备/返回仍由 App 组合 | 下一刀是完整 Story playback controller，不再抽零散 helper |
 | G compiler | G1–G25；词表、文本身份、音频状态、严格投影已拆出 | 后续限定真实 RAW command 领域状态变换，不能宣布 G 完成 |
-| P2-B | 两次近期短回归，正式 2–4 小时长稳未完成 | 先补 pre-E 实音基线；失败保留证据，修复限定可复现 blocker |
+| P2-B | 两次近期短回归，正式 2–4 小时长稳未完成 | 按用户决定后移至 E2 接管前；不阻塞 M/D/E1，失败保留证据 |
 
 这里的冻结是停止主动扩展该线，不禁止 D/E 集成所必需的有证据改动。
 暂停 schema v3、Pinia/Vue Router、Story Catalog 扩容以及为了拆文件而继续拆 masterdata。
@@ -74,7 +81,7 @@
 
 ## 3. 新窗口的执行顺序与验收门槛
 
-### 首先：保存 pre-E 真实音频基线
+### 后移至 E2 前：保存 pre-E 真实音频基线
 
 执行依据：`../notes/03_audit/STORY_P2B_SOAK_PREFLIGHT_20260813.md`。
 先确认代码仍为冻结基线及实际服务归属，直接使用可用 Browser 入口。
@@ -103,7 +110,7 @@
 
 两文件均位于 `../notes/03_audit/`。本次没有新增长稳或浏览器验收。
 
-### 然后：D 的第一批独立交付
+### D 的第一批独立交付（不等待长稳）
 
 先选包含 dialogue/narration/choice 的小规模实际 scenario 样本，建立每 scenario
 按需 reading JSON 和生成/验证入口。示例 rows 字段为 step、speaker_id、text_ref、
@@ -149,7 +156,7 @@ E1 的结果先与现有 Runtime shadow 对照；纯测试通过不代表真实�
   范围/准备；复用现有 navigation 和 prepareScenario/useEpisodeQueue，不另造状态副本。
   保留路由恢复、快速切换旧响应失效、错误/卸载、同文件不同范围与 preview 行为。
 
-本计划允许独立模块开发，不要求使用多 Agent。优先关闭 baseline 缺口，再推进 D/E1；
+本计划允许独立模块开发，不要求使用多 Agent。先推进移动门户与 D/E1，E2 前关闭 baseline 缺口；
 G/F 不能继续挤占这两项交付。不要边录制基线边热更新功能代码。
 
 ## 4. 验证入口与交接范围
@@ -174,7 +181,8 @@ G/F 不能继续挤占这两项交付。不要边录制基线边热更新功能�
 新窗口可直接使用这段任务：
 
 > 阅读 docs/ARCHITECTURE_PHASE2_HANDOFF_20260909.md 与其指向的边界/验收文档，
-> 确认 checkout 后从 pre-E P2-B 基线开始；冻结 A、B1–B27、C1–C7，暂停微修审计。
+> 确认 checkout 后按 MOBILE_PORTAL_READING_ROADMAP_20260909.md 推进移动门户、D/E1；
+> 冻结 A、B1–B27、C1–C7，暂停微修审计。pre-E 后移至 E2 接管前。
 > 随后交付 D 独立 Reading artifact/consumer 和 E1 纯 shadow projector；F 下一刀
 > 是完整播放器编排，G 只做真实命令领域状态变换。Browser 能用就直接用。
 > 明确区分测试、短回归、长稳和人工审阅，不将交接计划当成已实现功能。

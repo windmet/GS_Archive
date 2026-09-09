@@ -114,7 +114,7 @@ query、编码文件名、口型、卡图 MIME/cache，另测越界与 standalon
 | F，推进中 | F1 分离 repository 请求/契约；F2 移出导航状态与投影；F3 统一异步导航有效性和恢复生命周期，见 `ARCHIVE_DATA_BOUNDARIES.md`、`ARCHIVE_NAVIGATION_BOUNDARY.md`；F4 语音预览/连续播放队列、F5 卡片筛选、F6 卡池目录、F7 偶像详情派生已独立，F8–F9 修复启动路由过期，F10 显式筛选取消旧导航，F11 剧情响应校验、F12 剧情准备独立，F13 按需数据发布/卸载保护独立，F14 启动收尾纳入页面导航版本，F15 额外剧情关联卡池返回来源，F16 组合目录/详情领域派生独立，其他 feature 组合仍待拆分 | 数据/请求回归、1,792 组导航投影 parity、可控异步竞态、域门禁及真实剧情进入/返回通过；桌面/平板/390px、慢网络和启动/过滤完整矩阵仍待完成 |
 | G，推进中 | 已完成 G1–G25：scenario 包与资源输入、RAW 证据分层、masterdata wire 和身份/故事/卡片/活动领域拆分；主卡片流程显式返回目录与详情。逐批边界见 `SCENARIO_PIPELINE_BOUNDARIES.md` | 旧新完整输出对照、语义测试及消费者回归证据见 G1–G22 与其后跨层回归；资源扫描与纯投影已分层；JSON 写出与公共选择已集中；CLI/编排已分层；生成任务已独立并按需读取资源；Node 编译工具已依赖 shared normalization，G19 纯文本身份规则独立，G20 严格投影归包，G21 仓库根模块/历史 CLI 入口对齐，G22 批量失败结果与退出状态明确，G23 命令词表独立，G24 音频状态变换与会话标记分离，G25 背景音频继承归音频模块；上游 publish 与 compiler 内部边界仍待推进，不能视为 G 完成 |
 
-2026-09-09 转向：先补 pre-E P2-B 实音基线，再交付 D 与 E1；E2 后续逐 channel 接管。
+2026-09-09 用户补充：pre-E P2-B 后移至 E2 接管前，不阻塞移动门户、D 与 E1。先交付迷你手机导航和独立阅读；详见 [移动门户与 Reading 路线](MOBILE_PORTAL_READING_ROADMAP_20260909.md)。
 D 从参考功能方向转为正式交付目标，仍需独立契约与消费者验收。F 下一刀为完整 Story
 playback orchestration；G 只推进 RAW command 领域状态变换。冻结 A/B/C，暂停主动
 B28+、catalog 扩容、外围机械拆分；不引入 schema v3、Pinia/Vue Router 或全量重编译。
