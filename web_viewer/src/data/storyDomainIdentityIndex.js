@@ -61,62 +61,12 @@ function allDomainMemberships(storyMaster) {
   return memberships
 }
 
-export function buildMainStoryDomainIdentity(storyMaster) {
-  const groups = sortedRows(storyMaster.main?.groups)
-  const chapters = sortedRows(storyMaster.main?.chapters)
-  const episodeRows = sortedRows(storyMaster.main?.episodes)
-  const logicalEntries = episodeRows.map(row => logicalEntry('main', row, '5'))
-  const entryById = new Map(logicalEntries.map(entry => [entry.id, entry]))
-
-  const collections = groups.map(group => {
-    const groupId = String(group['1'])
-    const collectionChapters = chapters
-      .filter(chapter => String(chapter['2']) === groupId)
-      .map(chapter => {
-        const chapterId = String(chapter['1'])
-        const entries = logicalEntries.filter(entry => entry.parentId === chapterId)
-        return {
-          id: `main-chapter:${chapterId}`,
-          masterId: chapterId,
-          label: String(chapter['3'] || ''),
-          title: String(chapter['9'] || '').trim(),
-          releaseAt: numeric(chapter['5']),
-          logicalEntryIds: entries.map(entry => entry.id),
-          logicalEntryCount: entries.length,
-          compiledFileCount: new Set(entries.map(entry => entry.compiledFile).filter(Boolean)).size,
-          source: sourceEvidence(chapter),
-        }
-      })
-
-    return {
-      id: `main:${groupId}`,
-      masterId: groupId,
-      title: String(group['2'] || ''),
-      releaseAt: numeric(group['4']),
-      chapterIds: collectionChapters.map(chapter => chapter.id),
-      chapterCount: collectionChapters.length,
-      logicalEntryCount: collectionChapters.reduce((sum, chapter) => sum + chapter.logicalEntryCount, 0),
-      compiledFileCount: new Set(collectionChapters.flatMap(chapter =>
-        chapter.logicalEntryIds.map(id => entryById.get(id)?.compiledFile),
-      ).filter(Boolean)).size,
-      isPlaceholder: collectionChapters.length === 0,
-      chapters: collectionChapters,
-      source: sourceEvidence(group),
-    }
-  })
-
-  return {
-    collections,
-    logicalEntries,
-    meta: {
-      collectionCount: collections.length,
-      placeholderCollectionCount: collections.filter(collection => collection.isPlaceholder).length,
-      chapterCount: chapters.length,
-      logicalEntryCount: logicalEntries.length,
-      resourceIdCount: new Set(logicalEntries.map(entry => entry.resourceId).filter(Boolean)).size,
-      compiledFileCount: new Set(logicalEntries.map(entry => entry.compiledFile).filter(Boolean)).size,
-    },
-  }
+export function buildMainStoryDomainIdentity(catalog) {
+  if (!catalog) return null
+  if (!catalog.mainIdentity) throw new Error('Main identity requires the named catalog')
+  // Catalog values are JSON; this also accepts Vue's read proxies without
+  // coupling the data module to Vue or returning mutable cache-owned objects.
+  return JSON.parse(JSON.stringify(catalog.mainIdentity))
 }
 
 function speakerByNumericId(speakerDictionary) {
@@ -374,6 +324,7 @@ function buildPlaybackIndex(domains) {
 
 export function buildStoryDomainIdentityIndex({
   storyMaster,
+  storyCatalog,
   idolUnit,
   speakerDictionary,
   birthdayStorySemantic,
@@ -381,7 +332,7 @@ export function buildStoryDomainIdentityIndex({
   if (!storyMaster) return null
   const memberships = allDomainMemberships(storyMaster)
   const domains = {
-    main: buildMainStoryDomainIdentity(storyMaster),
+    main: buildMainStoryDomainIdentity(storyCatalog),
     birthday: buildBirthdayDomain(storyMaster, idolUnit, speakerDictionary, memberships, birthdayStorySemantic),
     extra: buildExtraDomain(storyMaster),
   }
@@ -389,6 +340,7 @@ export function buildStoryDomainIdentityIndex({
     schemaVersion: 1,
     authority: {
       semanticIdentity: 'story_master_index',
+      mainIdentity: 'story_catalog.mainIdentity',
       birthdaySemantic: 'birthday_story_semantic_index',
       idolIdentity: 'idol_unit_dictionary',
       npcIdentity: 'speaker_dictionary',

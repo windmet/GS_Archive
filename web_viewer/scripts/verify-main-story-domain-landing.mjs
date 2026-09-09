@@ -7,7 +7,7 @@ import { readArchiveRoute } from '../src/core/archiveRoute.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const readText = relative => readFile(path.join(root, relative), 'utf8')
-const storyMaster = JSON.parse(await readText('public/data/masterdata/story_master_index.json'))
+const storyCatalog = JSON.parse(await readText('public/data/masterdata/story_catalog.json'))
 const [appSource, catalogSource] = await Promise.all([
   readText('src/App.vue'),
   readText('src/components/archive/ArchiveStoryCatalog.vue'),
@@ -18,7 +18,7 @@ assert.equal(route.view, 'story_catalog')
 assert.equal(route.storyType, 'main')
 assert.equal(route.storyMode, 'portal')
 
-const main = buildMainStoryDomainIdentity(storyMaster)
+const main = buildMainStoryDomainIdentity(storyCatalog)
 assert.equal(main.collections.length, 3)
 assert.deepEqual(main.collections.map(collection => collection.masterId), ['101', '102', '103'])
 assert.deepEqual(main.collections.map(collection => collection.chapterCount), [11, 11, 0])
@@ -26,7 +26,7 @@ assert.deepEqual(main.collections.map(collection => collection.logicalEntryCount
 assert.equal(main.collections[2].isPlaceholder, true)
 
 assert.match(appSource, /:main-domain="mainStoryDomain"/)
-assert.match(appSource, /buildMainStoryDomainIdentity\(storyMasterData\.value\)/)
+assert.match(appSource, /buildMainStoryDomainIdentity\(storyCatalogData\.value\)/)
 assert.match(
   appSource,
   /currentStoryMode\.value === 'portal' && currentStoryDomain\.value === 'main'/,

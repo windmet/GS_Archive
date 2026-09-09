@@ -15,6 +15,7 @@ const [storyMaster, birthdayStorySemantic, idolUnit, speakerDictionary] = await 
 
 const index = buildStoryDomainIdentityIndex({
   storyMaster,
+  storyCatalog: await readJson('public/data/masterdata/story_catalog.json'),
   birthdayStorySemantic,
   idolUnit,
   speakerDictionary,
@@ -23,6 +24,7 @@ const index = buildStoryDomainIdentityIndex({
 assert.equal(index.schemaVersion, 1)
 assert.deepEqual(index.authority, {
   semanticIdentity: 'story_master_index',
+  mainIdentity: 'story_catalog.mainIdentity',
   birthdaySemantic: 'birthday_story_semantic_index',
   idolIdentity: 'idol_unit_dictionary',
   npcIdentity: 'speaker_dictionary',

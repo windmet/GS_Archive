@@ -153,3 +153,26 @@ archive-data 与源代码构建通过（2471 modules，原有两个背景路径�
 
 统一 LF 后，JSON 从 2,334,120 增至 2,397,621 bytes，本地 gzip 从 163,284
 增至 166,545 bytes。不新增请求，不重编译剧情，不修改 publication ledger。
+
+## C5：主线域身份（2026-09-09）
+
+`mainIdentity` 由 Python 生成 collections、logicalEntries 和 meta，保留组/章/分段
+来源表与 offset、跨记录文件去重、空章节占位和统计。App 的 mainStoryDomain 改读
+命名目录；原主线 builder 移除数字字段解释，返回独立 JSON 副本，既兼容 Vue 响应式
+代理，也避免页面修改污染 repository 缓存。聚合身份索引新增显式 storyCatalog 输入，
+authority.mainIdentity 标明 `story_catalog.mainIdentity`；其他域仍来源于旧 master。
+
+冻结 `c32d867` 主线 builder，全量逐字段比较 3 章、22 话、204 条逻辑记录及全部
+source 字段。合成输入覆盖空章节、无效日期、孤立分段、同 ID 的 ASCII 资源名排序、
+大小写并列和两种 provenance 字段。另测 Vue reactive 输入、返回副本隔离；契约拒绝
+缺模型、计数不符、占位不符、丢失 source、章节顺序关系和未知逻辑条目引用。
+
+story-catalog、story-domain-identity、main-story-domain-landing、archive-data、
+story-collections 通过；源代码构建通过（2472 modules，两个原有背景路径提示）。
+浏览器 1280×720、noAudio=1：主线 3/22/204，第3章仍为 disabled 未公开；进入
+第二章显示 11/11 话、102/102 段，返回后恢复主线域，截图确认三张章节卡布局。
+本批未运行窄屏完整矩阵或实音长稳。
+
+LF JSON 从 2,397,621 增至 2,497,495 bytes，本地 gzip 从 166,545 增至
+173,611 bytes。旧剧情索引在 App 中仍供 extra/birthday 使用，暂不移除；没有新
+网络请求、剧情重编译、RAW 全量提取或 publication 修改。

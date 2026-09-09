@@ -11,6 +11,9 @@ import { buildStoryCollections } from '../src/data/storyCollections.js'
 import { buildExtraStoryDomainIdentity } from '../src/data/storyDomainIdentityIndex.js'
 import { buildEventStoryEpisodes } from '../src/data/eventStoryEpisodes.js'
 import { buildEventStoryEpisodes as legacyEventEpisodes } from '../fixtures/story-catalog/legacy-event-episodes-v0.mjs'
+import { buildMainStoryDomainIdentity as legacyMainIdentity } from '../fixtures/story-catalog/legacy-main-identity-v0.mjs'
+import { buildMainStoryDomainIdentity } from '../src/data/storyDomainIdentityIndex.js'
+import { reactive } from 'vue'
 
 function verifyCollections(master, artifact, catalog) {
   const options = { extraDomain: buildExtraStoryDomainIdentity(master) }
@@ -44,6 +47,8 @@ const generated = JSON.parse(execFileSync('python', [pipeline, '--input', master
 const artifact = read('story_catalog')
 assert.deepEqual(artifact, generated, 'committed catalog must match the production pipeline')
 verifyFileMetadata(master, generated)
+assert.deepEqual(buildMainStoryDomainIdentity(generated), legacyMainIdentity(master))
+assert.deepEqual(buildMainStoryDomainIdentity(reactive(generated)), legacyMainIdentity(master))
 for (const overlay of [null, presentation]) {
   const expected = legacy(master, overlay)
   const actual = buildStoryCatalog(generated, overlay)
@@ -71,6 +76,12 @@ for (const mutate of [
   value => { delete value.eventEpisodeStructure },
   value => { value.eventEpisodeStructure.push(value.eventEpisodeStructure[0]) },
   value => { value.eventEpisodeStructure[0].episodes[0].resourceId = null },
+  value => { delete value.mainIdentity },
+  value => { value.mainIdentity.meta.logicalEntryCount++ },
+  value => { value.mainIdentity.logicalEntries[0].source = null },
+  value => { value.mainIdentity.collections[0].isPlaceholder = true },
+  value => { value.mainIdentity.collections[0].chapterIds[0] = 'unknown-chapter' },
+  value => { value.mainIdentity.collections[0].chapters[0].logicalEntryIds[0] = 'unknown-entry' },
 ]) {
   const bad = structuredClone(generated); mutate(bad)
   assert.throws(() => validateStoryCatalog(bad))
@@ -83,6 +94,10 @@ const edge = JSON.parse(execFileSync('python', [pipeline, '--input', fixturePath
 const overlay = { by_file: { 'shared.json': { preplay_synopsis: { title: 'Overlay', text: 'Search overlay' }, playable_step_count: 0, playable_start_index: 3 } } }
 const edgeActual = buildStoryCatalog(edge, overlay)
 verifyFileMetadata(fixture, edge)
+assert.deepEqual(buildMainStoryDomainIdentity(edge), legacyMainIdentity(fixture))
+const mainCopy = buildMainStoryDomainIdentity(edge)
+mainCopy.collections[0].chapters.length = 0
+assert.deepEqual(buildMainStoryDomainIdentity(edge), legacyMainIdentity(fixture), 'consumer mutation must not change the cached catalog')
 verifyCollections(fixture, edge, edgeActual)
 assert.deepEqual(edgeActual, legacy(fixture, overlay))
 assert.equal(edgeActual.find(entry => entry.file === 'shared.json').exists, false)
@@ -90,6 +105,7 @@ assert.ok(edgeActual.some(entry => entry.id === 'missing:main:missing'))
 console.log('Story catalog edge cases: duplicates, cross-domain aliases, missing parents/files, late summaries, numeric titles and resource-like dates passed')
 console.log(`File metadata: ${generated.fileMetadata.entries.length} files and ${generated.fileMetadata.missingExtra.length} missing-extra rows match the legacy consumer`)
 console.log(`Collection structure: ${generated.collectionStructure.length} main/unit collections match legacy with and without presentation`)
+console.log('Main identity: full corpus and edge parity, source evidence, placeholders, reactive input and copy isolation passed')
 
 const eventFixture = { event_group_id: '8', event_id: 'fixture-event' }
 const eventStory = {

@@ -794,7 +794,7 @@ const storyCatalog = computed(() => buildStoryCatalog(storyCatalogData.value, st
 }))
 
 const mainStoryDomain = computed(() => (
-  storyMasterData.value ? buildMainStoryDomainIdentity(storyMasterData.value) : null
+  storyCatalogData.value ? buildMainStoryDomainIdentity(storyCatalogData.value) : null
 ))
 
 const currentSeasonalCampaign = computed(() => {
