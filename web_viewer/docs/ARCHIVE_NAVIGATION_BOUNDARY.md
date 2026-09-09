@@ -294,3 +294,20 @@ routes、startup-route、gasha-catalog 和 publicDir:false 构建通过；构建
 2026-09-09 内置浏览器 noAudio 实测作品 604 → 卡池 1300011 → 重新加载详情 →
 返回作品 604；筛选 growing_fes/q=FES 的列表进入同一卡池后返回，地址与搜索框
 保留筛选。直接打开无 parent 的卡池详情返回卡池列表。此为导航验收，不是实音或完整响应式验收。
+
+## F16：组合页面的领域派生
+
+`src/data/unitPage.js` 负责组合目录、代码/数字 ID 查找、前传和已确认归属的歌曲。
+成员名单由 manifest membership 选出，字典只补原有显示元数据；卡片摘要复用
+现有 selector，活动关系保留原 evidence 对象。App 只组合这些纯函数和页面 refs，
+currentArchiveUnitMembers 复用 currentArchiveUnitEntry，不再重复查找同一组合。
+
+verify:unit-page 已接入 source CI。冻结 eff79c7 的原 App 投影作为独立对照，
+逐项比较 16 组合/34 种 ID（含空值和缺失）下的完整目录、成员、卡片、活动、
+前传与歌曲结果；另验证 membership 优先、缺失关系、严格歌曲归属、排序和输入
+不变。导航 1792 用例、idol-page 及 publicDir:false 构建通过。
+
+2026-09-09 内置浏览器 noAudio：目录显示 16 个组合，Jupiter 为 3 成员/52 卡片/
+2 团活；详情成员、3 首歌曲、2 团活、2 属性团曲出演与 3 条组合剧情可见。
+实际进入 BRAND NEW FIELD 后返回 Jupiter，unit=01jup 恢复。未播放音频，
+不将该导航检查称为实音长稳或完整响应式验收。

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div id="story-viewer">
 
     <StoryReleaseSoakPanel v-if="RUNTIME_DEBUG" />
@@ -384,6 +384,7 @@
 <script setup>
 import { createLazyArchiveResource } from './data/lazyArchiveResource.js'
 import { prepareScenario } from './data/prepareScenario.js'
+import { buildUnitCatalog, resolveArchiveUnit, storiesForUnit, songsForUnit } from './data/unitPage.js'
 import { buildIdolProfile, buildIdolStats, eventsForIdol, songsForIdol } from './data/idolPage.js'
 import { buildGashaCatalog, buildGashaCategoryOptions, filterGashaCatalog, resolveGashaRelatedCards } from './data/gashaCatalog.js'
 import { filterArchiveCards } from './data/cardFilters.js'
@@ -429,7 +430,6 @@ import { loadArchiveData, loadCardDetailData, loadIdolCommunicationData } from '
 import {
   buildCardMap,
   buildCardRarityTabs,
-  buildUnitCardSummary,
   buildScenarioMetaByFile,
   buildStoryCatalog,
   cardsForCharacter,
@@ -990,54 +990,16 @@ function eventStoryIdolVisualUrl(idolCode) {
     )
 }
 
-const unitCatalogEntries = computed(() => (idolUnitData.value?.units || []).map(unit => {
-  const unitId = String(unit.unit_id)
-  const members = Object.entries(archiveManifestData.value?.unit_membership_by_idol || {})
-    .filter(([, evidence]) => String(evidence.unit_id) === unitId)
-    .map(([idolCode]) => ({ idol_code: idolCode, ...idolUnitData.value?.by_idol_code?.[idolCode] }))
-    .sort((a, b) => Number(a.idol_id || 0) - Number(b.idol_id || 0))
-  const cardStats = buildUnitCardSummary(cardMap.value, members.map(member => member.idol_code))
-  const eventRelations = archiveManifestData.value?.unit_event_relations_by_unit?.[unitId] || {
-    team_events: [],
-    attribute_event_appearances: [],
-    mixed_unit_appearances: [],
-  }
-  return {
-    unit,
-    members,
-    storyCount: storyCatalog.value.filter(entry => entry.domain === 'unit_story' && entry.unitId === unitId).length,
-    cardStats,
-    eventRelations,
-  }
+const unitCatalogEntries = computed(() => buildUnitCatalog(idolUnitData.value, {
+  manifest: archiveManifestData.value, cardMap: cardMap.value, stories: storyCatalog.value,
 }))
-
-const currentArchiveUnit = computed(() => (idolUnitData.value?.units || []).find(unit =>
-  String(unit.unit_code) === currentArchiveUnitCode.value || String(unit.unit_id) === currentArchiveUnitCode.value,
+const currentArchiveUnit = computed(() => resolveArchiveUnit(idolUnitData.value, currentArchiveUnitCode.value))
+const currentArchiveUnitEntry = computed(() => unitCatalogEntries.value.find(entry =>
+  String(entry.unit.unit_id) === String(currentArchiveUnit.value?.unit_id || ''),
 ) || null)
-
-const currentArchiveUnitMembers = computed(() => {
-  const id = String(currentArchiveUnit.value?.unit_id || '')
-  return unitCatalogEntries.value.find(entry => String(entry.unit.unit_id) === id)?.members || []
-})
-
-const currentArchiveUnitEntry = computed(() => {
-  const id = String(currentArchiveUnit.value?.unit_id || '')
-  return unitCatalogEntries.value.find(entry => String(entry.unit.unit_id) === id) || null
-})
-
-const currentArchiveUnitStories = computed(() => {
-  const id = String(currentArchiveUnit.value?.unit_id || '')
-  return storyCatalog.value
-    .filter(entry => entry.domain === 'unit_story' && entry.unitId === id)
-    .sort((a, b) => a.resourceId.localeCompare(b.resourceId))
-})
-
-const currentArchiveUnitSongs = computed(() => {
-  const unitId = Number(currentArchiveUnit.value?.unit_id || 0)
-  return Object.values(songCatalogData.value?.songs || {})
-    .filter(song => song.performance_mapping?.confirmed_unit?.unit_id === unitId)
-    .sort((left, right) => Number(left.song_id || 0) - Number(right.song_id || 0))
-})
+const currentArchiveUnitMembers = computed(() => currentArchiveUnitEntry.value?.members || [])
+const currentArchiveUnitStories = computed(() => storiesForUnit(currentArchiveUnit.value, storyCatalog.value))
+const currentArchiveUnitSongs = computed(() => songsForUnit(currentArchiveUnit.value, songCatalogData.value))
 
 function displayTitleForMeta(meta, fallbackFile) {
   const titles = meta?.titles?.filter(Boolean) || []
