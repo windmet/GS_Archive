@@ -1,5 +1,9 @@
 # D2：现有入口与逐句演出往返
 
+最新产品计划见 [Reader/Player 下一阶段](READER_PLAYER_NEXT_PHASE_20260909.md)：普通 Reader
+改为顶部唯一完整演出入口，逐句按钮退出 UI；本文件中的底层深链、版本校验和返回定位
+能力保留。以下是历史验收记录，不代表下一版仍应逐行展示工具按钮。
+
 2026-09-09；起点 6b3a52b，codex/archive-architecture-refactor。
 
 本批在 D1 的五份样本上完成 D2 首批闭环，沿用 F 的唯一 playback controller。

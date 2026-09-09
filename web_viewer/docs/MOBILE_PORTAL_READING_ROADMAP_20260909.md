@@ -1,5 +1,11 @@
 # 移动门户与 Reading 后续路线
 
+最新调整（核对 `9097cd8`）：以 [Reader/Player 下一阶段计划](READER_PLAYER_NEXT_PHASE_20260909.md)
+为当前执行顺序。先收口 Reader UI，再将文本身份/视觉身份分离与 v2 文档迁移合批；
+随后建立 StoryAssetPlan、分层预载、buffering 与 transport/cache 契约。
+下文逐句按钮、显式阅读书签等历史交付记录不再作为未来产品目标；定位能力继续保留。
+本轮仅更新计划，未实施这些改造；正式长稳继续后移。
+
 日期：2026-09-09。核对起点：a523db1，codex/archive-architecture-refactor。
 本文保留原始设计依据，并在下方汇总已交付状态。
 

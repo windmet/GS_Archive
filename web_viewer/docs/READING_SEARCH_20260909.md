@@ -1,5 +1,8 @@
 # D：篇内查找
 
+最新产品计划见 [Reader/Player 下一阶段 R1](READER_PLAYER_NEXT_PHASE_20260909.md)：保留
+篇内匹配与定位，入口改为按需展开并撤掉常驻 sticky 表单。以下为历史实现记录，当前尚未改 UI。
+
 起点 `9bee872`。Reader 增加当前分段查找、匹配行底色、上一处/下一处循环定位。
 查找使用已有 localization 生成的当前 primary/secondary 文本及可见说话人，
 不搜索隐藏角色身份，不请求其他分段，不加载媒体。NFKC、忽略空白及大小写
