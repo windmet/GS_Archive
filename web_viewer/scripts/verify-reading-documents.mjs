@@ -10,6 +10,21 @@ const manifest = await read('public/data/reading/manifest.json')
 validateReadingManifest(manifest)
 assert.equal(manifest.schema_version, 1)
 assert.equal(new Set(manifest.entries.map(e => e.document_id)).size, manifest.entries.length)
+const selection = await read('config/reading-samples.v1.json')
+const storyCatalog = await read('public/data/masterdata/story_catalog.json')
+const expectedIds = new Set(selection.samples.map(sample => sample.document_id))
+for (const sectionId of selection.main_collection_sections || []) {
+  const collection = storyCatalog.collectionStructure.find(s => s.domain === 'main' && s.sectionId === sectionId)
+  assert.ok(collection?.chapters.length, `selected main section ${sectionId} exists`)
+  for (const chapter of collection.chapters) for (const episode of chapter.episodes) {
+    expectedIds.add(episode.resourceId)
+    const entry = manifest.entries.find(e => e.document_id === episode.resourceId)
+    assert.ok(entry, `reading coverage: ${episode.resourceId}`)
+    assert.equal(entry.title, chapter.title)
+    assert.equal(entry.episode_label, episode.label)
+  }
+}
+assert.deepEqual(new Set(manifest.entries.map(e => e.document_id)), expectedIds)
 const documents = []
 for (const entry of manifest.entries) {
   const bytes = await fs.readFile(new URL(`../public/data/reading/${entry.file}`, import.meta.url))

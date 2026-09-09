@@ -16,6 +16,8 @@ export function validateReadingManifest(value) {
     requireValue(e.source_file == null || /^episodes\/[A-Za-z0-9_-]+\.json$/.test(e.source_file), 'source file')
     requireValue(STATUS.has(e.status) && Number.isInteger(e.row_count) && e.row_count >= 0, 'document status/count')
     requireValue(typeof e.logical_id === 'string' && typeof e.scenario_id === 'string', 'story identity')
+    requireValue(e.title == null || typeof e.title === 'string', 'presentation title')
+    requireValue(e.episode_label == null || typeof e.episode_label === 'string', 'presentation episode label')
   }
   return value
 }

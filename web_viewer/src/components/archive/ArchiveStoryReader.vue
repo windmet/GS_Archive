@@ -5,8 +5,8 @@
       <h1 id="reading-heading" ref="heading" tabindex="-1">{{ title }}</h1>
       <p class="reader-subtitle">{{ episodeLabel }}</p>
       <label class="reader-picker">分段<select :value="documentId" :disabled="state.status === 'loading'" @change="emit('select', $event.target.value)">
-        <option v-if="!state.entries.some(e => e.document_id === documentId)" :value="documentId">{{ documentId }}</option>
-        <option v-for="entry in state.entries" :key="entry.document_id" :value="entry.document_id">{{ entry.document_id }}</option>
+        <option v-if="!state.entries.some(e => e.document_id === documentId)" :value="documentId">{{ state.status === 'loading' ? '正在载入分段…' : '当前分段尚未收录' }}</option>
+        <option v-for="entry in state.entries" :key="entry.document_id" :value="entry.document_id">{{ [entry.title || '剧情标题待确认', entry.episode_label].filter(Boolean).join(' · ') }}{{ entry.status === 'ready' ? '' : '（暂不支持阅读）' }}</option>
       </select></label>
       <div class="reader-languages" role="group" aria-label="正文语言">
         <button v-for="item in modes" :key="item.id" :aria-pressed="mode === item.id" @click="emit('mode', item.id)">{{ item.label }}</button>
@@ -63,7 +63,7 @@ const localizationInput = computed(() => document.value ? ({
 const preferences = computed(() => ({ story_content_mode: props.mode, story_translation_locale: 'zh-CN', bilingual_primary: 'original' }))
 const localization = createStoryLocalization({ compiledData: localizationInput, storyPreferences: preferences })
 const title = computed(() => document.value?.presentation?.title || document.value?.rows.find(r => r.kind === 'title')?.source_text || '剧情阅读')
-const episodeLabel = computed(() => document.value?.presentation?.episode_label || props.documentId)
+const episodeLabel = computed(() => document.value?.presentation?.episode_label || '')
 const presentedRows = computed(() => (document.value?.rows || []).map(row => ({ row,
   avatar: readingAvatarEntity(row), view: localization.resolveUnit({ source: row.source_text,
     textRef: row.text_ref, speaker: readingPresentationSpeaker(row), inlineEntry: row.inline_translation }),

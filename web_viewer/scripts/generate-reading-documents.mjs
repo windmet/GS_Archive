@@ -9,9 +9,21 @@ const hash = bytes => `sha256:${createHash('sha256').update(bytes).digest('hex')
 const serialize = value => `${JSON.stringify(value, null, 2)}\n`
 const read = async file => JSON.parse(await fs.readFile(path.join(root, file), 'utf8'))
 const check = process.argv.includes('--check')
-const samples = (await read('config/reading-samples.v1.json')).samples
+const selection = await read('config/reading-samples.v1.json')
 const publications = (await read('public/data/authoritative_story_publications.json')).entries
 const catalog = await read('public/data/masterdata/story_catalog.json')
+const selected = new Map(selection.samples.map(sample => [sample.document_id, sample]))
+for (const sectionId of selection.main_collection_sections || []) {
+  const collection = catalog.collectionStructure.find(s => s.domain === 'main' && s.sectionId === sectionId)
+  if (!collection?.chapters.length) throw Error(`Missing published main collection: ${sectionId}`)
+  for (const chapter of collection.chapters) for (const episode of chapter.episodes) {
+    const sample = { document_id: episode.resourceId, logical_id: `story-collection:${chapter.file.replace(/\.json$/, '')}`, file: `episodes/${episode.resourceId}.json` }
+    const previous = selected.get(sample.document_id)
+    if (previous && JSON.stringify(previous) !== JSON.stringify(sample)) throw Error(`Conflicting reading selection: ${sample.document_id}`)
+    selected.set(sample.document_id, sample)
+  }
+}
+const samples = [...selected.values()].sort((a, b) => a.document_id.localeCompare(b.document_id))
 const entries = []
 const outputs = []
 for (const sample of samples) {
@@ -40,11 +52,13 @@ for (const sample of samples) {
   outputs.push([`public/data/reading/${file}`, output])
   entries.push({ document_id: document.document_id, logical_id: document.logical_id,
     scenario_id: document.scenario_id, file, schema_version: document.schema_version,
-    sha256: hash(output), source_sha256: document.source.sha256, source_file: document.source.file, status: document.status, row_count: document.rows.length })
+    sha256: hash(output), source_sha256: document.source.sha256, source_file: document.source.file, status: document.status, row_count: document.rows.length,
+    title: document.presentation.title, episode_label: document.presentation.episode_label })
 }
 outputs.push(['public/data/reading/manifest.json', serialize({ schema_version: 1, entries })])
 for (const [file, content] of outputs) await emit(file, content)
-console.log(`${check ? 'Verified' : 'Generated'} ${entries.length} reading documents: ${entries.map(e => `${e.document_id}=${e.status}`).join(', ')}`)
+const counts = entries.reduce((counts, entry) => ({ ...counts, [entry.status]: (counts[entry.status] || 0) + 1 }), {})
+console.log(`${check ? 'Verified' : 'Generated'} ${entries.length} reading documents: ${JSON.stringify(counts)}`)
 
 async function emit(file, content) {
   const target = path.join(root, file)
