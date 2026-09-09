@@ -4,7 +4,11 @@
 本批为路线整合，不代表页面、Reading 或 projector 已实现。
 
 后续进展：M 首批已实现并完成本地浏览器验收，见
-[移动门户交付记录](MOBILE_PORTAL_ACCEPTANCE_20260909.md)。D/E 尚未实现。
+[移动门户交付记录](MOBILE_PORTAL_ACCEPTANCE_20260909.md)。D/E 尚未完成。
+
+D1 进展：四份 ReadingDocument 样本、独立 manifest、来源校验与版本化 repository
+已建立，见 [Reading 契约](READING_DOCUMENT_CONTRACT_20260909.md)。Reader 页面与
+浏览器验收仍待接入；不能将数据层交付记为 D1 完成。D2/F、E 尚未实现。
 
 ## 决策与参考来源
 

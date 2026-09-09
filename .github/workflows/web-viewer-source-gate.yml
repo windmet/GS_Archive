@@ -70,6 +70,9 @@ jobs:
       - name: Verify localization runtime
         run: npm run verify:story-localization
 
+      - name: Verify reading artifacts and repository
+        run: npm run verify:reading
+
       - name: Verify translation contracts
         run: npm run verify:story-translations
 

@@ -4,6 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "generate:reading": "node scripts/generate-reading-documents.mjs",
+    "verify:reading": "node scripts/verify-reading-documents.mjs && node scripts/verify-reading-repository.mjs",
+    "verify:reading-sources": "node scripts/generate-reading-documents.mjs --check",
     "dev": "vite --configLoader native",
     "build": "vite build --configLoader native",
     "smoke": "vite build --configLoader native",
