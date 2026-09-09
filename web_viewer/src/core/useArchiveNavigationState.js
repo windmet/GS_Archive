@@ -8,6 +8,7 @@ export function useArchiveNavigationState() {
   const storyCollectionParentView = ref('')
   const songParentView = ref('')
   const eventParentView = ref('')
+  const gashaParentView = ref('')
   const homeSelectedId = ref('001tom')
   const homeSelectedCue = ref('')
   const homeSelectedCostume = ref('')
@@ -103,7 +104,9 @@ export function useArchiveNavigationState() {
             ? storyDetailParentView.value
             : (preservesStoryCollectionContext
                 ? storyCollectionParentView.value
-                : (view.value === 'song_detail' ? songParentView.value : ''))),
+                : (view.value === 'song_detail' ? songParentView.value
+                    : (view.value === 'gasha_detail' && gashaParentView.value === 'story_collection'
+                        ? gashaParentView.value : '')))),
     }
   }
   
@@ -113,6 +116,7 @@ export function useArchiveNavigationState() {
     storyCollectionParentView,
     songParentView,
     eventParentView,
+    gashaParentView,
     homeSelectedId,
     homeSelectedCue,
     homeSelectedCostume,

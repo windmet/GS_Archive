@@ -499,6 +499,7 @@ const {
   storyCollectionParentView,
   songParentView,
   eventParentView,
+  gashaParentView,
   homeSelectedId,
   homeSelectedCue,
   homeSelectedCostume,
@@ -1484,6 +1485,8 @@ async function applyArchiveRoute(route) {
       (route.view === 'player' && route.returnView === 'story_collection')
     ) ? (route.parentView || '') : ''
     currentGashaId.value = route.gasha || ''
+    gashaParentView.value = route.view === 'gasha_detail' && route.parentView === 'story_collection'
+      && route.storyType === 'extra' && route.storySection ? 'story_collection' : ''
     currentGashaCategory.value = route.gashaType || 'all'
     currentSongId.value = route.song || ''
     currentSongScope.value = route.songScope || 'all'
@@ -1690,10 +1693,7 @@ function goArchiveBack() {
     cards: goBackFromCards,
     card_detail: goBackToCards,
     gashas: goHome,
-    gasha_detail: () => {
-      currentGashaId.value = ''
-      commitView('gashas')
-    },
+    gasha_detail: goBackFromGasha,
     song_catalog: goHome,
     song_detail: () => {
       const parent = songParentView.value
@@ -1811,6 +1811,7 @@ function openArchiveStatus() {
 }
 
 function openGashaCatalog() {
+  gashaParentView.value = ''
   filterQuery.value = ''
   currentCategoryId.value = ''
   currentCharacterId.value = ''
@@ -2345,6 +2346,8 @@ function openCard(card) {
 
 function openGasha(gasha) {
   if (!gasha?.id) return
+  gashaParentView.value = view.value === 'story_collection' && currentStoryDomain.value === 'extra'
+    ? 'story_collection' : ''
   const preserveCatalogQuery = view.value === 'gashas'
   currentCategoryId.value = ''
   currentCharacterId.value = ''
@@ -2352,6 +2355,13 @@ function openGasha(gasha) {
   currentGashaId.value = String(gasha.id)
   if (!preserveCatalogQuery) filterQuery.value = ''
   commitView('gasha_detail')
+}
+
+function goBackFromGasha() {
+  const returnsToCollection = gashaParentView.value === 'story_collection' && currentStoryCollection.value
+  currentGashaId.value = ''
+  gashaParentView.value = ''
+  commitView(returnsToCollection ? 'story_collection' : 'gashas')
 }
 
 function openCardGasha(relation) {
