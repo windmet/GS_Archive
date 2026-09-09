@@ -30,11 +30,11 @@ schemas 19、public/data 279、notes 127、tools 11。它们是各目录 tracked
 | 层 | 当前入口/owner | 输出与消费者 | 主要维护问题 |
 | --- | --- | --- | --- |
 | 物理来源与配置 | `data_pipeline/archive_paths.py`、`scripts/lib/archive-sources.mjs` | RAW、masterdata、legacy、candidate/publish 路径 | 新配置与旧脚本硬编码并存 |
-| masterdata 解码与域推导 | `data_pipeline/masterdata_extract.py` | `public/data/masterdata` 中字典与索引 | wire parser、表扫描、各实体 builder、CLI 同文件 |
+| masterdata 解码与域推导 | `data_pipeline/masterdata_extract.py` | `public/data/masterdata` 中字典与索引 | wire、领域 builder、CLI 和生成任务已拆至 sidem_masterdata，旧入口保留兼容导出 |
 | 剧情编译 | `scenario_compiler.py` → `authoritative_scenario.py` | compatibility steps 或严格 v2 artifact | 命令解释、累计状态、文本证据、timeline、口型定位集中 |
 | 候选/发布 | `scripts/lib/authoritative-collection-*`、`raw-story-promotion.mjs`、`publication-ledger.mjs` | candidate、校验、发布、rollback、append-only ledger | 不能用普通批量重编译绕过 provenance |
 | 门户数据访问 | `src/data/ArchiveDataRepository.js`、`archiveDataContracts.js` | 按 key fetch/cache 与独立契约检查，供 App/selector 使用 | F1 已分离请求/契约并移出三类固定数量；其他产品仍待更完整深层契约 |
-| 门户域模型 | `archiveSelectors.js`、`storyCollections.js`、`idolCommunicationSelectors.js` 等 | 卡牌、剧情、角色与集合页面模型 | story selector 仍解释数字字段 |
+| 门户域模型 | `archiveSelectors.js`、`storyCollections.js`、`idolCommunicationSelectors.js` 等 | 卡牌、剧情、角色与集合页面模型 | C1–C7 已改用命名剧情 catalog；目录展示与其他实体关系仍由消费者组合 |
 | 导航与组合 | `src/App.vue`、`src/core/archiveRoute.js` | query URL、页面、返回/父级上下文 | root 持有实体、过滤、加载、播放器队列和导航状态 |
 | 剧情调度 | `StoryViewer.vue`、`useStoryRuntimeCues.js`、`StoryClock.js`、`SceneSnapshotStore.js` | entry/settled 状态、cue、历史和播放模式 | legacy 兼容与正式调度同处产品路径 |
 | 画面执行 | `SpineStage.vue`、`PixiStageManager.js` 及各 manager | Pixi/Spine、背景、镜头与屏幕 | Vue 异步舞台同步体量大，owner 迁移需行为证据 |
@@ -111,7 +111,7 @@ query、编码文件名、口型、卡图 MIME/cache，另测越界与 standalon
 | D | 独立 reading artifact/consumer（功能扩展） | 复用 speaker/text_ref/overlay；choice 与来源 step 保真；浏览器请求证明无 Pixi/Spine/audio 初始化；桌面/窄屏交互验收 |
 | E | Runtime 单一状态计划与 renderer adapter | 在 B 的证据上逐 channel 迁移；兼容留在显式边界；不要先删 normalizer；行为变化需真实媒体回归及长稳证据 |
 | F，推进中 | F1 分离 repository 请求/契约；F2 移出导航状态与投影；F3 统一异步导航有效性和恢复生命周期，见 `ARCHIVE_DATA_BOUNDARIES.md`、`ARCHIVE_NAVIGATION_BOUNDARY.md`；F4 语音预览/连续播放队列、F5 卡片筛选、F6 卡池目录、F7 偶像详情派生已独立，F8–F9 修复启动路由过期，F10 显式筛选取消旧导航，F11 剧情响应校验、F12 剧情准备独立，F13 按需数据发布/卸载保护独立，F14 启动收尾纳入页面导航版本，F15 额外剧情关联卡池返回来源，F16 组合目录/详情领域派生独立，其他 feature 组合仍待拆分 | 数据/请求回归、1,792 组导航投影 parity、可控异步竞态、域门禁及真实剧情进入/返回通过；桌面/平板/390px、慢网络和启动/过滤完整矩阵仍待完成 |
-| G，推进中 | 已完成 G1–G22：scenario 包与资源输入、RAW 证据分层、masterdata wire 和身份/故事/卡片/活动领域拆分；主卡片流程显式返回目录与详情。逐批边界见 `SCENARIO_PIPELINE_BOUNDARIES.md` | 旧新完整输出对照、语义测试及消费者回归证据见 G1–G18；资源扫描与纯投影已分层；JSON 写出与公共选择已集中；CLI/编排已分层；生成任务已独立并按需读取资源；Node 编译工具已依赖 shared normalization，G19 纯文本身份规则独立，G20 严格投影归包，G21 仓库根模块/历史 CLI 入口对齐，G22 批量失败结果与退出状态明确；上游 publish 与 compiler 内部边界仍待推进，不能视为 G 完成 |
+| G，推进中 | 已完成 G1–G22：scenario 包与资源输入、RAW 证据分层、masterdata wire 和身份/故事/卡片/活动领域拆分；主卡片流程显式返回目录与详情。逐批边界见 `SCENARIO_PIPELINE_BOUNDARIES.md` | 旧新完整输出对照、语义测试及消费者回归证据见 G1–G22 与其后跨层回归；资源扫描与纯投影已分层；JSON 写出与公共选择已集中；CLI/编排已分层；生成任务已独立并按需读取资源；Node 编译工具已依赖 shared normalization，G19 纯文本身份规则独立，G20 严格投影归包，G21 仓库根模块/历史 CLI 入口对齐，G22 批量失败结果与退出状态明确；上游 publish 与 compiler 内部边界仍待推进，不能视为 G 完成 |
 
 B 优先服务反复反查 RAW 的维护痛点；不急于引入新 schema v3 或把所有已有 v2
 产物重编译。D 是参考文档提出的功能方向，尚未实现，不应和行为保持的重构混为一谈。

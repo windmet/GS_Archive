@@ -434,3 +434,23 @@ compile_directory 原先逐文件打印错误后返回 None，CLI 在部分失�
 输入目录、全成功退出 0，以及 API 结构化结果和受控遍历错误。原 10 组冻结
 产物/入口回归通过。测试仅用临时小输入，没有批量编译真实档案。返回值是有意
 新增的 API 结果；成功产物、处理顺序和已成功文件不回滚的行为不变。
+
+## G19–G22 后的跨层回归（2026-09-09）
+
+代码基线 af762e4；本轮未修改生产代码或公共产物。扩大到以下本地 CI 命令：
+
+- verify:compiled-migration：文本证据增补允许，场景/voice/lip/cue/choice/episode
+  漂移拒绝；Python 原生严格候选及临时目录发布/备份/拒绝用例通过。
+- verify:raw-evidence-boundaries：RAW 延迟依赖、来源、分组/排序/碰撞、无效字节、
+  part 级语音歧义和 Unity identity 通过。
+- verify:story-spine-cues、verify:story-timing-semantics -- --source-only：编译路径
+  对照、角色就绪/取消/恢复、neck/tint 时钟和已发布长编舞时序通过。
+- verify:story-schema：严格 schema 与 15 个 ledger artifact 检查通过；运行时形状
+  扫描 10,326 scenarios、315,124 snapshots、175,600 cues、48,073 lip records，
+  1,214 snapshot shapes、488 nested shapes、37 action/payload shapes 通过。
+- verify:story-catalog：1,394 目录与有/无 presentation 的完整属性对照及新增领域
+  投影边界通过；verify:archive-data 的 26 产品、请求竞态、重试与卸载通过。
+
+所有命令终态 exit 0。此为本地针对重构影响范围的跨层回归，并非完整 CI 任务，
+更非 GitHub Actions 已运行。shape 扫描、临时发布测试不证明真实媒体呈现或正式
+发布。没有扩大 strict-v2 promotion，P2-B 实音长稳仍未完成。
