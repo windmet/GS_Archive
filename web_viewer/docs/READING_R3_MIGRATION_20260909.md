@@ -39,7 +39,21 @@ Browser 插件，桌面 1280×800 与手机 390×844。
 v1 拒绝、视觉步号不符、未知 presence、缺 performance、遗留行级 playback。
 构建主包 525.77 kB，既有 500 kB 阈值警告仍在。
 
-剩余验收：头像加载失败沿用组件现有 error→hidden 回退，本批未额外注入真实 404；
-有效中文译文加载时的实际页面还需在有译文样本上补验。电话/聊天策略、动态外观、未解析
-actor/model 仍按 R2 保守不显示，不能称全部头像覆盖完成。正式长稳继续后移。
-后续主线为 P1 资源计划与加载状态，以上 Reader 补验需一并保留在后续待办中。
+## 后续补验（基线 cc14b83）
+
+有效译文：正式 overlay `public/translations/zh-CN/scenarios/1_4_001_01.json` 与
+`1_4_001_01_d` 第 7 步 text_ref/source_hash 匹配。实际页面 translation 模式显示
+“？？？ / ……嗯，是我。”；bilingual 模式同时显示日文“……ああ、そうだけど。”和
+中文，DOM lang 分别为 ja-JP、zh-CN。此样本 visual.reason=medium-policy-unavailable，
+不作为头像可见用例；头像保密仍由序章第 12 步证明。
+
+404 回退：在独立 Vite 服务 `127.0.0.1:5176` 上运行相同 app/config/source，只在服务端
+拦截 `/assets/idols/icons/image_chara_icon_047shu.png` 返回 HTTP 404。未改正式图片、
+reading JSON 或译文。服务输出确认命中 Controlled avatar HTTP 404；实际 Reader 第 12 步
+img.hidden=true、naturalWidth=0、DOM 宽度=0，姓名/正文不变，截图确认无破图与遗留头像空位。
+这一项证明现有 error→hidden 分支可用，不表示自动重试或占位头像功能已实现。
+验收后按进程命令行与端口核实，仅停止该临时服务；5175 原开发服务 PID 33944 保持运行。
+
+截图保存在本机 visualization 目录：`reader-valid-bilingual.png`、`reader-avatar-404.png`。
+这两项剩余补验已完成。电话/聊天策略、动态外观、未解析 actor/model 仍按 R2 保守不显示，
+不能称全部头像覆盖完成。正式长稳继续后移。后续主线为 P1 资源计划与加载状态。

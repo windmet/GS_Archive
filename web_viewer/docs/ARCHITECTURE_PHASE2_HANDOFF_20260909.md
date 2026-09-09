@@ -4,7 +4,7 @@
 
 用户在 `9097cd8` 后提供 Reader/Full Player 审阅及“名字保密与视觉呈现分离”的补充。
 已核对源码并形成 [下一阶段计划](READER_PLAYER_NEXT_PHASE_20260909.md)。**R1 首批已交付，
-R2/R3 主迁移已交付，接下来做 P1–P5 加载契约并补齐 Reader 剩余验收。**
+R2/R3 主迁移及 404/有效译文补验已完成，接下来做 P1–P5 加载契约。**
 暂不继续以 E1 零散通道增量替代这两条产品主线；E1 既有成果和未支持范围保留。
 逐句播放能力保留但已退出普通 UI，显式书签 UI 与 Reader 存储调用已撤下；reading_row/返回定位保留。
 见 [R1 验收](READING_R1_ACCEPTANCE_20260909.md)。ReadingDocument v2 已交付，StoryAssetPlan 未实现；长稳仍后移。
