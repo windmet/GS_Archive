@@ -69,6 +69,7 @@ for (const bad of [response(null, { ok: false, status: 404 }), response(null, { 
 {
   const { repo, requests } = setup()
   const pending = repo.loadArchiveData()
+  assert.ok(requests.every(request => !request.url.includes('story_master_index.json')), 'startup must not request the retired browser input')
   assert.equal(requests.length, Object.keys(ARCHIVE_SOURCES).length)
   for (const request of requests) request.resolve(request.url === ARCHIVE_SOURCES.compiledIndex
     ? response({ categories: [] }) : response(null, { ok: false, status: 503 }))

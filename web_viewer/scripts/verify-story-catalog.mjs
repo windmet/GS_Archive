@@ -15,6 +15,8 @@ import { buildMainStoryDomainIdentity as legacyMainIdentity } from '../fixtures/
 import { buildMainStoryDomainIdentity } from '../src/data/storyDomainIdentityIndex.js'
 import { reactive } from 'vue'
 import { buildExtraStoryDomainIdentity as legacyExtraIdentity } from '../fixtures/story-catalog/legacy-domain-identity-v0.mjs'
+import { buildBirthdayStoryDomainIdentity as legacyBirthdayIdentity } from '../fixtures/story-catalog/legacy-domain-identity-v0.mjs'
+import { buildBirthdayStoryDomainIdentity } from '../src/data/storyDomainIdentityIndex.js'
 
 function verifyCollections(master, artifact, catalog) {
   const options = { extraDomain: buildExtraStoryDomainIdentity(artifact) }
@@ -52,6 +54,7 @@ assert.deepEqual(artifact, generated, 'committed catalog must match the producti
 verifyFileMetadata(master, generated)
 assert.deepEqual(buildMainStoryDomainIdentity(generated), legacyMainIdentity(master))
 assert.deepEqual(buildMainStoryDomainIdentity(reactive(generated)), legacyMainIdentity(master))
+assert.deepEqual(buildBirthdayStoryDomainIdentity(reactive(generated)), legacyBirthdayIdentity(master))
 for (const overlay of [null, presentation]) {
   const expected = legacy(master, overlay)
   const actual = buildStoryCatalog(generated, overlay)
@@ -88,6 +91,9 @@ for (const mutate of [
   value => { delete value.extraIdentity },
   value => { value.extraIdentity.groups[0].source = null },
   value => { value.extraIdentity.logicalEntries[0].seriesId = 1 },
+  value => { delete value.birthdayIdentity },
+  value => { value.birthdayIdentity.logicalEntries[0].domainMemberships = ['unknown'] },
+  value => { value.birthdayIdentity.logicalEntries[0].birthdaySemantics = [] },
 ]) {
   const bad = structuredClone(generated); mutate(bad)
   assert.throws(() => validateStoryCatalog(bad))
@@ -101,6 +107,19 @@ const overlay = { by_file: { 'shared.json': { preplay_synopsis: { title: 'Overla
 const edgeActual = buildStoryCatalog(edge, overlay)
 verifyFileMetadata(fixture, edge)
 assert.deepEqual(buildMainStoryDomainIdentity(edge), legacyMainIdentity(fixture))
+assert.deepEqual(buildBirthdayStoryDomainIdentity(edge), legacyBirthdayIdentity(fixture))
+const birthdayIdols = { by_numeric_id: { '1': { idol_code: '001tom', display_name: 'Fixture idol' } } }
+const birthdayOverride = { by_episode_id: { '77': { subject_numeric_id: null, announcement_ids: [9] } }, announcements: [{ id: 9, text: 'Fixture announcement' }] }
+for (const semantic of [null, birthdayOverride]) {
+  assert.deepEqual(buildBirthdayStoryDomainIdentity(reactive(edge), birthdayIdols, null, semantic),
+    legacyBirthdayIdentity(fixture, birthdayIdols, null, semantic))
+}
+assert.equal(buildBirthdayStoryDomainIdentity(edge, birthdayIdols).logicalEntries[0].subject.kind, 'idol')
+assert.deepEqual(buildBirthdayStoryDomainIdentity(edge, birthdayIdols).logicalEntries[0].announcements, [])
+const birthdayOverridden = buildBirthdayStoryDomainIdentity(edge, birthdayIdols, null, birthdayOverride)
+assert.equal(birthdayOverridden.logicalEntries[0].subject.kind, 'shared')
+assert.equal(birthdayOverridden.logicalEntries[0].announcements.length, 1)
+assert.throws(() => buildBirthdayStoryDomainIdentity(fixture), /named catalog/)
 const mainCopy = buildMainStoryDomainIdentity(edge)
 mainCopy.collections[0].chapters.length = 0
 assert.deepEqual(buildMainStoryDomainIdentity(edge), legacyMainIdentity(fixture), 'consumer mutation must not change the cached catalog')

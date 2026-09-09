@@ -77,9 +77,6 @@ export function validateArchivePayload(key, payload) {
   if (key === 'cardDetailIndex' && (!payload.cards_by_resource_id || !payload.skills_by_id || !payload.costumes_by_key)) {
     throw new Error('cardDetailIndex is missing normalized card detail dictionaries')
   }
-  if (key === 'storyMaster' && !payload.main && !payload.idol_story) {
-    throw new Error('storyMaster has no recognized story families')
-  }
   if (key === 'birthdayStorySemantic' && !validBirthday(payload)) {
     throw new Error('birthdayStorySemantic must include consistent chapter, section, episode and announcement relations')
   }

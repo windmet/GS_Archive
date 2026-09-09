@@ -3,27 +3,9 @@ import {
   resolveExtraStoryGasha,
 } from './extraStoryTaxonomy.js'
 
-const DOMAIN_ROWS = Object.freeze([
-  ['main', data => data.main?.episodes],
-  ['event', data => data.event?.episodes],
-  ['unit_story', data => data.unit_story?.episodes],
-  ['idol_story', data => data.idol_story?.episodes],
-  ['card_scenarios', data => data.card_scenarios],
-  ['work', data => data.work],
-  ['birthday', data => data.birthday],
-  ['extra', data => data.extra?.episodes],
-])
-
 function numeric(value) {
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : 0
-}
-
-function sortedRows(rows) {
-  return [...(rows || [])].sort((left, right) =>
-    numeric(left?.['1']) - numeric(right?.['1']) ||
-    String(left?.resource_id || '').localeCompare(String(right?.resource_id || '')),
-  )
 }
 
 function sourceEvidence(row) {
@@ -31,34 +13,6 @@ function sourceEvidence(row) {
     table: numeric(row?._source?.table || row?._top_field),
     offset: numeric(row?._source?.offset || row?._offset),
   }
-}
-
-function logicalEntry(domain, row, releaseField) {
-  return {
-    id: `${domain}:${row?.['1'] || row?.resource_id || 'missing'}`,
-    domain,
-    masterId: String(row?.['1'] || ''),
-    parentId: String(row?.['2'] || ''),
-    title: String(row?.['3'] || ''),
-    releaseAt: numeric(row?.[releaseField]),
-    resourceId: String(row?.resource_id || ''),
-    compiledFile: String(row?.compiled_file || ''),
-    compiledExists: row?.compiled_exists !== false && Boolean(row?.compiled_file),
-    source: sourceEvidence(row),
-  }
-}
-
-function allDomainMemberships(storyMaster) {
-  const memberships = new Map()
-  for (const [domain, rowsFor] of DOMAIN_ROWS) {
-    for (const row of rowsFor(storyMaster) || []) {
-      const file = String(row?.compiled_file || '')
-      if (!file) continue
-      if (!memberships.has(file)) memberships.set(file, new Set())
-      memberships.get(file).add(domain)
-    }
-  }
-  return memberships
 }
 
 export function buildMainStoryDomainIdentity(catalog) {
@@ -77,9 +31,9 @@ function speakerByNumericId(speakerDictionary) {
 }
 
 function birthdaySubject(row, idolUnit, speakersByNumericId) {
-  const semantics = row?.birthday_semantics
+  const semantics = row?.birthdaySemantics
   const hasAuthoritativeSubject = semantics && Object.hasOwn(semantics, 'subject_numeric_id')
-  const resourceId = String(row?.resource_id || '')
+  const resourceId = String(row?.resourceId || '')
   const match = resourceId.match(/^1_(?:2|7|8)_(\d{3})_/)
   const numericId = hasAuthoritativeSubject
     ? (Number.isInteger(semantics.subject_numeric_id) ? String(semantics.subject_numeric_id) : '')
@@ -137,9 +91,9 @@ function birthdaySubject(row, idolUnit, speakersByNumericId) {
 }
 
 function birthdaySeries(row) {
-  const semantics = row?.birthday_semantics || {}
-  const parentId = String(row?.['2'] || '')
-  const resourceId = String(row?.resource_id || '')
+  const semantics = row?.birthdaySemantics || {}
+  const parentId = String(row?.parentId || '')
+  const resourceId = String(row?.resourceId || '')
   const chapterId = String(semantics.chapter_id || parentId.slice(0, 3))
   return {
     id: `birthday-series:${chapterId}:${resourceId.split('_').slice(0, 2).join('_')}`,
@@ -153,14 +107,14 @@ function birthdaySeries(row) {
   }
 }
 
-function buildBirthdayDomain(storyMaster, idolUnit, speakerDictionary, memberships, semanticIndex = null) {
+function buildBirthdayDomain(catalog, idolUnit, speakerDictionary, semanticIndex = null) {
+  if (!catalog?.birthdayIdentity) throw new Error('Birthday identity requires the named catalog')
   const speakersByNumericId = speakerByNumericId(speakerDictionary)
   const announcementsById = new Map((semanticIndex?.announcements || [])
     .map(announcement => [Number(announcement.id), announcement]))
-  const logicalEntries = sortedRows(storyMaster.birthday).map(row => {
-    const semantics = semanticIndex?.by_episode_id?.[String(row?.['1'] || '')] || null
-    const semanticRow = semantics ? { ...row, birthday_semantics: semantics } : row
-    const entry = logicalEntry('birthday', semanticRow, '4')
+  const logicalEntries = JSON.parse(JSON.stringify(catalog.birthdayIdentity.logicalEntries)).map(({ birthdaySemantics, ...entry }) => {
+    const semantics = semanticIndex?.by_episode_id?.[entry.masterId] || null
+    const semanticRow = { ...entry, birthdaySemantics: semantics || birthdaySemantics }
     return {
       ...entry,
       subject: birthdaySubject(semanticRow, idolUnit, speakersByNumericId),
@@ -168,7 +122,6 @@ function buildBirthdayDomain(storyMaster, idolUnit, speakerDictionary, membershi
       announcements: (semantics?.announcement_ids || [])
         .map(id => announcementsById.get(Number(id)))
         .filter(Boolean),
-      domainMemberships: [...(memberships.get(entry.compiledFile) || [])].sort(),
     }
   })
 
@@ -212,13 +165,12 @@ function buildBirthdayDomain(storyMaster, idolUnit, speakerDictionary, membershi
   }
 }
 
-export function buildBirthdayStoryDomainIdentity(storyMaster, idolUnit, speakerDictionary, semanticIndex = null) {
-  if (!storyMaster) return null
+export function buildBirthdayStoryDomainIdentity(catalog, idolUnit, speakerDictionary, semanticIndex = null) {
+  if (!catalog) return null
   return buildBirthdayDomain(
-    storyMaster,
+    catalog,
     idolUnit,
     speakerDictionary,
-    allDomainMemberships(storyMaster),
     semanticIndex,
   )
 }
@@ -313,23 +265,21 @@ function buildPlaybackIndex(domains) {
 }
 
 export function buildStoryDomainIdentityIndex({
-  storyMaster,
   storyCatalog,
   idolUnit,
   speakerDictionary,
   birthdayStorySemantic,
 } = {}) {
-  if (!storyMaster) return null
-  const memberships = allDomainMemberships(storyMaster)
+  if (!storyCatalog) return null
   const domains = {
     main: buildMainStoryDomainIdentity(storyCatalog),
-    birthday: buildBirthdayDomain(storyMaster, idolUnit, speakerDictionary, memberships, birthdayStorySemantic),
+    birthday: buildBirthdayDomain(storyCatalog, idolUnit, speakerDictionary, birthdayStorySemantic),
     extra: buildExtraDomain(storyCatalog),
   }
   return {
     schemaVersion: 1,
     authority: {
-      semanticIdentity: 'story_master_index',
+      semanticIdentity: 'story_catalog',
       mainIdentity: 'story_catalog.mainIdentity',
       extraIdentity: 'story_catalog.extraIdentity',
       birthdaySemantic: 'birthday_story_semantic_index',

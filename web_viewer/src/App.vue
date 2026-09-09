@@ -541,7 +541,6 @@ const cardIndexData = ref(null)
 const gashaIndexData = ref(null)
 const eventIndexData = ref(null)
 const cardDetailData = ref(null)
-const storyMasterData = ref(null)
 const storyCatalogData = ref(null)
 const birthdayStorySemanticData = ref(null)
 const extraStoryVisualIndexData = ref(null)
@@ -894,7 +893,7 @@ const extraStoryDomain = computed(() => buildExtraStoryDomainIdentity(
   extraStoryVisualIndexData.value,
 ))
 const birthdayStoryDomain = computed(() => buildBirthdayStoryDomainIdentity(
-  storyMasterData.value,
+  storyCatalogData.value,
   idolUnitData.value,
   speakerDictionaryData.value,
   birthdayStorySemanticData.value,
@@ -2638,7 +2637,6 @@ onMounted(async () => {
   cardIndexData.value = data.cardIndex
   gashaIndexData.value = data.gashaIndex
   eventIndexData.value = data.eventIndex
-  storyMasterData.value = data.storyMaster
   storyCatalogData.value = data.storyCatalog
   birthdayStorySemanticData.value = data.birthdayStorySemantic
   extraStoryVisualIndexData.value = data.extraStoryVisualIndex

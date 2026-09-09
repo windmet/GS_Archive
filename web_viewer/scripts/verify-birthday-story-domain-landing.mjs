@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { buildStoryCatalog } from '../src/data/archiveSelectors.js'
 import { buildStoryCollections } from '../src/data/storyCollections.js'
 import { buildBirthdayStoryDomainIdentity } from '../src/data/storyDomainIdentityIndex.js'
+import { buildBirthdayStoryDomainIdentity as legacyBirthday } from '../fixtures/story-catalog/legacy-domain-identity-v0.mjs'
 import { readArchiveRoute } from '../src/core/archiveRoute.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -36,7 +37,10 @@ assert.equal(collectionRoute.storyType, 'birthday')
 assert.equal(collectionRoute.storySection, '001tom')
 assert.equal(collectionRoute.query, '冬馬')
 
-const birthday = buildBirthdayStoryDomainIdentity(master, idolUnit, speakerDictionary, birthdaySemantic)
+const catalogData = await readJson('public/data/masterdata/story_catalog.json')
+const birthday = buildBirthdayStoryDomainIdentity(catalogData, idolUnit, speakerDictionary, birthdaySemantic)
+assert.deepEqual(birthday, legacyBirthday(master, idolUnit, speakerDictionary, birthdaySemantic))
+assert.deepEqual(buildBirthdayStoryDomainIdentity(catalogData, idolUnit, speakerDictionary), legacyBirthday(master, idolUnit, speakerDictionary))
 assert.equal(birthday.meta.collectionCount, 51)
 assert.equal(birthday.meta.logicalEntryCount, 181)
 assert.equal(birthday.meta.resolvedIdolEntryCount, 176)

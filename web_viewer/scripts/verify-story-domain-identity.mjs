@@ -6,15 +6,13 @@ import { buildStoryDomainIdentityIndex } from '../src/data/storyDomainIdentityIn
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const readJson = relative => readFile(path.join(root, relative), 'utf8').then(JSON.parse)
-const [storyMaster, birthdayStorySemantic, idolUnit, speakerDictionary] = await Promise.all([
-  readJson('public/data/masterdata/story_master_index.json'),
+const [birthdayStorySemantic, idolUnit, speakerDictionary] = await Promise.all([
   readJson('public/data/masterdata/birthday_story_semantic_index.json'),
   readJson('public/data/masterdata/idol_unit_dictionary.json'),
   readJson('public/data/masterdata/speaker_dictionary.json'),
 ])
 
 const index = buildStoryDomainIdentityIndex({
-  storyMaster,
   storyCatalog: await readJson('public/data/masterdata/story_catalog.json'),
   birthdayStorySemantic,
   idolUnit,
@@ -23,7 +21,7 @@ const index = buildStoryDomainIdentityIndex({
 
 assert.equal(index.schemaVersion, 1)
 assert.deepEqual(index.authority, {
-  semanticIdentity: 'story_master_index',
+  semanticIdentity: 'story_catalog',
   mainIdentity: 'story_catalog.mainIdentity',
   extraIdentity: 'story_catalog.extraIdentity',
   birthdaySemantic: 'birthday_story_semantic_index',

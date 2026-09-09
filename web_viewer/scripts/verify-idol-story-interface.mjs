@@ -8,10 +8,9 @@ import { buildBirthdayStoryDomainIdentity } from '../src/data/storyDomainIdentit
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const readJson = relative => readFile(path.join(root, relative), 'utf8').then(JSON.parse)
-const [episodes, mobile, master, birthdaySemantic, presentation, idols, speakers] = await Promise.all([
+const [episodes, mobile, birthdaySemantic, presentation, idols, speakers] = await Promise.all([
   readJson('public/data/masterdata/idol_episode_index.json'),
   readJson('public/data/masterdata/mobile_archive_index.json'),
-  readJson('public/data/masterdata/story_master_index.json'),
   readJson('public/data/masterdata/birthday_story_semantic_index.json'),
   readJson('public/data/masterdata/story_presentation_index.json'),
   readJson('public/data/masterdata/idol_unit_dictionary.json'),
@@ -19,7 +18,7 @@ const [episodes, mobile, master, birthdaySemantic, presentation, idols, speakers
 ])
 
 const catalog = buildStoryCatalog(await readJson('public/data/masterdata/story_catalog.json'), presentation)
-const birthdayDomain = buildBirthdayStoryDomainIdentity(master, idols, speakers, birthdaySemantic)
+const birthdayDomain = buildBirthdayStoryDomainIdentity(await readJson('public/data/masterdata/story_catalog.json'), idols, speakers, birthdaySemantic)
 const options = buildIdolStoryOptions(episodes, idols)
 assert.equal(options.length, 49, 'the personal-story selector must expose all 49 idols')
 

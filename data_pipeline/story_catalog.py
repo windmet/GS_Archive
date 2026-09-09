@@ -211,6 +211,23 @@ def build_main_identity(data):
                      "compiledFileCount": len({entry["compiledFile"] for entry in entries if entry["compiledFile"]})}}
 
 
+def build_birthday_identity(data):
+    memberships = {}
+    for domain in DOMAINS:
+        rows = data.get(domain, []) if domain in ("card_scenarios", "work", "birthday") else (data.get(domain) or {}).get("episodes", [])
+        for row in rows:
+            file = row.get("compiled_file")
+            if file:
+                memberships.setdefault(file, set()).add(domain)
+    entries = []
+    for row in identity_rows(data.get("birthday", [])):
+        entry = logical_identity_entry("birthday", row, "4")
+        entry["domainMemberships"] = sorted(memberships.get(entry["compiledFile"], set()))
+        entry["birthdaySemantics"] = row.get("birthday_semantics")
+        entries.append(entry)
+    return {"logicalEntries": entries}
+
+
 def build_story_catalog(data):
     def rows(domain, kind):
         return (data.get(domain) or {}).get(kind, [])
@@ -298,7 +315,7 @@ def build_story_catalog(data):
     return {"schema_version": 1, "source_digest": source_digest(data), "entries": list(entries.values()),
             "fileMetadata": build_file_metadata(data), "collectionStructure": build_collection_structure(data),
             "eventEpisodeStructure": build_event_episode_structure(data), "mainIdentity": build_main_identity(data),
-            "extraIdentity": build_extra_identity(data)}
+            "extraIdentity": build_extra_identity(data), "birthdayIdentity": build_birthday_identity(data)}
 
 
 def main():

@@ -5,7 +5,6 @@ const ARCHIVE_SOURCES = {
   cardIndex: '/data/masterdata/card_index.json',
   gashaIndex: '/data/masterdata/gasha_index.json',
   eventIndex: '/data/masterdata/event_index.json',
-  storyMaster: '/data/masterdata/story_master_index.json',
   storyCatalog: '/data/masterdata/story_catalog.json',
   birthdayStorySemantic: '/data/masterdata/birthday_story_semantic_index.json',
   extraStoryVisualIndex: '/data/masterdata/extra_story_visual_index.json',

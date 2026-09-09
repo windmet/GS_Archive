@@ -201,3 +201,35 @@ story-collections、archive-data 及源代码构建通过（2473 modules；原�
 
 LF JSON 从 2,497,495 增至 2,531,628 bytes，本地 gzip 从 173,611 增至
 177,346 bytes。不新增请求，不重编译或发布剧情；实音长稳和完整窄屏矩阵仍未完成。
+
+## C7：生日来源身份与旧索引请求退场（2026-09-09）
+
+`birthdayIdentity.logicalEntries` 由 pipeline 提供来源字段、排序、跨域文件归属及
+来源行自带的 birthdaySemantics。浏览器继续通过命名 semantic index 解释 subject、
+series 和公告，并关联 idol/speaker 字典；外部语义覆盖来源内嵌语义的优先级保持。
+公共篇的显式 null subject 不退回资源 ID 推断，来源内嵌公告 ID 不擅自升级为外部公告。
+
+App 删除 storyMasterData；repository 移除 story_master_index.json 的启动请求及
+对应旧契约分支。聚合身份入口只接收 storyCatalog，authority.semanticIdentity
+随之更新。src 不再有 storyMaster/story_master_index 的消费者；原 JSON 继续供
+离线生成、审计和历史对照使用，没有删除或修改其内容。其他字典及生日语义索引仍需加载，
+这不等于所有 masterdata 产品或所有资源语义都已从前端移除。
+
+旧生日实现冻结在 d58d4a0 oracle 中：全量 51 个集合、181 条记录、2 个公共篇、
+29 个跨域文件在有/无语义索引时逐字段一致。测试覆盖 reactive 输入、内嵌 subject
+与外部 null override、公告来源、非法域成员和语义类型。story-catalog、birthday
+域入口、story-domain-identity、archive-data、story-collections、idol-story-interface
+通过；个人故事仍为 49 偶像、491 分段、29 条 after-story 关联。source-only baseline
+与源代码构建通过（2474 modules；原两个背景路径提示仍在）。
+
+真实浏览器请求验收：本地 5186 转发到 5175，但对旧索引路径固定返回 503。经该入口
+打开 birthday 目录及 producer_birthday_common 集合，AX 确认公共篇两期入口可见。
+最终日志 2,078 条请求，story_catalog.json 2 次，story_master_index.json 0 次。
+日志保存于 `C:\Users\windm\.codex\evidence\sidem-story-runtime\2026-09-09\c7-catalog-cutover-requests.jsonl`。
+临时代理退出码 0，页面恢复到 5175。期间截图显示 319px 宽生日目录；随后重新读取
+AX 确认最终为公共篇集合，不将该截图描述为公共篇截图或完整移动端验收。
+
+本批 LF 目录从 2,531,628 增至 2,630,969 bytes，gzip 从 177,346 增至
+183,840 bytes；移除的旧索引工作树文件为 3,390,805 bytes。这是请求体原始大小，
+不声称等于实际压缩网络流量。实音长稳、完整窄屏矩阵和 C6 记录的卡池返回上下文缺口
+仍未完成；未进行 RAW 全量提取、剧情重编译或 publication。
