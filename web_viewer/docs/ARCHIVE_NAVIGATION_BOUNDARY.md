@@ -1,5 +1,9 @@
 # 导航状态边界
 
+> 2026-09-09 阶段转向（基线 876816e）：当前推进顺序见
+> [第二阶段交接](ARCHITECTURE_PHASE2_HANDOFF_20260909.md)。
+> 以下批次记录保留为历史证据；未完成项不再默认按旧顺序继续。
+
 2026-09-08，重构 F2。`src/core/useArchiveNavigationState.js` 现在拥有原 App 中
 39 个 URL/返回上下文 ref，以及 `currentArchiveRoute()` 投影。App 解构的是原 ref，
 不是值快照；模板、computed、watcher 和现有导航动作仍读写同一份状态。

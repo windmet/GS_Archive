@@ -1,5 +1,9 @@
 # Scenario Python 管线边界
 
+> 2026-09-09 阶段转向（基线 876816e）：当前推进顺序见
+> [第二阶段交接](ARCHITECTURE_PHASE2_HANDOFF_20260909.md)。
+> 以下批次记录保留为历史证据；未完成项不再默认按旧顺序继续。
+
 G1 将旧单文件拆到 `data_pipeline/sidem_scenario/`：
 
 | 文件 | 职责 |

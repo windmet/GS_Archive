@@ -1,7 +1,8 @@
 # SideM_Archived 全仓结构评估与重构入口
 
-日期：2026-09-08。状态：结构与关键链路审阅完成，第一批资源服务重构完成；
-整体迁移尚未完成。外部《仓库阶段与可维护性评估》仅作问题线索，以下以本地代码为依据。
+初评日期：2026-09-08；路线更新：2026-09-09（代码基线 876816e）。
+状态：A、C 本阶段完成，B1–B27 阶段性冻结；D/E 成为下一阶段主交付，整体迁移尚未完成。
+当前执行顺序与新窗口交接见 [第二阶段交接](ARCHITECTURE_PHASE2_HANDOFF_20260909.md)。外部《仓库阶段与可维护性评估》仅作问题线索，以下以本地代码为依据。
 本次覆盖目录边界、tracked source、主要生产链路和验证入口；不声称逐条审阅全部
 RAW、每篇剧情或所有历史 note，也不把结构审阅称为真实媒体验收。
 
@@ -105,16 +106,18 @@ query、编码文件名、口型、卡图 MIME/cache，另测越界与 standalon
 
 | 批次 | 具体结果 | 验收要求 |
 | --- | --- | --- |
-| A，已实现 | 共享资源解析，独立 HTTP 回归 | 配置、查找顺序、Vite/standalone 请求等价；保留 transport 差异 |
-| B，推进中 | 剧情语义与状态 ownership characterization；B1 拆 Spine cue 执行，B2 补模型发布归属，B3 统一元数据等待与 entry readiness；B4 统一背景加载/过渡取消记录，B5 背景渐变、B6 镜头缓动、B7 屏幕转场读取剧情时钟，B8 切步保留倍速/暂停，B9 注册表归属移交、B10 部分 settle 保留剩余事件、B11 颈部完成兜底读取剧情时钟、B12 tint 时钟/取消归属、B13 屏幕特效延迟/销毁清理、B14 活跃粒子即时释放、B15 overlay/抖动缓动清理、B16 屏幕特效延迟/运动统一剧情时钟、B17 背景 blur/color 时钟、B18 持续背景失败/alpha 清理、B19 累计播放时长与持续背景跨步时钟、B20 首段等待异步舞台、B21 背景叠层/滤镜销毁、B22 持续背景效果独立管理器、B23 屏幕特效独立管理器、B24 特效纹理失败重试、B25 图片纹理加载终态清理、B26 兼容角色滑动剧情时钟、B27 兼容入场颜色/透明度时钟，见 `STORY_STATE_OWNERSHIP.md` | RAW fixture → 两种编译路径 → Spine adapter 已接通；模型替换/离场/慢元数据竞态回归及三角色浏览器冒烟通过；背景 pending 取消、连续请求回退、暂停/恢复/倍速测试通过；其余舞台属性中间态与跨 channel 状态仍需推进 |
-| C，已实现 | Python 单一生成命名 Story catalog；C2 文件标题/摘要与缺失 extra、C3 主线/前传集合关系、C4 活动分段关系、C5 主线域身份、C6 额外剧情来源身份、C7 生日来源身份也移至 pipeline；浏览器目录、文件列表和集合消费者已迁移，见 `STORY_CATALOG_CONTRACT.md` | 1,394 条目录有/无 presentation 的全部属性 parity、缺失/合并 fixture、域门禁与桌面分类→前传入口通过；C7 已移除浏览器旧剧情索引请求；原产物保留为离线输入 |
-| D | 独立 reading artifact/consumer（功能扩展） | 复用 speaker/text_ref/overlay；choice 与来源 step 保真；浏览器请求证明无 Pixi/Spine/audio 初始化；桌面/窄屏交互验收 |
-| E | Runtime 单一状态计划与 renderer adapter | 在 B 的证据上逐 channel 迁移；兼容留在显式边界；不要先删 normalizer；行为变化需真实媒体回归及长稳证据 |
+| A，本阶段完成/冻结 | 共享资源解析，独立 HTTP 回归 | 配置、查找顺序、Vite/standalone 请求等价；保留 transport 差异 |
+| B，B1–B27 阶段性完成/冻结 | 剧情语义与状态 ownership characterization；B1 拆 Spine cue 执行，B2 补模型发布归属，B3 统一元数据等待与 entry readiness；B4 统一背景加载/过渡取消记录，B5 背景渐变、B6 镜头缓动、B7 屏幕转场读取剧情时钟，B8 切步保留倍速/暂停，B9 注册表归属移交、B10 部分 settle 保留剩余事件、B11 颈部完成兜底读取剧情时钟、B12 tint 时钟/取消归属、B13 屏幕特效延迟/销毁清理、B14 活跃粒子即时释放、B15 overlay/抖动缓动清理、B16 屏幕特效延迟/运动统一剧情时钟、B17 背景 blur/color 时钟、B18 持续背景失败/alpha 清理、B19 累计播放时长与持续背景跨步时钟、B20 首段等待异步舞台、B21 背景叠层/滤镜销毁、B22 持续背景效果独立管理器、B23 屏幕特效独立管理器、B24 特效纹理失败重试、B25 图片纹理加载终态清理、B26 兼容角色滑动剧情时钟、B27 兼容入场颜色/透明度时钟，见 `STORY_STATE_OWNERSHIP.md` | RAW fixture → 两种编译路径 → Spine adapter 已接通；模型替换/离场/慢元数据竞态回归及三角色浏览器冒烟通过；背景 pending 取消、连续请求回退、暂停/恢复/倍速测试通过；剩余中间态与跨 channel 重建转入 E；停止主动 B28+ 微修审计，P2-B 仍待完成 |
+| C，本阶段完成/冻结 | Python 单一生成命名 Story catalog；C2 文件标题/摘要与缺失 extra、C3 主线/前传集合关系、C4 活动分段关系、C5 主线域身份、C6 额外剧情来源身份、C7 生日来源身份也移至 pipeline；浏览器目录、文件列表和集合消费者已迁移，见 `STORY_CATALOG_CONTRACT.md` | 1,394 条目录有/无 presentation 的全部属性 parity、缺失/合并 fixture、域门禁与桌面分类→前传入口通过；C7 已移除浏览器旧剧情索引请求；原产物保留为离线输入 |
+| D，下一阶段正式交付/尚未实现 | 独立按需 reading artifact/consumer；不扩充总 catalog | 复用 speaker/text_ref/overlay；choice 与来源 step 保真；浏览器请求证明无 Pixi/Spine/audio 初始化；桌面/窄屏交互验收 |
+| E，最高架构优先级/尚未实现 | E1 纯 shadow 状态投影器，E2 才逐 channel 接管 renderer | 在 B 的证据上逐 channel 迁移；兼容留在显式边界；不要先删 normalizer；行为变化需真实媒体回归及长稳证据 |
 | F，推进中 | F1 分离 repository 请求/契约；F2 移出导航状态与投影；F3 统一异步导航有效性和恢复生命周期，见 `ARCHIVE_DATA_BOUNDARIES.md`、`ARCHIVE_NAVIGATION_BOUNDARY.md`；F4 语音预览/连续播放队列、F5 卡片筛选、F6 卡池目录、F7 偶像详情派生已独立，F8–F9 修复启动路由过期，F10 显式筛选取消旧导航，F11 剧情响应校验、F12 剧情准备独立，F13 按需数据发布/卸载保护独立，F14 启动收尾纳入页面导航版本，F15 额外剧情关联卡池返回来源，F16 组合目录/详情领域派生独立，其他 feature 组合仍待拆分 | 数据/请求回归、1,792 组导航投影 parity、可控异步竞态、域门禁及真实剧情进入/返回通过；桌面/平板/390px、慢网络和启动/过滤完整矩阵仍待完成 |
 | G，推进中 | 已完成 G1–G25：scenario 包与资源输入、RAW 证据分层、masterdata wire 和身份/故事/卡片/活动领域拆分；主卡片流程显式返回目录与详情。逐批边界见 `SCENARIO_PIPELINE_BOUNDARIES.md` | 旧新完整输出对照、语义测试及消费者回归证据见 G1–G22 与其后跨层回归；资源扫描与纯投影已分层；JSON 写出与公共选择已集中；CLI/编排已分层；生成任务已独立并按需读取资源；Node 编译工具已依赖 shared normalization，G19 纯文本身份规则独立，G20 严格投影归包，G21 仓库根模块/历史 CLI 入口对齐，G22 批量失败结果与退出状态明确，G23 命令词表独立，G24 音频状态变换与会话标记分离，G25 背景音频继承归音频模块；上游 publish 与 compiler 内部边界仍待推进，不能视为 G 完成 |
 
-B 优先服务反复反查 RAW 的维护痛点；不急于引入新 schema v3 或把所有已有 v2
-产物重编译。D 是参考文档提出的功能方向，尚未实现，不应和行为保持的重构混为一谈。
+2026-09-09 转向：先补 pre-E P2-B 实音基线，再交付 D 与 E1；E2 后续逐 channel 接管。
+D 从参考功能方向转为正式交付目标，仍需独立契约与消费者验收。F 下一刀为完整 Story
+playback orchestration；G 只推进 RAW command 领域状态变换。冻结 A/B/C，暂停主动
+B28+、catalog 扩容、外围机械拆分；不引入 schema v3、Pinia/Vue Router 或全量重编译。
 每批可以独立提交/回滚；不得通过重写历史破坏已发布记录的 ancestry。
 
 ## 6. 第一批共享资源解析验证记录（历史）
