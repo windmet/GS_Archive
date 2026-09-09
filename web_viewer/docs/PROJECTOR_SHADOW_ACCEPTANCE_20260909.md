@@ -71,3 +71,33 @@ E1 首批三个输出的纯查询→运行时读取→差异报告闭环已具�
 不支持的背景类型/重叠切换及其它未投影通道；不能以首批 match 覆盖这些限制。
 下一阶段先收口 E1 支持范围与 pre-E 冻结基线，再决定 E2 每个 channel 的接管门槛。
 本批不是 pre-E 长稳 PASS、听感验收、发布或全体重构完成。
+
+## 角色 RGB tint 运行时只读对照
+
+起点 `05faa2f`。新增 scope `spine-rgb-tint` 与逐角色结果。读取真实 Spine tint、
+现有颜色 tween 的起点/末次采样时间，以及 SpineStage 对当前 step 的 readiness。
+SpineCueRuntime 只给可扩展的真实 tween handle 加 cue 身份标记，不改变插值、
+起点或生命周期；未返回对象的 manager 实现仍可正常执行。
+
+缺失模型、未 ready、未观察到实际起点、无法归属当前 cue 的颜色 tween、
+主动提前结算、失败/取消均明确 not-comparable。非法/未支持投影也不算匹配。
+纯读取不能启动 tween、推进时钟或修改管理器。默认 soak 采集仍不调用 projector。
+整数 RGB 只要差 1 就报告差异，不使用扩大后的视觉近似容差。
+
+机械测试覆盖上述边界、延迟起点、RGB 差异及不变性；verify:story-projector、
+verify:story-spine-cues 与 source-only 构建通过。构建保留既有 500 kB 警告。
+
+Browser/IAB 在本 checkout 的 5175（PID 33944）实测 `1_4_001_05_j`：
+
+- step 3 的三位角色静态 tint 匹配。
+- step 4 中间态：逻辑采样 0.3154 秒，实际末次绘制 0.3086 秒，两个 tint 有差异。
+  各 tween 真实起点 0.1136/0.1138 秒已在报告中保留。时间差约 7 ms，仍记录为
+  difference；不把推测的帧滞后作为自动通过理由。
+- step 4 结束状态和 step 5 结束状态：三位角色全部匹配。
+- 从 step 5 用“上一段”回到 step 4：resolved entry / suppressed，三位角色匹配。
+- 正常路径无 console error；未启动长稳录制。
+
+仓库外证据：`C:/Users/windm/.codex/evidence/sidem-tint-shadow/2026-09-09/` 的
+`tint-middle-difference.json`、`tint-settled.json`、`tint-next-step.json`、
+`tint-history-restore.json`。本批未证明全部中间帧匹配，也未覆盖 alpha、骨骼姿势、
+过滤器或像素级合成。它完成 tint 查询到真实读取/差异报告的闭环，E2 仍未接管。

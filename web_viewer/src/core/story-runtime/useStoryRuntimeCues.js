@@ -137,7 +137,9 @@ export function useStoryRuntimeCues({
     if (shadowBasis.source !== compiledData.value || shadowBasis.stepIndex !== currentStepIndex.value || managerFrame != null) return { status: 'not-comparable', reason: 'navigation-pending' }
     getNormalizedStep()
     const manager = getManager()
-    const report = captureProjectorShadow({ scenario: normalizedScenario, stepIndex: currentStepIndex.value, runtime: scheduler.inspect(), manager, context: shadowBasis.context })
+    const expectedStep = getStageStep()
+    const report = captureProjectorShadow({ scenario: normalizedScenario, stepIndex: currentStepIndex.value, runtime: scheduler.inspect(), manager, context: shadowBasis.context,
+      isSpineReady: id => spineStageRef.value?.isSpineReady?.(id, expectedStep) === true })
     return manager !== shadowBasis.manager
       ? { ...report, status: 'not-comparable', reason: 'stage-manager-replaced', observed_comparison: report.status } : report
   }

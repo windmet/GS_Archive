@@ -22,6 +22,9 @@ export function readProjectorActual(manager) {
       target: transition?.newBgId || null } : null,
     camera: usable(container) ? { scale: container.scale.x, x: container.x, y: container.y } : null,
     screen: { fade: readPlane(manager._fadeOverlay, 'fade'), wipe: readPlane(manager._slideOverlay, 'wipe') },
+    spineTints: Object.fromEntries(Object.entries(manager.spineInstances || {}).filter(([, entry]) => usable(entry.spine))
+      .map(([id, entry]) => [id, { tint: entry.spine.tint ?? 0xFFFFFF,
+        timing: timing(manager._spineColorTweens?.[id]), cue_id: manager._spineColorTweens?.[id]?.projectorCueId || null }])),
   }
 }
 function differences(expected, actual, path = '', output = []) {
@@ -41,7 +44,7 @@ function comparablePlane(plane, kind) {
 }
 
 /** Read-only diagnostic adapter. It samples, never advances, settles or restores Runtime. */
-export function captureProjectorShadow({ scenario, stepIndex, runtime, manager, context = {} }) {
+export function captureProjectorShadow({ scenario, stepIndex, runtime, manager, context = {}, isSpineReady = () => false }) {
   if (!manager || manager._destroyed || !runtime?.clock || !scenario?.steps?.[stepIndex]) return { status: 'not-comparable', reason: 'runtime-not-ready' }
   const time = runtime.clock.time
   const actual = readProjectorActual(manager)
@@ -58,6 +61,11 @@ export function captureProjectorShadow({ scenario, stepIndex, runtime, manager, 
     const observedStart = actual.timing[kind]?.started_at
     const latest = [...entries].reverse().find(e => e.action === action && Number.isFinite(e.started_at))
     if (latest && knownIds.has(latest.cue_id) && Number.isFinite(observedStart) && observedStart >= latest.started_at) starts[latest.cue_id] = observedStart
+  }
+  for (const observed of Object.values(actual.spineTints)) {
+    const dispatched = entries.find(e => e.cue_id === observed.cue_id && e.action === 'spine.visual.tint')
+    const start = observed.timing?.started_at
+    if (dispatched && knownIds.has(dispatched.cue_id) && Number.isFinite(dispatched.started_at) && Number.isFinite(start) && start >= dispatched.started_at) starts[dispatched.cue_id] = start
   }
   const basis = { ...context, ...(context.cuePolicy !== 'suppressed' ? { startedAt: starts } : {}) }
   let expected
@@ -85,10 +93,25 @@ export function captureProjectorShadow({ scenario, stepIndex, runtime, manager, 
     const delta = differences(wanted, observed)
     samples[channel] = { status: delta.length ? 'difference' : 'match', differences: delta }
   }
+  const tintSamples = expected.spineTints.entries.map(tint => {
+    const observed = actual.spineTints[tint.id]
+    const related = entries.filter(e => e.action === 'spine.visual.tint' && step.cues.find(c => c.cue_id === e.cue_id)?.target === tint.id)
+    let reason = tint.status !== 'projected' ? 'unsupported-projection' : null
+    if (!observed || !isSpineReady(tint.id)) reason = 'spine-not-ready'
+    else if (related.some(e => e.completion_mode === 'explicit-settlement')) reason = 'explicit-settlement-requires-resolved-entry'
+    else if (related.some(e => ['failed', 'cancelled'].includes(e.status))) reason = 'cue-failed-or-cancelled'
+    else if (related.some(e => e.status === 'scheduled' && time >= e.at)) reason = 'cue-awaiting-dispatch'
+    else if (observed.timing && !related.some(e => e.cue_id === observed.cue_id)) reason = 'unattributed-tint-transition'
+    else if (related.some(e => !['settled', 'scheduled'].includes(e.status)) && !observed.timing) reason = 'tint-start-not-observed'
+    if (reason) return { id: tint.id, status: 'not-comparable', reason }
+    const delta = differences({ tint: tint.tint }, { tint: observed.tint })
+    return { id: tint.id, status: delta.length ? 'difference' : 'match', differences: delta }
+  })
+  samples.spineTints = { status: tintSamples.some(s => s.status === 'difference') ? 'difference' : tintSamples.some(s => s.status === 'not-comparable') ? 'not-comparable' : 'match', entries: tintSamples }
   return {
     shadow_version: 1, scenario_id: scenario.scenario_id || null,
     viewport: { width: manager.width, height: manager.height },
-    scope: ['background-mix', 'camera-stage', 'screen-overlays'], status: Object.values(samples).some(s => s.status === 'difference') ? 'difference'
+    scope: ['background-mix', 'camera-stage', 'screen-overlays', 'spine-rgb-tint'], status: Object.values(samples).some(s => s.status === 'difference') ? 'difference'
       : Object.values(samples).some(s => s.status === 'not-comparable') ? 'partial' : 'match',
     step_index: stepIndex, step_id: step.step_id, time, clock_state: runtime.clock.state,
     numeric_tolerance: .001, sampling: 'read-only-between-frames',

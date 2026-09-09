@@ -52,6 +52,30 @@ const restored = capture({ scenario: { schema_version: 2, steps: [{ ...scenario.
 assert.equal(restored.status, 'match')
 assert.equal(capture({ manager: null }).reason, 'runtime-not-ready')
 
+const tintScenario = structuredClone(scenario)
+tintScenario.steps[0].entry_snapshot.spines = [{ id: '001tom', idol_color: '#FFFFFF' }]
+tintScenario.steps[0].cues.push({ cue_id: 'tint', action: 'spine.visual.tint', target: '001tom', at: .5, duration: 2, payload: { value: '#000000' } })
+const tintRuntime = structuredClone(runtime)
+tintRuntime.clock.time = 3
+tintRuntime.entries.push({ cue_id: 'tint', action: 'spine.visual.tint', at: .5, duration: 2, started_at: .5, status: 'settled', completion_mode: 'natural' })
+const tintManager = { ...manager, spineInstances: { '001tom': { spine: { tint: 0 } } } }
+const tintCapture = overrides => capture({ scenario: tintScenario, runtime: tintRuntime, manager: tintManager, isSpineReady: () => true, ...overrides }).channels.spineTints
+assert.equal(tintCapture().status, 'match')
+assert.equal(tintCapture({ isSpineReady: () => false }).entries[0].reason, 'spine-not-ready')
+assert.equal(tintCapture({ manager: { ...tintManager, spineInstances: {} } }).entries[0].reason, 'spine-not-ready')
+assert.equal(tintCapture({ manager: { ...tintManager, spineInstances: { '001tom': { spine: { tint: 1 } } } } }).status, 'difference', 'integer RGB mismatch must remain visible')
+const activeTint = structuredClone(tintRuntime)
+activeTint.clock.time = 2
+activeTint.entries.at(-1).status = 'running'
+assert.equal(tintCapture({ runtime: activeTint }).entries[0].reason, 'tint-start-not-observed')
+const observedTint = { ...tintManager, spineInstances: { '001tom': { spine: { tint: 0x6C6C6C } } },
+  _spineColorTweens: { '001tom': { startedAtMilliseconds: 1500, sampledAtMilliseconds: 2000, projectorCueId: 'tint' } } }
+assert.equal(tintCapture({ runtime: activeTint, manager: observedTint }).status, 'match', 'use actual tween start after readiness delay')
+assert.equal(tintCapture({ runtime: activeTint, manager: { ...observedTint, _spineColorTweens: { '001tom': { startedAtMilliseconds: 1500 } } } }).entries[0].reason, 'unattributed-tint-transition')
+const tintBefore = JSON.stringify({ tintScenario, activeTint, observedTint })
+tintCapture({ runtime: activeTint, manager: observedTint })
+assert.equal(JSON.stringify({ tintScenario, activeTint, observedTint }), tintBefore)
+
 let wall = 0
 const clock = new StoryClock({ nowMilliseconds: () => wall })
 const scheduler = new EffectScheduler({ clock, requestFrame: () => 1, cancelFrame: () => {} })

@@ -102,6 +102,7 @@ export function createSpineCueHandle(cue, { step } = {}, {
       manager.stopSpineNeckAnim?.(target, cue.cue_id)
     } else if (cue.action === 'spine.visual.tint') {
       tintTween = manager.setSpineColor?.(target, payload.value, duration, 0, nowMilliseconds)
+      if (tintTween && typeof tintTween === 'object' && Object.isExtensible(tintTween)) tintTween.projectorCueId = cue.cue_id
     }
   }
   const performWhenReady = (duration, options) => {
