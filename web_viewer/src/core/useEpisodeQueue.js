@@ -31,5 +31,6 @@ export function useEpisodeQueue() {
     cursor.value += 1
     return current.value
   }
-  return { current, hasNext, start, restore, next, clear }
+  function peekNext() { return hasNext.value ? entries.value[cursor.value + 1] : null }
+  return { current, hasNext, start, restore, next, peekNext, clear }
 }

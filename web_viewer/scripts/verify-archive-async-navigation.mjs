@@ -6,6 +6,7 @@ import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigatio
 import { buildCardVoicePreviewScenario } from '../src/data/cardVoicePreview.js'
 import { useEpisodeQueue } from '../src/core/useEpisodeQueue.js'
 import { prepareScenario } from '../src/data/prepareScenario.js'
+import { useStoryPlaybackController } from '../src/core/useStoryPlaybackController.js'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const functionSource = (start, end) => app.slice(app.indexOf(start), app.indexOf(end, app.indexOf(start)))
@@ -40,10 +41,15 @@ function setup() {
     console: { error: (...args) => errors.push(args) },
   })
   context.prepareScenario = (name, options) => prepareScenario(name, { ...options, fetchImpl: (...args) => context.fetch(...args) })
+  context.playbackController = useStoryPlaybackController({ state: context, navigation, queue: context.episodeQueue,
+    loadPlayer: () => context.storyViewerLoader(), preloadAssets: (...args) => context.Preloader.preloadScenario(...args),
+    prepare: (...args) => context.prepareScenario(...args), syncRoute: () => context.syncArchiveRoute(),
+    returnTo: destination => context.commitView(destination), onError: (...args) => context.console.error(...args),
+  })
   const production = vm.runInContext([
     functionSource('function syncArchiveRoute(', 'function groupsForRoute('),
     functionSource('async function applyArchiveRoute(', 'function goHome('),
-    functionSource('function restoreEpisodeQueue(', 'function loadPlaybackEpisode('),
+    functionSource('function playbackEpisodes(', 'function openEventCard('),
     functionSource('async function openStoryCatalog(', 'function openExternalStoryResources('),
     functionSource('async function openSpineLab(', 'async function openChibiStage('),
     functionSource('async function openVoicePreview(', 'function openGroup('),
@@ -269,5 +275,16 @@ for (const response of [
   assert.equal(ready, false, 'asset completion alone must not publish an unready player')
   player.resolve()
   assert.equal(await pending, scenario, 'preparation preserves the decoded scenario object')
+}
+{
+  const t = setup()
+  const failedRestore = t.restore({ view: 'player', scenario: 'missing.json' })
+  t.requests[0].resolve({ ok: false, status: 404 })
+  await failedRestore
+  assert.equal(t.state.view.value, 'story_catalog', 'failed direct player route must leave a usable page')
+  assert.equal(t.context.currentScenario.value, null)
+  assert.ok(t.context.playbackController.error.value)
+  t.commit('home')
+  assert.equal(t.context.playbackController.error.value, '')
 }
 console.log('Archive async navigation: preparation boundary, intent races, explicit filters, HTTP/shape failures and obsolete response suppression passed')

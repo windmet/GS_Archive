@@ -359,6 +359,7 @@
     </ArchiveShell>
 
     <!-- ====== STORY PLAYER ====== -->
+    <p v-if="playbackError" class="playback-failure" role="alert">演出暂时无法载入，请从目录重新打开。</p>
     <StoryViewer
       v-if="view === 'player' && currentScenario"
       :key="currentScenarioInstance"
@@ -390,12 +391,11 @@
 
 <script setup>
 import { createLazyArchiveResource } from './data/lazyArchiveResource.js'
-import { prepareScenario } from './data/prepareScenario.js'
 import { buildUnitCatalog, resolveArchiveUnit, storiesForUnit, songsForUnit } from './data/unitPage.js'
 import { buildIdolProfile, buildIdolStats, eventsForIdol, songsForIdol } from './data/idolPage.js'
 import { buildGashaCatalog, buildGashaCategoryOptions, filterGashaCatalog, resolveGashaRelatedCards } from './data/gashaCatalog.js'
 import { filterArchiveCards } from './data/cardFilters.js'
-import { useEpisodeQueue } from './core/useEpisodeQueue.js'
+import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
 import { buildCardVoicePreviewScenario, findCardVoiceCue } from './data/cardVoicePreview.js'
 import { createArchiveNavigationCoordinator } from './core/ArchiveNavigationCoordinator.js'
 import { useArchiveNavigationState } from './core/useArchiveNavigationState.js'
@@ -580,10 +580,6 @@ const songCatalogData = ref(null)
 const songPlaybackAudioData = ref(null)
 const songExperimentalAudioData = ref(null)
 const idolEntityTranslationRevision = ref(0)
-const currentScenario = ref(null)
-const currentScenarioInstance = ref(0)
-const episodeQueue = useEpisodeQueue()
-const hasNextPlaybackEpisode = episodeQueue.hasNext
 const continuousPlayback = ref(window.localStorage.getItem('sidem:continuous-playback') === '1')
 const loading = ref(true)
 const preloadProgress = ref(0)
@@ -594,6 +590,13 @@ const cardArtMode = ref('clean')
 const storyVisibleLimit = ref(80)
 let archiveRouteReady = false
 const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loading.value = false } })
+const playbackController = useStoryPlaybackController({
+  state: { view, loading, preloadProgress, currentScenarioFile, currentScenarioStartStep, currentScenarioEndStep, currentPreviewCue, returnViewAfterPlayer },
+  navigation, loadPlayer: storyViewerLoader,
+  preloadAssets: (steps, progress) => Preloader.preloadScenario(steps, progress),
+  syncRoute: () => syncArchiveRoute(), returnTo: destination => commitView(destination),
+})
+const { currentScenario, currentScenarioInstance, hasNext: hasNextPlaybackEpisode, error: playbackError } = playbackController
 let removeArchivePopState = null
 let removeSpineAnimationDebug = null
 
@@ -1347,6 +1350,7 @@ function syncArchiveRoute({ replace = false } = {}) {
 
 function commitView(nextView, options = {}) {
   navigation.invalidate()
+  if (nextView !== 'player') playbackController.reset()
   loading.value = false
   view.value = nextView
   syncArchiveRoute(options)
@@ -1423,21 +1427,14 @@ const ensureIdolCommunicationData = createLazyArchiveResource({
   onError: error => console.error('[ArchiveData] Failed to load idol communication indexes:', error),
 })
 
-function restoreVoicePreview(route) {
+async function restoreVoicePreview(route, intent) {
   const card = cardMap.value.get(route.card)
   if (!card || !route.voice) return false
   const cue = findCardVoiceCue(card, route.voice,
     mergeCardDetail(card, cardDetailData.value)?.operational_voice_cues || [])
   if (!cue) return false
-  episodeQueue.clear()
-  currentScenario.value = buildCardVoicePreviewScenario(card, cue, idolDisplayName)
-  currentScenarioFile.value = ''
-  currentScenarioStartStep.value = null
-  currentScenarioEndStep.value = null
-  currentPreviewCue.value = route.voice
-  returnViewAfterPlayer.value = route.returnView || 'card_detail'
-  view.value = 'player'
-  return true
+  return playbackController.preview(() => buildCardVoicePreviewScenario(card, cue, idolDisplayName),
+    route.voice, route.returnView || 'card_detail', { intent, syncRoute: false })
 }
 
 async function applyArchiveRoute(route, { restoring = true } = {}) {
@@ -1446,7 +1443,7 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
       readingDocumentId.value = route.reading
       readingRowId.value = route.readingRow || ''
       readingMode.value = route.readingMode || 'original'
-      currentScenario.value = null
+      playbackController.reset()
       view.value = 'reader'
       loading.value = false
       await readingSession.open(route.reading, intent)
@@ -1454,7 +1451,7 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
     }
     if (route.view === 'portal') {
       portalFrom.value = route.portalFrom || ''
-      currentScenario.value = null
+      playbackController.reset()
       view.value = 'portal'
       return
     }
@@ -1529,12 +1526,7 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
     ) ? (route.unit || (route.view === 'mobile_archive' ? (idolUnitData.value?.units?.[0]?.unit_code || '01jup') : '')) : ''
     currentGroup.value = resolveRouteGroup(route)
     currentUnit.value = resolveRouteUnit(route)
-    currentScenario.value = null
-    currentScenarioFile.value = ''
-    currentScenarioStartStep.value = route.startStep || null
-    currentScenarioEndStep.value = route.endStep || null
-    currentPreviewCue.value = ''
-    returnViewAfterPlayer.value = route.returnView || 'files'
+    playbackController.reset()
 
     const episode = resolveRouteEpisode(currentUnit.value, route)
     if (route.view === 'files' && episode) {
@@ -1546,20 +1538,16 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
     }
 
     if (route.view === 'player' && route.scenario) {
-      const restoredQueue = restoreEpisodeQueue(route.scenario, route.returnView, route)
-      await loadScenario(route.scenario, route.returnView || 'home', {
-        syncRoute: false,
-        intent,
-        startStep: route.startStep,
-        endStep: route.endStep,
-        preserveQueue: restoredQueue,
-      })
+      const restored = await playbackController.restore(route.scenario, route.returnView || 'home',
+        { startStep: route.startStep, endStep: route.endStep }, playbackEpisodes(route.returnView), intent)
+      if (!restored && intent.isCurrent()) view.value = 'story_catalog'
       return
     }
     if (route.view === 'player' && route.voice) {
-      await storyViewerLoader()
+      if (await restoreVoicePreview(route, intent)) return
       if (!intent.isCurrent()) return
-      if (restoreVoicePreview(route)) return
+      view.value = currentCard.value ? 'card_detail' : 'cards'
+      return
     }
     if (route.view === 'spine_lab') await spineViewerLoader()
     if (route.view === 'chibi_stage') await chibiStageViewerLoader()
@@ -2477,33 +2465,17 @@ function playCurrentEventEpisode(episode) {
 }
 
 function startEpisodeQueue(episodes, index, returnView) {
-  loadPlaybackEpisode(episodeQueue.start(episodes, index), returnView)
+  return playbackController.startQueue(episodes, index, returnView)
 }
 
-function restoreEpisodeQueue(scenarioFile, returnView, range = {}) {
-  let episodes = []
-  if (returnView === 'story_collection') {
-    episodes = (currentStoryCollection.value?.chapters || []).flatMap(chapter => chapter.episodes || [])
-  } else if (returnView === 'event_detail') {
-    episodes = currentEventEpisodes.value
-  } else if (returnView === 'idol_story_archive') {
-    episodes = (currentIdolStoryPage.value?.sections || []).flatMap(section => section.episodes || [])
-  }
-  return episodeQueue.restore(episodes, scenarioFile, range)
+function playbackEpisodes(returnView) {
+  if (returnView === 'story_collection') return (currentStoryCollection.value?.chapters || []).flatMap(chapter => chapter.episodes || [])
+  if (returnView === 'event_detail') return currentEventEpisodes.value
+  if (returnView === 'idol_story_archive') return (currentIdolStoryPage.value?.sections || []).flatMap(section => section.episodes || [])
+  return []
 }
 
-function loadPlaybackEpisode(episode, returnView = returnViewAfterPlayer.value) {
-  if (!episode?.file) return
-  loadScenario(episode.file, returnView, {
-    startStep: episode.startStep,
-    endStep: episode.endStep,
-    preserveQueue: true,
-  })
-}
-
-function playNextEpisode() {
-  loadPlaybackEpisode(episodeQueue.next())
-}
+function playNextEpisode() { return playbackController.next() }
 
 function openEventCard(relation) {
   const card = cardMap.value.get(relation?.card_resource_id)
@@ -2534,20 +2506,8 @@ function openEventUnit(unit) {
 }
 
 async function openVoicePreview(card, cue, returnView) {
-  return navigation.run(async intent => {
-    loading.value = true
-    preloadProgress.value = 100
-    await storyViewerLoader()
-    if (!intent.isCurrent()) return
-    episodeQueue.clear()
-    currentScenario.value = buildCardVoicePreviewScenario(card, cue, idolDisplayName)
-    currentScenarioFile.value = ''
-    currentScenarioStartStep.value = null
-    currentScenarioEndStep.value = null
-    currentPreviewCue.value = typeof cue === 'string' ? cue : cue.cue
-    returnViewAfterPlayer.value = returnView
-    commitView('player')
-  })
+  return playbackController.preview(() => buildCardVoicePreviewScenario(card, cue, idolDisplayName),
+    typeof cue === 'string' ? cue : cue.cue, returnView)
 }
 
 function openGroup(group) {
@@ -2610,57 +2570,15 @@ function goBackToFiles() {
   }
 }
 
-function closePlayer() {
-  currentScenario.value = null
-  currentScenarioFile.value = ''
-  currentScenarioStartStep.value = null
-  currentScenarioEndStep.value = null
-  currentPreviewCue.value = ''
-  episodeQueue.clear()
-  const returnView = returnViewAfterPlayer.value || 'files'
-  returnViewAfterPlayer.value = 'files'
-  commitView(returnView)
-}
-
-function onPlayerReady() {
-  if (!navigation.isPending()) loading.value = false
-}
+function closePlayer() { return playbackController.close() }
+function onPlayerReady() { playbackController.ready() }
 
 function formatFileName(fn) {
   return fn.replace(/\.json$/, '').replace(/^[^_]+_[^_]+_scenario_/, '')
 }
 
 async function loadScenario(name, returnView = 'files', options = {}) {
-  return navigation.run(async intent => {
-    loading.value = true
-    preloadProgress.value = 0
-    try {
-      const scenario = await prepareScenario(name, {
-        isCurrent: intent.isCurrent,
-        loadPlayer: storyViewerLoader,
-        preloadAssets: (steps, progress) => Preloader.preloadScenario(steps, progress),
-        onProgress: pct => { preloadProgress.value = pct },
-      })
-      if (!scenario || !intent.isCurrent()) return
-      currentScenario.value = scenario
-      currentScenarioFile.value = name
-      currentScenarioStartStep.value = Number(options.startStep) > 0 ? Number(options.startStep) : null
-      currentScenarioEndStep.value = Number(options.endStep) > 0 ? Number(options.endStep) : null
-      if (!options.preserveQueue) {
-        episodeQueue.clear()
-      }
-      currentScenarioInstance.value += 1
-      currentPreviewCue.value = ''
-      returnViewAfterPlayer.value = returnView
-      view.value = 'player'
-      loading.value = false
-      if (options.syncRoute !== false) syncArchiveRoute()
-    } catch (err) {
-      if (!intent.isCurrent()) return
-      console.error('Failed to load:', err)
-      loading.value = false
-    }
-  }, { intent: options.intent })
+  return playbackController.load(name, returnView, options)
 }
 
 onMounted(async () => {
@@ -2756,6 +2674,7 @@ watch(storyTranslationLocale, locale => {
 })
 
 onBeforeUnmount(() => {
+  playbackController.dispose()
   navigation.dispose()
   removeArchivePopState?.()
   removeSpineAnimationDebug?.()
@@ -2767,6 +2686,7 @@ onBeforeUnmount(() => {
   width: 100%; height: 100vh; color: #222;
   background: #f8f9fa; overflow: hidden;
 }
+.playback-failure { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 120; max-width: calc(100vw - 32px); margin: 0; padding: 12px 18px; border: 1px solid #e4b7b7; border-radius: 8px; background: #fff4f4; color: #7f3434; font: 14px/1.6 system-ui, sans-serif; pointer-events: none; }
 </style>
 
 <style>

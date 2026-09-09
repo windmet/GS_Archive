@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "verify:playback-controller": "node scripts/verify-story-playback-controller.mjs",
     "generate:reading": "node scripts/generate-reading-documents.mjs",
     "verify:reading": "node scripts/verify-reading-documents.mjs && node scripts/verify-reading-repository.mjs && node scripts/verify-reading-navigation.mjs && node scripts/verify-reading-render.mjs",
     "verify:reading-sources": "node scripts/generate-reading-documents.mjs --check",
