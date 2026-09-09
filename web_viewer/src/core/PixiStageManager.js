@@ -1,3 +1,4 @@
+import { decodeSpineAtlasText } from '../../shared/story/SpineAtlasPages.js'
 /**
  * PixiStageManager manages the PixiJS canvas/renderer and stage graph.
  *
@@ -1066,10 +1067,8 @@ export class PixiStageManager {
         atlasUrl,
         skelUrl,
         decodeAtlasText: buf => this._decodeAtlasText(buf),
-        extractTextureFilename: atlasText => this._extractTextureFilename(atlasText),
-        resolveTextureUrl: (mid, file) => this._resolveTextureUrl(mid, file),
-        loadTextureFromUrl: url => this._loadTextureFromUrl(url),
-        getFallbackTexture: () => this._getFallbackTexture(),
+        resolveTextureUrl: (mid, file, options) => this._resolveTextureUrl(mid, file, options),
+        loadTextureFromUrl: url => this._loadTextureFromUrl(url, { allowFallback: false }),
         decodeSkelBuffer: buf => this._decodeSkelBuffer(buf),
         Spine,
         SkeletonBinary,
@@ -1478,26 +1477,7 @@ export class PixiStageManager {
   // Atlas / texture helpers
 
   _decodeAtlasText(buf) {
-    const text = new TextDecoder('utf-8').decode(buf)
-    const sizeIdx = text.indexOf('\nsize:')
-    if (sizeIdx < 0) return text
-    const lineStart = text.lastIndexOf('\n', sizeIdx - 1)
-    if (lineStart < 0) return text
-    const atlasText = text.substring(lineStart + 1)
-    const firstLine = atlasText.split('\n')[0].trim()
-    if (!firstLine || firstLine.includes(':')) return text
-    return atlasText
-  }
-
-  _extractTextureFilename(atlasText) {
-    const lines = atlasText.split('\n')
-    for (const line of lines) {
-      const trimmed = line.trim()
-      if (trimmed && !trimmed.includes(':') && !trimmed.startsWith('//')) {
-        return trimmed.split('/').pop()
-      }
-    }
-    return 'comu.png'
+    return decodeSpineAtlasText(buf)
   }
 
   /**
@@ -1533,11 +1513,11 @@ export class PixiStageManager {
     return `${base}/${textureFile}`
   }
 
-  async _resolveTextureUrl(modelId, textureFile) {
+  async _resolveTextureUrl(modelId, textureFile, { allowFallback = true } = {}) {
     const primaryUrl = this._getTextureUrl(modelId, textureFile)
     if (await this._isImageUrl(primaryUrl)) return primaryUrl
 
-    if (textureFile !== 'comu.png') {
+    if (allowFallback && textureFile !== 'comu.png') {
       const fallbackUrl = this._getTextureUrl(modelId, 'comu.png')
       if (await this._isImageUrl(fallbackUrl)) {
         console.warn(`[PixiStageManager] Texture "${textureFile}" missing for "${modelId}", using comu.png`)

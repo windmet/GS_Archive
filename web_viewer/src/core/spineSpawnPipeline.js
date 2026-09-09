@@ -1,45 +1,47 @@
+import { readSpineAtlasPages } from '../../shared/story/SpineAtlasPages.js'
+
 export async function loadAndCreateSpine({
   modelId,
   atlasUrl,
   skelUrl,
   decodeAtlasText,
-  extractTextureFilename,
   resolveTextureUrl,
   loadTextureFromUrl,
-  getFallbackTexture,
   decodeSkelBuffer,
   Spine,
   SkeletonBinary,
   AtlasAttachmentLoader,
   TextureAtlas,
+  fetchImpl = (...args) => fetch(...args),
 }) {
   const [atlasBuf, skelBuffer] = await Promise.all([
-    fetch(atlasUrl).then(r => {
+    fetchImpl(atlasUrl).then(r => {
       if (!r.ok) throw new Error(`Atlas ${r.status}`)
       return r.arrayBuffer()
     }),
-    fetch(skelUrl).then(r => {
+    fetchImpl(skelUrl).then(r => {
       if (!r.ok) throw new Error(`Skel ${r.status}`)
       return r.arrayBuffer()
     }),
   ])
 
   const atlasText = decodeAtlasText(atlasBuf)
-  const textureFile = extractTextureFilename(atlasText)
-  const textureUrl = await resolveTextureUrl(modelId, textureFile)
-  const texture = await loadTextureFromUrl(textureUrl)
-
-  const textureMap = { [textureFile]: texture }
+  const textureFiles = readSpineAtlasPages(atlasText)
+  const textureMap = new Map(await Promise.all(textureFiles.map(async file => {
+    const url = await resolveTextureUrl(modelId, file, { allowFallback: textureFiles.length === 1 })
+    const texture = await loadTextureFromUrl(url)
+    if (!texture?.baseTexture) throw new Error(`Spine texture unavailable: ${modelId}/${file}`)
+    return [file, texture]
+  })))
 
   const atlas = await new Promise((resolve, reject) => {
     try {
       new TextureAtlas(
         atlasText,
         (path, loaderCb) => {
-          const fileName = path.split('/').pop()
-          const tex = textureMap[fileName]
+          const tex = textureMap.get(path)
           if (tex && tex.baseTexture) loaderCb(tex.baseTexture)
-          else loaderCb(getFallbackTexture())
+          else loaderCb(null)
         },
         (result) => {
           if (result) resolve(result)
@@ -78,7 +80,8 @@ export async function loadAndCreateSpine({
 
   return {
     atlasText,
-    textureFile,
+    textureFile: textureFiles[0],
+    textureFiles,
     skeletonData,
     spine,
     animNames,

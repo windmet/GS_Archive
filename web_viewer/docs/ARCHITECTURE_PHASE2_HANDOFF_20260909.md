@@ -9,6 +9,7 @@ R2/R3 主迁移及 404/有效译文补验已完成，接下来做 P1–P5 加载
 逐句播放能力保留但已退出普通 UI，显式书签 UI 与 Reader 存储调用已撤下；reading_row/返回定位保留。
 见 [R1 验收](READING_R1_ACCEPTANCE_20260909.md)。ReadingDocument v2 已交付；长稳仍后移。
 P1 首批已完成 [资源需求发现](STORY_ASSET_PLAN_P1_20260909.md)，依赖闭包与执行器仍待接入。
+其中 [atlas 页依赖与运行时逐页加载](SPINE_ATLAS_PAGES_20260909.md) 已交付；其余依赖及旧预载器仍待迁移。
 R2 规则、真实第 12 步和 204 份源数据验算见 [投影记录](READING_R2_PROJECTION_20260909.md)；
 Reader 已接入新头像策略；真实 unknown 秀头像、v2 迁移与剩余验收见 [R3 记录](READING_R3_MIGRATION_20260909.md)。
 

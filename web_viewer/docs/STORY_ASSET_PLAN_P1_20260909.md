@@ -2,6 +2,8 @@
 
 2026-09-09，基线 `fc182b1`。实现 `shared/story/StoryAssetPlan.js` 与专用 verifier。
 本批是纯需求发现，不是新预载执行器；App 仍调用旧 Preloader，加载百分比尚未替换。
+后续 atlas 页依赖与实际加载器修复已完成，见 [atlas 页交付记录](SPINE_ATLAS_PAGES_20260909.md)。
+下文消费者核对中的第一张纹理限制是修复前证据，当前加载器已逐页加载。
 
 ## 输入与输出
 
