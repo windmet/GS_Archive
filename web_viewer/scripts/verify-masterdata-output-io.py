@@ -6,6 +6,7 @@ import io
 import json
 from pathlib import Path
 import sys
+import subprocess
 import tempfile
 from unittest.mock import patch
 
@@ -45,6 +46,15 @@ def cli_outputs(main=legacy.main):
                 stdout = io.StringIO()
                 with patch.object(sys, 'argv', argv), contextlib.redirect_stdout(stdout):
                     main()
+                if not flags:
+                    # Exercise the actual CLI artifact against the current browser
+                    # contract, instead of accepting any newly recorded hash.
+                    catalog = public / 'story_catalog.json' if publish else analysis / 'story_catalog.json'
+                    subprocess.run(['node', '--input-type=module', '-e',
+                        'import fs from "node:fs"; '
+                        'import { validateStoryCatalog } from "./src/data/storyCatalog.js"; '
+                        'validateStoryCatalog(JSON.parse(fs.readFileSync(process.argv[1], "utf8")));',
+                        str(catalog)], cwd=ROOT, check=True, capture_output=True, text=True)
                 result[f'{mode_number}-{publish}'] = {
                     'analysis': snapshot(analysis),
                     'public': snapshot(public) if publish else {},
@@ -82,7 +92,9 @@ def verify():
         assert (public / 'public.json').exists()
     expected = json.loads((ROOT / 'fixtures/masterdata-wire/output-io-baseline.json').read_text())
     actual = cli_outputs()
-    assert actual == expected['outputs']
+    differences = [f'{mode}/{field}' for mode in actual for field in actual[mode]
+                   if actual[mode][field] != expected['outputs'].get(mode, {}).get(field)]
+    assert actual == expected['outputs'], f'CLI snapshot differences: {differences}'
     assert set(actual['0-True']['public']) == set(FULL_PUBLIC_OUTPUTS)
     assert set(actual['1-True']['public']) == {'birthday_story_semantic_index.json'}
     assert len(actual['6-True']['public']) == 3

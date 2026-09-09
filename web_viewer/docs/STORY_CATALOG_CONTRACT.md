@@ -1,5 +1,22 @@
 # 命名剧情目录 v1
 
+## 当前生成输出门禁（2026-09-09）
+
+C2–C7 后顶层为九个键：原有 `schema_version/source_digest/entries` 加上
+`fileMetadata/collectionStructure/eventEpisodeStructure/mainIdentity/extraIdentity/birthdayIdentity`。
+下文按批次保留历史演进，不应把首批三键结构当成当前完整契约。
+
+`verify:masterdata-output-io` 的空输入快照原来仍停在三键阶段，现已补齐到
+`82682f2` 的已交付契约。仅完整模式的 story_catalog 文件 hash 与 stdout 的
+3 → 9 计数改变；其余全部产物、选择模式、公开输出边界逐项对照未变。
+fixture 保留旧 hash 和迁移说明。完整 CLI 的 analysis/public 目录产物均直接通过
+前端 `validateStoryCatalog` 检查，避免只接受新 hash 而未验证消费者契约。
+
+20 个临时 CLI 输出检查与 `verify:story-catalog` 的 1,394 条真实目录、
+来源摘要、文件元数据和各域身份 parity 均通过。本批没有修改公共数据或页面，
+不新增浏览器、媒体或长稳验收结论；关闭 `CARD_DETAIL_CANONICAL_FIX_20260909.md`
+记录的旧输出快照失败。
+
 2026-09-08，重构 C。目录行的 masterdata 数字字段解释移至
 `data_pipeline/story_catalog.py`；浏览器使用 `src/data/storyCatalog.js`。
 `archiveSelectors.js` 保留同名导出，所有仓内 `buildStoryCatalog` 调用已切到新输入。

@@ -1,7 +1,27 @@
 # 第二阶段重构交接：从基础稳定转向 Reading 与确定性状态投影
 
-最新进展：D2 首批现有主线阅读入口、指定句演出与返回、来源版本校验已落地，
-见 [D2 验收](READING_D2_ACCEPTANCE_20260909.md)。下一步 E1；本交接后文保留历史基线。
+## 当前恢复入口（2026-09-09，接续 `24e1cea`）
+
+后文为阶段启动时的历史基线。当前继续工作请先核对 HEAD/工作区，再按以下入口恢复：
+
+- M 手机门户已交付；[路线](MOBILE_PORTAL_READING_ROADMAP_20260909.md)保留设计与验收记录。
+- H 展示语义已覆盖歌曲、关系及各门户详情/列表；[展示契约](ARCHIVE_PRESENTATION_CONTRACT_20260909.md)。
+  `78f016d` 恢复 313 条真实卡片剧情标题；`24e1cea` 修正 10 张正式卡被教学卡覆盖的详情，
+  见 [卡片修复](CARD_DETAIL_CANONICAL_FIX_20260909.md)。
+- D 当前主线一、二章 204 个阅读产物，183 可读、21 明确未支持；
+  [覆盖](READING_MAIN_COVERAGE_20260909.md)、[篇内搜索](READING_SEARCH_20260909.md)、
+  [本机版本化阅读位置](READING_PROGRESS_20260909.md)均已实现。不能称为全库 Reading 完成。
+- E1 已有全主线离线投影审计与 Spine tint 的运行时只读 shadow；
+  [契约](STORY_PROJECTOR_CONTRACT_20260909.md)、[shadow 验收](PROJECTOR_SHADOW_ACCEPTANCE_20260909.md)。
+  动画、滤镜、粒子、背景几何及音频副作用等仍有未覆盖范围；中途 tint 的实际帧差异保留。
+  下一步继续处理明确的 E1 未覆盖状态通道，不能把 partial 改写为完整确定性投影。
+- F 播放 controller 已接管既有会话入口，详见 [验收](PLAYBACK_CONTROLLER_ACCEPTANCE_20260909.md)；
+  G 后续仍只针对实际编译领域边界，不重启全仓 helper 拆分。
+- 本批已关闭卡片修复验收发现的旧 CLI 快照失败，见
+  [当前目录生成门禁](STORY_CATALOG_CONTRACT.md)。没有改动公共目录数据或发布状态。
+
+用户明确要求正式长稳继续后移，不阻塞 D/E1 等独立工作；E2 renderer 尚未接管。
+仍需区分产品覆盖、纯投影验证、真实媒体与正式长稳，不能据日常稳定反馈写成长稳通过。
 
 日期：2026-09-09。核对代码基线：`876816e2ae9d942804f945ea717f7ca0e5c436fc`。
 分支：`codex/archive-architecture-refactor`；本次开始时工作区干净，本地与已知远端引用一致。
