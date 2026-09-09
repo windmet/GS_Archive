@@ -420,3 +420,17 @@ stdout 完整 JSON、指定临时输出目录与无参数帮助。它们与原�
 顶层模块入口、10 个冻结输出哈希、严格包导入及临时 batch 回归保持通过。
 scenario-source-config（含实际临时候选 CLI）也通过。没有对真实输入全库
 编译，没有更改公共产物和发布目录。本批仅为启动边界，无前端修改。
+
+## G22：批量编译失败结果显式化
+
+compile_directory 原先逐文件打印错误后返回 None，CLI 在部分失败时仍退出 0；
+临时 broken.json + valid.json 已复现该问题。现在 API 返回 compiled 与 failures
+（path/error）结果，CLI 有失败时退出 1，保留成功文件并继续处理其余输入。
+不存在的输入目录抛 NotADirectoryError，os.walk 的读取错误也记录为失败。
+错误前缀改为 ASCII [ERROR]，避免原叉号在 Windows GBK 输出下再次抛异常。
+
+新增 verify-scenario-batch-errors 已纳入 scenario-package CI 命令，覆盖旧脚本/
+包模块真实子进程的部分失败非零退出、成功文件保留、损坏文件不生成、缺失
+输入目录、全成功退出 0，以及 API 结构化结果和受控遍历错误。原 10 组冻结
+产物/入口回归通过。测试仅用临时小输入，没有批量编译真实档案。返回值是有意
+新增的 API 结果；成功产物、处理顺序和已成功文件不回滚的行为不变。
