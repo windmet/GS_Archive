@@ -155,7 +155,7 @@
     "verify:story-raw-promotion": "node scripts/verify-raw-story-promotion.mjs",
     "verify:story-localization": "node scripts/verify-story-localization-runtime.mjs && node scripts/verify-story-localization-stress.mjs && node scripts/verify-structured-bilingual-ui.mjs",
     "verify:story-translations": "node scripts/verify-story-translations.mjs && node scripts/report-story-translation-migration.mjs && node scripts/verify-entity-translations.mjs",
-    "verify:story-text": "python scripts/verify-story-text-evidence.py",
+    "verify:story-text": "python scripts/verify-story-text-evidence.py && python scripts/verify-story-text-boundary.py",
     "verify:compiled-migration": "node scripts/verify-compiled-scenario-migration.mjs && python scripts/verify-story-migration-candidate.py && python scripts/verify-story-migration-publish.py",
     "verify:raw-character-candidate": "node scripts/verify-raw-character-image-candidate.mjs",
     "verify:raw-character-promotion": "node scripts/verify-raw-character-image-promotion.mjs",

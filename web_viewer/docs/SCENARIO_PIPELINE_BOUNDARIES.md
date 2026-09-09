@@ -376,3 +376,18 @@ story_collection/unit_story/16，集合上下文保留。此为短流程冒烟�
 未完成边界：旧默认接口仍使用类缓存和兼容盘符；authoritative_scenario、RAW 候选写出、
 masterdata 已入包，authoritative/发布脚本仍在包外，G 整体未完成。此批按职责移动既有实现，
 没有引入新 IR/schema 或修改 RAW 语义。
+
+## G19：纯文本身份规则独立
+
+`sidem_scenario/text_identity.py` 拥有文本规范化/哈希、来源路径、token 检查和
+说话人身份分类，不读取资源，不导入编译器或持有编译状态。ScenarioCompiler
+保留历史方法名；两个 classmethod 包装仍尊重子类 TEXT_TOKEN_PATTERN 和
+normalize_source_text 覆写。当前 command index、part、unit ID 及 text_ref 的
+装配仍属于编译会话，未改变文本编号或来源证据。
+
+verify:story-text 纳入独立文件导入测试：无 compiler 导入副作用，Unicode NFC/
+BOM/换行哈希、非规范路径拒绝、说话人分类优先级、方法身份和子类派发通过。
+既有文本 evidence/hash vectors/schema/overlay fixture 通过；scenario-package 的
+10 组冻结完整输出/provenance 哈希、旧/新入口和临时 batch，以及 resources 的
+无文件系统注入编译回归通过。没有重新生成 public、候选或发布产物；本批不改
+浏览器源码，因此未重复浏览器验收或前端构建。
