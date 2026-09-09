@@ -17,7 +17,7 @@
       @back="goArchiveBack"
     >
       <ArchiveStoryReader v-if="view === 'reader'" :state="readingState" :document-id="readingDocumentId" :mode="readingMode" :anchor="readingRowId"
-        :notice="readingPlaybackNotice" :busy="loading" @refresh="refreshStoryReader" @play="openReaderPlayback" @select="openStoryReader" @mode="updateReadingMode" @back="closeStoryReader" @retry="openStoryReader(readingDocumentId)" />
+        :notice="readingPlaybackNotice" :busy="loading" @refresh="refreshStoryReader" @play="openReaderPlayback" @select="openStoryReader" @mode="updateReadingMode" @locate="locateReadingRow" @back="closeStoryReader" @retry="openStoryReader(readingDocumentId)" />
       <ArchivePortalLauncher
         v-if="view === 'portal'"
         @navigate="navigateArchiveSection"
@@ -1715,6 +1715,12 @@ async function openReaderPlayback(rowId, { intent: inherited, route } = {}) {
 
 function updateReadingMode(mode) {
   readingMode.value = mode
+  syncArchiveRoute({ replace: true })
+}
+
+function locateReadingRow(rowId) {
+  if (view.value !== 'reader' || readingState.value.status !== 'ready' || !readingState.value.document.rows.some(row => row.anchor.row_id === rowId)) return
+  readingRowId.value = rowId
   syncArchiveRoute({ replace: true })
 }
 

@@ -18,11 +18,19 @@
       <p v-else-if="state.status === 'empty'" role="status">这个分段没有可显示的正文。</p>
       <div v-else-if="state.status === 'unsupported'" class="reader-feedback" role="status"><h2>这个分段暂不支持完整阅读</h2><p>部分分支或贴图消息无法可靠还原，正文尚未开放。</p><details><summary>分支与来源说明</summary><ul><li v-for="(control, i) in state.document.controls" :key="i">选项：<span v-for="(option, j) in choiceRows(control)" :key="j">{{ option.source_text }}{{ j < choiceRows(control).length - 1 ? ' ／ ' : '' }}</span></li></ul><p>选项目标已保留，分支结束位置未确认。</p></details></div>
       <template v-else-if="state.status === 'ready'">
+        <form class="reader-search" role="search" aria-label="篇内查找" @submit.prevent="moveMatch(1)">
+          <label>篇内查找<input v-model="searchQuery" type="search" placeholder="查找当前显示的正文或说话人" /></label>
+          <div class="reader-search-actions">
+            <span role="status">{{ searchQuery.trim() ? (searchMatches.length ? `${matchIndex >= 0 ? `${matchIndex + 1} / ` : ''}${searchMatches.length} 处匹配` : '未找到匹配内容') : '仅查找当前分段' }}</span>
+            <button type="button" :disabled="!searchMatches.length" @click="moveMatch(-1)">上一处</button>
+            <button type="submit" :disabled="!searchMatches.length">下一处</button>
+          </div>
+        </form>
         <p v-if="missingAnchor" class="reader-notice" role="status">原定位行已不存在，现显示本篇正文。</p>
         <p v-if="mode !== 'original' && fallbackCount" class="reader-notice" role="status">{{ fallbackCount }} 处暂无可用译文，已显示原文。</p>
         <p v-if="mode !== 'original' && localization.diagnostics.value?.code === 'translation_invalid'" class="reader-notice" role="status">译文暂时无法载入，原文仍可阅读。</p>
         <article class="reader-transcript" aria-label="剧情正文">
-          <section v-for="item in presentedRows" :key="item.row.anchor.row_id" :id="`reading-${item.row.anchor.row_id}`" tabindex="-1" class="reader-row" :class="[`kind-${item.row.kind}`, { selected: anchor === item.row.anchor.row_id }]">
+          <section v-for="item in presentedRows" :key="item.row.anchor.row_id" :id="`reading-${item.row.anchor.row_id}`" tabindex="-1" class="reader-row" :class="[`kind-${item.row.kind}`, { selected: anchor === item.row.anchor.row_id, 'search-match': searchMatchIds.has(item.row.anchor.row_id) }]">
             <img v-if="item.avatar" class="reader-avatar" :src="getCharaIconUrl(item.avatar)" alt="" loading="lazy" @error="$event.target.hidden = true" />
             <p v-if="item.view.speaker.display" class="reader-speaker">{{ item.view.speaker.display }}</p>
             <span v-if="item.row.kind === 'choice'" class="reader-kind">选项</span>
@@ -46,7 +54,8 @@ import { readingAvatarEntity, readingPresentationSpeaker } from '../../../shared
 import { getCharaIconUrl } from '../../utils/AssetResolver.js'
 
 const props = defineProps({ state: { type: Object, required: true }, documentId: String, mode: String, anchor: String, notice: String, busy: Boolean })
-const emit = defineEmits(['select', 'mode', 'back', 'retry', 'play', 'refresh'])
+const emit = defineEmits(['select', 'mode', 'back', 'retry', 'play', 'refresh', 'locate'])
+const searchQuery = ref('')
 const heading = ref(null)
 const readerRoot = ref(null)
 const playbackNotice = ref(null)
@@ -69,6 +78,22 @@ const presentedRows = computed(() => (document.value?.rows || []).map(row => ({ 
     textRef: row.text_ref, speaker: readingPresentationSpeaker(row), inlineEntry: row.inline_translation }),
 })))
 const fallbackCount = computed(() => presentedRows.value.filter(item => item.view.translation.fallbackUsed).length)
+const searchText = text => String(text || '').normalize('NFKC').replace(/\s+/g, '').toLowerCase()
+const searchMatches = computed(() => {
+  const query = searchText(searchQuery.value)
+  if (!query || props.state.status !== 'ready') return []
+  return presentedRows.value.filter(item => [item.view.primary.text, item.view.secondary?.text, item.view.speaker.display]
+    .some(text => searchText(text).includes(query)))
+})
+const searchMatchIds = computed(() => new Set(searchMatches.value.map(item => item.row.anchor.row_id)))
+const matchIndex = computed(() => searchMatches.value.findIndex(item => item.row.anchor.row_id === props.anchor))
+function moveMatch(direction) {
+  const count = searchMatches.value.length
+  if (!count) return
+  const index = matchIndex.value < 0 ? (direction > 0 ? 0 : count - 1) : (matchIndex.value + direction + count) % count
+  emit('locate', searchMatches.value[index].row.anchor.row_id)
+}
+watch(() => props.documentId, () => { searchQuery.value = '' })
 const missingAnchor = computed(() => props.anchor && !document.value?.rows.some(r => r.anchor.row_id === props.anchor))
 const choiceRows = control => document.value.rows.filter(r => r.kind === 'choice' && r.anchor.step_index === control.step_index)
 watch(() => [props.state.status, props.documentId, props.anchor, props.notice], async () => {
@@ -86,6 +111,13 @@ watch(() => [props.state.status, props.documentId, props.anchor, props.notice], 
 </script>
 
 <style scoped>
+.reader-search { position: sticky; top: 0; z-index: 2; padding: 10px 0; background: #fff; border-bottom: 1px solid #cbd8df; }
+.reader-search label { display: flex; align-items: center; gap: 12px; font-size: 14px; white-space: nowrap; }
+.reader-search input { min-width: 0; width: 100%; min-height: 44px; padding: 8px; font: inherit; border: 1px solid #becdd5; border-radius: 6px; }
+.reader-search-actions { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+.reader-search-actions span { margin-right: auto; }
+.reader-search-actions button:disabled { opacity: .45; cursor: default; }
+.reader-row.search-match { background: #f0faf8; border-radius: 4px; }
 .reader-notice[role="alert"] { scroll-margin-top: 20px; padding: 12px; border: 1px solid #d3dfe4; border-radius: 8px; outline: none; }
 .reader-play { min-height: 44px; padding: 8px 12px; margin-top: 8px; border: 1px solid #cddde4; border-radius: 8px; background: #f5f9fb; color: #315a6b; font: inherit; font-size: 13px; cursor: pointer; }
 .reader-play:disabled { opacity: .5; cursor: wait; }
@@ -105,7 +137,7 @@ h1 { margin: 0; font-size: 26px; line-height: 1.5; letter-spacing: -.5px; outlin
 .reader-languages button { font-size: 15px; border-right: 1px solid white; color: #183846; }
 .reader-languages button[aria-pressed="true"] { background: #168f98; color: #fff; font-weight: 700; }
 .reader-transcript { border-top: 1px solid #cbd8df; padding-top: 12px; }
-.reader-row { position: relative; margin: 22px 0; scroll-margin-top: 20px; outline: none; }
+.reader-row { position: relative; margin: 22px 0; scroll-margin-top: 125px; outline: none; }
 .reader-row.selected { border-left: 3px solid #168f98; padding-left: 12px; }
 .reader-primary, .reader-secondary { margin: 5px 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 17px; line-height: 1.9; }
 .reader-secondary { color: #657986; font-size: 16px; }
