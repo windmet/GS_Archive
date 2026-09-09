@@ -16,6 +16,11 @@
       @navigate="navigateArchiveSection"
       @back="goArchiveBack"
     >
+      <ArchivePortalLauncher
+        v-if="view === 'portal'"
+        @navigate="navigateArchiveSection"
+        @back="closeArchivePortal"
+      />
       <ArchiveImmersiveHome
         v-if="view === 'home'"
         v-model:selected-id="homeSelectedId"
@@ -402,6 +407,7 @@ import StoryReleaseSoakPanel from './components/player/StoryReleaseSoakPanel.vue
 import { missingExtraFileEntries } from './data/storyFileMetadata.js'
 import ArchiveImmersiveHome from './components/archive/ArchiveImmersiveHome.vue'
 import ArchiveShell from './components/archive/ArchiveShell.vue'
+import ArchivePortalLauncher from './components/archive/ArchivePortalLauncher.vue'
 import ArchiveCardList from './components/archive/ArchiveCardList.vue'
 import ArchiveCardDetail from './components/archive/ArchiveCardDetail.vue'
 import ArchiveGashaCatalog from './components/archive/ArchiveGashaCatalog.vue'
@@ -447,6 +453,8 @@ import { buildIdolStoryOptions, buildIdolStoryPage } from './data/idolCommunicat
 import {
   archiveSectionForRoute,
   buildArchiveBreadcrumbs,
+  buildPortalReturnQuery,
+  readPortalReturnRoute,
   onArchivePopState,
   readArchiveRoute,
   writeArchiveRoute,
@@ -495,6 +503,7 @@ function resolveChatName(ch) {
 
 const {
   view,
+  portalFrom,
   returnViewAfterPlayer,
   storyCollectionParentView,
   songParentView,
@@ -1172,6 +1181,7 @@ const archiveSection = computed(() => archiveSectionForRoute({
 }))
 
 const archiveTitle = computed(() => {
+  if (view.value === 'portal') return '我的资料馆'
   if (view.value === 'home') return 'SideM Archive'
   if (view.value === 'archive_status') return '数据状态'
   if (view.value === 'story_catalog') {
@@ -1419,6 +1429,12 @@ function restoreVoicePreview(route) {
 
 async function applyArchiveRoute(route) {
   return navigation.run(async intent => {
+    if (route.view === 'portal') {
+      portalFrom.value = route.portalFrom || ''
+      currentScenario.value = null
+      view.value = 'portal'
+      return
+    }
     if (route.card && route.voice) await ensureCardDetailData()
     if (!intent.isCurrent()) return
     if ([
@@ -1579,7 +1595,8 @@ function goHome() {
 }
 
 function navigateArchiveSection(section) {
-  if (section === 'home') goHome()
+  if (section === 'portal') openArchivePortal()
+  else if (section === 'home') goHome()
   else if (section === 'stories') openStoryCatalog()
   else if (section === 'songs') openSongCatalog()
   else if (section === 'idols') openPrimaryIdol(currentCharacterId.value)
@@ -1587,6 +1604,20 @@ function navigateArchiveSection(section) {
   else if (section === 'interactions') openMobileArchive({ idolCode: currentCharacterId.value || '001tom', mode: 'personal' })
   else if (section === 'gashas') openGashaCatalog()
   else if (section === 'resources') openArchiveStatus()
+}
+
+function openArchivePortal() {
+  if (!archiveShellVisible.value || view.value === 'portal') return
+  portalFrom.value = buildPortalReturnQuery(currentArchiveRoute())
+  commitView('portal')
+}
+
+async function closeArchivePortal() {
+  const pending = applyArchiveRoute(readPortalReturnRoute(portalFrom.value))
+  const expected = navigation.getRevision()
+  await pending
+  if (navigation.isDisposed() || expected !== navigation.getRevision()) return
+  syncArchiveRoute()
 }
 
 function openSongCatalog() {

@@ -25,6 +25,7 @@ src/main.js
 
 ```text
 home
+portal
 idols / idol_detail
 unit_catalog / unit_detail
 cards / card_detail
@@ -175,9 +176,9 @@ parity 或兼容参考。
 <!-- authoritative-v2-summary collections=4 standalone=1 artifacts=30 -->
 <!-- publication-ledger-summary releases=3 stable_logical_ids=2 -->
 - external GS translation registry 当前有 8 条 exact mapping；
-- tracked PNG 为 183 个，约 49.1 MB；其中 108 个为 grandfathered，
+- tracked PNG 为 184 个，约 49.1 MB；其中 108 个为 grandfathered，
   14 个为 P1 Extra Story 导航视觉，61 个为 P1 Song 的有界 RAW-derived
-  365x360 封面；
+  365x360 封面，以及 1 个移动门户原版背景；
 - USM 为 260 个，当前 89 exact consumer、166 exact masterdata、5 unresolved。
 
 ## 5. 当前优先级（2026-08-13）

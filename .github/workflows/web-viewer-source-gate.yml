@@ -124,6 +124,9 @@ jobs:
       - name: Verify navigation state and route projection
         run: npm run verify:archive-navigation-state
 
+      - name: Verify mobile portal return and deep-link contract
+        run: npm run verify:portal-navigation
+
       - name: Verify asynchronous navigation ownership
         run: npm run verify:archive-async-navigation
 

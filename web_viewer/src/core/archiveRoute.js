@@ -1,4 +1,5 @@
 const ROUTE_QUERY_KEYS = [
+  'portal_from',
   'view',
   'home_idol',
   'home_cue',
@@ -37,6 +38,7 @@ const ROUTE_QUERY_KEYS = [
 ]
 
 const VALID_VIEWS = new Set([
+  'portal',
   'home',
   'idols',
   'idol_detail',
@@ -81,6 +83,7 @@ const VALID_MOBILE_MODES = new Set(['personal', 'phone', 'unit', 'random'])
 const VALID_RETURN_VIEWS = new Set([...VALID_VIEWS].filter(view => !['player', 'spine_lab', 'chibi_stage'].includes(view)))
 
 const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
+  portal: { section: 'portal', required: [] },
   home: { section: 'home', required: [] },
   archive_status: { section: 'resources', required: [] },
   story_catalog: { section: 'stories', required: [] },
@@ -122,7 +125,23 @@ const ARCHIVE_NAVIGATION = Object.freeze([
   { id: 'resources', label: '资源' },
 ])
 
-const BREADCRUMB_HIDDEN_VIEWS = new Set(['home', 'player', 'spine_lab', 'chibi_stage'])
+const BREADCRUMB_HIDDEN_VIEWS = new Set(['home', 'portal', 'player', 'spine_lab', 'chibi_stage'])
+
+// A launcher return is a bounded, local archive query, never an external URL.
+// Strip nesting before normalization so a shared portal URL cannot recurse.
+export function readPortalReturnRoute(query) {
+  if (typeof query !== 'string' || !query.startsWith('?') || query.length > 8192) return normalizeArchiveRoute({ view: 'home' })
+  const url = new URL(query, 'http://localhost/')
+  url.searchParams.delete('portal_from')
+  if (['portal', 'player', 'spine_lab', 'chibi_stage'].includes(url.searchParams.get('view')) || url.searchParams.has('scenario') || url.searchParams.has('file')) return normalizeArchiveRoute({ view: 'home' })
+  const route = readArchiveRoute(url)
+  return route.view === 'player' ? normalizeArchiveRoute({ view: 'home' }) : route
+}
+
+export function buildPortalReturnQuery(route) {
+  if (['portal', 'player', 'spine_lab', 'chibi_stage'].includes(route.view)) return ''
+  return buildArchiveUrl('http://localhost/', route).search
+}
 
 function clean(value) {
   return typeof value === 'string' ? value.trim() : ''
@@ -209,6 +228,7 @@ export function normalizeArchiveRoute(input = {}) {
   if (view === 'player' && !scenario && !(voice && card)) view = contract.fallback
   else if (contract?.required.some(key => !route[key])) view = contract.fallback
   route.view = view || 'home'
+  if (route.view === 'portal') route.portalFrom = buildPortalReturnQuery(readPortalReturnRoute(input.portalFrom))
   return route
 }
 
@@ -400,6 +420,7 @@ export function readArchiveRoute(input = null) {
   const params = url.searchParams
   return normalizeArchiveRoute({
     view: params.get('view'),
+    portalFrom: params.get('portal_from'),
     homeIdol: clean(params.get('home_idol')),
     homeCue: clean(params.get('home_cue')),
     homeCostume: clean(params.get('home_costume')),
@@ -444,6 +465,10 @@ export function buildArchiveUrl(input, route) {
   url.searchParams.delete('file')
 
   if (normalized.view !== 'home') url.searchParams.set('view', normalized.view)
+  if (normalized.view === 'portal') {
+    if (normalized.portalFrom) url.searchParams.set('portal_from', normalized.portalFrom)
+    return url
+  }
   if (normalized.view === 'home' && normalized.homeIdol) url.searchParams.set('home_idol', normalized.homeIdol)
   if (normalized.view === 'home' && normalized.homeCue) url.searchParams.set('home_cue', normalized.homeCue)
   if (normalized.view === 'home' && normalized.homeCostume) url.searchParams.set('home_costume', normalized.homeCostume)

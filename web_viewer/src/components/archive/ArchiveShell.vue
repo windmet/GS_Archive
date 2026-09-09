@@ -1,5 +1,5 @@
 <template>
-  <div class="archive-shell" :class="{ 'has-inspector': hasInspector, 'is-home': activeSection === 'home' }">
+  <div class="archive-shell" :class="{ 'has-inspector': hasInspector, 'is-home': activeSection === 'home', 'is-portal': activeSection === 'portal' }">
     <aside class="archive-sidebar" aria-label="资料馆导航">
       <div class="archive-brand">
         <img :src="getBrandMarkUrl()" alt="" />
@@ -19,7 +19,7 @@
       </nav>
     </aside>
 
-    <header class="archive-topbar">
+    <header v-if="activeSection !== 'portal'" class="archive-topbar">
       <button v-if="showBack" class="archive-back" title="返回" @click="emit('back')">
         <ArrowLeft :size="18" />
         <span>返回</span>
@@ -71,6 +71,7 @@ import {
   BookMarked,
   FolderOpen,
   Home,
+  LayoutGrid,
   Images,
   MessageSquare,
   Music,
@@ -97,7 +98,10 @@ const emit = defineEmits(['navigate', 'back', 'update:modelValue'])
 
 const iconBySection = { home: Home, stories: BookMarked, songs: Music, idols: Users, cards: Images, gashas: Sparkles, interactions: MessageSquare, resources: FolderOpen }
 const navigation = ARCHIVE_NAVIGATION.map(item => ({ ...item, icon: iconBySection[item.id] }))
-const mobileNavigation = navigation
+const mobileNavigation = [
+  { id: 'home', label: '首页', icon: Home },
+  { id: 'portal', label: '门户', icon: LayoutGrid },
+]
 </script>
 
 <style scoped>
@@ -123,6 +127,9 @@ const mobileNavigation = navigation
 .archive-shell.is-home { --archive-topbar: 0px; }
 .archive-shell.is-home .archive-topbar { display: none; }
 .archive-shell.is-home .archive-content { grid-row: 1 / 3; }
+.archive-shell.is-portal { --archive-topbar: 0px; }
+.archive-shell.is-portal .archive-topbar { display: none; }
+.archive-shell.is-portal .archive-content { grid-row: 1 / 3; }
 :global(html[data-archive-home-theme="day"]) .archive-shell.is-home .archive-sidebar { background: #102632; }
 :global(html[data-archive-home-theme="day"]) .archive-shell.is-home .archive-nav button.active { background: rgba(33,183,197,.13); }
 :global(html[data-archive-home-theme="day"]) .archive-shell.is-home .archive-nav button.active::before { background: #21b7c5; }
@@ -259,7 +266,7 @@ const mobileNavigation = navigation
     --archive-topbar: 124px;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: var(--archive-topbar) minmax(0, 1fr) 66px;
+    grid-template-rows: var(--archive-topbar) minmax(0, 1fr) calc(74px + env(safe-area-inset-bottom, 0px));
   }
   .archive-shell.is-home { --archive-topbar: 0px; }
   .archive-sidebar { display: none; }
@@ -292,7 +299,8 @@ const mobileNavigation = navigation
     grid-column: 1;
     grid-row: 3;
     display: grid;
-    grid-template-columns: repeat(8, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     border-top: 1px solid var(--archive-border);
     background: #fff;
     z-index: 20;
@@ -308,8 +316,12 @@ const mobileNavigation = navigation
     background: transparent;
     color: #69747e;
     font: inherit;
-    font-size: 0.64rem;
+    font-size: 0.8rem;
+    min-height: 44px;
+    cursor: pointer;
   }
   .archive-mobile-nav button.active { color: var(--archive-accent); }
+  .archive-mobile-nav button:focus-visible { outline: 3px solid var(--archive-accent); outline-offset: -5px; }
+  .archive-mobile-nav button + button { border-left: 1px solid #e5eeee; }
 }
 </style>

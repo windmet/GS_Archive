@@ -126,7 +126,8 @@ export function useVoicePlayer({
       return null
     }
 
-    ensureAudioCtx()
+    const preparingContext = ensureAudioCtx()
+    const isCurrentContext = () => preparingContext && audioCtx === preparingContext && preparingContext.state !== 'closed'
     try {
       const voiceUrls = getVoiceUrlCandidates(voice, scenarioId)
       let arrayBuffer = null
@@ -151,18 +152,23 @@ export function useVoicePlayer({
         }
       }
       if (!arrayBuffer) throw lastFetchError || new Error('No voice filename candidate resolved')
+      if (!isCurrentContext()) return null
 
       let audioBuffer
       try {
-        audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
+        audioBuffer = await preparingContext.decodeAudioData(arrayBuffer)
       } catch (decodeErr) {
+        if (!isCurrentContext()) return null
         console.error('[Audio] decodeAudioData FAILED:', decodeErr.message, 'voice:', voice)
         return null
       }
 
+      if (!isCurrentContext()) return null
       const lipCurve = includeLip ? await loadLipCurve(step, audioBuffer.duration) : null
+      if (!isCurrentContext()) return null
       return { voice, step, scenarioId, audioBuffer, lipCurve }
     } catch (err) {
+      if (!isCurrentContext()) return null
       console.warn('[Audio] prepare failed:', err.message, 'voice:', voice)
       return null
     }

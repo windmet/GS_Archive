@@ -4,6 +4,7 @@ import { ref } from 'vue'
 // Resource payloads, playback queues and async loading are feature-owned.
 export function useArchiveNavigationState() {
   const view = ref('__boot__')
+  const portalFrom = ref('')
   const returnViewAfterPlayer = ref('files')
   const storyCollectionParentView = ref('')
   const songParentView = ref('')
@@ -45,6 +46,7 @@ export function useArchiveNavigationState() {
   const storyDetailParentView = ref('')
 
   function currentArchiveRoute() {
+    if (view.value === 'portal') return { view: 'portal', portalFrom: portalFrom.value }
     const returnsToEvent = view.value === 'player' && returnViewAfterPlayer.value === 'event_detail'
     const returnsToStory = view.value === 'player' && returnViewAfterPlayer.value === 'story_detail'
     const returnsToStoryCollection = view.value === 'player' && returnViewAfterPlayer.value === 'story_collection'
@@ -112,6 +114,7 @@ export function useArchiveNavigationState() {
   
   return {
     view,
+    portalFrom,
     returnViewAfterPlayer,
     storyCollectionParentView,
     songParentView,

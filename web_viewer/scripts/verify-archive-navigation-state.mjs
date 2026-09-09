@@ -24,6 +24,7 @@ navigation.currentScenarioEndStep.value = 12
 const contexts = ['home', 'unit_detail', 'mobile_archive', 'event_detail', 'story_detail', 'story_collection', 'song_detail', 'files']
 let cases = 0
 for (const view of VALID_VIEWS) {
+  if (view === 'portal') continue // New route has its own return contract verifier.
   for (const returnView of contexts) {
     for (const parent of contexts) {
       navigation.view.value = view

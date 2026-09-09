@@ -3,6 +3,9 @@
 日期：2026-09-09。核对起点：a523db1，codex/archive-architecture-refactor。
 本批为路线整合，不代表页面、Reading 或 projector 已实现。
 
+后续进展：M 首批已实现并完成本地浏览器验收，见
+[移动门户交付记录](MOBILE_PORTAL_ACCEPTANCE_20260909.md)。D/E 尚未实现。
+
 ## 决策与参考来源
 
 用户反馈多轮调试未遇到加载不出、长时间使用也较稳定，明确将 pre-E

@@ -151,6 +151,38 @@ class FakeTimerQueue {
 
 const originalFetch = globalThis.fetch
 const originalWindow = globalThis.window
+// Leaving the audible home for the portal can dispose its voice owner while
+// fetch or decode is pending. A late result must be discarded without errors.
+for (const phase of ['fetch', 'decode']) {
+  const ctx = new FakeAudioContext()
+  const session = new StoryAudioSession({ contextFactory: () => ctx })
+  let release, decodes = 0
+  const pending = new Promise(resolve => { release = resolve })
+  ctx.decodeAudioData = async () => { decodes++; if (phase === 'decode') await pending; return { duration: 1 } }
+  const errors = [], oldError = console.error
+  console.error = (...args) => errors.push(args)
+  globalThis.window = { setTimeout, clearTimeout }
+  globalThis.fetch = async () => {
+    if (phase === 'fetch') await pending
+    return { ok: true, headers: new Map(), arrayBuffer: async () => new ArrayBuffer(2000) }
+  }
+  const player = useVoicePlayer({ spineStageRef: { value: null }, currentStep: { value: { dialogue: { voice: 'portal-exit' } } }, currentStepIndex: { value: 0 }, compiledData: { value: {} }, isPlaying: { value: false }, audioSession: session })
+  try {
+    const preparation = player.prepareVoice({ includeLip: false })
+    if (phase === 'decode') { for (let n = 0; n < 10 && !decodes; n++) await Promise.resolve(); assert.equal(decodes, 1) }
+    player.dispose()
+    release()
+    assert.equal(await preparation, null)
+    assert.equal(decodes, phase === 'fetch' ? 0 : 1)
+    assert.deepEqual(errors, [], 'disposed voice owner must not log a decode failure')
+  } finally {
+    console.error = oldError
+    globalThis.fetch = originalFetch
+    if (originalWindow === undefined) delete globalThis.window
+    else globalThis.window = originalWindow
+    await session.dispose()
+  }
+}
 globalThis.fetch = async () => ({ ok: true, arrayBuffer: async () => new ArrayBuffer(8) })
 try {
   assert.equal(knownDanglingStoryVoiceCount, 12)

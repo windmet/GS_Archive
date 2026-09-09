@@ -51,6 +51,18 @@ function classify(relativePath) {
   const stem = basenameWithoutExtension(relativePath)
   const logicalStem = stem.toLowerCase()
 
+  if (relativePath === 'web_viewer/public/assets/portal/image_mobile_background_common.png') {
+    return {
+      category: 'portal-asset',
+      logical_id: 'mobile-portal:background-common',
+      consumer: ['ArchivePortalLauncher'],
+      reason_tracked: 'user-selected single RAW mobile background; exact Texture2D identity and pixel provenance recorded',
+      force_add_allowed: true,
+      owner_release: '2026-09-09-mobile-portal-001',
+      grandfathered: false,
+    }
+  }
+
   if (relativePath.startsWith('web_viewer/notes/')) {
     return {
       category: 'documentation-evidence',
