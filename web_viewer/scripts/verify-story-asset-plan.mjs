@@ -19,7 +19,7 @@ assert.deepEqual(plan, createStoryAssetPlan(normalized, source), 'legacy enters 
 assert.deepEqual(plan, createStoryAssetPlan(legacy, source), 'deterministic plan')
 const byKey = new Map(plan.assets.map(asset => [asset.key, asset]))
 for (const key of ['background:start', 'background:end', 'voice:test.m4a', 'lipsync:adxlip/test.json',
-  'bgm:song', 'ambient:rain', 'se:door', 'image-icon:047shu', 'background-effect:cameraflare']) assert.ok(byKey.has(key), key)
+  'bgm:song', 'ambient:rain', 'se:door', 'image-icon:047shu', 'effect-texture:fx_adv_flare_01']) assert.ok(byKey.has(key), key)
 assert.equal(byKey.get('spine-bundle:047shu_005_00').dependencyState, 'pending')
 assert.deepEqual(byKey.get('spine-bundle:047shu_005_00').dependencies, ['spine-skeleton:047shu_005_00', 'spine-atlas:047shu_005_00'])
 assert.ok(byKey.get('background:end').uses.some(use => use.path.startsWith('cues[')), 'cue-only requirements carry provenance')
@@ -41,7 +41,33 @@ assert.ok(uncertain.unresolved.some(item => item.reason === 'unclassified-snapsh
 assert.ok(uncertain.unresolved.some(item => item.reason === 'unclassified-cue:future.resource'))
 assert.throws(() => createStoryAssetPlan(strict, { ...source, file: '../raw.json' }), /source file/)
 assert.throws(() => createStoryAssetPlan({ ...strict, steps: [...strict.steps, ...strict.steps] }, source), /unique/)
-console.log('Story asset plan verified: strict/compat, entry/settled/cues, deduplication, source provenance and unresolved dependencies')
+
+// Effect textures resolve to the exact files the effect managers request:
+// composite effects contribute every part, unique ones a single texture, and
+// generated overlays no requirement at all.
+const effects = { schema_version: 2, runtime_contract: 'story-runtime-v2', steps: [{ step_id: 1, type: 'adv',
+  entry_snapshot: { bg: 'room', spines: [], bg_effects: [{ id: 'fx_adv_rain_heavy2' }, { id: 'cameraflare' }],
+    screen_effects: [{ type: 'single', id: 'fx_adv_kamifubuki' }, { type: 'fadein', color: '#FFF' }] },
+  settled_snapshot: { bg: 'room', spines: [] } }] }
+const effectPlan = createStoryAssetPlan(effects, source)
+const effectTextures = effectPlan.assets.filter(asset => asset.kind === 'effect-texture').map(asset => asset.id)
+assert.deepEqual(effectTextures, ['fx_adv_rain', 'fx_adv_flare_01', 'fx_adv_sakura', 'fx_adv_star'],
+  'composite effects expand, heavy rain shares the rain texture and overlays add none')
+assert.equal(effectPlan.dependenciesComplete, true, 'mapped effect textures are complete logical requirements')
+const cameraflare = effectPlan.assets.find(asset => asset.id === 'fx_adv_flare_01')
+assert.equal(cameraflare.runtimeDisabled, 'cameraflare-re-authored-as-particles')
+assert.ok(cameraflare.uses.some(use => use.path === 'entry_snapshot.bg_effects[1]'), 'effect provenance is kept')
+assert.equal(effectPlan.assets.find(asset => asset.id === 'fx_adv_rain').runtimeDisabled, undefined)
+const unknownEffect = structuredClone(effects)
+unknownEffect.steps[0].entry_snapshot.bg_effects = [{ id: 'fx_adv_unknown' }]
+unknownEffect.steps[0].entry_snapshot.screen_effects = []
+const unmapped = createStoryAssetPlan(unknownEffect, source)
+assert.equal(unmapped.dependenciesComplete, false)
+assert.ok(unmapped.unresolved.some(item => item.reason === 'unmapped-effect-texture'),
+  'an effect with no texture mapping must stay explicitly unresolved')
+assert.deepEqual(unmapped.assets.filter(asset => asset.kind === 'effect-texture'), [],
+  'an unmapped effect must not be silently reported as satisfied')
+console.log('Story asset plan verified: strict/compat, entry/settled/cues, deduplication, source provenance, effect textures and unresolved dependencies')
 
 if (process.argv.includes('--local-sources')) {
   const manifest = JSON.parse(await fs.readFile(new URL('../public/data/reading/manifest.json', import.meta.url)))

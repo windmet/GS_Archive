@@ -1,4 +1,5 @@
 import { normalizeScenario } from './ScenarioNormalizer.js'
+import { effectTextures } from './EffectTextures.js'
 
 const HASH = /^sha256:[a-f0-9]{64}$/
 const record = value => value && typeof value === 'object' && !Array.isArray(value)
@@ -37,12 +38,19 @@ export function createStoryAssetPlan(input, { file, sha256 }) {
     if (value == null || value === '') return
     add(kind, typeof value === 'string' ? value : value.cue, use)
   }
-  function effects(kind, values, use) {
+  // Effects resolve per handler domain: an authored id only requires textures
+  // in the snapshot field whose manager implements it.
+  function effects(values, domain, use) {
     if (values == null) return
     if (!Array.isArray(values)) { issue(use, 'invalid-effect-list'); return }
     values.forEach((effect, index) => {
-      if (['fadein', 'fadeout'].includes(effect?.type)) return // generated overlays, no texture
-      add(kind, effect?.id || effect?.name || effect?.type, { ...use, path: `${use.path}[${index}]` }, 'effect-texture-mapping')
+      const at = { ...use, path: `${use.path}[${index}]` }
+      const resolved = effectTextures(effect, domain)
+      if (resolved.reason) { issue(at, resolved.reason); return }
+      resolved.textures.forEach(texture => {
+        const asset = add('effect-texture', texture, at)
+        if (asset && resolved.runtimeDisabled) asset.runtimeDisabled = resolved.runtimeDisabled
+      })
     })
   }
   scenario.steps.forEach((step, stepIndex) => {
@@ -78,9 +86,9 @@ export function createStoryAssetPlan(input, { file, sha256 }) {
           add('costume-dictionary', 'index', use)
         }
       }
-      effects('background-effect', snapshot.bg_effects, useAt(`${slot}.bg_effects`))
+      effects(snapshot.bg_effects, 'bg_effects', useAt(`${slot}.bg_effects`))
       if (snapshot.bg_effect) issue(useAt(`${slot}.bg_effect`), 'legacy-effect-field')
-      effects('screen-effect', snapshot.screen_effects, useAt(`${slot}.screen_effects`))
+      effects(snapshot.screen_effects, 'screen_effects', useAt(`${slot}.screen_effects`))
       if (typeof snapshot.image_icon === 'string' || snapshot.image_icon?.layer) add('image-icon', typeof snapshot.image_icon === 'string' ? snapshot.image_icon : snapshot.image_icon.display_id || snapshot.image_icon.id,
         useAt(`${slot}.image_icon`))
       if (snapshot.phone_mode || snapshot.talk_mode) issue(useAt(slot), 'communication-ui-dependencies')
