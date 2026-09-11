@@ -27,11 +27,18 @@ export function createStoryAssetPlan(input, { file, sha256 }) {
   }
   const assets = new Map(), unresolved = [], accountedFields = [], stepIds = new Set()
   const issue = (use, reason) => unresolved.push({ ...use, reason })
-  function add(kind, id, use, pending = null) {
+  // `required: false` marks a requirement the runtime is known to ignore. It is
+  // still enumerated with the reason it is unused, but it is not a download:
+  // nothing may count it towards readiness or loading progress.
+  function add(kind, id, use, pending = null, runtimeDisabled = null) {
     if (typeof id !== 'string' || !id) { issue(use, `invalid-${kind}-identity`); return null }
     const key = `${kind}:${id}`
-    if (!assets.has(key)) assets.set(key, { key, kind, id, dependencies: [],
-      dependencyState: pending ? 'pending' : 'complete', pending, uses: [] })
+    if (!assets.has(key)) {
+      const entry = { key, kind, id, required: !runtimeDisabled, dependencies: [],
+        dependencyState: pending ? 'pending' : 'complete', pending, uses: [] }
+      if (runtimeDisabled) entry.runtimeDisabled = runtimeDisabled
+      assets.set(key, entry)
+    }
     const asset = assets.get(key)
     if (!asset.uses.some(previous => JSON.stringify(previous) === JSON.stringify(use))) asset.uses.push(use)
     return asset
@@ -49,10 +56,8 @@ export function createStoryAssetPlan(input, { file, sha256 }) {
       const at = { ...use, path: `${use.path}[${index}]` }
       const resolved = effectTextures(effect, domain)
       if (resolved.reason) { issue(at, resolved.reason); return }
-      resolved.textures.forEach(texture => {
-        const asset = add('effect-texture', texture, at)
-        if (asset && resolved.runtimeDisabled) asset.runtimeDisabled = resolved.runtimeDisabled
-      })
+      resolved.textures.forEach(texture =>
+        add('effect-texture', texture, at, null, resolved.runtimeDisabled))
     })
   }
   scenario.steps.forEach((step, stepIndex) => {

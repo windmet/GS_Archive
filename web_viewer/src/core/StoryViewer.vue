@@ -87,8 +87,8 @@
         :key="currentStepIndex"
         :step="currentStep"
         @start="setTitleAnimationPending(true)"
-        @complete="onTitleAnimationEnd"
-        @cancel="setTitleAnimationPending(false)"
+        @complete="onTitleAnimationSettled('complete')"
+        @cancel="onTitleAnimationSettled('cancel')"
       />
 
       <!-- Pre-play synopsis -->
@@ -291,8 +291,11 @@ let cleanupRuntimeCues = () => {}
 let isRuntimeAutoBlocked = () => false
 let playbackController = null
 
-// True while a title step is playing its FX. Feeds the existing auto-blocking
-// query, so auto waits for the animation instead of pasting its delay on top.
+// True while a title step is playing its FX. The FX is a transition the player
+// owns, not a screen the user dismisses: it always advances when it ends, which
+// is the same contract `getAutoAdvanceTiming` gives every other transition
+// step. Auto is held for its duration so it cannot paste its delay on top of a
+// card that is still animating.
 const titleAnimationPending = ref(false)
 
 function setTitleAnimationPending(pending) {
@@ -302,9 +305,25 @@ function setTitleAnimationPending(pending) {
   playbackController?.notifyStateChanged()
 }
 
-function onTitleAnimationEnd() {
+// The card is already invisible by the time the FX ends, so an advance that the
+// menu or backlog refuses has to be remembered and replayed: nothing else would
+// retry it, and the reader would be left on the faded-out card with no way to
+// tell the step had finished at all.
+let titleAdvancePending = false
+
+function retryTitleAdvance() {
+  if (!titleAdvancePending || currentStep.value?.type !== 'title') { titleAdvancePending = false; return }
+  titleAdvancePending = false
+  goNext('title-animation')
+}
+
+// `cancel` means the step was left mid-flight, so advancing again would skip a
+// step the user never saw. Reduced motion emits neither event: the card stays
+// static and the step is dismissed by the user, exactly as it was before the FX.
+function onTitleAnimationSettled(event) {
   setTitleAnimationPending(false)
-  if (playbackController?.autoEnabled) goNext('title-animation')
+  if (event === 'cancel') return
+  titleAdvancePending = goNext('title-animation') === 'blocked'
 }
 
 const getVoiceVolume = () => voicePlayer?.getVoiceVolume?.() || 0
@@ -978,6 +997,7 @@ watch([menuOpen, backlogOpen, episodeFinished], ([menu, backlog, finished]) => {
   if (menu || backlog || finished) clearFadeAutoAdvance()
   playbackController?.setPaused('overlay', menu || backlog || finished)
   setRuntimeSessionPaused('overlay', menu || backlog || finished)
+  if (!menu && !backlog && !finished) retryTitleAdvance()
 }, { immediate: true })
 watch(uiHidden, hidden => {
   preferencesRepository.update({ ui_hidden: hidden })

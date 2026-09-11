@@ -94,6 +94,21 @@ jobs:
       - name: Verify shared scenario normalization boundary
         run: npm run verify:shared-scenario-normalizer
 
+      # Story asset dependency discovery. These run on committed fixtures only:
+      # the compiled corpus is gitignored, so the `:source` variants that walk it
+      # stay a local check.
+      - name: Verify story asset dependency plan
+        run: npm run verify:story-asset-plan
+
+      - name: Verify effect texture parity with the runtime managers
+        run: npm run verify:effect-texture-parity
+
+      - name: Verify communication UI asset parity
+        run: npm run verify:communication-assets
+
+      - name: Verify title transition lifecycle
+        run: npm run verify:title-transition
+
       - name: Verify background loading lifecycle
         run: npm run verify:story-background-loading
 

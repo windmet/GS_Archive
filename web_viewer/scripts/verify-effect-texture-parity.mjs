@@ -118,6 +118,9 @@ const plan = createStoryAssetPlan({ schema_version: 2, runtime_contract: 'story-
 assert.deepEqual(plan.assets.filter(a => a.kind === 'effect-texture').map(a => a.id),
   ['fx_adv_rain', 'fx_adv_flare_01', 'fx_adv_punch'],
   'every corpus effect resolves to its texture')
+assert.deepEqual(plan.assets.filter(a => a.kind === 'effect-texture' && a.required).map(a => a.id),
+  ['fx_adv_rain', 'fx_adv_punch'],
+  'the probe set must not report a disabled texture as a download')
 assert.equal(plan.dependenciesComplete, true, 'corpus effects are complete logical requirements')
 
 const wrongDomain = structuredClone(plan.source) && createStoryAssetPlan({

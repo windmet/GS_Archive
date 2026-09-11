@@ -6,8 +6,9 @@ import { communicationUiAssets } from '../shared/story/CommunicationUiAssets.js'
 import { getMobileBgUrl, getMobileIconUrl, getUnitMobileBgUrl, getStampUrl, getEmojiUrl }
   from '../src/utils/AssetResolver.js'
 import { getUnitCodeByCharaId } from '../src/utils/UnitNameMap.js'
-import { IDOL_ID_TO_NAME } from '../src/utils/IdolNameMap.js'
 import { SCREEN_EFFECT_HANDLER_IDS } from '../shared/story/EffectTextures.js'
+import { normalizeScenario } from '../shared/story/ScenarioNormalizer.js'
+import { resolveCommunicationContext } from '../src/core/story-runtime/CommunicationPresentationContext.js'
 
 /**
  * The plan enumerates communication assets for a whole scenario statically; the
@@ -116,15 +117,111 @@ assert.ok(noopPlan.unresolved.some(item => item.reason === 'unmapped-legacy-fiel
 assert.deepEqual(noopPlan.accountedFields.filter(field => field.field === 'state.screen_effects'), [],
   'an effect nothing animates is a gap, not an accounted field')
 
+// A list mixing a playable effect with an unsupported one is still partly a
+// no-op. Reporting the field only when *nothing* in it is handled would let one
+// playable entry hide its unsupported siblings from the diagnostics.
+const mixedFields = effects => normalizeScenario({ schema_version: 1,
+  steps: [{ step_id: 1, type: 'adv', state: { bg: 'room', spines: [], screen_effects: effects } }] })
+  .steps[0].normalization.unmapped_legacy_fields
+assert.deepEqual(mixedFields([{ type: 'single', id: 'fx_adv_punch' }]), [],
+  'a fully handled list is not a gap')
+for (const effects of [
+  [{ type: 'single', id: 'fx_adv_punch' }, { type: 'single', id: 'fx_adv_unknown' }],
+  [{ type: 'single', id: 'fx_adv_unknown' }, { type: 'single', id: 'fx_adv_punch' }],
+]) {
+  assert.ok(mixedFields(effects).includes('state.screen_effects'),
+    `an unsupported effect must stay reported even beside a playable one (${JSON.stringify(effects)})`)
+}
+for (const effects of [
+  [{ type: 'fadein', color: '#FFF' }, { type: 'single', id: 'fx_adv_punch' }],
+  [{ type: 'fadeout', color: '#000' }],
+]) {
+  assert.deepEqual(mixedFields(effects), [], 'generated overlays are handled in their own right')
+}
+
+// 7. Branch history. Everywhere else this file drives the resolver and the
+//    requirement helper together, which can only prove the plan called the
+//    shared rule, never that the rule itself is right. These fixtures carry a
+//    hand-written expectation instead, pinning the two properties the corpus
+//    run cannot check:
+//      - real history beats linear order, so one choice shows the scene the
+//        reader actually arrived from;
+//      - a boundary step stops inheritance rather than being passed through.
+//    A branch surface always originates from a step the plan also walks
+//    linearly, so the plan's reach is a superset by construction; what is
+//    asserted here is that the semantics agree, not that a surface is missing.
+const branchScenario = { schema_version: 1, scenario_id: '1_4_001_01_e', steps: [
+  { step_id: 1, type: 'talk', state: { spines: [], talk_mode: true },
+    dialogue: { speaker_identity: { entity_id: '001tom' }, source_text: 'hi' } },
+  { step_id: 2, type: 'call', state: { spines: [], phone_mode: true },
+    dialogue: { speaker_identity: { entity_id: '004ter' }, source_text: 'hello' } },
+  { step_id: 3, type: 'choice', state: { spines: [] }, options: [{ step_id: 4 }], dialogue: {} },
+] }
+const branchSteps = normalizeScenario(branchScenario).steps
+const resolveAt = (stepIndex, historyStack) => resolveCommunicationContext({
+  step: branchSteps[stepIndex], stepIndex, historyStack, steps: branchSteps,
+  scenarioId: branchScenario.scenario_id,
+})
+// Reached by reading straight through: the call step is the nearest predecessor.
+const viaLinear = resolveAt(2, [])
+assert.equal(viaLinear.mode, 'call', 'a choice with no history inherits the nearest predecessor')
+assert.equal(viaLinear.primaryCharaId, '004ter')
+// Reached on a branch that visited the talk step instead: real history wins over
+// linear order, which is the whole reason the plan cannot simply assume one path.
+const viaHistory = resolveAt(2, [0])
+assert.equal(viaHistory.mode, 'talk', 'a choice inherits the scene on the real history path')
+assert.equal(viaHistory.primaryCharaId, '001tom')
+assert.notEqual(`${viaLinear.mode}/${viaLinear.primaryCharaId}`, `${viaHistory.mode}/${viaHistory.primaryCharaId}`,
+  'the fixture is only meaningful while the two paths disagree')
+
+const branchText = index => {
+  const text = branchSteps[index]?.dialogue?.source_text
+  return typeof text === 'string' && text ? [text] : []
+}
+const branchRequirements = (context, index) => communicationUiAssets({
+  mode: context.mode, unitCode: context.unitCode || null,
+  charaId: context.primaryCharaId || '', texts: branchText(index),
+})
+const plannedKeys = new Set()
+const branchPlan = createStoryAssetPlan(branchScenario, source)
+for (const asset of branchPlan.assets) {
+  for (const use of asset.uses) if (use.path === 'communication') plannedKeys.add(`${asset.kind}|${asset.id}`)
+}
+for (const item of branchPlan.unresolved) {
+  assert.notEqual(item.path, 'communication', `no branch surface may be unresolvable: ${item.reason}`)
+}
+assert.deepEqual(branchPlan.unresolved, [], 'both branch surfaces must be fully resolvable')
+for (const [context, index] of [[viaLinear, 2], [viaHistory, 2]]) {
+  for (const requirement of branchRequirements(context, index)) {
+    assert.ok(plannedKeys.has(`${requirement.kind}|${requirement.id}`),
+      `the plan must enumerate ${requirement.kind}:${requirement.id} from the ${context.mode} branch`)
+  }
+}
+
+// An `adv` step between the conversation and the choice ends the inheritance:
+// the reader has left the phone scene, so the choice must not keep showing one.
+const boundaryScenario = { schema_version: 1, scenario_id: '1_4_001_01_e', steps: [
+  { step_id: 1, type: 'talk', state: { spines: [], talk_mode: true },
+    dialogue: { speaker_identity: { entity_id: '001tom' }, source_text: 'hi' } },
+  { step_id: 2, type: 'adv', state: { spines: [] }, dialogue: {} },
+  { step_id: 3, type: 'choice', state: { spines: [] }, options: [{ step_id: 4 }], dialogue: {} },
+] }
+const boundarySteps = normalizeScenario(boundaryScenario).steps
+const boundaryAt = (stepIndex, historyStack) => resolveCommunicationContext({
+  step: boundarySteps[stepIndex], stepIndex, historyStack, steps: boundarySteps,
+  scenarioId: boundaryScenario.scenario_id,
+})
+assert.equal(boundaryAt(2, [0]).mode, 'talk', 'a conversation before the boundary is still inheritable')
+assert.equal(boundaryAt(2, [0]).primaryCharaId, '001tom')
+assert.equal(boundaryAt(2, [1]).mode, null, 'a boundary step ends inheritance instead of being passed through')
+assert.equal(boundaryAt(2, []).mode, null, 'the linear fallback stops at the same boundary')
+
 console.log('Communication asset parity verified: shared URL helpers, surface selection, tween coverage and no-op marking')
 
 // The corpus run checks the plan against a second, independent walk of the
 // scenes, exactly as the scenes themselves drive it: same requirement helper,
 // same resolver, but the grouping recomputed from scratch.
 if (process.argv.includes('--local-sources')) {
-  const { resolveCommunicationContext } =
-    await import('../src/core/story-runtime/CommunicationPresentationContext.js')
-  const { normalizeScenario } = await import('../shared/story/ScenarioNormalizer.js')
   const manifest = JSON.parse(await fs.readFile(new URL('../public/data/reading/manifest.json', import.meta.url)))
   const totals = {}, unresolved = {}, accounted = {}, divergence = [], recordedReasons = new Set()
   const recordedCorpus = new Set()

@@ -295,14 +295,15 @@ function buildLegacyCues(step) {
     push(cue)
   }
 
-  // Only the effects ScreenEffectManager really animates are represented. A
-  // list whose entries it handles none of is a no-op at runtime, so it stays
-  // marked rather than reading as a cue that would otherwise be carried.
+  // Only the effects ScreenEffectManager really animates are represented, so a
+  // list containing one it does not handle is still a gap: the field is marked
+  // whenever any entry is neither a generated overlay nor a handled id. Asking
+  // instead whether the list has *no* handled entry would let one playable
+  // effect hide its unsupported siblings.
   // `EffectTextures.js` holds the handler names; this module stays free of
   // repository-relative imports so it can be normalized in isolation.
-  if (state.screen_effects?.length
-    && !state.screen_effects.some(effect =>
-      effect?.type === 'fadein' || effect?.type === 'fadeout' || SCREEN_EFFECT_HANDLERS.has(effect?.id))) {
+  if (state.screen_effects?.some(effect =>
+    effect?.type !== 'fadein' && effect?.type !== 'fadeout' && !SCREEN_EFFECT_HANDLERS.has(effect?.id))) {
     unmapped.push('state.screen_effects')
   }
   for (const spine of state.spines || []) {
