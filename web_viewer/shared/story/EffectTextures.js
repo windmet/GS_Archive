@@ -27,6 +27,9 @@ const EFFECT_HANDLERS = {
   },
 }
 
+/** Ids that animate as particles, i.e. the keys of the screen handler table. */
+export const SCREEN_EFFECT_HANDLER_IDS = new Set(Object.keys(EFFECT_HANDLERS.screen_effects))
+
 const GENERATED_OVERLAY_TYPES = new Set(['fadein', 'fadeout'])
 
 /** URL the managers load for an extracted effect texture. */

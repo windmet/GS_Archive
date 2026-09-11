@@ -14,6 +14,8 @@
     "verify:effect-texture-parity": "node scripts/verify-effect-texture-parity.mjs",
     "verify:spine-atlas-pages": "node scripts/verify-spine-atlas-pages.mjs",
     "verify:story-asset-plan-sources": "node scripts/verify-story-asset-plan.mjs --local-sources",
+    "verify:communication-assets": "node scripts/verify-communication-asset-parity.mjs",
+    "verify:communication-assets:source": "node scripts/verify-communication-asset-parity.mjs --local-sources",
     "verify:reading-sources": "node scripts/generate-reading-documents.mjs --check",
     "dev": "vite --configLoader native",
     "build": "vite build --configLoader native",

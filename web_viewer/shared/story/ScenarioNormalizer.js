@@ -1,6 +1,11 @@
 const LEGACY_SCHEMA_VERSION = 1
 const CURRENT_SCHEMA_VERSION = 2
 
+// Effects ScreenEffectManager animates as particles. Kept in step with
+// `screen_effects` in shared/story/EffectTextures.js, which is what the effect
+// managers are held to; `verify:effect-texture-parity` covers the agreement.
+const SCREEN_EFFECT_HANDLERS = new Set(['fx_adv_punch', 'fx_adv_kamifubuki', 'fx_adv_sakura', 'fx_adv_momiji'])
+
 function clone(value) {
   return value == null ? value : JSON.parse(JSON.stringify(value))
 }
@@ -290,7 +295,14 @@ function buildLegacyCues(step) {
     push(cue)
   }
 
-  if (state.screen_effects?.some(effect => effect?.type !== 'fadein' && effect?.type !== 'fadeout')) {
+  // Only the effects ScreenEffectManager really animates are represented. A
+  // list whose entries it handles none of is a no-op at runtime, so it stays
+  // marked rather than reading as a cue that would otherwise be carried.
+  // `EffectTextures.js` holds the handler names; this module stays free of
+  // repository-relative imports so it can be normalized in isolation.
+  if (state.screen_effects?.length
+    && !state.screen_effects.some(effect =>
+      effect?.type === 'fadein' || effect?.type === 'fadeout' || SCREEN_EFFECT_HANDLERS.has(effect?.id))) {
     unmapped.push('state.screen_effects')
   }
   for (const spine of state.spines || []) {

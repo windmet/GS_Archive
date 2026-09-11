@@ -217,25 +217,20 @@ export function getBodyTypeUrl() {
 }
 
 /**
- * Mobile phone UI assets — indexed by chara_id (e.g. "001tom").
+ * Mobile phone UI assets are shared with the asset plan, which enumerates them
+ * as dependencies. Both resolve through one module so discovery cannot drift
+ * from what the scenes actually request.
  */
-export function getMobileBgUrl(charaId) {
-  return `${ASSET_BASE}/idols/mobile_bg/image_chara_mobile_background_${charaId}.png`
-}
-
-export function getMobileIconUrl(charaId) {
-  return `${ASSET_BASE}/idols/mobile_icons/image_chara_mobile_icon_${charaId}.png`
-}
+export {
+  characterMobileBackgroundUrl as getMobileBgUrl,
+  mobileIconUrl as getMobileIconUrl,
+  unitMobileBgUrl as getUnitMobileBgUrl,
+  emojiUrl as getEmojiUrl,
+  stampUrl as getStampUrl,
+} from '../../shared/story/CommunicationUiAssets.js'
 
 export function getCharaIconUrl(charaId) {
   return `${ASSET_BASE}/idols/icons/image_chara_icon_${charaId}.png`
-}
-
-/**
- * Unit mobile backgrounds — indexed by unit code (e.g. "001jup").
- */
-export function getUnitMobileBgUrl(unitId) {
-  return `${ASSET_BASE}/units/mobile_bg/image_unit_mobile_background_${unitId}.png`
 }
 
 export function getUnitLogoUrl(unitId) {
@@ -252,20 +247,6 @@ export function getPortalBackgroundUrl() {
 
 export function getEventBannerUrl(eventCode) {
   return `${ASSET_BASE}/events/banners/image_home_announce_event_${eventCode}_01.png`
-}
-
-/**
- * Chat emoji images.
- */
-export function getEmojiUrl(emojiId) {
-  return `${ASSET_BASE}/emojis/${emojiId}.png`
-}
-
-/**
- * Stamp (large chat sticker) images.
- */
-export function getStampUrl(stampId) {
-  return `${ASSET_BASE}/stamps/${stampId}.png`
 }
 
 /**

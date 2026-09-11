@@ -1,5 +1,7 @@
 import { normalizeScenario } from './ScenarioNormalizer.js'
 import { effectTextures } from './EffectTextures.js'
+import { communicationRequirements } from './CommunicationScenes.js'
+import { legacyFieldCoverage } from './LegacyFieldCoverage.js'
 
 const HASH = /^sha256:[a-f0-9]{64}$/
 const record = value => value && typeof value === 'object' && !Array.isArray(value)
@@ -23,7 +25,7 @@ export function createStoryAssetPlan(input, { file, sha256 }) {
   if (!['story-runtime-v2', 'story-runtime-v2-compat'].includes(scenario.runtime_contract)) {
     throw new TypeError('Unsupported asset plan runtime contract')
   }
-  const assets = new Map(), unresolved = [], stepIds = new Set()
+  const assets = new Map(), unresolved = [], accountedFields = [], stepIds = new Set()
   const issue = (use, reason) => unresolved.push({ ...use, reason })
   function add(kind, id, use, pending = null) {
     if (typeof id !== 'string' || !id) { issue(use, `invalid-${kind}-identity`); return null }
@@ -91,7 +93,6 @@ export function createStoryAssetPlan(input, { file, sha256 }) {
       effects(snapshot.screen_effects, 'screen_effects', useAt(`${slot}.screen_effects`))
       if (typeof snapshot.image_icon === 'string' || snapshot.image_icon?.layer) add('image-icon', typeof snapshot.image_icon === 'string' ? snapshot.image_icon : snapshot.image_icon.display_id || snapshot.image_icon.id,
         useAt(`${slot}.image_icon`))
-      if (snapshot.phone_mode || snapshot.talk_mode) issue(useAt(slot), 'communication-ui-dependencies')
       for (const [field, value] of Object.entries(snapshot)) {
         if (value != null && !knownSnapshotFields.has(field)) issue(useAt(`${slot}.${field}`), 'unclassified-snapshot-field')
       }
@@ -100,8 +101,14 @@ export function createStoryAssetPlan(input, { file, sha256 }) {
     if (step.dialogue?.lip?.path) add('lipsync', step.dialogue.lip.path, useAt('dialogue.lip.path'))
     else if (step.dialogue?.lip) issue(useAt('dialogue.lip'), 'unresolved-lipsync-format')
     if (step.stamp) add('stamp', step.stamp.id || step.stamp.stamp_id, useAt('stamp'))
-    if (['talk', 'talk_stamp', 'call'].includes(step.type)) issue(useAt('type'), 'communication-ui-dependencies')
-    for (const field of step.normalization?.unmapped_legacy_fields || []) issue(useAt(field), 'unmapped-legacy-field')
+    // A field the normalizer leaves out of the cue layer is only an open gap
+    // when nothing else accounts for it. Fields with a real handler need no
+    // asset, so they are recorded as covered instead of inflating the backlog.
+    for (const field of step.normalization?.unmapped_legacy_fields || []) {
+      const coverage = legacyFieldCoverage(field)
+      if (coverage) accountedFields.push({ ...useAt(field), field, handledBy: coverage.handledBy })
+      else issue(useAt(field), 'unmapped-legacy-field')
+    }
     if (step.cues != null && !Array.isArray(step.cues)) throw new TypeError('Asset plan cues must be an array')
     for (const [index, cue] of (step.cues || []).entries()) {
       const use = { ...useAt(`cues[${index}]`), cueId: cue.cue_id ?? null }
@@ -110,8 +117,18 @@ export function createStoryAssetPlan(input, { file, sha256 }) {
       else if (!noAssetActions.has(cue.action)) issue(use, `unclassified-cue:${cue.action}`)
     }
   })
+  // Communication surfaces resolve through the runtime's own presentation
+  // context, so a step that shows a phone scene because of what it continues
+  // is described by the scene it is actually in.
+  for (const step of communicationRequirements(scenario)) {
+    const use = { stepIndex: step.stepIndex, stepId: scenario.steps[step.stepIndex]?.step_id ?? null, path: 'communication' }
+    for (const requirement of step.requirements) {
+      if (requirement.reason) issue(use, requirement.reason)
+      else add(requirement.kind, requirement.id, use)
+    }
+  }
   return { schema_version: 1, source: { file, sha256, scenarioId: scenario.scenario_id ?? null,
     runtimeContract: scenario.runtime_contract }, stepCount: scenario.steps.length,
-  assets: [...assets.values()], unresolved,
+  assets: [...assets.values()], unresolved, accountedFields,
   dependenciesComplete: unresolved.length === 0 && [...assets.values()].every(asset => asset.dependencyState === 'complete') }
 }
