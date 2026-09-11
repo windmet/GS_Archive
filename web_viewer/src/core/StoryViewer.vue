@@ -80,8 +80,16 @@
         @select="onChoice"
       />
 
-      <!-- Title (episode/chapter title card) -->
-      <TitleUI v-if="currentStep.type === 'title'" :step="currentStep" />
+      <!-- Title (episode/chapter title card). The key forces the FX to replay
+           for consecutive title steps instead of reusing the finished instance. -->
+      <TitleUI
+        v-if="currentStep.type === 'title'"
+        :key="currentStepIndex"
+        :step="currentStep"
+        @start="setTitleAnimationPending(true)"
+        @complete="onTitleAnimationEnd"
+        @cancel="setTitleAnimationPending(false)"
+      />
 
       <!-- Pre-play synopsis -->
       <SynopsisUI v-if="currentStep.type === 'synopsis'" :step="currentStep" />
@@ -282,6 +290,22 @@ let handleRuntimeStepChange = () => {}
 let cleanupRuntimeCues = () => {}
 let isRuntimeAutoBlocked = () => false
 let playbackController = null
+
+// True while a title step is playing its FX. Feeds the existing auto-blocking
+// query, so auto waits for the animation instead of pasting its delay on top.
+const titleAnimationPending = ref(false)
+
+function setTitleAnimationPending(pending) {
+  const next = Boolean(pending)
+  if (next === titleAnimationPending.value) return
+  titleAnimationPending.value = next
+  playbackController?.notifyStateChanged()
+}
+
+function onTitleAnimationEnd() {
+  setTitleAnimationPending(false)
+  if (playbackController?.autoEnabled) goNext('title-animation')
+}
 
 const getVoiceVolume = () => voicePlayer?.getVoiceVolume?.() || 0
 
@@ -600,6 +624,11 @@ function replayBacklogVoice(node) {
 
 function goNext(source = 'user') {
   if (episodeFinished.value || backlogOpen.value || menuOpen.value) return 'blocked'
+  if (source !== 'title-animation' && titleAnimationPending.value) {
+    // Title steps own the full FX duration: a manual advance (or an explicit
+    // skip) drops the pending animation and moves on immediately.
+    setTitleAnimationPending(false)
+  }
   const reason = typeof source === 'string' ? `${source}-next` : 'user-next'
   if (storyRuntimeCues.settleCurrentStep(reason)) return 'settled'
   markStepRead()
@@ -777,7 +806,7 @@ function applyDebugVisibility(hidden) {
 playbackController = new PlaybackModeController({
   getStep: () => storyRuntimeCues.getNormalizedStep(),
   getVoiceState: () => voicePlayer?.getVoiceState?.() || 'idle',
-  hasBlockingAuto: () => storyRuntimeCues.hasBlockingAuto(),
+  hasBlockingAuto: () => storyRuntimeCues.hasBlockingAuto() || titleAnimationPending.value,
   hasNonSkippable: () => storyRuntimeCues.hasNonSkippable(),
   isRead: isStepRead,
   autoDelayMs: autoDelayMs.value,
@@ -937,6 +966,10 @@ onUnmounted(() => {
 // Keep the legacy effects watcher behavior unchanged. The opt-in runtime watcher
 // is immediate so a scenario opened directly at an authored step is scheduled.
 watch(currentStep, (newStep, oldStep) => {
+  // Catch-all release: any navigation that is not the title's own completion
+  // (prev, backlog restore, go-to-step, episode end) must drop the hold. The
+  // incoming title card re-claims it from its own onMounted.
+  setTitleAnimationPending(false)
   handleStepChange(newStep, oldStep, { restore: Boolean(restoredSceneState.value) })
   playbackController?.notifyStateChanged()
 })
