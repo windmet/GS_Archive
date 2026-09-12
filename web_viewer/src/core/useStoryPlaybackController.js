@@ -14,11 +14,15 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
   const currentScenarioInstance = state.currentScenarioInstance || ref(0)
   const error = ref('')
   const preloadStatus = ref(null)
+  const canRetry = ref(false)
+  let failedEntry = null
+  function clearRetry() { failedEntry = null; canRetry.value = false }
   const currentScenarioInitialStep = state.currentScenarioInitialStep || ref(null)
   const { view, loading, preloadProgress, currentScenarioFile, currentScenarioStartStep,
     currentScenarioEndStep, currentPreviewCue, returnViewAfterPlayer } = state
 
   function reset() {
+    clearRetry()
     preloadStatus.value = null
     currentScenario.value = null
     currentScenarioFile.value = ''
@@ -49,7 +53,8 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
     return navigation.run(async intent => {
       // Navigation revokes the previous intent synchronously before starting
       // its successor, so an abandoned warming report must leave with it.
-      intent.signal?.addEventListener('abort', () => { preloadStatus.value = null }, { once: true })
+      intent.signal?.addEventListener('abort', () => { preloadStatus.value = null; clearRetry(); error.value = '' }, { once: true })
+      clearRetry()
       loading.value = true
       preloadProgress.value = 0
       preloadStatus.value = null
@@ -67,6 +72,9 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
       } catch (failure) {
         if (!intent.isCurrent()) return false
         error.value = failure.message
+        const { intent: ignoredIntent, ...retryOptions } = options
+        failedEntry = { name, returnView, options: retryOptions }
+        canRetry.value = true
         loading.value = false
         onError(failure)
         return false
@@ -76,6 +84,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
   async function preview(makeScenario, cue, returnView, options = {}) {
     return navigation.run(async intent => {
       loading.value = true
+      clearRetry()
       preloadProgress.value = 100
       preloadStatus.value = null
       error.value = ''
@@ -111,9 +120,14 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
       queueCommit: () => queue.next(),
     })
   }
+  function retry() {
+    if (!failedEntry || loading.value) return false
+    const entry = failedEntry
+    return load(entry.name, entry.returnView, entry.options)
+  }
   function close() {
+    const destination = failedEntry?.returnView || returnViewAfterPlayer.value || 'files'
     navigation.invalidate()
-    const destination = returnViewAfterPlayer.value || 'files'
     reset()
     returnViewAfterPlayer.value = 'files'
     loading.value = false
@@ -121,6 +135,6 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
   }
   function ready() { if (!navigation.isPending()) loading.value = false }
   function dispose() { navigation.invalidate(); reset(); loading.value = false }
-  return { currentScenario, currentScenarioInstance, currentScenarioInitialStep, error, preloadStatus, queue, hasNext: queue.hasNext,
-    load, preview, startQueue, restore, next, close, ready, reset, dispose }
+  return { currentScenario, currentScenarioInstance, currentScenarioInitialStep, error, preloadStatus, canRetry, queue, hasNext: queue.hasNext,
+    load, retry, preview, startQueue, restore, next, close, ready, reset, dispose }
 }

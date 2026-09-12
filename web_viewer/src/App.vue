@@ -359,7 +359,16 @@
     </ArchiveShell>
 
     <!-- ====== STORY PLAYER ====== -->
-    <p v-if="playbackError && view !== 'reader'" class="playback-failure" role="alert">演出暂时无法载入，请从目录重新打开。</p>
+    <section v-if="playbackError && !loading" class="playback-failure" role="alert">
+      <p>演出暂时无法载入。{{ playbackError }}</p>
+      <div class="playback-failure-actions">
+        <button v-if="playbackController.canRetry.value" type="button" @click="playbackController.retry()">重试载入</button>
+        <button type="button" @click="playbackController.close()">返回</button>
+      </div>
+      <details v-if="preloadStatus?.failed"><summary>查看失败资源</summary>
+        <ul><li v-for="task in preloadStatus.tasks.filter(task => task.state === 'failed')" :key="task.key">{{ task.id }}：{{ task.error }}</li></ul>
+      </details>
+    </section>
     <details v-if="view === 'player' && !loading && preloadStatus?.failed" class="preload-notice">
       <summary>有 {{ preloadStatus.failed }} 项资源未能预载</summary>
       <p>演出可能缺少部分画面。</p>
@@ -2788,7 +2797,10 @@ onBeforeUnmount(() => {
   width: 100%; height: 100vh; color: #222;
   background: #f8f9fa; overflow: hidden;
 }
-.playback-failure { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 120; max-width: calc(100vw - 32px); margin: 0; padding: 12px 18px; border: 1px solid #e4b7b7; border-radius: 8px; background: #fff4f4; color: #7f3434; font: 14px/1.6 system-ui, sans-serif; pointer-events: none; }
+.playback-failure { position: fixed; top: 64px; width: min(480px, calc(100vw - 24px)); left: 50%; transform: translateX(-50%); z-index: 120; max-width: calc(100vw - 32px); margin: 0; padding: 12px 18px; border: 1px solid #e4b7b7; border-radius: 8px; background: #fff4f4; color: #7f3434; font: 14px/1.6 system-ui, sans-serif; overflow-wrap: anywhere; max-height: 60vh; overflow: auto; box-sizing: border-box; }
+.playback-failure p { margin: 0 0 10px; }
+.playback-failure-actions { display: flex; gap: 12px; }
+.playback-failure button { white-space: nowrap; flex-shrink: 0; min-height: 44px; padding: 8px 16px; cursor: pointer; }
 .preload-notice { position: fixed; top: 64px; left: 12px; z-index: 120; max-width: min(440px, calc(100vw - 24px)); max-height: 35vh; overflow: auto; box-sizing: border-box; padding: 10px 14px; border: 1px solid #d6b86b; border-radius: 8px; background: #fff8e6; color: #654d18; font: 14px/1.6 system-ui, sans-serif; overflow-wrap: anywhere; }
 .preload-notice summary { cursor: pointer; min-height: 24px; }
 .preload-notice p { margin: 8px 0; }

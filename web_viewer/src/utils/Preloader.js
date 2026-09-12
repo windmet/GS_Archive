@@ -123,6 +123,9 @@ export class Preloader {
           }
         }))
         signal?.throwIfAborted()
+        if (outcomes.some(task => task.priority === 'critical' && task.state === 'failed')) {
+          return { plan, status: report('blocked') }
+        }
       }
     } catch (error) {
       for (const task of outcomes) {

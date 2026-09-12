@@ -240,3 +240,16 @@
 - at_step=14 的另一轮观察在语音启动后变成 4/4，日志证明先进入了第 14 步，但尚未定位其随后推进原因；不据此宣称音频自动推进验收通过。第 13 步无语音入口及上一段边界用于本批页面验收。
 
 当前仍等待所有可执行预热结束后 best-effort 进入；没有宣称 critical readiness gate、后台 deferred、动态 near 重排、共享缓存或重试已经完成。下一批接入当前入口失败的重试 / 返回及 critical 与后台工作的生命周期分离；首帧 gate 必须保持媒体准备与 renderer readiness 两阶段，未适配音频 / 通信依赖继续显式保留。总体 P1–P5 继续进行。
+
+## P2 当前入口失败阻断与恢复操作
+
+输入 HEAD：`649f785`。实际优先级执行中，只要一个批次出现 critical failed，就停止启动后续批次并报告 phase=blocked；未执行任务保留 discovered，不虚报成功或取消。prepareScenario 在此结果下不发布 scenario。尚未适配的 deferred / renderer-pending 不是失败，也不是就绪证明，本批没有把这条边界扩充成完整首帧 gate。
+
+- controller 保存失败请求的 file / returnView / options，提供 retry / canRetry；重试取得新的导航 intent，不复用 Reader / route 恢复传入的旧 intent。来源校验 readScenario、initialStep / range、queueCommit 都保留，队列仅在成功后提交。
+- 新导航、退出、预览和 reset 清理过期恢复状态；失败前尚未 publish 时，返回仍使用失败请求自己的目的地。旧导航回调不能重新发布错误或恢复按钮。
+- App 的来源错误 / critical 预载错误显示可点击“重试载入 / 返回”，可展开失败资源；320px 实测修复 fixed 面板 shrink-to-fit 导致的按钮竖排，设定宽度和 nowrap，保留顶部导航。
+- 新增 verify:story-entry-retry，受控图片失败覆盖阻止 mount / 低层启动、失败 inherited intent 后重试、Reader 重新验证、入口范围不变、queue 仅提交一次、返回 / 其他导航清理。playback-controller、asset-priority、preload-cancellation / status、plan-preparation、reading-playback、archive-async-navigation 通过。
+- Vite native 构建通过：2507 modules，主入口 540.19 kB，保留大小提示。仓库外产物 / 临时服务位于 `C:/Users/windm/.codex/qa/sidem-retry-20260912/`。
+- 5188 生产构建 fixture 是真实 strict-v2 episode 的内存副本，背景仅在首次请求返回真实 HTTP 404，后续提供真实 PNG。实际失败时无播放器挂载，点击重试后在 start=12 / end=15 / initial=13 的 2/4 正确对白进入。最终布局 320×740 无横向溢出，返回清除提示；1280×800 另验证不存在剧情 URL 的来源解析失败有恢复按钮。未修改真实剧情 / 媒体，未做长音频验收。
+
+本批重试重新读取来源并执行计划，尚非复用缓存的失败项增量重试；未执行的 critical 仍需下次重试处理。正常成功路径仍等待全部可执行预热。下一批继续 critical 与后台生命周期分离、当前步 near 重排、媒体准备 / renderer ready 两阶段及缓存复用；音频和通信动态依赖未闭合项保留。P1–P5 继续进行。

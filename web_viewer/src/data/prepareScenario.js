@@ -53,7 +53,10 @@ export async function prepareScenario(name, {
       if (isCurrent() && !signal?.aborted) onStatus?.(status)
     } }),
   ])
-  await awaitOwned(work)
+  const [, preloaded] = await awaitOwned(work)
   signal?.throwIfAborted()
+  if (preloaded?.status?.phase === 'blocked') {
+    throw new Error('当前入口的必要资源未能载入，请重试。')
+  }
   return isCurrent() ? scenario : null
 }
