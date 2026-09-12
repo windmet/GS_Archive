@@ -30,6 +30,13 @@ const callScene = await fs.readFile(new URL('../src/components/mobile/MobileCall
 const chatScene = await fs.readFile(new URL('../src/components/mobile/MobileChatScene.vue', import.meta.url), 'utf8')
 const bubble = await fs.readFile(new URL('../src/components/mobile/MobileMessageBubble.vue', import.meta.url), 'utf8')
 const profile = await fs.readFile(new URL('../src/components/mobile/MobileCallProfile.vue', import.meta.url), 'utf8')
+const callerProjection = callScene.match(/const charaId = computed\(\(\) => \{([^]*?)\n\}\)/)
+assert.ok(callerProjection, 'production caller projection must exist')
+function actualCaller(step, context) {
+  return runInNewContext(`(() => {${callerProjection[1]}\n})()`, {
+    props: { step, dialogue: step.dialogue }, context: { value: context }, IDOL_NAME_TO_ID,
+  })
+}
 
 // Execute the actual message projection and inline parser. Expected message
 // URLs here do not call communicationUiAssets or its marker classifier.
@@ -57,6 +64,27 @@ function renderedMessageImages(message) {
   const display = normalizeLocalizedDisplay(message.display)
   return [display.primary, display.secondary].filter(Boolean).flatMap(block =>
     consumer.messageParts(block.text).filter(part => part.type === 'emoji').map(part => getEmojiUrl(part.id)))
+}
+const actorCases = [
+  { name: 'call speaker name', type: 'call', dialogue: { speaker: '天ヶ瀬 冬馬', source_text: 'hello' } },
+  { name: 'call direct id wins over context', type: 'call', chara_id: '004ter', presentation_context: { primary_chara_id: '001tom' }, dialogue: { source_text: 'hello' } },
+  { name: 'chat name-only avatar', type: 'talk', dialogue: { speaker: '天ヶ瀬 冬馬', source_text: 'hello' } },
+  { name: 'chat stamp actor wins over step actor', type: 'talk_stamp', chara_id: '001tom', stamp: { id: 'image_mobile_stamp_001', chara_id: '004ter' }, dialogue: { speaker: '天道 輝', source_text: '' } },
+  { name: 'producer has no avatar', type: 'talk', chara_id: '001tom', dialogue: { speaker: '<P>', source_text: 'reply' } },
+  { name: 'history-sensitive legacy actor', type: 'talk', chara_id: 'legacy-actor', scenario_id: '3_001tom', dialogue: { speaker: 'legacy', source_text: 'reply' } },
+]
+for (const fixture of actorCases) {
+  const step = { ...fixture, step_id: 1, state: { spines: [] } }
+  const input = { schema_version: 1, scenario_id: fixture.scenario_id, steps: [step] }
+  const normalized = normalizeScenario(input)
+  const context = resolveCommunicationContext({ step: normalized.steps[0], stepIndex: 0, historyStack: [], steps: normalized.steps, scenarioId: input.scenario_id })
+  consumer.context.value = context
+  const actor = fixture.type === 'call' ? actualCaller(step, context) : consumer.stepToMessage(step)
+  const expectedIcon = typeof actor === 'string' ? actor : (actor.isProducer ? '' : actor.charaId)
+  const plan = createStoryAssetPlan(input, source)
+  assert.deepEqual(plan.assets.filter(a => a.kind === 'mobile-icon').map(a => a.id), expectedIcon ? [expectedIcon] : [], fixture.name)
+  if (fixture.type === 'call') assert.deepEqual(plan.assets.filter(a => a.kind === 'idol-mobile-background').map(a => a.id), actor ? [actor] : [], fixture.name)
+  if (fixture.name === 'history-sensitive legacy actor') assert.ok(plan.unresolved.some(item => item.reason === 'communication-history-avatar-pending'))
 }
 const sourceMessageCases = [
   { name: 'explicit stamp', stamp: { id: 'image_mobile_stamp_001', chara_id: '001tom' }, text: 'ignored <emoji>emoji_other</emoji>' },
@@ -326,7 +354,9 @@ if (process.argv.includes('--local-sources')) {
   const manifest = JSON.parse(await fs.readFile(new URL('../public/data/reading/manifest.json', import.meta.url)))
   const totals = {}, unresolved = {}, accounted = {}, divergence = [], recordedReasons = new Set()
   const consumerDivergence = []
+  const actorDivergence = []
   let consumerImageChecks = 0
+  let consumerActorChecks = 0
   const recordedCorpus = new Set()
   let open = 0, scenes = 0, plannedRequirements = 0
   for (const entry of manifest.entries) {
@@ -356,13 +386,27 @@ if (process.argv.includes('--local-sources')) {
     const scenarioId = raw.scenario_id
     const plannedMessageUrls = new Set(current.assets.filter(asset => ['stamp', 'emoji'].includes(asset.kind))
       .map(asset => asset.kind === 'stamp' ? getStampUrl(asset.id) : getEmojiUrl(asset.id)))
+    const plannedActorKeys = new Set(current.assets.filter(asset => ['mobile-icon', 'idol-mobile-background'].includes(asset.kind))
+      .map(asset => `${asset.kind}:${asset.id}`))
+    const checkActor = (kind, id, stepIndex) => {
+      if (!id) return
+      consumerActorChecks++
+      if (!plannedActorKeys.has(`${kind}:${id}`)) actorDivergence.push({ file: entry.source_file, stepIndex, kind, id })
+    }
     for (const [stepIndex, step] of steps.entries()) {
       const context = resolveCommunicationContext({ step, stepIndex, historyStack: [], steps, scenarioId })
+      if (context.mode === 'call') {
+        const caller = actualCaller(step, context)
+        checkActor('mobile-icon', caller, stepIndex)
+        checkActor('idol-mobile-background', caller, stepIndex)
+      }
       if (['talk', 'talk_stamp'].includes(step.type)) {
         consumer.context.value = context
         for (const mode of ['original', 'translation', 'bilingual']) {
           consumer.localization.resolveDialogue = dialogue => localizeDialogue(dialogue, mode)
-          for (const url of renderedMessageImages(consumer.stepToMessage(step))) {
+          const message = consumer.stepToMessage(step)
+          if (mode === 'original' && !message.isProducer) checkActor('mobile-icon', message.charaId, stepIndex)
+          for (const url of renderedMessageImages(message)) {
             consumerImageChecks++
             if (!plannedMessageUrls.has(url)) consumerDivergence.push({ file: entry.source_file, stepIndex, mode, url })
           }
@@ -372,7 +416,7 @@ if (process.argv.includes('--local-sources')) {
       scenes++
       const text = step?.stamp?.id ? null : step?.dialogue?.source_text
       const expected = communicationUiAssets({
-        mode: context.mode, unitCode: context.unitCode || null, charaId: context.primaryCharaId || '',
+        mode: context.mode, unitCode: context.unitCode || null, charaId: context.mode === 'call' ? actualCaller(step, context) : '',
         texts: typeof text === 'string' && text ? [text] : [],
       })
       for (const requirement of expected) {
@@ -400,8 +444,11 @@ if (process.argv.includes('--local-sources')) {
   console.log(JSON.stringify({ documents: manifest.entries.length, openDependencyPlans: open, communicationSteps: scenes,
     plannedRequirements, runtimeDivergence: divergence.length, sampleDivergence: divergence.slice(0, 10),
     consumerImageChecks, consumerImageDivergence: consumerDivergence.length, sampleConsumerDivergence: consumerDivergence.slice(0, 10),
+    consumerActorChecks, consumerActorDivergence: actorDivergence.length, sampleActorDivergence: actorDivergence.slice(0, 10),
     perDocumentAssetTotals: totals, unresolved, accountedFields: accounted }, null, 2))
   assert.equal(divergence.length, 0, 'linear consistency divergence must fail the verifier')
   assert.ok(consumerImageChecks > 0, 'independent source/inline message image check must not pass vacuously')
   assert.equal(consumerDivergence.length, 0, 'actual message image URLs must be represented in the plan')
+  assert.ok(consumerActorChecks > 0, 'independent caller/avatar checks must not pass vacuously')
+  assert.equal(actorDivergence.length, 0, 'actual caller backgrounds and message/profile avatars must be planned')
 }

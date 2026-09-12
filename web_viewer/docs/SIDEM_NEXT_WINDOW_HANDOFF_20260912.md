@@ -127,3 +127,16 @@
 - 204 个 plan 仍 open：history-dependent 64、translation-overlay-pending 11、without-unit 46、without-character 513；Spine 等现有 pending 仍保留。本批无渲染变化或新的浏览器验收。
 
 下一批需要将已校验本地化显示和真实 history 的需求纳入执行输入，并独立核对 call caller 与 chat 历史头像；同时保留特殊模型/配置回退和真实特效渲染的未验收项，继续朝 P1 执行状态接入推进。
+
+## P1 通信 caller / avatar 消费者对照
+
+输入 HEAD：`e19339b`。独立执行 MobileCallScene 的 charaId computed 及 MobileChatScene 的 stepToMessage，首先复现只有姓名的 caller 未被发现。
+
+- Call 按真实消费者优先级：step.chara_id → dialogue.speaker 姓名表 → scene context，通话背景和 profile avatar 使用同一 caller。
+- Chat 按每条消息的 presentation context、stamp actor、step actor、speaker identity、姓名表及现有继承规则识别头像；Producer 消息不要求头像。不能把 scene primaryCharaId 无条件当作 Bubble avatar。
+- 非标准消息角色 ID 可随当前 history context 改变头像，新增 communication-history-avatar-pending；fixture 验证保留此项，本次 204 篇的直接入口扫描未产生该诊断。不代表任意历史已经验收。
+- 六个独立 actor fixture 覆盖姓名 caller、直接 ID 与 context 冲突、聊天姓名头像、stamp actor 优先、Producer 无头像及旧角色继承。
+- `verify:communication-assets:source`：204 篇，5146 次 caller/background/avatar 存在性对照漏项 0，原有 78 次消息图片对照漏项 0。按篇 mobile-icon 从 382 减为 367，通话背景仍 348；更正后的线性 surface/source 子集为 5800 条。
+- `verify:story-asset-plan` 通过。204 个计划仍 open；分支历史 64、外部译文 11、缺 unit 46、缺 character 513 继续保留。本批没有改动 Call/Chat 的渲染规则，也没有把消费者一致性写成资源下载或网络可用性。
+
+下一步转向 P1 执行输入与状态：把这些已发现逻辑需求映射为真实任务，并明确未闭合项、取消/迟到响应、失败和重试；结合已有消费者加载器推进，避免继续只扩展无调用者的静态校验。

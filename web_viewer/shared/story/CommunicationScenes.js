@@ -3,6 +3,28 @@ import { communicationUiAssets, messageMarkers } from './CommunicationUiAssets.j
 import { normalizeLegacyDialogue, createChoiceSelectionRecord, normalizeChoiceSelection }
   from '../../src/localization/story/LegacyDialogueAdapter.js'
 import { resolveStoryText } from '../../src/localization/story/StoryTextResolver.js'
+import { IDOL_NAME_TO_ID, IDOL_ID_TO_NAME } from '../../src/utils/IdolNameMap.js'
+
+// These selectors mirror the concrete Call/Profile and Chat/Bubble consumers,
+// not the scene resolver's primary character. Independent production-function
+// tests pin their precedence so discovery cannot silently substitute an actor.
+function callerId(step, context) {
+  const raw = typeof step.dialogue?.speaker === 'string' ? step.dialogue.speaker : ''
+  return step.chara_id || IDOL_NAME_TO_ID[raw] || context.primaryCharaId || ''
+}
+
+function chatActor(step, context) {
+  const raw = step.dialogue?.speaker || ''
+  const sourceName = (step.stamp?.speaker || raw).replace(/ /g, ' ').trim()
+  const sourceId = step.presentation_context?.primary_chara_id || step.presentation_context?.primaryCharaId
+    || step.stamp?.chara_id || step.chara_id || step.dialogue?.speaker_identity?.entity_id
+    || IDOL_NAME_TO_ID[sourceName] || ''
+  const inherited = context.primaryCharaId || ''
+  const charaId = IDOL_ID_TO_NAME[sourceId] ? sourceId
+    : (sourceId && IDOL_ID_TO_NAME[inherited] ? inherited : sourceId)
+  const producer = raw ? ['<P>', 'プロデューサー', 'Producer', 'producer'].includes(raw.replace(/\s/g, '').trim()) : !charaId
+  return { charaId, producer, historyDependent: Boolean(sourceId && !IDOL_ID_TO_NAME[sourceId]) }
+}
 
 function markerAssets(text, allowStamp) {
   const { stamps, emojis } = messageMarkers(text, { allowStamp })
@@ -52,9 +74,15 @@ export function communicationRequirements(scenario) {
   const hasChat = steps.some(step => ['talk', 'talk_stamp'].includes(step?.type) || step?.state?.talk_mode)
   return steps.flatMap((step, stepIndex) => {
     const context = resolveCommunicationContext({ step, stepIndex, historyStack: [], steps, scenarioId })
+    const callCharaId = context.mode === 'call' ? callerId(step, context) : ''
     const requirements = communicationUiAssets({
-      mode: context.mode, unitCode: context.unitCode || null, charaId: context.primaryCharaId || '',
+      mode: context.mode, unitCode: context.unitCode || null, charaId: callCharaId,
     })
+    if (['talk', 'talk_stamp'].includes(step?.type)) {
+      const actor = chatActor(step, context)
+      if (!actor.producer && actor.charaId) requirements.push({ kind: 'mobile-icon', id: actor.charaId })
+      if (!actor.producer && actor.historyDependent) requirements.push({ reason: 'communication-history-avatar-pending' })
+    }
     // Explicit stamps replace the display text in MobileChatScene. The main
     // plan already collects step.stamp, so do not invent hidden text images.
     if (['talk', 'talk_stamp'].includes(step?.type) && !step?.stamp?.id) {
@@ -74,7 +102,7 @@ export function communicationRequirements(scenario) {
     return [{
       stepIndex,
       mode: context.mode,
-      charaId: context.primaryCharaId || '',
+      charaId: context.mode === 'call' ? callCharaId : (context.primaryCharaId || ''),
       unitCode: context.unitCode || null,
       requirements,
     }]
