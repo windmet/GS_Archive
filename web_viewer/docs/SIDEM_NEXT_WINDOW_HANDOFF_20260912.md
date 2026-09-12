@@ -1,6 +1,6 @@
 # 2026-09-12 分支审计与新窗口交接
 
-> 2026-09-12 最新执行状态：N01/N23已在桌面与390px完成Portal刷新往返并收口。当前旧导航基线冻结，从U0启动合同继续U1–U3门户UX。
+> 2026-09-12 最新执行状态：N01/N23旧导航基线与U0–U3启动/门户UX均已完成。代码提交`018ac7d`已推送；下一阶段回到媒体ready、缓存复用与长稳路线。
 
 > **最新产品顺序：** 用户要求先完成旧批N01/N23真实Browser结尾验收，再按[启动入口与门户UX计划](PORTAL_STARTUP_UX_PLAN_20260912.md)进入Welcome、用户启动偏好、偏好导航与门户大验收。该计划插在完整UX冻结之前，复用已完成的导航来源/恢复；不重做B1、不等待全部cache，不新增个人/卡片/通信Reader。
 
@@ -440,3 +440,21 @@ N15页面同时暴露剧情详情CAST错误使用中文本地化名的问题。�
 episode2最初报告4项预载失败：`103kur` placement、`103kur_001_00` atlas/skeleton/mouth不存在，而Vite返回的HTML fallback被继续当作JSON/atlas解析，HTML行又变成假纹理请求。本地已有`assets/silhouette/103kur_001_00.png`，故把该模型加入显式静态剪影清单；计划解析只在全部use均指向剪影bundle时排除该角色的placement/mouth预热，避免影响同一角色可能共用的真实Spine依赖。`Preloader`现在拒绝HTML内容类型，`SpineAtlasPages`只接受PNG页名；本地725个atlas扫描无违规。Browser重载后失败横幅消失，12/28的黒井社長显示为完整黑色剪影，左上角没有社长/队标常驻，console error为0。
 
 验证通过：card filters、portal/navigation/route/playback，story config/spine preload、atlas、silhouette、完整`verify:story-loading-safety`、runtime foundation、stage loading、plan preparation及asset plan。生产构建2511 modules、3m01s通过，入口`index-C1MBxdDq.js` 552.94kB，产物`C:/Users/windm/.codex/qa/sidem-navigation-queue-loading-20260912/build`，仅保留既有chunk提示。下一批优先完成N01/N23的真实Browser矩阵；个人/卡片/通信Reader入口继续停止，整体缓存/媒体长稳仍未宣称完成。
+
+## N01/N23旧导航基线收口
+
+输入HEAD `3dc98a9`。N01以主线第1章非默认第二话`1_4_001_01.json`验证集合、Player、Portal刷新与返回；N23覆盖`002sht` Work场景台词、翔太个人故事`20202/2020201`和Jupiter组合通信`20010010201`。集合所选章节与`work_mode=stories|lines`进入规范路由，个人故事与Mobile沿用既有section/episode/mode/scenario字段。IAB桌面与Edge CDP 390×844在进入及Portal刷新返回后均保持目标、URL、焦点语义，横向溢出和console error为0。navigation-state通过48 refs、1792组合、恢复及16条关系边；routes、Reader SSR与`build:check`通过。实现提交`d25c2e1`已推送，N01/N23由PARTIAL改为PASS。
+
+## U0–U3启动入口、用户偏好与Portal UX收口
+
+输入HEAD `d25c2e1`，实现提交`018ac7d`已推送。裸入口由纯resolver在原始URL层判定：新用户先到无媒体Welcome，light偏好直达根Portal，immersive偏好在人物清单有效后直接挂载所选人物；显式Home、Reader、Player及实体深链不套启动偏好。实测冷启动同时修正一处时序：immersive模式不能在数据未到时先把裸URL改写成无人物Home，否则会丢失翔太等非默认启动人物。
+
+新增独立版本化用户偏好，保存启动模式、首页人物、自推与引导状态；存储拒绝、损坏和旧版本都降级为当前会话可用并显示反馈。Welcome提供轻量/游戏风选择、稍后进入Portal、静态头像人物选择、显式随机一次、自推保存与清除。游戏风Home改为动态导入，light路径不执行该模块。Portal增加游戏风首页、启动设置及自推的资料/个人故事/卡片/Work/通信五个快捷入口，所有人物目标写入明确URL。
+
+移除导航层的隐含冬马：无人物cards显示全826张；资料、Work、个人故事和通信先选择人物。无效启动人物及无效实体人物也回对应选择器，不再在数据层兜底`001tom`；IAB以无效Work深链确认49人选择器、无冬马页面与canvas。浏览北斗等其他人物不会改变已保存的翔太自推。
+
+Edge CDP以全新本地存储状态执行18项desktop/390px启动、偏好、深链、返回、历史和清除旅程，并以320/430补选择器边界。冷Welcome及light Portal为0 canvas，请求记录无Home模块、skel、atlas、voice或音频；翔太immersive首次挂载即`002sht`且无冬马媒体请求。light偏好不覆盖北斗显式Home、主线Reader双语行锚点或430018 Player的1–26范围；Player返回活动后canvas归0。全部场景横向溢出与console error为0。忽略证据文件为`.analysis/startup-ux-browser-acceptance.json`。
+
+机器回归通过startup、routes、navigation-state（49 refs、1920组合、恢复与16关系边）、Portal、async navigation、Home、idol、Work、communication、cards、event及archive-data。`npm run build:check`在固定`.analysis/build-check`完成2515 modules，主入口537.81kB，`ArchiveImmersiveHome`拆成18.35kB JS/16.42kB CSS；只保留既有chunk提示，未复制public。详细合同与逐项证据见[启动入口、用户偏好与门户UX](PORTAL_STARTUP_UX_PLAN_20260912.md)。
+
+门户UX本批完成。下一窗口从媒体/renderer就绪门槛、跨入口缓存复用与真实音频长稳继续；当前浏览器结果不能替代完整媒体发布包或P2-B长稳验收。个人、卡片、通信不新增Reader入口；无关`docs/sidem_title_fx_css_rebuild_v9.html`仍保持未跟踪。

@@ -1,8 +1,8 @@
 # N01/N23之后：启动入口、用户偏好与门户UX
 
-> 2026-09-12 执行更新：N01/N23已在桌面与390px完成Portal刷新往返并收口。当前从U0启动合同开始，随后连续完成U1–U3。
+> 2026-09-12 执行更新：N01/N23旧导航基线已收口；U0–U3启动入口、用户偏好、Portal快捷入口及受影响Browser矩阵已完成并推送，代码提交`018ac7d`。
 
-日期2026-09-12；本地核对HEAD `3dfd9ea`。状态：**规划，未实施**。用户指导附件为 `fcef8fc8-1262-4ee5-98de-fac8c011fc46/pasted-text.txt`。吸收产品方向，具体边界以下文为准，不把附件的建议和历史验证描述当作本轮已完成事实。
+日期2026-09-12；实施输入HEAD `d25c2e1`。状态：**U0–U3已实施并验收**。用户指导附件为 `fcef8fc8-1262-4ee5-98de-fac8c011fc46/pasted-text.txt`；附件用于产品方向，实际完成范围与证据以本文执行结果为准。
 
 ## 执行顺序与现有工作衔接
 
@@ -10,7 +10,7 @@
 
 之后顺序：**U0启动合同 → U1无媒体Welcome与启动偏好 → U2偏好导航/门户快捷入口 → U3受影响导航矩阵与门户大验收 → 引导收口与UX冻结**。这项插入原下一阶段计划的“完整门户UX冻结”之前；不重新等待全部cache/长稳，也不重做已经落地的B1和来源合同。个人/卡片/通信新增Reader入口仍停止。
 
-## 本地代码核查
+## 实施前本地代码核查
 
 | 当前实现 | 证据/改造位置 | 影响 |
 | --- | --- | --- |
@@ -46,7 +46,7 @@ Portal按钮始终表示全站入口；独立“游戏风首页”入口可随�
 
 ## U1：首批只做启动隔离和用户偏好
 
-建议文件：独立ArchiveWelcome/start view、ArchiveUserPreferences存储模块、纯startup resolver，以及App/route最少接线。最终命名在U0固定，不预先造空模块。偏好至少包含version、startupMode、可空preferredIdol、onboardingComplete；首页外观仍归ArchiveHomePreferences。未选模式不能用默认值偷偷视为已完成引导。
+实现使用独立`ArchiveWelcome`、版本化`archiveUserPreferences`、纯`archiveStartup` resolver，以及App/route最少接线。偏好包含version、startupMode、可空startupIdol/preferredIdol、onboardingComplete；首页外观仍归ArchiveHomePreferences。未选模式不会用默认值视为已完成引导。
 
 Welcome提供“资料馆/轻量浏览”和“游戏风首页”；“稍后再选”直接进入Portal，并保持可重新选择。沉浸入口的人物选择仅取静态小头像、原始姓名、组合；名单来自发布数据，不写死49，不预热所有候选模型。可以“随机一位”：从实际可用首页人物中取样，每次显式选择只解析一次并写明当前人物，不能在render/watch反复随机；随机浏览不自动写成长期自推。“每次随机”属于额外偏好策略，首批不默认加入。
 
@@ -79,8 +79,24 @@ Portal保留原全站网格，有自推时增加轻量“我的偶像”与资�
 
 所有用例在desktop与390px验证；320/430补选择网格/长名/焦点/触摸边界。记录冷缓存网络、console、截图、横向溢出、URL、返回恢复。U1后重跑受启动/首页语义影响的N01/N17/N18/N19–N23；U2后补N07/N09/N14及其他变更入口。旧N01/N23结尾PASS是旧语义基线，不自动继承为新首页PASS。
 
+## 2026-09-12实施与验收结果
+
+代码提交`018ac7d`从输入HEAD `d25c2e1`完成U0–U2。裸入口在原始URL层判断，追踪参数不改变裸入口语义；显式route始终优先。Welcome与Portal会在完整档案数据到达前发布轻量页面和规范URL，`ArchiveImmersiveHome`改为动态导入。已存immersive模式则等待有效人物清单后一次性挂载所选人物，避免先发布无人物Home再丢失启动身份。
+
+用户偏好独立保存`startupMode`、`startupIdol`、`preferredIdol`与`onboardingComplete`。存储拒绝、缺失方法、损坏JSON和未知版本均有机器回归，写入失败保留当前会话可用状态；已有Home外观设置仍由原模块拥有。Welcome支持轻量入口、游戏风首页、稍后进入Portal、静态头像选择、显式随机一次、自推设置及清除。Portal保留全站网格，有自推时增加资料、个人故事、卡片、Work与通信五个显式人物快捷入口。
+
+路由不再用`001tom`填充缺失人物：无人物cards显示全部826张；资料、Work、个人故事与通信进入人物选择器。数据到达后发现无效人物代码时也回对应选择器；Browser以`work_archive&idol=999xxx`确认显示49人选择、无冬马档案及canvas。当前浏览人物不会改写`preferredIdol`。
+
+U3使用5175本工程dev服务和独立Edge CDP profile执行18项实际浏览器场景。冷裸入口为`?view=welcome`，canvas为0，且请求记录没有`ArchiveImmersiveHome`、skel、atlas、voice或音频；light选择与刷新均为根Portal、canvas为0。immersive选择`002sht`首次挂载即为翔太，URL写入`home_idol=002sht`，请求记录没有冬马媒体中间请求。失效启动人物在390px回无媒体选择器。light偏好下，北斗显式Home、主线Reader的`step-8:text`双语锚点及活动430018 Player的1–26范围均保持；Player返回活动详情后canvas归0。翔太自推Portal与Work显式URL、浏览北斗后的偏好隔离、Home→Portal→history back、设置清除后再次裸启动均通过。
+
+选择器在320、390、430px均为单列，随机按钮每次点击只解析一次且选择保持，主按钮可操作；所有18项记录的横向溢出与console error均为0。IAB另外完成翔太勾选自推→Home→Portal→Work、北斗浏览后偏好保持、全卡片826条及无效Work人物回选择器的交互核对。冷启动/矩阵证据保存在忽略目录`.analysis/startup-ux-browser-acceptance.json`，不作为发布资产提交。
+
+机器验证通过`verify:archive-startup-route`、`verify:routes`、`verify:archive-navigation-state`（49 refs、1920种投影与URL组合、恢复及16条关系边）、`verify:portal-navigation`、`verify:archive-async-navigation`、home/idol/work/communication/card/event/archive-data相关回归。`npm run build:check`在`.analysis/build-check`完成2515 modules；主入口537.81kB，游戏风Home单独为18.35kB JS与16.42kB CSS，仅保留既有主chunk体积提示。该构建不复制public，也不代表完整媒体发布包或长音频压力测试。
+
+U0–U3与本轮门户UX冻结完成。后续仍按总交接回到媒体ready、缓存复用和长稳路线；不把本批启动隔离扩写成全库媒体加载已经完成。
+
 ## 执行、构建与交接
 
 每批先读AGENTS.md及[BUILD_ACCEPTANCE_POLICY.md](BUILD_ACCEPTANCE_POLICY.md)。纯规划/验收记录不跑构建；代码改动按范围回归，需要前端编译时只用 `npm run build:check`，固定E盘工程内.analysis/build-check，禁止C盘全量public副本和每提交默认build/smoke。真实Browser验收不可由代码构建代替；完整媒体打包只在明确打包任务中使用。
 
-分批显式stage/commit/push，保留无关v9 HTML，不默认PR/部署。本计划不授权跳过N01/N23收尾，也不将未来UX或全库媒体标为完成。执行任务先读取本计划和最新交接，再继续实际代码工作。
+分批显式stage/commit/push，保留无关v9 HTML，不默认PR/部署。后续执行先读取本文完成记录和最新交接，再继续媒体加载工作。
