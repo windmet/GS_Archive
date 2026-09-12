@@ -491,6 +491,8 @@ export function buildArchiveUrl(input, route) {
     if (normalized.readingMode !== 'original') url.searchParams.set('reading_mode', normalized.readingMode)
     if (normalized.readingRev) url.searchParams.set('reading_rev', normalized.readingRev)
     if (normalized.view === 'reader') {
+      if (normalized.event) url.searchParams.set('event', normalized.event)
+      if (normalized.parentView) url.searchParams.set('parent', normalized.parentView)
       if (normalized.storyType) url.searchParams.set('story_type', normalized.storyType)
       if (normalized.storySection) url.searchParams.set('story_section', normalized.storySection)
       if (normalized.story) url.searchParams.set('story', normalized.story)

@@ -78,6 +78,19 @@ for (const name of ['applyArchiveRoute', 'openReaderPlayback', 'returnToReader']
   vm.runInNewContext(app.match(new RegExp(`(?:async )?function ${name}\\([^]*?\\n\\}`))[0], context)
 }
 await context.applyArchiveRoute({ view: 'reader', reading: document.document_id, readingMode: 'bilingual', storyType: 'main', storySection: '101', story: '1_4_001_01.json' })
+// Reader's event origin survives the player URL and a reload, without changing playback ownership.
+await context.applyArchiveRoute({ view: 'reader', reading: document.document_id, event: '10001', parentView: 'story_catalog' })
+await context.openReaderPlayback(row.anchor.row_id)
+const eventPlayback = readArchiveRoute(url)
+assert.equal(eventPlayback.event, '10001')
+assert.equal(eventPlayback.parentView, 'story_catalog')
+assert.equal(eventPlayback.returnView, 'reader')
+await context.playbackController.close()
+await context.applyArchiveRoute(eventPlayback)
+await context.playbackController.close()
+assert.equal(readArchiveRoute(url).event, '10001')
+await context.applyArchiveRoute({ view: 'reader', reading: document.document_id, readingMode: 'bilingual', storyType: 'main', storySection: '101', story: '1_4_001_01.json' })
+assert.equal(state.currentEventId.value, '', 'ordinary Reader navigation clears unrelated event origin')
 state.currentCardId.value = 'unrelated-card'
 state.filterQuery.value = 'unrelated-filter'
 await context.openReaderPlayback(row.anchor.row_id)

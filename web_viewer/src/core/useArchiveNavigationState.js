@@ -56,6 +56,7 @@ export function useArchiveNavigationState() {
         view: view.value, reading: readingDocumentId.value, readingRow: readingRowId.value,
         readingMode: readingMode.value, readingRev: readingRevision.value,
         storyType: currentStoryDomain.value, storySection: currentStorySection.value, story: currentStoryFile.value,
+        event: currentEventId.value, parentView: currentEventId.value ? eventParentView.value : '',
         ...(view.value === 'player' ? { scenario: currentScenarioFile.value,
           startStep: currentScenarioStartStep.value, endStep: currentScenarioEndStep.value,
           initialStep: currentScenarioInitialStep.value, returnView: 'reader' } : {}),

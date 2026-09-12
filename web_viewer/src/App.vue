@@ -163,6 +163,10 @@
         :units="currentEventUnits"
         :idol-visual-url="eventStoryIdolVisualUrl"
         :external-resources="currentEventExternalResources"
+        :reading-entries="readingCatalogEntries"
+        :reading-error="readingCatalogError"
+        @retry-reading="loadReadingCatalog"
+        @read="openEventReader"
         @play="playCurrentEvent"
         @play-episode="playCurrentEventEpisode"
         @open-card="openEventCard"
@@ -1206,7 +1210,7 @@ async function loadReadingCatalog() {
     readingCatalogError.value = ''
   } catch { readingCatalogError.value = '阅读目录暂时无法载入。' }
 }
-watch(() => ['story_collection', 'story_detail'].includes(view.value), active => {
+watch(() => ['story_collection', 'story_detail', 'event_detail'].includes(view.value), active => {
   if (active) loadReadingCatalog()
 })
 const readingSession = createReadingSession({ repository: readingRepository, publish: state => { readingState.value = state } })
@@ -1485,6 +1489,8 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
       currentStoryDomain.value = route.storyType || ''
       currentStorySection.value = route.storySection || ''
       currentStoryFile.value = route.story || ''
+      currentEventId.value = route.event || ''
+      eventParentView.value = route.event ? (route.parentView || '') : ''
       readingPlaybackNotice.value = ''
       playbackController.reset()
       view.value = 'reader'
@@ -1691,6 +1697,12 @@ function openCollectionReader({ chapter, documentId }) {
 }
 
 function closeStoryReader() {
+  if (currentEventId.value) {
+    const pending = applyArchiveRoute({ view: 'event_detail', event: currentEventId.value,
+      parentView: eventParentView.value }, { restoring: false })
+    const revision = navigation.getRevision()
+    return pending.then(() => { if (navigation.getRevision() === revision) syncArchiveRoute() })
+  }
   if (!currentStorySection.value && !currentStoryFile.value) return openStoryCatalog()
   const pending = applyArchiveRoute({ view: currentStorySection.value ? 'story_collection' : 'story_detail', storyType: currentStoryDomain.value,
     storySection: currentStorySection.value, story: currentStoryFile.value }, { restoring: false })
@@ -1704,6 +1716,10 @@ function returnToReader() {
   const pending = applyArchiveRoute(route, { restoring: false })
   syncArchiveRoute()
   return pending
+}
+
+function openEventReader(documentId) {
+  return openStoryReader(documentId, { event: currentEventId.value, parentView: eventParentView.value })
 }
 
 async function openReaderPlayback(rowId, { intent: inherited, route, fullDocument = false } = {}) {

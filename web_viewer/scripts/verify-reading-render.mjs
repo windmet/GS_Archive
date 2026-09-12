@@ -8,6 +8,15 @@ import { readFileSync } from 'node:fs'
 const server = await createServer({ configLoader: 'native', server: { middlewareMode: true }, appType: 'custom' })
 try {
   const { default: Reader } = await server.ssrLoadModule('/src/components/archive/ArchiveStoryReader.vue')
+  const { default: Event } = await server.ssrLoadModule('/src/components/archive/ArchiveEventDetail.vue')
+  const eventHtml = await renderToString(createSSRApp(Event, {
+    event: { event_id: 'test', event_code: 'test', title: 'Event', exists: true },
+    episodes: [{ id: 'a', file: 'episodes/a.json', label: 'Ready' }, { id: 'b', file: 'episodes/b.json', label: 'Branch' }],
+    readingEntries: [{ document_id: 'a', source_file: 'episodes/a.json', status: 'ready' },
+      { document_id: 'b', source_file: 'episodes/b.json', status: 'unsupported' }],
+  }))
+  assert.ok(eventHtml.includes('aria-label="阅读 Ready"'))
+  assert.ok(!eventHtml.includes('aria-label="阅读 Branch"'), 'unsupported episodes retain only their playback entry')
   for (const [status, expected] of [
     ['loading', '正在载入正文'], ['empty', '没有可显示的正文'],
     ['not-generated', '尚未生成阅读正文'], ['error', '正文暂时无法载入'],

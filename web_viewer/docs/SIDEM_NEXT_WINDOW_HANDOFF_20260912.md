@@ -282,3 +282,11 @@ B 批尚未完成，不把A批当作全剧情推广：现有204文档仍未扩�
 - Browser5175：THE虎牙道第3话ep5从目录进入正文，选择器10段，刷新后返回原组合及章节；生日1_x_001tom_1_8_001_01从详情进入整篇，刷新后返回原详情；1280及390宽检查无横向溢出，console无error。未对2734篇逐篇视觉或媒体验收。
 
 下一步：将已生成正文接到活动/工作/个人/卡片等专属页面的自然入口，保留各自返回上下文；通信来源需独立识别及贴图/分支处理，不能直接从文件库存扩充。完成Reader用户插入项后，继续加载任务的critical与后台生命周期分离。未PR、未部署；本地compiled仍是忽略产物，v9 HTML保持无关未跟踪。
+
+## Reader B2：活动页面入口与返回
+
+输入HEAD dc7dc83。活动详情的每个分段按source_file对应manifest，仅ready显示独立阅读按钮；unsupported保留原播放器入口。沿用event、parent路由字段及currentEventId/eventParentView，Reader和Player(return=reader)都保留来源活动；刷新后返回活动，再返回其原父页面。普通Reader入口清理无关event，避免串页。活动阅读目录失败提供重试。
+
+验证：36个活动396个分段均对应正确的父文件，362份ready正文全部可由活动页面分段路径到达；Vue SSR验证ready/unsupported按钮区别；App导航及Reader→Player→Reader/刷新测试验证event与parent保存；archive-routes通过。Browser5175实测430018「運命光年」ep1阅读→刷新→返回原活动，390px再打开ep2；1280/390无横向溢出，窄屏阅读按钮约68×58px，console无error。构建2509 modules，入口542.32kB，既有大小提示保留；仓库外产物sidem-reading-event-20260912/build。没有宣称活动媒体全部验收。
+
+下一步继续工作、个人、卡片专属入口及通信来源；工作组件已定位ArchiveWorkStory.vue，短剧情使用story.compiled_file，场景台词使用line.compiled_file，当前选中偶像在currentCharacterId；返回还需保留工作页与偶像上下文。之后继续加载路线。整体目标未完成。

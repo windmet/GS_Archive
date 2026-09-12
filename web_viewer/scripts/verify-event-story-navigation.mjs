@@ -18,6 +18,9 @@ const catalogData = await readJson('public/data/masterdata/story_catalog.json')
 const catalogByFile = new Map(buildStoryCatalog(catalogData, presentation).map(story => [story.file, story]))
 const events = manifest.unit_event_relations || []
 let episodeCount = 0
+const reading = (await readJson('public/data/reading/manifest.json')).entries
+const readingByFile = new Map(reading.map(entry => [entry.source_file, entry]))
+const reachableReading = new Set()
 
 assert.equal(events.length, 36)
 for (const event of events) {
@@ -33,7 +36,14 @@ for (const event of events) {
   assert.ok(episodes.every(episode => episode.endStep >= episode.startStep), `${event.event_id} has an invalid end step`)
   assert.ok(episodes.every(episode => episode.file), `${event.event_id} has an episode without a file`)
   episodeCount += episodes.length
+  for (const episode of episodes) {
+    const entry = readingByFile.get(episode.file)
+    assert.ok(entry, `event reading source ${episode.file}`)
+    assert.equal(entry.parent_file, event.file, `event reading parent ${episode.file}`)
+    if (entry.status === 'ready') reachableReading.add(entry.document_id)
+  }
 }
+assert.deepEqual(reachableReading, new Set(reading.filter(entry => entry.domain === 'event' && entry.status === 'ready').map(entry => entry.document_id)))
 
 const notAloneEvent = events.find(event => String(event.event_id) === '410001')
 const notAloneStory = catalogByFile.get(notAloneEvent.file)

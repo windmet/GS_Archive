@@ -55,9 +55,8 @@
         <span class="episode-count">{{ episodes.length }} 章</span>
       </div>
       <div class="episode-list">
+        <div v-for="(episode, index) in episodes" :key="episode.id" class="episode-entry">
         <button
-          v-for="(episode, index) in episodes"
-          :key="episode.id"
           :disabled="!event.exists"
           @click="emit('play-episode', episode)"
         >
@@ -71,7 +70,11 @@
           </span>
           <Play :size="16" fill="currentColor" />
         </button>
+        <button v-if="readingByFile.has(episode.file)" class="episode-reading" :aria-label="`阅读 ${episode.label}`"
+          @click="emit('read', readingByFile.get(episode.file).document_id)"><BookOpen :size="16" />阅读</button>
+        </div>
       </div>
+      <p v-if="readingError" role="status">{{ readingError }} <button @click="emit('retry-reading')">重试阅读目录</button></p>
     </section>
 
     <section class="detail-section reward-section" aria-labelledby="event-rewards-title">
@@ -173,8 +176,11 @@ const props = defineProps({
   units: { type: Array, default: () => [] },
   idolVisualUrl: { type: Function, default: () => '' },
   externalResources: { type: Array, default: () => [] },
+  readingEntries: { type: Array, default: () => [] },
+  readingError: { type: String, default: '' },
 })
-const emit = defineEmits(['play', 'play-episode', 'open-card', 'open-idol', 'open-unit'])
+const emit = defineEmits(['read', 'retry-reading', 'play', 'play-episode', 'open-card', 'open-idol', 'open-unit'])
+const readingByFile = computed(() => new Map(props.readingEntries.filter(entry => entry.status === 'ready').map(entry => [entry.source_file, entry])))
 
 const eventLogoUrl = computed(() => `/assets/events/logos/image_event_logo_${props.event?.event_code}.png`)
 const storyVisualByIdol = computed(() => Object.fromEntries(
@@ -266,6 +272,9 @@ function formatDateTime(timestamp) {
 </script>
 
 <style scoped>
+.episode-entry { display: flex; min-width: 0; }
+.episode-entry > button:first-child { flex: 1; min-width: 0; }
+.episode-list .episode-reading { display: flex; justify-content: center; flex: 0 0 auto; min-width: 62px; gap: 5px; color: #157c78; font-size: 13px; }
 .event-detail { height: 100%; overflow-y: auto; background: #f5f7f8; color: #24313a; }
 .event-identity { display: grid; grid-template-columns: minmax(420px, 1.4fr) minmax(280px, .6fr); gap: 28px; padding: 26px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #dfe5e8; background: #fff; }
 .event-visual { position: relative; align-self: start; overflow: hidden; aspect-ratio: 940 / 510; border: 1px solid #e1e6e8; border-radius: 6px; background: #e9eef0; }
