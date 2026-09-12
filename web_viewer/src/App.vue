@@ -603,7 +603,7 @@ const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loadin
 const playbackController = useStoryPlaybackController({
   state: { view, loading, preloadProgress, currentScenarioFile, currentScenarioStartStep, currentScenarioEndStep, currentScenarioInitialStep, currentPreviewCue, returnViewAfterPlayer },
   navigation, loadPlayer: storyViewerLoader,
-  preloadAssets: (steps, progress, options) => Preloader.preloadScenario(steps, progress, options),
+  preloadAssets: (plan, progress, options) => Preloader.preloadScenario(plan, progress, options),
   syncRoute: () => syncArchiveRoute(), returnTo: destination => destination === 'reader' ? returnToReader() : commitView(destination),
 })
 const { currentScenario, currentScenarioInstance, hasNext: hasNextPlaybackEpisode, error: playbackError, preloadStatus } = playbackController

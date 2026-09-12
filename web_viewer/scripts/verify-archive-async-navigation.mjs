@@ -11,7 +11,14 @@ import { useStoryPlaybackController } from '../src/core/useStoryPlaybackControll
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const functionSource = (start, end) => app.slice(app.indexOf(start), app.indexOf(end, app.indexOf(start)))
 const scenarioSource = functionSource('async function loadScenario(', 'onMounted(async () =>')
-const flush = async () => { for (let i = 0; i < 20; i++) await Promise.resolve() }
+const flush = async (predicate = null) => {
+  if (!predicate) { for (let i = 0; i < 20; i++) await Promise.resolve(); return }
+  const deadline = Date.now() + 3000
+  while (!predicate()) {
+    assert.ok(Date.now() < deadline, 'preparation did not reach its expected boundary')
+    await new Promise(resolve => setImmediate(resolve))
+  }
+}
 function deferred() {
   let resolve, reject
   const promise = new Promise((yes, no) => { resolve = yes; reject = no })
@@ -57,7 +64,7 @@ function setup() {
     scenarioSource,
     '({ load: loadScenario, restore: applyArchiveRoute, commit: commitView, select: commitArchiveSelection, onPlayerReady, openStoryCatalog, openSpineLab, openVoicePreview, sync: syncArchiveRoute, filter: updateArchiveFilter })',
   ].join('\n'), context)
-  const respond = (index, name) => requests[index].resolve({ ok: true, json: async () => ({ name, steps: [] }) })
+  const respond = (index, name) => requests[index].resolve(new Response(JSON.stringify({ name, steps: [] })))
   return { context, state, ...production, requests, respond, writes, errors }
 }
 {
@@ -84,7 +91,7 @@ function setup() {
   const t = setup(), preload = deferred()
   let progress
   t.context.Preloader.preloadScenario = (_steps, callback) => { progress = callback; return preload.promise }
-  const old = t.load('old.json'); t.respond(0, 'old'); await flush()
+  const old = t.load('old.json'); t.respond(0, 'old'); await flush(() => !!progress)
   const current = t.load('current.json')
   t.onPlayerReady()
   assert.equal(t.context.loading.value, true, 'old player ready cannot clear a pending navigation overlay')
@@ -225,9 +232,9 @@ for (const key of ['currentIdolUnitFilter', 'currentCardRarity', 'currentCardAss
 }
 for (const response of [
   { ok: false, status: 404, json: async () => ({ error: 'not found' }) },
-  { ok: true, status: 200, json: async () => ({ error: 'invalid scenario' }) },
-  { ok: true, status: 200, json: async () => ({ steps: {} }) },
-  { ok: true, status: 200, json: async () => null },
+  new Response(JSON.stringify({ error: 'invalid scenario' })),
+  new Response(JSON.stringify({ steps: {} })),
+  new Response('null'),
 ]) {
   const t = setup()
   t.state.view.value = 'cards'
@@ -260,12 +267,13 @@ for (const response of [
   let report, ready = false, playerStarted = false, assetsStarted = false
   const pending = prepareScenario('episodes/fixture.json', {
     isCurrent: () => true, now: () => 123,
-    fetchImpl: async (...args) => { requests.push(args); return { ok: true, json: async () => scenario } },
+    fetchImpl: async (...args) => { requests.push(args); return new Response(JSON.stringify(scenario)) },
     loadPlayer: () => { playerStarted = true; return player.promise },
-    preloadAssets: (steps, callback) => { assert.equal(steps, scenario.steps); assetsStarted = true; report = callback; return assets.promise },
+    readScenario: async response => { await response.json(); return scenario },
+    preloadAssets: (plan, callback) => { assert.equal(plan.stepCount, scenario.steps.length); assetsStarted = true; report = callback; return assets.promise },
     onProgress: value => progress.push(value),
   }).then(value => { ready = true; return value })
-  await flush()
+  await flush(() => playerStarted && assetsStarted)
   assert.deepEqual(requests, [['/data/compiled/episodes/fixture.json?v=123', { cache: 'no-store' }]])
   assert.equal(playerStarted && assetsStarted, true)
   report(50)

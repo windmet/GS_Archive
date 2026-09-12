@@ -167,3 +167,18 @@
 - 故障页面检查 1280×800、390×844、320×740；scrollWidth 分别等于 viewport width。390px 截图先发现提示覆盖导航，修正 top=64 后在 320 / 1280 复验返回可用；320px 返回首页后提示消失。切回未改动的 episodes/1_4_001_00_a.json 后无失败残留，菜单能打开。保留已有 Spine.update / tint 两条 warn，无新增应用错误遮罩。
 
 下批直接推进 StoryAssetPlan 的真实来源 hash / 执行输入和资源适配器，不再扩展旧 step.state 扫描。仍需闭合 Spine atlas pages、模型适配与通信动态依赖，并逐步接入 P2 的入口优先级 / 重试、P3 的局部等待、P4 transport 和 P5 网络验收。Browser 直接用于验收，不再重复说明可用性。
+
+## P1 资源计划接入真实准备流程
+
+输入 HEAD：`f391f56`。prepareScenario 在来源校验完成后，以本次响应原始字节的 SHA-256 和 file 生成 StoryAssetPlan，动态加载计划模块；Reader 原有 SHA / 行身份校验继续先于媒体导入和预载。取消覆盖响应读取、摘要 / 计划模块等待及播放器导入等待，迟到结果不发布。
+
+- App / Preloader 实际入参已从 steps 改为 plan；删除 scanStepAssets，不再扫描 step.state。strict-v2 依据 entry / settled / cues；compat 只经已有 normalizer。发布给 Viewer 的原始 scenario 不被计划生成修改。
+- 新增 StoryAssetAdapters：背景、stage icon、通信背景 / 头像 / stamp / emoji、特效图片走已有消费者 URL；普通 spine-skeleton 走 native fetch。已知 silhouette-only 模型不探测缺失 skeleton，等待模型适配；atlas、bundle、音频、配置等未适配需求明确 deferred，不假装执行。
+- 任务报告保留计划 key、source、uses、dependencies / dependencyState、unresolved；required:false 记 excluded，不下载、不计成功。total 是当前逻辑条目数，pending 包含 deferred；dependenciesComplete 只沿用逻辑计划，不代表 fetched / decoded / renderable。仍不展示整集分母或声称全部就绪。
+- `verify:story-plan-preparation` 验证含空白原始响应 SHA（不是 JSON 重序列化 SHA）、来源先于媒体、strict snapshot / cue-only 实际任务 URL、旧 state 冲突不执行、用途记录、图片适配、excluded / unsupported 不执行、真实 episode 原始字节输入。
+- `verify:story-preload-status` 改用计划，成功 2 / 失败 3 / deferred 6 的 fixture 明确保留 bundle / atlas 待处理；空逻辑计划可 dependenciesComplete=true，但不等于渲染就绪，仍不上报 100。preload-cancellation、story-asset-plan、playback-controller、archive-async-navigation、reading-playback 均通过。导航测试改用真实 Response 和有界条件等待，保留读取对象及竞争条件断言。
+- 生产构建通过：2501 modules，主入口 531.22 kB，保留 >500 kB 提示。构建和临时服务在仓库外 `C:/Users/windm/.codex/qa/sidem-plan-execution-20260912/`。
+- 5183 生产构建 fixture 使用真实 strict-v2 episode 的内存副本，在旧 state 放入 must_not_use_legacy_state，在末步 cue 加入等待 8 秒后返回 404 的 status_fixture_missing。服务请求记录证明：旧 state 背景未请求；cue-only 背景被请求；普通背景与 3 个 skeleton 被请求。页面显示已预载 4 项，随后失败 1 项，可展开原因并返回。
+- 1280×800 与 320×740 检查无横向溢出或错误遮罩；原始 episodes/1_4_001_00_a.json 能进入 3/23 对白、打开菜单，无 fixture 失败提示残留。日志仍保留既有 Spine.update / tint 两条 warn。无真实音频长稳或发布。
+
+下一批处理 Spine atlas 页依赖与特殊模型适配，把 deferred 逐类变成有证据的任务，继续保留 bundle 未渲染状态。通信外部译文 / history、音频 transport、入口分层 / critical 重试、首帧与局部 buffering 仍待推进；当前仍为 best-effort 准备后进入，不宣称 P1 或 P2–P5 完成。

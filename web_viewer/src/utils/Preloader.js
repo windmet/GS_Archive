@@ -1,21 +1,7 @@
-/**
- * Legacy best-effort background/skeleton cache warming. This scans step.state,
- * so it does not enumerate authoritative v2 snapshots or complete Spine bundles.
- *
- * Key principle: NEVER dynamically import pixi.js here. Use native Image/fetch
- * to attempt cache warming. Cache reuse, decoding and render readiness are not
- * guaranteed. Task outcomes describe only this limited warming pass, never the
- * complete episode or renderer readiness. Failures stay separate from successes.
- * StoryAssetPlan is being developed separately before replacing this executor.
- *
- * This runs ONLY when user clicks a scenario file (in App.vue loadScenario).
- * Home screen / list views never touch this code.
- *
- * Safety: every operation has a timeout and navigation-owned abort signal.
- * Cancellation clears pending work and prevents later batches/progress.
- */
-
-import { getBgUrl, getVoiceUrl, getSpineSkelUrl } from './AssetResolver.js'
+/** Native cache warming driven solely by StoryAssetPlan. Logical closure,
+ * fetched bytes, image load and renderer readiness are distinct. Unsupported
+ * requirements stay pending; no Pixi or audio runtime is imported here. */
+import { storyAssetAdapter } from './StoryAssetAdapters.js'
 
 const TIMEOUT_MS = 10000 // 10s per asset max
 
@@ -46,70 +32,27 @@ async function withTimeout(load, ms, label, signal) {
 }
 export class Preloader {
 
-  /**
-   * Scan all steps and classify asset requirements.
-   */
-  static scanStepAssets(steps) {
-    const bgIds = new Set()
-    const voiceFiles = new Set()
-    const spineModels = new Set()
-
-    for (const step of steps) {
-      const state = step.state || {}
-      if (state.bg) bgIds.add(state.bg)
-      if (step.dialogue?.voice) voiceFiles.add(step.dialogue.voice)
-      for (const spine of state.spines || []) {
-        if (spine.model) spineModels.add(spine.model)
-      }
-    }
-
-    return {
-      bgIds: [...bgIds],
-      voiceFiles: [...voiceFiles],
-      spineModels: [...spineModels],
-    }
-  }
-
-  /**
-   * Attempt the legacy background/skeleton subset for these steps.
-   * Uses Image() for backgrounds and fetch() for spine binaries
-   * to populate the browser's HTTP cache.
-   *
-   * @param {Array} steps - scenario steps array
-   * @param {function} onProgress - callback(percent: 0-100)
-   * @returns {Promise<object>} scanned assets and the final warming report
-   */
-  static async preloadScenario(steps, onProgress, { signal, onStatus } = {}) {
+  static async preloadScenario(plan, onProgress, { signal, onStatus } = {}) {
     signal?.throwIfAborted()
-    const assets = this.scanStepAssets(steps)
-
-    // Build a flat task list
-    const tasks = []
-
-    // Background images → Image() preload (browser HTTP cache)
-    for (const bgId of assets.bgIds) {
-      tasks.push({ type: 'bg', id: bgId, load: () => this._preloadImage(getBgUrl(bgId), { signal }) })
+    if (plan?.schema_version !== 1 || !plan.source?.sha256 || !Array.isArray(plan.assets)) {
+      throw new TypeError('Preloader requires a source-bound StoryAssetPlan')
     }
-
-    // Spine skeletons → fetch() preload .skel only (PIXI spine loader resolves atlas+png)
-    for (const modelId of assets.spineModels) {
-      tasks.push({ type: 'spine', id: modelId, load: () => this._preloadSpine(modelId, { signal }) })
-    }
-
-    // Voice files → 跳过预加载！IDM 会嗅探 .m4a 并返回 stub，
-    // 导致后续 playVoice 的 fetch() 拿到空数据。
-    // 改为在 playVoice 中按需 fetch + cache-busting
-
-    const outcomes = tasks.map(task => ({ key: `${task.type}:${task.id}`, kind: task.type,
-      id: task.id, state: 'discovered', error: null }))
+    const outcomes = plan.assets.map(asset => ({ key: asset.key, kind: asset.kind, id: asset.id,
+      uses: asset.uses.map(use => ({ ...use })), dependencies: [...asset.dependencies],
+      dependencyState: asset.dependencyState, ...storyAssetAdapter(asset), error: null }))
+    const tasks = outcomes.filter(task => task.state === 'discovered')
     const snapshot = phase => {
       const succeeded = outcomes.filter(task => ['image-loaded', 'fetched'].includes(task.state)).length
       const failed = outcomes.filter(task => task.state === 'failed').length
       const cancelled = outcomes.filter(task => task.state === 'cancelled').length
-      return { phase, scope: 'legacy-cache-warm', dependenciesComplete: false,
+      const excluded = outcomes.filter(task => task.state === 'excluded').length
+      const deferred = outcomes.filter(task => task.state === 'deferred').length
+      return { phase, scope: 'story-asset-plan', source: { ...plan.source },
+        dependenciesComplete: plan.dependenciesComplete,
+        unresolved: plan.unresolved.map(issue => ({ ...issue })), excluded, deferred,
         total: outcomes.length, succeeded, failed, cancelled,
-        pending: outcomes.length - succeeded - failed - cancelled,
-        tasks: outcomes.map(task => ({ ...task })) }
+        pending: outcomes.length - succeeded - failed - cancelled - excluded,
+        tasks: outcomes.map(task => ({ ...task, uses: task.uses.map(use => ({ ...use })), dependencies: [...task.dependencies] })) }
     }
     const report = phase => {
       const value = snapshot(phase)
@@ -122,10 +65,13 @@ export class Preloader {
       const BATCH_SIZE = 6
       for (let i = 0; i < tasks.length; i += BATCH_SIZE) {
         signal?.throwIfAborted()
-        await Promise.all(tasks.slice(i, i + BATCH_SIZE).map(async (task, offset) => {
-          const outcome = outcomes[i + offset]
+        await Promise.all(tasks.slice(i, i + BATCH_SIZE).map(async outcome => {
           outcome.state = 'loading'
-          try { outcome.state = await task.load() }
+          try {
+            outcome.state = outcome.operation === 'image'
+              ? await this._preloadImage(outcome.url, { signal })
+              : await this._preloadBinary(outcome.url, outcome.key, signal)
+          }
           catch (error) {
             outcome.state = signal?.aborted ? 'cancelled' : 'failed'
             outcome.error = String(error?.message || error)
@@ -134,7 +80,7 @@ export class Preloader {
             const value = report('warming')
             // Compatibility callback measures successful warming tasks only.
             // UI consumes structured status, not this subset percentage.
-            onProgress?.(Math.round(value.succeeded / value.total * 100))
+            onProgress?.(Math.round(value.succeeded / tasks.length * 100))
           }
         }))
         signal?.throwIfAborted()
@@ -146,8 +92,9 @@ export class Preloader {
       report('cancelled')
       throw error
     }
-    const status = report(outcomes.some(task => task.state === 'failed') ? 'partial' : 'settled')
-    return { ...assets, status }
+    const status = report(outcomes.some(task => task.state === 'failed') ? 'partial'
+      : !plan.dependenciesComplete || outcomes.some(task => task.state === 'deferred') ? 'pending' : 'settled')
+    return { plan, status }
   }
 
   // ── Internal loaders: all use native browser APIs, NO pixi.js ──
@@ -174,10 +121,6 @@ export class Preloader {
     }), TIMEOUT_MS, `image ${url}`, signal)
   }
 
-  static async _preloadSpine(modelId, { signal } = {}) {
-    return this._preloadBinary(getSpineSkelUrl(modelId), `spine ${modelId}`, signal)
-  }
-
   static async _preloadBinary(url, label, signal) {
     return withTimeout(async taskSignal => {
       const response = await fetch(url, { signal: taskSignal })
@@ -190,7 +133,4 @@ export class Preloader {
     }, TIMEOUT_MS, label, signal)
   }
 
-  static async _preloadAudio(voiceFile, { signal } = {}) {
-    return this._preloadBinary(getVoiceUrl(voiceFile), `voice ${voiceFile}`, signal)
-  }
 }
