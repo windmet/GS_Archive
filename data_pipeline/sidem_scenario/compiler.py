@@ -793,7 +793,7 @@ class ScenarioCompiler(ScenarioFileIO):
     def _idol_slide(self, vals: list):
         """Animate character to target position.
         Values: [chara_id, wait_before?, duration?, pos_x?, pos_y?]
-        Also handles idle_slidein / idol_slideout (same format, diff semantics).
+        Ordinary movement does not change visibility.
         Updates pos_x/pos_y immediately + stores slide_duration for frontend animation.
         """
         if vals and vals[0]:
@@ -807,6 +807,21 @@ class ScenarioCompiler(ScenarioFileIO):
                 spine["pos_y"] = pos_y
                 spine["slide_duration"] = duration
                 self._mark_stage_change()
+
+    def _idol_slidein(self, vals: list):
+        # A previously hidden actor can enter without another model/fadein.
+        # Keep its model, pose and position; visibility is independent of motion.
+        if vals and vals[0]:
+            self._pending_fadeout_ids.discard(vals[0])
+            self.state.set_spine_visible(vals[0], True)
+        self._idol_slide(vals)
+
+    def _idol_slideout(self, vals: list):
+        # The exit step still owns the actor; only subsequent snapshots omit it.
+        # Use the same post-snapshot visibility settlement as fadeout.
+        self._idol_slide(vals)
+        if vals and vals[0] and self.state.find_spine(vals[0]):
+            self._pending_fadeout_ids.add(vals[0])
 
     def _idol_color(self, vals: list):
         """Tint character with a color (dim/emphasize).
