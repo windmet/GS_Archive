@@ -59,6 +59,6 @@ export async function prepareScenario(name, {
   if (preloaded?.status?.phase === 'blocked') {
     throw new Error('当前入口的必要资源未能载入，请重试。')
   }
-  if (isCurrent() && preloaded?.startBackground) onBackgroundReady?.(preloaded.startBackground)
+  if (isCurrent() && preloaded?.startBackground) onBackgroundReady?.(preloaded.startBackground, preloaded.updatePriority)
   return isCurrent() ? scenario : null
 }

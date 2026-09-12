@@ -387,6 +387,8 @@
       v-if="view === 'player' && currentScenario"
       :key="currentScenarioInstance"
       :scenario-json="currentScenario"
+      :playback-instance="currentScenarioInstance"
+      @step-change="playbackController.stepChanged"
       :start-step="currentScenarioStartStep"
       :end-step="currentScenarioEndStep"
       :initial-step="currentScenarioInitialStep"

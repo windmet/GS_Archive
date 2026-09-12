@@ -326,3 +326,11 @@ verify-story-spine-order覆盖三人桥段、相同深度稳定顺序及源数�
 新增verify-story-background-preload（接入verify:story-entry-retry）：可控后续图片未完成时Player已发布、critical只执行一次；后台成功/失败不变导航；后台reset及critical准备中reset取消无迟到错误。entry-retry、plan-preparation、playback-controller、preload-cancellation/status、spine/config-preload、reading-playback均通过。构建2510 modules通过，仓库外sidem-background-20260912/build。Browser活动430018 ep1经正常入口进入冬马/翔太对白并返回原活动，console无error；不提供无冷缓存对照依据的提速百分比，不把受控测试当真实全媒体压力测试。
 
 下一步继续当前步与后台优先级/两阶段媒体ready、缓存复用及ep2取景裁切；个人/卡片/通信新增Reader入口仍停止。整体加载路线未完成。
+
+## 加载时序：随播放位置重排后台任务
+
+输入HEAD 7d9c115。StoryViewer发出带playbackInstance的实际currentStepIndex，App接到当前Controller。Controller验证实例、播放范围及取消状态，再以当前源数组索引重算StoryAssetPriority；不使用可能不连续的step_id代替索引。Preloader.updatePriority仅更新discovered任务，正在下载的批次继续，已完成任务不重跑；动态atlas新增页继承最新projection。后台新提升为critical的资源失败仅产生partial，不回滚成入口blocked或丢弃余下队列。后台结束释放update回调，避免后续步号把settled状态改回warming。
+
+验证：新增verify-story-background-priority，12个不同背景且非连续step_id的受控源，从第一批near任务暂停时跳到第11步，确认bg10先于旧deferred任务、bg11随后、每资源只执行一次；当前步资源失败仍完成其他任务，abort后更新被拒绝。Controller回归覆盖旧实例/越界事件忽略及完成后不再改状态。entry-retry/background、asset-priority、playback-controller、preload-status/cancellation、spine-preload、reading-playback通过；构建2510 modules、主入口545.20kB，产物在仓库外sidem-background-priority-20260912/build。Browser430018 ep1从7/34冬马对白推进到8/34翔太对白再返回，console无error；真实网络提速比例未测量。
+
+下一步媒体/renderer就绪条件与缓存复用、ep2镜头裁切复核。正在下载批次不抢断；此批不能代表GPU/audio ready或P1–P5全部完成。个人/卡片/通信新增Reader仍停止。

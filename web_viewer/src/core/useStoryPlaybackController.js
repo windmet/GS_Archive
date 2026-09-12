@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { createStoryAssetPriority } from '../../shared/story/StoryAssetPriority.js'
 import { useEpisodeQueue } from './useEpisodeQueue.js'
 import { prepareScenario } from '../data/prepareScenario.js'
 
@@ -15,6 +16,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
   const error = ref('')
   const preloadStatus = ref(null)
   let warmingController = null
+  let updateWarmingPriority = null
   const canRetry = ref(false)
   let failedEntry = null
   function clearRetry() { failedEntry = null; canRetry.value = false }
@@ -24,6 +26,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
 
   function reset() {
     warmingController?.abort()
+    updateWarmingPriority = null
     clearRetry()
     preloadStatus.value = null
     currentScenario.value = null
@@ -62,6 +65,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
       preloadStatus.value = null
       error.value = ''
       warmingController?.abort()
+      updateWarmingPriority = null
       const warming = warmingController = new AbortController()
       const abortWarming = () => warming.abort(intent.signal.reason)
       intent.signal?.addEventListener('abort', abortWarming, { once: true })
@@ -69,7 +73,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
       try {
         const scenario = await prepare(name, {
           isCurrent: intent.isCurrent, signal: warming.signal, loadPlayer, preloadAssets, readScenario: options.readScenario,
-          onBackgroundReady: start => { startBackground = start },
+          onBackgroundReady: (start, updatePriority) => { startBackground = start; updateWarmingPriority = updatePriority },
           playbackEntry: { startStep: boundary(options.startStep), initialStep: boundary(options.initialStep), endStep: boundary(options.endStep) },
           onProgress: pct => { if (intent.isCurrent() && !warming.signal.aborted) preloadProgress.value = pct },
           onStatus: status => { if (intent.isCurrent() && !warming.signal.aborted) preloadStatus.value = status },
@@ -82,7 +86,10 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
         if (startBackground) {
           // The continuation shares its source-bound plan and settled tasks.
           // It must never reopen the loading overlay or change navigation.
-          void startBackground().catch(() => {}).finally(() => intent.signal?.removeEventListener('abort', abortWarming))
+          void startBackground().catch(() => {}).finally(() => {
+            intent.signal?.removeEventListener('abort', abortWarming)
+            if (warmingController === warming) updateWarmingPriority = null
+          })
         } else intent.signal?.removeEventListener('abort', abortWarming)
         return true
       } catch (failure) {
@@ -153,7 +160,15 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
     return returnTo(destination)
   }
   function ready() { if (!navigation.isPending()) loading.value = false }
+  function stepChanged({ instance, stepIndex }) {
+    if (instance !== currentScenarioInstance.value || view.value !== 'player' || warmingController?.signal.aborted || !updateWarmingPriority) return
+    const scenario = currentScenario.value
+    const startStep = currentScenarioStartStep.value || 1
+    const endStep = currentScenarioEndStep.value || scenario?.steps?.length
+    if (!Number.isInteger(stepIndex) || stepIndex < startStep - 1 || stepIndex >= endStep) return
+    updateWarmingPriority(createStoryAssetPriority(scenario, { startStep, endStep, initialStep: stepIndex + 1 }))
+  }
   function dispose() { navigation.invalidate(); reset(); loading.value = false }
   return { currentScenario, currentScenarioInstance, currentScenarioInitialStep, error, preloadStatus, canRetry, queue, hasNext: queue.hasNext,
-    load, retry, preview, startQueue, restore, next, close, ready, reset, dispose }
+    load, retry, preview, startQueue, restore, next, close, ready, stepChanged, reset, dispose }
 }

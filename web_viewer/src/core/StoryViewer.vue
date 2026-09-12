@@ -219,6 +219,7 @@ import {
 
 const props = defineProps({
   scenarioJson: { type: Object, default: null },
+  playbackInstance: { type: Number, default: 0 },
   scenarioUrl: { type: String, default: null },
   startStep: { type: Number, default: null },
   initialStep: { type: Number, default: null },
@@ -226,7 +227,7 @@ const props = defineProps({
   hasNextEpisode: { type: Boolean, default: false },
   continuousPlayback: { type: Boolean, default: false },
 })
-const emit = defineEmits(['back', 'ready', 'next-episode', 'update:continuous-playback'])
+const emit = defineEmits(['back', 'ready', 'step-change', 'next-episode', 'update:continuous-playback'])
 const URL_FLAGS = new URLSearchParams(window.location.search)
 const HIDE_UI = URL_FLAGS.get('stageOnly') === '1' || URL_FLAGS.get('hideUI') === '1' || URL_FLAGS.get('transparentUI') === '1'
 const START_STEP_VALUE = URL_FLAGS.get('startStep')
@@ -1024,6 +1025,9 @@ watch([menuOpen, backlogOpen, episodeFinished], ([menu, backlog, finished]) => {
 watch(titlePaused, paused => {
   if (!paused) retryTitleAdvance()
 })
+watch(currentStep, step => {
+  if (step?.step_id != null) emit('step-change', { instance: props.playbackInstance, stepIndex: currentStepIndex.value })
+}, { immediate: true })
 watch(uiHidden, hidden => {
   preferencesRepository.update({ ui_hidden: hidden })
 })

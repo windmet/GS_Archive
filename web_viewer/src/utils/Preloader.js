@@ -68,6 +68,15 @@ export class Preloader {
       return value
     }
     report('warming')
+    const updatePriority = next => {
+      if (signal?.aborted) return false
+      priority = structuredClone(next)
+      for (const task of tasks) {
+        if (task.state === 'discovered') task.priority = assetPriority(task, priority)
+      }
+      report('background-warming')
+      return true
+    }
     let background
     const run = async stopAtEntry => {
     try {
@@ -78,7 +87,7 @@ export class Preloader {
         const pending = tasks.filter(task => task.state === 'discovered')
           .sort((a, b) => priorityRank[a.priority] - priorityRank[b.priority])
         if (stopAtEntry && pending[0].priority !== 'critical') {
-          return { plan, status: report('entry-warmed'), startBackground: () => background ||= run(false) }
+          return { plan, status: report('entry-warmed'), updatePriority, startBackground: () => background ||= run(false) }
         }
         // Finish the active tier (including newly discovered atlas pages)
         // before lower-priority work can occupy a slot.
@@ -121,14 +130,14 @@ export class Preloader {
             outcome.error = String(error?.message || error)
           }
           if (!signal?.aborted) {
-            const value = report('warming')
+            const value = report(entryOnly && !stopAtEntry ? 'background-warming' : 'warming')
             // Compatibility callback measures successful warming tasks only.
             // UI consumes structured status, not this subset percentage.
             onProgress?.(Math.round(value.succeeded / tasks.length * 100))
           }
         }))
         signal?.throwIfAborted()
-        if (outcomes.some(task => task.priority === 'critical' && task.state === 'failed')) {
+        if ((!entryOnly || stopAtEntry) && outcomes.some(task => task.priority === 'critical' && task.state === 'failed')) {
           return { plan, status: report('blocked') }
         }
       }
