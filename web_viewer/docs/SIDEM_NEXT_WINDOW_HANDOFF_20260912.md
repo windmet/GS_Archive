@@ -1,5 +1,19 @@
 # 2026-09-12 分支审计与新窗口交接
 
+> **所有窗口先读构建约束：** [构建/验收/提交与磁盘政策](BUILD_ACCEPTANCE_POLICY.md)，并遵守本工程 `AGENTS.md`。日常前端验收改用 `npm run build:check`（不复制public，固定E盘工程内输出）；禁止每批把全量媒体复制到C盘QA。代码编译与完整媒体打包必须分开记录。
+
+## C盘构建副本事故与处理（2026-09-12）
+
+核对最新HEAD `2af1d3f`，上一阶段计划`a920616`之后新增10个提交，包含B1当前场景门槛、导航来源/列表恢复/旅程、出演源名称及NPC剪影预载回退。本次不回退这些功能，也不扩展其验收结论。5175为本工程Vite PID45024，另一本工程dev PID51088保持运行；未发现以待清理构建路径启动的node/python进程。
+
+发现C:/Users/windm/.codex/qa下9份全量构建，每份约7.111GiB、69778文件，合计约64GiB逻辑文件大小：sidem-loading-safety-b1、navigation-list-domains、navigation-n24、navigation-queue-loading、navigation-queue-portal、navigation-reader-source、navigation-restoration、navigation-source-b1、navigation-work-story（均为sidem前缀、-20260912后缀，各自build子目录）。包含重复public媒体/compiled/data/translations；抽查ep2剧情及北斗图片与E盘原件SHA一致。早期copyPublicDir:false输出通常仅2–6MiB，不能把两种构建耗时差异归因于模型快慢。
+
+用户明确批准清理9份副本。批量动态路径删除被自动审批拦截；独立校验绝对路径/父目录/重解析点后，使用显式LiteralPath删除获准。全部9个build已不存在；仅删除这些可重建子目录，保留原资源、日志/截图/fixture、小型历史产物、无关v9 HTML。C盘可用空间从约2.81GiB恢复到68.28GiB（实测差约65.47GiB，包含文件系统分配开销及同期系统变化，不与逻辑文件大小混同）。本机清理回执：`.analysis/c-disk-cleanup-20260912.json`。
+
+新增`npm run build:check`及`scripts/build-check.mjs`，固定本工程`.analysis/build-check`，拒绝链接输出路径、只替换该构建目录、copyPublicDir:false。保留原build/smoke全量打包含义；它们不用于日常每提交验收。新增AGENTS.md直接约束后续窗口，并链接BUILD_ACCEPTANCE_POLICY.md的按变更验收/输出磁盘/清理/提交规则。
+
+实际验证最新源码：build:check完整Vite生产代码编译2511 modules，9.10秒，27文件共1.74MiB，无data或assets/voice副本；主入口index-C1MBxdDq.js与本次最新全量build中的文件SHA256同为6a4b28b615c4e96c9515e3d7821d9c18330576f55a0970b614f9d661bd457ed1。既有chunk体积提示保留。node --check与git diff --check通过。本批没有改应用运行行为，未重复Browser旅程或宣称完整发布包验收。
+
 > **最新执行顺序（2026-09-12，核对dae8e0d）：** 见 [下一阶段代码与门户调试计划](NEXT_PHASE_NAVIGATION_PORTAL_PLAN_20260912.md)。最低playable/readiness与buffering安全闭环后暂停加载扩展，转入导航模型审计、来源/返回/恢复迁移、24条门户旅程验收及引导收口；cache/长稳后移。此计划替代下文历史段落中的优先级，不改变其历史验证记录。本次为文档规划，未实施新导航或完成加载门槛。
 
 本文件是当前恢复入口。先核对实际 HEAD/工作区，再读取这里列出的专题文档；旧交接中的历史状态不代表现在。用户本轮要求核对新分支、修正偏移、更新文档并交接，不启动下一整批功能。

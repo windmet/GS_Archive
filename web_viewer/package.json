@@ -31,6 +31,7 @@
     "verify:reading-sources": "node scripts/generate-reading-documents.mjs --check",
     "dev": "vite --configLoader native",
     "build": "vite build --configLoader native",
+    "build:check": "node scripts/build-check.mjs",
     "smoke": "vite build --configLoader native",
     "verify:archive-assets": "node scripts/verify-archive-assets.mjs",
     "verify:story-stage-loading": "node scripts/verify-story-stage-loading.mjs && node scripts/verify-story-position-clock.mjs",
