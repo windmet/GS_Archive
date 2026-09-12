@@ -24,7 +24,11 @@ for (const sectionId of selection.main_collection_sections || []) {
     assert.equal(entry.episode_label, episode.label)
   }
 }
-assert.deepEqual(new Set(manifest.entries.map(e => e.document_id)), expectedIds)
+for (const id of expectedIds) assert.ok(manifest.entries.some(entry => entry.document_id === id), `regression sample ${id}`)
+for (const entry of manifest.entries) assert.ok(storyCatalog.entries.some(source => source.file === entry.parent_file && source.exists), `published catalog parent ${entry.document_id}`)
+const byDomain = {}
+for (const entry of manifest.entries) { const counts = byDomain[entry.domain] ||= {}; counts[entry.status] = (counts[entry.status] || 0) + 1 }
+assert.deepEqual((await read('public/data/reading/coverage.json')).by_domain, byDomain)
 const documents = []
 for (const entry of manifest.entries) {
   const bytes = await fs.readFile(new URL(`../public/data/reading/${entry.file}`, import.meta.url))

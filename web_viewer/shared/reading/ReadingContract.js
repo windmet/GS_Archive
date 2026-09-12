@@ -1,3 +1,4 @@
+import { READING_SOURCE_FILE } from './ReadingCatalog.js'
 const ID = /^[A-Za-z0-9_-]+$/
 const HASH = /^sha256:[a-f0-9]{64}$/
 const STATUS = new Set(['ready', 'empty', 'unsupported'])
@@ -15,7 +16,9 @@ export function validateReadingManifest(value) {
     ids.add(e.document_id)
     requireValue(e.file === `${e.document_id}.json` && e.schema_version === 2, 'document file/version (v2 required)')
     requireValue(HASH.test(e.sha256) && HASH.test(e.source_sha256), 'document hashes')
-    requireValue(e.source_file == null || /^episodes\/[A-Za-z0-9_-]+\.json$/.test(e.source_file), 'source file')
+    requireValue(e.source_file == null || READING_SOURCE_FILE.test(e.source_file), 'source file')
+    requireValue(e.parent_file == null || (READING_SOURCE_FILE.test(e.parent_file) && !e.parent_file.startsWith('episodes/')), 'parent file')
+    requireValue(e.domain == null || typeof e.domain === 'string', 'source domain')
     requireValue(STATUS.has(e.status) && Number.isInteger(e.row_count) && e.row_count >= 0, 'document status/count')
     requireValue(typeof e.logical_id === 'string' && typeof e.scenario_id === 'string', 'story identity')
     requireValue(e.title == null || typeof e.title === 'string', 'presentation title')
@@ -28,7 +31,7 @@ export function validateReadingDocument(d, entry) {
   requireValue(d?.schema_version === 2 && entry.schema_version === 2 && d.document_id === entry.document_id, 'document version/identity (v2 required)')
   requireValue(d.logical_id === entry.logical_id && d.scenario_id === entry.scenario_id, 'story identity')
   requireValue(d.source?.sha256 === entry.source_sha256 && d.status === entry.status, 'source/status')
-  requireValue(/^episodes\/[A-Za-z0-9_-]+\.json$/.test(d.source?.file || ''), 'source file')
+  requireValue(READING_SOURCE_FILE.test(d.source?.file || ''), 'source file')
   requireValue(entry.source_file == null || d.source.file === entry.source_file, 'source discovery identity')
   requireValue(Number.isInteger(d.source.step_count) && d.source.step_count >= 0, 'source step count')
   requireValue(d.playback?.file === d.source.file && d.playback.start_step_index === 0

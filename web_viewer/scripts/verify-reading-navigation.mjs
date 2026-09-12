@@ -15,6 +15,14 @@ assert.deepEqual(readPortalReturnRoute(buildPortalReturnQuery(route)), route)
 assert.equal(buildArchiveUrl('http://localhost/?reading=x&reading_mode=translation', { view: 'home' }).search, '')
 assert.equal(readArchiveRoute('http://localhost/?view=reader&reading=../../RAW').view, 'story_catalog')
 assert.equal(readArchiveRoute('http://localhost/?view=reader&reading=x&reading_mode=bad').readingMode, 'original')
+for (const query of [
+  'story_type=unit_story&story_section=13&story=1_1_013the_03.json',
+  'story_type=birthday&story=1_x_001tom_1_8_001_01.json',
+]) {
+  const nonMain = readArchiveRoute(`http://localhost/?view=reader&reading=sample&${query}`)
+  assert.deepEqual(readArchiveRoute(buildArchiveUrl('http://localhost/', nonMain)), nonMain)
+  assert.deepEqual(readPortalReturnRoute(buildPortalReturnQuery(nonMain)), nonMain)
+}
 
 let state
 let resolveSlow
@@ -53,6 +61,12 @@ const context = { ...useArchiveNavigationState(), navigation, readingSession: se
 context.playbackController = { reset: () => { context.currentScenario.value = null } }
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 vm.runInNewContext(app.match(/async function applyArchiveRoute\([^]*?\n\}/)[0], context)
+for (const source of [{ storyType: 'unit_story', storySection: '13', story: 'unit.json' },
+  { storyType: 'birthday', storySection: '', story: 'birthday.json' }]) {
+  await context.applyArchiveRoute({ ...route, ...source })
+  const restored = readArchiveRoute(buildArchiveUrl('http://localhost/', context.currentArchiveRoute()))
+  for (const key of Object.keys(source)) assert.equal(restored[key], source[key], `App retains ${key}`)
+}
 await context.applyArchiveRoute(route)
 assert.equal(context.view.value, 'reader')
 assert.equal(context.currentScenario.value, null)

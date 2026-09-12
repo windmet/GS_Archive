@@ -6,7 +6,8 @@ import { validateReadingDocument, validateReadingManifest } from '../shared/read
 const read = file => fs.readFile(new URL(`../public/data/reading/${file}`, import.meta.url), 'utf8')
 const manifestText = await read('manifest.json')
 const initial = JSON.parse(manifestText)
-const entry = initial.entries[0]
+const entry = initial.entries.find(entry => entry.document_id === '1_4_001_00_a')
+const entryIndex = initial.entries.indexOf(entry)
 const text = await read(entry.file)
 const digest = bytes => `sha256:${createHash('sha256').update(new Uint8Array(bytes)).digest('hex')}`
 const calls = []
@@ -34,7 +35,7 @@ const updated = JSON.parse(text)
 updated.source.publication.test_revision = 2
 documentBody = JSON.stringify(updated)
 const changed = structuredClone(initial)
-changed.entries[0].sha256 = digest(new TextEncoder().encode(documentBody))
+changed.entries[entryIndex].sha256 = digest(new TextEncoder().encode(documentBody))
 manifestBody = JSON.stringify(changed)
 await repo.manifest({ fresh: true })
 responseStatus = 503

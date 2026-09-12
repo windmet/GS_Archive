@@ -269,3 +269,16 @@ A 批：新增纯显示 ReadingTypography.reflowReadingText，仅用于 ArchiveS
 验证：新增 reading-typography 测试，包含真实1_4_001_00_a第13步及原文对象不变；实际Vue SSR检查该句不再含原textbox换行，原文/译文/双语unknown身份保护及行锚点检查通过；reading-playback通过。native构建2508 modules，主入口540.44 kB，保留大小提示。Browser直接检查5175实际Reader，在1280×800正文两句连续呈现；390×844随容器自然折行，scrollWidth=390；篇内查找“から、今日まで”跨原换行命中1处。该批没有重生成ReadingDocument。
 
 B 批尚未完成，不把A批当作全剧情推广：现有204文档仍未扩张。现场inventory：catalog resourceIds有磁盘episode文件 main204 / event396 / unit_story540 / idol_story390（共520个resourceIds）/ extra2；birthday152、work637、card342等大量输入是非episodes文件。下一批应以published catalog的source关系和ReadingDocument.status投影可用性，记录不支持/缺失，不仅改main_section列表。除App main条件与closeStoryReader外，ReadingContract的source_file也强制episodes/前缀，archiveRoute写Reader返回上下文也仅保留main，均需一并处理。通信贴图与不完整choice继续unsupported，不为覆盖率伪造正文。先落实B，再继续Player加载工作。
+
+## Reader B1：发布目录发现与通用入口扩展
+
+输入 HEAD 212f18d。本批推进 B 的来源与通用入口基础，替代上段“仍为204份”的现状；专属页面与通信覆盖尚未结束。
+
+- ReadingCatalog 从 story_catalog.entries 的已发布父文件及实际 episodes 边界发现正文；整文件也可生成，不扫描目录冒充已发布。strict-v2 继续要求 authoritative publication registry。记录缺失来源、拒绝越界路径和 episode/aggregate 身份错配。
+- 生成2734份文档：ready2419、unsupported315。按域 ready/unsupported：main183/21，unit_story540/0，event362/34，idol_story416/2，birthday151/1，work637/0，card_scenarios94/248，extra36/9。另缺少 episodes/1_2_001_12.json，单独写入 public/data/reading/coverage.json。不能据此声称全剧情或完整通信覆盖。
+- 通用 StoryCollection 与 StoryDetail 按 manifest ready 状态提供入口；详情页只有一个阅读按钮，多分段在 Reader 内切换。Reader 选择器限制为同一 logical_id，避免列出2734项。config/reading-samples.v1.json 现在仅是回归样本，不决定生成范围。
+- Reader 接受安全的根目录整文件来源；App 恢复、URL及导航状态保留非主线 storyType/storySection/story。无section时返回原story_detail，有section时返回原story_collection。Browser 实测发现并修复了 applyArchiveRoute 遗留的 main-only 判断。
+- 校验：2734份源文件重新生成一致性 --check；reading全套（目录发现fixture、正文hash/anchor、repository、导航、演出和Vue SSR）；真实整文件生日来源hash/完整演出范围；archive-routes与story-collections。构建在仓库外 C:/Users/windm/.codex/qa/sidem-reading-catalog-20260912/build，保留入口chunk大小提示。
+- Browser5175：THE虎牙道第3话ep5从目录进入正文，选择器10段，刷新后返回原组合及章节；生日1_x_001tom_1_8_001_01从详情进入整篇，刷新后返回原详情；1280及390宽检查无横向溢出，console无error。未对2734篇逐篇视觉或媒体验收。
+
+下一步：将已生成正文接到活动/工作/个人/卡片等专属页面的自然入口，保留各自返回上下文；通信来源需独立识别及贴图/分支处理，不能直接从文件库存扩充。完成Reader用户插入项后，继续加载任务的critical与后台生命周期分离。未PR、未部署；本地compiled仍是忽略产物，v9 HTML保持无关未跟踪。

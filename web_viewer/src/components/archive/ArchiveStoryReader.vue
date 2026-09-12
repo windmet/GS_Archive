@@ -6,7 +6,7 @@
       <p class="reader-subtitle">{{ episodeLabel }}</p>
       <details class="reader-segments"><summary>选择其他分段</summary><label class="reader-picker">分段<select :value="documentId" :disabled="state.status === 'loading'" @change="emit('select', $event.target.value)">
         <option v-if="!state.entries.some(e => e.document_id === documentId)" :value="documentId">{{ state.status === 'loading' ? '正在载入分段…' : '当前分段尚未收录' }}</option>
-        <option v-for="entry in state.entries" :key="entry.document_id" :value="entry.document_id">{{ [entry.title || '剧情标题待确认', entry.episode_label].filter(Boolean).join(' · ') }}{{ entry.status === 'ready' ? '' : '（暂不支持阅读）' }}</option>
+        <option v-for="entry in segmentEntries" :key="entry.document_id" :value="entry.document_id">{{ [entry.title || '剧情标题待确认', entry.episode_label].filter(Boolean).join(' · ') }}{{ entry.status === 'ready' ? '' : '（暂不支持阅读）' }}</option>
       </select></label></details>
       <div class="reader-toolbar"><div class="reader-languages" role="group" aria-label="正文语言">
         <button v-for="item in modes" :key="item.id" :aria-pressed="mode === item.id" @click="emit('mode', item.id)">{{ item.label }}</button>
@@ -80,6 +80,10 @@ const readerRoot = ref(null)
 const playbackNotice = ref(null)
 const modes = [{ id: 'original', label: '原文' }, { id: 'translation', label: '译文' }, { id: 'bilingual', label: '双语' }]
 const document = computed(() => props.state.document)
+const segmentEntries = computed(() => {
+  const logicalId = document.value?.logical_id || props.state.entries.find(entry => entry.document_id === props.documentId)?.logical_id
+  return logicalId ? props.state.entries.filter(entry => entry.logical_id === logicalId) : []
+})
 // The localization context consumes text identities only, never compiled media.
 const localizationInput = computed(() => document.value ? ({
   scenario_id: document.value.scenario_id, text_catalog_id: document.value.text_catalog_id,

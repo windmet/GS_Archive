@@ -29,6 +29,9 @@
           <Play :size="18" fill="currentColor" />
           <span>{{ story.exists ? '开始播放' : '缺少剧情文件' }}</span>
         </button>
+        <button v-if="availableReading.length" @click="emit('read', availableReading[0].document_id)">
+          <BookOpen :size="18" /><span>{{ availableReading.length > 1 ? '阅读可用分段' : '阅读正文' }}</span>
+        </button>
         <a
           v-for="resource in externalResources"
           :key="resource.external_id"
@@ -93,8 +96,11 @@ const props = defineProps({
   story: { type: Object, default: null }, related: { type: Array, default: () => [] },
   visualUrl: { type: String, default: '' }, idolName: { type: Function, required: true },
   externalResources: { type: Array, default: () => [] },
+  readingEntries: { type: Array, default: () => [] },
 })
-const emit = defineEmits(['play', 'select', 'open-idol'])
+const emit = defineEmits(['play', 'select', 'open-idol', 'read'])
+const availableReading = computed(() => props.readingEntries.filter(entry => entry.status === 'ready' &&
+  (entry.source_file === props.story?.file || entry.parent_file === props.story?.file)))
 const hierarchyLabel = computed(() => [props.story?.sectionLabel, props.story?.episodeLabel].filter(Boolean).join(' · ') || props.story?.domainLabel || '')
 const releaseDate = computed(() => props.story?.releaseAt >= 1577836800 ? new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium' }).format(new Date(props.story.releaseAt * 1000)) : '')
 const characters = computed(() => (props.story?.characters || []).filter(character => /^\d{3}[a-z0-9]{3}$/i.test(character)))

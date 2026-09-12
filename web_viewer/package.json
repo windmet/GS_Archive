@@ -18,7 +18,7 @@
     "verify:story-slide-visibility": "python scripts/verify-story-slide-visibility.py",
     "verify:reading-typography": "node scripts/verify-reading-typography.mjs",
     "generate:reading": "node scripts/generate-reading-documents.mjs",
-    "verify:reading": "node scripts/verify-reading-progress.mjs && node scripts/verify-reading-documents.mjs && node scripts/verify-reading-visual-identity.mjs && node scripts/verify-reading-repository.mjs && node scripts/verify-reading-navigation.mjs && node scripts/verify-reading-playback.mjs && node scripts/verify-reading-render.mjs",
+    "verify:reading": "node scripts/verify-reading-catalog.mjs && node scripts/verify-reading-progress.mjs && node scripts/verify-reading-documents.mjs && node scripts/verify-reading-visual-identity.mjs && node scripts/verify-reading-repository.mjs && node scripts/verify-reading-navigation.mjs && node scripts/verify-reading-playback.mjs && node scripts/verify-reading-render.mjs",
     "verify:reading-visual-sources": "node scripts/verify-reading-visual-identity.mjs --local-sources",
     "verify:story-asset-plan": "node scripts/verify-story-asset-plan.mjs",
     "verify:effect-texture-parity": "node scripts/verify-effect-texture-parity.mjs",

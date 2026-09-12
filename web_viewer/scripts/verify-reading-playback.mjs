@@ -17,6 +17,15 @@ const document = JSON.parse(read('public/data/reading/1_4_001_01_d.json'))
 const entry = manifest.entries.find(e => e.document_id === document.document_id)
 const row = document.rows[1]
 const localSources = process.argv.includes('--local-sources')
+if (localSources) {
+  const whole = JSON.parse(read('public/data/reading/1_x_001tom_1_8_001_01.json'))
+  const wholeEntry = manifest.entries.find(e => e.document_id === whole.document_id)
+  const wholeTarget = readingPlaybackTarget(whole, '', wholeEntry.sha256, wholeEntry, { fullDocument: true })
+  assert.equal(wholeTarget.file, '1_x_001tom_1_8_001_01.json')
+  assert.equal(wholeTarget.initialStep, 1)
+  assert.equal(wholeTarget.endStep, whole.source.step_count)
+  await wholeTarget.readScenario(new Response(read(`public/data/compiled/${wholeTarget.file}`)))
+}
 // CI has no published media tree. Its synthetic source deliberately uses a non-sequential ID.
 let bytes
 if (localSources) bytes = read(`public/data/compiled/${document.source.file}`)

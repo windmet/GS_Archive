@@ -265,6 +265,8 @@
         :visual-url="currentStoryVisualUrl"
         :idol-name="idolDisplayName"
         :external-resources="currentStoryExternalResources"
+        :reading-entries="readingCatalogEntries"
+        @read="documentId => openStoryReader(documentId, { storyType: currentStoryDomain, story: currentStoryFile })"
         @play="playStoryDetail"
         @select="openStoryDetail"
         @open-idol="openStoryIdol"
@@ -275,8 +277,8 @@
         :collection="currentStoryCollection"
         :external-resources="currentStoryCollectionExternalResources"
         :initial-chapter-id="currentStoryCollectionChapter?.id || ''"
-        :reading-entries="currentStoryCollection?.domain === 'main' ? readingCatalogEntries : []"
-        :reading-error="currentStoryCollection?.domain === 'main' ? readingCatalogError : ''"
+        :reading-entries="readingCatalogEntries"
+        :reading-error="readingCatalogError"
         @read-episode="openCollectionReader" @retry-reading="loadReadingCatalog"
         @play-chapter="playStoryCollectionChapter"
         @play-episode="playStoryCollectionEpisode"
@@ -1204,7 +1206,7 @@ async function loadReadingCatalog() {
     readingCatalogError.value = ''
   } catch { readingCatalogError.value = '阅读目录暂时无法载入。' }
 }
-watch(() => view.value === 'story_collection' && currentStoryCollection.value?.domain === 'main', active => {
+watch(() => ['story_collection', 'story_detail'].includes(view.value), active => {
   if (active) loadReadingCatalog()
 })
 const readingSession = createReadingSession({ repository: readingRepository, publish: state => { readingState.value = state } })
@@ -1480,9 +1482,9 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
       readingRowId.value = route.readingRow || ''
       readingMode.value = route.readingMode || 'original'
       readingRevision.value = route.readingRev || ''
-      currentStoryDomain.value = route.storyType === 'main' && route.storySection ? 'main' : ''
-      currentStorySection.value = currentStoryDomain.value ? route.storySection : ''
-      currentStoryFile.value = currentStoryDomain.value ? (route.story || '') : ''
+      currentStoryDomain.value = route.storyType || ''
+      currentStorySection.value = route.storySection || ''
+      currentStoryFile.value = route.story || ''
       readingPlaybackNotice.value = ''
       playbackController.reset()
       view.value = 'reader'
@@ -1689,8 +1691,8 @@ function openCollectionReader({ chapter, documentId }) {
 }
 
 function closeStoryReader() {
-  if (currentStoryDomain.value !== 'main' || !currentStorySection.value) return openStoryCatalog()
-  const pending = applyArchiveRoute({ view: 'story_collection', storyType: 'main',
+  if (!currentStorySection.value && !currentStoryFile.value) return openStoryCatalog()
+  const pending = applyArchiveRoute({ view: currentStorySection.value ? 'story_collection' : 'story_detail', storyType: currentStoryDomain.value,
     storySection: currentStorySection.value, story: currentStoryFile.value }, { restoring: false })
   const revision = navigation.getRevision()
   return pending.then(() => { if (navigation.getRevision() === revision) syncArchiveRoute() })
