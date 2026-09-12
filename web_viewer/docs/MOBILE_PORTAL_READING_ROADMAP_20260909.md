@@ -1,5 +1,7 @@
 # 移动门户与 Reading 后续路线
 
+> 2026-09-12最新顺序见 [代码与门户调试计划](NEXT_PHASE_NAVIGATION_PORTAL_PLAN_20260912.md)：最低加载安全闭环后立即进入导航/门户验收，不等待完整cache或长稳。下面是历史路线与交付记录；个人/卡片/通信新增Reader入口按用户要求停止。
+
 最新调整（核对 `9097cd8`）：以 [Reader/Player 下一阶段计划](READER_PLAYER_NEXT_PHASE_20260909.md)
 为当前执行顺序。先收口 Reader UI，再将文本身份/视觉身份分离与 v2 文档迁移合批；
 随后建立 StoryAssetPlan、分层预载、buffering 与 transport/cache 契约。
