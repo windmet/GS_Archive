@@ -216,6 +216,10 @@ export function getBodyTypeUrl() {
   return `/data/idolsetting/body_type.json`
 }
 
+export const getCostumePrefabMetaUrl = () => '/data/idolsetting/costume_prefab_meta.json'
+export const getCostumeDictionaryUrl = () => '/data/masterdata/costume_dictionary.json'
+export const getIdolMotionSettingUrl = () => '/data/idolsetting/motion/idol_motion_index.json'
+
 /**
  * Mobile phone UI assets are shared with the asset plan, which enumerates them
  * as dependencies. Both resolve through one module so discovery cannot drift

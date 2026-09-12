@@ -4,6 +4,7 @@
 import { storyAssetAdapter, resolveStaticSpineModels } from './StoryAssetAdapters.js'
 import { decodeSpineAtlasText, resolveSpineAtlasDependencies } from '../../shared/story/SpineAtlasPages.js'
 import { resolveSpineTextureUrl } from './SpineTextureUrl.js'
+import { validateStoryConfig } from './StoryConfigShape.js'
 
 const TIMEOUT_MS = 10000 // 10s per asset max
 
@@ -47,7 +48,7 @@ export class Preloader {
     const outcomes = plan.assets.map(makeOutcome)
     const tasks = outcomes.filter(task => task.state === 'discovered')
     const snapshot = phase => {
-      const succeeded = outcomes.filter(task => ['image-loaded', 'fetched', 'atlas-parsed'].includes(task.state)).length
+      const succeeded = outcomes.filter(task => ['image-loaded', 'fetched', 'atlas-parsed', 'json-parsed'].includes(task.state)).length
       const failed = outcomes.filter(task => task.state === 'failed').length
       const cancelled = outcomes.filter(task => task.state === 'cancelled').length
       const excluded = outcomes.filter(task => task.state === 'excluded').length
@@ -75,7 +76,10 @@ export class Preloader {
         await Promise.all(batch.map(async outcome => {
           outcome.state = 'loading'
           try {
-            if (outcome.operation === 'atlas') {
+            if (outcome.operation === 'json') {
+              await this._preloadConfig(outcome, signal)
+              outcome.state = 'json-parsed'
+            } else if (outcome.operation === 'atlas') {
               const { text, sha256 } = await this._preloadAtlas(outcome.url, signal)
               signal?.throwIfAborted()
               plan = resolveSpineAtlasDependencies(plan, { modelId: outcome.id, atlasText: text, atlasSha256: sha256, modelKind: 'spine' })
@@ -172,6 +176,27 @@ export class Preloader {
       const hash = await crypto.subtle.digest('SHA-256', bytes)
       return { text: decodeSpineAtlasText(bytes), sha256: `sha256:${Array.from(new Uint8Array(hash), byte => byte.toString(16).padStart(2, '0')).join('')}` }
     }, TIMEOUT_MS, `atlas ${url}`, signal)
+  }
+
+  static async _preloadConfig(task, signal) {
+    task.attempts = []
+    return withTimeout(async taskSignal => {
+      for (let index = 0; index < task.urls.length; index++) {
+        taskSignal.throwIfAborted()
+        const url = task.urls[index]
+        const response = await fetch(url, { signal: taskSignal, cache: task.cache })
+        task.attempts.push({ url, status: response.status })
+        if (!response.ok) {
+          await response.body?.cancel()
+          if (index + 1 < task.urls.length) continue
+          throw new Error(`HTTP ${response.status}: ${url}`)
+        }
+        validateStoryConfig(task.kind, await response.json())
+        task.url = url
+        return
+      }
+      throw new Error(`No config candidates: ${task.key}`)
+    }, TIMEOUT_MS, `config ${task.key}`, signal)
   }
 
   static async _resolvePage(task, signal) {

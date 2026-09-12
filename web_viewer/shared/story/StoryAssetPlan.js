@@ -2,6 +2,7 @@ import { normalizeScenario } from './ScenarioNormalizer.js'
 import { effectTextures } from './EffectTextures.js'
 import { communicationRequirements } from './CommunicationScenes.js'
 import { legacyFieldCoverage } from './LegacyFieldCoverage.js'
+import { mouthSettingCandidates } from './MouthSettingCandidates.js'
 
 const HASH = /^sha256:[a-f0-9]{64}$/
 const record = value => value && typeof value === 'object' && !Array.isArray(value)
@@ -86,7 +87,13 @@ export function createStoryAssetPlan(input, { file, sha256 }) {
         // Stage placement/lip-sync also read these data resources.
         if (spine?.id) {
           add('idol-placement', spine.id, use)
-          add('idol-mouth', spine.id, use, 'model-specific-mouth-fallback')
+          const mouth = add('idol-mouth', spine.id, use, bundle ? null : 'model-specific-mouth-fallback')
+          if (bundle && mouth) {
+            const config = add('model-mouth', `${spine.id}/${spine.model}`, use)
+            config.modelId = spine.model
+            config.candidateIds = mouthSettingCandidates(spine.id, spine.model)
+            if (!mouth.dependencies.includes(config.key)) mouth.dependencies.push(config.key)
+          }
           add('idol-body-types', 'index', use)
           add('idol-motion', 'index', use)
           add('costume-prefab-metadata', 'index', use)

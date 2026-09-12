@@ -1,3 +1,4 @@
+import { getCostumePrefabMetaUrl } from './AssetResolver.js'
 let cachedPrefabMeta = null
 let loadingPrefabMeta = null
 
@@ -5,7 +6,7 @@ export async function loadCostumePrefabMeta() {
   if (cachedPrefabMeta) return cachedPrefabMeta
   if (loadingPrefabMeta) return loadingPrefabMeta
 
-  loadingPrefabMeta = fetch('/data/idolsetting/costume_prefab_meta.json', {
+  loadingPrefabMeta = fetch(getCostumePrefabMetaUrl(), {
     cache: 'no-store',
   })
     .then(res => (res.ok ? res.json() : null))

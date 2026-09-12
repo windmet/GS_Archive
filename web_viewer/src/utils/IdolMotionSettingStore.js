@@ -1,3 +1,4 @@
+import { getIdolMotionSettingUrl } from './AssetResolver.js'
 let cachedMotionSettings = null
 let loadingMotionSettings = null
 
@@ -5,7 +6,7 @@ export async function loadIdolMotionSettings() {
   if (cachedMotionSettings) return cachedMotionSettings
   if (loadingMotionSettings) return loadingMotionSettings
 
-  loadingMotionSettings = fetch('/data/idolsetting/motion/idol_motion_index.json', {
+  loadingMotionSettings = fetch(getIdolMotionSettingUrl(), {
     cache: 'no-store',
   })
     .then(res => (res.ok ? res.json() : null))

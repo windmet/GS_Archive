@@ -198,3 +198,19 @@
 - 1280×800 中实际角色正常显示，unknown 姓名仍为 ？？？；390×844 从 1/16 推进至 2/16 白文，scrollWidth=390，无错误遮罩或预载失败提示。保留已有 Spine.update / tint 两条 warn。预载后舞台仍重复 GET 部分资源，尚未验证缓存命中或性能改善。
 
 下一步继续处理模型配置与其他未适配需求，并将实际入口 / range 纳入 P2 的 critical 集合和恢复动作。完整音频、通信动态上下文、bundle parse / renderer readiness、局部等待、transport / 缓存仍待实现或验收；未做正式长稳，不宣称整个 P1 已完成。
+
+## P1 配置预载与模型级口型回退
+
+输入 HEAD：`885a71a`。五类固定配置（placement、body types、motion、prefab metadata、costume dictionary）现已接入原生 JSON 预载；固定 URL 与原 Store / AssetResolver 共用，沿用既有 cache 选项，不声称共享内存缓存已建立。
+
+- 计划新增按 actor/model 区分的 model-mouth 子任务，idol-mouth 只保留逻辑依赖组。模型前缀 / 偶像候选顺序通过 MouthSettingCandidates 与真实 LipSyncController 共用；同一演员的不同模型不再混作一份口型配置。白名单剪影的 mouth 子任务 excluded。
+- 配置在 JSON parse 和消费者结构字段检查后记 json-parsed。placement 检查有限 positionY，索引检查 dataList / entries / models / by_model_resource_id，mouth 检查非空 mouthes；不保证索引覆盖每个模型、骨骼名匹配或舞台已采用该数据。
+- 口型仅在 HTTP 非成功时尝试下一候选，保留 attempts URL / status 和成功 URL。网络错误、解析错误、空 mouthes 不触发偶像回退，与现有消费者一致；失败仍可见，取消不会触发后续回退。逻辑组不计为又一份成功 JSON。
+- 新增 `verify:story-config-preload`：真实 HTTP 与真实 LipSyncController 对照 primary 成功、HTTP 回退、坏 JSON、空配置、网络断开；另验取消、同 actor 多模型、剪影跳过及当前磁盘 metadata 结构。相关 plan、atlas、预载状态 / 取消、stage-loading 与 reading-playback 验证通过。
+- 204 篇来源校验通过：新增按篇去重 model-mouth 828 项，204 个逻辑计划仍 open；history 64、translation overlay 11、without-unit 46、without-character 513 保留。没有更新编译剧情或媒体。
+- Vite native 构建通过：2504 modules，主入口 537.30 kB，保留大小提示。仓库外构建 / 服务在 `C:/Users/windm/.codex/qa/sidem-config-preload-20260912/`。
+- 5185 生产构建的原始 episodes/1_4_001_00_a.json / start_step=12 页面，请求记录包含 3 人 placement / mouth 和 4 个全局索引，进入对白无配置失败提示，下一段可用，unknown 姓名仍受保护。仍有既有 Spine.update / tint warn；仍有预载后消费者重复请求，不能声称缓存或性能改善。
+
+本轮页面检查新发现并对照确认的既有问题：窗口缩放后 Spine 不重排。当前构建首次截图角色偏左，下一段及稳定视口重载恢复；上一批 885a71a 的独立生产构建（5184）同样可复现“390px 定位角色 → 放大到 1280px → 角色停留旧横坐标”。PixiStageManager._observeResize 源码明确为保留拖拽位置而不重排 Spine，因此不将这次配置批记为首帧 / 缩放全面通过。
+
+下一批优先修复故事舞台的缩放重投影，保留 Spine Lab 拖拽语义且不重播 cue / 覆盖暂停或结算状态；再继续 P2 实际入口 / range、critical 失败恢复，以及音频和通信上下文的未闭合项。总体目标继续进行，P1–P5 尚未完成。

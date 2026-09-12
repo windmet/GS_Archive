@@ -1,3 +1,4 @@
+import { getCostumeDictionaryUrl } from './AssetResolver.js'
 let cachedCostumeDictionary = null
 let loadingCostumeDictionary = null
 
@@ -5,7 +6,7 @@ export async function loadCostumeDictionary() {
   if (cachedCostumeDictionary) return cachedCostumeDictionary
   if (loadingCostumeDictionary) return loadingCostumeDictionary
 
-  loadingCostumeDictionary = fetch('/data/masterdata/costume_dictionary.json', {
+  loadingCostumeDictionary = fetch(getCostumeDictionaryUrl(), {
     cache: 'default',
   })
     .then(res => (res.ok ? res.json() : null))
