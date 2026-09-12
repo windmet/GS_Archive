@@ -11,7 +11,7 @@ const independent = useArchiveNavigationState()
 const fields = Object.keys(navigation).filter(key => key !== 'currentArchiveRoute')
 assert.ok(fields.every(key => isRef(navigation[key])))
 assert.equal(navigation.view.value, '__boot__')
-assert.equal(navigation.homeSelectedId.value, '001tom')
+assert.equal(navigation.homeSelectedId.value, '')
 assert.equal(navigation.returnViewAfterPlayer.value, 'files')
 for (const key of fields) {
   assert.notEqual(navigation[key], independent[key], `${key} must be scoped to one App instance`)
@@ -38,6 +38,7 @@ for (const view of VALID_VIEWS) {
         expected.story = actual.story
         expected.workMode = actual.workMode
       }
+      if (view === 'idol_picker') expected.pickTarget = actual.pickTarget
       assert.deepEqual(actual, expected, `${view}/${returnView}/${parent}`)
       const url = buildArchiveUrl('http://localhost/?runtimeDebug=1', actual)
       assert.equal(url.href, buildArchiveUrl('http://localhost/?runtimeDebug=1', expected).href)

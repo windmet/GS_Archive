@@ -7,6 +7,7 @@ const ROUTE_QUERY_KEYS = [
   'reading_rev',
   'at_step',
   'view',
+  'pick',
   'home_idol',
   'home_cue',
   'home_costume',
@@ -45,6 +46,8 @@ const ROUTE_QUERY_KEYS = [
 ]
 
 const VALID_VIEWS = new Set([
+  'welcome',
+  'idol_picker',
   'portal',
   'reader',
   'home',
@@ -87,11 +90,14 @@ const VALID_STORY_AVAILABILITY = new Set(['all', 'playable', 'missing'])
 const VALID_STORY_SORTS = new Set(['domain', 'title', 'resource', 'steps_desc'])
 const VALID_STORY_MODES = new Set(['portal', 'search'])
 const VALID_WORK_MODES = new Set(['stories', 'lines'])
+const VALID_PICK_TARGETS = new Set(['home', 'profile', 'work', 'story', 'mobile'])
 const VALID_SONG_SCOPES = new Set(['all', 'movie', 'mvlive', 'layered', 'oneshot', 'special'])
 const VALID_MOBILE_MODES = new Set(['personal', 'phone', 'unit', 'random'])
 const VALID_RETURN_VIEWS = new Set([...VALID_VIEWS].filter(view => !['player', 'spine_lab', 'chibi_stage'].includes(view)))
 
 const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
+  welcome: { section: 'home', required: [] },
+  idol_picker: { section: 'home', required: ['pickTarget'], fallback: 'welcome' },
   reader: { section: 'reader', required: [], fallback: 'story_catalog' },
   portal: { section: 'portal', required: [] },
   home: { section: 'home', required: [] },
@@ -142,7 +148,7 @@ const MAX_SOURCE_LENGTH = 8192
 
 export function ownsArchiveSource(view, returnView = '') {
   if (view === 'player') return returnView !== 'player' && ownsArchiveSource(returnView || 'files')
-  return VALID_VIEWS.has(view) && !['home', 'portal'].includes(view)
+  return VALID_VIEWS.has(view) && !['welcome', 'home', 'portal'].includes(view)
 }
 
 // A launcher return is a bounded, local archive query, never an external URL.
@@ -243,15 +249,32 @@ export function normalizeArchiveRoute(input = {}) {
   let view = scenario ? 'player' : allowed(clean(input.view), VALID_VIEWS, 'home')
   let category = allowed(clean(input.category), VALID_CATEGORIES, '')
   let idol = clean(input.idol)
+  let pickTarget = allowed(clean(input.pickTarget), VALID_PICK_TARGETS, '')
 
-  if (view === 'idols' && category === 'idol') view = 'idol_detail'
+  if (view === 'idols' && category === 'idol' && idol) view = 'idol_detail'
   // Without an explicit idol this is the card member grid, including its All filter.
   if (view === 'idols' && category === 'cards' && idol) view = 'cards'
   if (view === 'idols' && ['idol_chat', 'idol_phone'].includes(category)) {
-    view = 'mobile_archive'
+    view = idol ? 'mobile_archive' : 'idol_picker'
+    if (!idol) pickTarget = 'mobile'
     category = ''
   }
-  if (['idol_detail', 'cards', 'mobile_archive'].includes(view) && !idol) idol = '001tom'
+  if (view === 'idol_detail' && !idol) {
+    view = 'idol_picker'
+    pickTarget = 'profile'
+  }
+  if (view === 'mobile_archive' && !idol) {
+    view = 'idol_picker'
+    pickTarget = 'mobile'
+  }
+  if (view === 'work_archive' && !idol) {
+    view = 'idol_picker'
+    pickTarget = 'work'
+  }
+  if (view === 'idol_story_archive' && !idol) {
+    view = 'idol_picker'
+    pickTarget = 'story'
+  }
 
   if (['idol_detail'].includes(view)) category = 'idol'
   if (['cards', 'card_detail'].includes(view)) category = 'cards'
@@ -259,6 +282,7 @@ export function normalizeArchiveRoute(input = {}) {
 
   const route = {
     view,
+    pickTarget,
     homeIdol: clean(input.homeIdol),
     homeCue: clean(input.homeCue),
     homeCostume: clean(input.homeCostume),
@@ -312,7 +336,10 @@ export function normalizeArchiveRoute(input = {}) {
     if (!route.reading) route.view = 'story_catalog'
   }
   if (route.view === 'player' && positiveInteger(input.initialStep)) route.initialStep = positiveInteger(input.initialStep)
-  if (route.view === 'portal') route.portalFrom = buildPortalReturnQuery(readPortalReturnRoute(input.portalFrom))
+  if (route.view === 'portal') {
+    const portalFrom = clean(input.portalFrom)
+    route.portalFrom = portalFrom ? buildPortalReturnQuery(readPortalReturnRoute(portalFrom)) : ''
+  }
   if (ownsArchiveSource(route.view, route.returnView) && clean(input.sourceRoute)) {
     const frames = sourceFrames(input.sourceRoute)
     const sourceRoute = packSourceFrames(frames)
@@ -509,6 +536,7 @@ export function readArchiveRoute(input = null) {
   const params = url.searchParams
   return normalizeArchiveRoute({
     view: params.get('view'),
+    pickTarget: params.get('pick'),
     portalFrom: params.get('portal_from'),
     sourceRoute: params.get('from'),
     reading: params.get('reading'),
@@ -560,7 +588,8 @@ export function buildArchiveUrl(input, route) {
   for (const key of ROUTE_QUERY_KEYS) url.searchParams.delete(key)
   url.searchParams.delete('file')
 
-  if (normalized.view !== 'home') url.searchParams.set('view', normalized.view)
+  url.searchParams.set('view', normalized.view)
+  if (normalized.pickTarget) url.searchParams.set('pick', normalized.pickTarget)
   if (normalized.view === 'reader' || (normalized.view === 'player' && normalized.returnView === 'reader')) {
     url.searchParams.set('reading', normalized.reading)
     if (normalized.readingRow) url.searchParams.set('reading_row', normalized.readingRow)

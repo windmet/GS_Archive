@@ -13,7 +13,7 @@ const unit = { unit_code: '01jup', unit_id: 1 }
 const context = vm.createContext({
   ...state, buildArchiveSourceQuery,
   songCatalogData: { value: { songs: { brndnf: {} } } },
-  idolUnitData: { value: { units: [unit] } },
+  idolUnitData: { value: { units: [unit], by_idol_code: { '002sht': {}, '003hok': {} } } },
   cardMap: { value: new Map([[card.resource_id, card]]) },
   cardIndexData: { value: { cards: [card] } },
   currentArchiveUnit: { value: unit },

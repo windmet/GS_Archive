@@ -51,17 +51,17 @@ assert.equal(invalidFilters.eventScope, 'all')
 assert.deepEqual(
   normalizeArchiveRoute({ view: 'idol_detail', idol: '001tom' }),
   {
-    view: 'idol_detail', homeIdol: '', homeCue: '', homeCostume: '', category: 'idol', idol: '001tom', group: '', unit: '', unitFilter: '',
+    view: 'idol_detail', pickTarget: '', homeIdol: '', homeCue: '', homeCostume: '', category: 'idol', idol: '001tom', group: '', unit: '', unitFilter: '',
     storyType: '', storyMode: 'portal', storySection: '', story: '', workMode: 'stories', mobileMode: 'personal', mobileScenario: '', eventScope: 'all', availability: 'all', sort: 'domain', episode: '', card: '',
     gasha: '', gashaType: 'all', rarity: 'all', assetState: 'all', relationState: 'all', query: '', song: '', songScope: 'all',
     event: '', scenario: '', startStep: 0, endStep: 0, voice: '', returnView: '', parentView: '',
   },
 )
 
-assert.equal(normalizeArchiveRoute({ view: 'idol_detail' }).view, 'idol_detail')
-assert.equal(normalizeArchiveRoute({ view: 'idol_detail' }).idol, '001tom')
+assert.equal(normalizeArchiveRoute({ view: 'idol_detail' }).view, 'idol_picker')
+assert.equal(normalizeArchiveRoute({ view: 'idol_detail' }).pickTarget, 'profile')
 assert.equal(normalizeArchiveRoute({ view: 'cards' }).view, 'cards')
-assert.equal(normalizeArchiveRoute({ view: 'cards' }).idol, '001tom')
+assert.equal(normalizeArchiveRoute({ view: 'cards' }).idol, '')
 assert.equal(normalizeArchiveRoute({ view: 'unit_detail' }).view, 'unit_catalog')
 assert.equal(normalizeArchiveRoute({ view: 'gasha_detail' }).view, 'gashas')
 assert.equal(normalizeArchiveRoute({ view: 'event_detail' }).view, 'story_catalog')
@@ -69,9 +69,9 @@ assert.equal(normalizeArchiveRoute({ view: 'story_detail' }).view, 'story_catalo
 assert.equal(normalizeArchiveRoute({ view: 'story_collection' }).view, 'story_catalog')
 assert.equal(normalizeArchiveRoute({ view: 'external_story_resources' }).view, 'external_story_resources')
 assert.equal(normalizeArchiveRoute({ view: 'seasonal_campaign' }).view, 'seasonal_campaign')
-assert.equal(normalizeArchiveRoute({ view: 'work_archive' }).view, 'work_archive')
-assert.equal(normalizeArchiveRoute({ view: 'idol_story_archive' }).view, 'idol_story_archive')
-assert.equal(normalizeArchiveRoute({ view: 'mobile_archive' }).view, 'mobile_archive')
+assert.equal(normalizeArchiveRoute({ view: 'work_archive' }).pickTarget, 'work')
+assert.equal(normalizeArchiveRoute({ view: 'idol_story_archive' }).pickTarget, 'story')
+assert.equal(normalizeArchiveRoute({ view: 'mobile_archive' }).pickTarget, 'mobile')
 assert.equal(normalizeArchiveRoute({ view: 'episodes' }).view, 'episode_zero_units')
 assert.equal(normalizeArchiveRoute({ view: 'player' }).view, 'home')
 assert.equal(normalizeArchiveRoute({ view: 'player', card: '001tom_n01', voice: '2_1_001_01_01_01' }).view, 'player')
@@ -195,17 +195,17 @@ assert.deepEqual(buildArchiveBreadcrumbs({ view: 'spine_lab' }), [])
 assert.deepEqual(buildArchiveBreadcrumbs({ view: 'chibi_stage' }), [])
 
 const legacyIdolRoot = readArchiveRoute('http://localhost/?view=idols&category=idol')
-assert.equal(legacyIdolRoot.view, 'idol_detail')
-assert.equal(legacyIdolRoot.idol, '001tom')
+assert.equal(legacyIdolRoot.view, 'idols')
+assert.equal(legacyIdolRoot.idol, '')
 const legacyCardRoot = readArchiveRoute('http://localhost/?view=idols&category=cards')
 assert.equal(legacyCardRoot.view, 'idols')
 assert.equal(legacyCardRoot.idol, '')
 assert.equal(readArchiveRoute('http://localhost/?view=idols&category=cards&idol=002sht').view, 'cards')
 const legacyChatRoot = readArchiveRoute('http://localhost/?view=idols&category=idol_chat')
-assert.equal(legacyChatRoot.view, 'mobile_archive')
-assert.equal(legacyChatRoot.idol, '001tom')
+assert.equal(legacyChatRoot.view, 'idol_picker')
+assert.equal(legacyChatRoot.pickTarget, 'mobile')
 assert.equal(legacyChatRoot.mobileMode, 'personal')
-assert.equal(archiveSectionForRoute(legacyChatRoot), 'interactions')
+assert.equal(archiveSectionForRoute(legacyChatRoot), 'home')
 const legacyPhoneRoot = readArchiveRoute('http://localhost/?view=idols&category=idol_phone&idol=040ren')
 assert.equal(legacyPhoneRoot.view, 'mobile_archive')
 assert.equal(legacyPhoneRoot.idol, '040ren')

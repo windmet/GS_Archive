@@ -45,7 +45,7 @@
     "verify:gasha-catalog": "node scripts/verify-gasha-catalog.mjs",
     "verify:idol-page": "node scripts/verify-idol-page.mjs",
     "verify:unit-page": "node scripts/verify-unit-page.mjs",
-    "verify:archive-startup-route": "node scripts/verify-archive-startup-route.mjs",
+    "verify:archive-startup-route": "node scripts/verify-archive-startup-preferences.mjs && node scripts/verify-archive-startup-route.mjs",
     "generate:story-catalog": "python ../data_pipeline/story_catalog.py --input public/data/masterdata/story_master_index.json --output public/data/masterdata/story_catalog.json",
     "verify:story-catalog": "node scripts/verify-story-catalog.mjs",
     "verify:archive-data": "node scripts/verify-archive-data-contracts.mjs && node scripts/verify-archive-data-repository.mjs && node scripts/verify-lazy-archive-resource.mjs",

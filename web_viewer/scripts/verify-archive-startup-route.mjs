@@ -19,6 +19,13 @@ for (const disposed of [false, true]) {
   const context = {
     onMounted: callback => { mount = callback },
     localStorage: { getItem: () => null },
+    window: { location: { href: 'http://localhost/' } },
+    userPreferences: { value: {} },
+    validArchiveHomeIdols: { value: [] },
+    pendingPreReadyRoute: null,
+    canResolveArchiveStartupBeforeData: () => true,
+    resolveArchiveStartup: () => ({ route: { ...route }, lightweight: false, source: 'test' }),
+    localStorageValue: () => null,
     readArchiveRoute: () => ({ ...route }),
     loadArchiveData: () => loading.promise,
     loadIdolEntityTranslations: () => translations.promise,
@@ -58,6 +65,10 @@ for (const disposed of [false, true]) {
   const applied = [], written = []
   const context = {
     onMounted: callback => { mount = callback }, localStorage: { getItem: () => null },
+    window: { location: { href: 'http://localhost/' } }, userPreferences: { value: {} },
+    validArchiveHomeIdols: { value: [] }, pendingPreReadyRoute: null,
+    canResolveArchiveStartupBeforeData: () => true,
+    resolveArchiveStartup: () => ({ route: { ...route }, lightweight: false, source: 'test' }), localStorageValue: () => null,
     readArchiveRoute: () => ({ ...route }), loadArchiveData: async () => ({ data: {}, errors: [] }),
     loadIdolEntityTranslations: async () => {}, navigation,
     applyArchiveRoute: value => navigation.run(async () => { applied.push(value); if (value.view === 'player') await firstRestore.promise }, { restoring: true }),
@@ -88,6 +99,10 @@ for (const asynchronous of [false, true]) {
   const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loading.value = false } })
   const context = {
     onMounted: callback => { mount = callback }, localStorage: { getItem: () => null },
+    window: { location: { href: 'http://localhost/' } }, userPreferences: { value: {} },
+    validArchiveHomeIdols: { value: [] }, pendingPreReadyRoute: null,
+    canResolveArchiveStartupBeforeData: () => true,
+    resolveArchiveStartup: () => ({ route: { view: 'player' }, lightweight: false, source: 'test' }), localStorageValue: () => null,
     readArchiveRoute: () => ({ view: 'player' }), loadArchiveData: async () => ({ data: {}, errors: [] }),
     loadIdolEntityTranslations: async () => {}, navigation,
     applyArchiveRoute: () => navigation.run(async intent => {

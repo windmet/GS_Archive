@@ -5,6 +5,7 @@ import { ownsArchiveSource } from './archiveRoute.js'
 // Resource payloads, playback queues and async loading are feature-owned.
 export function useArchiveNavigationState() {
   const view = ref('__boot__')
+  const currentPickTarget = ref('')
   const portalFrom = ref('')
   const detailSourceRoute = ref('')
   const readingDocumentId = ref('')
@@ -17,7 +18,7 @@ export function useArchiveNavigationState() {
   const songParentView = ref('')
   const eventParentView = ref('')
   const gashaParentView = ref('')
-  const homeSelectedId = ref('001tom')
+  const homeSelectedId = ref('')
   const homeSelectedCue = ref('')
   const homeSelectedCostume = ref('')
   const currentCategoryId = ref('')
@@ -87,6 +88,7 @@ export function useArchiveNavigationState() {
       (preservesEventContext && eventParentView.value === 'unit_detail')
     return {
       view: view.value,
+      ...(view.value === 'idol_picker' ? { pickTarget: currentPickTarget.value } : {}),
       ...(ownsArchiveSource(view.value, returnViewAfterPlayer.value) && detailSourceRoute.value.startsWith('?')
         ? { sourceRoute: detailSourceRoute.value } : {}),
       ...(view.value === 'player' && currentScenarioInitialStep.value ? { initialStep: currentScenarioInitialStep.value } : {}),
@@ -144,6 +146,7 @@ export function useArchiveNavigationState() {
   
   return {
     view,
+    currentPickTarget,
     portalFrom,
     detailSourceRoute,
     readingDocumentId,

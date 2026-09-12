@@ -33,10 +33,14 @@ export function loadArchiveHomePreferences() {
 
 export function saveArchiveHomePreferences(preferences) {
   const normalized = normalizePreferences(preferences)
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
-    version: SCHEMA_VERSION,
-    preferences: normalized,
-  }))
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      version: SCHEMA_VERSION,
+      preferences: normalized,
+    }))
+  } catch {
+    // Keep the normalized in-memory value usable when storage is denied.
+  }
   return normalized
 }
 
