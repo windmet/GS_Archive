@@ -1,53 +1,84 @@
 import assert from 'node:assert/strict'
+import * as PIXI from 'pixi.js'
 import { ScreenEffectManager } from '../src/core/ScreenEffectManager.js'
 import { BackgroundEffectManager } from '../src/core/BackgroundEffectManager.js'
 import { effectTextures, effectTextureUrl, knownEffectTextureIds } from '../shared/story/EffectTextures.js'
 import { createStoryAssetPlan } from '../shared/story/StoryAssetPlan.js'
 
 const source = { file: 'episodes/test.json', sha256: `sha256:${'a'.repeat(64)}` }
-
 const savedRaf = globalThis.requestAnimationFrame
 const savedCancel = globalThis.cancelAnimationFrame
-globalThis.requestAnimationFrame = () => 0
-globalThis.cancelAnimationFrame = () => {}
-// PIXI needs a canvas for some display objects; texture URLs are recorded first.
-process.on('unhandledRejection', () => {})
-
-function stubApp() {
-  return { stage: { addChild() {}, removeChild() {} }, ticker: { add() {}, remove() {} } }
-}
-const textureStub = () => ({ baseTexture: { valid: true }, width: 64, height: 64 })
-
-/** URLs the real background manager requests through its own entry point. */
-async function backgroundRequests(id) {
-  const urls = []
-  const manager = new BackgroundEffectManager({
-    app: stubApp(), bgEffectContainer: { addChild() {}, removeChild() {} },
-    getWidth: () => 1024, getHeight: () => 506,
-    loadTextureFromUrl: url => { urls.push(url); return Promise.resolve(textureStub()) },
-  })
-  try { manager.applyBgEffects([{ id }]) } catch { /* only the requested URL matters */ }
-  await new Promise(resolve => setTimeout(resolve, 20))
-  try { manager.destroy() } catch {}
-  return urls.map(url => url.replace('/data/fx_extracted/unity_', '').replace('.png', ''))
+const savedWarn = console.warn
+const savedError = console.error
+const diagnostics = []
+const frames = new Map()
+let frameId = 0
+let now = 0
+// Deterministic scheduler, with real PIXI display objects but no renderer/GPU.
+globalThis.requestAnimationFrame = callback => { frames.set(++frameId, callback); return frameId }
+globalThis.cancelAnimationFrame = id => frames.delete(id)
+console.warn = (...args) => { diagnostics.push(args); savedWarn(...args) }
+console.error = (...args) => { diagnostics.push(args); savedError(...args) }
+const drain = async () => { for (let i = 0; i < 20; i++) await Promise.resolve() }
+async function advance(milliseconds) {
+  now += milliseconds
+  const callbacks = [...frames.values()]
+  frames.clear()
+  for (const callback of callbacks) callback(now)
+  await drain()
 }
 
-/** URLs the real screen manager requests for one authored effect. */
-async function screenRequests(effect) {
-  const urls = []
-  const manager = new ScreenEffectManager({
-    app: stubApp(),
-    overlay: { destroyed: false, alpha: 1, visible: false, width: 1024, height: 506, tint: 0xffffff },
-    spineContainer: null,
-    getWidth: () => 1024, getHeight: () => 506,
-    loadTextureFromUrl: url => { urls.push(url); return Promise.resolve(textureStub()) },
-  })
-  try { manager.playScreenEffects([effect]) } catch { /* only the requested URL matters */ }
-  await new Promise(resolve => setTimeout(resolve, 20))
-  try { manager.clearScreenEffects() } catch {}
-  return urls.map(url => url.replace('/data/fx_extracted/unity_', '').replace('.png', ''))
+async function managerProbe(domain, effect) {
+  const urls = [], textures = [], tickers = new Set()
+  const stage = new PIXI.Container()
+  const bgContainer = new PIXI.Container()
+  stage.addChild(bgContainer)
+  const app = { stage, ticker: { add: fn => tickers.add(fn), remove: fn => tickers.delete(fn) } }
+  const loadTextureFromUrl = url => {
+    urls.push(url)
+    // Valid baseTexture/frame metadata is required by Sprite/TilingSprite.
+    // Synthetic pixels prove object construction, never real image rendering.
+    const texture = PIXI.Texture.fromBuffer(new Uint8Array(96 * 64 * 4), 96, 64)
+    textures.push(texture)
+    return Promise.resolve(texture)
+  }
+  const common = { app, getWidth: () => 1024, getHeight: () => 506, loadTextureFromUrl }
+  const manager = domain === 'background'
+    ? new BackgroundEffectManager({ ...common, bgEffectContainer: bgContainer })
+    : new ScreenEffectManager({ ...common,
+      overlay: { destroyed: false, alpha: 1, visible: false, width: 1024, height: 506, tint: 0xffffff },
+      spineContainer: null })
+  try {
+    if (domain === 'background') manager.applyBgEffects([effect], null, () => now)
+    else manager.playScreenEffects([effect], { nowMilliseconds: () => now })
+    await advance(0)
+    // Evidence 1: capture the requests independently from the plan mapping.
+    const requested = urls.map(url => url.replace('/data/fx_extracted/unity_', '').replace('.png', ''))
+    // Evidence 2: verify real PIXI object initialization and a lifecycle tick.
+    // Counts come from each concrete handler, not from effectTextures().
+    const backgroundCounts = { fx_adv_rain: 2, fx_adv_rain_heavy2: 3, fx_adv_sakura: 32, fx_adv_momiji: 28 }
+    const screenCounts = { fx_adv_punch: 1, fx_adv_sakura: 30, fx_adv_momiji: 30, fx_adv_kamifubuki: 48 }
+    const collectSprites = node => (node instanceof PIXI.Sprite ? 1 : 0)
+      + (node.children || []).reduce((sum, child) => sum + collectSprites(child), 0)
+    const expectedCount = (domain === 'background' ? backgroundCounts : screenCounts)[effect.id] || 0
+    assert.equal(collectSprites(stage), expectedCount, `${domain}/${effect.id}: initialized display objects`)
+    now += 50
+    for (const tick of [...tickers]) tick()
+    await advance(0)
+    assert.equal(diagnostics.length, 0, 'unexpected manager warning/error must fail verification')
+    return requested
+  } finally {
+    manager.destroy()
+    assert.equal(tickers.size, 0, 'manager disposal removes every ticker')
+    assert.equal(frames.size, 0, 'manager disposal cancels every frame')
+    stage.destroy({ children: true })
+    for (const texture of textures) texture.destroy(true)
+  }
 }
+const backgroundRequests = id => managerProbe('background', { id })
+const screenRequests = effect => managerProbe('screen', effect)
 
+try {
 // 1. The plan's mapping must equal what the managers really request. This is
 //    the contract that keeps discovery and execution from drifting apart.
 // Both probes take the authored effect object so a malformed id can never make
@@ -130,6 +161,11 @@ const wrongDomain = structuredClone(plan.source) && createStoryAssetPlan({
 assert.equal(wrongDomain.dependenciesComplete, false, 'a wrong-domain effect stays unresolved')
 assert.ok(wrongDomain.unresolved.some(item => item.reason === 'effect-unhandled-in-domain'))
 
-globalThis.requestAnimationFrame = savedRaf
-globalThis.cancelAnimationFrame = savedCancel
-console.log('Effect texture parity verified: manager requests match the plan in both domains, disabled and unimplemented effects stay explicit')
+
+console.log('Effect request parity and synthetic PIXI object lifecycle verified; real texture decode/GPU rendering NOT verified')
+} finally {
+  globalThis.requestAnimationFrame = savedRaf
+  globalThis.cancelAnimationFrame = savedCancel
+  console.warn = savedWarn
+  console.error = savedError
+}

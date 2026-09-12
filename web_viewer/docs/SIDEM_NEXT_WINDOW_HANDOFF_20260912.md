@@ -39,7 +39,7 @@
 3. **标题暂停缺口已复现并修复。** 菜单暂停时原有七个 CSS 动画仍运行至 2760ms；模拟 visibility 暂停时旧代码会继续进入对白。现由同一 runtimePauseReasons 驱动 TitleUI 的整组 CSS 暂停，隐藏界面保留同一组件实例。Browser 菜单、backlog、界面隐藏恢复及模拟 visibility 检查通过，原生环境限制见文末。
 4. **标题 settlement 卡住已复现并修复。** 给真实标题步骤附加 30 秒 screen.fade cue，旧代码在显式结算后停留于淡出标题。现由运行代次内的结算完成回调唤醒当前步骤的续进请求；导航、销毁和旧标题事件不能推进下一标题。生产构建的同一边界 fixture 已进入后续对白。
 5. **通信 parity 的证据有限。** 扫描采用 `historyStack: []` 与 `dialogue.source_text`。verifier 已有不同历史产生不同 context 的 fixture，但整库对比仍沿用同一 resolver/线性输入，不能证明任意分支历史、显示译文标记和全部聊天消息都已覆盖。先从真实 MobileChat/MobileCall 消费输入独立核对；无法确定的需求保持 unresolved，不凭 chara_id 猜完整闭包。
-6. **特效 verifier 只验证 URL 请求。** 本轮通过时仍出现 fake texture 引起的 `reading 'x'` 警告；脚本还全局吞掉 unhandledRejection。不可作为真实 PIXI handler 成功渲染的证据。后续改成明确隔离请求探针/渲染验证，并让意外异常失败，不能仅隐藏日志。
+6. **特效 verifier 的异常吞噬已修正，真实渲染仍待验收。** 继续执行时改用合法的内存 PIXI.Texture，分别检查请求、Sprite/TilingSprite 初始化数量、一次 tick 和销毁后的 ticker/frame 清理；无全局 unhandledRejection 吞噬，warn/error 保持输出且使校验失败。注入对象创建失败、未处理 rejection 均以 exit 1 失败。该证据是合成纹理下的 CPU 对象生命周期，不是实际 PNG 解码或 GPU 渲染。
 
 ## 本轮验证证据（2026-09-12）
 
@@ -94,3 +94,11 @@
 环境补验：Browser 的 visibility.set(false) 及切换内置标签未提供已确认的 document.hidden=true（诊断仍 visible），所以本轮证明的是生产 visibility 处理入口的模拟路径；真实 OS 后台/恢复事件和系统 reduced-motion 偏好仍未验收。没有做真实音频长稳或发布。
 
 临时 fixture/server/build 位于 `C:/Users/windm/.codex/qa/sidem-title-20260912/`，不提交测试媒体或截图。下批仍先核对通信消费者/分支历史、特效探针异常，再接 P1 执行状态；不可据标题修复宣称 P1 完成。
+
+## P1 特效校验修订（标题批之后）
+
+- `verify:effect-texture-parity`：通过；覆盖两种 domain 的现有探针、disabled/unmapped 行为、真实 PIXI 对象创建与清理，无假纹理警告。
+- `verify:story-asset-plan`：通过。
+- 负向验证：注入 Sprite 添加失败时，雨效果对象数量断言失败（exit 1）；注入未处理 rejection 时进程失败（exit 1）。不再把异常当作成功的请求证据。
+- 本批只修改校验与交接文档，不改变 renderer、资源映射或产品视觉。真实图片和 GPU 验收继续单列。
+- 通信消费者独立阅读已发现下一批需处理的具体差异：MobileChatScene 的显式 step.stamp；只有整条文本恰为 stamp marker 才走 stamp，混合文本中的相同 marker 在 MobileMessageBubble 走 emoji URL；显示译文与 choiceTexts 也参与实际消息图片请求。旧 corpus 对比复用同一 helper，不能独立证明上述覆盖。
