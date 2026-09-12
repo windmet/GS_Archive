@@ -1530,6 +1530,9 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
       currentCharacterId.value = route.idol || ''
       currentEventId.value = route.event || ''
       eventParentView.value = route.event ? (route.parentView || '') : ''
+      currentCategoryId.value = route.event ? (route.category || '') : ''
+      currentArchiveUnitCode.value = route.event && route.parentView === 'unit_detail' ? (route.unit || '') : ''
+      detailSourceRoute.value = route.event ? (route.sourceRoute || '') : ''
       readingPlaybackNotice.value = ''
       playbackController.reset()
       view.value = 'reader'
@@ -1749,7 +1752,8 @@ function closeStoryReader() {
   }
   if (currentEventId.value) {
     const pending = applyArchiveRoute({ view: 'event_detail', event: currentEventId.value,
-      parentView: eventParentView.value }, { restoring: false })
+      parentView: eventParentView.value, category: currentCategoryId.value,
+      unit: currentArchiveUnitCode.value, sourceRoute: detailSourceRoute.value }, { restoring: false })
     const revision = navigation.getRevision()
     return pending.then(() => { if (navigation.getRevision() === revision) syncArchiveRoute() })
   }
@@ -1762,14 +1766,20 @@ function closeStoryReader() {
 
 function returnToReader() {
   const route = { ...currentArchiveRoute(), view: 'reader', story: currentStoryFile.value, reading: readingDocumentId.value, readingRow: readingRowId.value,
-    readingMode: readingMode.value, readingRev: readingRevision.value }
+    readingMode: readingMode.value, readingRev: readingRevision.value,
+    category: currentEventId.value ? currentCategoryId.value : '',
+    unit: currentEventId.value && eventParentView.value === 'unit_detail' ? currentArchiveUnitCode.value : '',
+    parentView: currentEventId.value ? eventParentView.value : '',
+    sourceRoute: currentEventId.value ? detailSourceRoute.value : '' }
   const pending = applyArchiveRoute(route, { restoring: false })
   syncArchiveRoute()
   return pending
 }
 
 function openEventReader(documentId) {
-  return openStoryReader(documentId, { event: currentEventId.value, parentView: eventParentView.value })
+  return openStoryReader(documentId, { event: currentEventId.value, parentView: eventParentView.value,
+    category: currentCategoryId.value, unit: currentArchiveUnitCode.value,
+    sourceRoute: detailSourceRoute.value })
 }
 
 function openWorkReader(file) {

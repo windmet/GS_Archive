@@ -18,7 +18,7 @@ assert.equal(readArchiveRoute('http://localhost/?view=reader&reading=x&reading_m
 for (const query of [
   'story_type=unit_story&story_section=13&story=1_1_013the_03.json',
   'story_type=birthday&story=1_x_001tom_1_8_001_01.json',
-  'event=10001&parent=story_catalog',
+  'event=10001&parent=unit_detail&category=idol&unit=01jup&from=%3Fview%3Dunit_detail%26category%3Didol%26unit%3D01jup',
   'story_type=work&idol=001tom&story=work.json',
 ]) {
   const nonMain = readArchiveRoute(`http://localhost/?view=reader&reading=sample&${query}`)
@@ -59,7 +59,8 @@ for (const status of ['empty', 'unsupported', 'not-generated', 'error']) {
 }
 // Exercise the actual App route branch with no player/preloader globals present.
 const context = { ...useArchiveNavigationState(), navigation, readingSession: session,
-  readingPlaybackNotice: { value: '' }, currentScenario: { value: { old: true } }, loading: { value: true } }
+  readingPlaybackNotice: { value: '' }, currentScenario: { value: { old: true } }, loading: { value: true },
+  captureActiveArchiveView: () => {} }
 context.playbackController = { reset: () => { context.currentScenario.value = null } }
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 vm.runInNewContext(app.match(/async function applyArchiveRoute\([^]*?\n\}/)[0], context)

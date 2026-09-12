@@ -51,9 +51,9 @@
 | N08 | PASS | 卡池210003→关联卡→卡池→57项卡池列表，刷新、来源、位置与焦点均恢复 |
 | N09 | PASS | 冬马偶像详情→19张卡片→卡片详情→逐层返回偶像；当前偶像详情无tab，tab项为N/A |
 | N10 | PASS | 歌曲scope/query、长列表滚动与歌曲实体焦点在桌面/390px返回后恢复 |
-| N11 | PASS | song→collection parent、Player return已有合同 |
-| N12 | PASS | Reader row/revision/range往返已有回归 |
-| N13 | PASS | event Reader/Player来源实体已有回归 |
+| N11 | PASS | `drv999`→额外剧情602→Player→集合→原歌曲已实测 |
+| N12 | PASS | 主线Reader双语step-8→Player→Reader，文档、模式、焦点与滚动已实测恢复 |
+| N13 | PASS | Jupiter→活动430018→Reader→Player逐层返回Jupiter已实测，完整来源已修复并锁定 |
 | N14 | PASS | work idol/story来源已有回归 |
 | N15 | PASS | story detail作为Player return已有合同 |
 | N16 | PASS | episode queue下一集不改return已有回归 |
@@ -115,3 +115,13 @@ N06、N08、N09由待Browser验收改为PASS。下一批优先执行尚未完成
 N24从`archive_status`进入Spine实验室，再通过“多人舞台”进入`chibi_stage`；两页URL持续携带单层`from=?view=archive_status`。Chibi舞台完成5名角色装载，状态由3/5到5/5，实际画面显示5人站位；“返回资料馆”恢复`archive_status`，无横向溢出或console error。`verify:song-experimental-audio`新增卸载边界，锁定构建/口型序列失效、动画停止、ResizeObserver、媒体与舞台声部、背屏/图像/物件/灯光/背景、角色runtime、阴影纹理和Pixi app释放；连同routes与archive-navigation-state均通过。N24由PARTIAL改为PASS。
 
 下一批进入N11歌曲→剧情集合→Player逐层返回，以及N12/N13 Reader/Player来源与位置的真实Browser旅程。
+
+## N11/N12/N13 Reader与Player来源闭环
+
+输入HEAD `59ab950`。N11使用唯一已登记歌曲关联fixture `drv999 / DRIVE A LIVE（パッションMAX Ver.）`，进入`story_type=extra&story_section=602 / 2022年エイプリルフール`，再打开`episodes/5_03_000_22_a.json` Player。顶部返回依次恢复602集合和原`drv999`歌曲详情，canonical breadcrumb分别保持剧情集合与歌曲层级；无横向溢出或console error。页面准备期间的首次点击不计作失败，稳定后同一入口正常响应。
+
+N12从主线Reader文档`1_4_001_01_d`的`step-8:text`、双语模式进入全篇Player。返回后文档ID、SHA revision、行锚点、双语选择、焦点和约769px正文滚动位置全部恢复；无横向溢出或console error。
+
+N13实测发现旧实现只在Player URL暂时保留活动`parent=unit_detail`，Player返回Reader后会丢parent，Reader返回活动后也失去Jupiter来源。修复后，活动Reader及其Player统一携带`category=idol`、`unit=01jup`、`event=430018`、`parent=unit_detail`及单层`from=?view=unit_detail&category=idol&unit=01jup`；Reader刷新/Player往返均可复原这些字段，Reader→活动恢复完整活动来源，活动→Jupiter恢复`unit_detail&unit=01jup`。实现复用既有导航refs，没有新增第二份Reader来源状态。
+
+`verify-reading-playback`新增真实App函数的活动来源往返与`closeStoryReader`目标验证，`verify-reading-navigation`覆盖完整非主线Reader路由；reading playback/navigation、routes、archive-navigation-state和archive-async-navigation均通过。生产构建通过，入口`index-BzsO9vel.js` 552.28kB，保留既有chunk提示；仓库外产物`C:/Users/windm/.codex/qa/sidem-navigation-reader-source-20260912/build`。下一批执行N14 Work选择态与N15详情→Player来源旅程。

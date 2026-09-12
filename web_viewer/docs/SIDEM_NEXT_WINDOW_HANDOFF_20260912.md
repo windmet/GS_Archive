@@ -404,3 +404,7 @@ N02/N10也已在1280×900与390×844完成真实长列表返回验收：活动43
 ## 导航N03/N04与N24视觉验收
 
 输入HEAD 2c86aa7。N03以Jupiter→歌曲`unmikn`核对歌曲breadcrumb及顶部返回，N04以Jupiter→活动430018核对活动breadcrumb及顶部返回，两者均恢复`unit_detail&unit=01jup`，无横向溢出或console error；组合详情没有tab，N03 tab项为N/A。N24从`archive_status`进入Spine，再进入Chibi多人舞台；5名角色实际加载至5/5并显示，返回恢复资源页。`verify:song-experimental-audio`新增Chibi卸载合同，覆盖序列失效、动画、ResizeObserver、音频、视频/图层/灯光/背景、角色runtime、阴影纹理及Pixi app释放；routes、archive-navigation-state同时通过。N24改为PASS。下一批执行N11和N12/N13的剧情集合、Reader/Player真实Browser路径；个人/卡片/通信Reader入口仍停止。
+
+## 导航N11/N12/N13与活动Reader来源修复
+
+输入HEAD 59ab950。N11以`drv999`→额外剧情602→`5_03_000_22_a` Player核对逐层返回集合与原歌曲；N12以主线`1_4_001_01_d`的step-8、双语模式核对Player返回后revision、行、焦点及约769px正文滚动恢复。N13发现Jupiter来源的活动430018进入Reader/Player后，Player返回Reader会丢`parent=unit_detail`；现让活动Reader/Player统一保存`category=idol`、`unit=01jup`、`event=430018`、`parent=unit_detail`和单层unit来源。Browser复测Reader→Player→Reader→活动→Jupiter完整通过，无溢出或console error。reading playback/navigation、routes、navigation-state、async-navigation通过；生产构建入口552.28kB，产物`C:/Users/windm/.codex/qa/sidem-navigation-reader-source-20260912/build`。下一批N14/N15；个人/卡片/通信Reader入口仍停止。

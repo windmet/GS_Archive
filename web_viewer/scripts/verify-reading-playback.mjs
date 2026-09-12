@@ -9,7 +9,7 @@ import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState
 import { useStoryPlaybackController } from '../src/core/useStoryPlaybackController.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 import { createReadingSession } from '../src/core/ReadingSession.js'
-import { buildArchiveUrl, readArchiveRoute } from '../src/core/archiveRoute.js'
+import { buildArchiveSourceQuery, buildArchiveUrl, readArchiveRoute } from '../src/core/archiveRoute.js'
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url))
 const manifest = JSON.parse(read('public/data/reading/manifest.json'))
@@ -75,21 +75,43 @@ context.playbackController = useStoryPlaybackController({ state, navigation,
   returnTo: () => context.returnToReader(), onError: () => {} })
 context.playbackError = context.playbackController.error
 const app = read('src/App.vue').toString()
-for (const name of ['applyArchiveRoute', 'openReaderPlayback', 'returnToReader']) {
+for (const name of ['applyArchiveRoute', 'openReaderPlayback', 'returnToReader', 'closeStoryReader']) {
   vm.runInNewContext(app.match(new RegExp(`(?:async )?function ${name}\\([^]*?\\n\\}`))[0], context)
 }
 await context.applyArchiveRoute({ view: 'reader', reading: document.document_id, readingMode: 'bilingual', storyType: 'main', storySection: '101', story: '1_4_001_01.json' })
-// Reader's event origin survives the player URL and a reload, without changing playback ownership.
-await context.applyArchiveRoute({ view: 'reader', reading: document.document_id, event: '10001', parentView: 'story_catalog' })
+// Reader's complete event origin survives player return and a Reader refresh.
+const eventSourceRoute = buildArchiveSourceQuery({ view: 'unit_detail', category: 'idol', unit: '01jup' })
+await context.applyArchiveRoute({ view: 'reader', reading: document.document_id, event: '10001',
+  parentView: 'unit_detail', category: 'idol', unit: '01jup', sourceRoute: eventSourceRoute })
 await context.openReaderPlayback(row.anchor.row_id)
 const eventPlayback = readArchiveRoute(url)
 assert.equal(eventPlayback.event, '10001')
-assert.equal(eventPlayback.parentView, 'story_catalog')
+assert.equal(eventPlayback.parentView, 'unit_detail')
+assert.equal(eventPlayback.category, 'idol')
+assert.equal(eventPlayback.unit, '01jup')
+assert.equal(eventPlayback.sourceRoute, eventSourceRoute)
 assert.equal(eventPlayback.returnView, 'reader')
 await context.playbackController.close()
+const returnedEventReader = readArchiveRoute(url)
+assert.equal(returnedEventReader.view, 'reader')
+assert.equal(returnedEventReader.parentView, 'unit_detail')
+assert.equal(returnedEventReader.category, 'idol')
+assert.equal(returnedEventReader.unit, '01jup')
+assert.equal(returnedEventReader.sourceRoute, eventSourceRoute)
 await context.applyArchiveRoute(eventPlayback)
 await context.playbackController.close()
-assert.equal(readArchiveRoute(url).event, '10001')
+let eventCloseRoute = null
+const applyArchiveRoute = context.applyArchiveRoute
+context.applyArchiveRoute = async route => { eventCloseRoute = route; state.view.value = route.view }
+await context.closeStoryReader()
+context.applyArchiveRoute = applyArchiveRoute
+const returnedEvent = readArchiveRoute(buildArchiveUrl(url, eventCloseRoute))
+assert.equal(returnedEvent.view, 'event_detail')
+assert.equal(returnedEvent.event, '10001')
+assert.equal(returnedEvent.parentView, 'unit_detail')
+assert.equal(returnedEvent.category, 'idol')
+assert.equal(returnedEvent.unit, '01jup')
+assert.equal(returnedEvent.sourceRoute, eventSourceRoute)
 await context.applyArchiveRoute({ view: 'reader', reading: document.document_id, readingMode: 'bilingual', storyType: 'main', storySection: '101', story: '1_4_001_01.json' })
 assert.equal(state.currentEventId.value, '', 'ordinary Reader navigation clears unrelated event origin')
 await context.applyArchiveRoute({ view: 'reader', reading: document.document_id, storyType: 'work', idol: '001tom', story: 'work.json' })

@@ -269,7 +269,10 @@ export function normalizeArchiveRoute(input = {}) {
   }
   if (route.view === 'player' && positiveInteger(input.initialStep)) route.initialStep = positiveInteger(input.initialStep)
   if (route.view === 'portal') route.portalFrom = buildPortalReturnQuery(readPortalReturnRoute(input.portalFrom))
-  const ownsSourceRoute = SOURCE_ROUTE_OWNER_VIEWS.has(route.view) ||
+  const ownsEventReaderSource = route.event && (
+    route.view === 'reader' || (route.view === 'player' && route.returnView === 'reader')
+  )
+  const ownsSourceRoute = SOURCE_ROUTE_OWNER_VIEWS.has(route.view) || ownsEventReaderSource ||
     (route.view === 'player' && SOURCE_ROUTE_VIEWS.has(route.returnView))
   if (ownsSourceRoute && clean(input.sourceRoute)) {
     const sourceRoute = buildArchiveSourceQuery(readArchiveSourceRoute(input.sourceRoute))
@@ -523,7 +526,10 @@ export function buildArchiveUrl(input, route) {
     if (normalized.readingMode !== 'original') url.searchParams.set('reading_mode', normalized.readingMode)
     if (normalized.readingRev) url.searchParams.set('reading_rev', normalized.readingRev)
     if (normalized.view === 'reader') {
+      if (normalized.sourceRoute) url.searchParams.set('from', normalized.sourceRoute)
+      if (normalized.category) url.searchParams.set('category', normalized.category)
       if (normalized.idol) url.searchParams.set('idol', normalized.idol)
+      if (normalized.unit) url.searchParams.set('unit', normalized.unit)
       if (normalized.event) url.searchParams.set('event', normalized.event)
       if (normalized.parentView) url.searchParams.set('parent', normalized.parentView)
       if (normalized.storyType) url.searchParams.set('story_type', normalized.storyType)
