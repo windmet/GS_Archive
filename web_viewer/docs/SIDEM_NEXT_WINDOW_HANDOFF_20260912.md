@@ -304,3 +304,7 @@ B 批尚未完成，不把A批当作全剧情推广：现有204文档仍未扩�
 用户暂停个人/卡片/通信新增入口，改为先修剧情与活动资源，再继续加载时序。原始scenario_1_1_013_03_f给039mcr设置idol_priority=1；已发布第30步保持该值。旧SpineStage将数值升序投影为Pixi绘制顺序，令道流盖住两侧角色，与用户提供的原演出截图相反。本批按源深度降序投影到Pixi背到前顺序，保留同深度源顺序和没有显式priority时的既有行为，不修改坐标、模型、编译正文或媒体。
 
 verify-story-spine-order覆盖三人桥段、相同深度稳定顺序及源数组不变；构建2510 modules通过。Browser5175实际start_step=30/end_step=43显示同一句“この、離せっ！”且道流被漣和タケル遮挡，符合截图；仅验证遮挡关系，不宣称全演出时序逐帧一致。后续检查運命光年ep2的01jup图标路径、活动重复logo及北斗缺少正式立绘登记。
+
+## 運命光年ep2入口资源修复
+
+入口失败来自image_icon=01jup/layer=2：预载及舞台都调用偶像头像路径image_chara_icon_01jup.png，实际01jup为组合代码，本地已有units/logos/image_unit_logo_01jup.png。新增共用getSceneIconUrl，组合代码解析为unit logo，偶像代码仍为chara icon；必要资源门槛不放宽，原编译文件不修改。scene-icon解析回归、asset-plan与entry-retry通过。Browser实际打开episodes/1_3_30018_01_c.json进入5/26翔太对白，Jupiter标志成功显示，缺失图标不再阻断；未宣称ep2全部镜头/坐标通过，目前此镜头有原有取景裁切待加载/舞台路线继续复核。

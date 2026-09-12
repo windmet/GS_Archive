@@ -86,7 +86,7 @@ import { storySpineOrder } from '../core/StorySpineOrder.js'
 import {
   getBodyTypeUrl,
   getOtherSettingUrl,
-  getCharaIconUrl,
+  getSceneIconUrl,
   isSilhouetteOnlyModel,
 } from '../utils/AssetResolver.js'
 import { loadCostumePrefabMeta } from '../utils/CostumePrefabMetaStore.js'
@@ -125,7 +125,7 @@ const sceneIcon = computed(() => {
     ? imageIcon
     : imageIcon?.display_id || imageIcon?.id
   if (!id) return null
-  return { id, src: getCharaIconUrl(id) }
+  return { id, src: getSceneIconUrl(id) }
 })
 
 const containerRef = ref(null)

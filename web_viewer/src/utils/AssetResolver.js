@@ -241,6 +241,10 @@ export function getUnitLogoUrl(unitId) {
   return `${ASSET_BASE}/units/logos/image_unit_logo_${unitId}.png`
 }
 
+export function getSceneIconUrl(id) {
+  return /^\d{2}[a-z]{3}$/.test(id) ? getUnitLogoUrl(id) : getCharaIconUrl(id)
+}
+
 export function getBrandMarkUrl() {
   return `${ASSET_BASE}/brand/image_logo_imas_M_mark.png`
 }
