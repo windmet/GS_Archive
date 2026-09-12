@@ -140,3 +140,15 @@
 - `verify:story-asset-plan` 通过。204 个计划仍 open；分支历史 64、外部译文 11、缺 unit 46、缺 character 513 继续保留。本批没有改动 Call/Chat 的渲染规则，也没有把消费者一致性写成资源下载或网络可用性。
 
 下一步转向 P1 执行输入与状态：把这些已发现逻辑需求映射为真实任务，并明确未闭合项、取消/迟到响应、失败和重试；结合已有消费者加载器推进，避免继续只扩展无调用者的静态校验。
+
+## P1 导航取消接入（执行状态第一批）
+
+输入 HEAD：`9cf4722`。导航 intent 持有 AbortSignal，切换、关闭及销毁先撤销旧发布权，再取消旧工作；信号从 playback controller 经 prepareScenario / App 传入现有 Preloader。
+
+- 剧情 fetch、skeleton fetch 及完整响应体读取支持取消。每个预载任务的超时也中止实际适配器；图片取消移除 src 和事件监听器，清理定时器及 abort 监听器。
+- 取消后不启动后续批次、不回写旧进度，不把过期 AbortError 显示为当前播放错误。动态 import 本身不能取消，但准备流程不再等待它，也不会发布过期结果。
+- 新增 `verify:story-preload-cancellation`：本地真实 HTTP 服务保持剧情/skeleton 响应体打开，验证切换与关闭会断开请求；验证无后续批次、无迟到进度、发布权先撤销、预取消不启动、超时信号及等待 import 的取消。图片清理使用 Image 测试替身，不能据此宣称真实浏览器图片请求已中止。
+- 专项测试、`verify:playback-controller`、`verify-archive-async-navigation.mjs`、`verify-reading-playback.mjs` 及 diff check 通过。Vite native 构建通过，2497 modules；输出仓库外 `C:/Users/windm/.codex/qa/sidem-preload-cancel-20260912/build`，不复制媒体，保留主入口超过 500 kB 提示。
+- 再次实际确认 `mcp__cua_repl` 内置 Browser 可用；核对 5175 的 PID 45024 命令属于本仓库后打开首页，完成首页 → 门户点击、DOM、截图与日志读取。无错误遮罩，仍有 Spine.update / Spine.tint 两条 warn。此项是 Browser 可操作性与导航冒烟，未模拟慢网或证明浏览器取消完整链路。
+
+下一批仍需将 StoryAssetPlan 接入真实执行输入，并替换旧百分比的失败语义。当前 Preloader 仍扫描旧 state 子集、仍将非取消失败计入已处理进度；不能把它描述为资源 ready 或 P1 完成。真实图片取消、计划闭包、可信状态与重试、后续 P2–P5 验收继续待办。

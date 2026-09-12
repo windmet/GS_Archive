@@ -50,7 +50,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
       error.value = ''
       try {
         const scenario = await prepare(name, {
-          isCurrent: intent.isCurrent, loadPlayer, preloadAssets, readScenario: options.readScenario,
+          isCurrent: intent.isCurrent, signal: intent.signal, loadPlayer, preloadAssets, readScenario: options.readScenario,
           onProgress: pct => { if (intent.isCurrent()) preloadProgress.value = pct },
         })
         if (!scenario || !intent.isCurrent()) return false

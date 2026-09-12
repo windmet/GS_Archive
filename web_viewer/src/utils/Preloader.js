@@ -10,7 +10,8 @@
  * This runs ONLY when user clicks a scenario file (in App.vue loadScenario).
  * Home screen / list views never touch this code.
  *
- * Safety: every operation has a timeout. No single asset can hang the flow.
+ * Safety: every operation has a timeout and navigation-owned abort signal.
+ * Cancellation clears pending work and prevents later batches/progress.
  */
 
 import { getBgUrl, getVoiceUrl, getSpineSkelUrl } from './AssetResolver.js'
@@ -18,17 +19,30 @@ import { getBgUrl, getVoiceUrl, getSpineSkelUrl } from './AssetResolver.js'
 const TIMEOUT_MS = 10000 // 10s per asset max
 
 /**
- * Wraps a promise with a timeout. If it doesn't settle within `ms`,
- * it rejects with a TimeoutError so the catch handler can fire.
+ * Owns the task timeout and abort signal for the complete body/image load.
+ * Cancellation rejects promptly even when an adapter cannot stop its work.
  */
-function withTimeout(promise, ms, label) {
-  let timer
-  const timeout = new Promise((_, reject) => {
-    timer = setTimeout(() => reject(new Error(`[Preloader] timeout (${ms}ms): ${label}`)), ms)
-  })
-  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer))
+async function withTimeout(load, ms, label, signal) {
+  signal?.throwIfAborted()
+  const controller = new AbortController()
+  const forwardAbort = () => controller.abort(signal.reason)
+  signal?.addEventListener('abort', forwardAbort, { once: true })
+  const timer = setTimeout(() => controller.abort(new Error(`[Preloader] timeout (${ms}ms): ${label}`)), ms)
+  let onAbort
+  try {
+    return await Promise.race([
+      Promise.resolve().then(() => { controller.signal.throwIfAborted(); return load(controller.signal) }),
+      new Promise((_, reject) => {
+        onAbort = () => reject(controller.signal.reason)
+        controller.signal.addEventListener('abort', onAbort, { once: true })
+      }),
+    ])
+  } finally {
+    clearTimeout(timer)
+    signal?.removeEventListener('abort', forwardAbort)
+    controller.signal.removeEventListener('abort', onAbort)
+  }
 }
-
 export class Preloader {
 
   /**
@@ -64,7 +78,8 @@ export class Preloader {
    * @param {function} onProgress - callback(percent: 0-100)
    * @returns {Promise<{ bgIds: string[], voiceFiles: string[], spineModels: string[] }>}
    */
-  static async preloadScenario(steps, onProgress) {
+  static async preloadScenario(steps, onProgress, { signal } = {}) {
+    signal?.throwIfAborted()
     const assets = this.scanStepAssets(steps)
 
     // Build a flat task list
@@ -72,12 +87,12 @@ export class Preloader {
 
     // Background images → Image() preload (browser HTTP cache)
     for (const bgId of assets.bgIds) {
-      tasks.push({ type: 'bg', id: bgId, load: () => this._preloadImage(getBgUrl(bgId)) })
+      tasks.push({ type: 'bg', id: bgId, load: () => this._preloadImage(getBgUrl(bgId), { signal }) })
     }
 
     // Spine skeletons → fetch() preload .skel only (PIXI spine loader resolves atlas+png)
     for (const modelId of assets.spineModels) {
-      tasks.push({ type: 'spine', id: modelId, load: () => this._preloadSpine(modelId) })
+      tasks.push({ type: 'spine', id: modelId, load: () => this._preloadSpine(modelId, { signal }) })
     }
 
     // Voice files → 跳过预加载！IDM 会嗅探 .m4a 并返回 stub，
@@ -93,6 +108,7 @@ export class Preloader {
     let completed = 0
 
     const report = () => {
+      if (signal?.aborted) return
       completed++
       if (onProgress) onProgress(Math.round((completed / total) * 100))
     }
@@ -100,8 +116,10 @@ export class Preloader {
     // Process in batches to avoid flooding network
     const BATCH_SIZE = 6
     for (let i = 0; i < tasks.length; i += BATCH_SIZE) {
+      signal?.throwIfAborted()
       const batch = tasks.slice(i, i + BATCH_SIZE)
       await Promise.allSettled(batch.map(t => t.load().then(report).catch(report)))
+      signal?.throwIfAborted()
     }
 
     return assets
@@ -113,62 +131,47 @@ export class Preloader {
    * Preload an image into browser cache using Image object.
    * If 404 or timeout, just warn and resolve — never hang.
    */
-  static _preloadImage(url) {
-    return withTimeout(new Promise((resolve) => {
+  static _preloadImage(url, { signal } = {}) {
+    return withTimeout(taskSignal => new Promise((resolve, reject) => {
       const img = new Image()
-      img.onload = () => resolve()
-      img.onerror = () => {
-        console.warn(`[Preloader] bg 404: ${url}`)
-        resolve()
+      const cleanup = () => {
+        img.onload = img.onerror = img.onabort = null
+        taskSignal.removeEventListener('abort', abort)
       }
-      img.onabort = () => {
-        console.warn(`[Preloader] bg aborted: ${url}`)
-        resolve()
-      }
+      const finish = () => { cleanup(); resolve() }
+      const abort = () => { cleanup(); img.removeAttribute('src'); reject(taskSignal.reason) }
+      taskSignal.addEventListener('abort', abort, { once: true })
+      img.onload = finish
+      img.onerror = () => { console.warn(`[Preloader] bg failed: ${url}`); finish() }
+      img.onabort = () => { console.warn(`[Preloader] bg aborted: ${url}`); finish() }
       img.src = url
-    }), TIMEOUT_MS, `image ${url}`).catch((err) => {
-      console.warn(err.message)
+    }), TIMEOUT_MS, `image ${url}`, signal).catch(error => {
+      if (signal?.aborted) throw signal.reason
+      console.warn(error.message)
     })
   }
 
-  /**
-   * Preload spine model file (.skel) via fetch.
-   * The PIXI spine loader resolves .atlas and .png from the .skel path.
-   */
-  static async _preloadSpine(modelId) {
-    const skelUrl = getSpineSkelUrl(modelId)
-    const label = `spine ${modelId}`
+  static async _preloadSpine(modelId, { signal } = {}) {
+    return this._preloadBinary(getSpineSkelUrl(modelId), `spine ${modelId}`, signal)
+  }
+
+  static async _preloadBinary(url, label, signal) {
     try {
-      const res = await withTimeout(fetch(skelUrl), TIMEOUT_MS, label)
-      if (!res.ok) {
-        console.warn(`[Preloader] ${label} 404: ${skelUrl}`)
-        return
-      }
-      // Consume the body to populate browser cache
-      await withTimeout(res.blob(), TIMEOUT_MS, `${label} blob`)
-    } catch (err) {
-      console.warn(`[Preloader] ${label} failed: ${err.message}`)
+      await withTimeout(async taskSignal => {
+        const response = await fetch(url, { signal: taskSignal })
+        if (!response.ok) {
+          console.warn(`[Preloader] ${label} HTTP ${response.status}: ${url}`)
+          return
+        }
+        await response.blob()
+      }, TIMEOUT_MS, label, signal)
+    } catch (error) {
+      if (signal?.aborted) throw signal.reason
+      console.warn(`[Preloader] ${label} failed: ${error.message}`)
     }
   }
 
-  /**
-   * Preload a voice audio file via fetch to populate browser HTTP cache.
-   * Uses fetch + blob (NOT HTML5 Audio) to avoid triggering IDM sniffing.
-   * Web Audio API in playVoice() uses fetch() which will hit cache.
-   */
-  static async _preloadAudio(voiceFile) {
-    const url = getVoiceUrl(voiceFile)
-    const label = `voice ${voiceFile}`
-    try {
-      const res = await withTimeout(fetch(url), TIMEOUT_MS, label)
-      if (!res.ok) {
-        console.warn(`[Preloader] voice 404: ${url}`)
-        return
-      }
-      // Consume body to populate browser HTTP cache
-      await withTimeout(res.blob(), TIMEOUT_MS, `${label} blob`)
-    } catch (err) {
-      console.warn(`[Preloader] ${label} failed: ${err.message}`)
-    }
+  static async _preloadAudio(voiceFile, { signal } = {}) {
+    return this._preloadBinary(getVoiceUrl(voiceFile), `voice ${voiceFile}`, signal)
   }
 }
