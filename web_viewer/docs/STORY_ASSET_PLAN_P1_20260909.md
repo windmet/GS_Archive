@@ -1,5 +1,15 @@
 # P1：资源需求发现首批
 
+## 2026-09-12 当前进展
+
+当前分支 `codex/p1-effect-texture-deps` 的 `c090425` 已加入真实 handler 的特效纹理映射、
+通信 presentation context 扫描与共享 UI URL。详见 [最新审计与交接](SIDEM_NEXT_WINDOW_HANDOFF_20260912.md)。
+本轮 204 篇通信来源验证通过，但 204 个计划仍有未闭合依赖；线性 parity 不是所有分支验收。
+P1 尚未接入旧预载器，可信执行状态仍待实现。下文是首批历史记录，其中“特效/通信尚未映射”
+及旧统计不代表最新成果；特殊模型、配置回退、通信完整性和执行闭包仍需继续。
+
+## 首批历史记录
+
 2026-09-09，基线 `fc182b1`。实现 `shared/story/StoryAssetPlan.js` 与专用 verifier。
 本批是纯需求发现，不是新预载执行器；App 仍调用旧 Preloader，加载百分比尚未替换。
 后续 atlas 页依赖与实际加载器修复已完成，见 [atlas 页交付记录](SPINE_ATLAS_PAGES_20260909.md)。

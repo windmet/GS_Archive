@@ -1,5 +1,8 @@
 # SideM Growing Stars Archive — Claude Code 接手交接
 
+> 2026-09-12 已核对新分支 `codex/p1-effect-texture-deps`：请先读
+> [最新审计与交接](SIDEM_NEXT_WINDOW_HANDOFF_20260912.md)。本文件以下基线与待办保留为历史参考。
+
 > 来源：Codex 完整会话导出整理。此文档是接手导航，不替代仓库本身。
 > **仓库、Git diff、现有测试与仓库内最新文档始终是 source of truth。**
 
@@ -132,7 +135,7 @@ git rev-list --left-right --count 'HEAD...@{upstream}'
 - 顶部保留“播放完整剧情（实验）”入口。
 - 篇内搜索改为按需展开。
 - 深链/返回锚点仍保留在数据与路由层，不因 UI 简化而丢失。
-- 已有本地阅读位置保存/恢复/清除功能。
+- 显式书签 UI 与 Reader 自动存储调用已撤下；深链、搜索与 Player 返回定位保留。旧 ReadingProgressStore 的存在不代表普通 UI 仍提供书签。
 
 相关提交包括：`fa5af4e`（篇内搜索）、`1d52a25`（阅读进度）、`0292c8e`（R1 收口）。
 
@@ -353,7 +356,7 @@ canonical scenario
 → StoryViewer/runtime
 ```
 
-### P2. 分层预载与 buffering
+### P2. 分层预载（buffering 属于 P3）
 
 在 P1 ready contract 稳定之后再做：
 
@@ -369,7 +372,7 @@ Critical → Near → Deferred
 - 播放追上尚未 ready 的资源时进入 buffering。
 - buffering 结束只恢复“因 buffering 暂停”的播放；**不能清掉用户自己手动 pause 的状态。**
 
-### P3. 缓存与网络故障验收
+### P4 / P5. 缓存与网络故障验收
 
 随后做：
 
@@ -572,4 +575,3 @@ Before making changes, give me a concise CURRENT STATE / COMPLETED / REMAINING /
 - worktree: clean
 - push: completed
 - 下一任务：**继续补齐 StoryAssetPlan 剩余资源依赖，并逐步替换旧 Preloader；正式长稳继续后移。**
-

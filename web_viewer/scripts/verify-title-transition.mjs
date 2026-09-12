@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { runInNewContext } from 'node:vm'
 import { readFile } from 'node:fs/promises'
 import { isTransitionStep, getAutoAdvanceTiming } from '../src/utils/StoryStepFlow.js'
 
@@ -99,4 +100,18 @@ assert.equal(isTransitionStep(titleStep), false,
   'title steps are advanced by their own FX, not by the shared transition timing')
 assert.equal(getAutoAdvanceTiming(titleStep), null, 'a title step has no timing-table entry')
 
-console.log('Title transition verified: the FX advances on completion, releases the auto hold, and stays dismissable under reduced motion')
+// Execute the production navigation callback: a refused advance belongs to the
+// outgoing title, including when navigation reaches another title.
+const navigation = viewer.match(/watch\(currentStep, \(newStep, oldStep\) => \{([\s\S]*?)\n\}\)/)
+assert.ok(navigation, 'the navigation callback must exist')
+const context = {
+  titleAdvancePending: true,
+  newStep: { type: 'title' }, oldStep: { type: 'title' },
+  restoredSceneState: { value: null },
+  setTitleAnimationPending() {}, handleStepChange() {},
+  playbackController: { notifyStateChanged() {} },
+}
+runInNewContext(navigation[1], context)
+assert.equal(context.titleAdvancePending, false, 'navigation must discard the outgoing title retry')
+
+console.log('Title source contract and navigation retry reset verified; browser timing and pause lifecycle remain separate acceptance work')

@@ -988,6 +988,7 @@ watch(currentStep, (newStep, oldStep) => {
   // Catch-all release: any navigation that is not the title's own completion
   // (prev, backlog restore, go-to-step, episode end) must drop the hold. The
   // incoming title card re-claims it from its own onMounted.
+  titleAdvancePending = false
   setTitleAnimationPending(false)
   handleStepChange(newStep, oldStep, { restore: Boolean(restoredSceneState.value) })
   playbackController?.notifyStateChanged()

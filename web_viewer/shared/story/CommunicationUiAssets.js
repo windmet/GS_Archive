@@ -3,9 +3,9 @@
  *
  * The archive ships no phone chrome as an image: the device frame, bubbles and
  * rails are drawn in CSS. The only image files a phone scene loads are the
- * surfaces below, so this table is the complete dependency set of a talk or
- * call step. Both the asset plan and the runtime resolve through the URL
- * helpers here, so discovery cannot drift from what is actually requested.
+ * surfaces below are the currently mapped requirements. Sharing URL helpers
+ * prevents URL-format drift; it does not prove that discovery covers every
+ * runtime history, message or translated marker.
  */
 export const ASSET_BASE = '/assets'
 

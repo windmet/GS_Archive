@@ -1,5 +1,8 @@
 # 第二阶段重构交接：从基础稳定转向 Reading 与确定性状态投影
 
+> 2026-09-12：当前分支已转到 `codex/p1-effect-texture-deps`；恢复工作先读
+> [最新分支审计与新窗口交接](SIDEM_NEXT_WINDOW_HANDOFF_20260912.md)。以下保留阶段历史，不能作为最新 HEAD 或待办清单。
+
 ## 最新开发优先级：Reader 与 Full Player 产品契约
 
 用户在 `9097cd8` 后提供 Reader/Full Player 审阅及“名字保密与视觉呈现分离”的补充。
