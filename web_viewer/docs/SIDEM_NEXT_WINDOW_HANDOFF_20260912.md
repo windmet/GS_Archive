@@ -259,3 +259,13 @@
 用户要求先核查并解决《核查状态机问题.md》中的两处缺人，再继续加载工作。基线9eb5e54，已从具体原始命令证实：idol_slidein 被映射到普通 slide，只改位置，无法恢复淡出后的 visible；不是列表整体覆盖。分离 slide/in/out 可见性语义，并对本地 e30–36、f15–19 及 aggregate 应用经旧/新编译器匹配的 roster 差量，保留步号、对白、语音和其他状态。
 
 详见 `docs/THEKOGADO_EP5_EP6_ROSTER_AUDIT_20260912.md`，包含原始命令索引 / SHA、忽略产物的可复现修复脚本、测试和 Browser 对照。实际 e31/e32、f16 已恢复漣左少年右；正常 f26→28 对照仍双人。此批未调整滑动 delay/起始位置/缓动，也没有原始视频逐帧验收，不宣称全部演出时序一致。具体缺人问题已修复，接下来继续加载首屏/后台生命周期工作；总体目标仍在进行。
+
+## 用户插入：Reader 排版 A 批与全剧情覆盖 B 批
+
+用户提供 Reader 硬换行 / main pilot 覆盖的分析并要求着手处理；两个目标均纳入后续工作，加载任务在此之后继续。
+
+A 批：新增纯显示 ReadingTypography.reflowReadingText，仅用于 ArchiveStoryReader 主文/副文插值。ja/zh 单换行直接拼接，其他 locale 以空格连接；CRLF 统一，双换行及带空白的空行保留段落。source_text / text_ref / source_hash / 锚点 / 翻译匹配 / 搜索输入不改。正文宽度从42em放宽到min(100%,52em)，保留pre-wrap但改break-word、strict line-break和normal word-break。
+
+验证：新增 reading-typography 测试，包含真实1_4_001_00_a第13步及原文对象不变；实际Vue SSR检查该句不再含原textbox换行，原文/译文/双语unknown身份保护及行锚点检查通过；reading-playback通过。native构建2508 modules，主入口540.44 kB，保留大小提示。Browser直接检查5175实际Reader，在1280×800正文两句连续呈现；390×844随容器自然折行，scrollWidth=390；篇内查找“から、今日まで”跨原换行命中1处。该批没有重生成ReadingDocument。
+
+B 批尚未完成，不把A批当作全剧情推广：现有204文档仍未扩张。现场inventory：catalog resourceIds有磁盘episode文件 main204 / event396 / unit_story540 / idol_story390（共520个resourceIds）/ extra2；birthday152、work637、card342等大量输入是非episodes文件。下一批应以published catalog的source关系和ReadingDocument.status投影可用性，记录不支持/缺失，不仅改main_section列表。除App main条件与closeStoryReader外，ReadingContract的source_file也强制episodes/前缀，archiveRoute写Reader返回上下文也仅保留main，均需一并处理。通信贴图与不完整choice继续unsupported，不为覆盖率伪造正文。先落实B，再继续Player加载工作。

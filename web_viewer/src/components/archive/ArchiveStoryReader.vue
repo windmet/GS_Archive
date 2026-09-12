@@ -39,8 +39,8 @@
             <p v-if="item.view.speaker.display" class="reader-speaker">{{ item.view.speaker.display }}</p>
             <span v-if="item.row.kind === 'choice'" class="reader-kind">选项</span>
             <span v-if="item.row.kind === 'choice_detail'" class="reader-kind">选项附文</span>
-            <p class="reader-primary" :lang="item.view.primary.locale">{{ item.view.primary.text }}</p>
-            <p v-if="item.view.secondary" class="reader-secondary" :lang="item.view.secondary.locale">{{ item.view.secondary.text }}</p>
+            <p class="reader-primary" :lang="item.view.primary.locale">{{ reflowReadingText(item.view.primary.text, item.view.primary.locale) }}</p>
+            <p v-if="item.view.secondary" class="reader-secondary" :lang="item.view.secondary.locale">{{ reflowReadingText(item.view.secondary.text, item.view.secondary.locale) }}</p>
             <span v-if="mode !== 'original' && item.view.translation.stale" class="reader-kind">译文待更新</span>
           </section>
         </article>
@@ -50,6 +50,7 @@
 </template>
 
 <script setup>
+import { reflowReadingText } from '../../../shared/reading/ReadingTypography.js'
 import { computed, nextTick, ref, watch } from 'vue'
 import { ArrowLeft } from '@lucide/vue'
 import { createStoryLocalization } from '../../localization/story/StoryLocalizationContext.js'
@@ -162,7 +163,7 @@ h1 { margin: 0; font-size: 26px; line-height: 1.5; letter-spacing: -.5px; outlin
 .reader-full-play:disabled { opacity: .5; cursor: wait; }
 .reader-row { position: relative; margin: 14px 0; padding: 24px 32px; background: #fff; border: 1px solid #e1eaea; border-radius: 12px; scroll-margin-top: 20px; outline: none; }
 .reader-row.selected { border-color: #168f98; box-shadow: inset 3px 0 #168f98; }
-.reader-primary, .reader-secondary { max-width: 42em; margin: 5px 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 17px; line-height: 1.9; }
+.reader-primary, .reader-secondary { max-width: min(100%, 52em); margin: 5px 0; white-space: pre-wrap; overflow-wrap: break-word; line-break: strict; word-break: normal; font-size: 17px; line-height: 1.9; }
 .reader-secondary { color: #657986; font-size: 16px; }
 .reader-speaker { color: #167e89; font-size: 15px; font-weight: 700; margin: 0 0 4px; }
 .kind-title .reader-primary { font-weight: 700; font-size: 21px; line-height: 1.6; }

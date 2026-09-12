@@ -37,6 +37,11 @@ try {
     assert.ok(shu.includes('image_chara_icon_047shu.png'), mode)
     assert.ok(shu.includes('？？？') && !shu.includes('天峰'), mode)
     assert.ok(shu.includes('alt=""') && !shu.includes('aria-label=') && !shu.includes('title='), 'no auxiliary name disclosure')
+    if (mode === 'original') {
+      const producer = rendered.split('id="reading-1_4_001_00_a:step-13:text"')[1].split('</section>')[0]
+      assert.ok(producer.includes('から、今日まで'), 'actual Reader template removes textbox-only line break')
+      assert.ok(!producer.includes('から、\n今日まで'))
+    }
   }
   console.log('Reader Vue rendering verified: status branches, episode action, collapsed search and retained row anchors')
 } finally {
