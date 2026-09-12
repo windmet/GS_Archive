@@ -134,9 +134,14 @@ const ARCHIVE_NAVIGATION = Object.freeze([
 ])
 
 const BREADCRUMB_HIDDEN_VIEWS = new Set(['home', 'portal', 'reader', 'player', 'spine_lab', 'chibi_stage'])
-const SOURCE_ROUTE_VIEWS = new Set(['card_detail', 'event_detail'])
-const SOURCE_ROUTE_OWNER_VIEWS = new Set([...SOURCE_ROUTE_VIEWS, 'spine_lab', 'chibi_stage'])
 const SOURCE_ROUTE_FORBIDDEN_VIEWS = new Set(['portal', 'reader', 'player', 'spine_lab', 'chibi_stage'])
+const MAX_SOURCE_DEPTH = 16
+const MAX_SOURCE_LENGTH = 8192
+
+export function ownsArchiveSource(view, returnView = '') {
+  if (view === 'player') return returnView !== 'player' && ownsArchiveSource(returnView || 'files')
+  return VALID_VIEWS.has(view) && !['home', 'portal'].includes(view)
+}
 
 // A launcher return is a bounded, local archive query, never an external URL.
 // Strip nesting before normalization so a shared portal URL cannot recurse.
@@ -154,25 +159,60 @@ export function buildPortalReturnQuery(route) {
   return buildArchiveUrl('http://localhost/', route).search
 }
 
-// Detail provenance is one bounded route, not a recursive history stack.
-// Strip an inner `from` before normalization so relation chains cannot grow.
-export function readArchiveSourceRoute(query) {
-  if (typeof query !== 'string' || !query.startsWith('?') || query.length > 8192) return normalizeArchiveRoute({ view: 'home' })
-  const url = new URL(query, 'http://localhost/')
-  url.searchParams.delete('from')
-  const requestedView = url.searchParams.get('view') || 'home'
-  if (SOURCE_ROUTE_FORBIDDEN_VIEWS.has(requestedView) || url.searchParams.has('scenario') || url.searchParams.has('file')) {
-    return normalizeArchiveRoute({ view: 'home' })
+// Keep the immediate source plus a flat tail of canonical queries. Flat encoding
+// avoids exponentially escaped nested `from` URLs; oldest entries expire first.
+function sourceFrames(query) {
+  const frames = []
+  let pending = [query]
+  while (pending.length && frames.length < MAX_SOURCE_DEPTH) {
+    const next = pending.shift()
+    if (typeof next !== 'string' || !next.startsWith('?') || next.length > MAX_SOURCE_LENGTH) break
+    const url = new URL(next, 'http://localhost/')
+    const nested = url.searchParams.get('from')
+    const tail = url.searchParams.get('via')
+    url.searchParams.delete('from')
+    url.searchParams.delete('via')
+    url.searchParams.delete('portal_from')
+    const view = url.searchParams.get('view') || 'home'
+    if (!VALID_VIEWS.has(view) || SOURCE_ROUTE_FORBIDDEN_VIEWS.has(view) ||
+        url.searchParams.has('scenario') || url.searchParams.has('file')) break
+    const route = readArchiveRoute(url)
+    if (route.view !== view) break
+    frames.push(buildArchiveUrl('http://localhost/', route).search || '?view=home')
+    if (tail) {
+      try {
+        const entries = JSON.parse(tail)
+        if (Array.isArray(entries)) pending = entries.slice(0, MAX_SOURCE_DEPTH - frames.length)
+      } catch { break }
+    } else if (nested) pending.unshift(nested) // Accept older single-source URLs.
   }
-  const route = readArchiveRoute(url)
-  return SOURCE_ROUTE_FORBIDDEN_VIEWS.has(route.view) ? normalizeArchiveRoute({ view: 'home' }) : route
+  return frames
+}
+
+function packSourceFrames(frames) {
+  const kept = frames.slice(0, MAX_SOURCE_DEPTH)
+  while (kept.length) {
+    const url = new URL(kept[0], 'http://localhost/')
+    if (kept.length > 1) url.searchParams.set('via', JSON.stringify(kept.slice(1)))
+    if (url.search.length <= MAX_SOURCE_LENGTH) return url.search
+    kept.pop()
+  }
+  return ''
+}
+
+export function readArchiveSourceRoute(query) {
+  const frames = sourceFrames(query)
+  if (!frames.length) return normalizeArchiveRoute({ view: 'home' })
+  const route = readArchiveRoute(new URL(frames[0], 'http://localhost/'))
+  const tail = packSourceFrames(frames.slice(1))
+  if (tail && ownsArchiveSource(route.view)) route.sourceRoute = tail
+  return route
 }
 
 export function buildArchiveSourceQuery(route) {
   if (!route || SOURCE_ROUTE_FORBIDDEN_VIEWS.has(route.view)) return ''
-  const url = buildArchiveUrl('http://localhost/', { ...route, sourceRoute: '' })
-  url.searchParams.delete('from')
-  return url.search
+  const current = buildArchiveUrl('http://localhost/', { ...route, sourceRoute: '' }).search || '?view=home'
+  return packSourceFrames([current, ...sourceFrames(route.sourceRoute)])
 }
 
 function clean(value) {
@@ -203,7 +243,8 @@ export function normalizeArchiveRoute(input = {}) {
   let idol = clean(input.idol)
 
   if (view === 'idols' && category === 'idol') view = 'idol_detail'
-  if (view === 'idols' && category === 'cards') view = 'cards'
+  // Without an explicit idol this is the card member grid, including its All filter.
+  if (view === 'idols' && category === 'cards' && idol) view = 'cards'
   if (view === 'idols' && ['idol_chat', 'idol_phone'].includes(category)) {
     view = 'mobile_archive'
     category = ''
@@ -269,13 +310,9 @@ export function normalizeArchiveRoute(input = {}) {
   }
   if (route.view === 'player' && positiveInteger(input.initialStep)) route.initialStep = positiveInteger(input.initialStep)
   if (route.view === 'portal') route.portalFrom = buildPortalReturnQuery(readPortalReturnRoute(input.portalFrom))
-  const ownsEventReaderSource = route.event && (
-    route.view === 'reader' || (route.view === 'player' && route.returnView === 'reader')
-  )
-  const ownsSourceRoute = SOURCE_ROUTE_OWNER_VIEWS.has(route.view) || ownsEventReaderSource ||
-    (route.view === 'player' && SOURCE_ROUTE_VIEWS.has(route.returnView))
-  if (ownsSourceRoute && clean(input.sourceRoute)) {
-    const sourceRoute = buildArchiveSourceQuery(readArchiveSourceRoute(input.sourceRoute))
+  if (ownsArchiveSource(route.view, route.returnView) && clean(input.sourceRoute)) {
+    const frames = sourceFrames(input.sourceRoute)
+    const sourceRoute = packSourceFrames(frames)
     if (sourceRoute) route.sourceRoute = sourceRoute
   }
   return route

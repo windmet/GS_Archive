@@ -65,7 +65,7 @@ for (const [file, markers] of Object.entries({
   for (const marker of markers) assert.ok(source.includes(marker), `${file} exposes ${marker}`)
 }
 
-const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
+const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8').replace(/\r\n/g, '\n')
 assert.ok(app.includes('captureActiveArchiveView()\n  navigation.invalidate()'), 'view commits capture the outgoing page')
 assert.ok(app.includes('adoptArchiveViewContext()'), 'history restoration adopts the active entry before DOM restore')
 console.log('Archive view restoration: history-entry exact state, route fallback, scroll clamp, focus and list markers passed')

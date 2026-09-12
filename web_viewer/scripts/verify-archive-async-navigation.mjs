@@ -1,3 +1,4 @@
+import { ownsArchiveSource } from '../src/core/archiveRoute.js'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
@@ -39,7 +40,7 @@ function setup() {
     resolveRouteGroup: () => null, resolveRouteUnit: () => null, resolveRouteEpisode: () => null,
     currentStoryCollection: { value: null }, currentEventEpisodes: { value: [] }, currentIdolStoryPage: { value: null },
     spineViewerLoader: async () => {}, chibiStageViewerLoader: async () => {},
-    captureDetailSource: () => {},
+    captureDetailSource: () => {}, ownsArchiveSource,
     currentScenario: { value: null }, currentScenarioInstance: { value: 0 },
     episodeQueue: useEpisodeQueue(),
     storyViewerLoader: async () => {},

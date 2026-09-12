@@ -50,7 +50,7 @@
         :unit-options="idolUnitOptions"
         :current-unit="currentIdolUnitFilter"
         :idols-before-unit-filter="searchMatchedIdols.length"
-        @back="goHome"
+        @back="goArchiveBack"
         @select="openIdol"
         @select-unit="updateArchiveFilter('currentIdolUnitFilter', $event)"
         @open-units="openUnitCatalog"
@@ -70,7 +70,7 @@
         :idols="idolUnitData?.idols || []"
         :selected-idol="currentCharacterId"
         v-model:layout="cardLayout"
-        @back="goBackFromCards"
+        @back="goArchiveBack"
         @select-card="openCard"
         @select-rarity="updateArchiveFilter('currentCardRarity', $event)"
         @select-asset-state="updateArchiveFilter('currentCardAssetState', $event)"
@@ -104,7 +104,7 @@
         :series-cards="currentSeriesCards"
         :event-relation="currentCardEventRelation"
         :gasha-relation="currentCardGashaRelation"
-        @back="goBackToCards"
+        @back="goArchiveBack"
         @preview-voice="previewCardVoice"
         @open-scenario="openCardScenario"
         @navigate-card="openCard"
@@ -181,7 +181,7 @@
         @update:model-value="updateArchiveFilter('filterQuery', $event)"
         :title="groupTitle"
         :groups="filteredGroups"
-        @back="goBackFromGroups"
+        @back="goArchiveBack"
         @select="openGroup"
       />
 
@@ -189,7 +189,7 @@
         v-if="view === 'episode_zero_units'"
         embedded
         :units="episodeZeroUnits"
-        @back="goHome"
+        @back="goArchiveBack"
         @select="openUnit"
       />
 
@@ -197,7 +197,7 @@
         v-if="view === 'episodes'"
         embedded
         :unit="currentUnit"
-        @back="goBackToUnits"
+        @back="goArchiveBack"
         @select="openEpisodeFiles"
       />
 
@@ -208,7 +208,7 @@
         @update:model-value="updateArchiveFilter('filterQuery', $event)"
         :title="currentGroup?.title || 'Scenarios'"
         :entries="filteredFileEntries"
-        @back="goBackToFiles"
+        @back="goArchiveBack"
         @select="openScenarioEntry"
       />
 
@@ -490,6 +490,7 @@ import {
   archiveSectionForRoute,
   buildArchiveBreadcrumbs,
   buildArchiveSourceQuery,
+  ownsArchiveSource,
   buildPortalReturnQuery,
   readArchiveSourceRoute,
   readPortalReturnRoute,
@@ -1532,7 +1533,7 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
       eventParentView.value = route.event ? (route.parentView || '') : ''
       currentCategoryId.value = route.event ? (route.category || '') : ''
       currentArchiveUnitCode.value = route.event && route.parentView === 'unit_detail' ? (route.unit || '') : ''
-      detailSourceRoute.value = route.event ? (route.sourceRoute || '') : ''
+      detailSourceRoute.value = route.sourceRoute || ''
       readingPlaybackNotice.value = ''
       playbackController.reset()
       view.value = 'reader'
@@ -1570,10 +1571,7 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
     currentCardId.value = route.card || ''
     currentEventId.value = route.event || ''
     eventParentView.value = route.parentView || ''
-    detailSourceRoute.value = (
-      ['card_detail', 'event_detail', 'spine_lab', 'chibi_stage'].includes(route.view) ||
-      (route.view === 'player' && ['card_detail', 'event_detail'].includes(route.returnView))
-    ) ? (route.sourceRoute || '') : ''
+    detailSourceRoute.value = ownsArchiveSource(route.view, route.returnView) ? (route.sourceRoute || '') : ''
     storyDetailParentView.value = (
       route.view === 'story_detail' ||
       (route.view === 'player' && route.returnView === 'story_detail')
@@ -1707,19 +1705,21 @@ function goHome() {
 }
 
 function navigateArchiveSection(section) {
+  if (section !== 'portal') detailSourceRoute.value = ''
   if (section === 'portal') openArchivePortal()
   else if (section === 'home') goHome()
   else if (section === 'stories') openStoryCatalog()
   else if (section === 'songs') openSongCatalog()
   else if (section === 'idols') openPrimaryIdol(currentCharacterId.value)
   else if (section === 'cards') openPrimaryCards(currentCharacterId.value)
-  else if (section === 'interactions') openMobileArchive({ idolCode: currentCharacterId.value || '001tom', mode: 'personal' })
+  else if (section === 'interactions') openMobileArchive({ idolCode: currentCharacterId.value || '001tom', mode: 'personal', fromSection: true })
   else if (section === 'gashas') openGashaCatalog()
   else if (section === 'resources') openArchiveStatus()
 }
 
 async function openStoryReader(documentId, source = {}) {
-  const context = view.value === 'reader' ? currentArchiveRoute() : source
+  const context = view.value === 'reader' ? currentArchiveRoute() : { ...source,
+    sourceRoute: buildArchiveSourceQuery(currentArchiveRoute()) }
   const pending = applyArchiveRoute({ ...context, view: 'reader', reading: documentId, readingRow: '', readingRev: '', readingMode: readingMode.value }, { restoring: false })
   // Publish the requested route immediately, including while text is loading.
   syncArchiveRoute()
@@ -1744,6 +1744,9 @@ function openCollectionReader({ chapter, documentId }) {
 }
 
 function closeStoryReader() {
+  // Legacy event Reader URLs stored the event's parent; newer URLs store the event itself.
+  if (detailSourceRoute.value && (!currentEventId.value ||
+      readArchiveSourceRoute(detailSourceRoute.value).view === 'event_detail')) return restoreDetailSource(openStoryCatalog)
   if (currentStoryDomain.value === 'work' && currentCharacterId.value) {
     const pending = applyArchiveRoute({ view: 'work_archive', storyType: 'work', idol: currentCharacterId.value,
       story: currentStoryFile.value }, { restoring: false })
@@ -1770,7 +1773,7 @@ function returnToReader() {
     category: currentEventId.value ? currentCategoryId.value : '',
     unit: currentEventId.value && eventParentView.value === 'unit_detail' ? currentArchiveUnitCode.value : '',
     parentView: currentEventId.value ? eventParentView.value : '',
-    sourceRoute: currentEventId.value ? detailSourceRoute.value : '' }
+    sourceRoute: detailSourceRoute.value }
   const pending = applyArchiveRoute(route, { restoring: false })
   syncArchiveRoute()
   return pending
@@ -1838,6 +1841,7 @@ async function closeArchivePortal() {
 }
 
 function openSongCatalog() {
+  detailSourceRoute.value = ''
   currentSongId.value = ''
   currentSongScope.value = 'all'
   songParentView.value = ''
@@ -1848,6 +1852,7 @@ function openSongCatalog() {
 
 function openSong(songCode) {
   if (!songCatalogData.value?.songs?.[songCode]) return
+  captureDetailSource()
   if (view.value === 'idol_detail') songParentView.value = 'idol_detail'
   else if (view.value === 'unit_detail') songParentView.value = 'unit_detail'
   else if (view.value !== 'song_detail') songParentView.value = ''
@@ -1858,18 +1863,19 @@ function openSong(songCode) {
 function openSongUnit(unitCode) {
   const unit = (idolUnitData.value?.units || []).find(entry => String(entry.unit_code) === String(unitCode))
   if (unit) {
-    filterQuery.value = ''
     openArchiveUnit(unit)
   }
 }
 
 function openSongIdol(idolCode) {
+  captureDetailSource()
   filterQuery.value = ''
   openPrimaryIdol(idolCode)
 }
 
 function openSongRelatedStory(relation) {
   if (relation?.entity_type !== 'story_collection') return
+  captureDetailSource()
   currentStoryDomain.value = relation.story_type || 'extra'
   currentStorySection.value = relation.story_section || ''
   currentStoryMode.value = 'portal'
@@ -1893,6 +1899,9 @@ function openHomeChat(idolId) {
 }
 
 function goArchiveBack() {
+  if (view.value === 'reader') return closeStoryReader()
+  if (view.value === 'portal') return closeArchivePortal()
+  if (detailSourceRoute.value) return restoreDetailSource(goHome)
   const backByView = {
     idols: goHome,
     idol_detail: goHome,
@@ -2018,6 +2027,7 @@ function closeArchiveExperiment() {
 }
 
 function openArchiveStatus() {
+  detailSourceRoute.value = ''
   filterQuery.value = ''
   currentStoryDomain.value = ''
   currentEventScope.value = 'all'
@@ -2027,6 +2037,7 @@ function openArchiveStatus() {
 }
 
 function openGashaCatalog() {
+  detailSourceRoute.value = ''
   gashaParentView.value = ''
   filterQuery.value = ''
   currentCategoryId.value = ''
@@ -2038,6 +2049,7 @@ function openGashaCatalog() {
 }
 
 async function openStoryCatalog() {
+  detailSourceRoute.value = ''
   return navigation.run(async intent => {
     await ensureIdolCommunicationData()
     if (!intent.isCurrent()) return
@@ -2059,6 +2071,7 @@ async function openStoryCatalog() {
 }
 
 function openExternalStoryResources() {
+  detailSourceRoute.value = ''
   filterQuery.value = ''
   currentStoryDomain.value = ''
   currentStorySection.value = ''
@@ -2083,6 +2096,7 @@ function openExternalStoryInternal(entry) {
     return
   }
   if (target?.kind !== 'collection') return
+  captureDetailSource()
   currentStoryDomain.value = target.domain
   currentStorySection.value = target.section
   currentStoryMode.value = 'portal'
@@ -2110,6 +2124,7 @@ function setStoryMode(mode) {
 
 function browseStoryCollection({ domain, section = '', mode = '' }) {
   if (section && ['main', 'unit_story', 'extra', 'birthday'].includes(domain)) {
+    captureDetailSource()
     currentStoryDomain.value = domain
     currentStorySection.value = section
     currentStoryMode.value = 'portal'
@@ -2140,6 +2155,7 @@ function browseStoryCollection({ domain, section = '', mode = '' }) {
 }
 
 function openSeasonalCampaign(campaignId = 'valentine_2023') {
+  captureDetailSource()
   const fallback = seasonalCampaignData.value?.campaigns?.[0]?.id || ''
   currentStoryDomain.value = 'seasonal_campaign'
   currentStoryMode.value = 'portal'
@@ -2161,6 +2177,7 @@ function openWorkArchive(idolCode = '001tom') {
   const fallback = workStoryData.value?.idols?.[0]?.idol_code || ''
   const selected = workStoryData.value?.by_idol_code?.[idolCode] ? idolCode : fallback
   if (!selected) return
+  captureDetailSource()
   currentStoryDomain.value = 'work'
   currentStoryFile.value = ''
   currentStoryMode.value = 'portal'
@@ -2184,6 +2201,7 @@ async function openIdolStoryArchive(idolCode = '001tom') {
   return navigation.run(async intent => {
     await ensureIdolCommunicationData()
     if (!intent.isCurrent()) return
+    captureDetailSource()
     const fallback = idolEpisodeData.value?.chapters?.[0]?.idol_code || ''
     const selected = idolEpisodeData.value?.by_idol_code?.[idolCode] ? idolCode : fallback
     if (!selected) return
@@ -2212,6 +2230,7 @@ async function openBirthdayIdolStory(relation) {
     await ensureIdolCommunicationData()
     if (!intent.isCurrent()) return
     if (!relation?.idolCode || !idolEpisodeData.value?.by_idol_code?.[relation.idolCode]) return
+    captureDetailSource()
     currentStoryDomain.value = 'idol_story'
     currentStoryMode.value = 'portal'
     currentCharacterId.value = relation.idolCode
@@ -2225,6 +2244,7 @@ async function openBirthdayIdolStory(relation) {
 
 function openIdolBirthdayArchive() {
   if (!currentCharacterId.value) return
+  captureDetailSource()
   currentStoryDomain.value = 'birthday'
   currentStorySection.value = currentCharacterId.value
   currentStoryMode.value = 'portal'
@@ -2244,10 +2264,11 @@ function playIdolStoryEpisode({ section, episode }) {
   if (index >= 0) startEpisodeQueue(queue, index, 'idol_story_archive')
 }
 
-async function openMobileArchive({ idolCode = '001tom', mode = 'personal', scenarioId = '' } = {}) {
+async function openMobileArchive({ idolCode = '001tom', mode = 'personal', scenarioId = '', fromSection = false } = {}) {
   return navigation.run(async intent => {
     await ensureIdolCommunicationData()
     if (!intent.isCurrent()) return
+    if (!fromSection) captureDetailSource()
     const fallbackIdol = idolEpisodeData.value?.chapters?.[0]?.idol_code || '001tom'
     const fallbackUnit = idolUnitData.value?.units?.[0]?.unit_code || '01jup'
     currentCharacterId.value = idolEpisodeData.value?.by_idol_code?.[idolCode] ? idolCode : fallbackIdol
@@ -2306,6 +2327,7 @@ function playRandomTalkTopic(topic) {
 function openMobileCard(cardId) {
   const card = (cardIndexData.value?.cards || []).find(entry => Number(entry.card_id) === Number(cardId))
   if (!card) return
+  captureDetailSource()
   currentCategoryId.value = 'cards'
   currentCharacterId.value = card.character_id
   currentCardId.value = card.resource_id
@@ -2319,6 +2341,7 @@ function openMobileIdolStory(episodeId) {
     (entry.sections || []).some(section => Number(section.id) === Number(relation.section_id)),
   )
   if (!chapter?.idol_code) return
+  captureDetailSource()
   currentStoryDomain.value = 'idol_story'
   currentStoryMode.value = 'portal'
   currentCharacterId.value = chapter.idol_code
@@ -2329,6 +2352,7 @@ function openMobileIdolStory(episodeId) {
 }
 
 function openUnitCatalog() {
+  captureDetailSource()
   filterQuery.value = ''
   currentCategoryId.value = 'idol'
   currentCharacterId.value = ''
@@ -2338,6 +2362,7 @@ function openUnitCatalog() {
 
 function openArchiveUnit(unit) {
   if (!unit) return
+  captureDetailSource()
   currentCategoryId.value = 'idol'
   currentCharacterId.value = ''
   currentArchiveUnitCode.value = String(unit.unit_code || unit.unit_id)
@@ -2350,6 +2375,7 @@ function openUnitFromIdol(idol) {
 }
 
 function openUnitMember(member) {
+  captureDetailSource()
   currentCategoryId.value = 'idol'
   currentCharacterId.value = member.idol_code
   currentArchiveUnitCode.value = ''
@@ -2367,6 +2393,7 @@ function openUnitEvent(event) {
 function openUnitCards() {
   const unitId = String(currentArchiveUnit.value?.unit_id || '')
   if (!unitId) return
+  captureDetailSource()
   filterQuery.value = ''
   currentCategoryId.value = 'cards'
   currentCharacterId.value = ''
@@ -2385,6 +2412,7 @@ function openCatalogStory(entry) {
 
 function openStoryDetail(entry, parentView = '') {
   if (!entry?.file) return
+  captureDetailSource()
   currentStoryFile.value = entry.file
   storyDetailParentView.value = parentView
   commitView('story_detail')
@@ -2408,6 +2436,7 @@ function playStoryCollectionEpisode({ chapter, episode }) {
 
 function openStoryIdol(idolCode) {
   if (!/^\d{3}[a-z0-9]{3}$/i.test(idolCode)) return
+  captureDetailSource()
   currentCategoryId.value = 'idol'
   currentCharacterId.value = idolCode
   commitView('idol_detail')
@@ -2499,6 +2528,7 @@ function selectPrimaryIdol(idolCode) {
 }
 
 function openIdol(entry) {
+  captureDetailSource()
   filterQuery.value = ''
   // Group chat entry in idol_chat grid: go directly to file view.
   if (entry._isGroup && entry._groupData) {
@@ -2547,6 +2577,7 @@ function openIdolDomain(domain) {
   }
   const category = categoryByDomain[domain]
   if (!category) return
+  captureDetailSource()
   currentCategoryId.value = category
   currentGroup.value = null
   currentCardId.value = ''
@@ -2587,6 +2618,7 @@ function openCard(card) {
 
 function openGasha(gasha) {
   if (!gasha?.id) return
+  captureDetailSource()
   gashaParentView.value = view.value === 'story_collection' && currentStoryDomain.value === 'extra'
     ? 'story_collection' : ''
   const preserveCatalogQuery = view.value === 'gashas'
@@ -2624,7 +2656,7 @@ function openGashaCard(relation) {
 
 function openRelatedCard(card) {
   if (!card?.resource_id || !card?.character_id) return
-  if (view.value !== 'card_detail') captureDetailSource()
+  captureDetailSource()
   currentCategoryId.value = 'cards'
   currentCharacterId.value = card.character_id
   currentCardId.value = card.resource_id
@@ -2662,7 +2694,7 @@ function openHomeEvent(event) {
 
 function openEventDetail(event, parentView = 'story_catalog') {
   if (!event?.event_id) return
-  if (view.value !== 'event_detail') captureDetailSource()
+  captureDetailSource()
   currentEventId.value = String(event.event_id)
   eventParentView.value = parentView
   commitView('event_detail')
@@ -2724,6 +2756,7 @@ function openEventCard(relation) {
 }
 
 function openEventIdol(idol) {
+  captureDetailSource()
   currentCategoryId.value = 'idol'
   currentCharacterId.value = idol.idol_code
   currentCardId.value = ''
@@ -2734,8 +2767,6 @@ function openEventIdol(idol) {
 }
 
 function openEventUnit(unit) {
-  currentEventId.value = ''
-  eventParentView.value = ''
   openArchiveUnit(unit)
 }
 
@@ -2745,6 +2776,7 @@ async function openVoicePreview(card, cue, returnView) {
 }
 
 function openGroup(group) {
+  captureDetailSource()
   currentGroup.value = group
   currentEpisodeId.value = ''
   filterQuery.value = ''
@@ -2756,6 +2788,7 @@ function openScenarioEntry(entry) {
 }
 
 function openUnit(unit) {
+  captureDetailSource()
   currentUnit.value = unit
   currentEpisodeId.value = ''
   filterQuery.value = ''
@@ -2763,6 +2796,7 @@ function openUnit(unit) {
 }
 
 function openEpisodeFiles(ep) {
+  captureDetailSource()
   // Create a synthetic group object from episode data
   currentGroup.value = { id: ep.id, title: ep.title, files: groupFileList(ep) }
   currentEpisodeId.value = String(ep.id)

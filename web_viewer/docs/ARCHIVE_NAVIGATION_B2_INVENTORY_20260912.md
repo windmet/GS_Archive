@@ -1,5 +1,7 @@
 # Archive Navigation B2 Inventory — 2026-09-12
 
+> 2026-09-12 最新前置修复：见 [关系链逻辑盘点与交接](ARCHIVE_RELATION_CHAIN_CLOSEOUT_20260912.md)。Song→Idol/Unit 等遗漏关系、多层来源、Reader 返回及成员卡片网格刷新已修复；本轮完成定向 Browser 和代码回归，完整关系图/390px/Back-Forward 与原 N01/N23 收尾由验收窗口继续。之后再开始 U0/U1 门户启动 UX。历史 PASS 保持原证据范围，不外推为整张导航图已验收。
+
 ## 范围与证据边界
 
 输入HEAD `d27fa61`。本轮只盘点 `archiveRoute.js`、`useArchiveNavigationState.js`、`App.vue` 的真实view/入口/返回写入点及现有路由回归，不把源码存在写成Browser验收。当前有30个合法view、8个Portal一级section；`portal_from`已经能保存一个有界的完整当前路由，普通详情之间仍主要依赖单值`parent`及若干页面专属parent ref。

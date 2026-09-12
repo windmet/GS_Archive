@@ -1,5 +1,7 @@
 # 2026-09-12 分支审计与新窗口交接
 
+> 2026-09-12 最新前置修复：见 [关系链逻辑盘点与交接](ARCHIVE_RELATION_CHAIN_CLOSEOUT_20260912.md)。Song→Idol/Unit 等遗漏关系、多层来源、Reader 返回及成员卡片网格刷新已修复；本轮完成定向 Browser 和代码回归，完整关系图/390px/Back-Forward 与原 N01/N23 收尾由验收窗口继续。之后再开始 U0/U1 门户启动 UX。历史 PASS 保持原证据范围，不外推为整张导航图已验收。
+
 > **最新产品顺序：** 用户要求先完成旧批N01/N23真实Browser结尾验收，再按[启动入口与门户UX计划](PORTAL_STARTUP_UX_PLAN_20260912.md)进入Welcome、用户启动偏好、偏好导航与门户大验收。该计划插在完整UX冻结之前，复用已完成的导航来源/恢复；不重做B1、不等待全部cache，不新增个人/卡片/通信Reader。
 
 > **所有窗口先读构建约束：** [构建/验收/提交与磁盘政策](BUILD_ACCEPTANCE_POLICY.md)，并遵守本工程 `AGENTS.md`。日常前端验收改用 `npm run build:check`（不复制public，固定E盘工程内输出）；禁止每批把全量媒体复制到C盘QA。代码编译与完整媒体打包必须分开记录。

@@ -78,7 +78,7 @@ independent.view.value = 'player'
 independent.returnViewAfterPlayer.value = 'card_detail'
 independent.currentScenarioFile.value = 'card-story.json'
 assert.equal(independent.currentArchiveRoute().sourceRoute, sourcedCardRoute.sourceRoute, 'card playback preserves the detail source')
-independent.returnViewAfterPlayer.value = 'files'
+independent.returnViewAfterPlayer.value = 'home'
 assert.equal('sourceRoute' in independent.currentArchiveRoute(), false, 'unrelated playback cannot inherit a detail source')
 independent.detailSourceRoute.value = buildArchiveSourceQuery({ view: 'archive_status' })
 independent.view.value = 'spine_lab'
@@ -91,6 +91,7 @@ assert.equal(readArchiveSourceRoute(independent.currentArchiveRoute().sourceRout
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const context = {
   ...independent,
+  captureDetailSource: () => { independent.detailSourceRoute.value = buildArchiveSourceQuery(independent.currentArchiveRoute()) },
   currentStoryCollection: { value: { sectionId: '604' } },
   commitView: value => { independent.view.value = value },
 }

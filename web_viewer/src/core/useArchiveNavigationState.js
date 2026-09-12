@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { ownsArchiveSource } from './archiveRoute.js'
 
 // Own URL-facing state; consumers receive the original refs, never copies.
 // Resource payloads, playback queues and async loading are feature-owned.
@@ -60,7 +61,7 @@ export function useArchiveNavigationState() {
         unit: currentEventId.value && eventParentView.value === 'unit_detail' ? currentArchiveUnitCode.value : '',
         storyType: currentStoryDomain.value, storySection: currentStorySection.value, story: currentStoryFile.value,
         event: currentEventId.value, parentView: currentEventId.value ? eventParentView.value : '',
-        ...(currentEventId.value && detailSourceRoute.value.startsWith('?') ? { sourceRoute: detailSourceRoute.value } : {}),
+        ...(detailSourceRoute.value.startsWith('?') ? { sourceRoute: detailSourceRoute.value } : {}),
         idol: currentStoryDomain.value === 'work' ? currentCharacterId.value : '',
         ...(view.value === 'player' ? { scenario: currentScenarioFile.value,
           startStep: currentScenarioStartStep.value, endStep: currentScenarioEndStep.value,
@@ -84,10 +85,7 @@ export function useArchiveNavigationState() {
       (preservesEventContext && eventParentView.value === 'unit_detail')
     return {
       view: view.value,
-      ...((['card_detail', 'event_detail'].includes(view.value) ||
-          ['spine_lab', 'chibi_stage'].includes(view.value) ||
-          (view.value === 'player' && ['card_detail', 'event_detail'].includes(returnViewAfterPlayer.value))) &&
-          detailSourceRoute.value.startsWith('?')
+      ...(ownsArchiveSource(view.value, returnViewAfterPlayer.value) && detailSourceRoute.value.startsWith('?')
         ? { sourceRoute: detailSourceRoute.value } : {}),
       ...(view.value === 'player' && currentScenarioInitialStep.value ? { initialStep: currentScenarioInitialStep.value } : {}),
       homeIdol: view.value === 'home' ? homeSelectedId.value : '',

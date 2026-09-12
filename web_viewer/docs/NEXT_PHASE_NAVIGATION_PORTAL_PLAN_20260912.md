@@ -1,5 +1,7 @@
 # 下一阶段：加载安全闭环与门户导航验收
 
+> 2026-09-12 最新前置修复：见 [关系链逻辑盘点与交接](ARCHIVE_RELATION_CHAIN_CLOSEOUT_20260912.md)。Song→Idol/Unit 等遗漏关系、多层来源、Reader 返回及成员卡片网格刷新已修复；本轮完成定向 Browser 和代码回归，完整关系图/390px/Back-Forward 与原 N01/N23 收尾由验收窗口继续。之后再开始 U0/U1 门户启动 UX。历史 PASS 保持原证据范围，不外推为整张导航图已验收。
+
 > 后续用户调整（核对3dfd9ea）：B1与多数导航迁移/旅程已有交付；先完成N01/N23收尾，再按[启动入口与门户UX计划](PORTAL_STARTUP_UX_PLAN_20260912.md)处理首次入口、启动偏好及Portal。以下B1–B5为原始阶段设计，不要求重做已交付内容；最终UX冻结需追加新启动语义回归。所有构建遵守[磁盘与验收政策](BUILD_ACCEPTANCE_POLICY.md)。
 
 日期：2026-09-12；核对基线：`dae8e0d`，分支 `codex/p1-effect-texture-deps`。
