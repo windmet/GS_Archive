@@ -57,6 +57,7 @@ export function useArchiveNavigationState() {
         readingMode: readingMode.value, readingRev: readingRevision.value,
         storyType: currentStoryDomain.value, storySection: currentStorySection.value, story: currentStoryFile.value,
         event: currentEventId.value, parentView: currentEventId.value ? eventParentView.value : '',
+        idol: currentStoryDomain.value === 'work' ? currentCharacterId.value : '',
         ...(view.value === 'player' ? { scenario: currentScenarioFile.value,
           startStep: currentScenarioStartStep.value, endStep: currentScenarioEndStep.value,
           initialStep: currentScenarioInitialStep.value, returnView: 'reader' } : {}),
@@ -93,7 +94,8 @@ export function useArchiveNavigationState() {
       storyType: currentStoryDomain.value,
       storyMode: currentStoryMode.value,
       storySection: currentStorySection.value,
-      story: (view.value === 'story_detail' || returnsToStory || preservesStoryCollectionContext)
+      story: (view.value === 'story_detail' || returnsToStory || preservesStoryCollectionContext || view.value === 'work_archive'
+        || (view.value === 'player' && returnViewAfterPlayer.value === 'work_archive'))
         ? currentStoryFile.value
         : '',
       mobileMode: currentMobileMode.value,

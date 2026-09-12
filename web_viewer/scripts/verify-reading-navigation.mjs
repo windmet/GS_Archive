@@ -19,6 +19,7 @@ for (const query of [
   'story_type=unit_story&story_section=13&story=1_1_013the_03.json',
   'story_type=birthday&story=1_x_001tom_1_8_001_01.json',
   'event=10001&parent=story_catalog',
+  'story_type=work&idol=001tom&story=work.json',
 ]) {
   const nonMain = readArchiveRoute(`http://localhost/?view=reader&reading=sample&${query}`)
   assert.deepEqual(readArchiveRoute(buildArchiveUrl('http://localhost/', nonMain)), nonMain)
@@ -62,12 +63,18 @@ const context = { ...useArchiveNavigationState(), navigation, readingSession: se
 context.playbackController = { reset: () => { context.currentScenario.value = null } }
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 vm.runInNewContext(app.match(/async function applyArchiveRoute\([^]*?\n\}/)[0], context)
-for (const source of [{ event: '10001', parentView: 'story_catalog' }, { storyType: 'unit_story', storySection: '13', story: 'unit.json' },
+for (const source of [{ storyType: 'work', idol: '001tom', story: 'work.json' }, { event: '10001', parentView: 'story_catalog' }, { storyType: 'unit_story', storySection: '13', story: 'unit.json' },
   { storyType: 'birthday', storySection: '', story: 'birthday.json' }]) {
   await context.applyArchiveRoute({ ...route, ...source })
   const restored = readArchiveRoute(buildArchiveUrl('http://localhost/', context.currentArchiveRoute()))
   for (const key of Object.keys(source)) assert.equal(restored[key], source[key], `App retains ${key}`)
 }
+await context.applyArchiveRoute(route)
+context.view.value = 'work_archive'
+context.currentStoryDomain.value = 'work'
+context.currentCharacterId.value = '001tom'
+context.currentStoryFile.value = 'line.json'
+assert.equal(readArchiveRoute(buildArchiveUrl('http://localhost/', context.currentArchiveRoute())).story, 'line.json', 'work page refresh retains source tab selector')
 await context.applyArchiveRoute(route)
 assert.equal(context.view.value, 'reader')
 assert.equal(context.currentScenario.value, null)

@@ -17,6 +17,15 @@ try {
   }))
   assert.ok(eventHtml.includes('aria-label="阅读 Ready"'))
   assert.ok(!eventHtml.includes('aria-label="阅读 Branch"'), 'unsupported episodes retain only their playback entry')
+  const { default: Work } = await server.ssrLoadModule('/src/components/archive/ArchiveWorkStory.vue')
+  for (const initialFile of ['', 'line.json']) {
+    const workHtml = await renderToString(createSSRApp(Work, {
+      idol: { idol_code: '001tom', short_stories: [{ id: 'short', title: 'Short', compiled_file: 'short.json' }],
+        scene_lines: [{ id: 'line', background_name: 'Office', compiled_file: 'line.json' }] }, initialFile,
+      readingEntries: ['short', 'line'].map(id => ({ document_id: id, source_file: `${id}.json`, status: 'ready' })),
+    }))
+    assert.ok(workHtml.includes(`aria-label="阅读 ${initialFile ? 'Office' : 'Short'}"`), 'work return opens the matching content tab')
+  }
   for (const [status, expected] of [
     ['loading', '正在载入正文'], ['empty', '没有可显示的正文'],
     ['not-generated', '尚未生成阅读正文'], ['error', '正文暂时无法载入'],

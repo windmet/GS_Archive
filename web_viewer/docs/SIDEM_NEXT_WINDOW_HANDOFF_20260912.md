@@ -290,3 +290,11 @@ B 批尚未完成，不把A批当作全剧情推广：现有204文档仍未扩�
 验证：36个活动396个分段均对应正确的父文件，362份ready正文全部可由活动页面分段路径到达；Vue SSR验证ready/unsupported按钮区别；App导航及Reader→Player→Reader/刷新测试验证event与parent保存；archive-routes通过。Browser5175实测430018「運命光年」ep1阅读→刷新→返回原活动，390px再打开ep2；1280/390无横向溢出，窄屏阅读按钮约68×58px，console无error。构建2509 modules，入口542.32kB，既有大小提示保留；仓库外产物sidem-reading-event-20260912/build。没有宣称活动媒体全部验收。
 
 下一步继续工作、个人、卡片专属入口及通信来源；工作组件已定位ArchiveWorkStory.vue，短剧情使用story.compiled_file，场景台词使用line.compiled_file，当前选中偶像在currentCharacterId；返回还需保留工作页与偶像上下文。之后继续加载路线。整体目标未完成。
+
+## Reader B3：工作短剧情与场景台词
+
+输入HEAD 6a5e73e。ArchiveWorkStory按compiled_file匹配ready正文，短剧情和场景台词均有独立阅读按钮。工作来源复用storyType=work、idol、story路由字段：Reader/Player(return=reader)及返回工作页保留偶像和来源文件；Work组件由来源文件恢复短剧情/场景台词页签，普通Reader清理无关偶像。进入新的工作档案或切换偶像清理旧来源文件。没有新增媒体加载路径。
+
+验证：49名偶像的196篇短剧情、441条场景台词全部映射到637份ready正文；导航测试覆盖work/Reader URL和工作页来源文件保留；演出往返/刷新测试覆盖偶像上下文；Vue SSR覆盖两类入口及返回页签；archive-routes通过。Browser5175冬马短剧情「大衆向けアニメのお仕事」阅读刷新后返回原偶像；场景「テレビ局スタジオ」阅读刷新→返回→工作页刷新均保留场景台词页签。1280×900和390×844截图与DOM检查无横向溢出，console无error。构建2509 modules，入口543.78kB，保留原大小提示，仓库外产物sidem-reading-work-20260912/build。未声称637篇逐篇媒体验收。
+
+下一步个人/卡片专属阅读入口、通信来源与unsupported边界，之后继续Player加载的critical/后台生命周期路线。整体目标仍未完成；v9 HTML继续无关未跟踪，未PR/部署。

@@ -52,6 +52,7 @@
               <p>{{ story.dialogue_preview }}</p>
               <div class="story-footer">
                 <span>{{ story.dialogue_count }} 段对白 · {{ story.voice_count }} 段语音</span>
+                <button v-if="readingByFile.has(story.compiled_file)" class="reading-action" :aria-label="`阅读 ${story.title}`" @click="emit('read', story.compiled_file)"><BookOpen :size="16" />阅读</button>
                 <button :disabled="!story.compiled_exists" title="播放工作短剧情" @click="emit('play', story.compiled_file)"><Play :size="17" fill="currentColor" /></button>
               </div>
             </div>
@@ -70,6 +71,7 @@
             <div class="line-copy">
               <span>{{ locationLabel(line) }}</span>
               <p>{{ line.dialogue_preview }}</p>
+              <button v-if="readingByFile.has(line.compiled_file)" class="reading-action" :aria-label="`阅读 ${locationLabel(line)}`" @click="emit('read', line.compiled_file)"><BookOpen :size="16" />阅读</button>
             </div>
             <button :disabled="!line.compiled_exists" title="播放场景台词" @click="emit('play', line.compiled_file)"><Play :size="16" fill="currentColor" /></button>
           </article>
@@ -81,13 +83,18 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { BookOpen, ChevronLeft, ChevronRight, MessageSquareText, Play } from '@lucide/vue'
 
-const props = defineProps({ idol: { type: Object, default: null }, idols: { type: Array, default: () => [] } })
-const emit = defineEmits(['select-idol', 'play'])
+const props = defineProps({ idol: { type: Object, default: null }, idols: { type: Array, default: () => [] },
+  readingEntries: { type: Array, default: () => [] }, initialFile: { type: String, default: '' } })
+const emit = defineEmits(['read', 'select-idol', 'play'])
 const mode = ref('stories')
+const readingByFile = computed(() => new Map(props.readingEntries.filter(entry => entry.status === 'ready').map(entry => [entry.source_file, entry])))
+watch(() => [props.idol, props.initialFile], () => {
+  mode.value = props.idol?.scene_lines.some(line => line.compiled_file === props.initialFile) ? 'lines' : 'stories'
+}, { immediate: true })
 const totalVoices = computed(() => [...(props.idol?.short_stories || []), ...(props.idol?.scene_lines || [])].reduce((sum, item) => sum + (item.voice_count || 0), 0))
 const namedLocations = computed(() => [...(props.idol?.short_stories || []), ...(props.idol?.scene_lines || [])].filter(item => item.background_name).length)
 
@@ -104,6 +111,9 @@ function locationLabel(entry) { return entry.background_name || '场景名称未
 </script>
 
 <style scoped>
+.story-footer { flex-wrap: wrap; }
+.story-footer > span { flex: 1 1 100%; }
+.story-footer .reading-action, .line-copy .reading-action { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 44px; width: auto; padding: 5px 9px; border: 1px solid #cadbd9; border-radius: 5px; background: #fff; color: var(--work-accent); font: inherit; font-size: 13px; cursor: pointer; }
 .work-page { height: 100%; overflow-x: hidden; overflow-y: auto; background: #f4f6f7; color: #26343c; }.work-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 22px max(24px, calc((100% - 1080px) / 2)); border-bottom: 1px solid #dfe5e7; background: #fff; }.idol-heading { display: flex; align-items: center; gap: 14px; min-width: 0; }.idol-heading img { width: 62px; height: 62px; border: 3px solid var(--work-accent); border-radius: 50%; object-fit: cover; }.idol-heading span, .section-heading span { color: var(--work-accent); font-size: .58rem; font-weight: 800; }.idol-heading h2 { margin: 3px 0; font-size: 1.3rem; }.idol-heading p { margin: 0; color: #738087; font-size: .65rem; }.idol-controls { display: flex; align-items: end; gap: 6px; }.idol-controls > button { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid #d6dee1; border-radius: 5px; background: #fff; color: #4f5d64; cursor: pointer; }.idol-controls label { display: flex; flex-direction: column; gap: 4px; }.idol-controls label span { color: #7a878d; font-size: .56rem; }.idol-controls select { min-width: 230px; height: 34px; padding: 0 30px 0 10px; border: 1px solid #d5dde0; border-radius: 5px; background: #fff; color: #28363d; font: inherit; font-size: .67rem; }
 .work-body { max-width: 1080px; margin: 0 auto; padding: 18px 24px 38px; }.work-overview { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); border: 1px solid #dfe5e7; border-radius: 6px; background: #fff; }.work-overview div { display: flex; flex-direction: column; gap: 2px; padding: 12px 15px; border-right: 1px solid #e5eaec; }.work-overview div:last-child { border-right: 0; }.work-overview strong { font-size: .88rem; }.work-overview span { color: #7b888e; font-size: .56rem; }.content-tabs { display: flex; gap: 3px; margin: 18px 0 0; border-bottom: 1px solid #dce3e5; }.content-tabs button { display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 13px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #718087; cursor: pointer; font: inherit; font-size: .67rem; }.content-tabs button.active { border-color: var(--work-accent); color: #26343c; font-weight: 800; }.content-section { padding-top: 18px; }.section-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 11px; }.section-heading h3 { margin: 3px 0 0; font-size: 1rem; }.section-heading p { margin: 0; color: #78858b; font-size: .62rem; }
 .story-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }.story-card { display: grid; grid-template-columns: 148px minmax(0,1fr); overflow: hidden; min-height: 150px; border: 1px solid #dce3e5; border-radius: 6px; background: #fff; }.story-visual { position: relative; min-height: 150px; background: #dfe5e7; }.story-visual img { width: 100%; height: 100%; object-fit: cover; }.story-visual span { position: absolute; right: 6px; bottom: 6px; left: 6px; overflow: hidden; padding: 4px 6px; border-radius: 3px; background: rgba(25,35,40,.78); color: #fff; font-size: .52rem; text-overflow: ellipsis; white-space: nowrap; }.story-copy { display: flex; flex-direction: column; min-width: 0; padding: 11px 12px; }.story-copy > small { color: var(--work-accent); font-family: ui-monospace, Consolas, monospace; font-size: .52rem; }.story-copy h4 { margin: 4px 0 6px; font-size: .73rem; line-height: 1.4; }.story-copy p { display: -webkit-box; overflow: hidden; margin: 0; color: #66757c; font-size: .6rem; line-height: 1.5; white-space: pre-line; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }.story-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 8px; }.story-footer span { color: #879399; font-size: .52rem; }.story-footer button, .line-row > button { display: grid; flex: 0 0 auto; place-items: center; width: 32px; height: 32px; border: 1px solid color-mix(in srgb, var(--work-accent) 55%, #dce4e6); border-radius: 50%; background: #fff; color: var(--work-accent); cursor: pointer; }.story-footer button:disabled, .line-row > button:disabled { cursor: not-allowed; opacity: .4; }

@@ -302,6 +302,9 @@
         v-if="view === 'work_archive'"
         :idol="currentWorkIdol"
         :idols="workStoryData?.idols || []"
+        :reading-entries="readingCatalogEntries"
+        :initial-file="currentStoryFile"
+        @read="openWorkReader"
         @select-idol="selectWorkIdol"
         @play="playWorkStory"
       />
@@ -1210,7 +1213,7 @@ async function loadReadingCatalog() {
     readingCatalogError.value = ''
   } catch { readingCatalogError.value = '阅读目录暂时无法载入。' }
 }
-watch(() => ['story_collection', 'story_detail', 'event_detail'].includes(view.value), active => {
+watch(() => ['story_collection', 'story_detail', 'event_detail', 'work_archive'].includes(view.value), active => {
   if (active) loadReadingCatalog()
 })
 const readingSession = createReadingSession({ repository: readingRepository, publish: state => { readingState.value = state } })
@@ -1489,6 +1492,7 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
       currentStoryDomain.value = route.storyType || ''
       currentStorySection.value = route.storySection || ''
       currentStoryFile.value = route.story || ''
+      currentCharacterId.value = route.idol || ''
       currentEventId.value = route.event || ''
       eventParentView.value = route.event ? (route.parentView || '') : ''
       readingPlaybackNotice.value = ''
@@ -1697,6 +1701,12 @@ function openCollectionReader({ chapter, documentId }) {
 }
 
 function closeStoryReader() {
+  if (currentStoryDomain.value === 'work' && currentCharacterId.value) {
+    const pending = applyArchiveRoute({ view: 'work_archive', storyType: 'work', idol: currentCharacterId.value,
+      story: currentStoryFile.value }, { restoring: false })
+    const revision = navigation.getRevision()
+    return pending.then(() => { if (navigation.getRevision() === revision) syncArchiveRoute() })
+  }
   if (currentEventId.value) {
     const pending = applyArchiveRoute({ view: 'event_detail', event: currentEventId.value,
       parentView: eventParentView.value }, { restoring: false })
@@ -1720,6 +1730,11 @@ function returnToReader() {
 
 function openEventReader(documentId) {
   return openStoryReader(documentId, { event: currentEventId.value, parentView: eventParentView.value })
+}
+
+function openWorkReader(file) {
+  const entry = readingCatalogEntries.value.find(entry => entry.source_file === file && entry.status === 'ready')
+  if (entry) return openStoryReader(entry.document_id, { storyType: 'work', idol: currentCharacterId.value, story: file })
 }
 
 async function openReaderPlayback(rowId, { intent: inherited, route, fullDocument = false } = {}) {
@@ -2091,6 +2106,7 @@ function openWorkArchive(idolCode = '001tom') {
   const selected = workStoryData.value?.by_idol_code?.[idolCode] ? idolCode : fallback
   if (!selected) return
   currentStoryDomain.value = 'work'
+  currentStoryFile.value = ''
   currentStoryMode.value = 'portal'
   currentStorySection.value = ''
   currentCharacterId.value = selected
@@ -2100,6 +2116,7 @@ function openWorkArchive(idolCode = '001tom') {
 function selectWorkIdol(idolCode) {
   if (!workStoryData.value?.by_idol_code?.[idolCode]) return
   currentCharacterId.value = idolCode
+  currentStoryFile.value = ''
   commitArchiveSelection()
 }
 
