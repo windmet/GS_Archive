@@ -855,7 +855,7 @@ class ScenarioCompiler(ScenarioFileIO):
 
     def _idol_priority(self, vals: list):
         """Render priority for multi-character scenes.
-        Values: [chara_id, priority, ...]. Higher values render in front.
+        Values: [chara_id, priority, ...]. Higher source depth renders behind.
         """
         if len(vals) >= 2 and vals[0] and vals[1] != "":
             priority = self._safe_float(vals[1], 0.0)

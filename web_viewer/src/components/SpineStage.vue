@@ -82,6 +82,7 @@
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount, markRaw, reactive, onUnmounted, computed } from 'vue'
 import { PixiStageManager } from '../core/PixiStageManager.js'
+import { storySpineOrder } from '../core/StorySpineOrder.js'
 import {
   getBodyTypeUrl,
   getOtherSettingUrl,
@@ -1025,15 +1026,7 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
 
   // 鈹€鈹€ Phase 3: Official z-order, fallback to current speaker front 鈹€鈹€
   if (hasOfficialPriority) {
-    const orderedIds = desiredOrder
-      .slice()
-      .sort((a, b) => {
-        const pa = Number.isFinite(Number(a.idol_priority)) ? Number(a.idol_priority) : 0
-        const pb = Number.isFinite(Number(b.idol_priority)) ? Number(b.idol_priority) : 0
-        if (pa !== pb) return pa - pb
-        return desiredOrder.indexOf(a) - desiredOrder.indexOf(b)
-      })
-      .map(s => s.id)
+    const orderedIds = storySpineOrder(desiredOrder)
     manager.applySpineOrder?.(orderedIds)
   } else if (charaId && desiredIds.has(charaId)) {
     manager.bringToFront(charaId)
