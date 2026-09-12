@@ -342,3 +342,11 @@ verify-story-spine-order覆盖三人桥段、相同深度稳定顺序及源数�
 新增受控回归覆盖同ID下载未完成、已加载但淡入未完成、下载中落定、失败、取消；背景加载/属性时钟/效果生命周期及runtime-foundation全部通过。Vite构建2510 modules通过，主入口545.20kB，既有chunk提示保留；产物C:/Users/windm/.codex/qa/sidem-background-completion-20260912/build。Browser5175活动430018第二话进入5/26，推进6/26后返回原活动，console无error；当前窄屏截图背景、翔太、Jupiter标志均显示。没有冷网络或全媒体长测结论。
 
 整体ready仍未闭合：StoryViewer挂载后预热/5秒兜底emit ready并不证明场景完成；SpineStage ready目前也仅证明manager构造完成；App导航onFinish与publish提前清除loading。下一批需要共同设计入口场景、运行时背景快照、人物投影及实例隔离的就绪/失败门槛，不能只删超时或等待构造事件冒充GPU/audio ready。此批仅修正背景层提前完成，未改播放器ready门槛；ep2镜头裁切仍待复核，个人/卡片/通信Reader扩展仍停止。
+
+## 加载时序：人物投影后启动运行时时钟
+
+输入HEAD bb3c921。Runtime原先只等待manager构造，会在SpineStage异步元数据/人物加载与初始姿势设置期间开始镜头、淡入、音效，既消耗演出时间又可能被迟到的初始定位覆盖。现在Stage暴露isSceneProjected(expectedStep)，沿用既有projectedStep和当前props.step身份；Runtime捕获当前投影对象，等到该步投影结束才应用运行时入口快照并启动共同cue时钟。无场景快照的步骤不额外等待人物；原isSpineReady复用该身份判断。沿用generation/managerFrame撤销机制，等待期间阻塞Auto，不增加第二套人物状态。
+
+verify-story-stage-readiness新增manager存在但人物未投影时不启动、旧步投影不能放行新步、暂停加载与销毁撤销；runtime-foundation和背景加载/属性时钟/效果生命周期通过。Vite2510 modules构建通过，产物C:/Users/windm/.codex/qa/sidem-projection-clock-20260912/build，既有chunk大小提示保留。Browser5175活动430018第一话正常进入7/34冬马对白并推进8/34翔太对白，窄屏截图人物背景完整，console无error。
+
+本批不宣称全场景/GPU/audio ready：投影结束仍可能存在异步剪影图片、背景纹理和独立语音准备；Stage现有资源失败降级也未改成统一错误门槛。StoryViewer旧ready及App loading发布关系继续待修，ep2取景裁切待复核。整体目标保持进行中。

@@ -1044,13 +1044,18 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
 
 function isSpineReady(target, expectedStep) {
   return !!manager?.spineInstances?.[target]
-    && projectedStep === expectedStep
-    && props.step === expectedStep
+    && isSceneProjected(expectedStep)
+}
+
+function isSceneProjected(expectedStep) {
+  return !!manager && props.step === expectedStep
+    && (!getStepSceneState(expectedStep) || projectedStep === expectedStep)
 }
 
 defineExpose({
   get manager() { return manager },
   isSpineReady,
+  isSceneProjected,
 })
 </script>
 

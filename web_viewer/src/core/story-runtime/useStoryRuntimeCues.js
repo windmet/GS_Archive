@@ -48,10 +48,14 @@ export function useStoryRuntimeCues({
   }
 
   function applySnapshotWhenReady(snapshot, expectedGeneration, onReady) {
+    const expectedStep = getStageStep()
     const apply = () => {
       if (expectedGeneration !== generation) return
       const manager = getManager()
-      if (!manager) {
+      // A constructed Pixi manager does not imply that the source step's
+      // asynchronous actor placement has finished. Start the common clock
+      // only after that projection, so late placement cannot overwrite cues.
+      if (!manager || spineStageRef.value?.isSceneProjected?.(expectedStep) === false) {
         managerFrame = requestAnimationFrame(apply)
         return
       }

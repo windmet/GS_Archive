@@ -12,22 +12,37 @@ const tick = async () => { const pending = [...frames.values()]; frames.clear();
 try {
   for (const outcome of ['ready', 'paused', 'superseded', 'disposed']) {
     const stage = { value: null }, index = { value: 0 }, calls = []
+    let projectedStep = null
+    const source = { schema_version: 2, steps: [1, 2].map(id => ({
+      step_id: id, type: 'stage', entry_snapshot: { bg: `entry-${id}` },
+      cues: [{ cue_id: `background-${id}`, action: 'background.change', channel: 'background', at: 0, duration: 4,
+        payload: { bg: `destination-${id}`, type: 'dissolve' }, lifecycle: { skippable: true, blocks_auto: true } }],
+    })) }
     let paused = false
     const runtime = useStoryRuntimeCues({
-      compiledData: { value: { schema_version: 2, steps: [1, 2].map(id => ({
-        step_id: id, type: 'stage', entry_snapshot: { bg: `entry-${id}` },
-        cues: [{ cue_id: `background-${id}`, action: 'background.change', channel: 'background', at: 0, duration: 4,
-          payload: { bg: `destination-${id}`, type: 'dissolve' }, lifecycle: { skippable: true, blocks_auto: true } }],
-      })) } }, currentStepIndex: index, spineStageRef: stage, audioManager: {}, isPaused: () => paused,
+      compiledData: { value: source }, currentStepIndex: index, spineStageRef: stage, audioManager: {}, isPaused: () => paused,
     })
     runtime.handleStepChange()
     assert.equal(runtime.hasBlockingAuto(), true, 'stage readiness must block automatic advance')
     assert.equal(runtime.inspect().entries.length, 0, 'no cue can start before its stage exists')
     assert.equal(frames.size, 1)
     if (outcome === 'paused') { paused = true; await runtime.pause() }
-    if (outcome === 'superseded') { index.value = 1; runtime.handleStepChange() }
+    stage.value = {
+      manager: { setBackground: (bg, transition) => calls.push([bg, transition.duration]) },
+      isSceneProjected: expected => expected === projectedStep,
+    }
+    await tick()
+    assert.deepEqual(calls, [], 'manager construction must not start snapshots or cues during actor loading')
+    assert.equal(runtime.hasBlockingAuto(), true)
+    assert.equal(runtime.inspect().entries.length, 0, 'common cue clock must not consume loading time')
+    if (outcome === 'superseded') {
+      index.value = 1; runtime.handleStepChange()
+      projectedStep = source.steps[0]
+      await tick()
+      assert.deepEqual(calls, [], 'old projection cannot release the new step')
+    }
     if (outcome === 'disposed') runtime.cleanup()
-    stage.value = { manager: { setBackground: (bg, transition) => calls.push([bg, transition.duration]) } }
+    projectedStep = source.steps[index.value]
     await tick()
     if (outcome === 'disposed') assert.deepEqual(calls, [])
     else {
@@ -43,7 +58,7 @@ try {
     }
     await flush(); assert.equal(frames.size, 0)
   }
-  console.log('Story stage readiness: first cue, paused mount, superseding steps and disposal passed')
+  console.log('Story stage readiness: actor projection before clock start, paused mount, stale projection and disposal passed')
 } finally {
   [globalThis.window, globalThis.requestAnimationFrame, globalThis.cancelAnimationFrame] = saved
 }
