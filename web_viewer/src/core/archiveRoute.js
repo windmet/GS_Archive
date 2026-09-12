@@ -1,5 +1,6 @@
 const ROUTE_QUERY_KEYS = [
   'portal_from',
+  'from',
   'reading',
   'reading_row',
   'reading_mode',
@@ -133,6 +134,8 @@ const ARCHIVE_NAVIGATION = Object.freeze([
 ])
 
 const BREADCRUMB_HIDDEN_VIEWS = new Set(['home', 'portal', 'reader', 'player', 'spine_lab', 'chibi_stage'])
+const SOURCE_ROUTE_VIEWS = new Set(['card_detail', 'event_detail'])
+const SOURCE_ROUTE_FORBIDDEN_VIEWS = new Set(['portal', 'reader', 'player', 'spine_lab', 'chibi_stage'])
 
 // A launcher return is a bounded, local archive query, never an external URL.
 // Strip nesting before normalization so a shared portal URL cannot recurse.
@@ -148,6 +151,27 @@ export function readPortalReturnRoute(query) {
 export function buildPortalReturnQuery(route) {
   if (['portal', 'player', 'spine_lab', 'chibi_stage'].includes(route.view)) return ''
   return buildArchiveUrl('http://localhost/', route).search
+}
+
+// Detail provenance is one bounded route, not a recursive history stack.
+// Strip an inner `from` before normalization so relation chains cannot grow.
+export function readArchiveSourceRoute(query) {
+  if (typeof query !== 'string' || !query.startsWith('?') || query.length > 8192) return normalizeArchiveRoute({ view: 'home' })
+  const url = new URL(query, 'http://localhost/')
+  url.searchParams.delete('from')
+  const requestedView = url.searchParams.get('view') || 'home'
+  if (SOURCE_ROUTE_FORBIDDEN_VIEWS.has(requestedView) || url.searchParams.has('scenario') || url.searchParams.has('file')) {
+    return normalizeArchiveRoute({ view: 'home' })
+  }
+  const route = readArchiveRoute(url)
+  return SOURCE_ROUTE_FORBIDDEN_VIEWS.has(route.view) ? normalizeArchiveRoute({ view: 'home' }) : route
+}
+
+export function buildArchiveSourceQuery(route) {
+  if (!route || SOURCE_ROUTE_FORBIDDEN_VIEWS.has(route.view)) return ''
+  const url = buildArchiveUrl('http://localhost/', { ...route, sourceRoute: '' })
+  url.searchParams.delete('from')
+  return url.search
 }
 
 function clean(value) {
@@ -244,6 +268,12 @@ export function normalizeArchiveRoute(input = {}) {
   }
   if (route.view === 'player' && positiveInteger(input.initialStep)) route.initialStep = positiveInteger(input.initialStep)
   if (route.view === 'portal') route.portalFrom = buildPortalReturnQuery(readPortalReturnRoute(input.portalFrom))
+  const ownsSourceRoute = SOURCE_ROUTE_VIEWS.has(route.view) ||
+    (route.view === 'player' && SOURCE_ROUTE_VIEWS.has(route.returnView))
+  if (ownsSourceRoute && clean(input.sourceRoute)) {
+    const sourceRoute = buildArchiveSourceQuery(readArchiveSourceRoute(input.sourceRoute))
+    if (sourceRoute) route.sourceRoute = sourceRoute
+  }
   return route
 }
 
@@ -436,6 +466,7 @@ export function readArchiveRoute(input = null) {
   return normalizeArchiveRoute({
     view: params.get('view'),
     portalFrom: params.get('portal_from'),
+    sourceRoute: params.get('from'),
     reading: params.get('reading'),
     readingRow: params.get('reading_row'),
     readingMode: params.get('reading_mode'),
@@ -539,6 +570,7 @@ export function buildArchiveUrl(input, route) {
   if (normalized.voice) url.searchParams.set('voice', normalized.voice)
   if (normalized.returnView && normalized.returnView !== 'files') url.searchParams.set('return', normalized.returnView)
   if (normalized.parentView) url.searchParams.set('parent', normalized.parentView)
+  if (normalized.sourceRoute) url.searchParams.set('from', normalized.sourceRoute)
   return url
 }
 

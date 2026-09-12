@@ -489,7 +489,9 @@ import { buildIdolStoryOptions, buildIdolStoryPage } from './data/idolCommunicat
 import {
   archiveSectionForRoute,
   buildArchiveBreadcrumbs,
+  buildArchiveSourceQuery,
   buildPortalReturnQuery,
+  readArchiveSourceRoute,
   readPortalReturnRoute,
   onArchivePopState,
   readArchiveRoute,
@@ -540,6 +542,7 @@ function resolveChatName(ch) {
 const {
   view,
   portalFrom,
+  detailSourceRoute,
   readingDocumentId,
   readingRowId,
   readingMode,
@@ -1538,6 +1541,10 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
     currentCardId.value = route.card || ''
     currentEventId.value = route.event || ''
     eventParentView.value = route.parentView || ''
+    detailSourceRoute.value = (
+      ['card_detail', 'event_detail'].includes(route.view) ||
+      (route.view === 'player' && ['card_detail', 'event_detail'].includes(route.returnView))
+    ) ? (route.sourceRoute || '') : ''
     storyDetailParentView.value = (
       route.view === 'story_detail' ||
       (route.view === 'player' && route.returnView === 'story_detail')
@@ -1637,6 +1644,7 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
 }
 
 function goHome() {
+  detailSourceRoute.value = ''
   filterQuery.value = ''
   currentCategoryId.value = ''
   currentCharacterId.value = ''
@@ -2364,6 +2372,10 @@ function openStoryIdol(idolCode) {
 }
 
 function goBackToCards() {
+  if (detailSourceRoute.value) {
+    currentCardId.value = ''
+    return restoreDetailSource(() => commitView('cards'))
+  }
   currentCardId.value = ''
   commitView('cards')
 }
@@ -2507,7 +2519,26 @@ function openIdolEvent(event) {
   openEventDetail(event, 'idol_detail')
 }
 
+function captureDetailSource() {
+  detailSourceRoute.value = buildArchiveSourceQuery(currentArchiveRoute())
+}
+
+function restoreDetailSource(fallback) {
+  const source = detailSourceRoute.value
+  detailSourceRoute.value = ''
+  if (!source) {
+    fallback()
+    return
+  }
+  const pending = applyArchiveRoute(readArchiveSourceRoute(source), { restoring: false })
+  const revision = navigation.getRevision()
+  return pending.then(() => {
+    if (navigation.getRevision() === revision) syncArchiveRoute()
+  })
+}
+
 function openCard(card) {
+  if (view.value !== 'card_detail') captureDetailSource()
   currentCardId.value = card.resource_id
   commitView('card_detail')
 }
@@ -2541,6 +2572,7 @@ function openCardGasha(relation) {
 function openGashaCard(relation) {
   const card = cardMap.value.get(relation?.card_resource_id)
   if (!card) return
+  captureDetailSource()
   currentCategoryId.value = 'cards'
   currentCharacterId.value = card.character_id
   currentCardId.value = card.resource_id
@@ -2550,6 +2582,7 @@ function openGashaCard(relation) {
 
 function openRelatedCard(card) {
   if (!card?.resource_id || !card?.character_id) return
+  if (view.value !== 'card_detail') captureDetailSource()
   currentCategoryId.value = 'cards'
   currentCharacterId.value = card.character_id
   currentCardId.value = card.resource_id
@@ -2587,6 +2620,7 @@ function openHomeEvent(event) {
 
 function openEventDetail(event, parentView = 'story_catalog') {
   if (!event?.event_id) return
+  if (view.value !== 'event_detail') captureDetailSource()
   currentEventId.value = String(event.event_id)
   eventParentView.value = parentView
   commitView('event_detail')
@@ -2594,6 +2628,11 @@ function openEventDetail(event, parentView = 'story_catalog') {
 
 function goBackFromEvent() {
   const parent = eventParentView.value
+  if (detailSourceRoute.value) {
+    currentEventId.value = ''
+    eventParentView.value = ''
+    return restoreDetailSource(() => commitView('story_catalog'))
+  }
   currentEventId.value = ''
   eventParentView.value = ''
   if (parent === 'home') commitView('home')
@@ -2632,6 +2671,7 @@ function playNextEpisode() { return playbackController.next() }
 function openEventCard(relation) {
   const card = cardMap.value.get(relation?.card_resource_id)
   if (!card) return
+  captureDetailSource()
   currentCategoryId.value = 'cards'
   currentCharacterId.value = card.character_id
   currentCardId.value = card.resource_id

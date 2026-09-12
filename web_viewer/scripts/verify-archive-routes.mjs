@@ -2,14 +2,36 @@ import assert from 'node:assert/strict'
 import {
   archiveSectionForRoute,
   buildArchiveBreadcrumbs,
+  buildArchiveSourceQuery,
   buildArchiveUrl,
   normalizeArchiveRoute,
   readArchiveRoute,
+  readArchiveSourceRoute,
 } from '../src/core/archiveRoute.js'
 
 const legacyScenario = readArchiveRoute('http://localhost/?file=1_4_001_01')
 assert.equal(legacyScenario.view, 'player')
 assert.equal(legacyScenario.scenario, '1_4_001_01.json')
+
+const filteredCards = readArchiveRoute('http://localhost/?view=cards&idol=001tom&rarity=SSR&asset_state=has_large&relation_state=event_card&q=冬馬')
+const cardsSource = buildArchiveSourceQuery(filteredCards)
+const sourcedCardUrl = buildArchiveUrl('http://localhost/', {
+  view: 'card_detail',
+  idol: '003hok',
+  card: '003hok_sr01',
+  sourceRoute: cardsSource,
+})
+const sourcedCard = readArchiveRoute(sourcedCardUrl)
+assert.equal(sourcedCard.sourceRoute, cardsSource)
+assert.deepEqual(readArchiveSourceRoute(sourcedCard.sourceRoute), filteredCards)
+const eventSource = buildArchiveSourceQuery(readArchiveRoute(
+  'http://localhost/?view=event_detail&event=430018&parent=card_detail&card=003hok_sr01&idol=003hok&from=' +
+  encodeURIComponent(cardsSource),
+))
+assert.equal(new URL(eventSource, 'http://localhost/').searchParams.has('from'), false, 'detail source cannot recurse')
+for (const badSource of ['https://example.com/', '?view=player&scenario=a.json', '?view=portal', '?view=spine_lab', '?' + 'q'.repeat(8193)]) {
+  assert.equal(readArchiveSourceRoute(badSource).view, 'home')
+}
 
 const invalidFilters = readArchiveRoute('http://localhost/?view=story_catalog&availability=nope&sort=nope&event_scope=mixed_unit_event')
 const episodePlayer = readArchiveRoute('http://localhost/?view=player&scenario=episodes%2F1_4_001_00_b.json&start_step=1&end_step=33&return=story_collection')

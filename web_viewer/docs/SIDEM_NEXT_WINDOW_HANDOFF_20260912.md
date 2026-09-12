@@ -376,3 +376,13 @@ StoryViewer移除5秒ready兜底和重复首步preloadStepState。环境音、BG
 新增verify:story-loading-safety并接入web-viewer-source-gate，包含entry retry/background warm、preload status/cancellation、playback controller、step readiness/background lifecycle及audio session。统一命令、runtime-foundation、archive-async-navigation和reading-playback通过；Vite构建2510 modules，仓库外产物C:/Users/windm/.codex/qa/sidem-loading-safety-b1-20260912/build。Browser5175从活动430018进入episode2：首屏门槛后到5/26；点击下一段出现当前画面等待，再到6/26。1280×900与390×844无横向溢出，390调试值bgScale=spineScale=1.3、翔太scale=0.26，console error 0。
 
 B1在当前安全边界停止扩张。下一步进入NEXT_PHASE_NAVIGATION_PORTAL_PLAN的B2，只读盘点view、入口、来源字段、浏览器history与恢复状态，为N01-N24固定真实fixture；个人/卡片/通信Reader入口仍按用户要求停止。
+
+## 导航B2盘点与第一来源闭环
+
+输入HEAD d27fa61。新增ARCHIVE_NAVIGATION_B2_INVENTORY_20260912.md，盘点30个view、8个Portal section及N01-N24首轮状态。源码级确认N05活动→卡片、N08卡池→卡片、N09偶像→卡片和N24资源→实验页会丢来源；列表滚动/焦点及N18浏览器history仍缺证据。
+
+archiveRoute新增单层from来源query：同源规范化、8192长度限制，拒绝Player/Portal/Reader/Spine/Chibi目标，并主动剥离内层from，不能递归复制history。卡片/活动详情及返回两者的Player可携带该来源；cards/event/gasha/idol进入卡片统一捕获canonical route，返回优先恢复，旧深链沿用cards及event parent兼容。活动进入卡片再进入活动也使用同一解析器，关系链长度保持一。
+
+routes、archive-navigation-state（47 scoped refs、1792组合）、portal-navigation、archive-async-navigation、reading-playback通过。Vite构建3m09s通过，入口547.95kB，既有chunk提示保留，产物C:/Users/windm/.codex/qa/sidem-navigation-source-b1-20260912/build。Browser 1280×900活动430018→北斗报酬卡003hok_sr10，URL带单层event来源；返回恢复原活动。卡片页刷新后再次返回仍恢复活动，console error 0。N05来源/刷新已实测；N06/N07/N08/N09仍需各自Browser旅程，不能只凭共享入口写PASS。
+
+下一批修N24 archive_status→Spine/Chibi来源返回，并执行N18 Portal Back/Forward；之后处理列表滚动/焦点恢复。个人/卡片/通信Reader入口继续停止。

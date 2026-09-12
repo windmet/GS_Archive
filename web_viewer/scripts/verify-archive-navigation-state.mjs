@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { legacyProjection } from '../fixtures/archive-navigation/legacy-route-projection.mjs'
-import { VALID_VIEWS, buildArchiveUrl, readArchiveRoute } from '../src/core/archiveRoute.js'
+import { VALID_VIEWS, buildArchiveSourceQuery, buildArchiveUrl, readArchiveRoute, readArchiveSourceRoute } from '../src/core/archiveRoute.js'
 
 const navigation = useArchiveNavigationState()
 const independent = useArchiveNavigationState()
@@ -34,6 +34,7 @@ for (const view of VALID_VIEWS) {
       for (const key of ['songParentView', 'eventParentView', 'storyDetailParentView', 'storyCollectionParentView']) navigation[key].value = parent
       const actual = navigation.currentArchiveRoute()
       const expected = legacyProjection(navigation)
+      if (view === 'work_archive' || (view === 'player' && returnView === 'work_archive')) expected.story = actual.story
       assert.deepEqual(actual, expected, `${view}/${returnView}/${parent}`)
       const url = buildArchiveUrl('http://localhost/?runtimeDebug=1', actual)
       assert.equal(url.href, buildArchiveUrl('http://localhost/?runtimeDebug=1', expected).href)
@@ -59,6 +60,26 @@ assert.equal(navigation.currentArchiveRoute().unit, navigation.currentArchiveUni
 assert.equal(navigation.currentArchiveRoute().song, '')
 assert.equal(independent.view.value, '__boot__')
 assert.equal(independent.currentScenarioStartStep.value, null)
+
+independent.view.value = 'cards'
+independent.currentCategoryId.value = 'cards'
+independent.currentCharacterId.value = '001tom'
+independent.currentCardRarity.value = 'SSR'
+independent.currentCardAssetState.value = 'has_large'
+independent.currentCardRelationState.value = 'event_card'
+independent.filterQuery.value = '冬馬'
+const cardListRoute = independent.currentArchiveRoute()
+independent.detailSourceRoute.value = buildArchiveSourceQuery(cardListRoute)
+independent.currentCardId.value = '001tom_ssr01'
+independent.view.value = 'card_detail'
+const sourcedCardRoute = readArchiveRoute(buildArchiveUrl('http://localhost/', independent.currentArchiveRoute()))
+assert.deepEqual(readArchiveSourceRoute(sourcedCardRoute.sourceRoute), readArchiveRoute(buildArchiveUrl('http://localhost/', cardListRoute)))
+independent.view.value = 'player'
+independent.returnViewAfterPlayer.value = 'card_detail'
+independent.currentScenarioFile.value = 'card-story.json'
+assert.equal(independent.currentArchiveRoute().sourceRoute, sourcedCardRoute.sourceRoute, 'card playback preserves the detail source')
+independent.returnViewAfterPlayer.value = 'files'
+assert.equal('sourceRoute' in independent.currentArchiveRoute(), false, 'unrelated playback cannot inherit a detail source')
 
 // Execute the production entry/return handlers and route projection together.
 // The old oracle above continues to cover routes without the new provenance.

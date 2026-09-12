@@ -5,6 +5,7 @@ import { ref } from 'vue'
 export function useArchiveNavigationState() {
   const view = ref('__boot__')
   const portalFrom = ref('')
+  const detailSourceRoute = ref('')
   const readingDocumentId = ref('')
   const readingRowId = ref('')
   const readingMode = ref('original')
@@ -80,6 +81,10 @@ export function useArchiveNavigationState() {
       (preservesEventContext && eventParentView.value === 'unit_detail')
     return {
       view: view.value,
+      ...((['card_detail', 'event_detail'].includes(view.value) ||
+          (view.value === 'player' && ['card_detail', 'event_detail'].includes(returnViewAfterPlayer.value))) &&
+          detailSourceRoute.value.startsWith('?')
+        ? { sourceRoute: detailSourceRoute.value } : {}),
       ...(view.value === 'player' && currentScenarioInitialStep.value ? { initialStep: currentScenarioInitialStep.value } : {}),
       homeIdol: view.value === 'home' ? homeSelectedId.value : '',
       homeCue: view.value === 'home' ? homeSelectedCue.value : '',
@@ -134,6 +139,7 @@ export function useArchiveNavigationState() {
   return {
     view,
     portalFrom,
+    detailSourceRoute,
     readingDocumentId,
     readingRowId,
     readingMode,

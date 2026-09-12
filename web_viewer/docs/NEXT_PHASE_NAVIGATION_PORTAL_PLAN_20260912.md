@@ -119,3 +119,7 @@ StoryViewer删去5秒兜底ready与重复首步warmup。环境音、BGM、voice�
 新增统一`verify:story-loading-safety`并接入source gate，覆盖入口critical/retry、后台预热、预载状态/取消、实例隔离、当前步人物/背景门槛、暂停/恢复、背景生命周期和音频session。真实Browser从活动430018进入episode2：首屏等待后显示5/26；点击下一段时再次显示“正在准备当前画面…”，随后才显示6/26。1280×900和390×844均无横向溢出，390画面中背景与翔太均为1.3倍，console error为0。构建产物位于仓库外`C:/Users/windm/.codex/qa/sidem-loading-safety-b1-20260912/build`。
 
 B1当前安全门槛到此冻结；后续缓存复用、弱网和长稳不作为B2开工前置。下一步按B2只读盘点所有view/入口/现有来源字段，产出24条旅程的fixture和差异表，再决定最小导航模型改动。
+
+B2首轮盘点见[ARCHIVE_NAVIGATION_B2_INVENTORY_20260912.md](./ARCHIVE_NAVIGATION_B2_INVENTORY_20260912.md)。已确认N05/N08/N09和N24为源码级断点；第一实现批从卡片详情的单层、有界来源路由开始，覆盖活动/卡池/偶像进入卡片及既有筛选列表返回。
+
+第一实现批已完成N05来源/刷新Browser闭环，并让N06/N07/N08/N09共享同一单层来源合同；详见B2 inventory执行结果。下一批先修N24 archive_status→Spine/Chibi返回，再执行N18 Portal Back/Forward与详情列表滚动/焦点恢复审计。
