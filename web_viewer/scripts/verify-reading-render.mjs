@@ -16,6 +16,7 @@ try {
       { document_id: 'b', source_file: 'episodes/b.json', status: 'unsupported' }],
   }))
   assert.ok(eventHtml.includes('aria-label="阅读 Ready"'))
+  assert.ok(!eventHtml.includes('class="event-logo"'), 'promotional banner must not gain a duplicate late-loading logo')
   assert.ok(!eventHtml.includes('aria-label="阅读 Branch"'), 'unsupported episodes retain only their playback entry')
   const { default: Work } = await server.ssrLoadModule('/src/components/archive/ArchiveWorkStory.vue')
   for (const initialFile of ['', 'line.json']) {

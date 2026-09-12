@@ -308,3 +308,11 @@ verify-story-spine-order覆盖三人桥段、相同深度稳定顺序及源数�
 ## 運命光年ep2入口资源修复
 
 入口失败来自image_icon=01jup/layer=2：预载及舞台都调用偶像头像路径image_chara_icon_01jup.png，实际01jup为组合代码，本地已有units/logos/image_unit_logo_01jup.png。新增共用getSceneIconUrl，组合代码解析为unit logo，偶像代码仍为chara icon；必要资源门槛不放宽，原编译文件不修改。scene-icon解析回归、asset-plan与entry-retry通过。Browser实际打开episodes/1_3_30018_01_c.json进入5/26翔太对白，Jupiter标志成功显示，缺失图标不再阻断；未宣称ep2全部镜头/坐标通过，目前此镜头有原有取景裁切待加载/舞台路线继续复核。
+
+## 活动页图像链路修复
+
+红框后加载图标是ArchiveEventDetail在完整宣传banner上又绝对定位一个event-logo图片，非浏览器重复下载导致；移除该独立img、计算URL与样式，不改变banner本身。北斗回退头像来自正式registry只登记冬马/翔太：本地RAW/asset/image_chara_event_story_visuals.unity3d包含003hok Sprite，使用现有candidate提取及promotion脚本完成正式登记，不用临时候选URL或换脸替代。源bundle SHA b2c586614b404c0fffb6103ba331a8700f6b1f9089880d228adf5cc8fd10f8e8，Sprite path_id -3495293882974298537，输出594×796，PNG SHA 61859ca8ca805e662d97b9c82d6b9739acfc8e1979c9c704439325f00577a478。备份.analysis/raw-migration/character-image-backups/event-story-hokuto-20260912。
+
+正式PNG、registry及tracked-binary清单一并提交。RAW promotion验证（53个正式登记）与185个PNG库存校验通过，SSR覆盖无重复logo，构建2510 modules通过。Browser430018活动页确认event-logo节点为0，三人event-story-visual均complete且naturalWidth>0，截图北斗完整立绘与另外两人一致。ep2修复提交d5149b0的TLS推送失败已通过单次openssl后端重试成功，不改变全局Git配置或关闭证书校验。
+
+个人/卡片/通信新增阅读入口按用户指示停止。下一步回到加载时序主线：critical与后台预热生命周期分离，以及实际ep2镜头裁切需单独复核；上述4个具体问题按三批完成，不将入口可播放扩写成所有演出/时序通过。

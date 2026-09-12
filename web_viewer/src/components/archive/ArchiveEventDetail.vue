@@ -3,7 +3,6 @@
     <section class="event-identity">
       <div class="event-visual">
         <img class="event-banner" :src="getEventBannerUrl(event.event_code)" :alt="event.title" />
-        <img class="event-logo" :src="eventLogoUrl" alt="" />
       </div>
       <div class="event-summary">
         <div class="event-kicker">
@@ -182,7 +181,6 @@ const props = defineProps({
 const emit = defineEmits(['read', 'retry-reading', 'play', 'play-episode', 'open-card', 'open-idol', 'open-unit'])
 const readingByFile = computed(() => new Map(props.readingEntries.filter(entry => entry.status === 'ready').map(entry => [entry.source_file, entry])))
 
-const eventLogoUrl = computed(() => `/assets/events/logos/image_event_logo_${props.event?.event_code}.png`)
 const storyVisualByIdol = computed(() => Object.fromEntries(
   props.idols.map(idol => [
     idol.idol_code,
@@ -278,7 +276,7 @@ function formatDateTime(timestamp) {
 .event-detail { height: 100%; overflow-y: auto; background: #f5f7f8; color: #24313a; }
 .event-identity { display: grid; grid-template-columns: minmax(420px, 1.4fr) minmax(280px, .6fr); gap: 28px; padding: 26px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #dfe5e8; background: #fff; }
 .event-visual { position: relative; align-self: start; overflow: hidden; aspect-ratio: 940 / 510; border: 1px solid #e1e6e8; border-radius: 6px; background: #e9eef0; }
-.event-banner { display: block; width: 100%; height: 100%; object-fit: contain; }.event-logo { position: absolute; left: 20px; bottom: 16px; width: min(38%, 240px); max-height: 38%; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,.28)); }
+.event-banner { display: block; width: 100%; height: 100%; object-fit: contain; }
 .event-summary { min-width: 0; padding-top: 4px; }.event-kicker { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; color: #16857d; font-size: .62rem; font-weight: 800; }.event-kicker small { padding: 3px 5px; border-radius: 3px; background: #eaf7f5; color: #277870; font-size: .53rem; }.event-summary h2 { margin: 11px 0 18px; font-size: 1.18rem; line-height: 1.45; }.event-summary dl { margin: 0; }.event-summary dl div { display: grid; grid-template-columns: 70px minmax(0,1fr); gap: 10px; padding: 7px 0; border-bottom: 1px solid #edf0f2; font-size: .66rem; }.event-summary dt { color: #849097; }.event-summary dd { margin: 0; color: #36474f; font-variant-numeric: tabular-nums; }
 .story-band { display: flex; align-items: center; justify-content: space-between; gap: 28px; padding: 22px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #d7e6e4; background: #eaf6f4; }.story-band > div { min-width: 0; }.story-band > div > span { color: #147d76; font-size: .58rem; font-weight: 800; }.story-band h3 { margin: 7px 0 5px; font-size: .88rem; }.story-band p { max-width: 800px; margin: 0; color: #405159; font-size: .68rem; line-height: 1.75; white-space: pre-line; }.story-actions { display: grid; flex: 0 0 auto; gap: 7px; min-width: 174px; }.story-actions > button,.story-actions > a { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 8px 13px; border: 1px solid #158f87; border-radius: 6px; background: #158f87; color: #fff; cursor: pointer; font: inherit; font-size: .68rem; text-decoration: none; }.story-actions > button:disabled { border-color: #cbd3d6; background: #dfe5e7; color: #78848a; cursor: not-allowed; }.story-actions > a { justify-content: flex-start; border-color: #bedbd8; background: #fff; color: #166f69; }.story-actions > a span { display: flex; flex-direction: column; gap: 2px; }.story-actions > a strong { font-size: .64rem; }.story-actions > a small { color: #63817e; font-size: .52rem; }
 .detail-section { padding: 22px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #e1e6e8; background: #fff; }.detail-section + .detail-section { margin-top: 12px; }.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 14px; }.section-heading h3 { margin: 0; font-size: .86rem; }.section-heading p { margin: 4px 0 0; color: #849097; font-size: .59rem; }.raw-badge,.derived-badge { flex: 0 0 auto; padding: 4px 7px; border-radius: 4px; font-size: .58rem; font-weight: 700; }.raw-badge { background: #e5f6f3; color: #177970; }.derived-badge { background: #fff2d6; color: #8b6413; }
