@@ -414,3 +414,11 @@ N02/N10也已在1280×900与390×844完成真实长列表返回验收：活动43
 输入HEAD 9d7f8c1。N14实测冬马Work切换至翔太，选择“场景台词”并打开`1_5_002sht_1_5_002_00_0.json` Reader；返回恢复`idol=002sht`、场景台词tab和来源文件。N15以生日剧情`1_x_001tom_1_7_001_01.json`进入Player，返回恢复原详情，再返回精确恢复`story_type=birthday&story_mode=search`的152项目录。两条旅程无横向溢出或console error。
 
 N15页面同时暴露剧情详情CAST错误使用中文本地化名的问题。现仅将`ArchiveStoryDetail`的角色命名函数切换为`idolSourceName`，冬马恢复master-data源名`天ヶ瀬 冬馬`，不改变其他本地化界面。routes、archive-presentation、birthday-story-domain-landing与work-story-index通过；生产构建2m55s通过，入口552.28kB，产物`C:/Users/windm/.codex/qa/sidem-navigation-work-story-20260912/build`，保留既有chunk提示。下一批执行N16/N17队列和Portal来源旅程，再处理N01/N23尚缺的逐页Browser证据；个人/卡片/通信Reader入口仍停止。
+
+## 导航N16/N17与103kur静态剪影修复
+
+输入HEAD `a5f97b2`。N16真实Browser从Jupiter剧情集合第一章进入episode1 `1_1_001_01_a`（2–17），完成后用“下一话”进入episode2 `1_1_001_01_b`（1–28）；unit story的type/section/story、return及队列范围未漂移，返回后原章保持展开。N17从冬马12项SR列表末项`001tom_sr13`进入详情，打开Portal并刷新；关闭精确回详情，详情再返回精确恢复SR筛选、末项焦点与约1106/1106滚动。两条旅程无横向溢出或console error。卡片详情同系列角色名改用`idolSourceName`，源名与其余档案入口一致。
+
+episode2最初报告4项预载失败：`103kur` placement、`103kur_001_00` atlas/skeleton/mouth不存在，而Vite返回的HTML fallback被继续当作JSON/atlas解析，HTML行又变成假纹理请求。本地已有`assets/silhouette/103kur_001_00.png`，故把该模型加入显式静态剪影清单；计划解析只在全部use均指向剪影bundle时排除该角色的placement/mouth预热，避免影响同一角色可能共用的真实Spine依赖。`Preloader`现在拒绝HTML内容类型，`SpineAtlasPages`只接受PNG页名；本地725个atlas扫描无违规。Browser重载后失败横幅消失，12/28的黒井社長显示为完整黑色剪影，左上角没有社长/队标常驻，console error为0。
+
+验证通过：card filters、portal/navigation/route/playback，story config/spine preload、atlas、silhouette、完整`verify:story-loading-safety`、runtime foundation、stage loading、plan preparation及asset plan。生产构建2511 modules、3m01s通过，入口`index-C1MBxdDq.js` 552.94kB，产物`C:/Users/windm/.codex/qa/sidem-navigation-queue-loading-20260912/build`，仅保留既有chunk提示。下一批优先完成N01/N23的真实Browser矩阵；个人/卡片/通信Reader入口继续停止，整体缓存/媒体长稳仍未宣称完成。

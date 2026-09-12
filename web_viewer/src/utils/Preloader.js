@@ -9,6 +9,14 @@ import { assetPriority, priorityRank } from '../../shared/story/StoryAssetPriori
 
 const TIMEOUT_MS = 10000 // 10s per asset max
 
+function rejectHtmlResponse(response, url) {
+  const contentType = response.headers.get('content-type') || ''
+  if (/^(?:text\/html|application\/xhtml\+xml)(?:;|$)/i.test(contentType.trim())) {
+    response.body?.cancel()
+    throw new Error(`Unexpected HTML response: ${url}`)
+  }
+}
+
 /**
  * Owns the task timeout and abort signal for the complete body/image load.
  * Cancellation rejects promptly even when an adapter cannot stop its work.
@@ -185,6 +193,7 @@ export class Preloader {
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${url}`)
       }
+      rejectHtmlResponse(response, url)
       const body = await response.blob()
       if (!body.size) throw new Error(`Empty response: ${url}`)
       return 'fetched'
@@ -195,6 +204,7 @@ export class Preloader {
     return withTimeout(async taskSignal => {
       const response = await fetch(url, { signal: taskSignal })
       if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`)
+      rejectHtmlResponse(response, url)
       const bytes = await response.arrayBuffer()
       if (!bytes.byteLength) throw new Error(`Empty atlas: ${url}`)
       const hash = await crypto.subtle.digest('SHA-256', bytes)
@@ -215,6 +225,7 @@ export class Preloader {
           if (index + 1 < task.urls.length) continue
           throw new Error(`HTTP ${response.status}: ${url}`)
         }
+        rejectHtmlResponse(response, url)
         validateStoryConfig(task.kind, await response.json())
         task.url = url
         return

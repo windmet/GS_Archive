@@ -22,7 +22,7 @@ export function readSpineAtlasPages(atlasText) {
     if (beforeFirstPage && line.includes(':')) continue
     if (!needPage) continue
     if (/[\\:?#%\x00-\x1f]/.test(line) || line.startsWith('/') ||
-        line.split('/').some(part => !part || part === '.' || part === '..')) {
+        line.split('/').some(part => !part || part === '.' || part === '..') || !/\.png$/i.test(line)) {
       throw new TypeError(`Unsafe atlas page: ${line}`)
     }
     if (seen.has(line)) throw new TypeError(`Duplicate atlas page: ${line}`)

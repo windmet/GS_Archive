@@ -12,7 +12,8 @@ const parserCalls = []
 await new Promise(resolve => new InstalledTextureAtlas('a.png\nsize: 32,32\nfilter: Linear,Linear\n\nb.png\nsize: 32,32\nfilter: Linear,Linear\n',
   (name, complete) => { parserCalls.push(name); complete({ valid: true, realWidth: 32, realHeight: 32 }) }, resolve))
 assert.deepEqual(parserCalls, ['a.png', 'b.png'], 'page grammar agrees with the installed runtime parser')
-for (const bad of ['', '../page.png\nsize: 1,1', '/page.png', 'page.png\n\npage.png']) assert.throws(() => readSpineAtlasPages(bad))
+for (const bad of ['', '../page.png\nsize: 1,1', '/page.png', 'page.png\n\npage.png',
+  '<!DOCTYPE html>\n<html>']) assert.throws(() => readSpineAtlasPages(bad))
 let constructed = 0, binaryReads = 0
 const loaded = [], resolved = [], bound = []
 const fakeTexture = file => ({ baseTexture: { file } })

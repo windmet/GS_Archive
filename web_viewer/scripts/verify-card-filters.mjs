@@ -48,4 +48,7 @@ assert.equal(filterArchiveCards(fixture)[0], fixture[0], 'filter must retain sou
 const cardHeading = app.match(/const currentCardCharacterName = computed\(\(\) => \{[^]*?\n\}\)/)?.[0] || ''
 assert.ok(cardHeading.includes('idolSourceName(id)'), 'card archive heading keeps the master-data idol name')
 assert.equal(cardHeading.includes('idolDisplayName(id)'), false, 'card archive heading does not localize the idol name independently of its switcher')
+const seriesCards = app.match(/const currentSeriesCards = computed\(\(\) => \{[^]*?\n\}\)/)?.[0] || ''
+assert.ok(seriesCards.includes('idolSourceName(card.character_id)'), 'card detail series keeps master-data idol names')
+assert.equal(seriesCards.includes('idolDisplayName(card.character_id)'), false, 'card detail series does not mix localized names with source identity')
 console.log(`Card filters: ${cards.length} normalized cards, ${cases} combinations, hash ${hash}; missing data, search, relation presence and input preservation passed`)

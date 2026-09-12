@@ -56,8 +56,8 @@
 | N13 | PASS | Jupiter→活动430018→Reader→Player逐层返回Jupiter已实测，完整来源已修复并锁定 |
 | N14 | PASS | Work切换翔太及场景台词tab后进入Reader，返回恢复偶像、tab与来源文件 |
 | N15 | PASS | 生日剧情详情→Player→详情→生日搜索目录已实测，详情CAST保持源名 |
-| N16 | PASS | episode queue下一集不改return已有回归 |
-| N17 | PASS | `portal_from`完整路由、刷新及迟到close抑制已有回归 |
+| N16 | PASS | Jupiter第一章episode1→下一话episode2→集合已实测，type/section/story/return与展开章保持 |
+| N17 | PASS | 冬马SR末项→详情→Portal→刷新→关闭→详情→列表已实测，完整路由、1106px滚动与焦点恢复 |
 | N18 | PASS | Portal→歌曲的Browser Back/Forward、关闭Portal恢复完整筛选来源已实测 |
 | N19 | PASS | card深链required/fallback已有route回归 |
 | N20 | PASS | event/song/gasha required/fallback已有route回归 |
@@ -131,3 +131,13 @@ N13实测发现旧实现只在Player URL暂时保留活动`parent=unit_detail`�
 输入HEAD `9d7f8c1`。N14从冬马工作档案切换至`002sht / 御手洗 翔太`，选择“场景台词”并打开`1_5_002sht_1_5_002_00_0.json` Reader；返回后仍是翔太工作档案，场景台词tab保持激活，来源文件保留在规范路由中。N15使用生日剧情`1_x_001tom_1_7_001_01.json / 冬馬さん、お誕生日おめでとうございます！`，详情进入Player后返回原详情，再由详情返回`story_type=birthday&story_mode=search`的152项检索目录；筛选来源、路由和页面状态保持，无横向溢出或console error。
 
 Browser核对同时发现剧情详情CAST仍使用界面本地化名，显示“天濑冬马”，与卡片页及master-data源名不一致。`ArchiveStoryDetail`现只在CAST入口改用`idolSourceName`，显示恢复为`天ヶ瀬 冬馬`；其他需要本地化的界面不受影响。routes、archive-presentation、birthday-story-domain-landing和work-story-index通过；生产构建2m55s通过，入口`index-BnDyiRIQ.js` 552.28kB，保留既有chunk提示，产物位于`C:/Users/windm/.codex/qa/sidem-navigation-work-story-20260912/build`。下一批继续N16/N17队列与Portal来源旅程，再回收N01/N23剩余Browser缺口。
+
+## N16/N17队列、Portal来源与103kur加载修复
+
+输入HEAD `a5f97b2`。N16从Jupiter剧情集合第一章打开episode1 `episodes/1_1_001_01_a.json`（2–17），播放完成后点击“下一话”进入episode2 `episodes/1_1_001_01_b.json`（1–28）；`story_type=unit_story`、`story_section=1`、章节文件、`return=story_collection`及队列范围均保持。返回集合后第一章仍展开，console error为0。
+
+N17从冬马SR的12项列表滚至末项`001tom_sr13`（约1106/1106），进入卡片详情，再打开Portal并刷新。关闭Portal精确恢复原卡片详情；详情返回精确恢复`idol=001tom&rarity=SR`列表、`card:001tom_sr13`焦点及约1106px内部滚动，无横向溢出或console error。卡片详情的同系列角色名同时改用master-data源名，Browser确认冬马、翔太、北斗、FRAME及Altessimo均保持日文源名。
+
+该旅程还暴露episode2的`103kur_001_00 / 黒井社長`只有正式剪影PNG、没有Spine bundle；旧预载会继续请求不存在的placement/mouth/atlas，Vite的HTML fallback又被当成JSON或atlas文本，最终产生4项失败。现将该模型加入审计过的静态剪影清单；只在其全部use均属于剪影bundle时排除人物placement/mouth预热，共用真实Spine人物的依赖仍保留。预载器拒绝HTML响应，atlas解析器也只接受`.png`页名，避免HTML标签再变成假纹理URL。Browser重载episode2后失败横幅消失，推进至12/28显示黒井社長全身黑色剪影，左上角没有社长/组合小图标，console error为0。
+
+`verify:card-filters`、portal/navigation/route/playback回归、story config/spine/atlas/silhouette、`verify:story-loading-safety`、runtime/stage/plan/asset-plan均通过；本地725个atlas页全部符合PNG合同。生产构建2511 modules、3m01s通过，入口`index-C1MBxdDq.js` 552.94kB，保留既有chunk提示，产物在`C:/Users/windm/.codex/qa/sidem-navigation-queue-loading-20260912/build`。N16/N17完成；下一批处理N01/N23尚缺的真实Browser覆盖。个人、卡片、通信不新增Reader入口。

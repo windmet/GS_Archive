@@ -1202,7 +1202,7 @@ const currentSeriesCards = computed(() => {
   if (!seriesId) return []
   return [...cardMap.value.values()]
     .filter(card => card.release_series?.series_id === seriesId)
-    .map(card => ({ ...card, character_name: idolDisplayName(card.character_id) }))
+    .map(card => ({ ...card, character_name: idolSourceName(card.character_id) }))
 })
 
 const currentCardCharacterName = computed(() => {

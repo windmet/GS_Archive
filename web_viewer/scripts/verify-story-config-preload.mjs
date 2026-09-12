@@ -18,11 +18,12 @@ const planFor = prefix => {
 const requests = []
 const server = http.createServer((request, response) => {
   requests.push(request.url)
-  response.setHeader('Content-Type', 'application/json')
   const prefix = request.url.match(/idol_mouth_stg_(.+)\.json$/)?.[1]
+  response.setHeader('Content-Type', prefix === 'html' ? 'text/html; charset=utf-8' : 'application/json')
   if (prefix === 'slow') return
   if (prefix === 'missing') { response.writeHead(404); response.end('{}'); return }
   if (prefix === 'broken') { response.end('{'); return }
+  if (prefix === 'html') { response.end('<!DOCTYPE html><title>fallback</title>'); return }
   if (prefix === 'offline') { response.destroy(); return }
   if (prefix) { response.end(JSON.stringify({ mouthes: prefix === 'empty' ? [] : [{ openMouthScale: 3 }] })); return }
   const body = request.url.includes('/other/') ? { positionY: -600 }
@@ -36,7 +37,7 @@ const base = `http://127.0.0.1:${server.address().port}`
 const originalFetch = globalThis.fetch
 globalThis.fetch = (url, options) => originalFetch(new URL(url, base), options)
 try {
-  for (const prefix of ['own', 'missing', 'broken', 'empty', 'offline']) {
+  for (const prefix of ['own', 'missing', 'broken', 'html', 'empty', 'offline']) {
     const first = requests.length
     const result = await Preloader.preloadScenario(planFor(prefix))
     const task = result.status.tasks.find(task => task.kind === 'model-mouth')
@@ -48,6 +49,7 @@ try {
     assert.deepEqual(plannedRequests, consumerRequests, `${prefix}: executor follows actual consumer fallback boundary`)
     const success = ['own', 'missing'].includes(prefix)
     assert.equal(task.state, success ? 'json-parsed' : 'failed')
+    if (prefix === 'html') assert.match(task.error, /Unexpected HTML response/)
     assert.equal(!!spine._mouthData, success)
     assert.equal(result.status.succeeded, success ? 6 : 5)
     assert.equal(result.status.pending, 1, 'logical group is not counted as another parsed config')

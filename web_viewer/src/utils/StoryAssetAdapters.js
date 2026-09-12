@@ -49,7 +49,10 @@ export function storyAssetAdapter(asset) {
  * failed Spine parsing is not evidence that another model is PNG-only. */
 export function resolveStaticSpineModels(input) {
   const plan = structuredClone(input)
-  for (const bundle of plan.assets.filter(asset => asset.kind === 'spine-bundle' && asset.dependencyState === 'pending' && isSilhouetteOnlyModel(asset.id))) {
+  const silhouetteBundles = plan.assets.filter(asset => asset.kind === 'spine-bundle' &&
+    asset.dependencyState === 'pending' && isSilhouetteOnlyModel(asset.id))
+  const silhouetteUses = new Set(silhouetteBundles.flatMap(bundle => bundle.uses.map(use => JSON.stringify(use))))
+  for (const bundle of silhouetteBundles) {
     for (const key of bundle.dependencies) {
       const asset = plan.assets.find(asset => asset.key === key)
       asset.required = false
@@ -64,6 +67,19 @@ export function resolveStaticSpineModels(input) {
     bundle.dependencyState = 'complete'
     bundle.pending = null
     bundle.modelKind = 'silhouette'
+  }
+  // Static silhouettes are positioned directly from the scenario state and
+  // have no placement or mouth rig to warm. Keep a shared actor dependency
+  // when that actor also uses a real Spine model elsewhere in the scenario.
+  for (const asset of plan.assets.filter(asset => ['idol-placement', 'idol-mouth'].includes(asset.kind))) {
+    if (!asset.uses.length || !asset.uses.every(use => silhouetteUses.has(JSON.stringify(use)))) continue
+    asset.required = false
+    asset.runtimeDisabled = asset.kind === 'idol-placement'
+      ? 'silhouette-has-no-placement-config'
+      : 'silhouette-has-no-mouth-rig'
+    asset.dependencies = []
+    asset.dependencyState = 'complete'
+    asset.pending = null
   }
   plan.dependenciesComplete = !plan.unresolved.length && plan.assets.every(asset => asset.dependencyState === 'complete')
   return plan

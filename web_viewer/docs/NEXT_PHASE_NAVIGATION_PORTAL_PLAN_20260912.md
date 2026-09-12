@@ -137,3 +137,11 @@ N03/N04已以Jupiter→`unmikn`歌曲、Jupiter→活动430018完成Browser验�
 N11以`drv999`→额外剧情602→Player完成逐层返回原集合与歌曲；N12主线Reader的`1_4_001_01_d / step-8 / bilingual`在Player返回后恢复版本、行、焦点与正文滚动。N13实测发现Player返回Reader时会丢活动的Jupiter父来源，现已让活动Reader/Player共同序列化并恢复`category/unit/event/parent/from`，真实Browser可从Reader逐层返回活动430018和Jupiter。相关reading、routes、navigation-state、async回归及生产构建通过。下一批执行N14 Work选择态与N15详情→Player来源旅程。
 
 N14从工作档案切换翔太、进入“场景台词”Reader后返回，偶像、tab与来源文件均恢复。N15从生日剧情详情进入Player并逐层返回原详情及生日搜索目录，152项检索来源保持。剧情详情CAST另由本地化名改为master-data源名，Browser确认冬马显示为`天ヶ瀬 冬馬`。routes、archive-presentation、生日剧情域与工作剧情索引回归通过；生产构建产物为`C:/Users/windm/.codex/qa/sidem-navigation-work-story-20260912/build`。下一批执行N16/N17，再处理N01/N23剩余Browser证据。
+
+## 导航N16/N17与103kur剪影加载闭环
+
+输入HEAD `a5f97b2`。N16已用Jupiter第一章episode1（2–17）播放完成后的“下一话”进入episode2（1–28），确认unit story身份、章节、return和队列范围均保持，返回后原章仍展开。N17已用冬马SR列表末项`001tom_sr13`完成列表→详情→Portal→刷新→关闭→详情→列表，原筛选、约1106px滚动与实体焦点全部恢复。两条Browser旅程无横向溢出或console error，N16/N17维持PASS；下一批只回收N01/N23的逐页Browser缺口。
+
+N16同时发现`103kur_001_00`没有Spine、只有正式剪影，但旧计划仍预载placement/mouth/atlas；开发服务器HTML fallback又会被JSON/atlas解析，形成4项假资源失败。现在按审计清单把103kur解析为静态剪影，仅排除其专属placement/mouth预热；预载统一拒绝HTML响应，atlas只接受PNG页。本地725个atlas通过新合同。Browser episode2推进至12/28显示完整黒井社長剪影、无左上角身份图标、无失败横幅或console error。卡片详情同系列名单也统一改用源名。
+
+加载安全、runtime、stage、plan、asset-plan、config/spine/atlas/silhouette及导航相关回归通过；生产构建2511 modules、3m01s通过，产物`C:/Users/windm/.codex/qa/sidem-navigation-queue-loading-20260912/build`，入口552.94kB，保留既有chunk提示。个人、卡片、通信新增Reader入口继续停止。

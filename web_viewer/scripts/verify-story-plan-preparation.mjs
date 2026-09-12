@@ -37,13 +37,14 @@ assert.equal(result.status.tasks[2].uses[0].cueId, 'bg')
 
 // Native loaders stay separate from logical unimplemented / disabled entries.
 for (const [kind, id, expected] of [
-  ['image-icon', '047shu', '/assets/idols/icons/image_chara_icon_047shu.png'],
   ['mobile-icon', '047shu', '/assets/idols/mobile_icons/image_chara_mobile_icon_047shu.png'],
   ['idol-mobile-background', '047shu', '/assets/idols/mobile_bg/image_chara_mobile_background_047shu.png'],
   ['unit-mobile-background', 'c_first', '/assets/units/mobile_bg/image_unit_mobile_background_c_first.png'],
   ['stamp', 'stamp', '/assets/stamps/stamp.png'], ['emoji', 'emoji', '/assets/emojis/emoji.png'],
   ['effect-texture', 'fx_adv_rain', '/data/fx_extracted/unity_fx_adv_rain.png'],
 ]) assert.equal(storyAssetAdapter({ kind, id }).url, expected)
+assert.equal(storyAssetAdapter({ kind: 'image-icon', id: '047shu' }).state, 'deferred',
+  'retired scene identity metadata must not become a preload request')
 assert.equal(storyAssetAdapter({ kind: 'spine-skeleton', id: '102sha_001_00' }).state, 'deferred')
 assert.equal(storyAssetAdapter({ kind: 'effect-texture', id: 'fx_adv_flare_01', required: false, runtimeDisabled: 'disabled' }).state, 'excluded')
 assert.equal(storyAssetAdapter({ kind: 'toString', id: 'unknown' }).state, 'deferred')
