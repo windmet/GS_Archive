@@ -5,6 +5,7 @@ import { filterArchiveCards } from '../src/data/cardFilters.js'
 import { buildCardMap } from '../src/data/archiveSelectors.js'
 
 const read = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'))
+const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const cards = [...buildCardMap(read('../public/data/masterdata/card_index.json')).values()]
 const manifest = read('../public/data/archive_manifest.json')
 const gasha = read('../public/data/masterdata/gasha_index.json')
@@ -44,4 +45,7 @@ assert.deepEqual(filterArchiveCards(fixture, { relationState: 'unrelated' }), [f
 assert.deepEqual(filterArchiveCards(fixture, { relationState: 'event_card', eventRelations: { one: [] } }), [fixture[0]], 'existing empty relation array remains a present relation')
 assert.equal(JSON.stringify(fixture), before)
 assert.equal(filterArchiveCards(fixture)[0], fixture[0], 'filter must retain source object identity and order')
+const cardHeading = app.match(/const currentCardCharacterName = computed\(\(\) => \{[^]*?\n\}\)/)?.[0] || ''
+assert.ok(cardHeading.includes('idolSourceName(id)'), 'card archive heading keeps the master-data idol name')
+assert.equal(cardHeading.includes('idolDisplayName(id)'), false, 'card archive heading does not localize the idol name independently of its switcher')
 console.log(`Card filters: ${cards.length} normalized cards, ${cases} combinations, hash ${hash}; missing data, search, relation presence and input preservation passed`)

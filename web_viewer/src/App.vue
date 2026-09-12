@@ -1207,7 +1207,7 @@ const currentSeriesCards = computed(() => {
 
 const currentCardCharacterName = computed(() => {
   const id = currentCharacterId.value
-  return idolDisplayName(id) || 'Cards'
+  return idolSourceName(id) || 'Cards'
 })
 
 const currentIdolProfile = computed(() => buildIdolProfile(currentCharacterId.value, idolUnitData.value, archiveManifestData.value))

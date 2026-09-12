@@ -127,3 +127,5 @@ B2首轮盘点见[ARCHIVE_NAVIGATION_B2_INVENTORY_20260912.md](./ARCHIVE_NAVIGAT
 N24的Spine来源/刷新返回已修复并实测，Spine/Chibi互跳沿用同一资源来源。下一步转入N18 Portal Back/Forward和列表滚动/焦点恢复。
 
 N18已完成真实Browser的Portal→歌曲→Back/Forward及关闭Portal恢复筛选来源。列表恢复第一批也已落地：导航层用规范路由与history entry双键保存内部滚动和实体焦点，卡片、活动/剧情、歌曲、卡池目录接入统一标记；N07筛选路线、桌面和390px长列表均已实测。下一批不再修改恢复模型，直接执行N02活动、N10歌曲及N06/N08/N09的具体Browser旅程，发现域内缺口再回对应owner修复。
+
+N02活动目录和N10歌曲目录现已在1280×900与390×844完成长列表滚动/焦点恢复，歌曲scope/query路线也已实测，二者改为PASS。卡片目录偶像标题同时改回master-data源名，`天ヶ瀬 冬馬`与切换器保持一致。下一批直接补N06/N08/N09关系旅程。

@@ -42,7 +42,7 @@
 | 旅程 | 首轮状态 | 证据/缺口 |
 | --- | --- | --- |
 | N01 | PARTIAL | 集合/Player return已有测试；Portal与旧主线位置待Browser |
-| N02 | PARTIAL | 活动筛选字段保留；列表滚动与焦点未恢复 |
+| N02 | PASS | 活动筛选、长列表滚动与活动实体焦点在桌面/390px返回后恢复 |
 | N03 | PASS | unit→song parent及unit实体已编码 |
 | N04 | PASS | unit→event parent及unit实体已编码 |
 | N05 | FAIL | `openEventCard`清空event后进入card，`goBackToCards`固定返回cards |
@@ -50,7 +50,7 @@
 | N07 | PASS | cards筛选、搜索、滚动与实体焦点按规范路由/history entry恢复；桌面与390px Browser已验收 |
 | N08 | FAIL | `openGashaCard`进入card后固定返回cards |
 | N09 | FAIL | idol关联card进入详情后固定返回cards |
-| N10 | PARTIAL | scope/query保留；位置/焦点未恢复 |
+| N10 | PASS | 歌曲scope/query、长列表滚动与歌曲实体焦点在桌面/390px返回后恢复 |
 | N11 | PASS | song→collection parent、Player return已有合同 |
 | N12 | PASS | Reader row/revision/range往返已有回归 |
 | N13 | PASS | event Reader/Player来源实体已有回归 |
@@ -91,3 +91,9 @@ Vite构建通过，入口`index-BIIisoxJ.js` 547.95kB，保留既有chunk提示�
 N07真实Browser使用冬马SSR与`q=ランウェイ`打开`001tom_ssr02`，返回后URL、搜索值、结果数与焦点全部恢复；另以19张冬马卡片长列表验证实际滚动，1280×900恢复到约970/970并聚焦同一卡片，390×844恢复到约1508/1508并聚焦同一卡片。浏览器前进到详情、后退到列表也恢复滚动位置和实体焦点；无横向溢出或console error。N02活动与N10歌曲已接入同一机制，仍需各自Browser长列表旅程后才能改为PASS。
 
 机器回归新增`verify-archive-view-restoration.mjs`并并入`verify:archive-navigation-state`；routes、navigation-state、portal-navigation、archive-async-navigation、archive-startup-route与reading-playback均通过。生产构建通过，产物位于仓库外`C:/Users/windm/.codex/qa/sidem-navigation-restoration-20260912/build`，入口551.54kB，保留既有chunk提示。下一批执行N02活动列表与N10歌曲列表的实际位置恢复，再补N06/N08/N09关系链Browser证据。
+
+## N02/N10 Browser扩展与卡片源名修正
+
+N02使用活动检索目录的36条实体，从列表末端打开`430018 / GROWING SELECTION -運命光年-`。1280×900返回后恢复`event:1_3_30018_01.json`焦点及约1587/1587滚动；390×844恢复约3300/3300。N10使用60首歌曲目录打开末项`pl1gdd`，1280×900恢复约2466/2467，390×844恢复约8285/8285并聚焦同一歌曲；`song_scope=layered&q=DRIVE`打开`drvalv`后，返回仍保留scope、query与焦点。两域均无横向溢出或console error，因此N02/N10由PARTIAL改为PASS。
+
+卡片目录标题此前单独使用中文实体译名，和同页偶像切换器的档案源名不一致。`currentCardCharacterName`现统一读取master-data源名；Browser确认顶部标题、正文标题和切换器均显示`天ヶ瀬 冬馬`。`verify:card-filters`新增此边界检查，826张卡片、1225组筛选组合通过。生产构建3m17s通过，入口551.54kB，产物`C:/Users/windm/.codex/qa/sidem-navigation-list-domains-20260912/build`，保留既有chunk提示。下一批继续N06/N08/N09关系旅程。
