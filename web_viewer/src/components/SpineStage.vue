@@ -5,10 +5,6 @@
     :data-background-owner="manageBackground ? 'standalone' : 'external'"
   ></div>
 
-  <div v-if="sceneIcon" class="scene-icon">
-    <img :src="sceneIcon.src" alt="" @error="$event.target.style.display = 'none'" />
-  </div>
-
   <!-- Debug Toggle: visible in player/lab contexts, hidden by embedded scenes. -->
   <button v-if="debugControls" class="debug-toggle" @click="debugMode = !debugMode" :title="debugMode ? '关闭调试' : '开启调试'">
     {{ debugMode ? 'ON' : 'DBG' }}
@@ -86,7 +82,6 @@ import { storySpineOrder } from '../core/StorySpineOrder.js'
 import {
   getBodyTypeUrl,
   getOtherSettingUrl,
-  getSceneIconUrl,
   isSilhouetteOnlyModel,
 } from '../utils/AssetResolver.js'
 import { loadCostumePrefabMeta } from '../utils/CostumePrefabMetaStore.js'
@@ -114,19 +109,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['ready', 'error'])
-
-const sceneIcon = computed(() => {
-  const imageIcon = getStepSceneState(props.step)?.image_icon
-  // Compiled story state may retain icon metadata after the original command,
-  // but an empty layer means there is no drawable scene icon. Keep supporting
-  // the explicit string form used by standalone/smoke scenarios.
-  if (imageIcon && typeof imageIcon === 'object' && !imageIcon.layer) return null
-  const id = typeof imageIcon === 'string'
-    ? imageIcon
-    : imageIcon?.display_id || imageIcon?.id
-  if (!id) return null
-  return { id, src: getSceneIconUrl(id) }
-})
 
 const containerRef = ref(null)
 let manager = null
@@ -1074,28 +1056,6 @@ defineExpose({
 }
 
 /* 鈹€鈹€ Debug Toggle 鈹€鈹€ */
-.scene-icon {
-  position: absolute;
-  top: 18px;
-  left: 18px;
-  z-index: 45;
-  width: clamp(48px, 7vw, 76px);
-  height: clamp(48px, 7vw, 76px);
-  border: 2px solid rgba(255, 255, 255, 0.86);
-  border-radius: 8px;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.22);
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.32);
-  pointer-events: none;
-}
-
-.scene-icon img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
 .debug-toggle {
   position: absolute;
   bottom: 8px;

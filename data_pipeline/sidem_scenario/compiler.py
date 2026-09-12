@@ -1058,10 +1058,11 @@ class ScenarioCompiler(ScenarioFileIO):
             self._mark_stage_change()
 
     def _image_icon(self, vals: list):
-        """Scene/dialogue identity icon.
+        """Preserve source identity metadata without inferring a stage overlay.
 
-        Raw values usually store [icon_id, display_id, layer?, ...]. The first
-        non-empty identifier is the asset key used by image_chara_icon_*.png.
+        Raw values store identifiers and a third value retained as layer.
+        Neither that value nor the identifier implies a permanent HUD image;
+        identifiers also include units, not only character portrait keys.
         """
         icon_id = ""
         display_id = ""

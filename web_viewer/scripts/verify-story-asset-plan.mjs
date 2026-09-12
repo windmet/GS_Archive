@@ -19,7 +19,8 @@ assert.deepEqual(plan, createStoryAssetPlan(normalized, source), 'legacy enters 
 assert.deepEqual(plan, createStoryAssetPlan(legacy, source), 'deterministic plan')
 const byKey = new Map(plan.assets.map(asset => [asset.key, asset]))
 for (const key of ['background:start', 'background:end', 'voice:test.m4a', 'lipsync:adxlip/test.json',
-  'bgm:song', 'ambient:rain', 'se:door', 'image-icon:047shu', 'effect-texture:fx_adv_flare_01']) assert.ok(byKey.has(key), key)
+  'bgm:song', 'ambient:rain', 'se:door', 'effect-texture:fx_adv_flare_01']) assert.ok(byKey.has(key), key)
+assert.equal(byKey.has('image-icon:047shu'), false, 'identity metadata is not a stage image dependency')
 assert.equal(byKey.get('spine-bundle:047shu_005_00').dependencyState, 'pending')
 assert.deepEqual(byKey.get('spine-bundle:047shu_005_00').dependencies, ['spine-skeleton:047shu_005_00', 'spine-atlas:047shu_005_00'])
 assert.ok(byKey.get('background:end').uses.some(use => use.path.startsWith('cues[')), 'cue-only requirements carry provenance')

@@ -350,3 +350,17 @@ verify-story-spine-order覆盖三人桥段、相同深度稳定顺序及源数�
 verify-story-stage-readiness新增manager存在但人物未投影时不启动、旧步投影不能放行新步、暂停加载与销毁撤销；runtime-foundation和背景加载/属性时钟/效果生命周期通过。Vite2510 modules构建通过，产物C:/Users/windm/.codex/qa/sidem-projection-clock-20260912/build，既有chunk大小提示保留。Browser5175活动430018第一话正常进入7/34冬马对白并推进8/34翔太对白，窄屏截图人物背景完整，console无error。
 
 本批不宣称全场景/GPU/audio ready：投影结束仍可能存在异步剪影图片、背景纹理和独立语音准备；Stage现有资源失败降级也未改成统一错误门槛。StoryViewer旧ready及App loading发布关系继续待修，ep2取景裁切待复核。整体目标保持进行中。
+
+## 用户原片复核：運命光年ep2镜头Y方向与错误身份浮层
+
+输入HEAD31f03b5。用户提供ep2开头原片截图，指出翔太上移裁切、左上角Jupiter常驻，并补充人物也应随镜头放大。此前d5149b0仅修复图标URL并把显示成功当作正确行为，判断不充分；本批撤销该渲染假设。
+
+原始文件E:/BaiduNetdiskDownload/SideM/scripts/scenariodata/1_3_30018_01/scenario_1_3_30018_01_c.json，SHA256 044592414fe6b56f99aa6e6151e06a5ff0d8f03c49f89ab8e2750a77cabae9e9。命令索引4为camera_zoom [0,0,0,90,1]，5为image_icon [01jup,01jup,2]，11为翔太idol_position [002sht,0,60]，22为camera_zoom [0,0.5,0,90,1.3]。编译值保留一致，未改剧情文件。
+
+CameraController原targetY以负号使用offset_y，而角色game coord明确以向上为正转换到Pixi。改为centerY*(1-zoom)+offset_y*width/1280*zoom，使源坐标中的相机目标点在缩放后仍映射屏幕中心；X不变，不增加角色专属补偿。背景和人物层仍共享1.3倍。Browser实际data-stage-debug显示bgScale=spineScale=1.3，翔太baseScale=0.26、effectiveScale=0.338，未取消同步放大，也未叠加第二次1.3。
+
+移除SpineStage按image_icon/layer自行构建的左上角scene-icon DOM/CSS；源metadata仍保留，编译器注释不再声称其必为头像文件。StoryAssetPlan不再生成此舞台图片依赖，并移除无其他使用者的scene-icon解析器/adapter。组合资料/偶像资料/通信图标保留其独立消费者。P1文档已纠正，旧smoke源中的image_icon只作为元数据。
+
+回归覆盖队标与社长、空/非空layer/string均不生浮层依赖且源不变；相机正负Y/1、1.3、2倍/1280×720、1968×1060、390×844，目标点居中与背景人物同步缩放；沿用暂停/速率/取消回归。camera-clock（现含scene-icon）、asset-plan、entry-retry/background、stage-readiness通过。构建2510 modules通过，主入口545.12kB，产物C:/Users/windm/.codex/qa/sidem-camera-icon-20260912/build。
+
+Browser5175横屏第二话正常到5/26，头部回到画面内、无队标，推进到6/26；1280无横向溢出。截图与用户原片画幅、动作时刻不同，本批不宣称逐像素或逐帧还原。总体媒体就绪门槛继续待做。

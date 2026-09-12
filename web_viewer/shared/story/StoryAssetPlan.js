@@ -103,8 +103,8 @@ export function createStoryAssetPlan(input, { file, sha256 }) {
       effects(snapshot.bg_effects, 'bg_effects', useAt(`${slot}.bg_effects`))
       if (snapshot.bg_effect) issue(useAt(`${slot}.bg_effect`), 'legacy-effect-field')
       effects(snapshot.screen_effects, 'screen_effects', useAt(`${slot}.screen_effects`))
-      if (typeof snapshot.image_icon === 'string' || snapshot.image_icon?.layer) add('image-icon', typeof snapshot.image_icon === 'string' ? snapshot.image_icon : snapshot.image_icon.display_id || snapshot.image_icon.id,
-        useAt(`${slot}.image_icon`))
+      // image_icon is retained source metadata, not a stage overlay command.
+      // No stage consumer draws it, so it must not become an entry dependency.
       for (const [field, value] of Object.entries(snapshot)) {
         if (value != null && !knownSnapshotFields.has(field)) issue(useAt(`${slot}.${field}`), 'unclassified-snapshot-field')
       }

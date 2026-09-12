@@ -36,7 +36,7 @@ kind/id 去重，uses 保留 stepIndex/stepId/path/cueId。这里的 dependencyS
 Spine bundle 明确挂 skel/atlas 依赖，并保持 atlas-pages-and-model-adapter 待解析。
 特效纹理映射、mouth 模型回退与通信 UI 依赖也保留 pending/unresolved，不能静默当零需求。
 未知 snapshot 字段、未知 cue、normalizer 未映射字段保留来源诊断。
-image_icon 的 layer/display_id 规则与当前 SpineStage 消费者一致。
+image_icon 保留为来源元数据，不作为舞台常驻图片或预载依赖。2026-09-12 经運命光年 ep2 原片对照撤销了按 layer/display_id 绘制左上角浮层的错误推断；角色/组合资料页及通信自身图标不受影响。
 
 尚未形成执行闭包：atlas 多页与特殊模型 adapter、特效纹理、通信 emoji/background/icon/
 unit 资源、配置的实际 URL/回退链等仍需对照消费者展开；没有按 priority 划分或预取网络。

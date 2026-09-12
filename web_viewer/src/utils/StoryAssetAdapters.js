@@ -1,4 +1,4 @@
-import { getBgUrl, getSceneIconUrl, getMobileBgUrl, getUnitMobileBgUrl,
+import { getBgUrl, getMobileBgUrl, getUnitMobileBgUrl,
   getMobileIconUrl, getStampUrl, getEmojiUrl, getSpineSkelUrl,
   isSilhouetteOnlyModel, getSpineAtlasUrl, getSilhouetteUrl,
   getMouthSettingUrl, getOtherSettingUrl, getBodyTypeUrl, getCostumePrefabMetaUrl,
@@ -7,7 +7,6 @@ import { effectTextureUrl } from '../../shared/story/EffectTextures.js'
 
 const imageUrls = {
   background: getBgUrl,
-  'image-icon': getSceneIconUrl,
   'idol-mobile-background': getMobileBgUrl,
   'unit-mobile-background': getUnitMobileBgUrl,
   'mobile-icon': getMobileIconUrl,

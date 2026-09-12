@@ -88,6 +88,22 @@ try {
   controller.destroy()
   spine.destroy()
   bg.destroy()
+  // A source point at the camera target must stay at screen centre.
+  for (const [width, height] of [[1280, 720], [1968, 1060], [390, 844]]) {
+    const actors = new Container(), background = new Container()
+    const camera = new CameraController({ bgContainer: background, spineContainer: actors,
+      getWidth: () => width, getHeight: () => height, getBgSprite: () => null })
+    for (const offset_y of [-90, 0, 90]) for (const zoom of [1, 1.3, 2]) {
+      const offset_x = 60, coordScale = width / 1280
+      camera.setCameraZoom({ zoom, offset_x, offset_y, duration: 0 })
+      close(actors.scale.x, zoom)
+      close(background.scale.x, zoom)
+      close(0.26 * actors.scale.x, 0.26 * background.scale.x)
+      close((width / 2 + offset_x * coordScale) * zoom + actors.x, width / 2)
+      close((height / 2 - offset_y * coordScale) * zoom + actors.y, height / 2)
+    }
+    camera.destroy(); actors.destroy(); background.destroy()
+  }
 } finally {
   if (originalRequest === undefined) delete globalThis.requestAnimationFrame
   else globalThis.requestAnimationFrame = originalRequest

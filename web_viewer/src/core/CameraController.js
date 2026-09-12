@@ -58,7 +58,9 @@ export class CameraController {
     const centerX = width / 2
     const targetScale = zoom
     const targetX = centerX * (1 - zoom) - offset_x * coordScale * zoom
-    const targetY = height / 2 * (1 - zoom) - offset_y * coordScale * zoom
+    // Source camera targets use Unity's upward-positive Y, just like actor
+    // coordinates. Moving the camera up moves its contents down in Pixi.
+    const targetY = height / 2 * (1 - zoom) + offset_y * coordScale * zoom
 
     this._cameraTween?.cancel?.()
 
