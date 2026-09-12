@@ -8,6 +8,9 @@ import { getMobileBgUrl, getMobileIconUrl, getUnitMobileBgUrl, getStampUrl, getE
   from '../src/utils/AssetResolver.js'
 import { getUnitCodeByCharaId } from '../src/utils/UnitNameMap.js'
 import { IDOL_NAME_TO_ID, IDOL_ID_TO_NAME } from '../src/utils/IdolNameMap.js'
+import { normalizeLegacyDialogue, createChoiceSelectionRecord } from '../src/localization/story/LegacyDialogueAdapter.js'
+import { resolveStoryText } from '../src/localization/story/StoryTextResolver.js'
+import { normalizeLocalizedDisplay } from '../src/localization/story/LocalizedDisplay.js'
 import { SCREEN_EFFECT_HANDLER_IDS } from '../shared/story/EffectTextures.js'
 import { normalizeScenario } from '../shared/story/ScenarioNormalizer.js'
 import { resolveCommunicationContext } from '../src/core/story-runtime/CommunicationPresentationContext.js'
@@ -40,24 +43,42 @@ const consumer = {
   context: { value: { primaryCharaId: '001tom' } },
   localization: { resolveDialogue: dialogue => ({ text: dialogue.source_text || '', speaker: dialogue.speaker || '' }) },
 }
+function localizeDialogue(dialogue, mode) {
+  const normalized = normalizeLegacyDialogue(dialogue)
+  const view = resolveStoryText({ ...normalized, preferences: { story_content_mode: mode } })
+  return { speaker: view.speaker.display, text: [view.primary?.text, view.secondary?.text].filter(Boolean).join('\n'), view }
+}
 runInNewContext(['isProducer', 'cleanSpeaker', 'stepToMessage']
   .map(name => productionFunction(chatScene, name)).join('\n')
   + '\n' + productionFunction(bubble, 'messageParts'), consumer)
+function renderedMessageImages(message) {
+  if (!message.isProducer && message.isStamp) return [getStampUrl(message.stampId)]
+  if (!message.display) return []
+  const display = normalizeLocalizedDisplay(message.display)
+  return [display.primary, display.secondary].filter(Boolean).flatMap(block =>
+    consumer.messageParts(block.text).filter(part => part.type === 'emoji').map(part => getEmojiUrl(part.id)))
+}
 const sourceMessageCases = [
   { name: 'explicit stamp', stamp: { id: 'image_mobile_stamp_001', chara_id: '001tom' }, text: 'ignored <emoji>emoji_other</emoji>' },
   { name: 'whole-message stamp', text: '<emoji>image_mobile_stamp_001</emoji>' },
   { name: 'inline stamp-shaped emoji', text: 'hello <emoji>image_mobile_stamp_001</emoji> and <emoji>emoji_abc</emoji>' },
   { name: 'repeated emoji', text: '<emoji>emoji_abc</emoji><emoji>emoji_abc</emoji>' },
   { name: 'invalid inline marker stays text', text: 'hello <emoji>../invalid</emoji>' },
+  { name: 'legacy source text', dialogue: { text: 'legacy <emoji>emoji_old</emoji>' } },
+  { name: 'legacy Japanese and Chinese', dialogue: { text_jp: '<emoji>emoji_jp</emoji>', text_cn: '<emoji>emoji_cn</emoji>' } },
+  { name: 'stamp changes to inline in bilingual', dialogue: { source_text: '<emoji>image_mobile_stamp_001</emoji>', text_cn: 'translated' } },
+  { name: 'translation stamp', dialogue: { source_text: 'original', text_cn: '<emoji>image_mobile_stamp_002</emoji>' } },
 ]
 for (const fixture of sourceMessageCases) {
   const step = { step_id: 1, type: fixture.stamp ? 'talk_stamp' : 'talk',
     state: { spines: [], talk_mode: true }, chara_id: '001tom', stamp: fixture.stamp,
-    dialogue: { speaker: '天ヶ瀬 冬馬', source_text: fixture.text } }
-  const message = consumer.stepToMessage(step)
-  const expectedUrls = message.isStamp ? [getStampUrl(message.stampId)]
-    : [...new Set(consumer.messageParts(message.display.text).filter(part => part.type === 'emoji')
-      .map(part => getEmojiUrl(part.id)))]
+    dialogue: { speaker: '天ヶ瀬 冬馬', ...(fixture.dialogue || { source_text: fixture.text }) } }
+  const expectedUrls = new Set()
+  for (const mode of ['original', 'translation', 'bilingual']) {
+    consumer.localization.resolveDialogue = dialogue => localizeDialogue(dialogue, mode)
+    const message = consumer.stepToMessage(step)
+    for (const url of renderedMessageImages(message)) expectedUrls.add(url)
+  }
   for (const schema_version of [1, 2]) {
     const input = schema_version === 1 ? { schema_version, steps: [step] }
       : { schema_version, runtime_contract: 'story-runtime-v2', steps: [{ ...step,
@@ -201,6 +222,42 @@ const branchScenario = { schema_version: 1, scenario_id: '1_4_001_01_e', steps: 
   { step_id: 3, type: 'choice', state: { spines: [] }, options: [{ step_id: 4 }], dialogue: {} },
 ] }
 const branchSteps = normalizeScenario(branchScenario).steps
+// A choice reached in a call may later be injected into chat history. Run the
+// production historyMessages callback with the actual selection record.
+const choiceScenario = structuredClone(branchScenario)
+choiceScenario.steps[2].options = [
+  { option_id: 'stamp-shaped', source_text: '<emoji>image_mobile_stamp_reply</emoji>' },
+  { option_id: 'detail', detail_source_text: 'reply <emoji>emoji_detail</emoji>' },
+  { option_id: 'external', source_text: 'source', text_ref: { unit_id: 'reply-unit', source_hash: 'source-hash' } },
+]
+const beforeChoiceScan = JSON.stringify(choiceScenario)
+const choicePlan = createStoryAssetPlan(choiceScenario, source)
+const historyProjection = chatScene.match(/const historyMessages = computed\(\(\) => \{([^]*?)\n\}\)/)
+assert.ok(historyProjection, 'production history message projection must exist')
+for (const [optionIndex, option] of choiceScenario.steps[2].options.entries()) {
+  const selection = createChoiceSelectionRecord(option)
+  const projected = runInNewContext(`(() => {${historyProjection[1]}\n})()`, {
+    props: { historyStack: [], stepIndex: 2, choiceTexts: { 2: selection } },
+    talkByIndex: { value: {} },
+    localization: { resolveChoiceSelection: record => ({ text: record.source_text }) },
+  })
+  assert.equal(projected[0].isProducer, true)
+  assert.equal(projected[0].isStamp, false)
+  const expected = consumer.messageParts(projected[0].display.text).filter(part => part.type === 'emoji')
+  for (const part of expected) {
+    const asset = choicePlan.assets.find(asset => asset.kind === 'emoji' && asset.id === part.id)
+    assert.ok(asset, 'selected replies use emoji URLs even for whole stamp-shaped markers')
+    assert.ok(asset.uses.some(use => use.stepIndex === 2 && use.optionIndex === optionIndex), 'choice provenance')
+  }
+}
+assert.equal(JSON.stringify(choiceScenario), beforeChoiceScan, 'discovery must not choose a branch or mutate source')
+assert.ok(choicePlan.unresolved.some(item => item.reason === 'communication-history-dependent'))
+assert.ok(choicePlan.unresolved.some(item => item.reason === 'communication-translation-overlay-pending' && item.optionIndex === 2))
+const externalDialogue = structuredClone(unitScenario)
+externalDialogue.steps[0].dialogue.text_ref = { unit_id: 'external-dialogue', source_hash: 'source-hash' }
+const externalPlan = createStoryAssetPlan(externalDialogue, source)
+assert.ok(externalPlan.unresolved.some(item => item.reason === 'communication-translation-overlay-pending' && item.stepIndex === 0))
+assert.equal(externalPlan.dependenciesComplete, false, 'source inputs cannot prove unloaded translation images')
 const resolveAt = (stepIndex, historyStack) => resolveCommunicationContext({
   step: branchSteps[stepIndex], stepIndex, historyStack, steps: branchSteps,
   scenarioId: branchScenario.scenario_id,
@@ -231,9 +288,10 @@ for (const asset of branchPlan.assets) {
   for (const use of asset.uses) if (use.path === 'communication') plannedKeys.add(`${asset.kind}|${asset.id}`)
 }
 for (const item of branchPlan.unresolved) {
-  assert.notEqual(item.path, 'communication', `no branch surface may be unresolvable: ${item.reason}`)
+  assert.equal(item.reason, 'communication-history-dependent', 'unverified history must remain explicit')
 }
-assert.deepEqual(branchPlan.unresolved, [], 'both branch surfaces must be fully resolvable')
+assert.equal(branchPlan.dependenciesComplete, false, 'named branch fixtures do not close arbitrary-history requirements')
+assert.ok(branchPlan.unresolved.some(item => item.reason === 'communication-history-dependent'))
 for (const [context, index] of [[viaLinear, 2], [viaHistory, 2]]) {
   for (const requirement of branchRequirements(context, index)) {
     assert.ok(plannedKeys.has(`${requirement.kind}|${requirement.id}`),
@@ -267,6 +325,8 @@ console.log('Communication source-message consumer fixtures verified (strict/com
 if (process.argv.includes('--local-sources')) {
   const manifest = JSON.parse(await fs.readFile(new URL('../public/data/reading/manifest.json', import.meta.url)))
   const totals = {}, unresolved = {}, accounted = {}, divergence = [], recordedReasons = new Set()
+  const consumerDivergence = []
+  let consumerImageChecks = 0
   const recordedCorpus = new Set()
   let open = 0, scenes = 0, plannedRequirements = 0
   for (const entry of manifest.entries) {
@@ -294,8 +354,20 @@ if (process.argv.includes('--local-sources')) {
     // would find nothing and the comparison would pass vacuously.
     const steps = normalizeScenario(raw).steps
     const scenarioId = raw.scenario_id
+    const plannedMessageUrls = new Set(current.assets.filter(asset => ['stamp', 'emoji'].includes(asset.kind))
+      .map(asset => asset.kind === 'stamp' ? getStampUrl(asset.id) : getEmojiUrl(asset.id)))
     for (const [stepIndex, step] of steps.entries()) {
       const context = resolveCommunicationContext({ step, stepIndex, historyStack: [], steps, scenarioId })
+      if (['talk', 'talk_stamp'].includes(step.type)) {
+        consumer.context.value = context
+        for (const mode of ['original', 'translation', 'bilingual']) {
+          consumer.localization.resolveDialogue = dialogue => localizeDialogue(dialogue, mode)
+          for (const url of renderedMessageImages(consumer.stepToMessage(step))) {
+            consumerImageChecks++
+            if (!plannedMessageUrls.has(url)) consumerDivergence.push({ file: entry.source_file, stepIndex, mode, url })
+          }
+        }
+      }
       if (!context.mode) continue
       scenes++
       const text = step?.stamp?.id ? null : step?.dialogue?.source_text
@@ -327,6 +399,9 @@ if (process.argv.includes('--local-sources')) {
     'an unresolvable call character must stay stated rather than silently dropped')
   console.log(JSON.stringify({ documents: manifest.entries.length, openDependencyPlans: open, communicationSteps: scenes,
     plannedRequirements, runtimeDivergence: divergence.length, sampleDivergence: divergence.slice(0, 10),
+    consumerImageChecks, consumerImageDivergence: consumerDivergence.length, sampleConsumerDivergence: consumerDivergence.slice(0, 10),
     perDocumentAssetTotals: totals, unresolved, accountedFields: accounted }, null, 2))
   assert.equal(divergence.length, 0, 'linear consistency divergence must fail the verifier')
+  assert.ok(consumerImageChecks > 0, 'independent source/inline message image check must not pass vacuously')
+  assert.equal(consumerDivergence.length, 0, 'actual message image URLs must be represented in the plan')
 }

@@ -128,8 +128,9 @@ export function createStoryAssetPlan(input, { file, sha256 }) {
   for (const step of communicationRequirements(scenario)) {
     const use = { stepIndex: step.stepIndex, stepId: scenario.steps[step.stepIndex]?.step_id ?? null, path: 'communication' }
     for (const requirement of step.requirements) {
-      if (requirement.reason) issue(use, requirement.reason)
-      else add(requirement.kind, requirement.id, use)
+      const at = requirement.optionIndex == null ? use : { ...use, optionIndex: requirement.optionIndex }
+      if (requirement.reason) issue(at, requirement.reason)
+      else add(requirement.kind, requirement.id, at)
     }
   }
   return { schema_version: 1, source: { file, sha256, scenarioId: scenario.scenario_id ?? null,

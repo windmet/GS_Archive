@@ -113,3 +113,17 @@
 - corpus 对比明确标为同 helper 的线性一致性检查，删除任意历史 superset 已证明的表述；发现 divergence 现在必须断言失败，不能仅打印数字。
 - `verify:communication-assets`、`verify:story-asset-plan`、`verify:communication-assets:source` 通过。204 份、3308 个通信 step、6071 条线性需求、divergence 0；204 个 plan 仍 open，without-unit 46、without-character 513。本批没有改变真实 corpus 的资产总数，修正由边界 fixture 证明。
 - 本批没有修改渲染消费者或接入旧 Preloader；不主张新的浏览器/网络验收。完整分支历史、累积消息在不同 context 下重投影、外部译文和 choiceTexts 仍需处理，随后才接 P1 执行与可信状态。
+
+## P1 legacy / 内联译文 / 选择回复依赖（源文本修订之后）
+
+输入 HEAD：`5db3337`。纯计划复用已有无副作用的 LegacyDialogueAdapter 和 StoryTextResolver；不 fetch 外部 overlay、不执行 choice、不修改消费者。
+
+- 原文来源按 source_text → text_jp → text，内联 text_cn 按原文、译文、双语三种显示方式取并集。整条 stamp 与 LocalizedTextBlock 的 primary/secondary inline 图片分别扫描，避免双语下遗漏 emoji 路径。
+- 有 chat 的 scenario 枚举所有可选回复的 source selection record，并按 Producer 消息的 inline emoji 规则记录；即使当前线性 choice 在 call 中，后续 chat 的回复图片也能发现。uses 保留 stepIndex/stepId/optionIndex，不替用户选择分支。
+- 涉及通信的 choice 保留 communication-history-dependent；具有 text_ref.unit_id 的聊天消息/选择回复保留 communication-translation-overlay-pending。这些不是下载失败；待运行入口的真实 history 和已校验 translation overlay 参与需求闭包时再解除。
+- 九组消息 fixture 覆盖 strict/compat 和三种语言模式；生产 historyMessages 回调验证选择回复始终按 Producer/非 stamp 投影；验证 source 不变及 option 来源。外部 overlay 未提供的 fixture 必须保持 dependenciesComplete=false。
+- `verify:communication-assets:source`：204 份，3308 个线性通信步骤，线性旧子集 6071 条需求；生产 stepToMessage + messageParts + LocalizedDisplay 共 78 次图片 URL 检查，漏项 0。此证据限定为直接入口 context 下的原文/内联译文消息，不包含任意分支重投影或远端译文。
+- `verify:story-asset-plan` 与 `verify:story-asset-plan-sources` 通过。实际在 7 篇中新增按篇去重 14 条 emoji 需求，例如 1_4_001_06_b 的 stepIndex=38 / stepId=39 的 image_talk_emoji_01。不是 14 个跨篇唯一文件，也不是 14 个下载成功。
+- 204 个 plan 仍 open：history-dependent 64、translation-overlay-pending 11、without-unit 46、without-character 513；Spine 等现有 pending 仍保留。本批无渲染变化或新的浏览器验收。
+
+下一批需要将已校验本地化显示和真实 history 的需求纳入执行输入，并独立核对 call caller 与 chat 历史头像；同时保留特殊模型/配置回退和真实特效渲染的未验收项，继续朝 P1 执行状态接入推进。

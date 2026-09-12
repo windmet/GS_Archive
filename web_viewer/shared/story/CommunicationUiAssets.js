@@ -38,12 +38,12 @@ export function emojiUrl(emojiId) {
  * only a whole-message stamp goes through the stamp URL. Inside mixed text,
  * every valid marker goes through the emoji URL, even a stamp-shaped id.
  */
-export function messageMarkers(text) {
+export function messageMarkers(text, { allowStamp = true } = {}) {
   const stamps = new Set()
   const emojis = new Set()
   if (typeof text !== 'string' || !text) return { stamps: [...stamps], emojis: [...emojis] }
   const wholeStamp = text.match(/^<emoji>(image_mobile_stamp_.+?)<\/emoji>$/)
-  if (wholeStamp) return { stamps: [wholeStamp[1]], emojis: [] }
+  if (allowStamp && wholeStamp) return { stamps: [wholeStamp[1]], emojis: [] }
   const pattern = /<emoji>(.+?)<\/emoji>/g
   let match
   while ((match = pattern.exec(text))) {

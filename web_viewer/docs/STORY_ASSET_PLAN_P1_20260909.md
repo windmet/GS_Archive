@@ -2,6 +2,12 @@
 
 ## 2026-09-12 当前进展
 
+继续执行补充：通信消息发现已覆盖 legacy text/text_jp、source_text、内联 text_cn 的原文/
+译文/双语显示，以及可能被选择后注入聊天的 option 回复。按篇去重新增 14 条 emoji，
+204 篇上生产消息函数产生的 78 次图片 URL 对照全部命中计划。选择来源保留 optionIndex；
+任意历史和外部翻译覆盖分别以 communication-history-dependent、
+communication-translation-overlay-pending 保持 open，不能仅由线性结果推断完整。
+
 当前分支 `codex/p1-effect-texture-deps` 的 `c090425` 已加入真实 handler 的特效纹理映射、
 通信 presentation context 扫描与共享 UI URL。详见 [最新审计与交接](SIDEM_NEXT_WINDOW_HANDOFF_20260912.md)。
 本轮 204 篇通信来源验证通过，但 204 个计划仍有未闭合依赖；线性 parity 不是所有分支验收。

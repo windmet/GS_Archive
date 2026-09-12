@@ -1,5 +1,31 @@
 import { resolveCommunicationContext } from '../../src/core/story-runtime/CommunicationPresentationContext.js'
-import { communicationUiAssets } from './CommunicationUiAssets.js'
+import { communicationUiAssets, messageMarkers } from './CommunicationUiAssets.js'
+import { normalizeLegacyDialogue, createChoiceSelectionRecord, normalizeChoiceSelection }
+  from '../../src/localization/story/LegacyDialogueAdapter.js'
+import { resolveStoryText } from '../../src/localization/story/StoryTextResolver.js'
+
+function markerAssets(text, allowStamp) {
+  const { stamps, emojis } = messageMarkers(text, { allowStamp })
+  return [...stamps.map(id => ({ kind: 'stamp', id })), ...emojis.map(id => ({ kind: 'emoji', id }))]
+}
+
+// The compiled input contains original and optional legacy-inline translation.
+// Enumerate each supported display mode; external overlays are not in this input.
+function dialogueAssets(dialogue) {
+  const normalized = normalizeLegacyDialogue(dialogue)
+  const assets = []
+  for (const story_content_mode of ['original', 'translation', 'bilingual']) {
+    const view = resolveStoryText({ ...normalized, overlayEntry: normalized.overlayEntry,
+      preferences: { story_content_mode } })
+    const texts = [view.primary?.text, view.secondary?.text].filter(Boolean)
+    const joined = texts.join('\n')
+    const whole = messageMarkers(joined)
+    if (whole.stamps.length) assets.push(...whole.stamps.map(id => ({ kind: 'stamp', id })))
+    else for (const text of texts) assets.push(...markerAssets(text, false))
+  }
+  if (normalized.textRef?.unit_id) assets.push({ reason: 'communication-translation-overlay-pending' })
+  return assets
+}
 
 /**
  * The communication assets a scenario loads, one entry per step that renders a
@@ -12,31 +38,45 @@ import { communicationUiAssets } from './CommunicationUiAssets.js'
  * scenario takes; a different history can reach a different character, and a
  * requirement that only one route needs must still be discoverable.
  *
- * Requirements are recorded per step rather than per scene: a call keeps its
- * surface while the caller changes, and a chat keeps every message it has
- * shown, so what has to exist is the union across the steps.
+ * Requirements retain each originating step (and choice option). Original and
+ * inline-translated messages are enumerated; choice/history and unloaded
+ * translation overlays remain explicit pending requirements. This linear
+ * surface pass is not a proof of arbitrary accumulated-history projections.
  */
 export function communicationRequirements(scenario) {
   const steps = scenario?.steps
   if (!Array.isArray(steps)) return []
   const scenarioId = scenario.scenario_id
+  const hasCommunication = steps.some(step => ['talk', 'talk_stamp', 'call'].includes(step?.type)
+    || step?.state?.talk_mode || step?.state?.phone_mode)
+  const hasChat = steps.some(step => ['talk', 'talk_stamp'].includes(step?.type) || step?.state?.talk_mode)
   return steps.flatMap((step, stepIndex) => {
     const context = resolveCommunicationContext({ step, stepIndex, historyStack: [], steps, scenarioId })
-    if (!context.mode) return []
+    const requirements = communicationUiAssets({
+      mode: context.mode, unitCode: context.unitCode || null, charaId: context.primaryCharaId || '',
+    })
     // Explicit stamps replace the display text in MobileChatScene. The main
     // plan already collects step.stamp, so do not invent hidden text images.
-    const text = step?.stamp?.id ? null : step?.dialogue?.source_text
+    if (['talk', 'talk_stamp'].includes(step?.type) && !step?.stamp?.id) {
+      requirements.push(...dialogueAssets(step.dialogue))
+    }
+    if (step?.type === 'choice' && hasCommunication) {
+      requirements.push({ reason: 'communication-history-dependent' })
+      // History can inject any selected option into a later chat, even when
+      // the direct-entry context at the choice currently resolves to a call.
+      if (hasChat) for (const [optionIndex, option] of (step.options || []).entries()) {
+        const selection = normalizeChoiceSelection(createChoiceSelectionRecord(option, step.choice_id))
+        requirements.push(...markerAssets(selection.source, false).map(asset => ({ ...asset, optionIndex })))
+        if (selection.textRef?.unit_id) requirements.push({ reason: 'communication-translation-overlay-pending', optionIndex })
+      }
+    }
+    if (!context.mode && !requirements.length) return []
     return [{
       stepIndex,
       mode: context.mode,
       charaId: context.primaryCharaId || '',
       unitCode: context.unitCode || null,
-      requirements: communicationUiAssets({
-        mode: context.mode,
-        unitCode: context.unitCode || null,
-        charaId: context.primaryCharaId || '',
-        texts: typeof text === 'string' && text ? [text] : [],
-      }),
+      requirements,
     }]
   })
 }
