@@ -36,7 +36,7 @@ async function withTimeout(load, ms, label, signal) {
 }
 export class Preloader {
 
-  static async preloadScenario(plan, onProgress, { signal, onStatus, priority } = {}) {
+  static async preloadScenario(plan, onProgress, { signal, onStatus, priority, entryOnly = false } = {}) {
     signal?.throwIfAborted()
     if (plan?.schema_version !== 1 || !plan.source?.sha256 || !Array.isArray(plan.assets)) {
       throw new TypeError('Preloader requires a source-bound StoryAssetPlan')
@@ -68,6 +68,8 @@ export class Preloader {
       return value
     }
     report('warming')
+    let background
+    const run = async stopAtEntry => {
     try {
       // Process in batches to avoid flooding network.
       const BATCH_SIZE = 6
@@ -75,6 +77,9 @@ export class Preloader {
         signal?.throwIfAborted()
         const pending = tasks.filter(task => task.state === 'discovered')
           .sort((a, b) => priorityRank[a.priority] - priorityRank[b.priority])
+        if (stopAtEntry && pending[0].priority !== 'critical') {
+          return { plan, status: report('entry-warmed'), startBackground: () => background ||= run(false) }
+        }
         // Finish the active tier (including newly discovered atlas pages)
         // before lower-priority work can occupy a slot.
         const batch = pending.filter(task => task.priority === pending[0].priority).slice(0, BATCH_SIZE)
@@ -137,6 +142,8 @@ export class Preloader {
     const status = report(outcomes.some(task => task.state === 'failed') ? 'partial'
       : !plan.dependenciesComplete || outcomes.some(task => task.state === 'deferred') ? 'pending' : 'settled')
     return { plan, status }
+    }
+    return run(entryOnly)
   }
 
   // ── Internal loaders: all use native browser APIs, NO pixi.js ──

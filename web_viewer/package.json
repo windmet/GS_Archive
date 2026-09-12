@@ -14,7 +14,7 @@
     "verify:story-config-preload": "node scripts/verify-story-config-preload.mjs",
     "verify:story-stage-resize": "node scripts/verify-story-stage-resize.mjs",
     "verify:story-asset-priority": "node scripts/verify-story-asset-priority.mjs",
-    "verify:story-entry-retry": "node scripts/verify-story-entry-retry.mjs",
+    "verify:story-entry-retry": "node scripts/verify-story-entry-retry.mjs && node scripts/verify-story-background-preload.mjs",
     "verify:story-slide-visibility": "python scripts/verify-story-slide-visibility.py",
     "verify:reading-typography": "node scripts/verify-reading-typography.mjs",
     "generate:reading": "node scripts/generate-reading-documents.mjs",

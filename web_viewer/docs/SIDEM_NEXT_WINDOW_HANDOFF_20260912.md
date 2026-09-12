@@ -316,3 +316,13 @@ verify-story-spine-order覆盖三人桥段、相同深度稳定顺序及源数�
 正式PNG、registry及tracked-binary清单一并提交。RAW promotion验证（53个正式登记）与185个PNG库存校验通过，SSR覆盖无重复logo，构建2510 modules通过。Browser430018活动页确认event-logo节点为0，三人event-story-visual均complete且naturalWidth>0，截图北斗完整立绘与另外两人一致。ep2修复提交d5149b0的TLS推送失败已通过单次openssl后端重试成功，不改变全局Git配置或关闭证书校验。
 
 个人/卡片/通信新增阅读入口按用户指示停止。下一步回到加载时序主线：critical与后台预热生命周期分离，以及实际ep2镜头裁切需单独复核；上述4个具体问题按三批完成，不将入口可播放扩写成所有演出/时序通过。
+
+## 加载时序：critical与后台预热分离
+
+输入HEAD cf0b399。Preloader新增entryOnly选项，先处理所有critical任务（包含atlas新发现的critical纹理页），在进入低优先级批次前返回entry-warmed与幂等startBackground续跑函数；续跑闭包沿用相同plan/outcomes，已完成资源不会重跑。prepareScenario仍等待来源验证、Player模块和critical结果；Controller发布Player后启动续跑。默认完整预载API行为保留。
+
+每次准备有独立AbortController，跟随导航撤销，reset也可独立取消；回调同时检查intent和warming signal。后台失败保留partial明细，不变成入口失败、不重新打开loading；重置期间取消首屏也不产生retry错误。不会将entry-warmed宣称为renderer/GPU/audio ready，尚待动态当前步近邻重排及完整媒体就绪门槛。
+
+新增verify-story-background-preload（接入verify:story-entry-retry）：可控后续图片未完成时Player已发布、critical只执行一次；后台成功/失败不变导航；后台reset及critical准备中reset取消无迟到错误。entry-retry、plan-preparation、playback-controller、preload-cancellation/status、spine/config-preload、reading-playback均通过。构建2510 modules通过，仓库外sidem-background-20260912/build。Browser活动430018 ep1经正常入口进入冬马/翔太对白并返回原活动，console无error；不提供无冷缓存对照依据的提速百分比，不把受控测试当真实全媒体压力测试。
+
+下一步继续当前步与后台优先级/两阶段媒体ready、缓存复用及ep2取景裁切；个人/卡片/通信新增Reader入口仍停止。整体加载路线未完成。

@@ -14,6 +14,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
   const currentScenarioInstance = state.currentScenarioInstance || ref(0)
   const error = ref('')
   const preloadStatus = ref(null)
+  let warmingController = null
   const canRetry = ref(false)
   let failedEntry = null
   function clearRetry() { failedEntry = null; canRetry.value = false }
@@ -22,6 +23,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
     currentScenarioEndStep, currentPreviewCue, returnViewAfterPlayer } = state
 
   function reset() {
+    warmingController?.abort()
     clearRetry()
     preloadStatus.value = null
     currentScenario.value = null
@@ -59,18 +61,35 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
       preloadProgress.value = 0
       preloadStatus.value = null
       error.value = ''
+      warmingController?.abort()
+      const warming = warmingController = new AbortController()
+      const abortWarming = () => warming.abort(intent.signal.reason)
+      intent.signal?.addEventListener('abort', abortWarming, { once: true })
+      let startBackground
       try {
         const scenario = await prepare(name, {
-          isCurrent: intent.isCurrent, signal: intent.signal, loadPlayer, preloadAssets, readScenario: options.readScenario,
+          isCurrent: intent.isCurrent, signal: warming.signal, loadPlayer, preloadAssets, readScenario: options.readScenario,
+          onBackgroundReady: start => { startBackground = start },
           playbackEntry: { startStep: boundary(options.startStep), initialStep: boundary(options.initialStep), endStep: boundary(options.endStep) },
-          onProgress: pct => { if (intent.isCurrent()) preloadProgress.value = pct },
-          onStatus: status => { if (intent.isCurrent()) preloadStatus.value = status },
+          onProgress: pct => { if (intent.isCurrent() && !warming.signal.aborted) preloadProgress.value = pct },
+          onStatus: status => { if (intent.isCurrent() && !warming.signal.aborted) preloadStatus.value = status },
         })
-        if (!scenario || !intent.isCurrent()) return false
+        if (!scenario || !intent.isCurrent() || warming.signal.aborted) {
+          intent.signal?.removeEventListener('abort', abortWarming)
+          return false
+        }
         publish(scenario, name, returnView, options)
+        if (startBackground) {
+          // The continuation shares its source-bound plan and settled tasks.
+          // It must never reopen the loading overlay or change navigation.
+          void startBackground().catch(() => {}).finally(() => intent.signal?.removeEventListener('abort', abortWarming))
+        } else intent.signal?.removeEventListener('abort', abortWarming)
         return true
       } catch (failure) {
-        if (!intent.isCurrent()) return false
+        const cancelled = warming.signal.aborted
+        warming.abort()
+        intent.signal?.removeEventListener('abort', abortWarming)
+        if (cancelled || !intent.isCurrent()) return false
         error.value = failure.message
         const { intent: ignoredIntent, ...retryOptions } = options
         failedEntry = { name, returnView, options: retryOptions }

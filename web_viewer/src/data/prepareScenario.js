@@ -8,6 +8,7 @@ export async function prepareScenario(name, {
   preloadAssets,
   onProgress,
   onStatus,
+  onBackgroundReady,
   playbackEntry,
   fetchImpl = (...args) => globalThis.fetch(...args),
   now = () => Date.now(),
@@ -49,7 +50,7 @@ export async function prepareScenario(name, {
     loadPlayer(),
     preloadAssets(plan, progress => {
       if (isCurrent() && !signal?.aborted) onProgress?.(progress)
-    }, { signal, priority: createStoryAssetPriority(scenario, playbackEntry), onStatus: status => {
+    }, { signal, entryOnly: !!onBackgroundReady, priority: createStoryAssetPriority(scenario, playbackEntry), onStatus: status => {
       if (isCurrent() && !signal?.aborted) onStatus?.(status)
     } }),
   ])
@@ -58,5 +59,6 @@ export async function prepareScenario(name, {
   if (preloaded?.status?.phase === 'blocked') {
     throw new Error('当前入口的必要资源未能载入，请重试。')
   }
+  if (isCurrent() && preloaded?.startBackground) onBackgroundReady?.(preloaded.startBackground)
   return isCurrent() ? scenario : null
 }
