@@ -37,7 +37,7 @@
 
 ## N01–N24首轮状态
 
-`PASS`只表示已有机器合同覆盖；`PARTIAL`和`FAIL`均不得写成最终验收。
+`PASS`表示该旅程的现有合同与指定Browser路径均已核对；`PARTIAL`和`FAIL`均不得写成最终验收。表内状态随执行批次更新，具体边界以各结果段为准。
 
 | 旅程 | 首轮状态 | 证据/缺口 |
 | --- | --- | --- |
@@ -45,11 +45,11 @@
 | N02 | PASS | 活动筛选、长列表滚动与活动实体焦点在桌面/390px返回后恢复 |
 | N03 | PASS | unit→song parent及unit实体已编码 |
 | N04 | PASS | unit→event parent及unit实体已编码 |
-| N05 | FAIL | `openEventCard`清空event后进入card，`goBackToCards`固定返回cards |
-| N06 | PARTIAL | card→event→card可回；再回筛选列表可保留字段，位置/焦点未恢复 |
+| N05 | PASS | 活动430018→报酬卡及刷新后返回均恢复活动来源 |
+| N06 | PASS | 北斗活动关联卡→活动430018→卡片→原3项关联筛选列表，来源、位置与焦点均恢复 |
 | N07 | PASS | cards筛选、搜索、滚动与实体焦点按规范路由/history entry恢复；桌面与390px Browser已验收 |
-| N08 | FAIL | `openGashaCard`进入card后固定返回cards |
-| N09 | FAIL | idol关联card进入详情后固定返回cards |
+| N08 | PASS | 卡池210003→关联卡→卡池→57项卡池列表，刷新、来源、位置与焦点均恢复 |
+| N09 | PASS | 冬马偶像详情→19张卡片→卡片详情→逐层返回偶像；当前偶像详情无tab，tab项为N/A |
 | N10 | PASS | 歌曲scope/query、长列表滚动与歌曲实体焦点在桌面/390px返回后恢复 |
 | N11 | PASS | song→collection parent、Player return已有合同 |
 | N12 | PASS | Reader row/revision/range往返已有回归 |
@@ -64,7 +64,7 @@
 | N21 | PASS | Reader版本/行/range错误已有可解释失败回归 |
 | N22 | PASS | navigation intent迟到响应抑制已有回归 |
 | N23 | PARTIAL | 路由字段可往返；各组件选择/tab需逐页Browser |
-| N24 | FAIL | archive_status→Spine/Chibi的返回固定home |
+| N24 | PARTIAL | archive_status→Spine刷新后来源返回已实测；Chibi互跳仅机器覆盖，待完整视觉旅程 |
 
 ## 第一实现批边界
 
@@ -97,3 +97,13 @@ N07真实Browser使用冬马SSR与`q=ランウェイ`打开`001tom_ssr02`，返�
 N02使用活动检索目录的36条实体，从列表末端打开`430018 / GROWING SELECTION -運命光年-`。1280×900返回后恢复`event:1_3_30018_01.json`焦点及约1587/1587滚动；390×844恢复约3300/3300。N10使用60首歌曲目录打开末项`pl1gdd`，1280×900恢复约2466/2467，390×844恢复约8285/8285并聚焦同一歌曲；`song_scope=layered&q=DRIVE`打开`drvalv`后，返回仍保留scope、query与焦点。两域均无横向溢出或console error，因此N02/N10由PARTIAL改为PASS。
 
 卡片目录标题此前单独使用中文实体译名，和同页偶像切换器的档案源名不一致。`currentCardCharacterName`现统一读取master-data源名；Browser确认顶部标题、正文标题和切换器均显示`天ヶ瀬 冬馬`。`verify:card-filters`新增此边界检查，826张卡片、1225组筛选组合通过。生产构建3m17s通过，入口551.54kB，产物`C:/Users/windm/.codex/qa/sidem-navigation-list-domains-20260912/build`，保留既有chunk提示。下一批继续N06/N08/N09关系旅程。
+
+## N06/N08/N09关系旅程验收
+
+输入HEAD `a494cbb`，本批没有修改导航实现，只对已落地的来源与恢复合同执行独立Browser验收。
+
+- N06固定fixture为北斗卡片`003hok_sr10 / 頼もしさ添えるエール`及活动`430018 / GROWING SELECTION -運命光年-`。从`relation_state=event_card`的3项卡片列表进入卡片，再进入活动；活动顶部返回恢复卡片详情，卡片顶部返回恢复原关联筛选列表、`card:003hok_sr10`焦点和原列表状态。来源query保持单层，无横向溢出或console error。
+- N08从57项卡池目录末端打开`210003 / GROWING TWILIGHT LIVEガシャ`，再进入`018shm_ssr01 / 華の支度は抜かりなく`。刷新卡片详情后，顶部返回恢复卡池详情；再次返回恢复卡池列表、`gasha:210003`焦点及约1969/1970滚动。无横向溢出或console error。
+- N09从`idol_detail&idol=001tom`进入冬马19张卡片列表，打开末端`001tom_ssr02 / 賑やかなランウェイ`。返回后恢复`card:001tom_ssr02`焦点及约1149/1150滚动，再次返回准确恢复`idol_detail&category=idol&idol=001tom`；详情页、卡片页与切换器均显示源名`天ヶ瀬 冬馬`，无横向溢出或console error。当前`ArchiveIdolDetail`只有单一档案视图，没有tab控件，因此N09的tab恢复记为N/A，而不是缺证据。
+
+N06、N08、N09由待Browser验收改为PASS。下一批优先执行尚未完成的N03/N04组合关系Browser路径，以及N24 Chibi完整视觉旅程；继续复用现有来源与恢复owner，不为单个入口增加页面私有状态。

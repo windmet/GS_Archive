@@ -396,3 +396,7 @@ Spine/Chibi实验页作为from持有页接入同一单层来源合同，但仍�
 N18与N07现已完成：Portal Browser Back/Forward和关闭来源恢复通过；列表恢复由`src/core/archiveViewRestoration.js`统一管理，以规范路由+history entry恢复内部滚动与实体焦点，卡片、活动/剧情、歌曲、卡池已接线。桌面与390px卡片长列表、冬马SSR搜索路线及浏览器前进/后退均实测通过。下一批先跑N02活动列表、N10歌曲列表，再补N06/N08/N09关系旅程；不要为单个按钮另建恢复字段。
 
 N02/N10也已在1280×900与390×844完成真实长列表返回验收：活动430018、歌曲pl1gdd及`layered + DRIVE`筛选路线均恢复滚动/实体焦点，无溢出或console error。卡片目录标题已从本地化显示改为master-data源名，Browser确认`天ヶ瀬 冬馬`与切换器一致。下一批只需继续N06/N08/N09关系旅程。
+
+## 导航N06/N08/N09关系旅程验收
+
+输入HEAD a494cbb。N06以北斗`003hok_sr10`与活动430018核对card→event→card→3项`event_card`列表，单层来源、筛选、焦点均恢复；N08以卡池210003→`018shm_ssr01`核对卡片详情刷新后逐层返回卡池及57项列表，`gasha:210003`焦点和约1969/1970滚动恢复；N09以冬马详情→19张卡片→`001tom_ssr02`核对逐层返回，卡片列表恢复`card:001tom_ssr02`及约1149/1150滚动，再回`idol_detail&idol=001tom`，源名始终为`天ヶ瀬 冬馬`。三条路径无横向溢出或console error，改为PASS。当前偶像详情没有tab控件，N09的tab恢复为N/A。下一批执行N03/N04组合关系Browser路径和N24 Chibi完整视觉旅程；个人/卡片/通信Reader入口仍停止。
