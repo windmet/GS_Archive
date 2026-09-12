@@ -101,4 +101,15 @@
 - `verify:story-asset-plan`：通过。
 - 负向验证：注入 Sprite 添加失败时，雨效果对象数量断言失败（exit 1）；注入未处理 rejection 时进程失败（exit 1）。不再把异常当作成功的请求证据。
 - 本批只修改校验与交接文档，不改变 renderer、资源映射或产品视觉。真实图片和 GPU 验收继续单列。
-- 通信消费者独立阅读已发现下一批需处理的具体差异：MobileChatScene 的显式 step.stamp；只有整条文本恰为 stamp marker 才走 stamp，混合文本中的相同 marker 在 MobileMessageBubble 走 emoji URL；显示译文与 choiceTexts 也参与实际消息图片请求。旧 corpus 对比复用同一 helper，不能独立证明上述覆盖。
+- 通信消费者独立阅读发现需核对的具体差异：MobileChatScene 的显式 step.stamp 会覆盖正文；只有整条文本恰为 stamp marker 才走 stamp，混合文本中的相同 marker 在 MobileMessageBubble 走 emoji URL；显示译文与 choiceTexts 也参与实际消息图片请求。后续执行测试确认 step.stamp 已由计划主循环收集，问题是额外扫描了被覆盖的正文，不能将其称为显式 stamp 遗漏。旧 corpus 对比复用同一 helper，不能独立证明上述覆盖。
+
+## P1 通信源文本需求修订（特效校验批之后）
+
+输入 HEAD：`0b2365d`。执行 MobileChatScene 的生产 stepToMessage 与 MobileMessageBubble 的生产 messageParts，预期 URL 不调用计划的 marker/helper；测试先复现显式 stamp 覆盖正文后仍多算 emoji。
+
+- 修正整条 stamp / 混合文本的分类：混合文本里的 image_mobile_stamp_* 标记按实际 Bubble 消费者记录为 emoji URL；只有整条文本匹配 stamp 才记录 stamp URL。
+- 显式 step.stamp.id 覆盖消息正文时不扫描被隐藏的正文；stamp 仍由计划主循环收集，未重复添加需求。
+- 独立 fixture 覆盖显式 stamp、整条 stamp、混合 stamp-shaped emoji、重复 emoji、非法 inline marker 保留文字；每项验证 strict-v2 和 compat-v1。
+- corpus 对比明确标为同 helper 的线性一致性检查，删除任意历史 superset 已证明的表述；发现 divergence 现在必须断言失败，不能仅打印数字。
+- `verify:communication-assets`、`verify:story-asset-plan`、`verify:communication-assets:source` 通过。204 份、3308 个通信 step、6071 条线性需求、divergence 0；204 个 plan 仍 open，without-unit 46、without-character 513。本批没有改变真实 corpus 的资产总数，修正由边界 fixture 证明。
+- 本批没有修改渲染消费者或接入旧 Preloader；不主张新的浏览器/网络验收。完整分支历史、累积消息在不同 context 下重投影、外部译文和 choiceTexts 仍需处理，随后才接 P1 执行与可信状态。

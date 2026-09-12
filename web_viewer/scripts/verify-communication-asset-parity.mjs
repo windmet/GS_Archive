@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
+import { runInNewContext } from 'node:vm'
 import { createHash } from 'node:crypto'
 import { createStoryAssetPlan } from '../shared/story/StoryAssetPlan.js'
 import { communicationUiAssets } from '../shared/story/CommunicationUiAssets.js'
 import { getMobileBgUrl, getMobileIconUrl, getUnitMobileBgUrl, getStampUrl, getEmojiUrl }
   from '../src/utils/AssetResolver.js'
 import { getUnitCodeByCharaId } from '../src/utils/UnitNameMap.js'
+import { IDOL_NAME_TO_ID, IDOL_ID_TO_NAME } from '../src/utils/IdolNameMap.js'
 import { SCREEN_EFFECT_HANDLER_IDS } from '../shared/story/EffectTextures.js'
 import { normalizeScenario } from '../shared/story/ScenarioNormalizer.js'
 import { resolveCommunicationContext } from '../src/core/story-runtime/CommunicationPresentationContext.js'
@@ -25,6 +27,47 @@ const callScene = await fs.readFile(new URL('../src/components/mobile/MobileCall
 const chatScene = await fs.readFile(new URL('../src/components/mobile/MobileChatScene.vue', import.meta.url), 'utf8')
 const bubble = await fs.readFile(new URL('../src/components/mobile/MobileMessageBubble.vue', import.meta.url), 'utf8')
 const profile = await fs.readFile(new URL('../src/components/mobile/MobileCallProfile.vue', import.meta.url), 'utf8')
+
+// Execute the actual message projection and inline parser. Expected message
+// URLs here do not call communicationUiAssets or its marker classifier.
+const productionFunction = (text, name) => {
+  const match = text.match(new RegExp(`function ${name}\\([^]*?\\n\\}`))
+  assert.ok(match, `production function ${name} must exist`)
+  return match[0]
+}
+const consumer = {
+  IDOL_NAME_TO_ID, IDOL_ID_TO_NAME,
+  context: { value: { primaryCharaId: '001tom' } },
+  localization: { resolveDialogue: dialogue => ({ text: dialogue.source_text || '', speaker: dialogue.speaker || '' }) },
+}
+runInNewContext(['isProducer', 'cleanSpeaker', 'stepToMessage']
+  .map(name => productionFunction(chatScene, name)).join('\n')
+  + '\n' + productionFunction(bubble, 'messageParts'), consumer)
+const sourceMessageCases = [
+  { name: 'explicit stamp', stamp: { id: 'image_mobile_stamp_001', chara_id: '001tom' }, text: 'ignored <emoji>emoji_other</emoji>' },
+  { name: 'whole-message stamp', text: '<emoji>image_mobile_stamp_001</emoji>' },
+  { name: 'inline stamp-shaped emoji', text: 'hello <emoji>image_mobile_stamp_001</emoji> and <emoji>emoji_abc</emoji>' },
+  { name: 'repeated emoji', text: '<emoji>emoji_abc</emoji><emoji>emoji_abc</emoji>' },
+  { name: 'invalid inline marker stays text', text: 'hello <emoji>../invalid</emoji>' },
+]
+for (const fixture of sourceMessageCases) {
+  const step = { step_id: 1, type: fixture.stamp ? 'talk_stamp' : 'talk',
+    state: { spines: [], talk_mode: true }, chara_id: '001tom', stamp: fixture.stamp,
+    dialogue: { speaker: '天ヶ瀬 冬馬', source_text: fixture.text } }
+  const message = consumer.stepToMessage(step)
+  const expectedUrls = message.isStamp ? [getStampUrl(message.stampId)]
+    : [...new Set(consumer.messageParts(message.display.text).filter(part => part.type === 'emoji')
+      .map(part => getEmojiUrl(part.id)))]
+  for (const schema_version of [1, 2]) {
+    const input = schema_version === 1 ? { schema_version, steps: [step] }
+      : { schema_version, runtime_contract: 'story-runtime-v2', steps: [{ ...step,
+        entry_snapshot: step.state, settled_snapshot: step.state, cues: [] }] }
+    const plan = createStoryAssetPlan(input, source)
+    const plannedUrls = plan.assets.filter(asset => asset.kind === 'stamp' || asset.kind === 'emoji')
+      .map(asset => asset.kind === 'stamp' ? getStampUrl(asset.id) : getEmojiUrl(asset.id))
+    assert.deepEqual([...plannedUrls].sort(), [...expectedUrls].sort(), `${fixture.name} / v${schema_version}`)
+  }
+}
 for (const [name, sourceText, helper] of [
   ['call scene background', callScene, 'getMobileBgUrl'],
   ['chat scene background', chatScene, 'getUnitMobileBgUrl'],
@@ -67,7 +110,8 @@ const unitCode = getUnitCodeByCharaId(selfChara)
 assert.ok(unitCode, 'the fixture character must resolve a unit')
 assert.ok(kinds.includes(`unit-mobile-background:${unitCode}`), kinds.join(','))
 assert.ok(kinds.includes('mobile-icon:001tom'))
-assert.ok(kinds.includes('stamp:image_mobile_stamp_001'), 'a stamp marker is a stamp requirement')
+assert.ok(kinds.includes('emoji:image_mobile_stamp_001'), 'an inline stamp-shaped marker uses the emoji URL')
+assert.ok(!kinds.includes('stamp:image_mobile_stamp_001'), 'mixed text is not a whole-message stamp')
 assert.ok(kinds.includes('emoji:emoji_abc'), 'a non-stamp marker is an emoji requirement')
 assert.ok(kinds.includes('idol-mobile-background:001tom'), 'a call uses the character surface, not the unit one')
 for (const asset of unitPlan.assets) assert.equal(typeof asset.id, 'string', `${asset.key} must carry an id`)
@@ -147,9 +191,8 @@ for (const effects of [
 //      - real history beats linear order, so one choice shows the scene the
 //        reader actually arrived from;
 //      - a boundary step stops inheritance rather than being passed through.
-//    A branch surface always originates from a step the plan also walks
-//    linearly, so the plan's reach is a superset by construction; what is
-//    asserted here is that the semantics agree, not that a surface is missing.
+//    These fixtures cover their named surfaces only; they do not prove a
+//    superset for arbitrary message histories or translated/choice markers.
 const branchScenario = { schema_version: 1, scenario_id: '1_4_001_01_e', steps: [
   { step_id: 1, type: 'talk', state: { spines: [], talk_mode: true },
     dialogue: { speaker_identity: { entity_id: '001tom' }, source_text: 'hi' } },
@@ -216,11 +259,11 @@ assert.equal(boundaryAt(2, [0]).primaryCharaId, '001tom')
 assert.equal(boundaryAt(2, [1]).mode, null, 'a boundary step ends inheritance instead of being passed through')
 assert.equal(boundaryAt(2, []).mode, null, 'the linear fallback stops at the same boundary')
 
-console.log('Communication asset parity verified: shared URL helpers, surface selection, tween coverage and no-op marking')
+console.log('Communication source-message consumer fixtures verified (strict/compat); URL/surface consistency and tween coverage passed; arbitrary histories/translations remain outside this proof')
 
-// The corpus run checks the plan against a second, independent walk of the
-// scenes, exactly as the scenes themselves drive it: same requirement helper,
-// same resolver, but the grouping recomputed from scratch.
+// The corpus run is a consistency walk using the same resolver/helper, not an
+// independent consumer proof. The production-function fixtures above supply
+// independent evidence for source message image selection.
 if (process.argv.includes('--local-sources')) {
   const manifest = JSON.parse(await fs.readFile(new URL('../public/data/reading/manifest.json', import.meta.url)))
   const totals = {}, unresolved = {}, accounted = {}, divergence = [], recordedReasons = new Set()
@@ -244,7 +287,7 @@ if (process.argv.includes('--local-sources')) {
     }
     for (const key of recorded) recordedCorpus.add(key)
 
-    // Independent walk: every step asks the runtime resolver what scene it is
+    // Consistency walk: every step asks the runtime resolver what scene it is
     // in, then asks the same helper what that scene loads. The walk runs on the
     // normalized scenario because that is what the runtime resolves against — a
     // v2 file keeps its mode in the entry snapshot, so reading the raw steps
@@ -255,7 +298,7 @@ if (process.argv.includes('--local-sources')) {
       const context = resolveCommunicationContext({ step, stepIndex, historyStack: [], steps, scenarioId })
       if (!context.mode) continue
       scenes++
-      const text = step?.dialogue?.source_text
+      const text = step?.stamp?.id ? null : step?.dialogue?.source_text
       const expected = communicationUiAssets({
         mode: context.mode, unitCode: context.unitCode || null, charaId: context.primaryCharaId || '',
         texts: typeof text === 'string' && text ? [text] : [],
@@ -285,4 +328,5 @@ if (process.argv.includes('--local-sources')) {
   console.log(JSON.stringify({ documents: manifest.entries.length, openDependencyPlans: open, communicationSteps: scenes,
     plannedRequirements, runtimeDivergence: divergence.length, sampleDivergence: divergence.slice(0, 10),
     perDocumentAssetTotals: totals, unresolved, accountedFields: accounted }, null, 2))
+  assert.equal(divergence.length, 0, 'linear consistency divergence must fail the verifier')
 }

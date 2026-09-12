@@ -23,7 +23,9 @@ export function communicationRequirements(scenario) {
   return steps.flatMap((step, stepIndex) => {
     const context = resolveCommunicationContext({ step, stepIndex, historyStack: [], steps, scenarioId })
     if (!context.mode) return []
-    const text = step?.dialogue?.source_text
+    // Explicit stamps replace the display text in MobileChatScene. The main
+    // plan already collects step.stamp, so do not invent hidden text images.
+    const text = step?.stamp?.id ? null : step?.dialogue?.source_text
     return [{
       stepIndex,
       mode: context.mode,

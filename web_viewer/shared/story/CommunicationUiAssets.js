@@ -34,21 +34,22 @@ export function emojiUrl(emojiId) {
 }
 
 /**
- * Inline `<emoji>` markers in message text. One marker shape carries both chat
- * emoji and stamps (anything named `image_mobile_stamp_*`), which is why the
- * split has to live in one place.
+ * Source message markers, following MobileChatScene / MobileMessageBubble:
+ * only a whole-message stamp goes through the stamp URL. Inside mixed text,
+ * every valid marker goes through the emoji URL, even a stamp-shaped id.
  */
 export function messageMarkers(text) {
   const stamps = new Set()
   const emojis = new Set()
   if (typeof text !== 'string' || !text) return { stamps: [...stamps], emojis: [...emojis] }
+  const wholeStamp = text.match(/^<emoji>(image_mobile_stamp_.+?)<\/emoji>$/)
+  if (wholeStamp) return { stamps: [wholeStamp[1]], emojis: [] }
   const pattern = /<emoji>(.+?)<\/emoji>/g
   let match
   while ((match = pattern.exec(text))) {
     const id = match[1]
     if (!/^[A-Za-z0-9._-]+$/.test(id)) continue
-    if (id.startsWith('image_mobile_stamp_')) stamps.add(id)
-    else emojis.add(id)
+    emojis.add(id)
   }
   return { stamps: [...stamps], emojis: [...emojis] }
 }
