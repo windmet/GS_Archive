@@ -214,3 +214,16 @@
 本轮页面检查新发现并对照确认的既有问题：窗口缩放后 Spine 不重排。当前构建首次截图角色偏左，下一段及稳定视口重载恢复；上一批 885a71a 的独立生产构建（5184）同样可复现“390px 定位角色 → 放大到 1280px → 角色停留旧横坐标”。PixiStageManager._observeResize 源码明确为保留拖拽位置而不重排 Spine，因此不将这次配置批记为首帧 / 缩放全面通过。
 
 下一批优先修复故事舞台的缩放重投影，保留 Spine Lab 拖拽语义且不重播 cue / 覆盖暂停或结算状态；再继续 P2 实际入口 / range、critical 失败恢复，以及音频和通信上下文的未闭合项。总体目标继续进行，P1–P5 尚未完成。
+
+## 故事舞台缩放重投影修复
+
+输入 HEAD：`116d089`。StoryViewer 显式启用 SpineStage 的 responsivePositions；其他舞台默认保留像素位置，不将布局行为绑定到诊断 releaseOwner。
+
+- ResizeObserver 按角色最近一次定位的视口重新投影 x / y，保留显式故事 baseline 和宽度比例下的 posY；不重跑 applyState、不重播 cue、不改 pose / scale / alpha。Spine Lab 默认保留手动拖拽位置。
+- 正在移动的角色投影起止点并使用最后一次采样的 eased progress；缩放不采样或推进 StoryClock，不新建 RAF，不重置时长。取消与移除清理对应投影记录，暂停期间不恢复移动。
+- 新增 `verify:story-stage-resize`，使用真实 manager / StoryClock、受控 ResizeObserver / RAF，覆盖固定 baseline、窄宽往返、暂停中移动、完成 / 取消、移除及 Lab 默认像素行为。position-clock、stage-loading、playback-controller 和 spine-atomic-fade 检查通过；后者两处旧源码断言更新为包含既有 isCurrent 守卫，不代表新增 GPU 淡入验收。
+- Vite native 生产构建通过：2505 modules，主入口 537.30 kB，保留大小提示。仓库外产物位于 `C:/Users/windm/.codex/qa/sidem-stage-resize-20260912/`。
+- 5186 生产构建使用未修改的 episodes/1_4_001_00_a.json / start_step=12。真实页面由 390×844 放大到 1280×800，角色在同一段对白重新居中；菜单打开后缩到 320×740 再关闭，仍为 1/16，无横向溢出。最终显式 prop 构建再验 320 → 1280，同样居中且对白不推进。保留既有 Spine.update / tint warn，无新增错误遮罩。
+- 浏览器验证范围为静态角色与菜单暂停时的布局；移动中缩放和 Lab 保留位置由上述受控测试验证，未执行实际 Lab 拖拽、原生后台切换或真实音频长稳。
+
+下一批回到 P2 实际入口 / range 的 critical / near / deferred 分类及失败恢复；音频、通信动态上下文、bundle renderer readiness、局部 buffering、transport / 缓存仍待推进。总体目标继续进行，P1–P5 尚未完成。

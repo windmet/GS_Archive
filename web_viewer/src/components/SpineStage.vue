@@ -108,6 +108,7 @@ const props = defineProps({
   manageBackground: { type: Boolean, default: false },
   debugControls: { type: Boolean, default: false },
   releaseOwner: { type: String, default: '' },
+  responsivePositions: { type: Boolean, default: false },
   nowMilliseconds: { type: Function, default: undefined },
 })
 
@@ -142,7 +143,7 @@ let costumeDictionary = {}
 onMounted(() => {
   if (!containerRef.value) return
   try {
-    manager = markRaw(new PixiStageManager(containerRef.value))
+    manager = markRaw(new PixiStageManager(containerRef.value, { responsiveSpinePositions: props.responsivePositions }))
     if (props.releaseOwner === 'story-player') {
       unregisterReleaseStage = storyReleaseProbe.registerStageManager(manager)
     }
@@ -466,8 +467,8 @@ function computeVisualRootY(id, baseY, posY = 0) {
 
 function positionSpine(id, posX, posY, baseY) {
   if (!manager) return
-  const rootY = computeVisualRootY(id, baseY, posY)
-  manager.setSpinePositionByGameCoord(id, posX, 0, rootY)
+  computeVisualRootY(id, baseY, posY)
+  manager.setSpinePositionByGameCoord(id, posX, posY, baseY)
 }
 
 function syncBoundsSnapshot(step = props.step) {
@@ -932,7 +933,7 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
       // Slide animation: use animateSpinePosition if slide_duration present
       if (spineState.slide_duration && spineState.slide_duration > 0) {
         const targetX = manager.width / 2 + posX * (manager.width / 1280)
-        manager.animateSpinePosition(sid, targetX, targetY, spineState.slide_duration, props.nowMilliseconds)
+        manager.animateSpinePosition(sid, targetX, targetY, spineState.slide_duration, props.nowMilliseconds, baseY)
       } else {
         manager.setSpineZoom(sid, spineState.idol_zoom)
         positionSpine(sid, posX, posY, baseY)

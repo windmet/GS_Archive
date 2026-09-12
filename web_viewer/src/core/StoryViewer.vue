@@ -12,7 +12,7 @@
     </div>
     <div class="viewer-stage">
     <!-- Spine rendering layer (background + characters) -->
-    <SpineStage ref="spineStageRef" :step="stageStep" :fallbackBg="firstAvailableBg" :debug-controls="RUNTIME_DEBUG" :now-milliseconds="storyRuntimeCues.nowMilliseconds" release-owner="story-player" />
+    <SpineStage ref="spineStageRef" :step="stageStep" :fallbackBg="firstAvailableBg" :debug-controls="RUNTIME_DEBUG" :now-milliseconds="storyRuntimeCues.nowMilliseconds" responsive-positions release-owner="story-player" />
 
     <!-- Top bar -->
     <PlayerTopBar

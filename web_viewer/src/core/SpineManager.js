@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js'
 import { MixBlend } from '@pixi-spine/base'
 import { easeOutCubic, runRafTween } from './rafTween.js'
+import { recordSpinePosition } from './SpinePositionLayout.js'
 
 export class SpineManager {
   constructor(manager) {
@@ -18,6 +19,7 @@ export class SpineManager {
       spine.x = this.manager.width * 0.5
     }
     spine.y = this.manager.height + 20
+    recordSpinePosition(entry, this.manager)
   }
 
   setSpinePositionByGameCoord(idolId, posX, posY = 0, baseY = null) {
@@ -26,12 +28,14 @@ export class SpineManager {
     if (entry._slideTweenRaf) {
       cancelAnimationFrame(entry._slideTweenRaf)
       entry._slideTweenRaf = null
+      entry._positionTween = null
     }
     const centerX = this.manager.width / 2
     const yBase = baseY != null ? baseY : this.manager.height + 20
     const coordScale = this.manager.width / 1280
     entry.spine.x = centerX + posX * coordScale
     entry.spine.y = yBase - posY * coordScale
+    recordSpinePosition(entry, this.manager, baseY)
   }
 
   bringToFront(idolId) {
@@ -317,6 +321,7 @@ export class SpineManager {
         if (entry._slideTweenRaf) {
           cancelAnimationFrame(entry._slideTweenRaf)
           entry._slideTweenRaf = null
+          entry._positionTween = null
         }
         entry._alphaTween?.cancel?.()
         entry._alphaTween = null
@@ -414,6 +419,7 @@ export class SpineManager {
     if (entry._slideTweenRaf) {
       cancelAnimationFrame(entry._slideTweenRaf)
       entry._slideTweenRaf = null
+      entry._positionTween = null
     }
     entry._alphaTween?.cancel?.()
     entry._alphaTween = null

@@ -19,6 +19,7 @@ import { Spine, SkeletonBinary, AtlasAttachmentLoader } from '@pixi-spine/runtim
 import { TextureAtlas } from '@pixi-spine/base'
 import { getBgUrl, getMouthSettingUrl, getSpineAtlasUrl, getSpineSkelUrl, getSilhouetteUrl } from '../utils/AssetResolver.js'
 import { resolveSpineTextureUrl } from '../utils/SpineTextureUrl.js'
+import { positionFrame, positionBaseline, projectSpinePosition, recordSpinePosition, resizeSpinePosition } from './SpinePositionLayout.js'
 import { easeOutCubic, runRafTween } from './rafTween.js'
 import { tweenOverlayFade, tweenOverlaySlide } from './transitionTweens.js'
 import { loadAndCreateSpine } from './spineSpawnPipeline.js'
@@ -72,6 +73,7 @@ export class PixiStageManager {
     this.container = containerEl
     this.width = options.width || containerEl.clientWidth || 1280
     this.height = options.height || containerEl.clientHeight || 720
+    this.responsiveSpinePositions = options.responsiveSpinePositions === true
 
     this.app = null
     this._destroyed = false
@@ -224,7 +226,8 @@ export class PixiStageManager {
               layout.baseY,
             )
           }
-          // Spines stay at their current positions on resize (user may have dragged them)
+          // Story layout opts in. Lab instances preserve manually dragged pixels.
+          for (const spineEntry of Object.values(this.spineInstances)) resizeSpinePosition(spineEntry, this)
         }
       }
     })
@@ -755,6 +758,7 @@ export class PixiStageManager {
       if (entry?._slideTweenRaf) {
         cancelAnimationFrame(entry._slideTweenRaf)
         entry._slideTweenRaf = null
+        entry._positionTween = null
       }
     }
   }
@@ -767,7 +771,7 @@ export class PixiStageManager {
    * @param {number} targetY - target screen Y
    * @param {number} duration - animation duration in seconds
    */
-  animateSpinePosition(idolId, targetX, targetY, duration, nowMilliseconds = () => performance.now()) {
+  animateSpinePosition(idolId, targetX, targetY, duration, nowMilliseconds = () => performance.now(), baseY) {
     const entry = this.spineInstances[idolId]
     if (!entry) return
     const { spine } = entry
@@ -776,6 +780,7 @@ export class PixiStageManager {
     if (entry._slideTweenRaf) {
       cancelAnimationFrame(entry._slideTweenRaf)
       entry._slideTweenRaf = null
+      entry._positionTween = null
     }
 
     const startX = spine.x
@@ -783,24 +788,38 @@ export class PixiStageManager {
     const dx = targetX - startX
     const dy = targetY - startY
     const durMs = duration * 1000
+    const startFrame = entry._positionLayout || positionFrame(this)
+    const targetFrame = positionFrame(this, baseY === undefined ? startFrame.baseY : baseY)
+    let lastEase = 0
+    const render = () => {
+      const start = this.responsiveSpinePositions ? projectSpinePosition({ x: startX, y: startY }, startFrame, this) : { x: startX, y: startY }
+      const end = this.responsiveSpinePositions ? projectSpinePosition({ x: targetX, y: targetY }, targetFrame, this) : { x: targetX, y: targetY }
+      spine.x = start.x + (end.x - start.x) * lastEase
+      spine.y = start.y + (end.y - start.y) * lastEase
+      const interpolatedBase = startFrame.baseY == null && targetFrame.baseY == null ? null
+        : positionBaseline(startFrame, this.height) + (positionBaseline(targetFrame, this.height) - positionBaseline(startFrame, this.height)) * lastEase
+      recordSpinePosition(entry, this, interpolatedBase)
+    }
+    entry._positionTween = null
 
     if (durMs <= 0 || (dx === 0 && dy === 0)) {
-      spine.x = targetX
-      spine.y = targetY
+      lastEase = 1
+      render()
       return
     }
 
     const t0 = nowMilliseconds()
+    if (this.responsiveSpinePositions) entry._positionTween = { render }
     const tick = () => {
       const elapsed = Math.max(0, nowMilliseconds() - t0)
       const t = Math.min(elapsed / durMs, 1)
-      const ease = 1 - Math.pow(1 - t, 3)  // easeOutCubic
-      spine.x = startX + dx * ease
-      spine.y = startY + dy * ease
+      lastEase = 1 - Math.pow(1 - t, 3)  // easeOutCubic
+      render()
       if (t < 1) {
         entry._slideTweenRaf = requestAnimationFrame(tick)
       } else {
         entry._slideTweenRaf = null
+        entry._positionTween = null
       }
     }
     entry._slideTweenRaf = requestAnimationFrame(tick)
@@ -1709,6 +1728,7 @@ export class PixiStageManager {
     if (entry._slideTweenRaf) {
       cancelAnimationFrame(entry._slideTweenRaf)
       entry._slideTweenRaf = null
+      entry._positionTween = null
     }
 
     spine.customIsTalking = false
