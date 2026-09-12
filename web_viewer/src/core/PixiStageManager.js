@@ -18,6 +18,7 @@ import * as PIXI from 'pixi.js'
 import { Spine, SkeletonBinary, AtlasAttachmentLoader } from '@pixi-spine/runtime-3.8'
 import { TextureAtlas } from '@pixi-spine/base'
 import { getBgUrl, getMouthSettingUrl, getSpineAtlasUrl, getSpineSkelUrl, getSilhouetteUrl } from '../utils/AssetResolver.js'
+import { resolveSpineTextureUrl } from '../utils/SpineTextureUrl.js'
 import { easeOutCubic, runRafTween } from './rafTween.js'
 import { tweenOverlayFade, tweenOverlaySlide } from './transitionTweens.js'
 import { loadAndCreateSpine } from './spineSpawnPipeline.js'
@@ -1514,18 +1515,10 @@ export class PixiStageManager {
   }
 
   async _resolveTextureUrl(modelId, textureFile, { allowFallback = true } = {}) {
-    const primaryUrl = this._getTextureUrl(modelId, textureFile)
-    if (await this._isImageUrl(primaryUrl)) return primaryUrl
-
-    if (allowFallback && textureFile !== 'comu.png') {
-      const fallbackUrl = this._getTextureUrl(modelId, 'comu.png')
-      if (await this._isImageUrl(fallbackUrl)) {
-        console.warn(`[PixiStageManager] Texture "${textureFile}" missing for "${modelId}", using comu.png`)
-        return fallbackUrl
-      }
-    }
-
-    return primaryUrl
+    return resolveSpineTextureUrl(modelId, textureFile, { allowFallback,
+      probe: url => this._isImageUrl(url),
+      onFallback: () => console.warn(`[PixiStageManager] Texture "${textureFile}" missing for "${modelId}", using comu.png`),
+    })
   }
 
   async _isImageUrl(url) {

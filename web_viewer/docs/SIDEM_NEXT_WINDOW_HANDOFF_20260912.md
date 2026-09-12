@@ -182,3 +182,19 @@
 - 1280×800 与 320×740 检查无横向溢出或错误遮罩；原始 episodes/1_4_001_00_a.json 能进入 3/23 对白、打开菜单，无 fixture 失败提示残留。日志仍保留既有 Spine.update / tint 两条 warn。无真实音频长稳或发布。
 
 下一批处理 Spine atlas 页依赖与特殊模型适配，把 deferred 逐类变成有证据的任务，继续保留 bundle 未渲染状态。通信外部译文 / history、音频 transport、入口分层 / critical 重试、首帧与局部 buffering 仍待推进；当前仍为 best-effort 准备后进入，不宣称 P1 或 P2–P5 完成。
+
+## P1 atlas 页执行与静态剪影适配
+
+输入 HEAD：`6dfc144`。预载现在读取普通模型 atlas 的完整响应体，以共享 decodeSpineAtlasText / readSpineAtlasPages 规则解析，并按原始 atlas 字节 SHA 调用已有 resolveSpineAtlasDependencies 扩展计划。
+
+- atlas 记录 atlas-parsed；新页保留完整相对路径 key、atlasSource.sha256 / page / modelId 和 bundle uses，加入有界队列。初始批次不足 6 项时仍执行新追加的任务；原输入计划与早期报告不被回溯修改。
+- SpineTextureUrl 与舞台共享页 URL 策略：先 HEAD 检查原页，单页可检查 comu.png 回退，多页禁止将缺页别名成同一张 comu.png。任务同时保留逻辑 page 和最终物理 URL。解析/页下载不等于 skeleton binary 解析或 GPU readiness，bundle 继续 deferred。
+- resolveStaticSpineModels 只依据现有 isSilhouetteOnlyModel 白名单，将这类 bundle 改为依赖 silhouette PNG，原 skel / atlas 标记 excluded。没有将其他模型的运行时失败推断为 PNG-only，也没有修改舞台显示政策。
+- 失败 atlas 不解除闭包；atlas 成功而某页失败时，逻辑依赖可以已闭合，但任务明确 failed，bundle 仍 pending。取消覆盖新发现页的 HEAD；退出后不再启动它的 Image 加载。
+- 新增 `verify:story-spine-preload`：真实 HTTP atlas / HEAD、受控 Image 事件，覆盖双目录同名页、缺第二页、多页不回退、单页回退、atlas SHA 与 step 用途、畸形路径、短批次追加任务、剪影不访问 rig、新页 HEAD 中取消。不是 synthetic PNG 的真实解码证明。
+- `verify:story-preload-status`、`verify:story-preload-cancellation`、`verify:spine-atlas-pages`、`verify:story-plan-preparation`、playback-controller、story-stage-loading、reading-playback 通过。取消 fixture 现在是 17 个预载任务（8 skel + 8 atlas + 1 image），初始 5 个二进制请求被终止，bundle 的 deferred 不算 cancelled。
+- Vite native 构建通过：2502 modules，主入口 535.51 kB，保留大小提示。产物 / 临时服务在仓库外 `C:/Users/windm/.codex/qa/sidem-spine-preload-20260912/`。
+- 5184 的生产构建使用真实 episode 内存副本，仅在末步 settled spines 增加白名单剪影模型，start_step=12。请求记录含 047shu / 001tom / 004ter 的 skel、atlas、页 HEAD 与 PNG GET；102sha_001_00 只请求 silhouette PNG，无对应 rig 请求。
+- 1280×800 中实际角色正常显示，unknown 姓名仍为 ？？？；390×844 从 1/16 推进至 2/16 白文，scrollWidth=390，无错误遮罩或预载失败提示。保留已有 Spine.update / tint 两条 warn。预载后舞台仍重复 GET 部分资源，尚未验证缓存命中或性能改善。
+
+下一步继续处理模型配置与其他未适配需求，并将实际入口 / range 纳入 P2 的 critical 集合和恢复动作。完整音频、通信动态上下文、bundle parse / renderer readiness、局部等待、transport / 缓存仍待实现或验收；未做正式长稳，不宣称整个 P1 已完成。

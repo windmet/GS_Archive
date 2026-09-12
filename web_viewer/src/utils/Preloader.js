@@ -1,7 +1,9 @@
 /** Native cache warming driven solely by StoryAssetPlan. Logical closure,
  * fetched bytes, image load and renderer readiness are distinct. Unsupported
  * requirements stay pending; no Pixi or audio runtime is imported here. */
-import { storyAssetAdapter } from './StoryAssetAdapters.js'
+import { storyAssetAdapter, resolveStaticSpineModels } from './StoryAssetAdapters.js'
+import { decodeSpineAtlasText, resolveSpineAtlasDependencies } from '../../shared/story/SpineAtlasPages.js'
+import { resolveSpineTextureUrl } from './SpineTextureUrl.js'
 
 const TIMEOUT_MS = 10000 // 10s per asset max
 
@@ -37,12 +39,15 @@ export class Preloader {
     if (plan?.schema_version !== 1 || !plan.source?.sha256 || !Array.isArray(plan.assets)) {
       throw new TypeError('Preloader requires a source-bound StoryAssetPlan')
     }
-    const outcomes = plan.assets.map(asset => ({ key: asset.key, kind: asset.kind, id: asset.id,
+    plan = resolveStaticSpineModels(plan)
+    const makeOutcome = asset => ({ key: asset.key, kind: asset.kind, id: asset.id,
       uses: asset.uses.map(use => ({ ...use })), dependencies: [...asset.dependencies],
-      dependencyState: asset.dependencyState, ...storyAssetAdapter(asset), error: null }))
+      atlasSource: asset.atlasSource && structuredClone(asset.atlasSource),
+      dependencyState: asset.dependencyState, ...storyAssetAdapter(asset), error: null })
+    const outcomes = plan.assets.map(makeOutcome)
     const tasks = outcomes.filter(task => task.state === 'discovered')
     const snapshot = phase => {
-      const succeeded = outcomes.filter(task => ['image-loaded', 'fetched'].includes(task.state)).length
+      const succeeded = outcomes.filter(task => ['image-loaded', 'fetched', 'atlas-parsed'].includes(task.state)).length
       const failed = outcomes.filter(task => task.state === 'failed').length
       const cancelled = outcomes.filter(task => task.state === 'cancelled').length
       const excluded = outcomes.filter(task => task.state === 'excluded').length
@@ -52,7 +57,7 @@ export class Preloader {
         unresolved: plan.unresolved.map(issue => ({ ...issue })), excluded, deferred,
         total: outcomes.length, succeeded, failed, cancelled,
         pending: outcomes.length - succeeded - failed - cancelled - excluded,
-        tasks: outcomes.map(task => ({ ...task, uses: task.uses.map(use => ({ ...use })), dependencies: [...task.dependencies] })) }
+        tasks: structuredClone(outcomes) }
     }
     const report = phase => {
       const value = snapshot(phase)
@@ -63,14 +68,39 @@ export class Preloader {
     try {
       // Process in batches to avoid flooding network.
       const BATCH_SIZE = 6
-      for (let i = 0; i < tasks.length; i += BATCH_SIZE) {
+      for (let i = 0; i < tasks.length;) {
         signal?.throwIfAborted()
-        await Promise.all(tasks.slice(i, i + BATCH_SIZE).map(async outcome => {
+        const batch = tasks.slice(i, i + BATCH_SIZE)
+        i += batch.length
+        await Promise.all(batch.map(async outcome => {
           outcome.state = 'loading'
           try {
-            outcome.state = outcome.operation === 'image'
-              ? await this._preloadImage(outcome.url, { signal })
-              : await this._preloadBinary(outcome.url, outcome.key, signal)
+            if (outcome.operation === 'atlas') {
+              const { text, sha256 } = await this._preloadAtlas(outcome.url, signal)
+              signal?.throwIfAborted()
+              plan = resolveSpineAtlasDependencies(plan, { modelId: outcome.id, atlasText: text, atlasSha256: sha256, modelKind: 'spine' })
+              const bundle = plan.assets.find(asset => asset.key === `spine-bundle:${outcome.id}`)
+              const bundleOutcome = outcomes.find(task => task.key === bundle.key)
+              Object.assign(bundleOutcome, { dependencies: [...bundle.dependencies], dependencyState: 'complete',
+                atlasSource: structuredClone(bundle.atlasSource), reason: 'renderer-pending:spine-bundle' })
+              for (const asset of plan.assets) {
+                if (outcomes.some(task => task.key === asset.key)) continue
+                const added = makeOutcome(asset)
+                added.allowFallback = bundle.atlasSource.pages.length === 1
+                outcomes.push(added)
+                tasks.push(added)
+              }
+              outcome.state = 'atlas-parsed'
+              outcome.atlasSource = { sha256 }
+            } else if (outcome.operation === 'spine-page') {
+              outcome.url = await this._resolvePage(outcome, signal)
+              signal?.throwIfAborted()
+              outcome.state = await this._preloadImage(outcome.url, { signal })
+            } else {
+              outcome.state = outcome.operation === 'image'
+                ? await this._preloadImage(outcome.url, { signal })
+                : await this._preloadBinary(outcome.url, outcome.key, signal)
+            }
           }
           catch (error) {
             outcome.state = signal?.aborted ? 'cancelled' : 'failed'
@@ -131,6 +161,32 @@ export class Preloader {
       if (!body.size) throw new Error(`Empty response: ${url}`)
       return 'fetched'
     }, TIMEOUT_MS, label, signal)
+  }
+
+  static async _preloadAtlas(url, signal) {
+    return withTimeout(async taskSignal => {
+      const response = await fetch(url, { signal: taskSignal })
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`)
+      const bytes = await response.arrayBuffer()
+      if (!bytes.byteLength) throw new Error(`Empty atlas: ${url}`)
+      const hash = await crypto.subtle.digest('SHA-256', bytes)
+      return { text: decodeSpineAtlasText(bytes), sha256: `sha256:${Array.from(new Uint8Array(hash), byte => byte.toString(16).padStart(2, '0')).join('')}` }
+    }, TIMEOUT_MS, `atlas ${url}`, signal)
+  }
+
+  static async _resolvePage(task, signal) {
+    return withTimeout(taskSignal => resolveSpineTextureUrl(task.atlasSource.modelId, task.atlasSource.page, {
+      allowFallback: task.allowFallback,
+      probe: async url => {
+        try {
+          const response = await fetch(url, { method: 'HEAD', cache: 'no-store', signal: taskSignal })
+          return response.ok && (response.headers.get('content-type') || '').startsWith('image/')
+        } catch (error) {
+          taskSignal.throwIfAborted()
+          return false
+        }
+      },
+    }), TIMEOUT_MS, `page ${task.id}`, signal)
   }
 
 }

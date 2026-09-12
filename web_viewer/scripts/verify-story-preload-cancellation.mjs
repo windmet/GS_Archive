@@ -100,7 +100,7 @@ try {
   assert.equal(await first, false, 'closed load resolves without publishing')
   await waitFor(() => closed.length === 5, 'native skeleton requests aborted during body consumption')
   await waitFor(() => statuses.at(-1)?.phase === 'cancelled', 'executor records cancelled pending tasks')
-  assert.equal(statuses.at(-1).cancelled, 9)
+  assert.equal(statuses.at(-1).cancelled, 17)
   assert.equal(statuses.at(-1).succeeded, 0)
   assert.equal(statuses.at(-1).failed, 0)
   assert.equal(player.preloadStatus.value, null, 'closed controller rejects cancellation status publication')
