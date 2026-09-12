@@ -32,11 +32,11 @@
       </div>
 
       <nav class="content-tabs" aria-label="工作内容">
-        <button :class="{ active: mode === 'stories' }" @click="mode = 'stories'"><BookOpen :size="16" /> Short Story</button>
-        <button :class="{ active: mode === 'lines' }" @click="mode = 'lines'"><MessageSquareText :size="16" /> 场景台词</button>
+        <button :class="{ active: activeMode === 'stories' }" @click="emit('update:mode', 'stories')"><BookOpen :size="16" /> Short Story</button>
+        <button :class="{ active: activeMode === 'lines' }" @click="emit('update:mode', 'lines')"><MessageSquareText :size="16" /> 场景台词</button>
       </nav>
 
-      <section v-if="mode === 'stories'" class="content-section">
+      <section v-if="activeMode === 'stories'" class="content-section">
         <div class="section-heading">
           <div><span>PLAYABLE STORIES</span><h3>工作短剧情</h3></div>
           <p>工作过程中出现的多段剧情</p>
@@ -83,18 +83,17 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { BookOpen, ChevronLeft, ChevronRight, MessageSquareText, Play } from '@lucide/vue'
 
 const props = defineProps({ idol: { type: Object, default: null }, idols: { type: Array, default: () => [] },
-  readingEntries: { type: Array, default: () => [] }, initialFile: { type: String, default: '' } })
-const emit = defineEmits(['read', 'select-idol', 'play'])
-const mode = ref('stories')
+  readingEntries: { type: Array, default: () => [] }, initialFile: { type: String, default: '' },
+  mode: { type: String, default: 'stories' } })
+const emit = defineEmits(['read', 'select-idol', 'play', 'update:mode'])
 const readingByFile = computed(() => new Map(props.readingEntries.filter(entry => entry.status === 'ready').map(entry => [entry.source_file, entry])))
-watch(() => [props.idol, props.initialFile], () => {
-  mode.value = props.idol?.scene_lines.some(line => line.compiled_file === props.initialFile) ? 'lines' : 'stories'
-}, { immediate: true })
+const activeMode = computed(() => (props.mode === 'lines' || props.idol?.scene_lines.some(line => line.compiled_file === props.initialFile))
+  ? 'lines' : 'stories')
 const totalVoices = computed(() => [...(props.idol?.short_stories || []), ...(props.idol?.scene_lines || [])].reduce((sum, item) => sum + (item.voice_count || 0), 0))
 const namedLocations = computed(() => [...(props.idol?.short_stories || []), ...(props.idol?.scene_lines || [])].filter(item => item.background_name).length)
 

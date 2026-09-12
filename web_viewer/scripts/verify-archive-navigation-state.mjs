@@ -34,7 +34,10 @@ for (const view of VALID_VIEWS) {
       for (const key of ['songParentView', 'eventParentView', 'storyDetailParentView', 'storyCollectionParentView']) navigation[key].value = parent
       const actual = navigation.currentArchiveRoute()
       const expected = legacyProjection(navigation)
-      if (view === 'work_archive' || (view === 'player' && returnView === 'work_archive')) expected.story = actual.story
+      if (view === 'work_archive' || (view === 'player' && returnView === 'work_archive')) {
+        expected.story = actual.story
+        expected.workMode = actual.workMode
+      }
       assert.deepEqual(actual, expected, `${view}/${returnView}/${parent}`)
       const url = buildArchiveUrl('http://localhost/?runtimeDebug=1', actual)
       assert.equal(url.href, buildArchiveUrl('http://localhost/?runtimeDebug=1', expected).href)
@@ -128,4 +131,25 @@ assert.equal(independent.view.value, 'gashas')
 assert.equal(independent.filterQuery.value, 'FES')
 assert.equal(independent.currentGashaCategory.value, 'growing_fes')
 assert.equal(independent.currentArchiveRoute().parentView, '')
+
+// A non-default story chapter owns its collection route identity so refresh
+// and Player return can reopen the exact accordion row.
+let collectionSelectionCommits = 0
+const collectionContext = vm.createContext({
+  currentStoryFile: independent.currentStoryFile,
+  commitArchiveSelection: () => { collectionSelectionCommits++ },
+})
+const selectChapterSource = app.match(/function selectStoryCollectionChapter\([^]*?\n\}/)?.[0]
+assert.ok(selectChapterSource, 'story collection selection handler exists')
+vm.runInContext(selectChapterSource, collectionContext)
+independent.currentStoryFile.value = ''
+collectionContext.selectStoryCollectionChapter({ story: { file: '1_4_001_01.json' } })
+assert.equal(independent.currentStoryFile.value, '1_4_001_01.json')
+assert.equal(collectionSelectionCommits, 1)
+collectionContext.selectStoryCollectionChapter({ file: 'fallback.json' }, { sync: false })
+assert.equal(independent.currentStoryFile.value, 'fallback.json')
+assert.equal(collectionSelectionCommits, 1, 'Player entry updates chapter identity without a redundant history entry')
+assert.match(app, /@select-chapter="selectStoryCollectionChapter"/)
+assert.match(app, /:mode="currentWorkMode"/)
+assert.match(app, /@update:mode="setWorkMode"/)
 console.log(`Archive navigation state: ${fields.length} scoped refs and ${cases} view/return/parent projection + URL cases passed`)

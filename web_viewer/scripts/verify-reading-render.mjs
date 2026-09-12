@@ -27,6 +27,13 @@ try {
     }))
     assert.ok(workHtml.includes(`aria-label="阅读 ${initialFile ? 'Office' : 'Short'}"`), 'work return opens the matching content tab')
   }
+  const workLinesHtml = await renderToString(createSSRApp(Work, {
+    idol: { idol_code: '001tom', short_stories: [{ id: 'short', title: 'Short', compiled_file: 'short.json' }],
+      scene_lines: [{ id: 'line', background_name: 'Office', compiled_file: 'line.json' }] },
+    initialFile: '', mode: 'lines',
+    readingEntries: [{ document_id: 'line', source_file: 'line.json', status: 'ready' }],
+  }))
+  assert.ok(workLinesHtml.includes('工作场景台词'), 'explicit Work tab survives a URL-only return without a selected file')
   for (const [status, expected] of [
     ['loading', '正在载入正文'], ['empty', '没有可显示的正文'],
     ['not-generated', '尚未生成阅读正文'], ['error', '正文暂时无法载入'],

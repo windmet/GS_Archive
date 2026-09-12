@@ -19,6 +19,7 @@ const ROUTE_QUERY_KEYS = [
   'story_mode',
   'story_section',
   'story',
+  'work_mode',
   'mobile_mode',
   'mobile_scenario',
   'event_scope',
@@ -85,6 +86,7 @@ const VALID_GASHA_TYPES = new Set(['all', 'standard_pickup', 'growing_fes', 'sta
 const VALID_STORY_AVAILABILITY = new Set(['all', 'playable', 'missing'])
 const VALID_STORY_SORTS = new Set(['domain', 'title', 'resource', 'steps_desc'])
 const VALID_STORY_MODES = new Set(['portal', 'search'])
+const VALID_WORK_MODES = new Set(['stories', 'lines'])
 const VALID_SONG_SCOPES = new Set(['all', 'movie', 'mvlive', 'layered', 'oneshot', 'special'])
 const VALID_MOBILE_MODES = new Set(['personal', 'phone', 'unit', 'random'])
 const VALID_RETURN_VIEWS = new Set([...VALID_VIEWS].filter(view => !['player', 'spine_lab', 'chibi_stage'].includes(view)))
@@ -269,6 +271,7 @@ export function normalizeArchiveRoute(input = {}) {
     storyMode: allowed(clean(input.storyMode), VALID_STORY_MODES, 'portal'),
     storySection: clean(input.storySection),
     story: normalizeScenarioFile(input.story || ''),
+    workMode: allowed(clean(input.workMode), VALID_WORK_MODES, 'stories'),
     mobileMode: view === 'mobile_archive' && clean(input.category) === 'idol_phone'
       ? 'phone'
       : allowed(clean(input.mobileMode), VALID_MOBILE_MODES, 'personal'),
@@ -525,6 +528,7 @@ export function readArchiveRoute(input = null) {
     storyMode: params.get('story_mode'),
     storySection: clean(params.get('story_section')),
     story: params.get('story'),
+    workMode: params.get('work_mode'),
     mobileMode: params.get('mobile_mode'),
     mobileScenario: params.get('mobile_scenario'),
     eventScope: params.get('event_scope'),
@@ -572,6 +576,7 @@ export function buildArchiveUrl(input, route) {
       if (normalized.storyType) url.searchParams.set('story_type', normalized.storyType)
       if (normalized.storySection) url.searchParams.set('story_section', normalized.storySection)
       if (normalized.story) url.searchParams.set('story', normalized.story)
+      if (normalized.workMode !== 'stories') url.searchParams.set('work_mode', normalized.workMode)
       return url
     }
   }
@@ -592,6 +597,7 @@ export function buildArchiveUrl(input, route) {
   if (normalized.storyMode !== 'portal') url.searchParams.set('story_mode', normalized.storyMode)
   if (normalized.storySection) url.searchParams.set('story_section', normalized.storySection)
   if (normalized.story) url.searchParams.set('story', normalized.story)
+  if (normalized.workMode !== 'stories') url.searchParams.set('work_mode', normalized.workMode)
   if (normalized.mobileMode !== 'personal') url.searchParams.set('mobile_mode', normalized.mobileMode)
   if (normalized.mobileScenario) url.searchParams.set('mobile_scenario', normalized.mobileScenario)
   if (normalized.eventScope !== 'all') url.searchParams.set('event_scope', normalized.eventScope)

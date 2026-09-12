@@ -52,7 +52,7 @@
           :class="{ expanded: expandedChapterId === chapter.id, unavailable: !chapter.exists, canonical: chapter.canonicalRelation }"
         >
           <div class="chapter-summary">
-            <button class="chapter-toggle" :aria-expanded="expandedChapterId === chapter.id" @click="toggleChapter(chapter.id)">
+            <button class="chapter-toggle" :aria-expanded="expandedChapterId === chapter.id" @click="toggleChapter(chapter)">
               <span class="chapter-number">{{ String(chapterIndex + 1).padStart(2, '0') }}</span>
               <span class="chapter-identity">
                 <small>{{ chapter.label }}</small>
@@ -154,7 +154,7 @@ const props = defineProps({
   readingEntries: { type: Array, default: () => [] },
   readingError: { type: String, default: '' },
 })
-const emit = defineEmits(['read-episode', 'retry-reading', 'play-chapter', 'play-episode', 'open-gasha', 'open-idol-story'])
+const emit = defineEmits(['read-episode', 'retry-reading', 'play-chapter', 'play-episode', 'select-chapter', 'open-gasha', 'open-idol-story'])
 const expandedChapterId = ref('')
 const readingByFile = computed(() => new Map(props.readingEntries.filter(e => e.status === 'ready' && e.source_file).map(e => [e.source_file, e])))
 const readingEntry = episode => readingByFile.value.get(episode.file)
@@ -177,8 +177,10 @@ watch(() => [props.collection?.id, props.initialChapterId], () => {
     props.collection?.chapters?.[0]?.id || ''
 }, { immediate: true })
 
-function toggleChapter(chapterId) {
-  expandedChapterId.value = expandedChapterId.value === chapterId ? '' : chapterId
+function toggleChapter(chapter) {
+  const nextChapterId = expandedChapterId.value === chapter.id ? '' : chapter.id
+  expandedChapterId.value = nextChapterId
+  if (nextChapterId) emit('select-chapter', chapter)
 }
 
 function externalResourcesForChapter(chapterId) {

@@ -1,6 +1,6 @@
 # Archive Navigation B2 Inventory — 2026-09-12
 
-> 2026-09-12 最新前置修复：见 [关系链逻辑盘点与交接](ARCHIVE_RELATION_CHAIN_CLOSEOUT_20260912.md)。Song→Idol/Unit 等遗漏关系、多层来源、Reader 返回及成员卡片网格刷新已修复；本轮完成定向 Browser 和代码回归，完整关系图/390px/Back-Forward 与原 N01/N23 收尾由验收窗口继续。之后再开始 U0/U1 门户启动 UX。历史 PASS 保持原证据范围，不外推为整张导航图已验收。
+> 2026-09-12 最新收口：N01/N23 已在桌面与 390px 完成 Portal 刷新往返，具体证据见文末。旧导航基线冻结，下一步进入 [启动入口与门户 UX](PORTAL_STARTUP_UX_PLAN_20260912.md) 的 U0。
 
 ## 范围与证据边界
 
@@ -43,7 +43,7 @@
 
 | 旅程 | 首轮状态 | 证据/缺口 |
 | --- | --- | --- |
-| N01 | PARTIAL | 集合/Player return已有测试；Portal与旧主线位置待Browser |
+| N01 | PASS | 主线第1章非默认第二话在集合、Player返回及Portal刷新往返后均恢复展开位置；桌面/390px已实测 |
 | N02 | PASS | 活动筛选、长列表滚动与活动实体焦点在桌面/390px返回后恢复 |
 | N03 | PASS | Jupiter→歌曲`unmikn`→Jupiter已实测；组合详情无tab，tab项为N/A |
 | N04 | PASS | Jupiter→活动430018→Jupiter已实测，活动breadcrumb保持活动层级 |
@@ -65,7 +65,7 @@
 | N20 | PASS | event/song/gasha required/fallback已有route回归 |
 | N21 | PASS | Reader版本/行/range错误已有可解释失败回归 |
 | N22 | PASS | navigation intent迟到响应抑制已有回归 |
-| N23 | PARTIAL | 路由字段可往返；各组件选择/tab需逐页Browser |
+| N23 | PASS | Work场景台词、偶像剧情指定话目、Mobile组合通信指定条目均在Portal刷新往返后精确恢复；桌面/390px已实测 |
 | N24 | PASS | archive_status→Spine→Chibi 5/5就绪→archive_status已实测，卸载清理合同已回归锁定 |
 
 ## 第一实现批边界
@@ -143,3 +143,11 @@ N17从冬马SR的12项列表滚至末项`001tom_sr13`（约1106/1106），进入
 该旅程还暴露episode2的`103kur_001_00 / 黒井社長`只有正式剪影PNG、没有Spine bundle；旧预载会继续请求不存在的placement/mouth/atlas，Vite的HTML fallback又被当成JSON或atlas文本，最终产生4项失败。现将该模型加入审计过的静态剪影清单；只在其全部use均属于剪影bundle时排除人物placement/mouth预热，共用真实Spine人物的依赖仍保留。预载器拒绝HTML响应，atlas解析器也只接受`.png`页名，避免HTML标签再变成假纹理URL。Browser重载episode2后失败横幅消失，推进至12/28显示黒井社長全身黑色剪影，左上角没有社长/组合小图标，console error为0。
 
 `verify:card-filters`、portal/navigation/route/playback回归、story config/spine/atlas/silhouette、`verify:story-loading-safety`、runtime/stage/plan/asset-plan均通过；本地725个atlas页全部符合PNG合同。生产构建2511 modules、3m01s通过，入口`index-C1MBxdDq.js` 552.94kB，保留既有chunk提示，产物在`C:/Users/windm/.codex/qa/sidem-navigation-queue-loading-20260912/build`。N16/N17完成；下一批处理N01/N23尚缺的真实Browser覆盖。个人、卡片、通信不新增Reader入口。
+
+## N01/N23旧导航基线收口
+
+输入HEAD `3dc98a9`。N01真实路径为主线第1章打开非默认第二话`1_4_001_01.json`，再进入`episodes/1_4_001_01_a.json` Player。旧实现只在组件内展开章节，Player返回时回到默认PROLOGUE；现由集合组件上报所选章节，`currentStoryFile`成为集合、Player与Portal共同的规范章节身份。返回及刷新均重新展开第二话。
+
+N23真实路径覆盖三类选择态：`002sht`工作档案的“场景台词”、翔太个人故事`story_section=20202&episode=2020201`、Jupiter组合通信`mobile_mode=unit&mobile_scenario=20010010201`。Work tab此前仅存在于组件局部状态，Portal刷新后回到Short Story；现增加有界`work_mode=stories|lines`路由字段，Reader/Player与Portal来源一并携带。个人故事与Mobile沿用既有section/episode/mode/scenario合同。
+
+现有IAB Browser完成桌面交互往返；另以本机Edge CDP精确设置390×844，四条路径均在进入时和Portal刷新返回后保持目标状态、规范URL、390px viewport、横向溢出0、console、console error 0。`verify:archive-navigation-state`通过48 refs、1792组合、恢复及16条关系边；routes和Reader SSR通过；`npm run build:check`在仓库内`.analysis/build-check`完成2511 modules，入口`index-DkbbAeqS.js` 554.63kB，仅保留既有chunk体积提示。N01/N23由PARTIAL改为PASS，旧导航基线收口；下一阶段从U0启动合同开始。

@@ -30,6 +30,7 @@ export function useArchiveNavigationState() {
   const currentStoryMode = ref('portal')
   const currentStorySection = ref('')
   const currentStoryFile = ref('')
+  const currentWorkMode = ref('stories')
   const currentMobileMode = ref('personal')
   const currentMobileScenarioId = ref('')
   const currentEventScope = ref('all')
@@ -60,6 +61,7 @@ export function useArchiveNavigationState() {
         category: currentEventId.value ? currentCategoryId.value : '',
         unit: currentEventId.value && eventParentView.value === 'unit_detail' ? currentArchiveUnitCode.value : '',
         storyType: currentStoryDomain.value, storySection: currentStorySection.value, story: currentStoryFile.value,
+        ...(currentStoryDomain.value === 'work' ? { workMode: currentWorkMode.value } : {}),
         event: currentEventId.value, parentView: currentEventId.value ? eventParentView.value : '',
         ...(detailSourceRoute.value.startsWith('?') ? { sourceRoute: detailSourceRoute.value } : {}),
         idol: currentStoryDomain.value === 'work' ? currentCharacterId.value : '',
@@ -105,6 +107,8 @@ export function useArchiveNavigationState() {
         || (view.value === 'player' && returnViewAfterPlayer.value === 'work_archive'))
         ? currentStoryFile.value
         : '',
+      ...((view.value === 'work_archive' || (view.value === 'player' && returnViewAfterPlayer.value === 'work_archive'))
+        ? { workMode: currentWorkMode.value } : {}),
       mobileMode: currentMobileMode.value,
       mobileScenario: currentMobileScenarioId.value,
       eventScope: currentEventScope.value,
@@ -165,6 +169,7 @@ export function useArchiveNavigationState() {
     currentStoryMode,
     currentStorySection,
     currentStoryFile,
+    currentWorkMode,
     currentMobileMode,
     currentMobileScenarioId,
     currentEventScope,

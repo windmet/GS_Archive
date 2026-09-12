@@ -286,6 +286,7 @@
         @read-episode="openCollectionReader" @retry-reading="loadReadingCatalog"
         @play-chapter="playStoryCollectionChapter"
         @play-episode="playStoryCollectionEpisode"
+        @select-chapter="selectStoryCollectionChapter"
         @open-gasha="openGasha"
         @open-idol-story="openBirthdayIdolStory"
       />
@@ -304,8 +305,10 @@
         :idols="workStoryData?.idols || []"
         :reading-entries="readingCatalogEntries"
         :initial-file="currentStoryFile"
+        :mode="currentWorkMode"
         @read="openWorkReader"
         @select-idol="selectWorkIdol"
+        @update:mode="setWorkMode"
         @play="playWorkStory"
       />
 
@@ -572,6 +575,7 @@ const {
   currentStoryMode,
   currentStorySection,
   currentStoryFile,
+  currentWorkMode,
   currentMobileMode,
   currentMobileScenarioId,
   currentEventScope,
@@ -1528,6 +1532,7 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
       currentStoryDomain.value = route.storyType || ''
       currentStorySection.value = route.storySection || ''
       currentStoryFile.value = route.story || ''
+      currentWorkMode.value = route.storyType === 'work' ? (route.workMode || 'stories') : 'stories'
       currentCharacterId.value = route.idol || ''
       currentEventId.value = route.event || ''
       eventParentView.value = route.event ? (route.parentView || '') : ''
@@ -1595,6 +1600,7 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
     currentStoryMode.value = route.storyMode || 'portal'
     currentStorySection.value = route.storySection || ''
     currentStoryFile.value = route.story || ''
+    currentWorkMode.value = route.workMode || 'stories'
     currentEventScope.value = route.eventScope || 'all'
     currentStoryAvailability.value = route.availability || 'all'
     currentStorySort.value = route.sort || 'domain'
@@ -1749,7 +1755,7 @@ function closeStoryReader() {
       readArchiveSourceRoute(detailSourceRoute.value).view === 'event_detail')) return restoreDetailSource(openStoryCatalog)
   if (currentStoryDomain.value === 'work' && currentCharacterId.value) {
     const pending = applyArchiveRoute({ view: 'work_archive', storyType: 'work', idol: currentCharacterId.value,
-      story: currentStoryFile.value }, { restoring: false })
+      story: currentStoryFile.value, workMode: currentWorkMode.value }, { restoring: false })
     const revision = navigation.getRevision()
     return pending.then(() => { if (navigation.getRevision() === revision) syncArchiveRoute() })
   }
@@ -1787,7 +1793,8 @@ function openEventReader(documentId) {
 
 function openWorkReader(file) {
   const entry = readingCatalogEntries.value.find(entry => entry.source_file === file && entry.status === 'ready')
-  if (entry) return openStoryReader(entry.document_id, { storyType: 'work', idol: currentCharacterId.value, story: file })
+  if (entry) return openStoryReader(entry.document_id, { storyType: 'work', idol: currentCharacterId.value,
+    story: file, workMode: currentWorkMode.value })
 }
 
 async function openReaderPlayback(rowId, { intent: inherited, route, fullDocument = false } = {}) {
@@ -2180,6 +2187,7 @@ function openWorkArchive(idolCode = '001tom') {
   captureDetailSource()
   currentStoryDomain.value = 'work'
   currentStoryFile.value = ''
+  currentWorkMode.value = 'stories'
   currentStoryMode.value = 'portal'
   currentStorySection.value = ''
   currentCharacterId.value = selected
@@ -2189,6 +2197,13 @@ function openWorkArchive(idolCode = '001tom') {
 function selectWorkIdol(idolCode) {
   if (!workStoryData.value?.by_idol_code?.[idolCode]) return
   currentCharacterId.value = idolCode
+  currentStoryFile.value = ''
+  commitArchiveSelection()
+}
+
+function setWorkMode(mode) {
+  if (!['stories', 'lines'].includes(mode) || currentWorkMode.value === mode) return
+  currentWorkMode.value = mode
   currentStoryFile.value = ''
   commitArchiveSelection()
 }
@@ -2423,15 +2438,24 @@ function playStoryDetail(entry = currentStory.value) {
 }
 
 function playStoryCollectionChapter(chapter) {
+  selectStoryCollectionChapter(chapter, { sync: false })
   const queue = (chapter?.episodes || []).filter(episode => episode.exists && episode.file)
   if (queue.length) startEpisodeQueue(queue, 0, 'story_collection')
   else if (chapter?.file && chapter.exists) loadScenario(chapter.file, 'story_collection')
 }
 
 function playStoryCollectionEpisode({ chapter, episode }) {
+  selectStoryCollectionChapter(chapter, { sync: false })
   const queue = (chapter?.episodes || []).filter(candidate => candidate.exists && candidate.file)
   const index = queue.findIndex(candidate => candidate.id === episode?.id)
   if (index >= 0) startEpisodeQueue(queue, index, 'story_collection')
+}
+
+function selectStoryCollectionChapter(chapter, { sync = true } = {}) {
+  const file = chapter?.story?.file || chapter?.file || ''
+  if (!file || currentStoryFile.value === file) return
+  currentStoryFile.value = file
+  if (sync) commitArchiveSelection()
 }
 
 function openStoryIdol(idolCode) {

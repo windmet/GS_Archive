@@ -52,7 +52,7 @@ assert.deepEqual(
   normalizeArchiveRoute({ view: 'idol_detail', idol: '001tom' }),
   {
     view: 'idol_detail', homeIdol: '', homeCue: '', homeCostume: '', category: 'idol', idol: '001tom', group: '', unit: '', unitFilter: '',
-    storyType: '', storyMode: 'portal', storySection: '', story: '', mobileMode: 'personal', mobileScenario: '', eventScope: 'all', availability: 'all', sort: 'domain', episode: '', card: '',
+    storyType: '', storyMode: 'portal', storySection: '', story: '', workMode: 'stories', mobileMode: 'personal', mobileScenario: '', eventScope: 'all', availability: 'all', sort: 'domain', episode: '', card: '',
     gasha: '', gashaType: 'all', rarity: 'all', assetState: 'all', relationState: 'all', query: '', song: '', songScope: 'all',
     event: '', scenario: '', startStep: 0, endStep: 0, voice: '', returnView: '', parentView: '',
   },
@@ -224,6 +224,11 @@ const workContext = readArchiveRoute('http://localhost/?view=work_archive&story_
 assert.equal(workContext.view, 'work_archive')
 assert.equal(workContext.storyType, 'work')
 assert.equal(workContext.idol, '001tom')
+assert.equal(workContext.workMode, 'stories')
+const workLinesContext = readArchiveRoute('http://localhost/?view=work_archive&story_type=work&idol=002sht&work_mode=lines')
+assert.equal(workLinesContext.workMode, 'lines')
+assert.equal(buildArchiveUrl('http://localhost/', workLinesContext).searchParams.get('work_mode'), 'lines')
+assert.equal(readArchiveRoute('http://localhost/?view=work_archive&work_mode=invalid').workMode, 'stories')
 
 const seasonalContext = readArchiveRoute('http://localhost/?view=seasonal_campaign&story_type=seasonal_campaign&story_section=white_day_2022')
 assert.equal(seasonalContext.view, 'seasonal_campaign')

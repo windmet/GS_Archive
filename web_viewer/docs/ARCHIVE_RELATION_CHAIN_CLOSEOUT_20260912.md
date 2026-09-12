@@ -57,7 +57,7 @@
 
 ## 交给验收 / 门户窗口
 
-1. 原 N01/N23 仍为 PARTIAL；先按本轮代码复核它们，再冻结旧导航。不用旧 22 PASS 宣称新关系图已全部验收。
+1. N01/N23 已按当前代码在桌面与390px完成Portal刷新往返，旧导航基线现已冻结；证据见 `ARCHIVE_NAVIGATION_B2_INVENTORY_20260912.md` 文末。
 2. 增补 N25（Song→Idol→Song）和 N26（Song→Unit→Song），本轮已做针对性 Browser；继续对照上表覆盖反向边、三层以上链、刷新和 Back/Forward、390px、滚动/焦点恢复，尤其 Card↔Gasha、Mobile↔IdolStory、非 Event Reader↔Player。
 3. 之后才按 PORTAL_STARTUP_UX_PLAN 做 U0/U1/U2/U3。本轮不改 Welcome / 首页偏好 / 媒体启动 ownership。
 4. 已再次通知执行窗口遵守 AGENTS.md 与 BUILD_ACCEPTANCE_POLICY。日常只用 build:check；不在 C 盘 / Codex QA 生成全量 public 副本；纯验收记录/文档不机械重建。实际 packaging 才按政策单独处理。
