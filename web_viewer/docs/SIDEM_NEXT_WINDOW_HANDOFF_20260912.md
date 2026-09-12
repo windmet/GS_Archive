@@ -386,3 +386,7 @@ archiveRoute新增单层from来源query：同源规范化、8192长度限制，�
 routes、archive-navigation-state（47 scoped refs、1792组合）、portal-navigation、archive-async-navigation、reading-playback通过。Vite构建3m09s通过，入口547.95kB，既有chunk提示保留，产物C:/Users/windm/.codex/qa/sidem-navigation-source-b1-20260912/build。Browser 1280×900活动430018→北斗报酬卡003hok_sr10，URL带单层event来源；返回恢复原活动。卡片页刷新后再次返回仍恢复活动，console error 0。N05来源/刷新已实测；N06/N07/N08/N09仍需各自Browser旅程，不能只凭共享入口写PASS。
 
 下一批修N24 archive_status→Spine/Chibi来源返回，并执行N18 Portal Back/Forward；之后处理列表滚动/焦点恢复。个人/卡片/通信Reader入口继续停止。
+
+## 导航N24：资源实验页来源
+
+Spine/Chibi实验页作为from持有页接入同一单层来源合同，但仍不能作为来源目标；从archive_status进入时保存资源页，两实验页互跳沿用该来源，返回统一恢复，旧无from深链仍回home。routes、navigation-state和archive-async-navigation通过。Browser archive_status→Spine URL携带编码资源来源；实验页刷新后“返回资料馆”恢复archive_status，console error 0。Vite构建2m46s通过，入口548.20kB，产物C:/Users/windm/.codex/qa/sidem-navigation-n24-20260912/build。下一步N18 Portal Back/Forward与列表滚动/焦点恢复。

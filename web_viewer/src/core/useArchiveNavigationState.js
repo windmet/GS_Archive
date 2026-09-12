@@ -82,6 +82,7 @@ export function useArchiveNavigationState() {
     return {
       view: view.value,
       ...((['card_detail', 'event_detail'].includes(view.value) ||
+          ['spine_lab', 'chibi_stage'].includes(view.value) ||
           (view.value === 'player' && ['card_detail', 'event_detail'].includes(returnViewAfterPlayer.value))) &&
           detailSourceRoute.value.startsWith('?')
         ? { sourceRoute: detailSourceRoute.value } : {}),

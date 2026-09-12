@@ -39,6 +39,7 @@ function setup() {
     resolveRouteGroup: () => null, resolveRouteUnit: () => null, resolveRouteEpisode: () => null,
     currentStoryCollection: { value: null }, currentEventEpisodes: { value: [] }, currentIdolStoryPage: { value: null },
     spineViewerLoader: async () => {}, chibiStageViewerLoader: async () => {},
+    captureDetailSource: () => {},
     currentScenario: { value: null }, currentScenarioInstance: { value: 0 },
     episodeQueue: useEpisodeQueue(),
     storyViewerLoader: async () => {},

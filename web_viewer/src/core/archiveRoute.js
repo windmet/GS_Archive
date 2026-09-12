@@ -135,6 +135,7 @@ const ARCHIVE_NAVIGATION = Object.freeze([
 
 const BREADCRUMB_HIDDEN_VIEWS = new Set(['home', 'portal', 'reader', 'player', 'spine_lab', 'chibi_stage'])
 const SOURCE_ROUTE_VIEWS = new Set(['card_detail', 'event_detail'])
+const SOURCE_ROUTE_OWNER_VIEWS = new Set([...SOURCE_ROUTE_VIEWS, 'spine_lab', 'chibi_stage'])
 const SOURCE_ROUTE_FORBIDDEN_VIEWS = new Set(['portal', 'reader', 'player', 'spine_lab', 'chibi_stage'])
 
 // A launcher return is a bounded, local archive query, never an external URL.
@@ -268,7 +269,7 @@ export function normalizeArchiveRoute(input = {}) {
   }
   if (route.view === 'player' && positiveInteger(input.initialStep)) route.initialStep = positiveInteger(input.initialStep)
   if (route.view === 'portal') route.portalFrom = buildPortalReturnQuery(readPortalReturnRoute(input.portalFrom))
-  const ownsSourceRoute = SOURCE_ROUTE_VIEWS.has(route.view) ||
+  const ownsSourceRoute = SOURCE_ROUTE_OWNER_VIEWS.has(route.view) ||
     (route.view === 'player' && SOURCE_ROUTE_VIEWS.has(route.returnView))
   if (ownsSourceRoute && clean(input.sourceRoute)) {
     const sourceRoute = buildArchiveSourceQuery(readArchiveSourceRoute(input.sourceRoute))

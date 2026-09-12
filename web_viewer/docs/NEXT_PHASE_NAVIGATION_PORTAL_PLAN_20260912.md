@@ -123,3 +123,5 @@ B1当前安全门槛到此冻结；后续缓存复用、弱网和长稳不作为
 B2首轮盘点见[ARCHIVE_NAVIGATION_B2_INVENTORY_20260912.md](./ARCHIVE_NAVIGATION_B2_INVENTORY_20260912.md)。已确认N05/N08/N09和N24为源码级断点；第一实现批从卡片详情的单层、有界来源路由开始，覆盖活动/卡池/偶像进入卡片及既有筛选列表返回。
 
 第一实现批已完成N05来源/刷新Browser闭环，并让N06/N07/N08/N09共享同一单层来源合同；详见B2 inventory执行结果。下一批先修N24 archive_status→Spine/Chibi返回，再执行N18 Portal Back/Forward与详情列表滚动/焦点恢复审计。
+
+N24的Spine来源/刷新返回已修复并实测，Spine/Chibi互跳沿用同一资源来源。下一步转入N18 Portal Back/Forward和列表滚动/焦点恢复。

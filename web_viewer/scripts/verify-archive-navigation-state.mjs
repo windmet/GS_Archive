@@ -80,6 +80,11 @@ independent.currentScenarioFile.value = 'card-story.json'
 assert.equal(independent.currentArchiveRoute().sourceRoute, sourcedCardRoute.sourceRoute, 'card playback preserves the detail source')
 independent.returnViewAfterPlayer.value = 'files'
 assert.equal('sourceRoute' in independent.currentArchiveRoute(), false, 'unrelated playback cannot inherit a detail source')
+independent.detailSourceRoute.value = buildArchiveSourceQuery({ view: 'archive_status' })
+independent.view.value = 'spine_lab'
+assert.equal(readArchiveSourceRoute(independent.currentArchiveRoute().sourceRoute).view, 'archive_status')
+independent.view.value = 'chibi_stage'
+assert.equal(readArchiveSourceRoute(independent.currentArchiveRoute().sourceRoute).view, 'archive_status')
 
 // Execute the production entry/return handlers and route projection together.
 // The old oracle above continues to cover routes without the new provenance.

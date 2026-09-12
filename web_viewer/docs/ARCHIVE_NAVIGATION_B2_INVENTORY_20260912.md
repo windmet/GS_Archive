@@ -77,3 +77,7 @@
 机器回归覆盖筛选cards→card URL往返、非法来源、禁止递归、card Player来源保留及无关Player不继承；routes、archive-navigation-state（47 refs、1792组合）、portal-navigation、archive-async-navigation、reading-playback通过。Browser 1280×900从活动430018打开北斗报酬卡`003hok_sr10`，URL包含单层编码的event来源；返回恢复`?view=event_detail&event=430018`。卡片页刷新后再次返回仍恢复同一活动，console error为0。N05的来源与刷新闭环由此修复；N06/N07/N08/N09已接同一入口代码及机器合同，仍需各自Browser旅程验收，列表滚动/焦点继续是独立缺口。
 
 Vite构建通过，入口`index-BIIisoxJ.js` 547.95kB，保留既有chunk提示；仓库外产物`C:/Users/windm/.codex/qa/sidem-navigation-source-b1-20260912/build`。下一批处理N24资源实验页来源，并开始N18 Portal Back/Forward与滚动/焦点恢复证据。
+
+## N24实现结果
+
+`spine_lab`和`chibi_stage`现在可作为单层来源的持有页，但仍被禁止成为来源目标；从资源页进入任一实验页会保存`archive_status`，两个实验页互跳时沿用同一来源，返回统一恢复来源。没有`from`的旧实验页深链继续回home。route/state回归覆盖两页共享来源。Browser实际打开`archive_status`→Spine实验室，URL为`?view=spine_lab&from=%3Fview%3Darchive_status`；刷新后点击“返回资料馆”恢复`?view=archive_status`，console error为0。Vite构建2m46s通过，入口548.20kB，产物`C:/Users/windm/.codex/qa/sidem-navigation-n24-20260912/build`。N24的Spine路径已实测，Chibi互跳共享代码已机器覆盖，仍待完整视觉旅程。

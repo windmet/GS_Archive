@@ -32,6 +32,12 @@ assert.equal(new URL(eventSource, 'http://localhost/').searchParams.has('from'),
 for (const badSource of ['https://example.com/', '?view=player&scenario=a.json', '?view=portal', '?view=spine_lab', '?' + 'q'.repeat(8193)]) {
   assert.equal(readArchiveSourceRoute(badSource).view, 'home')
 }
+const labRoute = readArchiveRoute(buildArchiveUrl('http://localhost/', {
+  view: 'spine_lab',
+  sourceRoute: buildArchiveSourceQuery({ view: 'archive_status' }),
+}))
+assert.equal(labRoute.view, 'spine_lab')
+assert.equal(readArchiveSourceRoute(labRoute.sourceRoute).view, 'archive_status')
 
 const invalidFilters = readArchiveRoute('http://localhost/?view=story_catalog&availability=nope&sort=nope&event_scope=mixed_unit_event')
 const episodePlayer = readArchiveRoute('http://localhost/?view=player&scenario=episodes%2F1_4_001_00_b.json&start_step=1&end_step=33&return=story_collection')

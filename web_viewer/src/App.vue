@@ -404,11 +404,11 @@
     />
 
     <!-- ====== SPINE LAB ====== -->
-    <SpineViewer v-if="view === 'spine_lab'" @back="goHome" @open-stage="openChibiStage" />
+    <SpineViewer v-if="view === 'spine_lab'" @back="closeArchiveExperiment" @open-stage="openChibiStage" />
     <ChibiStageViewer
       v-if="view === 'chibi_stage'"
       :audio-experiments="songExperimentalAudioData?.songs || {}"
-      @back="goHome"
+      @back="closeArchiveExperiment"
       @open-lab="openSpineLab"
     />
 
@@ -1542,7 +1542,7 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
     currentEventId.value = route.event || ''
     eventParentView.value = route.parentView || ''
     detailSourceRoute.value = (
-      ['card_detail', 'event_detail'].includes(route.view) ||
+      ['card_detail', 'event_detail', 'spine_lab', 'chibi_stage'].includes(route.view) ||
       (route.view === 'player' && ['card_detail', 'event_detail'].includes(route.returnView))
     ) ? (route.sourceRoute || '') : ''
     storyDetailParentView.value = (
@@ -1957,6 +1957,7 @@ function goArchiveBack() {
 
 async function openSpineLab() {
   return navigation.run(async intent => {
+    if (!['spine_lab', 'chibi_stage'].includes(view.value)) captureDetailSource()
     loading.value = true
     preloadProgress.value = 100
     await spineViewerLoader()
@@ -1967,12 +1968,17 @@ async function openSpineLab() {
 
 async function openChibiStage() {
   return navigation.run(async intent => {
+    if (!['spine_lab', 'chibi_stage'].includes(view.value)) captureDetailSource()
     loading.value = true
     preloadProgress.value = 100
     await chibiStageViewerLoader()
     if (!intent.isCurrent()) return
     commitView('chibi_stage')
   })
+}
+
+function closeArchiveExperiment() {
+  return restoreDetailSource(goHome)
 }
 
 function openArchiveStatus() {
