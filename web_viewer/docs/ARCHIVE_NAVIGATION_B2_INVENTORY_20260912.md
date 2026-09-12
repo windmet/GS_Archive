@@ -54,8 +54,8 @@
 | N11 | PASS | `drv999`→额外剧情602→Player→集合→原歌曲已实测 |
 | N12 | PASS | 主线Reader双语step-8→Player→Reader，文档、模式、焦点与滚动已实测恢复 |
 | N13 | PASS | Jupiter→活动430018→Reader→Player逐层返回Jupiter已实测，完整来源已修复并锁定 |
-| N14 | PASS | work idol/story来源已有回归 |
-| N15 | PASS | story detail作为Player return已有合同 |
+| N14 | PASS | Work切换翔太及场景台词tab后进入Reader，返回恢复偶像、tab与来源文件 |
+| N15 | PASS | 生日剧情详情→Player→详情→生日搜索目录已实测，详情CAST保持源名 |
 | N16 | PASS | episode queue下一集不改return已有回归 |
 | N17 | PASS | `portal_from`完整路由、刷新及迟到close抑制已有回归 |
 | N18 | PASS | Portal→歌曲的Browser Back/Forward、关闭Portal恢复完整筛选来源已实测 |
@@ -125,3 +125,9 @@ N12从主线Reader文档`1_4_001_01_d`的`step-8:text`、双语模式进入全�
 N13实测发现旧实现只在Player URL暂时保留活动`parent=unit_detail`，Player返回Reader后会丢parent，Reader返回活动后也失去Jupiter来源。修复后，活动Reader及其Player统一携带`category=idol`、`unit=01jup`、`event=430018`、`parent=unit_detail`及单层`from=?view=unit_detail&category=idol&unit=01jup`；Reader刷新/Player往返均可复原这些字段，Reader→活动恢复完整活动来源，活动→Jupiter恢复`unit_detail&unit=01jup`。实现复用既有导航refs，没有新增第二份Reader来源状态。
 
 `verify-reading-playback`新增真实App函数的活动来源往返与`closeStoryReader`目标验证，`verify-reading-navigation`覆盖完整非主线Reader路由；reading playback/navigation、routes、archive-navigation-state和archive-async-navigation均通过。生产构建通过，入口`index-BzsO9vel.js` 552.28kB，保留既有chunk提示；仓库外产物`C:/Users/windm/.codex/qa/sidem-navigation-reader-source-20260912/build`。下一批执行N14 Work选择态与N15详情→Player来源旅程。
+
+## N14/N15 Work与剧情详情旅程验收
+
+输入HEAD `9d7f8c1`。N14从冬马工作档案切换至`002sht / 御手洗 翔太`，选择“场景台词”并打开`1_5_002sht_1_5_002_00_0.json` Reader；返回后仍是翔太工作档案，场景台词tab保持激活，来源文件保留在规范路由中。N15使用生日剧情`1_x_001tom_1_7_001_01.json / 冬馬さん、お誕生日おめでとうございます！`，详情进入Player后返回原详情，再由详情返回`story_type=birthday&story_mode=search`的152项检索目录；筛选来源、路由和页面状态保持，无横向溢出或console error。
+
+Browser核对同时发现剧情详情CAST仍使用界面本地化名，显示“天濑冬马”，与卡片页及master-data源名不一致。`ArchiveStoryDetail`现只在CAST入口改用`idolSourceName`，显示恢复为`天ヶ瀬 冬馬`；其他需要本地化的界面不受影响。routes、archive-presentation、birthday-story-domain-landing和work-story-index通过；生产构建2m55s通过，入口`index-BnDyiRIQ.js` 552.28kB，保留既有chunk提示，产物位于`C:/Users/windm/.codex/qa/sidem-navigation-work-story-20260912/build`。下一批继续N16/N17队列与Portal来源旅程，再回收N01/N23剩余Browser缺口。

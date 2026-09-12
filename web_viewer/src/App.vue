@@ -267,7 +267,7 @@
         :story="currentStory"
         :related="currentStoryRelated"
         :visual-url="currentStoryVisualUrl"
-        :idol-name="idolDisplayName"
+        :idol-name="idolSourceName"
         :external-resources="currentStoryExternalResources"
         :reading-entries="readingCatalogEntries"
         @read="documentId => openStoryReader(documentId, { storyType: currentStoryDomain, story: currentStoryFile })"

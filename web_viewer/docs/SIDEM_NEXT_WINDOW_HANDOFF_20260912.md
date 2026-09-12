@@ -408,3 +408,9 @@ N02/N10也已在1280×900与390×844完成真实长列表返回验收：活动43
 ## 导航N11/N12/N13与活动Reader来源修复
 
 输入HEAD 59ab950。N11以`drv999`→额外剧情602→`5_03_000_22_a` Player核对逐层返回集合与原歌曲；N12以主线`1_4_001_01_d`的step-8、双语模式核对Player返回后revision、行、焦点及约769px正文滚动恢复。N13发现Jupiter来源的活动430018进入Reader/Player后，Player返回Reader会丢`parent=unit_detail`；现让活动Reader/Player统一保存`category=idol`、`unit=01jup`、`event=430018`、`parent=unit_detail`和单层unit来源。Browser复测Reader→Player→Reader→活动→Jupiter完整通过，无溢出或console error。reading playback/navigation、routes、navigation-state、async-navigation通过；生产构建入口552.28kB，产物`C:/Users/windm/.codex/qa/sidem-navigation-reader-source-20260912/build`。下一批N14/N15；个人/卡片/通信Reader入口仍停止。
+
+## 导航N14/N15与剧情CAST源名
+
+输入HEAD 9d7f8c1。N14实测冬马Work切换至翔太，选择“场景台词”并打开`1_5_002sht_1_5_002_00_0.json` Reader；返回恢复`idol=002sht`、场景台词tab和来源文件。N15以生日剧情`1_x_001tom_1_7_001_01.json`进入Player，返回恢复原详情，再返回精确恢复`story_type=birthday&story_mode=search`的152项目录。两条旅程无横向溢出或console error。
+
+N15页面同时暴露剧情详情CAST错误使用中文本地化名的问题。现仅将`ArchiveStoryDetail`的角色命名函数切换为`idolSourceName`，冬马恢复master-data源名`天ヶ瀬 冬馬`，不改变其他本地化界面。routes、archive-presentation、birthday-story-domain-landing与work-story-index通过；生产构建2m55s通过，入口552.28kB，产物`C:/Users/windm/.codex/qa/sidem-navigation-work-story-20260912/build`，保留既有chunk提示。下一批执行N16/N17队列和Portal来源旅程，再处理N01/N23尚缺的逐页Browser证据；个人/卡片/通信Reader入口仍停止。

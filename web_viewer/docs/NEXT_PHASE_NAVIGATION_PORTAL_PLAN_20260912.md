@@ -135,3 +135,5 @@ N06/N08/N09关系旅程已完成真实Browser验收：北斗活动关联卡逐�
 N03/N04已以Jupiter→`unmikn`歌曲、Jupiter→活动430018完成Browser验收：详情保持各自canonical breadcrumb，顶部返回恢复`unit=01jup`；组合详情无tab，N03 tab项为N/A。N24也已完成`archive_status`→Spine→Chibi 5/5角色就绪→资源页的视觉旅程，并为Chibi卸载时的动画、媒体、图层、runtime和Pixi资源释放补充回归边界。下一批执行N11及N12/N13的剧情集合、Reader与Player逐层返回。
 
 N11以`drv999`→额外剧情602→Player完成逐层返回原集合与歌曲；N12主线Reader的`1_4_001_01_d / step-8 / bilingual`在Player返回后恢复版本、行、焦点与正文滚动。N13实测发现Player返回Reader时会丢活动的Jupiter父来源，现已让活动Reader/Player共同序列化并恢复`category/unit/event/parent/from`，真实Browser可从Reader逐层返回活动430018和Jupiter。相关reading、routes、navigation-state、async回归及生产构建通过。下一批执行N14 Work选择态与N15详情→Player来源旅程。
+
+N14从工作档案切换翔太、进入“场景台词”Reader后返回，偶像、tab与来源文件均恢复。N15从生日剧情详情进入Player并逐层返回原详情及生日搜索目录，152项检索来源保持。剧情详情CAST另由本地化名改为master-data源名，Browser确认冬马显示为`天ヶ瀬 冬馬`。routes、archive-presentation、生日剧情域与工作剧情索引回归通过；生产构建产物为`C:/Users/windm/.codex/qa/sidem-navigation-work-story-20260912/build`。下一批执行N16/N17，再处理N01/N23剩余Browser证据。

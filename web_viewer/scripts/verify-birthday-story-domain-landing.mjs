@@ -92,6 +92,8 @@ assert.ok(sharedChapters.every(chapter => chapter.file && chapter.episodes[0].fi
 assert.match(repositorySource, /speakerDictionary: '\/data\/masterdata\/speaker_dictionary\.json'/)
 assert.match(repositorySource, /birthdayStorySemantic: '\/data\/masterdata\/birthday_story_semantic_index\.json'/)
 assert.match(appSource, /:birthday-domain="birthdayStoryDomain"/)
+assert.match(appSource, /<ArchiveStoryDetail[\s\S]*?:idol-name="idolSourceName"/,
+  'story detail CAST keeps the master-data idol name')
 assert.match(appSource, /\['main', 'unit_story', 'extra', 'birthday'\]\.includes\(domain\)/)
 assert.match(appSource, /returnsToDomainLanding = \['main', 'extra', 'birthday'\]\.includes\(domain\)/)
 assert.match(catalogSource, /mode === 'portal' && domain === 'birthday'/)
