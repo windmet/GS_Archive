@@ -80,23 +80,26 @@
         @select="onChoice"
       />
 
-      <!-- Title (episode/chapter title card). The key forces the FX to replay
-           for consecutive title steps instead of reusing the finished instance. -->
-      <TitleUI
-        v-if="currentStep.type === 'title'"
-        :key="currentStepIndex"
-        :step="currentStep"
-        @start="setTitleAnimationPending(true)"
-        @complete="onTitleAnimationSettled('complete')"
-        @cancel="onTitleAnimationSettled('cancel')"
-      />
-
       <!-- Pre-play synopsis -->
       <SynopsisUI v-if="currentStep.type === 'synopsis'" :step="currentStep" />
 
       <!-- Time/location caption -->
       <TextTimeUI v-if="currentStep.type === 'text_time'" :step="currentStep" @next="goNext" />
 
+    </div>
+
+    <!-- Keep a hidden title mounted so restoring UI resumes the same animation.
+         Each step owns its card and completion events, including adjacent titles. -->
+    <div v-if="compiledData && !HIDE_UI && !episodeFinished && currentStep.type === 'title'"
+      class="ui-overlay" :style="{ visibility: uiHidden ? 'hidden' : undefined }">
+      <TitleUI
+        :key="currentStepIndex"
+        :step="currentStep"
+        :paused="titlePaused"
+        @start="onTitleAnimationStart"
+        @complete="onTitleAnimationSettled('complete', $event)"
+        @cancel="onTitleAnimationSettled('cancel', $event)"
+      />
     </div>
 
     <!-- Bottom control dock -->
@@ -305,25 +308,39 @@ function setTitleAnimationPending(pending) {
   playbackController?.notifyStateChanged()
 }
 
-// The card is already invisible by the time the FX ends, so an advance that the
-// menu or backlog refuses has to be remembered and replayed: nothing else would
-// retry it, and the reader would be left on the faded-out card with no way to
-// tell the step had finished at all.
-let titleAdvancePending = false
+// A completion belongs to one mounted step. Pause and asynchronous cue
+// settlement may defer it, but navigation must never transfer it to a new card.
+let titleAdvancePending = null
+
+function onTitleAnimationStart(step) {
+  if (step === currentStep.value) setTitleAnimationPending(true)
+}
 
 function retryTitleAdvance() {
-  if (!titleAdvancePending || currentStep.value?.type !== 'title') { titleAdvancePending = false; return }
-  titleAdvancePending = false
-  goNext('title-animation')
+  const request = titleAdvancePending
+  if (!request || request.step !== currentStep.value) { titleAdvancePending = null; return }
+  if (titlePaused.value || request.settling) return
+  request.settling = true
+  const result = goNext('title-animation', () => {
+    if (titleAdvancePending !== request || currentStep.value !== request.step) return
+    request.settling = false
+    retryTitleAdvance()
+  })
+  if (result !== 'settled') request.settling = false
+  if (result !== 'blocked' && result !== 'settled' && titleAdvancePending === request) {
+    titleAdvancePending = null
+  }
 }
 
 // `cancel` means the step was left mid-flight, so advancing again would skip a
 // step the user never saw. Reduced motion emits neither event: the card stays
 // static and the step is dismissed by the user, exactly as it was before the FX.
-function onTitleAnimationSettled(event) {
+function onTitleAnimationSettled(event, step) {
+  if (step !== currentStep.value) return
   setTitleAnimationPending(false)
   if (event === 'cancel') return
-  titleAdvancePending = goNext('title-animation') === 'blocked'
+  if (!titleAdvancePending) titleAdvancePending = { step, settling: false }
+  retryTitleAdvance()
 }
 
 const getVoiceVolume = () => voicePlayer?.getVoiceVolume?.() || 0
@@ -641,15 +658,17 @@ function replayBacklogVoice(node) {
   })
 }
 
-function goNext(source = 'user') {
+function goNext(source = 'user', onSettled) {
   if (episodeFinished.value || backlogOpen.value || menuOpen.value) return 'blocked'
+  if (source === 'title-animation' && titlePaused.value) return 'blocked'
+  if (source !== 'title-animation') titleAdvancePending = null
   if (source !== 'title-animation' && titleAnimationPending.value) {
     // Title steps own the full FX duration: a manual advance (or an explicit
     // skip) drops the pending animation and moves on immediately.
     setTitleAnimationPending(false)
   }
   const reason = typeof source === 'string' ? `${source}-next` : 'user-next'
-  if (storyRuntimeCues.settleCurrentStep(reason)) return 'settled'
+  if (storyRuntimeCues.settleCurrentStep(reason, onSettled)) return 'settled'
   markStepRead()
   recordHistoryStep()
   leaveRestoredScene()
@@ -721,7 +740,8 @@ const stepSceneEffects = useStepSceneEffects({
   },
 })
 
-const runtimePauseReasons = new Set()
+const runtimePauseReasons = reactive(new Set())
+const titlePaused = computed(() => runtimePauseReasons.size > 0 || uiHidden.value)
 const storyRuntimeCues = useStoryRuntimeCues({
   compiledData,
   getStageStep: () => stageStep.value,
@@ -861,6 +881,7 @@ onMounted(async () => {
   window.__STORY_PLAYBACK__ = playbackController
   window.__STORY_AUDIO__ = storyAudioSession
   document.addEventListener('visibilitychange', handleVisibilityChange)
+  handleVisibilityChange()
   if (RUNTIME_DEBUG) {
     unregisterReleaseViewer = storyReleaseProbe.registerViewer(collectReleaseSoakSample)
     releaseSoakRecorder.record('viewer-attached')
@@ -956,6 +977,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  titleAdvancePending = null
   if (RUNTIME_DEBUG) console.debug('[Lifecycle] StoryViewer onBeforeUnmount')
   cleanupStepSceneEffects()
   cleanupRuntimeCues()
@@ -988,7 +1010,7 @@ watch(currentStep, (newStep, oldStep) => {
   // Catch-all release: any navigation that is not the title's own completion
   // (prev, backlog restore, go-to-step, episode end) must drop the hold. The
   // incoming title card re-claims it from its own onMounted.
-  titleAdvancePending = false
+  titleAdvancePending = null
   setTitleAnimationPending(false)
   handleStepChange(newStep, oldStep, { restore: Boolean(restoredSceneState.value) })
   playbackController?.notifyStateChanged()
@@ -998,8 +1020,10 @@ watch([menuOpen, backlogOpen, episodeFinished], ([menu, backlog, finished]) => {
   if (menu || backlog || finished) clearFadeAutoAdvance()
   playbackController?.setPaused('overlay', menu || backlog || finished)
   setRuntimeSessionPaused('overlay', menu || backlog || finished)
-  if (!menu && !backlog && !finished) retryTitleAdvance()
 }, { immediate: true })
+watch(titlePaused, paused => {
+  if (!paused) retryTitleAdvance()
+})
 watch(uiHidden, hidden => {
   preferencesRepository.update({ ui_hidden: hidden })
 })

@@ -2,6 +2,8 @@
 
 本文件是当前恢复入口。先核对实际 HEAD/工作区，再读取这里列出的专题文档；旧交接中的历史状态不代表现在。用户本轮要求核对新分支、修正偏移、更新文档并交接，不启动下一整批功能。
 
+**后续执行更新（同日）：** 用户已要求继续；标题生命周期修复与本轮验收见文末。上述“不启动下一整批功能”属于前次审计范围，不是当前停止指令。接下来进入 P1 需求边界核对，原生后台事件及系统 reduced-motion 补验仍单列保留。
+
 ## 检出与提交范围
 
 - 仓库：`E:/Web_build/SideM_Archived`；前端目录：`web_viewer`。
@@ -23,7 +25,7 @@
 | P1 通信 | 共享 URL helper、复用 presentation context、按 step 扫描通信背景/icon/stamp/emoji | 线性历史及原文扫描的覆盖边界仍需补验 |
 | P1 atlas | 既有逐页加载及依赖展开回归通过 | 特殊模型、配置/回退及计划到执行器的闭包仍未完成 |
 | P1 加载状态 | `src` 尚无 createStoryAssetPlan 消费者；旧 Preloader 仍在使用 | 可信任务状态、失败/取消/重试、入口 ready 尚待接入 |
-| 标题动画 | CSS v9 已接入 TitleUI，结束后尝试前进；本轮修复跨步骤残留的前进请求 | 暂停、隐藏、cue settlement 等生命周期验收优先补齐 |
+| 标题动画 | 保留 CSS v9；已接入共享暂停、步骤归属与 generation 内的 cue 结算续进，完成行为回归与 Browser 交互检查 | 原生后台事件、系统 reduced-motion 设置仍需补验；模拟路径已通过，详见文末 |
 | P2–P5 | 未形成分层执行、局部 buffering、统一 transport/cache 和网络验收闭环 | 保持原路线编号，不将代码存在写成产品交付 |
 
 路线仍以 [Reader/Player 产品契约](READER_PLAYER_NEXT_PHASE_20260909.md) 为准：
@@ -34,8 +36,8 @@
 
 1. **已修正：标题前进请求跨步骤残留。** `StoryViewer` 的 currentStep watcher 现在清除 `titleAdvancePending`。测试直接执行生产回调，覆盖离开标题后进入另一标题的场景。没有改变 v9 美术表现。
 2. **已纠正文档：** 旧交接的书签现状与 P2/P3 合并编号；特效/通信已实现部分补记为当前进展；共享 URL 不再被注释宣称能保证完整发现。
-3. **标题暂停仍是源码确认的接入缺口，尚未浏览器复现。** TitleUI 没有暂停输入或 CSS animation-play-state；Viewer 的 overlay/visibility 暂停只接到既有 controller/runtime。需验证菜单、backlog、后台隐藏、手动前进、返回、连续标题和 reduced-motion。不能新设无归属计时器，也不能让动画回调跳过用户暂停。
-4. **标题 settlement 风险待复现。** `goNext()` 可能返回 `settled`，完成处理仅记录 `blocked`；若标题同时存在待 settle 的 cue，卡片淡出后可能未前进。先构造生产链路复现，再决定如何由当前 step/generation 拥有重试，避免重复 advance。
+3. **标题暂停缺口已复现并修复。** 菜单暂停时原有七个 CSS 动画仍运行至 2760ms；模拟 visibility 暂停时旧代码会继续进入对白。现由同一 runtimePauseReasons 驱动 TitleUI 的整组 CSS 暂停，隐藏界面保留同一组件实例。Browser 菜单、backlog、界面隐藏恢复及模拟 visibility 检查通过，原生环境限制见文末。
+4. **标题 settlement 卡住已复现并修复。** 给真实标题步骤附加 30 秒 screen.fade cue，旧代码在显式结算后停留于淡出标题。现由运行代次内的结算完成回调唤醒当前步骤的续进请求；导航、销毁和旧标题事件不能推进下一标题。生产构建的同一边界 fixture 已进入后续对白。
 5. **通信 parity 的证据有限。** 扫描采用 `historyStack: []` 与 `dialogue.source_text`。verifier 已有不同历史产生不同 context 的 fixture，但整库对比仍沿用同一 resolver/线性输入，不能证明任意分支历史、显示译文标记和全部聊天消息都已覆盖。先从真实 MobileChat/MobileCall 消费输入独立核对；无法确定的需求保持 unresolved，不凭 chara_id 猜完整闭包。
 6. **特效 verifier 只验证 URL 请求。** 本轮通过时仍出现 fake texture 引起的 `reading 'x'` 警告；脚本还全局吞掉 unhandledRejection。不可作为真实 PIXI handler 成功渲染的证据。后续改成明确隔离请求探针/渲染验证，并让意外异常失败，不能仅隐藏日志。
 
@@ -56,9 +58,39 @@
 ## 新窗口按此执行
 
 1. `git status --short --branch`、fetch、核对 HEAD 和本文件；保留未跟踪 HTML。确认本机服务实际端口/PID，不能沿用历史 5175 的假设。
-2. **先收口标题生命周期这一小批。** 阅读 TitleUI/StoryViewer/currentStep 与 pause reason；复现上列风险，复用既有暂停所有权；补行为测试，再用真实桌面/390/320 页面检查动画、overlay、隐藏恢复、连续标题、reduced-motion、console 和溢出。沿用用户 v9 设计，不另起视觉重做。
+2. **标题生命周期代码与本轮可执行验收已完成，保留两项环境补验。** 见文末；不要重新实现暂停或引入标题计时器。后续有支持原生后台事件/系统 reduced-motion 的浏览器环境时补验，不将模拟检查改写为原生事件已验证。沿用用户 v9 设计。
 3. **接着收口 P1 的剩余需求边界。** 独立核对通信消费者与分支历史、修正特效探针证据，列出特殊模型/配置回退未闭合项。只在有真实消费者证据后解除 pending/unresolved。
 4. **再接 P1 执行与状态，逐批进入 P2–P5。** 区分 discovered/fetched/decoded/renderable、failed/cancelled；进度不能把失败计成资源 ready。定义取消、迟到响应隔离和重试，再替换旧 Preloader；不要一次性合入整个加载重构。
 5. 每个可审阅小批做适当验证、显式路径 commit、推送同名分支；不默认开 PR 或部署。更新本交接或新增有明确入口的新交接，保留未验收事项。
 
 补充约束：Wikiwiki 是用户既有补字参考，尚无本轮批量导入授权需求；缺字工作仍应保留来源和文本边界。Sekai 审计的借鉴继续落实在轻量 Reader、消费者驱动依赖、可信加载和故障可见性上，不为模仿成熟项目扩展无关框架。
+
+## 继续执行：标题生命周期修复与验收（2026-09-12）
+
+输入 HEAD：`61a8449`。仍在 `codex/p1-effect-texture-deps`；未跟踪 v9 HTML 保留。
+
+实现：
+
+- TitleUI 接收暂停状态，根动画及所有子动画一起暂停；start/complete/cancel 携带所属 step。
+- Viewer 复用 reactive runtimePauseReasons；挂载时读取初始 document.hidden。界面隐藏时保留标题实例，以 visibility 隐藏并暂停，恢复不重播开场。
+- 标题完成请求绑定 step，并等待真实 cue settlement Promise 完成；暂停中不推进。Runtime 回调校验 generation；导航/销毁清除请求，旧卡片取消或完成事件不影响新卡片。
+- 没有增加定时器，没有修改 v9 关键帧、美术尺寸、剧情文本或数据产物。
+
+验证入口与证据：
+
+| 范围 | 结果 / 边界 |
+| --- | --- |
+| `verify:title-transition` | 执行生产 Viewer 回调及真实 Runtime scheduler/handle，覆盖暂停、结算期间暂停、重复完成、overlay 竞态、连续标题归属、手动 next、销毁和 frame 清理 |
+| `verify:playback-controller`、`verify:story-runtime-foundation` | 通过 |
+| Vite native 构建 | 2497 modules；copyPublicDir:false，仓库外 build-final；保留主入口 >500 kB 提示 |
+| Browser 入口 | `mcp__cua_repl` 内置 Browser 可用，用户纠正后改用它；无需另装 Browser。早期复现用过已有 Playwright/Edge，不代表后续浏览器入口缺失 |
+| 真实页面 | `http://127.0.0.1:5175/?scenario=episodes/1_4_001_00_a.json&start_step=5`；1280×800、390×844、320×740 |
+| 页面 / 布局 | 标题与后续对白均可见，无框架错误遮罩；document scrollWidth 分别等于 1280、390、320。截图已在本次任务显示 |
+| 交互 | 菜单 / backlog 停留超过原 2.76s 后标题仍在；关闭恢复。320px 隐藏/显示 UI 后继续同一标题。模拟 visibility 暂停时 step index=4、clock=2.0169 保持不变，恢复后继续；手动 next 从标题进入 2/23 过渡再到 3/23 对白，返回按钮可在标题期间离开到首页 |
+| 生产构建 fixture | 仓库外本地服务 5181，使用真实组件与真实 episode 的内存副本；30 秒 cue 结算后进入 3/23 对白；连续两个标题后进入 3/23 对白，无跳过 |
+| reduced-motion | 仓库外服务模拟 matchMedia 并启用对应 CSS 媒体分支；标题保持静态（无 play class），手动下一段有效。不是 Windows 系统设置验收 |
+| Console | 标题检查未见页面异常；后续角色出现时有两条来自 Spine.update / Spine.tint 的 warn 调用栈，保留记录，不宣称全静默 |
+
+环境补验：Browser 的 visibility.set(false) 及切换内置标签未提供已确认的 document.hidden=true（诊断仍 visible），所以本轮证明的是生产 visibility 处理入口的模拟路径；真实 OS 后台/恢复事件和系统 reduced-motion 偏好仍未验收。没有做真实音频长稳或发布。
+
+临时 fixture/server/build 位于 `C:/Users/windm/.codex/qa/sidem-title-20260912/`，不提交测试媒体或截图。下批仍先核对通信消费者/分支历史、特效探针异常，再接 P1 执行状态；不可据标题修复宣称 P1 完成。

@@ -124,10 +124,15 @@ export function useStoryRuntimeCues({
     return true
   }
 
-  function settleCurrentStep(reason = 'user-next') {
+  function settleCurrentStep(reason = 'user-next', onSettled) {
     if (!scheduler.hasUnsettledSkippable()) return false
+    const expectedGeneration = generation
     scheduler.settleSkippable(reason)
-      .then(() => console.debug('[StoryRuntime] settled', reason, JSON.stringify(scheduler.inspect())))
+      .then(() => {
+        if (expectedGeneration !== generation) return
+        console.debug('[StoryRuntime] settled', reason, JSON.stringify(scheduler.inspect()))
+        onSettled?.()
+      })
       .catch(error => console.warn('[StoryRuntime] failed to settle cues:', error))
     return true
   }

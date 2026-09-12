@@ -2,7 +2,7 @@
   <div
     ref="fxRoot"
     class="title-fx"
-    :class="{ play: playing }"
+    :class="{ play: playing, paused }"
     @animationend="onAnimationEnd"
   >
     <div class="seed-line"></div>
@@ -34,11 +34,12 @@ import { useStoryLocalization } from '../localization/story/StoryLocalizationCon
 
 const props = defineProps({
   step: { type: Object, default: null },
+  paused: { type: Boolean, default: false },
 })
 
 // start/complete mirror the CSS animation lifecycle so the player can hold
 // auto-advance for the duration; cancel releases that hold when the animation
-// can no longer finish (step left mid-flight, UI hidden).
+// can no longer finish (step left mid-flight, viewer disposed).
 const emit = defineEmits(['start', 'complete', 'cancel'])
 
 const fxRoot = ref(null)
@@ -123,7 +124,7 @@ function onAnimationEnd(event) {
 function settle(type) {
   if (!started || settled) return
   settled = true
-  emit(type)
+  emit(type, props.step)
 }
 
 onMounted(() => {
@@ -133,7 +134,7 @@ onMounted(() => {
   // through the normal playback flow rather than through this animation.
   if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
   started = true
-  emit('start')
+  emit('start', props.step)
   playing.value = true
 })
 
@@ -176,6 +177,10 @@ onBeforeUnmount(() => {
 }
 
 .title-fx.play { animation: fx-visibility var(--duration) linear forwards; }
+
+/* Pause the whole composition at its current frame, including every child. */
+.title-fx.paused,
+.title-fx.paused * { animation-play-state: paused !important; }
 
 /* First hairline. */
 .seed-line {
