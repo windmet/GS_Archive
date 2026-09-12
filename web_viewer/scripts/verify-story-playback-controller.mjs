@@ -25,6 +25,14 @@ const episodes = [{ id: 'a', file: 'shared.json', startStep: 2, endStep: 8 },
   const first = t.controller.startQueue(episodes, 0, 'story_collection')
   assert.equal(t.controller.queue.current.value, null, 'queue must not commit before preparation')
   t.reply(); assert.equal(await first, true)
+  assert.equal(t.controller.playbackBuffering.value, true, 'published player waits for source-bound scene readiness')
+  const firstInstance = t.controller.currentScenarioInstance.value
+  assert.equal(t.controller.readinessChanged({ instance: firstInstance - 1, status: 'playable' }), false)
+  assert.equal(t.controller.playbackBuffering.value, true, 'stale renderer cannot release current buffering')
+  assert.equal(t.controller.readinessChanged({ instance: firstInstance, status: 'waiting', stepIndex: 1 }), true)
+  assert.equal(t.controller.playbackBuffering.value, true)
+  assert.equal(t.controller.readinessChanged({ instance: firstInstance, status: 'playable', stepIndex: 1 }), true)
+  assert.equal(t.controller.playbackBuffering.value, false)
   const previousInstance = t.controller.currentScenarioInstance.value
   const next = t.controller.next()
   assert.equal(t.controller.queue.current.value.id, 'a')
@@ -44,6 +52,23 @@ const episodes = [{ id: 'a', file: 'shared.json', startStep: 2, endStep: 8 },
   assert.equal(t.state.currentScenarioFile.value, '')
   assert.equal(t.controller.queue.current.value, null)
   assert.equal(t.controller.error.value, '')
+}
+{
+  const t = setup()
+  const load = t.controller.load('render-retry.json', 'story_detail', { startStep: 2, endStep: 8 })
+  t.reply(); await load
+  const instance = t.controller.currentScenarioInstance.value
+  t.controller.readinessChanged({ instance, status: 'blocked', stepIndex: 4, reason: 'background-renderable' })
+  assert.equal(t.controller.playbackBuffering.value, false, 'blocked render reveals recovery UI instead of an endless overlay')
+  const retry = t.controller.retryCurrentStep()
+  assert.ok(retry instanceof Promise)
+  assert.equal(t.requests[1].file, 'render-retry.json')
+  t.reply(1); await retry
+  assert.equal(t.state.currentScenarioStartStep.value, 2)
+  assert.equal(t.state.currentScenarioEndStep.value, 8)
+  assert.equal(t.state.currentScenarioInitialStep.value, 5, 'retry resumes at the blocked source index')
+  assert.equal(t.controller.currentScenarioInstance.value, instance + 1)
+  assert.equal(t.controller.playbackBuffering.value, true)
 }
 {
   const t = setup()

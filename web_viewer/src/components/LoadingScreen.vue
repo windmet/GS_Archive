@@ -12,7 +12,7 @@
             />
           </svg>
         </div>
-        <div class="load-label">正在准备演出…</div>
+        <div class="load-label">{{ readiness?.status === 'waiting' ? '正在准备当前画面…' : '正在准备演出…' }}</div>
         <p v-if="status" class="load-count">已预载 {{ status.succeeded }} 项<span v-if="status.failed"> · 失败 {{ status.failed }} 项</span></p>
       </div>
     </div>
@@ -23,6 +23,7 @@
 defineProps({
   visible: { type: Boolean, default: false },
   status: { type: Object, default: null },
+  readiness: { type: Object, default: null },
 })
 </script>
 

@@ -1034,10 +1034,25 @@ function isSceneProjected(expectedStep) {
     && (!getStepSceneState(expectedStep) || projectedStep === expectedStep)
 }
 
+function getSceneReadiness(expectedStep) {
+  if (!manager || props.step !== expectedStep || !isSceneProjected(expectedStep)) {
+    return { status: 'waiting', reason: 'actor-projection' }
+  }
+  const desiredIds = (getStepSceneState(expectedStep)?.spines || [])
+    .filter(item => item?.id && item?.model && !NON_VISUAL_IDS.has(item.id))
+    .map(item => item.id)
+  const pending = desiredIds.filter(id => manager._silhouettePending?.[id])
+  if (pending.length) return { status: 'waiting', reason: 'silhouette-image', ids: pending }
+  const missing = desiredIds.filter(id => !manager.spineInstances?.[id] && !manager._silhouetteSprites?.[id])
+  if (missing.length) return { status: 'blocked', reason: 'actor-renderable', ids: missing }
+  return { status: 'ready' }
+}
+
 defineExpose({
   get manager() { return manager },
   isSpineReady,
   isSceneProjected,
+  getSceneReadiness,
 })
 </script>
 

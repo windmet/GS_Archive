@@ -368,10 +368,12 @@
     </ArchiveShell>
 
     <!-- ====== STORY PLAYER ====== -->
-    <section v-if="playbackError && !loading" class="playback-failure" role="alert">
-      <p>演出暂时无法载入。{{ playbackError }}</p>
+    <section v-if="(playbackError || playbackReadiness?.status === 'blocked') && !loading" class="playback-failure" role="alert">
+      <p v-if="playbackError">演出暂时无法载入。{{ playbackError }}</p>
+      <p v-else>当前段落的必要画面未能准备完成（{{ playbackReadiness.reason }}）。</p>
       <div class="playback-failure-actions">
         <button v-if="playbackController.canRetry.value" type="button" @click="playbackController.retry()">重试载入</button>
+        <button v-else-if="playbackReadiness?.status === 'blocked'" type="button" @click="playbackController.retryCurrentStep()">重试当前段落</button>
         <button type="button" @click="playbackController.close()">返回</button>
       </div>
       <details v-if="preloadStatus?.failed"><summary>查看失败资源</summary>
@@ -389,6 +391,7 @@
       :scenario-json="currentScenario"
       :playback-instance="currentScenarioInstance"
       @step-change="playbackController.stepChanged"
+      @readiness-change="playbackController.readinessChanged"
       :start-step="currentScenarioStartStep"
       :end-step="currentScenarioEndStep"
       :initial-step="currentScenarioInitialStep"
@@ -410,7 +413,7 @@
     />
 
     <!-- ====== PRELOADER LOADING SCREEN ====== -->
-    <LoadingScreen :visible="loading && view !== 'reader'" :status="preloadStatus" />
+    <LoadingScreen :visible="(loading || playbackBuffering) && view !== 'reader'" :status="preloadStatus" :readiness="playbackReadiness" />
 
   </div>
 </template>
@@ -626,7 +629,8 @@ const playbackController = useStoryPlaybackController({
   preloadAssets: (plan, progress, options) => Preloader.preloadScenario(plan, progress, options),
   syncRoute: () => syncArchiveRoute(), returnTo: destination => destination === 'reader' ? returnToReader() : commitView(destination),
 })
-const { currentScenario, currentScenarioInstance, hasNext: hasNextPlaybackEpisode, error: playbackError, preloadStatus } = playbackController
+const { currentScenario, currentScenarioInstance, hasNext: hasNextPlaybackEpisode, error: playbackError,
+  preloadStatus, playbackBuffering, playbackReadiness } = playbackController
 let removeArchivePopState = null
 let removeSpineAnimationDebug = null
 

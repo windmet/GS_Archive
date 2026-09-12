@@ -15,6 +15,8 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
   const currentScenarioInstance = state.currentScenarioInstance || ref(0)
   const error = ref('')
   const preloadStatus = ref(null)
+  const playbackBuffering = ref(false)
+  const playbackReadiness = ref(null)
   let warmingController = null
   let updateWarmingPriority = null
   const canRetry = ref(false)
@@ -29,6 +31,8 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
     updateWarmingPriority = null
     clearRetry()
     preloadStatus.value = null
+    playbackBuffering.value = false
+    playbackReadiness.value = null
     currentScenario.value = null
     currentScenarioFile.value = ''
     currentScenarioStartStep.value = null
@@ -40,6 +44,8 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
     error.value = ''
   }
   function publish(scenario, file, returnView, options = {}) {
+    playbackBuffering.value = true
+    playbackReadiness.value = null
     currentScenario.value = scenario
     currentScenarioFile.value = file
     currentScenarioStartStep.value = boundary(options.startStep)
@@ -160,6 +166,23 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
     return returnTo(destination)
   }
   function ready() { if (!navigation.isPending()) loading.value = false }
+  function readinessChanged(report) {
+    if (!report || report.instance !== currentScenarioInstance.value || view.value !== 'player') return false
+    playbackReadiness.value = { ...report }
+    playbackBuffering.value = report.status === 'waiting'
+    if (report.status === 'playable') loading.value = false
+    return true
+  }
+  function retryCurrentStep(stepIndex = playbackReadiness.value?.stepIndex) {
+    if (!currentScenarioFile.value || loading.value || playbackBuffering.value) return false
+    const initialStep = Number.isInteger(stepIndex) ? stepIndex + 1 : currentScenarioInitialStep.value
+    return load(currentScenarioFile.value, returnViewAfterPlayer.value, {
+      startStep: currentScenarioStartStep.value,
+      endStep: currentScenarioEndStep.value,
+      initialStep,
+      preserveQueue: true,
+    })
+  }
   function stepChanged({ instance, stepIndex }) {
     if (instance !== currentScenarioInstance.value || view.value !== 'player' || warmingController?.signal.aborted || !updateWarmingPriority) return
     const scenario = currentScenario.value
@@ -169,6 +192,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
     updateWarmingPriority(createStoryAssetPriority(scenario, { startStep, endStep, initialStep: stepIndex + 1 }))
   }
   function dispose() { navigation.invalidate(); reset(); loading.value = false }
-  return { currentScenario, currentScenarioInstance, currentScenarioInitialStep, error, preloadStatus, canRetry, queue, hasNext: queue.hasNext,
-    load, retry, preview, startQueue, restore, next, close, ready, stepChanged, reset, dispose }
+  return { currentScenario, currentScenarioInstance, currentScenarioInitialStep, error, preloadStatus,
+    playbackBuffering, playbackReadiness, canRetry, queue, hasNext: queue.hasNext,
+    load, retry, retryCurrentStep, preview, startQueue, restore, next, close, ready, readinessChanged, stepChanged, reset, dispose }
 }

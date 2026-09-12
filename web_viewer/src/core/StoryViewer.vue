@@ -227,7 +227,7 @@ const props = defineProps({
   hasNextEpisode: { type: Boolean, default: false },
   continuousPlayback: { type: Boolean, default: false },
 })
-const emit = defineEmits(['back', 'ready', 'step-change', 'next-episode', 'update:continuous-playback'])
+const emit = defineEmits(['back', 'ready', 'readiness-change', 'step-change', 'next-episode', 'update:continuous-playback'])
 const URL_FLAGS = new URLSearchParams(window.location.search)
 const HIDE_UI = URL_FLAGS.get('stageOnly') === '1' || URL_FLAGS.get('hideUI') === '1' || URL_FLAGS.get('transparentUI') === '1'
 const START_STEP_VALUE = URL_FLAGS.get('startStep')
@@ -259,7 +259,7 @@ const historyStack = ref([])
 const selectedChoices = reactive(new Map())
 const restoredSceneState = ref(null)
 const sceneSnapshotStore = new SceneSnapshotStore()
-const _ready = ref(false)
+let initialReadyEmitted = false
 const isPlaying = ref(false)
 const menuOpen = ref(false)
 const backlogOpen = ref(false)
@@ -274,7 +274,6 @@ const transitioning = ref(false)
 const runtimeDiagnostics = ref(null)
 const debugVisibilityOverride = ref(null)
 
-let _readyTimer = null
 let _runtimeDiagnosticsTimer = null
 let unregisterReleaseViewer = null
 
@@ -294,6 +293,7 @@ let handleRuntimeStepChange = () => {}
 let cleanupRuntimeCues = () => {}
 let isRuntimeAutoBlocked = () => false
 let playbackController = null
+let pendingStepEffects = null
 
 // True while a title step is playing its FX. The FX is a transition the player
 // owns, not a screen the user dismisses: it always advances when it ends, which
@@ -752,7 +752,26 @@ const storyRuntimeCues = useStoryRuntimeCues({
   debugSnapshotAt: SNAPSHOT_AT,
   isPaused: () => runtimePauseReasons.size > 0,
   debugSnapshotAction: () => freezeScene('snapshotAt'),
+  onReadinessChange: handleRuntimeReadinessChange,
 })
+
+function handleRuntimeReadinessChange(readiness) {
+  const report = { ...readiness, instance: props.playbackInstance }
+  emit('readiness-change', report)
+  const buffering = readiness.status === 'waiting' || readiness.status === 'blocked'
+  playbackController?.setPaused('buffering', buffering)
+  setRuntimeSessionPaused('buffering', buffering)
+  if (readiness.status !== 'playable') return
+  const pending = pendingStepEffects
+  if (pending && pending.step === currentStep.value && pending.stepIndex === currentStepIndex.value) {
+    pendingStepEffects = null
+    handleStepChange(pending.step, pending.oldStep, { restore: pending.restore })
+  }
+  if (!initialReadyEmitted) {
+    initialReadyEmitted = true
+    emit('ready')
+  }
+}
 
 function setRuntimeSessionPaused(reason, paused) {
   const wasPaused = runtimePauseReasons.size > 0
@@ -938,47 +957,13 @@ onMounted(async () => {
   // Focus root for keyboard events
   nextTick(() => { document.querySelector('.story-viewer-root')?.focus() })
 
-  // Safety timeout: ready always fires within 5s even if assets fail
-  _readyTimer = setTimeout(() => {
-    if (!_ready.value) {
-      _ready.value = true
-      emit('ready')
-    }
-  }, 5000)
-
-  // The Preloader (called from App.vue) has already cached all assets.
-  // PIXI.Assets.load() will resolve instantly from cache.
-  const mgr = spineStageRef.value?.manager
-  if (compiledData.value && mgr) {
-    const firstState = currentSceneState.value
-    if (firstState) {
-      try {
-        if (firstState.bg) {
-          await mgr.preloadStepState(firstState)
-        }
-      } catch (e) {
-        console.warn('[StoryViewer] preload warmup failed:', e.message)
-      }
-    }
-  }
-
-  if (_readyTimer) {
-    clearTimeout(_readyTimer)
-    _readyTimer = null
-  }
-
-  // SpineStage applies first step state reactively via :step prop binding.
-  // No explicit applyStepState call needed.
-
-  // Voice playback is handled in watch(currentStep) for a single source of truth
-
-  // Enable runtime watch
-  _ready.value = true
-  emit('ready')
+  // SpineStage and the Runtime publish source-bound readiness. The player no
+  // longer treats a timeout or a duplicate warmup request as playable proof.
 })
 
 onBeforeUnmount(() => {
   titleAdvancePending = null
+  pendingStepEffects = null
   if (RUNTIME_DEBUG) console.debug('[Lifecycle] StoryViewer onBeforeUnmount')
   cleanupStepSceneEffects()
   cleanupRuntimeCues()
@@ -986,10 +971,6 @@ onBeforeUnmount(() => {
   document.removeEventListener('visibilitychange', handleVisibilityChange)
   if (window.__STORY_PLAYBACK__ === playbackController) delete window.__STORY_PLAYBACK__
   if (window.__STORY_AUDIO__ === storyAudioSession) delete window.__STORY_AUDIO__
-  if (_readyTimer) {
-    clearTimeout(_readyTimer)
-    _readyTimer = null
-  }
   if (_runtimeDiagnosticsTimer) {
     clearInterval(_runtimeDiagnosticsTimer)
     _runtimeDiagnosticsTimer = null
@@ -1013,7 +994,15 @@ watch(currentStep, (newStep, oldStep) => {
   // incoming title card re-claims it from its own onMounted.
   titleAdvancePending = null
   setTitleAnimationPending(false)
-  handleStepChange(newStep, oldStep, { restore: Boolean(restoredSceneState.value) })
+  pendingStepEffects = {
+    step: newStep,
+    oldStep,
+    stepIndex: currentStepIndex.value,
+    restore: Boolean(restoredSceneState.value),
+  }
+  clearFadeAutoAdvance()
+  _stopCurrentVoice('step-buffering')
+  isPlaying.value = false
   playbackController?.notifyStateChanged()
 })
 watch(currentStep, handleRuntimeStepChange, { immediate: true })

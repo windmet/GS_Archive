@@ -15,6 +15,7 @@
     "verify:story-stage-resize": "node scripts/verify-story-stage-resize.mjs",
     "verify:story-asset-priority": "node scripts/verify-story-asset-priority.mjs",
     "verify:story-entry-retry": "node scripts/verify-story-entry-retry.mjs && node scripts/verify-story-background-preload.mjs && node scripts/verify-story-background-priority.mjs",
+    "verify:story-loading-safety": "npm run verify:story-entry-retry && npm run verify:story-preload-status && npm run verify:story-preload-cancellation && npm run verify:playback-controller && npm run verify:story-step-playback-state && npm run verify:story-background-loading && npm run verify:story-audio",
     "verify:story-slide-visibility": "python scripts/verify-story-slide-visibility.py",
     "verify:reading-typography": "node scripts/verify-reading-typography.mjs",
     "generate:reading": "node scripts/generate-reading-documents.mjs",

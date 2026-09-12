@@ -109,3 +109,13 @@ B3先提供准确可测试的目标名称；B5再润色文案。完成的域运�
 每批记录输入HEAD、实际改动、验证命令及结果、Browser证据、遗留风险、commit/push。明确“计划/实现/机器回归/真实浏览器/长稳”五种状态。只提交相关路径，保留未跟踪v9 HTML；沿用当前分支，不默认开PR或部署。
 
 下一步具体动作：先写B1当前资源→消费者→就绪/失败信号表及可控慢资源用例；同时可做B2只读view/入口盘点。不要继续以修完所有cache作为门户开工条件。
+
+## B1执行结果：当前步playable门槛
+
+输入HEAD `a920616`。Player发布scenario后保持独立`playbackBuffering`；当前步只有在同一播放实例、同一源step的人物投影完成、所需人物存在Spine或剪影可渲染对象、剪影图片不再pending，并且入口背景请求返回completed后，才发布`playable`。人物缺失或背景失败发布`blocked`，停止共同cue时钟和Auto，退出全屏等待并显示“重试当前段落/返回”；重试保留来源文件、播放范围、返回目标和episode queue，以该源数组索引重新进入。旧实例、旧step和已经撤销的异步结果不能解除当前等待。
+
+StoryViewer删去5秒兜底ready与重复首步warmup。环境音、BGM、voice及旧自动推进计时改到`playable`回调后启动；等待/阻断使用独立buffering pause reason，与visibility、overlay、audio-lock并存，解除buffering不会误解除其他暂停原因。这里的playable表示当前画面可渲染及入口背景落定，不表示所有后续媒体已缓存，也不声称音频已提前解码。
+
+新增统一`verify:story-loading-safety`并接入source gate，覆盖入口critical/retry、后台预热、预载状态/取消、实例隔离、当前步人物/背景门槛、暂停/恢复、背景生命周期和音频session。真实Browser从活动430018进入episode2：首屏等待后显示5/26；点击下一段时再次显示“正在准备当前画面…”，随后才显示6/26。1280×900和390×844均无横向溢出，390画面中背景与翔太均为1.3倍，console error为0。构建产物位于仓库外`C:/Users/windm/.codex/qa/sidem-loading-safety-b1-20260912/build`。
+
+B1当前安全门槛到此冻结；后续缓存复用、弱网和长稳不作为B2开工前置。下一步按B2只读盘点所有view/入口/现有来源字段，产出24条旅程的fixture和差异表，再决定最小导航模型改动。

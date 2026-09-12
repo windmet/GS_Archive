@@ -21,6 +21,7 @@ export function useStoryRuntimeCues({
   getStageStep = () => compiledData.value?.steps?.[currentStepIndex.value],
   debugSnapshotAt = null, debugSnapshotAction = null,
   isPaused = () => false,
+  onReadinessChange = () => {},
 }) {
   const scheduler = new EffectScheduler({ clock: new StoryClock() })
   let normalizedSource = null
@@ -30,6 +31,18 @@ export function useStoryRuntimeCues({
   let pendingRestore = null
   let shadowBasis = null
   let shadowUnavailableReason = 'not-started'
+  let readiness = { status: 'idle', generation: 0, stepIndex: null, stepId: null }
+
+  function publishReadiness(status, detail = {}) {
+    readiness = {
+      status,
+      generation,
+      stepIndex: currentStepIndex.value,
+      stepId: getStageStep()?.step_id ?? null,
+      ...detail,
+    }
+    onReadinessChange({ ...readiness })
+  }
 
   if (typeof window !== 'undefined') {
     window.__STORY_RUNTIME_CUES__ = scheduler
@@ -52,18 +65,41 @@ export function useStoryRuntimeCues({
     const apply = () => {
       if (expectedGeneration !== generation) return
       const manager = getManager()
+      const stage = spineStageRef.value
+      const sceneReadiness = stage?.getSceneReadiness?.(expectedStep)
       // A constructed Pixi manager does not imply that the source step's
       // asynchronous actor placement has finished. Start the common clock
       // only after that projection, so late placement cannot overwrite cues.
-      if (!manager || spineStageRef.value?.isSceneProjected?.(expectedStep) === false) {
+      if (!manager || sceneReadiness?.status === 'waiting'
+        || (!sceneReadiness && stage?.isSceneProjected?.(expectedStep) === false)) {
         managerFrame = requestAnimationFrame(apply)
         return
       }
       managerFrame = null
+      if (sceneReadiness?.status === 'blocked') {
+        publishReadiness('blocked', { reason: sceneReadiness.reason, ids: sceneReadiness.ids || [] })
+        return
+      }
       applyCameraEntrySnapshot(manager, snapshot?.camera_zoom)
       applyScreenEntrySnapshot(manager, snapshot?.screen_overlay)
-      applyBackgroundEntrySnapshot(manager, snapshot?.bg)
-      onReady?.(manager)
+      Promise.resolve(applyBackgroundEntrySnapshot(manager, snapshot?.bg))
+        .then(result => {
+          if (expectedGeneration !== generation) return
+          if (result?.status === 'failed') {
+            publishReadiness('blocked', { reason: 'background-renderable', ids: snapshot?.bg ? [snapshot.bg] : [] })
+            return
+          }
+          if (result?.status === 'cancelled') {
+            publishReadiness('blocked', { reason: 'background-cancelled', ids: snapshot?.bg ? [snapshot.bg] : [] })
+            return
+          }
+          onReady?.(manager)
+          publishReadiness('playable')
+        })
+        .catch(error => {
+          if (expectedGeneration !== generation) return
+          publishReadiness('blocked', { reason: 'background-renderable', ids: snapshot?.bg ? [snapshot.bg] : [], error: error?.message || String(error) })
+        })
     }
     apply()
   }
@@ -107,7 +143,8 @@ export function useStoryRuntimeCues({
     }
     scheduler.cancelAll('step-change')
     const step = getNormalizedStep()
-    if (!step) return
+    if (!step) { publishReadiness('idle'); return }
+    publishReadiness('waiting', { reason: 'scene-renderable', ids: [] })
     const restore = pendingRestore?.stepIndex === currentStepIndex.value ? pendingRestore : null
     pendingRestore = null
     shadowBasis = { source: compiledData.value, stepIndex: currentStepIndex.value, context: restore ? { entrySnapshot: clone(restore.snapshot), historyId: `runtime-restore:${generation}`, cuePolicy: 'suppressed' } : {} }
@@ -178,7 +215,7 @@ export function useStoryRuntimeCues({
     handleStepChange,
     settleCurrentStep,
     cancelCurrentStep,
-    hasBlockingAuto: () => managerFrame != null || scheduler.hasBlockingAuto(),
+    hasBlockingAuto: () => ['waiting', 'blocked'].includes(readiness.status) || managerFrame != null || scheduler.hasBlockingAuto(),
     hasNonSkippable: () => scheduler.hasNonSkippable(),
     isSnapshotEnabled: () => true,
     getNormalizedStep: index => clone(getNormalizedStep(index)),
@@ -186,7 +223,7 @@ export function useStoryRuntimeCues({
     pause: () => scheduler.pause(),
     resume: () => scheduler.resume(),
     setRate: rate => scheduler.setRate(rate),
-    inspect: () => scheduler.inspect(),
+    inspect: () => ({ ...scheduler.inspect(), readiness: { ...readiness } }),
     inspectProjectorShadow,
     cleanup,
   }

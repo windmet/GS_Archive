@@ -29,6 +29,7 @@ try {
   })
   runtime.setRate(2)
   runtime.handleStepChange()
+  await tick()
   assert.equal(runtime.inspect().clock.rate, 2, 'first step must retain preselected rate')
   assert.deepEqual(starts, [0])
   pauseReasons.add('menu')
@@ -37,6 +38,7 @@ try {
   runtime.cancelCurrentStep()
   currentStepIndex.value = 1
   runtime.handleStepChange()
+  await tick()
   assert.equal(runtime.inspect().clock.state, 'paused')
   assert.equal(runtime.inspect().clock.time, 0)
   assert.equal(runtime.inspect().clock.rate, 2)
@@ -54,6 +56,7 @@ try {
   runtime.cancelCurrentStep()
   currentStepIndex.value = 2
   runtime.handleStepChange()
+  await tick()
   assert.equal(runtime.inspect().clock.rate, 0.5, 'subsequent step retains changed rate')
   assert.deepEqual(starts, [0, 1, 2])
   pauseReasons.add('history')
@@ -61,6 +64,7 @@ try {
   runtime.prepareRestore(0, {})
   currentStepIndex.value = 0
   runtime.handleStepChange()
+  await tick()
   assert.equal(runtime.inspect().clock.state, 'paused')
   assert.equal(runtime.inspect().entries.length, 0)
   assert.deepEqual(starts, [0, 1, 2], 'restored snapshot must not replay cues')

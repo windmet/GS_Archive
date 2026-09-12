@@ -112,6 +112,9 @@ jobs:
       - name: Verify background loading lifecycle
         run: npm run verify:story-background-loading
 
+      - name: Verify story loading safety contract
+        run: npm run verify:story-loading-safety
+
       - name: Verify camera playback clock
         run: npm run verify:story-camera-clock
 

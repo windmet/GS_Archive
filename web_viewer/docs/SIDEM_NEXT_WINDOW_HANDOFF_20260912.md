@@ -366,3 +366,13 @@ CameraController原targetY以负号使用offset_y，而角色game coord明确以
 回归覆盖队标与社长、空/非空layer/string均不生浮层依赖且源不变；相机正负Y/1、1.3、2倍/1280×720、1968×1060、390×844，目标点居中与背景人物同步缩放；沿用暂停/速率/取消回归。camera-clock（现含scene-icon）、asset-plan、entry-retry/background、stage-readiness通过。构建2510 modules通过，主入口545.12kB，产物C:/Users/windm/.codex/qa/sidem-camera-icon-20260912/build。
 
 Browser5175横屏第二话正常到5/26，头部回到画面内、无队标，推进到6/26；1280无横向溢出。截图与用户原片画幅、动作时刻不同，本批不宣称逐像素或逐帧还原。总体媒体就绪门槛继续待做。
+
+## 加载时序B1收口：当前步playable与可恢复阻断
+
+输入HEAD a920616。Player发布后由独立playbackBuffering保持等待；Runtime捕获当前源step和generation，等SpineStage完成该step投影、全部所需人物已有Spine或剪影对象且剪影不再pending，再应用入口相机/屏幕快照并等待BackgroundManager返回入口背景completed。满足后才启动共同cue时钟并发布playable；人物不可渲染、背景failed/cancelled改为blocked，Auto继续阻断，全屏等待退出并显示当前段落重试/返回。旧播放实例及撤销步骤的迟到结果不具发布权。
+
+StoryViewer移除5秒ready兜底和重复首步preloadStepState。环境音、BGM、voice及旧自动推进计时延迟到playable后启动；buffering是独立pause reason，不会解除visibility、overlay或audio-lock。重试当前段落保留scenario、start/end、return和episode queue，以blocked源数组索引重新进入。该门槛证明当前画面和入口背景可用，不代表后续资源全部缓存或音频预解码完成。
+
+新增verify:story-loading-safety并接入web-viewer-source-gate，包含entry retry/background warm、preload status/cancellation、playback controller、step readiness/background lifecycle及audio session。统一命令、runtime-foundation、archive-async-navigation和reading-playback通过；Vite构建2510 modules，仓库外产物C:/Users/windm/.codex/qa/sidem-loading-safety-b1-20260912/build。Browser5175从活动430018进入episode2：首屏门槛后到5/26；点击下一段出现当前画面等待，再到6/26。1280×900与390×844无横向溢出，390调试值bgScale=spineScale=1.3、翔太scale=0.26，console error 0。
+
+B1在当前安全边界停止扩张。下一步进入NEXT_PHASE_NAVIGATION_PORTAL_PLAN的B2，只读盘点view、入口、来源字段、浏览器history与恢复状态，为N01-N24固定真实fixture；个人/卡片/通信Reader入口仍按用户要求停止。
