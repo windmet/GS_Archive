@@ -1,5 +1,5 @@
 <template>
-  <section class="story-catalog">
+  <section class="story-catalog" data-archive-scroll-container>
     <div class="catalog-switcher" role="tablist" aria-label="故事浏览方式">
       <button :class="{ active: mode === 'portal' }" @click="emit('update:mode', 'portal')">
         <LayoutGrid :size="16" />
@@ -287,7 +287,12 @@
       <p v-if="!entries.length" class="empty-state">没有符合当前条件的故事</p>
 
       <div v-if="domain === 'event' && entries.length" class="event-entity-grid">
-        <button v-for="entry in entries" :key="entry.id" @click="emit('select', entry)">
+        <button
+          v-for="entry in entries"
+          :key="entry.id"
+          :data-archive-focus-id="`event:${entry.id}`"
+          @click="emit('select', entry)"
+        >
           <span class="event-entity-visual">
             <img :src="eventBanner(entry)" :alt="entry.masterEvent?.name || entry.title" />
             <span>{{ entry.eventScopeLabel || '活动剧情' }}</span>
@@ -315,6 +320,7 @@
           v-for="entry in entries"
           :key="entry.id"
           class="story-row"
+          :data-archive-focus-id="`story:${entry.id}`"
           :class="{ missing: !entry.exists && !entry.eventRelation, event: entry.eventRelation }"
           :disabled="!entry.exists && !entry.eventRelation"
           @click="emit('select', entry)"

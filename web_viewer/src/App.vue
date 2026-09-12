@@ -428,7 +428,7 @@ import { useStoryPlaybackController } from './core/useStoryPlaybackController.js
 import { buildCardVoicePreviewScenario, findCardVoiceCue } from './data/cardVoicePreview.js'
 import { createArchiveNavigationCoordinator } from './core/ArchiveNavigationCoordinator.js'
 import { useArchiveNavigationState } from './core/useArchiveNavigationState.js'
-import { ref, computed, defineAsyncComponent, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, computed, defineAsyncComponent, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import { IDOL_ID_TO_NAME } from './utils/IdolNameMap.js'
 import { groupFileList } from './utils/IndexNormalizer.js'
 import { countScenarioFiles, getCategoryCountText } from './utils/IndexStats.js'
@@ -497,6 +497,11 @@ import {
   readArchiveRoute,
   writeArchiveRoute,
 } from './core/archiveRoute.js'
+import {
+  buildArchiveViewContext,
+  captureArchiveViewState,
+  restoreArchiveViewState,
+} from './core/archiveViewRestoration.js'
 import { installSpineAnimationDebug } from './debug/installSpineAnimationDebug.js'
 import { EntityTranslationRepository } from './localization/story/EntityTranslationRepository.js'
 import { PlayerPreferencesRepository } from './core/story-runtime/PlayerPreferencesRepository.js'
@@ -625,6 +630,8 @@ const cardLayout = ref('compact')
 const cardArtMode = ref('clean')
 const storyVisibleLimit = ref(80)
 let archiveRouteReady = false
+let activeArchiveViewContext = null
+let archiveViewRestoreRevision = 0
 const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loading.value = false } })
 const playbackController = useStoryPlaybackController({
   state: { view, loading, preloadProgress, currentScenarioFile, currentScenarioStartStep, currentScenarioEndStep, currentScenarioInitialStep, currentPreviewCue, returnViewAfterPlayer },
@@ -1397,12 +1404,30 @@ async function loadIdolEntityTranslations(locale = storyTranslationLocale.value)
   idolEntityTranslationRevision.value += 1
 }
 
-function syncArchiveRoute({ replace = false } = {}) {
+function captureActiveArchiveView() {
+  if (activeArchiveViewContext) captureArchiveViewState(activeArchiveViewContext)
+}
+
+function adoptArchiveViewContext({ restore = true } = {}) {
+  activeArchiveViewContext = buildArchiveViewContext(window.location.href, window.history.state)
+  const revision = ++archiveViewRestoreRevision
+  if (!restore) return
+  nextTick(() => {
+    if (revision !== archiveViewRestoreRevision || navigation.isDisposed()) return
+    restoreArchiveViewState(activeArchiveViewContext).catch(error => {
+      console.error('[ArchiveNavigation] Failed to restore view position:', error)
+    })
+  })
+}
+
+function syncArchiveRoute({ replace = false, restoreView = true } = {}) {
   if (!archiveRouteReady || navigation.isRestoring()) return
   writeArchiveRoute(currentArchiveRoute(), { replace })
+  adoptArchiveViewContext({ restore: restoreView })
 }
 
 function commitView(nextView, options = {}) {
+  captureActiveArchiveView()
   navigation.invalidate()
   if (nextView !== 'player') playbackController.reset()
   loading.value = false
@@ -1413,7 +1438,7 @@ function commitView(nextView, options = {}) {
 function commitArchiveSelection() {
   navigation.invalidate()
   loading.value = false
-  syncArchiveRoute()
+  syncArchiveRoute({ restoreView: false })
 }
 
 function updateArchiveFilter(key, value) {
@@ -1492,6 +1517,7 @@ async function restoreVoicePreview(route, intent) {
 }
 
 async function applyArchiveRoute(route, { restoring = true } = {}) {
+  captureActiveArchiveView()
   return navigation.run(async intent => {
     if (route.view === 'reader' || (route.view === 'player' && route.returnView === 'reader')) {
       readingDocumentId.value = route.reading
@@ -2829,6 +2855,7 @@ onMounted(async () => {
       startupRouteNormalized = true
       writeArchiveRoute(currentArchiveRoute(), { replace: true })
     }
+    adoptArchiveViewContext()
   }
   // Listen before restoration: a newer history entry may finish before the
   // initial route's assets. Only its completion may finalize startup.
@@ -2842,11 +2869,11 @@ onMounted(async () => {
 })
 
 watch([filterQuery, currentSongScope, currentCardRarity, currentCardAssetState, currentCardRelationState, currentGashaCategory, currentIdolUnitFilter, currentStoryDomain, currentStoryMode, currentStorySection, currentEventScope, currentStoryAvailability, currentStorySort, currentMobileMode, currentMobileScenarioId], () => {
-  syncArchiveRoute({ replace: true })
+  syncArchiveRoute({ replace: true, restoreView: false })
 })
 
 watch([homeSelectedId, homeSelectedCue, homeSelectedCostume], () => {
-  if (view.value === 'home') syncArchiveRoute({ replace: true })
+  if (view.value === 'home') syncArchiveRoute({ replace: true, restoreView: false })
 })
 
 watch([filterQuery, currentStoryDomain, currentStorySection, currentEventScope, currentStoryAvailability, currentStorySort], () => {

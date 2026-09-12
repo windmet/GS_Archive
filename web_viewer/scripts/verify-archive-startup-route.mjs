@@ -28,6 +28,7 @@ for (const disposed of [false, true]) {
     writeArchiveRoute: value => written.push(value),
     onArchivePopState: () => () => {},
     installSpineAnimationDebug: () => () => {},
+    adoptArchiveViewContext: () => {},
     console, archiveRouteReady: false,
   }
   // Supply refs used by the actual startup callback; execute its production
@@ -62,7 +63,7 @@ for (const disposed of [false, true]) {
     applyArchiveRoute: value => navigation.run(async () => { applied.push(value); if (value.view === 'player') await firstRestore.promise }, { restoring: true }),
     currentArchiveRoute: () => applied.at(-1), writeArchiveRoute: value => written.push(value),
     onArchivePopState: callback => { popState = callback; return () => {} },
-    installSpineAnimationDebug: () => () => {}, console, archiveRouteReady: false,
+    installSpineAnimationDebug: () => () => {}, adoptArchiveViewContext: () => {}, console, archiveRouteReady: false,
   }
   for (const match of source.matchAll(/\b(\w+)\.value\s*=/g)) context[match[1]] = { value: null }
   vm.runInNewContext(source, context)
@@ -95,7 +96,7 @@ for (const asynchronous of [false, true]) {
     }, { restoring: true }),
     currentArchiveRoute: () => ({ view: page }), writeArchiveRoute: value => written.push(value),
     onArchivePopState: () => () => {}, installSpineAnimationDebug: () => () => {},
-    console, archiveRouteReady: false,
+    adoptArchiveViewContext: () => {}, console, archiveRouteReady: false,
   }
   for (const match of source.matchAll(/\b(\w+)\.value\s*=/g)) context[match[1]] = { value: null }
   context.loading = loading

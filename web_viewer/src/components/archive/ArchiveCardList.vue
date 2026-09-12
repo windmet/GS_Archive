@@ -1,5 +1,5 @@
 <template>
-  <section class="screen list-screen">
+  <section class="screen list-screen" data-archive-scroll-container>
     <ArchiveListHeader v-if="!embedded" :title="title" @back="emit('back')">
       <template #filters>
         <input
@@ -80,6 +80,7 @@
         v-for="card in cards"
         :key="card.resource_id"
         class="card-archive-row"
+        :data-archive-focus-id="`card:${card.resource_id}`"
         @click="emit('select-card', card)"
       >
         <img

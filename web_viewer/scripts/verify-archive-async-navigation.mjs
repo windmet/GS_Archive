@@ -46,6 +46,8 @@ function setup() {
     Preloader: { preloadScenario: async () => {} },
     fetch: () => { const request = deferred(); requests.push(request); return request.promise },
     writeArchiveRoute: route => writes.push(route),
+    captureActiveArchiveView: () => {},
+    adoptArchiveViewContext: () => {},
     console: { error: (...args) => errors.push(args) },
   })
   context.prepareScenario = (name, options) => prepareScenario(name, { ...options, fetchImpl: (...args) => context.fetch(...args) })

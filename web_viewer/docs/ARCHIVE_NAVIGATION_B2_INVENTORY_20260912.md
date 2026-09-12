@@ -47,7 +47,7 @@
 | N04 | PASS | unit→event parent及unit实体已编码 |
 | N05 | FAIL | `openEventCard`清空event后进入card，`goBackToCards`固定返回cards |
 | N06 | PARTIAL | card→event→card可回；再回筛选列表可保留字段，位置/焦点未恢复 |
-| N07 | PARTIAL | card详情保留筛选字段；位置/焦点未恢复 |
+| N07 | PASS | cards筛选、搜索、滚动与实体焦点按规范路由/history entry恢复；桌面与390px Browser已验收 |
 | N08 | FAIL | `openGashaCard`进入card后固定返回cards |
 | N09 | FAIL | idol关联card进入详情后固定返回cards |
 | N10 | PARTIAL | scope/query保留；位置/焦点未恢复 |
@@ -58,7 +58,7 @@
 | N15 | PASS | story detail作为Player return已有合同 |
 | N16 | PASS | episode queue下一集不改return已有回归 |
 | N17 | PASS | `portal_from`完整路由、刷新及迟到close抑制已有回归 |
-| N18 | PARTIAL | Portal切section与Browser Back/Forward未执行完整矩阵 |
+| N18 | PASS | Portal→歌曲的Browser Back/Forward、关闭Portal恢复完整筛选来源已实测 |
 | N19 | PASS | card深链required/fallback已有route回归 |
 | N20 | PASS | event/song/gasha required/fallback已有route回归 |
 | N21 | PASS | Reader版本/行/range错误已有可解释失败回归 |
@@ -81,3 +81,13 @@ Vite构建通过，入口`index-BIIisoxJ.js` 547.95kB，保留既有chunk提示�
 ## N24实现结果
 
 `spine_lab`和`chibi_stage`现在可作为单层来源的持有页，但仍被禁止成为来源目标；从资源页进入任一实验页会保存`archive_status`，两个实验页互跳时沿用同一来源，返回统一恢复来源。没有`from`的旧实验页深链继续回home。route/state回归覆盖两页共享来源。Browser实际打开`archive_status`→Spine实验室，URL为`?view=spine_lab&from=%3Fview%3Darchive_status`；刷新后点击“返回资料馆”恢复`?view=archive_status`，console error为0。Vite构建2m46s通过，入口548.20kB，产物`C:/Users/windm/.codex/qa/sidem-navigation-n24-20260912/build`。N24的Spine路径已实测，Chibi互跳共享代码已机器覆盖，仍待完整视觉旅程。
+
+## N18与列表恢复批结果
+
+输入HEAD `b5b021c`。N18在真实Browser中从`cards/001tom/SSR/q=Jupiter`进入Portal，再进入歌曲档案：浏览器后退恢复带完整`portal_from`的Portal，前进恢复歌曲档案；再次后退并关闭Portal后，精确恢复原卡片筛选路线。全程无history重复写入、横向溢出或console error。
+
+新增统一的列表恢复owner：页面离开前只读取显式标注的内部滚动容器与当前实体按钮，以规范路由保存最近状态，并以`sidemArchiveEntryId`区分同一路由的不同history entry。浏览器Back/Forward优先读取entry状态；顶部返回创建的新entry使用同一规范路由的最近状态。记录限制为80项，焦点ID有长度上限；sessionStorage不可用时导航继续工作。卡片、活动/剧情目录、歌曲和卡池已接入同一合同。
+
+N07真实Browser使用冬马SSR与`q=ランウェイ`打开`001tom_ssr02`，返回后URL、搜索值、结果数与焦点全部恢复；另以19张冬马卡片长列表验证实际滚动，1280×900恢复到约970/970并聚焦同一卡片，390×844恢复到约1508/1508并聚焦同一卡片。浏览器前进到详情、后退到列表也恢复滚动位置和实体焦点；无横向溢出或console error。N02活动与N10歌曲已接入同一机制，仍需各自Browser长列表旅程后才能改为PASS。
+
+机器回归新增`verify-archive-view-restoration.mjs`并并入`verify:archive-navigation-state`；routes、navigation-state、portal-navigation、archive-async-navigation、archive-startup-route与reading-playback均通过。生产构建通过，产物位于仓库外`C:/Users/windm/.codex/qa/sidem-navigation-restoration-20260912/build`，入口551.54kB，保留既有chunk提示。下一批执行N02活动列表与N10歌曲列表的实际位置恢复，再补N06/N08/N09关系链Browser证据。

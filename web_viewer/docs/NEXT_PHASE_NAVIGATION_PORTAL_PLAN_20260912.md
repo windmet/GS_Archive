@@ -125,3 +125,5 @@ B2首轮盘点见[ARCHIVE_NAVIGATION_B2_INVENTORY_20260912.md](./ARCHIVE_NAVIGAT
 第一实现批已完成N05来源/刷新Browser闭环，并让N06/N07/N08/N09共享同一单层来源合同；详见B2 inventory执行结果。下一批先修N24 archive_status→Spine/Chibi返回，再执行N18 Portal Back/Forward与详情列表滚动/焦点恢复审计。
 
 N24的Spine来源/刷新返回已修复并实测，Spine/Chibi互跳沿用同一资源来源。下一步转入N18 Portal Back/Forward和列表滚动/焦点恢复。
+
+N18已完成真实Browser的Portal→歌曲→Back/Forward及关闭Portal恢复筛选来源。列表恢复第一批也已落地：导航层用规范路由与history entry双键保存内部滚动和实体焦点，卡片、活动/剧情、歌曲、卡池目录接入统一标记；N07筛选路线、桌面和390px长列表均已实测。下一批不再修改恢复模型，直接执行N02活动、N10歌曲及N06/N08/N09的具体Browser旅程，发现域内缺口再回对应owner修复。

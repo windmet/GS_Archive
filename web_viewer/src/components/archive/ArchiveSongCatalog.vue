@@ -1,5 +1,5 @@
 <template>
-  <section class="song-catalog">
+  <section class="song-catalog" data-archive-scroll-container>
     <header class="song-hero">
       <div>
         <span>SONG ARCHIVE</span>
@@ -44,6 +44,7 @@
         v-for="song in filteredSongs"
         :key="song.song_code"
         class="song-card"
+        :data-archive-focus-id="`song:${song.song_code}`"
         :class="{ special: hasSpecialVariant(song) }"
         @click="$emit('open', song.song_code)"
       >

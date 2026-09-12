@@ -38,6 +38,7 @@ const restoreContext = {
   ...useArchiveNavigationState(),
   navigation: createArchiveNavigationCoordinator(),
   currentScenario: { value: { steps: ['previous playback payload'] } },
+  captureActiveArchiveView: () => {},
 }
 restoreContext.playbackController = { reset: () => { restoreContext.currentScenario.value = null } }
 vm.runInNewContext(app.match(/async function applyArchiveRoute\([^]*?\n\}/)[0], restoreContext)

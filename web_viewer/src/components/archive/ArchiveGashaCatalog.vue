@@ -1,5 +1,5 @@
 <template>
-  <section class="gasha-catalog">
+  <section class="gasha-catalog" data-archive-scroll-container>
     <div class="catalog-summary">
       <div>
         <strong>{{ totalGashas }}</strong>
@@ -38,6 +38,7 @@
         v-for="gasha in gashas"
         :key="gasha.id"
         class="gasha-item"
+        :data-archive-focus-id="`gasha:${gasha.id}`"
         @click="emit('select', gasha)"
       >
         <span class="banner-frame">

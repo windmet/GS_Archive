@@ -63,6 +63,7 @@ const state = { ...useArchiveNavigationState(), loading: ref(false), preloadProg
 const navigation = createArchiveNavigationCoordinator()
 let url = new URL('http://localhost/')
 const context = { ...state, navigation, readingPlaybackTarget,
+  captureActiveArchiveView: () => {},
   syncArchiveRoute: () => { url = buildArchiveUrl(url, state.currentArchiveRoute()) },
   readingSession: createReadingSession({ repository: { manifest: async () => manifest,
     load: async () => ({ status: 'ready', document }) }, publish: value => { state.readingState.value = value } }),

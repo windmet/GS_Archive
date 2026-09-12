@@ -48,7 +48,7 @@
     "generate:story-catalog": "python ../data_pipeline/story_catalog.py --input public/data/masterdata/story_master_index.json --output public/data/masterdata/story_catalog.json",
     "verify:story-catalog": "node scripts/verify-story-catalog.mjs",
     "verify:archive-data": "node scripts/verify-archive-data-contracts.mjs && node scripts/verify-archive-data-repository.mjs && node scripts/verify-lazy-archive-resource.mjs",
-    "verify:archive-navigation-state": "node scripts/verify-archive-navigation-state.mjs",
+    "verify:archive-navigation-state": "node scripts/verify-archive-navigation-state.mjs && node scripts/verify-archive-view-restoration.mjs",
     "verify:archive-async-navigation": "node scripts/verify-archive-async-navigation.mjs",
     "verify:card-voice-preview": "node scripts/verify-card-voice-preview.mjs",
     "verify:episode-queue": "node scripts/verify-episode-queue.mjs",

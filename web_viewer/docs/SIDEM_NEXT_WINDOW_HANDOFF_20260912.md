@@ -390,3 +390,7 @@ routes、archive-navigation-state（47 scoped refs、1792组合）、portal-navi
 ## 导航N24：资源实验页来源
 
 Spine/Chibi实验页作为from持有页接入同一单层来源合同，但仍不能作为来源目标；从archive_status进入时保存资源页，两实验页互跳沿用该来源，返回统一恢复，旧无from深链仍回home。routes、navigation-state和archive-async-navigation通过。Browser archive_status→Spine URL携带编码资源来源；实验页刷新后“返回资料馆”恢复archive_status，console error 0。Vite构建2m46s通过，入口548.20kB，产物C:/Users/windm/.codex/qa/sidem-navigation-n24-20260912/build。下一步N18 Portal Back/Forward与列表滚动/焦点恢复。
+
+## 导航N18与列表恢复第一批
+
+N18与N07现已完成：Portal Browser Back/Forward和关闭来源恢复通过；列表恢复由`src/core/archiveViewRestoration.js`统一管理，以规范路由+history entry恢复内部滚动与实体焦点，卡片、活动/剧情、歌曲、卡池已接线。桌面与390px卡片长列表、冬马SSR搜索路线及浏览器前进/后退均实测通过。下一批先跑N02活动列表、N10歌曲列表，再补N06/N08/N09关系旅程；不要为单个按钮另建恢复字段。

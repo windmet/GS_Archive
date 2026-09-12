@@ -577,7 +577,11 @@ export function buildArchiveUrl(input, route) {
 
 export function writeArchiveRoute(route, { replace = false } = {}) {
   const url = buildArchiveUrl(window.location.href, route)
-  const state = { ...window.history.state, archiveRoute: true }
+  const existingEntryId = window.history.state?.sidemArchiveEntryId
+  const entryId = replace && typeof existingEntryId === 'string'
+    ? existingEntryId
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
+  const state = { ...window.history.state, archiveRoute: true, sidemArchiveEntryId: entryId }
   window.history[replace ? 'replaceState' : 'pushState'](state, '', url)
 }
 
