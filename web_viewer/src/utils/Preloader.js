@@ -4,7 +4,8 @@
  *
  * Key principle: NEVER dynamically import pixi.js here. Use native Image/fetch
  * to attempt cache warming. Cache reuse, decoding and render readiness are not
- * guaranteed. The percentage currently counts settled attempts, including failures.
+ * guaranteed. Task outcomes describe only this limited warming pass, never the
+ * complete episode or renderer readiness. Failures stay separate from successes.
  * StoryAssetPlan is being developed separately before replacing this executor.
  *
  * This runs ONLY when user clicks a scenario file (in App.vue loadScenario).
@@ -70,15 +71,15 @@ export class Preloader {
   }
 
   /**
-   * Preload all assets for a scenario's steps into browser cache.
+   * Attempt the legacy background/skeleton subset for these steps.
    * Uses Image() for backgrounds and fetch() for spine binaries
    * to populate the browser's HTTP cache.
    *
    * @param {Array} steps - scenario steps array
    * @param {function} onProgress - callback(percent: 0-100)
-   * @returns {Promise<{ bgIds: string[], voiceFiles: string[], spineModels: string[] }>}
+   * @returns {Promise<object>} scanned assets and the final warming report
    */
-  static async preloadScenario(steps, onProgress, { signal } = {}) {
+  static async preloadScenario(steps, onProgress, { signal, onStatus } = {}) {
     signal?.throwIfAborted()
     const assets = this.scanStepAssets(steps)
 
@@ -99,37 +100,61 @@ export class Preloader {
     // 导致后续 playVoice 的 fetch() 拿到空数据。
     // 改为在 playVoice 中按需 fetch + cache-busting
 
-    const total = tasks.length
-    if (total === 0) {
-      if (onProgress) onProgress(100)
-      return assets
+    const outcomes = tasks.map(task => ({ key: `${task.type}:${task.id}`, kind: task.type,
+      id: task.id, state: 'discovered', error: null }))
+    const snapshot = phase => {
+      const succeeded = outcomes.filter(task => ['image-loaded', 'fetched'].includes(task.state)).length
+      const failed = outcomes.filter(task => task.state === 'failed').length
+      const cancelled = outcomes.filter(task => task.state === 'cancelled').length
+      return { phase, scope: 'legacy-cache-warm', dependenciesComplete: false,
+        total: outcomes.length, succeeded, failed, cancelled,
+        pending: outcomes.length - succeeded - failed - cancelled,
+        tasks: outcomes.map(task => ({ ...task })) }
     }
-
-    let completed = 0
-
-    const report = () => {
-      if (signal?.aborted) return
-      completed++
-      if (onProgress) onProgress(Math.round((completed / total) * 100))
+    const report = phase => {
+      const value = snapshot(phase)
+      onStatus?.(value)
+      return value
     }
-
-    // Process in batches to avoid flooding network
-    const BATCH_SIZE = 6
-    for (let i = 0; i < tasks.length; i += BATCH_SIZE) {
-      signal?.throwIfAborted()
-      const batch = tasks.slice(i, i + BATCH_SIZE)
-      await Promise.allSettled(batch.map(t => t.load().then(report).catch(report)))
-      signal?.throwIfAborted()
+    report('warming')
+    try {
+      // Process in batches to avoid flooding network.
+      const BATCH_SIZE = 6
+      for (let i = 0; i < tasks.length; i += BATCH_SIZE) {
+        signal?.throwIfAborted()
+        await Promise.all(tasks.slice(i, i + BATCH_SIZE).map(async (task, offset) => {
+          const outcome = outcomes[i + offset]
+          outcome.state = 'loading'
+          try { outcome.state = await task.load() }
+          catch (error) {
+            outcome.state = signal?.aborted ? 'cancelled' : 'failed'
+            outcome.error = String(error?.message || error)
+          }
+          if (!signal?.aborted) {
+            const value = report('warming')
+            // Compatibility callback measures successful warming tasks only.
+            // UI consumes structured status, not this subset percentage.
+            onProgress?.(Math.round(value.succeeded / value.total * 100))
+          }
+        }))
+        signal?.throwIfAborted()
+      }
+    } catch (error) {
+      for (const task of outcomes) {
+        if (['discovered', 'loading'].includes(task.state)) task.state = 'cancelled'
+      }
+      report('cancelled')
+      throw error
     }
-
-    return assets
+    const status = report(outcomes.some(task => task.state === 'failed') ? 'partial' : 'settled')
+    return { ...assets, status }
   }
 
   // ── Internal loaders: all use native browser APIs, NO pixi.js ──
 
   /**
    * Preload an image into browser cache using Image object.
-   * If 404 or timeout, just warn and resolve — never hang.
+   * onload proves an image load only; no GPU readiness or retained decode claim.
    */
   static _preloadImage(url, { signal } = {}) {
     return withTimeout(taskSignal => new Promise((resolve, reject) => {
@@ -138,17 +163,15 @@ export class Preloader {
         img.onload = img.onerror = img.onabort = null
         taskSignal.removeEventListener('abort', abort)
       }
-      const finish = () => { cleanup(); resolve() }
+      const finish = () => { cleanup(); resolve('image-loaded') }
+      const fail = () => { cleanup(); reject(new Error(`Image load failed: ${url}`)) }
       const abort = () => { cleanup(); img.removeAttribute('src'); reject(taskSignal.reason) }
       taskSignal.addEventListener('abort', abort, { once: true })
       img.onload = finish
-      img.onerror = () => { console.warn(`[Preloader] bg failed: ${url}`); finish() }
-      img.onabort = () => { console.warn(`[Preloader] bg aborted: ${url}`); finish() }
+      img.onerror = fail
+      img.onabort = fail
       img.src = url
-    }), TIMEOUT_MS, `image ${url}`, signal).catch(error => {
-      if (signal?.aborted) throw signal.reason
-      console.warn(error.message)
-    })
+    }), TIMEOUT_MS, `image ${url}`, signal)
   }
 
   static async _preloadSpine(modelId, { signal } = {}) {
@@ -156,19 +179,15 @@ export class Preloader {
   }
 
   static async _preloadBinary(url, label, signal) {
-    try {
-      await withTimeout(async taskSignal => {
-        const response = await fetch(url, { signal: taskSignal })
-        if (!response.ok) {
-          console.warn(`[Preloader] ${label} HTTP ${response.status}: ${url}`)
-          return
-        }
-        await response.blob()
-      }, TIMEOUT_MS, label, signal)
-    } catch (error) {
-      if (signal?.aborted) throw signal.reason
-      console.warn(`[Preloader] ${label} failed: ${error.message}`)
-    }
+    return withTimeout(async taskSignal => {
+      const response = await fetch(url, { signal: taskSignal })
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${url}`)
+      }
+      const body = await response.blob()
+      if (!body.size) throw new Error(`Empty response: ${url}`)
+      return 'fetched'
+    }, TIMEOUT_MS, label, signal)
   }
 
   static async _preloadAudio(voiceFile, { signal } = {}) {

@@ -5,6 +5,7 @@ export async function prepareScenario(name, {
   loadPlayer,
   preloadAssets,
   onProgress,
+  onStatus,
   fetchImpl = (...args) => globalThis.fetch(...args),
   now = () => Date.now(),
   readScenario = response => response.json(),
@@ -22,7 +23,9 @@ export async function prepareScenario(name, {
     loadPlayer(),
     preloadAssets(scenario.steps, progress => {
       if (isCurrent() && !signal?.aborted) onProgress?.(progress)
-    }, { signal }),
+    }, { signal, onStatus: status => {
+      if (isCurrent() && !signal?.aborted) onStatus?.(status)
+    } }),
   ])
   // Dynamic imports cannot be cancelled, but a cancelled navigation must not
   // keep waiting for one or publish when it eventually finishes.

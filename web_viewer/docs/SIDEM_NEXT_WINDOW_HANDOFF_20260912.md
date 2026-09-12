@@ -152,3 +152,18 @@
 - 再次实际确认 `mcp__cua_repl` 内置 Browser 可用；核对 5175 的 PID 45024 命令属于本仓库后打开首页，完成首页 → 门户点击、DOM、截图与日志读取。无错误遮罩，仍有 Spine.update / Spine.tint 两条 warn。此项是 Browser 可操作性与导航冒烟，未模拟慢网或证明浏览器取消完整链路。
 
 下一批仍需将 StoryAssetPlan 接入真实执行输入，并替换旧百分比的失败语义。当前 Preloader 仍扫描旧 state 子集、仍将非取消失败计入已处理进度；不能把它描述为资源 ready 或 P1 完成。真实图片取消、计划闭包、可信状态与重试、后续 P2–P5 验收继续待办。
+
+## P1 预载结果与前端进度语义（取消接入之后）
+
+输入 HEAD：`dbae877`。按 P1 先交付前端进度语义修正的顺序，当前执行范围仍是 legacy 背景 / skeleton 预热子集，本批没有扩大为整集资源执行器。
+
+- 每项记录 discovered / loading / image-loaded / fetched / failed / cancelled；每份报告包含 phase、total、succeeded、failed、pending、cancelled 及不可回溯修改的 task 快照。scope 为 legacy-cache-warm，dependenciesComplete 固定 false，不能将总数当作整集闭包。
+- 图片 onload 只记 image-loaded；skeleton 完整非空响应体只记 fetched，不声称 decoded、parsed 或 renderable。HTTP 失败、空响应、图片错误、超时不再被吞成成功。取消与失败分开，待启动的任务也归为 cancelled。
+- 报告经 prepareScenario / controller 真实传到 App。导航失效、关闭及新播放清除旧报告；旧回调不能覆盖新报告。原数字回调仅保留兼容内部调用，计成功预热比例，零任务不再上报 100。
+- LoadingScreen 移除百分比和确定进度条，显示“正在准备演出…”及已预载 / 失败项数；Player 保留可展开的失败提示及原因，提示位于顶部导航下方。当前仍沿用 best-effort 进入，关键资源阻断、重试与首帧 gate 属于待实现部分，不能把可见失败提示当作完整故障恢复。
+- `verify:story-preload-status` 使用真实 HTTP 验证 404 / 空体，Image 事件替身验证图片成功 / 失败与清理；检查去重、历史报告不变、失败不抬高百分比、零任务语义。取消测试新增 9 项 cancelled 及 controller 不接受过期报告。playback-controller、archive-async-navigation、reading-playback 均通过。
+- Vite native 生产构建通过，2497 modules，主入口 528.22 kB（保留大小提示）。仓库外 build / 临时 fixture 服务位于 `C:/Users/windm/.codex/qa/sidem-preload-status-20260912/`，未修改真实剧情或媒体。
+- 页面验收使用 5182 的生产构建，数据 / 媒体转发至本项目 5175。fixture 是真实 strict-v2 episode 的内存副本，仅在 legacy state 注入一个等待 8 秒后 404 的背景，实际验证等待文案 → 失败 1 项 → 展开原因；这不是整集资源闭包或慢网全流程验收。
+- 故障页面检查 1280×800、390×844、320×740；scrollWidth 分别等于 viewport width。390px 截图先发现提示覆盖导航，修正 top=64 后在 320 / 1280 复验返回可用；320px 返回首页后提示消失。切回未改动的 episodes/1_4_001_00_a.json 后无失败残留，菜单能打开。保留已有 Spine.update / tint 两条 warn，无新增应用错误遮罩。
+
+下批直接推进 StoryAssetPlan 的真实来源 hash / 执行输入和资源适配器，不再扩展旧 step.state 扫描。仍需闭合 Spine atlas pages、模型适配与通信动态依赖，并逐步接入 P2 的入口优先级 / 重试、P3 的局部等待、P4 transport 和 P5 网络验收。Browser 直接用于验收，不再重复说明可用性。

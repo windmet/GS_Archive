@@ -360,6 +360,11 @@
 
     <!-- ====== STORY PLAYER ====== -->
     <p v-if="playbackError && view !== 'reader'" class="playback-failure" role="alert">演出暂时无法载入，请从目录重新打开。</p>
+    <details v-if="view === 'player' && !loading && preloadStatus?.failed" class="preload-notice">
+      <summary>有 {{ preloadStatus.failed }} 项资源未能预载</summary>
+      <p>演出可能缺少部分画面。</p>
+      <ul><li v-for="task in preloadStatus.tasks.filter(task => task.state === 'failed')" :key="task.key">{{ task.id }}：{{ task.error }}</li></ul>
+    </details>
     <StoryViewer
       v-if="view === 'player' && currentScenario"
       :key="currentScenarioInstance"
@@ -385,7 +390,7 @@
     />
 
     <!-- ====== PRELOADER LOADING SCREEN ====== -->
-    <LoadingScreen :visible="loading && view !== 'reader'" :progress="preloadProgress" />
+    <LoadingScreen :visible="loading && view !== 'reader'" :status="preloadStatus" />
 
   </div>
 </template>
@@ -601,7 +606,7 @@ const playbackController = useStoryPlaybackController({
   preloadAssets: (steps, progress, options) => Preloader.preloadScenario(steps, progress, options),
   syncRoute: () => syncArchiveRoute(), returnTo: destination => destination === 'reader' ? returnToReader() : commitView(destination),
 })
-const { currentScenario, currentScenarioInstance, hasNext: hasNextPlaybackEpisode, error: playbackError } = playbackController
+const { currentScenario, currentScenarioInstance, hasNext: hasNextPlaybackEpisode, error: playbackError, preloadStatus } = playbackController
 let removeArchivePopState = null
 let removeSpineAnimationDebug = null
 
@@ -2784,6 +2789,10 @@ onBeforeUnmount(() => {
   background: #f8f9fa; overflow: hidden;
 }
 .playback-failure { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 120; max-width: calc(100vw - 32px); margin: 0; padding: 12px 18px; border: 1px solid #e4b7b7; border-radius: 8px; background: #fff4f4; color: #7f3434; font: 14px/1.6 system-ui, sans-serif; pointer-events: none; }
+.preload-notice { position: fixed; top: 64px; left: 12px; z-index: 120; max-width: min(440px, calc(100vw - 24px)); max-height: 35vh; overflow: auto; box-sizing: border-box; padding: 10px 14px; border: 1px solid #d6b86b; border-radius: 8px; background: #fff8e6; color: #654d18; font: 14px/1.6 system-ui, sans-serif; overflow-wrap: anywhere; }
+.preload-notice summary { cursor: pointer; min-height: 24px; }
+.preload-notice p { margin: 8px 0; }
+.preload-notice ul { margin: 0; padding-left: 20px; }
 </style>
 
 <style>

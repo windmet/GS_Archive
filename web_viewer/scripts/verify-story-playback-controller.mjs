@@ -51,13 +51,27 @@ const episodes = [{ id: 'a', file: 'shared.json', startStep: 2, endStep: 8 },
   t.controller.close()
   const current = t.controller.load('current.json', 'home')
   t.requests[0].options.onProgress(99)
+  t.requests[0].options.onStatus({ phase: 'partial', failed: 7 })
+  assert.equal(t.controller.preloadStatus.value, null, 'stale status cannot publish into new preparation')
   assert.equal(t.state.preloadProgress.value, 0)
   t.reply(0); await old
   assert.equal(t.controller.currentScenario.value, null)
   assert.equal(t.state.loading.value, true)
+  t.requests[1].options.onStatus({ phase: 'partial', failed: 1 })
   t.reply(1); await current
+  assert.equal(t.controller.preloadStatus.value.failed, 1, 'current report stays available after publish')
   assert.equal(t.state.currentScenarioFile.value, 'current.json')
   assert.equal(t.writes.length, 1)
+  t.controller.close()
+  assert.equal(t.controller.preloadStatus.value, null)
+}
+{
+  const t = setup()
+  const current = t.controller.load('current.json')
+  t.requests[0].options.onStatus({ phase: 'warming', succeeded: 2 })
+  t.reply(); await current
+  await t.navigation.run(() => { t.state.view.value = 'home' })
+  assert.equal(t.controller.preloadStatus.value, null, 'other navigation clears the previous report')
 }
 {
   const t = setup()

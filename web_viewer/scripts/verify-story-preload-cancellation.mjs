@@ -75,6 +75,7 @@ await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
 const base = `http://127.0.0.1:${server.address().port}`
 const observedSignals = []
 const errors = [], progress = []
+const statuses = []
 globalThis.fetch = (url, options) => {
   assert.ok(options.signal instanceof AbortSignal, 'every scenario/binary fetch receives a signal')
   observedSignals.push(options.signal)
@@ -87,7 +88,9 @@ const state = Object.fromEntries(['view', 'loading', 'preloadProgress', 'current
 const navigation = createArchiveNavigationCoordinator({ onFinish: () => { state.loading.value = false } })
 const player = useStoryPlaybackController({ state, navigation,
   loadPlayer: async () => {},
-  preloadAssets: (steps, report, options) => Preloader.preloadScenario(steps, value => { progress.push(value); report(value) }, options),
+  preloadAssets: (steps, report, options) => Preloader.preloadScenario(steps, value => { progress.push(value); report(value) }, {
+    ...options, onStatus: value => { statuses.push(value); options.onStatus?.(value) },
+  }),
   syncRoute() {}, returnTo() {}, onError: error => errors.push(error),
 })
 try {
@@ -96,6 +99,11 @@ try {
   player.close()
   assert.equal(await first, false, 'closed load resolves without publishing')
   await waitFor(() => closed.length === 5, 'native skeleton requests aborted during body consumption')
+  await waitFor(() => statuses.at(-1)?.phase === 'cancelled', 'executor records cancelled pending tasks')
+  assert.equal(statuses.at(-1).cancelled, 9)
+  assert.equal(statuses.at(-1).succeeded, 0)
+  assert.equal(statuses.at(-1).failed, 0)
+  assert.equal(player.preloadStatus.value, null, 'closed controller rejects cancellation status publication')
   assert.ok(observedSignals.every(signal => signal.aborted), 'navigation and per-task fetch signals are aborted')
   assert.equal(images.length, 1)
   assert.equal(images[0].removed, true, 'pending image source removed')

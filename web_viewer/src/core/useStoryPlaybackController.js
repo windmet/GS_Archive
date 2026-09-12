@@ -13,11 +13,13 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
   const currentScenario = state.currentScenario || ref(null)
   const currentScenarioInstance = state.currentScenarioInstance || ref(0)
   const error = ref('')
+  const preloadStatus = ref(null)
   const currentScenarioInitialStep = state.currentScenarioInitialStep || ref(null)
   const { view, loading, preloadProgress, currentScenarioFile, currentScenarioStartStep,
     currentScenarioEndStep, currentPreviewCue, returnViewAfterPlayer } = state
 
   function reset() {
+    preloadStatus.value = null
     currentScenario.value = null
     currentScenarioFile.value = ''
     currentScenarioStartStep.value = null
@@ -45,13 +47,18 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
   }
   async function load(name, returnView = 'files', options = {}) {
     return navigation.run(async intent => {
+      // Navigation revokes the previous intent synchronously before starting
+      // its successor, so an abandoned warming report must leave with it.
+      intent.signal?.addEventListener('abort', () => { preloadStatus.value = null }, { once: true })
       loading.value = true
       preloadProgress.value = 0
+      preloadStatus.value = null
       error.value = ''
       try {
         const scenario = await prepare(name, {
           isCurrent: intent.isCurrent, signal: intent.signal, loadPlayer, preloadAssets, readScenario: options.readScenario,
           onProgress: pct => { if (intent.isCurrent()) preloadProgress.value = pct },
+          onStatus: status => { if (intent.isCurrent()) preloadStatus.value = status },
         })
         if (!scenario || !intent.isCurrent()) return false
         publish(scenario, name, returnView, options)
@@ -69,6 +76,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
     return navigation.run(async intent => {
       loading.value = true
       preloadProgress.value = 100
+      preloadStatus.value = null
       error.value = ''
       try {
         await loadPlayer()
@@ -112,6 +120,6 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
   }
   function ready() { if (!navigation.isPending()) loading.value = false }
   function dispose() { navigation.invalidate(); reset(); loading.value = false }
-  return { currentScenario, currentScenarioInstance, currentScenarioInitialStep, error, queue, hasNext: queue.hasNext,
+  return { currentScenario, currentScenarioInstance, currentScenarioInitialStep, error, preloadStatus, queue, hasNext: queue.hasNext,
     load, preview, startQueue, restore, next, close, ready, reset, dispose }
 }

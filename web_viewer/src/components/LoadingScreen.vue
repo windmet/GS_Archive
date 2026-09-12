@@ -1,22 +1,19 @@
 <template>
   <transition name="load-fade">
     <div v-if="visible" class="loading-screen">
-      <div class="loading-box">
-        <div class="load-icon">
+      <div class="loading-box" role="status" aria-live="polite">
+        <div class="load-icon" aria-hidden="true">
           <svg viewBox="0 0 48 48" width="48" height="48">
             <circle cx="24" cy="24" r="20" fill="none" stroke="#2a2a3a" stroke-width="3" />
             <circle
               cx="24" cy="24" r="20" fill="none" stroke="#4488cc"
               stroke-width="3" stroke-linecap="round"
-              :style="{ strokeDasharray: `${progress} 100`, strokeDashoffset: '0', transform: 'rotate(-90deg)', transformOrigin: 'center' }"
+              stroke-dasharray="30 100"
             />
           </svg>
-          <span class="load-pct">{{ progress }}%</span>
         </div>
-        <div class="load-label">Loading assets...</div>
-        <div class="load-bar-track">
-          <div class="load-bar-fill" :style="{ width: progress + '%' }"></div>
-        </div>
+        <div class="load-label">正在准备演出…</div>
+        <p v-if="status" class="load-count">已预载 {{ status.succeeded }} 项<span v-if="status.failed"> · 失败 {{ status.failed }} 项</span></p>
       </div>
     </div>
   </transition>
@@ -25,7 +22,7 @@
 <script setup>
 defineProps({
   visible: { type: Boolean, default: false },
-  progress: { type: Number, default: 0 },
+  status: { type: Object, default: null },
 })
 </script>
 
@@ -43,20 +40,9 @@ defineProps({
   width: 64px; height: 64px;
   display: flex; align-items: center; justify-content: center;
 }
-.load-pct {
-  position: absolute;
-  color: #ccc; font-size: 0.8rem; font-weight: bold;
-}
+.load-count { color: #ccc; font-size: 0.85rem; margin: 0; }
 .load-label {
   color: #888; font-size: 0.85rem; letter-spacing: 1px;
-}
-.load-bar-track {
-  width: 200px; height: 4px;
-  background: #2a2a3a; border-radius: 2px; overflow: hidden;
-}
-.load-bar-fill {
-  height: 100%; background: #4488cc;
-  border-radius: 2px; transition: width 0.15s ease;
 }
 .load-fade-enter-active, .load-fade-leave-active {
   transition: opacity 0.3s;
