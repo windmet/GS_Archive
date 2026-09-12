@@ -57,6 +57,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
       try {
         const scenario = await prepare(name, {
           isCurrent: intent.isCurrent, signal: intent.signal, loadPlayer, preloadAssets, readScenario: options.readScenario,
+          playbackEntry: { startStep: boundary(options.startStep), initialStep: boundary(options.initialStep), endStep: boundary(options.endStep) },
           onProgress: pct => { if (intent.isCurrent()) preloadProgress.value = pct },
           onStatus: status => { if (intent.isCurrent()) preloadStatus.value = status },
         })

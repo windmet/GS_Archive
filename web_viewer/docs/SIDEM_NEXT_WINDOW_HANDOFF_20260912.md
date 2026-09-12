@@ -227,3 +227,16 @@
 - 浏览器验证范围为静态角色与菜单暂停时的布局；移动中缩放和 Lab 保留位置由上述受控测试验证，未执行实际 Lab 拖拽、原生后台切换或真实音频长稳。
 
 下一批回到 P2 实际入口 / range 的 critical / near / deferred 分类及失败恢复；音频、通信动态上下文、bundle renderer readiness、局部 buffering、transport / 缓存仍待推进。总体目标继续进行，P1–P5 尚未完成。
+
+## P2 实际入口投影与分层执行顺序
+
+输入 HEAD：`87d558b`。此前 controller 没有把 startStep / initialStep / endStep 交给准备流程；现在通过 playbackEntry 传入，预载与 useStoryNavigation 共用 StoryPlaybackWindow 的 synopsis 跳过、episode 推断、range clamp 和初始位置规则。一基入口是数组位置，不当作 authored step_id。
+
+- 静态 StoryAssetPlan 保持不变。独立 StoryAssetPriority 按实际 entryIndex 的所有已发现用途保守标 critical（包含该步 entry / settled / cues），后续最多 3 步为 near，遇 choice / flow.advance=choice 停止，不选择分支或执行 cue；其余 deferred。此处尚未进一步区分入口一步内部的延迟 cue。
+- Preloader 状态记录 projection 和各项 priority，与任务 state 分离；critical bundle 仍可能是 deferred renderer-pending。执行同层最多 6 项，当前层结束才启动低层；atlas 动态发现页按用途继承优先级，首屏页面不会排到后续人物之后。
+- 新增 verify:story-asset-priority：非连续 step_id、实际 prepare 参数、默认 synopsis、范围截断、choice 边界、原计划不变、受控 atlas 等待及动态页排序。原真实 HTTP 取消 fixture 现在首先启动 critical skel / atlas 两个请求及一个 Image，关闭后全部终止；17 项 cancelled 保留，near 不启动。
+- playback-range、plan-preparation、preload-cancellation / status、spine-preload、config-preload、playback-controller、archive-async-navigation、reading-playback 全部通过。构建 2507 modules，主入口 539.10 kB，保留 >500 kB 提示；产物及临时服务位于 `C:/Users/windm/.codex/qa/sidem-priority-20260912/`。
+- 5187 生产构建使用原始 episodes/1_4_001_00_a.json；start_step=12 / end_step=15 / at_step=13 实际显示 2/4 正确对白，上一段回到 1/4 并禁用，1280×800 角色居中。请求记录含入口 047shu 页 GET 在其他人物 rig 之前。页面保留既有 Spine.update / tint warn，无错误遮罩。
+- at_step=14 的另一轮观察在语音启动后变成 4/4，日志证明先进入了第 14 步，但尚未定位其随后推进原因；不据此宣称音频自动推进验收通过。第 13 步无语音入口及上一段边界用于本批页面验收。
+
+当前仍等待所有可执行预热结束后 best-effort 进入；没有宣称 critical readiness gate、后台 deferred、动态 near 重排、共享缓存或重试已经完成。下一批接入当前入口失败的重试 / 返回及 critical 与后台工作的生命周期分离；首帧 gate 必须保持媒体准备与 renderer readiness 两阶段，未适配音频 / 通信依赖继续显式保留。总体 P1–P5 继续进行。

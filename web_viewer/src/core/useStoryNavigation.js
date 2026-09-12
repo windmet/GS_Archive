@@ -1,20 +1,7 @@
+import { episodeStartIndex, episodeEndIndex, resolveStoryPlaybackWindow } from '../../shared/story/StoryPlaybackWindow.js'
 import { computed } from 'vue'
 import { isTransitionStep } from '../utils/StoryStepFlow.js'
 import { createChoiceSelectionRecord } from '../localization/story/LegacyDialogueAdapter.js'
-
-function episodeStartIndex(episode) {
-  const legacy = Number(episode?.start_step_index)
-  if (Number.isFinite(legacy)) return legacy
-  const strict = Number(episode?.start_step_id)
-  return Number.isFinite(strict) ? Math.max(0, strict - 1) : null
-}
-
-function episodeEndIndex(episode) {
-  const legacy = Number(episode?.end_step_index)
-  if (Number.isFinite(legacy)) return legacy
-  const strict = Number(episode?.end_step_id)
-  return Number.isFinite(strict) ? Math.max(0, strict - 1) : null
-}
 
 export function useStoryNavigation({
   compiledData,
@@ -31,32 +18,10 @@ export function useStoryNavigation({
   ensureAudioCtx,
   resetVoiceDedup,
 }) {
-  const firstPlayableIndex = computed(() => {
-    const steps = compiledData.value?.steps || []
-    const index = steps.findIndex(step => step?.type !== 'synopsis')
-    return index < 0 ? 0 : index
-  })
-  const startEpisode = computed(() => {
-    if (!Number.isFinite(startStep)) return null
-    const startIndex = Math.max(0, startStep - 1)
-    return (compiledData.value?.episodes || []).find(episode => {
-      const first = episodeStartIndex(episode)
-      const last = episodeEndIndex(episode)
-      return first != null && last != null && startIndex >= first && startIndex <= last
-    }) || null
-  })
-  const navigationStartIndex = computed(() => {
-    const lastIndex = Math.max(0, (compiledData.value?.steps?.length || 1) - 1)
-    if (!Number.isFinite(startStep)) return Math.min(firstPlayableIndex.value, lastIndex)
-    return Math.max(firstPlayableIndex.value, Math.min(lastIndex, startStep - 1))
-  })
-  const navigationEndIndex = computed(() => {
-    const lastIndex = Math.max(0, (compiledData.value?.steps?.length || 1) - 1)
-    const inferredEnd = episodeEndIndex(startEpisode.value)
-    const requestedEnd = Number.isFinite(endStep) ? endStep - 1 : inferredEnd
-    if (!Number.isFinite(requestedEnd)) return lastIndex
-    return Math.max(navigationStartIndex.value, Math.min(lastIndex, requestedEnd))
-  })
+  const playbackWindow = computed(() => resolveStoryPlaybackWindow(compiledData.value, { startStep, initialStep, endStep }))
+  const firstPlayableIndex = computed(() => playbackWindow.value.firstPlayableIndex)
+  const navigationStartIndex = computed(() => playbackWindow.value.startIndex)
+  const navigationEndIndex = computed(() => playbackWindow.value.endIndex)
   const isFirstStep = computed(() => historyStack.value.length === 0 && currentStepIndex.value <= navigationStartIndex.value)
   const isLastStep = computed(() => !compiledData.value || currentStepIndex.value >= navigationEndIndex.value)
 
@@ -102,13 +67,7 @@ export function useStoryNavigation({
 
   function applyStartStepIfNeeded() {
     if (!compiledData.value?.steps?.length) return
-    const requested = Number.isFinite(initialStep) ? initialStep : startStep
-    if (!Number.isFinite(requested)) {
-      currentStepIndex.value = navigationStartIndex.value
-      return
-    }
-    const target = Math.max(navigationStartIndex.value, Math.min(navigationEndIndex.value, requested - 1))
-    currentStepIndex.value = target
+    currentStepIndex.value = playbackWindow.value.entryIndex
   }
 
   function goNext() {

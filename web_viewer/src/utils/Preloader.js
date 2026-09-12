@@ -5,6 +5,7 @@ import { storyAssetAdapter, resolveStaticSpineModels } from './StoryAssetAdapter
 import { decodeSpineAtlasText, resolveSpineAtlasDependencies } from '../../shared/story/SpineAtlasPages.js'
 import { resolveSpineTextureUrl } from './SpineTextureUrl.js'
 import { validateStoryConfig } from './StoryConfigShape.js'
+import { assetPriority, priorityRank } from '../../shared/story/StoryAssetPriority.js'
 
 const TIMEOUT_MS = 10000 // 10s per asset max
 
@@ -35,13 +36,13 @@ async function withTimeout(load, ms, label, signal) {
 }
 export class Preloader {
 
-  static async preloadScenario(plan, onProgress, { signal, onStatus } = {}) {
+  static async preloadScenario(plan, onProgress, { signal, onStatus, priority } = {}) {
     signal?.throwIfAborted()
     if (plan?.schema_version !== 1 || !plan.source?.sha256 || !Array.isArray(plan.assets)) {
       throw new TypeError('Preloader requires a source-bound StoryAssetPlan')
     }
     plan = resolveStaticSpineModels(plan)
-    const makeOutcome = asset => ({ key: asset.key, kind: asset.kind, id: asset.id,
+    const makeOutcome = asset => ({ key: asset.key, kind: asset.kind, id: asset.id, priority: assetPriority(asset, priority),
       uses: asset.uses.map(use => ({ ...use })), dependencies: [...asset.dependencies],
       atlasSource: asset.atlasSource && structuredClone(asset.atlasSource),
       dependencyState: asset.dependencyState, ...storyAssetAdapter(asset), error: null })
@@ -54,6 +55,7 @@ export class Preloader {
       const excluded = outcomes.filter(task => task.state === 'excluded').length
       const deferred = outcomes.filter(task => task.state === 'deferred').length
       return { phase, scope: 'story-asset-plan', source: { ...plan.source },
+        priority: priority && structuredClone(priority),
         dependenciesComplete: plan.dependenciesComplete,
         unresolved: plan.unresolved.map(issue => ({ ...issue })), excluded, deferred,
         total: outcomes.length, succeeded, failed, cancelled,
@@ -69,10 +71,13 @@ export class Preloader {
     try {
       // Process in batches to avoid flooding network.
       const BATCH_SIZE = 6
-      for (let i = 0; i < tasks.length;) {
+      while (tasks.some(task => task.state === 'discovered')) {
         signal?.throwIfAborted()
-        const batch = tasks.slice(i, i + BATCH_SIZE)
-        i += batch.length
+        const pending = tasks.filter(task => task.state === 'discovered')
+          .sort((a, b) => priorityRank[a.priority] - priorityRank[b.priority])
+        // Finish the active tier (including newly discovered atlas pages)
+        // before lower-priority work can occupy a slot.
+        const batch = pending.filter(task => task.priority === pending[0].priority).slice(0, BATCH_SIZE)
         await Promise.all(batch.map(async outcome => {
           outcome.state = 'loading'
           try {

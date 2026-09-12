@@ -1,3 +1,5 @@
+import { createStoryAssetPriority } from '../../shared/story/StoryAssetPriority.js'
+
 /** Prepare a scenario without owning page, route, queue or loading state. */
 export async function prepareScenario(name, {
   isCurrent,
@@ -6,6 +8,7 @@ export async function prepareScenario(name, {
   preloadAssets,
   onProgress,
   onStatus,
+  playbackEntry,
   fetchImpl = (...args) => globalThis.fetch(...args),
   now = () => Date.now(),
   readScenario = response => response.json(),
@@ -46,7 +49,7 @@ export async function prepareScenario(name, {
     loadPlayer(),
     preloadAssets(plan, progress => {
       if (isCurrent() && !signal?.aborted) onProgress?.(progress)
-    }, { signal, onStatus: status => {
+    }, { signal, priority: createStoryAssetPriority(scenario, playbackEntry), onStatus: status => {
       if (isCurrent() && !signal?.aborted) onStatus?.(status)
     } }),
   ])
