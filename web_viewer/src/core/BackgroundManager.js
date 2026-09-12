@@ -61,8 +61,14 @@ export class BackgroundManager {
 
   async setBackground(bgId, transition = null) {
     if (bgId === this.currentBgId) {
-      if (Number(transition?.duration) === 0) this.settleBackgroundTransition()
-      return
+      const pending = this._bgTransition
+      if (Number(transition?.duration) === 0) {
+        if (pending && !pending.newSprite) pending.settleOnLoad = true
+        this.settleBackgroundTransition()
+      }
+      // currentBgId is assigned before loading. Repeated callers must await
+      // the same texture/transition instead of reporting an unfinished scene.
+      return pending?.finished ?? { status: 'completed', bgId }
     }
     this.settleBackgroundTransition()
     // A request still waiting for its texture has no settled sprite. Supersede
@@ -83,12 +89,14 @@ export class BackgroundManager {
       newSprite: null,
       tickerFn: null,
       resolve: resolveTransition,
+      finished,
+      settleOnLoad: false,
     }
     this._bgTransition = record
     try {
       const url = this.getBgUrl(bgId)
       const texture = await this.loadTextureFromUrl(url)
-      if (token !== this._bgTransitionToken) return
+      if (token !== this._bgTransitionToken) return finished
 
       const newSprite = new PIXI.Sprite(texture)
       this._applyBgCover(newSprite)
@@ -97,8 +105,8 @@ export class BackgroundManager {
       this.bgSprite = newSprite
       record.newSprite = newSprite
 
-      const delayMs = Math.max(0, Number(transition?.delay || 0)) * 1000
-      const durationSeconds = transition?.duration == null ? 0.5 : Number(transition.duration)
+      const delayMs = record.settleOnLoad ? 0 : Math.max(0, Number(transition?.delay || 0)) * 1000
+      const durationSeconds = record.settleOnLoad ? 0 : transition?.duration == null ? 0.5 : Number(transition.duration)
       const durationMs = Math.max(0, Number.isFinite(durationSeconds) ? durationSeconds : 0.5) * 1000
       // Runtime cues share the scheduler's paused/rated logical clock. Direct
       // stage callers retain wall-clock timing; loading still precedes fading.
@@ -128,11 +136,12 @@ export class BackgroundManager {
       this.app.ticker.add(tickerFn)
       return finished
     } catch (err) {
-      if (token !== this._bgTransitionToken) return
+      if (token !== this._bgTransitionToken) return finished
       this.currentBgId = oldBgId
       this._bgTransition = null
       record.resolve?.({ status: 'failed', bgId })
       console.warn(`[PixiStageManager] Failed to load bg "${bgId}":`, err?.message || err)
+      return finished
     }
   }
 

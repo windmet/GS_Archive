@@ -334,3 +334,11 @@ verify-story-spine-order覆盖三人桥段、相同深度稳定顺序及源数�
 验证：新增verify-story-background-priority，12个不同背景且非连续step_id的受控源，从第一批near任务暂停时跳到第11步，确认bg10先于旧deferred任务、bg11随后、每资源只执行一次；当前步资源失败仍完成其他任务，abort后更新被拒绝。Controller回归覆盖旧实例/越界事件忽略及完成后不再改状态。entry-retry/background、asset-priority、playback-controller、preload-status/cancellation、spine-preload、reading-playback通过；构建2510 modules、主入口545.20kB，产物在仓库外sidem-background-priority-20260912/build。Browser430018 ep1从7/34冬马对白推进到8/34翔太对白再返回，console无error；真实网络提速比例未测量。
 
 下一步媒体/renderer就绪条件与缓存复用、ep2镜头裁切复核。正在下载批次不抢断；此批不能代表GPU/audio ready或P1–P5全部完成。个人/卡片/通信新增Reader仍停止。
+
+## 加载时序：同背景请求共享完成结果
+
+输入HEAD 7b8f973。核查ready链路发现BackgroundManager在纹理下载前写入currentBgId，第二次相同ID请求直接返回，导致运行时调用方提前收到完成。现在同ID请求等待原transition.finished，包含纹理下载及淡入；失败、取消均返回同一终态。下载期间收到duration=0的落定要求，记录settleOnLoad，图片到达后立即落定，不启动原淡入，不重复下载。
+
+新增受控回归覆盖同ID下载未完成、已加载但淡入未完成、下载中落定、失败、取消；背景加载/属性时钟/效果生命周期及runtime-foundation全部通过。Vite构建2510 modules通过，主入口545.20kB，既有chunk提示保留；产物C:/Users/windm/.codex/qa/sidem-background-completion-20260912/build。Browser5175活动430018第二话进入5/26，推进6/26后返回原活动，console无error；当前窄屏截图背景、翔太、Jupiter标志均显示。没有冷网络或全媒体长测结论。
+
+整体ready仍未闭合：StoryViewer挂载后预热/5秒兜底emit ready并不证明场景完成；SpineStage ready目前也仅证明manager构造完成；App导航onFinish与publish提前清除loading。下一批需要共同设计入口场景、运行时背景快照、人物投影及实例隔离的就绪/失败门槛，不能只删超时或等待构造事件冒充GPU/audio ready。此批仅修正背景层提前完成，未改播放器ready门槛；ep2镜头裁切仍待复核，个人/卡片/通信Reader扩展仍停止。

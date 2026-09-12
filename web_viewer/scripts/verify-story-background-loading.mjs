@@ -29,6 +29,45 @@ async function install(state, id) {
   await loading
 }
 
+for (const outcome of ['fade', 'settle-before-load', 'failure', 'cancel']) {
+  const state = setup()
+  await install(state, 'A')
+  let now = 0
+  const first = state.manager.setBackground('B', { duration: 1, nowMilliseconds: () => now })
+  const request = state.requests.at(-1)
+  let completed = false
+  const duplicate = state.manager.setBackground('B', outcome === 'settle-before-load' ? { duration: 0 } : null)
+  duplicate.then(() => { completed = true })
+  await Promise.resolve()
+  await Promise.resolve()
+  assert.equal(completed, false, `${outcome}: same-ID request cannot finish before texture arrives`)
+  assert.equal(state.requests.length, 2, 'duplicate must reuse the existing load')
+  const warn = console.warn
+  try {
+    if (outcome === 'failure') {
+      console.warn = () => {}
+      request.reject(new Error('shared failure'))
+    } else {
+      if (outcome === 'cancel') state.manager.clearBackground()
+      request.resolve(texture())
+      await Promise.resolve()
+      if (outcome === 'fade') {
+        assert.equal(completed, false, 'loaded texture is not yet a finished fade')
+        now = 1000
+        for (const tick of state.tickers) tick()
+      }
+    }
+    const expected = outcome === 'failure' ? 'failed' : outcome === 'cancel' ? 'cancelled' : 'completed'
+    assert.equal((await first).status, expected)
+    assert.equal((await duplicate).status, expected, 'all callers receive the same terminal outcome')
+    if (expected === 'completed') assert.equal(state.manager.bgSprite.alpha, 1)
+    assert.equal(state.tickers.size, 0)
+  } finally {
+    console.warn = warn
+    state.manager.clearBackground()
+  }
+}
+
 {
   const state = setup()
   await install(state, 'A')
