@@ -161,6 +161,28 @@ for (const [label, source, needles] of [
     if (!source.includes(needle)) fail(`${label} integration is missing: ${needle}`)
   }
 }
+const stageCleanup = stageSource.match(/onBeforeUnmount\(\(\) => \{([^]*?)\n\}\)/)?.[1] || ''
+for (const needle of [
+  'stageBuildSequence += 1',
+  'lipSyncSequence += 1',
+  'stopStage()',
+  'resizeObserver?.disconnect()',
+  'releaseAudio()',
+  'releaseStageVocalAudio()',
+  'releaseBackmonitor()',
+  'releaseImageLayers()',
+  'releaseObjectLayers()',
+  'releaseSpotlights()',
+  'releaseLaserlights()',
+  'releasePinspotlights()',
+  'releaseStageBackground()',
+  'destroyStageRuntime(runtime)',
+  'runtimes.clear()',
+  'characterShadowTexture?.destroy(true)',
+  'app?.destroy(true)',
+]) {
+  if (!stageCleanup.includes(needle)) fail(`Chibi stage unmount cleanup is missing: ${needle}`)
+}
 if (lineupPlayerSource.includes('liveChibiSpine')) {
   fail('portal lineup player must not pull Pixi/Spine runtime into the archive bundle')
 }

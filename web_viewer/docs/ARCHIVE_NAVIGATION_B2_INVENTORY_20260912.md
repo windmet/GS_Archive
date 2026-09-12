@@ -43,8 +43,8 @@
 | --- | --- | --- |
 | N01 | PARTIAL | 集合/Player return已有测试；Portal与旧主线位置待Browser |
 | N02 | PASS | 活动筛选、长列表滚动与活动实体焦点在桌面/390px返回后恢复 |
-| N03 | PASS | unit→song parent及unit实体已编码 |
-| N04 | PASS | unit→event parent及unit实体已编码 |
+| N03 | PASS | Jupiter→歌曲`unmikn`→Jupiter已实测；组合详情无tab，tab项为N/A |
+| N04 | PASS | Jupiter→活动430018→Jupiter已实测，活动breadcrumb保持活动层级 |
 | N05 | PASS | 活动430018→报酬卡及刷新后返回均恢复活动来源 |
 | N06 | PASS | 北斗活动关联卡→活动430018→卡片→原3项关联筛选列表，来源、位置与焦点均恢复 |
 | N07 | PASS | cards筛选、搜索、滚动与实体焦点按规范路由/history entry恢复；桌面与390px Browser已验收 |
@@ -64,7 +64,7 @@
 | N21 | PASS | Reader版本/行/range错误已有可解释失败回归 |
 | N22 | PASS | navigation intent迟到响应抑制已有回归 |
 | N23 | PARTIAL | 路由字段可往返；各组件选择/tab需逐页Browser |
-| N24 | PARTIAL | archive_status→Spine刷新后来源返回已实测；Chibi互跳仅机器覆盖，待完整视觉旅程 |
+| N24 | PASS | archive_status→Spine→Chibi 5/5就绪→archive_status已实测，卸载清理合同已回归锁定 |
 
 ## 第一实现批边界
 
@@ -107,3 +107,11 @@ N02使用活动检索目录的36条实体，从列表末端打开`430018 / GROWI
 - N09从`idol_detail&idol=001tom`进入冬马19张卡片列表，打开末端`001tom_ssr02 / 賑やかなランウェイ`。返回后恢复`card:001tom_ssr02`焦点及约1149/1150滚动，再次返回准确恢复`idol_detail&category=idol&idol=001tom`；详情页、卡片页与切换器均显示源名`天ヶ瀬 冬馬`，无横向溢出或console error。当前`ArchiveIdolDetail`只有单一档案视图，没有tab控件，因此N09的tab恢复记为N/A，而不是缺证据。
 
 N06、N08、N09由待Browser验收改为PASS。下一批优先执行尚未完成的N03/N04组合关系Browser路径，以及N24 Chibi完整视觉旅程；继续复用现有来源与恢复owner，不为单个入口增加页面私有状态。
+
+## N03/N04与N24视觉验收
+
+输入HEAD `2c86aa7`。N03从Jupiter组合详情打开`unmikn / 運命光年`，歌曲页保持“资料馆 / 歌曲 / 運命光年”的canonical breadcrumb，顶部返回准确恢复`unit_detail&category=idol&unit=01jup`。N04从同一组合页打开活动430018，活动页保持“资料馆 / 活动 / GROWING SELECTION -運命光年-”层级，顶部返回同样恢复Jupiter。当前组合详情没有tab控件，因此N03的tab恢复明确为N/A；两条路径无横向溢出或console error。
+
+N24从`archive_status`进入Spine实验室，再通过“多人舞台”进入`chibi_stage`；两页URL持续携带单层`from=?view=archive_status`。Chibi舞台完成5名角色装载，状态由3/5到5/5，实际画面显示5人站位；“返回资料馆”恢复`archive_status`，无横向溢出或console error。`verify:song-experimental-audio`新增卸载边界，锁定构建/口型序列失效、动画停止、ResizeObserver、媒体与舞台声部、背屏/图像/物件/灯光/背景、角色runtime、阴影纹理和Pixi app释放；连同routes与archive-navigation-state均通过。N24由PARTIAL改为PASS。
+
+下一批进入N11歌曲→剧情集合→Player逐层返回，以及N12/N13 Reader/Player来源与位置的真实Browser旅程。

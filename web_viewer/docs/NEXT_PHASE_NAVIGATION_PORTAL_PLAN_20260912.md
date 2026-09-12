@@ -59,7 +59,7 @@
 | --- | --- | --- |
 | N01 | Portal→故事→主线集合→章节 | 回对应集合/主线位置，Portal仍是入口 |
 | N02 | 活动列表→430018 | 返回原活动筛选与列表位置 |
-| N03 | Jupiter→关联歌曲 | 返回Jupiter及原tab |
+| N03 | Jupiter→关联歌曲 | 返回Jupiter；当前组合详情无tab，tab恢复为N/A |
 | N04 | Jupiter→关联活动430018 | 返回Jupiter；活动breadcrumb不变 |
 | N05 | 活动430018→报酬卡 | 返回该活动及原滚动位置 |
 | N06 | 卡片详情→关联活动→返回 | 返回该卡，再返回原筛选列表 |
@@ -131,3 +131,5 @@ N18已完成真实Browser的Portal→歌曲→Back/Forward及关闭Portal恢复�
 N02活动目录和N10歌曲目录现已在1280×900与390×844完成长列表滚动/焦点恢复，歌曲scope/query路线也已实测，二者改为PASS。卡片目录偶像标题同时改回master-data源名，`天ヶ瀬 冬馬`与切换器保持一致。下一批直接补N06/N08/N09关系旅程。
 
 N06/N08/N09关系旅程已完成真实Browser验收：北斗活动关联卡逐层返回3项筛选列表，卡池210003经关联卡刷新后逐层返回57项列表，冬马偶像详情经19张卡片及`001tom_ssr02`逐层返回原偶像；对应实体焦点与长列表滚动均恢复，源名保持`天ヶ瀬 冬馬`。偶像详情当前不存在tab控件，因此N09的tab项明确记为N/A。下一批执行N03/N04组合关系旅程及N24 Chibi完整视觉路径。
+
+N03/N04已以Jupiter→`unmikn`歌曲、Jupiter→活动430018完成Browser验收：详情保持各自canonical breadcrumb，顶部返回恢复`unit=01jup`；组合详情无tab，N03 tab项为N/A。N24也已完成`archive_status`→Spine→Chibi 5/5角色就绪→资源页的视觉旅程，并为Chibi卸载时的动画、媒体、图层、runtime和Pixi资源释放补充回归边界。下一批执行N11及N12/N13的剧情集合、Reader与Player逐层返回。

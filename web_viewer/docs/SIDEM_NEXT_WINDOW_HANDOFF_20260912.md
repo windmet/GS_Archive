@@ -400,3 +400,7 @@ N02/N10也已在1280×900与390×844完成真实长列表返回验收：活动43
 ## 导航N06/N08/N09关系旅程验收
 
 输入HEAD a494cbb。N06以北斗`003hok_sr10`与活动430018核对card→event→card→3项`event_card`列表，单层来源、筛选、焦点均恢复；N08以卡池210003→`018shm_ssr01`核对卡片详情刷新后逐层返回卡池及57项列表，`gasha:210003`焦点和约1969/1970滚动恢复；N09以冬马详情→19张卡片→`001tom_ssr02`核对逐层返回，卡片列表恢复`card:001tom_ssr02`及约1149/1150滚动，再回`idol_detail&idol=001tom`，源名始终为`天ヶ瀬 冬馬`。三条路径无横向溢出或console error，改为PASS。当前偶像详情没有tab控件，N09的tab恢复为N/A。下一批执行N03/N04组合关系Browser路径和N24 Chibi完整视觉旅程；个人/卡片/通信Reader入口仍停止。
+
+## 导航N03/N04与N24视觉验收
+
+输入HEAD 2c86aa7。N03以Jupiter→歌曲`unmikn`核对歌曲breadcrumb及顶部返回，N04以Jupiter→活动430018核对活动breadcrumb及顶部返回，两者均恢复`unit_detail&unit=01jup`，无横向溢出或console error；组合详情没有tab，N03 tab项为N/A。N24从`archive_status`进入Spine，再进入Chibi多人舞台；5名角色实际加载至5/5并显示，返回恢复资源页。`verify:song-experimental-audio`新增Chibi卸载合同，覆盖序列失效、动画、ResizeObserver、音频、视频/图层/灯光/背景、角色runtime、阴影纹理及Pixi app释放；routes、archive-navigation-state同时通过。N24改为PASS。下一批执行N11和N12/N13的剧情集合、Reader/Player真实Browser路径；个人/卡片/通信Reader入口仍停止。
