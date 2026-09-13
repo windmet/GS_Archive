@@ -1,5 +1,5 @@
 <template>
-  <section class="song-detail">
+  <section class="song-detail" data-archive-scroll-container>
     <header class="song-detail-hero">
       <img v-if="song.jacketUrl" class="song-detail-jacket" :src="song.jacketUrl" :alt="`${song.title} 封面`" />
       <div class="song-detail-title">
@@ -27,7 +27,7 @@
         <div class="song-block-heading"><span>PERFORMERS</span><h3>演唱者</h3></div>
         <div v-if="song.unit" class="song-subsection">
           <h4>演唱组合</h4>
-          <ul class="chip-list"><li><button :disabled="!song.unit.actionable" @click="emit('open-unit', song.unit.id)">{{ song.unit.displayName }}</button></li></ul>
+          <ul class="chip-list"><li><button :disabled="!song.unit.actionable" :data-archive-focus-id="`song-unit:${song.unit.id}`" @click="emit('open-unit', song.unit.id)">{{ song.unit.displayName }}</button></li></ul>
         </div>
         <div v-else class="performance-scope-card"><strong>{{ song.scopeLabel }}</strong><p>{{ song.scopeDescription }}</p></div>
         <div v-if="song.performers.length" class="song-subsection">
@@ -48,7 +48,7 @@
         <p class="song-block-note">完整混音：{{ song.fullMixCollected ? '已收录' : '未收录' }}。{{ song.playbackLabel }}。</p>
         <div v-for="group in song.audioGroups" :key="group.title" class="song-subsection">
           <h4>{{ group.title }}（{{ group.entries.length }}）</h4><p v-if="group.note" class="song-block-note">{{ group.note }}</p>
-          <ul v-if="group.kind === 'unit'" class="chip-list"><li v-for="entry in group.entries" :key="entry.id"><button :disabled="!entry.actionable" @click="emit('open-unit', entry.id)">{{ entry.displayName }}</button></li></ul>
+          <ul v-if="group.kind === 'unit'" class="chip-list"><li v-for="entry in group.entries" :key="entry.id"><button :disabled="!entry.actionable" :data-archive-focus-id="`audio-unit:${entry.id}`" @click="emit('open-unit', entry.id)">{{ entry.displayName }}</button></li></ul>
           <ul v-else class="audio-idol-list"><li v-for="entry in group.entries" :key="entry.id"><ArchiveIdolReference :reference="entry.reference" :show-image="false" @open="emit('open-idol', $event)" /></li></ul>
         </div>
       </section>

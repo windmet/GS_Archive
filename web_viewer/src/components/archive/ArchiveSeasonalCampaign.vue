@@ -1,5 +1,5 @@
 <template>
-  <section class="seasonal-page">
+  <section class="seasonal-page" data-archive-scroll-container>
     <header class="campaign-header">
       <div>
         <span>SEASONAL CAMPAIGN</span>

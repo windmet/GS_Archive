@@ -1,5 +1,5 @@
 <template>
-  <article v-if="event" class="event-detail">
+  <article v-if="event" class="event-detail" data-archive-scroll-container>
     <section class="event-identity">
       <div class="event-visual">
         <img class="event-banner" :src="getEventBannerUrl(event.event_code)" :alt="event.title" />

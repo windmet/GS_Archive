@@ -1,5 +1,5 @@
 <template>
-  <section v-if="gasha" class="gasha-detail">
+  <section v-if="gasha" class="gasha-detail" data-archive-scroll-container>
     <div class="gasha-identity">
       <div class="gasha-banner">
         <img :src="gasha.banner_url" :alt="gasha.display_name" />

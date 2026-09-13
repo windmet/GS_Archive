@@ -1,5 +1,5 @@
 <template>
-  <article v-if="collection" class="story-collection">
+  <article v-if="collection" class="story-collection" data-archive-scroll-container>
     <header class="collection-hero">
       <div class="collection-visual" :class="`domain-${collection.domain}`">
         <img v-if="collection.visualUrl" :src="collection.visualUrl" :alt="collection.title" />

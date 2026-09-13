@@ -1,5 +1,5 @@
 <template>
-  <article v-if="story" class="story-detail">
+  <article v-if="story" class="story-detail" data-archive-scroll-container>
     <header class="story-identity" :class="`domain-${story.domain}`">
       <div class="identity-visual">
         <img v-if="visualUrl" :src="visualUrl" :alt="story.sectionLabel || story.title" />

@@ -1,5 +1,5 @@
 <template>
-  <section class="unit-catalog">
+  <section class="unit-catalog" data-archive-scroll-container>
     <div class="unit-grid">
       <button v-for="entry in entries" :key="entry.unit.unit_code" class="unit-entry" @click="emit('select', entry.unit)">
         <img :src="getBgUrl(entry.unit.representative_bg)" :alt="entry.unit.unit_name" loading="lazy" />

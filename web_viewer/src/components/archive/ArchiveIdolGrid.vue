@@ -1,5 +1,5 @@
 <template>
-  <section class="screen list-screen">
+  <section class="screen list-screen" data-archive-scroll-container>
     <ArchiveListHeader
       v-if="!embedded"
       :title="title"
@@ -29,6 +29,7 @@
         v-for="entry in idols"
         :key="entry.id"
         class="idol-card"
+        :data-archive-focus-id="`idol:${entry.id}`"
         :class="{ 'group-card': entry._isGroup }"
         @click="emit('select', entry)"
       >

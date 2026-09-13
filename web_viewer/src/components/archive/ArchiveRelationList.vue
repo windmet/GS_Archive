@@ -5,6 +5,7 @@
       v-for="item in items"
       :key="item.id"
       class="relation-row"
+      :data-archive-focus-id="item.actionable === false ? undefined : `relation:${item.id}`"
       :class="[`kind-${item.kind || 'record'}`, { static: item.actionable === false }]"
       :type="item.actionable === false ? undefined : 'button'"
       @click="select(item)"

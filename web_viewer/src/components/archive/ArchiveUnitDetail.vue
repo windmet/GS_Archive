@@ -1,5 +1,5 @@
 <template>
-  <article v-if="unit" class="unit-detail">
+  <article v-if="unit" class="unit-detail" data-archive-scroll-container>
     <header class="unit-hero" :style="{ backgroundImage: `url(${getBgUrl(unit.representative_bg)})` }">
       <span class="unit-hero-shade" aria-hidden="true"></span>
       <div class="unit-hero-copy">

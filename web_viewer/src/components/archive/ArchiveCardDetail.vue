@@ -1,5 +1,5 @@
 <template>
-  <section class="screen list-screen">
+  <section class="screen list-screen" data-archive-scroll-container>
     <ArchiveListHeader v-if="!embedded" :title="card?.title || '卡片详情'" @back="emit('back')" />
     <div v-if="card" class="card-detail">
       <section class="card-detail-head">

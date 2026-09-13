@@ -19,3 +19,9 @@
 输入 HEAD `cec82d7`。Lab 在 manifest 未到时显示“正在读取动作库”，失败/真空结果分别表达；Reader 译文资源 invalid 时只报加载失败，避免叠加由 fallback 推出的“未译”数量；全局遮罩接显式资料/演出/舞台用途文案，既有播放画面等待提示保留。没有更改 Reader canonical 行或 Playback scheduler。
 
 验证：`verify-archive-loading-copy`、`verify-reading-render`、`verify:archive-async-navigation`、`verify:reading-playback`、`verify:story-loading-safety`、`build:check` PASS。5175 / Playwright 1280×850、390×850：Lab manifest 受控延迟时无假 0，到达后为 60 动作；`1_4_001_01_d` 译文请求（实际 text catalog `1_4_001_01`）注入 503 时只显示“译文暂时无法载入”，正文原文可读；390px 冷卡片索引延迟时显示“正在读取资料馆数据”。无页面异常与横向溢出；桌面 headless WebGL 有 ReadPixels GPU stall 性能警告。截图仓库外，未做设备性能/完整媒体验收。
+
+## UX-06：Archive 滚动容器与返回焦点
+
+输入 HEAD `5401ed4`。沿用既有 `archiveViewRestoration` 的 session 位置/焦点协议，为独立滚动的卡/歌曲/人物/组合详情及目录、活动/剧情/卡池/Mobile 等根节点接入滚动标记；重要人物/组合/关联行补稳定焦点 ID。卡片列表、歌曲/剧情/卡池目录原已接入，审计对此部分的判断已过时。未改变试听控件状态；音频在跨页面离开后的恢复属于独立议题。
+
+验证：`verify:archive-navigation-state`（包括 marker 断言）、`build:check` PASS。5175 / Playwright Chromium 1280×850、390×850：`brndnf` 歌曲详情中部→Jupiter 组合→返回，回到同一歌且 `scrollTop` 精确等于离开时记录值（桌面 516、窄屏 742），焦点为 `song-unit:01jup`；卡列表筛 `gasha_card` → `002sht_sr04` 卡详情中部→关联卡池→返回卡详情→返回卡列表，详情恢复 360，列表回到卡片所在位置并恢复 `card:002sht_sr04` 焦点。无页面 console error/横向溢出。截图仓库外；未覆盖所有页面和真实设备返回矩阵。

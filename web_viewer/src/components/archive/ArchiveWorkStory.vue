@@ -1,5 +1,5 @@
 <template>
-  <section class="work-page" :style="{ '--work-accent': idol?.color || '#168f87' }">
+  <section class="work-page" data-archive-scroll-container :style="{ '--work-accent': idol?.color || '#168f87' }">
     <header class="work-header">
       <div class="idol-heading">
         <img v-if="idol?.idol_code" :src="idolIcon(idol.idol_code)" :alt="idol.display_name" />

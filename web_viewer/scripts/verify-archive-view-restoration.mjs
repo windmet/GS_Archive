@@ -60,6 +60,14 @@ for (const [file, markers] of Object.entries({
   'ArchiveSongCatalog.vue': ['data-archive-scroll-container', 'song:${song.song_code}'],
   'ArchiveGashaCatalog.vue': ['data-archive-scroll-container', 'gasha:${gasha.id}'],
   'ArchiveStoryCatalog.vue': ['data-archive-scroll-container', 'event:${entry.id}', 'story:${entry.id}'],
+  'ArchiveIdolGrid.vue': ['data-archive-scroll-container', 'idol:${entry.id}'],
+  'ArchiveSongDetail.vue': ['data-archive-scroll-container', 'song-unit:${song.unit.id}', 'audio-unit:${entry.id}'],
+  'ArchiveCardDetail.vue': ['data-archive-scroll-container'],
+  'ArchiveUnitDetail.vue': ['data-archive-scroll-container'],
+  'ArchiveGashaDetail.vue': ['data-archive-scroll-container'],
+  'ArchiveMobileArchive.vue': ['data-archive-scroll-container'],
+  'ArchiveIdolReference.vue': ['idol-reference:${reference.idolCode}'],
+  'ArchiveRelationList.vue': ['relation:${item.id}'],
 })) {
   const source = readFileSync(new URL(`../src/components/archive/${file}`, import.meta.url), 'utf8')
   for (const marker of markers) assert.ok(source.includes(marker), `${file} exposes ${marker}`)

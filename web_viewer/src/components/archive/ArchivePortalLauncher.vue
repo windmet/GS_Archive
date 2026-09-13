@@ -1,5 +1,5 @@
 <template>
-  <section class="portal-launcher" aria-labelledby="portal-title" :style="{ '--portal-background': `url(${getPortalBackgroundUrl()})` }">
+  <section class="portal-launcher" data-archive-scroll-container aria-labelledby="portal-title" :style="{ '--portal-background': `url(${getPortalBackgroundUrl()})` }">
     <ArchivePageChrome class="portal-header" :can-go-back="canGoBack" back-class="portal-back" back-pill @back="emit('back')">
       <template #actions>
         <div class="portal-header-actions">

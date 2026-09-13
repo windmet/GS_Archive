@@ -4,6 +4,7 @@
     class="archive-idol-reference"
     :class="[`density-${density}`, { 'without-image': !showImage }]"
     :type="reference?.actionable ? 'button' : undefined"
+    :data-archive-focus-id="reference?.actionable ? `idol-reference:${reference.idolCode}` : undefined"
     :aria-label="reference?.actionable ? `查看${reference.displayName}的偶像资料` : undefined"
     @click="reference?.actionable && emit('open', reference.idolCode)"
   >

@@ -1,5 +1,5 @@
 <template>
-  <article v-if="story" class="idol-story" :style="{ '--idol-accent': story.color }">
+  <article v-if="story" class="idol-story" data-archive-scroll-container :style="{ '--idol-accent': story.color }">
     <header class="story-header">
       <div class="idol-identity">
         <img :src="idolIcon(story.idol_code)" :alt="story.idol_name" />

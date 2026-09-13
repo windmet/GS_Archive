@@ -2,6 +2,7 @@
   <article
     v-if="archive"
     class="mobile-archive"
+    data-archive-scroll-container
     :data-focused-scenario-id="String(focusedScenarioId || '')"
     :style="{ '--mobile-accent': accentColor, '--idol-frame-color': idolFrameColor || undefined }"
   >

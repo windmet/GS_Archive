@@ -1,5 +1,5 @@
 <template>
-  <article v-if="idol" class="idol-detail">
+  <article v-if="idol" class="idol-detail" data-archive-scroll-container>
     <header class="idol-profile-header">
       <img
         :src="`/assets/idols/icons/image_chara_icon_${idol.idol_code}.png`"
