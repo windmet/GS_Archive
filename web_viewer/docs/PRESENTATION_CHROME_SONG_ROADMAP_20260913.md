@@ -217,3 +217,9 @@ Portal自推卡改用共享身份引用，规范姓名、组合和头像降级�
 | `anwhre_live_effect` | 5 | 3 | 175 | 静态对象已接线，粒子仍缺 |
 
 验证：`verify:stage-vfx-coverage`遍历全部118份编排，核查以上代表曲目及缺索引、未知对象种类分支；`build:check`通过。5175 Browser在DRIVE A LIVE和ANYWHERE间切换，逐曲数量同步更新，未影响舞台播放与编成；390×844 Edge截图复核说明可读、0横向溢出、0运行错误。此批没有新增粒子渲染，也没有做原游戏视频的视觉对照；S4的“支持/近似/缺失”是来源与代码能力分层，实际视觉验收仍需对应原片。
+
+随后复验：此前两次`verify:archive-presentation`的Vite SSR样式加载60秒超时；独立加载`ArchiveTechnicalDetails.vue`与`ArchiveSongDetail.vue`分别成功后，全量验证重新运行并通过：61首歌曲、规范身份、能力边界、原证据不可变以及20个模板边界。此前超时保留为当时验证记录；当前HEAD不再有这项未通过检查。没有因此增加原声同步或原片视觉验收结论。
+
+## S1 媒体元数据前置核查
+
+输入HEAD `efe5ab5`。新增可单独运行的`verify:song-media-duration`，逐一使用ffprobe读取61份本地M4A容器时长，对照对应RAW cue的采样数/采样率与登记时长；当前61份均可读取，最大差异0.77ms。5175实际服务的61条歌曲路径也逐一通过HTTP HEAD。BRAND NEW FIELD容器约130.651秒、DRIVE A LIVE及`drv999`均约130.285秒但两份衍生文件SHA不同；`drv999`仍是独立特别版，不能只因时长相同合并身份。这些仅证明容器和时长元数据一致，不证明可持续解码、听感、歌词起句/中段/尾句对齐或舞台同步；时间线`timelineToAudio`仍保持`unverified`，正式歌词仍只作为文本资料。
