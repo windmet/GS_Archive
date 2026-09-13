@@ -117,6 +117,23 @@ function setup() {
   assert.equal(t.state.currentScenarioFile.value, '')
   assert.equal(t.writes.length, 1)
 }
+// A player deep link needs its lazy archive owner before restoring its queue
+// and before a later Back can render that owner.
+{
+  const t = setup(), data = deferred()
+  t.context.ensureIdolCommunicationData = () => data.promise
+  const pending = t.restore({ view: 'player', scenario: 'birthday-b.json', returnView: 'idol_story_archive', idol: '038tak' })
+  await flush()
+  assert.equal(t.requests.length, 0, 'owner data must precede player restoration')
+  t.context.idolUnitData.value = { by_idol_code: { '038tak': {} } }
+  t.context.currentIdolStoryPage.value = { sections: [{ episodes: [{ file: 'birthday-b.json' }] }] }
+  data.resolve()
+  await flush(() => t.requests.length === 1)
+  t.respond(0, 'birthday'); await pending
+  assert.equal(t.state.currentCharacterId.value, '038tak')
+  assert.equal(t.state.returnViewAfterPlayer.value, 'idol_story_archive')
+  assert.equal(t.state.view.value, 'player')
+}
 // Older history restore cannot write selections after its data dependency resolves.
 {
   const t = setup(), data = deferred()
@@ -138,6 +155,7 @@ function setup() {
   data.resolve(); await old
   assert.equal(t.context.navigation.isRestoring(), true)
   t.sync({ replace: true }); assert.equal(t.writes.length, 0)
+  await flush(() => t.requests.length === 1)
   t.respond(0, 'current'); await current
   assert.equal(t.context.navigation.isRestoring(), false)
   assert.equal(t.state.currentScenarioStartStep.value, 3)
@@ -153,6 +171,7 @@ function setup() {
     { id: 'second', file: 'shared.json', startStep: 12, endStep: 20 },
   ] }] }
   const restored = t.restore({ view: 'player', scenario: 'shared.json', returnView: 'story_collection', startStep: 12, endStep: 20 })
+  await flush(() => t.requests.length === 1)
   t.respond(0, 'shared'); await restored
   assert.equal(t.context.episodeQueue.current.value.id, 'second')
   assert.equal(t.context.episodeQueue.hasNext.value, false)

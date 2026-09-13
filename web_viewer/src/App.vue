@@ -1680,7 +1680,7 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
       'external_story_resources',
       'idol_story_archive',
       'mobile_archive',
-    ].includes(route.view)) {
+    ].includes(route.view === 'player' ? route.returnView : route.view)) {
       await ensureIdolCommunicationData()
     }
     if (!intent.isCurrent()) return

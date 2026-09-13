@@ -35,6 +35,33 @@ const toumaSmallTalk = presentation.by_file['1_x_001tom_2_1_2_001_12.json']
 assert.deepEqual(toumaSmallTalk.episodes.map(episode => episode.episode_part), ['a', 'b', 'c'])
 assert.deepEqual(toumaSmallTalk.episodes.map(episode => [episode.start_step_index, episode.end_step_index]), [[2, 7], [8, 13], [14, 19]])
 
+// Birthday small talks must load the authored scene, not inherit a previous
+// segment's cast/background from a legacy merged snapshot.
+const takeruFile = '1_x_038tak_2_1_2_038_12.json'
+const takeru = presentation.by_file[takeruFile]
+assert.equal(takeru.preplay_synopsis.title, '誰がための誕生日パーティ')
+assert.deepEqual(takeru.episodes.map(e => e.source_scenario_id), ['1_2_038_12_a', '1_2_038_12_b', '1_2_038_12_c'])
+const expectedCast = [ ['039mcr', '040ren'], ['038tak', '039mcr'], ['038tak', '040ren'] ]
+for (const [index, episode] of takeru.episodes.entries()) {
+  const data = await readJson(`public/data/compiled/${episode.episode_file}`)
+  const first = data.steps.find(step => step.type === 'adv')
+  assert.equal(first.state.bg, 'bg001_315pro_in_51')
+  const visible = first.state.spines.filter(spine => spine.visible !== false)
+  assert.deepEqual(visible.map(s => s.id).sort(), expectedCast[index])
+  assert.deepEqual(visible.map(s => s.pos_x).sort((a, b) => a - b), [-200, 200])
+  assert.equal(data.steps.filter(s => s.dialogue?.voice).length, 5)
+}
+const birthdayCases = await readJson('scripts/fixtures/birthday-entry-scenes.json')
+for (const sample of birthdayCases.cases) {
+  const entry = presentation.by_file[sample.aggregate].episodes.find(e => e.source_scenario_id === sample.source)
+  assert.ok(entry?.episode_file, `${sample.source}: explicit episode required`)
+  const data = await readJson(`public/data/compiled/${entry.episode_file}`)
+  const state = data.steps.find(s => s.type === 'adv').state
+  const cast = state.spines.filter(s => s.visible !== false).map(s => [s.id, s.pos_x || 0, s.pos_y || 0])
+    .sort((a, b) => a[0].localeCompare(b[0]))
+  assert.deepEqual({ bg: state.bg, cast }, sample.expected, `${sample.source}: RAW entrance differs`)
+}
+
 for (const [file, metadata] of Object.entries(presentation.by_file)) {
   assert.ok(metadata.playable_start_index >= 0, `${file} has an invalid playable start`)
   assert.ok(metadata.playable_step_count >= 0, `${file} has an invalid playable count`)
