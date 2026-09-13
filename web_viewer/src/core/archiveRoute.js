@@ -142,7 +142,7 @@ const ARCHIVE_NAVIGATION = Object.freeze([
 ])
 
 const BREADCRUMB_HIDDEN_VIEWS = new Set(['home', 'portal', 'reader', 'player', 'spine_lab', 'chibi_stage'])
-const SOURCE_ROUTE_FORBIDDEN_VIEWS = new Set(['portal', 'reader', 'player', 'spine_lab', 'chibi_stage'])
+const SOURCE_ROUTE_FORBIDDEN_VIEWS = new Set(['reader', 'player', 'spine_lab', 'chibi_stage'])
 const MAX_SOURCE_DEPTH = 16
 const MAX_SOURCE_LENGTH = 8192
 
@@ -180,8 +180,8 @@ function sourceFrames(query) {
     const tail = url.searchParams.get('via')
     url.searchParams.delete('from')
     url.searchParams.delete('via')
-    url.searchParams.delete('portal_from')
     const view = url.searchParams.get('view') || 'home'
+    if (view !== 'portal') url.searchParams.delete('portal_from')
     if (!VALID_VIEWS.has(view) || SOURCE_ROUTE_FORBIDDEN_VIEWS.has(view) ||
         url.searchParams.has('scenario') || url.searchParams.has('file')) break
     const route = readArchiveRoute(url)

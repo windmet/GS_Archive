@@ -29,9 +29,10 @@ const eventSource = buildArchiveSourceQuery(readArchiveRoute(
   encodeURIComponent(cardsSource),
 ))
 assert.equal(new URL(eventSource, 'http://localhost/').searchParams.has('from'), false, 'detail source cannot recurse')
-for (const badSource of ['https://example.com/', '?view=player&scenario=a.json', '?view=portal', '?view=spine_lab', '?' + 'q'.repeat(8193)]) {
+for (const badSource of ['https://example.com/', '?view=player&scenario=a.json', '?view=spine_lab', '?' + 'q'.repeat(8193)]) {
   assert.equal(readArchiveSourceRoute(badSource).view, 'home')
 }
+assert.equal(readArchiveSourceRoute('?view=portal').view, 'portal')
 const labRoute = readArchiveRoute(buildArchiveUrl('http://localhost/', {
   view: 'spine_lab',
   sourceRoute: buildArchiveSourceQuery({ view: 'archive_status' }),

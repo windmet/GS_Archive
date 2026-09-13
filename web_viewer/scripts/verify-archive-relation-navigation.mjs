@@ -110,9 +110,10 @@ while (route.sourceRoute) { route = source(route); depth++ }
 assert.equal(depth, 16)
 const old = '?view=unit_detail&unit=01jup&from=' + encodeURIComponent('?view=song_detail&song=brndnf')
 assert.equal(source(readArchiveSourceRoute(old)).song, 'brndnf')
-for (const bad of ['https://example.com/', '?view=player&scenario=x.json', '?view=portal', '?view=invalid', '?' + 'x'.repeat(8192)]) {
+for (const bad of ['https://example.com/', '?view=player&scenario=x.json', '?view=invalid', '?' + 'x'.repeat(8192)]) {
   assert.equal(roundTrip({ view: 'idol_detail', sourceRoute: bad }).sourceRoute, undefined)
 }
+assert.equal(roundTrip({ view: 'idol_detail', sourceRoute: '?view=portal' }).sourceRoute, '?view=portal')
 assert.equal(readArchiveSourceRoute('?view=song_detail&song=brndnf&via=broken').song, 'brndnf')
 console.log(`Archive relation navigation: ${fixtures.length} production edges, seven-page refresh chain, playback carriers and bounded legacy URL handling passed`)
 

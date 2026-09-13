@@ -20,7 +20,7 @@
         :notice="readingPlaybackNotice" :busy="loading" @refresh="refreshStoryReader" @play-document="openReaderPlayback(readingRowId, { fullDocument: true })" @select="openStoryReader" @mode="updateReadingMode" @locate="locateReadingRow" @back="closeStoryReader" @retry="openStoryReader(readingDocumentId)" />
       <ArchivePortalLauncher
         v-if="view === 'portal'"
-        :preferred-idol="preferredArchiveIdol"
+        :preferred-reference="preferredArchiveIdolReference"
         @navigate="navigateArchiveSection"
         @back="closeArchivePortal"
         @settings="openWelcomeSettings"
@@ -736,6 +736,9 @@ const archiveHomeHighlights = computed(() => buildArchiveHomeHighlights(
 const validArchiveHomeIdols = computed(() => archiveHomeIdols.value.map(idol => idol.id))
 const preferredArchiveIdol = computed(() =>
   archiveHomeIdols.value.find(idol => idol.id === userPreferences.value.preferredIdol) || null)
+const preferredArchiveIdolReference = computed(() => preferredArchiveIdol.value
+  ? buildIdolReference(preferredArchiveIdol.value.id, idolUnitData.value, archiveManifestData.value, 'portal:preferred')
+  : null)
 const idolPickerLabel = computed(() => ({
   home: '游戏风首页',
   profile: '偶像资料',
@@ -2004,6 +2007,7 @@ function openGameHome(idolCode = '') {
 function openPreferredDestination(destination) {
   const idolCode = preferredArchiveIdol.value?.id
   if (!idolCode) return
+  if (destination === 'profile' || destination === 'cards') captureDetailSource()
   if (destination === 'profile') openPrimaryIdol(idolCode)
   else if (destination === 'cards') openPrimaryCards(idolCode)
   else if (destination === 'work') openWorkArchive(idolCode)

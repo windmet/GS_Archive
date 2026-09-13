@@ -12,13 +12,9 @@
         <h1 id="portal-title" tabindex="-1" ref="heading">我的资料馆</h1>
         <p>从这里，打开每一份收藏</p>
       </div>
-      <section v-if="preferredIdol" class="preferred-panel" aria-labelledby="preferred-title">
-        <img :src="idolIcon(preferredIdol.id)" :alt="preferredIdol.name" />
-        <div class="preferred-copy">
-          <span>我的偶像</span>
-          <h2 id="preferred-title">{{ preferredIdol.name }}</h2>
-          <small>{{ preferredIdol.unitName || '315 STARS' }}</small>
-        </div>
+      <section v-if="preferredReference?.actionable" class="preferred-panel" aria-labelledby="preferred-title">
+        <h2 id="preferred-title">我的偶像</h2>
+        <ArchiveIdolReference :reference="preferredReference" density="portrait" @open="emit('open-preferred', 'profile')" />
         <nav aria-label="我的偶像快捷入口">
           <button v-for="item in preferredActions" :key="item.id" @click="emit('open-preferred', item.id)">{{ item.label }}</button>
         </nav>
@@ -40,9 +36,10 @@ import { ArrowLeft, Settings2, Sparkles } from '@lucide/vue'
 import { ARCHIVE_NAVIGATION } from '../../core/archiveRoute.js'
 import { getPortalBackgroundUrl } from '../../utils/AssetResolver.js'
 import { archiveNavigationIcons } from './archiveNavigationIcons.js'
+import ArchiveIdolReference from './ArchiveIdolReference.vue'
 
 defineProps({
-  preferredIdol: { type: Object, default: null },
+  preferredReference: { type: Object, default: null },
 })
 const emit = defineEmits(['navigate', 'back', 'settings', 'open-home', 'open-preferred'])
 const heading = ref(null)
@@ -53,7 +50,6 @@ const preferredActions = [
   { id: 'work', label: 'Work' },
   { id: 'mobile', label: '通信' },
 ]
-function idolIcon(idolCode) { return `/assets/idols/icons/image_chara_icon_${idolCode}.png` }
 onMounted(() => heading.value?.focus({ preventScroll: true }))
 </script>
 
@@ -77,7 +73,10 @@ onMounted(() => heading.value?.focus({ preventScroll: true }))
 .portal-body { width: 100%; max-width: 560px; margin: 0 auto; flex: 1 0 auto; display: flex; flex-direction: column; padding: 32px 25px 30px; box-sizing: border-box; }
 .portal-heading h1 { margin: 0; font-size: 34px; line-height: 1.3; letter-spacing: -.8px; font-weight: 800; outline: none; }
 .portal-heading p { margin: 8px 0 0; font-size: 16px; line-height: 1.6; color: var(--portal-muted); letter-spacing: .6px; }
-.preferred-panel { display: grid; grid-template-columns: 58px minmax(0,1fr); gap: 10px 13px; align-items: center; margin-top: 25px; padding: 14px; border: 1px solid #cde3e3; border-radius: 18px; background: rgba(255,255,255,.72); }.preferred-panel > img { width: 58px; height: 58px; border-radius: 50%; object-fit: cover; }.preferred-copy { min-width: 0; }.preferred-copy span,.preferred-copy small { color: var(--portal-muted); font-size: 11px; }.preferred-copy h2 { margin: 2px 0; overflow: hidden; font-size: 17px; text-overflow: ellipsis; white-space: nowrap; }.preferred-panel nav { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }.preferred-panel nav button { min-height: 36px; padding: 0 11px; border: 1px solid #cae0e0; border-radius: 18px; background: #fff; color: #175359; cursor: pointer; font: inherit; font-size: 12px; }
+.preferred-panel { display: grid; gap: 10px; margin-top: 25px; padding: 14px; border: 1px solid #cde3e3; border-radius: 18px; background: rgba(255,255,255,.72); }
+.preferred-panel h2 { margin: 0; color: var(--portal-muted); font-size: 11px; font-weight: 600; }
+.preferred-panel nav { display: flex; flex-wrap: wrap; gap: 6px; }
+.preferred-panel nav button { min-height: 44px; padding: 0 11px; border: 1px solid #cae0e0; border-radius: 18px; background: #fff; color: #175359; cursor: pointer; font: inherit; font-size: 12px; }
 .portal-apps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px 20px; margin-top: 32px; }
 .portal-app { display: flex; align-items: center; flex-direction: column; gap: 10px; padding: 0; min-width: 0; border: 0; border-radius: 20px; background: none; color: inherit; font: inherit; font-size: 16px; line-height: 1.4; font-weight: 600; cursor: pointer; }
 .portal-icon { display: grid; place-items: center; width: min(100%, 86px); aspect-ratio: 1; border-radius: 23px; background: #d4f5ef; color: #175359; transition: transform 160ms ease, box-shadow 160ms ease; }

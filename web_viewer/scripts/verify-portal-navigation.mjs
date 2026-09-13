@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
-import { ARCHIVE_NAVIGATION, buildArchiveUrl, buildPortalReturnQuery, readArchiveRoute, readPortalReturnRoute } from '../src/core/archiveRoute.js'
+import { ARCHIVE_NAVIGATION, buildArchiveSourceQuery, buildArchiveUrl, buildPortalReturnQuery, readArchiveRoute, readArchiveSourceRoute, readPortalReturnRoute } from '../src/core/archiveRoute.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 
@@ -32,6 +32,20 @@ for (const bad of ['https://example.com/', '//example.com/', '?view=player&scena
 assert.equal(readArchiveRoute('http://localhost/?view=portal').view, 'portal')
 assert.equal(buildArchiveUrl('http://localhost/?view=portal&portal_from=x', { view: 'cards' }).searchParams.has('portal_from'), false)
 assert.equal(ARCHIVE_NAVIGATION.length, 8, 'existing desktop taxonomy remains unchanged')
+
+for (const portalFrom of ['', '?view=cards&rarity=SSR&q=Jupiter']) {
+  const portalSource = buildArchiveSourceQuery({ view: 'portal', portalFrom })
+  const detail = readArchiveRoute(buildArchiveUrl('http://localhost/', {
+    view: 'idol_detail', idol: '002sht', category: 'idol', sourceRoute: portalSource,
+  }))
+  assert.equal(detail.sourceRoute, portalSource, 'idol detail keeps a bounded Portal source on refresh')
+  const restored = readArchiveSourceRoute(detail.sourceRoute)
+  assert.equal(restored.view, 'portal')
+  assert.equal(restored.portalFrom, portalFrom ? buildPortalReturnQuery(readPortalReturnRoute(portalFrom)) : '',
+    'returning to Portal keeps its own normalized original source')
+}
+assert.equal(readArchiveSourceRoute('?view=portal&portal_from=%3Fview%3Dportal').portalFrom,
+  '?view=home', 'nested Portal return cannot recurse')
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const restoreContext = {

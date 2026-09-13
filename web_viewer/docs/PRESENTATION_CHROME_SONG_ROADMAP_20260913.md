@@ -147,3 +147,9 @@ Cards总览在整行卡片按钮内增加所属偶像姓名，不嵌第二个按
 复核发现`raw_character_image_promotions.json`的`event_story_visual`条目已有`master_evidence.event_ids`与`compiled_files`，比本路线最初对只按人物查询的判断更具体。新`buildEventIdolReference`仅在当前活动ID和剧情文件同时属于同一条promotion时，把该立绘置于通用头像前；实验RAW候选也只能在此已证实关系下、显式URL参数打开时尝试。其余活动只用对应人物头像。活动页三人都走共享入口；visual卡固定230px，立绘HTTP失败时降级为头像而不改变卡高。
 
 验证：真实注册表中冬马、翔太、北斗三人都将`430018 / 1_3_30018_01.json`列为关联；`verify:idol-reference`覆盖三人、剧情文件不匹配、NPC不可操作；`verify:raw-character-candidate`和`verify:raw-character-promotion`通过。5175 Browser确认430018三张立绘、北斗→偶像→返回活动，430017只呈普通头像。390px Edge CDP确认三张立绘均解码、无横向溢出；阻断北斗立绘请求后回退到北斗头像，三张卡仍同为230px，零控制台错误。`build:check`只生成E盘代码产物，无public复制。Portal展示迁移及N1/N2/S0-S4仍待后续批次。
+
+## P2 分批实施：Portal“我的偶像”
+
+Portal自推卡改用共享身份引用，规范姓名、组合和头像降级由同一合同提供；保留原五个快捷入口，不改变偏好设置与持久化。原有`Portal→资料→返回`实测误落Welcome：来源解析曾完全禁止Portal。本批让Portal作为受限来源帧，仍禁止其作为自身`portal_from`的递归目标；从自推卡和五个快捷入口进入人物/卡片/个人故事/Work/通信后，返回可恢复Portal及其原来源。根Portal本身仍显示一个无真实来源的Back，属于下一批N1语义补口，不把本批标为N1完成。
+
+验证：`verify:portal-navigation`增加Portal来源经偶像URL刷新仍可返回、保留Portal自身来源及递归拒绝。5175 Browser通过设置页选翔太，实走Portal→资料→Portal，直达带来源的翔太URL→Portal，并逐一检查五个快捷入口返回。独立Edge CDP在1440×900与390×844检查翔太姓名/Jupiter/头像解码、五个快捷按钮44px、0横向溢出及0控制台错误；代码编译仅使用E盘`build:check`，不复制public。根Portal Back、picker取消与设置返回语义仍待N1处理。
