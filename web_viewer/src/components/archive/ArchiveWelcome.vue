@@ -1,5 +1,5 @@
 <template>
-  <section class="archive-welcome" :class="{ 'selection-only': selectionOnly }" aria-labelledby="welcome-title">
+  <section class="archive-welcome" :class="{ 'selection-only': selectionOnly, 'idol-selection': selectionOnly || step === 'idol' }" aria-labelledby="welcome-title">
     <div class="welcome-card">
       <header>
         <ArchiveBackAction v-if="canCancel" class="cancel-button" :label="selectionOnly ? '退出选择' : '返回来源页'" @back="emit('cancel')" />
@@ -135,6 +135,7 @@ function chooseIdol() {
 <style scoped>
 .archive-welcome { height: 100%; min-height: 0; box-sizing: border-box; overflow-y: auto; padding: 28px 24px; background: radial-gradient(circle at 15% 0%, #dff7f3 0, transparent 36%), linear-gradient(150deg,#f7fbfb,#edf1f8); color: #173c48; font-family: Inter,"Noto Sans SC","Noto Sans JP",system-ui,sans-serif; }
 .welcome-card { width: min(920px,100%); margin: 0 auto; padding: 34px; border: 1px solid #d7e6e7; border-radius: 28px; background: rgba(255,255,255,.92); box-shadow: 0 24px 60px rgba(32,73,83,.1); }
+.idol-selection .welcome-card { width: min(1360px,100%); }
 .welcome-brand { color: #168f87; font-size: 13px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .cancel-button { --archive-back-ink: #176f69; margin: -8px 0 12px -8px; }
 header h1 { margin: 10px 0 8px; font-size: clamp(30px,5vw,52px); line-height: 1.12; outline: none; }
@@ -148,7 +149,7 @@ header p { max-width: 680px; margin: 0; color: #607982; font-size: 16px; line-he
 .idol-step { margin-top: 20px; }.idol-step-heading { display: flex; justify-content: space-between; gap: 16px; min-height: 24px; color: #67818a; font-size: 13px; }
 .text-button,.later-button,.clear-button { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; color: #176f69; cursor: pointer; font: inherit; }
 .idol-search-row { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin: 4px 0 12px; }.idol-search { display: flex; flex: 1; flex-direction: column; gap: 5px; max-width: 360px; color: #526d76; font-size: 13px; }.idol-search input { min-height: 42px; padding: 0 12px; border: 1px solid #cfdee0; border-radius: 12px; background: #fff; color: #173c48; font: inherit; }.idol-count { flex: 0 0 auto; padding-bottom: 11px; color: #67818a; font-size: 12px; }
-.idol-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; padding: 3px; }
+.idol-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 10px; padding: 3px; }
 .idol-choice { display: grid; grid-template-columns: 52px minmax(0,1fr); align-items: center; gap: 10px; min-height: 68px; padding: 8px; border: 1px solid #dce7e8; border-radius: 14px; background: #fff; color: inherit; cursor: pointer; font: inherit; text-align: left; }
 .idol-choice.selected { border-color: #168f87; outline: 2px solid #bce7e2; }.idol-choice img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
 .idol-choice span { display: flex; min-width: 0; flex-direction: column; gap: 3px; }.idol-choice strong,.idol-choice small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.idol-choice strong { font-size: 14px; }.idol-choice small { color: #71858c; font-size: 11px; }
