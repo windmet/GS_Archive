@@ -5,6 +5,7 @@
         :src="`/assets/idols/icons/image_chara_icon_${idol.idol_code}.png`"
         :alt="idol.display_name"
         class="idol-portrait"
+        :style="{ '--idol-frame-color': normalizeIdolAccentColor(idol.color) || undefined }"
       />
       <div class="idol-identity">
         <span class="idol-code">偶像档案</span>
@@ -102,6 +103,7 @@ import { BookOpenText, ChevronRight, Images, MessageSquareText, Music, Phone, Us
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
+import { normalizeIdolAccentColor } from '../../presentation/idolAccentColor.js'
 
 const props = defineProps({
   idol: { type: Object, default: null },
@@ -179,7 +181,7 @@ function formatDate(timestamp) {
   background: #17212b;
   color: #fff;
 }
-.idol-portrait { width: 104px; height: 104px; border: 3px solid #fff; border-radius: 50%; background: #eef1f3; object-fit: cover; }
+.idol-portrait { width: 104px; height: 104px; border: 3px solid var(--idol-frame-color, #879a9e); border-radius: 50%; background: #eef1f3; object-fit: cover; box-shadow: 0 0 0 1px rgba(255, 255, 255, .85); }
 .idol-identity { min-width: 0; }
 .idol-code { color: #58cec5; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.68rem; }
 .idol-identity h2 { margin: 7px 0 4px; font-size: 1.55rem; letter-spacing: 0; }

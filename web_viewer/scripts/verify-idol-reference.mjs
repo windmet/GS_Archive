@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
 import { buildEventIdolReference, buildIdolReference } from '../src/presentation/IdolReferencePresentation.js'
 import { buildUnitCatalog } from '../src/data/unitPage.js'
+import { normalizeIdolAccentColor } from '../src/presentation/idolAccentColor.js'
 
 function readJson(path) { return JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8')) }
 
@@ -32,7 +33,14 @@ for (const member of unitMembers) {
   assert.equal(reference.idolCode, member.idol_code)
   assert.equal(reference.displayName, dictionary.by_idol_code[member.idol_code]?.display_name)
   assert.equal(reference.actionable, true, `unresolved unit member: ${member.idol_code}`)
+  assert.equal(reference.accentColor, normalizeIdolAccentColor(dictionary.by_idol_code[member.idol_code]?.color))
 }
+assert.equal(unitMembers.length, 49)
+assert.equal(normalizeIdolAccentColor('#ABC123'), '#abc123')
+for (const value of ['', 'red', '#ff0', 'url(evil)', '#123456; color:red', null]) {
+  assert.equal(normalizeIdolAccentColor(value), '')
+}
+assert.equal(buildIdolReference('001tom', { by_idol_code: { '001tom': { display_name: '冬馬', color: 'url(evil)' } } }).accentColor, '')
 
 const prologue = stories.find(story => story.file === '1_4_001_00.json')
 assert.ok(prologue, 'missing main-story cast fixture')
@@ -61,6 +69,7 @@ for (const unknown of ['999xxx', '01jup', '', '../001tom']) {
   assert.equal(reference.actionable, false)
   assert.equal(reference.imageCandidates.length, 0)
   assert.equal(reference.displayName, '姓名待确认')
+  assert.equal(reference.accentColor, '')
 }
 
 console.log(`Idol references: ${cards.length} card owners, ${unitMembers.length} unit members, story cast and event-bound art resolved; unknown identities remain inert`)

@@ -7,7 +7,7 @@
     :aria-label="reference?.actionable ? `查看${reference.displayName}的偶像资料` : undefined"
     @click="reference?.actionable && emit('open', reference.idolCode)"
   >
-    <span v-if="showImage" class="idol-reference-art" :class="{ 'is-icon-art': currentImageKind !== 'event_story_visual' }" aria-hidden="true">
+    <span v-if="showImage" class="idol-reference-art" :class="{ 'is-icon-art': currentImageKind !== 'event_story_visual' }" :style="{ '--idol-frame-color': reference?.accentColor || undefined }" aria-hidden="true">
       <img v-if="imageSrc" :src="imageSrc" alt="" loading="lazy" @error="advanceImage" />
       <span v-else>{{ reference?.actionable ? reference.displayName.slice(0, 1) : '?' }}</span>
     </span>
@@ -57,6 +57,8 @@ button.archive-idol-reference:focus-visible { outline: 3px solid #37a9a1; outlin
 .without-image { min-height: 44px; padding-inline: 12px; }
 .idol-reference-art { display: grid; flex: 0 0 var(--reference-size); place-items: center; width: var(--reference-size); height: var(--reference-size); border-radius: 50%; background: #e7f0f0; color: #63848a; font-weight: 700; overflow: hidden; }
 .idol-reference-art img { width: 100%; height: 100%; object-fit: cover; }
+.idol-reference-art.is-icon-art { box-sizing: border-box; border: 3px solid var(--idol-frame-color, #879a9e); box-shadow: 0 0 0 1px rgba(30, 48, 53, .28); }
+.idol-reference-art.is-icon-art img { transform: scale(1.05); }
 .idol-reference-copy { display: flex; flex: 1; flex-direction: column; gap: 3px; min-width: 0; }
 .idol-reference-copy strong, .idol-reference-copy small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .idol-reference-copy strong { font-size: .82rem; }.idol-reference-copy small { color: #70848a; font-size: .67rem; }

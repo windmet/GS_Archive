@@ -1,3 +1,5 @@
+import { normalizeIdolAccentColor } from './idolAccentColor.js'
+
 const IDOL_CODE = /^\d{3}[a-z0-9]{3}$/i
 
 /** Identity comes from the idol dictionary; a missing owner is never replaced by a different idol. */
@@ -10,6 +12,7 @@ export function buildIdolReference(idolCode, dictionary, manifest, context = '')
       idolCode: code,
       displayName: '姓名待确认',
       unitName: '',
+      accentColor: '',
       actionable: false,
       imageCandidates: [],
       source: { kind: 'unresolved', context },
@@ -21,6 +24,7 @@ export function buildIdolReference(idolCode, dictionary, manifest, context = '')
     idolCode: code,
     displayName,
     unitName: membership?.unit_name || profile.unit_name || '',
+    accentColor: normalizeIdolAccentColor(profile.color),
     actionable: true,
     imageCandidates: [{ url: `/assets/idols/icons/image_chara_icon_${code}.png`, kind: 'idol_icon' }],
     source: { kind: 'idol_unit_dictionary', context },
