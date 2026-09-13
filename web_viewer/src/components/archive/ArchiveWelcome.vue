@@ -33,9 +33,9 @@
           <label class="idol-search"><span>查找偶像或组合</span><input v-model.trim="searchQuery" type="search" placeholder="输入姓名或组合名" autocomplete="off" /></label>
           <span class="idol-count" role="status">{{ filteredIdols.length }} 位偶像</span>
         </div>
-        <div v-if="visibleIdols.length" class="idol-grid" role="group" aria-label="首页偶像">
+        <div v-if="filteredIdols.length" class="idol-grid" role="group" aria-label="首页偶像">
           <button
-            v-for="idol in visibleIdols"
+            v-for="idol in filteredIdols"
             :key="idol.id"
             class="idol-choice"
             :class="{ selected: selectedIdol === idol.id }"
@@ -47,11 +47,6 @@
           </button>
         </div>
         <p v-else-if="dataReady" class="idol-empty">没有找到符合条件的偶像，请试试其他姓名或组合。</p>
-        <nav v-if="pageCount > 1" class="idol-pagination" aria-label="偶像选择分页">
-          <button :disabled="page === 0" @click="page--">上一页</button>
-          <span>第 {{ page + 1 }} / {{ pageCount }} 页</span>
-          <button :disabled="page >= pageCount - 1" @click="page++">下一页</button>
-        </nav>
         <div class="idol-actions">
           <span v-if="selectedIdolName" class="idol-selected">已选：{{ selectedIdolName }}</span>
           <label><input v-model="setPreferred" type="checkbox" /> 同时设为“我的偶像”</label>
@@ -79,7 +74,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { ArrowLeft, Library, Shuffle, Sparkles } from '@lucide/vue'
 
 const props = defineProps({
@@ -97,46 +92,22 @@ const selectedIdol = ref('')
 const setPreferred = ref(false)
 const preferredDraft = ref(props.preferences.preferredIdol || '')
 const searchQuery = ref('')
-const page = ref(0)
-const pageSize = ref(12)
 const filteredIdols = computed(() => {
   const query = searchQuery.value.trim().toLocaleLowerCase()
   if (!query) return props.idols
   return props.idols.filter(idol => `${idol.name} ${idol.unitName || ''}`.toLocaleLowerCase().includes(query))
 })
-const pageCount = computed(() => Math.max(1, Math.ceil(filteredIdols.value.length / pageSize.value)))
-const visibleIdols = computed(() => filteredIdols.value.slice(page.value * pageSize.value, (page.value + 1) * pageSize.value))
 const selectedIdolName = computed(() => props.idols.find(idol => idol.id === selectedIdol.value)?.name || '')
-let compactViewport
-
-function syncPageSize() {
-  pageSize.value = compactViewport?.matches ? 3 : 12
-  if (selectedIdol.value && !searchQuery.value) {
-    page.value = Math.floor(props.idols.findIndex(idol => idol.id === selectedIdol.value) / pageSize.value)
-  }
-}
-
-watch(() => props.selectionOnly, value => { step.value = value ? 'idol' : 'mode'; syncPageSize() })
+watch(() => props.selectionOnly, value => { step.value = value ? 'idol' : 'mode' })
 watch(() => props.preferences.preferredIdol, value => { preferredDraft.value = value || '' })
-watch(searchQuery, () => { page.value = 0 })
-watch(pageCount, count => { page.value = Math.min(page.value, count - 1) })
 watch(() => props.idols, idols => {
   if (idols.some(idol => idol.id === selectedIdol.value)) return
   const remembered = props.preferences.startupIdol
   selectedIdol.value = idols.some(idol => idol.id === remembered) ? remembered : ''
-  if (selectedIdol.value) page.value = Math.floor(idols.findIndex(idol => idol.id === selectedIdol.value) / pageSize.value)
 }, { immediate: true })
 onMounted(() => {
-  compactViewport = window.matchMedia('(max-width: 700px)')
-  compactViewport.addEventListener('change', syncPageSize)
-  syncPageSize()
   heading.value?.focus({ preventScroll: true })
-  removeViewportListener = () => {
-    compactViewport.removeEventListener('change', syncPageSize)
-  }
 })
-let removeViewportListener = () => {}
-onBeforeUnmount(() => removeViewportListener())
 
 function selectIdol(idolCode) { selectedIdol.value = idolCode }
 
@@ -147,7 +118,6 @@ function chooseRandom() {
   if (!props.idols.length) return
   selectedIdol.value = props.idols[Math.floor(Math.random() * props.idols.length)].id
   searchQuery.value = ''
-  page.value = Math.floor(props.idols.findIndex(idol => idol.id === selectedIdol.value) / pageSize.value)
 }
 function chooseIdol() {
   if (!selectedIdol.value) return
@@ -178,15 +148,15 @@ header p { max-width: 680px; margin: 0; color: #607982; font-size: 16px; line-he
 .idol-choice { display: grid; grid-template-columns: 52px minmax(0,1fr); align-items: center; gap: 10px; min-height: 68px; padding: 8px; border: 1px solid #dce7e8; border-radius: 14px; background: #fff; color: inherit; cursor: pointer; font: inherit; text-align: left; }
 .idol-choice.selected { border-color: #168f87; outline: 2px solid #bce7e2; }.idol-choice img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
 .idol-choice span { display: flex; min-width: 0; flex-direction: column; gap: 3px; }.idol-choice strong,.idol-choice small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.idol-choice strong { font-size: 14px; }.idol-choice small { color: #71858c; font-size: 11px; }
-.idol-empty { margin: 0; padding: 24px 12px; border: 1px dashed #cfdee0; border-radius: 12px; color: #67818a; }.idol-pagination { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 10px; color: #526d76; font-size: 13px; }.idol-pagination button { min-height: 40px; padding: 0 13px; border: 1px solid #cfdee0; border-radius: 20px; background: #fff; color: #176f69; cursor: pointer; font: inherit; }.idol-pagination button:disabled { cursor: default; opacity: .45; }
-.idol-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 12px; }.idol-actions label { margin-right: auto; color: #526d76; font-size: 13px; }.idol-selected { width: 100%; color: #176f69; font-size: 13px; font-weight: 700; }
+.idol-empty { margin: 0; padding: 24px 12px; border: 1px dashed #cfdee0; border-radius: 12px; color: #67818a; }
+.idol-actions { position: sticky; bottom: 0; z-index: 1; display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 12px -12px -12px; padding: 12px; border-top: 1px solid #e0e9ea; border-radius: 0 0 16px 16px; background: rgba(255,255,255,.97); box-shadow: 0 -8px 24px rgba(32,73,83,.06); }.idol-actions label { margin-right: auto; color: #526d76; font-size: 13px; }.idol-selected { width: 100%; color: #176f69; font-size: 13px; font-weight: 700; }
 .random-button,.primary-button,.preferred-setting button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 16px; border: 1px solid #bcd9d7; border-radius: 22px; background: #fff; color: #176f69; cursor: pointer; font: inherit; font-weight: 700; }
 .primary-button { border-color: #168f87; background: #168f87; color: #fff; }.primary-button:disabled,.random-button:disabled { cursor: default; opacity: .45; }
 footer { display: grid; gap: 10px; margin-top: 18px; padding-top: 14px; border-top: 1px solid #e0e9ea; }.later-button { justify-self: start; min-height: 44px; }
 .preferred-setting { display: flex; align-items: end; gap: 8px; }.preferred-setting label { display: flex; flex: 1; flex-direction: column; gap: 5px; color: #657b83; font-size: 12px; }.preferred-setting select { width: 100%; min-height: 44px; padding: 0 12px; border: 1px solid #cfdee0; border-radius: 10px; background: #fff; color: #203f48; font: inherit; }
 .clear-button { justify-self: start; color: #8b4e4e; font-size: 13px; }
 button:focus-visible,select:focus-visible,input:focus-visible { outline: 3px solid #37a9a1; outline-offset: 3px; }
-@media (max-width:700px){.archive-welcome{padding:14px 12px}.welcome-card{padding:20px 16px;border-radius:20px}.mode-grid{grid-template-columns:1fr}.mode-card{min-height:140px}.idol-grid{grid-template-columns:1fr}.idol-actions{align-items:stretch;flex-direction:column}.idol-actions label{margin-right:0}.preferred-setting{align-items:stretch;flex-direction:column}.preferred-setting button{align-self:flex-start}}
+@media (max-width:700px){.archive-welcome{padding:14px 12px}.welcome-card{padding:20px 16px;border-radius:20px}.mode-grid{grid-template-columns:1fr}.mode-card{min-height:140px}.idol-grid{grid-template-columns:1fr}.idol-actions{position:static;align-items:stretch;flex-direction:column;margin:12px 0 0;padding:12px 0 0;border-radius:0;background:none;box-shadow:none}.idol-actions label{margin-right:0}.preferred-setting{align-items:stretch;flex-direction:column}.preferred-setting button{align-self:flex-start}}
 @media (max-width:360px){.archive-welcome{padding:10px 8px}.welcome-card{padding:16px 14px}.idol-step{margin-top:12px}.idol-choice{grid-template-columns:44px minmax(0,1fr);min-height:62px}.idol-choice img{width:44px;height:44px}.idol-actions{gap:7px}.idol-search-row{margin-bottom:8px}}
 @media (prefers-reduced-motion:reduce){.mode-card{transition:none}}
 </style>
