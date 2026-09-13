@@ -34,7 +34,8 @@
         <p v-if="mode !== 'original' && !translationLoadFailed && fallbackCount" class="reader-notice" role="status">{{ fallbackCount }} 处暂无可用译文，已显示原文。</p>
         <p v-if="mode !== 'original' && translationLoadFailed" class="reader-notice" role="status">译文暂时无法载入，原文仍可阅读。</p>
         <article class="reader-transcript" aria-label="剧情正文">
-          <section v-for="item in presentedRows" :key="item.row.anchor.row_id" :id="`reading-${item.row.anchor.row_id}`" tabindex="-1" class="reader-row" :class="[`kind-${item.row.kind}`, { selected: anchor === item.row.anchor.row_id, 'search-match': searchMatchIds.has(item.row.anchor.row_id) }]">
+          <section v-for="item in presentedRows" :key="item.row.anchor.row_id" :id="`reading-${item.row.anchor.row_id}`" tabindex="-1" class="reader-row" :aria-hidden="item.mergedTitle ? 'true' : undefined" :class="[`kind-${item.row.kind}`, { selected: anchor === item.row.anchor.row_id, 'search-match': searchMatchIds.has(item.row.anchor.row_id), 'front-matter': item.frontMatter, 'merged-title': item.mergedTitle }]">
+            <template v-if="!item.mergedTitle">
             <img v-if="item.avatar" class="reader-avatar" :src="getCharaIconUrl(item.avatar)" alt="" loading="lazy" @error="$event.target.hidden = true" />
             <p v-if="item.view.speaker.display" class="reader-speaker">{{ item.view.speaker.display }}</p>
             <span v-if="item.row.kind === 'choice'" class="reader-kind">选项</span>
@@ -42,6 +43,7 @@
             <p class="reader-primary" :lang="item.view.primary.locale">{{ reflowReadingText(item.view.primary.text, item.view.primary.locale) }}</p>
             <p v-if="item.view.secondary" class="reader-secondary" :lang="item.view.secondary.locale">{{ reflowReadingText(item.view.secondary.text, item.view.secondary.locale) }}</p>
             <span v-if="mode !== 'original' && item.view.translation.stale" class="reader-kind">译文待更新</span>
+            </template>
           </section>
         </article>
       </template>
@@ -56,6 +58,7 @@ import ArchivePageChrome from './ArchivePageChrome.vue'
 import { createStoryLocalization } from '../../localization/story/StoryLocalizationContext.js'
 import { readingAvatarEntity, readingPresentationSpeaker } from '../../../shared/reading/ReadingDocument.js'
 import { getCharaIconUrl } from '../../utils/AssetResolver.js'
+import { projectReadingFrontMatter } from '../../presentation/ReadingFrontMatter.js'
 
 const props = defineProps({ state: { type: Object, required: true }, documentId: String, mode: String, anchor: String, notice: String, busy: Boolean })
 const emit = defineEmits(['select', 'mode', 'back', 'retry', 'play-document', 'refresh', 'locate'])
@@ -96,17 +99,20 @@ const preferences = computed(() => ({ story_content_mode: props.mode, story_tran
 const localization = createStoryLocalization({ compiledData: localizationInput, storyPreferences: preferences })
 const title = computed(() => document.value?.presentation?.title || document.value?.rows.find(r => r.kind === 'title')?.source_text || '剧情阅读')
 const episodeLabel = computed(() => document.value?.presentation?.episode_label || '')
+const frontMatter = computed(() => projectReadingFrontMatter(document.value?.rows, title.value))
 const presentedRows = computed(() => (document.value?.rows || []).map(row => ({ row,
+  frontMatter: frontMatter.value.frontMatterIds.has(row.anchor.row_id),
+  mergedTitle: frontMatter.value.mergedTitleIds.has(row.anchor.row_id),
   avatar: readingAvatarEntity(row), view: localization.resolveUnit({ source: row.source_text,
     textRef: row.text_ref, speaker: readingPresentationSpeaker(row), inlineEntry: row.inline_translation }),
 })))
-const fallbackCount = computed(() => presentedRows.value.filter(item => item.view.translation.fallbackUsed).length)
+const fallbackCount = computed(() => presentedRows.value.filter(item => !item.mergedTitle && item.view.translation.fallbackUsed).length)
 const translationLoadFailed = computed(() => localization.diagnostics.value?.code === 'translation_invalid')
 const searchText = text => String(text || '').normalize('NFKC').replace(/\s+/g, '').toLowerCase()
 const searchMatches = computed(() => {
   const query = searchText(searchQuery.value)
   if (!query || props.state.status !== 'ready') return []
-  return presentedRows.value.filter(item => [item.view.primary.text, item.view.secondary?.text, item.view.speaker.display]
+  return presentedRows.value.filter(item => !item.mergedTitle && [item.view.primary.text, item.view.secondary?.text, item.view.speaker.display]
     .some(text => searchText(text).includes(query)))
 })
 const searchMatchIds = computed(() => new Set(searchMatches.value.map(item => item.row.anchor.row_id)))
@@ -129,7 +135,11 @@ watch(() => [props.state.status, props.documentId, props.anchor, props.notice], 
   }
   if (props.state.status !== 'ready') return
   const target = props.anchor && globalThis.document.getElementById(`reading-${props.anchor}`)
-  if (target) { target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'start' }) }
+  if (target) {
+    const visibleTarget = target.classList.contains('merged-title') ? heading.value : target
+    visibleTarget?.focus({ preventScroll: true })
+    visibleTarget?.scrollIntoView({ block: 'start' })
+  }
   else { readerRoot.value?.scrollTo({ top: 0 }); heading.value?.focus({ preventScroll: true }) }
 }, { immediate: true })
 </script>
@@ -167,6 +177,8 @@ h1 { margin: 0; font-size: 26px; line-height: 1.5; letter-spacing: -.5px; outlin
 .reader-full-play { padding: 10px 20px; border-radius: 8px; background: #16838d; color: white; }
 .reader-full-play:disabled { opacity: .5; cursor: wait; }
 .reader-row { position: relative; margin: 14px 0; padding: 24px 32px; background: #fff; border: 1px solid #e1eaea; border-radius: 12px; scroll-margin-top: 20px; outline: none; }
+.reader-row.front-matter:not(.merged-title) { margin-block: 0 8px; padding: 14px 24px; border-color: #e4ecec; background: #f8fbfb; }
+.reader-row.merged-title { height: 0; margin: 0; padding: 0; border: 0; overflow: hidden; }
 .reader-row.selected { border-color: #168f98; box-shadow: inset 3px 0 #168f98; }
 .reader-primary, .reader-secondary { max-width: min(100%, 52em); margin: 5px 0; white-space: pre-wrap; overflow-wrap: break-word; line-break: strict; word-break: normal; font-size: 17px; line-height: 1.9; }
 .reader-secondary { color: #657986; font-size: 16px; }

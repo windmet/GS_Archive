@@ -37,3 +37,9 @@
 输入 HEAD `990cd85`。手机偶像选择页使用受限高度的三段布局：搜索/数量、独立滚动的 49 人网格、网格外始终可见的操作区；较矮视口压缩非交互文案留足列表空间。桌面保持既有页面滚动。不改变随机选择、设置“我的偶像”或打开页面的行为。
 
 验证：`verify:portal-navigation`、`build:check` PASS。5175 / Playwright Chromium 1280×850、390×850、390×650：从 Welcome 选择游戏风首页，网格滚到底时按钮仍在视口内；390×850 网格可视高 249px、390×650 高 147px，点击已选人物后导航到 `?view=home&home_idol=001tom`；无页面 console error/横向溢出。截图仓库外。顺带补足 UX-09 引入的 `loadingPurpose` 旧 Portal 测试桩，先前未跑该项、此次跑通；尚未做真实 safe-area/屏幕键盘覆盖验收。
+
+## UX-08：Reader 前置信息与主线话目
+
+输入 HEAD `f1bb0b7`。仅在 Reader presentation 投影连续开头的 title/synopsis：与页面 h1 同文本身份的两个原脚本 title 行不重复展示，保留原行节点 ID/锚点和原始 document；其他独立 title（例如“第1話”）及 synopsis 仍可见。旧 title 锚点定位时聚焦可见 h1。主线集合内部 chapterCount 展示为“话”，其他域仍用原有“章”称呼；没有修改 `ReadingDocument`、翻译 identity 或源数据。
+
+验证：`verify:reading`（含 2734 份真实 ReadingDocument 的 hash/锚点校验与 Vue 渲染）、`build:check` PASS。5175 / Playwright Chromium 1280×850、390×850：`1_1_001_01_a` 原文 Reader 只显示一个页面标题，原 16 个行锚点仍在、两条重复标题成为无视觉重复的锚点、synopsis 和“第1話”仍可见；译文 URL 直达第一标题旧锚点时焦点落在可见 h1；主线集合显示“11 话”。无 console error/水平溢出，截图仓库外。未重新验收所有译文内容、全部 Reader 篇章的视觉效果。

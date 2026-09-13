@@ -3,6 +3,7 @@ import { createServer } from 'vite'
 import { createSSRApp } from 'vue'
 import { renderToString } from '@vue/server-renderer'
 import { readFileSync } from 'node:fs'
+import { projectReadingFrontMatter } from '../src/presentation/ReadingFrontMatter.js'
 
 // Exercise the actual Vue template's uncommon states without publishing fake stories.
 const server = await createServer({ configLoader: 'native', server: { middlewareMode: true }, appType: 'custom' })
@@ -54,6 +55,22 @@ try {
   assert.ok(!html.includes('从这里演出') && !html.includes('记住此处'))
   assert.ok(!html.includes('role="search"'), 'search starts collapsed')
   for (const row of document.rows) assert.ok(html.includes(`id="reading-${row.anchor.row_id}"`), 'all source row anchors survive')
+  const chapter = JSON.parse(readFileSync(new URL('../public/data/reading/1_1_001_01_a.json', import.meta.url)))
+  const firstTitle = chapter.rows[0]
+  const frontMatter = projectReadingFrontMatter(chapter.rows, chapter.presentation.title)
+  assert.ok(frontMatter.mergedTitleIds.has(firstTitle.anchor.row_id))
+  assert.equal(frontMatter.mergedTitleIds.size, 2, 'both leading copies of the heading are projected once')
+  assert.ok(frontMatter.frontMatterIds.has(chapter.rows[1].anchor.row_id))
+  assert.ok(frontMatter.frontMatterIds.has(chapter.rows[2].anchor.row_id))
+  assert.ok(!frontMatter.frontMatterIds.has(chapter.rows.find(row => row.kind === 'dialogue').anchor.row_id))
+  assert.equal(projectReadingFrontMatter(chapter.rows, '另一标题').mergedTitleIds.size, 0, 'distinct source title must remain visible')
+  const chapterHtml = await renderToString(createSSRApp(Reader, {
+    state: { status: 'ready', entries: [], document: chapter }, documentId: chapter.document_id, mode: 'original', anchor: '',
+  }))
+  assert.ok(chapterHtml.includes(`id="reading-${firstTitle.anchor.row_id}"`), 'merged title anchor stays addressable')
+  assert.equal(chapterHtml.split(chapter.presentation.title).length - 1, 1, 'matching leading title is only visually printed once')
+  assert.ok(chapterHtml.includes('第1話'), 'distinct structural episode title stays visible')
+  assert.ok(chapterHtml.includes('kind-synopsis front-matter'), 'synopsis is projected as front matter')
   const prologue = JSON.parse(readFileSync(new URL('../public/data/reading/1_4_001_00_a.json', import.meta.url)))
   for (const mode of ['original', 'translation', 'bilingual']) {
     const rendered = await renderToString(createSSRApp(Reader, {

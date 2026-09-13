@@ -59,7 +59,7 @@ for (const status of ['empty', 'unsupported', 'not-generated', 'error']) {
 }
 // Exercise the actual App route branch with no player/preloader globals present.
 const context = { ...useArchiveNavigationState(), navigation, readingSession: session,
-  readingPlaybackNotice: { value: '' }, currentScenario: { value: { old: true } }, loading: { value: true },
+  readingPlaybackNotice: { value: '' }, currentScenario: { value: { old: true } }, loading: { value: true }, loadingPurpose: { value: 'archive-data' },
   captureActiveArchiveView: () => {} }
 context.playbackController = { reset: () => { context.currentScenario.value = null } }
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')

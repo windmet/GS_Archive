@@ -41,7 +41,7 @@
     <section class="chapter-section">
       <div class="section-heading">
         <div><span>CHAPTERS</span><h3>{{ collection.domainLabel }}</h3></div>
-        <strong>{{ collection.chapterCount }} 章</strong>
+        <strong>{{ collection.chapterCount }} {{ collection.domain === 'main' ? '话' : '章' }}</strong>
       </div>
 
       <div class="chapter-list">
