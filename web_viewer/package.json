@@ -182,7 +182,7 @@
     "verify:story-spine-cues": "node scripts/verify-story-spine-cues.mjs && node scripts/verify-story-tint-clock.mjs",
     "verify:story-timing-semantics": "python scripts/verify-story-timing-semantics.py",
     "verify:story-step9-timing": "python scripts/verify-story-step9-timing.py",
-    "verify:story-audio": "node scripts/verify-story-audio-session.mjs",
+    "verify:story-audio": "node scripts/verify-story-audio-session.mjs && node scripts/verify-compressed-voice-cache.mjs",
     "verify:story-schema": "node scripts/verify-authoritative-story-schema.mjs && node scripts/verify-authoritative-runtime-shapes.mjs",
     "verify:story-runtime-shapes": "node scripts/verify-authoritative-runtime-shapes.mjs",
     "verify:story-authoritative-publish": "node scripts/verify-authoritative-story-publish.mjs",

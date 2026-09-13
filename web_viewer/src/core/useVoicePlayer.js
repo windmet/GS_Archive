@@ -2,6 +2,7 @@ import { getLipSyncUrl, getVoiceUrlCandidates } from '../utils/AssetResolver.js'
 import { deriveMainLipPathFromVoice, sampleLipCurve } from '../utils/LipSyncHelpers.js'
 import { isKnownDanglingStoryVoice } from '../data/knownDanglingStoryVoices.js'
 import { StoryAudioSession } from './story-runtime/StoryAudioSession.js'
+import { compressedVoiceCache } from './CompressedVoiceCache.js'
 
 export function useVoicePlayer({
   spineStageRef,
@@ -23,6 +24,7 @@ export function useVoicePlayer({
   let currentLipCurve = null
   let voiceCharaId = null
   let voiceState = 'idle'
+  const pendingVoiceLoads = new Set()
   const decodedVoiceCache = new Map()
   const MAX_DECODED_VOICES = 12
   const MAX_DECODED_VOICE_BYTES = 32 * 1024 * 1024
@@ -158,22 +160,18 @@ export function useVoicePlayer({
         let arrayBuffer = null
         let lastFetchError = null
         for (const voiceUrl of voiceUrls) {
+          if (!isCurrentContext()) return null
           const controller = new AbortController()
+          pendingVoiceLoads.add(controller)
           const timeoutId = window.setTimeout(() => controller.abort(), 6500)
           try {
-            const res = await fetch(`${voiceUrl}?_=${Date.now()}`, { signal: controller.signal })
-            if (!res.ok) throw new Error(`HTTP ${res.status}`)
-            const contentType = res.headers.get('content-type') || ''
-            const candidateBuffer = await res.arrayBuffer()
-            if (candidateBuffer.byteLength < 1000 || contentType.includes('text/html')) {
-              throw new Error(`Not an audio file: ${contentType} (${candidateBuffer.byteLength} bytes)`)
-            }
-            arrayBuffer = candidateBuffer
+            arrayBuffer = await compressedVoiceCache.get(voiceUrl, { signal: controller.signal })
             break
           } catch (error) {
             lastFetchError = error
           } finally {
             window.clearTimeout(timeoutId)
+            pendingVoiceLoads.delete(controller)
           }
         }
         if (!arrayBuffer) throw lastFetchError || new Error('No voice filename candidate resolved')
@@ -286,6 +284,8 @@ export function useVoicePlayer({
 
   function dispose() {
     stopCurrentVoice('dispose')
+    for (const controller of pendingVoiceLoads) controller.abort()
+    pendingVoiceLoads.clear()
     decodedVoiceCache.clear()
     decodedVoiceBytes = 0
     audioCtx = null

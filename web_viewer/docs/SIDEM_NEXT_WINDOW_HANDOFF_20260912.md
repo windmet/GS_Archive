@@ -478,3 +478,11 @@ Edge CDP以全新本地存储状态执行18项desktop/390px启动、偏好、深
 输入HEAD `1c36198`。用户反馈90%缩放下原长名单同屏只能看到三位，而整页操作区需要下滚。`ArchiveWelcome`现在从全49位中每组显示最多三位，提供上一组、下一组与带姓名的快速跳组；搜索仍覆盖全名单，改变搜索词回到首组，随机选中会定位到所在组。已有启动人物保留为选择状态，但首次进入仍显示首组三位；“已选”可直接定位，避免选中者在当前组外而无法找到。窄屏继续使用本页纵向滚动，不强制一屏展示三位。
 
 5175实际页面：IAB 479×542验证翻组、搜索北斗、随机定位、已选定位以及滚动后操作按钮可见，console error/warn 0。Edge无头桌面1920×900与1366×768均显示三位且操作区底缘519px、页面无纵向或横向溢出；390×844和320×640仅纵向滚动，按钮可到达、横向溢出0、请求/脚本错误0。`verify:archive-startup-route`通过；`build:check`仅生成E盘`.analysis/build-check`代码产物，不复制public。本批是选择页布局与交互修正，不代表P4压缩语音缓存完成；工作区中原有未提交的`src/core/CompressedVoiceCache.js`不属于本批。
+
+## P4 部分实施：压缩语音跨Player复用
+
+输入HEAD `67f97d9`。新增`CompressedVoiceCache`，按真实语音URL共享压缩ArrayBuffer；首次仍使用带时间戳的GET，仅在返回音频类型和ETag时保留。后续以`cache: no-store` HEAD核对同一URL的ETag，匹配才向新解码器交付独立副本，不匹配、无ETag或HEAD失败就重新GET。容量同时受16MiB和128项LRU约束；同URL并发共用一个请求，单个消费者退出不打断其他消费者，最后一个消费者退出则取消请求。Player卸载会取消自己的待载请求并清空其已解码PCM；压缩缓存为SPA内跨入口复用，页面`pagehide`清空。口型JSON与原有语音cache-bust策略未改。
+
+`verify:story-audio`新增验证ETag匹配/变更、独立副本、无验证器、字节预算LRU、并发共享、单/全部消费者取消及HTML回退拒绝；完整`verify:story-loading-safety`通过。`build:check`完成2528模块，仅生成E盘`.analysis/build-check`代码产物，不复制public。5175实际活动430018第二话：从活动详情进入到翔太开头5/26，`1_3_30018_01_c1001.m4a`首次GET；返回活动详情再进入同话只出现该URL的HEAD、没有第二次GET，两次页面脚本错误为0。IAB同段画面正常，但记录到Pixi Spine更新/tint警告，尚未作为本批语音问题归因或收口。
+
+此项只证明本地服务ETag核对下的压缩字节复用。正式内容hash/version URL、CDN头与更新策略未实现，不能去掉Date.now；长媒体播放、内存曲线、冷/热缓存指标和发布包验收仍开放，P4不标完成。
