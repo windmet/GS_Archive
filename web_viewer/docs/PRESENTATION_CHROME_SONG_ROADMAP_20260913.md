@@ -141,3 +141,9 @@ Cards总览在整行卡片按钮内增加所属偶像姓名，不嵌第二个按
 剧情详情的原始`characters`集合不变，展示层通过共享身份投影生成入口。已知偶像显示规范姓名、组合与头像；形似六字符偶像ID却不在字典内的NPC保留为不可操作的“姓名待确认”占位，不再进入无效偶像页。未知身份不用臆测成其他偶像；NPC专名的独立来源映射仍待后续资料审计。
 
 验证：`verify:idol-reference`加入主线序章角色样本，确认3位偶像可操作、`101ken`不可操作；`verify:birthday-story-domain-landing`、`verify:archive-presentation`与`build:check`通过。5175 Browser实走主线序章冬马→偶像→返回原剧情；390px Edge CDP检查主线第一话11个六字符角色，其中9位偶像入口、2个未知占位，单列可读、0横向溢出、0控制台错误。构建仅为E盘代码产物，无public复制。Event/Portal及跨页完整迁移仍未完成。
+
+## P2 分批实施：活动页出演人物与立绘
+
+复核发现`raw_character_image_promotions.json`的`event_story_visual`条目已有`master_evidence.event_ids`与`compiled_files`，比本路线最初对只按人物查询的判断更具体。新`buildEventIdolReference`仅在当前活动ID和剧情文件同时属于同一条promotion时，把该立绘置于通用头像前；实验RAW候选也只能在此已证实关系下、显式URL参数打开时尝试。其余活动只用对应人物头像。活动页三人都走共享入口；visual卡固定230px，立绘HTTP失败时降级为头像而不改变卡高。
+
+验证：真实注册表中冬马、翔太、北斗三人都将`430018 / 1_3_30018_01.json`列为关联；`verify:idol-reference`覆盖三人、剧情文件不匹配、NPC不可操作；`verify:raw-character-candidate`和`verify:raw-character-promotion`通过。5175 Browser确认430018三张立绘、北斗→偶像→返回活动，430017只呈普通头像。390px Edge CDP确认三张立绘均解码、无横向溢出；阻断北斗立绘请求后回退到北斗头像，三张卡仍同为230px，零控制台错误。`build:check`只生成E盘代码产物，无public复制。Portal展示迁移及N1/N2/S0-S4仍待后续批次。

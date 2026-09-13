@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
-import { buildIdolReference } from '../src/presentation/IdolReferencePresentation.js'
+import { buildEventIdolReference, buildIdolReference } from '../src/presentation/IdolReferencePresentation.js'
 import { buildUnitCatalog } from '../src/data/unitPage.js'
 
 function readJson(path) { return JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8')) }
@@ -9,6 +9,7 @@ const dictionary = readJson('../public/data/masterdata/idol_unit_dictionary.json
 const manifest = readJson('../public/data/archive_manifest.json')
 const cards = readJson('../public/data/masterdata/card_index.json').cards
 const stories = readJson('../public/data/masterdata/story_catalog.json').entries
+const visualRegistry = readJson('../public/data/assets/raw_character_image_promotions.json')
 assert.ok(cards.length > 0, 'card corpus is empty')
 
 for (const card of cards) {
@@ -40,6 +41,18 @@ assert.equal(cast.filter(reference => reference.actionable).length, 3)
 assert.equal(cast.find(reference => reference.idolCode === '101ken')?.actionable, false,
   'a six-character NPC code must not become an idol link')
 
+for (const idolCode of ['001tom', '002sht', '003hok']) {
+  const matching = buildEventIdolReference(idolCode, dictionary, manifest, visualRegistry,
+    { event_id: 430018, file: '1_3_30018_01.json' })
+  assert.equal(matching.imageCandidates[0].kind, 'event_story_visual')
+  assert.equal(matching.imageCandidates[1].kind, 'idol_icon')
+  const mismatched = buildEventIdolReference(idolCode, dictionary, manifest, visualRegistry,
+    { event_id: 430018, file: '1_3_30018_99.json' }, '/assets/character-candidate/event_story_visual/001tom.png')
+  assert.equal(mismatched.imageCandidates[0].kind, 'idol_icon', 'event art needs both ID and source-file match')
+}
+assert.equal(buildEventIdolReference('101ken', dictionary, manifest, visualRegistry,
+  { event_id: 430018, file: '1_3_30018_01.json' }).actionable, false)
+
 const touma = buildIdolReference('001tom', dictionary, manifest, 'card:001tom_n01')
 assert.equal(touma.displayName, '天ヶ瀬 冬馬')
 assert.equal(touma.unitName, 'Jupiter')
@@ -50,4 +63,4 @@ for (const unknown of ['999xxx', '01jup', '', '../001tom']) {
   assert.equal(reference.displayName, '姓名待确认')
 }
 
-console.log(`Idol references: ${cards.length} real card owners, ${unitMembers.length} unit members and main-story cast resolved; unknown identities remain inert`)
+console.log(`Idol references: ${cards.length} card owners, ${unitMembers.length} unit members, story cast and event-bound art resolved; unknown identities remain inert`)

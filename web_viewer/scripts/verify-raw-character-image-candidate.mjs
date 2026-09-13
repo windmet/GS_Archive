@@ -84,7 +84,7 @@ assert.match(
   /birthdayStoryIdolCode\(story\)/,
 )
 assert.match(appSource, /getPromotedCharacterImageUrl/)
-assert.match(appSource, /eventStoryIdolVisualUrl/)
+assert.match(appSource, /eventStoryIdolRawCandidateUrl/)
 assert.match(
   appSource,
   /getRawCharacterImageCandidateUrl\('event_story_visual', idolCode\)/,
@@ -94,8 +94,8 @@ const eventDetailSource = await readFile(
   new URL('../src/components/archive/ArchiveEventDetail.vue', import.meta.url),
   'utf8',
 )
-assert.match(eventDetailSource, /storyVisualByIdol/)
-assert.match(eventDetailSource, /class="event-story-visual"/)
+assert.match(eventDetailSource, /buildEventIdolReference/)
+assert.match(eventDetailSource, /rawVisualUrl\(idol\.idol_code\)/)
 assert.match(eventDetailSource, /has-story-visuals/)
 
 const viteSource = await readFile(new URL('../vite.config.js', import.meta.url), 'utf8')

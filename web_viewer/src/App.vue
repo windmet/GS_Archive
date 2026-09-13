@@ -181,7 +181,10 @@
         :cards="currentEventCards"
         :idols="currentEventIdols"
         :units="currentEventUnits"
-        :idol-visual-url="eventStoryIdolVisualUrl"
+        :identity="idolUnitData"
+        :manifest="archiveManifestData"
+        :visual-registry="rawCharacterImagePromotionsData"
+        :raw-visual-url="eventStoryIdolRawCandidateUrl"
         :external-resources="currentEventExternalResources"
         :reading-entries="readingCatalogEntries"
         :reading-error="readingCatalogError"
@@ -1108,13 +1111,8 @@ const currentStoryVisualUrl = computed(() => {
   return ''
 })
 
-function eventStoryIdolVisualUrl(idolCode) {
-  return getRawCharacterImageCandidateUrl('event_story_visual', idolCode) ||
-    getPromotedCharacterImageUrl(
-      'event_story_visual',
-      idolCode,
-      rawCharacterImagePromotionsData.value,
-    )
+function eventStoryIdolRawCandidateUrl(idolCode) {
+  return getRawCharacterImageCandidateUrl('event_story_visual', idolCode)
 }
 
 const unitCatalogEntries = computed(() => buildUnitCatalog(idolUnitData.value, {
