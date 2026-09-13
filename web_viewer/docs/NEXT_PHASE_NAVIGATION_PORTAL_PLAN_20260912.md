@@ -149,3 +149,9 @@ N14从工作档案切换翔太、进入“场景台词”Reader后返回，偶�
 N16同时发现`103kur_001_00`没有Spine、只有正式剪影，但旧计划仍预载placement/mouth/atlas；开发服务器HTML fallback又会被JSON/atlas解析，形成4项假资源失败。现在按审计清单把103kur解析为静态剪影，仅排除其专属placement/mouth预热；预载统一拒绝HTML响应，atlas只接受PNG页。本地725个atlas通过新合同。Browser episode2推进至12/28显示完整黒井社長剪影、无左上角身份图标、无失败横幅或console error。卡片详情同系列名单也统一改用源名。
 
 加载安全、runtime、stage、plan、asset-plan、config/spine/atlas/silhouette及导航相关回归通过；生产构建2511 modules、3m01s通过，产物`C:/Users/windm/.codex/qa/sidem-navigation-queue-loading-20260912/build`，入口552.94kB，保留既有chunk提示。个人、卡片、通信新增Reader入口继续停止。
+
+## 加载后续小批：剧情语音重复解码
+
+输入HEAD `933b8e9`。`useVoicePlayer`在单个Player实例内按剧情ID与语音名复用已解码的AudioBuffer，最近使用的最多保留12条；离开Player清空。失败结果不缓存，唇形曲线仍按当前步读取，跨剧情同名语音不共享。它减少同一段语音返回或重播时的重复请求与解码，但不替代当前步人物/背景readiness门槛，也不宣称跨入口全局缓存或弱网长稳已经完成。
+
+`verify:story-audio`新增重复使用、跨剧情隔离和12条上限回收断言；完整`verify:story-loading-safety`与`build:check`通过。5175 Browser打开活动430018 episode2，确认5/26画面、下一段等待状态后到8/26，0 console error；仍有Pixi Spine旧颜色工具弃用警告。此Browser旅程确认播放画面未受影响，重复请求减少由音频会话测试证明，尚未作浏览器网络瀑布量化。

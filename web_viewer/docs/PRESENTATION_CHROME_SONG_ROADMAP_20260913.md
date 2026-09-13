@@ -223,3 +223,7 @@ Portal自推卡改用共享身份引用，规范姓名、组合和头像降级�
 ## S1 媒体元数据前置核查
 
 输入HEAD `efe5ab5`。新增可单独运行的`verify:song-media-duration`，逐一使用ffprobe读取61份本地M4A容器时长，对照对应RAW cue的采样数/采样率与登记时长；当前61份均可读取，最大差异0.77ms。5175实际服务的61条歌曲路径也逐一通过HTTP HEAD。BRAND NEW FIELD容器约130.651秒、DRIVE A LIVE及`drv999`均约130.285秒但两份衍生文件SHA不同；`drv999`仍是独立特别版，不能只因时长相同合并身份。这些仅证明容器和时长元数据一致，不证明可持续解码、听感、歌词起句/中段/尾句对齐或舞台同步；时间线`timelineToAudio`仍保持`unverified`，正式歌词仍只作为文本资料。
+
+## S1/S4 原片候选核查
+
+核查官方歌曲视频 https://www.youtube.com/watch?v=5J364VmlFxQ（Jupiter／BRAND NEW FIELD SideM Play List）：本地临时参考文件约150.210秒，抽看35秒和75秒均为三人歌曲宣传画面及歌词文字，不是游戏内Chibi舞台录像。该文件只保存在忽略的`.analysis/reference-video`供内部核对，不入库、发布或充当原游戏舞台验收证据。它不能建立当前M4A、原脚本歌词事件与舞台镜头的共同时间轴；S1逐句同步和S4粒子/灯光原片一致性仍需真实游戏录屏或等效来源。上述状态保持未验证。

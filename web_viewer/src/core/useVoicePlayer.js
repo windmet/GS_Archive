@@ -23,7 +23,17 @@ export function useVoicePlayer({
   let currentLipCurve = null
   let voiceCharaId = null
   let voiceState = 'idle'
+  const decodedVoiceCache = new Map()
+  const MAX_DECODED_VOICES = 12
   const ORIGINAL_LIP_GAIN = 1.0
+
+  function rememberDecodedVoice(key, buffer) {
+    decodedVoiceCache.delete(key)
+    decodedVoiceCache.set(key, buffer)
+    if (decodedVoiceCache.size > MAX_DECODED_VOICES) {
+      decodedVoiceCache.delete(decodedVoiceCache.keys().next().value)
+    }
+  }
 
   const getVoiceVolume = () => {
     if (!currentLipCurve || voiceStartedAt == null) return 0
@@ -128,41 +138,46 @@ export function useVoicePlayer({
 
     const preparingContext = ensureAudioCtx()
     const isCurrentContext = () => preparingContext && audioCtx === preparingContext && preparingContext.state !== 'closed'
+    const cacheKey = `${scenarioId || ''}\0${voice}`
     try {
-      const voiceUrls = getVoiceUrlCandidates(voice, scenarioId)
-      let arrayBuffer = null
-      let lastFetchError = null
-      for (const voiceUrl of voiceUrls) {
-        const controller = new AbortController()
-        const timeoutId = window.setTimeout(() => controller.abort(), 6500)
-        try {
-          const res = await fetch(`${voiceUrl}?_=${Date.now()}`, { signal: controller.signal })
-          if (!res.ok) throw new Error(`HTTP ${res.status}`)
-          const contentType = res.headers.get('content-type') || ''
-          const candidateBuffer = await res.arrayBuffer()
-          if (candidateBuffer.byteLength < 1000 || contentType.includes('text/html')) {
-            throw new Error(`Not an audio file: ${contentType} (${candidateBuffer.byteLength} bytes)`)
+      let audioBuffer = decodedVoiceCache.get(cacheKey)
+      if (audioBuffer) rememberDecodedVoice(cacheKey, audioBuffer)
+      else {
+        const voiceUrls = getVoiceUrlCandidates(voice, scenarioId)
+        let arrayBuffer = null
+        let lastFetchError = null
+        for (const voiceUrl of voiceUrls) {
+          const controller = new AbortController()
+          const timeoutId = window.setTimeout(() => controller.abort(), 6500)
+          try {
+            const res = await fetch(`${voiceUrl}?_=${Date.now()}`, { signal: controller.signal })
+            if (!res.ok) throw new Error(`HTTP ${res.status}`)
+            const contentType = res.headers.get('content-type') || ''
+            const candidateBuffer = await res.arrayBuffer()
+            if (candidateBuffer.byteLength < 1000 || contentType.includes('text/html')) {
+              throw new Error(`Not an audio file: ${contentType} (${candidateBuffer.byteLength} bytes)`)
+            }
+            arrayBuffer = candidateBuffer
+            break
+          } catch (error) {
+            lastFetchError = error
+          } finally {
+            window.clearTimeout(timeoutId)
           }
-          arrayBuffer = candidateBuffer
-          break
-        } catch (error) {
-          lastFetchError = error
-        } finally {
-          window.clearTimeout(timeoutId)
         }
-      }
-      if (!arrayBuffer) throw lastFetchError || new Error('No voice filename candidate resolved')
-      if (!isCurrentContext()) return null
-
-      let audioBuffer
-      try {
-        audioBuffer = await preparingContext.decodeAudioData(arrayBuffer)
-      } catch (decodeErr) {
+        if (!arrayBuffer) throw lastFetchError || new Error('No voice filename candidate resolved')
         if (!isCurrentContext()) return null
-        console.error('[Audio] decodeAudioData FAILED:', decodeErr.message, 'voice:', voice)
-        return null
-      }
 
+        try {
+          audioBuffer = await preparingContext.decodeAudioData(arrayBuffer)
+        } catch (decodeErr) {
+          if (!isCurrentContext()) return null
+          console.error('[Audio] decodeAudioData FAILED:', decodeErr.message, 'voice:', voice)
+          return null
+        }
+        if (!isCurrentContext()) return null
+        rememberDecodedVoice(cacheKey, audioBuffer)
+      }
       if (!isCurrentContext()) return null
       const lipCurve = includeLip ? await loadLipCurve(step, audioBuffer.duration) : null
       if (!isCurrentContext()) return null
@@ -260,6 +275,7 @@ export function useVoicePlayer({
 
   function dispose() {
     stopCurrentVoice('dispose')
+    decodedVoiceCache.clear()
     audioCtx = null
     if (ownsAudioSession) session.dispose().catch(() => {})
     resetVoiceDedup()

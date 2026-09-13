@@ -183,6 +183,43 @@ for (const phase of ['fetch', 'decode']) {
     await session.dispose()
   }
 }
+{
+  const ctx = new FakeAudioContext()
+  let fetches = 0
+  let decodes = 0
+  ctx.decodeAudioData = async () => { decodes++; return { duration: 1 } }
+  globalThis.window = { setTimeout, clearTimeout }
+  globalThis.fetch = async () => {
+    fetches++
+    return { ok: true, headers: new Map(), arrayBuffer: async () => new ArrayBuffer(2000) }
+  }
+  const session = new StoryAudioSession({ contextFactory: () => ctx })
+  const player = useVoicePlayer({
+    spineStageRef: { value: null }, currentStep: { value: {} }, currentStepIndex: { value: 0 },
+    compiledData: { value: {} }, isPlaying: { value: false }, audioSession: session,
+  })
+  try {
+    const step = { dialogue: { voice: 'repeat-voice' } }
+    const first = await player.prepareVoice({ step, scenarioId: 'story-a', includeLip: false })
+    const repeated = await player.prepareVoice({ step, scenarioId: 'story-a', includeLip: false })
+    assert.equal(repeated.audioBuffer, first.audioBuffer, 'same story voice should reuse decoded audio')
+    assert.equal(fetches, 1)
+    assert.equal(decodes, 1)
+    await player.prepareVoice({ step, scenarioId: 'story-b', includeLip: false })
+    assert.equal(fetches, 2, 'different story source must not reuse a voice with the same name')
+    for (let index = 0; index < 12; index++) {
+      await player.prepareVoice({ step: { dialogue: { voice: `other-${index}` } }, scenarioId: 'story-a', includeLip: false })
+    }
+    await player.prepareVoice({ step, scenarioId: 'story-a', includeLip: false })
+    assert.equal(fetches, 15, 'oldest decoded voice should be evicted after twelve entries')
+  } finally {
+    player.dispose()
+    await session.dispose()
+    globalThis.fetch = originalFetch
+    if (originalWindow === undefined) delete globalThis.window
+    else globalThis.window = originalWindow
+  }
+}
 globalThis.fetch = async () => ({ ok: true, arrayBuffer: async () => new ArrayBuffer(8) })
 try {
   assert.equal(knownDanglingStoryVoiceCount, 12)
