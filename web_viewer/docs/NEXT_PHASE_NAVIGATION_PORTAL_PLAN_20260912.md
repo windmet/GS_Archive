@@ -161,3 +161,9 @@ N16同时发现`103kur_001_00`没有Spine、只有正式剪影，但旧计划仍
 输入HEAD `9c12dcc`。`prepareScenario`不再给每次请求附加当前时间，也不强制`no-store`；稳定的`/data/compiled/<file>`使用`cache: no-cache`逐次向服务器重新验证。当前5175服务对活动430018 episode2脚本提供`ETag`与`Cache-Control: no-cache`，使用其ETag发`If-None-Match`得到HTTP 304。未变化的脚本可复用浏览器缓存体；变化的脚本仍按新响应读取、计算SHA，Reader的固定来源校验不放宽。失败请求和导航取消仍由原入口状态机处理，没有加入跨剧情常驻内存副本。生产静态服务是否同样支持条件请求仍待发布环境验证，不把dev端304记作发布性能结论。
 
 `verify:archive-async-navigation`的请求合同更新为稳定URL与`no-cache`，并补齐此前因S3新增`stageHandoff`造成的VM夹具缺项；重跑通过。`verify:reading-playback`继续验证来源变化拒绝，完整`verify:story-loading-safety`及`build:check`通过。5175 Browser从活动430018 episode2进入到5/26、刷新后仍到5/26，返回活动页再次打开同一话仍到5/26，console error为0；本次Browser工具未提供该请求的网络瀑布，因此没有宣称浏览器实测304次数或节省字节数。
+
+## 加载后续小批：五槽试听的过期时间轴结果
+
+输入HEAD `7930259`。五槽试听读取轻量时间轴后才建立音频会话；切换歌曲或离开编成模式时，旧请求可能稍后返回。`ArchiveSongLineupPlayer`现在按加载代次核对结果，组件卸载后作废未完成请求；过期结果不再重置编成、不再启动新的音频解码，也不能覆盖当前错误或加载状态。已经进入音频解码的请求仍由现有`useSongPerformanceSession.release()`取消。
+
+`verify:song-experimental-audio`和`verify:song-stage-handoff`通过，`build:check`通过且仅在本工程E盘`.analysis/build-check`生成代码产物，没有复制public。5175 Browser从`drvalv`歌曲详情进入五槽编成，在“正在准备所选演唱成员的音频…”阶段切换为其他收录音轨；当前单轨控件显示02:10，等待5秒后仍为单轨，旧五槽状态没有回写。重新进入五槽后，五声部与伴奏完成加载，播放及舞台入口恢复可用。此短Browser旅程验证了可见状态，未量化取消前已传输的音频字节，也不等同于弱网长稳验收。

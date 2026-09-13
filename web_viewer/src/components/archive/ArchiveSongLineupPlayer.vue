@@ -97,7 +97,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useSongPerformanceSession } from '../../composables/useSongPerformanceSession.js'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { fetchSongPerformanceArrangements } from '../../utils/songPerformanceData.js'
@@ -115,6 +115,8 @@ const arrangements = ref([])
 const selectedArrangementId = ref('')
 const stageLineup = ref([])
 const loadingTimeline = ref(false)
+let loadGeneration = 0
+let disposed = false
 
 const soloEntries = computed(() => Object.values(props.audioExperiment?.solo_tracks || {}))
 const selectedArrangement = computed(() => arrangements.value
@@ -167,10 +169,12 @@ function initializeLineup() {
 }
 
 async function loadArrangements() {
+  const generation = ++loadGeneration
   loadingTimeline.value = true
   session.release()
   try {
     const timelines = await fetchSongPerformanceArrangements(props.audioExperiment.song_code)
+    if (disposed || generation !== loadGeneration) return
     arrangements.value = timelines.filter(entry => (
       entry.songCode === props.audioExperiment.song_code
       && !entry.variant
@@ -183,9 +187,11 @@ async function loadArrangements() {
     initializeLineup()
     await reloadSession()
   } catch (error) {
-    session.error.value = `演唱切换表读取失败：${error.message || error}`
+    if (!disposed && generation === loadGeneration) {
+      session.error.value = `演唱切换表读取失败：${error.message || error}`
+    }
   } finally {
-    loadingTimeline.value = false
+    if (!disposed && generation === loadGeneration) loadingTimeline.value = false
   }
 }
 
@@ -237,6 +243,7 @@ function formatTime(value) {
 
 watch(() => props.audioExperiment, loadArrangements)
 onMounted(loadArrangements)
+onBeforeUnmount(() => { disposed = true; loadGeneration += 1 })
 </script>
 
 <style scoped>
