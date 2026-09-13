@@ -42,6 +42,7 @@ function setup() {
     spineViewerLoader: async () => {}, chibiStageViewerLoader: async () => {},
     captureDetailSource: () => {}, ownsArchiveSource,
     currentScenario: { value: null }, currentScenarioInstance: { value: 0 },
+    stageHandoff: { value: null },
     episodeQueue: useEpisodeQueue(),
     storyViewerLoader: async () => {},
     Preloader: { preloadScenario: async () => {} },
@@ -270,7 +271,7 @@ for (const response of [
   const requests = [], progress = []
   let report, ready = false, playerStarted = false, assetsStarted = false
   const pending = prepareScenario('episodes/fixture.json', {
-    isCurrent: () => true, now: () => 123,
+    isCurrent: () => true,
     fetchImpl: async (...args) => { requests.push(args); return new Response(JSON.stringify(scenario)) },
     loadPlayer: () => { playerStarted = true; return player.promise },
     readScenario: async response => { await response.json(); return scenario },
@@ -278,7 +279,7 @@ for (const response of [
     onProgress: value => progress.push(value),
   }).then(value => { ready = true; return value })
   await flush(() => playerStarted && assetsStarted)
-  assert.deepEqual(requests, [['/data/compiled/episodes/fixture.json?v=123', { cache: 'no-store' }]])
+  assert.deepEqual(requests, [['/data/compiled/episodes/fixture.json', { cache: 'no-cache' }]])
   assert.equal(playerStarted && assetsStarted, true)
   report(50)
   assert.deepEqual(progress, [50])

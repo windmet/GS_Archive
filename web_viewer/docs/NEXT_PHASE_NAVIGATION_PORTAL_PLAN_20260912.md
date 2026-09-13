@@ -155,3 +155,9 @@ N16同时发现`103kur_001_00`没有Spine、只有正式剪影，但旧计划仍
 输入HEAD `933b8e9`。`useVoicePlayer`在单个Player实例内按剧情ID与语音名复用已解码的AudioBuffer，最近使用的最多保留12条；离开Player清空。失败结果不缓存，唇形曲线仍按当前步读取，跨剧情同名语音不共享。它减少同一段语音返回或重播时的重复请求与解码，但不替代当前步人物/背景readiness门槛，也不宣称跨入口全局缓存或弱网长稳已经完成。
 
 `verify:story-audio`新增重复使用、跨剧情隔离和12条上限回收断言；完整`verify:story-loading-safety`与`build:check`通过。5175 Browser打开活动430018 episode2，确认5/26画面、下一段等待状态后到8/26，0 console error；仍有Pixi Spine旧颜色工具弃用警告。此Browser旅程确认播放画面未受影响，重复请求减少由音频会话测试证明，尚未作浏览器网络瀑布量化。
+
+## 加载后续小批：编译剧情脚本 HTTP 重新验证
+
+输入HEAD `9c12dcc`。`prepareScenario`不再给每次请求附加当前时间，也不强制`no-store`；稳定的`/data/compiled/<file>`使用`cache: no-cache`逐次向服务器重新验证。当前5175服务对活动430018 episode2脚本提供`ETag`与`Cache-Control: no-cache`，使用其ETag发`If-None-Match`得到HTTP 304。未变化的脚本可复用浏览器缓存体；变化的脚本仍按新响应读取、计算SHA，Reader的固定来源校验不放宽。失败请求和导航取消仍由原入口状态机处理，没有加入跨剧情常驻内存副本。生产静态服务是否同样支持条件请求仍待发布环境验证，不把dev端304记作发布性能结论。
+
+`verify:archive-async-navigation`的请求合同更新为稳定URL与`no-cache`，并补齐此前因S3新增`stageHandoff`造成的VM夹具缺项；重跑通过。`verify:reading-playback`继续验证来源变化拒绝，完整`verify:story-loading-safety`及`build:check`通过。5175 Browser从活动430018 episode2进入到5/26、刷新后仍到5/26，返回活动页再次打开同一话仍到5/26，console error为0；本次Browser工具未提供该请求的网络瀑布，因此没有宣称浏览器实测304次数或节省字节数。

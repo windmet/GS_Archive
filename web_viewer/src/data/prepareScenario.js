@@ -11,7 +11,6 @@ export async function prepareScenario(name, {
   onBackgroundReady,
   playbackEntry,
   fetchImpl = (...args) => globalThis.fetch(...args),
-  now = () => Date.now(),
   readScenario = response => response.json(),
 }) {
   // Imports and digest work cannot themselves be cancelled, but navigation
@@ -30,7 +29,9 @@ export async function prepareScenario(name, {
     }
   }
   signal?.throwIfAborted()
-  const response = await fetchImpl(`/data/compiled/${name}?v=${now()}`, { cache: 'no-store', ...(signal ? { signal } : {}) })
+  // Revalidate the stable source URL so unchanged stories can use HTTP 304.
+  // Reader playback still checks the returned bytes against its pinned digest.
+  const response = await fetchImpl(`/data/compiled/${name}`, { cache: 'no-cache', ...(signal ? { signal } : {}) })
   if (!isCurrent()) return null
   if (!response.ok) throw new Error(`Failed to fetch scenario ${name}: HTTP ${response.status}`)
   const sourceResponse = response.clone()
