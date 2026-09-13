@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { StoryAudioSession } from '../src/core/story-runtime/StoryAudioSession.js'
 import { useVoicePlayer } from '../src/core/useVoicePlayer.js'
+import { useStepSceneEffects } from '../src/core/useStepSceneEffects.js'
 import { AudioManager } from '../src/core/AudioManager.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import {
@@ -201,6 +202,7 @@ for (const phase of ['fetch', 'decode']) {
   try {
     const step = { dialogue: { voice: 'repeat-voice' } }
     const first = await player.prepareVoice({ step, scenarioId: 'story-a', includeLip: false })
+    assert.equal(player.hasDecodedVoice(step, 'story-a'), true)
     const repeated = await player.prepareVoice({ step, scenarioId: 'story-a', includeLip: false })
     assert.equal(repeated.audioBuffer, first.audioBuffer, 'same story voice should reuse decoded audio')
     assert.equal(fetches, 1)
@@ -210,6 +212,7 @@ for (const phase of ['fetch', 'decode']) {
     for (let index = 0; index < 12; index++) {
       await player.prepareVoice({ step: { dialogue: { voice: `other-${index}` } }, scenarioId: 'story-a', includeLip: false })
     }
+    assert.equal(player.hasDecodedVoice(step, 'story-a'), false, 'evicted voice cannot skip visual hold')
     await player.prepareVoice({ step, scenarioId: 'story-a', includeLip: false })
     assert.equal(fetches, 15, 'oldest decoded voice should be evicted after twelve entries')
     ctx.decodeAudioData = async () => { decodes++; return { duration: 1, length: 2_000_000, numberOfChannels: 2 } }
@@ -280,6 +283,24 @@ for (const phase of ['fetch', 'decode']) {
     if (originalWindow === undefined) delete globalThis.window
     else globalThis.window = originalWindow
   }
+}
+{
+  const played = []
+  const prepared = { voice: 'prepared-voice', audioBuffer: {} }
+  const index = { value: 0 }
+  const effects = useStepSceneEffects({
+    currentStepIndex: index, isLastStep: { value: false }, historyStack: { value: [] },
+    spineStageRef: { value: null }, audioManager: { inspect: () => ({}) },
+    voicePlayer: { playPreparedVoice: value => played.push(['prepared', value]), playVoice: () => played.push(['fetch']) },
+    resetVoiceDedup: () => {}, takePreparedVoice: step => step?.step_id === 1 ? prepared : null,
+  })
+  try {
+    effects.handleStepChange({ step_id: 1, type: 'adv', entry_snapshot: {} }, null)
+    assert.deepEqual(played, [['prepared', prepared]], 'playable step must use the voice prepared by its readiness gate')
+    index.value = 1
+    effects.handleStepChange({ step_id: 2, type: 'adv', entry_snapshot: {} }, null)
+    assert.deepEqual(played, [['prepared', prepared], ['fetch']], 'non-gated voice remains compatible')
+  } finally { effects.cleanup() }
 }
 globalThis.fetch = async () => ({ ok: true, arrayBuffer: async () => new ArrayBuffer(8) })
 try {

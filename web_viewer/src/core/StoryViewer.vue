@@ -14,7 +14,7 @@
     <!-- Spine rendering layer (background + characters) -->
     <SpineStage ref="spineStageRef" :step="stageStep" :fallbackBg="firstAvailableBg" :debug-controls="RUNTIME_DEBUG" :now-milliseconds="storyRuntimeCues.nowMilliseconds" responsive-positions release-owner="story-player" />
     <div ref="frameHoldRoot" v-show="frameHolding" class="held-scene" aria-hidden="true"></div>
-    <div v-if="localBuffering && !HIDE_UI" class="local-buffering" role="status" aria-live="polite">正在准备下一段画面…</div>
+    <div v-if="localBuffering && !HIDE_UI" class="local-buffering" role="status" aria-live="polite">{{ localBufferingText }}</div>
 
     <!-- Top bar -->
     <PlayerTopBar
@@ -266,10 +266,13 @@ const frameHoldRoot = ref(null)
 const frameHolding = ref(false)
 const frameHoldRequired = ref(false)
 const runtimeReadinessStatus = ref('idle')
+const runtimeReadinessReason = ref('')
 let heldTargetIndex = null
 const MAX_HELD_FRAME_PIXELS = 1920 * 1080
 const localBuffering = computed(() => initialReadyEmitted.value && runtimeReadinessStatus.value === 'waiting'
   && (frameHolding.value || !frameHoldRequired.value))
+const localBufferingText = computed(() => runtimeReadinessReason.value === 'voice-preparing'
+  ? '正在准备下一段语音…' : '正在准备下一段画面…')
 const isPlaying = ref(false)
 const menuOpen = ref(false)
 const backlogOpen = ref(false)
@@ -304,6 +307,7 @@ let cleanupRuntimeCues = () => {}
 let isRuntimeAutoBlocked = () => false
 let playbackController = null
 let pendingStepEffects = null
+let preparedStepVoice = null
 
 // True while a title step is playing its FX. The FX is a transition the player
 // owns, not a screen the user dismisses: it always advances when it ends, which
@@ -420,7 +424,9 @@ function beginFrameHold(targetIndex) {
   const actorPending = (target.spines || []).some(actor => actor?.id && actor?.model
     && manager.spineInstances?.[actor.id]?.modelId !== actor.model
     && !manager._silhouetteSprites?.[actor.id])
-  frameHoldRequired.value = actorPending || source.bg !== target.bg
+  const voicePending = voicePlayer?.requiresVoice(visualTarget, compiledData.value?.scenario_id)
+    && !voicePlayer?.hasDecodedVoice(visualTarget, compiledData.value?.scenario_id)
+  frameHoldRequired.value = actorPending || source.bg !== target.bg || voicePending
   if (!frameHoldRequired.value) return
   heldTargetIndex = bridge ? targetIndex + 1 : targetIndex
   const host = frameHoldRoot.value
@@ -797,6 +803,11 @@ const stepSceneEffects = useStepSceneEffects({
   spineStageRef,
   audioManager: _audioManager,
   voicePlayer,
+  takePreparedVoice: (step, stepIndex) => {
+    const current = preparedStepVoice
+    preparedStepVoice = null
+    return current?.step === step && current.stepIndex === stepIndex ? current.prepared : null
+  },
   resetVoiceDedup: _resetVoiceDedup,
   onEpisodeEnd: finishEpisode,
   isAutoBlocked: () => isRuntimeAutoBlocked(),
@@ -820,10 +831,27 @@ const storyRuntimeCues = useStoryRuntimeCues({
   isPaused: () => runtimePauseReasons.size > 0,
   debugSnapshotAction: () => freezeScene('snapshotAt'),
   onReadinessChange: handleRuntimeReadinessChange,
+  prepareStepAudio: prepareCurrentStepAudio,
 })
+
+async function prepareCurrentStepAudio({ stepIndex, restore, signal, reportWaiting }) {
+  preparedStepVoice = null
+  const step = currentStep.value
+  const scenarioId = compiledData.value?.scenario_id
+  if (restore || !voicePlayer?.requiresVoice(step, scenarioId)) return { status: 'ready' }
+  reportWaiting('voice-preparing', [step.dialogue.voice])
+  const prepared = await voicePlayer.prepareVoice({ step, scenarioId, signal })
+  if (signal.aborted || step !== currentStep.value || stepIndex !== currentStepIndex.value) {
+    return { status: 'cancelled' }
+  }
+  if (!prepared) return { status: 'failed', reason: 'voice-renderable', ids: [step.dialogue.voice] }
+  preparedStepVoice = { step, stepIndex, prepared }
+  return { status: 'ready' }
+}
 
 function handleRuntimeReadinessChange(readiness) {
   runtimeReadinessStatus.value = readiness.status
+  runtimeReadinessReason.value = readiness.reason || ''
   const hasFrame = initialReadyEmitted.value && (frameHolding.value || !frameHoldRequired.value)
   const report = { ...readiness, hasFrame, instance: props.playbackInstance }
   emit('readiness-change', report)
@@ -1042,6 +1070,7 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   titleAdvancePending = null
   pendingStepEffects = null
+  preparedStepVoice = null
   releaseFrameHold()
   if (RUNTIME_DEBUG) console.debug('[Lifecycle] StoryViewer onBeforeUnmount')
   cleanupStepSceneEffects()
@@ -1072,6 +1101,7 @@ watch(currentStep, (newStep, oldStep) => {
   // (prev, backlog restore, go-to-step, episode end) must drop the hold. The
   // incoming title card re-claims it from its own onMounted.
   titleAdvancePending = null
+  preparedStepVoice = null
   setTitleAnimationPending(false)
   pendingStepEffects = {
     step: newStep,

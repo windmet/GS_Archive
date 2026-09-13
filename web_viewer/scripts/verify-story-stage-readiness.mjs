@@ -89,7 +89,68 @@ try {
     }
     await flush(); assert.equal(frames.size, 0)
   }
-  console.log('Story stage readiness: actor/background renderability, playable publication, paused mount, stale projection and disposal passed')
+  for (const outcome of ['audio-ready', 'audio-failed', 'audio-revoked']) {
+    const index = { value: 0 }
+    const calls = [], requests = [], events = []
+    const source = { schema_version: 2, steps: [1, 2].map(id => ({
+      step_id: id, type: 'stage', entry_snapshot: { bg: `entry-${id}` },
+      cues: [{ cue_id: `background-${id}`, action: 'background.change', channel: 'background', at: 0, duration: 1,
+        payload: { bg: `cue-${id}` }, lifecycle: { blocks_auto: true } }],
+    })) }
+    const stage = { value: {
+      manager: { setBackground: bg => { calls.push(bg); return Promise.resolve({ status: 'completed' }) } },
+      getSceneReadiness: () => ({ status: 'ready' }),
+    } }
+    const runtime = useStoryRuntimeCues({
+      compiledData: { value: source }, currentStepIndex: index, spineStageRef: stage, audioManager: {},
+      prepareStepAudio: request => new Promise(resolve => requests.push({ ...request, resolve })),
+      onReadinessChange: readiness => events.push(readiness),
+    })
+    runtime.handleStepChange()
+    await flush()
+    assert.equal(requests.length, 1)
+    assert.deepEqual(calls, ['entry-1'], 'entry background may prepare before the voice, but cues must wait')
+    requests[0].reportWaiting('voice-preparing', ['voice-1'])
+    assert.equal(runtime.inspect().readiness.status, 'waiting')
+    assert.equal(runtime.inspect().readiness.reason, 'voice-preparing')
+    assert.deepEqual(runtime.inspect().readiness.ids, ['voice-1'])
+    assert.equal(runtime.inspect().entries.length, 0)
+    if (outcome === 'audio-revoked') {
+      index.value = 1
+      runtime.handleStepChange()
+      await flush()
+      assert.equal(requests[0].signal.aborted, true, 'step change must abort the old voice preparation')
+      requests[0].reportWaiting('stale-voice', ['voice-1'])
+      assert.notEqual(runtime.inspect().readiness.reason, 'stale-voice', 'old step cannot publish a late loading label')
+      requests[0].resolve({ status: 'ready' })
+      await flush()
+      assert.equal(runtime.inspect().readiness.status, 'waiting', 'late old voice cannot publish playable')
+      assert.equal(requests.length, 2)
+      requests[1].resolve({ status: 'ready' })
+      await flush()
+      assert.equal(runtime.inspect().readiness.status, 'playable')
+      assert.equal(events.at(-1).stepIndex, 1)
+      assert.ok(calls.includes('cue-2'))
+      assert.equal(calls.includes('cue-1'), false)
+    } else {
+      requests[0].resolve(outcome === 'audio-failed'
+        ? { status: 'failed', reason: 'voice-renderable', ids: ['missing-voice'] }
+        : { status: 'ready' })
+      await flush()
+      if (outcome === 'audio-failed') {
+        assert.equal(runtime.inspect().readiness.status, 'blocked')
+        assert.equal(events.at(-1).reason, 'voice-renderable')
+        assert.deepEqual(events.at(-1).ids, ['missing-voice'])
+        assert.equal(calls.includes('cue-1'), false)
+      } else {
+        assert.equal(runtime.inspect().readiness.status, 'playable')
+        assert.ok(calls.includes('cue-1'))
+      }
+    }
+    runtime.cleanup()
+    await flush(); assert.equal(frames.size, 0)
+  }
+  console.log('Story stage readiness: actor/background/voice gates, paused mount, stale projection and audio revocation passed')
 } finally {
   [globalThis.window, globalThis.requestAnimationFrame, globalThis.cancelAnimationFrame] = saved
 }

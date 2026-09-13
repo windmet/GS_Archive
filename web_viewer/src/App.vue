@@ -404,7 +404,7 @@
     <!-- ====== STORY PLAYER ====== -->
     <section v-if="(playbackError || playbackReadiness?.status === 'blocked') && !loading" class="playback-failure" role="alert">
       <p v-if="playbackError">演出暂时无法载入。{{ playbackError }}</p>
-      <p v-else>当前段落的必要画面未能准备完成（{{ playbackReadiness.reason }}）。</p>
+      <p v-else>当前段落的必要{{ playbackReadiness.reason === 'voice-renderable' ? '语音' : '画面' }}未能准备完成（{{ playbackReadiness.reason }}）。</p>
       <div class="playback-failure-actions">
         <button v-if="playbackController.canRetry.value" type="button" @click="playbackController.retry()">重试载入</button>
         <button v-else-if="playbackReadiness?.status === 'blocked'" type="button" @click="playbackController.retryCurrentStep()">重试当前段落</button>

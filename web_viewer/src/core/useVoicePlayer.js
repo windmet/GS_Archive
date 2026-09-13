@@ -111,7 +111,7 @@ export function useVoicePlayer({
     setTalking(false)
   }
 
-  async function loadLipCurve(step, audioDuration) {
+  async function loadLipCurve(step, audioDuration, signal) {
     if (step?.lipSync === false) return null
 
     const candidates = []
@@ -123,9 +123,10 @@ export function useVoicePlayer({
 
     let lastError = null
     for (const candidate of candidates) {
+      if (signal?.aborted) return null
       try {
         const lipUrl = getLipSyncUrl(candidate)
-        const res = await fetch(`${lipUrl}?_=${Date.now()}`)
+        const res = await fetch(`${lipUrl}?_=${Date.now()}`, { signal })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const contentType = res.headers.get('content-type') || ''
         if (contentType.includes('text/html')) throw new Error('lip JSON returned HTML')
@@ -136,6 +137,7 @@ export function useVoicePlayer({
         const source = candidate === lipPath ? 'compiled' : 'derived-main'
         return { path: candidate, source, scales: data.scales, duration: audioDuration, gain: ORIGINAL_LIP_GAIN }
       } catch (err) {
+        if (signal?.aborted) return null
         lastError = err
       }
     }
@@ -144,16 +146,27 @@ export function useVoicePlayer({
     return null
   }
 
-  async function prepareVoice({ step = currentStep.value, scenarioId = compiledData.value?.scenario_id, includeLip = true } = {}) {
+  function requiresVoice(step = currentStep.value, scenarioId = compiledData.value?.scenario_id) {
     const voice = step?.dialogue?.voice
-    if (!voice || noVoice || session.disabled) return null
-    if (isKnownDanglingStoryVoice(scenarioId, voice)) {
+    return !!voice && !noVoice && !session.disabled && !isKnownDanglingStoryVoice(scenarioId, voice)
+  }
+
+  function hasDecodedVoice(step = currentStep.value, scenarioId = compiledData.value?.scenario_id) {
+    const voice = step?.dialogue?.voice
+    return !!voice && decodedVoiceCache.has(`${scenarioId || ''}\0${voice}`)
+  }
+
+  async function prepareVoice({ step = currentStep.value, scenarioId = compiledData.value?.scenario_id, includeLip = true, signal } = {}) {
+    const voice = step?.dialogue?.voice
+    if (!voice || noVoice || session.disabled || signal?.aborted) return null
+    if (!requiresVoice(step, scenarioId)) {
       console.info('[Audio] skipped RAW-authored dangling story voice:', { scenarioId, voice })
       return null
     }
 
     const preparingContext = ensureAudioCtx()
-    const isCurrentContext = () => preparingContext && audioCtx === preparingContext && preparingContext.state !== 'closed'
+    const isCurrentContext = () => preparingContext && audioCtx === preparingContext
+      && preparingContext.state !== 'closed' && !signal?.aborted
     const cacheKey = `${scenarioId || ''}\0${voice}`
     try {
       let audioBuffer = decodedVoiceCache.get(cacheKey)?.buffer
@@ -167,6 +180,9 @@ export function useVoicePlayer({
           const controller = new AbortController()
           pendingVoiceLoads.add(controller)
           const timeoutId = window.setTimeout(() => controller.abort(), 6500)
+          const forwardAbort = () => controller.abort(signal.reason)
+          signal?.addEventListener('abort', forwardAbort, { once: true })
+          if (signal?.aborted) forwardAbort()
           try {
             arrayBuffer = await compressedVoiceCache.get(voiceUrl, { signal: controller.signal })
             break
@@ -174,6 +190,7 @@ export function useVoicePlayer({
             lastFetchError = error
           } finally {
             window.clearTimeout(timeoutId)
+            signal?.removeEventListener('abort', forwardAbort)
             pendingVoiceLoads.delete(controller)
           }
         }
@@ -191,7 +208,7 @@ export function useVoicePlayer({
         rememberDecodedVoice(cacheKey, audioBuffer)
       }
       if (!isCurrentContext()) return null
-      const lipCurve = includeLip ? await loadLipCurve(step, audioBuffer.duration) : null
+      const lipCurve = includeLip ? await loadLipCurve(step, audioBuffer.duration, signal) : null
       if (!isCurrentContext()) return null
       return { voice, step, scenarioId, audioBuffer, lipCurve }
     } catch (err) {
@@ -304,6 +321,8 @@ export function useVoicePlayer({
 
   return {
     playVoice,
+    requiresVoice,
+    hasDecodedVoice,
     prepareVoice,
     playPreparedVoice,
     replayVoiceDetached,

@@ -9,6 +9,7 @@ export function useStepSceneEffects({
   spineStageRef,
   audioManager,
   voicePlayer,
+  takePreparedVoice = () => null,
   resetVoiceDedup,
   onEpisodeEnd,
   isAutoBlocked = () => false,
@@ -98,7 +99,9 @@ export function useStepSceneEffects({
     }
 
     if (!restore) {
-      voicePlayer?.playVoice?.()
+      const prepared = takePreparedVoice(newStep, currentStepIndex.value)
+      if (prepared) voicePlayer?.playPreparedVoice?.(prepared)
+      else voicePlayer?.playVoice?.()
     }
   }
 

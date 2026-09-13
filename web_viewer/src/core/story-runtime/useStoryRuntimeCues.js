@@ -22,11 +22,13 @@ export function useStoryRuntimeCues({
   debugSnapshotAt = null, debugSnapshotAction = null,
   isPaused = () => false,
   onReadinessChange = () => {},
+  prepareStepAudio = async () => ({ status: 'ready' }),
 }) {
   const scheduler = new EffectScheduler({ clock: new StoryClock() })
   let normalizedSource = null
   let normalizedScenario = null
   let managerFrame = null
+  let stepAudioController = null
   let generation = 0
   let pendingRestore = null
   let shadowBasis = null
@@ -60,7 +62,7 @@ export function useStoryRuntimeCues({
     return spineStageRef.value?.manager || null
   }
 
-  function applySnapshotWhenReady(snapshot, expectedGeneration, onReady) {
+  function applySnapshotWhenReady(snapshot, expectedGeneration, onReady, { restore = false } = {}) {
     const expectedStep = getStageStep()
     const apply = () => {
       if (expectedGeneration !== generation) return
@@ -83,7 +85,7 @@ export function useStoryRuntimeCues({
       applyCameraEntrySnapshot(manager, snapshot?.camera_zoom)
       applyScreenEntrySnapshot(manager, snapshot?.screen_overlay)
       Promise.resolve(applyBackgroundEntrySnapshot(manager, snapshot?.bg))
-        .then(result => {
+        .then(async result => {
           if (expectedGeneration !== generation) return
           if (result?.status === 'failed') {
             publishReadiness('blocked', { reason: 'background-renderable', ids: snapshot?.bg ? [snapshot.bg] : [] })
@@ -93,11 +95,40 @@ export function useStoryRuntimeCues({
             publishReadiness('blocked', { reason: 'background-cancelled', ids: snapshot?.bg ? [snapshot.bg] : [] })
             return
           }
+          const controller = new AbortController()
+          stepAudioController = controller
+          let audio
+          try {
+            audio = await prepareStepAudio({
+              stepIndex: currentStepIndex.value,
+              stepId: expectedStep?.step_id ?? null,
+              restore,
+              signal: controller.signal,
+              reportWaiting: (reason, ids = []) => {
+                if (expectedGeneration === generation && !controller.signal.aborted) {
+                  publishReadiness('waiting', { reason, ids })
+                }
+              },
+            })
+          } catch (error) {
+            if (expectedGeneration !== generation || controller.signal.aborted) return
+            stepAudioController = null
+            publishReadiness('blocked', { reason: 'voice-renderable', ids: [], error: error?.message || String(error) })
+            return
+          }
+          if (expectedGeneration !== generation || controller.signal.aborted) return
+          stepAudioController = null
+          if (audio?.status === 'cancelled') return
+          if (audio?.status === 'failed') {
+            publishReadiness('blocked', { reason: audio.reason || 'voice-renderable', ids: audio.ids || [] })
+            return
+          }
           onReady?.(manager)
           publishReadiness('playable')
         })
         .catch(error => {
           if (expectedGeneration !== generation) return
+          stepAudioController = null
           publishReadiness('blocked', { reason: 'background-renderable', ids: snapshot?.bg ? [snapshot.bg] : [], error: error?.message || String(error) })
         })
     }
@@ -137,6 +168,8 @@ export function useStoryRuntimeCues({
 
   function handleStepChange() {
     generation++
+    stepAudioController?.abort(new Error('step changed'))
+    stepAudioController = null
     if (managerFrame != null) {
       cancelAnimationFrame(managerFrame)
       managerFrame = null
@@ -156,7 +189,7 @@ export function useStoryRuntimeCues({
       scheduler.loadStep(cues, { handlers, context: { step } })
       scheduler.start({ paused: isPaused() })
       console.debug(restore ? '[StoryRuntime] restored' : '[StoryRuntime] scheduled', JSON.stringify(scheduler.inspect()))
-    })
+    }, { restore: Boolean(restore) })
   }
 
   function prepareRestore(stepIndex, snapshot) {
@@ -194,6 +227,8 @@ export function useStoryRuntimeCues({
     shadowBasis = null
     shadowUnavailableReason = reason
     generation++
+    stepAudioController?.abort(new Error(reason))
+    stepAudioController = null
     if (managerFrame != null) {
       cancelAnimationFrame(managerFrame)
       managerFrame = null
