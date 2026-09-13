@@ -440,7 +440,7 @@
     />
 
     <!-- ====== SPINE LAB ====== -->
-    <SpineViewer v-if="view === 'spine_lab'" @back="closeArchiveExperiment" @open-stage="openChibiStage" />
+    <SpineViewer v-if="view === 'spine_lab'" :back-label="labBackLabel" @back="closeArchiveExperiment" @open-stage="openChibiStage" />
     <ChibiStageViewer
       v-if="view === 'chibi_stage'"
       :audio-experiments="songExperimentalAudioData?.songs || {}"
@@ -769,6 +769,12 @@ const stageBackLabel = computed(() => (
   (!detailSourceRoute.value && stageTargetId.value && currentSongId.value)
     ? '返回歌曲'
     : '返回资料馆'
+))
+// Lab exits the experiment to its archive source; it does not push Stage into the generic source stack.
+const labBackLabel = computed(() => (
+  detailSourceRoute.value && readArchiveSourceRoute(detailSourceRoute.value).view === 'song_detail'
+    ? '返回歌曲详情'
+    : detailSourceRoute.value ? '返回来源页' : '返回资料馆'
 ))
 
 function categoryById(id) {

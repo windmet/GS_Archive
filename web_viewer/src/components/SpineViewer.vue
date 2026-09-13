@@ -1,7 +1,7 @@
 <template>
   <div class="chibi-lab">
     <header class="lab-header">
-      <ArchiveBackAction class="back-button" label="返回资料馆" icon-only @back="emit('back')" />
+      <ArchiveBackAction class="back-button" :label="backLabel" @back="emit('back')" />
       <div class="header-divider" aria-hidden="true"></div>
       <h1>舞台小人实验室</h1>
       <button class="stage-link" type="button" @click="emit('open-stage')">多人舞台</button>
@@ -220,6 +220,7 @@ import {
 } from '../utils/liveChibiSpine.js'
 import { getSongUrl } from '../utils/AssetResolver.js'
 
+defineProps({ backLabel: { type: String, default: '返回资料馆' } })
 const emit = defineEmits(['back', 'open-stage'])
 const canvasRef = ref(null)
 const manifest = ref(null)
@@ -835,6 +836,7 @@ h2 { margin: 0; color: #d4dfeb; font-size: 12px; font-weight: 650; letter-spacin
 @media (max-width: 860px) {
   .lab-header { height: 54px; padding: 0 12px; gap: 11px; }
   .lab-header h1 { font-size: 16px; }
+  .header-divider { display: none; }
   .header-meta { display: none; }
   .lab-workspace { inset-top: 54px; grid-template-columns: 1fr; grid-template-rows: minmax(390px, 58vh) minmax(0, 1fr); overflow-y: auto; }
   .stage-shell { min-height: 390px; }

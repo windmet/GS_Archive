@@ -43,3 +43,9 @@
 输入 HEAD `f1bb0b7`。仅在 Reader presentation 投影连续开头的 title/synopsis：与页面 h1 同文本身份的两个原脚本 title 行不重复展示，保留原行节点 ID/锚点和原始 document；其他独立 title（例如“第1話”）及 synopsis 仍可见。旧 title 锚点定位时聚焦可见 h1。主线集合内部 chapterCount 展示为“话”，其他域仍用原有“章”称呼；没有修改 `ReadingDocument`、翻译 identity 或源数据。
 
 验证：`verify:reading`（含 2734 份真实 ReadingDocument 的 hash/锚点校验与 Vue 渲染）、`build:check` PASS。5175 / Playwright Chromium 1280×850、390×850：`1_1_001_01_a` 原文 Reader 只显示一个页面标题，原 16 个行锚点仍在、两条重复标题成为无视觉重复的锚点、synopsis 和“第1話”仍可见；译文 URL 直达第一标题旧锚点时焦点落在可见 h1；主线集合显示“11 话”。无 console error/水平溢出，截图仓库外。未重新验收所有译文内容、全部 Reader 篇章的视觉效果。
+
+## UX-02 / UX-03：实验室返回与默认舞台语义
+
+输入 HEAD `500b0cd`。维持既有实验页退出到 Archive 来源页的产品语义，不把 Lab/Stage 加入通用 `from/via` 来源栈；单人 Lab 的返回从图标箭头改为可见的实际目标标签，歌曲来源为“返回歌曲详情”，其他来源为“返回来源页”或“返回资料馆”。歌曲详情无 handoff 的入口改为“打开默认舞台编成”，提示“不继承上方试听中的演唱选择”。既有“以当前编成进入舞台”的 lineup handoff 原样保留；Unit 单轨转舞台 handoff 尚未定义，也没有在本批伪造。
+
+验证：`verify:archive-navigation-state`、`verify:archive-presentation`、`build:check` PASS。5175 / Playwright Chromium 1280×850、390×850：`brndnf` 歌曲详情默认 CTA→ `brndnf_live_effect` 多人舞台→单人实验室，显示“返回歌曲详情”且点击后确实回 `?view=song_detail&song=brndnf`；默认入口提示不继承演唱选择，Lab 手机头部无横向溢出、无 console error。截图仓库外；不把此路径当作舞台原版效果、声画同步或长稳验收。Stage→Lab→返回仍是离开实验页回歌曲，而非一级回 Stage；这是本批明确标出的既有语义。

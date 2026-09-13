@@ -39,8 +39,8 @@
       <ArchiveSongSinglePlayer v-else-if="song.playback.track" :song="song" :track="song.playback.track" />
       <section v-if="stageCandidate || stageLookupError" class="song-block song-stage-entry">
         <div class="song-block-heading"><span>STAGE</span><h3>{{ stageCandidate?.stageKind === 'special_single' ? '社长特别演出' : '舞台小人' }}</h3></div>
-        <p class="song-block-note">{{ stageCandidate?.stageKind === 'special_single' ? '特别版使用社长单人 2D 剪影素材；进入后才加载演出，且不会自动播放。' : '进入后才加载舞台资源，演出不会自动播放。' }}</p>
-        <button v-if="stageCandidate" class="stage-open-button" type="button" @click="emit('open-stage', { songCode: song.id, choreographyId: stageCandidate.id })">{{ stageCandidate.stageKind === 'special_single' ? '打开社长特别演出' : '打开本曲舞台' }}</button>
+        <p class="song-block-note">{{ stageCandidate?.stageKind === 'special_single' ? '特别版使用社长单人 2D 剪影素材；进入后才加载演出，且不会自动播放。' : '进入后才加载舞台资源，演出不会自动播放；不继承上方试听中的演唱选择。' }}</p>
+        <button v-if="stageCandidate" class="stage-open-button" type="button" @click="emit('open-stage', { songCode: song.id, choreographyId: stageCandidate.id })">{{ stageCandidate.stageKind === 'special_single' ? '打开社长特别演出' : '打开默认舞台编成' }}</button>
         <p v-else class="song-block-note">舞台版本目录暂时无法读取。<button class="stage-retry-button" type="button" @click="loadStageCandidate">重试</button></p>
       </section>
       <section class="song-block">

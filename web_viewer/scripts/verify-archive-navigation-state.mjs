@@ -110,6 +110,8 @@ assert.equal(readArchiveSourceRoute(targetedStage.sourceRoute).view, 'archive_st
 // Execute the production entry/return handlers and route projection together.
 // The old oracle above continues to cover routes without the new provenance.
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
+assert.match(app, /:back-label="labBackLabel"/, 'Lab back action exposes its actual archive destination')
+assert.match(app, /返回歌曲详情/, 'song-sourced Lab exit is named explicitly')
 const context = {
   ...independent,
   captureDetailSource: () => { independent.detailSourceRoute.value = buildArchiveSourceQuery(independent.currentArchiveRoute()) },

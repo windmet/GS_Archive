@@ -22,6 +22,8 @@ const presentations = Object.values(catalog.songs).map(song => buildSongPresenta
 }))
 const byId = Object.fromEntries(presentations.map(song => [song.id, song]))
 assert.equal(byId.brndnf.unit.displayName, 'Jupiter')
+assert.match(read('src/components/archive/ArchiveSongDetail.vue'), /打开默认舞台编成/)
+assert.match(read('src/components/archive/ArchiveSongDetail.vue'), /不继承上方试听中的演唱选择/)
 assert.equal(byId.brndnf.performers[0].displayName, '天ヶ瀬 冬馬')
 assert.equal(byId.brndnf.performers[0].reference.unitName, 'Jupiter')
 assert.equal(byId.brndnf.performers[0].reference.imageCandidates[0].kind, 'idol_icon')
