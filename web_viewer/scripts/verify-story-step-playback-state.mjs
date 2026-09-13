@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { useStoryRuntimeCues } from '../src/core/story-runtime/useStoryRuntimeCues.js'
+import { useStepSceneEffects } from '../src/core/useStepSceneEffects.js'
 
 const saved = { window: globalThis.window, requestAnimationFrame: globalThis.requestAnimationFrame, cancelAnimationFrame: globalThis.cancelAnimationFrame }
 const frames = new Map()
@@ -77,4 +78,49 @@ try {
     else globalThis[key] = value
   }
 }
-console.log('Step playback state: selected rate, paused navigation, multiple reasons, resumed cues and paused history restore passed')
+
+const waitFor = async predicate => {
+  const deadline = Date.now() + 1000
+  while (!predicate() && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 10))
+  assert.ok(predicate(), 'auto advance did not settle before the deadline')
+}
+{
+  const index = { value: 0 }
+  const history = { value: [] }
+  const captures = []
+  let blocked = false
+  let dedupResets = 0
+  const effects = useStepSceneEffects({
+    currentStepIndex: index, historyStack: history, isLastStep: { value: false },
+    spineStageRef: { value: null }, audioManager: { inspect: () => ({}) },
+    voicePlayer: { playVoice: () => {} }, resetVoiceDedup: () => { dedupResets++ },
+    isAutoBlocked: () => blocked,
+    beforeStepChange: target => captures.push({ source: index.value, target }),
+  })
+  try {
+    effects.handleStepChange({ type: 'text_disable', duration: 0.2, entry_snapshot: {} }, null)
+    await waitFor(() => index.value === 1)
+    assert.deepEqual(captures, [{ source: 0, target: 1 }], 'text-disable bridge must capture before its auto navigation')
+    assert.deepEqual(history.value, [], 'text-disable bridge must keep its authored history behavior')
+
+    blocked = true
+    effects.handleStepChange({ type: 'stage', duration: 0.05, entry_snapshot: {} }, null)
+    await new Promise(resolve => setTimeout(resolve, 100))
+    assert.equal(index.value, 1, 'blocked auto advance must not change the step')
+    assert.equal(captures.length, 1, 'blocked auto advance must not capture a future frame')
+    blocked = false
+    await waitFor(() => index.value === 2)
+    assert.deepEqual(captures[1], { source: 1, target: 2 })
+    assert.deepEqual(history.value, [1], 'stage auto advance must retain its authored history push')
+    assert.equal(dedupResets, 2)
+
+    effects.handleStepChange({ type: 'text_disable', duration: 0.2, entry_snapshot: {} }, null)
+    effects.cleanup()
+    await new Promise(resolve => setTimeout(resolve, 330))
+    assert.equal(index.value, 2, 'cleanup must revoke a pending auto advance and its frame capture')
+    assert.equal(captures.length, 2)
+  } finally {
+    effects.cleanup()
+  }
+}
+console.log('Step playback state: pause/rate/history restore and auto-transition frame capture ordering passed')

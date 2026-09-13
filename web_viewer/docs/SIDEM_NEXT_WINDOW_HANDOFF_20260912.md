@@ -500,3 +500,9 @@ Edge CDP以全新本地存储状态执行18项desktop/390px启动、偏好、深
 受控Browser负例：活动430018第二话7/26延迟冬马`comu.skel`时，旧翔太和录影棚保留且不出现全屏黑幕，8/26可播放后遮罩/画布消失；390×844重复同一延迟，局部提示、画布、无横向溢出及释放均实测。另一段直接ADV换人物在模型延迟时保留旧台词，等待中点“上一段”后迟到响应不能覆盖已返回的步骤；注入404会显示必要资源错误，恢复资源后“重试当前段落”可进入目标步。受控页面脚本错误为0。IAB普通第二话页面正常，保留现有Pixi Spine update/tint警告，未归因于本批。
 
 `verify:story-loading-safety`、`verify:story-runtime-foundation`、`verify:archive-navigation-state`和`build:check`通过；构建2528模块，固定E盘`.analysis/build-check`只含代码、不复制public。此批只解决后续慢视觉资源下的画面保持，不等于P3完成：逻辑步索引仍先切换，下一步critical的准备与提交尚未拆开；声音、fade、choice、skip、连续高延迟、可见/隐藏切换、真实长音频及各类设备的性能仍需独立矩阵验收。不能把本次截图或短网络负例升级为完整媒体/长稳通过。
+
+## P3 自动过渡补漏：剧本定时切步同样保留旧帧
+
+输入HEAD `3c86e8b`。继续核对P3发现`useStepSceneEffects`的fade/slide/text_disable/text_time/stage/talk_stamp自动过渡在定时器中直接递增`currentStepIndex`，绕过手动导航新增的切步前画面捕获。现在该定时器在确认未被阻断、完成原有读过/历史处理后，先调用同一`beginFrameHold(targetIndex)`，再递增索引；不改各类型的延时、pushHistory与StoryClock行为。`verify:story-step-playback-state`新增text_disable与stage自动切步的捕获顺序、阻断时不捕获、history保持及cleanup取消回归，完整`verify:story-loading-safety`通过；`build:check`完成2528模块，仍仅生成E盘固定代码目录、不复制public。
+
+Browser 5175活动430018第二话：先在翔太5/26结算镜头cue，再进入6/26，等待剧本自动推进；受控延迟冬马`comu.skel`后，7/26保留翔太/录影棚像素和局部等待提示，资源放行后进入8/26并释放画布/提示，页面脚本错误0。IAB普通路径自动推进至8/26，console error 0。该补漏不改变上一节P3部分实施的边界；准备/提交分离、语音与纹理慢资源、复杂暂停/seek/skip/choice矩阵及长稳仍未完成。

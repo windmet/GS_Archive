@@ -13,6 +13,7 @@ export function useStepSceneEffects({
   onEpisodeEnd,
   isAutoBlocked = () => false,
   beforeAutoAdvance = () => {},
+  beforeStepChange = () => {},
 }) {
   let _fadeAutoTimer = null
   let _fadeAutoSeq = 0
@@ -87,6 +88,7 @@ export function useStepSceneEffects({
             if (autoAdvance.pushHistory) {
               historyStack.value.push(currentStepIndex.value)
             }
+            beforeStepChange(currentStepIndex.value + 1)
             currentStepIndex.value++
             resetVoiceDedup()
           }

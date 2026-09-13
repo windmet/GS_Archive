@@ -805,6 +805,7 @@ const stepSceneEffects = useStepSceneEffects({
     recordHistoryStep()
     leaveRestoredScene()
   },
+  beforeStepChange: beginFrameHold,
 })
 
 const runtimePauseReasons = reactive(new Set())
