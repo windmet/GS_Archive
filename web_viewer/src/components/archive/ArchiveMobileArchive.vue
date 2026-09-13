@@ -4,36 +4,40 @@
     class="mobile-archive"
     data-archive-scroll-container
     :data-focused-scenario-id="String(focusedScenarioId || '')"
-    :style="{ '--mobile-accent': accentColor, '--idol-frame-color': idolFrameColor || undefined }"
+    :style="{ '--mobile-accent': accentColor }"
   >
-    <header class="mobile-hero" :class="{ 'is-unit': mode === 'unit' }">
-      <div class="hero-backdrop" :style="heroImageStyle" aria-hidden="true"></div>
-      <div v-if="mode !== 'unit'" class="hero-art" :style="heroImageStyle" aria-hidden="true"></div>
-      <div class="hero-shade"></div>
-      <div class="mobile-identity">
-        <ArchiveIdolAvatar v-if="mode !== 'unit'" class="mobile-idol-avatar" :idol-code="selectedIdol" variant="mobile"
-          :accent-color="idolFrameColor" :size="76" :ring-width="3" :alt="idolName" />
-        <img v-else class="unit-logo" :src="unitLogo(selectedUnit)" :alt="unitName" />
-        <div>
-          <span>MOBILE ARCHIVE</span>
-          <h2>{{ mode === 'unit' ? unitName : idolName }}</h2>
-          <p>
-            <template v-for="(part, index) in roomSubtitleParts" :key="`${part.type}:${index}`">
-              <span v-if="part.type === 'text'">{{ part.text }}</span>
-              <img v-else :src="getEmojiUrl(part.id)" :alt="part.alt" />
-            </template>
-          </p>
-        </div>
+    <header class="mobile-hero" :class="{ 'is-unit': mode === 'unit' }" :style="heroMediaStyle">
+      <div class="hero-media" aria-hidden="true">
+        <img v-if="heroMedia.src" class="hero-media-blur" :src="heroMedia.src" alt="" />
+        <img v-if="heroMedia.src && mode !== 'unit'" class="hero-media-main" :src="heroMedia.src" alt="" />
       </div>
-      <div class="mobile-selector">
-        <button title="上一项" @click="moveSelection(-1)"><ChevronLeft :size="18" /></button>
-        <label>
-          <span>{{ mode === 'unit' ? '组合' : '偶像' }}</span>
-          <select :value="mode === 'unit' ? selectedUnit : selectedIdol" @change="changeSelection($event.target.value)">
-            <option v-for="entry in selectionOptions" :key="entry.value" :value="entry.value">{{ entry.label }}</option>
-          </select>
-        </label>
-        <button title="下一项" @click="moveSelection(1)"><ChevronRight :size="18" /></button>
+      <div class="hero-shade"></div>
+      <div class="hero-content">
+        <div class="mobile-identity">
+          <ArchiveIdolAvatar v-if="mode !== 'unit'" class="mobile-idol-avatar" :idol-code="selectedIdol" variant="mobile"
+            :accent-color="idolFrameColor" :size="76" :ring-width="3" :alt="idolName" />
+          <img v-else class="unit-logo" :src="unitLogo(selectedUnit)" :alt="unitName" />
+          <div>
+            <span>MOBILE ARCHIVE</span>
+            <h2>{{ mode === 'unit' ? unitName : idolName }}</h2>
+            <p>
+              <template v-for="(part, index) in roomSubtitleParts" :key="`${part.type}:${index}`">
+                <span v-if="part.type === 'text'">{{ part.text }}</span>
+                <img v-else :src="getEmojiUrl(part.id)" :alt="part.alt" />
+              </template>
+            </p>
+          </div>
+        </div>
+        <div class="mobile-selector">
+          <button title="上一项" @click="moveSelection(-1)"><ChevronLeft :size="18" /></button>
+          <label>
+            <span>{{ mode === 'unit' ? '组合' : '偶像' }}</span>
+            <select :value="mode === 'unit' ? selectedUnit : selectedIdol" @change="changeSelection($event.target.value)">
+              <option v-for="entry in selectionOptions" :key="entry.value" :value="entry.value">{{ entry.label }}</option>
+            </select>
+          </label>
+          <button title="下一项" @click="moveSelection(1)"><ChevronRight :size="18" /></button>
+        </div>
       </div>
     </header>
 
@@ -151,10 +155,11 @@ import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import { BookOpen, ChevronLeft, ChevronRight, CreditCard, FileWarning, Info, MessageSquareText, Phone, Play, Shuffle, Unlock, Users } from '@lucide/vue'
 import { buildCompiledGroupTitleMap, buildRandomTalkBundles, formatArchiveDate, groupMobileScenarios } from '../../data/idolCommunicationSelectors.js'
-import { getEmojiUrl } from '../../utils/AssetResolver.js'
+import { getEmojiUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { normalizeIdolAccentColor } from '../../presentation/idolAccentColor.js'
 import { projectCommunicationInlineContent } from '../../presentation/communicationInlineContent.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
+import { resolveMobileHeroMedia } from '../../presentation/mobileHeroMedia.js'
 
 const props = defineProps({
   archive: { type: Object, default: null },
@@ -229,9 +234,8 @@ const personalRoom = computed(() => props.archive?.rooms?.personal?.find(room =>
 const unitRoom = computed(() => props.archive?.rooms?.unit?.find(room => room.unit_code === props.selectedUnit))
 const roomSubtitle = computed(() => props.mode === 'unit' ? 'Unit Talk Room' : (personalRoom.value?.profile_text || 'Mobile Talk Room'))
 const roomSubtitleParts = computed(() => projectCommunicationInlineContent(roomSubtitle.value))
-const heroImageStyle = computed(() => ({
-  backgroundImage: `url('${props.mode === 'unit' ? unitBackground(props.selectedUnit) : idolBackground(props.selectedIdol)}')`,
-}))
+const heroMedia = computed(() => resolveMobileHeroMedia({ mode: props.mode, idolCode: props.selectedIdol, unitCode: props.selectedUnit }))
+const heroMediaStyle = computed(() => ({ '--hero-focal-x': `${heroMedia.value.focalX * 100}%`, '--hero-focal-y': `${heroMedia.value.focalY * 100}%` }))
 const selectionOptions = computed(() => props.mode === 'unit'
   ? props.units.map(entry => ({ value: entry.unit_code, label: entry.unit_name }))
   : props.idols.map(entry => ({ value: entry.idol_code, label: entry.display_name })))
@@ -297,9 +301,7 @@ function playRandomTopic(bundle, topic) {
   })
 }
 function formatDate(value) { return formatArchiveDate(value) }
-function idolBackground(code) { return `/assets/idols/mobile_bg/image_chara_mobile_background_${code}.png` }
-function unitBackground(code) { return `/assets/units/mobile_bg/image_unit_mobile_background_${code}.png` }
-function unitLogo(code) { return `/assets/units/logos/image_unit_logo_${code}.png` }
+function unitLogo(code) { return getUnitLogoUrl(code) }
 function timeWindow(topic) {
   const start = topic.open_time || '00:00'
   const end = topic.close_time || '00:00'
@@ -310,7 +312,16 @@ function timeWindow(topic) {
 </script>
 
 <style scoped>
-.mobile-archive { height: 100%; overflow-x: hidden; overflow-y: auto; background: #f4f6f7; color: #26343c; }.mobile-hero { position: relative; isolation: isolate; display: flex; align-items: end; justify-content: space-between; gap: 24px; min-height: 190px; padding: 26px max(24px, calc((100% - 1100px) / 2)); overflow: hidden; background-color: #26343c; }.hero-backdrop, .hero-art { position: absolute; pointer-events: none; background-repeat: no-repeat; }.hero-backdrop { inset: -20px; z-index: -3; background-position: center 18%; background-size: cover; filter: blur(16px) brightness(.58) saturate(.78); transform: scale(1.045); }.hero-art { inset: 0; z-index: -2; background-position: right 12%; background-size: clamp(480px, 42vw, 650px) auto; opacity: .78; -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.18) 24%, #000 52%, #000 100%); mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.18) 24%, #000 52%, #000 100%); }.mobile-hero.is-unit .hero-backdrop { inset: 0; background-position: center; filter: brightness(.6) saturate(.82); transform: none; }.hero-shade { position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(20,31,36,.88), rgba(20,31,36,.48) 58%, rgba(20,31,36,.3)); }.mobile-identity, .mobile-selector { position: relative; z-index: 1; }.mobile-identity { display: flex; align-items: center; gap: 15px; min-width: 0; color: #fff; }.mobile-identity > img { width: 76px; height: 76px; border: 3px solid rgba(255,255,255,.86); border-radius: 50%; background: #eef3f4; object-fit: cover; }.mobile-identity > img.unit-logo { width: 120px; border: 0; border-radius: 0; background: rgba(255,255,255,.9); object-fit: contain; }.mobile-identity span { color: #b9fff8; font-size: .58rem; font-weight: 800; }.mobile-identity h2 { margin: 4px 0; font-size: 1.45rem; }.mobile-identity p { margin: 0; color: rgba(255,255,255,.8); font-size: .65rem; }.mobile-selector { display: flex; align-items: end; gap: 6px; }.mobile-selector > button { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid rgba(255,255,255,.62); border-radius: 5px; background: rgba(19,30,35,.5); color: #fff; cursor: pointer; }.mobile-selector label { display: flex; flex-direction: column; gap: 4px; }.mobile-selector label span { color: rgba(255,255,255,.82); font-size: .56rem; }.mobile-selector select { min-width: 240px; height: 34px; padding: 0 30px 0 10px; border: 1px solid rgba(255,255,255,.7); border-radius: 5px; background: rgba(255,255,255,.94); color: #28363d; font: inherit; font-size: .67rem; }
+.mobile-archive { height: 100%; overflow-x: hidden; overflow-y: auto; background: #f4f6f7; color: #26343c; }
+.mobile-hero { position: relative; isolation: isolate; min-height: 190px; overflow: hidden; background-color: #26343c; }
+.hero-media { position: absolute; top: 0; right: 0; left: 0; height: 190px; overflow: hidden; pointer-events: none; }
+.hero-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: var(--hero-focal-x) var(--hero-focal-y); }
+.hero-media-blur { filter: blur(16px) brightness(.58) saturate(.78); }
+.hero-media-main { opacity: .78; -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.18) 24%, #000 52%, #000 100%); mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.18) 24%, #000 52%, #000 100%); }
+.mobile-hero.is-unit .hero-media-blur { filter: brightness(.6) saturate(.82); }
+.hero-shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(20,31,36,.88), rgba(20,31,36,.48) 58%, rgba(20,31,36,.3)); pointer-events: none; }
+.hero-content { position: relative; display: flex; align-items: end; justify-content: space-between; gap: 24px; min-height: 190px; box-sizing: border-box; padding: 26px max(24px, calc((100% - 1100px) / 2)); }
+.mobile-identity, .mobile-selector { position: relative; z-index: 1; }.mobile-identity { display: flex; align-items: center; gap: 15px; min-width: 0; color: #fff; }.mobile-identity > img { width: 76px; height: 76px; border: 3px solid rgba(255,255,255,.86); border-radius: 50%; background: #eef3f4; object-fit: cover; }.mobile-identity > img.unit-logo { width: 120px; border: 0; border-radius: 0; background: rgba(255,255,255,.9); object-fit: contain; }.mobile-identity span { color: #b9fff8; font-size: .58rem; font-weight: 800; }.mobile-identity h2 { margin: 4px 0; font-size: 1.45rem; }.mobile-identity p { margin: 0; color: rgba(255,255,255,.8); font-size: .65rem; }.mobile-selector { display: flex; align-items: end; gap: 6px; }.mobile-selector > button { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid rgba(255,255,255,.62); border-radius: 5px; background: rgba(19,30,35,.5); color: #fff; cursor: pointer; }.mobile-selector label { display: flex; flex-direction: column; gap: 4px; }.mobile-selector label span { color: rgba(255,255,255,.82); font-size: .56rem; }.mobile-selector select { min-width: 240px; height: 34px; padding: 0 30px 0 10px; border: 1px solid rgba(255,255,255,.7); border-radius: 5px; background: rgba(255,255,255,.94); color: #28363d; font: inherit; font-size: .67rem; }
 .mobile-identity p { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; white-space: pre-line; }.mobile-identity p img { width: 20px; height: 20px; object-fit: contain; }
 .conversation-copy h4 .inline-emoji, .random-bundle h4 .inline-emoji { display: inline-block; width: 1.5em; height: 1.5em; margin-inline: 2px; vertical-align: -.3em; object-fit: contain; }
 .mobile-idol-avatar { box-shadow: 0 0 0 1px rgba(255, 255, 255, .85); }
@@ -323,5 +334,5 @@ function timeWindow(topic) {
 .conversation-list { border-top: 1px solid #dbe2e4; }.conversation-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) 170px 38px; align-items: center; gap: 12px; min-height: 88px; padding: 12px 13px; border-right: 1px solid #dbe2e4; border-bottom: 1px solid #dbe2e4; border-left: 1px solid #dbe2e4; background: #fff; }.conversation-row.focused { box-shadow: inset 3px 0 var(--mobile-accent); background: #f2faf9; }.conversation-row.missing { background: #f6f7f8; }.conversation-type { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: color-mix(in srgb, var(--mobile-accent) 12%, #fff); color: var(--mobile-accent); }.conversation-copy { min-width: 0; }.conversation-copy > small { color: var(--mobile-accent); font-size: .52rem; font-weight: 700; }.conversation-copy h4 { margin: 3px 0 7px; font-size: .7rem; }.unlock-list { display: flex; flex-wrap: wrap; gap: 4px; }.unlock-list button { display: inline-flex; align-items: center; gap: 4px; max-width: 310px; min-height: 22px; padding: 2px 7px; border: 1px solid #dce4e6; border-radius: 4px; background: #f7f9fa; color: #65747b; cursor: default; font: inherit; font-size: .5rem; }.unlock-list button.related { border-color: #bfe0dd; background: #eef8f7; color: #167e77; cursor: pointer; }.unlock-list button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.conversation-meta { display: flex; flex-direction: column; align-items: end; gap: 4px; min-width: 0; color: #87949a; font-size: .5rem; }.conversation-meta code { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.conversation-play, .random-bundle header button { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--mobile-accent); border-radius: 50%; background: #fff; color: var(--mobile-accent); cursor: pointer; }.conversation-play:disabled, .random-bundle header button:disabled { border-color: #ccd5d8; color: #8e999e; cursor: not-allowed; }
 .random-explainer { display: grid; grid-template-columns: 24px minmax(0,1fr) auto; align-items: center; gap: 11px; margin-bottom: 12px; padding: 12px 14px; border: 1px solid color-mix(in srgb, var(--mobile-accent) 28%, #dce3e5); border-radius: 6px; background: #fff; color: var(--mobile-accent); }.random-explainer > div { display: flex; flex-direction: column; gap: 3px; }.random-explainer strong { font-size: .64rem; }.random-explainer p { margin: 0; color: #68777e; font-size: .54rem; line-height: 1.6; }.random-explainer dl { display: grid; grid-template-columns: repeat(2,72px); margin: 0; border-left: 1px solid #e1e7e9; }.random-explainer dl div { padding: 4px 10px; text-align: center; }.random-explainer dt { color: #849198; font-size: .48rem; }.random-explainer dd { margin: 3px 0 0; color: var(--mobile-accent); font-size: .74rem; font-weight: 800; }
 .random-list { border-top: 1px solid #dbe2e4; }.random-bundle { border-right: 1px solid #dbe2e4; border-bottom: 1px solid #dbe2e4; border-left: 1px solid #dbe2e4; background: #fff; }.random-bundle > header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 16px; border-bottom: 1px solid #e4e9eb; }.random-bundle header small { color: var(--mobile-accent); font-size: .52rem; font-weight: 800; }.random-bundle h4 { margin: 3px 0 0; font-size: .72rem; }.topic-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: #e1e6e8; }.topic-grid > button { display: grid; grid-template-columns: 28px minmax(0, 1fr) 18px; align-items: center; gap: 8px; min-height: 78px; padding: 10px 12px; border: 0; background: #fff; color: #2b3a42; cursor: pointer; font: inherit; text-align: left; }.topic-grid > button:hover:not(:disabled) { background: color-mix(in srgb, var(--mobile-accent) 7%, #fff); }.topic-grid > button:disabled { color: #87949a; cursor: not-allowed; }.topic-grid > button > span:first-child { align-self: start; color: var(--mobile-accent); font-size: .57rem; font-weight: 800; }.topic-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }.topic-grid strong { display: -webkit-box; overflow: hidden; font-size: .62rem; line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }.topic-grid small { color: #708087; font-size: .5rem; line-height: 1.4; }.topic-grid code { overflow: hidden; color: #a0aaae; font-size: .45rem; text-overflow: ellipsis; white-space: nowrap; }.topic-grid > button > svg { color: var(--mobile-accent); }.empty-state { padding: 40px 0; color: #7c898f; font-size: .65rem; text-align: center; }
-@media (max-width: 760px) { .mobile-hero { align-items: start; flex-direction: column; min-height: 210px; padding: 18px 12px; }.hero-art { background-position: center 10%; background-size: 480px auto; opacity: .72; -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0,0,0,.65) 65%, transparent 100%); mask-image: linear-gradient(180deg, #000 0%, rgba(0,0,0,.65) 65%, transparent 100%); }.hero-shade { background: linear-gradient(180deg, rgba(20,31,36,.58), rgba(20,31,36,.8)); }.mobile-idol-avatar { --idol-avatar-override-size: 58px; }.mobile-selector { width: 100%; }.mobile-selector label { flex: 1; }.mobile-selector select { width: 100%; min-width: 0; }.mobile-tabs { justify-content: start; overflow-x: auto; }.mobile-tabs button { flex: 0 0 auto; padding: 0 10px; }.mobile-content { padding: 16px 10px 30px; }.conversation-row { grid-template-columns: 36px minmax(0, 1fr) 36px; gap: 9px; padding: 11px 9px; }.conversation-type { width: 36px; height: 36px; }.conversation-meta { display: none; }.random-explainer { grid-template-columns: 22px minmax(0,1fr); }.random-explainer dl { grid-column: 1 / -1; border-top: 1px solid #e1e7e9; border-left: 0; }.topic-grid { grid-template-columns: 1fr; }.content-heading > strong { display: none; } }
+@media (max-width: 760px) { .mobile-hero { min-height: 210px; }.hero-media { height: 210px; }.hero-content { align-items: start; flex-direction: column; min-height: 210px; padding: 18px 12px; }.hero-media-main { opacity: .72; -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0,0,0,.65) 65%, transparent 100%); mask-image: linear-gradient(180deg, #000 0%, rgba(0,0,0,.65) 65%, transparent 100%); }.hero-shade { background: linear-gradient(180deg, rgba(20,31,36,.58), rgba(20,31,36,.8)); }.mobile-idol-avatar { --idol-avatar-override-size: 58px; }.mobile-selector { width: 100%; }.mobile-selector label { flex: 1; }.mobile-selector select { width: 100%; min-width: 0; }.mobile-tabs { justify-content: start; overflow-x: auto; }.mobile-tabs button { flex: 0 0 auto; padding: 0 10px; }.mobile-content { padding: 16px 10px 30px; }.conversation-row { grid-template-columns: 36px minmax(0, 1fr) 36px; gap: 9px; padding: 11px 9px; }.conversation-type { width: 36px; height: 36px; }.conversation-meta { display: none; }.random-explainer { grid-template-columns: 22px minmax(0,1fr); }.random-explainer dl { grid-column: 1 / -1; border-top: 1px solid #e1e7e9; border-left: 0; }.topic-grid { grid-template-columns: 1fr; }.content-heading > strong { display: none; } }
 </style>
