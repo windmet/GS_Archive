@@ -53,12 +53,17 @@ The second pass extends the transform to the whole PNG corpus: 2,376 files /
 946.3 MiB remained, of which `assets/bg/` was 400 files / 764.0 MiB and
 `assets/cards/icons/` 1,361 files / 41.5 MiB.
 
-A measured 15-file background sample retained 65.9%, extrapolating to roughly
-**763.95 → ~503 MiB, about 261 MiB saved**. That still lands near 8.5 GiB, so
-**the 8.2–8.3 GiB target is not reachable by lossless PNG→WebP alone** — even
-converting every remaining PNG saves about 323 MiB. Closing the remaining gap
-needs a different lever (lossy/AVIF backgrounds, or uploading less), and that is
-a separate decision from this transform.
+The two passes together are the shipped state: **9.944 GiB source →
+8.479 GiB deployed** across 98,032 objects (15,399 PNGs converted, ratio
+0.8527). The bucket measured 9,104,196,931 B, of which 392,558 B is 16 orphaned
+`.png` leftovers from pre-transform uploads that the routing policy now shadows.
+
+A measured 15-file background sample retained 65.9%, and the realized second
+pass tracked it closely. It still lands at 8.479 GiB, so **the 8.2–8.3 GiB
+target is not reachable by lossless PNG→WebP alone** — even converting every
+remaining PNG saves about 323 MiB. Closing the remaining ~183 MiB gap needs a
+different lever (lossy/AVIF backgrounds, or uploading less), and that is a
+separate decision from this transform.
 
 Backgrounds were classified by minimum alpha before the decision to convert, to
 record what the `alpha === 0` cleanup actually does per class:
@@ -123,7 +128,18 @@ manifest does not describe, so the staging tree always equals the manifest. That
 matters here: the pre-WebP stage holds 13,024 `.png` objects whose keys are no
 longer in the manifest, and leaving them would upload objects nothing references.
 `rclone copy` never deletes remote keys, so those stale *remote* objects survive
-until a separately reviewed cleanup.
+until a separately reviewed cleanup. The live bucket carries exactly 16 such
+leftovers — 15 `assets/stamps/*.png` and one
+`assets/portal/image_mobile_background_common.png`, 392,558 B total, all from
+uploads predating the transform. Their request keys are transformed, so the
+routing policy resolves them to `.webp` and never reads the `.png` object; they
+are dead weight, not a serving hazard.
+
+Run the upload with the proxy cleared. `rclone` honours `HTTP_PROXY` /
+`HTTPS_PROXY` / `ALL_PROXY` from the environment, and the local proxy caps
+throughput at ~0.6 MiB/s against ~3.2 MiB/s direct — a 5x difference over a
+9 GB corpus. `.deploy/upload-direct.cmd` clears those variables for its own
+process and then runs the copy.
 
 Pruning a reused tree is the current mechanism, not the desired end state. It
 deletes files in place, it is at the mercy of external handles on this Windows
