@@ -1,12 +1,13 @@
 <template>
   <section class="portal-launcher" aria-labelledby="portal-title" :style="{ '--portal-background': `url(${getPortalBackgroundUrl()})` }">
-    <header class="portal-header">
-      <ArchiveBackAction v-if="canGoBack" class="portal-back" pill @back="emit('back')" />
-      <div class="portal-header-actions">
-        <button class="portal-action" @click="emit('open-home')"><Sparkles :size="16" /><span>游戏风首页</span></button>
-        <button class="portal-action" @click="emit('settings')"><Settings2 :size="16" /><span>启动设置</span></button>
-      </div>
-    </header>
+    <ArchivePageChrome class="portal-header" :can-go-back="canGoBack" back-class="portal-back" back-pill @back="emit('back')">
+      <template #actions>
+        <div class="portal-header-actions">
+          <button class="portal-action" @click="emit('open-home')"><Sparkles :size="16" /><span>游戏风首页</span></button>
+          <button class="portal-action" @click="emit('settings')"><Settings2 :size="16" /><span>启动设置</span></button>
+        </div>
+      </template>
+    </ArchivePageChrome>
     <div class="portal-body">
       <div class="portal-heading">
         <h1 id="portal-title" tabindex="-1" ref="heading">我的资料馆</h1>
@@ -37,7 +38,7 @@ import { ARCHIVE_NAVIGATION } from '../../core/archiveRoute.js'
 import { getPortalBackgroundUrl } from '../../utils/AssetResolver.js'
 import { archiveNavigationIcons } from './archiveNavigationIcons.js'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
-import ArchiveBackAction from './ArchiveBackAction.vue'
+import ArchivePageChrome from './ArchivePageChrome.vue'
 
 defineProps({
   preferredReference: { type: Object, default: null },
@@ -69,10 +70,9 @@ onMounted(() => heading.value?.focus({ preventScroll: true }))
   background-position: center bottom;
   font-family: Inter, "Noto Sans SC", "Noto Sans JP", system-ui, sans-serif;
 }
-.portal-header { width: 100%; flex: 0 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 44px 22px 0; max-width: 680px; margin: 0 auto; }
-.portal-back { --archive-back-ink: var(--portal-ink); }
+.portal-header { --archive-back-ink: var(--portal-ink); width: 100%; flex: 0 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 44px 22px 0; max-width: 680px; margin: 0 auto; }
 .portal-header-actions { display: flex; gap: 8px; }.portal-action { display: inline-flex; align-items: center; gap: 5px; min-height: 44px; padding: 0 11px; border: 0; border-radius: 22px; background: rgba(255,255,255,.58); color: inherit; cursor: pointer; font: inherit; font-size: 12px; }
-.portal-body { width: 100%; max-width: 560px; margin: 0 auto; flex: 1 0 auto; display: flex; flex-direction: column; padding: 32px 25px 30px; box-sizing: border-box; }
+.portal-body { width: 100%; max-width: 560px; margin: 0 auto; flex: 1 0 auto; display: flex; flex-direction: column; padding: 32px max(25px, var(--archive-safe-right)) 30px max(25px, var(--archive-safe-left)); box-sizing: border-box; }
 .portal-heading h1 { margin: 0; font-size: 34px; line-height: 1.3; letter-spacing: -.8px; font-weight: 800; outline: none; }
 .portal-heading p { margin: 8px 0 0; font-size: 16px; line-height: 1.6; color: var(--portal-muted); letter-spacing: .6px; }
 .preferred-panel { display: grid; gap: 10px; margin-top: 25px; padding: 14px; border: 1px solid #cde3e3; border-radius: 18px; background: rgba(255,255,255,.72); }
@@ -90,10 +90,10 @@ onMounted(() => heading.value?.focus({ preventScroll: true }))
 .portal-app[data-section="resources"] .portal-icon { background: #e0ebf0; color: #486779; }
 .portal-app:hover .portal-icon { transform: translateY(-3px); box-shadow: 0 6px 15px #123d4b0d; }
 .portal-app:active .portal-icon { transform: scale(.96); }
-.portal-back:focus-visible, .portal-action:focus-visible, .portal-app:focus-visible, .preferred-panel button:focus-visible { outline: 3px solid #168f98; outline-offset: 4px; }
+.portal-action:focus-visible, .portal-app:focus-visible, .preferred-panel button:focus-visible { outline: 3px solid #168f98; outline-offset: 4px; }
 .portal-signature { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: auto; padding-top: 36px; color: var(--portal-muted); font-size: 11px; letter-spacing: 1px; }
 .portal-signature span:last-child { font-size: 10px; letter-spacing: 2.8px; }
-@media (max-width: 520px) { .portal-header { align-items: flex-start; padding: calc(24px + env(safe-area-inset-top, 0px)) max(14px, env(safe-area-inset-right, 0px)) 0 max(14px, env(safe-area-inset-left, 0px)); }.portal-header-actions { align-items: flex-end; flex-direction: column; }.portal-action { min-height: 44px; }.portal-body { padding: 25px 16px 24px; }.portal-heading h1 { font-size: 30px; }.portal-heading p { font-size: 14px; }.portal-apps { gap: 24px 12px; margin-top: 28px; }.portal-app { font-size: 14px; }.portal-icon { border-radius: 20px; } }
+@media (max-width: 520px) { .portal-header { align-items: flex-start; padding: calc(24px + var(--archive-safe-top)) max(14px, var(--archive-safe-right)) 0 max(14px, var(--archive-safe-left)); }.portal-header-actions { align-items: flex-end; flex-direction: column; }.portal-action { min-height: 44px; }.portal-body { padding: 25px max(16px, var(--archive-safe-right)) 24px max(16px, var(--archive-safe-left)); }.portal-heading h1 { font-size: 30px; }.portal-heading p { font-size: 14px; }.portal-apps { gap: 24px 12px; margin-top: 28px; }.portal-app { font-size: 14px; }.portal-icon { border-radius: 20px; } }
 @media (min-width: 761px) { .portal-header { padding-top: 32px; } .portal-body { padding-top: 34px; } }
 @media (prefers-reduced-motion: reduce) { .portal-icon { transition: none; } }
 </style>

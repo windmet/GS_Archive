@@ -19,25 +19,30 @@
       </nav>
     </aside>
 
-    <header v-if="!['portal', 'reader'].includes(activeSection)" class="archive-topbar">
-      <ArchiveBackAction v-if="showBack" class="archive-back" @back="emit('back')" />
-      <div class="archive-mobile-brand">
-        <img :src="getBrandMarkUrl()" alt="" />
-        <span>SideM Archive</span>
-      </div>
-      <div class="archive-heading">
-        <ArchiveBreadcrumb :items="breadcrumbs" />
-        <h1>{{ title }}</h1>
-      </div>
-      <label v-if="searchable" class="archive-search">
-        <Search :size="17" aria-hidden="true" />
-        <input
-          :value="modelValue"
-          :placeholder="searchPlaceholder"
-          @input="emit('update:modelValue', $event.target.value)"
-        />
-      </label>
-    </header>
+    <ArchivePageChrome v-if="!['portal', 'reader'].includes(activeSection)" class="archive-topbar" :can-go-back="showBack" back-class="archive-back" @back="emit('back')">
+      <template #before-title>
+        <div class="archive-mobile-brand">
+          <img :src="getBrandMarkUrl()" alt="" />
+          <span>SideM Archive</span>
+        </div>
+      </template>
+      <template #title>
+        <div class="archive-heading">
+          <ArchiveBreadcrumb :items="breadcrumbs" />
+          <h1>{{ title }}</h1>
+        </div>
+      </template>
+      <template #actions>
+        <label v-if="searchable" class="archive-search">
+          <Search :size="17" aria-hidden="true" />
+          <input
+            :value="modelValue"
+            :placeholder="searchPlaceholder"
+            @input="emit('update:modelValue', $event.target.value)"
+          />
+        </label>
+      </template>
+    </ArchivePageChrome>
 
     <main class="archive-content">
       <slot />
@@ -76,7 +81,7 @@ import {
   Users,
 } from '@lucide/vue'
 import ArchiveBreadcrumb from './ArchiveBreadcrumb.vue'
-import ArchiveBackAction from './ArchiveBackAction.vue'
+import ArchivePageChrome from './ArchivePageChrome.vue'
 import { ARCHIVE_NAVIGATION } from '../../core/archiveRoute.js'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
 
@@ -111,6 +116,9 @@ const mobileNavigation = [
   --archive-ink: #18212b;
   --archive-muted: #68727d;
   --archive-border: #dfe4e8;
+  --archive-safe-top: env(safe-area-inset-top, 0px);
+  --archive-safe-left: env(safe-area-inset-left, 0px);
+  --archive-safe-right: env(safe-area-inset-right, 0px);
   display: grid;
   grid-template-columns: var(--archive-sidebar) minmax(0, 1fr) var(--archive-inspector);
   grid-template-rows: var(--archive-topbar) minmax(0, 1fr);
@@ -208,7 +216,7 @@ const mobileNavigation = [
   gap: 5px;
   min-width: 0;
 }
-.archive-back {
+.archive-topbar {
   --archive-back-ink: #168f87;
 }
 .archive-search {
@@ -251,7 +259,7 @@ const mobileNavigation = [
   .archive-shell, .archive-shell.has-inspector {
     --archive-sidebar: 0px;
     --archive-inspector: 0px;
-    --archive-topbar: 124px;
+    --archive-topbar: calc(124px + var(--archive-safe-top));
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: var(--archive-topbar) minmax(0, 1fr) calc(74px + env(safe-area-inset-bottom, 0px));
@@ -264,7 +272,7 @@ const mobileNavigation = [
     grid-template-columns: auto minmax(0, 1fr);
     grid-template-rows: 52px 60px;
     gap: 0 10px;
-    padding: 0 16px 8px;
+    padding: var(--archive-safe-top) max(16px, var(--archive-safe-right)) 8px max(16px, var(--archive-safe-left));
   }
   .archive-mobile-brand {
     display: flex;
@@ -275,8 +283,8 @@ const mobileNavigation = [
     font-weight: 750;
   }
   .archive-mobile-brand img { width: 31px; height: 24px; object-fit: contain; }
-  .archive-back { grid-row: 1; grid-column: 1; }
-  .archive-back + .archive-mobile-brand { grid-column: 2; }
+  .archive-topbar :deep(.archive-back) { grid-row: 1; grid-column: 1; }
+  .archive-topbar:has(.archive-back) .archive-mobile-brand { grid-column: 2; }
   .archive-heading { grid-row: 2; grid-column: 1; gap: 4px; }
   .archive-topbar h1 { font-size: 1.15rem; }
   .archive-search { grid-row: 2; grid-column: 2; height: 36px; }

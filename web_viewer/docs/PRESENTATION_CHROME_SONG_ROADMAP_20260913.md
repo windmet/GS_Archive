@@ -165,3 +165,9 @@ Portal自推卡改用共享身份引用，规范姓名、组合和头像降级�
 新增不持有路由状态的`ArchiveBackAction`，由Shell、Portal、Reader、Welcome/picker及独立列表头消费；父级继续决定是否显示、按钮文案与返回处理。统一ArrowLeft、44×44最小触控区、焦点样式和颜色变量；Portal保留自身胶囊外观，Reader保留居中标题，Player顶栏未动。独立列表头的筛选栏sticky偏移同步改为实际69px头高；Portal窄屏设置操作升至44px并计入顶部safe area。未抽`ArchivePageChrome`及完整顶栏/滚动容器合同，不能标记N2全部完成。
 
 验证：`verify:reading`全链、`verify:portal-navigation`、`verify:archive-navigation-state`与`build:check`通过；阅读导航验证器同步修正了旧首页URL断言为当前规范`?view=home`。5175 Browser实走带来源Portal→歌曲、Reader→剧情目录，零相关控制台错误。1440×900与390×844 Edge实际DOM测量Portal返回74×44、Shell和Reader返回72×44，三页无横向溢出、零控制台错误；截图检查移动端三个页面的顶栏、内容与底部导航。构建仍为E盘`.analysis/build-check`代码产物，无public复制。
+
+## N2 第二批：薄页眉与安全区
+
+`ArchivePageChrome`以`canGoBack`/`backLabel`/`back`事件和标题、动作插槽组织Shell、Portal、Reader与独立列表头；具体返回来源仍由App负责。三个页面保留各自标题与滚动身份：Shell普通页顶栏在网格第一行且主体只由子页面滚动，Portal/Reader继续各自单滚动容器且不额外显示Shell顶栏。Shell向下传顶部及左右safe-area变量；窄屏Shell顶栏、Portal和Reader分别消耗一次，不动Player独立顶栏。列表头仅在非embedded场景出现，筛选栏跟随其69px头高，App现有embedded消费者不叠第二顶栏。
+
+验证：`verify:reading`、`verify:archive-navigation-state`、`build:check`通过；5175 Browser确认普通页、带来源Portal、Reader的返回动作与Reader原剧情目录来源，控制台零错误。Edge在1440×900与390×844再次核对三个返回区均≥44×44、页面无横向溢出，并截图复看窄屏的标题、正文与底部导航。具有非零safe-area的设备、独立列表头在App以外的嵌入场景仍未实机验证，不把此项外推成全设备验收。

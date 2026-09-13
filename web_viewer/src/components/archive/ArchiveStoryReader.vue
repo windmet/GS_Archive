@@ -1,6 +1,6 @@
 <template>
   <section ref="readerRoot" class="story-reader" :aria-busy="busy" aria-labelledby="reading-heading">
-    <header class="reader-top"><ArchiveBackAction class="reader-back" @back="emit('back')" /><span>剧情阅读</span></header>
+    <ArchivePageChrome class="reader-top" back-class="reader-back" @back="emit('back')"><template #title><span>剧情阅读</span></template></ArchivePageChrome>
     <div class="reader-body">
       <h1 id="reading-heading" ref="heading" tabindex="-1">{{ title }}</h1>
       <p class="reader-subtitle">{{ episodeLabel }}</p>
@@ -52,7 +52,7 @@
 <script setup>
 import { reflowReadingText } from '../../../shared/reading/ReadingTypography.js'
 import { computed, nextTick, ref, watch } from 'vue'
-import ArchiveBackAction from './ArchiveBackAction.vue'
+import ArchivePageChrome from './ArchivePageChrome.vue'
 import { createStoryLocalization } from '../../localization/story/StoryLocalizationContext.js'
 import { readingAvatarEntity, readingPresentationSpeaker } from '../../../shared/reading/ReadingDocument.js'
 import { getCharaIconUrl } from '../../utils/AssetResolver.js'
@@ -146,12 +146,12 @@ watch(() => [props.state.status, props.documentId, props.anchor, props.notice], 
 .reader-play:disabled { opacity: .5; cursor: wait; }
 .reader-play:focus-visible { outline: 2px solid #168f98; outline-offset: 3px; }
 .story-reader { height: 100%; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #cbd8df transparent; background: #f3f7f7; color: #183846; font-family: Inter, "Noto Sans JP", "Noto Sans SC", system-ui, sans-serif; }
-.reader-top { height: 64px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #d7e1e6; position: relative; font-size: 17px; font-weight: 700; }
-.reader-back { position: absolute; left: 12px; }
+.reader-top { height: calc(64px + var(--archive-safe-top)); box-sizing: border-box; padding-top: var(--archive-safe-top); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #d7e1e6; position: relative; font-size: 17px; font-weight: 700; }
+.reader-top :deep(.reader-back) { position: absolute; left: 12px; }
 button, select { font: inherit; font-size: 15px; color: inherit; cursor: pointer; }
 button { min-height: 44px; border: 0; background: none; color: #16838d; }
 button:focus-visible, select:focus-visible { outline: 3px solid #168f98; outline-offset: 3px; }
-.reader-body { max-width: 1000px; margin: 0 auto; padding: 28px 24px 60px; }
+.reader-body { max-width: 1000px; margin: 0 auto; padding: 28px max(24px, var(--archive-safe-right)) 60px max(24px, var(--archive-safe-left)); }
 h1 { margin: 0; font-size: 26px; line-height: 1.5; letter-spacing: -.5px; outline: none; }
 .reader-subtitle { font-size: 14px; color: #6e808a; margin: 4px 0 22px; }
 .reader-picker { display: flex; align-items: center; gap: 22px; white-space: nowrap; font-size: 15px; font-weight: 600; }
