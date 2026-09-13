@@ -31,3 +31,9 @@
 输入 HEAD `e4064a6`。歌曲 AUDIO 中的 `unit` 记录明确标为“收录组合 / 关联组合”，链接写“查看组合”，说明组合单轨试听在上方「演唱试听」选择 Unit；仍原样链接组合档案，不替换播放控件。Mobile 通信的历史解锁项在列表前解释“原游戏开放条件，不影响已收录内容浏览与播放”，逐项也注明历史性质；未改 unlock model、按钮或收录判定。
 
 验证：`verify-archive-inline-presentation`、`verify:archive-presentation`、`build:check` PASS。5175 / Playwright Chromium 1280×850、390×850：`drvalv` 显示关联组合标题、试听说明与“查看组合 · Jupiter”；`012yus` 的个人聊天展示说明和逐行标签。无页面 console error/水平溢出，截图仓库外；未做播放器实际多轨听感和全部通信记录逐条核对。
+
+## UX-07：手机选人确认区
+
+输入 HEAD `990cd85`。手机偶像选择页使用受限高度的三段布局：搜索/数量、独立滚动的 49 人网格、网格外始终可见的操作区；较矮视口压缩非交互文案留足列表空间。桌面保持既有页面滚动。不改变随机选择、设置“我的偶像”或打开页面的行为。
+
+验证：`verify:portal-navigation`、`build:check` PASS。5175 / Playwright Chromium 1280×850、390×850、390×650：从 Welcome 选择游戏风首页，网格滚到底时按钮仍在视口内；390×850 网格可视高 249px、390×650 高 147px，点击已选人物后导航到 `?view=home&home_idol=001tom`；无页面 console error/横向溢出。截图仓库外。顺带补足 UX-09 引入的 `loadingPurpose` 旧 Portal 测试桩，先前未跑该项、此次跑通；尚未做真实 safe-area/屏幕键盘覆盖验收。

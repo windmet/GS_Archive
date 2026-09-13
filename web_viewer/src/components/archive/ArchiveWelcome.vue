@@ -175,6 +175,24 @@ footer { display: grid; gap: 10px; margin-top: 18px; padding-top: 14px; border-t
 button:focus-visible,select:focus-visible,input:focus-visible { outline: 3px solid #37a9a1; outline-offset: 3px; }
 @media (max-width:1000px){.idol-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:700px){.archive-welcome{padding:14px 12px}.welcome-card{padding:20px 16px;border-radius:20px}.mode-grid{grid-template-columns:1fr}.mode-card{min-height:140px}.idol-grid{grid-template-columns:1fr}.idol-search-row{align-items:stretch;flex-direction:column}.idol-search{max-width:none}.idol-count{padding-bottom:0}.idol-actions{position:static;align-items:stretch;flex-direction:column;margin:12px 0 0;padding:12px 0 0;border-radius:0;background:none;box-shadow:none}.idol-actions label{margin-right:0}.preferred-setting{align-items:stretch;flex-direction:column}.preferred-setting button{align-self:flex-start}}
+@media (max-width:700px){
+  .archive-welcome.idol-selection { display: flex; flex-direction: column; overflow: hidden; }
+  .idol-selection .welcome-card { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+  .idol-selection .idol-step { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+  .idol-selection .idol-grid { flex: 1; min-height: 0; align-content: start; overflow-y: auto; overscroll-behavior: contain; }
+  .idol-selection .idol-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); flex: 0 0 auto; }
+  .idol-selection .idol-actions .idol-selected,
+  .idol-selection .idol-actions label { grid-column: 1 / -1; }
+  .idol-selection footer { flex: 0 0 auto; }
+}
 @media (max-width:360px){.archive-welcome{padding:10px 8px}.welcome-card{padding:16px 14px}.idol-step{margin-top:12px}.idol-choice{grid-template-columns:44px minmax(0,1fr);min-height:62px}.idol-choice img{width:44px;height:44px}.idol-actions{gap:7px}.idol-search-row{margin-bottom:8px}}
+@media (max-width:700px) and (max-height:700px){
+  .idol-selection .welcome-card { padding-top: 12px; padding-bottom: 12px; }
+  .idol-selection header h1 { margin: 4px 0; font-size: 24px; }
+  .idol-selection header p { font-size: 12px; line-height: 1.4; }
+  .idol-selection .idol-step { margin-top: 6px; }
+  .idol-selection .idol-search-row { margin-bottom: 4px; }
+  .idol-selection footer { gap: 0; margin-top: 6px; padding-top: 4px; }
+}
 @media (prefers-reduced-motion:reduce){.mode-card{transition:none}}
 </style>

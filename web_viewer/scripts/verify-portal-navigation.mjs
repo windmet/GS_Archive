@@ -63,6 +63,7 @@ const restoreContext = {
   ...useArchiveNavigationState(),
   navigation: createArchiveNavigationCoordinator(),
   currentScenario: { value: { steps: ['previous playback payload'] } },
+  loadingPurpose: { value: 'archive-data' },
   captureActiveArchiveView: () => {},
 }
 restoreContext.playbackController = { reset: () => { restoreContext.currentScenario.value = null } }
