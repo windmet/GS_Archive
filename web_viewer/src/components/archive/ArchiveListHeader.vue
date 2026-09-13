@@ -1,6 +1,6 @@
 <template>
   <header class="list-header">
-    <button class="back-btn" @click="emit('back')">← Back</button>
+    <ArchiveBackAction class="back-btn" @back="emit('back')" />
     <h2>{{ title }}</h2>
   </header>
   <div v-if="filterPlaceholder || $slots.filters" class="filter-bar">
@@ -16,6 +16,7 @@
 </template>
 
 <script setup>
+import ArchiveBackAction from './ArchiveBackAction.vue'
 defineProps({
   title: { type: String, default: '' },
   filterPlaceholder: { type: String, default: '' },
@@ -47,19 +48,11 @@ const emit = defineEmits(['back', 'update:modelValue'])
   overflow-wrap: anywhere;
 }
 .back-btn {
-  flex: 0 0 auto;
-  background: transparent;
-  color: #4488cc;
-  border: 1px solid #c0d8ee;
-  border-radius: 6px;
-  padding: 4px 12px;
-  cursor: pointer;
-  font-size: 0.85rem;
+  --archive-back-ink: #16838d;
 }
-.back-btn:hover { background: #e8f0ff; }
 .filter-bar {
   position: sticky;
-  top: 48px;
+  top: 69px;
   z-index: 5;
   padding: 8px 16px;
   background: #f8f9fa;

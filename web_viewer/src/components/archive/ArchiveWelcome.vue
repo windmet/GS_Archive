@@ -2,9 +2,7 @@
   <section class="archive-welcome" :class="{ 'selection-only': selectionOnly }" aria-labelledby="welcome-title">
     <div class="welcome-card">
       <header>
-        <button v-if="canCancel" class="cancel-button" type="button" @click="emit('cancel')">
-          <ArrowLeft :size="17" />{{ selectionOnly ? '退出选择' : '返回来源页' }}
-        </button>
+        <ArchiveBackAction v-if="canCancel" class="cancel-button" :label="selectionOnly ? '退出选择' : '返回来源页'" @back="emit('cancel')" />
         <span class="welcome-brand">SideM Archive</span>
         <h1 id="welcome-title" ref="heading" tabindex="-1">
           {{ selectionOnly ? `选择要打开${targetLabel}的偶像` : '欢迎来到资料馆' }}
@@ -79,6 +77,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { ArrowLeft, Library, Shuffle, Sparkles } from '@lucide/vue'
+import ArchiveBackAction from './ArchiveBackAction.vue'
 
 const props = defineProps({
   idols: { type: Array, default: () => [] },
@@ -137,7 +136,7 @@ function chooseIdol() {
 .archive-welcome { height: 100%; min-height: 0; box-sizing: border-box; overflow-y: auto; padding: 28px 24px; background: radial-gradient(circle at 15% 0%, #dff7f3 0, transparent 36%), linear-gradient(150deg,#f7fbfb,#edf1f8); color: #173c48; font-family: Inter,"Noto Sans SC","Noto Sans JP",system-ui,sans-serif; }
 .welcome-card { width: min(920px,100%); margin: 0 auto; padding: 34px; border: 1px solid #d7e6e7; border-radius: 28px; background: rgba(255,255,255,.92); box-shadow: 0 24px 60px rgba(32,73,83,.1); }
 .welcome-brand { color: #168f87; font-size: 13px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-.cancel-button { display: flex; align-items: center; gap: 6px; min-height: 44px; margin: -8px 0 12px -8px; padding: 0 8px; border: 0; background: transparent; color: #176f69; cursor: pointer; font: inherit; font-size: 14px; }
+.cancel-button { --archive-back-ink: #176f69; margin: -8px 0 12px -8px; }
 header h1 { margin: 10px 0 8px; font-size: clamp(30px,5vw,52px); line-height: 1.12; outline: none; }
 header p { max-width: 680px; margin: 0; color: #607982; font-size: 16px; line-height: 1.7; }
 .welcome-notice { padding: 10px 13px; border-radius: 10px; background: #fff4d9; color: #6d5420; font-size: 14px; }

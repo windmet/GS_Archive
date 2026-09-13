@@ -12,7 +12,7 @@ const route = readArchiveRoute('http://localhost/?view=reader&reading=1_4_001_01
 assert.equal(route.view, 'reader')
 assert.deepEqual(readArchiveRoute(buildArchiveUrl('http://localhost/?scenario=old&reading_row=stale', route)), route)
 assert.deepEqual(readPortalReturnRoute(buildPortalReturnQuery(route)), route)
-assert.equal(buildArchiveUrl('http://localhost/?reading=x&reading_mode=translation', { view: 'home' }).search, '')
+assert.equal(buildArchiveUrl('http://localhost/?reading=x&reading_mode=translation', { view: 'home' }).search, '?view=home')
 assert.equal(readArchiveRoute('http://localhost/?view=reader&reading=../../RAW').view, 'story_catalog')
 assert.equal(readArchiveRoute('http://localhost/?view=reader&reading=x&reading_mode=bad').readingMode, 'original')
 for (const query of [

@@ -1,6 +1,6 @@
 <template>
   <section ref="readerRoot" class="story-reader" :aria-busy="busy" aria-labelledby="reading-heading">
-    <header class="reader-top"><button @click="emit('back')"><ArrowLeft :size="18" />返回</button><span>剧情阅读</span></header>
+    <header class="reader-top"><ArchiveBackAction class="reader-back" @back="emit('back')" /><span>剧情阅读</span></header>
     <div class="reader-body">
       <h1 id="reading-heading" ref="heading" tabindex="-1">{{ title }}</h1>
       <p class="reader-subtitle">{{ episodeLabel }}</p>
@@ -52,7 +52,7 @@
 <script setup>
 import { reflowReadingText } from '../../../shared/reading/ReadingTypography.js'
 import { computed, nextTick, ref, watch } from 'vue'
-import { ArrowLeft } from '@lucide/vue'
+import ArchiveBackAction from './ArchiveBackAction.vue'
 import { createStoryLocalization } from '../../localization/story/StoryLocalizationContext.js'
 import { readingAvatarEntity, readingPresentationSpeaker } from '../../../shared/reading/ReadingDocument.js'
 import { getCharaIconUrl } from '../../utils/AssetResolver.js'
@@ -147,7 +147,7 @@ watch(() => [props.state.status, props.documentId, props.anchor, props.notice], 
 .reader-play:focus-visible { outline: 2px solid #168f98; outline-offset: 3px; }
 .story-reader { height: 100%; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #cbd8df transparent; background: #f3f7f7; color: #183846; font-family: Inter, "Noto Sans JP", "Noto Sans SC", system-ui, sans-serif; }
 .reader-top { height: 64px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #d7e1e6; position: relative; font-size: 17px; font-weight: 700; }
-.reader-top button { position: absolute; left: 20px; display: flex; align-items: center; gap: 6px; }
+.reader-back { position: absolute; left: 12px; }
 button, select { font: inherit; font-size: 15px; color: inherit; cursor: pointer; }
 button { min-height: 44px; border: 0; background: none; color: #16838d; }
 button:focus-visible, select:focus-visible { outline: 3px solid #168f98; outline-offset: 3px; }

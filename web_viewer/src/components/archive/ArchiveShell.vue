@@ -20,10 +20,7 @@
     </aside>
 
     <header v-if="!['portal', 'reader'].includes(activeSection)" class="archive-topbar">
-      <button v-if="showBack" class="archive-back" title="返回" @click="emit('back')">
-        <ArrowLeft :size="18" />
-        <span>返回</span>
-      </button>
+      <ArchiveBackAction v-if="showBack" class="archive-back" @back="emit('back')" />
       <div class="archive-mobile-brand">
         <img :src="getBrandMarkUrl()" alt="" />
         <span>SideM Archive</span>
@@ -67,7 +64,6 @@
 
 <script setup>
 import {
-  ArrowLeft,
   BookMarked,
   FolderOpen,
   Home,
@@ -80,6 +76,7 @@ import {
   Users,
 } from '@lucide/vue'
 import ArchiveBreadcrumb from './ArchiveBreadcrumb.vue'
+import ArchiveBackAction from './ArchiveBackAction.vue'
 import { ARCHIVE_NAVIGATION } from '../../core/archiveRoute.js'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
 
@@ -212,16 +209,7 @@ const mobileNavigation = [
   min-width: 0;
 }
 .archive-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 0;
-  background: transparent;
-  color: #168f87;
-  padding: 7px 4px;
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.8rem;
+  --archive-back-ink: #168f87;
 }
 .archive-search {
   display: flex;

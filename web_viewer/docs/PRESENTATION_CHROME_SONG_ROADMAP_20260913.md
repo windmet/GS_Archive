@@ -159,3 +159,9 @@ Portal自推卡改用共享身份引用，规范姓名、组合和头像降级�
 输入HEAD `d788b61`。根Portal没有真实来源，隐藏内页与Shell的返回并阻止空来源关闭；带`portal_from`的Portal仍显示返回并按原筛选恢复。Portal除明确跳转根首页外的七个图标入口保留Portal来源，目录及详情返回到Portal；Shell其他页面的全局导航继续按原根导航语义。`idol_picker`进入时捕获来源，显示“退出选择”：有来源则回来源页，直达无来源则进入根Portal。选定偶像进入目的页后，返回先到选择页，可重新选人或退出原入口。Welcome仅在从设置入口进入时携带来源并显示“返回来源页”；取消、稍后再选、选择轻量模式均回原入口，选择游戏风首页仍明确进入首页。Welcome和picker URL只保留自身目标与来源，不继承前页筛选字段；来源继续由既有16层/8192字符边界处理。
 
 验证：`verify:portal-navigation`覆盖Welcome、picker、歌曲目录刷新来源，以及根Portal无来源关闭；`verify:archive-navigation-state`新增两种入口精简投影，旧页面1792组投影保持等价。`verify:archive-startup-route`、`verify:archive-async-navigation`、`verify:routes`及`build:check`通过，构建仍只在E盘`.analysis/build-check`生成代码。5175 Browser实走根Portal→设置→返回，带SSR筛选来源的Portal→设置→Portal→Cards，带来源picker→偶像→picker→Portal、无来源picker→Portal，Portal的故事/歌曲/偶像/卡片/卡池/互动/资源入口均返回Portal；设置URL刷新后仍显示返回。1440×900与390×844 Edge截图复核根Portal与49人picker，0横向溢出、取消按钮44px、0控制台错误。N2共享Chrome和S0–S4歌曲/舞台工作仍未执行。
+
+## N2 首批：共享返回控件
+
+新增不持有路由状态的`ArchiveBackAction`，由Shell、Portal、Reader、Welcome/picker及独立列表头消费；父级继续决定是否显示、按钮文案与返回处理。统一ArrowLeft、44×44最小触控区、焦点样式和颜色变量；Portal保留自身胶囊外观，Reader保留居中标题，Player顶栏未动。独立列表头的筛选栏sticky偏移同步改为实际69px头高；Portal窄屏设置操作升至44px并计入顶部safe area。未抽`ArchivePageChrome`及完整顶栏/滚动容器合同，不能标记N2全部完成。
+
+验证：`verify:reading`全链、`verify:portal-navigation`、`verify:archive-navigation-state`与`build:check`通过；阅读导航验证器同步修正了旧首页URL断言为当前规范`?view=home`。5175 Browser实走带来源Portal→歌曲、Reader→剧情目录，零相关控制台错误。1440×900与390×844 Edge实际DOM测量Portal返回74×44、Shell和Reader返回72×44，三页无横向溢出、零控制台错误；截图检查移动端三个页面的顶栏、内容与底部导航。构建仍为E盘`.analysis/build-check`代码产物，无public复制。
