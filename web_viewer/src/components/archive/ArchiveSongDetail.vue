@@ -35,7 +35,7 @@
           <ul class="performer-list"><li v-for="entry in song.performers" :key="entry.id"><ArchiveIdolReference :reference="entry.reference" density="portrait" @open="emit('open-idol', $event)" /></li></ul>
         </div>
       </section>
-      <ArchiveSongExperimentalPlayer v-if="song.playback.experiment" :song="song" :audio-experiment="song.playback.experiment" />
+      <ArchiveSongExperimentalPlayer v-if="song.playback.experiment" :song="song" :audio-experiment="song.playback.experiment" @open-stage="emit('open-stage', $event)" />
       <ArchiveSongSinglePlayer v-else-if="song.playback.track" :song="song" :track="song.playback.track" />
       <section v-if="stageCandidate || stageLookupError" class="song-block song-stage-entry">
         <div class="song-block-heading"><span>STAGE</span><h3>舞台小人</h3></div>

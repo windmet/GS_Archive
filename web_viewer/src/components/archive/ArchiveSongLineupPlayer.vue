@@ -81,6 +81,11 @@
       </label>
     </div>
 
+    <div v-if="selectedArrangement?.capabilities?.stage?.kind === 'choreography_candidate'" class="lineup-stage-handoff">
+      <button type="button" :disabled="!session.ready.value || !stageLineup.some(Boolean)" @click="openStageWithLineup">以当前编成进入舞台</button>
+      <p>{{ stageLineup.some(Boolean) ? '先停止歌曲页试听，再把舞台位置、声部选择和音量带入；舞台从 00:00 暂停开始。' : '至少选择一位偶像后才能进入舞台。' }}</p>
+    </div>
+
     <ArchiveTechnicalDetails label="编成试听技术信息" :evidence="{ stagePositions: stagePositions.map(stagePosition => ({ stagePosition, performerSlot: performerSlotForStagePosition(stagePosition) })) }">
       <p class="lineup-evidence">
         所有轨道会在播放前完整解码，并由同一个音频时钟同步启动、预排演唱切换；当前混音采用活动偶像数的 1/√n 归一化与居中声像，仅为浏览器近似。重复选择不代表原游戏允许重复成员编组。
@@ -96,10 +101,12 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useSongPerformanceSession } from '../../composables/useSongPerformanceSession.js'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { fetchSongPerformanceArrangements } from '../../utils/songPerformanceData.js'
+import { createSongStageHandoff } from '../../core/songStageHandoff.js'
 
 const props = defineProps({
   audioExperiment: { type: Object, required: true },
 })
+const emit = defineEmits(['open-stage'])
 
 const session = useSongPerformanceSession()
 const slotNumbers = [1, 2, 3, 4, 5]
@@ -203,6 +210,26 @@ async function togglePlayback() {
   else await session.play()
 }
 
+function openStageWithLineup() {
+  if (!session.ready.value) return
+  const handoff = createSongStageHandoff({
+    songCode: props.audioExperiment.song_code,
+    arrangement: selectedArrangement.value,
+    stageLineup: stageLineup.value,
+    audioExperiment: props.audioExperiment,
+    vocalGain: session.vocalGain.value,
+    backingGain: session.backingGain.value,
+    sourceTimeSeconds: session.currentTime.value,
+  })
+  if (!handoff) return
+  session.release()
+  emit('open-stage', {
+    songCode: handoff.songCode,
+    choreographyId: handoff.choreographyId,
+    stageHandoff: handoff,
+  })
+}
+
 function formatTime(value) {
   const seconds = Math.max(0, Math.floor(Number(value) || 0))
   return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
@@ -238,6 +265,11 @@ onMounted(loadArrangements)
 .lineup-gains { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 12px; }
 .lineup-gains label { display: grid; gap: 5px; color: #5c6771; font-size: 0.7rem; font-weight: 700; }
 .lineup-gains input { accent-color: #158f87; }
+.lineup-stage-handoff { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #d6e4eb; }
+.lineup-stage-handoff button { min-height: 44px; padding: 8px 16px; border: 0; border-radius: 22px; background: #176f69; color: #fff; font: inherit; font-size: .74rem; font-weight: 700; cursor: pointer; }
+.lineup-stage-handoff button:disabled { cursor: wait; opacity: .55; }
+.lineup-stage-handoff button:focus-visible { outline: 3px solid #37a9a1; outline-offset: 3px; }
+.lineup-stage-handoff p { flex: 1 1 230px; margin: 0; color: #60717d; font-size: .7rem; line-height: 1.5; }
 .lineup-evidence { margin-top: 12px; }
 .lineup-status { margin-top: 8px; }
 .lineup-error { margin-top: 8px; color: #a04747; }

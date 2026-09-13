@@ -444,6 +444,7 @@
       :audio-experiments="songExperimentalAudioData?.songs || {}"
       :stage-target-id="stageTargetId"
       :stage-song-code="currentSongId"
+      :stage-handoff="stageHandoff"
       :back-label="stageBackLabel"
       @back="closeArchiveExperiment"
       @open-lab="openSpineLab"
@@ -658,6 +659,7 @@ const {
   storyDetailParentView,
   currentArchiveRoute,
 } = useArchiveNavigationState()
+const stageHandoff = ref(null)
 
 const indexData = ref(null)
 const cardIndexData = ref(null)
@@ -1680,6 +1682,7 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
     currentGashaCategory.value = route.gashaType || 'all'
     currentSongId.value = route.song || ''
     stageTargetId.value = route.view === 'chibi_stage' ? (route.stageId || '') : ''
+    stageHandoff.value = null
     currentSongScope.value = route.songScope || 'all'
     songParentView.value = route.view === 'song_detail' ? (route.parentView || '') : ''
     currentCardRarity.value = route.rarity || 'all'
@@ -2248,11 +2251,13 @@ async function openChibiStage(target = null) {
     if (!intent.isCurrent()) return
     stageTargetId.value = target?.choreographyId || ''
     currentSongId.value = stageTargetId.value ? target.songCode : ''
+    stageHandoff.value = target?.stageHandoff || null
     commitView('chibi_stage')
   })
 }
 
 function closeArchiveExperiment() {
+  stageHandoff.value = null
   if (view.value === 'chibi_stage' && !detailSourceRoute.value &&
       stageTargetId.value && songCatalogData.value?.songs?.[currentSongId.value]) {
     stageTargetId.value = ''
@@ -2265,6 +2270,7 @@ function updateStageTarget(target) {
   if (view.value !== 'chibi_stage' || !target?.songCode || !target?.choreographyId) return
   stageTargetId.value = target.choreographyId
   currentSongId.value = target.songCode
+  stageHandoff.value = null
   syncArchiveRoute({ replace: true, restoreView: false })
 }
 

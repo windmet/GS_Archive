@@ -48,6 +48,7 @@
     <ArchiveSongLineupPlayer
       v-if="mode === 'lineup'"
       :audio-experiment="audioExperiment"
+      @open-stage="emit('open-stage', $event)"
     />
 
     <div
@@ -120,6 +121,7 @@ const props = defineProps({
   song: { type: Object, required: true },
   audioExperiment: { type: Object, default: null },
 })
+const emit = defineEmits(['open-stage'])
 
 const mode = ref('single')
 const selectedSingleKey = ref('full_mix')

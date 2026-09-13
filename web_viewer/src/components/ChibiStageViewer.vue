@@ -12,6 +12,7 @@
     :data-stage-vocal-slots="stageVocalLoadedIdolCodes.length"
     :data-stage-vocal-clock="stageVocalEnabled ? 'audio-context-scheduled' : 'media-element'"
     :data-stage-vocal-mode="stageVocalMode"
+    :data-stage-handoff="handoffLineup ? 'lineup' : ''"
     :data-vocal-setting="selectedSong?.vocalSetting?.mode || ''"
     :data-position-tween-ms="POSITION_TWEEN_MS"
     :data-stage-base-zoom="STAGE_BASE_ZOOM"
@@ -84,7 +85,7 @@
         <div class="performance-hud">
           <span>NOW PLAYING</span>
           <strong>{{ selectedSong?.title || '—' }}</strong>
-          <small>{{ activePositions.length }} 人编排 · 当前演唱 {{ currentSingerLabel }}</small>
+          <small>{{ activePositions.length }} 人{{ handoffLineup ? '出场' : '编排' }} · 当前演唱 {{ currentSingerLabel }}</small>
         </div>
 
         <div v-if="currentLyric && lyricsEnabled" class="stage-lyric" aria-live="polite">
@@ -199,6 +200,7 @@
                 RAW 三个 Solo 候选均为中心一人演出；solo 与 solo_single 脚本相同，solo_multi 仅确认存在舞台效果差异，名称不作为声轨机制结论。
               </small>
               <small>均衡归一化与居中声像是浏览器近似，不代表游戏官方混音参数。</small>
+              <small v-if="handoffLineup">已接入歌曲页编成；空位不出场，舞台从 00:00 暂停开始。刷新后使用舞台默认编队。</small>
             </fieldset>
           </section>
 
@@ -230,6 +232,7 @@
                   :disabled="!activePositions.includes(slot.position)"
                   @change="handleCharacterChange(slot)"
                 >
+                  <option value="" disabled>空位</option>
                   <option v-for="character in characters" :key="character.id" :value="character.id">
                     {{ character.name }}
                   </option>
@@ -390,6 +393,7 @@ import {
 } from '../utils/liveChibiSpine.js'
 import { getSongUrl } from '../utils/AssetResolver.js'
 import { fetchSongTimelineManifest } from '../utils/songPerformanceData.js'
+import { resolveSongStageHandoff } from '../core/songStageHandoff.js'
 import { useSongPerformanceSession } from '../composables/useSongPerformanceSession.js'
 
 const emit = defineEmits(['back', 'open-lab', 'target-change'])
@@ -400,6 +404,7 @@ const props = defineProps({
   },
   stageTargetId: { type: String, default: '' },
   stageSongCode: { type: String, default: '' },
+  stageHandoff: { type: Object, default: null },
   backLabel: { type: String, default: '返回资料馆' },
 })
 const canvasRef = ref(null)
@@ -424,6 +429,7 @@ const errorText = ref('')
 const audioReady = ref(false)
 const audioError = ref('')
 const stageVocalEnabled = ref(false)
+const handoffLineup = ref(null)
 const stageVocalSession = useSongPerformanceSession()
 const stageVocalReady = stageVocalSession.ready
 const stageVocalBusGain = stageVocalSession.vocalGain
@@ -530,7 +536,12 @@ const eventIndices = new Map()
 const characters = computed(() => manifest.value?.characters || [])
 const songs = computed(() => choreography.value?.songs || [])
 const selectedSong = computed(() => songs.value.find(song => song.id === selectedSongId.value) || null)
-const activePositions = computed(() => selectedSong.value?.positions || [])
+const activePositions = computed(() => {
+  const positions = selectedSong.value?.positions || []
+  return handoffLineup.value && selectedSong.value?.id === props.stageHandoff?.choreographyId
+    ? positions.filter(position => handoffLineup.value[position - 1])
+    : positions
+})
 const activeSlots = computed(() => lineup.value.filter(slot => activePositions.value.includes(slot.position)))
 const loadedPositions = computed(() => activePositions.value.filter(position => runtimes.has(position)))
 const stageReady = computed(() => Boolean(selectedSong.value)
@@ -557,17 +568,19 @@ const stageVocalAvailable = computed(() => Boolean(
   selectedStageVocalExperiment.value
   && (isSoloChoreography.value
     ? activePositions.value.length === 1
-    : activePositions.value.length === selectedStageVocalExperiment.value.stage_vocal.slot_count),
+    : (handoffLineup.value || activePositions.value.length === selectedStageVocalExperiment.value.stage_vocal.slot_count)),
 ))
 const stageVocalFactLabel = computed(() => isSoloChoreography.value ? 'Center 实验音频' : '编成偶像实验音频')
 const stageVocalLegend = computed(() => isSoloChoreography.value ? 'Center 声部实验' : '编成偶像声部实验')
 const stageVocalToggleLabel = computed(() => isSoloChoreography.value
   ? 'Center：中心偶像声部＋伴奏'
+  : handoffLineup.value ? '当前编成：声部＋伴奏'
   : (isOfficialFormationSetting.value
     ? '编成偶像：五人声部＋伴奏'
     : '按编组位与 SwitchSinger 切换'))
 const stageVocalReadyLabel = computed(() => isSoloChoreography.value
   ? '统一音频时钟与中心 Solo 声部已就绪'
+  : handoffLineup.value ? `统一音频时钟与 ${stageVocalLoadedIdolCodes.value.length} 条去重声部已就绪`
   : '统一音频时钟与五个编组位声部已就绪')
 const stageVocalLoadingLabel = computed(() => isSoloChoreography.value
   ? '正在预解码中心 Solo 声部…'
@@ -596,7 +609,7 @@ const currentSingerPositions = computed(() => (
   currentSingerEvent.value?.stagePositions
   || currentSingerEvent.value?.singers
   || []
-))
+).filter(position => activePositions.value.includes(position)))
 const currentSingerPerformerSlots = computed(() => (
   currentSingerEvent.value?.performerSlots
   || currentSingerEvent.value?.singers
@@ -704,7 +717,25 @@ onMounted(async () => {
       errorText.value = '所选歌曲的舞台版本与本地编舞资源不一致。'
       return
     }
-    await Promise.all([loadSongLipSync(), loadSongAudio()])
+    const resolvedHandoff = resolveSongStageHandoff(props.stageHandoff, selectedSong.value, characters.value)
+    if (resolvedHandoff) {
+      handoffLineup.value = resolvedHandoff.stageLineup
+      for (const slot of lineup.value) {
+        const idolCode = resolvedHandoff.stageLineup[slot.position - 1]
+        if (!idolCode) {
+          slot.characterId = ''
+          slot.costumeId = ''
+          continue
+        }
+        const character = characters.value.find(entry => entry.id === idolCode)
+        slot.characterId = idolCode
+        slot.costumeId = character.defaultCostume || character.costumes?.[0]?.id || ''
+      }
+      stageVocalBusGain.value = resolvedHandoff.vocalGain
+      stageVocalBackingGain.value = resolvedHandoff.backingGain
+      stageVocalEnabled.value = stageVocalAvailable.value
+    }
+    await Promise.all([loadSongLipSync(), loadSongAudio(), stageVocalEnabled.value ? loadStageVocalAudio() : Promise.resolve()])
     if (stageDisposed) return
     await rebuildStage()
   } catch (error) {
@@ -844,6 +875,7 @@ function destroyStageRuntime(runtime) {
 async function handleCharacterChange(slot) {
   const reloadStageVocals = stageVocalEnabled.value
   if (reloadStageVocals) stopStage(true)
+  if (handoffLineup.value) handoffLineup.value[slot.position - 1] = slot.characterId
   const character = characterForSlot(slot)
   slot.costumeId = character?.defaultCostume || character?.costumes?.[0]?.id || ''
   await loadSlot(slot)
@@ -2418,6 +2450,13 @@ async function handleSongChange() {
     choreographyId: selectedSong.value.id,
   })
   stopStage(true)
+  handoffLineup.value = null
+  for (const slot of lineup.value) {
+    if (slot.characterId) continue
+    const character = characters.value[(slot.position - 1) % characters.value.length]
+    slot.characterId = character?.id || ''
+    slot.costumeId = character?.defaultCostume || character?.costumes?.[0]?.id || ''
+  }
   stageVocalEnabled.value = false
   releaseStageVocalAudio()
   songMotionsReady.value = false
@@ -2467,7 +2506,10 @@ async function loadStageVocalAudio() {
     const performerLineup = Array(slotCount).fill('')
     for (const performerSlot of performerSlots) {
       const stagePosition = stagePositionForPerformerSlot(performerSlot)
-      const idolCode = slotByPosition(stagePosition)?.characterId
+      const idolCode = handoffLineup.value
+        ? handoffLineup.value[stagePosition - 1]
+        : slotByPosition(stagePosition)?.characterId
+      if (!idolCode && handoffLineup.value) continue
       const vocal = experiment.solo_tracks?.[idolCode]?.vocal
       if (!vocal?.url) throw new Error(`${stagePosition}号位偶像缺少 ${experiment.song_code} 声部`)
       performerLineup[performerSlot - 1] = idolCode
@@ -2481,9 +2523,11 @@ async function loadStageVocalAudio() {
     })
     if (!stageVocalEnabled.value) return
     audioError.value = stageVocalSession.error.value
+    if (!stageVocalSession.ready.value) stageVocalEnabled.value = false
   } catch (error) {
     releaseStageVocalAudio()
     audioError.value = error.message
+    stageVocalEnabled.value = false
   }
 }
 
