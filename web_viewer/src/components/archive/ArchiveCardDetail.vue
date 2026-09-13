@@ -48,7 +48,7 @@
           <h3>{{ card.title || '卡名待确认' }}</h3>
           <div class="card-owner-block">
             <span>所属偶像</span>
-            <ArchiveIdolReference :reference="ownerReference" density="portrait" @open="emit('open-idol', $event)" />
+            <ArchiveIdolReference :reference="ownerReference" density="identity" @open="emit('open-idol', $event)" />
           </div>
           <div class="card-detail-controls">
             <button
@@ -82,9 +82,13 @@
         </div>
       </section>
 
-      <section v-if="eventRelation || gashaRelation || card.release_series" class="card-detail-section card-relations">
+      <section v-if="ownerReference || eventRelation || gashaRelation || card.release_series" class="card-detail-section card-relations">
         <h4>关联资料</h4>
-        <ArchiveRelationList :items="relationItems" @select="openRelation" />
+        <div v-if="ownerReference" class="card-owner-relation">
+          <span>所属偶像</span>
+          <ArchiveIdolReference :reference="ownerReference" density="portrait" @open="emit('open-idol', $event)" />
+        </div>
+        <ArchiveRelationList v-if="relationItems.length" :items="relationItems" @select="openRelation" />
         <div v-if="card.release_series" class="release-series">
           <div class="release-series-cards" :aria-label="`${card.release_series.title} 系列卡片`">
             <button
@@ -511,8 +515,8 @@ function openRelation(item) {
 .card-landscape-comparison figcaption { margin-top: 5px; color: #75808a; font-size: 0.66rem; text-align: center; }
 .card-head-copy { min-width: 0; }
 .card-detail-head h3 { margin: 8px 0 0; font-size: 1.15rem; color: #222; }
-.card-owner-block { display: grid; gap: 6px; max-width: 360px; margin-top: 14px; }
-.card-owner-block > span { color: #71838a; font-size: .7rem; font-weight: 700; }
+.card-owner-block { display: flex; align-items: center; gap: 6px; min-width: 0; margin-top: 10px; }
+.card-owner-block > span, .card-owner-relation > span { flex: 0 0 auto; color: #71838a; font-size: .7rem; font-weight: 700; }
 .card-detail-controls { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
 .card-nav-button { display: grid; place-items: center; width: 34px; height: 32px; padding: 0; border: 1px solid #dce2e5; border-radius: 6px; background: #fff; color: #41515c; cursor: pointer; }
 .card-nav-button:hover:not(:disabled) { border-color: #9ec8c3; background: #f1faf9; color: #147f77; }
@@ -537,6 +541,7 @@ function openRelation(item) {
 .card-detail-section h4 { margin: 0 0 10px; font-size: 0.92rem; color: #333; }
 .card-relations { display: flex; flex-direction: column; gap: 10px; }
 .card-relations h4 { margin-bottom: 0; }
+.card-owner-relation { display: grid; gap: 6px; max-width: 360px; }
 .gameplay-layout { display: grid; grid-template-columns: minmax(330px, 1.05fr) minmax(260px, 0.95fr); gap: 16px; }
 .parameter-panel, .skill-panel { min-width: 0; }
 .parameter-heading { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: #a33f29; }

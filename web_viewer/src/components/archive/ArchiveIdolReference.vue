@@ -26,7 +26,7 @@ import { ChevronRight } from '@lucide/vue'
 
 const props = defineProps({
   reference: { type: Object, default: null },
-  density: { type: String, default: 'compact', validator: value => ['compact', 'portrait', 'visual'].includes(value) },
+  density: { type: String, default: 'compact', validator: value => ['identity', 'compact', 'portrait', 'visual'].includes(value) },
   showImage: { type: Boolean, default: true },
 })
 const emit = defineEmits(['open'])
@@ -46,6 +46,10 @@ function advanceImage() {
 button.archive-idol-reference { cursor: pointer; }
 button.archive-idol-reference:hover { border-color: #89c9c2; background: #eff9f7; }
 button.archive-idol-reference:focus-visible { outline: 3px solid #37a9a1; outline-offset: 2px; }
+.density-identity { --reference-size: 36px; width: auto; min-height: 44px; padding: 3px 5px; border-color: transparent; background: transparent; }
+button.density-identity:hover { border-color: #d3e8e5; }
+.density-identity .idol-reference-copy { flex-direction: row; align-items: baseline; gap: 6px; }
+.density-identity .idol-reference-copy small::before { content: '·'; margin-right: 6px; }
 .density-portrait { --reference-size: 64px; min-height: 78px; }
 .density-visual { --reference-size: 96px; min-height: 110px; }
 .density-visual { flex-direction: column; justify-content: flex-end; box-sizing: border-box; height: 230px; min-height: 230px; text-align: center; }

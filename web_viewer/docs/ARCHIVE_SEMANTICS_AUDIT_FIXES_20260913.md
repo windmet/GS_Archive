@@ -31,3 +31,9 @@
 Picker/Welcome 的返回动作与 SideM Archive 标识进入独立 kicker row，移除返回按钮负 margin。人物头像框统一使用已有 `normalizeIdolAccentColor`，不另建颜色解释规则；头像本身保留圆形与原有选择态。窄屏长名单继续由内层网格滚动，操作区保持可见。
 
 验证：`verify:portal-navigation`、`build:check` PASS。5175 / Playwright Chromium 1280×850、390×850 与 390×650：返回与品牌间距 16px，首位人物色框为非默认角色色；搜索可筛选，退出选择回 Portal；窄屏长名单可滚动、操作区可见；无页面错误或横向溢出。截图仓库外；未做真实设备 safe-area 验收。
+
+## 06 · 卡片 Hero 人物层级
+
+卡片标题下的“所属偶像”改用共享 `ArchiveIdolReference` 的 `identity` 密度：36px 色框头像、姓名与组合同行，保持原有偶像资料跳转；原 portrait 密度人物关系下移至“关联资料”，与事件/卡池/系列关系处于相同区域。未改变 owner identity 来源或卡片关系数据。
+
+验证：`verify:archive-presentation`、`build:check` PASS。5175 / Playwright Chromium 1280×850、390×850：`038tak_sr01` Hero 人物入口高 44px，关联资料人物卡高 78px；点击 Hero 到 `038tak` 人物资料，保留卡片来源 URL；无页面错误或横向溢出。截图仓库外；未逐卡目视全部 title 长度组合。
