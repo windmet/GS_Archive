@@ -133,7 +133,7 @@
                   {{ card.gameplay.center_skill.category.name }}
                 </span>
               </div>
-              <p>{{ card.gameplay.center_skill.description }}</p>
+              <p>{{ presentCardSkillDescription(card.gameplay.center_skill.description) }}</p>
             </div>
             <div v-if="card.gameplay.skill?.name" class="skill-row">
               <div class="skill-heading">
@@ -151,7 +151,7 @@
                   <option v-for="level in card.gameplay.skill.levels" :key="level.level" :value="level.level">Lv.{{ level.level }}</option>
                 </select>
               </div>
-              <p>{{ selectedSkill?.description || '技能数值说明暂未收录。' }}</p>
+              <p>{{ presentCardSkillDescription(selectedSkill?.description) }}</p>
             </div>
             <div v-if="card.limitbreak_item?.name" class="limitbreak-item-row">
               <PackageOpen :size="19" />
@@ -304,6 +304,7 @@ import { Activity, CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand,
 import ArchiveImageLightbox from './ArchiveImageLightbox.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
+import { presentCardSkillDescription } from '../../presentation/CardSkillDescriptionPresenter.js'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { cardScenarioTitle } from '../../presentation/CardPresentation.js'
 import ArchiveRelationList from './ArchiveRelationList.vue'

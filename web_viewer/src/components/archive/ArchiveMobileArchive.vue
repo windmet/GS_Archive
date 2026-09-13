@@ -18,7 +18,7 @@
           <p>
             <template v-for="(part, index) in roomSubtitleParts" :key="`${part.type}:${index}`">
               <span v-if="part.type === 'text'">{{ part.text }}</span>
-              <img v-else :src="getEmojiUrl(part.id)" alt="" />
+              <img v-else :src="getEmojiUrl(part.id)" :alt="part.alt" />
             </template>
           </p>
         </div>
@@ -79,7 +79,7 @@
           </span>
           <div class="conversation-copy">
             <small>{{ formatDate(bundle.releaseAt) || kindLabel(bundle.kind) }}</small>
-            <h4>{{ bundle.title }}</h4>
+            <h4><template v-for="(part, index) in projectCommunicationInlineContent(bundle.title)" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></h4>
             <div class="unlock-list">
               <button
                 v-for="unlock in bundle.unlocks"
@@ -109,7 +109,7 @@
       <div v-else class="random-list">
         <article v-for="bundle in randomBundles" :key="bundle.id" class="random-bundle">
           <header>
-            <div><small>RANDOM TALK</small><h4>{{ bundle.title }}</h4></div>
+            <div><small>RANDOM TALK</small><h4><template v-for="(part, index) in projectCommunicationInlineContent(bundle.title)" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></h4></div>
             <button :disabled="!bundle.exists" title="按脚本顺序预览话题池" @click="emit('play', bundle.file)"><Play :size="17" fill="currentColor" /></button>
           </header>
           <div class="topic-grid">
@@ -145,6 +145,7 @@ import { BookOpen, ChevronLeft, ChevronRight, CreditCard, FileWarning, Info, Mes
 import { buildCompiledGroupTitleMap, buildRandomTalkBundles, formatArchiveDate, groupMobileScenarios } from '../../data/idolCommunicationSelectors.js'
 import { getEmojiUrl } from '../../utils/AssetResolver.js'
 import { normalizeIdolAccentColor } from '../../presentation/idolAccentColor.js'
+import { projectCommunicationInlineContent } from '../../presentation/communicationInlineContent.js'
 
 const props = defineProps({
   archive: { type: Object, default: null },
@@ -218,19 +219,7 @@ const accentColor = computed(() => (props.mode === 'unit'
 const personalRoom = computed(() => props.archive?.rooms?.personal?.find(room => room.idol_code === props.selectedIdol))
 const unitRoom = computed(() => props.archive?.rooms?.unit?.find(room => room.unit_code === props.selectedUnit))
 const roomSubtitle = computed(() => props.mode === 'unit' ? 'Unit Talk Room' : (personalRoom.value?.profile_text || 'Mobile Talk Room'))
-const roomSubtitleParts = computed(() => {
-  const parts = []
-  const pattern = /<emoji>([A-Za-z0-9._-]+)<\/emoji>/g
-  let cursor = 0
-  let match
-  while ((match = pattern.exec(roomSubtitle.value))) {
-    if (match.index > cursor) parts.push({ type: 'text', text: roomSubtitle.value.slice(cursor, match.index) })
-    parts.push({ type: 'emoji', id: match[1] })
-    cursor = match.index + match[0].length
-  }
-  if (cursor < roomSubtitle.value.length) parts.push({ type: 'text', text: roomSubtitle.value.slice(cursor) })
-  return parts.length ? parts : [{ type: 'text', text: roomSubtitle.value }]
-})
+const roomSubtitleParts = computed(() => projectCommunicationInlineContent(roomSubtitle.value))
 const heroImageStyle = computed(() => ({
   backgroundImage: `url('${props.mode === 'unit' ? unitBackground(props.selectedUnit) : idolBackground(props.selectedIdol)}')`,
 }))
@@ -315,6 +304,7 @@ function timeWindow(topic) {
 <style scoped>
 .mobile-archive { height: 100%; overflow-x: hidden; overflow-y: auto; background: #f4f6f7; color: #26343c; }.mobile-hero { position: relative; isolation: isolate; display: flex; align-items: end; justify-content: space-between; gap: 24px; min-height: 190px; padding: 26px max(24px, calc((100% - 1100px) / 2)); overflow: hidden; background-color: #26343c; }.hero-backdrop, .hero-art { position: absolute; pointer-events: none; background-repeat: no-repeat; }.hero-backdrop { inset: -20px; z-index: -3; background-position: center 18%; background-size: cover; filter: blur(16px) brightness(.58) saturate(.78); transform: scale(1.045); }.hero-art { inset: 0; z-index: -2; background-position: right 12%; background-size: clamp(480px, 42vw, 650px) auto; opacity: .78; -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.18) 24%, #000 52%, #000 100%); mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.18) 24%, #000 52%, #000 100%); }.mobile-hero.is-unit .hero-backdrop { inset: 0; background-position: center; filter: brightness(.6) saturate(.82); transform: none; }.hero-shade { position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(20,31,36,.88), rgba(20,31,36,.48) 58%, rgba(20,31,36,.3)); }.mobile-identity, .mobile-selector { position: relative; z-index: 1; }.mobile-identity { display: flex; align-items: center; gap: 15px; min-width: 0; color: #fff; }.mobile-identity > img { width: 76px; height: 76px; border: 3px solid rgba(255,255,255,.86); border-radius: 50%; background: #eef3f4; object-fit: cover; }.mobile-identity > img.unit-logo { width: 120px; border: 0; border-radius: 0; background: rgba(255,255,255,.9); object-fit: contain; }.mobile-identity span { color: #b9fff8; font-size: .58rem; font-weight: 800; }.mobile-identity h2 { margin: 4px 0; font-size: 1.45rem; }.mobile-identity p { margin: 0; color: rgba(255,255,255,.8); font-size: .65rem; }.mobile-selector { display: flex; align-items: end; gap: 6px; }.mobile-selector > button { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid rgba(255,255,255,.62); border-radius: 5px; background: rgba(19,30,35,.5); color: #fff; cursor: pointer; }.mobile-selector label { display: flex; flex-direction: column; gap: 4px; }.mobile-selector label span { color: rgba(255,255,255,.82); font-size: .56rem; }.mobile-selector select { min-width: 240px; height: 34px; padding: 0 30px 0 10px; border: 1px solid rgba(255,255,255,.7); border-radius: 5px; background: rgba(255,255,255,.94); color: #28363d; font: inherit; font-size: .67rem; }
 .mobile-identity p { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; white-space: pre-line; }.mobile-identity p img { width: 20px; height: 20px; object-fit: contain; }
+.conversation-copy h4 .inline-emoji, .random-bundle h4 .inline-emoji { display: inline-block; width: 1.5em; height: 1.5em; margin-inline: 2px; vertical-align: -.3em; object-fit: contain; }
 .mobile-identity > img:not(.unit-logo) { border-color: var(--idol-frame-color, #879a9e); box-shadow: 0 0 0 1px rgba(255, 255, 255, .85); }
 .mobile-tabs { position: sticky; top: 0; z-index: 3; display: flex; justify-content: center; gap: 2px; border-bottom: 1px solid #dce3e5; background: rgba(255,255,255,.97); }.mobile-tabs button { display: inline-grid; grid-template-columns: 18px auto 26px; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #718087; cursor: pointer; font: inherit; font-size: .65rem; }.mobile-tabs button.active { border-color: var(--mobile-accent); color: #26343c; font-weight: 800; }.mobile-tabs small { display: grid; place-items: center; min-width: 24px; height: 18px; border-radius: 9px; background: #edf1f2; color: #77858b; font-size: .48rem; }
 .mobile-content { max-width: 1100px; margin: 0 auto; padding: 22px 24px 42px; }.content-heading { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin-bottom: 12px; }.content-heading span { color: var(--mobile-accent); font-size: .57rem; font-weight: 800; }.content-heading h3 { margin: 3px 0 0; font-size: 1rem; }.content-heading > strong { color: #7b888e; font-size: .59rem; }
