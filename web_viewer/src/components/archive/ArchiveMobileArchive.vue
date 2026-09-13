@@ -214,8 +214,8 @@ const randomIntroCount = computed(() => (props.archive?.random_talk?.intros || [
 const contentSummary = computed(() => props.mode === 'random'
   ? `${randomTopicCount.value} 个话题 · ${contentCount.value} 组`
   : `${contentCount.value} 条记录`)
-const idol = computed(() => props.idols.find(entry => entry.idol_code === props.selectedIdol) || props.idols[0] || {})
-const unit = computed(() => props.units.find(entry => entry.unit_code === props.selectedUnit) || props.units[0] || {})
+const idol = computed(() => props.idols.find(entry => entry.idol_code === props.selectedIdol) || {})
+const unit = computed(() => props.units.find(entry => entry.unit_code === props.selectedUnit) || {})
 const idolName = computed(() => idol.value.display_name || '姓名待确认')
 const unitName = computed(() => unit.value.unit_name || '组合待确认')
 const idolFrameColor = computed(() => normalizeIdolAccentColor(idol.value.color))

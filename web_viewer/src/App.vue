@@ -492,6 +492,7 @@ import ArchiveGashaDetail from './components/archive/ArchiveGashaDetail.vue'
 import ArchiveSongCatalog from './components/archive/ArchiveSongCatalog.vue'
 import { buildSongPresentation } from './presentation/SongPresentation.js'
 import { buildIdolReference } from './presentation/IdolReferencePresentation.js'
+import { resolveMobileArchiveUnit } from './core/mobileArchiveIdentity.js'
 import ArchiveSongDetail from './components/archive/ArchiveSongDetail.vue'
 import ArchiveEventDetail from './components/archive/ArchiveEventDetail.vue'
 import ArchiveIdolGrid from './components/archive/ArchiveIdolGrid.vue'
@@ -1730,9 +1731,6 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
     currentStorySort.value = route.sort || 'domain'
     currentMobileMode.value = route.mobileMode || 'personal'
     currentMobileScenarioId.value = route.mobileScenario || ''
-    if (route.view === 'mobile_archive' && !mobileArchiveData.value?.by_unit_code?.[currentArchiveUnitCode.value]) {
-      currentArchiveUnitCode.value = idolUnitData.value?.units?.[0]?.unit_code || '01jup'
-    }
     currentEpisodeId.value = route.episode || ''
     const requestedHomeIdol = route.homeIdol
       ? archiveHomeIdols.value.find(idol => idol.id === route.homeIdol)
@@ -1750,7 +1748,16 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
       (route.view === 'song_detail' && route.parentView === 'unit_detail') ||
       (route.view === 'player' && route.returnView === 'unit_detail') ||
       (restoresEventContext && route.parentView === 'unit_detail')
-    ) ? (route.unit || (route.view === 'mobile_archive' ? (idolUnitData.value?.units?.[0]?.unit_code || '01jup') : '')) : ''
+    ) ? (route.view === 'mobile_archive'
+      ? resolveMobileArchiveUnit({
+          idolCode: currentCharacterId.value,
+          mode: currentMobileMode.value,
+          requestedUnit: route.unit,
+          manifest: archiveManifestData.value,
+          units: idolUnitData.value?.units,
+          archive: mobileArchiveData.value,
+        })
+      : route.unit || '') : ''
     currentGroup.value = resolveRouteGroup(route)
     currentUnit.value = resolveRouteUnit(route)
     playbackController.reset()
@@ -2556,12 +2563,15 @@ async function openMobileArchive({ idolCode = '', mode = 'personal', scenarioId 
     if (!intent.isCurrent()) return
     if (!fromSection) captureDetailSource()
     if (!idolEpisodeData.value?.by_idol_code?.[idolCode]) return openIdolPicker('mobile')
-    const fallbackUnit = idolUnitData.value?.units?.[0]?.unit_code || '01jup'
     currentCharacterId.value = idolCode
-    currentArchiveUnitCode.value = mobileArchiveData.value?.by_unit_code?.[currentArchiveUnitCode.value]
-      ? currentArchiveUnitCode.value
-      : fallbackUnit
     currentMobileMode.value = ['personal', 'phone', 'unit', 'random'].includes(mode) ? mode : 'personal'
+    currentArchiveUnitCode.value = resolveMobileArchiveUnit({
+      idolCode,
+      mode: currentMobileMode.value,
+      manifest: archiveManifestData.value,
+      units: idolUnitData.value?.units,
+      archive: mobileArchiveData.value,
+    })
     currentMobileScenarioId.value = scenarioId ? String(scenarioId) : ''
     currentStoryDomain.value = 'mobile_archive'
     currentStoryMode.value = 'portal'
@@ -2580,6 +2590,13 @@ function openStoryCommunication(scenario) {
 function selectMobileIdol(idolCode) {
   if (!idolEpisodeData.value?.by_idol_code?.[idolCode]) return
   currentCharacterId.value = idolCode
+  currentArchiveUnitCode.value = resolveMobileArchiveUnit({
+    idolCode,
+    mode: currentMobileMode.value,
+    manifest: archiveManifestData.value,
+    units: idolUnitData.value?.units,
+    archive: mobileArchiveData.value,
+  })
   currentMobileScenarioId.value = ''
   commitArchiveSelection()
 }
@@ -2594,6 +2611,13 @@ function selectMobileUnit(unitCode) {
 function setMobileMode(mode) {
   if (!['personal', 'phone', 'unit', 'random'].includes(mode)) return
   currentMobileMode.value = mode
+  if (mode !== 'unit') currentArchiveUnitCode.value = resolveMobileArchiveUnit({
+    idolCode: currentCharacterId.value,
+    mode,
+    manifest: archiveManifestData.value,
+    units: idolUnitData.value?.units,
+    archive: mobileArchiveData.value,
+  })
   currentMobileScenarioId.value = ''
   commitArchiveSelection()
 }
