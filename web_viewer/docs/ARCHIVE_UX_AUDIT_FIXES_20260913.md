@@ -25,3 +25,9 @@
 输入 HEAD `5401ed4`。沿用既有 `archiveViewRestoration` 的 session 位置/焦点协议，为独立滚动的卡/歌曲/人物/组合详情及目录、活动/剧情/卡池/Mobile 等根节点接入滚动标记；重要人物/组合/关联行补稳定焦点 ID。卡片列表、歌曲/剧情/卡池目录原已接入，审计对此部分的判断已过时。未改变试听控件状态；音频在跨页面离开后的恢复属于独立议题。
 
 验证：`verify:archive-navigation-state`（包括 marker 断言）、`build:check` PASS。5175 / Playwright Chromium 1280×850、390×850：`brndnf` 歌曲详情中部→Jupiter 组合→返回，回到同一歌且 `scrollTop` 精确等于离开时记录值（桌面 516、窄屏 742），焦点为 `song-unit:01jup`；卡列表筛 `gasha_card` → `002sht_sr04` 卡详情中部→关联卡池→返回卡详情→返回卡列表，详情恢复 360，列表回到卡片所在位置并恢复 `card:002sht_sr04` 焦点。无页面 console error/横向溢出。截图仓库外；未覆盖所有页面和真实设备返回矩阵。
+
+## UX-04 / UX-10：关联组合与历史开放条件
+
+输入 HEAD `e4064a6`。歌曲 AUDIO 中的 `unit` 记录明确标为“收录组合 / 关联组合”，链接写“查看组合”，说明组合单轨试听在上方「演唱试听」选择 Unit；仍原样链接组合档案，不替换播放控件。Mobile 通信的历史解锁项在列表前解释“原游戏开放条件，不影响已收录内容浏览与播放”，逐项也注明历史性质；未改 unlock model、按钮或收录判定。
+
+验证：`verify-archive-inline-presentation`、`verify:archive-presentation`、`build:check` PASS。5175 / Playwright Chromium 1280×850、390×850：`drvalv` 显示关联组合标题、试听说明与“查看组合 · Jupiter”；`012yus` 的个人聊天展示说明和逐行标签。无页面 console error/水平溢出，截图仓库外；未做播放器实际多轨听感和全部通信记录逐条核对。

@@ -48,7 +48,7 @@
         <p class="song-block-note">完整混音：{{ song.fullMixCollected ? '已收录' : '未收录' }}。{{ song.playbackLabel }}。</p>
         <div v-for="group in song.audioGroups" :key="group.title" class="song-subsection">
           <h4>{{ group.title }}（{{ group.entries.length }}）</h4><p v-if="group.note" class="song-block-note">{{ group.note }}</p>
-          <ul v-if="group.kind === 'unit'" class="chip-list"><li v-for="entry in group.entries" :key="entry.id"><button :disabled="!entry.actionable" :data-archive-focus-id="`audio-unit:${entry.id}`" @click="emit('open-unit', entry.id)">{{ entry.displayName }}</button></li></ul>
+          <ul v-if="group.kind === 'unit'" class="chip-list"><li v-for="entry in group.entries" :key="entry.id"><button :disabled="!entry.actionable" :data-archive-focus-id="`audio-unit:${entry.id}`" @click="emit('open-unit', entry.id)">查看组合 · {{ entry.displayName }} <ChevronRight :size="14" aria-hidden="true" /></button></li></ul>
           <ul v-else class="audio-idol-list"><li v-for="entry in group.entries" :key="entry.id"><ArchiveIdolReference :reference="entry.reference" :show-image="false" @open="emit('open-idol', $event)" /></li></ul>
         </div>
       </section>

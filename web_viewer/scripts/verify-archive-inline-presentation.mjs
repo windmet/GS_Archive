@@ -38,4 +38,6 @@ const cardComponent = readFileSync(new URL('../src/components/archive/ArchiveCar
 const mobileComponent = readFileSync(new URL('../src/components/archive/ArchiveMobileArchive.vue', import.meta.url), 'utf8')
 assert.match(cardComponent, /presentCardSkillDescription\(selectedSkill\?\.description\)/)
 assert.match(mobileComponent, /projectCommunicationInlineContent\(bundle\.title\)/)
+assert.match(mobileComponent, /原游戏开放条件/)
+assert.match(mobileComponent, /不影响资料馆内已收录内容的浏览与播放/)
 console.log(`Archive inline presentation: ${templated} skill levels, real communication title and shared emoji parts passed`)
