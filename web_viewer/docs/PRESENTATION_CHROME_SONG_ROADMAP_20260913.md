@@ -233,3 +233,13 @@ Portal自推卡改用共享身份引用，规范姓名、组合和头像降级�
 ## N2 实验页返回触控区
 
 输入HEAD `19f4d82`。`ArchiveBackAction`增加图标模式，深色实验页仍显示原箭头、保留动态返回文案为aria-label；Spine单人实验室和Chibi多人舞台都复用同一个最小44×44返回控件。两个实验页之间的顶部切换按钮也改为至少44px高，路由与舞台transport不变。`verify:archive-navigation-state`、`verify:live-chibi-singer-slots`及`build:check`通过，构建仍只生成E盘代码产物。5175 Browser在1280×720实测两个页面的返回与互跳按钮均高44px，实验室→多人舞台→实验室→直达入口Welcome路线可行；带`brndnf`歌曲来源的舞台按钮读为“返回歌曲”，点击回到原歌曲详情。多人舞台无页面横向溢出和console error，仍有已有Pixi Spine旧颜色工具弃用警告。本次IAB不支持临时viewport覆盖，未将390px结果冒称为本次实测；非零safe-area设备和实验页其他工具控件的触控区仍需专门复核。
+
+## S2 特别版补口：`drv999` 社长单人演出
+
+输入HEAD `84ff1d6`。复核`drv999_live_effect`的来源为零时长、3号位占位的特别脚本，原始对象层有`fx_in_drv999_ap_syacho-*`社长黑色剪影及影子，歌曲目录有单独的`drv999.m4a`；这些资料不构成普通3号位Spine演出。歌曲详情现在为`special_single`显示独立“社长特别演出”入口。舞台复用已有镜头、布景、2D对象、歌词及正式混音时钟，但特别版不加载默认3号位偶像，也不显示编队/角色控制；进入后须确认社长剪影对象已准备，才开放播放。切歌时用构建序号拦截旧结果，切换准备完毕前保持暂停/不可播放。舞台脚本选择器明确将该条标为“社长单人2D”。
+
+验证：`verify:song-timelines`、`verify:stage-vfx-coverage`、`verify:live-chibi-singer-slots`、`verify:archive-presentation`及`build:check`通过，后者仅在E盘`.analysis/build-check`生成代码而不复制public。5175 Browser实走`?view=song_detail&song=drv999`→“打开社长特别演出”→`drv999_live_effect`，画面可见社长黑色剪影、没有北斗等默认Spine偶像；初始暂停，点击播放后时间轴前进到约0:02，再暂停。控制台切到普通`drvalv_live_effect`显示5/5站位，再切回特别版恢复剪影和暂停状态，无残留站位。未拿到游戏内该段原片逐帧对照；镜头、灯光与粒子效果仍按既有“近似/未复刻”分层，不把本次视为原版视觉一致性或完整听感验收。
+
+## Welcome 偶像选择页宽度修正
+
+输入HEAD `84ff1d6`。选择逻辑始终保留49名偶像，并无六人截断；问题是原卡片最大宽度920px与固定三列让宽屏也主要靠纵向滚动。本批仅在偶像选择步骤把卡片上限扩大到1360px，并按至少220px的卡片宽度自适应列数；入口选择步骤保持原宽度，700px以下仍为单列、可向下滚动。5175 Browser当前1280×720面板显示四列，滚动到最后一位`眉見 鋭心`后可选中，操作按钮与页尾均可到达。用户90%浏览器缩放及390px独立窄屏尚未在本批直接复测，不能把此面板结果冒称为那些尺寸的验收。

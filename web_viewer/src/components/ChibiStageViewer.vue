@@ -3,6 +3,7 @@
     class="chibi-stage"
     :data-stage-ready="stageReady"
     :data-song-id="selectedSong?.id || ''"
+    :data-stage-kind="isSpecialSingle ? 'special_single' : 'choreography_candidate'"
     :data-active-positions="activePositions.join(',')"
     :data-loaded-positions="loadedPositions.join(',')"
     :data-current-singers="currentSingerPositions.join(',')"
@@ -32,7 +33,7 @@
     :data-object-layers-enabled="objectLayersEnabled"
     :data-lighting-enabled="lightingEnabled"
     :data-beam-effects-enabled="beamEffectsEnabled"
-    :data-characters-enabled="charactersEnabled"
+    :data-characters-enabled="charactersEnabled && !isSpecialSingle"
     :data-character-shadows-enabled="characterShadowsEnabled"
     :data-lyrics-enabled="lyricsEnabled"
     :data-backmonitor-movie="currentBackmonitorState.movie || ''"
@@ -67,15 +68,15 @@
       <ArchiveBackAction class="stage-back-button" :label="backLabel" icon-only @back="emit('back')" />
       <div class="header-divider" aria-hidden="true"></div>
       <div>
-        <h1>舞台小人 · 多人舞台</h1>
-        <p>共享歌曲时钟 · 独立动作轨道与口型</p>
+        <h1>{{ isSpecialSingle ? '社长特别演出 · 单人 2D' : '舞台小人 · 多人舞台' }}</h1>
+        <p>{{ isSpecialSingle ? '社长剪影与舞台对象按原脚本切换' : '共享歌曲时钟 · 独立动作轨道与口型' }}</p>
       </div>
       <button class="lab-link" type="button" @click="emit('open-lab')">单人实验室</button>
-      <div class="header-meta">Spine 3.8 · {{ loadedPositions.length }}/{{ activePositions.length }} 人就绪</div>
+      <div class="header-meta">{{ isSpecialSingle ? '社长剪影 · 单人演出' : `Spine 3.8 · ${loadedPositions.length}/${activePositions.length} 人就绪` }}</div>
     </header>
 
     <main class="stage-workspace">
-      <section class="performance-shell" aria-label="多人舞台预览">
+      <section class="performance-shell" :aria-label="isSpecialSingle ? '社长特别演出预览' : '多人舞台预览'">
         <div class="stage-backdrop" aria-hidden="true"></div>
         <div class="stage-floor" aria-hidden="true"></div>
         <div ref="canvasRef" class="stage-canvas"></div>
@@ -83,14 +84,14 @@
         <div class="performance-hud">
           <span>NOW PLAYING</span>
           <strong>{{ selectedSong?.title || '—' }}</strong>
-          <small>{{ activePositions.length }} 人{{ handoffLineup ? '出场' : '编排' }} · 当前演唱 {{ currentSingerLabel }}</small>
+          <small>{{ isSpecialSingle ? '社长单人剪影 · 特别版音源' : `${activePositions.length} 人${handoffLineup ? '出场' : '编排'} · 当前演唱 ${currentSingerLabel}` }}</small>
         </div>
 
         <div v-if="currentLyric && lyricsEnabled" class="stage-lyric" aria-live="polite">
           {{ currentLyric.text }}
         </div>
 
-        <div class="position-rail" aria-label="舞台站位状态">
+        <div v-if="!isSpecialSingle" class="position-rail" aria-label="舞台站位状态">
           <div
             v-for="position in allPositions"
             :key="position"
@@ -117,7 +118,7 @@
         </div>
         <div v-else-if="errorText" class="stage-state error-state">
           <CircleAlert :size="28" />
-          <strong>多人舞台暂时无法加载</strong>
+          <strong>{{ isSpecialSingle ? '社长特别演出暂时无法加载' : '多人舞台暂时无法加载' }}</strong>
           <span>{{ errorText }}</span>
         </div>
 
@@ -128,7 +129,7 @@
           <button
             class="primary-transport"
             type="button"
-            :aria-label="playing ? '暂停多人编排' : '播放多人编排'"
+            :aria-label="isSpecialSingle ? (playing ? '暂停社长特别演出' : '播放社长特别演出') : (playing ? '暂停多人编排' : '播放多人编排')"
             :disabled="!stageTransportReady || preloading"
             @click="toggleStage"
           >
@@ -136,12 +137,12 @@
             <Play v-else :size="22" fill="currentColor" />
           </button>
           <div class="transport-copy">
-            <strong>{{ preloading ? `正在预载动作 ${preloadProgress}%` : (playing ? '多人编排播放中' : '多人编排已暂停') }}</strong>
+            <strong>{{ preloading ? `正在预载动作 ${preloadProgress}%` : (isSpecialSingle ? (playing ? '社长特别演出播放中' : '社长特别演出已暂停') : (playing ? '多人编排播放中' : '多人编排已暂停')) }}</strong>
             <small>{{ formatTime(stageTime) }} / {{ formatTime(stageDuration) }}</small>
           </div>
           <input
             v-model.number="stageTime"
-            aria-label="多人舞台时间轴"
+            :aria-label="isSpecialSingle ? '社长特别演出时间轴' : '多人舞台时间轴'"
             type="range"
             min="0"
             :max="stageDuration"
@@ -151,19 +152,19 @@
         </div>
       </section>
 
-      <aside class="stage-inspector" aria-label="多人舞台控制台">
+      <aside class="stage-inspector" :aria-label="isSpecialSingle ? '社长特别演出控制台' : '多人舞台控制台'">
         <div class="inspector-scroll">
           <section class="control-section song-section">
             <div class="section-heading">
               <div>
-                <h2>歌曲编排</h2>
-                <span>{{ songs.length }} 份有效编排</span>
+                <h2>{{ isSpecialSingle ? '特别演出脚本' : '歌曲编排' }}</h2>
+                <span>{{ songs.length }} 份有效演出脚本</span>
               </div>
               <Music2 :size="18" />
             </div>
-            <select v-model="selectedSongId" aria-label="多人舞台歌曲" @change="handleSongChange">
+            <select v-model="selectedSongId" :aria-label="isSpecialSingle ? '特别演出与舞台歌曲' : '多人舞台歌曲'" @change="handleSongChange">
               <option v-for="song in songs" :key="song.id" :value="song.id">
-                {{ songOptionLabel(song) }} · {{ song.positions.join('/') }} 号位
+                {{ songOptionLabel(song) }} · {{ song.songCode === 'drv999' ? '社长单人 2D' : `${song.positions.join('/')} 号位` }}
               </option>
             </select>
             <div class="song-facts">
@@ -213,7 +214,7 @@
             </div>
           </section>
 
-          <section class="control-section lineup-section">
+          <section v-if="!isSpecialSingle" class="control-section lineup-section">
             <div class="section-heading">
               <div>
                 <h2>演出编队</h2>
@@ -269,7 +270,7 @@
             <div class="section-heading">
               <div>
                 <h2>播放参数</h2>
-                <span>歌曲、动作、口型共用同一时钟</span>
+                <span>{{ isSpecialSingle ? '歌曲与 2D 舞台对象共用同一时钟' : '歌曲、动作、口型共用同一时钟' }}</span>
               </div>
             </div>
             <label class="range-control">
@@ -307,11 +308,11 @@
                 <input v-model="beamEffectsEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
                 <span>光束灯效</span>
               </label>
-              <label>
+              <label v-if="!isSpecialSingle">
                 <input v-model="charactersEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
                 <span>舞台人物</span>
               </label>
-              <label>
+              <label v-if="!isSpecialSingle">
                 <input v-model="characterShadowsEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
                 <span>人物阴影</span>
               </label>
@@ -347,11 +348,11 @@
               <output>{{ environmentScale.toFixed(3) }}×</output>
             </label>
             <dl class="runtime-summary">
-              <div><dt>活动站位</dt><dd>{{ activePositions.join(' / ') || '—' }}</dd></div>
-              <div><dt>当前演唱</dt><dd>{{ currentSingerLabel }}</dd></div>
-              <div><dt>动作预载</dt><dd>{{ preloading ? `${preloadProgress}%` : (songMotionsReady ? '已完成' : '播放时载入') }}</dd></div>
+              <div><dt>演出主体</dt><dd>{{ isSpecialSingle ? '社长单人剪影' : (activePositions.join(' / ') || '—') }}</dd></div>
+              <div><dt>当前演唱</dt><dd>{{ isSpecialSingle ? '齋藤孝司' : currentSingerLabel }}</dd></div>
+              <div><dt>动作预载</dt><dd>{{ isSpecialSingle ? '2D 对象按需载入' : (preloading ? `${preloadProgress}%` : (songMotionsReady ? '已完成' : '播放时载入')) }}</dd></div>
               <div><dt>音频时钟</dt><dd>{{ stageVocalEnabled ? (stageVocalReady ? '实验伴奏' : '实验声部加载中') : (audioReady ? '官方混音' : '等待加载') }}</dd></div>
-              <div><dt>位置过渡</dt><dd>{{ POSITION_TWEEN_MS }}ms 平滑插值</dd></div>
+              <div v-if="!isSpecialSingle"><dt>位置过渡</dt><dd>{{ POSITION_TWEEN_MS }}ms 平滑插值</dd></div>
               <div><dt>动作组补位</dt><dd>{{ derivedGroupEventCount }} 处</dd></div>
               <div><dt>当前镜头</dt><dd>{{ currentCameraLabel }}</dd></div>
               <div><dt>舞台屏幕</dt><dd>{{ currentBackmonitorLabel }}</dd></div>
@@ -546,6 +547,7 @@ const eventIndices = new Map()
 const characters = computed(() => manifest.value?.characters || [])
 const songs = computed(() => choreography.value?.songs || [])
 const selectedSong = computed(() => songs.value.find(song => song.id === selectedSongId.value) || null)
+const isSpecialSingle = computed(() => selectedSong.value?.songCode === 'drv999')
 const stageVfxCoverage = computed(() => buildStageVfxCoverage(selectedSong.value, {
   backmonitor: backmonitorIndex.value,
   imageLayers: imageLayerIndex.value,
@@ -557,6 +559,7 @@ const stageVfxApproximateCount = computed(() => {
   return events ? events.characterLight + events.spotlight + events.pinspotlight + events.laserlight : 0
 })
 const activePositions = computed(() => {
+  if (isSpecialSingle.value) return []
   const positions = selectedSong.value?.positions || []
   return handoffLineup.value && selectedSong.value?.id === props.stageHandoff?.choreographyId
     ? positions.filter(position => handoffLineup.value[position - 1])
@@ -565,8 +568,9 @@ const activePositions = computed(() => {
 const activeSlots = computed(() => lineup.value.filter(slot => activePositions.value.includes(slot.position)))
 const loadedPositions = computed(() => activePositions.value.filter(position => runtimes.has(position)))
 const stageReady = computed(() => Boolean(selectedSong.value)
-  && activePositions.value.length > 0
-  && loadedPositions.value.length === activePositions.value.length
+  && !errorText.value
+  && (isSpecialSingle.value || (activePositions.value.length > 0
+    && loadedPositions.value.length === activePositions.value.length))
   && !booting.value)
 const stageTransportReady = computed(() => stageReady.value
   && (!stageVocalEnabled.value || stageVocalReady.value))
@@ -963,7 +967,9 @@ async function rebuildStage() {
   booting.value = true
   errorText.value = ''
   songMotionsReady.value = false
-  statusText.value = `正在构建 ${activePositions.value.length} 人编队…`
+  statusText.value = isSpecialSingle.value
+    ? '正在准备社长特别演出…'
+    : `正在构建 ${activePositions.value.length} 人编队…`
 
   for (const position of allPositions) {
     const runtime = runtimes.get(position)
@@ -972,13 +978,22 @@ async function rebuildStage() {
   try {
     await Promise.all(activeSlots.value.map(slot => loadSlot(slot)))
     if (buildSequence !== stageBuildSequence) return
-    booting.value = false
     resizeStage()
     await seekStage()
+    if (buildSequence !== stageBuildSequence) return
+    ensureSpecialStageVisual()
+    booting.value = false
   } catch (error) {
     if (buildSequence !== stageBuildSequence) return
     booting.value = false
     errorText.value = error.message
+  }
+}
+
+function ensureSpecialStageVisual() {
+  if (isSpecialSingle.value && ![...objectLayerRuntimes.keys()]
+    .some(asset => asset.startsWith('fx_in_drv999_ap_syacho-'))) {
+    throw new Error('社长单人剪影素材未能载入。')
   }
 }
 
@@ -2465,11 +2480,14 @@ function resizeStage() {
 }
 
 async function handleSongChange() {
+  const buildSequence = ++stageBuildSequence
   if (selectedSong.value) emit('target-change', {
     songCode: selectedSong.value.songCode,
     choreographyId: selectedSong.value.id,
   })
   stopStage(true)
+  booting.value = true
+  statusText.value = isSpecialSingle.value ? '正在准备社长特别演出…' : '正在切换舞台编排…'
   handoffLineup.value = null
   for (const slot of lineup.value) {
     if (slot.characterId) continue
@@ -2481,20 +2499,28 @@ async function handleSongChange() {
   releaseStageVocalAudio()
   songMotionsReady.value = false
   errorText.value = ''
-  await Promise.all([loadSongLipSync(), loadSongAudio()])
-  for (const position of allPositions) {
-    const runtime = runtimes.get(position)
-    if (runtime) runtime.spine.visible = activePositions.value.includes(position)
+  try {
+    await Promise.all([loadSongLipSync(), loadSongAudio()])
+    if (buildSequence !== stageBuildSequence) return
+    for (const position of allPositions) {
+      const runtime = runtimes.get(position)
+      if (runtime) runtime.spine.visible = activePositions.value.includes(position)
+    }
+    const missingSlots = activeSlots.value.filter(slot => !runtimes.has(slot.position))
+    if (missingSlots.length) {
+      statusText.value = `正在补齐 ${missingSlots.length} 个舞台站位…`
+      await Promise.all(missingSlots.map(slot => loadSlot(slot)))
+    }
+    if (buildSequence !== stageBuildSequence) return
+    resizeStage()
+    await seekStage()
+    if (buildSequence !== stageBuildSequence) return
+    ensureSpecialStageVisual()
+  } catch (error) {
+    if (buildSequence === stageBuildSequence) errorText.value = error.message || String(error)
+  } finally {
+    if (buildSequence === stageBuildSequence) booting.value = false
   }
-  const missingSlots = activeSlots.value.filter(slot => !runtimes.has(slot.position))
-  if (missingSlots.length) {
-    booting.value = true
-    statusText.value = `正在补齐 ${missingSlots.length} 个舞台站位…`
-    await Promise.all(missingSlots.map(slot => loadSlot(slot)))
-    booting.value = false
-  }
-  resizeStage()
-  await seekStage()
 }
 
 function releaseAudio() {
