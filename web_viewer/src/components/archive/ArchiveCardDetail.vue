@@ -165,10 +165,10 @@
         </div>
       </section>
 
-      <section v-if="uniqueCostumes.length" class="card-detail-section">
+      <section v-if="visibleCostumes.length" class="card-detail-section">
         <h4>关联衣装</h4>
         <div class="costume-list">
-          <div v-for="costume in uniqueCostumes" :key="costume.key" class="costume-row">
+          <div v-for="costume in visibleCostumes" :key="costume.key" class="costume-row">
             <Shirt :size="20" />
             <div>
               <div class="costume-heading">
@@ -315,6 +315,7 @@ import {
   getCardPortraitUrl,
   isRawCardCandidate,
 } from '../../utils/CardAssetResolver.js'
+import { presentCardAssetRows, presentCardCostumeRelations } from '../../presentation/CardDetailSemantics.js'
 
 const props = defineProps({
   card: { type: Object, default: null },
@@ -368,17 +369,7 @@ const parameterRows = computed(() => {
   ]
 })
 
-const uniqueCostumes = computed(() => {
-  const byModel = new Map()
-  for (const relation of props.card?.costume_relations || []) {
-    const key = relation.model_resource_id || relation.costume_key
-    if (!key) continue
-    const current = byModel.get(key) || { ...relation, key, labels: [] }
-    if (relation.label && !current.labels.includes(relation.label)) current.labels.push(relation.label)
-    byModel.set(key, current)
-  }
-  return [...byModel.values()]
-})
+const visibleCostumes = computed(() => presentCardCostumeRelations(props.card?.costume_relations))
 
 function formatDate(timestamp) {
   if (!Number.isFinite(timestamp)) return 'unknown'
@@ -418,19 +409,7 @@ const lightboxItems = computed(() => {
   return items
 })
 
-const assetRows = computed(() => props.card?.single_state
-  ? [
-      { label: '单卡面缩略图', available: props.assetStatus?.awakened_icon },
-      { label: '单卡面无框图', available: props.assetStatus?.awakened_portrait },
-    ]
-  : [
-      { label: '普通缩略图', available: props.assetStatus?.normal_icon },
-      { label: '觉醒缩略图', available: props.assetStatus?.awakened_icon },
-      { label: '普通无框卡面', available: props.assetStatus?.normal_portrait },
-      { label: '觉醒无框卡面', available: props.assetStatus?.awakened_portrait },
-      { label: '普通 SSR 横图', available: props.assetStatus?.normal_landscape },
-      { label: '觉醒 SSR 横图', available: props.assetStatus?.awakened_landscape },
-    ])
+const assetRows = computed(() => presentCardAssetRows(props.card, props.assetStatus))
 
 function voiceUrl(cue) {
   return cue ? getVoiceUrl(`${cue}.m4a`) : ''
