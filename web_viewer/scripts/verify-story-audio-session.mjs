@@ -187,7 +187,7 @@ for (const phase of ['fetch', 'decode']) {
   const ctx = new FakeAudioContext()
   let fetches = 0
   let decodes = 0
-  ctx.decodeAudioData = async () => { decodes++; return { duration: 1 } }
+  ctx.decodeAudioData = async () => { decodes++; return { duration: 1, length: 48000, numberOfChannels: 2 } }
   globalThis.window = { setTimeout, clearTimeout }
   globalThis.fetch = async () => {
     fetches++
@@ -212,6 +212,18 @@ for (const phase of ['fetch', 'decode']) {
     }
     await player.prepareVoice({ step, scenarioId: 'story-a', includeLip: false })
     assert.equal(fetches, 15, 'oldest decoded voice should be evicted after twelve entries')
+    ctx.decodeAudioData = async () => { decodes++; return { duration: 1, length: 2_000_000, numberOfChannels: 2 } }
+    for (const voice of ['large-a', 'large-b', 'large-c']) {
+      await player.prepareVoice({ step: { dialogue: { voice } }, scenarioId: 'story-a', includeLip: false })
+    }
+    const afterLargeVoices = fetches
+    await player.prepareVoice({ step: { dialogue: { voice: 'large-a' } }, scenarioId: 'story-a', includeLip: false })
+    assert.equal(fetches, afterLargeVoices + 1, 'PCM byte budget must evict an older large buffer before the twelve-entry limit')
+    ctx.decodeAudioData = async () => { decodes++; return { duration: 1, length: 9_000_000, numberOfChannels: 2 } }
+    const hugeStep = { dialogue: { voice: 'oversized' } }
+    await player.prepareVoice({ step: hugeStep, scenarioId: 'story-a', includeLip: false })
+    await player.prepareVoice({ step: hugeStep, scenarioId: 'story-a', includeLip: false })
+    assert.equal(fetches, afterLargeVoices + 3, 'an individual buffer larger than the budget must play without being retained')
   } finally {
     player.dispose()
     await session.dispose()

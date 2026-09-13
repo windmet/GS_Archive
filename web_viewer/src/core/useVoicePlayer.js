@@ -25,13 +25,24 @@ export function useVoicePlayer({
   let voiceState = 'idle'
   const decodedVoiceCache = new Map()
   const MAX_DECODED_VOICES = 12
+  const MAX_DECODED_VOICE_BYTES = 32 * 1024 * 1024
+  let decodedVoiceBytes = 0
   const ORIGINAL_LIP_GAIN = 1.0
 
   function rememberDecodedVoice(key, buffer) {
+    const previous = decodedVoiceCache.get(key)
+    if (previous) decodedVoiceBytes -= previous.bytes
     decodedVoiceCache.delete(key)
-    decodedVoiceCache.set(key, buffer)
-    if (decodedVoiceCache.size > MAX_DECODED_VOICES) {
-      decodedVoiceCache.delete(decodedVoiceCache.keys().next().value)
+    // AudioBuffer is 32-bit float PCM per channel. Unknown or oversized
+    // buffers stay playable but cannot claim a bounded retained cache slot.
+    const bytes = Number(buffer?.length) * Number(buffer?.numberOfChannels) * 4
+    if (!Number.isSafeInteger(bytes) || bytes <= 0 || bytes > MAX_DECODED_VOICE_BYTES) return
+    decodedVoiceCache.set(key, { buffer, bytes })
+    decodedVoiceBytes += bytes
+    while (decodedVoiceCache.size > MAX_DECODED_VOICES || decodedVoiceBytes > MAX_DECODED_VOICE_BYTES) {
+      const oldestKey = decodedVoiceCache.keys().next().value
+      decodedVoiceBytes -= decodedVoiceCache.get(oldestKey).bytes
+      decodedVoiceCache.delete(oldestKey)
     }
   }
 
@@ -140,7 +151,7 @@ export function useVoicePlayer({
     const isCurrentContext = () => preparingContext && audioCtx === preparingContext && preparingContext.state !== 'closed'
     const cacheKey = `${scenarioId || ''}\0${voice}`
     try {
-      let audioBuffer = decodedVoiceCache.get(cacheKey)
+      let audioBuffer = decodedVoiceCache.get(cacheKey)?.buffer
       if (audioBuffer) rememberDecodedVoice(cacheKey, audioBuffer)
       else {
         const voiceUrls = getVoiceUrlCandidates(voice, scenarioId)
@@ -276,6 +287,7 @@ export function useVoicePlayer({
   function dispose() {
     stopCurrentVoice('dispose')
     decodedVoiceCache.clear()
+    decodedVoiceBytes = 0
     audioCtx = null
     if (ownsAudioSession) session.dispose().catch(() => {})
     resetVoiceDedup()
