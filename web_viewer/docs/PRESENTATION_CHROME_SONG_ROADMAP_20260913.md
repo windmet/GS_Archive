@@ -129,3 +129,9 @@ Cards总览在整行卡片按钮内增加所属偶像姓名，不嵌第二个按
 输入为P1提交 `5eea343`；实施期间，人物选择页按用户反馈取消人数分页、改为完整名单自然滚动，并独立提交 `ce46adb`。P2本批只迁移Song：`SongPresentation`把已有演唱成员和个人声部条目投影为共同的偶像引用，`ArchiveSongDetail`以portrait密度展示确定演唱成员；大量个人声部条目只展示文字入口，不新增49张头像请求。组合声部仍是组合链接，声部收录没有被标成确定演唱阵容。身份与组合来自字典和档案manifest；未知人物保持不可操作。
 
 验证：`verify:archive-presentation`覆盖61首歌、Jupiter固定组合、ANYWHERE特别五人阵容、DRIVE A LIVE自由编成与49条个人声部、未知ID及原始证据不变；`verify:song-domain-landing`、`verify:idol-reference`、`verify:archive-navigation-state`、`verify:routes`与`npm run build:check`通过。5175 Browser实走BRAND NEW FIELD三人入口、翔太→偶像→返回歌曲，检查ANYWHERE五人和DRIVE A LIVE声部区；补充Edge CDP在1440×900与390×844核对头像数、0横向溢出和0控制台错误。构建只生成E盘`.analysis/build-check`代码产物，不复制public。Unit/Story/Event/Portal迁移、导航Chrome和歌曲时间轴仍待后续批次，不在此批验收范围内。
+
+## P2 分批实施：组合页成员入口
+
+组合成员仍由原有manifest成员关系排序与计数，不改动`buildUnitCatalog`的冻结数据合同。`ArchiveUnitDetail`接收现有身份字典与manifest，仅在展示层把各成员映射成共享偶像引用；点击继续向App传原成员对象，沿用既有`unit_detail→idol_detail→unit_detail`来源链。窄屏成员布局改为单列，保证姓名和入口完整可读。
+
+验证：`verify:unit-page`保持16组、34种身份路径与旧版投影等价；`verify:idol-reference`核对49名manifest成员全都解析为规范姓名且可操作；`verify:archive-navigation-state`通过。5175 Browser实走Jupiter三人头像与翔太进入偶像、返回原组合；390px Edge CDP检查High×Joker五人头像、0横向溢出及0控制台错误。代码编译使用`build:check`，仅E盘`.analysis/build-check`，不复制public。Story/Event/Portal展示迁移仍未完成。

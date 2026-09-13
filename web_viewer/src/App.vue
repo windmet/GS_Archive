@@ -378,6 +378,8 @@
         v-if="view === 'unit_detail'"
         :unit="currentArchiveUnit"
         :members="currentArchiveUnitMembers"
+        :identity="idolUnitData"
+        :manifest="archiveManifestData"
         :stories="currentArchiveUnitStories"
         :songs="currentArchiveUnitSongs"
         :card-stats="currentArchiveUnitEntry?.cardStats"

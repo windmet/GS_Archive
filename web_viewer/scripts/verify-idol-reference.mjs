@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
 import { buildIdolReference } from '../src/presentation/IdolReferencePresentation.js'
+import { buildUnitCatalog } from '../src/data/unitPage.js'
 
 function readJson(path) { return JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8')) }
 
@@ -21,6 +22,16 @@ for (const card of cards) {
     `missing owner icon: ${card.character_id}`)
 }
 
+const unitMembers = buildUnitCatalog(dictionary, { manifest }).flatMap(entry => entry.members)
+assert.equal(unitMembers.length, Object.keys(manifest.unit_membership_by_idol).length,
+  'unit member references retain the membership evidence count')
+for (const member of unitMembers) {
+  const reference = buildIdolReference(member.idol_code, dictionary, manifest, 'unit-member')
+  assert.equal(reference.idolCode, member.idol_code)
+  assert.equal(reference.displayName, dictionary.by_idol_code[member.idol_code]?.display_name)
+  assert.equal(reference.actionable, true, `unresolved unit member: ${member.idol_code}`)
+}
+
 const touma = buildIdolReference('001tom', dictionary, manifest, 'card:001tom_n01')
 assert.equal(touma.displayName, '天ヶ瀬 冬馬')
 assert.equal(touma.unitName, 'Jupiter')
@@ -31,4 +42,4 @@ for (const unknown of ['999xxx', '01jup', '', '../001tom']) {
   assert.equal(reference.displayName, '姓名待确认')
 }
 
-console.log(`Idol references: ${cards.length} real card owners resolved; unknown identities remain inert`)
+console.log(`Idol references: ${cards.length} real card owners and ${unitMembers.length} unit members resolved; unknown identities remain inert`)
