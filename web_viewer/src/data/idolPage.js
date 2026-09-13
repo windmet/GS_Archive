@@ -19,9 +19,9 @@ export function buildIdolStats(id, { cardIndex, cardMap = new Map(), episodes, m
   const mobileScenarios = (mobile?.by_idol_code?.[id] || []).map(scenarioId => mobileById.get(scenarioId)).filter(Boolean)
   return {
     cards: cardsForCharacter(cardIndex, cardMap, id).length,
-    stories: (chapter?.sections || []).reduce((sum, section) => sum + (section.episodes?.length || 0), 0),
-    chats: mobileScenarios.filter(scenario => scenario.kind === 'idol_talk').length,
-    phones: mobileScenarios.filter(scenario => scenario.kind === 'idol_phone').length,
+    stories: episodes ? (chapter?.sections || []).reduce((sum, section) => sum + (section.episodes?.length || 0), 0) : null,
+    chats: mobile ? mobileScenarios.filter(scenario => scenario.kind === 'idol_talk').length : null,
+    phones: mobile ? mobileScenarios.filter(scenario => scenario.kind === 'idol_phone').length : null,
   }
 }
 

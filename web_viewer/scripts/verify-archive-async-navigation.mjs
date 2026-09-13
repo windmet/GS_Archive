@@ -207,7 +207,7 @@ function setup() {
   const t = setup(), detail = deferred()
   t.state.view.value = 'cards'
   t.context.ensureIdolCommunicationData = () => detail.promise
-  const pending = t.restore({ view: 'idol_detail', query: 'old route' })
+  const pending = t.restore({ view: 'story_catalog', query: 'old route' })
   await flush()
   t.filter('filterQuery', 'new search')
   assert.equal(t.context.navigation.isPending(), false, 'explicit user filtering supersedes pending route restoration')

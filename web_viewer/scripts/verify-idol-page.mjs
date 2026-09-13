@@ -31,14 +31,16 @@ if (!baseline) assert.equal(hash, '0a961f02253cf9f55c142bb3912f0314cc6f5109c64fe
 delete data.cardMap
 assert.equal(JSON.stringify(data), before)
 assert.equal(buildIdolProfile('missing'), null)
-assert.deepEqual(buildIdolStats('missing'), { cards: 0, stories: 0, chats: 0, phones: 0 })
+assert.deepEqual(buildIdolStats('missing'), { cards: 0, stories: null, chats: null, phones: null })
 assert.deepEqual(eventsForIdol('missing'), [])
 assert.deepEqual(songsForIdol('missing'), [])
 const profile = { unit_name: 'fallback', unit_id: 7 }
 assert.equal(buildIdolProfile('id', { by_idol_code: { id: profile } }, { unit_membership_by_idol: { id: { unit_name: 'override' } } }).unit_name, 'override')
 assert.equal(profile.unit_name, 'fallback')
 const mobile = { scenarios: [{ id: 'talk', kind: 'idol_talk' }, { id: 'phone', kind: 'idol_phone' }], by_idol_code: { id: ['missing', 'talk', 'phone'] } }
-assert.deepEqual(buildIdolStats('id', { mobile }), { cards: 0, stories: 0, chats: 1, phones: 1 })
+assert.deepEqual(buildIdolStats('id', { mobile }), { cards: 0, stories: null, chats: 1, phones: 1 })
+assert.deepEqual(buildIdolStats('id', { episodes: { by_idol_code: {} }, mobile: { scenarios: [], by_idol_code: {} } }),
+  { cards: 0, stories: 0, chats: 0, phones: 0 })
 const song = { song_id: 1, performance_mapping: { performer_idol_codes: ['id'], performer_basis: 'table46_explicit' } }
 assert.equal(songsForIdol('id', { songs: { one: song } })[0].song, song)
 assert.equal(songsForIdol('id', { songs: { one: song } })[0].evidenceLabel, '表 46 明确演唱／参演')

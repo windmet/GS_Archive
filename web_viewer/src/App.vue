@@ -103,6 +103,7 @@
         v-if="view === 'idol_detail'"
         :idol="currentIdolProfile"
         :stats="currentIdolStats"
+        :communication-status="idolCommunicationState.status"
         :events="currentIdolEvents"
         :songs="currentIdolSongs"
         :idols="idolUnitData?.idols || []"
@@ -112,6 +113,7 @@
         @open-event="openIdolEvent"
         @open-song="openSong"
         @select-idol="selectPrimaryIdol"
+        @retry-communication="retryIdolCommunication"
       />
 
       <ArchiveCardDetail
@@ -461,6 +463,7 @@
 import { createLazyArchiveResource } from './data/lazyArchiveResource.js'
 import { buildUnitCatalog, resolveArchiveUnit, storiesForUnit, songsForUnit } from './data/unitPage.js'
 import { buildIdolProfile, buildIdolStats, eventsForIdol, songsForIdol } from './data/idolPage.js'
+import { createIdolCommunicationReadiness } from './data/idolCommunicationReadiness.js'
 import { buildGashaCatalog, buildGashaCategoryOptions, filterGashaCatalog, resolveGashaRelatedCards } from './data/gashaCatalog.js'
 import { filterArchiveCards } from './data/cardFilters.js'
 import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
@@ -1594,6 +1597,22 @@ const ensureIdolCommunicationData = createLazyArchiveResource({
   onError: error => console.error('[ArchiveData] Failed to load idol communication indexes:', error),
 })
 
+const idolCommunicationState = ref({ status: 'idle', idolCode: '' })
+const idolCommunicationReadiness = createIdolCommunicationReadiness({
+  ensure: ensureIdolCommunicationData,
+  hasData: () => Boolean(idolEpisodeData.value && mobileArchiveData.value && randomTalkPresentationData.value),
+  publish: state => { idolCommunicationState.value = state },
+})
+function retryIdolCommunication() {
+  if (view.value === 'idol_detail' && idolCommunicationState.value.status === 'error') {
+    idolCommunicationReadiness.enter(currentCharacterId.value)
+  }
+}
+watch([view, currentCharacterId], ([nextView, idolCode]) => {
+  if (nextView === 'idol_detail') idolCommunicationReadiness.enter(idolCode)
+  else idolCommunicationReadiness.leave()
+}, { immediate: true, flush: 'sync' })
+
 async function restoreVoicePreview(route, intent) {
   const card = cardMap.value.get(route.card)
   if (!card || !route.voice) return false
@@ -1648,7 +1667,6 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
       'external_story_resources',
       'idol_story_archive',
       'mobile_archive',
-      'idol_detail',
     ].includes(route.view)) {
       await ensureIdolCommunicationData()
     }
@@ -3228,6 +3246,7 @@ watch(storyTranslationLocale, locale => {
 })
 
 onBeforeUnmount(() => {
+  idolCommunicationReadiness.leave()
   playbackController.dispose()
   navigation.dispose()
   removeArchivePopState?.()
