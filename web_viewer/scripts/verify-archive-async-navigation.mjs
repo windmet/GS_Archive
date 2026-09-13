@@ -31,7 +31,7 @@ function setup() {
   const loading = { value: false }
   const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loading.value = false } })
   const context = vm.createContext({
-    ...state, navigation, loading, preloadProgress: { value: 0 },
+    ...state, navigation, loading, loadingPurpose: { value: 'archive-data' }, preloadProgress: { value: 0 },
     buildCardVoicePreviewScenario, idolDisplayName: id => `speaker:${id}`,
     archiveRouteReady: true,
     archiveHomeIdols: { value: [] }, idolEpisodeData: { value: {} },

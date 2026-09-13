@@ -31,8 +31,8 @@
           </div>
         </form>
         <p v-if="missingAnchor" class="reader-notice" role="status">原定位行已不存在，现显示本篇正文。</p>
-        <p v-if="mode !== 'original' && fallbackCount" class="reader-notice" role="status">{{ fallbackCount }} 处暂无可用译文，已显示原文。</p>
-        <p v-if="mode !== 'original' && localization.diagnostics.value?.code === 'translation_invalid'" class="reader-notice" role="status">译文暂时无法载入，原文仍可阅读。</p>
+        <p v-if="mode !== 'original' && !translationLoadFailed && fallbackCount" class="reader-notice" role="status">{{ fallbackCount }} 处暂无可用译文，已显示原文。</p>
+        <p v-if="mode !== 'original' && translationLoadFailed" class="reader-notice" role="status">译文暂时无法载入，原文仍可阅读。</p>
         <article class="reader-transcript" aria-label="剧情正文">
           <section v-for="item in presentedRows" :key="item.row.anchor.row_id" :id="`reading-${item.row.anchor.row_id}`" tabindex="-1" class="reader-row" :class="[`kind-${item.row.kind}`, { selected: anchor === item.row.anchor.row_id, 'search-match': searchMatchIds.has(item.row.anchor.row_id) }]">
             <img v-if="item.avatar" class="reader-avatar" :src="getCharaIconUrl(item.avatar)" alt="" loading="lazy" @error="$event.target.hidden = true" />
@@ -101,6 +101,7 @@ const presentedRows = computed(() => (document.value?.rows || []).map(row => ({ 
     textRef: row.text_ref, speaker: readingPresentationSpeaker(row), inlineEntry: row.inline_translation }),
 })))
 const fallbackCount = computed(() => presentedRows.value.filter(item => item.view.translation.fallbackUsed).length)
+const translationLoadFailed = computed(() => localization.diagnostics.value?.code === 'translation_invalid')
 const searchText = text => String(text || '').normalize('NFKC').replace(/\s+/g, '').toLowerCase()
 const searchMatches = computed(() => {
   const query = searchText(searchQuery.value)

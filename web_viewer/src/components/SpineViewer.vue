@@ -82,7 +82,7 @@
             <div class="section-heading">
               <div>
                 <h2>动作列表</h2>
-                <span>{{ motions.length }} 个可用动作</span>
+                <span>{{ !manifest ? (loading ? '正在读取动作库…' : '动作库载入失败') : motions.length ? `${motions.length} 个可用动作` : '没有可用动作' }}</span>
               </div>
               <button class="text-button" type="button" @click="replayMotion">
                 <RotateCcw :size="15" />重播

@@ -454,7 +454,7 @@
     />
 
     <!-- ====== PRELOADER LOADING SCREEN ====== -->
-    <LoadingScreen :visible="(loading || playbackBuffering) && view !== 'reader' && !(view === 'player' && !loading && playbackReadiness?.status === 'waiting' && playbackReadiness?.hasFrame)" :status="preloadStatus" :readiness="playbackReadiness" />
+    <LoadingScreen :visible="(loading || playbackBuffering) && view !== 'reader' && !(view === 'player' && !loading && playbackReadiness?.status === 'waiting' && playbackReadiness?.hasFrame)" :status="preloadStatus" :readiness="playbackReadiness" :message="loadingMessage" />
 
   </div>
 </template>
@@ -696,6 +696,7 @@ const userPreferenceNotice = ref(initialUserPreferences.issue)
 const archiveDataReady = ref(false)
 const continuousPlayback = ref(localStorageValue('sidem:continuous-playback') === '1')
 const loading = ref(true)
+const loadingPurpose = ref('archive-data')
 const preloadProgress = ref(0)
 
 // View preferences and history lifecycle (navigation refs are owned above).
@@ -706,7 +707,7 @@ let archiveRouteReady = false
 let pendingPreReadyRoute = null
 let activeArchiveViewContext = null
 let archiveViewRestoreRevision = 0
-const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loading.value = false } })
+const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loading.value = false; loadingPurpose.value = 'archive-data' } })
 const playbackController = useStoryPlaybackController({
   state: { view, loading, preloadProgress, currentScenarioFile, currentScenarioStartStep, currentScenarioEndStep, currentScenarioInitialStep, currentPreviewCue, returnViewAfterPlayer },
   navigation, loadPlayer: storyViewerLoader,
@@ -715,6 +716,9 @@ const playbackController = useStoryPlaybackController({
 })
 const { currentScenario, currentScenarioInstance, hasNext: hasNextPlaybackEpisode, error: playbackError,
   preloadStatus, playbackBuffering, playbackReadiness } = playbackController
+const loadingMessage = computed(() => playbackBuffering.value || view.value === 'player' || loadingPurpose.value === 'story-playback'
+  ? '正在准备演出…'
+  : loadingPurpose.value === 'stage' ? '正在准备舞台…' : '正在读取资料馆数据…')
 let removeArchivePopState = null
 let removeSpineAnimationDebug = null
 
@@ -1521,6 +1525,7 @@ function commitView(nextView, options = {}) {
   navigation.invalidate()
   if (nextView !== 'player') playbackController.reset()
   loading.value = false
+  loadingPurpose.value = 'archive-data'
   view.value = nextView
   if (!archiveRouteReady) pendingPreReadyRoute = currentArchiveRoute()
   syncArchiveRoute(options)
@@ -1619,12 +1624,14 @@ async function restoreVoicePreview(route, intent) {
   const cue = findCardVoiceCue(card, route.voice,
     mergeCardDetail(card, cardDetailData.value)?.operational_voice_cues || [])
   if (!cue) return false
+  loadingPurpose.value = 'story-playback'
   return playbackController.preview(() => buildCardVoicePreviewScenario(card, cue, idolDisplayName),
     route.voice, route.returnView || 'card_detail', { intent, syncRoute: false })
 }
 
 async function applyArchiveRoute(route, { restoring = true } = {}) {
   captureActiveArchiveView()
+  loadingPurpose.value = route.view === 'player' ? 'story-playback' : 'archive-data'
   return navigation.run(async intent => {
     if (route.view === 'reader' || (route.view === 'player' && route.returnView === 'reader')) {
       readingDocumentId.value = route.reading
@@ -1940,6 +1947,7 @@ async function openReaderPlayback(rowId, { intent: inherited, route, fullDocumen
       readingRowId.value = rowId
       // Pin the requested text version/row even if media preparation subsequently fails.
       if (!route) syncArchiveRoute({ replace: true })
+      loadingPurpose.value = 'story-playback'
       const loaded = await playbackController.load(target.file, 'reader', { ...target, intent, syncRoute: !route })
       if (!loaded && intent.isCurrent()) readingPlaybackNotice.value = playbackError.value
     } catch (error) {
@@ -2251,6 +2259,7 @@ async function openSpineLab() {
   return navigation.run(async intent => {
     if (!['spine_lab', 'chibi_stage'].includes(view.value)) captureDetailSource()
     loading.value = true
+    loadingPurpose.value = 'stage'
     preloadProgress.value = 100
     await spineViewerLoader()
     if (!intent.isCurrent()) return
@@ -2262,6 +2271,7 @@ async function openChibiStage(target = null) {
   return navigation.run(async intent => {
     if (!['spine_lab', 'chibi_stage'].includes(view.value)) captureDetailSource()
     loading.value = true
+    loadingPurpose.value = 'stage'
     preloadProgress.value = 100
     await chibiStageViewerLoader()
     if (!intent.isCurrent()) return
@@ -3069,6 +3079,7 @@ function openEventUnit(unit) {
 }
 
 async function openVoicePreview(card, cue, returnView) {
+  loadingPurpose.value = 'story-playback'
   return playbackController.preview(() => buildCardVoicePreviewScenario(card, cue, idolDisplayName),
     typeof cue === 'string' ? cue : cue.cue, returnView)
 }
@@ -3144,6 +3155,7 @@ function formatFileName(fn) {
 }
 
 async function loadScenario(name, returnView = 'files', options = {}) {
+  loadingPurpose.value = 'story-playback'
   return playbackController.load(name, returnView, options)
 }
 

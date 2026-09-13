@@ -58,7 +58,7 @@ await prepare(bytes)
 assert.equal(media, 2)
 
 // Execute the production App actions against real coordinator/controller/session.
-const state = { ...useArchiveNavigationState(), loading: ref(false), preloadProgress: ref(0),
+const state = { ...useArchiveNavigationState(), loading: ref(false), loadingPurpose: ref('archive-data'), preloadProgress: ref(0),
   readingState: ref({}), readingPlaybackNotice: ref('') }
 const navigation = createArchiveNavigationCoordinator()
 let url = new URL('http://localhost/')
