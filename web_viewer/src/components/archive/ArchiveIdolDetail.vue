@@ -1,12 +1,7 @@
 <template>
   <article v-if="idol" class="idol-detail" data-archive-scroll-container>
     <header class="idol-profile-header">
-      <img
-        :src="`/assets/idols/icons/image_chara_icon_${idol.idol_code}.png`"
-        :alt="idol.display_name"
-        class="idol-portrait"
-        :style="{ '--idol-frame-color': normalizeIdolAccentColor(idol.color) || undefined }"
-      />
+      <ArchiveIdolAvatar class="idol-portrait" :idol-code="idol.idol_code" :accent-color="idol.color" :size="104" :ring-width="3" :alt="idol.display_name" />
       <div class="idol-identity">
         <span class="idol-code">偶像档案</span>
         <h2>{{ idol.display_name }}</h2>
@@ -103,7 +98,7 @@ import { BookOpenText, ChevronRight, Images, MessageSquareText, Music, Phone, Us
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
-import { normalizeIdolAccentColor } from '../../presentation/idolAccentColor.js'
+import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 
 const props = defineProps({
   idol: { type: Object, default: null },
@@ -181,7 +176,7 @@ function formatDate(timestamp) {
   background: #17212b;
   color: #fff;
 }
-.idol-portrait { width: 104px; height: 104px; border: 3px solid var(--idol-frame-color, #879a9e); border-radius: 50%; background: #eef1f3; object-fit: cover; box-shadow: 0 0 0 1px rgba(255, 255, 255, .85); }
+.idol-portrait { box-shadow: 0 0 0 1px rgba(255, 255, 255, .85); }
 .idol-identity { min-width: 0; }
 .idol-code { color: #58cec5; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.68rem; }
 .idol-identity h2 { margin: 7px 0 4px; font-size: 1.55rem; letter-spacing: 0; }
@@ -246,7 +241,7 @@ function formatDate(timestamp) {
   .profile-switcher { flex-basis: 100%; width: 100%; margin: 4px 0 0; }
   .idol-detail { padding: 12px; }
   .idol-profile-header { gap: 15px; min-height: 124px; padding: 18px; }
-  .idol-portrait { width: 78px; height: 78px; }
+  .idol-portrait { --idol-avatar-override-size: 78px; }
   .idol-identity h2 { font-size: 1.2rem; }
   .idol-color { right: 16px; top: 16px; }
   .idol-facts, .idol-related, .idol-songs, .idol-events, .idol-notes { margin-top: 10px; padding: 14px; }

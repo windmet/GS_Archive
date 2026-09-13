@@ -1,4 +1,5 @@
 import { normalizeIdolAccentColor } from './idolAccentColor.js'
+import { getCharaIconUrl } from '../utils/AssetResolver.js'
 
 const IDOL_CODE = /^\d{3}[a-z0-9]{3}$/i
 
@@ -26,7 +27,7 @@ export function buildIdolReference(idolCode, dictionary, manifest, context = '')
     unitName: membership?.unit_name || profile.unit_name || '',
     accentColor: normalizeIdolAccentColor(profile.color),
     actionable: true,
-    imageCandidates: [{ url: `/assets/idols/icons/image_chara_icon_${code}.png`, kind: 'idol_icon' }],
+    imageCandidates: [{ url: getCharaIconUrl(code), kind: 'idol_icon' }],
     source: { kind: 'idol_unit_dictionary', context },
   }
 }

@@ -13,12 +13,15 @@
           </small>
         </span>
         <span class="member-stack" aria-hidden="true">
-          <img
+          <ArchiveIdolAvatar
             v-for="member in entry.members.slice(0, 5)"
             :key="member.idol_code"
-            :src="`/assets/idols/icons/image_chara_icon_${member.idol_code}.png`"
-            alt=""
-            loading="lazy"
+            :idol-code="member.idol_code"
+            :accent-color="member.color"
+            :size="30"
+            :ring-width="2"
+            :gap="0"
+            decorative
           />
         </span>
         <ChevronRight :size="18" aria-hidden="true" />
@@ -30,6 +33,7 @@
 <script setup>
 import { ChevronRight } from '@lucide/vue'
 import { getBgUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
+import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 
 defineProps({ entries: { type: Array, default: () => [] } })
 const emit = defineEmits(['select'])
@@ -47,7 +51,7 @@ const emit = defineEmits(['select'])
 .unit-copy strong { overflow: hidden; font-size: 0.82rem; text-overflow: ellipsis; white-space: nowrap; }
 .unit-copy small { color: #78838c; font-size: 0.66rem; }
 .member-stack { display: flex; padding-left: 8px; }
-.member-stack img { width: 30px; height: 30px; margin-left: -8px; border: 2px solid #fff; border-radius: 50%; background: #eef1f3; object-fit: cover; }
+.member-stack > .idol-avatar-shell { margin-left: -8px; box-shadow: 0 0 0 2px #fff; }
 .unit-entry > svg { color: #9aa4ab; }
 
 @media (max-width: 850px) {

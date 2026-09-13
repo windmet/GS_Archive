@@ -138,6 +138,7 @@ import { nextTick, onMounted, ref, watch } from 'vue'
 import { ArrowRight, Cake, ChevronLeft, ChevronRight, ExternalLink, FileWarning, PhoneCall, Play } from '@lucide/vue'
 import { formatArchiveDate } from '../../data/idolCommunicationSelectors.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
+import { getCharaIconUrl } from '../../utils/AssetResolver.js'
 
 const props = defineProps({
   story: { type: Object, default: null },
@@ -163,7 +164,7 @@ function moveIdol(delta) {
   if (index < 0 || !props.idols.length) return
   emit('select-idol', props.idols[(index + delta + props.idols.length) % props.idols.length].idolCode)
 }
-function idolIcon(code) { return `/assets/idols/icons/image_chara_icon_${code}.png` }
+function idolIcon(code) { return getCharaIconUrl(code) }
 function backgroundUrl(id) { return id ? `/assets/bg/${id}.png` : '/assets/stories/story_background.png' }
 function releaseDate(value) { return formatArchiveDate(value) || '开放日未记录' }
 function sectionBirthdayAligned(section) {
