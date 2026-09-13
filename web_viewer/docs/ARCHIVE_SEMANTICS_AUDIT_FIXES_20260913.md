@@ -19,3 +19,9 @@
 审计建议在生成层增补 relation kind，但现有 `card_detail_index` 已有原始卡片字段来源 `slot`：`live_*` / `story_*` 与 `home_*` 可直接区分。展示层仅将前者合并为“关联衣装”，后者仍保留在卡片技术证据；不按衣装名称过滤，也不改索引数据。资源状态仅对 SSR 展示 SSR 横图行，SR/R/N 不把“不适用”误报成“未收录”。
 
 验证：`verify-card-detail-semantics` 覆盖 709 张非 SSR/单卡面、127 张 SSR 及全量衣装 slot；`verify:archive-presentation`、`build:check` PASS。5175 / Playwright Chromium 1280×850、390×850：`038tak_sr01` / `001tom_r01` 没有 SSR 横图行与默认衣装，`001tom_r03` 保留卡片特定衣装，`001tom_ssr01` 保留两条 SSR 横图状态及专属衣装；无页面错误或横向溢出。截图仓库外；未逐卡人工确认衣装归属和真实游戏解锁关系。
+
+## 04 · Work 场景名称证据
+
+生成层先取 PictureStudio 主数据的资源 ID 直连名称；直连缺失时，仅在同一背景资源族（末尾两位变体序号以外的 ID 完全一致）所有已命名变体名称一致时继承，并将 `background_name_resolution=asset-family` 与证据资源 ID 写入索引。相互冲突或全无名称的资源保持未知，绝不由画面或资源英文 ID 猜中文/日文名称。637 条工作资源中的已命名条目由 444 增至 453，仅 9 条受益；`bg033_concerthallm_in_01` 因变体名称冲突仍未知。
+
+验证：原始解码主数据和同一 compiled corpus 重生索引，`verify-masterdata-work.py` 全量基线、`verify-work-story-index.mjs`、`build:check` PASS。该映射是有证据的展示补全，不是新的主数据事实；其余 184 条仍显示“场景名称未收录”。

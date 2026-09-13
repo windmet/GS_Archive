@@ -54,6 +54,8 @@ def verify():
     entry = result['idols'][0]['short_stories'][0]
     assert entry['background_name'] == 'Studio'
     assert entry['background_name_source'] == 'masterdata_picture_studio'
+    assert entry['background_name_resolution'] == 'master'
+    assert entry['background_name_evidence_resource_id'] == 'bg001'
     assert entry['model_resource_id'] == 'model'
     assert entry['dialogue_count'] == 3 and entry['dialogue_preview'] == '日本語'
     assert entry['speakers'] == ['A', 'B']
@@ -63,6 +65,24 @@ def verify():
     assert result['idols'][1]['idol_code'] is None
     unnamed = build_work_story_index(tables, stems, summaries, idols, {}, {'scene.json': payload})
     assert unnamed['idols'][0]['short_stories'][0]['background_name_source'] == 'compiled_resource_only'
+    assert unnamed['idols'][0]['short_stories'][0]['background_name_resolution'] == 'unknown'
+    family_payload = copy.deepcopy(payload)
+    family_payload['steps'][1]['state']['bg'] = 'bg002_in_01'
+    family_backgrounds = {'backgrounds': {
+        'bg002_in_01': {'names': []},
+        'bg002_in_02': {'names': ['Cafe']},
+        'bg002_in_03': {'names': ['Cafe']},
+    }}
+    family = build_work_story_index(tables, stems, summaries, idols, family_backgrounds,
+                                    {'scene.json': family_payload})['idols'][0]['short_stories'][0]
+    assert family['background_name'] == 'Cafe'
+    assert family['background_name_resolution'] == 'asset-family'
+    assert family['background_name_evidence_resource_id'] == 'bg002_in_02'
+    family_backgrounds['backgrounds']['bg002_in_03']['names'] = ['Other']
+    ambiguous = build_work_story_index(tables, stems, summaries, idols, family_backgrounds,
+                                       {'scene.json': family_payload})['idols'][0]['short_stories'][0]
+    assert ambiguous['background_name'] is None
+    assert ambiguous['background_name_resolution'] == 'unknown'
     with tempfile.TemporaryDirectory() as temp:
         directory = Path(temp)
         (directory / 'scene.json').write_text(json.dumps(payload), encoding='utf-8')

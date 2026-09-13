@@ -55,6 +55,14 @@ def build_work_story_index(
                 type_by_relation_id[relation_id] = entry
 
     backgrounds = background_catalog.get("backgrounds", {})
+    named_background_families: dict[str, list[tuple[str, str]]] = {}
+    for resource_id, background in backgrounds.items():
+        prefix, separator, suffix = resource_id.rpartition("_")
+        if not separator or len(suffix) != 2 or not suffix.isdigit():
+            continue
+        for name in background.get("names", []):
+            if name:
+                named_background_families.setdefault(prefix, []).append((resource_id, name))
     idols_by_numeric = idol_unit_dictionary.get("by_numeric_id", {})
     entries_by_idol: dict[int, dict[str, Any]] = {}
 
@@ -81,10 +89,25 @@ def build_work_story_index(
             if isinstance(step, dict) and step.get("type") in {"adv", "talk", "call"} and isinstance(step.get("dialogue"), dict)
         ]
         background = backgrounds.get(background_id, {}) if background_id else {}
+        direct_name = next((name for name in background.get("names", []) if name), None)
+        family_candidates: list[tuple[str, str]] = []
+        if background_id and not direct_name:
+            prefix, separator, suffix = background_id.rpartition("_")
+            if separator and len(suffix) == 2 and suffix.isdigit():
+                family_candidates = [(resource_id, name)
+                    for resource_id, name in named_background_families.get(prefix, [])
+                    if resource_id != background_id]
+        family_names = {name for _, name in family_candidates}
+        inferred_name = next(iter(family_names)) if len(family_names) == 1 else None
+        background_name = direct_name or inferred_name
         return {
             "background_resource_id": background_id,
-            "background_name": next((name for name in background.get("names", []) if name), None),
-            "background_name_source": "masterdata_picture_studio" if background.get("names") else "compiled_resource_only",
+            "background_name": background_name,
+            "background_name_source": "masterdata_picture_studio" if direct_name else
+                "masterdata_picture_studio_asset_family" if inferred_name else "compiled_resource_only",
+            "background_name_resolution": "master" if direct_name else "asset-family" if inferred_name else "unknown",
+            "background_name_evidence_resource_id": background_id if direct_name else
+                sorted(resource_id for resource_id, _ in family_candidates)[0] if inferred_name else None,
             "model_resource_id": model_id,
             "dialogue_count": len(dialogues),
             "dialogue_preview": next((dialogue.get("text_jp") or dialogue.get("text") for dialogue in dialogues if dialogue.get("text_jp") or dialogue.get("text")), None),

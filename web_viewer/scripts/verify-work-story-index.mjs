@@ -11,6 +11,7 @@ assert.equal(data.meta.scene_line_count, 441)
 assert.equal(data.meta.short_story_count, 196)
 assert.equal(data.meta.compiled_resource_count, 637)
 assert.equal(data.meta.missing_resource_count, 0)
+assert.equal(data.meta.named_background_count, 453)
 const reading = JSON.parse(fs.readFileSync('public/data/reading/manifest.json', 'utf8')).entries
 const workReading = new Map(reading.filter(entry => entry.domain === 'work' && entry.status === 'ready').map(entry => [entry.source_file, entry]))
 const reachable = new Set()
@@ -36,5 +37,13 @@ assert.deepEqual(
     'スポーツニュース番組のレポーターのお仕事',
   ],
 )
+
+const minoriCafe = data.by_idol_code['011min'].short_stories.find(entry => entry.background_resource_id === 'bg095_cafe_in_01')
+assert.equal(minoriCafe.background_name, 'カフェ')
+assert.equal(minoriCafe.background_name_resolution, 'asset-family')
+assert.equal(minoriCafe.background_name_evidence_resource_id, 'bg095_cafe_in_06')
+const ambiguousHall = data.by_idol_code['002sht'].short_stories.find(entry => entry.background_resource_id === 'bg033_concerthallm_in_01')
+assert.equal(ambiguousHall.background_name, null)
+assert.equal(ambiguousHall.background_name_resolution, 'unknown')
 
 console.log('Work story index verified: 49 idols, 441 scene lines, 196 short stories, 0 missing resources.')
