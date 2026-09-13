@@ -31,17 +31,14 @@
         class="idol-card"
         :data-archive-focus-id="`idol:${entry.id}`"
         :class="{ 'group-card': entry._isGroup }"
+        :style="!entry._isGroup ? { '--idol-card-accent': normalizeIdolAccentColor(entry.color) || '#168b83' } : undefined"
         @click="emit('select', entry)"
       >
-        <img
-          v-if="!entry._isGroup"
-          :src="`/assets/idols/icons/image_chara_icon_${entry.id}.png`"
-          :alt="entry.name"
-          class="idol-avatar"
-          loading="lazy"
-        />
+        <ArchiveIdolAvatar v-if="!entry._isGroup" class="idol-avatar" :idol-code="entry.id" :accent-color="entry.color"
+          :size="64" :alt="entry.name" />
         <div v-else class="group-avatar" aria-hidden="true"></div>
         <span class="idol-name">{{ entry.name }}</span>
+        <small v-if="!entry._isGroup && entry.unitName" class="idol-unit">{{ entry.unitName }}</small>
       </button>
     </div>
   </section>
@@ -50,6 +47,8 @@
 <script setup>
 import { LibraryBig, UsersRound } from '@lucide/vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
+import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
+import { normalizeIdolAccentColor } from '../../presentation/idolAccentColor.js'
 
 defineProps({
   title: { type: String, default: '' },
@@ -83,28 +82,23 @@ const emit = defineEmits(['back', 'select', 'select-unit', 'open-units', 'update
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   background: #fff;
   border: 1px solid #e8e8e8;
   border-radius: 10px;
-  padding: 12px 8px;
+  padding: 10px 6px;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, transform 0.15s, box-shadow 0.15s;
 }
 .idol-card:hover {
-  background: #f0f4ff;
-  border-color: #88ccff55;
+  background: color-mix(in srgb, var(--idol-card-accent, #168b83) 5%, #fff);
+  border-color: color-mix(in srgb, var(--idol-card-accent, #168b83) 50%, #fff);
   transform: translateY(-2px);
-  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  box-shadow: 0 5px 14px color-mix(in srgb, var(--idol-card-accent, #168b83) 16%, transparent);
 }
-.idol-avatar {
-  width: 64px;
-  height: 64px;
-  object-fit: cover;
-  border-radius: 50%;
-  background: #eee;
-}
-.idol-name { font-size: 0.78rem; color: #444; text-align: center; line-height: 1.2; }
+.idol-card:focus-visible { outline: 2px solid var(--idol-card-accent, #168b83); outline-offset: 2px; }
+.idol-name { color: #30434b; font-size: 0.78rem; font-weight: 700; text-align: center; line-height: 1.25; }
+.idol-unit { max-width: 100%; overflow: hidden; color: #71838a; font-size: 0.62rem; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
 .group-card { border-color: #b3d9ff; background: #f5faff; }
 .group-avatar {
   width: 64px;
@@ -119,6 +113,7 @@ const emit = defineEmits(['back', 'select', 'select-unit', 'open-units', 'update
   .unit-catalog-link { justify-content: center; }
   .idol-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 10px; }
   .idol-card { min-width: 0; padding: 10px 5px; }
-  .idol-avatar, .group-avatar { width: 58px; height: 58px; }
+  .idol-avatar { --idol-avatar-override-size: 58px; }
+  .group-avatar { width: 58px; height: 58px; }
 }
 </style>

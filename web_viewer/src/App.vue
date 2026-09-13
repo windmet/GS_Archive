@@ -803,7 +803,8 @@ function catCountText(id) {
 function withUnitEvidence(entry) {
   if (entry._isGroup) return entry
   const unit = archiveManifestData.value?.unit_membership_by_idol?.[entry.id]
-  return unit ? { ...entry, unitId: String(unit.unit_id), unitCode: unit.unit_code, unitName: unit.unit_name } : entry
+  const color = idolUnitData.value?.by_idol_code?.[entry.id]?.color || ''
+  return unit ? { ...entry, color, unitId: String(unit.unit_id), unitCode: unit.unit_code, unitName: unit.unit_name } : { ...entry, color }
 }
 
 const idolList = computed(() => {
@@ -918,7 +919,7 @@ const categoryHeaderText = computed(() => {
   if (currentCategoryId.value === 'cards') return '卡片档案'
   if (currentCategoryId.value === 'idol_chat') return '短信聊天'
   if (currentCategoryId.value === 'idol_phone') return '电话聊天'
-  return '偶像个人'
+  return '偶像档案'
 })
 
 const categoryFilterPlaceholder = computed(() => {
