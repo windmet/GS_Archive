@@ -2,8 +2,10 @@
   <section class="archive-welcome" :class="{ 'selection-only': selectionOnly, 'idol-selection': selectionOnly || step === 'idol' }" aria-labelledby="welcome-title">
     <div class="welcome-card">
       <header>
-        <ArchiveBackAction v-if="canCancel" class="cancel-button" :label="selectionOnly ? '退出选择' : '返回来源页'" @back="emit('cancel')" />
-        <span class="welcome-brand">SideM Archive</span>
+        <div class="welcome-kicker-row">
+          <ArchiveBackAction v-if="canCancel" :label="selectionOnly ? '退出选择' : '返回来源页'" @back="emit('cancel')" />
+          <span class="welcome-brand">SideM Archive</span>
+        </div>
         <h1 id="welcome-title" ref="heading" tabindex="-1">
           {{ selectionOnly ? `选择要打开${targetLabel}的偶像` : '欢迎来到资料馆' }}
         </h1>
@@ -44,7 +46,9 @@
             :data-idol-code="idol.id"
             @click="selectIdol(idol.id)"
           >
-            <img :src="idolIcon(idol.id)" :alt="idol.name" loading="lazy" decoding="async" />
+            <span class="idol-avatar-frame" :style="{ '--idol-color': normalizeIdolAccentColor(idol.color) || '#168f87' }">
+              <img :src="idolIcon(idol.id)" :alt="idol.name" loading="lazy" decoding="async" />
+            </span>
             <span><strong>{{ idol.name }}</strong><small>{{ idol.unitName || '315 STARS' }}</small></span>
           </button>
         </div>
@@ -79,6 +83,7 @@
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { ArrowLeft, Library, Shuffle, Sparkles } from '@lucide/vue'
 import ArchiveBackAction from './ArchiveBackAction.vue'
+import { normalizeIdolAccentColor } from '../../presentation/idolAccentColor.js'
 
 const props = defineProps({
   idols: { type: Array, default: () => [] },
@@ -147,8 +152,9 @@ function chooseIdol() {
 .archive-welcome { height: 100%; min-height: 0; box-sizing: border-box; overflow-y: auto; padding: 28px 24px; background: radial-gradient(circle at 15% 0%, #dff7f3 0, transparent 36%), linear-gradient(150deg,#f7fbfb,#edf1f8); color: #173c48; font-family: Inter,"Noto Sans SC","Noto Sans JP",system-ui,sans-serif; }
 .welcome-card { width: min(920px,100%); margin: 0 auto; padding: 34px; border: 1px solid #d7e6e7; border-radius: 28px; background: rgba(255,255,255,.92); box-shadow: 0 24px 60px rgba(32,73,83,.1); }
 .idol-selection .welcome-card { width: min(1360px,100%); }
+.welcome-kicker-row { display: flex; align-items: center; gap: 16px; min-height: 44px; }
 .welcome-brand { color: #168f87; font-size: 13px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-.cancel-button { --archive-back-ink: #176f69; margin: -8px 0 12px -8px; }
+.welcome-kicker-row .archive-back-action { --archive-back-ink: #176f69; }
 header h1 { margin: 10px 0 8px; font-size: clamp(30px,5vw,52px); line-height: 1.12; outline: none; }
 header p { max-width: 680px; margin: 0; color: #607982; font-size: 16px; line-height: 1.7; }
 .welcome-notice { padding: 10px 13px; border-radius: 10px; background: #fff4d9; color: #6d5420; font-size: 14px; }
@@ -162,8 +168,8 @@ header p { max-width: 680px; margin: 0; color: #607982; font-size: 16px; line-he
 .idol-search-row { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin: 4px 0 12px; }.idol-search { display: flex; flex: 1; flex-direction: column; gap: 5px; max-width: 360px; color: #526d76; font-size: 13px; }.idol-search input { min-height: 42px; padding: 0 12px; border: 1px solid #cfdee0; border-radius: 12px; background: #fff; color: #173c48; font: inherit; }.idol-count { flex: 0 0 auto; padding-bottom: 11px; color: #67818a; font-size: 12px; }
 .idol-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; padding: 3px; }
 .idol-choice { display: grid; grid-template-columns: 52px minmax(0,1fr); align-items: center; gap: 10px; min-height: 68px; padding: 8px; border: 1px solid #dce7e8; border-radius: 14px; background: #fff; color: inherit; cursor: pointer; font: inherit; text-align: left; }
-.idol-choice.selected { border-color: #168f87; outline: 2px solid #bce7e2; }.idol-choice img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
-.idol-choice span { display: flex; min-width: 0; flex-direction: column; gap: 3px; }.idol-choice strong,.idol-choice small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.idol-choice strong { font-size: 14px; }.idol-choice small { color: #71858c; font-size: 11px; }
+.idol-choice.selected { border-color: #168f87; outline: 2px solid #bce7e2; }.idol-avatar-frame { display: grid; place-items: center; width: 52px; height: 52px; box-sizing: border-box; border: 2px solid var(--idol-color); border-radius: 50%; padding: 2px; }.idol-avatar-frame img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+.idol-choice > span:not(.idol-avatar-frame) { display: flex; min-width: 0; flex-direction: column; gap: 3px; }.idol-choice strong,.idol-choice small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.idol-choice strong { font-size: 14px; }.idol-choice small { color: #71858c; font-size: 11px; }
 .idol-empty { margin: 0; padding: 24px 12px; border: 1px dashed #cfdee0; border-radius: 12px; color: #67818a; }
 .idol-actions { position: sticky; bottom: 0; z-index: 1; display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 12px -12px -12px; padding: 12px; border-top: 1px solid #e0e9ea; border-radius: 0 0 16px 16px; background: rgba(255,255,255,.97); box-shadow: 0 -8px 24px rgba(32,73,83,.06); }.idol-actions label { margin-right: auto; color: #526d76; font-size: 13px; }.idol-selected { width: 100%; color: #176f69; font-size: 13px; font-weight: 700; }
 .idol-selected { padding: 0; border: 0; background: none; cursor: pointer; text-align: left; }
@@ -185,7 +191,7 @@ button:focus-visible,select:focus-visible,input:focus-visible { outline: 3px sol
   .idol-selection .idol-actions label { grid-column: 1 / -1; }
   .idol-selection footer { flex: 0 0 auto; }
 }
-@media (max-width:360px){.archive-welcome{padding:10px 8px}.welcome-card{padding:16px 14px}.idol-step{margin-top:12px}.idol-choice{grid-template-columns:44px minmax(0,1fr);min-height:62px}.idol-choice img{width:44px;height:44px}.idol-actions{gap:7px}.idol-search-row{margin-bottom:8px}}
+@media (max-width:360px){.archive-welcome{padding:10px 8px}.welcome-card{padding:16px 14px}.idol-step{margin-top:12px}.idol-choice{grid-template-columns:44px minmax(0,1fr);min-height:62px}.idol-avatar-frame{width:44px;height:44px}.idol-avatar-frame img{width:36px;height:36px}.idol-actions{gap:7px}.idol-search-row{margin-bottom:8px}}
 @media (max-width:700px) and (max-height:700px){
   .idol-selection .welcome-card { padding-top: 12px; padding-bottom: 12px; }
   .idol-selection header h1 { margin: 4px 0; font-size: 24px; }

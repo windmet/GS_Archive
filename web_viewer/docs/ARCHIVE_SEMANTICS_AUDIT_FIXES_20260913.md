@@ -25,3 +25,9 @@
 生成层先取 PictureStudio 主数据的资源 ID 直连名称；直连缺失时，仅在同一背景资源族（末尾两位变体序号以外的 ID 完全一致）所有已命名变体名称一致时继承，并将 `background_name_resolution=asset-family` 与证据资源 ID 写入索引。相互冲突或全无名称的资源保持未知，绝不由画面或资源英文 ID 猜中文/日文名称。637 条工作资源中的已命名条目由 444 增至 453，仅 9 条受益；`bg033_concerthallm_in_01` 因变体名称冲突仍未知。
 
 验证：原始解码主数据和同一 compiled corpus 重生索引，`verify-masterdata-work.py` 全量基线、`verify-work-story-index.mjs`、`build:check` PASS。该映射是有证据的展示补全，不是新的主数据事实；其余 184 条仍显示“场景名称未收录”。
+
+## 05 · Picker 顶栏与人物色
+
+Picker/Welcome 的返回动作与 SideM Archive 标识进入独立 kicker row，移除返回按钮负 margin。人物头像框统一使用已有 `normalizeIdolAccentColor`，不另建颜色解释规则；头像本身保留圆形与原有选择态。窄屏长名单继续由内层网格滚动，操作区保持可见。
+
+验证：`verify:portal-navigation`、`build:check` PASS。5175 / Playwright Chromium 1280×850、390×850 与 390×650：返回与品牌间距 16px，首位人物色框为非默认角色色；搜索可筛选，退出选择回 Portal；窄屏长名单可滚动、操作区可见；无页面错误或横向溢出。截图仓库外；未做真实设备 safe-area 验收。
