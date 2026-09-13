@@ -1,13 +1,14 @@
 // Product-facing song data is projected from evidence plus the canonical identity dictionary.
 // Resource existence is not a playback guarantee. Keep collected media and playable media distinct.
-export function buildSongPresentation(song, identity, { playbackTrack = null, audioExperiment = null } = {}) {
+import { buildIdolReference } from './IdolReferencePresentation.js'
+
+export function buildSongPresentation(song, identity, { playbackTrack = null, audioExperiment = null, manifest = null } = {}) {
   if (!song) return null
-  const idols = identity?.by_idol_code || Object.fromEntries((identity?.idols || []).map(entry => [entry.idol_code, entry]))
   const units = new Map((identity?.units || []).map(entry => [entry.unit_code, entry]))
-  const idol = code => ({
-    id: code, displayName: idols[code]?.display_name || '姓名待确认',
-    actionable: Boolean(idols[code]?.display_name),
-  })
+  const idol = code => {
+    const reference = buildIdolReference(code, identity, manifest, `song:${song.song_code}`)
+    return { id: code, displayName: reference.displayName, actionable: reference.actionable, reference }
+  }
   const unit = code => {
     // Audio resource aliases have three numeric digits; canonical units have two.
     const id = /^0\d{2}[a-z0-9]{3}$/.test(code || '') ? code.slice(1) : code

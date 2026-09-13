@@ -3,7 +3,7 @@ const IDOL_CODE = /^\d{3}[a-z0-9]{3}$/i
 /** Identity comes from the idol dictionary; a missing owner is never replaced by a different idol. */
 export function buildIdolReference(idolCode, dictionary, manifest, context = '') {
   const code = IDOL_CODE.test(idolCode || '') ? idolCode : ''
-  const profile = code ? dictionary?.by_idol_code?.[code] : null
+  const profile = code ? dictionary?.by_idol_code?.[code] || dictionary?.idols?.find(idol => idol.idol_code === code) : null
   const displayName = typeof profile?.display_name === 'string' ? profile.display_name.trim() : ''
   if (!displayName) {
     return {

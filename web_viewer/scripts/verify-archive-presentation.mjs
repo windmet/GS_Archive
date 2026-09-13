@@ -13,20 +13,26 @@ const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8'
 const json = path => JSON.parse(read(`public/data/${path}`))
 const catalog = json('song_catalog.json')
 const identity = json('masterdata/idol_unit_dictionary.json')
+const manifest = json('archive_manifest.json')
 const playback = json('song_playback_audio.json')
 const experiments = json('song_experimental_audio.json')
-const before = JSON.stringify([catalog, identity, playback, experiments])
+const before = JSON.stringify([catalog, identity, manifest, playback, experiments])
 const presentations = Object.values(catalog.songs).map(song => buildSongPresentation(song, identity, {
-  playbackTrack: playback.songs[song.song_code], audioExperiment: experiments.songs[song.song_code],
+  playbackTrack: playback.songs[song.song_code], audioExperiment: experiments.songs[song.song_code], manifest,
 }))
 const byId = Object.fromEntries(presentations.map(song => [song.id, song]))
 assert.equal(byId.brndnf.unit.displayName, 'Jupiter')
 assert.equal(byId.brndnf.performers[0].displayName, '天ヶ瀬 冬馬')
+assert.equal(byId.brndnf.performers[0].reference.unitName, 'Jupiter')
+assert.equal(byId.brndnf.performers[0].reference.imageCandidates[0].kind, 'idol_icon')
 assert.equal(byId.drvalv.unit, null, 'a special selector is never interpreted as a unit')
 assert.equal(byId.drvalv.performers.length, 0, 'vocal resources are not a confirmed performer lineup')
 assert.equal(byId.drvalv.audioGroups[0].entries[0].id, '01jup', 'resource alias resolves to canonical route identity')
 assert.equal(byId.drvalv.playback.experiment.solo_tracks['001tom'].displayName, '天ヶ瀬 冬馬')
 assert.equal(byId.flslgt.performers.length, 4)
+assert.equal(byId.anwhre.performers.length, 5, 'special lineup retains its explicit five performers')
+assert.equal(byId.anwhre.unit, null, 'special lineup is not assigned a single unit')
+assert.equal(byId.drvalv.audioGroups.find(group => group.title === '个人声部').entries.length, 49)
 assert.equal(byId.drv999.unit, null)
 assert.equal(byId.drv999.scopeLabel, '特别演出')
 assert.ok(byId.hrkzbn.movies.length)
@@ -37,6 +43,7 @@ for (const result of presentations) {
   for (const entry of [...result.performers, ...result.audioGroups.flatMap(group => group.entries)]) {
     assert.ok(entry.displayName)
     assert.notEqual(entry.displayName, entry.id)
+    if (entry.reference) assert.equal(entry.reference.idolCode, entry.id)
   }
 }
 const missing = buildSongPresentation({ ...catalog.songs.brndnf, performance_mapping: {
@@ -46,8 +53,9 @@ assert.equal(missing.unit.actionable, false)
 assert.equal(missing.unit.displayName, '组合待确认')
 assert.equal(missing.performers[0].actionable, false)
 assert.equal(missing.performers[0].displayName, '姓名待确认')
+assert.equal(missing.performers[0].reference.imageCandidates.length, 0)
 assert.equal(missing.playbackLabel, '暂未提供试听', 'resource counts do not promise playable media')
-assert.equal(before, JSON.stringify([catalog, identity, playback, experiments]), 'projection never mutates evidence')
+assert.equal(before, JSON.stringify([catalog, identity, manifest, playback, experiments]), 'projection never mutates evidence')
 
 // Guard rendered text, not keys, URLs or event payloads. Explicit technical slots are exempt.
 // This is a bounded migrated-surface gate, not a claim about every archive page.

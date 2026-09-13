@@ -183,7 +183,8 @@ assert.match(detailComponent, /ArchiveTechnicalDetails/)
 assert.doesNotMatch(detailComponent, /IdolNameMap|function unitName/)
 assert.match(detailComponent, /emit\('open-related-story', entry\.payload\)/)
 assert.match(detailComponent, /emit\('open-unit', song\.unit\.id\)/)
-assert.match(detailComponent, /emit\('open-idol', entry\.id\)/)
+assert.match(detailComponent, /ArchiveIdolReference :reference="entry\.reference" density="portrait" @open="emit\('open-idol', \$event\)"/)
+assert.match(detailComponent, /ArchiveIdolReference :reference="entry\.reference" :show-image="false" @open="emit\('open-idol', \$event\)"/)
 assert.match(detailComponent, /rel="noopener noreferrer external"/)
 
 // Reverse navigation: idol and unit pages expose the semantic table-46 song relations.

@@ -123,3 +123,9 @@ P1/P2 是用户最先可感知的信息架构改进，N1/N2 随后收口统一�
 Cards总览在整行卡片按钮内增加所属偶像姓名，不嵌第二个按钮，也不为826条可见卡片新增头像请求。卡片详情增加“所属偶像”关系入口；App捕获当前卡片来源后进入 Idol，返回时恢复原卡，继续返回恢复卡片筛选。原始索引836条的所属ID全部能解析；当前正常目录筛选显示826条，两者口径不同。
 
 验证：`verify:idol-reference`覆盖836条索引、冬马规范姓名/Jupiter归属及未知ID不可操作；`verify:card-filters`、`verify:archive-navigation-state`、`verify:routes`与`npm run build:check`通过，后者只生成E盘`.analysis/build-check`代码产物，不复制public。5175 Browser实走桌面总览、网格、卡片详情及390px详情；从SSR＋标题筛选进入卡片→偶像→卡片→原筛选列表，查询与筛选恢复；桌面/390px无横向溢出。独立Edge CDP核对826行无嵌套按钮、零额外owner头像，并阻断冬马头像请求，确认同尺寸文字占位和可点击入口，未见console error。此批尚未验收Song/Unit/Story/Event跨页人物引用、导航Chrome或歌曲时间轴。
+
+## P2 分批实施：歌曲页人物引用
+
+输入为P1提交 `5eea343`；实施期间，人物选择页按用户反馈取消人数分页、改为完整名单自然滚动，并独立提交 `ce46adb`。P2本批只迁移Song：`SongPresentation`把已有演唱成员和个人声部条目投影为共同的偶像引用，`ArchiveSongDetail`以portrait密度展示确定演唱成员；大量个人声部条目只展示文字入口，不新增49张头像请求。组合声部仍是组合链接，声部收录没有被标成确定演唱阵容。身份与组合来自字典和档案manifest；未知人物保持不可操作。
+
+验证：`verify:archive-presentation`覆盖61首歌、Jupiter固定组合、ANYWHERE特别五人阵容、DRIVE A LIVE自由编成与49条个人声部、未知ID及原始证据不变；`verify:song-domain-landing`、`verify:idol-reference`、`verify:archive-navigation-state`、`verify:routes`与`npm run build:check`通过。5175 Browser实走BRAND NEW FIELD三人入口、翔太→偶像→返回歌曲，检查ANYWHERE五人和DRIVE A LIVE声部区；补充Edge CDP在1440×900与390×844核对头像数、0横向溢出和0控制台错误。构建只生成E盘`.analysis/build-check`代码产物，不复制public。Unit/Story/Event/Portal迁移、导航Chrome和歌曲时间轴仍待后续批次，不在此批验收范围内。

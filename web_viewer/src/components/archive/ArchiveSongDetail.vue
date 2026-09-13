@@ -32,7 +32,7 @@
         <div v-else class="performance-scope-card"><strong>{{ song.scopeLabel }}</strong><p>{{ song.scopeDescription }}</p></div>
         <div v-if="song.performers.length" class="song-subsection">
           <h4>演唱成员</h4><p v-if="song.performerNote" class="song-block-note">{{ song.performerNote }}</p>
-          <ul class="chip-list"><li v-for="entry in song.performers" :key="entry.id"><button :disabled="!entry.actionable" @click="emit('open-idol', entry.id)">{{ entry.displayName }}</button></li></ul>
+          <ul class="performer-list"><li v-for="entry in song.performers" :key="entry.id"><ArchiveIdolReference :reference="entry.reference" density="portrait" @open="emit('open-idol', $event)" /></li></ul>
         </div>
       </section>
       <ArchiveSongExperimentalPlayer v-if="song.playback.experiment" :song="song" :audio-experiment="song.playback.experiment" />
@@ -42,7 +42,8 @@
         <p class="song-block-note">完整混音：{{ song.fullMixCollected ? '已收录' : '未收录' }}。{{ song.playbackLabel }}。</p>
         <div v-for="group in song.audioGroups" :key="group.title" class="song-subsection">
           <h4>{{ group.title }}（{{ group.entries.length }}）</h4><p v-if="group.note" class="song-block-note">{{ group.note }}</p>
-          <ul class="chip-list"><li v-for="entry in group.entries" :key="entry.id"><button :disabled="!entry.actionable" @click="emit(group.kind === 'unit' ? 'open-unit' : 'open-idol', entry.id)">{{ entry.displayName }}</button></li></ul>
+          <ul v-if="group.kind === 'unit'" class="chip-list"><li v-for="entry in group.entries" :key="entry.id"><button :disabled="!entry.actionable" @click="emit('open-unit', entry.id)">{{ entry.displayName }}</button></li></ul>
+          <ul v-else class="audio-idol-list"><li v-for="entry in group.entries" :key="entry.id"><ArchiveIdolReference :reference="entry.reference" :show-image="false" @open="emit('open-idol', $event)" /></li></ul>
         </div>
       </section>
       <section v-if="song.variants.length" class="song-block">
@@ -69,6 +70,7 @@
 <script setup>
 import { ChevronRight, ExternalLink } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
+import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import ArchiveSongExperimentalPlayer from './ArchiveSongExperimentalPlayer.vue'
 import ArchiveSongSinglePlayer from './ArchiveSongSinglePlayer.vue'
 defineProps({ song: { type: Object, required: true } })
@@ -134,6 +136,9 @@ const emit = defineEmits(['open-song', 'open-unit', 'open-idol', 'open-related-s
 .song-subsection h4 { margin: 0 0 8px; font-size: 0.78rem; color: #5c6771; }
 .chip-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
 .chip-list li { display: inline-flex; }
+.performer-list, .audio-idol-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; margin: 10px 0 0; padding: 0; list-style: none; }
+.audio-idol-list { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.performer-list li, .audio-idol-list li { min-width: 0; }
 .chip-list button {
   display: inline-flex;
   align-items: center;

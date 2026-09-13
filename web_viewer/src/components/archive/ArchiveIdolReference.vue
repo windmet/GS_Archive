@@ -2,12 +2,12 @@
   <component
     :is="reference?.actionable ? 'button' : 'span'"
     class="archive-idol-reference"
-    :class="`density-${density}`"
+    :class="[`density-${density}`, { 'without-image': !showImage }]"
     :type="reference?.actionable ? 'button' : undefined"
     :aria-label="reference?.actionable ? `查看${reference.displayName}的偶像资料` : undefined"
     @click="reference?.actionable && emit('open', reference.idolCode)"
   >
-    <span class="idol-reference-art" aria-hidden="true">
+    <span v-if="showImage" class="idol-reference-art" aria-hidden="true">
       <img v-if="imageSrc" :src="imageSrc" alt="" loading="lazy" @error="advanceImage" />
       <span v-else>{{ reference?.displayName?.slice(0, 1) || '?' }}</span>
     </span>
@@ -26,6 +26,7 @@ import { ChevronRight } from '@lucide/vue'
 const props = defineProps({
   reference: { type: Object, default: null },
   density: { type: String, default: 'compact', validator: value => ['compact', 'portrait', 'visual'].includes(value) },
+  showImage: { type: Boolean, default: true },
 })
 const emit = defineEmits(['open'])
 const imageIndex = ref(0)
@@ -45,6 +46,7 @@ button.archive-idol-reference:hover { border-color: #89c9c2; background: #eff9f7
 button.archive-idol-reference:focus-visible { outline: 3px solid #37a9a1; outline-offset: 2px; }
 .density-portrait { --reference-size: 64px; min-height: 78px; }
 .density-visual { --reference-size: 96px; min-height: 110px; }
+.without-image { min-height: 44px; padding-inline: 12px; }
 .idol-reference-art { display: grid; flex: 0 0 var(--reference-size); place-items: center; width: var(--reference-size); height: var(--reference-size); border-radius: 50%; background: #e7f0f0; color: #63848a; font-weight: 700; overflow: hidden; }
 .idol-reference-art img { width: 100%; height: 100%; object-fit: cover; }
 .idol-reference-copy { display: flex; flex: 1; flex-direction: column; gap: 3px; min-width: 0; }

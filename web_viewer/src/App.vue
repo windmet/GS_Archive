@@ -1304,6 +1304,7 @@ const currentSong = computed(() => songCatalogData.value?.songs?.[currentSongId.
 const currentSongPresentation = computed(() => buildSongPresentation(currentSong.value, idolUnitData.value, {
   playbackTrack: songPlaybackAudioData.value?.songs?.[currentSongId.value] || null,
   audioExperiment: songExperimentalAudioData.value?.songs?.[currentSongId.value] || null,
+  manifest: archiveManifestData.value,
 }))
 
 const archiveSection = computed(() => archiveSectionForRoute({
