@@ -32,6 +32,8 @@
     "dev": "vite --configLoader native",
     "build": "vite build --configLoader native",
     "build:check": "node scripts/build-check.mjs",
+    "build:preview": "node scripts/build-preview.mjs",
+    "verify:preview-routing": "node scripts/verify-preview-routing.mjs",
     "smoke": "vite build --configLoader native",
     "verify:archive-assets": "node scripts/verify-archive-assets.mjs",
     "verify:story-stage-loading": "node scripts/verify-story-stage-loading.mjs && node scripts/verify-story-position-clock.mjs",
