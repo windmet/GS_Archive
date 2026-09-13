@@ -17,7 +17,13 @@ const image = choose(item => item.request_key.startsWith('assets/brand/') && ite
 const data = choose(item => item.request_key === 'data/archive_manifest.json')
 const audio = choose(item => item.request_key.startsWith('assets/voice/') && item.request_key.endsWith('.m4a') && item.deployed_size > 32)
 const local = item => path.join(root, '.deploy', 'r2', ...item.object_key.split('/'))
-async function request(key, options) { return fetch(`${base}/${key}`, options) }
+// This verifier compares served bytes against staged bytes, so it pins the
+// identity representation. Cloudflare Brotli-compresses JSON and, correctly,
+// drops Content-Length when it does; without this a transfer-coding detail
+// reads as a content mismatch.
+async function request(key, options = {}) {
+  return fetch(`${base}/${key}`, { ...options, headers: { 'Accept-Encoding': 'identity', ...options.headers } })
+}
 const MiB = bytes => (bytes / 1024 ** 2).toFixed(2)
 
 // Untransformed PNG prefixes must keep serving real PNG bytes at their own key.
