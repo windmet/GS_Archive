@@ -232,6 +232,55 @@ for (const phase of ['fetch', 'decode']) {
     else globalThis.window = originalWindow
   }
 }
+{
+  const ctx = new FakeAudioContext()
+  ctx.decodeAudioData = async () => ({ duration: 1, length: 48000, numberOfChannels: 1 })
+  const session = new StoryAudioSession({ contextFactory: () => ctx })
+  const step = { dialogue: { voice: 'race-same-voice' }, lipSync: false }
+  const currentStep = { value: step }
+  const currentStepIndex = { value: 0 }
+  let releaseFetch
+  const pendingFetch = new Promise(resolve => { releaseFetch = resolve })
+  globalThis.window = { setTimeout, clearTimeout }
+  globalThis.fetch = async () => {
+    await pendingFetch
+    return { ok: true, headers: new Map(), arrayBuffer: async () => new ArrayBuffer(2000) }
+  }
+  const player = useVoicePlayer({ spineStageRef: { value: null }, currentStep, currentStepIndex,
+    compiledData: { value: { scenario_id: 'voice-race' } }, isPlaying: { value: false }, audioSession: session })
+  try {
+    const first = player.playVoice()
+    currentStep.value = { dialogue: {} }
+    currentStepIndex.value = 1
+    player.stopCurrentVoice('left-before-fetch')
+    player.resetVoiceDedup()
+    currentStep.value = step
+    currentStepIndex.value = 0
+    const second = player.playVoice()
+    releaseFetch()
+    assert.deepEqual(await Promise.all([first, second]), [false, true],
+      'a late same-voice request from the old visit must not play into the new visit')
+    assert.equal(session.inspect().active_sources, 1, 'only the newest visit may create a voice source')
+
+    let releaseReplay
+    const pendingReplay = new Promise(resolve => { releaseReplay = resolve })
+    globalThis.fetch = async () => {
+      await pendingReplay
+      return { ok: true, headers: new Map(), arrayBuffer: async () => new ArrayBuffer(2000) }
+    }
+    const replay = player.replayVoiceDetached({ dialogue: { voice: 'backlog-stale' }, lipSync: false })
+    player.stopCurrentVoice('backlog-closed')
+    releaseReplay()
+    assert.equal(await replay, false, 'closing the backlog must invalidate its pending detached replay')
+    assert.equal(session.inspect().active_sources, 0)
+  } finally {
+    player.dispose()
+    await session.dispose()
+    globalThis.fetch = originalFetch
+    if (originalWindow === undefined) delete globalThis.window
+    else globalThis.window = originalWindow
+  }
+}
 globalThis.fetch = async () => ({ ok: true, arrayBuffer: async () => new ArrayBuffer(8) })
 try {
   assert.equal(knownDanglingStoryVoiceCount, 12)
@@ -463,4 +512,4 @@ assert.doesNotMatch(voicePlayerSource, /new \(window\.AudioContext/)
 assert.doesNotMatch(audioManagerSource, /new \(window\.AudioContext/)
 
 console.log('Story audio session verification passed.')
-console.log('  100-cycle BGM/Ambient crossfade, capture/restore, visibility/overlay pause, stale-load race, bounded sources, timer cleanup and noAudio network isolation covered.')
+console.log('  100-cycle BGM/Ambient crossfade, capture/restore, visibility/overlay pause, stale voice/BGM/Ambient loads, bounded sources, timer cleanup and noAudio network isolation covered.')

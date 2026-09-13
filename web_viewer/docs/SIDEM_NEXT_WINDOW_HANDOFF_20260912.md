@@ -506,3 +506,11 @@ Edge CDP以全新本地存储状态执行18项desktop/390px启动、偏好、深
 输入HEAD `3c86e8b`。继续核对P3发现`useStepSceneEffects`的fade/slide/text_disable/text_time/stage/talk_stamp自动过渡在定时器中直接递增`currentStepIndex`，绕过手动导航新增的切步前画面捕获。现在该定时器在确认未被阻断、完成原有读过/历史处理后，先调用同一`beginFrameHold(targetIndex)`，再递增索引；不改各类型的延时、pushHistory与StoryClock行为。`verify:story-step-playback-state`新增text_disable与stage自动切步的捕获顺序、阻断时不捕获、history保持及cleanup取消回归，完整`verify:story-loading-safety`通过；`build:check`完成2528模块，仍仅生成E盘固定代码目录、不复制public。
 
 Browser 5175活动430018第二话：先在翔太5/26结算镜头cue，再进入6/26，等待剧本自动推进；受控延迟冬马`comu.skel`后，7/26保留翔太/录影棚像素和局部等待提示，资源放行后进入8/26并释放画布/提示，页面脚本错误0。IAB普通路径自动推进至8/26，console error 0。该补漏不改变上一节P3部分实施的边界；准备/提交分离、语音与纹理慢资源、复杂暂停/seek/skip/choice矩阵及长稳仍未完成。
+
+## P3 语音迟到隔离：相同文件重访也只播当前请求
+
+输入HEAD `2f60071`。`useVoicePlayer.playVoice`原来在异步准备完成后只比较语音文件名；离开某一步又回到同名语音时，旧请求可能通过该检查并与新请求双播。现在每次停止/重置语音请求代次，开始准备时捕获步骤对象与索引，返回后必须同时匹配代次、对象、索引和语音名才可播放；过期请求也不得把新请求的状态改成`ended`。回看语音的独立请求同样在关闭/切步后失效。压缩字节仍可供在场消费者共享，未为此强制取消全局缓存请求。
+
+`verify:story-audio`增加受控“离开→返回同一句语音”的共享in-flight竞态，断言仅最新一次创建voice source；关闭回看后迟到请求不得播放。`verify:story-loading-safety`及`build:check`通过，2528模块，固定E盘代码产物不复制public。IAB重载活动430018第二话正常到翔太5/26，console error 0；Edge只延迟`1_3_30018_01_c1001.m4a`的播放器GET，入口预载和背景仍可进入。离开至6/26后放行旧GET，运行时仅保留环境音source，过期voice未启动，页面脚本错误0。这证明一个真实慢语音负例，未覆盖听感、所有回看/choice/skip组合或P3完整的提交前准备。
+
+源码边界继续明确：`Preloader`只证明HTTP/image层的暖载，`SpineStage.applyState`仍在步骤提交后异步拉取/构造Spine并投影；因此不能把预载完成误报成提交前renderable。下一阶段需要为目标步建立可取消的真正准备/提交合同，并把舞台实例与音频解码的所有权接入同一会话；旧帧遮罩仍是提交后失败的防护，而非该合同的替代。

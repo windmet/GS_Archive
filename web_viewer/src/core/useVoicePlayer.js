@@ -24,6 +24,7 @@ export function useVoicePlayer({
   let currentLipCurve = null
   let voiceCharaId = null
   let voiceState = 'idle'
+  let voiceRequestGeneration = 0
   const pendingVoiceLoads = new Set()
   const decodedVoiceCache = new Map()
   const MAX_DECODED_VOICES = 12
@@ -85,11 +86,13 @@ export function useVoicePlayer({
   }
 
   function resetVoiceDedup() {
+    voiceRequestGeneration++
     lastVoiceUrl = null
     lastVoiceStepIndex = -1
   }
 
   function stopCurrentVoice(reason = 'unspecified') {
+    voiceRequestGeneration++
     voiceState = 'idle'
     if (!currentSource) {
       currentLipCurve = null
@@ -254,13 +257,17 @@ export function useVoicePlayer({
 
     if (voice === lastVoiceUrl && currentStepIndex.value === lastVoiceStepIndex) return false
     stopCurrentVoice('step-change-new-voice')
+    const requestGeneration = voiceRequestGeneration
+    const stepIndex = currentStepIndex.value
     lastVoiceUrl = voice
     lastVoiceStepIndex = currentStepIndex.value
 
     isPlaying.value = false
     voiceState = 'preparing'
     const prepared = await prepareVoice({ step, scenarioId })
-    if (!prepared || voice !== lastVoiceUrl) {
+    if (requestGeneration !== voiceRequestGeneration || step !== currentStep.value
+      || stepIndex !== currentStepIndex.value || voice !== lastVoiceUrl) return false
+    if (!prepared) {
       voiceState = 'ended'
       return false
     }
@@ -269,12 +276,14 @@ export function useVoicePlayer({
 
   async function replayVoiceDetached(step) {
     if (noVoice || !step?.dialogue?.voice) return false
+    const requestGeneration = ++voiceRequestGeneration
     voiceState = 'preparing'
     const prepared = await prepareVoice({
       step,
       scenarioId: compiledData.value?.scenario_id,
       includeLip: false,
     })
+    if (requestGeneration !== voiceRequestGeneration) return false
     if (!prepared) {
       voiceState = 'ended'
       return false
