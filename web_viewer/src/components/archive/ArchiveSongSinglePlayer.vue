@@ -16,12 +16,14 @@
     <p v-if="clockSnapshot.phase === 'waiting'" class="song-block-note" role="status">正在缓冲音频…</p>
     <p class="song-block-note">时长 {{ formatDuration(track.source?.duration_seconds) }}</p>
     <p v-if="audioError" class="single-song-error" role="alert">{{ audioError }}</p>
+    <ArchiveSongLyrics :song-code="song.id" />
   </section>
 </template>
 
 <script setup>
 import { onBeforeUnmount, ref, watch } from 'vue'
 import { createMediaElementClock } from '../../utils/mediaElementClock.js'
+import ArchiveSongLyrics from './ArchiveSongLyrics.vue'
 
 const props = defineProps({
   song: { type: Object, required: true },

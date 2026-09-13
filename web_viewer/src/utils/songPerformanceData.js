@@ -49,3 +49,9 @@ export async function fetchSongPerformanceArrangements(songCode) {
   const references = (manifest.songs[songCode] || []).filter(entry => !entry.variant && entry.singerCount > 0)
   return Promise.all(references.map(entry => fetchSongTimeline(entry.id)))
 }
+
+export async function fetchSongBaseTimeline(songCode) {
+  const manifest = await fetchSongTimelineManifest()
+  const reference = (manifest.songs[songCode] || []).find(entry => !entry.variant)
+  return reference ? fetchSongTimeline(reference.id) : null
+}

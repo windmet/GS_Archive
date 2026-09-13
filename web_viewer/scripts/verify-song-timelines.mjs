@@ -97,17 +97,22 @@ try {
   assert.equal(requested.length, 2, 'unknown ids cannot request arbitrary paths')
   const drv = await api.fetchSongTimeline('drv999_live_effect')
   assert.equal(drv.capabilities.stage.kind, 'special_single')
+  const brandNewField = await api.fetchSongBaseTimeline('brndnf')
+  assert.equal(brandNewField.id, 'brndnf_live_effect')
+  assert.equal(brandNewField.capabilities.lyrics.alignment, 'unverified')
+  assert.equal(await api.fetchSongBaseTimeline('reason'), null,
+    'a catalog song without choreography must not request a fabricated timeline')
 
   let failOnce = true
   globalThis.fetch = async url => {
-    if (url.endsWith('/brndnf_live_effect.json') && failOnce) {
+    if (url.endsWith('/anwhre_live_effect.json') && failOnce) {
       failOnce = false
       return { ok: false, status: 503 }
     }
     return { ok: true, json: async () => read(`public${url}`) }
   }
-  await assert.rejects(api.fetchSongTimeline('brndnf_live_effect'), /503/)
-  assert.equal((await api.fetchSongTimeline('brndnf_live_effect')).id, 'brndnf_live_effect',
+  await assert.rejects(api.fetchSongTimeline('anwhre_live_effect'), /503/)
+  assert.equal((await api.fetchSongTimeline('anwhre_live_effect')).id, 'anwhre_live_effect',
     'failed detail request must be retryable')
 } finally {
   globalThis.fetch = previousFetch
