@@ -1839,10 +1839,8 @@ function navigateArchiveSection(section) {
   else if (section === 'home') goHome()
   else if (section === 'stories') openStoryCatalog()
   else if (section === 'songs') openSongCatalog()
-  else if (section === 'idols') {
-    if (preferredArchiveIdol.value) openPrimaryIdol(preferredArchiveIdol.value.id)
-    else openIdolPicker('profile')
-  } else if (section === 'cards') openPrimaryCards(preferredArchiveIdol.value?.id || '')
+  else if (section === 'idols') openIdolDirectory()
+  else if (section === 'cards') openPrimaryCards(preferredArchiveIdol.value?.id || '')
   else if (section === 'interactions') {
     if (preferredArchiveIdol.value) openMobileArchive({ idolCode: preferredArchiveIdol.value.id, mode: 'personal', fromSection: true })
     else openIdolPicker('mobile')
@@ -2786,6 +2784,16 @@ function openPrimaryIdol(idolCode = '') {
   currentGroup.value = null
   currentCardId.value = ''
   commitView('idol_detail')
+}
+
+function openIdolDirectory() {
+  filterQuery.value = ''
+  currentCategoryId.value = 'idol'
+  currentCharacterId.value = ''
+  currentIdolUnitFilter.value = ''
+  currentGroup.value = null
+  currentCardId.value = ''
+  commitView('idols')
 }
 
 function openPrimaryCards(idolCode = '') {
