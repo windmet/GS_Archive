@@ -179,3 +179,9 @@ Portal自推卡改用共享身份引用，规范姓名、组合和头像降级�
 歌曲详情的五槽合唱现在通过`fetchSongPerformanceArrangements(songCode)`只读取manifest和本曲的base编排，失败请求可重试；Chibi实验舞台仍有自己的整库入口，本批没有迁移或宣称其按曲加载。以`drvalv`为例，该入口JSON请求从原编舞索引8,267,629 bytes降到manifest加详情39,956 bytes。源编舞中负起点、重叠歌词和零duration保持原值；当前源没有同刻歌词的实证样例，投影不做按时间去重/排序，相关合成用例留在后续歌词消费合同中。
 
 验证：`verify:song-timelines`含Ajv schema、全118条源字段与hash一致性、无映射reason、特殊版边界、按曲请求集合及503重试；`verify:song-experimental-audio`改为检查新轻量入口，`verify:live-chibi-singer-slots`、`verify:song-playback-audio`、`verify:song-domain-landing`和`build:check`通过。5175 Browser实开DRIVE A LIVE切五槽合唱，播放器ready、五条声部已解码、无页面错误；独立Edge CDP复核1440×900截图、0横向溢出、0控制台错误，网络仅有manifest与`drvalv_live_effect.json`两个时间线请求、无整库编舞请求。构建仍为E盘`.analysis/build-check`代码产物，无public复制。没有播放声音、听感或歌词同步验收，S1–S4仍待实施。
+
+## S1 首批：正式完整混音的原生时钟适配
+
+输入HEAD `39112da`。`createMediaElementClock`只观察当前`<audio>`，将metadata、播放/暂停、缓冲、seek、进度、速率、结束和错误整理为同一快照；不接管原生播放按钮、另起RAF或改写音频时间。`ArchiveSongSinglePlayer`绑定该时钟，在真实waiting状态才显示缓冲提示；更换歌曲或组件卸载时移除监听。此批是歌词消费前的时钟基础，还没有歌词UI或时间轴映射。S0中全部offset仍是`unverified`，不能据本批推断歌词同步。
+
+验证：`verify:media-element-clock`以可控媒体事件验证加载、播放、缓冲、seek、rate、结束、错误、换音源和卸载；`build:check`通过。5175 Browser实开`brndnf`，音频metadata后时钟为ready，键盘在原生控件上播放后为playing、再次暂停后回ready，页面无相关控制台错误。未检验长音频头中尾的歌词对齐、seek后的实际听感及实验混音时钟；S1其余工作仍待实施。

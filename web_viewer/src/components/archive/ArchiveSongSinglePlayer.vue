@@ -1,24 +1,27 @@
 <template>
-  <section class="song-block single-song-player" aria-labelledby="song-single-player-title">
+  <section class="song-block single-song-player" aria-labelledby="song-single-player-title" :data-clock-phase="clockSnapshot.phase">
     <div class="song-block-heading">
       <span>FULL MIX</span>
       <h3 id="song-single-player-title">歌曲播放</h3>
     </div>
     <p class="song-block-note">完整混音试听</p>
     <audio
+      ref="audioElement"
       controls
       preload="metadata"
       :src="track.url"
       :aria-label="`${song.title} 完整混音`"
       @error="audioError = '暂时无法播放，请稍后重试。'"
     />
+    <p v-if="clockSnapshot.phase === 'waiting'" class="song-block-note" role="status">正在缓冲音频…</p>
     <p class="song-block-note">时长 {{ formatDuration(track.source?.duration_seconds) }}</p>
     <p v-if="audioError" class="single-song-error" role="alert">{{ audioError }}</p>
   </section>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { onBeforeUnmount, ref, watch } from 'vue'
+import { createMediaElementClock } from '../../utils/mediaElementClock.js'
 
 const props = defineProps({
   song: { type: Object, required: true },
@@ -26,6 +29,11 @@ const props = defineProps({
 })
 
 const audioError = ref('')
+const audioElement = ref(null)
+const clockSnapshot = ref({ phase: 'idle', currentTime: 0, duration: null, playbackRate: 1, errorCode: null })
+const clock = createMediaElementClock(snapshot => { clockSnapshot.value = snapshot })
+watch(audioElement, element => clock.bind(element), { immediate: true })
+onBeforeUnmount(() => clock.dispose())
 
 function formatDuration(value) {
   const seconds = Math.max(0, Math.round(Number(value) || 0))
