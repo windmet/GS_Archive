@@ -13,6 +13,8 @@
     <div class="viewer-stage">
     <!-- Spine rendering layer (background + characters) -->
     <SpineStage ref="spineStageRef" :step="stageStep" :fallbackBg="firstAvailableBg" :debug-controls="RUNTIME_DEBUG" :now-milliseconds="storyRuntimeCues.nowMilliseconds" responsive-positions release-owner="story-player" />
+    <div ref="frameHoldRoot" v-show="frameHolding" class="held-scene" aria-hidden="true"></div>
+    <div v-if="localBuffering && !HIDE_UI" class="local-buffering" role="status" aria-live="polite">正在准备下一段画面…</div>
 
     <!-- Top bar -->
     <PlayerTopBar
@@ -32,7 +34,7 @@
     <!-- Voice audio player: handled by the Web Audio API to avoid IDM sniffing -->
 
     <!-- UI overlay for step-specific screens -->
-    <div class="ui-overlay" v-if="compiledData && !HIDE_UI && !uiHidden && (!episodeFinished || communicationCompleted)">
+    <div class="ui-overlay" :class="{ 'held-underlay': frameHolding }" :aria-hidden="frameHolding ? 'true' : undefined" v-if="compiledData && !HIDE_UI && !uiHidden && (!episodeFinished || communicationCompleted)">
 
       <!-- ADV dialogue -->
       <Transition name="adv-dialogue-fade" appear>
@@ -91,7 +93,7 @@
     <!-- Keep a hidden title mounted so restoring UI resumes the same animation.
          Each step owns its card and completion events, including adjacent titles. -->
     <div v-if="compiledData && !HIDE_UI && !episodeFinished && currentStep.type === 'title'"
-      class="ui-overlay" :style="{ visibility: uiHidden ? 'hidden' : undefined }">
+      class="ui-overlay" :class="{ 'held-underlay': frameHolding }" :aria-hidden="frameHolding ? 'true' : undefined" :style="{ visibility: uiHidden ? 'hidden' : undefined }">
       <TitleUI
         :key="currentStepIndex"
         :step="currentStep"
@@ -259,7 +261,15 @@ const historyStack = ref([])
 const selectedChoices = reactive(new Map())
 const restoredSceneState = ref(null)
 const sceneSnapshotStore = new SceneSnapshotStore()
-let initialReadyEmitted = false
+const initialReadyEmitted = ref(false)
+const frameHoldRoot = ref(null)
+const frameHolding = ref(false)
+const frameHoldRequired = ref(false)
+const runtimeReadinessStatus = ref('idle')
+let heldTargetIndex = null
+const MAX_HELD_FRAME_PIXELS = 1920 * 1080
+const localBuffering = computed(() => initialReadyEmitted.value && runtimeReadinessStatus.value === 'waiting'
+  && (frameHolding.value || !frameHoldRequired.value))
 const isPlaying = ref(false)
 const menuOpen = ref(false)
 const backlogOpen = ref(false)
@@ -394,6 +404,61 @@ const currentStep = computed(() => {
 const currentSceneState = computed(() => restoredSceneState.value || getStepSceneState(currentStep.value))
 const stageStep = computed(() => projectStepSceneState(currentStep.value, currentSceneState.value))
 
+function beginFrameHold(targetIndex) {
+  if (!initialReadyEmitted.value) return
+  if (frameHolding.value) { heldTargetIndex = targetIndex; return }
+  const manager = spineStageRef.value?.manager
+  const targetStep = compiledData.value?.steps?.[targetIndex]
+  if (!manager?.app?.renderer || !targetStep) return
+  // A text-disable bridge is intentionally short and can advance before the
+  // following actor has loaded. Preserve the last dialogue's stage pixels
+  // through that bridge, without restoring its intentionally hidden text.
+  const bridge = targetStep.type === 'text_disable' ? compiledData.value.steps[targetIndex + 1] : null
+  const visualTarget = bridge || targetStep
+  const source = getStepSceneState(currentStep.value) || {}
+  const target = getStepSceneState(visualTarget) || {}
+  const actorPending = (target.spines || []).some(actor => actor?.id && actor?.model
+    && manager.spineInstances?.[actor.id]?.modelId !== actor.model
+    && !manager._silhouetteSprites?.[actor.id])
+  frameHoldRequired.value = actorPending || source.bg !== target.bg
+  if (!frameHoldRequired.value) return
+  heldTargetIndex = bridge ? targetIndex + 1 : targetIndex
+  const host = frameHoldRoot.value
+  if (!host) return
+  try {
+    // Extract the last playable Pixi frame before the next step can remove its
+    // actors. A detached canvas holds pixels without encoding a large data URL.
+    manager.app.renderer.render(manager.app.stage)
+    const extracted = manager.app.renderer.extract.canvas()
+    let canvas = extracted
+    if (extracted.width * extracted.height > MAX_HELD_FRAME_PIXELS) {
+      const scale = Math.sqrt(MAX_HELD_FRAME_PIXELS / (extracted.width * extracted.height))
+      canvas = document.createElement('canvas')
+      canvas.width = Math.max(1, Math.round(extracted.width * scale))
+      canvas.height = Math.max(1, Math.round(extracted.height * scale))
+      canvas.getContext('2d').drawImage(extracted, 0, 0, canvas.width, canvas.height)
+    }
+    canvas.style.cssText = 'display:block;width:100%;height:100%'
+    host.replaceChildren(canvas)
+    if (!bridge && currentStep.value.type === 'adv') {
+      for (const overlay of host.parentElement.querySelectorAll(':scope > .ui-overlay')) {
+        host.appendChild(overlay.cloneNode(true))
+      }
+    }
+    frameHolding.value = true
+  } catch (error) {
+    host.replaceChildren()
+    console.warn('[StoryFrameHold] capture failed:', error?.message || error)
+  }
+}
+
+function releaseFrameHold() {
+  frameHolding.value = false
+  frameHoldRequired.value = false
+  heldTargetIndex = null
+  frameHoldRoot.value?.replaceChildren()
+}
+
 const showAdvDialogue = computed(() => {
   const step = currentStep.value
   return step?.type === 'adv' && step?.hide_dialogue !== true && currentSceneState.value?.text_disabled !== true
@@ -455,6 +520,7 @@ const {
   clearFadeAutoAdvance: () => clearFadeAutoAdvance(),
   ensureAudioCtx: _ensureAudioCtx,
   resetVoiceDedup: _resetVoiceDedup,
+  beforeStepChange: beginFrameHold,
 })
 
 const mobileBackdropUrl = computed(() => {
@@ -756,9 +822,20 @@ const storyRuntimeCues = useStoryRuntimeCues({
 })
 
 function handleRuntimeReadinessChange(readiness) {
-  const report = { ...readiness, instance: props.playbackInstance }
+  runtimeReadinessStatus.value = readiness.status
+  const hasFrame = initialReadyEmitted.value && (frameHolding.value || !frameHoldRequired.value)
+  const report = { ...readiness, hasFrame, instance: props.playbackInstance }
   emit('readiness-change', report)
   const buffering = readiness.status === 'waiting' || readiness.status === 'blocked'
+  if (readiness.status === 'playable' && frameHolding.value && currentStepIndex.value === heldTargetIndex) {
+    // Paint the completed target before the old frame is released or audio is
+    // resumed; otherwise the next voice can lead the first visible frame.
+    const manager = spineStageRef.value?.manager
+    try { manager?.app?.renderer?.render(manager.app.stage) } catch (error) {
+      console.warn('[StoryFrameHold] target render failed:', error?.message || error)
+    }
+    releaseFrameHold()
+  }
   playbackController?.setPaused('buffering', buffering)
   setRuntimeSessionPaused('buffering', buffering)
   if (readiness.status !== 'playable') return
@@ -767,8 +844,8 @@ function handleRuntimeReadinessChange(readiness) {
     pendingStepEffects = null
     handleStepChange(pending.step, pending.oldStep, { restore: pending.restore })
   }
-  if (!initialReadyEmitted) {
-    initialReadyEmitted = true
+  if (!initialReadyEmitted.value) {
+    initialReadyEmitted.value = true
     emit('ready')
   }
 }
@@ -964,6 +1041,7 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   titleAdvancePending = null
   pendingStepEffects = null
+  releaseFrameHold()
   if (RUNTIME_DEBUG) console.debug('[Lifecycle] StoryViewer onBeforeUnmount')
   cleanupStepSceneEffects()
   cleanupRuntimeCues()
@@ -1064,6 +1142,8 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
   width: 100% !important;
   height: 100% !important;
 }
+.held-scene { position: absolute; inset: 0; z-index: 10; overflow: hidden; pointer-events: none; }
+.local-buffering { position: absolute; z-index: 25; top: var(--player-content-top); left: var(--player-edge); max-width: calc(100% - 2 * var(--player-edge)); padding: 9px 14px; border: 1px solid rgba(255,255,255,.35); border-radius: 12px; background: rgba(16,31,40,.78); color: #fff; box-shadow: 0 10px 26px rgba(0,0,0,.22); font-size: .82rem; pointer-events: none; }
 .ui-overlay {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
   z-index: 1;
@@ -1072,6 +1152,7 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 .ui-overlay > * {
   pointer-events: auto;
 }
+.ui-overlay.held-underlay > * { pointer-events: none; }
 @media (max-width: 699px) {
   .story-viewer-root {
     --player-edge: 10px;

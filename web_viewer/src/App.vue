@@ -452,7 +452,7 @@
     />
 
     <!-- ====== PRELOADER LOADING SCREEN ====== -->
-    <LoadingScreen :visible="(loading || playbackBuffering) && view !== 'reader'" :status="preloadStatus" :readiness="playbackReadiness" />
+    <LoadingScreen :visible="(loading || playbackBuffering) && view !== 'reader' && !(view === 'player' && !loading && playbackReadiness?.status === 'waiting' && playbackReadiness?.hasFrame)" :status="preloadStatus" :readiness="playbackReadiness" />
 
   </div>
 </template>

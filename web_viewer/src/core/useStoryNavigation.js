@@ -17,6 +17,7 @@ export function useStoryNavigation({
   clearFadeAutoAdvance,
   ensureAudioCtx,
   resetVoiceDedup,
+  beforeStepChange = () => {},
 }) {
   const playbackWindow = computed(() => resolveStoryPlaybackWindow(compiledData.value, { startStep, initialStep, endStep }))
   const firstPlayableIndex = computed(() => playbackWindow.value.firstPlayableIndex)
@@ -78,6 +79,7 @@ export function useStoryNavigation({
       if (!isTransitionStep(step)) {
         historyStack.value.push(currentStepIndex.value)
       }
+      beforeStepChange(currentStepIndex.value + 1)
       currentStepIndex.value++
       resetVoiceDedup()
     }
@@ -95,14 +97,18 @@ export function useStoryNavigation({
         }
         target = historyStack.value.pop()
       }
-      currentStepIndex.value = Math.max(navigationStartIndex.value, target)
+      target = Math.max(navigationStartIndex.value, target)
+      beforeStepChange(target)
+      currentStepIndex.value = target
       resetVoiceDedup()
     } else if (currentStepIndex.value > navigationStartIndex.value) {
       let target = currentStepIndex.value - 1
       while (target > navigationStartIndex.value && isTransitionStep(compiledData.value?.steps?.[target])) {
         target--
       }
-      currentStepIndex.value = Math.max(navigationStartIndex.value, target)
+      target = Math.max(navigationStartIndex.value, target)
+      beforeStepChange(target)
+      currentStepIndex.value = target
       resetVoiceDedup()
     }
   }
@@ -118,6 +124,7 @@ export function useStoryNavigation({
     const targetStepId = Number(opt.target_step_id ?? opt.step_id)
     if (Number.isFinite(targetStepId) && targetStepId - 1 >= navigationStartIndex.value && targetStepId - 1 <= navigationEndIndex.value) {
       historyStack.value.push(currentStepIndex.value)
+      beforeStepChange(targetStepId - 1)
       currentStepIndex.value = targetStepId - 1
     }
   }
@@ -126,6 +133,7 @@ export function useStoryNavigation({
     clearFadeAutoAdvance()
     if (compiledData.value && index >= navigationStartIndex.value && index <= navigationEndIndex.value) {
       historyStack.value.push(currentStepIndex.value)
+      beforeStepChange(index)
       currentStepIndex.value = index
     }
   }
@@ -141,6 +149,7 @@ export function useStoryNavigation({
       && candidate >= navigationStartIndex.value
       && candidate <= navigationEndIndex.value,
     )
+    beforeStepChange(index)
     currentStepIndex.value = index
     resetVoiceDedup()
     return true
