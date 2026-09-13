@@ -1,3 +1,5 @@
+import { resolvePreviewObjectKey } from '../../shared/deploy/PreviewAssetTransform.js'
+
 const TYPES = {
   '.atlas': 'text/plain; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.gif': 'image/gif', '.jpeg': 'image/jpeg', '.jpg': 'image/jpeg',
@@ -44,16 +46,19 @@ export async function serveR2Resource({ request, env, prefix }) {
   if (!relative || relative.split('/').some(part => !part || part === '.' || part === '..' || part.includes('\\') || /[\u0000-\u001f]/.test(part))) {
     return new Response(null, { status: 400 })
   }
-  const key = `${prefix}/${relative}`
+  // The request key is the frozen public contract; the object key is what the
+  // deployment actually stored. Content type follows the object, not the URL.
+  const requestKey = `${prefix}/${relative}`
+  const objectKey = resolvePreviewObjectKey(requestKey)
   const bucket = env.ARCHIVE_ASSETS
-  const meta = await bucket.head(key)
+  const meta = await bucket.head(objectKey)
   if (!meta) return new Response(null, { status: 404 })
   const etag = meta.httpEtag || (meta.etag ? `"${meta.etag}"` : undefined)
   const headers = new Headers({
     'Accept-Ranges': 'bytes',
     'Cache-Control': 'public, max-age=3600',
     'Content-Length': String(meta.size),
-    'Content-Type': contentType(key, meta),
+    'Content-Type': contentType(objectKey, meta),
   })
   if (etag) headers.set('ETag', etag)
   if (request.headers.get('If-None-Match') === etag) {
@@ -73,7 +78,7 @@ export async function serveR2Resource({ request, env, prefix }) {
     headers.set('Content-Length', String(range.end - range.start + 1))
   }
   if (request.method === 'HEAD') return new Response(null, { status: range ? 206 : 200, headers })
-  const object = await bucket.get(key, range ? { range: { offset: range.start, length: range.end - range.start + 1 } } : undefined)
+  const object = await bucket.get(objectKey, range ? { range: { offset: range.start, length: range.end - range.start + 1 } } : undefined)
   if (!object) return new Response(null, { status: 404 })
   return new Response(object.body, { status: range ? 206 : 200, headers })
 }

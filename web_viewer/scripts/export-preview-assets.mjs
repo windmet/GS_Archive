@@ -1,8 +1,11 @@
+import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { createStoryAssetPlan } from '../shared/story/StoryAssetPlan.js'
+import { resolvePreviewObjectKey, previewTransformKind, COPY_TRANSFORM } from '../shared/deploy/PreviewAssetTransform.js'
+import { encodeLosslessWebp, runPool } from './lib/lossless-webp.mjs'
 import { createArchiveAssetResolver } from './lib/archive-assets.mjs'
 import { getBgmUrl, getSeUrl, getAmbientUrl, getLipSyncUrl } from '../src/utils/AssetResolver.js'
 import { getCardPortraitUrl, getCardLandscapeUrl } from '../src/utils/CardAssetResolver.js'
@@ -38,9 +41,9 @@ const missing = new Map()
 async function add(url, source, provenance) {
   const key = safeKey(url)
   if (files.has(key)) return
-  if (!source || !(await isFile(source))) { if (!missing.has(key)) missing.set(key, { key, provenance }); return }
+  if (!source || !(await isFile(source))) { if (!missing.has(key)) missing.set(key, { request_key: key, provenance }); return }
   const stat = await fs.stat(source)
-  files.set(key, { key, source, size: stat.size, 'content-type': typeFor(key), provenance })
+  files.set(key, { request_key: key, source, size: stat.size, 'content-type': typeFor(key), provenance })
 }
 async function walk(dir, prefix) {
   for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
@@ -105,25 +108,93 @@ for (const [id, flags] of Object.entries(archiveManifest.card_assets_by_id)) {
   }
 }
 
-const entries = [...files.values()].sort((a, b) => a.key.localeCompare(b.key))
-const totals = { files: entries.length, bytes: entries.reduce((sum, item) => sum + item.size, 0), plans, missing: missing.size }
-const missingEntries = [...missing.values()].sort((a, b) => a.key.localeCompare(b.key))
-console.log(JSON.stringify({ mode, totals, missingByKind: Object.fromEntries([...new Set(missingEntries.map(item => item.key.split('/').slice(0, 3).join('/')))].map(kind => [kind, missingEntries.filter(item => item.key.startsWith(kind + '/')).length])), missingExamples: missingEntries.slice(0, 30) }, null, 2))
+const entries = [...files.values()].sort((a, b) => a.request_key.localeCompare(b.request_key))
+for (const item of entries) {
+  item.object_key = resolvePreviewObjectKey(item.request_key)
+  item.transform = previewTransformKind(item.request_key)
+  item.source_size = item.size
+  item.source_content_type = item['content-type']
+  item.deployed_content_type = typeFor(item.object_key)
+  delete item.key
+  delete item.size
+  delete item['content-type']
+}
+const objectKeys = new Set()
+for (const item of entries) {
+  if (objectKeys.has(item.object_key)) throw new Error(`Deployment object key collision: ${item.object_key}`)
+  objectKeys.add(item.object_key)
+}
+const sourceBytes = entries.reduce((sum, item) => sum + item.source_size, 0)
+const convertedPngs = entries.filter(item => item.transform !== COPY_TRANSFORM).length
+const totals = { source_files: entries.length, source_bytes: sourceBytes, plans, missing: missing.size, converted_pngs: convertedPngs }
+const missingEntries = [...missing.values()].sort((a, b) => a.request_key.localeCompare(b.request_key))
+const missingPrefix = item => item.request_key.split('/').slice(0, 3).join('/')
+console.log(JSON.stringify({ mode, totals, missingByKind: Object.fromEntries([...new Set(missingEntries.map(missingPrefix))].map(kind => [kind, missingEntries.filter(item => missingPrefix(item) === kind).length])), missingExamples: missingEntries.slice(0, 30) }, null, 2))
 if (mode === '--audit') process.exit(missing.size ? 2 : 0)
 if (missing.size && !allowMissing) throw new Error(`Refusing incomplete export: ${missing.size} runtime keys have no local source; use --allow-missing for an explicitly incomplete Preview`)
 await fs.mkdir(outputRoot, { recursive: true })
 if ((await fs.lstat(outputRoot)).isSymbolicLink()) throw new Error('Refusing linked .deploy root')
 await fs.mkdir(stageRoot, { recursive: true })
 if ((await fs.lstat(stageRoot)).isSymbolicLink()) throw new Error('Refusing linked R2 stage')
-for (let index = 0; index < entries.length; index++) {
-  const item = entries[index]
-  const target = path.join(stageRoot, ...item.key.split('/'))
+let staged = 0
+let deployedBytes = 0
+async function stage(item) {
+  const target = path.join(stageRoot, ...item.object_key.split('/'))
   await fs.mkdir(path.dirname(target), { recursive: true })
-  await fs.copyFile(item.source, target)
-  const hash = createHash('sha256').update(await fs.readFile(target)).digest('hex')
-  item.sha256 = hash
-  item.source = path.relative(root, item.source).replaceAll('\\', '/')
-  if ((index + 1) % 5000 === 0) console.log(`Staged ${index + 1}/${entries.length}`)
+  if (item.transform === COPY_TRANSFORM) await fs.copyFile(item.source, target)
+  else await encodeLosslessWebp({ source: item.source, target })
+  const content = await fs.readFile(target)
+  item.deployed_size = content.length
+  item.sha256 = createHash('sha256').update(content).digest('hex')
+  deployedBytes += content.length
+  if (++staged % 2000 === 0) console.log(`Staged ${staged}/${entries.length}`)
 }
-await fs.writeFile(manifestPath, JSON.stringify({ schema_version: 1, totals, missing: missingEntries, entries }, null, 2) + '\n')
-console.log(`Exported ${entries.length} objects to ${stageRoot}; manifest ${manifestPath}`)
+await runPool(entries, 4, stage)
+
+// Staging must end up exactly equal to the manifest. A previous run may have
+// staged a different physical layout for the same logical corpus (for example
+// the pre-WebP pass, whose `.png` objects now map to `.webp` ones); leaving
+// those behind would silently upload objects the manifest never describes.
+// Pruning deletes files, so refuse to run it on a key set that looks degenerate.
+assert.ok(entries.length > 0 && objectKeys.size === entries.length, 'Refusing to prune against an empty or inconsistent object key set')
+let removed = 0
+let scanned = 0
+async function removeStale(directory, prefix) {
+  for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
+    const absolute = path.join(directory, entry.name)
+    const key = `${prefix}/${entry.name}`
+    if (entry.isDirectory()) await removeStale(absolute, key)
+    else {
+      scanned++
+      // Bound the retries: an external handle on a stale object must surface as
+      // a loud failure rather than stalling the whole export indefinitely.
+      if (!objectKeys.has(key)) { await fs.rm(absolute, { maxRetries: 5, retryDelay: 200 }); if (++removed % 2000 === 0) console.log(`Pruned ${removed} stale objects`) }
+    }
+  }
+}
+async function removeEmptyDirectories(directory) {
+  let empty = true
+  for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
+    if (entry.isDirectory()) { if (!(await removeEmptyDirectories(path.join(directory, entry.name)))) empty = false }
+    else empty = false
+  }
+  if (empty && directory !== stageRoot) await fs.rmdir(directory)
+  return empty
+}
+async function isDirectory(candidate) {
+  try { return (await fs.lstat(candidate)).isDirectory() } catch (error) { if (error.code === 'ENOENT') return false; throw error }
+}
+for (const prefix of ['assets', 'data']) {
+  const directory = path.join(stageRoot, prefix)
+  if (await isDirectory(directory)) await removeStale(directory, prefix)
+}
+await removeEmptyDirectories(stageRoot)
+console.log(`Scanned ${scanned} staged objects; removed ${removed} that the new manifest does not describe`)
+
+for (const item of entries) item.source = path.relative(root, item.source).replaceAll('\\', '/')
+totals.deployed_objects = entries.length
+totals.deployed_bytes = deployedBytes
+totals.saved_bytes = sourceBytes - deployedBytes
+totals.ratio = sourceBytes ? Number((deployedBytes / sourceBytes).toFixed(4)) : 0
+await fs.writeFile(manifestPath, JSON.stringify({ schema_version: 2, totals, missing: missingEntries, entries }, null, 2) + '\n')
+console.log(`Exported ${entries.length} objects (${convertedPngs} lossless WebP) to ${stageRoot}; manifest ${manifestPath}`)

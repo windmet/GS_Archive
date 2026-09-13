@@ -3,6 +3,76 @@
 This is a Preview-only deployment contract. Do not attach a production domain or
 interpret a Pages `master` build as production acceptance.
 
+## Deployment transform: lossless WebP
+
+Runtime URLs are a frozen contract. Story JSON, Spine `.atlas` files and the
+asset resolvers keep requesting `.png`; only the physical R2 object changes.
+
+```text
+/assets/.../foo.png   (request key, unchanged everywhere in the app)
+        ↓  shared/deploy/PreviewAssetTransform.js
+assets/.../foo.webp   (object key, what R2 actually stores)
+```
+
+`shared/deploy/PreviewAssetTransform.js` is the single policy. The exporter and
+the Pages Function both import it, so they cannot drift. The scope is **every
+PNG in the corpus**, expressed as an exclusion list with one entry:
+`assets/brand/*.png` stays a real PNG so it can keep acting as the control probe
+proving that an untransformed PNG request still serves PNG bytes. An exclusion
+list rather than an allowlist is deliberate — an allowlist would silently skip
+any resource family added to the corpus later, and that family would 404 because
+the Function resolves `.png` to `.webp` unconditionally.
+
+`verify:preview-transform` enforces that closure directly: it fails if any PNG
+outside the exclusion list is still untransformed.
+
+Encoding rules, from the earlier SSR migration: `alpha === 0` pixels get their
+RGB zeroed (invisible pixels still bleed red or dark fringes into edge
+sampling), `0 < alpha < 255` is untouched, dimensions are never resampled, and
+the WebP is always lossless. PNGs are converted in full — there is no per-file
+"keep the PNG if the WebP is bigger" escape hatch, because the Function resolves
+`.png` to `.webp` unconditionally and a partial conversion would 404.
+
+Manifest `schema_version` is 2. Each entry carries `request_key`, `object_key`,
+`source_size`, `deployed_size`, `source_content_type`, `deployed_content_type`,
+`transform` and the placement hash. `totals` reports source and deployed bytes
+separately. `missing` still records request keys.
+
+## Storage budget
+
+The account is on the Cloudflare free tier, whose storage **budget** is 10 GB-month
+across all buckets — a budget to stay clear of, not a hard ceiling to fill to.
+Roughly 0.88 GB is already committed elsewhere. The account-wide figure is
+therefore not the target: the Preview bucket itself should stay at
+**≤ 8.2–8.3 GiB**, leaving real headroom rather than spending the free allowance
+down to its edge.
+
+First WebP pass (three domains only) measured 9.944 GiB source → **8.800 GiB
+deployed**, which is inside the account budget but above the bucket target.
+The second pass extends the transform to the whole PNG corpus: 2,376 files /
+946.3 MiB remained, of which `assets/bg/` was 400 files / 764.0 MiB and
+`assets/cards/icons/` 1,361 files / 41.5 MiB.
+
+A measured 15-file background sample retained 65.9%, extrapolating to roughly
+**763.95 → ~503 MiB, about 261 MiB saved**. That still lands near 8.5 GiB, so
+**the 8.2–8.3 GiB target is not reachable by lossless PNG→WebP alone** — even
+converting every remaining PNG saves about 323 MiB. Closing the remaining gap
+needs a different lever (lossy/AVIF backgrounds, or uploading less), and that is
+a separate decision from this transform.
+
+Backgrounds were classified by minimum alpha before the decision to convert, to
+record what the `alpha === 0` cleanup actually does per class:
+
+| class | files | MiB | cleanup applies |
+| --- | --- | --- | --- |
+| `alphaMin = 255` | 306 | 580.38 | no — plain lossless win |
+| `0 < alphaMin < 255` | 93 | 183.04 | no — `alpha === 0` never occurs |
+| `alphaMin = 0` | 1 | 0.53 | yes — the fringing cleanup |
+
+The classes proved statistically indistinguishable in compression (66.1% /
+65.3% / 63.9% retained), so opacity does not predict compressibility, and the
+whole corpus is converted in one pass rather than split by class.
+
 ## Architecture
 
 - `npm run build:preview` compiles only `index.html` and `/_app/*` into `dist`.
@@ -21,12 +91,49 @@ all compiled StoryAssetPlans, card availability flags, and local `public` files.
 
 ```powershell
 npm run audit:preview-assets
+npm run report:preview-footprint
+npm run verify:preview-routing
 node scripts/export-preview-assets.mjs --export --allow-missing
+npm run verify:preview-transform
 npm run verify:preview-assets
-rclone copy .deploy/r2 cloudflare:sidem-archive-preview --dry-run --quiet
+node scripts/verify-preview-webp-quality.mjs
+npm run generate:preview-canary
+rclone copy .deploy/r2 cloudflare:sidem-archive-preview --files-from .deploy/canary-object-keys.txt --dry-run --progress
+rclone copy .deploy/r2 cloudflare:sidem-archive-preview --files-from .deploy/canary-object-keys.txt --transfers 8 --checkers 16 --progress
+rclone check .deploy/r2 cloudflare:sidem-archive-preview --files-from .deploy/canary-object-keys.txt
+```
+
+Only after the canary is accepted over HTTP in a browser, do the full copy:
+
+```powershell
+rclone copy .deploy/r2 cloudflare:sidem-archive-preview --dry-run --progress
 rclone copy .deploy/r2 cloudflare:sidem-archive-preview --transfers 16 --checkers 32 --progress
 rclone check .deploy/r2 cloudflare:sidem-archive-preview
+rclone size cloudflare:sidem-archive-preview
 ```
+
+`verify-preview-webp-quality.mjs` replaces eyeballing samples with an exact
+comparison: alpha must be byte-identical, visible RGB must be byte-identical
+(the encode is lossless), and only fully transparent pixels may differ, which is
+the fringing cleanup itself. The canary list contains **object** keys, so
+converted domains appear as `.webp` while untransformed ones keep their name.
+
+The exporter repopulates `.deploy/r2` and then removes any staged object the new
+manifest does not describe, so the staging tree always equals the manifest. That
+matters here: the pre-WebP stage holds 13,024 `.png` objects whose keys are no
+longer in the manifest, and leaving them would upload objects nothing references.
+`rclone copy` never deletes remote keys, so those stale *remote* objects survive
+until a separately reviewed cleanup.
+
+Pruning a reused tree is the current mechanism, not the desired end state. It
+deletes files in place, it is at the mercy of external handles on this Windows
+tree (an observed blocker: a stalled `fs.rm` with no error), and each pass costs
+a full re-verification of the whole stage. **Future improvement:** export into a
+fresh versioned staging directory (for example `.deploy/r2-<hash>`), verify and
+upload it, then remove the superseded tree once its replacement is accepted.
+That makes every export atomic and removes pruning from the critical path. Not
+refactored in this pass, deliberately: the transform layer is the variable under
+test and the staging layout should not move at the same time.
 
 `--allow-missing` is a deliberate exception for an incomplete Preview, not a
 claim of full closure. Inspect `.deploy/r2-manifest.json` → `missing` and do not

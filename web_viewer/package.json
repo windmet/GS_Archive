@@ -34,10 +34,13 @@
     "build:check": "node scripts/build-check.mjs",
     "build:preview": "node scripts/build-preview.mjs",
     "verify:preview-routing": "node scripts/verify-preview-routing.mjs",
+    "verify:preview-transform": "node scripts/verify-preview-transform.mjs",
     "audit:preview-assets": "node scripts/export-preview-assets.mjs --audit",
+    "report:preview-footprint": "node scripts/report-preview-asset-footprint.mjs",
     "export:preview-assets": "node scripts/export-preview-assets.mjs --export",
     "verify:preview-assets": "node scripts/verify-preview-assets.mjs",
     "verify:preview-http": "node scripts/verify-preview-http.mjs",
+    "generate:preview-canary": "node scripts/generate-preview-canary.mjs",
     "smoke": "vite build --configLoader native",
     "verify:archive-assets": "node scripts/verify-archive-assets.mjs",
     "verify:story-stage-loading": "node scripts/verify-story-stage-loading.mjs && node scripts/verify-story-position-clock.mjs",
@@ -219,6 +222,7 @@
     "@vitejs/plugin-vue": "^5.0.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
+    "sharp": "^0.35.4",
     "vite": "^6.0.0"
   }
 }
