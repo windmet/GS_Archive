@@ -6,7 +6,7 @@
       <p class="reader-subtitle">{{ episodeLabel }}</p>
       <details class="reader-segments"><summary>选择其他分段</summary><label class="reader-picker">分段<select :value="documentId" :disabled="state.status === 'loading'" @change="emit('select', $event.target.value)">
         <option v-if="!state.entries.some(e => e.document_id === documentId)" :value="documentId">{{ state.status === 'loading' ? '正在载入分段…' : '当前分段尚未收录' }}</option>
-        <option v-for="entry in segmentEntries" :key="entry.document_id" :value="entry.document_id">{{ [entry.title || '剧情标题待确认', entry.episode_label].filter(Boolean).join(' · ') }}{{ entry.status === 'ready' ? '' : '（暂不支持阅读）' }}</option>
+        <option v-for="entry in segmentEntries" :key="entry.document_id" :value="entry.document_id">{{ [entry.title || '剧情标题待确认', presentIdolEpisodeLabel({ sourceName: entry.episode_label })].filter(Boolean).join(' · ') }}{{ entry.status === 'ready' ? '' : '（暂不支持阅读）' }}</option>
       </select></label></details>
       <div class="reader-toolbar"><div class="reader-languages" role="group" aria-label="正文语言">
         <button v-for="item in modes" :key="item.id" :aria-pressed="mode === item.id" @click="emit('mode', item.id)">{{ item.label }}</button>
@@ -59,6 +59,7 @@ import { createStoryLocalization } from '../../localization/story/StoryLocalizat
 import { readingAvatarEntity, readingPresentationSpeaker } from '../../../shared/reading/ReadingDocument.js'
 import { getCharaIconUrl } from '../../utils/AssetResolver.js'
 import { projectReadingFrontMatter } from '../../presentation/ReadingFrontMatter.js'
+import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 
 const props = defineProps({ state: { type: Object, required: true }, documentId: String, mode: String, anchor: String, notice: String, busy: Boolean })
 const emit = defineEmits(['select', 'mode', 'back', 'retry', 'play-document', 'refresh', 'locate'])
@@ -98,7 +99,7 @@ const localizationInput = computed(() => document.value ? ({
 const preferences = computed(() => ({ story_content_mode: props.mode, story_translation_locale: 'zh-CN', bilingual_primary: 'original' }))
 const localization = createStoryLocalization({ compiledData: localizationInput, storyPreferences: preferences })
 const title = computed(() => document.value?.presentation?.title || document.value?.rows.find(r => r.kind === 'title')?.source_text || '剧情阅读')
-const episodeLabel = computed(() => document.value?.presentation?.episode_label || '')
+const episodeLabel = computed(() => presentIdolEpisodeLabel({ sourceName: document.value?.presentation?.episode_label }))
 const frontMatter = computed(() => projectReadingFrontMatter(document.value?.rows, title.value))
 const presentedRows = computed(() => (document.value?.rows || []).map(row => ({ row,
   frontMatter: frontMatter.value.frontMatterIds.has(row.anchor.row_id),

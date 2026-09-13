@@ -152,6 +152,7 @@ import { buildCompiledGroupTitleMap, buildRandomTalkBundles, formatArchiveDate, 
 import { getEmojiUrl } from '../../utils/AssetResolver.js'
 import { normalizeIdolAccentColor } from '../../presentation/idolAccentColor.js'
 import { projectCommunicationInlineContent } from '../../presentation/communicationInlineContent.js'
+import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 
 const props = defineProps({
   archive: { type: Object, default: null },
@@ -270,7 +271,7 @@ function unlockText(unlock) {
   const card = unlockCard(unlock)
   if (card) return `${card.title_full || `【${card.title || '卡名待确认'}】`} ${unlockAction(unlock)}`
   const story = storyByEpisodeId.value.get(Number(unlock.condition?.param_a || 0))
-  if (story) return `「${story.section.scenario_title}」${story.episode.name} 完成`
+  if (story) return `「${story.section.scenario_title}」${presentIdolEpisodeLabel({ sourceName: story.episode.name })} 完成`
   if (unlock.kind.startsWith('card_')) return '关联卡片待确认'
   if (unlock.kind === 'idol_story_episode_finished') return '个人故事章节待确认'
   return ['scenario_title_mission', 'term_or_default_release'].includes(unlock.kind) ? unlock.text : '开放条件待确认'
@@ -279,7 +280,7 @@ function unlockTitle(unlock) {
   const card = unlockCard(unlock)
   if (card) return `卡片 · ${card.title_full || card.title} · ${unlockAction(unlock)} · 点击查看卡片资料`
   const story = storyByEpisodeId.value.get(Number(unlock.condition?.param_a || 0))
-  if (story) return `个人故事 · ${story.section.name}「${story.section.scenario_title}」${story.episode.name} · 点击查看个人故事`
+  if (story) return `个人故事 · ${story.section.name}「${story.section.scenario_title}」${presentIdolEpisodeLabel({ sourceName: story.episode.name })} · 点击查看个人故事`
   if (unlock.kind.startsWith('card_')) return '关联卡片待确认'
   if (unlock.kind === 'idol_story_episode_finished') return '个人故事章节待确认'
   return ['scenario_title_mission', 'term_or_default_release'].includes(unlock.kind) ? unlock.text : '开放条件待确认'

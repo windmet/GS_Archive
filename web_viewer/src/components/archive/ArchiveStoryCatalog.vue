@@ -354,6 +354,7 @@ import { computed } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { ArrowRight, BookOpen, Briefcase, Cake, CalendarRange, ChevronDown, CreditCard, FileWarning, Languages, LayoutGrid, Search, Sparkles, UserRound, X } from '@lucide/vue'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
+import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 
 const props = defineProps({
   entries: { type: Array, default: () => [] }, allEntries: { type: Array, default: () => [] },
@@ -441,7 +442,7 @@ function unitVisual(id) {
   const codes = ['01jup', '02dra', '03alt', '04bei', '05w00', '06fra', '07sai', '08hig', '09shi', '10caf', '11mof', '12sem', '13the', '14fla', '15leg', '16cfi']
   return `/assets/stories/units/image_unit_story_button_${codes[Number(id) - 1] || codes[0]}.png`
 }
-function hierarchyLabel(entry) { return [entry.sectionLabel, entry.episodeLabel].filter(Boolean).join(' · ') || entry.domainLabel }
+function hierarchyLabel(entry) { return [entry.sectionLabel, presentIdolEpisodeLabel({ sourceName: entry.episodeLabel })].filter(Boolean).join(' · ') || entry.domainLabel }
 function formatExtraDate(timestamp) {
   if (!Number(timestamp)) return '开放日期未记录'
   return new Intl.DateTimeFormat('zh-CN', {

@@ -108,7 +108,7 @@
             >
               <span class="episode-index">{{ String(episodeIndex + 1).padStart(2, '0') }}</span>
               <span class="episode-copy">
-                <strong>{{ episode.name }}</strong>
+                <strong>{{ presentIdolEpisodeLabel({ sourceName: episode.name }) }}</strong>
                 <small>{{ episode.dialogueCount }} 段对白 · {{ episode.voiceCount }} 段语音</small>
               </span>
               <Play v-if="episode.exists" :size="15" fill="currentColor" />
@@ -137,6 +137,7 @@
 import { nextTick, onMounted, ref, watch } from 'vue'
 import { ArrowRight, Cake, ChevronLeft, ChevronRight, ExternalLink, FileWarning, PhoneCall, Play } from '@lucide/vue'
 import { formatArchiveDate } from '../../data/idolCommunicationSelectors.js'
+import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 
 const props = defineProps({
   story: { type: Object, default: null },
@@ -178,7 +179,8 @@ function sectionBirthdayAligned(section) {
 }
 function finalEpisodeName(section) {
   const target = section.communications[0]?.release_condition?.param_a
-  return section.episodes.find(episode => Number(episode.id) === Number(target))?.name || '最终分段'
+  const sourceName = section.episodes.find(episode => Number(episode.id) === Number(target))?.name
+  return sourceName ? presentIdolEpisodeLabel({ sourceName }) : '最终分段'
 }
 function externalResourcesForSection(sectionId) {
   return props.externalResources

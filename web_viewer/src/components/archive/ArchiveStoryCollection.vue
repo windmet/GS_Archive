@@ -105,7 +105,7 @@
               <div>
                 <span>CANONICAL PERSONAL STORY</span>
                 <strong>{{ chapter.canonicalRelation.sectionName }}「{{ chapter.canonicalRelation.sectionTitle }}」</strong>
-                <p>本文件对应 {{ chapter.canonicalRelation.episodeNames.join('、') }}，在生日档案中仅作为同期关系保留；完整章节结构、连续播放与后续通信统一由个人故事页承担。</p>
+                <p>本文件对应 {{ chapter.canonicalRelation.episodeNames.map(sourceName => presentIdolEpisodeLabel({ sourceName })).join('、') }}，在生日档案中仅作为同期关系保留；完整章节结构、连续播放与后续通信统一由个人故事页承担。</p>
               </div>
               <button @click="emit('open-idol-story', chapter.canonicalRelation)">前往正式章节 <ChevronRight :size="15" /></button>
             </div>
@@ -146,6 +146,7 @@
 import { computed, ref, watch } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { BookOpen, ChevronDown, ChevronRight, ChevronUp, ExternalLink, Play } from '@lucide/vue'
+import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 
 const props = defineProps({
   collection: { type: Object, default: null },
