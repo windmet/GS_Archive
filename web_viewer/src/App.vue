@@ -173,6 +173,7 @@
         @open-unit="openSongUnit"
         @open-idol="openSongIdol"
         @open-related-story="openSongRelatedStory"
+        @open-stage="openSongStage"
       />
 
       <ArchiveEventDetail
@@ -441,8 +442,12 @@
     <ChibiStageViewer
       v-if="view === 'chibi_stage'"
       :audio-experiments="songExperimentalAudioData?.songs || {}"
+      :stage-target-id="stageTargetId"
+      :stage-song-code="currentSongId"
+      :back-label="stageBackLabel"
       @back="closeArchiveExperiment"
       @open-lab="openSpineLab"
+      @target-change="updateStageTarget"
     />
 
     <!-- ====== PRELOADER LOADING SCREEN ====== -->
@@ -637,6 +642,7 @@ const {
   currentEpisodeId,
   currentCardId,
   currentSongId,
+  stageTargetId,
   currentSongScope,
   currentEventId,
   currentGashaId,
@@ -749,6 +755,12 @@ const idolPickerLabel = computed(() => ({
   story: '个人故事',
   mobile: '通信档案',
 })[currentPickTarget.value] || '游戏风首页')
+const stageBackLabel = computed(() => (
+  (detailSourceRoute.value && readArchiveSourceRoute(detailSourceRoute.value).view === 'song_detail') ||
+  (!detailSourceRoute.value && stageTargetId.value && currentSongId.value)
+    ? '返回歌曲'
+    : '返回资料馆'
+))
 
 function categoryById(id) {
   if (!indexData.value) return null
@@ -1667,6 +1679,7 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
       && route.storyType === 'extra' && route.storySection ? 'story_collection' : ''
     currentGashaCategory.value = route.gashaType || 'all'
     currentSongId.value = route.song || ''
+    stageTargetId.value = route.view === 'chibi_stage' ? (route.stageId || '') : ''
     currentSongScope.value = route.songScope || 'all'
     songParentView.value = route.view === 'song_detail' ? (route.parentView || '') : ''
     currentCardRarity.value = route.rarity || 'all'
@@ -2069,6 +2082,11 @@ function openSong(songCode) {
   commitView('song_detail')
 }
 
+function openSongStage(target) {
+  if (view.value !== 'song_detail' || target?.songCode !== currentSongId.value || !target.choreographyId) return
+  return openChibiStage(target)
+}
+
 function openSongUnit(unitCode) {
   const unit = (idolUnitData.value?.units || []).find(entry => String(entry.unit_code) === String(unitCode))
   if (unit) {
@@ -2221,19 +2239,33 @@ async function openSpineLab() {
   })
 }
 
-async function openChibiStage() {
+async function openChibiStage(target = null) {
   return navigation.run(async intent => {
     if (!['spine_lab', 'chibi_stage'].includes(view.value)) captureDetailSource()
     loading.value = true
     preloadProgress.value = 100
     await chibiStageViewerLoader()
     if (!intent.isCurrent()) return
+    stageTargetId.value = target?.choreographyId || ''
+    currentSongId.value = stageTargetId.value ? target.songCode : ''
     commitView('chibi_stage')
   })
 }
 
 function closeArchiveExperiment() {
+  if (view.value === 'chibi_stage' && !detailSourceRoute.value &&
+      stageTargetId.value && songCatalogData.value?.songs?.[currentSongId.value]) {
+    stageTargetId.value = ''
+    return commitView('song_detail')
+  }
   return restoreDetailSource(goHome)
+}
+
+function updateStageTarget(target) {
+  if (view.value !== 'chibi_stage' || !target?.songCode || !target?.choreographyId) return
+  stageTargetId.value = target.choreographyId
+  currentSongId.value = target.songCode
+  syncArchiveRoute({ replace: true, restoreView: false })
 }
 
 function openArchiveStatus() {

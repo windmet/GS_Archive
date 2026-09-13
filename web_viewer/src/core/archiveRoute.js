@@ -29,6 +29,7 @@ const ROUTE_QUERY_KEYS = [
   'episode',
   'card',
   'song',
+  'stage',
   'song_scope',
   'event',
   'gasha',
@@ -328,6 +329,10 @@ export function normalizeArchiveRoute(input = {}) {
   if (view === 'player' && !scenario && !(voice && card)) view = contract.fallback
   else if (contract?.required.some(key => !route[key])) view = contract.fallback
   route.view = view || 'home'
+  if (route.view === 'chibi_stage') {
+    const stageId = clean(input.stageId)
+    route.stageId = /^[a-z0-9_]{1,100}$/.test(stageId) ? stageId : ''
+  }
   if (route.view === 'reader' || (route.view === 'player' && route.returnView === 'reader')) {
     route.reading = /^[A-Za-z0-9_-]+$/.test(input.reading || '') ? input.reading : ''
     route.readingRow = typeof input.readingRow === 'string' && input.readingRow.length <= 240 ? input.readingRow : ''
@@ -565,6 +570,7 @@ export function readArchiveRoute(input = null) {
     episode: clean(params.get('episode')),
     card: clean(params.get('card')),
     song: clean(params.get('song')),
+    stageId: params.get('stage'),
     songScope: params.get('song_scope'),
     event: clean(params.get('event')),
     gasha: clean(params.get('gasha')),
@@ -635,6 +641,7 @@ export function buildArchiveUrl(input, route) {
   if (normalized.episode) url.searchParams.set('episode', normalized.episode)
   if (normalized.card) url.searchParams.set('card', normalized.card)
   if (normalized.song) url.searchParams.set('song', normalized.song)
+  if (normalized.view === 'chibi_stage' && normalized.stageId) url.searchParams.set('stage', normalized.stageId)
   if (normalized.songScope !== 'all') url.searchParams.set('song_scope', normalized.songScope)
   if (normalized.event) url.searchParams.set('event', normalized.event)
   if (normalized.gasha) url.searchParams.set('gasha', normalized.gasha)

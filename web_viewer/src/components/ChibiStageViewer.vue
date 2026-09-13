@@ -63,7 +63,7 @@
     :data-character-light="currentCharacterLight.color"
   >
     <header class="stage-header">
-      <button class="icon-button" type="button" aria-label="返回资料馆" @click="emit('back')">
+      <button class="icon-button" type="button" :aria-label="backLabel" @click="emit('back')">
         <ArrowLeft :size="22" />
       </button>
       <div class="header-divider" aria-hidden="true"></div>
@@ -389,14 +389,18 @@ import {
   playLiveChibiMotion,
 } from '../utils/liveChibiSpine.js'
 import { getSongUrl } from '../utils/AssetResolver.js'
+import { fetchSongTimelineManifest } from '../utils/songPerformanceData.js'
 import { useSongPerformanceSession } from '../composables/useSongPerformanceSession.js'
 
-const emit = defineEmits(['back', 'open-lab'])
+const emit = defineEmits(['back', 'open-lab', 'target-change'])
 const props = defineProps({
   audioExperiments: {
     type: Object,
     default: () => ({}),
   },
+  stageTargetId: { type: String, default: '' },
+  stageSongCode: { type: String, default: '' },
+  backLabel: { type: String, default: '返回资料馆' },
 })
 const canvasRef = ref(null)
 const manifest = ref(null)
@@ -655,12 +659,26 @@ const currentCameraLabel = computed(() => {
   return `${composedZoom.toFixed(2)}× · ${focus} · ${camera.rotation.toFixed(1)}°`
 })
 
+let stageDisposed = false
 onMounted(async () => {
   await nextTick()
-  createPixiApp()
+  if (stageDisposed) return
   try {
+    if (props.stageTargetId || props.stageSongCode) {
+      const timelineManifest = await fetchSongTimelineManifest()
+      if (stageDisposed) return
+      const target = timelineManifest.songs[props.stageSongCode]?.find(entry => entry.id === props.stageTargetId)
+      if (!target) {
+        booting.value = false
+        errorText.value = '所选歌曲的舞台版本不存在或暂不可用。'
+        return
+      }
+    }
+    createPixiApp()
     manifest.value = await fetchLiveChibiManifest()
+    if (stageDisposed) return
     choreography.value = await fetchLiveChibiChoreography(manifest.value.choreography.index)
+    if (stageDisposed) return
     ;[
       musicIndex.value,
       backmonitorIndex.value,
@@ -676,13 +694,21 @@ onMounted(async () => {
       fetchLiveChibiStageBackgroundIndex(),
       fetchLiveChibiStageEffectIndex(),
     ])
+    if (stageDisposed) return
     initializeLineup()
-    selectedSongId.value = songs.value.find(song => song.id === 'drvalv_live_effect')?.id
-      || songs.value[0]?.id
-      || ''
+    selectedSongId.value = props.stageTargetId
+      ? (songs.value.find(song => song.id === props.stageTargetId && song.songCode === props.stageSongCode)?.id || '')
+      : (songs.value.find(song => song.id === 'drvalv_live_effect')?.id || songs.value[0]?.id || '')
+    if (!selectedSongId.value) {
+      booting.value = false
+      errorText.value = '所选歌曲的舞台版本与本地编舞资源不一致。'
+      return
+    }
     await Promise.all([loadSongLipSync(), loadSongAudio()])
+    if (stageDisposed) return
     await rebuildStage()
   } catch (error) {
+    if (stageDisposed) return
     booting.value = false
     errorText.value = error.message
     console.error('[ChibiStage] initialization failed', error)
@@ -690,6 +716,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  stageDisposed = true
   stageBuildSequence += 1
   lipSyncSequence += 1
   stopStage()
@@ -2386,6 +2413,10 @@ function resizeStage() {
 }
 
 async function handleSongChange() {
+  if (selectedSong.value) emit('target-change', {
+    songCode: selectedSong.value.songCode,
+    choreographyId: selectedSong.value.id,
+  })
   stopStage(true)
   stageVocalEnabled.value = false
   releaseStageVocalAudio()

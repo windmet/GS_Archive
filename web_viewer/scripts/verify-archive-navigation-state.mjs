@@ -21,6 +21,7 @@ navigation.currentGroup.value = { id: 'group-1' }
 navigation.currentUnit.value = { unit_code: 'legacy-unit', id: 'unit-fallback' }
 // New independent entry position is tested in verify-reading-playback; legacy projection stays unchanged.
 navigation.currentScenarioInitialStep.value = null
+navigation.stageTargetId.value = ''
 navigation.currentScenarioStartStep.value = 7
 navigation.currentScenarioEndStep.value = 12
 const contexts = ['home', 'unit_detail', 'mobile_archive', 'event_detail', 'story_detail', 'story_collection', 'song_detail', 'files']
@@ -30,10 +31,12 @@ for (const view of VALID_VIEWS) {
   for (const returnView of contexts) {
     for (const parent of contexts) {
       navigation.view.value = view
+      navigation.currentSongId.value = view === 'chibi_stage' ? '' : 'currentSongId-fixture'
       navigation.returnViewAfterPlayer.value = returnView
       for (const key of ['songParentView', 'eventParentView', 'storyDetailParentView', 'storyCollectionParentView']) navigation[key].value = parent
       const actual = navigation.currentArchiveRoute()
       const expected = legacyProjection(navigation)
+      if (view === 'chibi_stage') expected.stageId = actual.stageId
       if (view === 'work_archive' || (view === 'player' && returnView === 'work_archive')) {
         expected.story = actual.story
         expected.workMode = actual.workMode
@@ -97,6 +100,12 @@ independent.view.value = 'spine_lab'
 assert.equal(readArchiveSourceRoute(independent.currentArchiveRoute().sourceRoute).view, 'archive_status')
 independent.view.value = 'chibi_stage'
 assert.equal(readArchiveSourceRoute(independent.currentArchiveRoute().sourceRoute).view, 'archive_status')
+independent.stageTargetId.value = 'brndnf_live_effect'
+independent.currentSongId.value = 'brndnf'
+const targetedStage = readArchiveRoute(buildArchiveUrl('http://localhost/', independent.currentArchiveRoute()))
+assert.equal(targetedStage.song, 'brndnf')
+assert.equal(targetedStage.stageId, 'brndnf_live_effect')
+assert.equal(readArchiveSourceRoute(targetedStage.sourceRoute).view, 'archive_status')
 
 // Execute the production entry/return handlers and route projection together.
 // The old oracle above continues to cover routes without the new provenance.

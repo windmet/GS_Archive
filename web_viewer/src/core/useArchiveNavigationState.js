@@ -40,6 +40,7 @@ export function useArchiveNavigationState() {
   const currentEpisodeId = ref('')
   const currentCardId = ref('')
   const currentSongId = ref('')
+  const stageTargetId = ref('')
   const currentSongScope = ref('all')
   const currentEventId = ref('')
   const currentGashaId = ref('')
@@ -84,6 +85,7 @@ export function useArchiveNavigationState() {
     const preservesStoryDetailContext = view.value === 'story_detail' || returnsToStory
     const preservesStoryCollectionContext = view.value === 'story_collection' || returnsToStoryCollection
     const preservesSongContext = view.value === 'song_detail' ||
+      (view.value === 'chibi_stage' && Boolean(currentSongId.value)) ||
       (preservesStoryCollectionContext && storyCollectionParentView.value === 'song_detail')
     const preservesArchiveUnit = view.value === 'unit_detail' ||
       view.value === 'mobile_archive' ||
@@ -124,6 +126,7 @@ export function useArchiveNavigationState() {
       episode: currentEpisodeId.value,
       card: currentCardId.value,
       song: preservesSongContext ? currentSongId.value : '',
+      ...(view.value === 'chibi_stage' ? { stageId: stageTargetId.value } : {}),
       songScope: (view.value === 'song_catalog' || preservesSongContext) ? currentSongScope.value : 'all',
       event: currentEventId.value,
       gasha: view.value === 'gasha_detail' ? currentGashaId.value : '',
@@ -186,6 +189,7 @@ export function useArchiveNavigationState() {
     currentEpisodeId,
     currentCardId,
     currentSongId,
+    stageTargetId,
     currentSongScope,
     currentEventId,
     currentGashaId,

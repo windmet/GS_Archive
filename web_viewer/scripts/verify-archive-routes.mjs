@@ -39,6 +39,16 @@ const labRoute = readArchiveRoute(buildArchiveUrl('http://localhost/', {
 }))
 assert.equal(labRoute.view, 'spine_lab')
 assert.equal(readArchiveSourceRoute(labRoute.sourceRoute).view, 'archive_status')
+const songSource = buildArchiveSourceQuery({ view: 'song_detail', song: 'brndnf' })
+const stageRoute = readArchiveRoute(buildArchiveUrl('http://localhost/', {
+  view: 'chibi_stage', song: 'brndnf', stageId: 'brndnf_live_effect', sourceRoute: songSource,
+}))
+assert.equal(stageRoute.view, 'chibi_stage')
+assert.equal(stageRoute.song, 'brndnf')
+assert.equal(stageRoute.stageId, 'brndnf_live_effect')
+assert.equal(readArchiveSourceRoute(stageRoute.sourceRoute).song, 'brndnf')
+assert.equal(readArchiveRoute('http://localhost/?view=chibi_stage&song=brndnf&stage=../invalid').stageId, '')
+assert.equal(buildArchiveUrl('http://localhost/?stage=stale', { view: 'song_detail', song: 'brndnf' }).searchParams.has('stage'), false)
 
 const invalidFilters = readArchiveRoute('http://localhost/?view=story_catalog&availability=nope&sort=nope&event_scope=mixed_unit_event')
 const episodePlayer = readArchiveRoute('http://localhost/?view=player&scenario=episodes%2F1_4_001_00_b.json&start_step=1&end_step=33&return=story_collection')
