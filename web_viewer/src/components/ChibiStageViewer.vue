@@ -202,6 +202,17 @@
               <small>均衡归一化与居中声像是浏览器近似，不代表游戏官方混音参数。</small>
               <small v-if="handoffLineup">已接入歌曲页编成；空位不出场，舞台从 00:00 暂停开始。刷新后使用舞台默认编队。</small>
             </fieldset>
+            <div v-if="stageVfxCoverage" class="vfx-coverage">
+              <h3>效果覆盖 · 来源统计</h3>
+              <p>镜头 {{ stageVfxCoverage.sourceEvents.camera }} 条；屏幕 {{ stageVfxCoverage.sourceEvents.backmonitor }} 条、图片布景 {{ stageVfxCoverage.sourceEvents.imageLayer }} 条已登记。</p>
+              <p>人物染色、聚光与激光共 {{ stageVfxApproximateCount }} 条，当前采用浏览器近似绘制，尚未对原片逐帧核对。</p>
+              <p>静态对象素材 {{ stageVfxCoverage.objectSprites.length }} 种已接线；粒子对象 {{ stageVfxCoverage.objectParticles.length }} 种未复刻。</p>
+              <p v-if="stageVfxCoverage.objectMissing.length || stageVfxCoverage.objectOther.length || stageVfxCoverage.missingMedia.length" class="vfx-coverage-gap">另有 {{ stageVfxCoverage.objectMissing.length + stageVfxCoverage.objectOther.length + stageVfxCoverage.missingMedia.length }} 种对象或媒体缺少本地可用实现。</p>
+              <details v-if="stageVfxCoverage.objectParticles.length || stageVfxCoverage.objectMissing.length || stageVfxCoverage.objectOther.length">
+                <summary>查看未支持的对象素材</summary>
+                <code>{{ [...stageVfxCoverage.objectParticles, ...stageVfxCoverage.objectMissing, ...stageVfxCoverage.objectOther].join('、') }}</code>
+              </details>
+            </div>
           </section>
 
           <section class="control-section lineup-section">
@@ -394,6 +405,7 @@ import {
 import { getSongUrl } from '../utils/AssetResolver.js'
 import { fetchSongTimelineManifest } from '../utils/songPerformanceData.js'
 import { resolveSongStageHandoff } from '../core/songStageHandoff.js'
+import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
 import { useSongPerformanceSession } from '../composables/useSongPerformanceSession.js'
 
 const emit = defineEmits(['back', 'open-lab', 'target-change'])
@@ -536,6 +548,16 @@ const eventIndices = new Map()
 const characters = computed(() => manifest.value?.characters || [])
 const songs = computed(() => choreography.value?.songs || [])
 const selectedSong = computed(() => songs.value.find(song => song.id === selectedSongId.value) || null)
+const stageVfxCoverage = computed(() => buildStageVfxCoverage(selectedSong.value, {
+  backmonitor: backmonitorIndex.value,
+  imageLayers: imageLayerIndex.value,
+  objectLayers: objectLayerIndex.value,
+  stageEffects: stageEffectIndex.value,
+}))
+const stageVfxApproximateCount = computed(() => {
+  const events = stageVfxCoverage.value?.sourceEvents
+  return events ? events.characterLight + events.spotlight + events.pinspotlight + events.laserlight : 0
+})
 const activePositions = computed(() => {
   const positions = selectedSong.value?.positions || []
   return handoffLineup.value && selectedSong.value?.id === props.stageHandoff?.choreographyId
@@ -2943,6 +2965,13 @@ select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(65, 165, 
 .stage-vocal-controls { display: grid; gap: 10px; margin: 13px 0 0; padding: 11px 12px 12px; border: 1px solid rgba(65, 165, 255, 0.3); border-radius: 9px; background: rgba(18, 67, 108, 0.16); }
 .stage-vocal-controls legend { padding: 0 5px; color: #8ecbff; font-size: 10px; letter-spacing: 0.06em; }
 .stage-vocal-controls small { color: var(--muted); font-size: 9px; line-height: 1.5; }
+.vfx-coverage { display: grid; gap: 6px; margin-top: 14px; padding: 10px 12px; border: 1px solid rgba(232, 179, 99, .32); border-radius: 9px; background: rgba(100, 68, 33, .14); }
+.vfx-coverage h3, .vfx-coverage p { margin: 0; }
+.vfx-coverage h3 { color: #f1d0a1; font-size: 12px; }
+.vfx-coverage p, .vfx-coverage summary, .vfx-coverage code { color: #c8d5df; font-size: 12px; line-height: 1.55; }
+.vfx-coverage .vfx-coverage-gap { color: #ffbd9d; }
+.vfx-coverage summary { cursor: pointer; }
+.vfx-coverage code { display: block; overflow-wrap: anywhere; margin-top: 5px; }
 
 .lineup-section { display: grid; gap: 9px; }
 .lineup-card { position: relative; display: grid; grid-template-columns: 46px minmax(0, 1fr) 18px; gap: 9px; align-items: center; padding: 9px; border: 1px solid rgba(151, 185, 215, 0.17); border-radius: 9px; background: rgba(5, 16, 29, 0.34); transition: opacity 160ms ease, border-color 160ms ease; }
