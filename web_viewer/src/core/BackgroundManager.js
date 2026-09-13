@@ -95,7 +95,9 @@ export class BackgroundManager {
     this._bgTransition = record
     try {
       const url = this.getBgUrl(bgId)
-      const texture = await this.loadTextureFromUrl(url)
+      // A placeholder texture cannot satisfy the player's entry-background
+      // readiness gate. Let missing/invalid images reach its blocked state.
+      const texture = await this.loadTextureFromUrl(url, { allowFallback: false })
       if (token !== this._bgTransitionToken) return finished
 
       const newSprite = new PIXI.Sprite(texture)

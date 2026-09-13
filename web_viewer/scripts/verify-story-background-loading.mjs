@@ -23,6 +23,29 @@ function setup() {
   })
   return { manager, requests, tickers, container }
 }
+{
+  const tickers = new Set()
+  const manager = new BackgroundManager({
+    app: { ticker: { add: fn => tickers.add(fn), remove: fn => tickers.delete(fn) } },
+    bgContainer: new Container(), bgEffectContainer: new Container(),
+    getWidth: () => 100, getHeight: () => 100, getBgUrl: id => id,
+    loadTextureFromUrl: (_url, options) => {
+      assert.equal(options?.allowFallback, false, 'entry background must not accept a placeholder texture')
+      return Promise.reject(new Error('missing background'))
+    },
+  })
+  const warn = console.warn
+  try {
+    console.warn = () => {}
+    assert.equal((await manager.setBackground('missing', { duration: 0 })).status, 'failed')
+    assert.equal(manager.bgSprite, null)
+    assert.equal(manager.currentBgId, null)
+    assert.equal(tickers.size, 0)
+  } finally {
+    console.warn = warn
+    manager.clearBackground()
+  }
+}
 async function install(state, id) {
   const loading = state.manager.setBackground(id, { duration: 0 })
   state.requests.at(-1).resolve(texture())

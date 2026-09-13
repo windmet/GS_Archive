@@ -460,3 +460,9 @@ Edge CDP以全新本地存储状态执行18项desktop/390px启动、偏好、深
 机器回归通过startup、routes、navigation-state（49 refs、1920组合、恢复与16关系边）、Portal、async navigation、Home、idol、Work、communication、cards、event及archive-data。`npm run build:check`在固定`.analysis/build-check`完成2515 modules，主入口537.81kB，`ArchiveImmersiveHome`拆成18.35kB JS/16.42kB CSS；只保留既有chunk提示，未复制public。详细合同与逐项证据见[启动入口、用户偏好与门户UX](PORTAL_STARTUP_UX_PLAN_20260912.md)。
 
 门户UX本批完成。下一窗口从媒体/renderer就绪门槛、跨入口缓存复用与真实音频长稳继续；当前浏览器结果不能替代完整媒体发布包或P2-B长稳验收。个人、卡片、通信不新增Reader入口；无关`docs/sidem_title_fx_css_rebuild_v9.html`仍保持未跟踪。
+
+## 加载时序：入口背景不再用占位纹理冒充就绪
+
+输入HEAD `5383d6a`。复查B1门槛发现`BackgroundManager.setBackground`通过Pixi纹理加载器的默认`allowFallback:true`读取普通背景；源图404或解码失败时，洋红占位纹理仍可能令入口背景报告`completed`，与Player按`failed`阻断的合同矛盾。现由背景消费者显式传`allowFallback:false`，失败返回`failed`，保留旧背景/空背景及原有重试路径；特效图层原有严格失败逻辑不变。`verify:story-background-loading`新增生产BackgroundManager传参和失败终态回归，`verify:story-loading-safety`全链通过；`build:check`完成2527模块，仅在E盘`.analysis/build-check`生成代码，不复制public。
+
+5175 Browser以活动430018第二话直接进入，5/26的翔太、录影棚背景和台词正常显示；带不存在的`raw_bg_candidate=bg225_chromakeystudiobig_in_01`进入时，必要背景在原生预载阶段失败，显示“重试载入/返回”而非假画面。这项浏览器负例没有到达Pixi严格加载分支，后者由受控回归证明；本批未覆盖GPU上传完成、长媒体播放或跨入口缓存命中率。`useVoicePlayer`当前仍为语音和口型请求添加时间戳，直接去掉会违反[P4版本资源策略](READER_PLAYER_NEXT_PHASE_20260909.md)；压缩资源版本键、缓存预算和失效策略仍待后续。
