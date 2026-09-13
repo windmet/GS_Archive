@@ -115,3 +115,11 @@ P1/P2 是用户最先可感知的信息架构改进，N1/N2 随后收口统一�
 - 规划中的可用性、歌词对齐、移动端sticky和Stage释放门槛均未在本轮执行；不能将本次源代码审计标记为功能或Browser PASS。
 
 本路线是下一步主要开发方向，不重开已经完成的导航多层来源重构，也不提前进入完整Unity VFX/runtime替换工程。
+
+## P1 首批实施：卡片所属偶像
+
+输入HEAD `5e870c4`。新增 `IdolReferencePresentation`，只从原始偶像字典解析规范ID与姓名、从档案关系取组合，缺失身份保持不可操作且不补成其他偶像；当前图像候选仅为相同ID的通用头像。`ArchiveIdolReference`提供 compact / portrait / visual 三种密度、整块键盘可操作入口，以及图片请求失败后的固定尺寸文字占位。当前正式消费者是卡片详情；其余页面仍待P2迁移，不能把组件存在写成跨页统一完成。
+
+Cards总览在整行卡片按钮内增加所属偶像姓名，不嵌第二个按钮，也不为826条可见卡片新增头像请求。卡片详情增加“所属偶像”关系入口；App捕获当前卡片来源后进入 Idol，返回时恢复原卡，继续返回恢复卡片筛选。原始索引836条的所属ID全部能解析；当前正常目录筛选显示826条，两者口径不同。
+
+验证：`verify:idol-reference`覆盖836条索引、冬马规范姓名/Jupiter归属及未知ID不可操作；`verify:card-filters`、`verify:archive-navigation-state`、`verify:routes`与`npm run build:check`通过，后者只生成E盘`.analysis/build-check`代码产物，不复制public。5175 Browser实走桌面总览、网格、卡片详情及390px详情；从SSR＋标题筛选进入卡片→偶像→卡片→原筛选列表，查询与筛选恢复；桌面/390px无横向溢出。独立Edge CDP核对826行无嵌套按钮、零额外owner头像，并阻断冬马头像请求，确认同尺寸文字占位和可点击入口，未见console error。此批尚未验收Song/Unit/Story/Event跨页人物引用、导航Chrome或歌曲时间轴。

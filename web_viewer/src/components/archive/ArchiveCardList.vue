@@ -93,6 +93,7 @@
         <span class="card-rarity">{{ card.rarity || 'CARD' }}</span>
         <span class="card-main">
           <span class="card-title">{{ card.title || '卡名待确认' }}</span>
+          <span class="card-owner-name">{{ card.ownerReference?.displayName || '姓名待确认' }}</span>
         </span>
         <span class="card-counts">
           {{ card.home_voice_cues?.length || 0 }} 段触摸语音 · {{ card.scenario_entries?.length || 0 }} 篇剧情
@@ -191,6 +192,7 @@ function fallbackCardIcon(event, resourceId) {
 .card-rarity { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; height: 24px; border-radius: 6px; background: #edf2ff; color: #3157a4; font-size: 0.72rem; font-weight: 700; }
 .card-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .card-title { overflow: hidden; color: #222; font-size: 0.9rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.card-owner-name { overflow: hidden; color: #627a80; font-size: 0.72rem; text-overflow: ellipsis; white-space: nowrap; }
 .card-resource { color: #888; font-family: monospace; font-size: 0.72rem; }
 .card-counts { color: #777; font-size: 0.72rem; white-space: nowrap; }
 .card-archive-list.layout-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); align-content: start; }

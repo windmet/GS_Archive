@@ -80,7 +80,7 @@
         :model-value="filterQuery"
         @update:model-value="updateArchiveFilter('filterQuery', $event)"
         :title="currentCardCharacterName"
-        :cards="filteredCards"
+        :cards="filteredCardRows"
         :rarity-tabs="cardRarityTabs"
         :current-rarity="currentCardRarity"
         :current-asset-state="currentCardAssetState"
@@ -115,6 +115,7 @@
         v-if="view === 'card_detail'"
         embedded
         :card="currentCard"
+        :owner-reference="currentCardOwnerReference"
         :asset-status="currentCardAssetStatus"
         :art-mode="cardArtMode"
         :previous-card="previousCard"
@@ -129,6 +130,7 @@
         @navigate-related-card="openRelatedCard"
         @open-event="openCardEvent"
         @open-gasha="openCardGasha"
+        @open-idol="openCardIdol"
         @update:art-mode="cardArtMode = $event"
       />
 
@@ -470,6 +472,7 @@ import ArchiveGashaCatalog from './components/archive/ArchiveGashaCatalog.vue'
 import ArchiveGashaDetail from './components/archive/ArchiveGashaDetail.vue'
 import ArchiveSongCatalog from './components/archive/ArchiveSongCatalog.vue'
 import { buildSongPresentation } from './presentation/SongPresentation.js'
+import { buildIdolReference } from './presentation/IdolReferencePresentation.js'
 import ArchiveSongDetail from './components/archive/ArchiveSongDetail.vue'
 import ArchiveEventDetail from './components/archive/ArchiveEventDetail.vue'
 import ArchiveIdolGrid from './components/archive/ArchiveIdolGrid.vue'
@@ -1200,9 +1203,16 @@ const filteredCards = computed(() => filterArchiveCards(currentCards.value, {
   eventRelations: archiveManifestData.value?.event_card_relations_by_card,
   gashaRelations: gashaIndexData.value?.relations_by_card,
 }))
+const filteredCardRows = computed(() => filteredCards.value.map(card => ({
+  ...card,
+  ownerReference: buildIdolReference(card.character_id, idolUnitData.value, archiveManifestData.value, `card:${card.resource_id}`),
+})))
 
 const currentCardBase = computed(() => cardMap.value.get(currentCardId.value) || null)
 const currentCard = computed(() => mergeCardDetail(currentCardBase.value, cardDetailData.value))
+const currentCardOwnerReference = computed(() => buildIdolReference(
+  currentCard.value?.character_id, idolUnitData.value, archiveManifestData.value, `card:${currentCardId.value}`,
+))
 const currentCardAssetStatus = computed(() => archiveManifestData.value?.card_assets_by_id?.[currentCardId.value] || null)
 const currentCardEventRelation = computed(() => archiveManifestData.value?.event_card_relations_by_card?.[currentCardId.value] || null)
 const currentCardGashaRelation = computed(() => gashaIndexData.value?.relations_by_card?.[currentCardId.value] || null)
@@ -2805,6 +2815,15 @@ function openCard(card) {
   if (view.value !== 'card_detail') captureDetailSource()
   currentCardId.value = card.resource_id
   commitView('card_detail')
+}
+
+function openCardIdol(idolCode) {
+  if (!idolUnitData.value?.by_idol_code?.[idolCode] || currentCard.value?.character_id !== idolCode) return
+  captureDetailSource()
+  currentCategoryId.value = 'idol'
+  currentCharacterId.value = idolCode
+  currentCardId.value = ''
+  commitView('idol_detail')
 }
 
 function openGasha(gasha) {

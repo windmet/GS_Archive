@@ -46,6 +46,10 @@
             <span v-if="card.gameplay?.attribute?.name" class="card-attribute">{{ card.gameplay.attribute.name }}</span>
           </div>
           <h3>{{ card.title || '卡名待确认' }}</h3>
+          <div class="card-owner-block">
+            <span>所属偶像</span>
+            <ArchiveIdolReference :reference="ownerReference" density="portrait" @open="emit('open-idol', $event)" />
+          </div>
           <div class="card-detail-controls">
             <button
               class="card-nav-button"
@@ -299,6 +303,7 @@ import { computed, ref, watch } from 'vue'
 import { Activity, CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, HeartPulse, ImageOff, PackageOpen, Shirt } from '@lucide/vue'
 import ArchiveImageLightbox from './ArchiveImageLightbox.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
+import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { cardScenarioTitle } from '../../presentation/CardPresentation.js'
 import ArchiveRelationList from './ArchiveRelationList.vue'
@@ -312,6 +317,7 @@ import {
 
 const props = defineProps({
   card: { type: Object, default: null },
+  ownerReference: { type: Object, default: null },
   embedded: { type: Boolean, default: false },
   assetStatus: { type: Object, default: null },
   artMode: { type: String, default: 'clean' },
@@ -329,6 +335,7 @@ const emit = defineEmits([
   'navigate-related-card',
   'open-event',
   'open-gasha',
+  'open-idol',
   'update:art-mode',
 ])
 
@@ -524,6 +531,8 @@ function openRelation(item) {
 .card-landscape-comparison figcaption { margin-top: 5px; color: #75808a; font-size: 0.66rem; text-align: center; }
 .card-head-copy { min-width: 0; }
 .card-detail-head h3 { margin: 8px 0 0; font-size: 1.15rem; color: #222; }
+.card-owner-block { display: grid; gap: 6px; max-width: 360px; margin-top: 14px; }
+.card-owner-block > span { color: #71838a; font-size: .7rem; font-weight: 700; }
 .card-detail-controls { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
 .card-nav-button { display: grid; place-items: center; width: 34px; height: 32px; padding: 0; border: 1px solid #dce2e5; border-radius: 6px; background: #fff; color: #41515c; cursor: pointer; }
 .card-nav-button:hover:not(:disabled) { border-color: #9ec8c3; background: #f1faf9; color: #147f77; }
