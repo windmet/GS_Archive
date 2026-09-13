@@ -46,6 +46,17 @@ for (const portalFrom of ['', '?view=cards&rarity=SSR&q=Jupiter']) {
 }
 assert.equal(readArchiveSourceRoute('?view=portal&portal_from=%3Fview%3Dportal').portalFrom,
   '?view=home', 'nested Portal return cannot recurse')
+for (const destination of [
+  { view: 'welcome' },
+  { view: 'idol_picker', pickTarget: 'profile' },
+  { view: 'song_catalog' },
+]) {
+  const route = readArchiveRoute(buildArchiveUrl('http://localhost/', {
+    ...destination, sourceRoute: '?view=portal&portal_from=%3Fview%3Dcards%26rarity%3DSSR',
+  }))
+  assert.equal(readArchiveSourceRoute(route.sourceRoute).view, 'portal', `${destination.view} retains Portal origin after refresh`)
+  assert.equal(readPortalReturnRoute(readArchiveSourceRoute(route.sourceRoute).portalFrom).rarity, 'SSR')
+}
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const restoreContext = {
@@ -99,5 +110,10 @@ pending = context.closeArchivePortal()
 release()
 await pending
 assert.equal(nav.view.value, 'cards')
+assert.equal(published, 1)
+nav.view.value = 'portal'
+nav.portalFrom.value = ''
+await context.closeArchivePortal()
+assert.equal(nav.view.value, 'portal', 'root Portal has no synthetic return action')
 assert.equal(published, 1)
 console.log('Portal navigation: preserved contexts, safe deep links, refresh, no nesting and obsolete-close suppression passed')

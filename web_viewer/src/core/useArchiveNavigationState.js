@@ -72,6 +72,11 @@ export function useArchiveNavigationState() {
       }
     }
     if (view.value === 'portal') return { view: 'portal', portalFrom: portalFrom.value }
+    if (view.value === 'welcome' || view.value === 'idol_picker') return {
+      view: view.value,
+      ...(view.value === 'idol_picker' ? { pickTarget: currentPickTarget.value } : {}),
+      ...(detailSourceRoute.value.startsWith('?') ? { sourceRoute: detailSourceRoute.value } : {}),
+    }
     const returnsToEvent = view.value === 'player' && returnViewAfterPlayer.value === 'event_detail'
     const returnsToStory = view.value === 'player' && returnViewAfterPlayer.value === 'story_detail'
     const returnsToStoryCollection = view.value === 'player' && returnViewAfterPlayer.value === 'story_collection'

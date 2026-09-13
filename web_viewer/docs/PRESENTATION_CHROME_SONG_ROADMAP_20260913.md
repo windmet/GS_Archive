@@ -153,3 +153,9 @@ Cards总览在整行卡片按钮内增加所属偶像姓名，不嵌第二个按
 Portal自推卡改用共享身份引用，规范姓名、组合和头像降级由同一合同提供；保留原五个快捷入口，不改变偏好设置与持久化。原有`Portal→资料→返回`实测误落Welcome：来源解析曾完全禁止Portal。本批让Portal作为受限来源帧，仍禁止其作为自身`portal_from`的递归目标；从自推卡和五个快捷入口进入人物/卡片/个人故事/Work/通信后，返回可恢复Portal及其原来源。根Portal本身仍显示一个无真实来源的Back，属于下一批N1语义补口，不把本批标为N1完成。
 
 验证：`verify:portal-navigation`增加Portal来源经偶像URL刷新仍可返回、保留Portal自身来源及递归拒绝。5175 Browser通过设置页选翔太，实走Portal→资料→Portal，直达带来源的翔太URL→Portal，并逐一检查五个快捷入口返回。独立Edge CDP在1440×900与390×844检查翔太姓名/Jupiter/头像解码、五个快捷按钮44px、0横向溢出及0控制台错误；代码编译仅使用E盘`build:check`，不复制public。根Portal Back、picker取消与设置返回语义仍待N1处理。
+
+## N1 导航语义补口：Portal、选择页与设置页
+
+输入HEAD `d788b61`。根Portal没有真实来源，隐藏内页与Shell的返回并阻止空来源关闭；带`portal_from`的Portal仍显示返回并按原筛选恢复。Portal除明确跳转根首页外的七个图标入口保留Portal来源，目录及详情返回到Portal；Shell其他页面的全局导航继续按原根导航语义。`idol_picker`进入时捕获来源，显示“退出选择”：有来源则回来源页，直达无来源则进入根Portal。选定偶像进入目的页后，返回先到选择页，可重新选人或退出原入口。Welcome仅在从设置入口进入时携带来源并显示“返回来源页”；取消、稍后再选、选择轻量模式均回原入口，选择游戏风首页仍明确进入首页。Welcome和picker URL只保留自身目标与来源，不继承前页筛选字段；来源继续由既有16层/8192字符边界处理。
+
+验证：`verify:portal-navigation`覆盖Welcome、picker、歌曲目录刷新来源，以及根Portal无来源关闭；`verify:archive-navigation-state`新增两种入口精简投影，旧页面1792组投影保持等价。`verify:archive-startup-route`、`verify:archive-async-navigation`、`verify:routes`及`build:check`通过，构建仍只在E盘`.analysis/build-check`生成代码。5175 Browser实走根Portal→设置→返回，带SSR筛选来源的Portal→设置→Portal→Cards，带来源picker→偶像→picker→Portal、无来源picker→Portal，Portal的故事/歌曲/偶像/卡片/卡池/互动/资源入口均返回Portal；设置URL刷新后仍显示返回。1440×900与390×844 Edge截图复核根Portal与49人picker，0横向溢出、取消按钮44px、0控制台错误。N2共享Chrome和S0–S4歌曲/舞台工作仍未执行。

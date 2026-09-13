@@ -148,7 +148,7 @@ const MAX_SOURCE_LENGTH = 8192
 
 export function ownsArchiveSource(view, returnView = '') {
   if (view === 'player') return returnView !== 'player' && ownsArchiveSource(returnView || 'files')
-  return VALID_VIEWS.has(view) && !['welcome', 'home', 'portal'].includes(view)
+  return VALID_VIEWS.has(view) && !['home', 'portal'].includes(view)
 }
 
 // A launcher return is a bounded, local archive query, never an external URL.

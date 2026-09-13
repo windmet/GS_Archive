@@ -21,6 +21,7 @@
       <ArchivePortalLauncher
         v-if="view === 'portal'"
         :preferred-reference="preferredArchiveIdolReference"
+        :can-go-back="Boolean(portalFrom)"
         @navigate="navigateArchiveSection"
         @back="closeArchivePortal"
         @settings="openWelcomeSettings"
@@ -34,7 +35,9 @@
         :notice="userPreferenceNotice"
         :data-ready="archiveDataReady"
         :selection-only="view === 'home' || view === 'idol_picker'"
+        :can-cancel="view === 'idol_picker' || (view === 'welcome' && Boolean(detailSourceRoute))"
         :target-label="idolPickerLabel"
+        @cancel="cancelWelcomeOrPicker"
         @choose-light="chooseLightStartup"
         @choose-later="chooseStartupLater"
         @choose-idol="chooseImmersiveIdol"
@@ -1374,7 +1377,7 @@ const archiveSearchPlaceholder = computed(() => {
   return '搜索资料'
 })
 
-const archiveShowBack = computed(() => view.value !== 'home')
+const archiveShowBack = computed(() => view.value !== 'home' && (view.value !== 'portal' || Boolean(portalFrom.value)))
 
 const archiveBreadcrumbs = computed(() => {
   const route = currentArchiveRoute()
@@ -1795,7 +1798,9 @@ function goHome() {
 }
 
 function navigateArchiveSection(section) {
-  if (section !== 'portal') detailSourceRoute.value = ''
+  if (section !== 'portal' && section !== 'home') {
+    detailSourceRoute.value = view.value === 'portal' ? buildArchiveSourceQuery(currentArchiveRoute()) : ''
+  }
   if (section === 'portal') openArchivePortal()
   else if (section === 'home') goHome()
   else if (section === 'stories') openStoryCatalog()
@@ -1931,6 +1936,7 @@ function storeUserPreferences(next) {
 
 function chooseLightStartup() {
   storeUserPreferences({ startupMode: 'light', startupIdol: null, onboardingComplete: true })
+  if (view.value === 'welcome' && detailSourceRoute.value) return restoreDetailSource(openRootPortal)
   openRootPortal()
 }
 
@@ -1945,6 +1951,7 @@ function openRootPortal() {
 }
 
 function chooseStartupLater() {
+  if (view.value === 'welcome' && detailSourceRoute.value) return restoreDetailSource(openRootPortal)
   openRootPortal()
 }
 
@@ -1956,6 +1963,7 @@ function chooseImmersiveIdol({ idolCode, rememberStartup = true, setPreferred = 
   if (Object.keys(next).length) storeUserPreferences(next)
   if (view.value === 'idol_picker') {
     const target = currentPickTarget.value
+    captureDetailSource()
     currentPickTarget.value = ''
     if (target === 'profile') openPrimaryIdol(idolCode)
     else if (target === 'work') openWorkArchive(idolCode)
@@ -1984,13 +1992,20 @@ function clearUserPreferences() {
 
 function openWelcomeSettings() {
   userPreferenceNotice.value = ''
+  captureDetailSource()
   commitView('welcome')
 }
 
 function openIdolPicker(target) {
   if (!['home', 'profile', 'work', 'story', 'mobile'].includes(target)) return
+  captureDetailSource()
   currentPickTarget.value = target
   commitView('idol_picker')
+}
+
+function cancelWelcomeOrPicker() {
+  if (detailSourceRoute.value) return restoreDetailSource(openRootPortal)
+  if (view.value === 'idol_picker') openRootPortal()
 }
 
 function openGameHome(idolCode = '') {
@@ -2026,6 +2041,7 @@ function openArchivePortal() {
 }
 
 async function closeArchivePortal() {
+  if (!portalFrom.value) return
   const pending = applyArchiveRoute(readPortalReturnRoute(portalFrom.value))
   const expected = navigation.getRevision()
   await pending
@@ -2034,7 +2050,7 @@ async function closeArchivePortal() {
 }
 
 function openSongCatalog() {
-  detailSourceRoute.value = ''
+  if (view.value !== 'portal') detailSourceRoute.value = ''
   currentSongId.value = ''
   currentSongScope.value = 'all'
   songParentView.value = ''
@@ -2094,6 +2110,7 @@ function openHomeChat(idolId) {
 function goArchiveBack() {
   if (view.value === 'reader') return closeStoryReader()
   if (view.value === 'portal') return closeArchivePortal()
+  if (view.value === 'welcome' || view.value === 'idol_picker') return cancelWelcomeOrPicker()
   if (detailSourceRoute.value) return restoreDetailSource(goHome)
   const backByView = {
     idols: goHome,
@@ -2220,7 +2237,7 @@ function closeArchiveExperiment() {
 }
 
 function openArchiveStatus() {
-  detailSourceRoute.value = ''
+  if (view.value !== 'portal') detailSourceRoute.value = ''
   filterQuery.value = ''
   currentStoryDomain.value = ''
   currentEventScope.value = 'all'
@@ -2230,7 +2247,7 @@ function openArchiveStatus() {
 }
 
 function openGashaCatalog() {
-  detailSourceRoute.value = ''
+  if (view.value !== 'portal') detailSourceRoute.value = ''
   gashaParentView.value = ''
   filterQuery.value = ''
   currentCategoryId.value = ''
@@ -2242,7 +2259,7 @@ function openGashaCatalog() {
 }
 
 async function openStoryCatalog() {
-  detailSourceRoute.value = ''
+  if (view.value !== 'portal') detailSourceRoute.value = ''
   return navigation.run(async intent => {
     await ensureIdolCommunicationData()
     if (!intent.isCurrent()) return

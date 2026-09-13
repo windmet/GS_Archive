@@ -26,7 +26,7 @@ navigation.currentScenarioEndStep.value = 12
 const contexts = ['home', 'unit_detail', 'mobile_archive', 'event_detail', 'story_detail', 'story_collection', 'song_detail', 'files']
 let cases = 0
 for (const view of VALID_VIEWS) {
-  if (['portal', 'reader'].includes(view)) continue // New route has its own return contract verifier.
+  if (['portal', 'reader', 'welcome', 'idol_picker'].includes(view)) continue // Entry surfaces have their own provenance contract.
   for (const returnView of contexts) {
     for (const parent of contexts) {
       navigation.view.value = view
@@ -38,7 +38,6 @@ for (const view of VALID_VIEWS) {
         expected.story = actual.story
         expected.workMode = actual.workMode
       }
-      if (view === 'idol_picker') expected.pickTarget = actual.pickTarget
       assert.deepEqual(actual, expected, `${view}/${returnView}/${parent}`)
       const url = buildArchiveUrl('http://localhost/?runtimeDebug=1', actual)
       assert.equal(url.href, buildArchiveUrl('http://localhost/?runtimeDebug=1', expected).href)
@@ -47,6 +46,15 @@ for (const view of VALID_VIEWS) {
     }
   }
 }
+navigation.detailSourceRoute.value = '?view=portal'
+navigation.view.value = 'welcome'
+assert.deepEqual(navigation.currentArchiveRoute(), { view: 'welcome', sourceRoute: '?view=portal' },
+  'settings URL cannot inherit unrelated page filters')
+navigation.view.value = 'idol_picker'
+navigation.currentPickTarget.value = 'profile'
+assert.deepEqual(navigation.currentArchiveRoute(), { view: 'idol_picker', pickTarget: 'profile', sourceRoute: '?view=portal' },
+  'picker URL carries only target and origin')
+assert.equal(readArchiveRoute(buildArchiveUrl('http://localhost/', navigation.currentArchiveRoute())).sourceRoute, '?view=portal')
 // Explicit ownership invariants beyond the frozen oracle.
 navigation.view.value = 'story_catalog'
 assert.equal(navigation.currentArchiveRoute().scenario, '')

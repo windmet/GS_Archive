@@ -1,7 +1,7 @@
 <template>
   <section class="portal-launcher" aria-labelledby="portal-title" :style="{ '--portal-background': `url(${getPortalBackgroundUrl()})` }">
     <header class="portal-header">
-      <button class="portal-back" @click="emit('back')"><ArrowLeft :size="17" /><span>返回</span></button>
+      <button v-if="canGoBack" class="portal-back" @click="emit('back')"><ArrowLeft :size="17" /><span>返回</span></button>
       <div class="portal-header-actions">
         <button class="portal-action" @click="emit('open-home')"><Sparkles :size="16" /><span>游戏风首页</span></button>
         <button class="portal-action" @click="emit('settings')"><Settings2 :size="16" /><span>启动设置</span></button>
@@ -40,6 +40,7 @@ import ArchiveIdolReference from './ArchiveIdolReference.vue'
 
 defineProps({
   preferredReference: { type: Object, default: null },
+  canGoBack: { type: Boolean, default: false },
 })
 const emit = defineEmits(['navigate', 'back', 'settings', 'open-home', 'open-preferred'])
 const heading = ref(null)
