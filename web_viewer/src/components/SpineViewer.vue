@@ -1,9 +1,7 @@
 <template>
   <div class="chibi-lab">
     <header class="lab-header">
-      <button class="icon-button back-button" type="button" aria-label="返回资料馆" @click="emit('back')">
-        <ArrowLeft :size="22" />
-      </button>
+      <ArchiveBackAction class="back-button" label="返回资料馆" icon-only @back="emit('back')" />
       <div class="header-divider" aria-hidden="true"></div>
       <h1>舞台小人实验室</h1>
       <button class="stage-link" type="button" @click="emit('open-stage')">多人舞台</button>
@@ -199,7 +197,6 @@
 import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import * as PIXI from 'pixi.js'
 import {
-  ArrowLeft,
   CircleAlert,
   LoaderCircle,
   Mic2,
@@ -209,6 +206,7 @@ import {
   SkipBack,
   SkipForward,
 } from '@lucide/vue'
+import ArchiveBackAction from './archive/ArchiveBackAction.vue'
 import {
   applyLiveChibiLipSync,
   createLiveChibi,
@@ -755,12 +753,11 @@ function stopChoreography(reset = false) {
 }
 
 .lab-header h1 { margin: 0; font-size: 20px; font-weight: 680; letter-spacing: 0.02em; }
-.stage-link { height: 34px; padding: 0 13px; color: #dcecff; background: rgba(31, 112, 190, 0.25); border: 1px solid rgba(73, 161, 244, 0.46); border-radius: 7px; font: 650 12px/1 inherit; cursor: pointer; }
+.stage-link { min-height: 44px; padding: 0 13px; color: #dcecff; background: rgba(31, 112, 190, 0.25); border: 1px solid rgba(73, 161, 244, 0.46); border-radius: 7px; font: 650 12px/1 inherit; cursor: pointer; }
 .stage-link:hover { background: rgba(38, 130, 218, 0.36); }
 .header-meta { margin-left: auto; color: var(--muted); font-size: 12px; letter-spacing: 0.04em; }
 .header-divider { width: 1px; height: 26px; background: var(--line); }
-.icon-button { display: grid; place-items: center; width: 38px; height: 38px; padding: 0; color: var(--text); background: transparent; border: 0; border-radius: 8px; cursor: pointer; }
-.icon-button:hover { background: rgba(255, 255, 255, 0.07); }
+.back-button { --archive-back-ink: var(--text); --archive-back-hover: rgba(255, 255, 255, 0.07); border-radius: 8px; }
 
 .lab-workspace { position: absolute; inset: 62px 0 0; display: grid; grid-template-columns: minmax(0, 1fr) 380px; min-height: 0; }
 .stage-shell { position: relative; min-width: 0; overflow: hidden; background: #101a26; }

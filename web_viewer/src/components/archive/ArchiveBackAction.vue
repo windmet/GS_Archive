@@ -1,7 +1,7 @@
 <template>
-  <button type="button" class="archive-back-action" :class="{ 'is-pill': pill }" @click="emit('back')">
+  <button type="button" class="archive-back-action" :class="{ 'is-pill': pill, 'is-icon-only': iconOnly }" :aria-label="iconOnly ? label : undefined" @click="emit('back')">
     <ArrowLeft :size="18" :stroke-width="1.8" aria-hidden="true" />
-    <span>{{ label }}</span>
+    <span v-if="!iconOnly">{{ label }}</span>
   </button>
 </template>
 
@@ -11,6 +11,7 @@ import { ArrowLeft } from '@lucide/vue'
 defineProps({
   label: { type: String, default: '返回' },
   pill: { type: Boolean, default: false },
+  iconOnly: { type: Boolean, default: false },
 })
 const emit = defineEmits(['back'])
 </script>
@@ -40,6 +41,7 @@ const emit = defineEmits(['back'])
   border-radius: 24px;
   background: var(--archive-back-fill, transparent);
 }
+.archive-back-action.is-icon-only { width: 44px; padding: 0; }
 .archive-back-action:hover { background: var(--archive-back-hover, #eaf8f6); }
 .archive-back-action:focus-visible { outline: 3px solid #168f98; outline-offset: 3px; }
 </style>

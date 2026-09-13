@@ -64,9 +64,7 @@
     :data-character-light="currentCharacterLight.color"
   >
     <header class="stage-header">
-      <button class="icon-button" type="button" :aria-label="backLabel" @click="emit('back')">
-        <ArrowLeft :size="22" />
-      </button>
+      <ArchiveBackAction class="stage-back-button" :label="backLabel" icon-only @back="emit('back')" />
       <div class="header-divider" aria-hidden="true"></div>
       <div>
         <h1>舞台小人 · 多人舞台</h1>
@@ -374,7 +372,6 @@
 import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, ref, shallowReactive } from 'vue'
 import * as PIXI from 'pixi.js'
 import {
-  ArrowLeft,
   CircleAlert,
   LoaderCircle,
   Mic2,
@@ -385,6 +382,7 @@ import {
   RotateCcw,
   UsersRound,
 } from '@lucide/vue'
+import ArchiveBackAction from './archive/ArchiveBackAction.vue'
 import {
   LIVE_CHIBI_BASE,
   applyLiveChibiLipSync,
@@ -2884,11 +2882,10 @@ function formatTime(milliseconds) {
 }
 .stage-header h1 { margin: 0; font-size: 18px; letter-spacing: 0.02em; }
 .stage-header p { margin: 4px 0 0; color: var(--muted); font-size: 10px; }
-.icon-button { display: grid; place-items: center; width: 38px; height: 38px; padding: 0; color: var(--text); background: transparent; border: 0; border-radius: 8px; cursor: pointer; }
-.icon-button:hover { background: rgba(255, 255, 255, 0.07); }
+.stage-back-button { --archive-back-ink: var(--text); --archive-back-hover: rgba(255, 255, 255, 0.07); border-radius: 8px; }
 .header-divider { width: 1px; height: 28px; background: var(--line); }
 .header-meta { margin-left: auto; color: var(--muted); font-size: 11px; }
-.lab-link { height: 34px; margin-left: 8px; padding: 0 13px; color: #dbeeff; background: rgba(30, 109, 184, 0.22); border: 1px solid rgba(65, 165, 255, 0.42); border-radius: 7px; font: 650 11px/1 inherit; cursor: pointer; }
+.lab-link { min-height: 44px; margin-left: 8px; padding: 0 13px; color: #dbeeff; background: rgba(30, 109, 184, 0.22); border: 1px solid rgba(65, 165, 255, 0.42); border-radius: 7px; font: 650 11px/1 inherit; cursor: pointer; }
 
 .stage-workspace { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); min-height: 0; }
 .performance-shell { position: relative; width: 100%; min-width: 0; aspect-ratio: 16 / 9; overflow: hidden; background: #0b1726; }

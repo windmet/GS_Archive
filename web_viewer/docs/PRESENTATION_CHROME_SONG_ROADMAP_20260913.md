@@ -229,3 +229,7 @@ Portal自推卡改用共享身份引用，规范姓名、组合和头像降级�
 核查官方歌曲视频 https://www.youtube.com/watch?v=5J364VmlFxQ（Jupiter／BRAND NEW FIELD SideM Play List）：本地临时参考文件约150.210秒，抽看35秒、75秒、125秒均为歌曲宣传画面、固定文案或游戏广告，不是游戏内Chibi舞台录像。该文件只保存在忽略的`.analysis/reference-video`供内部核对，不入库、发布或充当原游戏舞台验收证据。
 
 进一步将视频和本地`brndnf.m4a`均转为4kHz单声道PCM，以归一化FFT互相关匹配。全段最高相关0.99016，视频时间0对应本地音频时间约2.206秒；本地10–30、55–75、100–120秒三个窗口分别得到2.206秒相同偏移，相关0.98918、0.99306、0.98859。视频SHA-256为`069b89f28faea046477e8a4a999281192194806c52cbb1c6871f6d77b8e56bfb`，本地M4A SHA-256为`fb863c0e215d29da793cc98ec3d02ef117bba24f79301bb4bf49b6d09d8e1d9a`；PCM及核对脚本均在忽略目录中。这确认两份音频在重叠段几乎同源、没有可测的头中尾漂移，但**不是**脚本歌词事件到音源的偏移，也不是游戏舞台镜头证据。该视频无人工字幕，日语自动字幕错词和时间交叠明显，不能用作逐句同步验收。`timelineToAudio`继续保持`unverified`；S1逐句同步及S4粒子/灯光原片一致性仍需逐句听核与真实游戏录屏或等效来源。
+
+## N2 实验页返回触控区
+
+输入HEAD `19f4d82`。`ArchiveBackAction`增加图标模式，深色实验页仍显示原箭头、保留动态返回文案为aria-label；Spine单人实验室和Chibi多人舞台都复用同一个最小44×44返回控件。两个实验页之间的顶部切换按钮也改为至少44px高，路由与舞台transport不变。`verify:archive-navigation-state`、`verify:live-chibi-singer-slots`及`build:check`通过，构建仍只生成E盘代码产物。5175 Browser在1280×720实测两个页面的返回与互跳按钮均高44px，实验室→多人舞台→实验室→直达入口Welcome路线可行；带`brndnf`歌曲来源的舞台按钮读为“返回歌曲”，点击回到原歌曲详情。多人舞台无页面横向溢出和console error，仍有已有Pixi Spine旧颜色工具弃用警告。本次IAB不支持临时viewport覆盖，未将390px结果冒称为本次实测；非零safe-area设备和实验页其他工具控件的触控区仍需专门复核。
