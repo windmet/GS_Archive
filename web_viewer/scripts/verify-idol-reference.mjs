@@ -8,6 +8,7 @@ function readJson(path) { return JSON.parse(readFileSync(new URL(path, import.me
 const dictionary = readJson('../public/data/masterdata/idol_unit_dictionary.json')
 const manifest = readJson('../public/data/archive_manifest.json')
 const cards = readJson('../public/data/masterdata/card_index.json').cards
+const stories = readJson('../public/data/masterdata/story_catalog.json').entries
 assert.ok(cards.length > 0, 'card corpus is empty')
 
 for (const card of cards) {
@@ -32,6 +33,13 @@ for (const member of unitMembers) {
   assert.equal(reference.actionable, true, `unresolved unit member: ${member.idol_code}`)
 }
 
+const prologue = stories.find(story => story.file === '1_4_001_00.json')
+assert.ok(prologue, 'missing main-story cast fixture')
+const cast = prologue.characters.map(code => buildIdolReference(code, dictionary, manifest, 'story:1_4_001_00.json'))
+assert.equal(cast.filter(reference => reference.actionable).length, 3)
+assert.equal(cast.find(reference => reference.idolCode === '101ken')?.actionable, false,
+  'a six-character NPC code must not become an idol link')
+
 const touma = buildIdolReference('001tom', dictionary, manifest, 'card:001tom_n01')
 assert.equal(touma.displayName, '天ヶ瀬 冬馬')
 assert.equal(touma.unitName, 'Jupiter')
@@ -42,4 +50,4 @@ for (const unknown of ['999xxx', '01jup', '', '../001tom']) {
   assert.equal(reference.displayName, '姓名待确认')
 }
 
-console.log(`Idol references: ${cards.length} real card owners and ${unitMembers.length} unit members resolved; unknown identities remain inert`)
+console.log(`Idol references: ${cards.length} real card owners, ${unitMembers.length} unit members and main-story cast resolved; unknown identities remain inert`)

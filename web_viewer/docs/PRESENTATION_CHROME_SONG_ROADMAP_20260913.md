@@ -135,3 +135,9 @@ Cards总览在整行卡片按钮内增加所属偶像姓名，不嵌第二个按
 组合成员仍由原有manifest成员关系排序与计数，不改动`buildUnitCatalog`的冻结数据合同。`ArchiveUnitDetail`接收现有身份字典与manifest，仅在展示层把各成员映射成共享偶像引用；点击继续向App传原成员对象，沿用既有`unit_detail→idol_detail→unit_detail`来源链。窄屏成员布局改为单列，保证姓名和入口完整可读。
 
 验证：`verify:unit-page`保持16组、34种身份路径与旧版投影等价；`verify:idol-reference`核对49名manifest成员全都解析为规范姓名且可操作；`verify:archive-navigation-state`通过。5175 Browser实走Jupiter三人头像与翔太进入偶像、返回原组合；390px Edge CDP检查High×Joker五人头像、0横向溢出及0控制台错误。代码编译使用`build:check`，仅E盘`.analysis/build-check`，不复制public。Story/Event/Portal展示迁移仍未完成。
+
+## P2 分批实施：剧情详情登场角色
+
+剧情详情的原始`characters`集合不变，展示层通过共享身份投影生成入口。已知偶像显示规范姓名、组合与头像；形似六字符偶像ID却不在字典内的NPC保留为不可操作的“姓名待确认”占位，不再进入无效偶像页。未知身份不用臆测成其他偶像；NPC专名的独立来源映射仍待后续资料审计。
+
+验证：`verify:idol-reference`加入主线序章角色样本，确认3位偶像可操作、`101ken`不可操作；`verify:birthday-story-domain-landing`、`verify:archive-presentation`与`build:check`通过。5175 Browser实走主线序章冬马→偶像→返回原剧情；390px Edge CDP检查主线第一话11个六字符角色，其中9位偶像入口、2个未知占位，单列可读、0横向溢出、0控制台错误。构建仅为E盘代码产物，无public复制。Event/Portal及跨页完整迁移仍未完成。

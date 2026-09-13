@@ -59,11 +59,7 @@
     <section v-if="characters.length" class="detail-section">
       <div class="section-heading"><div><span>CAST</span><h3>登场角色</h3></div><strong>{{ characters.length }}</strong></div>
       <div class="character-list">
-        <button v-for="character in characters" :key="character" :disabled="!isIdol(character)" @click="emit('open-idol', character)">
-          <img v-if="isIdol(character)" :src="`/assets/idols/icons/image_chara_icon_${character}.png`" :alt="characterName(character)" />
-          <span v-else class="character-placeholder">?</span>
-          <strong>{{ characterName(character) }}</strong>
-        </button>
+        <ArchiveIdolReference v-for="reference in characterReferences" :key="reference.idolCode" :reference="reference" @open="emit('open-idol', $event)" />
       </div>
     </section>
 
@@ -90,11 +86,14 @@
 <script setup>
 import { computed } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
+import ArchiveIdolReference from './ArchiveIdolReference.vue'
+import { buildIdolReference } from '../../presentation/IdolReferencePresentation.js'
 import { AlignLeft, ArrowRight, BookOpen, ExternalLink, Play } from '@lucide/vue'
 
 const props = defineProps({
   story: { type: Object, default: null }, related: { type: Array, default: () => [] },
   visualUrl: { type: String, default: '' }, idolName: { type: Function, required: true },
+  identity: { type: Object, default: null }, manifest: { type: Object, default: null },
   externalResources: { type: Array, default: () => [] },
   readingEntries: { type: Array, default: () => [] },
 })
@@ -104,13 +103,10 @@ const availableReading = computed(() => props.readingEntries.filter(entry => ent
 const hierarchyLabel = computed(() => [props.story?.sectionLabel, props.story?.episodeLabel].filter(Boolean).join(' · ') || props.story?.domainLabel || '')
 const releaseDate = computed(() => props.story?.releaseAt >= 1577836800 ? new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium' }).format(new Date(props.story.releaseAt * 1000)) : '')
 const characters = computed(() => (props.story?.characters || []).filter(character => /^\d{3}[a-z0-9]{3}$/i.test(character)))
+const characterReferences = computed(() => characters.value.map(character =>
+  buildIdolReference(character, props.identity, props.manifest, `story:${props.story?.file || ''}`)))
 const relatedStories = computed(() => props.related.slice(0, 24))
 const collectionTitle = computed(() => props.story?.sectionLabel ? `${props.story.sectionLabel}的故事` : '同类故事')
-function characterName(character) {
-  const name = props.idolName(character)
-  return name && name !== character ? name : '姓名待确认'
-}
-function isIdol(character) { return /^\d{3}[a-z0-9]{3}$/i.test(character) }
 </script>
 
 <style scoped>
@@ -124,7 +120,7 @@ function isIdol(character) { return /^\d{3}[a-z0-9]{3}$/i.test(character) }
 .story-actions { position: absolute; top: 50%; right: max(24px, calc((100% - 1120px) / 2)); display: grid; gap: 7px; min-width: 184px; transform: translateY(-50%); }.story-actions > button,.story-actions > a { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 8px 13px; border: 1px solid #158f87; border-radius: 6px; background: #158f87; color: #fff; cursor: pointer; font: inherit; font-size: .7rem; text-decoration: none; }.story-actions > button:disabled { border-color: #cbd3d6; background: #dfe5e7; color: #78848a; cursor: not-allowed; }.story-actions > a { justify-content: flex-start; border-color: #bedbd8; background: #fff; color: #166f69; }.story-actions > a span { display: flex; flex-direction: column; gap: 2px; }.story-actions > a strong { font-size: .64rem; }.story-actions > a small { color: #63817e; font-size: .52rem; }.story-actions > small { color: #66817e; font-size: .54rem; text-align: center; }
 .detail-section { padding: 22px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #e1e6e8; background: #fff; }.detail-section + .detail-section { margin-top: 10px; }.section-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 12px; }.section-heading span { color: #168a82; font-size: .57rem; font-weight: 800; }.section-heading h3 { margin: 3px 0 0; font-size: .84rem; }.section-heading > strong { color: #7f8c93; font-size: .62rem; }
 .episode-list { display: grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap: 1px; background: #e2e7e9; }.episode-list > div { display: flex; flex-direction: column; gap: 4px; min-height: 58px; padding: 11px 13px; background: #f9fafb; }.episode-list span { color: #16857e; font-size: .58rem; }.episode-list strong { font-size: .7rem; }
-.character-list { display: flex; flex-wrap: wrap; gap: 7px; }.character-list button { display: flex; align-items: center; gap: 8px; min-width: 132px; height: 48px; padding: 5px 10px 5px 5px; border: 1px solid #e0e5e7; border-radius: 6px; background: #fff; color: #2c3a42; cursor: pointer; font: inherit; text-align: left; }.character-list button:disabled { cursor: default; }.character-list img, .character-placeholder { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }.character-placeholder { display: grid; place-items: center; background: #e7edef; color: #718088; }.character-list strong { font-size: .65rem; }
+.character-list { display: grid; grid-template-columns: repeat(auto-fill,minmax(180px,1fr)); gap: 7px; }
 .related-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; }.related-list button { display: grid; grid-template-columns: 72px minmax(0,1fr) 16px; align-items: center; gap: 9px; min-height: 48px; padding: 8px 10px; border: 1px solid #e0e5e7; border-radius: 5px; background: #fff; color: #2b3941; cursor: pointer; font: inherit; text-align: left; }.related-list button.current { border-color: #70c2bc; background: #eff9f8; }.related-list span { color: #17857e; font-size: .57rem; }.related-list strong { overflow: hidden; font-size: .66rem; text-overflow: ellipsis; white-space: nowrap; }.related-list svg { color: #7f8d94; }
 .source-strip { display: flex; justify-content: space-between; gap: 18px; margin-top: 10px; padding: 15px max(24px, calc((100% - 1120px) / 2)) 22px; color: #879198; font-size: .58rem; }.source-strip code { overflow-wrap: anywhere; text-align: right; }
 @media (max-width: 760px) { .story-identity { grid-template-columns: 1fr; gap: 16px; padding: 15px 12px 18px; }.identity-copy h2 { font-size: 1.05rem; }.synopsis-band { padding: 19px 13px; }.story-actions { position: static; width: 100%; margin-top: 16px; transform: none; }.detail-section { padding: 18px 12px; }.episode-list, .related-list { grid-template-columns: 1fr; }.source-strip { flex-direction: column; padding: 13px 12px 18px; }.source-strip code { text-align: left; } }

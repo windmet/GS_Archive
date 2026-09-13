@@ -288,6 +288,8 @@
         :related="currentStoryRelated"
         :visual-url="currentStoryVisualUrl"
         :idol-name="idolSourceName"
+        :identity="idolUnitData"
+        :manifest="archiveManifestData"
         :external-resources="currentStoryExternalResources"
         :reading-entries="readingCatalogEntries"
         @read="documentId => openStoryReader(documentId, { storyType: currentStoryDomain, story: currentStoryFile })"

@@ -9,7 +9,7 @@
   >
     <span v-if="showImage" class="idol-reference-art" aria-hidden="true">
       <img v-if="imageSrc" :src="imageSrc" alt="" loading="lazy" @error="advanceImage" />
-      <span v-else>{{ reference?.displayName?.slice(0, 1) || '?' }}</span>
+      <span v-else>{{ reference?.actionable ? reference.displayName.slice(0, 1) : '?' }}</span>
     </span>
     <span class="idol-reference-copy">
       <strong>{{ reference?.displayName || '姓名待确认' }}</strong>
