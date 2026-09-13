@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sidem.local/schemas/song-timeline-v1.schema.json",
+  "title": "Lightweight song timeline",
+  "type": "object",
+  "required": ["schemaVersion", "id", "songCode", "variant", "title", "source", "timeUnit", "startTimeMs", "durationMs", "positions", "performerSlots", "stagePositionMap", "singerEvents", "lyricEvents", "audioRef", "timelineToAudio", "capabilities"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+    "songCode": { "type": "string", "pattern": "^[a-z0-9]+$" },
+    "variant": { "type": "string" },
+    "title": { "type": "string" },
+    "source": {
+      "type": "object",
+      "required": ["liveEffectCsv", "indexSha256", "entrySha256", "audioCatalogSha256"],
+      "properties": {
+        "liveEffectCsv": { "type": "string" },
+        "indexSha256": { "$ref": "#/$defs/sha256" },
+        "entrySha256": { "$ref": "#/$defs/sha256" },
+        "audioCatalogSha256": { "$ref": "#/$defs/sha256" }
+      },
+      "additionalProperties": false
+    },
+    "timeUnit": { "const": "ms" },
+    "startTimeMs": { "type": "number" },
+    "durationMs": { "type": "number", "minimum": 0 },
+    "positions": { "type": "array", "items": { "type": "integer" } },
+    "performerSlots": { "type": "array", "items": { "type": "integer" } },
+    "stagePositionMap": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["performerSlot", "stagePosition"],
+        "properties": {
+          "performerSlot": { "type": "integer" },
+          "stagePosition": { "type": "integer" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "singerEvents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["time", "singers", "stagePositions", "performerSlots"],
+        "properties": {
+          "time": { "type": "number" },
+          "singers": { "type": "array", "items": { "type": "integer" } },
+          "stagePositions": { "type": "array", "items": { "type": "integer" } },
+          "performerSlots": { "type": "array", "items": { "type": "integer" } }
+        },
+        "additionalProperties": false
+      }
+    },
+    "lyricEvents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["time", "text", "duration"],
+        "properties": {
+          "time": { "type": "number" },
+          "text": { "type": "string" },
+          "rawText": { "type": "string" },
+          "duration": { "type": "number", "minimum": 0 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "audioRef": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["url", "sourceSha256", "derivedSha256", "durationSeconds"],
+          "properties": {
+            "url": { "type": "string", "pattern": "^/assets/live-chibi/music/[a-z0-9]+\\.m4a$" },
+            "sourceSha256": { "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
+            "derivedSha256": { "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
+            "durationSeconds": { "type": ["number", "null"] }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "timelineToAudio": {
+      "type": "object",
+      "required": ["status", "offsetMs"],
+      "properties": {
+        "status": { "const": "unverified" },
+        "offsetMs": { "type": "null" }
+      },
+      "additionalProperties": false
+    },
+    "capabilities": {
+      "type": "object",
+      "required": ["audio", "lyrics", "stage"],
+      "properties": {
+        "audio": {
+          "type": "object",
+          "required": ["evidence", "resource", "tested"],
+          "properties": {
+            "evidence": { "enum": ["full_mix_catalog", "none"] },
+            "resource": { "enum": ["local_present", "not_found"] },
+            "tested": { "const": "not_tested" }
+          },
+          "additionalProperties": false
+        },
+        "lyrics": {
+          "type": "object",
+          "required": ["evidence", "alignment", "tested"],
+          "properties": {
+            "evidence": { "enum": ["timed_source", "none"] },
+            "alignment": { "const": "unverified" },
+            "tested": { "const": "not_tested" }
+          },
+          "additionalProperties": false
+        },
+        "stage": {
+          "type": "object",
+          "required": ["kind", "evidence", "resource", "tested"],
+          "properties": {
+            "kind": { "enum": ["choreography_candidate", "special_single"] },
+            "evidence": { "const": "live_effect_index" },
+            "resource": { "const": "not_assessed" },
+            "tested": { "const": "not_tested" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": { "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" } }
+}

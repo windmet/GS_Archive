@@ -95,7 +95,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useSongPerformanceSession } from '../../composables/useSongPerformanceSession.js'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
-import { fetchSongPerformanceChoreography } from '../../utils/songPerformanceData.js'
+import { fetchSongPerformanceArrangements } from '../../utils/songPerformanceData.js'
 
 const props = defineProps({
   audioExperiment: { type: Object, required: true },
@@ -163,8 +163,8 @@ async function loadArrangements() {
   loadingTimeline.value = true
   session.release()
   try {
-    const choreography = await fetchSongPerformanceChoreography()
-    arrangements.value = (choreography?.songs || []).filter(entry => (
+    const timelines = await fetchSongPerformanceArrangements(props.audioExperiment.song_code)
+    arrangements.value = timelines.filter(entry => (
       entry.songCode === props.audioExperiment.song_code
       && !entry.variant
       && Array.isArray(entry.singerEvents)

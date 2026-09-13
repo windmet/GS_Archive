@@ -171,3 +171,11 @@ Portal自推卡改用共享身份引用，规范姓名、组合和头像降级�
 `ArchivePageChrome`以`canGoBack`/`backLabel`/`back`事件和标题、动作插槽组织Shell、Portal、Reader与独立列表头；具体返回来源仍由App负责。三个页面保留各自标题与滚动身份：Shell普通页顶栏在网格第一行且主体只由子页面滚动，Portal/Reader继续各自单滚动容器且不额外显示Shell顶栏。Shell向下传顶部及左右safe-area变量；窄屏Shell顶栏、Portal和Reader分别消耗一次，不动Player独立顶栏。列表头仅在非embedded场景出现，筛选栏跟随其69px头高，App现有embedded消费者不叠第二顶栏。
 
 验证：`verify:reading`、`verify:archive-navigation-state`、`build:check`通过；5175 Browser确认普通页、带来源Portal、Reader的返回动作与Reader原剧情目录来源，控制台零错误。Edge在1440×900与390×844再次核对三个返回区均≥44×44、页面无横向溢出，并截图复看窄屏的标题、正文与底部导航。具有非零safe-area的设备、独立列表头在App以外的嵌入场景仍未实机验证，不把此项外推成全设备验收。
+
+## S0 轻量歌曲时间线：投影与现有合唱入口
+
+输入HEAD `051897e`。`generate:song-timelines`从编舞索引、正式歌曲目录和播放音源目录生成确定性的v1 manifest及118个按编排ID独立加载的详情文件，记录三个源文件hash、每个编排的内容hash、毫秒单位、负起点、原顺序的歌手/歌词事件、音源引用及彼此独立的音频/歌词/舞台能力状态。61首目录歌曲中60首有时间线；`reason`明确列为`no_choreography_entry`。`drv999_live_effect`保留零duration及21条歌词，标记`special_single`，不宣称普通多人编舞。时间线到音频的偏移和歌词对齐一律`unverified`，资源存在只表示本地路径在生成时可找到，绝不表示实测同步或媒体可播。
+
+歌曲详情的五槽合唱现在通过`fetchSongPerformanceArrangements(songCode)`只读取manifest和本曲的base编排，失败请求可重试；Chibi实验舞台仍有自己的整库入口，本批没有迁移或宣称其按曲加载。以`drvalv`为例，该入口JSON请求从原编舞索引8,267,629 bytes降到manifest加详情39,956 bytes。源编舞中负起点、重叠歌词和零duration保持原值；当前源没有同刻歌词的实证样例，投影不做按时间去重/排序，相关合成用例留在后续歌词消费合同中。
+
+验证：`verify:song-timelines`含Ajv schema、全118条源字段与hash一致性、无映射reason、特殊版边界、按曲请求集合及503重试；`verify:song-experimental-audio`改为检查新轻量入口，`verify:live-chibi-singer-slots`、`verify:song-playback-audio`、`verify:song-domain-landing`和`build:check`通过。5175 Browser实开DRIVE A LIVE切五槽合唱，播放器ready、五条声部已解码、无页面错误；独立Edge CDP复核1440×900截图、0横向溢出、0控制台错误，网络仅有manifest与`drvalv_live_effect.json`两个时间线请求、无整库编舞请求。构建仍为E盘`.analysis/build-check`代码产物，无public复制。没有播放声音、听感或歌词同步验收，S1–S4仍待实施。
