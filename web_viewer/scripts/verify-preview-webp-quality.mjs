@@ -11,8 +11,16 @@ import { LOSSLESS_WEBP_TRANSFORM } from '../shared/deploy/PreviewAssetTransform.
  * Visual spot-checking is the usual advice here, but every property that would
  * cause the classic artifacts is checkable exactly: alpha must survive
  * untouched, visible pixels must survive untouched (the encode is lossless),
- * geometry must not move, and the only pixels allowed to differ are fully
- * transparent ones, whose RGB the encoder deliberately clears.
+ * geometry must not move, and fully transparent pixels must decode to exactly
+ * (0,0,0).
+ *
+ * That last one is an equality, not a tolerance. The encoder zeroes the RGB of
+ * every `alpha === 0` pixel, and libwebp's `exact` flag is what stops it from
+ * re-spreading neighbouring colour back into them during compression. Without
+ * that flag a source with 39k dirty-but-invisible pixels decodes back with
+ * ~395k of them, and that colour is what GPU edge sampling bleeds into visible
+ * neighbours as fringing. So non-zero deployed RGB under alpha 0 means the
+ * encoder contract is broken and this script must fail.
  *
  * Usage: node scripts/verify-preview-webp-quality.mjs [samplesPerDomain]
  */
@@ -35,6 +43,7 @@ assert.ok(domains.length, 'No converted entries in the manifest')
 const raw = async file => (await sharp(file).ensureAlpha().raw().toBuffer({ resolveWithObject: true }))
 
 let checked = 0
+let firstLeak = null
 const summary = []
 for (const domain of domains) {
   const candidates = manifest.entries
@@ -61,10 +70,17 @@ for (const domain of domains) {
       const alphaDeployed = deployed.data[offset + 3]
       assert.equal(alphaDeployed, alphaSource, `${entry.request_key} alpha changed at byte ${offset}`)
       if (alphaSource === 0) {
-        // Invisible pixels may be zeroed, but must stay invisible and must never
-        // gain colour that a sampler could bleed into a visible neighbour.
+        // Fully transparent pixels must decode to exactly zero RGB. Any colour
+        // here is what a sampler bleeds into a visible neighbour as fringing.
+        // Counted across the whole run rather than thrown on the first hit so
+        // the failure reports how widespread the breakage is; the run still
+        // fails hard below.
         if (deployed.data[offset] || deployed.data[offset + 1] || deployed.data[offset + 2]) {
           transparentDiffering++
+          if (!firstLeak) {
+            firstLeak = `${entry.request_key} pixel ${offset / 4}: got (${deployed.data[offset]}, ` +
+              `${deployed.data[offset + 1]}, ${deployed.data[offset + 2]}), expected (0, 0, 0)`
+          }
         }
         continue
       }
@@ -83,8 +99,10 @@ for (const domain of domains) {
   summary.push({ domain, sample: sample.length, bytesIn, bytesOut, transparentDiffering })
 }
 
+const totalLeaks = summary.reduce((sum, row) => sum + row.transparentDiffering, 0)
+
 console.log(`WebP fidelity verified on ${checked} sampled conversions (alpha exact, visible RGB exact, dimensions exact)\n`)
-console.log('  domain                    samples   source MiB   deployed MiB   retained   cleared-alpha RGB leaks')
+console.log('  domain                    samples   source MiB   deployed MiB   retained   transparent RGB leaks')
 for (const row of summary) {
   const pct = ((row.bytesOut / row.bytesIn) * 100).toFixed(1) + '%'
   console.log(`  ${row.domain.padEnd(24)} ${String(row.sample).padStart(7)} ${(row.bytesIn / 1024 ** 2).toFixed(1).padStart(12)} ${(row.bytesOut / 1024 ** 2).toFixed(1).padStart(14)} ${pct.padStart(10)} ${String(row.transparentDiffering).padStart(24)}`)
@@ -92,4 +110,14 @@ for (const row of summary) {
 const totalIn = summary.reduce((sum, row) => sum + row.bytesIn, 0)
 const totalOut = summary.reduce((sum, row) => sum + row.bytesOut, 0)
 console.log(`\n  total ${(totalIn / 1024 ** 2).toFixed(1)} MiB -> ${(totalOut / 1024 ** 2).toFixed(1)} MiB  (${((totalOut / totalIn) * 100).toFixed(1)}% retained, ${(((totalIn - totalOut) / totalIn) * 100).toFixed(1)}% saved)`)
-console.log('\nA non-zero "cleared-alpha RGB leaks" count is expected and benign: it counts fully transparent pixels that still carry non-zero RGB on the PNG side, which is exactly the fringing source the transform removes.')
+
+// Hard failure. A deployed pixel with alpha 0 and non-zero RGB is the exact
+// condition the encoder's `exact` flag exists to prevent, so it can never be a
+// benign count.
+if (totalLeaks) {
+  console.error(`\nFAIL: ${totalLeaks} deployed pixel(s) have alpha 0 with non-zero RGB across ${summary.filter(row => row.transparentDiffering).length} domain(s).`)
+  console.error(`First violation: ${firstLeak}`)
+  console.error('Fully transparent deployed pixels must be exactly (0,0,0); this is the fringing source the transform removes.')
+  process.exit(1)
+}
+console.log('\nFully transparent deployed pixels are exactly (0,0,0) in every sampled conversion.')
