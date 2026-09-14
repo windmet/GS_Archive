@@ -4,7 +4,7 @@ import os from 'node:os'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 import { resolvePreviewObjectKey } from '../shared/deploy/PreviewAssetTransform.js'
-import { encodeLosslessWebp, runPool } from './lib/lossless-webp.mjs'
+import { encodeLosslessWebp, runPool, shutdownEncoderPool } from './lib/lossless-webp.mjs'
 
 /**
  * Second-stage audit of the PNG corpus the first WebP pass deliberately left
@@ -217,3 +217,7 @@ console.log(`\nReport written to ${path.relative(root, reportPath).replaceAll('\
 // just wrote on Windows, and that must not discard an otherwise complete audit.
 try { await fs.rm(sampleDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 300 }) }
 catch (error) { console.warn(`Note: could not remove ${sampleDir} (${error.code}); harmless`) }
+
+// Live encoder children keep the event loop non-empty, so the report would
+// otherwise print everything and then never exit.
+shutdownEncoderPool()

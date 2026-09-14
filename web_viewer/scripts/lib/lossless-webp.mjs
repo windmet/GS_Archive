@@ -123,7 +123,10 @@ export async function encodeLosslessWebp({ source, target }) {
   }
 }
 
-/** Stops every worker. Scripts must call this or Node will not exit. */
+/**
+ * Stops every worker immediately. Workers are unreferenced, so a drained pool
+ * already lets Node exit on its own; call this to tear down early.
+ */
 export function shutdownEncoderPool() {
   for (const worker of [...idle, ...busy]) worker.shutdown()
   idle.length = 0

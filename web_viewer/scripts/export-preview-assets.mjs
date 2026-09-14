@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
+import os from 'node:os'
 import path from 'node:path'
 import { createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { createStoryAssetPlan } from '../shared/story/StoryAssetPlan.js'
 import { resolvePreviewObjectKey, previewTransformKind, COPY_TRANSFORM } from '../shared/deploy/PreviewAssetTransform.js'
-import { encodeLosslessWebp, runPool } from './lib/lossless-webp.mjs'
+import { encodeLosslessWebp, runPool, shutdownEncoderPool } from './lib/lossless-webp.mjs'
 import { createArchiveAssetResolver } from './lib/archive-assets.mjs'
 import { getBgmUrl, getSeUrl, getAmbientUrl, getLipSyncUrl } from '../src/utils/AssetResolver.js'
 import { getCardPortraitUrl, getCardLandscapeUrl } from '../src/utils/CardAssetResolver.js'
@@ -149,7 +150,11 @@ async function stage(item) {
   deployedBytes += content.length
   if (++staged % 2000 === 0) console.log(`Staged ${staged}/${entries.length}`)
 }
-await runPool(entries, 4, stage)
+// method=6 is CPU-bound and single-threaded per image, so throughput is set by
+// how many encodes run at once. Default to a fraction of the machine rather
+// than a fixed 4, and let an operator raise or lower it without editing code.
+const stageConcurrency = Number(process.env.SIDEM_EXPORT_CONCURRENCY || Math.max(2, Math.min(8, (os.availableParallelism?.() ?? 4) - 2)))
+await runPool(entries, stageConcurrency, stage)
 
 // Staging must end up exactly equal to the manifest. A previous run may have
 // staged a different physical layout for the same logical corpus (for example
@@ -198,3 +203,8 @@ totals.saved_bytes = sourceBytes - deployedBytes
 totals.ratio = sourceBytes ? Number((deployedBytes / sourceBytes).toFixed(4)) : 0
 await fs.writeFile(manifestPath, JSON.stringify({ schema_version: 2, totals, missing: missingEntries, entries }, null, 2) + '\n')
 console.log(`Exported ${entries.length} objects (${convertedPngs} lossless WebP) to ${stageRoot}; manifest ${manifestPath}`)
+
+// The encoder pool holds live child processes, and a live child keeps Node's
+// event loop non-empty. Without this the export finishes all its work, writes
+// the manifest, and then sits at zero CPU forever -- the process never exits.
+shutdownEncoderPool()
