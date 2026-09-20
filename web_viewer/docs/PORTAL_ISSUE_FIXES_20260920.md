@@ -48,3 +48,12 @@
 - 回归发现 cleanup 取消异步准备后仍保留 waiting，已重置本地 readiness 为 idle，避免退出后仍报告 AUTO 阻塞。
 - Spine cue 测试先等待场景投影再触发 Skip，符合播放器就绪后启用输入的现有契约。
 - PASS：verify:story-spine-cues（含 tint clock）、verify:story-step-playback-state、build:check。
+
+## 批次 5：人物构图与跨尺寸比例
+
+- 播放器/首页舞台按 720 参考高度渲染后整体适配可见区域，人物与背景使用同一屏幕缩放。人物单独增加 1.25 倍展示比例，并同步映射基线，保留角色 prefab 身高差和原始镜头指令。
+- 去掉首页手机固定 +300 Y / 0.86 缩放和跨断点重建舞台；去掉桌面首页 520px 最小高度，修复短横屏台词被裁掉。Lab 默认像素布局不变。
+- 短横屏 ADV 缩小台词框留白和字号，保留可滚动正文，避免原手机竖屏样式遮住肩部。
+- PASS：verify:story-stage-resize（含六种尺寸不变量）、verify:home、verify:story-player-ui-pr1、verify:story-spine-cues、build:check、diff check。
+- Browser：冬马卡片预览 1280×720 / 390×732 / 681×403，真实章节 STEP16，牙崎漣首页 1024×768 / 844×390；截图显示上半身构图，横竖屏切换保留人物，短横屏台词控件在可见区域。无新应用错误；已有 Pixi deprecation warning 保留。
+- 边界：比例根据用户实机截图校准，非原游戏参数的逆向证明；未声称所有角色/服装、真机安全区或完整镜头矩阵均完成验收。

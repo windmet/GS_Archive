@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { PixiStageManager } from '../src/core/PixiStageManager.js'
 import { SpineManager } from '../src/core/SpineManager.js'
+import { storyStageFrame, storyPortraitBaseY, STORY_PORTRAIT_SCALE } from '../src/core/StoryStageFraming.js'
 import { StoryClock } from '../src/core/story-runtime/StoryClock.js'
 
 const saved = { requestAnimationFrame: globalThis.requestAnimationFrame, cancelAnimationFrame: globalThis.cancelAnimationFrame, ResizeObserver: globalThis.ResizeObserver }
@@ -86,3 +87,16 @@ try {
   Object.assign(globalThis, saved)
 }
 console.log('Stage resize verified: game-coordinate projection, fixed baseline, paused active tween, completion/cancel, no pose changes, removal and Lab pixel preservation')
+
+// A fixed design height keeps character/background ratios independent of CSS pixels.
+for (const [width, height] of [[1280, 720], [1920, 1080], [1024, 768], [390, 632], [390, 844], [844, 390]]) {
+  const frame = storyStageFrame(width, height)
+  close(frame.width * frame.scale, width)
+  close(frame.height * frame.scale, height)
+  close(storyPortraitBaseY(780) * frame.scale / height, storyPortraitBaseY(780) / 720)
+  close(0.26 * STORY_PORTRAIT_SCALE * frame.scale / height, 0.26 * STORY_PORTRAIT_SCALE / 720)
+}
+assert.equal(storyStageFrame(0, 720), null)
+assert.equal(storyStageFrame(390, 0), null)
+close(storyPortraitBaseY(860) - storyPortraitBaseY(780), 80 * STORY_PORTRAIT_SCALE)
+console.log('Portrait framing: screen coverage, size/baseline invariance and preserved character calibration passed')

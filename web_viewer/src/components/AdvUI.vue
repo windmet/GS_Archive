@@ -160,4 +160,14 @@ const isBilingual = computed(() => Boolean(display.value?.view?.secondary?.text)
     --localized-secondary-size: 0.84em;
   }
 }
+/* Short landscape screens need room for the portrait as well as the text. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .adv-container { width: min(1040px, calc(100vw - 80px)); }
+  .nameplate-outer { top: -15px; left: 20px; }
+  .nameplate { height: 28px; padding: 0 16px; font-size: 12px; }
+  .dialog { min-height: 84px; max-height: 30vh; padding: 20px 24px 16px; border-radius: 14px; }
+  .dialog-text { font-size: 14px; --localized-primary-line-height: 1.4; }
+  .dialog-next { right: 16px; bottom: 10px; font-size: 12px; }
+  .voice-status { bottom: 3px; font-size: 10px; }
+}
 </style>

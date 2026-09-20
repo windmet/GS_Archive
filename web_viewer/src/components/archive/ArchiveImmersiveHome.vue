@@ -13,7 +13,8 @@
     :style="homeStyle"
   >
     <SpineStage
-      :key="stageLayout"
+      responsive-positions
+      portrait-framing
       ref="spineStageRef"
       :step="renderStep"
       :fallback-bg="selectedBackground"
@@ -293,8 +294,6 @@ import {
 } from '../../data/archiveHomePreferences.js'
 
 const SpineStage = defineAsyncComponent(() => import('../SpineStage.vue'))
-const MOBILE_SPINE_ZOOM = 0.86
-const MOBILE_SPINE_LIFT = 300
 
 const props = defineProps({
   idols: { type: Array, default: () => [] },
@@ -316,7 +315,6 @@ const voiceError = ref(false)
 const lastStartedVoice = ref('')
 const stageReady = ref(false)
 const stageError = ref(false)
-const stageLayout = ref(window.innerWidth <= 560 ? 'compact' : 'wide')
 const highlightIndex = ref(0)
 const spineStageRef = ref(null)
 const currentStepIndex = ref(0)
@@ -341,7 +339,6 @@ const selectedBackground = computed(() => preferences.background === 'cue' || !a
 const renderStep = computed(() => {
   const step = activeCue.value?.previewStep
   if (!step?.state) return step || {}
-  const compactStage = stageLayout.value === 'compact'
   return {
     ...step,
     state: {
@@ -349,14 +346,9 @@ const renderStep = computed(() => {
       bg: selectedBackground.value,
       spines: (step.state.spines || []).map(spine => {
         if (spine.id !== activeIdol.value?.id) return spine
-        const sourceZoom = Number.isFinite(spine.idol_zoom) && spine.idol_zoom > 0 ? spine.idol_zoom : 1
         return {
           ...spine,
           ...(activeCostume.value?.modelId ? { model: activeCostume.value.modelId } : {}),
-          ...(compactStage ? {
-            idol_zoom: sourceZoom * MOBILE_SPINE_ZOOM,
-            pos_y: (spine.pos_y || 0) + MOBILE_SPINE_LIFT,
-          } : {}),
         }
       }),
     },
@@ -517,10 +509,6 @@ function formatBackgroundLabel(background) {
   return `背景 ${background}`
 }
 
-function syncStageLayout() {
-  stageLayout.value = window.innerWidth <= 560 ? 'compact' : 'wide'
-}
-
 function handleKeydown(event) {
   if (event.key !== 'Escape') return
   if (settingsOpen.value) settingsOpen.value = false
@@ -529,11 +517,9 @@ function handleKeydown(event) {
 
 onMounted(() => {
   document.documentElement.dataset.archiveHomeTheme = preferences.theme
-  window.addEventListener('resize', syncStageLayout)
   window.addEventListener('keydown', handleKeydown)
 })
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', syncStageLayout)
   window.removeEventListener('keydown', handleKeydown)
   voicePlayer.dispose()
   homeAudioSession.dispose().catch(() => {})
@@ -550,7 +536,7 @@ onBeforeUnmount(() => {
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 520px;
+  min-height: 0;
   overflow: hidden;
   background-position: center;
   background-size: cover;

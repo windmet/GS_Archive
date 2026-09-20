@@ -1431,6 +1431,9 @@ export class PixiStageManager {
       spine.scale.set(finalScale)
       spine.y = this.app.screen.height + 20
     }
+    const presentationScale = options.presentationScale > 0 ? options.presentationScale : 1
+    finalScale *= presentationScale
+    spine.scale.set(finalScale)
     spine.x = this.app.screen.width * 0.5
     spine._scaleConfig = {
       fitMode,
@@ -1442,6 +1445,7 @@ export class PixiStageManager {
       visualHeightReference,
       visualHeightStrength,
       visualHeightScale,
+      presentationScale,
       finalScale,
     }
     return spine._scaleConfig

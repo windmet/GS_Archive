@@ -1,9 +1,11 @@
 ﻿<template>
   <div
-    ref="containerRef"
+    ref="viewportRef"
     class="spine-stage-root"
     :data-background-owner="manageBackground ? 'standalone' : 'external'"
-  ></div>
+  >
+    <div ref="containerRef" class="spine-stage-canvas" :style="frameStyle"></div>
+  </div>
 
   <!-- Debug Toggle: visible in player/lab contexts, hidden by embedded scenes. -->
   <button v-if="debugControls" class="debug-toggle" @click="debugMode = !debugMode" :title="debugMode ? '关闭调试' : '开启调试'">
@@ -77,6 +79,7 @@
 
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount, markRaw, reactive, onUnmounted, computed } from 'vue'
+import { storyStageFrame, storyPortraitBaseY, STORY_PORTRAIT_SCALE } from '../core/StoryStageFraming.js'
 import { PixiStageManager } from '../core/PixiStageManager.js'
 import { storySpineOrder } from '../core/StorySpineOrder.js'
 import {
@@ -105,12 +108,26 @@ const props = defineProps({
   debugControls: { type: Boolean, default: false },
   releaseOwner: { type: String, default: '' },
   responsivePositions: { type: Boolean, default: false },
+  portraitFraming: { type: Boolean, default: false },
   nowMilliseconds: { type: Function, default: undefined },
 })
 
 const emit = defineEmits(['ready', 'error'])
 
+const viewportRef = ref(null)
 const containerRef = ref(null)
+const frameStyle = ref({ width: '100%', height: '100%' })
+let framingObserver = null
+function updateFraming() {
+  if (!props.portraitFraming || !viewportRef.value || !containerRef.value) return
+  const frame = storyStageFrame(viewportRef.value.clientWidth, viewportRef.value.clientHeight)
+  if (!frame) return
+  const style = { width: `${frame.width}px`, height: `${frame.height}px`, transform: `scale(${frame.scale})`, transformOrigin: 'top left' }
+  frameStyle.value = style
+  // Set the initial reference dimensions before Pixi reads clientWidth/Height.
+  Object.assign(containerRef.value.style, style)
+}
+const portraitBaseY = value => props.portraitFraming ? storyPortraitBaseY(value) : value
 let manager = null
 let unregisterReleaseStage = null
 let applyStateToken = 0
@@ -126,6 +143,11 @@ let costumeDictionary = {}
 onMounted(() => {
   if (!containerRef.value) return
   try {
+    updateFraming()
+    if (props.portraitFraming) {
+      framingObserver = new ResizeObserver(updateFraming)
+      framingObserver.observe(viewportRef.value)
+    }
     manager = markRaw(new PixiStageManager(containerRef.value, { responsiveSpinePositions: props.responsivePositions }))
     if (props.releaseOwner === 'story-player') {
       unregisterReleaseStage = storyReleaseProbe.registerStageManager(manager)
@@ -159,6 +181,7 @@ function syncManagedBackground() {
 }
 
 onBeforeUnmount(() => {
+  framingObserver?.disconnect()
   if (manager) {
     manager.destroy()
     manager = null
@@ -887,7 +910,7 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
       const posX = spineState.pos_x ?? 0
       let posY = spineState.pos_y ?? 0
       if (spineState.idol_zoom_y_offset) posY += spineState.idol_zoom_y_offset
-      const rootY = computeVisualRootY(sid, resolved.finalBaseY, posY)
+      const rootY = computeVisualRootY(sid, portraitBaseY(resolved.finalBaseY), posY)
       if (existing) manager.removeSpine(sid, true)
       manager.showSilhouette(sid, modelId, posX, 0, rootY)
       continue
@@ -911,7 +934,7 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
       const fit = FIT_MODE === 'prefabrect' && prefabMeta
         ? manager.fitSpineToPrefabRect(existing.spine, prefabMeta, { anchorMode: ANCHOR_MODE })
         : null
-      const baseY = fit?.rootY ?? resolved.finalBaseY
+      const baseY = fit?.rootY ?? portraitBaseY(resolved.finalBaseY)
       const targetY = computeVisualRootYUtil(baseY, posY, manager.width)
       // Slide animation: use animateSpinePosition if slide_duration present
       if (spineState.slide_duration && spineState.slide_duration > 0) {
@@ -945,6 +968,7 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
           prefabMeta,
           bodyScaleEnabled: BODY_SCALE_ENABLED,
           fitMode: FIT_MODE,
+          presentationScale: props.portraitFraming ? STORY_PORTRAIT_SCALE : 1,
           visualHeightReference: VISUAL_HEIGHT_REFERENCE,
           visualHeightStrength: VISUAL_HEIGHT_STRENGTH,
           deferReveal: true,
@@ -959,7 +983,7 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
           const pX = spineState.pos_x ?? 0
           let pY = spineState.pos_y ?? 0
           if (spineState.idol_zoom_y_offset) pY += spineState.idol_zoom_y_offset
-          const rootY = computeVisualRootY(sid, resolved.finalBaseY, pY)
+          const rootY = computeVisualRootY(sid, portraitBaseY(resolved.finalBaseY), pY)
           manager.showSilhouette(sid, modelId, pX, 0, rootY)
           continue
         }
@@ -976,7 +1000,7 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
         const fit = FIT_MODE === 'prefabrect' && prefabMeta
           ? manager.fitSpineToPrefabRect(entry.spine, prefabMeta, { anchorMode: ANCHOR_MODE })
           : null
-        const baseY = fit?.rootY ?? resolved.finalBaseY
+        const baseY = fit?.rootY ?? portraitBaseY(resolved.finalBaseY)
         const colorTransition = spineState.idol_color_transition || {}
         manager.setSpineColor(
           sid,
