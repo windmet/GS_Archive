@@ -13,6 +13,10 @@
       </div>
         <button v-if="state.status === 'ready'" ref="searchToggle" :aria-expanded="searchOpen" aria-controls="reader-search" @click="toggleSearch">篇内查找</button>
       </div>
+      <p v-if="state.status === 'ready' && mode !== 'original'" class="reader-notice" role="status">
+        已选择{{ mode === 'bilingual' ? '双语' : '译文' }}。{{ translationStatus }}
+        <button v-if="translationLoadFailed" :disabled="localization.loading.value" @click="localization.retryTranslation()">重试译文</button>
+      </p>
       <button v-if="state.status === 'ready'" class="reader-full-play" :disabled="busy" @click="emit('play-document')">{{ busy ? '正在准备演出…' : '播放完整剧情（实验）' }}</button>
       <p v-if="notice" ref="playbackNotice" tabindex="-1" class="reader-notice" role="alert">{{ notice }} <button class="reader-play" :disabled="busy" @click="emit('refresh')">重新载入正文</button></p>
       <p v-if="state.status === 'loading'" role="status">正在载入正文…</p>
@@ -31,8 +35,7 @@
           </div>
         </form>
         <p v-if="missingAnchor" class="reader-notice" role="status">原定位行已不存在，现显示本篇正文。</p>
-        <p v-if="mode !== 'original' && !translationLoadFailed && fallbackCount" class="reader-notice" role="status">{{ fallbackCount }} 处暂无可用译文，已显示原文。</p>
-        <p v-if="mode !== 'original' && translationLoadFailed" class="reader-notice" role="status">译文暂时无法载入，原文仍可阅读。</p>
+
         <article class="reader-transcript" aria-label="剧情正文">
           <section v-for="item in presentedRows" :key="item.row.anchor.row_id" :id="`reading-${item.row.anchor.row_id}`" tabindex="-1" class="reader-row" :aria-hidden="item.mergedTitle ? 'true' : undefined" :class="[`kind-${item.row.kind}`, { selected: anchor === item.row.anchor.row_id, 'search-match': searchMatchIds.has(item.row.anchor.row_id), 'front-matter': item.frontMatter, 'merged-title': item.mergedTitle }]">
             <template v-if="!item.mergedTitle">
@@ -112,6 +115,12 @@ const presentedRows = computed(() => (document.value?.rows || []).map(row => ({ 
 })))
 const fallbackCount = computed(() => presentedRows.value.filter(item => !item.mergedTitle && item.row.kind !== 'stamp' && item.view.translation.fallbackUsed).length)
 const translationLoadFailed = computed(() => localization.diagnostics.value?.code === 'translation_invalid')
+const translationStatus = computed(() => {
+  if (localization.loading.value) return '正在读取译文，暂时显示原文。'
+  if (translationLoadFailed.value) return '译文暂时无法载入，当前显示原文。'
+  if (fallbackCount.value) return `${fallbackCount.value} 处暂无可用译文，已显示原文。`
+  return props.mode === 'bilingual' ? '当前显示原文与译文。' : '当前显示译文。'
+})
 const searchText = text => String(text || '').normalize('NFKC').replace(/\s+/g, '').toLowerCase()
 const searchMatches = computed(() => {
   const query = searchText(searchQuery.value)

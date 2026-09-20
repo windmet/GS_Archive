@@ -54,6 +54,8 @@ export function createStoryLocalization({
   translationLocale = 'zh-CN',
   entityNames = null,
 } = {}) {
+  const loading = ref(false)
+  const reloadRevision = ref(0)
   const overlay = ref(null)
   const diagnostics = ref(null)
   const entityDiagnostics = ref([])
@@ -70,6 +72,7 @@ export function createStoryLocalization({
     () => [
       compiledData?.value?.text_catalog_id || compiledData?.value?.scenario_id || '',
       currentPreferences().story_translation_locale || translationLocale,
+      reloadRevision.value,
     ],
     async ([scenarioId, locale]) => {
       const requestGeneration = ++generation
@@ -78,6 +81,7 @@ export function createStoryLocalization({
       overlay.value = null
       diagnostics.value = null
       entityDiagnostics.value = []
+      loading.value = Boolean(scenarioId)
       if (!scenarioId) return
 
       abortController = new AbortController()
@@ -110,10 +114,21 @@ export function createStoryLocalization({
             errors: [error?.message || String(error)],
           }
         }
+      } finally {
+        if (requestGeneration === generation) loading.value = false
       }
     },
     { immediate: true },
   )
+
+  function retryTranslation() {
+    const scenarioId = compiledData?.value?.text_catalog_id || compiledData?.value?.scenario_id
+    const locale = currentPreferences().story_translation_locale || translationLocale
+    if (!scenarioId || loading.value) return false
+    repository.invalidate({ scenarioId, locale })
+    reloadRevision.value += 1
+    return true
+  }
 
   function preferences() {
     return currentPreferences()
@@ -188,6 +203,8 @@ export function createStoryLocalization({
 
   return {
     overlay,
+    loading,
+    retryTranslation,
     diagnostics,
     entityDiagnostics,
     resolveUnit,
