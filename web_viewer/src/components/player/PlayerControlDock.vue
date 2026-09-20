@@ -1,5 +1,5 @@
 <template>
-  <div class="player-control-dock" role="toolbar" :aria-label="uiText('player.controls')">
+  <div class="player-control-dock" :class="{ compact }" role="toolbar" :aria-label="uiText('player.controls')">
     <PlayerIconButton :title="uiText('player.previous')" :aria-label="uiText('player.previous')" :disabled="previousDisabled" @click="$emit('previous')">
       <ChevronLeft :size="22" />
     </PlayerIconButton>
@@ -24,6 +24,7 @@ import PlayerIconButton from './PlayerIconButton.vue'
 import { resolveUiText as uiText } from '../../localization/ui/UiTextResolver.js'
 
 defineProps({
+  compact: Boolean,
   autoEnabled: { type: Boolean, default: false },
   skipEnabled: { type: Boolean, default: false },
   previousDisabled: { type: Boolean, default: false },
@@ -87,5 +88,10 @@ defineEmits(['previous', 'auto', 'backlog', 'skip', 'next'])
   .mode-btn {
     padding: 0 10px;
   }
+}
+@media (orientation: landscape) and (max-height: 600px) {
+  .player-control-dock.compact { height: 44px; bottom: calc(var(--player-dock-bottom) + env(safe-area-inset-bottom)); }
+  .compact .mode-btn { min-width: 44px; padding: 0 10px; }
+  .compact .mode-btn span { display: none; }
 }
 </style>

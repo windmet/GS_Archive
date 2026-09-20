@@ -1,5 +1,5 @@
 <template>
-  <div class="story-viewer-root" :class="{ 'stage-only': HIDE_UI || uiHidden }" tabindex="0"
+  <div ref="playerRoot" class="story-viewer-root" :class="{ 'stage-only': HIDE_UI || uiHidden, 'immersive-landscape': immersiveCompact }" tabindex="0"
     @pointerdown.capture="_ensureAudioCtx" @keydown="handlePlayerKeydown">
     <pre
       v-if="RUNTIME_DEBUG"
@@ -10,7 +10,7 @@
       <button data-testid="story-debug-hide" @click.stop="applyDebugVisibility(true)">SIMULATE HIDDEN</button>
       <button data-testid="story-debug-show" @click.stop="applyDebugVisibility(false)">SIMULATE VISIBLE</button>
     </div>
-    <div class="viewer-stage">
+    <div class="viewer-stage" :inert="viewingOfferOpen || undefined">
     <!-- Spine rendering layer (background + characters) -->
     <SpineStage v-if="retainedStageStep" ref="spineStageRef" :step="retainedStageStep" :suspended="!communicationContext.needsStage" :fallbackBg="firstAvailableBg" :debug-controls="RUNTIME_DEBUG" :now-milliseconds="storyRuntimeCues.nowMilliseconds" responsive-positions portrait-framing release-owner="story-player" />
     <div ref="frameHoldRoot" v-show="frameHolding" class="held-scene" aria-hidden="true"></div>
@@ -19,6 +19,7 @@
     <!-- Top bar -->
     <PlayerTopBar
       v-if="compiledData && !HIDE_UI && !uiHidden"
+      :compact="immersiveCompact"
       :current="playableStepNumber"
       :total="playableStepTotal"
       :language="langLabel"
@@ -108,6 +109,7 @@
     <!-- Bottom control dock -->
     <PlayerControlDock
       v-if="compiledData && compiledData.steps.length > 0 && !HIDE_UI && !uiHidden && (!episodeFinished || communicationCompleted)"
+      :compact="immersiveCompact"
       :auto-enabled="autoEnabled"
       :skip-enabled="skipEnabled"
       :previous-disabled="isFirstStep"
@@ -122,6 +124,12 @@
     <Transition name="menu-slide">
       <aside v-if="menuOpen && !HIDE_UI" class="playback-menu" :aria-label="uiText('player.settings.panel')">
         <header><strong>MENU</strong><button class="icon-btn dark" :title="uiText('player.settings.close')" :aria-label="uiText('player.settings.close')" @click="menuOpen = false"><X :size="20" /></button></header>
+        <template v-if="immersiveEligible">
+          <button v-if="!immersive.active.value" :disabled="immersive.pending.value" @click="enterImmersive"><span>{{ uiText('player.immersive.enter') }}</span></button>
+          <button v-else @click="immersive.leave()"><span>{{ uiText('player.immersive.leave') }}</span></button>
+          <label class="menu-setting"><span>{{ uiText('player.immersive.mode') }}</span><select v-model="mobileViewMode" @change="saveMobileViewMode"><option value="ask">{{ uiText('player.immersive.ask') }}</option><option value="landscape">{{ uiText('player.immersive.landscape') }}</option><option value="portrait">{{ uiText('player.immersive.portrait') }}</option></select></label>
+        </template>
+        <button @click="cycleLanguage"><span>{{ uiText('player.immersive.language') }}</span><b>{{ langLabel }}</b></button>
         <label class="menu-toggle">
           <span>{{ uiText('player.settings.continuous') }}</span>
           <input type="checkbox" :checked="continuousPlayback" @change="emit('update:continuous-playback', $event.target.checked)" />
@@ -175,11 +183,26 @@
     </div>
 
     </div><!-- /viewer-stage -->
+    <div v-if="viewingOfferOpen" class="viewing-offer" role="dialog" aria-modal="true" aria-labelledby="viewing-offer-title" @keydown.stop="handleViewingOfferKeydown">
+      <div class="viewing-offer-panel">
+        <h2 id="viewing-offer-title">{{ uiText('player.immersive.title') }}</h2>
+        <p>{{ uiText('player.immersive.description') }}</p>
+        <label><input v-model="rememberViewingChoice" type="checkbox" />{{ uiText('player.immersive.remember') }}</label>
+        <button ref="viewingOfferAction" class="primary" @click="chooseViewingMode('landscape')">{{ uiText('player.immersive.enter') }}</button>
+        <button @click="chooseViewingMode('portrait')">{{ uiText('player.immersive.continue') }}</button>
+      </div>
+    </div>
+    <div v-else-if="!HIDE_UI && !uiHidden && ((showViewingShortcut && !immersive.active.value) || immersive.notice.value)" class="viewing-notice">
+      <span v-if="immersive.notice.value" role="status">{{ uiText(`player.immersive.${immersive.notice.value}`) }}</span>
+      <button v-if="!immersive.active.value || immersive.notice.value" :disabled="immersive.pending.value" @click="enterImmersive">{{ uiText('player.immersive.enter') }}</button>
+      <button @click="viewingShortcutDismissed = true; immersive.notice.value = ''">{{ uiText('player.immersive.dismiss') }}</button>
+    </div>
     <div class="loading" v-if="!compiledData && !HIDE_UI">{{ uiText('player.loading') }}</div>
   </div>
 </template>
 
 <script setup>
+import { usePlayerImmersiveMode, claimMobileViewingOffer } from '../composables/usePlayerImmersiveMode.js'
 import { ref, computed, watch, onMounted, onBeforeUnmount, onUnmounted, reactive, nextTick, defineAsyncComponent } from 'vue'
 import AdvUI from '../components/AdvUI.vue'
 import MobileChatScene from '../components/mobile/MobileChatScene.vue'
@@ -222,6 +245,7 @@ import {
 } from '../localization/story/StoryLocalizationContext.js'
 
 const props = defineProps({
+  previewOnly: Boolean,
   scenarioJson: { type: Object, default: null },
   playbackInstance: { type: Number, default: 0 },
   scenarioUrl: { type: String, default: null },
@@ -254,6 +278,51 @@ setStoryLanguagePreferences(initialPreferences)
 
 const spineStageRef = ref(null)
 const compiledData = ref(null)
+const playerRoot = ref(null)
+const viewingOfferAction = ref(null)
+const viewingOfferOpen = ref(false)
+const rememberViewingChoice = ref(true)
+const mobileViewMode = ref(initialPreferences.story_mobile_view_mode)
+const viewingShortcutDismissed = ref(false)
+const immersive = usePlayerImmersiveMode()
+const smallScreen = ref(false)
+const shortLandscape = ref(false)
+const portraitScreen = ref(false)
+const immersiveEligible = computed(() => !props.previewOnly && !HIDE_UI && (compiledData.value?.steps || [])
+  .slice(Math.max(0, (props.startStep || 1) - 1), props.endStep || undefined)
+  .some(step => step.type === 'adv'))
+const immersiveCompact = computed(() => immersiveEligible.value && immersive.active.value && shortLandscape.value)
+const showViewingShortcut = computed(() => immersiveEligible.value && smallScreen.value && mobileViewMode.value === 'landscape' && !viewingShortcutDismissed.value)
+function saveMobileViewMode() { preferencesRepository.update({ story_mobile_view_mode: mobileViewMode.value }) }
+function enterImmersive() {
+  // Keep this call before awaits: browsers require a fresh user gesture.
+  const request = immersive.enter(playerRoot.value)
+  viewingOfferOpen.value = false
+  menuOpen.value = false
+  return request
+}
+function chooseViewingMode(mode) {
+  if (rememberViewingChoice.value) { mobileViewMode.value = mode; saveMobileViewMode() }
+  viewingOfferOpen.value = false
+  viewingShortcutDismissed.value = mode !== 'landscape'
+  if (mode === 'landscape') void enterImmersive()
+  else playerRoot.value?.focus()
+}
+function handleViewingOfferKeydown(event) {
+  if (event.key === 'Escape') { event.preventDefault(); chooseViewingMode('portrait'); return }
+  if (event.key !== 'Tab') return
+  const items = [...event.currentTarget.querySelectorAll('button, input')]
+  const first = items[0], last = items.at(-1)
+  if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
+  else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
+}
+function updateViewingViewport() {
+  const width = window.innerWidth, height = window.innerHeight
+  smallScreen.value = width <= 699 || (height <= 600 && width <= 1100)
+  shortLandscape.value = width > height && height <= 600 && width <= 1100
+  portraitScreen.value = width < height
+}
+
 provideStoryLocalization(createStoryLocalization({
   compiledData,
   storyPreferences: storyLanguagePreferences,
@@ -684,13 +753,16 @@ function stopPlaybackModes(reason = 'manual-navigation') {
 }
 
 function handlePlayerKeydown(event) {
+  if (viewingOfferOpen.value) return
+  if (event.target?.closest?.('button, a') && [' ', 'Enter'].includes(event.key)) return
   if (event.repeat) return
   const tag = event.target?.tagName
   if (['INPUT', 'SELECT', 'TEXTAREA'].includes(tag) && event.key !== 'Escape') return
   const key = event.key.toLowerCase()
   if (key === 'escape') {
     event.preventDefault()
-    closeOverlay()
+    if (!menuOpen.value && !backlogOpen.value && immersive.active.value) void immersive.leave()
+    else closeOverlay()
   } else if (key === 'arrowleft') {
     event.preventDefault()
     goPrev()
@@ -741,7 +813,7 @@ function replayBacklogVoice(node) {
 }
 
 function goNext(source = 'user', onSettled) {
-  if (episodeFinished.value || backlogOpen.value || menuOpen.value
+  if (episodeFinished.value || backlogOpen.value || menuOpen.value || viewingOfferOpen.value
       || runtimeReadinessStatus.value !== 'playable') return 'blocked'
   if (source === 'title-animation' && titlePaused.value) return 'blocked'
   if (source !== 'title-animation') titleAdvancePending = null
@@ -773,7 +845,7 @@ function goNext(source = 'user', onSettled) {
 }
 
 function goPrev() {
-  if (backlogOpen.value || menuOpen.value) return
+  if (backlogOpen.value || menuOpen.value || viewingOfferOpen.value) return
   if (communicationCompleted.value) {
     episodeFinished.value = false
     transitioning.value = false
@@ -1007,6 +1079,8 @@ cleanupRuntimeCues = storyRuntimeCues.cleanup
 isRuntimeAutoBlocked = storyRuntimeCues.hasBlockingAuto
 
 onMounted(async () => {
+  updateViewingViewport()
+  window.addEventListener('resize', updateViewingViewport)
   window.__STORY_PLAYBACK__ = playbackController
   window.__STORY_AUDIO__ = storyAudioSession
   document.addEventListener('visibilitychange', handleVisibilityChange)
@@ -1064,13 +1138,14 @@ onMounted(async () => {
   }
 
   // Focus root for keyboard events
-  nextTick(() => { document.querySelector('.story-viewer-root')?.focus() })
+  nextTick(() => { if (viewingOfferOpen.value) viewingOfferAction.value?.focus(); else playerRoot.value?.focus() })
 
   // SpineStage and the Runtime publish source-bound readiness. The player no
   // longer treats a timeout or a duplicate warmup request as playable proof.
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateViewingViewport)
   titleAdvancePending = null
   pendingStepEffects = null
   releaseFrameHold()
@@ -1116,11 +1191,17 @@ watch(currentStep, (newStep, oldStep) => {
   playbackController?.notifyStateChanged()
 })
 watch(currentStep, handleRuntimeStepChange, { immediate: true })
-watch([menuOpen, backlogOpen, episodeFinished], ([menu, backlog, finished]) => {
-  if (menu || backlog || finished) clearFadeAutoAdvance()
-  playbackController?.setPaused('overlay', menu || backlog || finished)
-  setRuntimeSessionPaused('overlay', menu || backlog || finished)
+watch([menuOpen, backlogOpen, episodeFinished, viewingOfferOpen], ([menu, backlog, finished, viewingOffer]) => {
+  if (menu || backlog || finished || viewingOffer) clearFadeAutoAdvance()
+  playbackController?.setPaused('overlay', menu || backlog || finished || viewingOffer)
+  setRuntimeSessionPaused('overlay', menu || backlog || finished || viewingOffer)
 }, { immediate: true })
+watch([immersiveEligible, smallScreen, portraitScreen], ([eligible, small, portrait]) => {
+  if (eligible && small && portrait && !uiHidden.value && mobileViewMode.value === 'ask' && claimMobileViewingOffer()) {
+    viewingOfferOpen.value = true
+    nextTick(() => viewingOfferAction.value?.focus())
+  }
+})
 watch(titlePaused, paused => {
   if (!paused) retryTitleAdvance()
 })
@@ -1154,6 +1235,19 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 </script>
 
 <style scoped>
+.viewing-offer { position: absolute; inset: 0; z-index: 60; display: grid; place-items: center; padding: 20px; background: rgba(6,21,33,.7); }
+.viewing-offer-panel { box-sizing: border-box; width: min(100%, 400px); max-height: 100%; overflow: auto; padding: 24px; border-radius: 20px; background: #f7faf9; color: #193c44; box-shadow: 0 14px 50px #0006; display: grid; gap: 14px; }
+.viewing-offer h2 { margin: 0; font-size: 22px; }
+.viewing-offer p { margin: 0; line-height: 1.7; }
+.viewing-offer label { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+.viewing-offer button, .viewing-notice button { min-height: 44px; padding: 8px 14px; border: 1px solid #97b9b5; border-radius: 10px; color: #176f69; background: white; font: inherit; cursor: pointer; }
+.viewing-offer button.primary { background: #176f69; color: white; }
+.viewing-offer button:focus-visible, .viewing-notice button:focus-visible { outline: 3px solid #45b8ae; outline-offset: 2px; }
+.viewing-notice { position: absolute; top: max(64px, var(--player-content-top)); left: 50%; transform: translateX(-50%); z-index: 30; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: max-content; max-width: calc(100% - 32px); box-sizing: border-box; padding: 8px 12px; border-radius: 12px; background: #f7faf9; color: #23434a; box-shadow: 0 8px 25px #0004; font-size: 13px; }
+@media (orientation: landscape) and (max-height: 600px) {
+  .story-viewer-root.immersive-landscape { --player-edge: 8px; --player-topbar-height: 0px; --player-topbar-gap: 0px; --player-dock-gap: 6px; --player-dock-bottom: 6px; --player-dock-height: 44px; --player-dialogue-gap: 6px; --player-dialogue-bottom: calc(56px + env(safe-area-inset-bottom)); --player-content-top: max(8px, env(safe-area-inset-top)); }
+}
+
 .story-viewer-root {
   position: fixed; inset: 0;
   outline: none; background: #000;

@@ -428,6 +428,7 @@
       v-if="view === 'player' && currentScenario"
       :key="currentScenarioInstance"
       :scenario-json="currentScenario"
+      :preview-only="Boolean(currentPreviewCue)"
       :playback-instance="currentScenarioInstance"
       @step-change="playbackController.stepChanged"
       @readiness-change="playbackController.readinessChanged"

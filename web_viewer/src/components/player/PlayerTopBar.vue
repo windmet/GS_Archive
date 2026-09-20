@@ -1,10 +1,10 @@
 <template>
-  <div class="player-top-bar">
+  <div class="player-top-bar" :class="{ compact }">
     <PlayerIconButton :title="uiText('player.back')" :aria-label="uiText('player.back')" @click="$emit('back')">
       <ChevronLeft :size="22" />
     </PlayerIconButton>
 
-    <div class="bar-center">
+    <div v-if="!compact" class="bar-center">
       <div
         class="progress-capsule"
         role="progressbar"
@@ -22,7 +22,7 @@
     </div>
 
     <div class="bar-right">
-      <button class="lang-btn" :title="uiText('player.language')" :aria-label="uiText('player.language')" @click="$emit('language')">
+      <button v-if="!compact" class="lang-btn" :title="uiText('player.language')" :aria-label="uiText('player.language')" @click="$emit('language')">
         {{ language }}
       </button>
       <PlayerIconButton :title="uiText('player.menu')" :aria-label="uiText('player.menu')" @click="$emit('menu')">
@@ -39,6 +39,7 @@ import PlayerIconButton from './PlayerIconButton.vue'
 import { resolveUiText as uiText } from '../../localization/ui/UiTextResolver.js'
 
 const props = defineProps({
+  compact: Boolean,
   episodeLabel: { type: String, default: '' },
   current: { type: Number, default: 0 },
   total: { type: Number, default: 0 },
@@ -182,5 +183,8 @@ const progressPercent = computed(() => {
     overflow: hidden;
     text-overflow: ellipsis;
   }
+}
+@media (orientation: landscape) and (max-height: 600px) {
+  .player-top-bar.compact { top: max(8px, env(safe-area-inset-top)); left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); }
 }
 </style>
