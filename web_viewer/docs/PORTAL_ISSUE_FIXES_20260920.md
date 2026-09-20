@@ -77,3 +77,19 @@
 ## 本轮完成范围
 
 问题包中的卡片语音边界、移动触达、语音软就绪/轻提示/取消、手动推进、人物构图、HTTP 缓存、歌曲歌词均已分批实现并验证。构建仅代码检查，不复制素材、不新增发布包、不部署；全设备/全服装/整章长稳不属于本轮已完成的验收证据。
+
+## 追加批次 8：翔太闭眼、首页时间轴及重复歪头
+
+- 输入 HEAD `87f41b3`。5175 实际使用 PNG 仍能复现闭眼失败；对比 `002sht_002_00` / `002sht_003_00` 原 PNG 与本地 `.deploy/r2` lossless WebP：尺寸、alpha、非透明像素 RGB 一致。没有修改骨骼或重新上传 PNG。
+- 根因是 neck_question 自带中性脸 attachment/color 时间线，在 Track 3 覆盖 Track 1 的 face_happy；additive 混合不阻止离散附件替换。生成不修改原动画的 neck overlay，移除由 face_* 管理的槽位外观时间线，保留头部骨骼/变形运动；使用 runtime 类型判断，避免生产压缩改名。
+- 首页原先只投影起始状态；现在语音播放/重播接入现有 cue scheduler，支持延迟表情、身体及颈部动作，切句/换装/卸载取消、页面隐藏暂停。
+- 从 `RAW/asset/scenario_2_2_002_01.unity3d` 的 `assets/resources/scenariodata/002sht_201/scenario_2_2_002_01_00.json` 核对第三句 `2_2_002_01_00_09`：唯一 neck_question 指令为 1.5 秒，3 秒 face_happy，4 秒 angry。卡片索引旧快照残留前句 neck_anim，造成起始状态和时间轴各执行一次。按当前 compiled source 修复索引中 1036 个过期 neck 字段（含重复存储），保留源中合法即时命令，其他字段未改。
+- PASS：真实 Spine 二进制复现原缺陷并验证修复后 180 帧闭眼/重新睁眼、动作保留/源不变；verify-home-neck-projection 检查 10256 个字段；verify-spine-motion-state、verify:story-spine-cues、verify:home、verify-card-voice-preview。
+- Browser：真实卡片 player 和首页第三句闭眼正常；修正索引后首页仅一次延迟 neck cue。5177 只将 Spine 贴图替换成本地 lossless WebP（HTTP image/webp），同句 1.5/3/4 秒顺序及闭眼与 PNG 相同。此为本地 A/B，不是线上 CDN 验收。
+
+## 追加批次 9：舞台渲染开销
+
+- framebuffer 按舞台实际 CSS 展示比例计算，DPR 上限 2、总像素上限 4Mi；限制 60 FPS，隐藏页面停止渲染，非调试模式跳过 marker 更新和动态指针命中。保留模型及 atlas 分辨率。
+- 同一浏览器 319×492 窗口的 canvas 从 1015×1566 降为 638×984，像素工作量约减少 60.5%。Windows GPU Engine 对浏览器宿主进程短采样从约 27.5–27.9% 至 15.0–16.1%；该进程含宿主 UI，不作为设备独立 GPU benchmark，也不能据此断言所有历史 PNG/WebP 性能差异都已解释。
+- PASS：verify-stage-render-budget 的多尺寸/DPR/像素预算；verify:story-stage-resize；build:check（`.analysis/build-check`，不复制 public）；git diff --check。已有 chunk size/Pixi deprecation 提示不计为新增故障。
+- 范围边界：修复已确认的动画覆盖、重复指令和过量渲染；未更改压缩格式、原始素材、S3/R2 对象或容量，不宣称全角色全部动画已逐个目验。

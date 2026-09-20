@@ -118,11 +118,14 @@ const viewportRef = ref(null)
 const containerRef = ref(null)
 const frameStyle = ref({ width: '100%', height: '100%' })
 let framingObserver = null
+let presentationScale = 1
 function updateFraming() {
   if (!props.portraitFraming || !viewportRef.value || !containerRef.value) return
   const frame = storyStageFrame(viewportRef.value.clientWidth, viewportRef.value.clientHeight)
   if (!frame) return
   const style = { width: `${frame.width}px`, height: `${frame.height}px`, transform: `scale(${frame.scale})`, transformOrigin: 'top left' }
+  presentationScale = frame.scale
+  manager?.setPresentationScale(frame.scale)
   frameStyle.value = style
   // Set the initial reference dimensions before Pixi reads clientWidth/Height.
   Object.assign(containerRef.value.style, style)
@@ -148,7 +151,7 @@ onMounted(() => {
       framingObserver = new ResizeObserver(updateFraming)
       framingObserver.observe(viewportRef.value)
     }
-    manager = markRaw(new PixiStageManager(containerRef.value, { responsiveSpinePositions: props.responsivePositions }))
+    manager = markRaw(new PixiStageManager(containerRef.value, { responsiveSpinePositions: props.responsivePositions, presentationScale }))
     if (props.releaseOwner === 'story-player') {
       unregisterReleaseStage = storyReleaseProbe.registerStageManager(manager)
     }

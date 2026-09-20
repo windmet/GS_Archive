@@ -1,3 +1,4 @@
+import { stageRenderResolution } from './StageRenderBudget.js'
 import { decodeSpineAtlasText } from '../../shared/story/SpineAtlasPages.js'
 /**
  * PixiStageManager manages the PixiJS canvas/renderer and stage graph.
@@ -73,6 +74,7 @@ export class PixiStageManager {
     this.container = containerEl
     this.width = options.width || containerEl.clientWidth || 1280
     this.height = options.height || containerEl.clientHeight || 720
+    this.presentationScale = options.presentationScale || 1
     this.responsiveSpinePositions = options.responsiveSpinePositions === true
 
     this.app = null
@@ -117,9 +119,16 @@ export class PixiStageManager {
       height: this.height,
       backgroundColor: 0x000000,
       antialias: true,
-      resolution: window.devicePixelRatio || 1,
+      resolution: stageRenderResolution(this.width, this.height, this.presentationScale, globalThis.devicePixelRatio),
       autoDensity: true,
     })
+    this.app.ticker.maxFPS = 60
+    this._visibilityHandler = () => {
+      if (document.hidden) this.app?.stop()
+      else this.app?.start()
+    }
+    document.addEventListener('visibilitychange', this._visibilityHandler)
+    this._visibilityHandler()
     this.container.appendChild(this.app.view)
 
     // Layer structure: bgContainer (bottom) -> spineContainer -> fadeOverlay (top)
@@ -178,6 +187,7 @@ export class PixiStageManager {
       loadTextureFromUrl: url => this._loadTextureFromUrl(url, { allowFallback: false }),
     })
     this._debugMarkerUpdater = () => {
+      if (!this._debugMode) return
       for (const entry of Object.values(this.spineInstances)) {
         const marker = entry?.marker
         if (!marker || marker.destroyed) continue
@@ -192,6 +202,21 @@ export class PixiStageManager {
     this.app.ticker.add(this._debugMarkerUpdater)
   }
 
+  setPresentationScale(scale) {
+    if (this.presentationScale === scale) return
+    this.presentationScale = scale
+    this._syncRenderResolution()
+    this.app.renderer.resize(this.width, this.height)
+  }
+
+  _syncRenderResolution() {
+    const resolution = stageRenderResolution(this.width, this.height, this.presentationScale, globalThis.devicePixelRatio)
+    this.app.renderer.resolution = resolution
+    for (const entry of Object.values(this.spineInstances)) {
+      if (entry.wrapper?._wholeModelAlpha) entry.wrapper._wholeModelAlpha.resolution = resolution
+    }
+  }
+
   _observeResize() {
     this._resizeObserver = new ResizeObserver(entries => {
       for (const entry of entries) {
@@ -199,6 +224,7 @@ export class PixiStageManager {
         if (width > 0 && height > 0) {
           this.width = width
           this.height = height
+          this._syncRenderResolution()
           this.app.renderer.resize(width, height)
           this.backgroundManager?.handleResize()
           this.cameraController?.handleResize()
@@ -239,6 +265,7 @@ export class PixiStageManager {
     this._debugMode = enabled
     for (const entry of Object.values(this.spineInstances)) {
       if (entry.marker) entry.marker.visible = enabled
+      if (entry.spine) entry.spine.eventMode = enabled ? 'dynamic' : 'none'
     }
   }
 
@@ -1220,7 +1247,7 @@ export class PixiStageManager {
         spine._baseScale = spine.scale.x
       }
 
-      spine.eventMode = 'dynamic'
+      spine.eventMode = this._debugMode ? 'dynamic' : 'none'
       spine.cursor = 'grab'
 
       spine.on('pointerdown', (event) => {
@@ -1921,6 +1948,8 @@ export class PixiStageManager {
   destroy() {
     if (this._destroyed) return
     this._destroyed = true
+    if (this._visibilityHandler) document.removeEventListener('visibilitychange', this._visibilityHandler)
+    this._visibilityHandler = null
     this.screenEffects?.destroy()
     this.screenEffects = null
     this._dragSpineId = null
