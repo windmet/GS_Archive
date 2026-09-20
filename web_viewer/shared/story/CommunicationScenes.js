@@ -65,7 +65,7 @@ function dialogueAssets(dialogue) {
  * translation overlays remain explicit pending requirements. This linear
  * surface pass is not a proof of arbitrary accumulated-history projections.
  */
-export function communicationRequirements(scenario) {
+export function communicationRequirements(scenario, { historyStack = [], currentStepIndex = -1 } = {}) {
   const steps = scenario?.steps
   if (!Array.isArray(steps)) return []
   const scenarioId = scenario.scenario_id
@@ -73,7 +73,7 @@ export function communicationRequirements(scenario) {
     || step?.state?.talk_mode || step?.state?.phone_mode)
   const hasChat = steps.some(step => ['talk', 'talk_stamp'].includes(step?.type) || step?.state?.talk_mode)
   return steps.flatMap((step, stepIndex) => {
-    const context = resolveCommunicationContext({ step, stepIndex, historyStack: [], steps, scenarioId })
+    const context = resolveCommunicationContext({ step, stepIndex, historyStack: stepIndex === currentStepIndex ? historyStack : [], steps, scenarioId })
     const callCharaId = context.mode === 'call' ? callerId(step, context) : ''
     const requirements = communicationUiAssets({
       mode: context.mode, unitCode: context.unitCode || null, charaId: callCharaId,

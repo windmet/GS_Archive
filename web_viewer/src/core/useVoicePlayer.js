@@ -11,6 +11,7 @@ export function useVoicePlayer({
   compiledData,
   isPlaying,
   noVoice = false,
+  canAnimateStage = () => true,
   audioSession = null,
   onStateChange = () => {},
   voiceTimeoutMs = 6500,
@@ -60,7 +61,7 @@ export function useVoicePlayer({
   }
 
   function setTalking(on) {
-    if (noVoice) return
+    if (noVoice || (on && !canAnimateStage())) return
     const mgr = spineStageRef.value?.manager
     if (!mgr || !voiceCharaId) return
     if (on && currentStep.value?.lipSync === false) return
@@ -298,7 +299,7 @@ export function useVoicePlayer({
 
     isPlaying.value = false
     setVoiceState('preparing')
-    const prepared = await preparePlaybackVoice({ step, scenarioId })
+    const prepared = await preparePlaybackVoice({ step, scenarioId, includeLip: canAnimateStage() })
     if (requestGeneration !== voiceRequestGeneration || step !== currentStep.value
       || stepIndex !== currentStepIndex.value || voice !== lastVoiceUrl) return false
     if (!prepared) {

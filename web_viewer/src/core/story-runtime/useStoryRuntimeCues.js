@@ -21,6 +21,8 @@ export function useStoryRuntimeCues({
   getStageStep = () => compiledData.value?.steps?.[currentStepIndex.value],
   debugSnapshotAt = null, debugSnapshotAction = null,
   isPaused = () => false,
+  needsStage = () => true,
+  prepareCommunication = async () => ({ status: 'ready' }),
   onReadinessChange = () => {},
   prepareStepAudio = async () => ({ status: 'ready' }),
 }) {
@@ -64,16 +66,17 @@ export function useStoryRuntimeCues({
 
   function applySnapshotWhenReady(snapshot, expectedGeneration, onReady, { restore = false } = {}) {
     const expectedStep = getStageStep()
+    const stageRequired = needsStage()
     const apply = () => {
       if (expectedGeneration !== generation) return
       const manager = getManager()
       const stage = spineStageRef.value
-      const sceneReadiness = stage?.getSceneReadiness?.(expectedStep)
+      const sceneReadiness = stageRequired ? stage?.getSceneReadiness?.(expectedStep) : null
       // A constructed Pixi manager does not imply that the source step's
       // asynchronous actor placement has finished. Start the common clock
       // only after that projection, so late placement cannot overwrite cues.
-      if (!manager || sceneReadiness?.status === 'waiting'
-        || (!sceneReadiness && stage?.isSceneProjected?.(expectedStep) === false)) {
+      if (stageRequired && (!manager || sceneReadiness?.status === 'waiting'
+        || (!sceneReadiness && stage?.isSceneProjected?.(expectedStep) === false))) {
         managerFrame = requestAnimationFrame(apply)
         return
       }
@@ -82,9 +85,14 @@ export function useStoryRuntimeCues({
         publishReadiness('blocked', { reason: sceneReadiness.reason, ids: sceneReadiness.ids || [] })
         return
       }
-      applyCameraEntrySnapshot(manager, snapshot?.camera_zoom)
-      applyScreenEntrySnapshot(manager, snapshot?.screen_overlay)
-      Promise.resolve(applyBackgroundEntrySnapshot(manager, snapshot?.bg))
+      const controller = new AbortController()
+      stepAudioController = controller
+      if (stageRequired) {
+        applyCameraEntrySnapshot(manager, snapshot?.camera_zoom)
+        applyScreenEntrySnapshot(manager, snapshot?.screen_overlay)
+      }
+      Promise.resolve(stageRequired ? applyBackgroundEntrySnapshot(manager, snapshot?.bg)
+        : prepareCommunication({ signal: controller.signal }))
         .then(async result => {
           if (expectedGeneration !== generation) return
           if (result?.status === 'failed') {
@@ -95,8 +103,6 @@ export function useStoryRuntimeCues({
             publishReadiness('blocked', { reason: 'background-cancelled', ids: snapshot?.bg ? [snapshot.bg] : [] })
             return
           }
-          const controller = new AbortController()
-          stepAudioController = controller
           let audio
           try {
             audio = await prepareStepAudio({
@@ -181,7 +187,7 @@ export function useStoryRuntimeCues({
     const restore = pendingRestore?.stepIndex === currentStepIndex.value ? pendingRestore : null
     pendingRestore = null
     shadowBasis = { source: compiledData.value, stepIndex: currentStepIndex.value, context: restore ? { entrySnapshot: clone(restore.snapshot), historyId: `runtime-restore:${generation}`, cuePolicy: 'suppressed' } : {} }
-    const cues = restore ? [] : step.cues.filter(cue => handlers.has(cue.action))
+    const cues = restore ? [] : step.cues.filter(cue => handlers.has(cue.action) && (needsStage() || cue.action === 'se.play'))
     const debugSnapshotCue = restore ? null : createDebugSnapshotCue(step, debugSnapshotAt)
     if (debugSnapshotCue) cues.push(debugSnapshotCue)
     applySnapshotWhenReady(restore?.snapshot || step.entry_snapshot, generation, manager => {

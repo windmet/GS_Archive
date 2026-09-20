@@ -12,7 +12,7 @@
     </div>
     <div class="viewer-stage">
     <!-- Spine rendering layer (background + characters) -->
-    <SpineStage ref="spineStageRef" :step="stageStep" :fallbackBg="firstAvailableBg" :debug-controls="RUNTIME_DEBUG" :now-milliseconds="storyRuntimeCues.nowMilliseconds" responsive-positions portrait-framing release-owner="story-player" />
+    <SpineStage v-if="retainedStageStep" ref="spineStageRef" :step="retainedStageStep" :suspended="!communicationContext.needsStage" :fallbackBg="firstAvailableBg" :debug-controls="RUNTIME_DEBUG" :now-milliseconds="storyRuntimeCues.nowMilliseconds" responsive-positions portrait-framing release-owner="story-player" />
     <div ref="frameHoldRoot" v-show="frameHolding" class="held-scene" aria-hidden="true"></div>
     <div v-if="localBuffering && !HIDE_UI" class="local-buffering" role="status" aria-live="polite">{{ localBufferingText }}</div>
 
@@ -200,7 +200,8 @@ import {
   uiLocale,
 } from '../utils/LanguageStore.js'
 import { resolveUiText as uiText } from '../localization/ui/UiTextResolver.js'
-import { resolveCommunicationContext } from './story-runtime/CommunicationPresentationContext.js'
+import { resolveStoryPresentation } from '../../shared/story/StoryPresentation.js'
+import { warmCommunicationScene } from './story-runtime/CommunicationSceneWarmup.js'
 import { getBgUrl } from '../utils/AssetResolver.js'
 import { useVoicePlayer } from './useVoicePlayer.js'
 import { AudioManager } from './AudioManager.js'
@@ -469,13 +470,20 @@ const showAdvDialogue = computed(() => {
   return step?.type === 'adv' && step?.hide_dialogue !== true && currentSceneState.value?.text_disabled !== true
 })
 
-const communicationContext = computed(() => resolveCommunicationContext({
+const communicationContext = computed(() => resolveStoryPresentation({
   step: currentStep.value,
   stepIndex: currentStepIndex.value,
   historyStack: historyStack.value,
   steps: compiledData.value?.steps || [],
   scenarioId: compiledData.value?.scenario_id || '',
 }))
+
+// Preserve the last stage while an opaque communication surface is visible.
+// A direct communication entry never constructs a renderer.
+const retainedStageStep = ref(null)
+watch([stageStep, communicationContext], ([step, presentation]) => {
+  if (compiledData.value && presentation.needsStage) retainedStageStep.value = step
+}, { immediate: true, flush: 'sync' })
 
 const playableStepNumber = computed(() => Math.max(1, currentStepIndex.value - navigationStartIndex.value + 1))
 const playableStepTotal = computed(() => Math.max(0, navigationEndIndex.value - navigationStartIndex.value + 1))
@@ -488,6 +496,7 @@ if (!voicePlayer) {
     compiledData,
     isPlaying,
     noVoice: NO_VOICE,
+    canAnimateStage: () => communicationContext.value.needsStage,
     onStateChange: state => { voiceStatus.value = state },
     audioSession: storyAudioSession,
   })
@@ -829,6 +838,11 @@ const titlePaused = computed(() => runtimePauseReasons.size > 0 || uiHidden.valu
 const storyRuntimeCues = useStoryRuntimeCues({
   compiledData,
   getStageStep: () => stageStep.value,
+  needsStage: () => communicationContext.value.needsStage,
+  prepareCommunication: ({ signal }) => warmCommunicationScene({
+    scenario: compiledData.value, stepIndex: currentStepIndex.value,
+    historyStack: historyStack.value, backdropUrl: mobileBackdropUrl.value, signal,
+  }),
   currentStepIndex,
   spineStageRef,
   audioManager: _audioManager,

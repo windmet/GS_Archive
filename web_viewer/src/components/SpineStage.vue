@@ -2,6 +2,7 @@
   <div
     ref="viewportRef"
     class="spine-stage-root"
+    :data-presentation-suspended="suspended"
     :data-background-owner="manageBackground ? 'standalone' : 'external'"
   >
     <div ref="containerRef" class="spine-stage-canvas" :style="frameStyle"></div>
@@ -102,6 +103,7 @@ import {
 } from './SpineStageDiagnostics.js'
 
 const props = defineProps({
+  suspended: { type: Boolean, default: false },
   step: { type: Object, default: null },
   fallbackBg: { type: String, default: null },
   manageBackground: { type: Boolean, default: false },
@@ -152,6 +154,7 @@ onMounted(() => {
       framingObserver.observe(viewportRef.value)
     }
     manager = markRaw(new PixiStageManager(containerRef.value, { responsiveSpinePositions: props.responsivePositions, presentationScale }))
+    manager.setPresentationSuspended(props.suspended)
     if (props.releaseOwner === 'story-player') {
       unregisterReleaseStage = storyReleaseProbe.registerStageManager(manager)
     }
@@ -775,6 +778,8 @@ function yesNo(value) {
   if (value === false) return 'no'
   return 'unknown'
 }
+
+watch(() => props.suspended, value => manager?.setPresentationSuspended(value))
 
 watch(() => props.step, (step, oldStep) => {
   if (!manager) return

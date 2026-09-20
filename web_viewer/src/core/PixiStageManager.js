@@ -70,6 +70,11 @@ const SILHOUETTE_SCALE_MULTIPLIER = {
 }
 
 export class PixiStageManager {
+  setPresentationSuspended(suspended) {
+    this.presentationSuspended = suspended
+    this._visibilityHandler?.()
+  }
+
   constructor(containerEl, options = {}) {
     this.container = containerEl
     this.width = options.width || containerEl.clientWidth || 1280
@@ -124,7 +129,7 @@ export class PixiStageManager {
     })
     this.app.ticker.maxFPS = 60
     this._visibilityHandler = () => {
-      if (document.hidden) this.app?.stop()
+      if (document.hidden || this.presentationSuspended) this.app?.stop()
       else this.app?.start()
     }
     document.addEventListener('visibilitychange', this._visibilityHandler)
