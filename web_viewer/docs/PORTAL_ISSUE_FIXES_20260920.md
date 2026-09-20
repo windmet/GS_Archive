@@ -64,3 +64,16 @@
 - 内存仅复用显式 max-age 且仍新鲜的音频响应，扣除 Age/Date，最多保留新鲜度 5 分钟；no-store/no-cache/未声明 freshness 不直接复用。16MiB/128 条 LRU、独立 ArrayBuffer、共享请求的按消费者取消保留。
 - PASS：verify:story-audio（含 freshness、失效、no-store/no-cache、稳定 GET、容量和取消回归）、build:check、diff check。
 - 边界：没有改动 CDN Cache-Control 或上传资源；实际命中率由服务端响应与浏览器缓存共同决定。
+
+## 批次 7：歌曲页原始歌词时序
+
+- 歌词跟随媒体元素 / 现有分轨 session 的 currentTime；点句 seek、暂停保持、高亮、局部滚动及关闭自动跟随。没有另建计时器，不估时间戳、不对照外部发行版。
+- 单轨要求匹配 timeline.audioRef；Unit / Center / 五槽复用现有舞台时钟，五槽使用所选 arrangement。未知音轨保留静态文本，不套用错版时序。原始 generated 数据的审计标签没有改写。
+- 处理空白清屏、下一句截断、结束间隙和旧歌曲异步返回；卸载使请求结果失效。
+- PASS：verify:song-lyrics（60 首 / 1353 行，时间戳保留、跳转、空白、间隙及音轨身份）、verify:media-element-clock、verify:song-stage-handoff、build:check、diff check。
+- Browser：1280×800 / 390×732，ANYWHERE 暂停点句至 15.1s、播放后高亮变化、跳末句、暂停后再跳回；手机文字换行且歌词在独立滚动区。DRIVE A LIVE 完整混音、Unit、Center、五槽均点句跳到 6.7s；Center/五槽播放共用原 session。控制台无 error。
+- 边界：这是对现有舞台时序的复用及浏览器交互验收，不等于新增全曲听感校准。
+
+## 本轮完成范围
+
+问题包中的卡片语音边界、移动触达、语音软就绪/轻提示/取消、手动推进、人物构图、HTTP 缓存、歌曲歌词均已分批实现并验证。构建仅代码检查，不复制素材、不新增发布包、不部署；全设备/全服装/整章长稳不属于本轮已完成的验收证据。

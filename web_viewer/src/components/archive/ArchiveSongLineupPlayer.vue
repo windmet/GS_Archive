@@ -86,6 +86,8 @@
       <p>{{ stageLineup.some(Boolean) ? '先停止歌曲页试听，再把舞台位置、声部选择和音量带入；舞台从 00:00 暂停开始。' : '至少选择一位偶像后才能进入舞台。' }}</p>
     </div>
 
+    <ArchiveSongLyrics :song-code="audioExperiment.song_code" :source-timeline="selectedArrangement"
+      stage-clock :current-time="session.currentTime.value" :ready="session.ready.value" @seek="session.seek" />
     <ArchiveTechnicalDetails label="编成试听技术信息" :evidence="{ stagePositions: stagePositions.map(stagePosition => ({ stagePosition, performerSlot: performerSlotForStagePosition(stagePosition) })) }">
       <p class="lineup-evidence">
         所有轨道会在播放前完整解码，并由同一个音频时钟同步启动、预排演唱切换；当前混音采用活动偶像数的 1/√n 归一化与居中声像，仅为浏览器近似。重复选择不代表原游戏允许重复成员编组。
@@ -99,6 +101,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useSongPerformanceSession } from '../../composables/useSongPerformanceSession.js'
+import ArchiveSongLyrics from './ArchiveSongLyrics.vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { fetchSongPerformanceArrangements } from '../../utils/songPerformanceData.js'
 import { createSongStageHandoff } from '../../core/songStageHandoff.js'

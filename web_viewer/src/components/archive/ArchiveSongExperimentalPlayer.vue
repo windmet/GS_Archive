@@ -102,6 +102,10 @@
       </div>
     </div>
 
+    <ArchiveSongLyrics v-if="mode !== 'lineup'" :song-code="song.id"
+      :audio-url="isSingleTrackMode ? currentSingleTrack?.url || '' : ''"
+      :stage-clock="['solo', 'unit'].includes(mode)" :current-time="transportCurrentTime" :ready="transportReady && transportDuration > 0 && !audioError"
+      @seek="seekPlayback({ target: { value: $event } })" />
     <ArchiveTechnicalDetails v-if="mode !== 'lineup'" label="试听技术信息">
       <p class="experimental-evidence">
         对齐证据：{{ syncLabel }}。{{ playbackEvidence }}
@@ -114,6 +118,7 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useSongPerformanceSession } from '../../composables/useSongPerformanceSession.js'
+import ArchiveSongLyrics from './ArchiveSongLyrics.vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveSongLineupPlayer from './ArchiveSongLineupPlayer.vue'
 

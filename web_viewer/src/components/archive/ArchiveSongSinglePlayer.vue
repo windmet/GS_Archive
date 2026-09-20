@@ -16,7 +16,8 @@
     <p v-if="clockSnapshot.phase === 'waiting'" class="song-block-note" role="status">正在缓冲音频…</p>
     <p class="song-block-note">时长 {{ formatDuration(track.source?.duration_seconds) }}</p>
     <p v-if="audioError" class="single-song-error" role="alert">{{ audioError }}</p>
-    <ArchiveSongLyrics :song-code="song.id" />
+    <ArchiveSongLyrics :song-code="song.id" :audio-url="track.url" :current-time="clockSnapshot.currentTime"
+      :ready="clockSnapshot.duration > 0 && clockSnapshot.phase !== 'error'" @seek="clock.seek" />
   </section>
 </template>
 
