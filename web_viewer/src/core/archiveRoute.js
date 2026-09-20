@@ -610,6 +610,7 @@ export function buildArchiveUrl(input, route) {
       if (normalized.parentView) url.searchParams.set('parent', normalized.parentView)
       if (normalized.storyType) url.searchParams.set('story_type', normalized.storyType)
       if (normalized.storySection) url.searchParams.set('story_section', normalized.storySection)
+      if (normalized.storyType === 'idol_story' && normalized.episode) url.searchParams.set('episode', normalized.episode)
       if (normalized.story) url.searchParams.set('story', normalized.story)
       if (normalized.workMode !== 'stories') url.searchParams.set('work_mode', normalized.workMode)
       return url

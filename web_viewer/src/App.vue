@@ -346,6 +346,8 @@
       <ArchiveIdolStory
         v-if="view === 'idol_story_archive'"
         :story="currentIdolStoryPage"
+        :reading-entries="readingCatalogEntries"
+        @read-episode="openIdolStoryReader"
         :idols="idolStoryOptions"
         :external-resources="currentIdolStoryExternalResources"
         :focused-section-id="currentStorySection"
@@ -508,6 +510,7 @@ import ArchiveStoryDetail from './components/archive/ArchiveStoryDetail.vue'
 import ArchiveStoryCollection from './components/archive/ArchiveStoryCollection.vue'
 import ArchiveSeasonalCampaign from './components/archive/ArchiveSeasonalCampaign.vue'
 import ArchiveWorkStory from './components/archive/ArchiveWorkStory.vue'
+import { readyEpisodeReading } from './data/IdolStoryReading.js'
 import ArchiveIdolStory from './components/archive/ArchiveIdolStory.vue'
 import ArchiveMobileArchive from './components/archive/ArchiveMobileArchive.vue'
 import ArchiveUnitCatalog from './components/archive/ArchiveUnitCatalog.vue'
@@ -1330,7 +1333,7 @@ async function loadReadingCatalog() {
     readingCatalogError.value = ''
   } catch { readingCatalogError.value = '阅读目录暂时无法载入。' }
 }
-watch(() => ['story_collection', 'story_detail', 'event_detail', 'work_archive'].includes(view.value), active => {
+watch(() => ['story_collection', 'story_detail', 'event_detail', 'work_archive', 'idol_story_archive'].includes(view.value), active => {
   if (active) loadReadingCatalog()
 })
 const readingSession = createReadingSession({ repository: readingRepository, publish: state => { readingState.value = state } })
@@ -1650,6 +1653,7 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
       readingRevision.value = route.readingRev || ''
       currentStoryDomain.value = route.storyType || ''
       currentStorySection.value = route.storySection || ''
+      currentEpisodeId.value = route.episode || ''
       currentStoryFile.value = route.story || ''
       currentWorkMode.value = route.storyType === 'work' ? (route.workMode || 'stories') : 'stories'
       currentCharacterId.value = route.idol || ''
@@ -1872,9 +1876,9 @@ function navigateArchiveSection(section) {
   else if (section === 'resources') openArchiveStatus()
 }
 
-async function openStoryReader(documentId, source = {}) {
+async function openStoryReader(documentId, source = {}, returnSourceRoute = '') {
   const context = view.value === 'reader' ? currentArchiveRoute() : { ...source,
-    sourceRoute: buildArchiveSourceQuery(currentArchiveRoute()) }
+    sourceRoute: returnSourceRoute || buildArchiveSourceQuery(currentArchiveRoute()) }
   const pending = applyArchiveRoute({ ...context, view: 'reader', reading: documentId, readingRow: '', readingRev: '', readingMode: readingMode.value }, { restoring: false })
   // Publish the requested route immediately, including while text is loading.
   syncArchiveRoute()
@@ -1938,6 +1942,14 @@ function openEventReader(documentId) {
   return openStoryReader(documentId, { event: currentEventId.value, parentView: eventParentView.value,
     category: currentCategoryId.value, unit: currentArchiveUnitCode.value,
     sourceRoute: detailSourceRoute.value })
+}
+
+function openIdolStoryReader({ section, episode }) {
+  const entry = readyEpisodeReading(readingCatalogEntries.value, episode)
+  if (!entry) return
+  const source = { ...currentArchiveRoute(), view: 'idol_story_archive', storyType: 'idol_story',
+    idol: currentCharacterId.value, storySection: String(section.id), episode: String(episode.id), story: episode.file }
+  return openStoryReader(entry.document_id, source, buildArchiveSourceQuery(source))
 }
 
 function openWorkReader(file) {

@@ -98,9 +98,8 @@
           </div>
 
           <div class="episode-list">
+            <div v-for="(episode, episodeIndex) in section.episodes" :key="episode.id" class="episode-entry">
             <button
-              v-for="(episode, episodeIndex) in section.episodes"
-              :key="episode.id"
               :disabled="!episode.exists"
               :class="{ focused: Number(episode.id) === Number(focusedEpisodeId) }"
               :data-episode-id="episode.id"
@@ -114,6 +113,8 @@
               <Play v-if="episode.exists" :size="15" fill="currentColor" />
               <FileWarning v-else :size="15" />
             </button>
+            <button v-if="readingEntry(episode)" class="episode-read" :aria-label="`阅读 ${presentIdolEpisodeLabel({ sourceName: episode.name })}`" @click="emit('read-episode', { section, episode })">阅读</button>
+            </div>
           </div>
 
           <div v-if="section.communications.length" class="communication-strip">
@@ -136,6 +137,7 @@
 <script setup>
 import { nextTick, onMounted, ref, watch } from 'vue'
 import { ArrowRight, Cake, ChevronLeft, ChevronRight, ExternalLink, FileWarning, PhoneCall, Play } from '@lucide/vue'
+import { readyEpisodeReading } from '../../data/IdolStoryReading.js'
 import { formatArchiveDate } from '../../data/idolCommunicationSelectors.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { getCharaIconUrl } from '../../utils/AssetResolver.js'
@@ -143,12 +145,14 @@ import { getCharaIconUrl } from '../../utils/AssetResolver.js'
 const props = defineProps({
   story: { type: Object, default: null },
   idols: { type: Array, default: () => [] },
+  readingEntries: { type: Array, default: () => [] },
   externalResources: { type: Array, default: () => [] },
   focusedSectionId: { type: [String, Number], default: '' },
   focusedEpisodeId: { type: [String, Number], default: '' },
 })
-const emit = defineEmits(['select-idol', 'play-section', 'play-episode', 'open-communication', 'open-birthday'])
+const emit = defineEmits(['read-episode', 'select-idol', 'play-section', 'play-episode', 'open-communication', 'open-birthday'])
 const focusedSectionElement = ref(null)
+const readingEntry = episode => readyEpisodeReading(props.readingEntries, episode)
 
 function setSectionElement(element, sectionId) {
   if (Number(sectionId) === Number(props.focusedSectionId)) focusedSectionElement.value = element
@@ -205,4 +209,6 @@ function externalResourcesForSection(sectionId) {
 .episode-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin-top: 15px; background: #dfe5e7; }.episode-list button { display: grid; grid-template-columns: 30px minmax(0, 1fr) 18px; align-items: center; gap: 8px; min-height: 55px; padding: 8px 10px; border: 0; background: #fff; color: #2c3c44; cursor: pointer; font: inherit; text-align: left; }.episode-list button:hover:not(:disabled), .episode-list button.focused { background: #edf8f7; }.episode-list button.focused { outline: 2px solid var(--idol-accent); outline-offset: -2px; }.episode-list button:disabled { background: #f4f6f7; color: #909ba0; cursor: not-allowed; }.episode-index { color: var(--idol-accent); font-size: .58rem; font-weight: 800; }.episode-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }.episode-copy strong { font-size: .65rem; }.episode-copy small { color: #859299; font-size: .51rem; }.episode-list svg { color: var(--idol-accent); }
 .communication-strip { display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; align-items: center; gap: 11px; margin-top: 15px; padding: 11px 12px; border-top: 1px solid #dfe6e8; border-bottom: 1px solid #dfe6e8; background: #f4faf9; }.communication-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: var(--idol-accent); color: #fff; }.communication-strip > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }.communication-strip small { color: var(--idol-accent); font-size: .5rem; font-weight: 800; }.communication-strip strong { font-size: .67rem; }.communication-strip div span { color: #7c898f; font-size: .52rem; }.communication-strip > button { display: inline-flex; align-items: center; gap: 5px; border: 0; background: transparent; color: var(--idol-accent); cursor: pointer; font: inherit; font-size: .61rem; font-weight: 700; }
 @media (max-width: 760px) { .story-header { align-items: start; flex-direction: column; padding: 14px 12px; }.idol-identity img { width: 56px; height: 56px; }.idol-controls { width: 100%; }.idol-controls label { flex: 1; }.idol-controls select { width: 100%; min-width: 0; }.story-boundary { grid-template-columns: 22px minmax(0,1fr); margin: 10px 12px 0; }.story-boundary button { grid-column: 1 / -1; justify-content: center; }.story-summary { margin: 10px 12px 0; grid-template-columns: repeat(2, minmax(0, 1fr)); }.story-summary div:nth-child(2) { border-right: 0; }.story-summary div:nth-child(-n+2) { border-bottom: 1px solid #e4e9eb; }.section-list { margin: 12px 10px 28px; }.story-section { grid-template-columns: 1fr; }.section-visual { min-height: 150px; max-height: 210px; }.section-content { padding: 14px 12px 16px; }.section-content > header { align-items: start; flex-direction: column; }.play-section { width: 100%; justify-content: center; }.episode-list { grid-template-columns: 1fr; }.communication-strip { grid-template-columns: 36px minmax(0, 1fr); }.communication-strip > button { grid-column: 1 / -1; justify-content: flex-end; } }
+.episode-entry { display: grid; grid-template-columns: minmax(0,1fr) auto; background: #fff; }
+.episode-list .episode-read { display: flex; justify-content: center; min-width: 54px; color: var(--idol-accent); border-left: 1px solid #dfe5e7; }
 </style>
