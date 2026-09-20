@@ -240,6 +240,7 @@ export function useStoryRuntimeCues({
 
   function cleanup() {
     cancelCurrentStep('cleanup')
+    readiness = { status: 'idle', generation, stepIndex: null, stepId: null }
     scheduler.dispose().catch(() => {})
     if (window.__STORY_RUNTIME_CUES__ === scheduler) delete window.__STORY_RUNTIME_CUES__
   }

@@ -126,6 +126,7 @@ print(json.dumps(result))
 
   const delayed = create([makeStep(1, { at: 100 }), makeStep(2)])
   delayed.runtime.handleStepChange()
+  await flush() // Scene projection must finish before interactive Skip is enabled.
   assert.equal(delayed.calls.length, 0, 'a future cue must not execute at step entry')
   delayed.runtime.settleCurrentStep('skip')
   await flush()

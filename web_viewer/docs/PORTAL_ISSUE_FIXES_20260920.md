@@ -42,3 +42,9 @@
 - PASS：verify:story-playback-range（新增无声正文、动作、AUTO、历史、特殊节点和区间边界行为）、verify:story-player-ui-pr1、verify:story-loading-safety、build:check、diff check。
 - Browser：真实 1_4_001_00.json 的 start_step=16/end_step=24，一次手点从 STEP16 到 STEP20；上一段直接回 STEP16。AUTO 日志确认分别调度 STEP17、18、19 后才到20。回看仅含16/20/21/22正文，没有17–19动作节点。桌面1280×800；移动布局复核沿用前三批，本批不声称人物构图已修复。
 - 用户追加三张构图参考：当前人物偏小，目标接近实机上半身构图；人物与背景应一并校准，而不是只改 Y。
+
+## 补充：运行时退出状态
+
+- 回归发现 cleanup 取消异步准备后仍保留 waiting，已重置本地 readiness 为 idle，避免退出后仍报告 AUTO 阻塞。
+- Spine cue 测试先等待场景投影再触发 Skip，符合播放器就绪后启用输入的现有契约。
+- PASS：verify:story-spine-cues（含 tint clock）、verify:story-step-playback-state、build:check。
