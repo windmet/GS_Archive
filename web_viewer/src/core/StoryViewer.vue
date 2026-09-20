@@ -741,8 +741,14 @@ function goNext(source = 'user', onSettled) {
     // skip) drops the pending animation and moves on immediately.
     setTitleAnimationPending(false)
   }
+  const manual = typeof source !== 'string' || source === 'user'
+  if (currentStep.value.type === 'choice') return 'blocked'
   const reason = typeof source === 'string' ? `${source}-next` : 'user-next'
-  if (storyRuntimeCues.settleCurrentStep(reason, onSettled)) return 'settled'
+  if (manual) {
+    if (storyRuntimeCues.hasNonSkippable()) return 'blocked'
+    storyRuntimeCues.cancelCurrentStep(reason)
+    _stopCurrentVoice(reason)
+  } else if (storyRuntimeCues.settleCurrentStep(reason, onSettled)) return 'settled'
   markStepRead()
   recordHistoryStep()
   leaveRestoredScene()
@@ -750,7 +756,10 @@ function goNext(source = 'user', onSettled) {
     finishEpisode()
     return 'finished'
   }
-  advanceStep()
+  if (!advanceStep({ manual })) {
+    finishEpisode()
+    return 'finished'
+  }
   return 'advanced'
 }
 

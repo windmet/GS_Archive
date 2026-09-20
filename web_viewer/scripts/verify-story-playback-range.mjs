@@ -93,3 +93,40 @@ fromMiddle.goPrev()
 assert.equal(fromMiddle.currentStepIndex.value, 2, 'initial position must not become the range floor')
 fromMiddle.goNext()
 assert.equal(fromMiddle.currentStepIndex.value, 3)
+
+// Manual input consumes a dialogue, while AUTO advances authored physical steps.
+const manualScenario = { steps: [
+  { step_id: 1, type: 'adv', dialogue: { text: 'First line', voice: 'a.m4a' } },
+  { step_id: 2, type: 'stage', duration: 1 },
+  { step_id: 3, type: 'stage', duration: 3 },
+  { step_id: 4, type: 'adv', dialogue: { source_text: 'Silent second line' } },
+  { step_id: 5, type: 'choice', options: [] },
+  { step_id: 6, type: 'title' },
+  { step_id: 7, type: 'talk_stamp', auto_advance: true },
+  { step_id: 8, type: 'stage', auto_advance: false },
+  { step_id: 9, type: 'text_time' },
+  { step_id: 10, type: 'stage' },
+] }
+{
+  const manual = createNavigation(1, 10, manualScenario)
+  manual.applyStartStepIfNeeded()
+  assert.equal(manual.goNext({ manual: true }), true)
+  assert.equal(manual.currentStepIndex.value, 3, 'one click must cross both internal actions')
+  assert.deepEqual(manual.historyStack.value, [0])
+  manual.goPrev()
+  assert.equal(manual.currentStepIndex.value, 0)
+  manual.goNext()
+  assert.equal(manual.currentStepIndex.value, 1, 'AUTO/runtime keeps the first action')
+  manual.goNext()
+  assert.equal(manual.currentStepIndex.value, 2, 'AUTO/runtime keeps the second action')
+  manual.goNext({ manual: true })
+  assert.equal(manual.currentStepIndex.value, 3)
+  for (const expected of [4, 5, 6, 7, 8]) {
+    manual.goNext({ manual: true }); assert.equal(manual.currentStepIndex.value, expected)
+  }
+  assert.equal(manual.goNext({ manual: true }), false, 'trailing transitions must not require an extra click')
+  const bounded = createNavigation(1, 3, manualScenario)
+  bounded.applyStartStepIfNeeded()
+  assert.equal(bounded.goNext({ manual: true }), false, 'manual navigation cannot escape the requested range')
+}
+console.log('Manual boundaries: voiced/silent lines, action bridges, AUTO, history, special nodes and episode limits passed')

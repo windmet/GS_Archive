@@ -34,3 +34,11 @@
 - PASS：verify:story-loading-safety；补充 lip 中途取消/超时与旧请求隔离后 verify:story-audio；build:check；diff check。
 - Browser：5176 临时代理指向同一 5175 Vite，实际语音延迟 5s 时正文已出现且显示轻提示；强制 404 后正文/角色保留，390×732 提示在屏内、无横向溢出，点击下一段能完成该单步预览。仅预期 404 warning 和既有 Pixi warning。
 - 边界：慢网预览验证不替代整章声画时序或长稳。手动点击跨动作节点的实现属于下一批。
+
+## 批次 4：手动阅读边界
+
+- 手动输入取消当前可跳过 cue/voice，并跨过无正文的 stage/text_disable/fade/slide；不会先等待或逐次结算内部动作。
+- AUTO/SKIP 保留原逐 step 时序；选择不能被 Next 绕过，标题、字幕、通信、未知类型、明确等待保持停点；导航严格限制在播放区间。
+- PASS：verify:story-playback-range（新增无声正文、动作、AUTO、历史、特殊节点和区间边界行为）、verify:story-player-ui-pr1、verify:story-loading-safety、build:check、diff check。
+- Browser：真实 1_4_001_00.json 的 start_step=16/end_step=24，一次手点从 STEP16 到 STEP20；上一段直接回 STEP16。AUTO 日志确认分别调度 STEP17、18、19 后才到20。回看仅含16/20/21/22正文，没有17–19动作节点。桌面1280×800；移动布局复核沿用前三批，本批不声称人物构图已修复。
+- 用户追加三张构图参考：当前人物偏小，目标接近实机上半身构图；人物与背景应一并校准，而不是只改 Y。

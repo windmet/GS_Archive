@@ -1,6 +1,6 @@
 import { episodeStartIndex, episodeEndIndex, resolveStoryPlaybackWindow } from '../../shared/story/StoryPlaybackWindow.js'
 import { computed } from 'vue'
-import { isTransitionStep } from '../utils/StoryStepFlow.js'
+import { isTransitionStep, nextInteractionIndex } from '../utils/StoryStepFlow.js'
 import { createChoiceSelectionRecord } from '../localization/story/LegacyDialogueAdapter.js'
 
 export function useStoryNavigation({
@@ -71,18 +71,24 @@ export function useStoryNavigation({
     currentStepIndex.value = playbackWindow.value.entryIndex
   }
 
-  function goNext() {
+  function goNext({ manual = false } = {}) {
     clearFadeAutoAdvance()
     ensureAudioCtx()
     if (!isLastStep.value) {
+      const target = manual
+        ? nextInteractionIndex(compiledData.value.steps, currentStepIndex.value, navigationEndIndex.value)
+        : currentStepIndex.value + 1
+      if (target == null) return false
       const step = compiledData.value?.steps?.[currentStepIndex.value]
       if (!isTransitionStep(step)) {
         historyStack.value.push(currentStepIndex.value)
       }
-      beforeStepChange(currentStepIndex.value + 1)
-      currentStepIndex.value++
+      beforeStepChange(target)
+      currentStepIndex.value = target
       resetVoiceDedup()
+      return true
     }
+    return false
   }
 
   function goPrev() {
