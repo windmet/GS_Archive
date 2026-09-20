@@ -93,3 +93,11 @@
 - 同一浏览器 319×492 窗口的 canvas 从 1015×1566 降为 638×984，像素工作量约减少 60.5%。Windows GPU Engine 对浏览器宿主进程短采样从约 27.5–27.9% 至 15.0–16.1%；该进程含宿主 UI，不作为设备独立 GPU benchmark，也不能据此断言所有历史 PNG/WebP 性能差异都已解释。
 - PASS：verify-stage-render-budget 的多尺寸/DPR/像素预算；verify:story-stage-resize；build:check（`.analysis/build-check`，不复制 public）；git diff --check。已有 chunk size/Pixi deprecation 提示不计为新增故障。
 - 范围边界：修复已确认的动画覆盖、重复指令和过量渲染；未更改压缩格式、原始素材、S3/R2 对象或容量，不宣称全角色全部动画已逐个目验。
+
+## 追加批次 10：保留手动推进后的中间演出（修正批次 4）
+
+- 用户在虎牙道第一话 Episode 1 发现进度 11 直接跳到 16。对应源 step_id 12→17；此前 nextInteractionIndex 跳过了 13–16 的无文字节点，连同回忆音效、白色转场、停顿及场景更换一起丢弃。批次 4 的直接跨节点策略作废。
+- 手动输入只结束当前句并进入下一条原始步骤；中间演出由现有 transition timer 依次执行，再停在下一个阅读节点。是否有语音不作为跳过依据；保留 silent ADV、选择、章节范围及末尾转场。
+- PASS：verify-story-playback-range（增加真实虎牙道 11–18 回归）、verify-story-step-playback-state、verify-story-runtime-foundation、build:check、diff check。
+- Browser：第一话 progress 11/30 的道流内心句点击后立即进入 step_id 13 fadein，随后 14 text_disable、15 stage、16 fadeout，约 4.2 秒后到 17 医者「では、お大事に。」并保持等待点击。AUTO/SKIP 均关闭，验证中没有为过渡步骤追加点击。
+- Edge 卡顿另有直接环境证据：用户给出的 GL_RENDERER 为 Microsoft Basic Render Driver，WebGL 为 Software only；当前 Edge GPU 子进程使用 d3d11-warp-webgl，图形加速设置关闭。建议用户打开系统设置中的图形加速并重启后确认 Hardware accelerated。未代替用户关闭浏览器、改驱动或声称重启后的流畅性已验收。预览窗通过不代表 Edge 硬件加速已经正常。

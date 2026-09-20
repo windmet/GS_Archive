@@ -94,7 +94,7 @@ assert.equal(fromMiddle.currentStepIndex.value, 2, 'initial position must not be
 fromMiddle.goNext()
 assert.equal(fromMiddle.currentStepIndex.value, 3)
 
-// Manual input consumes a dialogue, while AUTO advances authored physical steps.
+// Manual and AUTO both enter every authored step; scene timers own transitions.
 const manualScenario = { steps: [
   { step_id: 1, type: 'adv', dialogue: { text: 'First line', voice: 'a.m4a' } },
   { step_id: 2, type: 'stage', duration: 1 },
@@ -111,7 +111,7 @@ const manualScenario = { steps: [
   const manual = createNavigation(1, 10, manualScenario)
   manual.applyStartStepIfNeeded()
   assert.equal(manual.goNext({ manual: true }), true)
-  assert.equal(manual.currentStepIndex.value, 3, 'one click must cross both internal actions')
+  assert.equal(manual.currentStepIndex.value, 1, 'one click must enter the first authored action')
   assert.deepEqual(manual.historyStack.value, [0])
   manual.goPrev()
   assert.equal(manual.currentStepIndex.value, 0)
@@ -124,9 +124,25 @@ const manualScenario = { steps: [
   for (const expected of [4, 5, 6, 7, 8]) {
     manual.goNext({ manual: true }); assert.equal(manual.currentStepIndex.value, expected)
   }
-  assert.equal(manual.goNext({ manual: true }), false, 'trailing transitions must not require an extra click')
+  assert.equal(manual.goNext({ manual: true }), true, 'trailing transitions must render before episode completion')
+  assert.equal(manual.currentStepIndex.value, 9)
+  assert.equal(manual.goNext({ manual: true }), false)
   const bounded = createNavigation(1, 3, manualScenario)
   bounded.applyStartStepIfNeeded()
+  assert.equal(bounded.goNext({ manual: true }), true)
+  assert.equal(bounded.currentStepIndex.value, 1)
+  assert.equal(bounded.goNext({ manual: true }), true)
   assert.equal(bounded.goNext({ manual: true }), false, 'manual navigation cannot escape the requested range')
 }
 console.log('Manual boundaries: voiced/silent lines, action bridges, AUTO, history, special nodes and episode limits passed')
+
+const kogadou = JSON.parse(await readFile(new URL('../public/data/compiled/episodes/1_1_013_01_a.json', import.meta.url), 'utf8'))
+const kogadouNav = createNavigation(11, 18, kogadou)
+kogadouNav.applyStartStepIfNeeded()
+for (let expected = 11; expected <= 17; expected++) {
+  assert.equal(kogadouNav.goNext({ manual: true }), true)
+  assert.equal(kogadouNav.currentStepIndex.value, expected, 'Kogadou episode 1 must preserve every transition and silent line')
+}
+assert.ok(kogadou.steps[16].dialogue.text)
+assert.ok(!kogadou.steps[16].dialogue.voice, 'silent spoken text remains a reading stop')
+console.log('Kogadou 11-18: all authored steps and silent dialogue retained')

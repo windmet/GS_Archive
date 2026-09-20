@@ -1,6 +1,6 @@
 import { episodeStartIndex, episodeEndIndex, resolveStoryPlaybackWindow } from '../../shared/story/StoryPlaybackWindow.js'
 import { computed } from 'vue'
-import { isTransitionStep, nextInteractionIndex } from '../utils/StoryStepFlow.js'
+import { isTransitionStep } from '../utils/StoryStepFlow.js'
 import { createChoiceSelectionRecord } from '../localization/story/LegacyDialogueAdapter.js'
 
 export function useStoryNavigation({
@@ -71,14 +71,13 @@ export function useStoryNavigation({
     currentStepIndex.value = playbackWindow.value.entryIndex
   }
 
-  function goNext({ manual = false } = {}) {
+  function goNext() {
     clearFadeAutoAdvance()
     ensureAudioCtx()
     if (!isLastStep.value) {
-      const target = manual
-        ? nextInteractionIndex(compiledData.value.steps, currentStepIndex.value, navigationEndIndex.value)
-        : currentStepIndex.value + 1
-      if (target == null) return false
+      // Enter every authored step. Transition timers carry the scene to the
+      // next reading boundary without dropping its animations or silent text.
+      const target = currentStepIndex.value + 1
       const step = compiledData.value?.steps?.[currentStepIndex.value]
       if (!isTransitionStep(step)) {
         historyStack.value.push(currentStepIndex.value)

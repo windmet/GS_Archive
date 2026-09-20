@@ -47,20 +47,3 @@ export function getAutoAdvanceTiming(step) {
 
   return null
 }
-
-// Internal visual timeline nodes are not separate reader clicks. Keep unknown
-// nodes, explicit waits, captions, choices and communication messages as stops.
-export function isManualBridge(step) {
-  if (!step || step.auto_advance === false || step.unavailable || step.fatal || step.flow?.advance === 'choice') return false
-  const dialogue = step.dialogue
-  const text = dialogue?.source_text || dialogue?.text_jp || dialogue?.text || dialogue?.text_cn
-  if (typeof text === 'string' && text.trim()) return false
-  return ['stage', 'text_disable', 'fadein', 'fadeout', 'fadecolor', 'slidein', 'slideout'].includes(step.type)
-}
-
-export function nextInteractionIndex(steps, fromIndex, endIndex) {
-  for (let index = fromIndex + 1; index <= endIndex; index++) {
-    if (!isManualBridge(steps[index])) return index
-  }
-  return null
-}
