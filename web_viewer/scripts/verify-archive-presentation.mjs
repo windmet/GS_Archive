@@ -31,7 +31,7 @@ assert.equal(byId.drvalv.unit, null, 'a special selector is never interpreted as
 assert.equal(byId.drvalv.performers.length, 0, 'vocal resources are not a confirmed performer lineup')
 assert.equal(byId.drvalv.audioGroups[0].entries[0].id, '01jup', 'resource alias resolves to canonical route identity')
 assert.equal(byId.drvalv.audioGroups[0].title, '收录组合 / 关联组合')
-assert.match(byId.drvalv.audioGroups[0].note, /演唱试听.*Unit.*组合档案/)
+assert.match(byId.drvalv.audioGroups[0].note, /演唱试听.*组合.*组合档案/)
 assert.equal(byId.drvalv.playback.experiment.solo_tracks['001tom'].displayName, '天ヶ瀬 冬馬')
 assert.equal(byId.flslgt.performers.length, 4)
 assert.equal(byId.anwhre.performers.length, 5, 'special lineup retains its explicit five performers')

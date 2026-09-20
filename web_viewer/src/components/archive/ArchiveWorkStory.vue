@@ -24,15 +24,8 @@
     </header>
 
     <div v-if="idol" class="work-body">
-      <div class="work-overview">
-        <div><strong>{{ idol.short_stories.length }}</strong><span>短剧情</span></div>
-        <div><strong>{{ idol.scene_lines.length }}</strong><span>场景台词</span></div>
-        <div><strong>{{ totalVoices }}</strong><span>语音</span></div>
-        <div><strong>{{ namedLocations }}</strong><span>已命名场景</span></div>
-      </div>
-
       <nav class="content-tabs" aria-label="工作内容">
-        <button :class="{ active: activeMode === 'stories' }" @click="emit('update:mode', 'stories')"><BookOpen :size="16" /> Short Story</button>
+        <button :class="{ active: activeMode === 'stories' }" @click="emit('update:mode', 'stories')"><BookOpen :size="16" /> 工作短剧情</button>
         <button :class="{ active: activeMode === 'lines' }" @click="emit('update:mode', 'lines')"><MessageSquareText :size="16" /> 场景台词</button>
       </nav>
 
@@ -77,6 +70,15 @@
           </article>
         </div>
       </section>
+      <details class="work-extra"><summary>收录概况</summary>
+      <div class="work-overview">
+        <div><strong>{{ idol.short_stories.length }}</strong><span>短剧情</span></div>
+        <div><strong>{{ idol.scene_lines.length }}</strong><span>场景台词</span></div>
+        <div><strong>{{ totalVoices }}</strong><span>语音</span></div>
+        <div><strong>{{ namedLocations }}</strong><span>已命名场景</span></div>
+      </div>
+
+      </details>
       <ArchiveTechnicalDetails :key="idol.idol_code" :evidence="idol" />
     </div>
   </section>
@@ -110,6 +112,7 @@ function locationLabel(entry) { return entry.background_name || '场景名称未
 </script>
 
 <style scoped>
+.work-extra > summary { min-height: 44px; padding: 12px; box-sizing: border-box; cursor: pointer; color: #52616a; }
 .story-footer { flex-wrap: wrap; }
 .story-footer > span { flex: 1 1 100%; }
 .story-footer .reading-action, .line-copy .reading-action { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 44px; width: auto; padding: 5px 9px; border: 1px solid #cadbd9; border-radius: 5px; background: #fff; color: var(--work-accent); font: inherit; font-size: 13px; cursor: pointer; }

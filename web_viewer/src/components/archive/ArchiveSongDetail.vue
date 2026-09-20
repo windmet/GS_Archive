@@ -19,10 +19,8 @@
       </dl>
     </header>
     <div class="song-detail-body">
-      <section v-if="song.credits.length" class="song-block">
-        <div class="song-block-heading"><span>CREDITS</span><h3>制作信息</h3></div>
-        <ul class="credit-list"><li v-for="line in song.credits" :key="line">{{ line }}</li></ul>
-      </section>
+      <ArchiveSongExperimentalPlayer v-if="song.playback.experiment" :song="song" :audio-experiment="song.playback.experiment" @open-stage="emit('open-stage', $event)" />
+      <ArchiveSongSinglePlayer v-else-if="song.playback.track" :song="song" :track="song.playback.track" />
       <section class="song-block">
         <div class="song-block-heading"><span>PERFORMERS</span><h3>演唱者</h3></div>
         <div v-if="song.unit" class="song-subsection">
@@ -35,8 +33,6 @@
           <ul class="performer-list"><li v-for="entry in song.performers" :key="entry.id"><ArchiveIdolReference :reference="entry.reference" density="portrait" @open="emit('open-idol', $event)" /></li></ul>
         </div>
       </section>
-      <ArchiveSongExperimentalPlayer v-if="song.playback.experiment" :song="song" :audio-experiment="song.playback.experiment" @open-stage="emit('open-stage', $event)" />
-      <ArchiveSongSinglePlayer v-else-if="song.playback.track" :song="song" :track="song.playback.track" />
       <section v-if="stageCandidate || stageLookupError" class="song-block song-stage-entry">
         <div class="song-block-heading"><span>STAGE</span><h3>{{ stageCandidate?.stageKind === 'special_single' ? '社长特别演出' : '舞台小人' }}</h3></div>
         <p class="song-block-note">{{ stageCandidate?.stageKind === 'special_single' ? '特别版使用社长单人 2D 剪影素材；进入后才加载演出，且不会自动播放。' : '进入后才加载舞台资源，演出不会自动播放；不继承上方试听中的演唱选择。' }}</p>
@@ -67,6 +63,10 @@
       <section v-if="song.links.length" class="song-block">
         <div class="song-block-heading"><span>RELEASES</span><h3>专辑链接</h3></div>
         <ul class="link-list"><li v-for="link in song.links" :key="link"><a :href="link" target="_blank" rel="noopener noreferrer external">前往专辑页面 <ExternalLink :size="14" /></a></li></ul>
+      </section>
+      <section v-if="song.credits.length" class="song-block">
+        <div class="song-block-heading"><span>CREDITS</span><h3>制作信息</h3></div>
+        <ul class="credit-list"><li v-for="line in song.credits" :key="line">{{ line }}</li></ul>
       </section>
       <ArchiveTechnicalDetails :key="song.id" :evidence="song.technicalEvidence" />
     </div>

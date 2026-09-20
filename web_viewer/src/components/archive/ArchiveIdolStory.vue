@@ -23,24 +23,6 @@
       </div>
     </header>
 
-    <aside class="story-boundary">
-      <Cake :size="19" />
-      <div>
-        <strong>正式个人故事 · 生日同期公开</strong>
-        <p>Idol Episode 是连续章节的正式归档。开放日常与偶像生日同期，但不等同于生日问候；生日页只收录独立问候，并把共享 Small Talk 指回这里。</p>
-      </div>
-      <button v-if="story.birthdayArchive?.entryCount" @click="emit('open-birthday')">
-        查看生日档案 <ArrowRight :size="15" />
-      </button>
-    </aside>
-
-    <div class="story-summary">
-      <div><strong>{{ story.sectionCount }}</strong><span>正式话目</span></div>
-      <div><strong>{{ story.episodeCount }}</strong><span>剧情分段</span></div>
-      <div><strong>{{ story.playableEpisodeCount }}</strong><span>可播放</span></div>
-      <div><strong>{{ story.communicationCount }}</strong><span>解锁后通信</span></div>
-    </div>
-
     <div class="section-list">
       <section
         v-for="(section, sectionIndex) in story.sections"
@@ -61,7 +43,7 @@
               <h3>{{ section.scenario_title }}</h3>
               <div class="section-badges">
                 <span v-if="sectionBirthdayAligned(section)">生日同期公开</span>
-                <span v-if="section.sharedBirthdayEntries?.length" class="shared">生日域共享入口 · 本页为正式归档</span>
+                <span v-if="section.sharedBirthdayEntries?.length" class="shared">也可从生日内容访问</span>
               </div>
             </div>
             <button
@@ -131,6 +113,26 @@
         </div>
       </section>
     </div>
+    <details class="story-extra"><summary>收录概况与生日内容</summary>
+    <aside class="story-boundary">
+      <Cake :size="19" />
+      <div>
+        <strong>个人故事 · 生日同期公开</strong>
+        <p>个人故事按章节收录；独立的生日问候可前往生日档案查看。</p>
+      </div>
+      <button v-if="story.birthdayArchive?.entryCount" @click="emit('open-birthday')">
+        查看生日档案 <ArrowRight :size="15" />
+      </button>
+    </aside>
+
+    <div class="story-summary">
+      <div><strong>{{ story.sectionCount }}</strong><span>章节</span></div>
+      <div><strong>{{ story.episodeCount }}</strong><span>剧情分段</span></div>
+      <div><strong>{{ story.playableEpisodeCount }}</strong><span>可播放</span></div>
+      <div><strong>{{ story.communicationCount }}</strong><span>解锁后通信</span></div>
+    </div>
+
+    </details>
   </article>
 </template>
 
@@ -195,6 +197,8 @@ function externalResourcesForSection(sectionId) {
 </script>
 
 <style scoped>
+.story-extra { max-width: 1100px; margin: 20px auto; }
+.story-extra > summary { min-height: 44px; padding: 12px; box-sizing: border-box; cursor: pointer; color: #52616a; }
 .idol-story { height: 100%; overflow-x: hidden; overflow-y: auto; background: #f4f6f7; color: #26343c; }
 .story-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 22px max(24px, calc((100% - 1100px) / 2)); border-bottom: 1px solid #dce3e5; background: #fff; }
 .idol-identity { display: flex; align-items: center; gap: 14px; min-width: 0; }.idol-identity img { width: 68px; height: 68px; border: 3px solid var(--idol-accent); border-radius: 50%; object-fit: cover; }.idol-identity span { color: var(--idol-accent); font-size: .58rem; font-weight: 800; }.idol-identity h2 { margin: 3px 0; font-size: 1.35rem; }.idol-identity p { margin: 0; color: #748188; font-size: .64rem; }

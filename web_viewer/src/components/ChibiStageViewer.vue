@@ -69,10 +69,10 @@
       <div class="header-divider" aria-hidden="true"></div>
       <div>
         <h1>{{ isSpecialSingle ? '社长特别演出 · 单人 2D' : '舞台小人 · 多人舞台' }}</h1>
-        <p>{{ isSpecialSingle ? '社长剪影与舞台对象按原脚本切换' : '共享歌曲时钟 · 独立动作轨道与口型' }}</p>
+        <p>{{ isSpecialSingle ? '社长剪影与舞台对象按原脚本切换' : '选择歌曲与编队，观看舞台演出' }}</p>
       </div>
       <button class="lab-link" type="button" @click="emit('open-lab')">单人实验室</button>
-      <div class="header-meta">{{ isSpecialSingle ? '社长剪影 · 单人演出' : `Spine 3.8 · ${loadedPositions.length}/${activePositions.length} 人就绪` }}</div>
+      <div class="header-meta">{{ isSpecialSingle ? '社长剪影 · 单人演出' : `${loadedPositions.length}/${activePositions.length} 人就绪` }}</div>
     </header>
 
     <main class="stage-workspace">
@@ -158,7 +158,7 @@
             <div class="section-heading">
               <div>
                 <h2>{{ isSpecialSingle ? '特别演出脚本' : '歌曲编排' }}</h2>
-                <span>{{ songs.length }} 份有效演出脚本</span>
+                <span>{{ songs.length }} 首可选演出</span>
               </div>
               <Music2 :size="18" />
             </div>
@@ -167,15 +167,6 @@
                 {{ songOptionLabel(song) }} · {{ song.songCode === 'drv999' ? '社长单人 2D' : `${song.positions.join('/')} 号位` }}
               </option>
             </select>
-            <div class="song-facts">
-              <span>{{ selectedSong?.events.length || 0 }} 条动作</span>
-              <span>{{ selectedSong?.singerEvents.length || 0 }} 次演唱切换</span>
-              <span>{{ selectedSong?.cameraEvents?.length || 0 }} 条镜头</span>
-              <span>{{ selectedSong?.backmonitorEvents?.length || 0 }} 条屏幕</span>
-              <span>{{ selectedSong?.imageLayerEvents?.length || 0 }} 条布景</span>
-              <span>{{ selectedSong?.lyricEvents?.length || 0 }} 条歌词</span>
-              <span>{{ selectedVocalSettingFact }}</span>
-            </div>
             <fieldset v-if="stageVocalAvailable" class="stage-vocal-controls">
               <legend>{{ stageVocalLegend }}</legend>
               <label class="camera-toggle">
@@ -195,23 +186,9 @@
                 </label>
                 <small>{{ stageVocalReady ? stageVocalReadyLabel : stageVocalLoadingLabel }}</small>
               </template>
-              <small v-if="isSoloChoreography">
-                RAW 三个 Solo 候选均为中心一人演出；solo 与 solo_single 脚本相同，solo_multi 仅确认存在舞台效果差异，名称不作为声轨机制结论。
-              </small>
               <small>均衡归一化与居中声像是浏览器近似，不代表游戏官方混音参数。</small>
               <small v-if="handoffLineup">已接入歌曲页编成；空位不出场，舞台从 00:00 暂停开始。刷新后使用舞台默认编队。</small>
             </fieldset>
-            <div v-if="stageVfxCoverage" class="vfx-coverage">
-              <h3>效果覆盖 · 来源统计</h3>
-              <p>镜头 {{ stageVfxCoverage.sourceEvents.camera }} 条；屏幕 {{ stageVfxCoverage.sourceEvents.backmonitor }} 条、图片布景 {{ stageVfxCoverage.sourceEvents.imageLayer }} 条已登记。</p>
-              <p>人物染色、聚光与激光共 {{ stageVfxApproximateCount }} 条，当前采用浏览器近似绘制，尚未对原片逐帧核对。</p>
-              <p>静态对象素材 {{ stageVfxCoverage.objectSprites.length }} 种已接线；粒子对象 {{ stageVfxCoverage.objectParticles.length }} 种未复刻。</p>
-              <p v-if="stageVfxCoverage.objectMissing.length || stageVfxCoverage.objectOther.length || stageVfxCoverage.missingMedia.length" class="vfx-coverage-gap">另有 {{ stageVfxCoverage.objectMissing.length + stageVfxCoverage.objectOther.length + stageVfxCoverage.missingMedia.length }} 种对象或媒体缺少本地可用实现。</p>
-              <details v-if="stageVfxCoverage.objectParticles.length || stageVfxCoverage.objectMissing.length || stageVfxCoverage.objectOther.length">
-                <summary>查看未支持的对象素材</summary>
-                <code>{{ [...stageVfxCoverage.objectParticles, ...stageVfxCoverage.objectMissing, ...stageVfxCoverage.objectOther].join('、') }}</code>
-              </details>
-            </div>
           </section>
 
           <section v-if="!isSpecialSingle" class="control-section lineup-section">
@@ -266,7 +243,33 @@
             </button>
           </section>
 
+          <details class="advanced-controls">
+            <summary>高级控制与演出信息</summary>
           <section class="control-section playback-section">
+            <div class="song-facts">
+              <span>{{ selectedSong?.events.length || 0 }} 条动作</span>
+              <span>{{ selectedSong?.singerEvents.length || 0 }} 次演唱切换</span>
+              <span>{{ selectedSong?.cameraEvents?.length || 0 }} 条镜头</span>
+              <span>{{ selectedSong?.backmonitorEvents?.length || 0 }} 条屏幕</span>
+              <span>{{ selectedSong?.imageLayerEvents?.length || 0 }} 条布景</span>
+              <span>{{ selectedSong?.lyricEvents?.length || 0 }} 条歌词</span>
+              <span>{{ selectedVocalSettingFact }}</span>
+            </div>
+              <small v-if="isSoloChoreography">
+                RAW 三个 Solo 候选均为中心一人演出；solo 与 solo_single 脚本相同，solo_multi 仅确认存在舞台效果差异，名称不作为声轨机制结论。
+              </small>
+            <div v-if="stageVfxCoverage" class="vfx-coverage">
+              <h3>效果覆盖 · 来源统计</h3>
+              <p>镜头 {{ stageVfxCoverage.sourceEvents.camera }} 条；屏幕 {{ stageVfxCoverage.sourceEvents.backmonitor }} 条、图片布景 {{ stageVfxCoverage.sourceEvents.imageLayer }} 条已登记。</p>
+              <p>人物染色、聚光与激光共 {{ stageVfxApproximateCount }} 条，当前采用浏览器近似绘制，尚未对原片逐帧核对。</p>
+              <p>静态对象素材 {{ stageVfxCoverage.objectSprites.length }} 种已接线；粒子对象 {{ stageVfxCoverage.objectParticles.length }} 种未复刻。</p>
+              <p v-if="stageVfxCoverage.objectMissing.length || stageVfxCoverage.objectOther.length || stageVfxCoverage.missingMedia.length" class="vfx-coverage-gap">另有 {{ stageVfxCoverage.objectMissing.length + stageVfxCoverage.objectOther.length + stageVfxCoverage.missingMedia.length }} 种对象或媒体缺少本地可用实现。</p>
+              <details v-if="stageVfxCoverage.objectParticles.length || stageVfxCoverage.objectMissing.length || stageVfxCoverage.objectOther.length">
+                <summary>查看未支持的对象素材</summary>
+                <code>{{ [...stageVfxCoverage.objectParticles, ...stageVfxCoverage.objectMissing, ...stageVfxCoverage.objectOther].join('、') }}</code>
+              </details>
+            </div>
+
             <div class="section-heading">
               <div>
                 <h2>播放参数</h2>
@@ -361,8 +364,9 @@
               <div><dt>静态舞台</dt><dd>{{ stageBackgroundReady ? '已载入' : '无/等待' }}</dd></div>
               <div><dt>当前歌词</dt><dd>{{ currentLyric?.text || '—' }}</dd></div>
             </dl>
-            <small v-if="audioError" class="audio-error">{{ audioError }}</small>
           </section>
+          </details>
+          <p v-if="audioError" class="audio-error" role="alert">{{ audioError }}</p>
         </div>
       </aside>
     </main>
@@ -2877,6 +2881,8 @@ function formatTime(milliseconds) {
 </script>
 
 <style scoped>
+.advanced-controls > summary { min-height: 44px; padding: 14px 18px; box-sizing: border-box; cursor: pointer; font-weight: 600; }
+.advanced-controls > summary:focus-visible { outline: 2px solid #168f87; outline-offset: -2px; }
 .chibi-stage {
   --ink: #07111f;
   --panel: #102238;

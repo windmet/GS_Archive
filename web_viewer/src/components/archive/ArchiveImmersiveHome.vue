@@ -173,7 +173,7 @@
       <p>{{ activeCue.text }}</p>
       <div class="dialogue-meta">
         <span>{{ activeCue.rarity }} · {{ activeCue.cardTitle }}</span>
-        <code>{{ activeCue.cue }}</code>
+
       </div>
       <div class="dialogue-actions">
         <button type="button" :aria-label="playing ? '停止语音' : '播放语音'" :title="playing ? '停止语音' : '播放语音'" @click="toggleVoice">
