@@ -57,3 +57,10 @@
 - PASS：verify:story-stage-resize（含六种尺寸不变量）、verify:home、verify:story-player-ui-pr1、verify:story-spine-cues、build:check、diff check。
 - Browser：冬马卡片预览 1280×720 / 390×732 / 681×403，真实章节 STEP16，牙崎漣首页 1024×768 / 844×390；截图显示上半身构图，横竖屏切换保留人物，短横屏台词控件在可见区域。无新应用错误；已有 Pixi deprecation warning 保留。
 - 边界：比例根据用户实机截图校准，非原游戏参数的逆向证明；未声称所有角色/服装、真机安全区或完整镜头矩阵均完成验收。
+
+## 批次 6：语音与口型 HTTP 缓存
+
+- 删除语音每次命中的 HEAD 和 GET 时间戳；采用稳定 URL + 默认 HTTP 缓存，由浏览器进行过期校验，避免跨源自定义验证头。口型 JSON 同样取消时间戳。
+- 内存仅复用显式 max-age 且仍新鲜的音频响应，扣除 Age/Date，最多保留新鲜度 5 分钟；no-store/no-cache/未声明 freshness 不直接复用。16MiB/128 条 LRU、独立 ArrayBuffer、共享请求的按消费者取消保留。
+- PASS：verify:story-audio（含 freshness、失效、no-store/no-cache、稳定 GET、容量和取消回归）、build:check、diff check。
+- 边界：没有改动 CDN Cache-Control 或上传资源；实际命中率由服务端响应与浏览器缓存共同决定。

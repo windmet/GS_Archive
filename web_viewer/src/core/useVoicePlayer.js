@@ -133,7 +133,7 @@ export function useVoicePlayer({
       if (signal?.aborted) return null
       try {
         const lipUrl = getLipSyncUrl(candidate)
-        const res = await fetch(`${lipUrl}?_=${Date.now()}`, { signal })
+        const res = await fetch(lipUrl, { signal, cache: 'default' })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const contentType = res.headers.get('content-type') || ''
         if (contentType.includes('text/html')) throw new Error('lip JSON returned HTML')

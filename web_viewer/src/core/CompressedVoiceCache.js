@@ -1,6 +1,5 @@
-/** Revalidated, bounded compressed bytes shared by story-player instances.
- * The source keeps its existing cache-busted GET until versioned URLs exist.
- * Only an audio response with an ETag may be reused after a matching HEAD.
+/** Bounded compressed bytes. Stable URLs let the browser honor HTTP validators.
+ * Memory reuse is limited to explicitly fresh, cacheable audio responses.
  */
 export function createCompressedVoiceCache({
   fetchImpl = (...args) => globalThis.fetch(...args),
@@ -20,10 +19,18 @@ export function createCompressedVoiceCache({
     entries.delete(url)
   }
 
-  function remember(url, etag, bytes) {
+  function remember(url, response, bytes) {
     forget(url)
-    if (!etag || bytes.byteLength > maxBytes || maxEntries < 1) return
-    entries.set(url, { etag, bytes })
+    const control = response.headers?.get?.('cache-control') || ''
+    if (/(?:^|,)\s*(?:no-store|no-cache)\b/i.test(control)) return
+    const maxAge = /(?:^|,)\s*max-age\s*=\s*"?(\d+)/i.exec(control)
+    if (!maxAge || bytes.byteLength > maxBytes || maxEntries < 1) return
+    const age = Math.max(0, Number(response.headers?.get?.('age')) || 0)
+    const date = Date.parse(response.headers?.get?.('date') || '')
+    const apparentAge = Number.isFinite(date) ? Math.max(0, (now() - date) / 1000) : 0
+    const remaining = Math.min(300, Number(maxAge[1]) - Math.max(age, apparentAge))
+    if (!(remaining > 0)) return
+    entries.set(url, { bytes, freshUntil: now() + remaining * 1000 })
     retainedBytes += bytes.byteLength
     while (retainedBytes > maxBytes || entries.size > maxEntries) {
       forget(entries.keys().next().value)
@@ -32,25 +39,15 @@ export function createCompressedVoiceCache({
 
   async function load(url, signal) {
     const cached = entries.get(url)
-    if (cached) {
-      try {
-        const head = await fetchImpl(url, { method: 'HEAD', cache: 'no-store', signal })
-        signal.throwIfAborted()
-        if (head.ok && head.headers?.get?.('etag') === cached.etag
-          && /^audio\//i.test(head.headers?.get?.('content-type') || '')) {
-          entries.delete(url)
-          entries.set(url, cached)
-          return cached.bytes
-        }
-      } catch (error) {
-        signal.throwIfAborted()
-        // A failed validator cannot authorize reuse. Fetch fresh bytes below.
-      }
-      forget(url)
+    if (cached && now() < cached.freshUntil) {
+      entries.delete(url)
+      entries.set(url, cached)
+      return cached.bytes
     }
-
-    const separator = url.includes('?') ? '&' : '?'
-    const response = await fetchImpl(`${url}${separator}_=${now()}`, { signal })
+    forget(url)
+    // The browser performs conditional GET when stale and uses fresh HTTP cache
+    // entries directly. No HEAD round trip, timestamp URL or custom CORS header.
+    const response = await fetchImpl(url, { signal, cache: 'default' })
     signal.throwIfAborted()
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
     const contentType = response.headers?.get?.('content-type') || ''
@@ -59,7 +56,7 @@ export function createCompressedVoiceCache({
     if (bytes.byteLength < 1000 || /(?:text\/html|application\/xhtml\+xml)/i.test(contentType)) {
       throw new Error(`Not an audio file: ${contentType} (${bytes.byteLength} bytes)`)
     }
-    if (/^audio\//i.test(contentType)) remember(url, response.headers?.get?.('etag'), bytes)
+    if (/^audio\//i.test(contentType)) remember(url, response, bytes)
     return bytes
   }
 
