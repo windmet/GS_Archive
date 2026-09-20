@@ -31,3 +31,9 @@ Browser evidence completed: `episodes/1_3_10017_01_j.json` call → stage return
 Final direction supersedes the earlier artwork/card screenshots: retain the original phone composition, with modest readability adjustments. All 52 local mobile backgrounds were checked as 688×1000; the complete source background remains installed on the device.
 
 Final visual acceptance after restoring the original phone design: 1280×800 desktop and 390×667 mobile, Ren `040ren_303_2_3_040_03_09_a.json` steps 3→4→5 (long line → choice → reply). Full original background and centred portrait remain; no horizontal overflow; the mobile text panel measured clientHeight=scrollHeight=273, including the selected reply. Direct entry had zero Canvas nodes. The final build:check passed in 11.95 s. Earlier horizontal-card screenshots are superseded.
+
+## User-directed visual rollback (supersedes the final visual acceptance above)
+
+The user rejected stretched artwork and requested rollback. Call profile sizing, device ratio and dialogue layout are restored to the pre-redesign `5b5f2e4` versions. The necessary correction is `background-size: 100% auto`, positioned top/centre without repetition, so the 688×1000 source always scales uniformly. Narrow screens retain the phone's dark rounded frame. Communication rendering separation, Reader media rows and the choice-rail overlap fix are retained. This is a scoped forward commit, not a branch reset.
+
+Verification: build:check passed (12.16 s); IAB 390×667 and 1280×800, Ren phone steps 2→3, original composition, equal-axis background scale and phone frame checked. No claim that the restored layout eliminates scrolling on every long message.

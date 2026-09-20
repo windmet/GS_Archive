@@ -47,7 +47,7 @@ defineProps({
 
 /* Call variant sizing (handoff §5.7) */
 .variant-call {
-  aspect-ratio: 0.8;
+  aspect-ratio: 0.72;
 }
 
 @media (min-width: 700px) and (max-width: 1099px) {
@@ -58,7 +58,7 @@ defineProps({
     transform: translate(0, 0) rotate(-1.5deg);
   }
   .variant-call {
-    aspect-ratio: 0.8;
+    aspect-ratio: 0.72;
   }
 }
 
@@ -78,6 +78,15 @@ defineProps({
 @media (max-height: 760px) and (min-width: 700px) {
   .mobile-device-frame {
     max-height: 100%;
+  }
+}
+/* Retain the original phone frame on narrow screens as well. */
+@media (max-width: 699px) {
+  .mobile-device-frame.variant-call {
+    box-sizing: border-box;
+    width: calc(100% - 24px);
+    border: 4px solid #222;
+    border-radius: 28px;
   }
 }
 </style>

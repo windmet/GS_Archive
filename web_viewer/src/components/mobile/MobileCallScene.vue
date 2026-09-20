@@ -5,7 +5,7 @@
         <div class="call-profile-layer">
           <MobileCallProfile :chara-id="charaId" :name="speakerName" :theme="theme" />
         </div>
-        <div ref="contentPanel" class="call-content-panel">
+        <div class="call-content-panel">
           <div v-if="dialogueText" class="dialogue-card">
             <LocalizedTextBlock class="dialogue-text" :display="display" />
           </div>
@@ -27,7 +27,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, nextTick } from 'vue'
+import { computed } from 'vue'
 import MobileSceneLayout from './MobileSceneLayout.vue'
 import MobileDeviceFrame from './MobileDeviceFrame.vue'
 import MobileCallProfile from './MobileCallProfile.vue'
@@ -73,11 +73,6 @@ const currentChoices = computed(() => props.step?.options || [])
 const display = computed(() => localization?.resolveDialogue(props.dialogue) ?? resolveText(props.dialogue))
 const speakerName = computed(() => display.value.speaker || IDOL_ID_TO_NAME[charaId.value] || '')
 const dialogueText = computed(() => display.value.text || '')
-const contentPanel = ref(null)
-watch([() => props.stepIndex, display], async () => {
-  await nextTick()
-  if (contentPanel.value) contentPanel.value.scrollTop = 0
-})
 
 const latestChoiceSelection = computed(() => {
   const path = [...(props.historyStack || [])].reverse()
@@ -109,8 +104,10 @@ const bgUrl = computed(() => (charaId.value ? getMobileBgUrl(charaId.value) : nu
 
 const callSurfaceStyle = computed(() => bgUrl.value ? {
   backgroundImage: `url(${bgUrl.value})`,
-  backgroundSize: '100% 100%',
-  backgroundPosition: 'center',
+  backgroundSize: '100% auto',
+  backgroundPosition: 'center top',
+  backgroundRepeat: 'no-repeat',
+  backgroundColor: '#c4babd',
 } : null)
 
 const replyLabel = 'プロデューサー：'
@@ -144,25 +141,24 @@ const replyLabel = 'プロデューサー：'
   align-items: center;
   justify-content: flex-start;
   gap: 14px;
-  padding: 14px 18px calc(18px + env(safe-area-inset-bottom));
+  padding: 12% 7% calc(24px + env(safe-area-inset-bottom));
   overflow-y: auto;
 }
 
 .dialogue-card {
-  box-sizing: border-box;
-  width: 100%;
+  width: 88%;
   max-width: 620px;
   background: rgba(255, 255, 255, 0.96);
   color: #18242b;
   border-radius: 20px;
-  padding: 18px 20px;
+  padding: 22px 26px;
   box-shadow: 0 12px 30px rgba(30, 24, 28, 0.16);
   flex-shrink: 0;
 }
 
 .dialogue-text {
   width: 100%;
-  font-size: 17px;
+  font-size: 0.95rem;
   --localized-primary-line-height: 1.7;
   --localized-secondary-color: #56616c;
   --localized-secondary-size: 0.84em;
@@ -202,10 +198,10 @@ const replyLabel = 'プロデューサー：'
   }
   .call-content-panel {
     inset: 48% 0 0;
-    padding: 12px 14px 18px;
+    padding: 12% 12px 18px;
   }
   .dialogue-card {
-    width: 100%;
+    width: calc(100% - 24px);
     border-radius: 14px;
     padding: 15px 14px;
   }
@@ -213,7 +209,7 @@ const replyLabel = 'プロデューサー：'
 
 @media (max-height: 760px) and (min-width: 700px) {
   .call-content-panel {
-    padding-top: 12px;
+    padding-top: 9%;
   }
 }
 </style>
