@@ -72,13 +72,6 @@
               <ChevronRight :size="18" />
             </button>
           </div>
-          <dl class="asset-status-grid">
-            <div v-for="item in assetRows" :key="item.label" :class="{ missing: !item.available }">
-              <component :is="item.available ? CheckCircle2 : CircleSlash" :size="15" />
-              <dt>{{ item.label }}</dt>
-              <dd>{{ item.available ? '已收录' : '未收录' }}</dd>
-            </div>
-          </dl>
         </div>
       </section>
 
@@ -211,7 +204,7 @@
           <div class="card-text-heading">
             <strong>普通</strong>
             <div v-if="card.card_text_voices?.normal" class="card-text-voice">
-              <audio controls preload="none" :src="voiceUrl(card.card_text_voices.normal)"></audio>
+              <ArchiveVoiceRow :src="voiceUrl(card.card_text_voices.normal)" />
               <button v-if="cardVoicePreviewStep(card, card.card_text_voices.normal)" class="voice-preview-btn" @click="emit('preview-voice', card.card_text_voices.normal)">演出预览</button>
             </div>
           </div>
@@ -221,7 +214,7 @@
           <div class="card-text-heading">
             <strong>{{ card.single_state ? '卡面台词' : '特训后' }}</strong>
             <div v-if="card.card_text_voices?.awakened" class="card-text-voice">
-              <audio controls preload="none" :src="voiceUrl(card.card_text_voices.awakened)"></audio>
+              <ArchiveVoiceRow :src="voiceUrl(card.card_text_voices.awakened)" />
               <button v-if="cardVoicePreviewStep(card, card.card_text_voices.awakened)" class="voice-preview-btn" @click="emit('preview-voice', card.card_text_voices.awakened)">演出预览</button>
             </div>
           </div>
@@ -241,7 +234,7 @@
               <strong>触摸语音 {{ index + 1 }}</strong>
               <p v-if="cue.preview?.text">{{ cue.preview.text }}</p>
             </div>
-            <audio controls preload="none" :src="voiceUrl(cue.cue)"></audio>
+            <ArchiveVoiceRow :src="voiceUrl(cue.cue)" />
             <button v-if="cardVoicePreviewStep(card, cue)" class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
           </div>
         </div>
@@ -258,7 +251,7 @@
               </div>
               <p v-if="cue.text?.trim() && cue.text.trim() !== '0'">{{ cue.text }}</p>
             </div>
-            <audio controls preload="none" :src="voiceUrl(cue.cue)"></audio>
+            <ArchiveVoiceRow :src="voiceUrl(cue.cue)" />
             <button v-if="cardVoicePreviewStep(card, cue)" class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
           </div>
         </div>
@@ -281,12 +274,19 @@
       </section>
 
       <ArchiveTechnicalDetails :key="card.resource_id" :evidence="{ card, assetStatus, rawCandidateActive, eventRelation, gashaRelation }">
+          <dl class="asset-status-grid">
+            <div v-for="item in assetRows" :key="item.label" :class="{ missing: !item.available }">
+              <component :is="item.available ? CheckCircle2 : CircleSlash" :size="15" />
+              <dt>{{ item.label }}</dt>
+              <dd>{{ item.available ? '已收录' : '未收录' }}</dd>
+            </div>
+          </dl>
         <section v-if="card.voice_candidates?.unmapped_card_only?.length" class="card-detail-section">
           <h4>未归类卡面语音候选</h4>
           <div class="voice-list">
             <div v-for="cue in card.voice_candidates.unmapped_card_only" :key="cue" class="voice-row">
               <span>{{ cue }}</span>
-              <audio controls preload="none" :src="voiceUrl(cue)"></audio>
+              <ArchiveVoiceRow :src="voiceUrl(cue)" />
               <button v-if="cardVoicePreviewStep(card, cue)" class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
             </div>
           </div>
@@ -303,6 +303,7 @@
 </template>
 
 <script setup>
+import ArchiveVoiceRow from './ArchiveVoiceRow.vue'
 import { computed, ref, watch } from 'vue'
 import { Activity, CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, HeartPulse, ImageOff, PackageOpen, Shirt } from '@lucide/vue'
 import ArchiveImageLightbox from './ArchiveImageLightbox.vue'

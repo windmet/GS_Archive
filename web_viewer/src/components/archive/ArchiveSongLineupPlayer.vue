@@ -52,23 +52,7 @@
       <strong v-else>无人 / 当前槽为空</strong>
     </div>
 
-    <div class="lineup-transport">
-      <button type="button" class="lineup-play" :disabled="!session.ready.value" @click="togglePlayback">
-        {{ session.playing.value ? '暂停' : '播放' }}
-      </button>
-      <button type="button" class="lineup-reset" :disabled="!session.ready.value" @click="session.reset">归零</button>
-      <input
-        type="range"
-        min="0"
-        :max="session.duration.value || 0"
-        step="0.01"
-        :value="session.currentTime.value"
-        aria-label="五槽播放进度"
-        :disabled="!session.ready.value"
-        @input="session.seek(Number($event.target.value))"
-      />
-      <span>{{ formatTime(session.currentTime.value) }} / {{ formatTime(session.duration.value) }}</span>
-    </div>
+    <ArchiveMediaTransport :ready="session.ready.value" :playing="session.playing.value" :duration="session.duration.value" :current-time="session.currentTime.value" @toggle="togglePlayback" @restart="session.reset" @seek="session.seek" />
 
     <div class="lineup-gains">
       <label>
@@ -99,6 +83,7 @@
 </template>
 
 <script setup>
+import ArchiveMediaTransport from './ArchiveMediaTransport.vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useSongPerformanceSession } from '../../composables/useSongPerformanceSession.js'
 import ArchiveSongLyrics from './ArchiveSongLyrics.vue'
@@ -239,10 +224,6 @@ function openStageWithLineup() {
   })
 }
 
-function formatTime(value) {
-  const seconds = Math.max(0, Math.floor(Number(value) || 0))
-  return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
-}
 
 watch(() => props.audioExperiment, loadArrangements)
 onMounted(loadArrangements)

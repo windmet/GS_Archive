@@ -1,11 +1,11 @@
 <template>
   <section v-if="audioExperiment" class="song-block experimental-player" aria-labelledby="song-experimental-player-title">
     <div class="song-block-heading">
-      <span>EXPERIMENTAL PLAYER</span>
+      <span>SONG PLAYER</span>
       <h3 id="song-experimental-player-title">演唱试听（实验）</h3>
     </div>
     <p class="song-block-note">
-      选择组合、中心偶像或自由编成试听。分轨混音为浏览器近似，尚未完成听感校准。
+      选择组合、中心偶像或自由编成试听。分轨试听与原游戏混音可能不同。
     </p>
 
     <div class="experimental-controls">
@@ -13,14 +13,14 @@
         演唱指定
         <select v-model="mode" data-vocal-setting-selector>
           <option v-if="hasVocalSetting('formation')" value="lineup">编成偶像（五槽合唱）</option>
-          <option v-if="hasVocalSetting('unit')" value="unit">Unit（组合单轨）</option>
-          <option v-if="hasVocalSetting('all_stars')" value="all_stars">315 ALL STARS（完整混音候选）</option>
-          <option v-if="hasVocalSetting('center')" value="solo">Center（中心偶像＋伴奏）</option>
+          <option v-if="hasVocalSetting('unit')" value="unit">组合（单轨）</option>
+          <option v-if="hasVocalSetting('all_stars')" value="all_stars">315 ALL STARS（完整混音试听）</option>
+          <option v-if="hasVocalSetting('center')" value="solo">中心偶像＋伴奏</option>
           <option v-if="auditedOptions.length" value="single">其他收录音轨</option>
         </select>
       </label>
       <label v-if="mode === 'unit'">
-        Unit
+        组合
         <select v-model="selectedUnitKey">
           <option v-for="option in unitOptions" :key="option.key" :value="option.key">
             {{ option.label }}
@@ -36,7 +36,7 @@
         </select>
       </label>
       <label v-else-if="mode === 'solo'">
-        Center 偶像
+        中心偶像
         <select v-model="selectedIdolCode">
           <option v-for="entry in soloEntries" :key="entry.idol_code" :value="entry.idol_code">
             {{ entry.displayName }}
@@ -71,24 +71,7 @@
         @error="onAudioError"
       />
 
-      <div class="experimental-transport">
-        <button type="button" class="experimental-play" :disabled="!transportReady" @click="togglePlayback">
-          {{ transportPlaying ? '暂停' : '播放' }}
-        </button>
-        <button type="button" class="experimental-reset" :disabled="!transportReady" @click="resetPlayback">归零</button>
-        <input
-          class="experimental-seek"
-          type="range"
-          min="0"
-          :max="transportDuration || 0"
-          step="0.01"
-          :value="transportCurrentTime"
-          aria-label="播放进度"
-          :disabled="!transportReady"
-          @input="seekPlayback"
-        />
-        <span class="experimental-time">{{ formatTime(transportCurrentTime) }} / {{ formatTime(transportDuration) }}</span>
-      </div>
+      <ArchiveMediaTransport :ready="transportReady" :playing="transportPlaying" :duration="transportDuration" :current-time="transportCurrentTime" @toggle="togglePlayback" @restart="resetPlayback" @seek="seekPlayback({ target: { value: $event } })" />
 
       <div v-if="mode === 'solo'" class="experimental-mix-controls">
         <label>
@@ -116,6 +99,7 @@
 </template>
 
 <script setup>
+import ArchiveMediaTransport from './ArchiveMediaTransport.vue'
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useSongPerformanceSession } from '../../composables/useSongPerformanceSession.js'
 import ArchiveSongLyrics from './ArchiveSongLyrics.vue'
@@ -262,10 +246,6 @@ function onAudioError() {
   audioError.value = '实验音频资源不可用；请先运行实验音频准备脚本。'
 }
 
-function formatTime(value) {
-  const seconds = Math.max(0, Math.floor(Number(value) || 0))
-  return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
-}
 
 async function reloadSources() {
   resetPlayback()
