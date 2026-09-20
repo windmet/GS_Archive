@@ -16,38 +16,32 @@ for (const card of index.cards) {
     assert.ok(resolved, `${card.resource_id}: missing ${id}`)
     const before = JSON.stringify(cue)
     const result = buildCardVoicePreviewScenario(card, cue, id => `speaker:${id}`)
-    assert.equal(result.total_steps, 1)
-    assert.equal(result.steps.length, 1)
-    assert.equal(result.steps[0].step_id, 1)
-    assert.equal(result.scenario_id, `card_voice_preview_${card.resource_id}_${id}`)
-    if (cue?.preview?.preview_step) {
+    const home = card.home_voice_cues?.find(item => item.cue === id)
+    if (home?.preview?.preview_step) {
       sourceSteps++
-      assert.deepEqual(result.steps[0], { ...cue.preview.preview_step, step_id: 1 })
-      assert.equal(result.source_scenario_id, cue.preview.scenario_id)
-      assert.equal(result.source_compiled_file, cue.preview.compiled_file)
-      assert.notEqual(result.steps[0], cue.preview.preview_step)
+      assert.ok(result, `${id}: source-backed home preview must remain available`)
+      assert.equal(result.total_steps, 1)
+      assert.deepEqual(result.steps[0], { ...home.preview.preview_step, step_id: 1 })
+      assert.equal(result.source_scenario_id, home.preview.scenario_id)
+      assert.equal(result.source_compiled_file, home.preview.compiled_file)
+      assert.notEqual(result.steps[0], home.preview.preview_step)
       if (result.steps[0].state) result.steps[0].state.bg = 'mutation-isolation-check'
     } else {
       fallbackSteps++
-      const character = card.character_id || card.resource_id?.slice(0, 6) || ''
-      assert.equal(result.steps[0].dialogue.speaker, `speaker:${character}`)
-      assert.equal(result.steps[0].dialogue.voice, `${id}.m4a`)
-      assert.equal(result.steps[0].dialogue.lip.path,
-        `adxlip/${character}/${card.voice_base || id.split('_').slice(0, 5).join('_')}/${id}.json`)
-      assert.equal(result.steps[0].state.spines[0].id, character)
+      assert.equal(result, null, `${id}: audio-only evidence must not fabricate ADV/model/lip`)
     }
     assert.equal(JSON.stringify(cue), before, 'adapter mutated source evidence')
   }
   assert.equal(findCardVoiceCue(card, 'not-a-card-cue', operational), undefined)
 }
 assert.ok(sourceSteps > 0 && fallbackSteps > 0)
-// Speaker ownership follows the supplied card, regardless of another selected card.
-const cardA = { resource_id: '001tom_card', character_id: '001tom' }
-const cardB = { resource_id: '002kao_card', character_id: '002kao' }
-const names = id => `display:${id}`
-assert.equal(buildCardVoicePreviewScenario(cardB, 'cue', names).steps[0].dialogue.speaker, 'display:002kao')
-assert.equal(buildCardVoicePreviewScenario(cardA, 'cue', names).steps[0].dialogue.speaker, 'display:001tom')
+// Neither arbitrary cues nor a forged operational preview can create a scene.
+const operationalPreview = { cue: 'cue', preview: { preview_step: { dialogue: { text: 'forged', voice: 'cue.m4a' } } } }
+assert.equal(buildCardVoicePreviewScenario({ resource_id: '001tom_card' }, operationalPreview), null)
+assert.equal(buildCardVoicePreviewScenario({ resource_id: '001tom_card' }, 'cue'), null)
+const mismatched = { home_voice_cues: [{ cue: 'cue', preview: { preview_step: { dialogue: { text: 'line', voice: 'other.m4a' } } } }] }
+assert.equal(buildCardVoicePreviewScenario(mismatched, 'cue'), null)
 // Prefer home evidence over operational/text/unmapped candidates with the same ID.
 const home = { cue: 'same', text: 'home' }, operational = { cue: 'same', text: 'operational' }
 assert.equal(findCardVoiceCue({ home_voice_cues: [home] }, 'same', [operational]), home)
-console.log(`Card voice preview: ${index.cards.length} cards, ${sourceSteps} source steps, ${fallbackSteps} fallbacks; ownership and source isolation passed`)
+console.log(`Card voice preview: ${index.cards.length} cards, ${sourceSteps} source steps, ${fallbackSteps} audio-only cues; ownership and source isolation passed`)

@@ -192,6 +192,9 @@ function setup() {
   assert.equal(t.state.view.value, 'home')
   assert.equal(t.context.loading.value, false)
 }
+const previewCard = (id, cue) => ({ resource_id: `${id}_card`, character_id: id,
+  home_voice_cues: [{ cue, preview: { preview_step: { type: 'adv', dialogue: { speaker: `speaker:${id}`, text: 'Source line', voice: `${cue}.m4a` } } } }] })
+
 // Current failures remain visible; disposal prevents late publication and new jobs.
 {
   const t = setup()
@@ -210,12 +213,12 @@ function setup() {
 {
   const t = setup(), module = deferred()
   t.context.storyViewerLoader = () => module.promise
-  const old = t.openVoicePreview({ resource_id: '001tom_card', character_id: '001tom' }, 'old', 'cards')
+  const old = t.openVoicePreview(previewCard('001tom', 'old'), 'old', 'cards')
   t.commit('home'); module.resolve(); await old
   assert.equal(t.context.currentScenario.value, null)
   t.state.currentCharacterId.value = '001tom'
   t.context.episodeQueue.start([{ file: 'old-a.json' }, { file: 'old-b.json' }], 0)
-  await t.openVoicePreview({ resource_id: '002kao_card', character_id: '002kao' }, 'current', 'card_detail')
+  await t.openVoicePreview(previewCard('002kao', 'current'), 'current', 'card_detail')
   assert.equal(t.state.view.value, 'player')
   assert.equal(t.context.currentScenario.value.steps[0].dialogue.speaker, 'speaker:002kao')
   assert.equal(t.state.currentPreviewCue.value, 'current')

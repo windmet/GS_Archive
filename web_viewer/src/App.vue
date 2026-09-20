@@ -1632,8 +1632,10 @@ async function restoreVoicePreview(route, intent) {
   const cue = findCardVoiceCue(card, route.voice,
     mergeCardDetail(card, cardDetailData.value)?.operational_voice_cues || [])
   if (!cue) return false
+  const scenario = buildCardVoicePreviewScenario(card, cue)
+  if (!scenario) return false
   loadingPurpose.value = 'story-playback'
-  return playbackController.preview(() => buildCardVoicePreviewScenario(card, cue, idolDisplayName),
+  return playbackController.preview(() => scenario,
     route.voice, route.returnView || 'card_detail', { intent, syncRoute: false })
 }
 
@@ -3110,8 +3112,10 @@ function openEventUnit(unit) {
 }
 
 async function openVoicePreview(card, cue, returnView) {
+  const scenario = buildCardVoicePreviewScenario(card, cue)
+  if (!scenario) return false
   loadingPurpose.value = 'story-playback'
-  return playbackController.preview(() => buildCardVoicePreviewScenario(card, cue, idolDisplayName),
+  return playbackController.preview(() => scenario,
     typeof cue === 'string' ? cue : cue.cue, returnView)
 }
 

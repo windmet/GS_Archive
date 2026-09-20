@@ -212,7 +212,7 @@
             <strong>普通</strong>
             <div v-if="card.card_text_voices?.normal" class="card-text-voice">
               <audio controls preload="none" :src="voiceUrl(card.card_text_voices.normal)"></audio>
-              <button class="voice-preview-btn" @click="emit('preview-voice', card.card_text_voices.normal)">演出预览</button>
+              <button v-if="cardVoicePreviewStep(card, card.card_text_voices.normal)" class="voice-preview-btn" @click="emit('preview-voice', card.card_text_voices.normal)">演出预览</button>
             </div>
           </div>
           <p>{{ card.texts.normal }}</p>
@@ -222,7 +222,7 @@
             <strong>{{ card.single_state ? '卡面台词' : '特训后' }}</strong>
             <div v-if="card.card_text_voices?.awakened" class="card-text-voice">
               <audio controls preload="none" :src="voiceUrl(card.card_text_voices.awakened)"></audio>
-              <button class="voice-preview-btn" @click="emit('preview-voice', card.card_text_voices.awakened)">演出预览</button>
+              <button v-if="cardVoicePreviewStep(card, card.card_text_voices.awakened)" class="voice-preview-btn" @click="emit('preview-voice', card.card_text_voices.awakened)">演出预览</button>
             </div>
           </div>
           <p>{{ card.texts.awakened }}</p>
@@ -242,7 +242,7 @@
               <p v-if="cue.preview?.text">{{ cue.preview.text }}</p>
             </div>
             <audio controls preload="none" :src="voiceUrl(cue.cue)"></audio>
-            <button class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
+            <button v-if="cardVoicePreviewStep(card, cue)" class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
           </div>
         </div>
       </section>
@@ -259,7 +259,7 @@
               <p v-if="cue.text?.trim() && cue.text.trim() !== '0'">{{ cue.text }}</p>
             </div>
             <audio controls preload="none" :src="voiceUrl(cue.cue)"></audio>
-            <button class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
+            <button v-if="cardVoicePreviewStep(card, cue)" class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
           </div>
         </div>
       </section>
@@ -287,7 +287,7 @@
             <div v-for="cue in card.voice_candidates.unmapped_card_only" :key="cue" class="voice-row">
               <span>{{ cue }}</span>
               <audio controls preload="none" :src="voiceUrl(cue)"></audio>
-              <button class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
+              <button v-if="cardVoicePreviewStep(card, cue)" class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
             </div>
           </div>
         </section>
@@ -312,6 +312,7 @@ import { presentCardSkillDescription } from '../../presentation/CardSkillDescrip
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { cardScenarioTitle } from '../../presentation/CardPresentation.js'
 import ArchiveRelationList from './ArchiveRelationList.vue'
+import { cardVoicePreviewStep } from '../../data/cardVoicePreview.js'
 import { getVoiceUrl } from '../../utils/AssetResolver.js'
 import {
   getCardIconUrl,
