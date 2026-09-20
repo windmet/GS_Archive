@@ -7,7 +7,7 @@
           <span class="welcome-brand">SideM Archive</span>
         </div>
         <h1 id="welcome-title" ref="heading" tabindex="-1">
-          {{ selectionOnly ? `选择要打开${targetLabel}的偶像` : '欢迎来到资料馆' }}
+          {{ selectionOnly ? '选择偶像' : '欢迎来到资料馆' }}
         </h1>
         <p>{{ selectionOnly ? '这个选择只用于本次导航，不会自动改写“我的偶像”。' : '选择你希望每次打开资料馆时先看到的入口。之后可以随时更改。' }}</p>
       </header>
@@ -28,7 +28,7 @@
       </div>
 
       <div v-else class="idol-step">
-        <div class="idol-step-heading">
+        <div v-if="!selectionOnly || !dataReady" class="idol-step-heading">
           <button v-if="!selectionOnly" class="text-button" @click="step = 'mode'"><ArrowLeft :size="16" />返回入口选择</button>
           <span v-if="!dataReady">正在准备可用人物名单…</span>
         </div>
@@ -106,6 +106,9 @@ const filteredIdols = computed(() => {
   return props.idols.filter(idol => `${idol.name} ${idol.unitName || ''}`.toLocaleLowerCase().includes(query))
 })
 const selectedIdolName = computed(() => props.idols.find(idol => idol.id === selectedIdol.value)?.name || '')
+watch(searchQuery, () => {
+  if (idolGrid.value) idolGrid.value.scrollTop = 0
+}, { flush: 'post' })
 watch(() => props.selectionOnly, value => { step.value = value ? 'idol' : 'mode' })
 watch(() => props.preferences.preferredIdol, value => { preferredDraft.value = value || '' })
 watch(() => props.idols, idols => {
@@ -147,6 +150,7 @@ function chooseIdol() {
 .archive-welcome { height: 100%; min-height: 0; box-sizing: border-box; overflow-y: auto; padding: 28px 24px; background: radial-gradient(circle at 15% 0%, #dff7f3 0, transparent 36%), linear-gradient(150deg,#f7fbfb,#edf1f8); color: #173c48; font-family: Inter,"Noto Sans SC","Noto Sans JP",system-ui,sans-serif; }
 .welcome-card { width: min(920px,100%); margin: 0 auto; padding: 34px; border: 1px solid #d7e6e7; border-radius: 28px; background: rgba(255,255,255,.92); box-shadow: 0 24px 60px rgba(32,73,83,.1); }
 .idol-selection .welcome-card { width: min(1360px,100%); }
+.welcome-card { box-sizing: border-box; min-width: 0; }
 .welcome-kicker-row { display: flex; align-items: center; gap: 16px; min-height: 44px; }
 .welcome-brand { color: #168f87; font-size: 13px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .welcome-kicker-row .archive-back-action { --archive-back-ink: #176f69; }
@@ -177,11 +181,14 @@ button:focus-visible,select:focus-visible,input:focus-visible { outline: 3px sol
 @media (max-width:1000px){.idol-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:700px){.archive-welcome{padding:14px 12px}.welcome-card{padding:20px 16px;border-radius:20px}.mode-grid{grid-template-columns:1fr}.mode-card{min-height:140px}.idol-grid{grid-template-columns:1fr}.idol-search-row{align-items:stretch;flex-direction:column}.idol-search{max-width:none}.idol-count{padding-bottom:0}.idol-actions{position:static;align-items:stretch;flex-direction:column;margin:12px 0 0;padding:12px 0 0;border-radius:0;background:none;box-shadow:none}.idol-actions label{margin-right:0}.preferred-setting{align-items:stretch;flex-direction:column}.preferred-setting button{align-self:flex-start}}
 @media (max-width:700px){
-  .archive-welcome.idol-selection { display: flex; flex-direction: column; overflow: hidden; }
-  .idol-selection .welcome-card { display: flex; flex: 1; flex-direction: column; min-height: 0; }
-  .idol-selection .idol-step { display: flex; flex: 1; flex-direction: column; min-height: 0; }
-  .idol-selection .idol-grid { flex: 1; min-height: 0; align-content: start; overflow-y: auto; overscroll-behavior: contain; }
-  .idol-selection .idol-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); flex: 0 0 auto; }
+  /* Keep a real list viewport. Short screens scroll the page instead of
+     shrinking the list to zero between a fixed header and action panel. */
+  .archive-welcome.idol-selection { overflow-y: auto; }
+  .idol-selection .idol-grid { max-height: clamp(200px,42dvh,420px); align-content: start; overflow-y: auto; overscroll-behavior-y: contain; }
+  .idol-selection header h1 { font-size: 26px; line-height: 1.25; }
+  .idol-selection header p { font-size: 13px; line-height: 1.5; }
+  .idol-selection .idol-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .idol-selection .idol-actions button { min-width: 0; padding: 8px; font-size: 14px; overflow-wrap: anywhere; }
   .idol-selection .idol-actions .idol-selected,
   .idol-selection .idol-actions label { grid-column: 1 / -1; }
   .idol-selection footer { flex: 0 0 auto; }

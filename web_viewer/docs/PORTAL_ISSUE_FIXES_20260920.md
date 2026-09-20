@@ -101,3 +101,10 @@
 - PASS：verify-story-playback-range（增加真实虎牙道 11–18 回归）、verify-story-step-playback-state、verify-story-runtime-foundation、build:check、diff check。
 - Browser：第一话 progress 11/30 的道流内心句点击后立即进入 step_id 13 fadein，随后 14 text_disable、15 stage、16 fadeout，约 4.2 秒后到 17 医者「では、お大事に。」并保持等待点击。AUTO/SKIP 均关闭，验证中没有为过渡步骤追加点击。
 - Edge 卡顿另有直接环境证据：用户给出的 GL_RENDERER 为 Microsoft Basic Render Driver，WebGL 为 Software only；当前 Edge GPU 子进程使用 d3d11-warp-webgl，图形加速设置关闭。建议用户打开系统设置中的图形加速并重启后确认 Hardware accelerated。未代替用户关闭浏览器、改驱动或声称重启后的流畅性已验收。预览窗通过不代表 Edge 硬件加速已经正常。
+
+## 追加批次 11：移动端首页偶像选择布局
+
+- 修复 ArchiveWelcome 移动端多层 flex:1/min-height:0 配合外层 overflow:hidden，将偶像网格挤到近零高度的问题。外层恢复页面滚动，网格使用有界 42dvh（200–420px）可视区，不再与标题/操作区竞争剩余高度。
+- 压缩选择页标题与手机字号，移除名单就绪后的空标题行，卡片使用 border-box，按钮允许窄屏换行；搜索变化后重置结果滚动位置。
+- Browser：319×492 首屏可见偶像；搜索翔太、选中、点击打开首页成功；390×844 通过“查看”定位第 49 位眉見鋭心并显示完整操作区；681×403 搜索虎牙道；1280×800 桌面三列 Jupiter。页面与网格分别可滚动，无新增控制台 error，测试结束恢复原窗口尺寸及首页选择入口。
+- PASS：verify-archive-startup-preferences、verify:home、build:check（无 public 复制）、git diff --check。未改写启动偏好或用户的“我的偶像”。
