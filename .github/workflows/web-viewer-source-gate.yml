@@ -73,6 +73,21 @@ jobs:
       - name: Verify reading artifacts and repository
         run: npm run verify:reading
 
+      - name: Verify playback interaction matrix
+        run: npm run verify:story-interaction-matrix
+
+      - name: Verify neck overlay and personal Reader entry
+        run: npm run verify:spine-neck-contract && npm run verify:home-neck-contract && npm run verify:idol-story-reading
+
+      - name: Verify visual asset transport ownership
+        run: npm run verify:story-asset-transport
+
+      - name: Verify displayed stage pixel budget
+        run: npm run verify:stage-render-budget
+
+      - name: Verify song lyrics and media clock
+        run: npm run verify:song-lyrics && npm run verify:media-element-clock
+
       - name: Verify playback feature ownership
         run: npm run verify:playback-controller
 

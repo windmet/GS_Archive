@@ -19,7 +19,7 @@
     "verify:story-slide-visibility": "python scripts/verify-story-slide-visibility.py",
     "verify:reading-typography": "node scripts/verify-reading-typography.mjs",
     "generate:reading": "node scripts/generate-reading-documents.mjs",
-    "verify:reading": "node scripts/verify-reading-catalog.mjs && node scripts/verify-reading-progress.mjs && node scripts/verify-reading-documents.mjs && node scripts/verify-reading-visual-identity.mjs && node scripts/verify-reading-repository.mjs && node scripts/verify-reading-navigation.mjs && node scripts/verify-reading-playback.mjs && node scripts/verify-reading-render.mjs",
+    "verify:reading": "node scripts/verify-reading-catalog.mjs && node scripts/verify-reading-progress.mjs && node scripts/verify-reading-documents.mjs && node scripts/verify-reading-visual-identity.mjs && node scripts/verify-reading-repository.mjs && node scripts/verify-reading-navigation.mjs && node scripts/verify-reading-playback.mjs && node scripts/verify-reading-render.mjs && npm run verify:reading-typography",
     "verify:reading-visual-sources": "node scripts/verify-reading-visual-identity.mjs --local-sources",
     "verify:story-asset-plan": "node scripts/verify-story-asset-plan.mjs",
     "verify:effect-texture-parity": "node scripts/verify-effect-texture-parity.mjs",
@@ -211,7 +211,13 @@
     "verify:silhouette": "node scripts/verify-silhouette-fallback-contract.mjs",
     "verify:work-story": "node scripts/verify-work-story-index.mjs",
     "preview": "vite preview --configLoader native",
-    "start": "node server.js"
+    "start": "node server.js",
+    "verify:story-asset-transport": "node scripts/verify-story-asset-transport.mjs",
+    "verify:stage-render-budget": "node scripts/verify-stage-render-budget.mjs",
+    "verify:story-interaction-matrix": "node scripts/verify-story-interaction-matrix.mjs",
+    "verify:spine-neck-contract": "node scripts/verify-spine-neck-contract.mjs",
+    "verify:idol-story-reading": "node scripts/verify-idol-story-reading.mjs",
+    "verify:home-neck-contract": "node scripts/verify-home-neck-projection.mjs --source-only"
   },
   "dependencies": {
     "@lucide/vue": "^1.24.0",

@@ -47,7 +47,7 @@ function setup() {
     _loadBodyTypes: async () => {}, applyStepSceneState: noop,
     _loadPrefabMeta: async () => {}, _loadMotionSettings: async () => {},
     NON_VISUAL_IDS: new Set(), _otherSettingCache: { idol: {} },
-    getSelectedReferenceY: noop, resolveBaseYUtil: () => ({ finalBaseY: 0 }),
+    portraitBaseY: value => value, getSelectedReferenceY: noop, resolveBaseYUtil: () => ({ finalBaseY: 0 }),
     USE_PREFAB_META: false, costumePrefabMeta: {}, MODEL_Y_OFFSET: {},
     BASE_ANCHOR: 0, SUB_BASE_ANCHOR: 0, ANCHOR_UNITY_Y: 0, SUB_ANCHOR_UNITY_Y: 0,
     PIXEL_SCALE: 1, SUB_PIXEL_SCALE: 1, SUB_MODEL_RE: /sub/, costumeDictionary: {},

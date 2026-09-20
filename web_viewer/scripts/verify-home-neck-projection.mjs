@@ -6,7 +6,7 @@ import fs from 'node:fs'
 const path = new URL('../public/data/masterdata/card_index.json', import.meta.url)
 const index = JSON.parse(fs.readFileSync(path, 'utf8'))
 let checked = 0
-for (const card of index.cards) {
+for (const card of process.argv.includes('--source-only') ? [] : index.cards) {
   for (const cue of card.home_voice_cues || []) {
     const preview = cue.preview
     if (!preview?.preview_step) continue
@@ -29,3 +29,11 @@ const shota = index.cards.find(card => card.resource_id === '002sht_r01').home_v
 assert.equal(shota.state.spines[0].neck_anim, undefined)
 assert.deepEqual(shota.timeline.filter(event => event.type === 'spine_neck_anim').map(event => [event.time, event.value]), [[1.5, 'neck_question']])
 console.log(`Home neck source projection: ${checked} fields checked.`)
+
+const supportedHomeCues = new Set(['spine_face', 'spine_anim', 'spine_neck_anim', 'spine_neck_stop'])
+for (const card of index.cards) for (const cue of card.home_voice_cues || []) {
+  for (const event of cue.preview?.preview_step?.timeline || []) {
+    assert.ok(supportedHomeCues.has(event.type), `Home scheduler needs a handler for ${event.type}`)
+  }
+}
+console.log('Home source contract: Shota single neck cue and supported timeline types passed')
