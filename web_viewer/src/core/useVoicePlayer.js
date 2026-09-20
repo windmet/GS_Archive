@@ -12,6 +12,8 @@ export function useVoicePlayer({
   isPlaying,
   noVoice = false,
   audioSession = null,
+  onStateChange = () => {},
+  voiceTimeoutMs = 6500,
 }) {
   const session = audioSession || new StoryAudioSession()
   const ownsAudioSession = !audioSession
@@ -24,6 +26,8 @@ export function useVoicePlayer({
   let currentLipCurve = null
   let voiceCharaId = null
   let voiceState = 'idle'
+  let activeVoiceLoad = null
+  function setVoiceState(state) { voiceState = state; onStateChange(state) }
   let voiceRequestGeneration = 0
   const pendingVoiceLoads = new Set()
   const decodedVoiceCache = new Map()
@@ -93,7 +97,10 @@ export function useVoicePlayer({
 
   function stopCurrentVoice(reason = 'unspecified') {
     voiceRequestGeneration++
-    voiceState = 'idle'
+    activeVoiceLoad?.abort()
+    activeVoiceLoad = null
+    isPlaying.value = false
+    setVoiceState('idle')
     if (!currentSource) {
       currentLipCurve = null
       voiceStartedAt = null
@@ -236,7 +243,7 @@ export function useVoicePlayer({
     currentSourceRelease = releaseSource
     voiceStartedAt = session.currentTime()
     currentSource = source
-    voiceState = 'playing'
+    setVoiceState('playing')
     source.start(0)
     setTalking(true)
 
@@ -250,16 +257,26 @@ export function useVoicePlayer({
       currentSourceRelease = null
       currentSource = null
       isPlaying.value = false
-      voiceState = 'ended'
+      setVoiceState('ended')
     }
     return true
+  }
+
+  async function preparePlaybackVoice(options) {
+    const controller = activeVoiceLoad = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), voiceTimeoutMs)
+    try { return await prepareVoice({ ...options, signal: controller.signal }) }
+    finally {
+      clearTimeout(timeout)
+      if (activeVoiceLoad === controller) activeVoiceLoad = null
+    }
   }
 
   async function playVoice() {
     if (noVoice) {
       stopCurrentVoice('noVoice-flag')
       isPlaying.value = false
-      voiceState = 'idle'
+      setVoiceState('idle')
       return false
     }
 
@@ -268,7 +285,7 @@ export function useVoicePlayer({
     const scenarioId = compiledData.value?.scenario_id
     if (!voice) {
       stopCurrentVoice('step-change-no-voice')
-      voiceState = 'idle'
+      setVoiceState('idle')
       return false
     }
 
@@ -280,12 +297,12 @@ export function useVoicePlayer({
     lastVoiceStepIndex = currentStepIndex.value
 
     isPlaying.value = false
-    voiceState = 'preparing'
-    const prepared = await prepareVoice({ step, scenarioId })
+    setVoiceState('preparing')
+    const prepared = await preparePlaybackVoice({ step, scenarioId })
     if (requestGeneration !== voiceRequestGeneration || step !== currentStep.value
       || stepIndex !== currentStepIndex.value || voice !== lastVoiceUrl) return false
     if (!prepared) {
-      voiceState = 'ended'
+      setVoiceState('unavailable')
       return false
     }
     return playPreparedVoice(prepared)
@@ -293,16 +310,17 @@ export function useVoicePlayer({
 
   async function replayVoiceDetached(step) {
     if (noVoice || !step?.dialogue?.voice) return false
-    const requestGeneration = ++voiceRequestGeneration
-    voiceState = 'preparing'
-    const prepared = await prepareVoice({
+    stopCurrentVoice('backlog-replay')
+    const requestGeneration = voiceRequestGeneration
+    setVoiceState('preparing')
+    const prepared = await preparePlaybackVoice({
       step,
       scenarioId: compiledData.value?.scenario_id,
       includeLip: false,
     })
     if (requestGeneration !== voiceRequestGeneration) return false
     if (!prepared) {
-      voiceState = 'ended'
+      setVoiceState('unavailable')
       return false
     }
     return playPreparedVoice({ ...prepared, step: { ...step, chara_id: null } })

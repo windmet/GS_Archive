@@ -24,3 +24,13 @@
 - PASS：verify:portal-navigation、build:check、diff check。
 - Browser：390×632 / 390×844 高度变化、844×390 横屏切换；根高度随视口变化，底部 nav 的 bottom 分别约 632.18 / 844.14（浏览器缩放亚像素）。短屏首页点击“门户”进入完整门户，再从“游戏风首页”返回。
 - 边界：本机 Browser 的视口变化验证，不冒称 iOS Safari / Android 真机地址栏及非零安全区验收。人物短屏裁切仍待独立定位修复。
+
+## 批次 3：语音软就绪与取消
+
+- StoryViewer 不再把 voice prepare 放入 scene readiness，也不因未缓存语音捕获旧画面；背景和角色就绪保护保留。
+- 画面未就绪时拒绝推进，并在导航开始同步关闭输入窗口，避免 watcher 尚未运行时快速连点越过加载中的句子。
+- 语音独立异步播放、取消覆盖 audio/lip；播放与回看请求均有 6.5s 整体超时。旧结果不播放、不更新当前句状态。失败释放 AUTO 的 preparing 等待。
+- ADV 气泡内 350ms 后显示小点，1.5s 后显示“语音加载中”；失败轻提示，无遮挡弹窗。
+- PASS：verify:story-loading-safety；补充 lip 中途取消/超时与旧请求隔离后 verify:story-audio；build:check；diff check。
+- Browser：5176 临时代理指向同一 5175 Vite，实际语音延迟 5s 时正文已出现且显示轻提示；强制 404 后正文/角色保留，390×732 提示在屏内、无横向溢出，点击下一段能完成该单步预览。仅预期 404 warning 和既有 Pixi warning。
+- 边界：慢网预览验证不替代整章声画时序或长稳。手动点击跨动作节点的实现属于下一批。

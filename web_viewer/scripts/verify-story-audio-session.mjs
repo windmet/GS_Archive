@@ -302,6 +302,50 @@ for (const phase of ['fetch', 'decode']) {
     assert.deepEqual(played, [['prepared', prepared], ['fetch']], 'non-gated voice remains compatible')
   } finally { effects.cleanup() }
 }
+// Soft voice jobs must be cancellable through lip loading, not only audio bytes.
+{
+  const ctx = new FakeAudioContext()
+  ctx.decodeAudioData = async () => ({ duration: 1, length: 48000, numberOfChannels: 1 })
+  const session = new StoryAudioSession({ contextFactory: () => ctx })
+  const currentStep = { value: { dialogue: { voice: 'soft-voice', lip: { path: 'adxlip/qa.json' } } } }
+  const statuses = []
+  let lipStarted = false, lipAborted = false
+  globalThis.window = { setTimeout, clearTimeout }
+  globalThis.fetch = async (url, { signal } = {}) => {
+    if (url.includes('/lipsync/')) {
+      lipStarted = true
+      return new Promise((resolve, reject) => signal.addEventListener('abort', () => {
+        lipAborted = true; reject(signal.reason)
+      }, { once: true }))
+    }
+    return { ok: true, headers: new Map(), arrayBuffer: async () => new ArrayBuffer(2000) }
+  }
+  const playing = { value: false }
+  const player = useVoicePlayer({ spineStageRef: { value: null }, currentStep,
+    currentStepIndex: { value: 0 }, compiledData: { value: {} }, isPlaying: playing,
+    audioSession: session, voiceTimeoutMs: 30, onStateChange: state => statuses.push(state) })
+  try {
+    const pending = player.playVoice()
+    while (!lipStarted) await new Promise(resolve => setImmediate(resolve))
+    assert.equal(player.getVoiceState(), 'preparing')
+    player.stopCurrentVoice('next-dialogue')
+    assert.equal(await pending, false)
+    assert.equal(lipAborted, true)
+    assert.equal(player.getVoiceState(), 'idle')
+    assert.equal(playing.value, false)
+    assert.equal(session.inspect().active_sources, 0)
+    assert.ok(statuses.includes('preparing'))
+    player.resetVoiceDedup()
+    assert.equal(await player.playVoice(), false, 'a stalled lip request must time out')
+    assert.equal(player.getVoiceState(), 'unavailable', 'failed soft audio must release AUTO waiting')
+    assert.equal(session.inspect().active_sources, 0)
+  } finally {
+    player.dispose(); await session.dispose(); globalThis.fetch = originalFetch
+    if (originalWindow === undefined) delete globalThis.window
+    else globalThis.window = originalWindow
+  }
+}
+
 globalThis.fetch = async () => ({ ok: true, arrayBuffer: async () => new ArrayBuffer(8) })
 try {
   assert.equal(knownDanglingStoryVoiceCount, 12)
@@ -517,6 +561,8 @@ const [appSource, homeSource, viewerSource, voicePlayerSource, audioManagerSourc
   readFile(new URL('../src/core/useVoicePlayer.js', import.meta.url), 'utf8'),
   readFile(new URL('../src/core/AudioManager.js', import.meta.url), 'utf8'),
 ])
+assert.doesNotMatch(viewerSource, /prepareStepAudio:|voice-preparing|voicePending/, 'audio must not participate in scene readiness or frame hold')
+assert.match(viewerSource, /runtimeReadinessStatus\.value !== 'playable'/, 'scene loading must reject manual advance')
 assert.match(viewerSource, /new StoryAudioSession/)
 assert.match(viewerSource, /new AudioManager\(\{ audioSession: storyAudioSession \}\)/)
 assert.match(viewerSource, /audioSession: storyAudioSession/)

@@ -13,6 +13,8 @@
       <!-- Dialog panel -->
       <div class="dialog" :class="{ 'is-bilingual': isBilingual }">
         <LocalizedTextBlock class="dialog-text" :display="display" />
+        <small v-if="voiceStatus === 'preparing'" class="voice-status voice-preparing" role="status"><span aria-hidden="true">···</span><span class="voice-loading-label">语音加载中</span></small>
+        <small v-else-if="voiceStatus === 'unavailable'" class="voice-status">语音暂不可用</small>
         <div class="dialog-next">▶</div>
       </div>
 
@@ -30,6 +32,7 @@ const props = defineProps({
   dialogue: { type: Object, default: null },
   step: { type: Object, default: null },
   playing: { type: Boolean, default: false },
+  voiceStatus: { type: String, default: 'idle' },
 })
 
 const localization = useStoryLocalization()
@@ -38,6 +41,11 @@ const isBilingual = computed(() => Boolean(display.value?.view?.secondary?.text)
 </script>
 
 <style scoped>
+.voice-status { position: absolute; bottom: 9px; left: 24px; color: #65747b; font: 11px/1.3 system-ui, sans-serif; pointer-events: none; }
+.voice-preparing { visibility: hidden; animation: reveal-voice-status 0s 350ms forwards; }
+.voice-loading-label { margin-left: 5px; visibility: hidden; animation: reveal-voice-status 0s 1500ms forwards; }
+@keyframes reveal-voice-status { to { visibility: visible; } }
+
 .adv-root {
   position: absolute;
   bottom: var(--player-dialogue-bottom);
