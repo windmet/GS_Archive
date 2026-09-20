@@ -38,8 +38,8 @@ const capsuleStyle = computed(() => ({
 }
 
 .call-avatar {
-  width: 96px;
-  height: 96px;
+  width: 76px;
+  height: 76px;
   border-radius: 50%;
   border: 4px solid rgba(255, 255, 255, 0.9);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);

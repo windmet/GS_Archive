@@ -10,7 +10,7 @@
         <slot />
       </div>
 
-      <div class="scene-rail-slot">
+      <div v-if="phase === 'choice'" class="scene-rail-slot">
         <slot name="rail" />
       </div>
     </div>
@@ -98,9 +98,9 @@ defineProps({
     min-height: 0;
     align-items: stretch;
   }
+  .scene-device-slot :deep(.mobile-device-frame) { height: 100%; max-height: 100%; }
   .scene-rail-slot {
-    position: absolute;
-    inset: auto 0 0;
+    flex: 0 0 auto;
     align-items: flex-end;
     justify-content: center;
     padding: 0 14px 8px;

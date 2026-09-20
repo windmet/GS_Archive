@@ -47,7 +47,7 @@ defineProps({
 
 /* Call variant sizing (handoff §5.7) */
 .variant-call {
-  aspect-ratio: 0.72;
+  aspect-ratio: 0.8;
 }
 
 @media (min-width: 700px) and (max-width: 1099px) {
@@ -58,7 +58,7 @@ defineProps({
     transform: translate(0, 0) rotate(-1.5deg);
   }
   .variant-call {
-    aspect-ratio: 0.72;
+    aspect-ratio: 0.8;
   }
 }
 
