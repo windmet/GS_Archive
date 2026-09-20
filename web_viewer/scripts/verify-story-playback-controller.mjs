@@ -130,3 +130,18 @@ const episodes = [{ id: 'a', file: 'shared.json', startStep: 2, endStep: 8 },
   assert.equal(t.state.loading.value, false)
 }
 console.log('Playback controller verified: atomic queue/cursor, retry, same-file ranges, restoration, preview, close and disposal')
+
+for (const destination of ['reader', 'card_detail', 'idol_story']) {
+  const t = setup()
+  const pending = t.controller.load('cancel-before-publish.json', destination)
+  assert.equal(t.controller.pendingEntry.value.returnView, destination)
+  t.controller.close()
+  assert.equal(t.state.view.value, destination)
+  assert.equal(t.requests[0].options.signal.aborted, true)
+  t.reply()
+  assert.equal(await pending, false)
+  assert.equal(t.controller.currentScenario.value, null)
+  assert.equal(t.state.loading.value, false)
+  assert.equal(t.writes.length, 0)
+}
+console.log('Pending-entry cancellation returns to source and rejects stale publication')

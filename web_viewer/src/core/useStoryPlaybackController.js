@@ -21,12 +21,14 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
   let updateWarmingPriority = null
   const canRetry = ref(false)
   let failedEntry = null
+  const pendingEntry = ref(null)
   function clearRetry() { failedEntry = null; canRetry.value = false }
   const currentScenarioInitialStep = state.currentScenarioInitialStep || ref(null)
   const { view, loading, preloadProgress, currentScenarioFile, currentScenarioStartStep,
     currentScenarioEndStep, currentPreviewCue, returnViewAfterPlayer } = state
 
   function reset() {
+    pendingEntry.value = null
     warmingController?.abort()
     updateWarmingPriority = null
     clearRetry()
@@ -44,6 +46,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
     error.value = ''
   }
   function publish(scenario, file, returnView, options = {}) {
+    pendingEntry.value = null
     playbackBuffering.value = true
     playbackReadiness.value = null
     currentScenario.value = scenario
@@ -62,6 +65,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
   }
   async function load(name, returnView = 'files', options = {}) {
     return navigation.run(async intent => {
+      pendingEntry.value = { returnView }
       // Navigation revokes the previous intent synchronously before starting
       // its successor, so an abandoned warming report must leave with it.
       intent.signal?.addEventListener('abort', () => { preloadStatus.value = null; clearRetry(); error.value = '' }, { once: true })
@@ -115,6 +119,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
   }
   async function preview(makeScenario, cue, returnView, options = {}) {
     return navigation.run(async intent => {
+      pendingEntry.value = { returnView }
       loading.value = true
       clearRetry()
       preloadProgress.value = 100
@@ -158,7 +163,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
     return load(entry.name, entry.returnView, entry.options)
   }
   function close() {
-    const destination = failedEntry?.returnView || returnViewAfterPlayer.value || 'files'
+    const destination = pendingEntry.value?.returnView || failedEntry?.returnView || returnViewAfterPlayer.value || 'files'
     navigation.invalidate()
     reset()
     returnViewAfterPlayer.value = 'files'
@@ -193,6 +198,6 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
   }
   function dispose() { navigation.invalidate(); reset(); loading.value = false }
   return { currentScenario, currentScenarioInstance, currentScenarioInitialStep, error, preloadStatus,
-    playbackBuffering, playbackReadiness, canRetry, queue, hasNext: queue.hasNext,
+    playbackBuffering, playbackReadiness, pendingEntry, canRetry, queue, hasNext: queue.hasNext,
     load, retry, retryCurrentStep, preview, startQueue, restore, next, close, ready, readinessChanged, stepChanged, reset, dispose }
 }
