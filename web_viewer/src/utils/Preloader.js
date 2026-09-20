@@ -1,3 +1,4 @@
+import { storyAssetTransport } from '../core/StoryAssetTransport.js'
 /** Native cache warming driven solely by StoryAssetPlan. Logical closure,
  * fetched bytes, image load and renderer readiness are distinct. Unsupported
  * requirements stay pending; no Pixi or audio runtime is imported here. */
@@ -8,14 +9,6 @@ import { validateStoryConfig } from './StoryConfigShape.js'
 import { assetPriority, priorityRank } from '../../shared/story/StoryAssetPriority.js'
 
 const TIMEOUT_MS = 10000 // 10s per asset max
-
-function rejectHtmlResponse(response, url) {
-  const contentType = response.headers.get('content-type') || ''
-  if (/^(?:text\/html|application\/xhtml\+xml)(?:;|$)/i.test(contentType.trim())) {
-    response.body?.cancel()
-    throw new Error(`Unexpected HTML response: ${url}`)
-  }
-}
 
 /**
  * Owns the task timeout and abort signal for the complete body/image load.
@@ -189,24 +182,14 @@ export class Preloader {
 
   static async _preloadBinary(url, label, signal) {
     return withTimeout(async taskSignal => {
-      const response = await fetch(url, { signal: taskSignal })
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${url}`)
-      }
-      rejectHtmlResponse(response, url)
-      const body = await response.blob()
-      if (!body.size) throw new Error(`Empty response: ${url}`)
+      await storyAssetTransport.getArrayBuffer(url, { signal: taskSignal })
       return 'fetched'
     }, TIMEOUT_MS, label, signal)
   }
 
   static async _preloadAtlas(url, signal) {
     return withTimeout(async taskSignal => {
-      const response = await fetch(url, { signal: taskSignal })
-      if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`)
-      rejectHtmlResponse(response, url)
-      const bytes = await response.arrayBuffer()
-      if (!bytes.byteLength) throw new Error(`Empty atlas: ${url}`)
+      const bytes = await storyAssetTransport.getArrayBuffer(url, { signal: taskSignal })
       const hash = await crypto.subtle.digest('SHA-256', bytes)
       return { text: decodeSpineAtlasText(bytes), sha256: `sha256:${Array.from(new Uint8Array(hash), byte => byte.toString(16).padStart(2, '0')).join('')}` }
     }, TIMEOUT_MS, `atlas ${url}`, signal)
@@ -218,15 +201,16 @@ export class Preloader {
       for (let index = 0; index < task.urls.length; index++) {
         taskSignal.throwIfAborted()
         const url = task.urls[index]
-        const response = await fetch(url, { signal: taskSignal, cache: task.cache })
-        task.attempts.push({ url, status: response.status })
-        if (!response.ok) {
-          await response.body?.cancel()
-          if (index + 1 < task.urls.length) continue
-          throw new Error(`HTTP ${response.status}: ${url}`)
+        let config
+        try {
+          config = await storyAssetTransport.getJson(url, { signal: taskSignal, cache: task.cache })
+          task.attempts.push({ url, status: 200 })
+        } catch (error) {
+          if (error.status) task.attempts.push({ url, status: error.status })
+          if (error.status && index + 1 < task.urls.length) continue
+          throw error
         }
-        rejectHtmlResponse(response, url)
-        validateStoryConfig(task.kind, await response.json())
+        validateStoryConfig(task.kind, config)
         task.url = url
         return
       }

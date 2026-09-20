@@ -1,3 +1,4 @@
+import { createStoryAssetTransport, storyAssetTransport } from './StoryAssetTransport.js'
 import { readSpineAtlasPages } from '../../shared/story/SpineAtlasPages.js'
 
 export async function loadAndCreateSpine({
@@ -12,17 +13,13 @@ export async function loadAndCreateSpine({
   SkeletonBinary,
   AtlasAttachmentLoader,
   TextureAtlas,
-  fetchImpl = (...args) => fetch(...args),
+  fetchImpl,
+  transport = fetchImpl ? createStoryAssetTransport({ fetchImpl }) : storyAssetTransport,
+  signal,
 }) {
   const [atlasBuf, skelBuffer] = await Promise.all([
-    fetchImpl(atlasUrl).then(r => {
-      if (!r.ok) throw new Error(`Atlas ${r.status}`)
-      return r.arrayBuffer()
-    }),
-    fetchImpl(skelUrl).then(r => {
-      if (!r.ok) throw new Error(`Skel ${r.status}`)
-      return r.arrayBuffer()
-    }),
+    transport.getArrayBuffer(atlasUrl, { signal }),
+    transport.getArrayBuffer(skelUrl, { signal }),
   ])
 
   const atlasText = decodeAtlasText(atlasBuf)
