@@ -46,3 +46,5 @@
 未通过：`npm run verify:archive-presentation` 在 Vite SSR 读取 ArchiveTechnicalDetails.vue 的 scoped CSS 时 `transport invoke timed out after 60000ms`。这是实际运行结果，未跳过检查或修改断言绕过；本轮不能称完整 SSR 门禁通过。此次 Browser 与生产代码编译通过仅覆盖各自的验证边界。
 
 未做完整发布打包、云资源上传、全库媒体验证，也未修改不相关未跟踪文件。
+
+补充日志边界：最终 warn 检查仍返回 Pixi/Spine 的 tint、update 调用堆栈（舞台加载、剧情 spawn）；未见 error，但不能据此称零警告。本次没有修改相应渲染路径，也没有将这些警告判定为已经修复。
