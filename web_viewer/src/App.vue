@@ -3311,7 +3311,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 #story-viewer {
-  width: 100%; height: 100vh; color: #222;
+  width: 100%; height: 100vh; height: 100dvh; color: #222;
   background: #f8f9fa; overflow: hidden;
 }
 .playback-failure { position: fixed; top: 64px; width: min(480px, calc(100vw - 24px)); left: 50%; transform: translateX(-50%); z-index: 120; max-width: calc(100vw - 32px); margin: 0; padding: 12px 18px; border: 1px solid #e4b7b7; border-radius: 8px; background: #fff4f4; color: #7f3434; font: 14px/1.6 system-ui, sans-serif; overflow-wrap: anywhere; max-height: 60vh; overflow: auto; box-sizing: border-box; }
