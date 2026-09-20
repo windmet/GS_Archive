@@ -1,4 +1,6 @@
+import { neckOverlayAnimation } from './spineNeckOverlay.js'
 import * as PIXI from 'pixi.js'
+import { DeformTimeline } from '@pixi-spine/runtime-3.8'
 import { MixBlend } from '@pixi-spine/base'
 import { easeOutCubic, runRafTween } from './rafTween.js'
 import { recordSpinePosition } from './SpinePositionLayout.js'
@@ -256,6 +258,7 @@ export class SpineManager {
         // SideM neck clips contain offsets authored around the setup pose. They
         // are an additive performance layer over the current body animation;
         // replace blending would snap hello/angry poses back to setup at t=0.
+        track.animation = neckOverlayAnimation(track.animation, spine.state.data.skeletonData)
         track.mixBlend = MixBlend.add
         track.mixDuration = 0
         const previousTargets = spine._neckAdditiveTargets || { boneIndices: [], deformSlotIndices: [] }
@@ -263,7 +266,7 @@ export class SpineManager {
         const deformSlotIndices = new Set(previousTargets.deformSlotIndices)
         for (const timeline of track.animation?.timelines || []) {
           if (Number.isInteger(timeline?.boneIndex)) boneIndices.add(timeline.boneIndex)
-          if (timeline?.constructor?.name?.includes('Deform') && Number.isInteger(timeline.slotIndex)) {
+          if (timeline instanceof DeformTimeline && Number.isInteger(timeline.slotIndex)) {
             deformSlotIndices.add(timeline.slotIndex)
           }
         }
