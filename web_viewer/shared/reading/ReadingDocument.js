@@ -1,3 +1,4 @@
+import { resolveCommunicationContext } from '../../src/core/story-runtime/CommunicationPresentationContext.js'
 import { normalizeLegacyDialogue } from '../../src/localization/story/LegacyDialogueAdapter.js'
 import { normalizeScenario } from '../story/ScenarioNormalizer.js'
 import { projectReadingIdentity, readingVisualAvatarEntity } from './ReadingVisualIdentity.js'
@@ -6,7 +7,7 @@ export const READING_SCHEMA_VERSION = 2
 const clone = value => value == null ? null : JSON.parse(JSON.stringify(value))
 const none = () => ({ kind: 'none', entityType: null, entityId: null, sourceName: '' })
 const text = value => typeof value === 'string' ? value : ''
-const TEXT_TYPES = new Set(['adv', 'talk', 'call', 'synopsis', 'title', 'text_time', 'choice'])
+const TEXT_TYPES = new Set(['adv', 'talk', 'talk_stamp', 'call', 'synopsis', 'title', 'text_time', 'choice'])
 const VISUAL_TYPES = new Set(['stage', 'fadein', 'fadeout', 'slidein', 'slideout', 'text_disable'])
 
 /** A text projection of published compiled input. No RAW interpretation or media loading. */
@@ -31,9 +32,10 @@ export function createReadingDocument(input, { documentId, logicalId, file, sha2
   if (!strict) diagnose('compatibility-source-fields-may-be-missing', null)
 
   for (const [stepIndex, step] of steps.entries()) {
+    const medium = resolveCommunicationContext({ step, stepIndex, steps, scenarioId: input.scenario_id }).mode
     const structuralTitle = ['title', 'synopsis'].includes(step.type)
     if (!TEXT_TYPES.has(step.type) && !VISUAL_TYPES.has(step.type)) diagnose('unsupported-step-kind', stepIndex, 'unsupported')
-    if (step.stamp) diagnose('nontext-message-not-represented', stepIndex, 'unsupported')
+    if (step.stamp && !/^[A-Za-z0-9_-]+$/.test(step.stamp.id || '')) diagnose('invalid-stamp-identity', stepIndex, 'unsupported')
     // Published formats do not define a complete branch-exit graph. Never infer
     // reconvergence from label names, adjacency, or the existing player's behavior.
     if (step.type === 'choice' && (step.options?.length ?? 0) !== 1) diagnose('branch-exits-unavailable', stepIndex, 'unsupported')
@@ -54,9 +56,17 @@ export function createReadingDocument(input, { documentId, logicalId, file, sha2
       rows.push({ kind, source_text: source, text_ref: clone(textRef), speaker: clone(speaker),
         ...projectReadingIdentity({ step: normalized.steps[stepIndex], rowKind: kind, speaker, knownIdolIds }),
         inline_translation: clone(inline), has_voice: Boolean(step.dialogue?.voice),
-        anchor: anchor(slot), option: clone(option) })
+        anchor: anchor(slot), option: clone(option),
+        ...(medium ? { presentation: medium } : {}) })
     }
-    if (step.dialogue) {
+    if (step.stamp && /^[A-Za-z0-9_-]+$/.test(step.stamp.id || '')) {
+      const speaker = normalizeLegacyDialogue({ speaker: step.stamp.speaker || step.dialogue?.speaker || '' }).speaker
+      rows.push({ kind: 'stamp', source_text: '', text_ref: null, speaker,
+        ...projectReadingIdentity({ step: normalized.steps[stepIndex], rowKind: 'stamp', speaker, knownIdolIds }),
+        inline_translation: null, has_voice: Boolean(step.dialogue?.voice),
+        anchor: anchor('stamp'), option: null, presentation: 'talk', media: { kind: 'stamp', id: step.stamp.id } })
+    }
+    if (step.dialogue && !step.stamp) {
       const d = normalizeLegacyDialogue(step.dialogue)
       if (structuralTitle) {
         append({ kind: 'title', source: text(step.dialogue.speaker_source_text ?? step.dialogue.speaker),

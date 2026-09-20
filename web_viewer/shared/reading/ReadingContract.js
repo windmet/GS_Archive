@@ -2,7 +2,7 @@ import { READING_SOURCE_FILE } from './ReadingCatalog.js'
 const ID = /^[A-Za-z0-9_-]+$/
 const HASH = /^sha256:[a-f0-9]{64}$/
 const STATUS = new Set(['ready', 'empty', 'unsupported'])
-const KINDS = new Set(['title', 'synopsis', 'narration', 'dialogue', 'caption', 'choice', 'choice_detail'])
+const KINDS = new Set(['title', 'synopsis', 'narration', 'dialogue', 'caption', 'choice', 'choice_detail', 'stamp'])
 const PRESENCE = new Set(['visible', 'hidden', 'offstage', 'silhouette', 'unknown', 'not-applicable'])
 const IDOL = /^[0-9]{3}[a-z]{3}$/
 const record = x => !!x && typeof x === 'object' && !Array.isArray(x)
@@ -43,6 +43,8 @@ export function validateReadingDocument(d, entry) {
   for (const r of d.rows) {
     const a = r.anchor
     requireValue(KINDS.has(r.kind) && typeof r.source_text === 'string', 'row text')
+    requireValue(r.presentation == null || ['talk', 'call'].includes(r.presentation), 'presentation')
+    if (r.kind === 'stamp') requireValue(r.media?.kind === 'stamp' && ID.test(r.media.id || '') && r.source_text === '', 'stamp media')
     requireValue(record(r.speaker) && typeof r.speaker.sourceName === 'string' && typeof r.speaker.kind === 'string', 'speaker')
     requireValue(r.text_ref === null || (record(r.text_ref) && typeof r.text_ref.unit_id === 'string' && HASH.test(r.text_ref.source_hash)), 'text reference')
     requireValue(record(a) && typeof a.row_id === 'string' && a.row_id.startsWith(`${d.document_id}:`) && !rowIds.has(a.row_id), 'row anchor')

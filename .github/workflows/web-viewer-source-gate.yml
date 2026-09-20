@@ -119,7 +119,7 @@ jobs:
         run: npm run verify:effect-texture-parity
 
       - name: Verify communication UI asset parity
-        run: npm run verify:communication-assets
+        run: npm run verify:communication-assets && npm run verify:communication-presentation
 
       - name: Verify title transition lifecycle
         run: npm run verify:title-transition

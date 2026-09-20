@@ -19,7 +19,7 @@
       <div v-else-if="state.status === 'error'" class="reader-feedback" role="alert"><h2>正文暂时无法载入</h2><p>请重试，或选择其他分段。</p><button @click="emit('retry')">重试</button><details><summary>加载详情</summary><p>{{ state.error }}</p></details></div>
       <p v-else-if="state.status === 'not-generated'" role="status">这个分段尚未生成阅读正文，请选择已有分段。</p>
       <p v-else-if="state.status === 'empty'" role="status">这个分段没有可显示的正文。</p>
-      <div v-else-if="state.status === 'unsupported'" class="reader-feedback" role="status"><h2>这个分段暂不支持完整阅读</h2><p>部分分支或贴图消息无法可靠还原，正文尚未开放。</p><details><summary>分支与来源说明</summary><ul><li v-for="(control, i) in state.document.controls" :key="i">选项：<span v-for="(option, j) in choiceRows(control)" :key="j">{{ option.source_text }}{{ j < choiceRows(control).length - 1 ? ' ／ ' : '' }}</span></li></ul><p>选项目标已保留，分支结束位置未确认。</p></details></div>
+      <div v-else-if="state.status === 'unsupported'" class="reader-feedback" role="status"><h2>这个分段暂不支持完整阅读</h2><p>部分分支或来源字段无法可靠还原，正文尚未开放。</p><details><summary>分支与来源说明</summary><ul><li v-for="(control, i) in state.document.controls" :key="i">选项：<span v-for="(option, j) in choiceRows(control)" :key="j">{{ option.source_text }}{{ j < choiceRows(control).length - 1 ? ' ／ ' : '' }}</span></li></ul><p>选项目标已保留，分支结束位置未确认。</p></details></div>
       <template v-else-if="state.status === 'ready'">
         <form v-if="searchOpen" id="reader-search" class="reader-search" role="search" aria-label="篇内查找" @submit.prevent="moveMatch(1)" @keydown.esc.prevent="closeSearch">
           <label>篇内查找<input ref="searchInput" v-model="searchQuery" type="search" placeholder="查找当前显示的正文或说话人" /></label>
@@ -40,7 +40,9 @@
             <p v-if="item.view.speaker.display" class="reader-speaker">{{ item.view.speaker.display }}</p>
             <span v-if="item.row.kind === 'choice'" class="reader-kind">选项</span>
             <span v-if="item.row.kind === 'choice_detail'" class="reader-kind">选项附文</span>
-            <p class="reader-primary" :lang="item.view.primary.locale">{{ reflowReadingText(item.view.primary.text, item.view.primary.locale) }}</p>
+            <span v-if="item.row.presentation" class="reader-kind">{{ item.row.presentation === 'call' ? '通话' : '短信' }}</span>
+            <MobileStamp v-if="item.row.kind === 'stamp'" :id="item.row.media.id" />
+            <p v-else class="reader-primary" :lang="item.view.primary.locale">{{ reflowReadingText(item.view.primary.text, item.view.primary.locale) }}</p>
             <p v-if="item.view.secondary" class="reader-secondary" :lang="item.view.secondary.locale">{{ reflowReadingText(item.view.secondary.text, item.view.secondary.locale) }}</p>
             <span v-if="mode !== 'original' && item.view.translation.stale" class="reader-kind">译文待更新</span>
             </template>
@@ -52,6 +54,7 @@
 </template>
 
 <script setup>
+import MobileStamp from '../mobile/MobileStamp.vue'
 import { reflowReadingText } from '../../../shared/reading/ReadingTypography.js'
 import { computed, nextTick, ref, watch } from 'vue'
 import ArchivePageChrome from './ArchivePageChrome.vue'
@@ -107,7 +110,7 @@ const presentedRows = computed(() => (document.value?.rows || []).map(row => ({ 
   avatar: readingAvatarEntity(row), view: localization.resolveUnit({ source: row.source_text,
     textRef: row.text_ref, speaker: readingPresentationSpeaker(row), inlineEntry: row.inline_translation }),
 })))
-const fallbackCount = computed(() => presentedRows.value.filter(item => !item.mergedTitle && item.view.translation.fallbackUsed).length)
+const fallbackCount = computed(() => presentedRows.value.filter(item => !item.mergedTitle && item.row.kind !== 'stamp' && item.view.translation.fallbackUsed).length)
 const translationLoadFailed = computed(() => localization.diagnostics.value?.code === 'translation_invalid')
 const searchText = text => String(text || '').normalize('NFKC').replace(/\s+/g, '').toLowerCase()
 const searchMatches = computed(() => {
@@ -187,7 +190,7 @@ h1 { margin: 0; font-size: 26px; line-height: 1.5; letter-spacing: -.5px; outlin
 .kind-title .reader-primary { font-weight: 700; font-size: 21px; line-height: 1.6; }
 .kind-caption, .kind-narration, .kind-synopsis { background: #edf3f3; padding: 24px 32px; border-block: 1px solid #e3e9ed; color: #607a88; }
 .kind-choice, .kind-choice_detail { border-left: 2px solid #9acbd0; padding-left: 32px; }
-.reader-kind { font-size: 12px; color: #607a88; }
+.reader-kind { display: inline-block; margin-inline-end: 8px; font-size: 12px; color: #607a88; }
 .reader-avatar { width: 36px; height: 36px; border-radius: 50%; float: left; margin: 0 12px 4px 0; object-fit: cover; }
 .reader-notice, .reader-feedback { font-size: 14px; line-height: 1.8; color: #60727e; }
 .reader-feedback h2 { font-size: 18px; color: #183846; }
