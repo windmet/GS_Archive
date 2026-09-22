@@ -43,7 +43,7 @@ const functions = ['setTitleAnimationPending','onTitleAnimationStart','retryTitl
 }).join('\n')
 const navigation = viewer.match(/watch\(currentStep, \(newStep, oldStep\) => \{([\s\S]*?)\n\}\)/)[1]
 
-function setup({withCue=false}={}) {
+async function setup({withCue=false}={}) {
  const first=structuredClone(base), second=structuredClone(base)
  first.cues=withCue?[structuredClone(cue)]:[]; second.cues=[]; second.step_id=first.step_id+1
  const source={...fixture,steps:[first,second]}
@@ -52,6 +52,8 @@ function setup({withCue=false}={}) {
  const runtime=useStoryRuntimeCues({compiledData:{value:source},currentStepIndex:index,
   spineStageRef:{value:{manager:{setScreenFade(){settlements++},clearScreenFade(){}}}},audioManager:{}})
  const ctx={currentStep:step,titleAnimationPending:{value:false},titlePaused:{value:false},
+  viewingOfferOpen:{value:false},runtimeReadinessStatus:{value:'playable'},
+  currentStepIndex:index,isPlaying:{value:false},clearFadeAutoAdvance(){},_stopCurrentVoice(){},
   playbackController:{notifyStateChanged(){}},episodeFinished:{value:false},backlogOpen:{value:false},menuOpen:{value:false},
   storyRuntimeCues:runtime,isLastStep:{value:false},markStepRead(){},recordHistoryStep(){},leaveRestoredScene(){},finishEpisode(){},
   restoredSceneState:{value:null},handleStepChange(){},advances:0,
@@ -59,15 +61,19 @@ function setup({withCue=false}={}) {
  }
  runInNewContext('var titleAdvancePending = null;\n'+functions,ctx)
  runtime.handleStepChange()
+ await drain()
+ assert.equal(runtime.inspect().readiness.status, 'playable', 'fixture waits for real scene/audio readiness')
  return {ctx,runtime,first,second,settlements:()=>settlements}
 }
 {
- const {ctx,runtime,first,second}=setup()
+ const {ctx,runtime,first,second}=await setup()
  ctx.onTitleAnimationStart(first); assert.equal(ctx.titleAnimationPending.value,true)
  ctx.titlePaused.value=true
  ctx.onTitleAnimationSettled('complete',first)
  ctx.retryTitleAdvance(); assert.equal(ctx.advances,0,'completion cannot bypass a pause')
- ctx.titlePaused.value=false; ctx.retryTitleAdvance()
+ ctx.titlePaused.value=false; ctx.viewingOfferOpen.value=true; ctx.retryTitleAdvance()
+ assert.equal(ctx.advances,0,'viewing offer holds title completion')
+ ctx.viewingOfferOpen.value=false; ctx.retryTitleAdvance()
  assert.equal(ctx.advances,1,'resume consumes completion once')
  ctx.onTitleAnimationStart(second)
  ctx.onTitleAnimationSettled('cancel',first)
@@ -77,7 +83,7 @@ function setup({withCue=false}={}) {
  runtime.cleanup(); await drain()
 }
 {
- const {ctx,runtime,first}=setup({withCue:true})
+ const {ctx,runtime,first}=await setup({withCue:true})
  ctx.onTitleAnimationSettled('complete',first)
  assert.equal(ctx.advances,0,'wait for real cue settlement')
  ctx.onTitleAnimationSettled('complete',first)
@@ -89,7 +95,7 @@ function setup({withCue=false}={}) {
  runtime.cleanup(); await drain()
 }
 {
- const {ctx,runtime,first,second}=setup({withCue:true})
+ const {ctx,runtime,first,second}=await setup({withCue:true})
  ctx.onTitleAnimationSettled('complete',first)
  ctx.advanceStep(); ctx.onTitleAnimationStart(second)
  await drain()
@@ -98,13 +104,13 @@ function setup({withCue=false}={}) {
  runtime.cleanup(); await drain()
 }
 {
- const {ctx,runtime,first}=setup({withCue:true})
+ const {ctx,runtime,first}=await setup({withCue:true})
  ctx.onTitleAnimationSettled('complete',first)
  runtime.cleanup(); await drain()
  assert.equal(ctx.advances,0,'disposed runtime cannot deliver settlement')
 }
 {
- const {ctx,runtime,first}=setup()
+ const {ctx,runtime,first}=await setup()
  ctx.menuOpen.value=true
  ctx.onTitleAnimationSettled('complete',first)
  assert.equal(ctx.advances,0,'an overlay blocks a racing completion before pause propagation')
@@ -113,7 +119,7 @@ function setup({withCue=false}={}) {
  runtime.cleanup(); await drain()
 }
 {
- const {ctx,runtime,first}=setup()
+ const {ctx,runtime,first}=await setup()
  ctx.onTitleAnimationStart(first); ctx.goNext('user')
  ctx.onTitleAnimationSettled('complete',first)
  assert.equal(ctx.advances,1,'manual next plus old animation completion cannot skip a step')

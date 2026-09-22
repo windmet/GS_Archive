@@ -33,6 +33,7 @@ const navigation = useStoryNavigation({ compiledData: ref({ steps }), currentSte
 const source = readFileSync(new URL('../src/core/StoryViewer.vue', import.meta.url), 'utf8')
 const method = source.slice(source.indexOf("function goNext(source = 'user'"), source.indexOf('\nfunction goPrev()', source.indexOf("function goNext(source = 'user'")))
 const context = { currentStep, currentStepIndex, episodeFinished: ref(false), backlogOpen: ref(false), menuOpen: ref(false),
+  viewingOfferOpen: ref(false),
   runtimeReadinessStatus: ref('playable'), titlePaused: ref(false), titleAnimationPending: ref(false), titleAdvancePending: null,
   setTitleAnimationPending: noop, markStepRead: noop, recordHistoryStep: noop, leaveRestoredScene: noop,
   _stopCurrentVoice: noop, storyRuntimeCues: { hasNonSkippable: () => false, cancelCurrentStep: noop, settleCurrentStep: () => false },
@@ -60,6 +61,10 @@ try {
   context.backlogOpen.value = true
   assert.equal(next(), 'blocked')
   context.backlogOpen.value = false
+  context.viewingOfferOpen.value = true
+  assert.equal(next(), 'blocked', 'viewing offer must not advance the story behind the dialog')
+  assert.equal(currentStepIndex.value, 3)
+  context.viewingOfferOpen.value = false
   assert.equal(next(), 'advanced'); assert.equal(next(), 'blocked', 'choice cannot be bypassed by Next')
   navigation.goPrev(); assert.equal(currentStepIndex.value, 3)
   navigation.goNext(); assert.equal(currentStepIndex.value, 4)
