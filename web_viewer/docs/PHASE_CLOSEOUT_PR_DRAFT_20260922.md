@@ -6,8 +6,12 @@
 
 该 PR 包含稳定分支以来整阶段的解析、发布记录、运行时、UI 和 Preview 路由变更，不只是最后一个横屏提交。About、缩略图、永久缓存与关卡功能不纳入。
 
-验证状态与剩余条件以 [阶段收口记录](PHASE_CLOSEOUT_20260922.md) 为准。`build:check`、publication ledger、Reader / 资料展示 SSR、projector / shadow 以及三项资源清单校验已通过。当前仅 archive-assets 本地 HTTP 门禁仍出现请求超时；当前提交的 Pages Preview 桌面/移动端验收尚未执行，因此草稿不具备合并条件。历史 Browser 证据与本轮 source gate 分开记录，不能以本地编译替代部署和媒体验收。
+验证状态以 [阶段收口记录](PHASE_CLOSEOUT_20260922.md) 的 2026-09-23 Preview 验收节为准。[第三轮 Linux Source Gate](https://github.com/windmet/GS_Archive/actions/runs/35703330087) 全部通过，包括 shared archive asset HTTP contract 与 production build。此前 Windows HTTP timeout 保留为环境记录，不再阻塞本轮 Preview。
 
-容量约束：本轮收口准备未写入 R2，未增加派生图或更改资源 key。后续代码 Preview 应复用已有桶资源，缺失对象不得自动补传。现存 Pixi/Spine warning、真机方向锁和长音频验收按记录保留边界。
+实际验收部署为 [da322c61 Preview](https://da322c61.gs-archive-preview.pages.dev)，部署记录的 commit SHA 精确为 `61329ca1a290c975ac259857fafd4d695a3e11df`。`verify:preview-http` 通过；Browser 抽查覆盖故事目录 / 36 项活动检索、Reader 往返、剧情推进、混合电话与聊天回复、歌曲播放 / seek、移动页面、横屏入口和深链接刷新 / 返回。后续收口文档提交不改变这份已验收部署的 SHA。
 
-此文件是本地正文草稿，尚未向 GitHub 创建 PR，也未合并或部署。
+容量约束：核对差异、远端既有 key、备份和 dry-run 后，仅覆盖 `data/archive_baseline_report.json` 与 `data/image_bundle_relation_catalog.json`；回读及 Preview HTTP 字节校验一致。0 图片新增、0 删除，存储净减少 203425 bytes。未全量上传、重编码或运行 sync。Pages 使用 `npm run build:preview` / `copyPublicDir:false`，Preview 绑定 `ARCHIVE_ASSETS -> sidem-archive-preview`。master 自动 production deployment 仍关闭，未绑定 production custom domain。
+
+验收限于上述浏览器旅程和 HTTP 样本，并非全库网络抓包或所有剧情回归。真机方向锁、浏览器地址栏行为、长音频 / 长稳和既有 Pixi/Spine warning 仍保留边界；内嵌浏览器全屏叠加模拟尺寸的外侧黑边不作为真机适配通过证据。About、lazy loading、thumbnail、srcset、Cloudflare Images、cache-policy 重构均未追加。
+
+此文件是本地正文草稿，已完成指定 Preview 验收，尚未向 GitHub 创建 PR，也未合并。准备以普通 merge commit 合入 master，不 squash / rebase 整阶段历史。

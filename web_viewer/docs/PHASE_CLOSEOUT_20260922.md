@@ -1,5 +1,7 @@
 # 阶段性收口准备（2026-09-22）
 
+> 最新状态（2026-09-23）：`61329ca1a290c975ac259857fafd4d695a3e11df` 的第三轮 Linux Source Gate 与指定 Pages Preview 的 HTTP / Browser 抽查通过，可准备普通 merge PR。下文 9 月 22 日的失败和“未部署”表述保留为历史记录，以文末 Preview 验收节为准；Windows HTTP timeout 不再阻塞本轮 Preview。
+
 ## 基线与范围
 
 本次输入 HEAD 为 `38f8c4b`，工作分支 `codex/mobile-story-immersive`。实时查询并 fetch 后，远端 `master` 为 `58098c280a209e30d7b35c176ae5a5ab4eb3ee81`，也是 merge-base；当前没有开放 PR。输入分支领先 255 个提交，差异涉及 3560 个文件。因此待收口的是自稳定基线以来的整阶段工作，不应把 PR 命名为仅修复横屏或图片加载。
@@ -104,3 +106,52 @@ R2 仍零写入。合并前条件未变，不能将本批通过的三项推广�
 更正前节 HTTP 定位边界：更完整的中间件跟踪显示超时请求也可能已经进入资源处理器，不能据先前截断日志断言“未进入中间件”。纯 Node HTTP 服务 30 次请求正常；Vite 资源请求的具体超时原因仍未确定。诊断用中间件日志和夹具位置实验均已撤回。
 
 [第二次 Linux 运行](https://github.com/windmet/GS_Archive/actions/runs/35702629127) 已通过 scenario-package，后续在 masterdata-output-io 失败。基准捕获的是 Windows JSON 文本换行和 stdout 路径分隔符；测试现在只对 JSON 换行及 `<analysis>` 后的路径分隔符作跨平台比较，二进制哈希、原 golden hash、JSON 内容及所有发布边界断言不变。正常写入及模拟 Linux LF 写入的全部 20 组 CLI 场景在本地通过；真实本地/public 输出字节相等断言仍保留。此修改只影响测试，不改变发布文件的写入策略。远端还需重跑，不能据此前两次失败宣称全 CI 通过。
+
+## Preview deployment acceptance（2026-09-23）
+
+本节覆盖此前“HTTP 门禁未通过 / 未部署”的当前状态判断，不删除历史诊断记录。本轮未修改产品功能。
+
+### Source Gate 与部署身份
+
+- [第三轮 GitHub Web Viewer Source Gate](https://github.com/windmet/GS_Archive/actions/runs/35703330087) 在干净 Linux 环境完整成功，包括 Verify shared archive asset HTTP contract 与 production build。此前 Windows 本机 timeout 只保留为环境记录，不再阻塞本轮 Preview。
+- 来源分支：`codex/mobile-story-immersive`。创建部署前核对本地 HEAD 与 origin 分支均为 `61329ca1a290c975ac259857fafd4d695a3e11df`。
+- 实际部署 ID：`da322c61-3390-4368-8341-eed6fb9fd463`；[固定 Preview URL](https://da322c61.gs-archive-preview.pages.dev)。Cloudflare 返回 environment=preview、commit_dirty=false、commit_hash=`61329ca1a290c975ac259857fafd4d695a3e11df`；deploy 阶段于 `2026-09-22T22:40:48.461771Z` 成功。
+- 实际 Preview branch control 原本只允许 `codex/p1-effect-texture-deps`，本轮保留原配置并增加 `codex/mobile-story-immersive`。重新读取配置，确认 production_deployments_enabled=false，production branch 仍为 master，domains 仅有 `gs-archive-preview.pages.dev`；未开启 master 自动部署或添加自定义域名。
+- build command 仍为 `npm run build:preview`，root=`web_viewer`、output=`dist`；源码 `scripts/build-preview.mjs` 使用 `copyPublicDir:false`。云端执行该 Preview 构建，本地未复制媒体库。
+- Preview 环境实际绑定 `ARCHIVE_ASSETS -> sidem-archive-preview`。读取时发现 production 配置也已有同名绑定，本轮保持原状，未新增或改动 production binding。
+
+### R2 精确范围与回读
+
+`git diff --name-status 38f8c4b..61329ca -- public/data` 仅包含下列两项。分别用 `rclone lsjson --stat` 确认既有远端 key，备份旧 JSON，再用两个精确 `rclone copyto ... --dry-run` 审查；确认 2 existing JSON overwrites / 0 image additions / 0 deletes 后，逐项 copyto 覆盖。
+
+| 既有 key | 原 bytes | 新 bytes | 新 SHA-256 |
+| --- | ---: | ---: | --- |
+| `data/archive_baseline_report.json` | 3080 | 3080 | `72fa88df69852f6c70c7c713b8975ac9ef2a266acf316d7fab0bb7710d615852` |
+| `data/image_bundle_relation_catalog.json` | 7461866 | 7258441 | `7a9e83e4d6b501dcacd82af8762f29fe980fc2f4fae358796658cc517ffa69d2` |
+
+远端下载回读及固定 Preview HTTP GET（200、application/json）与本地 SHA-256 全部一致。净减少 203425 bytes；未重新统计整个账户的桶容量，因此不据此声称账户总使用量。没有全量复制 `.deploy/r2`、执行 rclone sync、删除对象、转换图片或添加派生图。
+
+### 远端 HTTP 与实际 Browser
+
+`npm run verify:preview-http -- https://da322c61.gs-archive-preview.pages.dev` 退出 0。覆盖品牌真实 PNG、12 类 PNG logical URL → WebP physical object 的完整字节 / MIME / 长度、ETag/304、JSON HEAD、voice audio Range/206/416，以及预期的 missing-key 404 / unsupported-method 405。正常探针无 404/503；预期负向探针不视为资源故障。
+
+实际使用 Browser 插件访问上述固定 URL，桌面 1440×900、移动 390×844、横屏 844×390：
+
+| 旅程 | 实际结果 |
+| --- | --- |
+| 桌面故事目录 / 全量活动搜索 | 分类入口正常；活动“查看全部”显示 36 项；搜索首页六项之外的 Not Alone 得到 1 条结果，封面与布局正常 |
+| Reader 往返 | `reading=1_2_002_02_a` 正文可读；点击播放完整剧情进入播放器，4/20 → 5/20；返回恢复原 Reader |
+| Story Player | `scenario=1_3_30018_01.json&at_step=9` 三名角色、气泡与操作栏实际渲染；刷新保持指定步骤（界面 8/287） |
+| 混合通信 | 同一 scenario 的 at_step=114 电话显示手机边框、头像、背景和文本；at_step=280 聊天推进出现回复按钮，点击“もしかして……？”后 280/287 → 281/287，并出现翔太回复 |
+| 歌曲播放 / seek | `song=drvalv` 点击播放后 0:00 → 0:20；暂停后进度条 Home 回到 0，ArrowRight 定位至 0.01；此次为短时播放，不是长音频 soak |
+| 深链接 / Browser back | 歌曲深链接刷新后保持歌曲页；浏览器 back 恢复混合剧情；剧情深链接刷新恢复原步骤 |
+| 移动页面 | 歌曲页封面 / 文案 / 底部导航正常；首页偶像选择可见人物列表、滚动区和底部操作，没有复现列表挤没 |
+| 横屏入口 / 返回 | 竖屏完整剧情出现推荐弹窗；取消“记住选择”后点击横屏全屏观看，显示已进入全屏提示；返回恢复首页偶像选择；普通横屏舞台实际可见三人、气泡及全部播放控制 |
+
+Browser error 日志抽查为空，未观察到意外 404/503；不声称完成了每个请求的 HAR 审计或全库所有对象检查。工具导航 / 截图有多次耗时超时，后续读取确认交互已生效，不能把工具超时直接归因于网站网络。内嵌浏览器的“全屏 + 尺寸模拟”截图出现外侧黑边；普通横屏布局通过，但真机方向锁、地址栏行为仍待实机验证。既有 Pixi/Spine warning 与长稳验收未因本次通过自动关闭。
+
+### 交付与合并边界
+
+本轮 Preview 抽查通过，可以准备到 master 的普通 merge PR；本次只更新本地 PR 正文草稿，未创建或合并 PR。后续文档提交采用 `[CF-Pages-Skip]` 前缀，避免用文档提交替换本次固定 SHA 的验收部署；该行为参照 [Cloudflare GitHub integration](https://developers.cloudflare.com/pages/configuration/git-integration/github-integration/#skipping-a-build-via-a-commit-message)。不 squash / rebase 整阶段历史。
+
+本地证据目录 `.analysis/preview-acceptance-61329ca/` 保存两份旧 JSON、dry-run / upload 日志、远端回读副本、R2 receipt、Pages 修改前 / 验证后配置、部署身份及 HTTP 日志。证据不包含媒体包，不提交备份副本。About、lazy loading、thumbnail、srcset、Cloudflare Images 和 cache-policy 重构均未开展。
