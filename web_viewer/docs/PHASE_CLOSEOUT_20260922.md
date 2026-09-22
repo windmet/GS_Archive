@@ -94,3 +94,11 @@ R2 仍零写入。合并前条件未变，不能将本批通过的三项推广�
 - 动态端口服务可启动，但在本机不同资源请求上出现超时。测试过 fetch/Node HTTP、IPv4/IPv6；临时服务日志显示先前请求文件流正常结束，后续超时请求未进入资源中间件。证据不足以认定具体网络/环境原因。客户端/IPv6/生产配置日志实验均撤回，门禁仍标记未通过。
 
 未创建 PR 或部署；仍需对应当前 SHA 的 Preview URL 才能作远端只读验收。没有调用 R2 写操作、转换或上传，也没有重新打包媒体库。三份 JSON 的修订不代表已更新远端 R2 中的数据副本。
+
+## 干净 Linux 环境交叉验证
+
+对 `71de10a` 手动触发仅源码检查/构建的 [GitHub Source Gate](https://github.com/windmet/GS_Archive/actions/runs/35702300274)，没有部署或 R2 步骤。该运行在 scenario-package 处失败，尚未运行到 HTTP 门禁，因此不作为 HTTP 通过证据。
+
+定位结果：冻结基准的 step9-missing-target-timing-raw.json 按 CRLF 源字节计算 provenance，另外三份 timing fixture 按 LF。对各文件分别计算 LF / CRLF 版本，只有上述组合匹配全部原始单文件 golden hash。新增四条精确 `.gitattributes` 规则固定基准输入的检出换行，不修改 golden hash、不改变编译器或发布语料。本地 scenario-package 全部通过，远端需重跑。
+
+更正前节 HTTP 定位边界：更完整的中间件跟踪显示超时请求也可能已经进入资源处理器，不能据先前截断日志断言“未进入中间件”。纯 Node HTTP 服务 30 次请求正常；Vite 资源请求的具体超时原因仍未确定。诊断用中间件日志和夹具位置实验均已撤回。
