@@ -42,7 +42,7 @@
         @click="emit('select', gasha)"
       >
         <span class="banner-frame">
-          <img :src="gasha.banner_url" :alt="gasha.display_name" loading="lazy" />
+          <img :src="gasha.banner_url" :alt="gasha.display_name" loading="lazy" decoding="async" width="940" height="510" />
         </span>
         <span class="gasha-copy">
           <span class="gasha-heading">

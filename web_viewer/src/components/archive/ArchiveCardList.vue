@@ -87,7 +87,7 @@
           :src="getCardIconUrl(card.resource_id, true)"
           :alt="card.title || '卡名待确认'"
           class="card-thumb"
-          loading="lazy"
+          loading="lazy" decoding="async"
           @error="fallbackCardIcon($event, card.resource_id)"
         />
         <span class="card-rarity">{{ card.rarity || 'CARD' }}</span>
