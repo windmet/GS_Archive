@@ -33,3 +33,7 @@ Browser 插件可用；固定基线 https://da322c61.gs-archive-preview.pages.de
 ## 容量与交付
 
 相对 61329ca 的 public/assets、public/data、shared/deploy、functions、scripts/export-preview-assets.mjs 差异为空。本轮 0 R2 写操作、0 新媒体、0 删除，R2 +0 B；没有更改 bucket、object key 或缓存策略。无 PR 创建/合并，保留原阶段历史。
+
+## 完整 Source Gate
+
+[GitHub Web Viewer Source Gate #35797236545](https://github.com/windmet/GS_Archive/actions/runs/35797236545) 对代码提交 `5b348bc` 的 Linux 全套检查已成功，包括资源 HTTP 合同及 production build。后续文档提交只记录结果，不改变通过验证的代码。补充 Browser：Extra 图区域仍约 104×58；390px 故事入口活动图约 272×148，比例正确，控制台 error/warn 为空。
