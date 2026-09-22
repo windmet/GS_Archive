@@ -120,7 +120,7 @@ function publicText(html) {
   }
   return collect(baseParse(html, parserOptions))
 }
-const server = await createServer({ configFile: false, plugins: [vue()], server: { middlewareMode: true, watch: null }, appType: 'custom' })
+const server = await createServer({ configFile: false, plugins: [vue()], optimizeDeps: { noDiscovery: true }, server: { middlewareMode: true, watch: null }, appType: 'custom' })
 try {
   const { default: Detail } = await server.ssrLoadModule('/src/components/archive/ArchiveSongDetail.vue')
   for (const song of presentations) {
