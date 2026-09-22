@@ -145,4 +145,3 @@ class LegacyCompilerResources(LocalScenarioResources):
     @_LIPSYNC_BASENAME_INDEX.setter
     def _LIPSYNC_BASENAME_INDEX(self, value):
         self.owner._LIPSYNC_BASENAME_INDEX = value
-

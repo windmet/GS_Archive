@@ -152,7 +152,7 @@ export function useArchiveNavigationState() {
                         ? gashaParentView.value : '')))),
     }
   }
-  
+
   return {
     view,
     currentPickTarget,

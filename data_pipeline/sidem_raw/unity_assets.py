@@ -43,5 +43,3 @@ def extract_text_assets(bundle: Path) -> list[tuple[str, bytes]]:
         (str(record["name"]), bytes(record["payload"]))
         for record in extract_text_asset_records(bundle)
     ]
-
-

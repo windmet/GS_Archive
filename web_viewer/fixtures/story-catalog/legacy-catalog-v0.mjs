@@ -213,4 +213,3 @@ export function rowDisplayTitle(row) {
   if (rawTitle !== undefined && rawTitle !== null) return String(rawTitle)
   return ''
 }
-

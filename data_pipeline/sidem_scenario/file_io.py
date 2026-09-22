@@ -33,5 +33,3 @@ class ScenarioFileIO:
             cls.save_json(result, out_path)
             print(f"  → {out_path}  ({result['total_steps']} steps)")
         return result
-
-

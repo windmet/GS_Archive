@@ -164,4 +164,3 @@ export function validateArchivePayload(key, payload) {
   }
   return payload
 }
-

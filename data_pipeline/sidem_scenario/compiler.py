@@ -1795,4 +1795,3 @@ class ScenarioCompiler(ScenarioFileIO):
     @staticmethod
     def _infer_id(raw_data: dict) -> str:
         return raw_data.get("scenarioId", "unknown")
-

@@ -75,4 +75,3 @@ cancellation.handleStepChange(); cancellation.cancelCurrentStep(); release({ sta
 assert.equal(cancelledSignal.aborted, true); assert.equal(last.status, 'waiting')
 cancellation.cleanup()
 console.log('Communication presentation: standalone, ADV/call/ADV, chat/choice/ADV, assets, Reader stamps and stale readiness passed')
-

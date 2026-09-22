@@ -206,5 +206,3 @@ def build_song_movie_index(
             "disabled_open_at": disabled_open_at,
         },
     }
-
-

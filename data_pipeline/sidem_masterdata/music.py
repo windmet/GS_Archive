@@ -173,5 +173,3 @@ def build_music_catalog(tables: dict[int, list[dict[str, Any]]]) -> dict[str, An
             }),
         },
     }
-
-

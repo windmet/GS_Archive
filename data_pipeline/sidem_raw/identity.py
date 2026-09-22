@@ -89,5 +89,3 @@ def group_scenario_assets(
                 "items": sorted(items, key=lambda item: item["container_path"]),
             }
     return groups, excluded
-
-

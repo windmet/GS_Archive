@@ -7,5 +7,3 @@ def source(table: int, fields: dict[str, int], offset: int | None = None) -> dic
     if offset is not None:
         out["offset"] = offset
     return out
-
-

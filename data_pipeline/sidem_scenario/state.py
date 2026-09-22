@@ -160,5 +160,3 @@ class ScenarioState:
         self.bgm_stop_fade = None
         self.environmental_volume = None
         self.environmental_duck_target = None
-
-

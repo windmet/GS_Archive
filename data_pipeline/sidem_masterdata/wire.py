@@ -165,5 +165,3 @@ def extract_table_rows(
         parsed["_offset"] = start
         tables[top_field].append(parsed)
     return tables
-
-

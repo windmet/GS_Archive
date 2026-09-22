@@ -25,5 +25,3 @@ def inspect_acb_cues(vgmstream: Path | None, acb: Path) -> list[str]:
             break
         cues.append(name)
     return cues
-
-

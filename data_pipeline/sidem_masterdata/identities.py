@@ -235,5 +235,3 @@ def build_face_dictionary(tables: dict[int, list[dict[str, Any]]]) -> dict[str, 
             "_source": source(176, {"base_face": 3, "evolution_face": 4}, row.get("_offset")),
         }
     return {"faces": faces, "meta": {"face_count": len(faces)}}
-
-
