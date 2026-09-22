@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { once } from 'node:events'
+import { createServer as createPortProbe } from 'node:net'
 import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
@@ -12,6 +13,10 @@ const viewerRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '.
 const root = await mkdtemp(path.join(os.tmpdir(), 'sidem-asset-contract-'))
 const keys = ['SIDEM_ARCHIVE_SOURCES_CONFIG', 'SIDEM_AUDIO_ROOT', 'SIDEM_LEGACY_AUDIO_ROOT', 'SIDEM_LIPSYNC_ROOT', 'SIDEM_CARD_ART_ROOT']
 const saved = Object.fromEntries(keys.map(key => [key, process.env[key]]))
+async function request(url) {
+  try { return await fetch(url, { signal: AbortSignal.timeout(15000) }) }
+  catch (error) { throw new Error(`HTTP asset fixture request failed: ${url}`, { cause: error }) }
+}
 let vite, production
 
 async function put(relative, contents) {
@@ -78,25 +83,31 @@ try {
   for (const key of keys) delete process.env[key]
   process.env.SIDEM_ARCHIVE_SOURCES_CONFIG = configPath
   vite = await createServer({ root: viewerRoot, configFile: path.join(viewerRoot, 'vite.config.js'), configLoader: 'native', publicDir: false, logLevel: 'error', server: { host: '127.0.0.1', port: 0, watch: null } })
-  await vite.listen()
+  // Vite 6 treats port 0 as its default port, so select an available port.
+  const probe = createPortProbe()
+  probe.listen(0, '127.0.0.1')
+  await once(probe, 'listening')
+  const port = probe.address().port
+  await new Promise((resolve, reject) => probe.close(error => error ? reject(error) : resolve()))
+  await vite.listen(port)
   production = createArchiveServer({ distDir: path.join(root, 'dist') })
   production.listen(0, '127.0.0.1')
   await once(production, 'listening')
   for (const [name, server] of [['vite', vite.httpServer], ['standalone', production]]) {
     const base = `http://127.0.0.1:${server.address().port}`
     for (const { url, body, mime } of cases) {
-      const response = await fetch(base + url)
+      const response = await request(base + url)
       assert.equal(response.status, 200, `${name}: ${url}`)
       assert.ok(response.headers.get('content-type')?.startsWith(mime), `${name}: ${url} MIME`)
       assert.equal(await response.text(), body, `${name}: ${url} body`)
       if (mime === 'image/png') assert.equal(response.headers.get('cache-control'), 'public, max-age=86400')
     }
-    const forbidden = await fetch(`${base}/assets/lipsync/adxlip/%2e%2e%2foutside.json`)
+    const forbidden = await request(`${base}/assets/lipsync/adxlip/%2e%2e%2foutside.json`)
     assert.equal(forbidden.status, 403)
     await forbidden.text()
   }
   // Standalone retains the dist fallback for resources not mounted externally.
-  const missing = await fetch(`http://127.0.0.1:${production.address().port}/assets/audio/se/missing.ogg`)
+  const missing = await request(`http://127.0.0.1:${production.address().port}/assets/audio/se/missing.ogg`)
   assert.equal(await missing.text(), '<html>fixture fallback</html>')
   console.log(`Archive assets: root precedence, ordered resolution, containment and ${cases.length * 2} real HTTP asset responses passed (Vite + standalone). Fixture bytes only; not real-media acceptance.`)
 } finally {

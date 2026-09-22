@@ -82,3 +82,15 @@
 - inventory 差异已定位为既有 `8170f9a` 提交中的 `public/assets/brand/image_chara_icon_producer.png`（5297 bytes，SHA-256 `1d0eefc4bb59cceea0de76048b03389a42e4fc210f810d25b5d9849ce8921fd9`）未进入记录；本轮尚未改其分类或生成新清单。baseline、inventory、image relation 三项仍待证据修复。
 
 R2 仍零写入。合并前条件未变，不能将本批通过的三项推广为完整验收完成。
+
+## 继续收口：清单证据对齐（同日）
+
+三项清单门禁现已通过，目前只剩本机 HTTP 门禁及最终部署验收。
+
+- 制作人头像来自 `8170f9a`，本地字节与 Git blob 一致，5297 bytes / 上节 SHA-256。按现有 brand 分类补入 inventory；只增加记录，不增加 PNG 文件。inventory 为 186 PNG / 49389439 bytes，验证通过。
+- 北斗活动立绘及其权威 registry 来自 `cf0b399`。本地 237759 bytes 与 registry 的 SHA-256 一致；将已有 registry 的 `003hok` promotion 同步到 image bundle relation。1271 bundles / 7816 image objects 的 source-only 校验通过。
+- baseline 只刷新 tracked PNG 数量/字节数；保留历史 RAW/compiled 统计快照，未用本地全库扫描值覆盖历史指标。source-only baseline 校验通过。
+- HTTP 门禁发现 Vite 6 的 `listen` 实现会将 `port:0` 回退到默认端口，改由 Node 选择可用端口；增加请求期限及失败 URL，避免无限等待。仍保留全部 MIME、正文、优先级与路径安全断言。
+- 动态端口服务可启动，但在本机不同资源请求上出现超时。测试过 fetch/Node HTTP、IPv4/IPv6；临时服务日志显示先前请求文件流正常结束，后续超时请求未进入资源中间件。证据不足以认定具体网络/环境原因。客户端/IPv6/生产配置日志实验均撤回，门禁仍标记未通过。
+
+未创建 PR 或部署；仍需对应当前 SHA 的 Preview URL 才能作远端只读验收。没有调用 R2 写操作、转换或上传，也没有重新打包媒体库。三份 JSON 的修订不代表已更新远端 R2 中的数据副本。
