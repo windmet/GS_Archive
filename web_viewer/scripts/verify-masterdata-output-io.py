@@ -22,7 +22,15 @@ MODES = [[], ['--birthday-semantic-only'], ['--movie-announce-only'], ['--card-s
 
 
 def snapshot(directory):
-    return {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in sorted(directory.iterdir())}
+    # The frozen baseline was captured with Windows text-mode JSON writes.
+    # Compare JSON under that newline convention, retaining all other bytes;
+    # decoded binary outputs remain byte-exact on every platform.
+    def fingerprint(path):
+        data = path.read_bytes()
+        if path.suffix == '.json':
+            data = data.replace(b'\r\n', b'\n').replace(b'\n', b'\r\n')
+        return hashlib.sha256(data).hexdigest()
+    return {path.name: fingerprint(path) for path in sorted(directory.iterdir())}
 
 
 def cli_outputs(main=legacy.main):
@@ -58,7 +66,7 @@ def cli_outputs(main=legacy.main):
                 result[f'{mode_number}-{publish}'] = {
                     'analysis': snapshot(analysis),
                     'public': snapshot(public) if publish else {},
-                    'stdout': stdout.getvalue().replace(str(analysis), '<analysis>'),
+                    'stdout': stdout.getvalue().replace(str(analysis), '<analysis>').replace('<analysis>/', '<analysis>\\'),
                 }
                 if not publish:
                     assert not public.exists()
@@ -99,7 +107,7 @@ def verify():
     assert set(actual['1-True']['public']) == {'birthday_story_semantic_index.json'}
     assert len(actual['6-True']['public']) == 3
     assert actual['9-True']['public'] == actual['1-True']['public']
-    print('Masterdata output IO: 20 temporary CLI runs, exact bytes/stdout, selective publication, mode priority and unrelated files passed')
+    print('Masterdata output IO: 20 temporary CLI runs, canonical JSON newlines / exact binary bytes and normalized stdout, selective publication, mode priority and unrelated files passed')
 
 
 if __name__ == '__main__':

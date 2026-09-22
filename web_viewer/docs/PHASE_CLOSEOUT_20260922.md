@@ -102,3 +102,5 @@ R2 仍零写入。合并前条件未变，不能将本批通过的三项推广�
 定位结果：冻结基准的 step9-missing-target-timing-raw.json 按 CRLF 源字节计算 provenance，另外三份 timing fixture 按 LF。对各文件分别计算 LF / CRLF 版本，只有上述组合匹配全部原始单文件 golden hash。新增四条精确 `.gitattributes` 规则固定基准输入的检出换行，不修改 golden hash、不改变编译器或发布语料。本地 scenario-package 全部通过，远端需重跑。
 
 更正前节 HTTP 定位边界：更完整的中间件跟踪显示超时请求也可能已经进入资源处理器，不能据先前截断日志断言“未进入中间件”。纯 Node HTTP 服务 30 次请求正常；Vite 资源请求的具体超时原因仍未确定。诊断用中间件日志和夹具位置实验均已撤回。
+
+[第二次 Linux 运行](https://github.com/windmet/GS_Archive/actions/runs/35702629127) 已通过 scenario-package，后续在 masterdata-output-io 失败。基准捕获的是 Windows JSON 文本换行和 stdout 路径分隔符；测试现在只对 JSON 换行及 `<analysis>` 后的路径分隔符作跨平台比较，二进制哈希、原 golden hash、JSON 内容及所有发布边界断言不变。正常写入及模拟 Linux LF 写入的全部 20 组 CLI 场景在本地通过；真实本地/public 输出字节相等断言仍保留。此修改只影响测试，不改变发布文件的写入策略。远端还需重跑，不能据此前两次失败宣称全 CI 通过。
