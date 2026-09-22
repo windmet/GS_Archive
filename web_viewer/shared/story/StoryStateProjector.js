@@ -23,7 +23,8 @@ function cameraTransform(camera, viewport) {
   const x = camera?.offset_x ?? 0, y = camera?.offset_y ?? 0
   if (!Number.isFinite(x) || !Number.isFinite(y)) throw new TypeError('Invalid projector camera offset')
   return { scale, x: viewport.width / 2 * (1 - scale) - x * viewport.width / 1280 * scale,
-    y: viewport.height / 2 * (1 - scale) - y * viewport.width / 1280 * scale }
+    // Camera targets use Unity's upward-positive Y, matching CameraController.
+    y: viewport.height / 2 * (1 - scale) + y * viewport.width / 1280 * scale }
 }
 function cameraAt(motion, time) {
   if (!motion.cue) return motion.to

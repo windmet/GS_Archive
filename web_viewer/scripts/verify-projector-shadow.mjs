@@ -141,6 +141,8 @@ try {
   const runtimeCues = useStoryRuntimeCues({ compiledData: data, currentStepIndex: index, spineStageRef: stageRef })
   assert.equal(runtimeCues.inspectProjectorShadow().reason, 'not-started')
   runtimeCues.handleStepChange()
+  for (let i = 0; i < 20; i++) await Promise.resolve()
+  assert.equal(runtimeCues.inspect().readiness.status, 'playable')
   const priorWrites = writes
   assert.equal(runtimeCues.inspectProjectorShadow().status, 'match')
   assert.equal(writes, priorWrites, 'on-demand inspection cannot write to managers')
@@ -153,6 +155,8 @@ try {
   runtimeCues.cancelCurrentStep('history-restore')
   runtimeCues.prepareRestore(0, entry)
   runtimeCues.handleStepChange()
+  for (let i = 0; i < 20; i++) await Promise.resolve()
+  assert.equal(runtimeCues.inspect().readiness.status, 'playable')
   assert.equal(runtimeCues.inspectProjectorShadow().expected.basis.cue_policy, 'suppressed')
   runtimeCues.cleanup()
   assert.equal(runtimeCues.inspectProjectorShadow().reason, 'cleanup')

@@ -4,6 +4,7 @@ import { parse } from '@vue/compiler-sfc'
 import { parseExpression } from '@babel/parser'
 import { baseParse, parserOptions } from '@vue/compiler-dom'
 import { createServer } from 'vite'
+import vue from '@vitejs/plugin-vue'
 import { createSSRApp } from 'vue'
 import { renderToString } from '@vue/server-renderer'
 import { buildSongPresentation } from '../src/presentation/SongPresentation.js'
@@ -119,7 +120,7 @@ function publicText(html) {
   }
   return collect(baseParse(html, parserOptions))
 }
-const server = await createServer({ configLoader: 'native', server: { middlewareMode: true }, appType: 'custom' })
+const server = await createServer({ configFile: false, plugins: [vue()], server: { middlewareMode: true, watch: null }, appType: 'custom' })
 try {
   const { default: Detail } = await server.ssrLoadModule('/src/components/archive/ArchiveSongDetail.vue')
   for (const song of presentations) {

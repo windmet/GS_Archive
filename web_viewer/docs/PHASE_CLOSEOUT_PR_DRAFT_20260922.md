@@ -11,3 +11,5 @@
 容量约束：本轮收口准备未写入 R2，未增加派生图或更改资源 key。后续代码 Preview 应复用已有桶资源，缺失对象不得自动补传。现存 Pixi/Spine warning、真机方向锁和长音频验收按记录保留边界。
 
 此文件是本地正文草稿，尚未向 GitHub 创建 PR，也未合并或部署。
+
+继续收口更新：SSR 两项和 projector/shadow 已修复并通过，完整 reading 和 build:check 复跑通过；当前剩余 4 项失败为 archive-assets、archive-baseline、tracked-binary-inventory、image-bundle-relation-catalog。上文的 7 项为首次收口时的历史结果；以收口记录最后一节为当前状态。

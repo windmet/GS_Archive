@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict'
 import { createServer } from 'vite'
+import vue from '@vitejs/plugin-vue'
 import { createSSRApp } from 'vue'
 import { renderToString } from '@vue/server-renderer'
 import { readFileSync } from 'node:fs'
 import { projectReadingFrontMatter } from '../src/presentation/ReadingFrontMatter.js'
 
 // Exercise the actual Vue template's uncommon states without publishing fake stories.
-const server = await createServer({ configLoader: 'native', server: { middlewareMode: true }, appType: 'custom' })
+const server = await createServer({ configFile: false, plugins: [vue()], server: { middlewareMode: true, watch: null }, appType: 'custom' })
 try {
   const { default: Reader } = await server.ssrLoadModule('/src/components/archive/ArchiveStoryReader.vue')
   const { default: Event } = await server.ssrLoadModule('/src/components/archive/ArchiveEventDetail.vue')

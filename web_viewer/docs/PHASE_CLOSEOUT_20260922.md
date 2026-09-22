@@ -70,3 +70,15 @@
 发布账本通过：3 releases / 2 stable logical IDs，基线参数为完整 master SHA。Runtime schema 本地检查覆盖 10417 scenarios / 316682 snapshots / 177050 cues。`build:check` 成功，public 未复制。日志为本地小型文本证据，不提交媒体包。
 
 本次不把剩余问题扩展成无界的运行时/图片管线改造，也不发布一份声称“验收全绿”的 PR。后续优先处理上述门禁，再进行确切 Preview 的桌面/移动端验收；About 和性能功能继续后置。
+
+## 继续收口：SSR 与投影（同日）
+
+以下结果覆盖上表相应失败，目前剩余 4 项门禁未解决。
+
+- `verify:reading` 完整复跑通过；`verify:archive-presentation` 通过。两个 SSR 测试使用相同的 Vue SFC 插件，改为不加载包含外部资源服务的完整 Vite 配置、禁用文件监听的独立 middleware 测试环境。所有原渲染断言保留；资源路由继续由独立 HTTP 门禁覆盖，不将 SSR 通过当作媒体可用性证据。
+- `verify:story-projector` 的 pure projector 与 shadow 两部分通过。纯投影模型 camera Y 与已存在的 CameraController 正向 offset_y 合同对齐；实际镜头控制器及人物取景未改。shadow 夹具现在等待真实异步 scene/audio readiness，再断言只读投影和 restore 状态。
+- `build:check` 再次通过，仍不复制 public。此次未改渲染 UI，不新增 Browser 视觉验收结论。
+- HTTP 测试尝试 Node 动态端口加 Vite middleware 后越过了 5173 绑定问题，但不同 fixture 请求出现超时，尚未证明稳定。因此该实验改动已撤回，`verify:archive-assets` 仍保留为未通过，不修改断言掩盖问题。
+- inventory 差异已定位为既有 `8170f9a` 提交中的 `public/assets/brand/image_chara_icon_producer.png`（5297 bytes，SHA-256 `1d0eefc4bb59cceea0de76048b03389a42e4fc210f810d25b5d9849ce8921fd9`）未进入记录；本轮尚未改其分类或生成新清单。baseline、inventory、image relation 三项仍待证据修复。
+
+R2 仍零写入。合并前条件未变，不能将本批通过的三项推广为完整验收完成。
