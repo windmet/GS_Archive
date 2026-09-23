@@ -46,6 +46,8 @@
                 v-if="!collection.isPlaceholder && index < 2"
                 :src="mainVisual(index)"
                 :alt="collection.title"
+                loading="eager" :fetchpriority="index === 0 ? 'high' : 'auto'"
+                width="1456" height="553"
               />
               <span v-else aria-hidden="true">{{ String(index + 1).padStart(2, '0') }}</span>
             </span>
@@ -87,13 +89,16 @@
         </div>
         <div class="extra-card-grid">
           <button
-            v-for="card in officialExtraCards"
+            v-for="(card, index) in officialExtraCards"
             :key="card.id"
             class="extra-card"
             @click="browse('extra', card.masterId)"
           >
             <span class="extra-card-visual">
-              <img v-if="card.bannerUrl" :src="card.bannerUrl" alt="" />
+              <img v-if="card.bannerUrl" :src="card.bannerUrl" alt=""
+                :loading="index < 3 ? 'eager' : 'lazy'"
+                :decoding="index < 3 ? 'auto' : 'async'"
+                :fetchpriority="index === 0 ? 'high' : 'auto'" />
               <span v-else class="extra-card-index">待补图</span>
             </span>
             <span class="extra-card-copy">
@@ -122,7 +127,7 @@
             @click="browse('extra', card.masterId)"
           >
             <span class="extra-card-visual">
-              <img v-if="card.bannerUrl" :src="card.bannerUrl" alt="" />
+              <img v-if="card.bannerUrl" :src="card.bannerUrl" alt="" loading="lazy" decoding="async" />
               <span v-else class="extra-card-index">待补图</span>
             </span>
             <span class="extra-card-copy">
@@ -196,7 +201,8 @@
             class="chapter-entry"
             @click="browse('main', chapter.id)"
           >
-            <img v-if="index < 2" :src="mainVisual(index)" :alt="chapter.label" />
+            <img v-if="index < 2" :src="mainVisual(index)" :alt="chapter.label"
+              loading="eager" :fetchpriority="index === 0 ? 'high' : 'auto'" width="1456" height="553" />
             <span v-else class="chapter-fallback">{{ chapter.label }}</span>
             <span class="chapter-copy">
               <small>{{ chapter.label }}</small>
@@ -214,8 +220,9 @@
           <button @click="browse('event')">查看全部 <ArrowRight :size="15" /></button>
         </div>
         <div class="event-strip">
-          <button v-for="entry in featuredEvents" :key="entry.id" @click="emit('select', entry)">
-            <img :src="eventBanner(entry)" :alt="entry.title" />
+          <button v-for="(entry, index) in featuredEvents" :key="entry.id" @click="emit('select', entry)">
+            <img :src="eventBanner(entry)" :alt="entry.title" :loading="index < 3 ? 'eager' : 'lazy'"
+              :decoding="index < 3 ? 'auto' : 'async'" width="940" height="510" />
             <span><small>{{ entry.eventScopeLabel || entry.domainLabel }}</small><strong>{{ entry.title }}</strong></span>
           </button>
         </div>
@@ -228,7 +235,7 @@
         </div>
         <div class="unit-grid">
           <button v-for="unit in unitGateways" :key="unit.id" @click="browse('unit_story', unit.id)">
-            <img :src="unitVisual(unit.id)" :alt="unit.label" />
+            <img :src="unitVisual(unit.id)" :alt="unit.label" loading="lazy" decoding="async" width="446" height="150" />
             <span>{{ unit.entries.length }} 篇</span>
           </button>
         </div>
@@ -288,13 +295,16 @@
 
       <div v-if="domain === 'event' && entries.length" class="event-entity-grid">
         <button
-          v-for="entry in entries"
+          v-for="(entry, index) in entries"
           :key="entry.id"
           :data-archive-focus-id="`event:${entry.id}`"
           @click="emit('select', entry)"
         >
           <span class="event-entity-visual">
-            <img :src="eventBanner(entry)" :alt="entry.masterEvent?.name || entry.title" />
+            <img :src="eventBanner(entry)" :alt="entry.masterEvent?.name || entry.title"
+              :loading="index < 2 ? 'eager' : 'lazy'"
+              :decoding="index < 2 ? 'auto' : 'async'"
+              :fetchpriority="index === 0 ? 'high' : 'auto'" width="940" height="510" />
             <span>{{ entry.eventScopeLabel || '活动剧情' }}</span>
           </span>
           <span class="event-entity-copy">
@@ -308,6 +318,7 @@
               :key="cardId"
               :src="getCardIconUrl(cardId, true)"
               alt="活动报酬卡"
+              loading="lazy" decoding="async" fetchpriority="low" width="30" height="30"
             />
             <small v-if="!entry.rewardCardIds?.length">无卡片报酬记录</small>
           </span>
@@ -542,7 +553,7 @@ function formatExtraDate(timestamp) {
 .section-heading > button { display: inline-flex; align-items: center; gap: 5px; border: 0; background: transparent; color: #167e77; cursor: pointer; font: inherit; font-size: .66rem; }
 .event-strip { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
 .event-strip button { overflow: hidden; padding: 0; border: 1px solid #dfe5e7; border-radius: 6px; background: #fff; cursor: pointer; text-align: left; }
-.event-strip img { display: block; width: 100%; aspect-ratio: 940/510; object-fit: contain; background: #eef2f3; }
+.event-strip img { display: block; width: 100%; height: auto; aspect-ratio: 940/510; object-fit: contain; background: #eef2f3; }
 .event-strip button > span { display: flex; flex-direction: column; gap: 3px; padding: 9px 10px 11px; }
 .event-strip small { color: #168a82; font-size: .56rem; }
 .event-strip strong { overflow: hidden; font-size: .7rem; text-overflow: ellipsis; white-space: nowrap; }

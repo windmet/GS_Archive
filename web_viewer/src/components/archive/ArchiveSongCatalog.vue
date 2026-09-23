@@ -49,7 +49,7 @@
         @click="$emit('open', song.song_code)"
       >
         <span v-if="song.jacket_url" class="song-card-jacket">
-          <img :src="song.jacket_url" :alt="`${song.title} 封面`" loading="lazy" />
+          <img :src="song.jacket_url" :alt="`${song.title} 封面`" loading="lazy" decoding="async" width="365" height="360" />
         </span>
         <span v-else class="song-card-code">封面未收录</span>
         <span class="song-card-copy">
