@@ -19,3 +19,8 @@
 - Desktop 1440x900 and mobile 390x844 meaningful page content, no framework overlay, settled screenshots verified, error/warn log empty.
 - Mobile portal -> About -> refresh preserves about/from route; app Back -> portal; browser Back -> About. Bottom project buttons and thanks visible when scrolled, no horizontal document overflow. Four external href/target/rel values verified in DOM (third-party page content not audited).
 - R2 +0 B; no remote upload, deletion, re-encoding or derived images. This page is local/source-branch acceptance, not a new Pages deployment or real-device acceptance.
+
+## Linux closeout
+- Full Linux Web Viewer Source Gate #35803485624 passed at 6992feb, including shared archive asset HTTP contract and production build: https://github.com/windmet/GS_Archive/actions/runs/35803485624.
+- Prior attempts caught one trailing EOF blank line and a legacy eight-destination navigation assertion. Fixed in separate commits; portal contract now preserves the original destinations plus About and exercises About return/deep-link handling. verify:portal-navigation passed locally.
+- About remains a separately pushed branch, not merged or deployed in this pass.
