@@ -6,6 +6,7 @@ import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 
 for (const query of [
+  '?view=about',
   '?home_idol=003hok&home_cue=voice&home_costume=model',
   '?view=cards&idol=001tom&rarity=SSR&q=Jupiter',
   '?view=card_detail&card=001tom_ssr01&parent=event_detail&event=410018',
@@ -31,7 +32,9 @@ for (const bad of ['https://example.com/', '//example.com/', '?view=player&scena
 }
 assert.equal(readArchiveRoute('http://localhost/?view=portal').view, 'portal')
 assert.equal(buildArchiveUrl('http://localhost/?view=portal&portal_from=x', { view: 'cards' }).searchParams.has('portal_from'), false)
-assert.equal(ARCHIVE_NAVIGATION.length, 8, 'existing desktop taxonomy remains unchanged')
+assert.deepEqual(ARCHIVE_NAVIGATION.map(item => item.id),
+  ['home', 'stories', 'songs', 'idols', 'cards', 'gashas', 'interactions', 'resources', 'about'],
+  'About extends the existing archive destinations without replacing them')
 
 for (const portalFrom of ['', '?view=cards&rarity=SSR&q=Jupiter']) {
   const portalSource = buildArchiveSourceQuery({ view: 'portal', portalFrom })
@@ -47,6 +50,7 @@ for (const portalFrom of ['', '?view=cards&rarity=SSR&q=Jupiter']) {
 assert.equal(readArchiveSourceRoute('?view=portal&portal_from=%3Fview%3Dportal').portalFrom,
   '?view=home', 'nested Portal return cannot recurse')
 for (const destination of [
+  { view: 'about' },
   { view: 'welcome' },
   { view: 'idol_picker', pickTarget: 'profile' },
   { view: 'song_catalog' },
