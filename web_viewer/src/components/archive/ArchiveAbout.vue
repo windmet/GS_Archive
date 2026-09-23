@@ -102,4 +102,3 @@ footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12
   .about-project h3 { font-size: 20px; }
 }
 </style>
-
