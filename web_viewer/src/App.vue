@@ -18,6 +18,7 @@
     >
       <ArchiveStoryReader v-if="view === 'reader'" :state="readingState" :document-id="readingDocumentId" :mode="readingMode" :anchor="readingRowId"
         :notice="readingPlaybackNotice" :busy="loading" @refresh="refreshStoryReader" @play-document="openReaderPlayback(readingRowId, { fullDocument: true })" @select="openStoryReader" @mode="updateReadingMode" @locate="locateReadingRow" @back="closeStoryReader" @retry="openStoryReader(readingDocumentId)" />
+      <ArchiveAbout v-if="view === 'about'" />
       <ArchivePortalLauncher
         v-if="view === 'portal'"
         :preferred-reference="preferredArchiveIdolReference"
@@ -506,6 +507,7 @@ import ArchiveFileList from './components/archive/ArchiveFileList.vue'
 import ArchiveUnitGrid from './components/archive/ArchiveUnitGrid.vue'
 import ArchiveEpisodeList from './components/archive/ArchiveEpisodeList.vue'
 import ArchiveStatus from './components/archive/ArchiveStatus.vue'
+import ArchiveAbout from './components/archive/ArchiveAbout.vue'
 import ArchiveStoryCatalog from './components/archive/ArchiveStoryCatalog.vue'
 import ArchiveExternalStoryResources from './components/archive/ArchiveExternalStoryResources.vue'
 import ArchiveStoryDetail from './components/archive/ArchiveStoryDetail.vue'
@@ -1364,6 +1366,7 @@ const archiveSection = computed(() => archiveSectionForRoute({
 }))
 
 const archiveTitle = computed(() => {
+  if (view.value === 'about') return '关于'
   if (view.value === 'reader') return '剧情阅读'
   if (view.value === 'portal') return '我的资料馆'
   if (view.value === 'home') return 'SideM Archive'
@@ -1876,6 +1879,7 @@ function navigateArchiveSection(section) {
   }
   else if (section === 'gashas') openGashaCatalog()
   else if (section === 'resources') openArchiveStatus()
+  else if (section === 'about') commitView('about')
 }
 
 async function openStoryReader(documentId, source = {}, returnSourceRoute = '') {
@@ -2188,6 +2192,7 @@ function goArchiveBack() {
   if (view.value === 'welcome' || view.value === 'idol_picker') return cancelWelcomeOrPicker()
   if (detailSourceRoute.value) return restoreDetailSource(goHome)
   const backByView = {
+    about: () => commitView('portal'),
     idols: goHome,
     idol_detail: goHome,
     groups: goBackFromGroups,

@@ -28,7 +28,7 @@ export function resolveArchiveStartup(input, preferences, validHomeIdols = []) {
     const route = readArchiveRoute(input)
     return {
       route,
-      lightweight: route.view === 'welcome' || route.view === 'portal' ||
+      lightweight: route.view === 'about' || route.view === 'welcome' || route.view === 'portal' ||
         (route.view === 'home' && !route.homeIdol),
       source: 'explicit',
     }

@@ -47,6 +47,7 @@ const ROUTE_QUERY_KEYS = [
 ]
 
 const VALID_VIEWS = new Set([
+  'about',
   'welcome',
   'idol_picker',
   'portal',
@@ -97,6 +98,7 @@ const VALID_MOBILE_MODES = new Set(['personal', 'phone', 'unit', 'random'])
 const VALID_RETURN_VIEWS = new Set([...VALID_VIEWS].filter(view => !['player', 'spine_lab', 'chibi_stage'].includes(view)))
 
 const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
+  about: { section: 'about', required: [] },
   welcome: { section: 'home', required: [] },
   idol_picker: { section: 'home', required: ['pickTarget'], fallback: 'welcome' },
   reader: { section: 'reader', required: [], fallback: 'story_catalog' },
@@ -140,6 +142,7 @@ const ARCHIVE_NAVIGATION = Object.freeze([
   { id: 'gashas', label: '卡池' },
   { id: 'interactions', label: '互动' },
   { id: 'resources', label: '资源' },
+  { id: 'about', label: '关于' },
 ])
 
 const BREADCRUMB_HIDDEN_VIEWS = new Set(['home', 'portal', 'reader', 'player', 'spine_lab', 'chibi_stage'])
@@ -519,6 +522,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
     return items.length <= 4 ? items : [items[0], ...items.slice(-3)]
   }
 
+  if (route.view === 'about') return [home, { label: '关于' }]
   if (route.view === 'archive_status') return [home, { label: '资源' }]
   if (route.view === 'seasonal_campaign') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('季节企划', route.storySection)]
   if (route.view === 'work_archive') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('工作档案', route.idol)]
