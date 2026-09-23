@@ -9,7 +9,7 @@
     data-clock-mode="audio-context-scheduled"
   >
     <p class="lineup-note">
-      五个选择位与 Chibi 舞台位置 1–5 完全对应；网页会在内部反查 RAW 编组槽。空位会静音；重复偶像只播放一条声部，并合并其多个位置的演唱区间。
+      五个选择位与 Chibi 舞台位置 1–5 完全对应。空位会静音；重复偶像只播放一条声部，并合并其多个位置的演唱区间。
     </p>
 
     <label v-if="arrangements.length > 1" class="arrangement-select">
@@ -35,11 +35,11 @@
         >
           <option value="">空位</option>
           <option v-for="entry in soloEntries" :key="entry.idol_code" :value="entry.idol_code">
-            {{ entry.name }}（{{ entry.idol_code }}）
+            {{ entry.displayName }}
           </option>
         </select>
         <small>
-          {{ activeStagePositions.includes(stagePosition) ? '当前演唱' : '等待' }} · RAW 编组槽 {{ performerSlotForStagePosition(stagePosition) }}
+          {{ activeStagePositions.includes(stagePosition) ? '当前演唱' : '等待' }}
         </small>
       </label>
     </fieldset>
@@ -52,27 +52,11 @@
       <strong v-else>无人 / 当前槽为空</strong>
     </div>
 
-    <div class="lineup-transport">
-      <button type="button" class="lineup-play" :disabled="!session.ready.value" @click="togglePlayback">
-        {{ session.playing.value ? '暂停' : '播放' }}
-      </button>
-      <button type="button" class="lineup-reset" :disabled="!session.ready.value" @click="session.reset">归零</button>
-      <input
-        type="range"
-        min="0"
-        :max="session.duration.value || 0"
-        step="0.01"
-        :value="session.currentTime.value"
-        aria-label="五槽播放进度"
-        :disabled="!session.ready.value"
-        @input="session.seek(Number($event.target.value))"
-      />
-      <span>{{ formatTime(session.currentTime.value) }} / {{ formatTime(session.duration.value) }}</span>
-    </div>
+    <ArchiveMediaTransport :ready="session.ready.value" :playing="session.playing.value" :duration="session.duration.value" :current-time="session.currentTime.value" @toggle="togglePlayback" @restart="session.reset" @seek="session.seek" />
 
     <div class="lineup-gains">
       <label>
-        声部总线
+        演唱音量
         <input v-model.number="session.vocalGain.value" type="range" min="0" max="1" step="0.01" aria-label="五槽声部音量" />
       </label>
       <label>
@@ -81,23 +65,36 @@
       </label>
     </div>
 
-    <p class="lineup-evidence">
-      所有轨道会在播放前完整解码，并由同一个音频时钟同步启动、预排演唱切换；当前混音采用活动偶像数的 1/√n 归一化与居中声像，仅为浏览器近似。重复选择不代表原游戏允许重复成员编组。
-    </p>
-    <p v-if="loadingTimeline" class="lineup-status">正在读取演唱切换表并预解码所选轨道…</p>
+    <div v-if="selectedArrangement?.capabilities?.stage?.kind === 'choreography_candidate'" class="lineup-stage-handoff">
+      <button type="button" :disabled="!session.ready.value || !stageLineup.some(Boolean)" @click="openStageWithLineup">以当前编成进入舞台</button>
+      <p>{{ stageLineup.some(Boolean) ? '先停止歌曲页试听，再把舞台位置、声部选择和音量带入；舞台从 00:00 暂停开始。' : '至少选择一位偶像后才能进入舞台。' }}</p>
+    </div>
+
+    <ArchiveSongLyrics :song-code="audioExperiment.song_code" :source-timeline="selectedArrangement"
+      stage-clock :current-time="session.currentTime.value" :ready="session.ready.value" @seek="session.seek" />
+    <ArchiveTechnicalDetails label="编成试听技术信息" :evidence="{ stagePositions: stagePositions.map(stagePosition => ({ stagePosition, performerSlot: performerSlotForStagePosition(stagePosition) })) }">
+      <p class="lineup-evidence">
+        所有轨道会在播放前完整解码，并由同一个音频时钟同步启动、预排演唱切换；当前混音采用活动偶像数的 1/√n 归一化与居中声像，仅为浏览器近似。重复选择不代表原游戏允许重复成员编组。
+      </p>
+    </ArchiveTechnicalDetails>
+    <p v-if="loadingTimeline" class="lineup-status">正在准备所选演唱成员的音频…</p>
     <p v-else-if="session.error.value" class="lineup-error" role="alert">{{ session.error.value }}</p>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import ArchiveMediaTransport from './ArchiveMediaTransport.vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useSongPerformanceSession } from '../../composables/useSongPerformanceSession.js'
-import { IDOL_ID_TO_NAME } from '../../utils/IdolNameMap.js'
-import { fetchSongPerformanceChoreography } from '../../utils/songPerformanceData.js'
+import ArchiveSongLyrics from './ArchiveSongLyrics.vue'
+import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
+import { fetchSongPerformanceArrangements } from '../../utils/songPerformanceData.js'
+import { createSongStageHandoff } from '../../core/songStageHandoff.js'
 
 const props = defineProps({
   audioExperiment: { type: Object, required: true },
 })
+const emit = defineEmits(['open-stage'])
 
 const session = useSongPerformanceSession()
 const slotNumbers = [1, 2, 3, 4, 5]
@@ -106,12 +103,10 @@ const arrangements = ref([])
 const selectedArrangementId = ref('')
 const stageLineup = ref([])
 const loadingTimeline = ref(false)
+let loadGeneration = 0
+let disposed = false
 
-const soloEntries = computed(() => Object.values(props.audioExperiment?.solo_tracks || {})
-  .map(entry => ({
-    ...entry,
-    name: IDOL_ID_TO_NAME[entry.idol_code] || entry.name || entry.idol_code,
-  })))
+const soloEntries = computed(() => Object.values(props.audioExperiment?.solo_tracks || {}))
 const selectedArrangement = computed(() => arrangements.value
   .find(entry => entry.id === selectedArrangementId.value) || null)
 const activeStagePositions = computed(() => session.activePerformerSlots.value
@@ -125,7 +120,7 @@ const activeSingerEntries = computed(() => {
     if (!idolCode) continue
     if (!byIdol.has(idolCode)) byIdol.set(idolCode, {
       idolCode,
-      name: IDOL_ID_TO_NAME[idolCode] || idolCode,
+      name: props.audioExperiment.solo_tracks?.[idolCode]?.displayName || '姓名待确认',
       slots: [],
       stagePositions: [],
     })
@@ -162,11 +157,13 @@ function initializeLineup() {
 }
 
 async function loadArrangements() {
+  const generation = ++loadGeneration
   loadingTimeline.value = true
   session.release()
   try {
-    const choreography = await fetchSongPerformanceChoreography()
-    arrangements.value = (choreography?.songs || []).filter(entry => (
+    const timelines = await fetchSongPerformanceArrangements(props.audioExperiment.song_code)
+    if (disposed || generation !== loadGeneration) return
+    arrangements.value = timelines.filter(entry => (
       entry.songCode === props.audioExperiment.song_code
       && !entry.variant
       && Array.isArray(entry.singerEvents)
@@ -178,9 +175,11 @@ async function loadArrangements() {
     initializeLineup()
     await reloadSession()
   } catch (error) {
-    session.error.value = `演唱切换表读取失败：${error.message || error}`
+    if (!disposed && generation === loadGeneration) {
+      session.error.value = `演唱切换表读取失败：${error.message || error}`
+    }
   } finally {
-    loadingTimeline.value = false
+    if (!disposed && generation === loadGeneration) loadingTimeline.value = false
   }
 }
 
@@ -205,13 +204,30 @@ async function togglePlayback() {
   else await session.play()
 }
 
-function formatTime(value) {
-  const seconds = Math.max(0, Math.floor(Number(value) || 0))
-  return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
+function openStageWithLineup() {
+  if (!session.ready.value) return
+  const handoff = createSongStageHandoff({
+    songCode: props.audioExperiment.song_code,
+    arrangement: selectedArrangement.value,
+    stageLineup: stageLineup.value,
+    audioExperiment: props.audioExperiment,
+    vocalGain: session.vocalGain.value,
+    backingGain: session.backingGain.value,
+    sourceTimeSeconds: session.currentTime.value,
+  })
+  if (!handoff) return
+  session.release()
+  emit('open-stage', {
+    songCode: handoff.songCode,
+    choreographyId: handoff.choreographyId,
+    stageHandoff: handoff,
+  })
 }
+
 
 watch(() => props.audioExperiment, loadArrangements)
 onMounted(loadArrangements)
+onBeforeUnmount(() => { disposed = true; loadGeneration += 1 })
 </script>
 
 <style scoped>
@@ -240,6 +256,11 @@ onMounted(loadArrangements)
 .lineup-gains { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 12px; }
 .lineup-gains label { display: grid; gap: 5px; color: #5c6771; font-size: 0.7rem; font-weight: 700; }
 .lineup-gains input { accent-color: #158f87; }
+.lineup-stage-handoff { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #d6e4eb; }
+.lineup-stage-handoff button { min-height: 44px; padding: 8px 16px; border: 0; border-radius: 22px; background: #176f69; color: #fff; font: inherit; font-size: .74rem; font-weight: 700; cursor: pointer; }
+.lineup-stage-handoff button:disabled { cursor: wait; opacity: .55; }
+.lineup-stage-handoff button:focus-visible { outline: 3px solid #37a9a1; outline-offset: 3px; }
+.lineup-stage-handoff p { flex: 1 1 230px; margin: 0; color: #60717d; font-size: .7rem; line-height: 1.5; }
 .lineup-evidence { margin-top: 12px; }
 .lineup-status { margin-top: 8px; }
 .lineup-error { margin-top: 8px; color: #a04747; }

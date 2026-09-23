@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { access, readFile } from 'node:fs/promises'
 import { MOBILE_UNIT_THEMES } from '../src/data/mobileVisualThemes.js'
 import { resolveCommunicationContext } from '../src/core/story-runtime/CommunicationPresentationContext.js'
+import { resolveMobileHeroMedia, MOBILE_HERO_FOCAL_POINT } from '../src/presentation/mobileHeroMedia.js'
 
 const read = path => readFile(new URL(`../${path}`, import.meta.url), 'utf8')
 const readJson = async path => JSON.parse(await read(path))
@@ -157,9 +158,18 @@ assert.match(viewer, /:next-disabled="episodeFinished"/, 'completed communicatio
 assert.match(dock, /:disabled="nextDisabled"/, 'the shared player dock must expose a disabled completed-state advance control')
 assert.match(zhLocale, /player\.complete\.communication/, 'Chinese UI locale must name non-blocking communication completion')
 assert.match(jaLocale, /player\.complete\.communication/, 'Japanese UI locale must name non-blocking communication completion')
-assert.match(archiveMobile, /class="hero-backdrop"/, 'mobile archive hero must own a softened fill layer')
-assert.match(archiveMobile, /class="hero-art"/, 'personal mobile archive hero must retain a proportional foreground crop')
-assert.match(archiveMobile, /v-if="mode !== 'unit'" class="hero-art"/, 'unit archive mode must not apply personal portrait cropping')
+assert.match(archiveMobile, /class="hero-media"/, 'mobile archive hero must own a fixed media shell')
+assert.match(archiveMobile, /class="hero-media-blur"/, 'mobile archive hero must own a softened fill layer')
+assert.match(archiveMobile, /mode !== 'unit'" class="hero-media-main"/, 'unit archive mode must not apply personal portrait cropping')
+assert.match(archiveMobile, /object-position: var\(--hero-focal-x\) var\(--hero-focal-y\)/, 'both image layers must share one focal point')
+assert.doesNotMatch(archiveMobile, /background-position:/, 'breakpoints must not define independent image coordinates')
+assert.deepEqual(resolveMobileHeroMedia({ mode: 'personal', idolCode: '038tak', unitCode: '01jup' }), {
+  src: '/assets/idols/mobile_bg/image_chara_mobile_background_038tak.png',
+  focalX: MOBILE_HERO_FOCAL_POINT.x,
+  focalY: MOBILE_HERO_FOCAL_POINT.y,
+})
+assert.equal(resolveMobileHeroMedia({ mode: 'unit', idolCode: '038tak', unitCode: '13the' }).src,
+  '/assets/units/mobile_bg/image_unit_mobile_background_13the.png')
 assert.match(archiveMobile, /cardById/, 'mobile archive unlock chips must resolve card masterdata')
 assert.match(archiveMobile, /card\.title_full/, 'mobile archive unlock chips must display authoritative card names')
 assert.match(archiveMobile, /emit\('open-card'/, 'named card unlock chips must retain the existing card-detail route entry')

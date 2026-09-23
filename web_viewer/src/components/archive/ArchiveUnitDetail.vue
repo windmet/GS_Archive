@@ -1,10 +1,10 @@
 <template>
-  <article v-if="unit" class="unit-detail">
+  <article v-if="unit" class="unit-detail" data-archive-scroll-container>
     <header class="unit-hero" :style="{ backgroundImage: `url(${getBgUrl(unit.representative_bg)})` }">
       <span class="unit-hero-shade" aria-hidden="true"></span>
       <div class="unit-hero-copy">
         <img class="unit-hero-logo" :src="getUnitLogoUrl(unit.unit_code)" alt="" />
-        <span>{{ unit.unit_code }}</span>
+        <span>UNIT ARCHIVE</span>
         <h2>{{ unit.unit_name }}</h2>
         <p>{{ unit.unit_kana }}</p>
       </div>
@@ -50,17 +50,14 @@
         <span>{{ members.length }}</span>
       </div>
       <div class="unit-members">
-        <button v-for="member in members" :key="member.idol_code" @click="emit('open-idol', member)">
-          <img :src="`/assets/idols/icons/image_chara_icon_${member.idol_code}.png`" :alt="member.display_name" />
-          <span>{{ member.display_name }}</span>
-        </button>
+        <ArchiveIdolReference v-for="entry in memberReferences" :key="entry.member.idol_code" :reference="entry.reference" @open="emit('open-idol', entry.member)" />
       </div>
     </section>
 
     <section v-if="songs.length" class="unit-section" aria-labelledby="unit-songs-title">
       <div class="section-heading">
         <h3 id="unit-songs-title">组合歌曲</h3>
-        <span>{{ songs.length }} · 表 46 类别 2</span>
+        <span>{{ songs.length }} 首</span>
       </div>
       <div class="unit-songs">
         <button v-for="song in songs" :key="song.song_code" @click="emit('open-song', song.song_code)">
@@ -68,7 +65,7 @@
           <Music v-else :size="20" aria-hidden="true" />
           <span>
             <strong>{{ song.title }}</strong>
-            <small>{{ song.song_code }}</small>
+
           </span>
           <ChevronRight :size="16" aria-hidden="true" />
         </button>
@@ -109,24 +106,30 @@
           <Play :size="15" fill="currentColor" />
           <span>
             <strong>{{ story.title }}</strong>
-            <small>{{ story.resourceId }}</small>
+
           </span>
-          <small>{{ story.summary?.step_count || 0 }} steps</small>
+          <small>查看剧情</small>
         </button>
       </div>
     </section>
+    <ArchiveTechnicalDetails :key="unit.unit_code" :evidence="{ unit, songs: songs.map(song => ({ song_code: song.song_code, title: song.title, performance_mapping: song.performance_mapping })), stories: stories.map(story => ({ title: story.title, resourceId: story.resourceId, file: story.file, summary: story.summary })) }" />
   </article>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { ChevronRight, Images, Music, Play } from '@lucide/vue'
+import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
+import ArchiveIdolReference from './ArchiveIdolReference.vue'
+import { buildIdolReference } from '../../presentation/IdolReferencePresentation.js'
 import { getBgUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 
 const props = defineProps({
   unit: { type: Object, default: null },
   members: { type: Array, default: () => [] },
+  identity: { type: Object, default: null },
+  manifest: { type: Object, default: null },
   stories: { type: Array, default: () => [] },
   songs: { type: Array, default: () => [] },
   cardStats: { type: Object, default: () => ({}) },
@@ -136,10 +139,14 @@ const props = defineProps({
   },
 })
 const emit = defineEmits(['open-idol', 'open-story', 'open-event', 'open-cards', 'open-song'])
+const memberReferences = computed(() => props.members.map(member => ({
+  member,
+  reference: buildIdolReference(member.idol_code, props.identity, props.manifest, `unit:${props.unit?.unit_code || ''}`),
+})))
 
 function matchingMemberNames(event) {
   const names = new Map(props.members.map(member => [member.idol_code, member.display_name]))
-  return (event.matching_character_ids || []).map(idolCode => names.get(idolCode) || idolCode).join('、')
+  return (event.matching_character_ids || []).map(idolCode => names.get(idolCode) || '姓名待确认').join('、')
 }
 
 function relationItems(events, label, meta) {
@@ -165,7 +172,7 @@ function relationItems(events, label, meta) {
 const teamEventItems = computed(() => relationItems(
   props.eventRelations.team_events,
   '固定组合团活',
-  event => [event.series, `${event.characters?.length || 0} members`].filter(Boolean).join(' · '),
+  event => [event.series, `${event.characters?.length || 0} 位成员`].filter(Boolean).join(' · '),
 ))
 const attributeEventItems = computed(() => relationItems(
   props.eventRelations.attribute_event_appearances,
@@ -200,11 +207,7 @@ const mixedEventItems = computed(() => relationItems(
 .unit-stat-grid > div { min-width: 0; padding: 12px; background: #f8fafb; }
 .unit-stat-grid dt { overflow: hidden; color: #68747c; font-size: 0.64rem; text-overflow: ellipsis; white-space: nowrap; }
 .unit-stat-grid dd { margin: 5px 0 0; color: #233039; font-size: 1.12rem; font-weight: 700; }
-.unit-members { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
-.unit-members button { display: flex; align-items: center; gap: 9px; min-width: 0; min-height: 52px; padding: 7px 9px; border: 1px solid #e0e5e8; border-radius: 6px; background: #fff; color: #26313a; cursor: pointer; text-align: left; }
-.unit-members button:hover { border-color: #73c9c2; background: #f2fbfa; }
-.unit-members img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }
-.unit-members span { overflow: hidden; font-size: 0.72rem; text-overflow: ellipsis; white-space: nowrap; }
+.unit-members { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
 .unit-songs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .unit-songs button { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 58px; padding: 7px 10px; border: 1px solid #e0e5e8; border-radius: 6px; background: #fff; color: #26313a; cursor: pointer; text-align: left; }
 .unit-songs button:hover { border-color: #73c9c2; background: #f2fbfa; }
@@ -227,7 +230,7 @@ const mixedEventItems = computed(() => relationItems(
   .unit-hero { min-height: 170px; padding: 20px; }
   .unit-hero h2 { font-size: 1.45rem; }
   .unit-description, .unit-section { margin-top: 8px; padding: 14px; }
-  .unit-members { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .unit-members { grid-template-columns: 1fr; }
   .unit-songs { grid-template-columns: 1fr; }
   .unit-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .unit-stories button { grid-template-columns: 20px minmax(0, 1fr); }

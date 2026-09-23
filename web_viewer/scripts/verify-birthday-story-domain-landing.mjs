@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { buildStoryCatalog } from '../src/data/archiveSelectors.js'
 import { buildStoryCollections } from '../src/data/storyCollections.js'
 import { buildBirthdayStoryDomainIdentity } from '../src/data/storyDomainIdentityIndex.js'
+import { buildBirthdayStoryDomainIdentity as legacyBirthday } from '../fixtures/story-catalog/legacy-domain-identity-v0.mjs'
 import { readArchiveRoute } from '../src/core/archiveRoute.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -36,7 +37,10 @@ assert.equal(collectionRoute.storyType, 'birthday')
 assert.equal(collectionRoute.storySection, '001tom')
 assert.equal(collectionRoute.query, '冬馬')
 
-const birthday = buildBirthdayStoryDomainIdentity(master, idolUnit, speakerDictionary, birthdaySemantic)
+const catalogData = await readJson('public/data/masterdata/story_catalog.json')
+const birthday = buildBirthdayStoryDomainIdentity(catalogData, idolUnit, speakerDictionary, birthdaySemantic)
+assert.deepEqual(birthday, legacyBirthday(master, idolUnit, speakerDictionary, birthdaySemantic))
+assert.deepEqual(buildBirthdayStoryDomainIdentity(catalogData, idolUnit, speakerDictionary), legacyBirthday(master, idolUnit, speakerDictionary))
 assert.equal(birthday.meta.collectionCount, 51)
 assert.equal(birthday.meta.logicalEntryCount, 181)
 assert.equal(birthday.meta.resolvedIdolEntryCount, 176)
@@ -45,8 +49,8 @@ assert.equal(birthday.meta.sharedSubjectEntryCount, 2)
 assert.equal(birthday.meta.unresolvedEntryCount, 0)
 assert.equal(birthday.meta.crossDomainSharedFileCount, 29)
 
-const catalog = buildStoryCatalog(master, presentation)
-const collections = buildStoryCollections(master, catalog, { birthdayDomain: birthday, idolEpisodes })
+const catalog = buildStoryCatalog(await readJson('public/data/masterdata/story_catalog.json'), presentation)
+const collections = buildStoryCollections(await readJson('public/data/masterdata/story_catalog.json'), catalog, { birthdayDomain: birthday, idolEpisodes })
   .filter(collection => collection.domain === 'birthday')
 assert.equal(collections.length, 51)
 assert.equal(collections.reduce((sum, collection) => sum + collection.chapterCount, 0), 181)
@@ -88,10 +92,12 @@ assert.ok(sharedChapters.every(chapter => chapter.file && chapter.episodes[0].fi
 assert.match(repositorySource, /speakerDictionary: '\/data\/masterdata\/speaker_dictionary\.json'/)
 assert.match(repositorySource, /birthdayStorySemantic: '\/data\/masterdata\/birthday_story_semantic_index\.json'/)
 assert.match(appSource, /:birthday-domain="birthdayStoryDomain"/)
+assert.match(appSource, /<ArchiveStoryDetail[\s\S]*?:idol-name="idolSourceName"/,
+  'story detail CAST keeps the master-data idol name')
 assert.match(appSource, /\['main', 'unit_story', 'extra', 'birthday'\]\.includes\(domain\)/)
 assert.match(appSource, /returnsToDomainLanding = \['main', 'extra', 'birthday'\]\.includes\(domain\)/)
 assert.match(catalogSource, /mode === 'portal' && domain === 'birthday'/)
-assert.match(catalogSource, /card\.subject\.kind === 'shared' \? 'COMMON'/)
+assert.match(catalogSource, /card\.subject\.kind === 'shared' \? '公共篇'/)
 assert.match(catalogSource, /@media \(max-width: 620px\).*\.extra-card-grid, \.birthday-card-grid \{ grid-template-columns: 1fr;/s)
 
 console.log('Birthday story domain landing: 51 collections, 181 logical records, 2 unassigned producer-birthday entries and 29 cross-domain files verified')

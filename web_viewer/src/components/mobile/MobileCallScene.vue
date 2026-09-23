@@ -104,8 +104,10 @@ const bgUrl = computed(() => (charaId.value ? getMobileBgUrl(charaId.value) : nu
 
 const callSurfaceStyle = computed(() => bgUrl.value ? {
   backgroundImage: `url(${bgUrl.value})`,
-  backgroundSize: '100% 100%',
-  backgroundPosition: 'center',
+  backgroundSize: '100% auto',
+  backgroundPosition: 'center top',
+  backgroundRepeat: 'no-repeat',
+  backgroundColor: '#c4babd',
 } : null)
 
 const replyLabel = 'プロデューサー：'

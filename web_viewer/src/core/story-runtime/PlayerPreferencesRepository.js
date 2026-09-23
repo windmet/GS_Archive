@@ -13,6 +13,7 @@ export const DEFAULT_PLAYER_PREFERENCES = Object.freeze({
   skip_mode: 'readOnly',
   voice_on_back: false,
   ui_hidden: false,
+  story_mobile_view_mode: 'ask',
   volumes: Object.freeze({
     master: 0.7,
     bgm: 0.5,
@@ -53,6 +54,8 @@ function normalize(input = {}) {
     skip_mode: ['readOnly', 'all'].includes(input.skip_mode) ? input.skip_mode : defaults.skip_mode,
     voice_on_back: input.voice_on_back === true,
     ui_hidden: input.ui_hidden === true,
+    story_mobile_view_mode: ['ask', 'landscape', 'portrait'].includes(input.story_mobile_view_mode)
+      ? input.story_mobile_view_mode : defaults.story_mobile_view_mode,
     volumes: {
       master: finite(volumes.master, defaults.volumes.master, { min: 0, max: 1 }),
       bgm: finite(volumes.bgm, defaults.volumes.bgm, { min: 0, max: 1 }),

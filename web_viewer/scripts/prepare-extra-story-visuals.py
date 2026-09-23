@@ -25,7 +25,7 @@ DATA_PIPELINE_ROOT = REPOSITORY_ROOT / "data_pipeline"
 sys.path.insert(0, str(DATA_PIPELINE_ROOT))
 
 from archive_paths import add_sources_config_argument, load_archive_sources
-from masterdata_extract import iter_top_records, parse_message
+from sidem_masterdata import iter_top_records, parse_message
 
 
 DEFAULT_RELATION_CATALOG = (

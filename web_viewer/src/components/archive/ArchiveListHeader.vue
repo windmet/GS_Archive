@@ -1,8 +1,5 @@
 <template>
-  <header class="list-header">
-    <button class="back-btn" @click="emit('back')">← Back</button>
-    <h2>{{ title }}</h2>
-  </header>
+  <ArchivePageChrome class="list-header" back-class="back-btn" @back="emit('back')"><template #title><h2>{{ title }}</h2></template></ArchivePageChrome>
   <div v-if="filterPlaceholder || $slots.filters" class="filter-bar">
     <slot name="filters">
       <input
@@ -16,6 +13,7 @@
 </template>
 
 <script setup>
+import ArchivePageChrome from './ArchivePageChrome.vue'
 defineProps({
   title: { type: String, default: '' },
   filterPlaceholder: { type: String, default: '' },
@@ -27,6 +25,7 @@ const emit = defineEmits(['back', 'update:modelValue'])
 
 <style scoped>
 .list-header {
+  --archive-back-ink: #16838d;
   position: sticky;
   top: 0;
   z-index: 5;
@@ -46,20 +45,9 @@ const emit = defineEmits(['back', 'update:modelValue'])
   color: #222;
   overflow-wrap: anywhere;
 }
-.back-btn {
-  flex: 0 0 auto;
-  background: transparent;
-  color: #4488cc;
-  border: 1px solid #c0d8ee;
-  border-radius: 6px;
-  padding: 4px 12px;
-  cursor: pointer;
-  font-size: 0.85rem;
-}
-.back-btn:hover { background: #e8f0ff; }
 .filter-bar {
   position: sticky;
-  top: 48px;
+  top: 69px;
   z-index: 5;
   padding: 8px 16px;
   background: #f8f9fa;

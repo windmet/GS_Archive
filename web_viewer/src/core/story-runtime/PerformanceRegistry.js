@@ -26,17 +26,25 @@ export function createPerformanceHandle({
 
   let currentStatus = status
   let operation = null
+  let operationKind = null
+  let operationGeneration = 0
   let resolveFinished
   const finished = new Promise(resolve => { resolveFinished = resolve })
 
   async function transition(finalStatus, callback, reason) {
     if (!ACTIVE_STATUSES.has(currentStatus)) return currentStatus
-    if (operation) return operation
+    // Navigation/disposal must be able to interrupt an asynchronous Skip
+    // settlement (for example, a Spine cue waiting for its model to load).
+    if (operation && (finalStatus !== 'cancelled' || operationKind === 'cancelled')) return operation
+    const generation = ++operationGeneration
+    operationKind = finalStatus
     operation = (async () => {
       try {
         await callback?.(reason)
+        if (generation !== operationGeneration) return currentStatus
         currentStatus = finalStatus
       } catch (error) {
+        if (generation !== operationGeneration) return currentStatus
         currentStatus = 'failed'
         resolveFinished({ status: currentStatus, reason, error })
         throw error
@@ -58,11 +66,12 @@ export function createPerformanceHandle({
     get status() { return currentStatus },
     get active() { return ACTIVE_STATUSES.has(currentStatus) },
     async start() {
-      if (currentStatus !== 'scheduled') return currentStatus
+      if (currentStatus !== 'scheduled' || operationKind !== null) return currentStatus
       currentStatus = 'running'
       try {
         await onStart?.()
       } catch (error) {
+        if (operationKind === 'cancelled' || !ACTIVE_STATUSES.has(currentStatus)) return currentStatus
         currentStatus = 'failed'
         resolveFinished({ status: currentStatus, reason: 'start-failed', error })
         throw error
@@ -76,15 +85,15 @@ export function createPerformanceHandle({
       return transition('cancelled', onCancel, reason)
     },
     async pause() {
-      if (currentStatus !== 'running') return currentStatus
+      if (currentStatus !== 'running' || operationKind !== null) return currentStatus
       await onPause?.()
-      currentStatus = 'paused'
+      if (currentStatus === 'running' && operationKind !== 'cancelled') currentStatus = 'paused'
       return currentStatus
     },
     async resume() {
-      if (currentStatus !== 'paused') return currentStatus
+      if (currentStatus !== 'paused' || operationKind !== null) return currentStatus
       await onResume?.()
-      currentStatus = 'running'
+      if (currentStatus === 'paused' && operationKind !== 'cancelled') currentStatus = 'running'
       return currentStatus
     },
     complete(reason = 'natural-completion') {
@@ -100,6 +109,7 @@ export class PerformanceRegistry {
   constructor() {
     this._active = new Map()
     this._completed = []
+    this._cancelling = new Set()
   }
 
   register(handle) {
@@ -158,8 +168,22 @@ export class PerformanceRegistry {
 
   async cancelAll(reason = 'cancel-all') {
     const targets = this.getActive()
-    await Promise.all(targets.map(handle => handle.cancel(reason)))
-    return targets.length
+    // Retire ownership before async cleanup so the next step can reuse cue IDs
+    // and cannot inherit the previous step's input/Auto blockers.
+    for (const handle of targets) {
+      if (this._active.get(handle.id) === handle) this._active.delete(handle.id)
+    }
+    const cleanup = Promise.allSettled(targets.map(handle => handle.cancel(reason))).then(results => {
+      const failures = results.filter(result => result.status === 'rejected').map(result => result.reason)
+      if (failures.length) throw new AggregateError(failures, 'performance cancellation failed')
+    })
+    this._cancelling.add(cleanup)
+    try {
+      await cleanup
+      return targets.length
+    } finally {
+      this._cancelling.delete(cleanup)
+    }
   }
 
   clearCompleted() {
@@ -168,6 +192,7 @@ export class PerformanceRegistry {
 
   async dispose() {
     await this.cancelAll('registry-dispose')
+    await Promise.all([...this._cancelling])
     this._active.clear()
   }
 

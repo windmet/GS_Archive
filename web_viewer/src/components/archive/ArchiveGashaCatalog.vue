@@ -1,5 +1,5 @@
 <template>
-  <section class="gasha-catalog">
+  <section class="gasha-catalog" data-archive-scroll-container>
     <div class="catalog-summary">
       <div>
         <strong>{{ totalGashas }}</strong>
@@ -38,6 +38,7 @@
         v-for="gasha in gashas"
         :key="gasha.id"
         class="gasha-item"
+        :data-archive-focus-id="`gasha:${gasha.id}`"
         @click="emit('select', gasha)"
       >
         <span class="banner-frame">
@@ -52,9 +53,8 @@
             </span>
           </span>
           <span class="gasha-meta">
-            <code>{{ gasha.code }}</code>
             <span>{{ formatDate(gasha.start_at) }}</span>
-            <span>{{ pickupCardCount(gasha) }} cards</span>
+            <span>{{ pickupCardCount(gasha) }} 张关联卡</span>
           </span>
         </span>
         <ChevronRight :size="18" />
@@ -84,7 +84,7 @@ const CATEGORY_LABELS = {
 }
 
 function categoryLabel(category) {
-  return CATEGORY_LABELS[category] || category || '未分类'
+  return CATEGORY_LABELS[category] || '未分类'
 }
 
 function pickupCardCount(gasha) {
@@ -92,7 +92,7 @@ function pickupCardCount(gasha) {
 }
 
 function formatDate(timestamp) {
-  if (!Number.isFinite(timestamp)) return 'unknown'
+  if (!Number.isFinite(timestamp)) return '未记录'
   return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeZone: 'Asia/Tokyo' })
     .format(new Date(timestamp * 1000))
 }

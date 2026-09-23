@@ -1,13 +1,12 @@
 <template>
-  <article v-if="event" class="event-detail">
+  <article v-if="event" class="event-detail" data-archive-scroll-container>
     <section class="event-identity">
       <div class="event-visual">
         <img class="event-banner" :src="getEventBannerUrl(event.event_code)" :alt="event.title" />
-        <img class="event-logo" :src="eventLogoUrl" alt="" />
       </div>
       <div class="event-summary">
         <div class="event-kicker">
-          <span>EVENT {{ event.event_code }}</span>
+          <span>EVENT ARCHIVE</span>
           <small>{{ eventTypeLabel }}</small>
           <small>{{ scopeLabel }}</small>
         </div>
@@ -17,8 +16,7 @@
           <div><dt>活动结束</dt><dd>{{ formatDateTime(masterEvent?.end_at) }}</dd></div>
           <div><dt>展示结束</dt><dd>{{ formatDateTime(masterEvent?.display_end_at) }}</dd></div>
           <div><dt>活动形式</dt><dd>{{ eventTypeLabel }}</dd></div>
-          <div v-if="masterEvent?.bgm_resource_id"><dt>活动 BGM</dt><dd>{{ masterEvent.bgm_resource_id }}</dd></div>
-          <div><dt>故事章节</dt><dd>{{ masterEvent?.story_chapter_id || event.event_id }}</dd></div>
+
         </dl>
       </div>
     </section>
@@ -27,7 +25,7 @@
       <div>
         <span>故事简介</span>
         <h3 id="event-synopsis-title">{{ story?.preplaySynopsis?.title || event.title }}</h3>
-        <p>{{ story?.preplaySynopsis?.text || '本地剧情文件已收录，可直接进入正式播放。' }}</p>
+        <p>{{ story?.preplaySynopsis?.text || (event.exists ? '剧情已收录，可选择章节观看。' : '剧情暂未收录。') }}</p>
       </div>
       <div class="story-actions">
         <button :disabled="!event.exists" @click="emit('play')">
@@ -51,38 +49,40 @@
       <div class="section-heading">
         <div>
           <h3 id="event-episodes-title">活动剧情</h3>
-          <p>从序章或指定 Episode 的正式剧情边界开始播放。</p>
+          <p>选择章节开始观看剧情。</p>
         </div>
-        <span class="episode-count">{{ episodes.length }} episodes</span>
+        <span class="episode-count">{{ episodes.length }} 章</span>
       </div>
       <div class="episode-list">
+        <div v-for="(episode, index) in episodes" :key="episode.id" class="episode-entry">
         <button
-          v-for="(episode, index) in episodes"
-          :key="episode.id"
           :disabled="!event.exists"
           @click="emit('play-episode', episode)"
         >
           <span class="episode-number">{{ String(index + 1).padStart(2, '0') }}</span>
           <span class="episode-copy">
             <strong>{{ episode.label }}</strong>
-            <small>{{ episode.resourceId }}</small>
           </span>
           <span class="episode-stats">
-            <span>{{ episode.dialogueCount }} dialogues</span>
-            <span>{{ episode.voiceCount }} voices</span>
+            <span>{{ episode.dialogueCount }} 段对白</span>
+            <span>{{ episode.voiceCount }} 段语音</span>
           </span>
           <Play :size="16" fill="currentColor" />
         </button>
+        <button v-if="readingByFile.has(episode.file)" class="episode-reading" :aria-label="`阅读 ${episode.label}`"
+          @click="emit('read', readingByFile.get(episode.file).document_id)"><BookOpen :size="16" />阅读</button>
+        </div>
       </div>
+      <p v-if="readingError" role="status">{{ readingError }} <button @click="emit('retry-reading')">重试阅读目录</button></p>
     </section>
 
     <section class="detail-section reward-section" aria-labelledby="event-rewards-title">
       <div class="section-heading">
         <div>
           <h3 id="event-rewards-title">活动报酬卡</h3>
-          <p>读取 masterdata 的剧情阅读报酬与累计 PT 报酬，不以同期发布时间代替获得方式。</p>
+          <p>通过阅读剧情或累计活动点数获得的报酬卡。</p>
         </div>
-        <span class="raw-badge">Raw · {{ rewardCards.length }}</span>
+        <span class="raw-badge">{{ rewardCards.length }} 张</span>
       </div>
       <div v-if="rewardCards.length" class="reward-grid">
         <button v-for="card in rewardCards" :key="card.card_resource_id" @click="emit('open-card', card)">
@@ -101,28 +101,20 @@
           <ChevronRight :size="17" />
         </button>
       </div>
-      <p v-else class="empty-copy">当前活动类型未在本地静态报酬表中检出卡片报酬。</p>
+      <p v-else class="empty-copy">尚未收录此活动的卡片报酬信息。</p>
     </section>
 
     <section class="detail-section" aria-labelledby="event-cast-title">
       <div class="section-heading"><h3 id="event-cast-title">出演与归属</h3></div>
       <div class="cast-layout">
         <div class="idol-list" :class="{ 'has-story-visuals': hasStoryVisuals }">
-          <button v-for="idol in idols" :key="idol.idol_code" @click="emit('open-idol', idol)">
-            <img
-              v-if="storyVisualByIdol[idol.idol_code]"
-              class="event-story-visual"
-              :src="storyVisualByIdol[idol.idol_code]"
-              :alt="idol.display_name || idol.idol_code"
-            />
-            <img
-              v-else
-              class="idol-icon"
-              :src="`/assets/idols/icons/image_chara_icon_${idol.idol_code}.png`"
-              :alt="idol.display_name || idol.idol_code"
-            />
-            <span>{{ idol.display_name || idol.idol_code }}</span>
-          </button>
+          <ArchiveIdolReference
+            v-for="entry in castReferences"
+            :key="entry.idol.idol_code"
+            :reference="entry.reference"
+            :density="entry.reference.imageCandidates[0]?.kind === 'event_story_visual' ? 'visual' : 'portrait'"
+            @open="emit('open-idol', entry.idol)"
+          />
         </div>
         <div class="unit-list">
           <button v-for="unit in units" :key="unit.unit_id" @click="emit('open-unit', unit)">
@@ -136,29 +128,34 @@
     <section v-if="derivedOnlyCards.length" class="detail-section" aria-labelledby="event-related-title">
       <div class="section-heading">
         <div><h3 id="event-related-title">其他同期关联</h3><p>仅由开放时间与出演阵容推导，尚未在报酬表中确认获得方式。</p></div>
-        <span class="derived-badge">Derived · {{ derivedOnlyCards.length }}</span>
+        <span class="derived-badge">{{ derivedOnlyCards.length }} 张</span>
       </div>
       <ArchiveRelationList layout="grid" :items="derivedRelationItems" @select="emit('open-card', $event.payload)" />
     </section>
 
-    <section class="detail-section evidence-section" aria-labelledby="event-evidence-title">
-      <div class="section-heading"><h3 id="event-evidence-title">资料来源</h3></div>
-      <dl>
-        <div><dt>活动实体</dt><dd>Raw · table 112</dd></div>
-        <div><dt>活动详情</dt><dd>Raw · table {{ masterEvent?.event_type === 3 ? 124 : 113 }}</dd></div>
-        <div><dt>累计 PT 报酬</dt><dd>Raw · table {{ masterEvent?.event_type === 3 ? 126 : 114 }}</dd></div>
-        <div><dt>剧情阅读报酬</dt><dd>Raw · table 10 / 11 / 12 / 70</dd></div>
-        <div><dt>剧情文件</dt><dd>{{ event.file }}</dd></div>
-        <div><dt>归属判定</dt><dd>{{ event.classification_source }}</dd></div>
-      </dl>
-    </section>
+    <ArchiveTechnicalDetails :key="event.event_id" :evidence="{ event, masterEvent, episodes }">
+      <section class="detail-section evidence-section" aria-labelledby="event-evidence-title">
+        <div class="section-heading"><h3 id="event-evidence-title">资料来源</h3></div>
+        <dl>
+          <div><dt>活动实体</dt><dd>Raw · table 112</dd></div>
+          <div><dt>活动详情</dt><dd>Raw · table {{ masterEvent?.event_type === 3 ? 124 : 113 }}</dd></div>
+          <div><dt>累计 PT 报酬</dt><dd>Raw · table {{ masterEvent?.event_type === 3 ? 126 : 114 }}</dd></div>
+          <div><dt>剧情阅读报酬</dt><dd>Raw · table 10 / 11 / 12 / 70</dd></div>
+          <div><dt>剧情文件</dt><dd>{{ event.file }}</dd></div>
+          <div><dt>归属判定</dt><dd>{{ event.classification_source }}</dd></div>
+        </dl>
+      </section>
+    </ArchiveTechnicalDetails>
   </article>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { BookOpen, ChevronRight, ExternalLink, Gauge, Play } from '@lucide/vue'
+import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
+import ArchiveIdolReference from './ArchiveIdolReference.vue'
+import { buildEventIdolReference } from '../../presentation/IdolReferencePresentation.js'
 import { getEventBannerUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 
@@ -170,21 +167,24 @@ const props = defineProps({
   cards: { type: Array, default: () => [] },
   idols: { type: Array, default: () => [] },
   units: { type: Array, default: () => [] },
-  idolVisualUrl: { type: Function, default: () => '' },
+  identity: { type: Object, default: null },
+  manifest: { type: Object, default: null },
+  visualRegistry: { type: Object, default: null },
+  rawVisualUrl: { type: Function, default: () => '' },
   externalResources: { type: Array, default: () => [] },
+  readingEntries: { type: Array, default: () => [] },
+  readingError: { type: String, default: '' },
 })
-const emit = defineEmits(['play', 'play-episode', 'open-card', 'open-idol', 'open-unit'])
+const emit = defineEmits(['read', 'retry-reading', 'play', 'play-episode', 'open-card', 'open-idol', 'open-unit'])
+const readingByFile = computed(() => new Map(props.readingEntries.filter(entry => entry.status === 'ready').map(entry => [entry.source_file, entry])))
 
-const eventLogoUrl = computed(() => `/assets/events/logos/image_event_logo_${props.event?.event_code}.png`)
-const storyVisualByIdol = computed(() => Object.fromEntries(
-  props.idols.map(idol => [
-    idol.idol_code,
-    props.idolVisualUrl(idol.idol_code),
-  ]),
-))
-const hasStoryVisuals = computed(() =>
-  Object.values(storyVisualByIdol.value).some(Boolean),
-)
+const castReferences = computed(() => props.idols.map(idol => ({
+  idol,
+  reference: buildEventIdolReference(idol.idol_code, props.identity, props.manifest,
+    props.visualRegistry, props.event, props.rawVisualUrl(idol.idol_code)),
+})))
+const hasStoryVisuals = computed(() => castReferences.value.some(entry =>
+  entry.reference.imageCandidates[0]?.kind === 'event_story_visual'))
 const eventTypeLabel = computed(() => ({
   theater: 'THEATER 累计 PT',
   tour: 'TOUR 累计 PT',
@@ -251,7 +251,7 @@ const derivedRelationItems = computed(() => derivedOnlyCards.value.map(card => (
 })))
 
 function idolName(id) {
-  return props.idols.find(idol => idol.idol_code === id)?.display_name || id
+  return props.idols.find(idol => idol.idol_code === id)?.display_name || '姓名待确认'
 }
 function formatNumber(value) {
   return new Intl.NumberFormat('zh-CN').format(Number(value || 0))
@@ -265,16 +265,25 @@ function formatDateTime(timestamp) {
 </script>
 
 <style scoped>
+.episode-entry { display: flex; min-width: 0; }
+.episode-entry > button:first-child { flex: 1; min-width: 0; }
+.episode-list .episode-reading { display: flex; justify-content: center; flex: 0 0 auto; min-width: 62px; gap: 5px; color: #157c78; font-size: 13px; }
 .event-detail { height: 100%; overflow-y: auto; background: #f5f7f8; color: #24313a; }
 .event-identity { display: grid; grid-template-columns: minmax(420px, 1.4fr) minmax(280px, .6fr); gap: 28px; padding: 26px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #dfe5e8; background: #fff; }
 .event-visual { position: relative; align-self: start; overflow: hidden; aspect-ratio: 940 / 510; border: 1px solid #e1e6e8; border-radius: 6px; background: #e9eef0; }
-.event-banner { display: block; width: 100%; height: 100%; object-fit: contain; }.event-logo { position: absolute; left: 20px; bottom: 16px; width: min(38%, 240px); max-height: 38%; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,.28)); }
+.event-banner { display: block; width: 100%; height: 100%; object-fit: contain; }
 .event-summary { min-width: 0; padding-top: 4px; }.event-kicker { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; color: #16857d; font-size: .62rem; font-weight: 800; }.event-kicker small { padding: 3px 5px; border-radius: 3px; background: #eaf7f5; color: #277870; font-size: .53rem; }.event-summary h2 { margin: 11px 0 18px; font-size: 1.18rem; line-height: 1.45; }.event-summary dl { margin: 0; }.event-summary dl div { display: grid; grid-template-columns: 70px minmax(0,1fr); gap: 10px; padding: 7px 0; border-bottom: 1px solid #edf0f2; font-size: .66rem; }.event-summary dt { color: #849097; }.event-summary dd { margin: 0; color: #36474f; font-variant-numeric: tabular-nums; }
 .story-band { display: flex; align-items: center; justify-content: space-between; gap: 28px; padding: 22px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #d7e6e4; background: #eaf6f4; }.story-band > div { min-width: 0; }.story-band > div > span { color: #147d76; font-size: .58rem; font-weight: 800; }.story-band h3 { margin: 7px 0 5px; font-size: .88rem; }.story-band p { max-width: 800px; margin: 0; color: #405159; font-size: .68rem; line-height: 1.75; white-space: pre-line; }.story-actions { display: grid; flex: 0 0 auto; gap: 7px; min-width: 174px; }.story-actions > button,.story-actions > a { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 8px 13px; border: 1px solid #158f87; border-radius: 6px; background: #158f87; color: #fff; cursor: pointer; font: inherit; font-size: .68rem; text-decoration: none; }.story-actions > button:disabled { border-color: #cbd3d6; background: #dfe5e7; color: #78848a; cursor: not-allowed; }.story-actions > a { justify-content: flex-start; border-color: #bedbd8; background: #fff; color: #166f69; }.story-actions > a span { display: flex; flex-direction: column; gap: 2px; }.story-actions > a strong { font-size: .64rem; }.story-actions > a small { color: #63817e; font-size: .52rem; }
 .detail-section { padding: 22px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #e1e6e8; background: #fff; }.detail-section + .detail-section { margin-top: 12px; }.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 14px; }.section-heading h3 { margin: 0; font-size: .86rem; }.section-heading p { margin: 4px 0 0; color: #849097; font-size: .59rem; }.raw-badge,.derived-badge { flex: 0 0 auto; padding: 4px 7px; border-radius: 4px; font-size: .58rem; font-weight: 700; }.raw-badge { background: #e5f6f3; color: #177970; }.derived-badge { background: #fff2d6; color: #8b6413; }
 .episode-section { background: #f8fafb; }.episode-count { color: #6f7e85; font-size: .59rem; font-weight: 700; }.episode-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); border-top: 1px solid #dfe5e7; border-left: 1px solid #dfe5e7; }.episode-list button { display: grid; grid-template-columns: 32px minmax(0,1fr) auto 28px; align-items: center; gap: 9px; min-height: 58px; padding: 8px 10px; border: 0; border-right: 1px solid #dfe5e7; border-bottom: 1px solid #dfe5e7; background: #fff; color: #29383f; cursor: pointer; font: inherit; text-align: left; }.episode-list button:hover { background: #eff9f7; }.episode-list button:disabled { cursor: not-allowed; opacity: .55; }.episode-number { color: #17877f; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .62rem; font-weight: 800; }.episode-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }.episode-copy strong { font-size: .67rem; }.episode-copy small { overflow: hidden; color: #929ca1; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .48rem; text-overflow: ellipsis; white-space: nowrap; }.episode-stats { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; color: #7d898f; font-size: .5rem; }.episode-list button > svg { color: #168a82; }
 .reward-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }.reward-grid > button { display: grid; grid-template-columns: 72px minmax(0,1fr) 18px; align-items: center; gap: 10px; min-width: 0; min-height: 106px; padding: 8px; border: 1px solid #dfe5e7; border-radius: 6px; background: #fff; color: #28363e; cursor: pointer; font: inherit; text-align: left; }.reward-grid > button:hover { border-color: #69beb7; background: #f4fbfa; }.reward-grid > button > img { width: 72px; aspect-ratio: 1; border-radius: 4px; object-fit: contain; }.reward-copy { min-width: 0; }.reward-copy > span { color: #168078; font-size: .55rem; font-weight: 700; }.reward-copy strong { display: block; overflow: hidden; margin: 4px 0 6px; font-size: .66rem; text-overflow: ellipsis; white-space: nowrap; }.reward-copy ul { display: grid; gap: 3px; margin: 0; padding: 0; list-style: none; }.reward-copy li { display: flex; align-items: flex-start; gap: 4px; color: #69767e; font-size: .54rem; line-height: 1.35; }.reward-copy li svg { flex: 0 0 auto; margin-top: 1px; color: #248980; }.empty-copy { margin: 0; color: #7b878e; font-size: .66rem; }
-.cast-layout { display: grid; grid-template-columns: 1fr auto; gap: 18px; }.idol-list { display: grid; grid-template-columns: repeat(auto-fit,minmax(132px,1fr)); gap: 7px; }.unit-list { display: grid; gap: 7px; min-width: 180px; }.idol-list button,.unit-list button { display: flex; align-items: center; gap: 9px; min-width: 0; min-height: 52px; padding: 6px 9px; border: 1px solid #e0e5e8; border-radius: 6px; background: #fff; color: #26323b; cursor: pointer; font: inherit; text-align: left; }.idol-list .idol-icon { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }.idol-list.has-story-visuals { grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); }.idol-list.has-story-visuals button { flex-direction: column; justify-content: flex-end; min-height: 210px; overflow: hidden; padding: 8px; text-align: center; }.idol-list.has-story-visuals .event-story-visual { width: 100%; height: 170px; object-fit: contain; object-position: center bottom; }.idol-list.has-story-visuals .idol-icon { width: 72px; height: 72px; margin: auto; }.unit-list img { width: 70px; height: 38px; object-fit: contain; }.idol-list span,.unit-list span { overflow: hidden; font-size: .66rem; text-overflow: ellipsis; white-space: nowrap; }
+.cast-layout { display: grid; grid-template-columns: 1fr auto; gap: 18px; }
+.idol-list { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 7px; }
+.idol-list.has-story-visuals { grid-template-columns: repeat(auto-fit,minmax(190px,1fr)); }
+.unit-list { display: grid; gap: 7px; min-width: 180px; }
+.unit-list button { display: flex; align-items: center; gap: 9px; min-width: 0; min-height: 52px; padding: 6px 9px; border: 1px solid #e0e5e8; border-radius: 6px; background: #fff; color: #26323b; cursor: pointer; font: inherit; text-align: left; }
+.unit-list img { width: 70px; height: 38px; object-fit: contain; }
+.unit-list span { overflow: hidden; font-size: .66rem; text-overflow: ellipsis; white-space: nowrap; }
 .evidence-section { margin-bottom: 18px; }.evidence-section dl { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0 24px; margin: 0; }.evidence-section dl div { display: grid; grid-template-columns: 90px minmax(0,1fr); gap: 10px; padding: 8px 0; border-bottom: 1px solid #edf0f2; }.evidence-section dt { color: #7d898f; font-size: .61rem; }.evidence-section dd { margin: 0; overflow-wrap: anywhere; color: #394a52; font-size: .63rem; }
 @media (max-width: 900px) { .reward-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 @media (max-width: 760px) { .event-identity { grid-template-columns: 1fr; gap: 18px; padding: 16px; }.story-band { align-items: stretch; flex-direction: column; gap: 14px; padding: 18px 16px; }.detail-section { padding: 18px 16px; }.cast-layout { grid-template-columns: 1fr; }.unit-list { min-width: 0; }.evidence-section dl { grid-template-columns: 1fr; } }

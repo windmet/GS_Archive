@@ -12,7 +12,7 @@ export function applyScreenEntrySnapshot(manager, overlay) {
   }
 }
 
-export function createScreenCueHandle(cue, getManager) {
+export function createScreenCueHandle(cue, getManager, { nowMilliseconds } = {}) {
   const isWipe = cue.action === 'screen.directional_wipe'
   const start = duration => {
     if (isWipe) {
@@ -22,6 +22,7 @@ export function createScreenCueHandle(cue, getManager) {
         duration,
         0,
         cue.payload.direction,
+        ...(nowMilliseconds ? [nowMilliseconds] : []),
       )
     } else {
       getManager()?.setScreenFade?.(
@@ -30,6 +31,7 @@ export function createScreenCueHandle(cue, getManager) {
         duration,
         0,
         cue.payload.alpha ?? 1,
+        ...(nowMilliseconds ? [nowMilliseconds] : []),
       )
     }
   }

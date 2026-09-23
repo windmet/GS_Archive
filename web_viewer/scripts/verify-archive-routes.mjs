@@ -2,14 +2,53 @@ import assert from 'node:assert/strict'
 import {
   archiveSectionForRoute,
   buildArchiveBreadcrumbs,
+  buildArchiveSourceQuery,
   buildArchiveUrl,
   normalizeArchiveRoute,
   readArchiveRoute,
+  readArchiveSourceRoute,
 } from '../src/core/archiveRoute.js'
 
 const legacyScenario = readArchiveRoute('http://localhost/?file=1_4_001_01')
 assert.equal(legacyScenario.view, 'player')
 assert.equal(legacyScenario.scenario, '1_4_001_01.json')
+
+const filteredCards = readArchiveRoute('http://localhost/?view=cards&idol=001tom&rarity=SSR&asset_state=has_large&relation_state=event_card&q=冬馬')
+const cardsSource = buildArchiveSourceQuery(filteredCards)
+const sourcedCardUrl = buildArchiveUrl('http://localhost/', {
+  view: 'card_detail',
+  idol: '003hok',
+  card: '003hok_sr01',
+  sourceRoute: cardsSource,
+})
+const sourcedCard = readArchiveRoute(sourcedCardUrl)
+assert.equal(sourcedCard.sourceRoute, cardsSource)
+assert.deepEqual(readArchiveSourceRoute(sourcedCard.sourceRoute), filteredCards)
+const eventSource = buildArchiveSourceQuery(readArchiveRoute(
+  'http://localhost/?view=event_detail&event=430018&parent=card_detail&card=003hok_sr01&idol=003hok&from=' +
+  encodeURIComponent(cardsSource),
+))
+assert.equal(new URL(eventSource, 'http://localhost/').searchParams.has('from'), false, 'detail source cannot recurse')
+for (const badSource of ['https://example.com/', '?view=player&scenario=a.json', '?view=spine_lab', '?' + 'q'.repeat(8193)]) {
+  assert.equal(readArchiveSourceRoute(badSource).view, 'home')
+}
+assert.equal(readArchiveSourceRoute('?view=portal').view, 'portal')
+const labRoute = readArchiveRoute(buildArchiveUrl('http://localhost/', {
+  view: 'spine_lab',
+  sourceRoute: buildArchiveSourceQuery({ view: 'archive_status' }),
+}))
+assert.equal(labRoute.view, 'spine_lab')
+assert.equal(readArchiveSourceRoute(labRoute.sourceRoute).view, 'archive_status')
+const songSource = buildArchiveSourceQuery({ view: 'song_detail', song: 'brndnf' })
+const stageRoute = readArchiveRoute(buildArchiveUrl('http://localhost/', {
+  view: 'chibi_stage', song: 'brndnf', stageId: 'brndnf_live_effect', sourceRoute: songSource,
+}))
+assert.equal(stageRoute.view, 'chibi_stage')
+assert.equal(stageRoute.song, 'brndnf')
+assert.equal(stageRoute.stageId, 'brndnf_live_effect')
+assert.equal(readArchiveSourceRoute(stageRoute.sourceRoute).song, 'brndnf')
+assert.equal(readArchiveRoute('http://localhost/?view=chibi_stage&song=brndnf&stage=../invalid').stageId, '')
+assert.equal(buildArchiveUrl('http://localhost/?stage=stale', { view: 'song_detail', song: 'brndnf' }).searchParams.has('stage'), false)
 
 const invalidFilters = readArchiveRoute('http://localhost/?view=story_catalog&availability=nope&sort=nope&event_scope=mixed_unit_event')
 const episodePlayer = readArchiveRoute('http://localhost/?view=player&scenario=episodes%2F1_4_001_00_b.json&start_step=1&end_step=33&return=story_collection')
@@ -23,17 +62,17 @@ assert.equal(invalidFilters.eventScope, 'all')
 assert.deepEqual(
   normalizeArchiveRoute({ view: 'idol_detail', idol: '001tom' }),
   {
-    view: 'idol_detail', homeIdol: '', homeCue: '', homeCostume: '', category: 'idol', idol: '001tom', group: '', unit: '', unitFilter: '',
-    storyType: '', storyMode: 'portal', storySection: '', story: '', mobileMode: 'personal', mobileScenario: '', eventScope: 'all', availability: 'all', sort: 'domain', episode: '', card: '',
+    view: 'idol_detail', pickTarget: '', homeIdol: '', homeCue: '', homeCostume: '', category: 'idol', idol: '001tom', group: '', unit: '', unitFilter: '',
+    storyType: '', storyMode: 'portal', storySection: '', story: '', workMode: 'stories', mobileMode: 'personal', mobileScenario: '', eventScope: 'all', availability: 'all', sort: 'domain', episode: '', card: '',
     gasha: '', gashaType: 'all', rarity: 'all', assetState: 'all', relationState: 'all', query: '', song: '', songScope: 'all',
     event: '', scenario: '', startStep: 0, endStep: 0, voice: '', returnView: '', parentView: '',
   },
 )
 
-assert.equal(normalizeArchiveRoute({ view: 'idol_detail' }).view, 'idol_detail')
-assert.equal(normalizeArchiveRoute({ view: 'idol_detail' }).idol, '001tom')
+assert.equal(normalizeArchiveRoute({ view: 'idol_detail' }).view, 'idol_picker')
+assert.equal(normalizeArchiveRoute({ view: 'idol_detail' }).pickTarget, 'profile')
 assert.equal(normalizeArchiveRoute({ view: 'cards' }).view, 'cards')
-assert.equal(normalizeArchiveRoute({ view: 'cards' }).idol, '001tom')
+assert.equal(normalizeArchiveRoute({ view: 'cards' }).idol, '')
 assert.equal(normalizeArchiveRoute({ view: 'unit_detail' }).view, 'unit_catalog')
 assert.equal(normalizeArchiveRoute({ view: 'gasha_detail' }).view, 'gashas')
 assert.equal(normalizeArchiveRoute({ view: 'event_detail' }).view, 'story_catalog')
@@ -41,9 +80,9 @@ assert.equal(normalizeArchiveRoute({ view: 'story_detail' }).view, 'story_catalo
 assert.equal(normalizeArchiveRoute({ view: 'story_collection' }).view, 'story_catalog')
 assert.equal(normalizeArchiveRoute({ view: 'external_story_resources' }).view, 'external_story_resources')
 assert.equal(normalizeArchiveRoute({ view: 'seasonal_campaign' }).view, 'seasonal_campaign')
-assert.equal(normalizeArchiveRoute({ view: 'work_archive' }).view, 'work_archive')
-assert.equal(normalizeArchiveRoute({ view: 'idol_story_archive' }).view, 'idol_story_archive')
-assert.equal(normalizeArchiveRoute({ view: 'mobile_archive' }).view, 'mobile_archive')
+assert.equal(normalizeArchiveRoute({ view: 'work_archive' }).pickTarget, 'work')
+assert.equal(normalizeArchiveRoute({ view: 'idol_story_archive' }).pickTarget, 'story')
+assert.equal(normalizeArchiveRoute({ view: 'mobile_archive' }).pickTarget, 'mobile')
 assert.equal(normalizeArchiveRoute({ view: 'episodes' }).view, 'episode_zero_units')
 assert.equal(normalizeArchiveRoute({ view: 'player' }).view, 'home')
 assert.equal(normalizeArchiveRoute({ view: 'player', card: '001tom_n01', voice: '2_1_001_01_01_01' }).view, 'player')
@@ -167,16 +206,17 @@ assert.deepEqual(buildArchiveBreadcrumbs({ view: 'spine_lab' }), [])
 assert.deepEqual(buildArchiveBreadcrumbs({ view: 'chibi_stage' }), [])
 
 const legacyIdolRoot = readArchiveRoute('http://localhost/?view=idols&category=idol')
-assert.equal(legacyIdolRoot.view, 'idol_detail')
-assert.equal(legacyIdolRoot.idol, '001tom')
+assert.equal(legacyIdolRoot.view, 'idols')
+assert.equal(legacyIdolRoot.idol, '')
 const legacyCardRoot = readArchiveRoute('http://localhost/?view=idols&category=cards')
-assert.equal(legacyCardRoot.view, 'cards')
-assert.equal(legacyCardRoot.idol, '001tom')
+assert.equal(legacyCardRoot.view, 'idols')
+assert.equal(legacyCardRoot.idol, '')
+assert.equal(readArchiveRoute('http://localhost/?view=idols&category=cards&idol=002sht').view, 'cards')
 const legacyChatRoot = readArchiveRoute('http://localhost/?view=idols&category=idol_chat')
-assert.equal(legacyChatRoot.view, 'mobile_archive')
-assert.equal(legacyChatRoot.idol, '001tom')
+assert.equal(legacyChatRoot.view, 'idol_picker')
+assert.equal(legacyChatRoot.pickTarget, 'mobile')
 assert.equal(legacyChatRoot.mobileMode, 'personal')
-assert.equal(archiveSectionForRoute(legacyChatRoot), 'interactions')
+assert.equal(archiveSectionForRoute(legacyChatRoot), 'home')
 const legacyPhoneRoot = readArchiveRoute('http://localhost/?view=idols&category=idol_phone&idol=040ren')
 assert.equal(legacyPhoneRoot.view, 'mobile_archive')
 assert.equal(legacyPhoneRoot.idol, '040ren')
@@ -195,6 +235,11 @@ const workContext = readArchiveRoute('http://localhost/?view=work_archive&story_
 assert.equal(workContext.view, 'work_archive')
 assert.equal(workContext.storyType, 'work')
 assert.equal(workContext.idol, '001tom')
+assert.equal(workContext.workMode, 'stories')
+const workLinesContext = readArchiveRoute('http://localhost/?view=work_archive&story_type=work&idol=002sht&work_mode=lines')
+assert.equal(workLinesContext.workMode, 'lines')
+assert.equal(buildArchiveUrl('http://localhost/', workLinesContext).searchParams.get('work_mode'), 'lines')
+assert.equal(readArchiveRoute('http://localhost/?view=work_archive&work_mode=invalid').workMode, 'stories')
 
 const seasonalContext = readArchiveRoute('http://localhost/?view=seasonal_campaign&story_type=seasonal_campaign&story_section=white_day_2022')
 assert.equal(seasonalContext.view, 'seasonal_campaign')

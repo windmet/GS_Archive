@@ -1,13 +1,9 @@
 <template>
-  <article v-if="idol" class="idol-detail">
+  <article v-if="idol" class="idol-detail" data-archive-scroll-container>
     <header class="idol-profile-header">
-      <img
-        :src="`/assets/idols/icons/image_chara_icon_${idol.idol_code}.png`"
-        :alt="idol.display_name"
-        class="idol-portrait"
-      />
+      <ArchiveIdolAvatar class="idol-portrait" :idol-code="idol.idol_code" :accent-color="idol.color" :size="104" :ring-width="3" :alt="idol.display_name" />
       <div class="idol-identity">
-        <span class="idol-code">{{ idol.idol_code }}</span>
+        <span class="idol-code">偶像档案</span>
         <h2>{{ idol.display_name }}</h2>
         <p>{{ idol.name_fields?.kana || idol.cv || '' }}</p>
         <button v-if="idol.unit_code" class="idol-unit-link" @click="emit('open-unit', idol)">
@@ -38,7 +34,7 @@
     <section class="idol-related" aria-labelledby="idol-related-title">
       <div class="section-heading">
         <h3 id="idol-related-title">关联资料</h3>
-        <span>按现有索引统计</span>
+        <span>已收录</span>
       </div>
       <div class="related-grid">
         <button v-for="item in related" :key="item.id" @click="emit('open-domain', item.id)">
@@ -50,12 +46,16 @@
           <ChevronRight :size="18" aria-hidden="true" />
         </button>
       </div>
+      <div v-if="communicationStatus === 'error'" class="communication-status" role="alert">
+        通信资料暂时无法载入，统计尚未确认。
+        <button type="button" @click="emit('retry-communication')">重试加载统计</button>
+      </div>
     </section>
 
     <section v-if="songs.length" class="idol-songs" aria-labelledby="idol-songs-title">
       <div class="section-heading">
         <h3 id="idol-songs-title">演唱歌曲</h3>
-        <span>{{ songs.length }} songs · 表 46 映射</span>
+        <span>{{ songs.length }} 首</span>
       </div>
       <div class="song-links">
         <button v-for="entry in songs" :key="entry.song.song_code" @click="emit('open-song', entry.song.song_code)">
@@ -63,7 +63,7 @@
           <Music v-else :size="20" aria-hidden="true" />
           <span>
             <strong>{{ entry.song.title }}</strong>
-            <small>{{ entry.evidenceLabel }}</small>
+
           </span>
           <ChevronRight :size="16" aria-hidden="true" />
         </button>
@@ -73,7 +73,7 @@
     <section v-if="events.length" class="idol-events" aria-labelledby="idol-events-title">
       <div class="section-heading">
         <h3 id="idol-events-title">相关活动</h3>
-        <span>{{ events.length }} events · 按出演阵容</span>
+        <span>{{ events.length }} 场 · 参演活动</span>
       </div>
       <ArchiveRelationList :items="eventItems" @select="emit('open-event', $event.payload)" />
     </section>
@@ -88,25 +88,29 @@
         <p>{{ idol.specialty }}</p>
       </div>
     </section>
+    <ArchiveTechnicalDetails :key="idol.idol_code" :evidence="{ idol, songs: songs.map(entry => ({ song_code: entry.song.song_code, title: entry.song.title, evidenceLabel: entry.evidenceLabel, performance_mapping: entry.song.performance_mapping })) }" />
   </article>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { BookOpenText, ChevronRight, Images, MessageSquareText, Music, Phone, UsersRound } from '@lucide/vue'
+import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
+import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 
 const props = defineProps({
   idol: { type: Object, default: null },
   stats: { type: Object, default: () => ({}) },
+  communicationStatus: { type: String, default: 'idle' },
   events: { type: Array, default: () => [] },
   songs: { type: Array, default: () => [] },
   idols: { type: Array, default: () => [] },
   selectedIdol: { type: String, default: '' },
 })
 
-const emit = defineEmits(['open-domain', 'open-unit', 'open-event', 'open-song', 'select-idol'])
+const emit = defineEmits(['open-domain', 'open-unit', 'open-event', 'open-song', 'select-idol', 'retry-communication'])
 
 const facts = computed(() => [
   { label: '年龄', value: props.idol?.age ? `${props.idol.age}岁` : '' },
@@ -119,11 +123,14 @@ const facts = computed(() => [
   { label: '组合', value: props.idol?.unit_name },
 ])
 
+const communicationCount = (value, unit) => value == null
+  ? (props.communicationStatus === 'error' ? '载入失败' : '加载中…')
+  : `${value} ${unit}`
 const related = computed(() => [
-  { id: 'stories', label: '个人故事', count: `${props.stats.stories || 0} segments`, icon: BookOpenText },
-  { id: 'cards', label: '卡片', count: `${props.stats.cards || 0} cards`, icon: Images },
-  { id: 'chat', label: '个人聊天', count: `${props.stats.chats || 0} records`, icon: MessageSquareText },
-  { id: 'phone', label: '电话通信', count: `${props.stats.phones || 0} records`, icon: Phone },
+  { id: 'stories', label: '个人故事', count: communicationCount(props.stats.stories, '篇'), icon: BookOpenText },
+  { id: 'cards', label: '卡片', count: `${props.stats.cards || 0} 张`, icon: Images },
+  { id: 'chat', label: '个人聊天', count: communicationCount(props.stats.chats, '条'), icon: MessageSquareText },
+  { id: 'phone', label: '电话通信', count: communicationCount(props.stats.phones, '条'), icon: Phone },
 ])
 
 const eventItems = computed(() => props.events.map(event => {
@@ -169,7 +176,7 @@ function formatDate(timestamp) {
   background: #17212b;
   color: #fff;
 }
-.idol-portrait { width: 104px; height: 104px; border: 3px solid #fff; border-radius: 50%; background: #eef1f3; object-fit: cover; }
+.idol-portrait { box-shadow: 0 0 0 1px rgba(255, 255, 255, .85); }
 .idol-identity { min-width: 0; }
 .idol-code { color: #58cec5; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.68rem; }
 .idol-identity h2 { margin: 7px 0 4px; font-size: 1.55rem; letter-spacing: 0; }
@@ -208,6 +215,9 @@ function formatDate(timestamp) {
 .related-grid span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .related-grid strong { font-size: 0.78rem; }
 .related-grid small { color: #7b858e; font-size: 0.66rem; }
+.communication-status { margin-top: 12px; color: #8b3030; font-size: 0.75rem; }
+.communication-status button { margin-left: 8px; min-height: 36px; padding: 6px 10px; border: 1px solid currentColor; border-radius: 4px; background: #fff; color: inherit; cursor: pointer; }
+.communication-status button:focus-visible { outline: 3px solid #16978e; outline-offset: 2px; }
 .song-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .song-links button { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 58px; padding: 7px 10px; border: 1px solid #dfe4e8; border-radius: 6px; background: #fff; color: #26313a; cursor: pointer; text-align: left; }
 .song-links button:hover { border-color: #75cbc5; background: #f0fbfa; }
@@ -231,7 +241,7 @@ function formatDate(timestamp) {
   .profile-switcher { flex-basis: 100%; width: 100%; margin: 4px 0 0; }
   .idol-detail { padding: 12px; }
   .idol-profile-header { gap: 15px; min-height: 124px; padding: 18px; }
-  .idol-portrait { width: 78px; height: 78px; }
+  .idol-portrait { --idol-avatar-override-size: 78px; }
   .idol-identity h2 { font-size: 1.2rem; }
   .idol-color { right: 16px; top: 16px; }
   .idol-facts, .idol-related, .idol-songs, .idol-events, .idol-notes { margin-top: 10px; padding: 14px; }

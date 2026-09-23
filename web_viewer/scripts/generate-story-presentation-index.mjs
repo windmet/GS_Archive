@@ -27,8 +27,7 @@ let episodeBoundaryCount = 0
 const dialogueSourceText = dialogue => dialogue?.source_text ?? dialogue?.text_jp ?? dialogue?.text ?? ''
 const dialogueSpeakerText = dialogue => (
   dialogue?.speaker_source_text
-  ?? dialogue?.speaker_identity?.source_name
-  ?? dialogue?.speaker
+  ?? (dialogue?.speaker_identity?.source_name || dialogue?.speaker)
   ?? ''
 )
 
@@ -75,7 +74,7 @@ for (const file of files) {
     if (dialogueSpeakerText(step?.dialogue) || dialogueSourceText(step?.dialogue)) episode.dialogue_count += 1
     if (step?.dialogue?.voice) episode.voice_count += 1
   })
-  if (episodeMap.size === 0) {
+  if (episodeMap.size === 0 || (episodeMap.size === 1 && ![...episodeMap.values()][0].episode_part)) {
     const namedRows = sourceRows
       .map(row => ({
         row,
@@ -87,6 +86,7 @@ for (const file of files) {
       .filter(index => index >= 0)
 
     if (namedRows.length > 1 && stageIndexes.length >= namedRows.length) {
+      episodeMap.clear()
       const segmentStarts = [stageIndexes[0], ...stageIndexes.slice(-(namedRows.length - 1))]
       namedRows.forEach((item, index) => {
         const startStepIndex = segmentStarts[index]
@@ -110,7 +110,8 @@ for (const file of files) {
   ).map(episode => {
     const source = (scenario.episodes || []).find(candidate =>
       Number(candidate.episode_index) === episode.episode_index &&
-      (!candidate.part || candidate.part === episode.episode_part),
+      (!episode.episode_part || candidate.part === episode.episode_part ||
+        candidate.source_scenario_id?.endsWith(`_${episode.episode_part}`)),
     )
     const localSteps = steps.slice(episode.start_step_index, episode.end_step_index + 1)
     const localPlayableStart = localSteps.findIndex(step => step?.type !== 'synopsis')

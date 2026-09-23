@@ -14,7 +14,7 @@ sys.path.insert(0, str(DATA_PIPELINE_ROOT))
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 
 from archive_paths import load_archive_sources
-from masterdata_extract import extract_table_rows, iter_top_records
+from sidem_masterdata import extract_table_rows, iter_top_records
 
 
 def fail(message: str) -> None:

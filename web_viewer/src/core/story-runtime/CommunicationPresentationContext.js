@@ -23,7 +23,10 @@ function modeFromStep(step) {
   if (!step) return null
   if (step.type === 'call') return 'call'
   if (step.type === 'talk' || step.type === 'talk_stamp') return 'talk'
-  const st = step.state || {}
+  // Legacy snapshots can retain phone_mode long after the call ends.
+  // Authored stage commands and choices must not turn those stale flags into UI.
+  if (MODE_BOUNDARIES.has(step.type) || ['choice', 'stage', 'text_disable', 'fadein', 'fadeout', 'slidein', 'slideout'].includes(step.type)) return null
+  const st = step.entry_snapshot || step.state || {}
   if (st.phone_mode === true) return 'call'
   if (st.talk_mode === true) return 'talk'
   return null
@@ -89,12 +92,12 @@ export function resolveCommunicationContext({ step, stepIndex, historyStack, ste
       if (!linearStep && modeFromStep(s)) linearStep = s
       if (!charaStep && charaIdFromStep(s)) charaStep = s
       if (linearStep && charaStep) break
-      if (MODE_BOUNDARIES.has(s.type) && !charaStep) break
+      if (MODE_BOUNDARIES.has(s.type)) break
     }
   }
 
   const source = inheritedStep || linearStep || step
-  const mode = explicitMode || (source ? modeFromStep(source) : null)
+  const mode = explicitMode || (step?.type === 'choice' && source ? modeFromStep(source) : null)
 
   let unitCode = unitCodeFromScenario(scenarioId)
   const rawPrimaryCharaId = charaStep ? charaIdFromStep(charaStep) : (source ? charaIdFromStep(source) : '')

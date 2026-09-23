@@ -1,4 +1,5 @@
 import { getMouthSettingUrl as defaultGetMouthSettingUrl } from '../utils/AssetResolver.js'
+import { mouthSettingCandidates } from '../../shared/story/MouthSettingCandidates.js'
 
 const ORIGINAL_LIP_OPEN_THRESHOLD = 0.04
 const ORIGINAL_LIP_SCALE_MIN = 1.0
@@ -384,8 +385,7 @@ export class LipSyncController {
     // Some models (e.g. 244sub_001_00 for 040ren's child variant) have their own
     // mouth setting file keyed by model prefix, not idolId.
     const modelId = spine._modelName || ''
-    const modelPrefix = modelId.replace(/_\d{3}_\d{2}$/, '')  // "244sub_001_00" → "244sub"
-    const primaryId = (modelPrefix && modelPrefix !== idolId) ? modelPrefix : idolId
+    const [primaryId] = mouthSettingCandidates(idolId, modelId)
     try {
       const resp = await fetch(this.getMouthSettingUrl(primaryId))
       if (!resp.ok && primaryId !== idolId) {

@@ -1,10 +1,11 @@
 <template>
-  <div class="relation-list" :class="`layout-${layout}`">
+  <div class="relation-list" :data-technical-details="showEvidence ? '' : undefined" :class="`layout-${layout}`">
     <component
       :is="item.actionable === false ? 'div' : 'button'"
       v-for="item in items"
       :key="item.id"
       class="relation-row"
+      :data-archive-focus-id="item.actionable === false ? undefined : `relation:${item.id}`"
       :class="[`kind-${item.kind || 'record'}`, { static: item.actionable === false }]"
       :type="item.actionable === false ? undefined : 'button'"
       @click="select(item)"
@@ -17,7 +18,7 @@
       <span class="relation-copy">
         <span class="relation-labels">
           <strong>{{ item.label }}</strong>
-          <small v-if="item.evidenceLabel" class="evidence" :class="`tone-${item.evidenceTone || 'derived'}`">
+          <small v-if="showEvidence && item.evidenceLabel" class="evidence" :class="`tone-${item.evidenceTone || 'derived'}`">
             {{ item.evidenceLabel }}
           </small>
           <small v-if="item.statusLabel" class="status" :class="`tone-${item.statusTone || 'available'}`">
@@ -26,23 +27,28 @@
         </span>
         <b>{{ item.title }}</b>
         <small v-if="item.meta" class="relation-meta">{{ item.meta }}</small>
-        <small v-if="item.evidence" class="relation-proof">{{ item.evidence }}</small>
-        <code v-if="item.resource">{{ item.resource }}</code>
+        <small v-if="showEvidence && item.evidence" class="relation-proof">{{ item.evidence }}</small>
+        <code v-if="showEvidence && item.resource">{{ item.resource }}</code>
       </span>
 
       <ChevronRight v-if="item.actionable !== false" :size="17" class="relation-arrow" aria-hidden="true" />
     </component>
   </div>
+  <ArchiveTechnicalDetails :key="evidenceItems.map(item => item.id).join('|')" v-if="!showEvidence && evidenceItems.length" label="关联资料来源 / 技术信息" :evidence="evidenceItems" />
 </template>
 
 <script setup>
+import { computed } from 'vue'
+import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { BookOpenText, CalendarRange, ChevronRight, Images, Layers3, Link2, Sparkles, UsersRound } from '@lucide/vue'
 
-defineProps({
+const props = defineProps({
   items: { type: Array, default: () => [] },
   layout: { type: String, default: 'stack' },
+  showEvidence: { type: Boolean, default: false },
 })
 const emit = defineEmits(['select'])
+const evidenceItems = computed(() => props.items.filter(item => item.evidence || item.resource || item.evidenceLabel).map(({ id, title, evidenceLabel, evidence, resource }) => ({ id, title, evidenceLabel, evidence, resource })))
 
 const ICONS = {
   card: Images,

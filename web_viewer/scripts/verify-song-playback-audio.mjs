@@ -2,6 +2,8 @@
 
 import fs from 'node:fs'
 import process from 'node:process'
+import assert from 'node:assert/strict'
+import { validateArchivePayload } from '../src/data/archiveDataContracts.js'
 
 const root = new URL('..', import.meta.url)
 const mounted = process.argv.includes('--mounted')
@@ -13,6 +15,9 @@ const appSource = read('src/App.vue')
 const detailSource = read('src/components/archive/ArchiveSongDetail.vue')
 const playerSource = read('src/components/archive/ArchiveSongSinglePlayer.vue')
 const repositorySource = read('src/data/ArchiveDataRepository.js')
+
+validateArchivePayload('songPlaybackAudio', manifest)
+assert.throws(() => validateArchivePayload('songPlaybackAudio', { ...manifest, status: 'experimental' }))
 
 function fail(message) {
   throw new Error(`[song-playback-audio] ${message}`)
@@ -70,30 +75,28 @@ if (ordinaryCodes.length !== 56) fail(`expected 56 ordinary single-player songs,
 
 for (const [label, source, needles] of [
   ['App', appSource, [
-    ':playback-track="songPlaybackAudioData?.songs?.[currentSongId] || null"',
+    'playbackTrack: songPlaybackAudioData.value?.songs?.[currentSongId.value] || null',
     'const songPlaybackAudioData = ref(null)',
     'songPlaybackAudioData.value = data.songPlaybackAudio',
   ]],
   ['ArchiveSongDetail', detailSource, [
     '<ArchiveSongExperimentalPlayer',
-    'v-if="audioExperiment"',
+    'v-if="song.playback.experiment"',
     '<ArchiveSongSinglePlayer',
-    'v-else-if="playbackTrack"',
-    'playbackTrack: { type: Object, default: null }',
+    'v-else-if="song.playback.track"',
+    ':track="song.playback.track"',
   ]],
   ['ordinary player', playerSource, [
     '<h3 id="song-single-player-title">歌曲播放</h3>',
-    '这是普通单轨播放，不代表存在编成偶像、Unit 或 Center 声部',
+    '完整混音试听',
     ':src="track.url"',
     'controls',
     'preload="metadata"',
-    'aria-label="完整混音来源"',
+
     '@media (max-width: 560px)',
   ]],
   ['data repository', repositorySource, [
     "songPlaybackAudio: '/data/song_playback_audio.json'",
-    "payload.status !== 'local-derived'",
-    "throw new Error('songPlaybackAudio must include the 61-song local full-mix contract')",
   ]],
 ]) {
   for (const needle of needles) {

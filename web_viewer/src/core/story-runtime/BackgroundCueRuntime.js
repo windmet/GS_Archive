@@ -2,16 +2,18 @@ import { createPerformanceHandle } from './PerformanceRegistry.js'
 
 export function applyBackgroundEntrySnapshot(manager, bg) {
   if (!manager) return
-  if (bg) manager.setBackground?.(bg, { duration: 0, delay: 0 })
-  else manager.clearBackground?.()
+  if (bg) return manager.setBackground?.(bg, { duration: 0, delay: 0 })
+  manager.clearBackground?.()
+  return { status: 'completed', bgId: null }
 }
 
-export function createBackgroundCueHandle(cue, getManager) {
+export function createBackgroundCueHandle(cue, getManager, { nowMilliseconds } = {}) {
   const transition = duration => ({
     type: cue.payload.type,
     color: cue.payload.color,
     duration,
     delay: 0,
+    ...(nowMilliseconds ? { nowMilliseconds } : {}),
   })
   return createPerformanceHandle({
     id: cue.cue_id,

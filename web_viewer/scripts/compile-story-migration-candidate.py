@@ -22,6 +22,8 @@ DATA_PIPELINE_ROOT = PROJECT_ROOT.parent / "data_pipeline"
 sys.path.insert(0, str(DATA_PIPELINE_ROOT))
 
 from scenario_compiler import ScenarioCompiler  # noqa: E402
+from sidem_scenario import LocalScenarioResources  # noqa: E402
+from archive_paths import add_sources_config_argument, load_archive_sources  # noqa: E402
 
 
 PART_PATTERN = re.compile(r"^scenario_(?P<part>.+_[a-z])\.json$")
@@ -232,6 +234,7 @@ def compile_candidate(args: argparse.Namespace) -> dict[str, Any]:
         raise ValueError(f"Candidate output directory must be empty: {output_dir}")
 
     expected_parts = expand_expected_parts(args.expected_parts, args.group_id)
+    resources = LocalScenarioResources.from_archive_sources(load_archive_sources(getattr(args, 'sources_config', None)))
     if args.raw_file:
         if expected_parts:
             raise ValueError("--expected-parts is only valid with --raw-group-dir")
@@ -244,6 +247,7 @@ def compile_candidate(args: argparse.Namespace) -> dict[str, Any]:
             args.group_id,
             part_id,
             source_files[0],
+            resources=resources,
         ).compile()
         compilation_mode = "standalone"
     else:
@@ -258,7 +262,7 @@ def compile_candidate(args: argparse.Namespace) -> dict[str, Any]:
         raw_data = [load_json(path) for path, _ in parts]
         part_ids = [part_id for _, part_id in parts]
         source_files = [f"scenariodata/{raw_group_dir.name}/{path.name}" for path, _ in parts]
-        scenario = ScenarioCompiler.compile_group(raw_data, args.group_id, part_ids, source_files)
+        scenario = ScenarioCompiler.compile_group(raw_data, args.group_id, part_ids, source_files, resources=resources)
         compilation_mode = "group"
 
     scenario["source"] = build_source_evidence(raw_paths, source_files)
@@ -304,6 +308,7 @@ def compile_candidate(args: argparse.Namespace) -> dict[str, Any]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
+    add_sources_config_argument(parser)
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--raw-group-dir")
     source.add_argument("--raw-file")

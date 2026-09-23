@@ -9,7 +9,9 @@
       <button data-testid="story-soak-quiet" @click="quiet">QUIET ENDPOINT</button>
       <button data-testid="story-soak-stop" @click="stop">STOP</button>
       <button data-testid="story-soak-export" @click="exportReport">EXPORT</button>
+      <button @click="captureShadow">E1 SHADOW</button>
     </div>
+    <textarea v-if="shadow" :value="shadow" readonly aria-label="E1 projector shadow report" />
     <textarea
       v-if="report"
       data-testid="story-release-soak-export"
@@ -28,6 +30,11 @@ import { storyReleaseProbe } from '../../core/story-runtime/StoryReleaseProbe.js
 
 const status = ref(releaseSoakRecorder.inspect())
 const report = ref('')
+const shadow = ref('')
+function captureShadow() {
+  const snapshot = storyReleaseProbe.collectSnapshot({ includeProjector: true })
+  shadow.value = JSON.stringify({ captured_at: snapshot.captured_at, ...snapshot.projector_shadow }, null, 2)
+}
 let refreshTimer = null
 
 function refresh() {

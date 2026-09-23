@@ -9,10 +9,12 @@ export function useStepSceneEffects({
   spineStageRef,
   audioManager,
   voicePlayer,
+  takePreparedVoice = () => null,
   resetVoiceDedup,
   onEpisodeEnd,
   isAutoBlocked = () => false,
   beforeAutoAdvance = () => {},
+  beforeStepChange = () => {},
 }) {
   let _fadeAutoTimer = null
   let _fadeAutoSeq = 0
@@ -87,6 +89,7 @@ export function useStepSceneEffects({
             if (autoAdvance.pushHistory) {
               historyStack.value.push(currentStepIndex.value)
             }
+            beforeStepChange(currentStepIndex.value + 1)
             currentStepIndex.value++
             resetVoiceDedup()
           }
@@ -96,7 +99,9 @@ export function useStepSceneEffects({
     }
 
     if (!restore) {
-      voicePlayer?.playVoice?.()
+      const prepared = takePreparedVoice(newStep, currentStepIndex.value)
+      if (prepared) voicePlayer?.playPreparedVoice?.(prepared)
+      else voicePlayer?.playVoice?.()
     }
   }
 

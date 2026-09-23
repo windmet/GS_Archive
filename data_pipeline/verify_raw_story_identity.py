@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from extract_raw_story_candidate import group_scenario_assets
+from sidem_raw import group_scenario_assets
 
 
 def record(name: str, directory: str, path_id: int) -> dict:

@@ -192,7 +192,9 @@ async function verifyMissingSpineTargetDoesNotBlockAuto() {
         }],
       } },
       currentStepIndex: { value: 0 },
-      spineStageRef: { value: { manager: null } },
+      // The stage exists; only the actor is absent. Unmounted-stage waiting is
+      // independently covered by verify-story-stage-readiness.mjs.
+      spineStageRef: { value: { manager: {} } },
       audioManager: {},
     })
     runtime.handleStepChange()

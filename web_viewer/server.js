@@ -12,36 +12,11 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import http from 'node:http'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import { createArchiveAssetResolver } from './scripts/lib/archive-assets.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const DIST_DIR = path.resolve(__dirname, 'dist')
-
-// External asset roots (mirrors vite.config.js defaults)
-const LIPSYNC_ROOT = process.env.SIDEM_LIPSYNC_ROOT || 'E:/BaiduNetdiskDownload/SideM/scripts/lipsyncdata/adxlip'
-const AUDIO_ROOT = process.env.SIDEM_AUDIO_ROOT || 'E:/BaiduNetdiskDownload/SideM/GS_Res/Audio'
-const LEGACY_AUDIO_ROOT = process.env.SIDEM_LEGACY_AUDIO_ROOT || 'E:/BaiduNetdiskDownload/SideM/story_viewer/voice_ogg'
-const CARD_ART_ROOT = process.env.SIDEM_CARD_ART_ROOT || 'E:/BaiduNetdiskDownload/SideM/GS_Res/ALL_PHOTOS/assets/resources/image/image_card'
-
-function addSeAliasCandidates(candidates, fileName) {
-  if (!fileName.endsWith('.ogg')) return
-  const cue = fileName.replace(/\.ogg$/, '')
-  const aliases = []
-
-  if (/^step_(walk|run)_(come|away)_conc_sneaker$/.test(cue)) {
-    aliases.push(cue.replace(/^step_(walk|run)_(come|away)_conc_sneaker$/, 'group_step_$1_conc_sneaker'))
-  }
-  if (cue === 'step_walk_come_conc_boot' || cue === 'step_walk_away_conc_boot') {
-    aliases.push('step_walk_come_conc_boot_hall', 'step_walk_come_conc_boot_slow')
-  }
-
-  for (const alias of aliases) {
-    for (const dir of ['sfx', 'telephone', 'system']) {
-      candidates.push(path.resolve(AUDIO_ROOT, dir, `${alias}.ogg`))
-    }
-    candidates.push(path.resolve(LEGACY_AUDIO_ROOT, `${alias}.ogg`))
-  }
-}
 
 // ── MIME types ──
 const MIME = {
@@ -86,83 +61,77 @@ function serveFile(res, filePath, maxAge = 0) {
   return true
 }
 
-// ── Audio middleware ──
-const AUDIO_DIRS = ['ambient', 'bgm', 'sfx', 'system', 'telephone']
-
-function handleAudio(urlPath, res) {
-  // urlPath: /se/cloth_move_ss01.ogg or /ambient/ambi_room.ogg
-  const parts = urlPath.replace(/^\/+/, '').split('/')
-  const type = parts[0]
-  const fileName = parts.slice(1).join('/')
-  if (!type || !fileName) return false
-
-  const candidates = []
-  if (type === 'se') {
-    for (const dir of ['sfx', 'telephone', 'system']) {
-      candidates.push(path.resolve(AUDIO_ROOT, dir, fileName))
+/** Construct without listening so callers can own the port and lifecycle. */
+export function createArchiveServer({ distDir = DIST_DIR, assetResolver = createArchiveAssetResolver() } = {}) {
+  function handleAudio(urlPath, res) {
+    const clean = decodeURIComponent(urlPath.split('?')[0])
+    for (const file of assetResolver.audioCandidates(clean)) {
+      if (serveFile(res, file)) return true
     }
-    candidates.push(path.resolve(LEGACY_AUDIO_ROOT, fileName))
-    addSeAliasCandidates(candidates, fileName)
-  } else if (AUDIO_DIRS.includes(type)) {
-    candidates.push(path.resolve(AUDIO_ROOT, type, fileName))
-    if (type === 'ambient' && fileName.endsWith('_t.ogg')) {
-      candidates.push(path.resolve(AUDIO_ROOT, type, fileName.replace(/_t\.ogg$/, '.ogg')))
-    }
-  } else {
     return false
   }
 
-  const rootPaths = [path.resolve(AUDIO_ROOT), path.resolve(LEGACY_AUDIO_ROOT)]
-  for (const fp of candidates) {
-    if (!rootPaths.some(rootPath => fp.startsWith(rootPath + path.sep))) continue
-    if (serveFile(res, fp)) return true
+  function handleLipsync(urlPath, res) {
+    const file = assetResolver.lipsyncPath(decodeURIComponent(urlPath.split('?')[0]))
+    if (!file) {
+      res.statusCode = 403
+      res.end('Forbidden')
+      return true
+    }
+    return serveFile(res, file)
   }
-  return false
-}
 
-// ── Lipsync middleware ──
-function handleLipsync(urlPath, res) {
-  // urlPath: /scenario_1_1_001_01.json
-  const rawUrl = decodeURIComponent(urlPath.split('?')[0]).replace(/^\/+/, '')
-  const filePath = path.resolve(LIPSYNC_ROOT, rawUrl)
-  const rootPath = path.resolve(LIPSYNC_ROOT)
-  if (!filePath.startsWith(rootPath + path.sep)) {
-    res.statusCode = 403
-    res.end('Forbidden')
-    return true
+  function handleCardArt(urlPath, res) {
+    const file = assetResolver.cardArtPath(decodeURIComponent(urlPath.split('?')[0]))
+    return file ? serveFile(res, file, 86400) : false
   }
-  if (serveFile(res, filePath)) return true
-  return false
-}
 
-function handleCardArt(urlPath, res) {
-  const clean = decodeURIComponent(urlPath.split('?')[0]).replace(/^\/+/, '')
-  const [kind, ...nameParts] = clean.split('/')
-  const directory = { portrait: 'image_card_portrait', landscape: 'image_card_landscape' }[kind]
-  const fileName = nameParts.join('/')
-  if (!directory || !/^image_card_(portrait|landscape)_[a-z0-9_]+\.png$/i.test(fileName)) return false
-  const rootPath = path.resolve(CARD_ART_ROOT)
-  const filePath = path.resolve(rootPath, directory, fileName)
-  if (!filePath.startsWith(rootPath + path.sep)) return false
-  return serveFile(res, filePath, 86400)
-}
+  // ── Static file serving from dist/ ──
+  function handleStatic(urlPath, res) {
+    // Normalise: strip query strings, decode, remove leading /
+    const clean = decodeURIComponent(urlPath.split('?')[0]).replace(/^\//, '')
+    const relativePath = clean || 'index.html'
+    const filePath = path.resolve(distDir, relativePath)
 
-// ── Static file serving from dist/ ──
-function handleStatic(urlPath, res) {
-  // Normalise: strip query strings, decode, remove leading /
-  const clean = decodeURIComponent(urlPath.split('?')[0]).replace(/^\//, '')
-  const relativePath = clean || 'index.html'
-  let filePath = path.resolve(DIST_DIR, relativePath)
-
-  const ext = path.extname(filePath).toLowerCase()
-  const immutableAsset = clean.startsWith('assets/') && !['.html', '.json'].includes(ext)
-  if (serveFile(res, filePath, immutableAsset ? 86400 : 0)) {
-    return true
+    const ext = path.extname(filePath).toLowerCase()
+    const immutableAsset = clean.startsWith('assets/') && !['.html', '.json'].includes(ext)
+    if (serveFile(res, filePath, immutableAsset ? 86400 : 0)) {
+      return true
+    }
+    // SPA fallback: try index.html
+    const indexHtml = path.resolve(distDir, 'index.html')
+    if (serveFile(res, indexHtml)) return true
+    return false
   }
-  // SPA fallback: try index.html
-  const indexHtml = path.resolve(DIST_DIR, 'index.html')
-  if (serveFile(res, indexHtml)) return true
-  return false
+
+  return http.createServer((req, res) => {
+    const urlPath = req.url || '/'
+
+    // Route: lipsync
+    if (urlPath.startsWith('/assets/lipsync/adxlip/')) {
+      const subPath = urlPath.replace('/assets/lipsync/adxlip', '')
+      if (handleLipsync(subPath, res)) return
+    }
+
+    // Route: audio
+    if (urlPath.startsWith('/assets/audio/')) {
+      const subPath = urlPath.replace('/assets/audio', '')
+      if (handleAudio(subPath, res)) return
+    }
+
+    if (urlPath.startsWith('/assets/card-art/')) {
+      const subPath = urlPath.replace('/assets/card-art', '')
+      if (handleCardArt(subPath, res)) return
+    }
+
+    // Route: static files from dist/
+    if (handleStatic(urlPath, res)) return
+
+    // 404
+    res.statusCode = 404
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+    res.end('404 Not Found')
+  })
 }
 
 // ── Server ──
@@ -175,52 +144,27 @@ function parseArgs() {
   return args
 }
 
-const { port, host } = parseArgs()
+if (process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url) {
+  const { port, host } = parseArgs()
+  const assetResolver = createArchiveAssetResolver()
+  const server = createArchiveServer({ assetResolver })
 
-// Check dist exists
-if (!fs.existsSync(DIST_DIR)) {
-  console.error(`❌ dist/ directory not found at: ${DIST_DIR}`)
-  console.error('   Run "npm run build" first.')
-  process.exit(1)
+  // Check dist exists
+  if (!fs.existsSync(DIST_DIR)) {
+    console.error(`❌ dist/ directory not found at: ${DIST_DIR}`)
+    console.error('   Run "npm run build" first.')
+    process.exit(1)
+  }
+
+  server.listen(port, host, () => {
+    console.log(`🚀 SideM Story Viewer server running`)
+    console.log(`   Local:   http://${host === '0.0.0.0' ? '127.0.0.1' : host}:${port}`)
+    if (host === '0.0.0.0') {
+      console.log(`   Network: http://<your-lan-ip>:${port}`)
+    }
+    console.log(`   Audio:   ${assetResolver.roots.audio}`)
+    console.log(`   Lipsync: ${assetResolver.roots.lipsync}`)
+    console.log(`   Card art: ${assetResolver.roots.cardArt}`)
+    console.log(`   (Press Ctrl+C to stop)`)
+  })
 }
-
-const server = http.createServer((req, res) => {
-  const urlPath = req.url || '/'
-
-  // Route: lipsync
-  if (urlPath.startsWith('/assets/lipsync/adxlip/')) {
-    const subPath = urlPath.replace('/assets/lipsync/adxlip', '')
-    if (handleLipsync(subPath, res)) return
-  }
-
-  // Route: audio
-  if (urlPath.startsWith('/assets/audio/')) {
-    const subPath = urlPath.replace('/assets/audio', '')
-    if (handleAudio(subPath, res)) return
-  }
-
-  if (urlPath.startsWith('/assets/card-art/')) {
-    const subPath = urlPath.replace('/assets/card-art', '')
-    if (handleCardArt(subPath, res)) return
-  }
-
-  // Route: static files from dist/
-  if (handleStatic(urlPath, res)) return
-
-  // 404
-  res.statusCode = 404
-  res.setHeader('Content-Type', 'text/plain; charset=utf-8')
-  res.end('404 Not Found')
-})
-
-server.listen(port, host, () => {
-  console.log(`🚀 SideM Story Viewer server running`)
-  console.log(`   Local:   http://${host === '0.0.0.0' ? '127.0.0.1' : host}:${port}`)
-  if (host === '0.0.0.0') {
-    console.log(`   Network: http://<your-lan-ip>:${port}`)
-  }
-  console.log(`   Audio:   ${AUDIO_ROOT}`)
-  console.log(`   Lipsync: ${LIPSYNC_ROOT}`)
-  console.log(`   Card art: ${CARD_ART_ROOT}`)
-  console.log(`   (Press Ctrl+C to stop)`)
-})

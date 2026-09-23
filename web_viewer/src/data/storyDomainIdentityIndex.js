@@ -3,27 +3,9 @@ import {
   resolveExtraStoryGasha,
 } from './extraStoryTaxonomy.js'
 
-const DOMAIN_ROWS = Object.freeze([
-  ['main', data => data.main?.episodes],
-  ['event', data => data.event?.episodes],
-  ['unit_story', data => data.unit_story?.episodes],
-  ['idol_story', data => data.idol_story?.episodes],
-  ['card_scenarios', data => data.card_scenarios],
-  ['work', data => data.work],
-  ['birthday', data => data.birthday],
-  ['extra', data => data.extra?.episodes],
-])
-
 function numeric(value) {
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : 0
-}
-
-function sortedRows(rows) {
-  return [...(rows || [])].sort((left, right) =>
-    numeric(left?.['1']) - numeric(right?.['1']) ||
-    String(left?.resource_id || '').localeCompare(String(right?.resource_id || '')),
-  )
 }
 
 function sourceEvidence(row) {
@@ -33,90 +15,12 @@ function sourceEvidence(row) {
   }
 }
 
-function logicalEntry(domain, row, releaseField) {
-  return {
-    id: `${domain}:${row?.['1'] || row?.resource_id || 'missing'}`,
-    domain,
-    masterId: String(row?.['1'] || ''),
-    parentId: String(row?.['2'] || ''),
-    title: String(row?.['3'] || ''),
-    releaseAt: numeric(row?.[releaseField]),
-    resourceId: String(row?.resource_id || ''),
-    compiledFile: String(row?.compiled_file || ''),
-    compiledExists: row?.compiled_exists !== false && Boolean(row?.compiled_file),
-    source: sourceEvidence(row),
-  }
-}
-
-function allDomainMemberships(storyMaster) {
-  const memberships = new Map()
-  for (const [domain, rowsFor] of DOMAIN_ROWS) {
-    for (const row of rowsFor(storyMaster) || []) {
-      const file = String(row?.compiled_file || '')
-      if (!file) continue
-      if (!memberships.has(file)) memberships.set(file, new Set())
-      memberships.get(file).add(domain)
-    }
-  }
-  return memberships
-}
-
-export function buildMainStoryDomainIdentity(storyMaster) {
-  const groups = sortedRows(storyMaster.main?.groups)
-  const chapters = sortedRows(storyMaster.main?.chapters)
-  const episodeRows = sortedRows(storyMaster.main?.episodes)
-  const logicalEntries = episodeRows.map(row => logicalEntry('main', row, '5'))
-  const entryById = new Map(logicalEntries.map(entry => [entry.id, entry]))
-
-  const collections = groups.map(group => {
-    const groupId = String(group['1'])
-    const collectionChapters = chapters
-      .filter(chapter => String(chapter['2']) === groupId)
-      .map(chapter => {
-        const chapterId = String(chapter['1'])
-        const entries = logicalEntries.filter(entry => entry.parentId === chapterId)
-        return {
-          id: `main-chapter:${chapterId}`,
-          masterId: chapterId,
-          label: String(chapter['3'] || ''),
-          title: String(chapter['9'] || '').trim(),
-          releaseAt: numeric(chapter['5']),
-          logicalEntryIds: entries.map(entry => entry.id),
-          logicalEntryCount: entries.length,
-          compiledFileCount: new Set(entries.map(entry => entry.compiledFile).filter(Boolean)).size,
-          source: sourceEvidence(chapter),
-        }
-      })
-
-    return {
-      id: `main:${groupId}`,
-      masterId: groupId,
-      title: String(group['2'] || ''),
-      releaseAt: numeric(group['4']),
-      chapterIds: collectionChapters.map(chapter => chapter.id),
-      chapterCount: collectionChapters.length,
-      logicalEntryCount: collectionChapters.reduce((sum, chapter) => sum + chapter.logicalEntryCount, 0),
-      compiledFileCount: new Set(collectionChapters.flatMap(chapter =>
-        chapter.logicalEntryIds.map(id => entryById.get(id)?.compiledFile),
-      ).filter(Boolean)).size,
-      isPlaceholder: collectionChapters.length === 0,
-      chapters: collectionChapters,
-      source: sourceEvidence(group),
-    }
-  })
-
-  return {
-    collections,
-    logicalEntries,
-    meta: {
-      collectionCount: collections.length,
-      placeholderCollectionCount: collections.filter(collection => collection.isPlaceholder).length,
-      chapterCount: chapters.length,
-      logicalEntryCount: logicalEntries.length,
-      resourceIdCount: new Set(logicalEntries.map(entry => entry.resourceId).filter(Boolean)).size,
-      compiledFileCount: new Set(logicalEntries.map(entry => entry.compiledFile).filter(Boolean)).size,
-    },
-  }
+export function buildMainStoryDomainIdentity(catalog) {
+  if (!catalog) return null
+  if (!catalog.mainIdentity) throw new Error('Main identity requires the named catalog')
+  // Catalog values are JSON; this also accepts Vue's read proxies without
+  // coupling the data module to Vue or returning mutable cache-owned objects.
+  return JSON.parse(JSON.stringify(catalog.mainIdentity))
 }
 
 function speakerByNumericId(speakerDictionary) {
@@ -127,9 +31,9 @@ function speakerByNumericId(speakerDictionary) {
 }
 
 function birthdaySubject(row, idolUnit, speakersByNumericId) {
-  const semantics = row?.birthday_semantics
+  const semantics = row?.birthdaySemantics
   const hasAuthoritativeSubject = semantics && Object.hasOwn(semantics, 'subject_numeric_id')
-  const resourceId = String(row?.resource_id || '')
+  const resourceId = String(row?.resourceId || '')
   const match = resourceId.match(/^1_(?:2|7|8)_(\d{3})_/)
   const numericId = hasAuthoritativeSubject
     ? (Number.isInteger(semantics.subject_numeric_id) ? String(semantics.subject_numeric_id) : '')
@@ -187,9 +91,9 @@ function birthdaySubject(row, idolUnit, speakersByNumericId) {
 }
 
 function birthdaySeries(row) {
-  const semantics = row?.birthday_semantics || {}
-  const parentId = String(row?.['2'] || '')
-  const resourceId = String(row?.resource_id || '')
+  const semantics = row?.birthdaySemantics || {}
+  const parentId = String(row?.parentId || '')
+  const resourceId = String(row?.resourceId || '')
   const chapterId = String(semantics.chapter_id || parentId.slice(0, 3))
   return {
     id: `birthday-series:${chapterId}:${resourceId.split('_').slice(0, 2).join('_')}`,
@@ -203,14 +107,14 @@ function birthdaySeries(row) {
   }
 }
 
-function buildBirthdayDomain(storyMaster, idolUnit, speakerDictionary, memberships, semanticIndex = null) {
+function buildBirthdayDomain(catalog, idolUnit, speakerDictionary, semanticIndex = null) {
+  if (!catalog?.birthdayIdentity) throw new Error('Birthday identity requires the named catalog')
   const speakersByNumericId = speakerByNumericId(speakerDictionary)
   const announcementsById = new Map((semanticIndex?.announcements || [])
     .map(announcement => [Number(announcement.id), announcement]))
-  const logicalEntries = sortedRows(storyMaster.birthday).map(row => {
-    const semantics = semanticIndex?.by_episode_id?.[String(row?.['1'] || '')] || null
-    const semanticRow = semantics ? { ...row, birthday_semantics: semantics } : row
-    const entry = logicalEntry('birthday', semanticRow, '4')
+  const logicalEntries = JSON.parse(JSON.stringify(catalog.birthdayIdentity.logicalEntries)).map(({ birthdaySemantics, ...entry }) => {
+    const semantics = semanticIndex?.by_episode_id?.[entry.masterId] || null
+    const semanticRow = { ...entry, birthdaySemantics: semantics || birthdaySemantics }
     return {
       ...entry,
       subject: birthdaySubject(semanticRow, idolUnit, speakersByNumericId),
@@ -218,7 +122,6 @@ function buildBirthdayDomain(storyMaster, idolUnit, speakerDictionary, membershi
       announcements: (semantics?.announcement_ids || [])
         .map(id => announcementsById.get(Number(id)))
         .filter(Boolean),
-      domainMemberships: [...(memberships.get(entry.compiledFile) || [])].sort(),
     }
   })
 
@@ -262,37 +165,26 @@ function buildBirthdayDomain(storyMaster, idolUnit, speakerDictionary, membershi
   }
 }
 
-export function buildBirthdayStoryDomainIdentity(storyMaster, idolUnit, speakerDictionary, semanticIndex = null) {
-  if (!storyMaster) return null
+export function buildBirthdayStoryDomainIdentity(catalog, idolUnit, speakerDictionary, semanticIndex = null) {
+  if (!catalog) return null
   return buildBirthdayDomain(
-    storyMaster,
+    catalog,
     idolUnit,
     speakerDictionary,
-    allDomainMemberships(storyMaster),
     semanticIndex,
   )
 }
 
-function buildExtraDomain(storyMaster, gashaIndex = null, visualIndex = null) {
-  const groups = sortedRows(storyMaster.extra?.groups)
+function buildExtraDomain(catalog, gashaIndex = null, visualIndex = null) {
+  if (!catalog?.extraIdentity) throw new Error('Extra identity requires the named catalog')
+  const { groups, logicalEntries } = JSON.parse(JSON.stringify(catalog.extraIdentity))
   const visualsByChapter = new Map((visualIndex?.entries || [])
     .map(entry => [String(entry.chapter_id || ''), entry]))
-  const logicalEntries = sortedRows(storyMaster.extra?.episodes)
-    .map(row => {
-      const entry = logicalEntry('extra', row, '4')
-      const group = groups.find(candidate => String(candidate['1']) === entry.parentId)
-      return {
-        ...entry,
-        masterGroupTitle: String(group?.['3'] || ''),
-        seriesId: String(group?.['2'] || ''),
-      }
-    })
-
-  const seriesIds = [...new Set(groups.map(group => String(group['2'] || '')).filter(Boolean))]
+  const seriesIds = [...new Set(groups.map(group => group.seriesId).filter(Boolean))]
   const collections = seriesIds.map(seriesId => {
     const definition = extraStorySeriesDefinition(seriesId)
-    const masterGroups = groups.filter(group => String(group['2']) === seriesId)
-    const masterGroupIds = masterGroups.map(group => String(group['1']))
+    const masterGroups = groups.filter(group => group.seriesId === seriesId)
+    const masterGroupIds = masterGroups.map(group => group.masterId)
     const entries = logicalEntries.filter(entry => entry.seriesId === seriesId)
     const gasha = resolveExtraStoryGasha(gashaIndex, definition.gashaCode)
     const visual = visualsByChapter.get(seriesId) || null
@@ -315,7 +207,7 @@ function buildExtraDomain(storyMaster, gashaIndex = null, visualIndex = null) {
       resourceIdCount: new Set(entries.map(entry => entry.resourceId).filter(Boolean)).size,
       compiledFileCount: new Set(entries.map(entry => entry.compiledFile).filter(Boolean)).size,
       releaseAt: Math.min(...entries.map(entry => entry.releaseAt).filter(Boolean)),
-      source: sourceEvidence(masterGroups[0]),
+      source: masterGroups[0].source,
     }
   })
 
@@ -343,9 +235,9 @@ function buildExtraDomain(storyMaster, gashaIndex = null, visualIndex = null) {
   }
 }
 
-export function buildExtraStoryDomainIdentity(storyMaster, gashaIndex = null, visualIndex = null) {
-  if (!storyMaster) return null
-  return buildExtraDomain(storyMaster, gashaIndex, visualIndex)
+export function buildExtraStoryDomainIdentity(catalog, gashaIndex = null, visualIndex = null) {
+  if (!catalog) return null
+  return buildExtraDomain(catalog, gashaIndex, visualIndex)
 }
 
 function buildPlaybackIndex(domains) {
@@ -373,22 +265,23 @@ function buildPlaybackIndex(domains) {
 }
 
 export function buildStoryDomainIdentityIndex({
-  storyMaster,
+  storyCatalog,
   idolUnit,
   speakerDictionary,
   birthdayStorySemantic,
 } = {}) {
-  if (!storyMaster) return null
-  const memberships = allDomainMemberships(storyMaster)
+  if (!storyCatalog) return null
   const domains = {
-    main: buildMainStoryDomainIdentity(storyMaster),
-    birthday: buildBirthdayDomain(storyMaster, idolUnit, speakerDictionary, memberships, birthdayStorySemantic),
-    extra: buildExtraDomain(storyMaster),
+    main: buildMainStoryDomainIdentity(storyCatalog),
+    birthday: buildBirthdayDomain(storyCatalog, idolUnit, speakerDictionary, birthdayStorySemantic),
+    extra: buildExtraDomain(storyCatalog),
   }
   return {
     schemaVersion: 1,
     authority: {
-      semanticIdentity: 'story_master_index',
+      semanticIdentity: 'story_catalog',
+      mainIdentity: 'story_catalog.mainIdentity',
+      extraIdentity: 'story_catalog.extraIdentity',
       birthdaySemantic: 'birthday_story_semantic_index',
       idolIdentity: 'idol_unit_dictionary',
       npcIdentity: 'speaker_dictionary',

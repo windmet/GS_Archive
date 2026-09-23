@@ -1,35 +1,43 @@
 <template>
   <transition name="load-fade">
     <div v-if="visible" class="loading-screen">
-      <div class="loading-box">
-        <div class="load-icon">
+      <div class="loading-box" role="status" aria-live="polite">
+        <div class="load-icon" aria-hidden="true">
           <svg viewBox="0 0 48 48" width="48" height="48">
             <circle cx="24" cy="24" r="20" fill="none" stroke="#2a2a3a" stroke-width="3" />
             <circle
               cx="24" cy="24" r="20" fill="none" stroke="#4488cc"
               stroke-width="3" stroke-linecap="round"
-              :style="{ strokeDasharray: `${progress} 100`, strokeDashoffset: '0', transform: 'rotate(-90deg)', transformOrigin: 'center' }"
+              stroke-dasharray="30 100"
             />
           </svg>
-          <span class="load-pct">{{ progress }}%</span>
         </div>
-        <div class="load-label">Loading assets...</div>
-        <div class="load-bar-track">
-          <div class="load-bar-fill" :style="{ width: progress + '%' }"></div>
-        </div>
+        <div class="load-label">{{ readiness?.status === 'waiting' ? '正在准备当前画面…' : message }}</div>
+        <p v-if="critical.total" class="load-count">当前段落资源：{{ critical.ready }} / {{ critical.total }}</p>
+        <p v-if="critical.total && critical.ready === critical.total" class="load-count">资源已预载，正在准备画面与语音…</p>
+        <button v-if="canCancel" type="button" class="load-cancel" @click="$emit('cancel')">取消并返回</button>
       </div>
     </div>
   </transition>
 </template>
 
 <script setup>
-defineProps({
+import { computed } from 'vue'
+import { criticalPreloadProgress } from '../presentation/LoadingPresentation.js'
+defineEmits(['cancel'])
+const props = defineProps({
+  canCancel: Boolean,
   visible: { type: Boolean, default: false },
-  progress: { type: Number, default: 0 },
+  status: { type: Object, default: null },
+  readiness: { type: Object, default: null },
+  message: { type: String, default: '正在读取资料馆数据…' },
 })
+const critical = computed(() => criticalPreloadProgress(props.status))
 </script>
 
 <style scoped>
+.load-cancel { min-height: 44px; padding: 10px 20px; border: 1px solid #81999d; border-radius: 8px; background: #203337; color: #fff; font: inherit; cursor: pointer; }
+.load-cancel:focus-visible { outline: 3px solid #66c8c0; outline-offset: 3px; }
 .loading-screen {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   background: #111; z-index: 99999;
@@ -43,20 +51,9 @@ defineProps({
   width: 64px; height: 64px;
   display: flex; align-items: center; justify-content: center;
 }
-.load-pct {
-  position: absolute;
-  color: #ccc; font-size: 0.8rem; font-weight: bold;
-}
+.load-count { color: #ccc; font-size: 0.85rem; margin: 0; }
 .load-label {
   color: #888; font-size: 0.85rem; letter-spacing: 1px;
-}
-.load-bar-track {
-  width: 200px; height: 4px;
-  background: #2a2a3a; border-radius: 2px; overflow: hidden;
-}
-.load-bar-fill {
-  height: 100%; background: #4488cc;
-  border-radius: 2px; transition: width 0.15s ease;
 }
 .load-fade-enter-active, .load-fade-leave-active {
   transition: opacity 0.3s;

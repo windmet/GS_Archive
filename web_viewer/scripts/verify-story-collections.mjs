@@ -8,8 +8,7 @@ import { buildBirthdayStoryDomainIdentity, buildExtraStoryDomainIdentity } from 
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const readJson = relative => readFile(path.join(root, relative), 'utf8').then(JSON.parse)
-const [master, birthdaySemantic, presentation, idolEpisodes, idols, speakers] = await Promise.all([
-  readJson('public/data/masterdata/story_master_index.json'),
+const [birthdaySemantic, presentation, idolEpisodes, idols, speakers] = await Promise.all([
   readJson('public/data/masterdata/birthday_story_semantic_index.json'),
   readJson('public/data/masterdata/story_presentation_index.json'),
   readJson('public/data/masterdata/idol_episode_index.json'),
@@ -17,10 +16,10 @@ const [master, birthdaySemantic, presentation, idolEpisodes, idols, speakers] = 
   readJson('public/data/masterdata/speaker_dictionary.json'),
 ])
 
-const catalog = buildStoryCatalog(master, presentation)
-const extraDomain = buildExtraStoryDomainIdentity(master)
-const birthdayDomain = buildBirthdayStoryDomainIdentity(master, idols, speakers, birthdaySemantic)
-const collections = buildStoryCollections(master, catalog, { extraDomain, birthdayDomain, idolEpisodes })
+const catalog = buildStoryCatalog(await readJson('public/data/masterdata/story_catalog.json'), presentation)
+const extraDomain = buildExtraStoryDomainIdentity(await readJson('public/data/masterdata/story_catalog.json'))
+const birthdayDomain = buildBirthdayStoryDomainIdentity(await readJson('public/data/masterdata/story_catalog.json'), idols, speakers, birthdaySemantic)
+const collections = buildStoryCollections(await readJson('public/data/masterdata/story_catalog.json'), catalog, { extraDomain, birthdayDomain, idolEpisodes })
 const mainCollections = collections.filter(collection => collection.domain === 'main')
 const unitCollections = collections.filter(collection => collection.domain === 'unit_story')
 const extraCollections = collections.filter(collection => collection.domain === 'extra')

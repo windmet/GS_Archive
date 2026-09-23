@@ -1,38 +1,52 @@
+import { captureProjectorShadow } from './ProjectorShadow.js'
 import { StoryClock } from './StoryClock.js'
 import { EffectScheduler } from './EffectScheduler.js'
-import { createPerformanceHandle } from './PerformanceRegistry.js'
 import { normalizeScenario } from './ScenarioNormalizer.js'
 import { applyScreenEntrySnapshot, createScreenCueHandle } from './ScreenCueRuntime.js'
 import { applyBackgroundEntrySnapshot, createBackgroundCueHandle } from './BackgroundCueRuntime.js'
 import { applyCameraEntrySnapshot, createCameraCueHandle } from './CameraCueRuntime.js'
 import { createSeCueHandle } from './SeCueRuntime.js'
 import { createDebugSnapshotCue, createDebugSnapshotHandle } from './DebugSnapshotRuntime.js'
-import { getCachedMotionSetting } from '../../utils/IdolMotionSettingStore.js'
+import { createSpineCueHandle } from './SpineCueRuntime.js'
 
 function clone(value) {
   return value == null ? value : JSON.parse(JSON.stringify(value))
 }
 
-export function settleSpineNeckCue(manager, cue) {
-  if (!manager || !cue?.target || !cue?.payload?.value) return false
-  manager.playSpineNeckAnim?.(cue.target, cue.payload.value, cue.cue_id)
-  const track = manager.spineInstances?.[cue.target]?.spine?.state?.getCurrent?.(3)
-  if (!track) return false
-  track.trackTime = track.animationEnd
-  manager.flushSpinePose?.(cue.target, 0)
-  return true
-}
+// Keep the existing public helper import stable during the module migration.
+export { settleSpineNeckCue } from './SpineCueRuntime.js'
 
 export function useStoryRuntimeCues({
   compiledData, currentStepIndex, spineStageRef, audioManager,
+  getStageStep = () => compiledData.value?.steps?.[currentStepIndex.value],
   debugSnapshotAt = null, debugSnapshotAction = null,
+  isPaused = () => false,
+  needsStage = () => true,
+  prepareCommunication = async () => ({ status: 'ready' }),
+  onReadinessChange = () => {},
+  prepareStepAudio = async () => ({ status: 'ready' }),
 }) {
   const scheduler = new EffectScheduler({ clock: new StoryClock() })
   let normalizedSource = null
   let normalizedScenario = null
   let managerFrame = null
+  let stepAudioController = null
   let generation = 0
   let pendingRestore = null
+  let shadowBasis = null
+  let shadowUnavailableReason = 'not-started'
+  let readiness = { status: 'idle', generation: 0, stepIndex: null, stepId: null }
+
+  function publishReadiness(status, detail = {}) {
+    readiness = {
+      status,
+      generation,
+      stepIndex: currentStepIndex.value,
+      stepId: getStageStep()?.step_id ?? null,
+      ...detail,
+    }
+    onReadinessChange({ ...readiness })
+  }
 
   if (typeof window !== 'undefined') {
     window.__STORY_RUNTIME_CUES__ = scheduler
@@ -50,148 +64,107 @@ export function useStoryRuntimeCues({
     return spineStageRef.value?.manager || null
   }
 
-  function applySnapshotWhenReady(snapshot, expectedGeneration) {
+  function applySnapshotWhenReady(snapshot, expectedGeneration, onReady, { restore = false } = {}) {
+    const expectedStep = getStageStep()
+    const stageRequired = needsStage()
     const apply = () => {
       if (expectedGeneration !== generation) return
       const manager = getManager()
-      if (!manager) {
+      const stage = spineStageRef.value
+      const sceneReadiness = stageRequired ? stage?.getSceneReadiness?.(expectedStep) : null
+      // A constructed Pixi manager does not imply that the source step's
+      // asynchronous actor placement has finished. Start the common clock
+      // only after that projection, so late placement cannot overwrite cues.
+      if (stageRequired && (!manager || sceneReadiness?.status === 'waiting'
+        || (!sceneReadiness && stage?.isSceneProjected?.(expectedStep) === false))) {
         managerFrame = requestAnimationFrame(apply)
         return
       }
       managerFrame = null
-      applyCameraEntrySnapshot(manager, snapshot?.camera_zoom)
-      applyScreenEntrySnapshot(manager, snapshot?.screen_overlay)
-      applyBackgroundEntrySnapshot(manager, snapshot?.bg)
+      if (sceneReadiness?.status === 'blocked') {
+        publishReadiness('blocked', { reason: sceneReadiness.reason, ids: sceneReadiness.ids || [] })
+        return
+      }
+      const controller = new AbortController()
+      stepAudioController = controller
+      if (stageRequired) {
+        applyCameraEntrySnapshot(manager, snapshot?.camera_zoom)
+        applyScreenEntrySnapshot(manager, snapshot?.screen_overlay)
+      }
+      Promise.resolve(stageRequired ? applyBackgroundEntrySnapshot(manager, snapshot?.bg)
+        : prepareCommunication({ signal: controller.signal }))
+        .then(async result => {
+          if (expectedGeneration !== generation) return
+          if (result?.status === 'failed') {
+            publishReadiness('blocked', { reason: 'background-renderable', ids: snapshot?.bg ? [snapshot.bg] : [] })
+            return
+          }
+          if (result?.status === 'cancelled') {
+            publishReadiness('blocked', { reason: 'background-cancelled', ids: snapshot?.bg ? [snapshot.bg] : [] })
+            return
+          }
+          let audio
+          try {
+            audio = await prepareStepAudio({
+              stepIndex: currentStepIndex.value,
+              stepId: expectedStep?.step_id ?? null,
+              restore,
+              signal: controller.signal,
+              reportWaiting: (reason, ids = []) => {
+                if (expectedGeneration === generation && !controller.signal.aborted) {
+                  publishReadiness('waiting', { reason, ids })
+                }
+              },
+            })
+          } catch (error) {
+            if (expectedGeneration !== generation || controller.signal.aborted) return
+            stepAudioController = null
+            publishReadiness('blocked', { reason: 'voice-renderable', ids: [], error: error?.message || String(error) })
+            return
+          }
+          if (expectedGeneration !== generation || controller.signal.aborted) return
+          stepAudioController = null
+          if (audio?.status === 'cancelled') return
+          if (audio?.status === 'failed') {
+            publishReadiness('blocked', { reason: audio.reason || 'voice-renderable', ids: audio.ids || [] })
+            return
+          }
+          onReady?.(manager)
+          publishReadiness('playable')
+        })
+        .catch(error => {
+          if (expectedGeneration !== generation) return
+          stepAudioController = null
+          publishReadiness('blocked', { reason: 'background-renderable', ids: snapshot?.bg ? [snapshot.bg] : [], error: error?.message || String(error) })
+        })
     }
     apply()
   }
 
-  function createSpineHandle(cue, context = {}) {
-    let operationToken = 0
-    let activeNeckTrack = null
-    let releasePending = null
-    let neckFallbackTimer = null
-    const isTransient = cue.lifecycle.persistence === 'transient'
-    const expectedSpineIds = new Set(
-      (context.step?.entry_snapshot?.spines || [])
-        .map(spine => spine?.id)
-        .filter(Boolean),
-    )
-    const targetExpectedInEntry = expectedSpineIds.has(cue.target)
-    const apply = (manager, duration, { settleNeck = false } = {}) => {
-      const target = cue.target
-      const payload = cue.payload || {}
-      if (cue.action === 'spine.face.set') {
-        manager.updateSpineFace?.(target, payload.value, {
-          anim_flag: payload.anim_flag,
-          blush_flag: payload.blush_flag,
-          sweat_flag: payload.sweat_flag,
-        })
-      } else if (cue.action === 'spine.body.play') {
-        const modelId = manager.spineInstances?.[target]?.modelId || ''
-        const motionSetting = getCachedMotionSetting(target, modelId, payload.value)
-        manager.playSpineAnim?.(target, payload.value, false, !!payload.no_back, motionSetting, true, 0.3)
-      } else if (cue.action === 'spine.neck.play') {
-        if (settleNeck) {
-          settleSpineNeckCue(manager, cue)
-          activeNeckTrack = manager.spineInstances?.[target]?.spine?.state?.getCurrent?.(3) || null
-          releasePending?.()
-          return
-        }
-        manager.playSpineNeckAnim?.(target, payload.value, cue.cue_id)
-        const entry = manager.spineInstances?.[target]
-        const track = entry?.spine?.state?.getCurrent?.(3)
-        activeNeckTrack = track || null
-        if (track) {
-          return new Promise(resolve => {
-            let completed = false
-            const finish = () => {
-              if (completed) return
-              completed = true
-              if (neckFallbackTimer != null) clearTimeout(neckFallbackTimer)
-              neckFallbackTimer = null
-              releasePending = null
-              resolve()
-            }
-            releasePending = finish
-            // Keep Track 3 clamped at its final pose. The step transition or an
-            // explicit neck.stop cue owns clearing it.
-            track.listener = { complete: finish }
-            const durationMs = Math.max(0, Number(track.animationEnd || 0) - Number(track.animationStart || 0)) * 1000
-            neckFallbackTimer = setTimeout(finish, durationMs + 250)
-          })
-        }
-      } else if (cue.action === 'spine.neck.stop') {
-        manager.stopSpineNeckAnim?.(target, cue.cue_id)
-      } else if (cue.action === 'spine.visual.tint') {
-        manager.setSpineColor?.(target, payload.value, duration, 0)
-      }
-    }
-    const performWhenReady = (duration, options) => {
-      const token = ++operationToken
-      const expectedGeneration = generation
-      if (!targetExpectedInEntry) {
-        console.debug('[StoryRuntime] spine cue target absent from entry snapshot; skipped', cue.cue_id, cue.target)
-        return Promise.resolve(false)
-      }
-      const deadline = performance.now() + 5000
-      return new Promise(resolve => {
-        const attempt = () => {
-          if (token !== operationToken || expectedGeneration !== generation) return resolve(false)
-          const manager = getManager()
-          if (manager?.spineInstances?.[cue.target]) {
-            Promise.resolve(apply(manager, duration, options)).then(() => resolve(true), () => resolve(false))
-            return
-          }
-          if (performance.now() >= deadline) {
-            console.warn('[StoryRuntime] spine cue target unavailable', cue.cue_id, cue.target)
-            return resolve(false)
-          }
-          requestAnimationFrame(attempt)
-        }
-        attempt()
-      })
-    }
-    return createPerformanceHandle({
-      id: cue.cue_id,
-      channel: cue.channel,
-      skippable: cue.lifecycle.skippable,
-      blocksInput: cue.lifecycle.blocks_input,
-      blocksAuto: cue.lifecycle.blocks_auto && targetExpectedInEntry,
-      metadata: { action: cue.action, cue },
-      onStart: () => {
-        console.debug('[StoryRuntime] cue start', cue.cue_id)
-        return performWhenReady(cue.duration)
-      },
-      onSettle: () => {
-        operationToken++
-        if (isTransient) {
-          if (cue.action === 'spine.neck.play') {
-            return performWhenReady(0, { settleNeck: true })
-          }
-          releasePending?.()
-          return
-        }
-        console.debug('[StoryRuntime] cue settle', cue.cue_id)
-        return performWhenReady(0)
-      },
-      onCancel: reason => {
-        operationToken++
-        releasePending?.()
-        const preservesAuthoredPose = reason === 'step-change' || reason === 'load-step'
-        if (cue.action === 'spine.neck.play' && !preservesAuthoredPose) {
-          getManager()?.stopSpineNeckAnim?.(cue.target, `${cue.cue_id}:cancel`)
-        }
-      },
+  const createSpineHandle = (cue, context) => {
+    // The stage consumes a projected source step, not the normalizer's copy.
+    // Capture its identity now so readiness cannot silently follow navigation.
+    const expectedStep = getStageStep()
+    return createSpineCueHandle(cue, context, {
+      getManager, getGeneration: () => generation,
+      nowMilliseconds: () => scheduler.clock.now() * 1000,
+      isTargetReady: target => spineStageRef.value?.isSpineReady?.(target, expectedStep) ?? true,
     })
   }
 
   const handlers = new Map()
-  handlers.set('camera.transform', cue => createCameraCueHandle(cue, getManager))
+  handlers.set('camera.transform', cue => createCameraCueHandle(cue, getManager, {
+    nowMilliseconds: () => scheduler.clock.now() * 1000,
+  }))
   handlers.set('se.play', cue => createSeCueHandle(cue, audioManager))
-  handlers.set('screen.directional_wipe', cue => createScreenCueHandle(cue, getManager))
-  handlers.set('screen.fade', cue => createScreenCueHandle(cue, getManager))
-  handlers.set('background.change', cue => createBackgroundCueHandle(cue, getManager))
+  const createScreenHandle = cue => createScreenCueHandle(cue, getManager, {
+    nowMilliseconds: () => scheduler.clock.now() * 1000,
+  })
+  handlers.set('screen.directional_wipe', createScreenHandle)
+  handlers.set('screen.fade', createScreenHandle)
+  handlers.set('background.change', cue => createBackgroundCueHandle(cue, getManager, {
+    nowMilliseconds: () => scheduler.clock.now() * 1000,
+  }))
   handlers.set('spine.face.set', createSpineHandle)
   handlers.set('spine.body.play', createSpineHandle)
   handlers.set('spine.neck.play', createSpineHandle)
@@ -201,22 +174,28 @@ export function useStoryRuntimeCues({
 
   function handleStepChange() {
     generation++
+    stepAudioController?.abort(new Error('step changed'))
+    stepAudioController = null
     if (managerFrame != null) {
       cancelAnimationFrame(managerFrame)
       managerFrame = null
     }
     scheduler.cancelAll('step-change')
     const step = getNormalizedStep()
-    if (!step) return
+    if (!step) { publishReadiness('idle'); return }
+    publishReadiness('waiting', { reason: 'scene-renderable', ids: [] })
     const restore = pendingRestore?.stepIndex === currentStepIndex.value ? pendingRestore : null
     pendingRestore = null
-    applySnapshotWhenReady(restore?.snapshot || step.entry_snapshot, generation)
-    const cues = restore ? [] : step.cues.filter(cue => handlers.has(cue.action))
+    shadowBasis = { source: compiledData.value, stepIndex: currentStepIndex.value, context: restore ? { entrySnapshot: clone(restore.snapshot), historyId: `runtime-restore:${generation}`, cuePolicy: 'suppressed' } : {} }
+    const cues = restore ? [] : step.cues.filter(cue => handlers.has(cue.action) && (needsStage() || cue.action === 'se.play'))
     const debugSnapshotCue = restore ? null : createDebugSnapshotCue(step, debugSnapshotAt)
     if (debugSnapshotCue) cues.push(debugSnapshotCue)
-    scheduler.loadStep(cues, { handlers, context: { step } })
-    scheduler.start()
-    console.debug(restore ? '[StoryRuntime] restored' : '[StoryRuntime] scheduled', JSON.stringify(scheduler.inspect()))
+    applySnapshotWhenReady(restore?.snapshot || step.entry_snapshot, generation, manager => {
+      shadowBasis.manager = manager
+      scheduler.loadStep(cues, { handlers, context: { step } })
+      scheduler.start({ paused: isPaused() })
+      console.debug(restore ? '[StoryRuntime] restored' : '[StoryRuntime] scheduled', JSON.stringify(scheduler.inspect()))
+    }, { restore: Boolean(restore) })
   }
 
   function prepareRestore(stepIndex, snapshot) {
@@ -225,16 +204,37 @@ export function useStoryRuntimeCues({
     return true
   }
 
-  function settleCurrentStep(reason = 'user-next') {
+  function settleCurrentStep(reason = 'user-next', onSettled) {
     if (!scheduler.hasUnsettledSkippable()) return false
+    const expectedGeneration = generation
     scheduler.settleSkippable(reason)
-      .then(() => console.debug('[StoryRuntime] settled', reason, JSON.stringify(scheduler.inspect())))
+      .then(() => {
+        if (expectedGeneration !== generation) return
+        console.debug('[StoryRuntime] settled', reason, JSON.stringify(scheduler.inspect()))
+        onSettled?.()
+      })
       .catch(error => console.warn('[StoryRuntime] failed to settle cues:', error))
     return true
   }
 
+  function inspectProjectorShadow() {
+    if (!shadowBasis) return { status: 'not-comparable', reason: shadowUnavailableReason }
+    if (shadowBasis.source !== compiledData.value || shadowBasis.stepIndex !== currentStepIndex.value || managerFrame != null) return { status: 'not-comparable', reason: 'navigation-pending' }
+    getNormalizedStep()
+    const manager = getManager()
+    const expectedStep = getStageStep()
+    const report = captureProjectorShadow({ scenario: normalizedScenario, stepIndex: currentStepIndex.value, runtime: scheduler.inspect(), manager, context: shadowBasis.context, stageStep: expectedStep, sceneTimeOffset: scheduler.clock.elapsedOffset,
+      isSpineReady: id => spineStageRef.value?.isSpineReady?.(id, expectedStep) === true })
+    return manager !== shadowBasis.manager
+      ? { ...report, status: 'not-comparable', reason: 'stage-manager-replaced', observed_comparison: report.status } : report
+  }
+
   function cancelCurrentStep(reason = 'navigation') {
+    shadowBasis = null
+    shadowUnavailableReason = reason
     generation++
+    stepAudioController?.abort(new Error(reason))
+    stepAudioController = null
     if (managerFrame != null) {
       cancelAnimationFrame(managerFrame)
       managerFrame = null
@@ -246,16 +246,18 @@ export function useStoryRuntimeCues({
 
   function cleanup() {
     cancelCurrentStep('cleanup')
+    readiness = { status: 'idle', generation, stepIndex: null, stepId: null }
     scheduler.dispose().catch(() => {})
     if (window.__STORY_RUNTIME_CUES__ === scheduler) delete window.__STORY_RUNTIME_CUES__
   }
 
   return {
     enabled: true,
+    nowMilliseconds: () => scheduler.clock.elapsed() * 1000,
     handleStepChange,
     settleCurrentStep,
     cancelCurrentStep,
-    hasBlockingAuto: () => scheduler.hasBlockingAuto(),
+    hasBlockingAuto: () => ['waiting', 'blocked'].includes(readiness.status) || managerFrame != null || scheduler.hasBlockingAuto(),
     hasNonSkippable: () => scheduler.hasNonSkippable(),
     isSnapshotEnabled: () => true,
     getNormalizedStep: index => clone(getNormalizedStep(index)),
@@ -263,7 +265,8 @@ export function useStoryRuntimeCues({
     pause: () => scheduler.pause(),
     resume: () => scheduler.resume(),
     setRate: rate => scheduler.setRate(rate),
-    inspect: () => scheduler.inspect(),
+    inspect: () => ({ ...scheduler.inspect(), readiness: { ...readiness } }),
+    inspectProjectorShadow,
     cleanup,
   }
 }

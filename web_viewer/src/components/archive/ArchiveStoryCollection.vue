@@ -1,5 +1,5 @@
 <template>
-  <article v-if="collection" class="story-collection">
+  <article v-if="collection" class="story-collection" data-archive-scroll-container>
     <header class="collection-hero">
       <div class="collection-visual" :class="`domain-${collection.domain}`">
         <img v-if="collection.visualUrl" :src="collection.visualUrl" :alt="collection.title" />
@@ -17,16 +17,16 @@
         </dl>
         <aside v-if="collection.domain === 'birthday'" class="domain-boundary-note">
           <BookOpen :size="17" />
-          <p v-if="collection.subject?.kind === 'shared'"><strong>归档边界</strong><span>该篇由山村贤登场引导，但表 80 没有绑定角色；因此按制作人生日公共篇建档，不复制到山村贤的个人生日集合。</span></p>
+          <p v-if="collection.subject?.kind === 'shared'"><strong>归档边界</strong><span>该篇由山村贤登场引导，内容为制作人生日问候，归入公共篇。</span></p>
           <p v-else><strong>归档边界</strong><span>生日问候属于本页；生日同期开放的正式个人章节归入 Idol Episode。共享文件只保留一个关系入口，不重复定义章节。</span></p>
         </aside>
         <div v-if="collection.gasha || collection.sourceUrl" class="collection-relations">
           <button v-if="collection.gasha" type="button" @click="emit('open-gasha', collection.gasha)">
             <img v-if="collection.gasha.banner_url" :src="collection.gasha.banner_url" alt="" />
             <span>
-              <small>RELATED GASHA · {{ collection.gasha.code }}</small>
+              <small>关联卡池</small>
               <strong>{{ collection.gasha.display_name }}</strong>
-              <em>{{ collection.gasha.derived_pickup_cards?.length || 0 }} pickup SSR</em>
+              <em>{{ collection.gasha.derived_pickup_cards?.length || 0 }} 张推定关联卡</em>
             </span>
             <ChevronRight :size="18" />
           </button>
@@ -41,7 +41,7 @@
     <section class="chapter-section">
       <div class="section-heading">
         <div><span>CHAPTERS</span><h3>{{ collection.domainLabel }}</h3></div>
-        <strong>{{ collection.chapterCount }} chapters</strong>
+        <strong>{{ collection.chapterCount }} {{ collection.domain === 'main' ? '话' : '章' }}</strong>
       </div>
 
       <div class="chapter-list">
@@ -52,15 +52,15 @@
           :class="{ expanded: expandedChapterId === chapter.id, unavailable: !chapter.exists, canonical: chapter.canonicalRelation }"
         >
           <div class="chapter-summary">
-            <button class="chapter-toggle" :aria-expanded="expandedChapterId === chapter.id" @click="toggleChapter(chapter.id)">
+            <button class="chapter-toggle" :aria-expanded="expandedChapterId === chapter.id" @click="toggleChapter(chapter)">
               <span class="chapter-number">{{ String(chapterIndex + 1).padStart(2, '0') }}</span>
               <span class="chapter-identity">
                 <small>{{ chapter.label }}</small>
                 <strong>{{ chapter.title }}</strong>
               </span>
               <span class="chapter-stats">
-                <small>{{ chapter.episodeCount }} episodes</small>
-                <small>{{ chapter.voiceCount }} voices</small>
+                <small>{{ chapter.episodeCount }} 段剧情</small>
+                <small>{{ chapter.voiceCount }} 段语音</small>
               </span>
               <ChevronUp v-if="expandedChapterId === chapter.id" :size="18" />
               <ChevronDown v-else :size="18" />
@@ -105,7 +105,7 @@
               <div>
                 <span>CANONICAL PERSONAL STORY</span>
                 <strong>{{ chapter.canonicalRelation.sectionName }}「{{ chapter.canonicalRelation.sectionTitle }}」</strong>
-                <p>本文件对应 {{ chapter.canonicalRelation.episodeNames.join('、') }}，在生日档案中仅作为同期关系保留；完整章节结构、连续播放与后续通信统一由个人故事页承担。</p>
+                <p>本文件对应 {{ chapter.canonicalRelation.episodeNames.map(sourceName => presentIdolEpisodeLabel({ sourceName })).join('、') }}，在生日档案中仅作为同期关系保留；完整章节结构、连续播放与后续通信统一由个人故事页承担。</p>
               </div>
               <button @click="emit('open-idol-story', chapter.canonicalRelation)">前往正式章节 <ChevronRight :size="15" /></button>
             </div>
@@ -114,42 +114,51 @@
               <strong>{{ chapter.synopsis.title || chapter.title }}</strong>
               <p>{{ chapter.synopsis.text }}</p>
             </div>
-            <p v-else-if="!chapter.exists" class="chapter-unavailable">该话目保留于 masterdata，但没有可播放的编译剧情。</p>
+            <p v-else-if="!chapter.exists" class="chapter-unavailable">此章节已建档，剧情暂未收录。</p>
 
+            <p v-if="readingError" role="status">{{ readingError }} <button @click="emit('retry-reading')">重试阅读目录</button></p>
             <div v-if="!chapter.canonicalRelation" class="episode-grid">
+              <div v-for="(episode, episodeIndex) in chapter.episodes" :key="episode.id" class="episode-entry">
               <button
-                v-for="(episode, episodeIndex) in chapter.episodes"
-                :key="episode.id"
                 :disabled="!episode.exists"
                 @click="emit('play-episode', { chapter, episode })"
               >
                 <span class="episode-number">{{ String(episodeIndex + 1).padStart(2, '0') }}</span>
                 <span class="episode-copy">
                   <strong>{{ episode.label }}</strong>
-                  <small>{{ episode.dialogueCount }} dialogues · {{ episode.voiceCount }} voices</small>
+                  <small>{{ episode.dialogueCount }} 段对白 · {{ episode.voiceCount }} 段语音</small>
                 </span>
                 <Play v-if="episode.exists" :size="15" fill="currentColor" />
                 <span v-else class="episode-lock">－</span>
               </button>
+              <button v-if="readingEntry(episode)" class="episode-reading" :aria-label="`阅读 ${episode.label}`" @click="emit('read-episode', { chapter, documentId: readingEntry(episode).document_id })"><BookOpen :size="16" />阅读</button>
+              </div>
             </div>
           </div>
         </section>
       </div>
     </section>
+    <ArchiveTechnicalDetails :key="collection.id" :evidence="collection" />
   </article>
 </template>
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { BookOpen, ChevronDown, ChevronRight, ChevronUp, ExternalLink, Play } from '@lucide/vue'
+import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 
 const props = defineProps({
   collection: { type: Object, default: null },
   externalResources: { type: Array, default: () => [] },
   initialChapterId: { type: String, default: '' },
+  readingEntries: { type: Array, default: () => [] },
+  readingError: { type: String, default: '' },
 })
-const emit = defineEmits(['play-chapter', 'play-episode', 'open-gasha', 'open-idol-story'])
+const emit = defineEmits(['read-episode', 'retry-reading', 'play-chapter', 'play-episode', 'select-chapter', 'open-gasha', 'open-idol-story'])
 const expandedChapterId = ref('')
+const readingByFile = computed(() => new Map(props.readingEntries.filter(e => e.status === 'ready' && e.source_file).map(e => [e.source_file, e])))
+const readingEntry = episode => readingByFile.value.get(episode.file)
 
 const releaseDate = computed(() => {
   const timestamp = Number(props.collection?.releaseAt || 0)
@@ -169,8 +178,10 @@ watch(() => [props.collection?.id, props.initialChapterId], () => {
     props.collection?.chapters?.[0]?.id || ''
 }, { immediate: true })
 
-function toggleChapter(chapterId) {
-  expandedChapterId.value = expandedChapterId.value === chapterId ? '' : chapterId
+function toggleChapter(chapter) {
+  const nextChapterId = expandedChapterId.value === chapter.id ? '' : chapter.id
+  expandedChapterId.value = nextChapterId
+  if (nextChapterId) emit('select-chapter', chapter)
 }
 
 function externalResourcesForChapter(chapterId) {
@@ -234,6 +245,9 @@ function externalResourcesForChapter(chapterId) {
 .episode-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: #dfe6e8; }
 .episode-grid button { display: grid; grid-template-columns: 34px minmax(0, 1fr) 18px; align-items: center; gap: 8px; min-height: 54px; padding: 8px 11px; border: 0; background: #fff; color: #2d3d45; cursor: pointer; font: inherit; text-align: left; }
 .episode-grid button:hover:not(:disabled) { background: #edf8f7; }.episode-grid button:disabled { background: #f4f6f7; color: #929da2; cursor: not-allowed; }
+.episode-entry { display: flex; min-width: 0; background: #fff; }
+.episode-entry > button:first-child { flex: 1; min-width: 0; }
+.episode-grid .episode-reading { display: flex; flex: 0 0 auto; justify-content: center; min-width: 66px; min-height: 44px; border-left: 1px solid #e2ecef; color: #157c78; font-size: 13px; }
 .episode-number { color: #16877f; font-size: .59rem; font-weight: 800; font-variant-numeric: tabular-nums; }.episode-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }.episode-copy strong { font-size: .67rem; }.episode-copy small { color: #87949a; font-size: .53rem; }.episode-grid svg { color: #159087; }.episode-lock { text-align: center; }
 @media (max-width: 840px) { .collection-hero { grid-template-columns: 1fr; gap: 18px; }.collection-visual { max-width: 720px; }.chapter-toggle { grid-template-columns: 38px minmax(0, 1fr) 22px; }.chapter-stats { display: none; } }
 @media (max-width: 620px) { .collection-hero { padding: 15px 12px 18px; }.collection-copy h2 { font-size: 1.14rem; }.chapter-section { padding: 18px 10px 30px; }.chapter-summary { grid-template-columns: 1fr; }.chapter-toggle { grid-template-columns: 30px minmax(0, 1fr) 18px; gap: 7px; padding: 9px 8px; }.chapter-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); margin: 0 8px 12px; }.chapter-actions > a,.chapter-actions > button { min-width: 0; }.chapter-panel { padding: 4px 8px 12px; }.canonical-note { grid-template-columns: 1fr; }.canonical-note button { justify-content: center; }.episode-grid { grid-template-columns: 1fr; }.section-heading > strong { display: none; } }

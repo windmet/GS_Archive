@@ -70,6 +70,27 @@ jobs:
       - name: Verify localization runtime
         run: npm run verify:story-localization
 
+      - name: Verify reading artifacts and repository
+        run: npm run verify:reading
+
+      - name: Verify playback interaction matrix
+        run: npm run verify:story-interaction-matrix
+
+      - name: Verify neck overlay and personal Reader entry
+        run: npm run verify:spine-neck-contract && npm run verify:home-neck-contract && npm run verify:idol-story-reading
+
+      - name: Verify visual asset transport ownership
+        run: npm run verify:story-asset-transport
+
+      - name: Verify displayed stage pixel budget
+        run: npm run verify:stage-render-budget
+
+      - name: Verify song lyrics and media clock
+        run: npm run verify:song-lyrics && npm run verify:media-element-clock
+
+      - name: Verify playback feature ownership
+        run: npm run verify:playback-controller
+
       - name: Verify translation contracts
         run: npm run verify:story-translations
 
@@ -85,8 +106,146 @@ jobs:
       - name: Verify Runtime foundation
         run: node scripts/verify-story-runtime-foundation.mjs
 
+      - name: Verify shared scenario normalization boundary
+        run: npm run verify:shared-scenario-normalizer
+
+      # Story asset dependency discovery. These run on committed fixtures only:
+      # the compiled corpus is gitignored, so the `:source` variants that walk it
+      # stay a local check.
+      - name: Verify story asset dependency plan
+        run: npm run verify:story-asset-plan
+
+      - name: Verify effect texture parity with the runtime managers
+        run: npm run verify:effect-texture-parity
+
+      - name: Verify communication UI asset parity
+        run: npm run verify:communication-assets && npm run verify:communication-presentation
+
+      - name: Verify title transition lifecycle
+        run: npm run verify:title-transition
+
+      - name: Verify background loading lifecycle
+        run: npm run verify:story-background-loading
+
+      - name: Verify story loading safety contract
+        run: npm run verify:story-loading-safety
+
+      - name: Verify camera playback clock
+        run: npm run verify:story-camera-clock
+
+      - name: Verify screen transition playback clock
+        run: npm run verify:story-screen-clock
+
+      - name: Verify pure story state projector and manager shadow comparison
+        run: npm run verify:story-projector
+
+      - name: Verify playback state across story steps
+        run: npm run verify:story-step-playback-state
+
+      - name: Verify performance registry handoff
+        run: npm run verify:story-registry-handoff
+
+      - name: Verify partial performance settlement
+        run: npm run verify:story-partial-settlement
+
       - name: Verify Story timing semantics matrix
         run: npm run verify:story-timing-semantics -- --source-only
+
+      - name: Verify Spine cue lifecycle and compiler parity
+        run: npm run verify:story-spine-cues
+
+      - name: Verify story stage loading ownership
+        run: npm run verify:story-stage-loading
+
+      - name: Verify named story catalog and full consumer parity
+        run: npm run verify:story-catalog
+
+      - name: Verify archive contracts and repository lifecycle
+        run: npm run verify:archive-data
+
+      - name: Verify navigation state and route projection
+        run: npm run verify:archive-navigation-state
+
+      - name: Verify mobile portal return and deep-link contract
+        run: npm run verify:portal-navigation
+
+      - name: Verify asynchronous navigation ownership
+        run: npm run verify:archive-async-navigation
+
+      - name: Verify card voice preview adapter
+        run: npm run verify:card-voice-preview
+
+      - name: Verify card filtering boundary
+        run: npm run verify:card-filters
+
+      - name: Verify gasha catalog boundary
+        run: npm run verify:gasha-catalog
+
+      - name: Verify idol page projections
+        run: npm run verify:idol-page
+
+      - name: Verify unit page projections
+        run: npm run verify:unit-page
+
+      - name: Verify archive presentation and technical evidence boundaries
+        run: npm run verify:archive-presentation
+
+      - name: Verify archive startup route freshness
+        run: npm run verify:archive-startup-route
+
+      - name: Verify episode queue ownership and range restoration
+        run: npm run verify:episode-queue
+
+      - name: Verify scenario compiler package compatibility
+        run: npm run verify:scenario-package
+
+      - name: Verify isolated scenario resource providers
+        run: npm run verify:scenario-resources
+
+      - name: Verify candidate resource source configuration
+        run: npm run verify:scenario-source-config
+
+      - name: Verify RAW evidence boundaries
+        run: npm run verify:raw-evidence-boundaries
+
+      - name: Verify masterdata wire boundary
+        run: npm run verify:masterdata-wire
+
+      - name: Verify masterdata identity domain
+        run: npm run verify:masterdata-identities
+
+      - name: Verify masterdata media domains
+        run: npm run verify:masterdata-media
+
+      - name: Verify masterdata interaction domains
+        run: npm run verify:masterdata-interactions
+
+      - name: Verify work story input boundary
+        run: npm run verify:masterdata-work
+
+      - name: Verify story masterdata domains
+        run: npm run verify:masterdata-story-domains
+
+      - name: Verify card gameplay domain
+        run: npm run verify:masterdata-card-gameplay
+
+      - name: Verify card index split
+        run: npm run verify:masterdata-cards
+
+      - name: Verify event and gasha evidence
+        run: npm run verify:masterdata-events-gasha
+
+      - name: Verify masterdata resource inputs
+        run: npm run verify:masterdata-resource-inputs
+
+      - name: Verify masterdata output transport
+        run: npm run verify:masterdata-output-io
+
+      - name: Verify masterdata package entrypoint
+        run: npm run verify:masterdata-entrypoint
+
+      - name: Verify independent masterdata jobs
+        run: npm run verify:masterdata-generation-jobs
 
       - name: Verify release soak recorder
         run: npm run verify:release-soak
@@ -96,6 +255,9 @@ jobs:
 
       - name: Verify archive source configuration
         run: npm run verify:archive-sources
+
+      - name: Verify shared archive asset HTTP contract
+        run: npm run verify:archive-assets
 
       - name: Verify current archive baseline report
         run: npm run verify:archive-baseline:source-only

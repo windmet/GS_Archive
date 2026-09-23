@@ -1,3 +1,4 @@
+import { DeformTimeline } from '@pixi-spine/runtime-3.8'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -18,7 +19,7 @@ function createHarness() {
       ? [
           { boneIndex: 3 },
           { boneIndex: 7 },
-          { slotIndex: 2, constructor: { name: 'DeformTimeline' } },
+          Object.assign(new DeformTimeline(1), { slotIndex: 2 }),
         ]
       : [],
   }))

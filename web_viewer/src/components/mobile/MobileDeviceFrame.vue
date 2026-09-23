@@ -80,4 +80,13 @@ defineProps({
     max-height: 100%;
   }
 }
+/* Retain the original phone frame on narrow screens as well. */
+@media (max-width: 699px) {
+  .mobile-device-frame.variant-call {
+    box-sizing: border-box;
+    width: calc(100% - 24px);
+    border: 4px solid #222;
+    border-radius: 28px;
+  }
+}
 </style>

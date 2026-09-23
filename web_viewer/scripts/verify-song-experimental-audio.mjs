@@ -112,7 +112,7 @@ for (const [label, source, needles] of [
     'Unit（组合单轨）',
     'Center（中心偶像＋伴奏）',
     '315 ALL STARS（完整混音候选）',
-    '其他音轨（审计）',
+    '其他收录音轨',
     "if (mode.value === 'all_stars')",
     "if (mode.value === 'unit')",
     'useSongPerformanceSession()',
@@ -134,7 +134,7 @@ for (const [label, source, needles] of [
     '&& !entry.variant',
     'activeSingerEntries',
     '当前演唱',
-    'fetchSongPerformanceChoreography',
+    'fetchSongPerformanceArrangements',
     'data-clock-mode="audio-context-scheduled"',
     '播放前完整解码',
   ]],
@@ -153,13 +153,39 @@ for (const [label, source, needles] of [
     'gate.gain.setValueAtTime(1, startAt)',
   ]],
   ['lightweight performance data loader', performanceDataSource, [
-    '/assets/live-chibi/choreography/index.json',
-    'choreographyPromise',
+    '/data/song_timelines/manifest.json',
+    'fetchSongTimeline(entry.id)',
+    'detailPromises.delete(choreographyId)',
   ]],
 ]) {
   for (const needle of needles) {
     if (!source.includes(needle)) fail(`${label} integration is missing: ${needle}`)
   }
+}
+if (performanceDataSource.includes('/assets/live-chibi/choreography/index.json')) {
+  fail('portal lineup player must use the projected song timeline, not the full choreography index')
+}
+const stageCleanup = stageSource.match(/onBeforeUnmount\(\(\) => \{([^]*?)\n\}\)/)?.[1] || ''
+for (const needle of [
+  'stageBuildSequence += 1',
+  'lipSyncSequence += 1',
+  'stopStage()',
+  'resizeObserver?.disconnect()',
+  'releaseAudio()',
+  'releaseStageVocalAudio()',
+  'releaseBackmonitor()',
+  'releaseImageLayers()',
+  'releaseObjectLayers()',
+  'releaseSpotlights()',
+  'releaseLaserlights()',
+  'releasePinspotlights()',
+  'releaseStageBackground()',
+  'destroyStageRuntime(runtime)',
+  'runtimes.clear()',
+  'characterShadowTexture?.destroy(true)',
+  'app?.destroy(true)',
+]) {
+  if (!stageCleanup.includes(needle)) fail(`Chibi stage unmount cleanup is missing: ${needle}`)
 }
 if (lineupPlayerSource.includes('liveChibiSpine')) {
   fail('portal lineup player must not pull Pixi/Spine runtime into the archive bundle')

@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { buildStoryCatalog } from '../src/data/archiveSelectors.js'
 import { buildStoryCollections } from '../src/data/storyCollections.js'
 import { buildExtraStoryDomainIdentity } from '../src/data/storyDomainIdentityIndex.js'
+import { buildExtraStoryDomainIdentity as legacyExtra } from '../fixtures/story-catalog/legacy-domain-identity-v0.mjs'
 import { readArchiveRoute } from '../src/core/archiveRoute.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -34,7 +35,8 @@ assert.equal(collectionRoute.storyType, 'extra')
 assert.equal(collectionRoute.storySection, '60201')
 assert.equal(collectionRoute.query, '315')
 
-const extra = buildExtraStoryDomainIdentity(master, gashaIndex, visualIndex)
+const extra = buildExtraStoryDomainIdentity(await readJson('public/data/masterdata/story_catalog.json'), gashaIndex, visualIndex)
+assert.deepEqual(extra, legacyExtra(master, gashaIndex, visualIndex), 'all extra fields including gasha and visual evidence remain unchanged')
 assert.equal(extra.meta.collectionCount, 10)
 assert.equal(extra.meta.officialCollectionCount, 7)
 assert.equal(extra.meta.supplementaryCollectionCount, 3)
@@ -43,8 +45,8 @@ assert.equal(extra.meta.logicalEntryCount, 47)
 assert.equal(extra.meta.resourceIdCount, 45)
 assert.equal(extra.meta.compiledFileCount, 44)
 
-const catalog = buildStoryCatalog(master, presentation)
-const collections = buildStoryCollections(master, catalog, { extraDomain: extra })
+const catalog = buildStoryCatalog(await readJson('public/data/masterdata/story_catalog.json'), presentation)
+const collections = buildStoryCollections(await readJson('public/data/masterdata/story_catalog.json'), catalog, { extraDomain: extra })
   .filter(collection => collection.domain === 'extra')
 assert.equal(collections.length, 10)
 assert.equal(collections.reduce((sum, collection) => sum + collection.chapterCount, 0), 47)
@@ -93,7 +95,7 @@ assert.match(catalogSource, /官方 Extra Story/)
 assert.match(catalogSource, /card\.bannerUrl/)
 assert.match(catalogSource, /其他特别剧情记录/)
 assert.match(catalogSource, /@media \(max-width: 620px\).*\.extra-card-grid, \.birthday-card-grid \{ grid-template-columns: 1fr;/s)
-assert.match(collectionSource, /RELATED GASHA/)
+assert.match(collectionSource, /关联卡池/)
 assert.match(collectionSource, /分类核对来源/)
 
 console.log('Extra story domain landing: 7 table-178 works + 3 supplements, 47 chapters, exact RAW visuals and FES gasha relation verified')

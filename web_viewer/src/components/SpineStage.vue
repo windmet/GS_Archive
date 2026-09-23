@@ -1,12 +1,11 @@
 ﻿<template>
   <div
-    ref="containerRef"
+    ref="viewportRef"
     class="spine-stage-root"
+    :data-presentation-suspended="suspended"
     :data-background-owner="manageBackground ? 'standalone' : 'external'"
-  ></div>
-
-  <div v-if="sceneIcon" class="scene-icon">
-    <img :src="sceneIcon.src" alt="" @error="$event.target.style.display = 'none'" />
+  >
+    <div ref="containerRef" class="spine-stage-canvas" :style="frameStyle"></div>
   </div>
 
   <!-- Debug Toggle: visible in player/lab contexts, hidden by embedded scenes. -->
@@ -81,11 +80,12 @@
 
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount, markRaw, reactive, onUnmounted, computed } from 'vue'
+import { storyStageFrame, storyPortraitBaseY, STORY_PORTRAIT_SCALE } from '../core/StoryStageFraming.js'
 import { PixiStageManager } from '../core/PixiStageManager.js'
+import { storySpineOrder } from '../core/StorySpineOrder.js'
 import {
   getBodyTypeUrl,
   getOtherSettingUrl,
-  getCharaIconUrl,
   isSilhouetteOnlyModel,
 } from '../utils/AssetResolver.js'
 import { loadCostumePrefabMeta } from '../utils/CostumePrefabMetaStore.js'
@@ -103,37 +103,43 @@ import {
 } from './SpineStageDiagnostics.js'
 
 const props = defineProps({
+  suspended: { type: Boolean, default: false },
   step: { type: Object, default: null },
   fallbackBg: { type: String, default: null },
   manageBackground: { type: Boolean, default: false },
   debugControls: { type: Boolean, default: false },
   releaseOwner: { type: String, default: '' },
+  responsivePositions: { type: Boolean, default: false },
+  portraitFraming: { type: Boolean, default: false },
+  nowMilliseconds: { type: Function, default: undefined },
 })
 
 const emit = defineEmits(['ready', 'error'])
 
-const sceneIcon = computed(() => {
-  const imageIcon = getStepSceneState(props.step)?.image_icon
-  // Compiled story state may retain icon metadata after the original command,
-  // but an empty layer means there is no drawable scene icon. Keep supporting
-  // the explicit string form used by standalone/smoke scenarios.
-  if (imageIcon && typeof imageIcon === 'object' && !imageIcon.layer) return null
-  const id = typeof imageIcon === 'string'
-    ? imageIcon
-    : imageIcon?.display_id || imageIcon?.id
-  if (!id) return null
-  return { id, src: getCharaIconUrl(id) }
-})
-
+const viewportRef = ref(null)
 const containerRef = ref(null)
+const frameStyle = ref({ width: '100%', height: '100%' })
+let framingObserver = null
+let presentationScale = 1
+function updateFraming() {
+  if (!props.portraitFraming || !viewportRef.value || !containerRef.value) return
+  const frame = storyStageFrame(viewportRef.value.clientWidth, viewportRef.value.clientHeight)
+  if (!frame) return
+  const style = { width: `${frame.width}px`, height: `${frame.height}px`, transform: `scale(${frame.scale})`, transformOrigin: 'top left' }
+  presentationScale = frame.scale
+  manager?.setPresentationScale(frame.scale)
+  frameStyle.value = style
+  // Set the initial reference dimensions before Pixi reads clientWidth/Height.
+  Object.assign(containerRef.value.style, style)
+}
+const portraitBaseY = value => props.portraitFraming ? storyPortraitBaseY(value) : value
 let manager = null
 let unregisterReleaseStage = null
 let applyStateToken = 0
+let projectedStep = null
 let lastScreenEffectsKey = ''
 let managedBackgroundId = null
 const debugMode = ref(false)
-const prefabMetaReady = ref(false)
-const motionSettingsReady = ref(false)
 const spineStates = reactive({})
 const boundsSnapshot = ref(null)
 let costumePrefabMeta = {}
@@ -142,7 +148,13 @@ let costumeDictionary = {}
 onMounted(() => {
   if (!containerRef.value) return
   try {
-    manager = markRaw(new PixiStageManager(containerRef.value))
+    updateFraming()
+    if (props.portraitFraming) {
+      framingObserver = new ResizeObserver(updateFraming)
+      framingObserver.observe(viewportRef.value)
+    }
+    manager = markRaw(new PixiStageManager(containerRef.value, { responsiveSpinePositions: props.responsivePositions, presentationScale }))
+    manager.setPresentationSuspended(props.suspended)
     if (props.releaseOwner === 'story-player') {
       unregisterReleaseStage = storyReleaseProbe.registerStageManager(manager)
     }
@@ -175,6 +187,7 @@ function syncManagedBackground() {
 }
 
 onBeforeUnmount(() => {
+  framingObserver?.disconnect()
   if (manager) {
     manager.destroy()
     manager = null
@@ -466,8 +479,8 @@ function computeVisualRootY(id, baseY, posY = 0) {
 
 function positionSpine(id, posX, posY, baseY) {
   if (!manager) return
-  const rootY = computeVisualRootY(id, baseY, posY)
-  manager.setSpinePositionByGameCoord(id, posX, 0, rootY)
+  computeVisualRootY(id, baseY, posY)
+  manager.setSpinePositionByGameCoord(id, posX, posY, baseY)
 }
 
 function syncBoundsSnapshot(step = props.step) {
@@ -490,16 +503,6 @@ watch(debugMode, (on) => {
   } else {
     Object.keys(spineStates).forEach(k => delete spineStates[k])
   }
-})
-
-watch(prefabMetaReady, (ready) => {
-  if (!ready || !getStepSceneState(props.step) || !manager) return
-  applyState(props.step, { reason: 'prefab-meta-ready' })
-})
-
-watch(motionSettingsReady, (ready) => {
-  if (!ready || !getStepSceneState(props.step) || !manager) return
-  applyState(props.step, { reason: 'motion-settings-ready' })
 })
 
 // Listen for custom event from PixiStageManager drag
@@ -679,12 +682,10 @@ async function _loadPrefabMeta() {
   _prefabMetaPromise = loadCostumePrefabMeta()
     .then(models => {
       costumePrefabMeta = models || {}
-      prefabMetaReady.value = true
       return costumePrefabMeta
     })
     .catch(() => {
       costumePrefabMeta = {}
-      prefabMetaReady.value = true
       return costumePrefabMeta
     })
   return _prefabMetaPromise
@@ -708,12 +709,7 @@ async function _loadCostumeDictionary() {
 async function _loadMotionSettings() {
   if (_motionSettingsPromise) return _motionSettingsPromise
   _motionSettingsPromise = loadIdolMotionSettings()
-    .then(() => {
-      motionSettingsReady.value = true
-    })
-    .catch(() => {
-      motionSettingsReady.value = true
-    })
+    .catch(() => {})
   return _motionSettingsPromise
 }
 
@@ -783,6 +779,8 @@ function yesNo(value) {
   return 'unknown'
 }
 
+watch(() => props.suspended, value => manager?.setPresentationSuspended(value))
+
 watch(() => props.step, (step, oldStep) => {
   if (!manager) return
   syncManagedBackground()
@@ -830,7 +828,10 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
   const state = getStepSceneState(step)
   if (!state) return
   const token = ++applyStateToken
-  await _loadBodyTypes()
+  projectedStep = null
+  // Entry positioning and motion selection must use one resolved metadata set.
+  // Reapplying entry after a late metadata fetch can overwrite settled cues.
+  await Promise.all([_loadBodyTypes(), _loadPrefabMeta(), _loadMotionSettings()])
   if (token !== applyStateToken || !manager) return
 
   lastScreenEffectsKey = applyStepSceneState({
@@ -839,6 +840,7 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
     state,
     lastScreenEffectsKey,
     resetScreenEffects,
+    nowMilliseconds: props.nowMilliseconds,
   })
 
   const charaId = step.chara_id || ''
@@ -916,7 +918,7 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
       const posX = spineState.pos_x ?? 0
       let posY = spineState.pos_y ?? 0
       if (spineState.idol_zoom_y_offset) posY += spineState.idol_zoom_y_offset
-      const rootY = computeVisualRootY(sid, resolved.finalBaseY, posY)
+      const rootY = computeVisualRootY(sid, portraitBaseY(resolved.finalBaseY), posY)
       if (existing) manager.removeSpine(sid, true)
       manager.showSilhouette(sid, modelId, posX, 0, rootY)
       continue
@@ -940,12 +942,12 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
       const fit = FIT_MODE === 'prefabrect' && prefabMeta
         ? manager.fitSpineToPrefabRect(existing.spine, prefabMeta, { anchorMode: ANCHOR_MODE })
         : null
-      const baseY = fit?.rootY ?? resolved.finalBaseY
+      const baseY = fit?.rootY ?? portraitBaseY(resolved.finalBaseY)
       const targetY = computeVisualRootYUtil(baseY, posY, manager.width)
       // Slide animation: use animateSpinePosition if slide_duration present
       if (spineState.slide_duration && spineState.slide_duration > 0) {
         const targetX = manager.width / 2 + posX * (manager.width / 1280)
-        manager.animateSpinePosition(sid, targetX, targetY, spineState.slide_duration)
+        manager.animateSpinePosition(sid, targetX, targetY, spineState.slide_duration, props.nowMilliseconds, baseY)
       } else {
         manager.setSpineZoom(sid, spineState.idol_zoom)
         positionSpine(sid, posX, posY, baseY)
@@ -956,10 +958,11 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
         spineState.idol_color || null,
         colorTransition.duration ?? 0,
         colorTransition.delay ?? 0,
+        props.nowMilliseconds,
       )
       if (spineState.fade?.type) {
         const targetAlpha = spineState.fade.type === 'out' ? 0 : 1
-        manager.animateSpineAlpha?.(sid, targetAlpha, spineState.fade.duration, spineState.fade.delay)
+        manager.animateSpineAlpha?.(sid, targetAlpha, spineState.fade.duration, spineState.fade.delay, props.nowMilliseconds)
       } else {
         manager.setSpineAlpha?.(sid, 1)
       }
@@ -968,17 +971,18 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
       if (existing) manager.removeSpine(sid, true)
       try {
         await manager.spawnSpine(sid, modelId, {
+          isCurrent: () => token === applyStateToken && !!manager,
           bodyType: getBodyType(sid),
           prefabMeta,
           bodyScaleEnabled: BODY_SCALE_ENABLED,
           fitMode: FIT_MODE,
+          presentationScale: props.portraitFraming ? STORY_PORTRAIT_SCALE : 1,
           visualHeightReference: VISUAL_HEIGHT_REFERENCE,
           visualHeightStrength: VISUAL_HEIGHT_STRENGTH,
           deferReveal: true,
           fadeInDuration: spineState.fade?.type === 'in' ? spineState.fade.duration : undefined,
         })
         if (token !== applyStateToken || !manager) {
-          manager?.removeSpine(sid, true)
           return
         }
         const entry = manager.spineInstances[sid]
@@ -987,7 +991,7 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
           const pX = spineState.pos_x ?? 0
           let pY = spineState.pos_y ?? 0
           if (spineState.idol_zoom_y_offset) pY += spineState.idol_zoom_y_offset
-          const rootY = computeVisualRootY(sid, resolved.finalBaseY, pY)
+          const rootY = computeVisualRootY(sid, portraitBaseY(resolved.finalBaseY), pY)
           manager.showSilhouette(sid, modelId, pX, 0, rootY)
           continue
         }
@@ -1004,19 +1008,20 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
         const fit = FIT_MODE === 'prefabrect' && prefabMeta
           ? manager.fitSpineToPrefabRect(entry.spine, prefabMeta, { anchorMode: ANCHOR_MODE })
           : null
-        const baseY = fit?.rootY ?? resolved.finalBaseY
+        const baseY = fit?.rootY ?? portraitBaseY(resolved.finalBaseY)
         const colorTransition = spineState.idol_color_transition || {}
         manager.setSpineColor(
           sid,
           spineState.idol_color || null,
           colorTransition.duration ?? 0,
           colorTransition.delay ?? 0,
+          props.nowMilliseconds,
         )
         manager.setSpineZoom(sid, spineState.idol_zoom)
         positionSpine(sid, posX, posY, baseY)
         if (spineState.fade?.type) {
           const targetAlpha = spineState.fade.type === 'out' ? 0 : 1
-          manager.animateSpineAlpha?.(sid, targetAlpha, spineState.fade.duration, spineState.fade.delay)
+          manager.animateSpineAlpha?.(sid, targetAlpha, spineState.fade.duration, spineState.fade.delay, props.nowMilliseconds)
         } else {
           manager.setSpineAlpha?.(sid, 1)
         }
@@ -1035,15 +1040,7 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
 
   // 鈹€鈹€ Phase 3: Official z-order, fallback to current speaker front 鈹€鈹€
   if (hasOfficialPriority) {
-    const orderedIds = desiredOrder
-      .slice()
-      .sort((a, b) => {
-        const pa = Number.isFinite(Number(a.idol_priority)) ? Number(a.idol_priority) : 0
-        const pb = Number.isFinite(Number(b.idol_priority)) ? Number(b.idol_priority) : 0
-        if (pa !== pb) return pa - pb
-        return desiredOrder.indexOf(a) - desiredOrder.indexOf(b)
-      })
-      .map(s => s.id)
+    const orderedIds = storySpineOrder(desiredOrder)
     manager.applySpineOrder?.(orderedIds)
   } else if (charaId && desiredIds.has(charaId)) {
     manager.bringToFront(charaId)
@@ -1052,13 +1049,42 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
   // 鈹€鈹€ Apply per-character URL overrides after all positioning logic 鈹€鈹€
   applyCharaOverrides(manager)
 
+  projectedStep = step
+
   syncBoundsSnapshot(step)
   if (debugMode.value) syncStates()
   scheduleStageDebugPublish()
 }
 
+function isSpineReady(target, expectedStep) {
+  return !!manager?.spineInstances?.[target]
+    && isSceneProjected(expectedStep)
+}
+
+function isSceneProjected(expectedStep) {
+  return !!manager && props.step === expectedStep
+    && (!getStepSceneState(expectedStep) || projectedStep === expectedStep)
+}
+
+function getSceneReadiness(expectedStep) {
+  if (!manager || props.step !== expectedStep || !isSceneProjected(expectedStep)) {
+    return { status: 'waiting', reason: 'actor-projection' }
+  }
+  const desiredIds = (getStepSceneState(expectedStep)?.spines || [])
+    .filter(item => item?.id && item?.model && !NON_VISUAL_IDS.has(item.id))
+    .map(item => item.id)
+  const pending = desiredIds.filter(id => manager._silhouettePending?.[id])
+  if (pending.length) return { status: 'waiting', reason: 'silhouette-image', ids: pending }
+  const missing = desiredIds.filter(id => !manager.spineInstances?.[id] && !manager._silhouetteSprites?.[id])
+  if (missing.length) return { status: 'blocked', reason: 'actor-renderable', ids: missing }
+  return { status: 'ready' }
+}
+
 defineExpose({
   get manager() { return manager },
+  isSpineReady,
+  isSceneProjected,
+  getSceneReadiness,
 })
 </script>
 
@@ -1077,28 +1103,6 @@ defineExpose({
 }
 
 /* 鈹€鈹€ Debug Toggle 鈹€鈹€ */
-.scene-icon {
-  position: absolute;
-  top: 18px;
-  left: 18px;
-  z-index: 45;
-  width: clamp(48px, 7vw, 76px);
-  height: clamp(48px, 7vw, 76px);
-  border: 2px solid rgba(255, 255, 255, 0.86);
-  border-radius: 8px;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.22);
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.32);
-  pointer-events: none;
-}
-
-.scene-icon img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
 .debug-toggle {
   position: absolute;
   bottom: 8px;

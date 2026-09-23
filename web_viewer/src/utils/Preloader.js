@@ -1,173 +1,236 @@
-/**
- * Preloader — scan scenario steps for required assets and preload them
- * into the browser's HTTP cache so that PIXI.Assets.load() resolves instantly.
- *
- * Key principle: NEVER dynamically import pixi.js here. Use native Image/fetch
- * to warm the browser cache, then PIXI.Assets.load() in PixiStageManager will
- * be a cache hit (near-zero latency).
- *
- * This runs ONLY when user clicks a scenario file (in App.vue loadScenario).
- * Home screen / list views never touch this code.
- *
- * Safety: every operation has a timeout. No single asset can hang the flow.
- */
-
-import { getBgUrl, getVoiceUrl, getSpineSkelUrl } from './AssetResolver.js'
+import { storyAssetTransport } from '../core/StoryAssetTransport.js'
+/** Native cache warming driven solely by StoryAssetPlan. Logical closure,
+ * fetched bytes, image load and renderer readiness are distinct. Unsupported
+ * requirements stay pending; no Pixi or audio runtime is imported here. */
+import { storyAssetAdapter, resolveStaticSpineModels } from './StoryAssetAdapters.js'
+import { decodeSpineAtlasText, resolveSpineAtlasDependencies } from '../../shared/story/SpineAtlasPages.js'
+import { resolveSpineTextureUrl } from './SpineTextureUrl.js'
+import { validateStoryConfig } from './StoryConfigShape.js'
+import { assetPriority, priorityRank } from '../../shared/story/StoryAssetPriority.js'
 
 const TIMEOUT_MS = 10000 // 10s per asset max
 
 /**
- * Wraps a promise with a timeout. If it doesn't settle within `ms`,
- * it rejects with a TimeoutError so the catch handler can fire.
+ * Owns the task timeout and abort signal for the complete body/image load.
+ * Cancellation rejects promptly even when an adapter cannot stop its work.
  */
-function withTimeout(promise, ms, label) {
-  let timer
-  const timeout = new Promise((_, reject) => {
-    timer = setTimeout(() => reject(new Error(`[Preloader] timeout (${ms}ms): ${label}`)), ms)
-  })
-  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer))
+async function withTimeout(load, ms, label, signal) {
+  signal?.throwIfAborted()
+  const controller = new AbortController()
+  const forwardAbort = () => controller.abort(signal.reason)
+  signal?.addEventListener('abort', forwardAbort, { once: true })
+  const timer = setTimeout(() => controller.abort(new Error(`[Preloader] timeout (${ms}ms): ${label}`)), ms)
+  let onAbort
+  try {
+    return await Promise.race([
+      Promise.resolve().then(() => { controller.signal.throwIfAborted(); return load(controller.signal) }),
+      new Promise((_, reject) => {
+        onAbort = () => reject(controller.signal.reason)
+        controller.signal.addEventListener('abort', onAbort, { once: true })
+      }),
+    ])
+  } finally {
+    clearTimeout(timer)
+    signal?.removeEventListener('abort', forwardAbort)
+    controller.signal.removeEventListener('abort', onAbort)
+  }
 }
-
 export class Preloader {
 
-  /**
-   * Scan all steps and classify asset requirements.
-   */
-  static scanStepAssets(steps) {
-    const bgIds = new Set()
-    const voiceFiles = new Set()
-    const spineModels = new Set()
-
-    for (const step of steps) {
-      const state = step.state || {}
-      if (state.bg) bgIds.add(state.bg)
-      if (step.dialogue?.voice) voiceFiles.add(step.dialogue.voice)
-      for (const spine of state.spines || []) {
-        if (spine.model) spineModels.add(spine.model)
+  static async preloadScenario(plan, onProgress, { signal, onStatus, priority, entryOnly = false } = {}) {
+    signal?.throwIfAborted()
+    if (plan?.schema_version !== 1 || !plan.source?.sha256 || !Array.isArray(plan.assets)) {
+      throw new TypeError('Preloader requires a source-bound StoryAssetPlan')
+    }
+    plan = resolveStaticSpineModels(plan)
+    const makeOutcome = asset => ({ key: asset.key, kind: asset.kind, id: asset.id, priority: assetPriority(asset, priority),
+      uses: asset.uses.map(use => ({ ...use })), dependencies: [...asset.dependencies],
+      atlasSource: asset.atlasSource && structuredClone(asset.atlasSource),
+      dependencyState: asset.dependencyState, ...storyAssetAdapter(asset), error: null })
+    const outcomes = plan.assets.map(makeOutcome)
+    const tasks = outcomes.filter(task => task.state === 'discovered')
+    const snapshot = phase => {
+      const succeeded = outcomes.filter(task => ['image-loaded', 'fetched', 'atlas-parsed', 'json-parsed'].includes(task.state)).length
+      const failed = outcomes.filter(task => task.state === 'failed').length
+      const cancelled = outcomes.filter(task => task.state === 'cancelled').length
+      const excluded = outcomes.filter(task => task.state === 'excluded').length
+      const deferred = outcomes.filter(task => task.state === 'deferred').length
+      return { phase, scope: 'story-asset-plan', source: { ...plan.source },
+        priority: priority && structuredClone(priority),
+        dependenciesComplete: plan.dependenciesComplete,
+        unresolved: plan.unresolved.map(issue => ({ ...issue })), excluded, deferred,
+        total: outcomes.length, succeeded, failed, cancelled,
+        pending: outcomes.length - succeeded - failed - cancelled - excluded,
+        tasks: structuredClone(outcomes) }
+    }
+    const report = phase => {
+      const value = snapshot(phase)
+      onStatus?.(value)
+      return value
+    }
+    report('warming')
+    const updatePriority = next => {
+      if (signal?.aborted) return false
+      priority = structuredClone(next)
+      for (const task of tasks) {
+        if (task.state === 'discovered') task.priority = assetPriority(task, priority)
       }
+      report('background-warming')
+      return true
     }
-
-    return {
-      bgIds: [...bgIds],
-      voiceFiles: [...voiceFiles],
-      spineModels: [...spineModels],
+    let background
+    const run = async stopAtEntry => {
+    try {
+      // Process in batches to avoid flooding network.
+      const BATCH_SIZE = 6
+      while (tasks.some(task => task.state === 'discovered')) {
+        signal?.throwIfAborted()
+        const pending = tasks.filter(task => task.state === 'discovered')
+          .sort((a, b) => priorityRank[a.priority] - priorityRank[b.priority])
+        if (stopAtEntry && pending[0].priority !== 'critical') {
+          return { plan, status: report('entry-warmed'), updatePriority, startBackground: () => background ||= run(false) }
+        }
+        // Finish the active tier (including newly discovered atlas pages)
+        // before lower-priority work can occupy a slot.
+        const batch = pending.filter(task => task.priority === pending[0].priority).slice(0, BATCH_SIZE)
+        await Promise.all(batch.map(async outcome => {
+          outcome.state = 'loading'
+          try {
+            if (outcome.operation === 'json') {
+              await this._preloadConfig(outcome, signal)
+              outcome.state = 'json-parsed'
+            } else if (outcome.operation === 'atlas') {
+              const { text, sha256 } = await this._preloadAtlas(outcome.url, signal)
+              signal?.throwIfAborted()
+              plan = resolveSpineAtlasDependencies(plan, { modelId: outcome.id, atlasText: text, atlasSha256: sha256, modelKind: 'spine' })
+              const bundle = plan.assets.find(asset => asset.key === `spine-bundle:${outcome.id}`)
+              const bundleOutcome = outcomes.find(task => task.key === bundle.key)
+              Object.assign(bundleOutcome, { dependencies: [...bundle.dependencies], dependencyState: 'complete',
+                atlasSource: structuredClone(bundle.atlasSource), reason: 'renderer-pending:spine-bundle' })
+              for (const asset of plan.assets) {
+                if (outcomes.some(task => task.key === asset.key)) continue
+                const added = makeOutcome(asset)
+                added.allowFallback = bundle.atlasSource.pages.length === 1
+                outcomes.push(added)
+                tasks.push(added)
+              }
+              outcome.state = 'atlas-parsed'
+              outcome.atlasSource = { sha256 }
+            } else if (outcome.operation === 'spine-page') {
+              outcome.url = await this._resolvePage(outcome, signal)
+              signal?.throwIfAborted()
+              outcome.state = await this._preloadImage(outcome.url, { signal })
+            } else {
+              outcome.state = outcome.operation === 'image'
+                ? await this._preloadImage(outcome.url, { signal })
+                : await this._preloadBinary(outcome.url, outcome.key, signal)
+            }
+          }
+          catch (error) {
+            outcome.state = signal?.aborted ? 'cancelled' : 'failed'
+            outcome.error = String(error?.message || error)
+          }
+          if (!signal?.aborted) {
+            const value = report(entryOnly && !stopAtEntry ? 'background-warming' : 'warming')
+            // Compatibility callback measures successful warming tasks only.
+            // UI consumes structured status, not this subset percentage.
+            onProgress?.(Math.round(value.succeeded / tasks.length * 100))
+          }
+        }))
+        signal?.throwIfAborted()
+        if ((!entryOnly || stopAtEntry) && outcomes.some(task => task.priority === 'critical' && task.state === 'failed')) {
+          return { plan, status: report('blocked') }
+        }
+      }
+    } catch (error) {
+      for (const task of outcomes) {
+        if (['discovered', 'loading'].includes(task.state)) task.state = 'cancelled'
+      }
+      report('cancelled')
+      throw error
     }
-  }
-
-  /**
-   * Preload all assets for a scenario's steps into browser cache.
-   * Uses Image() for backgrounds and fetch() for spine binaries
-   * to populate the browser's HTTP cache.
-   *
-   * @param {Array} steps - scenario steps array
-   * @param {function} onProgress - callback(percent: 0-100)
-   * @returns {Promise<{ bgIds: string[], voiceFiles: string[], spineModels: string[] }>}
-   */
-  static async preloadScenario(steps, onProgress) {
-    const assets = this.scanStepAssets(steps)
-
-    // Build a flat task list
-    const tasks = []
-
-    // Background images → Image() preload (browser HTTP cache)
-    for (const bgId of assets.bgIds) {
-      tasks.push({ type: 'bg', id: bgId, load: () => this._preloadImage(getBgUrl(bgId)) })
+    const status = report(outcomes.some(task => task.state === 'failed') ? 'partial'
+      : !plan.dependenciesComplete || outcomes.some(task => task.state === 'deferred') ? 'pending' : 'settled')
+    return { plan, status }
     }
-
-    // Spine skeletons → fetch() preload .skel only (PIXI spine loader resolves atlas+png)
-    for (const modelId of assets.spineModels) {
-      tasks.push({ type: 'spine', id: modelId, load: () => this._preloadSpine(modelId) })
-    }
-
-    // Voice files → 跳过预加载！IDM 会嗅探 .m4a 并返回 stub，
-    // 导致后续 playVoice 的 fetch() 拿到空数据。
-    // 改为在 playVoice 中按需 fetch + cache-busting
-
-    const total = tasks.length
-    if (total === 0) {
-      if (onProgress) onProgress(100)
-      return assets
-    }
-
-    let completed = 0
-
-    const report = () => {
-      completed++
-      if (onProgress) onProgress(Math.round((completed / total) * 100))
-    }
-
-    // Process in batches to avoid flooding network
-    const BATCH_SIZE = 6
-    for (let i = 0; i < tasks.length; i += BATCH_SIZE) {
-      const batch = tasks.slice(i, i + BATCH_SIZE)
-      await Promise.allSettled(batch.map(t => t.load().then(report).catch(report)))
-    }
-
-    return assets
+    return run(entryOnly)
   }
 
   // ── Internal loaders: all use native browser APIs, NO pixi.js ──
 
   /**
    * Preload an image into browser cache using Image object.
-   * If 404 or timeout, just warn and resolve — never hang.
+   * onload proves an image load only; no GPU readiness or retained decode claim.
    */
-  static _preloadImage(url) {
-    return withTimeout(new Promise((resolve) => {
+  static _preloadImage(url, { signal } = {}) {
+    return withTimeout(taskSignal => new Promise((resolve, reject) => {
       const img = new Image()
-      img.onload = () => resolve()
-      img.onerror = () => {
-        console.warn(`[Preloader] bg 404: ${url}`)
-        resolve()
+      const cleanup = () => {
+        img.onload = img.onerror = img.onabort = null
+        taskSignal.removeEventListener('abort', abort)
       }
-      img.onabort = () => {
-        console.warn(`[Preloader] bg aborted: ${url}`)
-        resolve()
-      }
+      const finish = () => { cleanup(); resolve('image-loaded') }
+      const fail = () => { cleanup(); reject(new Error(`Image load failed: ${url}`)) }
+      const abort = () => { cleanup(); img.removeAttribute('src'); reject(taskSignal.reason) }
+      taskSignal.addEventListener('abort', abort, { once: true })
+      img.onload = finish
+      img.onerror = fail
+      img.onabort = fail
       img.src = url
-    }), TIMEOUT_MS, `image ${url}`).catch((err) => {
-      console.warn(err.message)
-    })
+    }), TIMEOUT_MS, `image ${url}`, signal)
   }
 
-  /**
-   * Preload spine model file (.skel) via fetch.
-   * The PIXI spine loader resolves .atlas and .png from the .skel path.
-   */
-  static async _preloadSpine(modelId) {
-    const skelUrl = getSpineSkelUrl(modelId)
-    const label = `spine ${modelId}`
-    try {
-      const res = await withTimeout(fetch(skelUrl), TIMEOUT_MS, label)
-      if (!res.ok) {
-        console.warn(`[Preloader] ${label} 404: ${skelUrl}`)
-        return
-      }
-      // Consume the body to populate browser cache
-      await withTimeout(res.blob(), TIMEOUT_MS, `${label} blob`)
-    } catch (err) {
-      console.warn(`[Preloader] ${label} failed: ${err.message}`)
-    }
+  static async _preloadBinary(url, label, signal) {
+    return withTimeout(async taskSignal => {
+      await storyAssetTransport.getArrayBuffer(url, { signal: taskSignal })
+      return 'fetched'
+    }, TIMEOUT_MS, label, signal)
   }
 
-  /**
-   * Preload a voice audio file via fetch to populate browser HTTP cache.
-   * Uses fetch + blob (NOT HTML5 Audio) to avoid triggering IDM sniffing.
-   * Web Audio API in playVoice() uses fetch() which will hit cache.
-   */
-  static async _preloadAudio(voiceFile) {
-    const url = getVoiceUrl(voiceFile)
-    const label = `voice ${voiceFile}`
-    try {
-      const res = await withTimeout(fetch(url), TIMEOUT_MS, label)
-      if (!res.ok) {
-        console.warn(`[Preloader] voice 404: ${url}`)
+  static async _preloadAtlas(url, signal) {
+    return withTimeout(async taskSignal => {
+      const bytes = await storyAssetTransport.getArrayBuffer(url, { signal: taskSignal })
+      const hash = await crypto.subtle.digest('SHA-256', bytes)
+      return { text: decodeSpineAtlasText(bytes), sha256: `sha256:${Array.from(new Uint8Array(hash), byte => byte.toString(16).padStart(2, '0')).join('')}` }
+    }, TIMEOUT_MS, `atlas ${url}`, signal)
+  }
+
+  static async _preloadConfig(task, signal) {
+    task.attempts = []
+    return withTimeout(async taskSignal => {
+      for (let index = 0; index < task.urls.length; index++) {
+        taskSignal.throwIfAborted()
+        const url = task.urls[index]
+        let config
+        try {
+          config = await storyAssetTransport.getJson(url, { signal: taskSignal, cache: task.cache })
+          task.attempts.push({ url, status: 200 })
+        } catch (error) {
+          if (error.status) task.attempts.push({ url, status: error.status })
+          if (error.status && index + 1 < task.urls.length) continue
+          throw error
+        }
+        validateStoryConfig(task.kind, config)
+        task.url = url
         return
       }
-      // Consume body to populate browser HTTP cache
-      await withTimeout(res.blob(), TIMEOUT_MS, `${label} blob`)
-    } catch (err) {
-      console.warn(`[Preloader] ${label} failed: ${err.message}`)
-    }
+      throw new Error(`No config candidates: ${task.key}`)
+    }, TIMEOUT_MS, `config ${task.key}`, signal)
   }
+
+  static async _resolvePage(task, signal) {
+    return withTimeout(taskSignal => resolveSpineTextureUrl(task.atlasSource.modelId, task.atlasSource.page, {
+      allowFallback: task.allowFallback,
+      probe: async url => {
+        try {
+          const response = await fetch(url, { method: 'HEAD', cache: 'no-store', signal: taskSignal })
+          return response.ok && (response.headers.get('content-type') || '').startsWith('image/')
+        } catch (error) {
+          taskSignal.throwIfAborted()
+          return false
+        }
+      },
+    }), TIMEOUT_MS, `page ${task.id}`, signal)
+  }
+
 }

@@ -1,5 +1,5 @@
 <template>
-  <section class="external-story-navigation">
+  <section class="external-story-navigation" data-archive-scroll-container>
     <header class="resource-hero">
       <div>
         <span>COMMUNITY TRANSLATIONS</span>

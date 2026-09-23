@@ -2,6 +2,7 @@ import { getLipSyncUrl, getVoiceUrlCandidates } from '../utils/AssetResolver.js'
 import { deriveMainLipPathFromVoice, sampleLipCurve } from '../utils/LipSyncHelpers.js'
 import { isKnownDanglingStoryVoice } from '../data/knownDanglingStoryVoices.js'
 import { StoryAudioSession } from './story-runtime/StoryAudioSession.js'
+import { compressedVoiceCache } from './CompressedVoiceCache.js'
 
 export function useVoicePlayer({
   spineStageRef,
@@ -10,7 +11,10 @@ export function useVoicePlayer({
   compiledData,
   isPlaying,
   noVoice = false,
+  canAnimateStage = () => true,
   audioSession = null,
+  onStateChange = () => {},
+  voiceTimeoutMs = 6500,
 }) {
   const session = audioSession || new StoryAudioSession()
   const ownsAudioSession = !audioSession
@@ -23,7 +27,32 @@ export function useVoicePlayer({
   let currentLipCurve = null
   let voiceCharaId = null
   let voiceState = 'idle'
+  let activeVoiceLoad = null
+  function setVoiceState(state) { voiceState = state; onStateChange(state) }
+  let voiceRequestGeneration = 0
+  const pendingVoiceLoads = new Set()
+  const decodedVoiceCache = new Map()
+  const MAX_DECODED_VOICES = 12
+  const MAX_DECODED_VOICE_BYTES = 32 * 1024 * 1024
+  let decodedVoiceBytes = 0
   const ORIGINAL_LIP_GAIN = 1.0
+
+  function rememberDecodedVoice(key, buffer) {
+    const previous = decodedVoiceCache.get(key)
+    if (previous) decodedVoiceBytes -= previous.bytes
+    decodedVoiceCache.delete(key)
+    // AudioBuffer is 32-bit float PCM per channel. Unknown or oversized
+    // buffers stay playable but cannot claim a bounded retained cache slot.
+    const bytes = Number(buffer?.length) * Number(buffer?.numberOfChannels) * 4
+    if (!Number.isSafeInteger(bytes) || bytes <= 0 || bytes > MAX_DECODED_VOICE_BYTES) return
+    decodedVoiceCache.set(key, { buffer, bytes })
+    decodedVoiceBytes += bytes
+    while (decodedVoiceCache.size > MAX_DECODED_VOICES || decodedVoiceBytes > MAX_DECODED_VOICE_BYTES) {
+      const oldestKey = decodedVoiceCache.keys().next().value
+      decodedVoiceBytes -= decodedVoiceCache.get(oldestKey).bytes
+      decodedVoiceCache.delete(oldestKey)
+    }
+  }
 
   const getVoiceVolume = () => {
     if (!currentLipCurve || voiceStartedAt == null) return 0
@@ -32,7 +61,7 @@ export function useVoicePlayer({
   }
 
   function setTalking(on) {
-    if (noVoice) return
+    if (noVoice || (on && !canAnimateStage())) return
     const mgr = spineStageRef.value?.manager
     if (!mgr || !voiceCharaId) return
     if (on && currentStep.value?.lipSync === false) return
@@ -62,12 +91,17 @@ export function useVoicePlayer({
   }
 
   function resetVoiceDedup() {
+    voiceRequestGeneration++
     lastVoiceUrl = null
     lastVoiceStepIndex = -1
   }
 
   function stopCurrentVoice(reason = 'unspecified') {
-    voiceState = 'idle'
+    voiceRequestGeneration++
+    activeVoiceLoad?.abort()
+    activeVoiceLoad = null
+    isPlaying.value = false
+    setVoiceState('idle')
     if (!currentSource) {
       currentLipCurve = null
       voiceStartedAt = null
@@ -85,7 +119,7 @@ export function useVoicePlayer({
     setTalking(false)
   }
 
-  async function loadLipCurve(step, audioDuration) {
+  async function loadLipCurve(step, audioDuration, signal) {
     if (step?.lipSync === false) return null
 
     const candidates = []
@@ -97,9 +131,10 @@ export function useVoicePlayer({
 
     let lastError = null
     for (const candidate of candidates) {
+      if (signal?.aborted) return null
       try {
         const lipUrl = getLipSyncUrl(candidate)
-        const res = await fetch(`${lipUrl}?_=${Date.now()}`)
+        const res = await fetch(lipUrl, { signal, cache: 'default' })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const contentType = res.headers.get('content-type') || ''
         if (contentType.includes('text/html')) throw new Error('lip JSON returned HTML')
@@ -110,6 +145,7 @@ export function useVoicePlayer({
         const source = candidate === lipPath ? 'compiled' : 'derived-main'
         return { path: candidate, source, scales: data.scales, duration: audioDuration, gain: ORIGINAL_LIP_GAIN }
       } catch (err) {
+        if (signal?.aborted) return null
         lastError = err
       }
     }
@@ -118,51 +154,73 @@ export function useVoicePlayer({
     return null
   }
 
-  async function prepareVoice({ step = currentStep.value, scenarioId = compiledData.value?.scenario_id, includeLip = true } = {}) {
+  function requiresVoice(step = currentStep.value, scenarioId = compiledData.value?.scenario_id) {
     const voice = step?.dialogue?.voice
-    if (!voice || noVoice || session.disabled) return null
-    if (isKnownDanglingStoryVoice(scenarioId, voice)) {
+    return !!voice && !noVoice && !session.disabled && !isKnownDanglingStoryVoice(scenarioId, voice)
+  }
+
+  function hasDecodedVoice(step = currentStep.value, scenarioId = compiledData.value?.scenario_id) {
+    const voice = step?.dialogue?.voice
+    return !!voice && decodedVoiceCache.has(`${scenarioId || ''}\0${voice}`)
+  }
+
+  async function prepareVoice({ step = currentStep.value, scenarioId = compiledData.value?.scenario_id, includeLip = true, signal } = {}) {
+    const voice = step?.dialogue?.voice
+    if (!voice || noVoice || session.disabled || signal?.aborted) return null
+    if (!requiresVoice(step, scenarioId)) {
       console.info('[Audio] skipped RAW-authored dangling story voice:', { scenarioId, voice })
       return null
     }
 
-    ensureAudioCtx()
+    const preparingContext = ensureAudioCtx()
+    const isCurrentContext = () => preparingContext && audioCtx === preparingContext
+      && preparingContext.state !== 'closed' && !signal?.aborted
+    const cacheKey = `${scenarioId || ''}\0${voice}`
     try {
-      const voiceUrls = getVoiceUrlCandidates(voice, scenarioId)
-      let arrayBuffer = null
-      let lastFetchError = null
-      for (const voiceUrl of voiceUrls) {
-        const controller = new AbortController()
-        const timeoutId = window.setTimeout(() => controller.abort(), 6500)
-        try {
-          const res = await fetch(`${voiceUrl}?_=${Date.now()}`, { signal: controller.signal })
-          if (!res.ok) throw new Error(`HTTP ${res.status}`)
-          const contentType = res.headers.get('content-type') || ''
-          const candidateBuffer = await res.arrayBuffer()
-          if (candidateBuffer.byteLength < 1000 || contentType.includes('text/html')) {
-            throw new Error(`Not an audio file: ${contentType} (${candidateBuffer.byteLength} bytes)`)
+      let audioBuffer = decodedVoiceCache.get(cacheKey)?.buffer
+      if (audioBuffer) rememberDecodedVoice(cacheKey, audioBuffer)
+      else {
+        const voiceUrls = getVoiceUrlCandidates(voice, scenarioId)
+        let arrayBuffer = null
+        let lastFetchError = null
+        for (const voiceUrl of voiceUrls) {
+          if (!isCurrentContext()) return null
+          const controller = new AbortController()
+          pendingVoiceLoads.add(controller)
+          const timeoutId = window.setTimeout(() => controller.abort(), 6500)
+          const forwardAbort = () => controller.abort(signal.reason)
+          signal?.addEventListener('abort', forwardAbort, { once: true })
+          if (signal?.aborted) forwardAbort()
+          try {
+            arrayBuffer = await compressedVoiceCache.get(voiceUrl, { signal: controller.signal })
+            break
+          } catch (error) {
+            lastFetchError = error
+          } finally {
+            window.clearTimeout(timeoutId)
+            signal?.removeEventListener('abort', forwardAbort)
+            pendingVoiceLoads.delete(controller)
           }
-          arrayBuffer = candidateBuffer
-          break
-        } catch (error) {
-          lastFetchError = error
-        } finally {
-          window.clearTimeout(timeoutId)
         }
-      }
-      if (!arrayBuffer) throw lastFetchError || new Error('No voice filename candidate resolved')
+        if (!arrayBuffer) throw lastFetchError || new Error('No voice filename candidate resolved')
+        if (!isCurrentContext()) return null
 
-      let audioBuffer
-      try {
-        audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
-      } catch (decodeErr) {
-        console.error('[Audio] decodeAudioData FAILED:', decodeErr.message, 'voice:', voice)
-        return null
+        try {
+          audioBuffer = await preparingContext.decodeAudioData(arrayBuffer)
+        } catch (decodeErr) {
+          if (!isCurrentContext()) return null
+          console.error('[Audio] decodeAudioData FAILED:', decodeErr.message, 'voice:', voice)
+          return null
+        }
+        if (!isCurrentContext()) return null
+        rememberDecodedVoice(cacheKey, audioBuffer)
       }
-
-      const lipCurve = includeLip ? await loadLipCurve(step, audioBuffer.duration) : null
+      if (!isCurrentContext()) return null
+      const lipCurve = includeLip ? await loadLipCurve(step, audioBuffer.duration, signal) : null
+      if (!isCurrentContext()) return null
       return { voice, step, scenarioId, audioBuffer, lipCurve }
     } catch (err) {
+      if (!isCurrentContext()) return null
       console.warn('[Audio] prepare failed:', err.message, 'voice:', voice)
       return null
     }
@@ -186,7 +244,7 @@ export function useVoicePlayer({
     currentSourceRelease = releaseSource
     voiceStartedAt = session.currentTime()
     currentSource = source
-    voiceState = 'playing'
+    setVoiceState('playing')
     source.start(0)
     setTalking(true)
 
@@ -200,16 +258,26 @@ export function useVoicePlayer({
       currentSourceRelease = null
       currentSource = null
       isPlaying.value = false
-      voiceState = 'ended'
+      setVoiceState('ended')
     }
     return true
+  }
+
+  async function preparePlaybackVoice(options) {
+    const controller = activeVoiceLoad = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), voiceTimeoutMs)
+    try { return await prepareVoice({ ...options, signal: controller.signal }) }
+    finally {
+      clearTimeout(timeout)
+      if (activeVoiceLoad === controller) activeVoiceLoad = null
+    }
   }
 
   async function playVoice() {
     if (noVoice) {
       stopCurrentVoice('noVoice-flag')
       isPlaying.value = false
-      voiceState = 'idle'
+      setVoiceState('idle')
       return false
     }
 
@@ -218,20 +286,24 @@ export function useVoicePlayer({
     const scenarioId = compiledData.value?.scenario_id
     if (!voice) {
       stopCurrentVoice('step-change-no-voice')
-      voiceState = 'idle'
+      setVoiceState('idle')
       return false
     }
 
     if (voice === lastVoiceUrl && currentStepIndex.value === lastVoiceStepIndex) return false
     stopCurrentVoice('step-change-new-voice')
+    const requestGeneration = voiceRequestGeneration
+    const stepIndex = currentStepIndex.value
     lastVoiceUrl = voice
     lastVoiceStepIndex = currentStepIndex.value
 
     isPlaying.value = false
-    voiceState = 'preparing'
-    const prepared = await prepareVoice({ step, scenarioId })
-    if (!prepared || voice !== lastVoiceUrl) {
-      voiceState = 'ended'
+    setVoiceState('preparing')
+    const prepared = await preparePlaybackVoice({ step, scenarioId, includeLip: canAnimateStage() })
+    if (requestGeneration !== voiceRequestGeneration || step !== currentStep.value
+      || stepIndex !== currentStepIndex.value || voice !== lastVoiceUrl) return false
+    if (!prepared) {
+      setVoiceState('unavailable')
       return false
     }
     return playPreparedVoice(prepared)
@@ -239,14 +311,17 @@ export function useVoicePlayer({
 
   async function replayVoiceDetached(step) {
     if (noVoice || !step?.dialogue?.voice) return false
-    voiceState = 'preparing'
-    const prepared = await prepareVoice({
+    stopCurrentVoice('backlog-replay')
+    const requestGeneration = voiceRequestGeneration
+    setVoiceState('preparing')
+    const prepared = await preparePlaybackVoice({
       step,
       scenarioId: compiledData.value?.scenario_id,
       includeLip: false,
     })
+    if (requestGeneration !== voiceRequestGeneration) return false
     if (!prepared) {
-      voiceState = 'ended'
+      setVoiceState('unavailable')
       return false
     }
     return playPreparedVoice({ ...prepared, step: { ...step, chara_id: null } })
@@ -254,6 +329,10 @@ export function useVoicePlayer({
 
   function dispose() {
     stopCurrentVoice('dispose')
+    for (const controller of pendingVoiceLoads) controller.abort()
+    pendingVoiceLoads.clear()
+    decodedVoiceCache.clear()
+    decodedVoiceBytes = 0
     audioCtx = null
     if (ownsAudioSession) session.dispose().catch(() => {})
     resetVoiceDedup()
@@ -261,6 +340,8 @@ export function useVoicePlayer({
 
   return {
     playVoice,
+    requiresVoice,
+    hasDecodedVoice,
     prepareVoice,
     playPreparedVoice,
     replayVoiceDetached,

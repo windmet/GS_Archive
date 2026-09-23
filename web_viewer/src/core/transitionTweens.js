@@ -9,12 +9,14 @@ export function tweenOverlayFade({
   startAlpha,
   endAlpha,
   onFinish,
+  nowMilliseconds,
 }) {
   if (!overlay || overlay.destroyed) return null
   return runRafTween({
     durationMs,
     delayMs,
     startValue: startAlpha,
+    nowMilliseconds,
     endValue: endAlpha,
     ease: easeOutCubic,
     shouldStop: () => !isCurrent(token) || !overlay || overlay.destroyed,
@@ -36,12 +38,14 @@ export function tweenOverlaySlide({
   start,
   end,
   onFinish,
+  nowMilliseconds,
 }) {
   if (!overlay || overlay.destroyed) return null
   return runRafTween({
     durationMs,
     delayMs,
     startValue: 0,
+    nowMilliseconds,
     endValue: 1,
     ease: easeOutCubic,
     shouldStop: () => !isCurrent(token) || !overlay || overlay.destroyed,
@@ -60,11 +64,24 @@ export function tweenOverlayPunch({
   spineContainer,
   durationMs,
   dir,
+  onFinish,
+  nowMilliseconds,
 }) {
   if (!overlay || overlay.destroyed || !spineContainer) return null
   const baseX = spineContainer.x || 0
   const baseY = spineContainer.y || 0
-  return runRafTween({
+  const restore = () => {
+    if (!spineContainer.destroyed) {
+      spineContainer.x = baseX
+      spineContainer.y = baseY
+    }
+    if (!overlay.destroyed) {
+      overlay.alpha = 0
+      overlay.visible = false
+    }
+  }
+  const tween = runRafTween({
+    nowMilliseconds,
     durationMs,
     startValue: 0,
     endValue: 1,
@@ -76,10 +93,11 @@ export function tweenOverlayPunch({
       overlay.alpha = 0.55 * Math.max(0, 1 - t * 2.4)
     },
     onComplete: () => {
-      spineContainer.x = baseX
-      spineContainer.y = baseY
-      overlay.alpha = 0
-      overlay.visible = false
+      restore()
+      onFinish?.()
     },
   })
+  const cancel = tween.cancel
+  tween.cancel = () => { cancel(); restore() }
+  return tween
 }

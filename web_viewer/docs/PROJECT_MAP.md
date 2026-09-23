@@ -14,10 +14,18 @@ src/main.js
         -> src/components/SpineStage.vue
 ```
 
-`src/core/archiveRoute.js` 是 query route 契约。当前正式视图包括：
+`src/core/archiveRoute.js` 是 query route 契约。
+
+剧情目录的命名输入为 `public/data/masterdata/story_catalog.json`，由
+`data_pipeline/story_catalog.py` 单一生成，消费者为 `src/data/storyCatalog.js`。
+旧 `story_master_index.json` 暂保留供其他域 selector 使用，生成与迁移边界见
+`docs/STORY_CATALOG_CONTRACT.md`。
+
+当前正式视图包括：
 
 ```text
 home
+portal
 idols / idol_detail
 unit_catalog / unit_detail
 cards / card_detail
@@ -45,6 +53,7 @@ spine_lab / chibi_stage
 | --- | --- | --- |
 | 播放会话与导航协调 | `src/core/StoryViewer.vue` | 当前 step、历史恢复、Auto/Skip、暂停原因和诊断 |
 | cue 归一化与调度 | `src/core/story-runtime/useStoryRuntimeCues.js` | 调度 Screen、Background、Camera、SE、Snapshot 和 Spine cue |
+| Spine cue 执行与等待生命周期 | `src/core/story-runtime/SpineCueRuntime.js` | 角色就绪、face/body/neck/tint 执行、RAF/timer/listener 释放；不拥有 cue 时间 |
 | 逻辑时间 | `src/core/story-runtime/StoryClock.js` | pause/resume/rate 和逻辑时间 |
 | 场景历史 | `src/core/story-runtime/SceneSnapshotStore.js`、`src/core/story-runtime/StepSceneState.js` | settled/entry snapshot 与导航恢复 |
 | 音频会话 | `src/core/story-runtime/StoryAudioSession.js` | Voice、SE、BGM、Ambient 的共享生命周期和 mixer |
@@ -92,6 +101,15 @@ npm run verify:story-audio
 ```
 
 ## 3. 工程分层
+
+2026-09-08 全仓结构核对与重构批次见
+[`ARCHITECTURE_REFACTOR_20260908.md`](ARCHITECTURE_REFACTOR_20260908.md)。
+Node 端 `scripts/lib/archive-assets.mjs` 统一 Vite/standalone 的外部资源路径与
+别名策略；浏览器 `src/utils/AssetResolver.js` 只负责 URL。验证入口是
+`npm run verify:archive-assets`。
+
+剧情属性与异步生命周期边界见 [`STORY_STATE_OWNERSHIP.md`](STORY_STATE_OWNERSHIP.md)，
+Spine cue/RAW fixture 回归入口为 `npm run verify:story-spine-cues`。
 
 ### `src/components/archive/`
 
@@ -158,9 +176,9 @@ parity 或兼容参考。
 <!-- authoritative-v2-summary collections=4 standalone=1 artifacts=30 -->
 <!-- publication-ledger-summary releases=3 stable_logical_ids=2 -->
 - external GS translation registry 当前有 8 条 exact mapping；
-- tracked PNG 为 183 个，约 49.1 MB；其中 108 个为 grandfathered，
+- tracked PNG 为 184 个，约 49.1 MB；其中 108 个为 grandfathered，
   14 个为 P1 Extra Story 导航视觉，61 个为 P1 Song 的有界 RAW-derived
-  365x360 封面；
+  365x360 封面，以及 1 个移动门户原版背景；
 - USM 为 260 个，当前 89 exact consumer、166 exact masterdata、5 unresolved。
 
 ## 5. 当前优先级（2026-08-13）

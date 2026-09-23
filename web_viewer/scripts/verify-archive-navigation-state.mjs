@@ -1,0 +1,175 @@
+import assert from 'node:assert/strict'
+import { isRef } from 'vue'
+import { readFileSync } from 'node:fs'
+import vm from 'node:vm'
+import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
+import { legacyProjection } from '../fixtures/archive-navigation/legacy-route-projection.mjs'
+import { VALID_VIEWS, buildArchiveSourceQuery, buildArchiveUrl, readArchiveRoute, readArchiveSourceRoute } from '../src/core/archiveRoute.js'
+
+const navigation = useArchiveNavigationState()
+const independent = useArchiveNavigationState()
+const fields = Object.keys(navigation).filter(key => key !== 'currentArchiveRoute')
+assert.ok(fields.every(key => isRef(navigation[key])))
+assert.equal(navigation.view.value, '__boot__')
+assert.equal(navigation.homeSelectedId.value, '')
+assert.equal(navigation.returnViewAfterPlayer.value, 'files')
+for (const key of fields) {
+  assert.notEqual(navigation[key], independent[key], `${key} must be scoped to one App instance`)
+  navigation[key].value = `${key}-fixture`
+}
+navigation.currentGroup.value = { id: 'group-1' }
+navigation.currentUnit.value = { unit_code: 'legacy-unit', id: 'unit-fallback' }
+// New independent entry position is tested in verify-reading-playback; legacy projection stays unchanged.
+navigation.currentScenarioInitialStep.value = null
+navigation.stageTargetId.value = ''
+navigation.currentScenarioStartStep.value = 7
+navigation.currentScenarioEndStep.value = 12
+const contexts = ['home', 'unit_detail', 'mobile_archive', 'event_detail', 'story_detail', 'story_collection', 'song_detail', 'files']
+let cases = 0
+for (const view of VALID_VIEWS) {
+  if (['portal', 'reader', 'welcome', 'idol_picker'].includes(view)) continue // Entry surfaces have their own provenance contract.
+  for (const returnView of contexts) {
+    for (const parent of contexts) {
+      navigation.view.value = view
+      navigation.currentSongId.value = view === 'chibi_stage' ? '' : 'currentSongId-fixture'
+      navigation.returnViewAfterPlayer.value = returnView
+      for (const key of ['songParentView', 'eventParentView', 'storyDetailParentView', 'storyCollectionParentView']) navigation[key].value = parent
+      const actual = navigation.currentArchiveRoute()
+      const expected = legacyProjection(navigation)
+      if (view === 'chibi_stage') expected.stageId = actual.stageId
+      if (view === 'work_archive' || (view === 'player' && returnView === 'work_archive')) {
+        expected.story = actual.story
+        expected.workMode = actual.workMode
+      }
+      assert.deepEqual(actual, expected, `${view}/${returnView}/${parent}`)
+      const url = buildArchiveUrl('http://localhost/?runtimeDebug=1', actual)
+      assert.equal(url.href, buildArchiveUrl('http://localhost/?runtimeDebug=1', expected).href)
+      assert.deepEqual(readArchiveRoute(url.href), readArchiveRoute(buildArchiveUrl('http://localhost/?runtimeDebug=1', expected).href))
+      cases++
+    }
+  }
+}
+navigation.detailSourceRoute.value = '?view=portal'
+navigation.view.value = 'welcome'
+assert.deepEqual(navigation.currentArchiveRoute(), { view: 'welcome', sourceRoute: '?view=portal' },
+  'settings URL cannot inherit unrelated page filters')
+navigation.view.value = 'idol_picker'
+navigation.currentPickTarget.value = 'profile'
+assert.deepEqual(navigation.currentArchiveRoute(), { view: 'idol_picker', pickTarget: 'profile', sourceRoute: '?view=portal' },
+  'picker URL carries only target and origin')
+assert.equal(readArchiveRoute(buildArchiveUrl('http://localhost/', navigation.currentArchiveRoute())).sourceRoute, '?view=portal')
+// Explicit ownership invariants beyond the frozen oracle.
+navigation.view.value = 'story_catalog'
+assert.equal(navigation.currentArchiveRoute().scenario, '')
+assert.equal(navigation.currentArchiveRoute().voice, '')
+assert.equal(navigation.currentArchiveRoute().homeIdol, '')
+navigation.view.value = 'player'
+navigation.returnViewAfterPlayer.value = 'story_collection'
+navigation.storyCollectionParentView.value = 'song_detail'
+assert.equal(navigation.currentArchiveRoute().song, navigation.currentSongId.value)
+assert.equal(navigation.currentArchiveRoute().parentView, 'song_detail')
+assert.equal(navigation.currentArchiveRoute().startStep, 7)
+navigation.returnViewAfterPlayer.value = 'event_detail'
+navigation.eventParentView.value = 'unit_detail'
+assert.equal(navigation.currentArchiveRoute().unit, navigation.currentArchiveUnitCode.value)
+assert.equal(navigation.currentArchiveRoute().song, '')
+assert.equal(independent.view.value, '__boot__')
+assert.equal(independent.currentScenarioStartStep.value, null)
+
+independent.view.value = 'cards'
+independent.currentCategoryId.value = 'cards'
+independent.currentCharacterId.value = '001tom'
+independent.currentCardRarity.value = 'SSR'
+independent.currentCardAssetState.value = 'has_large'
+independent.currentCardRelationState.value = 'event_card'
+independent.filterQuery.value = '冬馬'
+const cardListRoute = independent.currentArchiveRoute()
+independent.detailSourceRoute.value = buildArchiveSourceQuery(cardListRoute)
+independent.currentCardId.value = '001tom_ssr01'
+independent.view.value = 'card_detail'
+const sourcedCardRoute = readArchiveRoute(buildArchiveUrl('http://localhost/', independent.currentArchiveRoute()))
+assert.deepEqual(readArchiveSourceRoute(sourcedCardRoute.sourceRoute), readArchiveRoute(buildArchiveUrl('http://localhost/', cardListRoute)))
+independent.view.value = 'player'
+independent.returnViewAfterPlayer.value = 'card_detail'
+independent.currentScenarioFile.value = 'card-story.json'
+assert.equal(independent.currentArchiveRoute().sourceRoute, sourcedCardRoute.sourceRoute, 'card playback preserves the detail source')
+independent.returnViewAfterPlayer.value = 'home'
+assert.equal('sourceRoute' in independent.currentArchiveRoute(), false, 'unrelated playback cannot inherit a detail source')
+independent.detailSourceRoute.value = buildArchiveSourceQuery({ view: 'archive_status' })
+independent.view.value = 'spine_lab'
+assert.equal(readArchiveSourceRoute(independent.currentArchiveRoute().sourceRoute).view, 'archive_status')
+independent.view.value = 'chibi_stage'
+assert.equal(readArchiveSourceRoute(independent.currentArchiveRoute().sourceRoute).view, 'archive_status')
+independent.stageTargetId.value = 'brndnf_live_effect'
+independent.currentSongId.value = 'brndnf'
+const targetedStage = readArchiveRoute(buildArchiveUrl('http://localhost/', independent.currentArchiveRoute()))
+assert.equal(targetedStage.song, 'brndnf')
+assert.equal(targetedStage.stageId, 'brndnf_live_effect')
+assert.equal(readArchiveSourceRoute(targetedStage.sourceRoute).view, 'archive_status')
+
+// Execute the production entry/return handlers and route projection together.
+// The old oracle above continues to cover routes without the new provenance.
+const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
+assert.match(app, /:back-label="labBackLabel"/, 'Lab back action exposes its actual archive destination')
+assert.match(app, /返回歌曲详情/, 'song-sourced Lab exit is named explicitly')
+const context = {
+  ...independent,
+  captureDetailSource: () => { independent.detailSourceRoute.value = buildArchiveSourceQuery(independent.currentArchiveRoute()) },
+  currentStoryCollection: { value: { sectionId: '604' } },
+  commitView: value => { independent.view.value = value },
+}
+for (const name of ['openGasha', 'goBackFromGasha']) {
+  const source = app.match(new RegExp(`function ${name}\\([^]*?\\n\\}`))?.[0]
+  assert.ok(source, `${name} production handler exists`)
+  vm.runInNewContext(source, context)
+}
+independent.view.value = 'story_collection'
+independent.currentStoryDomain.value = 'extra'
+independent.currentStorySection.value = '604'
+context.openGasha({ id: '1300011' })
+const restored = readArchiveRoute(buildArchiveUrl('http://localhost/?noAudio=1', independent.currentArchiveRoute()).href)
+assert.equal(restored.parentView, 'story_collection')
+assert.equal(restored.storySection, '604')
+assert.equal(restored.gasha, '1300011')
+// Exercise the same parent restoration assignment as full App startup.
+const restoreSource = app.match(/    gashaParentView.value =[^]*?(?=\n    currentGashaCategory.value)/)?.[0]
+assert.ok(restoreSource)
+for (const route of [restored, { ...restored, storySection: '' }, { ...restored, storyType: 'main' }, { ...restored, parentView: '' }]) {
+  vm.runInNewContext(restoreSource, { ...context, route })
+  context.goBackFromGasha()
+  assert.equal(independent.view.value, route === restored ? 'story_collection' : 'gashas')
+}
+independent.gashaParentView.value = 'story_collection'
+context.currentStoryCollection.value = null
+context.goBackFromGasha()
+assert.equal(independent.view.value, 'gashas')
+independent.filterQuery.value = 'FES'
+independent.currentGashaCategory.value = 'growing_fes'
+context.openGasha({ id: '1300011' })
+context.goBackFromGasha()
+assert.equal(independent.view.value, 'gashas')
+assert.equal(independent.filterQuery.value, 'FES')
+assert.equal(independent.currentGashaCategory.value, 'growing_fes')
+assert.equal(independent.currentArchiveRoute().parentView, '')
+
+// A non-default story chapter owns its collection route identity so refresh
+// and Player return can reopen the exact accordion row.
+let collectionSelectionCommits = 0
+const collectionContext = vm.createContext({
+  currentStoryFile: independent.currentStoryFile,
+  commitArchiveSelection: () => { collectionSelectionCommits++ },
+})
+const selectChapterSource = app.match(/function selectStoryCollectionChapter\([^]*?\n\}/)?.[0]
+assert.ok(selectChapterSource, 'story collection selection handler exists')
+vm.runInContext(selectChapterSource, collectionContext)
+independent.currentStoryFile.value = ''
+collectionContext.selectStoryCollectionChapter({ story: { file: '1_4_001_01.json' } })
+assert.equal(independent.currentStoryFile.value, '1_4_001_01.json')
+assert.equal(collectionSelectionCommits, 1)
+collectionContext.selectStoryCollectionChapter({ file: 'fallback.json' }, { sync: false })
+assert.equal(independent.currentStoryFile.value, 'fallback.json')
+assert.equal(collectionSelectionCommits, 1, 'Player entry updates chapter identity without a redundant history entry')
+assert.match(app, /@select-chapter="selectStoryCollectionChapter"/)
+assert.match(app, /:mode="currentWorkMode"/)
+assert.match(app, /@update:mode="setWorkMode"/)
+console.log(`Archive navigation state: ${fields.length} scoped refs and ${cases} view/return/parent projection + URL cases passed`)

@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-08-02T20:21:53+08:00",
-  "generated_from_commit": "95ad5613610bca84ab08700ca5e87df1cbaad641",
+  "generated_at": "2026-09-22T15:42:50+08:00",
+  "generated_from_commit": "6761baed79be30d31ec258415ee42e7252dbe168",
   "governed_extensions": [
     "png"
   ],
   "summary": {
-    "files": 183,
-    "bytes": 49123497,
-    "grandfathered_files": 108,
-    "new_policy_files": 75
+    "files": 186,
+    "bytes": 49389439,
+    "grandfathered_files": 110,
+    "new_policy_files": 76
   },
   "entries": [
     {
@@ -51,6 +51,20 @@
       ],
       "reason_tracked": "grandfathered visual evidence referenced by project notes",
       "force_add_allowed": false,
+      "owner_release": null,
+      "grandfathered": true
+    },
+    {
+      "path": "web_viewer/public/assets/brand/image_chara_icon_producer.png",
+      "bytes": 5297,
+      "sha256": "1d0eefc4bb59cceea0de76048b03389a42e4fc210f810d25b5d9849ce8921fd9",
+      "category": "portal-asset",
+      "logical_id": "portal-brand:image_chara_icon_producer",
+      "consumer": [
+        "archive-shell"
+      ],
+      "reason_tracked": "grandfathered local portal brand asset",
+      "force_add_allowed": true,
       "owner_release": null,
       "grandfathered": true
     },
@@ -97,6 +111,35 @@
       "force_add_allowed": true,
       "owner_release": null,
       "grandfathered": true
+    },
+    {
+      "path": "web_viewer/public/assets/events/characters/image_chara_event_story_visual_003hok.png",
+      "bytes": 237759,
+      "sha256": "61859ca8ca805e662d97b9c82d6b9739acfc8e1979c9c704439325f00577a478",
+      "category": "stable-promoted-asset",
+      "logical_id": "event-story-visual:003hok",
+      "consumer": [
+        "ArchiveEventDetail",
+        "ArchiveStoryDetail"
+      ],
+      "reason_tracked": "grandfathered RAW-derived stable event story visual",
+      "force_add_allowed": true,
+      "owner_release": null,
+      "grandfathered": true
+    },
+    {
+      "path": "web_viewer/public/assets/portal/image_mobile_background_common.png",
+      "bytes": 22886,
+      "sha256": "f52aa88f225a16897f6d257c8f2416d4635908b3b57f18fc477512ac3305a7ec",
+      "category": "portal-asset",
+      "logical_id": "mobile-portal:background-common",
+      "consumer": [
+        "ArchivePortalLauncher"
+      ],
+      "reason_tracked": "user-selected single RAW mobile background; exact Texture2D identity and pixel provenance recorded",
+      "force_add_allowed": true,
+      "owner_release": "2026-09-09-mobile-portal-001",
+      "grandfathered": false
     },
     {
       "path": "web_viewer/public/assets/silhouette/102sha_001_00.png",

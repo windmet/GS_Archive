@@ -1,3 +1,5 @@
+import { stageRenderResolution } from './StageRenderBudget.js'
+import { decodeSpineAtlasText } from '../../shared/story/SpineAtlasPages.js'
 /**
  * PixiStageManager manages the PixiJS canvas/renderer and stage graph.
  *
@@ -17,11 +19,15 @@ import * as PIXI from 'pixi.js'
 import { Spine, SkeletonBinary, AtlasAttachmentLoader } from '@pixi-spine/runtime-3.8'
 import { TextureAtlas } from '@pixi-spine/base'
 import { getBgUrl, getMouthSettingUrl, getSpineAtlasUrl, getSpineSkelUrl, getSilhouetteUrl } from '../utils/AssetResolver.js'
+import { resolveSpineTextureUrl } from '../utils/SpineTextureUrl.js'
+import { positionFrame, positionBaseline, projectSpinePosition, recordSpinePosition, resizeSpinePosition } from './SpinePositionLayout.js'
 import { easeOutCubic, runRafTween } from './rafTween.js'
-import { tweenOverlayFade, tweenOverlayPunch, tweenOverlaySlide } from './transitionTweens.js'
+import { tweenOverlayFade, tweenOverlaySlide } from './transitionTweens.js'
 import { loadAndCreateSpine } from './spineSpawnPipeline.js'
 import { finalizeSpawnedSpine } from './spineSpawnFinalize.js'
 import { BackgroundManager } from './BackgroundManager.js'
+import { ScreenEffectManager } from './ScreenEffectManager.js'
+import { loadImageTexture } from './loadImageTexture.js'
 import { CameraController } from './CameraController.js'
 import { SpineManager } from './SpineManager.js'
 import { fitSpineToPrefabRect as fitSpineToPrefabRectUtil, getPrefabRectMetrics as getPrefabRectMetricsUtil } from './spinePrefabFit.js'
@@ -64,10 +70,17 @@ const SILHOUETTE_SCALE_MULTIPLIER = {
 }
 
 export class PixiStageManager {
+  setPresentationSuspended(suspended) {
+    this.presentationSuspended = suspended
+    this._visibilityHandler?.()
+  }
+
   constructor(containerEl, options = {}) {
     this.container = containerEl
     this.width = options.width || containerEl.clientWidth || 1280
     this.height = options.height || containerEl.clientHeight || 720
+    this.presentationScale = options.presentationScale || 1
+    this.responsiveSpinePositions = options.responsiveSpinePositions === true
 
     this.app = null
     this._destroyed = false
@@ -91,7 +104,7 @@ export class PixiStageManager {
     this._slideOverlay = null
     this._screenSlideToken = 0
     this._effectOverlay = null
-    this._screenEffectToken = 0
+    this.screenEffects = null
 
     // Visual filters
     this._grayFilter = null     // PIXI.ColorMatrixFilter for grayscale
@@ -100,8 +113,6 @@ export class PixiStageManager {
     this._bgBlurAmount = 0
     this._bgOverlayColor = 0xFFFFFF
     this._spineColorTweens = {}
-    this._cameraflareTextures = null
-    this._effectTextureCache = {}
 
     this._init()
     this._observeResize()
@@ -113,9 +124,16 @@ export class PixiStageManager {
       height: this.height,
       backgroundColor: 0x000000,
       antialias: true,
-      resolution: window.devicePixelRatio || 1,
+      resolution: stageRenderResolution(this.width, this.height, this.presentationScale, globalThis.devicePixelRatio),
       autoDensity: true,
     })
+    this.app.ticker.maxFPS = 60
+    this._visibilityHandler = () => {
+      if (document.hidden || this.presentationSuspended) this.app?.stop()
+      else this.app?.start()
+    }
+    document.addEventListener('visibilitychange', this._visibilityHandler)
+    this._visibilityHandler()
     this.container.appendChild(this.app.view)
 
     // Layer structure: bgContainer (bottom) -> spineContainer -> fadeOverlay (top)
@@ -132,7 +150,7 @@ export class PixiStageManager {
       getWidth: () => this.width,
       getHeight: () => this.height,
       getBgUrl,
-      loadTextureFromUrl: url => this._loadTextureFromUrl(url),
+      loadTextureFromUrl: (url, options) => this._loadTextureFromUrl(url, options),
     })
     this.cameraController = new CameraController({
       bgContainer: this.bgContainer,
@@ -168,7 +186,13 @@ export class PixiStageManager {
     this._effectOverlay.visible = false
     this._effectOverlay.eventMode = 'none'
     this.app.stage.addChild(this._effectOverlay)
+    this.screenEffects = new ScreenEffectManager({
+      app: this.app, overlay: this._effectOverlay, spineContainer: this.spineContainer,
+      getWidth: () => this.width, getHeight: () => this.height,
+      loadTextureFromUrl: url => this._loadTextureFromUrl(url, { allowFallback: false }),
+    })
     this._debugMarkerUpdater = () => {
+      if (!this._debugMode) return
       for (const entry of Object.values(this.spineInstances)) {
         const marker = entry?.marker
         if (!marker || marker.destroyed) continue
@@ -183,6 +207,21 @@ export class PixiStageManager {
     this.app.ticker.add(this._debugMarkerUpdater)
   }
 
+  setPresentationScale(scale) {
+    if (this.presentationScale === scale) return
+    this.presentationScale = scale
+    this._syncRenderResolution()
+    this.app.renderer.resize(this.width, this.height)
+  }
+
+  _syncRenderResolution() {
+    const resolution = stageRenderResolution(this.width, this.height, this.presentationScale, globalThis.devicePixelRatio)
+    this.app.renderer.resolution = resolution
+    for (const entry of Object.values(this.spineInstances)) {
+      if (entry.wrapper?._wholeModelAlpha) entry.wrapper._wholeModelAlpha.resolution = resolution
+    }
+  }
+
   _observeResize() {
     this._resizeObserver = new ResizeObserver(entries => {
       for (const entry of entries) {
@@ -190,6 +229,7 @@ export class PixiStageManager {
         if (width > 0 && height > 0) {
           this.width = width
           this.height = height
+          this._syncRenderResolution()
           this.app.renderer.resize(width, height)
           this.backgroundManager?.handleResize()
           this.cameraController?.handleResize()
@@ -217,7 +257,8 @@ export class PixiStageManager {
               layout.baseY,
             )
           }
-          // Spines stay at their current positions on resize (user may have dragged them)
+          // Story layout opts in. Lab instances preserve manually dragged pixels.
+          for (const spineEntry of Object.values(this.spineInstances)) resizeSpinePosition(spineEntry, this)
         }
       }
     })
@@ -229,6 +270,7 @@ export class PixiStageManager {
     this._debugMode = enabled
     for (const entry of Object.values(this.spineInstances)) {
       if (entry.marker) entry.marker.visible = enabled
+      if (entry.spine) entry.spine.eventMode = enabled ? 'dynamic' : 'none'
     }
   }
 
@@ -495,8 +537,8 @@ export class PixiStageManager {
     return this.backgroundManager?.clearBackground()
   }
 
-  setBgBlur(amount, duration = 0, delay = 0) {
-    return this.backgroundManager?.setBgBlur(amount, duration, delay)
+  setBgBlur(amount, duration = 0, delay = 0, nowMilliseconds) {
+    return this.backgroundManager?.setBgBlur(amount, duration, delay, nowMilliseconds)
   }
 
   _ensureBgBlurFilter() {
@@ -511,8 +553,8 @@ export class PixiStageManager {
     return this.backgroundManager?.clearBgBlur()
   }
 
-  setBgColorOverlay(hexColor, duration = 0, delay = 0) {
-    return this.backgroundManager?.setBgColorOverlay(hexColor, duration, delay)
+  setBgColorOverlay(hexColor, duration = 0, delay = 0, nowMilliseconds) {
+    return this.backgroundManager?.setBgColorOverlay(hexColor, duration, delay, nowMilliseconds)
   }
 
   clearBgColorOverlay() {
@@ -527,8 +569,8 @@ export class PixiStageManager {
     return this.backgroundManager?._rgbToHex(rgb)
   }
 
-  applyBgEffects(effects = [], bgProfile = null) {
-    return this.backgroundManager?.applyBgEffects(effects, bgProfile)
+  applyBgEffects(effects = [], bgProfile = null, nowMilliseconds) {
+    return this.backgroundManager?.applyBgEffects(effects, bgProfile, nowMilliseconds)
   }
 
   _createBgEffect(id) {
@@ -625,8 +667,9 @@ export class PixiStageManager {
    * @param {number} duration - animation duration in seconds
    * @returns {Promise} resolves when animation completes
    */
-  setScreenFade(type, color, duration, delay = 0, maxAlpha = 1) {
+  setScreenFade(type, color, duration, delay = 0, maxAlpha = 1, nowMilliseconds) {
     const token = ++this._screenFadeToken
+    this._screenFadeTween = null
     return new Promise(resolve => {
       if (!this._fadeOverlay || this._fadeOverlay.destroyed) {
         resolve()
@@ -650,7 +693,8 @@ export class PixiStageManager {
         resolve()
         return
       }
-      tweenOverlayFade({
+      // Retain timing for inspection; existing tokens still control cancellation.
+      this._screenFadeTween = tweenOverlayFade({
         overlay: this._fadeOverlay,
         token,
         isCurrent: t => t === this._screenFadeToken,
@@ -658,6 +702,7 @@ export class PixiStageManager {
         delayMs,
         startAlpha,
         endAlpha,
+        nowMilliseconds,
         onFinish: () => {
           if (type === 'in' && this._fadeOverlay && !this._fadeOverlay.destroyed) {
             this._fadeOverlay.visible = false
@@ -670,207 +715,21 @@ export class PixiStageManager {
 
   clearScreenFade() {
     this._screenFadeToken++
+    this._screenFadeTween = null
     if (!this._fadeOverlay || this._fadeOverlay.destroyed) return
     this._fadeOverlay.alpha = 0
     this._fadeOverlay.visible = false
   }
 
   clearScreenEffects() {
-    this._screenEffectToken++
-    if (!this._effectOverlay || this._effectOverlay.destroyed) return
-    this._effectOverlay.alpha = 0
-    this._effectOverlay.visible = false
+    this.screenEffects?.clearScreenEffects()
   }
 
-  playScreenEffects(effects = []) {
-    if (!Array.isArray(effects) || effects.length === 0 || !this._effectOverlay) return
-    const token = ++this._screenEffectToken
-    for (const effect of effects) {
-      const delayMs = Math.max(0, Number(effect?.delay || 0)) * 1000
-      setTimeout(() => {
-        if (token !== this._screenEffectToken) return
-        if (effect?.type === 'single') this._playSingleScreenEffect(effect)
-        else this._playFadeScreenEffect(effect)
-      }, delayMs)
-    }
+  playScreenEffects(effects = [], options = {}) {
+    return this.screenEffects?.playScreenEffects(effects, options)
   }
 
-  _playFadeScreenEffect(effect) {
-    const overlay = this._effectOverlay
-    if (!overlay || overlay.destroyed) return
-    const type = effect?.type || 'fadeout'
-    const color = String(effect?.color || '#FFFFFF')
-    overlay.tint = parseInt(color.replace('#', ''), 16)
-    overlay.width = this.width
-    overlay.height = this.height
-    overlay.visible = true
-    const maxAlpha = Math.max(0, Math.min(1, Number(effect?.alpha ?? 1)))
-    const startAlpha = type === 'fadein' ? 0 : maxAlpha
-    const endAlpha = type === 'fadein' ? maxAlpha : 0
-    overlay.alpha = startAlpha
-    const durationMs = Math.max(0, Number(effect?.duration || 0)) * 1000
-    tweenOverlayFade({
-      overlay,
-      token: this._screenEffectToken,
-      isCurrent: token => token === this._screenEffectToken,
-      durationMs,
-      startAlpha,
-      endAlpha,
-      onFinish: () => {
-        if (endAlpha <= 0 && overlay && !overlay.destroyed) overlay.visible = false
-      },
-    })
-  }
-
-  _playSingleScreenEffect(effect) {
-    const id = effect?.id || ''
-    if (id === 'fx_adv_punch') {
-      this._playPunchEffect(effect)
-    } else if (id === 'fx_adv_kamifubuki') {
-      this._playKamifubukiEffect(effect)
-    } else if (id === 'fx_adv_sakura' || id === 'fx_adv_momiji') {
-      this._playFallingScreenTexture(id, effect)
-    }
-  }
-
-  _playPunchEffect(effect) {
-    const overlay = this._effectOverlay
-    if (!overlay || overlay.destroyed) return
-    this._playPunchTexture(effect)
-    overlay.tint = 0xffffff
-    overlay.width = this.width
-    overlay.height = this.height
-    overlay.alpha = 0.3
-    overlay.visible = true
-    const dir = Math.sign(Number(effect?.x || 0))
-    const durationMs = Math.max(120, Number(effect?.duration || 0.35) * 1000)
-    tweenOverlayPunch({
-      overlay,
-      spineContainer: this.spineContainer,
-      durationMs,
-      dir: dir || 1,
-    })
-  }
-
-  _loadEffectTexture(name) {
-    if (!this._effectTextureCache[name]) {
-      this._effectTextureCache[name] = this._loadTextureFromUrl(`/data/fx_extracted/unity_${name}.png`)
-    }
-    return this._effectTextureCache[name]
-  }
-
-  async _playPunchTexture(effect) {
-    const token = this._screenEffectToken
-    try {
-      const texture = await this._loadEffectTexture('fx_adv_punch')
-      if (token !== this._screenEffectToken || !this.app?.stage) return
-      const frameWidth = Math.floor(texture.width / 3)
-      const frameHeight = Math.floor(texture.height / 2)
-      const base = texture.baseTexture
-      const sprite = new PIXI.Sprite(new PIXI.Texture(base, new PIXI.Rectangle(0, 0, frameWidth, frameHeight)))
-      sprite.anchor.set(0.5)
-      sprite.blendMode = PIXI.BLEND_MODES.ADD
-      sprite.x = this.width / 2
-      sprite.y = this.height / 2
-      const scale = Math.max(this.width / frameWidth, this.height / frameHeight) * 0.82
-      sprite.scale.set(scale)
-      sprite.alpha = 0.9
-      sprite.eventMode = 'none'
-      this.app.stage.addChild(sprite)
-
-      const durationMs = Math.max(180, Number(effect?.duration || 0.35) * 1000)
-      const start = performance.now()
-      const tick = () => {
-        if (token !== this._screenEffectToken || sprite.destroyed) {
-          this.app?.ticker?.remove(tick)
-          if (!sprite.destroyed) sprite.destroy()
-          return
-        }
-        const t = Math.min((performance.now() - start) / durationMs, 1)
-        const frame = Math.min(5, Math.floor(t * 6))
-        const fx = frame % 3
-        const fy = Math.floor(frame / 3)
-        sprite.texture = new PIXI.Texture(base, new PIXI.Rectangle(fx * frameWidth, fy * frameHeight, frameWidth, frameHeight))
-        sprite.alpha = 1 - Math.max(0, t - 0.25) / 0.75
-        sprite.scale.set(scale * (0.92 + t * 0.18))
-        if (t >= 1) {
-          this.app.ticker.remove(tick)
-          sprite.destroy()
-        }
-      }
-      this.app.ticker.add(tick)
-    } catch (err) {
-      console.warn('[PixiStageManager] Failed to load punch texture:', err?.message || err)
-    }
-  }
-
-  _playKamifubukiEffect(effect) {
-    this._playFallingScreenTexture('fx_adv_sakura', effect, {
-      count: 48,
-      duration: Math.max(0.8, Number(effect?.duration || 1.1)),
-      useStar: true,
-    })
-    this._playFadeScreenEffect({ type: 'fadein', color: '#FFFFFF', alpha: 0.18, duration: 0.1 })
-    this._playFadeScreenEffect({ type: 'fadeout', color: '#FFFFFF', alpha: 0.18, duration: 0.28 })
-  }
-
-  async _playFallingScreenTexture(id, effect, options = {}) {
-    const token = this._screenEffectToken
-    const textureName = id === 'fx_adv_momiji' ? 'fx_adv_momiji' : 'fx_adv_sakura'
-    try {
-      const textures = [await this._loadEffectTexture(textureName)]
-      if (options.useStar) {
-        textures.push(await this._loadEffectTexture('fx_adv_star'))
-      }
-      if (token !== this._screenEffectToken || !this.app?.stage) return
-
-      const container = new PIXI.Container()
-      container.eventMode = 'none'
-      this.app.stage.addChild(container)
-      const count = options.count || 30
-      const sprites = []
-      for (let i = 0; i < count; i++) {
-        const texture = textures[i % textures.length]
-        const sprite = new PIXI.Sprite(texture)
-        sprite.anchor.set(0.5)
-        sprite.alpha = 0.58 + ((i * 19) % 30) / 100
-        sprite.scale.set(0.035 + ((i * 7) % 28) / 1000)
-        sprite.rotation = (i * 0.77) % Math.PI
-        sprite._fxSeed = i * 131
-        sprite._fxSpeed = 0.7 + ((i * 11) % 30) / 20
-        container.addChild(sprite)
-        sprites.push(sprite)
-      }
-      const durationMs = Math.max(300, Number(options.duration || effect?.duration || 1) * 1000)
-      const start = performance.now()
-      const tick = () => {
-        if (token !== this._screenEffectToken || container.destroyed) {
-          this.app?.ticker?.remove(tick)
-          if (!container.destroyed) container.destroy({ children: true })
-          return
-        }
-        const elapsed = performance.now() - start
-        const progress = Math.min(elapsed / durationMs, 1)
-        for (const sprite of sprites) {
-          const seed = sprite._fxSeed || 0
-          const drift = elapsed / 1000 * sprite._fxSpeed
-          sprite.x = ((seed * 17 + drift * 260) % (this.width + 180)) - 90 + Math.sin(drift * 4 + seed) * 28
-          sprite.y = ((seed * 9 + drift * 390) % (this.height + 180)) - 120
-          sprite.rotation += 0.035 * sprite._fxSpeed
-          sprite.alpha = (0.72 - progress * 0.42) * (0.75 + ((seed % 17) / 50))
-        }
-        if (progress >= 1) {
-          this.app.ticker.remove(tick)
-          container.destroy({ children: true })
-        }
-      }
-      this.app.ticker.add(tick)
-    } catch (err) {
-      console.warn(`[PixiStageManager] Failed to load screen effect "${id}":`, err?.message || err)
-    }
-  }
-
-  setScreenSlide(type, color = '#000000', duration = 0.5, delay = 0, direction = '6') {
+  setScreenSlide(type, color = '#000000', duration = 0.5, delay = 0, direction = '6', nowMilliseconds) {
     const token = ++this._screenSlideToken
     if (!this._slideOverlay || this._slideOverlay.destroyed) return
     const overlay = this._slideOverlay
@@ -892,7 +751,7 @@ export class PixiStageManager {
 
     const delayMs = Math.max(0, Number(delay || 0)) * 1000
     const durationMs = Math.max(0, Number(duration || 0)) * 1000
-    tweenOverlaySlide({
+    this._screenSlideTween = tweenOverlaySlide({
       overlay,
       token,
       isCurrent: t => t === this._screenSlideToken,
@@ -900,6 +759,7 @@ export class PixiStageManager {
       delayMs,
       start,
       end,
+      nowMilliseconds,
       onFinish: () => {
         overlay.x = end.x
         overlay.y = end.y
@@ -918,6 +778,7 @@ export class PixiStageManager {
 
   clearScreenSlide() {
     this._screenSlideToken++
+    this._screenSlideTween = null
     if (!this._slideOverlay || this._slideOverlay.destroyed) return
     this._slideOverlay.visible = false
     this._slideOverlay.x = 0
@@ -929,6 +790,7 @@ export class PixiStageManager {
       if (entry?._slideTweenRaf) {
         cancelAnimationFrame(entry._slideTweenRaf)
         entry._slideTweenRaf = null
+        entry._positionTween = null
       }
     }
   }
@@ -941,7 +803,7 @@ export class PixiStageManager {
    * @param {number} targetY - target screen Y
    * @param {number} duration - animation duration in seconds
    */
-  animateSpinePosition(idolId, targetX, targetY, duration) {
+  animateSpinePosition(idolId, targetX, targetY, duration, nowMilliseconds = () => performance.now(), baseY) {
     const entry = this.spineInstances[idolId]
     if (!entry) return
     const { spine } = entry
@@ -950,6 +812,7 @@ export class PixiStageManager {
     if (entry._slideTweenRaf) {
       cancelAnimationFrame(entry._slideTweenRaf)
       entry._slideTweenRaf = null
+      entry._positionTween = null
     }
 
     const startX = spine.x
@@ -957,24 +820,38 @@ export class PixiStageManager {
     const dx = targetX - startX
     const dy = targetY - startY
     const durMs = duration * 1000
+    const startFrame = entry._positionLayout || positionFrame(this)
+    const targetFrame = positionFrame(this, baseY === undefined ? startFrame.baseY : baseY)
+    let lastEase = 0
+    const render = () => {
+      const start = this.responsiveSpinePositions ? projectSpinePosition({ x: startX, y: startY }, startFrame, this) : { x: startX, y: startY }
+      const end = this.responsiveSpinePositions ? projectSpinePosition({ x: targetX, y: targetY }, targetFrame, this) : { x: targetX, y: targetY }
+      spine.x = start.x + (end.x - start.x) * lastEase
+      spine.y = start.y + (end.y - start.y) * lastEase
+      const interpolatedBase = startFrame.baseY == null && targetFrame.baseY == null ? null
+        : positionBaseline(startFrame, this.height) + (positionBaseline(targetFrame, this.height) - positionBaseline(startFrame, this.height)) * lastEase
+      recordSpinePosition(entry, this, interpolatedBase)
+    }
+    entry._positionTween = null
 
     if (durMs <= 0 || (dx === 0 && dy === 0)) {
-      spine.x = targetX
-      spine.y = targetY
+      lastEase = 1
+      render()
       return
     }
 
-    const t0 = performance.now()
+    const t0 = nowMilliseconds()
+    if (this.responsiveSpinePositions) entry._positionTween = { render }
     const tick = () => {
-      const elapsed = performance.now() - t0
+      const elapsed = Math.max(0, nowMilliseconds() - t0)
       const t = Math.min(elapsed / durMs, 1)
-      const ease = 1 - Math.pow(1 - t, 3)  // easeOutCubic
-      spine.x = startX + dx * ease
-      spine.y = startY + dy * ease
+      lastEase = 1 - Math.pow(1 - t, 3)  // easeOutCubic
+      render()
       if (t < 1) {
         entry._slideTweenRaf = requestAnimationFrame(tick)
       } else {
         entry._slideTweenRaf = null
+        entry._positionTween = null
       }
     }
     entry._slideTweenRaf = requestAnimationFrame(tick)
@@ -986,18 +863,20 @@ export class PixiStageManager {
    * @param {string} idolId
    * @param {string|null} hexColor - "#FFFFFF" (normal), "#AAAAAA" (dim), null (reset)
    */
-  setSpineColor(idolId, hexColor, duration = 0, delay = 0) {
+  setSpineColor(idolId, hexColor, duration = 0, delay = 0, nowMilliseconds) {
     const entry = this.spineInstances[idolId]
     if (!entry) return
     const target = hexColor ? parseInt(hexColor.replace('#', ''), 16) : 0xFFFFFF
     const durationMs = Math.max(0, Number(duration || 0)) * 1000
     const delayMs = Math.max(0, Number(delay || 0)) * 1000
     this._spineColorTweens[idolId]?.cancel?.()
+    delete this._spineColorTweens[idolId]
     const start = entry.spine.tint ?? 0xFFFFFF
     const startRgb = this._hexToRgb(start)
     const targetRgb = this._hexToRgb(target)
     if (durationMs > 0 || delayMs > 0) {
-      this._spineColorTweens[idolId] = runRafTween({
+      const tween = runRafTween({
+        nowMilliseconds,
         durationMs,
         delayMs,
         startValue: 0,
@@ -1011,9 +890,16 @@ export class PixiStageManager {
           })
         },
         onComplete: () => {
-          delete this._spineColorTweens[idolId]
+          if (this._spineColorTweens[idolId] === tween) delete this._spineColorTweens[idolId]
         },
       })
+      const cancel = tween.cancel
+      tween.cancel = () => {
+        cancel()
+        if (this._spineColorTweens[idolId] === tween) delete this._spineColorTweens[idolId]
+      }
+      this._spineColorTweens[idolId] = tween
+      return tween
     } else {
       entry.spine.tint = target
     }
@@ -1211,7 +1097,7 @@ export class PixiStageManager {
   // Spine loading
 
   async spawnSpine(idolId, modelId, options = {}) {
-    if (this._destroyed || !this.app) return null
+    if (this._destroyed || !this.app || options.isCurrent?.() === false) return null
     this.removeSpine(idolId)
     const spawnToken = (this._spawnTokens[idolId] || 0) + 1
     this._spawnTokens[idolId] = spawnToken
@@ -1233,16 +1119,22 @@ export class PixiStageManager {
         atlasUrl,
         skelUrl,
         decodeAtlasText: buf => this._decodeAtlasText(buf),
-        extractTextureFilename: atlasText => this._extractTextureFilename(atlasText),
-        resolveTextureUrl: (mid, file) => this._resolveTextureUrl(mid, file),
-        loadTextureFromUrl: url => this._loadTextureFromUrl(url),
-        getFallbackTexture: () => this._getFallbackTexture(),
+        resolveTextureUrl: (mid, file, options) => this._resolveTextureUrl(mid, file, options),
+        loadTextureFromUrl: url => this._loadTextureFromUrl(url, { allowFallback: false }),
         decodeSkelBuffer: buf => this._decodeSkelBuffer(buf),
         Spine,
         SkeletonBinary,
         AtlasAttachmentLoader,
         TextureAtlas,
       }))
+
+      // Asset completion does not confer ownership of the current scene.
+      // Dispose this unpublished object only; the idol ID may already belong
+      // to a newer scene/model. Other callers can omit the scene predicate.
+      if (this._destroyed || !this.app || this._spawnTokens[idolId] !== spawnToken || options.isCurrent?.() === false) {
+        spine.destroy({ children: true, texture: false, baseTexture: false })
+        return null
+      }
 
       console.log(`[DEBUG] hasMeshOrRegion: ${hasMeshOrRegion}`)
 
@@ -1347,11 +1239,6 @@ export class PixiStageManager {
         this._applyOptionalPartsSlots(spine)
       }
 
-      if (this._destroyed || !this.app || this._spawnTokens[idolId] !== spawnToken) {
-        spine.destroy({ children: true, texture: false, baseTexture: false })
-        return null
-      }
-
       this._applyDefaultPosition(spine, modelId, idolId, options)
       if (this._debugMode) {
         console.debug('[SPAWN_DONE]', idolId, modelId, {
@@ -1365,7 +1252,7 @@ export class PixiStageManager {
         spine._baseScale = spine.scale.x
       }
 
-      spine.eventMode = 'dynamic'
+      spine.eventMode = this._debugMode ? 'dynamic' : 'none'
       spine.cursor = 'grab'
 
       spine.on('pointerdown', (event) => {
@@ -1576,6 +1463,9 @@ export class PixiStageManager {
       spine.scale.set(finalScale)
       spine.y = this.app.screen.height + 20
     }
+    const presentationScale = options.presentationScale > 0 ? options.presentationScale : 1
+    finalScale *= presentationScale
+    spine.scale.set(finalScale)
     spine.x = this.app.screen.width * 0.5
     spine._scaleConfig = {
       fitMode,
@@ -1587,6 +1477,7 @@ export class PixiStageManager {
       visualHeightReference,
       visualHeightStrength,
       visualHeightScale,
+      presentationScale,
       finalScale,
     }
     return spine._scaleConfig
@@ -1642,26 +1533,7 @@ export class PixiStageManager {
   // Atlas / texture helpers
 
   _decodeAtlasText(buf) {
-    const text = new TextDecoder('utf-8').decode(buf)
-    const sizeIdx = text.indexOf('\nsize:')
-    if (sizeIdx < 0) return text
-    const lineStart = text.lastIndexOf('\n', sizeIdx - 1)
-    if (lineStart < 0) return text
-    const atlasText = text.substring(lineStart + 1)
-    const firstLine = atlasText.split('\n')[0].trim()
-    if (!firstLine || firstLine.includes(':')) return text
-    return atlasText
-  }
-
-  _extractTextureFilename(atlasText) {
-    const lines = atlasText.split('\n')
-    for (const line of lines) {
-      const trimmed = line.trim()
-      if (trimmed && !trimmed.includes(':') && !trimmed.startsWith('//')) {
-        return trimmed.split('/').pop()
-      }
-    }
-    return 'comu.png'
+    return decodeSpineAtlasText(buf)
   }
 
   /**
@@ -1697,19 +1569,11 @@ export class PixiStageManager {
     return `${base}/${textureFile}`
   }
 
-  async _resolveTextureUrl(modelId, textureFile) {
-    const primaryUrl = this._getTextureUrl(modelId, textureFile)
-    if (await this._isImageUrl(primaryUrl)) return primaryUrl
-
-    if (textureFile !== 'comu.png') {
-      const fallbackUrl = this._getTextureUrl(modelId, 'comu.png')
-      if (await this._isImageUrl(fallbackUrl)) {
-        console.warn(`[PixiStageManager] Texture "${textureFile}" missing for "${modelId}", using comu.png`)
-        return fallbackUrl
-      }
-    }
-
-    return primaryUrl
+  async _resolveTextureUrl(modelId, textureFile, { allowFallback = true } = {}) {
+    return resolveSpineTextureUrl(modelId, textureFile, { allowFallback,
+      probe: url => this._isImageUrl(url),
+      onFallback: () => console.warn(`[PixiStageManager] Texture "${textureFile}" missing for "${modelId}", using comu.png`),
+    })
   }
 
   async _isImageUrl(url) {
@@ -1723,32 +1587,8 @@ export class PixiStageManager {
     }
   }
 
-  _loadTextureFromUrl(url) {
-    return new Promise(resolve => {
-      const img = new Image()
-      img.crossOrigin = 'anonymous'
-      img.src = url
-      img.onload = () => {
-        const bt = PIXI.BaseTexture.from(img)
-        bt.alphaMode = PIXI.ALPHA_MODES.PMA
-        const onReady = () => resolve(PIXI.Texture.from(bt))
-        if (bt.valid) {
-          onReady()
-        } else {
-          bt.once('update', onReady)
-          setTimeout(() => {
-            if (!bt.valid) {
-              console.warn(`[PixiStageManager] Texture timeout: ${url}`)
-              resolve(PIXI.Texture.from(bt))
-            }
-          }, 10000)
-        }
-      }
-      img.onerror = () => {
-        console.warn(`[PixiStageManager] Failed to load texture: ${url}`)
-        resolve(this._getFallbackTexture())
-      }
-    })
+  _loadTextureFromUrl(url, { allowFallback = true } = {}) {
+    return loadImageTexture(url, { allowFallback, fallbackTexture: () => this._getFallbackTexture() })
   }
 
   _getFallbackTexture() {
@@ -1840,8 +1680,8 @@ export class PixiStageManager {
     return this.spineManager?._fadeIn(spine, duration)
   }
 
-  animateSpineAlpha(idolId, targetAlpha, duration = 0.2, delay = 0) {
-    return this.spineManager?.animateSpineAlpha(idolId, targetAlpha, duration, delay)
+  animateSpineAlpha(idolId, targetAlpha, duration = 0.2, delay = 0, nowMilliseconds) {
+    return this.spineManager?.animateSpineAlpha(idolId, targetAlpha, duration, delay, nowMilliseconds)
   }
 
   /**
@@ -1924,6 +1764,7 @@ export class PixiStageManager {
     if (entry._slideTweenRaf) {
       cancelAnimationFrame(entry._slideTweenRaf)
       entry._slideTweenRaf = null
+      entry._positionTween = null
     }
 
     spine.customIsTalking = false
@@ -2074,11 +1915,13 @@ export class PixiStageManager {
    * The model fades out over ~12 frames then destroys itself.
    */
   removeSpine(idolId, immediate = false) {
+    this._spineColorTweens[idolId]?.cancel?.()
     this.removeSilhouette(idolId)
     return this.spineManager?.removeSpine(idolId, immediate)
   }
 
   clearAllSpines(options = {}) {
+    Object.values(this._spineColorTweens).forEach(tween => tween.cancel?.())
     this.clearAllSilhouettes()
     return this.spineManager?.clearAllSpines(options)
   }
@@ -2110,6 +1953,10 @@ export class PixiStageManager {
   destroy() {
     if (this._destroyed) return
     this._destroyed = true
+    if (this._visibilityHandler) document.removeEventListener('visibilitychange', this._visibilityHandler)
+    this._visibilityHandler = null
+    this.screenEffects?.destroy()
+    this.screenEffects = null
     this._dragSpineId = null
     if (this._globalMoveHandler && this.app) {
       this.app.stage.off('globalpointermove', this._globalMoveHandler)

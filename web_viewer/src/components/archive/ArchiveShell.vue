@@ -1,5 +1,5 @@
 <template>
-  <div class="archive-shell" :class="{ 'has-inspector': hasInspector, 'is-home': activeSection === 'home' }">
+  <div class="archive-shell" :class="{ 'has-inspector': hasInspector, 'is-home': activeSection === 'home', 'is-portal': activeSection === 'portal' || activeSection === 'reader' }">
     <aside class="archive-sidebar" aria-label="资料馆导航">
       <div class="archive-brand">
         <img :src="getBrandMarkUrl()" alt="" />
@@ -9,8 +9,8 @@
         <button
           v-for="item in navigation"
           :key="item.id"
-          :class="{ active: activeSection === item.id }"
-          :aria-current="activeSection === item.id ? 'page' : undefined"
+          :class="{ active: (activeSection === item.id || (activeSection === 'reader' && item.id === 'stories')) }"
+          :aria-current="(activeSection === item.id || (activeSection === 'reader' && item.id === 'stories')) ? 'page' : undefined"
           @click="emit('navigate', item.id)"
         >
           <component :is="item.icon" :size="19" :stroke-width="1.8" />
@@ -19,28 +19,30 @@
       </nav>
     </aside>
 
-    <header class="archive-topbar">
-      <button v-if="showBack" class="archive-back" title="返回" @click="emit('back')">
-        <ArrowLeft :size="18" />
-        <span>返回</span>
-      </button>
-      <div class="archive-mobile-brand">
-        <img :src="getBrandMarkUrl()" alt="" />
-        <span>SideM Archive</span>
-      </div>
-      <div class="archive-heading">
-        <ArchiveBreadcrumb :items="breadcrumbs" />
-        <h1>{{ title }}</h1>
-      </div>
-      <label v-if="searchable" class="archive-search">
-        <Search :size="17" aria-hidden="true" />
-        <input
-          :value="modelValue"
-          :placeholder="searchPlaceholder"
-          @input="emit('update:modelValue', $event.target.value)"
-        />
-      </label>
-    </header>
+    <ArchivePageChrome v-if="!['portal', 'reader'].includes(activeSection)" class="archive-topbar" :can-go-back="showBack" back-class="archive-back" @back="emit('back')">
+      <template #before-title>
+        <div class="archive-mobile-brand">
+          <img :src="getBrandMarkUrl()" alt="" />
+          <span>SideM Archive</span>
+        </div>
+      </template>
+      <template #title>
+        <div class="archive-heading">
+          <ArchiveBreadcrumb :items="breadcrumbs" />
+          <h1>{{ title }}</h1>
+        </div>
+      </template>
+      <template #actions>
+        <label v-if="searchable" class="archive-search">
+          <Search :size="17" aria-hidden="true" />
+          <input
+            :value="modelValue"
+            :placeholder="searchPlaceholder"
+            @input="emit('update:modelValue', $event.target.value)"
+          />
+        </label>
+      </template>
+    </ArchivePageChrome>
 
     <main class="archive-content">
       <slot />
@@ -54,8 +56,8 @@
       <button
         v-for="item in mobileNavigation"
         :key="item.id"
-        :class="{ active: activeSection === item.id }"
-        :aria-current="activeSection === item.id ? 'page' : undefined"
+        :class="{ active: (activeSection === item.id || (activeSection === 'reader' && item.id === 'stories')) }"
+        :aria-current="(activeSection === item.id || (activeSection === 'reader' && item.id === 'stories')) ? 'page' : undefined"
         @click="emit('navigate', item.id)"
       >
         <component :is="item.icon" :size="21" :stroke-width="1.8" />
@@ -67,10 +69,10 @@
 
 <script setup>
 import {
-  ArrowLeft,
   BookMarked,
   FolderOpen,
   Home,
+  LayoutGrid,
   Images,
   MessageSquare,
   Music,
@@ -79,6 +81,7 @@ import {
   Users,
 } from '@lucide/vue'
 import ArchiveBreadcrumb from './ArchiveBreadcrumb.vue'
+import ArchivePageChrome from './ArchivePageChrome.vue'
 import { ARCHIVE_NAVIGATION } from '../../core/archiveRoute.js'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
 
@@ -97,7 +100,10 @@ const emit = defineEmits(['navigate', 'back', 'update:modelValue'])
 
 const iconBySection = { home: Home, stories: BookMarked, songs: Music, idols: Users, cards: Images, gashas: Sparkles, interactions: MessageSquare, resources: FolderOpen }
 const navigation = ARCHIVE_NAVIGATION.map(item => ({ ...item, icon: iconBySection[item.id] }))
-const mobileNavigation = navigation
+const mobileNavigation = [
+  { id: 'home', label: '首页', icon: Home },
+  { id: 'portal', label: '门户', icon: LayoutGrid },
+]
 </script>
 
 <style scoped>
@@ -110,6 +116,9 @@ const mobileNavigation = navigation
   --archive-ink: #18212b;
   --archive-muted: #68727d;
   --archive-border: #dfe4e8;
+  --archive-safe-top: env(safe-area-inset-top, 0px);
+  --archive-safe-left: env(safe-area-inset-left, 0px);
+  --archive-safe-right: env(safe-area-inset-right, 0px);
   display: grid;
   grid-template-columns: var(--archive-sidebar) minmax(0, 1fr) var(--archive-inspector);
   grid-template-rows: var(--archive-topbar) minmax(0, 1fr);
@@ -123,6 +132,9 @@ const mobileNavigation = navigation
 .archive-shell.is-home { --archive-topbar: 0px; }
 .archive-shell.is-home .archive-topbar { display: none; }
 .archive-shell.is-home .archive-content { grid-row: 1 / 3; }
+.archive-shell.is-portal { --archive-topbar: 0px; }
+.archive-shell.is-portal .archive-topbar { display: none; }
+.archive-shell.is-portal .archive-content { grid-row: 1 / 3; }
 :global(html[data-archive-home-theme="day"]) .archive-shell.is-home .archive-sidebar { background: #102632; }
 :global(html[data-archive-home-theme="day"]) .archive-shell.is-home .archive-nav button.active { background: rgba(33,183,197,.13); }
 :global(html[data-archive-home-theme="day"]) .archive-shell.is-home .archive-nav button.active::before { background: #21b7c5; }
@@ -204,17 +216,8 @@ const mobileNavigation = navigation
   gap: 5px;
   min-width: 0;
 }
-.archive-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 0;
-  background: transparent;
-  color: #168f87;
-  padding: 7px 4px;
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.8rem;
+.archive-topbar {
+  --archive-back-ink: #168f87;
 }
 .archive-search {
   display: flex;
@@ -256,10 +259,10 @@ const mobileNavigation = navigation
   .archive-shell, .archive-shell.has-inspector {
     --archive-sidebar: 0px;
     --archive-inspector: 0px;
-    --archive-topbar: 124px;
+    --archive-topbar: calc(124px + var(--archive-safe-top));
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: var(--archive-topbar) minmax(0, 1fr) 66px;
+    grid-template-rows: var(--archive-topbar) minmax(0, 1fr) calc(74px + env(safe-area-inset-bottom, 0px));
   }
   .archive-shell.is-home { --archive-topbar: 0px; }
   .archive-sidebar { display: none; }
@@ -269,7 +272,7 @@ const mobileNavigation = navigation
     grid-template-columns: auto minmax(0, 1fr);
     grid-template-rows: 52px 60px;
     gap: 0 10px;
-    padding: 0 16px 8px;
+    padding: var(--archive-safe-top) max(16px, var(--archive-safe-right)) 8px max(16px, var(--archive-safe-left));
   }
   .archive-mobile-brand {
     display: flex;
@@ -280,8 +283,8 @@ const mobileNavigation = navigation
     font-weight: 750;
   }
   .archive-mobile-brand img { width: 31px; height: 24px; object-fit: contain; }
-  .archive-back { grid-row: 1; grid-column: 1; }
-  .archive-back + .archive-mobile-brand { grid-column: 2; }
+  .archive-topbar :deep(.archive-back) { grid-row: 1; grid-column: 1; }
+  .archive-topbar:has(.archive-back) .archive-mobile-brand { grid-column: 2; }
   .archive-heading { grid-row: 2; grid-column: 1; gap: 4px; }
   .archive-topbar h1 { font-size: 1.15rem; }
   .archive-search { grid-row: 2; grid-column: 2; height: 36px; }
@@ -292,7 +295,8 @@ const mobileNavigation = navigation
     grid-column: 1;
     grid-row: 3;
     display: grid;
-    grid-template-columns: repeat(8, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     border-top: 1px solid var(--archive-border);
     background: #fff;
     z-index: 20;
@@ -308,8 +312,12 @@ const mobileNavigation = navigation
     background: transparent;
     color: #69747e;
     font: inherit;
-    font-size: 0.64rem;
+    font-size: 0.8rem;
+    min-height: 44px;
+    cursor: pointer;
   }
   .archive-mobile-nav button.active { color: var(--archive-accent); }
+  .archive-mobile-nav button:focus-visible { outline: 3px solid var(--archive-accent); outline-offset: -5px; }
+  .archive-mobile-nav button + button { border-left: 1px solid #e5eeee; }
 }
 </style>

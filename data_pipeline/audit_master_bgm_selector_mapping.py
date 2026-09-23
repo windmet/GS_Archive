@@ -20,7 +20,7 @@ from archive_paths import (
     load_archive_sources,
 )
 from cri_utf import UtfTable, nested_table
-from masterdata_extract import (
+from sidem_masterdata import (
     decode_masterdata_input,
     extract_table_rows,
     iter_top_records,

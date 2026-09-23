@@ -1,15 +1,13 @@
-export function buildEventStoryEpisodes(event, story, storyMasterData) {
+export function buildEventStoryEpisodes(event, story, catalogData) {
   if (!event || !story) return []
 
   const groupId = String(event.event_group_id || '')
-  const rows = (storyMasterData?.event?.episodes || [])
-    .filter(row => String(row['2']) === groupId)
-    .sort((a, b) => Number(a['1'] || 0) - Number(b['1'] || 0))
+  if (!Array.isArray(catalogData?.eventEpisodeStructure)) throw new Error('Event episodes require the named catalog structure')
+  const rows = catalogData.eventEpisodeStructure.find(group => group.groupId === groupId)?.episodes || []
   const boundaries = story.episodes || []
 
   return rows.map((row, index) => {
-    const resourceId = row.resource_id || row['5'] || ''
-    const part = resourceId.match(/_([a-z])$/i)?.[1] || ''
+    const { resourceId, part } = row
     const boundary = boundaries.find(item => item.episode_part === part) || boundaries[index] || null
     const episodeFile = boundary?.episode_file || ''
     const rawStart = Number(boundary?.start_step_index || 0)
@@ -18,8 +16,8 @@ export function buildEventStoryEpisodes(event, story, storyMasterData) {
       : (index === 0 ? Math.max(rawStart, Number(story.playableStartIndex || 0)) : rawStart)
 
     return {
-      id: String(row['1'] || `${event.event_id}-${index}`),
-      label: row['3'] || (index === 0 ? 'プロローグ' : `エピソード${index}`),
+      id: row.id || `${event.event_id}-${index}`,
+      label: row.label || (index === 0 ? 'プロローグ' : `エピソード${index}`),
       resourceId,
       part,
       file: episodeFile || story.file || '',

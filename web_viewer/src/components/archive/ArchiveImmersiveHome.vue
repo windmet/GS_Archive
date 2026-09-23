@@ -13,9 +13,11 @@
     :style="homeStyle"
   >
     <SpineStage
-      :key="stageLayout"
+      responsive-positions
+      portrait-framing
       ref="spineStageRef"
       :step="renderStep"
+      :now-milliseconds="homeCueRuntime.nowMilliseconds"
       :fallback-bg="selectedBackground"
       :manage-background="true"
       :debug-controls="false"
@@ -171,7 +173,7 @@
       <p>{{ activeCue.text }}</p>
       <div class="dialogue-meta">
         <span>{{ activeCue.rarity }} · {{ activeCue.cardTitle }}</span>
-        <code>{{ activeCue.cue }}</code>
+
       </div>
       <div class="dialogue-actions">
         <button type="button" :aria-label="playing ? '停止语音' : '播放语音'" :title="playing ? '停止语音' : '播放语音'" @click="toggleVoice">
@@ -285,6 +287,7 @@ import {
 } from '@lucide/vue'
 import { getBgUrl, getCharaIconUrl } from '../../utils/AssetResolver.js'
 import { useVoicePlayer } from '../../core/useVoicePlayer.js'
+import { useStoryRuntimeCues } from '../../core/story-runtime/useStoryRuntimeCues.js'
 import { StoryAudioSession } from '../../core/story-runtime/StoryAudioSession.js'
 import {
   loadArchiveHomePreferences,
@@ -293,8 +296,6 @@ import {
 } from '../../data/archiveHomePreferences.js'
 
 const SpineStage = defineAsyncComponent(() => import('../SpineStage.vue'))
-const MOBILE_SPINE_ZOOM = 0.86
-const MOBILE_SPINE_LIFT = 300
 
 const props = defineProps({
   idols: { type: Array, default: () => [] },
@@ -316,10 +317,11 @@ const voiceError = ref(false)
 const lastStartedVoice = ref('')
 const stageReady = ref(false)
 const stageError = ref(false)
-const stageLayout = ref(window.innerWidth <= 560 ? 'compact' : 'wide')
 const highlightIndex = ref(0)
 const spineStageRef = ref(null)
 const currentStepIndex = ref(0)
+const performanceRevision = ref(0)
+let homeDisposed = false
 const settingsOpen = ref(false)
 const costumePickerOpen = ref(false)
 const stageTapPending = ref(false)
@@ -339,9 +341,9 @@ const selectedBackground = computed(() => preferences.background === 'cue' || !a
   ? activeCue.value?.background || activeIdol.value?.representativeBg || ''
   : preferences.background)
 const renderStep = computed(() => {
+  performanceRevision.value // Replay reprojects the source entry pose without remounting the stage.
   const step = activeCue.value?.previewStep
   if (!step?.state) return step || {}
-  const compactStage = stageLayout.value === 'compact'
   return {
     ...step,
     state: {
@@ -349,14 +351,9 @@ const renderStep = computed(() => {
       bg: selectedBackground.value,
       spines: (step.state.spines || []).map(spine => {
         if (spine.id !== activeIdol.value?.id) return spine
-        const sourceZoom = Number.isFinite(spine.idol_zoom) && spine.idol_zoom > 0 ? spine.idol_zoom : 1
         return {
           ...spine,
           ...(activeCostume.value?.modelId ? { model: activeCostume.value.modelId } : {}),
-          ...(compactStage ? {
-            idol_zoom: sourceZoom * MOBILE_SPINE_ZOOM,
-            pos_y: (spine.pos_y || 0) + MOBILE_SPINE_LIFT,
-          } : {}),
         }
       }),
     },
@@ -365,7 +362,7 @@ const renderStep = computed(() => {
 const activeHighlight = computed(() => props.highlights[highlightIndex.value] || props.highlights[0] || null)
 const cueIndex = computed(() => Math.max(0, activeIdol.value?.cues?.findIndex(cue => cue.cue === activeCue.value?.cue) || 0))
 const currentStep = computed(() => activeCue.value?.previewStep || {})
-const compiledData = computed(() => ({ scenario_id: activeCue.value?.scenarioId || '' }))
+const compiledData = computed(() => ({ scenario_id: activeCue.value?.scenarioId || '', steps: [renderStep.value] }))
 const homeAudioSession = new StoryAudioSession({ disabled: props.noAudio })
 const homeStyle = computed(() => ({
   '--idol-color': activeIdol.value?.color || '#21b7c5',
@@ -381,6 +378,19 @@ const voicePlayer = useVoicePlayer({
   audioSession: homeAudioSession,
 })
 
+const homeCueRuntime = useStoryRuntimeCues({
+  compiledData, currentStepIndex, spineStageRef,
+  getStageStep: () => renderStep.value,
+  audioManager: {}, // Home source timelines contain only spine face/body/neck cues.
+  isPaused: () => document.hidden,
+})
+function syncHomeVisibility() {
+  const action = document.hidden ? 'pause' : 'resume'
+  homeCueRuntime[action]().catch(() => {})
+  homeAudioSession[action]('visibility').catch(() => {})
+}
+watch(() => activeCostume.value?.modelId, () => stopVoice())
+
 watch(() => activeIdol.value?.id, () => {
   stageError.value = false
   stopVoice()
@@ -390,6 +400,7 @@ watch(() => activeIdol.value?.id, () => {
 })
 
 watch(activeCue, () => {
+  homeCueRuntime.cancelCurrentStep('home-cue-change')
   voiceError.value = false
   if (stageTapCommitPending.value) return
   stopVoice()
@@ -457,12 +468,18 @@ async function handleStageTap() {
     return
   }
 
+  homeCueRuntime.cancelCurrentStep('home-next-cue')
   stageTapCommitPending.value = true
   emit('update:selectedCue', next.cue)
+  await nextTick()
+  if (homeDisposed) return
   let started = false
   if (prepared) {
     started = voicePlayer.playPreparedVoice(prepared)
-    if (started) lastStartedVoice.value = next.voice || ''
+    if (started) {
+      lastStartedVoice.value = next.voice || ''
+      homeCueRuntime.handleStepChange()
+    }
     voiceError.value = !started
   } else {
     voiceError.value = true
@@ -491,6 +508,7 @@ function stepHighlight(direction) {
 }
 
 function stopVoice() {
+  homeCueRuntime.cancelCurrentStep('home-stop-voice')
   voicePlayer.stopCurrentVoice('archive-home')
   voicePlayer.resetVoiceDedup()
   playing.value = false
@@ -504,8 +522,16 @@ async function toggleVoice() {
   voiceError.value = false
   voicePlayer.unlockAudioContext()
   voicePlayer.resetVoiceDedup()
+  homeCueRuntime.cancelCurrentStep('home-replay')
+  performanceRevision.value++
+  await nextTick()
+  if (homeDisposed) return
   const started = await voicePlayer.playVoice()
-  if (started) lastStartedVoice.value = activeCue.value?.voice || ''
+  if (homeDisposed) return
+  if (started) {
+    lastStartedVoice.value = activeCue.value?.voice || ''
+    homeCueRuntime.handleStepChange()
+  }
   voiceError.value = !started
 }
 
@@ -517,10 +543,6 @@ function formatBackgroundLabel(background) {
   return `背景 ${background}`
 }
 
-function syncStageLayout() {
-  stageLayout.value = window.innerWidth <= 560 ? 'compact' : 'wide'
-}
-
 function handleKeydown(event) {
   if (event.key !== 'Escape') return
   if (settingsOpen.value) settingsOpen.value = false
@@ -529,11 +551,13 @@ function handleKeydown(event) {
 
 onMounted(() => {
   document.documentElement.dataset.archiveHomeTheme = preferences.theme
-  window.addEventListener('resize', syncStageLayout)
   window.addEventListener('keydown', handleKeydown)
+  document.addEventListener('visibilitychange', syncHomeVisibility)
 })
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', syncStageLayout)
+  homeDisposed = true
+  homeCueRuntime.cleanup()
+  document.removeEventListener('visibilitychange', syncHomeVisibility)
   window.removeEventListener('keydown', handleKeydown)
   voicePlayer.dispose()
   homeAudioSession.dispose().catch(() => {})
@@ -550,7 +574,7 @@ onBeforeUnmount(() => {
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 520px;
+  min-height: 0;
   overflow: hidden;
   background-position: center;
   background-size: cover;

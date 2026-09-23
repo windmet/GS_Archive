@@ -1,9 +1,7 @@
 <template>
   <div class="chibi-lab">
     <header class="lab-header">
-      <button class="icon-button back-button" type="button" aria-label="返回资料馆" @click="emit('back')">
-        <ArrowLeft :size="22" />
-      </button>
+      <ArchiveBackAction class="back-button" :label="backLabel" @back="emit('back')" />
       <div class="header-divider" aria-hidden="true"></div>
       <h1>舞台小人实验室</h1>
       <button class="stage-link" type="button" @click="emit('open-stage')">多人舞台</button>
@@ -84,7 +82,7 @@
             <div class="section-heading">
               <div>
                 <h2>动作列表</h2>
-                <span>{{ motions.length }} 个可用动作</span>
+                <span>{{ !manifest ? (loading ? '正在读取动作库…' : '动作库载入失败') : motions.length ? `${motions.length} 个可用动作` : '没有可用动作' }}</span>
               </div>
               <button class="text-button" type="button" @click="replayMotion">
                 <RotateCcw :size="15" />重播
@@ -199,7 +197,6 @@
 import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import * as PIXI from 'pixi.js'
 import {
-  ArrowLeft,
   CircleAlert,
   LoaderCircle,
   Mic2,
@@ -209,6 +206,7 @@ import {
   SkipBack,
   SkipForward,
 } from '@lucide/vue'
+import ArchiveBackAction from './archive/ArchiveBackAction.vue'
 import {
   applyLiveChibiLipSync,
   createLiveChibi,
@@ -222,6 +220,7 @@ import {
 } from '../utils/liveChibiSpine.js'
 import { getSongUrl } from '../utils/AssetResolver.js'
 
+defineProps({ backLabel: { type: String, default: '返回资料馆' } })
 const emit = defineEmits(['back', 'open-stage'])
 const canvasRef = ref(null)
 const manifest = ref(null)
@@ -755,12 +754,11 @@ function stopChoreography(reset = false) {
 }
 
 .lab-header h1 { margin: 0; font-size: 20px; font-weight: 680; letter-spacing: 0.02em; }
-.stage-link { height: 34px; padding: 0 13px; color: #dcecff; background: rgba(31, 112, 190, 0.25); border: 1px solid rgba(73, 161, 244, 0.46); border-radius: 7px; font: 650 12px/1 inherit; cursor: pointer; }
+.stage-link { min-height: 44px; padding: 0 13px; color: #dcecff; background: rgba(31, 112, 190, 0.25); border: 1px solid rgba(73, 161, 244, 0.46); border-radius: 7px; font: 650 12px/1 inherit; cursor: pointer; }
 .stage-link:hover { background: rgba(38, 130, 218, 0.36); }
 .header-meta { margin-left: auto; color: var(--muted); font-size: 12px; letter-spacing: 0.04em; }
 .header-divider { width: 1px; height: 26px; background: var(--line); }
-.icon-button { display: grid; place-items: center; width: 38px; height: 38px; padding: 0; color: var(--text); background: transparent; border: 0; border-radius: 8px; cursor: pointer; }
-.icon-button:hover { background: rgba(255, 255, 255, 0.07); }
+.back-button { --archive-back-ink: var(--text); --archive-back-hover: rgba(255, 255, 255, 0.07); border-radius: 8px; }
 
 .lab-workspace { position: absolute; inset: 62px 0 0; display: grid; grid-template-columns: minmax(0, 1fr) 380px; min-height: 0; }
 .stage-shell { position: relative; min-width: 0; overflow: hidden; background: #101a26; }
@@ -838,6 +836,7 @@ h2 { margin: 0; color: #d4dfeb; font-size: 12px; font-weight: 650; letter-spacin
 @media (max-width: 860px) {
   .lab-header { height: 54px; padding: 0 12px; gap: 11px; }
   .lab-header h1 { font-size: 16px; }
+  .header-divider { display: none; }
   .header-meta { display: none; }
   .lab-workspace { inset-top: 54px; grid-template-columns: 1fr; grid-template-rows: minmax(390px, 58vh) minmax(0, 1fr); overflow-y: auto; }
   .stage-shell { min-height: 390px; }

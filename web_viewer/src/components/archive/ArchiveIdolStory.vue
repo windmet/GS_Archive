@@ -1,5 +1,5 @@
 <template>
-  <article v-if="story" class="idol-story" :style="{ '--idol-accent': story.color }">
+  <article v-if="story" class="idol-story" data-archive-scroll-container :style="{ '--idol-accent': story.color }">
     <header class="story-header">
       <div class="idol-identity">
         <img :src="idolIcon(story.idol_code)" :alt="story.idol_name" />
@@ -23,24 +23,6 @@
       </div>
     </header>
 
-    <aside class="story-boundary">
-      <Cake :size="19" />
-      <div>
-        <strong>正式个人故事 · 生日同期公开</strong>
-        <p>Idol Episode 是连续章节的正式归档。开放日常与偶像生日同期，但不等同于生日问候；生日页只收录独立问候，并把共享 Small Talk 指回这里。</p>
-      </div>
-      <button v-if="story.birthdayArchive?.entryCount" @click="emit('open-birthday')">
-        查看生日档案 <ArrowRight :size="15" />
-      </button>
-    </aside>
-
-    <div class="story-summary">
-      <div><strong>{{ story.sectionCount }}</strong><span>正式话目</span></div>
-      <div><strong>{{ story.episodeCount }}</strong><span>剧情分段</span></div>
-      <div><strong>{{ story.playableEpisodeCount }}</strong><span>可播放</span></div>
-      <div><strong>{{ story.communicationCount }}</strong><span>解锁后通信</span></div>
-    </div>
-
     <div class="section-list">
       <section
         v-for="(section, sectionIndex) in story.sections"
@@ -61,7 +43,7 @@
               <h3>{{ section.scenario_title }}</h3>
               <div class="section-badges">
                 <span v-if="sectionBirthdayAligned(section)">生日同期公开</span>
-                <span v-if="section.sharedBirthdayEntries?.length" class="shared">生日域共享入口 · 本页为正式归档</span>
+                <span v-if="section.sharedBirthdayEntries?.length" class="shared">也可从生日内容访问</span>
               </div>
             </div>
             <button
@@ -98,9 +80,8 @@
           </div>
 
           <div class="episode-list">
+            <div v-for="(episode, episodeIndex) in section.episodes" :key="episode.id" class="episode-entry">
             <button
-              v-for="(episode, episodeIndex) in section.episodes"
-              :key="episode.id"
               :disabled="!episode.exists"
               :class="{ focused: Number(episode.id) === Number(focusedEpisodeId) }"
               :data-episode-id="episode.id"
@@ -108,12 +89,14 @@
             >
               <span class="episode-index">{{ String(episodeIndex + 1).padStart(2, '0') }}</span>
               <span class="episode-copy">
-                <strong>{{ episode.name }}</strong>
-                <small>{{ episode.dialogueCount }} dialogues · {{ episode.voiceCount }} voices</small>
+                <strong>{{ presentIdolEpisodeLabel({ sourceName: episode.name }) }}</strong>
+                <small>{{ episode.dialogueCount }} 段对白 · {{ episode.voiceCount }} 段语音</small>
               </span>
               <Play v-if="episode.exists" :size="15" fill="currentColor" />
               <FileWarning v-else :size="15" />
             </button>
+            <button v-if="readingEntry(episode)" class="episode-read" :aria-label="`阅读 ${presentIdolEpisodeLabel({ sourceName: episode.name })}`" @click="emit('read-episode', { section, episode })">阅读</button>
+            </div>
           </div>
 
           <div v-if="section.communications.length" class="communication-strip">
@@ -130,23 +113,48 @@
         </div>
       </section>
     </div>
+    <details class="story-extra"><summary>收录概况与生日内容</summary>
+    <aside class="story-boundary">
+      <Cake :size="19" />
+      <div>
+        <strong>个人故事 · 生日同期公开</strong>
+        <p>个人故事按章节收录；独立的生日问候可前往生日档案查看。</p>
+      </div>
+      <button v-if="story.birthdayArchive?.entryCount" @click="emit('open-birthday')">
+        查看生日档案 <ArrowRight :size="15" />
+      </button>
+    </aside>
+
+    <div class="story-summary">
+      <div><strong>{{ story.sectionCount }}</strong><span>章节</span></div>
+      <div><strong>{{ story.episodeCount }}</strong><span>剧情分段</span></div>
+      <div><strong>{{ story.playableEpisodeCount }}</strong><span>可播放</span></div>
+      <div><strong>{{ story.communicationCount }}</strong><span>解锁后通信</span></div>
+    </div>
+
+    </details>
   </article>
 </template>
 
 <script setup>
 import { nextTick, onMounted, ref, watch } from 'vue'
 import { ArrowRight, Cake, ChevronLeft, ChevronRight, ExternalLink, FileWarning, PhoneCall, Play } from '@lucide/vue'
+import { readyEpisodeReading } from '../../data/IdolStoryReading.js'
 import { formatArchiveDate } from '../../data/idolCommunicationSelectors.js'
+import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
+import { getCharaIconUrl } from '../../utils/AssetResolver.js'
 
 const props = defineProps({
   story: { type: Object, default: null },
   idols: { type: Array, default: () => [] },
+  readingEntries: { type: Array, default: () => [] },
   externalResources: { type: Array, default: () => [] },
   focusedSectionId: { type: [String, Number], default: '' },
   focusedEpisodeId: { type: [String, Number], default: '' },
 })
-const emit = defineEmits(['select-idol', 'play-section', 'play-episode', 'open-communication', 'open-birthday'])
+const emit = defineEmits(['read-episode', 'select-idol', 'play-section', 'play-episode', 'open-communication', 'open-birthday'])
 const focusedSectionElement = ref(null)
+const readingEntry = episode => readyEpisodeReading(props.readingEntries, episode)
 
 function setSectionElement(element, sectionId) {
   if (Number(sectionId) === Number(props.focusedSectionId)) focusedSectionElement.value = element
@@ -162,7 +170,7 @@ function moveIdol(delta) {
   if (index < 0 || !props.idols.length) return
   emit('select-idol', props.idols[(index + delta + props.idols.length) % props.idols.length].idolCode)
 }
-function idolIcon(code) { return `/assets/idols/icons/image_chara_icon_${code}.png` }
+function idolIcon(code) { return getCharaIconUrl(code) }
 function backgroundUrl(id) { return id ? `/assets/bg/${id}.png` : '/assets/stories/story_background.png' }
 function releaseDate(value) { return formatArchiveDate(value) || '开放日未记录' }
 function sectionBirthdayAligned(section) {
@@ -178,7 +186,8 @@ function sectionBirthdayAligned(section) {
 }
 function finalEpisodeName(section) {
   const target = section.communications[0]?.release_condition?.param_a
-  return section.episodes.find(episode => Number(episode.id) === Number(target))?.name || '最终分段'
+  const sourceName = section.episodes.find(episode => Number(episode.id) === Number(target))?.name
+  return sourceName ? presentIdolEpisodeLabel({ sourceName }) : '最终分段'
 }
 function externalResourcesForSection(sectionId) {
   return props.externalResources
@@ -188,6 +197,8 @@ function externalResourcesForSection(sectionId) {
 </script>
 
 <style scoped>
+.story-extra { max-width: 1100px; margin: 20px auto; }
+.story-extra > summary { min-height: 44px; padding: 12px; box-sizing: border-box; cursor: pointer; color: #52616a; }
 .idol-story { height: 100%; overflow-x: hidden; overflow-y: auto; background: #f4f6f7; color: #26343c; }
 .story-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 22px max(24px, calc((100% - 1100px) / 2)); border-bottom: 1px solid #dce3e5; background: #fff; }
 .idol-identity { display: flex; align-items: center; gap: 14px; min-width: 0; }.idol-identity img { width: 68px; height: 68px; border: 3px solid var(--idol-accent); border-radius: 50%; object-fit: cover; }.idol-identity span { color: var(--idol-accent); font-size: .58rem; font-weight: 800; }.idol-identity h2 { margin: 3px 0; font-size: 1.35rem; }.idol-identity p { margin: 0; color: #748188; font-size: .64rem; }
@@ -202,4 +213,6 @@ function externalResourcesForSection(sectionId) {
 .episode-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin-top: 15px; background: #dfe5e7; }.episode-list button { display: grid; grid-template-columns: 30px minmax(0, 1fr) 18px; align-items: center; gap: 8px; min-height: 55px; padding: 8px 10px; border: 0; background: #fff; color: #2c3c44; cursor: pointer; font: inherit; text-align: left; }.episode-list button:hover:not(:disabled), .episode-list button.focused { background: #edf8f7; }.episode-list button.focused { outline: 2px solid var(--idol-accent); outline-offset: -2px; }.episode-list button:disabled { background: #f4f6f7; color: #909ba0; cursor: not-allowed; }.episode-index { color: var(--idol-accent); font-size: .58rem; font-weight: 800; }.episode-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }.episode-copy strong { font-size: .65rem; }.episode-copy small { color: #859299; font-size: .51rem; }.episode-list svg { color: var(--idol-accent); }
 .communication-strip { display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; align-items: center; gap: 11px; margin-top: 15px; padding: 11px 12px; border-top: 1px solid #dfe6e8; border-bottom: 1px solid #dfe6e8; background: #f4faf9; }.communication-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: var(--idol-accent); color: #fff; }.communication-strip > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }.communication-strip small { color: var(--idol-accent); font-size: .5rem; font-weight: 800; }.communication-strip strong { font-size: .67rem; }.communication-strip div span { color: #7c898f; font-size: .52rem; }.communication-strip > button { display: inline-flex; align-items: center; gap: 5px; border: 0; background: transparent; color: var(--idol-accent); cursor: pointer; font: inherit; font-size: .61rem; font-weight: 700; }
 @media (max-width: 760px) { .story-header { align-items: start; flex-direction: column; padding: 14px 12px; }.idol-identity img { width: 56px; height: 56px; }.idol-controls { width: 100%; }.idol-controls label { flex: 1; }.idol-controls select { width: 100%; min-width: 0; }.story-boundary { grid-template-columns: 22px minmax(0,1fr); margin: 10px 12px 0; }.story-boundary button { grid-column: 1 / -1; justify-content: center; }.story-summary { margin: 10px 12px 0; grid-template-columns: repeat(2, minmax(0, 1fr)); }.story-summary div:nth-child(2) { border-right: 0; }.story-summary div:nth-child(-n+2) { border-bottom: 1px solid #e4e9eb; }.section-list { margin: 12px 10px 28px; }.story-section { grid-template-columns: 1fr; }.section-visual { min-height: 150px; max-height: 210px; }.section-content { padding: 14px 12px 16px; }.section-content > header { align-items: start; flex-direction: column; }.play-section { width: 100%; justify-content: center; }.episode-list { grid-template-columns: 1fr; }.communication-strip { grid-template-columns: 36px minmax(0, 1fr); }.communication-strip > button { grid-column: 1 / -1; justify-content: flex-end; } }
+.episode-entry { display: grid; grid-template-columns: minmax(0,1fr) auto; background: #fff; }
+.episode-list .episode-read { display: flex; justify-content: center; min-width: 54px; color: var(--idol-accent); border-left: 1px solid #dfe5e7; }
 </style>

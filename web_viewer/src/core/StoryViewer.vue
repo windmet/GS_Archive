@@ -1,5 +1,5 @@
 <template>
-  <div class="story-viewer-root" :class="{ 'stage-only': HIDE_UI || uiHidden }" tabindex="0"
+  <div ref="playerRoot" class="story-viewer-root" :class="{ 'stage-only': HIDE_UI || uiHidden, 'immersive-landscape': immersiveCompact }" tabindex="0"
     @pointerdown.capture="_ensureAudioCtx" @keydown="handlePlayerKeydown">
     <pre
       v-if="RUNTIME_DEBUG"
@@ -10,13 +10,16 @@
       <button data-testid="story-debug-hide" @click.stop="applyDebugVisibility(true)">SIMULATE HIDDEN</button>
       <button data-testid="story-debug-show" @click.stop="applyDebugVisibility(false)">SIMULATE VISIBLE</button>
     </div>
-    <div class="viewer-stage">
+    <div class="viewer-stage" :inert="viewingOfferOpen || undefined">
     <!-- Spine rendering layer (background + characters) -->
-    <SpineStage ref="spineStageRef" :step="stageStep" :fallbackBg="firstAvailableBg" :debug-controls="RUNTIME_DEBUG" release-owner="story-player" />
+    <SpineStage v-if="retainedStageStep" ref="spineStageRef" :step="retainedStageStep" :suspended="!communicationContext.needsStage" :fallbackBg="firstAvailableBg" :debug-controls="RUNTIME_DEBUG" :now-milliseconds="storyRuntimeCues.nowMilliseconds" responsive-positions portrait-framing release-owner="story-player" />
+    <div ref="frameHoldRoot" v-show="frameHolding" class="held-scene" aria-hidden="true"></div>
+    <div v-if="localBuffering && !HIDE_UI" class="local-buffering" role="status" aria-live="polite">{{ localBufferingText }}</div>
 
     <!-- Top bar -->
     <PlayerTopBar
       v-if="compiledData && !HIDE_UI && !uiHidden"
+      :compact="immersiveCompact"
       :current="playableStepNumber"
       :total="playableStepTotal"
       :language="langLabel"
@@ -32,7 +35,7 @@
     <!-- Voice audio player: handled by the Web Audio API to avoid IDM sniffing -->
 
     <!-- UI overlay for step-specific screens -->
-    <div class="ui-overlay" v-if="compiledData && !HIDE_UI && !uiHidden && (!episodeFinished || communicationCompleted)">
+    <div class="ui-overlay" :class="{ 'held-underlay': frameHolding }" :aria-hidden="frameHolding ? 'true' : undefined" v-if="compiledData && !HIDE_UI && !uiHidden && (!episodeFinished || communicationCompleted)">
 
       <!-- ADV dialogue -->
       <Transition name="adv-dialogue-fade" appear>
@@ -41,6 +44,7 @@
           :dialogue="currentStep.dialogue"
           :step="currentStep"
           :playing="isPlaying"
+          :voice-status="voiceStatus"
           @click="goNext"
         />
       </Transition>
@@ -80,9 +84,6 @@
         @select="onChoice"
       />
 
-      <!-- Title (episode/chapter title card) -->
-      <TitleUI v-if="currentStep.type === 'title'" :step="currentStep" />
-
       <!-- Pre-play synopsis -->
       <SynopsisUI v-if="currentStep.type === 'synopsis'" :step="currentStep" />
 
@@ -91,9 +92,24 @@
 
     </div>
 
+    <!-- Keep a hidden title mounted so restoring UI resumes the same animation.
+         Each step owns its card and completion events, including adjacent titles. -->
+    <div v-if="compiledData && !HIDE_UI && !episodeFinished && currentStep.type === 'title'"
+      class="ui-overlay" :class="{ 'held-underlay': frameHolding }" :aria-hidden="frameHolding ? 'true' : undefined" :style="{ visibility: uiHidden ? 'hidden' : undefined }">
+      <TitleUI
+        :key="currentStepIndex"
+        :step="currentStep"
+        :paused="titlePaused"
+        @start="onTitleAnimationStart"
+        @complete="onTitleAnimationSettled('complete', $event)"
+        @cancel="onTitleAnimationSettled('cancel', $event)"
+      />
+    </div>
+
     <!-- Bottom control dock -->
     <PlayerControlDock
       v-if="compiledData && compiledData.steps.length > 0 && !HIDE_UI && !uiHidden && (!episodeFinished || communicationCompleted)"
+      :compact="immersiveCompact"
       :auto-enabled="autoEnabled"
       :skip-enabled="skipEnabled"
       :previous-disabled="isFirstStep"
@@ -108,6 +124,12 @@
     <Transition name="menu-slide">
       <aside v-if="menuOpen && !HIDE_UI" class="playback-menu" :aria-label="uiText('player.settings.panel')">
         <header><strong>MENU</strong><button class="icon-btn dark" :title="uiText('player.settings.close')" :aria-label="uiText('player.settings.close')" @click="menuOpen = false"><X :size="20" /></button></header>
+        <template v-if="immersiveEligible">
+          <button v-if="!immersive.active.value" :disabled="immersive.pending.value" @click="enterImmersive"><span>{{ uiText('player.immersive.enter') }}</span></button>
+          <button v-else @click="immersive.leave()"><span>{{ uiText('player.immersive.leave') }}</span></button>
+          <label class="menu-setting"><span>{{ uiText('player.immersive.mode') }}</span><select v-model="mobileViewMode" @change="saveMobileViewMode"><option value="ask">{{ uiText('player.immersive.ask') }}</option><option value="landscape">{{ uiText('player.immersive.landscape') }}</option><option value="portrait">{{ uiText('player.immersive.portrait') }}</option></select></label>
+        </template>
+        <button @click="cycleLanguage"><span>{{ uiText('player.immersive.language') }}</span><b>{{ langLabel }}</b></button>
         <label class="menu-toggle">
           <span>{{ uiText('player.settings.continuous') }}</span>
           <input type="checkbox" :checked="continuousPlayback" @change="emit('update:continuous-playback', $event.target.checked)" />
@@ -161,11 +183,26 @@
     </div>
 
     </div><!-- /viewer-stage -->
+    <div v-if="viewingOfferOpen" class="viewing-offer" role="dialog" aria-modal="true" aria-labelledby="viewing-offer-title" @keydown.stop="handleViewingOfferKeydown">
+      <div class="viewing-offer-panel">
+        <h2 id="viewing-offer-title">{{ uiText('player.immersive.title') }}</h2>
+        <p>{{ uiText('player.immersive.description') }}</p>
+        <label><input v-model="rememberViewingChoice" type="checkbox" />{{ uiText('player.immersive.remember') }}</label>
+        <button ref="viewingOfferAction" class="primary" @click="chooseViewingMode('landscape')">{{ uiText('player.immersive.enter') }}</button>
+        <button @click="chooseViewingMode('portrait')">{{ uiText('player.immersive.continue') }}</button>
+      </div>
+    </div>
+    <div v-else-if="!HIDE_UI && !uiHidden && ((showViewingShortcut && !immersive.active.value) || immersive.notice.value)" class="viewing-notice">
+      <span v-if="immersive.notice.value" role="status">{{ uiText(`player.immersive.${immersive.notice.value}`) }}</span>
+      <button v-if="!immersive.active.value || immersive.notice.value" :disabled="immersive.pending.value" @click="enterImmersive">{{ uiText('player.immersive.enter') }}</button>
+      <button @click="viewingShortcutDismissed = true; immersive.notice.value = ''">{{ uiText('player.immersive.dismiss') }}</button>
+    </div>
     <div class="loading" v-if="!compiledData && !HIDE_UI">{{ uiText('player.loading') }}</div>
   </div>
 </template>
 
 <script setup>
+import { usePlayerImmersiveMode, claimMobileViewingOffer } from '../composables/usePlayerImmersiveMode.js'
 import { ref, computed, watch, onMounted, onBeforeUnmount, onUnmounted, reactive, nextTick, defineAsyncComponent } from 'vue'
 import AdvUI from '../components/AdvUI.vue'
 import MobileChatScene from '../components/mobile/MobileChatScene.vue'
@@ -186,7 +223,8 @@ import {
   uiLocale,
 } from '../utils/LanguageStore.js'
 import { resolveUiText as uiText } from '../localization/ui/UiTextResolver.js'
-import { resolveCommunicationContext } from './story-runtime/CommunicationPresentationContext.js'
+import { resolveStoryPresentation } from '../../shared/story/StoryPresentation.js'
+import { warmCommunicationScene } from './story-runtime/CommunicationSceneWarmup.js'
 import { getBgUrl } from '../utils/AssetResolver.js'
 import { useVoicePlayer } from './useVoicePlayer.js'
 import { AudioManager } from './AudioManager.js'
@@ -207,14 +245,17 @@ import {
 } from '../localization/story/StoryLocalizationContext.js'
 
 const props = defineProps({
+  previewOnly: Boolean,
   scenarioJson: { type: Object, default: null },
+  playbackInstance: { type: Number, default: 0 },
   scenarioUrl: { type: String, default: null },
   startStep: { type: Number, default: null },
+  initialStep: { type: Number, default: null },
   endStep: { type: Number, default: null },
   hasNextEpisode: { type: Boolean, default: false },
   continuousPlayback: { type: Boolean, default: false },
 })
-const emit = defineEmits(['back', 'ready', 'next-episode', 'update:continuous-playback'])
+const emit = defineEmits(['back', 'ready', 'readiness-change', 'step-change', 'next-episode', 'update:continuous-playback'])
 const URL_FLAGS = new URLSearchParams(window.location.search)
 const HIDE_UI = URL_FLAGS.get('stageOnly') === '1' || URL_FLAGS.get('hideUI') === '1' || URL_FLAGS.get('transparentUI') === '1'
 const START_STEP_VALUE = URL_FLAGS.get('startStep')
@@ -237,6 +278,51 @@ setStoryLanguagePreferences(initialPreferences)
 
 const spineStageRef = ref(null)
 const compiledData = ref(null)
+const playerRoot = ref(null)
+const viewingOfferAction = ref(null)
+const viewingOfferOpen = ref(false)
+const rememberViewingChoice = ref(true)
+const mobileViewMode = ref(initialPreferences.story_mobile_view_mode)
+const viewingShortcutDismissed = ref(false)
+const immersive = usePlayerImmersiveMode()
+const smallScreen = ref(false)
+const shortLandscape = ref(false)
+const portraitScreen = ref(false)
+const immersiveEligible = computed(() => !props.previewOnly && !HIDE_UI && (compiledData.value?.steps || [])
+  .slice(Math.max(0, (props.startStep || 1) - 1), props.endStep || undefined)
+  .some(step => step.type === 'adv'))
+const immersiveCompact = computed(() => immersiveEligible.value && immersive.active.value && shortLandscape.value)
+const showViewingShortcut = computed(() => immersiveEligible.value && smallScreen.value && mobileViewMode.value === 'landscape' && !viewingShortcutDismissed.value)
+function saveMobileViewMode() { preferencesRepository.update({ story_mobile_view_mode: mobileViewMode.value }) }
+function enterImmersive() {
+  // Keep this call before awaits: browsers require a fresh user gesture.
+  const request = immersive.enter(playerRoot.value)
+  viewingOfferOpen.value = false
+  menuOpen.value = false
+  return request
+}
+function chooseViewingMode(mode) {
+  if (rememberViewingChoice.value) { mobileViewMode.value = mode; saveMobileViewMode() }
+  viewingOfferOpen.value = false
+  viewingShortcutDismissed.value = mode !== 'landscape'
+  if (mode === 'landscape') void enterImmersive()
+  else playerRoot.value?.focus()
+}
+function handleViewingOfferKeydown(event) {
+  if (event.key === 'Escape') { event.preventDefault(); chooseViewingMode('portrait'); return }
+  if (event.key !== 'Tab') return
+  const items = [...event.currentTarget.querySelectorAll('button, input')]
+  const first = items[0], last = items.at(-1)
+  if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
+  else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
+}
+function updateViewingViewport() {
+  const width = window.innerWidth, height = window.innerHeight
+  smallScreen.value = width <= 699 || (height <= 600 && width <= 1100)
+  shortLandscape.value = width > height && height <= 600 && width <= 1100
+  portraitScreen.value = width < height
+}
+
 provideStoryLocalization(createStoryLocalization({
   compiledData,
   storyPreferences: storyLanguagePreferences,
@@ -246,7 +332,18 @@ const historyStack = ref([])
 const selectedChoices = reactive(new Map())
 const restoredSceneState = ref(null)
 const sceneSnapshotStore = new SceneSnapshotStore()
-const _ready = ref(false)
+const initialReadyEmitted = ref(false)
+const frameHoldRoot = ref(null)
+const frameHolding = ref(false)
+const frameHoldRequired = ref(false)
+const runtimeReadinessStatus = ref('idle')
+const runtimeReadinessReason = ref('')
+let heldTargetIndex = null
+const MAX_HELD_FRAME_PIXELS = 1920 * 1080
+const localBuffering = computed(() => initialReadyEmitted.value && runtimeReadinessStatus.value === 'waiting'
+  && (frameHolding.value || !frameHoldRequired.value))
+const localBufferingText = '正在准备下一段画面…'
+const voiceStatus = ref('idle')
 const isPlaying = ref(false)
 const menuOpen = ref(false)
 const backlogOpen = ref(false)
@@ -261,7 +358,6 @@ const transitioning = ref(false)
 const runtimeDiagnostics = ref(null)
 const debugVisibilityOverride = ref(null)
 
-let _readyTimer = null
 let _runtimeDiagnosticsTimer = null
 let unregisterReleaseViewer = null
 
@@ -281,6 +377,56 @@ let handleRuntimeStepChange = () => {}
 let cleanupRuntimeCues = () => {}
 let isRuntimeAutoBlocked = () => false
 let playbackController = null
+let pendingStepEffects = null
+
+// True while a title step is playing its FX. The FX is a transition the player
+// owns, not a screen the user dismisses: it always advances when it ends, which
+// is the same contract `getAutoAdvanceTiming` gives every other transition
+// step. Auto is held for its duration so it cannot paste its delay on top of a
+// card that is still animating.
+const titleAnimationPending = ref(false)
+
+function setTitleAnimationPending(pending) {
+  const next = Boolean(pending)
+  if (next === titleAnimationPending.value) return
+  titleAnimationPending.value = next
+  playbackController?.notifyStateChanged()
+}
+
+// A completion belongs to one mounted step. Pause and asynchronous cue
+// settlement may defer it, but navigation must never transfer it to a new card.
+let titleAdvancePending = null
+
+function onTitleAnimationStart(step) {
+  if (step === currentStep.value) setTitleAnimationPending(true)
+}
+
+function retryTitleAdvance() {
+  const request = titleAdvancePending
+  if (!request || request.step !== currentStep.value) { titleAdvancePending = null; return }
+  if (titlePaused.value || request.settling) return
+  request.settling = true
+  const result = goNext('title-animation', () => {
+    if (titleAdvancePending !== request || currentStep.value !== request.step) return
+    request.settling = false
+    retryTitleAdvance()
+  })
+  if (result !== 'settled') request.settling = false
+  if (result !== 'blocked' && result !== 'settled' && titleAdvancePending === request) {
+    titleAdvancePending = null
+  }
+}
+
+// `cancel` means the step was left mid-flight, so advancing again would skip a
+// step the user never saw. Reduced motion emits neither event: the card stays
+// static and the step is dismissed by the user, exactly as it was before the FX.
+function onTitleAnimationSettled(event, step) {
+  if (step !== currentStep.value) return
+  setTitleAnimationPending(false)
+  if (event === 'cancel') return
+  if (!titleAdvancePending) titleAdvancePending = { step, settling: false }
+  retryTitleAdvance()
+}
 
 const getVoiceVolume = () => voicePlayer?.getVoiceVolume?.() || 0
 
@@ -332,18 +478,81 @@ const currentStep = computed(() => {
 const currentSceneState = computed(() => restoredSceneState.value || getStepSceneState(currentStep.value))
 const stageStep = computed(() => projectStepSceneState(currentStep.value, currentSceneState.value))
 
+function beginFrameHold(targetIndex) {
+  runtimeReadinessStatus.value = 'waiting'
+  if (!initialReadyEmitted.value) return
+  if (frameHolding.value) { heldTargetIndex = targetIndex; return }
+  const manager = spineStageRef.value?.manager
+  const targetStep = compiledData.value?.steps?.[targetIndex]
+  if (!manager?.app?.renderer || !targetStep) return
+  // A text-disable bridge is intentionally short and can advance before the
+  // following actor has loaded. Preserve the last dialogue's stage pixels
+  // through that bridge, without restoring its intentionally hidden text.
+  const bridge = targetStep.type === 'text_disable' ? compiledData.value.steps[targetIndex + 1] : null
+  const visualTarget = bridge || targetStep
+  const source = getStepSceneState(currentStep.value) || {}
+  const target = getStepSceneState(visualTarget) || {}
+  const actorPending = (target.spines || []).some(actor => actor?.id && actor?.model
+    && manager.spineInstances?.[actor.id]?.modelId !== actor.model
+    && !manager._silhouetteSprites?.[actor.id])
+  frameHoldRequired.value = actorPending || source.bg !== target.bg
+  if (!frameHoldRequired.value) return
+  heldTargetIndex = bridge ? targetIndex + 1 : targetIndex
+  const host = frameHoldRoot.value
+  if (!host) return
+  try {
+    // Extract the last playable Pixi frame before the next step can remove its
+    // actors. A detached canvas holds pixels without encoding a large data URL.
+    manager.app.renderer.render(manager.app.stage)
+    const extracted = manager.app.renderer.extract.canvas()
+    let canvas = extracted
+    if (extracted.width * extracted.height > MAX_HELD_FRAME_PIXELS) {
+      const scale = Math.sqrt(MAX_HELD_FRAME_PIXELS / (extracted.width * extracted.height))
+      canvas = document.createElement('canvas')
+      canvas.width = Math.max(1, Math.round(extracted.width * scale))
+      canvas.height = Math.max(1, Math.round(extracted.height * scale))
+      canvas.getContext('2d').drawImage(extracted, 0, 0, canvas.width, canvas.height)
+    }
+    canvas.style.cssText = 'display:block;width:100%;height:100%'
+    host.replaceChildren(canvas)
+    if (!bridge && currentStep.value.type === 'adv') {
+      for (const overlay of host.parentElement.querySelectorAll(':scope > .ui-overlay')) {
+        host.appendChild(overlay.cloneNode(true))
+      }
+    }
+    frameHolding.value = true
+  } catch (error) {
+    host.replaceChildren()
+    console.warn('[StoryFrameHold] capture failed:', error?.message || error)
+  }
+}
+
+function releaseFrameHold() {
+  frameHolding.value = false
+  frameHoldRequired.value = false
+  heldTargetIndex = null
+  frameHoldRoot.value?.replaceChildren()
+}
+
 const showAdvDialogue = computed(() => {
   const step = currentStep.value
   return step?.type === 'adv' && step?.hide_dialogue !== true && currentSceneState.value?.text_disabled !== true
 })
 
-const communicationContext = computed(() => resolveCommunicationContext({
+const communicationContext = computed(() => resolveStoryPresentation({
   step: currentStep.value,
   stepIndex: currentStepIndex.value,
   historyStack: historyStack.value,
   steps: compiledData.value?.steps || [],
   scenarioId: compiledData.value?.scenario_id || '',
 }))
+
+// Preserve the last stage while an opaque communication surface is visible.
+// A direct communication entry never constructs a renderer.
+const retainedStageStep = ref(null)
+watch([stageStep, communicationContext], ([step, presentation]) => {
+  if (compiledData.value && presentation.needsStage) retainedStageStep.value = step
+}, { immediate: true, flush: 'sync' })
 
 const playableStepNumber = computed(() => Math.max(1, currentStepIndex.value - navigationStartIndex.value + 1))
 const playableStepTotal = computed(() => Math.max(0, navigationEndIndex.value - navigationStartIndex.value + 1))
@@ -356,6 +565,8 @@ if (!voicePlayer) {
     compiledData,
     isPlaying,
     noVoice: NO_VOICE,
+    canAnimateStage: () => communicationContext.value.needsStage,
+    onStateChange: state => { voiceStatus.value = state },
     audioSession: storyAudioSession,
   })
 }
@@ -388,10 +599,12 @@ const {
     setStoryLanguagePreferences(saved)
   },
   startStep: START_STEP,
+  initialStep: props.initialStep,
   endStep: END_STEP,
   clearFadeAutoAdvance: () => clearFadeAutoAdvance(),
   ensureAudioCtx: _ensureAudioCtx,
   resetVoiceDedup: _resetVoiceDedup,
+  beforeStepChange: beginFrameHold,
 })
 
 const mobileBackdropUrl = computed(() => {
@@ -540,13 +753,16 @@ function stopPlaybackModes(reason = 'manual-navigation') {
 }
 
 function handlePlayerKeydown(event) {
+  if (viewingOfferOpen.value) return
+  if (event.target?.closest?.('button, a') && [' ', 'Enter'].includes(event.key)) return
   if (event.repeat) return
   const tag = event.target?.tagName
   if (['INPUT', 'SELECT', 'TEXTAREA'].includes(tag) && event.key !== 'Escape') return
   const key = event.key.toLowerCase()
   if (key === 'escape') {
     event.preventDefault()
-    closeOverlay()
+    if (!menuOpen.value && !backlogOpen.value && immersive.active.value) void immersive.leave()
+    else closeOverlay()
   } else if (key === 'arrowleft') {
     event.preventDefault()
     goPrev()
@@ -596,10 +812,24 @@ function replayBacklogVoice(node) {
   })
 }
 
-function goNext(source = 'user') {
-  if (episodeFinished.value || backlogOpen.value || menuOpen.value) return 'blocked'
+function goNext(source = 'user', onSettled) {
+  if (episodeFinished.value || backlogOpen.value || menuOpen.value || viewingOfferOpen.value
+      || runtimeReadinessStatus.value !== 'playable') return 'blocked'
+  if (source === 'title-animation' && titlePaused.value) return 'blocked'
+  if (source !== 'title-animation') titleAdvancePending = null
+  if (source !== 'title-animation' && titleAnimationPending.value) {
+    // Title steps own the full FX duration: a manual advance (or an explicit
+    // skip) drops the pending animation and moves on immediately.
+    setTitleAnimationPending(false)
+  }
+  const manual = typeof source !== 'string' || source === 'user'
+  if (currentStep.value.type === 'choice') return 'blocked'
   const reason = typeof source === 'string' ? `${source}-next` : 'user-next'
-  if (storyRuntimeCues.settleCurrentStep(reason)) return 'settled'
+  if (manual) {
+    if (storyRuntimeCues.hasNonSkippable()) return 'blocked'
+    storyRuntimeCues.cancelCurrentStep(reason)
+    _stopCurrentVoice(reason)
+  } else if (storyRuntimeCues.settleCurrentStep(reason, onSettled)) return 'settled'
   markStepRead()
   recordHistoryStep()
   leaveRestoredScene()
@@ -607,12 +837,15 @@ function goNext(source = 'user') {
     finishEpisode()
     return 'finished'
   }
-  advanceStep()
+  if (!advanceStep({ manual })) {
+    finishEpisode()
+    return 'finished'
+  }
   return 'advanced'
 }
 
 function goPrev() {
-  if (backlogOpen.value || menuOpen.value) return
+  if (backlogOpen.value || menuOpen.value || viewingOfferOpen.value) return
   if (communicationCompleted.value) {
     episodeFinished.value = false
     transitioning.value = false
@@ -669,18 +902,58 @@ const stepSceneEffects = useStepSceneEffects({
     recordHistoryStep()
     leaveRestoredScene()
   },
+  beforeStepChange: beginFrameHold,
 })
 
+const runtimePauseReasons = reactive(new Set())
+const titlePaused = computed(() => runtimePauseReasons.size > 0 || uiHidden.value)
 const storyRuntimeCues = useStoryRuntimeCues({
   compiledData,
+  getStageStep: () => stageStep.value,
+  needsStage: () => communicationContext.value.needsStage,
+  prepareCommunication: ({ signal }) => warmCommunicationScene({
+    scenario: compiledData.value, stepIndex: currentStepIndex.value,
+    historyStack: historyStack.value, backdropUrl: mobileBackdropUrl.value, signal,
+  }),
   currentStepIndex,
   spineStageRef,
   audioManager: _audioManager,
   debugSnapshotAt: SNAPSHOT_AT,
+  isPaused: () => runtimePauseReasons.size > 0,
   debugSnapshotAction: () => freezeScene('snapshotAt'),
+  onReadinessChange: handleRuntimeReadinessChange,
 })
 
-const runtimePauseReasons = new Set()
+function handleRuntimeReadinessChange(readiness) {
+  runtimeReadinessStatus.value = readiness.status
+  runtimeReadinessReason.value = readiness.reason || ''
+  const hasFrame = initialReadyEmitted.value && (frameHolding.value || !frameHoldRequired.value)
+  const report = { ...readiness, hasFrame, instance: props.playbackInstance }
+  emit('readiness-change', report)
+  const buffering = readiness.status === 'waiting' || readiness.status === 'blocked'
+  if (readiness.status === 'playable' && frameHolding.value && currentStepIndex.value === heldTargetIndex) {
+    // Paint the completed target before the old frame is released or audio is
+    // resumed; otherwise the next voice can lead the first visible frame.
+    const manager = spineStageRef.value?.manager
+    try { manager?.app?.renderer?.render(manager.app.stage) } catch (error) {
+      console.warn('[StoryFrameHold] target render failed:', error?.message || error)
+    }
+    releaseFrameHold()
+  }
+  playbackController?.setPaused('buffering', buffering)
+  setRuntimeSessionPaused('buffering', buffering)
+  if (readiness.status !== 'playable') return
+  const pending = pendingStepEffects
+  if (pending && pending.step === currentStep.value && pending.stepIndex === currentStepIndex.value) {
+    pendingStepEffects = null
+    handleStepChange(pending.step, pending.oldStep, { restore: pending.restore })
+  }
+  if (!initialReadyEmitted.value) {
+    initialReadyEmitted.value = true
+    emit('ready')
+  }
+}
+
 function setRuntimeSessionPaused(reason, paused) {
   const wasPaused = runtimePauseReasons.size > 0
   if (paused) runtimePauseReasons.add(reason)
@@ -700,7 +973,7 @@ function setPlaybackRate(rate) {
   return appliedRate
 }
 
-function buildRuntimeDiagnostics() {
+function buildRuntimeDiagnostics({ includeProjector = false } = {}) {
   const memory = performance.memory
   const stageManager = spineStageRef.value?.manager
   const spineEntries = Object.entries(stageManager?.spineInstances || {})
@@ -727,6 +1000,7 @@ function buildRuntimeDiagnostics() {
     playback: playbackController?.inspect() || null,
     step_effects: inspectStepSceneEffects(),
     runtime,
+    ...(includeProjector ? { projector_shadow: storyRuntimeCues.inspectProjectorShadow() } : {}),
     runtime_active_count: runtime?.active?.length || 0,
     runtime_frame_pending: Number(Boolean(runtime?.frame_pending)),
     spine: {
@@ -753,7 +1027,7 @@ function refreshRuntimeDiagnostics() {
   }
 }
 
-const collectReleaseSoakSample = () => buildRuntimeDiagnostics()
+const collectReleaseSoakSample = options => buildRuntimeDiagnostics(options)
 
 function applyVisibilityPause(hidden) {
   if (hidden) clearFadeAutoAdvance()
@@ -772,7 +1046,7 @@ function applyDebugVisibility(hidden) {
 playbackController = new PlaybackModeController({
   getStep: () => storyRuntimeCues.getNormalizedStep(),
   getVoiceState: () => voicePlayer?.getVoiceState?.() || 'idle',
-  hasBlockingAuto: () => storyRuntimeCues.hasBlockingAuto(),
+  hasBlockingAuto: () => storyRuntimeCues.hasBlockingAuto() || titleAnimationPending.value,
   hasNonSkippable: () => storyRuntimeCues.hasNonSkippable(),
   isRead: isStepRead,
   autoDelayMs: autoDelayMs.value,
@@ -805,9 +1079,12 @@ cleanupRuntimeCues = storyRuntimeCues.cleanup
 isRuntimeAutoBlocked = storyRuntimeCues.hasBlockingAuto
 
 onMounted(async () => {
+  updateViewingViewport()
+  window.addEventListener('resize', updateViewingViewport)
   window.__STORY_PLAYBACK__ = playbackController
   window.__STORY_AUDIO__ = storyAudioSession
   document.addEventListener('visibilitychange', handleVisibilityChange)
+  handleVisibilityChange()
   if (RUNTIME_DEBUG) {
     unregisterReleaseViewer = storyReleaseProbe.registerViewer(collectReleaseSoakSample)
     releaseSoakRecorder.record('viewer-attached')
@@ -861,48 +1138,17 @@ onMounted(async () => {
   }
 
   // Focus root for keyboard events
-  nextTick(() => { document.querySelector('.story-viewer-root')?.focus() })
+  nextTick(() => { if (viewingOfferOpen.value) viewingOfferAction.value?.focus(); else playerRoot.value?.focus() })
 
-  // Safety timeout: ready always fires within 5s even if assets fail
-  _readyTimer = setTimeout(() => {
-    if (!_ready.value) {
-      _ready.value = true
-      emit('ready')
-    }
-  }, 5000)
-
-  // The Preloader (called from App.vue) has already cached all assets.
-  // PIXI.Assets.load() will resolve instantly from cache.
-  const mgr = spineStageRef.value?.manager
-  if (compiledData.value && mgr) {
-    const firstState = currentSceneState.value
-    if (firstState) {
-      try {
-        if (firstState.bg) {
-          await mgr.preloadStepState(firstState)
-        }
-      } catch (e) {
-        console.warn('[StoryViewer] preload warmup failed:', e.message)
-      }
-    }
-  }
-
-  if (_readyTimer) {
-    clearTimeout(_readyTimer)
-    _readyTimer = null
-  }
-
-  // SpineStage applies first step state reactively via :step prop binding.
-  // No explicit applyStepState call needed.
-
-  // Voice playback is handled in watch(currentStep) for a single source of truth
-
-  // Enable runtime watch
-  _ready.value = true
-  emit('ready')
+  // SpineStage and the Runtime publish source-bound readiness. The player no
+  // longer treats a timeout or a duplicate warmup request as playable proof.
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateViewingViewport)
+  titleAdvancePending = null
+  pendingStepEffects = null
+  releaseFrameHold()
   if (RUNTIME_DEBUG) console.debug('[Lifecycle] StoryViewer onBeforeUnmount')
   cleanupStepSceneEffects()
   cleanupRuntimeCues()
@@ -910,10 +1156,6 @@ onBeforeUnmount(() => {
   document.removeEventListener('visibilitychange', handleVisibilityChange)
   if (window.__STORY_PLAYBACK__ === playbackController) delete window.__STORY_PLAYBACK__
   if (window.__STORY_AUDIO__ === storyAudioSession) delete window.__STORY_AUDIO__
-  if (_readyTimer) {
-    clearTimeout(_readyTimer)
-    _readyTimer = null
-  }
   if (_runtimeDiagnosticsTimer) {
     clearInterval(_runtimeDiagnosticsTimer)
     _runtimeDiagnosticsTimer = null
@@ -932,14 +1174,39 @@ onUnmounted(() => {
 // Keep the legacy effects watcher behavior unchanged. The opt-in runtime watcher
 // is immediate so a scenario opened directly at an authored step is scheduled.
 watch(currentStep, (newStep, oldStep) => {
-  handleStepChange(newStep, oldStep, { restore: Boolean(restoredSceneState.value) })
+  // Catch-all release: any navigation that is not the title's own completion
+  // (prev, backlog restore, go-to-step, episode end) must drop the hold. The
+  // incoming title card re-claims it from its own onMounted.
+  titleAdvancePending = null
+  setTitleAnimationPending(false)
+  pendingStepEffects = {
+    step: newStep,
+    oldStep,
+    stepIndex: currentStepIndex.value,
+    restore: Boolean(restoredSceneState.value),
+  }
+  clearFadeAutoAdvance()
+  _stopCurrentVoice('step-buffering')
+  isPlaying.value = false
   playbackController?.notifyStateChanged()
 })
 watch(currentStep, handleRuntimeStepChange, { immediate: true })
-watch([menuOpen, backlogOpen, episodeFinished], ([menu, backlog, finished]) => {
-  if (menu || backlog || finished) clearFadeAutoAdvance()
-  playbackController?.setPaused('overlay', menu || backlog || finished)
-  setRuntimeSessionPaused('overlay', menu || backlog || finished)
+watch([menuOpen, backlogOpen, episodeFinished, viewingOfferOpen], ([menu, backlog, finished, viewingOffer]) => {
+  if (menu || backlog || finished || viewingOffer) clearFadeAutoAdvance()
+  playbackController?.setPaused('overlay', menu || backlog || finished || viewingOffer)
+  setRuntimeSessionPaused('overlay', menu || backlog || finished || viewingOffer)
+}, { immediate: true })
+watch([immersiveEligible, smallScreen, portraitScreen], ([eligible, small, portrait]) => {
+  if (eligible && small && portrait && !uiHidden.value && mobileViewMode.value === 'ask' && claimMobileViewingOffer()) {
+    viewingOfferOpen.value = true
+    nextTick(() => viewingOfferAction.value?.focus())
+  }
+})
+watch(titlePaused, paused => {
+  if (!paused) retryTitleAdvance()
+})
+watch(currentStep, step => {
+  if (step?.step_id != null) emit('step-change', { instance: props.playbackInstance, stepIndex: currentStepIndex.value })
 }, { immediate: true })
 watch(uiHidden, hidden => {
   preferencesRepository.update({ ui_hidden: hidden })
@@ -968,6 +1235,19 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 </script>
 
 <style scoped>
+.viewing-offer { position: absolute; inset: 0; z-index: 60; display: grid; place-items: center; padding: 20px; background: rgba(6,21,33,.7); }
+.viewing-offer-panel { box-sizing: border-box; width: min(100%, 400px); max-height: 100%; overflow: auto; padding: 24px; border-radius: 20px; background: #f7faf9; color: #193c44; box-shadow: 0 14px 50px #0006; display: grid; gap: 14px; }
+.viewing-offer h2 { margin: 0; font-size: 22px; }
+.viewing-offer p { margin: 0; line-height: 1.7; }
+.viewing-offer label { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+.viewing-offer button, .viewing-notice button { min-height: 44px; padding: 8px 14px; border: 1px solid #97b9b5; border-radius: 10px; color: #176f69; background: white; font: inherit; cursor: pointer; }
+.viewing-offer button.primary { background: #176f69; color: white; }
+.viewing-offer button:focus-visible, .viewing-notice button:focus-visible { outline: 3px solid #45b8ae; outline-offset: 2px; }
+.viewing-notice { position: absolute; top: max(64px, var(--player-content-top)); left: 50%; transform: translateX(-50%); z-index: 30; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: max-content; max-width: calc(100% - 32px); box-sizing: border-box; padding: 8px 12px; border-radius: 12px; background: #f7faf9; color: #23434a; box-shadow: 0 8px 25px #0004; font-size: 13px; }
+@media (orientation: landscape) and (max-height: 600px) {
+  .story-viewer-root.immersive-landscape { --player-edge: 8px; --player-topbar-height: 0px; --player-topbar-gap: 0px; --player-dock-gap: 6px; --player-dock-bottom: 6px; --player-dock-height: 44px; --player-dialogue-gap: 6px; --player-dialogue-bottom: calc(56px + env(safe-area-inset-bottom)); --player-content-top: max(8px, env(safe-area-inset-top)); }
+}
+
 .story-viewer-root {
   position: fixed; inset: 0;
   outline: none; background: #000;
@@ -988,6 +1268,8 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
   width: 100% !important;
   height: 100% !important;
 }
+.held-scene { position: absolute; inset: 0; z-index: 10; overflow: hidden; pointer-events: none; }
+.local-buffering { position: absolute; z-index: 25; top: var(--player-content-top); left: var(--player-edge); max-width: calc(100% - 2 * var(--player-edge)); padding: 9px 14px; border: 1px solid rgba(255,255,255,.35); border-radius: 12px; background: rgba(16,31,40,.78); color: #fff; box-shadow: 0 10px 26px rgba(0,0,0,.22); font-size: .82rem; pointer-events: none; }
 .ui-overlay {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
   z-index: 1;
@@ -996,6 +1278,7 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 .ui-overlay > * {
   pointer-events: auto;
 }
+.ui-overlay.held-underlay > * { pointer-events: none; }
 @media (max-width: 699px) {
   .story-viewer-root {
     --player-edge: 10px;

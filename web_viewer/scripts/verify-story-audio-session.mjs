@@ -2,7 +2,9 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { StoryAudioSession } from '../src/core/story-runtime/StoryAudioSession.js'
 import { useVoicePlayer } from '../src/core/useVoicePlayer.js'
+import { useStepSceneEffects } from '../src/core/useStepSceneEffects.js'
 import { AudioManager } from '../src/core/AudioManager.js'
+import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import {
   isKnownDanglingStoryVoice,
   knownDanglingStoryVoiceCount,
@@ -150,6 +152,200 @@ class FakeTimerQueue {
 
 const originalFetch = globalThis.fetch
 const originalWindow = globalThis.window
+// Leaving the audible home for the portal can dispose its voice owner while
+// fetch or decode is pending. A late result must be discarded without errors.
+for (const phase of ['fetch', 'decode']) {
+  const ctx = new FakeAudioContext()
+  const session = new StoryAudioSession({ contextFactory: () => ctx })
+  let release, decodes = 0
+  const pending = new Promise(resolve => { release = resolve })
+  ctx.decodeAudioData = async () => { decodes++; if (phase === 'decode') await pending; return { duration: 1 } }
+  const errors = [], oldError = console.error
+  console.error = (...args) => errors.push(args)
+  globalThis.window = { setTimeout, clearTimeout }
+  globalThis.fetch = async () => {
+    if (phase === 'fetch') await pending
+    return { ok: true, headers: new Map(), arrayBuffer: async () => new ArrayBuffer(2000) }
+  }
+  const player = useVoicePlayer({ spineStageRef: { value: null }, currentStep: { value: { dialogue: { voice: 'portal-exit' } } }, currentStepIndex: { value: 0 }, compiledData: { value: {} }, isPlaying: { value: false }, audioSession: session })
+  try {
+    const preparation = player.prepareVoice({ includeLip: false })
+    if (phase === 'decode') { for (let n = 0; n < 10 && !decodes; n++) await Promise.resolve(); assert.equal(decodes, 1) }
+    player.dispose()
+    release()
+    assert.equal(await preparation, null)
+    assert.equal(decodes, phase === 'fetch' ? 0 : 1)
+    assert.deepEqual(errors, [], 'disposed voice owner must not log a decode failure')
+  } finally {
+    console.error = oldError
+    globalThis.fetch = originalFetch
+    if (originalWindow === undefined) delete globalThis.window
+    else globalThis.window = originalWindow
+    await session.dispose()
+  }
+}
+{
+  const ctx = new FakeAudioContext()
+  let fetches = 0
+  let decodes = 0
+  ctx.decodeAudioData = async () => { decodes++; return { duration: 1, length: 48000, numberOfChannels: 2 } }
+  globalThis.window = { setTimeout, clearTimeout }
+  globalThis.fetch = async () => {
+    fetches++
+    return { ok: true, headers: new Map(), arrayBuffer: async () => new ArrayBuffer(2000) }
+  }
+  const session = new StoryAudioSession({ contextFactory: () => ctx })
+  const player = useVoicePlayer({
+    spineStageRef: { value: null }, currentStep: { value: {} }, currentStepIndex: { value: 0 },
+    compiledData: { value: {} }, isPlaying: { value: false }, audioSession: session,
+  })
+  try {
+    const step = { dialogue: { voice: 'repeat-voice' } }
+    const first = await player.prepareVoice({ step, scenarioId: 'story-a', includeLip: false })
+    assert.equal(player.hasDecodedVoice(step, 'story-a'), true)
+    const repeated = await player.prepareVoice({ step, scenarioId: 'story-a', includeLip: false })
+    assert.equal(repeated.audioBuffer, first.audioBuffer, 'same story voice should reuse decoded audio')
+    assert.equal(fetches, 1)
+    assert.equal(decodes, 1)
+    await player.prepareVoice({ step, scenarioId: 'story-b', includeLip: false })
+    assert.equal(fetches, 2, 'different story source must not reuse a voice with the same name')
+    for (let index = 0; index < 12; index++) {
+      await player.prepareVoice({ step: { dialogue: { voice: `other-${index}` } }, scenarioId: 'story-a', includeLip: false })
+    }
+    assert.equal(player.hasDecodedVoice(step, 'story-a'), false, 'evicted voice cannot skip visual hold')
+    await player.prepareVoice({ step, scenarioId: 'story-a', includeLip: false })
+    assert.equal(fetches, 15, 'oldest decoded voice should be evicted after twelve entries')
+    ctx.decodeAudioData = async () => { decodes++; return { duration: 1, length: 2_000_000, numberOfChannels: 2 } }
+    for (const voice of ['large-a', 'large-b', 'large-c']) {
+      await player.prepareVoice({ step: { dialogue: { voice } }, scenarioId: 'story-a', includeLip: false })
+    }
+    const afterLargeVoices = fetches
+    await player.prepareVoice({ step: { dialogue: { voice: 'large-a' } }, scenarioId: 'story-a', includeLip: false })
+    assert.equal(fetches, afterLargeVoices + 1, 'PCM byte budget must evict an older large buffer before the twelve-entry limit')
+    ctx.decodeAudioData = async () => { decodes++; return { duration: 1, length: 9_000_000, numberOfChannels: 2 } }
+    const hugeStep = { dialogue: { voice: 'oversized' } }
+    await player.prepareVoice({ step: hugeStep, scenarioId: 'story-a', includeLip: false })
+    await player.prepareVoice({ step: hugeStep, scenarioId: 'story-a', includeLip: false })
+    assert.equal(fetches, afterLargeVoices + 3, 'an individual buffer larger than the budget must play without being retained')
+  } finally {
+    player.dispose()
+    await session.dispose()
+    globalThis.fetch = originalFetch
+    if (originalWindow === undefined) delete globalThis.window
+    else globalThis.window = originalWindow
+  }
+}
+{
+  const ctx = new FakeAudioContext()
+  ctx.decodeAudioData = async () => ({ duration: 1, length: 48000, numberOfChannels: 1 })
+  const session = new StoryAudioSession({ contextFactory: () => ctx })
+  const step = { dialogue: { voice: 'race-same-voice' }, lipSync: false }
+  const currentStep = { value: step }
+  const currentStepIndex = { value: 0 }
+  let releaseFetch
+  const pendingFetch = new Promise(resolve => { releaseFetch = resolve })
+  globalThis.window = { setTimeout, clearTimeout }
+  globalThis.fetch = async () => {
+    await pendingFetch
+    return { ok: true, headers: new Map(), arrayBuffer: async () => new ArrayBuffer(2000) }
+  }
+  const player = useVoicePlayer({ spineStageRef: { value: null }, currentStep, currentStepIndex,
+    compiledData: { value: { scenario_id: 'voice-race' } }, isPlaying: { value: false }, audioSession: session })
+  try {
+    const first = player.playVoice()
+    currentStep.value = { dialogue: {} }
+    currentStepIndex.value = 1
+    player.stopCurrentVoice('left-before-fetch')
+    player.resetVoiceDedup()
+    currentStep.value = step
+    currentStepIndex.value = 0
+    const second = player.playVoice()
+    releaseFetch()
+    assert.deepEqual(await Promise.all([first, second]), [false, true],
+      'a late same-voice request from the old visit must not play into the new visit')
+    assert.equal(session.inspect().active_sources, 1, 'only the newest visit may create a voice source')
+
+    let releaseReplay
+    const pendingReplay = new Promise(resolve => { releaseReplay = resolve })
+    globalThis.fetch = async () => {
+      await pendingReplay
+      return { ok: true, headers: new Map(), arrayBuffer: async () => new ArrayBuffer(2000) }
+    }
+    const replay = player.replayVoiceDetached({ dialogue: { voice: 'backlog-stale' }, lipSync: false })
+    player.stopCurrentVoice('backlog-closed')
+    releaseReplay()
+    assert.equal(await replay, false, 'closing the backlog must invalidate its pending detached replay')
+    assert.equal(session.inspect().active_sources, 0)
+  } finally {
+    player.dispose()
+    await session.dispose()
+    globalThis.fetch = originalFetch
+    if (originalWindow === undefined) delete globalThis.window
+    else globalThis.window = originalWindow
+  }
+}
+{
+  const played = []
+  const prepared = { voice: 'prepared-voice', audioBuffer: {} }
+  const index = { value: 0 }
+  const effects = useStepSceneEffects({
+    currentStepIndex: index, isLastStep: { value: false }, historyStack: { value: [] },
+    spineStageRef: { value: null }, audioManager: { inspect: () => ({}) },
+    voicePlayer: { playPreparedVoice: value => played.push(['prepared', value]), playVoice: () => played.push(['fetch']) },
+    resetVoiceDedup: () => {}, takePreparedVoice: step => step?.step_id === 1 ? prepared : null,
+  })
+  try {
+    effects.handleStepChange({ step_id: 1, type: 'adv', entry_snapshot: {} }, null)
+    assert.deepEqual(played, [['prepared', prepared]], 'playable step must use the voice prepared by its readiness gate')
+    index.value = 1
+    effects.handleStepChange({ step_id: 2, type: 'adv', entry_snapshot: {} }, null)
+    assert.deepEqual(played, [['prepared', prepared], ['fetch']], 'non-gated voice remains compatible')
+  } finally { effects.cleanup() }
+}
+// Soft voice jobs must be cancellable through lip loading, not only audio bytes.
+{
+  const ctx = new FakeAudioContext()
+  ctx.decodeAudioData = async () => ({ duration: 1, length: 48000, numberOfChannels: 1 })
+  const session = new StoryAudioSession({ contextFactory: () => ctx })
+  const currentStep = { value: { dialogue: { voice: 'soft-voice', lip: { path: 'adxlip/qa.json' } } } }
+  const statuses = []
+  let lipStarted = false, lipAborted = false
+  globalThis.window = { setTimeout, clearTimeout }
+  globalThis.fetch = async (url, { signal } = {}) => {
+    if (url.includes('/lipsync/')) {
+      lipStarted = true
+      return new Promise((resolve, reject) => signal.addEventListener('abort', () => {
+        lipAborted = true; reject(signal.reason)
+      }, { once: true }))
+    }
+    return { ok: true, headers: new Map(), arrayBuffer: async () => new ArrayBuffer(2000) }
+  }
+  const playing = { value: false }
+  const player = useVoicePlayer({ spineStageRef: { value: null }, currentStep,
+    currentStepIndex: { value: 0 }, compiledData: { value: {} }, isPlaying: playing,
+    audioSession: session, voiceTimeoutMs: 30, onStateChange: state => statuses.push(state) })
+  try {
+    const pending = player.playVoice()
+    while (!lipStarted) await new Promise(resolve => setImmediate(resolve))
+    assert.equal(player.getVoiceState(), 'preparing')
+    player.stopCurrentVoice('next-dialogue')
+    assert.equal(await pending, false)
+    assert.equal(lipAborted, true)
+    assert.equal(player.getVoiceState(), 'idle')
+    assert.equal(playing.value, false)
+    assert.equal(session.inspect().active_sources, 0)
+    assert.ok(statuses.includes('preparing'))
+    player.resetVoiceDedup()
+    assert.equal(await player.playVoice(), false, 'a stalled lip request must time out')
+    assert.equal(player.getVoiceState(), 'unavailable', 'failed soft audio must release AUTO waiting')
+    assert.equal(session.inspect().active_sources, 0)
+  } finally {
+    player.dispose(); await session.dispose(); globalThis.fetch = originalFetch
+    if (originalWindow === undefined) delete globalThis.window
+    else globalThis.window = originalWindow
+  }
+}
+
 globalThis.fetch = async () => ({ ok: true, arrayBuffer: async () => new ArrayBuffer(8) })
 try {
   assert.equal(knownDanglingStoryVoiceCount, 12)
@@ -365,6 +561,8 @@ const [appSource, homeSource, viewerSource, voicePlayerSource, audioManagerSourc
   readFile(new URL('../src/core/useVoicePlayer.js', import.meta.url), 'utf8'),
   readFile(new URL('../src/core/AudioManager.js', import.meta.url), 'utf8'),
 ])
+assert.doesNotMatch(viewerSource, /prepareStepAudio:|voice-preparing|voicePending/, 'audio must not participate in scene readiness or frame hold')
+assert.match(viewerSource, /runtimeReadinessStatus\.value !== 'playable'/, 'scene loading must reject manual advance')
 assert.match(viewerSource, /new StoryAudioSession/)
 assert.match(viewerSource, /new AudioManager\(\{ audioSession: storyAudioSession \}\)/)
 assert.match(viewerSource, /audioSession: storyAudioSession/)
@@ -372,7 +570,8 @@ assert.match(viewerSource, /const NO_AUDIO = URL_FLAGS\.get\('noAudio'\) === '1'
 assert.match(viewerSource, /const NO_VOICE = NO_AUDIO \|\| URL_FLAGS\.get\('noVoice'\) === '1'/)
 assert.match(appSource, /const NO_AUDIO = URL_FLAGS\.get\('noAudio'\) === '1'/)
 assert.match(appSource, /:no-audio="NO_AUDIO"/)
-assert.match(appSource, /const view = ref\('__boot__'\)/)
+assert.match(appSource, /const\s*\{[^}]*\bview\b[^}]*\}\s*=\s*useArchiveNavigationState\(\)/)
+assert.equal(useArchiveNavigationState().view.value, '__boot__', 'startup must not mount audible home before route restoration')
 assert.match(appSource, /const loading = ref\(true\)/)
 assert.match(homeSource, /new StoryAudioSession\(\{ disabled: props\.noAudio \}\)/)
 assert.match(homeSource, /audioSession: homeAudioSession/)
@@ -380,4 +579,4 @@ assert.doesNotMatch(voicePlayerSource, /new \(window\.AudioContext/)
 assert.doesNotMatch(audioManagerSource, /new \(window\.AudioContext/)
 
 console.log('Story audio session verification passed.')
-console.log('  100-cycle BGM/Ambient crossfade, capture/restore, visibility/overlay pause, stale-load race, bounded sources, timer cleanup and noAudio network isolation covered.')
+console.log('  100-cycle BGM/Ambient crossfade, capture/restore, visibility/overlay pause, stale voice/BGM/Ambient loads, bounded sources, timer cleanup and noAudio network isolation covered.')

@@ -1,6 +1,9 @@
+import { neckOverlayAnimation } from './spineNeckOverlay.js'
 import * as PIXI from 'pixi.js'
+import { DeformTimeline } from '@pixi-spine/runtime-3.8'
 import { MixBlend } from '@pixi-spine/base'
 import { easeOutCubic, runRafTween } from './rafTween.js'
+import { recordSpinePosition } from './SpinePositionLayout.js'
 
 export class SpineManager {
   constructor(manager) {
@@ -18,6 +21,7 @@ export class SpineManager {
       spine.x = this.manager.width * 0.5
     }
     spine.y = this.manager.height + 20
+    recordSpinePosition(entry, this.manager)
   }
 
   setSpinePositionByGameCoord(idolId, posX, posY = 0, baseY = null) {
@@ -26,12 +30,14 @@ export class SpineManager {
     if (entry._slideTweenRaf) {
       cancelAnimationFrame(entry._slideTweenRaf)
       entry._slideTweenRaf = null
+      entry._positionTween = null
     }
     const centerX = this.manager.width / 2
     const yBase = baseY != null ? baseY : this.manager.height + 20
     const coordScale = this.manager.width / 1280
     entry.spine.x = centerX + posX * coordScale
     entry.spine.y = yBase - posY * coordScale
+    recordSpinePosition(entry, this.manager, baseY)
   }
 
   bringToFront(idolId) {
@@ -101,7 +107,7 @@ export class SpineManager {
     this.manager.app.ticker.add(ticker)
   }
 
-  animateSpineAlpha(idolId, targetAlpha, duration = 0.2, delay = 0) {
+  animateSpineAlpha(idolId, targetAlpha, duration = 0.2, delay = 0, nowMilliseconds) {
     const entry = this.manager.spineInstances[idolId]
     if (!entry) return
     const target = entry.wrapper || entry.spine
@@ -113,6 +119,7 @@ export class SpineManager {
     const delayMs = Math.max(0, Number(delay) || 0) * 1000
     const durMs = Math.max(0.01, Number(duration) || 0.2) * 1000
     entry._alphaTween = runRafTween({
+      nowMilliseconds,
       durationMs: durMs,
       delayMs,
       startValue: startAlpha,
@@ -251,6 +258,7 @@ export class SpineManager {
         // SideM neck clips contain offsets authored around the setup pose. They
         // are an additive performance layer over the current body animation;
         // replace blending would snap hello/angry poses back to setup at t=0.
+        track.animation = neckOverlayAnimation(track.animation, spine.state.data.skeletonData)
         track.mixBlend = MixBlend.add
         track.mixDuration = 0
         const previousTargets = spine._neckAdditiveTargets || { boneIndices: [], deformSlotIndices: [] }
@@ -258,7 +266,7 @@ export class SpineManager {
         const deformSlotIndices = new Set(previousTargets.deformSlotIndices)
         for (const timeline of track.animation?.timelines || []) {
           if (Number.isInteger(timeline?.boneIndex)) boneIndices.add(timeline.boneIndex)
-          if (timeline?.constructor?.name?.includes('Deform') && Number.isInteger(timeline.slotIndex)) {
+          if (timeline instanceof DeformTimeline && Number.isInteger(timeline.slotIndex)) {
             deformSlotIndices.add(timeline.slotIndex)
           }
         }
@@ -316,6 +324,7 @@ export class SpineManager {
         if (entry._slideTweenRaf) {
           cancelAnimationFrame(entry._slideTweenRaf)
           entry._slideTweenRaf = null
+          entry._positionTween = null
         }
         entry._alphaTween?.cancel?.()
         entry._alphaTween = null
@@ -413,6 +422,7 @@ export class SpineManager {
     if (entry._slideTweenRaf) {
       cancelAnimationFrame(entry._slideTweenRaf)
       entry._slideTweenRaf = null
+      entry._positionTween = null
     }
     entry._alphaTween?.cancel?.()
     entry._alphaTween = null
