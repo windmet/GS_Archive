@@ -33,3 +33,7 @@
 本地证据：`.deploy/voice64/prepare.log`、`prepare-16.log`、`groups/*.json`、`manifest.json`、`replacement-receipt.json`、`http-receipt.json`。旧完整清单和 gzip/data 快照保持不变，后续上传应使用新的 `full-manifest.json`，避免将旧 128k 语音误传回去。
 
 当前完整 manifest：`.deploy/voice64/full-manifest.json`；台词派生物 manifest SHA256：`4c4cce16e1e0a7edb84e55a6c93fe4876ce3eba7b8a28bc865514becccc92541`。日志为 `replacement.log`（首次包装器退出）、`replacement-resume.log`（已完成）、`http.log`。原始 ACB/AWB、public M4A、旧部署备份保留；歌曲、BGM、SE、BRMY 未纳入本次替换。
+
+## 用户实测补充
+
+2026-09-24 用户明确确认“我已经真实测试过了没问题”，并要求准备正式部署。记录为用户真实播放验收通过；未推断设备、浏览器及全剧情覆盖范围。正式发布准备见 [PRODUCTION_RELEASE_20260924.md](PRODUCTION_RELEASE_20260924.md)。
