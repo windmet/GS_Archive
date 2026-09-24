@@ -79,6 +79,10 @@
 
 159 条对照总占用 229,148,528 B，固定存于 E 盘 `.analysis/voice-compression/listening-candidates/`，回执 `listening-samples.json` 记录各文件 SHA256 和原始 ACB/相关 AWB hash。现有 M4A 共 23,575,562 B，64k 共 12,795,911 B，72k 共 14,146,653 B。**只完成候选生成，尚未试听、补齐困难类别或批准任一码率；没有上传或替换线上语音。**
 
+2026-09-24 后续时序检查（输入 HEAD `2dd0ec7`）：`python scripts/audit-voice-candidate-timing.py` 对 159 条原音参考分别比较现有 AAC、64k、72k，共 477 次完整解码。每条先核对候选文件 SHA256，再取原音能量最大的至多 1 秒单声道窗口，在 ±250ms 内计算互相关偏移。全部测得窗口偏移为 0 个采样点；三个版本的解码长度在全部 159 条中一致。最低归一化相关值为现有编码 0.9770、64k 0.9264、72k 0.9432，仅用于匹配可信度，不能当作听感质量分数。人工构造的延迟 137 个采样点、提前 83 个采样点及静音输入检查通过。
+
+FFmpeg 解码相对原 PCM 的长度差为 -13 至 +1,008 个采样点。负差的 3 条为 `2_3_025_07_01_01.m4a`（6 点）、`2_4_020_01_01_01.m4a`（13 点）、`5_02_040_23_a1009.m4a`（10 点），约 0.136–0.295ms；原 PCM 对应末尾及最后 10ms 均为数字零，且现有线上编码具有同样差异。保留原始审计的 review 标记和尾部复核记录，不据此更改资源。证据为 `.analysis/voice-compression/candidate-timing.json` 与 `candidate-tail-review.json`。这些结果不证明整段波形相同、浏览器实际结束时刻、尾音听感或口型播放通过；仍需试听和 Browser 验收。
+
 ### 3. 歌曲范围比“61 首”更大
 
 旧 manifest 中 `assets/live-chibi/music` 有 **109 个 M4A、319,284,266 B（304.49 MiB）**，另有 index.json；61 是 song playback catalog 的 full-mix 条目数，不是目录全部文件数。
