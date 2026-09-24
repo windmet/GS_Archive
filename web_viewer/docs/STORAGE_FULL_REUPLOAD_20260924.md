@@ -22,4 +22,6 @@
 
 运行日志：`.deploy/storage-compression/full-reupload-execution.log`；回执：`full-reupload-receipt.json`。本文记录启动方案，不是已完成声明。
 
+2026-09-24 14:48（本地时间）已删除清空前的 98,103 个对象，随后实测 `count=0, bytes=0, sizeless=0`。其他可见桶占用 439,415,133 B；保留 880,000,000 B 的最低预留后，完整上传预算合计仍为 8,710,976,511 B。回执现处于 `uploading`，不能表述为迁移完成。
+
 上传统一验收通过后，部署 gzip `all` 与相同数据 revision 的代码包，再验证 HTTP、剧情、阅读和 Chibi。云端口型直接观察仍未通过专项验收；浏览器截图超时不能当作通过。维护窗口持续到新预览恢复，历史固定预览地址不在恢复保证内。
