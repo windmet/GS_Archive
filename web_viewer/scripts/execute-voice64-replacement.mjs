@@ -23,6 +23,12 @@ assert.equal((await hashFile(previousPath)).sha256, manifest.baseline_manifest_s
 assert.equal(combined.voice_manifest_sha256, manifestSha)
 const old = new Map(previous.entries.map(e => [e.object_key, e]))
 const replacement = new Map(manifest.entries.map(e => [e.object_key, e]))
+const listeningSamples = JSON.parse(await fs.readFile(path.join(root, '.analysis/voice-compression/listening-samples.json'), 'utf8'))
+assert.equal(listeningSamples.entries.length, 159)
+for (const sample of listeningSamples.entries) {
+  assert.equal(replacement.get(`assets/voice/${sample.file}`)?.deployed_sha256,
+    sample.artifacts['aac-64k'].sha256, `Full encode differs from approved 64k candidate: ${sample.file}`)
+}
 assert.equal(replacement.size, 32421); assert.equal(manifest.entries.length, 32421)
 assert.equal(manifest.totals.files, replacement.size)
 assert.equal(manifest.totals.bytes, manifest.entries.reduce((n, e) => n + e.deployed_size, 0))
