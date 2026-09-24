@@ -20,8 +20,16 @@
 
 上传按 MIME/编码分组只为设置正确 metadata，不再每组删除、验收和等待。回执记录已完成组，恢复运行不会再次清空已上传集合；失败保留日志和回执。完整重传工具必须先有本地清单及清空前远端清单，不能用于任意其他桶。
 
-运行日志：`.deploy/storage-compression/full-reupload-execution.log`；回执：`full-reupload-receipt.json`。本文记录启动方案，不是已完成声明。
+运行日志：`.deploy/storage-compression/full-reupload-execution.log`；回执：`full-reupload-receipt.json`，现为 `verified`。整桶迁移及对象校验完成，浏览器播放专项验收仍待完成。
 
 2026-09-24 14:48（本地时间）已删除清空前的 98,103 个对象，随后实测 `count=0, bytes=0, sizeless=0`。其他可见桶占用 439,415,133 B；保留 880,000,000 B 的最低预留后，完整上传预算合计仍为 8,710,976,511 B。回执现处于 `uploading`，不能表述为迁移完成。
 
-上传统一验收通过后，部署 gzip `all` 与相同数据 revision 的代码包，再验证 HTTP、剧情、阅读和 Chibi。云端口型直接观察仍未通过专项验收；浏览器截图超时不能当作通过。维护窗口持续到新预览恢复，历史固定预览地址不在恢复保证内。
+上述 `uploading` 是 14:48 的历史状态。15:20 前完成全部上传与统一验收：43,970 个 gzip、3,176 个数据快照及 50,886 个其余对象 checksum 全部匹配；完整远端键集合、大小及分组 MIME/encoding 样本通过。
+
+最终桶占用 **7,830,976,511 B**，其他可见桶 **439,415,133 B**，实际合计 **8,270,391,644 B**。按最低预留计算为 **8,710,976,511 B**，距 10,000,000,000 B 控制线尚余 **1,289,023,489 B**。
+
+已部署 gzip `all` 和上述 data revision：[新预览](https://3412e295.gs-archive-preview.pages.dev)。首个部署后探针曾返回 404；随后同 URL 恢复 200、identity 返回 406，未改代码或重传资源。可能是部署传播窗口，原因未独立证实。
+
+新预览的 60 条 gzip HTTP 探针已通过（原始/解压 hash、GET/HEAD/304、Range 200、fetch 解码、identity 406）；品牌 PNG、12 类 WebP、数据 HEAD、语音 Range/416、404/405 通过。3 个 `translations/zh-CN/` 文件均与本地逐字节一致。3,176 个普通数据逻辑 URL 全部通过 HTTP 状态、JSON MIME、大小及 SHA256 校验，失败数为 0；结果见 `data-snapshot-http-receipt.json`（2026-09-24 15:29:55 本地时间）。
+
+内置浏览器打开新首页超时，之前本地 AAC 试听页播放时崩溃；不能把 HTTP 结果表述为剧情、阅读、Chibi 或口型实际播放验收。历史固定预览地址不在恢复保证内；线上语音未重新编码。
