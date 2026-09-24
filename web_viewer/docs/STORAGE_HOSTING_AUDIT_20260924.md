@@ -69,6 +69,8 @@
 
 下一步扩展至 100–200 条按角色、时长、音量/表演类型选取的听感对照，保留 64/72k 两档；选定后只生成部署派生物。如果 RAW 可可靠映射，应从原音频解码生成，避免继续串联有损转码；本轮体积样本来自现有 M4A，必须标注这一差别。
 
+2026-09-24 后续源文件预检：当前 32,421 个 M4A 全部在 `voice_index.json` 中，映射到 3,447 个不同 ACB 路径，全部存在；索引中也没有缺失的 M4A。证据为 `.analysis/storage-audit/voice-source-preflight.json`。一次 vgmstream 实测确认 `appeal/001tom/2_5_001_00.acb` 的 subsong 1 名称为 `2_5_001_00_04_01`，源编码为 CRI HCA、44.1 kHz、单声道。此预检仅证明路径闭包和一个 cue 样本，尚未证明全量 cue/subsong 身份、PCM 对齐或听感；正式样本必须逐条核对 cue 后从 ACB 解码，不沿用 AAC→AAC 估算样本作为发布字节。
+
 ### 3. 歌曲范围比“61 首”更大
 
 旧 manifest 中 `assets/live-chibi/music` 有 **109 个 M4A、319,284,266 B（304.49 MiB）**，另有 index.json；61 是 song playback catalog 的 full-mix 条目数，不是目录全部文件数。
