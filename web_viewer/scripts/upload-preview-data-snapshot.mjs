@@ -3,6 +3,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync, spawnSync } from 'node:child_process'
+import { verifyLiveUploadBudget } from './lib/upload-storage-budget.mjs'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const [remote, mode = '--plan'] = process.argv.slice(2)
@@ -11,6 +12,7 @@ assert.ok(['--plan', '--dry-run', '--upload'].includes(mode))
 execFileSync(process.execPath, ['scripts/prepare-preview-data-snapshot.mjs', '--verify'], { cwd: root, stdio: 'inherit' })
 const directory = path.join(root, '.deploy/storage-compression')
 const manifest = JSON.parse(await fs.readFile(path.join(directory, 'data-snapshot-manifest.json'), 'utf8'))
+if (mode === '--upload') verifyLiveUploadBudget(remote, manifest.totals.bytes)
 const list = path.join(directory, 'data-snapshot-keys.txt')
 await fs.writeFile(list, manifest.entries.map(e => e.object_key).join('\n') + '\n')
 // Version-prefixed objects are immutable. Existing different bytes are errors;

@@ -3,6 +3,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { verifyStructuredGzip } from './verify-structured-gzip.mjs'
+import { verifyLiveUploadBudget } from './lib/upload-storage-budget.mjs'
 
 // Plan only unless --dry-run or --upload is explicitly supplied. No sync/delete.
 const [manifestArg, remote, mode = '--plan'] = process.argv.slice(2)
@@ -10,6 +11,7 @@ assert.ok(manifestArg && /^[\w-]+:[^\s]+$/.test(remote || ''), 'Usage: upload-st
 assert.ok(['--plan', '--dry-run', '--upload'].includes(mode))
 const manifestPath = path.resolve(manifestArg)
 const manifest = await verifyStructuredGzip(manifestPath)
+if (mode === '--upload') verifyLiveUploadBudget(remote, manifest.entries.reduce((sum, e) => sum + e.deployed_size, 0))
 const directory = path.dirname(manifestPath)
 const groups = new Map()
 for (const entry of manifest.entries) {
