@@ -13,7 +13,7 @@ export function checkStorageBudget({ targetBytes, otherBytes, uploadBytes }) {
   return { targetBytes, otherBytes, reservedOtherBytes, uploadBytes, projectedTarget, projectedAccount }
 }
 
-export function verifyLiveUploadBudget(remote, uploadBytes) {
+export function readLiveStorageUsage(remote) {
   assert.match(remote, /^[\w-]+:[^/\s]+$/, 'Budget guard requires a bucket root')
   const [name, target] = remote.split(':')
   const run = args => execFileSync('rclone', args, { encoding: 'utf8', windowsHide: true })
@@ -26,7 +26,11 @@ export function verifyLiveUploadBudget(remote, uploadBytes) {
     if (bucket === target) targetBytes = size.bytes
     else otherBytes += size.bytes
   }
-  const receipt = checkStorageBudget({ targetBytes, otherBytes, uploadBytes })
+  return { targetBytes, otherBytes }
+}
+
+export function verifyLiveUploadBudget(remote, uploadBytes) {
+  const receipt = checkStorageBudget({ ...readLiveStorageUsage(remote), uploadBytes })
   console.log(JSON.stringify({ storage_budget: receipt, checked_at: new Date().toISOString() }))
   return receipt
 }
