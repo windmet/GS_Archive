@@ -32,3 +32,13 @@ Browser plugin not available；使用现有 Playwright Chromium，未安装依�
 当前没有证据支持更换 AAC、WebP 或添加原生 audio fallback。服务端单 GET/边缘缓存、worker pool 性能调优和设备逐阶段时钟属于后续测量工作，本轮不把候选建议直接当成已证明的根因。电话/聊天没有独立语音状态展示，本轮未增加独立重试 UI。
 
 回退依据是本轮之前的兼容 gzip/64k 提交 `361c582` 与已冻结 Production 包，不是旧 master。未经新部署指令不切正式入口。
+
+## 正式发布补充
+
+用户随后明确要求直接更新正式线上部署。以源码 `37fe0559adb83d76657b91addee7baa21bd76d15` 构建独立小包 `.deploy/local-fix-production-37fe055`（copyPublicDir=false，3 个受版本控制的翻译文件显式复制），沿用原 R2 绑定、gzip all 和固定 data revision，未操作媒体。
+
+正式部署：`6ed057d8-7178-4183-96bd-a5f5c1942406`；入口 <https://gs-archive-preview.pages.dev>；不可变地址 <https://6ed057d8.gs-archive-preview.pages.dev>。Cloudflare API 已确认 canonical deployment 为上述 Production 部署，35 个线上静态文件均与发布包逐字节一致。
+
+正式入口 registry GET/HEAD 已为 410/no-store；gzip 抽样解码 hash、Range 忽略并返回 200、identity 406 正常。媒体检查包含 PNG/WebP 映射、数据 HEAD、ETag/304、语音 Range/416、404/405，全部通过。日志 `.analysis/local-fix-production-*.log`，部署回执位于发布包 `production-receipt.json`。旧 immutable 部署未删除，其历史 registry 内容未追溯撤回。
+
+新 Production 部署的 160 条语音 HTTP 检查全部通过、0 失败，完成时间 2026-09-24T12:50:18.970Z；包含字节 SHA256、GET/HEAD、ETag/304、MIME、首尾 Range/206 与 416。线上 HTTP 验证不替代真机听感与交互验收。
