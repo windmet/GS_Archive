@@ -115,3 +115,19 @@ Browser 插件/技能未在会话列出（Browser plugin not available），使�
 60条编码 benchmark：gzip9为222,162 B，Brotli q9为204,286 B；测得压缩/round-trip计时约89ms vs Brotli压缩348ms（计时范围略不同，不作严格性能结论）。分域样本外推 Brotli额外收益约10.4MiB，非全量结果；继续gzip。
 
 本机证据：`.deploy/storage-compression/` 的 baseline、两个manifest、HTTP receipt、acceptance与请求日志；截图及浏览器hash/对照日志位于 `C:/Users/windm/.codex/visualizations/2026/09/24/01a0d19a-0135-74a1-a491-58a3b8b641b0/`。旧审计仍见 [存储审计](STORAGE_HOSTING_AUDIT_20260924.md)。
+
+## 2026-09-24 云端 canary 进展
+
+已向现有私有 R2 bucket 上传 60 条新 gzip 键（222,162 B），保留全部旧对象；已在现有 Pages 项目的 `codex/storage-compression` 分支发布独立 canary。当前固定地址：<https://cf53d8f0.gs-archive-preview.pages.dev>，代码提交 `2e3ab55`。尚未开启 all、未上传全量 43,970 条、未清理远端对象。
+
+真实云端首次检查发现 Cloudflare 会规范化 Accept-Encoding，使 identity 请求误返回200。现已优先读取 `request.cf.clientAcceptEncoding`，增加原始值为空、identity、gzip;q=0、gzip 的边缘回归。依据：[Cloudflare HTTP headers](https://developers.cloudflare.com/fundamentals/reference/http-headers/)。修复后 60 条 raw gzip/source 双hash、GET、HEAD、304、Range完整200、fetch解码与identity406全部通过。相关本地 routing 回归也通过；本轮执行一次无public的 build:preview，后续只更新Function，无前端重复构建。
+
+浏览器使用 Codex in-app Browser 实测：剧情序章显示台词，下一段使进度11→12；单人实验室通用动作2→3，画面有角色渲染。阅读原文正常，双语按钮切换成功，但提示译文暂时无法载入。因此 **cloud browser acceptance仍为false**；不可把本地双语通过沿用成云端通过。口型资源的HTTP字节已经验证，云端口型动画的专项观察仍待完成。浏览器控制接口存在30–60秒超时，后续读取确认动作已执行；不把超时记作产品失败。
+
+上传前 `rclone size` 为98,048对象 / 9,077,325,614 B；上传后完整路径/大小清单为98,108对象 / 9,077,547,776 B，精确增加60对象 / 222,162 B。所有60条远端大小与manifest相符；内容由云端HTTP双hash验证。
+
+与旧schema2清单对账：旧键无缺失；`data/image_bundle_relation_catalog.json` 远端为7,258,441 B，旧清单为7,461,866 B；另有16个旧PNG键共392,558 B。此对账只验证旧对象路径/大小，不代表全库远端hash已重验。当前baseline的528条变化全部在gzip三域之外，必须独立完成版本对账，不能把gzip delta当当前完整数据发布。
+
+审计清单使用 `rclone lsjson ... --recursive --files-only --fast-list --no-modtime --no-mimetype`，避免为每个对象额外读取时间/MIME。最初的remote-before.json因逐对象读取过慢而中止，是不完整文件，不可作为快照；remote-gzip-before.json枚举跨越了上传时刻，也不可当上传前原子快照。权威完成清单为 `.deploy/storage-compression/remote-after-canary.json`；汇总与差异为 `remote-canary-summary.json`、`remote-reconciliation.json`。
+
+证据：同目录 `canary-http-local-receipt.json`保留本地结果，`canary-http-receipt.json`为云端成功结果，`canary-cloud-acceptance.json`明确记录尚未完整通过；两个部署日志保留首次失败和修复后环境。Pages配置与代码包位于E盘的 `pages-canary/`，不包含媒体库。下一步先补齐翻译部署闭包、528条非gzip变化对账和云端口型观察，再决定全量切换；语音仍按独立后续批次处理。
