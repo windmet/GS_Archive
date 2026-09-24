@@ -64,7 +64,10 @@ export async function serveR2Resource({ request, env, prefix }) {
   const requestKey = `${prefix}/${relative}`
   const gzip = previewGzipEnabled(env, requestKey)
   const objectKey = resolvePreviewObjectKey(requestKey, { gzip })
-  if (gzip && !acceptsGzip(request.headers.get('Accept-Encoding'))) {
+  // Cloudflare normalizes the forwarded header; negotiate using the client's
+  // original value when the edge provides it (including an empty string).
+  const acceptEncoding = request.cf?.clientAcceptEncoding ?? request.headers.get('Accept-Encoding')
+  if (gzip && !acceptsGzip(acceptEncoding)) {
     return new Response(null, { status: 406, headers: { Vary: 'Accept-Encoding', 'Cache-Control': 'no-store' } })
   }
   const bucket = env.ARCHIVE_ASSETS

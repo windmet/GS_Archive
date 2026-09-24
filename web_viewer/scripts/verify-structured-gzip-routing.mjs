@@ -68,6 +68,12 @@ try {
     for (const accept of ['gzip', 'br, gzip;q=0.5', '*', 'identity;q=0, gzip']) {
       assert.equal((await call({ 'Accept-Encoding': accept })).status, 200)
     }
+    for (const original of ['identity', '', 'gzip;q=0', 'gzip']) {
+      const request = new Request(`https://canary.test/${key}`, { headers: { 'Accept-Encoding': 'br, gzip' } })
+      Object.defineProperty(request, 'cf', { value: { clientAcceptEncoding: original } })
+      const edgeResponse = await serveR2Resource({ env, prefix: key.split('/')[0], request })
+      assert.equal(edgeResponse.status, original === 'gzip' ? 200 : 406, 'Use original client encoding at the edge')
+    }
     assert.ok(heads.every(k => k === `${key}.gz`))
     encoding = ''; assert.equal((await call()).status, 502); encoding = 'gzip'
     declaredType = 'text/plain'; assert.equal((await call()).status, 502); declaredType = type
