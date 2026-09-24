@@ -1,4 +1,6 @@
-# 正式发布候选：既存缺失依赖
+# 正式发布：既存未闭合音频依赖
+
+Production 已明确接受为非阻断限制；问题尚未关闭，不能将每项都视为已确认的真实音频缺失。后续按 sentinel/control、mapping-unresolved、source-unresolved、confirmed-missing 分类。
 
 当前 64k 完整清单记录 82 项：75 BGM、6 SE、1 ambient。不是本轮压缩新增缺失。来源列是首个发现来源，不是全部受影响剧情列表。
 
