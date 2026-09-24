@@ -67,7 +67,6 @@ if (receipt.phase === 'delete-started') {
   await save('deleted')
 }
 if (receipt.phase === 'deleted') {
-  receipt.budget = verifyLiveUploadBudget(remote, selected.reduce((s, e) => s + e.deployed_size, 0))
   await save('upload-started')
 }
 const uploadList = path.join(directory, `cleanup-migration-${batch}-upload-keys.txt`)
@@ -89,6 +88,18 @@ if (receipt.phase === 'upload-started') {
 if (receipt.phase === 'uploaded') {
   run(['check', path.join(directory, 'structured'), remote, '--files-from-raw', uploadList,
     '--download', '--one-way', '--checkers', '16', ...common])
+  receipt.metadata_samples = []
+  for (const type of new Set(selected.map(e => e.deployed_content_type))) {
+    const entry = selected.find(e => e.deployed_content_type === type)
+    const probe = spawnSync('rclone', ['lsjson', `${remote}/${entry.object_key}`, '--stat', '--metadata',
+      '--no-modtime', '--no-mimetype'], { cwd: root, windowsHide: true, encoding: 'utf8' })
+    assert.equal(probe.status, 0)
+    const object = JSON.parse(probe.stdout)
+    assert.equal(object.Size, entry.deployed_size)
+    assert.equal(object.Metadata?.['content-encoding'], 'gzip')
+    assert.equal(object.Metadata?.['content-type'], type)
+    receipt.metadata_samples.push({ object_key: entry.object_key, content_type: type, content_encoding: 'gzip' })
+  }
   await save('verified')
 }
 assert.equal(receipt.phase, 'verified')
