@@ -1,3 +1,4 @@
+import { waitForSignal, createLoadTimeout, attachOptionalResource } from './AsyncLoadBoundary.js'
 import { getLipSyncUrl, getVoiceUrlCandidates } from '../utils/AssetResolver.js'
 import { deriveMainLipPathFromVoice, sampleLipCurve } from '../utils/LipSyncHelpers.js'
 import { isKnownDanglingStoryVoice } from '../data/knownDanglingStoryVoices.js'
@@ -14,7 +15,8 @@ export function useVoicePlayer({
   canAnimateStage = () => true,
   audioSession = null,
   onStateChange = () => {},
-  voiceTimeoutMs = 6500,
+  voiceTimeoutMs = 20000,
+  lipTimeoutMs = 8000,
 }) {
   const session = audioSession || new StoryAudioSession()
   const ownsAudioSession = !audioSession
@@ -28,6 +30,12 @@ export function useVoicePlayer({
   let voiceCharaId = null
   let voiceState = 'idle'
   let activeVoiceLoad = null
+  let optionalLipLoad = null
+  let lastVoiceFailure = null
+  function cancelOptionalLip() { optionalLipLoad?.cancel(); optionalLipLoad = null }
+  function recordVoiceFailure(error, phase) {
+    lastVoiceFailure = { phase, code: error?.code || error?.name || 'ERROR', message: String(error?.message || error) }
+  }
   function setVoiceState(state) { voiceState = state; onStateChange(state) }
   let voiceRequestGeneration = 0
   const pendingVoiceLoads = new Set()
@@ -97,6 +105,7 @@ export function useVoicePlayer({
   }
 
   function stopCurrentVoice(reason = 'unspecified') {
+    cancelOptionalLip()
     voiceRequestGeneration++
     activeVoiceLoad?.abort()
     activeVoiceLoad = null
@@ -109,6 +118,7 @@ export function useVoicePlayer({
       return
     }
     console.debug('[Audio] stopCurrentVoice:', reason)
+    currentSource.onended = null
     try { currentSource.stop() } catch (_) {}
     try { currentSource.disconnect() } catch (_) {}
     currentSourceRelease?.()
@@ -187,7 +197,6 @@ export function useVoicePlayer({
           if (!isCurrentContext()) return null
           const controller = new AbortController()
           pendingVoiceLoads.add(controller)
-          const timeoutId = window.setTimeout(() => controller.abort(), 6500)
           const forwardAbort = () => controller.abort(signal.reason)
           signal?.addEventListener('abort', forwardAbort, { once: true })
           if (signal?.aborted) forwardAbort()
@@ -196,8 +205,8 @@ export function useVoicePlayer({
             break
           } catch (error) {
             lastFetchError = error
+            if (controller.signal.aborted || ![404, 410].includes(error.status)) throw error
           } finally {
-            window.clearTimeout(timeoutId)
             signal?.removeEventListener('abort', forwardAbort)
             pendingVoiceLoads.delete(controller)
           }
@@ -209,6 +218,7 @@ export function useVoicePlayer({
           audioBuffer = await preparingContext.decodeAudioData(arrayBuffer)
         } catch (decodeErr) {
           if (!isCurrentContext()) return null
+          recordVoiceFailure(decodeErr, 'decode-audio')
           console.error('[Audio] decodeAudioData FAILED:', decodeErr.message, 'voice:', voice)
           return null
         }
@@ -216,11 +226,12 @@ export function useVoicePlayer({
         rememberDecodedVoice(cacheKey, audioBuffer)
       }
       if (!isCurrentContext()) return null
-      const lipCurve = includeLip ? await loadLipCurve(step, audioBuffer.duration, signal) : null
-      if (!isCurrentContext()) return null
-      return { voice, step, scenarioId, audioBuffer, lipCurve }
+      // The optional curve must not gate an already decoded, playable voice.
+      // Load it after start with its own owner; do not reuse this preparation signal.
+      return { voice, step, scenarioId, audioBuffer, lipCurve: null, lipStep: includeLip ? step : null }
     } catch (err) {
       if (!isCurrentContext()) return null
+      recordVoiceFailure(err, 'fetch-or-prepare')
       console.warn('[Audio] prepare failed:', err.message, 'voice:', voice)
       return null
     }
@@ -237,36 +248,66 @@ export function useVoicePlayer({
     voiceCharaId = prepared.step?.chara_id || null
     currentLipCurve = prepared.lipCurve || null
 
-    const source = audioCtx.createBufferSource()
-    source.buffer = prepared.audioBuffer
-    source.connect(session.getBus('voice'))
-    const releaseSource = session.registerSource(source, { bus: 'voice', kind: 'dialogue', cue: prepared.voice })
-    currentSourceRelease = releaseSource
-    voiceStartedAt = session.currentTime()
-    currentSource = source
-    setVoiceState('playing')
-    source.start(0)
-    setTalking(true)
+    let source
+    try {
+      source = audioCtx.createBufferSource()
+      source.buffer = prepared.audioBuffer
+      source.connect(session.getBus('voice'))
+      const releaseSource = session.registerSource(source, { bus: 'voice', kind: 'dialogue', cue: prepared.voice })
+      currentSourceRelease = releaseSource
+      voiceStartedAt = session.currentTime()
+      currentSource = source
+      setVoiceState('playing')
+      source.start(0)
+      setTalking(true)
 
-    isPlaying.value = true
-    source.onended = () => {
-      releaseSource()
-      if (currentSource !== source) return
-      setTalking(false)
-      currentLipCurve = null
-      voiceStartedAt = null
-      currentSourceRelease = null
-      currentSource = null
-      isPlaying.value = false
-      setVoiceState('ended')
+      isPlaying.value = true
+      if (prepared.lipStep && !prepared.lipCurve) {
+        const generation = voiceRequestGeneration // captured after stopCurrentVoice above
+        optionalLipLoad = attachOptionalResource({
+          timeoutMs: lipTimeoutMs,
+          load: signal => loadLipCurve(prepared.lipStep, prepared.audioBuffer.duration, signal),
+          isCurrent: () => currentSource === source && voiceRequestGeneration === generation,
+          apply: curve => {
+            currentLipCurve = curve
+            // Sample from elapsed playback time; never restart the voice for a late curve.
+            setTalking(true)
+          },
+          onFailure: error => console.debug('[LipSync] optional curve unavailable:', error?.message),
+        })
+      }
+      source.onended = () => {
+        releaseSource()
+        if (currentSource !== source) return
+        cancelOptionalLip()
+        setTalking(false)
+        currentLipCurve = null
+        voiceStartedAt = null
+        currentSourceRelease = null
+        currentSource = null
+        isPlaying.value = false
+        setVoiceState('ended')
+      }
+      return true
+    } catch (error) {
+      // A source that cannot start must not retain the voice bus or dedup lock.
+      if (source && currentSource !== source) { try { source.disconnect() } catch {} }
+      stopCurrentVoice('source-start-failed')
+      resetVoiceDedup()
+      recordVoiceFailure(error, 'source-start')
+      setVoiceState('unavailable')
+      return false
     }
-    return true
   }
 
   async function preparePlaybackVoice(options) {
     const controller = activeVoiceLoad = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), voiceTimeoutMs)
-    try { return await prepareVoice({ ...options, signal: controller.signal }) }
+    const timeout = setTimeout(() => controller.abort(createLoadTimeout('voice-ready', voiceTimeoutMs)), voiceTimeoutMs)
+    try { return await waitForSignal(prepareVoice({ ...options, signal: controller.signal }), controller.signal) }
+    catch (error) {
+      if (activeVoiceLoad === controller) recordVoiceFailure(error, 'voice-ready')
+      return null
+    }
     finally {
       clearTimeout(timeout)
       if (activeVoiceLoad === controller) activeVoiceLoad = null
@@ -303,9 +344,13 @@ export function useVoicePlayer({
     if (requestGeneration !== voiceRequestGeneration || step !== currentStep.value
       || stepIndex !== currentStepIndex.value || voice !== lastVoiceUrl) return false
     if (!prepared) {
+      // A failed attempt is not a successfully played cue. Allow same-step retry.
+      lastVoiceUrl = null
+      lastVoiceStepIndex = -1
       setVoiceState('unavailable')
       return false
     }
+    lastVoiceFailure = null
     return playPreparedVoice(prepared)
   }
 
@@ -327,6 +372,12 @@ export function useVoicePlayer({
     return playPreparedVoice({ ...prepared, step: { ...step, chara_id: null } })
   }
 
+  function retryVoice() {
+    stopCurrentVoice('explicit-voice-retry')
+    resetVoiceDedup()
+    return playVoice()
+  }
+
   function dispose() {
     stopCurrentVoice('dispose')
     for (const controller of pendingVoiceLoads) controller.abort()
@@ -340,6 +391,8 @@ export function useVoicePlayer({
 
   return {
     playVoice,
+    retryVoice,
+    getDiagnostics: () => ({ state: voiceState, lastFailure: lastVoiceFailure && { ...lastVoiceFailure } }),
     requiresVoice,
     hasDecodedVoice,
     prepareVoice,

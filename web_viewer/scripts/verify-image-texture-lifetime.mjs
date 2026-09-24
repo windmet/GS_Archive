@@ -9,7 +9,7 @@ function setup(options = {}) {
   const pending = loadImageTexture('fixture.png', {
     allowFallback: false, createImage: () => image, createBaseTexture: () => base,
     createTexture: () => { creations++; return texture }, fallbackTexture: () => fallback,
-    setTimer: (fn, delay) => { assert.equal(delay, 10000); timers.set(++sequence, fn); return sequence },
+    setTimer: (fn, delay) => { assert.ok([25000, 10000].includes(delay)); timers.set(++sequence, fn); return sequence },
     clearTimer: id => timers.delete(id), ...options,
   })
   const clean = () => {
@@ -31,14 +31,13 @@ for (const allowFallback of [false, true]) {
   const t = setup({ allowFallback }); t.image.onload()
   const update = [...t.listeners][0]
   ;[...t.timers.values()][0]()
-  if (allowFallback) assert.equal(await t.pending, t.texture)
-  else await assert.rejects(t.pending, /Texture timeout/)
+  await assert.rejects(t.pending, error => error.code === 'LOAD_TIMEOUT' && error.phase.startsWith('texture-ready'))
   t.clean(); t.base.valid = true; update()
-  assert.equal(t.creations(), allowFallback ? 1 : 0)
+  assert.equal(t.creations(), 0)
 }
 {
   const t = setup(); t.image.onerror()
-  await assert.rejects(t.pending, /Failed to load texture/); t.clean()
+  await assert.rejects(t.pending, /Image load failed/); t.clean()
   const valid = setup(); valid.base.valid = true; valid.image.onload()
   assert.equal(await valid.pending, valid.texture); valid.clean()
 }

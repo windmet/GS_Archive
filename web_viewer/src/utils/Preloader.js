@@ -8,7 +8,9 @@ import { resolveSpineTextureUrl } from './SpineTextureUrl.js'
 import { validateStoryConfig } from './StoryConfigShape.js'
 import { assetPriority, priorityRank } from '../../shared/story/StoryAssetPriority.js'
 
-const TIMEOUT_MS = 10000 // 10s per asset max
+// A finite consumer budget; the shared byte flight has a longer safety ceiling.
+// This is a tolerance fix, not a claim that the network became faster.
+const TIMEOUT_MS = 25000
 
 /**
  * Owns the task timeout and abort signal for the complete body/image load.
@@ -19,7 +21,7 @@ async function withTimeout(load, ms, label, signal) {
   const controller = new AbortController()
   const forwardAbort = () => controller.abort(signal.reason)
   signal?.addEventListener('abort', forwardAbort, { once: true })
-  const timer = setTimeout(() => controller.abort(new Error(`[Preloader] timeout (${ms}ms): ${label}`)), ms)
+  const timer = setTimeout(() => controller.abort(Object.assign(new Error(`[Preloader] timeout (${ms}ms): ${label}`), { name: 'TimeoutError', code: 'LOAD_TIMEOUT', phase: label })), ms)
   let onAbort
   try {
     return await Promise.race([
@@ -129,6 +131,8 @@ export class Preloader {
           catch (error) {
             outcome.state = signal?.aborted ? 'cancelled' : 'failed'
             outcome.error = String(error?.message || error)
+            outcome.errorCode = error?.code || error?.name || 'LOAD_FAILED'
+            outcome.retryable = !signal?.aborted && ['LOAD_TIMEOUT', 'TimeoutError', 'TypeError'].includes(outcome.errorCode)
           }
           if (!signal?.aborted) {
             const value = report(entryOnly && !stopAtEntry ? 'background-warming' : 'warming')
@@ -170,12 +174,14 @@ export class Preloader {
         taskSignal.removeEventListener('abort', abort)
       }
       const finish = () => { cleanup(); resolve('image-loaded') }
-      const fail = () => { cleanup(); reject(new Error(`Image load failed: ${url}`)) }
+      const fail = () => { cleanup(); reject(Object.assign(new Error(`Image load failed: ${url}`), { code: 'IMAGE_LOAD_FAILED', phase: 'image' })) }
       const abort = () => { cleanup(); img.removeAttribute('src'); reject(taskSignal.reason) }
       taskSignal.addEventListener('abort', abort, { once: true })
       img.onload = finish
       img.onerror = fail
       img.onabort = fail
+      // Match the renderer's image request mode; no codec or PMA transformation.
+      img.crossOrigin = 'anonymous'
       img.src = url
     }), TIMEOUT_MS, `image ${url}`, signal)
   }
@@ -207,7 +213,7 @@ export class Preloader {
           task.attempts.push({ url, status: 200 })
         } catch (error) {
           if (error.status) task.attempts.push({ url, status: error.status })
-          if (error.status && index + 1 < task.urls.length) continue
+          if ([404, 410].includes(error.status) && index + 1 < task.urls.length) continue
           throw error
         }
         validateStoryConfig(task.kind, config)

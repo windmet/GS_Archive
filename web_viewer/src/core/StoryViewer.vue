@@ -45,6 +45,7 @@
           :step="currentStep"
           :playing="isPlaying"
           :voice-status="voiceStatus"
+          @retry-voice="retryCurrentVoice"
           @click="goNext"
         />
       </Transition>
@@ -444,6 +445,11 @@ function _setTalking(on) {
 function _ensureAudioCtx() {
   if (!NO_AUDIO) storyAudioSession.unlockFromUserGesture()
   playbackController?.setPaused('audio-lock', false)
+}
+
+function retryCurrentVoice() {
+  _ensureAudioCtx() // called synchronously by the retry button's user gesture
+  void voicePlayer?.retryVoice?.()
 }
 
 function _resetVoiceDedup() {

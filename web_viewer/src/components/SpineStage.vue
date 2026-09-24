@@ -136,6 +136,7 @@ const portraitBaseY = value => props.portraitFraming ? storyPortraitBaseY(value)
 let manager = null
 let unregisterReleaseStage = null
 let applyStateToken = 0
+let applyStateLoad = new AbortController()
 let projectedStep = null
 let lastScreenEffectsKey = ''
 let managedBackgroundId = null
@@ -187,6 +188,7 @@ function syncManagedBackground() {
 }
 
 onBeforeUnmount(() => {
+  applyStateLoad.abort()
   framingObserver?.disconnect()
   if (manager) {
     manager.destroy()
@@ -785,6 +787,7 @@ watch(() => props.step, (step, oldStep) => {
   if (!manager) return
   syncManagedBackground()
   applyStateToken++
+  applyStateLoad.abort()
   // Clear stale stage state when returning to non-story screens.
   if (!getStepSceneState(step)) {
     if (props.fallbackBg) {
@@ -827,6 +830,9 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
   if (!manager) return
   const state = getStepSceneState(step)
   if (!state) return
+  applyStateLoad.abort()
+  applyStateLoad = new AbortController()
+  const signal = applyStateLoad.signal
   const token = ++applyStateToken
   projectedStep = null
   // Entry positioning and motion selection must use one resolved metadata set.
@@ -972,6 +978,7 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
       try {
         await manager.spawnSpine(sid, modelId, {
           isCurrent: () => token === applyStateToken && !!manager,
+          signal,
           bodyType: getBodyType(sid),
           prefabMeta,
           bodyScaleEnabled: BODY_SCALE_ENABLED,

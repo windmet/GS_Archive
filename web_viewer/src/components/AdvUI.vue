@@ -14,7 +14,7 @@
       <div class="dialog" :class="{ 'is-bilingual': isBilingual }">
         <LocalizedTextBlock class="dialog-text" :display="display" />
         <small v-if="voiceStatus === 'preparing'" class="voice-status voice-preparing" role="status"><span aria-hidden="true">···</span><span class="voice-loading-label">语音加载中</span></small>
-        <small v-else-if="voiceStatus === 'unavailable'" class="voice-status">语音暂不可用</small>
+        <button v-else-if="voiceStatus === 'unavailable'" type="button" class="voice-status voice-retry" @click.stop="emit('retry-voice')">语音未载入 · 重试</button>
         <div class="dialog-next">▶</div>
       </div>
 
@@ -28,6 +28,7 @@ import LocalizedTextBlock from './LocalizedTextBlock.vue'
 import { resolveText } from '../utils/TextHelper.js'
 import { useStoryLocalization } from '../localization/story/StoryLocalizationContext.js'
 
+const emit = defineEmits(['retry-voice'])
 const props = defineProps({
   dialogue: { type: Object, default: null },
   step: { type: Object, default: null },
@@ -42,6 +43,7 @@ const isBilingual = computed(() => Boolean(display.value?.view?.secondary?.text)
 
 <style scoped>
 .voice-status { position: absolute; bottom: 9px; left: 24px; color: #65747b; font: 11px/1.3 system-ui, sans-serif; pointer-events: none; }
+.voice-retry { pointer-events: auto; border: 0; padding: 3px 0; background: transparent; text-decoration: underline; cursor: pointer; }
 .voice-preparing { visibility: hidden; animation: reveal-voice-status 0s 350ms forwards; }
 .voice-loading-label { margin-left: 5px; visibility: hidden; animation: reveal-voice-status 0s 1500ms forwards; }
 @keyframes reveal-voice-status { to { visibility: visible; } }

@@ -6,7 +6,7 @@ export function createCompressedVoiceCache({
   now = () => Date.now(),
   maxBytes = 16 * 1024 * 1024,
   maxEntries = 128,
-  timeoutMs = 10000,
+  timeoutMs = 30000, // physical shared-flight safety ceiling; playback owns its shorter deadline
 } = {}) {
   const entries = new Map()
   const flights = new Map()
@@ -49,7 +49,7 @@ export function createCompressedVoiceCache({
     // entries directly. No HEAD round trip, timestamp URL or custom CORS header.
     const response = await fetchImpl(url, { signal, cache: 'default' })
     signal.throwIfAborted()
-    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    if (!response.ok) throw Object.assign(new Error(`HTTP ${response.status}`), { status: response.status, code: `HTTP_${response.status}` })
     const contentType = response.headers?.get?.('content-type') || ''
     const bytes = await response.arrayBuffer()
     signal.throwIfAborted()

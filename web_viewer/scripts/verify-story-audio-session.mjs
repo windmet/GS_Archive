@@ -327,18 +327,18 @@ for (const phase of ['fetch', 'decode']) {
   try {
     const pending = player.playVoice()
     while (!lipStarted) await new Promise(resolve => setImmediate(resolve))
-    assert.equal(player.getVoiceState(), 'preparing')
+    assert.equal(player.getVoiceState(), 'playing', 'optional lip must not gate playable audio')
     player.stopCurrentVoice('next-dialogue')
-    assert.equal(await pending, false)
+    assert.equal(await pending, true)
     assert.equal(lipAborted, true)
     assert.equal(player.getVoiceState(), 'idle')
     assert.equal(playing.value, false)
     assert.equal(session.inspect().active_sources, 0)
     assert.ok(statuses.includes('preparing'))
     player.resetVoiceDedup()
-    assert.equal(await player.playVoice(), false, 'a stalled lip request must time out')
-    assert.equal(player.getVoiceState(), 'unavailable', 'failed soft audio must release AUTO waiting')
-    assert.equal(session.inspect().active_sources, 0)
+    assert.equal(await player.playVoice(), true, 'a stalled optional lip cannot prevent voice playback')
+    assert.equal(player.getVoiceState(), 'playing')
+    assert.equal(session.inspect().active_sources, 1)
   } finally {
     player.dispose(); await session.dispose(); globalThis.fetch = originalFetch
     if (originalWindow === undefined) delete globalThis.window

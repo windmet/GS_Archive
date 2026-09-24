@@ -15,6 +15,7 @@
         <div class="load-label">{{ readiness?.status === 'waiting' ? '正在准备当前画面…' : message }}</div>
         <p v-if="critical.total" class="load-count">当前段落资源：{{ critical.ready }} / {{ critical.total }}</p>
         <p v-if="critical.total && critical.ready === critical.total" class="load-count">资源已预载，正在准备画面与语音…</p>
+        <p v-if="slow" class="load-count">加载较慢，可继续等待，或取消后重试。</p>
         <button v-if="canCancel" type="button" class="load-cancel" @click="$emit('cancel')">取消并返回</button>
       </div>
     </div>
@@ -22,7 +23,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch, onUnmounted } from 'vue'
 import { criticalPreloadProgress } from '../presentation/LoadingPresentation.js'
 defineEmits(['cancel'])
 const props = defineProps({
@@ -32,6 +33,14 @@ const props = defineProps({
   readiness: { type: Object, default: null },
   message: { type: String, default: '正在读取资料馆数据…' },
 })
+const slow = ref(false)
+let slowTimer
+watch(() => props.visible, visible => {
+  clearTimeout(slowTimer)
+  slow.value = false
+  if (visible) slowTimer = setTimeout(() => { slow.value = true }, 8000)
+}, { immediate: true })
+onUnmounted(() => clearTimeout(slowTimer))
 const critical = computed(() => criticalPreloadProgress(props.status))
 </script>
 

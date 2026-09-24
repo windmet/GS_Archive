@@ -420,8 +420,8 @@
       </details>
     </section>
     <details v-if="view === 'player' && !loading && preloadStatus?.failed" class="preload-notice">
-      <summary>有 {{ preloadStatus.failed }} 项资源未能预载</summary>
-      <p>演出可能缺少部分画面。</p>
+      <summary>预载诊断记录（{{ preloadStatus.failed }} 项）</summary>
+      <p>以下是先前预载未成功的记录，不代表当前画面仍然缺失。当前段落状态以播放器提示为准。</p>
       <ul><li v-for="task in preloadStatus.tasks.filter(task => task.state === 'failed')" :key="task.key">{{ task.id }}：{{ task.error }}</li></ul>
     </details>
     <StoryViewer

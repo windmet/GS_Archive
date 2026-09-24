@@ -86,6 +86,8 @@ export class PixiStageManager {
     this._destroyed = false
     this.spineInstances = {}   // { idolId: { spine: Spine, modelId: string, marker: Graphics } }
     this._spawnTokens = {}
+    this._spawnLoads = new Map()
+    this._textureOwner = new AbortController()
     this._silhouetteSprites = {}  // { idolId: PIXI.Sprite } — fallback for missing Spine assets
     this._silhouettePending = {}  // { idolId: { token, modelId, posX, posY, baseY } }
     this._silhouetteLoadTokens = {}
@@ -1101,6 +1103,11 @@ export class PixiStageManager {
     this.removeSpine(idolId)
     const spawnToken = (this._spawnTokens[idolId] || 0) + 1
     this._spawnTokens[idolId] = spawnToken
+    const loadController = new AbortController()
+    this._spawnLoads.set(idolId, loadController)
+    const abortLoad = () => loadController.abort(options.signal.reason)
+    options.signal?.addEventListener('abort', abortLoad, { once: true })
+    if (options.signal?.aborted) abortLoad()
 
     const step = (name, fn) => {
       try {
@@ -1120,7 +1127,8 @@ export class PixiStageManager {
         skelUrl,
         decodeAtlasText: buf => this._decodeAtlasText(buf),
         resolveTextureUrl: (mid, file, options) => this._resolveTextureUrl(mid, file, options),
-        loadTextureFromUrl: url => this._loadTextureFromUrl(url, { allowFallback: false }),
+        loadTextureFromUrl: (url, options) => this._loadTextureFromUrl(url, { ...options, allowFallback: false }),
+        signal: loadController.signal,
         decodeSkelBuffer: buf => this._decodeSkelBuffer(buf),
         Spine,
         SkeletonBinary,
@@ -1331,6 +1339,9 @@ export class PixiStageManager {
       if (this._destroyed) return null
       console.warn(`[PixiStageManager] Failed to load spine "${modelId}" for "${idolId}":`, err.message)
       return null
+    } finally {
+      options.signal?.removeEventListener('abort', abortLoad)
+      if (this._spawnLoads.get(idolId) === loadController) this._spawnLoads.delete(idolId)
     }
   }
   _emitSpineState(idolId) {
@@ -1587,8 +1598,13 @@ export class PixiStageManager {
     }
   }
 
-  _loadTextureFromUrl(url, { allowFallback = true } = {}) {
-    return loadImageTexture(url, { allowFallback, fallbackTexture: () => this._getFallbackTexture() })
+  _loadTextureFromUrl(url, { allowFallback = true, signal } = {}) {
+    const controller = new AbortController()
+    const signals = [signal, this._textureOwner.signal].filter(Boolean)
+    const abort = () => controller.abort(signals.find(item => item.aborted)?.reason)
+    for (const item of signals) { item.addEventListener('abort', abort, { once: true }); if (item.aborted) abort() }
+    return loadImageTexture(url, { allowFallback, signal: controller.signal, fallbackTexture: () => this._getFallbackTexture() })
+      .finally(() => { for (const item of signals) item.removeEventListener('abort', abort) })
   }
 
   _getFallbackTexture() {
@@ -1915,12 +1931,16 @@ export class PixiStageManager {
    * The model fades out over ~12 frames then destroys itself.
    */
   removeSpine(idolId, immediate = false) {
+    this._spawnLoads.get(idolId)?.abort()
+    this._spawnLoads.delete(idolId)
     this._spineColorTweens[idolId]?.cancel?.()
     this.removeSilhouette(idolId)
     return this.spineManager?.removeSpine(idolId, immediate)
   }
 
   clearAllSpines(options = {}) {
+    for (const controller of this._spawnLoads.values()) controller.abort()
+    this._spawnLoads.clear()
     Object.values(this._spineColorTweens).forEach(tween => tween.cancel?.())
     this.clearAllSilhouettes()
     return this.spineManager?.clearAllSpines(options)
@@ -1953,6 +1973,7 @@ export class PixiStageManager {
   destroy() {
     if (this._destroyed) return
     this._destroyed = true
+    this._textureOwner.abort()
     if (this._visibilityHandler) document.removeEventListener('visibilitychange', this._visibilityHandler)
     this._visibilityHandler = null
     this.screenEffects?.destroy()

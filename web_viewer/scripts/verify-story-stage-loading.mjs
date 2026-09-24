@@ -28,7 +28,7 @@ function fakeSpine() {
 function setup() {
   const loads = [], removals = [], published = []
   const manager = {
-    app: { stage: { on: noop } }, width: 1280, _spawnTokens: {}, spineInstances: {},
+    app: { stage: { on: noop } }, width: 1280, _spawnTokens: {}, _spawnLoads: new Map(), spineInstances: {},
     removeSpine(id) { removals.push(id); delete this.spineInstances[id]; this._spawnTokens[id] = (this._spawnTokens[id] || 0) + 1 },
     _detectBlinkSlots: noop, _detectEffectSlots: noop, _detectOptionalPartsSlots: noop,
     _applyDefaultPosition: noop, setSpineColor: noop, setSpineZoom: noop,
@@ -36,7 +36,7 @@ function setup() {
     showSilhouette(id, model) { this.spineInstances[id] = { modelId: model, silhouette: true } },
   }
   const context = vm.createContext({
-    window: {},
+    window: {}, AbortController, applyStateLoad: new AbortController(),
     console: {
       log: noop, debug: noop,
       warn: (...args) => assert.ok(args.join(' ').includes('missing asset'), args.join(' ')),
@@ -60,8 +60,8 @@ function setup() {
     computeVisualRootYUtil: () => 0,
     getSpineAtlasUrl: id => id, getSpineSkelUrl: id => id,
     Spine: {}, SkeletonBinary: {}, AtlasAttachmentLoader: {}, TextureAtlas: {},
-    loadAndCreateSpine: () => {
-      const load = deferred(); loads.push(load); return load.promise
+    loadAndCreateSpine: ({ signal }) => {
+      const load = { ...deferred(), signal }; loads.push(load); return load.promise
     },
     finalizeSpawnedSpine: ({ spine, modelId, idolId }) => {
       published.push(modelId); manager.spineInstances[idolId] = { spine, modelId }
@@ -85,6 +85,8 @@ const step = model => ({ step_id: model, entry_snapshot: { spines: model ? [{ id
   const t = setup()
   const old = t.apply(step('old')); await flush()
   const current = t.apply(step('current')); await flush()
+  assert.equal(t.loads[0].signal.aborted, true, 'old scene must cancel its asset owner')
+  assert.equal(t.loads[1].signal.aborted, false)
   t.finish(1); await current
   assert.equal(t.manager.spineInstances.idol?.modelId, 'current')
   assert.equal(t.manager.spineInstances.idol?.silhouette, undefined)
