@@ -203,7 +203,7 @@
 
 <script setup>
 import { usePlayerImmersiveMode, claimMobileViewingOffer } from '../composables/usePlayerImmersiveMode.js'
-import { ref, computed, watch, onMounted, onBeforeUnmount, onUnmounted, reactive, nextTick, defineAsyncComponent } from 'vue'
+import { ref, shallowRef, computed, watch, onMounted, onBeforeUnmount, onUnmounted, reactive, nextTick, defineAsyncComponent } from 'vue'
 import AdvUI from '../components/AdvUI.vue'
 import MobileChatScene from '../components/mobile/MobileChatScene.vue'
 import MobileCallScene from '../components/mobile/MobileCallScene.vue'
@@ -549,7 +549,9 @@ const communicationContext = computed(() => resolveStoryPresentation({
 
 // Preserve the last stage while an opaque communication surface is visible.
 // A direct communication entry never constructs a renderer.
-const retainedStageStep = ref(null)
+// Readiness binds to the exact projected step. A deep ref would proxy this
+// plain object, making SpineStage's identity check wait forever after loading.
+const retainedStageStep = shallowRef(null)
 watch([stageStep, communicationContext], ([step, presentation]) => {
   if (compiledData.value && presentation.needsStage) retainedStageStep.value = step
 }, { immediate: true, flush: 'sync' })
