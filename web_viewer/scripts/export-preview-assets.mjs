@@ -10,6 +10,7 @@ import { encodeLosslessWebp, runPool, shutdownEncoderPool } from './lib/lossless
 import { createArchiveAssetResolver } from './lib/archive-assets.mjs'
 import { getBgmUrl, getSeUrl, getAmbientUrl, getLipSyncUrl } from '../src/utils/AssetResolver.js'
 import { getCardPortraitUrl, getCardLandscapeUrl } from '../src/utils/CardAssetResolver.js'
+import { writeSourceBaseline } from './lib/preview-source-baseline.mjs'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const publicRoot = path.join(root, 'public')
@@ -17,7 +18,7 @@ const outputRoot = path.join(root, '.deploy')
 const stageRoot = path.join(outputRoot, 'r2')
 const manifestPath = path.join(outputRoot, 'r2-manifest.json')
 const mode = process.argv[2]
-if (mode !== '--audit' && mode !== '--export') throw new Error('Use --audit or --export')
+if (!['--audit', '--export', '--baseline'].includes(mode)) throw new Error('Use --audit, --export or --baseline')
 const allowMissing = process.argv.includes('--allow-missing')
 
 function safeKey(url) {
@@ -129,6 +130,12 @@ const sourceBytes = entries.reduce((sum, item) => sum + item.source_size, 0)
 const convertedPngs = entries.filter(item => item.transform !== COPY_TRANSFORM).length
 const totals = { source_files: entries.length, source_bytes: sourceBytes, plans, missing: missing.size, converted_pngs: convertedPngs }
 const missingEntries = [...missing.values()].sort((a, b) => a.request_key.localeCompare(b.request_key))
+if (mode === '--baseline') {
+  // Enumerate current sources with the SAME closure as export, without changing
+  // the old manifest or copying any media. Missing dependencies remain explicit.
+  await writeSourceBaseline({ root, entries, missing: missingEntries, plans })
+  process.exit(0)
+}
 const missingPrefix = item => item.request_key.split('/').slice(0, 3).join('/')
 console.log(JSON.stringify({ mode, totals, missingByKind: Object.fromEntries([...new Set(missingEntries.map(missingPrefix))].map(kind => [kind, missingEntries.filter(item => missingPrefix(item) === kind).length])), missingExamples: missingEntries.slice(0, 30) }, null, 2))
 if (mode === '--audit') process.exit(missing.size ? 2 : 0)

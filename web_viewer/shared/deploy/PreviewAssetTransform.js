@@ -19,6 +19,28 @@ export const PREVIEW_WEBP_EXCLUDED_PREFIXES = Object.freeze([
 
 export const COPY_TRANSFORM = 'copy'
 export const LOSSLESS_WEBP_TRANSFORM = 'webp-lossless-alpha0-rgb0'
+export const GZIP_TRANSFORM = 'gzip-v1'
+export const PREVIEW_GZIP_PREFIXES = Object.freeze([
+  'data/compiled/', 'assets/lipsync/', 'assets/live-chibi/motions/',
+])
+
+export function isPreviewGzipCandidate(key) {
+  return typeof key === 'string'
+    && ((key.endsWith('.json') && PREVIEW_GZIP_PREFIXES.slice(0, 2).some(prefix => key.startsWith(prefix)))
+      || (key.startsWith('assets/live-chibi/motions/') && /\.(motion|bin)$/.test(key)))
+    && !key.split('/').some(part => !part || part === '.' || part === '..' || part.includes('\\'))
+}
+
+// Default off: pushing code must not switch live requests to objects that have
+// not been uploaded. Canary mode changes only the explicit, reviewed key list.
+export function previewGzipEnabled(env, key) {
+  if (!isPreviewGzipCandidate(key)) return false
+  if (env.ARCHIVE_GZIP_MODE === 'all') return true
+  if (env.ARCHIVE_GZIP_MODE !== 'canary') return false
+  const keys = JSON.parse(env.ARCHIVE_GZIP_CANARY_KEYS || '[]')
+  if (!Array.isArray(keys) || !keys.every(isPreviewGzipCandidate)) throw new Error('Invalid gzip canary keys')
+  return keys.includes(key)
+}
 
 const PNG_EXTENSION = /\.png$/i
 
@@ -28,12 +50,14 @@ export function isPreviewLosslessWebpCandidate(requestKey) {
 }
 
 /** Logical request key -> physical R2 object key. Identity when not transformed. */
-export function resolvePreviewObjectKey(requestKey) {
+export function resolvePreviewObjectKey(requestKey, { gzip = false } = {}) {
+  if (gzip && isPreviewGzipCandidate(requestKey)) return `${requestKey}.gz`
   return isPreviewLosslessWebpCandidate(requestKey)
     ? requestKey.replace(PNG_EXTENSION, '.webp')
     : requestKey
 }
 
-export function previewTransformKind(requestKey) {
+export function previewTransformKind(requestKey, { gzip = false } = {}) {
+  if (gzip && isPreviewGzipCandidate(requestKey)) return GZIP_TRANSFORM
   return isPreviewLosslessWebpCandidate(requestKey) ? LOSSLESS_WEBP_TRANSFORM : COPY_TRANSFORM
 }

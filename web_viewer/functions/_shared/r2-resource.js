@@ -1,4 +1,4 @@
-import { resolvePreviewObjectKey } from '../../shared/deploy/PreviewAssetTransform.js'
+import { resolvePreviewObjectKey, previewGzipEnabled } from '../../shared/deploy/PreviewAssetTransform.js'
 
 const TYPES = {
   '.atlas': 'text/plain; charset=utf-8', '.css': 'text/css; charset=utf-8',
@@ -13,6 +13,19 @@ function contentType(key, object) {
   const declared = object.httpMetadata?.contentType
   if (declared && declared !== 'application/octet-stream') return declared
   return TYPES[key.slice(key.lastIndexOf('.')).toLowerCase()] || declared || 'application/octet-stream'
+}
+
+function acceptsGzip(value) {
+  // Missing Accept-Encoding imposes no preference (RFC 9110). Explicit
+  // gzip;q=0 overrides wildcard; never send gzip to an identity-only client.
+  if (value === null) return true
+  const encodings = value.toLowerCase().split(',').map(part => {
+    const [name, ...parameters] = part.trim().split(';')
+    const q = parameters.find(p => p.trim().startsWith('q='))
+    return [name.trim(), q ? Number(q.trim().slice(2)) : 1]
+  })
+  const quality = encodings.find(([name]) => name === 'gzip') ?? encodings.find(([name]) => name === '*')
+  return !!quality && Number.isFinite(quality[1]) && quality[1] > 0 && quality[1] <= 1
 }
 
 function requestedRange(value, size) {
@@ -49,23 +62,39 @@ export async function serveR2Resource({ request, env, prefix }) {
   // The request key is the frozen public contract; the object key is what the
   // deployment actually stored. Content type follows the object, not the URL.
   const requestKey = `${prefix}/${relative}`
-  const objectKey = resolvePreviewObjectKey(requestKey)
+  const gzip = previewGzipEnabled(env, requestKey)
+  const objectKey = resolvePreviewObjectKey(requestKey, { gzip })
+  if (gzip && !acceptsGzip(request.headers.get('Accept-Encoding'))) {
+    return new Response(null, { status: 406, headers: { Vary: 'Accept-Encoding', 'Cache-Control': 'no-store' } })
+  }
   const bucket = env.ARCHIVE_ASSETS
   const meta = await bucket.head(objectKey)
   if (!meta) return new Response(null, { status: 404 })
   const etag = meta.httpEtag || (meta.etag ? `"${meta.etag}"` : undefined)
-  const headers = new Headers({
-    'Accept-Ranges': 'bytes',
-    'Cache-Control': 'public, max-age=3600',
-    'Content-Length': String(meta.size),
-    'Content-Type': contentType(objectKey, meta),
-  })
-  if (etag) headers.set('ETag', etag)
-  if (request.headers.get('If-None-Match') === etag) {
-    headers.delete('Content-Length')
-    return new Response(null, { status: 304, headers })
+  // Fail closed on a bad upload instead of returning compressed bytes as JSON.
+  const gzipType = requestKey.endsWith('.json') ? 'application/json' : 'application/octet-stream'
+  if (gzip && (meta.httpMetadata?.contentEncoding !== 'gzip'
+    || meta.httpMetadata?.contentType?.split(';')[0].trim() !== gzipType)) {
+    return new Response('Invalid structured resource metadata', { status: 502, headers: { 'Cache-Control': 'no-store' } })
   }
-  const rangeHeader = request.headers.get('Range')
+  const headers = new Headers()
+  meta.writeHttpMetadata?.(headers)
+  headers.set('Cache-Control', 'public, max-age=3600')
+  headers.set('Content-Length', String(meta.size))
+  headers.set('Content-Type', contentType(objectKey, meta))
+  if (gzip) {
+    headers.set('Content-Encoding', 'gzip')
+    headers.set('Vary', 'Accept-Encoding')
+    headers.delete('Accept-Ranges')
+    headers.delete('Content-Range')
+  } else headers.set('Accept-Ranges', 'bytes')
+  if (etag) headers.set('ETag', etag)
+  const validators = request.headers.get('If-None-Match')?.split(',').map(value => value.trim().replace(/^W\//, ''))
+  if (validators?.includes('*') || (etag && validators?.includes(etag.replace(/^W\//, '')))) {
+    headers.delete('Content-Length')
+    return new Response(null, { status: 304, headers, encodeBody: 'manual' })
+  }
+  const rangeHeader = gzip ? null : request.headers.get('Range')
   const range = rangeHeader && (!request.headers.has('If-Range') || request.headers.get('If-Range') === etag)
     ? requestedRange(rangeHeader, meta.size) : undefined
   if (rangeHeader && range === null) {
@@ -77,8 +106,8 @@ export async function serveR2Resource({ request, env, prefix }) {
     headers.set('Content-Range', `bytes ${range.start}-${range.end}/${meta.size}`)
     headers.set('Content-Length', String(range.end - range.start + 1))
   }
-  if (request.method === 'HEAD') return new Response(null, { status: range ? 206 : 200, headers })
+  if (request.method === 'HEAD') return new Response(null, { status: range ? 206 : 200, headers, encodeBody: 'manual' })
   const object = await bucket.get(objectKey, range ? { range: { offset: range.start, length: range.end - range.start + 1 } } : undefined)
   if (!object) return new Response(null, { status: 404 })
-  return new Response(object.body, { status: range ? 206 : 200, headers })
+  return new Response(object.body, { status: range ? 206 : 200, headers, encodeBody: 'manual' })
 }

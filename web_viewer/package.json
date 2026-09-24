@@ -219,7 +219,13 @@
     "verify:story-interaction-matrix": "node scripts/verify-story-interaction-matrix.mjs",
     "verify:spine-neck-contract": "node scripts/verify-spine-neck-contract.mjs",
     "verify:idol-story-reading": "node scripts/verify-idol-story-reading.mjs",
-    "verify:home-neck-contract": "node scripts/verify-home-neck-projection.mjs --source-only"
+    "verify:home-neck-contract": "node scripts/verify-home-neck-projection.mjs --source-only",
+    "audit:preview-baseline": "node scripts/export-preview-assets.mjs --baseline",
+    "prepare:gzip-canary": "node scripts/prepare-structured-gzip.mjs --canary",
+    "verify:gzip-routing": "node scripts/verify-structured-gzip-routing.mjs",
+    "verify:gzip-assets": "node scripts/verify-structured-gzip.mjs",
+    "verify:gzip-http": "node scripts/verify-structured-gzip-http.mjs",
+    "serve:gzip-canary": "node scripts/serve-structured-gzip-canary.mjs"
   },
   "dependencies": {
     "@lucide/vue": "^1.24.0",

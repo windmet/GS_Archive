@@ -3,6 +3,16 @@
 This is a Preview-only deployment contract. Do not attach a production domain or
 interpret a Pages `master` build as production acceptance.
 
+## Opt-in structured gzip rollout (2026-09-24)
+
+The new `gzip-v1` channel is **off by default**. Its schema-3 source baseline,
+canary, structured-resource delta, metadata-aware upload plan and acceptance
+instructions are in [STRUCTURED_GZIP_ROLLOUT.md](STRUCTURED_GZIP_ROLLOUT.md).
+The existing `.deploy/r2` and schema-2 manifest below remain untouched. Do not
+enable `ARCHIVE_GZIP_MODE=all` or use the legacy full export as a complete release
+after enabling gzip until the v3 delta and current non-gzip source changes have
+been reconciled and accepted on the target Preview environment.
+
 ## Deployment transform: lossless WebP
 
 Runtime URLs are a frozen contract. Story JSON, Spine `.atlas` files and the
