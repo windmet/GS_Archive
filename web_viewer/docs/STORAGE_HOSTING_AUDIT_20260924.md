@@ -71,6 +71,10 @@
 
 2026-09-24 后续源文件预检：当前 32,421 个 M4A 全部在 `voice_index.json` 中，映射到 3,447 个不同 ACB 路径，全部存在；索引中也没有缺失的 M4A。证据为 `.analysis/storage-audit/voice-source-preflight.json`。一次 vgmstream 实测确认 `appeal/001tom/2_5_001_00.acb` 的 subsong 1 名称为 `2_5_001_00_04_01`，源编码为 CRI HCA、44.1 kHz、单声道。此预检仅证明路径闭包和一个 cue 样本，尚未证明全量 cue/subsong 身份、PCM 对齐或听感；正式样本必须逐条核对 cue 后从 ACB 解码，不沿用 AAC→AAC 估算样本作为发布字节。
 
+后续全量 cue 核对已完成：`python scripts/audit-voice-source-cues.py` 检查全部 3,447 个 ACB，32,421 个索引名称均唯一匹配一个 subsong，没有缺失、重名或读取失败。全部为 44.1 kHz CRI HCA，无循环，32,407 条单声道、14 条双声道，原始时长 0.19–43.208 秒。证据为 `.analysis/voice-compression/source-cues.json`；这是 metadata 身份核对，尚未验证 PCM 对齐或听感。
+
+`python scripts/plan-voice-listening-samples.py` 已生成 159 条候选清单 `.analysis/voice-compression/listening-plan.json`：49 个有语音路径的偶像分别选最短、中位时长、最长，并加入全部双声道例外。33 个其他口型身份没有对应语音路径，单独记录，不推断其语音缺失。候选尚未转码，喊叫、气声、哭腔、混响等困难类别仍须实际听辨和补选；不能把时长分层当作这些类别已覆盖，也尚未选择 64k 或 72k。
+
 ### 3. 歌曲范围比“61 首”更大
 
 旧 manifest 中 `assets/live-chibi/music` 有 **109 个 M4A、319,284,266 B（304.49 MiB）**，另有 index.json；61 是 song playback catalog 的 full-mix 条目数，不是目录全部文件数。
