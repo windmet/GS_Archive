@@ -75,6 +75,10 @@
 
 `python scripts/plan-voice-listening-samples.py` 已生成 159 条候选清单 `.analysis/voice-compression/listening-plan.json`：49 个有语音路径的偶像分别选最短、中位时长、最长，并加入全部双声道例外。33 个其他口型身份没有对应语音路径，单独记录，不推断其语音缺失。候选尚未转码，喊叫、气声、哭腔、混响等困难类别仍须实际听辨和补选；不能把时长分层当作这些类别已覆盖，也尚未选择 64k 或 72k。
 
+上述候选随后已通过 `python scripts/prepare-voice-listening-samples.py` 全部生成本地对照：ACB→PCM16 WAV→AAC-LC 64k/72k，两档共享同一份 PCM，另保留现有 M4A 对照。逐条核对 cue、PCM 样本数/声道/采样率、源文件生成前后 hash，两档共 318 个 AAC 均经 ffprobe 和完整解码验证。容器时长相对源样本时长最大差约 0.000772 秒；这不等于实际口型/播放切换验收。
+
+159 条对照总占用 229,148,528 B，固定存于 E 盘 `.analysis/voice-compression/listening-candidates/`，回执 `listening-samples.json` 记录各文件 SHA256 和原始 ACB/相关 AWB hash。现有 M4A 共 23,575,562 B，64k 共 12,795,911 B，72k 共 14,146,653 B。**只完成候选生成，尚未试听、补齐困难类别或批准任一码率；没有上传或替换线上语音。**
+
 ### 3. 歌曲范围比“61 首”更大
 
 旧 manifest 中 `assets/live-chibi/music` 有 **109 个 M4A、319,284,266 B（304.49 MiB）**，另有 index.json；61 是 song playback catalog 的 full-mix 条目数，不是目录全部文件数。
