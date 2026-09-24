@@ -361,6 +361,7 @@
 </template>
 
 <script setup>
+import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../../../shared/deploy/ExternalStoryResourcePolicy.js'
 import { computed } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { ArrowRight, BookOpen, Briefcase, Cake, CalendarRange, ChevronDown, CreditCard, FileWarning, Languages, LayoutGrid, Search, Sparkles, UserRound, X } from '@lucide/vue'
@@ -417,7 +418,7 @@ const secondaryGateways = [
   { id: 'work', label: '工作剧情', icon: Briefcase, unit: '人', action: 'work' }, { id: 'birthday', label: '生日剧情', icon: Cake },
   { id: 'extra', label: '额外剧情', icon: Sparkles },
   { id: 'seasonal_campaign', label: '季节企划', icon: CalendarRange, unit: '组', action: 'seasonal' },
-]
+].filter(gateway => EXTERNAL_STORY_RESOURCES_ENABLED || gateway.action !== 'external-resources')
 const sectionLabel = computed(() => props.allEntries.find(entry => entry.domain === props.domain && entry.sectionId === props.section)?.sectionLabel || props.section)
 
 function browse(domain, section = '') { emit('browse', { domain, section }) }

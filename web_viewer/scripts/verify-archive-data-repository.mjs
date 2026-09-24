@@ -1,3 +1,4 @@
+import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../shared/deploy/ExternalStoryResourcePolicy.js'
 import assert from 'node:assert/strict'
 import { createArchiveDataRepository, ARCHIVE_SOURCES, IDOL_COMMUNICATION_SOURCES } from '../src/data/ArchiveDataRepository.js'
 
@@ -70,7 +71,8 @@ for (const bad of [response(null, { ok: false, status: 404 }), response(null, { 
   const { repo, requests } = setup()
   const pending = repo.loadArchiveData()
   assert.ok(requests.every(request => !request.url.includes('story_master_index.json')), 'startup must not request the retired browser input')
-  assert.equal(requests.length, Object.keys(ARCHIVE_SOURCES).length)
+  assert.equal(requests.length, Object.keys(ARCHIVE_SOURCES).length - Number(!EXTERNAL_STORY_RESOURCES_ENABLED))
+  assert.ok(EXTERNAL_STORY_RESOURCES_ENABLED || requests.every(request => request.url !== ARCHIVE_SOURCES.externalStoryResources))
   for (const request of requests) request.resolve(request.url === ARCHIVE_SOURCES.compiledIndex
     ? response({ categories: [] }) : response(null, { ok: false, status: 503 }))
   const result = await pending

@@ -1,3 +1,4 @@
+import { isWithdrawnExternalStoryKey } from '../../shared/deploy/ExternalStoryResourcePolicy.js'
 import { resolvePreviewObjectKey, previewGzipEnabled } from '../../shared/deploy/PreviewAssetTransform.js'
 
 const TYPES = {
@@ -62,6 +63,11 @@ export async function serveR2Resource({ request, env, prefix }) {
   // The request key is the frozen public contract; the object key is what the
   // deployment actually stored. Content type follows the object, not the URL.
   const requestKey = `${prefix}/${relative}`
+  if (isWithdrawnExternalStoryKey(requestKey)) {
+    return new Response('This resource is not currently published.', {
+      status: 410, headers: { 'Cache-Control': 'no-store', 'Content-Type': 'text/plain; charset=utf-8' },
+    })
+  }
   const gzip = previewGzipEnabled(env, requestKey)
   const objectKey = resolvePreviewObjectKey(requestKey, { gzip, dataRevision: env.ARCHIVE_DATA_REVISION })
   // Cloudflare normalizes the forwarded header; negotiate using the client's

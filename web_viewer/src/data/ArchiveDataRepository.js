@@ -1,3 +1,4 @@
+import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../../shared/deploy/ExternalStoryResourcePolicy.js'
 import { validateArchivePayload } from './archiveDataContracts.js'
 
 const ARCHIVE_SOURCES = {
@@ -62,6 +63,7 @@ export function createArchiveDataRepository({ fetchImpl = (...args) => globalThi
 
   async function loadArchiveData(options = {}) {
     const entries = Object.entries(ARCHIVE_SOURCES)
+      .filter(([key]) => key !== 'externalStoryResources' || EXTERNAL_STORY_RESOURCES_ENABLED)
     const settled = await Promise.allSettled(
       entries.map(([key, url]) => fetchJson(key, url, options)),
     )

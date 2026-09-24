@@ -191,7 +191,7 @@
         :manifest="archiveManifestData"
         :visual-registry="rawCharacterImagePromotionsData"
         :raw-visual-url="eventStoryIdolRawCandidateUrl"
-        :external-resources="currentEventExternalResources"
+        :external-resources="EXTERNAL_STORY_RESOURCES_ENABLED ? currentEventExternalResources : []"
         :reading-entries="readingCatalogEntries"
         :reading-error="readingCatalogError"
         @retry-reading="loadReadingCatalog"
@@ -299,7 +299,7 @@
         :idol-name="idolSourceName"
         :identity="idolUnitData"
         :manifest="archiveManifestData"
-        :external-resources="currentStoryExternalResources"
+        :external-resources="EXTERNAL_STORY_RESOURCES_ENABLED ? currentStoryExternalResources : []"
         :reading-entries="readingCatalogEntries"
         @read="documentId => openStoryReader(documentId, { storyType: currentStoryDomain, story: currentStoryFile })"
         @play="playStoryDetail"
@@ -310,7 +310,7 @@
       <ArchiveStoryCollection
         v-if="view === 'story_collection'"
         :collection="currentStoryCollection"
-        :external-resources="currentStoryCollectionExternalResources"
+        :external-resources="EXTERNAL_STORY_RESOURCES_ENABLED ? currentStoryCollectionExternalResources : []"
         :initial-chapter-id="currentStoryCollectionChapter?.id || ''"
         :reading-entries="readingCatalogEntries"
         :reading-error="readingCatalogError"
@@ -349,7 +349,7 @@
         :reading-entries="readingCatalogEntries"
         @read-episode="openIdolStoryReader"
         :idols="idolStoryOptions"
-        :external-resources="currentIdolStoryExternalResources"
+        :external-resources="EXTERNAL_STORY_RESOURCES_ENABLED ? currentIdolStoryExternalResources : []"
         :focused-section-id="currentStorySection"
         :focused-episode-id="currentEpisodeId"
         @select-idol="selectIdolStory"
@@ -464,6 +464,7 @@
 </template>
 
 <script setup>
+import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../shared/deploy/ExternalStoryResourcePolicy.js'
 import { createLazyArchiveResource } from './data/lazyArchiveResource.js'
 import { buildUnitCatalog, resolveArchiveUnit, storiesForUnit, songsForUnit } from './data/unitPage.js'
 import { buildIdolProfile, buildIdolStats, eventsForIdol, songsForIdol } from './data/idolPage.js'

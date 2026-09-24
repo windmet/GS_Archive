@@ -1,3 +1,4 @@
+import { isWithdrawnExternalStoryKey } from './shared/deploy/ExternalStoryResourcePolicy.js'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import fs from 'node:fs'
@@ -29,6 +30,17 @@ const CHARACTER_IMAGE_CANDIDATE_KINDS = new Set([
   'sign',
   'story_visual',
 ])
+
+function externalPublicationPolicyPlugin() {
+  const install = server => server.middlewares.use((req, res, next) => {
+    let key
+    try { key = decodeURIComponent(new URL(req.url, 'http://localhost').pathname).slice(1) } catch { return next() }
+    if (!['GET', 'HEAD'].includes(req.method) || !isWithdrawnExternalStoryKey(key)) return next()
+    res.writeHead(410, { 'Cache-Control': 'no-store', 'Content-Type': 'text/plain; charset=utf-8' })
+    res.end(req.method === 'HEAD' ? undefined : 'This resource is not currently published.')
+  })
+  return { name: 'external-publication-policy', configureServer: install, configurePreviewServer: install }
+}
 
 function lipsyncStaticPlugin() {
   return {
@@ -382,6 +394,7 @@ function rawAudioCandidatePlugin() {
 export default defineConfig({
   plugins: [
     vue(),
+    externalPublicationPolicyPlugin(),
     lipsyncStaticPlugin(),
     audioPlugin(),
     cardArtPlugin(),

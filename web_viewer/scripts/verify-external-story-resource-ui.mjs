@@ -251,7 +251,7 @@ assert.match(storyCatalogComponent, /社区中文剧情/, 'story portal must exp
 assert.match(storyCatalogComponent, /open-external-resources/, 'story portal gateway must emit a navigation action')
 assert.match(
   appComponent,
-  /:external-resources="currentStoryCollectionExternalResources"/,
+  /:external-resources="EXTERNAL_STORY_RESOURCES_ENABLED \? currentStoryCollectionExternalResources : \[\]"/,
   'App must pass exact collection resources to ArchiveStoryCollection',
 )
 assert.match(
@@ -266,7 +266,7 @@ assert.match(
 )
 assert.match(
   appComponent,
-  /:external-resources="currentIdolStoryExternalResources"/,
+  /:external-resources="EXTERNAL_STORY_RESOURCES_ENABLED \? currentIdolStoryExternalResources : \[\]"/,
   'App must pass exact personal-story resources to ArchiveIdolStory',
 )
 assert.match(
@@ -286,3 +286,5 @@ assert.match(
 )
 
 console.log('External Story resource UI verified: exact mappings and safe links')
+
+await import('./verify-external-publication-off.mjs')

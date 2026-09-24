@@ -1,5 +1,6 @@
 <template>
   <section class="external-story-navigation" data-archive-scroll-container>
+    <template v-if="EXTERNAL_STORY_RESOURCES_ENABLED">
     <header class="resource-hero">
       <div>
         <span>COMMUNITY TRANSLATIONS</span>
@@ -50,10 +51,13 @@
       <ShieldCheck :size="16" />
       <span>链接指向原投稿并显示 uploader；本站不镜像视频、字幕、封面或头像。</span>
     </footer>
+    </template>
+    <p v-else class="empty-state" role="status">站外视频导航已暂时关闭。站内剧情阅读与播放不受此调整影响。</p>
   </section>
 </template>
 
 <script setup>
+import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../../../shared/deploy/ExternalStoryResourcePolicy.js'
 import { BookOpen, ExternalLink, ShieldCheck } from '@lucide/vue'
 
 defineProps({ entries: { type: Array, default: () => [] } })
