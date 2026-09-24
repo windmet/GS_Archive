@@ -50,7 +50,16 @@ export function isPreviewLosslessWebpCandidate(requestKey) {
 }
 
 /** Logical request key -> physical R2 object key. Identity when not transformed. */
-export function resolvePreviewObjectKey(requestKey, { gzip = false } = {}) {
+export function isPreviewDataSnapshotKey(key) {
+  return typeof key === 'string' && key.startsWith('data/') && !key.startsWith('data/compiled/')
+    && key.endsWith('.json') && !key.split('/').some(part => !part || part === '.' || part === '..' || part.includes('\\'))
+}
+
+export function resolvePreviewObjectKey(requestKey, { gzip = false, dataRevision = '' } = {}) {
+  if (dataRevision && isPreviewDataSnapshotKey(requestKey)) {
+    if (!/^[a-f0-9]{64}$/.test(dataRevision)) throw new Error('Invalid data snapshot revision')
+    return `versions/${dataRevision}/${requestKey}`
+  }
   if (gzip && isPreviewGzipCandidate(requestKey)) return `${requestKey}.gz`
   return isPreviewLosslessWebpCandidate(requestKey)
     ? requestKey.replace(PNG_EXTENSION, '.webp')

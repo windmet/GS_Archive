@@ -63,7 +63,7 @@ export async function serveR2Resource({ request, env, prefix }) {
   // deployment actually stored. Content type follows the object, not the URL.
   const requestKey = `${prefix}/${relative}`
   const gzip = previewGzipEnabled(env, requestKey)
-  const objectKey = resolvePreviewObjectKey(requestKey, { gzip })
+  const objectKey = resolvePreviewObjectKey(requestKey, { gzip, dataRevision: env.ARCHIVE_DATA_REVISION })
   // Cloudflare normalizes the forwarded header; negotiate using the client's
   // original value when the edge provides it (including an empty string).
   const acceptEncoding = request.cf?.clientAcceptEncoding ?? request.headers.get('Accept-Encoding')
