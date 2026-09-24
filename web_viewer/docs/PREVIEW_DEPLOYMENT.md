@@ -90,7 +90,9 @@ whole corpus is converted in one pass rather than split by class.
 
 ## Architecture
 
-- `npm run build:preview` compiles only `index.html` and `/_app/*` into `dist`.
+- `npm run build:preview` compiles `index.html` and `/_app/*` into `dist`, then
+  copies the Git-tracked JSON files under `public/translations` to
+  `dist/translations`. It does not copy the full public resource corpus.
 - Pages Functions handle `/assets/*` and `/data/*` using the private R2 binding
   `ARCHIVE_ASSETS`. Git does not contain the full local `public` corpus, so both
   prefixes must come from R2. The default Vite `build` remains unchanged.
