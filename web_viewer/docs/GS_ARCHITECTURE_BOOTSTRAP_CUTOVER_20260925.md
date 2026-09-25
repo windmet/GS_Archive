@@ -1,8 +1,10 @@
 # GS 门户 bootstrap 切换：第二批
 
-输入 HEAD `9a17e86`，分支 `codex/gs-architecture-rebuild`。沿用已验证的
-`fdbfbc927800cef97f15388b9962c53b5b9a836650cd8b72efdec789b219e2aa`
-本地 read-model 候选，只提交其 11,509 B bootstrap，不提交 2,961 个静态模型文件。
+输入 HEAD `9a17e86`，分支 `codex/gs-architecture-rebuild`。生产器代码提交
+`dc5ec7b` 后重生真实候选，release 为
+`ebbc9c4bfc54d019e1927d7f3ef7c6cee9d6476c30c05fd5536b2af4817e5fb8`。
+只提交其 11,509 B bootstrap，不提交 2,961 个静态模型文件。
+候选位于 `E:\GS_readmodels_candidate_20260925_r3`，全部文件已再次校验。
 
 ## 变更
 
