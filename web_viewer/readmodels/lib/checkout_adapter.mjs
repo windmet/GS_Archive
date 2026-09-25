@@ -147,6 +147,7 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
   return { product: { home: homes, homeStats, homeHighlights, identities, cards, stories, gashas,
     songs: Object.values(data.songCatalog.songs), songViews, songSummary: data.songCatalog.summary, cardContext,
     gashaCatalogIds:gashaCatalog.map(g=>String(g.id)),
+    gashaSummary:pick(data.gashaIndex.meta,['gasha_count','logical_gasha_count','derived_pickup_count','category_counts']),
     playback: data.songPlaybackAudio.songs, experimental: data.songExperimentalAudio.songs, extraDomains },
     provenance: { sources, codeHashes, dataRevision, mediaEpoch, canonicalCounts: {
       rawCardRecords: data.cardIndex.cards.length, preferredCards: cards.length,
