@@ -35,7 +35,9 @@ function setup() {
     buildCardVoicePreviewScenario, idolDisplayName: id => `speaker:${id}`,
     archiveRouteReady: true,
     archiveHomeIdols: { value: [] }, idolEpisodeData: { value: {} },
+    archiveBootstrap: { idols: [{ id: '038tak' }] },
     mobileArchiveData: { value: {} }, idolUnitData: { value: {} },
+    idolStoryReadModelDetail: { value: null }, loadIdolStoryDetail: async () => ({ id: '038tak', view: { page: { idol_code: '038tak' } } }),
     ensureCardDetailData: async () => {}, ensureIdolCommunicationData: async () => {},
     resolveRouteGroup: () => null, resolveRouteUnit: () => null, resolveRouteEpisode: () => null,
     currentStoryCollection: { value: null }, currentEventEpisodes: { value: [] }, currentIdolStoryPage: { value: null },
@@ -117,22 +119,22 @@ function setup() {
   assert.equal(t.state.currentScenarioFile.value, '')
   assert.equal(t.writes.length, 1)
 }
-// A player deep link needs its lazy archive owner before restoring its queue
+// A player deep link needs its selected read-model owner before restoring its queue
 // and before a later Back can render that owner.
 {
   const t = setup(), data = deferred()
-  t.context.ensureIdolCommunicationData = () => data.promise
+  t.context.loadIdolStoryDetail = () => data.promise
   const pending = t.restore({ view: 'player', scenario: 'birthday-b.json', returnView: 'idol_story_archive', idol: '038tak' })
   await flush()
   assert.equal(t.requests.length, 0, 'owner data must precede player restoration')
-  t.context.idolUnitData.value = { by_idol_code: { '038tak': {} } }
   t.context.currentIdolStoryPage.value = { sections: [{ episodes: [{ file: 'birthday-b.json' }] }] }
-  data.resolve()
+  data.resolve({ id: '038tak', view: { page: t.context.currentIdolStoryPage.value } })
   await flush(() => t.requests.length === 1)
   t.respond(0, 'birthday'); await pending
   assert.equal(t.state.currentCharacterId.value, '038tak')
   assert.equal(t.state.returnViewAfterPlayer.value, 'idol_story_archive')
   assert.equal(t.state.view.value, 'player')
+  assert.equal(t.context.idolStoryReadModelDetail.value.id, '038tak')
 }
 // Older history restore cannot write selections after its data dependency resolves.
 {
