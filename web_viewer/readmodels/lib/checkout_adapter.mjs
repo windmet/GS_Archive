@@ -190,6 +190,6 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     provenance: { sources, codeHashes, dataRevision, mediaEpoch, canonicalCounts: {
       rawCardRecords: data.cardIndex.cards.length, preferredCards: cards.length,
       storyEntries: stories.length, homeIdols: homes.length },
-      followupProducers: ['main-extra-birthday landing projections + identity parity','mobile + random talk pages','resources UI/provenance','reading document locator','legacy groups/files directory aliases'],
+      followupProducers: ['story catalog identity parity and resource projections','mobile + random talk pages','resources UI/provenance','reading document locator','legacy groups/files directory aliases'],
     } };
 }
