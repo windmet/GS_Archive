@@ -61,7 +61,7 @@ export async function writeReadModels(root, release, product, provenance = {}) {
 
   const storyRows = [], storySearch = [];
   for (const story of product.stories) {
-    const descriptor = await detail('stories', story.id, { story: stripEvidence(story) });
+    const descriptor = await detail('stories', story.id, { story: stripEvidence(story), view: product.storyViews?.[story.id] || null });
     const row = { ...pick(story, ['id','file','title','subtitle','domain','domainLabel','exists','releaseAt','unitId','unitName','sectionId','sectionLabel','episodeLabel','resourceId','playableStartIndex','playableStepCount','eventScope','eventScopeLabel','rewardCardIds']), detail: descriptor };
     storyRows.push(row);
     storySearch.push({ ...pick(row, ['id','file','title','subtitle','domain','exists','unitId','sectionId']),

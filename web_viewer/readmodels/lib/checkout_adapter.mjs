@@ -26,6 +26,7 @@ const HELPERS = {
  eventEpisodes: 'src/data/eventStoryEpisodes.js', idolPage: 'src/data/idolPage.js', unitPage: 'src/data/unitPage.js',
  domainIdentity: 'src/data/storyDomainIdentityIndex.js', collections: 'src/data/storyCollections.js',
  idolStories: 'src/data/idolCommunicationSelectors.js',
+ characterImages: 'src/utils/CharacterImageResolver.js',
 };
 export function projectUnitRecord(entry, stories, songs) {
   const unit = entry.unit;
@@ -49,7 +50,7 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
   }
   const codeHashes = {};
   // Include transitive pure-module code in the release digest, not only direct import entrypoints.
-  for (const dir of ['src/data','src/presentation','shared/story']) {
+  for (const dir of ['src/data','src/presentation','src/utils','shared/story']) {
     for (const name of await listFiles(path.join(viewer, dir))) {
       if (!name.endsWith('.js') && !name.endsWith('.mjs')) continue;
       codeHashes[`${dir}/${name}`] = sha256(await safeRead(viewer, `${dir}/${name}`));
@@ -92,6 +93,24 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
   const gashas = [...gashaMap.values()];
   const cardMap = new Map(cards.map(c => [c.resource_id,c]));
   const originalCardMap = modules.cards.buildCardMap(data.cardIndex);
+  const storyGroups = new Map();
+  for (const story of stories) {
+    const key = `${story.domain}:${story.sectionId || ''}`;
+    const group = storyGroups.get(key) || [];
+    group.push(story);
+    storyGroups.set(key, group);
+  }
+  const storyViews = Object.fromEntries(stories.map(story => {
+    const group = storyGroups.get(`${story.domain}:${story.sectionId || ''}`) || [];
+    const related = [...group].sort((a,b) => a.releaseAt - b.releaseAt || a.resourceId.localeCompare(b.resourceId))
+      .slice(0,24).map(entry => pick(entry,['id','file','title','episodeLabel','domainLabel','domain','sectionId','exists']));
+    const castReferences = (story.characters || []).filter(code => /^\d{3}[a-z0-9]{3}$/i.test(code))
+      .map(code => modules.idolReference.buildIdolReference(code,data.idolUnit,data.archiveManifest,`story:${story.file}`));
+    const birthdayIdol = story.domain === 'birthday' ? modules.characterImages.birthdayStoryIdolCode(story) : '';
+    const promotedVisualUrl = birthdayIdol
+      ? modules.characterImages.getPromotedCharacterImageUrl('birthday_visual',birthdayIdol,data.rawCharacterImagePromotions) : '';
+    return [story.id,{ related, castReferences, promotedVisualUrl }];
+  }));
   const birthdayDomain = modules.domainIdentity.buildBirthdayStoryDomainIdentity(data.storyCatalog,data.idolUnit,data.speakerDictionary,data.birthdayStorySemantic);
   const extraDomain = modules.domainIdentity.buildExtraStoryDomainIdentity(data.storyCatalog,data.gashaIndex,data.extraStoryVisualIndex);
   const collections = modules.collections.buildStoryCollections(data.storyCatalog,stories,{birthdayDomain,extraDomain,idolEpisodes:data.idolEpisode});
@@ -161,7 +180,7 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
             .filter(episode=>episode._source).map(episode=>({id:episode.id,source:episode._source}))}}})) },
   };
   return { product: { home: homes, homeStats, homeHighlights, identities, cards, stories, gashas,
-    songs: Object.values(data.songCatalog.songs), songViews, songSummary: data.songCatalog.summary, cardContext,
+    songs: Object.values(data.songCatalog.songs), songViews, songSummary: data.songCatalog.summary, cardContext, storyViews,
     gashaCatalogIds:gashaCatalog.map(g=>String(g.id)),
     gashaSummary:pick(data.gashaIndex.meta,['gasha_count','logical_gasha_count','derived_pickup_count','category_counts']),
     playback: data.songPlaybackAudio.songs, experimental: data.songExperimentalAudio.songs, extraDomains },
