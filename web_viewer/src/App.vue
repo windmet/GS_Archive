@@ -250,9 +250,9 @@
 
       <ArchiveStatus
         v-if="view === 'archive_status'"
-        :manifest="archiveManifestData"
-        :verification="archiveVerificationData"
-        :ui-assets="uiAssetCatalogData"
+        :manifest="resourceReadModelDetail?.view?.manifest || archiveManifestData"
+        :verification="resourceReadModelDetail?.view?.verification || archiveVerificationData"
+        :ui-assets="resourceReadModelDetail?.view?.uiAssets || uiAssetCatalogData"
         @open-spine-lab="openSpineLab"
       />
 
@@ -421,6 +421,7 @@
       <p v-if="!loading && idolStoryReadModelStatus" role="status">{{ idolStoryReadModelStatus }}</p>
       <p v-if="!loading && collectionReadModelStatus" role="status">{{ collectionReadModelStatus }}</p>
       <p v-if="!loading && storyReadModelStatus" role="status">{{ storyReadModelStatus }}</p>
+      <p v-if="!loading && resourceReadModelStatus" role="status">{{ resourceReadModelStatus }}</p>
       <p v-if="['unit_catalog', 'unit_detail'].includes(view) && unitReadModelStatus" class="unit-read-model-status" role="status">{{ unitReadModelStatus }}</p>
     </ArchiveShell>
 
@@ -794,6 +795,10 @@ const storyCatalogLanding = shallowRef(null)
 let storyCatalogPromise = null
 let storyLandingPromise = null
 let pendingStoryDetailNavigation = 0
+const resourceReadModelDetail = shallowRef(null)
+const resourceReadModelStatus = ref('')
+let resourceDetailPromise = null
+let pendingResourceNavigation = 0
 const homeReadModelIndex = ref(null)
 const homeReadModelProfiles = ref({})
 const homeEntryStatus = ref('')
@@ -804,7 +809,7 @@ let pendingHomeNavigation = 0
 let pendingLegacyNavigation = 0
 let legacyDataPromise = null
 const continuousPlayback = ref(localStorageValue('sidem:continuous-playback') === '1')
-const loading = ref(!isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'story_collection', 'story_detail', 'story_catalog'].includes(initialArchiveStartup.route.view) || initialArchiveStartup.route.view === 'home' && Boolean(initialArchiveStartup.route.homeIdol))
+const loading = ref(!isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status'].includes(initialArchiveStartup.route.view) || initialArchiveStartup.route.view === 'home' && Boolean(initialArchiveStartup.route.homeIdol))
 const loadingPurpose = ref('archive-data')
 const preloadProgress = ref(0)
 
@@ -1813,6 +1818,11 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
       await loadStoryReadModelLanding()
       if (!intent.isCurrent()) return
     }
+    if (route.view === 'archive_status') {
+      const detail = await loadResourceStatus()
+      if (!intent.isCurrent()) return
+      resourceReadModelDetail.value = detail
+    }
     if ((route.view === 'idol_story_archive' || (route.view === 'player' && route.returnView === 'idol_story_archive')) && route.idol) {
       const detail = await loadIdolStoryDetail(route.idol)
       if (!intent.isCurrent()) return
@@ -2001,7 +2011,7 @@ function navigateArchiveSection(section) {
     if (!archiveDataReady.value) loading.value = false
     return openArchivePortal()
   }
-  if (section !== 'portal' && section !== 'home' && section !== 'songs' && section !== 'idols' && section !== 'gashas' && section !== 'cards' && !archiveDataReady.value) {
+  if (!['portal', 'home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources'].includes(section) && !archiveDataReady.value) {
     return runWhenLegacyReady(() => navigateArchiveSection(section))
   }
   if (section !== 'portal' && section !== 'home') {
@@ -2542,13 +2552,27 @@ function updateStageTarget(target) {
 }
 
 function openArchiveStatus() {
-  if (view.value !== 'portal') detailSourceRoute.value = ''
-  filterQuery.value = ''
-  currentStoryDomain.value = ''
-  currentEventScope.value = 'all'
-  currentStoryAvailability.value = 'all'
-  currentStorySort.value = 'domain'
-  commitView('archive_status')
+  const request = ++pendingResourceNavigation
+  const revision = navigation.getRevision()
+  resourceReadModelStatus.value = '正在读取资源状态…'
+  loading.value = true
+  return loadResourceStatus().then(detail => {
+    if (request !== pendingResourceNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
+    resourceReadModelDetail.value = detail
+    resourceReadModelStatus.value = ''
+    if (view.value !== 'portal') detailSourceRoute.value = ''
+    filterQuery.value = ''
+    currentStoryDomain.value = ''
+    currentEventScope.value = 'all'
+    currentStoryAvailability.value = 'all'
+    currentStorySort.value = 'domain'
+    commitView('archive_status')
+  }).catch(error => {
+    if (request !== pendingResourceNavigation || revision !== navigation.getRevision()) return
+    loading.value = false
+    console.error('[ResourceReadModel] Failed to open status:', error)
+    resourceReadModelStatus.value = '资源状态暂时无法读取，请重试。'
+  })
 }
 
 function openGashaCatalog() {
@@ -4062,6 +4086,23 @@ async function loadStoryReadModelDetail(file) {
   } })
 }
 
+async function loadResourceStatus() {
+  if (!resourceDetailPromise) {
+    resourceDetailPromise = (async () => {
+      const index = await readModelClient.load(archiveBootstrap.domains.resources)
+      if (index.count !== 1 || index.pages?.length !== 1) throw new Error('Resource status directory mismatch')
+      const page = await readModelClient.load(index.pages[0])
+      const row = page.rows?.[0]
+      if (row?.id !== 'archive-status' || !row.detail) throw new Error('Resource status identity mismatch')
+      return readModelClient.load(row.detail, { expectedId: row.id, validate: data => {
+        if (!data.view?.manifest?.coverage || !data.view?.verification?.scenarios ||
+          !data.view?.uiAssets?.meta) throw new Error('Resource status shape mismatch')
+      } })
+    })().catch(error => { resourceDetailPromise = null; throw error })
+  }
+  return resourceDetailPromise
+}
+
 async function loadSongCatalog() {
   if (songReadModelCatalog.value) return songReadModelCatalog.value
   if (!songCatalogPromise) {
@@ -4103,7 +4144,7 @@ async function loadSongDetail(songCode) {
 }
 
 function isBootstrapRoute(route) {
-  return ['portal', 'welcome', 'idol_picker', 'home', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'story_collection', 'story_detail', 'story_catalog'].includes(route.view) ||
+  return ['portal', 'welcome', 'idol_picker', 'home', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status'].includes(route.view) ||
     (route.view === 'idols' && (!route.category || route.category === 'idol'))
 }
 
@@ -4149,6 +4190,7 @@ onMounted(async () => {
     ++pendingIdolStoryNavigation
     ++pendingCollectionNavigation
     ++pendingStoryDetailNavigation
+    ++pendingResourceNavigation
     ++pendingLegacyNavigation
     legacyEntryStatus.value = ''
     if (route.view === 'story_collection' && (!route.storyType || !route.storySection) ||
@@ -4331,7 +4373,7 @@ onMounted(async () => {
   if (startup.source === 'invalid-immersive-idol') {
     userPreferenceNotice.value = '之前选择的首页偶像当前不可用，请重新选择。'
   }
-  if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'story_collection', 'story_detail', 'story_catalog'].includes(startup.route.view) && !(startup.route.view === 'home' && startup.route.homeIdol)) loading.value = false
+  if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status'].includes(startup.route.view) && !(startup.route.view === 'home' && startup.route.homeIdol)) loading.value = false
   await restoreRoute(startup.route)
 })
 
