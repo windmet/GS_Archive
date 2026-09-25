@@ -134,6 +134,12 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
   // Explicitly scoped leaves: these are source-owned domain records, not root-level index dumps.
   // The UI integration guide specifies which remaining joins must move into offline route producers.
   const extraDomains = {
+    resources: { records:[{ id:'archive-status', summary:{ title:'数据与资源状态' }, view:{
+      manifest:pick(data.archiveManifest,['schema_version','generated_at','data_updated_at','counts','coverage']),
+      verification:pick(data.archiveVerification,['generated_at','scenarios','dialogue_voices','card_home_voices','card_scenarios','card_relations','card_details','gashas','unit_event_relations']),
+      uiAssets:{ schema_version:data.uiAssetCatalog.schema_version,
+        meta:data.uiAssetCatalog.meta, source:pick(data.uiAssetCatalog.source || {},['scope']) },
+    }}] },
     events: { searchable: true, records: (data.archiveManifest.unit_event_relations || []).map(event => {
       const story = stories.find(s => s.file === event.file) || null;
       const units = new Set((event.participating_unit_ids || []).map(String));
