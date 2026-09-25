@@ -26,6 +26,18 @@ const HELPERS = {
  domainIdentity: 'src/data/storyDomainIdentityIndex.js', collections: 'src/data/storyCollections.js',
  idolStories: 'src/data/idolCommunicationSelectors.js',
 };
+export function projectUnitRecord(entry, stories, songs) {
+  const unit = entry.unit;
+  const cardStats = pick(entry.cardStats, ['total', 'rarity_counts', 'cards_with_story', 'single_state']);
+  const compactEntry = { ...entry, cardStats };
+  return {
+    id: String(unit.unit_id),
+    summary: { name: unit.unit_name || unit.name || String(unit.unit_id),
+      catalog: { unit, members: entry.members, cardStats,
+        teamEventCount: entry.eventRelations.team_events.length } },
+    view: { entry: compactEntry, stories, songs },
+  };
+}
 /** Production adapter: executes the existing, checkout-owned pure selectors. No hand-reimplementation of card precedence or story identity. */
 export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
   const sources = {}, data = {};
@@ -121,9 +133,8 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
         events:modules.idolPage.eventsForIdol(id,data.archiveManifest),
         songs:modules.idolPage.songsForIdol(id,data.songCatalog),
       }})) },
-    units: { records:unitCatalog.map(entry=>{const unit=entry.unit;return {id:String(unit.unit_id),summary:{name:unit.unit_name||unit.name||String(unit.unit_id)},view:{
-      entry,stories:modules.unitPage.storiesForUnit(unit,stories),songs:modules.unitPage.songsForUnit(unit,data.songCatalog),
-    }}}) },
+    units: { records:unitCatalog.map(entry=>projectUnitRecord(entry,
+      modules.unitPage.storiesForUnit(entry.unit,stories),modules.unitPage.songsForUnit(entry.unit,data.songCatalog))) },
     collections: { searchable:true, records:collections.map(collection=>({id:collection.id,
       summary:pick(collection,['title','domain','sectionId','legacySectionIds','visualUrl','chapterCount','episodeCount']),view:{collection}})) },
     'idol-stories': { records:data.idolEpisode.chapters.map(chapter=>({id:chapter.idol_code,summary:{name:chapter.idol_name},view:{
