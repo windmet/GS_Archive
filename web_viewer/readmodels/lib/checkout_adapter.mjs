@@ -113,6 +113,7 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
   }));
   const birthdayDomain = modules.domainIdentity.buildBirthdayStoryDomainIdentity(data.storyCatalog,data.idolUnit,data.speakerDictionary,data.birthdayStorySemantic);
   const extraDomain = modules.domainIdentity.buildExtraStoryDomainIdentity(data.storyCatalog,data.gashaIndex,data.extraStoryVisualIndex);
+  const mainDomain = modules.domainIdentity.buildMainStoryDomainIdentity(data.storyCatalog);
   const collections = modules.collections.buildStoryCollections(data.storyCatalog,stories,{birthdayDomain,extraDomain,idolEpisodes:data.idolEpisode});
   const unitCatalog = modules.unitPage.buildUnitCatalog(data.idolUnit,{manifest:data.archiveManifest,cardMap:originalCardMap,stories});
   const songViews = Object.fromEntries(Object.values(data.songCatalog.songs).map(song => [song.song_code,
@@ -181,6 +182,8 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
   };
   return { product: { home: homes, homeStats, homeHighlights, identities, cards, stories, gashas,
     songs: Object.values(data.songCatalog.songs), songViews, songSummary: data.songCatalog.summary, cardContext, storyViews,
+    storyCatalogView: { mainDomain, extraDomain, birthdayDomain,
+      seasonalCount: data.seasonalCampaign.campaigns.length, workCount: data.workStory.idols.length },
     gashaCatalogIds:gashaCatalog.map(g=>String(g.id)),
     gashaSummary:pick(data.gashaIndex.meta,['gasha_count','logical_gasha_count','derived_pickup_count','category_counts']),
     playback: data.songPlaybackAudio.songs, experimental: data.songExperimentalAudio.songs, extraDomains },

@@ -29,6 +29,18 @@ test('Core products preserve details, keep catalogs thin, and close descriptors'
     const story = report.artifacts.find(a => a.kind === 'stories.detail');
     const storyBody=JSON.parse(await fs.readFile(path.join(dir,'pages',story.url.slice(1)),'utf8'));
     assert.equal(storyBody.data.story.episodes[0].local_playable_start_index,3); assert.equal(storyBody.data.story.releaseAt,null);
+    const storyIndex=JSON.parse(await fs.readFile(path.join(dir,'pages',bootstrap.domains.stories.url.slice(1)),'utf8'));
+    assert.equal(storyIndex.data.workCount,49);
+    assert.equal(storyIndex.data.seasonalCount,4);
+    assert.deepEqual(Object.keys(storyIndex.data.landing),['birthday','extra','main']);
+    const storyPage=JSON.parse(await fs.readFile(path.join(dir,'pages',storyIndex.data.pages[0].url.slice(1)),'utf8'));
+    assert.equal(storyPage.data.rows[0].searchText,'fixture story');
+    assert.equal(storyPage.data.rows[0].summary.step_count,8);
+    assert.equal(storyPage.data.rows[0].detail.kind,'stories.detail');
+    for (const [domain, descriptor] of Object.entries(storyIndex.data.landing)) {
+      const landing=JSON.parse(await fs.readFile(path.join(dir,'pages',descriptor.url.slice(1)),'utf8'));
+      assert.deepEqual(landing.data.value,p.storyCatalogView[`${domain}Domain`]);
+    }
     await fs.appendFile(path.join(dir,'pages',story.url.slice(1)),' ');
     await assert.rejects(verifyArtifacts(dir),/Artifact drift/);
   } finally { await fs.rm(dir,{recursive:true,force:true}); }

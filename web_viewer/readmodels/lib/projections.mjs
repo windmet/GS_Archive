@@ -62,12 +62,21 @@ export async function writeReadModels(root, release, product, provenance = {}) {
   const storyRows = [], storySearch = [];
   for (const story of product.stories) {
     const descriptor = await detail('stories', story.id, { story: stripEvidence(story), view: product.storyViews?.[story.id] || null });
-    const row = { ...pick(story, ['id','file','title','subtitle','domain','domainLabel','exists','releaseAt','unitId','unitName','sectionId','sectionLabel','episodeLabel','resourceId','playableStartIndex','playableStepCount','eventScope','eventScopeLabel','rewardCardIds']), detail: descriptor };
+    const row = { ...pick(story, ['id','file','title','subtitle','domain','domainOrder','domainLabel','exists','releaseAt','unitId','unitName','sectionId','sectionLabel','episodeLabel','resourceId','playableStartIndex','playableStepCount','eventScope','eventScopeLabel','rewardCardIds','searchText','characters','summary','preplaySynopsis']),
+      eventRelation: story.eventRelation ? pick(story.eventRelation, ['event_id','event_code','title','event_scope']) : null,
+      masterEvent: story.masterEvent ? pick(story.masterEvent, ['name','event_type_label','start_at']) : null,
+      detail: descriptor };
     storyRows.push(row);
     storySearch.push({ ...pick(row, ['id','file','title','subtitle','domain','exists','unitId','sectionId']),
       resourceIds: story.resourceIds || [], characters: story.characters || [], detail: descriptor });
   }
-  await directory('stories', storyRows, { searchRows: storySearch });
+  const landing = product.storyCatalogView || {};
+  const landingDescriptors = {};
+  for (const [key, value] of Object.entries({ main: landing.mainDomain, extra: landing.extraDomain, birthday: landing.birthdayDomain })) {
+    if (value) landingDescriptors[key] = await writer.emit(`stories/landing/${key}.json`, `stories.landing.${key}`, { value: stripEvidence(value) });
+  }
+  await directory('stories', storyRows, { searchRows: storySearch,
+    meta: { landing: landingDescriptors, seasonalCount: landing.seasonalCount || 0, workCount: landing.workCount || 0 } });
 
   const songRows = [];
   for (const song of product.songs) {
