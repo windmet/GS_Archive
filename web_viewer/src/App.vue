@@ -21,7 +21,7 @@
       <ArchivePortalLauncher
         v-if="view === 'portal'"
         :preferred-reference="preferredArchiveIdolReference"
-        :loading-section="legacyEntryStatus"
+        :loading-section="homeEntryStatus || legacyEntryStatus"
         :can-go-back="Boolean(portalFrom)"
         @navigate="navigateArchiveSection"
         @back="closeArchivePortal"
@@ -45,6 +45,7 @@
         @save-preferred="savePreferredIdol"
         @clear-preferences="clearUserPreferences"
       />
+      <p v-if="view === 'home' && homeEntryStatus" class="home-read-model-status" role="status">{{ homeEntryStatus }}</p>
       <ArchiveImmersiveHome
         v-if="view === 'home' && homeSelectedId"
         v-model:selected-id="homeSelectedId"
@@ -540,6 +541,7 @@ import {
 import { resolveArchiveHomeAction, resolveArchiveStartup } from './core/archiveStartup.js'
 import { readBootstrap } from '../readmodels/runtime/readBootstrap.mjs'
 import { ReadModelClient, entityDescriptor } from '../readmodels/runtime/ReadModelClient.mjs'
+import { hydrateHomeProfile } from '../readmodels/runtime/hydrateHomeProfile.mjs'
 import { buildEventStoryEpisodes } from './data/eventStoryEpisodes.js'
 import { buildStoryCollections } from './data/storyCollections.js'
 import {
@@ -723,10 +725,17 @@ const songReadModelDetail = ref(null)
 const songReadModelStatus = ref('')
 let songCatalogPromise = null
 let pendingSongNavigation = 0
+const homeReadModelIndex = ref(null)
+const homeReadModelProfiles = ref({})
+const homeEntryStatus = ref('')
+let homeIndexPromise = null
+const homeProfilePromises = new Map()
+const recentHomeProfiles = []
+let pendingHomeNavigation = 0
 let pendingLegacyNavigation = 0
 let legacyDataPromise = null
 const continuousPlayback = ref(localStorageValue('sidem:continuous-playback') === '1')
-const loading = ref(!isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail'].includes(initialArchiveStartup.route.view))
+const loading = ref(!isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail', 'home'].includes(initialArchiveStartup.route.view) && Boolean(initialArchiveStartup.route.homeIdol))
 const loadingPurpose = ref('archive-data')
 const preloadProgress = ref(0)
 
@@ -765,18 +774,20 @@ const CATEGORIES = [
 ]
 
 const totalFiles = computed(() => countScenarioFiles(indexData.value?.categories || []))
-const archiveStats = computed(() => [
+const archiveStats = computed(() => homeReadModelIndex.value?.stats || [
   { label: '剧情文件', value: archiveVerificationData.value?.scenarios?.parsed_files ?? archiveManifestData.value?.counts?.indexed_scenarios ?? totalFiles.value },
   { label: '偶像', value: archiveManifestData.value?.counts?.idols ?? Object.keys(idolUnitData.value?.by_idol_code || {}).length },
   { label: '卡片', value: archiveManifestData.value?.counts?.cards ?? cardIndexData.value?.meta?.card_count ?? cardIndexData.value?.cards?.length ?? 0 },
   { label: '卡池', value: gashaIndexData.value?.meta?.logical_gasha_count ?? archiveManifestData.value?.counts?.gashas ?? 0 },
   { label: '首页语音', value: archiveManifestData.value?.counts?.home_voice_cues ?? cardIndexData.value?.meta?.home_voice_cue_count ?? 0 },
 ])
-const archiveHomeIdols = computed(() => archiveDataReady.value
-  ? buildArchiveHomeState(idolUnitData.value, cardIndexData.value, archiveManifestData.value, costumeDictionaryData.value)
-  : archiveBootstrap.idols.filter(idol => idol.home_available))
+const archiveHomeIdols = computed(() => homeReadModelIndex.value
+  ? homeReadModelIndex.value.idols.map(idol => homeReadModelProfiles.value[idol.id] || idol)
+  : archiveDataReady.value
+    ? buildArchiveHomeState(idolUnitData.value, cardIndexData.value, archiveManifestData.value, costumeDictionaryData.value)
+    : archiveBootstrap.idols.filter(idol => idol.home_available))
 const archivePickerIdols = computed(() => archiveBootstrap.idols)
-const archiveHomeHighlights = computed(() => buildArchiveHomeHighlights(
+const archiveHomeHighlights = computed(() => homeReadModelIndex.value?.highlights || buildArchiveHomeHighlights(
   archiveManifestData.value,
   uiAssetCatalogData.value,
 ))
@@ -1877,29 +1888,24 @@ function goHome() {
     portalFrom.value = ''
     commitView('portal')
   } else if (destination.view === 'home') {
-    homeSelectedId.value = destination.homeIdol || ''
-    homeSelectedCue.value = ''
-    homeSelectedCostume.value = ''
-    commitView('home')
+    return openGameHome(destination.homeIdol || '')
   } else {
     commitView('welcome')
   }
 }
 
 function navigateArchiveSection(section) {
-  if (section === 'portal' && !archiveDataReady.value) {
-    ++pendingLegacyNavigation
-    legacyEntryStatus.value = ''
-    return
+  if (section === 'portal') {
+    if (!archiveDataReady.value) loading.value = false
+    return openArchivePortal()
   }
-  if (section !== 'portal' && section !== 'songs' && !archiveDataReady.value) {
+  if (section !== 'portal' && section !== 'home' && section !== 'songs' && !archiveDataReady.value) {
     return runWhenLegacyReady(() => navigateArchiveSection(section))
   }
   if (section !== 'portal' && section !== 'home') {
     detailSourceRoute.value = view.value === 'portal' ? buildArchiveSourceQuery(currentArchiveRoute()) : ''
   }
-  if (section === 'portal') openArchivePortal()
-  else if (section === 'home') goHome()
+  if (section === 'home') goHome()
   else if (section === 'stories') openStoryCatalog()
   else if (section === 'songs') openSongCatalog()
   else if (section === 'idols') openIdolDirectory()
@@ -2064,7 +2070,7 @@ function chooseStartupLater() {
 function chooseImmersiveIdol({ idolCode, rememberStartup = true, setPreferred = false } = {}) {
   const isGeneralPicker = view.value === 'idol_picker' && currentPickTarget.value !== 'home'
   if (!(isGeneralPicker ? archivePickerIdols.value : archiveHomeIdols.value).some(idol => idol.id === idolCode)) return
-  if (!archiveDataReady.value) return runWhenLegacyReady(() => chooseImmersiveIdol({ idolCode, rememberStartup, setPreferred }))
+  if (isGeneralPicker && !archiveDataReady.value) return runWhenLegacyReady(() => chooseImmersiveIdol({ idolCode, rememberStartup, setPreferred }))
   const next = {}
   if (rememberStartup) Object.assign(next, { startupMode: 'immersive', startupIdol: idolCode, onboardingComplete: true })
   if (setPreferred) next.preferredIdol = idolCode
@@ -2122,10 +2128,24 @@ function cancelWelcomeOrPicker() {
   if (view.value === 'idol_picker') openRootPortal()
 }
 
-function openGameHome(idolCode = '') {
-  if (!archiveDataReady.value) return runWhenLegacyReady(() => openGameHome(idolCode))
+async function openGameHome(idolCode = '') {
   const candidate = [idolCode, userPreferences.value.startupIdol, userPreferences.value.preferredIdol]
     .find(code => validArchiveHomeIdols.value.includes(code)) || ''
+  if (!candidate) return openIdolPicker('home')
+  const request = ++pendingHomeNavigation
+  const revision = navigation.getRevision()
+  homeEntryStatus.value = '正在准备游戏风首页…'
+  try {
+    await loadHomeIdol(candidate)
+  } catch (error) {
+    if (request !== pendingHomeNavigation || revision !== navigation.getRevision()) return
+    console.error('[HomeReadModel] Failed to open Home:', error)
+    homeEntryStatus.value = '游戏风首页暂时无法打开，请重试。'
+    userPreferenceNotice.value = homeEntryStatus.value
+    return
+  }
+  if (request !== pendingHomeNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
+  homeEntryStatus.value = ''
   detailSourceRoute.value = ''
   portalFrom.value = ''
   homeSelectedId.value = candidate
@@ -2160,8 +2180,10 @@ function openArchivePortal() {
 
 async function closeArchivePortal() {
   if (!portalFrom.value) return
-  if (!archiveDataReady.value) return runWhenLegacyReady(() => closeArchivePortal())
-  const pending = applyArchiveRoute(readPortalReturnRoute(portalFrom.value))
+  const route = readPortalReturnRoute(portalFrom.value)
+  if (!archiveDataReady.value && !isBootstrapRoute(route)) return runWhenLegacyReady(() => closeArchivePortal())
+  if (route.view === 'home' && route.homeIdol) await loadHomeIdol(route.homeIdol)
+  const pending = applyArchiveRoute(route)
   const expected = navigation.getRevision()
   await pending
   if (navigation.isDisposed() || expected !== navigation.getRevision()) return
@@ -2236,16 +2258,19 @@ function openSongRelatedStory(relation) {
 }
 
 function openHomeIdol(idolId) {
+  if (!archiveDataReady.value) return runWhenLegacyReady(() => openHomeIdol(idolId))
   currentCategoryId.value = 'idol'
   openIdol({ id: idolId })
 }
 
 function openHomeCards(idolId) {
+  if (!archiveDataReady.value) return runWhenLegacyReady(() => openHomeCards(idolId))
   currentCategoryId.value = 'cards'
   openIdol({ id: idolId })
 }
 
 function openHomeChat(idolId) {
+  if (!archiveDataReady.value) return runWhenLegacyReady(() => openHomeChat(idolId))
   openMobileArchive({ idolCode: idolId, mode: 'personal' })
 }
 
@@ -3022,6 +3047,7 @@ async function restoreDetailSource(fallback) {
   const route = readArchiveSourceRoute(source)
   const beforeLoad = navigation.getRevision()
   if (!isBootstrapRoute(route)) await ensureLegacyArchiveData()
+  if (route.view === 'home' && route.homeIdol) await loadHomeIdol(route.homeIdol)
   if (route.view === 'song_catalog') await ensureSongCatalog()
   if (route.view === 'song_detail' && route.song) songReadModelDetail.value = await loadSongDetail(route.song)
   if (navigation.isDisposed() || beforeLoad !== navigation.getRevision()) return
@@ -3120,6 +3146,7 @@ function openCardEvent(event) {
 }
 
 function openHomeEvent(event) {
+  if (!archiveDataReady.value) return runWhenLegacyReady(() => openHomeEvent(event))
   openEventDetail(event, 'home')
 }
 
@@ -3320,6 +3347,50 @@ function ensureLegacyArchiveData() {
   return legacyDataPromise
 }
 
+async function loadHomeIndex() {
+  if (homeReadModelIndex.value) return homeReadModelIndex.value
+  if (!homeIndexPromise) {
+    homeIndexPromise = readModelClient.load(archiveBootstrap.domains.home, { validate: data => {
+      const expected = archiveBootstrap.idols.filter(idol => idol.home_available).map(idol => idol.id)
+      if (!Array.isArray(data.idols) || data.idols.length !== expected.length ||
+        data.idols.some((idol, index) => idol.id !== expected[index]) ||
+        !Array.isArray(data.stats) || !Array.isArray(data.highlights))
+        throw new Error('Home index does not match inline bootstrap')
+    } }).then(index => { homeReadModelIndex.value = index; return index })
+      .catch(error => { homeIndexPromise = null; throw error })
+  }
+  return homeIndexPromise
+}
+
+async function loadHomeIdol(idolId) {
+  if (homeReadModelProfiles.value[idolId]) {
+    const previous = recentHomeProfiles.indexOf(idolId)
+    if (previous >= 0) recentHomeProfiles.splice(previous, 1)
+    recentHomeProfiles.push(idolId)
+    return homeReadModelProfiles.value[idolId]
+  }
+  if (homeProfilePromises.has(idolId)) return homeProfilePromises.get(idolId)
+  const pending = (async () => {
+    const index = await loadHomeIndex()
+    const row = index.idols.find(idol => idol.id === idolId)
+    if (!row) throw new Error(`Unavailable Home idol: ${idolId}`)
+    const detail = await readModelClient.load(row.detail, { validate: data => {
+      if (data.id !== idolId || data.profile?.id !== idolId || !Array.isArray(data.cueIndex))
+        throw new Error('Home detail identity mismatch')
+    } })
+    const pageDescriptors = [...new Map(detail.cueIndex.map(cue => [cue.page.url, cue.page])).values()]
+    const pages = await Promise.all(pageDescriptors.map(descriptor => readModelClient.load(descriptor)))
+    const profile = hydrateHomeProfile(detail, pageDescriptors, pages)
+    recentHomeProfiles.push(idolId)
+    const profiles = { ...homeReadModelProfiles.value, [idolId]: profile }
+    while (recentHomeProfiles.length > 3) delete profiles[recentHomeProfiles.shift()]
+    homeReadModelProfiles.value = profiles
+    return profile
+  })().finally(() => homeProfilePromises.delete(idolId))
+  homeProfilePromises.set(idolId, pending)
+  return pending
+}
+
 async function loadSongCatalog() {
   if (songReadModelCatalog.value) return songReadModelCatalog.value
   if (!songCatalogPromise) {
@@ -3361,20 +3432,23 @@ async function loadSongDetail(songCode) {
 }
 
 function isBootstrapRoute(route) {
-  return ['portal', 'welcome', 'idol_picker', 'song_catalog', 'song_detail'].includes(route.view) ||
-    (route.view === 'home' && !route.homeIdol)
+  return ['portal', 'welcome', 'idol_picker', 'home', 'song_catalog', 'song_detail'].includes(route.view)
 }
 
 function runWhenLegacyReady(action) {
   if (archiveDataReady.value) return action()
   const request = ++pendingLegacyNavigation
+  const fromHome = view.value === 'home'
+  if (fromHome) loading.value = true
   legacyEntryStatus.value = '正在准备该栏目的资料…'
   ensureLegacyArchiveData().then(() => {
     if (navigation.isDisposed() || request !== pendingLegacyNavigation) return
+    if (fromHome) loading.value = false
     legacyEntryStatus.value = ''
     action()
   }).catch(error => {
     if (request !== pendingLegacyNavigation) return
+    if (fromHome) loading.value = false
     console.error('[ArchiveData] Failed to prepare requested section:', error)
     legacyEntryStatus.value = '该栏目暂时无法打开，请重试。'
   })
@@ -3392,9 +3466,20 @@ onMounted(async () => {
   const restoreRoute = async route => {
     const request = ++restoreRequest
     ++pendingSongNavigation
+    ++pendingHomeNavigation
     ++pendingLegacyNavigation
     legacyEntryStatus.value = ''
     if (!isBootstrapRoute(route)) await ensureLegacyArchiveData()
+    if (route.view === 'home' && route.homeIdol) {
+      try {
+        await loadHomeIdol(route.homeIdol)
+      } catch (error) {
+        if (request !== restoreRequest) return
+        console.error('[HomeReadModel] Failed to restore Home:', error)
+        userPreferenceNotice.value = '游戏风首页暂时无法读取，请重新选择偶像。'
+        route = { view: 'welcome' }
+      }
+    }
     if (route.view === 'song_catalog') await ensureSongCatalog()
     if (route.view === 'song_detail' && route.song) {
       try {
@@ -3434,7 +3519,7 @@ onMounted(async () => {
   if (startup.source === 'invalid-immersive-idol') {
     userPreferenceNotice.value = '之前选择的首页偶像当前不可用，请重新选择。'
   }
-  if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail'].includes(startup.route.view)) loading.value = false
+  if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail'].includes(startup.route.view) && !(startup.route.view === 'home' && startup.route.homeIdol)) loading.value = false
   await restoreRoute(startup.route)
 })
 
@@ -3444,6 +3529,25 @@ watch([filterQuery, currentSongScope, currentCardRarity, currentCardAssetState, 
 
 watch([homeSelectedId, homeSelectedCue, homeSelectedCostume], () => {
   if (view.value === 'home') syncArchiveRoute({ replace: true, restoreView: false })
+})
+
+watch(homeSelectedId, async (idolId, previousId) => {
+  if (view.value !== 'home' || !idolId || homeReadModelProfiles.value[idolId]) return
+  const request = ++pendingHomeNavigation
+  homeEntryStatus.value = '正在准备首页偶像…'
+  loading.value = true
+  try {
+    await loadHomeIdol(idolId)
+    if (request !== pendingHomeNavigation || navigation.isDisposed()) return
+    homeEntryStatus.value = ''
+  } catch (error) {
+    if (request !== pendingHomeNavigation || navigation.isDisposed()) return
+    console.error('[HomeReadModel] Failed to switch idol:', error)
+    homeEntryStatus.value = '首页偶像暂时无法读取，请重试。'
+    if (previousId && homeReadModelProfiles.value[previousId]) homeSelectedId.value = previousId
+  } finally {
+    if (request === pendingHomeNavigation) loading.value = false
+  }
 })
 
 watch([filterQuery, currentStoryDomain, currentStorySection, currentEventScope, currentStoryAvailability, currentStorySort], () => {
@@ -3469,6 +3573,7 @@ watch(storyTranslationLocale, locale => {
 })
 
 onBeforeUnmount(() => {
+  ++pendingHomeNavigation
   readModelClient.dispose()
   idolCommunicationReadiness.leave()
   playbackController.dispose()
@@ -3484,6 +3589,7 @@ onBeforeUnmount(() => {
   background: #f8f9fa; overflow: hidden;
 }
 .song-read-model-status { margin: 12px 24px; padding: 12px 16px; background: #eef8f7; color: #246d67; font-size: .8rem; }
+.home-read-model-status { position: absolute; top: 80px; left: 16px; z-index: 20; padding: 10px 14px; background: #eef8f7; color: #246d67; font-size: .8rem; }
 .playback-failure { position: fixed; top: 64px; width: min(480px, calc(100vw - 24px)); left: 50%; transform: translateX(-50%); z-index: 120; max-width: calc(100vw - 32px); margin: 0; padding: 12px 18px; border: 1px solid #e4b7b7; border-radius: 8px; background: #fff4f4; color: #7f3434; font: 14px/1.6 system-ui, sans-serif; overflow-wrap: anywhere; max-height: 60vh; overflow: auto; box-sizing: border-box; }
 .playback-failure p { margin: 0 0 10px; }
 .playback-failure-actions { display: flex; gap: 12px; }

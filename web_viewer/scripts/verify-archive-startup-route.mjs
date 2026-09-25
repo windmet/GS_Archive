@@ -13,27 +13,23 @@ function deferred() {
 for (const disposed of [false, true]) {
   const loading = deferred()
   const translations = deferred()
-  let mount, isDisposed = false
-  let route = { view: 'cards', idol: '001tom' }
+  let mount, popState, isDisposed = false
+  const route = { view: 'cards', idol: '001tom' }
   const applied = [], written = []
   const context = {
     onMounted: callback => { mount = callback },
     localStorage: { getItem: () => null },
     window: { location: { href: 'http://localhost/' } },
     userPreferences: { value: {} },
-    validArchiveHomeIdols: { value: [] },
-    pendingPreReadyRoute: null,
-    canResolveArchiveStartupBeforeData: () => true,
-    resolveArchiveStartup: () => ({ route: { ...route }, lightweight: false, source: 'test' }),
-    localStorageValue: () => null,
-    readArchiveRoute: () => ({ ...route }),
-    loadArchiveData: () => loading.promise,
+    initialArchiveStartup: { route, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
+    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingLegacyNavigation: 0,
+    isBootstrapRoute: () => false, ensureLegacyArchiveData: () => loading.promise,
     loadIdolEntityTranslations: () => translations.promise,
     navigation: { isDisposed: () => isDisposed, getRevision: () => 0 },
     applyArchiveRoute: async value => { applied.push(value) },
     currentArchiveRoute: () => applied.at(-1),
     writeArchiveRoute: value => written.push(value),
-    onArchivePopState: () => () => {},
+    onArchivePopState: callback => { popState = callback; return () => {} },
     installSpineAnimationDebug: () => () => {},
     adoptArchiveViewContext: () => {},
     console, archiveRouteReady: false,
@@ -43,18 +39,18 @@ for (const disposed of [false, true]) {
   for (const match of source.matchAll(/\b(\w+)\.value\s*=/g)) context[match[1]] = { value: null }
   vm.runInNewContext(source, context)
   const pending = mount()
-  route = { view: 'gashas' }
+  const latestRoute = { view: 'idol_detail', idol: '002sht' }
+  popState(latestRoute)
   loading.resolve({ data: {}, errors: [] })
-  await Promise.resolve()
-  route = { view: 'idol_detail', idol: '002sht' }
   isDisposed = disposed
   translations.resolve()
   await pending
+  await Promise.resolve()
   assert.equal(applied.length, disposed ? 0 : 1)
   assert.equal(written.length, disposed ? 0 : 1)
   if (!disposed) {
-    assert.deepEqual(applied[0], route, 'startup must restore the latest browser route after all initial loads')
-    assert.deepEqual(written[0], route)
+    assert.deepEqual(applied[0], latestRoute, 'latest history route must own restoration after a shared load')
+    assert.deepEqual(written[0], latestRoute)
   }
 }
 {
@@ -66,10 +62,9 @@ for (const disposed of [false, true]) {
   const context = {
     onMounted: callback => { mount = callback }, localStorage: { getItem: () => null },
     window: { location: { href: 'http://localhost/' } }, userPreferences: { value: {} },
-    validArchiveHomeIdols: { value: [] }, pendingPreReadyRoute: null,
-    canResolveArchiveStartupBeforeData: () => true,
-    resolveArchiveStartup: () => ({ route: { ...route }, lightweight: false, source: 'test' }), localStorageValue: () => null,
-    readArchiveRoute: () => ({ ...route }), loadArchiveData: async () => ({ data: {}, errors: [] }),
+    initialArchiveStartup: { route: { ...route }, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
+    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingLegacyNavigation: 0,
+    isBootstrapRoute: () => false, ensureLegacyArchiveData: async () => {},
     loadIdolEntityTranslations: async () => {}, navigation,
     applyArchiveRoute: value => navigation.run(async () => { applied.push(value); if (value.view === 'player') await firstRestore.promise }, { restoring: true }),
     currentArchiveRoute: () => applied.at(-1), writeArchiveRoute: value => written.push(value),
@@ -100,10 +95,9 @@ for (const asynchronous of [false, true]) {
   const context = {
     onMounted: callback => { mount = callback }, localStorage: { getItem: () => null },
     window: { location: { href: 'http://localhost/' } }, userPreferences: { value: {} },
-    validArchiveHomeIdols: { value: [] }, pendingPreReadyRoute: null,
-    canResolveArchiveStartupBeforeData: () => true,
-    resolveArchiveStartup: () => ({ route: { view: 'player' }, lightweight: false, source: 'test' }), localStorageValue: () => null,
-    readArchiveRoute: () => ({ view: 'player' }), loadArchiveData: async () => ({ data: {}, errors: [] }),
+    initialArchiveStartup: { route: { view: 'player' }, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
+    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingLegacyNavigation: 0,
+    isBootstrapRoute: () => false, ensureLegacyArchiveData: async () => {},
     loadIdolEntityTranslations: async () => {}, navigation,
     applyArchiveRoute: () => navigation.run(async intent => {
       await initial.promise

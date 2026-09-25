@@ -1,15 +1,17 @@
 # Read-model reconstruction, phase 1
 
 This directory imports the executable core of the user-supplied
-`GS_Architecture_Rebuild_20260925.zip` guidance package at the current
-`a6929d4` baseline. It builds versioned, bounded catalog projections from the
+`GS_Architecture_Rebuild_20260925.zip` guidance package. It builds versioned, bounded catalog projections from the
 checkout's existing pure selectors. The copied kit's synthetic tests cover the
 artifact writer, client, assembler and optional media helpers.
 
-`bootstrap.inline.json` is the verified local candidate's 11,509-byte bootstrap.
-Vite embeds it in HTML. Portal, welcome and the idol picker can render without
-the legacy `/data` startup batch. Other routes still call `loadArchiveData()`
-when entered; the full route cutover and dynamic feature imports remain open.
+`bootstrap.inline.json` is the verified local r4 candidate's 11,509-byte bootstrap.
+Vite embeds it in HTML. Portal, welcome, the idol picker, Home and song routes
+can open without the legacy 21-source `/data` startup batch. Home loads its
+index, selected idol detail and cue pages; it keeps duplicate cue IDs in source
+order. Song routes load their index, pages and selected detail. Other routes
+still prepare legacy data on entry. The full route cutover and dynamic feature
+imports remain open.
 No Pages candidate has been assembled or deployed. The package's route
 checklist in `contracts/routes.json` remains the cutover inventory.
 
@@ -27,8 +29,7 @@ hashes all data inputs and rechecks them before accepting an artifact. Use
 assembler continues to reject cutover while routes and device review are
 unfinished.
 
-The next integration targets are Home and song catalog/detail. On the next
-data release, regenerate this checked-in bootstrap from the verified model
-candidate. The assembler rejects a code bundle whose inline bootstrap differs
+On the next data release, regenerate this checked-in bootstrap from the verified
+model candidate. The assembler rejects a code bundle whose inline bootstrap differs
 from the model candidate. Keep generated assets outside the checkout until
 packaging is deliberately approved under `docs/BUILD_ACCEPTANCE_POLICY.md`.
