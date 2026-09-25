@@ -193,6 +193,7 @@
         :cards="currentEventCards"
         :idols="currentEventIdols"
         :units="currentEventUnits"
+        :projected-cast-references="currentEventProjection?.castReferences || null"
         :identity="idolUnitData"
         :manifest="archiveManifestData"
         :visual-registry="rawCharacterImagePromotionsData"
@@ -411,6 +412,7 @@
       />
       <p v-if="['cards', 'card_detail'].includes(view) && cardReadModelStatus" role="status">{{ cardReadModelStatus }}</p>
       <p v-if="['gashas', 'gasha_detail'].includes(view) && gashaReadModelStatus" role="status">{{ gashaReadModelStatus }}</p>
+      <p v-if="!loading && eventReadModelStatus" role="status">{{ eventReadModelStatus }}</p>
       <p v-if="['unit_catalog', 'unit_detail'].includes(view) && unitReadModelStatus" class="unit-read-model-status" role="status">{{ unitReadModelStatus }}</p>
     </ArchiveShell>
 
@@ -752,6 +754,11 @@ const cardReadModelDetail = ref(null)
 const cardReadModelStatus = ref('')
 let cardCatalogPromise = null
 let pendingCardNavigation = 0
+const eventReadModelCatalog = ref(null)
+const eventReadModelDetail = ref(null)
+const eventReadModelStatus = ref('')
+let eventCatalogPromise = null
+let pendingEventNavigation = 0
 const homeReadModelIndex = ref(null)
 const homeReadModelProfiles = ref({})
 const homeEntryStatus = ref('')
@@ -1187,10 +1194,11 @@ const currentStoryRelated = computed(() => {
   return sameCollection.sort((a, b) => a.releaseAt - b.releaseAt || a.resourceId.localeCompare(b.resourceId))
 })
 
-const currentEventStory = computed(() => storyCatalog.value.find(entry => entry.file === currentEvent.value?.file) || null)
+const currentEventStory = computed(() => currentEventProjection.value?.story ||
+  storyCatalog.value.find(entry => entry.file === currentEvent.value?.file) || null)
 
 const currentEventEpisodes = computed(() => {
-  return buildEventStoryEpisodes(currentEvent.value, currentEventStory.value, storyCatalogData.value)
+  return currentEventProjection.value?.episodes || buildEventStoryEpisodes(currentEvent.value, currentEventStory.value, storyCatalogData.value)
 })
 
 watch(continuousPlayback, enabled => {
@@ -1360,15 +1368,17 @@ const currentGasha = computed(() => gashaReadModelDetail.value?.id === currentGa
   : resolveGashaRelatedCards(gashaIndexData.value?.by_id?.[currentGashaId.value] || null, gashaIndexData.value))
 const eventMap = computed(() => new Map((archiveManifestData.value?.unit_event_relations || [])
   .map(event => [String(event.event_id), event])))
-const currentEvent = computed(() => eventMap.value.get(currentEventId.value) || null)
+const currentEventProjection = computed(() => eventReadModelDetail.value?.id === currentEventId.value
+  ? eventReadModelDetail.value.view : null)
+const currentEvent = computed(() => currentEventProjection.value?.event || eventMap.value.get(currentEventId.value) || null)
 const currentMasterEvent = computed(() => {
   const code = String(currentEvent.value?.event_code || '')
-  return eventIndexData.value?.by_code?.[code] || null
+  return currentEventProjection.value?.masterEvent || eventIndexData.value?.by_code?.[code] || null
 })
 const currentEventExternalResources = computed(() =>
   externalResourcesForEvent(externalStoryResourcesData.value, currentEvent.value?.event_code),
 )
-const currentEventCards = computed(() => (archiveManifestData.value?.event_card_relations_by_event?.[currentEventId.value] || [])
+const currentEventCards = computed(() => currentEventProjection.value?.cards || (archiveManifestData.value?.event_card_relations_by_event?.[currentEventId.value] || [])
   .map(relation => {
     const card = cardMap.value.get(relation.card_resource_id)
     return {
@@ -1377,11 +1387,12 @@ const currentEventCards = computed(() => (archiveManifestData.value?.event_card_
       character_name: idolDisplayName(relation.character_id),
     }
   }))
-const currentEventIdols = computed(() => (currentEvent.value?.characters || []).map(idolCode => ({
+const currentEventIdols = computed(() => currentEventProjection.value?.idols || (currentEvent.value?.characters || []).map(idolCode => ({
   idol_code: idolCode,
   ...(idolUnitData.value?.by_idol_code?.[idolCode] || {}),
 })))
 const currentEventUnits = computed(() => {
+  if (currentEventProjection.value) return currentEventProjection.value.units
   const unitIds = new Set((currentEvent.value?.participating_unit_ids || []).map(String))
   return (idolUnitData.value?.units || []).filter(unit => unitIds.has(String(unit.unit_id)))
 })
@@ -2259,6 +2270,7 @@ async function closeArchivePortal() {
   if (route.view === 'gasha_detail' && route.gasha) gashaReadModelDetail.value = await loadGashaDetail(route.gasha)
   if (route.view === 'cards') await loadCardCatalog()
   if (route.view === 'card_detail' && route.card) cardReadModelDetail.value = await loadCardDetail(route.card)
+  if (route.view === 'event_detail' && route.event) eventReadModelDetail.value = await loadEventDetail(String(route.event))
   const pending = applyArchiveRoute(route)
   const expected = navigation.getRevision()
   await pending
@@ -2876,7 +2888,7 @@ function openUnitCatalog() {
   })
 }
 
-function openArchiveUnit(unit) {
+function openArchiveUnit(unit, { clearEventContext = false } = {}) {
   if (!unit) return
   const code = String(unit.unit_code || unit.unit_id || '')
   const request = ++pendingUnitNavigation
@@ -2888,6 +2900,7 @@ function openArchiveUnit(unit) {
     unitReadModelDetail.value = detail
     unitReadModelStatus.value = ''
     captureDetailSource()
+    if (clearEventContext) { currentEventId.value = ''; eventParentView.value = '' }
     currentCategoryId.value = 'idol'
     currentCharacterId.value = ''
     currentArchiveUnitCode.value = detail.view.entry.unit.unit_code
@@ -2914,8 +2927,7 @@ function openUnitStory(story) {
 }
 
 function openUnitEvent(event) {
-  if (!archiveDataReady.value) return runWhenLegacyReady(() => openUnitEvent(event))
-  openEventDetail(event, 'unit_detail')
+  return openEventDetail(event, 'unit_detail')
 }
 
 function openUnitCards() {
@@ -3040,7 +3052,7 @@ function openPrimaryIdol(idolCode = '') {
   return openIdolReadModel(idolCode, { resetContext: true })
 }
 
-async function openIdolReadModel(idolCode, { captureSource = false, resetContext = false, selection = false, clearUnit = false } = {}) {
+async function openIdolReadModel(idolCode, { captureSource = false, resetContext = false, selection = false, clearUnit = false, clearEventContext = false } = {}) {
   if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return
   const request = ++pendingIdolNavigation
   const revision = navigation.getRevision()
@@ -3060,6 +3072,7 @@ async function openIdolReadModel(idolCode, { captureSource = false, resetContext
   idolReadModelDetail.value = detail
   idolReadModelStatus.value = ''
   if (captureSource) captureDetailSource()
+  if (clearEventContext) { currentEventId.value = ''; eventParentView.value = '' }
   if (resetContext) {
     currentCategoryId.value = 'idol'
     currentGroup.value = null
@@ -3169,8 +3182,7 @@ function openIdolDomain(domain) {
 }
 
 function openIdolEvent(event) {
-  if (!archiveDataReady.value) return runWhenLegacyReady(() => openIdolEvent(event))
-  openEventDetail(event, 'idol_detail')
+  return openEventDetail(event, 'idol_detail')
 }
 
 function captureDetailSource() {
@@ -3195,6 +3207,7 @@ async function restoreDetailSource(fallback) {
   if (route.view === 'gasha_detail' && route.gasha) gashaReadModelDetail.value = await loadGashaDetail(route.gasha)
   if (route.view === 'cards') await loadCardCatalog()
   if (route.view === 'card_detail' && route.card) cardReadModelDetail.value = await loadCardDetail(route.card)
+  if (route.view === 'event_detail' && route.event) eventReadModelDetail.value = await loadEventDetail(String(route.event))
   if (route.view === 'song_catalog') await ensureSongCatalog()
   if (route.view === 'song_detail' && route.song) songReadModelDetail.value = await loadSongDetail(route.song)
   if (navigation.isDisposed() || beforeLoad !== navigation.getRevision()) return
@@ -3205,7 +3218,7 @@ async function restoreDetailSource(fallback) {
   })
 }
 
-function openCard(card, { resetContext = false, captureSource = false } = {}) {
+function openCard(card, { resetContext = false, captureSource = false, clearEventContext = false } = {}) {
   if (!card?.resource_id) return
   const id = card.resource_id
   const request = ++pendingCardNavigation
@@ -3217,6 +3230,7 @@ function openCard(card, { resetContext = false, captureSource = false } = {}) {
     cardReadModelDetail.value = detail
     cardReadModelStatus.value = ''
     if (captureSource || view.value !== 'card_detail') captureDetailSource()
+    if (clearEventContext) { currentEventId.value = ''; eventParentView.value = '' }
     if (resetContext) {
       currentCategoryId.value = 'cards'
       currentCharacterId.value = card.character_id
@@ -3312,21 +3326,34 @@ async function previewCardVoice(cue) {
 }
 
 function openCardEvent(event) {
-  if (!archiveDataReady.value) return runWhenLegacyReady(() => openCardEvent(event))
-  openEventDetail(event, 'card_detail')
+  return openEventDetail(event, 'card_detail')
 }
 
 function openHomeEvent(event) {
-  if (!archiveDataReady.value) return runWhenLegacyReady(() => openHomeEvent(event))
-  openEventDetail(event, 'home')
+  return openEventDetail(event, 'home')
 }
 
 function openEventDetail(event, parentView = 'story_catalog') {
   if (!event?.event_id) return
-  captureDetailSource()
-  currentEventId.value = String(event.event_id)
-  eventParentView.value = parentView
-  commitView('event_detail')
+  const id = String(event.event_id)
+  const request = ++pendingEventNavigation
+  const revision = navigation.getRevision()
+  eventReadModelStatus.value = '正在读取活动详情…'
+  loading.value = true
+  return loadEventDetail(id).then(detail => {
+    if (request !== pendingEventNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
+    eventReadModelDetail.value = detail
+    eventReadModelStatus.value = ''
+    captureDetailSource()
+    currentEventId.value = id
+    eventParentView.value = parentView
+    commitView('event_detail')
+  }).catch(error => {
+    if (request !== pendingEventNavigation || revision !== navigation.getRevision()) return
+    loading.value = false
+    console.error('[EventReadModel] Failed to load detail:', error)
+    eventReadModelStatus.value = '活动详情暂时无法读取，请重试。'
+  })
 }
 
 function goBackFromEvent() {
@@ -3371,32 +3398,30 @@ function playbackEpisodes(returnView) {
 
 function playNextEpisode() { return playbackController.next() }
 
-function openEventCard(relation) {
-  const card = cardMap.value.get(relation?.card_resource_id)
+async function openEventCard(relation) {
+  const revision = navigation.getRevision()
+  const eventId = currentEventId.value
+  try {
+    if (!cardReadModelCatalog.value) await loadCardCatalog()
+  } catch (error) {
+    if (revision === navigation.getRevision() && currentEventId.value === eventId) {
+      console.error('[EventReadModel] Failed to load linked cards:', error)
+      eventReadModelStatus.value = '关联卡片暂时无法读取，请重试。'
+    }
+    return
+  }
+  if (revision !== navigation.getRevision() || view.value !== 'event_detail' || currentEventId.value !== eventId) return
+  const card = cardReadModelCatalog.value?.find(row => row.resource_id === relation?.card_resource_id) || cardMap.value.get(relation?.card_resource_id)
   if (!card) return
-  captureDetailSource()
-  currentCategoryId.value = 'cards'
-  currentCharacterId.value = card.character_id
-  currentCardId.value = card.resource_id
-  currentEventId.value = ''
-  eventParentView.value = ''
-  filterQuery.value = ''
-  commitView('card_detail')
+  return openCard(card, { resetContext: true, captureSource: true, clearEventContext: true })
 }
 
 function openEventIdol(idol) {
-  captureDetailSource()
-  currentCategoryId.value = 'idol'
-  currentCharacterId.value = idol.idol_code
-  currentCardId.value = ''
-  currentArchiveUnitCode.value = ''
-  currentEventId.value = ''
-  eventParentView.value = ''
-  commitView('idol_detail')
+  return openIdolReadModel(idol.idol_code, { captureSource: true, resetContext: true, clearUnit: true, clearEventContext: true })
 }
 
 function openEventUnit(unit) {
-  openArchiveUnit(unit)
+  return openArchiveUnit(unit, { clearEventContext: true })
 }
 
 async function openVoicePreview(card, cue, returnView) {
@@ -3679,6 +3704,37 @@ async function loadCardDetail(id) {
   } })
 }
 
+async function loadEventCatalog() {
+  if (eventReadModelCatalog.value) return eventReadModelCatalog.value
+  if (!eventCatalogPromise) {
+    eventCatalogPromise = (async () => {
+      const index = await readModelClient.load(archiveBootstrap.domains.events)
+      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
+      const rows = pages.flatMap(page => page.rows || [])
+      if (rows.length !== index.count || new Set(rows.map(row => String(row.id))).size !== rows.length ||
+        rows.some(row => !row.detail || String(row.event_id) !== String(row.id)))
+        throw new Error('Event catalog count or identity mismatch')
+      eventReadModelCatalog.value = rows
+      return rows
+    })().catch(error => { eventCatalogPromise = null; throw error })
+  }
+  return eventCatalogPromise
+}
+
+async function loadEventDetail(id) {
+  const row = (await loadEventCatalog()).find(entry => String(entry.id) === id)
+  if (!row) throw new Error(`Unavailable event: ${id}`)
+  return readModelClient.load(row.detail, { expectedId: id, validate: data => {
+    if (String(data.view?.event?.event_id) !== id || !Array.isArray(data.view?.episodes) ||
+      !Array.isArray(data.view?.cards) || !Array.isArray(data.view?.idols) ||
+      !Array.isArray(data.view?.units) || !Array.isArray(data.view?.castReferences) ||
+      data.view.castReferences.length !== data.view.idols.length ||
+      data.view.castReferences.some((entry, index) => entry.idol_code !== data.view.idols[index].idol_code ||
+        entry.reference?.idolCode !== entry.idol_code))
+      throw new Error('Event detail identity or shape mismatch')
+  } })
+}
+
 async function loadSongCatalog() {
   if (songReadModelCatalog.value) return songReadModelCatalog.value
   if (!songCatalogPromise) {
@@ -3720,7 +3776,7 @@ async function loadSongDetail(songCode) {
 }
 
 function isBootstrapRoute(route) {
-  return ['portal', 'welcome', 'idol_picker', 'home', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail'].includes(route.view) ||
+  return ['portal', 'welcome', 'idol_picker', 'home', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail'].includes(route.view) ||
     (route.view === 'idols' && (!route.category || route.category === 'idol'))
 }
 
@@ -3760,6 +3816,7 @@ onMounted(async () => {
     ++pendingUnitNavigation
     ++pendingGashaNavigation
     ++pendingCardNavigation
+    ++pendingEventNavigation
     ++pendingLegacyNavigation
     legacyEntryStatus.value = ''
     if (!isBootstrapRoute(route)) await ensureLegacyArchiveData()
@@ -3823,6 +3880,18 @@ onMounted(async () => {
         console.error('[CardReadModel] Failed to restore card route:', error)
         cardReadModelStatus.value = '卡片资料暂时无法读取，请稍后重试。'
         route = { view: 'cards' }
+      }
+    }
+    if (route.view === 'event_detail' && route.event) {
+      try {
+        const detail = await loadEventDetail(String(route.event))
+        if (request === restoreRequest) eventReadModelDetail.value = detail
+        eventReadModelStatus.value = ''
+      } catch (error) {
+        if (request !== restoreRequest) return
+        console.error('[EventReadModel] Failed to restore event route:', error)
+        eventReadModelStatus.value = '活动详情暂时无法读取，请稍后重试。'
+        route = { view: 'story_catalog' }
       }
     }
     if (route.view === 'song_catalog') await ensureSongCatalog()

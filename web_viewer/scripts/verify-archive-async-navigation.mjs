@@ -61,7 +61,7 @@ function setup() {
   const production = vm.runInContext([
     functionSource('function syncArchiveRoute(', 'function groupsForRoute('),
     functionSource('async function applyArchiveRoute(', 'function goHome('),
-    functionSource('function playbackEpisodes(', 'function openEventCard('),
+    functionSource('function playbackEpisodes(', 'async function openEventCard('),
     functionSource('async function openStoryCatalog(', 'function openExternalStoryResources('),
     functionSource('async function openSpineLab(', 'async function openChibiStage('),
     functionSource('async function openVoicePreview(', 'function openGroup('),

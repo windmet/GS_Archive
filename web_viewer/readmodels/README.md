@@ -5,8 +5,8 @@ This directory imports the executable core of the user-supplied
 checkout's existing pure selectors. The copied kit's synthetic tests cover the
 artifact writer, client, assembler and optional media helpers.
 
-`bootstrap.inline.json` is the verified local r7 candidate's 11,509-byte bootstrap.
-Vite embeds it in HTML. Portal, welcome, the idol picker, Home, the idol directory, song, gasha and card routes
+`bootstrap.inline.json` is the verified local r8 candidate's 11,509-byte bootstrap.
+Vite embeds it in HTML. Portal, welcome, the idol picker, Home, the idol directory, song, gasha, card and event detail routes
 can open without the legacy 21-source `/data` startup batch. Home loads its
 index, selected idol detail and cue pages; it keeps duplicate cue IDs in source
 order. Song routes load their index, pages and selected detail. The idol directory
@@ -14,8 +14,9 @@ uses the 49 bootstrap identities; idol detail loads its pinned catalog and one
 per-idol view with profile, statistics, songs and events. Unit catalog/detail
 load compact unit summaries and one selected unit detail. Gasha catalog/detail
 load searchable pickup summaries and one selected announcement. Card catalog/detail
-load bounded summary pages and one selected card detail. Outgoing links to
-unmigrated domains still prepare legacy data. Other routes
+load bounded summary pages and one selected card detail. Event detail loads its bounded
+directory and selected event leaf, including reward cards, cast references and
+episode queue. The story catalog entry into events and other unmigrated routes
 still prepare legacy data on entry. The full route cutover and dynamic feature
 imports remain open.
 No Pages candidate has been assembled or deployed. The package's route
