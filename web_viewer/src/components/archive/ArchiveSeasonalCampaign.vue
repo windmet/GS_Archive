@@ -57,7 +57,7 @@
           </button>
         </article>
       </div>
-      <ArchiveTechnicalDetails :key="campaign.id" :evidence="campaign" />
+      <ArchiveTechnicalDetails :key="campaign.id" :evidence="sourceEvidence ? { campaign, sourceEvidence } : campaign" />
     </div>
   </section>
 </template>
@@ -67,7 +67,8 @@ import { computed, ref, watch } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { Gift, Heart, Play } from '@lucide/vue'
 
-const props = defineProps({ campaign: { type: Object, default: null }, campaigns: { type: Array, default: () => [] } })
+const props = defineProps({ campaign: { type: Object, default: null }, campaigns: { type: Array, default: () => [] },
+  sourceEvidence: { type: Object, default: null } })
 const emit = defineEmits(['select', 'play'])
 const participantType = ref('idol')
 const years = computed(() => [...new Set(props.campaigns.map(item => item.year))].sort())

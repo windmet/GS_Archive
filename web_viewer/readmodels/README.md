@@ -5,8 +5,8 @@ This directory imports the executable core of the user-supplied
 checkout's existing pure selectors. The copied kit's synthetic tests cover the
 artifact writer, client, assembler and optional media helpers.
 
-`bootstrap.inline.json` is the verified local r8 candidate's 11,509-byte bootstrap.
-Vite embeds it in HTML. Portal, welcome, the idol picker, Home, the idol directory, song, gasha, card and event detail routes
+`bootstrap.inline.json` is the verified local r10 candidate's 11,509-byte bootstrap.
+Vite embeds it in HTML. Portal, welcome, the idol picker, Home, the idol directory, song, gasha, card, event detail and seasonal campaign routes
 can open without the legacy 21-source `/data` startup batch. Home loads its
 index, selected idol detail and cue pages; it keeps duplicate cue IDs in source
 order. Song routes load their index, pages and selected detail. The idol directory
@@ -17,7 +17,9 @@ load searchable pickup summaries and one selected announcement. Card catalog/det
 load bounded summary pages and one selected card detail. Event detail loads its bounded
 directory and selected event leaf, including reward cards, cast references and
 episode queue. The story catalog entry into events and other unmigrated routes
-still prepare legacy data on entry. The full route cutover and dynamic feature
+still prepare legacy data on entry. Seasonal campaign loads four switch summaries
+and one selected detail, with its source evidence retained in the technical panel.
+The full route cutover and dynamic feature
 imports remain open.
 No Pages candidate has been assembled or deployed. The package's route
 checklist in `contracts/routes.json` remains the cutover inventory.
