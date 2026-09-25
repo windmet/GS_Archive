@@ -418,6 +418,7 @@
       <p v-if="!loading && seasonalReadModelStatus" role="status">{{ seasonalReadModelStatus }}</p>
       <p v-if="!loading && workReadModelStatus" role="status">{{ workReadModelStatus }}</p>
       <p v-if="!loading && idolStoryReadModelStatus" role="status">{{ idolStoryReadModelStatus }}</p>
+      <p v-if="!loading && collectionReadModelStatus" role="status">{{ collectionReadModelStatus }}</p>
       <p v-if="['unit_catalog', 'unit_detail'].includes(view) && unitReadModelStatus" class="unit-read-model-status" role="status">{{ unitReadModelStatus }}</p>
     </ArchiveShell>
 
@@ -778,6 +779,11 @@ const idolStoryReadModelDetail = shallowRef(null)
 const idolStoryReadModelStatus = ref('')
 let idolStoryCatalogPromise = null
 let pendingIdolStoryNavigation = 0
+const collectionReadModelCatalog = shallowRef(null)
+const collectionReadModelDetail = shallowRef(null)
+const collectionReadModelStatus = ref('')
+let collectionCatalogPromise = null
+let pendingCollectionNavigation = 0
 const homeReadModelIndex = ref(null)
 const homeReadModelProfiles = ref({})
 const homeEntryStatus = ref('')
@@ -788,7 +794,7 @@ let pendingHomeNavigation = 0
 let pendingLegacyNavigation = 0
 let legacyDataPromise = null
 const continuousPlayback = ref(localStorageValue('sidem:continuous-playback') === '1')
-const loading = ref(!isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive'].includes(initialArchiveStartup.route.view) || initialArchiveStartup.route.view === 'home' && Boolean(initialArchiveStartup.route.homeIdol))
+const loading = ref(!isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'story_collection'].includes(initialArchiveStartup.route.view) || initialArchiveStartup.route.view === 'home' && Boolean(initialArchiveStartup.route.homeIdol))
 const loadingPurpose = ref('archive-data')
 const preloadProgress = ref(0)
 
@@ -1158,13 +1164,13 @@ const storyCollections = computed(() => buildStoryCollections(
   },
 ))
 
-const currentStoryCollection = computed(() => storyCollections.value.find(collection =>
-  collection.domain === currentStoryDomain.value &&
-  (
-    collection.sectionId === currentStorySection.value ||
-    collection.legacySectionIds?.includes(currentStorySection.value)
-  ),
-) || null)
+const currentStoryCollection = computed(() => {
+  const collection = collectionReadModelDetail.value?.view?.collection
+  return collection?.domain === currentStoryDomain.value &&
+    (collection.sectionId === currentStorySection.value ||
+      collection.legacySectionIds?.includes(currentStorySection.value))
+    ? collection : null
+})
 
 const currentStoryCollectionExternalResources = computed(() =>
   externalResourcesForCollection(externalStoryResourcesData.value, currentStoryCollection.value),
@@ -1796,7 +1802,6 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
     if (!intent.isCurrent()) return
     if ([
       'story_catalog',
-      'story_collection',
       'external_story_resources',
       'mobile_archive',
     ].includes(route.view === 'player' ? route.returnView : route.view)) {
@@ -1807,10 +1812,15 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
       if (!intent.isCurrent()) return
       idolStoryReadModelDetail.value = detail
     }
+    if ((route.view === 'story_collection' || (route.view === 'player' && route.returnView === 'story_collection')) && route.storyType && route.storySection) {
+      const detail = await loadCollectionDetail(route.storyType, route.storySection)
+      if (!intent.isCurrent()) return
+      collectionReadModelDetail.value = detail
+    }
     if (!intent.isCurrent()) return
     filterQuery.value = route.query || ''
     const idolOwnerView = route.view === 'player' ? route.returnView : route.view
-    const validRouteIdol = !route.idol || (['idol_detail', 'cards', 'card_detail', 'work_archive', 'idol_story_archive'].includes(idolOwnerView)
+    const validRouteIdol = !route.idol || (['idol_detail', 'cards', 'card_detail', 'work_archive', 'idol_story_archive', 'story_collection'].includes(idolOwnerView)
       ? archiveBootstrap.idols.some(idol => idol.id === route.idol)
       : Boolean(idolUnitData.value?.by_idol_code?.[route.idol]))
     const invalidIdolPickTarget = !validRouteIdol ? ({
@@ -2282,6 +2292,7 @@ async function closeArchivePortal() {
   }
   if (route.view === 'work_archive' && route.idol) workReadModelDetail.value = await loadWorkDetail(route.idol)
   if (route.view === 'idol_story_archive' && route.idol) idolStoryReadModelDetail.value = await loadIdolStoryDetail(route.idol)
+  if (route.view === 'story_collection' && route.storyType && route.storySection) collectionReadModelDetail.value = await loadCollectionDetail(route.storyType, route.storySection)
   const pending = applyArchiveRoute(route)
   const expected = navigation.getRevision()
   await pending
@@ -2341,14 +2352,8 @@ function openSongIdol(idolCode) {
 
 function openSongRelatedStory(relation) {
   if (relation?.entity_type !== 'story_collection') return
-  if (!archiveDataReady.value) return runWhenLegacyReady(() => openSongRelatedStory(relation))
-  captureDetailSource()
-  currentStoryDomain.value = relation.story_type || 'extra'
-  currentStorySection.value = relation.story_section || ''
-  currentStoryMode.value = 'portal'
-  currentStoryFile.value = ''
-  storyCollectionParentView.value = 'song_detail'
-  commitView('story_collection')
+  return openProjectedCollection({ domain: relation.story_type || 'extra',
+    section: relation.story_section || '', parent: 'song_detail' })
 }
 
 function openHomeIdol(idolId) {
@@ -2432,6 +2437,7 @@ function goArchiveBack() {
         commitView('song_detail')
         return
       }
+      if (!archiveDataReady.value) return runWhenLegacyReady(() => goArchiveBack())
       const domain = currentStoryDomain.value
       const returnsToDomainLanding = ['main', 'extra', 'birthday'].includes(domain) && parent !== 'external_story_resources'
       currentStoryDomain.value = returnsToDomainLanding ? domain : ''
@@ -2600,13 +2606,8 @@ function openExternalStoryInternal(entry) {
     return
   }
   if (target?.kind !== 'collection') return
-  captureDetailSource()
-  currentStoryDomain.value = target.domain
-  currentStorySection.value = target.section
-  currentStoryMode.value = 'portal'
-  currentStoryFile.value = target.storyFile
-  storyCollectionParentView.value = 'external_story_resources'
-  commitView('story_collection')
+  return openProjectedCollection({ domain: target.domain, section: target.section,
+    storyFile: target.storyFile, parent: 'external_story_resources' })
 }
 
 function setStoryDomain(domain) {
@@ -2628,14 +2629,7 @@ function setStoryMode(mode) {
 
 function browseStoryCollection({ domain, section = '', mode = '' }) {
   if (section && ['main', 'unit_story', 'extra', 'birthday'].includes(domain)) {
-    captureDetailSource()
-    currentStoryDomain.value = domain
-    currentStorySection.value = section
-    currentStoryMode.value = 'portal'
-    currentStoryFile.value = ''
-    storyCollectionParentView.value = ''
-    commitView('story_collection')
-    return
+    return openProjectedCollection({ domain, section })
   }
   const opensFormalDomain = (mode === 'portal' && domain === 'main') ||
     ['extra', 'birthday'].includes(domain)
@@ -2677,6 +2671,30 @@ function openSeasonalCampaign(campaignId = 'valentine_2023') {
     loading.value = false
     console.error('[SeasonalReadModel] Failed to load campaign:', error)
     seasonalReadModelStatus.value = '季节企划暂时无法读取，请重试。'
+  })
+}
+
+function openProjectedCollection({ domain, section, storyFile = '', parent = '' }) {
+  const request = ++pendingCollectionNavigation
+  const revision = navigation.getRevision()
+  collectionReadModelStatus.value = '正在读取故事章节…'
+  loading.value = true
+  return loadCollectionDetail(domain, section).then(detail => {
+    if (request !== pendingCollectionNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
+    collectionReadModelDetail.value = detail
+    collectionReadModelStatus.value = ''
+    captureDetailSource()
+    currentStoryDomain.value = domain
+    currentStorySection.value = String(section)
+    currentStoryMode.value = 'portal'
+    currentStoryFile.value = storyFile || ''
+    storyCollectionParentView.value = parent
+    commitView('story_collection')
+  }).catch(error => {
+    if (request !== pendingCollectionNavigation || revision !== navigation.getRevision()) return
+    loading.value = false
+    console.error('[CollectionReadModel] Failed to open collection:', error)
+    collectionReadModelStatus.value = '故事章节暂时无法读取，请重试。'
   })
 }
 
@@ -2831,25 +2849,10 @@ async function openBirthdayIdolStory(relation) {
   })
 }
 
-async function openIdolBirthdayArchive() {
+function openIdolBirthdayArchive() {
   if (!currentCharacterId.value) return
-  const revision = navigation.getRevision()
-  try {
-    await ensureLegacyArchiveData()
-  } catch (error) {
-    if (revision !== navigation.getRevision()) return
-    console.error('[ArchiveData] Failed to open birthday collection:', error)
-    idolStoryReadModelStatus.value = '生日内容暂时无法读取，请重试。'
-    return
-  }
-  if (revision !== navigation.getRevision() || navigation.isDisposed()) return
-  captureDetailSource()
-  currentStoryDomain.value = 'birthday'
-  currentStorySection.value = currentCharacterId.value
-  currentStoryMode.value = 'portal'
-  currentStoryFile.value = ''
-  storyCollectionParentView.value = 'idol_story_archive'
-  commitView('story_collection')
+  return openProjectedCollection({ domain: 'birthday', section: currentCharacterId.value,
+    parent: 'idol_story_archive' })
 }
 
 function playIdolStorySection(section) {
@@ -3326,6 +3329,7 @@ async function restoreDetailSource(fallback) {
   }
   if (route.view === 'work_archive' && route.idol) workReadModelDetail.value = await loadWorkDetail(route.idol)
   if (route.view === 'idol_story_archive' && route.idol) idolStoryReadModelDetail.value = await loadIdolStoryDetail(route.idol)
+  if (route.view === 'story_collection' && route.storyType && route.storySection) collectionReadModelDetail.value = await loadCollectionDetail(route.storyType, route.storySection)
   if (route.view === 'song_catalog') await ensureSongCatalog()
   if (route.view === 'song_detail' && route.song) songReadModelDetail.value = await loadSongDetail(route.song)
   if (navigation.isDisposed() || beforeLoad !== navigation.getRevision()) return
@@ -3940,6 +3944,34 @@ async function loadIdolStoryDetail(id) {
   } })
 }
 
+async function loadCollectionCatalog() {
+  if (collectionReadModelCatalog.value) return collectionReadModelCatalog.value
+  if (!collectionCatalogPromise) {
+    collectionCatalogPromise = (async () => {
+      const index = await readModelClient.load(archiveBootstrap.domains.collections)
+      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
+      const rows = pages.flatMap(page => page.rows || [])
+      if (rows.length !== index.count || new Set(rows.map(row => row.id)).size !== rows.length ||
+        rows.some(row => row.id !== `${row.domain}:${row.sectionId}` || !row.title || !row.detail))
+        throw new Error('Collection catalog identity or shape mismatch')
+      collectionReadModelCatalog.value = rows
+      return rows
+    })().catch(error => { collectionCatalogPromise = null; throw error })
+  }
+  return collectionCatalogPromise
+}
+
+async function loadCollectionDetail(domain, section) {
+  const row = (await loadCollectionCatalog()).find(entry => entry.domain === domain &&
+    (entry.sectionId === String(section) || entry.legacySectionIds?.includes(String(section))))
+  if (!row) throw new Error(`Unavailable story collection: ${domain}:${section}`)
+  return readModelClient.load(row.detail, { expectedId: row.id, validate: data => {
+    const collection = data.view?.collection
+    if (collection?.domain !== row.domain || collection.sectionId !== row.sectionId ||
+      !Array.isArray(collection.chapters)) throw new Error('Collection detail identity or shape mismatch')
+  } })
+}
+
 async function loadSongCatalog() {
   if (songReadModelCatalog.value) return songReadModelCatalog.value
   if (!songCatalogPromise) {
@@ -3981,7 +4013,7 @@ async function loadSongDetail(songCode) {
 }
 
 function isBootstrapRoute(route) {
-  return ['portal', 'welcome', 'idol_picker', 'home', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive'].includes(route.view) ||
+  return ['portal', 'welcome', 'idol_picker', 'home', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'story_collection'].includes(route.view) ||
     (route.view === 'idols' && (!route.category || route.category === 'idol'))
 }
 
@@ -4025,8 +4057,10 @@ onMounted(async () => {
     ++pendingSeasonalNavigation
     ++pendingWorkNavigation
     ++pendingIdolStoryNavigation
+    ++pendingCollectionNavigation
     ++pendingLegacyNavigation
     legacyEntryStatus.value = ''
+    if (route.view === 'story_collection' && (!route.storyType || !route.storySection)) route = { view: 'story_catalog' }
     if (!isBootstrapRoute(route)) await ensureLegacyArchiveData()
     if (route.view === 'home' && route.homeIdol) {
       try {
@@ -4139,6 +4173,19 @@ onMounted(async () => {
         route = { view: 'idol_picker', pickTarget: 'story' }
       }
     }
+    if ((route.view === 'story_collection' || (route.view === 'player' && route.returnView === 'story_collection')) && route.storyType && route.storySection) {
+      try {
+        const detail = await loadCollectionDetail(route.storyType, route.storySection)
+        if (request === restoreRequest) collectionReadModelDetail.value = detail
+        collectionReadModelStatus.value = ''
+      } catch (error) {
+        if (request !== restoreRequest) return
+        console.error('[CollectionReadModel] Failed to restore collection:', error)
+        collectionReadModelStatus.value = '故事章节暂时无法读取，请稍后重试。'
+        await ensureLegacyArchiveData()
+        route = { view: 'story_catalog' }
+      }
+    }
     if (route.view === 'song_catalog') await ensureSongCatalog()
     if (route.view === 'song_detail' && route.song) {
       try {
@@ -4178,7 +4225,7 @@ onMounted(async () => {
   if (startup.source === 'invalid-immersive-idol') {
     userPreferenceNotice.value = '之前选择的首页偶像当前不可用，请重新选择。'
   }
-  if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive'].includes(startup.route.view) && !(startup.route.view === 'home' && startup.route.homeIdol)) loading.value = false
+  if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'story_collection'].includes(startup.route.view) && !(startup.route.view === 'home' && startup.route.homeIdol)) loading.value = false
   await restoreRoute(startup.route)
 })
 

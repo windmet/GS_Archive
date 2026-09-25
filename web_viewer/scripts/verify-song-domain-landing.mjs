@@ -103,7 +103,7 @@ assert.equal(catalog.songs.grwsml.choreography.live_effect_variants.includes('tu
 // App wiring: dispatch, open handlers, route sync, load assignment
 assert.match(appComponent, /v-if="view === 'song_catalog'"/)
 assert.match(appComponent, /v-if="view === 'song_detail'"/)
-assert.match(appComponent, /:catalog="songCatalogData"/)
+assert.match(appComponent, /:catalog="songReadModelCatalog \|\| songCatalogData"/)
 assert.match(appComponent, /:song="currentSongPresentation"/)
 assert.match(appComponent, /@open="openSong"/)
 assert.match(appComponent, /function openSongCatalog\(\)/)
