@@ -5,8 +5,8 @@ This directory imports the executable core of the user-supplied
 checkout's existing pure selectors. The copied kit's synthetic tests cover the
 artifact writer, client, assembler and optional media helpers.
 
-`bootstrap.inline.json` is the verified local r12 candidate's 11,509-byte bootstrap.
-Vite embeds it in HTML. Portal, welcome, the idol picker, Home, the idol directory, song, gasha, card, event detail, seasonal campaign, work archive, idol story and story collection routes
+`bootstrap.inline.json` is the verified local r13 candidate's 11,509-byte bootstrap.
+Vite embeds it in HTML. Portal, welcome, the idol picker, Home, the idol directory, song, gasha, card, event detail, seasonal campaign, work archive, idol story, story collection and story detail routes
 can open without the legacy 21-source `/data` startup batch. Home loads its
 index, selected idol detail and cue pages; it keeps duplicate cue IDs in source
 order. Song routes load their index, pages and selected detail. The idol directory
@@ -18,8 +18,10 @@ load bounded summary pages and one selected card detail. Event detail loads its 
 directory and selected event leaf, including reward cards, cast references and
 episode queue. Story collection loads an 80-entry directory and one selected chapter leaf,
 including legacy section aliases. The story catalog and other unmigrated routes
-still prepare legacy data on entry. Seasonal campaign loads four switch summaries
-and one selected detail, with its source evidence retained in the technical panel.
+still prepare legacy data on entry. Story detail loads the bounded story directory
+and one selected leaf, including same-section links, cast references and a
+promoted birthday visual. Seasonal campaign loads four switch summaries and one
+selected detail, with its source evidence retained in the technical panel.
 Work archive loads a 49-person switch directory and one selected idol, preserving
 the separate story/line modes and source evidence for technical details.
 Idol story loads a 49-person switch directory and one selected story page.
