@@ -90,7 +90,7 @@
         :current-rarity="currentCardRarity"
         :current-asset-state="currentCardAssetState"
         :current-relation-state="currentCardRelationState"
-        :idols="idolUnitData?.idols || []"
+        :idols="idolUnitData?.idols || bootstrapIdolSwitcher"
         :selected-idol="currentCharacterId"
         v-model:layout="cardLayout"
         @back="goArchiveBack"
@@ -98,7 +98,7 @@
         @select-rarity="updateArchiveFilter('currentCardRarity', $event)"
         @select-asset-state="updateArchiveFilter('currentCardAssetState', $event)"
         @select-relation-state="updateArchiveFilter('currentCardRelationState', $event)"
-        @select-idol="selectPrimaryIdol"
+        @select-idol="selectCardIdol"
       />
 
       <ArchiveIdolDetail
@@ -409,6 +409,7 @@
         @open-cards="openUnitCards"
         @open-song="openSong"
       />
+      <p v-if="['cards', 'card_detail'].includes(view) && cardReadModelStatus" role="status">{{ cardReadModelStatus }}</p>
       <p v-if="['gashas', 'gasha_detail'].includes(view) && gashaReadModelStatus" role="status">{{ gashaReadModelStatus }}</p>
       <p v-if="['unit_catalog', 'unit_detail'].includes(view) && unitReadModelStatus" class="unit-read-model-status" role="status">{{ unitReadModelStatus }}</p>
     </ArchiveShell>
@@ -746,6 +747,11 @@ const gashaReadModelDetail = ref(null)
 const gashaReadModelStatus = ref('')
 let gashaCatalogPromise = null
 let pendingGashaNavigation = 0
+const cardReadModelCatalog = ref(null)
+const cardReadModelDetail = ref(null)
+const cardReadModelStatus = ref('')
+let cardCatalogPromise = null
+let pendingCardNavigation = 0
 const homeReadModelIndex = ref(null)
 const homeReadModelProfiles = ref({})
 const homeEntryStatus = ref('')
@@ -1306,9 +1312,11 @@ const filteredFileEntries = computed(() => {
 
 const cardMap = computed(() => buildCardMap(cardIndexData.value))
 
-const currentCards = computed(() => currentCharacterId.value
-  ? cardsForCharacter(cardIndexData.value, cardMap.value, currentCharacterId.value)
-  : [...cardMap.value.values()])
+const currentCards = computed(() => cardReadModelCatalog.value
+  ? cardReadModelCatalog.value.filter(card => !currentCharacterId.value || card.character_id === currentCharacterId.value)
+  : currentCharacterId.value
+    ? cardsForCharacter(cardIndexData.value, cardMap.value, currentCharacterId.value)
+    : [...cardMap.value.values()])
 
 const cardRarityTabs = computed(() => buildCardRarityTabs(currentCards.value))
 
@@ -1323,17 +1331,22 @@ const filteredCards = computed(() => filterArchiveCards(currentCards.value, {
 }))
 const filteredCardRows = computed(() => filteredCards.value.map(card => ({
   ...card,
-  ownerReference: buildIdolReference(card.character_id, idolUnitData.value, archiveManifestData.value, `card:${card.resource_id}`),
+  ownerReference: card.ownerReference || buildIdolReference(card.character_id, idolUnitData.value, archiveManifestData.value, `card:${card.resource_id}`),
 })))
 
 const currentCardBase = computed(() => cardMap.value.get(currentCardId.value) || null)
-const currentCard = computed(() => mergeCardDetail(currentCardBase.value, cardDetailData.value))
-const currentCardOwnerReference = computed(() => buildIdolReference(
+const currentCard = computed(() => cardReadModelDetail.value?.id === currentCardId.value
+  ? cardReadModelDetail.value.card : mergeCardDetail(currentCardBase.value, cardDetailData.value))
+const currentCardOwnerReference = computed(() => cardReadModelDetail.value?.id === currentCardId.value
+  ? cardReadModelDetail.value.ownerReference : buildIdolReference(
   currentCard.value?.character_id, idolUnitData.value, archiveManifestData.value, `card:${currentCardId.value}`,
 ))
-const currentCardAssetStatus = computed(() => archiveManifestData.value?.card_assets_by_id?.[currentCardId.value] || null)
-const currentCardEventRelation = computed(() => archiveManifestData.value?.event_card_relations_by_card?.[currentCardId.value] || null)
-const currentCardGashaRelation = computed(() => gashaIndexData.value?.relations_by_card?.[currentCardId.value] || null)
+const currentCardAssetStatus = computed(() => cardReadModelDetail.value?.id === currentCardId.value
+  ? cardReadModelDetail.value.assetStatus : archiveManifestData.value?.card_assets_by_id?.[currentCardId.value] || null)
+const currentCardEventRelation = computed(() => cardReadModelDetail.value?.id === currentCardId.value
+  ? cardReadModelDetail.value.eventRelation : archiveManifestData.value?.event_card_relations_by_card?.[currentCardId.value] || null)
+const currentCardGashaRelation = computed(() => cardReadModelDetail.value?.id === currentCardId.value
+  ? cardReadModelDetail.value.gashaRelation : gashaIndexData.value?.relations_by_card?.[currentCardId.value] || null)
 const gashaCatalog = computed(() => gashaReadModelCatalog.value?.rows || buildGashaCatalog(gashaIndexData.value))
 const gashaCategoryOptions = computed(() => buildGashaCategoryOptions(
   gashaReadModelCatalog.value ? { meta: gashaReadModelCatalog.value.summary } : gashaIndexData.value, gashaCatalog.value))
@@ -1382,8 +1395,8 @@ const nextCard = computed(() => currentCardIndex.value >= 0 && currentCardIndex.
 const currentSeriesCards = computed(() => {
   const seriesId = currentCard.value?.release_series?.series_id
   if (!seriesId) return []
-  return [...cardMap.value.values()]
-    .filter(card => card.release_series?.series_id === seriesId)
+  return (cardReadModelCatalog.value || [...cardMap.value.values()])
+    .filter(card => (card.release_series_id || card.release_series?.series_id) === seriesId)
     .map(card => ({ ...card, character_name: idolSourceName(card.character_id) }))
 })
 
@@ -1781,7 +1794,7 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
     }
     if (!intent.isCurrent()) return
     filterQuery.value = route.query || ''
-    const validRouteIdol = !route.idol || (route.view === 'idol_detail'
+    const validRouteIdol = !route.idol || (['idol_detail', 'cards', 'card_detail'].includes(route.view)
       ? archiveBootstrap.idols.some(idol => idol.id === route.idol)
       : Boolean(idolUnitData.value?.by_idol_code?.[route.idol]))
     const invalidIdolPickTarget = !validRouteIdol ? ({
@@ -1950,7 +1963,7 @@ function navigateArchiveSection(section) {
     if (!archiveDataReady.value) loading.value = false
     return openArchivePortal()
   }
-  if (section !== 'portal' && section !== 'home' && section !== 'songs' && section !== 'idols' && section !== 'gashas' && !archiveDataReady.value) {
+  if (section !== 'portal' && section !== 'home' && section !== 'songs' && section !== 'idols' && section !== 'gashas' && section !== 'cards' && !archiveDataReady.value) {
     return runWhenLegacyReady(() => navigateArchiveSection(section))
   }
   if (section !== 'portal' && section !== 'home') {
@@ -2244,6 +2257,8 @@ async function closeArchivePortal() {
   if (route.view === 'unit_detail' && route.unit) unitReadModelDetail.value = await loadUnitDetail(route.unit)
   if (route.view === 'gashas') await loadGashaCatalog()
   if (route.view === 'gasha_detail' && route.gasha) gashaReadModelDetail.value = await loadGashaDetail(route.gasha)
+  if (route.view === 'cards') await loadCardCatalog()
+  if (route.view === 'card_detail' && route.card) cardReadModelDetail.value = await loadCardDetail(route.card)
   const pending = applyArchiveRoute(route)
   const expected = navigation.getRevision()
   await pending
@@ -2319,9 +2334,7 @@ function openHomeIdol(idolId) {
 }
 
 function openHomeCards(idolId) {
-  if (!archiveDataReady.value) return runWhenLegacyReady(() => openHomeCards(idolId))
-  currentCategoryId.value = 'cards'
-  openIdol({ id: idolId })
+  return openPrimaryCards(idolId, { captureSource: true })
 }
 
 function openHomeChat(idolId) {
@@ -3069,21 +3082,46 @@ function openIdolDirectory() {
   commitView('idols')
 }
 
-function openPrimaryCards(idolCode = '') {
-  filterQuery.value = ''
-  currentCategoryId.value = 'cards'
-  currentCharacterId.value = idolUnitData.value?.by_idol_code?.[idolCode] ? idolCode : ''
-  currentGroup.value = null
-  currentCardId.value = ''
-  currentCardRarity.value = 'all'
-  currentCardAssetState.value = 'all'
-  currentCardRelationState.value = 'all'
-  commitView('cards')
+function openPrimaryCards(idolCode = '', { captureSource = false } = {}) {
+  const request = ++pendingCardNavigation
+  const revision = navigation.getRevision()
+  cardReadModelStatus.value = '正在读取卡片目录…'
+  loading.value = true
+  return loadCardCatalog().then(() => {
+    if (request !== pendingCardNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
+    cardReadModelStatus.value = ''
+    if (captureSource) captureDetailSource()
+    filterQuery.value = ''
+    currentCategoryId.value = 'cards'
+    currentCharacterId.value = archiveBootstrap.idols.some(idol => idol.id === idolCode) ? idolCode : ''
+    currentGroup.value = null
+    currentCardId.value = ''
+    currentCardRarity.value = 'all'
+    currentCardAssetState.value = 'all'
+    currentCardRelationState.value = 'all'
+    commitView('cards')
+  }).catch(error => {
+    if (request !== pendingCardNavigation || revision !== navigation.getRevision()) return
+    loading.value = false
+    console.error('[CardReadModel] Failed to load catalog:', error)
+    cardReadModelStatus.value = '卡片目录暂时无法读取，请重试。'
+  })
 }
 
 function selectPrimaryIdol(idolCode) {
   if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return
   return openIdolReadModel(idolCode, { selection: true })
+}
+
+function selectCardIdol(idolCode) {
+  if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return
+  currentCharacterId.value = idolCode
+  currentCardId.value = ''
+  filterQuery.value = ''
+  currentCardRarity.value = 'all'
+  currentCardAssetState.value = 'all'
+  currentCardRelationState.value = 'all'
+  commitArchiveSelection()
 }
 
 function openIdol(entry) {
@@ -3115,6 +3153,7 @@ function openIdol(entry) {
 }
 
 function openIdolDomain(domain) {
+  if (domain === 'cards') return openPrimaryCards(currentCharacterId.value, { captureSource: true })
   if (!archiveDataReady.value) return runWhenLegacyReady(() => openIdolDomain(domain))
   if (domain === 'stories') {
     openIdolStoryArchive(currentCharacterId.value)
@@ -3127,20 +3166,6 @@ function openIdolDomain(domain) {
     })
     return
   }
-  const categoryByDomain = {
-    cards: 'cards',
-  }
-  const category = categoryByDomain[domain]
-  if (!category) return
-  captureDetailSource()
-  currentCategoryId.value = category
-  currentGroup.value = null
-  currentCardId.value = ''
-  currentCardRarity.value = 'all'
-  currentCardAssetState.value = 'all'
-  currentCardRelationState.value = 'all'
-  filterQuery.value = ''
-  commitView(domain === 'cards' ? 'cards' : 'groups')
 }
 
 function openIdolEvent(event) {
@@ -3168,6 +3193,8 @@ async function restoreDetailSource(fallback) {
   if (route.view === 'unit_detail' && route.unit) unitReadModelDetail.value = await loadUnitDetail(route.unit)
   if (route.view === 'gashas') await loadGashaCatalog()
   if (route.view === 'gasha_detail' && route.gasha) gashaReadModelDetail.value = await loadGashaDetail(route.gasha)
+  if (route.view === 'cards') await loadCardCatalog()
+  if (route.view === 'card_detail' && route.card) cardReadModelDetail.value = await loadCardDetail(route.card)
   if (route.view === 'song_catalog') await ensureSongCatalog()
   if (route.view === 'song_detail' && route.song) songReadModelDetail.value = await loadSongDetail(route.song)
   if (navigation.isDisposed() || beforeLoad !== navigation.getRevision()) return
@@ -3178,19 +3205,36 @@ async function restoreDetailSource(fallback) {
   })
 }
 
-function openCard(card) {
-  if (view.value !== 'card_detail') captureDetailSource()
-  currentCardId.value = card.resource_id
-  commitView('card_detail')
+function openCard(card, { resetContext = false, captureSource = false } = {}) {
+  if (!card?.resource_id) return
+  const id = card.resource_id
+  const request = ++pendingCardNavigation
+  const revision = navigation.getRevision()
+  cardReadModelStatus.value = '正在读取卡片详情…'
+  loading.value = true
+  return loadCardDetail(id).then(detail => {
+    if (request !== pendingCardNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
+    cardReadModelDetail.value = detail
+    cardReadModelStatus.value = ''
+    if (captureSource || view.value !== 'card_detail') captureDetailSource()
+    if (resetContext) {
+      currentCategoryId.value = 'cards'
+      currentCharacterId.value = card.character_id
+      filterQuery.value = ''
+    }
+    currentCardId.value = id
+    commitView('card_detail')
+  }).catch(error => {
+    if (request !== pendingCardNavigation || revision !== navigation.getRevision()) return
+    loading.value = false
+    console.error('[CardReadModel] Failed to load detail:', error)
+    cardReadModelStatus.value = '卡片详情暂时无法读取，请重试。'
+  })
 }
 
 function openCardIdol(idolCode) {
-  if (!idolUnitData.value?.by_idol_code?.[idolCode] || currentCard.value?.character_id !== idolCode) return
-  captureDetailSource()
-  currentCategoryId.value = 'idol'
-  currentCharacterId.value = idolCode
-  currentCardId.value = ''
-  commitView('idol_detail')
+  if (!archiveBootstrap.idols.some(idol => idol.id === idolCode) || currentCard.value?.character_id !== idolCode) return
+  return openIdolReadModel(idolCode, { captureSource: true, resetContext: true })
 }
 
 function openGasha(gasha) {
@@ -3231,30 +3275,19 @@ function goBackFromGasha() {
 
 function openCardGasha(relation) {
   if (!relation?.announcement_id) return
-  const gasha = gashaIndexData.value?.by_id?.[String(relation.announcement_id)]
-  if (gasha) openGasha(gasha)
+  openGasha({ id: String(relation.announcement_id) })
 }
 
-function openGashaCard(relation) {
-  if (!archiveDataReady.value) return runWhenLegacyReady(() => openGashaCard(relation))
-  const card = cardMap.value.get(relation?.card_resource_id)
+async function openGashaCard(relation) {
+  if (!cardReadModelCatalog.value) await loadCardCatalog()
+  const card = cardReadModelCatalog.value?.find(row => row.resource_id === relation?.card_resource_id) || cardMap.value.get(relation?.card_resource_id)
   if (!card) return
-  captureDetailSource()
-  currentCategoryId.value = 'cards'
-  currentCharacterId.value = card.character_id
-  currentCardId.value = card.resource_id
-  filterQuery.value = ''
-  commitView('card_detail')
+  return openCard(card, { resetContext: true })
 }
 
 function openRelatedCard(card) {
   if (!card?.resource_id || !card?.character_id) return
-  captureDetailSource()
-  currentCategoryId.value = 'cards'
-  currentCharacterId.value = card.character_id
-  currentCardId.value = card.resource_id
-  filterQuery.value = ''
-  commitView('card_detail')
+  return openCard(card, { resetContext: true, captureSource: true })
 }
 
 function goBackFromCards() {
@@ -3266,6 +3299,7 @@ function goBackFromCards() {
 }
 
 function openCardScenario(entry) {
+  if (!archiveDataReady.value) return runWhenLegacyReady(() => openCardScenario(entry))
   if (entry?.compiled_file) {
     loadScenario(entry.compiled_file, 'card_detail')
   }
@@ -3278,6 +3312,7 @@ async function previewCardVoice(cue) {
 }
 
 function openCardEvent(event) {
+  if (!archiveDataReady.value) return runWhenLegacyReady(() => openCardEvent(event))
   openEventDetail(event, 'card_detail')
 }
 
@@ -3615,6 +3650,35 @@ async function loadGashaDetail(id) {
   } })
 }
 
+async function loadCardCatalog() {
+  if (cardReadModelCatalog.value) return cardReadModelCatalog.value
+  if (!cardCatalogPromise) {
+    cardCatalogPromise = (async () => {
+      const index = await readModelClient.load(archiveBootstrap.domains.cards)
+      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
+      const rows = pages.flatMap(page => page.rows || [])
+      if (rows.length !== index.count || rows.length !== archiveBootstrap.counts.canonical_cards ||
+        new Set(rows.map(row => row.resource_id)).size !== rows.length ||
+        rows.some(row => row.id !== row.resource_id || !row.detail || !row.ownerReference ||
+          !Number.isInteger(row.home_voice_count) || !Number.isInteger(row.scenario_count)))
+        throw new Error('Card catalog count or identity mismatch')
+      cardReadModelCatalog.value = rows
+      return rows
+    })().catch(error => { cardCatalogPromise = null; throw error })
+  }
+  return cardCatalogPromise
+}
+
+async function loadCardDetail(id) {
+  const row = (await loadCardCatalog()).find(card => card.resource_id === id)
+  if (!row) throw new Error(`Unavailable card: ${id}`)
+  return readModelClient.load(row.detail, { expectedId: id, validate: data => {
+    if (data.card?.resource_id !== id || !data.ownerReference ||
+      !Array.isArray(data.card?.home_voice_cues) || !Array.isArray(data.card?.scenario_entries))
+      throw new Error('Card detail identity or shape mismatch')
+  } })
+}
+
 async function loadSongCatalog() {
   if (songReadModelCatalog.value) return songReadModelCatalog.value
   if (!songCatalogPromise) {
@@ -3656,7 +3720,7 @@ async function loadSongDetail(songCode) {
 }
 
 function isBootstrapRoute(route) {
-  return ['portal', 'welcome', 'idol_picker', 'home', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail'].includes(route.view) ||
+  return ['portal', 'welcome', 'idol_picker', 'home', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail'].includes(route.view) ||
     (route.view === 'idols' && (!route.category || route.category === 'idol'))
 }
 
@@ -3695,6 +3759,7 @@ onMounted(async () => {
     ++pendingIdolNavigation
     ++pendingUnitNavigation
     ++pendingGashaNavigation
+    ++pendingCardNavigation
     ++pendingLegacyNavigation
     legacyEntryStatus.value = ''
     if (!isBootstrapRoute(route)) await ensureLegacyArchiveData()
@@ -3746,6 +3811,18 @@ onMounted(async () => {
         console.error('[GashaReadModel] Failed to restore gasha route:', error)
         gashaReadModelStatus.value = '卡池资料暂时无法读取，请稍后重试。'
         route = { view: 'gashas' }
+      }
+    }
+    if (route.view === 'cards' || route.view === 'card_detail') {
+      try {
+        if (route.view === 'cards') await loadCardCatalog()
+        else cardReadModelDetail.value = await loadCardDetail(route.card)
+        cardReadModelStatus.value = ''
+      } catch (error) {
+        if (request !== restoreRequest) return
+        console.error('[CardReadModel] Failed to restore card route:', error)
+        cardReadModelStatus.value = '卡片资料暂时无法读取，请稍后重试。'
+        route = { view: 'cards' }
       }
     }
     if (route.view === 'song_catalog') await ensureSongCatalog()
@@ -3823,7 +3900,7 @@ watch([filterQuery, currentStoryDomain, currentStorySection, currentEventScope, 
 })
 
 watch([view, currentCardId], ([nextView, cardId]) => {
-  if (nextView === 'card_detail' && cardId) ensureCardDetailData()
+  if (nextView === 'card_detail' && cardId && cardReadModelDetail.value?.id !== cardId) ensureCardDetailData()
 })
 
 watch(cardLayout, layout => {

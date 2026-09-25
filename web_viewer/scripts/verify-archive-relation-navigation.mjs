@@ -15,10 +15,12 @@ const context = vm.createContext({
   songCatalogData: { value: { songs: { brndnf: {} } } },
   songReadModelStatus: { value: '' }, songReadModelDetail: { value: null },
   gashaReadModelStatus: { value: '' }, gashaReadModelDetail: { value: null },
-  pendingSongNavigation: 0, pendingGashaNavigation: 0, loading: { value: false }, archiveDataReady: { value: true },
+  cardReadModelCatalog: { value: [card] }, cardReadModelStatus: { value: '' }, cardReadModelDetail: { value: null },
+  pendingSongNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, loading: { value: false }, archiveDataReady: { value: true },
   navigation: { getRevision: () => 0, isDisposed: () => false },
   loadSongDetail: async songCode => ({ id: songCode, song: { song_code: songCode }, view: { id: songCode } }),
   loadGashaDetail: async id => ({ id, gasha: { id } }),
+  loadCardDetail: async id => ({ id, card: { resource_id: id } }),
   idolUnitData: { value: { units: [unit], by_idol_code: { '002sht': {}, '003hok': {} } } },
   archiveBootstrap: { idols: [{ id: '002sht' }, { id: '003hok' }] },
   openIdolReadModel: (idolCode, options = {}) => {
@@ -31,6 +33,13 @@ const context = vm.createContext({
     state.currentArchiveUnitCode.value = String(unit.unit_code || unit.unit_id)
     state.view.value = 'unit_detail'
   },
+  openPrimaryCards: idolCode => {
+    context.captureDetailSource()
+    state.currentCategoryId.value = 'cards'
+    state.currentCharacterId.value = idolCode
+    state.currentCardId.value = ''
+    state.view.value = 'cards'
+  },
   cardMap: { value: new Map([[card.resource_id, card]]) },
   cardIndexData: { value: { cards: [card] } },
   currentArchiveUnit: { value: unit },
@@ -39,7 +48,7 @@ const context = vm.createContext({
 })
 const handlers = ['captureDetailSource', 'openSong', 'openSongIdol', 'openSongUnit',
   'openPrimaryIdol', 'openUnitMember', 'openUnitCards', 'openIdolDomain',
-  'openEventIdol', 'openEventUnit', 'openGasha', 'openGashaCard', 'openEventCard',
+  'openEventIdol', 'openEventUnit', 'openCard', 'openGasha', 'openGashaCard', 'openEventCard',
   'openMobileCard', 'openStoryIdol', 'openRelatedCard', 'openEventDetail']
 for (const name of handlers) {
   const code = app.match(new RegExp(`(?:async )?function ${name}\\([^]*?\\n\\}`))?.[0]

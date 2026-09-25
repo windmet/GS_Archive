@@ -10,6 +10,14 @@ const cards = [...buildCardMap(read('../public/data/masterdata/card_index.json')
 const manifest = read('../public/data/archive_manifest.json')
 const gasha = read('../public/data/masterdata/gasha_index.json')
 const context = { assets: manifest.card_assets_by_id, eventRelations: manifest.event_card_relations_by_card, gashaRelations: gasha.relations_by_card }
+const summaries = cards.map(card => ({
+  resource_id: card.resource_id, title: card.title, rarity: card.rarity,
+  has_story: Boolean(card.scenario_entries?.length),
+  has_event_relation: Boolean(context.eventRelations?.[card.resource_id]),
+  has_gasha_relation: Boolean(context.gashaRelations?.[card.resource_id]),
+  has_release_series: Boolean(card.release_series),
+  asset_status: context.assets?.[card.resource_id] || null,
+}))
 const baselinePath = process.argv[2]
 const baseline = baselinePath ? new Function('cards', 'options', `
   const currentCards = {value:cards}, filterQuery = {value:options.query}, currentCardRarity = {value:options.rarity},
@@ -28,6 +36,8 @@ for (const rarity of ['all', ...new Set(cards.map(card => card.rarity))]) {
       for (const query of ['', 'SSR', '001', 'チュートリアル', 'unlikely-missing-title']) {
         const options = { ...context, rarity, assetState, relationState, query }
         const result = filterArchiveCards(cards, options)
+        assert.deepEqual(filterArchiveCards(summaries, options).map(card => card.resource_id),
+          result.map(card => card.resource_id), 'read-model summary filters retain legacy results')
         if (baseline) assert.deepEqual(result, baseline(cards, options))
         digest.update(JSON.stringify([rarity, assetState, relationState, query, result.map(card => card.resource_id)]))
         cases++

@@ -88,6 +88,7 @@ const context = {
   ...nav, navigation, buildPortalReturnQuery, readPortalReturnRoute,
   archiveShellVisible: { value: true },
   archiveDataReady: { value: true },
+  loadCardCatalog: async () => [],
   pendingLegacyNavigation: 0,
   legacyEntryStatus: { value: '' },
   commitView: view => { navigation.invalidate(); nav.view.value = view },
@@ -104,6 +105,7 @@ const captured = nav.portalFrom.value
 context.openArchivePortal()
 assert.equal(nav.portalFrom.value, captured, 'reopening cannot overwrite return context')
 let pending = context.closeArchivePortal()
+await new Promise(resolve => setImmediate(resolve))
 navigation.invalidate()
 nav.view.value = 'gashas'
 release()
@@ -111,6 +113,7 @@ await pending
 assert.equal(nav.view.value, 'gashas')
 assert.equal(published, 0, 'obsolete close cannot rewrite newer navigation')
 pending = context.closeArchivePortal()
+await new Promise(resolve => setImmediate(resolve))
 release()
 await pending
 assert.equal(nav.view.value, 'cards')
