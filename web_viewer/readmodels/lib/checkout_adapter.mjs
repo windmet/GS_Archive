@@ -1,0 +1,137 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { assert, safeRead, sha256, jsonBytes, listFiles, pick } from './common.mjs';
+
+export const INPUTS = {
+ cardIndex: 'data/masterdata/card_index.json', cardDetailIndex: 'data/masterdata/card_detail_index.json',
+ idolUnit: 'data/masterdata/idol_unit_dictionary.json', costumeDictionary: 'data/masterdata/costume_dictionary.json',
+ archiveManifest: 'data/archive_manifest.json', uiAssetCatalog: 'data/assets/ui_asset_catalog.json',
+ storyCatalog: 'data/masterdata/story_catalog.json', storyPresentation: 'data/masterdata/story_presentation_index.json',
+ songCatalog: 'data/song_catalog.json', songPlaybackAudio: 'data/song_playback_audio.json',
+ songExperimentalAudio: 'data/song_experimental_audio.json', gashaIndex: 'data/masterdata/gasha_index.json',
+ eventIndex: 'data/masterdata/event_index.json', idolEpisode: 'data/masterdata/idol_episode_index.json',
+ workStory: 'data/masterdata/work_story_index.json', archiveVerification: 'data/archive_verification.json',
+ mobileArchive: 'data/masterdata/mobile_archive_index.json',
+ birthdayStorySemantic: 'data/masterdata/birthday_story_semantic_index.json',
+ extraStoryVisualIndex: 'data/masterdata/extra_story_visual_index.json',
+ speakerDictionary: 'data/masterdata/speaker_dictionary.json',
+ seasonalCampaign: 'data/masterdata/seasonal_campaign_index.json',
+};
+const HELPERS = {
+ home: 'src/data/archiveHomeState.js', cards: 'src/data/archiveSelectors.js',
+ stories: 'src/data/storyCatalog.js', gashas: 'src/data/gashaCatalog.js', contracts: 'src/data/archiveDataContracts.js',
+ songPresentation: 'src/presentation/SongPresentation.js', idolReference: 'src/presentation/IdolReferencePresentation.js',
+ eventEpisodes: 'src/data/eventStoryEpisodes.js', idolPage: 'src/data/idolPage.js', unitPage: 'src/data/unitPage.js',
+ domainIdentity: 'src/data/storyDomainIdentityIndex.js', collections: 'src/data/storyCollections.js',
+ idolStories: 'src/data/idolCommunicationSelectors.js',
+};
+/** Production adapter: executes the existing, checkout-owned pure selectors. No hand-reimplementation of card precedence or story identity. */
+export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
+  const sources = {}, data = {};
+  for (const [key, name] of Object.entries(INPUTS)) {
+    const bytes = await safeRead(path.join(viewer, 'public'), name);
+    sources[name] = { sha256: sha256(bytes), bytes: bytes.length };
+    data[key] = JSON.parse(bytes.toString('utf8').replace(/^\uFEFF/, ''));
+  }
+  const codeHashes = {};
+  // Include transitive pure-module code in the release digest, not only direct import entrypoints.
+  for (const dir of ['src/data','src/presentation','shared/story']) {
+    for (const name of await listFiles(path.join(viewer, dir))) {
+      if (!name.endsWith('.js') && !name.endsWith('.mjs')) continue;
+      codeHashes[`${dir}/${name}`] = sha256(await safeRead(viewer, `${dir}/${name}`));
+    }
+  }
+  const modules = {};
+  for (const [key, relative] of Object.entries(HELPERS)) {
+    await safeRead(viewer, relative); // resolve/containment check before import.
+    modules[key] = await import(pathToFileURL(path.join(viewer, relative)).href);
+  }
+  for (const [key, value] of Object.entries(data)) modules.contracts.validateArchivePayload(key, value);
+  const homes = modules.home.buildArchiveHomeState(data.idolUnit, data.cardIndex, data.archiveManifest, data.costumeDictionary);
+  const cards = [...modules.cards.buildCardMap(data.cardIndex).values()].map(card => modules.cards.mergeCardDetail(card, data.cardDetailIndex));
+  // Move the actual App.vue event decoration into the producer, rather than losing it during data splitting.
+  const eventByFile = new Map((data.archiveManifest.unit_event_relations || []).map(e => [e.file, e]));
+  const stories = modules.stories.buildStoryCatalog(data.storyCatalog, data.storyPresentation).map(entry => {
+    if (entry.domain !== 'event') return entry;
+    const relation = eventByFile.get(entry.file);
+    if (!relation) return { ...entry, eventScope: 'unclassified', eventScopeLabel: '活动' };
+    const masterEvent = data.eventIndex.by_code?.[String(relation.event_code)] || null;
+    return { ...entry, title: relation.title, subtitle: [entry.title,entry.subtitle].filter(Boolean).join(' / '),
+      searchText: `${entry.searchText} ${relation.title} ${relation.attribute || ''}`.toLowerCase(),
+      eventScope: relation.event_scope,
+      eventScopeLabel: relation.event_scope === 'fixed_unit_event' ? '固定团活' : relation.event_scope === 'attribute_event' ? `属性·${relation.attribute}` : '跨组合团活',
+      eventRelation: relation, masterEvent, rewardCardIds: masterEvent?.reward_card_ids || [] };
+  });
+  const gashaCatalog = modules.gashas.buildGashaCatalog(data.gashaIndex);
+  const gashaMap = new Map(gashaCatalog.map(g => [String(g.id),g]));
+  for (const gasha of Object.values(data.gashaIndex.by_id || {})) {
+    if (!gashaMap.has(String(gasha.id))) gashaMap.set(String(gasha.id), modules.gashas.resolveGashaRelatedCards(gasha,data.gashaIndex));
+  }
+  const gashas = [...gashaMap.values()];
+  const cardMap = new Map(cards.map(c => [c.resource_id,c]));
+  const originalCardMap = modules.cards.buildCardMap(data.cardIndex);
+  const birthdayDomain = modules.domainIdentity.buildBirthdayStoryDomainIdentity(data.storyCatalog,data.idolUnit,data.speakerDictionary,data.birthdayStorySemantic);
+  const extraDomain = modules.domainIdentity.buildExtraStoryDomainIdentity(data.storyCatalog,data.gashaIndex,data.extraStoryVisualIndex);
+  const collections = modules.collections.buildStoryCollections(data.storyCatalog,stories,{birthdayDomain,extraDomain,idolEpisodes:data.idolEpisode});
+  const unitCatalog = modules.unitPage.buildUnitCatalog(data.idolUnit,{manifest:data.archiveManifest,cardMap:originalCardMap,stories});
+  const songViews = Object.fromEntries(Object.values(data.songCatalog.songs).map(song => [song.song_code,
+    modules.songPresentation.buildSongPresentation(song,data.idolUnit,{playbackTrack:data.songPlaybackAudio.songs?.[song.song_code]||null,
+    audioExperiment:data.songExperimentalAudio.songs?.[song.song_code]||null,manifest:data.archiveManifest})]));
+  const cardContext = Object.fromEntries(cards.map(card => [card.resource_id,{
+    ownerReference:modules.idolReference.buildIdolReference(card.character_id,data.idolUnit,data.archiveManifest,`card:${card.resource_id}`),
+    assetStatus:data.archiveManifest.card_assets_by_id?.[card.resource_id]||null,
+    eventRelation:data.archiveManifest.event_card_relations_by_card?.[card.resource_id]||null,
+    gashaRelation:data.gashaIndex.relations_by_card?.[card.resource_id]||null,
+  }]));
+  const identities = Object.entries(data.idolUnit.by_idol_code).map(([id, profile]) => ({
+    id, name: profile.display_name, kana: profile.name_fields?.kana || '', color: profile.color || '',
+    unitId: String(data.archiveManifest.unit_membership_by_idol?.[id]?.unit_id || profile.unit_id || ''),
+    unitCode: data.archiveManifest.unit_membership_by_idol?.[id]?.unit_code || profile.unit_code || '',
+    unitName: data.archiveManifest.unit_membership_by_idol?.[id]?.unit_name || profile.unit_name || '',
+  }));
+  // Explicitly scoped leaves: these are source-owned domain records, not root-level index dumps.
+  // The UI integration guide specifies which remaining joins must move into offline route producers.
+  const extraDomains = {
+    events: { searchable: true, records: (data.archiveManifest.unit_event_relations || []).map(event => {
+      const story = stories.find(s => s.file === event.file) || null;
+      const units = new Set((event.participating_unit_ids || []).map(String));
+      return { id: String(event.event_id), summary: pick(event,['event_id','event_code','title','release_at','event_scope']), view:{
+        event, masterEvent:data.eventIndex.by_code?.[String(event.event_code)]||null, story,
+        episodes:modules.eventEpisodes.buildEventStoryEpisodes(event,story,data.storyCatalog),
+        cards:(data.archiveManifest.event_card_relations_by_event?.[String(event.event_id)]||[]).map(relation=>({...relation,
+          card_title:cardMap.get(relation.card_resource_id)?.title||relation.card_resource_id,
+          character_name:data.idolUnit.by_idol_code?.[relation.character_id]?.display_name||relation.character_id})),
+        idols:(event.characters||[]).map(id=>({idol_code:id,...data.idolUnit.by_idol_code?.[id]})),
+        units:(data.idolUnit.units||[]).filter(unit=>units.has(String(unit.unit_id))),
+      }};
+    }) },
+    idols: { searchable:true, records:Object.keys(data.idolUnit.by_idol_code).map(id=>({id,
+      summary:{name:data.idolUnit.by_idol_code[id].display_name},view:{
+        profile:modules.idolPage.buildIdolProfile(id,data.idolUnit,data.archiveManifest),
+        stats:modules.idolPage.buildIdolStats(id,{cardIndex:data.cardIndex,cardMap:originalCardMap,episodes:data.idolEpisode,mobile:data.mobileArchive}),
+        events:modules.idolPage.eventsForIdol(id,data.archiveManifest),
+        songs:modules.idolPage.songsForIdol(id,data.songCatalog),
+      }})) },
+    units: { records:unitCatalog.map(entry=>{const unit=entry.unit;return {id:String(unit.unit_id),summary:{name:unit.unit_name||unit.name||String(unit.unit_id)},view:{
+      entry,stories:modules.unitPage.storiesForUnit(unit,stories),songs:modules.unitPage.songsForUnit(unit,data.songCatalog),
+    }}}) },
+    collections: { searchable:true, records:collections.map(collection=>({id:collection.id,
+      summary:pick(collection,['title','domain','sectionId','legacySectionIds','visualUrl','chapterCount','episodeCount']),view:{collection}})) },
+    'idol-stories': { records:data.idolEpisode.chapters.map(chapter=>({id:chapter.idol_code,summary:{name:chapter.idol_name},view:{
+      page:(()=>{const page=modules.idolStories.buildIdolStoryPage(data.idolEpisode,data.mobileArchive,stories,data.idolUnit,chapter.idol_code,birthdayDomain);return page?{...page,unitName:data.archiveManifest.unit_membership_by_idol?.[chapter.idol_code]?.unit_name||page.unitName}:null})(),
+    }})) },
+    work: { records:Object.entries(data.workStory.by_idol_code).map(([id,idol])=>({id,summary:{name:idol.idol_name||idol.name||id},view:{idol}})) },
+    seasonal: { searchable:true,records:data.seasonalCampaign.campaigns.map(campaign=>({id:campaign.id,
+      summary:pick(campaign,['name','title','start_at','end_at']),view:{campaign}})) },
+  };
+  return { product: { home: homes, identities, cards, stories, gashas,
+    songs: Object.values(data.songCatalog.songs), songViews, songSummary: data.songCatalog.summary, cardContext,
+    gashaCatalogIds:gashaCatalog.map(g=>String(g.id)),
+    playback: data.songPlaybackAudio.songs, experimental: data.songExperimentalAudio.songs, extraDomains },
+    provenance: { sources, codeHashes, dataRevision, mediaEpoch, canonicalCounts: {
+      rawCardRecords: data.cardIndex.cards.length, preferredCards: cards.length,
+      storyEntries: stories.length, homeIdols: homes.length },
+      followupProducers: ['main-extra-birthday landing projections + identity parity','mobile + random talk pages','resources UI/provenance','reading document locator','legacy groups/files directory aliases'],
+    } };
+}
