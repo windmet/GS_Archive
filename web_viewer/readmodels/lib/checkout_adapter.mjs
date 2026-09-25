@@ -141,7 +141,13 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
       modules.unitPage.storiesForUnit(entry.unit,stories),modules.unitPage.songsForUnit(entry.unit,data.songCatalog))) },
     collections: { searchable:true, records:collections.map(collection=>({id:collection.id,
       summary:pick(collection,['title','domain','sectionId','legacySectionIds','visualUrl','chapterCount','episodeCount']),view:{collection}})) },
-    'idol-stories': { records:data.idolEpisode.chapters.map(chapter=>({id:chapter.idol_code,summary:{name:chapter.idol_name},view:{
+    'idol-stories': { records:data.idolEpisode.chapters.map(chapter=>({id:chapter.idol_code,summary:{
+      idolCode:chapter.idol_code,idolName:chapter.idol_name,
+      unitName:data.idolUnit.by_idol_code?.[chapter.idol_code]?.unit_name||'',
+      color:data.idolUnit.by_idol_code?.[chapter.idol_code]?.color||'#168f87',
+      sectionCount:chapter.sections?.length||0,
+      episodeCount:(chapter.sections||[]).reduce((sum,section)=>sum+(section.episodes?.length||0),0),
+    },view:{
       page:(()=>{const page=modules.idolStories.buildIdolStoryPage(data.idolEpisode,data.mobileArchive,stories,data.idolUnit,chapter.idol_code,birthdayDomain);return page?{...page,unitName:data.archiveManifest.unit_membership_by_idol?.[chapter.idol_code]?.unit_name||page.unitName}:null})(),
     }})) },
     work: { records:data.workStory.idols.map(idol=>({id:idol.idol_code,
