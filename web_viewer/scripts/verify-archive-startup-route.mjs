@@ -21,9 +21,11 @@ for (const disposed of [false, true]) {
     localStorage: { getItem: () => null },
     window: { location: { href: 'http://localhost/' } },
     userPreferences: { value: {} },
+    archiveBootstrap: { idols: [{ id: '002sht' }] },
     initialArchiveStartup: { route, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
-    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingLegacyNavigation: 0,
+    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingLegacyNavigation: 0,
     isBootstrapRoute: () => false, ensureLegacyArchiveData: () => loading.promise,
+    loadIdolDetail: async idolCode => ({ id: idolCode, view: { profile: { idol_code: idolCode } } }),
     loadIdolEntityTranslations: () => translations.promise,
     navigation: { isDisposed: () => isDisposed, getRevision: () => 0 },
     applyArchiveRoute: async value => { applied.push(value) },
@@ -45,7 +47,7 @@ for (const disposed of [false, true]) {
   isDisposed = disposed
   translations.resolve()
   await pending
-  await Promise.resolve()
+  await new Promise(resolve => setImmediate(resolve))
   assert.equal(applied.length, disposed ? 0 : 1)
   assert.equal(written.length, disposed ? 0 : 1)
   if (!disposed) {
@@ -63,7 +65,7 @@ for (const disposed of [false, true]) {
     onMounted: callback => { mount = callback }, localStorage: { getItem: () => null },
     window: { location: { href: 'http://localhost/' } }, userPreferences: { value: {} },
     initialArchiveStartup: { route: { ...route }, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
-    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingLegacyNavigation: 0,
+    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingLegacyNavigation: 0,
     isBootstrapRoute: () => false, ensureLegacyArchiveData: async () => {},
     loadIdolEntityTranslations: async () => {}, navigation,
     applyArchiveRoute: value => navigation.run(async () => { applied.push(value); if (value.view === 'player') await firstRestore.promise }, { restoring: true }),
@@ -96,7 +98,7 @@ for (const asynchronous of [false, true]) {
     onMounted: callback => { mount = callback }, localStorage: { getItem: () => null },
     window: { location: { href: 'http://localhost/' } }, userPreferences: { value: {} },
     initialArchiveStartup: { route: { view: 'player' }, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
-    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingLegacyNavigation: 0,
+    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingLegacyNavigation: 0,
     isBootstrapRoute: () => false, ensureLegacyArchiveData: async () => {},
     loadIdolEntityTranslations: async () => {}, navigation,
     applyArchiveRoute: () => navigation.run(async intent => {

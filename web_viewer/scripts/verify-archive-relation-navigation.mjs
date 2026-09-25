@@ -18,6 +18,8 @@ const context = vm.createContext({
   navigation: { getRevision: () => 0, isDisposed: () => false },
   loadSongDetail: async songCode => ({ id: songCode, song: { song_code: songCode }, view: { id: songCode } }),
   idolUnitData: { value: { units: [unit], by_idol_code: { '002sht': {}, '003hok': {} } } },
+  archiveBootstrap: { idols: [{ id: '002sht' }, { id: '003hok' }] },
+  openIdolReadModel: idolCode => { state.currentCharacterId.value = idolCode; state.view.value = 'idol_detail' },
   cardMap: { value: new Map([[card.resource_id, card]]) },
   cardIndexData: { value: { cards: [card] } },
   currentArchiveUnit: { value: unit },

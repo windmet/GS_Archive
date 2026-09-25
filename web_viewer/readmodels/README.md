@@ -10,7 +10,9 @@ Vite embeds it in HTML. Portal, welcome, the idol picker, Home, the idol directo
 can open without the legacy 21-source `/data` startup batch. Home loads its
 index, selected idol detail and cue pages; it keeps duplicate cue IDs in source
 order. Song routes load their index, pages and selected detail. The idol directory
-uses the 49 bootstrap identities; idol detail still prepares legacy data. Other routes
+uses the 49 bootstrap identities; idol detail loads its pinned catalog and one
+per-idol view with profile, statistics, songs and events. Outgoing links to
+unmigrated domains still prepare legacy data. Other routes
 still prepare legacy data on entry. The full route cutover and dynamic feature
 imports remain open.
 No Pages candidate has been assembled or deployed. The package's route
