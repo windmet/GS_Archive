@@ -849,6 +849,12 @@ function withUnitEvidence(entry) {
 
 const idolList = computed(() => {
   const catId = currentCategoryId.value
+  if ((catId === 'idol' || !catId) && !archiveDataReady.value) {
+    return archiveBootstrap.idols.map(idol => ({
+      id: idol.id, name: idol.name, color: idol.color, unitId: idol.unitId,
+      unitCode: idol.unitCode, unitName: idol.unitName, _isGroup: false,
+    }))
+  }
   if (catId === 'cards') {
     const byCharacter = cardIndexData.value?.by_character || {}
     return Object.entries(byCharacter).map(([id, cards]) => withUnitEvidence({
@@ -896,7 +902,10 @@ const idolUnitOptions = computed(() => {
   for (const entry of idolList.value) {
     if (entry.unitId) counts.set(entry.unitId, (counts.get(entry.unitId) || 0) + 1)
   }
-  return (idolUnitData.value?.units || []).map(unit => ({
+  const units = idolUnitData.value?.units || [...new Map(archiveBootstrap.idols.map(idol => [idol.unitId, {
+    unit_id: idol.unitId, unit_code: idol.unitCode, unit_name: idol.unitName,
+  }])).values()]
+  return units.map(unit => ({
     id: String(unit.unit_id),
     code: unit.unit_code,
     name: unit.unit_name,
@@ -1740,7 +1749,7 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
       mobile_archive: 'mobile',
     }[route.view] || '') : ''
     currentPickTarget.value = invalidIdolPickTarget || route.pickTarget || ''
-    currentCategoryId.value = route.category || ''
+    currentCategoryId.value = route.view === 'idols' && !route.category ? 'idol' : (route.category || '')
     currentCharacterId.value = validRouteIdol ? (route.idol || '') : ''
     currentCardId.value = route.card || ''
     currentEventId.value = route.event || ''
@@ -1899,7 +1908,7 @@ function navigateArchiveSection(section) {
     if (!archiveDataReady.value) loading.value = false
     return openArchivePortal()
   }
-  if (section !== 'portal' && section !== 'home' && section !== 'songs' && !archiveDataReady.value) {
+  if (section !== 'portal' && section !== 'home' && section !== 'songs' && section !== 'idols' && !archiveDataReady.value) {
     return runWhenLegacyReady(() => navigateArchiveSection(section))
   }
   if (section !== 'portal' && section !== 'home') {
@@ -2774,6 +2783,7 @@ function openMobileIdolStory(episodeId) {
 }
 
 function openUnitCatalog() {
+  if (!archiveDataReady.value) return runWhenLegacyReady(() => openUnitCatalog())
   captureDetailSource()
   filterQuery.value = ''
   currentCategoryId.value = 'idol'
@@ -2969,6 +2979,8 @@ function selectPrimaryIdol(idolCode) {
 }
 
 function openIdol(entry) {
+  if (currentCategoryId.value === 'idol' && !archiveDataReady.value)
+    return runWhenLegacyReady(() => openIdol(entry))
   captureDetailSource()
   filterQuery.value = ''
   // Group chat entry in idol_chat grid: go directly to file view.
@@ -3432,23 +3444,24 @@ async function loadSongDetail(songCode) {
 }
 
 function isBootstrapRoute(route) {
-  return ['portal', 'welcome', 'idol_picker', 'home', 'song_catalog', 'song_detail'].includes(route.view)
+  return ['portal', 'welcome', 'idol_picker', 'home', 'song_catalog', 'song_detail'].includes(route.view) ||
+    (route.view === 'idols' && (!route.category || route.category === 'idol'))
 }
 
 function runWhenLegacyReady(action) {
   if (archiveDataReady.value) return action()
   const request = ++pendingLegacyNavigation
-  const fromHome = view.value === 'home'
-  if (fromHome) loading.value = true
+  const showOverlay = ['home', 'idols'].includes(view.value)
+  if (showOverlay) loading.value = true
   legacyEntryStatus.value = '正在准备该栏目的资料…'
   ensureLegacyArchiveData().then(() => {
     if (navigation.isDisposed() || request !== pendingLegacyNavigation) return
-    if (fromHome) loading.value = false
+    if (showOverlay) loading.value = false
     legacyEntryStatus.value = ''
     action()
   }).catch(error => {
     if (request !== pendingLegacyNavigation) return
-    if (fromHome) loading.value = false
+    if (showOverlay) loading.value = false
     console.error('[ArchiveData] Failed to prepare requested section:', error)
     legacyEntryStatus.value = '该栏目暂时无法打开，请重试。'
   })

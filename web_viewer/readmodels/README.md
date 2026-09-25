@@ -6,10 +6,11 @@ checkout's existing pure selectors. The copied kit's synthetic tests cover the
 artifact writer, client, assembler and optional media helpers.
 
 `bootstrap.inline.json` is the verified local r4 candidate's 11,509-byte bootstrap.
-Vite embeds it in HTML. Portal, welcome, the idol picker, Home and song routes
+Vite embeds it in HTML. Portal, welcome, the idol picker, Home, the idol directory and song routes
 can open without the legacy 21-source `/data` startup batch. Home loads its
 index, selected idol detail and cue pages; it keeps duplicate cue IDs in source
-order. Song routes load their index, pages and selected detail. Other routes
+order. Song routes load their index, pages and selected detail. The idol directory
+uses the 49 bootstrap identities; idol detail still prepares legacy data. Other routes
 still prepare legacy data on entry. The full route cutover and dynamic feature
 imports remain open.
 No Pages candidate has been assembled or deployed. The package's route
