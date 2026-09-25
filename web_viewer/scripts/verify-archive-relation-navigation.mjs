@@ -13,6 +13,10 @@ const unit = { unit_code: '01jup', unit_id: 1 }
 const context = vm.createContext({
   ...state, buildArchiveSourceQuery,
   songCatalogData: { value: { songs: { brndnf: {} } } },
+  songReadModelStatus: { value: '' }, songReadModelDetail: { value: null },
+  pendingSongNavigation: 0, archiveDataReady: { value: true },
+  navigation: { getRevision: () => 0, isDisposed: () => false },
+  loadSongDetail: async songCode => ({ id: songCode, song: { song_code: songCode }, view: { id: songCode } }),
   idolUnitData: { value: { units: [unit], by_idol_code: { '002sht': {}, '003hok': {} } } },
   cardMap: { value: new Map([[card.resource_id, card]]) },
   cardIndexData: { value: { cards: [card] } },
@@ -25,7 +29,7 @@ const handlers = ['captureDetailSource', 'openSong', 'openSongIdol', 'openSongUn
   'openEventIdol', 'openEventUnit', 'openGasha', 'openGashaCard', 'openEventCard',
   'openMobileCard', 'openStoryIdol', 'openRelatedCard', 'openEventDetail']
 for (const name of handlers) {
-  const code = app.match(new RegExp(`function ${name}\\([^]*?\\n\\}`))?.[0]
+  const code = app.match(new RegExp(`(?:async )?function ${name}\\([^]*?\\n\\}`))?.[0]
   assert.ok(code, name)
   vm.runInContext(code, context)
 }
@@ -63,7 +67,7 @@ for (const [view, handler, arg, target] of fixtures) {
   state.filterQuery.value = 'preserve me'
   state.detailSourceRoute.value = buildArchiveSourceQuery({ view: 'song_catalog', query: 'BRAND' })
   const before = roundTrip(state.currentArchiveRoute())
-  context[handler](arg)
+  await context[handler](arg)
   const after = roundTrip(state.currentArchiveRoute())
   assert.equal(after.view, target, handler)
   assert.deepEqual(source(after), before, `${handler}: exact prior identity, filters and ancestors`)

@@ -161,14 +161,17 @@
 
       <ArchiveSongCatalog
         v-if="view === 'song_catalog'"
-        :catalog="songCatalogData"
+        :catalog="songReadModelCatalog || songCatalogData"
+        :status="songReadModelStatus"
         :scope="currentSongScope"
         :query="filterQuery"
         @open="openSong"
+        @retry="ensureSongCatalog"
         @update:scope="updateArchiveFilter('currentSongScope', $event)"
         @update:query="updateArchiveFilter('filterQuery', $event)"
       />
 
+      <p v-if="view === 'song_detail' && (songReadModelStatus || legacyEntryStatus)" class="song-read-model-status" role="status">{{ songReadModelStatus || legacyEntryStatus }}</p>
       <ArchiveSongDetail
         v-if="view === 'song_detail'"
         :song="currentSongPresentation"
@@ -536,6 +539,7 @@ import {
 } from './data/archiveUserPreferences.js'
 import { resolveArchiveHomeAction, resolveArchiveStartup } from './core/archiveStartup.js'
 import { readBootstrap } from '../readmodels/runtime/readBootstrap.mjs'
+import { ReadModelClient, entityDescriptor } from '../readmodels/runtime/ReadModelClient.mjs'
 import { buildEventStoryEpisodes } from './data/eventStoryEpisodes.js'
 import { buildStoryCollections } from './data/storyCollections.js'
 import {
@@ -701,6 +705,7 @@ const songExperimentalAudioData = ref(null)
 const idolEntityTranslationRevision = ref(0)
 const initialUserPreferences = loadArchiveUserPreferences()
 const archiveBootstrap = readBootstrap()
+const readModelClient = new ReadModelClient({ release: archiveBootstrap.release })
 const initialArchiveStartup = resolveArchiveStartup(window.location.href, initialUserPreferences.preferences,
   archiveBootstrap.idols.filter(idol => idol.home_available).map(idol => idol.id))
 const bootstrapIdolDictionary = { by_idol_code: Object.fromEntries(archiveBootstrap.idols.map(idol => [idol.id, {
@@ -713,10 +718,15 @@ const userPreferences = ref(initialUserPreferences.preferences)
 const userPreferenceNotice = ref(initialUserPreferences.issue)
 const archiveDataReady = ref(false)
 const legacyEntryStatus = ref('')
+const songReadModelCatalog = ref(null)
+const songReadModelDetail = ref(null)
+const songReadModelStatus = ref('')
+let songCatalogPromise = null
+let pendingSongNavigation = 0
 let pendingLegacyNavigation = 0
 let legacyDataPromise = null
 const continuousPlayback = ref(localStorageValue('sidem:continuous-playback') === '1')
-const loading = ref(!isBootstrapRoute(initialArchiveStartup.route))
+const loading = ref(!isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail'].includes(initialArchiveStartup.route.view))
 const loadingPurpose = ref('archive-data')
 const preloadProgress = ref(0)
 
@@ -1356,8 +1366,10 @@ const readingSession = createReadingSession({ repository: readingRepository, pub
 
 const archiveShellVisible = computed(() => !['__boot__', 'player', 'spine_lab', 'chibi_stage'].includes(view.value))
 
-const currentSong = computed(() => songCatalogData.value?.songs?.[currentSongId.value] || null)
-const currentSongPresentation = computed(() => buildSongPresentation(currentSong.value, idolUnitData.value, {
+const currentSong = computed(() => songReadModelDetail.value?.id === currentSongId.value
+  ? songReadModelDetail.value.song : songCatalogData.value?.songs?.[currentSongId.value] || null)
+const currentSongPresentation = computed(() => songReadModelDetail.value?.id === currentSongId.value
+  ? songReadModelDetail.value.view : buildSongPresentation(currentSong.value, idolUnitData.value, {
   playbackTrack: songPlaybackAudioData.value?.songs?.[currentSongId.value] || null,
   audioExperiment: songExperimentalAudioData.value?.songs?.[currentSongId.value] || null,
   manifest: archiveManifestData.value,
@@ -1880,7 +1892,7 @@ function navigateArchiveSection(section) {
     legacyEntryStatus.value = ''
     return
   }
-  if (section !== 'portal' && !archiveDataReady.value) {
+  if (section !== 'portal' && section !== 'songs' && !archiveDataReady.value) {
     return runWhenLegacyReady(() => navigateArchiveSection(section))
   }
   if (section !== 'portal' && section !== 'home') {
@@ -2164,10 +2176,25 @@ function openSongCatalog() {
   filterQuery.value = ''
   currentCategoryId.value = ''
   commitView('song_catalog')
+  ensureSongCatalog()
 }
 
-function openSong(songCode) {
-  if (!songCatalogData.value?.songs?.[songCode]) return
+async function openSong(songCode) {
+  if (!songCode) return
+  const request = ++pendingSongNavigation
+  const revision = navigation.getRevision()
+  songReadModelStatus.value = '正在读取歌曲详情…'
+  try {
+    const detail = await loadSongDetail(songCode)
+    if (request !== pendingSongNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
+    songReadModelDetail.value = detail
+    songReadModelStatus.value = ''
+  } catch (error) {
+    if (request !== pendingSongNavigation || revision !== navigation.getRevision()) return
+    console.error('[SongReadModel] Failed to load song detail:', error)
+    songReadModelStatus.value = '歌曲详情暂时无法读取，请重新选择。'
+    return
+  }
   captureDetailSource()
   if (view.value === 'idol_detail') songParentView.value = 'idol_detail'
   else if (view.value === 'unit_detail') songParentView.value = 'unit_detail'
@@ -2182,6 +2209,7 @@ function openSongStage(target) {
 }
 
 function openSongUnit(unitCode) {
+  if (!archiveDataReady.value) return runWhenLegacyReady(() => openSongUnit(unitCode))
   const unit = (idolUnitData.value?.units || []).find(entry => String(entry.unit_code) === String(unitCode))
   if (unit) {
     openArchiveUnit(unit)
@@ -2189,6 +2217,7 @@ function openSongUnit(unitCode) {
 }
 
 function openSongIdol(idolCode) {
+  if (!archiveDataReady.value) return runWhenLegacyReady(() => openSongIdol(idolCode))
   captureDetailSource()
   filterQuery.value = ''
   openPrimaryIdol(idolCode)
@@ -2196,6 +2225,7 @@ function openSongIdol(idolCode) {
 
 function openSongRelatedStory(relation) {
   if (relation?.entity_type !== 'story_collection') return
+  if (!archiveDataReady.value) return runWhenLegacyReady(() => openSongRelatedStory(relation))
   captureDetailSource()
   currentStoryDomain.value = relation.story_type || 'extra'
   currentStorySection.value = relation.story_section || ''
@@ -2242,7 +2272,10 @@ function goArchiveBack() {
       songParentView.value = ''
       if (parent === 'idol_detail' && currentIdolProfile.value) commitView('idol_detail')
       else if (parent === 'unit_detail' && currentArchiveUnit.value) commitView('unit_detail')
-      else commitView('song_catalog')
+      else {
+        commitView('song_catalog')
+        ensureSongCatalog()
+      }
     },
     event_detail: goBackFromEvent,
     archive_status: goHome,
@@ -2352,7 +2385,7 @@ async function openChibiStage(target = null) {
 function closeArchiveExperiment() {
   stageHandoff.value = null
   if (view.value === 'chibi_stage' && !detailSourceRoute.value &&
-      stageTargetId.value && songCatalogData.value?.songs?.[currentSongId.value]) {
+      stageTargetId.value && currentSong.value) {
     stageTargetId.value = ''
     return commitView('song_detail')
   }
@@ -2979,14 +3012,20 @@ function captureDetailSource() {
   detailSourceRoute.value = buildArchiveSourceQuery(currentArchiveRoute())
 }
 
-function restoreDetailSource(fallback) {
+async function restoreDetailSource(fallback) {
   const source = detailSourceRoute.value
   detailSourceRoute.value = ''
   if (!source) {
     fallback()
     return
   }
-  const pending = applyArchiveRoute(readArchiveSourceRoute(source), { restoring: false })
+  const route = readArchiveSourceRoute(source)
+  const beforeLoad = navigation.getRevision()
+  if (!isBootstrapRoute(route)) await ensureLegacyArchiveData()
+  if (route.view === 'song_catalog') await ensureSongCatalog()
+  if (route.view === 'song_detail' && route.song) songReadModelDetail.value = await loadSongDetail(route.song)
+  if (navigation.isDisposed() || beforeLoad !== navigation.getRevision()) return
+  const pending = applyArchiveRoute(route, { restoring: false })
   const revision = navigation.getRevision()
   return pending.then(() => {
     if (navigation.getRevision() === revision) syncArchiveRoute()
@@ -3281,8 +3320,48 @@ function ensureLegacyArchiveData() {
   return legacyDataPromise
 }
 
+async function loadSongCatalog() {
+  if (songReadModelCatalog.value) return songReadModelCatalog.value
+  if (!songCatalogPromise) {
+    songCatalogPromise = (async () => {
+      const index = await readModelClient.load(archiveBootstrap.domains.songs)
+      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
+      const rows = pages.flatMap(page => page.rows || [])
+      if (rows.length !== index.count || new Set(rows.map(row => row.song_code)).size !== rows.length)
+        throw new Error('Song catalog page count or identity mismatch')
+      const catalog = { songs: Object.fromEntries(rows.map(row => [row.song_code, row])), summary: index.summary }
+      songReadModelCatalog.value = catalog
+      return catalog
+    })().catch(error => { songCatalogPromise = null; throw error })
+  }
+  return songCatalogPromise
+}
+
+async function ensureSongCatalog() {
+  if (songReadModelCatalog.value) return true
+  songReadModelStatus.value = '正在读取歌曲目录…'
+  try {
+    await loadSongCatalog()
+    songReadModelStatus.value = ''
+    return true
+  } catch (error) {
+    console.error('[SongReadModel] Failed to load catalog:', error)
+    songReadModelStatus.value = '歌曲目录暂时无法读取，请重试。'
+    return false
+  }
+}
+
+async function loadSongDetail(songCode) {
+  const row = songReadModelCatalog.value?.songs?.[songCode]
+  const descriptor = row?.detail || await entityDescriptor(archiveBootstrap, 'songs', songCode, 'songs.detail')
+  return readModelClient.load(descriptor, { validate: data => {
+    if (data.song?.song_code !== songCode || data.view?.id !== songCode)
+      throw new Error('Song detail identity mismatch')
+  } })
+}
+
 function isBootstrapRoute(route) {
-  return ['portal', 'welcome', 'idol_picker'].includes(route.view) ||
+  return ['portal', 'welcome', 'idol_picker', 'song_catalog', 'song_detail'].includes(route.view) ||
     (route.view === 'home' && !route.homeIdol)
 }
 
@@ -3312,9 +3391,23 @@ onMounted(async () => {
   let restoreRequest = 0
   const restoreRoute = async route => {
     const request = ++restoreRequest
+    ++pendingSongNavigation
     ++pendingLegacyNavigation
     legacyEntryStatus.value = ''
     if (!isBootstrapRoute(route)) await ensureLegacyArchiveData()
+    if (route.view === 'song_catalog') await ensureSongCatalog()
+    if (route.view === 'song_detail' && route.song) {
+      try {
+        const detail = await loadSongDetail(route.song)
+        if (request === restoreRequest) songReadModelDetail.value = detail
+        songReadModelStatus.value = ''
+      } catch (error) {
+        if (request !== restoreRequest) return
+        console.error('[SongReadModel] Failed to restore song detail:', error)
+        await ensureSongCatalog()
+        songReadModelStatus.value = '歌曲详情暂时无法读取，请重新选择。'
+      }
+    }
     if (navigation.isDisposed() || request !== restoreRequest) return
     const pending = applyArchiveRoute(route)
     const expected = navigation.getRevision()
@@ -3341,7 +3434,7 @@ onMounted(async () => {
   if (startup.source === 'invalid-immersive-idol') {
     userPreferenceNotice.value = '之前选择的首页偶像当前不可用，请重新选择。'
   }
-  if (isBootstrapRoute(startup.route)) loading.value = false
+  if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail'].includes(startup.route.view)) loading.value = false
   await restoreRoute(startup.route)
 })
 
@@ -3376,6 +3469,7 @@ watch(storyTranslationLocale, locale => {
 })
 
 onBeforeUnmount(() => {
+  readModelClient.dispose()
   idolCommunicationReadiness.leave()
   playbackController.dispose()
   navigation.dispose()
@@ -3389,6 +3483,7 @@ onBeforeUnmount(() => {
   width: 100%; height: 100vh; height: 100dvh; color: #222;
   background: #f8f9fa; overflow: hidden;
 }
+.song-read-model-status { margin: 12px 24px; padding: 12px 16px; background: #eef8f7; color: #246d67; font-size: .8rem; }
 .playback-failure { position: fixed; top: 64px; width: min(480px, calc(100vw - 24px)); left: 50%; transform: translateX(-50%); z-index: 120; max-width: calc(100vw - 32px); margin: 0; padding: 12px 18px; border: 1px solid #e4b7b7; border-radius: 8px; background: #fff4f4; color: #7f3434; font: 14px/1.6 system-ui, sans-serif; overflow-wrap: anywhere; max-height: 60vh; overflow: auto; box-sizing: border-box; }
 .playback-failure p { margin: 0 0 10px; }
 .playback-failure-actions { display: flex; gap: 12px; }
