@@ -146,7 +146,10 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     }})) },
     work: { records:Object.entries(data.workStory.by_idol_code).map(([id,idol])=>({id,summary:{name:idol.idol_name||idol.name||id},view:{idol}})) },
     seasonal: { searchable:true,records:data.seasonalCampaign.campaigns.map(campaign=>({id:campaign.id,
-      summary:pick(campaign,['name','title','year','season','start_at','end_at']),view:{campaign}})) },
+      summary:pick(campaign,['name','title','year','season','start_at','end_at']),view:{campaign,
+        sourceEvidence:{campaign:campaign._source||null,
+          episodes:[...(campaign.introduction||[]),...(campaign.participants||[]).flatMap(participant=>participant.episodes||[])]
+            .filter(episode=>episode._source).map(episode=>({id:episode.id,source:episode._source}))}}})) },
   };
   return { product: { home: homes, homeStats, homeHighlights, identities, cards, stories, gashas,
     songs: Object.values(data.songCatalog.songs), songViews, songSummary: data.songCatalog.summary, cardContext,
