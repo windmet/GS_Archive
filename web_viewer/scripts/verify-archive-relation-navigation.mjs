@@ -14,9 +14,11 @@ const context = vm.createContext({
   ...state, buildArchiveSourceQuery,
   songCatalogData: { value: { songs: { brndnf: {} } } },
   songReadModelStatus: { value: '' }, songReadModelDetail: { value: null },
-  pendingSongNavigation: 0, archiveDataReady: { value: true },
+  gashaReadModelStatus: { value: '' }, gashaReadModelDetail: { value: null },
+  pendingSongNavigation: 0, pendingGashaNavigation: 0, loading: { value: false }, archiveDataReady: { value: true },
   navigation: { getRevision: () => 0, isDisposed: () => false },
   loadSongDetail: async songCode => ({ id: songCode, song: { song_code: songCode }, view: { id: songCode } }),
+  loadGashaDetail: async id => ({ id, gasha: { id } }),
   idolUnitData: { value: { units: [unit], by_idol_code: { '002sht': {}, '003hok': {} } } },
   archiveBootstrap: { idols: [{ id: '002sht' }, { id: '003hok' }] },
   openIdolReadModel: (idolCode, options = {}) => {

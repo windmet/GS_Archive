@@ -114,6 +114,11 @@ assert.match(app, /:back-label="labBackLabel"/, 'Lab back action exposes its act
 assert.match(app, /返回歌曲详情/, 'song-sourced Lab exit is named explicitly')
 const context = {
   ...independent,
+  pendingGashaNavigation: 0,
+  gashaReadModelStatus: { value: '' }, gashaReadModelDetail: { value: null },
+  loading: { value: false },
+  navigation: { getRevision: () => 0, isDisposed: () => false },
+  loadGashaDetail: async id => ({ id, gasha: { id } }),
   captureDetailSource: () => { independent.detailSourceRoute.value = buildArchiveSourceQuery(independent.currentArchiveRoute()) },
   currentStoryCollection: { value: { sectionId: '604' } },
   commitView: value => { independent.view.value = value },
@@ -126,7 +131,7 @@ for (const name of ['openGasha', 'goBackFromGasha']) {
 independent.view.value = 'story_collection'
 independent.currentStoryDomain.value = 'extra'
 independent.currentStorySection.value = '604'
-context.openGasha({ id: '1300011' })
+await context.openGasha({ id: '1300011' })
 const restored = readArchiveRoute(buildArchiveUrl('http://localhost/?noAudio=1', independent.currentArchiveRoute()).href)
 assert.equal(restored.parentView, 'story_collection')
 assert.equal(restored.storySection, '604')
@@ -145,7 +150,7 @@ context.goBackFromGasha()
 assert.equal(independent.view.value, 'gashas')
 independent.filterQuery.value = 'FES'
 independent.currentGashaCategory.value = 'growing_fes'
-context.openGasha({ id: '1300011' })
+await context.openGasha({ id: '1300011' })
 context.goBackFromGasha()
 assert.equal(independent.view.value, 'gashas')
 assert.equal(independent.filterQuery.value, 'FES')

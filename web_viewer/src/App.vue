@@ -148,8 +148,8 @@
         :category-options="gashaCategoryOptions"
         :category="currentGashaCategory"
         :total-gashas="gashaCatalog.length"
-        :announcement-count="gashaIndexData?.meta?.gasha_count || 0"
-        :pickup-count="gashaIndexData?.meta?.derived_pickup_count || 0"
+        :announcement-count="gashaReadModelCatalog?.summary?.gasha_count || gashaIndexData?.meta?.gasha_count || 0"
+        :pickup-count="gashaReadModelCatalog?.summary?.derived_pickup_count || gashaIndexData?.meta?.derived_pickup_count || 0"
         @select="openGasha"
         @update:category="updateArchiveFilter('currentGashaCategory', $event)"
       />
@@ -409,6 +409,7 @@
         @open-cards="openUnitCards"
         @open-song="openSong"
       />
+      <p v-if="['gashas', 'gasha_detail'].includes(view) && gashaReadModelStatus" role="status">{{ gashaReadModelStatus }}</p>
       <p v-if="['unit_catalog', 'unit_detail'].includes(view) && unitReadModelStatus" class="unit-read-model-status" role="status">{{ unitReadModelStatus }}</p>
     </ArchiveShell>
 
@@ -740,6 +741,11 @@ const unitReadModelDetail = ref(null)
 const unitReadModelStatus = ref('')
 let unitCatalogPromise = null
 let pendingUnitNavigation = 0
+const gashaReadModelCatalog = ref(null)
+const gashaReadModelDetail = ref(null)
+const gashaReadModelStatus = ref('')
+let gashaCatalogPromise = null
+let pendingGashaNavigation = 0
 const homeReadModelIndex = ref(null)
 const homeReadModelProfiles = ref({})
 const homeEntryStatus = ref('')
@@ -1328,17 +1334,17 @@ const currentCardOwnerReference = computed(() => buildIdolReference(
 const currentCardAssetStatus = computed(() => archiveManifestData.value?.card_assets_by_id?.[currentCardId.value] || null)
 const currentCardEventRelation = computed(() => archiveManifestData.value?.event_card_relations_by_card?.[currentCardId.value] || null)
 const currentCardGashaRelation = computed(() => gashaIndexData.value?.relations_by_card?.[currentCardId.value] || null)
-const gashaCatalog = computed(() => buildGashaCatalog(gashaIndexData.value))
-const gashaCategoryOptions = computed(() => buildGashaCategoryOptions(gashaIndexData.value, gashaCatalog.value))
+const gashaCatalog = computed(() => gashaReadModelCatalog.value?.rows || buildGashaCatalog(gashaIndexData.value))
+const gashaCategoryOptions = computed(() => buildGashaCategoryOptions(
+  gashaReadModelCatalog.value ? { meta: gashaReadModelCatalog.value.summary } : gashaIndexData.value, gashaCatalog.value))
 const filteredGashas = computed(() => filterGashaCatalog(gashaCatalog.value, {
   query: filterQuery.value,
   category: currentGashaCategory.value,
   idolSearchText: idolEntitySearchText,
 }))
-const currentGasha = computed(() => resolveGashaRelatedCards(
-  gashaIndexData.value?.by_id?.[currentGashaId.value] || null,
-  gashaIndexData.value,
-))
+const currentGasha = computed(() => gashaReadModelDetail.value?.id === currentGashaId.value
+  ? gashaReadModelDetail.value.gasha
+  : resolveGashaRelatedCards(gashaIndexData.value?.by_id?.[currentGashaId.value] || null, gashaIndexData.value))
 const eventMap = computed(() => new Map((archiveManifestData.value?.unit_event_relations || [])
   .map(event => [String(event.event_id), event])))
 const currentEvent = computed(() => eventMap.value.get(currentEventId.value) || null)
@@ -1944,7 +1950,7 @@ function navigateArchiveSection(section) {
     if (!archiveDataReady.value) loading.value = false
     return openArchivePortal()
   }
-  if (section !== 'portal' && section !== 'home' && section !== 'songs' && section !== 'idols' && !archiveDataReady.value) {
+  if (section !== 'portal' && section !== 'home' && section !== 'songs' && section !== 'idols' && section !== 'gashas' && !archiveDataReady.value) {
     return runWhenLegacyReady(() => navigateArchiveSection(section))
   }
   if (section !== 'portal' && section !== 'home') {
@@ -2236,6 +2242,8 @@ async function closeArchivePortal() {
   if (route.view === 'idol_detail' && route.idol) idolReadModelDetail.value = await loadIdolDetail(route.idol)
   if (route.view === 'unit_catalog') await loadUnitCatalog()
   if (route.view === 'unit_detail' && route.unit) unitReadModelDetail.value = await loadUnitDetail(route.unit)
+  if (route.view === 'gashas') await loadGashaCatalog()
+  if (route.view === 'gasha_detail' && route.gasha) gashaReadModelDetail.value = await loadGashaDetail(route.gasha)
   const pending = applyArchiveRoute(route)
   const expected = navigation.getRevision()
   await pending
@@ -2483,15 +2491,28 @@ function openArchiveStatus() {
 }
 
 function openGashaCatalog() {
-  if (view.value !== 'portal') detailSourceRoute.value = ''
-  gashaParentView.value = ''
-  filterQuery.value = ''
-  currentCategoryId.value = ''
-  currentCharacterId.value = ''
-  currentCardId.value = ''
-  currentGashaId.value = ''
-  currentGashaCategory.value = 'all'
-  commitView('gashas')
+  const request = ++pendingGashaNavigation
+  const revision = navigation.getRevision()
+  gashaReadModelStatus.value = '正在读取卡池目录…'
+  loading.value = true
+  return loadGashaCatalog().then(() => {
+    if (request !== pendingGashaNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
+    gashaReadModelStatus.value = ''
+    if (view.value !== 'portal') detailSourceRoute.value = ''
+    gashaParentView.value = ''
+    filterQuery.value = ''
+    currentCategoryId.value = ''
+    currentCharacterId.value = ''
+    currentCardId.value = ''
+    currentGashaId.value = ''
+    currentGashaCategory.value = 'all'
+    commitView('gashas')
+  }).catch(error => {
+    if (request !== pendingGashaNavigation || revision !== navigation.getRevision()) return
+    loading.value = false
+    console.error('[GashaReadModel] Failed to load catalog:', error)
+    gashaReadModelStatus.value = '卡池目录暂时无法读取，请重试。'
+  })
 }
 
 async function openStoryCatalog() {
@@ -3145,6 +3166,8 @@ async function restoreDetailSource(fallback) {
   if (route.view === 'idol_detail' && route.idol) idolReadModelDetail.value = await loadIdolDetail(route.idol)
   if (route.view === 'unit_catalog') await loadUnitCatalog()
   if (route.view === 'unit_detail' && route.unit) unitReadModelDetail.value = await loadUnitDetail(route.unit)
+  if (route.view === 'gashas') await loadGashaCatalog()
+  if (route.view === 'gasha_detail' && route.gasha) gashaReadModelDetail.value = await loadGashaDetail(route.gasha)
   if (route.view === 'song_catalog') await ensureSongCatalog()
   if (route.view === 'song_detail' && route.song) songReadModelDetail.value = await loadSongDetail(route.song)
   if (navigation.isDisposed() || beforeLoad !== navigation.getRevision()) return
@@ -3172,16 +3195,31 @@ function openCardIdol(idolCode) {
 
 function openGasha(gasha) {
   if (!gasha?.id) return
-  captureDetailSource()
-  gashaParentView.value = view.value === 'story_collection' && currentStoryDomain.value === 'extra'
-    ? 'story_collection' : ''
-  const preserveCatalogQuery = view.value === 'gashas'
-  currentCategoryId.value = ''
-  currentCharacterId.value = ''
-  currentCardId.value = ''
-  currentGashaId.value = String(gasha.id)
-  if (!preserveCatalogQuery) filterQuery.value = ''
-  commitView('gasha_detail')
+  const id = String(gasha.id)
+  const request = ++pendingGashaNavigation
+  const revision = navigation.getRevision()
+  gashaReadModelStatus.value = '正在读取卡池详情…'
+  loading.value = true
+  return loadGashaDetail(id).then(detail => {
+    if (request !== pendingGashaNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
+    gashaReadModelDetail.value = detail
+    gashaReadModelStatus.value = ''
+    captureDetailSource()
+    gashaParentView.value = view.value === 'story_collection' && currentStoryDomain.value === 'extra'
+      ? 'story_collection' : ''
+    const preserveCatalogQuery = view.value === 'gashas'
+    currentCategoryId.value = ''
+    currentCharacterId.value = ''
+    currentCardId.value = ''
+    currentGashaId.value = id
+    if (!preserveCatalogQuery) filterQuery.value = ''
+    commitView('gasha_detail')
+  }).catch(error => {
+    if (request !== pendingGashaNavigation || revision !== navigation.getRevision()) return
+    loading.value = false
+    console.error('[GashaReadModel] Failed to load detail:', error)
+    gashaReadModelStatus.value = '卡池详情暂时无法读取，请重试。'
+  })
 }
 
 function goBackFromGasha() {
@@ -3198,6 +3236,7 @@ function openCardGasha(relation) {
 }
 
 function openGashaCard(relation) {
+  if (!archiveDataReady.value) return runWhenLegacyReady(() => openGashaCard(relation))
   const card = cardMap.value.get(relation?.card_resource_id)
   if (!card) return
   captureDetailSource()
@@ -3548,6 +3587,34 @@ async function loadUnitDetail(unitCode) {
   } })
 }
 
+async function loadGashaCatalog() {
+  if (gashaReadModelCatalog.value) return gashaReadModelCatalog.value
+  if (!gashaCatalogPromise) {
+    gashaCatalogPromise = (async () => {
+      const index = await readModelClient.load(archiveBootstrap.domains.gashas)
+      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
+      const rows = pages.flatMap(page => page.rows || [])
+      if (rows.length !== index.count || rows.length !== archiveBootstrap.counts.primary_gashas ||
+        new Set(rows.map(row => String(row.id))).size !== rows.length ||
+        rows.some(row => row.phase !== 'primary' || !row.detail))
+        throw new Error('Gasha catalog count or identity mismatch')
+      const catalog = { rows, summary: index.summary || {} }
+      gashaReadModelCatalog.value = catalog
+      return catalog
+    })().catch(error => { gashaCatalogPromise = null; throw error })
+  }
+  return gashaCatalogPromise
+}
+
+async function loadGashaDetail(id) {
+  const row = (await loadGashaCatalog()).rows.find(entry => String(entry.id) === id)
+  if (!row) throw new Error(`Unavailable gasha: ${id}`)
+  return readModelClient.load(row.detail, { expectedId: id, validate: data => {
+    if (String(data.gasha?.id) !== id || !Array.isArray(data.gasha?.derived_pickup_cards))
+      throw new Error('Gasha detail identity or shape mismatch')
+  } })
+}
+
 async function loadSongCatalog() {
   if (songReadModelCatalog.value) return songReadModelCatalog.value
   if (!songCatalogPromise) {
@@ -3589,7 +3656,7 @@ async function loadSongDetail(songCode) {
 }
 
 function isBootstrapRoute(route) {
-  return ['portal', 'welcome', 'idol_picker', 'home', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail'].includes(route.view) ||
+  return ['portal', 'welcome', 'idol_picker', 'home', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail'].includes(route.view) ||
     (route.view === 'idols' && (!route.category || route.category === 'idol'))
 }
 
@@ -3627,6 +3694,7 @@ onMounted(async () => {
     ++pendingHomeNavigation
     ++pendingIdolNavigation
     ++pendingUnitNavigation
+    ++pendingGashaNavigation
     ++pendingLegacyNavigation
     legacyEntryStatus.value = ''
     if (!isBootstrapRoute(route)) await ensureLegacyArchiveData()
@@ -3666,6 +3734,18 @@ onMounted(async () => {
         console.error('[UnitReadModel] Failed to restore unit route:', error)
         unitReadModelStatus.value = '组合资料暂时无法读取，请稍后重试。'
         route = { view: 'idols', category: 'idol' }
+      }
+    }
+    if (route.view === 'gashas' || route.view === 'gasha_detail') {
+      try {
+        if (route.view === 'gashas') await loadGashaCatalog()
+        else gashaReadModelDetail.value = await loadGashaDetail(route.gasha)
+        gashaReadModelStatus.value = ''
+      } catch (error) {
+        if (request !== restoreRequest) return
+        console.error('[GashaReadModel] Failed to restore gasha route:', error)
+        gashaReadModelStatus.value = '卡池资料暂时无法读取，请稍后重试。'
+        route = { view: 'gashas' }
       }
     }
     if (route.view === 'song_catalog') await ensureSongCatalog()
