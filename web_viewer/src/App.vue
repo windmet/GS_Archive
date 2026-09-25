@@ -397,8 +397,8 @@
         v-if="view === 'unit_detail'"
         :unit="currentArchiveUnit"
         :members="currentArchiveUnitMembers"
-        :identity="idolUnitData"
-        :manifest="archiveManifestData"
+        :identity="idolUnitData || bootstrapIdolDictionary"
+        :manifest="archiveManifestData || bootstrapMembership"
         :stories="currentArchiveUnitStories"
         :songs="currentArchiveUnitSongs"
         :card-stats="currentArchiveUnitEntry?.cardStats"
@@ -409,6 +409,7 @@
         @open-cards="openUnitCards"
         @open-song="openSong"
       />
+      <p v-if="['unit_catalog', 'unit_detail'].includes(view) && unitReadModelStatus" class="unit-read-model-status" role="status">{{ unitReadModelStatus }}</p>
     </ArchiveShell>
 
     <!-- ====== STORY PLAYER ====== -->
@@ -734,6 +735,11 @@ const idolReadModelDetail = ref(null)
 const idolReadModelStatus = ref('')
 let idolCatalogPromise = null
 let pendingIdolNavigation = 0
+const unitReadModelCatalog = ref(null)
+const unitReadModelDetail = ref(null)
+const unitReadModelStatus = ref('')
+let unitCatalogPromise = null
+let pendingUnitNavigation = 0
 const homeReadModelIndex = ref(null)
 const homeReadModelProfiles = ref({})
 const homeEntryStatus = ref('')
@@ -744,7 +750,7 @@ let pendingHomeNavigation = 0
 let pendingLegacyNavigation = 0
 let legacyDataPromise = null
 const continuousPlayback = ref(localStorageValue('sidem:continuous-playback') === '1')
-const loading = ref(!isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail', 'idol_detail'].includes(initialArchiveStartup.route.view) || initialArchiveStartup.route.view === 'home' && Boolean(initialArchiveStartup.route.homeIdol))
+const loading = ref(!isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail'].includes(initialArchiveStartup.route.view) || initialArchiveStartup.route.view === 'home' && Boolean(initialArchiveStartup.route.homeIdol))
 const loadingPurpose = ref('archive-data')
 const preloadProgress = ref(0)
 
@@ -1208,16 +1214,27 @@ function eventStoryIdolRawCandidateUrl(idolCode) {
   return getRawCharacterImageCandidateUrl('event_story_visual', idolCode)
 }
 
-const unitCatalogEntries = computed(() => buildUnitCatalog(idolUnitData.value, {
+const unitCatalogEntries = computed(() => unitReadModelCatalog.value
+  ? unitReadModelCatalog.value.map(row => row.catalog)
+  : buildUnitCatalog(idolUnitData.value, {
   manifest: archiveManifestData.value, cardMap: cardMap.value, stories: storyCatalog.value,
 }))
-const currentArchiveUnit = computed(() => resolveArchiveUnit(idolUnitData.value, currentArchiveUnitCode.value))
-const currentArchiveUnitEntry = computed(() => unitCatalogEntries.value.find(entry =>
+const currentArchiveUnit = computed(() => {
+  const projected = unitReadModelDetail.value?.view.entry.unit
+  if (projected && [String(projected.unit_id), projected.unit_code].includes(currentArchiveUnitCode.value)) return projected
+  return unitCatalogEntries.value.find(entry => [String(entry.unit.unit_id), entry.unit.unit_code].includes(currentArchiveUnitCode.value))?.unit ||
+    resolveArchiveUnit(idolUnitData.value, currentArchiveUnitCode.value)
+})
+const currentArchiveUnitEntry = computed(() => unitReadModelDetail.value?.view.entry.unit === currentArchiveUnit.value
+  ? unitReadModelDetail.value.view.entry
+  : unitCatalogEntries.value.find(entry =>
   String(entry.unit.unit_id) === String(currentArchiveUnit.value?.unit_id || ''),
 ) || null)
 const currentArchiveUnitMembers = computed(() => currentArchiveUnitEntry.value?.members || [])
-const currentArchiveUnitStories = computed(() => storiesForUnit(currentArchiveUnit.value, storyCatalog.value))
-const currentArchiveUnitSongs = computed(() => songsForUnit(currentArchiveUnit.value, songCatalogData.value))
+const currentArchiveUnitStories = computed(() => unitReadModelDetail.value?.view.entry.unit === currentArchiveUnit.value
+  ? unitReadModelDetail.value.view.stories : storiesForUnit(currentArchiveUnit.value, storyCatalog.value))
+const currentArchiveUnitSongs = computed(() => unitReadModelDetail.value?.view.entry.unit === currentArchiveUnit.value
+  ? unitReadModelDetail.value.view.songs : songsForUnit(currentArchiveUnit.value, songCatalogData.value))
 
 function displayTitleForMeta(meta, fallbackFile) {
   const titles = meta?.titles?.filter(Boolean) || []
@@ -2217,6 +2234,8 @@ async function closeArchivePortal() {
   if (!archiveDataReady.value && !isBootstrapRoute(route)) return runWhenLegacyReady(() => closeArchivePortal())
   if (route.view === 'home' && route.homeIdol) await loadHomeIdol(route.homeIdol)
   if (route.view === 'idol_detail' && route.idol) idolReadModelDetail.value = await loadIdolDetail(route.idol)
+  if (route.view === 'unit_catalog') await loadUnitCatalog()
+  if (route.view === 'unit_detail' && route.unit) unitReadModelDetail.value = await loadUnitDetail(route.unit)
   const pending = applyArchiveRoute(route)
   const expected = navigation.getRevision()
   await pending
@@ -2265,11 +2284,7 @@ function openSongStage(target) {
 }
 
 function openSongUnit(unitCode) {
-  if (!archiveDataReady.value) return runWhenLegacyReady(() => openSongUnit(unitCode))
-  const unit = (idolUnitData.value?.units || []).find(entry => String(entry.unit_code) === String(unitCode))
-  if (unit) {
-    openArchiveUnit(unit)
-  }
+  return openArchiveUnit({ unit_code: unitCode })
 }
 
 function openSongIdol(idolCode) {
@@ -2806,47 +2821,71 @@ function openMobileIdolStory(episodeId) {
 }
 
 function openUnitCatalog() {
-  if (!archiveDataReady.value) return runWhenLegacyReady(() => openUnitCatalog())
-  captureDetailSource()
-  filterQuery.value = ''
-  currentCategoryId.value = 'idol'
-  currentCharacterId.value = ''
-  currentArchiveUnitCode.value = ''
-  commitView('unit_catalog')
+  const request = ++pendingUnitNavigation
+  const revision = navigation.getRevision()
+  unitReadModelStatus.value = '正在读取组合目录…'
+  loading.value = true
+  return loadUnitCatalog().then(() => {
+    if (request !== pendingUnitNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
+    unitReadModelStatus.value = ''
+    captureDetailSource()
+    filterQuery.value = ''
+    currentCategoryId.value = 'idol'
+    currentCharacterId.value = ''
+    currentArchiveUnitCode.value = ''
+    commitView('unit_catalog')
+  }).catch(error => {
+    if (request !== pendingUnitNavigation || revision !== navigation.getRevision()) return
+    loading.value = false
+    console.error('[UnitReadModel] Failed to load unit catalog:', error)
+    unitReadModelStatus.value = '组合目录暂时无法读取，请重试。'
+  })
 }
 
 function openArchiveUnit(unit) {
   if (!unit) return
-  captureDetailSource()
-  currentCategoryId.value = 'idol'
-  currentCharacterId.value = ''
-  currentArchiveUnitCode.value = String(unit.unit_code || unit.unit_id)
-  commitView('unit_detail')
+  const code = String(unit.unit_code || unit.unit_id || '')
+  const request = ++pendingUnitNavigation
+  const revision = navigation.getRevision()
+  unitReadModelStatus.value = '正在读取组合详情…'
+  loading.value = true
+  return loadUnitDetail(code).then(detail => {
+    if (request !== pendingUnitNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
+    unitReadModelDetail.value = detail
+    unitReadModelStatus.value = ''
+    captureDetailSource()
+    currentCategoryId.value = 'idol'
+    currentCharacterId.value = ''
+    currentArchiveUnitCode.value = detail.view.entry.unit.unit_code
+    commitView('unit_detail')
+  }).catch(error => {
+    if (request !== pendingUnitNavigation || revision !== navigation.getRevision()) return
+    loading.value = false
+    console.error('[UnitReadModel] Failed to load unit detail:', error)
+    unitReadModelStatus.value = '组合详情暂时无法读取，请重试。'
+  })
 }
 
 function openUnitFromIdol(idol) {
-  if (!archiveDataReady.value) return runWhenLegacyReady(() => openUnitFromIdol(idol))
-  const unit = (idolUnitData.value?.units || []).find(entry => String(entry.unit_code) === String(idol?.unit_code))
-  if (unit) openArchiveUnit(unit)
+  if (idol?.unit_code) return openArchiveUnit({ unit_code: idol.unit_code })
 }
 
 function openUnitMember(member) {
-  captureDetailSource()
-  currentCategoryId.value = 'idol'
-  currentCharacterId.value = member.idol_code
-  currentArchiveUnitCode.value = ''
-  commitView('idol_detail')
+  return openIdolReadModel(member.idol_code, { captureSource: true, resetContext: true, clearUnit: true })
 }
 
 function openUnitStory(story) {
+  if (!archiveDataReady.value) return runWhenLegacyReady(() => openUnitStory(story))
   if (story?.file && story.exists) loadScenario(story.file, 'unit_detail')
 }
 
 function openUnitEvent(event) {
+  if (!archiveDataReady.value) return runWhenLegacyReady(() => openUnitEvent(event))
   openEventDetail(event, 'unit_detail')
 }
 
 function openUnitCards() {
+  if (!archiveDataReady.value) return runWhenLegacyReady(() => openUnitCards())
   const unitId = String(currentArchiveUnit.value?.unit_id || '')
   if (!unitId) return
   captureDetailSource()
@@ -2967,7 +3006,7 @@ function openPrimaryIdol(idolCode = '') {
   return openIdolReadModel(idolCode, { resetContext: true })
 }
 
-async function openIdolReadModel(idolCode, { captureSource = false, resetContext = false, selection = false } = {}) {
+async function openIdolReadModel(idolCode, { captureSource = false, resetContext = false, selection = false, clearUnit = false } = {}) {
   if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return
   const request = ++pendingIdolNavigation
   const revision = navigation.getRevision()
@@ -2991,6 +3030,7 @@ async function openIdolReadModel(idolCode, { captureSource = false, resetContext
     currentCategoryId.value = 'idol'
     currentGroup.value = null
   }
+  if (clearUnit) currentArchiveUnitCode.value = ''
   currentCharacterId.value = idolCode
   currentCardId.value = ''
   filterQuery.value = ''
@@ -3103,6 +3143,8 @@ async function restoreDetailSource(fallback) {
   if (!isBootstrapRoute(route)) await ensureLegacyArchiveData()
   if (route.view === 'home' && route.homeIdol) await loadHomeIdol(route.homeIdol)
   if (route.view === 'idol_detail' && route.idol) idolReadModelDetail.value = await loadIdolDetail(route.idol)
+  if (route.view === 'unit_catalog') await loadUnitCatalog()
+  if (route.view === 'unit_detail' && route.unit) unitReadModelDetail.value = await loadUnitDetail(route.unit)
   if (route.view === 'song_catalog') await ensureSongCatalog()
   if (route.view === 'song_detail' && route.song) songReadModelDetail.value = await loadSongDetail(route.song)
   if (navigation.isDisposed() || beforeLoad !== navigation.getRevision()) return
@@ -3474,6 +3516,38 @@ async function loadIdolDetail(idolCode) {
   } })
 }
 
+async function loadUnitCatalog() {
+  if (unitReadModelCatalog.value) return unitReadModelCatalog.value
+  if (!unitCatalogPromise) {
+    unitCatalogPromise = (async () => {
+      const index = await readModelClient.load(archiveBootstrap.domains.units)
+      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
+      const rows = pages.flatMap(page => page.rows || [])
+      const expected = [...new Set(archiveBootstrap.idols.map(idol => idol.unitId))]
+      if (rows.length !== index.count || rows.length !== expected.length ||
+        rows.some((row, position) => row.id !== expected[position] ||
+          String(row.catalog?.unit?.unit_id) !== row.id || !row.catalog?.members ||
+          !row.catalog?.cardStats || !row.detail))
+        throw new Error('Unit catalog does not match inline bootstrap')
+      unitReadModelCatalog.value = rows
+      return rows
+    })().catch(error => { unitCatalogPromise = null; throw error })
+  }
+  return unitCatalogPromise
+}
+
+async function loadUnitDetail(unitCode) {
+  const rows = await loadUnitCatalog()
+  const row = rows.find(entry => entry.id === unitCode || entry.catalog.unit.unit_code === unitCode)
+  if (!row) throw new Error(`Unavailable unit: ${unitCode}`)
+  return readModelClient.load(row.detail, { expectedId: row.id, validate: data => {
+    if (String(data.view?.entry?.unit?.unit_id) !== row.id ||
+      !Array.isArray(data.view?.entry?.members) || !data.view?.entry?.cardStats ||
+      !Array.isArray(data.view?.stories) || !Array.isArray(data.view?.songs))
+      throw new Error('Unit detail identity or shape mismatch')
+  } })
+}
+
 async function loadSongCatalog() {
   if (songReadModelCatalog.value) return songReadModelCatalog.value
   if (!songCatalogPromise) {
@@ -3515,14 +3589,14 @@ async function loadSongDetail(songCode) {
 }
 
 function isBootstrapRoute(route) {
-  return ['portal', 'welcome', 'idol_picker', 'home', 'idol_detail', 'song_catalog', 'song_detail'].includes(route.view) ||
+  return ['portal', 'welcome', 'idol_picker', 'home', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail'].includes(route.view) ||
     (route.view === 'idols' && (!route.category || route.category === 'idol'))
 }
 
 function runWhenLegacyReady(action) {
   if (archiveDataReady.value) return action()
   const request = ++pendingLegacyNavigation
-  const showOverlay = ['home', 'idols', 'idol_detail'].includes(view.value)
+  const showOverlay = ['home', 'idols', 'idol_detail', 'unit_catalog', 'unit_detail'].includes(view.value)
   if (showOverlay) loading.value = true
   legacyEntryStatus.value = '正在准备该栏目的资料…'
   ensureLegacyArchiveData().then(() => {
@@ -3552,6 +3626,7 @@ onMounted(async () => {
     ++pendingSongNavigation
     ++pendingHomeNavigation
     ++pendingIdolNavigation
+    ++pendingUnitNavigation
     ++pendingLegacyNavigation
     legacyEntryStatus.value = ''
     if (!isBootstrapRoute(route)) await ensureLegacyArchiveData()
@@ -3579,6 +3654,18 @@ onMounted(async () => {
           idolReadModelStatus.value = '偶像档案暂时无法读取，请重新选择。'
           route = { view: 'idols', category: 'idol' }
         }
+      }
+    }
+    if (route.view === 'unit_catalog' || route.view === 'unit_detail') {
+      try {
+        if (route.view === 'unit_catalog') await loadUnitCatalog()
+        else unitReadModelDetail.value = await loadUnitDetail(route.unit)
+        unitReadModelStatus.value = ''
+      } catch (error) {
+        if (request !== restoreRequest) return
+        console.error('[UnitReadModel] Failed to restore unit route:', error)
+        unitReadModelStatus.value = '组合资料暂时无法读取，请稍后重试。'
+        route = { view: 'idols', category: 'idol' }
       }
     }
     if (route.view === 'song_catalog') await ensureSongCatalog()
@@ -3620,7 +3707,7 @@ onMounted(async () => {
   if (startup.source === 'invalid-immersive-idol') {
     userPreferenceNotice.value = '之前选择的首页偶像当前不可用，请重新选择。'
   }
-  if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail', 'idol_detail'].includes(startup.route.view) && !(startup.route.view === 'home' && startup.route.homeIdol)) loading.value = false
+  if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail'].includes(startup.route.view) && !(startup.route.view === 'home' && startup.route.homeIdol)) loading.value = false
   await restoreRoute(startup.route)
 })
 
@@ -3691,6 +3778,7 @@ onBeforeUnmount(() => {
 }
 .song-read-model-status { margin: 12px 24px; padding: 12px 16px; background: #eef8f7; color: #246d67; font-size: .8rem; }
 .idol-read-model-status { position: absolute; top: 80px; right: 16px; z-index: 20; padding: 10px 14px; background: #eef8f7; color: #246d67; font-size: .8rem; }
+.unit-read-model-status { position: absolute; top: 80px; right: 16px; z-index: 20; padding: 10px 14px; background: #eef8f7; color: #246d67; font-size: .8rem; }
 .home-read-model-status { position: absolute; top: 80px; left: 16px; z-index: 20; padding: 10px 14px; background: #eef8f7; color: #246d67; font-size: .8rem; }
 .playback-failure { position: fixed; top: 64px; width: min(480px, calc(100vw - 24px)); left: 50%; transform: translateX(-50%); z-index: 120; max-width: calc(100vw - 32px); margin: 0; padding: 12px 18px; border: 1px solid #e4b7b7; border-radius: 8px; background: #fff4f4; color: #7f3434; font: 14px/1.6 system-ui, sans-serif; overflow-wrap: anywhere; max-height: 60vh; overflow: auto; box-sizing: border-box; }
 .playback-failure p { margin: 0 0 10px; }

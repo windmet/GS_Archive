@@ -9,7 +9,7 @@
           <strong>{{ entry.unit.unit_name }}</strong>
           <small>
             {{ entry.members.length }} members · {{ entry.cardStats.total }} cards ·
-            {{ entry.eventRelations.team_events.length }} events
+            {{ entry.teamEventCount ?? entry.eventRelations?.team_events?.length ?? 0 }} events
           </small>
         </span>
         <span class="member-stack" aria-hidden="true">

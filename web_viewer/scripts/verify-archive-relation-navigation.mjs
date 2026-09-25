@@ -19,7 +19,16 @@ const context = vm.createContext({
   loadSongDetail: async songCode => ({ id: songCode, song: { song_code: songCode }, view: { id: songCode } }),
   idolUnitData: { value: { units: [unit], by_idol_code: { '002sht': {}, '003hok': {} } } },
   archiveBootstrap: { idols: [{ id: '002sht' }, { id: '003hok' }] },
-  openIdolReadModel: idolCode => { state.currentCharacterId.value = idolCode; state.view.value = 'idol_detail' },
+  openIdolReadModel: (idolCode, options = {}) => {
+    if (options.captureSource) context.captureDetailSource()
+    state.currentCharacterId.value = idolCode
+    state.view.value = 'idol_detail'
+  },
+  openArchiveUnit: unit => {
+    context.captureDetailSource()
+    state.currentArchiveUnitCode.value = String(unit.unit_code || unit.unit_id)
+    state.view.value = 'unit_detail'
+  },
   cardMap: { value: new Map([[card.resource_id, card]]) },
   cardIndexData: { value: { cards: [card] } },
   currentArchiveUnit: { value: unit },
@@ -27,7 +36,7 @@ const context = vm.createContext({
   commitView: view => { state.view.value = view },
 })
 const handlers = ['captureDetailSource', 'openSong', 'openSongIdol', 'openSongUnit',
-  'openPrimaryIdol', 'openArchiveUnit', 'openUnitMember', 'openUnitCards', 'openIdolDomain',
+  'openPrimaryIdol', 'openUnitMember', 'openUnitCards', 'openIdolDomain',
   'openEventIdol', 'openEventUnit', 'openGasha', 'openGashaCard', 'openEventCard',
   'openMobileCard', 'openStoryIdol', 'openRelatedCard', 'openEventDetail']
 for (const name of handlers) {
