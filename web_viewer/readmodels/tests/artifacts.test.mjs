@@ -23,6 +23,9 @@ test('Core products preserve details, keep catalogs thin, and close descriptors'
     const cardPage = report.artifacts.find(a => a.kind === 'cards.page');
     const body=JSON.parse(await fs.readFile(path.join(dir,'pages',cardPage.url.slice(1)),'utf8'));
     assert.ok(!JSON.stringify(body).includes('preview_step')); assert.ok(!JSON.stringify(body).includes('home_voice_cues'));
+    assert.equal(body.data.rows[0].home_voice_count, 1);
+    assert.equal(body.data.rows[0].scenario_count, 0);
+    assert.equal(body.data.rows[0].release_series_id, null);
     const story = report.artifacts.find(a => a.kind === 'stories.detail');
     const storyBody=JSON.parse(await fs.readFile(path.join(dir,'pages',story.url.slice(1)),'utf8'));
     assert.equal(storyBody.data.story.episodes[0].local_playable_start_index,3); assert.equal(storyBody.data.story.releaseAt,null);
