@@ -144,7 +144,10 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     'idol-stories': { records:data.idolEpisode.chapters.map(chapter=>({id:chapter.idol_code,summary:{name:chapter.idol_name},view:{
       page:(()=>{const page=modules.idolStories.buildIdolStoryPage(data.idolEpisode,data.mobileArchive,stories,data.idolUnit,chapter.idol_code,birthdayDomain);return page?{...page,unitName:data.archiveManifest.unit_membership_by_idol?.[chapter.idol_code]?.unit_name||page.unitName}:null})(),
     }})) },
-    work: { records:Object.entries(data.workStory.by_idol_code).map(([id,idol])=>({id,summary:{name:idol.idol_name||idol.name||id},view:{idol}})) },
+    work: { records:data.workStory.idols.map(idol=>({id:idol.idol_code,
+      summary:pick(idol,['idol_code','display_name','work_type_name']),view:{idol,
+        sourceEvidence:{entries:[...(idol.short_stories||[]),...(idol.scene_lines||[])]
+          .filter(entry=>entry._source).map(entry=>({id:entry.id,source:entry._source}))}}})) },
     seasonal: { searchable:true,records:data.seasonalCampaign.campaigns.map(campaign=>({id:campaign.id,
       summary:pick(campaign,['name','title','year','season','start_at','end_at']),view:{campaign,
         sourceEvidence:{campaign:campaign._source||null,
