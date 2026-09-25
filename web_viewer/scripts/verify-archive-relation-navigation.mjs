@@ -45,6 +45,8 @@ const context = vm.createContext({
   },
   cardMap: { value: new Map([[card.resource_id, card]]) },
   cardIndexData: { value: { cards: [card] } },
+  mobileIdolReadModelDetail: { value: { view: { cardRefs: [card] } } },
+  mobileUnitReadModelDetail: { value: { view: { cardRefs: [card] } } },
   currentArchiveUnit: { value: unit },
   normalizedPrimaryIdol: code => code,
   commitView: view => { state.view.value = view },

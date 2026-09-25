@@ -369,15 +369,13 @@
         @open-birthday="openIdolBirthdayArchive"
       />
 
+      <p v-if="view === 'mobile_archive' && mobileReadModelStatus" class="idol-read-model-status" role="status">{{ mobileReadModelStatus }}</p>
       <ArchiveMobileArchive
         v-if="view === 'mobile_archive'"
-        :archive="mobileArchiveData"
-        :compiled-index="indexData"
-        :cards="cardIndexData?.cards || []"
-        :idol-episodes="idolEpisodeData"
-        :random-talk-presentation="randomTalkPresentationData"
-        :idols="idolUnitData?.idols || []"
-        :units="idolUnitData?.units || []"
+        :idol-data="mobileIdolReadModelDetail"
+        :unit-data="mobileUnitReadModelDetail"
+        :idols="mobileIdolOptions"
+        :units="mobileUnitOptions"
         :selected-idol="currentCharacterId"
         :selected-unit="currentArchiveUnitCode"
         :mode="currentMobileMode"
@@ -729,10 +727,23 @@ const bootstrapIdolDictionary = { by_idol_code: Object.fromEntries(archiveBootst
 }])) }
 const bootstrapMembership = { unit_membership_by_idol: Object.fromEntries(archiveBootstrap.idols.map(idol => [idol.id, {
   unit_name: idol.unitName,
+  unit_code: idol.unitCode,
 }])) }
 const bootstrapIdolSwitcher = archiveBootstrap.idols.map(idol => ({
   idol_code: idol.id, display_name: idol.name, unit_name: idol.unitName,
 }))
+const mobileIdolReadModelCatalog = ref(null)
+const mobileUnitReadModelCatalog = ref(null)
+const mobileIdolReadModelDetail = ref(null)
+const mobileUnitReadModelDetail = ref(null)
+const mobileReadModelStatus = ref('')
+const mobileIdolOptions = archiveBootstrap.idols.map(idol => ({ idol_code: idol.id, display_name: idol.name, color: idol.color }))
+const mobileUnitOptions = computed(() => (mobileUnitReadModelCatalog.value || []).map(unit => ({
+  unit_code: unit.id, unit_name: unit.name, unit_color: unit.color,
+})))
+let mobileIdolCatalogPromise = null
+let mobileUnitCatalogPromise = null
+let pendingMobileNavigation = 0
 const userPreferences = ref(initialUserPreferences.preferences)
 const userPreferenceNotice = ref(initialUserPreferences.issue)
 const archiveDataReady = ref(false)
@@ -809,7 +820,7 @@ let pendingHomeNavigation = 0
 let pendingLegacyNavigation = 0
 let legacyDataPromise = null
 const continuousPlayback = ref(localStorageValue('sidem:continuous-playback') === '1')
-const loading = ref(!isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status'].includes(initialArchiveStartup.route.view) || initialArchiveStartup.route.view === 'home' && Boolean(initialArchiveStartup.route.homeIdol))
+const loading = ref(!isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status'].includes(initialArchiveStartup.route.view) || initialArchiveStartup.route.view === 'home' && Boolean(initialArchiveStartup.route.homeIdol))
 const loadingPurpose = ref('archive-data')
 const preloadProgress = ref(0)
 
@@ -1811,8 +1822,15 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
     }
     if (route.card && route.voice) await ensureCardDetailData()
     if (!intent.isCurrent()) return
-    if (['external_story_resources', 'mobile_archive'].includes(route.view === 'player' ? route.returnView : route.view)) {
+    if (['external_story_resources'].includes(route.view === 'player' ? route.returnView : route.view)) {
       await ensureIdolCommunicationData()
+    }
+    if ((route.view === 'mobile_archive' || (route.view === 'player' && route.returnView === 'mobile_archive')) &&
+      route.idol && archiveBootstrap.idols.some(idol => idol.id === route.idol)) {
+      const mobile = await loadMobileRoute(route.idol, route.mobileMode || 'personal', route.unit || '')
+      if (!intent.isCurrent()) return
+      mobileIdolReadModelDetail.value = mobile.idol
+      mobileUnitReadModelDetail.value = mobile.unit
     }
     if (route.view === 'story_catalog' || (route.view === 'player' && route.returnView === 'story_catalog')) {
       await loadStoryReadModelLanding()
@@ -1842,7 +1860,7 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
     if (!intent.isCurrent()) return
     filterQuery.value = route.query || ''
     const idolOwnerView = route.view === 'player' ? route.returnView : route.view
-    const validRouteIdol = !route.idol || (['idol_detail', 'cards', 'card_detail', 'work_archive', 'idol_story_archive', 'story_collection'].includes(idolOwnerView)
+    const validRouteIdol = !route.idol || (['idol_detail', 'cards', 'card_detail', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection'].includes(idolOwnerView)
       ? archiveBootstrap.idols.some(idol => idol.id === route.idol)
       : Boolean(idolUnitData.value?.by_idol_code?.[route.idol]))
     const invalidIdolPickTarget = !validRouteIdol ? ({
@@ -1911,9 +1929,9 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
           idolCode: currentCharacterId.value,
           mode: currentMobileMode.value,
           requestedUnit: route.unit,
-          manifest: archiveManifestData.value,
-          units: idolUnitData.value?.units,
-          archive: mobileArchiveData.value,
+          manifest: bootstrapMembership,
+          units: mobileUnitOptions.value,
+          archive: { by_unit_code: Object.fromEntries(mobileUnitOptions.value.map(unit => [unit.unit_code, true])) },
         })
       : route.unit || '') : ''
     currentGroup.value = resolveRouteGroup(route)
@@ -1957,7 +1975,7 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
     else if (route.view === 'seasonal_campaign' && !currentSeasonalCampaign.value) view.value = 'story_catalog'
     else if (route.view === 'work_archive' && !currentWorkIdol.value) view.value = 'story_catalog'
     else if (route.view === 'idol_story_archive' && !currentIdolStoryPage.value) view.value = 'story_catalog'
-    else if (route.view === 'mobile_archive' && !mobileArchiveData.value) view.value = 'story_catalog'
+    else if (route.view === 'mobile_archive' && !mobileIdolReadModelDetail.value) view.value = 'story_catalog'
     else if (route.view === 'files' && !currentGroup.value) view.value = currentCharacterId.value ? 'groups' : 'home'
     else if (route.view === 'episodes' && !currentUnit.value) view.value = 'episode_zero_units'
     else view.value = route.view || 'home'
@@ -2011,7 +2029,7 @@ function navigateArchiveSection(section) {
     if (!archiveDataReady.value) loading.value = false
     return openArchivePortal()
   }
-  if (!['portal', 'home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources'].includes(section) && !archiveDataReady.value) {
+  if (!['portal', 'home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions'].includes(section) && !archiveDataReady.value) {
     return runWhenLegacyReady(() => navigateArchiveSection(section))
   }
   if (section !== 'portal' && section !== 'home') {
@@ -2916,19 +2934,26 @@ function playIdolStoryEpisode({ section, episode }) {
 
 async function openMobileArchive({ idolCode = '', mode = 'personal', scenarioId = '', fromSection = false } = {}) {
   return navigation.run(async intent => {
-    await ensureIdolCommunicationData()
+    if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return openIdolPicker('mobile')
+    const selectedMode = ['personal', 'phone', 'unit', 'random'].includes(mode) ? mode : 'personal'
+    let mobile
+    try { mobile = await loadMobileRoute(idolCode, selectedMode) }
+    catch (error) {
+      if (intent.isCurrent()) {
+        console.error('[MobileReadModel] Failed to open archive:', error)
+        legacyEntryStatus.value = 'Mobile 通信暂时无法读取，请重试。'
+      }
+      return
+    }
     if (!intent.isCurrent()) return
+    legacyEntryStatus.value = ''
+    mobileReadModelStatus.value = ''
     if (!fromSection) captureDetailSource()
-    if (!idolEpisodeData.value?.by_idol_code?.[idolCode]) return openIdolPicker('mobile')
+    mobileIdolReadModelDetail.value = mobile.idol
+    mobileUnitReadModelDetail.value = mobile.unit
     currentCharacterId.value = idolCode
-    currentMobileMode.value = ['personal', 'phone', 'unit', 'random'].includes(mode) ? mode : 'personal'
-    currentArchiveUnitCode.value = resolveMobileArchiveUnit({
-      idolCode,
-      mode: currentMobileMode.value,
-      manifest: archiveManifestData.value,
-      units: idolUnitData.value?.units,
-      archive: mobileArchiveData.value,
-    })
+    currentMobileMode.value = selectedMode
+    currentArchiveUnitCode.value = mobile.unitCode
     currentMobileScenarioId.value = scenarioId ? String(scenarioId) : ''
     currentStoryDomain.value = 'mobile_archive'
     currentStoryMode.value = 'portal'
@@ -2944,37 +2969,69 @@ function openStoryCommunication(scenario) {
   })
 }
 
-function selectMobileIdol(idolCode) {
-  if (!idolEpisodeData.value?.by_idol_code?.[idolCode]) return
+async function selectMobileIdol(idolCode) {
+  if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return
+  const request = ++pendingMobileNavigation
+  const revision = navigation.getRevision()
+  let mobile
+  try { mobile = await loadMobileRoute(idolCode, currentMobileMode.value) }
+  catch (error) {
+    if (request === pendingMobileNavigation && revision === navigation.getRevision()) {
+      console.error('[MobileReadModel] Failed to switch idol:', error)
+      mobileReadModelStatus.value = '偶像通信暂时无法读取，请重试。'
+    }
+    return
+  }
+  if (request !== pendingMobileNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
+  mobileIdolReadModelDetail.value = mobile.idol
+  mobileUnitReadModelDetail.value = mobile.unit
+  mobileReadModelStatus.value = ''
   currentCharacterId.value = idolCode
-  currentArchiveUnitCode.value = resolveMobileArchiveUnit({
-    idolCode,
-    mode: currentMobileMode.value,
-    manifest: archiveManifestData.value,
-    units: idolUnitData.value?.units,
-    archive: mobileArchiveData.value,
-  })
+  currentArchiveUnitCode.value = mobile.unitCode
   currentMobileScenarioId.value = ''
   commitArchiveSelection()
 }
 
-function selectMobileUnit(unitCode) {
-  if (!mobileArchiveData.value?.by_unit_code?.[unitCode]) return
+async function selectMobileUnit(unitCode) {
+  if (!mobileUnitOptions.value.some(unit => unit.unit_code === unitCode)) return
+  const request = ++pendingMobileNavigation
+  const revision = navigation.getRevision()
+  let detail
+  try { detail = await loadMobileDetail('mobile-units', unitCode) }
+  catch (error) {
+    if (request === pendingMobileNavigation && revision === navigation.getRevision()) {
+      console.error('[MobileReadModel] Failed to switch unit:', error)
+      mobileReadModelStatus.value = '组合通信暂时无法读取，请重试。'
+    }
+    return
+  }
+  if (request !== pendingMobileNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
+  mobileUnitReadModelDetail.value = detail
+  mobileReadModelStatus.value = ''
   currentArchiveUnitCode.value = unitCode
   currentMobileScenarioId.value = ''
   commitArchiveSelection()
 }
 
-function setMobileMode(mode) {
+async function setMobileMode(mode) {
   if (!['personal', 'phone', 'unit', 'random'].includes(mode)) return
+  const request = ++pendingMobileNavigation
+  const revision = navigation.getRevision()
+  let mobile
+  try { mobile = await loadMobileRoute(currentCharacterId.value, mode, currentArchiveUnitCode.value) }
+  catch (error) {
+    if (request === pendingMobileNavigation && revision === navigation.getRevision()) {
+      console.error('[MobileReadModel] Failed to switch mode:', error)
+      mobileReadModelStatus.value = '通信分类暂时无法读取，请重试。'
+    }
+    return
+  }
+  if (request !== pendingMobileNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
+  mobileIdolReadModelDetail.value = mobile.idol
+  mobileUnitReadModelDetail.value = mobile.unit
+  mobileReadModelStatus.value = ''
   currentMobileMode.value = mode
-  if (mode !== 'unit') currentArchiveUnitCode.value = resolveMobileArchiveUnit({
-    idolCode: currentCharacterId.value,
-    mode,
-    manifest: archiveManifestData.value,
-    units: idolUnitData.value?.units,
-    archive: mobileArchiveData.value,
-  })
+  currentArchiveUnitCode.value = mobile.unitCode
   currentMobileScenarioId.value = ''
   commitArchiveSelection()
 }
@@ -2991,9 +3048,16 @@ function playRandomTalkTopic(topic) {
   })
 }
 
-function openMobileCard(cardId) {
-  const card = (cardIndexData.value?.cards || []).find(entry => Number(entry.card_id) === Number(cardId))
+async function openMobileCard(cardId) {
+  const refs = currentMobileMode.value === 'unit' ? mobileUnitReadModelDetail.value?.view?.cardRefs : mobileIdolReadModelDetail.value?.view?.cardRefs
+  const card = (refs || []).find(entry => Number(entry.card_id) === Number(cardId))
   if (!card) return
+  const revision = navigation.getRevision()
+  let detail
+  try { detail = await loadCardDetail(card.resource_id) }
+  catch (error) { console.error('[CardReadModel] Failed to open mobile relation:', error); return }
+  if (revision !== navigation.getRevision() || navigation.isDisposed()) return
+  cardReadModelDetail.value = detail
   captureDetailSource()
   currentCategoryId.value = 'cards'
   currentCharacterId.value = card.character_id
@@ -3002,15 +3066,13 @@ function openMobileCard(cardId) {
 }
 
 async function openMobileIdolStory(episodeId) {
-  const relation = idolEpisodeData.value?.by_episode_id?.[String(episodeId)]
+  const refs = currentMobileMode.value === 'unit' ? mobileUnitReadModelDetail.value?.view?.episodeRefs : mobileIdolReadModelDetail.value?.view?.episodeRefs
+  const relation = (refs || []).find(entry => Number(entry.id) === Number(episodeId))
   if (!relation) return
-  const chapter = (idolEpisodeData.value?.chapters || []).find(entry =>
-    (entry.sections || []).some(section => Number(section.id) === Number(relation.section_id)),
-  )
-  if (!chapter?.idol_code) return
+  if (!relation.idolCode) return
   const revision = navigation.getRevision()
   let detail
-  try { detail = await loadIdolStoryDetail(chapter.idol_code) }
+  try { detail = await loadIdolStoryDetail(relation.idolCode) }
   catch (error) {
     if (revision !== navigation.getRevision()) return
     console.error('[IdolStoryReadModel] Failed to open mobile relation:', error)
@@ -3022,8 +3084,8 @@ async function openMobileIdolStory(episodeId) {
   captureDetailSource()
   currentStoryDomain.value = 'idol_story'
   currentStoryMode.value = 'portal'
-  currentCharacterId.value = chapter.idol_code
-  currentStorySection.value = String(relation.section_id)
+  currentCharacterId.value = relation.idolCode
+  currentStorySection.value = String(relation.sectionId)
   currentEpisodeId.value = String(episodeId)
   currentMobileScenarioId.value = ''
   commitView('idol_story_archive')
@@ -4010,6 +4072,57 @@ async function loadIdolStoryDetail(id) {
   } })
 }
 
+async function loadMobileCatalog(domain) {
+  const idol = domain === 'mobile-idols'
+  const current = idol ? mobileIdolReadModelCatalog : mobileUnitReadModelCatalog
+  if (current.value) return current.value
+  const pending = idol ? mobileIdolCatalogPromise : mobileUnitCatalogPromise
+  if (pending) return pending
+  const promise = (async () => {
+    const index = await readModelClient.load(archiveBootstrap.domains[domain])
+    const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
+    const rows = pages.flatMap(page => page.rows || [])
+    if (rows.length !== index.count || rows.some(row => !row.id || !row.detail ||
+      (idol ? !row.idolCode || !row.name : !row.unitCode || !row.name)))
+      throw new Error(`${domain} catalog identity or shape mismatch`)
+    if (idol && (rows.length !== archiveBootstrap.idols.length ||
+      rows.some(row => !archiveBootstrap.idols.some(entry => entry.id === row.id))))
+      throw new Error('Mobile idol catalog differs from bootstrap identity')
+    current.value = rows
+    return rows
+  })().catch(error => {
+    if (idol) mobileIdolCatalogPromise = null
+    else mobileUnitCatalogPromise = null
+    throw error
+  })
+  if (idol) mobileIdolCatalogPromise = promise
+  else mobileUnitCatalogPromise = promise
+  return promise
+}
+
+async function loadMobileDetail(domain, id) {
+  const row = (await loadMobileCatalog(domain)).find(entry => entry.id === id)
+  if (!row) throw new Error(`Unavailable ${domain} entry: ${id}`)
+  return readModelClient.load(row.detail, { expectedId: id, validate: data => {
+    if (domain === 'mobile-idols' ?
+      !Array.isArray(data.view?.personalBundles) || !Array.isArray(data.view?.phoneBundles) || !Array.isArray(data.view?.randomBundles) :
+      !Array.isArray(data.view?.unitBundles))
+      throw new Error(`${domain} detail identity or shape mismatch`)
+  } })
+}
+
+async function loadMobileRoute(idolCode, mode, requestedUnit = '') {
+  const [idol, units] = await Promise.all([
+    loadMobileDetail('mobile-idols', idolCode), loadMobileCatalog('mobile-units'),
+  ])
+  const unitCode = resolveMobileArchiveUnit({ idolCode, mode, requestedUnit,
+    manifest: bootstrapMembership, units: units.map(unit => ({ unit_code: unit.id })),
+    archive: { by_unit_code: Object.fromEntries(units.map(unit => [unit.id, true])) },
+  })
+  const unit = unitCode ? await loadMobileDetail('mobile-units', unitCode) : null
+  return { idol, unit, unitCode }
+}
+
 async function loadCollectionCatalog() {
   if (collectionReadModelCatalog.value) return collectionReadModelCatalog.value
   if (!collectionCatalogPromise) {
@@ -4144,7 +4257,8 @@ async function loadSongDetail(songCode) {
 }
 
 function isBootstrapRoute(route) {
-  return ['portal', 'welcome', 'idol_picker', 'home', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status'].includes(route.view) ||
+  return ['portal', 'welcome', 'idol_picker', 'home', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status'].includes(route.view) ||
+    (route.view === 'player' && route.returnView === 'mobile_archive') ||
     (route.view === 'idols' && (!route.category || route.category === 'idol'))
 }
 
@@ -4188,6 +4302,7 @@ onMounted(async () => {
     ++pendingSeasonalNavigation
     ++pendingWorkNavigation
     ++pendingIdolStoryNavigation
+    ++pendingMobileNavigation
     ++pendingCollectionNavigation
     ++pendingStoryDetailNavigation
     ++pendingResourceNavigation
@@ -4204,6 +4319,22 @@ onMounted(async () => {
         console.error('[HomeReadModel] Failed to restore Home:', error)
         userPreferenceNotice.value = '游戏风首页暂时无法读取，请重新选择偶像。'
         route = { view: 'welcome' }
+      }
+    }
+    if (route.view === 'mobile_archive' || (route.view === 'player' && route.returnView === 'mobile_archive')) {
+      try {
+        if (!archiveBootstrap.idols.some(idol => idol.id === route.idol)) throw new Error('Unknown mobile idol')
+        const mobile = await loadMobileRoute(route.idol, route.mobileMode || 'personal', route.unit || '')
+        if (request === restoreRequest) {
+          mobileIdolReadModelDetail.value = mobile.idol
+          mobileUnitReadModelDetail.value = mobile.unit
+          mobileReadModelStatus.value = ''
+        }
+      } catch (error) {
+        if (request !== restoreRequest) return
+        console.error('[MobileReadModel] Failed to restore mobile route:', error)
+        mobileReadModelStatus.value = 'Mobile 通信暂时无法读取，请重新选择。'
+        route = { view: 'idol_picker', pickTarget: 'mobile' }
       }
     }
     if (route.view === 'idol_detail' && route.idol) {
@@ -4373,7 +4504,7 @@ onMounted(async () => {
   if (startup.source === 'invalid-immersive-idol') {
     userPreferenceNotice.value = '之前选择的首页偶像当前不可用，请重新选择。'
   }
-  if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status'].includes(startup.route.view) && !(startup.route.view === 'home' && startup.route.homeIdol)) loading.value = false
+  if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status'].includes(startup.route.view) && !(startup.route.view === 'home' && startup.route.homeIdol)) loading.value = false
   await restoreRoute(startup.route)
 })
 

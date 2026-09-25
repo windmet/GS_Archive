@@ -5,7 +5,8 @@ This directory imports the executable core of the user-supplied
 checkout's existing pure selectors. The copied kit's synthetic tests cover the
 artifact writer, client, assembler and optional media helpers.
 
-`bootstrap.inline.json` is the verified local r16 candidate's 11,762-byte bootstrap.
+`bootstrap.inline.json` is the verified local r17 candidate's 12,286-byte bootstrap
+(`bc90adb8d88614a9d7339600ead42b6a2667ebba2f00a3448bd03014f1b177af`).
 Vite embeds it in HTML. Portal, welcome, the idol picker, Home, the idol directory, song, gasha, card, event detail, seasonal campaign, work archive, idol story, story collection, story detail, story catalog and resource status routes
 can open without the legacy 21-source `/data` startup batch. Home loads its
 index, selected idol detail and cue pages; it keeps duplicate cue IDs in source
@@ -26,6 +27,8 @@ selected detail, with its source evidence retained in the technical panel.
 Work archive loads a 49-person switch directory and one selected idol, preserving
 the separate story/line modes and source evidence for technical details.
 Idol story loads a 49-person switch directory and one selected story page.
+Mobile communication loads a 49-person switch directory, a 16-unit directory,
+and the selected personal, phone, unit, and random-topic route leaves.
 The full route cutover and dynamic feature
 imports remain open.
 No Pages candidate has been assembled or deployed. The package's route

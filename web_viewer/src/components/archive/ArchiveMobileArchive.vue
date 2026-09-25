@@ -1,6 +1,6 @@
 <template>
   <article
-    v-if="archive"
+    v-if="idolData || unitData"
     class="mobile-archive"
     data-archive-scroll-container
     :data-focused-scenario-id="String(focusedScenarioId || '')"
@@ -144,7 +144,7 @@
       </div>
 
       <p v-if="!contentCount" class="empty-state">当前分类没有可展示记录。</p>
-      <ArchiveTechnicalDetails :key="`${mode}:${selectedIdol}:${selectedUnit}`" :evidence="{ bundles, randomBundles: mode === 'random' ? randomBundles : [], sourceTables: mode === 'random' ? [104, 105] : undefined, randomIntros: mode === 'random' ? (archive.random_talk?.intros || []).filter(intro => randomRoomIds.has(Number(intro.talk_room_id))) : [] }" />
+      <ArchiveTechnicalDetails :key="`${mode}:${selectedIdol}:${selectedUnit}`" :evidence="{ bundles, randomBundles: mode === 'random' ? randomBundles : [], sourceTables: mode === 'random' ? [104, 105] : undefined, randomIntros: mode === 'random' ? idolData?.view?.randomIntros || [] : [], sourceEvidence: mode === 'unit' ? unitData?.view?.sourceEvidence : idolData?.view?.sourceEvidence }" />
     </main>
   </article>
 </template>
@@ -154,7 +154,7 @@ import { computed } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import { BookOpen, ChevronLeft, ChevronRight, CreditCard, FileWarning, Info, MessageSquareText, Phone, Play, Shuffle, Unlock, Users } from '@lucide/vue'
-import { buildCompiledGroupTitleMap, buildRandomTalkBundles, formatArchiveDate, groupMobileScenarios } from '../../data/idolCommunicationSelectors.js'
+import { formatArchiveDate } from '../../data/idolCommunicationSelectors.js'
 import { getEmojiUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { normalizeIdolAccentColor } from '../../presentation/idolAccentColor.js'
 import { projectCommunicationInlineContent } from '../../presentation/communicationInlineContent.js'
@@ -162,11 +162,8 @@ import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { resolveMobileHeroMedia } from '../../presentation/mobileHeroMedia.js'
 
 const props = defineProps({
-  archive: { type: Object, default: null },
-  compiledIndex: { type: Object, default: null },
-  cards: { type: Array, default: () => [] },
-  idolEpisodes: { type: Object, default: null },
-  randomTalkPresentation: { type: Object, default: null },
+  idolData: { type: Object, default: null },
+  unitData: { type: Object, default: null },
   idols: { type: Array, default: () => [] },
   units: { type: Array, default: () => [] },
   selectedIdol: { type: String, default: '' },
@@ -183,42 +180,15 @@ const tabs = [
   { id: 'random', label: '随机话题池', eyebrow: 'RANDOM TOPICS', icon: Shuffle },
 ]
 const activeTab = computed(() => tabs.find(tab => tab.id === props.mode) || tabs[0])
-const titleMap = computed(() => buildCompiledGroupTitleMap(props.compiledIndex))
-const cardById = computed(() => new Map(props.cards.map(card => [Number(card.card_id), card])))
-const storyByEpisodeId = computed(() => {
-  const entries = new Map()
-  for (const chapter of props.idolEpisodes?.chapters || []) {
-    for (const section of chapter.sections || []) {
-      for (const episode of section.episodes || []) {
-        entries.set(Number(episode.id), { chapter, section, episode })
-      }
-    }
-  }
-  return entries
-})
-const scenariosById = computed(() => new Map((props.archive?.scenarios || []).map(entry => [entry.id, entry])))
-const idolScenarioIds = computed(() => props.archive?.by_idol_code?.[props.selectedIdol] || [])
-const unitScenarioIds = computed(() => props.archive?.by_unit_code?.[props.selectedUnit] || [])
-const idolScenarios = computed(() => idolScenarioIds.value.map(id => scenariosById.value.get(id)).filter(Boolean))
-const unitScenarios = computed(() => unitScenarioIds.value.map(id => scenariosById.value.get(id)).filter(Boolean))
-const bundles = computed(() => {
-  const source = props.mode === 'unit' ? unitScenarios.value : idolScenarios.value
-  const kind = props.mode === 'phone' ? 'idol_phone' : props.mode === 'unit' ? 'unit_talk' : 'idol_talk'
-  return groupMobileScenarios(source.filter(entry => entry.kind === kind), titleMap.value)
-})
-const randomBundles = computed(() => buildRandomTalkBundles(
-  props.archive,
-  props.selectedIdol,
-  titleMap.value,
-  props.randomTalkPresentation,
-))
+const cardById = computed(() => new Map((props.mode === 'unit' ? props.unitData : props.idolData)?.view?.cardRefs?.map(card => [Number(card.card_id), card]) || []))
+const storyByEpisodeId = computed(() => new Map(((props.mode === 'unit' ? props.unitData : props.idolData)?.view?.episodeRefs || [])
+  .map(story => [Number(story.id), story])))
+const bundles = computed(() => props.mode === 'unit' ? props.unitData?.view?.unitBundles || []
+  : props.mode === 'phone' ? props.idolData?.view?.phoneBundles || [] : props.idolData?.view?.personalBundles || [])
+const randomBundles = computed(() => props.idolData?.view?.randomBundles || [])
 const contentCount = computed(() => props.mode === 'random' ? randomBundles.value.length : bundles.value.length)
-const randomTopics = computed(() => (props.archive?.random_talk?.topics || []).filter(topic => topic.idol_code === props.selectedIdol))
-const randomTopicCount = computed(() => randomTopics.value.length)
-const randomRoomIds = computed(() => new Set(randomTopics.value.map(topic => Number(topic.talk_room_id))))
-const randomIntroCount = computed(() => (props.archive?.random_talk?.intros || []).filter(intro =>
-  randomRoomIds.value.has(Number(intro.talk_room_id)),
-).length)
+const randomTopicCount = computed(() => randomBundles.value.reduce((sum, bundle) => sum + bundle.topics.length, 0))
+const randomIntroCount = computed(() => props.idolData?.view?.randomIntros?.length || 0)
 const contentSummary = computed(() => props.mode === 'random'
   ? `${randomTopicCount.value} 个话题 · ${contentCount.value} 组`
   : `${contentCount.value} 条记录`)
@@ -230,8 +200,7 @@ const idolFrameColor = computed(() => normalizeIdolAccentColor(idol.value.color)
 const accentColor = computed(() => (props.mode === 'unit'
   ? normalizeIdolAccentColor(unit.value.unit_color)
   : idolFrameColor.value) || '#168f87')
-const personalRoom = computed(() => props.archive?.rooms?.personal?.find(room => room.idol_code === props.selectedIdol))
-const unitRoom = computed(() => props.archive?.rooms?.unit?.find(room => room.unit_code === props.selectedUnit))
+const personalRoom = computed(() => props.idolData?.view?.room)
 const roomSubtitle = computed(() => props.mode === 'unit' ? 'Unit Talk Room' : (personalRoom.value?.profile_text || 'Mobile Talk Room'))
 const roomSubtitleParts = computed(() => projectCommunicationInlineContent(roomSubtitle.value))
 const heroMedia = computed(() => resolveMobileHeroMedia({ mode: props.mode, idolCode: props.selectedIdol, unitCode: props.selectedUnit }))
@@ -242,8 +211,9 @@ const selectionOptions = computed(() => props.mode === 'unit'
 
 function tabCount(mode) {
   if (mode === 'random') return randomTopicCount.value
-  if (mode === 'unit') return unitScenarios.value.filter(entry => entry.kind === 'unit_talk').length
-  return idolScenarios.value.filter(entry => entry.kind === (mode === 'phone' ? 'idol_phone' : 'idol_talk')).length
+  const source = mode === 'unit' ? props.unitData?.view?.unitBundles
+    : mode === 'phone' ? props.idolData?.view?.phoneBundles : props.idolData?.view?.personalBundles
+  return (source || []).reduce((sum, bundle) => sum + bundle.scenarios.length, 0)
 }
 function moveSelection(delta) {
   const options = selectionOptions.value
@@ -277,7 +247,7 @@ function unlockText(unlock) {
   const card = unlockCard(unlock)
   if (card) return `${card.title_full || `【${card.title || '卡名待确认'}】`} ${unlockAction(unlock)}`
   const story = storyByEpisodeId.value.get(Number(unlock.condition?.param_a || 0))
-  if (story) return `「${story.section.scenario_title}」${presentIdolEpisodeLabel({ sourceName: story.episode.name })} 完成`
+  if (story) return `「${story.scenarioTitle}」${presentIdolEpisodeLabel({ sourceName: story.episodeName })} 完成`
   if (unlock.kind.startsWith('card_')) return '关联卡片待确认'
   if (unlock.kind === 'idol_story_episode_finished') return '个人故事章节待确认'
   return ['scenario_title_mission', 'term_or_default_release'].includes(unlock.kind) ? unlock.text : '开放条件待确认'
@@ -286,7 +256,7 @@ function unlockTitle(unlock) {
   const card = unlockCard(unlock)
   if (card) return `卡片 · ${card.title_full || card.title} · ${unlockAction(unlock)} · 点击查看卡片资料`
   const story = storyByEpisodeId.value.get(Number(unlock.condition?.param_a || 0))
-  if (story) return `个人故事 · ${story.section.name}「${story.section.scenario_title}」${presentIdolEpisodeLabel({ sourceName: story.episode.name })} · 点击查看个人故事`
+  if (story) return `个人故事 · ${story.sectionName}「${story.scenarioTitle}」${presentIdolEpisodeLabel({ sourceName: story.episodeName })} · 点击查看个人故事`
   if (unlock.kind.startsWith('card_')) return '关联卡片待确认'
   if (unlock.kind === 'idol_story_episode_finished') return '个人故事章节待确认'
   return ['scenario_title_mission', 'term_or_default_release'].includes(unlock.kind) ? unlock.text : '开放条件待确认'
