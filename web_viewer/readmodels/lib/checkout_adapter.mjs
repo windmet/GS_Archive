@@ -7,6 +7,7 @@ export const INPUTS = {
  cardIndex: 'data/masterdata/card_index.json', cardDetailIndex: 'data/masterdata/card_detail_index.json',
  idolUnit: 'data/masterdata/idol_unit_dictionary.json', costumeDictionary: 'data/masterdata/costume_dictionary.json',
  archiveManifest: 'data/archive_manifest.json', uiAssetCatalog: 'data/assets/ui_asset_catalog.json',
+ rawCharacterImagePromotions: 'data/assets/raw_character_image_promotions.json',
  storyCatalog: 'data/masterdata/story_catalog.json', storyPresentation: 'data/masterdata/story_presentation_index.json',
  songCatalog: 'data/song_catalog.json', songPlaybackAudio: 'data/song_playback_audio.json',
  songExperimentalAudio: 'data/song_experimental_audio.json', gashaIndex: 'data/masterdata/gasha_index.json',
@@ -123,6 +124,9 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
           card_title:cardMap.get(relation.card_resource_id)?.title||relation.card_resource_id,
           character_name:data.idolUnit.by_idol_code?.[relation.character_id]?.display_name||relation.character_id})),
         idols:(event.characters||[]).map(id=>({idol_code:id,...data.idolUnit.by_idol_code?.[id]})),
+        castReferences:(event.characters||[]).map(id=>({idol_code:id,
+          reference:modules.idolReference.buildEventIdolReference(id,data.idolUnit,data.archiveManifest,
+            data.rawCharacterImagePromotions,event)})),
         units:(data.idolUnit.units||[]).filter(unit=>units.has(String(unit.unit_id))),
       }};
     }) },
