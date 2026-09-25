@@ -332,7 +332,7 @@
       <ArchiveSeasonalCampaign
         v-if="view === 'seasonal_campaign'"
         :campaign="currentSeasonalCampaign"
-        :campaigns="seasonalReadModelCatalog || seasonalCampaignData?.campaigns || []"
+        :campaigns="seasonalReadModelCatalog || []"
         :source-evidence="seasonalReadModelDetail?.view?.sourceEvidence || null"
         @select="selectSeasonalCampaign"
         @play="playSeasonalCampaignStory"
@@ -341,7 +341,8 @@
       <ArchiveWorkStory
         v-if="view === 'work_archive'"
         :idol="currentWorkIdol"
-        :idols="workStoryData?.idols || []"
+        :idols="workReadModelCatalog || []"
+        :source-evidence="workReadModelDetail?.view?.sourceEvidence || null"
         :reading-entries="readingCatalogEntries"
         :initial-file="currentStoryFile"
         :mode="currentWorkMode"
@@ -415,6 +416,7 @@
       <p v-if="['gashas', 'gasha_detail'].includes(view) && gashaReadModelStatus" role="status">{{ gashaReadModelStatus }}</p>
       <p v-if="!loading && eventReadModelStatus" role="status">{{ eventReadModelStatus }}</p>
       <p v-if="!loading && seasonalReadModelStatus" role="status">{{ seasonalReadModelStatus }}</p>
+      <p v-if="!loading && workReadModelStatus" role="status">{{ workReadModelStatus }}</p>
       <p v-if="['unit_catalog', 'unit_detail'].includes(view) && unitReadModelStatus" class="unit-read-model-status" role="status">{{ unitReadModelStatus }}</p>
     </ArchiveShell>
 
@@ -766,6 +768,11 @@ const seasonalReadModelDetail = shallowRef(null)
 const seasonalReadModelStatus = ref('')
 let seasonalCatalogPromise = null
 let pendingSeasonalNavigation = 0
+const workReadModelCatalog = shallowRef(null)
+const workReadModelDetail = shallowRef(null)
+const workReadModelStatus = ref('')
+let workCatalogPromise = null
+let pendingWorkNavigation = 0
 const homeReadModelIndex = ref(null)
 const homeReadModelProfiles = ref({})
 const homeEntryStatus = ref('')
@@ -776,7 +783,7 @@ let pendingHomeNavigation = 0
 let pendingLegacyNavigation = 0
 let legacyDataPromise = null
 const continuousPlayback = ref(localStorageValue('sidem:continuous-playback') === '1')
-const loading = ref(!isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign'].includes(initialArchiveStartup.route.view) || initialArchiveStartup.route.view === 'home' && Boolean(initialArchiveStartup.route.homeIdol))
+const loading = ref(!isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive'].includes(initialArchiveStartup.route.view) || initialArchiveStartup.route.view === 'home' && Boolean(initialArchiveStartup.route.homeIdol))
 const loadingPurpose = ref('archive-data')
 const preloadProgress = ref(0)
 
@@ -1056,17 +1063,11 @@ const mainStoryDomain = computed(() => (
   storyCatalogData.value ? buildMainStoryDomainIdentity(storyCatalogData.value) : null
 ))
 
-const currentSeasonalCampaign = computed(() => {
-  if (seasonalReadModelDetail.value?.id === currentStorySection.value) return seasonalReadModelDetail.value.view.campaign
-  const campaigns = seasonalCampaignData.value?.campaigns || []
-  return seasonalCampaignData.value?.by_id?.[currentStorySection.value] ||
-    campaigns.find(item => item.id === 'valentine_2023') ||
-    campaigns[0] || null
-})
+const currentSeasonalCampaign = computed(() => seasonalReadModelDetail.value?.id === currentStorySection.value
+  ? seasonalReadModelDetail.value.view.campaign : null)
 
-const currentWorkIdol = computed(() => {
-  return workStoryData.value?.by_idol_code?.[currentCharacterId.value] || null
-})
+const currentWorkIdol = computed(() => workReadModelDetail.value?.id === currentCharacterId.value
+  ? workReadModelDetail.value.view.idol : null)
 
 const idolStoryOptions = computed(() => buildIdolStoryOptions(idolEpisodeData.value, idolUnitData.value))
 
@@ -1813,7 +1814,7 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
     }
     if (!intent.isCurrent()) return
     filterQuery.value = route.query || ''
-    const validRouteIdol = !route.idol || (['idol_detail', 'cards', 'card_detail'].includes(route.view)
+    const validRouteIdol = !route.idol || (['idol_detail', 'cards', 'card_detail', 'work_archive'].includes(route.view)
       ? archiveBootstrap.idols.some(idol => idol.id === route.idol)
       : Boolean(idolUnitData.value?.by_idol_code?.[route.idol]))
     const invalidIdolPickTarget = !validRouteIdol ? ({
@@ -2283,6 +2284,7 @@ async function closeArchivePortal() {
     seasonalReadModelDetail.value = await loadSeasonalDetail(route.storySection)
     route = { ...route, storySection: seasonalReadModelDetail.value.id }
   }
+  if (route.view === 'work_archive' && route.idol) workReadModelDetail.value = await loadWorkDetail(route.idol)
   const pending = applyArchiveRoute(route)
   const expected = navigation.getRevision()
   await pending
@@ -2704,23 +2706,50 @@ function playSeasonalCampaignStory(file) {
 }
 
 function openWorkArchive(idolCode = '') {
-  const selected = workStoryData.value?.by_idol_code?.[idolCode] ? idolCode : ''
-  if (!selected) return openIdolPicker('work')
-  captureDetailSource()
-  currentStoryDomain.value = 'work'
-  currentStoryFile.value = ''
-  currentWorkMode.value = 'stories'
-  currentStoryMode.value = 'portal'
-  currentStorySection.value = ''
-  currentCharacterId.value = selected
-  commitView('work_archive')
+  if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return openIdolPicker('work')
+  const request = ++pendingWorkNavigation
+  const revision = navigation.getRevision()
+  workReadModelStatus.value = '正在读取工作档案…'
+  loading.value = true
+  return loadWorkDetail(idolCode).then(detail => {
+    if (request !== pendingWorkNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
+    workReadModelDetail.value = detail
+    workReadModelStatus.value = ''
+    captureDetailSource()
+    currentStoryDomain.value = 'work'
+    currentStoryFile.value = ''
+    currentWorkMode.value = 'stories'
+    currentStoryMode.value = 'portal'
+    currentStorySection.value = ''
+    currentCharacterId.value = idolCode
+    commitView('work_archive')
+  }).catch(error => {
+    if (request !== pendingWorkNavigation || revision !== navigation.getRevision()) return
+    loading.value = false
+    console.error('[WorkReadModel] Failed to open idol:', error)
+    workReadModelStatus.value = '工作档案暂时无法读取，请重试。'
+  })
 }
 
 function selectWorkIdol(idolCode) {
-  if (!workStoryData.value?.by_idol_code?.[idolCode]) return
-  currentCharacterId.value = idolCode
-  currentStoryFile.value = ''
-  commitArchiveSelection()
+  if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return
+  const request = ++pendingWorkNavigation
+  const revision = navigation.getRevision()
+  workReadModelStatus.value = '正在切换工作档案…'
+  loading.value = true
+  return loadWorkDetail(idolCode).then(detail => {
+    if (request !== pendingWorkNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
+    workReadModelDetail.value = detail
+    workReadModelStatus.value = ''
+    currentCharacterId.value = idolCode
+    currentStoryFile.value = ''
+    commitArchiveSelection()
+  }).catch(error => {
+    if (request !== pendingWorkNavigation || revision !== navigation.getRevision()) return
+    loading.value = false
+    console.error('[WorkReadModel] Failed to switch idol:', error)
+    workReadModelStatus.value = '工作档案切换失败，请重试。'
+  })
 }
 
 function setWorkMode(mode) {
@@ -3250,6 +3279,7 @@ async function restoreDetailSource(fallback) {
     seasonalReadModelDetail.value = await loadSeasonalDetail(route.storySection)
     route = { ...route, storySection: seasonalReadModelDetail.value.id }
   }
+  if (route.view === 'work_archive' && route.idol) workReadModelDetail.value = await loadWorkDetail(route.idol)
   if (route.view === 'song_catalog') await ensureSongCatalog()
   if (route.view === 'song_detail' && route.song) songReadModelDetail.value = await loadSongDetail(route.song)
   if (navigation.isDisposed() || beforeLoad !== navigation.getRevision()) return
@@ -3807,6 +3837,35 @@ async function loadSeasonalDetail(requestedId = 'valentine_2023') {
   } })
 }
 
+async function loadWorkCatalog() {
+  if (workReadModelCatalog.value) return workReadModelCatalog.value
+  if (!workCatalogPromise) {
+    workCatalogPromise = (async () => {
+      const index = await readModelClient.load(archiveBootstrap.domains.work)
+      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
+      const rows = pages.flatMap(page => page.rows || [])
+      const expected = archiveBootstrap.idols.map(idol => idol.id)
+      if (rows.length !== index.count || rows.length !== expected.length ||
+        rows.some((row, position) => row.id !== expected[position] || row.idol_code !== row.id ||
+          !row.display_name || !row.work_type_name || !row.detail))
+        throw new Error('Work catalog identity or switch fields mismatch')
+      workReadModelCatalog.value = rows
+      return rows
+    })().catch(error => { workCatalogPromise = null; throw error })
+  }
+  return workCatalogPromise
+}
+
+async function loadWorkDetail(id) {
+  const row = (await loadWorkCatalog()).find(entry => entry.id === id)
+  if (!row) throw new Error(`Unavailable work idol: ${id}`)
+  return readModelClient.load(row.detail, { expectedId: id, validate: data => {
+    if (data.view?.idol?.idol_code !== id || !Array.isArray(data.view.idol.short_stories) ||
+      !Array.isArray(data.view.idol.scene_lines) || !Array.isArray(data.view?.sourceEvidence?.entries))
+      throw new Error('Work detail identity or shape mismatch')
+  } })
+}
+
 async function loadSongCatalog() {
   if (songReadModelCatalog.value) return songReadModelCatalog.value
   if (!songCatalogPromise) {
@@ -3848,7 +3907,7 @@ async function loadSongDetail(songCode) {
 }
 
 function isBootstrapRoute(route) {
-  return ['portal', 'welcome', 'idol_picker', 'home', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign'].includes(route.view) ||
+  return ['portal', 'welcome', 'idol_picker', 'home', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive'].includes(route.view) ||
     (route.view === 'idols' && (!route.category || route.category === 'idol'))
 }
 
@@ -3890,6 +3949,7 @@ onMounted(async () => {
     ++pendingCardNavigation
     ++pendingEventNavigation
     ++pendingSeasonalNavigation
+    ++pendingWorkNavigation
     ++pendingLegacyNavigation
     legacyEntryStatus.value = ''
     if (!isBootstrapRoute(route)) await ensureLegacyArchiveData()
@@ -3967,7 +4027,7 @@ onMounted(async () => {
         route = { view: 'story_catalog' }
       }
     }
-    if (route.view === 'seasonal_campaign') {
+    if (route.view === 'seasonal_campaign' || (route.view === 'player' && route.returnView === 'seasonal_campaign')) {
       try {
         const detail = await loadSeasonalDetail(route.storySection)
         if (request === restoreRequest) seasonalReadModelDetail.value = detail
@@ -3978,6 +4038,18 @@ onMounted(async () => {
         console.error('[SeasonalReadModel] Failed to restore campaign:', error)
         seasonalReadModelStatus.value = '季节企划暂时无法读取，请稍后重试。'
         route = { view: 'portal' }
+      }
+    }
+    if ((route.view === 'work_archive' || (route.view === 'player' && route.returnView === 'work_archive')) && route.idol) {
+      try {
+        const detail = await loadWorkDetail(route.idol)
+        if (request === restoreRequest) workReadModelDetail.value = detail
+        workReadModelStatus.value = ''
+      } catch (error) {
+        if (request !== restoreRequest) return
+        console.error('[WorkReadModel] Failed to restore idol:', error)
+        workReadModelStatus.value = '工作档案暂时无法读取，请稍后重试。'
+        route = { view: 'idol_picker', pickTarget: 'work' }
       }
     }
     if (route.view === 'song_catalog') await ensureSongCatalog()
@@ -4019,7 +4091,7 @@ onMounted(async () => {
   if (startup.source === 'invalid-immersive-idol') {
     userPreferenceNotice.value = '之前选择的首页偶像当前不可用，请重新选择。'
   }
-  if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign'].includes(startup.route.view) && !(startup.route.view === 'home' && startup.route.homeIdol)) loading.value = false
+  if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive'].includes(startup.route.view) && !(startup.route.view === 'home' && startup.route.homeIdol)) loading.value = false
   await restoreRoute(startup.route)
 })
 

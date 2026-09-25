@@ -79,7 +79,7 @@
       </div>
 
       </details>
-      <ArchiveTechnicalDetails :key="idol.idol_code" :evidence="idol" />
+      <ArchiveTechnicalDetails :key="idol.idol_code" :evidence="sourceEvidence ? { idol, sourceEvidence } : idol" />
     </div>
   </section>
 </template>
@@ -91,6 +91,7 @@ import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import { BookOpen, ChevronLeft, ChevronRight, MessageSquareText, Play } from '@lucide/vue'
 
 const props = defineProps({ idol: { type: Object, default: null }, idols: { type: Array, default: () => [] },
+  sourceEvidence: { type: Object, default: null },
   readingEntries: { type: Array, default: () => [] }, initialFile: { type: String, default: '' },
   mode: { type: String, default: 'stories' } })
 const emit = defineEmits(['read', 'select-idol', 'play', 'update:mode'])

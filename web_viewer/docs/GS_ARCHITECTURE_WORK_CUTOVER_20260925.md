@@ -1,0 +1,11 @@
+# Work archive read-model cutover, 2026-09-25
+
+The active checkout supplied the actual fields and route behavior; the attached guide was a reference checklist. This batch moves `work_archive` to a 49-idol switch directory and one selected idol leaf. The directory preserves source order, display names, and work types. The leaf retains short stories, scene lines, playback files, and a small source-evidence record for the technical panel.
+
+The verified local r11 candidate is `E:\GS_readmodels_candidate_20260925_r11`, release `9d72b1efa246145cfc06842d97cdfe3697a3d5ca061de601565a05009440e9e4`. All 2,961 artifacts verified, and the inline bootstrap remains 11,509 bytes. The work directory order matches all 49 bootstrap idol identities; all 49 selected details remain separate leaves.
+
+Direct work routes validate the idol against bootstrap identity, load the directory and selected leaf, and send an unknown idol to the work picker. Opening and switching idols reject obsolete responses. The story/line mode remains independent across a switch; changing mode does not fetch another detail. Reading and Player links retain the selected idol and return context. The work and seasonal route components now consume only their selected read-model details; a refreshed Player route preloads its return detail.
+
+Verification: 27 read-model tests, artifact verification, `npm run build:check`, startup/navigation regressions, and a new async picker/race/retry/mode test passed. In-app Browser on the local QA server confirmed a direct work route, both modes, a switch to another idol with `work_mode=lines`, Reading and Player entry/return, unknown-idol picker and selected-idol handoff, and source evidence in the technical panel. Browser also confirmed that refreshed work and seasonal Player URLs return to their selected read-model details. The direct work route used only the work index, directory page, selected leaf and the separate Reading manifest; Player loaded its compiled scenario and runtime assets. This is local Browser evidence, not real-device or full-media acceptance.
+
+Story catalog and remaining routes still use legacy data. The route checklist is unpromoted; no full package or deployment was created.
