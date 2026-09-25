@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { assert, safeRead, sha256, jsonBytes, listFiles, pick } from './common.mjs';
+import { buildMobileRecords } from './mobile_projection.mjs';
 
 export const INPUTS = {
  cardIndex: 'data/masterdata/card_index.json', cardDetailIndex: 'data/masterdata/card_detail_index.json',
@@ -14,6 +15,8 @@ export const INPUTS = {
  eventIndex: 'data/masterdata/event_index.json', idolEpisode: 'data/masterdata/idol_episode_index.json',
  workStory: 'data/masterdata/work_story_index.json', archiveVerification: 'data/archive_verification.json',
  mobileArchive: 'data/masterdata/mobile_archive_index.json',
+ randomTalkPresentation: 'data/masterdata/random_talk_presentation_index.json',
+ compiledIndex: 'data/compiled/index.json',
  birthdayStorySemantic: 'data/masterdata/birthday_story_semantic_index.json',
  extraStoryVisualIndex: 'data/masterdata/extra_story_visual_index.json',
  speakerDictionary: 'data/masterdata/speaker_dictionary.json',
@@ -26,6 +29,7 @@ const HELPERS = {
  eventEpisodes: 'src/data/eventStoryEpisodes.js', idolPage: 'src/data/idolPage.js', unitPage: 'src/data/unitPage.js',
  domainIdentity: 'src/data/storyDomainIdentityIndex.js', collections: 'src/data/storyCollections.js',
  idolStories: 'src/data/idolCommunicationSelectors.js',
+ mobile: 'src/data/idolCommunicationSelectors.js',
  characterImages: 'src/utils/CharacterImageResolver.js',
 };
 export function projectUnitRecord(entry, stories, songs) {
@@ -131,6 +135,7 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     unitCode: data.archiveManifest.unit_membership_by_idol?.[id]?.unit_code || profile.unit_code || '',
     unitName: data.archiveManifest.unit_membership_by_idol?.[id]?.unit_name || profile.unit_name || '',
   }));
+  const mobileRecords = buildMobileRecords(data, modules.mobile);
   // Explicitly scoped leaves: these are source-owned domain records, not root-level index dumps.
   // The UI integration guide specifies which remaining joins must move into offline route producers.
   const extraDomains = {
@@ -176,6 +181,8 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     },view:{
       page:(()=>{const page=modules.idolStories.buildIdolStoryPage(data.idolEpisode,data.mobileArchive,stories,data.idolUnit,chapter.idol_code,birthdayDomain);return page?{...page,unitName:data.archiveManifest.unit_membership_by_idol?.[chapter.idol_code]?.unit_name||page.unitName}:null})(),
     }})) },
+    'mobile-idols': { records:mobileRecords.idolRecords },
+    'mobile-units': { records:mobileRecords.unitRecords },
     work: { records:data.workStory.idols.map(idol=>({id:idol.idol_code,
       summary:pick(idol,['idol_code','display_name','work_type_name']),view:{idol,
         sourceEvidence:{entries:[...(idol.short_stories||[]),...(idol.scene_lines||[])]
@@ -196,6 +203,6 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     provenance: { sources, codeHashes, dataRevision, mediaEpoch, canonicalCounts: {
       rawCardRecords: data.cardIndex.cards.length, preferredCards: cards.length,
       storyEntries: stories.length, homeIdols: homes.length },
-      followupProducers: ['story catalog identity parity and resource projections','mobile + random talk pages','resources UI/provenance','reading document locator','legacy groups/files directory aliases'],
+      followupProducers: ['story catalog identity parity and resource projections','resources UI/provenance','reading document locator','legacy groups/files directory aliases'],
     } };
 }
