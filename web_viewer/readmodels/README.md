@@ -5,8 +5,8 @@ This directory imports the executable core of the user-supplied
 checkout's existing pure selectors. The copied kit's synthetic tests cover the
 artifact writer, client, assembler and optional media helpers.
 
-`bootstrap.inline.json` is the verified local r13 candidate's 11,509-byte bootstrap.
-Vite embeds it in HTML. Portal, welcome, the idol picker, Home, the idol directory, song, gasha, card, event detail, seasonal campaign, work archive, idol story, story collection and story detail routes
+`bootstrap.inline.json` is the verified local r15 candidate's 11,509-byte bootstrap.
+Vite embeds it in HTML. Portal, welcome, the idol picker, Home, the idol directory, song, gasha, card, event detail, seasonal campaign, work archive, idol story, story collection, story detail and story catalog routes
 can open without the legacy 21-source `/data` startup batch. Home loads its
 index, selected idol detail and cue pages; it keeps duplicate cue IDs in source
 order. Song routes load their index, pages and selected detail. The idol directory
@@ -17,8 +17,8 @@ load searchable pickup summaries and one selected announcement. Card catalog/det
 load bounded summary pages and one selected card detail. Event detail loads its bounded
 directory and selected event leaf, including reward cards, cast references and
 episode queue. Story collection loads an 80-entry directory and one selected chapter leaf,
-including legacy section aliases. The story catalog and other unmigrated routes
-still prepare legacy data on entry. Story detail loads the bounded story directory
+including legacy section aliases. Story catalog loads the 1,394-entry bounded story directory
+and three source-derived landing projections; other unmigrated routes still prepare legacy data on entry. Story detail loads the bounded story directory
 and one selected leaf, including same-section links, cast references and a
 promoted birthday visual. Seasonal campaign loads four switch summaries and one
 selected detail, with its source evidence retained in the technical panel.

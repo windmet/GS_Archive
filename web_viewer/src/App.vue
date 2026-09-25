@@ -259,7 +259,7 @@
       <ArchiveStoryCatalog
         v-if="view === 'story_catalog'"
         :entries="visibleStoryCatalogEntries"
-        :all-entries="storyCatalog"
+        :all-entries="storyCatalogEntries"
         :domain-options="storyDomainOptions"
         :domain="currentStoryDomain"
         :section="currentStorySection"
@@ -268,10 +268,10 @@
         :event-scope="currentEventScope"
         :availability="currentStoryAvailability"
         :sort="currentStorySort"
-        :catalog-total="storyCatalog.length"
+        :catalog-total="storyCatalogEntries.length"
         :filtered-total="filteredStoryCatalog.length"
-        :seasonal-campaigns="seasonalCampaignData?.campaigns || []"
-        :work-idols="workStoryData?.idols || []"
+        :seasonal-count="storyCatalogIndex?.seasonalCount ?? seasonalCampaignData?.campaigns?.length ?? 0"
+        :work-count="storyCatalogIndex?.workCount ?? workStoryData?.idols?.length ?? 0"
         :idol-story-count="archiveBootstrap.idols.length"
         :external-resource-count="externalStoryNavigationEntries.length"
         :main-domain="mainStoryDomain"
@@ -789,7 +789,10 @@ let pendingCollectionNavigation = 0
 const storyReadModelCatalog = shallowRef(null)
 const storyReadModelDetail = shallowRef(null)
 const storyReadModelStatus = ref('')
+const storyCatalogIndex = shallowRef(null)
+const storyCatalogLanding = shallowRef(null)
 let storyCatalogPromise = null
+let storyLandingPromise = null
 let pendingStoryDetailNavigation = 0
 const homeReadModelIndex = ref(null)
 const homeReadModelProfiles = ref({})
@@ -801,7 +804,7 @@ let pendingHomeNavigation = 0
 let pendingLegacyNavigation = 0
 let legacyDataPromise = null
 const continuousPlayback = ref(localStorageValue('sidem:continuous-playback') === '1')
-const loading = ref(!isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'story_collection', 'story_detail'].includes(initialArchiveStartup.route.view) || initialArchiveStartup.route.view === 'home' && Boolean(initialArchiveStartup.route.homeIdol))
+const loading = ref(!isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'story_collection', 'story_detail', 'story_catalog'].includes(initialArchiveStartup.route.view) || initialArchiveStartup.route.view === 'home' && Boolean(initialArchiveStartup.route.homeIdol))
 const loadingPurpose = ref('archive-data')
 const preloadProgress = ref(0)
 
@@ -1077,9 +1080,8 @@ const storyCatalog = computed(() => buildStoryCatalog(storyCatalogData.value, st
   }
 }))
 
-const mainStoryDomain = computed(() => (
-  storyCatalogData.value ? buildMainStoryDomainIdentity(storyCatalogData.value) : null
-))
+const mainStoryDomain = computed(() => storyCatalogLanding.value?.main ||
+  (storyCatalogData.value ? buildMainStoryDomainIdentity(storyCatalogData.value) : null))
 
 const currentSeasonalCampaign = computed(() => seasonalReadModelDetail.value?.id === currentStorySection.value
   ? seasonalReadModelDetail.value.view.campaign : null)
@@ -1102,7 +1104,7 @@ const currentIdolStoryExternalResources = computed(() =>
 const storyDomainOptions = computed(() => {
   const counts = new Map()
   const labels = new Map()
-  for (const entry of storyCatalog.value) {
+  for (const entry of storyCatalogEntries.value) {
     counts.set(entry.domain, (counts.get(entry.domain) || 0) + 1)
     labels.set(entry.domain, entry.domainLabel)
   }
@@ -1118,14 +1120,14 @@ const storyEventScopeOptions = computed(() => {
   return Object.entries(labels).map(([id, label]) => ({
     id,
     label,
-    count: storyCatalog.value.filter(entry => entry.domain === 'event' && entry.eventScope === id).length,
+    count: storyCatalogEntries.value.filter(entry => entry.domain === 'event' && entry.eventScope === id).length,
   }))
 })
 
 const filteredStoryCatalog = computed(() => {
   const query = filterQuery.value.trim().toLowerCase()
   const availability = currentStoryAvailability.value
-  const entries = storyCatalog.value.filter(entry =>
+  const entries = storyCatalogEntries.value.filter(entry =>
     (!currentStoryDomain.value || entry.domain === currentStoryDomain.value) &&
     (!currentStorySection.value || entry.sectionId === currentStorySection.value) &&
     (currentStoryDomain.value !== 'event' || currentEventScope.value === 'all' || entry.eventScope === currentEventScope.value) &&
@@ -1150,12 +1152,12 @@ const currentStoryExternalResources = computed(() =>
   externalResourcesForStory(externalStoryResourcesData.value, currentStory.value),
 )
 
-const extraStoryDomain = computed(() => buildExtraStoryDomainIdentity(
+const extraStoryDomain = computed(() => storyCatalogLanding.value?.extra || buildExtraStoryDomainIdentity(
   storyCatalogData.value,
   gashaIndexData.value,
   extraStoryVisualIndexData.value,
 ))
-const birthdayStoryDomain = computed(() => buildBirthdayStoryDomainIdentity(
+const birthdayStoryDomain = computed(() => storyCatalogLanding.value?.birthday || buildBirthdayStoryDomainIdentity(
   storyCatalogData.value,
   idolUnitData.value,
   speakerDictionaryData.value,
@@ -1247,6 +1249,8 @@ const unitCatalogEntries = computed(() => unitReadModelCatalog.value
   : buildUnitCatalog(idolUnitData.value, {
   manifest: archiveManifestData.value, cardMap: cardMap.value, stories: storyCatalog.value,
 }))
+const storyCatalogEntries = computed(() => view.value === 'story_catalog' && storyReadModelCatalog.value
+  ? storyReadModelCatalog.value : storyCatalog.value)
 const currentArchiveUnit = computed(() => {
   const projected = unitReadModelDetail.value?.view.entry.unit
   if (projected && [String(projected.unit_id), projected.unit_code].includes(currentArchiveUnitCode.value)) return projected
@@ -1802,12 +1806,12 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
     }
     if (route.card && route.voice) await ensureCardDetailData()
     if (!intent.isCurrent()) return
-    if ([
-      'story_catalog',
-      'external_story_resources',
-      'mobile_archive',
-    ].includes(route.view === 'player' ? route.returnView : route.view)) {
+    if (['external_story_resources', 'mobile_archive'].includes(route.view === 'player' ? route.returnView : route.view)) {
       await ensureIdolCommunicationData()
+    }
+    if (route.view === 'story_catalog' || (route.view === 'player' && route.returnView === 'story_catalog')) {
+      await loadStoryReadModelLanding()
+      if (!intent.isCurrent()) return
     }
     if ((route.view === 'idol_story_archive' || (route.view === 'player' && route.returnView === 'idol_story_archive')) && route.idol) {
       const detail = await loadIdolStoryDetail(route.idol)
@@ -2450,15 +2454,17 @@ function goArchiveBack() {
         commitView('song_detail')
         return
       }
-      if (!archiveDataReady.value) return runWhenLegacyReady(() => goArchiveBack())
       const domain = currentStoryDomain.value
       const returnsToDomainLanding = ['main', 'extra', 'birthday'].includes(domain) && parent !== 'external_story_resources'
-      currentStoryDomain.value = returnsToDomainLanding ? domain : ''
-      currentStorySection.value = ''
-      currentStoryFile.value = ''
       storyCollectionParentView.value = ''
-      currentStoryMode.value = 'portal'
-      commitView(parent === 'external_story_resources' ? 'external_story_resources' : 'story_catalog')
+      if (parent === 'external_story_resources') {
+        currentStoryDomain.value = ''
+        currentStorySection.value = ''
+        currentStoryFile.value = ''
+        commitView('external_story_resources')
+        return
+      }
+      return openStoryCatalog({ domain: returnsToDomainLanding ? domain : '' })
     },
     seasonal_campaign: () => {
       currentStoryDomain.value = ''
@@ -2570,14 +2576,15 @@ function openGashaCatalog() {
   })
 }
 
-async function openStoryCatalog() {
+async function openStoryCatalog(options = {}) {
+  const domain = typeof options?.domain === 'string' ? options.domain : ''
   if (view.value !== 'portal') detailSourceRoute.value = ''
+  loading.value = true
   return navigation.run(async intent => {
-    await ensureIdolCommunicationData()
-    await ensureLegacyArchiveData()
+    await loadStoryReadModelLanding()
     if (!intent.isCurrent()) return
     filterQuery.value = ''
-    currentStoryDomain.value = ''
+    currentStoryDomain.value = domain
     currentStoryMode.value = 'portal'
     currentStorySection.value = ''
     currentStoryFile.value = ''
@@ -2590,6 +2597,10 @@ async function openStoryCatalog() {
     currentMobileScenarioId.value = ''
     storyVisibleLimit.value = 80
     commitView('story_catalog')
+  }).catch(error => {
+    loading.value = false
+    console.error('[StoryReadModel] Failed to load catalog:', error)
+    storyReadModelStatus.value = '故事目录暂时无法读取，请重试。'
   })
 }
 
@@ -3514,7 +3525,7 @@ function goBackFromEvent() {
   if (detailSourceRoute.value) {
     currentEventId.value = ''
     eventParentView.value = ''
-    return restoreDetailSource(() => commitView('story_catalog'))
+    return restoreDetailSource(openStoryCatalog)
   }
   currentEventId.value = ''
   eventParentView.value = ''
@@ -3523,7 +3534,7 @@ function goBackFromEvent() {
   else if (parent === 'card_detail' && currentCard.value) commitView('card_detail')
   else if (parent === 'unit_detail' && currentArchiveUnit.value) commitView('unit_detail')
   else if (parent === 'idol_detail' && currentIdolProfile.value) commitView('idol_detail')
-  else commitView('story_catalog')
+  else return openStoryCatalog()
 }
 
 function playCurrentEvent() {
@@ -4014,11 +4025,31 @@ async function loadStoryReadModelCatalog() {
         new Set(rows.map(row => row.file)).size !== rows.length ||
         rows.some(row => row.id !== row.file || !row.title || !row.detail))
         throw new Error('Story directory identity or count mismatch')
+      storyCatalogIndex.value = index
       storyReadModelCatalog.value = rows
       return rows
     })().catch(error => { storyCatalogPromise = null; throw error })
   }
   return storyCatalogPromise
+}
+
+async function loadStoryReadModelLanding() {
+  if (storyCatalogLanding.value) return storyCatalogLanding.value
+  await loadStoryReadModelCatalog()
+  if (!storyLandingPromise) {
+    storyLandingPromise = (async () => {
+      const descriptors = storyCatalogIndex.value?.landing
+      if (!descriptors?.main || !descriptors?.extra || !descriptors?.birthday)
+        throw new Error('Story catalog landing descriptors missing')
+      const [main, extra, birthday] = await Promise.all(['main', 'extra', 'birthday'].map(key =>
+        readModelClient.load(descriptors[key])))
+      if (!main?.value?.collections || !extra?.value?.collections || !birthday?.value?.collections)
+        throw new Error('Story catalog landing shape mismatch')
+      storyCatalogLanding.value = { main: main.value, extra: extra.value, birthday: birthday.value }
+      return storyCatalogLanding.value
+    })().catch(error => { storyLandingPromise = null; throw error })
+  }
+  return storyLandingPromise
 }
 
 async function loadStoryReadModelDetail(file) {
@@ -4072,7 +4103,7 @@ async function loadSongDetail(songCode) {
 }
 
 function isBootstrapRoute(route) {
-  return ['portal', 'welcome', 'idol_picker', 'home', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'story_collection', 'story_detail'].includes(route.view) ||
+  return ['portal', 'welcome', 'idol_picker', 'home', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'story_collection', 'story_detail', 'story_catalog'].includes(route.view) ||
     (route.view === 'idols' && (!route.category || route.category === 'idol'))
 }
 
@@ -4300,7 +4331,7 @@ onMounted(async () => {
   if (startup.source === 'invalid-immersive-idol') {
     userPreferenceNotice.value = '之前选择的首页偶像当前不可用，请重新选择。'
   }
-  if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'story_collection', 'story_detail'].includes(startup.route.view) && !(startup.route.view === 'home' && startup.route.homeIdol)) loading.value = false
+  if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'story_collection', 'story_detail', 'story_catalog'].includes(startup.route.view) && !(startup.route.view === 'home' && startup.route.homeIdol)) loading.value = false
   await restoreRoute(startup.route)
 })
 

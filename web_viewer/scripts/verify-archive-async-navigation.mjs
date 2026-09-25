@@ -39,6 +39,7 @@ function setup() {
     mobileArchiveData: { value: {} }, idolUnitData: { value: {} },
     idolStoryReadModelDetail: { value: null }, loadIdolStoryDetail: async () => ({ id: '038tak', view: { page: { idol_code: '038tak' } } }),
     ensureCardDetailData: async () => {}, ensureIdolCommunicationData: async () => {},
+    loadStoryReadModelLanding: async () => {},
     resolveRouteGroup: () => null, resolveRouteUnit: () => null, resolveRouteEpisode: () => null,
     currentStoryCollection: { value: null }, currentEventEpisodes: { value: [] }, currentIdolStoryPage: { value: null },
     spineViewerLoader: async () => {}, chibiStageViewerLoader: async () => {},
@@ -230,7 +231,7 @@ const previewCard = (id, cue) => ({ resource_id: `${id}_card`, character_id: id,
 {
   const t = setup(), detail = deferred()
   t.state.view.value = 'cards'
-  t.context.ensureIdolCommunicationData = () => detail.promise
+  t.context.loadStoryReadModelLanding = () => detail.promise
   const pending = t.restore({ view: 'story_catalog', query: 'old route' })
   await flush()
   t.filter('filterQuery', 'new search')

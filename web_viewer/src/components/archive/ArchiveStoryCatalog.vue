@@ -375,8 +375,8 @@ const props = defineProps({
   eventScopeOptions: { type: Array, default: () => [] }, eventScope: { type: String, default: 'all' },
   availability: { type: String, default: 'all' }, sort: { type: String, default: 'domain' },
   catalogTotal: { type: Number, default: 0 }, filteredTotal: { type: Number, default: 0 },
-  seasonalCampaigns: { type: Array, default: () => [] },
-  workIdols: { type: Array, default: () => [] },
+  seasonalCount: { type: Number, default: 0 },
+  workCount: { type: Number, default: 0 },
   idolStoryCount: { type: Number, default: 0 },
   externalResourceCount: { type: Number, default: 0 },
   mainDomain: { type: Object, default: null },
@@ -426,8 +426,8 @@ function openDomain(domain) { emit('browse', { domain, section: '', mode: 'porta
 function domainCount(domain) { return props.allEntries.filter(entry => entry.domain === domain).length }
 function gatewayCount(gateway) {
   if (gateway.action === 'external-resources') return props.externalResourceCount
-  if (gateway.action === 'seasonal') return props.seasonalCampaigns.length
-  if (gateway.action === 'work') return props.workIdols.length
+  if (gateway.action === 'seasonal') return props.seasonalCount
+  if (gateway.action === 'work') return props.workCount
   if (gateway.action === 'idol-story') return props.idolStoryCount
   return domainCount(gateway.id)
 }
