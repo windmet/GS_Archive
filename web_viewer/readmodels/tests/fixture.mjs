@@ -5,6 +5,7 @@ export function fixture({ cards = 3, padding = 32, idols = 2 } = {}) {
     identities,
     home: identities.map((person, i) => ({ ...person, costumes: [], cues: [{ id: `cue-${i}`, cue: `cue-${i}`, cardId: `card-${i}`, cardTitle:'Fixture card', modelId:'fixture-model',
       voice:'fixture.m4a', previewStep:{step_id:7, type:'adv',state:{bg:'fixture'},dialogue:{text:'fixture'}} }] })),
+    homeStats:[{label:'偶像',value:idols}], homeHighlights:[{id:'event-fixture',title:'Fixture event',bannerUrl:'/assets/fixture.png'}],
     cards: Array.from({ length: cards }, (_, i) => ({ resource_id: `card-${i}`, card_id: i + 1, character_id: identities[i % identities.length].id,
       rarity:'SSR', title:`Fixture card ${i}`, voice_base:`voice-${i}`, single_state: false, texts:{normal:'x'.repeat(padding)},
       home_voice_cues:[{cue:`cue-${i}`,preview:{preview_step:{state:{bg:'fixture'},dialogue:{voice:`v-${i}`}}}}], scenario_entries:[] })),

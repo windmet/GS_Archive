@@ -37,7 +37,9 @@ export async function writeReadModels(root, release, product, provenance = {}) {
     const descriptor = await detail('home', home.id, { profile, cueIndex, first: cuePages[0] });
     idolRows.push({ ...pick(home, ['id', 'name', 'kana', 'unitId', 'unitCode', 'unitName', 'color']), home_available: true, detail: descriptor });
   }
-  domains.home = await writer.emit('home/index.json', 'home.index', { idols: idolRows }, { maxRaw: 128 * 1024 });
+  domains.home = await writer.emit('home/index.json', 'home.index', {
+    idols: idolRows, stats: product.homeStats || [], highlights: stripEvidence(product.homeHighlights || []),
+  }, { maxRaw: 128 * 1024 });
   coverage.home = { idols: idolRows.length, cues: product.home.reduce((n, h) => n + h.cues.length, 0) };
 
   const cardRows = [], cardSearch = [];

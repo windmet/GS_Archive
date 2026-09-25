@@ -15,6 +15,9 @@ test('Core products preserve details, keep catalogs thin, and close descriptors'
     const verified = await verifyArtifacts(dir); assert.equal(verified.verified, report.artifactFiles);
     assert.ok(report.bootstrapDecodedBytes < 64 * 1024); assert.equal(bootstrap.counts.canonical_cards, 3);
     const home = report.artifacts.find(a => a.kind === 'home.cues');
+    const homeIndex = JSON.parse(await fs.readFile(path.join(dir, 'pages', bootstrap.domains.home.url.slice(1)), 'utf8'));
+    assert.deepEqual(homeIndex.data.stats, p.homeStats);
+    assert.deepEqual(homeIndex.data.highlights, p.homeHighlights);
     const homeBody=JSON.parse(await fs.readFile(path.join(dir,'pages',home.url.slice(1)),'utf8'));
     assert.equal(homeBody.data.rows[0].previewStep.step_id,7);
     const cardPage = report.artifacts.find(a => a.kind === 'cards.page');

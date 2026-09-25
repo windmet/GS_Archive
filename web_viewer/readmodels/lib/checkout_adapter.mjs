@@ -49,6 +49,14 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
   }
   for (const [key, value] of Object.entries(data)) modules.contracts.validateArchivePayload(key, value);
   const homes = modules.home.buildArchiveHomeState(data.idolUnit, data.cardIndex, data.archiveManifest, data.costumeDictionary);
+  const homeStats = [
+    { label: '剧情文件', value: data.archiveVerification.scenarios?.parsed_files ?? data.archiveManifest.counts?.indexed_scenarios ?? 0 },
+    { label: '偶像', value: data.archiveManifest.counts?.idols ?? Object.keys(data.idolUnit.by_idol_code || {}).length },
+    { label: '卡片', value: data.archiveManifest.counts?.cards ?? data.cardIndex.meta?.card_count ?? data.cardIndex.cards.length },
+    { label: '卡池', value: data.gashaIndex.meta?.logical_gasha_count ?? data.archiveManifest.counts?.gashas ?? 0 },
+    { label: '首页语音', value: data.archiveManifest.counts?.home_voice_cues ?? data.cardIndex.meta?.home_voice_cue_count ?? 0 },
+  ];
+  const homeHighlights = modules.home.buildArchiveHomeHighlights(data.archiveManifest, data.uiAssetCatalog);
   const cards = [...modules.cards.buildCardMap(data.cardIndex).values()].map(card => modules.cards.mergeCardDetail(card, data.cardDetailIndex));
   // Move the actual App.vue event decoration into the producer, rather than losing it during data splitting.
   const eventByFile = new Map((data.archiveManifest.unit_event_relations || []).map(e => [e.file, e]));
@@ -125,7 +133,7 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     seasonal: { searchable:true,records:data.seasonalCampaign.campaigns.map(campaign=>({id:campaign.id,
       summary:pick(campaign,['name','title','start_at','end_at']),view:{campaign}})) },
   };
-  return { product: { home: homes, identities, cards, stories, gashas,
+  return { product: { home: homes, homeStats, homeHighlights, identities, cards, stories, gashas,
     songs: Object.values(data.songCatalog.songs), songViews, songSummary: data.songCatalog.summary, cardContext,
     gashaCatalogIds:gashaCatalog.map(g=>String(g.id)),
     playback: data.songPlaybackAudio.songs, experimental: data.songExperimentalAudio.songs, extraDomains },
