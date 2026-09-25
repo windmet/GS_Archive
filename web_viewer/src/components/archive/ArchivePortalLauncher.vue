@@ -12,6 +12,7 @@
       <div class="portal-heading">
         <h1 id="portal-title" tabindex="-1" ref="heading">我的资料馆</h1>
         <p>从这里，打开每一份收藏</p>
+        <p v-if="loadingSection" class="portal-loading-status" role="status">{{ loadingSection }}</p>
       </div>
       <section v-if="preferredReference?.actionable" class="preferred-panel" aria-labelledby="preferred-title">
         <h2 id="preferred-title">我的偶像</h2>
@@ -43,6 +44,7 @@ import ArchivePageChrome from './ArchivePageChrome.vue'
 defineProps({
   preferredReference: { type: Object, default: null },
   canGoBack: { type: Boolean, default: false },
+  loadingSection: { type: String, default: '' },
 })
 const emit = defineEmits(['navigate', 'back', 'settings', 'open-home', 'open-preferred'])
 const heading = ref(null)
@@ -75,6 +77,7 @@ onMounted(() => heading.value?.focus({ preventScroll: true }))
 .portal-body { width: 100%; max-width: 560px; margin: 0 auto; flex: 1 0 auto; display: flex; flex-direction: column; padding: 32px max(25px, var(--archive-safe-right)) 30px max(25px, var(--archive-safe-left)); box-sizing: border-box; }
 .portal-heading h1 { margin: 0; font-size: 34px; line-height: 1.3; letter-spacing: -.8px; font-weight: 800; outline: none; }
 .portal-heading p { margin: 8px 0 0; font-size: 16px; line-height: 1.6; color: var(--portal-muted); letter-spacing: .6px; }
+.portal-heading .portal-loading-status { padding: 8px 10px; border-radius: 10px; background: rgba(255,255,255,.8); color: #315e69; font-size: 13px; letter-spacing: 0; }
 .preferred-panel { display: grid; gap: 10px; margin-top: 25px; padding: 14px; border: 1px solid #cde3e3; border-radius: 18px; background: rgba(255,255,255,.72); }
 .preferred-panel h2 { margin: 0; color: var(--portal-muted); font-size: 11px; font-weight: 600; }
 .preferred-panel nav { display: flex; flex-wrap: wrap; gap: 6px; }

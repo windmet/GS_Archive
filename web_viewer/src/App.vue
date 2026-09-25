@@ -21,6 +21,7 @@
       <ArchivePortalLauncher
         v-if="view === 'portal'"
         :preferred-reference="preferredArchiveIdolReference"
+        :loading-section="legacyEntryStatus"
         :can-go-back="Boolean(portalFrom)"
         @navigate="navigateArchiveSection"
         @back="closeArchivePortal"
@@ -30,10 +31,10 @@
       />
       <ArchiveWelcome
         v-if="view === 'welcome' || view === 'idol_picker' || (view === 'home' && !homeSelectedId)"
-        :idols="archiveHomeIdols"
+        :idols="view === 'idol_picker' && currentPickTarget !== 'home' ? archivePickerIdols : archiveHomeIdols"
         :preferences="userPreferences"
         :notice="userPreferenceNotice"
-        :data-ready="archiveDataReady"
+        :data-ready="archiveBootstrap.idols.length > 0"
         :selection-only="view === 'home' || view === 'idol_picker'"
         :can-cancel="view === 'idol_picker' || (view === 'welcome' && Boolean(detailSourceRoute))"
         :target-label="idolPickerLabel"
@@ -533,7 +534,8 @@ import {
   loadArchiveUserPreferences,
   saveArchiveUserPreferences,
 } from './data/archiveUserPreferences.js'
-import { canResolveArchiveStartupBeforeData, resolveArchiveHomeAction, resolveArchiveStartup } from './core/archiveStartup.js'
+import { resolveArchiveHomeAction, resolveArchiveStartup } from './core/archiveStartup.js'
+import { readBootstrap } from '../readmodels/runtime/readBootstrap.mjs'
 import { buildEventStoryEpisodes } from './data/eventStoryEpisodes.js'
 import { buildStoryCollections } from './data/storyCollections.js'
 import {
@@ -698,11 +700,23 @@ const songPlaybackAudioData = ref(null)
 const songExperimentalAudioData = ref(null)
 const idolEntityTranslationRevision = ref(0)
 const initialUserPreferences = loadArchiveUserPreferences()
+const archiveBootstrap = readBootstrap()
+const initialArchiveStartup = resolveArchiveStartup(window.location.href, initialUserPreferences.preferences,
+  archiveBootstrap.idols.filter(idol => idol.home_available).map(idol => idol.id))
+const bootstrapIdolDictionary = { by_idol_code: Object.fromEntries(archiveBootstrap.idols.map(idol => [idol.id, {
+  display_name: idol.name, unit_name: idol.unitName, color: idol.color,
+}])) }
+const bootstrapMembership = { unit_membership_by_idol: Object.fromEntries(archiveBootstrap.idols.map(idol => [idol.id, {
+  unit_name: idol.unitName,
+}])) }
 const userPreferences = ref(initialUserPreferences.preferences)
 const userPreferenceNotice = ref(initialUserPreferences.issue)
 const archiveDataReady = ref(false)
+const legacyEntryStatus = ref('')
+let pendingLegacyNavigation = 0
+let legacyDataPromise = null
 const continuousPlayback = ref(localStorageValue('sidem:continuous-playback') === '1')
-const loading = ref(true)
+const loading = ref(!isBootstrapRoute(initialArchiveStartup.route))
 const loadingPurpose = ref('archive-data')
 const preloadProgress = ref(0)
 
@@ -748,12 +762,10 @@ const archiveStats = computed(() => [
   { label: '卡池', value: gashaIndexData.value?.meta?.logical_gasha_count ?? archiveManifestData.value?.counts?.gashas ?? 0 },
   { label: '首页语音', value: archiveManifestData.value?.counts?.home_voice_cues ?? cardIndexData.value?.meta?.home_voice_cue_count ?? 0 },
 ])
-const archiveHomeIdols = computed(() => buildArchiveHomeState(
-  idolUnitData.value,
-  cardIndexData.value,
-  archiveManifestData.value,
-  costumeDictionaryData.value,
-))
+const archiveHomeIdols = computed(() => archiveDataReady.value
+  ? buildArchiveHomeState(idolUnitData.value, cardIndexData.value, archiveManifestData.value, costumeDictionaryData.value)
+  : archiveBootstrap.idols.filter(idol => idol.home_available))
+const archivePickerIdols = computed(() => archiveBootstrap.idols)
 const archiveHomeHighlights = computed(() => buildArchiveHomeHighlights(
   archiveManifestData.value,
   uiAssetCatalogData.value,
@@ -762,7 +774,8 @@ const validArchiveHomeIdols = computed(() => archiveHomeIdols.value.map(idol => 
 const preferredArchiveIdol = computed(() =>
   archiveHomeIdols.value.find(idol => idol.id === userPreferences.value.preferredIdol) || null)
 const preferredArchiveIdolReference = computed(() => preferredArchiveIdol.value
-  ? buildIdolReference(preferredArchiveIdol.value.id, idolUnitData.value, archiveManifestData.value, 'portal:preferred')
+  ? buildIdolReference(preferredArchiveIdol.value.id, idolUnitData.value || bootstrapIdolDictionary,
+    archiveManifestData.value || bootstrapMembership, 'portal:preferred')
   : null)
 const idolPickerLabel = computed(() => ({
   home: '游戏风首页',
@@ -1862,6 +1875,14 @@ function goHome() {
 }
 
 function navigateArchiveSection(section) {
+  if (section === 'portal' && !archiveDataReady.value) {
+    ++pendingLegacyNavigation
+    legacyEntryStatus.value = ''
+    return
+  }
+  if (section !== 'portal' && !archiveDataReady.value) {
+    return runWhenLegacyReady(() => navigateArchiveSection(section))
+  }
   if (section !== 'portal' && section !== 'home') {
     detailSourceRoute.value = view.value === 'portal' ? buildArchiveSourceQuery(currentArchiveRoute()) : ''
   }
@@ -2012,6 +2033,8 @@ function chooseLightStartup() {
 }
 
 function openRootPortal() {
+  ++pendingLegacyNavigation
+  legacyEntryStatus.value = ''
   portalFrom.value = ''
   commitView('portal')
   nextTick(() => {
@@ -2027,7 +2050,9 @@ function chooseStartupLater() {
 }
 
 function chooseImmersiveIdol({ idolCode, rememberStartup = true, setPreferred = false } = {}) {
-  if (!validArchiveHomeIdols.value.includes(idolCode)) return
+  const isGeneralPicker = view.value === 'idol_picker' && currentPickTarget.value !== 'home'
+  if (!(isGeneralPicker ? archivePickerIdols.value : archiveHomeIdols.value).some(idol => idol.id === idolCode)) return
+  if (!archiveDataReady.value) return runWhenLegacyReady(() => chooseImmersiveIdol({ idolCode, rememberStartup, setPreferred }))
   const next = {}
   if (rememberStartup) Object.assign(next, { startupMode: 'immersive', startupIdol: idolCode, onboardingComplete: true })
   if (setPreferred) next.preferredIdol = idolCode
@@ -2052,6 +2077,8 @@ function savePreferredIdol(idolCode) {
 }
 
 function clearUserPreferences() {
+  ++pendingLegacyNavigation
+  legacyEntryStatus.value = ''
   const result = clearArchiveUserPreferences()
   userPreferences.value = result.preferences
   userPreferenceNotice.value = result.issue || '启动与“我的偶像”设置已清除。'
@@ -2062,6 +2089,8 @@ function clearUserPreferences() {
 }
 
 function openWelcomeSettings() {
+  ++pendingLegacyNavigation
+  legacyEntryStatus.value = ''
   userPreferenceNotice.value = ''
   captureDetailSource()
   commitView('welcome')
@@ -2075,11 +2104,14 @@ function openIdolPicker(target) {
 }
 
 function cancelWelcomeOrPicker() {
+  ++pendingLegacyNavigation
+  legacyEntryStatus.value = ''
   if (detailSourceRoute.value) return restoreDetailSource(openRootPortal)
   if (view.value === 'idol_picker') openRootPortal()
 }
 
 function openGameHome(idolCode = '') {
+  if (!archiveDataReady.value) return runWhenLegacyReady(() => openGameHome(idolCode))
   const candidate = [idolCode, userPreferences.value.startupIdol, userPreferences.value.preferredIdol]
     .find(code => validArchiveHomeIdols.value.includes(code)) || ''
   detailSourceRoute.value = ''
@@ -2091,6 +2123,7 @@ function openGameHome(idolCode = '') {
 }
 
 function openPreferredDestination(destination) {
+  if (!archiveDataReady.value) return runWhenLegacyReady(() => openPreferredDestination(destination))
   const idolCode = preferredArchiveIdol.value?.id
   if (!idolCode) return
   if (destination === 'profile' || destination === 'cards') captureDetailSource()
@@ -2103,6 +2136,8 @@ function openPreferredDestination(destination) {
 
 function openArchivePortal() {
   if (!archiveShellVisible.value || view.value === 'portal') return
+  ++pendingLegacyNavigation
+  legacyEntryStatus.value = ''
   const source = currentArchiveRoute()
   portalFrom.value = ['welcome', 'idol_picker'].includes(source.view) ||
     (source.view === 'home' && !source.homeIdol)
@@ -2113,6 +2148,7 @@ function openArchivePortal() {
 
 async function closeArchivePortal() {
   if (!portalFrom.value) return
+  if (!archiveDataReady.value) return runWhenLegacyReady(() => closeArchivePortal())
   const pending = applyArchiveRoute(readPortalReturnRoute(portalFrom.value))
   const expected = navigation.getRevision()
   await pending
@@ -3209,54 +3245,77 @@ async function loadScenario(name, returnView = 'files', options = {}) {
   return playbackController.load(name, returnView, options)
 }
 
-onMounted(async () => {
-  const earlyStartup = resolveArchiveStartup(window.location.href, userPreferences.value, [])
-  if (earlyStartup.lightweight && canResolveArchiveStartupBeforeData(window.location.href, userPreferences.value)) {
-    view.value = earlyStartup.route.view
-    loading.value = false
-    writeArchiveRoute(earlyStartup.route, { replace: true })
+function ensureLegacyArchiveData() {
+  if (archiveDataReady.value) return Promise.resolve()
+  if (!legacyDataPromise) {
+    legacyDataPromise = loadArchiveData().then(({ data, errors }) => {
+      if (navigation.isDisposed()) return
+      indexData.value = data.compiledIndex
+      cardIndexData.value = data.cardIndex
+      gashaIndexData.value = data.gashaIndex
+      eventIndexData.value = data.eventIndex
+      storyCatalogData.value = data.storyCatalog
+      birthdayStorySemanticData.value = data.birthdayStorySemantic
+      extraStoryVisualIndexData.value = data.extraStoryVisualIndex
+      storyPresentationData.value = data.storyPresentation
+      seasonalCampaignData.value = data.seasonalCampaign
+      workStoryData.value = data.workStory
+      idolUnitData.value = data.idolUnit
+      speakerDictionaryData.value = data.speakerDictionary
+      costumeDictionaryData.value = data.costumeDictionary
+      archiveManifestData.value = data.archiveManifest
+      archiveVerificationData.value = data.archiveVerification
+      uiAssetCatalogData.value = data.uiAssetCatalog
+      rawCharacterImagePromotionsData.value = data.rawCharacterImagePromotions
+      externalStoryResourcesData.value = data.externalStoryResources
+      songCatalogData.value = data.songCatalog
+      songPlaybackAudioData.value = data.songPlaybackAudio
+      songExperimentalAudioData.value = data.songExperimentalAudio
+      archiveDataReady.value = true
+      for (const { key, error } of errors) console.error(`[ArchiveData] Failed to load ${key}:`, error)
+    }).catch(error => {
+      legacyDataPromise = null
+      throw error
+    })
   }
+  return legacyDataPromise
+}
+
+function isBootstrapRoute(route) {
+  return ['portal', 'welcome', 'idol_picker'].includes(route.view) ||
+    (route.view === 'home' && !route.homeIdol)
+}
+
+function runWhenLegacyReady(action) {
+  if (archiveDataReady.value) return action()
+  const request = ++pendingLegacyNavigation
+  legacyEntryStatus.value = '正在准备该栏目的资料…'
+  ensureLegacyArchiveData().then(() => {
+    if (navigation.isDisposed() || request !== pendingLegacyNavigation) return
+    legacyEntryStatus.value = ''
+    action()
+  }).catch(error => {
+    if (request !== pendingLegacyNavigation) return
+    console.error('[ArchiveData] Failed to prepare requested section:', error)
+    legacyEntryStatus.value = '该栏目暂时无法打开，请重试。'
+  })
+}
+
+onMounted(async () => {
   cardLayout.value = localStorageValue('sidem-archive-card-layout') === 'grid' ? 'grid' : 'compact'
   cardArtMode.value = localStorageValue('sidem-archive-card-art-mode') === 'framed' ? 'framed' : 'clean'
-  const entityTranslations = loadIdolEntityTranslations().catch(error => {
+  loadIdolEntityTranslations().catch(error => {
     console.error('[EntityTranslations] Failed to load idols:', error)
   })
-  const { data, errors } = await loadArchiveData()
-  if (navigation.isDisposed()) return
-  indexData.value = data.compiledIndex
-  cardIndexData.value = data.cardIndex
-  gashaIndexData.value = data.gashaIndex
-  eventIndexData.value = data.eventIndex
-  storyCatalogData.value = data.storyCatalog
-  birthdayStorySemanticData.value = data.birthdayStorySemantic
-  extraStoryVisualIndexData.value = data.extraStoryVisualIndex
-  storyPresentationData.value = data.storyPresentation
-  seasonalCampaignData.value = data.seasonalCampaign
-  workStoryData.value = data.workStory
-  idolUnitData.value = data.idolUnit
-  speakerDictionaryData.value = data.speakerDictionary
-  costumeDictionaryData.value = data.costumeDictionary
-  archiveManifestData.value = data.archiveManifest
-  archiveVerificationData.value = data.archiveVerification
-  uiAssetCatalogData.value = data.uiAssetCatalog
-  rawCharacterImagePromotionsData.value = data.rawCharacterImagePromotions
-  externalStoryResourcesData.value = data.externalStoryResources
-  songCatalogData.value = data.songCatalog
-  songPlaybackAudioData.value = data.songPlaybackAudio
-  songExperimentalAudioData.value = data.songExperimentalAudio
-  archiveDataReady.value = true
-  for (const { key, error } of errors) {
-    console.error(`[ArchiveData] Failed to load ${key}:`, error)
-  }
-  await entityTranslations
-  if (navigation.isDisposed()) return
-
-
-  // Base data is ready. The coordinator suppresses route writes while a
-  // restoration owns navigation; newer page actions may publish immediately.
   archiveRouteReady = true
   let startupRouteNormalized = false
+  let restoreRequest = 0
   const restoreRoute = async route => {
+    const request = ++restoreRequest
+    ++pendingLegacyNavigation
+    legacyEntryStatus.value = ''
+    if (!isBootstrapRoute(route)) await ensureLegacyArchiveData()
+    if (navigation.isDisposed() || request !== restoreRequest) return
     const pending = applyArchiveRoute(route)
     const expected = navigation.getRevision()
     await pending
@@ -3278,10 +3337,11 @@ onMounted(async () => {
   removeSpineAnimationDebug = installSpineAnimationDebug()
   const startup = pendingPreReadyRoute
     ? { route: pendingPreReadyRoute, source: 'early-action' }
-    : resolveArchiveStartup(window.location.href, userPreferences.value, validArchiveHomeIdols.value)
+    : initialArchiveStartup
   if (startup.source === 'invalid-immersive-idol') {
     userPreferenceNotice.value = '之前选择的首页偶像当前不可用，请重新选择。'
   }
+  if (isBootstrapRoute(startup.route)) loading.value = false
   await restoreRoute(startup.route)
 })
 

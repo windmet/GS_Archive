@@ -87,6 +87,9 @@ let release, published = 0
 const context = {
   ...nav, navigation, buildPortalReturnQuery, readPortalReturnRoute,
   archiveShellVisible: { value: true },
+  archiveDataReady: { value: true },
+  pendingLegacyNavigation: 0,
+  legacyEntryStatus: { value: '' },
   commitView: view => { navigation.invalidate(); nav.view.value = view },
   syncArchiveRoute: () => { published++ },
   applyArchiveRoute: route => navigation.run(async intent => {

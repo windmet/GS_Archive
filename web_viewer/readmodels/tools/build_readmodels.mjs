@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
-import { parseArgs, assert, createOutput, jsonBytes, sha256, safeRead, listFiles } from '../lib/common.mjs';
+import { parseArgs, assert, createOutput, jsonBytes, sha256, safeRead } from '../lib/common.mjs';
 import { readCheckout } from '../lib/checkout_adapter.mjs';
 import { writeReadModels } from '../lib/projections.mjs';
 
@@ -26,9 +26,11 @@ const kit = fileURLToPath(new URL('..', import.meta.url));
 const root = await createOutput(args['--out'], [repo, kit]);
 try {
   const { product, provenance } = await readCheckout(viewer, { dataRevision: args['--data-revision'], mediaEpoch: args['--media-epoch'] });
+  // Only code that affects projection bytes belongs in the data release.
+  // Assembler, audit and verification changes must not rotate immutable URLs.
   const generatorHashes = {};
-  for (const dir of ['lib','tools']) for (const file of await listFiles(path.join(kit, dir))) {
-    if (file.endsWith('.mjs')) generatorHashes[`${dir}/${file}`] = sha256(await safeRead(kit, `${dir}/${file}`));
+  for (const relative of ['lib/common.mjs', 'lib/checkout_adapter.mjs', 'lib/projections.mjs', 'tools/build_readmodels.mjs']) {
+    generatorHashes[relative] = sha256(await safeRead(kit, relative));
   }
   const release = sha256(jsonBytes({ format: 'gs-readmodels-v1', ...provenance, generatorHashes }));
   const result = await writeReadModels(root, release, product, { ...provenance, head, generatorHashes });

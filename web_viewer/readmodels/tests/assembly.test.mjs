@@ -15,6 +15,18 @@ test('Assembler injects verified bootstrap and excludes read models from Functio
  const routes=JSON.parse(await fs.readFile(path.join(out,'_routes.json'),'utf8'));assert.ok(routes.exclude.includes('/_catalog/*'));assert.deepEqual(routes.include,['/assets/*','/data/*']);
  await assert.rejects(fs.access(path.join(out,'audit')));await assert.rejects(fs.access(path.join(out,'data')));
 }finally{await fs.rm(x.root,{recursive:true,force:true})}});
+test('Assembler accepts the matching inline bootstrap and rejects a mismatched one before output',async()=>{const x=await setup();try{
+ const boot=JSON.parse(await fs.readFile(path.join(x.models,'bootstrap.inline.json'),'utf8'));
+ const inline=JSON.stringify(boot).replace(/</g,'\\u003c');
+ const html=`<html><head><script type="application/json" id="archive-bootstrap">${inline}</script></head><body>fixture</body></html>`;
+ await fs.writeFile(path.join(x.bundle,'index.html'),html);
+ const out=path.join(x.root,'matching');execFileSync(process.execPath,[script,'--bundle',x.bundle,'--models',x.models,'--out',out],{stdio:'pipe'});
+ assert.equal(await fs.readFile(path.join(out,'index.html'),'utf8'),html);
+ await fs.writeFile(path.join(x.bundle,'index.html'),html.replace(release,'b'.repeat(64)));
+ const rejected=path.join(x.root,'mismatched');
+ assert.throws(()=>execFileSync(process.execPath,[script,'--bundle',x.bundle,'--models',x.models,'--out',rejected],{stdio:'pipe'}),/Code bundle bootstrap differs/);
+ await assert.rejects(fs.access(rejected));
+}finally{await fs.rm(x.root,{recursive:true,force:true})}});
 test('Assembler rejects unfinished cutover and never creates a misleading candidate',async()=>{const x=await setup();try{
  await fs.writeFile(path.join(x.bundle,'audit/readmodel-cutover.json'),jsonBytes({...x.acceptance,allPublicRoutesMigrated:false}));
  const out=path.join(x.root,'blocked');assert.throws(()=>execFileSync(process.execPath,[script,'--bundle',x.bundle,'--models',x.models,'--out',out],{stdio:'pipe'}),/Cutover gate missing/);

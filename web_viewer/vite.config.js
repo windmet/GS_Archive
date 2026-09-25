@@ -4,6 +4,7 @@ import vue from '@vitejs/plugin-vue'
 import fs from 'node:fs'
 import path from 'node:path'
 import { createArchiveAssetResolver } from './scripts/lib/archive-assets.mjs'
+import { archiveBootstrapPlugin } from './scripts/lib/archive-bootstrap-plugin.mjs'
 
 const assetResolver = createArchiveAssetResolver()
 const STORY_CANDIDATE_ROOT = path.resolve(
@@ -32,13 +33,15 @@ const CHARACTER_IMAGE_CANDIDATE_KINDS = new Set([
 ])
 
 function externalPublicationPolicyPlugin() {
-  const install = server => server.middlewares.use((req, res, next) => {
-    let key
-    try { key = decodeURIComponent(new URL(req.url, 'http://localhost').pathname).slice(1) } catch { return next() }
-    if (!['GET', 'HEAD'].includes(req.method) || !isWithdrawnExternalStoryKey(key)) return next()
-    res.writeHead(410, { 'Cache-Control': 'no-store', 'Content-Type': 'text/plain; charset=utf-8' })
-    res.end(req.method === 'HEAD' ? undefined : 'This resource is not currently published.')
-  })
+  const install = server => {
+    server.middlewares.use((req, res, next) => {
+      let key
+      try { key = decodeURIComponent(new URL(req.url, 'http://localhost').pathname).slice(1) } catch { return next() }
+      if (!['GET', 'HEAD'].includes(req.method) || !isWithdrawnExternalStoryKey(key)) return next()
+      res.writeHead(410, { 'Cache-Control': 'no-store', 'Content-Type': 'text/plain; charset=utf-8' })
+      res.end(req.method === 'HEAD' ? undefined : 'This resource is not currently published.')
+    })
+  }
   return { name: 'external-publication-policy', configureServer: install, configurePreviewServer: install }
 }
 
@@ -394,6 +397,7 @@ function rawAudioCandidatePlugin() {
 export default defineConfig({
   plugins: [
     vue(),
+    archiveBootstrapPlugin(),
     externalPublicationPolicyPlugin(),
     lipsyncStaticPlugin(),
     audioPlugin(),

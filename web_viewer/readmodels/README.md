@@ -6,11 +6,12 @@ This directory imports the executable core of the user-supplied
 checkout's existing pure selectors. The copied kit's synthetic tests cover the
 artifact writer, client, assembler and optional media helpers.
 
-This is producer and client infrastructure. `App.vue` still uses
-`loadArchiveData()` at startup. No public route has cut over, no Pages candidate
-has been assembled or deployed, and a successful generator run alone does not
-establish semantic parity or device acceptance. The package's route checklist
-in `contracts/routes.json` remains the cutover inventory.
+`bootstrap.inline.json` is the verified local candidate's 11,509-byte bootstrap.
+Vite embeds it in HTML. Portal, welcome and the idol picker can render without
+the legacy `/data` startup batch. Other routes still call `loadArchiveData()`
+when entered; the full route cutover and dynamic feature imports remain open.
+No Pages candidate has been assembled or deployed. The package's route
+checklist in `contracts/routes.json` remains the cutover inventory.
 
 Catalog indexes expose bounded `pages` and `searchPages` descriptor arrays.
 Global search consumers must load all search pages within their own feature;
@@ -26,7 +27,8 @@ hashes all data inputs and rechecks them before accepting an artifact. Use
 assembler continues to reject cutover while routes and device review are
 unfinished.
 
-The first integration targets are Portal/welcome/picker and Home, followed by
-song catalog/detail. Route consumers must be changed before using any output
-for a release. Keep generated assets outside the checkout until packaging is
-deliberately approved under `docs/BUILD_ACCEPTANCE_POLICY.md`.
+The next integration targets are Home and song catalog/detail. On the next
+data release, regenerate this checked-in bootstrap from the verified model
+candidate. The assembler rejects a code bundle whose inline bootstrap differs
+from the model candidate. Keep generated assets outside the checkout until
+packaging is deliberately approved under `docs/BUILD_ACCEPTANCE_POLICY.md`.

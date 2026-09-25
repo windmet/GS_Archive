@@ -20,6 +20,15 @@ assert(files.includes('index.html'), 'Bundle lacks index.html');
 assert(!files.some(f => f.startsWith('assets/') || f.startsWith('data/')), 'Refuse a full-media build; use assetsDir=_app and copyPublicDir=false');
 assert(!files.some(f => ['_headers','_routes.json','_redirects','_worker.js'].includes(f)), 'Existing serving policy/worker found. Review and merge manually rather than overwrite it with a generic policy.');
 assert(files.length <= 500, 'Bundle file count suggests accidental media/public copy');
+const boot = JSON.parse(await fs.readFile(path.join(models, 'bootstrap.inline.json'), 'utf8'));
+const inline = JSON.stringify(boot).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+const bundleHtml = (await safeRead(bundle, 'index.html')).toString('utf8');
+const existing = /<script type="application\/json" id="archive-bootstrap">([^<]*)<\/script>/.exec(bundleHtml);
+if (existing) assert(existing[1] === inline, 'Code bundle bootstrap differs from read-model candidate');
+else {
+  assert(!bundleHtml.includes('id="archive-bootstrap"'), 'Unexpected archive bootstrap markup');
+  assert(bundleHtml.includes('</head>'), 'HTML lacks head');
+}
 const root = await createOutput(a['--out'], [bundle, models, fileURLToPath(new URL('..', import.meta.url))]);
 let totalBytes = 0, totalFiles = 0;
 const hashes = {};
@@ -41,12 +50,7 @@ if (a['--previous']) {
   for (const name of await listFiles(path.join(previous, 'pages'))) if (name.startsWith('_catalog/v/')) await copy(path.join(previous, 'pages'), name, { identicalOkay: true });
 }
 assert(totalFiles + 2 <= 18000, 'Combined retained versions exceed the 18,000-file safety budget');
-const boot = JSON.parse(await fs.readFile(path.join(models, 'bootstrap.inline.json'), 'utf8'));
-const inline = JSON.stringify(boot).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
-let html = await fs.readFile(path.join(root, 'index.html'), 'utf8');
-assert(!html.includes('id="archive-bootstrap"'), 'Bootstrap is already injected');
-assert(html.includes('</head>'), 'HTML lacks head');
-html = html.replace('</head>', `<script type="application/json" id="archive-bootstrap">${inline}</script>\n</head>`);
+let html = existing ? bundleHtml : bundleHtml.replace('</head>', `<script type="application/json" id="archive-bootstrap">${inline}</script>\n</head>`);
 await fs.writeFile(path.join(root, 'index.html'), html); // Only the newly created candidate is edited.
 await fs.writeFile(path.join(root, '_routes.json'), jsonBytes({ version: 1, include: ['/assets/*','/data/*'], exclude: ['/_app/*','/_catalog/*','/translations/*'] }), { flag: 'wx' });
 await fs.writeFile(path.join(root, '_headers'), `/_catalog/v/*\n  Cache-Control: public, max-age=31536000, immutable\n  X-Archive-Delivery: pages-readmodel-v1\n/_catalog/bootstrap.json\n  Cache-Control: no-cache\n  X-Archive-Delivery: pages-bootstrap-v1\n/_app/*\n  Cache-Control: public, max-age=31536000, immutable\n`, { flag: 'wx' });
