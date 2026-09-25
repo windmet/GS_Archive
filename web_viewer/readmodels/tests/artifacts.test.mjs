@@ -38,6 +38,26 @@ test('Synthetic 30 MB card database is not embedded into bootstrap or directory 
     assert.ok(report.artifactFiles < 9000);
   } finally { await fs.rm(dir,{recursive:true,force:true}); }
 });
+test('Large global story search remains complete across bounded pages', async () => {
+  const dir = await temp();
+  try {
+    const p = fixture();
+    p.stories = Array.from({ length: 400 }, (_, i) => ({
+      ...p.stories[0], id: `story:${i}`, file: `story-${i}.json`, title: `Story ${i} ${'x'.repeat(2500)}`,
+    }));
+    const { bootstrap } = await writeReadModels(dir, release, p, { fixture: true });
+    const index = JSON.parse(await fs.readFile(path.join(dir, 'pages', bootstrap.domains.stories.url.slice(1)), 'utf8'));
+    assert.ok(index.data.searchPages.length > 1);
+    const rows = [];
+    for (const descriptor of index.data.searchPages) {
+      const page = JSON.parse(await fs.readFile(path.join(dir, 'pages', descriptor.url.slice(1)), 'utf8'));
+      rows.push(...page.data.rows);
+      assert.ok(descriptor.bytes <= 192 * 1024);
+    }
+    assert.equal(rows.length, index.data.searchCount);
+    assert.deepEqual(rows.map(row => row.id), p.stories.map(story => story.id));
+  } finally { await fs.rm(dir, { recursive: true, force: true }); }
+});
 test('Oversized and duplicate output is rejected instead of silently increasing budgets', async () => {
   const dir=await temp(); try {
     const w=new ArtifactWriter(dir,release);

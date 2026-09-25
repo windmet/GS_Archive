@@ -13,9 +13,10 @@ export async function writeReadModels(root, release, product, provenance = {}) {
   };
   async function directory(domain, rows, { searchRows = null, meta = {} } = {}) {
     const pages = await writer.pages(`${domain}/catalog`, `${domain}.page`, rows);
-    const search = searchRows ? await writer.emit(`${domain}/search.json`, `${domain}.search`, { rows: searchRows }) : null;
-    domains[domain] = await writer.emit(`${domain}/index.json`, `${domain}.index`, { count: rows.length, pages, search, ...meta }, { maxRaw: 128 * 1024 });
-    coverage[domain] = { rows: rows.length, pages: pages.length };
+    const searchPages = searchRows ? await writer.pages(`${domain}/search`, `${domain}.search`, searchRows) : [];
+    domains[domain] = await writer.emit(`${domain}/index.json`, `${domain}.index`,
+      { count: rows.length, pages, searchCount: searchRows?.length || 0, searchPages, ...meta }, { maxRaw: 128 * 1024 });
+    coverage[domain] = { rows: rows.length, pages: pages.length, searchPages: searchPages.length };
   }
 
   // Home: same availability and source cue ordering as buildArchiveHomeState.

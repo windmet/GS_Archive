@@ -12,6 +12,10 @@ has been assembled or deployed, and a successful generator run alone does not
 establish semantic parity or device acceptance. The package's route checklist
 in `contracts/routes.json` remains the cutover inventory.
 
+Catalog indexes expose bounded `pages` and `searchPages` descriptor arrays.
+Global search consumers must load all search pages within their own feature;
+they must not report the first page's count as the full result count.
+
 Run `npm test` here. For a real candidate, run the generator from this directory
 with `--repo` pointing to the GS repository root and `--out` pointing to a new
 directory outside that repository. Supply the currently published 64-character
