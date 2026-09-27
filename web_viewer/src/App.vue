@@ -506,11 +506,6 @@ import ArchiveWelcome from './components/archive/ArchiveWelcome.vue'
 import { buildSongPresentation } from './presentation/SongPresentation.js'
 import { buildIdolReference } from './presentation/IdolReferencePresentation.js'
 import { resolveMobileArchiveUnit } from './core/mobileArchiveIdentity.js'
-import ArchiveGroupList from './components/archive/ArchiveGroupList.vue'
-import ArchiveFileList from './components/archive/ArchiveFileList.vue'
-import ArchiveUnitGrid from './components/archive/ArchiveUnitGrid.vue'
-import ArchiveEpisodeList from './components/archive/ArchiveEpisodeList.vue'
-import ArchiveStatus from './components/archive/ArchiveStatus.vue'
 import ArchiveExternalStoryResources from './components/archive/ArchiveExternalStoryResources.vue'
 import { readyEpisodeReading } from './data/IdolStoryReading.js'
 import { loadArchiveData, loadCardDetailData, loadIdolCommunicationData } from './data/ArchiveDataRepository.js'
@@ -623,6 +618,11 @@ const archiveRouteLoaders = {
   unit_detail: () => import('./components/archive/ArchiveUnitDetail.vue'),
   idols: () => import('./components/archive/ArchiveIdolGrid.vue'),
   idol_detail: () => import('./components/archive/ArchiveIdolDetail.vue'),
+  groups: () => import('./components/archive/ArchiveGroupList.vue'),
+  files: () => import('./components/archive/ArchiveFileList.vue'),
+  episode_zero_units: () => import('./components/archive/ArchiveUnitGrid.vue'),
+  episodes: () => import('./components/archive/ArchiveEpisodeList.vue'),
+  archive_status: () => import('./components/archive/ArchiveStatus.vue'),
 }
 const ArchiveStoryReader = defineAsyncComponent(archiveRouteLoaders.reader)
 const ArchiveEventDetail = defineAsyncComponent(archiveRouteLoaders.event_detail)
@@ -643,6 +643,11 @@ const ArchiveUnitCatalog = defineAsyncComponent(archiveRouteLoaders.unit_catalog
 const ArchiveUnitDetail = defineAsyncComponent(archiveRouteLoaders.unit_detail)
 const ArchiveIdolGrid = defineAsyncComponent(archiveRouteLoaders.idols)
 const ArchiveIdolDetail = defineAsyncComponent(archiveRouteLoaders.idol_detail)
+const ArchiveGroupList = defineAsyncComponent(archiveRouteLoaders.groups)
+const ArchiveFileList = defineAsyncComponent(archiveRouteLoaders.files)
+const ArchiveUnitGrid = defineAsyncComponent(archiveRouteLoaders.episode_zero_units)
+const ArchiveEpisodeList = defineAsyncComponent(archiveRouteLoaders.episodes)
+const ArchiveStatus = defineAsyncComponent(archiveRouteLoaders.archive_status)
 function primeArchiveRouteComponent(routeView) {
   const load = archiveRouteLoaders[routeView]
   if (load) load().catch(error => console.error(`[ArchiveRoute] Could not load ${routeView}:`, error))
