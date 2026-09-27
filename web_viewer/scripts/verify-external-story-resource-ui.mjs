@@ -276,8 +276,8 @@ assert.match(
 )
 assert.match(
   appComponent,
-  /\['external_story_resources'\]\.includes\(route\.view === 'player' \? route\.returnView : route\.view\)[\s\S]*?await ensureIdolCommunicationData\(\)/,
-  'direct external-resource routes must load idol_episode_index before rendering',
+  /if \(EXTERNAL_STORY_RESOURCES_ENABLED &&[\s\S]*?route\.view === 'external_story_resources'[\s\S]*?await ensureIdolCommunicationData\(\)/,
+  'enabled external-resource routes must prepare the identity index while withdrawn routes stay independent',
 )
 assert.match(
   appComponent,

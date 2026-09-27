@@ -506,7 +506,6 @@ import ArchiveWelcome from './components/archive/ArchiveWelcome.vue'
 import { buildSongPresentation } from './presentation/SongPresentation.js'
 import { buildIdolReference } from './presentation/IdolReferencePresentation.js'
 import { resolveMobileArchiveUnit } from './core/mobileArchiveIdentity.js'
-import ArchiveExternalStoryResources from './components/archive/ArchiveExternalStoryResources.vue'
 import { readyEpisodeReading } from './data/IdolStoryReading.js'
 import { loadArchiveData, loadCardDetailData, loadIdolCommunicationData } from './data/ArchiveDataRepository.js'
 import {
@@ -623,6 +622,7 @@ const archiveRouteLoaders = {
   episode_zero_units: () => import('./components/archive/ArchiveUnitGrid.vue'),
   episodes: () => import('./components/archive/ArchiveEpisodeList.vue'),
   archive_status: () => import('./components/archive/ArchiveStatus.vue'),
+  external_story_resources: () => import('./components/archive/ArchiveExternalStoryResources.vue'),
 }
 const ArchiveStoryReader = defineAsyncComponent(archiveRouteLoaders.reader)
 const ArchiveEventDetail = defineAsyncComponent(archiveRouteLoaders.event_detail)
@@ -648,6 +648,7 @@ const ArchiveFileList = defineAsyncComponent(archiveRouteLoaders.files)
 const ArchiveUnitGrid = defineAsyncComponent(archiveRouteLoaders.episode_zero_units)
 const ArchiveEpisodeList = defineAsyncComponent(archiveRouteLoaders.episodes)
 const ArchiveStatus = defineAsyncComponent(archiveRouteLoaders.archive_status)
+const ArchiveExternalStoryResources = defineAsyncComponent(archiveRouteLoaders.external_story_resources)
 function primeArchiveRouteComponent(routeView) {
   const load = archiveRouteLoaders[routeView]
   if (load) load().catch(error => console.error(`[ArchiveRoute] Could not load ${routeView}:`, error))
@@ -1207,12 +1208,12 @@ const currentStoryCollectionChapter = computed(() =>
 )
 
 const externalStoryNavigationEntries = computed(() =>
-  buildExternalStoryNavigationEntries(externalStoryResourcesData.value, {
+  EXTERNAL_STORY_RESOURCES_ENABLED ? buildExternalStoryNavigationEntries(externalStoryResourcesData.value, {
     events: archiveManifestData.value?.unit_event_relations || [],
     collections: storyCollections.value,
     stories: storyCatalog.value,
     idolEpisodes: idolEpisodeData.value,
-  }),
+  }) : [],
 )
 
 const currentStoryRelated = computed(() => storyReadModelDetail.value?.view?.related || [])
@@ -1756,7 +1757,8 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
     }
     if (route.view === 'idols' && route.category === 'cards') await loadCardCatalog()
     if (!intent.isCurrent()) return
-    if (['external_story_resources'].includes(route.view === 'player' ? route.returnView : route.view)) {
+    if (EXTERNAL_STORY_RESOURCES_ENABLED &&
+        (route.view === 'external_story_resources' || route.view === 'player' && route.returnView === 'external_story_resources')) {
       await ensureIdolCommunicationData()
     }
     if ((route.view === 'mobile_archive' || (route.view === 'player' && route.returnView === 'mobile_archive')) &&
@@ -2378,7 +2380,7 @@ function goArchiveBack() {
       }
       goHome()
     },
-    external_story_resources: () => commitView('story_catalog'),
+    external_story_resources: openStoryCatalog,
     story_detail: () => {
       const parent = storyDetailParentView.value
       currentStoryFile.value = ''
@@ -4299,7 +4301,8 @@ async function loadSongDetail(songCode) {
 }
 
 function isBootstrapRoute(route) {
-  return ['portal', 'welcome', 'idol_picker', 'home', 'reader', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes'].includes(route.view) ||
+  return (!EXTERNAL_STORY_RESOURCES_ENABLED && route.view === 'external_story_resources') ||
+    ['portal', 'welcome', 'idol_picker', 'home', 'reader', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes'].includes(route.view) ||
     (route.view === 'player' && route.returnView === 'reader') ||
     (route.view === 'player' && route.returnView === 'mobile_archive') ||
     (route.view === 'player' && ['story_catalog', 'story_collection', 'story_detail'].includes(route.returnView)) ||

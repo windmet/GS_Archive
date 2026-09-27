@@ -1564,21 +1564,21 @@
     {
       "view": "external_story_resources",
       "entry": {
-        "status": "legacy",
+        "status": "migrated",
         "evidence": [
-          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+          "docs/GS_ARCHITECTURE_EXTERNAL_PAUSED_ROUTE_20260927.md"
         ]
       },
       "data": {
-        "status": "legacy",
+        "status": "migrated",
         "evidence": [
-          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+          "docs/GS_ARCHITECTURE_EXTERNAL_PAUSED_ROUTE_20260927.md"
         ]
       },
       "actions": {
-        "status": "partial",
+        "status": "migrated",
         "evidence": [
-          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+          "docs/GS_ARCHITECTURE_EXTERNAL_PAUSED_ROUTE_20260927.md"
         ]
       },
       "player": {
@@ -1588,29 +1588,31 @@
         ]
       },
       "component": {
-        "status": "static",
+        "status": "dynamic",
         "module": "src/components/archive/ArchiveExternalStoryResources.vue",
         "evidence": [
           "src/App.vue"
         ]
       },
       "parity": {
-        "status": "pending",
+        "status": "partial",
         "evidence": [
-          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+          "docs/GS_ARCHITECTURE_EXTERNAL_PAUSED_ROUTE_20260927.md"
         ]
       },
-      "browserEvidence": [],
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_EXTERNAL_PAUSED_ROUTE_20260927.md",
+          "scope": "Local paused-route direct entry, return, and refreshed catalog only; no external publication or device acceptance."
+        }
+      ],
       "device": {
         "status": "pending",
         "evidence": []
       },
-      "legacyRemaining": [
-        "direct route enters global archive load and communication indexes despite paused publication"
-      ],
-      "blockedReasons": [
-        "route component remains statically imported"
-      ]
+      "legacyRemaining": [],
+      "blockedReasons": []
     },
     {
       "view": "spine_lab",
