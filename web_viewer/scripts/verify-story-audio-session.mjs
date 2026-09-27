@@ -1,3 +1,4 @@
+import { until } from './repair/helpers.mjs'
 import { setStoryRuntimePaused } from '../src/core/story-runtime/StoryPausePolicy.js'
 import { StoryClock } from '../src/core/story-runtime/StoryClock.js'
 import { EffectScheduler } from '../src/core/story-runtime/EffectScheduler.js'
@@ -131,9 +132,9 @@ const voicePlayer = useVoicePlayer({
   audioSession: voiceSession,
 })
 const prepared = { voice: 'voice-a', audioBuffer: {}, step: { chara_id: null } }
-voicePlayer.playPreparedVoice(prepared)
+await voicePlayer.playPreparedVoice(prepared)
 const firstVoiceSource = voiceContext.sources.at(-1)
-voicePlayer.playPreparedVoice({ ...prepared, voice: 'voice-b' })
+await voicePlayer.playPreparedVoice({ ...prepared, voice: 'voice-b' })
 firstVoiceSource.onended?.()
 assert.equal(voiceSession.inspect().active_sources, 1, 'an old onended callback must not release the new voice source')
 assert.equal(playing.value, true, 'an old onended callback must not mark the new voice as ended')
@@ -174,7 +175,7 @@ for (const phase of ['fetch', 'decode']) {
   const player = useVoicePlayer({ spineStageRef: { value: null }, currentStep: { value: { dialogue: { voice: 'portal-exit' } } }, currentStepIndex: { value: 0 }, compiledData: { value: {} }, isPlaying: { value: false }, audioSession: session })
   try {
     const preparation = player.prepareVoice({ includeLip: false })
-    if (phase === 'decode') { for (let n = 0; n < 10 && !decodes; n++) await Promise.resolve(); assert.equal(decodes, 1) }
+    if (phase === 'decode') { await until(() => decodes > 0); assert.equal(decodes, 1) }
     player.dispose()
     release()
     assert.equal(await preparation, null)
@@ -332,7 +333,8 @@ for (const phase of ['fetch', 'decode']) {
     audioSession: session, voiceTimeoutMs: 30, onStateChange: state => statuses.push(state) })
   try {
     const pending = player.playVoice()
-    while (!lipStarted) await new Promise(resolve => setImmediate(resolve))
+    await until(() => lipStarted)
+    assert.equal(await pending, true, 'audio starts while the parallel lip request remains stalled')
     assert.equal(player.getVoiceState(), 'playing', 'optional lip must not gate playable audio')
     player.stopCurrentVoice('next-dialogue')
     assert.equal(await pending, true)

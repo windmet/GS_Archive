@@ -49,3 +49,17 @@ export function attachOptionalResource({
     },
   }
 }
+
+/** A finite wait, even for implementations that ignore AbortSignal. */
+export async function withLoadDeadline(load, { signal, timeoutMs = 25000, label = 'resource' } = {}) {
+  signal?.throwIfAborted()
+  const owner = new AbortController()
+  const abort = () => owner.abort(signal.reason)
+  signal?.addEventListener('abort', abort, { once: true })
+  const timer = setTimeout(() => owner.abort(createLoadTimeout(label, timeoutMs)), timeoutMs)
+  try {
+    owner.signal.throwIfAborted()
+    return await waitForSignal(load(owner.signal), owner.signal)
+  }
+  finally { clearTimeout(timer); signal?.removeEventListener('abort', abort) }
+}

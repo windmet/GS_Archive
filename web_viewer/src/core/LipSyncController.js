@@ -1,3 +1,5 @@
+import { storyAssetTransport } from './StoryAssetTransport.js'
+import { withLoadDeadline } from './AsyncLoadBoundary.js'
 import { getMouthSettingUrl as defaultGetMouthSettingUrl } from '../utils/AssetResolver.js'
 import { mouthSettingCandidates } from '../../shared/story/MouthSettingCandidates.js'
 
@@ -28,6 +30,7 @@ export class LipSyncController {
     this.getSpineEntry = getSpineEntry
     this.getMouthSettingUrl = getMouthSettingUrl
     this.pendingTalking = {}
+    this._mouthLoads = new Map()
   }
 
   setTalking(idolId, isTalking, volumeCallback = null) {
@@ -59,7 +62,20 @@ export class LipSyncController {
     }
   }
 
+  prepare(idolId) {
+    const entry = this.getSpineEntry?.(idolId)
+    if (!entry?.spine) return
+    entry.spine._modelName = entry.modelId || '?'
+    this._installHook(idolId, entry.spine)
+    void this._loadMouthSetting(idolId, entry.spine)
+  }
+
   clearPending(idolId = null) {
+    for (const [id, load] of this._mouthLoads) {
+      if (idolId && id !== idolId) continue
+      load.controller.abort()
+      this._mouthLoads.delete(id)
+    }
     if (idolId) {
       delete this.pendingTalking[idolId]
       return
@@ -382,42 +398,36 @@ export class LipSyncController {
   }
 
   async _loadMouthSetting(idolId, spine) {
-    // Some models (e.g. 244sub_001_00 for 040ren's child variant) have their own
-    // mouth setting file keyed by model prefix, not idolId.
-    const modelId = spine._modelName || ''
-    const [primaryId] = mouthSettingCandidates(idolId, modelId)
-    try {
-      const resp = await fetch(this.getMouthSettingUrl(primaryId))
-      if (!resp.ok && primaryId !== idolId) {
-        // Fall back to idolId-based mouth setting for models without their own.
-        const fallback = await fetch(this.getMouthSettingUrl(idolId))
-        if (!fallback.ok) return
-        const data = await fallback.json()
-        if (data?.mouthes?.length) {
+    if (spine._mouthData) return spine._mouthData
+    const prior = this._mouthLoads.get(idolId)
+    if (prior?.spine === spine) return prior.promise
+    prior?.controller.abort()
+    const controller = new AbortController()
+    const record = { controller, spine, promise: null }
+    this._mouthLoads.set(idolId, record)
+    record.promise = withLoadDeadline(async signal => {
+      const candidates = mouthSettingCandidates(idolId, spine._modelName || '')
+      for (let index = 0; index < candidates.length; index++) {
+        let data
+        try { data = await storyAssetTransport.getJson(this.getMouthSettingUrl(candidates[index]), { signal }) }
+        catch (error) {
+          if ([404, 410].includes(error.status) && index + 1 < candidates.length) continue
+          throw error
+        }
+        signal.throwIfAborted()
+        if (this.getSpineEntry?.(idolId)?.spine !== spine || spine.destroyed) return null
+        if (!Array.isArray(data?.mouthes) || !data.mouthes.length) return null
+        if (data.mouthes.length) {
           spine._mouthData = data
-          console.log(`[LipMouth] ${idolId} model "${modelId}" has no own mouth setting, using idolId`)
-          if (spine.customIsTalking) {
-            try { spine.skeleton.updateWorldTransform() } catch (_) {}
-          }
-        }
-        return
-      }
-      if (!resp.ok) return
-      const data = await resp.json()
-      if (data?.mouthes?.length) {
-        spine._mouthData = data
-        if (primaryId !== idolId) {
-          console.log(`[LipMouth] ${idolId} using model-specific mouth setting: ${primaryId}`)
-        }
-        if (spine.customIsTalking) {
-          try {
-            spine.skeleton.updateWorldTransform()
-          } catch (_) {}
+          if (spine.customIsTalking) { try { spine.skeleton.updateWorldTransform() } catch {} }
+          return data
         }
       }
-    } catch (_) {
-      // Silently fall back to fallback constants.
-    }
+      return null
+    }, { signal: controller.signal, timeoutMs: 8000, label: 'optional-mouth-config' })
+      .catch(() => null) // mouth shape remains optional; never blocks audible speech
+      .finally(() => { if (this._mouthLoads.get(idolId) === record) this._mouthLoads.delete(idolId) })
+    return record.promise
   }
 
   _logRigDiagnostics(idolId, spine, { mouthSlot, mouthBone, mouthCloseBone, chinControlBone, activeMouthBone, isChildRig }) {

@@ -19,6 +19,8 @@
         </div>
         <div class="actions">
           <button v-if="item.node.voice?.cue" @click="emit('replay-voice', item.node)"><Volume2 :size="16" />{{ uiText('backlog.replayVoice') }}</button>
+          <span v-if="voiceNode === item.node.node_id && voiceStatus === 'preparing'" role="status">{{ uiText('player.voice.loading') }}</span>
+          <button v-if="voiceNode === item.node.node_id && voiceStatus === 'unavailable'" @click="emit('replay-voice', item.node, 'media')">{{ uiText('player.voice.compat') }}</button>
           <button v-if="!item.node.current" @click="emit('restore', item.node.node_id)"><Undo2 :size="16" />{{ uiText('backlog.restore') }}</button>
         </div>
       </article>
@@ -36,6 +38,8 @@ import { resolveUiText as uiText } from '../localization/ui/UiTextResolver.js'
 
 const props = defineProps({
   nodes: { type: Array, default: () => [] },
+  voiceNode: { type: String, default: '' },
+  voiceStatus: { type: String, default: 'idle' },
 })
 const emit = defineEmits(['close', 'restore', 'replay-voice'])
 const listRef = ref(null)

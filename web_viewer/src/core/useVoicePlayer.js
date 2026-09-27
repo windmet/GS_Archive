@@ -1,423 +1,303 @@
-import { waitForSignal, createLoadTimeout, attachOptionalResource } from './AsyncLoadBoundary.js'
-import { getLipSyncUrl, getVoiceUrlCandidates } from '../utils/AssetResolver.js'
-import { deriveMainLipPathFromVoice, sampleLipCurve } from '../utils/LipSyncHelpers.js'
+import { withLoadDeadline } from './AsyncLoadBoundary.js'
+import { getVoiceUrlCandidates } from '../utils/AssetResolver.js'
+import { sampleLipCurve } from '../utils/LipSyncHelpers.js'
 import { isKnownDanglingStoryVoice } from '../data/knownDanglingStoryVoices.js'
 import { StoryAudioSession } from './story-runtime/StoryAudioSession.js'
 import { compressedVoiceCache } from './CompressedVoiceCache.js'
+import { VoiceMediaOutput } from './VoiceMediaOutput.js'
+import { createVoiceLipStore } from './VoiceLipStore.js'
+import { tracePlayer } from './PlayerTrace.js'
 
-export function useVoicePlayer({
-  spineStageRef,
-  currentStep,
-  currentStepIndex,
-  compiledData,
-  isPlaying,
-  noVoice = false,
-  canAnimateStage = () => true,
-  audioSession = null,
-  onStateChange = () => {},
-  voiceTimeoutMs = 20000,
-  lipTimeoutMs = 8000,
+export function useVoicePlayer({ spineStageRef, currentStep, currentStepIndex, compiledData, isPlaying,
+  noVoice = false, canAnimateStage = () => true, audioSession = null, onStateChange = () => {},
+  voiceTimeoutMs = 20000, lipTimeoutMs = 8000, decodeTimeoutMs = 6000,
+  backendMode = 'auto', createAudio, resolveVoiceUrls = getVoiceUrlCandidates, voiceCache = compressedVoiceCache, lipStore = createVoiceLipStore(),
 }) {
   const session = audioSession || new StoryAudioSession()
   const ownsAudioSession = !audioSession
-  let audioCtx = null
-  let currentSource = null
-  let currentSourceRelease = null
-  let lastVoiceUrl = null
-  let lastVoiceStepIndex = -1
-  let voiceStartedAt = null
-  let currentLipCurve = null
-  let voiceCharaId = null
-  let voiceState = 'idle'
-  let activeVoiceLoad = null
-  let optionalLipLoad = null
-  let lastVoiceFailure = null
-  let lastVoiceAttempt = null
-  function cancelOptionalLip() { optionalLipLoad?.cancel(); optionalLipLoad = null }
-  function recordVoiceFailure(error, phase) {
-    lastVoiceFailure = { voice: lastVoiceAttempt?.voice || null, url: lastVoiceAttempt?.url || null, phase, code: error?.code || error?.name || 'ERROR', message: String(error?.message || error) }
+  const lifetime = new AbortController()
+  const preparations = new Set(), lipRequests = new Set()
+  const decodedCache = new Map(), resolvedUrls = new Map()
+  let decodedBytes = 0, audioCtx = null, generation = 0, foregroundPreparation = null
+  let current = null, voiceState = 'idle', mode = backendMode
+  let lastVoiceUrl = null, lastVoiceStepIndex = -1, lastFailure = null, lastAttempt = null
+  const media = new VoiceMediaOutput(session, { createAudio, timeoutMs: voiceTimeoutMs })
+  const disposed = () => lifetime.signal.aborted
+  const keyOf = (step, scenarioId) => `${scenarioId || ''}\0${step?.dialogue?.voice || ''}`
+  function ensureAudioCtx() { if (disposed() || session.disabled) return null; return audioCtx = session.ensureContext() }
+  function unlockAudioContext() { if (disposed() || session.disabled) return null; return audioCtx = session.unlockFromUserGesture() }
+  function setVoiceState(value) { voiceState = value; onStateChange(value) }
+  function fail(error, phase, attempt = lastAttempt) {
+    lastFailure = { voice: attempt?.voice || null, url: attempt?.url || null, phase,
+      code: error?.code || error?.name || 'ERROR', message: String(error?.message || error) }
+    tracePlayer('voice-failure', lastFailure)
   }
-  function setVoiceState(state) { voiceState = state; onStateChange(state) }
-  let voiceRequestGeneration = 0
-  const pendingVoiceLoads = new Set()
-  const decodedVoiceCache = new Map()
-  const MAX_DECODED_VOICES = 12
-  const MAX_DECODED_VOICE_BYTES = 32 * 1024 * 1024
-  let decodedVoiceBytes = 0
-  const ORIGINAL_LIP_GAIN = 1.0
-
-  function rememberDecodedVoice(key, buffer) {
-    const previous = decodedVoiceCache.get(key)
-    if (previous) decodedVoiceBytes -= previous.bytes
-    decodedVoiceCache.delete(key)
-    // AudioBuffer is 32-bit float PCM per channel. Unknown or oversized
-    // buffers stay playable but cannot claim a bounded retained cache slot.
+  function remember(key, buffer) {
+    const previous = decodedCache.get(key)
+    if (previous) decodedBytes -= previous.bytes
+    decodedCache.delete(key)
     const bytes = Number(buffer?.length) * Number(buffer?.numberOfChannels) * 4
-    if (!Number.isSafeInteger(bytes) || bytes <= 0 || bytes > MAX_DECODED_VOICE_BYTES) return
-    decodedVoiceCache.set(key, { buffer, bytes })
-    decodedVoiceBytes += bytes
-    while (decodedVoiceCache.size > MAX_DECODED_VOICES || decodedVoiceBytes > MAX_DECODED_VOICE_BYTES) {
-      const oldestKey = decodedVoiceCache.keys().next().value
-      decodedVoiceBytes -= decodedVoiceCache.get(oldestKey).bytes
-      decodedVoiceCache.delete(oldestKey)
+    if (!Number.isSafeInteger(bytes) || bytes <= 0 || bytes > 32 * 1024 * 1024) return
+    decodedCache.set(key, { buffer, bytes }); decodedBytes += bytes
+    while (decodedCache.size > 12 || decodedBytes > 32 * 1024 * 1024) {
+      const first = decodedCache.keys().next().value
+      decodedBytes -= decodedCache.get(first).bytes; decodedCache.delete(first)
     }
   }
-
-  const getVoiceVolume = () => {
-    if (!currentLipCurve || voiceStartedAt == null) return 0
-    const elapsed = Math.max(0, session.currentTime() - voiceStartedAt)
-    return sampleLipCurve(currentLipCurve, elapsed)
+  function rememberUrl(key, url) {
+    resolvedUrls.delete(key); resolvedUrls.set(key, url)
+    if (resolvedUrls.size > 128) resolvedUrls.delete(resolvedUrls.keys().next().value)
   }
-
-  function setTalking(on) {
-    if (noVoice || (on && !canAnimateStage())) return
-    const mgr = spineStageRef.value?.manager
-    if (!mgr || !voiceCharaId) return
-    if (on && currentStep.value?.lipSync === false) return
-    mgr.setSpineTalking(voiceCharaId, on, getVoiceVolume)
+  function startLip(step, enabled) {
+    if (!enabled || step?.lipSync === false) return null
+    const controller = new AbortController()
+    const request = { controller, curve: null, cancel: () => controller.abort() }
+    lipRequests.add(request)
+    request.done = lipStore.load(step, { signal: controller.signal, timeoutMs: lipTimeoutMs })
+      .then(curve => {
+        if (!controller.signal.aborted && !disposed()) request.curve = curve
+      }).catch(error => {
+        if (!controller.signal.aborted) tracePlayer('optional-lip-unavailable', { message: error.message })
+      }).finally(() => lipRequests.delete(request))
+    return request
   }
-
-  function ensureAudioCtx() {
-    if (session.disabled) return null
-    audioCtx = session.ensureContext()
-    return audioCtx
-  }
-
-  function unlockAudioContext() {
-    if (session.disabled) return null
-    audioCtx = session.unlockFromUserGesture()
-    return audioCtx
-  }
-
-  function resetVoiceDedup() {
-    voiceRequestGeneration++
-    lastVoiceUrl = null
-    lastVoiceStepIndex = -1
-  }
-
-  function stopCurrentVoice(reason = 'unspecified') {
-    cancelOptionalLip()
-    voiceRequestGeneration++
-    activeVoiceLoad?.abort()
-    activeVoiceLoad = null
-    isPlaying.value = false
-    setVoiceState('idle')
-    if (!currentSource) {
-      currentLipCurve = null
-      voiceStartedAt = null
-      setTalking(false)
-      return
-    }
-    console.debug('[Audio] stopCurrentVoice:', reason)
-    currentSource.onended = null
-    try { currentSource.stop() } catch (_) {}
-    try { currentSource.disconnect() } catch (_) {}
-    currentSourceRelease?.()
-    currentSourceRelease = null
-    currentSource = null
-    currentLipCurve = null
-    voiceStartedAt = null
-    setTalking(false)
-  }
-
-  async function loadLipCurve(step, audioDuration, signal) {
-    if (step?.lipSync === false) return null
-
-    const candidates = []
-    const lipPath = step?.dialogue?.lip?.path
-    const derivedPath = deriveMainLipPathFromVoice(step?.dialogue?.voice)
-    if (lipPath) candidates.push(lipPath)
-    if (derivedPath && !candidates.includes(derivedPath)) candidates.push(derivedPath)
-    if (!candidates.length) return null
-
-    let lastError = null
-    for (const candidate of candidates) {
-      if (signal?.aborted) return null
-      try {
-        const lipUrl = getLipSyncUrl(candidate)
-        const res = await fetch(lipUrl, { signal, cache: 'default' })
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const contentType = res.headers.get('content-type') || ''
-        if (contentType.includes('text/html')) throw new Error('lip JSON returned HTML')
-        const data = await res.json()
-        if (!Array.isArray(data.scales) || data.scales.length === 0) {
-          throw new Error('missing scales')
-        }
-        const source = candidate === lipPath ? 'compiled' : 'derived-main'
-        return { path: candidate, source, scales: data.scales, duration: audioDuration, gain: ORIGINAL_LIP_GAIN }
-      } catch (err) {
-        if (signal?.aborted) return null
-        lastError = err
-      }
-    }
-
-    console.warn('[LipSync] failed to load original curve:', lastError?.message, candidates)
-    return null
-  }
-
+  function releasePreparedVoice(prepared) { prepared?.lipRequest?.cancel() }
   function requiresVoice(step = currentStep.value, scenarioId = compiledData.value?.scenario_id) {
     const voice = step?.dialogue?.voice
-    return !!voice && !noVoice && !session.disabled && !isKnownDanglingStoryVoice(scenarioId, voice)
+    return Boolean(voice && !noVoice && !session.disabled && !disposed() && !isKnownDanglingStoryVoice(scenarioId, voice))
   }
-
   function hasDecodedVoice(step = currentStep.value, scenarioId = compiledData.value?.scenario_id) {
-    const voice = step?.dialogue?.voice
-    return !!voice && decodedVoiceCache.has(`${scenarioId || ''}\0${voice}`)
+    return decodedCache.has(keyOf(step, scenarioId))
   }
-
-  async function prepareVoice({ step = currentStep.value, scenarioId = compiledData.value?.scenario_id, includeLip = true, signal } = {}) {
-    const voice = step?.dialogue?.voice
-    if (!voice || noVoice || session.disabled || signal?.aborted) return null
-    if (!requiresVoice(step, scenarioId)) {
-      console.info('[Audio] skipped RAW-authored dangling story voice:', { scenarioId, voice })
-      return null
-    }
-
-    const preparingContext = ensureAudioCtx()
-    const isCurrentContext = () => preparingContext && audioCtx === preparingContext
-      && preparingContext.state !== 'closed' && !signal?.aborted
-    const cacheKey = `${scenarioId || ''}\0${voice}`
-    const attempt = { voice, scenarioId, url: null, transport: null, decoded: null, sourceStarted: false, contextAtStart: null }
-    lastVoiceAttempt = attempt
-    lastVoiceFailure = null
+  function makeMediaPrepared(step, scenarioId, includeLip = true) {
+    const voice = step.dialogue.voice
+    const url = resolvedUrls.get(keyOf(step, scenarioId)) || resolveVoiceUrls(voice, scenarioId)[0]
+    return { voice, step, scenarioId, backend: 'media', url,
+      lipRequest: startLip(step, includeLip), diagnostics: { voice, scenarioId, url, backend: 'media', sourceStarted: false } }
+  }
+  async function prepareVoice({ step = currentStep.value, scenarioId = compiledData.value?.scenario_id,
+    includeLip = true, signal, backend = mode } = {}) {
+    if (!requiresVoice(step, scenarioId) || signal?.aborted) return null
+    if (backend === 'media') return makeMediaPrepared(step, scenarioId, includeLip)
+    const context = ensureAudioCtx()
+    if (!context) return null
+    const controller = new AbortController()
+    const abort = () => controller.abort(signal?.reason || lifetime.signal.reason)
+    signal?.addEventListener('abort', abort, { once: true })
+    lifetime.signal.addEventListener('abort', abort, { once: true })
+    preparations.add(controller)
+    const currentOwner = () => !disposed() && !controller.signal.aborted && audioCtx === context && context.state !== 'closed'
+    const key = keyOf(step, scenarioId), voice = step.dialogue.voice
+    const attempt = { voice, scenarioId, url: null, transport: null, decoded: null, sourceStarted: false,
+      backend: 'webaudio', startedAt: performance.now(), timings: {} }
+    lastAttempt = attempt
+    lastFailure = null
+    // Start optional lip alongside audio, never after source.start and never as a gate.
+    const lipRequest = startLip(step, includeLip)
+    let transferred = false
     try {
-      let audioBuffer = decodedVoiceCache.get(cacheKey)?.buffer
+      let audioBuffer = decodedCache.get(key)?.buffer
       if (audioBuffer) {
-        attempt.cache = 'decoded'
-        rememberDecodedVoice(cacheKey, audioBuffer)
-      }
-      else {
-        const voiceUrls = getVoiceUrlCandidates(voice, scenarioId)
-        let arrayBuffer = null
-        let lastFetchError = null
-        for (const voiceUrl of voiceUrls) {
-          if (!isCurrentContext()) return null
-          const controller = new AbortController()
-          pendingVoiceLoads.add(controller)
-          const forwardAbort = () => controller.abort(signal.reason)
-          signal?.addEventListener('abort', forwardAbort, { once: true })
-          if (signal?.aborted) forwardAbort()
-          try {
-            attempt.url = voiceUrl
-            arrayBuffer = await compressedVoiceCache.get(voiceUrl, { signal: controller.signal,
-              onDiagnostics: diagnostics => { attempt.transport = diagnostics; attempt.url = diagnostics.url; attempt.cache = diagnostics.cache },
-            })
-            break
-          } catch (error) {
-            if (error.diagnostics) attempt.transport = { ...error.diagnostics }
-            lastFetchError = error
-            if (controller.signal.aborted || ![404, 410].includes(error.status)) throw error
-          } finally {
-            signal?.removeEventListener('abort', forwardAbort)
-            pendingVoiceLoads.delete(controller)
+        attempt.cache = 'decoded'; attempt.url = resolvedUrls.get(key) || resolveVoiceUrls(voice, scenarioId)[0]
+        remember(key, audioBuffer)
+      } else {
+        const bytes = await withLoadDeadline(async requestSignal => {
+          const urls = resolveVoiceUrls(voice, scenarioId)
+          for (let index = 0; index < urls.length; index++) {
+            attempt.url = urls[index]
+            try {
+              const data = await voiceCache.get(urls[index], { signal: requestSignal, onDiagnostics: value => {
+                attempt.transport = value; attempt.url = value.url; attempt.cache = value.cache
+              } })
+              rememberUrl(key, urls[index])
+              return data
+            } catch (error) {
+              if (error.diagnostics) attempt.transport = error.diagnostics
+              if (requestSignal.aborted || ![404, 410].includes(error.status) || index + 1 === urls.length) throw error
+            }
           }
-        }
-        if (!arrayBuffer) throw lastFetchError || new Error('No voice filename candidate resolved')
-        if (!isCurrentContext()) return null
-
+          throw new Error('No voice URL candidate')
+        }, { signal: controller.signal, timeoutMs: voiceTimeoutMs, label: 'voice-fetch' })
+        if (!currentOwner()) return null
+        attempt.timings.fetchedMs = Math.round(performance.now() - attempt.startedAt)
+        tracePlayer('voice-fetched', { voice, bytes: bytes.byteLength, elapsedMs: attempt.timings.fetchedMs })
+        const decodeStart = performance.now()
         try {
-          audioBuffer = await preparingContext.decodeAudioData(arrayBuffer)
-        } catch (decodeErr) {
-          if (!isCurrentContext()) return null
-          recordVoiceFailure(decodeErr, 'decode-audio')
-          console.error('[Audio] decodeAudioData FAILED:', decodeErr.message, 'voice:', voice)
-          return null
+          audioBuffer = await withLoadDeadline(() => context.decodeAudioData(bytes), {
+            signal: controller.signal, timeoutMs: decodeTimeoutMs, label: 'voice-decode',
+          })
+        } catch (error) {
+          if (!currentOwner()) return null
+          attempt.decodeError = { code: error.code || error.name, message: error.message }
+          if (backend !== 'auto' || ['InvalidStateError', 'AbortError'].includes(error.name)) {
+            fail(error, 'decode-audio', attempt); return null
+          }
+          // Only a failure INSIDE the decoder selects this path; network and
+          // cancellation failures do not silently change playback backend.
+          attempt.backend = 'media'
+          transferred = true
+          tracePlayer('voice-backend-fallback', { voice, code: error.code || error.name })
+          return { voice, step, scenarioId, backend: 'media', url: attempt.url, diagnostics: attempt, lipRequest }
         }
-        if (!isCurrentContext()) return null
-        rememberDecodedVoice(cacheKey, audioBuffer)
+        if (!currentOwner()) return null
+        attempt.timings.decodeMs = Math.round(performance.now() - decodeStart)
+        remember(key, audioBuffer)
       }
-      if (!isCurrentContext()) return null
       attempt.decoded = { duration: audioBuffer.duration ?? null, sampleRate: audioBuffer.sampleRate ?? null, channels: audioBuffer.numberOfChannels ?? null }
-      // The optional curve must not gate an already decoded, playable voice.
-      // Load it after start with its own owner; do not reuse this preparation signal.
-      return { voice, step, scenarioId, audioBuffer, diagnostics: attempt, lipCurve: null, lipStep: includeLip ? step : null }
-    } catch (err) {
-      if (!isCurrentContext()) return null
-      recordVoiceFailure(err, 'fetch-or-prepare')
-      console.warn('[Audio] prepare failed:', err.message, 'voice:', voice)
+      transferred = true
+      return { voice, step, scenarioId, audioBuffer, backend: 'webaudio', url: attempt.url, diagnostics: attempt, lipRequest }
+    } catch (error) {
+      if (currentOwner()) fail(error, 'fetch-or-prepare', attempt)
       return null
+    } finally {
+      if (!transferred) lipRequest?.cancel()
+      signal?.removeEventListener('abort', abort)
+      lifetime.signal.removeEventListener('abort', abort)
+      preparations.delete(controller)
     }
   }
-
-  function playPreparedVoice(prepared) {
-    if (noVoice || session.disabled || !prepared?.audioBuffer || !prepared.voice) return false
-
+  function getVoiceVolume() {
+    const curve = current?.prepared.lipRequest?.curve || current?.prepared.lipCurve
+    if (!curve || !current.started) return 0
+    const elapsed = current.backend === 'media' ? media.currentTime() : Math.max(0, session.currentTime() - current.startedAt)
+    const duration = current.backend === 'media' ? media.duration() : current.prepared.audioBuffer?.duration
+    return sampleLipCurve({ ...curve, duration: duration || curve.scales.length / 60 }, elapsed)
+  }
+  function setTalking(on) {
+    if (noVoice || (on && !canAnimateStage())) return
+    const id = current?.prepared.step?.chara_id
+    if (!id || (on && current.prepared.step?.lipSync === false)) return
+    spineStageRef.value?.manager?.setSpineTalking(id, on, getVoiceVolume)
+  }
+  function stopCurrentVoice(reason = 'unspecified') {
+    generation++
+    foregroundPreparation?.abort(); foregroundPreparation = null
+    const owner = current
+    if (owner) {
+      setTalking(false)
+      current = null
+      owner.controller.abort()
+      owner.source && (owner.source.onended = null)
+      try { owner.source?.stop(); owner.source?.disconnect() } catch {}
+      owner.release?.()
+      releasePreparedVoice(owner.prepared)
+    }
+    media.stop()
+    isPlaying.value = false
+    setVoiceState('idle')
+    tracePlayer('voice-stop', { reason })
+  }
+  function resetVoiceDedup() { generation++; lastVoiceUrl = null; lastVoiceStepIndex = -1 }
+  async function playPreparedVoice(prepared) {
+    if (!prepared?.voice || (!prepared.audioBuffer && prepared.backend !== 'media') || noVoice || session.disabled || disposed()) {
+      releasePreparedVoice(prepared); return false
+    }
     stopCurrentVoice('playPreparedVoice-new')
-    ensureAudioCtx()
-
-    lastVoiceAttempt = prepared.diagnostics || { voice: prepared.voice, sourceStarted: false }
+    const owner = { prepared, controller: new AbortController(), backend: prepared.backend || 'webaudio', started: false }
+    current = owner
+    const isCurrent = () => current === owner && !owner.controller.signal.aborted && !disposed()
+    lastAttempt = prepared.diagnostics || { voice: prepared.voice, backend: owner.backend }
     lastVoiceUrl = prepared.voice
     lastVoiceStepIndex = currentStepIndex.value
-    voiceCharaId = prepared.step?.chara_id || null
-    currentLipCurve = prepared.lipCurve || null
-
-    let source
-    try {
-      source = audioCtx.createBufferSource()
-      source.buffer = prepared.audioBuffer
-      source.connect(session.getBus('voice'))
-      const releaseSource = session.registerSource(source, { bus: 'voice', kind: 'dialogue', cue: prepared.voice })
-      currentSourceRelease = releaseSource
-      voiceStartedAt = session.currentTime()
-      currentSource = source
-      setVoiceState('playing')
-      source.start(0)
-      lastVoiceAttempt.sourceStarted = true
-      lastVoiceAttempt.contextAtStart = audioCtx.state
-      setTalking(true)
-
-      isPlaying.value = true
-      if (prepared.lipStep && !prepared.lipCurve) {
-        const generation = voiceRequestGeneration // captured after stopCurrentVoice above
-        optionalLipLoad = attachOptionalResource({
-          timeoutMs: lipTimeoutMs,
-          load: signal => loadLipCurve(prepared.lipStep, prepared.audioBuffer.duration, signal),
-          isCurrent: () => currentSource === source && voiceRequestGeneration === generation,
-          apply: curve => {
-            currentLipCurve = curve
-            // Sample from elapsed playback time; never restart the voice for a late curve.
-            setTalking(true)
-          },
-          onFailure: error => console.debug('[LipSync] optional curve unavailable:', error?.message),
-        })
-      }
-      source.onended = () => {
-        releaseSource()
-        if (currentSource !== source) return
-        cancelOptionalLip()
-        setTalking(false)
-        currentLipCurve = null
-        voiceStartedAt = null
-        currentSourceRelease = null
-        currentSource = null
-        isPlaying.value = false
-        setVoiceState('ended')
-      }
-      return true
-    } catch (error) {
-      // A source that cannot start must not retain the voice bus or dedup lock.
-      if (source && currentSource !== source) { try { source.disconnect() } catch {} }
-      stopCurrentVoice('source-start-failed')
-      resetVoiceDedup()
-      recordVoiceFailure(error, 'source-start')
-      setVoiceState('unavailable')
-      return false
-    }
-  }
-
-  async function preparePlaybackVoice(options) {
-    const controller = activeVoiceLoad = new AbortController()
-    const timeout = setTimeout(() => controller.abort(createLoadTimeout('voice-ready', voiceTimeoutMs)), voiceTimeoutMs)
-    try { return await waitForSignal(prepareVoice({ ...options, signal: controller.signal }), controller.signal) }
-    catch (error) {
-      if (activeVoiceLoad === controller) recordVoiceFailure(error, 'voice-ready')
-      return null
-    }
-    finally {
-      clearTimeout(timeout)
-      if (activeVoiceLoad === controller) activeVoiceLoad = null
-    }
-  }
-
-  async function playVoice() {
-    if (noVoice) {
-      stopCurrentVoice('noVoice-flag')
-      isPlaying.value = false
-      setVoiceState('idle')
-      return false
-    }
-
-    const step = currentStep.value
-    const voice = step?.dialogue?.voice
-    const scenarioId = compiledData.value?.scenario_id
-    if (!voice) {
-      stopCurrentVoice('step-change-no-voice')
-      setVoiceState('idle')
-      return false
-    }
-
-    if (voice === lastVoiceUrl && currentStepIndex.value === lastVoiceStepIndex) return false
-    stopCurrentVoice('step-change-new-voice')
-    const requestGeneration = voiceRequestGeneration
-    const stepIndex = currentStepIndex.value
-    lastVoiceUrl = voice
-    lastVoiceStepIndex = currentStepIndex.value
-
-    isPlaying.value = false
     setVoiceState('preparing')
-    const prepared = await preparePlaybackVoice({ step, scenarioId, includeLip: canAnimateStage() })
-    if (requestGeneration !== voiceRequestGeneration || step !== currentStep.value
-      || stepIndex !== currentStepIndex.value || voice !== lastVoiceUrl) return false
-    if (!prepared) {
-      // A failed attempt is not a successfully played cue. Allow same-step retry.
-      lastVoiceUrl = null
-      lastVoiceStepIndex = -1
-      setVoiceState('unavailable')
-      return false
+    const ended = () => { if (isCurrent()) { stopCurrentVoice('ended'); setVoiceState('ended') } }
+    const failed = error => {
+      if (!isCurrent()) return
+      stopCurrentVoice('source-failed'); resetVoiceDedup(); fail(error, 'source-start'); setVoiceState('unavailable')
     }
-    lastVoiceFailure = null
+    try {
+      ensureAudioCtx()
+      if (audioCtx.state !== 'running' || session.paused) await session.waitUntilRunning({ signal: owner.controller.signal })
+      if (!isCurrent()) return false
+      if (owner.backend === 'media') {
+        // In manual compatibility retry this executes before the first await,
+        // preserving the user's play gesture when the context is already running.
+        const started = await media.start(prepared.url, { signal: owner.controller.signal, cue: prepared.voice,
+          onEnded: ended, onFailure: failed, onState: state => { if (isCurrent()) setVoiceState(state) } })
+        if (!started || !isCurrent()) return false
+      } else {
+        const source = audioCtx.createBufferSource()
+        owner.source = source
+        source.buffer = prepared.audioBuffer
+        source.connect(session.getBus('voice'))
+        owner.release = session.registerSource(source, { bus: 'voice', kind: 'dialogue', cue: prepared.voice })
+        owner.startedAt = session.currentTime()
+        source.onended = ended
+        source.start(0)
+      }
+      if (!isCurrent()) return false
+      owner.started = true
+      lastAttempt.sourceStarted = true
+      lastAttempt.contextAtStart = audioCtx.state
+      lastFailure = null
+      setVoiceState('playing'); isPlaying.value = true; setTalking(true)
+      tracePlayer('voice-started', { voice: prepared.voice, backend: owner.backend, context: audioCtx.state })
+      return true
+    } catch (error) { failed(error); return false }
+  }
+  async function playVoice() {
+    const step = currentStep.value, scenarioId = compiledData.value?.scenario_id
+    if (!requiresVoice(step, scenarioId)) { stopCurrentVoice('no-voice'); return false }
+    const voice = step.dialogue.voice, index = currentStepIndex.value
+    if (voice === lastVoiceUrl && index === lastVoiceStepIndex) return false
+    stopCurrentVoice('step-change-new-voice')
+    const request = generation
+    lastVoiceUrl = voice; lastVoiceStepIndex = index
+    const controller = foregroundPreparation = new AbortController()
+    setVoiceState('preparing')
+    const prepared = await prepareVoice({ step, scenarioId, includeLip: canAnimateStage(), signal: controller.signal })
+    if (request !== generation || step !== currentStep.value || index !== currentStepIndex.value) {
+      releasePreparedVoice(prepared); return false
+    }
+    foregroundPreparation = null
+    if (!prepared) { resetVoiceDedup(); setVoiceState('unavailable'); return false }
     return playPreparedVoice(prepared)
   }
-
   async function replayVoiceDetached(step) {
-    if (noVoice || !step?.dialogue?.voice) return false
+    if (!requiresVoice(step)) return false
     stopCurrentVoice('backlog-replay')
-    const requestGeneration = voiceRequestGeneration
+    if (mode === 'media') return playPreparedVoice(makeMediaPrepared({ ...step, chara_id: null }, compiledData.value?.scenario_id, false))
+    const request = generation
+    const controller = foregroundPreparation = new AbortController()
     setVoiceState('preparing')
-    const prepared = await preparePlaybackVoice({
-      step,
-      scenarioId: compiledData.value?.scenario_id,
-      includeLip: false,
-    })
-    if (requestGeneration !== voiceRequestGeneration) return false
-    if (!prepared) {
-      setVoiceState('unavailable')
-      return false
-    }
+    const prepared = await prepareVoice({ step, scenarioId: compiledData.value?.scenario_id, includeLip: false, signal: controller.signal })
+    if (request !== generation) { releasePreparedVoice(prepared); return false }
+    foregroundPreparation = null
+    if (!prepared) { resetVoiceDedup(); setVoiceState('unavailable'); return false }
     return playPreparedVoice({ ...prepared, step: { ...step, chara_id: null } })
   }
-
-  function retryVoice() {
-    stopCurrentVoice('explicit-voice-retry')
-    resetVoiceDedup()
+  function setBackendMode(value) {
+    if (!['auto', 'webaudio', 'media'].includes(value)) throw new TypeError('Unknown voice backend')
+    mode = value
+  }
+  function retryVoice(options = {}) {
+    if (options?.backend) setBackendMode(options.backend)
+    stopCurrentVoice('explicit-voice-retry'); resetVoiceDedup()
+    if (mode === 'media' && requiresVoice()) {
+      return playPreparedVoice(makeMediaPrepared(currentStep.value, compiledData.value?.scenario_id, canAnimateStage()))
+    }
     return playVoice()
   }
-
   function dispose() {
+    if (disposed()) return
     stopCurrentVoice('dispose')
-    for (const controller of pendingVoiceLoads) controller.abort()
-    pendingVoiceLoads.clear()
-    decodedVoiceCache.clear()
-    decodedVoiceBytes = 0
+    lifetime.abort()
+    for (const controller of preparations) controller.abort()
+    for (const request of lipRequests) request.cancel()
+    preparations.clear(); lipRequests.clear()
+    media.dispose(); lipStore.clear(); decodedCache.clear(); resolvedUrls.clear(); decodedBytes = 0
     audioCtx = null
     if (ownsAudioSession) session.dispose().catch(() => {})
     resetVoiceDedup()
   }
-
-  return {
-    playVoice,
-    retryVoice,
-    getDiagnostics: () => ({
-      state: voiceState, contextState: audioCtx?.state || 'uninitialized',
-      voiceGain: session.inspect().buses.voice, activeSource: Boolean(currentSource),
-      attempt: lastVoiceAttempt && structuredClone(lastVoiceAttempt),
-      decodedCache: { entries: decodedVoiceCache.size, bytes: decodedVoiceBytes },
-      compressedCache: compressedVoiceCache.inspect(),
-      lastFailure: lastVoiceFailure && { ...lastVoiceFailure },
-    }),
-    requiresVoice,
-    hasDecodedVoice,
-    prepareVoice,
-    playPreparedVoice,
-    replayVoiceDetached,
-    setTalking,
-    stopCurrentVoice,
-    resetVoiceDedup,
-    ensureAudioCtx,
-    unlockAudioContext,
-    getVoiceVolume,
-    getVoiceState: () => voiceState,
-    getAudioSession: () => session,
-    dispose,
+  return { playVoice, retryVoice, replayVoiceDetached, prepareVoice, playPreparedVoice, releasePreparedVoice,
+    requiresVoice, hasDecodedVoice, stopCurrentVoice, resetVoiceDedup, setTalking, getVoiceVolume,
+    ensureAudioCtx, unlockAudioContext, setBackendMode, getBackendMode: () => mode,
+    getVoiceState: () => voiceState, getAudioSession: () => session, dispose,
+    getDiagnostics: () => ({ state: voiceState, contextState: audioCtx?.state || 'uninitialized',
+      voiceGain: session.inspect().buses.voice, activeSource: Boolean(current?.started), backendMode: mode,
+      attempt: lastAttempt && structuredClone(lastAttempt), lastFailure: lastFailure && { ...lastFailure },
+      decodedCache: { entries: decodedCache.size, bytes: decodedBytes }, compressedCache: voiceCache.inspect(),
+      lipCache: lipStore.inspect(), media: media.inspect() }),
   }
 }

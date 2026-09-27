@@ -1,24 +1,5 @@
 import { getCostumeDictionaryUrl } from './AssetResolver.js'
-let cachedCostumeDictionary = null
-let loadingCostumeDictionary = null
-
-export async function loadCostumeDictionary() {
-  if (cachedCostumeDictionary) return cachedCostumeDictionary
-  if (loadingCostumeDictionary) return loadingCostumeDictionary
-
-  loadingCostumeDictionary = fetch(getCostumeDictionaryUrl(), {
-    cache: 'default',
-  })
-    .then(res => (res.ok ? res.json() : null))
-    .catch(() => null)
-    .then(data => {
-      cachedCostumeDictionary = data?.by_model_resource_id || {}
-      return cachedCostumeDictionary
-    })
-
-  return loadingCostumeDictionary
-}
-
-export function getCachedCostumeInfo(modelId) {
-  return cachedCostumeDictionary?.[modelId] || null
-}
+import { createStoryConfigStore } from './StoryConfigStore.js'
+const store = createStoryConfigStore({ kind: 'costume-dictionary', url: getCostumeDictionaryUrl, project: data => data.by_model_resource_id })
+export const loadCostumeDictionary = options => store.load(options)
+export const getCachedCostumeInfo = modelId => store.peek()?.[modelId] || null

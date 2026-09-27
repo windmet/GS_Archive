@@ -4,6 +4,7 @@ import vm from 'node:vm'
 import { ARCHIVE_NAVIGATION, buildArchiveSourceQuery, buildArchiveUrl, buildPortalReturnQuery, readArchiveRoute, readArchiveSourceRoute, readPortalReturnRoute } from '../src/core/archiveRoute.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
+import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
 
 for (const query of [
   '?home_idol=003hok&home_cue=voice&home_costume=model',
@@ -60,6 +61,7 @@ for (const destination of [
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const restoreContext = {
+  isDirectScenarioEntry,
   ...useArchiveNavigationState(),
   navigation: createArchiveNavigationCoordinator(),
   currentScenario: { value: { steps: ['previous playback payload'] } },

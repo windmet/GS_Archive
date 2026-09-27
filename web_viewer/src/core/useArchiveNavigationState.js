@@ -5,6 +5,7 @@ import { ownsArchiveSource } from './archiveRoute.js'
 // Resource payloads, playback queues and async loading are feature-owned.
 export function useArchiveNavigationState() {
   const view = ref('__boot__')
+  const playerEntryRoute = ref(null)
   const currentPickTarget = ref('')
   const portalFrom = ref('')
   const detailSourceRoute = ref('')
@@ -56,6 +57,12 @@ export function useArchiveNavigationState() {
   const storyDetailParentView = ref('')
 
   function currentArchiveRoute() {
+    if (view.value === 'player' && playerEntryRoute.value) return {
+      ...playerEntryRoute.value, view: 'player', scenario: currentScenarioFile.value,
+      startStep: currentScenarioStartStep.value, endStep: currentScenarioEndStep.value,
+      initialStep: currentScenarioInitialStep.value, voice: currentPreviewCue.value,
+      returnView: returnViewAfterPlayer.value,
+    }
     if (view.value === 'reader' || (view.value === 'player' && returnViewAfterPlayer.value === 'reader')) {
       return {
         view: view.value, reading: readingDocumentId.value, readingRow: readingRowId.value,
@@ -155,6 +162,7 @@ export function useArchiveNavigationState() {
 
   return {
     view,
+    playerEntryRoute,
     currentPickTarget,
     portalFrom,
     detailSourceRoute,

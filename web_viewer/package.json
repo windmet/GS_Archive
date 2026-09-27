@@ -228,6 +228,7 @@
     "verify:gzip-assets": "node scripts/verify-structured-gzip.mjs",
     "verify:gzip-http": "node scripts/verify-structured-gzip-http.mjs",
     "serve:gzip-canary": "node scripts/serve-structured-gzip-canary.mjs",
+    "verify:player-repair": "node --test scripts/repair/*.test.mjs",
     "verify:voice-load-recovery": "node scripts/verify-voice-load-recovery.mjs --source src/core/useVoicePlayer.js --expect candidate",
     "verify:load-boundaries": "node --test scripts/boundary.test.mjs scripts/image-boundary.test.mjs",
     "verify:external-publication-off": "node scripts/verify-external-publication-off.mjs"

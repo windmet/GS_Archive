@@ -137,6 +137,9 @@ jobs:
       - name: Verify story loading safety contract
         run: npm run verify:story-loading-safety
 
+      - name: Verify player entry, warmup and voice repair contracts
+        run: npm run verify:player-repair
+
       - name: Verify camera playback clock
         run: npm run verify:story-camera-clock
 

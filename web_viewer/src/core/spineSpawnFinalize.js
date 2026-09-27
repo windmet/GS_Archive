@@ -78,6 +78,7 @@ export function finalizeSpawnedSpine({
     }
   }
 
+  manager.lipSyncController?.prepare?.(idolId)
   spine.update(0)
   captureBaselineBounds(idolId)
 

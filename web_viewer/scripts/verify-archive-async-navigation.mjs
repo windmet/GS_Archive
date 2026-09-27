@@ -1,3 +1,4 @@
+import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue } from '../src/core/PlayerEntryRequest.js'
 import { ownsArchiveSource } from '../src/core/archiveRoute.js'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
@@ -11,7 +12,7 @@ import { useStoryPlaybackController } from '../src/core/useStoryPlaybackControll
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const functionSource = (start, end) => app.slice(app.indexOf(start), app.indexOf(end, app.indexOf(start)))
-const scenarioSource = functionSource('async function loadScenario(', 'onMounted(async () =>')
+const scenarioSource = functionSource('async function loadScenario(', 'async function loadHomeIndex(')
 const flush = async (predicate = null) => {
   if (!predicate) { for (let i = 0; i < 20; i++) await Promise.resolve(); return }
   const deadline = Date.now() + 3000
@@ -31,6 +32,7 @@ function setup() {
   const loading = { value: false }
   const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loading.value = false } })
   const context = vm.createContext({
+    isDirectScenarioEntry, playerReturnRoute,
     prepareArchivePage: (_view, data) => data,
     ...state, navigation, loading, loadingPurpose: { value: 'archive-data' }, preloadProgress: { value: 0 },
     EXTERNAL_STORY_RESOURCES_ENABLED: false,
@@ -64,6 +66,9 @@ function setup() {
   context.prepareScenario = (name, options) => prepareScenario(name, { ...options, fetchImpl: (...args) => context.fetch(...args) })
   context.playbackController = useStoryPlaybackController({ state: context, navigation, queue: context.episodeQueue,
     loadPlayer: () => context.storyViewerLoader(), preloadAssets: (...args) => context.Preloader.preloadScenario(...args),
+    resolveQueue: async (route, request) => route.view === 'story_collection'
+      ? selectPlayerQueue(context.currentStoryCollection.value?.chapters, request.file, request)
+      : selectPlayerQueue(context.currentIdolStoryPage.value?.sections, request.file, request),
     prepare: (...args) => context.prepareScenario(...args), syncRoute: () => context.syncArchiveRoute(),
     returnTo: destination => context.commitView(destination), onError: (...args) => context.console.error(...args),
   })
@@ -127,22 +132,21 @@ function setup() {
   assert.equal(t.state.currentScenarioFile.value, '')
   assert.equal(t.writes.length, 1)
 }
-// A player deep link needs its selected read-model owner before restoring its queue
-// and before a later Back can render that owner.
+// A raw player deep link saves return identity without blocking on owner payloads.
 {
   const t = setup(), data = deferred()
   t.context.loadIdolStoryDetail = () => data.promise
   const pending = t.restore({ view: 'player', scenario: 'birthday-b.json', returnView: 'idol_story_archive', idol: '038tak' })
   await flush()
-  assert.equal(t.requests.length, 0, 'owner data must precede player restoration')
+  assert.equal(t.requests.length, 1, 'scenario restoration must precede owner hydration')
   t.context.currentIdolStoryPage.value = { sections: [{ episodes: [{ file: 'birthday-b.json' }] }] }
   data.resolve({ id: '038tak', view: { page: t.context.currentIdolStoryPage.value } })
   await flush(() => t.requests.length === 1)
   t.respond(0, 'birthday'); await pending
-  assert.equal(t.state.currentCharacterId.value, '038tak')
+  assert.equal(t.state.playerEntryRoute.value.idol, '038tak')
   assert.equal(t.state.returnViewAfterPlayer.value, 'idol_story_archive')
   assert.equal(t.state.view.value, 'player')
-  assert.equal(t.context.idolStoryReadModelDetail.value.id, '038tak')
+  assert.equal(t.context.idolStoryReadModelDetail.value, null, 'return payload is not a first-frame dependency')
 }
 // Older history restore cannot write selections after its data dependency resolves.
 {
@@ -161,7 +165,7 @@ function setup() {
   const t = setup(), data = deferred()
   t.context.ensureIdolCommunicationData = () => data.promise
   const old = t.restore({ view: 'story_catalog' })
-  const current = t.restore({ view: 'player', scenario: 'current.json', startStep: 3, endStep: 9, returnView: 'story_collection' })
+  const current = t.restore({ view: 'player', scenario: 'current.json', startStep: 3, endStep: 9, returnView: 'story_collection', storyType: 'main', storySection: '101' })
   data.resolve(); await old
   assert.equal(t.context.navigation.isRestoring(), true)
   t.sync({ replace: true }); assert.equal(t.writes.length, 0)
@@ -180,9 +184,11 @@ function setup() {
     { id: 'first', file: 'shared.json', startStep: 2, endStep: 10 },
     { id: 'second', file: 'shared.json', startStep: 12, endStep: 20 },
   ] }] }
-  const restored = t.restore({ view: 'player', scenario: 'shared.json', returnView: 'story_collection', startStep: 12, endStep: 20 })
+  const restored = t.restore({ view: 'player', scenario: 'shared.json', returnView: 'story_collection', storyType: 'main', storySection: '101', startStep: 12, endStep: 20 })
   await flush(() => t.requests.length === 1)
   t.respond(0, 'shared'); await restored
+  t.context.playbackController.readinessChanged({ instance: t.context.currentScenarioInstance.value, status: 'playable', stepIndex: 11 })
+  await t.context.playbackController.ensureQueue()
   assert.equal(t.context.episodeQueue.current.value.id, 'second')
   assert.equal(t.context.episodeQueue.hasNext.value, false)
 }
@@ -311,7 +317,9 @@ for (const response of [
     onProgress: value => progress.push(value),
   }).then(value => { ready = true; return value })
   await flush(() => playerStarted && assetsStarted)
-  assert.deepEqual(requests, [['/data/compiled/episodes/fixture.json', { cache: 'no-cache' }]])
+  assert.equal(requests[0][0], '/data/compiled/episodes/fixture.json')
+  assert.equal(requests[0][1].cache, 'no-cache')
+  assert.ok(requests[0][1].signal instanceof AbortSignal)
   assert.equal(playerStarted && assetsStarted, true)
   report(50)
   assert.deepEqual(progress, [50])
@@ -327,7 +335,8 @@ for (const response of [
   await flush(() => t.requests.length > 0)
   t.requests[0].resolve({ ok: false, status: 404 })
   await failedRestore
-  assert.equal(t.state.view.value, 'story_catalog', 'failed direct player route must leave a usable page')
+  assert.notEqual(t.state.view.value, 'player', 'failed direct entry must not publish a blank player')
+  assert.equal(t.context.playbackController.canRetry.value, true, 'source failure keeps retry and return recovery')
   assert.equal(t.context.currentScenario.value, null)
   assert.ok(t.context.playbackController.error.value)
   t.commit('home')
@@ -347,8 +356,8 @@ for (const response of [
   assert.equal(t.context.currentScenario.value.steps[0].dialogue.text, 'source line')
   assert.equal(t.requests.length, 0, 'source-backed voice step is already in the selected card leaf')
 }
-// A history entry to card detail, including a scenario Player return, owns its
-// card leaf before publication. A later route revokes an older pending leaf.
+// A card detail view owns its leaf. Raw scenario playback defers the return leaf;
+// synthetic card voice previews still require it. Supersession revokes old reads.
 {
   const t = setup(), leaf = deferred()
   t.context.loadCardDetail = id => { assert.equal(id, '001tom_n01'); return leaf.promise }
@@ -365,13 +374,14 @@ for (const response of [
   t.context.loadCardDetail = () => leaf.promise
   const pending = t.restore({ view: 'player', scenario: 'card-story.json', returnView: 'card_detail', card: '001tom_n01' })
   await flush()
-  assert.equal(t.requests.length, 0, 'card leaf must precede scenario preparation')
+  assert.equal(t.requests.length, 1, 'raw scenario must not wait for its return card leaf')
   leaf.resolve({ id: '001tom_n01', card: { resource_id: '001tom_n01' } })
   await flush(() => t.requests.length === 1)
   t.respond(0, 'card-story'); await pending
   assert.equal(t.state.view.value, 'player')
   assert.equal(t.state.returnViewAfterPlayer.value, 'card_detail')
-  assert.equal(t.context.cardReadModelDetail.value.id, '001tom_n01')
+  assert.equal(t.state.playerEntryRoute.value.card, '001tom_n01')
+  assert.equal(t.context.cardReadModelDetail.value, null)
 }
 {
   const t = setup(), leaf = deferred()

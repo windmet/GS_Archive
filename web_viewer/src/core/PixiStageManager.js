@@ -1,3 +1,4 @@
+import { withLoadDeadline } from './AsyncLoadBoundary.js'
 import { stageRenderResolution } from './StageRenderBudget.js'
 import { decodeSpineAtlasText } from '../../shared/story/SpineAtlasPages.js'
 /**
@@ -1580,22 +1581,20 @@ export class PixiStageManager {
     return `${base}/${textureFile}`
   }
 
-  async _resolveTextureUrl(modelId, textureFile, { allowFallback = true } = {}) {
-    return resolveSpineTextureUrl(modelId, textureFile, { allowFallback,
-      probe: url => this._isImageUrl(url),
+  async _resolveTextureUrl(modelId, textureFile, { allowFallback = true, signal } = {}) {
+    return resolveSpineTextureUrl(modelId, textureFile, { allowFallback, signal,
+      probe: url => this._isImageUrl(url, signal),
       onFallback: () => console.warn(`[PixiStageManager] Texture "${textureFile}" missing for "${modelId}", using comu.png`),
     })
   }
 
-  async _isImageUrl(url) {
-    try {
-      const r = await fetch(url, { method: 'HEAD', cache: 'no-store' })
-      if (!r.ok) return false
-      const contentType = r.headers.get('content-type') || ''
-      return contentType.startsWith('image/')
-    } catch (_) {
-      return false
-    }
+  async _isImageUrl(url, signal) {
+    return withLoadDeadline(async requestSignal => {
+      const response = await fetch(url, { method: 'HEAD', cache: 'default', signal: requestSignal })
+      if ([404, 410].includes(response.status)) return false
+      if (!response.ok) throw new Error(`Texture probe HTTP ${response.status}: ${url}`)
+      return (response.headers.get('content-type') || '').startsWith('image/')
+    }, { signal, timeoutMs: 10000, label: 'texture-probe' })
   }
 
   _loadTextureFromUrl(url, { allowFallback = true, signal } = {}) {

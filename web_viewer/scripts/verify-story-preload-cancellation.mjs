@@ -1,30 +1,20 @@
 import assert from 'node:assert/strict'
 import http from 'node:http'
-import { readFile } from 'node:fs/promises'
-import { runInNewContext } from 'node:vm'
 import { ref } from 'vue'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 import { useStoryPlaybackController } from '../src/core/useStoryPlaybackController.js'
 import { Preloader } from '../src/utils/Preloader.js'
 import { prepareScenario } from '../src/data/prepareScenario.js'
+import { withLoadDeadline } from '../src/core/AsyncLoadBoundary.js'
+import { createStoryAssetPlan } from '../shared/story/StoryAssetPlan.js'
+import { createStoryAssetPriority } from '../shared/story/StoryAssetPriority.js'
 
 // Execute the production timeout wrapper with a controlled timer: a timeout
 // must abort its adapter rather than merely stop awaiting an active request.
-const preloaderSource = await readFile(new URL('../src/utils/Preloader.js', import.meta.url), 'utf8')
-const timeoutFunction = preloaderSource.match(/async function withTimeout\([^]*?\n\}/)
-assert.ok(timeoutFunction)
-let fireTimeout, timerCleared = false, taskSignal
-const timeoutScope = { AbortController,
-  setTimeout(callback) { fireTimeout = callback; return 1 },
-  clearTimeout(id) { assert.equal(id, 1); timerCleared = true },
-}
-runInNewContext(timeoutFunction[0], timeoutScope)
-const timed = timeoutScope.withTimeout(signal => { taskSignal = signal; return new Promise(() => {}) }, 10, 'fixture')
-await Promise.resolve()
-fireTimeout()
-await assert.rejects(timed, /timeout \(10ms\): fixture/)
+let taskSignal
+const timed = withLoadDeadline(signal => { taskSignal = signal; return new Promise(() => {}) }, { timeoutMs: 10, label: 'fixture' })
+await assert.rejects(timed, /fixture timeout \(10ms\)/)
 assert.equal(taskSignal.aborted, true)
-assert.equal(timerCleared, true)
 
 const importAbort = new AbortController()
 let importStarted = false
@@ -94,10 +84,17 @@ const player = useStoryPlaybackController({ state, navigation,
   syncRoute() {}, returnTo() {}, onError: error => errors.push(error),
 })
 try {
-  const first = player.load('fixture.json')
+  // Full/audit mode still owns blocking image loads. Runtime-owned entry now
+  // publishes before speculative work (covered by repair/player-entry tests).
+  const auditAbort = new AbortController()
+  const plan = createStoryAssetPlan(scenario, { file: 'fixture.json', sha256: `sha256:${'a'.repeat(64)}` })
+  const first = Preloader.preloadScenario(plan, value => progress.push(value), {
+    signal: auditAbort.signal, priority: createStoryAssetPriority(scenario, { startStep: 1 }),
+    onStatus: value => statuses.push(value),
+  })
   await waitFor(() => started.length === 2, 'critical skeleton and atlas plus image start before near assets')
-  player.close()
-  assert.equal(await first, false, 'closed load resolves without publishing')
+  auditAbort.abort()
+  await assert.rejects(first, { name: 'AbortError' })
   await waitFor(() => closed.length === 2, 'native skeleton requests aborted during body consumption')
   await waitFor(() => statuses.at(-1)?.phase === 'cancelled', 'executor records cancelled pending tasks')
   assert.equal(statuses.at(-1).cancelled, 17)
@@ -111,7 +108,7 @@ try {
   assert.equal(images[0].onerror, null)
   assert.equal(images[0].onabort, null)
   assert.equal(started.length, 2, 'no next batch launched')
-  assert.deepEqual(progress, [], 'aborted tasks do not report completion')
+  assert.ok(progress.every(value => value === 0), 'aborted tasks do not report completion')
   assert.deepEqual(errors, [], 'obsolete abort is not a current playback error')
   assert.equal(player.currentScenario.value, null)
 

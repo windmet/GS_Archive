@@ -182,7 +182,7 @@
         </button>
         <span>{{ cueIndex + 1 }} / {{ activeIdol.cues.length }}</span>
       </div>
-      <small v-if="voiceError" class="voice-error">语音资源暂时不可用</small>
+      <button v-if="voiceError" type="button" class="voice-error" @click="replayCompatibilityVoice">语音资源暂时不可用 · 兼容播放</button>
     </section>
 
     <button v-if="settingsOpen" class="settings-scrim" type="button" aria-label="关闭场景设置" @click="settingsOpen = false"></button>
@@ -329,6 +329,9 @@ const stageTapCommitPending = ref(false)
 const queuedStageCue = ref(null)
 const queuedStageVoice = ref(null)
 let stageVoiceQueueToken = 0
+let queuedVoiceAbort = null
+let stageTapAbort = null
+let homePlaybackRevision = 0
 const preferences = reactive(loadArchiveHomePreferences())
 
 const activeIdol = computed(() => props.idols.find(idol => idol.id === selectedId.value) || props.idols[0] || null)
@@ -392,6 +395,7 @@ function syncHomeVisibility() {
 watch(() => activeCostume.value?.modelId, () => stopVoice())
 
 watch(() => activeIdol.value?.id, () => {
+  stageTapAbort?.abort()
   stageError.value = false
   stopVoice()
   if (activeCue.value?.cue !== props.selectedCue) emit('update:selectedCue', activeCue.value?.cue || '')
@@ -453,43 +457,44 @@ async function handleStageTap() {
   if (stageTapPending.value) return
   const next = queuedStageCue.value || resolveNextCue()
   if (!next) return
-
   const idolId = activeIdol.value?.id
+  const revision = ++homePlaybackRevision
+  const tapOwner = stageTapAbort = new AbortController()
+  const isCurrent = () => !homeDisposed && !tapOwner.signal.aborted && stageTapAbort === tapOwner
+    && homePlaybackRevision === revision && activeIdol.value?.id === idolId
+  stageTapPending.value = true // cached MediaElement preparation is asynchronous too
   voiceError.value = false
   voicePlayer.unlockAudioContext()
   let prepared = queuedStageCue.value?.cue === next.cue ? queuedStageVoice.value : null
-  if (!prepared) {
-    stageTapPending.value = true
-    prepared = await voicePlayer.prepareVoice({ step: next.previewStep, scenarioId: next.scenarioId })
-  }
-
-  if (activeIdol.value?.id !== idolId) {
-    stageTapPending.value = false
-    return
-  }
-
-  homeCueRuntime.cancelCurrentStep('home-next-cue')
-  stageTapCommitPending.value = true
-  emit('update:selectedCue', next.cue)
-  await nextTick()
-  if (homeDisposed) return
-  let started = false
-  if (prepared) {
-    started = voicePlayer.playPreparedVoice(prepared)
+  if (prepared) queuedStageVoice.value = null // ownership transferred to this tap
+  try {
+    if (!prepared) prepared = await voicePlayer.prepareVoice({ step: next.previewStep, scenarioId: next.scenarioId, signal: tapOwner.signal })
+    if (!isCurrent()) { voicePlayer.releasePreparedVoice(prepared); return }
+    homeCueRuntime.cancelCurrentStep('home-next-cue')
+    stageTapCommitPending.value = true
+    emit('update:selectedCue', next.cue)
+    await nextTick()
+    if (!isCurrent()) { voicePlayer.releasePreparedVoice(prepared); return }
+    const started = prepared ? await voicePlayer.playPreparedVoice(prepared) : false
+    if (!isCurrent()) return
+    voiceError.value = !started
     if (started) {
       lastStartedVoice.value = next.voice || ''
       homeCueRuntime.handleStepChange()
     }
-    voiceError.value = !started
-  } else {
-    voiceError.value = true
+  } finally {
+    if (stageTapAbort === tapOwner) {
+      stageTapAbort = null
+      stageTapCommitPending.value = false
+      stageTapPending.value = false
+    }
   }
-  await nextTick()
-  stageTapCommitPending.value = false
-  stageTapPending.value = false
 }
 
 async function queueNextStageVoice() {
+  queuedVoiceAbort?.abort()
+  voicePlayer.releasePreparedVoice(queuedStageVoice.value)
+  const owner = queuedVoiceAbort = new AbortController()
   const next = resolveNextCue()
   const idolId = activeIdol.value?.id
   const token = ++stageVoiceQueueToken
@@ -497,8 +502,11 @@ async function queueNextStageVoice() {
   queuedStageVoice.value = null
   if (!next?.previewStep) return
 
-  const prepared = await voicePlayer.prepareVoice({ step: next.previewStep, scenarioId: next.scenarioId })
-  if (token !== stageVoiceQueueToken || activeIdol.value?.id !== idolId || queuedStageCue.value?.cue !== next.cue) return
+  const prepared = await voicePlayer.prepareVoice({ step: next.previewStep, scenarioId: next.scenarioId, signal: owner.signal })
+  if (homeDisposed || owner.signal.aborted || token !== stageVoiceQueueToken || activeIdol.value?.id !== idolId || queuedStageCue.value?.cue !== next.cue) {
+    voicePlayer.releasePreparedVoice(prepared)
+    return
+  }
   queuedStageVoice.value = prepared
 }
 
@@ -508,6 +516,7 @@ function stepHighlight(direction) {
 }
 
 function stopVoice() {
+  homePlaybackRevision++
   homeCueRuntime.cancelCurrentStep('home-stop-voice')
   voicePlayer.stopCurrentVoice('archive-home')
   voicePlayer.resetVoiceDedup()
@@ -519,20 +528,36 @@ async function toggleVoice() {
     stopVoice()
     return
   }
+  const revision = ++homePlaybackRevision
+  const cue = activeCue.value
   voiceError.value = false
   voicePlayer.unlockAudioContext()
   voicePlayer.resetVoiceDedup()
   homeCueRuntime.cancelCurrentStep('home-replay')
   performanceRevision.value++
   await nextTick()
-  if (homeDisposed) return
+  if (homeDisposed || revision !== homePlaybackRevision || activeCue.value !== cue) return
   const started = await voicePlayer.playVoice()
-  if (homeDisposed) return
+  if (homeDisposed || revision !== homePlaybackRevision || activeCue.value !== cue) return
   if (started) {
     lastStartedVoice.value = activeCue.value?.voice || ''
     homeCueRuntime.handleStepChange()
   }
   voiceError.value = !started
+}
+
+async function replayCompatibilityVoice() {
+  const revision = ++homePlaybackRevision
+  const cue = activeCue.value
+  voicePlayer.unlockAudioContext()
+  homeCueRuntime.cancelCurrentStep('home-compat-replay')
+  const started = await voicePlayer.retryVoice({ backend: 'media' })
+  if (homeDisposed || revision !== homePlaybackRevision || activeCue.value !== cue) return
+  voiceError.value = !started
+  if (started) {
+    lastStartedVoice.value = activeCue.value?.voice || ''
+    homeCueRuntime.handleStepChange()
+  }
 }
 
 function resetPreferences() {
@@ -556,6 +581,9 @@ onMounted(() => {
 })
 onBeforeUnmount(() => {
   homeDisposed = true
+  queuedVoiceAbort?.abort()
+  stageTapAbort?.abort()
+  voicePlayer.releasePreparedVoice(queuedStageVoice.value)
   homeCueRuntime.cleanup()
   document.removeEventListener('visibilitychange', syncHomeVisibility)
   window.removeEventListener('keydown', handleKeydown)
@@ -723,7 +751,8 @@ onBeforeUnmount(() => {
 .dialogue-actions button { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 1px solid var(--control-border); border-radius: 4px; background: var(--control-bg); color: #19a8b4; cursor: pointer; }
 .dialogue-actions button:hover { border-color: var(--archive-cyan); background: #f3fdfe; }
 .dialogue-actions > span { margin-left: 5px; color: #788992; font-size: .6rem; }
-.voice-error { display: block; margin-top: 5px; color: #a25353; font-size: .58rem; }
+.voice-error { display: block; width: fit-content; max-width: 100%; min-height: 44px; margin-top: 5px; padding: 6px 0; border: 0; background: transparent; color: #a25353; font: inherit; font-size: .75rem; text-align: left; cursor: pointer; }
+.voice-error:focus-visible { outline: 2px solid #168f87; outline-offset: 2px; }
 
 .settings-scrim { position: absolute; z-index: 10; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; background: rgba(4,10,15,.12); cursor: default; }
 .scene-settings {

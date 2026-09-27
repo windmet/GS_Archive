@@ -1,27 +1,8 @@
 import { getIdolMotionSettingUrl } from './AssetResolver.js'
-let cachedMotionSettings = null
-let loadingMotionSettings = null
-
-export async function loadIdolMotionSettings() {
-  if (cachedMotionSettings) return cachedMotionSettings
-  if (loadingMotionSettings) return loadingMotionSettings
-
-  loadingMotionSettings = fetch(getIdolMotionSettingUrl(), {
-    cache: 'no-store',
-  })
-    .then(res => (res.ok ? res.json() : null))
-    .catch(() => null)
-    .then(data => {
-      cachedMotionSettings = data?.entries || {}
-      return cachedMotionSettings
-    })
-
-  return loadingMotionSettings
-}
-
+import { createStoryConfigStore } from './StoryConfigStore.js'
+const store = createStoryConfigStore({ kind: 'idol-motion', url: getIdolMotionSettingUrl, project: data => data.entries })
+export const loadIdolMotionSettings = options => store.load(options)
 export function getCachedMotionSetting(idolId, modelId, animName) {
-  if (!cachedMotionSettings || !animName) return null
-  return cachedMotionSettings?.[modelId]?.[animName]
-    || cachedMotionSettings?.[idolId]?.[animName]
-    || null
+  const entries = store.peek()
+  return animName ? entries?.[modelId]?.[animName] || entries?.[idolId]?.[animName] || null : null
 }

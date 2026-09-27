@@ -1,3 +1,4 @@
+import { tracePlayer } from './PlayerTrace.js'
 /** Bounded compressed bytes. Stable URLs let the browser honor HTTP validators.
  * Memory reuse is limited to explicitly fresh, cacheable audio responses.
  */
@@ -47,13 +48,16 @@ export function createCompressedVoiceCache({
     forget(url)
     // The browser performs conditional GET when stale and uses fresh HTTP cache
     // entries directly. No HEAD round trip, timestamp URL or custom CORS header.
+    tracePlayer('voice-http-request', { url })
     const response = await fetchImpl(url, { signal, cache: 'default' })
+    tracePlayer('voice-http-headers', { url, status: response.status, contentType: response.headers?.get?.('content-type') })
     signal.throwIfAborted()
     const diagnostics = { url: response.url || url, status: response.status ?? null, contentType: response.headers?.get?.('content-type') || '', cache: 'http', bytes: null }
     if (!response.ok) throw Object.assign(new Error(`HTTP ${response.status}`), { diagnostics, status: response.status, code: `HTTP_${response.status}` })
     const contentType = response.headers?.get?.('content-type') || ''
     const bytes = await response.arrayBuffer()
     diagnostics.bytes = bytes.byteLength
+    tracePlayer('voice-http-body', { url, bytes: bytes.byteLength })
     signal.throwIfAborted()
     if (bytes.byteLength < 1000 || /(?:text\/html|application\/xhtml\+xml)/i.test(contentType)) {
       throw Object.assign(new Error(`Not an audio file: ${contentType} (${bytes.byteLength} bytes)`), { diagnostics })

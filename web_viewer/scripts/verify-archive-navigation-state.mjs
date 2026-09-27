@@ -21,6 +21,7 @@ navigation.currentGroup.value = { id: 'group-1' }
 navigation.currentUnit.value = { unit_code: 'legacy-unit', id: 'unit-fallback' }
 // New independent entry position is tested in verify-reading-playback; legacy projection stays unchanged.
 navigation.currentScenarioInitialStep.value = null
+navigation.playerEntryRoute.value = null // legacy oracle excludes explicit player entry descriptors
 navigation.stageTargetId.value = ''
 navigation.currentScenarioStartStep.value = 7
 navigation.currentScenarioEndStep.value = 12

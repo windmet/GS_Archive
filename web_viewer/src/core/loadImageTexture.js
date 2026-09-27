@@ -1,3 +1,4 @@
+import { tracePlayer } from './PlayerTrace.js'
 import * as PIXI from 'pixi.js'
 import { createLoadTimeout } from './AsyncLoadBoundary.js'
 
@@ -11,6 +12,8 @@ export function loadImageTexture(url, {
   signal, networkTimeoutMs = 25000, textureTimeoutMs = 10000,
 } = {}) {
   return new Promise((resolve, reject) => {
+    const startedAt = performance.now()
+    tracePlayer('image-request', { url })
     const image = createImage()
     let base, timer = null, settled = false
     const clearDeadline = () => {
@@ -20,6 +23,7 @@ export function loadImageTexture(url, {
     const finish = (value, error) => {
       if (settled) return
       settled = true
+      tracePlayer(error ? 'texture-failed' : 'texture-base-ready', { url, elapsedMs: Math.round(performance.now() - startedAt), code: error?.code, phase: error?.phase })
       image.onload = image.onerror = image.onabort = null
       signal?.removeEventListener('abort', onAbort)
       clearDeadline()
@@ -46,6 +50,7 @@ export function loadImageTexture(url, {
     image.onload = () => {
       if (settled) return
       clearDeadline()
+      tracePlayer('image-onload', { url, width: image.naturalWidth, height: image.naturalHeight, elapsedMs: Math.round(performance.now() - startedAt) })
       try {
         base = createBaseTexture(image)
         base.alphaMode = PIXI.ALPHA_MODES.PMA

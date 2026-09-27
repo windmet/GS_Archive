@@ -33,7 +33,11 @@
       <Eye :size="20" />
     </button>
 
-    <!-- Voice audio player: handled by the Web Audio API to avoid IDM sniffing -->
+    <div v-if="voiceStatus === 'unavailable' && !showAdvDialogue && !HIDE_UI && !uiHidden && !backlogOpen && !viewingOfferOpen" class="voice-recovery">
+      <button @click.stop="retryCurrentVoice()">{{ uiText('player.voice.retry') }}</button>
+      <button @click.stop="retryCurrentVoice({ backend: 'media' })">{{ uiText('player.voice.compat') }}</button>
+    </div>
+    <!-- Audio output is owned by useVoicePlayer, not the scene DOM. -->
 
     <!-- UI overlay for step-specific screens -->
     <div class="ui-overlay" :class="{ 'held-underlay': frameHolding }" :aria-hidden="frameHolding ? 'true' : undefined" v-if="compiledData && !HIDE_UI && !uiHidden && (!episodeFinished || communicationCompleted)">
@@ -152,6 +156,14 @@
           <select :value="uiLocale" @change="saveUiLocale"><option value="zh-CN">简体中文</option><option value="ja-JP">日本語</option></select>
         </label>
         <button @click="uiHidden = true; menuOpen = false"><EyeOff :size="19" /><span>{{ uiText('player.settings.hideUi') }}</span></button>
+        <label class="menu-setting"><span>{{ uiText('player.voice.backend') }}</span>
+          <select v-model="voiceBackend" @change="changeVoiceBackend">
+            <option value="auto">{{ uiText('player.voice.auto') }}</option>
+            <option value="webaudio">Web Audio</option>
+            <option value="media">{{ uiText('player.voice.compat') }}</option>
+          </select>
+        </label>
+        <button @click="menuOpen = false; retryCurrentVoice()">{{ uiText('backlog.replayVoice') }}</button>
         <button @click="openBacklog"><BookOpenText :size="19" /><span>{{ uiText('player.settings.backlog') }}</span></button>
         <button @click="skipEpisode"><SkipForward :size="19" /><span>{{ uiText('player.settings.skipEpisode') }}</span></button>
         <button @click="emit('back')"><LogOut :size="19" /><span>{{ uiText('player.settings.returnCatalog') }}</span></button>
@@ -161,6 +173,7 @@
     <StoryBacklog
       v-if="backlogOpen && !HIDE_UI"
       :nodes="backlogNodes"
+      :voice-node="backlogVoiceNode" :voice-status="voiceStatus"
       @close="backlogOpen = false"
       @restore="restoreFromBacklog"
       @replay-voice="replayBacklogVoice"
@@ -179,6 +192,8 @@
         <GsLoadingIndicator v-if="transitioning" class="complete-loading"
           variant="inline" :message="uiText('player.complete.loadingNext')" />
         <div v-else class="complete-actions">
+          <span v-if="queueStatus === 'idle' || queueStatus === 'loading'" role="status">{{ uiText('player.queue.loading') }}</span>
+          <button v-if="queueStatus === 'error'" @click="emit('retry-queue')">{{ uiText('player.queue.retry') }}</button>
           <button v-if="hasNextEpisode" class="primary" @click="emit('next-episode')"><SkipForward :size="18" />{{ uiText('player.complete.nextEpisode') }}</button>
           <button @click="emit('back')"><LogOut :size="18" />{{ uiText('player.settings.returnCatalog') }}</button>
         </div>
@@ -260,8 +275,11 @@ const props = defineProps({
   endStep: { type: Number, default: null },
   hasNextEpisode: { type: Boolean, default: false },
   continuousPlayback: { type: Boolean, default: false },
+  transitionPending: Boolean,
+  queueStatus: { type: String, default: 'ready' },
+  queueError: { type: String, default: '' },
 })
-const emit = defineEmits(['back', 'ready', 'readiness-change', 'step-change', 'next-episode', 'update:continuous-playback'])
+const emit = defineEmits(['back', 'ready', 'readiness-change', 'step-change', 'next-episode', 'update:continuous-playback', 'retry-queue'])
 const URL_FLAGS = new URLSearchParams(window.location.search)
 const HIDE_UI = URL_FLAGS.get('stageOnly') === '1' || URL_FLAGS.get('hideUI') === '1' || URL_FLAGS.get('transparentUI') === '1'
 const START_STEP_VALUE = URL_FLAGS.get('startStep')
@@ -350,6 +368,8 @@ const localBuffering = computed(() => initialReadyEmitted.value && runtimeReadin
   && (frameHolding.value || !frameHoldRequired.value))
 const localBufferingText = '正在准备下一段画面…'
 const voiceStatus = ref('idle')
+const voiceBackend = ref(['auto', 'webaudio', 'media'].includes(URL_FLAGS.get('voiceBackend')) ? URL_FLAGS.get('voiceBackend') : 'auto')
+const backlogVoiceNode = ref('')
 const isPlaying = ref(false)
 const menuOpen = ref(false)
 const backlogOpen = ref(false)
@@ -360,7 +380,7 @@ const skipEnabled = ref(false)
 const skipMode = ref(initialPreferences.skip_mode)
 const uiHidden = ref(initialPreferences.ui_hidden)
 const episodeFinished = ref(false)
-const transitioning = ref(false)
+const transitioning = computed(() => props.transitionPending)
 const runtimeDiagnostics = ref(null)
 const debugVisibilityOverride = ref(null)
 
@@ -452,10 +472,16 @@ function _ensureAudioCtx() {
   playbackController?.setPaused('audio-lock', false)
 }
 
-function retryCurrentVoice() {
-  _ensureAudioCtx() // called synchronously by the retry button's user gesture
-  void voicePlayer?.retryVoice?.()
+function retryCurrentVoice(options = {}) {
+  _ensureAudioCtx()
+  if (options?.backend) voiceBackend.value = options.backend
+  voicePlayer?.setBackendMode(voiceBackend.value)
+  void voicePlayer?.retryVoice?.({ backend: voiceBackend.value })
 }
+function changeVoiceBackend() {
+  voicePlayer?.setBackendMode(voiceBackend.value)
+}
+
 
 function _resetVoiceDedup() {
   voicePlayer?.resetVoiceDedup?.()
@@ -581,6 +607,7 @@ if (!voicePlayer) {
     canAnimateStage: () => communicationContext.value.needsStage,
     onStateChange: state => { voiceStatus.value = state },
     audioSession: storyAudioSession,
+    backendMode: voiceBackend.value,
   })
 }
 
@@ -637,7 +664,6 @@ function finishEpisode() {
   menuOpen.value = false
   episodeFinished.value = true
   if (props.continuousPlayback && props.hasNextEpisode) {
-    transitioning.value = true
     emit('next-episode')
   }
 }
@@ -817,7 +843,9 @@ function restoreFromBacklog(nodeId) {
   if (!restoreHistoryNode(node)) restoredSceneState.value = null
 }
 
-function replayBacklogVoice(node) {
+function replayBacklogVoice(node, backend) {
+  backlogVoiceNode.value = node.node_id
+  if (backend) { voiceBackend.value = backend; voicePlayer?.setBackendMode(backend) }
   _ensureAudioCtx()
   voicePlayer?.replayVoiceDetached?.({
     ...(compiledData.value?.steps?.[node.step_index] || {}),
@@ -861,7 +889,6 @@ function goPrev() {
   if (backlogOpen.value || menuOpen.value || viewingOfferOpen.value) return
   if (communicationCompleted.value) {
     episodeFinished.value = false
-    transitioning.value = false
   }
   stopPlaybackModes('previous')
   storyRuntimeCues.cancelCurrentStep('previous')
@@ -1086,6 +1113,7 @@ isRuntimeAutoBlocked = storyRuntimeCues.hasBlockingAuto
 onMounted(async () => {
   updateViewingViewport()
   window.addEventListener('resize', updateViewingViewport)
+  if (RUNTIME_DEBUG || URL_FLAGS.get('playerTrace') === '1') window.__GS_PLAYER_DIAGNOSTICS__ = buildRuntimeDiagnostics
   window.__STORY_PLAYBACK__ = playbackController
   window.__STORY_AUDIO__ = storyAudioSession
   document.addEventListener('visibilitychange', handleVisibilityChange)
@@ -1159,6 +1187,7 @@ onBeforeUnmount(() => {
   cleanupRuntimeCues()
   playbackController?.dispose()
   document.removeEventListener('visibilitychange', handleVisibilityChange)
+  if (window.__GS_PLAYER_DIAGNOSTICS__ === buildRuntimeDiagnostics) delete window.__GS_PLAYER_DIAGNOSTICS__
   if (window.__STORY_PLAYBACK__ === playbackController) delete window.__STORY_PLAYBACK__
   if (window.__STORY_AUDIO__ === storyAudioSession) delete window.__STORY_AUDIO__
   if (_runtimeDiagnosticsTimer) {
@@ -1196,11 +1225,24 @@ watch(currentStep, (newStep, oldStep) => {
   playbackController?.notifyStateChanged()
 })
 watch(currentStep, handleRuntimeStepChange, { immediate: true })
-watch([menuOpen, backlogOpen, episodeFinished, viewingOfferOpen], ([menu, backlog, finished, viewingOffer]) => {
-  if (menu || backlog || finished || viewingOffer) clearFadeAutoAdvance()
-  playbackController?.setPaused('overlay', menu || backlog || finished || viewingOffer)
-  setRuntimeSessionPaused('overlay', menu || backlog || finished || viewingOffer)
+watch([menuOpen, backlogOpen, episodeFinished, viewingOfferOpen], ([menu, backlog, finished, viewingOffer], previous = []) => {
+  const any = menu || backlog || finished || viewingOffer
+  if (any) clearFadeAutoAdvance()
+  playbackController?.setPaused('overlay', any)
+  for (const [reason, value] of [['menu', menu], ['backlog', backlog], ['episode-complete', finished], ['viewing-offer', viewingOffer]]) {
+    setRuntimeSessionPaused(reason, value)
+  }
+  if ([menu, backlog, finished, viewingOffer].some((value, index) => value && !previous[index]) || (previous[1] && !backlog)) {
+    _stopCurrentVoice('overlay-transition')
+    backlogVoiceNode.value = ''
+  }
 }, { immediate: true })
+// A late queue lookup must not turn a completed episode into a permanent dead end.
+watch(() => props.hasNextEpisode, hasNext => {
+  if (hasNext && episodeFinished.value && props.continuousPlayback && !transitioning.value) {
+    emit('next-episode')
+  }
+})
 watch([immersiveEligible, smallScreen, portraitScreen], ([eligible, small, portrait]) => {
   if (eligible && small && portrait && !uiHidden.value && mobileViewMode.value === 'ask' && claimMobileViewingOffer()) {
     viewingOfferOpen.value = true
@@ -1240,6 +1282,9 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 </script>
 
 <style scoped>
+.voice-recovery { position: absolute; top: var(--player-content-top); left: var(--player-edge); z-index: 32; display: flex; flex-wrap: wrap; gap: 8px; max-width: calc(100% - 2 * var(--player-edge)); }
+.voice-recovery button { min-height: 44px; padding: 8px 12px; border: 1px solid #96bbb6; border-radius: 8px; color: #176f69; background: #f7faf9; cursor: pointer; }
+
 .viewing-offer { position: absolute; inset: 0; z-index: 60; display: grid; place-items: center; padding: 20px; background: rgba(6,21,33,.7); }
 .viewing-offer-panel { box-sizing: border-box; width: min(100%, 400px); max-height: 100%; overflow: auto; padding: 24px; border-radius: 20px; background: #f7faf9; color: #193c44; box-shadow: 0 14px 50px #0006; display: grid; gap: 14px; }
 .viewing-offer h2 { margin: 0; font-size: 22px; }
@@ -1405,7 +1450,7 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 .complete-panel > span { color: #0d9c75; font-size: .66rem; font-weight: 800; }
 .complete-panel > strong { display: block; margin: 6px 0 18px; font-size: 1.05rem; }
 .complete-panel p { margin: 8px 0 0; color: #64727a; }
-.complete-panel > .complete-actions { display: flex; justify-content: center; gap: 8px; }
+.complete-panel > .complete-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .complete-panel button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 0 14px; border: 1px solid #d6dfe2; border-radius: 5px; background: #fff; color: #26343c; cursor: pointer; font: inherit; }
 .complete-panel button.primary { border-color: #0d9c75; background: #0d9c75; color: #fff; }
 

@@ -100,8 +100,8 @@ export function useStepSceneEffects({
 
     if (!restore) {
       const prepared = takePreparedVoice(newStep, currentStepIndex.value)
-      if (prepared) voicePlayer?.playPreparedVoice?.(prepared)
-      else voicePlayer?.playVoice?.()
+      const work = prepared ? voicePlayer?.playPreparedVoice?.(prepared) : voicePlayer?.playVoice?.()
+      void Promise.resolve(work).catch(error => console.warn('[Voice] Playback failed:', error))
     }
   }
 

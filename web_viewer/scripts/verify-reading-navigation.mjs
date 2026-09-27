@@ -7,6 +7,7 @@ import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState
 import { buildArchiveUrl, readArchiveRoute, readPortalReturnRoute, buildPortalReturnQuery } from '../src/core/archiveRoute.js'
 import { readingPresentationSpeaker } from '../shared/reading/ReadingDocument.js'
 import { resolveStoryText } from '../src/localization/story/StoryTextResolver.js'
+import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
 
 const route = readArchiveRoute('http://localhost/?view=reader&reading=1_4_001_01_d&reading_mode=bilingual&reading_row=1_4_001_01_d:step-9:text')
 assert.equal(route.view, 'reader')
@@ -58,7 +59,7 @@ for (const status of ['empty', 'unsupported', 'not-generated', 'error']) {
   assert.equal(state.document, null)
 }
 // Exercise the actual App route branch with no player/preloader globals present.
-const context = { ...useArchiveNavigationState(), navigation, readingSession: session,
+const context = { ...useArchiveNavigationState(), navigation, readingSession: session, isDirectScenarioEntry,
   readingPlaybackNotice: { value: '' }, currentScenario: { value: { old: true } }, loading: { value: true }, loadingPurpose: { value: 'archive-data' },
   captureActiveArchiveView: () => {}, primeArchiveRouteComponent: () => {} }
 context.playbackController = { reset: () => { context.currentScenario.value = null } }

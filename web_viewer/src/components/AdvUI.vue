@@ -14,7 +14,10 @@
       <div class="dialog" :class="{ 'is-bilingual': isBilingual }">
         <LocalizedTextBlock class="dialog-text" :display="display" />
         <small v-if="voiceStatus === 'preparing'" class="voice-status voice-preparing" role="status"><span aria-hidden="true">···</span><span class="voice-loading-label">语音加载中</span></small>
-        <button v-else-if="voiceStatus === 'unavailable'" type="button" class="voice-status voice-retry" @click.stop="emit('retry-voice')">语音未载入 · 重试</button>
+        <div v-else-if="voiceStatus === 'unavailable'" class="voice-recovery-actions">
+          <button type="button" @click.stop="emit('retry-voice')">{{ uiText('player.voice.retry') }}</button>
+          <button type="button" @click.stop="emit('retry-voice', { backend: 'media' })">{{ uiText('player.voice.compat') }}</button>
+        </div>
         <div class="dialog-next">▶</div>
       </div>
 
@@ -24,6 +27,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { resolveUiText as uiText } from '../localization/ui/UiTextResolver.js'
 import LocalizedTextBlock from './LocalizedTextBlock.vue'
 import { resolveText } from '../utils/TextHelper.js'
 import { useStoryLocalization } from '../localization/story/StoryLocalizationContext.js'
@@ -43,7 +47,9 @@ const isBilingual = computed(() => Boolean(display.value?.view?.secondary?.text)
 
 <style scoped>
 .voice-status { position: absolute; bottom: 9px; left: 24px; color: #65747b; font: 11px/1.3 system-ui, sans-serif; pointer-events: none; }
-.voice-retry { pointer-events: auto; border: 0; padding: 3px 0; background: transparent; text-decoration: underline; cursor: pointer; }
+.voice-recovery-actions { display: flex; flex-wrap: wrap; gap: 4px 10px; flex-shrink: 0; margin-top: 4px; padding-right: 20px; }
+.voice-recovery-actions button { min-height: 44px; border: 0; padding: 6px 0; background: transparent; color: #176f69; font: 12px/1.4 system-ui; text-decoration: underline; cursor: pointer; }
+.voice-recovery-actions button:focus-visible { outline: 2px solid #168f87; outline-offset: 2px; }
 .voice-preparing { visibility: hidden; animation: reveal-voice-status 0s 350ms forwards; }
 .voice-loading-label { margin-left: 5px; visibility: hidden; animation: reveal-voice-status 0s 1500ms forwards; }
 @keyframes reveal-voice-status { to { visibility: visible; } }
