@@ -7,6 +7,12 @@ export function buildReadingLocatorRecords(manifest) {
   assert(manifest?.schema_version === 1 && Array.isArray(manifest.entries), 'Reading manifest version/entries');
   const ids = new Set();
   const files = new Set();
+  const byLogicalId = new Map();
+  for (const entry of manifest.entries) {
+    const siblings = byLogicalId.get(entry.logical_id) || [];
+    siblings.push(entry);
+    byLogicalId.set(entry.logical_id, siblings);
+  }
   return manifest.entries.map(entry => {
     assert(ID.test(entry.document_id || '') && !ids.has(entry.document_id), 'Reading locator document identity');
     assert(entry.file === `${entry.document_id}.json` && entry.schema_version === 2, 'Reading locator file/version');
@@ -17,8 +23,7 @@ export function buildReadingLocatorRecords(manifest) {
     files.add(entry.source_file);
     return { id: entry.document_id,
       summary: pick(entry, ['source_file', 'status', 'row_count', 'title', 'episode_label', 'domain']),
-      view: { entry: pick(entry, ['document_id', 'logical_id', 'scenario_id', 'file', 'schema_version',
-        'sha256', 'source_sha256', 'source_file', 'status', 'row_count', 'title', 'episode_label', 'domain', 'parent_file']) },
+      view: { entry, entries: byLogicalId.get(entry.logical_id) },
     };
   });
 }

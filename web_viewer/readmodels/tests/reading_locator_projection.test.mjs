@@ -12,6 +12,7 @@ test('reading locator preserves every source entry and its document digest', asy
   for (let i = 0; i < records.length; i++) {
     assert.equal(records[i].id, manifest.entries[i].document_id);
     assert.deepEqual(records[i].view.entry, manifest.entries[i]);
+    assert.deepEqual(records[i].view.entries, manifest.entries.filter(entry => entry.logical_id === manifest.entries[i].logical_id));
     assert.equal(records[i].summary.status, manifest.entries[i].status);
     assert.ok(!('rows' in records[i].view));
   }
