@@ -33,7 +33,7 @@ function deferred() {
   return { promise, resolve }
 }
 for (const disposed of [false, true]) {
-  const loading = deferred()
+  const catalog = deferred()
   const translations = deferred()
   let mount, popState, isDisposed = false
   const route = { view: 'cards', idol: '001tom' }
@@ -46,7 +46,7 @@ for (const disposed of [false, true]) {
     archiveBootstrap: { idols: [{ id: '002sht' }] },
     initialArchiveStartup: { route, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
     pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingMobileNavigation: 0, pendingLegacyAliasNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
-    isBootstrapRoute: () => false, ensureLegacyArchiveData: () => loading.promise,
+    isBootstrapRoute: () => false, loadCardCatalog: () => catalog.promise,
     loadIdolDetail: async idolCode => ({ id: idolCode, view: { profile: { idol_code: idolCode } } }),
     loadIdolEntityTranslations: () => translations.promise,
     navigation: { isDisposed: () => isDisposed, getRevision: () => 0 },
@@ -66,7 +66,7 @@ for (const disposed of [false, true]) {
   const pending = mount()
   const latestRoute = { view: 'idol_detail', idol: '002sht' }
   popState(latestRoute)
-  loading.resolve({ data: {}, errors: [] })
+  catalog.resolve([])
   isDisposed = disposed
   translations.resolve()
   await pending
@@ -74,7 +74,7 @@ for (const disposed of [false, true]) {
   assert.equal(applied.length, disposed ? 0 : 1)
   assert.equal(written.length, disposed ? 0 : 1)
   if (!disposed) {
-    assert.deepEqual(applied[0], latestRoute, 'latest history route must own restoration after a shared load')
+    assert.deepEqual(applied[0], latestRoute, 'latest history route must own restoration after a bounded catalog load')
     assert.deepEqual(written[0], latestRoute)
   }
 }
@@ -90,7 +90,7 @@ for (const disposed of [false, true]) {
     initialArchiveStartup: { route: { ...route }, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
     pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingMobileNavigation: 0, pendingLegacyAliasNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
     loadGashaCatalog: async () => ({ rows: [] }),
-    isBootstrapRoute: () => false, ensureLegacyArchiveData: async () => {},
+    isBootstrapRoute: () => false,
     loadIdolEntityTranslations: async () => {}, navigation,
     applyArchiveRoute: value => navigation.run(async () => { applied.push(value); if (value.view === 'player') await firstRestore.promise }, { restoring: true }),
     currentArchiveRoute: () => applied.at(-1), writeArchiveRoute: value => written.push(value),
@@ -124,7 +124,7 @@ for (const asynchronous of [false, true]) {
     window: { location: { href: 'http://localhost/' } }, userPreferences: { value: {} },
     initialArchiveStartup: { route: { view: 'player' }, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
     pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingMobileNavigation: 0, pendingLegacyAliasNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
-    isBootstrapRoute: () => false, ensureLegacyArchiveData: async () => {},
+    isBootstrapRoute: () => false,
     loadIdolEntityTranslations: async () => {}, navigation,
     applyArchiveRoute: () => navigation.run(async intent => {
       await initial.promise
@@ -169,7 +169,7 @@ for (const route of [
   { view: 'story_collection', storyType: 'main', storySection: 'missing' },
   { view: 'story_detail', story: 'missing.json' },
 ]) {
-  let mount, legacyLoads = 0
+  let mount
   const applied = []
   const context = {
     onMounted: callback => { mount = callback }, localStorage: { getItem: () => null },
@@ -177,7 +177,6 @@ for (const route of [
     initialArchiveStartup: { route, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
     pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingMobileNavigation: 0, pendingLegacyAliasNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
     isBootstrapRoute: () => true,
-    ensureLegacyArchiveData: async () => { legacyLoads++ },
     loadCollectionDetail: async () => { throw new Error('missing leaf') },
     loadStoryReadModelDetail: async () => { throw new Error('missing leaf') },
     loadIdolEntityTranslations: async () => {},
@@ -191,7 +190,8 @@ for (const route of [
   for (const match of source.matchAll(/\b(\w+)\.value\s*=/g)) context[match[1]] = { value: null }
   vm.runInNewContext(source, context)
   await mount()
-  assert.equal(legacyLoads, 0, `${route.view} failure must not load the global archive batch`)
+  assert.doesNotMatch(source, /ensureLegacyArchiveData|loadArchiveData|runWhenLegacyReady/,
+    `${route.view} failure must not load the global archive batch`)
   assert.equal(applied[0].view, 'story_catalog', `${route.view} failure must reach the migrated catalog`)
 }
 console.log('Archive startup: latest URL, history/page supersession, obsolete completion and disposal passed')

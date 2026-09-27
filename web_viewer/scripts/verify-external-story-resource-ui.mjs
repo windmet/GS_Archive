@@ -273,11 +273,8 @@ assert.match(appComponent, /const externalStoryNavigationEntries = \[\]/,
   'withdrawn external navigation must stay empty in the live app')
 assert.doesNotMatch(appComponent, /buildExternalStoryNavigationEntries\(/,
   'the withdrawn external registry must not join story sources in the live app')
-assert.match(
-  appComponent,
-  /if \(EXTERNAL_STORY_RESOURCES_ENABLED &&[\s\S]*?route\.view === 'external_story_resources'[\s\S]*?await ensureIdolCommunicationData\(\)/,
-  'enabled external-resource routes must prepare the identity index while withdrawn routes stay independent',
-)
+assert.doesNotMatch(appComponent, /ensureIdolCommunicationData|loadIdolCommunicationData|ArchiveDataRepository/,
+  'withdrawn external-resource routes must not retain the legacy archive repository')
 assert.match(
   appComponent,
   /target\?\.kind === 'idol-story'/,

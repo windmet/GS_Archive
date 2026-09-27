@@ -90,7 +90,7 @@
         :current-rarity="currentCardRarity"
         :current-asset-state="currentCardAssetState"
         :current-relation-state="currentCardRelationState"
-        :idols="idolUnitData?.idols || bootstrapIdolSwitcher"
+        :idols="bootstrapIdolSwitcher"
         :selected-idol="currentCharacterId"
         v-model:layout="cardLayout"
         @back="goArchiveBack"
@@ -107,7 +107,7 @@
         :stats="currentIdolStats"
         :events="currentIdolEvents"
         :songs="currentIdolSongs"
-        :idols="idolUnitData?.idols || bootstrapIdolSwitcher"
+        :idols="bootstrapIdolSwitcher"
         :selected-idol="currentCharacterId"
         @open-domain="openIdolDomain"
         @open-unit="openUnitFromIdol"
@@ -192,9 +192,8 @@
         :idols="currentEventIdols"
         :units="currentEventUnits"
         :projected-cast-references="currentEventProjection?.castReferences || null"
-        :identity="idolUnitData"
-        :manifest="archiveManifestData"
-        :visual-registry="rawCharacterImagePromotionsData"
+        :identity="bootstrapIdolDictionary"
+        :manifest="bootstrapMembership"
         :raw-visual-url="eventStoryIdolRawCandidateUrl"
         :external-resources="EXTERNAL_STORY_RESOURCES_ENABLED ? currentEventExternalResources : []"
         :reading-entries="readingCatalogEntries"
@@ -247,7 +246,7 @@
 
       <ArchiveStatus
         v-if="view === 'archive_status'"
-        :manifest="resourceReadModelDetail?.view?.manifest || archiveManifestData"
+        :manifest="resourceReadModelDetail?.view?.manifest || null"
         :verification="resourceReadModelDetail?.view?.verification || null"
         :ui-assets="resourceReadModelDetail?.view?.uiAssets || null"
         @open-spine-lab="openSpineLab"
@@ -301,8 +300,8 @@
         :related="currentStoryRelated"
         :visual-url="currentStoryVisualUrl"
         :idol-name="idolSourceName"
-        :identity="idolUnitData"
-        :manifest="archiveManifestData"
+        :identity="bootstrapIdolDictionary"
+        :manifest="bootstrapMembership"
         :projected-cast-references="storyReadModelDetail?.view?.castReferences || null"
         :external-resources="EXTERNAL_STORY_RESOURCES_ENABLED ? currentStoryExternalResources : []"
         :reading-entries="readingCatalogEntries"
@@ -395,8 +394,8 @@
         v-if="view === 'unit_detail'"
         :unit="currentArchiveUnit"
         :members="currentArchiveUnitMembers"
-        :identity="idolUnitData || bootstrapIdolDictionary"
-        :manifest="archiveManifestData || bootstrapMembership"
+        :identity="bootstrapIdolDictionary"
+        :manifest="bootstrapMembership"
         :stories="currentArchiveUnitStories"
         :songs="currentArchiveUnitSongs"
         :card-stats="currentArchiveUnitEntry?.cardStats"
@@ -479,7 +478,6 @@
 
 <script setup>
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../shared/deploy/ExternalStoryResourcePolicy.js'
-import { createLazyArchiveResource } from './data/lazyArchiveResource.js'
 import { buildGashaCategoryOptions, filterGashaCatalog } from './data/gashaCatalog.js'
 import { filterArchiveCards } from './data/cardFilters.js'
 import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
@@ -500,7 +498,6 @@ import ArchiveWelcome from './components/archive/ArchiveWelcome.vue'
 import { buildIdolReference } from './presentation/IdolReferencePresentation.js'
 import { resolveMobileArchiveUnit } from './core/mobileArchiveIdentity.js'
 import { readyEpisodeReading } from './data/IdolStoryReading.js'
-import { loadArchiveData, loadIdolCommunicationData } from './data/ArchiveDataRepository.js'
 import { buildCardRarityTabs } from './data/archiveSelectors.js'
 import {
   clearArchiveUserPreferences,
@@ -538,7 +535,6 @@ import {
 } from './utils/LanguageStore.js'
 import {
   birthdayStoryIdolCode,
-  getPromotedCharacterImageUrl,
   getRawCharacterImageCandidateUrl,
 } from './utils/CharacterImageResolver.js'
 import {
@@ -687,13 +683,6 @@ const {
 } = useArchiveNavigationState()
 const stageHandoff = ref(null)
 
-const indexData = ref(null)
-const idolEpisodeData = ref(null)
-const mobileArchiveData = ref(null)
-const randomTalkPresentationData = ref(null)
-const idolUnitData = ref(null)
-const archiveManifestData = ref(null)
-const rawCharacterImagePromotionsData = ref(null)
 const externalStoryResourcesData = ref(null)
 const idolEntityTranslationRevision = ref(0)
 const initialUserPreferences = loadArchiveUserPreferences()
@@ -731,7 +720,6 @@ let mobileUnitCatalogPromise = null
 let pendingMobileNavigation = 0
 const userPreferences = ref(initialUserPreferences.preferences)
 const userPreferenceNotice = ref(initialUserPreferences.issue)
-const archiveDataReady = ref(false)
 const legacyEntryStatus = ref('')
 const songReadModelCatalog = ref(null)
 const songReadModelDetail = ref(null)
@@ -802,8 +790,6 @@ let homeIndexPromise = null
 const homeProfilePromises = new Map()
 const recentHomeProfiles = []
 let pendingHomeNavigation = 0
-let pendingLegacyNavigation = 0
-let legacyDataPromise = null
 const continuousPlayback = ref(localStorageValue('sidem:continuous-playback') === '1')
 const loading = ref(!isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes'].includes(initialArchiveStartup.route.view) || initialArchiveStartup.route.view === 'home' && Boolean(initialArchiveStartup.route.homeIdol))
 const loadingPurpose = ref('archive-data')
@@ -911,7 +897,7 @@ const idolUnitOptions = computed(() => {
   for (const entry of idolList.value) {
     if (entry.unitId) counts.set(entry.unitId, (counts.get(entry.unitId) || 0) + 1)
   }
-  const units = idolUnitData.value?.units || [...new Map(archiveBootstrap.idols.map(idol => [idol.unitId, {
+  const units = [...new Map(archiveBootstrap.idols.map(idol => [idol.unitId, {
     unit_id: idol.unitId, unit_code: idol.unitCode, unit_name: idol.unitName,
   }])).values()]
   return units.map(unit => ({
@@ -1074,12 +1060,7 @@ const currentStoryVisualUrl = computed(() => {
   if (story.domain === 'birthday') {
     const idolCode = birthdayStoryIdolCode(story)
     return getRawCharacterImageCandidateUrl('birthday_visual', idolCode) ||
-      storyReadModelDetail.value?.view?.promotedVisualUrl ||
-      getPromotedCharacterImageUrl(
-        'birthday_visual',
-        idolCode,
-        rawCharacterImagePromotionsData.value,
-      )
+      storyReadModelDetail.value?.view?.promotedVisualUrl || ''
   }
   return ''
 })
@@ -1351,9 +1332,8 @@ const archiveBreadcrumbs = computed(() => {
 
 function idolSourceName(id, fallback = '') {
   if (!id) return ''
-  return idolUnitData.value?.by_idol_code?.[id]?.display_name ||
+  return bootstrapIdolDictionary.by_idol_code[id]?.display_name ||
     IDOL_ID_TO_NAME[id] ||
-    indexData.value?.characters?.[id] ||
     fallback ||
     id
 }
@@ -1444,20 +1424,6 @@ function updateArchiveFilter(key, value) {
   target.value = value
 }
 
-const ensureIdolCommunicationData = createLazyArchiveResource({
-  read: () => idolEpisodeData.value && mobileArchiveData.value && randomTalkPresentationData.value
-    ? { idolEpisode: idolEpisodeData.value, mobileArchive: mobileArchiveData.value, randomTalkPresentation: randomTalkPresentationData.value }
-    : null,
-  load: loadIdolCommunicationData,
-  publish: data => {
-    idolEpisodeData.value = data.idolEpisode
-    mobileArchiveData.value = data.mobileArchive
-    randomTalkPresentationData.value = data.randomTalkPresentation
-  },
-  isDisposed: navigation.isDisposed,
-  onError: error => console.error('[ArchiveData] Failed to load idol communication indexes:', error),
-})
-
 async function restoreVoicePreview(route, intent) {
   const card = cardReadModelDetail.value?.id === route.card ? cardReadModelDetail.value.card : null
   if (!card || !route.voice) return false
@@ -1516,10 +1482,6 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
     }
     if (route.view === 'idols' && route.category === 'cards') await loadCardCatalog()
     if (!intent.isCurrent()) return
-    if (EXTERNAL_STORY_RESOURCES_ENABLED &&
-        (route.view === 'external_story_resources' || route.view === 'player' && route.returnView === 'external_story_resources')) {
-      await ensureIdolCommunicationData()
-    }
     if ((route.view === 'mobile_archive' || (route.view === 'player' && route.returnView === 'mobile_archive')) &&
       route.idol && archiveBootstrap.idols.some(idol => idol.id === route.idol)) {
       const mobile = await loadMobileRoute(route.idol, route.mobileMode || 'personal', route.unit || '')
@@ -1561,7 +1523,7 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
     const validRouteIdol = !route.idol || (['groups', 'files'].includes(idolOwnerView) && aliasRoute?.groups
       ? true : ['idol_detail', 'cards', 'card_detail', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection'].includes(idolOwnerView)
       ? archiveBootstrap.idols.some(idol => idol.id === route.idol)
-      : Boolean(idolUnitData.value?.by_idol_code?.[route.idol]))
+      : Boolean(bootstrapIdolDictionary.by_idol_code[route.idol]))
     const invalidIdolPickTarget = !validRouteIdol ? ({
       idol_detail: 'profile',
       work_archive: 'work',
@@ -1716,7 +1678,7 @@ function goHome() {
 
 function navigateArchiveSection(section) {
   if (section === 'portal') {
-    if (!archiveDataReady.value) loading.value = false
+    loading.value = false
     return openArchivePortal()
   }
   if (!['home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions'].includes(section)) return
@@ -1869,7 +1831,6 @@ function chooseLightStartup() {
 }
 
 function openRootPortal() {
-  ++pendingLegacyNavigation
   legacyEntryStatus.value = ''
   portalFrom.value = ''
   commitView('portal')
@@ -1912,7 +1873,6 @@ function savePreferredIdol(idolCode) {
 }
 
 function clearUserPreferences() {
-  ++pendingLegacyNavigation
   legacyEntryStatus.value = ''
   const result = clearArchiveUserPreferences()
   userPreferences.value = result.preferences
@@ -1924,7 +1884,6 @@ function clearUserPreferences() {
 }
 
 function openWelcomeSettings() {
-  ++pendingLegacyNavigation
   legacyEntryStatus.value = ''
   userPreferenceNotice.value = ''
   captureDetailSource()
@@ -1939,7 +1898,6 @@ function openIdolPicker(target) {
 }
 
 function cancelWelcomeOrPicker() {
-  ++pendingLegacyNavigation
   legacyEntryStatus.value = ''
   if (detailSourceRoute.value) return restoreDetailSource(openRootPortal)
   if (view.value === 'idol_picker') openRootPortal()
@@ -1988,7 +1946,6 @@ function openPreferredDestination(destination) {
 
 function openArchivePortal() {
   if (!archiveShellVisible.value || view.value === 'portal') return
-  ++pendingLegacyNavigation
   legacyEntryStatus.value = ''
   const source = currentArchiveRoute()
   portalFrom.value = ['welcome', 'idol_picker'].includes(source.view) ||
@@ -2001,7 +1958,6 @@ function openArchivePortal() {
 async function closeArchivePortal() {
   if (!portalFrom.value) return
   let route = readPortalReturnRoute(portalFrom.value)
-  if (!archiveDataReady.value && !isBootstrapRoute(route)) return runWhenLegacyReady(() => closeArchivePortal())
   if (route.view === 'home' && route.homeIdol) await loadHomeIdol(route.homeIdol)
   if (route.view === 'idol_detail' && route.idol) idolReadModelDetail.value = await loadIdolDetail(route.idol)
   if (route.view === 'unit_catalog') await loadUnitCatalog()
@@ -3160,7 +3116,6 @@ async function restoreDetailSource(fallback) {
   }
   let route = readArchiveSourceRoute(source)
   const beforeLoad = navigation.getRevision()
-  if (!isBootstrapRoute(route)) await ensureLegacyArchiveData()
   if (route.view === 'home' && route.homeIdol) await loadHomeIdol(route.homeIdol)
   if (route.view === 'idol_detail' && route.idol) idolReadModelDetail.value = await loadIdolDetail(route.idol)
   if (route.view === 'unit_catalog') await loadUnitCatalog()
@@ -3517,26 +3472,6 @@ function onPlayerReady() { playbackController.ready() }
 async function loadScenario(name, returnView = 'files', options = {}) {
   loadingPurpose.value = 'story-playback'
   return playbackController.load(name, returnView, options)
-}
-
-function ensureLegacyArchiveData() {
-  if (archiveDataReady.value) return Promise.resolve()
-  if (!legacyDataPromise) {
-    legacyDataPromise = loadArchiveData().then(({ data, errors }) => {
-      if (navigation.isDisposed()) return
-      indexData.value = data.compiledIndex
-      idolUnitData.value = data.idolUnit
-      archiveManifestData.value = data.archiveManifest
-      rawCharacterImagePromotionsData.value = data.rawCharacterImagePromotions
-      externalStoryResourcesData.value = data.externalStoryResources
-      archiveDataReady.value = true
-      for (const { key, error } of errors) console.error(`[ArchiveData] Failed to load ${key}:`, error)
-    }).catch(error => {
-      legacyDataPromise = null
-      throw error
-    })
-  }
-  return legacyDataPromise
 }
 
 async function loadHomeIndex() {
@@ -4060,25 +3995,6 @@ function isBootstrapRoute(route) {
     route.view === 'idols'
 }
 
-function runWhenLegacyReady(action) {
-  if (archiveDataReady.value) return action()
-  const request = ++pendingLegacyNavigation
-  const showOverlay = ['home', 'idols', 'idol_detail', 'unit_catalog', 'unit_detail'].includes(view.value)
-  if (showOverlay) loading.value = true
-  legacyEntryStatus.value = '正在准备该栏目的资料…'
-  ensureLegacyArchiveData().then(() => {
-    if (navigation.isDisposed() || request !== pendingLegacyNavigation) return
-    if (showOverlay) loading.value = false
-    legacyEntryStatus.value = ''
-    action()
-  }).catch(error => {
-    if (request !== pendingLegacyNavigation) return
-    if (showOverlay) loading.value = false
-    console.error('[ArchiveData] Failed to prepare requested section:', error)
-    legacyEntryStatus.value = '该栏目暂时无法打开，请重试。'
-  })
-}
-
 onMounted(async () => {
   cardLayout.value = localStorageValue('sidem-archive-card-layout') === 'grid' ? 'grid' : 'compact'
   cardArtMode.value = localStorageValue('sidem-archive-card-art-mode') === 'framed' ? 'framed' : 'clean'
@@ -4106,11 +4022,9 @@ onMounted(async () => {
     ++pendingCollectionNavigation
     ++pendingStoryDetailNavigation
     ++pendingResourceNavigation
-    ++pendingLegacyNavigation
     legacyEntryStatus.value = ''
     if (route.view === 'story_collection' && (!route.storyType || !route.storySection) ||
       route.view === 'story_detail' && !route.story) route = { view: 'story_catalog' }
-    if (!isBootstrapRoute(route)) await ensureLegacyArchiveData()
     if (route.view === 'home' && route.homeIdol) {
       try {
         await loadHomeIdol(route.homeIdol)

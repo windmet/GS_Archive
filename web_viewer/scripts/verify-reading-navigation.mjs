@@ -63,7 +63,7 @@ const context = { ...useArchiveNavigationState(), navigation, readingSession: se
   captureActiveArchiveView: () => {}, primeArchiveRouteComponent: () => {} }
 context.playbackController = { reset: () => { context.currentScenario.value = null } }
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
-const bootstrapContext = {}
+const bootstrapContext = { EXTERNAL_STORY_RESOURCES_ENABLED: false }
 vm.runInNewContext(app.match(/function isBootstrapRoute\([^]*?\n\}/)[0], bootstrapContext)
 assert.equal(bootstrapContext.isBootstrapRoute({ view: 'reader', reading: '1_4_001_00_a' }), true)
 assert.equal(bootstrapContext.isBootstrapRoute({ view: 'player', returnView: 'reader', reading: '1_4_001_00_a' }), true)
