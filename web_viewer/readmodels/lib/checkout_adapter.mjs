@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url';
 import { assert, safeRead, sha256, jsonBytes, listFiles, pick } from './common.mjs';
 import { buildMobileRecords } from './mobile_projection.mjs';
 import { buildLegacyAliasRecords } from './legacy_alias_projection.mjs';
+import { buildReadingLocatorRecords } from './reading_locator_projection.mjs';
 
 export const INPUTS = {
  cardIndex: 'data/masterdata/card_index.json', cardDetailIndex: 'data/masterdata/card_detail_index.json',
@@ -18,6 +19,7 @@ export const INPUTS = {
  mobileArchive: 'data/masterdata/mobile_archive_index.json',
  randomTalkPresentation: 'data/masterdata/random_talk_presentation_index.json',
  compiledIndex: 'data/compiled/index.json',
+ readingManifest: 'data/reading/manifest.json',
  birthdayStorySemantic: 'data/masterdata/birthday_story_semantic_index.json',
  extraStoryVisualIndex: 'data/masterdata/extra_story_visual_index.json',
  speakerDictionary: 'data/masterdata/speaker_dictionary.json',
@@ -189,6 +191,7 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     'legacy-files': { records:legacyAliases.fileRecords },
     'legacy-episodes': { records:legacyAliases.episodeRecords },
     'legacy-zero': { records:legacyAliases.zeroRecords },
+    'reading-docs': { records:buildReadingLocatorRecords(data.readingManifest) },
     work: { records:data.workStory.idols.map(idol=>({id:idol.idol_code,
       summary:pick(idol,['idol_code','display_name','work_type_name']),view:{idol,
         sourceEvidence:{entries:[...(idol.short_stories||[]),...(idol.scene_lines||[])]
@@ -209,6 +212,6 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     provenance: { sources, codeHashes, dataRevision, mediaEpoch, canonicalCounts: {
       rawCardRecords: data.cardIndex.cards.length, preferredCards: cards.length,
       storyEntries: stories.length, homeIdols: homes.length },
-      followupProducers: ['story catalog identity parity and resource projections','resources UI/provenance','reading document locator'],
+      followupProducers: ['story catalog identity parity and resource projections','resources UI/provenance','reading locator consumers'],
     } };
 }
