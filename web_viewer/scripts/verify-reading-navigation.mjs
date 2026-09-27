@@ -63,6 +63,10 @@ const context = { ...useArchiveNavigationState(), navigation, readingSession: se
   captureActiveArchiveView: () => {}, primeStoryRouteComponent: () => {} }
 context.playbackController = { reset: () => { context.currentScenario.value = null } }
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
+const bootstrapContext = {}
+vm.runInNewContext(app.match(/function isBootstrapRoute\([^]*?\n\}/)[0], bootstrapContext)
+assert.equal(bootstrapContext.isBootstrapRoute({ view: 'reader', reading: '1_4_001_00_a' }), true)
+assert.equal(bootstrapContext.isBootstrapRoute({ view: 'player', returnView: 'reader', reading: '1_4_001_00_a' }), true)
 vm.runInNewContext(app.match(/async function applyArchiveRoute\([^]*?\n\}/)[0], context)
 for (const source of [{ storyType: 'work', idol: '001tom', story: 'work.json' }, { event: '10001', parentView: 'story_catalog' }, { storyType: 'unit_story', storySection: '13', story: 'unit.json' },
   { storyType: 'birthday', storySection: '', story: 'birthday.json' }]) {

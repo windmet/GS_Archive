@@ -4266,7 +4266,8 @@ async function loadSongDetail(songCode) {
 }
 
 function isBootstrapRoute(route) {
-  return ['portal', 'welcome', 'idol_picker', 'home', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes'].includes(route.view) ||
+  return ['portal', 'welcome', 'idol_picker', 'home', 'reader', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes'].includes(route.view) ||
+    (route.view === 'player' && route.returnView === 'reader') ||
     (route.view === 'player' && route.returnView === 'mobile_archive') ||
     (route.view === 'player' && ['files', 'episodes', 'episode_zero_units', 'groups'].includes(route.returnView)) ||
     (route.view === 'idols' && (!route.category || route.category === 'idol'))
