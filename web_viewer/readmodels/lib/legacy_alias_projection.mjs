@@ -57,7 +57,7 @@ export function buildLegacyAliasRecords(compiledIndex, storyCatalog) {
   const addGroups = (categoryId, ownerId, title, groups) => {
     const id = ownerId ? `${categoryId}:${ownerId}` : categoryId;
     groupRecords.push({ id, summary: { categoryId, ownerId, title, groupCount: groups.length },
-      view: { groups: groups.map(group => addFiles(categoryId, ownerId, group)) } });
+      view: { title, groups: groups.map(group => addFiles(categoryId, ownerId, group)) } });
   };
   const categories = new Map((compiledIndex.categories || []).map(category => [category.id, category]));
   for (const id of ['main_story', 'event', 'extra']) {
