@@ -29,6 +29,7 @@
 - 第二次运行 `36296609792` 的 readmodels/路由检查通过，随后旧音频断言仍要求 `loading=ref(true)` 而失败。移除这个与按路由启动冲突的断言，保留 `__boot__` 防止过早挂载有声首页的检查；路由加载状态继续由 startup-route/async-navigation 测试验证。
 - 后续 source gate 本机预查发现两个旧 Pixi prototype fixture 未初始化现有的 `_textureOwner/_spawnLoads`，已补齐 fixture；屏幕效果和 tint 生命周期测试重新通过，未改动运行时行为。
 - external-resource UI 的旧源码匹配假定路由数组包含逗号，已改为检查当前直达/Player 返回条件，重跑通过。本机 `verify:archive-assets` 在 fixture HTTP 请求发生超时，单独保留为未通过项，不用于媒体或部署签收。
+- 远端 `36296867236` 继续暴露串联检查中第三个旧纹理 fixture，已补 `_textureOwner` 并检查结构化 `IMAGE_LOAD_FAILED` 错误。完整 `verify:story-screen-clock`（四个脚本）及 `verify:story-spine-cues` 均在本机通过。
 
 ## 下一批
 
