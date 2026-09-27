@@ -503,15 +503,9 @@ import { createReadingRepository } from './data/ReadingRepository.js'
 import { createReadingSession } from './core/ReadingSession.js'
 import ArchivePortalLauncher from './components/archive/ArchivePortalLauncher.vue'
 import ArchiveWelcome from './components/archive/ArchiveWelcome.vue'
-import ArchiveCardList from './components/archive/ArchiveCardList.vue'
-import ArchiveCardDetail from './components/archive/ArchiveCardDetail.vue'
-import ArchiveGashaCatalog from './components/archive/ArchiveGashaCatalog.vue'
-import ArchiveGashaDetail from './components/archive/ArchiveGashaDetail.vue'
-import ArchiveSongCatalog from './components/archive/ArchiveSongCatalog.vue'
 import { buildSongPresentation } from './presentation/SongPresentation.js'
 import { buildIdolReference } from './presentation/IdolReferencePresentation.js'
 import { resolveMobileArchiveUnit } from './core/mobileArchiveIdentity.js'
-import ArchiveSongDetail from './components/archive/ArchiveSongDetail.vue'
 import ArchiveIdolGrid from './components/archive/ArchiveIdolGrid.vue'
 import ArchiveIdolDetail from './components/archive/ArchiveIdolDetail.vue'
 import ArchiveGroupList from './components/archive/ArchiveGroupList.vue'
@@ -521,9 +515,6 @@ import ArchiveEpisodeList from './components/archive/ArchiveEpisodeList.vue'
 import ArchiveStatus from './components/archive/ArchiveStatus.vue'
 import ArchiveExternalStoryResources from './components/archive/ArchiveExternalStoryResources.vue'
 import { readyEpisodeReading } from './data/IdolStoryReading.js'
-import ArchiveMobileArchive from './components/archive/ArchiveMobileArchive.vue'
-import ArchiveUnitCatalog from './components/archive/ArchiveUnitCatalog.vue'
-import ArchiveUnitDetail from './components/archive/ArchiveUnitDetail.vue'
 import { loadArchiveData, loadCardDetailData, loadIdolCommunicationData } from './data/ArchiveDataRepository.js'
 import {
   buildCardMap,
@@ -614,7 +605,7 @@ const StoryViewer = defineAsyncComponent(storyViewerLoader)
 const ArchiveImmersiveHome = defineAsyncComponent(immersiveHomeLoader)
 const SpineViewer = defineAsyncComponent(spineViewerLoader)
 const ChibiStageViewer = defineAsyncComponent(chibiStageViewerLoader)
-const storyRouteLoaders = {
+const archiveRouteLoaders = {
   reader: () => import('./components/archive/ArchiveStoryReader.vue'),
   event_detail: () => import('./components/archive/ArchiveEventDetail.vue'),
   story_catalog: () => import('./components/archive/ArchiveStoryCatalog.vue'),
@@ -623,18 +614,36 @@ const storyRouteLoaders = {
   seasonal_campaign: () => import('./components/archive/ArchiveSeasonalCampaign.vue'),
   work_archive: () => import('./components/archive/ArchiveWorkStory.vue'),
   idol_story_archive: () => import('./components/archive/ArchiveIdolStory.vue'),
+  cards: () => import('./components/archive/ArchiveCardList.vue'),
+  card_detail: () => import('./components/archive/ArchiveCardDetail.vue'),
+  gashas: () => import('./components/archive/ArchiveGashaCatalog.vue'),
+  gasha_detail: () => import('./components/archive/ArchiveGashaDetail.vue'),
+  song_catalog: () => import('./components/archive/ArchiveSongCatalog.vue'),
+  song_detail: () => import('./components/archive/ArchiveSongDetail.vue'),
+  mobile_archive: () => import('./components/archive/ArchiveMobileArchive.vue'),
+  unit_catalog: () => import('./components/archive/ArchiveUnitCatalog.vue'),
+  unit_detail: () => import('./components/archive/ArchiveUnitDetail.vue'),
 }
-const ArchiveStoryReader = defineAsyncComponent(storyRouteLoaders.reader)
-const ArchiveEventDetail = defineAsyncComponent(storyRouteLoaders.event_detail)
-const ArchiveStoryCatalog = defineAsyncComponent(storyRouteLoaders.story_catalog)
-const ArchiveStoryDetail = defineAsyncComponent(storyRouteLoaders.story_detail)
-const ArchiveStoryCollection = defineAsyncComponent(storyRouteLoaders.story_collection)
-const ArchiveSeasonalCampaign = defineAsyncComponent(storyRouteLoaders.seasonal_campaign)
-const ArchiveWorkStory = defineAsyncComponent(storyRouteLoaders.work_archive)
-const ArchiveIdolStory = defineAsyncComponent(storyRouteLoaders.idol_story_archive)
-function primeStoryRouteComponent(routeView) {
-  const load = storyRouteLoaders[routeView]
-  if (load) load().catch(error => console.error(`[StoryRoute] Could not load ${routeView}:`, error))
+const ArchiveStoryReader = defineAsyncComponent(archiveRouteLoaders.reader)
+const ArchiveEventDetail = defineAsyncComponent(archiveRouteLoaders.event_detail)
+const ArchiveStoryCatalog = defineAsyncComponent(archiveRouteLoaders.story_catalog)
+const ArchiveStoryDetail = defineAsyncComponent(archiveRouteLoaders.story_detail)
+const ArchiveStoryCollection = defineAsyncComponent(archiveRouteLoaders.story_collection)
+const ArchiveSeasonalCampaign = defineAsyncComponent(archiveRouteLoaders.seasonal_campaign)
+const ArchiveWorkStory = defineAsyncComponent(archiveRouteLoaders.work_archive)
+const ArchiveIdolStory = defineAsyncComponent(archiveRouteLoaders.idol_story_archive)
+const ArchiveCardList = defineAsyncComponent(archiveRouteLoaders.cards)
+const ArchiveCardDetail = defineAsyncComponent(archiveRouteLoaders.card_detail)
+const ArchiveGashaCatalog = defineAsyncComponent(archiveRouteLoaders.gashas)
+const ArchiveGashaDetail = defineAsyncComponent(archiveRouteLoaders.gasha_detail)
+const ArchiveSongCatalog = defineAsyncComponent(archiveRouteLoaders.song_catalog)
+const ArchiveSongDetail = defineAsyncComponent(archiveRouteLoaders.song_detail)
+const ArchiveMobileArchive = defineAsyncComponent(archiveRouteLoaders.mobile_archive)
+const ArchiveUnitCatalog = defineAsyncComponent(archiveRouteLoaders.unit_catalog)
+const ArchiveUnitDetail = defineAsyncComponent(archiveRouteLoaders.unit_detail)
+function primeArchiveRouteComponent(routeView) {
+  const load = archiveRouteLoaders[routeView]
+  if (load) load().catch(error => console.error(`[ArchiveRoute] Could not load ${routeView}:`, error))
 }
 
 function resolveChatName(ch) {
@@ -1608,7 +1617,7 @@ function syncArchiveRoute({ replace = false, restoreView = true } = {}) {
 }
 
 function commitView(nextView, options = {}) {
-  primeStoryRouteComponent(nextView)
+  primeArchiveRouteComponent(nextView)
   captureActiveArchiveView()
   navigation.invalidate()
   if (nextView !== 'player') playbackController.reset()
@@ -1689,7 +1698,7 @@ async function restoreVoicePreview(route, intent) {
 }
 
 async function applyArchiveRoute(route, { restoring = true } = {}) {
-  primeStoryRouteComponent(route.view)
+  primeArchiveRouteComponent(route.view)
   captureActiveArchiveView()
   loadingPurpose.value = route.view === 'player' ? 'story-playback' : 'archive-data'
   return navigation.run(async intent => {
@@ -4301,7 +4310,7 @@ onMounted(async () => {
   let restoreRequest = 0
   const restoreRoute = async route => {
     const request = ++restoreRequest
-    primeStoryRouteComponent(route.view)
+    primeArchiveRouteComponent(route.view)
     ++pendingSongNavigation
     ++pendingHomeNavigation
     ++pendingIdolNavigation

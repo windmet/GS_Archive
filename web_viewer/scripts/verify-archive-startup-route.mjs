@@ -46,7 +46,7 @@ for (const disposed of [false, true]) {
   // Supply refs used by the actual startup callback; execute its production
   // control flow rather than reproducing the order of awaits in a fixture.
   for (const match of source.matchAll(/\b(\w+)\.value\s*=/g)) context[match[1]] = { value: null }
-  context.primeStoryRouteComponent = () => {}
+  context.primeArchiveRouteComponent = () => {}
   vm.runInNewContext(source, context)
   const pending = mount()
   const latestRoute = { view: 'idol_detail', idol: '002sht' }
@@ -83,7 +83,7 @@ for (const disposed of [false, true]) {
     installSpineAnimationDebug: () => () => {}, adoptArchiveViewContext: () => {}, console, archiveRouteReady: false,
   }
   for (const match of source.matchAll(/\b(\w+)\.value\s*=/g)) context[match[1]] = { value: null }
-  context.primeStoryRouteComponent = () => {}
+  context.primeArchiveRouteComponent = () => {}
   vm.runInNewContext(source, context)
   const pending = mount()
   await new Promise(resolve => setImmediate(resolve))
@@ -122,7 +122,7 @@ for (const asynchronous of [false, true]) {
   for (const match of source.matchAll(/\b(\w+)\.value\s*=/g)) context[match[1]] = { value: null }
   context.loading = loading
   const syncSource = app.slice(app.indexOf('function syncArchiveRoute('), app.indexOf('function commitView('))
-  context.primeStoryRouteComponent = () => {}
+  context.primeArchiveRouteComponent = () => {}
   vm.runInNewContext(source + '\n' + syncSource, context)
   const pending = mount()
   await new Promise(resolve => setImmediate(resolve))
