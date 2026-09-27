@@ -4,6 +4,12 @@ import vm from 'node:vm'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
+const bootstrapContext = {}
+vm.runInNewContext(app.match(/function isBootstrapRoute\([^]*?\n\}/)[0], bootstrapContext)
+for (const returnView of ['story_catalog', 'story_collection', 'story_detail']) {
+  assert.equal(bootstrapContext.isBootstrapRoute({ view: 'player', returnView }), true,
+    `${returnView} player refresh must not wait for the legacy archive batch`)
+}
 const source = app.slice(app.indexOf('onMounted(async () => {'), app.indexOf('\nwatch([filterQuery', app.indexOf('onMounted(async () => {')))
 function deferred() {
   let resolve
