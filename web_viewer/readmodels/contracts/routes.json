@@ -1672,15 +1672,15 @@
     {
       "view": "chibi_stage",
       "entry": {
-        "status": "legacy",
+        "status": "migrated",
         "evidence": [
-          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+          "docs/GS_ARCHITECTURE_CHIBI_STAGE_STARTUP_20260927.md"
         ]
       },
       "data": {
-        "status": "legacy",
+        "status": "partial",
         "evidence": [
-          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+          "docs/GS_ARCHITECTURE_CHIBI_STAGE_STARTUP_20260927.md"
         ]
       },
       "actions": {
@@ -1703,18 +1703,24 @@
         ]
       },
       "parity": {
-        "status": "pending",
+        "status": "partial",
         "evidence": [
-          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+          "docs/GS_ARCHITECTURE_CHIBI_STAGE_STARTUP_20260927.md"
         ]
       },
-      "browserEvidence": [],
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_CHIBI_STAGE_STARTUP_20260927.md",
+          "scope": "Generic and targeted stage direct load, song switch, and return to song detail on mapped local production code."
+        }
+      ],
       "device": {
         "status": "pending",
         "evidence": []
       },
       "legacyRemaining": [
-        "direct startup enters global archive load and stage data contract is not migrated"
+        "stage choreography and timeline manifest remain feature-local legacy sources; exhaustive stage parity and device acceptance remain pending"
       ],
       "blockedReasons": []
     }

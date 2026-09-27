@@ -463,7 +463,7 @@
     <SpineViewer v-if="view === 'spine_lab'" :back-label="labBackLabel" @back="closeArchiveExperiment" @open-stage="openChibiStage" />
     <ChibiStageViewer
       v-if="view === 'chibi_stage'"
-      :audio-experiments="songExperimentalAudioData?.songs || {}"
+      :audio-experiments="stageAudioExperiments"
       :stage-target-id="stageTargetId"
       :stage-song-code="currentSongId"
       :stage-handoff="stageHandoff"
@@ -1440,6 +1440,9 @@ const archiveShellVisible = computed(() => !['__boot__', 'player', 'spine_lab', 
 
 const currentSong = computed(() => songReadModelDetail.value?.id === currentSongId.value
   ? songReadModelDetail.value.song : songCatalogData.value?.songs?.[currentSongId.value] || null)
+const stageAudioExperiments = computed(() => songReadModelDetail.value?.experimental
+  ? { [songReadModelDetail.value.id]: songReadModelDetail.value.experimental }
+  : {})
 const currentSongPresentation = computed(() => songReadModelDetail.value?.id === currentSongId.value
   ? songReadModelDetail.value.view : buildSongPresentation(currentSong.value, idolUnitData.value, {
   playbackTrack: songPlaybackAudioData.value?.songs?.[currentSongId.value] || null,
@@ -2471,6 +2474,17 @@ async function openChibiStage(target = null) {
     preloadProgress.value = 100
     await chibiStageViewerLoader()
     if (!intent.isCurrent()) return
+    const songCode = target?.songCode || 'drvalv'
+    if (songReadModelDetail.value?.id !== songCode) {
+      try {
+        const detail = await loadSongDetail(songCode)
+        if (!intent.isCurrent()) return
+        songReadModelDetail.value = detail
+      } catch (error) {
+        if (!intent.isCurrent()) return
+        console.error('[StageReadModel] Failed to load song audio experiment:', error)
+      }
+    }
     stageTargetId.value = target?.choreographyId || ''
     currentSongId.value = stageTargetId.value ? target.songCode : ''
     stageHandoff.value = target?.stageHandoff || null
@@ -2494,6 +2508,16 @@ function updateStageTarget(target) {
   currentSongId.value = target.songCode
   stageHandoff.value = null
   syncArchiveRoute({ replace: true, restoreView: false })
+  if (songReadModelDetail.value?.id === target.songCode) return
+  const revision = navigation.getRevision()
+  loadSongDetail(target.songCode).then(detail => {
+    if (navigation.isDisposed() || revision !== navigation.getRevision() ||
+        view.value !== 'chibi_stage' || currentSongId.value !== target.songCode) return
+    songReadModelDetail.value = detail
+  }).catch(error => {
+    if (revision === navigation.getRevision() && view.value === 'chibi_stage')
+      console.error('[StageReadModel] Failed to switch song audio experiment:', error)
+  })
 }
 
 function openArchiveStatus() {
@@ -4302,7 +4326,7 @@ async function loadSongDetail(songCode) {
 
 function isBootstrapRoute(route) {
   return (!EXTERNAL_STORY_RESOURCES_ENABLED && route.view === 'external_story_resources') ||
-    ['portal', 'welcome', 'idol_picker', 'home', 'reader', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes', 'spine_lab'].includes(route.view) ||
+    ['portal', 'welcome', 'idol_picker', 'home', 'reader', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes', 'spine_lab', 'chibi_stage'].includes(route.view) ||
     (route.view === 'player' && route.returnView === 'reader') ||
     (route.view === 'player' && route.returnView === 'mobile_archive') ||
     (route.view === 'player' && ['story_catalog', 'story_collection', 'story_detail'].includes(route.returnView)) ||
@@ -4541,16 +4565,18 @@ onMounted(async () => {
       }
     }
     if (route.view === 'song_catalog') await ensureSongCatalog()
-    if (route.view === 'song_detail' && route.song) {
+    if (['song_detail', 'chibi_stage'].includes(route.view) && (route.song || route.view === 'chibi_stage')) {
       try {
-        const detail = await loadSongDetail(route.song)
+        const detail = await loadSongDetail(route.song || 'drvalv')
         if (request === restoreRequest) songReadModelDetail.value = detail
         songReadModelStatus.value = ''
       } catch (error) {
         if (request !== restoreRequest) return
         console.error('[SongReadModel] Failed to restore song detail:', error)
-        await ensureSongCatalog()
-        songReadModelStatus.value = '歌曲详情暂时无法读取，请重新选择。'
+        if (route.view === 'song_detail') {
+          await ensureSongCatalog()
+          songReadModelStatus.value = '歌曲详情暂时无法读取，请重新选择。'
+        }
       }
     }
     if (navigation.isDisposed() || request !== restoreRequest) return
