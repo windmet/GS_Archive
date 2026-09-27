@@ -4,7 +4,7 @@ import { pathToFileURL } from 'node:url';
 import { assert, safeRead, sha256, jsonBytes, listFiles, pick } from './common.mjs';
 import { buildMobileRecords } from './mobile_projection.mjs';
 import { buildLegacyAliasRecords } from './legacy_alias_projection.mjs';
-import { buildReadingLocatorRecords } from './reading_locator_projection.mjs';
+import { buildReadingLocatorRecords, readingEntriesForFiles } from './reading_locator_projection.mjs';
 
 export const INPUTS = {
  cardIndex: 'data/masterdata/card_index.json', cardDetailIndex: 'data/masterdata/card_detail_index.json',
@@ -116,7 +116,8 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     const birthdayIdol = story.domain === 'birthday' ? modules.characterImages.birthdayStoryIdolCode(story) : '';
     const promotedVisualUrl = birthdayIdol
       ? modules.characterImages.getPromotedCharacterImageUrl('birthday_visual',birthdayIdol,data.rawCharacterImagePromotions) : '';
-    return [story.id,{ related, castReferences, promotedVisualUrl }];
+    return [story.id,{ related, castReferences, promotedVisualUrl,
+      readingEntries:readingEntriesForFiles(data.readingManifest.entries,[story.file],{includeChildrenOf:[story.file]}) }];
   }));
   const birthdayDomain = modules.domainIdentity.buildBirthdayStoryDomainIdentity(data.storyCatalog,data.idolUnit,data.speakerDictionary,data.birthdayStorySemantic);
   const extraDomain = modules.domainIdentity.buildExtraStoryDomainIdentity(data.storyCatalog,data.gashaIndex,data.extraStoryVisualIndex);
@@ -152,9 +153,10 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     events: { searchable: true, records: (data.archiveManifest.unit_event_relations || []).map(event => {
       const story = stories.find(s => s.file === event.file) || null;
       const units = new Set((event.participating_unit_ids || []).map(String));
+      const episodes = modules.eventEpisodes.buildEventStoryEpisodes(event,story,data.storyCatalog);
       return { id: String(event.event_id), summary: pick(event,['event_id','event_code','title','release_at','event_scope']), view:{
         event, masterEvent:data.eventIndex.by_code?.[String(event.event_code)]||null, story,
-        episodes:modules.eventEpisodes.buildEventStoryEpisodes(event,story,data.storyCatalog),
+        episodes, readingEntries:readingEntriesForFiles(data.readingManifest.entries,episodes.map(episode=>episode.file)),
         cards:(data.archiveManifest.event_card_relations_by_event?.[String(event.event_id)]||[]).map(relation=>({...relation,
           card_title:cardMap.get(relation.card_resource_id)?.title||relation.card_resource_id,
           character_name:data.idolUnit.by_idol_code?.[relation.character_id]?.display_name||relation.character_id})),
@@ -175,16 +177,21 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     units: { records:unitCatalog.map(entry=>projectUnitRecord(entry,
       modules.unitPage.storiesForUnit(entry.unit,stories),modules.unitPage.songsForUnit(entry.unit,data.songCatalog))) },
     collections: { searchable:true, records:collections.map(collection=>({id:collection.id,
-      summary:pick(collection,['title','domain','sectionId','legacySectionIds','visualUrl','chapterCount','episodeCount']),view:{collection}})) },
+      summary:pick(collection,['title','domain','sectionId','legacySectionIds','visualUrl','chapterCount','episodeCount']),view:{collection,
+        readingEntries:readingEntriesForFiles(data.readingManifest.entries,
+          collection.chapters.flatMap(chapter=>(chapter.episodes||[]).map(episode=>episode.file)))}})) },
     'idol-stories': { records:data.idolEpisode.chapters.map(chapter=>({id:chapter.idol_code,summary:{
       idolCode:chapter.idol_code,idolName:chapter.idol_name,
       unitName:data.idolUnit.by_idol_code?.[chapter.idol_code]?.unit_name||'',
       color:data.idolUnit.by_idol_code?.[chapter.idol_code]?.color||'#168f87',
       sectionCount:chapter.sections?.length||0,
       episodeCount:(chapter.sections||[]).reduce((sum,section)=>sum+(section.episodes?.length||0),0),
-    },view:{
-      page:(()=>{const page=modules.idolStories.buildIdolStoryPage(data.idolEpisode,data.mobileArchive,stories,data.idolUnit,chapter.idol_code,birthdayDomain);return page?{...page,unitName:data.archiveManifest.unit_membership_by_idol?.[chapter.idol_code]?.unit_name||page.unitName}:null})(),
-    }})) },
+    },view:(()=>{
+      const page=modules.idolStories.buildIdolStoryPage(data.idolEpisode,data.mobileArchive,stories,data.idolUnit,chapter.idol_code,birthdayDomain);
+      return { page:page?{...page,unitName:data.archiveManifest.unit_membership_by_idol?.[chapter.idol_code]?.unit_name||page.unitName}:null,
+        readingEntries:readingEntriesForFiles(data.readingManifest.entries,
+          (page?.sections||[]).flatMap(section=>(section.episodes||[]).map(episode=>episode.file))) };
+    })()})) },
     'mobile-idols': { records:mobileRecords.idolRecords },
     'mobile-units': { records:mobileRecords.unitRecords },
     'legacy-groups': { records:legacyAliases.groupRecords },
@@ -194,6 +201,8 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     'reading-docs': { records:buildReadingLocatorRecords(data.readingManifest) },
     work: { records:data.workStory.idols.map(idol=>({id:idol.idol_code,
       summary:pick(idol,['idol_code','display_name','work_type_name']),view:{idol,
+        readingEntries:readingEntriesForFiles(data.readingManifest.entries,
+          [...(idol.short_stories||[]),...(idol.scene_lines||[])].map(entry=>entry.compiled_file)),
         sourceEvidence:{entries:[...(idol.short_stories||[]),...(idol.scene_lines||[])]
           .filter(entry=>entry._source).map(entry=>({id:entry.id,source:entry._source}))}}})) },
     seasonal: { searchable:true,records:data.seasonalCampaign.campaigns.map(campaign=>({id:campaign.id,

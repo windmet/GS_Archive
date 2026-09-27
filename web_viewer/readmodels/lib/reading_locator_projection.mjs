@@ -27,3 +27,9 @@ export function buildReadingLocatorRecords(manifest) {
     };
   });
 }
+
+export function readingEntriesForFiles(entries, files, { includeChildrenOf = [] } = {}) {
+  const sources = new Set(files.filter(Boolean));
+  const parents = new Set(includeChildrenOf.filter(Boolean));
+  return entries.filter(entry => sources.has(entry.source_file) || parents.has(entry.parent_file));
+}
