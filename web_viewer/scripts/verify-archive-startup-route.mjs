@@ -18,6 +18,10 @@ for (const returnView of ['story_catalog', 'story_collection', 'story_detail',
     `${returnView} player refresh must not wait for the legacy archive batch`)
 }
 assert.equal(bootstrapContext.isBootstrapRoute({ view: 'idols', category: 'cards' }), true)
+for (const category of ['', 'idol', 'cards', 'event', 'main_story', 'episode_zero', 'extra']) {
+  assert.equal(bootstrapContext.isBootstrapRoute({ view: 'idols', category }), true,
+    `idols/${category || 'default'} uses the inline idol directory and must not load the legacy archive batch`)
+}
 assert.equal(bootstrapContext.isBootstrapRoute({ view: 'spine_lab' }), true,
   'Spine Lab owns its manifest and must not wait for the global archive batch')
 assert.equal(bootstrapContext.isBootstrapRoute({ view: 'chibi_stage' }), true,

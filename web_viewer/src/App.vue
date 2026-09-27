@@ -1797,9 +1797,7 @@ function navigateArchiveSection(section) {
     if (!archiveDataReady.value) loading.value = false
     return openArchivePortal()
   }
-  if (!['portal', 'home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions'].includes(section) && !archiveDataReady.value) {
-    return runWhenLegacyReady(() => navigateArchiveSection(section))
-  }
+  if (!['home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions'].includes(section)) return
   if (section !== 'portal' && section !== 'home') {
     detailSourceRoute.value = view.value === 'portal' ? buildArchiveSourceQuery(currentArchiveRoute()) : ''
   }
@@ -4152,7 +4150,7 @@ function isBootstrapRoute(route) {
     (route.view === 'player' && ['event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive'].includes(route.returnView)) ||
     (route.view === 'player' && ['unit_detail', 'card_detail'].includes(route.returnView)) ||
     (route.view === 'player' && ['files', 'episodes', 'episode_zero_units', 'groups'].includes(route.returnView)) ||
-    (route.view === 'idols' && (!route.category || ['idol', 'cards'].includes(route.category)))
+    route.view === 'idols'
 }
 
 function runWhenLegacyReady(action) {
