@@ -3,6 +3,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { assert, safeRead, sha256, jsonBytes, listFiles, pick } from './common.mjs';
 import { buildMobileRecords } from './mobile_projection.mjs';
+import { buildLegacyAliasRecords } from './legacy_alias_projection.mjs';
 
 export const INPUTS = {
  cardIndex: 'data/masterdata/card_index.json', cardDetailIndex: 'data/masterdata/card_detail_index.json',
@@ -136,6 +137,7 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     unitName: data.archiveManifest.unit_membership_by_idol?.[id]?.unit_name || profile.unit_name || '',
   }));
   const mobileRecords = buildMobileRecords(data, modules.mobile);
+  const legacyAliases = buildLegacyAliasRecords(data.compiledIndex, data.storyCatalog);
   // Explicitly scoped leaves: these are source-owned domain records, not root-level index dumps.
   // The UI integration guide specifies which remaining joins must move into offline route producers.
   const extraDomains = {
@@ -183,6 +185,10 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     }})) },
     'mobile-idols': { records:mobileRecords.idolRecords },
     'mobile-units': { records:mobileRecords.unitRecords },
+    'legacy-groups': { records:legacyAliases.groupRecords },
+    'legacy-files': { records:legacyAliases.fileRecords },
+    'legacy-episodes': { records:legacyAliases.episodeRecords },
+    'legacy-zero': { records:legacyAliases.zeroRecords },
     work: { records:data.workStory.idols.map(idol=>({id:idol.idol_code,
       summary:pick(idol,['idol_code','display_name','work_type_name']),view:{idol,
         sourceEvidence:{entries:[...(idol.short_stories||[]),...(idol.scene_lines||[])]
@@ -203,6 +209,6 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     provenance: { sources, codeHashes, dataRevision, mediaEpoch, canonicalCounts: {
       rawCardRecords: data.cardIndex.cards.length, preferredCards: cards.length,
       storyEntries: stories.length, homeIdols: homes.length },
-      followupProducers: ['story catalog identity parity and resource projections','resources UI/provenance','reading document locator','legacy groups/files directory aliases'],
+      followupProducers: ['story catalog identity parity and resource projections','resources UI/provenance','reading document locator'],
     } };
 }
