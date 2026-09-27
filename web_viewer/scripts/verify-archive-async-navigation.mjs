@@ -53,6 +53,7 @@ function setup() {
     fetch: () => { const request = deferred(); requests.push(request); return request.promise },
     writeArchiveRoute: route => writes.push(route),
     captureActiveArchiveView: () => {},
+    primeStoryRouteComponent: () => {},
     adoptArchiveViewContext: () => {},
     console: { error: (...args) => errors.push(args) },
   })

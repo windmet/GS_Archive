@@ -65,6 +65,7 @@ const restoreContext = {
   currentScenario: { value: { steps: ['previous playback payload'] } },
   loadingPurpose: { value: 'archive-data' },
   captureActiveArchiveView: () => {},
+  primeStoryRouteComponent: () => {},
 }
 restoreContext.playbackController = { reset: () => { restoreContext.currentScenario.value = null } }
 vm.runInNewContext(app.match(/async function applyArchiveRoute\([^]*?\n\}/)[0], restoreContext)

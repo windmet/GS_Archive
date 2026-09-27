@@ -33,8 +33,8 @@ Legacy group, file and Episode Zero URLs use source-derived aliases. A directory
 loads only its selected group or unit; a file route loads one group leaf with
 ordered file metadata and missing-file states.
 Reader document routes now resolve one pinned locator and its same-story segments; story, collection, event, work and idol-story detail leaves carry their own matching reading entries.
-The full route cutover and dynamic feature
-imports remain open.
+Eight story-facing route components now use dynamic imports. Remaining feature
+imports and the full route cutover remain open.
 No Pages candidate has been assembled or deployed. The package's route
 checklist in `contracts/routes.json` remains the cutover inventory.
 

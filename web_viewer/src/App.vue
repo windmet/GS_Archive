@@ -501,7 +501,6 @@ import ArchiveShell from './components/archive/ArchiveShell.vue'
 import { readingPlaybackTarget } from './core/ReadingPlayback.js'
 import { createReadingRepository } from './data/ReadingRepository.js'
 import { createReadingSession } from './core/ReadingSession.js'
-import ArchiveStoryReader from './components/archive/ArchiveStoryReader.vue'
 import ArchivePortalLauncher from './components/archive/ArchivePortalLauncher.vue'
 import ArchiveWelcome from './components/archive/ArchiveWelcome.vue'
 import ArchiveCardList from './components/archive/ArchiveCardList.vue'
@@ -513,7 +512,6 @@ import { buildSongPresentation } from './presentation/SongPresentation.js'
 import { buildIdolReference } from './presentation/IdolReferencePresentation.js'
 import { resolveMobileArchiveUnit } from './core/mobileArchiveIdentity.js'
 import ArchiveSongDetail from './components/archive/ArchiveSongDetail.vue'
-import ArchiveEventDetail from './components/archive/ArchiveEventDetail.vue'
 import ArchiveIdolGrid from './components/archive/ArchiveIdolGrid.vue'
 import ArchiveIdolDetail from './components/archive/ArchiveIdolDetail.vue'
 import ArchiveGroupList from './components/archive/ArchiveGroupList.vue'
@@ -521,14 +519,8 @@ import ArchiveFileList from './components/archive/ArchiveFileList.vue'
 import ArchiveUnitGrid from './components/archive/ArchiveUnitGrid.vue'
 import ArchiveEpisodeList from './components/archive/ArchiveEpisodeList.vue'
 import ArchiveStatus from './components/archive/ArchiveStatus.vue'
-import ArchiveStoryCatalog from './components/archive/ArchiveStoryCatalog.vue'
 import ArchiveExternalStoryResources from './components/archive/ArchiveExternalStoryResources.vue'
-import ArchiveStoryDetail from './components/archive/ArchiveStoryDetail.vue'
-import ArchiveStoryCollection from './components/archive/ArchiveStoryCollection.vue'
-import ArchiveSeasonalCampaign from './components/archive/ArchiveSeasonalCampaign.vue'
-import ArchiveWorkStory from './components/archive/ArchiveWorkStory.vue'
 import { readyEpisodeReading } from './data/IdolStoryReading.js'
-import ArchiveIdolStory from './components/archive/ArchiveIdolStory.vue'
 import ArchiveMobileArchive from './components/archive/ArchiveMobileArchive.vue'
 import ArchiveUnitCatalog from './components/archive/ArchiveUnitCatalog.vue'
 import ArchiveUnitDetail from './components/archive/ArchiveUnitDetail.vue'
@@ -622,6 +614,28 @@ const StoryViewer = defineAsyncComponent(storyViewerLoader)
 const ArchiveImmersiveHome = defineAsyncComponent(immersiveHomeLoader)
 const SpineViewer = defineAsyncComponent(spineViewerLoader)
 const ChibiStageViewer = defineAsyncComponent(chibiStageViewerLoader)
+const storyRouteLoaders = {
+  reader: () => import('./components/archive/ArchiveStoryReader.vue'),
+  event_detail: () => import('./components/archive/ArchiveEventDetail.vue'),
+  story_catalog: () => import('./components/archive/ArchiveStoryCatalog.vue'),
+  story_detail: () => import('./components/archive/ArchiveStoryDetail.vue'),
+  story_collection: () => import('./components/archive/ArchiveStoryCollection.vue'),
+  seasonal_campaign: () => import('./components/archive/ArchiveSeasonalCampaign.vue'),
+  work_archive: () => import('./components/archive/ArchiveWorkStory.vue'),
+  idol_story_archive: () => import('./components/archive/ArchiveIdolStory.vue'),
+}
+const ArchiveStoryReader = defineAsyncComponent(storyRouteLoaders.reader)
+const ArchiveEventDetail = defineAsyncComponent(storyRouteLoaders.event_detail)
+const ArchiveStoryCatalog = defineAsyncComponent(storyRouteLoaders.story_catalog)
+const ArchiveStoryDetail = defineAsyncComponent(storyRouteLoaders.story_detail)
+const ArchiveStoryCollection = defineAsyncComponent(storyRouteLoaders.story_collection)
+const ArchiveSeasonalCampaign = defineAsyncComponent(storyRouteLoaders.seasonal_campaign)
+const ArchiveWorkStory = defineAsyncComponent(storyRouteLoaders.work_archive)
+const ArchiveIdolStory = defineAsyncComponent(storyRouteLoaders.idol_story_archive)
+function primeStoryRouteComponent(routeView) {
+  const load = storyRouteLoaders[routeView]
+  if (load) load().catch(error => console.error(`[StoryRoute] Could not load ${routeView}:`, error))
+}
 
 function resolveChatName(ch) {
   // index may store raw chara_id such as "031sak"; resolve to display name.
@@ -1594,6 +1608,7 @@ function syncArchiveRoute({ replace = false, restoreView = true } = {}) {
 }
 
 function commitView(nextView, options = {}) {
+  primeStoryRouteComponent(nextView)
   captureActiveArchiveView()
   navigation.invalidate()
   if (nextView !== 'player') playbackController.reset()
@@ -1674,6 +1689,7 @@ async function restoreVoicePreview(route, intent) {
 }
 
 async function applyArchiveRoute(route, { restoring = true } = {}) {
+  primeStoryRouteComponent(route.view)
   captureActiveArchiveView()
   loadingPurpose.value = route.view === 'player' ? 'story-playback' : 'archive-data'
   return navigation.run(async intent => {
@@ -4286,6 +4302,7 @@ onMounted(async () => {
   let restoreRequest = 0
   const restoreRoute = async route => {
     const request = ++restoreRequest
+    primeStoryRouteComponent(route.view)
     ++pendingSongNavigation
     ++pendingHomeNavigation
     ++pendingIdolNavigation

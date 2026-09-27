@@ -23,7 +23,7 @@ for (const disposed of [false, true]) {
     userPreferences: { value: {} },
     archiveBootstrap: { idols: [{ id: '002sht' }] },
     initialArchiveStartup: { route, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
-    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
+    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingMobileNavigation: 0, pendingLegacyAliasNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
     isBootstrapRoute: () => false, ensureLegacyArchiveData: () => loading.promise,
     loadIdolDetail: async idolCode => ({ id: idolCode, view: { profile: { idol_code: idolCode } } }),
     loadIdolEntityTranslations: () => translations.promise,
@@ -39,6 +39,7 @@ for (const disposed of [false, true]) {
   // Supply refs used by the actual startup callback; execute its production
   // control flow rather than reproducing the order of awaits in a fixture.
   for (const match of source.matchAll(/\b(\w+)\.value\s*=/g)) context[match[1]] = { value: null }
+  context.primeStoryRouteComponent = () => {}
   vm.runInNewContext(source, context)
   const pending = mount()
   const latestRoute = { view: 'idol_detail', idol: '002sht' }
@@ -65,7 +66,7 @@ for (const disposed of [false, true]) {
     onMounted: callback => { mount = callback }, localStorage: { getItem: () => null },
     window: { location: { href: 'http://localhost/' } }, userPreferences: { value: {} },
     initialArchiveStartup: { route: { ...route }, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
-    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
+    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingMobileNavigation: 0, pendingLegacyAliasNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
     loadGashaCatalog: async () => ({ rows: [] }),
     isBootstrapRoute: () => false, ensureLegacyArchiveData: async () => {},
     loadIdolEntityTranslations: async () => {}, navigation,
@@ -75,6 +76,7 @@ for (const disposed of [false, true]) {
     installSpineAnimationDebug: () => () => {}, adoptArchiveViewContext: () => {}, console, archiveRouteReady: false,
   }
   for (const match of source.matchAll(/\b(\w+)\.value\s*=/g)) context[match[1]] = { value: null }
+  context.primeStoryRouteComponent = () => {}
   vm.runInNewContext(source, context)
   const pending = mount()
   await new Promise(resolve => setImmediate(resolve))
@@ -99,7 +101,7 @@ for (const asynchronous of [false, true]) {
     onMounted: callback => { mount = callback }, localStorage: { getItem: () => null },
     window: { location: { href: 'http://localhost/' } }, userPreferences: { value: {} },
     initialArchiveStartup: { route: { view: 'player' }, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
-    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
+    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingMobileNavigation: 0, pendingLegacyAliasNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
     isBootstrapRoute: () => false, ensureLegacyArchiveData: async () => {},
     loadIdolEntityTranslations: async () => {}, navigation,
     applyArchiveRoute: () => navigation.run(async intent => {
@@ -113,6 +115,7 @@ for (const asynchronous of [false, true]) {
   for (const match of source.matchAll(/\b(\w+)\.value\s*=/g)) context[match[1]] = { value: null }
   context.loading = loading
   const syncSource = app.slice(app.indexOf('function syncArchiveRoute('), app.indexOf('function commitView('))
+  context.primeStoryRouteComponent = () => {}
   vm.runInNewContext(source + '\n' + syncSource, context)
   const pending = mount()
   await new Promise(resolve => setImmediate(resolve))
