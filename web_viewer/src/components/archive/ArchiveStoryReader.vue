@@ -19,7 +19,8 @@
       </p>
       <button v-if="state.status === 'ready'" class="reader-full-play" :disabled="busy" @click="emit('play-document')">{{ busy ? '正在准备演出…' : '播放完整剧情（实验）' }}</button>
       <p v-if="notice" ref="playbackNotice" tabindex="-1" class="reader-notice" role="alert">{{ notice }} <button class="reader-play" :disabled="busy" @click="emit('refresh')">重新载入正文</button></p>
-      <p v-if="state.status === 'loading'" role="status">正在载入正文…</p>
+      <GsLoadingIndicator v-if="state.status === 'loading'" class="reader-loading"
+        variant="inline" message="正在载入正文…" />
       <div v-else-if="state.status === 'error'" class="reader-feedback" role="alert"><h2>正文暂时无法载入</h2><p>请重试，或选择其他分段。</p><button @click="emit('retry')">重试</button><details><summary>加载详情</summary><p>{{ state.error }}</p></details></div>
       <p v-else-if="state.status === 'not-generated'" role="status">这个分段尚未生成阅读正文，请选择已有分段。</p>
       <p v-else-if="state.status === 'empty'" role="status">这个分段没有可显示的正文。</p>
@@ -58,6 +59,7 @@
 
 <script setup>
 import MobileStamp from '../mobile/MobileStamp.vue'
+import GsLoadingIndicator from '../GsLoadingIndicator.vue'
 import { reflowReadingText } from '../../../shared/reading/ReadingTypography.js'
 import { computed, nextTick, ref, watch } from 'vue'
 import ArchivePageChrome from './ArchivePageChrome.vue'
@@ -206,4 +208,5 @@ h1 { margin: 0; font-size: 26px; line-height: 1.5; letter-spacing: -.5px; outlin
 .reader-feedback details { margin-top: 18px; overflow-wrap: anywhere; }
 .reader-feedback summary { cursor: pointer; }
 @media (max-width: 760px) { .reader-row { padding: 20px 18px; } .reader-search { padding: 12px; } .reader-search label { display: block; white-space: normal; } .reader-search input { box-sizing: border-box; margin-top: 8px; } .reader-languages { flex: 1; } .reader-body { padding: 24px 20px 40px; } h1 { font-size: 24px; } .reader-primary { font-size: 16px; } .reader-secondary { font-size: 15px; } .kind-title .reader-primary { font-size: 19px; } }
+.reader-loading { margin-block: 18px; max-width: 100%; }
 </style>

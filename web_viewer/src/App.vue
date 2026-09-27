@@ -416,6 +416,9 @@
       <p v-if="!loading && storyReadModelStatus" role="status">{{ storyReadModelStatus }}</p>
       <p v-if="!loading && resourceReadModelStatus" role="status">{{ resourceReadModelStatus }}</p>
       <p v-if="['unit_catalog', 'unit_detail'].includes(view) && unitReadModelStatus" class="unit-read-model-status" role="status">{{ unitReadModelStatus }}</p>
+      <template #pending>
+        <GsLoadingIndicator v-if="routePending" variant="inline" message="正在准备下一页…" />
+      </template>
     </ArchiveShell>
 
     <!-- ====== STORY PLAYER ====== -->
@@ -471,8 +474,10 @@
     />
 
     <!-- ====== PRELOADER LOADING SCREEN ====== -->
-    <p v-if="routePending" class="archive-route-pending" role="status" aria-live="polite">正在准备下一页…</p>
-    <LoadingScreen :can-cancel="Boolean(playbackController.pendingEntry.value) || playbackBuffering" @cancel="playbackController.close()" :visible="(hardLoading || playbackBuffering) && view !== 'reader' && !(view === 'player' && !loading && playbackReadiness?.status === 'waiting' && playbackReadiness?.hasFrame)" :status="preloadStatus" :readiness="playbackReadiness" :message="loadingMessage" />
+    <GsLoadingIndicator v-if="routePending && !archiveShellVisible" class="archive-route-pending-fallback"
+      variant="inline" message="正在准备下一页…" />
+    <LoadingScreen :can-cancel="Boolean(playbackController.pendingEntry.value) || playbackBuffering" @cancel="playbackController.close()" :visible="(hardLoading || playbackBuffering) && view !== 'reader' && !(view === 'player' && !loading && playbackReadiness?.status === 'waiting' && playbackReadiness?.hasFrame)" :status="preloadStatus" :readiness="playbackReadiness" :message="loadingMessage"
+      :surface="loadingPurpose === 'stage' ? 'stage' : (playbackBuffering || view === 'player' || loadingPurpose === 'story-playback' ? 'player' : 'archive')" />
 
   </div>
 </template>
@@ -489,6 +494,7 @@ import { IDOL_ID_TO_NAME } from './utils/IdolNameMap.js'
 import { Preloader } from './utils/Preloader.js'
 import { prepareArchiveRoute } from './core/prepareArchiveRoute.js'
 import LoadingScreen from './components/LoadingScreen.vue'
+import GsLoadingIndicator from './components/GsLoadingIndicator.vue'
 import StoryReleaseSoakPanel from './components/player/StoryReleaseSoakPanel.vue'
 import ArchiveShell from './components/archive/ArchiveShell.vue'
 import { readingPlaybackTarget } from './core/ReadingPlayback.js'
@@ -4395,5 +4401,14 @@ onBeforeUnmount(() => {
 html, body { margin: 0; padding: 0; height: 100%; overflow-x: hidden; overflow-y: hidden; }
 *, *::before, *::after { box-sizing: border-box; }
 #app { overflow-x: hidden; }
-.archive-route-pending { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 1000; padding: 10px 18px; border: 1px solid #a1d8d4; border-radius: 20px; background: #f1fbfa; color: #205d5b; pointer-events: none; }
+/* Non-archive source pages keep the existing non-blocking feedback semantics. */
+.archive-route-pending-fallback {
+  position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  z-index: 1000; max-width: calc(100% - 32px); pointer-events: none;
+  animation: gs-route-feedback-in 120ms ease-out 140ms both;
+}
+@keyframes gs-route-feedback-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .archive-route-pending-fallback { animation: none; }
+}
 </style>

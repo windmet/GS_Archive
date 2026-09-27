@@ -47,6 +47,9 @@
     <main class="archive-content">
       <slot />
     </main>
+    <div v-if="$slots.pending" class="archive-pending-layer">
+      <slot name="pending" />
+    </div>
 
     <aside v-if="hasInspector" class="archive-inspector">
       <slot name="inspector" />
@@ -319,5 +322,32 @@ const mobileNavigation = [
   .archive-mobile-nav button.active { color: var(--archive-accent); }
   .archive-mobile-nav button:focus-visible { outline: 3px solid var(--archive-accent); outline-offset: -5px; }
   .archive-mobile-nav button + button { border-left: 1px solid #e5eeee; }
+}
+/* Same grid cell as content: never cover the separate mobile navigation row.
+   Explicitly place main as well: leaving it auto-placed would push it to a new
+   row when this overlapping item reserves row 2. Do not make main positioned;
+   that would change containing blocks for its existing absolute descendants. */
+.archive-content { grid-row: 2; }
+.archive-pending-layer {
+  grid-column: 2; grid-row: 2; z-index: 25;
+  display: flex; align-items: flex-end; justify-content: flex-end;
+  min-width: 0; min-height: 0; padding: 18px;
+  pointer-events: none;
+}
+.archive-pending-layer :deep(.gs-loading-indicator) {
+  max-width: 100%; pointer-events: none;
+  animation: gs-archive-pending-in 120ms ease-out 140ms both;
+}
+.archive-shell.is-home .archive-pending-layer,
+.archive-shell.is-portal .archive-pending-layer { grid-row: 1 / 3; }
+@keyframes gs-archive-pending-in { from { opacity: 0; } to { opacity: 1; } }
+@media (max-width: 760px) {
+  .archive-pending-layer {
+    grid-column: 1;
+    padding: 12px max(12px, var(--archive-safe-right)) 12px max(12px, var(--archive-safe-left));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .archive-pending-layer :deep(.gs-loading-indicator) { animation: none; }
 }
 </style>

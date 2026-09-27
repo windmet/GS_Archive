@@ -14,7 +14,8 @@
     <!-- Spine rendering layer (background + characters) -->
     <SpineStage v-if="retainedStageStep" ref="spineStageRef" :step="retainedStageStep" :suspended="!communicationContext.needsStage" :fallbackBg="firstAvailableBg" :debug-controls="RUNTIME_DEBUG" :now-milliseconds="storyRuntimeCues.nowMilliseconds" responsive-positions portrait-framing release-owner="story-player" />
     <div ref="frameHoldRoot" v-show="frameHolding" class="held-scene" aria-hidden="true"></div>
-    <div v-if="localBuffering && !HIDE_UI" class="local-buffering" role="status" aria-live="polite">{{ localBufferingText }}</div>
+    <GsLoadingIndicator v-if="localBuffering && !HIDE_UI" class="local-buffering"
+      variant="inline" :message="localBufferingText" />
 
     <!-- Top bar -->
     <PlayerTopBar
@@ -175,8 +176,9 @@
       <div class="complete-panel">
         <span>{{ hasNextEpisode ? 'EPISODE COMPLETE' : 'STORY COMPLETE' }}</span>
         <strong>{{ hasNextEpisode ? uiText('player.complete.episode') : uiText('player.complete.story') }}</strong>
-        <p v-if="transitioning">{{ uiText('player.complete.loadingNext') }}</p>
-        <div v-else>
+        <GsLoadingIndicator v-if="transitioning" class="complete-loading"
+          variant="inline" :message="uiText('player.complete.loadingNext')" />
+        <div v-else class="complete-actions">
           <button v-if="hasNextEpisode" class="primary" @click="emit('next-episode')"><SkipForward :size="18" />{{ uiText('player.complete.nextEpisode') }}</button>
           <button @click="emit('back')"><LogOut :size="18" />{{ uiText('player.settings.returnCatalog') }}</button>
         </div>
@@ -198,7 +200,8 @@
       <button v-if="!immersive.active.value || immersive.notice.value" :disabled="immersive.pending.value" @click="enterImmersive">{{ uiText('player.immersive.enter') }}</button>
       <button @click="viewingShortcutDismissed = true; immersive.notice.value = ''">{{ uiText('player.immersive.dismiss') }}</button>
     </div>
-    <div class="loading" v-if="!compiledData && !HIDE_UI">{{ uiText('player.loading') }}</div>
+    <GsLoadingIndicator class="story-data-loading" v-if="!compiledData && !HIDE_UI"
+      tone="dark" :message="uiText('player.loading')" />
   </div>
 </template>
 
@@ -207,6 +210,7 @@ import { setStoryRuntimePaused } from './story-runtime/StoryPausePolicy.js'
 import { usePlayerImmersiveMode, claimMobileViewingOffer } from '../composables/usePlayerImmersiveMode.js'
 import { ref, shallowRef, computed, watch, onMounted, onBeforeUnmount, onUnmounted, reactive, nextTick, defineAsyncComponent } from 'vue'
 import AdvUI from '../components/AdvUI.vue'
+import GsLoadingIndicator from '../components/GsLoadingIndicator.vue'
 import MobileChatScene from '../components/mobile/MobileChatScene.vue'
 import MobileCallScene from '../components/mobile/MobileCallScene.vue'
 import StageChoiceUI from '../components/choices/StageChoiceUI.vue'
@@ -1270,7 +1274,16 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
   height: 100% !important;
 }
 .held-scene { position: absolute; inset: 0; z-index: 10; overflow: hidden; pointer-events: none; }
-.local-buffering { position: absolute; z-index: 25; top: var(--player-content-top); left: var(--player-edge); max-width: calc(100% - 2 * var(--player-edge)); padding: 9px 14px; border: 1px solid rgba(255,255,255,.35); border-radius: 12px; background: rgba(16,31,40,.78); color: #fff; box-shadow: 0 10px 26px rgba(0,0,0,.22); font-size: .82rem; pointer-events: none; }
+.local-buffering {
+  position: absolute; z-index: 25;
+  top: max(var(--player-content-top), env(safe-area-inset-top, 0px));
+  left: max(var(--player-edge), env(safe-area-inset-left, 0px));
+  max-width: calc(100% - max(var(--player-edge), env(safe-area-inset-left, 0px)) - max(var(--player-edge), env(safe-area-inset-right, 0px)));
+  pointer-events: none;
+  animation: gs-step-feedback-in 100ms ease-out 160ms both;
+}
+@keyframes gs-step-feedback-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .local-buffering { animation: none; } }
 .ui-overlay {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
   z-index: 1;
@@ -1392,7 +1405,7 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 .complete-panel > span { color: #0d9c75; font-size: .66rem; font-weight: 800; }
 .complete-panel > strong { display: block; margin: 6px 0 18px; font-size: 1.05rem; }
 .complete-panel p { margin: 8px 0 0; color: #64727a; }
-.complete-panel div { display: flex; justify-content: center; gap: 8px; }
+.complete-panel > .complete-actions { display: flex; justify-content: center; gap: 8px; }
 .complete-panel button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 0 14px; border: 1px solid #d6dfe2; border-radius: 5px; background: #fff; color: #26343c; cursor: pointer; font: inherit; }
 .complete-panel button.primary { border-color: #0d9c75; background: #0d9c75; color: #fff; }
 
@@ -1403,5 +1416,10 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 .menu-slide-enter-active, .menu-slide-leave-active { transition: transform 180ms ease, opacity 180ms ease; }
 .menu-slide-enter-from, .menu-slide-leave-to { transform: translateX(100%); opacity: 0; }
 
-.loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #333; font-size: 1.2rem; }
+.story-data-loading {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: min(22rem, calc(100% - 32px)); max-height: calc(100% - 32px);
+  overflow: auto; z-index: 25;
+}
+.complete-loading { margin-top: 8px; max-width: 100%; }
 </style>

@@ -13,9 +13,8 @@
         <div class="stage-backdrop" aria-hidden="true"></div>
         <div ref="canvasRef" class="stage-canvas"></div>
 
-        <div v-if="loading" class="stage-state">
-          <LoaderCircle class="loading-icon" :size="26" />
-          <span>{{ statusText }}</span>
+        <div v-if="loading" class="stage-state stage-state--loading">
+          <GsLoadingIndicator :message="statusText" tone="dark" />
         </div>
         <div v-else-if="errorText" class="stage-state error-state">
           <CircleAlert :size="26" />
@@ -194,6 +193,7 @@
 </template>
 
 <script setup>
+import GsLoadingIndicator from './GsLoadingIndicator.vue'
 import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import * as PIXI from 'pixi.js'
 import {
@@ -851,4 +851,10 @@ h2 { margin: 0; color: #d4dfeb; font-size: 12px; font-weight: 650; letter-spacin
 @media (prefers-reduced-motion: reduce) {
   .loading-icon { animation: none; }
 }
+/* Loading only; the adjacent error branch intentionally keeps its own style. */
+.stage-state--loading {
+  box-sizing: border-box; padding: 18px; min-width: 0; min-height: 0;
+  overflow: auto; overscroll-behavior: contain; backdrop-filter: none;
+}
+.stage-state--loading :deep(.gs-loading-indicator) { max-width: min(22rem, 100%); }
 </style>
