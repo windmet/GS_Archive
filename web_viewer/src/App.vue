@@ -4266,6 +4266,7 @@ function isBootstrapRoute(route) {
     (route.view === 'player' && route.returnView === 'reader') ||
     (route.view === 'player' && route.returnView === 'mobile_archive') ||
     (route.view === 'player' && ['story_catalog', 'story_collection', 'story_detail'].includes(route.returnView)) ||
+    (route.view === 'player' && ['event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive'].includes(route.returnView)) ||
     (route.view === 'player' && ['files', 'episodes', 'episode_zero_units', 'groups'].includes(route.returnView)) ||
     (route.view === 'idols' && (!route.category || route.category === 'idol'))
 }
@@ -4414,7 +4415,7 @@ onMounted(async () => {
         route = { view: 'cards' }
       }
     }
-    if (route.view === 'event_detail' && route.event) {
+    if ((route.view === 'event_detail' || (route.view === 'player' && route.returnView === 'event_detail')) && route.event) {
       try {
         const detail = await loadEventDetail(String(route.event))
         if (request === restoreRequest) eventReadModelDetail.value = detail

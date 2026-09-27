@@ -6,7 +6,8 @@ import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigatio
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const bootstrapContext = {}
 vm.runInNewContext(app.match(/function isBootstrapRoute\([^]*?\n\}/)[0], bootstrapContext)
-for (const returnView of ['story_catalog', 'story_collection', 'story_detail']) {
+for (const returnView of ['story_catalog', 'story_collection', 'story_detail',
+  'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive']) {
   assert.equal(bootstrapContext.isBootstrapRoute({ view: 'player', returnView }), true,
     `${returnView} player refresh must not wait for the legacy archive batch`)
 }
