@@ -2102,8 +2102,6 @@ function chooseStartupLater() {
 function chooseImmersiveIdol({ idolCode, rememberStartup = true, setPreferred = false } = {}) {
   const isGeneralPicker = view.value === 'idol_picker' && currentPickTarget.value !== 'home'
   if (!(isGeneralPicker ? archivePickerIdols.value : archiveHomeIdols.value).some(idol => idol.id === idolCode)) return
-  if (isGeneralPicker && currentPickTarget.value !== 'profile' && !archiveDataReady.value)
-    return runWhenLegacyReady(() => chooseImmersiveIdol({ idolCode, rememberStartup, setPreferred }))
   const next = {}
   if (rememberStartup) Object.assign(next, { startupMode: 'immersive', startupIdol: idolCode, onboardingComplete: true })
   if (setPreferred) next.preferredIdol = idolCode
@@ -2193,7 +2191,6 @@ function openPreferredDestination(destination) {
     if (idolCode) return openIdolReadModel(idolCode, { captureSource: true, resetContext: true })
     return
   }
-  if (!archiveDataReady.value) return runWhenLegacyReady(() => openPreferredDestination(destination))
   const idolCode = preferredArchiveIdol.value?.id
   if (!idolCode) return
   if (destination === 'cards') captureDetailSource()
@@ -2309,7 +2306,6 @@ function openHomeCards(idolId) {
 }
 
 function openHomeChat(idolId) {
-  if (!archiveDataReady.value) return runWhenLegacyReady(() => openHomeChat(idolId))
   openMobileArchive({ idolCode: idolId, mode: 'personal' })
 }
 
