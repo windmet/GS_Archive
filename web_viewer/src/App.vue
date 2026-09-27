@@ -480,7 +480,6 @@
 <script setup>
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../shared/deploy/ExternalStoryResourcePolicy.js'
 import { createLazyArchiveResource } from './data/lazyArchiveResource.js'
-import { buildUnitCatalog, resolveArchiveUnit, storiesForUnit, songsForUnit } from './data/unitPage.js'
 import { buildGashaCatalog, buildGashaCategoryOptions, filterGashaCatalog, resolveGashaRelatedCards } from './data/gashaCatalog.js'
 import { filterArchiveCards } from './data/cardFilters.js'
 import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
@@ -503,7 +502,6 @@ import { resolveMobileArchiveUnit } from './core/mobileArchiveIdentity.js'
 import { readyEpisodeReading } from './data/IdolStoryReading.js'
 import { loadArchiveData, loadIdolCommunicationData } from './data/ArchiveDataRepository.js'
 import {
-  buildCardMap,
   buildCardRarityTabs,
   buildStoryCatalog,
 } from './data/archiveSelectors.js'
@@ -516,7 +514,6 @@ import { resolveArchiveHomeAction, resolveArchiveStartup } from './core/archiveS
 import { readBootstrap } from '../readmodels/runtime/readBootstrap.mjs'
 import { ReadModelClient, entityDescriptor } from '../readmodels/runtime/ReadModelClient.mjs'
 import { hydrateHomeProfile } from '../readmodels/runtime/hydrateHomeProfile.mjs'
-import { buildEventStoryEpisodes } from './data/eventStoryEpisodes.js'
 import { buildStoryCollections } from './data/storyCollections.js'
 import {
   buildBirthdayStoryDomainIdentity,
@@ -701,7 +698,6 @@ const {
 const stageHandoff = ref(null)
 
 const indexData = ref(null)
-const cardIndexData = ref(null)
 const gashaIndexData = ref(null)
 const eventIndexData = ref(null)
 const storyCatalogData = ref(null)
@@ -1132,12 +1128,8 @@ const externalStoryNavigationEntries = computed(() =>
 
 const currentStoryRelated = computed(() => storyReadModelDetail.value?.view?.related || [])
 
-const currentEventStory = computed(() => currentEventProjection.value?.story ||
-  storyCatalog.value.find(entry => entry.file === currentEvent.value?.file) || null)
-
-const currentEventEpisodes = computed(() => {
-  return currentEventProjection.value?.episodes || buildEventStoryEpisodes(currentEvent.value, currentEventStory.value, storyCatalogData.value)
-})
+const currentEventStory = computed(() => currentEventProjection.value?.story || null)
+const currentEventEpisodes = computed(() => currentEventProjection.value?.episodes || [])
 
 watch(continuousPlayback, enabled => {
   setLocalStorageValue('sidem:continuous-playback', enabled ? '1' : '0')
@@ -1173,18 +1165,14 @@ function eventStoryIdolRawCandidateUrl(idolCode) {
   return getRawCharacterImageCandidateUrl('event_story_visual', idolCode)
 }
 
-const unitCatalogEntries = computed(() => unitReadModelCatalog.value
-  ? unitReadModelCatalog.value.map(row => row.catalog)
-  : buildUnitCatalog(idolUnitData.value, {
-  manifest: archiveManifestData.value, cardMap: cardMap.value, stories: storyCatalog.value,
-}))
+const unitCatalogEntries = computed(() => (unitReadModelCatalog.value || []).map(row => row.catalog))
 const storyCatalogEntries = computed(() => view.value === 'story_catalog' && storyReadModelCatalog.value
   ? storyReadModelCatalog.value : storyCatalog.value)
 const currentArchiveUnit = computed(() => {
   const projected = unitReadModelDetail.value?.view.entry.unit
   if (projected && [String(projected.unit_id), projected.unit_code].includes(currentArchiveUnitCode.value)) return projected
-  return unitCatalogEntries.value.find(entry => [String(entry.unit.unit_id), entry.unit.unit_code].includes(currentArchiveUnitCode.value))?.unit ||
-    resolveArchiveUnit(idolUnitData.value, currentArchiveUnitCode.value)
+  return unitCatalogEntries.value.find(entry =>
+    [String(entry.unit.unit_id), entry.unit.unit_code].includes(currentArchiveUnitCode.value))?.unit || null
 })
 const currentArchiveUnitEntry = computed(() => unitReadModelDetail.value?.view.entry.unit === currentArchiveUnit.value
   ? unitReadModelDetail.value.view.entry
@@ -1193,9 +1181,9 @@ const currentArchiveUnitEntry = computed(() => unitReadModelDetail.value?.view.e
 ) || null)
 const currentArchiveUnitMembers = computed(() => currentArchiveUnitEntry.value?.members || [])
 const currentArchiveUnitStories = computed(() => unitReadModelDetail.value?.view.entry.unit === currentArchiveUnit.value
-  ? unitReadModelDetail.value.view.stories : storiesForUnit(currentArchiveUnit.value, storyCatalog.value))
+  ? unitReadModelDetail.value.view.stories : [])
 const currentArchiveUnitSongs = computed(() => unitReadModelDetail.value?.view.entry.unit === currentArchiveUnit.value
-  ? unitReadModelDetail.value.view.songs : songsForUnit(currentArchiveUnit.value, songCatalogData.value))
+  ? unitReadModelDetail.value.view.songs : [])
 
 const filteredFileEntries = computed(() => {
   if (!currentGroup.value) return []
@@ -1204,8 +1192,6 @@ const filteredFileEntries = computed(() => {
   const q = filterQuery.value.toLowerCase()
   return q ? entries.filter(entry => entry.searchText.toLowerCase().includes(q)) : entries
 })
-
-const cardMap = computed(() => buildCardMap(cardIndexData.value))
 
 const currentCards = computed(() => (cardReadModelCatalog.value || [])
   .filter(card => !currentCharacterId.value || card.character_id === currentCharacterId.value))
@@ -1244,36 +1230,16 @@ const filteredGashas = computed(() => filterGashaCatalog(gashaCatalog.value, {
 const currentGasha = computed(() => gashaReadModelDetail.value?.id === currentGashaId.value
   ? gashaReadModelDetail.value.gasha
   : resolveGashaRelatedCards(gashaIndexData.value?.by_id?.[currentGashaId.value] || null, gashaIndexData.value))
-const eventMap = computed(() => new Map((archiveManifestData.value?.unit_event_relations || [])
-  .map(event => [String(event.event_id), event])))
 const currentEventProjection = computed(() => eventReadModelDetail.value?.id === currentEventId.value
   ? eventReadModelDetail.value.view : null)
-const currentEvent = computed(() => currentEventProjection.value?.event || eventMap.value.get(currentEventId.value) || null)
-const currentMasterEvent = computed(() => {
-  const code = String(currentEvent.value?.event_code || '')
-  return currentEventProjection.value?.masterEvent || eventIndexData.value?.by_code?.[code] || null
-})
+const currentEvent = computed(() => currentEventProjection.value?.event || null)
+const currentMasterEvent = computed(() => currentEventProjection.value?.masterEvent || null)
 const currentEventExternalResources = computed(() =>
   externalResourcesForEvent(externalStoryResourcesData.value, currentEvent.value?.event_code),
 )
-const currentEventCards = computed(() => currentEventProjection.value?.cards || (archiveManifestData.value?.event_card_relations_by_event?.[currentEventId.value] || [])
-  .map(relation => {
-    const card = cardMap.value.get(relation.card_resource_id)
-    return {
-      ...relation,
-      card_title: card?.title || relation.card_resource_id,
-      character_name: idolDisplayName(relation.character_id),
-    }
-  }))
-const currentEventIdols = computed(() => currentEventProjection.value?.idols || (currentEvent.value?.characters || []).map(idolCode => ({
-  idol_code: idolCode,
-  ...(idolUnitData.value?.by_idol_code?.[idolCode] || {}),
-})))
-const currentEventUnits = computed(() => {
-  if (currentEventProjection.value) return currentEventProjection.value.units
-  const unitIds = new Set((currentEvent.value?.participating_unit_ids || []).map(String))
-  return (idolUnitData.value?.units || []).filter(unit => unitIds.has(String(unit.unit_id)))
-})
+const currentEventCards = computed(() => currentEventProjection.value?.cards || [])
+const currentEventIdols = computed(() => currentEventProjection.value?.idols || [])
+const currentEventUnits = computed(() => currentEventProjection.value?.units || [])
 const currentCardIndex = computed(() => currentCards.value.findIndex(card => card.resource_id === currentCardId.value))
 const previousCard = computed(() => currentCardIndex.value > 0
   ? currentCards.value[currentCardIndex.value - 1]
@@ -3639,7 +3605,6 @@ function ensureLegacyArchiveData() {
     legacyDataPromise = loadArchiveData().then(({ data, errors }) => {
       if (navigation.isDisposed()) return
       indexData.value = data.compiledIndex
-      cardIndexData.value = data.cardIndex
       gashaIndexData.value = data.gashaIndex
       eventIndexData.value = data.eventIndex
       storyCatalogData.value = data.storyCatalog

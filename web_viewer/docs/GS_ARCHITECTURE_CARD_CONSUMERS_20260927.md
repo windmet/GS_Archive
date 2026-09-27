@@ -7,3 +7,5 @@
 Browser 使用本机 `127.0.0.1:5188`，映射当前生产代码编译结果、现有 public 与 `E:\GS_ReadModels_QA\candidate_20260927_r23\pages`；除舞台运行时本地时间轴外，旧 `/data/` 来源被服务阻断。直达 `?view=cards` 显示 826 张卡，进入天ヶ瀬 冬馬的「スタートライン」后能看到详情和共通系列；点击“下一张：GROWING STARS”正确切换卡片。返回目录选择“有可显示卡图”和“有卡片小剧情”，结果显示有剧情的卡；以上操作无浏览器 console error。服务日志记录卡片目录页和两张单卡叶子的请求。Browser 旅程只覆盖代表性卡片与两种筛选，不能充当全部卡片 parity 或真机验收。
 
 跨域的活动/组合展示仍有旧卡片索引引用，`cards` 的 actions 在路由台账中保持 partial；整体旧 `ArchiveDataRepository` 仍在生产链中。本批不是完整 cutover、媒体打包或部署验收。
+
+后续批次已移除上述跨域卡片索引引用，见 [组合与活动叶子记录](GS_ARCHITECTURE_UNIT_EVENT_LEAVES_20260927.md)；本段保留本批提交时的状态边界。
