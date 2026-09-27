@@ -248,8 +248,8 @@
       <ArchiveStatus
         v-if="view === 'archive_status'"
         :manifest="resourceReadModelDetail?.view?.manifest || archiveManifestData"
-        :verification="resourceReadModelDetail?.view?.verification || archiveVerificationData"
-        :ui-assets="resourceReadModelDetail?.view?.uiAssets || uiAssetCatalogData"
+        :verification="resourceReadModelDetail?.view?.verification || null"
+        :ui-assets="resourceReadModelDetail?.view?.uiAssets || null"
         @open-spine-lab="openSpineLab"
       />
 
@@ -267,8 +267,8 @@
         :sort="currentStorySort"
         :catalog-total="storyCatalogEntries.length"
         :filtered-total="filteredStoryCatalog.length"
-        :seasonal-count="storyCatalogIndex?.seasonalCount ?? seasonalCampaignData?.campaigns?.length ?? 0"
-        :work-count="storyCatalogIndex?.workCount ?? workStoryData?.idols?.length ?? 0"
+        :seasonal-count="storyCatalogIndex?.seasonalCount ?? 0"
+        :work-count="storyCatalogIndex?.workCount ?? 0"
         :idol-story-count="archiveBootstrap.idols.length"
         :external-resource-count="externalStoryNavigationEntries.length"
         :main-domain="mainStoryDomain"
@@ -501,10 +501,7 @@ import { buildIdolReference } from './presentation/IdolReferencePresentation.js'
 import { resolveMobileArchiveUnit } from './core/mobileArchiveIdentity.js'
 import { readyEpisodeReading } from './data/IdolStoryReading.js'
 import { loadArchiveData, loadIdolCommunicationData } from './data/ArchiveDataRepository.js'
-import {
-  buildCardRarityTabs,
-  buildStoryCatalog,
-} from './data/archiveSelectors.js'
+import { buildCardRarityTabs } from './data/archiveSelectors.js'
 import {
   clearArchiveUserPreferences,
   loadArchiveUserPreferences,
@@ -514,12 +511,6 @@ import { resolveArchiveHomeAction, resolveArchiveStartup } from './core/archiveS
 import { readBootstrap } from '../readmodels/runtime/readBootstrap.mjs'
 import { ReadModelClient, entityDescriptor } from '../readmodels/runtime/ReadModelClient.mjs'
 import { hydrateHomeProfile } from '../readmodels/runtime/hydrateHomeProfile.mjs'
-import { buildStoryCollections } from './data/storyCollections.js'
-import {
-  buildBirthdayStoryDomainIdentity,
-  buildExtraStoryDomainIdentity,
-  buildMainStoryDomainIdentity,
-} from './data/storyDomainIdentityIndex.js'
 import {
   archiveSectionForRoute,
   buildArchiveBreadcrumbs,
@@ -551,7 +542,6 @@ import {
   getRawCharacterImageCandidateUrl,
 } from './utils/CharacterImageResolver.js'
 import {
-  buildExternalStoryNavigationEntries,
   externalResourcesForCollection,
   externalResourcesForEvent,
   externalResourcesForIdolStory,
@@ -698,28 +688,13 @@ const {
 const stageHandoff = ref(null)
 
 const indexData = ref(null)
-const gashaIndexData = ref(null)
-const eventIndexData = ref(null)
-const storyCatalogData = ref(null)
-const birthdayStorySemanticData = ref(null)
-const extraStoryVisualIndexData = ref(null)
-const storyPresentationData = ref(null)
-const seasonalCampaignData = ref(null)
-const workStoryData = ref(null)
 const idolEpisodeData = ref(null)
 const mobileArchiveData = ref(null)
 const randomTalkPresentationData = ref(null)
 const idolUnitData = ref(null)
-const speakerDictionaryData = ref(null)
-const costumeDictionaryData = ref(null)
 const archiveManifestData = ref(null)
-const archiveVerificationData = ref(null)
-const uiAssetCatalogData = ref(null)
 const rawCharacterImagePromotionsData = ref(null)
 const externalStoryResourcesData = ref(null)
-const songCatalogData = ref(null)
-const songPlaybackAudioData = ref(null)
-const songExperimentalAudioData = ref(null)
 const idolEntityTranslationRevision = ref(0)
 const initialUserPreferences = loadArchiveUserPreferences()
 const archiveBootstrap = readBootstrap()
@@ -980,33 +955,7 @@ const episodeZeroUnits = computed(() => {
   return legacyZeroReadModelDetail.value?.id === 'episode_zero' ? legacyZeroReadModelDetail.value.view.units : []
 })
 
-const eventRelationByFile = computed(() => new Map(
-  (archiveManifestData.value?.unit_event_relations || []).map(relation => [relation.file, relation]),
-))
-
-const storyCatalog = computed(() => buildStoryCatalog(storyCatalogData.value, storyPresentationData.value).map(entry => {
-  if (entry.domain !== 'event') return entry
-  const relation = eventRelationByFile.value.get(entry.file)
-  if (!relation) return { ...entry, eventScope: 'unclassified', eventScopeLabel: '活动' }
-  const masterEvent = eventIndexData.value?.by_code?.[String(relation.event_code)] || null
-  const eventScopeLabel = relation.event_scope === 'fixed_unit_event'
-    ? '固定团活'
-    : (relation.event_scope === 'attribute_event' ? `属性·${relation.attribute}` : '跨组合团活')
-  return {
-    ...entry,
-    title: relation.title,
-    subtitle: [entry.title, entry.subtitle].filter(Boolean).join(' / '),
-    searchText: `${entry.searchText} ${relation.title} ${relation.attribute || ''}`.toLowerCase(),
-    eventScope: relation.event_scope,
-    eventScopeLabel,
-    eventRelation: relation,
-    masterEvent,
-    rewardCardIds: masterEvent?.reward_card_ids || [],
-  }
-}))
-
-const mainStoryDomain = computed(() => storyCatalogLanding.value?.main ||
-  (storyCatalogData.value ? buildMainStoryDomainIdentity(storyCatalogData.value) : null))
+const mainStoryDomain = computed(() => storyCatalogLanding.value?.main || null)
 
 const currentSeasonalCampaign = computed(() => seasonalReadModelDetail.value?.id === currentStorySection.value
   ? seasonalReadModelDetail.value.view.campaign : null)
@@ -1077,27 +1026,8 @@ const currentStoryExternalResources = computed(() =>
   externalResourcesForStory(externalStoryResourcesData.value, currentStory.value),
 )
 
-const extraStoryDomain = computed(() => storyCatalogLanding.value?.extra || buildExtraStoryDomainIdentity(
-  storyCatalogData.value,
-  gashaIndexData.value,
-  extraStoryVisualIndexData.value,
-))
-const birthdayStoryDomain = computed(() => storyCatalogLanding.value?.birthday || buildBirthdayStoryDomainIdentity(
-  storyCatalogData.value,
-  idolUnitData.value,
-  speakerDictionaryData.value,
-  birthdayStorySemanticData.value,
-))
-
-const storyCollections = computed(() => buildStoryCollections(
-  storyCatalogData.value,
-  storyCatalog.value,
-  {
-    birthdayDomain: birthdayStoryDomain.value,
-    extraDomain: extraStoryDomain.value,
-    idolEpisodes: idolEpisodeData.value,
-  },
-))
+const extraStoryDomain = computed(() => storyCatalogLanding.value?.extra || null)
+const birthdayStoryDomain = computed(() => storyCatalogLanding.value?.birthday || null)
 
 const currentStoryCollection = computed(() => {
   const collection = collectionReadModelDetail.value?.view?.collection
@@ -1117,14 +1047,7 @@ const currentStoryCollectionChapter = computed(() =>
   ) || null,
 )
 
-const externalStoryNavigationEntries = computed(() =>
-  EXTERNAL_STORY_RESOURCES_ENABLED ? buildExternalStoryNavigationEntries(externalStoryResourcesData.value, {
-    events: archiveManifestData.value?.unit_event_relations || [],
-    collections: storyCollections.value,
-    stories: storyCatalog.value,
-    idolEpisodes: idolEpisodeData.value,
-  }) : [],
-)
+const externalStoryNavigationEntries = []
 
 const currentStoryRelated = computed(() => storyReadModelDetail.value?.view?.related || [])
 
@@ -1166,8 +1089,7 @@ function eventStoryIdolRawCandidateUrl(idolCode) {
 }
 
 const unitCatalogEntries = computed(() => (unitReadModelCatalog.value || []).map(row => row.catalog))
-const storyCatalogEntries = computed(() => view.value === 'story_catalog' && storyReadModelCatalog.value
-  ? storyReadModelCatalog.value : storyCatalog.value)
+const storyCatalogEntries = computed(() => storyReadModelCatalog.value || [])
 const currentArchiveUnit = computed(() => {
   const projected = unitReadModelDetail.value?.view.entry.unit
   if (projected && [String(projected.unit_id), projected.unit_code].includes(currentArchiveUnitCode.value)) return projected
@@ -3603,25 +3525,10 @@ function ensureLegacyArchiveData() {
     legacyDataPromise = loadArchiveData().then(({ data, errors }) => {
       if (navigation.isDisposed()) return
       indexData.value = data.compiledIndex
-      gashaIndexData.value = data.gashaIndex
-      eventIndexData.value = data.eventIndex
-      storyCatalogData.value = data.storyCatalog
-      birthdayStorySemanticData.value = data.birthdayStorySemantic
-      extraStoryVisualIndexData.value = data.extraStoryVisualIndex
-      storyPresentationData.value = data.storyPresentation
-      seasonalCampaignData.value = data.seasonalCampaign
-      workStoryData.value = data.workStory
       idolUnitData.value = data.idolUnit
-      speakerDictionaryData.value = data.speakerDictionary
-      costumeDictionaryData.value = data.costumeDictionary
       archiveManifestData.value = data.archiveManifest
-      archiveVerificationData.value = data.archiveVerification
-      uiAssetCatalogData.value = data.uiAssetCatalog
       rawCharacterImagePromotionsData.value = data.rawCharacterImagePromotions
       externalStoryResourcesData.value = data.externalStoryResources
-      songCatalogData.value = data.songCatalog
-      songPlaybackAudioData.value = data.songPlaybackAudio
-      songExperimentalAudioData.value = data.songExperimentalAudio
       archiveDataReady.value = true
       for (const { key, error } of errors) console.error(`[ArchiveData] Failed to load ${key}:`, error)
     }).catch(error => {

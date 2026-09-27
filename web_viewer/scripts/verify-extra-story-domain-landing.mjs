@@ -86,7 +86,10 @@ assert.deepEqual(
 )
 
 assert.match(appSource, /:extra-domain="extraStoryDomain"/)
-assert.match(appSource, /extraDomain: extraStoryDomain\.value/)
+assert.match(appSource, /const extraStoryDomain = computed\(\(\) => storyCatalogLanding\.value\?\.extra \|\| null\)/)
+assert.match(appSource, /await loadStoryReadModelLanding\(\)/)
+assert.doesNotMatch(appSource, /buildExtraStoryDomainIdentity\(/,
+  'runtime must consume the projected extra landing instead of rebuilding it')
 assert.match(appSource, /collection\.legacySectionIds\?\.includes\(currentStorySection\.value\)/)
 assert.match(appSource, /\['main', 'unit_story', 'extra', 'birthday'\]\.includes\(domain\)/)
 assert.match(appSource, /returnsToDomainLanding = \['main', 'extra', 'birthday'\]\.includes\(domain\)/)

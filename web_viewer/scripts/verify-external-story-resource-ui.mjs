@@ -269,11 +269,10 @@ assert.match(
   /:external-resources="EXTERNAL_STORY_RESOURCES_ENABLED \? currentIdolStoryExternalResources : \[\]"/,
   'App must pass exact personal-story resources to ArchiveIdolStory',
 )
-assert.match(
-  appComponent,
-  /idolEpisodes: idolEpisodeData\.value/,
-  'dedicated navigation must resolve exact personal stories through idol_episode_index',
-)
+assert.match(appComponent, /const externalStoryNavigationEntries = \[\]/,
+  'withdrawn external navigation must stay empty in the live app')
+assert.doesNotMatch(appComponent, /buildExternalStoryNavigationEntries\(/,
+  'the withdrawn external registry must not join story sources in the live app')
 assert.match(
   appComponent,
   /if \(EXTERNAL_STORY_RESOURCES_ENABLED &&[\s\S]*?route\.view === 'external_story_resources'[\s\S]*?await ensureIdolCommunicationData\(\)/,
