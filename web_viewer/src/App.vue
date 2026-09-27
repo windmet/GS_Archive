@@ -967,6 +967,13 @@ const idolList = computed(() => {
     }))
   }
   if (catId === 'cards') {
+    if (cardReadModelCatalog.value) {
+      const counts = new Map()
+      for (const card of cardReadModelCatalog.value) counts.set(card.character_id, (counts.get(card.character_id) || 0) + 1)
+      return archiveBootstrap.idols.filter(idol => counts.has(idol.id)).map(idol => ({
+        ...idol, cardCount: counts.get(idol.id), _isGroup: false,
+      }))
+    }
     const byCharacter = cardIndexData.value?.by_character || {}
     return Object.entries(byCharacter).map(([id, cards]) => withUnitEvidence({
       id,
@@ -1687,10 +1694,9 @@ watch([view, currentCharacterId], ([nextView, idolCode]) => {
 }, { immediate: true, flush: 'sync' })
 
 async function restoreVoicePreview(route, intent) {
-  const card = cardMap.value.get(route.card)
+  const card = cardReadModelDetail.value?.id === route.card ? cardReadModelDetail.value.card : null
   if (!card || !route.voice) return false
-  const cue = findCardVoiceCue(card, route.voice,
-    mergeCardDetail(card, cardDetailData.value)?.operational_voice_cues || [])
+  const cue = findCardVoiceCue(card, route.voice, card.operational_voice_cues || [])
   if (!cue) return false
   const scenario = buildCardVoicePreviewScenario(card, cue)
   if (!scenario) return false
@@ -1738,7 +1744,12 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
       view.value = 'portal'
       return
     }
-    if (route.card && route.voice) await ensureCardDetailData()
+    if (route.card && route.voice && cardReadModelDetail.value?.id !== route.card) {
+      const detail = await loadCardDetail(route.card)
+      if (!intent.isCurrent()) return
+      cardReadModelDetail.value = detail
+    }
+    if (route.view === 'idols' && route.category === 'cards') await loadCardCatalog()
     if (!intent.isCurrent()) return
     if (['external_story_resources'].includes(route.view === 'player' ? route.returnView : route.view)) {
       await ensureIdolCommunicationData()
@@ -3056,8 +3067,7 @@ function openUnitMember(member) {
 }
 
 function openUnitStory(story) {
-  if (!archiveDataReady.value) return runWhenLegacyReady(() => openUnitStory(story))
-  if (story?.file && story.exists) loadScenario(story.file, 'unit_detail')
+  if (story?.file && story.exists) return loadScenario(story.file, 'unit_detail')
 }
 
 function openUnitEvent(event) {
@@ -3065,19 +3075,31 @@ function openUnitEvent(event) {
 }
 
 function openUnitCards() {
-  if (!archiveDataReady.value) return runWhenLegacyReady(() => openUnitCards())
   const unitId = String(currentArchiveUnit.value?.unit_id || '')
   if (!unitId) return
-  captureDetailSource()
-  filterQuery.value = ''
-  currentCategoryId.value = 'cards'
-  currentCharacterId.value = ''
-  currentArchiveUnitCode.value = ''
-  currentIdolUnitFilter.value = unitId
-  currentCardRarity.value = 'all'
-  currentCardAssetState.value = 'all'
-  currentCardRelationState.value = 'all'
-  commitView('idols')
+  const request = ++pendingCardNavigation
+  const revision = navigation.getRevision()
+  unitReadModelStatus.value = '正在读取卡片目录…'
+  loading.value = true
+  return loadCardCatalog().then(() => {
+    if (request !== pendingCardNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
+    unitReadModelStatus.value = ''
+    captureDetailSource()
+    filterQuery.value = ''
+    currentCategoryId.value = 'cards'
+    currentCharacterId.value = ''
+    currentArchiveUnitCode.value = ''
+    currentIdolUnitFilter.value = unitId
+    currentCardRarity.value = 'all'
+    currentCardAssetState.value = 'all'
+    currentCardRelationState.value = 'all'
+    commitView('idols')
+  }).catch(error => {
+    if (request !== pendingCardNavigation || revision !== navigation.getRevision()) return
+    loading.value = false
+    console.error('[CardReadModel] Failed to load unit cards:', error)
+    unitReadModelStatus.value = '卡片目录暂时无法读取，请重试。'
+  })
 }
 
 function openCatalogStory(entry) {
@@ -3493,9 +3515,8 @@ function goBackFromCards() {
 }
 
 function openCardScenario(entry) {
-  if (!archiveDataReady.value) return runWhenLegacyReady(() => openCardScenario(entry))
   if (entry?.compiled_file) {
-    loadScenario(entry.compiled_file, 'card_detail')
+    return loadScenario(entry.compiled_file, 'card_detail')
   }
 }
 
@@ -4278,8 +4299,9 @@ function isBootstrapRoute(route) {
     (route.view === 'player' && route.returnView === 'mobile_archive') ||
     (route.view === 'player' && ['story_catalog', 'story_collection', 'story_detail'].includes(route.returnView)) ||
     (route.view === 'player' && ['event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive'].includes(route.returnView)) ||
+    (route.view === 'player' && ['unit_detail', 'card_detail'].includes(route.returnView)) ||
     (route.view === 'player' && ['files', 'episodes', 'episode_zero_units', 'groups'].includes(route.returnView)) ||
-    (route.view === 'idols' && (!route.category || route.category === 'idol'))
+    (route.view === 'idols' && (!route.category || ['idol', 'cards'].includes(route.category)))
 }
 
 function runWhenLegacyReady(action) {
@@ -4390,10 +4412,14 @@ onMounted(async () => {
         }
       }
     }
-    if (route.view === 'unit_catalog' || route.view === 'unit_detail') {
+    if (route.view === 'unit_catalog' || route.view === 'unit_detail' ||
+        (route.view === 'player' && route.returnView === 'unit_detail')) {
       try {
         if (route.view === 'unit_catalog') await loadUnitCatalog()
-        else unitReadModelDetail.value = await loadUnitDetail(route.unit)
+        else {
+          const detail = await loadUnitDetail(route.unit)
+          if (request === restoreRequest) unitReadModelDetail.value = detail
+        }
         unitReadModelStatus.value = ''
       } catch (error) {
         if (request !== restoreRequest) return
@@ -4414,10 +4440,14 @@ onMounted(async () => {
         route = { view: 'gashas' }
       }
     }
-    if (route.view === 'cards' || route.view === 'card_detail') {
+    if (route.view === 'cards' || route.view === 'card_detail' ||
+        (route.view === 'player' && route.returnView === 'card_detail')) {
       try {
         if (route.view === 'cards') await loadCardCatalog()
-        else cardReadModelDetail.value = await loadCardDetail(route.card)
+        else {
+          const detail = await loadCardDetail(route.card)
+          if (request === restoreRequest) cardReadModelDetail.value = detail
+        }
         cardReadModelStatus.value = ''
       } catch (error) {
         if (request !== restoreRequest) return

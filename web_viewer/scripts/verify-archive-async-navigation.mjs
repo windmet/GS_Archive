@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
-import { buildCardVoicePreviewScenario } from '../src/data/cardVoicePreview.js'
+import { buildCardVoicePreviewScenario, findCardVoiceCue } from '../src/data/cardVoicePreview.js'
 import { useEpisodeQueue } from '../src/core/useEpisodeQueue.js'
 import { prepareScenario } from '../src/data/prepareScenario.js'
 import { useStoryPlaybackController } from '../src/core/useStoryPlaybackController.js'
@@ -32,7 +32,8 @@ function setup() {
   const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loading.value = false } })
   const context = vm.createContext({
     ...state, navigation, loading, loadingPurpose: { value: 'archive-data' }, preloadProgress: { value: 0 },
-    buildCardVoicePreviewScenario, idolDisplayName: id => `speaker:${id}`,
+    buildCardVoicePreviewScenario, findCardVoiceCue, idolDisplayName: id => `speaker:${id}`,
+    cardReadModelDetail: { value: null },
     archiveRouteReady: true,
     archiveHomeIdols: { value: [] }, idolEpisodeData: { value: {} },
     archiveBootstrap: { idols: [{ id: '038tak' }] },
@@ -66,6 +67,7 @@ function setup() {
   const production = vm.runInContext([
     functionSource('function syncArchiveRoute(', 'const ensureCardDetailData'),
     functionSource('async function applyArchiveRoute(', 'function goHome('),
+    functionSource('async function restoreVoicePreview(', 'async function applyArchiveRoute('),
     functionSource('function playbackEpisodes(', 'async function openEventCard('),
     functionSource('async function openStoryCatalog(', 'function openExternalStoryResources('),
     functionSource('async function openSpineLab(', 'async function openChibiStage('),
@@ -328,4 +330,28 @@ for (const response of [
   t.commit('home')
   assert.equal(t.context.playbackController.error.value, '')
 }
-console.log('Archive async navigation: preparation boundary, intent races, explicit filters, HTTP/shape failures and obsolete response suppression passed')
+{
+  const t = setup(), data = deferred()
+  const cue = 'touch_001'
+  t.context.loadCardDetail = id => { assert.equal(id, '001tom_n01'); return data.promise }
+  t.context.ensureCardDetailData = () => assert.fail('voice deep link must not load the old full card-detail table')
+  const pending = t.restore({ view: 'player', card: '001tom_n01', voice: cue, returnView: 'card_detail' })
+  data.resolve({ id: '001tom_n01', card: { resource_id: '001tom_n01', home_voice_cues: [
+    { cue, preview: { preview_step: { dialogue: { text: 'source line', voice: `${cue}.m4a` } } } },
+  ] } })
+  await pending
+  assert.equal(t.state.view.value, 'player')
+  assert.equal(t.state.currentPreviewCue.value, cue)
+  assert.equal(t.context.currentScenario.value.steps[0].dialogue.text, 'source line')
+  assert.equal(t.requests.length, 0, 'source-backed voice step is already in the selected card leaf')
+}
+{
+  const t = setup(), data = deferred()
+  t.context.loadCardDetail = () => data.promise
+  const pending = t.restore({ view: 'player', card: 'old', voice: 'old', returnView: 'card_detail' })
+  t.commit('portal')
+  data.resolve({ id: 'old', card: {} }); await pending
+  assert.equal(t.state.view.value, 'portal')
+  assert.equal(t.context.cardReadModelDetail.value, null, 'late voice owner must not publish after navigation')
+}
+console.log('Archive async navigation: preparation, races, filters, failures and card voice leaf restoration passed')

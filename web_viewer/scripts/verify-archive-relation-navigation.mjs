@@ -23,6 +23,7 @@ const context = vm.createContext({
   loadSongDetail: async songCode => ({ id: songCode, song: { song_code: songCode }, view: { id: songCode } }),
   loadGashaDetail: async id => ({ id, gasha: { id } }),
   loadCardDetail: async id => ({ id, card: { resource_id: id } }),
+  loadCardCatalog: async () => [card], unitReadModelStatus: { value: '' },
   loadEventDetail: async id => ({ id, view: { event: { event_id: id } } }),
   idolUnitData: { value: { units: [unit], by_idol_code: { '002sht': {}, '003hok': {} } } },
   archiveBootstrap: { idols: [{ id: '002sht' }, { id: '003hok' }] },

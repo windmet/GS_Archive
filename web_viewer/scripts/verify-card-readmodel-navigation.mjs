@@ -17,6 +17,8 @@ function setup() {
   let revision = 0
   const context = vm.createContext({
     pendingCardNavigation: 0, cardReadModelStatus: { value: '' }, cardReadModelDetail: { value: null },
+    unitReadModelStatus: { value: '' }, currentArchiveUnit: { value: { unit_id: '1' } },
+    currentArchiveUnitCode: { value: '01jup' }, currentIdolUnitFilter: { value: '' },
     loading: { value: false }, view: { value: 'cards' }, filterQuery: { value: 'old' },
     currentCategoryId: { value: '' }, currentCharacterId: { value: '' }, currentCardId: { value: '' },
     currentGroup: { value: null }, currentCardRarity: { value: 'SSR' },
@@ -29,7 +31,7 @@ function setup() {
     commitView: value => { revision++; commits.push(value); context.view.value = value; context.loading.value = false },
     console: { error: (...args) => errors.push(args) },
   })
-  vm.runInContext(`${listSource}\n${detailSource}`, context)
+  vm.runInContext(`${listSource}\n${detailSource}\n${app.match(/function openUnitCards\([^]*?\n\}/)[0]}`, context)
   return { context, jobs, commits, errors, invalidate: () => revision++ }
 }
 const detail = id => ({ id, card: { resource_id: id } })
@@ -69,4 +71,47 @@ const detail = id => ({ id, card: { resource_id: id } })
   assert.equal(t.context.currentCharacterId.value, '001tom')
   assert.equal(t.context.currentCardRarity.value, 'all')
 }
-console.log('Card read-model navigation: latest selection, route supersession, retry and catalog passed')
+{
+  const t = setup()
+  const pending = t.context.openUnitCards()
+  t.jobs.get('catalog').resolve([]); await pending
+  assert.deepEqual(t.commits, ['idols'])
+  assert.equal(t.context.currentCategoryId.value, 'cards')
+  assert.equal(t.context.currentIdolUnitFilter.value, '1')
+  assert.equal(t.context.currentArchiveUnitCode.value, '')
+}
+{
+  const t = setup()
+  const pending = t.context.openUnitCards()
+  t.invalidate()
+  t.jobs.get('catalog').resolve([]); await pending
+  assert.deepEqual(t.commits, [], 'leaving the unit page cancels the old cards action')
+}
+{
+  const t = setup()
+  const pending = t.context.openUnitCards()
+  t.jobs.get('catalog').reject(new Error('offline')); await pending
+  assert.deepEqual(t.commits, [])
+  assert.match(t.context.unitReadModelStatus.value, /重试/)
+  assert.equal(t.context.loading.value, false)
+}
+{
+  const calls = []
+  const context = { loadScenario: (...args) => { calls.push(args); return 'pending' } }
+  vm.runInNewContext(['openUnitStory', 'openCardScenario'].map(name => app.match(new RegExp(`function ${name}\\([^]*?\\n\\}`))[0]).join('\n'), context)
+  assert.equal(context.openUnitStory({ file: 'unit.json', exists: true }), 'pending')
+  context.openUnitStory({ file: 'missing.json', exists: false })
+  assert.equal(context.openCardScenario({ compiled_file: 'card.json' }), 'pending')
+  assert.deepEqual(calls, [['unit.json', 'unit_detail'], ['card.json', 'card_detail']])
+}
+{
+  const context = { computed: fn => fn(), currentCategoryId: { value: 'cards' },
+    cardReadModelCatalog: { value: [{ character_id: 'a' }, { character_id: 'a' }, { character_id: 'b' }] },
+    archiveBootstrap: { idols: [{ id: 'a', unitId: '1' }, { id: 'b', unitId: '2' }, { id: 'c', unitId: '1' }] } }
+  const source = app.slice(app.indexOf('const idolList = computed('), app.indexOf('const searchMatchedIdols = computed('))
+  const list = vm.runInNewContext(source + '\nidolList', context)
+  assert.deepEqual(JSON.parse(JSON.stringify(list)), [
+    { id: 'a', unitId: '1', cardCount: 2, _isGroup: false }, { id: 'b', unitId: '2', cardCount: 1, _isGroup: false },
+  ], 'card idol directory must use projected ownership and bootstrap unit identity without old tables')
+}
+console.log('Card read-model navigation: selection, races, retry, unit card directory and scenario actions passed')

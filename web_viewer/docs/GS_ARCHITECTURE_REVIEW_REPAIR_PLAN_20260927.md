@@ -23,3 +23,7 @@
 - `build:check` 仅编译，无 startup/cutover 报告；source workflow 尚未接 readmodels 测试与审计，push 触发仅限 master。
 
 该计划不构成最终 cutover、合并或部署签收。
+
+## 执行进度
+
+- A 已落实并完成本机回归/Browser 验收，边界与旅程见 [组合与卡片操作记录](GS_ARCHITECTURE_UNIT_CARD_ACTIONS_20260927.md)。
