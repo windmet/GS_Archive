@@ -1474,7 +1474,9 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
       view.value = 'portal'
       return
     }
-    if (route.card && route.voice && cardReadModelDetail.value?.id !== route.card) {
+    const cardOwnerView = route.view === 'player' ? route.returnView : route.view
+    if (route.card && (route.voice || cardOwnerView === 'card_detail') &&
+        cardReadModelDetail.value?.id !== route.card) {
       const detail = await loadCardDetail(route.card)
       if (!intent.isCurrent()) return
       cardReadModelDetail.value = detail
@@ -4294,24 +4296,6 @@ watch([view, currentSongId], ([nextView, songCode]) => {
       view.value !== 'song_detail' || currentSongId.value !== songCode) return
     console.error('[SongReadModel] Failed to restore song detail:', error)
     songReadModelStatus.value = '歌曲详情暂时无法读取，请返回后重试。'
-  })
-})
-
-watch([view, currentCardId], ([nextView, cardId]) => {
-  if (nextView !== 'card_detail' || !cardId || cardReadModelDetail.value?.id === cardId) return
-  const request = ++pendingCardNavigation
-  const revision = navigation.getRevision()
-  cardReadModelStatus.value = '正在读取卡片详情…'
-  loadCardDetail(cardId).then(detail => {
-    if (request !== pendingCardNavigation || revision !== navigation.getRevision() ||
-      navigation.isDisposed() || view.value !== 'card_detail' || currentCardId.value !== cardId) return
-    cardReadModelDetail.value = detail
-    cardReadModelStatus.value = ''
-  }).catch(error => {
-    if (request !== pendingCardNavigation || revision !== navigation.getRevision() ||
-      view.value !== 'card_detail' || currentCardId.value !== cardId) return
-    console.error('[CardReadModel] Failed to restore card detail:', error)
-    cardReadModelStatus.value = '卡片详情暂时无法读取，请返回后重试。'
   })
 })
 

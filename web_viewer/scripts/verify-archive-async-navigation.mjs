@@ -59,6 +59,7 @@ function setup() {
     adoptArchiveViewContext: () => {},
     console: { error: (...args) => errors.push(args) },
   })
+  context.currentCard = { get value() { return context.cardReadModelDetail.value?.card || null } }
   context.prepareScenario = (name, options) => prepareScenario(name, { ...options, fetchImpl: (...args) => context.fetch(...args) })
   context.playbackController = useStoryPlaybackController({ state: context, navigation, queue: context.episodeQueue,
     loadPlayer: () => context.storyViewerLoader(), preloadAssets: (...args) => context.Preloader.preloadScenario(...args),
@@ -344,6 +345,42 @@ for (const response of [
   assert.equal(t.state.currentPreviewCue.value, cue)
   assert.equal(t.context.currentScenario.value.steps[0].dialogue.text, 'source line')
   assert.equal(t.requests.length, 0, 'source-backed voice step is already in the selected card leaf')
+}
+// A history entry to card detail, including a scenario Player return, owns its
+// card leaf before publication. A later route revokes an older pending leaf.
+{
+  const t = setup(), leaf = deferred()
+  t.context.loadCardDetail = id => { assert.equal(id, '001tom_n01'); return leaf.promise }
+  const pending = t.restore({ view: 'card_detail', card: '001tom_n01', idol: '001tom' })
+  await flush()
+  assert.equal(t.state.view.value, '__boot__', 'card detail must wait for its leaf')
+  leaf.resolve({ id: '001tom_n01', card: { resource_id: '001tom_n01' } })
+  await pending
+  assert.equal(t.state.view.value, 'card_detail')
+  assert.equal(t.context.cardReadModelDetail.value.id, '001tom_n01')
+}
+{
+  const t = setup(), leaf = deferred()
+  t.context.loadCardDetail = () => leaf.promise
+  const pending = t.restore({ view: 'player', scenario: 'card-story.json', returnView: 'card_detail', card: '001tom_n01' })
+  await flush()
+  assert.equal(t.requests.length, 0, 'card leaf must precede scenario preparation')
+  leaf.resolve({ id: '001tom_n01', card: { resource_id: '001tom_n01' } })
+  await flush(() => t.requests.length === 1)
+  t.respond(0, 'card-story'); await pending
+  assert.equal(t.state.view.value, 'player')
+  assert.equal(t.state.returnViewAfterPlayer.value, 'card_detail')
+  assert.equal(t.context.cardReadModelDetail.value.id, '001tom_n01')
+}
+{
+  const t = setup(), leaf = deferred()
+  t.context.loadCardDetail = () => leaf.promise
+  const stale = t.restore({ view: 'card_detail', card: '001tom_n01' })
+  await t.restore({ view: 'portal' })
+  leaf.resolve({ id: '001tom_n01', card: { resource_id: '001tom_n01' } })
+  await stale
+  assert.equal(t.state.view.value, 'portal')
+  assert.equal(t.context.cardReadModelDetail.value, null)
 }
 {
   const t = setup(), data = deferred()

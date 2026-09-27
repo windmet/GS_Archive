@@ -114,24 +114,4 @@ const detail = id => ({ id, card: { resource_id: id } })
     { id: 'a', unitId: '1', cardCount: 2, _isGroup: false }, { id: 'b', unitId: '2', cardCount: 1, _isGroup: false },
   ], 'card idol directory must use projected ownership and bootstrap unit identity without old tables')
 }
-{
-  const t = setup()
-  t.context.view.value = 'card_detail'
-  t.context.currentCardId.value = 'first'
-  t.context.watch = (_sources, callback) => { t.context.recoverCard = callback }
-  const start = app.indexOf('watch([view, currentCardId]')
-  vm.runInContext(app.slice(start, app.indexOf('watch([view, currentCharacterId]', start)), t.context)
-  t.context.recoverCard(['card_detail', 'first'])
-  t.jobs.get('first').resolve(detail('first'))
-  await new Promise(resolve => setImmediate(resolve))
-  assert.equal(t.context.cardReadModelDetail.value.id, 'first')
-  assert.equal(t.context.cardReadModelStatus.value, '')
-  t.context.cardReadModelDetail.value = null
-  t.context.currentCardId.value = 'second'
-  t.context.recoverCard(['card_detail', 'second'])
-  t.invalidate()
-  t.jobs.get('second').resolve(detail('second'))
-  await new Promise(resolve => setImmediate(resolve))
-  assert.equal(t.context.cardReadModelDetail.value, null, 'late compatibility recovery must not overwrite a newer route')
-}
 console.log('Card read-model navigation: selection, races, retry, unit card directory and scenario actions passed')
