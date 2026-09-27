@@ -7,7 +7,7 @@ import { readingEntriesForFiles } from '../lib/reading_locator_projection.mjs';
 
 const viewer = fileURLToPath(new URL('../..', import.meta.url));
 
-test('route leaves preserve exact readable source membership and manifest order', async () => {
+test('[local-corpus] route leaves preserve exact readable source membership and manifest order', async () => {
   const manifest = JSON.parse(await fs.readFile(new URL('../../public/data/reading/manifest.json', import.meta.url), 'utf8'));
   const entries = manifest.entries;
   const { product } = await readCheckout(viewer, { dataRevision: 'test', mediaEpoch: 'test' });

@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { readCheckout } from '../lib/checkout_adapter.mjs'
 import { pick } from '../lib/common.mjs'
 
-test('Resource status projection preserves displayed source fields without full inventories', async () => {
+test('[local-corpus] Resource status projection preserves displayed source fields without full inventories', async () => {
   const viewer = fileURLToPath(new URL('../..', import.meta.url))
   const { product } = await readCheckout(viewer, { dataRevision: 'test', mediaEpoch: 'test' })
   const record = product.extraDomains.resources.records[0]

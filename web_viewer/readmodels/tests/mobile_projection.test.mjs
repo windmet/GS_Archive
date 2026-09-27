@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { readCheckout } from '../lib/checkout_adapter.mjs';
 import { buildCompiledGroupTitleMap, groupMobileScenarios, buildRandomTalkBundles } from '../../src/data/idolCommunicationSelectors.js';
 
-test('mobile route leaves match source grouping for every idol and unit', async () => {
+test('[local-corpus] mobile route leaves match source grouping for every idol and unit', async () => {
   const viewer = new URL('../..', import.meta.url);
   const publicRoot = new URL('../../public/data/', import.meta.url);
   const read = async file => JSON.parse(await fs.readFile(new URL(file, publicRoot), 'utf8'));

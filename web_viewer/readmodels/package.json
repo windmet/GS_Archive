@@ -1,1 +1,1 @@
-{"name":"gs-archive-readmodels","private":true,"type":"module","engines":{"node":">=22"},"scripts":{"test":"node --test tests/*.test.mjs","verify":"node tools/verify_artifacts.mjs"}}
+{"name":"gs-archive-readmodels","private":true,"type":"module","engines":{"node":">=22"},"scripts":{"test":"node --test tests/*.test.mjs","test:source":"node --test --test-skip-pattern=local-corpus tests/*.test.mjs","verify":"node tools/verify_artifacts.mjs"}}

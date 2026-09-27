@@ -7,7 +7,7 @@ import { groupFileList } from '../../src/utils/IndexNormalizer.js';
 const publicRoot = new URL('../../public/data/', import.meta.url);
 const read = async file => JSON.parse(await fs.readFile(new URL(file, publicRoot), 'utf8'));
 
-test('legacy route aliases retain every source group, file order and selected file metadata', async () => {
+test('[local-corpus] legacy route aliases retain every source group, file order and selected file metadata', async () => {
   const [compiled, catalog] = await Promise.all([
     read('compiled/index.json'), read('masterdata/story_catalog.json'),
   ]);

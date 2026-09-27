@@ -54,7 +54,7 @@ jobs:
         run: npm ci
 
       - name: Verify read-model tools and assembler rejection contracts
-        run: npm test --prefix readmodels
+        run: npm run test:source --prefix readmodels
 
       - name: Validate route progress ledger against public routes
         run: npm run verify:cutover-routes

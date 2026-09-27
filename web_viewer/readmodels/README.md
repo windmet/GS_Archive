@@ -73,6 +73,10 @@ modules/calls, source fingerprint, HEAD, release and reviewed route ledger.
 `npm run verify:build-audit` validates this proof in progress mode; it may pass
 with explicitly listed migration blockers. Source CI runs both progress checks.
 
+CI uses `npm run test:source --prefix readmodels`, which explicitly skips the four
+`[local-corpus]` tests requiring ignored real data. `npm test --prefix readmodels`
+still runs all tests locally; a source-only pass never grants real-corpus parity.
+
 For final acceptance use `node scripts/verify-archive-build-audit.mjs --final`
 and `node readmodels/tools/check_cutover_routes.mjs` (without `--progress`).
 The assembler supports `--bundle <code-output> --models <candidate> --check-only`
