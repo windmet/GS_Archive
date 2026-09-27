@@ -27,3 +27,4 @@
 ## 执行进度
 
 - A 已落实并完成本机回归/Browser 验收，边界与旅程见 [组合与卡片操作记录](GS_ARCHITECTURE_UNIT_CARD_ACTIONS_20260927.md)。
+- B 已落实路由事实账本、实际构建图审计、严格 assembler 预检和 source CI 接线，见 [构建审计记录](GS_ARCHITECTURE_BUILD_AUDIT_20260927.md)。最终 cutover 结论仍为 false。

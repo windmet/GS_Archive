@@ -1,198 +1,1727 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "baseline": "a6929d4054a8a9ce7da64b3d962c86eedd2cfb27",
   "routes": [
     {
       "view": "welcome",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_BOOTSTRAP_CUTOVER_20260925.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_BOOTSTRAP_CUTOVER_20260925.md"
+        ]
+      },
+      "actions": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_BOOTSTRAP_CUTOVER_20260925.md"
+        ]
+      },
+      "player": {
+        "status": "not-applicable",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_BOOTSTRAP_CUTOVER_20260925.md"
+        ]
+      },
+      "component": {
+        "status": "shell",
+        "module": "src/components/archive/ArchiveWelcome.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_BOOTSTRAP_CUTOVER_20260925.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_BOOTSTRAP_CUTOVER_20260925.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [],
+      "blockedReasons": []
     },
     {
       "view": "idol_picker",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_PORTAL_ENTRY_GATES_20260927.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_PORTAL_ENTRY_GATES_20260927.md"
+        ]
+      },
+      "actions": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_PORTAL_ENTRY_GATES_20260927.md"
+        ]
+      },
+      "player": {
+        "status": "not-applicable",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_PORTAL_ENTRY_GATES_20260927.md"
+        ]
+      },
+      "component": {
+        "status": "shell",
+        "module": "src/components/archive/ArchiveWelcome.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_PORTAL_ENTRY_GATES_20260927.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_PORTAL_ENTRY_GATES_20260927.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [],
+      "blockedReasons": []
     },
     {
       "view": "portal",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_PORTAL_ENTRY_GATES_20260927.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_PORTAL_ENTRY_GATES_20260927.md"
+        ]
+      },
+      "actions": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_PORTAL_ENTRY_GATES_20260927.md"
+        ]
+      },
+      "player": {
+        "status": "not-applicable",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_PORTAL_ENTRY_GATES_20260927.md"
+        ]
+      },
+      "component": {
+        "status": "shell",
+        "module": "src/components/archive/ArchivePortalLauncher.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_PORTAL_ENTRY_GATES_20260927.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_PORTAL_ENTRY_GATES_20260927.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [
+        "source return can target an unmigrated route"
+      ],
+      "blockedReasons": []
     },
     {
       "view": "home",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_HOME_CUTOVER_20260925.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_HOME_CUTOVER_20260925.md"
+        ]
+      },
+      "actions": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_HOME_CUTOVER_20260925.md"
+        ]
+      },
+      "player": {
+        "status": "not-applicable",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_HOME_CUTOVER_20260925.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/archive/ArchiveImmersiveHome.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_HOME_CUTOVER_20260925.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_HOME_CUTOVER_20260925.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [
+        "remaining compatibility helpers and cross-domain return paths need removal review"
+      ],
+      "blockedReasons": []
     },
     {
       "view": "song_catalog",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_SONG_CUTOVER_20260925.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_SONG_CUTOVER_20260925.md"
+        ]
+      },
+      "actions": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_SONG_CUTOVER_20260925.md"
+        ]
+      },
+      "player": {
+        "status": "not-applicable",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_SONG_CUTOVER_20260925.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/archive/ArchiveSongCatalog.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_SONG_CUTOVER_20260925.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_SONG_CUTOVER_20260925.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [],
+      "blockedReasons": []
     },
     {
       "view": "song_detail",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_NONSTORY_ROUTE_CHUNKS_20260927.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_NONSTORY_ROUTE_CHUNKS_20260927.md"
+        ]
+      },
+      "actions": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_NONSTORY_ROUTE_CHUNKS_20260927.md"
+        ]
+      },
+      "player": {
+        "status": "not-applicable",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_NONSTORY_ROUTE_CHUNKS_20260927.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/archive/ArchiveSongDetail.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_NONSTORY_ROUTE_CHUNKS_20260927.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_NONSTORY_ROUTE_CHUNKS_20260927.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [
+        "stage variant catalog still loads old stage indexes"
+      ],
+      "blockedReasons": []
     },
     {
       "view": "cards",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_CARD_CUTOVER_20260925.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_CARD_CUTOVER_20260925.md"
+        ]
+      },
+      "actions": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_CARD_CUTOVER_20260925.md"
+        ]
+      },
+      "player": {
+        "status": "not-applicable",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_CARD_CUTOVER_20260925.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/archive/ArchiveCardList.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_CARD_CUTOVER_20260925.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_CARD_CUTOVER_20260925.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [
+        "legacy selector fallback still exists"
+      ],
+      "blockedReasons": []
     },
     {
       "view": "card_detail",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_UNIT_CARD_ACTIONS_20260927.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_UNIT_CARD_ACTIONS_20260927.md"
+        ]
+      },
+      "actions": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_UNIT_CARD_ACTIONS_20260927.md"
+        ]
+      },
+      "player": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_UNIT_CARD_ACTIONS_20260927.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/archive/ArchiveCardDetail.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_UNIT_CARD_ACTIONS_20260927.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_UNIT_CARD_ACTIONS_20260927.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [
+        "legacy card detail watcher fallback still exists"
+      ],
+      "blockedReasons": []
     },
     {
       "view": "gashas",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_GASHA_CUTOVER_20260925.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_GASHA_CUTOVER_20260925.md"
+        ]
+      },
+      "actions": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_GASHA_CUTOVER_20260925.md"
+        ]
+      },
+      "player": {
+        "status": "not-applicable",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_GASHA_CUTOVER_20260925.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/archive/ArchiveGashaCatalog.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_GASHA_CUTOVER_20260925.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_GASHA_CUTOVER_20260925.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [],
+      "blockedReasons": []
     },
     {
       "view": "gasha_detail",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_GASHA_CUTOVER_20260925.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_GASHA_CUTOVER_20260925.md"
+        ]
+      },
+      "actions": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_GASHA_CUTOVER_20260925.md"
+        ]
+      },
+      "player": {
+        "status": "not-applicable",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_GASHA_CUTOVER_20260925.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/archive/ArchiveGashaDetail.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_GASHA_CUTOVER_20260925.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_GASHA_CUTOVER_20260925.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [],
+      "blockedReasons": []
     },
     {
       "view": "story_catalog",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_STORY_CATALOG_CUTOVER_20260925.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_STORY_CATALOG_CUTOVER_20260925.md"
+        ]
+      },
+      "actions": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_STORY_CATALOG_CUTOVER_20260925.md"
+        ]
+      },
+      "player": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_STORY_CATALOG_CUTOVER_20260925.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/archive/ArchiveStoryCatalog.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_STORY_CATALOG_CUTOVER_20260925.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_STORY_CATALOG_CUTOVER_20260925.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [
+        "birthday action still loads three communication indexes"
+      ],
+      "blockedReasons": []
     },
     {
       "view": "story_detail",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_STORY_DETAIL_CUTOVER_20260925.md"
+        ]
+      },
+      "data": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_STORY_DETAIL_CUTOVER_20260925.md"
+        ]
+      },
+      "actions": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_STORY_DETAIL_CUTOVER_20260925.md"
+        ]
+      },
+      "player": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_STORY_DETAIL_CUTOVER_20260925.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/archive/ArchiveStoryDetail.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_STORY_DETAIL_CUTOVER_20260925.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_STORY_DETAIL_CUTOVER_20260925.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [
+        "restore failure can fall back to global archive load"
+      ],
+      "blockedReasons": []
     },
     {
       "view": "story_collection",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_COLLECTION_CUTOVER_20260925.md"
+        ]
+      },
+      "data": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_COLLECTION_CUTOVER_20260925.md"
+        ]
+      },
+      "actions": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_COLLECTION_CUTOVER_20260925.md"
+        ]
+      },
+      "player": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_COLLECTION_CUTOVER_20260925.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/archive/ArchiveStoryCollection.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_COLLECTION_CUTOVER_20260925.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_COLLECTION_CUTOVER_20260925.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [
+        "restore failure can fall back to global archive load"
+      ],
+      "blockedReasons": []
     },
     {
       "view": "event_detail",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_EVENT_CUTOVER_20260925.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_EVENT_CUTOVER_20260925.md"
+        ]
+      },
+      "actions": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_EVENT_CUTOVER_20260925.md"
+        ]
+      },
+      "player": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_EVENT_CUTOVER_20260925.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/archive/ArchiveEventDetail.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_EVENT_CUTOVER_20260925.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_EVENT_CUTOVER_20260925.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [],
+      "blockedReasons": []
     },
     {
       "view": "seasonal_campaign",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_SEASONAL_CUTOVER_20260925.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_SEASONAL_CUTOVER_20260925.md"
+        ]
+      },
+      "actions": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_SEASONAL_CUTOVER_20260925.md"
+        ]
+      },
+      "player": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_SEASONAL_CUTOVER_20260925.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/archive/ArchiveSeasonalCampaign.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_SEASONAL_CUTOVER_20260925.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_SEASONAL_CUTOVER_20260925.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [],
+      "blockedReasons": []
     },
     {
       "view": "work_archive",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_WORK_CUTOVER_20260925.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_WORK_CUTOVER_20260925.md"
+        ]
+      },
+      "actions": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_WORK_CUTOVER_20260925.md"
+        ]
+      },
+      "player": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_WORK_CUTOVER_20260925.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/archive/ArchiveWorkStory.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_WORK_CUTOVER_20260925.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_WORK_CUTOVER_20260925.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [],
+      "blockedReasons": []
     },
     {
       "view": "idol_story_archive",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_IDOL_STORY_CUTOVER_20260925.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_IDOL_STORY_CUTOVER_20260925.md"
+        ]
+      },
+      "actions": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_IDOL_STORY_CUTOVER_20260925.md"
+        ]
+      },
+      "player": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_IDOL_STORY_CUTOVER_20260925.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/archive/ArchiveIdolStory.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_IDOL_STORY_CUTOVER_20260925.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_IDOL_STORY_CUTOVER_20260925.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [],
+      "blockedReasons": []
     },
     {
       "view": "mobile_archive",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_MOBILE_CUTOVER_20260925.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_MOBILE_CUTOVER_20260925.md"
+        ]
+      },
+      "actions": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_MOBILE_CUTOVER_20260925.md"
+        ]
+      },
+      "player": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_MOBILE_CUTOVER_20260925.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/archive/ArchiveMobileArchive.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_MOBILE_CUTOVER_20260925.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_MOBILE_CUTOVER_20260925.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [],
+      "blockedReasons": []
     },
     {
       "view": "reader",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_READER_STARTUP_20260927.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_READER_STARTUP_20260927.md"
+        ]
+      },
+      "actions": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_READER_STARTUP_20260927.md"
+        ]
+      },
+      "player": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_READER_STARTUP_20260927.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/archive/ArchiveStoryReader.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_READER_STARTUP_20260927.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_READER_STARTUP_20260927.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [],
+      "blockedReasons": []
     },
     {
       "view": "player",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_FEATURE_PLAYER_STARTUP_20260927.md"
+        ]
+      },
+      "data": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_FEATURE_PLAYER_STARTUP_20260927.md"
+        ]
+      },
+      "actions": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_FEATURE_PLAYER_STARTUP_20260927.md"
+        ]
+      },
+      "player": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_FEATURE_PLAYER_STARTUP_20260927.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/core/StoryViewer.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_FEATURE_PLAYER_STARTUP_20260927.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_FEATURE_PLAYER_STARTUP_20260927.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [
+        "returnView whitelist still has uncovered targets; card detail compatibility watcher remains"
+      ],
+      "blockedReasons": []
     },
     {
       "view": "idols",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_UNIT_CARD_ACTIONS_20260927.md"
+        ]
+      },
+      "data": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_UNIT_CARD_ACTIONS_20260927.md"
+        ]
+      },
+      "actions": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_UNIT_CARD_ACTIONS_20260927.md"
+        ]
+      },
+      "player": {
+        "status": "not-applicable",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_UNIT_CARD_ACTIONS_20260927.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/archive/ArchiveIdolGrid.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_UNIT_CARD_ACTIONS_20260927.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_UNIT_CARD_ACTIONS_20260927.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [
+        "idol_chat and idol_phone category grids still use legacy compiled index"
+      ],
+      "blockedReasons": []
     },
     {
       "view": "idol_detail",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_IDOL_ROUTE_CHUNKS_20260927.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_IDOL_ROUTE_CHUNKS_20260927.md"
+        ]
+      },
+      "actions": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_IDOL_ROUTE_CHUNKS_20260927.md"
+        ]
+      },
+      "player": {
+        "status": "not-applicable",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_IDOL_ROUTE_CHUNKS_20260927.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/archive/ArchiveIdolDetail.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_IDOL_ROUTE_CHUNKS_20260927.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_IDOL_ROUTE_CHUNKS_20260927.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [
+        "compatibility communication-readiness watcher still exists"
+      ],
+      "blockedReasons": []
     },
     {
       "view": "unit_catalog",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_UNIT_CUTOVER_20260925.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_UNIT_CUTOVER_20260925.md"
+        ]
+      },
+      "actions": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_UNIT_CUTOVER_20260925.md"
+        ]
+      },
+      "player": {
+        "status": "not-applicable",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_UNIT_CUTOVER_20260925.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/archive/ArchiveUnitCatalog.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_UNIT_CUTOVER_20260925.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_UNIT_CUTOVER_20260925.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [],
+      "blockedReasons": []
     },
     {
       "view": "unit_detail",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_UNIT_CARD_ACTIONS_20260927.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_UNIT_CARD_ACTIONS_20260927.md"
+        ]
+      },
+      "actions": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_UNIT_CARD_ACTIONS_20260927.md"
+        ]
+      },
+      "player": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_UNIT_CARD_ACTIONS_20260927.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/archive/ArchiveUnitDetail.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_UNIT_CARD_ACTIONS_20260927.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_UNIT_CARD_ACTIONS_20260927.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [],
+      "blockedReasons": []
     },
     {
       "view": "episode_zero_units",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md"
+        ]
+      },
+      "actions": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md"
+        ]
+      },
+      "player": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md"
+        ]
+      },
+      "component": {
+        "status": "static",
+        "module": "src/components/archive/ArchiveUnitGrid.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [],
+      "blockedReasons": [
+        "route component remains statically imported"
+      ]
     },
     {
       "view": "episodes",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md"
+        ]
+      },
+      "actions": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md"
+        ]
+      },
+      "player": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md"
+        ]
+      },
+      "component": {
+        "status": "static",
+        "module": "src/components/archive/ArchiveEpisodeList.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [],
+      "blockedReasons": [
+        "route component remains statically imported"
+      ]
     },
     {
       "view": "groups",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md"
+        ]
+      },
+      "actions": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md"
+        ]
+      },
+      "player": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md"
+        ]
+      },
+      "component": {
+        "status": "static",
+        "module": "src/components/archive/ArchiveGroupList.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [],
+      "blockedReasons": [
+        "route component remains statically imported"
+      ]
     },
     {
       "view": "files",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md"
+        ]
+      },
+      "actions": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md"
+        ]
+      },
+      "player": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md"
+        ]
+      },
+      "component": {
+        "status": "static",
+        "module": "src/components/archive/ArchiveFileList.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_LEGACY_ALIAS_CUTOVER_20260927.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [],
+      "blockedReasons": [
+        "route component remains statically imported"
+      ]
     },
     {
       "view": "archive_status",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_RESOURCE_STATUS_CUTOVER_20260925.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_RESOURCE_STATUS_CUTOVER_20260925.md"
+        ]
+      },
+      "actions": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_RESOURCE_STATUS_CUTOVER_20260925.md"
+        ]
+      },
+      "player": {
+        "status": "not-applicable",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_RESOURCE_STATUS_CUTOVER_20260925.md"
+        ]
+      },
+      "component": {
+        "status": "static",
+        "module": "src/components/archive/ArchiveStatus.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_RESOURCE_STATUS_CUTOVER_20260925.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_RESOURCE_STATUS_CUTOVER_20260925.md",
+          "scope": "Representative local journey recorded in this dated batch; inspect its baseline and limitations."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [],
+      "blockedReasons": [
+        "route component remains statically imported"
+      ]
     },
     {
       "view": "external_story_resources",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "legacy",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+        ]
+      },
+      "data": {
+        "status": "legacy",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+        ]
+      },
+      "actions": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+        ]
+      },
+      "player": {
+        "status": "not-applicable",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+        ]
+      },
+      "component": {
+        "status": "static",
+        "module": "src/components/archive/ArchiveExternalStoryResources.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "pending",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+        ]
+      },
+      "browserEvidence": [],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [
+        "direct route enters global archive load and communication indexes despite paused publication"
+      ],
+      "blockedReasons": [
+        "route component remains statically imported"
+      ]
     },
     {
       "view": "spine_lab",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "legacy",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+        ]
+      },
+      "data": {
+        "status": "legacy",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+        ]
+      },
+      "actions": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+        ]
+      },
+      "player": {
+        "status": "not-applicable",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/SpineViewer.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "pending",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+        ]
+      },
+      "browserEvidence": [],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [
+        "direct startup still enters global archive load"
+      ],
+      "blockedReasons": []
     },
     {
       "view": "chibi_stage",
-      "migrated": false,
-      "parityPassed": false,
-      "deviceEvidence": []
+      "entry": {
+        "status": "legacy",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+        ]
+      },
+      "data": {
+        "status": "legacy",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+        ]
+      },
+      "actions": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+        ]
+      },
+      "player": {
+        "status": "not-applicable",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/ChibiStageViewer.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "pending",
+        "evidence": [
+          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+        ]
+      },
+      "browserEvidence": [],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [
+        "direct startup enters global archive load and stage data contract is not migrated"
+      ],
+      "blockedReasons": []
     }
-  ]
+  ],
+  "reviewedSourceRevision": "59fc93168291fbf57319c890461b55080f28bb95",
+  "release": "23493f6b8994a51851cae7b8e0fd0b265a04c303e80d1e41ee86f85be638912c",
+  "note": "Current implementation inventory; linked local Browser records are dated samples, not current-HEAD full parity or physical-device acceptance. Final booleans are derived by the checker."
 }

@@ -3,16 +3,19 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assert, parseArgs, createOutput, safeRead, listFiles, jsonBytes, sha256 } from '../lib/common.mjs';
 import { verifyArtifacts } from './verify_artifacts.mjs';
+import { readBuildAudit } from '../../scripts/lib/archive-build-audit.mjs';
 
-const a = parseArgs(process.argv.slice(2), ['--bundle','--models','--out','--previous']);
-assert(a['--bundle'] && a['--models'] && a['--out'], 'Usage: --bundle <copyPublicDir=false build> --models <verified model output> --out <new external stage> [--previous <previous verified model output>]');
+const checkOnly = process.argv.includes('--check-only');
+const a = parseArgs(process.argv.slice(2).filter(arg => arg !== '--check-only'), ['--bundle','--models','--out','--previous']);
+assert(a['--bundle'] && a['--models'] && (checkOnly || a['--out']), 'Usage: --bundle <copyPublicDir=false build> --models <verified model output> [--check-only | --out <new external stage>] [--previous <previous verified model output>]');
+assert(!checkOnly || !a['--out'], 'Check-only mode must not specify an output');
 const bundle = await fs.realpath(a['--bundle']), models = await fs.realpath(a['--models']);
 await verifyArtifacts(models);
-const budget = JSON.parse((await safeRead(bundle, 'audit/startup-budget.json')).toString('utf8'));
+const { budget, acceptance } = await readBuildAudit(bundle);
+assert(!budget.sourceDirty, 'Build audit source was uncommitted');
 assert(Array.isArray(budget.initialChunks) && budget.initialChunks.length > 0, 'Missing entry import-graph proof');
 assert(Array.isArray(budget.forbiddenModules) && budget.forbiddenModules.length === 0, 'Legacy/heavy entry imports still present');
 assert(budget.initialJsGzipEstimate > 0 && budget.initialJsGzipEstimate <= 200 * 1024, 'Startup JS budget not met');
-const acceptance = JSON.parse((await safeRead(bundle, 'audit/readmodel-cutover.json')).toString('utf8'));
 assert(acceptance.schema_version === 1 && acceptance.globalArchiveLoadRemoved === true && acceptance.allPublicRoutesMigrated === true && acceptance.deviceReviewAccepted === true, 'Cutover gate missing: do not publish new data behind the unchanged global-loading App');
 assert(acceptance.release === JSON.parse(await fs.readFile(path.join(models,'bootstrap.inline.json'),'utf8')).release, 'Cutover proof is for another data release');
 const files = await listFiles(bundle);
@@ -28,6 +31,30 @@ if (existing) assert(existing[1] === inline, 'Code bundle bootstrap differs from
 else {
   assert(!bundleHtml.includes('id="archive-bootstrap"'), 'Unexpected archive bootstrap markup');
   assert(bundleHtml.includes('</head>'), 'HTML lacks head');
+}
+if (checkOnly) {
+  // Apply the same remaining size/retention checks without creating an output.
+  let total = 0, count = 0;
+  const combined = new Map();
+  const inspect = async (source, name) => {
+    const bytes = await safeRead(source, name);
+    assert(bytes.length <= 25 * 1024 * 1024, `Pages single-file limit: ${name}`);
+    const hash = sha256(bytes);
+    if (combined.has(name)) { assert(combined.get(name) === hash, `Conflicting versioned path: ${name}`); return; }
+    combined.set(name, hash); count++;
+  };
+  for (const name of files.filter(name => !name.startsWith('.vite/') && !name.startsWith('audit/'))) {
+    total += (await safeRead(bundle, name)).length; await inspect(bundle, name);
+  }
+  assert(total <= 30 * 1024 * 1024, 'Code bundle too large; inspect publicDir and import graph');
+  for (const name of await listFiles(path.join(models, 'pages'))) await inspect(path.join(models, 'pages'), name);
+  if (a['--previous']) {
+    const previous = await fs.realpath(a['--previous']); await verifyArtifacts(previous);
+    for (const name of await listFiles(path.join(previous, 'pages'))) if (name.startsWith('_catalog/v/')) await inspect(path.join(previous, 'pages'), name);
+  }
+  assert(count + 2 <= 18000, 'Combined retained versions exceed the 18,000-file safety budget');
+  console.log(JSON.stringify({ checkOnly: true, release: boot.release, files: count + 2, outputCreated: false, deployed: false }, null, 2));
+  process.exit(0);
 }
 const root = await createOutput(a['--out'], [bundle, models, fileURLToPath(new URL('..', import.meta.url))]);
 let totalBytes = 0, totalFiles = 0;

@@ -9,6 +9,7 @@ on:
   push:
     branches:
       - master
+      - codex/gs-architecture-rebuild
     paths:
       - ".github/workflows/web-viewer-source-gate.yml"
       - "data_pipeline/**"
@@ -51,6 +52,12 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Verify read-model tools and assembler rejection contracts
+        run: npm test --prefix readmodels
+
+      - name: Validate route progress ledger against public routes
+        run: npm run verify:cutover-routes
 
       - name: Check patch whitespace
         working-directory: ${{ github.workspace }}
@@ -312,5 +319,8 @@ jobs:
       - name: Verify compiled migration
         run: npm run verify:compiled-migration
 
-      - name: Build production bundle
-        run: npm run build
+      - name: Compile source and generate startup/cutover audits
+        run: npm run build:check
+
+      - name: Verify current-build audits (progress, not release approval)
+        run: npm run verify:build-audit

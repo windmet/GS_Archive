@@ -33,8 +33,9 @@ Legacy group, file and Episode Zero URLs use source-derived aliases. A directory
 loads only its selected group or unit; a file route loads one group leaf with
 ordered file metadata and missing-file states.
 Reader document routes now resolve one pinned locator and its same-story segments; story, collection, event, work and idol-story detail leaves carry their own matching reading entries.
-Eight story-facing route components now use dynamic imports. Remaining feature
-imports and the full route cutover remain open.
+The current route ledger records each component's import mode. Unit/card internal
+story actions, unit card ownership lists, and card voice refresh now use bounded
+read models. Remaining feature imports and the full route cutover remain open.
 No Pages candidate has been assembled or deployed. The package's route
 checklist in `contracts/routes.json` remains the cutover inventory.
 
@@ -56,3 +57,27 @@ On the next data release, regenerate this checked-in bootstrap from the verified
 model candidate. The assembler rejects a code bundle whose inline bootstrap differs
 from the model candidate. Keep generated assets outside the checkout until
 packaging is deliberately approved under `docs/BUILD_ACCEPTANCE_POLICY.md`.
+
+## Current-build audit and cutover checks
+
+From `web_viewer`, run `npm run verify:cutover-routes` to validate all 32 public
+routes and their evidence references in progress mode. Entry, data, internal
+actions, player return, component loading, parity and device evidence are separate
+dimensions. Historical local Browser samples do not grant current-build parity
+or physical-device acceptance.
+
+`npm run build:check` writes code under `.analysis/build-check/_app` and generates
+`audit/startup-budget.json` and `audit/readmodel-cutover.json`. The reports bind
+the emitted static entry closure, final chunk hashes/gzip sizes, retained legacy
+modules/calls, source fingerprint, HEAD, release and reviewed route ledger.
+`npm run verify:build-audit` validates this proof in progress mode; it may pass
+with explicitly listed migration blockers. Source CI runs both progress checks.
+
+For final acceptance use `node scripts/verify-archive-build-audit.mjs --final`
+and `node readmodels/tools/check_cutover_routes.mjs` (without `--progress`).
+The assembler supports `--bundle <code-output> --models <candidate> --check-only`
+for strict validation without creating a staging directory. It still rejects
+dirty source, forbidden initial imports, global legacy loading, unfinished
+routes or missing device acceptance. No command here deploys the site.
+
+See [the repair plan](../docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md).

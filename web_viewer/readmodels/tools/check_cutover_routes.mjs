@@ -1,13 +1,17 @@
 import fs from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { assert } from '../lib/common.mjs';
-assert(process.argv[2], 'Usage: node tools/check_cutover_routes.mjs <completed routes.json>');
-const original=JSON.parse(await fs.readFile(new URL('../contracts/routes.json',import.meta.url),'utf8'));
-const actual=JSON.parse(await fs.readFile(process.argv[2],'utf8'));
-assert(Array.isArray(actual.routes),'Missing routes array');
-const expected=new Set(original.routes.map(r=>r.view)),seen=new Set();
-for(const route of actual.routes){assert(expected.has(route.view)&&!seen.has(route.view),`Unknown/duplicate route: ${route.view}`);seen.add(route.view);
- assert(route.migrated===true && route.parityPassed===true,`Unfinished route: ${route.view}`);
- assert(Array.isArray(route.deviceEvidence)&&route.deviceEvidence.length>0,`Missing evidence: ${route.view}`);
-}
-assert(expected.size===seen.size,'Some existing routes disappeared');
-console.log(JSON.stringify({routes:seen.size,scope:'checklist structure only; reviewer must inspect the referenced evidence'},null,2));
+import { summarizeRoutes, validateRouteEvidence } from '../lib/cutover.mjs';
+import { VALID_VIEWS } from '../../src/core/archiveRoute.js';
+
+const args = process.argv.slice(2);
+const progress = args.includes('--progress');
+assert(args.every(arg => !arg.startsWith('--') || ['--progress', '--final'].includes(arg)), 'Unknown route-check option');
+assert(!(progress && args.includes('--final')), 'Choose progress or final mode');
+const files = args.filter(arg => !arg.startsWith('--'));
+assert(files.length <= 1, 'Usage: check_cutover_routes.mjs [routes.json] [--progress|--final]');
+const ledger = JSON.parse(await fs.readFile(files[0] || new URL('../contracts/routes.json', import.meta.url), 'utf8'));
+const result = summarizeRoutes(ledger, VALID_VIEWS);
+await validateRouteEvidence(ledger, fileURLToPath(new URL('../..', import.meta.url)));
+console.log(JSON.stringify({ mode: progress ? 'progress' : 'final', ...result }, null, 2));
+if (!progress) assert(result.allPublicRoutesMigrated && result.deviceReviewAccepted, 'Unfinished cutover: implementation/parity/device requirements remain');
