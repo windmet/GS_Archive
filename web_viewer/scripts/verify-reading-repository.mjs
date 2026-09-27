@@ -30,6 +30,21 @@ assert.ok(Object.isFrozen(a.document.rows[0].anchor))
 assert.throws(() => { a.document.rows[0].source_text = 'changed' }, TypeError)
 await assert.rejects(repo.load('../../RAW'), /Invalid/)
 
+// A selected locator carries its segment siblings without fetching the full manifest.
+const siblings = initial.entries.filter(candidate => candidate.logical_id === entry.logical_id)
+const directCalls = []
+const direct = createReadingRepository({ digest,
+  locatorResolver: async documentId => ({ entry: structuredClone(siblings.find(candidate => candidate.document_id === documentId)), entries: structuredClone(siblings) }),
+  fetchImpl: async url => { directCalls.push(url); return new Response(text, { headers: { 'content-type': 'application/json' } }) },
+})
+assert.deepEqual((await direct.locator(entry.document_id)).entries.map(candidate => candidate.document_id), siblings.map(candidate => candidate.document_id))
+assert.equal((await direct.load(entry.document_id)).document.document_id, entry.document_id)
+assert.deepEqual(directCalls, [`/data/reading/${entry.file}?rev=${entry.sha256.slice(7)}`])
+const absent = createReadingRepository({ locatorResolver: async () => ({ entry: null, entries: [] }),
+  fetchImpl: async () => { throw Error('Absent documents must not fetch a body') } })
+assert.equal((await absent.locator('not_generated')).entry, null)
+assert.equal((await absent.load('not_generated')).status, 'not-generated')
+
 // Versioned bytes replace old cached content, while bad responses can be retried.
 const updated = JSON.parse(text)
 updated.source.publication.test_revision = 2

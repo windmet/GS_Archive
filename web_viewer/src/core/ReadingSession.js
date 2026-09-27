@@ -6,9 +6,10 @@ export function createReadingSession({ repository, publish }) {
       publish({ status: 'loading', document: null, entries: [], error: '' })
       let entries = []
       try {
-        entries = (await repository.manifest()).entries
+        const locator = repository.locator ? await repository.locator(documentId) : null
+        entries = locator?.entries || (await repository.manifest()).entries
         if (!intent.isCurrent()) return
-        const result = await repository.load(documentId)
+        const result = await repository.load(documentId, locator?.entry)
         if (intent.isCurrent()) publish({ ...result, entries, error: '' })
       } catch (error) {
         if (intent.isCurrent()) publish({ status: 'error', document: null, entries, error: error.message })

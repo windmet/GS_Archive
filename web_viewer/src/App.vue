@@ -1372,7 +1372,20 @@ const currentIdolSongs = computed(() => idolReadModelDetail.value?.id === curren
 
 const readingState = ref({ status: 'idle', document: null, entries: [], error: '' })
 const readingPlaybackNotice = ref('')
-const readingRepository = createReadingRepository()
+const readingRepository = createReadingRepository({ locatorResolver: async (documentId, { fresh }) => {
+  const descriptor = await entityDescriptor(archiveBootstrap, 'reading-docs', documentId, 'reading-docs.detail')
+  if (fresh) readModelClient.invalidate(descriptor)
+  try {
+    const detail = await readModelClient.load(descriptor, { expectedId: documentId,
+      validate: data => { if (!data.view?.entry || !Array.isArray(data.view.entries)) throw Error('Reading locator shape mismatch') } })
+    return detail.view
+  } catch (error) {
+    if (error.code !== 'RELEASE_OR_ARTIFACT_MISSING') throw error
+    const exists = (await readingRepository.manifest()).entries.some(entry => entry.document_id === documentId)
+    if (exists) throw error
+    return { entry: null, entries: [] }
+  }
+} })
 const readingCatalogEntries = ref([])
 const readingCatalogError = ref('')
 async function loadReadingCatalog() {
@@ -1935,7 +1948,7 @@ async function refreshStoryReader() {
   return navigation.run(async intent => {
     loading.value = true
     try {
-      await readingRepository.manifest({ fresh: true })
+      await readingRepository.locator(readingDocumentId.value, { fresh: true })
       if (intent.isCurrent()) await openStoryReader(readingDocumentId.value)
     } catch (error) {
       if (intent.isCurrent()) readingPlaybackNotice.value = `正文刷新失败：${error.message}`
