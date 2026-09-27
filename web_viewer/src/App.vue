@@ -105,7 +105,7 @@
         v-if="view === 'idol_detail'"
         :idol="currentIdolProfile"
         :stats="currentIdolStats"
-        :communication-status="idolReadModelDetail?.id === currentCharacterId ? 'ready' : idolCommunicationState.status"
+        :communication-status="idolReadModelDetail?.id === currentCharacterId ? 'ready' : 'idle'"
         :events="currentIdolEvents"
         :songs="currentIdolSongs"
         :idols="idolUnitData?.idols || bootstrapIdolSwitcher"
@@ -115,7 +115,6 @@
         @open-event="openIdolEvent"
         @open-song="openSong"
         @select-idol="selectPrimaryIdol"
-        @retry-communication="retryIdolCommunication"
       />
       <p v-if="['idols', 'idol_detail'].includes(view) && idolReadModelStatus" class="idol-read-model-status" role="status">{{ idolReadModelStatus }}</p>
 
@@ -484,7 +483,6 @@ import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../shared/deploy/ExternalStory
 import { createLazyArchiveResource } from './data/lazyArchiveResource.js'
 import { buildUnitCatalog, resolveArchiveUnit, storiesForUnit, songsForUnit } from './data/unitPage.js'
 import { buildIdolProfile, buildIdolStats, eventsForIdol, songsForIdol } from './data/idolPage.js'
-import { createIdolCommunicationReadiness } from './data/idolCommunicationReadiness.js'
 import { buildGashaCatalog, buildGashaCategoryOptions, filterGashaCatalog, resolveGashaRelatedCards } from './data/gashaCatalog.js'
 import { filterArchiveCards } from './data/cardFilters.js'
 import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
@@ -1610,22 +1608,6 @@ const ensureIdolCommunicationData = createLazyArchiveResource({
   isDisposed: navigation.isDisposed,
   onError: error => console.error('[ArchiveData] Failed to load idol communication indexes:', error),
 })
-
-const idolCommunicationState = ref({ status: 'idle', idolCode: '' })
-const idolCommunicationReadiness = createIdolCommunicationReadiness({
-  ensure: ensureIdolCommunicationData,
-  hasData: () => Boolean(idolEpisodeData.value && mobileArchiveData.value && randomTalkPresentationData.value),
-  publish: state => { idolCommunicationState.value = state },
-})
-function retryIdolCommunication() {
-  if (view.value === 'idol_detail' && idolCommunicationState.value.status === 'error') {
-    idolCommunicationReadiness.enter(currentCharacterId.value)
-  }
-}
-watch([view, currentCharacterId], ([nextView, idolCode]) => {
-  if (nextView === 'idol_detail' && idolReadModelDetail.value?.id !== idolCode) idolCommunicationReadiness.enter(idolCode)
-  else idolCommunicationReadiness.leave()
-}, { immediate: true, flush: 'sync' })
 
 async function restoreVoicePreview(route, intent) {
   const card = cardReadModelDetail.value?.id === route.card ? cardReadModelDetail.value.card : null
@@ -4567,6 +4549,24 @@ watch([view, currentCardId], ([nextView, cardId]) => {
   })
 })
 
+watch([view, currentCharacterId], ([nextView, idolCode]) => {
+  if (nextView !== 'idol_detail' || !idolCode || idolReadModelDetail.value?.id === idolCode) return
+  const request = ++pendingIdolNavigation
+  const revision = navigation.getRevision()
+  idolReadModelStatus.value = '正在读取偶像档案…'
+  loadIdolDetail(idolCode).then(detail => {
+    if (request !== pendingIdolNavigation || revision !== navigation.getRevision() ||
+      navigation.isDisposed() || view.value !== 'idol_detail' || currentCharacterId.value !== idolCode) return
+    idolReadModelDetail.value = detail
+    idolReadModelStatus.value = ''
+  }).catch(error => {
+    if (request !== pendingIdolNavigation || revision !== navigation.getRevision() ||
+      view.value !== 'idol_detail' || currentCharacterId.value !== idolCode) return
+    console.error('[IdolReadModel] Failed to restore idol detail:', error)
+    idolReadModelStatus.value = '偶像档案暂时无法读取，请返回后重试。'
+  })
+})
+
 watch(cardLayout, layout => {
   setLocalStorageValue('sidem-archive-card-layout', layout)
 })
@@ -4584,7 +4584,6 @@ watch(storyTranslationLocale, locale => {
 onBeforeUnmount(() => {
   ++pendingHomeNavigation
   readModelClient.dispose()
-  idolCommunicationReadiness.leave()
   playbackController.dispose()
   navigation.dispose()
   removeArchivePopState?.()

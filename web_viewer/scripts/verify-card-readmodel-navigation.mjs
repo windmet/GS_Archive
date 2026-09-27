@@ -120,7 +120,7 @@ const detail = id => ({ id, card: { resource_id: id } })
   t.context.currentCardId.value = 'first'
   t.context.watch = (_sources, callback) => { t.context.recoverCard = callback }
   const start = app.indexOf('watch([view, currentCardId]')
-  vm.runInContext(app.slice(start, app.indexOf('watch(cardLayout', start)), t.context)
+  vm.runInContext(app.slice(start, app.indexOf('watch([view, currentCharacterId]', start)), t.context)
   t.context.recoverCard(['card_detail', 'first'])
   t.jobs.get('first').resolve(detail('first'))
   await new Promise(resolve => setImmediate(resolve))

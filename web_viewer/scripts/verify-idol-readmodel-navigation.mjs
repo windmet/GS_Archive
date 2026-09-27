@@ -64,4 +64,24 @@ function setup() {
   assert.equal(t.context.currentCharacterId.value, '001tom')
   assert.equal(t.context.idolReadModelStatus.value, '')
 }
+{
+  const t = setup()
+  t.context.view.value = 'idol_detail'
+  t.context.currentCharacterId.value = '001tom'
+  t.context.watch = (_sources, callback) => { t.context.recoverIdol = callback }
+  const watcherStart = app.indexOf('watch([view, currentCharacterId]')
+  vm.runInContext(app.slice(watcherStart, app.indexOf('watch(cardLayout', watcherStart)), t.context)
+  t.context.recoverIdol(['idol_detail', '001tom'])
+  t.jobs.get('001tom').resolve({ id: '001tom', view: { stats: { chats: 2, phones: 1 } } })
+  await new Promise(resolve => setImmediate(resolve))
+  assert.equal(t.context.idolReadModelDetail.value.id, '001tom')
+  assert.equal(t.context.idolReadModelStatus.value, '')
+  t.context.idolReadModelDetail.value = null
+  t.context.currentCharacterId.value = '002sht'
+  t.context.recoverIdol(['idol_detail', '002sht'])
+  t.invalidate()
+  t.jobs.get('002sht').resolve({ id: '002sht' })
+  await new Promise(resolve => setImmediate(resolve))
+  assert.equal(t.context.idolReadModelDetail.value, null, 'late detail must not replace a newer route')
+}
 console.log('Idol read-model navigation: latest selection, route supersession and retry passed')
