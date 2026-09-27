@@ -21,3 +21,28 @@
 ## 设备验收应记录
 
 使用最终部署的不可变 URL 记录设备型号、系统/浏览器版本、网络、首次打开与重访时间、卡片/剧情的来回导航和刷新、语音/BGM、舞台连续进出。至少覆盖 iPhone Safari、iPad Safari、Android Chromium；本机 Browser 结果不能替代这些记录。
+
+## 已完成的本地验收及部署
+
+- 测试包源版本：`c3380de6441de4735dc92278e039e6e52bfecc36`；[完整 Source Gate](https://github.com/windmet/GS_Archive/actions/runs/36306730472) 成功。
+- 当前 HEAD 的 `build:check`、`verify:build-audit` 成功：`sourceDirty=false`，入口 gzip 107,724 B；`forbiddenModules=[]`、`productionLegacyModules=[]`、`legacyCallSites=[]`、`globalArchiveLoadRemoved=true`。
+- r23 全部数据通过 `verifyArtifacts`；测试包 8,541 文件、62,630,601 B，打包后逐文件重新核对哈希通过。包位于 `.deploy/rebuild-device-preview-c3380de`，含清单和回执，不含 public 媒体副本。
+- 最终 assembler 对同一代码/r23 执行 `--check-only` 仍以 cutover gate 未满足拒绝，没有最终 candidate。错误文案包含历史 global-loading 描述；本次实际阻塞是 routes parity/device，并非全局 loader 重新出现。
+- Cloudflare Preview：`https://c405746d.gs-archive-preview.pages.dev`；稳定测试别名：`https://gs-architecture-device-test.gs-archive-preview.pages.dev`。部署分支为 `gs-architecture-device-test`，回执 `preview-receipt.json` 的 source/release 与本机一致。
+- 上传 8,524 个新文件，15 个文件复用；Functions、headers、routes 上传成功。重新查询 Production 仍为原 `6ed057d8` / `master`，未切换生产。
+- 线上 78 项 HTTP 验收全部通过：每种 ReadModel kind 抽取一个完整哈希样本、版本目录 immutable 缓存、index/bootstrap/preview receipt 同包哈希、真实 R2 品牌 PNG、gzip 剧情解码后源哈希、版本化数据读取及语音 206/416 Range。抽样不等于全量内容 parity；回执位于包根 `http-receipt.json`。
+
+## Browser 旅程与边界
+
+Browser 插件可用；未使用外部浏览器替代。沿用既有窄屏约 465×492，另在新本地标签页观察桌面布局。截图在本次会话中直接核对。
+
+| 环境 | 旅程与观察 | 结果 |
+| --- | --- | --- |
+| 5188 阻断旧大表服务 | 门户→卡片→ブライトストライク→勝利を掴め！→刷新 Player→返回同一卡片 | 导航、正文、刷新返回通过；该服务缺外置卡图，不能用于媒体验收 |
+| `127.0.0.1:2374` | 实际部署包静态文件 + 固定旧 Production 资源代理；单卡普通/特训图、卡片剧情画面 | 图片与剧情可见，无框架覆盖层，检查的 console error 为空 |
+| 同一本地测试包 | 卡池直达→GROWING FES 分类 | 57 个卡池、分类 4/57 与选择状态一致 |
+| 线上不可变 URL | 门户→故事→主线第1章→阅读 EPISODE 01→展开分段→EPISODE 02→刷新 | 正文与分段恢复一致，截图正常，最终 error/warn 日志为空 |
+
+线上最初 `cua` 导航/AX 查询多次超时；使用同一 Browser 已有标签页的开发接口后取得截图、DOM 和交互结果。后续部分调用仍耗时约 21–55 秒，不能据此推算真实首屏性能，也不能把它笼统归因于网站或网络。分段控件位于折叠区；首次按错误标签定位失败后，按实际可见控件展开并完成选择。
+
+未覆盖：32 条路由完整 parity、舞台 choreography/multi-stage 长稳、iPhone/iPad/Android 真机、主观音频听感和真实移动网络首屏指标。`allPublicRoutesMigrated=false`、`deviceReviewAccepted=false` 保持不变。这个地址用于下一阶段设备验收，不是最终发布签收。
