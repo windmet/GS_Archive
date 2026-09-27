@@ -506,7 +506,6 @@ import {
   buildCardMap,
   buildCardRarityTabs,
   buildStoryCatalog,
-  cardsForCharacter,
 } from './data/archiveSelectors.js'
 import {
   clearArchiveUserPreferences,
@@ -1208,11 +1207,8 @@ const filteredFileEntries = computed(() => {
 
 const cardMap = computed(() => buildCardMap(cardIndexData.value))
 
-const currentCards = computed(() => cardReadModelCatalog.value
-  ? cardReadModelCatalog.value.filter(card => !currentCharacterId.value || card.character_id === currentCharacterId.value)
-  : currentCharacterId.value
-    ? cardsForCharacter(cardIndexData.value, cardMap.value, currentCharacterId.value)
-    : [...cardMap.value.values()])
+const currentCards = computed(() => (cardReadModelCatalog.value || [])
+  .filter(card => !currentCharacterId.value || card.character_id === currentCharacterId.value))
 
 const cardRarityTabs = computed(() => buildCardRarityTabs(currentCards.value))
 
@@ -1221,27 +1217,22 @@ const filteredCards = computed(() => filterArchiveCards(currentCards.value, {
   rarity: currentCardRarity.value,
   assetState: currentCardAssetState.value,
   relationState: currentCardRelationState.value,
-  assets: archiveManifestData.value?.card_assets_by_id,
-  eventRelations: archiveManifestData.value?.event_card_relations_by_card,
-  gashaRelations: gashaIndexData.value?.relations_by_card,
 }))
 const filteredCardRows = computed(() => filteredCards.value.map(card => ({
   ...card,
-  ownerReference: card.ownerReference || buildIdolReference(card.character_id, idolUnitData.value, archiveManifestData.value, `card:${card.resource_id}`),
+  ownerReference: card.ownerReference,
 })))
 
 const currentCard = computed(() => cardReadModelDetail.value?.id === currentCardId.value
   ? cardReadModelDetail.value.card : null)
 const currentCardOwnerReference = computed(() => cardReadModelDetail.value?.id === currentCardId.value
-  ? cardReadModelDetail.value.ownerReference : buildIdolReference(
-  currentCard.value?.character_id, idolUnitData.value, archiveManifestData.value, `card:${currentCardId.value}`,
-))
+  ? cardReadModelDetail.value.ownerReference : null)
 const currentCardAssetStatus = computed(() => cardReadModelDetail.value?.id === currentCardId.value
-  ? cardReadModelDetail.value.assetStatus : archiveManifestData.value?.card_assets_by_id?.[currentCardId.value] || null)
+  ? cardReadModelDetail.value.assetStatus : null)
 const currentCardEventRelation = computed(() => cardReadModelDetail.value?.id === currentCardId.value
-  ? cardReadModelDetail.value.eventRelation : archiveManifestData.value?.event_card_relations_by_card?.[currentCardId.value] || null)
+  ? cardReadModelDetail.value.eventRelation : null)
 const currentCardGashaRelation = computed(() => cardReadModelDetail.value?.id === currentCardId.value
-  ? cardReadModelDetail.value.gashaRelation : gashaIndexData.value?.relations_by_card?.[currentCardId.value] || null)
+  ? cardReadModelDetail.value.gashaRelation : null)
 const gashaCatalog = computed(() => gashaReadModelCatalog.value?.rows || buildGashaCatalog(gashaIndexData.value))
 const gashaCategoryOptions = computed(() => buildGashaCategoryOptions(
   gashaReadModelCatalog.value ? { meta: gashaReadModelCatalog.value.summary } : gashaIndexData.value, gashaCatalog.value))
@@ -1293,7 +1284,7 @@ const nextCard = computed(() => currentCardIndex.value >= 0 && currentCardIndex.
 const currentSeriesCards = computed(() => {
   const seriesId = currentCard.value?.release_series?.series_id
   if (!seriesId) return []
-  return (cardReadModelCatalog.value || [...cardMap.value.values()])
+  return (cardReadModelCatalog.value || [])
     .filter(card => (card.release_series_id || card.release_series?.series_id) === seriesId)
     .map(card => ({ ...card, character_name: idolSourceName(card.character_id) }))
 })
@@ -3387,7 +3378,7 @@ function openCardGasha(relation) {
 
 async function openGashaCard(relation) {
   if (!cardReadModelCatalog.value) await loadCardCatalog()
-  const card = cardReadModelCatalog.value?.find(row => row.resource_id === relation?.card_resource_id) || cardMap.value.get(relation?.card_resource_id)
+  const card = cardReadModelCatalog.value?.find(row => row.resource_id === relation?.card_resource_id)
   if (!card) return
   return openCard(card, { resetContext: true })
 }
@@ -3503,7 +3494,7 @@ async function openEventCard(relation) {
     return
   }
   if (revision !== navigation.getRevision() || view.value !== 'event_detail' || currentEventId.value !== eventId) return
-  const card = cardReadModelCatalog.value?.find(row => row.resource_id === relation?.card_resource_id) || cardMap.value.get(relation?.card_resource_id)
+  const card = cardReadModelCatalog.value?.find(row => row.resource_id === relation?.card_resource_id)
   if (!card) return
   return openCard(card, { resetContext: true, captureSource: true, clearEventContext: true })
 }
