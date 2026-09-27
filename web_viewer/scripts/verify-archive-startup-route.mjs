@@ -159,4 +159,35 @@ for (const asynchronous of [false, true]) {
   assert.equal(written.length, 1)
   assert.equal(written[0].view, 'cards')
 }
+// A missing bounded story leaf falls back to the migrated catalog without
+// starting the retired global archive batch.
+for (const route of [
+  { view: 'story_collection', storyType: 'main', storySection: 'missing' },
+  { view: 'story_detail', story: 'missing.json' },
+]) {
+  let mount, legacyLoads = 0
+  const applied = []
+  const context = {
+    onMounted: callback => { mount = callback }, localStorage: { getItem: () => null },
+    window: { location: { href: 'http://localhost/' } }, userPreferences: { value: {} },
+    initialArchiveStartup: { route, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
+    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingMobileNavigation: 0, pendingLegacyAliasNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
+    isBootstrapRoute: () => true,
+    ensureLegacyArchiveData: async () => { legacyLoads++ },
+    loadCollectionDetail: async () => { throw new Error('missing leaf') },
+    loadStoryReadModelDetail: async () => { throw new Error('missing leaf') },
+    loadIdolEntityTranslations: async () => {},
+    navigation: { isDisposed: () => false, getRevision: () => 0 },
+    applyArchiveRoute: async value => { applied.push(value) },
+    currentArchiveRoute: () => applied.at(-1), writeArchiveRoute: () => {},
+    onArchivePopState: () => () => {}, installSpineAnimationDebug: () => () => {},
+    adoptArchiveViewContext: () => {}, primeArchiveRouteComponent: () => {},
+    console: { error: () => {} }, archiveRouteReady: false,
+  }
+  for (const match of source.matchAll(/\b(\w+)\.value\s*=/g)) context[match[1]] = { value: null }
+  vm.runInNewContext(source, context)
+  await mount()
+  assert.equal(legacyLoads, 0, `${route.view} failure must not load the global archive batch`)
+  assert.equal(applied[0].view, 'story_catalog', `${route.view} failure must reach the migrated catalog`)
+}
 console.log('Archive startup: latest URL, history/page supersession, obsolete completion and disposal passed')

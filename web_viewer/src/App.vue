@@ -4546,7 +4546,6 @@ onMounted(async () => {
         if (request !== restoreRequest) return
         console.error('[CollectionReadModel] Failed to restore collection:', error)
         collectionReadModelStatus.value = '故事章节暂时无法读取，请稍后重试。'
-        await ensureLegacyArchiveData()
         route = { view: 'story_catalog' }
       }
     }
@@ -4560,7 +4559,6 @@ onMounted(async () => {
         if (request !== restoreRequest) return
         console.error('[StoryReadModel] Failed to restore detail:', error)
         storyReadModelStatus.value = '故事详情暂时无法读取，请稍后重试。'
-        await ensureLegacyArchiveData()
         route = { view: 'story_catalog' }
       }
     }
