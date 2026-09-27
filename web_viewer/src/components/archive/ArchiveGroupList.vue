@@ -33,7 +33,7 @@
         </template>
         <template v-else>
           <span class="group-title">{{ group.title }}</span>
-          <span class="group-meta">{{ groupFileCount(group) }} files</span>
+          <span class="group-meta">{{ group.fileCount ?? groupFileCount(group) }} files</span>
         </template>
       </button>
     </div>

@@ -40,6 +40,7 @@ function setup() {
     idolStoryReadModelDetail: { value: null }, loadIdolStoryDetail: async () => ({ id: '038tak', view: { page: { idol_code: '038tak' } } }),
     ensureCardDetailData: async () => {}, ensureIdolCommunicationData: async () => {},
     loadStoryReadModelLanding: async () => {},
+    loadLegacyAliasRoute: async () => null, publishLegacyAliasRoute: () => {},
     resolveRouteGroup: () => null, resolveRouteUnit: () => null, resolveRouteEpisode: () => null,
     currentStoryCollection: { value: null }, currentEventEpisodes: { value: [] }, currentIdolStoryPage: { value: null },
     spineViewerLoader: async () => {}, chibiStageViewerLoader: async () => {},
@@ -62,13 +63,13 @@ function setup() {
     returnTo: destination => context.commitView(destination), onError: (...args) => context.console.error(...args),
   })
   const production = vm.runInContext([
-    functionSource('function syncArchiveRoute(', 'function groupsForRoute('),
+    functionSource('function syncArchiveRoute(', 'const ensureCardDetailData'),
     functionSource('async function applyArchiveRoute(', 'function goHome('),
     functionSource('function playbackEpisodes(', 'async function openEventCard('),
     functionSource('async function openStoryCatalog(', 'function openExternalStoryResources('),
     functionSource('async function openSpineLab(', 'async function openChibiStage('),
-    functionSource('async function openVoicePreview(', 'function openGroup('),
-    functionSource('function onPlayerReady(', 'function formatFileName('),
+    functionSource('async function openVoicePreview(', 'async function openGroup('),
+    functionSource('function onPlayerReady(', 'async function loadScenario('),
     scenarioSource,
     '({ load: loadScenario, restore: applyArchiveRoute, commit: commitView, select: commitArchiveSelection, onPlayerReady, openStoryCatalog, openSpineLab, openVoicePreview, sync: syncArchiveRoute, filter: updateArchiveFilter })',
   ].join('\n'), context)
@@ -317,6 +318,7 @@ for (const response of [
 {
   const t = setup()
   const failedRestore = t.restore({ view: 'player', scenario: 'missing.json' })
+  await flush(() => t.requests.length > 0)
   t.requests[0].resolve({ ok: false, status: 404 })
   await failedRestore
   assert.equal(t.state.view.value, 'story_catalog', 'failed direct player route must leave a usable page')

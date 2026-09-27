@@ -210,6 +210,7 @@
         @open-unit="openEventUnit"
       />
 
+      <p v-if="['groups', 'files', 'episodes', 'episode_zero_units'].includes(view) && legacyAliasStatus" class="idol-read-model-status" role="status">{{ legacyAliasStatus }}</p>
       <ArchiveGroupList
         v-if="view === 'groups'"
         embedded
@@ -495,12 +496,10 @@ import { createArchiveNavigationCoordinator } from './core/ArchiveNavigationCoor
 import { useArchiveNavigationState } from './core/useArchiveNavigationState.js'
 import { ref, shallowRef, computed, defineAsyncComponent, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import { IDOL_ID_TO_NAME } from './utils/IdolNameMap.js'
-import { groupFileList } from './utils/IndexNormalizer.js'
 import { countScenarioFiles, getCategoryCountText } from './utils/IndexStats.js'
 import { Preloader } from './utils/Preloader.js'
 import LoadingScreen from './components/LoadingScreen.vue'
 import StoryReleaseSoakPanel from './components/player/StoryReleaseSoakPanel.vue'
-import { missingExtraFileEntries } from './data/storyFileMetadata.js'
 import ArchiveShell from './components/archive/ArchiveShell.vue'
 import { readingPlaybackTarget } from './core/ReadingPlayback.js'
 import { createReadingRepository } from './data/ReadingRepository.js'
@@ -540,7 +539,6 @@ import { loadArchiveData, loadCardDetailData, loadIdolCommunicationData } from '
 import {
   buildCardMap,
   buildCardRarityTabs,
-  buildScenarioMetaByFile,
   buildStoryCatalog,
   cardsForCharacter,
   mergeCardDetail,
@@ -737,6 +735,12 @@ const mobileUnitReadModelCatalog = ref(null)
 const mobileIdolReadModelDetail = ref(null)
 const mobileUnitReadModelDetail = ref(null)
 const mobileReadModelStatus = ref('')
+const legacyGroupReadModelDetail = ref(null)
+const legacyFileReadModelDetail = ref(null)
+const legacyZeroReadModelDetail = ref(null)
+const legacyEpisodeReadModelDetail = ref(null)
+const legacyAliasStatus = ref('')
+let pendingLegacyAliasNavigation = 0
 const mobileIdolOptions = archiveBootstrap.idols.map(idol => ({ idol_code: idol.id, display_name: idol.name, color: idol.color }))
 const mobileUnitOptions = computed(() => (mobileUnitReadModelCatalog.value || []).map(unit => ({
   unit_code: unit.id, unit_name: unit.name, unit_color: unit.color,
@@ -820,7 +824,7 @@ let pendingHomeNavigation = 0
 let pendingLegacyNavigation = 0
 let legacyDataPromise = null
 const continuousPlayback = ref(localStorageValue('sidem:continuous-playback') === '1')
-const loading = ref(!isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status'].includes(initialArchiveStartup.route.view) || initialArchiveStartup.route.view === 'home' && Boolean(initialArchiveStartup.route.homeIdol))
+const loading = ref(!isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes'].includes(initialArchiveStartup.route.view) || initialArchiveStartup.route.view === 'home' && Boolean(initialArchiveStartup.route.homeIdol))
 const loadingPurpose = ref('archive-data')
 const preloadProgress = ref(0)
 
@@ -1000,53 +1004,16 @@ const idolUnitOptions = computed(() => {
 
 // Group list.
 const filteredGroups = computed(() => {
-  if (!currentCharacterId.value && !currentCategoryId.value) return []
-  let groups = []
-
-  if (currentCharacterId.value) {
-    if (currentCategoryId.value === 'idol_chat') {
-      const cat = categoryById('idol_chat')
-      const ch = cat?.individual?.[currentCharacterId.value]
-      groups = ch?.groups || groupChatByUnitCode('idol_chat', currentCharacterId.value)?.groups || []
-    } else if (currentCategoryId.value === 'idol_phone') {
-      const cat = categoryById('idol_phone')
-      const ch = cat?.individual?.[currentCharacterId.value]
-      groups = ch?.groups || []
-    } else {
-      const cat = categoryById('idol')
-      const ch = cat?.characters?.[currentCharacterId.value]
-      groups = ch?.groups || []
-    }
-  } else if (currentCategoryId.value) {
-    const cat = categoryById(currentCategoryId.value)
-    groups = cat?.groups || []
-  }
-
+  const aliasId = currentCharacterId.value ? `${currentCategoryId.value}:${currentCharacterId.value}` : currentCategoryId.value
+  if (legacyGroupReadModelDetail.value?.id !== aliasId) return []
+  const groups = legacyGroupReadModelDetail.value.view.groups
   const q = filterQuery.value.toLowerCase()
-  if (!q) return groups
-  return groups.filter(g =>
-    g.title.toLowerCase().includes(q) ||
-    g.id.toLowerCase().includes(q)
-  )
+  return q ? groups.filter(group => group.title.toLowerCase().includes(q) || group.id.toLowerCase().includes(q)) : groups
 })
 
 const groupTitle = computed(() => {
-  if (currentCharacterId.value) {
-    if (currentCategoryId.value === 'idol_chat') {
-      const cat = categoryById('idol_chat')
-      const ch = resolveChatName(cat?.individual?.[currentCharacterId.value])
-      return ch?.name || groupChatByUnitCode('idol_chat', currentCharacterId.value)?.unit_name || currentCharacterId.value
-    }
-    if (currentCategoryId.value === 'idol_phone') {
-      const cat = categoryById('idol_phone')
-      const ch = resolveChatName(cat?.individual?.[currentCharacterId.value])
-      return ch?.name || currentCharacterId.value
-    }
-    const cat = categoryById('idol')
-    const ch = cat?.characters?.[currentCharacterId.value]
-    return ch?.name || currentCharacterId.value
-  }
-  return currentCategory.value?.name || ''
+  const aliasId = currentCharacterId.value ? `${currentCategoryId.value}:${currentCharacterId.value}` : currentCategoryId.value
+  return legacyGroupReadModelDetail.value?.id === aliasId ? legacyGroupReadModelDetail.value.view.title : ''
 })
 
 const categoryHeaderText = computed(() => {
@@ -1065,11 +1032,8 @@ const categoryFilterPlaceholder = computed(() => {
 
 // Episode Zero units.
 const episodeZeroUnits = computed(() => {
-  const cat = categoryById('episode_zero')
-  return cat?.units || []
+  return legacyZeroReadModelDetail.value?.id === 'episode_zero' ? legacyZeroReadModelDetail.value.view.units : []
 })
-
-const scenarioMetaByFile = computed(() => buildScenarioMetaByFile(storyCatalogData.value))
 
 const eventRelationByFile = computed(() => new Map(
   (archiveManifestData.value?.unit_event_relations || []).map(relation => [relation.file, relation]),
@@ -1284,66 +1248,12 @@ const currentArchiveUnitStories = computed(() => unitReadModelDetail.value?.view
 const currentArchiveUnitSongs = computed(() => unitReadModelDetail.value?.view.entry.unit === currentArchiveUnit.value
   ? unitReadModelDetail.value.view.songs : songsForUnit(currentArchiveUnit.value, songCatalogData.value))
 
-function displayTitleForMeta(meta, fallbackFile) {
-  const titles = meta?.titles?.filter(Boolean) || []
-  if (!titles.length) return formatFileName(fallbackFile || meta?.resourceIds?.[0] || '')
-  if (titles.length === 1) return titles[0]
-  if (titles.every(title => /^エピソード\d+$/.test(String(title)))) {
-    return `${titles[0]} - ${titles[titles.length - 1]}`
-  }
-  return titles.slice(0, 2).join(' / ') + (titles.length > 2 ? ` +${titles.length - 2}` : '')
-}
-
-function fileEntryFor(fn) {
-  const meta = scenarioMetaByFile.value.get(fn)
-  if (!meta) {
-    return {
-      file: fn,
-      title: formatFileName(fn),
-      subtitle: '',
-      resourceId: fn,
-      missing: false,
-      searchText: fn,
-    }
-  }
-  const resourceText = meta.resourceIds.length ? meta.resourceIds.join(', ') : fn
-  const summaryText = summaryTextForMeta(meta)
-  const title = displayTitleForMeta(meta, fn)
-  return {
-    file: fn,
-    title,
-    subtitle: summaryText ? `${resourceText} · ${summaryText}` : resourceText,
-    resourceId: meta.resourceIds[0] || fn,
-    missing: meta.exists === false,
-    searchText: `${fn} ${title} ${resourceText}`,
-  }
-}
-
-function summaryTextForMeta(meta) {
-  const summary = meta?.summary
-  if (!summary) return ''
-  const parts = []
-  if (summary.voice_count) parts.push(`${summary.voice_count} voices`)
-  if (summary.lip_count) parts.push(`${summary.lip_count} lips`)
-  if (!parts.length && summary.step_count) parts.push(`${summary.step_count} steps`)
-  return parts.join(' · ')
-}
-
 const filteredFileEntries = computed(() => {
   if (!currentGroup.value) return []
-  const files = groupFileList(currentGroup.value)
-  let entries = files.map(fileEntryFor)
-
-  if (currentCategoryId.value === 'extra') {
-    const existingFiles = new Set(files)
-    const missingExtra = missingExtraFileEntries(storyCatalogData.value)
-      .filter(entry => !existingFiles.has(entry.file))
-    entries = [...entries, ...missingExtra]
-  }
-
+  if (legacyFileReadModelDetail.value?.id !== String(currentGroup.value.id)) return []
+  const entries = legacyFileReadModelDetail.value.view.entries
   const q = filterQuery.value.toLowerCase()
-  if (!q) return entries
-  return entries.filter(entry => entry.searchText.toLowerCase().includes(q))
+  return q ? entries.filter(entry => entry.searchText.toLowerCase().includes(q)) : entries
 })
 
 const cardMap = computed(() => buildCardMap(cardIndexData.value))
@@ -1700,37 +1610,6 @@ function updateArchiveFilter(key, value) {
   target.value = value
 }
 
-function groupsForRoute(categoryId, idolId) {
-  if (!categoryId) return []
-  if (!idolId) return categoryById(categoryId)?.groups || []
-  if (categoryId === 'idol_chat') {
-    return categoryById('idol_chat')?.individual?.[idolId]?.groups ||
-      groupChatByUnitCode('idol_chat', idolId)?.groups || []
-  }
-  if (categoryId === 'idol_phone') {
-    return categoryById('idol_phone')?.individual?.[idolId]?.groups || []
-  }
-  return categoryById('idol')?.characters?.[idolId]?.groups || []
-}
-
-function resolveRouteGroup(route) {
-  if (!route.group) return null
-  return groupsForRoute(route.category, route.idol)
-    .find(group => String(group.id) === route.group) || null
-}
-
-function resolveRouteUnit(route) {
-  if (!route.unit) return null
-  return episodeZeroUnits.value.find(unit =>
-    String(unit.unit_code || unit.id) === route.unit,
-  ) || null
-}
-
-function resolveRouteEpisode(unit, route) {
-  if (!unit || !route.episode) return null
-  return (unit.episodes || []).find(episode => String(episode.id) === route.episode) || null
-}
-
 const ensureCardDetailData = createLazyArchiveResource({
   read: () => cardDetailData.value,
   load: loadCardDetailData,
@@ -1836,6 +1715,9 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
       await loadStoryReadModelLanding()
       if (!intent.isCurrent()) return
     }
+    const aliasRoute = await loadLegacyAliasRoute(route)
+    if (!intent.isCurrent()) return
+    publishLegacyAliasRoute(aliasRoute)
     if (route.view === 'archive_status') {
       const detail = await loadResourceStatus()
       if (!intent.isCurrent()) return
@@ -1860,7 +1742,8 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
     if (!intent.isCurrent()) return
     filterQuery.value = route.query || ''
     const idolOwnerView = route.view === 'player' ? route.returnView : route.view
-    const validRouteIdol = !route.idol || (['idol_detail', 'cards', 'card_detail', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection'].includes(idolOwnerView)
+    const validRouteIdol = !route.idol || (['groups', 'files'].includes(idolOwnerView) && aliasRoute?.groups
+      ? true : ['idol_detail', 'cards', 'card_detail', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection'].includes(idolOwnerView)
       ? archiveBootstrap.idols.some(idol => idol.id === route.idol)
       : Boolean(idolUnitData.value?.by_idol_code?.[route.idol]))
     const invalidIdolPickTarget = !validRouteIdol ? ({
@@ -1934,18 +1817,9 @@ async function applyArchiveRoute(route, { restoring = true } = {}) {
           archive: { by_unit_code: Object.fromEntries(mobileUnitOptions.value.map(unit => [unit.unit_code, true])) },
         })
       : route.unit || '') : ''
-    currentGroup.value = resolveRouteGroup(route)
-    currentUnit.value = resolveRouteUnit(route)
+    currentGroup.value = aliasRoute?.files?.view.group || null
+    currentUnit.value = aliasRoute?.episode?.view.unit || null
     playbackController.reset()
-
-    const episode = resolveRouteEpisode(currentUnit.value, route)
-    if (route.view === 'files' && episode) {
-      currentGroup.value = {
-        id: episode.id,
-        title: episode.title,
-        files: groupFileList(episode),
-      }
-    }
 
     if (route.view === 'player' && route.scenario) {
       const restored = await playbackController.restore(route.scenario, route.returnView || 'home',
@@ -3279,13 +3153,35 @@ function openCategory(cat) {
       })
     } else openIdolPicker('mobile')
   } else if (cat.id === 'episode_zero') {
-    currentCategoryId.value = 'episode_zero'
-    commitView('episode_zero_units')
+    const request = ++pendingLegacyAliasNavigation
+    const revision = navigation.getRevision()
+    loadLegacyAliasDetail('legacy-zero', 'episode_zero').then(detail => {
+      if (request !== pendingLegacyAliasNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
+      legacyZeroReadModelDetail.value = detail
+      legacyAliasStatus.value = ''
+      currentCategoryId.value = 'episode_zero'
+      commitView('episode_zero_units')
+    }).catch(error => {
+      if (request !== pendingLegacyAliasNavigation || revision !== navigation.getRevision()) return
+      console.error('[LegacyAliasReadModel] Failed to open episode zero:', error)
+      legacyAliasStatus.value = '第零话目录暂时无法读取，请重试。'
+    })
   } else {
-    currentCategoryId.value = cat.id
-    currentCharacterId.value = ''
-    currentGroup.value = null
-    commitView('groups')
+    const request = ++pendingLegacyAliasNavigation
+    const revision = navigation.getRevision()
+    loadLegacyAliasDetail('legacy-groups', cat.id).then(detail => {
+      if (request !== pendingLegacyAliasNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
+      legacyGroupReadModelDetail.value = detail
+      legacyAliasStatus.value = ''
+      currentCategoryId.value = cat.id
+      currentCharacterId.value = ''
+      currentGroup.value = null
+      commitView('groups')
+    }).catch(error => {
+      if (request !== pendingLegacyAliasNavigation || revision !== navigation.getRevision()) return
+      console.error('[LegacyAliasReadModel] Failed to open groups:', error)
+      legacyAliasStatus.value = '剧情分组暂时无法读取，请重试。'
+    })
   }
 }
 
@@ -3409,7 +3305,6 @@ function openIdol(entry) {
 
 function openIdolDomain(domain) {
   if (domain === 'cards') return openPrimaryCards(currentCharacterId.value, { captureSource: true })
-  if (!archiveDataReady.value) return runWhenLegacyReady(() => openIdolDomain(domain))
   if (domain === 'stories') {
     openIdolStoryArchive(currentCharacterId.value)
     return
@@ -3682,9 +3577,23 @@ async function openVoicePreview(card, cue, returnView) {
     typeof cue === 'string' ? cue : cue.cue, returnView)
 }
 
-function openGroup(group) {
+async function openGroup(group) {
+  const request = ++pendingLegacyAliasNavigation
+  const revision = navigation.getRevision()
+  let detail
+  try { detail = await loadLegacyAliasDetail('legacy-files', String(group.id)) }
+  catch (error) {
+    if (request === pendingLegacyAliasNavigation && revision === navigation.getRevision()) {
+      console.error('[LegacyAliasReadModel] Failed to open files:', error)
+      legacyAliasStatus.value = '剧情文件暂时无法读取，请重试。'
+    }
+    return
+  }
+  if (request !== pendingLegacyAliasNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
   captureDetailSource()
-  currentGroup.value = group
+  legacyFileReadModelDetail.value = detail
+  legacyAliasStatus.value = ''
+  currentGroup.value = detail.view.group
   currentEpisodeId.value = ''
   filterQuery.value = ''
   commitView('files')
@@ -3694,18 +3603,45 @@ function openScenarioEntry(entry) {
   if (entry?.file && !entry.missing) loadScenario(entry.file)
 }
 
-function openUnit(unit) {
+async function openUnit(unit) {
+  const request = ++pendingLegacyAliasNavigation
+  const revision = navigation.getRevision()
+  let detail
+  try { detail = await loadLegacyAliasDetail('legacy-episodes', unit.unit_code) }
+  catch (error) {
+    if (request === pendingLegacyAliasNavigation && revision === navigation.getRevision()) {
+      console.error('[LegacyAliasReadModel] Failed to open episodes:', error)
+      legacyAliasStatus.value = '组合前传目录暂时无法读取，请重试。'
+    }
+    return
+  }
+  if (request !== pendingLegacyAliasNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
   captureDetailSource()
-  currentUnit.value = unit
+  legacyEpisodeReadModelDetail.value = detail
+  legacyAliasStatus.value = ''
+  currentUnit.value = detail.view.unit
   currentEpisodeId.value = ''
   filterQuery.value = ''
   commitView('episodes')
 }
 
-function openEpisodeFiles(ep) {
+async function openEpisodeFiles(ep) {
+  const request = ++pendingLegacyAliasNavigation
+  const revision = navigation.getRevision()
+  let detail
+  try { detail = await loadLegacyAliasDetail('legacy-files', String(ep.id)) }
+  catch (error) {
+    if (request === pendingLegacyAliasNavigation && revision === navigation.getRevision()) {
+      console.error('[LegacyAliasReadModel] Failed to open episode files:', error)
+      legacyAliasStatus.value = '章节文件暂时无法读取，请重试。'
+    }
+    return
+  }
+  if (request !== pendingLegacyAliasNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
   captureDetailSource()
-  // Create a synthetic group object from episode data
-  currentGroup.value = { id: ep.id, title: ep.title, files: groupFileList(ep) }
+  legacyFileReadModelDetail.value = detail
+  legacyAliasStatus.value = ''
+  currentGroup.value = detail.view.group
   currentEpisodeId.value = String(ep.id)
   filterQuery.value = ''
   commitView('files')
@@ -3732,7 +3668,10 @@ function goBackToFiles() {
     commitView('card_detail')
   } else if (currentCategoryId.value === 'cards') {
     commitView('cards')
-  } else if (groupChatByUnitCode(currentCategoryId.value, currentCharacterId.value)) {
+  } else if (groupChatByUnitCode(currentCategoryId.value, currentCharacterId.value) ||
+    currentCategoryId.value === 'idol_chat' &&
+    legacyGroupReadModelDetail.value?.id === `idol_chat:${currentCharacterId.value}` &&
+    !archiveBootstrap.idols.some(idol => idol.id === currentCharacterId.value)) {
     currentGroup.value = null
     currentCharacterId.value = ''
     commitView('idols')
@@ -3747,10 +3686,6 @@ function goBackToFiles() {
 
 function closePlayer() { return playbackController.close() }
 function onPlayerReady() { playbackController.ready() }
-
-function formatFileName(fn) {
-  return fn.replace(/\.json$/, '').replace(/^[^_]+_[^_]+_scenario_/, '')
-}
 
 async function loadScenario(name, returnView = 'files', options = {}) {
   loadingPurpose.value = 'story-playback'
@@ -4123,6 +4058,47 @@ async function loadMobileRoute(idolCode, mode, requestedUnit = '') {
   return { idol, unit, unitCode }
 }
 
+async function loadLegacyAliasDetail(domain, id) {
+  const descriptor = await entityDescriptor(archiveBootstrap, domain, id, `${domain}.detail`)
+  return readModelClient.load(descriptor, { expectedId: id, validate: data => {
+    const view = data.view
+    if (domain === 'legacy-groups' && (!view?.title || !Array.isArray(view.groups)) ||
+      domain === 'legacy-files' && (!view?.group || !Array.isArray(view.entries) || !view.sourceRoute) ||
+      domain === 'legacy-episodes' && (!view?.unit || !Array.isArray(view.unit.episodes)) ||
+      domain === 'legacy-zero' && !Array.isArray(view?.units))
+      throw new Error(`${domain} alias shape mismatch`)
+  } })
+}
+
+async function loadLegacyAliasRoute(route) {
+  const owner = route.view === 'player' ? route.returnView : route.view
+  if (owner === 'episode_zero_units') return { zero: await loadLegacyAliasDetail('legacy-zero', 'episode_zero') }
+  if (owner === 'episodes') return { episode: await loadLegacyAliasDetail('legacy-episodes', route.unit) }
+  if (owner === 'groups') {
+    const id = route.idol ? `${route.category}:${route.idol}` : route.category
+    return { groups: await loadLegacyAliasDetail('legacy-groups', id) }
+  }
+  if (owner !== 'files' || !route.group) return null
+  const id = route.idol ? `${route.category}:${route.idol}` : route.category
+  const [files, parent] = await Promise.all([
+    loadLegacyAliasDetail('legacy-files', route.group),
+    loadLegacyAliasDetail(route.category === 'episode_zero' ? 'legacy-episodes' : 'legacy-groups',
+      route.category === 'episode_zero' ? route.unit : id),
+  ])
+  if (files.view.sourceRoute.categoryId !== route.category ||
+    files.view.sourceRoute.ownerId !== (route.category === 'episode_zero' ? route.unit : route.idol || ''))
+    throw new Error('Legacy file alias route context mismatch')
+  return route.category === 'episode_zero' ? { files, episode: parent } : { files, groups: parent }
+}
+
+function publishLegacyAliasRoute(result) {
+  if (!result) return
+  if (result.groups) legacyGroupReadModelDetail.value = result.groups
+  if (result.files) legacyFileReadModelDetail.value = result.files
+  if (result.episode) legacyEpisodeReadModelDetail.value = result.episode
+  if (result.zero) legacyZeroReadModelDetail.value = result.zero
+}
+
 async function loadCollectionCatalog() {
   if (collectionReadModelCatalog.value) return collectionReadModelCatalog.value
   if (!collectionCatalogPromise) {
@@ -4257,8 +4233,9 @@ async function loadSongDetail(songCode) {
 }
 
 function isBootstrapRoute(route) {
-  return ['portal', 'welcome', 'idol_picker', 'home', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status'].includes(route.view) ||
+  return ['portal', 'welcome', 'idol_picker', 'home', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes'].includes(route.view) ||
     (route.view === 'player' && route.returnView === 'mobile_archive') ||
+    (route.view === 'player' && ['files', 'episodes', 'episode_zero_units', 'groups'].includes(route.returnView)) ||
     (route.view === 'idols' && (!route.category || route.category === 'idol'))
 }
 
@@ -4303,6 +4280,7 @@ onMounted(async () => {
     ++pendingWorkNavigation
     ++pendingIdolStoryNavigation
     ++pendingMobileNavigation
+    ++pendingLegacyAliasNavigation
     ++pendingCollectionNavigation
     ++pendingStoryDetailNavigation
     ++pendingResourceNavigation
@@ -4319,6 +4297,21 @@ onMounted(async () => {
         console.error('[HomeReadModel] Failed to restore Home:', error)
         userPreferenceNotice.value = '游戏风首页暂时无法读取，请重新选择偶像。'
         route = { view: 'welcome' }
+      }
+    }
+    if (['groups', 'files', 'episode_zero_units', 'episodes'].includes(route.view) ||
+      (route.view === 'player' && ['groups', 'files', 'episode_zero_units', 'episodes'].includes(route.returnView))) {
+      try {
+        const alias = await loadLegacyAliasRoute(route)
+        if (request === restoreRequest) {
+          publishLegacyAliasRoute(alias)
+          legacyAliasStatus.value = ''
+        }
+      } catch (error) {
+        if (request !== restoreRequest) return
+        console.error('[LegacyAliasReadModel] Failed to restore route:', error)
+        legacyAliasStatus.value = '旧剧情目录暂时无法读取，请重试。'
+        route = { view: route.category === 'episode_zero' ? 'episode_zero_units' : 'home' }
       }
     }
     if (route.view === 'mobile_archive' || (route.view === 'player' && route.returnView === 'mobile_archive')) {
@@ -4504,7 +4497,7 @@ onMounted(async () => {
   if (startup.source === 'invalid-immersive-idol') {
     userPreferenceNotice.value = '之前选择的首页偶像当前不可用，请重新选择。'
   }
-  if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status'].includes(startup.route.view) && !(startup.route.view === 'home' && startup.route.homeIdol)) loading.value = false
+  if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes'].includes(startup.route.view) && !(startup.route.view === 'home' && startup.route.homeIdol)) loading.value = false
   await restoreRoute(startup.route)
 })
 

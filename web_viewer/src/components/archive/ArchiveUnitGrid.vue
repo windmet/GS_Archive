@@ -4,7 +4,7 @@
     <div class="unit-grid">
       <button v-for="unit in units" :key="unit.unit_code" class="unit-card" @click="emit('select', unit)">
         <span class="unit-name">{{ unit.unit_name }}</span>
-        <span class="unit-count">{{ unit.episodes.length }} episodes</span>
+        <span class="unit-count">{{ unit.episodeCount ?? unit.episodes?.length ?? 0 }} episodes</span>
       </button>
     </div>
   </section>
