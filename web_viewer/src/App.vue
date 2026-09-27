@@ -493,7 +493,7 @@ import { createArchiveNavigationCoordinator } from './core/ArchiveNavigationCoor
 import { useArchiveNavigationState } from './core/useArchiveNavigationState.js'
 import { ref, shallowRef, computed, defineAsyncComponent, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import { IDOL_ID_TO_NAME } from './utils/IdolNameMap.js'
-import { countScenarioFiles, getCategoryCountText } from './utils/IndexStats.js'
+import { countScenarioFiles } from './utils/IndexStats.js'
 import { Preloader } from './utils/Preloader.js'
 import LoadingScreen from './components/LoadingScreen.vue'
 import StoryReleaseSoakPanel from './components/player/StoryReleaseSoakPanel.vue'
@@ -652,14 +652,6 @@ const ArchiveExternalStoryResources = defineAsyncComponent(archiveRouteLoaders.e
 function primeArchiveRouteComponent(routeView) {
   const load = archiveRouteLoaders[routeView]
   if (load) load().catch(error => console.error(`[ArchiveRoute] Could not load ${routeView}:`, error))
-}
-
-function resolveChatName(ch) {
-  // index may store raw chara_id such as "031sak"; resolve to display name.
-  if (ch && /^\d{3}[a-z0-9]{3}$/.test(ch.name || '')) {
-    return { ...ch, name: IDOL_ID_TO_NAME[ch.name] || ch.name }
-  }
-  return ch
 }
 
 const {
@@ -935,75 +927,19 @@ const labBackLabel = computed(() => (
     : detailSourceRoute.value ? '返回来源页' : '返回资料馆'
 ))
 
-function categoryById(id) {
-  if (!indexData.value) return null
-  return indexData.value.categories.find(c => c.id === id) || null
-}
-
-function groupChatByUnitCode(categoryId, unitCode) {
-  if (categoryId !== 'idol_chat' || !unitCode) return null
-  return categoryById('idol_chat')?.groups?.find(group => group.unit_code === unitCode) || null
-}
-
-const currentCategory = computed(() => categoryById(currentCategoryId.value))
-
-function catCountText(id) {
-  if (id === 'cards') {
-    const cards = cardIndexData.value?.meta?.card_count || cardIndexData.value?.cards?.length || 0
-    const chars = Object.keys(cardIndexData.value?.by_character || {}).length
-    return cards ? `${cards} cards · ${chars} idols` : ''
-  }
-  return getCategoryCountText(categoryById(id))
-}
-
-// Idol / chat grid.
-function withUnitEvidence(entry) {
-  if (entry._isGroup) return entry
-  const unit = archiveManifestData.value?.unit_membership_by_idol?.[entry.id]
-  const color = idolUnitData.value?.by_idol_code?.[entry.id]?.color || ''
-  return unit ? { ...entry, color, unitId: String(unit.unit_id), unitCode: unit.unit_code, unitName: unit.unit_name } : { ...entry, color }
-}
-
+// Public idol and card member grids use the inline bootstrap and card directory.
 const idolList = computed(() => {
-  const catId = currentCategoryId.value
-  if ((catId === 'idol' || !catId) && !archiveDataReady.value) {
+  if (currentCategoryId.value !== 'cards') {
     return archiveBootstrap.idols.map(idol => ({
       id: idol.id, name: idol.name, color: idol.color, unitId: idol.unitId,
       unitCode: idol.unitCode, unitName: idol.unitName, _isGroup: false,
     }))
   }
-  if (catId === 'cards') {
-    if (cardReadModelCatalog.value) {
-      const counts = new Map()
-      for (const card of cardReadModelCatalog.value) counts.set(card.character_id, (counts.get(card.character_id) || 0) + 1)
-      return archiveBootstrap.idols.filter(idol => counts.has(idol.id)).map(idol => ({
-        ...idol, cardCount: counts.get(idol.id), _isGroup: false,
-      }))
-    }
-    const byCharacter = cardIndexData.value?.by_character || {}
-    return Object.entries(byCharacter).map(([id, cards]) => withUnitEvidence({
-      id,
-      name: idolDisplayName(id),
-      cardCount: cards.length,
-      _isGroup: false,
-    }))
-  }
-  if (catId === 'idol_phone') {
-    const cat = categoryById('idol_phone')
-    const source = cat?.individual
-    if (!source) return []
-    return Object.entries(source).map(([id, data]) => withUnitEvidence({ id, ...resolveChatName(data), _isGroup: false }))
-  }
-  const cat = categoryById(catId === 'idol_chat' ? 'idol_chat' : 'idol')
-  const source = catId === 'idol_chat' ? cat?.individual : cat?.characters
-  if (!source) return []
-  // For chat category, also include group chat entries
-  if (catId === 'idol_chat' && cat?.groups) {
-    const chars = Object.entries(source).map(([id, data]) => withUnitEvidence({ id, ...resolveChatName(data), _isGroup: false }))
-    const groups = cat.groups.map(g => ({ id: g.unit_code, name: g.unit_name, _isGroup: true, _groupData: g }))
-    return [...groups, ...chars]
-  }
-  return Object.entries(source).map(([id, data]) => withUnitEvidence({ id, ...data }))
+  const counts = new Map()
+  for (const card of cardReadModelCatalog.value || []) counts.set(card.character_id, (counts.get(card.character_id) || 0) + 1)
+  return archiveBootstrap.idols.filter(idol => counts.has(idol.id)).map(idol => ({
+    ...idol, cardCount: counts.get(idol.id), _isGroup: false,
+  }))
 })
 
 const searchMatchedIdols = computed(() => {
@@ -3363,31 +3299,15 @@ function selectCardIdol(idolCode) {
 }
 
 function openIdol(entry) {
-  if (currentCategoryId.value === 'idol') return openIdolReadModel(entry.id, { captureSource: true })
+  if (currentCategoryId.value !== 'cards') return openIdolReadModel(entry.id, { captureSource: true })
   captureDetailSource()
   filterQuery.value = ''
-  // Group chat entry in idol_chat grid: go directly to file view.
-  if (entry._isGroup && entry._groupData) {
-    currentCharacterId.value = entry.id
-    currentCategoryId.value = 'idol_chat'
-    currentGroup.value = entry._groupData.groups[0]
-    commitView('files')
-    return
-  }
-  if (currentCategoryId.value === 'cards') {
-    currentCharacterId.value = entry.id
-    currentCardId.value = ''
-    currentCardRarity.value = 'all'
-    currentCardAssetState.value = 'all'
-    currentCardRelationState.value = 'all'
-    filterQuery.value = ''
-    commitView('cards')
-    return
-  }
   currentCharacterId.value = entry.id
-  currentCategoryId.value = currentCategoryId.value || 'idol'
-  currentGroup.value = null
-  commitView('groups')
+  currentCardId.value = ''
+  currentCardRarity.value = 'all'
+  currentCardAssetState.value = 'all'
+  currentCardRelationState.value = 'all'
+  commitView('cards')
 }
 
 function openIdolDomain(domain) {
@@ -3735,7 +3655,8 @@ async function openEpisodeFiles(ep) {
 
 function goBackFromGroups() {
   if (currentCharacterId.value) {
-    if (currentCategoryId.value === 'idol') commitView('idol_detail')
+    if (currentCategoryId.value === 'idol') openIdolReadModel(currentCharacterId.value)
+    else if (['idol_chat', 'idol_phone'].includes(currentCategoryId.value)) returnToMobilePicker()
     else {
       currentCharacterId.value = ''
       commitView('idols')
@@ -3743,6 +3664,15 @@ function goBackFromGroups() {
   } else {
     goHome()
   }
+}
+
+function returnToMobilePicker() {
+  detailSourceRoute.value = ''
+  currentCharacterId.value = ''
+  currentCategoryId.value = ''
+  currentGroup.value = null
+  currentPickTarget.value = 'mobile'
+  commitView('idol_picker')
 }
 
 function goBackToFiles() {
@@ -3754,13 +3684,6 @@ function goBackToFiles() {
     commitView('card_detail')
   } else if (currentCategoryId.value === 'cards') {
     commitView('cards')
-  } else if (groupChatByUnitCode(currentCategoryId.value, currentCharacterId.value) ||
-    currentCategoryId.value === 'idol_chat' &&
-    legacyGroupReadModelDetail.value?.id === `idol_chat:${currentCharacterId.value}` &&
-    !archiveBootstrap.idols.some(idol => idol.id === currentCharacterId.value)) {
-    currentGroup.value = null
-    currentCharacterId.value = ''
-    commitView('idols')
   } else if (currentCharacterId.value) {
     currentGroup.value = null
     commitView('groups')
