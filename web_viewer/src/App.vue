@@ -200,8 +200,6 @@
         :raw-visual-url="eventStoryIdolRawCandidateUrl"
         :external-resources="EXTERNAL_STORY_RESOURCES_ENABLED ? currentEventExternalResources : []"
         :reading-entries="readingCatalogEntries"
-        :reading-error="readingCatalogError"
-        @retry-reading="loadReadingCatalog"
         @read="openEventReader"
         @play="playCurrentEvent"
         @play-episode="playCurrentEventEpisode"
@@ -322,8 +320,7 @@
         :external-resources="EXTERNAL_STORY_RESOURCES_ENABLED ? currentStoryCollectionExternalResources : []"
         :initial-chapter-id="currentStoryCollectionChapter?.id || ''"
         :reading-entries="readingCatalogEntries"
-        :reading-error="readingCatalogError"
-        @read-episode="openCollectionReader" @retry-reading="loadReadingCatalog"
+        @read-episode="openCollectionReader"
         @play-chapter="playStoryCollectionChapter"
         @play-episode="playStoryCollectionEpisode"
         @select-chapter="selectStoryCollectionChapter"
@@ -1386,16 +1383,18 @@ const readingRepository = createReadingRepository({ locatorResolver: async (docu
     return { entry: null, entries: [] }
   }
 } })
-const readingCatalogEntries = ref([])
-const readingCatalogError = ref('')
-async function loadReadingCatalog() {
-  try {
-    readingCatalogEntries.value = (await readingRepository.manifest()).entries
-    readingCatalogError.value = ''
-  } catch { readingCatalogError.value = '阅读目录暂时无法载入。' }
-}
-watch(() => ['story_collection', 'story_detail', 'event_detail', 'work_archive', 'idol_story_archive'].includes(view.value), active => {
-  if (active) loadReadingCatalog()
+const readingCatalogEntries = computed(() => {
+  if (view.value === 'story_collection' && currentStoryCollection.value)
+    return collectionReadModelDetail.value.view.readingEntries
+  if (view.value === 'story_detail' && currentStory.value)
+    return storyReadModelDetail.value.view.readingEntries
+  if (view.value === 'event_detail' && currentEventProjection.value)
+    return eventReadModelDetail.value.view.readingEntries
+  if (view.value === 'work_archive' && currentWorkIdol.value)
+    return workReadModelDetail.value.view.readingEntries
+  if (view.value === 'idol_story_archive' && currentIdolStoryPage.value)
+    return idolStoryReadModelDetail.value.view.readingEntries
+  return []
 })
 const readingSession = createReadingSession({ repository: readingRepository, publish: state => { readingState.value = state } })
 
@@ -3926,6 +3925,7 @@ async function loadEventDetail(id) {
     if (String(data.view?.event?.event_id) !== id || !Array.isArray(data.view?.episodes) ||
       !Array.isArray(data.view?.cards) || !Array.isArray(data.view?.idols) ||
       !Array.isArray(data.view?.units) || !Array.isArray(data.view?.castReferences) ||
+      !Array.isArray(data.view?.readingEntries) ||
       data.view.castReferences.length !== data.view.idols.length ||
       data.view.castReferences.some((entry, index) => entry.idol_code !== data.view.idols[index].idol_code ||
         entry.reference?.idolCode !== entry.idol_code))
@@ -3987,7 +3987,8 @@ async function loadWorkDetail(id) {
   if (!row) throw new Error(`Unavailable work idol: ${id}`)
   return readModelClient.load(row.detail, { expectedId: id, validate: data => {
     if (data.view?.idol?.idol_code !== id || !Array.isArray(data.view.idol.short_stories) ||
-      !Array.isArray(data.view.idol.scene_lines) || !Array.isArray(data.view?.sourceEvidence?.entries))
+      !Array.isArray(data.view.idol.scene_lines) || !Array.isArray(data.view?.sourceEvidence?.entries) ||
+      !Array.isArray(data.view?.readingEntries))
       throw new Error('Work detail identity or shape mismatch')
   } })
 }
@@ -4015,7 +4016,8 @@ async function loadIdolStoryDetail(id) {
   const row = (await loadIdolStoryCatalog()).find(entry => entry.id === id)
   if (!row) throw new Error(`Unavailable idol story: ${id}`)
   return readModelClient.load(row.detail, { expectedId: id, validate: data => {
-    if (data.view?.page?.idol_code !== id || !Array.isArray(data.view.page.sections))
+    if (data.view?.page?.idol_code !== id || !Array.isArray(data.view.page.sections) ||
+      !Array.isArray(data.view?.readingEntries))
       throw new Error('Idol story detail identity or shape mismatch')
   } })
 }
@@ -4136,7 +4138,8 @@ async function loadCollectionDetail(domain, section) {
   return readModelClient.load(row.detail, { expectedId: row.id, validate: data => {
     const collection = data.view?.collection
     if (collection?.domain !== row.domain || collection.sectionId !== row.sectionId ||
-      !Array.isArray(collection.chapters)) throw new Error('Collection detail identity or shape mismatch')
+      !Array.isArray(collection.chapters) || !Array.isArray(data.view?.readingEntries))
+      throw new Error('Collection detail identity or shape mismatch')
   } })
 }
 
@@ -4183,7 +4186,8 @@ async function loadStoryReadModelDetail(file) {
   if (!row) throw new Error(`Unavailable story: ${file}`)
   return readModelClient.load(row.detail, { expectedId: row.id, validate: data => {
     if (data.story?.file !== file || !Array.isArray(data.view?.related) ||
-      !Array.isArray(data.view?.castReferences) || typeof data.view.promotedVisualUrl !== 'string')
+      !Array.isArray(data.view?.castReferences) || typeof data.view.promotedVisualUrl !== 'string' ||
+      !Array.isArray(data.view?.readingEntries))
       throw new Error('Story detail identity or shape mismatch')
   } })
 }
