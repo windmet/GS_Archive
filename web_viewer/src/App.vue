@@ -161,7 +161,7 @@
 
       <ArchiveSongCatalog
         v-if="view === 'song_catalog'"
-        :catalog="songReadModelCatalog || songCatalogData"
+        :catalog="songReadModelCatalog"
         :status="songReadModelStatus"
         :scope="currentSongScope"
         :query="filterQuery"
@@ -173,7 +173,7 @@
 
       <p v-if="view === 'song_detail' && (songReadModelStatus || legacyEntryStatus)" class="song-read-model-status" role="status">{{ songReadModelStatus || legacyEntryStatus }}</p>
       <ArchiveSongDetail
-        v-if="view === 'song_detail'"
+        v-if="view === 'song_detail' && currentSongPresentation"
         :song="currentSongPresentation"
         @open-song="openSong"
         @open-unit="openSongUnit"
@@ -498,7 +498,6 @@ import { createReadingRepository } from './data/ReadingRepository.js'
 import { createReadingSession } from './core/ReadingSession.js'
 import ArchivePortalLauncher from './components/archive/ArchivePortalLauncher.vue'
 import ArchiveWelcome from './components/archive/ArchiveWelcome.vue'
-import { buildSongPresentation } from './presentation/SongPresentation.js'
 import { buildIdolReference } from './presentation/IdolReferencePresentation.js'
 import { resolveMobileArchiveUnit } from './core/mobileArchiveIdentity.js'
 import { readyEpisodeReading } from './data/IdolStoryReading.js'
@@ -1345,16 +1344,12 @@ const readingSession = createReadingSession({ repository: readingRepository, pub
 const archiveShellVisible = computed(() => !['__boot__', 'player', 'spine_lab', 'chibi_stage'].includes(view.value))
 
 const currentSong = computed(() => songReadModelDetail.value?.id === currentSongId.value
-  ? songReadModelDetail.value.song : songCatalogData.value?.songs?.[currentSongId.value] || null)
-const stageAudioExperiments = computed(() => songReadModelDetail.value?.experimental
+  ? songReadModelDetail.value.song : null)
+const stageAudioExperiments = computed(() => songReadModelDetail.value?.id === (currentSongId.value || (view.value === 'chibi_stage' ? 'drvalv' : '')) && songReadModelDetail.value?.experimental
   ? { [songReadModelDetail.value.id]: songReadModelDetail.value.experimental }
   : {})
 const currentSongPresentation = computed(() => songReadModelDetail.value?.id === currentSongId.value
-  ? songReadModelDetail.value.view : buildSongPresentation(currentSong.value, idolUnitData.value, {
-  playbackTrack: songPlaybackAudioData.value?.songs?.[currentSongId.value] || null,
-  audioExperiment: songExperimentalAudioData.value?.songs?.[currentSongId.value] || null,
-  manifest: archiveManifestData.value,
-}))
+  ? songReadModelDetail.value.view : null)
 
 const archiveSection = computed(() => archiveSectionForRoute({
   view: view.value,
@@ -2286,7 +2281,7 @@ function goArchiveBack() {
         commitView('idol_story_archive')
         return
       }
-      if (parent === 'song_detail' && currentSong.value) {
+      if (parent === 'song_detail' && currentSongId.value) {
         currentStoryDomain.value = ''
         currentStorySection.value = ''
         currentStoryFile.value = ''
@@ -2377,7 +2372,7 @@ async function openChibiStage(target = null) {
 function closeArchiveExperiment() {
   stageHandoff.value = null
   if (view.value === 'chibi_stage' && !detailSourceRoute.value &&
-      stageTargetId.value && currentSong.value) {
+      stageTargetId.value && currentSongId.value) {
     stageTargetId.value = ''
     return commitView('song_detail')
   }
@@ -4504,6 +4499,24 @@ watch(homeSelectedId, async (idolId, previousId) => {
 
 watch([filterQuery, currentStoryDomain, currentStorySection, currentEventScope, currentStoryAvailability, currentStorySort], () => {
   storyVisibleLimit.value = 80
+})
+
+watch([view, currentSongId], ([nextView, songCode]) => {
+  if (nextView !== 'song_detail' || !songCode || songReadModelDetail.value?.id === songCode) return
+  const request = ++pendingSongNavigation
+  const revision = navigation.getRevision()
+  songReadModelStatus.value = '正在读取歌曲详情…'
+  loadSongDetail(songCode).then(detail => {
+    if (request !== pendingSongNavigation || revision !== navigation.getRevision() ||
+      navigation.isDisposed() || view.value !== 'song_detail' || currentSongId.value !== songCode) return
+    songReadModelDetail.value = detail
+    songReadModelStatus.value = ''
+  }).catch(error => {
+    if (request !== pendingSongNavigation || revision !== navigation.getRevision() ||
+      view.value !== 'song_detail' || currentSongId.value !== songCode) return
+    console.error('[SongReadModel] Failed to restore song detail:', error)
+    songReadModelStatus.value = '歌曲详情暂时无法读取，请返回后重试。'
+  })
 })
 
 watch([view, currentCardId], ([nextView, cardId]) => {
