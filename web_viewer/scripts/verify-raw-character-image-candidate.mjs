@@ -83,7 +83,10 @@ assert.match(
   appSource,
   /birthdayStoryIdolCode\(story\)/,
 )
-assert.match(appSource, /getPromotedCharacterImageUrl/)
+assert.match(appSource, /storyReadModelDetail\.value\?\.view\?\.promotedVisualUrl/)
+assert.doesNotMatch(appSource, /getPromotedCharacterImageUrl/)
+const adapterSource = await readFile(new URL('../readmodels/lib/checkout_adapter.mjs', import.meta.url), 'utf8')
+assert.match(adapterSource, /getPromotedCharacterImageUrl\('birthday_visual',birthdayIdol,data\.rawCharacterImagePromotions\)/)
 assert.match(appSource, /eventStoryIdolRawCandidateUrl/)
 assert.match(
   appSource,
