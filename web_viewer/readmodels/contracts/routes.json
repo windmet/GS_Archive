@@ -1617,15 +1617,15 @@
     {
       "view": "spine_lab",
       "entry": {
-        "status": "legacy",
+        "status": "migrated",
         "evidence": [
-          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+          "docs/GS_ARCHITECTURE_SPINE_LAB_STARTUP_20260927.md"
         ]
       },
       "data": {
-        "status": "legacy",
+        "status": "migrated",
         "evidence": [
-          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+          "docs/GS_ARCHITECTURE_SPINE_LAB_STARTUP_20260927.md"
         ]
       },
       "actions": {
@@ -1648,18 +1648,24 @@
         ]
       },
       "parity": {
-        "status": "pending",
+        "status": "partial",
         "evidence": [
-          "docs/GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md"
+          "docs/GS_ARCHITECTURE_SPINE_LAB_STARTUP_20260927.md"
         ]
       },
-      "browserEvidence": [],
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_ARCHITECTURE_SPINE_LAB_STARTUP_20260927.md",
+          "scope": "Local direct entry, rendered model, resource-page entry and return; no full motion or device acceptance."
+        }
+      ],
       "device": {
         "status": "pending",
         "evidence": []
       },
       "legacyRemaining": [
-        "direct startup still enters global archive load"
+        "multi-stage action still enters an unmigrated stage data path"
       ],
       "blockedReasons": []
     },
