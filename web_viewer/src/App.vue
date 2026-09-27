@@ -489,7 +489,6 @@ import { createArchiveNavigationCoordinator } from './core/ArchiveNavigationCoor
 import { useArchiveNavigationState } from './core/useArchiveNavigationState.js'
 import { ref, shallowRef, computed, defineAsyncComponent, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import { IDOL_ID_TO_NAME } from './utils/IdolNameMap.js'
-import { countScenarioFiles } from './utils/IndexStats.js'
 import { Preloader } from './utils/Preloader.js'
 import LoadingScreen from './components/LoadingScreen.vue'
 import StoryReleaseSoakPanel from './components/player/StoryReleaseSoakPanel.vue'
@@ -510,7 +509,6 @@ import {
   buildStoryCatalog,
   cardsForCharacter,
 } from './data/archiveSelectors.js'
-import { buildArchiveHomeHighlights, buildArchiveHomeState } from './data/archiveHomeState.js'
 import {
   clearArchiveUserPreferences,
   loadArchiveUserPreferences,
@@ -876,30 +874,18 @@ const CATEGORIES = [
   { id: 'extra', name: '额外剧情' },
 ]
 
-const totalFiles = computed(() => countScenarioFiles(indexData.value?.categories || []))
-const archiveStats = computed(() => homeReadModelIndex.value?.stats || [
-  { label: '剧情文件', value: archiveVerificationData.value?.scenarios?.parsed_files ?? archiveManifestData.value?.counts?.indexed_scenarios ?? totalFiles.value },
-  { label: '偶像', value: archiveManifestData.value?.counts?.idols ?? Object.keys(idolUnitData.value?.by_idol_code || {}).length },
-  { label: '卡片', value: archiveManifestData.value?.counts?.cards ?? cardIndexData.value?.meta?.card_count ?? cardIndexData.value?.cards?.length ?? 0 },
-  { label: '卡池', value: gashaIndexData.value?.meta?.logical_gasha_count ?? archiveManifestData.value?.counts?.gashas ?? 0 },
-  { label: '首页语音', value: archiveManifestData.value?.counts?.home_voice_cues ?? cardIndexData.value?.meta?.home_voice_cue_count ?? 0 },
-])
+const archiveStats = computed(() => homeReadModelIndex.value?.stats || [])
 const archiveHomeIdols = computed(() => homeReadModelIndex.value
   ? homeReadModelIndex.value.idols.map(idol => homeReadModelProfiles.value[idol.id] || idol)
-  : archiveDataReady.value
-    ? buildArchiveHomeState(idolUnitData.value, cardIndexData.value, archiveManifestData.value, costumeDictionaryData.value)
-    : archiveBootstrap.idols.filter(idol => idol.home_available))
+  : archiveBootstrap.idols.filter(idol => idol.home_available))
 const archivePickerIdols = computed(() => archiveBootstrap.idols)
-const archiveHomeHighlights = computed(() => homeReadModelIndex.value?.highlights || buildArchiveHomeHighlights(
-  archiveManifestData.value,
-  uiAssetCatalogData.value,
-))
+const archiveHomeHighlights = computed(() => homeReadModelIndex.value?.highlights || [])
 const validArchiveHomeIdols = computed(() => archiveHomeIdols.value.map(idol => idol.id))
 const preferredArchiveIdol = computed(() =>
   archiveHomeIdols.value.find(idol => idol.id === userPreferences.value.preferredIdol) || null)
 const preferredArchiveIdolReference = computed(() => preferredArchiveIdol.value
-  ? buildIdolReference(preferredArchiveIdol.value.id, idolUnitData.value || bootstrapIdolDictionary,
-    archiveManifestData.value || bootstrapMembership, 'portal:preferred')
+  ? buildIdolReference(preferredArchiveIdol.value.id, bootstrapIdolDictionary,
+    bootstrapMembership, 'portal:preferred')
   : null)
 const idolPickerLabel = computed(() => ({
   home: '游戏风首页',

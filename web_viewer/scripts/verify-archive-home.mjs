@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
+import vm from 'node:vm'
 import {
   archiveHomeStateStats,
   buildArchiveHomeHighlights,
@@ -63,4 +64,32 @@ assert.match(spineStageSource, /data-background-owner/,
 assert.doesNotMatch(sceneApplicationSource, /manager\.(?:setBackground|clearBackground)/,
   'generic story scene application must not regain a duplicate background owner')
 
-console.log(`Archive home state: ${stats.idols} idols, ${stats.cues} cues, ${stats.models} models, ${highlights.length} highlights; standalone background owner verified`)
+const appSource = readSource('../src/App.vue')
+const projectionStart = appSource.indexOf('const archiveStats = computed(')
+const projectionEnd = appSource.indexOf('const idolPickerLabel = computed(', projectionStart)
+assert.ok(projectionStart >= 0 && projectionEnd > projectionStart)
+const context = vm.createContext({
+  computed: fn => ({ get value() { return fn() } }),
+  homeReadModelIndex: { value: null }, homeReadModelProfiles: { value: {} },
+  archiveBootstrap: { idols: [{ id: '001tom', home_available: true }, { id: 'hidden', home_available: false }] },
+  userPreferences: { value: { preferredIdol: '001tom' } },
+  bootstrapIdolDictionary: { source: 'bootstrap-idols' },
+  bootstrapMembership: { source: 'bootstrap-membership' },
+  buildIdolReference: (_id, dictionary, membership) => ({ dictionary, membership }),
+})
+const projections = vm.runInContext(`${appSource.slice(projectionStart, projectionEnd)}\n;[
+  archiveStats, archiveHomeIdols, archiveHomeHighlights, preferredArchiveIdolReference
+]`, context)
+assert.equal(projections[0].value.length, 0)
+assert.deepEqual(Array.from(projections[1].value, idol => idol.id), ['001tom'])
+assert.equal(projections[2].value.length, 0)
+assert.equal(projections[3].value.dictionary.source, 'bootstrap-idols')
+context.homeReadModelIndex.value = {
+  stats: [{ label: '剧情文件', value: 12 }],
+  idols: [{ id: '001tom', name: '冬馬' }], highlights: [{ event_id: 1 }],
+}
+assert.equal(projections[0].value[0].value, 12)
+assert.equal(projections[1].value[0].name, '冬馬')
+assert.equal(projections[2].value[0].event_id, 1)
+
+console.log(`Archive home state: ${stats.idols} idols, ${stats.cues} cues, ${stats.models} models, ${highlights.length} highlights; standalone background owner and read-model projection verified`)
