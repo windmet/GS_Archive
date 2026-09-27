@@ -5,7 +5,8 @@ import vm from 'node:vm'
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const open = app.match(/function openIdolStoryArchive\([^]*?\n\}/)?.[0]
 const select = app.match(/function selectIdolStory\([^]*?\n\}/)?.[0]
-assert.ok(open && select)
+const birthday = app.match(/async function openBirthdayIdolStory\([^]*?\n\}/)?.[0]
+assert.ok(open && select && birthday)
 function deferred() {
   let resolve, reject
   const promise = new Promise((yes, no) => { resolve = yes; reject = no })
@@ -64,5 +65,22 @@ const detail = id => ({ id, view: { page: { idol_code: id } } })
   t.jobs.get('002sht').resolve(detail('002sht')); await retry
   assert.equal(t.context.currentCharacterId.value, '002sht')
   assert.deepEqual(t.commits, ['idol_story_archive', 'selection'])
+}
+{
+  const t = setup()
+  let oldCommunicationLoads = 0
+  t.context.ensureIdolCommunicationData = async () => { oldCommunicationLoads++ }
+  t.context.navigation.run = async action => action({ isCurrent: () => true })
+  t.context.currentStoryFile = { value: 'old' }
+  t.context.storyCollectionParentView = { value: 'old' }
+  vm.runInContext(birthday, t.context)
+  const relation = { idolCode: '001tom', sectionId: 12, episodeId: 34 }
+  const pending = t.context.openBirthdayIdolStory(relation)
+  t.jobs.get('001tom').resolve(detail('001tom'))
+  await pending
+  assert.equal(oldCommunicationLoads, 0, 'birthday relation must use the idol story leaf without old communication indexes')
+  assert.equal(t.context.currentStorySection.value, '12')
+  assert.equal(t.context.currentEpisodeId.value, '34')
+  assert.deepEqual(t.commits, ['idol_story_archive'])
 }
 console.log('Idol story read-model navigation: picker, latest selection, supersession and retry passed')

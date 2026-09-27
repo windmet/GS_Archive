@@ -2847,12 +2847,11 @@ function selectIdolStory(idolCode) {
 }
 
 async function openBirthdayIdolStory(relation) {
+  if (!relation?.idolCode || !archiveBootstrap.idols.some(idol => idol.id === relation.idolCode)) return
   return navigation.run(async intent => {
-    await ensureIdolCommunicationData()
-    if (!intent.isCurrent()) return
-    if (!relation?.idolCode || !idolEpisodeData.value?.by_idol_code?.[relation.idolCode]) return
     const detail = await loadIdolStoryDetail(relation.idolCode)
     if (!intent.isCurrent()) return
+    if (!detail.view.page) return
     idolStoryReadModelDetail.value = detail
     captureDetailSource()
     currentStoryDomain.value = 'idol_story'
