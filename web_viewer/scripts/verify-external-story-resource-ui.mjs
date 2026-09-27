@@ -276,7 +276,7 @@ assert.match(
 )
 assert.match(
   appComponent,
-  /'external_story_resources',[\s\S]*await ensureIdolCommunicationData\(\)/,
+  /\['external_story_resources'\]\.includes\(route\.view === 'player' \? route\.returnView : route\.view\)[\s\S]*?await ensureIdolCommunicationData\(\)/,
   'direct external-resource routes must load idol_episode_index before rendering',
 )
 assert.match(

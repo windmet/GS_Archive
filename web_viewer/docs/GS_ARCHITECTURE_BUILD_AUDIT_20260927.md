@@ -22,6 +22,14 @@
 
 本批开发验证的构建基线为 `59fc931` 加本批未提交变更，因此报告正确标记 dirty。提交后需重新生成当前 HEAD 报告再作严格预检；不能复用旧 HEAD 报告作为发布签收。
 
+## 提交后的复核与 CI 修复
+
+- `0393886` 提交后重新构建，报告正确绑定该 HEAD 且 `sourceDirty=false`；真实 r22 的 assembler `--check-only` 因入口旧/重型模块仍存在而拒绝，未创建输出。
+- 首次远端运行 `36296515801` 暴露 4 项真实语料测试依赖 ignored 文件。`54059cd` 增加 `test:source`，显式排除 `[local-corpus]` 测试；默认 `npm test` 仍完整执行它们。其余 fixture 测试保留。
+- 第二次运行 `36296609792` 的 readmodels/路由检查通过，随后旧音频断言仍要求 `loading=ref(true)` 而失败。移除这个与按路由启动冲突的断言，保留 `__boot__` 防止过早挂载有声首页的检查；路由加载状态继续由 startup-route/async-navigation 测试验证。
+- 后续 source gate 本机预查发现两个旧 Pixi prototype fixture 未初始化现有的 `_textureOwner/_spawnLoads`，已补齐 fixture；屏幕效果和 tint 生命周期测试重新通过，未改动运行时行为。
+- external-resource UI 的旧源码匹配假定路由数组包含逗号，已改为检查当前直达/Player 返回条件，重跑通过。本机 `verify:archive-assets` 在 fixture HTTP 请求发生超时，单独保留为未通过项，不用于媒体或部署签收。
+
 ## 下一批
 
 按 [修复路线](GS_ARCHITECTURE_REVIEW_REPAIR_PLAN_20260927.md) 继续清理 birthday、external、idols 其他分类、Stage/Lab 和静态 route imports，再删除旧 Repository 生产依赖。最终 assembler 保持关闭，直到路由 parity 与设备证据齐全。

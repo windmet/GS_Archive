@@ -572,7 +572,9 @@ assert.match(appSource, /const NO_AUDIO = URL_FLAGS\.get\('noAudio'\) === '1'/)
 assert.match(appSource, /:no-audio="NO_AUDIO"/)
 assert.match(appSource, /const\s*\{[^}]*\bview\b[^}]*\}\s*=\s*useArchiveNavigationState\(\)/)
 assert.equal(useArchiveNavigationState().view.value, '__boot__', 'startup must not mount audible home before route restoration')
-assert.match(appSource, /const loading = ref\(true\)/)
+// Route-specific loading is verified by verify-archive-startup-route. The
+// audio safety boundary is the non-audible __boot__ view until restoration,
+// not a global loading overlay (bootstrap routes deliberately avoid it).
 assert.match(homeSource, /new StoryAudioSession\(\{ disabled: props\.noAudio \}\)/)
 assert.match(homeSource, /audioSession: homeAudioSession/)
 assert.doesNotMatch(voicePlayerSource, /new \(window\.AudioContext/)
