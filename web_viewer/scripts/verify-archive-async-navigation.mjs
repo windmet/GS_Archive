@@ -40,7 +40,7 @@ function setup() {
     archiveBootstrap: { idols: [{ id: '038tak' }] },
     mobileArchiveData: { value: {} }, idolUnitData: { value: {} },
     idolStoryReadModelDetail: { value: null }, loadIdolStoryDetail: async () => ({ id: '038tak', view: { page: { idol_code: '038tak' } } }),
-    ensureCardDetailData: async () => {}, ensureIdolCommunicationData: async () => {},
+    ensureIdolCommunicationData: async () => {},
     loadStoryReadModelLanding: async () => {},
     loadLegacyAliasRoute: async () => null, publishLegacyAliasRoute: () => {},
     resolveRouteGroup: () => null, resolveRouteUnit: () => null, resolveRouteEpisode: () => null,
@@ -66,7 +66,7 @@ function setup() {
     returnTo: destination => context.commitView(destination), onError: (...args) => context.console.error(...args),
   })
   const production = vm.runInContext([
-    functionSource('function syncArchiveRoute(', 'const ensureCardDetailData'),
+    functionSource('function syncArchiveRoute(', 'const ensureIdolCommunicationData'),
     functionSource('async function applyArchiveRoute(', 'function goHome('),
     functionSource('async function restoreVoicePreview(', 'async function applyArchiveRoute('),
     functionSource('function playbackEpisodes(', 'async function openEventCard('),
@@ -335,7 +335,6 @@ for (const response of [
   const t = setup(), data = deferred()
   const cue = 'touch_001'
   t.context.loadCardDetail = id => { assert.equal(id, '001tom_n01'); return data.promise }
-  t.context.ensureCardDetailData = () => assert.fail('voice deep link must not load the old full card-detail table')
   const pending = t.restore({ view: 'player', card: '001tom_n01', voice: cue, returnView: 'card_detail' })
   data.resolve({ id: '001tom_n01', card: { resource_id: '001tom_n01', home_voice_cues: [
     { cue, preview: { preview_step: { dialogue: { text: 'source line', voice: `${cue}.m4a` } } } },

@@ -507,13 +507,12 @@ import { buildSongPresentation } from './presentation/SongPresentation.js'
 import { buildIdolReference } from './presentation/IdolReferencePresentation.js'
 import { resolveMobileArchiveUnit } from './core/mobileArchiveIdentity.js'
 import { readyEpisodeReading } from './data/IdolStoryReading.js'
-import { loadArchiveData, loadCardDetailData, loadIdolCommunicationData } from './data/ArchiveDataRepository.js'
+import { loadArchiveData, loadIdolCommunicationData } from './data/ArchiveDataRepository.js'
 import {
   buildCardMap,
   buildCardRarityTabs,
   buildStoryCatalog,
   cardsForCharacter,
-  mergeCardDetail,
 } from './data/archiveSelectors.js'
 import { buildArchiveHomeHighlights, buildArchiveHomeState } from './data/archiveHomeState.js'
 import {
@@ -713,7 +712,6 @@ const indexData = ref(null)
 const cardIndexData = ref(null)
 const gashaIndexData = ref(null)
 const eventIndexData = ref(null)
-const cardDetailData = ref(null)
 const storyCatalogData = ref(null)
 const birthdayStorySemanticData = ref(null)
 const extraStoryVisualIndexData = ref(null)
@@ -1251,9 +1249,8 @@ const filteredCardRows = computed(() => filteredCards.value.map(card => ({
   ownerReference: card.ownerReference || buildIdolReference(card.character_id, idolUnitData.value, archiveManifestData.value, `card:${card.resource_id}`),
 })))
 
-const currentCardBase = computed(() => cardMap.value.get(currentCardId.value) || null)
 const currentCard = computed(() => cardReadModelDetail.value?.id === currentCardId.value
-  ? cardReadModelDetail.value.card : mergeCardDetail(currentCardBase.value, cardDetailData.value))
+  ? cardReadModelDetail.value.card : null)
 const currentCardOwnerReference = computed(() => cardReadModelDetail.value?.id === currentCardId.value
   ? cardReadModelDetail.value.ownerReference : buildIdolReference(
   currentCard.value?.character_id, idolUnitData.value, archiveManifestData.value, `card:${currentCardId.value}`,
@@ -1599,14 +1596,6 @@ function updateArchiveFilter(key, value) {
   loading.value = false
   target.value = value
 }
-
-const ensureCardDetailData = createLazyArchiveResource({
-  read: () => cardDetailData.value,
-  load: loadCardDetailData,
-  publish: data => { cardDetailData.value = data },
-  isDisposed: navigation.isDisposed,
-  onError: error => console.error('[ArchiveData] Failed to load cardDetailIndex:', error),
-})
 
 const ensureIdolCommunicationData = createLazyArchiveResource({
   read: () => idolEpisodeData.value && mobileArchiveData.value && randomTalkPresentationData.value
@@ -4561,7 +4550,21 @@ watch([filterQuery, currentStoryDomain, currentStorySection, currentEventScope, 
 })
 
 watch([view, currentCardId], ([nextView, cardId]) => {
-  if (nextView === 'card_detail' && cardId && cardReadModelDetail.value?.id !== cardId) ensureCardDetailData()
+  if (nextView !== 'card_detail' || !cardId || cardReadModelDetail.value?.id === cardId) return
+  const request = ++pendingCardNavigation
+  const revision = navigation.getRevision()
+  cardReadModelStatus.value = '正在读取卡片详情…'
+  loadCardDetail(cardId).then(detail => {
+    if (request !== pendingCardNavigation || revision !== navigation.getRevision() ||
+      navigation.isDisposed() || view.value !== 'card_detail' || currentCardId.value !== cardId) return
+    cardReadModelDetail.value = detail
+    cardReadModelStatus.value = ''
+  }).catch(error => {
+    if (request !== pendingCardNavigation || revision !== navigation.getRevision() ||
+      view.value !== 'card_detail' || currentCardId.value !== cardId) return
+    console.error('[CardReadModel] Failed to restore card detail:', error)
+    cardReadModelStatus.value = '卡片详情暂时无法读取，请返回后重试。'
+  })
 })
 
 watch(cardLayout, layout => {
