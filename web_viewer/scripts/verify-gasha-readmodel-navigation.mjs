@@ -16,12 +16,13 @@ function setup() {
   const jobs = new Map(), commits = [], errors = []
   let revision = 0
   const context = vm.createContext({
+    prepareArchivePage: (_view, data) => data,
     pendingGashaNavigation: 0, gashaReadModelStatus: { value: '' }, gashaReadModelDetail: { value: null },
     loading: { value: false }, view: { value: 'gashas' }, detailSourceRoute: { value: '' },
     gashaParentView: { value: '' }, currentStoryDomain: { value: '' }, filterQuery: { value: 'card' },
     currentCategoryId: { value: '' }, currentCharacterId: { value: '' }, currentCardId: { value: '' },
     currentGashaId: { value: '' }, currentGashaCategory: { value: 'all' },
-    navigation: { getRevision: () => revision, isDisposed: () => false },
+    navigation: { invalidate: () => revision++, getRevision: () => revision, isDisposed: () => false },
     loadGashaCatalog: () => { const job = deferred(); jobs.set('catalog', job); return job.promise },
     loadGashaDetail: id => { const job = deferred(); jobs.set(id, job); return job.promise },
     captureDetailSource: () => {},

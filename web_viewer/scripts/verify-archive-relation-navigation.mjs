@@ -11,6 +11,7 @@ const state = useArchiveNavigationState()
 const card = { resource_id: '002sht_sr01', character_id: '002sht', card_id: 42 }
 const unit = { unit_code: '01jup', unit_id: 1 }
 const context = vm.createContext({
+    prepareArchivePage: (_view, data) => data,
   ...state, buildArchiveSourceQuery,
   songCatalogData: { value: { songs: { brndnf: {} } } },
   songReadModelStatus: { value: '' }, songReadModelDetail: { value: null },
@@ -19,7 +20,7 @@ const context = vm.createContext({
   pendingSongNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0,
   eventReadModelStatus: { value: '' }, eventReadModelDetail: { value: null },
   loading: { value: false }, archiveDataReady: { value: true },
-  navigation: { getRevision: () => 0, isDisposed: () => false },
+  navigation: { invalidate: () => {}, getRevision: () => 0, isDisposed: () => false },
   loadSongDetail: async songCode => ({ id: songCode, song: { song_code: songCode }, view: { id: songCode } }),
   loadGashaDetail: async id => ({ id, gasha: { id } }),
   loadCardDetail: async id => ({ id, card: { resource_id: id } }),

@@ -32,9 +32,10 @@ export function useVoicePlayer({
   let activeVoiceLoad = null
   let optionalLipLoad = null
   let lastVoiceFailure = null
+  let lastVoiceAttempt = null
   function cancelOptionalLip() { optionalLipLoad?.cancel(); optionalLipLoad = null }
   function recordVoiceFailure(error, phase) {
-    lastVoiceFailure = { phase, code: error?.code || error?.name || 'ERROR', message: String(error?.message || error) }
+    lastVoiceFailure = { voice: lastVoiceAttempt?.voice || null, url: lastVoiceAttempt?.url || null, phase, code: error?.code || error?.name || 'ERROR', message: String(error?.message || error) }
   }
   function setVoiceState(state) { voiceState = state; onStateChange(state) }
   let voiceRequestGeneration = 0
@@ -86,16 +87,6 @@ export function useVoicePlayer({
     if (session.disabled) return null
     audioCtx = session.unlockFromUserGesture()
     return audioCtx
-  }
-
-  async function waitForRunningAudioContext(timeoutMs = 1800) {
-    ensureAudioCtx()
-    if (audioCtx.state === 'running') return
-    await Promise.race([
-      session.resume('voice-wait'),
-      new Promise(resolve => setTimeout(resolve, timeoutMs)),
-    ])
-    if (audioCtx.state !== 'running') throw new Error('AudioContext is waiting for a user gesture')
   }
 
   function resetVoiceDedup() {
@@ -186,9 +177,15 @@ export function useVoicePlayer({
     const isCurrentContext = () => preparingContext && audioCtx === preparingContext
       && preparingContext.state !== 'closed' && !signal?.aborted
     const cacheKey = `${scenarioId || ''}\0${voice}`
+    const attempt = { voice, scenarioId, url: null, transport: null, decoded: null, sourceStarted: false, contextAtStart: null }
+    lastVoiceAttempt = attempt
+    lastVoiceFailure = null
     try {
       let audioBuffer = decodedVoiceCache.get(cacheKey)?.buffer
-      if (audioBuffer) rememberDecodedVoice(cacheKey, audioBuffer)
+      if (audioBuffer) {
+        attempt.cache = 'decoded'
+        rememberDecodedVoice(cacheKey, audioBuffer)
+      }
       else {
         const voiceUrls = getVoiceUrlCandidates(voice, scenarioId)
         let arrayBuffer = null
@@ -201,9 +198,13 @@ export function useVoicePlayer({
           signal?.addEventListener('abort', forwardAbort, { once: true })
           if (signal?.aborted) forwardAbort()
           try {
-            arrayBuffer = await compressedVoiceCache.get(voiceUrl, { signal: controller.signal })
+            attempt.url = voiceUrl
+            arrayBuffer = await compressedVoiceCache.get(voiceUrl, { signal: controller.signal,
+              onDiagnostics: diagnostics => { attempt.transport = diagnostics; attempt.url = diagnostics.url; attempt.cache = diagnostics.cache },
+            })
             break
           } catch (error) {
+            if (error.diagnostics) attempt.transport = { ...error.diagnostics }
             lastFetchError = error
             if (controller.signal.aborted || ![404, 410].includes(error.status)) throw error
           } finally {
@@ -226,9 +227,10 @@ export function useVoicePlayer({
         rememberDecodedVoice(cacheKey, audioBuffer)
       }
       if (!isCurrentContext()) return null
+      attempt.decoded = { duration: audioBuffer.duration ?? null, sampleRate: audioBuffer.sampleRate ?? null, channels: audioBuffer.numberOfChannels ?? null }
       // The optional curve must not gate an already decoded, playable voice.
       // Load it after start with its own owner; do not reuse this preparation signal.
-      return { voice, step, scenarioId, audioBuffer, lipCurve: null, lipStep: includeLip ? step : null }
+      return { voice, step, scenarioId, audioBuffer, diagnostics: attempt, lipCurve: null, lipStep: includeLip ? step : null }
     } catch (err) {
       if (!isCurrentContext()) return null
       recordVoiceFailure(err, 'fetch-or-prepare')
@@ -243,6 +245,7 @@ export function useVoicePlayer({
     stopCurrentVoice('playPreparedVoice-new')
     ensureAudioCtx()
 
+    lastVoiceAttempt = prepared.diagnostics || { voice: prepared.voice, sourceStarted: false }
     lastVoiceUrl = prepared.voice
     lastVoiceStepIndex = currentStepIndex.value
     voiceCharaId = prepared.step?.chara_id || null
@@ -259,6 +262,8 @@ export function useVoicePlayer({
       currentSource = source
       setVoiceState('playing')
       source.start(0)
+      lastVoiceAttempt.sourceStarted = true
+      lastVoiceAttempt.contextAtStart = audioCtx.state
       setTalking(true)
 
       isPlaying.value = true
@@ -392,7 +397,14 @@ export function useVoicePlayer({
   return {
     playVoice,
     retryVoice,
-    getDiagnostics: () => ({ state: voiceState, lastFailure: lastVoiceFailure && { ...lastVoiceFailure } }),
+    getDiagnostics: () => ({
+      state: voiceState, contextState: audioCtx?.state || 'uninitialized',
+      voiceGain: session.inspect().buses.voice, activeSource: Boolean(currentSource),
+      attempt: lastVoiceAttempt && structuredClone(lastVoiceAttempt),
+      decodedCache: { entries: decodedVoiceCache.size, bytes: decodedVoiceBytes },
+      compressedCache: compressedVoiceCache.inspect(),
+      lastFailure: lastVoiceFailure && { ...lastVoiceFailure },
+    }),
     requiresVoice,
     hasDecodedVoice,
     prepareVoice,

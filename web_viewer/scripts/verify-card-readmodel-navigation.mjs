@@ -16,6 +16,7 @@ function setup() {
   const jobs = new Map(), commits = [], errors = []
   let revision = 0
   const context = vm.createContext({
+    prepareArchivePage: (_view, data) => data,
     pendingCardNavigation: 0, cardReadModelStatus: { value: '' }, cardReadModelDetail: { value: null },
     unitReadModelStatus: { value: '' }, currentArchiveUnit: { value: { unit_id: '1' } },
     currentArchiveUnitCode: { value: '01jup' }, currentIdolUnitFilter: { value: '' },
@@ -24,7 +25,7 @@ function setup() {
     currentGroup: { value: null }, currentCardRarity: { value: 'SSR' },
     currentCardAssetState: { value: 'all' }, currentCardRelationState: { value: 'all' },
     archiveBootstrap: { idols: [{ id: '001tom' }] },
-    navigation: { getRevision: () => revision, isDisposed: () => false },
+    navigation: { invalidate: () => revision++, getRevision: () => revision, isDisposed: () => false },
     loadCardCatalog: () => { const job = deferred(); jobs.set('catalog', job); return job.promise },
     loadCardDetail: id => { const job = deferred(); jobs.set(id, job); return job.promise },
     captureDetailSource: () => {},

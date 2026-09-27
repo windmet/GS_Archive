@@ -15,12 +15,13 @@ function setup() {
   const jobs = [], commits = [], errors = []
   let revision = 0
   const context = vm.createContext({
+    prepareArchivePage: (_view, data) => data,
     pendingResourceNavigation: 0, resourceReadModelStatus: { value: '' },
     resourceReadModelDetail: { value: null }, loading: { value: false },
     view: { value: 'portal' }, detailSourceRoute: { value: '' }, filterQuery: { value: 'prior' },
     currentStoryDomain: { value: 'main' }, currentEventScope: { value: 'fixed_unit_event' },
     currentStoryAvailability: { value: 'playable' }, currentStorySort: { value: 'title' },
-    navigation: { getRevision: () => revision, isDisposed: () => false },
+    navigation: { invalidate: () => revision++, getRevision: () => revision, isDisposed: () => false },
     loadResourceStatus: () => { const job = deferred(); jobs.push(job); return job.promise },
     commitView: next => { revision++; commits.push(next); context.loading.value = false },
     console: { error: (...args) => errors.push(args) },

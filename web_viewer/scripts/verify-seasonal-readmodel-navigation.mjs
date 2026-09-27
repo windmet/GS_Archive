@@ -16,10 +16,11 @@ function setup() {
   const jobs = new Map(), commits = [], errors = []
   let revision = 0, captured = 0
   const context = vm.createContext({
+    prepareArchivePage: (_view, data) => data,
     pendingSeasonalNavigation: 0, seasonalReadModelStatus: { value: '' },
     seasonalReadModelDetail: { value: null }, loading: { value: false },
     currentStoryDomain: { value: '' }, currentStoryMode: { value: '' }, currentStorySection: { value: '' },
-    navigation: { getRevision: () => revision, isDisposed: () => false },
+    navigation: { invalidate: () => revision++, getRevision: () => revision, isDisposed: () => false },
     loadSeasonalDetail: id => { const job = deferred(); jobs.set(id, job); return job.promise },
     captureDetailSource: () => { captured++ },
     commitView: view => { revision++; commits.push(view); context.loading.value = false },

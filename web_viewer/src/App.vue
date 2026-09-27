@@ -406,8 +406,8 @@
         @open-cards="openUnitCards"
         @open-song="openSong"
       />
-      <p v-if="['cards', 'card_detail'].includes(view) && cardReadModelStatus" role="status">{{ cardReadModelStatus }}</p>
-      <p v-if="['gashas', 'gasha_detail'].includes(view) && gashaReadModelStatus" role="status">{{ gashaReadModelStatus }}</p>
+      <p v-if="!loading && cardReadModelStatus" role="status">{{ cardReadModelStatus }}</p>
+      <p v-if="!loading && gashaReadModelStatus" role="status">{{ gashaReadModelStatus }}</p>
       <p v-if="!loading && eventReadModelStatus" role="status">{{ eventReadModelStatus }}</p>
       <p v-if="!loading && seasonalReadModelStatus" role="status">{{ seasonalReadModelStatus }}</p>
       <p v-if="!loading && workReadModelStatus" role="status">{{ workReadModelStatus }}</p>
@@ -471,7 +471,8 @@
     />
 
     <!-- ====== PRELOADER LOADING SCREEN ====== -->
-    <LoadingScreen :can-cancel="Boolean(playbackController.pendingEntry.value) || playbackBuffering" @cancel="playbackController.close()" :visible="(loading || playbackBuffering) && view !== 'reader' && !(view === 'player' && !loading && playbackReadiness?.status === 'waiting' && playbackReadiness?.hasFrame)" :status="preloadStatus" :readiness="playbackReadiness" :message="loadingMessage" />
+    <p v-if="routePending" class="archive-route-pending" role="status" aria-live="polite">正在准备下一页…</p>
+    <LoadingScreen :can-cancel="Boolean(playbackController.pendingEntry.value) || playbackBuffering" @cancel="playbackController.close()" :visible="(hardLoading || playbackBuffering) && view !== 'reader' && !(view === 'player' && !loading && playbackReadiness?.status === 'waiting' && playbackReadiness?.hasFrame)" :status="preloadStatus" :readiness="playbackReadiness" :message="loadingMessage" />
 
   </div>
 </template>
@@ -486,6 +487,7 @@ import { useArchiveNavigationState } from './core/useArchiveNavigationState.js'
 import { ref, shallowRef, computed, defineAsyncComponent, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import { IDOL_ID_TO_NAME } from './utils/IdolNameMap.js'
 import { Preloader } from './utils/Preloader.js'
+import { prepareArchiveRoute } from './core/prepareArchiveRoute.js'
 import LoadingScreen from './components/LoadingScreen.vue'
 import StoryReleaseSoakPanel from './components/player/StoryReleaseSoakPanel.vue'
 import ArchiveShell from './components/archive/ArchiveShell.vue'
@@ -621,6 +623,15 @@ const ArchiveUnitGrid = defineAsyncComponent(archiveRouteLoaders.episode_zero_un
 const ArchiveEpisodeList = defineAsyncComponent(archiveRouteLoaders.episodes)
 const ArchiveStatus = defineAsyncComponent(archiveRouteLoaders.archive_status)
 const ArchiveExternalStoryResources = defineAsyncComponent(archiveRouteLoaders.external_story_resources)
+function prepareArchivePage(routeView, data) {
+  // The shared pending notice owns progress; discard notices from superseded routes.
+  for (const status of [mobileReadModelStatus, songReadModelStatus, idolReadModelStatus,
+    unitReadModelStatus, gashaReadModelStatus, cardReadModelStatus, eventReadModelStatus,
+    seasonalReadModelStatus, workReadModelStatus, idolStoryReadModelStatus,
+    collectionReadModelStatus, storyReadModelStatus, resourceReadModelStatus]) status.value = ''
+  return prepareArchiveRoute(archiveRouteLoaders, routeView, data)
+}
+
 function primeArchiveRouteComponent(routeView) {
   const load = archiveRouteLoaders[routeView]
   if (load) load().catch(error => console.error(`[ArchiveRoute] Could not load ${routeView}:`, error))
@@ -792,6 +803,8 @@ let pendingHomeNavigation = 0
 const continuousPlayback = ref(localStorageValue('sidem:continuous-playback') === '1')
 const loading = ref(!isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes'].includes(initialArchiveStartup.route.view) || initialArchiveStartup.route.view === 'home' && Boolean(initialArchiveStartup.route.homeIdol))
 const loadingPurpose = ref('archive-data')
+const hardLoading = computed(() => loading.value && (view.value === '__boot__' || loadingPurpose.value !== 'archive-data'))
+const routePending = computed(() => loading.value && !hardLoading.value)
 const preloadProgress = ref(0)
 
 // View preferences and history lifecycle (navigation refs are owned above).
@@ -2233,10 +2246,11 @@ function updateStageTarget(target) {
 
 function openArchiveStatus() {
   const request = ++pendingResourceNavigation
+  navigation.invalidate()
   const revision = navigation.getRevision()
   resourceReadModelStatus.value = '正在读取资源状态…'
   loading.value = true
-  return loadResourceStatus().then(detail => {
+  return prepareArchivePage('archive_status', loadResourceStatus()).then(detail => {
     if (request !== pendingResourceNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
     resourceReadModelDetail.value = detail
     resourceReadModelStatus.value = ''
@@ -2257,10 +2271,11 @@ function openArchiveStatus() {
 
 function openGashaCatalog() {
   const request = ++pendingGashaNavigation
+  navigation.invalidate()
   const revision = navigation.getRevision()
   gashaReadModelStatus.value = '正在读取卡池目录…'
   loading.value = true
-  return loadGashaCatalog().then(() => {
+  return prepareArchivePage('gashas', loadGashaCatalog()).then(() => {
     if (request !== pendingGashaNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
     gashaReadModelStatus.value = ''
     if (view.value !== 'portal') detailSourceRoute.value = ''
@@ -2285,7 +2300,7 @@ async function openStoryCatalog(options = {}) {
   if (view.value !== 'portal') detailSourceRoute.value = ''
   loading.value = true
   return navigation.run(async intent => {
-    await loadStoryReadModelLanding()
+    await prepareArchivePage('story_catalog', loadStoryReadModelLanding())
     if (!intent.isCurrent()) return
     filterQuery.value = ''
     currentStoryDomain.value = domain
@@ -2382,10 +2397,11 @@ function browseStoryCollection({ domain, section = '', mode = '' }) {
 
 function openSeasonalCampaign(campaignId = 'valentine_2023') {
   const request = ++pendingSeasonalNavigation
+  navigation.invalidate()
   const revision = navigation.getRevision()
   seasonalReadModelStatus.value = '正在读取季节企划…'
   loading.value = true
-  return loadSeasonalDetail(campaignId).then(detail => {
+  return prepareArchivePage('seasonal_campaign', loadSeasonalDetail(campaignId)).then(detail => {
     if (request !== pendingSeasonalNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
     seasonalReadModelDetail.value = detail
     seasonalReadModelStatus.value = ''
@@ -2404,10 +2420,11 @@ function openSeasonalCampaign(campaignId = 'valentine_2023') {
 
 function openProjectedCollection({ domain, section, storyFile = '', parent = '' }) {
   const request = ++pendingCollectionNavigation
+  navigation.invalidate()
   const revision = navigation.getRevision()
   collectionReadModelStatus.value = '正在读取故事章节…'
   loading.value = true
-  return loadCollectionDetail(domain, section).then(detail => {
+  return prepareArchivePage('story_collection', loadCollectionDetail(domain, section)).then(detail => {
     if (request !== pendingCollectionNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
     collectionReadModelDetail.value = detail
     collectionReadModelStatus.value = ''
@@ -2428,10 +2445,11 @@ function openProjectedCollection({ domain, section, storyFile = '', parent = '' 
 
 function selectSeasonalCampaign(campaignId) {
   const request = ++pendingSeasonalNavigation
+  navigation.invalidate()
   const revision = navigation.getRevision()
   seasonalReadModelStatus.value = '正在切换季节企划…'
   loading.value = true
-  return loadSeasonalDetail(campaignId).then(detail => {
+  return prepareArchivePage('seasonal_campaign', loadSeasonalDetail(campaignId)).then(detail => {
     if (request !== pendingSeasonalNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
     seasonalReadModelDetail.value = detail
     seasonalReadModelStatus.value = ''
@@ -2452,10 +2470,11 @@ function playSeasonalCampaignStory(file) {
 function openWorkArchive(idolCode = '') {
   if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return openIdolPicker('work')
   const request = ++pendingWorkNavigation
+  navigation.invalidate()
   const revision = navigation.getRevision()
   workReadModelStatus.value = '正在读取工作档案…'
   loading.value = true
-  return loadWorkDetail(idolCode).then(detail => {
+  return prepareArchivePage('work_archive', loadWorkDetail(idolCode)).then(detail => {
     if (request !== pendingWorkNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
     workReadModelDetail.value = detail
     workReadModelStatus.value = ''
@@ -2478,10 +2497,11 @@ function openWorkArchive(idolCode = '') {
 function selectWorkIdol(idolCode) {
   if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return
   const request = ++pendingWorkNavigation
+  navigation.invalidate()
   const revision = navigation.getRevision()
   workReadModelStatus.value = '正在切换工作档案…'
   loading.value = true
-  return loadWorkDetail(idolCode).then(detail => {
+  return prepareArchivePage('work_archive', loadWorkDetail(idolCode)).then(detail => {
     if (request !== pendingWorkNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
     workReadModelDetail.value = detail
     workReadModelStatus.value = ''
@@ -2510,10 +2530,11 @@ function playWorkStory(file) {
 function openIdolStoryArchive(idolCode = '') {
   if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return openIdolPicker('story')
   const request = ++pendingIdolStoryNavigation
+  navigation.invalidate()
   const revision = navigation.getRevision()
   idolStoryReadModelStatus.value = '正在读取个人故事…'
   loading.value = true
-  return loadIdolStoryDetail(idolCode).then(detail => {
+  return prepareArchivePage('idol_story_archive', loadIdolStoryDetail(idolCode)).then(detail => {
     if (request !== pendingIdolStoryNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
     idolStoryReadModelDetail.value = detail
     idolStoryReadModelStatus.value = ''
@@ -2537,10 +2558,11 @@ function openIdolStoryArchive(idolCode = '') {
 function selectIdolStory(idolCode) {
   if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return
   const request = ++pendingIdolStoryNavigation
+  navigation.invalidate()
   const revision = navigation.getRevision()
   idolStoryReadModelStatus.value = '正在切换个人故事…'
   loading.value = true
-  return loadIdolStoryDetail(idolCode).then(detail => {
+  return prepareArchivePage('idol_story_archive', loadIdolStoryDetail(idolCode)).then(detail => {
     if (request !== pendingIdolStoryNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
     idolStoryReadModelDetail.value = detail
     idolStoryReadModelStatus.value = ''
@@ -2754,10 +2776,11 @@ async function openMobileIdolStory(episodeId) {
 
 function openUnitCatalog() {
   const request = ++pendingUnitNavigation
+  navigation.invalidate()
   const revision = navigation.getRevision()
   unitReadModelStatus.value = '正在读取组合目录…'
   loading.value = true
-  return loadUnitCatalog().then(() => {
+  return prepareArchivePage('unit_catalog', loadUnitCatalog()).then(() => {
     if (request !== pendingUnitNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
     unitReadModelStatus.value = ''
     captureDetailSource()
@@ -2778,10 +2801,11 @@ function openArchiveUnit(unit, { clearEventContext = false } = {}) {
   if (!unit) return
   const code = String(unit.unit_code || unit.unit_id || '')
   const request = ++pendingUnitNavigation
+  navigation.invalidate()
   const revision = navigation.getRevision()
   unitReadModelStatus.value = '正在读取组合详情…'
   loading.value = true
-  return loadUnitDetail(code).then(detail => {
+  return prepareArchivePage('unit_detail', loadUnitDetail(code)).then(detail => {
     if (request !== pendingUnitNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
     unitReadModelDetail.value = detail
     unitReadModelStatus.value = ''
@@ -2819,10 +2843,11 @@ function openUnitCards() {
   const unitId = String(currentArchiveUnit.value?.unit_id || '')
   if (!unitId) return
   const request = ++pendingCardNavigation
+  navigation.invalidate()
   const revision = navigation.getRevision()
   unitReadModelStatus.value = '正在读取卡片目录…'
   loading.value = true
-  return loadCardCatalog().then(() => {
+  return prepareArchivePage('cards', loadCardCatalog()).then(() => {
     if (request !== pendingCardNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
     unitReadModelStatus.value = ''
     captureDetailSource()
@@ -2852,10 +2877,11 @@ function openStoryDetail(entry, parentView = '') {
   if (!entry?.file) return
   const file = entry.file
   const request = ++pendingStoryDetailNavigation
+  navigation.invalidate()
   const revision = navigation.getRevision()
   storyReadModelStatus.value = '正在读取故事详情…'
   loading.value = true
-  return loadStoryReadModelDetail(file).then(detail => {
+  return prepareArchivePage('story_detail', loadStoryReadModelDetail(file)).then(detail => {
     if (request !== pendingStoryDetailNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
     storyReadModelDetail.value = detail
     storyReadModelStatus.value = ''
@@ -3033,10 +3059,11 @@ function openIdolDirectory() {
 
 function openPrimaryCards(idolCode = '', { captureSource = false } = {}) {
   const request = ++pendingCardNavigation
+  navigation.invalidate()
   const revision = navigation.getRevision()
   cardReadModelStatus.value = '正在读取卡片目录…'
   loading.value = true
-  return loadCardCatalog().then(() => {
+  return prepareArchivePage('cards', loadCardCatalog()).then(() => {
     if (request !== pendingCardNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
     cardReadModelStatus.value = ''
     if (captureSource) captureDetailSource()
@@ -3148,10 +3175,11 @@ function openCard(card, { resetContext = false, captureSource = false, clearEven
   if (!card?.resource_id) return
   const id = card.resource_id
   const request = ++pendingCardNavigation
+  navigation.invalidate()
   const revision = navigation.getRevision()
   cardReadModelStatus.value = '正在读取卡片详情…'
   loading.value = true
-  return loadCardDetail(id).then(detail => {
+  return prepareArchivePage('card_detail', loadCardDetail(id)).then(detail => {
     if (request !== pendingCardNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
     cardReadModelDetail.value = detail
     cardReadModelStatus.value = ''
@@ -3181,10 +3209,11 @@ function openGasha(gasha) {
   if (!gasha?.id) return
   const id = String(gasha.id)
   const request = ++pendingGashaNavigation
+  navigation.invalidate()
   const revision = navigation.getRevision()
   gashaReadModelStatus.value = '正在读取卡池详情…'
   loading.value = true
-  return loadGashaDetail(id).then(detail => {
+  return prepareArchivePage('gasha_detail', loadGashaDetail(id)).then(detail => {
     if (request !== pendingGashaNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
     gashaReadModelDetail.value = detail
     gashaReadModelStatus.value = ''
@@ -3262,10 +3291,11 @@ function openEventDetail(event, parentView = 'story_catalog') {
   if (!event?.event_id) return
   const id = String(event.event_id)
   const request = ++pendingEventNavigation
+  navigation.invalidate()
   const revision = navigation.getRevision()
   eventReadModelStatus.value = '正在读取活动详情…'
   loading.value = true
-  return loadEventDetail(id).then(detail => {
+  return prepareArchivePage('event_detail', loadEventDetail(id)).then(detail => {
     if (request !== pendingEventNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
     eventReadModelDetail.value = detail
     eventReadModelStatus.value = ''
@@ -4365,4 +4395,5 @@ onBeforeUnmount(() => {
 html, body { margin: 0; padding: 0; height: 100%; overflow-x: hidden; overflow-y: hidden; }
 *, *::before, *::after { box-sizing: border-box; }
 #app { overflow-x: hidden; }
+.archive-route-pending { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 1000; padding: 10px 18px; border: 1px solid #a1d8d4; border-radius: 20px; background: #f1fbfa; color: #205d5b; pointer-events: none; }
 </style>

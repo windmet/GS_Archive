@@ -26,8 +26,8 @@ function fixture({ network, decode, lipFetch, start } = {}) {
     async decodeAudioData(data) { stats.decoded++; return decode ? decode(data) : buffer },
     createBufferSource() { return { connect() {}, disconnect() {}, start() { if (start) start(); stats.started++ }, stop() {} } },
   }
-  const session = { disabled: false, ensureContext: () => ctx, unlockFromUserGesture: () => ctx, getBus: () => ({}), currentTime: () => stats.time, registerSource: () => () => {}, resume: async () => {}, dispose: async () => {} }
-  const cache = { async get(url, options) { stats.fetched++; return network ? network(url, options) : new ArrayBuffer(2048) } }
+  const session = { inspect: () => ({ buses: { voice: 1 } }), disabled: false, ensureContext: () => ctx, unlockFromUserGesture: () => ctx, getBus: () => ({}), currentTime: () => stats.time, registerSource: () => () => {}, resume: async () => {}, dispose: async () => {} }
+  const cache = { inspect: () => ({ entries: 0, bytes: 0, flights: 0 }), async get(url, options) { stats.fetched++; return network ? network(url, options) : new ArrayBuffer(2048) } }
   const fetch = lipFetch || (async () => new Response(JSON.stringify({ scales: [0.5] }), { headers: { 'content-type': 'application/json' } }))
   const factory = new Function('getLipSyncUrl','getVoiceUrlCandidates','deriveMainLipPathFromVoice','sampleLipCurve','isKnownDanglingStoryVoice','StoryAudioSession','compressedVoiceCache','window','fetch','console','waitForSignal','createLoadTimeout','attachOptionalResource', `${code};return useVoicePlayer`)
   const use = factory(x => `/assets/lipsync/${x}`, v => [`/assets/voice/${v}`], () => null, curve => curve.scales[0], () => false, class {}, cache, { setTimeout, clearTimeout }, fetch, silent, waitForSignal, createLoadTimeout, attachOptionalResource)

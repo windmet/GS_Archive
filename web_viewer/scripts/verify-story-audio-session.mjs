@@ -1,3 +1,6 @@
+import { setStoryRuntimePaused } from '../src/core/story-runtime/StoryPausePolicy.js'
+import { StoryClock } from '../src/core/story-runtime/StoryClock.js'
+import { EffectScheduler } from '../src/core/story-runtime/EffectScheduler.js'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { StoryAudioSession } from '../src/core/story-runtime/StoryAudioSession.js'
@@ -48,13 +51,14 @@ class FakeAudioContext {
     this.gains = []
     this.sources = []
     this.closeCount = 0
+    this.suspendCount = 0
   }
   createGain() { const gain = new FakeGain(); this.gains.push(gain); return gain }
   createBuffer() { return {} }
   createBufferSource() { const source = new FakeSource(); this.sources.push(source); return source }
   async decodeAudioData() { return {} }
   async resume() { this.state = 'running' }
-  async suspend() { this.state = 'suspended' }
+  async suspend() { this.suspendCount++; this.state = 'suspended' }
   async close() { this.state = 'closed'; this.closeCount++ }
 }
 
@@ -206,6 +210,8 @@ for (const phase of ['fetch', 'decode']) {
     const repeated = await player.prepareVoice({ step, scenarioId: 'story-a', includeLip: false })
     assert.equal(repeated.audioBuffer, first.audioBuffer, 'same story voice should reuse decoded audio')
     assert.equal(fetches, 1)
+    assert.equal(player.getDiagnostics().attempt.cache, 'decoded')
+    assert.equal(player.getDiagnostics().attempt.decoded.channels, 2)
     assert.equal(decodes, 1)
     await player.prepareVoice({ step, scenarioId: 'story-b', includeLip: false })
     assert.equal(fetches, 2, 'different story source must not reuse a voice with the same name')
@@ -393,6 +399,32 @@ try {
     '00_action_volume_down_sebgm',
   ])
 
+  // Exercise the same pause policy used by StoryViewer, with real scheduler/session.
+  const reasons = new Set()
+  const cues = new EffectScheduler({ clock: new StoryClock(), requestFrame: () => 1, cancelFrame: () => {} })
+  cues.start()
+  await audioManager.playBgm('continuous', 0)
+  await audioManager.playAmbient('continuous-room', 0)
+  const continuousSources = [...soakContext.sources]
+  for (let step = 0; step < 30; step++) {
+    await setStoryRuntimePaused({ reasons, cues, audioSession: soakSession }, 'buffering', true)
+    assert.equal(cues.inspect().running, false, 'waiting must freeze new cue scheduling')
+    assert.equal(reasons.has('buffering'), true)
+    assert.equal(soakContext.state, 'running')
+    await setStoryRuntimePaused({ reasons, cues, audioSession: soakSession }, 'buffering', false)
+    assert.equal(cues.inspect().running, true)
+  }
+  assert.equal(soakContext.suspendCount, 0, '30 waiting/playable transitions must not suspend BGM')
+  assert.ok(continuousSources.every(source => !source.stopped))
+  await setStoryRuntimePaused({ reasons, cues, audioSession: soakSession }, 'buffering', true)
+  await setStoryRuntimePaused({ reasons, cues, audioSession: soakSession }, 'visibility', true)
+  await setStoryRuntimePaused({ reasons, cues, audioSession: soakSession }, 'buffering', false)
+  assert.equal(cues.inspect().running, false, 'ready must not clear visibility pause')
+  assert.equal(soakContext.state, 'suspended')
+  await setStoryRuntimePaused({ reasons, cues, audioSession: soakSession }, 'visibility', false)
+  assert.equal(soakContext.state, 'running')
+  await cues.cancelAll()
+
   for (let index = 0; index < 100; index++) {
     await audioManager.playBgm(`bgm-${index % 3}`, 0.01)
     await audioManager.playAmbient(`ambient-${index % 4}`, 0.01, (index % 10) / 10)
@@ -564,6 +596,8 @@ const [appSource, homeSource, viewerSource, voicePlayerSource, audioManagerSourc
 assert.doesNotMatch(viewerSource, /prepareStepAudio:|voice-preparing|voicePending/, 'audio must not participate in scene readiness or frame hold')
 assert.match(viewerSource, /runtimeReadinessStatus\.value !== 'playable'/, 'scene loading must reject manual advance')
 assert.match(viewerSource, /new StoryAudioSession/)
+assert.match(viewerSource, /voice_player: voicePlayer.getDiagnostics\(\)/)
+assert.match(viewerSource, /setStoryRuntimePaused\(\{ reasons: runtimePauseReasons/)
 assert.match(viewerSource, /new AudioManager\(\{ audioSession: storyAudioSession \}\)/)
 assert.match(viewerSource, /audioSession: storyAudioSession/)
 assert.match(viewerSource, /const NO_AUDIO = URL_FLAGS\.get\('noAudio'\) === '1'/)

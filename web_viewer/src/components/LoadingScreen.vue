@@ -4,9 +4,9 @@
       <div class="loading-box" role="status" aria-live="polite">
         <div class="load-icon" aria-hidden="true">
           <svg viewBox="0 0 48 48" width="48" height="48">
-            <circle cx="24" cy="24" r="20" fill="none" stroke="#2a2a3a" stroke-width="3" />
+            <circle cx="24" cy="24" r="20" fill="none" stroke="#d4e9e8" stroke-width="3" />
             <circle
-              cx="24" cy="24" r="20" fill="none" stroke="#4488cc"
+              cx="24" cy="24" r="20" fill="none" stroke="#168d88"
               stroke-width="3" stroke-linecap="round"
               stroke-dasharray="30 100"
             />
@@ -49,7 +49,7 @@ const critical = computed(() => criticalPreloadProgress(props.status))
 .load-cancel:focus-visible { outline: 3px solid #66c8c0; outline-offset: 3px; }
 .loading-screen {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: #111; z-index: 99999;
+  background: #f3faf9; z-index: 99999;
   display: flex; align-items: center; justify-content: center;
 }
 .loading-box {
@@ -60,9 +60,9 @@ const critical = computed(() => criticalPreloadProgress(props.status))
   width: 64px; height: 64px;
   display: flex; align-items: center; justify-content: center;
 }
-.load-count { color: #ccc; font-size: 0.85rem; margin: 0; }
+.load-count { color: #466b6a; font-size: 0.85rem; margin: 0; }
 .load-label {
-  color: #888; font-size: 0.85rem; letter-spacing: 1px;
+  color: #205d5b; font-size: 0.85rem; letter-spacing: 1px;
 }
 .load-fade-enter-active, .load-fade-leave-active {
   transition: opacity 0.3s;

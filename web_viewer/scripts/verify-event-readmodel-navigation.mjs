@@ -15,9 +15,10 @@ function setup() {
   const jobs = new Map(), commits = [], errors = []
   let revision = 0, captured = 0
   const context = vm.createContext({
+    prepareArchivePage: (_view, data) => data,
     pendingEventNavigation: 0, eventReadModelStatus: { value: '' }, eventReadModelDetail: { value: null },
     currentEventId: { value: '' }, eventParentView: { value: '' }, loading: { value: false },
-    navigation: { getRevision: () => revision, isDisposed: () => false },
+    navigation: { invalidate: () => revision++, getRevision: () => revision, isDisposed: () => false },
     loadEventDetail: id => { const job = deferred(); jobs.set(id, job); return job.promise },
     captureDetailSource: () => { captured++ },
     commitView: view => { revision++; commits.push(view); context.loading.value = false },

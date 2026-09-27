@@ -113,11 +113,12 @@ const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 assert.match(app, /:back-label="labBackLabel"/, 'Lab back action exposes its actual archive destination')
 assert.match(app, /返回歌曲详情/, 'song-sourced Lab exit is named explicitly')
 const context = {
+  prepareArchivePage: (_view, data) => data,
   ...independent,
   pendingGashaNavigation: 0,
   gashaReadModelStatus: { value: '' }, gashaReadModelDetail: { value: null },
   loading: { value: false },
-  navigation: { getRevision: () => 0, isDisposed: () => false },
+  navigation: { invalidate: () => {}, getRevision: () => 0, isDisposed: () => false },
   loadGashaDetail: async id => ({ id, gasha: { id } }),
   captureDetailSource: () => { independent.detailSourceRoute.value = buildArchiveSourceQuery(independent.currentArchiveRoute()) },
   currentStoryCollection: { value: { sectionId: '604' } },

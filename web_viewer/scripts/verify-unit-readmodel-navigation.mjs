@@ -17,10 +17,11 @@ function setup() {
   const jobs = new Map(), commits = [], errors = []
   let revision = 0
   const context = vm.createContext({
+    prepareArchivePage: (_view, data) => data,
     pendingUnitNavigation: 0, unitReadModelStatus: { value: '' }, unitReadModelDetail: { value: null },
     loading: { value: false }, filterQuery: { value: 'old' }, currentCategoryId: { value: '' },
     currentCharacterId: { value: '001tom' }, currentArchiveUnitCode: { value: '' },
-    navigation: { getRevision: () => revision, isDisposed: () => false },
+    navigation: { invalidate: () => revision++, getRevision: () => revision, isDisposed: () => false },
     loadUnitCatalog: () => { const job = deferred(); jobs.set('catalog', job); return job.promise },
     loadUnitDetail: code => { const job = deferred(); jobs.set(code, job); return job.promise },
     captureDetailSource: () => {},

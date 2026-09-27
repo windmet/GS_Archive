@@ -15,12 +15,13 @@ function setup() {
   const jobs = new Map(), commits = [], errors = []
   let revision = 0, captured = 0, picker = ''
   const context = vm.createContext({
+    prepareArchivePage: (_view, data) => data,
     archiveBootstrap: { idols: [{ id: '001tom' }, { id: '002sht' }] },
     pendingWorkNavigation: 0, workReadModelStatus: { value: '' }, workReadModelDetail: { value: null },
     currentCharacterId: { value: '' }, currentStoryDomain: { value: '' }, currentStoryFile: { value: 'old.json' },
     currentWorkMode: { value: 'lines' }, currentStoryMode: { value: '' }, currentStorySection: { value: '' },
     loading: { value: false },
-    navigation: { getRevision: () => revision, isDisposed: () => false },
+    navigation: { invalidate: () => revision++, getRevision: () => revision, isDisposed: () => false },
     loadWorkDetail: id => { const job = deferred(); jobs.set(id, job); return job.promise },
     captureDetailSource: () => { captured++ }, openIdolPicker: target => { picker = target },
     commitView: view => { revision++; commits.push(view); context.loading.value = false },

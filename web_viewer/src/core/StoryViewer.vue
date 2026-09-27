@@ -203,6 +203,7 @@
 </template>
 
 <script setup>
+import { setStoryRuntimePaused } from './story-runtime/StoryPausePolicy.js'
 import { usePlayerImmersiveMode, claimMobileViewingOffer } from '../composables/usePlayerImmersiveMode.js'
 import { ref, shallowRef, computed, watch, onMounted, onBeforeUnmount, onUnmounted, reactive, nextTick, defineAsyncComponent } from 'vue'
 import AdvUI from '../components/AdvUI.vue'
@@ -963,16 +964,7 @@ function handleRuntimeReadinessChange(readiness) {
 }
 
 function setRuntimeSessionPaused(reason, paused) {
-  const wasPaused = runtimePauseReasons.size > 0
-  if (paused) runtimePauseReasons.add(reason)
-  else runtimePauseReasons.delete(reason)
-  const isPaused = runtimePauseReasons.size > 0
-  if (!wasPaused && isPaused) storyRuntimeCues.pause().catch(() => {})
-  if (wasPaused && !isPaused) storyRuntimeCues.resume().catch(() => {})
-  const audioTransition = paused
-    ? storyAudioSession.pause(reason)
-    : storyAudioSession.resume(reason)
-  audioTransition.catch(() => {})
+  setStoryRuntimePaused({ reasons: runtimePauseReasons, cues: storyRuntimeCues, audioSession: storyAudioSession }, reason, paused).catch(() => {})
 }
 
 function setPlaybackRate(rate) {
@@ -1004,6 +996,7 @@ function buildRuntimeDiagnostics({ includeProjector = false } = {}) {
       pause_reasons: [...runtimePauseReasons].sort(),
     },
     audio_session: storyAudioSession.inspect(),
+    voice_player: voicePlayer.getDiagnostics(),
     audio_manager: _audioManager.inspect(),
     playback: playbackController?.inspect() || null,
     step_effects: inspectStepSceneEffects(),

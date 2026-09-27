@@ -14,12 +14,13 @@ function setup() {
   const jobs = new Map(), commits = [], errors = []
   let revision = 0, captures = 0
   const context = vm.createContext({
+    prepareArchivePage: (_view, data) => data,
     pendingCollectionNavigation: 0, collectionReadModelStatus: { value: '' },
     collectionReadModelDetail: { value: null }, loading: { value: false },
     currentStoryDomain: { value: '' }, currentStorySection: { value: '' },
     currentStoryMode: { value: '' }, currentStoryFile: { value: '' },
     storyCollectionParentView: { value: '' },
-    navigation: { getRevision: () => revision, isDisposed: () => false },
+    navigation: { invalidate: () => revision++, getRevision: () => revision, isDisposed: () => false },
     loadCollectionDetail: (domain, section) => {
       const job = deferred(); jobs.set(`${domain}:${section}`, job); return job.promise
     },
