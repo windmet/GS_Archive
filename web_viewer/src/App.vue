@@ -105,7 +105,6 @@
         v-if="view === 'idol_detail'"
         :idol="currentIdolProfile"
         :stats="currentIdolStats"
-        :communication-status="idolReadModelDetail?.id === currentCharacterId ? 'ready' : 'idle'"
         :events="currentIdolEvents"
         :songs="currentIdolSongs"
         :idols="idolUnitData?.idols || bootstrapIdolSwitcher"
@@ -482,7 +481,6 @@
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../shared/deploy/ExternalStoryResourcePolicy.js'
 import { createLazyArchiveResource } from './data/lazyArchiveResource.js'
 import { buildUnitCatalog, resolveArchiveUnit, storiesForUnit, songsForUnit } from './data/unitPage.js'
-import { buildIdolProfile, buildIdolStats, eventsForIdol, songsForIdol } from './data/idolPage.js'
 import { buildGashaCatalog, buildGashaCategoryOptions, filterGashaCatalog, resolveGashaRelatedCards } from './data/gashaCatalog.js'
 import { filterArchiveCards } from './data/cardFilters.js'
 import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
@@ -1320,21 +1318,12 @@ const currentCardCharacterName = computed(() => {
   return idolSourceName(id) || 'Cards'
 })
 
-const currentIdolProfile = computed(() => idolReadModelDetail.value?.id === currentCharacterId.value
-  ? idolReadModelDetail.value.view.profile
-  : buildIdolProfile(currentCharacterId.value, idolUnitData.value, archiveManifestData.value))
-const currentIdolStats = computed(() => idolReadModelDetail.value?.id === currentCharacterId.value
-  ? idolReadModelDetail.value.view.stats
-  : buildIdolStats(currentCharacterId.value, {
-  cardIndex: cardIndexData.value, cardMap: cardMap.value,
-  episodes: idolEpisodeData.value, mobile: mobileArchiveData.value,
-}))
-const currentIdolEvents = computed(() => idolReadModelDetail.value?.id === currentCharacterId.value
-  ? idolReadModelDetail.value.view.events
-  : eventsForIdol(currentCharacterId.value, archiveManifestData.value))
-const currentIdolSongs = computed(() => idolReadModelDetail.value?.id === currentCharacterId.value
-  ? idolReadModelDetail.value.view.songs
-  : songsForIdol(currentCharacterId.value, songCatalogData.value))
+const currentIdolDetail = computed(() => idolReadModelDetail.value?.id === currentCharacterId.value
+  ? idolReadModelDetail.value.view : null)
+const currentIdolProfile = computed(() => currentIdolDetail.value?.profile || null)
+const currentIdolStats = computed(() => currentIdolDetail.value?.stats || {})
+const currentIdolEvents = computed(() => currentIdolDetail.value?.events || [])
+const currentIdolSongs = computed(() => currentIdolDetail.value?.songs || [])
 
 const readingState = ref({ status: 'idle', document: null, entries: [], error: '' })
 const readingPlaybackNotice = ref('')
@@ -2269,7 +2258,7 @@ function goArchiveBack() {
       const parent = songParentView.value
       currentSongId.value = ''
       songParentView.value = ''
-      if (parent === 'idol_detail' && currentIdolProfile.value) commitView('idol_detail')
+      if (parent === 'idol_detail' && archiveBootstrap.idols.some(idol => idol.id === currentCharacterId.value)) commitView('idol_detail')
       else if (parent === 'unit_detail' && currentArchiveUnit.value) commitView('unit_detail')
       else {
         commitView('song_catalog')
@@ -3491,7 +3480,7 @@ function goBackFromEvent() {
   else if (parent === 'external_story_resources') commitView('external_story_resources')
   else if (parent === 'card_detail' && currentCard.value) commitView('card_detail')
   else if (parent === 'unit_detail' && currentArchiveUnit.value) commitView('unit_detail')
-  else if (parent === 'idol_detail' && currentIdolProfile.value) commitView('idol_detail')
+  else if (parent === 'idol_detail' && archiveBootstrap.idols.some(idol => idol.id === currentCharacterId.value)) commitView('idol_detail')
   else return openStoryCatalog()
 }
 

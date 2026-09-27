@@ -84,4 +84,26 @@ function setup() {
   await new Promise(resolve => setImmediate(resolve))
   assert.equal(t.context.idolReadModelDetail.value, null, 'late detail must not replace a newer route')
 }
-console.log('Idol read-model navigation: latest selection, route supersession and retry passed')
+{
+  const detailStart = app.indexOf('const currentIdolDetail = computed(')
+  const detailEnd = app.indexOf('const readingState = ref(', detailStart)
+  assert.ok(detailStart >= 0 && detailEnd > detailStart)
+  const context = vm.createContext({
+    computed: fn => ({ get value() { return fn() } }),
+    currentCharacterId: { value: '001tom' },
+    idolReadModelDetail: { value: { id: '001tom', view: {
+      profile: { display_name: '冬馬' }, stats: { chats: 20 }, events: [{ event_id: 1 }], songs: [{ song: { song_code: 'one' } }],
+    } } },
+  })
+  const projections = vm.runInContext(`${app.slice(detailStart, detailEnd)}\n;[currentIdolProfile, currentIdolStats, currentIdolEvents, currentIdolSongs]`, context)
+  assert.equal(projections[0].value.display_name, '冬馬')
+  assert.equal(projections[1].value.chats, 20)
+  assert.equal(projections[2].value.length, 1)
+  assert.equal(projections[3].value.length, 1)
+  context.currentCharacterId.value = '002sht'
+  assert.equal(projections[0].value, null, 'previous idol profile must not appear while another leaf loads')
+  assert.equal(projections[1].value.chats, undefined)
+  assert.equal(projections[2].value.length, 0)
+  assert.equal(projections[3].value.length, 0)
+}
+console.log('Idol read-model navigation: latest selection, route supersession, retry and leaf-only projection passed')

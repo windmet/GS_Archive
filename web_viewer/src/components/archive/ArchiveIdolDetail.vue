@@ -46,10 +46,6 @@
           <ChevronRight :size="18" aria-hidden="true" />
         </button>
       </div>
-      <div v-if="communicationStatus === 'error'" class="communication-status" role="alert">
-        通信资料暂时无法载入，统计尚未确认。
-        <button type="button" @click="emit('retry-communication')">重试加载统计</button>
-      </div>
     </section>
 
     <section v-if="songs.length" class="idol-songs" aria-labelledby="idol-songs-title">
@@ -103,14 +99,13 @@ import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 const props = defineProps({
   idol: { type: Object, default: null },
   stats: { type: Object, default: () => ({}) },
-  communicationStatus: { type: String, default: 'idle' },
   events: { type: Array, default: () => [] },
   songs: { type: Array, default: () => [] },
   idols: { type: Array, default: () => [] },
   selectedIdol: { type: String, default: '' },
 })
 
-const emit = defineEmits(['open-domain', 'open-unit', 'open-event', 'open-song', 'select-idol', 'retry-communication'])
+const emit = defineEmits(['open-domain', 'open-unit', 'open-event', 'open-song', 'select-idol'])
 
 const facts = computed(() => [
   { label: '年龄', value: props.idol?.age ? `${props.idol.age}岁` : '' },
@@ -124,7 +119,7 @@ const facts = computed(() => [
 ])
 
 const communicationCount = (value, unit) => value == null
-  ? (props.communicationStatus === 'error' ? '载入失败' : '加载中…')
+  ? '尚未确认'
   : `${value} ${unit}`
 const related = computed(() => [
   { id: 'stories', label: '个人故事', count: communicationCount(props.stats.stories, '篇'), icon: BookOpenText },
@@ -215,9 +210,6 @@ function formatDate(timestamp) {
 .related-grid span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .related-grid strong { font-size: 0.78rem; }
 .related-grid small { color: #7b858e; font-size: 0.66rem; }
-.communication-status { margin-top: 12px; color: #8b3030; font-size: 0.75rem; }
-.communication-status button { margin-left: 8px; min-height: 36px; padding: 6px 10px; border: 1px solid currentColor; border-radius: 4px; background: #fff; color: inherit; cursor: pointer; }
-.communication-status button:focus-visible { outline: 3px solid #16978e; outline-offset: 2px; }
 .song-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .song-links button { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 58px; padding: 7px 10px; border: 1px solid #dfe4e8; border-radius: 6px; background: #fff; color: #26313a; cursor: pointer; text-align: left; }
 .song-links button:hover { border-color: #75cbc5; background: #f0fbfa; }
