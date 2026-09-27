@@ -106,20 +106,3 @@ export function buildUnitCardSummary(cardMap, memberCodes) {
     single_state: cards.filter(card => card.single_state).length,
   }
 }
-
-export function buildCardRarityTabs(cards) {
-  const order = ['SSR', 'SR', 'R', 'N']
-  const counts = new Map()
-  for (const card of cards) {
-    const rarity = card.rarity || 'CARD'
-    counts.set(rarity, (counts.get(rarity) || 0) + 1)
-  }
-  const tabs = [{ id: 'all', label: 'All', count: cards.length }]
-  for (const rarity of order) {
-    if (counts.has(rarity)) tabs.push({ id: rarity, label: rarity, count: counts.get(rarity) })
-  }
-  for (const [rarity, count] of [...counts.entries()].sort()) {
-    if (!order.includes(rarity)) tabs.push({ id: rarity, label: rarity, count })
-  }
-  return tabs
-}

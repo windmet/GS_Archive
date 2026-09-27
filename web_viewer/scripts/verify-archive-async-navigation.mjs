@@ -66,7 +66,7 @@ function setup() {
     returnTo: destination => context.commitView(destination), onError: (...args) => context.console.error(...args),
   })
   const production = vm.runInContext([
-    functionSource('function syncArchiveRoute(', 'const ensureIdolCommunicationData'),
+    functionSource('function syncArchiveRoute(', 'async function restoreVoicePreview('),
     functionSource('async function applyArchiveRoute(', 'function goHome('),
     functionSource('async function restoreVoicePreview(', 'async function applyArchiveRoute('),
     functionSource('function playbackEpisodes(', 'async function openEventCard('),

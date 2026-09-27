@@ -478,8 +478,7 @@
 
 <script setup>
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../shared/deploy/ExternalStoryResourcePolicy.js'
-import { buildGashaCategoryOptions, filterGashaCatalog } from './data/gashaCatalog.js'
-import { filterArchiveCards } from './data/cardFilters.js'
+import { buildCardRarityTabs, filterArchiveCards } from './data/cardFilters.js'
 import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
 import { buildCardVoicePreviewScenario, findCardVoiceCue } from './data/cardVoicePreview.js'
 import { createArchiveNavigationCoordinator } from './core/ArchiveNavigationCoordinator.js'
@@ -498,7 +497,6 @@ import ArchiveWelcome from './components/archive/ArchiveWelcome.vue'
 import { buildIdolReference } from './presentation/IdolReferencePresentation.js'
 import { resolveMobileArchiveUnit } from './core/mobileArchiveIdentity.js'
 import { readyEpisodeReading } from './data/IdolStoryReading.js'
-import { buildCardRarityTabs } from './data/archiveSelectors.js'
 import {
   clearArchiveUserPreferences,
   loadArchiveUserPreferences,
@@ -737,6 +735,7 @@ const unitReadModelStatus = ref('')
 let unitCatalogPromise = null
 let pendingUnitNavigation = 0
 const gashaReadModelCatalog = ref(null)
+const gashaCatalogFunctions = shallowRef(null)
 const gashaReadModelDetail = ref(null)
 const gashaReadModelStatus = ref('')
 let gashaCatalogPromise = null
@@ -1123,13 +1122,13 @@ const currentCardEventRelation = computed(() => cardReadModelDetail.value?.id ==
 const currentCardGashaRelation = computed(() => cardReadModelDetail.value?.id === currentCardId.value
   ? cardReadModelDetail.value.gashaRelation : null)
 const gashaCatalog = computed(() => gashaReadModelCatalog.value?.rows || [])
-const gashaCategoryOptions = computed(() => buildGashaCategoryOptions(
-  { meta: gashaReadModelCatalog.value?.summary }, gashaCatalog.value))
-const filteredGashas = computed(() => filterGashaCatalog(gashaCatalog.value, {
+const gashaCategoryOptions = computed(() => gashaCatalogFunctions.value?.buildGashaCategoryOptions(
+  { meta: gashaReadModelCatalog.value?.summary }, gashaCatalog.value) || [])
+const filteredGashas = computed(() => gashaCatalogFunctions.value?.filterGashaCatalog(gashaCatalog.value, {
   query: filterQuery.value,
   category: currentGashaCategory.value,
   idolSearchText: idolEntitySearchText,
-}))
+}) || [])
 const currentGasha = computed(() => gashaReadModelDetail.value?.id === currentGashaId.value
   ? gashaReadModelDetail.value.gasha
   : null)
@@ -3582,7 +3581,10 @@ async function loadGashaCatalog() {
   if (gashaReadModelCatalog.value) return gashaReadModelCatalog.value
   if (!gashaCatalogPromise) {
     gashaCatalogPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.gashas)
+      const [functions, index] = await Promise.all([
+        import('./data/gashaCatalog.js'),
+        readModelClient.load(archiveBootstrap.domains.gashas),
+      ])
       const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
       const rows = pages.flatMap(page => page.rows || [])
       if (rows.length !== index.count || rows.length !== archiveBootstrap.counts.primary_gashas ||
@@ -3590,6 +3592,7 @@ async function loadGashaCatalog() {
         rows.some(row => row.phase !== 'primary' || !row.detail))
         throw new Error('Gasha catalog count or identity mismatch')
       const catalog = { rows, summary: index.summary || {} }
+      gashaCatalogFunctions.value = functions
       gashaReadModelCatalog.value = catalog
       return catalog
     })().catch(error => { gashaCatalogPromise = null; throw error })
