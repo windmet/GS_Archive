@@ -13,7 +13,8 @@ export const INPUTS = {
  rawCharacterImagePromotions: 'data/assets/raw_character_image_promotions.json',
  storyCatalog: 'data/masterdata/story_catalog.json', storyPresentation: 'data/masterdata/story_presentation_index.json',
  songCatalog: 'data/song_catalog.json', songPlaybackAudio: 'data/song_playback_audio.json',
- songExperimentalAudio: 'data/song_experimental_audio.json', gashaIndex: 'data/masterdata/gasha_index.json',
+ songExperimentalAudio: 'data/song_experimental_audio.json', songTimelines: 'data/song_timelines/manifest.json',
+ gashaIndex: 'data/masterdata/gasha_index.json',
  eventIndex: 'data/masterdata/event_index.json', idolEpisode: 'data/masterdata/idol_episode_index.json',
  workStory: 'data/masterdata/work_story_index.json', archiveVerification: 'data/archive_verification.json',
  mobileArchive: 'data/masterdata/mobile_archive_index.json',
@@ -69,6 +70,8 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     modules[key] = await import(pathToFileURL(path.join(viewer, relative)).href);
   }
   for (const [key, value] of Object.entries(data)) modules.contracts.validateArchivePayload(key, value);
+  assert(data.songTimelines.schemaVersion === 1 && data.songTimelines.timeUnit === 'ms' &&
+    data.songTimelines.songs && typeof data.songTimelines.songs === 'object', 'Song timeline manifest contract mismatch');
   const homes = modules.home.buildArchiveHomeState(data.idolUnit, data.cardIndex, data.archiveManifest, data.costumeDictionary);
   const homeStats = [
     { label: '剧情文件', value: data.archiveVerification.scenarios?.parsed_files ?? data.archiveManifest.counts?.indexed_scenarios ?? 0 },
@@ -124,9 +127,17 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
   const mainDomain = modules.domainIdentity.buildMainStoryDomainIdentity(data.storyCatalog);
   const collections = modules.collections.buildStoryCollections(data.storyCatalog,stories,{birthdayDomain,extraDomain,idolEpisodes:data.idolEpisode});
   const unitCatalog = modules.unitPage.buildUnitCatalog(data.idolUnit,{manifest:data.archiveManifest,cardMap:originalCardMap,stories});
-  const songViews = Object.fromEntries(Object.values(data.songCatalog.songs).map(song => [song.song_code,
-    modules.songPresentation.buildSongPresentation(song,data.idolUnit,{playbackTrack:data.songPlaybackAudio.songs?.[song.song_code]||null,
-    audioExperiment:data.songExperimentalAudio.songs?.[song.song_code]||null,manifest:data.archiveManifest})]));
+  const songViews = Object.fromEntries(Object.values(data.songCatalog.songs).map(song => {
+    const stageCandidate = (data.songTimelines.songs[song.song_code] || [])
+      .find(entry => !entry.variant && ['choreography_candidate', 'special_single'].includes(entry.stageKind)) || null;
+    if (stageCandidate) assert(typeof stageCandidate.id === 'string' && stageCandidate.id &&
+      typeof stageCandidate.url === 'string' && stageCandidate.url.startsWith('/data/song_timelines/entries/'),
+      `Invalid stage candidate for ${song.song_code}`);
+    return [song.song_code, { ...modules.songPresentation.buildSongPresentation(song,data.idolUnit,{
+      playbackTrack:data.songPlaybackAudio.songs?.[song.song_code]||null,
+      audioExperiment:data.songExperimentalAudio.songs?.[song.song_code]||null,manifest:data.archiveManifest}),
+      stageCandidate: stageCandidate ? pick(stageCandidate,['id','stageKind']) : null }];
+  }));
   const cardContext = Object.fromEntries(cards.map(card => [card.resource_id,{
     ownerReference:modules.idolReference.buildIdolReference(card.character_id,data.idolUnit,data.archiveManifest,`card:${card.resource_id}`),
     assetStatus:data.archiveManifest.card_assets_by_id?.[card.resource_id]||null,
