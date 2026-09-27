@@ -146,8 +146,8 @@
         :category-options="gashaCategoryOptions"
         :category="currentGashaCategory"
         :total-gashas="gashaCatalog.length"
-        :announcement-count="gashaReadModelCatalog?.summary?.gasha_count || gashaIndexData?.meta?.gasha_count || 0"
-        :pickup-count="gashaReadModelCatalog?.summary?.derived_pickup_count || gashaIndexData?.meta?.derived_pickup_count || 0"
+        :announcement-count="gashaReadModelCatalog?.summary?.gasha_count || 0"
+        :pickup-count="gashaReadModelCatalog?.summary?.derived_pickup_count || 0"
         @select="openGasha"
         @update:category="updateArchiveFilter('currentGashaCategory', $event)"
       />
@@ -480,7 +480,7 @@
 <script setup>
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../shared/deploy/ExternalStoryResourcePolicy.js'
 import { createLazyArchiveResource } from './data/lazyArchiveResource.js'
-import { buildGashaCatalog, buildGashaCategoryOptions, filterGashaCatalog, resolveGashaRelatedCards } from './data/gashaCatalog.js'
+import { buildGashaCategoryOptions, filterGashaCatalog } from './data/gashaCatalog.js'
 import { filterArchiveCards } from './data/cardFilters.js'
 import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
 import { buildCardVoicePreviewScenario, findCardVoiceCue } from './data/cardVoicePreview.js'
@@ -1219,9 +1219,9 @@ const currentCardEventRelation = computed(() => cardReadModelDetail.value?.id ==
   ? cardReadModelDetail.value.eventRelation : null)
 const currentCardGashaRelation = computed(() => cardReadModelDetail.value?.id === currentCardId.value
   ? cardReadModelDetail.value.gashaRelation : null)
-const gashaCatalog = computed(() => gashaReadModelCatalog.value?.rows || buildGashaCatalog(gashaIndexData.value))
+const gashaCatalog = computed(() => gashaReadModelCatalog.value?.rows || [])
 const gashaCategoryOptions = computed(() => buildGashaCategoryOptions(
-  gashaReadModelCatalog.value ? { meta: gashaReadModelCatalog.value.summary } : gashaIndexData.value, gashaCatalog.value))
+  { meta: gashaReadModelCatalog.value?.summary }, gashaCatalog.value))
 const filteredGashas = computed(() => filterGashaCatalog(gashaCatalog.value, {
   query: filterQuery.value,
   category: currentGashaCategory.value,
@@ -1229,7 +1229,7 @@ const filteredGashas = computed(() => filterGashaCatalog(gashaCatalog.value, {
 }))
 const currentGasha = computed(() => gashaReadModelDetail.value?.id === currentGashaId.value
   ? gashaReadModelDetail.value.gasha
-  : resolveGashaRelatedCards(gashaIndexData.value?.by_id?.[currentGashaId.value] || null, gashaIndexData.value))
+  : null)
 const currentEventProjection = computed(() => eventReadModelDetail.value?.id === currentEventId.value
   ? eventReadModelDetail.value.view : null)
 const currentEvent = computed(() => currentEventProjection.value?.event || null)
