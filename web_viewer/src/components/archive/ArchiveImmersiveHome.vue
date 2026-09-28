@@ -4,6 +4,7 @@
     class="immersive-home"
     :class="{ 'is-focus-mode': focusMode, 'has-settings': settingsOpen }"
     :data-home-mode="homeMode"
+    :data-home-stage-ready="stageReady ? '1' : '0'"
     :data-home-cue="activeCue.cue"
     :data-home-voice="activeCue.voice"
     :data-home-costume="activeCostume?.modelId || ''"
@@ -24,8 +25,9 @@
       :fallback-bg="selectedBackground"
       :manage-background="true"
       :debug-controls="false"
-      @ready="stageReady = true"
-      @error="stageError = true"
+      @ready="handleStageReady"
+      @scene-ready="handleSceneReady"
+      @error="handleStageError"
     />
     <button
       class="stage-tap-target"
@@ -411,6 +413,34 @@ const voicePlayer = useVoicePlayer({
   canAnimateStage: () => props.homeMode === 'spine',
 })
 
+async function handleStageReady() {
+  // Child ready fires during mount, before Vue necessarily assigns its ref.
+  await nextTick()
+  if (homeDisposed || props.homeMode !== 'spine' || !spineStageRef.value?.manager) return
+  stageReady.value = true
+  stageError.value = false
+  // Audio can start while the async renderer is still loading. Reattach the
+  // current audio clock. Scene-ready repeats this after actor replacement.
+  if (playing.value) voicePlayer.setTalking(true)
+}
+
+function handleStageError() {
+  stageReady.value = false
+  stageError.value = true
+}
+
+function handleSceneReady(step) {
+  if (homeDisposed || props.homeMode !== 'spine' || step !== renderStep.value) return
+  if (playing.value) voicePlayer.setTalking(true)
+}
+
+// defineAsyncComponent forwards the exposed ref after the child's mount/ready
+// event. Cover both arrival orders rather than assuming one nextTick is enough.
+watch(spineStageRef, stage => {
+  if (stage?.manager) handleStageReady()
+  else stageReady.value = false
+}, { flush: 'post' })
+
 const homeCueRuntime = useStoryRuntimeCues({
   compiledData, currentStepIndex, spineStageRef,
   getStageStep: () => renderStep.value,
@@ -608,6 +638,8 @@ function handleKeydown(event) {
 watch(() => props.homeMode, mode => {
   stageTapAbort?.abort()
   stopVoice(); costumePickerOpen.value = false
+  stageReady.value = false
+  stageError.value = false
   queueNextStageVoice()
   if (mode === 'card') loadCards()
   else if (preferences.background !== 'cue' || settingsOpen.value) loadBackgroundCatalogue()

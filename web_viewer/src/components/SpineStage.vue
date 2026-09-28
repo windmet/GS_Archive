@@ -119,7 +119,7 @@ const props = defineProps({
   nowMilliseconds: { type: Function, default: undefined },
 })
 
-const emit = defineEmits(['ready', 'error'])
+const emit = defineEmits(['ready', 'scene-ready', 'error'])
 
 const viewportRef = ref(null)
 const containerRef = ref(null)
@@ -1052,6 +1052,9 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
   applyCharaOverrides(manager)
 
   projectedStep = step
+  // Manager creation is not actor readiness: spawn may clear queued talking.
+  // Consumers can now bind the current audio clock after the real projection.
+  emit('scene-ready', step)
 
   syncBoundsSnapshot(step)
   if (debugMode.value) syncStates()

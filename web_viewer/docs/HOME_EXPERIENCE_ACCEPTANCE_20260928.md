@@ -43,7 +43,7 @@ Browser plugin not available（本会话未提供 browser 技能），使用已�
 | 目录注入 503 → 重试 | 保留台词及重试按钮；恢复后加载真实横图 |
 | 1024×768 横屏、换偶像 | 横图正常；卡面与姓名同步切到冬马 |
 
-主流程 20 项、补充边界 4 项通过。未发现应用异常；控制台保留以下解释过的限制，不能写成“零错误”：切换人物模式后，神楽麗下一句的两条可选 lipsync 查找路径返回 404（`adxlip/008rei/2_2_008_01/2_2_008_01_00_09.json` 和 `adxlip/main/2_2_008/2_2_008_01/2_2_008_01_00/2_2_008_01_00_09.json`），本地资源确实不存在。另有 Chromium GPU ReadPixels 性能提示及 Pixi Spine update/tint 弃用提示；画面正常。card 模式不准备 lipsync。
+主流程 20 项、补充边界 4 项通过。未发现应用异常；控制台保留以下解释过的限制，不能写成“零错误”：切换人物模式后，神楽麗下一句的两条可选 lipsync 查找路径返回 404（`adxlip/008rei/2_2_008_01/2_2_008_01_00_09.json` 和 `adxlip/main/2_2_008/2_2_008_01/2_2_008_01_00/2_2_008_01_00_09.json`），**后续纠正：这些文件存在于配置的外部 lipsync 目录，之前仅检查 public 且临时预览服务漏了映射，不能据此认定素材缺失。映射和 Home 就绪竞态的修复见 [口型验收补充](HOME_LIPSYNC_ACCEPTANCE_20260928.md)。**另有 Chromium GPU ReadPixels 性能提示及 Pixi Spine update/tint 弃用提示；画面正常。card 模式不准备 lipsync。
 
 QA 脚本、JSON、截图位于仓库外 `E:/Web_build/SideM_Archived/.analysis/home-experience-qa/`：`acceptance.mjs`、`edge-cases.mjs`、`results.json`、`edge-results.json`、`card-desktop.png`、`focus-desktop.png`、`spine-desktop.png`、`card-mobile.png`、`card-tablet.png`。截图已实际查看确认。
 
