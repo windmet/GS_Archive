@@ -21,6 +21,9 @@
       <ArchivePortalLauncher
         v-if="view === 'portal'"
         :preferred-reference="preferredArchiveIdolReference"
+        :idols="archivePickerIdols"
+        :preference-notice="userPreferenceNotice"
+        @save-preferred="savePreferredIdol"
         :loading-section="homeEntryStatus || legacyEntryStatus"
         :can-go-back="Boolean(portalFrom)"
         @navigate="navigateArchiveSection"
@@ -33,6 +36,7 @@
         v-if="view === 'welcome' || view === 'idol_picker' || (view === 'home' && !homeSelectedId)"
         :idols="view === 'idol_picker' && currentPickTarget !== 'home' ? archivePickerIdols : archiveHomeIdols"
         :preferences="userPreferences"
+        :preferred-idols="archivePickerIdols"
         :notice="userPreferenceNotice"
         :data-ready="archiveBootstrap.idols.length > 0"
         :selection-only="view === 'home' || view === 'idol_picker'"
@@ -881,7 +885,7 @@ const archivePickerIdols = computed(() => archiveBootstrap.idols)
 const archiveHomeHighlights = computed(() => homeReadModelIndex.value?.highlights || [])
 const validArchiveHomeIdols = computed(() => archiveHomeIdols.value.map(idol => idol.id))
 const preferredArchiveIdol = computed(() =>
-  archiveHomeIdols.value.find(idol => idol.id === userPreferences.value.preferredIdol) || null)
+  archivePickerIdols.value.find(idol => idol.id === userPreferences.value.preferredIdol) || null)
 const preferredArchiveIdolReference = computed(() => preferredArchiveIdol.value
   ? buildIdolReference(preferredArchiveIdol.value.id, bootstrapIdolDictionary,
     bootstrapMembership, 'portal:preferred')
@@ -1917,7 +1921,8 @@ function chooseImmersiveIdol({ idolCode, rememberStartup = true, setPreferred = 
 }
 
 function savePreferredIdol(idolCode) {
-  const preferredIdol = validArchiveHomeIdols.value.includes(idolCode) ? idolCode : null
+  if (idolCode && !archivePickerIdols.value.some(idol => idol.id === idolCode)) return
+  const preferredIdol = idolCode || null
   storeUserPreferences({ preferredIdol })
 }
 

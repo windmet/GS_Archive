@@ -1,51 +1,34 @@
-const STORAGE_KEY = 'sidem:archive-home-preferences'
-const SCHEMA_VERSION = 1
-
+export const ARCHIVE_HOME_PREFERENCES_KEY = 'sidem:archive-home-preferences'
+const SCHEMA_VERSION = 2
 export const DEFAULT_ARCHIVE_HOME_PREFERENCES = Object.freeze({
-  theme: 'day',
-  background: 'cue',
-  dialogueOrder: 'sequential',
-  autoVoice: false,
-  focusMode: false,
-  interfaceOpacity: 88,
+  background: 'cue', dialogueOrder: 'sequential', autoVoice: false, focusMode: false, interfaceOpacity: 88,
 })
-
-function normalizePreferences(value = {}) {
+export function normalizeArchiveHomePreferences(value = {}) {
+  value ||= {}
   return {
-    theme: value.theme === 'night' ? 'night' : 'day',
-    background: typeof value.background === 'string' && value.background ? value.background : 'cue',
+    background: typeof value.background === 'string' && /^bg[a-z0-9_]+$/i.test(value.background) ? value.background : 'cue',
     dialogueOrder: value.dialogueOrder === 'random' ? 'random' : 'sequential',
-    autoVoice: value.autoVoice === true,
-    focusMode: value.focusMode === true,
+    autoVoice: value.autoVoice === true, focusMode: value.focusMode === true,
     interfaceOpacity: Math.min(100, Math.max(68, Number(value.interfaceOpacity) || 88)),
   }
 }
-
-export function loadArchiveHomePreferences() {
+export function loadArchiveHomePreferences(storage) {
   try {
-    const stored = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || 'null')
-    if (!stored || stored.version !== SCHEMA_VERSION) return { ...DEFAULT_ARCHIVE_HOME_PREFERENCES }
-    return normalizePreferences(stored.preferences)
-  } catch {
-    return { ...DEFAULT_ARCHIVE_HOME_PREFERENCES }
-  }
+    const target = storage === undefined ? globalThis.localStorage : storage
+    const stored = JSON.parse(target?.getItem(ARCHIVE_HOME_PREFERENCES_KEY) || 'null')
+    if (![1, SCHEMA_VERSION].includes(stored?.version)) return { ...DEFAULT_ARCHIVE_HOME_PREFERENCES }
+    const result = normalizeArchiveHomePreferences(stored.preferences)
+    // Remove v1's theme field without clearing unrelated audio, costume or startup settings.
+    if (stored.version === 1 || Object.hasOwn(stored.preferences || {}, 'theme')) saveArchiveHomePreferences(result, target)
+    return result
+  } catch { return { ...DEFAULT_ARCHIVE_HOME_PREFERENCES } }
 }
-
-export function saveArchiveHomePreferences(preferences) {
-  const normalized = normalizePreferences(preferences)
+export function saveArchiveHomePreferences(preferences, storage) {
+  const normalized = normalizeArchiveHomePreferences(preferences)
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      version: SCHEMA_VERSION,
-      preferences: normalized,
-    }))
-  } catch {
-    // Keep the normalized in-memory value usable when storage is denied.
-  }
+    const target = storage === undefined ? globalThis.localStorage : storage
+    target?.setItem(ARCHIVE_HOME_PREFERENCES_KEY, JSON.stringify({ version: SCHEMA_VERSION, preferences: normalized }))
+  } catch { /* Keep session preferences usable when persistence is denied. */ }
   return normalized
 }
-
-export function resetArchiveHomePreferences() {
-  const defaults = { ...DEFAULT_ARCHIVE_HOME_PREFERENCES }
-  saveArchiveHomePreferences(defaults)
-  return defaults
-}
+export function resetArchiveHomePreferences(storage) { return saveArchiveHomePreferences(DEFAULT_ARCHIVE_HOME_PREFERENCES, storage) }

@@ -138,10 +138,9 @@ const mobileNavigation = [
 .archive-shell.is-portal { --archive-topbar: 0px; }
 .archive-shell.is-portal .archive-topbar { display: none; }
 .archive-shell.is-portal .archive-content { grid-row: 1 / 3; }
-:global(html[data-archive-home-theme="day"]) .archive-shell.is-home .archive-sidebar { background: #102632; }
-:global(html[data-archive-home-theme="day"]) .archive-shell.is-home .archive-nav button.active { background: rgba(33,183,197,.13); }
-:global(html[data-archive-home-theme="day"]) .archive-shell.is-home .archive-nav button.active::before { background: #21b7c5; }
-:global(html[data-archive-home-theme="night"]) .archive-shell.is-home .archive-sidebar { background: #101b27; }
+.archive-shell.is-home .archive-sidebar { background: #183548; }
+.archive-shell.is-home .archive-nav button.active { background: rgba(33,183,197,.13); }
+.archive-shell.is-home .archive-nav button.active::before { background: #21b7c5; }
 .archive-sidebar {
   grid-row: 1 / -1;
   background: #17212b;
