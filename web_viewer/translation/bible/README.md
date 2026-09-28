@@ -5,6 +5,11 @@
 Producer 姓名语义、人物口癖或译法规则。不要把本目录直接作为翻译模型的
 `verified` Bible 使用。
 
+7 张游戏屏幕的称呼形式与本地 RAW 原文逐句核对，见
+[Producer 人称称呼进一步核实](../../docs/PRODUCER_ADDRESSING_EXACT_AUDIT_20260928.md)。
+其中十黑点与固定字面称呼可以在同一事件的不同分集并存；截图到具体来源版本的
+最终绑定、十黑点显示算法和中文译法仍未批准。
+
 从 `web_viewer` 运行：
 
 ```powershell
