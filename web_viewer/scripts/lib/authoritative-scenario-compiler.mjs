@@ -32,11 +32,13 @@ function projectEvidence(evidence, fallback = {}, { confidence = null, parserRul
 
 function projectDialogue(dialogue) {
   if (!dialogue) return undefined
+  const sourceText = String(dialogue.source_text ?? '')
   const output = {
     speaker_identity: clone(requireValue(dialogue.speaker_identity, 'dialogue.speaker_identity')),
-    source_text: String(dialogue.source_text ?? ''),
-    text_ref: clone(requireValue(dialogue.text_ref, 'dialogue.text_ref')),
+    source_text: sourceText,
   }
+  if (sourceText) output.text_ref = clone(requireValue(dialogue.text_ref, 'dialogue.text_ref'))
+  else if (dialogue.text_ref) output.text_ref = clone(dialogue.text_ref)
   if (dialogue.speaker_text_ref) {
     output.speaker_source_text = String(dialogue.speaker_source_text ?? dialogue.speaker ?? '')
     output.speaker_text_ref = clone(dialogue.speaker_text_ref)
@@ -107,7 +109,9 @@ function projectStep(step) {
   for (const key of ['episode_index', 'episode_part', 'chara_id', 'auto_advance', 'duration', 'hide_dialogue', 'lipSync']) {
     if (key in step) output[key] = clone(step[key])
   }
-  if (step.dialogue) output.dialogue = projectDialogue(step.dialogue)
+  if (step.dialogue && (step.dialogue.source_text || step.dialogue.text_ref || step.dialogue.speaker_text_ref)) {
+    output.dialogue = projectDialogue(step.dialogue)
+  }
   if (Array.isArray(step.options)) output.options = step.options.map(projectOption)
   if (step.choice_id) output.choice_id = step.choice_id
   if (step.text_time) output.text_time = projectTextUnit(step.text_time, 'text_time')
@@ -204,7 +208,7 @@ export function compareAuthoritativeRuntimeProjection(input, authoritative) {
     }
     if (!isDeepStrictEqual(clone(comparableBefore), clone(comparableAfter))) differences.push(`steps[${index}]`)
     const textBefore = {
-      dialogue: before.dialogue ? {
+      dialogue: before.dialogue && (before.dialogue.source_text || before.dialogue.text_ref || before.dialogue.speaker_text_ref) ? {
         speaker_identity: before.dialogue.speaker_identity,
         speaker_source_text: before.dialogue.speaker_text_ref
           ? String(before.dialogue.speaker_source_text ?? before.dialogue.speaker ?? '')

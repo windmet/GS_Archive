@@ -75,7 +75,24 @@ def run(raw_root: Path, output: Path) -> dict:
                 continue
             try:
                 raw = json.loads(record["payload"])
-                compiled = ScenarioCompiler(raw, bundle_id, part, record["container_path"]).compile(
+                owner = Path(record["container_path"]).parent.name
+                owner_file = ROOT / "public" / "data" / "compiled" / f"{owner}_{part}.json"
+                episode_file = ROOT / "public" / "data" / "compiled" / "episodes" / f"{part}.json"
+                # Legacy mounted files already distinguish same-named RAW parts
+                # under different owner containers. Reuse that identity; group
+                # episodes retain their existing bundle-level text catalog ID.
+                if owner_file.is_file():
+                    scenario_id = owner_file.stem
+                    identity_basis = "mounted-owner-part"
+                elif episode_file.is_file():
+                    scenario_id = bundle_id
+                    identity_basis = "mounted-group-episode"
+                else:
+                    raise ValueError(f"no mounted compiled identity for {record['container_path']}")
+                entry.update(candidate_scenario_id=scenario_id, identity_basis=identity_basis)
+                if owner_file.is_file() and episode_file.is_file():
+                    entry["also_mounted_as_episode"] = True
+                compiled = ScenarioCompiler(raw, scenario_id, part, record["container_path"]).compile(
                     output_contract="authoritative",
                     source={"raw_path": f"RAW/asset/{bundle.name}", "raw_hash": bundle_hash},
                     compiler_version="local-raw-text-audit-v1",
@@ -98,9 +115,15 @@ def run(raw_root: Path, output: Path) -> dict:
                 encoded = (json.dumps(compiled, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
                 target.write_bytes(encoded)
                 seen_units.update({unit_id: f"{bundle.name}/{part}" for unit_id in ids})
-                entry.update(status="strict-v2-candidate", candidate=str(relative).replace("\\", "/"),
+                invalid_targets = [step["step_id"] for step in compiled["steps"]
+                                   for option in step.get("options", [])
+                                   if option.get("target_step_id", 0) < 1]
+                entry.update(status="schema-invalid-choice-target" if invalid_targets else "strict-v2-candidate",
+                             candidate=str(relative).replace("\\", "/"),
                              candidate_sha256=digest(encoded), steps=len(compiled["steps"]),
                              text_units=len(ids))
+                if invalid_targets:
+                    entry["invalid_choice_steps"] = sorted(set(invalid_targets))
             except Exception as error:
                 entry.update(status="compile-failed", error=str(error))
         if bundle_no % 100 == 0:
@@ -118,6 +141,7 @@ def export_ledger(output: Path, target: Path) -> None:
     """Commit-safe index: source identities and outcomes, never RAW text/candidates."""
     ledger = json.loads((output / "ledger.json").read_text("utf-8"))
     keep = ("bundle", "bundle_sha256", "container_path", "part", "payload_sha256",
+            "candidate_scenario_id", "identity_basis", "also_mounted_as_episode", "invalid_choice_steps",
             "status", "candidate", "candidate_sha256", "steps", "text_units", "error")
     compact = {"schema_version": 1, "purpose": ledger["purpose"],
                "publication_status": ledger["publication_status"],

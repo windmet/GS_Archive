@@ -130,7 +130,13 @@
     },
     "dialogue": {
       "type": "object",
-      "required": ["speaker_identity", "source_text", "text_ref"],
+      "required": ["speaker_identity", "source_text"],
+      "anyOf": [
+        { "required": ["text_ref"], "properties": { "text_ref": { "$ref": "#/$defs/textRef" } } },
+        { "required": ["speaker_text_ref"], "properties": { "speaker_text_ref": { "$ref": "#/$defs/textRef" } } }
+      ],
+      "if": { "properties": { "source_text": { "type": "string", "minLength": 1 } } },
+      "then": { "required": ["text_ref"], "properties": { "text_ref": { "$ref": "#/$defs/textRef" } } },
       "properties": {
         "speaker_identity": { "$ref": "#/$defs/speakerIdentity" },
         "speaker_source_text": { "type": "string" },
@@ -182,6 +188,9 @@
       "required": ["id"],
       "properties": {
         "id": { "type": "string", "minLength": 1 },
+        "raw_id": { "type": "string" },
+        "speaker": { "type": "string" },
+        "side": { "type": "string" },
         "chara_id": { "type": ["string", "null"] },
         "speaker_identity": { "$ref": "#/$defs/speakerIdentity" }
       },

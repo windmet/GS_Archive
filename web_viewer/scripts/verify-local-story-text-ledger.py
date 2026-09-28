@@ -31,6 +31,7 @@ def verify(output: Path) -> dict:
     if ledger["schema_version"] != 1 or ledger["publication_status"] != "candidate-only":
         raise ValueError("Unexpected ledger contract")
     raw_asset = Path(ledger["raw_root"]) / "asset"
+    compiled_root = Path(__file__).resolve().parents[1] / "public" / "data" / "compiled"
     bundles = sorted(raw_asset.glob("scenario_*.unity3d"))
     if len(bundles) != ledger["bundles"]:
         raise ValueError("RAW bundle count changed")
@@ -47,7 +48,7 @@ def verify(output: Path) -> dict:
             raise ValueError(f"Source mismatch: {bundle}")
         covered.add(bundle)
         statuses[entry["status"]] += 1
-        if entry["status"] != "strict-v2-candidate":
+        if entry["status"] not in ("strict-v2-candidate", "schema-invalid-choice-target"):
             if "candidate" in entry:
                 raise ValueError(f"Noncandidate has output: {bundle}")
             continue
@@ -61,9 +62,27 @@ def verify(output: Path) -> dict:
         scenario = json.loads(path.read_text("utf-8"))
         if scenario.get("schema_version") != 2 or scenario.get("runtime_contract") != "story-runtime-v2":
             raise ValueError(f"Not strict v2: {relative}")
+        if scenario.get("scenario_id") != entry.get("candidate_scenario_id"):
+            raise ValueError(f"Candidate scenario identity changed: {relative}")
+        if entry.get("identity_basis") == "mounted-owner-part":
+            owner = Path(entry["container_path"]).parent.name
+            if entry["candidate_scenario_id"] != f"{owner}_{entry['part']}" or not (compiled_root / f"{owner}_{entry['part']}.json").is_file():
+                raise ValueError(f"Mounted owner identity unavailable: {relative}")
+        elif entry.get("identity_basis") == "mounted-group-episode":
+            if not (compiled_root / "episodes" / f"{entry['part']}.json").is_file():
+                raise ValueError(f"Mounted group episode unavailable: {relative}")
+        else:
+            raise ValueError(f"Unknown identity basis: {relative}")
         if scenario["source"] != {"raw_path": f"RAW/asset/{bundle}", "raw_hash": source_hashes[bundle]}:
             raise ValueError(f"Candidate provenance changed: {relative}")
         refs = list(text_refs(scenario))
+        invalid_steps = sorted({step["step_id"] for step in scenario["steps"]
+                                for option in step.get("options", [])
+                                if option.get("target_step_id", 0) < 1})
+        if (entry["status"] == "schema-invalid-choice-target") != bool(invalid_steps):
+            raise ValueError(f"Choice target status changed: {relative}")
+        if invalid_steps != entry.get("invalid_choice_steps", []):
+            raise ValueError(f"Invalid choice steps changed: {relative}")
         ids = [ref["unit_id"] for ref in refs]
         if len(ids) != entry["text_units"] or len(scenario["steps"]) != entry["steps"]:
             raise ValueError(f"Candidate counts changed: {relative}")
