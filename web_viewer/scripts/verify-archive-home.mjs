@@ -78,18 +78,17 @@ const context = vm.createContext({
   buildIdolReference: (_id, dictionary, membership) => ({ dictionary, membership }),
 })
 const projections = vm.runInContext(`${appSource.slice(projectionStart, projectionEnd)}\n;[
-  archiveStats, archiveHomeIdols, archiveHomeHighlights, preferredArchiveIdolReference
+  archiveStats, archiveHomeIdols, preferredArchiveIdolReference
 ]`, context)
 assert.equal(projections[0].value.length, 0)
 assert.deepEqual(Array.from(projections[1].value, idol => idol.id), ['001tom'])
-assert.equal(projections[2].value.length, 0)
-assert.equal(projections[3].value.dictionary.source, 'bootstrap-idols')
+assert.equal(projections[2].value.dictionary.source, 'bootstrap-idols')
 context.homeReadModelIndex.value = {
   stats: [{ label: '剧情文件', value: 12 }],
   idols: [{ id: '001tom', name: '冬馬' }], highlights: [{ event_id: 1 }],
 }
 assert.equal(projections[0].value[0].value, 12)
 assert.equal(projections[1].value[0].name, '冬馬')
-assert.equal(projections[2].value[0].event_id, 1)
+assert.doesNotMatch(immersiveHomeSource, /home-highlight|activeHighlight|stepHighlight/)
 
 console.log(`Archive home state: ${stats.idols} idols, ${stats.cues} cues, ${stats.models} models, ${highlights.length} highlights; standalone background owner and read-model projection verified`)

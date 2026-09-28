@@ -1,14 +1,15 @@
 export const ARCHIVE_HOME_PREFERENCES_KEY = 'sidem:archive-home-preferences'
 const SCHEMA_VERSION = 2
 export const DEFAULT_ARCHIVE_HOME_PREFERENCES = Object.freeze({
-  background: 'cue', dialogueOrder: 'sequential', autoVoice: false, focusMode: false, interfaceOpacity: 88,
+  background: 'cue', dialogueOrder: 'sequential', autoVoice: false, cardKey: '', interfaceOpacity: 88,
 })
 export function normalizeArchiveHomePreferences(value = {}) {
   value ||= {}
   return {
     background: typeof value.background === 'string' && /^bg[a-z0-9_]+$/i.test(value.background) ? value.background : 'cue',
     dialogueOrder: value.dialogueOrder === 'random' ? 'random' : 'sequential',
-    autoVoice: value.autoVoice === true, focusMode: value.focusMode === true,
+    autoVoice: value.autoVoice === true,
+    cardKey: /^[a-z0-9_]+:(base|p)$/.test(value.cardKey || '') ? value.cardKey : '',
     interfaceOpacity: Math.min(100, Math.max(68, Number(value.interfaceOpacity) || 88)),
   }
 }
@@ -32,3 +33,8 @@ export function saveArchiveHomePreferences(preferences, storage) {
   return normalized
 }
 export function resetArchiveHomePreferences(storage) { return saveArchiveHomePreferences(DEFAULT_ARCHIVE_HOME_PREFERENCES, storage) }
+
+export function resolveHomeCard(entries, idolCode, cardKey) {
+  const cards = entries.filter(entry => entry.idolCode === idolCode)
+  return cards.find(entry => entry.id === cardKey) || cards.slice().sort((a, b) => a.id.localeCompare(b.id))[0] || null
+}

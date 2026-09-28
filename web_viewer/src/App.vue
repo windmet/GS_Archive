@@ -8,6 +8,7 @@
       :model-value="filterQuery"
       @update:model-value="updateArchiveFilter('filterQuery', $event)"
       :active-section="archiveSection"
+      :home-focus="view === 'home' && homeFocus"
       :title="archiveTitle"
       :searchable="archiveSearchable"
       :search-placeholder="archiveSearchPlaceholder"
@@ -43,7 +44,6 @@
         :can-cancel="view === 'idol_picker' || (view === 'welcome' && Boolean(detailSourceRoute))"
         :target-label="idolPickerLabel"
         @cancel="cancelWelcomeOrPicker"
-        @choose-light="chooseLightStartup"
         @choose-later="chooseStartupLater"
         @choose-idol="chooseImmersiveIdol"
         @save-preferred="savePreferredIdol"
@@ -57,13 +57,14 @@
         v-model:selected-costume="homeSelectedCostume"
         :no-audio="NO_AUDIO"
         :idols="archiveHomeIdols"
-        :highlights="archiveHomeHighlights"
+        :home-mode="userPreferences.homeMode === 'card' ? 'card' : 'spine'"
+        @update:home-mode="storeUserPreferences({ homeMode: $event })"
+        @focus-change="homeFocus = $event"
         :stats="archiveStats"
         @open-story="navigateArchiveSection('stories')"
         @open-cards="openHomeCards"
         @open-idol="openHomeIdol"
         @open-chat="openHomeChat"
-        @open-event="openHomeEvent"
       />
 
       <ArchiveIdolGrid
@@ -763,6 +764,7 @@ const mobileUnitOptions = computed(() => (mobileUnitReadModelCatalog.value || []
 let mobileIdolCatalogPromise = null
 let mobileUnitCatalogPromise = null
 let pendingMobileNavigation = 0
+const homeFocus = ref(false)
 const userPreferences = ref(initialUserPreferences.preferences)
 const userPreferenceNotice = ref(initialUserPreferences.issue)
 const legacyEntryStatus = ref('')
@@ -882,7 +884,6 @@ const archiveHomeIdols = computed(() => homeReadModelIndex.value
   ? homeReadModelIndex.value.idols.map(idol => homeReadModelProfiles.value[idol.id] || idol)
   : archiveBootstrap.idols.filter(idol => idol.home_available))
 const archivePickerIdols = computed(() => archiveBootstrap.idols)
-const archiveHomeHighlights = computed(() => homeReadModelIndex.value?.highlights || [])
 const validArchiveHomeIdols = computed(() => archiveHomeIdols.value.map(idol => idol.id))
 const preferredArchiveIdol = computed(() =>
   archivePickerIdols.value.find(idol => idol.id === userPreferences.value.preferredIdol) || null)
@@ -891,12 +892,12 @@ const preferredArchiveIdolReference = computed(() => preferredArchiveIdol.value
     bootstrapMembership, 'portal:preferred')
   : null)
 const idolPickerLabel = computed(() => ({
-  home: '游戏风首页',
+  home: '首页',
   profile: '偶像资料',
   work: '工作档案',
   story: '个人故事',
   mobile: '通信档案',
-})[currentPickTarget.value] || '游戏风首页')
+})[currentPickTarget.value] || '首页')
 const stageBackLabel = computed(() => (
   (detailSourceRoute.value && readArchiveSourceRoute(detailSourceRoute.value).view === 'song_detail') ||
   (!detailSourceRoute.value && stageTargetId.value && currentSongId.value)
@@ -1877,12 +1878,6 @@ function storeUserPreferences(next) {
   return result.preferences
 }
 
-function chooseLightStartup() {
-  storeUserPreferences({ startupMode: 'light', startupIdol: null, onboardingComplete: true })
-  if (view.value === 'welcome' && detailSourceRoute.value) return restoreDetailSource(openRootPortal)
-  openRootPortal()
-}
-
 function openRootPortal() {
   legacyEntryStatus.value = ''
   portalFrom.value = ''
@@ -1899,11 +1894,11 @@ function chooseStartupLater() {
   openRootPortal()
 }
 
-function chooseImmersiveIdol({ idolCode, rememberStartup = true, setPreferred = false } = {}) {
+function chooseImmersiveIdol({ idolCode, rememberStartup = true, setPreferred = false, homeMode = 'spine' } = {}) {
   const isGeneralPicker = view.value === 'idol_picker' && currentPickTarget.value !== 'home'
   if (!(isGeneralPicker ? archivePickerIdols.value : archiveHomeIdols.value).some(idol => idol.id === idolCode)) return
   const next = {}
-  if (rememberStartup) Object.assign(next, { startupMode: 'immersive', startupIdol: idolCode, onboardingComplete: true })
+  if (rememberStartup || currentPickTarget.value === 'home' || (view.value === 'home' && !homeSelectedId.value)) Object.assign(next, { homeMode: rememberStartup ? homeMode : (userPreferences.value.homeMode === 'card' ? 'card' : 'spine'), startupIdol: idolCode, onboardingComplete: true })
   if (setPreferred) next.preferredIdol = idolCode
   if (Object.keys(next).length) storeUserPreferences(next)
   if (view.value === 'idol_picker') {
@@ -1963,13 +1958,13 @@ async function openGameHome(idolCode = '') {
   if (!candidate) return openIdolPicker('home')
   const request = ++pendingHomeNavigation
   const revision = navigation.getRevision()
-  homeEntryStatus.value = '正在准备游戏风首页…'
+  homeEntryStatus.value = '正在准备首页…'
   try {
     await loadHomeIdol(candidate)
   } catch (error) {
     if (request !== pendingHomeNavigation || revision !== navigation.getRevision()) return
     console.error('[HomeReadModel] Failed to open Home:', error)
-    homeEntryStatus.value = '游戏风首页暂时无法打开，请重试。'
+    homeEntryStatus.value = '首页暂时无法打开，请重试。'
     userPreferenceNotice.value = homeEntryStatus.value
     return
   }
@@ -3323,10 +3318,6 @@ function openCardEvent(event) {
   return openEventDetail(event, 'card_detail')
 }
 
-function openHomeEvent(event) {
-  return openEventDetail(event, 'home')
-}
-
 function openEventDetail(event, parentView = 'story_catalog') {
   if (!event?.event_id) return
   const id = String(event.event_id)
@@ -4130,7 +4121,7 @@ async function restoreRoute(route, { restoring = true } = {}) {
         } catch (error) {
           if (!intent.isCurrent() || request !== restoreRequest) return
           console.error('[HomeReadModel] Failed to restore Home:', error)
-          userPreferenceNotice.value = '游戏风首页暂时无法读取，请重新选择偶像。'
+          userPreferenceNotice.value = '首页暂时无法读取，请重新选择偶像。'
           route = { view: 'welcome' }
         }
       }
@@ -4374,7 +4365,7 @@ onMounted(async () => {
   const startup = pendingPreReadyRoute
     ? { route: pendingPreReadyRoute, source: 'early-action' }
     : initialArchiveStartup
-  if (startup.source === 'invalid-immersive-idol') {
+  if (startup.source === 'invalid-home-idol') {
     userPreferenceNotice.value = '之前选择的首页偶像当前不可用，请重新选择。'
   }
   if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes'].includes(startup.route.view) && !(startup.route.view === 'home' && startup.route.homeIdol)) loading.value = false

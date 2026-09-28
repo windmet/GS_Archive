@@ -2,7 +2,8 @@
   <main
     v-if="activeIdol && activeCue"
     class="immersive-home"
-    :class="{ 'is-focus-mode': preferences.focusMode, 'has-settings': settingsOpen }"
+    :class="{ 'is-focus-mode': focusMode, 'has-settings': settingsOpen }"
+    :data-home-mode="homeMode"
     :data-home-cue="activeCue.cue"
     :data-home-voice="activeCue.voice"
     :data-home-costume="activeCostume?.modelId || ''"
@@ -12,7 +13,9 @@
     :data-last-started-voice="lastStartedVoice"
     :style="homeStyle"
   >
+    <ArchiveCardHomeStage v-if="homeMode === 'card'" :card="selectedCard" :loading="cardLoading" :error="cardError" @retry="loadCards(true)" />
     <SpineStage
+      v-else
       responsive-positions
       portrait-framing
       ref="spineStageRef"
@@ -43,7 +46,7 @@
     </header>
 
     <div class="home-context" aria-label="首页偶像与服装">
-      <img :src="getCharaIconUrl(activeIdol.id)" :alt="activeIdol.name" />
+      <ArchiveIdolAvatar :idol-code="activeIdol.id" :accent-color="activeIdol.color" :size="34" decorative />
       <label class="context-select context-idol">
         <span>首页偶像</span>
         <select v-model="selectedId" aria-label="首页偶像">
@@ -52,8 +55,8 @@
           </option>
         </select>
       </label>
-      <span class="context-divider" aria-hidden="true"></span>
-      <label class="context-select context-costume">
+      <span v-if="homeMode === 'spine'" class="context-divider" aria-hidden="true"></span>
+      <label v-if="homeMode === 'spine'" class="context-select context-costume">
         <span>服装</span>
         <select
           :value="activeCostume?.modelId || ''"
@@ -80,7 +83,7 @@
 
     <label class="mobile-idol-switch" title="选择首页偶像">
       <span>选择首页偶像</span>
-      <ArrowLeftRight :size="20" />
+      <ArchiveIdolAvatar :idol-code="activeIdol.id" :accent-color="activeIdol.color" :size="34" decorative />
       <select v-model="selectedId" aria-label="选择首页偶像">
         <option v-for="idol in idols" :key="idol.id" :value="idol.id">{{ idol.name }}</option>
       </select>
@@ -99,7 +102,7 @@
     </button>
 
     <button
-      v-if="activeIdol.costumes.length"
+      v-if="homeMode === 'spine' && activeIdol.costumes.length"
       class="mobile-costume-trigger"
       type="button"
       aria-haspopup="dialog"
@@ -149,24 +152,7 @@
       </div>
     </aside>
 
-    <section v-if="activeHighlight && !preferences.focusMode" class="home-highlight" aria-label="活动聚焦">
-      <button class="highlight-main" type="button" @click="emit('open-event', activeHighlight)">
-        <img :src="activeHighlight.bannerUrl" :alt="activeHighlight.title" />
-        <span class="highlight-copy">
-          <strong>{{ activeHighlight.title }}</strong>
-          <small>{{ activeHighlight.scopeLabel }}</small>
-        </span>
-      </button>
-      <div class="highlight-controls">
-        <button type="button" aria-label="上一个活动" title="上一个活动" @click="stepHighlight(-1)">
-          <ChevronLeft :size="15" />
-        </button>
-        <span>{{ highlightIndex + 1 }} / {{ highlights.length }}</span>
-        <button type="button" aria-label="下一个活动" title="下一个活动" @click="stepHighlight(1)">
-          <ChevronRight :size="15" />
-        </button>
-      </div>
-    </section>
+    <button v-if="focusMode" class="exit-focus" type="button" @click="focusMode = false">退出专注</button>
 
     <section class="home-dialogue" aria-label="首页台词" aria-live="polite">
       <div class="dialogue-name">{{ activeCue.speaker || activeIdol.name }}</div>
@@ -185,19 +171,24 @@
       <button v-if="voiceError" type="button" class="voice-error" @click="replayCompatibilityVoice">语音资源暂时不可用 · 兼容播放</button>
     </section>
 
-    <dialog ref="sceneSettingsRef" class="scene-settings" aria-labelledby="scene-settings-title" @cancel="settingsOpen = false" @close="restoreSettingsFocus">
+    <dialog v-if="settingsOpen" ref="sceneSettingsRef" class="scene-settings" aria-labelledby="scene-settings-title" @cancel.prevent="closeSettings" @close="closeSettings">
       <header>
         <div>
           <h3 id="scene-settings-title">场景设置</h3>
           <p>首页显示与播放偏好</p>
         </div>
-        <button type="button" aria-label="关闭场景设置" title="关闭" @click="settingsOpen = false">
+        <button type="button" aria-label="关闭场景设置" title="关闭" @click="closeSettings">
           <X :size="21" />
         </button>
       </header>
 
-      <div v-if="settingsOpen" class="settings-body">
-        <fieldset class="settings-backgrounds">
+      <div class="settings-body">
+        <label class="settings-field"><span>首页样式</span><select aria-label="首页样式" :value="homeMode" @change="emit('update:homeMode', $event.target.value)"><option value="card">卡牌首页</option><option value="spine">人物互动首页</option></select></label>
+        <label v-if="homeMode === 'card'" class="settings-field"><span>首页卡面</span>
+          <select v-model="preferences.cardKey" aria-label="首页卡面"><option value="">使用当前偶像的默认卡面</option><option v-for="card in idolCards" :key="card.id" :value="card.id">{{ card.label }} · {{ card.variantLabel }}</option></select>
+          <small>此选择独立于资料馆壁纸，切换偶像时优先使用该偶像的卡面。</small>
+        </label>
+        <fieldset v-if="homeMode === 'spine'" class="settings-backgrounds">
           <legend>场景背景</legend>
           <p>固定背景不会随换人、换装或切换台词改变。</p>
           <button type="button" class="background-auto" :aria-pressed="preferences.background === 'cue'" @click="preferences.background = 'cue'">跟随台词背景</button>
@@ -222,7 +213,7 @@
           </select>
         </label>
 
-        <label class="settings-field settings-costume-field">
+        <label v-if="homeMode === 'spine'" class="settings-field settings-costume-field">
           <span>服装</span>
           <select :value="activeCostume?.modelId || ''" @change="emit('update:selectedCostume', $event.target.value)">
             <option v-for="costume in activeIdol.costumes" :key="costume.modelId" :value="costume.modelId">
@@ -244,8 +235,8 @@
         </label>
 
         <label class="settings-toggle settings-toggle-help">
-          <span>专注角色模式<small>隐藏活动推荐，减少界面干扰</small></span>
-          <input v-model="preferences.focusMode" type="checkbox" />
+          <span>专注模式<small>隐藏导航与控件，保留姓名、台词及退出按钮</small></span>
+          <input v-model="focusMode" type="checkbox" />
           <i aria-hidden="true"></i>
         </label>
 
@@ -263,7 +254,7 @@
           <RotateCcw :size="15" />
           恢复默认
         </button>
-        <button class="settings-done" type="button" @click="settingsOpen = false">
+        <button class="settings-done" type="button" @click="closeSettings">
           <Check :size="16" />
           完成
         </button>
@@ -275,10 +266,7 @@
 <script setup>
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import {
-  ArrowLeftRight,
   Check,
-  ChevronLeft,
-  ChevronRight,
   RotateCcw,
   SlidersHorizontal,
   Square,
@@ -286,7 +274,9 @@ import {
   Volume2,
   X,
 } from '@lucide/vue'
-import { getCharaIconUrl } from '../../utils/AssetResolver.js'
+import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
+import ArchiveCardHomeStage from './ArchiveCardHomeStage.vue'
+import { resolveHomeCard } from '../../data/archiveHomePreferences.js'
 import { loadTerminalManifest, resolveHomeBackground } from '../../data/terminal/terminalMedia.js'
 import { useVoicePlayer } from '../../core/useVoicePlayer.js'
 import { useStoryRuntimeCues } from '../../core/story-runtime/useStoryRuntimeCues.js'
@@ -301,14 +291,14 @@ const SpineStage = defineAsyncComponent(() => import('../SpineStage.vue'))
 
 const props = defineProps({
   idols: { type: Array, default: () => [] },
-  highlights: { type: Array, default: () => [] },
+  homeMode: { type: String, default: 'spine' },
   stats: { type: Array, default: () => [] },
   selectedId: { type: String, default: '' },
   selectedCue: { type: String, default: '' },
   selectedCostume: { type: String, default: '' },
   noAudio: { type: Boolean, default: false },
 })
-const emit = defineEmits(['open-story', 'open-cards', 'open-idol', 'open-chat', 'open-event', 'update:selectedId', 'update:selectedCue', 'update:selectedCostume'])
+const emit = defineEmits(['open-story', 'open-cards', 'open-idol', 'open-chat', 'update:homeMode', 'focus-change', 'update:selectedId', 'update:selectedCue', 'update:selectedCostume'])
 
 const selectedId = computed({
   get: () => props.selectedId || props.idols[0]?.id || '',
@@ -319,7 +309,8 @@ const voiceError = ref(false)
 const lastStartedVoice = ref('')
 const stageReady = ref(false)
 const stageError = ref(false)
-const highlightIndex = ref(0)
+const focusMode = ref(false)
+watch(focusMode, value => { emit('focus-change', value); if (value) { costumePickerOpen.value = false; closeSettings() } })
 const spineStageRef = ref(null)
 const currentStepIndex = ref(0)
 const performanceRevision = ref(0)
@@ -331,14 +322,11 @@ function restoreSettingsFocus() {
   if (settingsReturnFocus?.isConnected) settingsReturnFocus.focus({ preventScroll: true })
   settingsReturnFocus = null
 }
-watch(settingsOpen, async open => {
-  await nextTick()
-  if (homeDisposed) return
-  if (open && settingsOpen.value && !sceneSettingsRef.value?.open) {
-    settingsReturnFocus = document.activeElement
-    sceneSettingsRef.value?.showModal()
-  } else if (!open && sceneSettingsRef.value?.open) sceneSettingsRef.value.close()
-})
+function closeSettings() {
+  sceneSettingsRef.value?.close()
+  settingsOpen.value = false
+  restoreSettingsFocus()
+}
 const costumePickerOpen = ref(false)
 const stageTapPending = ref(false)
 const stageTapCommitPending = ref(false)
@@ -348,6 +336,7 @@ let stageVoiceQueueToken = 0
 let queuedVoiceAbort = null
 let stageTapAbort = null
 let homePlaybackRevision = 0
+let autoVoiceTimer = null
 const preferences = reactive(loadArchiveHomePreferences())
 
 const activeIdol = computed(() => props.idols.find(idol => idol.id === selectedId.value) || props.idols[0] || null)
@@ -394,7 +383,16 @@ const renderStep = computed(() => {
     },
   }
 })
-const activeHighlight = computed(() => props.highlights[highlightIndex.value] || props.highlights[0] || null)
+const cards = ref([]), cardLoading = ref(false), cardError = ref('')
+const idolCards = computed(() => cards.value.filter(card => card.idolCode === activeIdol.value?.id))
+const selectedCard = computed(() => resolveHomeCard(cards.value, activeIdol.value?.id, preferences.cardKey))
+async function loadCards(retry = false) {
+  if (cardLoading.value || (cards.value.length && !retry)) return
+  cardLoading.value = true; cardError.value = ''
+  try { const data = await loadTerminalManifest('wallpapers', { retry }); if (!homeDisposed) cards.value = data.entries }
+  catch { if (!homeDisposed) cardError.value = '卡面暂时无法载入，台词和语音仍可使用。' }
+  finally { if (!homeDisposed) cardLoading.value = false }
+}
 const cueIndex = computed(() => Math.max(0, activeIdol.value?.cues?.findIndex(cue => cue.cue === activeCue.value?.cue) || 0))
 const currentStep = computed(() => activeCue.value?.previewStep || {})
 const compiledData = computed(() => ({ scenario_id: activeCue.value?.scenarioId || '', steps: [renderStep.value] }))
@@ -410,6 +408,7 @@ const voicePlayer = useVoicePlayer({
   compiledData,
   isPlaying: playing,
   audioSession: homeAudioSession,
+  canAnimateStage: () => props.homeMode === 'spine',
 })
 
 const homeCueRuntime = useStoryRuntimeCues({
@@ -417,6 +416,7 @@ const homeCueRuntime = useStoryRuntimeCues({
   getStageStep: () => renderStep.value,
   audioManager: {}, // Home source timelines contain only spine face/body/neck cues.
   isPaused: () => document.hidden,
+  needsStage: () => props.homeMode === 'spine',
 })
 function syncHomeVisibility() {
   const action = document.hidden ? 'pause' : 'resume'
@@ -438,7 +438,10 @@ watch(activeCue, () => {
   voiceError.value = false
   if (stageTapCommitPending.value) return
   stopVoice()
-  if (preferences.autoVoice && !stageTapPending.value) window.setTimeout(() => toggleVoice(), 180)
+  if (preferences.autoVoice && !stageTapPending.value) autoVoiceTimer = window.setTimeout(() => {
+    autoVoiceTimer = null
+    if (!homeDisposed && preferences.autoVoice) toggleVoice()
+  }, 180)
 })
 
 watch([
@@ -451,14 +454,18 @@ watch(preferences, value => {
   saveArchiveHomePreferences(value)
 }, { deep: true })
 
-function openSettings() {
+async function openSettings() {
+  if (settingsOpen.value) return
+  settingsReturnFocus = document.activeElement
   costumePickerOpen.value = false
   settingsOpen.value = true
-  loadBackgroundCatalogue()
+  await nextTick()
+  if (!homeDisposed && settingsOpen.value) sceneSettingsRef.value?.showModal()
+  if (props.homeMode === 'spine') loadBackgroundCatalogue()
 }
 
 function toggleCostumePicker() {
-  settingsOpen.value = false
+  closeSettings()
   costumePickerOpen.value = !costumePickerOpen.value
 }
 
@@ -498,7 +505,7 @@ async function handleStageTap() {
   let prepared = queuedStageCue.value?.cue === next.cue ? queuedStageVoice.value : null
   if (prepared) queuedStageVoice.value = null // ownership transferred to this tap
   try {
-    if (!prepared) prepared = await voicePlayer.prepareVoice({ step: next.previewStep, scenarioId: next.scenarioId, signal: tapOwner.signal })
+    if (!prepared) prepared = await voicePlayer.prepareVoice({ step: next.previewStep, scenarioId: next.scenarioId, includeLip: props.homeMode === 'spine', signal: tapOwner.signal })
     if (!isCurrent()) { voicePlayer.releasePreparedVoice(prepared); return }
     homeCueRuntime.cancelCurrentStep('home-next-cue')
     stageTapCommitPending.value = true
@@ -510,7 +517,7 @@ async function handleStageTap() {
     voiceError.value = !started
     if (started) {
       lastStartedVoice.value = next.voice || ''
-      homeCueRuntime.handleStepChange()
+      props.homeMode === 'spine' && homeCueRuntime.handleStepChange()
     }
   } finally {
     if (stageTapAbort === tapOwner) {
@@ -532,7 +539,7 @@ async function queueNextStageVoice() {
   queuedStageVoice.value = null
   if (!next?.previewStep) return
 
-  const prepared = await voicePlayer.prepareVoice({ step: next.previewStep, scenarioId: next.scenarioId, signal: owner.signal })
+  const prepared = await voicePlayer.prepareVoice({ step: next.previewStep, scenarioId: next.scenarioId, includeLip: props.homeMode === 'spine', signal: owner.signal })
   if (homeDisposed || owner.signal.aborted || token !== stageVoiceQueueToken || activeIdol.value?.id !== idolId || queuedStageCue.value?.cue !== next.cue) {
     voicePlayer.releasePreparedVoice(prepared)
     return
@@ -540,12 +547,9 @@ async function queueNextStageVoice() {
   queuedStageVoice.value = prepared
 }
 
-function stepHighlight(direction) {
-  if (!props.highlights.length) return
-  highlightIndex.value = (highlightIndex.value + direction + props.highlights.length) % props.highlights.length
-}
-
 function stopVoice() {
+  clearTimeout(autoVoiceTimer)
+  autoVoiceTimer = null
   homePlaybackRevision++
   homeCueRuntime.cancelCurrentStep('home-stop-voice')
   voicePlayer.stopCurrentVoice('archive-home')
@@ -571,7 +575,7 @@ async function toggleVoice() {
   if (homeDisposed || revision !== homePlaybackRevision || activeCue.value !== cue) return
   if (started) {
     lastStartedVoice.value = activeCue.value?.voice || ''
-    homeCueRuntime.handleStepChange()
+    props.homeMode === 'spine' && homeCueRuntime.handleStepChange()
   }
   voiceError.value = !started
 }
@@ -586,7 +590,7 @@ async function replayCompatibilityVoice() {
   voiceError.value = !started
   if (started) {
     lastStartedVoice.value = activeCue.value?.voice || ''
-    homeCueRuntime.handleStepChange()
+    props.homeMode === 'spine' && homeCueRuntime.handleStepChange()
   }
 }
 
@@ -596,18 +600,30 @@ function resetPreferences() {
 
 function handleKeydown(event) {
   if (event.key !== 'Escape') return
-  if (settingsOpen.value) settingsOpen.value = false
+  if (settingsOpen.value) closeSettings()
+  else if (focusMode.value) focusMode.value = false
   if (costumePickerOpen.value) costumePickerOpen.value = false
 }
 
+watch(() => props.homeMode, mode => {
+  stageTapAbort?.abort()
+  stopVoice(); costumePickerOpen.value = false
+  queueNextStageVoice()
+  if (mode === 'card') loadCards()
+  else if (preferences.background !== 'cue' || settingsOpen.value) loadBackgroundCatalogue()
+})
+
 onMounted(() => {
   delete document.documentElement.dataset.archiveHomeTheme
-  if (preferences.background !== 'cue') loadBackgroundCatalogue()
+  if (props.homeMode === 'card') loadCards()
+  else if (preferences.background !== 'cue') loadBackgroundCatalogue()
   window.addEventListener('keydown', handleKeydown)
   document.addEventListener('visibilitychange', syncHomeVisibility)
 })
 onBeforeUnmount(() => {
   homeDisposed = true
+  emit('focus-change', false)
+  clearTimeout(autoVoiceTimer)
   sceneSettingsRef.value?.close()
   restoreSettingsFocus()
   delete document.documentElement.dataset.archiveHomeTheme

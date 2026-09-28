@@ -1,5 +1,5 @@
 <template>
-  <div class="archive-shell" :class="{ 'has-inspector': hasInspector, 'is-home': activeSection === 'home', 'is-portal': activeSection === 'portal' || activeSection === 'reader' }">
+  <div class="archive-shell" :class="{ 'is-home-focus': homeFocus && activeSection === 'home', 'has-inspector': hasInspector, 'is-home': activeSection === 'home', 'is-portal': activeSection === 'portal' || activeSection === 'reader' }">
     <aside class="archive-sidebar" aria-label="资料馆导航">
       <div class="archive-brand">
         <img :src="getBrandMarkUrl()" alt="" />
@@ -89,6 +89,7 @@ import { ARCHIVE_NAVIGATION } from '../../core/archiveRoute.js'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
 
 defineProps({
+  homeFocus: Boolean,
   activeSection: { type: String, default: 'home' },
   title: { type: String, default: '' },
   searchable: { type: Boolean, default: false },
@@ -349,4 +350,8 @@ const mobileNavigation = [
 @media (prefers-reduced-motion: reduce) {
   .archive-pending-layer :deep(.gs-loading-indicator) { animation: none; }
 }
+.archive-shell.is-home-focus { --archive-sidebar: 0px; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+.archive-shell.is-home-focus .archive-sidebar, .archive-shell.is-home-focus .archive-topbar, .archive-shell.is-home-focus .archive-mobile-nav { display: none; }
+.archive-shell.is-home-focus .archive-content { grid-column: 1; grid-row: 1; }
+.archive-shell.is-home-focus .archive-pending-layer { grid-column: 1; grid-row: 1; }
 </style>
