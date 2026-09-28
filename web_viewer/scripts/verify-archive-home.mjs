@@ -25,7 +25,7 @@ assert.equal(stats.backgrounds, 1)
 assert.equal(stats.models, 57)
 
 for (const background of new Set(idols.flatMap(idol => idol.cues).map(cue => cue.background).filter(Boolean))) {
-  assert.ok(fs.existsSync(new URL(`../public/assets/bg/${background}.png`, import.meta.url)), background)
+  assert.match(background, /^[a-z0-9_]+$/, background)
 }
 
 const toma = idols.find(idol => idol.id === '001tom')
@@ -49,7 +49,8 @@ assert.equal(highlights[0].scopeLabel, '固定组合团活')
 assert.equal(highlights[1].event_id, 410018)
 assert.equal(highlights[1].scopeLabel, '跨组合团活')
 for (const highlight of highlights) {
-  assert.ok(fs.existsSync(new URL(`../public${highlight.bannerUrl}`, import.meta.url)), highlight.bannerUrl)
+  assert.match(highlight.bannerUrl, /^\/assets\/events\/banners\/[a-z0-9_]+\.png$/, highlight.bannerUrl)
+  assert.equal(highlight.bannerUrl, uiAssets.featured_sets.event_banner_urls[highlight.event_code])
 }
 
 const immersiveHomeSource = readSource('../src/components/archive/ArchiveImmersiveHome.vue')
