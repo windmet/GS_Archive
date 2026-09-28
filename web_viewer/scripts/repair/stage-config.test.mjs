@@ -31,7 +31,7 @@ const applySource = source.slice(source.indexOf('async function applyState('), s
 const readinessSource = source.slice(source.indexOf('function getSceneReadiness('), source.indexOf('\ndefineExpose('))
 function stageFixture(spines, loaders = {}) {
   const step = { step_id: 2, state: { spines } }
-  const context = vm.createContext({ AbortController, DOMException, console, Promise, step, props: { step },
+  const context = vm.createContext({ AbortController, DOMException, console, Promise, step, props: { step }, emit: () => {},
     manager: { spineInstances: {}, _silhouetteSprites: {}, _silhouettePending: {} }, applyStateToken: 0,
     applyStateLoad: new AbortController(), projectedStep: null, projectionFailure: null, lastScreenEffectsKey: '',
     NON_VISUAL_IDS: new Set(), isSilhouetteOnlyModel: () => false, getStepSceneState: item => item.state,

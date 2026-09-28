@@ -1,5 +1,24 @@
 # 翻译前正文与身份审计（2026-09-28）
 
+## 后续出版与 Reader 修复（同日）
+
+本节记录后续 Work 正式出版和生日剧情 Reader 入口修复后的现状；下文的
+932/29,172 和“缺失”结论保留为原审计时点的历史基线，不应当作当前计数。
+Work publication `2026-09-28-story-work-text-backfill-001` 已将 637 份作品的
+4,103 条非空文本行纳入稳定身份；详见
+[`GS_WORK_TEXT_PUBLICATION_20260928.md`](GS_WORK_TEXT_PUBLICATION_20260928.md)。
+
+Reader 现在对唯一完整覆盖父文件的单集剧情，在分集文件不存在时复用已经
+登记的父 compiled；`1_2_001_12` 因此成为可读文档，使用
+`1_x_001tom_2_1_2_001_12.json` 的 15 段对白，不导入 a/b/c 重复文本。
+重新运行 `node scripts/audit-reading-diagnostics.mjs` 得到 2,801 份文档、
+30,121 条非空文本行，其中 5,052 条具有已核验身份、25,069 条仍缺身份；
+一致性异常和身份冲突均为 0。该生日剧情新增 17 条有身份文本行，缺身份
+数量不变。Reader 仍有 311 份 unsupported，主要为控制流问题。
+
+这些数字只覆盖 Reader 投影与现有 compiled 身份，不代表 RAW 全量完整性、
+语境核查、译文交付或生产部署验收。
+
 输入分支 `codex/gs-architecture-rebuild`，HEAD `5cf227190e708c4846cf434b272db9f39baad449`。用户提供的 unsupported 分析用作待验证假设。本批只增加审计工具、回归与记录；结论来自当前文件及本地 RAW 实测。
 
 ## 结论

@@ -140,6 +140,9 @@ jobs:
       - name: Verify player entry, warmup and voice repair contracts
         run: npm run verify:player-repair
 
+      - name: Verify Home experience contracts
+        run: npm run verify:home
+
       - name: Verify camera playback clock
         run: npm run verify:story-camera-clock
 

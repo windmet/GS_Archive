@@ -15,11 +15,21 @@ export async function discoverReadingSources({ catalog, publications, readCompil
     const ids = boundaryIds.filter(id => entry.resourceIds.includes(id))
     // Sources without separate episode boundaries are complete file documents.
     const files = ids.length ? ids.map(id => `episodes/${id}.json`) : [entry.file]
-    for (const file of files) {
+    const fullSpanEpisode = ids.length === 1 && parent.data.episodes?.length === 1 &&
+      parent.data.steps?.length > 0 &&
+      parent.data.episodes[0].start_step_id === parent.data.steps[0].step_id &&
+      parent.data.episodes[0].end_step_id === parent.data.steps.at(-1).step_id
+    for (const episodeFile of files) {
+      let file = episodeFile
       if (!READING_SOURCE_FILE.test(file)) throw Error('Invalid episode source file')
       let source
-      try { source = file === entry.file ? parent : await readCompiled(file) } catch (error) { exclude(file, `source-read:${error.code || error.message}`); continue }
-      const id = file.replace(/^episodes\//, '').replace(/\.json$/, '')
+      try { source = file === entry.file ? parent : await readCompiled(file) } catch (error) {
+        if (error.code !== 'ENOENT' || !fullSpanEpisode) { exclude(file, `source-read:${error.code || error.message}`); continue }
+        // A complete single-episode parent already contains the canonical text.
+        file = entry.file
+        source = parent
+      }
+      const id = episodeFile.replace(/^episodes\//, '').replace(/\.json$/, '')
       const publication = publications.find(p => p.artifacts.some(a => a.path === `public/data/compiled/${file}`))
       if (source.data.schema_version === 2 && !publication) { exclude(file, 'strict-source-not-in-publication-registry'); continue }
       if (file !== entry.file && (source.data.scenario_id !== id ||

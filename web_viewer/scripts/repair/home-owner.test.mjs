@@ -8,7 +8,8 @@ const section = (start,end) => source.slice(source.indexOf(start), source.indexO
 function setup() {
   const gate = deferred(), calls = []
   const cue={cue:'next',voice:'next.m4a',scenarioId:'qa',previewStep:{dialogue:{voice:'next.m4a'}}}
-  const context={ AbortController, nextTick:tick, homeDisposed:false, homePlaybackRevision:0,stageTapAbort:null,
+  const context={ AbortController, clearTimeout, nextTick:tick, props:{homeMode:'spine'}, autoVoiceTimer:null,
+    homeDisposed:false, homePlaybackRevision:0,stageTapAbort:null,
     stageTapPending:{value:false},stageTapCommitPending:{value:false},activeIdol:{value:{id:'001tom'}},activeCue:{value:{cue:'old'}},
     voiceError:{value:false},lastStartedVoice:{value:''},queuedStageCue:{value:cue},queuedStageVoice:{value:{voice:'next.m4a'}},
     playing:{value:false},performanceRevision:{value:0},
