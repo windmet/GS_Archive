@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_030mak_1_5_030_01",
-  "logical_id": "story-collection:1_5_030mak_1_5_030_01",
+  "logical_id": "story:1_5_030mak_1_5_030_01",
   "scenario_id": "1_5_030mak_1_5_030_01",
   "text_catalog_id": "1_5_030mak_1_5_030_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_030mak_1_5_030_01.json",
-    "sha256": "sha256:8a37a49d4fa3eafcd227a0a279937963b3aec266044a4f99194ad86dcd0366f4",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:16bcd6100a21972859978c819922ad2e459d515033b6c674beb2ef6cbf00a57b",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 14,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_030mak_1_5_030_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_030mak_1_5_030_01:1_5_030_01:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_030mak_1_5_030_01",
+          "part_id": "1_5_030_01",
+          "file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_030mak_1_5_030_01:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_030_01",
+        "source_file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_030mak_1_5_030_01:1_5_030_01:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_030mak_1_5_030_01",
+          "part_id": "1_5_030_01",
+          "file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_030mak_1_5_030_01:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_030_01",
+        "source_file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_030mak_1_5_030_01:1_5_030_01:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_030mak_1_5_030_01",
+          "part_id": "1_5_030_01",
+          "file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_030mak_1_5_030_01:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_030_01",
+        "source_file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "TV学生トーク番組のお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_030mak_1_5_030_01:1_5_030_01:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_030mak_1_5_030_01",
+          "part_id": "1_5_030_01",
+          "file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:25fa26a01a5a921eb23d20cb4fab01be69c51ac3966f20727b70393106b6c342"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,21 +212,32 @@
         "row_id": "1_5_030mak_1_5_030_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_030_01",
+        "source_file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "リハーサルお疲れさまでした！\n●●●●プロデューサーさんから見て、どうでした？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_030mak_1_5_030_01:1_5_030_01:cmd-000016:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_030mak_1_5_030_01",
+          "part_id": "1_5_030_01",
+          "file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+          "command_index": 16,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ceddaaaecb90788477d69d2d7674dfe55c29a970f401a1b9801bdca8722d3e57"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "030mak",
         "sourceName": "卯月 巻緒"
       },
       "performance": {
@@ -196,7 +254,6 @@
         "stepId": 5
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -205,17 +262,28 @@
         "row_id": "1_5_030mak_1_5_030_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_030_01",
+        "source_file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "出演者の方とのトーク、弾んでいましたね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_030mak_1_5_030_01:1_5_030_01:cmd-000021:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_030mak_1_5_030_01",
+          "part_id": "1_5_030_01",
+          "file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+          "command_index": 21,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:14c9f41cef8e14092fe7058f9286544cc4abf18b75aa6512e288d3dd8ed892dd"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -242,17 +310,28 @@
         "row_id": "1_5_030mak_1_5_030_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_030_01",
+        "source_file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "安定して見ることができました。\nさすが巻緒さんです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_030mak_1_5_030_01:1_5_030_01:cmd-000025:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_030mak_1_5_030_01",
+          "part_id": "1_5_030_01",
+          "file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+          "command_index": 25,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bf58599dc3ca4154afc104d56a4e9ad129179ff0f64353cb2c32e38278ebe400"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -279,21 +358,32 @@
         "row_id": "1_5_030mak_1_5_030_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_030_01",
+        "source_file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "あはは、ありがとうございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_030mak_1_5_030_01:1_5_030_01:cmd-000029:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_030mak_1_5_030_01",
+          "part_id": "1_5_030_01",
+          "file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+          "command_index": 29,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6ee98a9e9d7a75e165ba910978e13c990495bd0822973a290cbd2b5fa9f2619c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "030mak",
         "sourceName": "卯月 巻緒"
       },
       "performance": {
@@ -309,30 +399,39 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_030mak_1_5_030_01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_030_01",
+        "source_file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "同学年が集まった学生あるあるトークなので、\n話しやすいのかもしれません。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_030mak_1_5_030_01:1_5_030_01:cmd-000033:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_030mak_1_5_030_01",
+          "part_id": "1_5_030_01",
+          "file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+          "command_index": 33,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:566711e7a1888781f2c4a5906f755116342d19dfd9502bf46a36f61d344b59a1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "030mak",
         "sourceName": "卯月 巻緒"
       },
       "performance": {
@@ -348,26 +447,35 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_030mak_1_5_030_01:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_030_01",
+        "source_file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "巻緒さんは出演者の方と、\nあっという間に仲良くなっていましたよね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_030mak_1_5_030_01:1_5_030_01:cmd-000036:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_030mak_1_5_030_01",
+          "part_id": "1_5_030_01",
+          "file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+          "command_index": 36,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:027ff4a576d23baeb6361f2d54d1b806fab8ec613b4b646be3f029c5649a719e"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -394,21 +502,32 @@
         "row_id": "1_5_030mak_1_5_030_01:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_030_01",
+        "source_file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+        "command_start": 36,
+        "command_end": 36
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "俺は小さい頃から転校することが多かったので、\n人見知りしない方なんです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_030mak_1_5_030_01:1_5_030_01:cmd-000042:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_030mak_1_5_030_01",
+          "part_id": "1_5_030_01",
+          "file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+          "command_index": 42,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:564d59766838d8f2f087ed1edc8695cff147ac4709bfd82c0ece82c5ae169aef"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "030mak",
         "sourceName": "卯月 巻緒"
       },
       "performance": {
@@ -425,7 +544,6 @@
         "stepId": 11
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -434,17 +552,28 @@
         "row_id": "1_5_030mak_1_5_030_01:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_030_01",
+        "source_file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+        "command_start": 42,
+        "command_end": 42
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "昔からのできごとが経験となって、\n今につながっているんですね。素敵だと思います。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_030mak_1_5_030_01:1_5_030_01:cmd-000045:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_030mak_1_5_030_01",
+          "part_id": "1_5_030_01",
+          "file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+          "command_index": 45,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:151bd1c381a75468e2e9ee257c8442463966755d6be664fbb9f6d5307ff12083"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -471,21 +600,32 @@
         "row_id": "1_5_030mak_1_5_030_01:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_030_01",
+        "source_file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+        "command_start": 45,
+        "command_end": 45
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "そう言ってもらえて嬉しいです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_030mak_1_5_030_01:1_5_030_01:cmd-000049:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_030mak_1_5_030_01",
+          "part_id": "1_5_030_01",
+          "file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+          "command_index": 49,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f8a3bdc96582969f36834cee35afe72c3e039939d8270dd8bed35b0bf38cb1e6"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "030mak",
         "sourceName": "卯月 巻緒"
       },
       "performance": {
@@ -502,7 +642,6 @@
         "stepId": 13
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -511,21 +650,32 @@
         "row_id": "1_5_030mak_1_5_030_01:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_030_01",
+        "source_file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+        "command_start": 49,
+        "command_end": 49
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "これからも、人とのつながりを\n大事にしていきたいと思います！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_030mak_1_5_030_01:1_5_030_01:cmd-000052:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_030mak_1_5_030_01",
+          "part_id": "1_5_030_01",
+          "file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+          "command_index": 52,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4ff3b536e6125fa9499545c0cc4b6d5e1cd13876bcd09a81834616fed9d13b3a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "030mak",
         "sourceName": "卯月 巻緒"
       },
       "performance": {
@@ -541,101 +691,23 @@
         "snapshot": "entry",
         "stepId": 14
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_030mak_1_5_030_01:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_030_01",
+        "source_file": "assets/resources/scenariodata/1_5_030mak/scenario_1_5_030_01.json",
+        "command_start": 52,
+        "command_end": 52
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "TV学生トーク番組のお仕事",
     "episode_label": null

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_002sht_1_5_002_02",
-  "logical_id": "story-collection:1_5_002sht_1_5_002_02",
+  "logical_id": "story:1_5_002sht_1_5_002_02",
   "scenario_id": "1_5_002sht_1_5_002_02",
   "text_catalog_id": "1_5_002sht_1_5_002_02",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_002sht_1_5_002_02.json",
-    "sha256": "sha256:87307d892fcba4c7b49de73bc23b0965796569e9333ee812b01c8fdd404b2c3b",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:d09626cad77a1c15d25514a8d05f8c31ea1cdb2cf84a0a058ee2546872011bf5",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 14,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_002sht_1_5_002_02.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_02:1_5_002_02:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_02",
+          "part_id": "1_5_002_02",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_002sht_1_5_002_02:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_02",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_02:1_5_002_02:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_02",
+          "part_id": "1_5_002_02",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_002sht_1_5_002_02:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_02",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_02:1_5_002_02:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_02",
+          "part_id": "1_5_002_02",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_002sht_1_5_002_02:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_02",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "寝具のCMに出演するお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_02:1_5_002_02:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_02",
+          "part_id": "1_5_002_02",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:30861a6dc327449d2c02effa92bfab60046127257606b2db1d2e01bca2e64fd3"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,21 +212,32 @@
         "row_id": "1_5_002sht_1_5_002_02:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_02",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "寝具のCMなんて僕にぴったりじゃない？\nしかもすっごくフワフワでフカフカの枕とお布団！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_02:1_5_002_02:cmd-000016:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_02",
+          "part_id": "1_5_002_02",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+          "command_index": 16,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3f5abc1cbded89a5b455b4001075263bf83af4c3ff68c782e4053b8b1765004b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -196,7 +254,6 @@
         "stepId": 5
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -205,17 +262,28 @@
         "row_id": "1_5_002sht_1_5_002_02:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_02",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "高級寝具メーカーですからね。\nどの商品も評判がいいんですよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_02:1_5_002_02:cmd-000019:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_02",
+          "part_id": "1_5_002_02",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+          "command_index": 19,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4d89914b4d5fab5c9ca68e37b9cde95ae8b9d5f57d9a7dad44a0dcdee0c7a679"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -242,21 +310,32 @@
         "row_id": "1_5_002sht_1_5_002_02:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_02",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "きっとぐっすり眠れるよね♪",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_02:1_5_002_02:cmd-000024:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_02",
+          "part_id": "1_5_002_02",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+          "command_index": 24,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d10dbfa3fce0100bdd96d9105a6000b52b0034895a1a0f6fffa25e0264696dac"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -273,7 +352,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -282,21 +360,32 @@
         "row_id": "1_5_002sht_1_5_002_02:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_02",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "あまりにも気持ち良すぎて撮影中に\n寝ちゃったらどうしよ～！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_02:1_5_002_02:cmd-000027:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_02",
+          "part_id": "1_5_002_02",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+          "command_index": 27,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:42821c3652902ff0a4cdd8b67958bafe9131fb16b76fbb2ab91b2724fa8fa2fb"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -312,26 +401,35 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_002sht_1_5_002_02:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_02",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+        "command_start": 27,
+        "command_end": 27
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "そ、そこは頑張って起きていましょう！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_02:1_5_002_02:cmd-000030:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_02",
+          "part_id": "1_5_002_02",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+          "command_index": 30,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:46fc5d6b3b189157c727028909203ae254d6cdf7e30e15294bf7eeb63b76cf57"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -358,21 +456,32 @@
         "row_id": "1_5_002sht_1_5_002_02:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_02",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+        "command_start": 30,
+        "command_end": 30
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "え～でもそんなの難しいよ～。\nあ、でも本気で寝ちゃうのはそれはそれでアリ？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_02:1_5_002_02:cmd-000037:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_02",
+          "part_id": "1_5_002_02",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+          "command_index": 37,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:35609d253b0df19cbf4400c25a72e6372ebf81929066ed45b4313f313dfc1a08"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -389,7 +498,6 @@
         "stepId": 10
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -398,21 +506,32 @@
         "row_id": "1_5_002sht_1_5_002_02:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_02",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+        "command_start": 37,
+        "command_end": 37
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "だってさ、僕が本気で寝ちゃうくらい気持ちの良い\n商品ってことの証明になるし！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_02:1_5_002_02:cmd-000042:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_02",
+          "part_id": "1_5_002_02",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+          "command_index": 42,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0574605ddc2fd789369b5895feee594d7cad627a282c1db63c95feccbda7ad26"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -429,7 +548,6 @@
         "stepId": 11
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -438,17 +556,28 @@
         "row_id": "1_5_002sht_1_5_002_02:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_02",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+        "command_start": 42,
+        "command_end": 42
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ま、まぁそれはそれで確かに……。\nですが、先方の映像イメージがありますから。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_02:1_5_002_02:cmd-000045:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_02",
+          "part_id": "1_5_002_02",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+          "command_index": 45,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:14a0a1497a3b2555224b6953e77ae3a86155abe95d4bd00bb2c6c8c2e8e2f2b1"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -475,21 +604,32 @@
         "row_id": "1_5_002sht_1_5_002_02:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_02",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+        "command_start": 45,
+        "command_end": 45
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "それもそっか！\nうん、大丈夫。寝ないように頑張るよ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_02:1_5_002_02:cmd-000049:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_02",
+          "part_id": "1_5_002_02",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+          "command_index": 49,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:42ea55a20133a67adb9da0adedd487852eb7e8fa6485f7e7cbbf77d928313098"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -506,7 +646,6 @@
         "stepId": 13
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -515,21 +654,32 @@
         "row_id": "1_5_002sht_1_5_002_02:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_02",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+        "command_start": 49,
+        "command_end": 49
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "じゃあ僕そろそろ撮影の準備してくるね～！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_02:1_5_002_02:cmd-000053:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_02",
+          "part_id": "1_5_002_02",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+          "command_index": 53,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e9ea83ea85dd97e9add4f8e9f878e8ad77c64941ec0754a8134e4180711576cb"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -546,7 +696,6 @@
         "stepId": 14
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -555,92 +704,16 @@
         "row_id": "1_5_002sht_1_5_002_02:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_02",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_02.json",
+        "command_start": 53,
+        "command_end": 53
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "寝具のCMに出演するお仕事",
     "episode_label": null

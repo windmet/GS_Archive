@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_019kur_1_5_019_04",
-  "logical_id": "story-collection:1_5_019kur_1_5_019_04",
+  "logical_id": "story:1_5_019kur_1_5_019_04",
   "scenario_id": "1_5_019kur_1_5_019_04",
   "text_catalog_id": "1_5_019kur_1_5_019_04",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_019kur_1_5_019_04.json",
-    "sha256": "sha256:19cab4527647f5457dfd6d90b76cc0910558ea95fef0fcc8c908fe65d0bcad96",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:7d7aa3b22203234f0f7c4bd22abda8bb2c685d9464e18fa55beede97620b1f13",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 16,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_019kur_1_5_019_04.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_019kur_1_5_019_04:1_5_019_04:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_019kur_1_5_019_04",
+          "part_id": "1_5_019_04",
+          "file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_019kur_1_5_019_04:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_019_04",
+        "source_file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_019kur_1_5_019_04:1_5_019_04:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_019kur_1_5_019_04",
+          "part_id": "1_5_019_04",
+          "file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_019kur_1_5_019_04:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_019_04",
+        "source_file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_019kur_1_5_019_04:1_5_019_04:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_019kur_1_5_019_04",
+          "part_id": "1_5_019_04",
+          "file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_019kur_1_5_019_04:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_019_04",
+        "source_file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "有名時代小説の舞台のお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_019kur_1_5_019_04:1_5_019_04:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_019kur_1_5_019_04",
+          "part_id": "1_5_019_04",
+          "file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:78956b85a37261e7d3641cf56a11b3a021056a755e2a0827075165c903f9454a"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,21 +212,32 @@
         "row_id": "1_5_019kur_1_5_019_04:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_019_04",
+        "source_file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "「貴様、何を言っている！\n我は決して敵に屈したりしない！」",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_019kur_1_5_019_04:1_5_019_04:cmd-000015:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_019kur_1_5_019_04",
+          "part_id": "1_5_019_04",
+          "file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+          "command_index": 15,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7dfdcc1ec42538dd29adb584fd4d5ebecdab9bc23f31325ad3cf58a13a8ca37c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "019kur",
         "sourceName": "清澄 九郎"
       },
       "performance": {
@@ -196,7 +254,6 @@
         "stepId": 5
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -205,21 +262,32 @@
         "row_id": "1_5_019kur_1_5_019_04:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_019_04",
+        "source_file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "……もう少し、迫力があった方が\nよろしいでしょうか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_019kur_1_5_019_04:1_5_019_04:cmd-000019:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_019kur_1_5_019_04",
+          "part_id": "1_5_019_04",
+          "file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+          "command_index": 19,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6a9e86653d3699ef198f76f21d1a6dfd5d92010cee2f45d95d498c996ec0ccee"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "019kur",
         "sourceName": "清澄 九郎"
       },
       "performance": {
@@ -235,30 +303,39 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_019kur_1_5_019_04:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_019_04",
+        "source_file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "「貴様、何を言っているっ！？　我は決して……」\nうう、力み過ぎて噛んでしまいました……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_019kur_1_5_019_04:1_5_019_04:cmd-000032:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_019kur_1_5_019_04",
+          "part_id": "1_5_019_04",
+          "file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+          "command_index": 32,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e068940e3623928fa374ed29b7fcd3ee01037b9fb89107db57ba14276affba83"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "019kur",
         "sourceName": "清澄 九郎"
       },
       "performance": {
@@ -275,7 +352,6 @@
         "stepId": 8
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -284,17 +360,28 @@
         "row_id": "1_5_019kur_1_5_019_04:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_019_04",
+        "source_file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+        "command_start": 32,
+        "command_end": 32
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "九郎さん、お疲れさまです。\n差し入れを持ってきたので、少し休憩しませんか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_019kur_1_5_019_04:1_5_019_04:cmd-000036:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_019kur_1_5_019_04",
+          "part_id": "1_5_019_04",
+          "file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+          "command_index": 36,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:95ca3415bfde7416822c16b62938330677a238049a610525a60c0be8085245fb"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -321,21 +408,32 @@
         "row_id": "1_5_019kur_1_5_019_04:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_019_04",
+        "source_file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+        "command_start": 36,
+        "command_end": 36
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサーさん……。\nそうですね、ありがとうございます。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_019kur_1_5_019_04:1_5_019_04:cmd-000042:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_019kur_1_5_019_04",
+          "part_id": "1_5_019_04",
+          "file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+          "command_index": 42,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:78cc1cef1c2c61cb9d9e5439c05a002cc5c3d5455ef5d3b9410781f5184b4a17"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "019kur",
         "sourceName": "清澄 九郎"
       },
       "performance": {
@@ -352,7 +450,6 @@
         "stepId": 10
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -361,17 +458,28 @@
         "row_id": "1_5_019kur_1_5_019_04:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_019_04",
+        "source_file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+        "command_start": 42,
+        "command_end": 42
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "少し苦戦しているように見えましたが、\n私に何かお手伝いできることはありませんか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_019kur_1_5_019_04:1_5_019_04:cmd-000044:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_019kur_1_5_019_04",
+          "part_id": "1_5_019_04",
+          "file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+          "command_index": 44,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1888877e36e8be7f78dfef17b2dbfcbdc067b3e35f8146cdb7736c65d9b78edd"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -398,21 +506,32 @@
         "row_id": "1_5_019kur_1_5_019_04:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_019_04",
+        "source_file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+        "command_start": 44,
+        "command_end": 44
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ご心配をおかけして、すみません。\n大丈夫と言えれば良いのですが、今はまだ……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_019kur_1_5_019_04:1_5_019_04:cmd-000049:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_019kur_1_5_019_04",
+          "part_id": "1_5_019_04",
+          "file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+          "command_index": 49,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:22d38661e7d594d19f81502fde8149147a3a254df4fc3e38fa80241d86538cf6"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "019kur",
         "sourceName": "清澄 九郎"
       },
       "performance": {
@@ -429,7 +548,6 @@
         "stepId": 12
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -438,21 +556,32 @@
         "row_id": "1_5_019kur_1_5_019_04:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_019_04",
+        "source_file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+        "command_start": 49,
+        "command_end": 49
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ですが、今はできなくとも\nできるようになるまで精進するのみ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_019kur_1_5_019_04:1_5_019_04:cmd-000053:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_019kur_1_5_019_04",
+          "part_id": "1_5_019_04",
+          "file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+          "command_index": 53,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:505e02b0aaf5480c2b3ad9f329a778ccb3440b29fae29c9dc7bf95354fd2bc46"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "019kur",
         "sourceName": "清澄 九郎"
       },
       "performance": {
@@ -469,7 +598,6 @@
         "stepId": 13
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -478,21 +606,32 @@
         "row_id": "1_5_019kur_1_5_019_04:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_019_04",
+        "source_file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+        "command_start": 53,
+        "command_end": 53
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "あの、●●●●プロデューサーさん。\n少しレッスンにお付き合いいただけませんか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_019kur_1_5_019_04:1_5_019_04:cmd-000061:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_019kur_1_5_019_04",
+          "part_id": "1_5_019_04",
+          "file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+          "command_index": 61,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a57a9705a8012deeea4f25dd3f1ed487b2fbc744325b783085efd0efc50a3dec"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "019kur",
         "sourceName": "清澄 九郎"
       },
       "performance": {
@@ -508,26 +647,35 @@
         "snapshot": "entry",
         "stepId": 15
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_019kur_1_5_019_04:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_019_04",
+        "source_file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+        "command_start": 61,
+        "command_end": 61
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "もちろんです！\nいくらでもお付き合いしますよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_019kur_1_5_019_04:1_5_019_04:cmd-000064:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_019kur_1_5_019_04",
+          "part_id": "1_5_019_04",
+          "file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+          "command_index": 64,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b6d54f82bd1932081b0ab3a8948b6874b4e01a1296fb23e08565939e6f4132f7"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -554,92 +702,16 @@
         "row_id": "1_5_019kur_1_5_019_04:step-16:text",
         "step_id": 16,
         "step_index": 15,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_019_04",
+        "source_file": "assets/resources/scenariodata/1_5_019kur/scenario_1_5_019_04.json",
+        "command_start": 64,
+        "command_end": 64
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 15,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "有名時代小説の舞台のお仕事",
     "episode_label": null

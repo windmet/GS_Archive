@@ -45,16 +45,30 @@ const copy = async (source, file, destination) => {
 for (const file of codeFiles) await copy(bundle, file, dist)
 for (const file of modelFiles) await copy(path.join(models, 'pages'), file, dist)
 await copyPreviewTranslations(root, dist)
+const workRelease = '2026-09-28-story-work-text-backfill-001'
+const readingManifest = JSON.parse(await fs.readFile(path.join(root, 'public/data/reading/manifest.json'), 'utf8'))
+const workEntries = readingManifest.entries.filter(entry => entry.domain === 'work')
+assert(workEntries.length === 637, 'Work backfill preview requires 637 published Reading entries')
+const workFiles = new Set([
+  'data/reading/manifest.json', 'data/authoritative_story_publications.json',
+  'data/publication/manifest.json', `data/publication/releases/${workRelease}.json`,
+])
+for (const entry of workEntries) {
+  workFiles.add(`data/compiled/${entry.source_file}`)
+  workFiles.add(`data/reading/${entry.file}`)
+}
+for (const file of workFiles) await copy(path.join(root, 'public'), file, path.join(dist, '_work-backfill'))
 for (const directory of ['functions', 'shared/deploy']) for (const file of await listFiles(path.join(root, directory))) {
   await copy(path.join(root, directory), file, path.join(packageRoot, directory))
 }
 const receipt = { purpose: 'device-review-preview', productionApproved: false,
   branch: 'gs-architecture-device-test', sourceRevision: budget.sourceRevision, sourceDigest: budget.sourceDigest,
   release: boot.release, dataRevision: a['--data-revision'], initialJsGzipEstimate: budget.initialJsGzipEstimate,
+  workBackfillRelease: workRelease,
   allPublicRoutesMigrated: acceptance.allPublicRoutesMigrated, deviceReviewAccepted: acceptance.deviceReviewAccepted,
   remainingRoutes: acceptance.routes.unfinished, generatedAt: new Date().toISOString() }
 await fs.writeFile(path.join(dist, 'preview-receipt.json'), JSON.stringify(receipt, null, 2) + '\n')
-await fs.writeFile(path.join(dist, '_routes.json'), JSON.stringify({version: 1, include: ['/assets/*', '/data/*'], exclude: ['/_app/*', '/_catalog/*', '/translations/*']}))
+await fs.writeFile(path.join(dist, '_routes.json'), JSON.stringify({version: 1, include: ['/assets/*', '/data/*'], exclude: ['/_app/*', '/_catalog/*', '/translations/*', '/_work-backfill/*']}))
 await fs.writeFile(path.join(dist, '_headers'), `/*
   X-Robots-Tag: noindex, nofollow
 /_app/*
@@ -70,7 +84,8 @@ await fs.writeFile(path.join(dist, '_headers'), `/*
 `)
 await fs.writeFile(path.join(packageRoot, 'wrangler.jsonc'), JSON.stringify({ name: 'gs-archive-preview',
   pages_build_output_dir: './dist', compatibility_date: '2026-09-13',
-  vars: { ARCHIVE_GZIP_MODE: 'all', ARCHIVE_DATA_REVISION: a['--data-revision'] },
+  vars: { ARCHIVE_GZIP_MODE: 'all', ARCHIVE_DATA_REVISION: a['--data-revision'],
+    ARCHIVE_WORK_BACKFILL_RELEASE: workRelease },
   r2_buckets: [{binding: 'ARCHIVE_ASSETS', bucket_name: 'sidem-archive-preview'}] }, null, 2))
 for (const file of await listFiles(dist)) {
   const bytes = await safeRead(dist, file)

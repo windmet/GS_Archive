@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_024shk_1_5_024_01",
-  "logical_id": "story-collection:1_5_024shk_1_5_024_01",
+  "logical_id": "story:1_5_024shk_1_5_024_01",
   "scenario_id": "1_5_024shk_1_5_024_01",
   "text_catalog_id": "1_5_024shk_1_5_024_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_024shk_1_5_024_01.json",
-    "sha256": "sha256:27ebdcf76b03a6618b63b84185ceab6f196fbe96417d8d1f863908e95d18e2d4",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:0abcef16768eabad6e6367b93ca51963447e82f4119cc481cd6211eba3dc213e",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 14,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_024shk_1_5_024_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_024shk_1_5_024_01:1_5_024_01:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_024shk_1_5_024_01",
+          "part_id": "1_5_024_01",
+          "file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_024shk_1_5_024_01:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_024_01",
+        "source_file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_024shk_1_5_024_01:1_5_024_01:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_024shk_1_5_024_01",
+          "part_id": "1_5_024_01",
+          "file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_024shk_1_5_024_01:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_024_01",
+        "source_file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_024shk_1_5_024_01:1_5_024_01:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_024shk_1_5_024_01",
+          "part_id": "1_5_024_01",
+          "file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_024shk_1_5_024_01:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_024_01",
+        "source_file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "のど飴のCMのお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_024shk_1_5_024_01:1_5_024_01:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_024shk_1_5_024_01",
+          "part_id": "1_5_024_01",
+          "file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:6cc541f41399bfbb6cf575e53b8054e570277117b7191b17c24610a7218f7da2"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,17 +212,28 @@
         "row_id": "1_5_024shk_1_5_024_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_024_01",
+        "source_file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "四季さん、のど飴のCMのお仕事が決まりました！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_024shk_1_5_024_01:1_5_024_01:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_024shk_1_5_024_01",
+          "part_id": "1_5_024_01",
+          "file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8a8fd8d8f3433f541c63d7d33b2fb5ed0b04c88aa0d2ab68c5499f1e87721694"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -202,21 +260,32 @@
         "row_id": "1_5_024shk_1_5_024_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_024_01",
+        "source_file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "おおー！　マジっすか、\n●●●●プロデューサーちゃん！？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_024shk_1_5_024_01:1_5_024_01:cmd-000021:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_024shk_1_5_024_01",
+          "part_id": "1_5_024_01",
+          "file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+          "command_index": 21,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4b865f96528f4a0707e1964ace1a5287ca2742eb778fd6b71be948e600f248c0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "024shk",
         "sourceName": "伊瀬谷 四季"
       },
       "performance": {
@@ -233,7 +302,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -242,21 +310,32 @@
         "row_id": "1_5_024shk_1_5_024_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_024_01",
+        "source_file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "のど飴といえばボーカルの必需品。\nCMに選ばれてマジメガ嬉しいっす！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_024shk_1_5_024_01:1_5_024_01:cmd-000028:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_024shk_1_5_024_01",
+          "part_id": "1_5_024_01",
+          "file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+          "command_index": 28,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:90d0178148694aa4bf644e8d69393f5a98655f914a0d16893898bf1b8b289529"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "024shk",
         "sourceName": "伊瀬谷 四季"
       },
       "performance": {
@@ -273,7 +352,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -282,17 +360,28 @@
         "row_id": "1_5_024shk_1_5_024_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_024_01",
+        "source_file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "撮影で使うのど飴は、フルーツ味になります。\nサンプルをいただいたので、どうぞ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_024shk_1_5_024_01:1_5_024_01:cmd-000033:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_024shk_1_5_024_01",
+          "part_id": "1_5_024_01",
+          "file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+          "command_index": 33,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1eab8561911714379f5f8f3d099b0bf6cd02f4298c65ae59423aff16996eaa10"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -319,21 +408,32 @@
         "row_id": "1_5_024shk_1_5_024_01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_024_01",
+        "source_file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ありがとっす！\nそれじゃさっそく、いっただきまーす！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_024shk_1_5_024_01:1_5_024_01:cmd-000041:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_024shk_1_5_024_01",
+          "part_id": "1_5_024_01",
+          "file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+          "command_index": 41,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:00e9e9c69e4ded2ef17f8636a3db125133875c1ea3e55315709984a2146e99ec"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "024shk",
         "sourceName": "伊瀬谷 四季"
       },
       "performance": {
@@ -350,7 +450,6 @@
         "stepId": 9
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -359,21 +458,32 @@
         "row_id": "1_5_024shk_1_5_024_01:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_024_01",
+        "source_file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+        "command_start": 41,
+        "command_end": 41
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "んん？　こ、これは……！？\nメッチャのどに効くっす！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_024shk_1_5_024_01:1_5_024_01:cmd-000049:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_024shk_1_5_024_01",
+          "part_id": "1_5_024_01",
+          "file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+          "command_index": 49,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d6ccfc460f7326ee02b7737e6445c7b820516f05179c206619135bfbfe6f1f65"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "024shk",
         "sourceName": "伊瀬谷 四季"
       },
       "performance": {
@@ -390,7 +500,6 @@
         "stepId": 10
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -399,17 +508,28 @@
         "row_id": "1_5_024shk_1_5_024_01:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_024_01",
+        "source_file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+        "command_start": 49,
+        "command_end": 49
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "あれ？　食べてすぐわかるものなんですか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_024shk_1_5_024_01:1_5_024_01:cmd-000053:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_024shk_1_5_024_01",
+          "part_id": "1_5_024_01",
+          "file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+          "command_index": 53,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:24f4382d2994c7f67eb4e1bef9e70f7c341e17fee9ba95a41410a319fc329865"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -436,21 +556,32 @@
         "row_id": "1_5_024shk_1_5_024_01:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_024_01",
+        "source_file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+        "command_start": 53,
+        "command_end": 53
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "フィーリングっすよ、フィーリング。\nマジメガハイパーヤバいっすよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_024shk_1_5_024_01:1_5_024_01:cmd-000059:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_024shk_1_5_024_01",
+          "part_id": "1_5_024_01",
+          "file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+          "command_index": 59,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f36dc80bd9dcc5c39d103f2f3f79e73235e046209ba59e50a3559652fc645a5a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "024shk",
         "sourceName": "伊瀬谷 四季"
       },
       "performance": {
@@ -467,7 +598,6 @@
         "stepId": 12
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -476,17 +606,28 @@
         "row_id": "1_5_024shk_1_5_024_01:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_024_01",
+        "source_file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+        "command_start": 59,
+        "command_end": 59
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "なるほど、フィーリングは大事ですよね！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_024shk_1_5_024_01:1_5_024_01:cmd-000062:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_024shk_1_5_024_01",
+          "part_id": "1_5_024_01",
+          "file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+          "command_index": 62,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8bb4bd3e96ea2a7324cc0fa2208c4265081838a554cb06adf8c6e1105977bec8"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -513,21 +654,32 @@
         "row_id": "1_5_024shk_1_5_024_01:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_024_01",
+        "source_file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+        "command_start": 62,
+        "command_end": 62
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "はいっす！　撮影も頑張るっすよ。\n期待しててほしいっす☆",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_024shk_1_5_024_01:1_5_024_01:cmd-000069:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_024shk_1_5_024_01",
+          "part_id": "1_5_024_01",
+          "file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+          "command_index": 69,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1b402647fedcde9e0201d93998e1ec170aedd66640f200722d69ed506e527ce2"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "024shk",
         "sourceName": "伊瀬谷 四季"
       },
       "performance": {
@@ -544,7 +696,6 @@
         "stepId": 14
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -553,92 +704,16 @@
         "row_id": "1_5_024shk_1_5_024_01:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_024_01",
+        "source_file": "assets/resources/scenariodata/1_5_024shk/scenario_1_5_024_01.json",
+        "command_start": 69,
+        "command_end": 69
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "のど飴のCMのお仕事",
     "episode_label": null

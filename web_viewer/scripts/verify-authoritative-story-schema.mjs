@@ -325,10 +325,15 @@ try {
 }
 
 const publicationManifest = await readJson('public/data/publication/manifest.json')
+const authoritativeRegistry = await readJson('public/data/authoritative_story_publications.json')
+const storyKinds = new Map(authoritativeRegistry.entries.map(entry => [entry.logical_id, entry.kind]))
 let ledgerStoryFiles = 0
 for (const [logicalId, state] of Object.entries(publicationManifest.by_logical_id || {})) {
   if (state.domain !== 'story') continue
-  assert.ok(state.artifacts.length >= 2, `${logicalId} must publish an aggregate and at least one episode`)
+  const kind = storyKinds.get(logicalId)
+  assert.ok(kind, `${logicalId} must appear in the authoritative Story registry`)
+  if (kind === 'collection') assert.ok(state.artifacts.length >= 2, `${logicalId} must publish an aggregate and at least one episode`)
+  else assert.equal(state.artifacts.length, 1, `${logicalId} must publish one standalone artifact`)
   const aggregateArtifacts = state.artifacts.filter(artifact => !artifact.path.includes('/episodes/'))
   assert.equal(aggregateArtifacts.length, 1, `${logicalId} must publish exactly one aggregate`)
   for (const artifact of state.artifacts) {

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_020hay_1_5_020_01",
-  "logical_id": "story-collection:1_5_020hay_1_5_020_01",
+  "logical_id": "story:1_5_020hay_1_5_020_01",
   "scenario_id": "1_5_020hay_1_5_020_01",
   "text_catalog_id": "1_5_020hay_1_5_020_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_020hay_1_5_020_01.json",
-    "sha256": "sha256:18efe746b088352c68bd742109e00394a90ae28b5d825ad08cb1454f2a750937",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:62523a6907349825ec015f7fbe5406d62b5baa109179532580afa8d748a60025",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 16,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_020hay_1_5_020_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_020hay_1_5_020_01:1_5_020_01:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_020hay_1_5_020_01",
+          "part_id": "1_5_020_01",
+          "file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_020hay_1_5_020_01:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_020_01",
+        "source_file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_020hay_1_5_020_01:1_5_020_01:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_020hay_1_5_020_01",
+          "part_id": "1_5_020_01",
+          "file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_020hay_1_5_020_01:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_020_01",
+        "source_file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_020hay_1_5_020_01:1_5_020_01:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_020hay_1_5_020_01",
+          "part_id": "1_5_020_01",
+          "file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_020hay_1_5_020_01:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_020_01",
+        "source_file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "ゲームアプリのCMのお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_020hay_1_5_020_01:1_5_020_01:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_020hay_1_5_020_01",
+          "part_id": "1_5_020_01",
+          "file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:1032370a88a6f8dcfc29af4d580e74fc3e90d8d64eb2d166bbc956d21edc60da"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,21 +212,32 @@
         "row_id": "1_5_020hay_1_5_020_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_020_01",
+        "source_file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "うーん、なかなか連鎖が繋がらないな……。\n……あ、こうすればいいんだ！　よし、クリア！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_020hay_1_5_020_01:1_5_020_01:cmd-000021:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_020hay_1_5_020_01",
+          "part_id": "1_5_020_01",
+          "file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+          "command_index": 21,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2d9633f4bfe701297ca734f598ddbf667361a474f7f1c4f61cf55ade9ef993b9"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "020hay",
         "sourceName": "秋山 隼人"
       },
       "performance": {
@@ -196,7 +254,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -205,17 +262,28 @@
         "row_id": "1_5_020hay_1_5_020_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_020_01",
+        "source_file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "お疲れさまです。……あれ？\n隼人さん、何をやっているんですか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_020hay_1_5_020_01:1_5_020_01:cmd-000028:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_020hay_1_5_020_01",
+          "part_id": "1_5_020_01",
+          "file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+          "command_index": 28,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:afd36260be7fa02848cdec38d5a4dd0fea94dab0fb92bf5af3c8144846b1c623"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -242,21 +310,32 @@
         "row_id": "1_5_020hay_1_5_020_01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_020_01",
+        "source_file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサー、お疲れさま。\nゲームアプリだよ。ほら。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_020hay_1_5_020_01:1_5_020_01:cmd-000034:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_020hay_1_5_020_01",
+          "part_id": "1_5_020_01",
+          "file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+          "command_index": 34,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d5e48963e625fbe213b8ab32fbe035126844177eb90151f5ce65e9a2a08f2d4b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "020hay",
         "sourceName": "秋山 隼人"
       },
       "performance": {
@@ -273,7 +352,6 @@
         "stepId": 9
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -282,17 +360,28 @@
         "row_id": "1_5_020hay_1_5_020_01:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_020_01",
+        "source_file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+        "command_start": 34,
+        "command_end": 34
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "これは……今度、隼人さんが出演されるCMの\nゲームですね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_020hay_1_5_020_01:1_5_020_01:cmd-000036:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_020hay_1_5_020_01",
+          "part_id": "1_5_020_01",
+          "file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+          "command_index": 36,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:cd7e4adb0230fd10589d56a6f8caecdda0726c87a8c3d9cc60f672398f827c62"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -319,21 +408,32 @@
         "row_id": "1_5_020hay_1_5_020_01:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_020_01",
+        "source_file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+        "command_start": 36,
+        "command_end": 36
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "そうそう！　パズルゲームなんだけど、\nすげー面白くてさ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_020hay_1_5_020_01:1_5_020_01:cmd-000041:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_020hay_1_5_020_01",
+          "part_id": "1_5_020_01",
+          "file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+          "command_index": 41,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:cca78370ea0fbf7524e0621f4c24f83e056a225196e4c53833928236c4a2c1b7"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "020hay",
         "sourceName": "秋山 隼人"
       },
       "performance": {
@@ -350,7 +450,6 @@
         "stepId": 11
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -359,21 +458,32 @@
         "row_id": "1_5_020hay_1_5_020_01:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_020_01",
+        "source_file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+        "command_start": 41,
+        "command_end": 41
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ちょっとした時間にできるから、\n学校の休み時間や移動中にやってるんだよね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_020hay_1_5_020_01:1_5_020_01:cmd-000045:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_020hay_1_5_020_01",
+          "part_id": "1_5_020_01",
+          "file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+          "command_index": 45,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:54b7496b0e9ab7a99f657268dfb421a601bce07422ee9f783b3ace7de6ecfeea"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "020hay",
         "sourceName": "秋山 隼人"
       },
       "performance": {
@@ -389,30 +499,39 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_020hay_1_5_020_01:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_020_01",
+        "source_file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+        "command_start": 45,
+        "command_end": 45
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "こんな面白いゲームアプリのCMに\n出られるなんて、嬉しいなぁ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_020hay_1_5_020_01:1_5_020_01:cmd-000049:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_020hay_1_5_020_01",
+          "part_id": "1_5_020_01",
+          "file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+          "command_index": 49,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:da96d63c4aede02df620a3b9911d884416579054f65eb554c275e03d71a36c6f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "020hay",
         "sourceName": "秋山 隼人"
       },
       "performance": {
@@ -428,30 +547,39 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_020hay_1_5_020_01:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_020_01",
+        "source_file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+        "command_start": 49,
+        "command_end": 49
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "よかったら、●●●●プロデューサーもやってみて！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_020hay_1_5_020_01:1_5_020_01:cmd-000054:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_020hay_1_5_020_01",
+          "part_id": "1_5_020_01",
+          "file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+          "command_index": 54,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5b53903b5ff25c31cd1effea8c56d57c57942f6be6546875acab4f24f864f9a0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "020hay",
         "sourceName": "秋山 隼人"
       },
       "performance": {
@@ -468,7 +596,6 @@
         "stepId": 14
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -477,17 +604,28 @@
         "row_id": "1_5_020hay_1_5_020_01:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_020_01",
+        "source_file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+        "command_start": 54,
+        "command_end": 54
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "わかりました！　早速ダウンロードしますね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_020hay_1_5_020_01:1_5_020_01:cmd-000057:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_020hay_1_5_020_01",
+          "part_id": "1_5_020_01",
+          "file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+          "command_index": 57,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:44ccf2664dc20a8b00a80037c180e764af681a9a2090b96def5f2743cbefa739"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -514,21 +652,32 @@
         "row_id": "1_5_020hay_1_5_020_01:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_020_01",
+        "source_file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+        "command_start": 57,
+        "command_end": 57
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "やった！　わからないことがあったら、\nなんでも聞いてくれよな！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_020hay_1_5_020_01:1_5_020_01:cmd-000062:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_020hay_1_5_020_01",
+          "part_id": "1_5_020_01",
+          "file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+          "command_index": 62,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:09568fbef40a3eec439137018a0562a72a3254ceddef53ec98e0981911dae7cd"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "020hay",
         "sourceName": "秋山 隼人"
       },
       "performance": {
@@ -545,7 +694,6 @@
         "stepId": 16
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -554,92 +702,16 @@
         "row_id": "1_5_020hay_1_5_020_01:step-16:text",
         "step_id": 16,
         "step_index": 15,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_020_01",
+        "source_file": "assets/resources/scenariodata/1_5_020hay/scenario_1_5_020_01.json",
+        "command_start": 62,
+        "command_end": 62
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 15,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "ゲームアプリのCMのお仕事",
     "episode_label": null

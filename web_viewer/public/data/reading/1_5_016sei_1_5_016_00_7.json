@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_016sei_1_5_016_00_7",
-  "logical_id": "story-collection:1_5_016sei_1_5_016_00_7",
+  "logical_id": "story:1_5_016sei_1_5_016_00_7",
   "scenario_id": "1_5_016sei_1_5_016_00_7",
   "text_catalog_id": "1_5_016sei_1_5_016_00_7",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_016sei_1_5_016_00_7.json",
-    "sha256": "sha256:4b3b61c7bd0cc262d9b1124ddf61bb94d7e51ecdd6a6b5ac18aa2fef72e5c8f4",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:3de5c602affec067e4cef9df45e88796d5861a34186892a05ab43e08fbc6f96c",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 4,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_016sei_1_5_016_00_7.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事開始",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_016sei_1_5_016_00_7:1_5_016_00_7:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_016sei_1_5_016_00_7",
+          "part_id": "1_5_016_00_7",
+          "file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_00_7.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c9578f41f04512f8dd518c9243e386d3dec69c30c8930a99faa1eaef07ea0ceb"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_016sei_1_5_016_00_7:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_016_00_7",
+        "source_file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_00_7.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_016sei_1_5_016_00_7:1_5_016_00_7:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_016sei_1_5_016_00_7",
+          "part_id": "1_5_016_00_7",
+          "file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_00_7.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,21 +116,32 @@
         "row_id": "1_5_016sei_1_5_016_00_7:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_016_00_7",
+        "source_file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_00_7.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "太陽の下で体を動かすと気分が良くなるな。\nプロデューサーさんも一緒にどうだ？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_016sei_1_5_016_00_7:1_5_016_00_7:cmd-000015:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_016sei_1_5_016_00_7",
+          "part_id": "1_5_016_00_7",
+          "file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_00_7.json",
+          "command_index": 15,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8a51387918721609aee58347265759a5c74449d4952a204a46674157c17fccbd"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -122,7 +158,6 @@
         "stepId": 4
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -131,37 +166,16 @@
         "row_id": "1_5_016sei_1_5_016_00_7:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_016_00_7",
+        "source_file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_00_7.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "太陽の下で体を動かすと気分が良くなるな。",
     "episode_label": null

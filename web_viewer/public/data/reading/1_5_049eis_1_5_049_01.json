@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_049eis_1_5_049_01",
-  "logical_id": "story-collection:1_5_049eis_1_5_049_01",
+  "logical_id": "story:1_5_049eis_1_5_049_01",
   "scenario_id": "1_5_049eis_1_5_049_01",
   "text_catalog_id": "1_5_049eis_1_5_049_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_049eis_1_5_049_01.json",
-    "sha256": "sha256:c7abfb793b6c014ca6019650b80db1e02b0dc325bf715851d64e1546b4d94b20",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:a632370339e25da666cfafc39ab11d82e70bda1eee8335830169c0e9706965c7",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 20,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_049eis_1_5_049_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_049eis_1_5_049_01:1_5_049_01:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_049eis_1_5_049_01",
+          "part_id": "1_5_049_01",
+          "file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_049eis_1_5_049_01:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_049_01",
+        "source_file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_049eis_1_5_049_01:1_5_049_01:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_049eis_1_5_049_01",
+          "part_id": "1_5_049_01",
+          "file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_049eis_1_5_049_01:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_049_01",
+        "source_file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_049eis_1_5_049_01:1_5_049_01:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_049eis_1_5_049_01",
+          "part_id": "1_5_049_01",
+          "file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_049eis_1_5_049_01:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_049_01",
+        "source_file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "学習塾のCMのナレーションのお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_049eis_1_5_049_01:1_5_049_01:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_049eis_1_5_049_01",
+          "part_id": "1_5_049_01",
+          "file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:5726e740955796be80c7e13a9350694da4813485edf7c1e3f95c1cf666fd63ba"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,21 +212,32 @@
         "row_id": "1_5_049eis_1_5_049_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_049_01",
+        "source_file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "「諦めるな、前へ進め。\n大丈夫、あなたは一人じゃない」",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_049eis_1_5_049_01:1_5_049_01:cmd-000014:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_049eis_1_5_049_01",
+          "part_id": "1_5_049_01",
+          "file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+          "command_index": 14,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9b4241f882ee82c0d29187d37817a1331a3d877da0994a4e694963abbcca2fe2"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "049eis",
         "sourceName": "眉見 鋭心"
       },
       "performance": {
@@ -195,30 +253,39 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_049eis_1_5_049_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_049_01",
+        "source_file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "「ここには、あなたの力になれる人たちがいる」",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_049eis_1_5_049_01:1_5_049_01:cmd-000016:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_049eis_1_5_049_01",
+          "part_id": "1_5_049_01",
+          "file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+          "command_index": 16,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:82331c8cea56011ee6d44738d2329d7d97593ee24bd7538a9f1e33431ea88277"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "049eis",
         "sourceName": "眉見 鋭心"
       },
       "performance": {
@@ -234,30 +301,39 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_049eis_1_5_049_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_049_01",
+        "source_file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "「なりたい自分になるために、今、動き出そう」",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_049eis_1_5_049_01:1_5_049_01:cmd-000022:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_049eis_1_5_049_01",
+          "part_id": "1_5_049_01",
+          "file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+          "command_index": 22,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5a8f591630855412e3a2a16b08dfa5b00214c76603de6b5e5e07d67502c34d2e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "049eis",
         "sourceName": "眉見 鋭心"
       },
       "performance": {
@@ -274,7 +350,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -283,17 +358,28 @@
         "row_id": "1_5_049eis_1_5_049_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_049_01",
+        "source_file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null
     },
     {
       "kind": "caption",
       "source_text": "収録後……",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_049eis_1_5_049_01:1_5_049_01:cmd-000032:time_caption:000",
+        "source": {
+          "scenario_id": "1_5_049eis_1_5_049_01",
+          "part_id": "1_5_049_01",
+          "file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+          "command_index": 32,
+          "field_kind": "time_caption",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4f10f377623d30a2f8e6eef9924c2cd8b7962dcbd80ad5f1e46aca35a570d7f4"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -320,17 +406,28 @@
         "row_id": "1_5_049eis_1_5_049_01:step-11:caption",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_049_01",
+        "source_file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+        "command_start": 32,
+        "command_end": 32
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "鋭心さん、お疲れさまでした！\nとても聞きやすいナレーションでしたよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_049eis_1_5_049_01:1_5_049_01:cmd-000040:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_049eis_1_5_049_01",
+          "part_id": "1_5_049_01",
+          "file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+          "command_index": 40,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ef85eaf7976a0d242392c972051e707c7d3921a739d055ebb7dc2486457f6b24"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -357,17 +454,28 @@
         "row_id": "1_5_049eis_1_5_049_01:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_049_01",
+        "source_file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+        "command_start": 40,
+        "command_end": 40
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "何より、背中を押してくれる力強さを感じました！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_049eis_1_5_049_01:1_5_049_01:cmd-000043:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_049eis_1_5_049_01",
+          "part_id": "1_5_049_01",
+          "file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+          "command_index": 43,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9d65cc26bf44ee1ce3b97096cea59f53379e38e18ff0d5ca2ec7a2f6552724ec"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -394,21 +502,32 @@
         "row_id": "1_5_049eis_1_5_049_01:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_049_01",
+        "source_file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+        "command_start": 43,
+        "command_end": 43
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "当然だ。言葉だけで相手に伝わるよう、\n意識してナレーションをした。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_049eis_1_5_049_01:1_5_049_01:cmd-000046:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_049eis_1_5_049_01",
+          "part_id": "1_5_049_01",
+          "file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+          "command_index": 46,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7f27c30fefedc6ac205b2bce9cd403c82c1e12bc15a7cb2cd5f715d0696cf95f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "049eis",
         "sourceName": "眉見 鋭心"
       },
       "performance": {
@@ -424,30 +543,39 @@
         "snapshot": "entry",
         "stepId": 16
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_049eis_1_5_049_01:step-16:text",
         "step_id": 16,
         "step_index": 15,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_049_01",
+        "source_file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+        "command_start": 46,
+        "command_end": 46
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "しかし……今回の仕事は、『声の演技』の\n奥深さについて考えるいい機会になったな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_049eis_1_5_049_01:1_5_049_01:cmd-000050:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_049eis_1_5_049_01",
+          "part_id": "1_5_049_01",
+          "file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+          "command_index": 50,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a25b9fa6b55db033915b91d3ce169a18c255c9a0fdbe4adcd3ea2053e3021cce"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "049eis",
         "sourceName": "眉見 鋭心"
       },
       "performance": {
@@ -464,7 +592,6 @@
         "stepId": 17
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -473,17 +600,28 @@
         "row_id": "1_5_049eis_1_5_049_01:step-17:text",
         "step_id": 17,
         "step_index": 16,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_049_01",
+        "source_file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+        "command_start": 50,
+        "command_end": 50
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "鋭心さんのナレーションを聞いて、\n多くの受験生が心を動かされると思いますが……",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_049eis_1_5_049_01:1_5_049_01:cmd-000054:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_049eis_1_5_049_01",
+          "part_id": "1_5_049_01",
+          "file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+          "command_index": 54,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b9714f95e41c369416e5ffadd9e0658a6ff7e02b219730d54dfdea97458b0e25"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -510,17 +648,28 @@
         "row_id": "1_5_049eis_1_5_049_01:step-18:text",
         "step_id": 18,
         "step_index": 17,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_049_01",
+        "source_file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+        "command_start": 54,
+        "command_end": 54
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "鋭心さん自身の未来にも、\nまた新しい光が差したのかもしれませんね！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_049eis_1_5_049_01:1_5_049_01:cmd-000056:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_049eis_1_5_049_01",
+          "part_id": "1_5_049_01",
+          "file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+          "command_index": 56,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:77a66eacd6fc737a32d8d3aba0d6a88976dbde05443f9c7d1b9bc177263c20e7"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -547,21 +696,32 @@
         "row_id": "1_5_049eis_1_5_049_01:step-19:text",
         "step_id": 19,
         "step_index": 18,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_049_01",
+        "source_file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+        "command_start": 56,
+        "command_end": 56
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ふっ、そうだな。俺にとっても、\n一歩踏み出すきっかけになったようだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_049eis_1_5_049_01:1_5_049_01:cmd-000061:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_049eis_1_5_049_01",
+          "part_id": "1_5_049_01",
+          "file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+          "command_index": 61,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c1d2d9c80d08ca4dbcd268c067901804afee16266fd7948186f2120c0cb4f321"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "049eis",
         "sourceName": "眉見 鋭心"
       },
       "performance": {
@@ -578,7 +738,6 @@
         "stepId": 20
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -587,97 +746,16 @@
         "row_id": "1_5_049eis_1_5_049_01:step-20:text",
         "step_id": 20,
         "step_index": 19,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_049_01",
+        "source_file": "assets/resources/scenariodata/1_5_049eis/scenario_1_5_049_01.json",
+        "command_start": 61,
+        "command_end": 61
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 15,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 16,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 17,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 18,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 19,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "学習塾のCMのナレーションのお仕事",
     "episode_label": null

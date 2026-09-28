@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_011min_1_5_011_00_0",
-  "logical_id": "story-collection:1_5_011min_1_5_011_00_0",
+  "logical_id": "story:1_5_011min_1_5_011_00_0",
   "scenario_id": "1_5_011min_1_5_011_00_0",
   "text_catalog_id": "1_5_011min_1_5_011_00_0",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_011min_1_5_011_00_0.json",
-    "sha256": "sha256:5570358404dd4de009d19c840dcdf80133f55c196b69d80ed8e88912c8f9a326",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:be71a8a85da5a8e40b2cae014d396ab4d18a3ddf16bbecf42b4e392541385645",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 4,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_011min_1_5_011_00_0.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事開始",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_00_0:1_5_011_00_0:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_00_0",
+          "part_id": "1_5_011_00_0",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_00_0.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c9578f41f04512f8dd518c9243e386d3dec69c30c8930a99faa1eaef07ea0ceb"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_011min_1_5_011_00_0:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_00_0",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_00_0.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_00_0:1_5_011_00_0:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_00_0",
+          "part_id": "1_5_011_00_0",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_00_0.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,21 +116,32 @@
         "row_id": "1_5_011min_1_5_011_00_0:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_00_0",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_00_0.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "恭二とピエールが一緒なら、\nどんなことがあっても乗り越えられると思うんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_00_0:1_5_011_00_0:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_00_0",
+          "part_id": "1_5_011_00_0",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_00_0.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0f0a478d901f5008afd789527f34322e050153d32f545a70532abc88c2884961"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -122,7 +158,6 @@
         "stepId": 4
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -131,37 +166,16 @@
         "row_id": "1_5_011min_1_5_011_00_0:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_00_0",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_00_0.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "恭二とピエールが一緒なら、",
     "episode_label": null

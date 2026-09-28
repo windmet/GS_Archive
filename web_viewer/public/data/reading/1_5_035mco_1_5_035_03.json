@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_035mco_1_5_035_03",
-  "logical_id": "story-collection:1_5_035mco_1_5_035_03",
+  "logical_id": "story:1_5_035mco_1_5_035_03",
   "scenario_id": "1_5_035mco_1_5_035_03",
   "text_catalog_id": "1_5_035mco_1_5_035_03",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_035mco_1_5_035_03.json",
-    "sha256": "sha256:36126d248008a21e290c5c8ae52cc7247ebda301da8c63abe167f2936ae1f9d0",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:a2811d8554d20efe15756e90d3c86c7a6bbd8fc373fbc0dc359264047d87b9c8",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 15,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_035mco_1_5_035_03.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_03:1_5_035_03:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_03",
+          "part_id": "1_5_035_03",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_035mco_1_5_035_03:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_03",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_03:1_5_035_03:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_03",
+          "part_id": "1_5_035_03",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_035mco_1_5_035_03:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_03",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_03:1_5_035_03:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_03",
+          "part_id": "1_5_035_03",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_035mco_1_5_035_03:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_03",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "クイズ番組にゲスト出演するお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_03:1_5_035_03:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_03",
+          "part_id": "1_5_035_03",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:128c7212fc772a90bd998e77d73060dfcc9c0e21cc8e90b2c18465aa8f48d59d"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,17 +212,28 @@
         "row_id": "1_5_035mco_1_5_035_03:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_03",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "お疲れさまです……って、道夫さん！\nど、どうしたんですか、この本の山は！？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_03:1_5_035_03:cmd-000016:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_03",
+          "part_id": "1_5_035_03",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+          "command_index": 16,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:10ed982b1509163b93d76a894c82b5df590c7b35d277190f3af2401aa9457149"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -202,21 +260,32 @@
         "row_id": "1_5_035mco_1_5_035_03:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_03",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "お疲れさま、●●●●プロデューサー。\nクイズ番組に向け勉強するために持ってきた。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_03:1_5_035_03:cmd-000020:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_03",
+          "part_id": "1_5_035_03",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+          "command_index": 20,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0c8ca4f86f367cc722bac2088fc05a50acbc8dcd785d0c901b46342debd365fe"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -232,30 +301,39 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_035mco_1_5_035_03:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_03",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "対戦相手は偏差値が高いことで有名な学校に通う、\n現役の学生だからな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_03:1_5_035_03:cmd-000022:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_03",
+          "part_id": "1_5_035_03",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+          "command_index": 22,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0fc4fc95a004cf51505714df858df2d4d0bbea57d10d35ab206a9e1f1716ea04"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -271,26 +349,35 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_035mco_1_5_035_03:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_03",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "それで勉強をしていたんですね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_03:1_5_035_03:cmd-000024:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_03",
+          "part_id": "1_5_035_03",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+          "command_index": 24,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:29f1061d3790936eda5125a44c91842e0b0146388c528a419763d8dadbe9aa2c"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -317,21 +404,32 @@
         "row_id": "1_5_035mco_1_5_035_03:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_03",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ああ。私がゲスト出演するのは、\n現役の学生が様々な分野の方と対戦する番組だろう？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_03:1_5_035_03:cmd-000027:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_03",
+          "part_id": "1_5_035_03",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+          "command_index": 27,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:338e625974af81414a89b05d91ca5205a2e3d46801a959b5639b6e055caaa855"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -348,7 +446,6 @@
         "stepId": 10
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -357,21 +454,32 @@
         "row_id": "1_5_035mco_1_5_035_03:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_03",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+        "command_start": 27,
+        "command_end": 27
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "元高校教師の私が対戦相手と決まってから\n学生達もいつも以上に気合いが入っているらしい。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_03:1_5_035_03:cmd-000031:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_03",
+          "part_id": "1_5_035_03",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+          "command_index": 31,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a5eaa8ce45999e803c94660a0fceacb992860184df0321bd580f4cfb05cf92ca"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -388,7 +496,6 @@
         "stepId": 11
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -397,21 +504,32 @@
         "row_id": "1_5_035mco_1_5_035_03:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_03",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "その熱意に応えるためにも、\n収録までこちらもしっかりと対策を練らねば。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_03:1_5_035_03:cmd-000033:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_03",
+          "part_id": "1_5_035_03",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+          "command_index": 33,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8f247521712f2c0d495a5b170d6fe1be0e132a00c0be1c3431f0f862d635aaad"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -427,26 +545,35 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_035mco_1_5_035_03:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_03",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "はい！　私にもお手伝いできることがあったら、\nなんでも言ってくださいね！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_03:1_5_035_03:cmd-000035:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_03",
+          "part_id": "1_5_035_03",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+          "command_index": 35,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2df92bc3dee605a16ffebbb9f58ecffb8685362f4cdd7d2be2b568c92965f33f"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -473,17 +600,28 @@
         "row_id": "1_5_035mco_1_5_035_03:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_03",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+        "command_start": 35,
+        "command_end": 35
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "一緒に頑張りましょう！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_03:1_5_035_03:cmd-000037:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_03",
+          "part_id": "1_5_035_03",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+          "command_index": 37,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1d3cdd80476f40e53602a40222485c40ccd6c1b18a9c7ecf78a20c45f153298b"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -510,21 +648,32 @@
         "row_id": "1_5_035mco_1_5_035_03:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_03",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+        "command_start": 37,
+        "command_end": 37
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ありがとう、●●●●プロデューサー。\nその時は遠慮なく声を掛けさせてもらおう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_03:1_5_035_03:cmd-000041:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_03",
+          "part_id": "1_5_035_03",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+          "command_index": 41,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6636cd0a584c6bdeaf43d9a673e7ef326ac6d8a7c83ec9a6899d9a813b45be04"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -541,7 +690,6 @@
         "stepId": 15
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -550,92 +698,16 @@
         "row_id": "1_5_035mco_1_5_035_03:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_03",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_03.json",
+        "command_start": 41,
+        "command_end": 41
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "クイズ番組にゲスト出演するお仕事",
     "episode_label": null

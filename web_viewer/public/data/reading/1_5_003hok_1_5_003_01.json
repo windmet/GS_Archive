@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_003hok_1_5_003_01",
-  "logical_id": "story-collection:1_5_003hok_1_5_003_01",
+  "logical_id": "story:1_5_003hok_1_5_003_01",
   "scenario_id": "1_5_003hok_1_5_003_01",
   "text_catalog_id": "1_5_003hok_1_5_003_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_003hok_1_5_003_01.json",
-    "sha256": "sha256:743ca7ce6121cfc76149ef28ebe3080fb90a12e2c21baec57c9e1a2fa2830d2a",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:472c20cd088237468423bf4c8d43ef617b0fa5178cfc6ec5dd12acaa5c4df734",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 14,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_003hok_1_5_003_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_003hok_1_5_003_01:1_5_003_01:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_003hok_1_5_003_01",
+          "part_id": "1_5_003_01",
+          "file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_003hok_1_5_003_01:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_003_01",
+        "source_file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_003hok_1_5_003_01:1_5_003_01:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_003hok_1_5_003_01",
+          "part_id": "1_5_003_01",
+          "file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_003hok_1_5_003_01:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_003_01",
+        "source_file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_003hok_1_5_003_01:1_5_003_01:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_003hok_1_5_003_01",
+          "part_id": "1_5_003_01",
+          "file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_003hok_1_5_003_01:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_003_01",
+        "source_file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "トーク番組に出演するお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_003hok_1_5_003_01:1_5_003_01:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_003hok_1_5_003_01",
+          "part_id": "1_5_003_01",
+          "file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:996ab82de97c51960fa9b5da076b3eee0ad69fbe52dbe06775535df4ef32485f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,21 +212,32 @@
         "row_id": "1_5_003hok_1_5_003_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_003_01",
+        "source_file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "トークテーマが「過去の自分へ」だなんて\n面白いですよね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_003hok_1_5_003_01:1_5_003_01:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_003hok_1_5_003_01",
+          "part_id": "1_5_003_01",
+          "file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6693d4ed69168710a5dd6ee226dcaa16fe24b8dbd5327050894852f166432cd4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -195,30 +253,39 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_003hok_1_5_003_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_003_01",
+        "source_file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "モデルをやっていた時の写真やデビュー当時の\n写真も出るみたいで。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_003hok_1_5_003_01:1_5_003_01:cmd-000020:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_003hok_1_5_003_01",
+          "part_id": "1_5_003_01",
+          "file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+          "command_index": 20,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a5cd98e4364c19bbda14444a3e67ecfbb63c1e0c56badf384a216b22249a78c7"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -234,26 +301,35 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_003hok_1_5_003_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_003_01",
+        "source_file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "今はもうなかなか見られない写真ですし\n貴重ですよね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_003hok_1_5_003_01:1_5_003_01:cmd-000023:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_003hok_1_5_003_01",
+          "part_id": "1_5_003_01",
+          "file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+          "command_index": 23,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bc74a9b388cb89188e0f05af686516410470503ff7151818d08475817d58e931"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -280,21 +356,32 @@
         "row_id": "1_5_003hok_1_5_003_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_003_01",
+        "source_file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "出し惜しみしているわけではないんですけどね。\nなかなか公開する機会がなくて。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_003hok_1_5_003_01:1_5_003_01:cmd-000028:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_003hok_1_5_003_01",
+          "part_id": "1_5_003_01",
+          "file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+          "command_index": 28,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e3949ba52ee6c904754071463011a0c65f974f588101b05aadce9d34d42ac9da"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -311,7 +398,6 @@
         "stepId": 8
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -320,21 +406,32 @@
         "row_id": "1_5_003hok_1_5_003_01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_003_01",
+        "source_file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "きっと、この番組で初めて見るエンジェルちゃんが\nいると思うんですよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_003hok_1_5_003_01:1_5_003_01:cmd-000032:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_003hok_1_5_003_01",
+          "part_id": "1_5_003_01",
+          "file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+          "command_index": 32,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:91ed87902b5c16431da4f0ec6495938cb450239e16111c815d166d4d1dfeb50c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -350,30 +447,39 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_003hok_1_5_003_01:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_003_01",
+        "source_file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+        "command_start": 32,
+        "command_end": 32
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "写真だけじゃなくて、俺の過去を知った\nエンジェルちゃん達の反応も楽しみです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_003hok_1_5_003_01:1_5_003_01:cmd-000036:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_003hok_1_5_003_01",
+          "part_id": "1_5_003_01",
+          "file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+          "command_index": 36,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:be5651a49e2015ea3517e16c54e9ac856fcf6c12f30c92b7160e39a549c1106b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -390,7 +496,6 @@
         "stepId": 10
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -399,17 +504,28 @@
         "row_id": "1_5_003hok_1_5_003_01:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_003_01",
+        "source_file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+        "command_start": 36,
+        "command_end": 36
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "もう番組内でお話しすることは\n決めてあるんですか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_003hok_1_5_003_01:1_5_003_01:cmd-000041:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_003hok_1_5_003_01",
+          "part_id": "1_5_003_01",
+          "file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+          "command_index": 41,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:af8e60bfdb3ae79a27e0b20344d522a3fbebe284f8e4f2c7a5402a0618cfbff2"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -436,21 +552,32 @@
         "row_id": "1_5_003hok_1_5_003_01:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_003_01",
+        "source_file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+        "command_start": 41,
+        "command_end": 41
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ある程度は。その当時のエピソードをいくつか\n用意してありますよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_003hok_1_5_003_01:1_5_003_01:cmd-000045:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_003hok_1_5_003_01",
+          "part_id": "1_5_003_01",
+          "file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+          "command_index": 45,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:433dd190c170a269cabc0cae732fcbb2f2dd952e8257650b4dd6b3560cc7f0d9"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -466,30 +593,39 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_003hok_1_5_003_01:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_003_01",
+        "source_file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+        "command_start": 45,
+        "command_end": 45
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "見てくれるエンジェルちゃん達も\nきっと楽しんでくれると思います。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_003hok_1_5_003_01:1_5_003_01:cmd-000049:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_003hok_1_5_003_01",
+          "part_id": "1_5_003_01",
+          "file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+          "command_index": 49,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bc1031e4bcedb3efb0fe489a1c0dccb3252707a09fe0373fccbe13d60c66a00b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -505,30 +641,39 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_003hok_1_5_003_01:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_003_01",
+        "source_file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+        "command_start": 49,
+        "command_end": 49
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "さて、それじゃあそろそろ時間ですから\n収録、行ってきます。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_003hok_1_5_003_01:1_5_003_01:cmd-000053:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_003hok_1_5_003_01",
+          "part_id": "1_5_003_01",
+          "file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+          "command_index": 53,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4a2dc0ec934bd6fe2121f1ead4e627b8b77af682a680bfc95ae1fad8e76226e0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -545,7 +690,6 @@
         "stepId": 14
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -554,92 +698,16 @@
         "row_id": "1_5_003hok_1_5_003_01:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_003_01",
+        "source_file": "assets/resources/scenariodata/1_5_003hok/scenario_1_5_003_01.json",
+        "command_start": 53,
+        "command_end": 53
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "トーク番組に出演するお仕事",
     "episode_label": null

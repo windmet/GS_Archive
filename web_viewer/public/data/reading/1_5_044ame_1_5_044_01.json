@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_044ame_1_5_044_01",
-  "logical_id": "story-collection:1_5_044ame_1_5_044_01",
+  "logical_id": "story:1_5_044ame_1_5_044_01",
   "scenario_id": "1_5_044ame_1_5_044_01",
   "text_catalog_id": "1_5_044ame_1_5_044_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_044ame_1_5_044_01.json",
-    "sha256": "sha256:4448becd5d5db8bb9fc878319440a1c7d012fbb6c848d4fcacb2423f8e9c5b7b",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:e1e3bf99f6040292f3c252a3ff4a355f46d58691f69a637d6a0e25fa038d65a2",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 14,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_044ame_1_5_044_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_044ame_1_5_044_01:1_5_044_01:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_044ame_1_5_044_01",
+          "part_id": "1_5_044_01",
+          "file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_044ame_1_5_044_01:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_044_01",
+        "source_file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_044ame_1_5_044_01:1_5_044_01:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_044ame_1_5_044_01",
+          "part_id": "1_5_044_01",
+          "file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_044ame_1_5_044_01:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_044_01",
+        "source_file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_044ame_1_5_044_01:1_5_044_01:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_044ame_1_5_044_01",
+          "part_id": "1_5_044_01",
+          "file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_044ame_1_5_044_01:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_044_01",
+        "source_file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "ファッション誌のグラビア撮影のお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_044ame_1_5_044_01:1_5_044_01:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_044ame_1_5_044_01",
+          "part_id": "1_5_044_01",
+          "file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:8d84ccbcf286a6bf79622ad54d01b87530f290ca0c419cc37d76c67e51277849"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,17 +212,28 @@
         "row_id": "1_5_044ame_1_5_044_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_044_01",
+        "source_file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "雨彦さん、本日はファッション雑誌の\n衣装合わせになります。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_044ame_1_5_044_01:1_5_044_01:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_044ame_1_5_044_01",
+          "part_id": "1_5_044_01",
+          "file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:047a4d36e17ce7ca0edf8b3480793a4e0e2f54287a43faf19c12bbbb9e7e5e93"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -202,21 +260,32 @@
         "row_id": "1_5_044ame_1_5_044_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_044_01",
+        "source_file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ああ、衣装合わせのあとは\n軽い打ち合わせがあると言っていたな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_044ame_1_5_044_01:1_5_044_01:cmd-000019:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_044ame_1_5_044_01",
+          "part_id": "1_5_044_01",
+          "file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+          "command_index": 19,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c69d65a9e041ddab18358e4182b2b3ad81ce01aff37cbf1c6320888bb6a9ac20"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -232,30 +301,39 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_044ame_1_5_044_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_044_01",
+        "source_file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "資料に目を通したが、\n落ち着いたデザインのブランドだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_044ame_1_5_044_01:1_5_044_01:cmd-000022:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_044ame_1_5_044_01",
+          "part_id": "1_5_044_01",
+          "file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+          "command_index": 22,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:053331ca7c38b81d42efd272bb8937a78d919eefaf563d7ce227d25681ffa14d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -271,30 +349,39 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_044ame_1_5_044_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_044_01",
+        "source_file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "着回しもしやすいだろう。\n服のサイズが合えばいいんだがな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_044ame_1_5_044_01:1_5_044_01:cmd-000028:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_044ame_1_5_044_01",
+          "part_id": "1_5_044_01",
+          "file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+          "command_index": 28,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1fb1baf7aafa18398cd9ccd2c05fa0fb4d5317cc194d9586b460260962ab1c2f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -311,7 +398,6 @@
         "stepId": 8
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -320,17 +406,28 @@
         "row_id": "1_5_044ame_1_5_044_01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_044_01",
+        "source_file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "雨彦さんは身長が高いですからね。\nでも、大丈夫です！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_044ame_1_5_044_01:1_5_044_01:cmd-000032:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_044ame_1_5_044_01",
+          "part_id": "1_5_044_01",
+          "file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+          "command_index": 32,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a93b4b018891eadfdf4fefaa7655ecd929bf6bfc560f0206ab9e83e2eb54be05"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -357,17 +454,28 @@
         "row_id": "1_5_044ame_1_5_044_01:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_044_01",
+        "source_file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+        "command_start": 32,
+        "command_end": 32
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "サイズはもちろん、雨彦さんのイメージに合う衣装を\n用意したと、先方がおっしゃっていました。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_044ame_1_5_044_01:1_5_044_01:cmd-000035:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_044ame_1_5_044_01",
+          "part_id": "1_5_044_01",
+          "file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+          "command_index": 35,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d1e9195ff8cd7198052ab84a59fa38cc65af37660381a4843baf1636a77c3de7"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -394,17 +502,28 @@
         "row_id": "1_5_044ame_1_5_044_01:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_044_01",
+        "source_file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+        "command_start": 35,
+        "command_end": 35
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "とても楽しみにされていますよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_044ame_1_5_044_01:1_5_044_01:cmd-000038:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_044ame_1_5_044_01",
+          "part_id": "1_5_044_01",
+          "file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+          "command_index": 38,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:93d37f7c660bdab43f9a65e20ab7990d6cfaeb453f0507300860cd8ca624eb06"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -431,21 +550,32 @@
         "row_id": "1_5_044ame_1_5_044_01:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_044_01",
+        "source_file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+        "command_start": 38,
+        "command_end": 38
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "はは、そいつはありがたい話だ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_044ame_1_5_044_01:1_5_044_01:cmd-000042:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_044ame_1_5_044_01",
+          "part_id": "1_5_044_01",
+          "file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+          "command_index": 42,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:34c50a42d1a6148c71e3944b43e2b7549281eefbc82b7e84b2056347aedeaf40"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -462,7 +592,6 @@
         "stepId": 12
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -471,21 +600,32 @@
         "row_id": "1_5_044ame_1_5_044_01:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_044_01",
+        "source_file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+        "command_start": 42,
+        "command_end": 42
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "そこまで期待されちゃあ、\n失望させるわけにはいかないな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_044ame_1_5_044_01:1_5_044_01:cmd-000046:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_044ame_1_5_044_01",
+          "part_id": "1_5_044_01",
+          "file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+          "command_index": 46,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9528df91c007fdaad957abf2b3bfb49c88cc656745a94b0cbd6f0c4300c853fb"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -502,7 +642,6 @@
         "stepId": 13
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -511,21 +650,32 @@
         "row_id": "1_5_044ame_1_5_044_01:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_044_01",
+        "source_file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+        "command_start": 46,
+        "command_end": 46
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "先方にも●●●●プロデューサーにも、\n納得してもらえるよう頑張ろうか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_044ame_1_5_044_01:1_5_044_01:cmd-000050:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_044ame_1_5_044_01",
+          "part_id": "1_5_044_01",
+          "file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+          "command_index": 50,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b0f58b1346cd97327eafff820230594da6654d7e1c6f6493ccfb155fcc626565"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -541,101 +691,23 @@
         "snapshot": "entry",
         "stepId": 14
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_044ame_1_5_044_01:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_044_01",
+        "source_file": "assets/resources/scenariodata/1_5_044ame/scenario_1_5_044_01.json",
+        "command_start": 50,
+        "command_end": 50
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "ファッション誌のグラビア撮影のお仕事",
     "episode_label": null

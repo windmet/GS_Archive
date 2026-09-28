@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_037jir_1_5_037_01",
-  "logical_id": "story-collection:1_5_037jir_1_5_037_01",
+  "logical_id": "story:1_5_037jir_1_5_037_01",
   "scenario_id": "1_5_037jir_1_5_037_01",
   "text_catalog_id": "1_5_037jir_1_5_037_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_037jir_1_5_037_01.json",
-    "sha256": "sha256:e021483886a149a9f20060187b66a77cd33bed8257882829f4b11c2c0c13ae66",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:9c330ffbef165f826f15830e07b93f87fb5c60ba2ac0cede6fa7619cf03cfe11",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 22,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_037jir_1_5_037_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_01:1_5_037_01:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_01",
+          "part_id": "1_5_037_01",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_037jir_1_5_037_01:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_01",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_01:1_5_037_01:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_01",
+          "part_id": "1_5_037_01",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_037jir_1_5_037_01:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_01",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_01:1_5_037_01:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_01",
+          "part_id": "1_5_037_01",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_037jir_1_5_037_01:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_01",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "子供向けラジオ番組にゲスト出演するお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_01:1_5_037_01:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_01",
+          "part_id": "1_5_037_01",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:202549fda7b9db909613b1aaa5638cd0db2a5e50ee9cbf793648413ea4e9eaee"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,17 +212,28 @@
         "row_id": "1_5_037jir_1_5_037_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_01",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "もう間もなく、ラジオ収録が始まります。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_01:1_5_037_01:cmd-000014:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_01",
+          "part_id": "1_5_037_01",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+          "command_index": 14,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bc8e2c43b8bb25f0c344f48f7255f21d944dbae4146835cdb6cf8f28e6a75d4e"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -202,17 +260,28 @@
         "row_id": "1_5_037jir_1_5_037_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_01",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "今回の収録では、子供たちから様々な疑問について\n電話相談が来るので、それに答えていただきます。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_01:1_5_037_01:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_01",
+          "part_id": "1_5_037_01",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3d8ce977f649f13412d92e617cbb2106b60219c87990ebeb767096057866da84"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -239,21 +308,32 @@
         "row_id": "1_5_037jir_1_5_037_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_01",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "電話相談ねえ。子供って思いもよらないこと\n言い出すじゃない？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_01:1_5_037_01:cmd-000022:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_01",
+          "part_id": "1_5_037_01",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+          "command_index": 22,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a135166f729984124cc0a53ef2098504827730efc787cfa6b42ca73706b61539"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -270,7 +350,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -279,21 +358,32 @@
         "row_id": "1_5_037jir_1_5_037_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_01",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "どんな質問が飛び出てくるかわからないから、\nドキドキするねえ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_01:1_5_037_01:cmd-000025:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_01",
+          "part_id": "1_5_037_01",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+          "command_index": 25,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0409f4eb8a69fd1c74314a6299d04a53043f1217afbccc2b116e0d45b79ad4dc"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -309,26 +399,35 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_037jir_1_5_037_01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_01",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "大丈夫です。次郎さんなら答えられます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_01:1_5_037_01:cmd-000027:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_01",
+          "part_id": "1_5_037_01",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+          "command_index": 27,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:70ea5ceee4e17222a88f70defd94fe3a91adedf43a8848ef04f0a987702b4095"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -355,21 +454,32 @@
         "row_id": "1_5_037jir_1_5_037_01:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_01",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+        "command_start": 27,
+        "command_end": 27
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサーちゃんも\nこう言ってくれてるし、頑張ってきますか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_01:1_5_037_01:cmd-000032:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_01",
+          "part_id": "1_5_037_01",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+          "command_index": 32,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:244f6ef8f4d180e5202b506eba5b5c7737ec005fc9c4f56e7e2a6a10bc26e288"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -386,7 +496,6 @@
         "stepId": 10
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -395,17 +504,28 @@
         "row_id": "1_5_037jir_1_5_037_01:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_01",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+        "command_start": 32,
+        "command_end": 32
       },
       "option": null
     },
     {
       "kind": "caption",
       "source_text": "収録中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_01:1_5_037_01:cmd-000043:time_caption:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_01",
+          "part_id": "1_5_037_01",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+          "command_index": 43,
+          "field_kind": "time_caption",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:83b91878176a36430c39bc5426de2edd68820f09e7576494a38fc8f14e07694f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -432,17 +552,28 @@
         "row_id": "1_5_037jir_1_5_037_01:step-14:caption",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_01",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+        "command_start": 43,
+        "command_end": 43
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "「どうして海とお空は青いんですか？」",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_01:1_5_037_01:cmd-000047:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_01",
+          "part_id": "1_5_037_01",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+          "command_index": 47,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:97d823317dcde5a6d8fec1995fccc9ec9ae5451e63a2dc11f7017b71eeea0d17"
+      },
       "speaker": {
         "kind": "named",
         "entityType": null,
@@ -471,21 +602,32 @@
         "row_id": "1_5_037jir_1_5_037_01:step-16:text",
         "step_id": 16,
         "step_index": 15,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_01",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+        "command_start": 47,
+        "command_end": 47
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "いい質問だね。空気も手に掬った海も\n透明だから、不思議に思うよねえ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_01:1_5_037_01:cmd-000052:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_01",
+          "part_id": "1_5_037_01",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+          "command_index": 52,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:75b059425f17c4dfe791a74ba88d9d2495aae0a37708e0a2e3de632f3999c766"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -502,7 +644,6 @@
         "stepId": 17
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -511,21 +652,32 @@
         "row_id": "1_5_037jir_1_5_037_01:step-17:text",
         "step_id": 17,
         "step_index": 16,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_01",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+        "command_start": 52,
+        "command_end": 52
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "でもそれぞれちゃんとした理由があるんだよ。\nまず空が青い理由だけど……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_01:1_5_037_01:cmd-000056:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_01",
+          "part_id": "1_5_037_01",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+          "command_index": 56,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ac63687cc734061ea44e9ec4aa837b563dce0a7b6f0033cb032e8686e744f080"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -541,26 +693,35 @@
         "snapshot": "entry",
         "stepId": 18
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_037jir_1_5_037_01:step-18:text",
         "step_id": 18,
         "step_index": 17,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_01",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+        "command_start": 56,
+        "command_end": 56
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "（次郎さんの説明はとてもわかりやすいと\n子供たちから好評だった…！）",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_01:1_5_037_01:cmd-000063:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_01",
+          "part_id": "1_5_037_01",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+          "command_index": 63,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:cef12ff33685a806ba68473aafc3ddd39cb2c50a29110dc78d560f09cc0040b3"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -587,97 +748,16 @@
         "row_id": "1_5_037jir_1_5_037_01:step-22:text",
         "step_id": 22,
         "step_index": 21,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_01",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_01.json",
+        "command_start": 63,
+        "command_end": 63
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 15,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 16,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 17,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 21,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "子供向けラジオ番組にゲスト出演するお仕事",
     "episode_label": null

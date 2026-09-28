@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_017kir_1_5_017_03",
-  "logical_id": "story-collection:1_5_017kir_1_5_017_03",
+  "logical_id": "story:1_5_017kir_1_5_017_03",
   "scenario_id": "1_5_017kir_1_5_017_03",
   "text_catalog_id": "1_5_017kir_1_5_017_03",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_017kir_1_5_017_03.json",
-    "sha256": "sha256:7f1570671de0747b8160864f3ead3baa03c3bae07e3016429af3e586cbd1009f",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:86a3974498b477ff9ddd1bcb26391a710feb45e97b96604abb1c081a7ec1fae8",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 14,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_017kir_1_5_017_03.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_017kir_1_5_017_03:1_5_017_03:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_017kir_1_5_017_03",
+          "part_id": "1_5_017_03",
+          "file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_017kir_1_5_017_03:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_017_03",
+        "source_file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_017kir_1_5_017_03:1_5_017_03:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_017kir_1_5_017_03",
+          "part_id": "1_5_017_03",
+          "file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_017kir_1_5_017_03:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_017_03",
+        "source_file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_017kir_1_5_017_03:1_5_017_03:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_017kir_1_5_017_03",
+          "part_id": "1_5_017_03",
+          "file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_017kir_1_5_017_03:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_017_03",
+        "source_file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "クイズバラエティ番組のゲストのお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_017kir_1_5_017_03:1_5_017_03:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_017kir_1_5_017_03",
+          "part_id": "1_5_017_03",
+          "file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:30f14293fc1fbde1496c5153330b76e1da3cca15f0c0146692887696afbbf6f2"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,17 +212,28 @@
         "row_id": "1_5_017kir_1_5_017_03:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_017_03",
+        "source_file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "キリオさん、こちらが今度ゲスト出演する\nクイズバラエティ番組の資料になります。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_017kir_1_5_017_03:1_5_017_03:cmd-000015:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_017kir_1_5_017_03",
+          "part_id": "1_5_017_03",
+          "file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+          "command_index": 15,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e8661bdaac7f48182bf3391cfb888933ee3457adf150967a3b8ee1a3eacda8a4"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -202,21 +260,32 @@
         "row_id": "1_5_017kir_1_5_017_03:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_017_03",
+        "source_file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ありがとうでにゃんす、\n●●●●プロデューサークン。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_017kir_1_5_017_03:1_5_017_03:cmd-000019:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_017kir_1_5_017_03",
+          "part_id": "1_5_017_03",
+          "file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+          "command_index": 19,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6018083fb37804291b570f32f13b89e93c3cf82e5703c80eff6e01aa30d9e73b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "017kir",
         "sourceName": "猫柳 キリオ"
       },
       "performance": {
@@ -232,26 +301,35 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_017kir_1_5_017_03:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_017_03",
+        "source_file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "キリオさんが出演するのは、\n世界の動物を紹介する回になります。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_017kir_1_5_017_03:1_5_017_03:cmd-000023:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_017kir_1_5_017_03",
+          "part_id": "1_5_017_03",
+          "file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+          "command_index": 23,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:51f58e6165a9629ea04de83d0e4fb600efd4a12324f9e55dbe86c40c5df1217a"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -278,21 +356,32 @@
         "row_id": "1_5_017kir_1_5_017_03:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_017_03",
+        "source_file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "世界の動物……！　きゅぴぴーんっと\n小噺が思いつきそうな予感がするでにゃんす！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_017kir_1_5_017_03:1_5_017_03:cmd-000031:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_017kir_1_5_017_03",
+          "part_id": "1_5_017_03",
+          "file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+          "command_index": 31,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5aaa9a5d7a336a54d10f09a0740695637af46af006cd88c6df47b2d49051181b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "017kir",
         "sourceName": "猫柳 キリオ"
       },
       "performance": {
@@ -309,7 +398,6 @@
         "stepId": 8
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -318,17 +406,28 @@
         "row_id": "1_5_017kir_1_5_017_03:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_017_03",
+        "source_file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "収録時には、スタジオに動物が来るそうです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_017kir_1_5_017_03:1_5_017_03:cmd-000035:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_017kir_1_5_017_03",
+          "part_id": "1_5_017_03",
+          "file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+          "command_index": 35,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:23c64697c6101ace5655953ec19b39706b0fa1b75845caede56be34fd8dc634c"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -355,21 +454,32 @@
         "row_id": "1_5_017kir_1_5_017_03:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_017_03",
+        "source_file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+        "command_start": 35,
+        "command_end": 35
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "にゃ、にゃんと！　ワガハイは人や生き物を\n観察するのが好きであるからして。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_017kir_1_5_017_03:1_5_017_03:cmd-000041:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_017kir_1_5_017_03",
+          "part_id": "1_5_017_03",
+          "file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+          "command_index": 41,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:aff51b1e03b6a40d813cbe2dfcef5e5948f16b0449cbeec208a504f8d6bd2cba"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "017kir",
         "sourceName": "猫柳 キリオ"
       },
       "performance": {
@@ -386,7 +496,6 @@
         "stepId": 10
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -395,21 +504,32 @@
         "row_id": "1_5_017kir_1_5_017_03:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_017_03",
+        "source_file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+        "command_start": 41,
+        "command_end": 41
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "世界の動物を間近で見られる\nちゃんすでにゃんす～♪",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_017kir_1_5_017_03:1_5_017_03:cmd-000045:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_017kir_1_5_017_03",
+          "part_id": "1_5_017_03",
+          "file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+          "command_index": 45,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:045c051f7ed4c28283fa127136cecc5a979440a15717f3cf82f200534364c4a6"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "017kir",
         "sourceName": "猫柳 キリオ"
       },
       "performance": {
@@ -425,30 +545,39 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_017kir_1_5_017_03:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_017_03",
+        "source_file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+        "command_start": 45,
+        "command_end": 45
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "して、●●●●プロデューサークン。\nすたじおに来るのはなんの動物でにゃんすか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_017kir_1_5_017_03:1_5_017_03:cmd-000051:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_017kir_1_5_017_03",
+          "part_id": "1_5_017_03",
+          "file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+          "command_index": 51,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a9a87cbb2b15efaaedd8c5fe03c70d5ce8a73692ff267c890ed5bd87a9e35cfe"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "017kir",
         "sourceName": "猫柳 キリオ"
       },
       "performance": {
@@ -465,7 +594,6 @@
         "stepId": 12
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -474,17 +602,28 @@
         "row_id": "1_5_017kir_1_5_017_03:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_017_03",
+        "source_file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+        "command_start": 51,
+        "command_end": 51
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "それがまだ調整中のようでして。\n当日ギリギリまでわからない可能性もあるそうです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_017kir_1_5_017_03:1_5_017_03:cmd-000053:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_017kir_1_5_017_03",
+          "part_id": "1_5_017_03",
+          "file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+          "command_index": 53,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c458865529c49a0e3925825ef999834db1b62dcc6e774d84643132216c7bc83c"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -511,21 +650,32 @@
         "row_id": "1_5_017kir_1_5_017_03:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_017_03",
+        "source_file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+        "command_start": 53,
+        "command_end": 53
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "行くまでわからない……それも一興ぞなもし。\n収録が楽しみでにゃんす♪",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_017kir_1_5_017_03:1_5_017_03:cmd-000061:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_017kir_1_5_017_03",
+          "part_id": "1_5_017_03",
+          "file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+          "command_index": 61,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:26d8069508b4038def28098ea329bb4ea9a3e0b346ee8154ea077b49a4af496b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "017kir",
         "sourceName": "猫柳 キリオ"
       },
       "performance": {
@@ -542,7 +692,6 @@
         "stepId": 14
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -551,92 +700,16 @@
         "row_id": "1_5_017kir_1_5_017_03:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_017_03",
+        "source_file": "assets/resources/scenariodata/1_5_017kir/scenario_1_5_017_03.json",
+        "command_start": 61,
+        "command_end": 61
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "クイズバラエティ番組のゲストのお仕事",
     "episode_label": null

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_002sht_1_5_002_04",
-  "logical_id": "story-collection:1_5_002sht_1_5_002_04",
+  "logical_id": "story:1_5_002sht_1_5_002_04",
   "scenario_id": "1_5_002sht_1_5_002_04",
   "text_catalog_id": "1_5_002sht_1_5_002_04",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_002sht_1_5_002_04.json",
-    "sha256": "sha256:1701f0cdbe1d99232550be940c3f01e1cd814f584bd202ea9d62854c28812b67",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:7a7d73032ac138c62878703013e31ece3926e2515645963cb6d45542d815f091",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 14,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_002sht_1_5_002_04.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_04:1_5_002_04:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_04",
+          "part_id": "1_5_002_04",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_002sht_1_5_002_04:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_04",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_04:1_5_002_04:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_04",
+          "part_id": "1_5_002_04",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_002sht_1_5_002_04:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_04",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_04:1_5_002_04:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_04",
+          "part_id": "1_5_002_04",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_002sht_1_5_002_04:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_04",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "舞台に出演するお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_04:1_5_002_04:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_04",
+          "part_id": "1_5_002_04",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:af7c24e6a6571468cf3726c8432ddf91eb4da580d8503007c2d7e99cf31380b5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,21 +212,32 @@
         "row_id": "1_5_002sht_1_5_002_04:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_04",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "稽古期間が楽しすぎて、本番までが\nあっという間だったなー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_04:1_5_002_04:cmd-000016:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_04",
+          "part_id": "1_5_002_04",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+          "command_index": 16,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9ee622375b67ddae3e7dca8109310f8963c29bfdccdd039fa94b5d452fb123e4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -196,7 +254,6 @@
         "stepId": 5
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -205,17 +262,28 @@
         "row_id": "1_5_002sht_1_5_002_04:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_04",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "にぎやかな稽古場でしたよね。\nみなさんのびのびと稽古をしていた印象です。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_04:1_5_002_04:cmd-000021:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_04",
+          "part_id": "1_5_002_04",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+          "command_index": 21,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7d9ba2ff27e619c3ebb6d521ec8b332f6a3ea6468b4467258d7a968ab6849a32"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -242,21 +310,32 @@
         "row_id": "1_5_002sht_1_5_002_04:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_04",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "演出家さんが脚本に沿ってれば自由に\nやっていいよーって言ってくれたからね！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_04:1_5_002_04:cmd-000025:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_04",
+          "part_id": "1_5_002_04",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+          "command_index": 25,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:83e134a7334fc145984bba733c2fc63a672b309b7e2b7aabd4239937af40139a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -273,7 +352,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -282,21 +360,32 @@
         "row_id": "1_5_002sht_1_5_002_04:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_04",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "劇中のダンスの振り付けを\n任せてもらったのは嬉しかった！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_04:1_5_002_04:cmd-000029:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_04",
+          "part_id": "1_5_002_04",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+          "command_index": 29,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7386e7e7ef19b42ed731e58e04a4b9f938a2b9b6a421c95554d21332f5203515"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -313,7 +402,6 @@
         "stepId": 8
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -322,17 +410,28 @@
         "row_id": "1_5_002sht_1_5_002_04:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_04",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "翔太さんの演じる奔放なキャラクターに\nぴったりなダンスだと思いました。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_04:1_5_002_04:cmd-000033:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_04",
+          "part_id": "1_5_002_04",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+          "command_index": 33,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8ae2e07532d13c348d66beff647e9f6b1278d8b479bff3f0ae861b8153f3b4d0"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -359,21 +458,32 @@
         "row_id": "1_5_002sht_1_5_002_04:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_04",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "うん！　演出家さんもそう言って\n褒めてくれたんだよ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_04:1_5_002_04:cmd-000038:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_04",
+          "part_id": "1_5_002_04",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+          "command_index": 38,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:444351c00903c67c00e2c7d434c5b718992a6b74b4fcc72ef8061e759b9238cf"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -390,7 +500,6 @@
         "stepId": 10
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -399,21 +508,32 @@
         "row_id": "1_5_002sht_1_5_002_04:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_04",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+        "command_start": 38,
+        "command_end": 38
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "僕の得意な曲調っていうのもあったし、\n振り付けがすぐに浮かんだんだよね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_04:1_5_002_04:cmd-000043:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_04",
+          "part_id": "1_5_002_04",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+          "command_index": 43,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fed6121f692ea959d54cdb796842d27d6795f1cec90c92f1892795f307db6142"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -430,7 +550,6 @@
         "stepId": 11
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -439,17 +558,28 @@
         "row_id": "1_5_002sht_1_5_002_04:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_04",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+        "command_start": 43,
+        "command_end": 43
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "本番でも、楽しみにしていますね！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_04:1_5_002_04:cmd-000047:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_04",
+          "part_id": "1_5_002_04",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+          "command_index": 47,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:21613cad7c71a597b67039413be69a75649cd91f294b94b6d64172da7a674672"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -476,21 +606,32 @@
         "row_id": "1_5_002sht_1_5_002_04:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_04",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+        "command_start": 47,
+        "command_end": 47
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ありがとう、●●●●プロデューサーさん！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_04:1_5_002_04:cmd-000052:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_04",
+          "part_id": "1_5_002_04",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+          "command_index": 52,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:459e5d8d1bd889042d9717f7b4e1bfabebee1b89cafb0adaba3b3da25463e397"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -507,7 +648,6 @@
         "stepId": 13
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -516,21 +656,32 @@
         "row_id": "1_5_002sht_1_5_002_04:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_04",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+        "command_start": 52,
+        "command_end": 52
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "あ、そろそろ時間だ！\n着替えてメイクしてくるねー！！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_04:1_5_002_04:cmd-000058:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_04",
+          "part_id": "1_5_002_04",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+          "command_index": 58,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f3718d505390eea5c71922e37a3ccdb58bf728588fc9cc67f1aa042bb804af84"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -547,7 +698,6 @@
         "stepId": 14
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -556,92 +706,16 @@
         "row_id": "1_5_002sht_1_5_002_04:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_04",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_04.json",
+        "command_start": 58,
+        "command_end": 58
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "舞台に出演するお仕事",
     "episode_label": null

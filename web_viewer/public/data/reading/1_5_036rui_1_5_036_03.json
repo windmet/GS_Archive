@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_036rui_1_5_036_03",
-  "logical_id": "story-collection:1_5_036rui_1_5_036_03",
+  "logical_id": "story:1_5_036rui_1_5_036_03",
   "scenario_id": "1_5_036rui_1_5_036_03",
   "text_catalog_id": "1_5_036rui_1_5_036_03",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_036rui_1_5_036_03.json",
-    "sha256": "sha256:99fe6ef5132b01a0756e0dea11b3903b9691d414e8b0686cccdbaa1601a5aca2",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:0191f00666b9be925d5b581071f997fc3f403cf46c023c7b50370ed65f046d78",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 14,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_036rui_1_5_036_03.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_036rui_1_5_036_03:1_5_036_03:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_036rui_1_5_036_03",
+          "part_id": "1_5_036_03",
+          "file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_036rui_1_5_036_03:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_036_03",
+        "source_file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_036rui_1_5_036_03:1_5_036_03:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_036rui_1_5_036_03",
+          "part_id": "1_5_036_03",
+          "file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_036rui_1_5_036_03:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_036_03",
+        "source_file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_036rui_1_5_036_03:1_5_036_03:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_036rui_1_5_036_03",
+          "part_id": "1_5_036_03",
+          "file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_036rui_1_5_036_03:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_036_03",
+        "source_file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "国内リゾート施設のリポートをするお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_036rui_1_5_036_03:1_5_036_03:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_036rui_1_5_036_03",
+          "part_id": "1_5_036_03",
+          "file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:94f0839ca0cf8be85940149ff2d5a97d855722a26e4b2f1b78c452f6e22e2499"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,17 +212,28 @@
         "row_id": "1_5_036rui_1_5_036_03:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_036_03",
+        "source_file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "類さんにリポートしていただくのは、\n国内リゾート施設になります。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_036rui_1_5_036_03:1_5_036_03:cmd-000014:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_036rui_1_5_036_03",
+          "part_id": "1_5_036_03",
+          "file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+          "command_index": 14,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:60028011d50c313c8dc4ae6dc3972bd3af44a5c9800bb447e515bcad0b519f0c"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -202,17 +260,28 @@
         "row_id": "1_5_036rui_1_5_036_03:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_036_03",
+        "source_file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ゴルフや乗馬、アスレチックやテニスができる\n施設があって、子供から大人まで楽しめます。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_036rui_1_5_036_03:1_5_036_03:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_036rui_1_5_036_03",
+          "part_id": "1_5_036_03",
+          "file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:eabf6063888c28b5c2ed494a788aedd0de5245a9d757e81927e0b1cc347916f5"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -239,17 +308,28 @@
         "row_id": "1_5_036rui_1_5_036_03:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_036_03",
+        "source_file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "そういえば……。類さんは学生時代\nテニスサークルだったんですよね？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_036rui_1_5_036_03:1_5_036_03:cmd-000020:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_036rui_1_5_036_03",
+          "part_id": "1_5_036_03",
+          "file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+          "command_index": 20,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ec167e0e6ec8d7e0923ecbd51833336f8b50db2304e97ea71c30c789cad54fc4"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -276,21 +356,32 @@
         "row_id": "1_5_036rui_1_5_036_03:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_036_03",
+        "source_file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "Of course！　北斗ともテニスサークルで\n出会ったんだよね～。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_036rui_1_5_036_03:1_5_036_03:cmd-000026:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_036rui_1_5_036_03",
+          "part_id": "1_5_036_03",
+          "file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+          "command_index": 26,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4461d587469d0e7076d4aa4560859a59a7130913bd3bd2dd3fa05d7abb3715c7"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "036rui",
         "sourceName": "舞田 類"
       },
       "performance": {
@@ -307,7 +398,6 @@
         "stepId": 8
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -316,21 +406,32 @@
         "row_id": "1_5_036rui_1_5_036_03:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_036_03",
+        "source_file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "気軽なサークルで、very funだったよ♪",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_036rui_1_5_036_03:1_5_036_03:cmd-000030:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_036rui_1_5_036_03",
+          "part_id": "1_5_036_03",
+          "file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+          "command_index": 30,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:947c5cb61493014b7dab613569ab90e3ebd2006825472306483ab69b1883eddb"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "036rui",
         "sourceName": "舞田 類"
       },
       "performance": {
@@ -346,26 +447,35 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_036rui_1_5_036_03:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_036_03",
+        "source_file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+        "command_start": 30,
+        "command_end": 30
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ふふ、そうだったんですね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_036rui_1_5_036_03:1_5_036_03:cmd-000032:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_036rui_1_5_036_03",
+          "part_id": "1_5_036_03",
+          "file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+          "command_index": 32,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e4c59d9724a7e869516d8c8d03ef2daff270730ad471a2dddeb14e482c739a49"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -392,17 +502,28 @@
         "row_id": "1_5_036rui_1_5_036_03:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_036_03",
+        "source_file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+        "command_start": 32,
+        "command_end": 32
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "気になる施設があったら、ぜひ遊んでいってほしいと\n先方がおっしゃっていましたよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_036rui_1_5_036_03:1_5_036_03:cmd-000036:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_036rui_1_5_036_03",
+          "part_id": "1_5_036_03",
+          "file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+          "command_index": 36,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:76f512055576961c0d1518ae95d6cce77bd340bbd9293f7d5e03da4af8da952b"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -429,21 +550,32 @@
         "row_id": "1_5_036rui_1_5_036_03:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_036_03",
+        "source_file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+        "command_start": 36,
+        "command_end": 36
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "Really？　それじゃあ、\n一緒にテニスをしないかい？　他のでもいいよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_036rui_1_5_036_03:1_5_036_03:cmd-000043:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_036rui_1_5_036_03",
+          "part_id": "1_5_036_03",
+          "file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+          "command_index": 43,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2aa2f60755e73149bc1eea7fcfbfaf5f184db4f1a4a1c834a045aa377dad66da"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "036rui",
         "sourceName": "舞田 類"
       },
       "performance": {
@@ -460,7 +592,6 @@
         "stepId": 12
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -469,21 +600,32 @@
         "row_id": "1_5_036rui_1_5_036_03:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_036_03",
+        "source_file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+        "command_start": 43,
+        "command_end": 43
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサーちゃんとなら\nどれで遊んでも楽しいと思うんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_036rui_1_5_036_03:1_5_036_03:cmd-000046:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_036rui_1_5_036_03",
+          "part_id": "1_5_036_03",
+          "file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+          "command_index": 46,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:da9797d9b30078dcbb894b770e92a6337b8487c915cd72f0ee524c57a96e5ba4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "036rui",
         "sourceName": "舞田 類"
       },
       "performance": {
@@ -499,30 +641,39 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_036rui_1_5_036_03:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_036_03",
+        "source_file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+        "command_start": 46,
+        "command_end": 46
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "……っと、話してる間に現場に到着したみたい。\n何で遊ぶかはworkが終わってから決めよう☆",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_036rui_1_5_036_03:1_5_036_03:cmd-000052:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_036rui_1_5_036_03",
+          "part_id": "1_5_036_03",
+          "file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+          "command_index": 52,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1d023f607b5a39109194ab14eb892bcc7a4318616f1c9857b7aa7f4531f425fc"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "036rui",
         "sourceName": "舞田 類"
       },
       "performance": {
@@ -539,7 +690,6 @@
         "stepId": 14
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -548,92 +698,16 @@
         "row_id": "1_5_036rui_1_5_036_03:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_036_03",
+        "source_file": "assets/resources/scenariodata/1_5_036rui/scenario_1_5_036_03.json",
+        "command_start": 52,
+        "command_end": 52
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "国内リゾート施設のリポートをするお仕事",
     "episode_label": null
