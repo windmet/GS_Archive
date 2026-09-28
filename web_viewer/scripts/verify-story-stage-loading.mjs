@@ -42,7 +42,7 @@ function setup() {
       warn: (...args) => assert.ok(args.join(' ').includes('missing asset'), args.join(' ')),
       error: (...args) => { throw new Error(args.join(' ')) },
     },
-    manager, applyStateToken: 0, projectedStep: null, props: { step: null }, lastScreenEffectsKey: null,
+    manager, applyStateToken: 0, projectedStep: null, props: { step: null }, lastScreenEffectsKey: null, emit: noop,
     getStepSceneState: step => step?.entry_snapshot,
     _loadBodyTypes: async () => {}, applyStepSceneState: noop,
     _loadPrefabMeta: async () => {}, _loadMotionSettings: async () => {},
