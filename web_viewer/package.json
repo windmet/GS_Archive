@@ -23,6 +23,8 @@
     "verify:reading-typography": "node scripts/verify-reading-typography.mjs",
     "audit:producer-placeholders": "node scripts/audit-producer-placeholders.mjs",
     "verify:producer-placeholders": "node scripts/verify-producer-placeholder-audit.mjs",
+    "generate:producer-addressing-bible": "node scripts/generate-producer-addressing-bible.mjs",
+    "verify:producer-addressing-bible": "node scripts/verify-producer-addressing-bible.mjs",
     "generate:reading": "node scripts/generate-reading-documents.mjs",
     "verify:reading": "node scripts/verify-reading-catalog.mjs && node scripts/verify-reading-progress.mjs && node scripts/verify-reading-documents.mjs && node scripts/verify-reading-visual-identity.mjs && node scripts/verify-reading-repository.mjs && node scripts/verify-reading-navigation.mjs && node scripts/verify-reading-playback.mjs && node scripts/verify-reading-render.mjs && npm run verify:reading-typography",
     "verify:reading-visual-sources": "node scripts/verify-reading-visual-identity.mjs --local-sources",
