@@ -80,6 +80,9 @@ jobs:
       - name: Verify reading artifacts and repository
         run: npm run verify:reading
 
+      - name: Audit Producer placeholder boundaries
+        run: npm run verify:producer-placeholders && npm run audit:producer-placeholders
+
       - name: Verify playback interaction matrix
         run: npm run verify:story-interaction-matrix
 

@@ -1,5 +1,9 @@
 # 翻译前正文与身份审计（2026-09-28）
 
+Producer 说话人、职业称谓与黑点姓名候选的独立全量 Reader 审计见
+[`PRODUCER_PLACEHOLDER_AUDIT_20260928.md`](PRODUCER_PLACEHOLDER_AUDIT_20260928.md)。
+含黑点的文本须先核定占位语义及来源身份，不能直接批量翻译或改写 canonical 原文。
+
 ## 后续出版与 Reader 修复（同日）
 
 本节记录后续 Work 正式出版和生日剧情 Reader 入口修复后的现状；下文的
