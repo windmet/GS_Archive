@@ -40,7 +40,7 @@
           <header>
             <div>
               <small>{{ section.name }} · {{ releaseDate(section.open_at) }}</small>
-              <h3>{{ section.scenario_title }}</h3>
+              <h3>{{ presentProducerAddressingText(section.scenario_title) }}</h3>
               <div class="section-badges">
                 <span v-if="sectionBirthdayAligned(section)">生日同期公开</span>
                 <span v-if="section.sharedBirthdayEntries?.length" class="shared">也可从生日内容访问</span>
@@ -70,7 +70,7 @@
             </a>
           </div>
 
-          <p v-if="section.synopsis?.text" class="synopsis">{{ section.synopsis.text }}</p>
+          <p v-if="section.synopsis?.text" class="synopsis">{{ presentProducerAddressingText(section.synopsis.text) }}</p>
 
           <div class="section-meta">
             <span>{{ section.episodes.length }} 段</span>
@@ -142,6 +142,7 @@ import { ArrowRight, Cake, ChevronLeft, ChevronRight, ExternalLink, FileWarning,
 import { readyEpisodeReading } from '../../data/IdolStoryReading.js'
 import { formatArchiveDate } from '../../data/idolCommunicationSelectors.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
+import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { getCharaIconUrl } from '../../utils/AssetResolver.js'
 
 const props = defineProps({

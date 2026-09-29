@@ -158,7 +158,7 @@
 
     <section class="home-dialogue" aria-label="首页台词" aria-live="polite">
       <div class="dialogue-name">{{ activeCue.speaker || activeIdol.name }}</div>
-      <p>{{ activeCue.text }}</p>
+      <p>{{ presentProducerAddressingText(activeCue.text) }}</p>
       <div class="dialogue-meta">
         <span>{{ activeCue.rarity }} · {{ activeCue.cardTitle }}</span>
 
@@ -283,6 +283,7 @@ import { loadTerminalManifest, resolveHomeBackground } from '../../data/terminal
 import { useVoicePlayer } from '../../core/useVoicePlayer.js'
 import { useStoryRuntimeCues } from '../../core/story-runtime/useStoryRuntimeCues.js'
 import { StoryAudioSession } from '../../core/story-runtime/StoryAudioSession.js'
+import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import {
   loadArchiveHomePreferences,
   resetArchiveHomePreferences,

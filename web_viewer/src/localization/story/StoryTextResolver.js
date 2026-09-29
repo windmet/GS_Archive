@@ -1,4 +1,4 @@
-import { renderProducerAddressing } from './ProducerAddressing.js'
+import { renderProducerAddressing, validateProducerAddressingOverlay } from './ProducerAddressing.js'
 
 const VALID_MODES = new Set(['original', 'translation', 'bilingual'])
 const VALID_PRIMARY = new Set(['original', 'translation'])
@@ -69,20 +69,22 @@ function normalizeSpeaker(speaker) {
   }
 }
 
-function translationState({ overlayEntry, textRef, allowStale }) {
+function translationState({ overlayEntry, textRef, allowStale, sourceText }) {
   const entry = overlayEntry && typeof overlayEntry === 'object' ? overlayEntry : null
   const text = textValue(entry?.text)
   const expectedHash = textValue(textRef?.source_hash)
   const entryHash = textValue(entry?.source_hash)
   const stale = Boolean(text && expectedHash && entryHash !== expectedHash)
-  const structurallyUsable = Boolean(text)
+  const slotsValid = !text || validateProducerAddressingOverlay(sourceText, text)
+  const structurallyUsable = Boolean(text) && slotsValid
   const available = structurallyUsable && (!stale || allowStale)
 
   return {
     text,
     available,
-    status: text ? (textValue(entry?.status) || 'invalid') : 'missing',
+    status: text ? (slotsValid ? (textValue(entry?.status) || 'invalid') : 'invalid') : 'missing',
     stale,
+    slotsValid,
   }
 }
 
@@ -109,7 +111,7 @@ export function resolveStoryText({
 } = {}) {
   const sourceText = textValue(source)
   const prefs = normalizePreferences(preferences)
-  const translation = translationState({ overlayEntry, textRef, allowStale })
+  const translation = translationState({ overlayEntry, textRef, allowStale, sourceText })
   const original = originalBlock(renderProducerAddressing(sourceText, prefs.producer_name))
   const localized = translationBlock(prefs.story_translation_locale,
     renderProducerAddressing(translation.text, prefs.producer_name))
@@ -162,6 +164,7 @@ export function resolveStoryText({
       available: translation.available,
       status: translation.status,
       stale: translation.stale,
+      slotsValid: translation.slotsValid,
       fallbackUsed,
     },
   }

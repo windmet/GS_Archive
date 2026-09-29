@@ -232,7 +232,7 @@
           <div v-for="(cue, index) in card.home_voice_cues" :key="cue.cue" class="voice-row">
             <div class="voice-copy">
               <strong>触摸语音 {{ index + 1 }}</strong>
-              <p v-if="cue.preview?.text"><span class="authored-text">{{ cue.preview.text }}</span><span class="reflowed-text">{{ reflowArchiveText(cue.preview.text) }}</span></p>
+              <p v-if="cue.preview?.text"><span class="authored-text">{{ presentProducerAddressingText(cue.preview.text) }}</span><span class="reflowed-text">{{ reflowArchiveText(presentProducerAddressingText(cue.preview.text)) }}</span></p>
             </div>
             <ArchiveVoiceRow :src="voiceUrl(cue.cue)" />
             <button v-if="cardVoicePreviewStep(card, cue)" class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
@@ -249,7 +249,7 @@
                 <strong>{{ cue.label }}</strong>
                 <small :class="`source-${cue.text_source}`">{{ cue.text?.trim() && cue.text.trim() !== '0' ? voiceSourceLabel(cue.text_source) : '仅音频' }}</small>
               </div>
-              <p v-if="cue.text?.trim() && cue.text.trim() !== '0'"><span class="authored-text">{{ cue.text }}</span><span class="reflowed-text">{{ reflowArchiveText(cue.text) }}</span></p>
+              <p v-if="cue.text?.trim() && cue.text.trim() !== '0'"><span class="authored-text">{{ presentProducerAddressingText(cue.text) }}</span><span class="reflowed-text">{{ reflowArchiveText(presentProducerAddressingText(cue.text)) }}</span></p>
             </div>
             <ArchiveVoiceRow :src="voiceUrl(cue.cue)" />
             <button v-if="cardVoicePreviewStep(card, cue)" class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
@@ -304,6 +304,7 @@
 
 <script setup>
 import { reflowArchiveText } from '../../presentation/ArchiveText.js'
+import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import ArchiveVoiceRow from './ArchiveVoiceRow.vue'
 import { computed, ref, watch } from 'vue'
 import { Activity, CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, HeartPulse, ImageOff, PackageOpen, Shirt } from '@lucide/vue'

@@ -7,10 +7,14 @@ import {
   protectProducerAddressingForTranslation, restoreProducerAddressingAfterTranslation,
 } from '../src/localization/story/ProducerAddressing.js'
 import { resolveStoryText } from '../src/localization/story/StoryTextResolver.js'
+import { createStoryTranslationDraft, importStoryTranslationDraft } from '../src/localization/story/StoryTranslationDraft.js'
+import { diagnoseStoryTranslations, hasBlockingTranslationDiagnostics } from '../src/localization/story/TranslationDiagnostics.js'
 import { createStoryLocalization } from '../src/localization/story/StoryLocalizationContext.js'
 import { PlayerPreferencesRepository } from '../src/core/story-runtime/PlayerPreferencesRepository.js'
 import { resolveText } from '../src/utils/TextHelper.js'
 import { producerName, setStoryLanguagePreferences } from '../src/utils/LanguageStore.js'
+import { presentProducerAddressingText } from '../src/presentation/ProducerAddressingText.js'
+import { projectReadingFrontMatter } from '../src/presentation/ReadingFrontMatter.js'
 
 const name = '叶絵理奈'
 const ten = '●'.repeat(10)
@@ -72,6 +76,36 @@ const translated = resolveStoryText({ source: `${ten}さん`, textRef,
   preferences: { producer_name: name, story_content_mode: 'translation' } })
 assert.equal(translated.primary.text, `${name}さん`)
 assert.equal(translated.translation.available, true)
+const broken = resolveStoryText({ source: `${ten}さん`, textRef,
+  overlayEntry: { text: `${name}さん`, source_hash: textRef.source_hash, status: 'reviewed' },
+  preferences: { producer_name: name, story_content_mode: 'translation' } })
+assert.equal(broken.primary.text, `${name}さん`)
+assert.equal(broken.translation.available, false)
+assert.equal(broken.translation.fallbackUsed, true)
+assert.equal(broken.translation.slotsValid, false)
+
+const unitId = 'story-text:v1:test-scenario:test-part:cmd-000001:dialogue:000'
+const stableHash = `sha256:${'a'.repeat(64)}`
+const draftEvidence = { scenario_id: 'test-scenario', source_raw_hash: stableHash, text_units: [
+  { unit_id: unitId, source_hash: stableHash, source_text: source },
+] }
+const draft = createStoryTranslationDraft(draftEvidence)
+assert.equal(draft.entries[unitId].source.includes(name), false)
+const markers = protectProducerAddressingForTranslation(source).slots.map(slot => slot.marker)
+draft.entries[unitId].translation = `${markers[1]}酱，${markers[0]}先生`
+const imported = importStoryTranslationDraft(draftEvidence, draft)
+assert.equal(imported.entries[unitId].text, `${fourP}酱，${ten}先生`)
+assert.equal(hasBlockingTranslationDiagnostics(diagnoseStoryTranslations({ evidence: draftEvidence, overlay: imported })), false)
+for (const invalidTranslation of [markers[0], `${markers[0]}${markers[0]}${markers[1]}`,
+  `${markers[0]}{{GS_ADDRESS:1:producer_name}}`, `${markers[0]}{{GS_ADDRESS:9:producer_name_with_p}}`]) {
+  assert.throws(() => importStoryTranslationDraft(draftEvidence, {
+    ...draft, entries: { [unitId]: { ...draft.entries[unitId], translation: invalidTranslation } },
+  }))
+}
+const invalidOverlay = { ...imported, entries: { [unitId]: { ...imported.entries[unitId], text: `${ten}先生` } } }
+const invalidReport = diagnoseStoryTranslations({ evidence: draftEvidence, overlay: invalidOverlay })
+assert.equal(hasBlockingTranslationDiagnostics(invalidReport), true)
+assert.equal(invalidReport.counts.invalid, 1)
 
 const storage = new Map()
 const preferences = new PlayerPreferencesRepository({ storage: {
@@ -97,8 +131,15 @@ scope.stop()
 const originalName = producerName.value
 setStoryLanguagePreferences({ producer_name: '甲' })
 assert.equal(resolveText({ text_jp: `${fourP}さん` }, 'JP').text, '甲Pさん')
+const readingManifest = JSON.parse(await readFile(new URL('../public/data/reading/manifest.json', import.meta.url), 'utf8'))
+const sourceTitle = readingManifest.entries.find(entry => entry.title.includes(fourP))?.title
+assert.ok(sourceTitle)
+assert.equal(presentProducerAddressingText(sourceTitle), renderProducerAddressing(sourceTitle, '甲'))
+const titleRow = { kind: 'title', source_text: sourceTitle, anchor: { row_id: 'title-row' } }
+assert.equal(projectReadingFrontMatter([titleRow], sourceTitle).mergedTitleIds.has('title-row'), true)
 setStoryLanguagePreferences({ producer_name: '乙' })
 assert.equal(resolveText({ text_jp: `${fourP}さん` }, 'JP').text, '乙Pさん')
+assert.equal(presentProducerAddressingText(sourceTitle), renderProducerAddressing(sourceTitle, '乙'))
 setStoryLanguagePreferences({ producer_name: originalName })
 
 console.log('Producer addressing shared runtime verified: Reader source, dialogue, choice, caption, fallback, preferences and translation slots')

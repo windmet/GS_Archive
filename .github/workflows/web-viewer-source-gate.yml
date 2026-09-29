@@ -86,6 +86,9 @@ jobs:
       - name: Verify Producer addressing Bible evidence
         run: npm run verify:producer-addressing-bible
 
+      - name: Verify Producer addressing runtime
+        run: npm run verify:producer-addressing-runtime
+
       - name: Verify playback interaction matrix
         run: npm run verify:story-interaction-matrix
 

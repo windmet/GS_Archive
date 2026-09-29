@@ -6,7 +6,7 @@
       <p class="reader-subtitle">{{ episodeLabel }}</p>
       <details class="reader-segments"><summary>选择其他分段</summary><label class="reader-picker">分段<select :value="documentId" :disabled="state.status === 'loading'" @change="emit('select', $event.target.value)">
         <option v-if="!state.entries.some(e => e.document_id === documentId)" :value="documentId">{{ state.status === 'loading' ? '正在载入分段…' : '当前分段尚未收录' }}</option>
-        <option v-for="entry in segmentEntries" :key="entry.document_id" :value="entry.document_id">{{ [entry.title || '剧情标题待确认', presentIdolEpisodeLabel({ sourceName: entry.episode_label })].filter(Boolean).join(' · ') }}{{ entry.status === 'ready' ? '' : '（暂不支持阅读）' }}</option>
+        <option v-for="entry in segmentEntries" :key="entry.document_id" :value="entry.document_id">{{ [presentProducerAddressingText(entry.title) || '剧情标题待确认', presentIdolEpisodeLabel({ sourceName: entry.episode_label })].filter(Boolean).join(' · ') }}{{ entry.status === 'ready' ? '' : '（暂不支持阅读）' }}</option>
       </select></label></details>
       <div class="reader-toolbar"><div class="reader-languages" role="group" aria-label="正文语言">
         <button v-for="item in modes" :key="item.id" :aria-pressed="mode === item.id" @click="emit('mode', item.id)">{{ item.label }}</button>
@@ -25,7 +25,7 @@
       <div v-else-if="state.status === 'error'" class="reader-feedback" role="alert"><h2>正文暂时无法载入</h2><p>请重试，或选择其他分段。</p><button @click="emit('retry')">重试</button><details><summary>加载详情</summary><p>{{ state.error }}</p></details></div>
       <p v-else-if="state.status === 'not-generated'" role="status">这个分段尚未生成阅读正文，请选择已有分段。</p>
       <p v-else-if="state.status === 'empty'" role="status">这个分段没有可显示的正文。</p>
-      <div v-else-if="state.status === 'unsupported'" class="reader-feedback" role="status"><h2>这个分段暂不支持完整阅读</h2><p>部分分支或来源字段无法可靠还原，正文尚未开放。</p><details><summary>分支与来源说明</summary><ul><li v-for="(control, i) in state.document.controls" :key="i">选项：<span v-for="(option, j) in choiceRows(control)" :key="j">{{ option.source_text }}{{ j < choiceRows(control).length - 1 ? ' ／ ' : '' }}</span></li></ul><p>选项目标已保留，分支结束位置未确认。</p></details></div>
+      <div v-else-if="state.status === 'unsupported'" class="reader-feedback" role="status"><h2>这个分段暂不支持完整阅读</h2><p>部分分支或来源字段无法可靠还原，正文尚未开放。</p><details><summary>分支与来源说明</summary><ul><li v-for="(control, i) in state.document.controls" :key="i">选项：<span v-for="(option, j) in choiceRows(control)" :key="j">{{ presentProducerAddressingText(option.source_text) }}{{ j < choiceRows(control).length - 1 ? ' ／ ' : '' }}</span></li></ul><p>选项目标已保留，分支结束位置未确认。</p></details></div>
       <template v-else-if="state.status === 'ready'">
         <form v-if="searchOpen" id="reader-search" class="reader-search" role="search" aria-label="篇内查找" @submit.prevent="moveMatch(1)" @keydown.esc.prevent="closeSearch">
           <label>篇内查找<input ref="searchInput" v-model="searchQuery" type="search" placeholder="查找当前显示的正文或说话人" /></label>
@@ -69,6 +69,7 @@ import { producerName, saveProducerName } from '../../utils/LanguageStore.js'
 import { readingAvatarEntity, readingPresentationSpeaker } from '../../../shared/reading/ReadingDocument.js'
 import { getCharaIconUrl } from '../../utils/AssetResolver.js'
 import { projectReadingFrontMatter } from '../../presentation/ReadingFrontMatter.js'
+import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 
 const props = defineProps({ state: { type: Object, required: true }, documentId: String, mode: String, anchor: String, notice: String, busy: Boolean })
@@ -108,9 +109,10 @@ const localizationInput = computed(() => document.value ? ({
 }) : null)
 const preferences = computed(() => ({ story_content_mode: props.mode, story_translation_locale: 'zh-CN', bilingual_primary: 'original', producer_name: producerName.value }))
 const localization = createStoryLocalization({ compiledData: localizationInput, storyPreferences: preferences })
-const title = computed(() => document.value?.presentation?.title || document.value?.rows.find(r => r.kind === 'title')?.source_text || '剧情阅读')
+const sourceTitle = computed(() => document.value?.presentation?.title || document.value?.rows.find(r => r.kind === 'title')?.source_text || '剧情阅读')
+const title = computed(() => presentProducerAddressingText(sourceTitle.value))
 const episodeLabel = computed(() => presentIdolEpisodeLabel({ sourceName: document.value?.presentation?.episode_label }))
-const frontMatter = computed(() => projectReadingFrontMatter(document.value?.rows, title.value))
+const frontMatter = computed(() => projectReadingFrontMatter(document.value?.rows, sourceTitle.value))
 const presentedRows = computed(() => (document.value?.rows || []).map(row => ({ row,
   frontMatter: frontMatter.value.frontMatterIds.has(row.anchor.row_id),
   mergedTitle: frontMatter.value.mergedTitleIds.has(row.anchor.row_id),

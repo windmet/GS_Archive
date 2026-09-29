@@ -34,6 +34,25 @@ export function renderProducerAddressing(source, producerName = '') {
   }).join('')
 }
 
+/** Published overlays keep source macros, not a user's name or draft markers. */
+export function validateProducerAddressingOverlay(source, translated) {
+  if (typeof source !== 'string' || typeof translated !== 'string') {
+    throw new TypeError('Producer overlay texts must be strings')
+  }
+  if (translated.includes('{{GS_ADDRESS:')) return false
+  const counts = text => {
+    const result = { producer_name: 0, producer_name_with_p: 0 }
+    for (const part of tokenizeProducerAddressing(text)) {
+      if (part.kind in result) result[part.kind] += 1
+    }
+    return result
+  }
+  const expected = counts(source)
+  const actual = counts(translated)
+  return expected.producer_name === actual.producer_name
+    && expected.producer_name_with_p === actual.producer_name_with_p
+}
+
 // Translation input is a separate projection. Each occurrence has its own marker;
 // restored overlay text retains the original macro and never a local user's name.
 const MARKER = /\{\{GS_ADDRESS:[^{}]*\}\}/gu
