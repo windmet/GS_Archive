@@ -1,12 +1,21 @@
 """Verify the five-group identity-only pilot's exact prepublish rollback bytes."""
 import hashlib
 import json
+import argparse
 from pathlib import Path
 from zipfile import ZipFile
 
 ROOT = Path(__file__).resolve().parents[1]
-archive = ROOT / 'docs/GS_STORY_TEXT_IDENTITY_PILOT_BACKUP_20260929.zip'
-releases = sorted((ROOT / 'public/data/publication/releases').glob('2026-09-29-story-text-identity-backfill-*.json'))
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--zip', default='docs/GS_STORY_TEXT_IDENTITY_PILOT_BACKUP_20260929.zip')
+parser.add_argument('--ids', default='1,5,23,97,133')
+parser.add_argument('--count', type=int, default=51)
+args = parser.parse_args()
+archive = ROOT / args.zip
+pilot_ids = tuple(int(value) for value in args.ids.split(','))
+releases = [ROOT / 'public/data/publication/releases' /
+            f'2026-09-29-story-text-identity-backfill-{number:03d}.json'
+            for number in pilot_ids]
 expected = {}
 for release in releases:
     data = json.loads(release.read_text(encoding='utf-8'))
@@ -29,6 +38,6 @@ with ZipFile(archive) as package:
         if len(raw) != artifact['bytes'] or hashlib.sha256(raw).hexdigest() != artifact['sha256']:
             raise ValueError(f'previous byte mismatch: {member}')
 
-if len(expected) != 51:
-    raise ValueError(f'expected 51 pilot artifacts, found {len(expected)}')
-print('Identity-only pilot exact rollback ZIP verified: 51 previous compiled artifacts')
+if len(expected) != args.count:
+    raise ValueError(f'expected {args.count} artifacts, found {len(expected)}')
+print(f'Identity-only exact rollback ZIP verified: {len(expected)} previous compiled artifacts')

@@ -21,3 +21,5 @@ P2-B 保持 `NOT EXECUTED`，仍约束 Story Runtime 的 release-accepted 声明
 试点新增 **1,162 个 compiled 文本引用**，其中 parent 与 episode 双份对应同一来源；正式 Reader 新增 **581 个有效身份行**。Reader 非空总行数维持 30,121，稳定身份从 **10,046 增至 10,627**，剩余 **19,494** 行。`ready=2,490`、`unsupported=311` 不变；`audit-reading-diagnostics` 报告 0 integrity issue、0 compiled identity issue、0 conflicting unit ID。`npm run verify:reading` 与 `npm run verify:reading-sources` 通过。Runtime strict-v2 drift 和 4 个 target=0 独立来源仍未处理。
 
 下一批需在更新后的 Reader manifest 上逐文件核对未迁组的旧来源哈希，不能拿原始全局 manifest SHA 阻断后续批次；每组先完整 dry-run，再应用、重建 Reader、核对诊断及 publication ledger。剩余 183 个 group / 1,463 集与 4 个 target=0 独立来源尚未补账，最终目标仍为 30,121 / 30,121。
+
+随后 20 组的进度另见 [Batch 1 记录](GS_STORY_TEXT_IDENTITY_BATCH1_20260929.md)；上述剩余数是本试点完成时的历史截面。

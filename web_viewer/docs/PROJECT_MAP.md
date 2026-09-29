@@ -190,7 +190,7 @@ parity 或兼容参考。
 覆盖收尾；9 月 29 日再迁移 536 份独立正文后，仍有 20,075 条非空文本行缺稳定身份，详见 [翻译前审计与清理](GS_TRANSLATION_STRICT_V2_PREP_20260929.md)。长/短 stage 双向 timing
 regression 与 P2-B preflight 已完成，真实音频 P2-B 仍待执行。在它完成
 前不开始下一个会改变 Runtime 语义的 Event / collection strict-v2 promotion；
-纯文本身份补账走独立 identity gate，见[试点记录](GS_STORY_TEXT_IDENTITY_BACKFILL_20260929.md)。
+纯文本身份补账走独立 identity gate，见[试点记录](GS_STORY_TEXT_IDENTITY_BACKFILL_20260929.md)与[Batch 1](GS_STORY_TEXT_IDENTITY_BATCH1_20260929.md)。Batch 1 后正式 Reader 身份为 12,940 / 30,121，剩余 17,181。
 
 ### P0：收口当前架构认知
 

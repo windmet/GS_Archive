@@ -3,6 +3,7 @@ import fs from 'node:fs/promises'
 import { createHash } from 'node:crypto'
 import { createReadingDocument, readingAvatarEntity } from '../shared/reading/ReadingDocument.js'
 import { validateReadingDocument, validateReadingManifest } from '../shared/reading/ReadingContract.js'
+import { sourceHash } from './audit-reading-diagnostics.mjs'
 
 const read = async file => JSON.parse(await fs.readFile(new URL(`../${file}`, import.meta.url), 'utf8'))
 const hash = value => `sha256:${createHash('sha256').update(value).digest('hex')}`
@@ -42,7 +43,7 @@ for (const entry of manifest.entries) {
   assert.equal(new Set(doc.rows.map(r => r.anchor.row_id)).size, doc.rows.length)
   for (const row of doc.rows) {
     assert.equal(typeof row.source_text, 'string')
-    if (row.text_ref) assert.equal(hash(row.source_text), row.text_ref.source_hash)
+    if (row.text_ref) assert.equal(sourceHash(row.source_text), row.text_ref.source_hash)
     assert.ok(row.anchor.step_index >= 0 && row.anchor.step_index < doc.source.step_count)
     assert.equal(row.anchor.playback, undefined)
     assert.equal(doc.playback.file, doc.source.file)
