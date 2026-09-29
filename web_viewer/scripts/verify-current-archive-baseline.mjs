@@ -91,10 +91,10 @@ if (
 }
 if (
   report.story?.authoritative_v2?.collection_count !== 4 ||
-  report.story?.authoritative_v2?.standalone_count !== 638 ||
-  report.story?.authoritative_v2?.artifact_count !== 667
+  report.story?.authoritative_v2?.standalone_count !== 1174 ||
+  report.story?.authoritative_v2?.artifact_count !== 1203
 ) {
-  failures.push('authoritative Story v2 population must be 4 collections + 638 standalone / 667 artifacts')
+  failures.push('authoritative Story v2 population must be 4 collections + 1174 standalone / 1203 artifacts')
 }
 
 const authoritativeSummary = report.story?.authoritative_v2

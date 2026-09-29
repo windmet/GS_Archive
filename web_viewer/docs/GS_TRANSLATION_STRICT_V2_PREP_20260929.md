@@ -32,4 +32,21 @@
 
 `audit-translation-crosswalk.mjs` 默认只写 `.analysis` 审计，不改 public。`publish-translation-strict-v2.mjs` 默认只预检；`--apply` 才写入，第二批另需 `--choice-identities`。已发布范围会拒绝重复应用或基线漂移。
 
-`node scripts/verify-translation-strict-v2.mjs` 从已提交回滚 ZIP 重验全部 536 份旧来源、4,994 个身份、strict schema、正文/步骤、音频、选择目标和演出；`npm run verify:reading` 及 `generate-reading-documents.mjs --check` 验证 Reader 合同与生成一致性。全量诊断保留在 `.analysis/translation-preflight/after-strict-v2.json`。页面和 read-model 验收记录在完成后追加；数据合同通过不代表媒体长稳或设备验收。
+`node scripts/verify-translation-strict-v2.mjs` 从已提交回滚 ZIP 重验全部 536 份旧来源、4,994 个身份、strict schema、正文/步骤、音频、选择目标和演出；`npm run verify:reading` 及 `generate-reading-documents.mjs --check` 验证 Reader 合同与生成一致性。全量诊断保留在 `.analysis/translation-preflight/after-strict-v2.json`。
+
+以下检查已通过：两批完整回滚/迁移校验、Reader 全套合同及生成一致性、`verify:story-text`、`verify:story-translations`、authoritative publication 注册表、完整 publication ledger（6 releases / 1,175 IDs）、source-only archive baseline、`build:check`、build audit 和 cutover progress。后两项仍明确记录全站 parity 和实机验收未完成。账本初次检查发现新文件未声明 LF，已逐文件补齐 `.gitattributes` 后通过；未扩大到全库换行重写。
+
+## read-model 与实际页面
+
+数据提交为 `d1ef5575bc7748dc46f071c25523c35fb9d74612`。从该提交生成并验证 8,420 个 read-model 产物：`b8d17783cec0dbe570b4c996d2b787f8e56cc917edd26ca1021c9e3ff53790c7`，位于 `E:/GS_ReadModels_QA/translation_strict_v2_20260929`。同步 inline bootstrap 与 route ledger 的 release，保留既有 partial/device pending 状态。生成器仅在该进程中忽略既存、未被 checkout adapter 消费的 `public/data/terminal/` 未跟踪目录；没有改动其文件或仓库 ignore。所有实际输入仍由生成器进行前后哈希检查。
+
+Browser 插件未提供，使用已有 Playwright + headless Edge。开发服务未能完成启动，停止本轮启动的进程后改用已通过 `build:check` 的生产代码、当前 read-model 和原位 public 静态映射，地址 `http://127.0.0.1:5202`；没有复制 public 全库。构建时 HEAD 为 `d1ef5575`，工作区包含新 bootstrap/route release，后续提交保存这些完全相同的字节。
+
+桌面 1440×900、移动宽度 390×844，各验收 9 个代表文档，共 18 次：
+
+- 第一批：`001tom_401_2_4_001_01_09_b`、`1_x_001tom_1_7_001_01`、`1_x_007kei_2_1_2_007_12`、`5_00_003_23_5_00_003_23`。
+- 第二批：`001tom_307_2_3_001_07_09_a`、`001tom_401_2_4_001_01_09_a`、`1_x_001tom_2_1_8_001_02`、`5_00_000_22_5_00_000_22`、`5_00_007_23_5_00_007_23`。
+
+通过：目标 URL/页面标题、非空正文、人名显示、无框架报错层、无脚本异常和横向溢出。ready 页面实际操作“篇内查找→输入→关闭→双语→原文”；unsupported 页面实际展开“分支与来源说明”，原有边界没有被身份迁移掩盖。HTTP 404 仅为 9 份尚未制作的中文译文，正确回退原文；没有创建空译文来消除请求记录。
+
+截图与逐路径结果：`E:/GS_ReadModels_QA/translation-reader-1440.png`、`translation-reader-390.png`、`translation-reader-qa.json`。本轮验收覆盖 Reader 数据与界面，未声称全部剧情演出、真实音频长稳、物理设备或远端部署验收。发布账本的 `not-tested` 是发布准备时状态，本节补充发布后的上述样本证据，不改写已有 release。

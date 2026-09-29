@@ -46,8 +46,8 @@ of `HEAD`. It is not the current repository HEAD.
 - the RAW USM catalog contains 260 identities: 12 exact client relations, 166
   exact masterdata relations, 77 BackMonitor relations and 5 unresolved.
 
-<!-- authoritative-v2-summary collections=4 standalone=638 artifacts=667 -->
-<!-- publication-ledger-summary releases=4 stable_logical_ids=639 -->
+<!-- authoritative-v2-summary collections=4 standalone=1174 artifacts=1203 -->
+<!-- publication-ledger-summary releases=6 stable_logical_ids=1175 -->
 
 ## 3. Consumer evidence
 

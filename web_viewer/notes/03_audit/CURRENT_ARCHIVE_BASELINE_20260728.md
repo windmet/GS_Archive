@@ -227,8 +227,8 @@ as separate stories.
 
 The published authoritative runtime-v2 surface is:
 
-<!-- authoritative-v2-summary collections=4 standalone=638 artifacts=667 -->
-<!-- publication-ledger-summary releases=4 stable_logical_ids=639 -->
+<!-- authoritative-v2-summary collections=4 standalone=1174 artifacts=1203 -->
+<!-- publication-ledger-summary releases=6 stable_logical_ids=1175 -->
 
 - four authoritative collections:
   - `1_3_10001_01`;
