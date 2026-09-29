@@ -21,14 +21,20 @@ npm run translation:studio:check -- .analysis/translation-studio/RUN/B001-main
 npm run translation:studio:import -- .analysis/translation-studio/RUN/B001-main
 npm run translation:studio:reader-preview -- .analysis/translation-studio/RUN/B001-main --out .analysis/translation-preview/RUN
 npm run build:check
-python scripts/serve-studio-reader-preview.py --overlay .analysis/translation-preview/RUN --port 5196
+python scripts/serve-studio-reader-preview.py --overlay .analysis/translation-preview/RUN --models E:/GS_ReadModels_QA/translation_strict_v2_20260929 --port 5196
 ```
 
 The server binds only to `127.0.0.1`, uses the reusable `build:check` code
 output plus the existing `public` source tree, and serves trial scenario JSON
-from `.analysis`. It marks the page “R3 本地未审试译 · 仅 B001”. Other scenario
+from `.analysis`. The `--models` directory must contain `bootstrap.inline.json`
+and `pages/_catalog`, with a bootstrap identical to the current build. It marks
+the page “R3 本地未审试译 · 仅 B001”. Other scenario
 translations return 404 and use the app's source fallback. Open a B001 Reader
 document, for example:
+
+The local server refreshes B001 reading-locator entries from the current
+`public/data/reading/manifest.json` when the matching read-model candidate
+contains older document hashes. It does not edit the candidate or public data.
 
 ```text
 http://127.0.0.1:5196/?view=reader&reading=1_4_001_00_a&reading_mode=translation

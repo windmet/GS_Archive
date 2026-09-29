@@ -9,9 +9,8 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
 import mimetypes
 from pathlib import Path
-from urllib.error import HTTPError
+import re
 from urllib.parse import unquote, urlsplit
-from urllib.request import urlopen
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -30,15 +29,23 @@ BADGE = (
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--overlay", required=True, type=Path)
+    parser.add_argument("--models", required=True, type=Path)
     parser.add_argument("--port", type=int, default=5196)
     args = parser.parse_args()
     overlay_root = args.overlay.resolve()
+    models_root = args.models.resolve()
     if not overlay_root.is_relative_to(PREVIEW_BASE) or not BUILD.is_dir():
         raise SystemExit("Overlay must be under this checkout's .analysis/translation-preview; build:check required")
     manifest = json.loads((overlay_root / "manifest.json").read_text(encoding="utf-8"))
     if manifest.get("schema") != "GS-LOCAL-READER-TRIAL-V1" or manifest.get("human_status") != "unreviewed":
         raise SystemExit("Invalid local preview manifest")
+    html = (BUILD / "index.html").read_text(encoding="utf-8")
+    embedded = re.search(r'<script type="application/json" id="archive-bootstrap">([^<]*)</script>', html)
+    if not embedded or json.loads(embedded.group(1)) != json.loads((models_root / "bootstrap.inline.json").read_text(encoding="utf-8")):
+        raise SystemExit("Read-model bootstrap does not match build:check")
+    model_pages = (models_root / "pages").resolve()
     files = {}
+    trial_documents = set()
     for item in manifest["files"]:
         relative = Path(item["path"])
         target = (overlay_root / relative).resolve()
@@ -48,6 +55,12 @@ def main() -> None:
         if "sha256:" + hashlib.sha256(data).hexdigest() != item["sha256"]:
             raise SystemExit(f"Overlay hash mismatch: {relative}")
         files["/translations/" + relative.as_posix()] = data
+        overlay = json.loads(data)
+        trial_documents.update(unit_id.split(":")[3] for unit_id in overlay["entries"])
+    reading_entries = json.loads((PUBLIC / "data/reading/manifest.json").read_text(encoding="utf-8"))["entries"]
+    reading_by_id = {entry["document_id"]: entry for entry in reading_entries}
+    if not trial_documents.issubset(reading_by_id):
+        raise SystemExit("Trial Reader document missing from current manifest")
 
     class Handler(SimpleHTTPRequestHandler):
         def _send(self, data: bytes, content_type: str, head: bool = False) -> None:
@@ -76,13 +89,21 @@ def main() -> None:
                            "text/html; charset=utf-8", head)
                 return
             if route.startswith("/_catalog/"):
-                try:
-                    with urlopen("http://127.0.0.1:5176" + self.path, timeout=15) as response:
-                        self._send(response.read(), response.headers.get("Content-Type", "application/json"), head)
-                except HTTPError as error:
-                    self.send_error(error.code, "Catalogue unavailable")
-                except OSError:
-                    self.send_error(502, "Catalogue service unavailable")
+                target = (model_pages / route.lstrip("/")).resolve()
+                if not target.is_relative_to(model_pages) or not target.is_file():
+                    self.send_error(404, "Catalogue unavailable")
+                    return
+                data = target.read_bytes()
+                if "/reading-docs/detail/" in route:
+                    detail = json.loads(data)
+                    document_id = detail.get("data", {}).get("id")
+                    if document_id in trial_documents:
+                        entry = reading_by_id[document_id]
+                        siblings = [candidate for candidate in reading_entries
+                                    if candidate["logical_id"] == entry["logical_id"]]
+                        detail["data"]["view"] = {"entry": entry, "entries": siblings}
+                        data = json.dumps(detail, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+                self._send(data, "application/json; charset=utf-8", head)
                 return
             target = self.translate_path(self.path)
             if not Path(target).is_file():
