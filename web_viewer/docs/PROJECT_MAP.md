@@ -189,7 +189,8 @@ parity 或兼容参考。
 本分支已发布 637 份 Work strict-v2 正文，正在完成翻译前身份审计与 Reader
 覆盖收尾；9 月 29 日再迁移 536 份独立正文后，仍有 20,075 条非空文本行缺稳定身份，详见 [翻译前审计与清理](GS_TRANSLATION_STRICT_V2_PREP_20260929.md)。长/短 stage 双向 timing
 regression 与 P2-B preflight 已完成，真实音频 P2-B 仍待执行。在它完成
-前不开始下一个 Event promotion。
+前不开始下一个会改变 Runtime 语义的 Event / collection strict-v2 promotion；
+纯文本身份补账走独立 identity gate，见[试点记录](GS_STORY_TEXT_IDENTITY_BACKFILL_20260929.md)。
 
 ### P0：收口当前架构认知
 
@@ -210,7 +211,7 @@ regression 与 P2-B preflight 已完成，真实音频 P2-B 仍待执行。在�
 `spine_lab` 和 `chibi_stage` 保持全屏；它们只继续使用明确的
 `return`/`parent` 返回契约。
 
-9 月 29 日 [聚合编译复审](GS_GROUP_COMPILATION_REPAIR_20260929.md) 已修正候选工具的 RAW part 作用域：188 组 / 1,509 集文本对齐，46 集仍有运行时差异。候选未发布，正式身份覆盖与 P2-B 条件不变。
+9 月 29 日 [聚合编译复审](GS_GROUP_COMPILATION_REPAIR_20260929.md) 已修正候选工具的 RAW part 作用域：188 组 / 1,509 集文本对齐，46 集仍有运行时差异。strict-v2 Runtime 候选未发布；身份补账只从候选提取文本坐标，保留当前正式 Runtime。
 
 ### P2-A：代表性 strict-v2 promotion
 
@@ -226,8 +227,11 @@ PR #37 的 release/annotation 所引用 commit identity 已验证为 `master` �
 
 2–4 小时混合长稳、最后 25% 资源曲线和 quiet endpoint 尚未执行。它仍是
 宣称 Story Runtime `release-accepted` 的必要证据；按当前 authoritative
-baseline，它也是选择下一批代表性 strict-v2 collection 前的明确门禁。它不
-阻塞无关的门户开发或资源关系审计。
+baseline，它也是选择下一批会改变 snapshot、timing、cue、audio、flow 或
+episode 边界的 strict-v2 Runtime promotion 前的明确门禁。它不阻塞通过
+RAW 哈希、身份校验、Runtime stripped deep-equal 和 Reader 行/控制/status
+parity 的 identity-only backfill。用户反馈的长期部署与朋友试用可作为运行信心线索，
+但没有可复核的 2–4 小时采样报告，不能写成 P2-B 正式通过。
 
 ## 6. 禁止默认扫描目录
 

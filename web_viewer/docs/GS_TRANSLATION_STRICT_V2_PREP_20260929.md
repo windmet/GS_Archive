@@ -17,6 +17,8 @@
 
 复核后稳定身份 **10,046 / 30,121 行**，仍缺 **20,075 行 / 1,513 份**。Reader `ready=2,490`、`unsupported=311` 保持不变；遍历限制与翻译身份仍是两类独立问题，不因身份补全而声称分支可读。
 
+后续 identity-only group 试点改走独立 backfill 路径，不将 strict-v2 Runtime 候选整体挂载。试点后的最新计数与未完成范围见[身份补账记录](GS_STORY_TEXT_IDENTITY_BACKFILL_20260929.md)；本段保留两批 standalone strict-v2 发布后的历史基线。
+
 ## 清理与恢复
 
 线上路径中的这 536 份旧 legacy 字节已被替换，不保留第二份活动副本。旧字节仅保留在两个小型、逐文件验证的回滚包中，不由前端加载：

@@ -44,7 +44,10 @@ Gate。按以下顺序执行：
 2. P2-B preflight 已提供跨播放器卸载的 v2 recorder、Story lifecycle/timer
    指标、quiet endpoint 和 analyzer；
 3. 下一步执行 P2-B 2–4 小时 Runtime 长稳；P2-B 仍是 `NOT EXECUTED`；
-4. P2-B 完成前不选择下一个 strict-v2 collection。
+4. P2-B 完成前不选择下一个会改变 Runtime 语义的 strict-v2 collection；
+   只新增 RAW 可证的文本 `text_ref`、Runtime stripped deep-equal 且 Reader
+   parity 的 identity-only backfill 走独立门禁，见
+   [`GS_STORY_TEXT_IDENTITY_BACKFILL_20260929.md`](GS_STORY_TEXT_IDENTITY_BACKFILL_20260929.md)。
 
 不得因为长稳降为 P2 就写成已经通过，也不得在普通门户批次中顺手执行或伪造
 长稳结论。
