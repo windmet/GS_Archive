@@ -16,7 +16,7 @@ export async function loadStudioPolicy({ version = 2 } = {}) {
   const selected = version === 3 ? {
     ...files,
     voice: 'translation/studio/policy/voice-profiles.trial.v1.json',
-    trial: 'translation/studio/policy/trial-policy.v1.json',
+    trial: 'translation/studio/policy/trial-policy.v2.json',
     prompt: 'translation/studio/policy/translation-r3.md',
   } : files
   const bytes = Object.fromEntries(await Promise.all(Object.entries(selected).map(async ([key, file]) =>
@@ -32,7 +32,7 @@ export async function loadStudioPolicy({ version = 2 } = {}) {
   assert(glossary.items.every(item => item.chosen_zh === null), 'Approved terminology requires an explicit policy revision')
   const trial = version === 3 ? JSON.parse(bytes.trial) : null
   if (trial) {
-    assert.equal(trial.schema, 'GS-TRIAL-POLICY-V1')
+    assert.equal(trial.schema, 'GS-TRIAL-POLICY-V2')
     assert.equal(trial.editorial_status, 'frozen-for-trial')
     assert.equal(trial.public_approval, false)
     assert(trial.items.every(item => item.editorial_status === 'frozen-for-trial'

@@ -45,8 +45,9 @@ export function renderStudioInput(batch) {
         '## 本轮已冻结的试译词条（不是官方审定）', '')
       for (const item of batch.trial_policy.items)
         lines.push(`- ${item.key}: ${item.scope} → ${item.chosen_rendering}。要求：${item.required}`)
-      lines.push('', `精确保留专名：${batch.trial_policy.proper_name_exceptions.join('、')}。此例外不适用于普通日语语法。`,
-        `待审术语：${batch.trial_policy.pending_terms.join('；')}。不要在Chinese写译注。`, '')
+      if (batch.trial_policy.proper_name_exceptions.length)
+        lines.push('', `精确保留专名：${batch.trial_policy.proper_name_exceptions.join('、')}。此例外不适用于普通日语语法。`)
+      lines.push(`待审术语：${batch.trial_policy.pending_terms.join('；')}。不要在Chinese写译注。`, '')
     }
     for (const [id, profile] of Object.entries(batch.voice_roster || {})) {
       if (batch.projection_version === 3) lines.push(profile.style
@@ -126,7 +127,8 @@ export function checkStudioRows(rows, translations, { trialPolicy = null } = {})
     catch (error) { blocking.push(`${row.rid}: ${error.message}`); continue }
     if (translated === row.protected_source) review.push(`${row.rid}: unchanged source`)
     let languageText = translated.replace(/\{\{GS_ADDRESS:[^{}]*\}\}/gu, '')
-    if (trialPolicy && row.source_text.includes('タケル')) languageText = languageText.replaceAll('タケル', '')
+    if (trialPolicy) for (const name of trialPolicy.proper_name_exceptions || [])
+      if (row.source_text.includes(name)) languageText = languageText.replaceAll(name, '')
     if (/[\p{Script=Hiragana}\p{Script=Katakana}]/u.test(languageText))
       review.push(`${row.rid}: Japanese kana remains`)
     if (/^\n|\n$/u.test(translated)) review.push(`${row.rid}: leading or trailing line break`)

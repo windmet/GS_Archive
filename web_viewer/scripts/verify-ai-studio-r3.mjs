@@ -4,6 +4,7 @@ import { renderStudioInput, parseStudioResult, checkStudioRows } from './lib/ai-
 import { makeQualityRequest, mergeQualityPatch } from './lib/ai-studio-quality.mjs'
 
 const policy = await loadStudioPolicy({ version: 3 })
+assert.equal(policy.trial.schema, 'GS-TRIAL-POLICY-V2')
 assert.equal(policy.trial.editorial_status, 'frozen-for-trial')
 assert.equal(policy.trial.public_approval, false)
 assert(policy.voice.profiles.every(profile => profile.required && profile.forbidden))
@@ -40,7 +41,7 @@ assert(!input.includes('Avoid:'))
 const qa = checkStudioRows([batch.rows[1]], new Map([['T000002', '道夫先生']]), { trialPolicy: policy.trial })
 assert(qa.review.some(item => item.includes('trial term name-michiru')))
 const name = checkStudioRows([{ rid: 'T1', source_text: 'タケルさん', protected_source: 'タケルさん', kind: 'dialogue' }],
-  new Map([['T1', 'タケル先生']]), { trialPolicy: policy.trial })
+  new Map([['T1', '武先生']]), { trialPolicy: policy.trial })
 assert(!name.review.some(item => item.includes('kana')))
 const grammar = checkStudioRows([{ rid: 'T1', source_text: 'タケルっす', protected_source: 'タケルっす', kind: 'dialogue' }],
   new Map([['T1', 'タケルっす']]), { trialPolicy: policy.trial })
