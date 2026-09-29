@@ -210,6 +210,8 @@ regression 与 P2-B preflight 已完成，真实音频 P2-B 仍待执行。在�
 `spine_lab` 和 `chibi_stage` 保持全屏；它们只继续使用明确的
 `return`/`parent` 返回契约。
 
+9 月 29 日 [聚合编译复审](GS_GROUP_COMPILATION_REPAIR_20260929.md) 已修正候选工具的 RAW part 作用域：188 组 / 1,509 集文本对齐，46 集仍有运行时差异。候选未发布，正式身份覆盖与 P2-B 条件不变。
+
 ### P2-A：代表性 strict-v2 promotion
 
 Event `1_3_10001_01` 已在 PR #37 完成首次 strict-v2 publication 与 bounded

@@ -1,10 +1,33 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
+import { resolveStoryPlaybackWindow } from '../shared/story/StoryPlaybackWindow.js'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const source = app.match(/function openStoryDetail\([^]*?\n\}/)?.[0]
 assert.ok(source)
+// Follow the real entry to the shared runtime window. Passing a startStep merely
+// to skip synopsis also selects an episode boundary and would truncate a group.
+const playSource = app.match(/function playStoryDetail\([^]*?\n\}/)?.[0]
+assert.ok(playSource)
+{
+  const calls=[]
+  const entry={file:'chapter.json',exists:true,playableStartIndex:1}
+  const context=vm.createContext({currentStory:{value:entry},loadScenario:(...args)=>calls.push(args)})
+  vm.runInContext(playSource,context)
+  context.playStoryDetail()
+  assert.equal(calls[0][0],'chapter.json');assert.equal(calls[0][1],'story_detail')
+  const steps=[{type:'synopsis'},{type:'title'},{type:'adv'},{type:'synopsis'},{type:'adv'}]
+  const scenario={steps,episodes:[{start_step_id:1,end_step_id:3},{start_step_id:4,end_step_id:5}]}
+  const window=resolveStoryPlaybackWindow(scenario,calls[0][2])
+  assert.equal(window.startIndex,1)
+  assert.equal(steps[window.entryIndex].type,'title','formal title must remain playable')
+  assert.equal(window.endIndex,4,'detail entry must keep the whole group, not only the first episode')
+  assert.equal(steps[3].type,'synopsis','nonleading authored synopsis is not globally filtered')
+  assert.equal(resolveStoryPlaybackWindow({steps:[{type:'adv'}]},{}).entryIndex,0)
+  const count=calls.length
+  context.playStoryDetail({...entry,exists:false});assert.equal(calls.length,count)
+}
 function deferred() {
   let resolve, reject
   const promise = new Promise((yes, no) => { resolve = yes; reject = no })

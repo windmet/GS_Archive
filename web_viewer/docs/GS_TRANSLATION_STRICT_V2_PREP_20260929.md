@@ -50,3 +50,7 @@ Browser 插件未提供，使用已有 Playwright + headless Edge。开发服务
 通过：目标 URL/页面标题、非空正文、人名显示、无框架报错层、无脚本异常和横向溢出。ready 页面实际操作“篇内查找→输入→关闭→双语→原文”；unsupported 页面实际展开“分支与来源说明”，原有边界没有被身份迁移掩盖。HTTP 404 仅为 9 份尚未制作的中文译文，正确回退原文；没有创建空译文来消除请求记录。
 
 截图与逐路径结果：`E:/GS_ReadModels_QA/translation-reader-1440.png`、`translation-reader-390.png`、`translation-reader-qa.json`。本轮验收覆盖 Reader 数据与界面，未声称全部剧情演出、真实音频长稳、物理设备或远端部署验收。发布账本的 `not-tested` 是发布准备时状态，本节补充发布后的上述样本证据，不改写已有 release。
+
+## 后续：聚合编译作用域复审
+
+[编译逻辑修复与完整审计](GS_GROUP_COMPILATION_REPAIR_20260929.md) 已确认 1,320 份 row-drift 来自重复开场简介。整组 RAW 重编后，1,509 集 / 20,029 条文本完全对齐；其中 46 集仍有运行时差异，另有 4 份独立文档的选择目标无效。此批只修复候选工具和诊断，没有新增正式迁移，本文身份覆盖数量不变。

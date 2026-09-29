@@ -69,6 +69,20 @@ for (const entry of manifest.entries) {
   record.old_rows = a.length; record.next_rows = b.length
   record.row_parity = equal(a, b)
   record.text_order_parity = equal(a.map(r => [r.kind,r.text]), b.map(r => [r.kind,r.text]))
+  // Classification only: never trim candidate rows or promote a part compilation.
+  // A duplicated synopsis must be proven against the actual parent, not suffixes.
+  if (record.topology === 'episode' && b.length === a.length + 2 && strict.steps[0]?.type === 'synopsis') {
+    const parentBytes = await read(`public/data/compiled/${entry.parent_file}`)
+    record.parent_sha256 = bytesHash(parentBytes)
+    const parent = JSON.parse(parentBytes)
+    const synopsis = parent.steps[0]?.type==='synopsis' ? parent.steps[0].dialogue : null
+    const content = rows => rows.map(r=>[r.kind,r.text,r.speaker])
+    const title = synopsis?.speaker_source_text ?? synopsis?.speaker ?? synopsis?.speaker_identity?.sourceName
+    const text = synopsis?.source_text ?? synopsis?.text
+    record.duplicate_preplay_synopsis = b[0]?.kind === 'title' && b[1]?.kind === 'synopsis' &&
+      b[0].text === title && b[1].text === text && equal(content(a),content(b.slice(2))) &&
+      a.every((r,i)=>b[i+2].step_id===r.step_id+1 && b[i+2].step_index===r.step_index+1)
+  }
   record.speaker_identity_changes = old.rows.flatMap((r,i) => !equal(r.speaker,next.rows[i]?.speaker) ? [{index:i,before:r.speaker,after:next.rows[i]?.speaker}] : [])
   // Enriching a legacy named speaker is distinct from replacing an existing identity.
   record.speaker_identity_conflicts = old.rows.flatMap((r,i) => r.speaker?.entityId && !equal(r.speaker,next.rows[i]?.speaker) ? [i] : [])
@@ -98,7 +112,7 @@ for (const entry of manifest.entries) {
     record.first_drift = {index, before:a[index], after:b[index]}
   }
   record.status = !record.schema_valid ? 'invalid-schema' : record.identity_issues.length ? 'invalid-identity'
-    : !record.row_parity ? 'row-drift' : record.existing_identity_drift.length ? 'existing-identity-drift'
+    : !record.row_parity ? (record.duplicate_preplay_synopsis ? 'duplicate-preplay-synopsis-parity' : 'row-drift') : record.existing_identity_drift.length ? 'existing-identity-drift'
       : record.speaker_identity_conflicts.length ? 'speaker-identity-conflict'
       : record.runtime_differences.length && record.runtime_difference_fields.length && record.runtime_difference_fields.every(f=>f.endsWith('.flow.choice_id')) && record.audio_parity && record.choice_target_parity ? 'choice-identity-parity'
       : record.runtime_differences.length || !record.audio_parity || !record.choice_target_parity ? 'text-parity-runtime-drift' : 'exact-identity-parity'
