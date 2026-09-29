@@ -19,6 +19,8 @@
 
 后续 identity-only group 试点改走独立 backfill 路径，不将 strict-v2 Runtime 候选整体挂载。试点后的最新计数与未完成范围见[身份补账记录](GS_STORY_TEXT_IDENTITY_BACKFILL_20260929.md)；本段保留两批 standalone strict-v2 发布后的历史基线。
 
+2026-09-29 后续批次已将正式 Reader 文本身份补至 30,121 / 30,121；最终范围和未解除的 Runtime/P2-B 门禁见[补账收口](GS_STORY_TEXT_IDENTITY_CLOSEOUT_20260929.md)。上文的 20,075 缺口仅为两笔 strict-v2 publication 后的历史截面。
+
 ## 清理与恢复
 
 线上路径中的这 536 份旧 legacy 字节已被替换，不保留第二份活动副本。旧字节仅保留在两个小型、逐文件验证的回滚包中，不由前端加载：

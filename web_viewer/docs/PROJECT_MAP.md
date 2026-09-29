@@ -155,7 +155,7 @@ parity 或兼容参考。
 ### `schemas/`、`policies/`
 
 机器契约和治理策略。publication v1 已冻结；publication v2 和 annotation v1
-已激活。当前分支有 6 笔 release record、1,175 个 stable logical ID；
+已激活。当前分支有 198 笔 release record、1,367 个 stable logical ID；
 `story-collection:1_3_10001_01` 的 current owner 是 repair release
 `2026-08-09-story-1-3-10001-01-002`。
 
@@ -172,9 +172,9 @@ parity 或兼容参考。
 - compiled 目录含 10,420 个 JSON artifact，不等于 10,420 篇剧情；
 - strict authoritative Runtime v2 为 4 collections + 1,174 standalone /
   1,203 artifacts；
-- publication ledger 为 6 releases / 1,175 stable logical IDs；
+- publication ledger 为 198 releases / 1,367 stable logical IDs；
 <!-- authoritative-v2-summary collections=4 standalone=1174 artifacts=1203 -->
-<!-- publication-ledger-summary releases=6 stable_logical_ids=1175 -->
+<!-- publication-ledger-summary releases=198 stable_logical_ids=1367 -->
 - external GS translation registry 当前有 8 条 exact mapping；
 - tracked PNG 为 186 个；其中 108 个为 grandfathered，
   14 个为 P1 Extra Story 导航视觉，61 个为 P1 Song 的有界 RAW-derived
@@ -186,11 +186,11 @@ parity 或兼容参考。
 当前执行入口是
 `notes/03_audit/CURRENT_ARCHIVE_BASELINE.md` 和
 [`GS_WORK_TEXT_PUBLICATION_20260928.md`](GS_WORK_TEXT_PUBLICATION_20260928.md)。
-本分支已发布 637 份 Work strict-v2 正文，正在完成翻译前身份审计与 Reader
-覆盖收尾；9 月 29 日再迁移 536 份独立正文后，仍有 20,075 条非空文本行缺稳定身份，详见 [翻译前审计与清理](GS_TRANSLATION_STRICT_V2_PREP_20260929.md)。长/短 stage 双向 timing
+本分支已发布 637 份 Work strict-v2 正文，并完成翻译前文本身份补账：
+Reader 30,121 / 30,121 条非空文本行具有稳定身份，详见[补账收口](GS_STORY_TEXT_IDENTITY_CLOSEOUT_20260929.md)。9 月 29 日迁移 536 份独立正文后的历史审计见[翻译前审计与清理](GS_TRANSLATION_STRICT_V2_PREP_20260929.md)。长/短 stage 双向 timing
 regression 与 P2-B preflight 已完成，真实音频 P2-B 仍待执行。在它完成
 前不开始下一个会改变 Runtime 语义的 Event / collection strict-v2 promotion；
-纯文本身份补账走独立 identity gate，见[试点记录](GS_STORY_TEXT_IDENTITY_BACKFILL_20260929.md)与[Batch 1](GS_STORY_TEXT_IDENTITY_BATCH1_20260929.md)。Batch 1 后正式 Reader 身份为 12,940 / 30,121，剩余 17,181。
+纯文本身份补账走独立 identity gate，见[试点记录](GS_STORY_TEXT_IDENTITY_BACKFILL_20260929.md)与[收口记录](GS_STORY_TEXT_IDENTITY_CLOSEOUT_20260929.md)。
 
 ### P0：收口当前架构认知
 

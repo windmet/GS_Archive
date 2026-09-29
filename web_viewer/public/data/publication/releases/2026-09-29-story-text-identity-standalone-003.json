@@ -1,0 +1,91 @@
+{
+  "schema_version": 2,
+  "release_id": "2026-09-29-story-text-identity-standalone-003",
+  "created_at": "2026-09-29T08:25:04.154Z",
+  "prepared_from_commit": "7c67d69099b651c5336eed2c9b523e158252749e",
+  "transaction_kind": "backfill",
+  "scope": {
+    "kind": "item",
+    "ids": [
+      "1_x_039mcr_1_8_039_01"
+    ]
+  },
+  "entries": [
+    {
+      "logical_id": "story:1_x_039mcr_1_8_039_01",
+      "domain": "story",
+      "source": {
+        "archive_relative_path": "asset/scenario_1_8.unity3d",
+        "sha256": "932cc9780790b1beca93977fb1add93b1bf97a72fc2b326e2280526e1387e97b",
+        "objects": [
+          {
+            "type": "TextAsset",
+            "name": "scenario_1_8_039_01",
+            "container_path": "assets/resources/scenariodata/1_x_039mcr/scenario_1_8_039_01.json",
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "story_catalog",
+          "key": "1_x_039mcr_1_8_039_01",
+          "evidence": "RAW-derived text coordinates only; target_step_id=0 and all mounted Runtime fields retained"
+        }
+      ],
+      "transform": {
+        "tool": "backfill-standalone-choice-text-identities.mjs",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/compiled/1_x_039mcr_1_8_039_01.json",
+          "url": "/data/compiled/1_x_039mcr_1_8_039_01.json",
+          "bytes": 16392,
+          "sha256": "187bdd26c98e375d5721069759a19740490a7e5c4e5aa7264520ac123507551f"
+        }
+      ],
+      "consumers": [
+        "Story Runtime",
+        "ReadingDocument",
+        "translation preflight"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "Identity-only stripped deep-equal; Reader text, speaker source name, controls and status unchanged",
+          "RAW bundle and candidate hashes verified; choice target remains 0; strict Runtime candidate not mounted"
+        ]
+      },
+      "browser_acceptance": {
+        "state": "not-tested",
+        "tested_url": null,
+        "tested_at": null,
+        "tested_commit": null,
+        "environment": null,
+        "evidence": []
+      },
+      "previous_state": {
+        "kind": "unmanaged-existing",
+        "release_id": null,
+        "artifacts": [
+          {
+            "path": "web_viewer/public/data/compiled/1_x_039mcr_1_8_039_01.json",
+            "url": "/data/compiled/1_x_039mcr_1_8_039_01.json",
+            "bytes": 14195,
+            "sha256": "1c438fbac51ab2337bcad437a5b93f35d19806de27b303369d2fea05e06523ab"
+          }
+        ],
+        "evidence": [
+          "Git baseline 7c67d69099b651c5336eed2c9b523e158252749e; exact old bytes in rollback ZIP"
+        ]
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    }
+  ]
+}
