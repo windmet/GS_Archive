@@ -11,21 +11,54 @@ const state = useArchiveNavigationState()
 const card = { resource_id: '002sht_sr01', character_id: '002sht', card_id: 42 }
 const unit = { unit_code: '01jup', unit_id: 1 }
 const context = vm.createContext({
+    prepareArchivePage: (_view, data) => data,
   ...state, buildArchiveSourceQuery,
   songCatalogData: { value: { songs: { brndnf: {} } } },
+  songReadModelStatus: { value: '' }, songReadModelDetail: { value: null },
+  gashaReadModelStatus: { value: '' }, gashaReadModelDetail: { value: null },
+  cardReadModelCatalog: { value: [card] }, cardReadModelStatus: { value: '' }, cardReadModelDetail: { value: null },
+  pendingSongNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0,
+  eventReadModelStatus: { value: '' }, eventReadModelDetail: { value: null },
+  loading: { value: false }, archiveDataReady: { value: true },
+  navigation: { invalidate: () => {}, getRevision: () => 0, isDisposed: () => false },
+  loadSongDetail: async songCode => ({ id: songCode, song: { song_code: songCode }, view: { id: songCode } }),
+  loadGashaDetail: async id => ({ id, gasha: { id } }),
+  loadCardDetail: async id => ({ id, card: { resource_id: id } }),
+  loadCardCatalog: async () => [card], unitReadModelStatus: { value: '' },
+  loadEventDetail: async id => ({ id, view: { event: { event_id: id } } }),
   idolUnitData: { value: { units: [unit], by_idol_code: { '002sht': {}, '003hok': {} } } },
+  archiveBootstrap: { idols: [{ id: '002sht' }, { id: '003hok' }] },
+  openIdolReadModel: (idolCode, options = {}) => {
+    if (options.captureSource) context.captureDetailSource()
+    state.currentCharacterId.value = idolCode
+    state.view.value = 'idol_detail'
+  },
+  openArchiveUnit: unit => {
+    context.captureDetailSource()
+    state.currentArchiveUnitCode.value = String(unit.unit_code || unit.unit_id)
+    state.view.value = 'unit_detail'
+  },
+  openPrimaryCards: idolCode => {
+    context.captureDetailSource()
+    state.currentCategoryId.value = 'cards'
+    state.currentCharacterId.value = idolCode
+    state.currentCardId.value = ''
+    state.view.value = 'cards'
+  },
   cardMap: { value: new Map([[card.resource_id, card]]) },
   cardIndexData: { value: { cards: [card] } },
+  mobileIdolReadModelDetail: { value: { view: { cardRefs: [card] } } },
+  mobileUnitReadModelDetail: { value: { view: { cardRefs: [card] } } },
   currentArchiveUnit: { value: unit },
   normalizedPrimaryIdol: code => code,
   commitView: view => { state.view.value = view },
 })
 const handlers = ['captureDetailSource', 'openSong', 'openSongIdol', 'openSongUnit',
-  'openPrimaryIdol', 'openArchiveUnit', 'openUnitMember', 'openUnitCards', 'openIdolDomain',
-  'openEventIdol', 'openEventUnit', 'openGasha', 'openGashaCard', 'openEventCard',
+  'openPrimaryIdol', 'openUnitMember', 'openUnitCards', 'openIdolDomain',
+  'openEventIdol', 'openEventUnit', 'openCard', 'openGasha', 'openGashaCard', 'openEventCard',
   'openMobileCard', 'openStoryIdol', 'openRelatedCard', 'openEventDetail']
 for (const name of handlers) {
-  const code = app.match(new RegExp(`function ${name}\\([^]*?\\n\\}`))?.[0]
+  const code = app.match(new RegExp(`(?:async )?function ${name}\\([^]*?\\n\\}`))?.[0]
   assert.ok(code, name)
   vm.runInContext(code, context)
 }
@@ -63,7 +96,7 @@ for (const [view, handler, arg, target] of fixtures) {
   state.filterQuery.value = 'preserve me'
   state.detailSourceRoute.value = buildArchiveSourceQuery({ view: 'song_catalog', query: 'BRAND' })
   const before = roundTrip(state.currentArchiveRoute())
-  context[handler](arg)
+  await context[handler](arg)
   const after = roundTrip(state.currentArchiveRoute())
   assert.equal(after.view, target, handler)
   assert.deepEqual(source(after), before, `${handler}: exact prior identity, filters and ancestors`)

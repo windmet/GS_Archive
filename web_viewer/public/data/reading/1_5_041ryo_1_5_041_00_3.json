@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_041ryo_1_5_041_00_3",
-  "logical_id": "story-collection:1_5_041ryo_1_5_041_00_3",
+  "logical_id": "story:1_5_041ryo_1_5_041_00_3",
   "scenario_id": "1_5_041ryo_1_5_041_00_3",
   "text_catalog_id": "1_5_041ryo_1_5_041_00_3",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_041ryo_1_5_041_00_3.json",
-    "sha256": "sha256:8082a5cbf55e0ead0f82c663c4597605b0940e30006542c11fdf04b439abae72",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:90e9301414836e2b8494955995f0b1c1b37448043333ce0e2025b70ad5c82adb",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 4,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_041ryo_1_5_041_00_3.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事開始",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_041ryo_1_5_041_00_3:1_5_041_00_3:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_041ryo_1_5_041_00_3",
+          "part_id": "1_5_041_00_3",
+          "file": "assets/resources/scenariodata/1_5_041ryo/scenario_1_5_041_00_3.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c9578f41f04512f8dd518c9243e386d3dec69c30c8930a99faa1eaef07ea0ceb"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_041ryo_1_5_041_00_3:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_041_00_3",
+        "source_file": "assets/resources/scenariodata/1_5_041ryo/scenario_1_5_041_00_3.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_041ryo_1_5_041_00_3:1_5_041_00_3:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_041ryo_1_5_041_00_3",
+          "part_id": "1_5_041_00_3",
+          "file": "assets/resources/scenariodata/1_5_041ryo/scenario_1_5_041_00_3.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,21 +116,32 @@
         "row_id": "1_5_041ryo_1_5_041_00_3:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_041_00_3",
+        "source_file": "assets/resources/scenariodata/1_5_041ryo/scenario_1_5_041_00_3.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ここへ来る前に時間があったので\n川原をお散歩してきたんです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_041ryo_1_5_041_00_3:1_5_041_00_3:cmd-000015:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_041ryo_1_5_041_00_3",
+          "part_id": "1_5_041_00_3",
+          "file": "assets/resources/scenariodata/1_5_041ryo/scenario_1_5_041_00_3.json",
+          "command_index": 15,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:eaf2d79a0c7f0eda71da2e3a9e286aee3415312ed94d3a708788e22b5f041435"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
         "sourceName": "秋月 涼"
       },
       "performance": {
@@ -121,46 +157,23 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_041ryo_1_5_041_00_3:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_041_00_3",
+        "source_file": "assets/resources/scenariodata/1_5_041ryo/scenario_1_5_041_00_3.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "ここへ来る前に時間があったので",
     "episode_label": null

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_040ren_1_5_040_01",
-  "logical_id": "story-collection:1_5_040ren_1_5_040_01",
+  "logical_id": "story:1_5_040ren_1_5_040_01",
   "scenario_id": "1_5_040ren_1_5_040_01",
   "text_catalog_id": "1_5_040ren_1_5_040_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_040ren_1_5_040_01.json",
-    "sha256": "sha256:feee6e6f7521e5507bb4882baeaae25f287472f05de4848aa9be060d2b27ad6d",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:914c993e736a481c4623e7974d57b6d05639647857221b5f436fa7ffcca215c0",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 18,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_040ren_1_5_040_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_040ren_1_5_040_01:1_5_040_01:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_040ren_1_5_040_01",
+          "part_id": "1_5_040_01",
+          "file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_040ren_1_5_040_01:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_040_01",
+        "source_file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_040ren_1_5_040_01:1_5_040_01:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_040ren_1_5_040_01",
+          "part_id": "1_5_040_01",
+          "file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_040ren_1_5_040_01:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_040_01",
+        "source_file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_040ren_1_5_040_01:1_5_040_01:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_040ren_1_5_040_01",
+          "part_id": "1_5_040_01",
+          "file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_040ren_1_5_040_01:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_040_01",
+        "source_file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "TV番組で大盛りの料理を紹介するお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_040ren_1_5_040_01:1_5_040_01:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_040ren_1_5_040_01",
+          "part_id": "1_5_040_01",
+          "file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:dc609c32b6e194dc54ddf302c316fae1393b7fd19bb9ed8d66f2cbd2c31cf0a1"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,17 +212,28 @@
         "row_id": "1_5_040ren_1_5_040_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_040_01",
+        "source_file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "これから収録があるのに、いつの間にか漣さんが\nいなくなってしまった！　早く探さないと……！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_040ren_1_5_040_01:1_5_040_01:cmd-000012:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_040ren_1_5_040_01",
+          "part_id": "1_5_040_01",
+          "file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+          "command_index": 12,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:194e444d2355791dc04628a746551497ab823c995eb4f02ee7f849d1aa58baad"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -202,21 +260,32 @@
         "row_id": "1_5_040ren_1_5_040_01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_040_01",
+        "source_file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "あァ？　おい、ネコ。\nオレ様の前に立つとはいい度胸じゃねェか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_040ren_1_5_040_01:1_5_040_01:cmd-000026:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_040ren_1_5_040_01",
+          "part_id": "1_5_040_01",
+          "file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+          "command_index": 26,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:dfb216d1877e7370826de1455cab58b134052c9bbd3aa637c227131819757af8"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "040ren",
         "sourceName": "牙崎 漣"
       },
       "performance": {
@@ -233,7 +302,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -242,21 +310,32 @@
         "row_id": "1_5_040ren_1_5_040_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_040_01",
+        "source_file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "お前にはコイツで十分だろ。\nおら、飛んでみやがれ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_040ren_1_5_040_01:1_5_040_01:cmd-000031:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_040ren_1_5_040_01",
+          "part_id": "1_5_040_01",
+          "file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+          "command_index": 31,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0a84c2c2f5c7412db30c891a8615f9566b806cbd145132afafd141838ddbc0fc"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "040ren",
         "sourceName": "牙崎 漣"
       },
       "performance": {
@@ -273,7 +352,6 @@
         "stepId": 8
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -282,21 +360,32 @@
         "row_id": "1_5_040ren_1_5_040_01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_040_01",
+        "source_file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "フン、いい飛びっぷりじゃねェか。\nなら、次はこれでどうだ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_040ren_1_5_040_01:1_5_040_01:cmd-000040:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_040ren_1_5_040_01",
+          "part_id": "1_5_040_01",
+          "file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+          "command_index": 40,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:165e34fa8ffa27e81b0509080aad26715574eee8799cbf73b1c018e23d60e145"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "040ren",
         "sourceName": "牙崎 漣"
       },
       "performance": {
@@ -313,7 +402,6 @@
         "stepId": 10
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -322,17 +410,28 @@
         "row_id": "1_5_040ren_1_5_040_01:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_040_01",
+        "source_file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+        "command_start": 40,
+        "command_end": 40
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "漣さ～ん！　やっと見つけましたよ！\n収録前にいなくなられたら困ります。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_040ren_1_5_040_01:1_5_040_01:cmd-000050:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_040ren_1_5_040_01",
+          "part_id": "1_5_040_01",
+          "file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+          "command_index": 50,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e14d2ecd7431adacc8ca091d3762b5c8e5a6a8c7d9841c7b6c969011ee16f185"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -359,21 +458,32 @@
         "row_id": "1_5_040ren_1_5_040_01:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_040_01",
+        "source_file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+        "command_start": 50,
+        "command_end": 50
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "シューロクなんざ知らねェし、\nオマエが困ろうがオレ様には関係ねェ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_040ren_1_5_040_01:1_5_040_01:cmd-000055:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_040ren_1_5_040_01",
+          "part_id": "1_5_040_01",
+          "file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+          "command_index": 55,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5605030f6d41c96f328a656fc41f392a9988797a0f7e850ff34a3f915ba4f31"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "040ren",
         "sourceName": "牙崎 漣"
       },
       "performance": {
@@ -390,7 +500,6 @@
         "stepId": 14
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -399,17 +508,28 @@
         "row_id": "1_5_040ren_1_5_040_01:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_040_01",
+        "source_file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+        "command_start": 55,
+        "command_end": 55
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "関係あります！\nそろそろ収録が始まるので戻りますよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_040ren_1_5_040_01:1_5_040_01:cmd-000057:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_040ren_1_5_040_01",
+          "part_id": "1_5_040_01",
+          "file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+          "command_index": 57,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d5a9dd6395ad5f797b9090a3e0083bf4cc7c517c8c22cf3f766ac04e901332f4"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -436,21 +556,32 @@
         "row_id": "1_5_040ren_1_5_040_01:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_040_01",
+        "source_file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+        "command_start": 57,
+        "command_end": 57
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "あァ？\nそーいや、シューロクで飯が食えるって言ってたな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_040ren_1_5_040_01:1_5_040_01:cmd-000062:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_040ren_1_5_040_01",
+          "part_id": "1_5_040_01",
+          "file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+          "command_index": 62,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:461c089c8b43b07a929009ed5045005aff77050f7cdb0a845d3ee9a5ed91d718"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "040ren",
         "sourceName": "牙崎 漣"
       },
       "performance": {
@@ -467,7 +598,6 @@
         "stepId": 16
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -476,17 +606,28 @@
         "row_id": "1_5_040ren_1_5_040_01:step-16:text",
         "step_id": 16,
         "step_index": 15,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_040_01",
+        "source_file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+        "command_start": 62,
+        "command_end": 62
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "はい、お店の大盛りメニューを紹介したあと、\n実際に食べていただきます。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_040ren_1_5_040_01:1_5_040_01:cmd-000066:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_040ren_1_5_040_01",
+          "part_id": "1_5_040_01",
+          "file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+          "command_index": 66,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:df158b985c11fd9c01ce775daa22c2ac301bf0b22f6b440c186f7747e885c591"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -513,21 +654,32 @@
         "row_id": "1_5_040ren_1_5_040_01:step-17:text",
         "step_id": 17,
         "step_index": 16,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_040_01",
+        "source_file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+        "command_start": 66,
+        "command_end": 66
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "フン、悪くねェ。店のメシ、\n全部食ってやるからカクゴしやがれ！　くはは！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_040ren_1_5_040_01:1_5_040_01:cmd-000071:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_040ren_1_5_040_01",
+          "part_id": "1_5_040_01",
+          "file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+          "command_index": 71,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3ca5f417ca6362b106b3dd794f8f3beac55915f25ccb92dfcf79d3e9f47f4dea"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "040ren",
         "sourceName": "牙崎 漣"
       },
       "performance": {
@@ -544,7 +696,6 @@
         "stepId": 18
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -553,92 +704,16 @@
         "row_id": "1_5_040ren_1_5_040_01:step-18:text",
         "step_id": 18,
         "step_index": 17,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_040_01",
+        "source_file": "assets/resources/scenariodata/1_5_040ren/scenario_1_5_040_01.json",
+        "command_start": 71,
+        "command_end": 71
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 15,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 16,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 17,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "TV番組で大盛りの料理を紹介するお仕事",
     "episode_label": null

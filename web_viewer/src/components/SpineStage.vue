@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div
     ref="viewportRef"
     class="spine-stage-root"
@@ -80,6 +80,11 @@
 
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount, markRaw, reactive, onUnmounted, computed } from 'vue'
+import { createStoryConfigStore } from '../utils/StoryConfigStore.js'
+import { storyAssetTransport } from '../core/StoryAssetTransport.js'
+import { withLoadDeadline } from '../core/AsyncLoadBoundary.js'
+import { validateStoryConfig } from '../utils/StoryConfigShape.js'
+import { tracePlayer } from '../core/PlayerTrace.js'
 import { storyStageFrame, storyPortraitBaseY, STORY_PORTRAIT_SCALE } from '../core/StoryStageFraming.js'
 import { PixiStageManager } from '../core/PixiStageManager.js'
 import { storySpineOrder } from '../core/StorySpineOrder.js'
@@ -114,7 +119,7 @@ const props = defineProps({
   nowMilliseconds: { type: Function, default: undefined },
 })
 
-const emit = defineEmits(['ready', 'error'])
+const emit = defineEmits(['ready', 'scene-ready', 'error'])
 
 const viewportRef = ref(null)
 const containerRef = ref(null)
@@ -136,7 +141,10 @@ const portraitBaseY = value => props.portraitFraming ? storyPortraitBaseY(value)
 let manager = null
 let unregisterReleaseStage = null
 let applyStateToken = 0
+let applyStateLoad = new AbortController()
 let projectedStep = null
+let projectionFailure = null
+const stageMetadataOwner = new AbortController()
 let lastScreenEffectsKey = ''
 let managedBackgroundId = null
 const debugMode = ref(false)
@@ -171,9 +179,8 @@ onMounted(() => {
     manager.setBackground(props.fallbackBg)
   }
 
-  void _loadPrefabMeta()
-  void _loadCostumeDictionary()
-  void _loadMotionSettings()
+  // Costume names are diagnostics only; empty-background entries need no actor metadata.
+  if (props.debugControls) void _loadCostumeDictionary()
   installDebugGlobals()
 })
 
@@ -187,6 +194,8 @@ function syncManagedBackground() {
 }
 
 onBeforeUnmount(() => {
+  applyStateLoad.abort()
+  stageMetadataOwner.abort()
   framingObserver?.disconnect()
   if (manager) {
     manager.destroy()
@@ -658,60 +667,30 @@ function applyCharaOverrides(manager) {
 const LOG_Y_DIAGNOSTICS = URL_FLAGS.get('yDebug') === '1' || URL_FLAGS.get('debugY') === '1'
 const BOUNDS_DEBUG = URL_FLAGS.get('bounds') === '1' || URL_FLAGS.get('debugBounds') === '1'
 const Y_DEBUG_STORE = (window.__SIDEM_Y_DIAG__ = window.__SIDEM_Y_DIAG__ || {})
-let _bodyTypePromise = null
 const _bodyTypeById = {}
-let _prefabMetaPromise = null
-let _costumeDictionaryPromise = null
-let _motionSettingsPromise = null
+const bodyTypeStore = createStoryConfigStore({ kind: 'idol-body-types', url: getBodyTypeUrl })
 
-async function _loadBodyTypes() {
-  if (_bodyTypePromise) return _bodyTypePromise
-  _bodyTypePromise = fetch(getBodyTypeUrl())
-    .then(res => res.ok ? res.json() : null)
-    .then(data => {
-      for (const row of data?.dataList || []) {
-        if (row.idolId) _bodyTypeById[row.idolId] = row.bodyType
-      }
-    })
-    .catch(() => {})
-  return _bodyTypePromise
+async function _loadBodyTypes(signal) {
+  const data = await bodyTypeStore.load({ signal })
+  signal?.throwIfAborted()
+  for (const row of data.dataList) if (row.idolId) _bodyTypeById[row.idolId] = row.bodyType
 }
-
-async function _loadPrefabMeta() {
-  if (_prefabMetaPromise) return _prefabMetaPromise
-  _prefabMetaPromise = loadCostumePrefabMeta()
-    .then(models => {
-      costumePrefabMeta = models || {}
-      return costumePrefabMeta
-    })
-    .catch(() => {
-      costumePrefabMeta = {}
-      return costumePrefabMeta
-    })
-  return _prefabMetaPromise
+async function _loadPrefabMeta(signal) {
+  const data = await loadCostumePrefabMeta({ signal })
+  signal?.throwIfAborted()
+  costumePrefabMeta = data
 }
-
 async function _loadCostumeDictionary() {
-  if (_costumeDictionaryPromise) return _costumeDictionaryPromise
-  _costumeDictionaryPromise = loadCostumeDictionary()
-    .then(models => {
-      costumeDictionary = models || {}
-      if (debugMode.value) syncStates()
-      return costumeDictionary
-    })
-    .catch(() => {
-      costumeDictionary = {}
-      return costumeDictionary
-    })
-  return _costumeDictionaryPromise
+  try {
+    const data = await loadCostumeDictionary({ signal: stageMetadataOwner.signal })
+    if (stageMetadataOwner.signal.aborted) return
+    costumeDictionary = data
+    if (debugMode.value) syncStates()
+  } catch (error) {
+    if (!stageMetadataOwner.signal.aborted) console.debug('[Stage] Optional costume names unavailable:', error.message)
+  }
 }
-
-async function _loadMotionSettings() {
-  if (_motionSettingsPromise) return _motionSettingsPromise
-  _motionSettingsPromise = loadIdolMotionSettings()
-    .catch(() => {})
-  return _motionSettingsPromise
-}
+function _loadMotionSettings(signal) { return loadIdolMotionSettings({ signal }) }
 
 function getBodyType(charaId) {
   return _bodyTypeById[charaId] || null
@@ -721,15 +700,19 @@ function getMotionSetting(charaId, modelId, animName) {
   return getCachedMotionSetting(charaId, modelId, animName)
 }
 
-async function _loadOtherSetting(charaId) {
+async function _loadOtherSetting(charaId, signal) {
   if (_otherSettingCache[charaId] !== undefined) return
   try {
-    const url = getOtherSettingUrl(charaId)
-    const res = await fetch(url)
-    if (!res.ok) { _otherSettingCache[charaId] = null; return }
-    _otherSettingCache[charaId] = await res.json()
-  } catch (_) {
-    _otherSettingCache[charaId] = null
+    const data = await withLoadDeadline(taskSignal => storyAssetTransport.getJson(getOtherSettingUrl(charaId),
+      { signal: taskSignal, cache: 'default' }), { signal, timeoutMs: 15000, label: `actor-placement:${charaId}` })
+    signal?.throwIfAborted()
+    validateStoryConfig('idol-placement', data)
+    _otherSettingCache[charaId] = data
+  } catch (error) {
+    // Explicit absence keeps the existing default-placement fallback. Timeout,
+    // cancellation and malformed data must never poison this cache as missing.
+    if (!signal?.aborted && [404, 410].includes(error.status)) _otherSettingCache[charaId] = null
+    else throw error
   }
 }
 
@@ -785,6 +768,7 @@ watch(() => props.step, (step, oldStep) => {
   if (!manager) return
   syncManagedBackground()
   applyStateToken++
+  applyStateLoad.abort()
   // Clear stale stage state when returning to non-story screens.
   if (!getStepSceneState(step)) {
     if (props.fallbackBg) {
@@ -827,12 +811,27 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
   if (!manager) return
   const state = getStepSceneState(step)
   if (!state) return
+  applyStateLoad.abort()
+  applyStateLoad = new AbortController()
+  const signal = applyStateLoad.signal
   const token = ++applyStateToken
   projectedStep = null
-  // Entry positioning and motion selection must use one resolved metadata set.
-  // Reapplying entry after a late metadata fetch can overwrite settled cues.
-  await Promise.all([_loadBodyTypes(), _loadPrefabMeta(), _loadMotionSettings()])
-  if (token !== applyStateToken || !manager) return
+  projectionFailure = null
+  const desired = state.spines || []
+  const realActors = desired.filter(actor => actor?.id && actor.model && !NON_VISUAL_IDS.has(actor.id)
+    && !isSilhouetteOnlyModel(actor.model))
+  const failProjection = error => {
+    if (token !== applyStateToken || !manager || signal.aborted) return
+    projectionFailure = { step, code: error.code || error.name, message: String(error.message || error) }
+    tracePlayer('stage-config-failed', { code: projectionFailure.code, message: projectionFailure.message })
+  }
+  // Metadata is mandatory before actual actor positioning, not before an empty
+  // background. Do not eagerly fetch the full actor indexes on mount.
+  if (realActors.length) {
+    try { await Promise.all([_loadBodyTypes(signal), _loadPrefabMeta(signal), _loadMotionSettings(signal)]) }
+    catch (error) { failProjection(error); return }
+  }
+  if (token !== applyStateToken || !manager || signal.aborted) return
 
   lastScreenEffectsKey = applyStepSceneState({
     manager,
@@ -844,7 +843,6 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
   })
 
   const charaId = step.chara_id || ''
-  const desired = state.spines || []
   const existingIds = new Set(Object.keys(manager.spineInstances))
   for (const sid of Object.keys(manager._silhouetteSprites || {})) {
     existingIds.add(sid)
@@ -865,7 +863,10 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
 
     // Load the per-character baseline before positioning. Without awaiting
     // this, first render uses the rough fallback and later navigation differs.
-    if (_otherSettingCache[sid] === undefined) await _loadOtherSetting(sid)
+    if (!isSilhouetteOnlyModel(spineState.model) && _otherSettingCache[sid] === undefined) {
+      try { await _loadOtherSetting(sid, signal) }
+      catch (error) { failProjection(error); return }
+    }
     if (token !== applyStateToken || !manager) return
 
     const modelId = spineState.model
@@ -972,6 +973,7 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
       try {
         await manager.spawnSpine(sid, modelId, {
           isCurrent: () => token === applyStateToken && !!manager,
+          signal,
           bodyType: getBodyType(sid),
           prefabMeta,
           bodyScaleEnabled: BODY_SCALE_ENABLED,
@@ -1050,6 +1052,9 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
   applyCharaOverrides(manager)
 
   projectedStep = step
+  // Manager creation is not actor readiness: spawn may clear queued talking.
+  // Consumers can now bind the current audio clock after the real projection.
+  emit('scene-ready', step)
 
   syncBoundsSnapshot(step)
   if (debugMode.value) syncStates()
@@ -1067,6 +1072,9 @@ function isSceneProjected(expectedStep) {
 }
 
 function getSceneReadiness(expectedStep) {
+  if (manager && props.step === expectedStep && projectionFailure?.step === expectedStep) {
+    return { status: 'blocked', reason: 'actor-configuration', code: projectionFailure.code, message: projectionFailure.message }
+  }
   if (!manager || props.step !== expectedStep || !isSceneProjected(expectedStep)) {
     return { status: 'waiting', reason: 'actor-projection' }
   }

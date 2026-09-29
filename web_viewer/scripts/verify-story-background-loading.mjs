@@ -19,7 +19,7 @@ function setup() {
     app: { ticker: { add: fn => tickers.add(fn), remove: fn => tickers.delete(fn) } },
     bgContainer: container, bgEffectContainer: new Container(),
     getWidth: () => 100, getHeight: () => 100, getBgUrl: id => id,
-    loadTextureFromUrl: id => { const request = { id, ...deferred() }; requests.push(request); return request.promise },
+    loadTextureFromUrl: (id, options) => { const request = { id, signal: options.signal, ...deferred() }; requests.push(request); return request.promise },
   })
   return { manager, requests, tickers, container }
 }
@@ -98,6 +98,7 @@ for (const outcome of ['fade', 'settle-before-load', 'failure', 'cancel']) {
   const pending = state.manager.setBackground('B', { duration: 1 })
   assert.equal(state.manager.settleBackgroundTransition(), false, 'unloaded texture cannot be settled')
   assert.equal(state.manager.cancelBackgroundTransition(), true, 'pending load must be cancellable')
+  assert.equal(state.requests.at(-1).signal.aborted, true, 'cancel must reach the image loader')
   state.requests.at(-1).resolve(texture())
   await pending
   assert.equal(state.manager.currentBgId, 'A')

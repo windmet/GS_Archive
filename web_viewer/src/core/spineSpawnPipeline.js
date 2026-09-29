@@ -25,8 +25,10 @@ export async function loadAndCreateSpine({
   const atlasText = decodeAtlasText(atlasBuf)
   const textureFiles = readSpineAtlasPages(atlasText)
   const textureMap = new Map(await Promise.all(textureFiles.map(async file => {
-    const url = await resolveTextureUrl(modelId, file, { allowFallback: textureFiles.length === 1 })
-    const texture = await loadTextureFromUrl(url)
+    const url = await resolveTextureUrl(modelId, file, { allowFallback: textureFiles.length === 1, signal })
+    signal?.throwIfAborted()
+    const texture = await loadTextureFromUrl(url, { signal })
+    signal?.throwIfAborted()
     if (!texture?.baseTexture) throw new Error(`Spine texture unavailable: ${modelId}/${file}`)
     return [file, texture]
   })))

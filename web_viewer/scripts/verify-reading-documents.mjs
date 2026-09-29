@@ -69,6 +69,11 @@ const multi = documents.find(d => d.document_id === '1_4_001_03_h')
 assert.equal(multi.status, 'unsupported')
 assert.equal(multi.controls[0].options.length, 3)
 assert.ok(multi.diagnostics.some(d => d.code === 'branch-exits-unavailable'))
+const birthday = documents.find(d => d.document_id === '1_2_001_12')
+assert.equal(birthday.status, 'ready')
+assert.equal(birthday.source.file, '1_x_001tom_2_1_2_001_12.json')
+assert.equal(birthday.playback.file, birthday.source.file)
+assert.equal(birthday.rows.filter(row => row.kind === 'dialogue').length, 15)
 
 // A non-contiguous source ID is not a zero-based playback offset.
 const input = { scenario_id: 'test', steps: [

@@ -41,8 +41,8 @@
               <span>{{ locationLabel(story) }}</span>
             </div>
             <div class="story-copy">
-              <h4>{{ story.title }}</h4>
-              <p>{{ story.dialogue_preview }}</p>
+              <h4>{{ presentProducerAddressingText(story.title) }}</h4>
+              <p>{{ presentProducerAddressingText(story.dialogue_preview) }}</p>
               <div class="story-footer">
                 <span>{{ story.dialogue_count }} 段对白 · {{ story.voice_count }} 段语音</span>
                 <button v-if="readingByFile.has(story.compiled_file)" class="reading-action" :aria-label="`阅读 ${story.title}`" @click="emit('read', story.compiled_file)"><BookOpen :size="16" />阅读</button>
@@ -63,7 +63,7 @@
             <img :src="backgroundUrl(line.background_resource_id)" :alt="locationLabel(line)" />
             <div class="line-copy">
               <span>{{ locationLabel(line) }}</span>
-              <p>{{ line.dialogue_preview }}</p>
+              <p>{{ presentProducerAddressingText(line.dialogue_preview) }}</p>
               <button v-if="readingByFile.has(line.compiled_file)" class="reading-action" :aria-label="`阅读 ${locationLabel(line)}`" @click="emit('read', line.compiled_file)"><BookOpen :size="16" />阅读</button>
             </div>
             <button :disabled="!line.compiled_exists" title="播放场景台词" @click="emit('play', line.compiled_file)"><Play :size="16" fill="currentColor" /></button>
@@ -79,7 +79,7 @@
       </div>
 
       </details>
-      <ArchiveTechnicalDetails :key="idol.idol_code" :evidence="idol" />
+      <ArchiveTechnicalDetails :key="idol.idol_code" :evidence="sourceEvidence ? { idol, sourceEvidence } : idol" />
     </div>
   </section>
 </template>
@@ -88,9 +88,11 @@
 import { computed } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
+import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { BookOpen, ChevronLeft, ChevronRight, MessageSquareText, Play } from '@lucide/vue'
 
 const props = defineProps({ idol: { type: Object, default: null }, idols: { type: Array, default: () => [] },
+  sourceEvidence: { type: Object, default: null },
   readingEntries: { type: Array, default: () => [] }, initialFile: { type: String, default: '' },
   mode: { type: String, default: 'stories' } })
 const emit = defineEmits(['read', 'select-idol', 'play', 'update:mode'])

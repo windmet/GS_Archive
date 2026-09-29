@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_018shm_1_5_018_02",
-  "logical_id": "story-collection:1_5_018shm_1_5_018_02",
+  "logical_id": "story:1_5_018shm_1_5_018_02",
   "scenario_id": "1_5_018shm_1_5_018_02",
   "text_catalog_id": "1_5_018shm_1_5_018_02",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_018shm_1_5_018_02.json",
-    "sha256": "sha256:53d3501e8f7da66d61f0e2735192b90cfce62387d5cb8f403ede162ad8a93606",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:09637dff3fbaab2744e886459ebce3cff97be39a90c58c92e5f7ff16694604ea",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 18,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_018shm_1_5_018_02.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_02:1_5_018_02:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_02",
+          "part_id": "1_5_018_02",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_018shm_1_5_018_02:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_02",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_02:1_5_018_02:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_02",
+          "part_id": "1_5_018_02",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_018shm_1_5_018_02:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_02",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_02:1_5_018_02:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_02",
+          "part_id": "1_5_018_02",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_018shm_1_5_018_02:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_02",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "情報番組のロケのお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_02:1_5_018_02:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_02",
+          "part_id": "1_5_018_02",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:1b6643db706ad1d3a0e9ab1d1fabbebcb50042fbd575b97fe9638243b793d729"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,21 +212,32 @@
         "row_id": "1_5_018shm_1_5_018_02:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_02",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "気持ちのいい天気だねェ。いつも以上に\n太陽の存在を感じるわ。海だもの。当然よね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_02:1_5_018_02:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_02",
+          "part_id": "1_5_018_02",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ae54539b5036002bec5a4ba3b70fe7a2fe3a4f37363106264641e2676c506cf7"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -196,7 +254,6 @@
         "stepId": 5
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -205,17 +262,28 @@
         "row_id": "1_5_018shm_1_5_018_02:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_02",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "今日のロケは港町の隠れたグルメ探しなので、\nこの日差しの中、かなり歩きます。…大丈夫ですか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_02:1_5_018_02:cmd-000019:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_02",
+          "part_id": "1_5_018_02",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+          "command_index": 19,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f1e1c3adb14f69cac27bbba4f0899926727020a3a0bf247df613fa892baf5e75"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -242,21 +310,32 @@
         "row_id": "1_5_018shm_1_5_018_02:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_02",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ああ、問題ないよ。日の光は苦手だけど、\n仕事ともなればそうも言ってられないからね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_02:1_5_018_02:cmd-000025:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_02",
+          "part_id": "1_5_018_02",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+          "command_index": 25,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b20cf406159ddbf0d29e5dda901721b606a716e8d82d9cfeb5209272d9476f2c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -273,7 +352,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -282,21 +360,32 @@
         "row_id": "1_5_018shm_1_5_018_02:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_02",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "大抵の仕事はこなしてみせる。そう言って、\nこの仕事を引き受けたのはアタシじゃないか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_02:1_5_018_02:cmd-000029:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_02",
+          "part_id": "1_5_018_02",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+          "command_index": 29,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e01fcef8f3a1c932a4ea88bf48cf29465057906225a34aa2c416896ef776e2eb"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -313,7 +402,6 @@
         "stepId": 8
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -322,21 +410,32 @@
         "row_id": "1_5_018shm_1_5_018_02:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_02",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "だから、気にしないでおくれ。スポットライトが\n当たる仕事の方がいいのは確かだけどね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_02:1_5_018_02:cmd-000035:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_02",
+          "part_id": "1_5_018_02",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+          "command_index": 35,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6a3babad0cc521db2574fbb146a01bf03cede44fd1e0d1d6d9b76eee79ba0edd"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -353,7 +452,6 @@
         "stepId": 9
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -362,17 +460,28 @@
         "row_id": "1_5_018shm_1_5_018_02:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_02",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+        "command_start": 35,
+        "command_end": 35
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "はい。スポットライトに当たる仕事も\nたくさん取ってきます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_02:1_5_018_02:cmd-000038:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_02",
+          "part_id": "1_5_018_02",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+          "command_index": 38,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:77150a2f0fe376e4b30961476cf48b6e1bbc20e5bb5c2675cfffe59107c87c9f"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -399,21 +508,32 @@
         "row_id": "1_5_018shm_1_5_018_02:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_02",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+        "command_start": 38,
+        "command_end": 38
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "頼りにしてるよ、●●●●プロデューサーちゃん。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_02:1_5_018_02:cmd-000042:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_02",
+          "part_id": "1_5_018_02",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+          "command_index": 42,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:87e0605d74fe6e57ef73c6b4474f838db114a5f6c4780fcc8ea89333e5c7ab7f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -429,26 +549,35 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_018shm_1_5_018_02:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_02",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+        "command_start": 42,
+        "command_end": 42
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "はい。任せてください。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_02:1_5_018_02:cmd-000044:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_02",
+          "part_id": "1_5_018_02",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+          "command_index": 44,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:929576e7ae425c7051272c7c887137f805c7b94e1f15f6491831e838d9258f79"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -475,21 +604,32 @@
         "row_id": "1_5_018shm_1_5_018_02:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_02",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+        "command_start": 44,
+        "command_end": 44
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "じゃあ、アタシはアンタが仕事を取りやすくなるよう、\nこの仕事も成功させてくるとするよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_02:1_5_018_02:cmd-000050:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_02",
+          "part_id": "1_5_018_02",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+          "command_index": 50,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:32a19844928d905da761dca33e2ade63d2c56a6265f0013b39ef46806efe1153"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -506,7 +646,6 @@
         "stepId": 13
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -515,17 +654,28 @@
         "row_id": "1_5_018shm_1_5_018_02:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_02",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+        "command_start": 50,
+        "command_end": 50
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "（翔真さんは宣言通り、仕事を成功させ\n紹介したお店は連日大盛況となった！）",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_02:1_5_018_02:cmd-000060:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_02",
+          "part_id": "1_5_018_02",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+          "command_index": 60,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:865827cf4d27719e52fde39f5e2db5cdd25081390ad49781b0898130c920ab1a"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -552,92 +702,16 @@
         "row_id": "1_5_018shm_1_5_018_02:step-18:text",
         "step_id": 18,
         "step_index": 17,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_02",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_02.json",
+        "command_start": 60,
+        "command_end": 60
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 17,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "情報番組のロケのお仕事",
     "episode_label": null

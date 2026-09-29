@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_042dai_1_5_042_01",
-  "logical_id": "story-collection:1_5_042dai_1_5_042_01",
+  "logical_id": "story:1_5_042dai_1_5_042_01",
   "scenario_id": "1_5_042dai_1_5_042_01",
   "text_catalog_id": "1_5_042dai_1_5_042_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_042dai_1_5_042_01.json",
-    "sha256": "sha256:a116312853a31556e20fa1c63d55200d801d34dcfbbaf4c0a0511876259da421",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:b3eeebc8dd5c01fedd0988e0ef7dfce2db6e3c3d78cd762dc4ea04b775e2ca3e",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 14,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_042dai_1_5_042_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_042dai_1_5_042_01:1_5_042_01:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_042dai_1_5_042_01",
+          "part_id": "1_5_042_01",
+          "file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_042dai_1_5_042_01:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_042_01",
+        "source_file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_042dai_1_5_042_01:1_5_042_01:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_042dai_1_5_042_01",
+          "part_id": "1_5_042_01",
+          "file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_042dai_1_5_042_01:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_042_01",
+        "source_file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_042dai_1_5_042_01:1_5_042_01:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_042dai_1_5_042_01",
+          "part_id": "1_5_042_01",
+          "file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_042dai_1_5_042_01:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_042_01",
+        "source_file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "ゲーム情報番組のゲストのお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_042dai_1_5_042_01:1_5_042_01:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_042dai_1_5_042_01",
+          "part_id": "1_5_042_01",
+          "file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:b7d7ee07d123106945399d613facf19c30aa3e5f1366c918986d5cd09915fa13"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,21 +212,32 @@
         "row_id": "1_5_042dai_1_5_042_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_042_01",
+        "source_file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "今日の仕事はゲーム情報番組じゃろ？\n楽しみで、昨日から落ち着かんかったわ。わはは！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_042dai_1_5_042_01:1_5_042_01:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_042dai_1_5_042_01",
+          "part_id": "1_5_042_01",
+          "file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b8f4512153ddccbe8160c955b186ec96a3bc10c180547bb86d2e0d8326a9cda0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "042dai",
         "sourceName": "兜 大吾"
       },
       "performance": {
@@ -196,7 +254,6 @@
         "stepId": 5
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -205,21 +262,32 @@
         "row_id": "1_5_042dai_1_5_042_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_042_01",
+        "source_file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "しかもワシの好きな格闘ゲーム！\nいつも以上にやる気がみなぎるってもんじゃ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_042dai_1_5_042_01:1_5_042_01:cmd-000022:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_042dai_1_5_042_01",
+          "part_id": "1_5_042_01",
+          "file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+          "command_index": 22,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:54efbdc171852a2d02fd30c8d63f04d56c8db8a22cd781873ade74a6583a31fd"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "042dai",
         "sourceName": "兜 大吾"
       },
       "performance": {
@@ -236,7 +304,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -245,21 +312,32 @@
         "row_id": "1_5_042dai_1_5_042_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_042_01",
+        "source_file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "あ、もちろんどんな仕事もやる気満々じゃけぇ、\nそこは誤解せんでくれ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_042dai_1_5_042_01:1_5_042_01:cmd-000028:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_042dai_1_5_042_01",
+          "part_id": "1_5_042_01",
+          "file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+          "command_index": 28,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7f35769ea4e92e603f651e9bcf0e75d927da610da4af7b7bb9efaaa36809b174"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "042dai",
         "sourceName": "兜 大吾"
       },
       "performance": {
@@ -276,7 +354,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -285,17 +362,28 @@
         "row_id": "1_5_042dai_1_5_042_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_042_01",
+        "source_file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "わかってますよ。大吾さんはいつでも\nどんな仕事でも一生懸命ですからね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_042dai_1_5_042_01:1_5_042_01:cmd-000030:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_042dai_1_5_042_01",
+          "part_id": "1_5_042_01",
+          "file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+          "command_index": 30,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e7698850cf15aabce1950a5de0b48a330487ce042f8e2342c2405c454146d98a"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -322,21 +410,32 @@
         "row_id": "1_5_042dai_1_5_042_01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_042_01",
+        "source_file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+        "command_start": 30,
+        "command_end": 30
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "一生懸命やれば、見てくれる人を\nはなまる笑顔にできるかもしれん。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_042dai_1_5_042_01:1_5_042_01:cmd-000035:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_042dai_1_5_042_01",
+          "part_id": "1_5_042_01",
+          "file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+          "command_index": 35,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5bfb92a5cfebc60c8b9ada486f44092c0bc5c413b5b1245c0242a61858ea45d7"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "042dai",
         "sourceName": "兜 大吾"
       },
       "performance": {
@@ -353,7 +452,6 @@
         "stepId": 9
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -362,21 +460,32 @@
         "row_id": "1_5_042dai_1_5_042_01:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_042_01",
+        "source_file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+        "command_start": 35,
+        "command_end": 35
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "それに大好きな格闘ゲームじゃけぇ\n活躍してみたいしのぉ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_042dai_1_5_042_01:1_5_042_01:cmd-000039:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_042dai_1_5_042_01",
+          "part_id": "1_5_042_01",
+          "file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+          "command_index": 39,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bc1397cc1a8e7a213e3282ac2a073add7a05fb8f35aa7e1146713a1772b569fa"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "042dai",
         "sourceName": "兜 大吾"
       },
       "performance": {
@@ -392,30 +501,39 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_042dai_1_5_042_01:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_042_01",
+        "source_file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+        "command_start": 39,
+        "command_end": 39
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "コンボがつながった時の楽しさ、\nカウンターが決まった時の高揚感！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_042dai_1_5_042_01:1_5_042_01:cmd-000043:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_042dai_1_5_042_01",
+          "part_id": "1_5_042_01",
+          "file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+          "command_index": 43,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e61954762d753f9a8f521e14fb85f5e6a49a74cdd8a6066c0f2b265dde5a2029"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "042dai",
         "sourceName": "兜 大吾"
       },
       "performance": {
@@ -432,7 +550,6 @@
         "stepId": 11
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -441,21 +558,32 @@
         "row_id": "1_5_042dai_1_5_042_01:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_042_01",
+        "source_file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+        "command_start": 43,
+        "command_end": 43
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "そういうのを見せたら\nワシにも興味を持ってくれるかもしれんのぉー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_042dai_1_5_042_01:1_5_042_01:cmd-000047:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_042dai_1_5_042_01",
+          "part_id": "1_5_042_01",
+          "file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+          "command_index": 47,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f4a2d4bf1fe93dc41fce6cd89e2fcffa70147cb89deed7678fe8a912e2477ad0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "042dai",
         "sourceName": "兜 大吾"
       },
       "performance": {
@@ -471,30 +599,39 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_042dai_1_5_042_01:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_042_01",
+        "source_file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+        "command_start": 47,
+        "command_end": 47
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "●●●●●●●●●●ボスも見とってくれ！\nビシっと技を決めるけぇ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_042dai_1_5_042_01:1_5_042_01:cmd-000051:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_042dai_1_5_042_01",
+          "part_id": "1_5_042_01",
+          "file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+          "command_index": 51,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:117902be3b99315f7956781d3f167039b5afbbf961044d273cd1e2073401527f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "042dai",
         "sourceName": "兜 大吾"
       },
       "performance": {
@@ -511,7 +648,6 @@
         "stepId": 13
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -520,21 +656,32 @@
         "row_id": "1_5_042dai_1_5_042_01:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_042_01",
+        "source_file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+        "command_start": 51,
+        "command_end": 51
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ほんじゃ、行ってくるけぇのぉ。\n頑張ってくるけぇ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_042dai_1_5_042_01:1_5_042_01:cmd-000057:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_042dai_1_5_042_01",
+          "part_id": "1_5_042_01",
+          "file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+          "command_index": 57,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:09e872c5dde167e233f9e07970a8c20c0810ce39b06da3d885169c9250ab39d9"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "042dai",
         "sourceName": "兜 大吾"
       },
       "performance": {
@@ -551,7 +698,6 @@
         "stepId": 14
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -560,92 +706,16 @@
         "row_id": "1_5_042dai_1_5_042_01:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_042_01",
+        "source_file": "assets/resources/scenariodata/1_5_042dai/scenario_1_5_042_01.json",
+        "command_start": 57,
+        "command_end": 57
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "ゲーム情報番組のゲストのお仕事",
     "episode_label": null

@@ -1,43 +1,22 @@
 import { storyAssetTransport } from '../core/StoryAssetTransport.js'
-/** Native cache warming driven solely by StoryAssetPlan. Logical closure,
- * fetched bytes, image load and renderer readiness are distinct. Unsupported
- * requirements stay pending; no Pixi or audio runtime is imported here. */
+import { withLoadDeadline } from '../core/AsyncLoadBoundary.js'
+import { StoryWarmupQueue } from '../core/StoryWarmupQueue.js'
+import { tracePlayer } from '../core/PlayerTrace.js'
 import { storyAssetAdapter, resolveStaticSpineModels } from './StoryAssetAdapters.js'
 import { decodeSpineAtlasText, resolveSpineAtlasDependencies } from '../../shared/story/SpineAtlasPages.js'
 import { resolveSpineTextureUrl } from './SpineTextureUrl.js'
 import { validateStoryConfig } from './StoryConfigShape.js'
 import { assetPriority, priorityRank } from '../../shared/story/StoryAssetPriority.js'
 
-const TIMEOUT_MS = 10000 // 10s per asset max
+const TIMEOUT_MS = 25000
+const withTimeout = (load, ms, label, signal) => withLoadDeadline(load, { signal, timeoutMs: ms, label: `[Preloader] ${label}` })
+const warmed = new Set(['image-loaded', 'fetched', 'atlas-parsed', 'json-parsed'])
 
-/**
- * Owns the task timeout and abort signal for the complete body/image load.
- * Cancellation rejects promptly even when an adapter cannot stop its work.
- */
-async function withTimeout(load, ms, label, signal) {
-  signal?.throwIfAborted()
-  const controller = new AbortController()
-  const forwardAbort = () => controller.abort(signal.reason)
-  signal?.addEventListener('abort', forwardAbort, { once: true })
-  const timer = setTimeout(() => controller.abort(new Error(`[Preloader] timeout (${ms}ms): ${label}`)), ms)
-  let onAbort
-  try {
-    return await Promise.race([
-      Promise.resolve().then(() => { controller.signal.throwIfAborted(); return load(controller.signal) }),
-      new Promise((_, reject) => {
-        onAbort = () => reject(controller.signal.reason)
-        controller.signal.addEventListener('abort', onAbort, { once: true })
-      }),
-    ])
-  } finally {
-    clearTimeout(timer)
-    signal?.removeEventListener('abort', forwardAbort)
-    controller.signal.removeEventListener('abort', onAbort)
-  }
-}
+/** Warming is an optimization. In runtimeOwned mode it performs no network work
+ * before the renderer's first frame, and never drains deferred/far-future assets.
+ * The explicit full/audit mode keeps its independent warming evidence contract. */
 export class Preloader {
-
-  static async preloadScenario(plan, onProgress, { signal, onStatus, priority, entryOnly = false } = {}) {
+  static async preloadScenario(plan, onProgress, { signal, onStatus, priority, entryOnly = false, runtimeOwned = false } = {}) {
     signal?.throwIfAborted()
     if (plan?.schema_version !== 1 || !plan.source?.sha256 || !Array.isArray(plan.assets)) {
       throw new TypeError('Preloader requires a source-bound StoryAssetPlan')
@@ -46,122 +25,134 @@ export class Preloader {
     const makeOutcome = asset => ({ key: asset.key, kind: asset.kind, id: asset.id, priority: assetPriority(asset, priority),
       uses: asset.uses.map(use => ({ ...use })), dependencies: [...asset.dependencies],
       atlasSource: asset.atlasSource && structuredClone(asset.atlasSource),
-      dependencyState: asset.dependencyState, ...storyAssetAdapter(asset), error: null })
+      dependencyState: asset.dependencyState, ...storyAssetAdapter(asset), error: null,
+      ...(runtimeOwned && asset.kind === 'costume-dictionary'
+        ? { state: 'excluded', required: false, reason: 'diagnostic-only-config' } : {}) })
     const outcomes = plan.assets.map(makeOutcome)
     const tasks = outcomes.filter(task => task.state === 'discovered')
     const snapshot = phase => {
-      const succeeded = outcomes.filter(task => ['image-loaded', 'fetched', 'atlas-parsed', 'json-parsed'].includes(task.state)).length
-      const failed = outcomes.filter(task => task.state === 'failed').length
-      const cancelled = outcomes.filter(task => task.state === 'cancelled').length
-      const excluded = outcomes.filter(task => task.state === 'excluded').length
-      const deferred = outcomes.filter(task => task.state === 'deferred').length
+      const count = state => outcomes.filter(task => task.state === state).length
+      const succeeded = outcomes.filter(task => warmed.has(task.state)).length
       return { phase, scope: 'story-asset-plan', source: { ...plan.source },
-        priority: priority && structuredClone(priority),
-        dependenciesComplete: plan.dependenciesComplete,
-        unresolved: plan.unresolved.map(issue => ({ ...issue })), excluded, deferred,
-        total: outcomes.length, succeeded, failed, cancelled,
-        pending: outcomes.length - succeeded - failed - cancelled - excluded,
+        priority: priority && structuredClone(priority), runtimeOwned,
+        dependenciesComplete: plan.dependenciesComplete, unresolved: plan.unresolved.map(issue => ({ ...issue })),
+        total: outcomes.length, succeeded, failed: count('failed'), cancelled: count('cancelled'),
+        excluded: count('excluded'), deferred: count('deferred'),
+        pending: outcomes.filter(task => ['discovered', 'loading', 'deferred'].includes(task.state)).length,
         tasks: structuredClone(outcomes) }
     }
     const report = phase => {
       const value = snapshot(phase)
       onStatus?.(value)
+      if (tasks.length) onProgress?.(Math.round(value.succeeded / tasks.length * 100))
       return value
     }
-    report('warming')
-    const updatePriority = next => {
-      if (signal?.aborted) return false
-      priority = structuredClone(next)
-      for (const task of tasks) {
-        if (task.state === 'discovered') task.priority = assetPriority(task, priority)
+    const attempts = new WeakMap()
+    const execute = async (target, taskSignal, bytesOnly = false) => {
+      const token = {}
+      attempts.set(target, token)
+      const outcome = { ...target }
+      outcome.state = 'loading'
+      outcome.startedAt = performance.now()
+      tracePlayer('warmup-request', { key: outcome.key, priority: outcome.priority, bytesOnly })
+      try {
+        taskSignal?.throwIfAborted()
+        if (outcome.operation === 'json') {
+          await this._preloadConfig(outcome, taskSignal)
+          outcome.state = 'json-parsed'
+        } else if (outcome.operation === 'atlas') {
+          const { text, sha256 } = await this._preloadAtlas(outcome.url, taskSignal)
+          taskSignal?.throwIfAborted()
+          plan = resolveSpineAtlasDependencies(plan, { modelId: outcome.id, atlasText: text, atlasSha256: sha256, modelKind: 'spine' })
+          const bundle = plan.assets.find(asset => asset.key === `spine-bundle:${outcome.id}`)
+          const bundleOutcome = outcomes.find(task => task.key === bundle.key)
+          Object.assign(bundleOutcome, { dependencies: [...bundle.dependencies], dependencyState: 'complete',
+            atlasSource: structuredClone(bundle.atlasSource), reason: 'renderer-pending:spine-bundle' })
+          for (const asset of plan.assets) {
+            if (outcomes.some(task => task.key === asset.key)) continue
+            const added = makeOutcome(asset)
+            added.allowFallback = bundle.atlasSource.pages.length === 1
+            outcomes.push(added)
+            if (added.state === 'discovered') tasks.push(added)
+          }
+          outcome.state = 'atlas-parsed'
+          outcome.atlasSource = { sha256 }
+        } else if (outcome.operation === 'spine-page') {
+          outcome.url = await this._resolvePage(outcome, taskSignal)
+          taskSignal?.throwIfAborted()
+          outcome.state = bytesOnly ? await this._preloadBinary(outcome.url, outcome.key, taskSignal)
+            : await this._preloadImage(outcome.url, { signal: taskSignal })
+        } else {
+          outcome.state = outcome.operation === 'image' && !bytesOnly
+            ? await this._preloadImage(outcome.url, { signal: taskSignal })
+            : await this._preloadBinary(outcome.url, outcome.key, taskSignal)
+        }
+      } catch (error) {
+        const yielded = taskSignal?.reason?.code === 'WARMUP_YIELD' || error?.code === 'WARMUP_YIELD'
+        outcome.state = yielded ? 'discovered' : (signal?.aborted || taskSignal?.aborted) ? 'cancelled' : 'failed'
+        outcome.error = yielded ? null : String(error?.message || error)
+        outcome.errorCode = yielded ? null : error?.code || error?.name || 'LOAD_FAILED'
+        outcome.retryable = !signal?.aborted && ['LOAD_TIMEOUT', 'TimeoutError', 'TypeError'].includes(outcome.errorCode)
+      } finally {
+        outcome.elapsedMs = Math.round(performance.now() - outcome.startedAt)
+        if (attempts.get(target) !== token) return
+        if (taskSignal?.aborted) outcome.state = taskSignal.reason?.code === 'WARMUP_YIELD' ? 'discovered' : 'cancelled'
+        outcome.priority = assetPriority(target, priority)
+        Object.assign(target, outcome)
+        tracePlayer('warmup-settled', { key: outcome.key, state: outcome.state, elapsedMs: outcome.elapsedMs })
       }
-      report('background-warming')
-      return true
     }
-    let background
-    const run = async stopAtEntry => {
+    let session = null
+    const liveWindow = () => {
+      if (session) return session
+      const queue = new StoryWarmupQueue({ tasks, signal,
+        priority: task => task.priority,
+        eligible: task => runtimeOwned ? task.priority === 'near' : task.priority !== 'deferred',
+        run: (task, taskSignal) => execute(task, taskSignal, true),
+        report: () => report('background-warming'),
+        concurrency: 2, imageConcurrency: 1,
+      })
+      session = { plan, status: report(runtimeOwned ? 'renderer-owned' : 'entry-warmed'),
+        startBackground: () => queue.start(),
+        setPaused: value => queue.setPaused(value), dispose: () => queue.dispose(),
+        updatePriority: next => {
+          if (signal?.aborted || queue.disposed) return false
+          priority = structuredClone(next)
+          for (const task of tasks) task.priority = assetPriority(task, priority)
+          queue.update()
+          report('background-warming')
+          return true
+        },
+      }
+      return session
+    }
+    if (runtimeOwned) return liveWindow()
+    report('warming')
     try {
-      // Process in batches to avoid flooding network.
-      const BATCH_SIZE = 6
       while (tasks.some(task => task.state === 'discovered')) {
         signal?.throwIfAborted()
-        const pending = tasks.filter(task => task.state === 'discovered')
-          .sort((a, b) => priorityRank[a.priority] - priorityRank[b.priority])
-        if (stopAtEntry && pending[0].priority !== 'critical') {
-          return { plan, status: report('entry-warmed'), updatePriority, startBackground: () => background ||= run(false) }
-        }
-        // Finish the active tier (including newly discovered atlas pages)
-        // before lower-priority work can occupy a slot.
-        const batch = pending.filter(task => task.priority === pending[0].priority).slice(0, BATCH_SIZE)
+        const pending = tasks.filter(task => task.state === 'discovered').sort((a, b) => priorityRank[a.priority] - priorityRank[b.priority])
+        if (entryOnly && pending[0].priority !== 'critical') return liveWindow()
+        const batch = pending.filter(task => task.priority === pending[0].priority).slice(0, 6)
         await Promise.all(batch.map(async outcome => {
-          outcome.state = 'loading'
-          try {
-            if (outcome.operation === 'json') {
-              await this._preloadConfig(outcome, signal)
-              outcome.state = 'json-parsed'
-            } else if (outcome.operation === 'atlas') {
-              const { text, sha256 } = await this._preloadAtlas(outcome.url, signal)
-              signal?.throwIfAborted()
-              plan = resolveSpineAtlasDependencies(plan, { modelId: outcome.id, atlasText: text, atlasSha256: sha256, modelKind: 'spine' })
-              const bundle = plan.assets.find(asset => asset.key === `spine-bundle:${outcome.id}`)
-              const bundleOutcome = outcomes.find(task => task.key === bundle.key)
-              Object.assign(bundleOutcome, { dependencies: [...bundle.dependencies], dependencyState: 'complete',
-                atlasSource: structuredClone(bundle.atlasSource), reason: 'renderer-pending:spine-bundle' })
-              for (const asset of plan.assets) {
-                if (outcomes.some(task => task.key === asset.key)) continue
-                const added = makeOutcome(asset)
-                added.allowFallback = bundle.atlasSource.pages.length === 1
-                outcomes.push(added)
-                tasks.push(added)
-              }
-              outcome.state = 'atlas-parsed'
-              outcome.atlasSource = { sha256 }
-            } else if (outcome.operation === 'spine-page') {
-              outcome.url = await this._resolvePage(outcome, signal)
-              signal?.throwIfAborted()
-              outcome.state = await this._preloadImage(outcome.url, { signal })
-            } else {
-              outcome.state = outcome.operation === 'image'
-                ? await this._preloadImage(outcome.url, { signal })
-                : await this._preloadBinary(outcome.url, outcome.key, signal)
-            }
-          }
-          catch (error) {
-            outcome.state = signal?.aborted ? 'cancelled' : 'failed'
-            outcome.error = String(error?.message || error)
-          }
-          if (!signal?.aborted) {
-            const value = report(entryOnly && !stopAtEntry ? 'background-warming' : 'warming')
-            // Compatibility callback measures successful warming tasks only.
-            // UI consumes structured status, not this subset percentage.
-            onProgress?.(Math.round(value.succeeded / tasks.length * 100))
-          }
+          await execute(outcome, signal)
+          if (!signal?.aborted) report('warming')
         }))
         signal?.throwIfAborted()
-        if ((!entryOnly || stopAtEntry) && outcomes.some(task => task.priority === 'critical' && task.state === 'failed')) {
+        if (outcomes.some(task => task.priority === 'critical' && task.state === 'failed')) {
           return { plan, status: report('blocked') }
         }
       }
     } catch (error) {
-      for (const task of outcomes) {
-        if (['discovered', 'loading'].includes(task.state)) task.state = 'cancelled'
-      }
+      for (const task of outcomes) if (['discovered', 'loading'].includes(task.state)) task.state = 'cancelled'
       report('cancelled')
       throw error
     }
-    const status = report(outcomes.some(task => task.state === 'failed') ? 'partial'
-      : !plan.dependenciesComplete || outcomes.some(task => task.state === 'deferred') ? 'pending' : 'settled')
-    return { plan, status }
-    }
-    return run(entryOnly)
+    return { plan, status: report(outcomes.some(task => task.state === 'failed') ? 'partial'
+      : !plan.dependenciesComplete || outcomes.some(task => task.state === 'deferred') ? 'pending' : 'settled') }
   }
 
-  // ── Internal loaders: all use native browser APIs, NO pixi.js ──
-
-  /**
-   * Preload an image into browser cache using Image object.
-   * onload proves an image load only; no GPU readiness or retained decode claim.
-   */
+  /** Full/audit mode only. Interactive speculation fetches bytes, not Image decodes. */
   static _preloadImage(url, { signal } = {}) {
     return withTimeout(taskSignal => new Promise((resolve, reject) => {
       const img = new Image()
@@ -169,24 +160,22 @@ export class Preloader {
         img.onload = img.onerror = img.onabort = null
         taskSignal.removeEventListener('abort', abort)
       }
-      const finish = () => { cleanup(); resolve('image-loaded') }
-      const fail = () => { cleanup(); reject(new Error(`Image load failed: ${url}`)) }
       const abort = () => { cleanup(); img.removeAttribute('src'); reject(taskSignal.reason) }
       taskSignal.addEventListener('abort', abort, { once: true })
-      img.onload = finish
-      img.onerror = fail
-      img.onabort = fail
+      img.onload = () => { cleanup(); resolve('image-loaded') }
+      img.onerror = img.onabort = () => {
+        cleanup(); reject(Object.assign(new Error(`Image load failed: ${url}`), { code: 'IMAGE_LOAD_FAILED', phase: 'image' }))
+      }
+      img.crossOrigin = 'anonymous'
       img.src = url
     }), TIMEOUT_MS, `image ${url}`, signal)
   }
-
   static async _preloadBinary(url, label, signal) {
     return withTimeout(async taskSignal => {
       await storyAssetTransport.getArrayBuffer(url, { signal: taskSignal })
       return 'fetched'
     }, TIMEOUT_MS, label, signal)
   }
-
   static async _preloadAtlas(url, signal) {
     return withTimeout(async taskSignal => {
       const bytes = await storyAssetTransport.getArrayBuffer(url, { signal: taskSignal })
@@ -194,7 +183,6 @@ export class Preloader {
       return { text: decodeSpineAtlasText(bytes), sha256: `sha256:${Array.from(new Uint8Array(hash), byte => byte.toString(16).padStart(2, '0')).join('')}` }
     }, TIMEOUT_MS, `atlas ${url}`, signal)
   }
-
   static async _preloadConfig(task, signal) {
     task.attempts = []
     return withTimeout(async taskSignal => {
@@ -207,7 +195,7 @@ export class Preloader {
           task.attempts.push({ url, status: 200 })
         } catch (error) {
           if (error.status) task.attempts.push({ url, status: error.status })
-          if (error.status && index + 1 < task.urls.length) continue
+          if ([404, 410].includes(error.status) && index + 1 < task.urls.length) continue
           throw error
         }
         validateStoryConfig(task.kind, config)
@@ -217,20 +205,14 @@ export class Preloader {
       throw new Error(`No config candidates: ${task.key}`)
     }, TIMEOUT_MS, `config ${task.key}`, signal)
   }
-
   static async _resolvePage(task, signal) {
     return withTimeout(taskSignal => resolveSpineTextureUrl(task.atlasSource.modelId, task.atlasSource.page, {
-      allowFallback: task.allowFallback,
+      signal: taskSignal, allowFallback: task.allowFallback,
       probe: async url => {
-        try {
-          const response = await fetch(url, { method: 'HEAD', cache: 'no-store', signal: taskSignal })
-          return response.ok && (response.headers.get('content-type') || '').startsWith('image/')
-        } catch (error) {
-          taskSignal.throwIfAborted()
-          return false
-        }
+        const response = await fetch(url, { method: 'HEAD', cache: 'default', signal: taskSignal })
+        if (!response.ok && ![404, 410].includes(response.status)) throw new Error(`Texture probe HTTP ${response.status}`)
+        return response.ok && (response.headers.get('content-type') || '').startsWith('image/')
       },
     }), TIMEOUT_MS, `page ${task.id}`, signal)
   }
-
 }

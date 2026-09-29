@@ -32,6 +32,7 @@ try {
   {
     const owner = Object.assign(Object.create(PixiStageManager.prototype), {
       _spineColorTweens: {}, clearAllSilhouettes: () => {},
+      _textureOwner: new AbortController(), _spawnLoads: new Map(),
     })
     const effects = new ScreenEffectManager({ app: {}, overlay: { visible: false, alpha: 0 },
       spineContainer: {}, getWidth: () => 1280, getHeight: () => 720, loadTextureFromUrl: () => {} })

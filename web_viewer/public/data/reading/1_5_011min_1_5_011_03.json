@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_011min_1_5_011_03",
-  "logical_id": "story-collection:1_5_011min_1_5_011_03",
+  "logical_id": "story:1_5_011min_1_5_011_03",
   "scenario_id": "1_5_011min_1_5_011_03",
   "text_catalog_id": "1_5_011min_1_5_011_03",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_011min_1_5_011_03.json",
-    "sha256": "sha256:f9637eb02e2de9ede9d3d87ee259440f3832ddff7ca8fa864554f4405c947245",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:4de402b6b259f5eff63c288c3fcbe51ece3d695ab7c651b3179b9f64d2b26bba",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 23,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_011min_1_5_011_03.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_03:1_5_011_03:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_03",
+          "part_id": "1_5_011_03",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_011min_1_5_011_03:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_03",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_03:1_5_011_03:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_03",
+          "part_id": "1_5_011_03",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_011min_1_5_011_03:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_03",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_03:1_5_011_03:cmd-000011:title:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_03",
+          "part_id": "1_5_011_03",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+          "command_index": 11,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_011min_1_5_011_03:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_03",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "刑事ドラマでカフェの店主役をするお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_03:1_5_011_03:cmd-000011:title:001",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_03",
+          "part_id": "1_5_011_03",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+          "command_index": 11,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:ac64026efccf7463cbf4a4adbd00a573d7456fe1c93855760690ad0d212da946"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,21 +212,32 @@
         "row_id": "1_5_011min_1_5_011_03:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_03",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "「いらっしゃいませ。\n……おや、少し疲れた顔をしていますね」",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_03:1_5_011_03:cmd-000020:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_03",
+          "part_id": "1_5_011_03",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+          "command_index": 20,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:11f33fb4f6b486549b11a59742b11a96d4856662e88be68995588090cc90d7ff"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -196,7 +254,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -205,21 +262,32 @@
         "row_id": "1_5_011min_1_5_011_03:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_03",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "「また根を詰めすぎているんじゃないですか？\n時には休むことも大切ですよ」",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_03:1_5_011_03:cmd-000025:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_03",
+          "part_id": "1_5_011_03",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+          "command_index": 25,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8aa31294781300c5eaae4f880e9e55d841610a9cd6292bdd40b812bda23debed"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -236,7 +304,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -245,21 +312,32 @@
         "row_id": "1_5_011min_1_5_011_03:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_03",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "「このコーヒーは俺のおごりです。\nどうぞゆっくりしていってください」",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_03:1_5_011_03:cmd-000034:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_03",
+          "part_id": "1_5_011_03",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+          "command_index": 34,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d05effb1756f522906507d86ee7184dc9baf6249436f0c125c3bcde8df5e196e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -276,7 +354,6 @@
         "stepId": 10
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -285,17 +362,28 @@
         "row_id": "1_5_011min_1_5_011_03:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_03",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+        "command_start": 34,
+        "command_end": 34
       },
       "option": null
     },
     {
       "kind": "caption",
       "source_text": "撮影後……",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_03:1_5_011_03:cmd-000047:time_caption:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_03",
+          "part_id": "1_5_011_03",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+          "command_index": 47,
+          "field_kind": "time_caption",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b778da12e44b043eb3a21bef897722f6e5014accfaf2495bacec6def645c7bcf"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -322,17 +410,28 @@
         "row_id": "1_5_011min_1_5_011_03:step-15:caption",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_03",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+        "command_start": 47,
+        "command_end": 47
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "みのりさん、お疲れさまです！\n思わず相談したくなるような、包容力を感じました。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_03:1_5_011_03:cmd-000053:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_03",
+          "part_id": "1_5_011_03",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+          "command_index": 53,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5c817532244ae74fc6f44172ef5bd6f6b491460c26078d594c0565036d34f6d8"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -359,21 +458,32 @@
         "row_id": "1_5_011min_1_5_011_03:step-17:text",
         "step_id": 17,
         "step_index": 16,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_03",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+        "command_start": 53,
+        "command_end": 53
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "それならよかった。俺の役は、\n刑事たちが常連になってるカフェの店主だからね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_03:1_5_011_03:cmd-000058:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_03",
+          "part_id": "1_5_011_03",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+          "command_index": 58,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:74dde70733537e4a29ce91c766c031a0fccfda993af33543b70c289360e30e3f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -390,7 +500,6 @@
         "stepId": 18
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -399,21 +508,32 @@
         "row_id": "1_5_011min_1_5_011_03:step-18:text",
         "step_id": 18,
         "step_index": 17,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_03",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+        "command_start": 58,
+        "command_end": 58
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "このカフェは、彼らにとって\n心休まる場所でもあると思うんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_03:1_5_011_03:cmd-000061:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_03",
+          "part_id": "1_5_011_03",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+          "command_index": 61,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bdab89a643127285a5d21bb7af868bbd7c94b9aed6c44ac577edf8b26b3ad6bb"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -429,26 +549,35 @@
         "snapshot": "entry",
         "stepId": 19
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_011min_1_5_011_03:step-19:text",
         "step_id": 19,
         "step_index": 18,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_03",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+        "command_start": 61,
+        "command_end": 61
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ふふ、そうですね。\n次の収録まで少し時間が空きますが、どうしますか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_03:1_5_011_03:cmd-000064:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_03",
+          "part_id": "1_5_011_03",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+          "command_index": 64,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b0950914f206e062fd494f707b7d9f2d31e8e364e31e619044ed2a34b65f5248"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -475,21 +604,32 @@
         "row_id": "1_5_011min_1_5_011_03:step-20:text",
         "step_id": 20,
         "step_index": 19,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_03",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+        "command_start": 64,
+        "command_end": 64
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "そうだなぁ、台本の確認をしようかな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_03:1_5_011_03:cmd-000068:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_03",
+          "part_id": "1_5_011_03",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+          "command_index": 68,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c452a96484ce947f9ef17f3e8f795480575e25d945e877553e5da6d54ac0b25a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -506,7 +646,6 @@
         "stepId": 21
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -515,17 +654,28 @@
         "row_id": "1_5_011min_1_5_011_03:step-21:text",
         "step_id": 21,
         "step_index": 20,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_03",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+        "command_start": 68,
+        "command_end": 68
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "わかりました。\n出番が近くなったら声をかけますね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_03:1_5_011_03:cmd-000071:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_03",
+          "part_id": "1_5_011_03",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+          "command_index": 71,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ee7f0a4727fe1ff8581936227fc77c9da668ff9a6174cef7474a4ffc4e7ec15a"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -552,21 +702,32 @@
         "row_id": "1_5_011min_1_5_011_03:step-22:text",
         "step_id": 22,
         "step_index": 21,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_03",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+        "command_start": 71,
+        "command_end": 71
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ありがとう。\nよろしくね、●●●●プロデューサー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_03:1_5_011_03:cmd-000075:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_03",
+          "part_id": "1_5_011_03",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+          "command_index": 75,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c24bcb9a249cb0f148127c7c3d7d5912235047079a3b5aef563fca12aa51b4ed"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -583,7 +744,6 @@
         "stepId": 23
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -592,97 +752,16 @@
         "row_id": "1_5_011min_1_5_011_03:step-23:text",
         "step_id": 23,
         "step_index": 22,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_03",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_03.json",
+        "command_start": 75,
+        "command_end": 75
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 16,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 17,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 18,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 19,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 20,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 21,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 22,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "刑事ドラマでカフェの店主役をするお仕事",
     "episode_label": null

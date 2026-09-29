@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_010pie_1_5_010_01",
-  "logical_id": "story-collection:1_5_010pie_1_5_010_01",
+  "logical_id": "story:1_5_010pie_1_5_010_01",
   "scenario_id": "1_5_010pie_1_5_010_01",
   "text_catalog_id": "1_5_010pie_1_5_010_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_010pie_1_5_010_01.json",
-    "sha256": "sha256:b6d21a4cebb40f87f4a57f3c2a5c81801a8b4979a1462f14096901e3d1cfc677",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:03d7c634100d2179962fdc655b77bcda6bdb545449c0dd5c13bbeb8c4c44c874",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 15,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_010pie_1_5_010_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_010pie_1_5_010_01:1_5_010_01:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_010pie_1_5_010_01",
+          "part_id": "1_5_010_01",
+          "file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_010pie_1_5_010_01:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_010_01",
+        "source_file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_010pie_1_5_010_01:1_5_010_01:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_010pie_1_5_010_01",
+          "part_id": "1_5_010_01",
+          "file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_010pie_1_5_010_01:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_010_01",
+        "source_file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_010pie_1_5_010_01:1_5_010_01:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_010pie_1_5_010_01",
+          "part_id": "1_5_010_01",
+          "file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_010pie_1_5_010_01:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_010_01",
+        "source_file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "おもちゃメーカーのCMのお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_010pie_1_5_010_01:1_5_010_01:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_010pie_1_5_010_01",
+          "part_id": "1_5_010_01",
+          "file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:eb426bf53cbbe65226566689850f6c8bfd8177c33aec97d51af594148b363965"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,21 +212,32 @@
         "row_id": "1_5_010pie_1_5_010_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_010_01",
+        "source_file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "わあ！　このおもちゃ、かわいい。\nこっちのおもちゃ、おもしろそう！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_010pie_1_5_010_01:1_5_010_01:cmd-000021:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_010pie_1_5_010_01",
+          "part_id": "1_5_010_01",
+          "file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+          "command_index": 21,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:29833bb1343761491f9c8a0b755b703d63188112bedcf0100f1c689d890e7112"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "010pie",
         "sourceName": "ピエール"
       },
       "performance": {
@@ -196,7 +254,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -205,17 +262,28 @@
         "row_id": "1_5_010pie_1_5_010_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_010_01",
+        "source_file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ピエールさん、お疲れさまです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_010pie_1_5_010_01:1_5_010_01:cmd-000025:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_010pie_1_5_010_01",
+          "part_id": "1_5_010_01",
+          "file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+          "command_index": 25,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:663da578f32434983945bc6957dd419f8a159a0a4e70212d803ce1cac028d484"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -242,21 +310,32 @@
         "row_id": "1_5_010pie_1_5_010_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_010_01",
+        "source_file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "あ、●●●●プロデューサーさん。\nお疲れさま！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_010pie_1_5_010_01:1_5_010_01:cmd-000029:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_010pie_1_5_010_01",
+          "part_id": "1_5_010_01",
+          "file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+          "command_index": 29,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:03c92acd778bad3a5caf94fff5476b2d2cdb09abe13aed88b89c6aa1007cbb60"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "010pie",
         "sourceName": "ピエール"
       },
       "performance": {
@@ -273,7 +352,6 @@
         "stepId": 8
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -282,17 +360,28 @@
         "row_id": "1_5_010pie_1_5_010_01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_010_01",
+        "source_file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ピエールさんが読んでいるのは……。\nおもちゃのカタログ、ですか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_010pie_1_5_010_01:1_5_010_01:cmd-000032:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_010pie_1_5_010_01",
+          "part_id": "1_5_010_01",
+          "file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+          "command_index": 32,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4aa445b778793ad95d7ca7751dcfd4532c73883e1e69d5496ca0a9340678de6b"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -319,21 +408,32 @@
         "row_id": "1_5_010pie_1_5_010_01:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_010_01",
+        "source_file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+        "command_start": 32,
+        "command_end": 32
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "うん！　今度、おもちゃメーカーのCM、出る。\nどんなおもちゃ、あるか見てた。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_010pie_1_5_010_01:1_5_010_01:cmd-000036:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_010pie_1_5_010_01",
+          "part_id": "1_5_010_01",
+          "file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+          "command_index": 36,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f55f8ef8b049fa68aa7e6bddfb37d44072dd3fedfe51642c2039b1c2091cfaaa"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "010pie",
         "sourceName": "ピエール"
       },
       "performance": {
@@ -350,7 +450,6 @@
         "stepId": 10
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -359,21 +458,32 @@
         "row_id": "1_5_010pie_1_5_010_01:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_010_01",
+        "source_file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+        "command_start": 36,
+        "command_end": 36
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ブロック、ミニカー、お人形。\n他にも、おもちゃの種類、いっぱいある。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_010pie_1_5_010_01:1_5_010_01:cmd-000039:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_010pie_1_5_010_01",
+          "part_id": "1_5_010_01",
+          "file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+          "command_index": 39,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c30cc70c96be842eee8468fc85c4d92834f75df537b73d13367f3b05df270fdc"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "010pie",
         "sourceName": "ピエール"
       },
       "performance": {
@@ -390,7 +500,6 @@
         "stepId": 11
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -399,21 +508,32 @@
         "row_id": "1_5_010pie_1_5_010_01:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_010_01",
+        "source_file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+        "command_start": 39,
+        "command_end": 39
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "おもしろそうなおもちゃ、いーっぱいあった！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_010pie_1_5_010_01:1_5_010_01:cmd-000043:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_010pie_1_5_010_01",
+          "part_id": "1_5_010_01",
+          "file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+          "command_index": 43,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0653fa85b6fb6fedc2b42716263a31c0f6f961c39e080b45be844afb355e4494"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "010pie",
         "sourceName": "ピエール"
       },
       "performance": {
@@ -430,7 +550,6 @@
         "stepId": 12
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -439,21 +558,32 @@
         "row_id": "1_5_010pie_1_5_010_01:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_010_01",
+        "source_file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+        "command_start": 43,
+        "command_end": 43
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ボク、●●●●プロデューサーさんと、\n一緒、遊びたい！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_010pie_1_5_010_01:1_5_010_01:cmd-000049:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_010pie_1_5_010_01",
+          "part_id": "1_5_010_01",
+          "file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+          "command_index": 49,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:eadbd8a6a8f99baf603439e6170b04bd5f041db17696a432087b16c087fbff02"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "010pie",
         "sourceName": "ピエール"
       },
       "performance": {
@@ -470,7 +600,6 @@
         "stepId": 13
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -479,17 +608,28 @@
         "row_id": "1_5_010pie_1_5_010_01:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_010_01",
+        "source_file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+        "command_start": 49,
+        "command_end": 49
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "実は先ほど、おもちゃのサンプルが届いたんです。\nよかったら、今から遊びませんか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_010pie_1_5_010_01:1_5_010_01:cmd-000052:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_010pie_1_5_010_01",
+          "part_id": "1_5_010_01",
+          "file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+          "command_index": 52,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3e1272338c441b196da034bc7dc16fc3f6ec8fbd24fd7d919078715847116863"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -516,21 +656,32 @@
         "row_id": "1_5_010pie_1_5_010_01:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_010_01",
+        "source_file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+        "command_start": 52,
+        "command_end": 52
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ホント？　●●●●プロデューサーさんと、\n一緒、遊ぶ！　やふー！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_010pie_1_5_010_01:1_5_010_01:cmd-000057:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_010pie_1_5_010_01",
+          "part_id": "1_5_010_01",
+          "file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+          "command_index": 57,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c21d004e8ec06fc4a9c03a859ae2e2831057194a00182d61d15162e3680441e5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "010pie",
         "sourceName": "ピエール"
       },
       "performance": {
@@ -547,7 +698,6 @@
         "stepId": 15
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -556,92 +706,16 @@
         "row_id": "1_5_010pie_1_5_010_01:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_010_01",
+        "source_file": "assets/resources/scenariodata/1_5_010pie/scenario_1_5_010_01.json",
+        "command_start": 57,
+        "command_end": 57
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "おもちゃメーカーのCMのお仕事",
     "episode_label": null

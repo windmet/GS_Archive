@@ -1,29 +1,8 @@
 import { getCostumePrefabMetaUrl } from './AssetResolver.js'
-let cachedPrefabMeta = null
-let loadingPrefabMeta = null
-
-export async function loadCostumePrefabMeta() {
-  if (cachedPrefabMeta) return cachedPrefabMeta
-  if (loadingPrefabMeta) return loadingPrefabMeta
-
-  loadingPrefabMeta = fetch(getCostumePrefabMetaUrl(), {
-    cache: 'no-store',
-  })
-    .then(res => (res.ok ? res.json() : null))
-    .catch(() => null)
-    .then(data => {
-      cachedPrefabMeta = data?.models || {}
-      return cachedPrefabMeta
-    })
-
-  return loadingPrefabMeta
+import { createStoryConfigStore } from './StoryConfigStore.js'
+const store = createStoryConfigStore({ kind: 'costume-prefab-metadata', url: getCostumePrefabMetaUrl, project: data => data.models })
+export const loadCostumePrefabMeta = options => store.load(options)
+export async function getCostumePrefabMeta(modelId, options) {
+  return (await store.load(options))?.[modelId] || null
 }
-
-export async function getCostumePrefabMeta(modelId) {
-  const models = await loadCostumePrefabMeta()
-  return models?.[modelId] || null
-}
-
-export function getCachedCostumePrefabMeta(modelId) {
-  return cachedPrefabMeta?.[modelId] || null
-}
+export const getCachedCostumePrefabMeta = modelId => store.peek()?.[modelId] || null

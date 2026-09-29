@@ -44,7 +44,7 @@ try {
     const plannedRequests = requests.slice(first).filter(url => url.includes('/mouth/'))
     const next = requests.length
     const spine = { _modelName: `${prefix}_001_00` }
-    await new LipSyncController({ getSpineEntry: () => null })._loadMouthSetting('040ren', spine)
+    await new LipSyncController({ getSpineEntry: () => ({ spine, modelId: spine._modelName }) })._loadMouthSetting('040ren', spine)
     const consumerRequests = requests.slice(next)
     assert.deepEqual(plannedRequests, consumerRequests, `${prefix}: executor follows actual consumer fallback boundary`)
     const success = ['own', 'missing'].includes(prefix)
@@ -60,7 +60,7 @@ try {
     }
   }
   const plan = planFor('own')
-  for (const asset of plan.assets.filter(asset => !['idol-mouth', 'model-mouth'].includes(asset.kind))) {
+  for (const asset of (process.argv.includes('--fixtures-only') ? [] : plan.assets).filter(asset => !['idol-mouth', 'model-mouth'].includes(asset.kind))) {
     const [url] = storyAssetAdapter(asset).urls
     const data = JSON.parse(await readFile(new URL(`../public${url}`, import.meta.url)))
     validateStoryConfig(asset.kind, data)
@@ -92,4 +92,4 @@ try {
   server.closeAllConnections()
   await new Promise(resolve => server.close(resolve))
 }
-console.log('Config preload verified: actual mouth consumer parity, HTTP-only fallback, parse/shape failures, model identity, real metadata shapes and cancellation')
+console.log(`${process.argv.includes('--fixtures-only') ? '[Fixture-only: external metadata shapes NOT checked] ' : ''}` + 'Config preload verified: actual mouth consumer parity, HTTP-only fallback, parse/shape failures, model identity, real metadata shapes and cancellation')

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import vm from 'node:vm'
 import { validateArchivePayload } from '../src/data/archiveDataContracts.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { readFile } from 'node:fs/promises'
@@ -102,9 +103,12 @@ assert.equal(catalog.songs.grwsml.choreography.live_effect_variants.includes('tu
 
 // App wiring: dispatch, open handlers, route sync, load assignment
 assert.match(appComponent, /v-if="view === 'song_catalog'"/)
-assert.match(appComponent, /v-if="view === 'song_detail'"/)
-assert.match(appComponent, /:catalog="songCatalogData"/)
+assert.match(appComponent, /v-if="view === 'song_detail' && currentSongPresentation"/)
+assert.match(appComponent, /:catalog="songReadModelCatalog"/)
 assert.match(appComponent, /:song="currentSongPresentation"/)
+assert.match(detailComponent, /v-if="song\.stageCandidate"/)
+assert.doesNotMatch(detailComponent, /fetchSongTimelineManifest/,
+  'song detail must receive stage entry from its bounded leaf')
 assert.match(appComponent, /@open="openSong"/)
 assert.match(appComponent, /function openSongCatalog\(\)/)
 assert.match(appComponent, /function openSong\(songCode\)/)
@@ -126,6 +130,54 @@ assert.match(appComponent, /const currentIdolSongs = computed/)
 assert.match(appComponent, /const currentArchiveUnitSongs = computed/)
 assert.match(appComponent, /songParentView\.value = 'idol_detail'/)
 assert.match(appComponent, /songParentView\.value = 'unit_detail'/)
+
+const projectionStart = appComponent.indexOf('const currentSong = computed(')
+const projectionEnd = appComponent.indexOf('const archiveSection = computed(', projectionStart)
+assert.ok(projectionStart >= 0 && projectionEnd > projectionStart)
+const projectionContext = vm.createContext({
+  computed: fn => ({ get value() { return fn() } }),
+  songReadModelDetail: { value: { id: 'drvalv', song: { title: 'DRIVE A LIVE' },
+    view: { title: 'DRIVE A LIVE' }, experimental: { form: 'layered' } } },
+  currentSongId: { value: 'drvalv' }, view: { value: 'song_detail' },
+})
+const [currentSong, stageAudioExperiments, currentSongPresentation] = vm.runInContext(
+  `${appComponent.slice(projectionStart, projectionEnd)}\n;[currentSong, stageAudioExperiments, currentSongPresentation]`, projectionContext)
+assert.equal(currentSong.value.title, 'DRIVE A LIVE')
+assert.equal(currentSongPresentation.value.title, 'DRIVE A LIVE')
+projectionContext.currentSongId.value = 'brndnf'
+assert.equal(currentSong.value, null, 'old song metadata must not appear while another leaf loads')
+assert.equal(currentSongPresentation.value, null)
+assert.equal(Object.keys(stageAudioExperiments.value).length, 0)
+projectionContext.currentSongId.value = ''
+projectionContext.view.value = 'chibi_stage'
+assert.equal(Object.keys(stageAudioExperiments.value).length, 1, 'default stage retains DRIVE A LIVE experiment')
+
+let resolveSong
+let revision = 0
+const recoveryContext = vm.createContext({
+  view: { value: 'song_detail' }, currentSongId: { value: 'brndnf' },
+  songReadModelDetail: { value: null }, songReadModelStatus: { value: '' },
+  pendingSongNavigation: 0,
+  navigation: { getRevision: () => revision, isDisposed: () => false },
+  loadSongDetail: () => new Promise(resolve => { resolveSong = resolve }),
+  watch: (_sources, callback) => { recoveryContext.recoverSong = callback },
+  console: { error: () => {} },
+})
+const watcherStart = appComponent.indexOf('watch([view, currentSongId]')
+const watcherEnd = appComponent.indexOf('watch([view, currentCardId]', watcherStart)
+assert.ok(watcherStart >= 0 && watcherEnd > watcherStart)
+vm.runInContext(appComponent.slice(watcherStart, watcherEnd), recoveryContext)
+recoveryContext.recoverSong(['song_detail', 'brndnf'])
+resolveSong({ id: 'brndnf', song: { title: 'BRAND NEW FIELD' }, view: { title: 'BRAND NEW FIELD' } })
+await new Promise(resolve => setImmediate(resolve))
+assert.equal(recoveryContext.songReadModelDetail.value.id, 'brndnf')
+recoveryContext.songReadModelDetail.value = null
+recoveryContext.currentSongId.value = 'drvalv'
+recoveryContext.recoverSong(['song_detail', 'drvalv'])
+revision++
+resolveSong({ id: 'drvalv' })
+await new Promise(resolve => setImmediate(resolve))
+assert.equal(recoveryContext.songReadModelDetail.value, null, 'late song leaf must not replace a newer route')
 
 // Jacket relation: every catalog song carries a published RAW cover URL
 assert.equal(Object.keys(jacketIndex.entries).length, 61)

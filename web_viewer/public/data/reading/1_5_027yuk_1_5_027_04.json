@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_027yuk_1_5_027_04",
-  "logical_id": "story-collection:1_5_027yuk_1_5_027_04",
+  "logical_id": "story:1_5_027yuk_1_5_027_04",
   "scenario_id": "1_5_027yuk_1_5_027_04",
   "text_catalog_id": "1_5_027yuk_1_5_027_04",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_027yuk_1_5_027_04.json",
-    "sha256": "sha256:7d4514fa72f1e07b726c50870eac6cc2a3a1777b8755ade8c0243d4a102ed465",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:612c351e529fdd2195b9f3552d6c692251dd9ebe7264124f4bc5432c43589725",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 21,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_027yuk_1_5_027_04.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_027yuk_1_5_027_04:1_5_027_04:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_027yuk_1_5_027_04",
+          "part_id": "1_5_027_04",
+          "file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_027yuk_1_5_027_04:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_027_04",
+        "source_file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_027yuk_1_5_027_04:1_5_027_04:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_027yuk_1_5_027_04",
+          "part_id": "1_5_027_04",
+          "file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_027yuk_1_5_027_04:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_027_04",
+        "source_file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_027yuk_1_5_027_04:1_5_027_04:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_027yuk_1_5_027_04",
+          "part_id": "1_5_027_04",
+          "file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_027yuk_1_5_027_04:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_027_04",
+        "source_file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "邦画のお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_027yuk_1_5_027_04:1_5_027_04:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_027yuk_1_5_027_04",
+          "part_id": "1_5_027_04",
+          "file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:3b8fd1aea9dc7975105ba23aaee259fbf2dfe1c592ec91ab2238f8299b82a483"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,17 +212,28 @@
         "row_id": "1_5_027yuk_1_5_027_04:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_027_04",
+        "source_file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "今日の撮影はあまり時間が取れないそうなので、\n現場に入ったらすぐに着替えていただきます。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_027yuk_1_5_027_04:1_5_027_04:cmd-000014:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_027yuk_1_5_027_04",
+          "part_id": "1_5_027_04",
+          "file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+          "command_index": 14,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ddba7b2450e66f471d917fd248a0b765908501e6be513593f58328e14cd80859"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -202,21 +260,32 @@
         "row_id": "1_5_027yuk_1_5_027_04:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_027_04",
+        "source_file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "それなら今のうちに台本を確認しておこう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_027yuk_1_5_027_04:1_5_027_04:cmd-000016:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_027yuk_1_5_027_04",
+          "part_id": "1_5_027_04",
+          "file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+          "command_index": 16,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a972093515991edb9b528c610bf619c75a8d623422e06db500b064405310f251"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "神谷 幸広"
       },
       "performance": {
@@ -232,30 +301,39 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_027yuk_1_5_027_04:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_027_04",
+        "source_file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサーさん。\nよかったら台詞の確認に付き合ってくれないか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_027yuk_1_5_027_04:1_5_027_04:cmd-000021:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_027yuk_1_5_027_04",
+          "part_id": "1_5_027_04",
+          "file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+          "command_index": 21,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3b051a3b1eb7759c6709718263bc4c37bc5127b88bad631e05a89fe1d1541359"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "神谷 幸広"
       },
       "performance": {
@@ -272,7 +350,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -281,17 +358,28 @@
         "row_id": "1_5_027yuk_1_5_027_04:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_027_04",
+        "source_file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null
     },
     {
       "kind": "caption",
       "source_text": "一時間後……",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_027yuk_1_5_027_04:1_5_027_04:cmd-000033:time_caption:000",
+        "source": {
+          "scenario_id": "1_5_027yuk_1_5_027_04",
+          "part_id": "1_5_027_04",
+          "file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+          "command_index": 33,
+          "field_kind": "time_caption",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:16216436c5b82da4dd0de41754414e2d7a9993afd63ae3cac590ed427f10856e"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -318,21 +406,32 @@
         "row_id": "1_5_027yuk_1_5_027_04:step-13:caption",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_027_04",
+        "source_file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ありがとう、●●●●プロデューサーさん。\n最後に読み合わせができてよかった。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_027yuk_1_5_027_04:1_5_027_04:cmd-000040:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_027yuk_1_5_027_04",
+          "part_id": "1_5_027_04",
+          "file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+          "command_index": 40,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4204f95e34d606e689ee15108c68a23adff2cc60c2c437c1f4e2daf92d4bbac1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "神谷 幸広"
       },
       "performance": {
@@ -349,7 +448,6 @@
         "stepId": 15
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -358,17 +456,28 @@
         "row_id": "1_5_027yuk_1_5_027_04:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_027_04",
+        "source_file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+        "command_start": 40,
+        "command_end": 40
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "どういたしまして。\n昭和時代の人情溢れるストーリーですね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_027yuk_1_5_027_04:1_5_027_04:cmd-000044:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_027yuk_1_5_027_04",
+          "part_id": "1_5_027_04",
+          "file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+          "command_index": 44,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:70de6800bd952ce6c3dc0d4fcd4b7a5f132f76173571b6ba4f46dcb95ccd12d9"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -395,17 +504,28 @@
         "row_id": "1_5_027yuk_1_5_027_04:step-16:text",
         "step_id": 16,
         "step_index": 15,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_027_04",
+        "source_file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+        "command_start": 44,
+        "command_end": 44
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "幸広さんが演じるのは、\n難しい役どころだと思いますが……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_027yuk_1_5_027_04:1_5_027_04:cmd-000047:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_027yuk_1_5_027_04",
+          "part_id": "1_5_027_04",
+          "file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+          "command_index": 47,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a06470930f11fa46bdb375c8c0383698b5199fc3e7f0938113286ba1480c0f80"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -432,21 +552,32 @@
         "row_id": "1_5_027yuk_1_5_027_04:step-17:text",
         "step_id": 17,
         "step_index": 16,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_027_04",
+        "source_file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+        "command_start": 47,
+        "command_end": 47
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "確かに役作りには手こずったよ。\n台本だって何度も読み返した。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_027yuk_1_5_027_04:1_5_027_04:cmd-000053:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_027yuk_1_5_027_04",
+          "part_id": "1_5_027_04",
+          "file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+          "command_index": 53,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e0996608d073952691c3293bb81efe38e0376c3ef1b01426d122a563fe72a1fc"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "神谷 幸広"
       },
       "performance": {
@@ -463,7 +594,6 @@
         "stepId": 18
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -472,17 +602,28 @@
         "row_id": "1_5_027yuk_1_5_027_04:step-18:text",
         "step_id": 18,
         "step_index": 17,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_027_04",
+        "source_file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+        "command_start": 53,
+        "command_end": 53
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "だからそんなにボロボロなんですね。\n書き込みの量もすごいです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_027yuk_1_5_027_04:1_5_027_04:cmd-000059:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_027yuk_1_5_027_04",
+          "part_id": "1_5_027_04",
+          "file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+          "command_index": 59,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3224fb6465518e1a5f4e8b2aa3557115775bfc4d85ff15609974baec4f07488c"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -509,21 +650,32 @@
         "row_id": "1_5_027yuk_1_5_027_04:step-19:text",
         "step_id": 19,
         "step_index": 18,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_027_04",
+        "source_file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+        "command_start": 59,
+        "command_end": 59
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "これくらい当然さ。それに難しい分、\nやりがいがあると思っている。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_027yuk_1_5_027_04:1_5_027_04:cmd-000064:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_027yuk_1_5_027_04",
+          "part_id": "1_5_027_04",
+          "file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+          "command_index": 64,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:cd6b97a4dcea42a81ba846e616dc79eb46bf30087d57d61fb5fe4c059b6336a7"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "神谷 幸広"
       },
       "performance": {
@@ -540,7 +692,6 @@
         "stepId": 20
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -549,21 +700,32 @@
         "row_id": "1_5_027yuk_1_5_027_04:step-20:text",
         "step_id": 20,
         "step_index": 19,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_027_04",
+        "source_file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+        "command_start": 64,
+        "command_end": 64
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "……おや、そろそろ現場に到着するみたいだ。\n楽しんで演じてくるとしよう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_027yuk_1_5_027_04:1_5_027_04:cmd-000071:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_027yuk_1_5_027_04",
+          "part_id": "1_5_027_04",
+          "file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+          "command_index": 71,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4d37bdf4c4420a611bbc17f0a194e3783d7e4b55abf523307d29282f9a74ed07"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "神谷 幸広"
       },
       "performance": {
@@ -580,7 +742,6 @@
         "stepId": 21
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -589,97 +750,16 @@
         "row_id": "1_5_027yuk_1_5_027_04:step-21:text",
         "step_id": 21,
         "step_index": 20,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_027_04",
+        "source_file": "assets/resources/scenariodata/1_5_027yuk/scenario_1_5_027_04.json",
+        "command_start": 71,
+        "command_end": 71
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 15,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 16,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 17,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 18,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 19,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 20,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "邦画のお仕事",
     "episode_label": null

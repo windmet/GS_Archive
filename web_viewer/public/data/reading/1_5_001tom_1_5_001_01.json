@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_001tom_1_5_001_01",
-  "logical_id": "story-collection:1_5_001tom_1_5_001_01",
+  "logical_id": "story:1_5_001tom_1_5_001_01",
   "scenario_id": "1_5_001tom_1_5_001_01",
   "text_catalog_id": "1_5_001tom_1_5_001_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_001tom_1_5_001_01.json",
-    "sha256": "sha256:5dd4c74d1a7a3bb22351f4b557ce0e45432f83a78b025f260d5942605fbcb90e",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:2ac6b2d8a6c721c3a7d0c27de1bb976c14845d8f4fec5fefc83640fd0525b1b1",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 14,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_001tom_1_5_001_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_001tom_1_5_001_01:1_5_001_01:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_001tom_1_5_001_01",
+          "part_id": "1_5_001_01",
+          "file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_001tom_1_5_001_01:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_001_01",
+        "source_file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_001tom_1_5_001_01:1_5_001_01:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_001tom_1_5_001_01",
+          "part_id": "1_5_001_01",
+          "file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_001tom_1_5_001_01:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_001_01",
+        "source_file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_001tom_1_5_001_01:1_5_001_01:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_001tom_1_5_001_01",
+          "part_id": "1_5_001_01",
+          "file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_001tom_1_5_001_01:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_001_01",
+        "source_file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "大衆向けアニメのお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_001tom_1_5_001_01:1_5_001_01:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_001tom_1_5_001_01",
+          "part_id": "1_5_001_01",
+          "file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:8e494f2fb1e12f0f5b5c89d86a347fcec327352b0de4386516e5338adfedfe3b"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,21 +212,32 @@
         "row_id": "1_5_001tom_1_5_001_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_001_01",
+        "source_file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "アニメ映画の声優か、ワクワクするな！\nしかも大人も子供も楽しめるタイプの映画だろ？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_001tom_1_5_001_01:1_5_001_01:cmd-000016:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_001tom_1_5_001_01",
+          "part_id": "1_5_001_01",
+          "file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+          "command_index": 16,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c1406ea6f56b99798342ee8eecbac578722e500c867cad568e8d5510fec5c3a5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -196,7 +254,6 @@
         "stepId": 5
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -205,21 +262,32 @@
         "row_id": "1_5_001tom_1_5_001_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_001_01",
+        "source_file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "見てくれた人全員を感動させてみせる！！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_001tom_1_5_001_01:1_5_001_01:cmd-000020:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_001tom_1_5_001_01",
+          "part_id": "1_5_001_01",
+          "file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+          "command_index": 20,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7e3acc96caa732eb2661da8aa7f51bf9bcbd888db5f78132dd305e7aa50984ee"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -236,7 +304,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -245,17 +312,28 @@
         "row_id": "1_5_001tom_1_5_001_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_001_01",
+        "source_file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "素晴らしい意気込みですね、冬馬さん。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_001tom_1_5_001_01:1_5_001_01:cmd-000023:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_001tom_1_5_001_01",
+          "part_id": "1_5_001_01",
+          "file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+          "command_index": 23,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0c53bf2bd5c54a7c8875a49be7c9b4f8ada9aef3db21fe2875acd6427cead830"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -282,21 +360,32 @@
         "row_id": "1_5_001tom_1_5_001_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_001_01",
+        "source_file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ああ、もちろんだ！\nやるからには中途半端な出来にしたくねぇ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_001tom_1_5_001_01:1_5_001_01:cmd-000026:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_001tom_1_5_001_01",
+          "part_id": "1_5_001_01",
+          "file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+          "command_index": 26,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1876ec4780a2f9025354566cae8d10273e24cdf258bd28c6249d3ea16c194603"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -313,7 +402,6 @@
         "stepId": 8
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -322,21 +410,32 @@
         "row_id": "1_5_001tom_1_5_001_01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_001_01",
+        "source_file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "そのためにも、今は練習あるのみだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_001tom_1_5_001_01:1_5_001_01:cmd-000030:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_001tom_1_5_001_01",
+          "part_id": "1_5_001_01",
+          "file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+          "command_index": 30,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1553371454d761a493bd5da8721bdf38377da574026fee26dc4aae433ae26e08"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -353,7 +452,6 @@
         "stepId": 9
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -362,21 +460,32 @@
         "row_id": "1_5_001tom_1_5_001_01:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_001_01",
+        "source_file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+        "command_start": 30,
+        "command_end": 30
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ってもな、声優をやる上で何を練習すりゃいいんだ？\n発声や滑舌はもちろんだけど……",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_001tom_1_5_001_01:1_5_001_01:cmd-000037:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_001tom_1_5_001_01",
+          "part_id": "1_5_001_01",
+          "file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+          "command_index": 37,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9657ff2c58a8a0b00846f74970d40b227b25a99b1fdee5f331b34e7bfd1eeb22"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -393,7 +502,6 @@
         "stepId": 10
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -402,21 +510,32 @@
         "row_id": "1_5_001tom_1_5_001_01:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_001_01",
+        "source_file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+        "command_start": 37,
+        "command_end": 37
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "声で演技をしなきゃならねぇってことだよな。\nなぁ、声優のレッスンを手配してくれねえか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_001tom_1_5_001_01:1_5_001_01:cmd-000042:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_001tom_1_5_001_01",
+          "part_id": "1_5_001_01",
+          "file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+          "command_index": 42,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a7e1185b23c55b2b0f9f7ace6dcfbf4bf16b25fb5cf5bda4289546fb8375e00c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -433,7 +552,6 @@
         "stepId": 11
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -442,17 +560,28 @@
         "row_id": "1_5_001tom_1_5_001_01:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_001_01",
+        "source_file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+        "command_start": 42,
+        "command_end": 42
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ええ、もちろんです！\n早速講師の方を頼んでおきますね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_001tom_1_5_001_01:1_5_001_01:cmd-000045:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_001tom_1_5_001_01",
+          "part_id": "1_5_001_01",
+          "file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+          "command_index": 45,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:545d7036406b90920206a5422163367482723c89ae85c6f38985ba9b0162dc7c"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -479,21 +608,32 @@
         "row_id": "1_5_001tom_1_5_001_01:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_001_01",
+        "source_file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+        "command_start": 45,
+        "command_end": 45
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "さすがだぜ、●●●●プロデューサー！\nんじゃレッスンスケジュールの調整頼んだ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_001tom_1_5_001_01:1_5_001_01:cmd-000050:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_001tom_1_5_001_01",
+          "part_id": "1_5_001_01",
+          "file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+          "command_index": 50,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b693575ba6c71d5ec4c726bdf089335c8d8d434d1b5b3cb54e6fe0832b9fb5b9"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -510,7 +650,6 @@
         "stepId": 13
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -519,17 +658,28 @@
         "row_id": "1_5_001tom_1_5_001_01:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_001_01",
+        "source_file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+        "command_start": 50,
+        "command_end": 50
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "はい、任せてください！\nさっそく手配しますね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_001tom_1_5_001_01:1_5_001_01:cmd-000053:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_001tom_1_5_001_01",
+          "part_id": "1_5_001_01",
+          "file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+          "command_index": 53,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c6e1d6177dee6f53b3be621f90ec72ca037d9d972985aec982980cd0a7be4fe9"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -556,92 +706,16 @@
         "row_id": "1_5_001tom_1_5_001_01:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_001_01",
+        "source_file": "assets/resources/scenariodata/1_5_001tom/scenario_1_5_001_01.json",
+        "command_start": 53,
+        "command_end": 53
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "大衆向けアニメのお仕事",
     "episode_label": null

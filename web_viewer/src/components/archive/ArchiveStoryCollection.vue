@@ -7,7 +7,7 @@
       </div>
       <div class="collection-copy">
         <span>{{ collection.eyebrow }}</span>
-        <h2>{{ collection.title }}</h2>
+        <h2>{{ presentProducerAddressingText(collection.title) }}</h2>
         <p>{{ collection.description }}</p>
         <dl>
           <div><dt>{{ collection.domain === 'birthday' ? '独立生日档案' : '正式话目' }}</dt><dd>{{ collection.domain === 'birthday' ? collection.independentChapterCount : `${collection.playableChapterCount} / ${collection.chapterCount}` }}</dd></div>
@@ -56,7 +56,7 @@
               <span class="chapter-number">{{ String(chapterIndex + 1).padStart(2, '0') }}</span>
               <span class="chapter-identity">
                 <small>{{ chapter.label }}</small>
-                <strong>{{ chapter.title }}</strong>
+                <strong>{{ presentProducerAddressingText(chapter.title) }}</strong>
               </span>
               <span class="chapter-stats">
                 <small>{{ chapter.episodeCount }} 段剧情</small>
@@ -111,7 +111,7 @@
             </div>
             <div v-if="chapter.synopsis" class="chapter-synopsis">
               <span>STORY</span>
-              <strong>{{ chapter.synopsis.title || chapter.title }}</strong>
+              <strong>{{ presentProducerAddressingText(chapter.synopsis.title || chapter.title) }}</strong>
               <p>{{ chapter.synopsis.text }}</p>
             </div>
             <p v-else-if="!chapter.exists" class="chapter-unavailable">此章节已建档，剧情暂未收录。</p>
@@ -147,6 +147,7 @@ import { computed, ref, watch } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { BookOpen, ChevronDown, ChevronRight, ChevronUp, ExternalLink, Play } from '@lucide/vue'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
+import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 
 const props = defineProps({
   collection: { type: Object, default: null },

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_045sor_1_5_045_03",
-  "logical_id": "story-collection:1_5_045sor_1_5_045_03",
+  "logical_id": "story:1_5_045sor_1_5_045_03",
   "scenario_id": "1_5_045sor_1_5_045_03",
   "text_catalog_id": "1_5_045sor_1_5_045_03",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_045sor_1_5_045_03.json",
-    "sha256": "sha256:a0afd1813752784c491ecb738353258b2da71450998ce40534c2eedf7b2a83cb",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:8bc142c8bc81a59f4ef9792c539116f3101ea66a83e622e91dca2e8587596748",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 15,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_045sor_1_5_045_03.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_045sor_1_5_045_03:1_5_045_03:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_045sor_1_5_045_03",
+          "part_id": "1_5_045_03",
+          "file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_045sor_1_5_045_03:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_045_03",
+        "source_file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_045sor_1_5_045_03:1_5_045_03:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_045sor_1_5_045_03",
+          "part_id": "1_5_045_03",
+          "file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_045sor_1_5_045_03:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_045_03",
+        "source_file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_045sor_1_5_045_03:1_5_045_03:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_045sor_1_5_045_03",
+          "part_id": "1_5_045_03",
+          "file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_045sor_1_5_045_03:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_045_03",
+        "source_file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "連続ミステリドラマにゲスト出演するお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_045sor_1_5_045_03:1_5_045_03:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_045sor_1_5_045_03",
+          "part_id": "1_5_045_03",
+          "file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:fb40d7fffdef0ca0300120c97b42118acb0048a995b37a16182d78a16436559f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,21 +212,32 @@
         "row_id": "1_5_045sor_1_5_045_03:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_045_03",
+        "source_file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "「へえ？　そんな理由で僕を疑ってるんだ」",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_045sor_1_5_045_03:1_5_045_03:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_045sor_1_5_045_03",
+          "part_id": "1_5_045_03",
+          "file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3b0bbe2c31a8ea61c97e50a73a4bfd3644b43c5fc04962f2fabdaa8df26aa10f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -195,30 +253,39 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_045sor_1_5_045_03:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_045_03",
+        "source_file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "「あはは！　浅はかな推理だね。\nあなた本当にそれで探偵を名乗ってるの？」",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_045sor_1_5_045_03:1_5_045_03:cmd-000021:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_045sor_1_5_045_03",
+          "part_id": "1_5_045_03",
+          "file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+          "command_index": 21,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:708147ec751814a458365f4e1fd11736d08aaa899ec30c27adc741ed088e50b3"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -235,7 +302,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -244,21 +310,32 @@
         "row_id": "1_5_045sor_1_5_045_03:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_045_03",
+        "source_file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "「もっと頭を使うんだね。\n……じゃないと、真相にたどり着けないよ」",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_045sor_1_5_045_03:1_5_045_03:cmd-000027:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_045sor_1_5_045_03",
+          "part_id": "1_5_045_03",
+          "file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+          "command_index": 27,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5b5cfd8dc6923b1f5e0cde34779c4d95f0eb6eda894c2aead38b7cdc7ca0f61e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -275,7 +352,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -284,21 +360,32 @@
         "row_id": "1_5_045sor_1_5_045_03:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_045_03",
+        "source_file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+        "command_start": 27,
+        "command_end": 27
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ふう、●●●●プロデューサーさん\n今のどうかなー？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_045sor_1_5_045_03:1_5_045_03:cmd-000035:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_045sor_1_5_045_03",
+          "part_id": "1_5_045_03",
+          "file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+          "command_index": 35,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f555a0bd791a0648c0417d03e10249eed6f33a18e330904d79b3414f32bc3bc3"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -315,7 +402,6 @@
         "stepId": 9
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -324,17 +410,28 @@
         "row_id": "1_5_045sor_1_5_045_03:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_045_03",
+        "source_file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+        "command_start": 35,
+        "command_end": 35
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "とってもよかったです！\n感情がこもっていて、ハラハラしました。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_045sor_1_5_045_03:1_5_045_03:cmd-000039:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_045sor_1_5_045_03",
+          "part_id": "1_5_045_03",
+          "file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+          "command_index": 39,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3d5c39e7e54a73c6d3f94ef4a7291d5e9fbc9140aa4ecc05819560631212f9b1"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -361,21 +458,32 @@
         "row_id": "1_5_045sor_1_5_045_03:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_045_03",
+        "source_file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+        "command_start": 39,
+        "command_end": 39
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "よかったー。僕が演じる役は物語のキーパーソン。\n頑張らないとねー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_045sor_1_5_045_03:1_5_045_03:cmd-000046:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_045sor_1_5_045_03",
+          "part_id": "1_5_045_03",
+          "file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+          "command_index": 46,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:78e3a6bbfacb3c9e0eeb03e82f6be84069a896041769a1d243b884161f9212d3"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -392,7 +500,6 @@
         "stepId": 11
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -401,17 +508,28 @@
         "row_id": "1_5_045sor_1_5_045_03:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_045_03",
+        "source_file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+        "command_start": 46,
+        "command_end": 46
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "もう少しレッスンしますか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_045sor_1_5_045_03:1_5_045_03:cmd-000048:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_045sor_1_5_045_03",
+          "part_id": "1_5_045_03",
+          "file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+          "command_index": 48,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3013ae5601148f98126a508eb0a9ad7714c018b9303e7ecf7cc39142e9ff6018"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -438,21 +556,32 @@
         "row_id": "1_5_045sor_1_5_045_03:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_045_03",
+        "source_file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+        "command_start": 48,
+        "command_end": 48
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "うん。●●●●プロデューサーさんは\nこの後どうするのー？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_045sor_1_5_045_03:1_5_045_03:cmd-000052:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_045sor_1_5_045_03",
+          "part_id": "1_5_045_03",
+          "file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+          "command_index": 52,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:184e5bf2ac690c1c991660b7d784fe0693f259ea3343c388d9d00ece8d514a25"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -469,7 +598,6 @@
         "stepId": 13
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -478,17 +606,28 @@
         "row_id": "1_5_045sor_1_5_045_03:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_045_03",
+        "source_file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+        "command_start": 52,
+        "command_end": 52
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "特に予定はないので、\n想楽さんにとことんお付き合いしますよ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_045sor_1_5_045_03:1_5_045_03:cmd-000054:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_045sor_1_5_045_03",
+          "part_id": "1_5_045_03",
+          "file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+          "command_index": 54,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0498a54a0949d5aea72b214f59dc63c1ee83ce10ca860585a5f9668eb71c54b5"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -515,21 +654,32 @@
         "row_id": "1_5_045sor_1_5_045_03:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_045_03",
+        "source_file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+        "command_start": 54,
+        "command_end": 54
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサーさん、\nありがとうー。それじゃあ、よろしくねー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_045sor_1_5_045_03:1_5_045_03:cmd-000060:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_045sor_1_5_045_03",
+          "part_id": "1_5_045_03",
+          "file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+          "command_index": 60,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8aef7b66c3701c735f2fbefde904a1dd7ab52921c8b52e64f3daec11ea44be59"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -546,7 +696,6 @@
         "stepId": 15
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -555,92 +704,16 @@
         "row_id": "1_5_045sor_1_5_045_03:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_045_03",
+        "source_file": "assets/resources/scenariodata/1_5_045sor/scenario_1_5_045_03.json",
+        "command_start": 60,
+        "command_end": 60
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "連続ミステリドラマにゲスト出演するお仕事",
     "episode_label": null

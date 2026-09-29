@@ -155,7 +155,7 @@ parity 或兼容参考。
 ### `schemas/`、`policies/`
 
 机器契约和治理策略。publication v1 已冻结；publication v2 和 annotation v1
-已激活。当前 `master` 有 3 笔 release record、2 个 stable logical ID；
+已激活。当前分支有 4 笔 release record、639 个 stable logical ID；
 `story-collection:1_3_10001_01` 的 current owner 是 repair release
 `2026-08-09-story-1-3-10001-01-002`。
 
@@ -169,24 +169,26 @@ parity 或兼容参考。
 以 `public/data/archive_baseline_report.json` 和各 verifier 为准：
 
 - 3,398 个 RAW logical story group、4,939 个有效 part 均有唯一 public 对应；
-- compiled 目录含 10,329 个 JSON artifact，不等于 10,329 篇剧情；
-- strict authoritative Runtime v2 为 4 collections + 1 standalone /
-  30 artifacts；
-- publication ledger 为 3 releases / 2 stable logical IDs；
-<!-- authoritative-v2-summary collections=4 standalone=1 artifacts=30 -->
-<!-- publication-ledger-summary releases=3 stable_logical_ids=2 -->
+- compiled 目录含 10,420 个 JSON artifact，不等于 10,420 篇剧情；
+- strict authoritative Runtime v2 为 4 collections + 638 standalone /
+  667 artifacts；
+- publication ledger 为 4 releases / 639 stable logical IDs；
+<!-- authoritative-v2-summary collections=4 standalone=638 artifacts=667 -->
+<!-- publication-ledger-summary releases=4 stable_logical_ids=639 -->
 - external GS translation registry 当前有 8 条 exact mapping；
-- tracked PNG 为 184 个，约 49.1 MB；其中 108 个为 grandfathered，
+- tracked PNG 为 186 个；其中 108 个为 grandfathered，
   14 个为 P1 Extra Story 导航视觉，61 个为 P1 Song 的有界 RAW-derived
   365x360 封面，以及 1 个移动门户原版背景；
 - USM 为 260 个，当前 89 exact consumer、166 exact masterdata、5 unresolved。
 
-## 5. 当前优先级（2026-08-13）
+## 5. 当前优先级（2026-09-28）
 
 当前执行入口是
-`notes/03_audit/CURRENT_ARCHIVE_BASELINE.md`。PR #37 与 #38 已合入
-`master@8d43405`，两者 post-merge Source Gate 均通过。长/短 stage 双向 timing
-regression 与 P2-B preflight 已完成；当前下一步是执行真实音频 P2-B。在它完成
+`notes/03_audit/CURRENT_ARCHIVE_BASELINE.md` 和
+[`GS_WORK_TEXT_PUBLICATION_20260928.md`](GS_WORK_TEXT_PUBLICATION_20260928.md)。
+本分支已发布 637 份 Work strict-v2 正文，正在完成翻译前身份审计与 Reader
+覆盖收尾；仍有 25,069 条非空文本行缺稳定身份。长/短 stage 双向 timing
+regression 与 P2-B preflight 已完成，真实音频 P2-B 仍待执行。在它完成
 前不开始下一个 Event promotion。
 
 ### P0：收口当前架构认知

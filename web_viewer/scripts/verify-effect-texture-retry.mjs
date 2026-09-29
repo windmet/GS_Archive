@@ -36,10 +36,12 @@ const images = []
 globalThis.Image = class { constructor() { images.push(this) } }
 try {
   const fallback = { placeholder: true }
-  const stage = Object.assign(Object.create(PixiStageManager.prototype), { _getFallbackTexture: () => fallback })
+  const stage = Object.assign(Object.create(PixiStageManager.prototype), {
+    _getFallbackTexture: () => fallback, _textureOwner: new AbortController(),
+  })
   const strict = stage._loadTextureFromUrl('fixture.png', { allowFallback: false })
   images.at(-1).onerror()
-  await assert.rejects(strict, /Failed to load texture/)
+  await assert.rejects(strict, error => error.code === 'IMAGE_LOAD_FAILED' && error.phase === 'image')
   const ordinary = stage._loadTextureFromUrl('fixture.png')
   images.at(-1).onerror()
   assert.equal(await ordinary, fallback, 'ordinary background fallback must remain available')

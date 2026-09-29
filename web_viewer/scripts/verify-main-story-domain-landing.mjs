@@ -26,7 +26,10 @@ assert.deepEqual(main.collections.map(collection => collection.logicalEntryCount
 assert.equal(main.collections[2].isPlaceholder, true)
 
 assert.match(appSource, /:main-domain="mainStoryDomain"/)
-assert.match(appSource, /buildMainStoryDomainIdentity\(storyCatalogData\.value\)/)
+assert.match(appSource, /const mainStoryDomain = computed\(\(\) => storyCatalogLanding\.value\?\.main \|\| null\)/)
+assert.match(appSource, /await loadStoryReadModelLanding\(\)/)
+assert.doesNotMatch(appSource, /buildMainStoryDomainIdentity\(/,
+  'runtime must consume the projected main landing instead of rebuilding it')
 assert.match(
   appSource,
   /currentStoryMode\.value === 'portal' && currentStoryDomain\.value === 'main'/,

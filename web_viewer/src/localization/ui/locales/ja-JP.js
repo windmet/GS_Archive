@@ -1,4 +1,12 @@
 export default Object.freeze({
+  'player.voice.backend': '音声の再生方式',
+  'player.voice.auto': '自動',
+  'player.voice.compat': '互換モードで再生',
+  'player.voice.retry': '音声を再試行',
+  'player.voice.loading': '音声を準備中…',
+  'player.queue.loading': '次の話を確認中…',
+  'player.queue.retry': '次の話の情報を再取得',
+
   'player.immersive.title': '横向きでストーリーを見る',
   'player.immersive.description': '横向きにすると複数の人物が見やすくなります。現在の向きでも視聴できます。',
   'player.immersive.enter': '横向き・全画面で見る',
@@ -32,6 +40,8 @@ export default Object.freeze({
   'player.settings.readOnly': '既読のみ',
   'player.settings.all': 'すべて',
   'player.settings.uiLanguage': 'UI言語',
+  'player.settings.producerName': 'プロデューサー名',
+  'player.settings.producerNamePlaceholder': '未設定なら原文のまま',
   'player.settings.hideUi': 'UIを隠す',
   'player.settings.backlog': 'ログ',
   'player.settings.skipEpisode': 'エピソードをスキップ',

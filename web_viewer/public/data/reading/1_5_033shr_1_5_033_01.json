@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_033shr_1_5_033_01",
-  "logical_id": "story-collection:1_5_033shr_1_5_033_01",
+  "logical_id": "story:1_5_033shr_1_5_033_01",
   "scenario_id": "1_5_033shr_1_5_033_01",
   "text_catalog_id": "1_5_033shr_1_5_033_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_033shr_1_5_033_01.json",
-    "sha256": "sha256:e3d838c2a8ee565952f1bb45777b6279da88415a52c589f4a22c85ea6f235265",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:ffbc908f5c7dab489ff17e96e5d10685e9dd2ccd1a679fb1c9107cf836489bd9",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 14,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_033shr_1_5_033_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_033shr_1_5_033_01:1_5_033_01:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_033shr_1_5_033_01",
+          "part_id": "1_5_033_01",
+          "file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_033shr_1_5_033_01:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_033_01",
+        "source_file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_033shr_1_5_033_01:1_5_033_01:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_033shr_1_5_033_01",
+          "part_id": "1_5_033_01",
+          "file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_033shr_1_5_033_01:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_033_01",
+        "source_file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_033shr_1_5_033_01:1_5_033_01:cmd-000011:title:000",
+        "source": {
+          "scenario_id": "1_5_033shr_1_5_033_01",
+          "part_id": "1_5_033_01",
+          "file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+          "command_index": 11,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_033shr_1_5_033_01:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_033_01",
+        "source_file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "子供向けスポーツスニーカーのCMのお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_033shr_1_5_033_01:1_5_033_01:cmd-000011:title:001",
+        "source": {
+          "scenario_id": "1_5_033shr_1_5_033_01",
+          "part_id": "1_5_033_01",
+          "file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+          "command_index": 11,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:7b4686311156810b34a8ea8fd56ee26d22f6cf8cfd76b0f27f677214792532c2"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,17 +212,28 @@
         "row_id": "1_5_033shr_1_5_033_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_033_01",
+        "source_file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "志狼くん、こちらがCMの撮影で履いていただく\nスニーカーになります。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_033shr_1_5_033_01:1_5_033_01:cmd-000018:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_033shr_1_5_033_01",
+          "part_id": "1_5_033_01",
+          "file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+          "command_index": 18,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:340cde33995c6285d5998ded82ea22294ec67a92d501468f222ed92edb28ef2f"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -202,21 +260,32 @@
         "row_id": "1_5_033shr_1_5_033_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_033_01",
+        "source_file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "うわっ、かっけー！\nさっそく履いてみよーっと。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_033shr_1_5_033_01:1_5_033_01:cmd-000024:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_033shr_1_5_033_01",
+          "part_id": "1_5_033_01",
+          "file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+          "command_index": 24,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9c48b33c9d6260640553b44c9009618ba9a710d8df401c980dae1ea32fd091d1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "033shr",
         "sourceName": "橘 志狼"
       },
       "performance": {
@@ -232,30 +301,39 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_033shr_1_5_033_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_033_01",
+        "source_file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "おおっ、すっげー軽くて走りやすい！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_033shr_1_5_033_01:1_5_033_01:cmd-000031:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_033shr_1_5_033_01",
+          "part_id": "1_5_033_01",
+          "file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+          "command_index": 31,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:aaac1fda2969feb2de948ceefc614e3ac7b82d6329527b7996b323af7f67956a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "033shr",
         "sourceName": "橘 志狼"
       },
       "performance": {
@@ -272,7 +350,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference",
         "transitional-stage-appearance"
       ],
@@ -282,17 +359,28 @@
         "row_id": "1_5_033shr_1_5_033_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_033_01",
+        "source_file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "し、志狼くん！\n事務所内を走ったらダメですよ～！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_033shr_1_5_033_01:1_5_033_01:cmd-000033:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_033shr_1_5_033_01",
+          "part_id": "1_5_033_01",
+          "file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+          "command_index": 33,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5c967135b141c3748a072a0c280048ab2d587488a1b22a9d172abb40102d1cae"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -319,21 +407,32 @@
         "row_id": "1_5_033shr_1_5_033_01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_033_01",
+        "source_file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "悪い悪い、ついテンションが上がっちまったぜ。\nCMは……どんな内容だったっけ？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_033shr_1_5_033_01:1_5_033_01:cmd-000041:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_033shr_1_5_033_01",
+          "part_id": "1_5_033_01",
+          "file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+          "command_index": 41,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:491abdc9588e39e8f7e85984faab0f18e8bbc23c30872c62626f4f0851f7245b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "033shr",
         "sourceName": "橘 志狼"
       },
       "performance": {
@@ -350,7 +449,6 @@
         "stepId": 9
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference",
         "transitional-stage-appearance"
       ],
@@ -360,17 +458,28 @@
         "row_id": "1_5_033shr_1_5_033_01:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_033_01",
+        "source_file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+        "command_start": 41,
+        "command_end": 41
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "このスニーカーを履いて、\nいろんな場所を走り回ってもらいます。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_033shr_1_5_033_01:1_5_033_01:cmd-000043:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_033shr_1_5_033_01",
+          "part_id": "1_5_033_01",
+          "file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+          "command_index": 43,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8ebdb7a9bc75f402ad0751dce02bb6749de521163b3e046ad79e16933a2437ea"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -397,17 +506,28 @@
         "row_id": "1_5_033shr_1_5_033_01:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_033_01",
+        "source_file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+        "command_start": 43,
+        "command_end": 43
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "大変だと思いますが、大丈夫ですか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_033shr_1_5_033_01:1_5_033_01:cmd-000046:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_033shr_1_5_033_01",
+          "part_id": "1_5_033_01",
+          "file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+          "command_index": 46,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ea2301039711e54b5130302f65554c5795de0d3ab6a96a9c45ceda953671324b"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -434,21 +554,32 @@
         "row_id": "1_5_033shr_1_5_033_01:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_033_01",
+        "source_file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+        "command_start": 46,
+        "command_end": 46
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "もっちろん！\n体を動かすのは好きだし、どんとこい！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_033shr_1_5_033_01:1_5_033_01:cmd-000051:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_033shr_1_5_033_01",
+          "part_id": "1_5_033_01",
+          "file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+          "command_index": 51,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:38f8eef333b8a867c855a1a0066d1062dac2b5f83c7b52388f1396daebfb2ea0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "033shr",
         "sourceName": "橘 志狼"
       },
       "performance": {
@@ -465,7 +596,6 @@
         "stepId": 12
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -474,21 +604,32 @@
         "row_id": "1_5_033shr_1_5_033_01:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_033_01",
+        "source_file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+        "command_start": 51,
+        "command_end": 51
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "走り回るってことは、スニーカーに慣れた方が\nいいよな？　ちょっと外走ってくる！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_033shr_1_5_033_01:1_5_033_01:cmd-000057:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_033shr_1_5_033_01",
+          "part_id": "1_5_033_01",
+          "file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+          "command_index": 57,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7073065f2d06e806f7141a010c61d7048433abb5cf54cefbd8fd26fd59423f88"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "033shr",
         "sourceName": "橘 志狼"
       },
       "performance": {
@@ -505,7 +646,6 @@
         "stepId": 13
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -514,21 +654,32 @@
         "row_id": "1_5_033shr_1_5_033_01:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_033_01",
+        "source_file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+        "command_start": 57,
+        "command_end": 57
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "そんじゃ、行ってきまーす！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_033shr_1_5_033_01:1_5_033_01:cmd-000063:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_033shr_1_5_033_01",
+          "part_id": "1_5_033_01",
+          "file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+          "command_index": 63,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:70261e0d3d6c627a2d3967804aea3d751f84995f1fb16b8c623296a8f36d2c87"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "033shr",
         "sourceName": "橘 志狼"
       },
       "performance": {
@@ -545,7 +696,6 @@
         "stepId": 14
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference",
         "transitional-stage-appearance"
       ],
@@ -555,92 +705,16 @@
         "row_id": "1_5_033shr_1_5_033_01:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_033_01",
+        "source_file": "assets/resources/scenariodata/1_5_033shr/scenario_1_5_033_01.json",
+        "command_start": 63,
+        "command_end": 63
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "子供向けスポーツスニーカーのCMのお仕事",
     "episode_label": null

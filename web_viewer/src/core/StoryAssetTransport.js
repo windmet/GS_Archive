@@ -4,7 +4,7 @@ export function createStoryAssetTransport({
   now = () => Date.now(),
   maxBytes = 32 * 1024 * 1024,
   maxEntries = 128,
-  timeoutMs = 10000,
+  timeoutMs = 30000, // shared-flight ceiling, longer than the consumer preload budget
 } = {}) {
   const entries = new Map()
   const flights = new Map()

@@ -12,8 +12,14 @@ const audio = (etag = null, length = 2000, control = 'max-age=60', age = '0') =>
     calls.push({ url, method: options.method || 'GET', cache: options.cache })
     return audio('v1')
   } })
-  const first = await cache.get('/assets/voice/a.m4a')
-  const second = await cache.get('/assets/voice/a.m4a')
+  const diagnostics = []
+  const first = await cache.get('/assets/voice/a.m4a', { onDiagnostics: value => diagnostics.push(value) })
+  const second = await cache.get('/assets/voice/a.m4a', { onDiagnostics: value => diagnostics.push(value) })
+  assert.equal(diagnostics[0].url, '/assets/voice/a.m4a')
+  assert.equal(diagnostics[0].status, 200)
+  assert.equal(diagnostics[0].bytes, 2000)
+  assert.equal(diagnostics[0].contentType, 'audio/mp4')
+  assert.deepEqual(diagnostics.map(value => value.cache), ['http', 'memory'])
   assert.deepEqual(calls, [{ url: '/assets/voice/a.m4a', method: 'GET', cache: 'default' }])
   assert.notEqual(first, second)
   new Uint8Array(first)[0] = 255

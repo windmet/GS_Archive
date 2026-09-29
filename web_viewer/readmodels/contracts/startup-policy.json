@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "note": "Rules for production startup, not a total bundle-size proxy. Dynamic player/lab modules remain allowed outside the entry closure.",
+  "initialJsGzipLimit": 204800,
+  "forbiddenInitialModules": [
+    "src/data/ArchiveDataRepository.js",
+    "src/data/archiveSelectors.js",
+    "src/data/unitPage.js",
+    "src/data/idolPage.js",
+    "src/data/gashaCatalog.js",
+    "src/data/storyCollections.js",
+    "src/data/storyDomainIdentityIndex.js",
+    "src/data/archiveHomeState.js",
+    "src/core/StoryViewer.vue",
+    "src/components/SpineViewer.vue",
+    "src/components/ChibiStageViewer.vue"
+  ],
+  "forbiddenInitialPrefixes": ["node_modules/pixi.js/", "node_modules/@pixi/", "node_modules/@pixi-spine/", "node_modules/@esotericsoftware/"],
+  "globalArchiveModules": ["src/data/ArchiveDataRepository.js"],
+  "globalArchiveCalls": ["loadArchiveData", "ensureLegacyArchiveData", "runWhenLegacyReady"]
+}

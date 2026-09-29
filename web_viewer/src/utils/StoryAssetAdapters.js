@@ -26,7 +26,7 @@ const configUrls = {
 export function storyAssetAdapter(asset) {
   if (asset.required === false) return { state: 'excluded', reason: asset.runtimeDisabled }
   if (Object.hasOwn(configUrls, asset.kind)) return { state: 'discovered', operation: 'json',
-    urls: [configUrls[asset.kind](asset.id)], cache: ['idol-motion', 'costume-prefab-metadata'].includes(asset.kind) ? 'no-store' : 'default' }
+    urls: [configUrls[asset.kind](asset.id)], cache: import.meta.env?.DEV && ['idol-motion', 'costume-prefab-metadata'].includes(asset.kind) ? 'no-store' : 'default' }
   if (asset.kind === 'model-mouth') {
     if (isSilhouetteOnlyModel(asset.modelId)) return { state: 'excluded', reason: 'silhouette-has-no-mouth-rig' }
     return { state: 'discovered', operation: 'json', urls: asset.candidateIds.map(getMouthSettingUrl), cache: 'default' }

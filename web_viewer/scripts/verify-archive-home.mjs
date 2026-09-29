@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
+import vm from 'node:vm'
 import {
   archiveHomeStateStats,
   buildArchiveHomeHighlights,
@@ -24,7 +25,7 @@ assert.equal(stats.backgrounds, 1)
 assert.equal(stats.models, 57)
 
 for (const background of new Set(idols.flatMap(idol => idol.cues).map(cue => cue.background).filter(Boolean))) {
-  assert.ok(fs.existsSync(new URL(`../public/assets/bg/${background}.png`, import.meta.url)), background)
+  assert.match(background, /^[a-z0-9_]+$/, background)
 }
 
 const toma = idols.find(idol => idol.id === '001tom')
@@ -48,7 +49,8 @@ assert.equal(highlights[0].scopeLabel, '固定组合团活')
 assert.equal(highlights[1].event_id, 410018)
 assert.equal(highlights[1].scopeLabel, '跨组合团活')
 for (const highlight of highlights) {
-  assert.ok(fs.existsSync(new URL(`../public${highlight.bannerUrl}`, import.meta.url)), highlight.bannerUrl)
+  assert.match(highlight.bannerUrl, /^\/assets\/events\/banners\/[a-z0-9_]+\.png$/, highlight.bannerUrl)
+  assert.equal(highlight.bannerUrl, uiAssets.featured_sets.event_banner_urls[highlight.event_code])
 }
 
 const immersiveHomeSource = readSource('../src/components/archive/ArchiveImmersiveHome.vue')
@@ -63,4 +65,31 @@ assert.match(spineStageSource, /data-background-owner/,
 assert.doesNotMatch(sceneApplicationSource, /manager\.(?:setBackground|clearBackground)/,
   'generic story scene application must not regain a duplicate background owner')
 
-console.log(`Archive home state: ${stats.idols} idols, ${stats.cues} cues, ${stats.models} models, ${highlights.length} highlights; standalone background owner verified`)
+const appSource = readSource('../src/App.vue')
+const projectionStart = appSource.indexOf('const archiveStats = computed(')
+const projectionEnd = appSource.indexOf('const idolPickerLabel = computed(', projectionStart)
+assert.ok(projectionStart >= 0 && projectionEnd > projectionStart)
+const context = vm.createContext({
+  computed: fn => ({ get value() { return fn() } }),
+  homeReadModelIndex: { value: null }, homeReadModelProfiles: { value: {} },
+  archiveBootstrap: { idols: [{ id: '001tom', home_available: true }, { id: 'hidden', home_available: false }] },
+  userPreferences: { value: { preferredIdol: '001tom' } },
+  bootstrapIdolDictionary: { source: 'bootstrap-idols' },
+  bootstrapMembership: { source: 'bootstrap-membership' },
+  buildIdolReference: (_id, dictionary, membership) => ({ dictionary, membership }),
+})
+const projections = vm.runInContext(`${appSource.slice(projectionStart, projectionEnd)}\n;[
+  archiveStats, archiveHomeIdols, preferredArchiveIdolReference
+]`, context)
+assert.equal(projections[0].value.length, 0)
+assert.deepEqual(Array.from(projections[1].value, idol => idol.id), ['001tom'])
+assert.equal(projections[2].value.dictionary.source, 'bootstrap-idols')
+context.homeReadModelIndex.value = {
+  stats: [{ label: '剧情文件', value: 12 }],
+  idols: [{ id: '001tom', name: '冬馬' }], highlights: [{ event_id: 1 }],
+}
+assert.equal(projections[0].value[0].value, 12)
+assert.equal(projections[1].value[0].name, '冬馬')
+assert.doesNotMatch(immersiveHomeSource, /home-highlight|activeHighlight|stepHighlight/)
+
+console.log(`Archive home state: ${stats.idols} idols, ${stats.cues} cues, ${stats.models} models, ${highlights.length} highlights; standalone background owner and read-model projection verified`)

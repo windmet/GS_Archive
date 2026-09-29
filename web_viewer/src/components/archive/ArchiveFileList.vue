@@ -23,7 +23,7 @@
           <Play v-else :size="17" fill="currentColor" />
         </span>
         <span class="file-main">
-          <span class="file-title">{{ entry.title }}</span>
+          <span class="file-title">{{ presentProducerAddressingText(entry.title) }}</span>
           <span v-if="entry.subtitle" class="file-subtitle">{{ entry.subtitle }}</span>
         </span>
         <span class="file-availability">{{ entry.missing ? '缺少文件' : '可播放' }}</span>
@@ -35,6 +35,7 @@
 <script setup>
 import { FileWarning, Play } from '@lucide/vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
+import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 
 defineProps({
   title: { type: String, default: '' },

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_035mco_1_5_035_01",
-  "logical_id": "story-collection:1_5_035mco_1_5_035_01",
+  "logical_id": "story:1_5_035mco_1_5_035_01",
   "scenario_id": "1_5_035mco_1_5_035_01",
   "text_catalog_id": "1_5_035mco_1_5_035_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_035mco_1_5_035_01.json",
-    "sha256": "sha256:2061cf7084573efb7040b6959402c0b98f2fe8e2f930879175913782d62bdcee",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:9a2785ef2ede9687016678d400d15aac98907c0b7cb9b5a3d46ce05e887370f5",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 18,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_035mco_1_5_035_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_01:1_5_035_01:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_01",
+          "part_id": "1_5_035_01",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_035mco_1_5_035_01:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_01",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_01:1_5_035_01:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_01",
+          "part_id": "1_5_035_01",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_035mco_1_5_035_01:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_01",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_01:1_5_035_01:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_01",
+          "part_id": "1_5_035_01",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_035mco_1_5_035_01:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_01",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "スーツのCMに主演するお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_01:1_5_035_01:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_01",
+          "part_id": "1_5_035_01",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:b13bec4686b0f3a2c03d6c47da02ae97a709ee6bd7da8ef65aefdf5d924bc5ca"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,17 +212,28 @@
         "row_id": "1_5_035mco_1_5_035_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_01",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "お待たせしました。\nこちらが先日採寸したスーツです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_01:1_5_035_01:cmd-000014:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_01",
+          "part_id": "1_5_035_01",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+          "command_index": 14,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4544e8c5950bc6a05e4d7a23f1b732b104fec927108e1ee0033567c30228f13d"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -202,21 +260,32 @@
         "row_id": "1_5_035mco_1_5_035_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_01",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ありがとう、●●●●プロデューサー。\nでは、さっそく試着してみるとしよう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_01:1_5_035_01:cmd-000016:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_01",
+          "part_id": "1_5_035_01",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+          "command_index": 16,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d312ffa7b4a90ff8adc68044f2cf9583021f684a2b8815857cfe4300a6453653"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -232,26 +301,35 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_035mco_1_5_035_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_01",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "道夫さん、試着してみてどうでしたか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_01:1_5_035_01:cmd-000027:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_01",
+          "part_id": "1_5_035_01",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+          "command_index": 27,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:42ad5deb66b11e9d0dff847447ebf591679b8ba436ff1900784695e3ad432dfa"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -278,21 +356,32 @@
         "row_id": "1_5_035mco_1_5_035_01:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_01",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+        "command_start": 27,
+        "command_end": 27
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "うむ、サイズはぴったりで着心地もよく、\nとても動きやすい。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_01:1_5_035_01:cmd-000031:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_01",
+          "part_id": "1_5_035_01",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+          "command_index": 31,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:685c2262371c2d6f39accddb39958cdf0492c9efe085c0fdd6d89b15997d3809"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -309,7 +398,6 @@
         "stepId": 12
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -318,21 +406,32 @@
         "row_id": "1_5_035mco_1_5_035_01:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_01",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "かつ、スタンダードカラーで\n様々な場面に使えるだろう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_01:1_5_035_01:cmd-000033:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_01",
+          "part_id": "1_5_035_01",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+          "command_index": 33,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0ef9923d63f09898de9976fc62f17c535e9c72700465959fa0f10100c230f9d1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -348,30 +447,39 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_035mco_1_5_035_01:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_01",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "それに資料に書かれていた生地を\n使用しているならば、通気性も期待できる。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_01:1_5_035_01:cmd-000037:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_01",
+          "part_id": "1_5_035_01",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+          "command_index": 37,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:547ab446460eb2a5b95b9c1625f9ec843f09c3dc914f7a6f16b64f3c51113d2b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -387,30 +495,39 @@
         "snapshot": "entry",
         "stepId": 14
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_035mco_1_5_035_01:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_01",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+        "command_start": 37,
+        "command_end": 37
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサーにもおすすめの一品だ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_01:1_5_035_01:cmd-000040:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_01",
+          "part_id": "1_5_035_01",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+          "command_index": 40,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:eec8ccc813ecb2084e6f13fab4da74afa497ba093428f056e330df8447d7349e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -426,26 +543,35 @@
         "snapshot": "entry",
         "stepId": 15
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_035mco_1_5_035_01:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_01",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+        "command_start": 40,
+        "command_end": 40
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "なるほど、そんなにいいスーツなんですね……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_01:1_5_035_01:cmd-000042:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_01",
+          "part_id": "1_5_035_01",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+          "command_index": 42,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a026f3dbc607410cb3b02a1339a44e5911eeb3f2e325ef506ab409f38b59252b"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -472,17 +598,28 @@
         "row_id": "1_5_035mco_1_5_035_01:step-16:text",
         "step_id": 16,
         "step_index": 15,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_01",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+        "command_start": 42,
+        "command_end": 42
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "道夫さんの感想を聞いていたら、\nとても興味を惹かれました！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_01:1_5_035_01:cmd-000044:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_01",
+          "part_id": "1_5_035_01",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+          "command_index": 44,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6e4c2f10e2bce9301babca0e7557b30f06b34a314e31a657a9499dd6c4614dc7"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -509,21 +646,32 @@
         "row_id": "1_5_035mco_1_5_035_01:step-17:text",
         "step_id": 17,
         "step_index": 16,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_01",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+        "command_start": 44,
+        "command_end": 44
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "そうか。ではCMを見た人にもそう思って\nもらえるよう、努めるとしよう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_035mco_1_5_035_01:1_5_035_01:cmd-000048:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_035mco_1_5_035_01",
+          "part_id": "1_5_035_01",
+          "file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+          "command_index": 48,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4c24768dfb47383552d8c24f36d885b8e06cb228c47f75b9068332b31f7fd856"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -539,101 +687,23 @@
         "snapshot": "entry",
         "stepId": 18
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_035mco_1_5_035_01:step-18:text",
         "step_id": 18,
         "step_index": 17,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_035_01",
+        "source_file": "assets/resources/scenariodata/1_5_035mco/scenario_1_5_035_01.json",
+        "command_start": 48,
+        "command_end": 48
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 15,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 16,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 17,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "スーツのCMに主演するお仕事",
     "episode_label": null

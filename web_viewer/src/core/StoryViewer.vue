@@ -14,7 +14,8 @@
     <!-- Spine rendering layer (background + characters) -->
     <SpineStage v-if="retainedStageStep" ref="spineStageRef" :step="retainedStageStep" :suspended="!communicationContext.needsStage" :fallbackBg="firstAvailableBg" :debug-controls="RUNTIME_DEBUG" :now-milliseconds="storyRuntimeCues.nowMilliseconds" responsive-positions portrait-framing release-owner="story-player" />
     <div ref="frameHoldRoot" v-show="frameHolding" class="held-scene" aria-hidden="true"></div>
-    <div v-if="localBuffering && !HIDE_UI" class="local-buffering" role="status" aria-live="polite">{{ localBufferingText }}</div>
+    <GsLoadingIndicator v-if="localBuffering && !HIDE_UI" class="local-buffering"
+      variant="inline" :message="localBufferingText" />
 
     <!-- Top bar -->
     <PlayerTopBar
@@ -32,7 +33,11 @@
       <Eye :size="20" />
     </button>
 
-    <!-- Voice audio player: handled by the Web Audio API to avoid IDM sniffing -->
+    <div v-if="voiceStatus === 'unavailable' && !showAdvDialogue && !HIDE_UI && !uiHidden && !backlogOpen && !viewingOfferOpen" class="voice-recovery">
+      <button @click.stop="retryCurrentVoice()">{{ uiText('player.voice.retry') }}</button>
+      <button @click.stop="retryCurrentVoice({ backend: 'media' })">{{ uiText('player.voice.compat') }}</button>
+    </div>
+    <!-- Audio output is owned by useVoicePlayer, not the scene DOM. -->
 
     <!-- UI overlay for step-specific screens -->
     <div class="ui-overlay" :class="{ 'held-underlay': frameHolding }" :aria-hidden="frameHolding ? 'true' : undefined" v-if="compiledData && !HIDE_UI && !uiHidden && (!episodeFinished || communicationCompleted)">
@@ -45,6 +50,7 @@
           :step="currentStep"
           :playing="isPlaying"
           :voice-status="voiceStatus"
+          @retry-voice="retryCurrentVoice"
           @click="goNext"
         />
       </Transition>
@@ -149,7 +155,16 @@
           <span>{{ uiText('player.settings.uiLanguage') }}</span>
           <select :value="uiLocale" @change="saveUiLocale"><option value="zh-CN">简体中文</option><option value="ja-JP">日本語</option></select>
         </label>
+        <label class="menu-setting"><span>{{ uiText('player.settings.producerName') }}</span><input class="producer-name-input" :value="producerName" type="text" autocomplete="off" :placeholder="uiText('player.settings.producerNamePlaceholder')" @input="saveProducerName($event.target.value)" /></label>
         <button @click="uiHidden = true; menuOpen = false"><EyeOff :size="19" /><span>{{ uiText('player.settings.hideUi') }}</span></button>
+        <label class="menu-setting"><span>{{ uiText('player.voice.backend') }}</span>
+          <select v-model="voiceBackend" @change="changeVoiceBackend">
+            <option value="auto">{{ uiText('player.voice.auto') }}</option>
+            <option value="webaudio">Web Audio</option>
+            <option value="media">{{ uiText('player.voice.compat') }}</option>
+          </select>
+        </label>
+        <button @click="menuOpen = false; retryCurrentVoice()">{{ uiText('backlog.replayVoice') }}</button>
         <button @click="openBacklog"><BookOpenText :size="19" /><span>{{ uiText('player.settings.backlog') }}</span></button>
         <button @click="skipEpisode"><SkipForward :size="19" /><span>{{ uiText('player.settings.skipEpisode') }}</span></button>
         <button @click="emit('back')"><LogOut :size="19" /><span>{{ uiText('player.settings.returnCatalog') }}</span></button>
@@ -159,6 +174,7 @@
     <StoryBacklog
       v-if="backlogOpen && !HIDE_UI"
       :nodes="backlogNodes"
+      :voice-node="backlogVoiceNode" :voice-status="voiceStatus"
       @close="backlogOpen = false"
       @restore="restoreFromBacklog"
       @replay-voice="replayBacklogVoice"
@@ -174,8 +190,11 @@
       <div class="complete-panel">
         <span>{{ hasNextEpisode ? 'EPISODE COMPLETE' : 'STORY COMPLETE' }}</span>
         <strong>{{ hasNextEpisode ? uiText('player.complete.episode') : uiText('player.complete.story') }}</strong>
-        <p v-if="transitioning">{{ uiText('player.complete.loadingNext') }}</p>
-        <div v-else>
+        <GsLoadingIndicator v-if="transitioning" class="complete-loading"
+          variant="inline" :message="uiText('player.complete.loadingNext')" />
+        <div v-else class="complete-actions">
+          <span v-if="queueStatus === 'idle' || queueStatus === 'loading'" role="status">{{ uiText('player.queue.loading') }}</span>
+          <button v-if="queueStatus === 'error'" @click="emit('retry-queue')">{{ uiText('player.queue.retry') }}</button>
           <button v-if="hasNextEpisode" class="primary" @click="emit('next-episode')"><SkipForward :size="18" />{{ uiText('player.complete.nextEpisode') }}</button>
           <button @click="emit('back')"><LogOut :size="18" />{{ uiText('player.settings.returnCatalog') }}</button>
         </div>
@@ -197,14 +216,17 @@
       <button v-if="!immersive.active.value || immersive.notice.value" :disabled="immersive.pending.value" @click="enterImmersive">{{ uiText('player.immersive.enter') }}</button>
       <button @click="viewingShortcutDismissed = true; immersive.notice.value = ''">{{ uiText('player.immersive.dismiss') }}</button>
     </div>
-    <div class="loading" v-if="!compiledData && !HIDE_UI">{{ uiText('player.loading') }}</div>
+    <GsLoadingIndicator class="story-data-loading" v-if="!compiledData && !HIDE_UI"
+      tone="dark" :message="uiText('player.loading')" />
   </div>
 </template>
 
 <script setup>
+import { setStoryRuntimePaused } from './story-runtime/StoryPausePolicy.js'
 import { usePlayerImmersiveMode, claimMobileViewingOffer } from '../composables/usePlayerImmersiveMode.js'
-import { ref, computed, watch, onMounted, onBeforeUnmount, onUnmounted, reactive, nextTick, defineAsyncComponent } from 'vue'
+import { ref, shallowRef, computed, watch, onMounted, onBeforeUnmount, onUnmounted, reactive, nextTick, defineAsyncComponent } from 'vue'
 import AdvUI from '../components/AdvUI.vue'
+import GsLoadingIndicator from '../components/GsLoadingIndicator.vue'
 import MobileChatScene from '../components/mobile/MobileChatScene.vue'
 import MobileCallScene from '../components/mobile/MobileCallScene.vue'
 import StageChoiceUI from '../components/choices/StageChoiceUI.vue'
@@ -218,6 +240,8 @@ import PlayerControlDock from '../components/player/PlayerControlDock.vue'
 // SpineStage is lazy-loaded so PIXI.js only loads when a story opens
 const SpineStage = defineAsyncComponent(() => import('../components/SpineStage.vue'))
 import {
+  producerName,
+  saveProducerName,
   setStoryLanguagePreferences,
   storyLanguagePreferences,
   uiLocale,
@@ -254,8 +278,11 @@ const props = defineProps({
   endStep: { type: Number, default: null },
   hasNextEpisode: { type: Boolean, default: false },
   continuousPlayback: { type: Boolean, default: false },
+  transitionPending: Boolean,
+  queueStatus: { type: String, default: 'ready' },
+  queueError: { type: String, default: '' },
 })
-const emit = defineEmits(['back', 'ready', 'readiness-change', 'step-change', 'next-episode', 'update:continuous-playback'])
+const emit = defineEmits(['back', 'ready', 'readiness-change', 'step-change', 'next-episode', 'update:continuous-playback', 'retry-queue'])
 const URL_FLAGS = new URLSearchParams(window.location.search)
 const HIDE_UI = URL_FLAGS.get('stageOnly') === '1' || URL_FLAGS.get('hideUI') === '1' || URL_FLAGS.get('transparentUI') === '1'
 const START_STEP_VALUE = URL_FLAGS.get('startStep')
@@ -344,6 +371,8 @@ const localBuffering = computed(() => initialReadyEmitted.value && runtimeReadin
   && (frameHolding.value || !frameHoldRequired.value))
 const localBufferingText = '正在准备下一段画面…'
 const voiceStatus = ref('idle')
+const voiceBackend = ref(['auto', 'webaudio', 'media'].includes(URL_FLAGS.get('voiceBackend')) ? URL_FLAGS.get('voiceBackend') : 'auto')
+const backlogVoiceNode = ref('')
 const isPlaying = ref(false)
 const menuOpen = ref(false)
 const backlogOpen = ref(false)
@@ -354,7 +383,7 @@ const skipEnabled = ref(false)
 const skipMode = ref(initialPreferences.skip_mode)
 const uiHidden = ref(initialPreferences.ui_hidden)
 const episodeFinished = ref(false)
-const transitioning = ref(false)
+const transitioning = computed(() => props.transitionPending)
 const runtimeDiagnostics = ref(null)
 const debugVisibilityOverride = ref(null)
 
@@ -445,6 +474,17 @@ function _ensureAudioCtx() {
   if (!NO_AUDIO) storyAudioSession.unlockFromUserGesture()
   playbackController?.setPaused('audio-lock', false)
 }
+
+function retryCurrentVoice(options = {}) {
+  _ensureAudioCtx()
+  if (options?.backend) voiceBackend.value = options.backend
+  voicePlayer?.setBackendMode(voiceBackend.value)
+  void voicePlayer?.retryVoice?.({ backend: voiceBackend.value })
+}
+function changeVoiceBackend() {
+  voicePlayer?.setBackendMode(voiceBackend.value)
+}
+
 
 function _resetVoiceDedup() {
   voicePlayer?.resetVoiceDedup?.()
@@ -549,7 +589,9 @@ const communicationContext = computed(() => resolveStoryPresentation({
 
 // Preserve the last stage while an opaque communication surface is visible.
 // A direct communication entry never constructs a renderer.
-const retainedStageStep = ref(null)
+// Readiness binds to the exact projected step. A deep ref would proxy this
+// plain object, making SpineStage's identity check wait forever after loading.
+const retainedStageStep = shallowRef(null)
 watch([stageStep, communicationContext], ([step, presentation]) => {
   if (compiledData.value && presentation.needsStage) retainedStageStep.value = step
 }, { immediate: true, flush: 'sync' })
@@ -568,6 +610,7 @@ if (!voicePlayer) {
     canAnimateStage: () => communicationContext.value.needsStage,
     onStateChange: state => { voiceStatus.value = state },
     audioSession: storyAudioSession,
+    backendMode: voiceBackend.value,
   })
 }
 
@@ -624,7 +667,6 @@ function finishEpisode() {
   menuOpen.value = false
   episodeFinished.value = true
   if (props.continuousPlayback && props.hasNextEpisode) {
-    transitioning.value = true
     emit('next-episode')
   }
 }
@@ -804,7 +846,9 @@ function restoreFromBacklog(nodeId) {
   if (!restoreHistoryNode(node)) restoredSceneState.value = null
 }
 
-function replayBacklogVoice(node) {
+function replayBacklogVoice(node, backend) {
+  backlogVoiceNode.value = node.node_id
+  if (backend) { voiceBackend.value = backend; voicePlayer?.setBackendMode(backend) }
   _ensureAudioCtx()
   voicePlayer?.replayVoiceDetached?.({
     ...(compiledData.value?.steps?.[node.step_index] || {}),
@@ -848,7 +892,6 @@ function goPrev() {
   if (backlogOpen.value || menuOpen.value || viewingOfferOpen.value) return
   if (communicationCompleted.value) {
     episodeFinished.value = false
-    transitioning.value = false
   }
   stopPlaybackModes('previous')
   storyRuntimeCues.cancelCurrentStep('previous')
@@ -955,16 +998,7 @@ function handleRuntimeReadinessChange(readiness) {
 }
 
 function setRuntimeSessionPaused(reason, paused) {
-  const wasPaused = runtimePauseReasons.size > 0
-  if (paused) runtimePauseReasons.add(reason)
-  else runtimePauseReasons.delete(reason)
-  const isPaused = runtimePauseReasons.size > 0
-  if (!wasPaused && isPaused) storyRuntimeCues.pause().catch(() => {})
-  if (wasPaused && !isPaused) storyRuntimeCues.resume().catch(() => {})
-  const audioTransition = paused
-    ? storyAudioSession.pause(reason)
-    : storyAudioSession.resume(reason)
-  audioTransition.catch(() => {})
+  setStoryRuntimePaused({ reasons: runtimePauseReasons, cues: storyRuntimeCues, audioSession: storyAudioSession }, reason, paused).catch(() => {})
 }
 
 function setPlaybackRate(rate) {
@@ -996,6 +1030,7 @@ function buildRuntimeDiagnostics({ includeProjector = false } = {}) {
       pause_reasons: [...runtimePauseReasons].sort(),
     },
     audio_session: storyAudioSession.inspect(),
+    voice_player: voicePlayer.getDiagnostics(),
     audio_manager: _audioManager.inspect(),
     playback: playbackController?.inspect() || null,
     step_effects: inspectStepSceneEffects(),
@@ -1081,6 +1116,7 @@ isRuntimeAutoBlocked = storyRuntimeCues.hasBlockingAuto
 onMounted(async () => {
   updateViewingViewport()
   window.addEventListener('resize', updateViewingViewport)
+  if (RUNTIME_DEBUG || URL_FLAGS.get('playerTrace') === '1') window.__GS_PLAYER_DIAGNOSTICS__ = buildRuntimeDiagnostics
   window.__STORY_PLAYBACK__ = playbackController
   window.__STORY_AUDIO__ = storyAudioSession
   document.addEventListener('visibilitychange', handleVisibilityChange)
@@ -1154,6 +1190,7 @@ onBeforeUnmount(() => {
   cleanupRuntimeCues()
   playbackController?.dispose()
   document.removeEventListener('visibilitychange', handleVisibilityChange)
+  if (window.__GS_PLAYER_DIAGNOSTICS__ === buildRuntimeDiagnostics) delete window.__GS_PLAYER_DIAGNOSTICS__
   if (window.__STORY_PLAYBACK__ === playbackController) delete window.__STORY_PLAYBACK__
   if (window.__STORY_AUDIO__ === storyAudioSession) delete window.__STORY_AUDIO__
   if (_runtimeDiagnosticsTimer) {
@@ -1191,11 +1228,24 @@ watch(currentStep, (newStep, oldStep) => {
   playbackController?.notifyStateChanged()
 })
 watch(currentStep, handleRuntimeStepChange, { immediate: true })
-watch([menuOpen, backlogOpen, episodeFinished, viewingOfferOpen], ([menu, backlog, finished, viewingOffer]) => {
-  if (menu || backlog || finished || viewingOffer) clearFadeAutoAdvance()
-  playbackController?.setPaused('overlay', menu || backlog || finished || viewingOffer)
-  setRuntimeSessionPaused('overlay', menu || backlog || finished || viewingOffer)
+watch([menuOpen, backlogOpen, episodeFinished, viewingOfferOpen], ([menu, backlog, finished, viewingOffer], previous = []) => {
+  const any = menu || backlog || finished || viewingOffer
+  if (any) clearFadeAutoAdvance()
+  playbackController?.setPaused('overlay', any)
+  for (const [reason, value] of [['menu', menu], ['backlog', backlog], ['episode-complete', finished], ['viewing-offer', viewingOffer]]) {
+    setRuntimeSessionPaused(reason, value)
+  }
+  if ([menu, backlog, finished, viewingOffer].some((value, index) => value && !previous[index]) || (previous[1] && !backlog)) {
+    _stopCurrentVoice('overlay-transition')
+    backlogVoiceNode.value = ''
+  }
 }, { immediate: true })
+// A late queue lookup must not turn a completed episode into a permanent dead end.
+watch(() => props.hasNextEpisode, hasNext => {
+  if (hasNext && episodeFinished.value && props.continuousPlayback && !transitioning.value) {
+    emit('next-episode')
+  }
+})
 watch([immersiveEligible, smallScreen, portraitScreen], ([eligible, small, portrait]) => {
   if (eligible && small && portrait && !uiHidden.value && mobileViewMode.value === 'ask' && claimMobileViewingOffer()) {
     viewingOfferOpen.value = true
@@ -1235,6 +1285,9 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 </script>
 
 <style scoped>
+.voice-recovery { position: absolute; top: var(--player-content-top); left: var(--player-edge); z-index: 32; display: flex; flex-wrap: wrap; gap: 8px; max-width: calc(100% - 2 * var(--player-edge)); }
+.voice-recovery button { min-height: 44px; padding: 8px 12px; border: 1px solid #96bbb6; border-radius: 8px; color: #176f69; background: #f7faf9; cursor: pointer; }
+
 .viewing-offer { position: absolute; inset: 0; z-index: 60; display: grid; place-items: center; padding: 20px; background: rgba(6,21,33,.7); }
 .viewing-offer-panel { box-sizing: border-box; width: min(100%, 400px); max-height: 100%; overflow: auto; padding: 24px; border-radius: 20px; background: #f7faf9; color: #193c44; box-shadow: 0 14px 50px #0006; display: grid; gap: 14px; }
 .viewing-offer h2 { margin: 0; font-size: 22px; }
@@ -1269,7 +1322,16 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
   height: 100% !important;
 }
 .held-scene { position: absolute; inset: 0; z-index: 10; overflow: hidden; pointer-events: none; }
-.local-buffering { position: absolute; z-index: 25; top: var(--player-content-top); left: var(--player-edge); max-width: calc(100% - 2 * var(--player-edge)); padding: 9px 14px; border: 1px solid rgba(255,255,255,.35); border-radius: 12px; background: rgba(16,31,40,.78); color: #fff; box-shadow: 0 10px 26px rgba(0,0,0,.22); font-size: .82rem; pointer-events: none; }
+.local-buffering {
+  position: absolute; z-index: 25;
+  top: max(var(--player-content-top), env(safe-area-inset-top, 0px));
+  left: max(var(--player-edge), env(safe-area-inset-left, 0px));
+  max-width: calc(100% - max(var(--player-edge), env(safe-area-inset-left, 0px)) - max(var(--player-edge), env(safe-area-inset-right, 0px)));
+  pointer-events: none;
+  animation: gs-step-feedback-in 100ms ease-out 160ms both;
+}
+@keyframes gs-step-feedback-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .local-buffering { animation: none; } }
 .ui-overlay {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
   z-index: 1;
@@ -1380,6 +1442,7 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 .menu-toggle input { width: 42px; height: 22px; accent-color: #12a87d; cursor: pointer; }
 .menu-setting { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 7px; min-height: 42px; padding: 0 13px; border: 1px solid #e3e8ea; border-radius: 5px; background: #f7f9fa; color: #4b5b63; font-size: .78rem; }
 .menu-setting input { width: 76px; }
+.menu-setting .producer-name-input { width: min(150px, 42vw); }
 .menu-setting select, .menu-setting input { min-height: 28px; border: 1px solid #ccd5d9; border-radius: 4px; background: #fff; color: #26343c; }
 .menu-setting small { color: #839096; }
 .episode-complete { position: absolute; inset: 0; z-index: 35; display: grid; place-items: center; background: rgba(0,0,0,.5); }
@@ -1391,7 +1454,7 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 .complete-panel > span { color: #0d9c75; font-size: .66rem; font-weight: 800; }
 .complete-panel > strong { display: block; margin: 6px 0 18px; font-size: 1.05rem; }
 .complete-panel p { margin: 8px 0 0; color: #64727a; }
-.complete-panel div { display: flex; justify-content: center; gap: 8px; }
+.complete-panel > .complete-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .complete-panel button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 0 14px; border: 1px solid #d6dfe2; border-radius: 5px; background: #fff; color: #26343c; cursor: pointer; font: inherit; }
 .complete-panel button.primary { border-color: #0d9c75; background: #0d9c75; color: #fff; }
 
@@ -1402,5 +1465,10 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 .menu-slide-enter-active, .menu-slide-leave-active { transition: transform 180ms ease, opacity 180ms ease; }
 .menu-slide-enter-from, .menu-slide-leave-to { transform: translateX(100%); opacity: 0; }
 
-.loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #333; font-size: 1.2rem; }
+.story-data-loading {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: min(22rem, calc(100% - 32px)); max-height: calc(100% - 32px);
+  overflow: auto; z-index: 25;
+}
+.complete-loading { margin-top: 8px; max-width: 100%; }
 </style>

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_047shu_1_5_047_01",
-  "logical_id": "story-collection:1_5_047shu_1_5_047_01",
+  "logical_id": "story:1_5_047shu_1_5_047_01",
   "scenario_id": "1_5_047shu_1_5_047_01",
   "text_catalog_id": "1_5_047shu_1_5_047_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_047shu_1_5_047_01.json",
-    "sha256": "sha256:5c7bf1ff6cd5110993e8acbd00a80e3fcd45d8728197d13bf1d8b11ec6260d21",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:f372cd5deb81c0f012366470b0d7e2c6612debcb31c76b6490f8f526f7f0eff6",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 25,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_047shu_1_5_047_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_047shu_1_5_047_01:1_5_047_01:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_047shu_1_5_047_01",
+          "part_id": "1_5_047_01",
+          "file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_047shu_1_5_047_01:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_047_01",
+        "source_file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_047shu_1_5_047_01:1_5_047_01:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_047shu_1_5_047_01",
+          "part_id": "1_5_047_01",
+          "file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_047shu_1_5_047_01:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_047_01",
+        "source_file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_047shu_1_5_047_01:1_5_047_01:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_047shu_1_5_047_01",
+          "part_id": "1_5_047_01",
+          "file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_047shu_1_5_047_01:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_047_01",
+        "source_file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "炭酸水のCMのお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_047shu_1_5_047_01:1_5_047_01:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_047shu_1_5_047_01",
+          "part_id": "1_5_047_01",
+          "file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:a07887e515b9a35465a22046886f994064e4d5d38abfbb648fa98a29ca7dbe3c"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,21 +212,32 @@
         "row_id": "1_5_047shu_1_5_047_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_047_01",
+        "source_file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ねえ、●●●●プロデューサー、\nこの炭酸水もらっていい？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_047shu_1_5_047_01:1_5_047_01:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_047shu_1_5_047_01",
+          "part_id": "1_5_047_01",
+          "file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:dce3977af193b4380c0ceafc92bb0855f4e43f79b9eb405d9d409ad33a171115"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "047shu",
         "sourceName": "天峰 秀"
       },
       "performance": {
@@ -195,26 +253,35 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_047shu_1_5_047_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_047_01",
+        "source_file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "構いませんが……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_047shu_1_5_047_01:1_5_047_01:cmd-000019:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_047shu_1_5_047_01",
+          "part_id": "1_5_047_01",
+          "file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+          "command_index": 19,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:40c1f4c8ebc5e0455ec66ae93bf9540822d9a6d83dc1ae3b5cf964e16c126d68"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -241,17 +308,28 @@
         "row_id": "1_5_047shu_1_5_047_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_047_01",
+        "source_file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "このあと撮影でも飲んでいただくのに、\nお腹いっぱいになりませんか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_047shu_1_5_047_01:1_5_047_01:cmd-000022:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_047shu_1_5_047_01",
+          "part_id": "1_5_047_01",
+          "file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+          "command_index": 22,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b3987ac23007cb176845e5e59fb271fb671687a95d62ab10c3b7d4896d07d88e"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -278,21 +356,32 @@
         "row_id": "1_5_047shu_1_5_047_01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_047_01",
+        "source_file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "大丈夫、一発で成功させるし。\n……ふう。この炭酸、飲みやすいんだよね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_047shu_1_5_047_01:1_5_047_01:cmd-000031:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_047shu_1_5_047_01",
+          "part_id": "1_5_047_01",
+          "file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+          "command_index": 31,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:deffb5fb8e07c5854b3e44e46c058341561afe4b7079f00fe75501a08aba2944"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "047shu",
         "sourceName": "天峰 秀"
       },
       "performance": {
@@ -309,7 +398,6 @@
         "stepId": 9
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -318,21 +406,32 @@
         "row_id": "1_5_047shu_1_5_047_01:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_047_01",
+        "source_file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "作曲してるときとか、\nもらったサンプルを飲んでるんだけど……",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_047shu_1_5_047_01:1_5_047_01:cmd-000035:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_047shu_1_5_047_01",
+          "part_id": "1_5_047_01",
+          "file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+          "command_index": 35,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e228b67387ba72d14f9cb42e75f6f994fc50b6beb5b7a0d83275338b3e505a6b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "047shu",
         "sourceName": "天峰 秀"
       },
       "performance": {
@@ -349,7 +448,6 @@
         "stepId": 10
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -358,21 +456,32 @@
         "row_id": "1_5_047shu_1_5_047_01:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_047_01",
+        "source_file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+        "command_start": 35,
+        "command_end": 35
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "飲みやすくて美味しい上に、この俺が\nCMに出演するんだから、大ヒット確定だね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_047shu_1_5_047_01:1_5_047_01:cmd-000037:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_047shu_1_5_047_01",
+          "part_id": "1_5_047_01",
+          "file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+          "command_index": 37,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f3bcfe9397d85d1df9a47b3845fe25a829b50d7899315fc21f45becd831370a6"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "047shu",
         "sourceName": "天峰 秀"
       },
       "performance": {
@@ -388,26 +497,35 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_047shu_1_5_047_01:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_047_01",
+        "source_file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+        "command_start": 37,
+        "command_end": 37
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "はい、大ヒット間違いないです！\n秀さん、期待していますね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_047shu_1_5_047_01:1_5_047_01:cmd-000039:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_047shu_1_5_047_01",
+          "part_id": "1_5_047_01",
+          "file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+          "command_index": 39,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:648e5045c7e7e04f750cd1c663b3dc6e01a3e1fd742d7ee8a30b71e291581455"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -434,17 +552,28 @@
         "row_id": "1_5_047shu_1_5_047_01:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_047_01",
+        "source_file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+        "command_start": 39,
+        "command_end": 39
       },
       "option": null
     },
     {
       "kind": "caption",
       "source_text": "撮影開始",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_047shu_1_5_047_01:1_5_047_01:cmd-000054:time_caption:000",
+        "source": {
+          "scenario_id": "1_5_047shu_1_5_047_01",
+          "part_id": "1_5_047_01",
+          "file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+          "command_index": 54,
+          "field_kind": "time_caption",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f9aecbc1aa9d75278e30c5a1849ad2c5980c5badf5d1ef5900cb7292ab227219"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -471,21 +600,32 @@
         "row_id": "1_5_047shu_1_5_047_01:step-17:caption",
         "step_id": 17,
         "step_index": 16,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_047_01",
+        "source_file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+        "command_start": 54,
+        "command_end": 54
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "「ふわあ……ん、おはよう。\nあ、炭酸水出しといてくれたんだ。アリガト」",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_047shu_1_5_047_01:1_5_047_01:cmd-000066:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_047shu_1_5_047_01",
+          "part_id": "1_5_047_01",
+          "file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+          "command_index": 66,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:78640d700d248ede971448f6a1919c4918062f34f387551f75d2c649472c7ba0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "047shu",
         "sourceName": "天峰 秀"
       },
       "performance": {
@@ -502,7 +642,6 @@
         "stepId": 21
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -511,21 +650,32 @@
         "row_id": "1_5_047shu_1_5_047_01:step-21:text",
         "step_id": 21,
         "step_index": 20,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_047_01",
+        "source_file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+        "command_start": 66,
+        "command_end": 66
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "「……ん、美味い。これ飲むとスッキリする。\n朝はやっぱり炭酸水だよね」",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_047shu_1_5_047_01:1_5_047_01:cmd-000081:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_047shu_1_5_047_01",
+          "part_id": "1_5_047_01",
+          "file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+          "command_index": 81,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:25e2b4e7984a9f19a492c1bd120dcf06d5b4507dfa8540c9ef85c5601fb315c5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "047shu",
         "sourceName": "天峰 秀"
       },
       "performance": {
@@ -542,7 +692,6 @@
         "stepId": 23
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -551,17 +700,28 @@
         "row_id": "1_5_047shu_1_5_047_01:step-23:text",
         "step_id": 23,
         "step_index": 22,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_047_01",
+        "source_file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+        "command_start": 81,
+        "command_end": 81
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "（秀さんの演技は監督やスタッフさんに大好評！\n宣言通り、一発でOKを決めた！）",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_047shu_1_5_047_01:1_5_047_01:cmd-000085:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_047shu_1_5_047_01",
+          "part_id": "1_5_047_01",
+          "file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+          "command_index": 85,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:487a22430ddfb0d5377cb3d49f4f30bbaa5c256be4883963ecdfaae8a6c5ec3f"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -588,97 +748,16 @@
         "row_id": "1_5_047shu_1_5_047_01:step-25:text",
         "step_id": 25,
         "step_index": 24,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_047_01",
+        "source_file": "assets/resources/scenariodata/1_5_047shu/scenario_1_5_047_01.json",
+        "command_start": 85,
+        "command_end": 85
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 16,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 20,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 22,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 24,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "炭酸水のCMのお仕事",
     "episode_label": null

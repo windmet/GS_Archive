@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_011min_1_5_011_02",
-  "logical_id": "story-collection:1_5_011min_1_5_011_02",
+  "logical_id": "story:1_5_011min_1_5_011_02",
   "scenario_id": "1_5_011min_1_5_011_02",
   "text_catalog_id": "1_5_011min_1_5_011_02",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_011min_1_5_011_02.json",
-    "sha256": "sha256:be8d440afac721f489dbfa41f6ecf2b1474235591412bf395e4f7647c4e62998",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:0751297e35722852e1db8f8c835e09169690ddb94879d0ebcf3a2d4bab28ed88",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 14,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_011min_1_5_011_02.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_02:1_5_011_02:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_02",
+          "part_id": "1_5_011_02",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_011min_1_5_011_02:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_02",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_02:1_5_011_02:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_02",
+          "part_id": "1_5_011_02",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_011min_1_5_011_02:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_02",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_02:1_5_011_02:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_02",
+          "part_id": "1_5_011_02",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_011min_1_5_011_02:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_02",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "デオドラント製品のCMのお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_02:1_5_011_02:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_02",
+          "part_id": "1_5_011_02",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:46e25158f0088cf128a2a148fb83b0559ad89445706814115ba7138e130465b0"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,17 +212,28 @@
         "row_id": "1_5_011min_1_5_011_02:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_02",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ぜひ、みのりさんにお願いしたいと、\n制汗剤のCMのオファーをいただきました。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_02:1_5_011_02:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_02",
+          "part_id": "1_5_011_02",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:24d26062178f391c12a1e2a68ee481c3bc689854fdfb1c26090e5e70b1b2d259"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -202,17 +260,28 @@
         "row_id": "1_5_011min_1_5_011_02:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_02",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "こちらが製品のサンプルと、\nCMの資料になります。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_02:1_5_011_02:cmd-000021:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_02",
+          "part_id": "1_5_011_02",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+          "command_index": 21,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:56414210e1762ec2542c7137d387c5d1c1dce010d17e02b3e3d0205815c2972d"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -239,21 +308,32 @@
         "row_id": "1_5_011min_1_5_011_02:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_02",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ありがとう。……へえ、制汗剤のフレグランスごとに\n演じる役の設定が変わるCMなのか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_02:1_5_011_02:cmd-000025:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_02",
+          "part_id": "1_5_011_02",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+          "command_index": 25,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bb0d9d94bab9aa94dd0b9190f2c62a04792ebe8a27ee921c77621d06930d67fe"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -270,7 +350,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -279,21 +358,32 @@
         "row_id": "1_5_011min_1_5_011_02:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_02",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "俺が1人でいろんなアイドルを演じるような\nイメージが湧くね。衣装がそれっぽいからかな？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_02:1_5_011_02:cmd-000029:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_02",
+          "part_id": "1_5_011_02",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+          "command_index": 29,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:29c6a7b36ea641eb1f4472ff18b648eb5e293afcf9a1222ea5203e3b9bbe4829"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -310,7 +400,6 @@
         "stepId": 8
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -319,21 +408,32 @@
         "row_id": "1_5_011min_1_5_011_02:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_02",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "例えばこれ、ミント系ならクールなアイドルって\nイメージだし、石鹸なら爽やかアイドルとか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_02:1_5_011_02:cmd-000033:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_02",
+          "part_id": "1_5_011_02",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+          "command_index": 33,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8fdc9fe7a870c094dc3fbeaf56fb11a108ca4b010b4d73ed1c94b2267ad5021c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -350,7 +450,6 @@
         "stepId": 9
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -359,21 +458,32 @@
         "row_id": "1_5_011min_1_5_011_02:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_02",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "何より今回の目玉の甘酸っぱいフルーツの\nフレーバーはまさに可愛いアイドル！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_02:1_5_011_02:cmd-000037:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_02",
+          "part_id": "1_5_011_02",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+          "command_index": 37,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d0262b1c707a8e7c74e092188ef653a82930c7108aa53046fce8e3961bf6612e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -390,7 +500,6 @@
         "stepId": 10
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -399,21 +508,32 @@
         "row_id": "1_5_011min_1_5_011_02:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_02",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+        "command_start": 37,
+        "command_end": 37
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ってごめん、つい熱くなっちゃった。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_02:1_5_011_02:cmd-000043:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_02",
+          "part_id": "1_5_011_02",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+          "command_index": 43,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f471a8c4a90bc4ec038d0a731b719bb3e046ae64b0c00b68c488ee8f66432325"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -430,7 +550,6 @@
         "stepId": 11
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -439,17 +558,28 @@
         "row_id": "1_5_011min_1_5_011_02:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_02",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+        "command_start": 43,
+        "command_end": 43
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "好きなことに熱くなれるのは素敵だと思います！\nその方向で一度、先方と相談してみましょう！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_02:1_5_011_02:cmd-000045:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_02",
+          "part_id": "1_5_011_02",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+          "command_index": 45,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1f0f33c2360d2df9521dd012b28cb70867964e41dfdd3856ec306cf7811ea16f"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -476,21 +606,32 @@
         "row_id": "1_5_011min_1_5_011_02:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_02",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+        "command_start": 45,
+        "command_end": 45
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "あはは、ありがとう。\n●●●●プロデューサー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_02:1_5_011_02:cmd-000050:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_02",
+          "part_id": "1_5_011_02",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+          "command_index": 50,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6a451dae0a6d8a69b72d41cc58d186ccb518527d8f91f42d6b768427ab34029e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -507,7 +648,6 @@
         "stepId": 13
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -516,21 +656,32 @@
         "row_id": "1_5_011min_1_5_011_02:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_02",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+        "command_start": 50,
+        "command_end": 50
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "商品をたくさんの人に知ってもらえるように、\n俺ももっと考えを纏めてくるよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_011min_1_5_011_02:1_5_011_02:cmd-000054:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_011min_1_5_011_02",
+          "part_id": "1_5_011_02",
+          "file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+          "command_index": 54,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c9f92627ddc9cb93ef6b2369b66b1beb8e3ddbf5ab717148ed3d1cc10ad19042"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -547,7 +698,6 @@
         "stepId": 14
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -556,92 +706,16 @@
         "row_id": "1_5_011min_1_5_011_02:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_011_02",
+        "source_file": "assets/resources/scenariodata/1_5_011min/scenario_1_5_011_02.json",
+        "command_start": 54,
+        "command_end": 54
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "デオドラント製品のCMのお仕事",
     "episode_label": null

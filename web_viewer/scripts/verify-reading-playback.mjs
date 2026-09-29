@@ -9,6 +9,7 @@ import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState
 import { useStoryPlaybackController } from '../src/core/useStoryPlaybackController.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 import { createReadingSession } from '../src/core/ReadingSession.js'
+import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
 import { buildArchiveSourceQuery, buildArchiveUrl, readArchiveRoute, readArchiveSourceRoute } from '../src/core/archiveRoute.js'
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url))
@@ -62,8 +63,9 @@ const state = { ...useArchiveNavigationState(), loading: ref(false), loadingPurp
   readingState: ref({}), readingPlaybackNotice: ref('') }
 const navigation = createArchiveNavigationCoordinator()
 let url = new URL('http://localhost/')
-const context = { ...state, navigation, readingPlaybackTarget, readArchiveSourceRoute,
+const context = { ...state, navigation, readingPlaybackTarget, readArchiveSourceRoute, isDirectScenarioEntry,
   captureActiveArchiveView: () => {},
+  primeArchiveRouteComponent: () => {},
   syncArchiveRoute: () => { url = buildArchiveUrl(url, state.currentArchiveRoute()) },
   readingSession: createReadingSession({ repository: { manifest: async () => manifest,
     load: async () => ({ status: 'ready', document }) }, publish: value => { state.readingState.value = value } }),

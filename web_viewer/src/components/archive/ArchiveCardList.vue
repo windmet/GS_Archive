@@ -96,7 +96,7 @@
           <span class="card-owner-name">{{ card.ownerReference?.displayName || '姓名待确认' }}</span>
         </span>
         <span class="card-counts">
-          {{ card.home_voice_cues?.length || 0 }} 段触摸语音 · {{ card.scenario_entries?.length || 0 }} 篇剧情
+          {{ card.home_voice_count ?? card.home_voice_cues?.length ?? 0 }} 段触摸语音 · {{ card.scenario_count ?? card.scenario_entries?.length ?? 0 }} 篇剧情
         </span>
       </button>
     </div>

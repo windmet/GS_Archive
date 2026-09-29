@@ -8,7 +8,7 @@
       <div class="identity-copy">
         <span class="domain-label">{{ story.domainLabel }}</span>
         <p class="hierarchy">{{ hierarchyLabel }}</p>
-        <h2>{{ story.title }}</h2>
+        <h2>{{ presentProducerAddressingText(story.title) }}</h2>
         <dl>
           <div><dt>剧情</dt><dd>{{ story.exists ? '已收录' : '暂未收录' }}</dd></div>
           <div v-if="story.rowCount > 1"><dt>段落</dt><dd>{{ story.rowCount }} 段</dd></div>
@@ -20,7 +20,7 @@
     <section class="synopsis-band" :class="{ empty: !story.preplaySynopsis }">
       <div class="section-label"><AlignLeft :size="16" /><span>故事简介</span></div>
       <div v-if="story.preplaySynopsis" class="synopsis-copy">
-        <h3>{{ story.preplaySynopsis.title || story.title }}</h3>
+        <h3>{{ presentProducerAddressingText(story.preplaySynopsis.title || story.title) }}</h3>
         <p>{{ story.preplaySynopsis.text }}</p>
       </div>
       <p v-else class="missing-copy">原始资料中没有独立的播放前简介。</p>
@@ -51,7 +51,7 @@
       <div class="episode-list">
         <div v-for="(card, index) in story.titleCards" :key="`${card.episode_index}-${index}`">
           <span>{{ card.label || `EP${index + 1}` }}</span>
-          <strong>{{ card.title || story.title }}</strong>
+          <strong>{{ presentProducerAddressingText(card.title || story.title) }}</strong>
         </div>
       </div>
     </section>
@@ -68,7 +68,7 @@
       <div class="related-list">
         <button v-for="entry in relatedStories" :key="entry.id" :class="{ current: entry.id === story.id }" @click="emit('select', entry)">
           <span>{{ presentIdolEpisodeLabel({ sourceName: entry.episodeLabel }) || entry.domainLabel }}</span>
-          <strong>{{ entry.title }}</strong>
+          <strong>{{ presentProducerAddressingText(entry.title) }}</strong>
           <ArrowRight :size="16" />
         </button>
       </div>
@@ -89,12 +89,14 @@ import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import { buildIdolReference } from '../../presentation/IdolReferencePresentation.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
+import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { AlignLeft, ArrowRight, BookOpen, ExternalLink, Play } from '@lucide/vue'
 
 const props = defineProps({
   story: { type: Object, default: null }, related: { type: Array, default: () => [] },
   visualUrl: { type: String, default: '' }, idolName: { type: Function, required: true },
   identity: { type: Object, default: null }, manifest: { type: Object, default: null },
+  projectedCastReferences: { type: Array, default: null },
   externalResources: { type: Array, default: () => [] },
   readingEntries: { type: Array, default: () => [] },
 })
@@ -104,7 +106,7 @@ const availableReading = computed(() => props.readingEntries.filter(entry => ent
 const hierarchyLabel = computed(() => [props.story?.sectionLabel, presentIdolEpisodeLabel({ sourceName: props.story?.episodeLabel })].filter(Boolean).join(' · ') || props.story?.domainLabel || '')
 const releaseDate = computed(() => props.story?.releaseAt >= 1577836800 ? new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium' }).format(new Date(props.story.releaseAt * 1000)) : '')
 const characters = computed(() => (props.story?.characters || []).filter(character => /^\d{3}[a-z0-9]{3}$/i.test(character)))
-const characterReferences = computed(() => characters.value.map(character =>
+const characterReferences = computed(() => props.projectedCastReferences || characters.value.map(character =>
   buildIdolReference(character, props.identity, props.manifest, `story:${props.story?.file || ''}`)))
 const relatedStories = computed(() => props.related.slice(0, 24))
 const collectionTitle = computed(() => props.story?.sectionLabel ? `${props.story.sectionLabel}的故事` : '同类故事')

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_006tsu_1_5_006_01",
-  "logical_id": "story-collection:1_5_006tsu_1_5_006_01",
+  "logical_id": "story:1_5_006tsu_1_5_006_01",
   "scenario_id": "1_5_006tsu_1_5_006_01",
   "text_catalog_id": "1_5_006tsu_1_5_006_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_006tsu_1_5_006_01.json",
-    "sha256": "sha256:2f27c33fb42a25ca52898a44ef469c04086fe1556696db90d72fc3d5a279f922",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:c006e9bb4f3e28b8d58941d05ebf68f7c7d8740ee49ad9fbdd2ab8e733ae1618",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 18,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_006tsu_1_5_006_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_006tsu_1_5_006_01:1_5_006_01:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_006tsu_1_5_006_01",
+          "part_id": "1_5_006_01",
+          "file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_006tsu_1_5_006_01:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_006_01",
+        "source_file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_006tsu_1_5_006_01:1_5_006_01:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_006tsu_1_5_006_01",
+          "part_id": "1_5_006_01",
+          "file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_006tsu_1_5_006_01:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_006_01",
+        "source_file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_006tsu_1_5_006_01:1_5_006_01:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_006tsu_1_5_006_01",
+          "part_id": "1_5_006_01",
+          "file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_006tsu_1_5_006_01:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_006_01",
+        "source_file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "ご飯パックのCMのお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_006tsu_1_5_006_01:1_5_006_01:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_006tsu_1_5_006_01",
+          "part_id": "1_5_006_01",
+          "file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:55059d1f40fc7f8ce7816ee209b4f5195f0d030716e3657f673459d36351f0e7"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,17 +212,28 @@
         "row_id": "1_5_006tsu_1_5_006_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_006_01",
+        "source_file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "よいしょ……さすがに重たいですね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_006tsu_1_5_006_01:1_5_006_01:cmd-000014:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_006tsu_1_5_006_01",
+          "part_id": "1_5_006_01",
+          "file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+          "command_index": 14,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8845b83402b397cb6f4defab5808f8b0599ed2ee86e35aa5ebc059e9bac1157f"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -202,21 +260,32 @@
         "row_id": "1_5_006tsu_1_5_006_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_006_01",
+        "source_file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "あれ、●●●●プロデューサー。\nその荷物、どうしたんですか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_006tsu_1_5_006_01:1_5_006_01:cmd-000024:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_006tsu_1_5_006_01",
+          "part_id": "1_5_006_01",
+          "file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+          "command_index": 24,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:dd8567830d4969dec431caf53e009458b404c96619f1e37531c2a237e4c05f64"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "006tsu",
         "sourceName": "柏木 翼"
       },
       "performance": {
@@ -232,26 +301,35 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_006tsu_1_5_006_01:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_006_01",
+        "source_file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "これですか？　今度、翼さんが出演する\nCMの企業から届いたんですよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_006tsu_1_5_006_01:1_5_006_01:cmd-000028:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_006tsu_1_5_006_01",
+          "part_id": "1_5_006_01",
+          "file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+          "command_index": 28,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3ae508f2ee4ec6a4a9dac796d583d99e4b1803664c4e6d5fc0eaa3dcce1584f5"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -278,21 +356,32 @@
         "row_id": "1_5_006tsu_1_5_006_01:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_006_01",
+        "source_file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "今度っていうとご飯パックの……ということは、\n●●●●プロデューサー、すごいです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_006tsu_1_5_006_01:1_5_006_01:cmd-000040:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_006tsu_1_5_006_01",
+          "part_id": "1_5_006_01",
+          "file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+          "command_index": 40,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:580950b64fa30f0a97b2adf4f0ad322457c26393a6fbcbe2e7765b2172576888"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "006tsu",
         "sourceName": "柏木 翼"
       },
       "performance": {
@@ -309,7 +398,6 @@
         "stepId": 11
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -318,21 +406,32 @@
         "row_id": "1_5_006tsu_1_5_006_01:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_006_01",
+        "source_file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+        "command_start": 40,
+        "command_end": 40
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "白米以外にもお赤飯、五目御飯……\nそれに大盛りサイズまで！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_006tsu_1_5_006_01:1_5_006_01:cmd-000048:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_006tsu_1_5_006_01",
+          "part_id": "1_5_006_01",
+          "file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+          "command_index": 48,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6ffb33a3753b63723598abea9d2c234eb3b4b3faa3b6ba2c4f4fcd5cddac8d7f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "006tsu",
         "sourceName": "柏木 翼"
       },
       "performance": {
@@ -349,7 +448,6 @@
         "stepId": 12
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -358,21 +456,32 @@
         "row_id": "1_5_006tsu_1_5_006_01:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_006_01",
+        "source_file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+        "command_start": 48,
+        "command_end": 48
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ここの商品はどれも炊き立てと同じくらい\nおいしいんですよね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_006tsu_1_5_006_01:1_5_006_01:cmd-000054:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_006tsu_1_5_006_01",
+          "part_id": "1_5_006_01",
+          "file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+          "command_index": 54,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c4dc3ad448b01964c231cff7fdc4dedc0a7fe9cba655fcd14f66a9b0c5fd96b0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "006tsu",
         "sourceName": "柏木 翼"
       },
       "performance": {
@@ -389,7 +498,6 @@
         "stepId": 13
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -398,21 +506,32 @@
         "row_id": "1_5_006tsu_1_5_006_01:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_006_01",
+        "source_file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+        "command_start": 54,
+        "command_end": 54
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "初めて食べた時、すごく驚きました。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_006tsu_1_5_006_01:1_5_006_01:cmd-000057:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_006tsu_1_5_006_01",
+          "part_id": "1_5_006_01",
+          "file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+          "command_index": 57,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:478cb7710aadb1c676844a74ce37434e83c8775ccd5cf6cb1d2ef6256b9c0e85"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "006tsu",
         "sourceName": "柏木 翼"
       },
       "performance": {
@@ -428,30 +547,39 @@
         "snapshot": "entry",
         "stepId": 14
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_006tsu_1_5_006_01:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_006_01",
+        "source_file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+        "command_start": 57,
+        "command_end": 57
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "これでおにぎりを握ってもおいしいですし、\nちょっとしたアレンジをしても……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_006tsu_1_5_006_01:1_5_006_01:cmd-000062:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_006tsu_1_5_006_01",
+          "part_id": "1_5_006_01",
+          "file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+          "command_index": 62,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:12fa3e86bebdb049264915c863ce1bd5a090db058f6609920eb684bbea7118ad"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "006tsu",
         "sourceName": "柏木 翼"
       },
       "performance": {
@@ -468,7 +596,6 @@
         "stepId": 15
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -477,21 +604,32 @@
         "row_id": "1_5_006tsu_1_5_006_01:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_006_01",
+        "source_file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+        "command_start": 62,
+        "command_end": 62
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "って、ご飯のことを考えていたら\nお腹が減ってきちゃいました。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_006tsu_1_5_006_01:1_5_006_01:cmd-000070:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_006tsu_1_5_006_01",
+          "part_id": "1_5_006_01",
+          "file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+          "command_index": 70,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b0244e6835c3e5a9922743513fbfd86c1fbd7d67c968683758a4f92c60c6ef28"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "006tsu",
         "sourceName": "柏木 翼"
       },
       "performance": {
@@ -508,7 +646,6 @@
         "stepId": 17
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -517,17 +654,28 @@
         "row_id": "1_5_006tsu_1_5_006_01:step-17:text",
         "step_id": 17,
         "step_index": 16,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_006_01",
+        "source_file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+        "command_start": 70,
+        "command_end": 70
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ふふ、この後打ち合わせの予定ですが、\nまだ時間があるので、食事にしましょうか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_006tsu_1_5_006_01:1_5_006_01:cmd-000073:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_006tsu_1_5_006_01",
+          "part_id": "1_5_006_01",
+          "file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+          "command_index": 73,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2b0a6fe93fdd535c382f5d87cfdf80181d19ee8168f750b51adac8b69d2402b6"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -554,92 +702,16 @@
         "row_id": "1_5_006tsu_1_5_006_01:step-18:text",
         "step_id": 18,
         "step_index": 17,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_006_01",
+        "source_file": "assets/resources/scenariodata/1_5_006tsu/scenario_1_5_006_01.json",
+        "command_start": 73,
+        "command_end": 73
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 16,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 17,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "ご飯パックのCMのお仕事",
     "episode_label": null

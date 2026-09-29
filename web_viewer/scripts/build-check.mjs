@@ -2,6 +2,7 @@ import { build } from 'vite'
 import { mkdir, realpath, lstat } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { archiveBuildAuditPlugin } from './lib/archive-build-audit.mjs'
 
 // Routine source compilation: never copy the local media corpus to QA output.
 const root = await realpath(fileURLToPath(new URL('..', import.meta.url)))
@@ -13,4 +14,5 @@ try {
   if ((await lstat(outDir)).isSymbolicLink()) throw new Error('Refusing linked build output')
 } catch (error) { if (error.code !== 'ENOENT') throw error }
 console.log(`Source build only; public assets stay in place. Output: ${outDir}`)
-await build({ root, configLoader: 'native', build: { outDir, emptyOutDir: true, copyPublicDir: false } })
+await build({ root, configLoader: 'native', plugins: [archiveBuildAuditPlugin(root)],
+  build: { outDir, assetsDir: '_app', emptyOutDir: true, copyPublicDir: false } })

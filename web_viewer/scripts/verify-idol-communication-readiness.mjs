@@ -51,8 +51,9 @@ await abandoned
 expectState('idle', '')
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
-assert.match(app, /watch\(\[view, currentCharacterId\],[\s\S]*?idolCommunicationReadiness\.enter\(idolCode\)/)
-assert.match(app, /@retry-communication="retryIdolCommunication"/)
+assert.doesNotMatch(app, /idolCommunicationReadiness\.enter\(idolCode\)/,
+  'idol detail must not fetch old communication indexes after its read-model cutover')
+assert.match(app, /watch\(\[view, currentCharacterId\],[\s\S]*?loadIdolDetail\(idolCode\)/)
 assert.doesNotMatch(app.match(/if \(\[([\s\S]*?)\]\.includes\(route\.view\)\)/)?.[1] || '', /'idol_detail'/,
   'idol detail route should render before communication indexes arrive')
-console.log('Idol communication readiness: entry, cache, failure/retry, switch and exit races passed')
+console.log('Idol communication readiness utility races and production leaf cutover passed')

@@ -33,11 +33,10 @@
           <ul class="performer-list"><li v-for="entry in song.performers" :key="entry.id"><ArchiveIdolReference :reference="entry.reference" density="portrait" @open="emit('open-idol', $event)" /></li></ul>
         </div>
       </section>
-      <section v-if="stageCandidate || stageLookupError" class="song-block song-stage-entry">
-        <div class="song-block-heading"><span>STAGE</span><h3>{{ stageCandidate?.stageKind === 'special_single' ? '社长特别演出' : '舞台小人' }}</h3></div>
-        <p class="song-block-note">{{ stageCandidate?.stageKind === 'special_single' ? '特别版使用社长单人 2D 剪影素材；进入后才加载演出，且不会自动播放。' : '进入后才加载舞台资源，演出不会自动播放；不继承上方试听中的演唱选择。' }}</p>
-        <button v-if="stageCandidate" class="stage-open-button" type="button" @click="emit('open-stage', { songCode: song.id, choreographyId: stageCandidate.id })">{{ stageCandidate.stageKind === 'special_single' ? '打开社长特别演出' : '打开默认舞台编成' }}</button>
-        <p v-else class="song-block-note">舞台版本目录暂时无法读取。<button class="stage-retry-button" type="button" @click="loadStageCandidate">重试</button></p>
+      <section v-if="song.stageCandidate" class="song-block song-stage-entry">
+        <div class="song-block-heading"><span>STAGE</span><h3>{{ song.stageCandidate.stageKind === 'special_single' ? '社长特别演出' : '舞台小人' }}</h3></div>
+        <p class="song-block-note">{{ song.stageCandidate.stageKind === 'special_single' ? '特别版使用社长单人 2D 剪影素材；进入后才加载演出，且不会自动播放。' : '进入后才加载舞台资源，演出不会自动播放；不继承上方试听中的演唱选择。' }}</p>
+        <button class="stage-open-button" type="button" @click="emit('open-stage', { songCode: song.id, choreographyId: song.stageCandidate.id })">{{ song.stageCandidate.stageKind === 'special_single' ? '打开社长特别演出' : '打开默认舞台编成' }}</button>
       </section>
       <section class="song-block">
         <div class="song-block-heading"><span>AUDIO</span><h3>收录音频</h3></div>
@@ -74,34 +73,13 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
 import { ChevronRight, ExternalLink } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import ArchiveSongExperimentalPlayer from './ArchiveSongExperimentalPlayer.vue'
 import ArchiveSongSinglePlayer from './ArchiveSongSinglePlayer.vue'
-import { fetchSongTimelineManifest } from '../../utils/songPerformanceData.js'
-const props = defineProps({ song: { type: Object, required: true } })
+defineProps({ song: { type: Object, required: true } })
 const emit = defineEmits(['open-song', 'open-unit', 'open-idol', 'open-related-story', 'open-stage'])
-const stageCandidate = ref(null)
-const stageLookupError = ref(false)
-let stageLookupGeneration = 0
-async function loadStageCandidate() {
-  const generation = ++stageLookupGeneration
-  stageCandidate.value = null
-  stageLookupError.value = false
-  const songCode = props.song?.id
-  if (!songCode) return
-  try {
-    const manifest = await fetchSongTimelineManifest()
-    if (generation !== stageLookupGeneration) return
-    stageCandidate.value = (manifest.songs[songCode] || [])
-      .find(entry => !entry.variant && ['choreography_candidate', 'special_single'].includes(entry.stageKind)) || null
-  } catch {
-    if (generation === stageLookupGeneration) stageLookupError.value = true
-  }
-}
-watch(() => props.song?.id, loadStageCandidate, { immediate: true })
 </script>
 
 <style scoped>
@@ -154,8 +132,7 @@ watch(() => props.song?.id, loadStageCandidate, { immediate: true })
 .song-block-heading h3 { margin: 4px 0 0; font-size: 0.94rem; }
 .song-block-note { margin: 8px 0 0; color: #7a858e; font-size: 0.72rem; }
 .stage-open-button { min-height: 44px; margin-top: 12px; padding: 0 18px; border: 0; border-radius: 22px; background: #168f87; color: #fff; font: inherit; font-size: .78rem; font-weight: 700; cursor: pointer; }
-.stage-retry-button { min-height: 44px; border: 0; background: none; color: #176f69; font: inherit; text-decoration: underline; cursor: pointer; }
-.stage-open-button:focus-visible, .stage-retry-button:focus-visible { outline: 3px solid #37a9a1; outline-offset: 3px; }
+.stage-open-button:focus-visible { outline: 3px solid #37a9a1; outline-offset: 3px; }
 .mapping-caution { margin: 12px 0 0; padding: 9px 11px; border-left: 3px solid #b08a4b; background: #fff8e9; color: #775f35; font-size: 0.72rem; line-height: 1.6; }
 .credit-list { margin: 10px 0 0; padding: 0; list-style: none; color: #4a545e; font-size: 0.78rem; line-height: 1.7; }
 .audio-stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 12px 0 0; }

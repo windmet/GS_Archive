@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_018shm_1_5_018_04",
-  "logical_id": "story-collection:1_5_018shm_1_5_018_04",
+  "logical_id": "story:1_5_018shm_1_5_018_04",
   "scenario_id": "1_5_018shm_1_5_018_04",
   "text_catalog_id": "1_5_018shm_1_5_018_04",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_018shm_1_5_018_04.json",
-    "sha256": "sha256:599354616493737b22d7026e27ff830a6a9c986eb0a524b5b1e455267cd31d3a",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:36b001185c3ecaa495c2b34af819f19e4a3a80030a65bcd42ae9f6c6fa74981d",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 14,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_018shm_1_5_018_04.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_04:1_5_018_04:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_04",
+          "part_id": "1_5_018_04",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_018shm_1_5_018_04:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_04",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_04:1_5_018_04:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_04",
+          "part_id": "1_5_018_04",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_018shm_1_5_018_04:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_04",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_04:1_5_018_04:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_04",
+          "part_id": "1_5_018_04",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_018shm_1_5_018_04:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_04",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "ダークヒーロー映画の撮影のお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_04:1_5_018_04:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_04",
+          "part_id": "1_5_018_04",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:7a2d455796d719615fcaa14e774d0402bae23890419aa0669fad7c80eb032a7f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,21 +212,32 @@
         "row_id": "1_5_018shm_1_5_018_04:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_04",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "いい画が撮れたって監督が喜んでいたけど。\n急に天候が崩れるなんて思ってもみなかったわ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_04:1_5_018_04:cmd-000015:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_04",
+          "part_id": "1_5_018_04",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+          "command_index": 15,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:90aabffa9ae0f5c1e69addad00ca8618781bb2571d571ee69ac12da741a6fb0a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -196,7 +254,6 @@
         "stepId": 5
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -205,17 +262,28 @@
         "row_id": "1_5_018shm_1_5_018_04:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_04",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "衣装が乾くまでもう少しかかるそうです。\nスタッフさんたちも急いでくれているようなのですが…",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_04:1_5_018_04:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_04",
+          "part_id": "1_5_018_04",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:25369270d3ef7abac6d5c5b721e91393ed7547cbd18055514f18f207f01cf957"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -242,21 +310,32 @@
         "row_id": "1_5_018shm_1_5_018_04:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_04",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "アタシの衣装、ヴィラン役ってことで凝ってるでしょ。\n装飾も多いし、時間がかかって当然。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_04:1_5_018_04:cmd-000022:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_04",
+          "part_id": "1_5_018_04",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+          "command_index": 22,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:de49245352d795f8cea5dee4cd42b8b13fdefcfddb33a93904e140389e59e328"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -273,7 +352,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -282,21 +360,32 @@
         "row_id": "1_5_018shm_1_5_018_04:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_04",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "それに、どのみち天気が回復しないと\n撮影の再開は出来ないんだしさ。気長に待つさね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_04:1_5_018_04:cmd-000025:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_04",
+          "part_id": "1_5_018_04",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+          "command_index": 25,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:cdb1d2a9c7f637b008ae7f91da4d96e1d4e8d1cd3c35809fc2c01328268a3eb2"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -313,7 +402,6 @@
         "stepId": 8
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -322,21 +410,32 @@
         "row_id": "1_5_018shm_1_5_018_04:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_04",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ねえ、●●●●プロデューサーちゃん。\nアタシの役の感想を聞かせてちょうだいな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_04:1_5_018_04:cmd-000031:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_04",
+          "part_id": "1_5_018_04",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+          "command_index": 31,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6ae62ce6bcd617bc6a2b82e8835e1ab52690d0460d03775887d66209d9b908d2"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -352,26 +451,35 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_018shm_1_5_018_04:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_04",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "配役を聞いた時以上に、\n翔真さんととても相性の良い役だと思いました。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_04:1_5_018_04:cmd-000033:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_04",
+          "part_id": "1_5_018_04",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+          "command_index": 33,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f4b7bb3953ccdf58e5be7bf363104cb9d5c6ccd1ecbf3789b07bdfbede89f623"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -398,21 +506,32 @@
         "row_id": "1_5_018shm_1_5_018_04:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_04",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "嬉しいことを言ってくれるじゃないの。この役を\n当たり役と言わせてみせようって気に更になったわ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_04:1_5_018_04:cmd-000037:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_04",
+          "part_id": "1_5_018_04",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+          "command_index": 37,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:eed5a1a192584d8132e3469d9cee2497f7d45e5ff33932cc2f980f0bec4c15d1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -428,26 +547,35 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_018shm_1_5_018_04:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_04",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+        "command_start": 37,
+        "command_end": 37
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "翔真さんのファンにも\nきっと喜んでもらえると思います。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_04:1_5_018_04:cmd-000040:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_04",
+          "part_id": "1_5_018_04",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+          "command_index": 40,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c7183ec3eaeeb685a04b638541a38f7c8b53deb67db9adc1c3c9a955047ca5d0"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -474,21 +602,32 @@
         "row_id": "1_5_018shm_1_5_018_04:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_04",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+        "command_start": 40,
+        "command_end": 40
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ふふ、SNSでファンが盛り上がってくれてるんだろ？\nその期待に応えてみせるよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_04:1_5_018_04:cmd-000046:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_04",
+          "part_id": "1_5_018_04",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+          "command_index": 46,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bffccc3f18720e08074000f5416c0b8e4dd000a501f075ef45f67ea67d570778"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -505,7 +644,6 @@
         "stepId": 13
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -514,17 +652,28 @@
         "row_id": "1_5_018shm_1_5_018_04:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_04",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+        "command_start": 46,
+        "command_end": 46
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "この映画がたくさんの方に見ていただけるように、\n私も協力させていただきますね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_018shm_1_5_018_04:1_5_018_04:cmd-000049:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_018shm_1_5_018_04",
+          "part_id": "1_5_018_04",
+          "file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+          "command_index": 49,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d695f214e0679d892033e3b4796e03fcf316350f742e9a21d59935aff8ac4da9"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -551,92 +700,16 @@
         "row_id": "1_5_018shm_1_5_018_04:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_018_04",
+        "source_file": "assets/resources/scenariodata/1_5_018shm/scenario_1_5_018_04.json",
+        "command_start": 49,
+        "command_end": 49
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "ダークヒーロー映画の撮影のお仕事",
     "episode_label": null

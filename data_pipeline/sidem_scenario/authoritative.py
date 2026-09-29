@@ -332,11 +332,15 @@ def _project_evidence(
 
 
 def _project_dialogue(dialogue: dict[str, Any]) -> dict[str, Any]:
+    source_text = str(dialogue.get("source_text") or "")
     output = {
         "speaker_identity": _clone(_required(dialogue.get("speaker_identity"), "dialogue.speaker_identity")),
-        "source_text": str(dialogue.get("source_text") or ""),
-        "text_ref": _clone(_required(dialogue.get("text_ref"), "dialogue.text_ref")),
+        "source_text": source_text,
     }
+    if source_text:
+        output["text_ref"] = _clone(_required(dialogue.get("text_ref"), "dialogue.text_ref"))
+    elif dialogue.get("text_ref"):
+        output["text_ref"] = _clone(dialogue["text_ref"])
     if dialogue.get("speaker_text_ref"):
         output["speaker_source_text"] = str(dialogue.get("speaker_source_text", dialogue.get("speaker", "")) or "")
         output["speaker_text_ref"] = _clone(dialogue["speaker_text_ref"])
@@ -388,7 +392,10 @@ def _project_step(step: dict[str, Any], previous: dict[str, Any] | None) -> tupl
     for key in ("episode_index", "episode_part", "chara_id", "auto_advance", "duration", "hide_dialogue", "lipSync"):
         if key in step:
             output[key] = _clone(step[key])
-    if step.get("dialogue"):
+    if step.get("dialogue") and (
+        step["dialogue"].get("source_text") or step["dialogue"].get("text_ref")
+        or step["dialogue"].get("speaker_text_ref")
+    ):
         output["dialogue"] = _project_dialogue(step["dialogue"])
     if isinstance(step.get("options"), list):
         output["options"] = [_project_option(option) for option in step["options"]]

@@ -1,5 +1,5 @@
 <template>
-  <div class="archive-shell" :class="{ 'has-inspector': hasInspector, 'is-home': activeSection === 'home', 'is-portal': activeSection === 'portal' || activeSection === 'reader' }">
+  <div class="archive-shell" :class="{ 'is-home-focus': homeFocus && activeSection === 'home', 'has-inspector': hasInspector, 'is-home': activeSection === 'home', 'is-portal': activeSection === 'portal' || activeSection === 'reader' }">
     <aside class="archive-sidebar" aria-label="资料馆导航">
       <div class="archive-brand">
         <img :src="getBrandMarkUrl()" alt="" />
@@ -47,6 +47,9 @@
     <main class="archive-content">
       <slot />
     </main>
+    <div v-if="$slots.pending" class="archive-pending-layer">
+      <slot name="pending" />
+    </div>
 
     <aside v-if="hasInspector" class="archive-inspector">
       <slot name="inspector" />
@@ -86,6 +89,7 @@ import { ARCHIVE_NAVIGATION } from '../../core/archiveRoute.js'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
 
 defineProps({
+  homeFocus: Boolean,
   activeSection: { type: String, default: 'home' },
   title: { type: String, default: '' },
   searchable: { type: Boolean, default: false },
@@ -135,10 +139,9 @@ const mobileNavigation = [
 .archive-shell.is-portal { --archive-topbar: 0px; }
 .archive-shell.is-portal .archive-topbar { display: none; }
 .archive-shell.is-portal .archive-content { grid-row: 1 / 3; }
-:global(html[data-archive-home-theme="day"]) .archive-shell.is-home .archive-sidebar { background: #102632; }
-:global(html[data-archive-home-theme="day"]) .archive-shell.is-home .archive-nav button.active { background: rgba(33,183,197,.13); }
-:global(html[data-archive-home-theme="day"]) .archive-shell.is-home .archive-nav button.active::before { background: #21b7c5; }
-:global(html[data-archive-home-theme="night"]) .archive-shell.is-home .archive-sidebar { background: #101b27; }
+.archive-shell.is-home .archive-sidebar { background: #183548; }
+.archive-shell.is-home .archive-nav button.active { background: rgba(33,183,197,.13); }
+.archive-shell.is-home .archive-nav button.active::before { background: #21b7c5; }
 .archive-sidebar {
   grid-row: 1 / -1;
   background: #17212b;
@@ -320,4 +323,35 @@ const mobileNavigation = [
   .archive-mobile-nav button:focus-visible { outline: 3px solid var(--archive-accent); outline-offset: -5px; }
   .archive-mobile-nav button + button { border-left: 1px solid #e5eeee; }
 }
+/* Same grid cell as content: never cover the separate mobile navigation row.
+   Explicitly place main as well: leaving it auto-placed would push it to a new
+   row when this overlapping item reserves row 2. Do not make main positioned;
+   that would change containing blocks for its existing absolute descendants. */
+.archive-content { grid-row: 2; }
+.archive-pending-layer {
+  grid-column: 2; grid-row: 2; z-index: 25;
+  display: flex; align-items: flex-end; justify-content: flex-end;
+  min-width: 0; min-height: 0; padding: 18px;
+  pointer-events: none;
+}
+.archive-pending-layer :deep(.gs-loading-indicator) {
+  max-width: 100%; pointer-events: none;
+  animation: gs-archive-pending-in 120ms ease-out 140ms both;
+}
+.archive-shell.is-home .archive-pending-layer,
+.archive-shell.is-portal .archive-pending-layer { grid-row: 1 / 3; }
+@keyframes gs-archive-pending-in { from { opacity: 0; } to { opacity: 1; } }
+@media (max-width: 760px) {
+  .archive-pending-layer {
+    grid-column: 1;
+    padding: 12px max(12px, var(--archive-safe-right)) 12px max(12px, var(--archive-safe-left));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .archive-pending-layer :deep(.gs-loading-indicator) { animation: none; }
+}
+.archive-shell.is-home-focus { --archive-sidebar: 0px; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+.archive-shell.is-home-focus .archive-sidebar, .archive-shell.is-home-focus .archive-topbar, .archive-shell.is-home-focus .archive-mobile-nav { display: none; }
+.archive-shell.is-home-focus .archive-content { grid-column: 1; grid-row: 1; }
+.archive-shell.is-home-focus .archive-pending-layer { grid-column: 1; grid-row: 1; }
 </style>

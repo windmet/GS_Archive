@@ -251,7 +251,7 @@ assert.match(storyCatalogComponent, /社区中文剧情/, 'story portal must exp
 assert.match(storyCatalogComponent, /open-external-resources/, 'story portal gateway must emit a navigation action')
 assert.match(
   appComponent,
-  /:external-resources="currentStoryCollectionExternalResources"/,
+  /:external-resources="EXTERNAL_STORY_RESOURCES_ENABLED \? currentStoryCollectionExternalResources : \[\]"/,
   'App must pass exact collection resources to ArchiveStoryCollection',
 )
 assert.match(
@@ -266,19 +266,15 @@ assert.match(
 )
 assert.match(
   appComponent,
-  /:external-resources="currentIdolStoryExternalResources"/,
+  /:external-resources="EXTERNAL_STORY_RESOURCES_ENABLED \? currentIdolStoryExternalResources : \[\]"/,
   'App must pass exact personal-story resources to ArchiveIdolStory',
 )
-assert.match(
-  appComponent,
-  /idolEpisodes: idolEpisodeData\.value/,
-  'dedicated navigation must resolve exact personal stories through idol_episode_index',
-)
-assert.match(
-  appComponent,
-  /'external_story_resources',[\s\S]*await ensureIdolCommunicationData\(\)/,
-  'direct external-resource routes must load idol_episode_index before rendering',
-)
+assert.match(appComponent, /const externalStoryNavigationEntries = \[\]/,
+  'withdrawn external navigation must stay empty in the live app')
+assert.doesNotMatch(appComponent, /buildExternalStoryNavigationEntries\(/,
+  'the withdrawn external registry must not join story sources in the live app')
+assert.doesNotMatch(appComponent, /ensureIdolCommunicationData|loadIdolCommunicationData|ArchiveDataRepository/,
+  'withdrawn external-resource routes must not retain the legacy archive repository')
 assert.match(
   appComponent,
   /target\?\.kind === 'idol-story'/,
@@ -286,3 +282,5 @@ assert.match(
 )
 
 console.log('External Story resource UI verified: exact mappings and safe links')
+
+await import('./verify-external-publication-off.mjs')

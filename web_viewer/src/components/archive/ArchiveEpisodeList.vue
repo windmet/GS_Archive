@@ -4,7 +4,7 @@
     <div class="episode-list">
       <button v-for="episode in unit?.episodes || []" :key="episode.id" class="episode-btn" @click="emit('select', episode)">
         <span class="episode-title">{{ episode.title || episode.id }}</span>
-        <span class="episode-count">{{ groupFileCount(episode) }} files</span>
+        <span class="episode-count">{{ episode.fileCount ?? groupFileCount(episode) }} files</span>
       </button>
     </div>
   </section>

@@ -208,7 +208,7 @@
               <button v-if="cardVoicePreviewStep(card, card.card_text_voices.normal)" class="voice-preview-btn" @click="emit('preview-voice', card.card_text_voices.normal)">演出预览</button>
             </div>
           </div>
-          <p>{{ card.texts.normal }}</p>
+          <p><span class="authored-text">{{ card.texts.normal }}</span><span class="reflowed-text">{{ reflowArchiveText(card.texts.normal) }}</span></p>
         </div>
         <div v-if="card.texts?.awakened" class="card-text-block">
           <div class="card-text-heading">
@@ -218,11 +218,11 @@
               <button v-if="cardVoicePreviewStep(card, card.card_text_voices.awakened)" class="voice-preview-btn" @click="emit('preview-voice', card.card_text_voices.awakened)">演出预览</button>
             </div>
           </div>
-          <p>{{ card.texts.awakened }}</p>
+          <p><span class="authored-text">{{ card.texts.awakened }}</span><span class="reflowed-text">{{ reflowArchiveText(card.texts.awakened) }}</span></p>
         </div>
         <div v-if="card.texts?.extra?.trim() && card.texts.extra !== '0'" class="card-text-block">
           <strong>短台词</strong>
-          <p>{{ card.texts.extra }}</p>
+          <p><span class="authored-text">{{ card.texts.extra }}</span><span class="reflowed-text">{{ reflowArchiveText(card.texts.extra) }}</span></p>
         </div>
       </section>
 
@@ -232,7 +232,7 @@
           <div v-for="(cue, index) in card.home_voice_cues" :key="cue.cue" class="voice-row">
             <div class="voice-copy">
               <strong>触摸语音 {{ index + 1 }}</strong>
-              <p v-if="cue.preview?.text">{{ cue.preview.text }}</p>
+              <p v-if="cue.preview?.text"><span class="authored-text">{{ presentProducerAddressingText(cue.preview.text) }}</span><span class="reflowed-text">{{ reflowArchiveText(presentProducerAddressingText(cue.preview.text)) }}</span></p>
             </div>
             <ArchiveVoiceRow :src="voiceUrl(cue.cue)" />
             <button v-if="cardVoicePreviewStep(card, cue)" class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
@@ -249,7 +249,7 @@
                 <strong>{{ cue.label }}</strong>
                 <small :class="`source-${cue.text_source}`">{{ cue.text?.trim() && cue.text.trim() !== '0' ? voiceSourceLabel(cue.text_source) : '仅音频' }}</small>
               </div>
-              <p v-if="cue.text?.trim() && cue.text.trim() !== '0'">{{ cue.text }}</p>
+              <p v-if="cue.text?.trim() && cue.text.trim() !== '0'"><span class="authored-text">{{ presentProducerAddressingText(cue.text) }}</span><span class="reflowed-text">{{ reflowArchiveText(presentProducerAddressingText(cue.text)) }}</span></p>
             </div>
             <ArchiveVoiceRow :src="voiceUrl(cue.cue)" />
             <button v-if="cardVoicePreviewStep(card, cue)" class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
@@ -303,6 +303,8 @@
 </template>
 
 <script setup>
+import { reflowArchiveText } from '../../presentation/ArchiveText.js'
+import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import ArchiveVoiceRow from './ArchiveVoiceRow.vue'
 import { computed, ref, watch } from 'vue'
 import { Activity, CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, HeartPulse, ImageOff, PackageOpen, Shirt } from '@lucide/vue'
@@ -591,6 +593,7 @@ function openRelation(item) {
 .release-series-cards button:disabled { cursor: default; }
 .release-series-cards img { display: block; width: 62px; height: 62px; border-radius: 4px; background: #eef1f3; object-fit: cover; }
 .release-series-cards span { display: block; overflow: hidden; margin-top: 4px; font-size: 0.62rem; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+.reflowed-text { display: none; }
 .card-text-block { border-top: 1px solid #f0f0f0; padding-top: 10px; margin-top: 10px; }
 .card-text-block:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
 .card-text-block strong { display: block; margin-bottom: 6px; color: #3157a4; font-size: 0.78rem; }
@@ -633,8 +636,12 @@ function openRelation(item) {
 @media (max-width: 700px) {
   .card-detail { padding: 10px; }
   .card-detail-head { grid-template-columns: 1fr; gap: 14px; }
-  .voice-row { grid-template-columns: 1fr auto; }
-  .voice-row audio { grid-column: 1 / -1; grid-row: 2; }
+  .authored-text { display: none; }
+  .reflowed-text { display: inline; }
+  .voice-row { grid-template-columns: minmax(0, 1fr); }
+  .voice-copy p { font-size: 0.78rem; line-height: 1.65; }
+  .voice-preview-btn { justify-self: start; }
+  .voice-row audio { grid-column: 1; }
   .card-landscape-comparison { grid-template-columns: 1fr; }
   .card-text-heading { align-items: flex-start; flex-direction: column; }
   .card-text-voice { width: 100%; }

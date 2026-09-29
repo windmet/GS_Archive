@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_008rei_1_5_008_03",
-  "logical_id": "story-collection:1_5_008rei_1_5_008_03",
+  "logical_id": "story:1_5_008rei_1_5_008_03",
   "scenario_id": "1_5_008rei_1_5_008_03",
   "text_catalog_id": "1_5_008rei_1_5_008_03",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_008rei_1_5_008_03.json",
-    "sha256": "sha256:4438f43ab37e558635e9980170710e24037d6885829c121ead30c6c8bf583450",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:c6acd70c0711d966a76a4db349ceca1c1ba1e46045febb75c9a5dcab2f837c43",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 15,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_008rei_1_5_008_03.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_008rei_1_5_008_03:1_5_008_03:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_008rei_1_5_008_03",
+          "part_id": "1_5_008_03",
+          "file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_008rei_1_5_008_03:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_008_03",
+        "source_file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_008rei_1_5_008_03:1_5_008_03:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_008rei_1_5_008_03",
+          "part_id": "1_5_008_03",
+          "file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_008rei_1_5_008_03:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_008_03",
+        "source_file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_008rei_1_5_008_03:1_5_008_03:cmd-000011:title:000",
+        "source": {
+          "scenario_id": "1_5_008rei_1_5_008_03",
+          "part_id": "1_5_008_03",
+          "file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+          "command_index": 11,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_008rei_1_5_008_03:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_008_03",
+        "source_file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "雑誌の食レポのお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_008rei_1_5_008_03:1_5_008_03:cmd-000011:title:001",
+        "source": {
+          "scenario_id": "1_5_008rei_1_5_008_03",
+          "part_id": "1_5_008_03",
+          "file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+          "command_index": 11,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:6f2469f662591055092d0f0633847c5a6e15ffa39c6434455675e620b46f5f46"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,17 +212,28 @@
         "row_id": "1_5_008rei_1_5_008_03:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_008_03",
+        "source_file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "麗さん、何を確認しているんですか？\nああ、今日レポートするメニューですね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_008rei_1_5_008_03:1_5_008_03:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_008rei_1_5_008_03",
+          "part_id": "1_5_008_03",
+          "file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d2d15ed14cf0556ae726bd54d006d3f1aaa6c564658ac0161e3991a6a93e93ab"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -202,21 +260,32 @@
         "row_id": "1_5_008rei_1_5_008_03:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_008_03",
+        "source_file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ああ、事前にどのような物を食べるのか確認して\nおこうと思ってな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_008rei_1_5_008_03:1_5_008_03:cmd-000021:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_008rei_1_5_008_03",
+          "part_id": "1_5_008_03",
+          "file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+          "command_index": 21,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4c8c4ed77a3529393a21dd7aba5487b8bc19cd8e24c217b155679485860974e0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -232,30 +301,39 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_008rei_1_5_008_03:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_008_03",
+        "source_file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "どれも美味しそうだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_008rei_1_5_008_03:1_5_008_03:cmd-000024:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_008rei_1_5_008_03",
+          "part_id": "1_5_008_03",
+          "file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+          "command_index": 24,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ca09928203f32320add2c1552f212602d03b580541be7edc584ec4b8c979d62a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -271,26 +349,35 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_008rei_1_5_008_03:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_008_03",
+        "source_file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "わあ、本当ですね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_008rei_1_5_008_03:1_5_008_03:cmd-000026:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_008rei_1_5_008_03",
+          "part_id": "1_5_008_03",
+          "file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+          "command_index": 26,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:36884642460ab5a101b812e86560d0138a532becbcabfe138d24e5e4891736a6"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -317,21 +404,32 @@
         "row_id": "1_5_008rei_1_5_008_03:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_008_03",
+        "source_file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ところで、わたしはあまり食レポの経験がないのだが\n上手くできるだろうか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_008rei_1_5_008_03:1_5_008_03:cmd-000031:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_008rei_1_5_008_03",
+          "part_id": "1_5_008_03",
+          "file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+          "command_index": 31,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1c9277c5728276b23ccb898343e42e9ac791388d411274edf651d667d7396c31"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -348,7 +446,6 @@
         "stepId": 10
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -357,21 +454,32 @@
         "row_id": "1_5_008rei_1_5_008_03:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_008_03",
+        "source_file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "練習はしてみたのだが、\n記者の望む反応ができるかどうか……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_008rei_1_5_008_03:1_5_008_03:cmd-000034:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_008rei_1_5_008_03",
+          "part_id": "1_5_008_03",
+          "file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+          "command_index": 34,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f32ab5e272c77648afa2a9847faf3842cfc2e92487051435460a57dc0b44263e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -388,7 +496,6 @@
         "stepId": 11
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -397,17 +504,28 @@
         "row_id": "1_5_008rei_1_5_008_03:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_008_03",
+        "source_file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+        "command_start": 34,
+        "command_end": 34
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "食べて感じた感想をそのまま伝えれば大丈夫ですよ。\n麗さんは食事を楽しんでください。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_008rei_1_5_008_03:1_5_008_03:cmd-000037:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_008rei_1_5_008_03",
+          "part_id": "1_5_008_03",
+          "file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+          "command_index": 37,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ca6e2ef4843e3e41f6c7f684179e125226949aea443b2af51597b3fe5de62cd5"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -434,21 +552,32 @@
         "row_id": "1_5_008rei_1_5_008_03:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_008_03",
+        "source_file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+        "command_start": 37,
+        "command_end": 37
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "食事を楽しむ……わかった。やってみよう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_008rei_1_5_008_03:1_5_008_03:cmd-000042:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_008rei_1_5_008_03",
+          "part_id": "1_5_008_03",
+          "file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+          "command_index": 42,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0ddd59e21963ff6432d653875b3995e161019d3dfda21909a6c685b4ee13c734"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -464,26 +593,35 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_008rei_1_5_008_03:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_008_03",
+        "source_file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+        "command_start": 42,
+        "command_end": 42
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "はい！　麗さんの食レポ、楽しみにしてます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_008rei_1_5_008_03:1_5_008_03:cmd-000044:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_008rei_1_5_008_03",
+          "part_id": "1_5_008_03",
+          "file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+          "command_index": 44,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:20a93fa010dce8947a80fb1dc853306c5ecdc06773cc403c7a9bf54005238c13"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -510,21 +648,32 @@
         "row_id": "1_5_008rei_1_5_008_03:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_008_03",
+        "source_file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+        "command_start": 44,
+        "command_end": 44
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ああ。\n……撮影の準備が整ったようだ。行ってくる。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_008rei_1_5_008_03:1_5_008_03:cmd-000049:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_008rei_1_5_008_03",
+          "part_id": "1_5_008_03",
+          "file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+          "command_index": 49,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5d836b6354f2930a88cbbfb6b71dd9a54cab23055cea3654ea17a2888eb6dfa7"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -541,7 +690,6 @@
         "stepId": 15
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -550,92 +698,16 @@
         "row_id": "1_5_008rei_1_5_008_03:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_008_03",
+        "source_file": "assets/resources/scenariodata/1_5_008rei/scenario_1_5_008_03.json",
+        "command_start": 49,
+        "command_end": 49
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "雑誌の食レポのお仕事",
     "episode_label": null

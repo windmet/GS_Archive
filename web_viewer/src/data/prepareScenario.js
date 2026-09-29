@@ -1,3 +1,5 @@
+import { withLoadDeadline } from '../core/AsyncLoadBoundary.js'
+import { tracePlayer } from '../core/PlayerTrace.js'
 import { createStoryAssetPriority } from '../../shared/story/StoryAssetPriority.js'
 
 /** Prepare a scenario without owning page, route, queue or loading state. */
@@ -29,13 +31,16 @@ export async function prepareScenario(name, {
     }
   }
   signal?.throwIfAborted()
-  // Revalidate the stable source URL so unchanged stories can use HTTP 304.
-  // Reader playback still checks the returned bytes against its pinned digest.
-  const response = await fetchImpl(`/data/compiled/${name}`, { cache: 'no-cache', ...(signal ? { signal } : {}) })
-  if (!isCurrent()) return null
-  if (!response.ok) throw new Error(`Failed to fetch scenario ${name}: HTTP ${response.status}`)
-  const sourceResponse = response.clone()
-  const [scenario, bytes] = await awaitOwned(Promise.all([readScenario(response), sourceResponse.arrayBuffer()]))
+  tracePlayer('scenario-request', { file: name })
+  // Reader still supplies its pinned-byte verifier. Stable URLs keep HTTP validators.
+  const [scenario, bytes] = await withLoadDeadline(async requestSignal => {
+    const response = await fetchImpl(`/data/compiled/${name}`, { cache: 'no-cache', signal: requestSignal })
+    tracePlayer('scenario-headers', { file: name, status: response.status })
+    if (!response.ok) throw new Error(`Failed to fetch scenario ${name}: HTTP ${response.status}`)
+    const sourceResponse = response.clone()
+    return Promise.all([readScenario(response), sourceResponse.arrayBuffer()])
+  }, { signal, timeoutMs: 25000, label: 'scenario-body' })
+  tracePlayer('scenario-body', { file: name, bytes: bytes.byteLength })
   if (!isCurrent()) return null
   if (!scenario || typeof scenario !== 'object' || !Array.isArray(scenario.steps)) {
     throw new Error(`Invalid scenario ${name}: steps must be an array`)
@@ -48,18 +53,18 @@ export async function prepareScenario(name, {
   signal?.throwIfAborted()
   const plan = createStoryAssetPlan(scenario, { file: name, sha256 })
   const work = Promise.all([
-    loadPlayer(),
+    withLoadDeadline(() => loadPlayer(), { signal, timeoutMs: 25000, label: 'player-module' }),
     preloadAssets(plan, progress => {
       if (isCurrent() && !signal?.aborted) onProgress?.(progress)
-    }, { signal, entryOnly: !!onBackgroundReady, priority: createStoryAssetPriority(scenario, playbackEntry), onStatus: status => {
+    }, { signal, entryOnly: !!onBackgroundReady, runtimeOwned: !!onBackgroundReady, priority: createStoryAssetPriority(scenario, playbackEntry), onStatus: status => {
       if (isCurrent() && !signal?.aborted) onStatus?.(status)
     } }),
   ])
   const [, preloaded] = await awaitOwned(work)
   signal?.throwIfAborted()
-  if (preloaded?.status?.phase === 'blocked') {
+  if (!onBackgroundReady && preloaded?.status?.phase === 'blocked') {
     throw new Error('当前入口的必要资源未能载入，请重试。')
   }
-  if (isCurrent() && preloaded?.startBackground) onBackgroundReady?.(preloaded.startBackground, preloaded.updatePriority)
+  if (isCurrent() && preloaded?.startBackground) onBackgroundReady?.(preloaded.startBackground, preloaded.updatePriority, preloaded)
   return isCurrent() ? scenario : null
 }

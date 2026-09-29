@@ -5,6 +5,8 @@ import Ajv2020 from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
 
 import { validateStoryTranslationOverlay } from '../../src/localization/story/TranslationRepository.js'
+import { collectStoryTextEvidence } from '../../src/localization/story/TranslationDiagnostics.js'
+import { validateProducerAddressingOverlay } from '../../src/localization/story/ProducerAddressing.js'
 import { compareAuthoritativeRuntimeProjection } from './authoritative-scenario-compiler.mjs'
 import { atomicWriteFrom } from './authoritative-collection-publisher.mjs'
 import { jsonBytes, resolveInside } from './authoritative-collection-candidate.mjs'
@@ -79,6 +81,7 @@ function collectTextRefs(value, refs = new Map()) {
 async function overlayEvidence(translationsRoot, scenarioId, candidate) {
   const root = path.resolve(translationsRoot)
   const refs = collectTextRefs(candidate)
+  const sourceTexts = collectStoryTextEvidence(candidate).byUnitId
   const records = []
   if (!await exists(root)) return records
   const locales = await readdir(root, { withFileTypes: true })
@@ -101,6 +104,10 @@ async function overlayEvidence(translationsRoot, scenarioId, candidate) {
       if (!refs.has(unitId)) throw new Error(`Translation unit is absent from candidate: ${unitId}`)
       if (refs.get(unitId) !== entry.source_hash) {
         throw new Error(`Translation source hash drift: ${unitId}`)
+      }
+      const source = sourceTexts.get(unitId)
+      if (!source || !validateProducerAddressingOverlay(source.sourceText, entry.text)) {
+        throw new Error(`Producer addressing slots differ from candidate: ${unitId}`)
       }
     }
     records.push({

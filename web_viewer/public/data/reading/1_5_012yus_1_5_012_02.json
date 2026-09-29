@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_012yus_1_5_012_02",
-  "logical_id": "story-collection:1_5_012yus_1_5_012_02",
+  "logical_id": "story:1_5_012yus_1_5_012_02",
   "scenario_id": "1_5_012yus_1_5_012_02",
   "text_catalog_id": "1_5_012yus_1_5_012_02",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_012yus_1_5_012_02.json",
-    "sha256": "sha256:0aa04dc49a987afa15402f31a04bdd46393b0cd53757b9f2639b20a393b520cf",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:274f5ed8a99a815a0f820f2a608082065a1eaea32133067b88eae88e2b39a6c2",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 15,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_012yus_1_5_012_02.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_012yus_1_5_012_02:1_5_012_02:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_012yus_1_5_012_02",
+          "part_id": "1_5_012_02",
+          "file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_012yus_1_5_012_02:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_012_02",
+        "source_file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_012yus_1_5_012_02:1_5_012_02:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_012yus_1_5_012_02",
+          "part_id": "1_5_012_02",
+          "file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_012yus_1_5_012_02:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_012_02",
+        "source_file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_012yus_1_5_012_02:1_5_012_02:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_012yus_1_5_012_02",
+          "part_id": "1_5_012_02",
+          "file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_012yus_1_5_012_02:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_012_02",
+        "source_file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "TVドッキリ番組で仕掛け人のお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_012yus_1_5_012_02:1_5_012_02:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_012yus_1_5_012_02",
+          "part_id": "1_5_012_02",
+          "file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:bbe39f404c0fb9b06cf9fc6e7629769476d75220d140453c68664bad5ceabc4d"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,21 +212,32 @@
         "row_id": "1_5_012yus_1_5_012_02:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_012_02",
+        "source_file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "はぁ～～～。\n緊張しすぎて心臓がバクバクしてきたぁ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_012yus_1_5_012_02:1_5_012_02:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_012yus_1_5_012_02",
+          "part_id": "1_5_012_02",
+          "file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fdcdd24ff9fcc5a0e56c150d07a6590f85abdfd8359d209f24aa5a9012bf29c3"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "012yus",
         "sourceName": "蒼井 悠介"
       },
       "performance": {
@@ -195,26 +253,35 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_012yus_1_5_012_02:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_012_02",
+        "source_file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ドッキリ番組の仕掛け人なんて、\n初めての経験ですもんね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_012yus_1_5_012_02:1_5_012_02:cmd-000019:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_012yus_1_5_012_02",
+          "part_id": "1_5_012_02",
+          "file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+          "command_index": 19,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b0252bd74d0faf99d24a35ebccbe54f55edf196386e50242d750d810cf5ce7c5"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -241,21 +308,32 @@
         "row_id": "1_5_012yus_1_5_012_02:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_012_02",
+        "source_file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "バレちゃいけないっていう緊張感が\nハンパじゃないよね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_012yus_1_5_012_02:1_5_012_02:cmd-000024:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_012yus_1_5_012_02",
+          "part_id": "1_5_012_02",
+          "file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+          "command_index": 24,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:495b5b29d412595ec62ce4d028f23ff6e07bbb682a07e5802dcba432e70bfdb5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "012yus",
         "sourceName": "蒼井 悠介"
       },
       "performance": {
@@ -272,7 +350,6 @@
         "stepId": 8
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -281,21 +358,32 @@
         "row_id": "1_5_012yus_1_5_012_02:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_012_02",
+        "source_file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "寝ている享介の部屋にオレが忍び込んで、\nバズーカみたいなクラッカーで起こすんだよね？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_012yus_1_5_012_02:1_5_012_02:cmd-000029:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_012yus_1_5_012_02",
+          "part_id": "1_5_012_02",
+          "file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+          "command_index": 29,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f9db8cee0bc5c2671bc9ffc1a2961a68a05f4db0adda03115b769a5ad04c3bab"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "012yus",
         "sourceName": "蒼井 悠介"
       },
       "performance": {
@@ -312,7 +400,6 @@
         "stepId": 9
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -321,17 +408,28 @@
         "row_id": "1_5_012yus_1_5_012_02:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_012_02",
+        "source_file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "はい！　このドッキリは、いかに物音を立てずに\nお部屋に入れるかが肝ですね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_012yus_1_5_012_02:1_5_012_02:cmd-000032:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_012yus_1_5_012_02",
+          "part_id": "1_5_012_02",
+          "file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+          "command_index": 32,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e98b83b3bbba7176c6b8a92c53104e576eda00867cc4586460ec9dd88d0a2fad"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -358,21 +456,32 @@
         "row_id": "1_5_012yus_1_5_012_02:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_012_02",
+        "source_file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+        "command_start": 32,
+        "command_end": 32
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "想像しただけでもう面白いよなぁ。\n忍び込む時にオレ、笑っちゃいそう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_012yus_1_5_012_02:1_5_012_02:cmd-000037:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_012yus_1_5_012_02",
+          "part_id": "1_5_012_02",
+          "file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+          "command_index": 37,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:da98b95d2bfb8015a04bbb6c990fdd0e19dfc2466749e62f104dc79375a51bb4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "012yus",
         "sourceName": "蒼井 悠介"
       },
       "performance": {
@@ -389,7 +498,6 @@
         "stepId": 11
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -398,21 +506,32 @@
         "row_id": "1_5_012yus_1_5_012_02:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_012_02",
+        "source_file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+        "command_start": 37,
+        "command_end": 37
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "それに、こんな時に限って双子の勘的なミラクルが\n起きてバレちゃったりして。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_012yus_1_5_012_02:1_5_012_02:cmd-000041:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_012yus_1_5_012_02",
+          "part_id": "1_5_012_02",
+          "file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+          "command_index": 41,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:90ae101571516ea2b000bb3aef4d4bc2f6b1848b84a8bef8a883f190745d6d4d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "012yus",
         "sourceName": "蒼井 悠介"
       },
       "performance": {
@@ -429,7 +548,6 @@
         "stepId": 12
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -438,17 +556,28 @@
         "row_id": "1_5_012yus_1_5_012_02:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_012_02",
+        "source_file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+        "command_start": 41,
+        "command_end": 41
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "やっぱり享介さん相手だと\nドッキリはやりにくかったりしますか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_012yus_1_5_012_02:1_5_012_02:cmd-000045:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_012yus_1_5_012_02",
+          "part_id": "1_5_012_02",
+          "file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+          "command_index": 45,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:41c6d029f50a3d9a58b333a8c8eb84f49105bc6f7f198a004c04092c4c241d3d"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -475,21 +604,32 @@
         "row_id": "1_5_012yus_1_5_012_02:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_012_02",
+        "source_file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+        "command_start": 45,
+        "command_end": 45
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ううん！　むしろ楽しみ！\n緊張してるのと同じくらいワクワクもしてるんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_012yus_1_5_012_02:1_5_012_02:cmd-000050:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_012yus_1_5_012_02",
+          "part_id": "1_5_012_02",
+          "file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+          "command_index": 50,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:daf4b833a225d562367582f0d817aed98c18c15e1c9cec16c8c5bf5071882262"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "012yus",
         "sourceName": "蒼井 悠介"
       },
       "performance": {
@@ -505,30 +645,39 @@
         "snapshot": "entry",
         "stepId": 14
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_012yus_1_5_012_02:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_012_02",
+        "source_file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+        "command_start": 50,
+        "command_end": 50
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "享介をビックリさせて絶対に面白い番組にするから、\n●●●●●●●●●●監督も楽しみにしてろよな！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_012yus_1_5_012_02:1_5_012_02:cmd-000055:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_012yus_1_5_012_02",
+          "part_id": "1_5_012_02",
+          "file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+          "command_index": 55,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:76b95504ae89a53c78571bf5b4127ddcc032bba9beb1aef8ee0356c5bb7bb0e9"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "012yus",
         "sourceName": "蒼井 悠介"
       },
       "performance": {
@@ -545,7 +694,6 @@
         "stepId": 15
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -554,92 +702,16 @@
         "row_id": "1_5_012yus_1_5_012_02:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_012_02",
+        "source_file": "assets/resources/scenariodata/1_5_012yus/scenario_1_5_012_02.json",
+        "command_start": 55,
+        "command_end": 55
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "TVドッキリ番組で仕掛け人のお仕事",
     "episode_label": null

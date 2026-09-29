@@ -91,13 +91,14 @@ export class BackgroundManager {
       resolve: resolveTransition,
       finished,
       settleOnLoad: false,
+      controller: new AbortController(),
     }
     this._bgTransition = record
     try {
       const url = this.getBgUrl(bgId)
       // A placeholder texture cannot satisfy the player's entry-background
       // readiness gate. Let missing/invalid images reach its blocked state.
-      const texture = await this.loadTextureFromUrl(url, { allowFallback: false })
+      const texture = await this.loadTextureFromUrl(url, { allowFallback: false, signal: record.controller.signal })
       if (token !== this._bgTransitionToken) return finished
 
       const newSprite = new PIXI.Sprite(texture)
@@ -158,6 +159,7 @@ export class BackgroundManager {
     const record = this._bgTransition
     if (!record) return false
     this._bgTransitionToken++
+    record.controller?.abort()
     if (record.tickerFn) this.app.ticker.remove(record.tickerFn)
     if (record.newSprite?.parent) this.bgContainer.removeChild(record.newSprite)
     record.newSprite?.destroy?.({ texture: true })

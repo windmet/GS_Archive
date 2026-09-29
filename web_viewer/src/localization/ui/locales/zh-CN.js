@@ -1,4 +1,12 @@
 export default Object.freeze({
+  'player.voice.backend': '语音播放方式',
+  'player.voice.auto': '自动选择',
+  'player.voice.compat': '兼容播放',
+  'player.voice.retry': '语音未载入 · 重试',
+  'player.voice.loading': '正在准备语音…',
+  'player.queue.loading': '正在读取下一话信息…',
+  'player.queue.retry': '重试下一话信息',
+
   'player.immersive.title': '横屏观看剧情',
   'player.immersive.description': '横屏可以更清楚地显示多人演出。也可以继续使用当前方向。',
   'player.immersive.enter': '横屏全屏观看',
@@ -32,6 +40,8 @@ export default Object.freeze({
   'player.settings.readOnly': '仅已读',
   'player.settings.all': '全部',
   'player.settings.uiLanguage': '界面语言',
+  'player.settings.producerName': 'Producer 显示名',
+  'player.settings.producerNamePlaceholder': '留空保留黑点',
   'player.settings.hideUi': '隐藏界面',
   'player.settings.backlog': '剧情回看',
   'player.settings.skipEpisode': '跳过本话',

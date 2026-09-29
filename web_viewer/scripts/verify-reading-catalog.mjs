@@ -28,6 +28,18 @@ assert.deepEqual(result.excluded.map(e => e.reason), ['source-read:ENOENT', 'str
 assert.equal((await run([{ logical_id: 'strict:published', ownership: 'native', artifacts: [{ path: 'public/data/compiled/strict.json' }] }])).candidates.length, 3)
 data['episodes/part.json'].aggregate_source.file = 'wrong.json'
 assert.ok((await run()).excluded.some(e => e.reason === 'episode-aggregate-identity-mismatch'))
+const fullSpan = await discoverReadingSources({
+  catalog: { entries: [{ file: 'whole.json', domain: 'idol_story', exists: true, resourceIds: ['root'] }] },
+  publications: [{ logical_id: 'story:whole', ownership: 'native', artifacts: [{ path: 'public/data/compiled/whole.json' }] }],
+  readCompiled: async file => {
+    if (file !== 'whole.json') throw Object.assign(Error('missing'), { code: 'ENOENT' })
+    return { data: { schema_version: 2, steps: [{ step_id: 1 }, { step_id: 20 }],
+      episodes: [{ source_scenario_id: 'root', start_step_id: 1, end_step_id: 20 }] } }
+  },
+})
+assert.equal(fullSpan.candidates[0].document_id, 'root')
+assert.equal(fullSpan.candidates[0].file, 'whole.json')
+assert.deepEqual(fullSpan.excluded, [])
 for (const file of ['../secret.json', 'episodes/../secret.json', '/root.json', 'a/b.json']) assert.ok(!READING_SOURCE_FILE.test(file))
 parents[0].file = '../secret.json'
 await assert.rejects(run(), /Invalid catalog source/)

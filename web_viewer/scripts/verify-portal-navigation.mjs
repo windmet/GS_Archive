@@ -4,6 +4,7 @@ import vm from 'node:vm'
 import { ARCHIVE_NAVIGATION, buildArchiveSourceQuery, buildArchiveUrl, buildPortalReturnQuery, readArchiveRoute, readArchiveSourceRoute, readPortalReturnRoute } from '../src/core/archiveRoute.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
+import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
 
 for (const query of [
   '?home_idol=003hok&home_cue=voice&home_costume=model',
@@ -60,11 +61,13 @@ for (const destination of [
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const restoreContext = {
+  isDirectScenarioEntry,
   ...useArchiveNavigationState(),
   navigation: createArchiveNavigationCoordinator(),
   currentScenario: { value: { steps: ['previous playback payload'] } },
   loadingPurpose: { value: 'archive-data' },
   captureActiveArchiveView: () => {},
+  primeArchiveRouteComponent: () => {},
 }
 restoreContext.playbackController = { reset: () => { restoreContext.currentScenario.value = null } }
 vm.runInNewContext(app.match(/async function applyArchiveRoute\([^]*?\n\}/)[0], restoreContext)
@@ -87,6 +90,10 @@ let release, published = 0
 const context = {
   ...nav, navigation, buildPortalReturnQuery, readPortalReturnRoute,
   archiveShellVisible: { value: true },
+  archiveDataReady: { value: true },
+  loadCardCatalog: async () => [],
+  pendingLegacyNavigation: 0,
+  legacyEntryStatus: { value: '' },
   commitView: view => { navigation.invalidate(); nav.view.value = view },
   syncArchiveRoute: () => { published++ },
   applyArchiveRoute: route => navigation.run(async intent => {
@@ -101,6 +108,7 @@ const captured = nav.portalFrom.value
 context.openArchivePortal()
 assert.equal(nav.portalFrom.value, captured, 'reopening cannot overwrite return context')
 let pending = context.closeArchivePortal()
+await new Promise(resolve => setImmediate(resolve))
 navigation.invalidate()
 nav.view.value = 'gashas'
 release()
@@ -108,6 +116,7 @@ await pending
 assert.equal(nav.view.value, 'gashas')
 assert.equal(published, 0, 'obsolete close cannot rewrite newer navigation')
 pending = context.closeArchivePortal()
+await new Promise(resolve => setImmediate(resolve))
 release()
 await pending
 assert.equal(nav.view.value, 'cards')

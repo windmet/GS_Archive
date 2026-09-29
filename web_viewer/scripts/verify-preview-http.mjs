@@ -7,7 +7,7 @@ const origin = process.argv[2]
 if (!origin || !/^https:\/\/[^/]+\/?$/.test(origin)) throw new Error('Usage: npm run verify:preview-http -- https://<preview>.pages.dev')
 const base = origin.replace(/\/$/, '')
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const manifest = JSON.parse(await fs.readFile(path.join(root, '.deploy', 'r2-manifest.json'), 'utf8'))
+const manifest = JSON.parse(await fs.readFile(path.resolve(root, process.argv[3] || '.deploy/r2-manifest.json'), 'utf8'))
 const choose = predicate => {
   const item = manifest.entries.find(predicate)
   assert.ok(item, 'Manifest does not contain a required HTTP probe')
@@ -16,7 +16,7 @@ const choose = predicate => {
 const image = choose(item => item.request_key.startsWith('assets/brand/') && item.request_key.endsWith('.png'))
 const data = choose(item => item.request_key === 'data/archive_manifest.json')
 const audio = choose(item => item.request_key.startsWith('assets/voice/') && item.request_key.endsWith('.m4a') && item.deployed_size > 32)
-const local = item => path.join(root, '.deploy', 'r2', ...item.object_key.split('/'))
+const local = item => path.join(root, item.stage || '.deploy/r2', ...item.object_key.split('/'))
 // This verifier compares served bytes against staged bytes, so it pins the
 // identity representation. Cloudflare Brotli-compresses JSON and, correctly,
 // drops Content-Length when it does; without this a transfer-coding detail

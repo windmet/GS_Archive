@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_031sak_1_5_031_02",
-  "logical_id": "story-collection:1_5_031sak_1_5_031_02",
+  "logical_id": "story:1_5_031sak_1_5_031_02",
   "scenario_id": "1_5_031sak_1_5_031_02",
   "text_catalog_id": "1_5_031sak_1_5_031_02",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_031sak_1_5_031_02.json",
-    "sha256": "sha256:b872777e63f1004c96b1fcc20c7b5c310a805a56ebe0c6a62229a8122b94296e",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:867b9db93e9508d1df2c870841a63821ccabaeb6721d10e4b6234bee0d27034f",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 19,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_031sak_1_5_031_02.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_031sak_1_5_031_02:1_5_031_02:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_031sak_1_5_031_02",
+          "part_id": "1_5_031_02",
+          "file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_031sak_1_5_031_02:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_031_02",
+        "source_file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_031sak_1_5_031_02:1_5_031_02:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_031sak_1_5_031_02",
+          "part_id": "1_5_031_02",
+          "file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_031sak_1_5_031_02:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_031_02",
+        "source_file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_031sak_1_5_031_02:1_5_031_02:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_031sak_1_5_031_02",
+          "part_id": "1_5_031_02",
+          "file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_031sak_1_5_031_02:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_031_02",
+        "source_file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "青春映画に出演するお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_031sak_1_5_031_02:1_5_031_02:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_031sak_1_5_031_02",
+          "part_id": "1_5_031_02",
+          "file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:a59993df01b60237c05ca9d1ac637e5d5c1ffb5726a0a0a7b4878b981dca62ee"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,21 +212,32 @@
         "row_id": "1_5_031sak_1_5_031_02:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_031_02",
+        "source_file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "わあ！　この学校で映画の撮影をするんだね。\n台本もバッチリ覚えてきたよ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_031sak_1_5_031_02:1_5_031_02:cmd-000019:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_031sak_1_5_031_02",
+          "part_id": "1_5_031_02",
+          "file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+          "command_index": 19,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:da065d2fcdac989d0117bcdf196c0ec9a92be57dd8df79008733af96e8ca44f5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "031sak",
         "sourceName": "水嶋 咲"
       },
       "performance": {
@@ -196,7 +254,6 @@
         "stepId": 5
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -205,17 +262,28 @@
         "row_id": "1_5_031sak_1_5_031_02:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_031_02",
+        "source_file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "小説が原作の青春映画になりますが、\n読んでみてどうでしたか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_031sak_1_5_031_02:1_5_031_02:cmd-000024:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_031sak_1_5_031_02",
+          "part_id": "1_5_031_02",
+          "file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+          "command_index": 24,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4bd85fb931ef76ec316a002edd5d2727943e013b3cd78e10dd16642207cb23d1"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -242,21 +310,32 @@
         "row_id": "1_5_031sak_1_5_031_02:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_031_02",
+        "source_file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "すっごく面白かったー！\nあたしが演じる役の登場シーンを読んだ時にね……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_031sak_1_5_031_02:1_5_031_02:cmd-000030:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_031sak_1_5_031_02",
+          "part_id": "1_5_031_02",
+          "file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+          "command_index": 30,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ff28dcddaae45d5d6a27c0dda02759becbe3243e2e17de79e079e3b268251f66"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "031sak",
         "sourceName": "水嶋 咲"
       },
       "performance": {
@@ -273,7 +352,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -282,21 +360,32 @@
         "row_id": "1_5_031sak_1_5_031_02:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_031_02",
+        "source_file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+        "command_start": 30,
+        "command_end": 30
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "この子を演じるんだなーって思ったら、\nパピプペッとワクワクしたんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_031sak_1_5_031_02:1_5_031_02:cmd-000038:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_031sak_1_5_031_02",
+          "part_id": "1_5_031_02",
+          "file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+          "command_index": 38,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e8f8170f39ba941e447e497b0b9208d5b298f2f7e906af32c7ff3a0b58ed5c9e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "031sak",
         "sourceName": "水嶋 咲"
       },
       "performance": {
@@ -313,7 +402,6 @@
         "stepId": 8
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -322,21 +410,32 @@
         "row_id": "1_5_031sak_1_5_031_02:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_031_02",
+        "source_file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+        "command_start": 38,
+        "command_end": 38
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "それにチアリーディング部の衣装もカワイイよね！\nあと制服も！　早く着たいな～。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_031sak_1_5_031_02:1_5_031_02:cmd-000046:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_031sak_1_5_031_02",
+          "part_id": "1_5_031_02",
+          "file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+          "command_index": 46,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0f31ba94407f1ff7ba5b545cd291db243cea27ba1bd9b4f498ea73688a40cf29"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "031sak",
         "sourceName": "水嶋 咲"
       },
       "performance": {
@@ -353,7 +452,6 @@
         "stepId": 9
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -362,17 +460,28 @@
         "row_id": "1_5_031sak_1_5_031_02:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_031_02",
+        "source_file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+        "command_start": 46,
+        "command_end": 46
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "その前に、スタッフと共演者の方に\n挨拶をしに行きましょう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_031sak_1_5_031_02:1_5_031_02:cmd-000050:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_031sak_1_5_031_02",
+          "part_id": "1_5_031_02",
+          "file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+          "command_index": 50,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a7edb731ced951b44b2a10273013554d631c304b4fae374d0a627dfc5e422e76"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -399,17 +508,28 @@
         "row_id": "1_5_031sak_1_5_031_02:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_031_02",
+        "source_file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+        "command_start": 50,
+        "command_end": 50
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "顔合わせと台本の読み合わせ以来ですし、\n私も一緒に行きます。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_031sak_1_5_031_02:1_5_031_02:cmd-000054:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_031sak_1_5_031_02",
+          "part_id": "1_5_031_02",
+          "file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+          "command_index": 54,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fbd85f3e0b3a60ea3895de31e92e260b008a97be0f00364bf5a7c002bf62a372"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -436,21 +556,32 @@
         "row_id": "1_5_031sak_1_5_031_02:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_031_02",
+        "source_file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+        "command_start": 54,
+        "command_end": 54
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "あ、そうだった！　挨拶は大事だもんね。\nそれじゃ、張り切っていこー♪",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_031sak_1_5_031_02:1_5_031_02:cmd-000061:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_031sak_1_5_031_02",
+          "part_id": "1_5_031_02",
+          "file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+          "command_index": 61,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9c015f180561c526ef7299fafc14364c6d594f4458dd3972647ff38b56bbd976"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "031sak",
         "sourceName": "水嶋 咲"
       },
       "performance": {
@@ -467,7 +598,6 @@
         "stepId": 12
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -476,21 +606,32 @@
         "row_id": "1_5_031sak_1_5_031_02:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_031_02",
+        "source_file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+        "command_start": 61,
+        "command_end": 61
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "水嶋咲、パピッと登場！\n撮影が始まるの、ずっと楽しみにしてたんだ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_031sak_1_5_031_02:1_5_031_02:cmd-000083:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_031sak_1_5_031_02",
+          "part_id": "1_5_031_02",
+          "file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+          "command_index": 83,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:84ec84da680ec75aee50f31a8b15a21ee420b9769da42c314af907c99169d159"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "031sak",
         "sourceName": "水嶋 咲"
       },
       "performance": {
@@ -507,7 +648,6 @@
         "stepId": 18
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -516,21 +656,32 @@
         "row_id": "1_5_031sak_1_5_031_02:step-18:text",
         "step_id": 18,
         "step_index": 17,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_031_02",
+        "source_file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+        "command_start": 83,
+        "command_end": 83
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "頑張って演じるから、みんなよろしくね♪",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_031sak_1_5_031_02:1_5_031_02:cmd-000089:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_031sak_1_5_031_02",
+          "part_id": "1_5_031_02",
+          "file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+          "command_index": 89,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:66a64bc02322cc031f1c7a9cea1a1b35bf91e08e4c5f629a52029b81530474e4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "031sak",
         "sourceName": "水嶋 咲"
       },
       "performance": {
@@ -547,7 +698,6 @@
         "stepId": 19
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -556,92 +706,16 @@
         "row_id": "1_5_031sak_1_5_031_02:step-19:text",
         "step_id": 19,
         "step_index": 18,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_031_02",
+        "source_file": "assets/resources/scenariodata/1_5_031sak/scenario_1_5_031_02.json",
+        "command_start": 89,
+        "command_end": 89
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 17,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 18,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "青春映画に出演するお仕事",
     "episode_label": null

@@ -3,6 +3,16 @@
 This is a Preview-only deployment contract. Do not attach a production domain or
 interpret a Pages `master` build as production acceptance.
 
+## Opt-in structured gzip rollout (2026-09-24)
+
+The new `gzip-v1` channel is **off by default**. Its schema-3 source baseline,
+canary, structured-resource delta, metadata-aware upload plan and acceptance
+instructions are in [STRUCTURED_GZIP_ROLLOUT.md](STRUCTURED_GZIP_ROLLOUT.md).
+The existing `.deploy/r2` and schema-2 manifest below remain untouched. Do not
+enable `ARCHIVE_GZIP_MODE=all` or use the legacy full export as a complete release
+after enabling gzip until the v3 delta and current non-gzip source changes have
+been reconciled and accepted on the target Preview environment.
+
 ## Deployment transform: lossless WebP
 
 Runtime URLs are a frozen contract. Story JSON, Spine `.atlas` files and the
@@ -80,7 +90,9 @@ whole corpus is converted in one pass rather than split by class.
 
 ## Architecture
 
-- `npm run build:preview` compiles only `index.html` and `/_app/*` into `dist`.
+- `npm run build:preview` compiles `index.html` and `/_app/*` into `dist`, then
+  copies the Git-tracked JSON files under `public/translations` to
+  `dist/translations`. It does not copy the full public resource corpus.
 - Pages Functions handle `/assets/*` and `/data/*` using the private R2 binding
   `ARCHIVE_ASSETS`. Git does not contain the full local `public` corpus, so both
   prefixes must come from R2. The default Vite `build` remains unchanged.

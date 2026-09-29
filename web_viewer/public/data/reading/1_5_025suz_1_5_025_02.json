@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_025suz_1_5_025_02",
-  "logical_id": "story-collection:1_5_025suz_1_5_025_02",
+  "logical_id": "story:1_5_025suz_1_5_025_02",
   "scenario_id": "1_5_025suz_1_5_025_02",
   "text_catalog_id": "1_5_025suz_1_5_025_02",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_025suz_1_5_025_02.json",
-    "sha256": "sha256:9d41116f49366d889086b7209dff08dbffc20deb00695d9d520e1663a5c700a3",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:1694e60e59bc499fd804c60118f31a5346cfb73db008a686971a27f4ddeec0d2",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 14,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_025suz_1_5_025_02.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_025suz_1_5_025_02:1_5_025_02:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_025suz_1_5_025_02",
+          "part_id": "1_5_025_02",
+          "file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_025suz_1_5_025_02:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_025_02",
+        "source_file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_025suz_1_5_025_02:1_5_025_02:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_025suz_1_5_025_02",
+          "part_id": "1_5_025_02",
+          "file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_025suz_1_5_025_02:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_025_02",
+        "source_file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_025suz_1_5_025_02:1_5_025_02:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_025suz_1_5_025_02",
+          "part_id": "1_5_025_02",
+          "file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_025suz_1_5_025_02:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_025_02",
+        "source_file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "ラジオでゲスト出演するお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_025suz_1_5_025_02:1_5_025_02:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_025suz_1_5_025_02",
+          "part_id": "1_5_025_02",
+          "file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:bf022b5515c50c14359757a62a65b866a43c60cea4dfdf638176a0859d749748"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,17 +212,28 @@
         "row_id": "1_5_025suz_1_5_025_02:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_025_02",
+        "source_file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ラジオ収録お疲れさまでした。\nゲストでの出演でしたが、どうでしたか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_025suz_1_5_025_02:1_5_025_02:cmd-000014:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_025suz_1_5_025_02",
+          "part_id": "1_5_025_02",
+          "file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+          "command_index": 14,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:26c71645260be8dd63bbd234acdcf8b6ad3b516457943b958db71aaed7b01faf"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -202,21 +260,32 @@
         "row_id": "1_5_025suz_1_5_025_02:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_025_02",
+        "source_file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "スッゲー楽しかった！\nMCが気さくな人でよぉ、いろんなことを話したぜ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_025suz_1_5_025_02:1_5_025_02:cmd-000020:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_025suz_1_5_025_02",
+          "part_id": "1_5_025_02",
+          "file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+          "command_index": 20,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:93332203b08f5fdef496268697280c01ddfc293a650488a8622748a8da2d5a9a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -233,7 +302,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -242,17 +310,28 @@
         "row_id": "1_5_025suz_1_5_025_02:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_025_02",
+        "source_file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "朱雀さん、とてもイキイキしていましたよね。\n心から楽しんでいるのが伝わってきました！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_025suz_1_5_025_02:1_5_025_02:cmd-000023:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_025suz_1_5_025_02",
+          "part_id": "1_5_025_02",
+          "file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+          "command_index": 23,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:132cd19e6f610d96790c592aecda4dea3b9bb1f8c7f24340e14366e56da060dd"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -279,17 +358,28 @@
         "row_id": "1_5_025suz_1_5_025_02:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_025_02",
+        "source_file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "印象に残ったコーナーはありますか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_025suz_1_5_025_02:1_5_025_02:cmd-000028:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_025suz_1_5_025_02",
+          "part_id": "1_5_025_02",
+          "file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+          "command_index": 28,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:575f011f96184b8b7700f4a58d2d7e673647e4eb8b0a8d04b3898526249149a3"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -316,21 +406,32 @@
         "row_id": "1_5_025suz_1_5_025_02:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_025_02",
+        "source_file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "どのコーナーも楽しかったけど、\nやっぱ悩み相談のコーナーだな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_025suz_1_5_025_02:1_5_025_02:cmd-000033:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_025suz_1_5_025_02",
+          "part_id": "1_5_025_02",
+          "file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+          "command_index": 33,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ba9f3cd42753bc5307d2c863f6c24f63113cac203c113021114b0d89db037c5e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -347,7 +448,6 @@
         "stepId": 9
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -356,21 +456,32 @@
         "row_id": "1_5_025suz_1_5_025_02:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_025_02",
+        "source_file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "オレと同年代のリスナーの相談に乗ったけどよぉ、\nみんないろんなことで悩んでんだな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_025suz_1_5_025_02:1_5_025_02:cmd-000038:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_025suz_1_5_025_02",
+          "part_id": "1_5_025_02",
+          "file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+          "command_index": 38,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:abd1bc982c44851322a0de34b68e43d10f15e366b82e19de90537e3120d4301e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -387,7 +498,6 @@
         "stepId": 10
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -396,21 +506,32 @@
         "row_id": "1_5_025suz_1_5_025_02:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_025_02",
+        "source_file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+        "command_start": 38,
+        "command_end": 38
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "にしても、恋愛の相談がきた時は焦ったぜ。\nどうにもああいうのは苦手でよぉ……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_025suz_1_5_025_02:1_5_025_02:cmd-000043:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_025suz_1_5_025_02",
+          "part_id": "1_5_025_02",
+          "file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+          "command_index": 43,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d61ccc013136790aef1a8492e8939ba0e3f30e14c78863f0f25e71dcba987114"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -427,7 +548,6 @@
         "stepId": 11
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -436,21 +556,32 @@
         "row_id": "1_5_025suz_1_5_025_02:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_025_02",
+        "source_file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+        "command_start": 43,
+        "command_end": 43
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "なんとか答えたけど、あれでよかったのか……？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_025suz_1_5_025_02:1_5_025_02:cmd-000048:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_025suz_1_5_025_02",
+          "part_id": "1_5_025_02",
+          "file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+          "command_index": 48,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:068144a0490383646cc88a3774a2cba0c96c6fe5e96e5136ea2348030b4de73f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -466,26 +597,35 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_025suz_1_5_025_02:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_025_02",
+        "source_file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+        "command_start": 48,
+        "command_end": 48
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "朱雀さんの人柄が現れる、誠実な回答でしたよ。\nスタッフもとてもよかったとおっしゃっていました。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_025suz_1_5_025_02:1_5_025_02:cmd-000052:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_025suz_1_5_025_02",
+          "part_id": "1_5_025_02",
+          "file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+          "command_index": 52,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7b5123e2988058787210f3d0035b042c87282f32a12d062ebe418a96227bdc35"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -512,21 +652,32 @@
         "row_id": "1_5_025suz_1_5_025_02:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_025_02",
+        "source_file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+        "command_start": 52,
+        "command_end": 52
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ほ、ホントか！？\nへへッ、困ってるヤツの力になれてよかったぜッ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_025suz_1_5_025_02:1_5_025_02:cmd-000058:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_025suz_1_5_025_02",
+          "part_id": "1_5_025_02",
+          "file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+          "command_index": 58,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2c7dcdedfc76dd1546b9416228012feac151628feffe88023eee1df1cffdbb4a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -543,7 +694,6 @@
         "stepId": 14
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -552,92 +702,16 @@
         "row_id": "1_5_025suz_1_5_025_02:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_025_02",
+        "source_file": "assets/resources/scenariodata/1_5_025suz/scenario_1_5_025_02.json",
+        "command_start": 58,
+        "command_end": 58
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "ラジオでゲスト出演するお仕事",
     "episode_label": null

@@ -1,16 +1,25 @@
 import { computed, ref } from 'vue'
 import { setUiLocale, uiLocale } from '../localization/ui/UiLocaleStore.js'
+import { PlayerPreferencesRepository } from '../core/story-runtime/PlayerPreferencesRepository.js'
 
 export { uiLocale }
 export const storyContentMode = ref('original')
 export const storyTranslationLocale = ref('zh-CN')
 export const bilingualPrimary = ref('original')
+const producerPreferences = new PlayerPreferencesRepository()
+export const producerName = ref(producerPreferences.load().producer_name)
+
+export function saveProducerName(value) {
+  if (typeof value !== 'string') throw new TypeError('Producer name must be a string')
+  producerName.value = producerPreferences.update({ producer_name: value }).producer_name
+}
 
 export const storyLanguagePreferences = computed(() => ({
   story_content_mode: storyContentMode.value,
   story_translation_locale: storyTranslationLocale.value,
   bilingual_primary: bilingualPrimary.value,
   missing_translation_policy: 'fallback-source',
+  producer_name: producerName.value,
 }))
 
 function legacyModeFromPreferences() {
@@ -35,6 +44,7 @@ export function setLanguageMode(mode) {
 }
 
 export function setStoryLanguagePreferences(preferences = {}) {
+  if (typeof preferences.producer_name === 'string') producerName.value = preferences.producer_name
   if (['zh-CN', 'ja-JP'].includes(preferences.ui_locale)) setUiLocale(preferences.ui_locale)
   if (['original', 'translation', 'bilingual'].includes(preferences.story_content_mode)) {
     storyContentMode.value = preferences.story_content_mode

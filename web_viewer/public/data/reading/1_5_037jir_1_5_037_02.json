@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_037jir_1_5_037_02",
-  "logical_id": "story-collection:1_5_037jir_1_5_037_02",
+  "logical_id": "story:1_5_037jir_1_5_037_02",
   "scenario_id": "1_5_037jir_1_5_037_02",
   "text_catalog_id": "1_5_037jir_1_5_037_02",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_037jir_1_5_037_02.json",
-    "sha256": "sha256:40e2fc6a8a8b45fec1800a6721e2537fc670d8c22455a5fd9c3c68bf434599da",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:27a1e0aa7f7dae8256a3b85b6c1c5ee5c9b2d769914a58a30d845c5805e1afb5",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 14,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_037jir_1_5_037_02.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_02:1_5_037_02:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_02",
+          "part_id": "1_5_037_02",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_037jir_1_5_037_02:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_02",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_02:1_5_037_02:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_02",
+          "part_id": "1_5_037_02",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_037jir_1_5_037_02:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_02",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_02:1_5_037_02:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_02",
+          "part_id": "1_5_037_02",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_037jir_1_5_037_02:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_02",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "競馬のCMに出演するお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_02:1_5_037_02:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_02",
+          "part_id": "1_5_037_02",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:74a710c7457ed29b5d1b971f549fb593485294cf147715d142f5ef36fe55247a"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,17 +212,28 @@
         "row_id": "1_5_037jir_1_5_037_02:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_02",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "次郎さん、競馬のCMの仕事が決まりました！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_02:1_5_037_02:cmd-000014:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_02",
+          "part_id": "1_5_037_02",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+          "command_index": 14,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bbe98da8f922c1a49cc0335ab0fe29133480c4f10fc6f432066aecd5ebedf9b8"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -202,21 +260,32 @@
         "row_id": "1_5_037jir_1_5_037_02:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_02",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "えっ、競馬だって！？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_02:1_5_037_02:cmd-000018:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_02",
+          "part_id": "1_5_037_02",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+          "command_index": 18,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:82da56fa8e9a90d0a6e6826ae0245a4947c912444683b3e5d83a8637a3764b1b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -232,26 +301,35 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_037jir_1_5_037_02:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_02",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "はい！　こちらが資料になります。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_02:1_5_037_02:cmd-000022:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_02",
+          "part_id": "1_5_037_02",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+          "command_index": 22,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a7ae1547544bab84bf0dcb91d17a67ef2533bd28fdb9072f4d8d02e5e25e519c"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -278,21 +356,32 @@
         "row_id": "1_5_037jir_1_5_037_02:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_02",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "どれどれ……。\nおっ、あそこの競馬場で撮影するのね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_02:1_5_037_02:cmd-000029:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_02",
+          "part_id": "1_5_037_02",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+          "command_index": 29,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fa61069e1876bda0a66dbadfa8445b11204f257a62e82a6a2f6eaf0f4fdf8889"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -309,7 +398,6 @@
         "stepId": 8
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -318,21 +406,32 @@
         "row_id": "1_5_037jir_1_5_037_02:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_02",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "なっ、こ、これは……！　\nあの名馬と共演できるってホント！？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_02:1_5_037_02:cmd-000035:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_02",
+          "part_id": "1_5_037_02",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+          "command_index": 35,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3563dae920bbd9a422cca1f6125245d4d7b3852b702fe53b48095cbf394c203d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -349,7 +448,6 @@
         "stepId": 9
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -358,17 +456,28 @@
         "row_id": "1_5_037jir_1_5_037_02:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_02",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+        "command_start": 35,
+        "command_end": 35
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "は、はい！　ホントです！！\n次郎さんには競走馬と共演していただきますっ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_02:1_5_037_02:cmd-000037:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_02",
+          "part_id": "1_5_037_02",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+          "command_index": 37,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:99fcb2159f72faf3c20ba22b8f06ed98d4a5ea94bd98388e4b34bfbdc16099d9"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -395,21 +504,32 @@
         "row_id": "1_5_037jir_1_5_037_02:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_02",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+        "command_start": 37,
+        "command_end": 37
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "あ……はは、ごめんね。\n競馬のことになるとつい熱くなっちゃって。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_02:1_5_037_02:cmd-000041:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_02",
+          "part_id": "1_5_037_02",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+          "command_index": 41,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9cbcf45f6b25d220adcdb4c4ce2619945c5130f6295d2386a665c1a0ffe0bc47"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -425,30 +545,39 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_037jir_1_5_037_02:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_02",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+        "command_start": 41,
+        "command_end": 41
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "でもこの名馬、すごく縁起がいいって\n言われててさ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_02:1_5_037_02:cmd-000045:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_02",
+          "part_id": "1_5_037_02",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+          "command_index": 45,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:452e45af13c88cc5d9946b703c582921bb6cde187d6752d16b4101f4c4a4eb3f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -464,30 +593,39 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_037jir_1_5_037_02:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_02",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+        "command_start": 45,
+        "command_end": 45
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "共演したら運気が舞い込んで、\n億万長者になれたりして……でへへっ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_02:1_5_037_02:cmd-000049:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_02",
+          "part_id": "1_5_037_02",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+          "command_index": 49,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a3cbdd87f6710e9aa90a399975459cb04918f88fe2a11f50d404f6238f087340"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -504,7 +642,6 @@
         "stepId": 13
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -513,21 +650,32 @@
         "row_id": "1_5_037jir_1_5_037_02:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_02",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+        "command_start": 49,
+        "command_end": 49
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ま、なんにせよ頑張りますか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_037jir_1_5_037_02:1_5_037_02:cmd-000052:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_037jir_1_5_037_02",
+          "part_id": "1_5_037_02",
+          "file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+          "command_index": 52,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:42f5fd18a9712303e3af326b414cff0273661055475edae4af89ed79e0f566fd"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -543,101 +691,23 @@
         "snapshot": "entry",
         "stepId": 14
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_037jir_1_5_037_02:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_037_02",
+        "source_file": "assets/resources/scenariodata/1_5_037jir/scenario_1_5_037_02.json",
+        "command_start": 52,
+        "command_end": 52
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "競馬のCMに出演するお仕事",
     "episode_label": null

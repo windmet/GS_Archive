@@ -1,4 +1,5 @@
 import { validateStoryTranslationOverlay } from './TranslationRepository.js'
+import { validateProducerAddressingOverlay } from './ProducerAddressing.js'
 
 const UNIT_ID_PATTERN = /^story-text:v1:([A-Za-z0-9._-]+):([A-Za-z0-9._-]+):cmd-([0-9]{6}):([A-Za-z0-9._-]+):([0-9]{3})$/
 const BIDI_OR_CONTROL_PATTERN = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/u
@@ -174,6 +175,8 @@ export function diagnoseStoryTranslations({ evidence, overlay, locale = null } =
       diagnostics.push(diagnostic('missing', unitId, 'translation entry is missing', 'warning'))
       continue
     }
+    const slotsValid = typeof entry.text === 'string'
+      && validateProducerAddressingOverlay(source.sourceText, entry.text)
     if (entry.source_hash !== source.sourceHash) {
       diagnostics.push(diagnostic('stale', unitId, 'translation source hash does not match current evidence'))
     } else {
@@ -181,6 +184,9 @@ export function diagnoseStoryTranslations({ evidence, overlay, locale = null } =
     }
     if (typeof entry.text === 'string' && entry.text.trim().length === 0) {
       diagnostics.push(diagnostic('invalid_entry', unitId, 'translation text is empty or whitespace-only'))
+    }
+    if (typeof entry.text === 'string' && !slotsValid) {
+      diagnostics.push(diagnostic('invalid_entry', unitId, 'Producer addressing slots do not match source'))
     }
     if (typeof entry.text === 'string' && BIDI_OR_CONTROL_PATTERN.test(entry.text)) {
       diagnostics.push(diagnostic('control_character_risk', unitId, 'translation contains bidi or control characters', 'warning'))

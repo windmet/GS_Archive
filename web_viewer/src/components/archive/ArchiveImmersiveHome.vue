@@ -2,7 +2,9 @@
   <main
     v-if="activeIdol && activeCue"
     class="immersive-home"
-    :class="[`theme-${preferences.theme}`, { 'is-focus-mode': preferences.focusMode, 'has-settings': settingsOpen }]"
+    :class="{ 'is-focus-mode': focusMode, 'has-settings': settingsOpen }"
+    :data-home-mode="homeMode"
+    :data-home-stage-ready="stageReady ? '1' : '0'"
     :data-home-cue="activeCue.cue"
     :data-home-voice="activeCue.voice"
     :data-home-costume="activeCostume?.modelId || ''"
@@ -12,7 +14,9 @@
     :data-last-started-voice="lastStartedVoice"
     :style="homeStyle"
   >
+    <ArchiveCardHomeStage v-if="homeMode === 'card'" :card="selectedCard" :loading="cardLoading" :error="cardError" @retry="loadCards(true)" />
     <SpineStage
+      v-else
       responsive-positions
       portrait-framing
       ref="spineStageRef"
@@ -21,8 +25,9 @@
       :fallback-bg="selectedBackground"
       :manage-background="true"
       :debug-controls="false"
-      @ready="stageReady = true"
-      @error="stageError = true"
+      @ready="handleStageReady"
+      @scene-ready="handleSceneReady"
+      @error="handleStageError"
     />
     <button
       class="stage-tap-target"
@@ -43,7 +48,7 @@
     </header>
 
     <div class="home-context" aria-label="首页偶像与服装">
-      <img :src="getCharaIconUrl(activeIdol.id)" :alt="activeIdol.name" />
+      <ArchiveIdolAvatar :idol-code="activeIdol.id" :accent-color="activeIdol.color" :size="34" decorative />
       <label class="context-select context-idol">
         <span>首页偶像</span>
         <select v-model="selectedId" aria-label="首页偶像">
@@ -52,8 +57,8 @@
           </option>
         </select>
       </label>
-      <span class="context-divider" aria-hidden="true"></span>
-      <label class="context-select context-costume">
+      <span v-if="homeMode === 'spine'" class="context-divider" aria-hidden="true"></span>
+      <label v-if="homeMode === 'spine'" class="context-select context-costume">
         <span>服装</span>
         <select
           :value="activeCostume?.modelId || ''"
@@ -80,7 +85,7 @@
 
     <label class="mobile-idol-switch" title="选择首页偶像">
       <span>选择首页偶像</span>
-      <ArrowLeftRight :size="20" />
+      <ArchiveIdolAvatar :idol-code="activeIdol.id" :accent-color="activeIdol.color" :size="34" decorative />
       <select v-model="selectedId" aria-label="选择首页偶像">
         <option v-for="idol in idols" :key="idol.id" :value="idol.id">{{ idol.name }}</option>
       </select>
@@ -99,7 +104,7 @@
     </button>
 
     <button
-      v-if="activeIdol.costumes.length"
+      v-if="homeMode === 'spine' && activeIdol.costumes.length"
       class="mobile-costume-trigger"
       type="button"
       aria-haspopup="dialog"
@@ -149,28 +154,11 @@
       </div>
     </aside>
 
-    <section v-if="activeHighlight && !preferences.focusMode" class="home-highlight" aria-label="活动聚焦">
-      <button class="highlight-main" type="button" @click="emit('open-event', activeHighlight)">
-        <img :src="activeHighlight.bannerUrl" :alt="activeHighlight.title" />
-        <span class="highlight-copy">
-          <strong>{{ activeHighlight.title }}</strong>
-          <small>{{ activeHighlight.scopeLabel }}</small>
-        </span>
-      </button>
-      <div class="highlight-controls">
-        <button type="button" aria-label="上一个活动" title="上一个活动" @click="stepHighlight(-1)">
-          <ChevronLeft :size="15" />
-        </button>
-        <span>{{ highlightIndex + 1 }} / {{ highlights.length }}</span>
-        <button type="button" aria-label="下一个活动" title="下一个活动" @click="stepHighlight(1)">
-          <ChevronRight :size="15" />
-        </button>
-      </div>
-    </section>
+    <button v-if="focusMode" class="exit-focus" type="button" @click="focusMode = false">退出专注</button>
 
     <section class="home-dialogue" aria-label="首页台词" aria-live="polite">
       <div class="dialogue-name">{{ activeCue.speaker || activeIdol.name }}</div>
-      <p>{{ activeCue.text }}</p>
+      <p>{{ presentProducerAddressingText(activeCue.text) }}</p>
       <div class="dialogue-meta">
         <span>{{ activeCue.rarity }} · {{ activeCue.cardTitle }}</span>
 
@@ -182,37 +170,43 @@
         </button>
         <span>{{ cueIndex + 1 }} / {{ activeIdol.cues.length }}</span>
       </div>
-      <small v-if="voiceError" class="voice-error">语音资源暂时不可用</small>
+      <button v-if="voiceError" type="button" class="voice-error" @click="replayCompatibilityVoice">语音资源暂时不可用 · 兼容播放</button>
     </section>
 
-    <button v-if="settingsOpen" class="settings-scrim" type="button" aria-label="关闭场景设置" @click="settingsOpen = false"></button>
-    <aside v-if="settingsOpen" class="scene-settings" role="dialog" aria-modal="true" aria-labelledby="scene-settings-title">
+    <dialog v-if="settingsOpen" ref="sceneSettingsRef" class="scene-settings" aria-labelledby="scene-settings-title" @cancel.prevent="closeSettings" @close="closeSettings">
       <header>
         <div>
           <h3 id="scene-settings-title">场景设置</h3>
           <p>首页显示与播放偏好</p>
         </div>
-        <button type="button" aria-label="关闭场景设置" title="关闭" @click="settingsOpen = false">
+        <button type="button" aria-label="关闭场景设置" title="关闭" @click="closeSettings">
           <X :size="21" />
         </button>
       </header>
 
       <div class="settings-body">
-        <fieldset class="settings-segment settings-theme">
-          <legend>显示模式</legend>
-          <button type="button" :class="{ active: preferences.theme === 'day' }" @click="preferences.theme = 'day'">日间</button>
-          <button type="button" :class="{ active: preferences.theme === 'night' }" @click="preferences.theme = 'night'">夜间</button>
-        </fieldset>
-
-        <label class="settings-field">
-          <span>背景</span>
-          <select v-model="preferences.background">
-            <option value="cue">场景台词背景</option>
-            <option v-for="background in availableBackgrounds" :key="background" :value="background">
-              {{ formatBackgroundLabel(background) }}
-            </option>
-          </select>
+        <label class="settings-field"><span>首页样式</span><select aria-label="首页样式" :value="homeMode" @change="emit('update:homeMode', $event.target.value)"><option value="card">卡牌首页</option><option value="spine">人物互动首页</option></select></label>
+        <label v-if="homeMode === 'card'" class="settings-field"><span>首页卡面</span>
+          <select v-model="preferences.cardKey" aria-label="首页卡面"><option value="">使用当前偶像的默认卡面</option><option v-for="card in idolCards" :key="card.id" :value="card.id">{{ card.label }} · {{ card.variantLabel }}</option></select>
+          <small>此选择独立于资料馆壁纸，切换偶像时优先使用该偶像的卡面。</small>
         </label>
+        <fieldset v-if="homeMode === 'spine'" class="settings-backgrounds">
+          <legend>场景背景</legend>
+          <p>固定背景不会随换人、换装或切换台词改变。</p>
+          <button type="button" class="background-auto" :aria-pressed="preferences.background === 'cue'" @click="preferences.background = 'cue'">跟随台词背景</button>
+          <p v-if="backgroundLoading" role="status">正在读取已收录场景…</p>
+          <p v-if="backgroundError" role="status">{{ backgroundError }} <button type="button" @click="loadBackgroundCatalogue(true)">重试</button></p>
+          <p v-if="backgroundUnavailable" role="status">之前选择的背景当前不可用，暂用台词背景；请重新选择。</p>
+          <label class="settings-field"><span>查找场景</span><input v-model="backgroundQuery" type="search" placeholder="按场景名称查找" /></label>
+          <div class="background-grid">
+            <button v-for="background in visibleBackgrounds" :key="background.id" type="button" :aria-pressed="preferences.background === background.id" @click="preferences.background = background.id">
+              <img v-if="background.thumbnail" :src="background.thumbnail" alt="" loading="lazy" decoding="async" />
+              <strong>{{ background.label }}</strong>
+            </button>
+          </div>
+          <button v-if="filteredBackgrounds.length > backgroundLimit" type="button" class="background-more" @click="backgroundLimit += 12">显示更多场景</button>
+          <small>来自资料馆已发布场景；不是原游戏首页可选背景的完整还原清单。</small>
+        </fieldset>
 
         <label class="settings-field">
           <span>首页偶像</span>
@@ -221,7 +215,7 @@
           </select>
         </label>
 
-        <label class="settings-field settings-costume-field">
+        <label v-if="homeMode === 'spine'" class="settings-field settings-costume-field">
           <span>服装</span>
           <select :value="activeCostume?.modelId || ''" @change="emit('update:selectedCostume', $event.target.value)">
             <option v-for="costume in activeIdol.costumes" :key="costume.modelId" :value="costume.modelId">
@@ -243,8 +237,8 @@
         </label>
 
         <label class="settings-toggle settings-toggle-help">
-          <span>专注角色模式<small>隐藏活动推荐，减少界面干扰</small></span>
-          <input v-model="preferences.focusMode" type="checkbox" />
+          <span>专注模式<small>隐藏导航与控件，保留姓名、台词及退出按钮</small></span>
+          <input v-model="focusMode" type="checkbox" />
           <i aria-hidden="true"></i>
         </label>
 
@@ -262,22 +256,19 @@
           <RotateCcw :size="15" />
           恢复默认
         </button>
-        <button class="settings-done" type="button" @click="settingsOpen = false">
+        <button class="settings-done" type="button" @click="closeSettings">
           <Check :size="16" />
           完成
         </button>
       </footer>
-    </aside>
+    </dialog>
   </main>
 </template>
 
 <script setup>
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import {
-  ArrowLeftRight,
   Check,
-  ChevronLeft,
-  ChevronRight,
   RotateCcw,
   SlidersHorizontal,
   Square,
@@ -285,10 +276,14 @@ import {
   Volume2,
   X,
 } from '@lucide/vue'
-import { getBgUrl, getCharaIconUrl } from '../../utils/AssetResolver.js'
+import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
+import ArchiveCardHomeStage from './ArchiveCardHomeStage.vue'
+import { resolveHomeCard } from '../../data/archiveHomePreferences.js'
+import { loadTerminalManifest, resolveHomeBackground } from '../../data/terminal/terminalMedia.js'
 import { useVoicePlayer } from '../../core/useVoicePlayer.js'
 import { useStoryRuntimeCues } from '../../core/story-runtime/useStoryRuntimeCues.js'
 import { StoryAudioSession } from '../../core/story-runtime/StoryAudioSession.js'
+import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import {
   loadArchiveHomePreferences,
   resetArchiveHomePreferences,
@@ -299,14 +294,14 @@ const SpineStage = defineAsyncComponent(() => import('../SpineStage.vue'))
 
 const props = defineProps({
   idols: { type: Array, default: () => [] },
-  highlights: { type: Array, default: () => [] },
+  homeMode: { type: String, default: 'spine' },
   stats: { type: Array, default: () => [] },
   selectedId: { type: String, default: '' },
   selectedCue: { type: String, default: '' },
   selectedCostume: { type: String, default: '' },
   noAudio: { type: Boolean, default: false },
 })
-const emit = defineEmits(['open-story', 'open-cards', 'open-idol', 'open-chat', 'open-event', 'update:selectedId', 'update:selectedCue', 'update:selectedCostume'])
+const emit = defineEmits(['open-story', 'open-cards', 'open-idol', 'open-chat', 'update:homeMode', 'focus-change', 'update:selectedId', 'update:selectedCue', 'update:selectedCostume'])
 
 const selectedId = computed({
   get: () => props.selectedId || props.idols[0]?.id || '',
@@ -317,18 +312,34 @@ const voiceError = ref(false)
 const lastStartedVoice = ref('')
 const stageReady = ref(false)
 const stageError = ref(false)
-const highlightIndex = ref(0)
+const focusMode = ref(false)
+watch(focusMode, value => { emit('focus-change', value); if (value) { costumePickerOpen.value = false; closeSettings() } })
 const spineStageRef = ref(null)
 const currentStepIndex = ref(0)
 const performanceRevision = ref(0)
 let homeDisposed = false
 const settingsOpen = ref(false)
+const sceneSettingsRef = ref(null)
+let settingsReturnFocus = null
+function restoreSettingsFocus() {
+  if (settingsReturnFocus?.isConnected) settingsReturnFocus.focus({ preventScroll: true })
+  settingsReturnFocus = null
+}
+function closeSettings() {
+  sceneSettingsRef.value?.close()
+  settingsOpen.value = false
+  restoreSettingsFocus()
+}
 const costumePickerOpen = ref(false)
 const stageTapPending = ref(false)
 const stageTapCommitPending = ref(false)
 const queuedStageCue = ref(null)
 const queuedStageVoice = ref(null)
 let stageVoiceQueueToken = 0
+let queuedVoiceAbort = null
+let stageTapAbort = null
+let homePlaybackRevision = 0
+let autoVoiceTimer = null
 const preferences = reactive(loadArchiveHomePreferences())
 
 const activeIdol = computed(() => props.idols.find(idol => idol.id === selectedId.value) || props.idols[0] || null)
@@ -336,10 +347,26 @@ const activeCue = computed(() => activeIdol.value?.cues?.find(cue => cue.cue ===
 const activeCostume = computed(() => activeIdol.value?.costumes?.find(costume => costume.modelId === props.selectedCostume) ||
   activeIdol.value?.costumes?.find(costume => costume.modelId === activeCue.value?.modelId) ||
   activeIdol.value?.costumes?.[0] || null)
-const availableBackgrounds = computed(() => [...new Set((activeIdol.value?.cues || []).map(cue => cue.background).filter(Boolean))])
-const selectedBackground = computed(() => preferences.background === 'cue' || !availableBackgrounds.value.includes(preferences.background)
-  ? activeCue.value?.background || activeIdol.value?.representativeBg || ''
-  : preferences.background)
+const backgroundEntries = ref([])
+const backgroundReady = ref(false), backgroundLoading = ref(false), backgroundError = ref('')
+const backgroundQuery = ref(''), backgroundLimit = ref(12)
+const filteredBackgrounds = computed(() => backgroundEntries.value.filter(entry => entry.label.toLocaleLowerCase().includes(backgroundQuery.value.trim().toLocaleLowerCase())))
+const visibleBackgrounds = computed(() => filteredBackgrounds.value.slice(0, backgroundLimit.value))
+watch(backgroundQuery, () => { backgroundLimit.value = 12 })
+const backgroundUnavailable = computed(() => backgroundReady.value && preferences.background !== 'cue' && !backgroundEntries.value.some(entry => entry.id === preferences.background))
+const selectedBackground = computed(() => resolveHomeBackground(preferences.background, backgroundEntries.value,
+  activeCue.value?.background || activeIdol.value?.representativeBg || '', backgroundReady.value))
+async function loadBackgroundCatalogue(retry = false) {
+  if (backgroundLoading.value || (backgroundReady.value && !retry)) return
+  backgroundLoading.value = true; backgroundError.value = ''
+  try {
+    const catalogue = await loadTerminalManifest('backgrounds', { retry })
+    if (homeDisposed) return
+    backgroundEntries.value = catalogue.entries; backgroundReady.value = true
+  } catch {
+    if (!homeDisposed) backgroundError.value = '场景目录暂时不可用。现有首页仍可继续使用。'
+  } finally { if (!homeDisposed) backgroundLoading.value = false }
+}
 const renderStep = computed(() => {
   performanceRevision.value // Replay reprojects the source entry pose without remounting the stage.
   const step = activeCue.value?.previewStep
@@ -359,7 +386,16 @@ const renderStep = computed(() => {
     },
   }
 })
-const activeHighlight = computed(() => props.highlights[highlightIndex.value] || props.highlights[0] || null)
+const cards = ref([]), cardLoading = ref(false), cardError = ref('')
+const idolCards = computed(() => cards.value.filter(card => card.idolCode === activeIdol.value?.id))
+const selectedCard = computed(() => resolveHomeCard(cards.value, activeIdol.value?.id, preferences.cardKey))
+async function loadCards(retry = false) {
+  if (cardLoading.value || (cards.value.length && !retry)) return
+  cardLoading.value = true; cardError.value = ''
+  try { const data = await loadTerminalManifest('wallpapers', { retry }); if (!homeDisposed) cards.value = data.entries }
+  catch { if (!homeDisposed) cardError.value = '卡面暂时无法载入，台词和语音仍可使用。' }
+  finally { if (!homeDisposed) cardLoading.value = false }
+}
 const cueIndex = computed(() => Math.max(0, activeIdol.value?.cues?.findIndex(cue => cue.cue === activeCue.value?.cue) || 0))
 const currentStep = computed(() => activeCue.value?.previewStep || {})
 const compiledData = computed(() => ({ scenario_id: activeCue.value?.scenarioId || '', steps: [renderStep.value] }))
@@ -367,7 +403,6 @@ const homeAudioSession = new StoryAudioSession({ disabled: props.noAudio })
 const homeStyle = computed(() => ({
   '--idol-color': activeIdol.value?.color || '#21b7c5',
   '--interface-alpha': (preferences.interfaceOpacity / 100).toFixed(2),
-  backgroundImage: selectedBackground.value ? `url(${getBgUrl(selectedBackground.value)})` : 'none',
 }))
 const voicePlayer = useVoicePlayer({
   spineStageRef,
@@ -376,13 +411,43 @@ const voicePlayer = useVoicePlayer({
   compiledData,
   isPlaying: playing,
   audioSession: homeAudioSession,
+  canAnimateStage: () => props.homeMode === 'spine',
 })
+
+async function handleStageReady() {
+  // Child ready fires during mount, before Vue necessarily assigns its ref.
+  await nextTick()
+  if (homeDisposed || props.homeMode !== 'spine' || !spineStageRef.value?.manager) return
+  stageReady.value = true
+  stageError.value = false
+  // Audio can start while the async renderer is still loading. Reattach the
+  // current audio clock. Scene-ready repeats this after actor replacement.
+  if (playing.value) voicePlayer.setTalking(true)
+}
+
+function handleStageError() {
+  stageReady.value = false
+  stageError.value = true
+}
+
+function handleSceneReady(step) {
+  if (homeDisposed || props.homeMode !== 'spine' || step !== renderStep.value) return
+  if (playing.value) voicePlayer.setTalking(true)
+}
+
+// defineAsyncComponent forwards the exposed ref after the child's mount/ready
+// event. Cover both arrival orders rather than assuming one nextTick is enough.
+watch(spineStageRef, stage => {
+  if (stage?.manager) handleStageReady()
+  else stageReady.value = false
+}, { flush: 'post' })
 
 const homeCueRuntime = useStoryRuntimeCues({
   compiledData, currentStepIndex, spineStageRef,
   getStageStep: () => renderStep.value,
   audioManager: {}, // Home source timelines contain only spine face/body/neck cues.
   isPaused: () => document.hidden,
+  needsStage: () => props.homeMode === 'spine',
 })
 function syncHomeVisibility() {
   const action = document.hidden ? 'pause' : 'resume'
@@ -392,11 +457,11 @@ function syncHomeVisibility() {
 watch(() => activeCostume.value?.modelId, () => stopVoice())
 
 watch(() => activeIdol.value?.id, () => {
+  stageTapAbort?.abort()
   stageError.value = false
   stopVoice()
   if (activeCue.value?.cue !== props.selectedCue) emit('update:selectedCue', activeCue.value?.cue || '')
   if (activeCostume.value?.modelId !== props.selectedCostume) emit('update:selectedCostume', activeCostume.value?.modelId || '')
-  if (preferences.background !== 'cue' && !availableBackgrounds.value.includes(preferences.background)) preferences.background = 'cue'
 })
 
 watch(activeCue, () => {
@@ -404,7 +469,10 @@ watch(activeCue, () => {
   voiceError.value = false
   if (stageTapCommitPending.value) return
   stopVoice()
-  if (preferences.autoVoice && !stageTapPending.value) window.setTimeout(() => toggleVoice(), 180)
+  if (preferences.autoVoice && !stageTapPending.value) autoVoiceTimer = window.setTimeout(() => {
+    autoVoiceTimer = null
+    if (!homeDisposed && preferences.autoVoice) toggleVoice()
+  }, 180)
 })
 
 watch([
@@ -415,16 +483,20 @@ watch([
 
 watch(preferences, value => {
   saveArchiveHomePreferences(value)
-  document.documentElement.dataset.archiveHomeTheme = value.theme
 }, { deep: true })
 
-function openSettings() {
+async function openSettings() {
+  if (settingsOpen.value) return
+  settingsReturnFocus = document.activeElement
   costumePickerOpen.value = false
   settingsOpen.value = true
+  await nextTick()
+  if (!homeDisposed && settingsOpen.value) sceneSettingsRef.value?.showModal()
+  if (props.homeMode === 'spine') loadBackgroundCatalogue()
 }
 
 function toggleCostumePicker() {
-  settingsOpen.value = false
+  closeSettings()
   costumePickerOpen.value = !costumePickerOpen.value
 }
 
@@ -453,43 +525,44 @@ async function handleStageTap() {
   if (stageTapPending.value) return
   const next = queuedStageCue.value || resolveNextCue()
   if (!next) return
-
   const idolId = activeIdol.value?.id
+  const revision = ++homePlaybackRevision
+  const tapOwner = stageTapAbort = new AbortController()
+  const isCurrent = () => !homeDisposed && !tapOwner.signal.aborted && stageTapAbort === tapOwner
+    && homePlaybackRevision === revision && activeIdol.value?.id === idolId
+  stageTapPending.value = true // cached MediaElement preparation is asynchronous too
   voiceError.value = false
   voicePlayer.unlockAudioContext()
   let prepared = queuedStageCue.value?.cue === next.cue ? queuedStageVoice.value : null
-  if (!prepared) {
-    stageTapPending.value = true
-    prepared = await voicePlayer.prepareVoice({ step: next.previewStep, scenarioId: next.scenarioId })
-  }
-
-  if (activeIdol.value?.id !== idolId) {
-    stageTapPending.value = false
-    return
-  }
-
-  homeCueRuntime.cancelCurrentStep('home-next-cue')
-  stageTapCommitPending.value = true
-  emit('update:selectedCue', next.cue)
-  await nextTick()
-  if (homeDisposed) return
-  let started = false
-  if (prepared) {
-    started = voicePlayer.playPreparedVoice(prepared)
+  if (prepared) queuedStageVoice.value = null // ownership transferred to this tap
+  try {
+    if (!prepared) prepared = await voicePlayer.prepareVoice({ step: next.previewStep, scenarioId: next.scenarioId, includeLip: props.homeMode === 'spine', signal: tapOwner.signal })
+    if (!isCurrent()) { voicePlayer.releasePreparedVoice(prepared); return }
+    homeCueRuntime.cancelCurrentStep('home-next-cue')
+    stageTapCommitPending.value = true
+    emit('update:selectedCue', next.cue)
+    await nextTick()
+    if (!isCurrent()) { voicePlayer.releasePreparedVoice(prepared); return }
+    const started = prepared ? await voicePlayer.playPreparedVoice(prepared) : false
+    if (!isCurrent()) return
+    voiceError.value = !started
     if (started) {
       lastStartedVoice.value = next.voice || ''
-      homeCueRuntime.handleStepChange()
+      props.homeMode === 'spine' && homeCueRuntime.handleStepChange()
     }
-    voiceError.value = !started
-  } else {
-    voiceError.value = true
+  } finally {
+    if (stageTapAbort === tapOwner) {
+      stageTapAbort = null
+      stageTapCommitPending.value = false
+      stageTapPending.value = false
+    }
   }
-  await nextTick()
-  stageTapCommitPending.value = false
-  stageTapPending.value = false
 }
 
 async function queueNextStageVoice() {
+  queuedVoiceAbort?.abort()
+  voicePlayer.releasePreparedVoice(queuedStageVoice.value)
+  const owner = queuedVoiceAbort = new AbortController()
   const next = resolveNextCue()
   const idolId = activeIdol.value?.id
   const token = ++stageVoiceQueueToken
@@ -497,17 +570,18 @@ async function queueNextStageVoice() {
   queuedStageVoice.value = null
   if (!next?.previewStep) return
 
-  const prepared = await voicePlayer.prepareVoice({ step: next.previewStep, scenarioId: next.scenarioId })
-  if (token !== stageVoiceQueueToken || activeIdol.value?.id !== idolId || queuedStageCue.value?.cue !== next.cue) return
+  const prepared = await voicePlayer.prepareVoice({ step: next.previewStep, scenarioId: next.scenarioId, includeLip: props.homeMode === 'spine', signal: owner.signal })
+  if (homeDisposed || owner.signal.aborted || token !== stageVoiceQueueToken || activeIdol.value?.id !== idolId || queuedStageCue.value?.cue !== next.cue) {
+    voicePlayer.releasePreparedVoice(prepared)
+    return
+  }
   queuedStageVoice.value = prepared
 }
 
-function stepHighlight(direction) {
-  if (!props.highlights.length) return
-  highlightIndex.value = (highlightIndex.value + direction + props.highlights.length) % props.highlights.length
-}
-
 function stopVoice() {
+  clearTimeout(autoVoiceTimer)
+  autoVoiceTimer = null
+  homePlaybackRevision++
   homeCueRuntime.cancelCurrentStep('home-stop-voice')
   voicePlayer.stopCurrentVoice('archive-home')
   voicePlayer.resetVoiceDedup()
@@ -519,43 +593,76 @@ async function toggleVoice() {
     stopVoice()
     return
   }
+  const revision = ++homePlaybackRevision
+  const cue = activeCue.value
   voiceError.value = false
   voicePlayer.unlockAudioContext()
   voicePlayer.resetVoiceDedup()
   homeCueRuntime.cancelCurrentStep('home-replay')
   performanceRevision.value++
   await nextTick()
-  if (homeDisposed) return
+  if (homeDisposed || revision !== homePlaybackRevision || activeCue.value !== cue) return
   const started = await voicePlayer.playVoice()
-  if (homeDisposed) return
+  if (homeDisposed || revision !== homePlaybackRevision || activeCue.value !== cue) return
   if (started) {
     lastStartedVoice.value = activeCue.value?.voice || ''
-    homeCueRuntime.handleStepChange()
+    props.homeMode === 'spine' && homeCueRuntime.handleStepChange()
   }
   voiceError.value = !started
+}
+
+async function replayCompatibilityVoice() {
+  const revision = ++homePlaybackRevision
+  const cue = activeCue.value
+  voicePlayer.unlockAudioContext()
+  homeCueRuntime.cancelCurrentStep('home-compat-replay')
+  const started = await voicePlayer.retryVoice({ backend: 'media' })
+  if (homeDisposed || revision !== homePlaybackRevision || activeCue.value !== cue) return
+  voiceError.value = !started
+  if (started) {
+    lastStartedVoice.value = activeCue.value?.voice || ''
+    props.homeMode === 'spine' && homeCueRuntime.handleStepChange()
+  }
 }
 
 function resetPreferences() {
   Object.assign(preferences, resetArchiveHomePreferences())
 }
 
-function formatBackgroundLabel(background) {
-  return `背景 ${background}`
-}
-
 function handleKeydown(event) {
   if (event.key !== 'Escape') return
-  if (settingsOpen.value) settingsOpen.value = false
+  if (settingsOpen.value) closeSettings()
+  else if (focusMode.value) focusMode.value = false
   if (costumePickerOpen.value) costumePickerOpen.value = false
 }
 
+watch(() => props.homeMode, mode => {
+  stageTapAbort?.abort()
+  stopVoice(); costumePickerOpen.value = false
+  stageReady.value = false
+  stageError.value = false
+  queueNextStageVoice()
+  if (mode === 'card') loadCards()
+  else if (preferences.background !== 'cue' || settingsOpen.value) loadBackgroundCatalogue()
+})
+
 onMounted(() => {
-  document.documentElement.dataset.archiveHomeTheme = preferences.theme
+  delete document.documentElement.dataset.archiveHomeTheme
+  if (props.homeMode === 'card') loadCards()
+  else if (preferences.background !== 'cue') loadBackgroundCatalogue()
   window.addEventListener('keydown', handleKeydown)
   document.addEventListener('visibilitychange', syncHomeVisibility)
 })
 onBeforeUnmount(() => {
   homeDisposed = true
+  emit('focus-change', false)
+  clearTimeout(autoVoiceTimer)
+  sceneSettingsRef.value?.close()
+  restoreSettingsFocus()
+  delete document.documentElement.dataset.archiveHomeTheme
+  queuedVoiceAbort?.abort()
+  stageTapAbort?.abort()
+  voicePlayer.releasePreparedVoice(queuedStageVoice.value)
   homeCueRuntime.cleanup()
   document.removeEventListener('visibilitychange', syncHomeVisibility)
   window.removeEventListener('keydown', handleKeydown)
@@ -564,318 +671,4 @@ onBeforeUnmount(() => {
 })
 </script>
 
-<style scoped>
-.immersive-home {
-  --archive-cyan: #21b7c5;
-  --archive-green: #20bf83;
-  --archive-navy: #101b27;
-  --archive-ink: #20303d;
-  --archive-muted: #91a4b1;
-  position: relative;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  overflow: hidden;
-  background-position: center;
-  background-size: cover;
-  color: #fff;
-  --chrome-bg: rgb(14 27 39 / var(--interface-alpha));
-  --chrome-ink: #fff;
-  --chrome-muted: #91a4b1;
-  --chrome-border: rgba(255,255,255,.38);
-  --dialogue-bg: rgb(255 255 255 / var(--interface-alpha));
-  --dialogue-ink: #20303d;
-  --dialogue-muted: #71828c;
-  --control-bg: #fff;
-  --control-border: #cbd7dc;
-}
-.immersive-home.theme-day {
-  --chrome-bg: rgb(248 252 253 / var(--interface-alpha));
-  --chrome-ink: #20303d;
-  --chrome-muted: #56707d;
-  --chrome-border: rgba(255,255,255,.78);
-}
-.immersive-home.theme-night {
-  --dialogue-bg: rgb(14 27 39 / var(--interface-alpha));
-  --dialogue-ink: #f6fafb;
-  --dialogue-muted: #a4b5be;
-  --control-bg: rgba(255,255,255,.08);
-  --control-border: rgba(255,255,255,.28);
-}
-.immersive-home :deep(.spine-stage-root) { z-index: 1; }
-.stage-tap-target {
-  position: absolute;
-  z-index: 3;
-  top: 11%;
-  bottom: 0;
-  left: 35%;
-  width: 38%;
-  padding: 0;
-  border: 0;
-  outline-offset: -4px;
-  background: transparent;
-  cursor: pointer;
-  touch-action: manipulation;
-}
-.stage-tap-target:focus-visible { outline: 2px solid rgba(33,183,197,.82); }
-.stage-tap-target:disabled { cursor: progress; }
-.scene-shade {
-  position: absolute;
-  z-index: 2;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(90deg, rgba(8, 17, 24, .58) 0%, rgba(8, 17, 24, .05) 35%, transparent 66%, rgba(8, 17, 24, .16) 100%);
-}
-.scene-shade::after { content: ""; position: absolute; inset: 72% 0 0; background: linear-gradient(transparent, rgba(7, 14, 20, .42)); }
-.home-masthead { position: absolute; z-index: 4; top: 26px; left: 30px; }
-.idol-heading { padding-left: 14px; border-left: 4px solid var(--idol-color); text-shadow: 0 2px 7px rgba(0,0,0,.55); }
-.idol-heading span { color: #edf5f7; font-size: .64rem; font-weight: 750; }
-.idol-heading h2 { margin: 5px 0 2px; font-size: 1.55rem; line-height: 1.15; letter-spacing: .01em; }
-.idol-heading small { color: #d0dce1; font-size: .66rem; }
-
-.home-context {
-  position: absolute;
-  z-index: 5;
-  top: 24px;
-  right: 28px;
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  height: 44px;
-  padding: 4px;
-  border: 1px solid var(--chrome-border);
-  border-radius: 5px;
-  background: var(--chrome-bg);
-  color: var(--chrome-ink);
-  box-shadow: 0 8px 24px rgba(0,0,0,.18);
-}
-.home-context > button { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 0; background: transparent; color: currentColor; cursor: pointer; }
-.home-context > button:hover { background: rgba(255,255,255,.09); }
-.home-context > img {
-  width: 32px;
-  height: 32px;
-  box-sizing: border-box;
-  object-fit: contain;
-  margin-left: 2px;
-  overflow: hidden;
-  border: 1px solid #b5c8e5;
-  border-radius: 6px;
-  background: #e6edfa;
-  box-shadow: 0 0 0 1px rgba(230,237,250,.72);
-}
-.context-select { position: relative; display: flex; align-items: center; min-width: 0; height: 34px; }
-.context-select > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-.context-select select { height: 34px; padding: 0 26px 0 9px; border: 0; outline: 0; background: transparent; color: currentColor; font: inherit; font-size: .66rem; font-weight: 650; }
-.context-select option { color: #182630; }
-.context-idol select { width: 116px; }
-.context-costume select { width: 144px; }
-.context-divider { width: 1px; height: 24px; background: rgba(255,255,255,.2); }
-.settings-trigger { width: 34px !important; margin-left: 8px; padding: 0 !important; border: 1px solid rgba(255,255,255,.35) !important; border-radius: 4px; }
-.settings-trigger:hover { border-color: var(--archive-cyan) !important; color: #baf8fa; }
-.mobile-costume-trigger,
-.mobile-idol-switch,
-.mobile-settings-trigger,
-.costume-picker-scrim,
-.mobile-costume-picker { display: none; }
-
-.home-highlight {
-  position: absolute;
-  z-index: 4;
-  top: 86px;
-  right: 28px;
-  width: min(300px, 29vw);
-  overflow: hidden;
-  border: 1px solid var(--chrome-border);
-  border-radius: 5px;
-  background: var(--chrome-bg);
-  color: var(--chrome-ink);
-  box-shadow: 0 14px 34px rgba(0,0,0,.24);
-}
-.highlight-main { display: block; width: 100%; padding: 0; border: 0; background: transparent; color: inherit; cursor: pointer; text-align: left; }
-.highlight-main img { display: block; width: 100%; aspect-ratio: 940 / 510; object-fit: cover; }
-.highlight-copy { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 10px 11px 5px; }
-.highlight-copy strong { overflow: hidden; flex: 1; font-size: .68rem; text-overflow: ellipsis; white-space: nowrap; }
-.highlight-copy small { flex: 0 0 auto; color: var(--archive-cyan); font-size: .53rem; }
-.highlight-controls { display: flex; align-items: center; justify-content: flex-end; gap: 5px; padding: 2px 7px 7px; color: var(--chrome-muted); font-size: .54rem; }
-.highlight-controls button { display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 3px; background: rgba(255,255,255,.08); color: #fff; cursor: pointer; }
-
-.home-dialogue {
-  position: absolute;
-  z-index: 4;
-  left: 30px;
-  bottom: 30px;
-  width: min(420px, 40vw);
-  min-height: 154px;
-  padding: 28px 22px 16px;
-  border: 1px solid rgba(255,255,255,.78);
-  border-radius: 5px 16px 16px 16px;
-  background: var(--dialogue-bg);
-  color: var(--dialogue-ink);
-  box-shadow: 0 16px 42px rgba(0,0,0,.22);
-}
-.home-dialogue::after { content: ""; position: absolute; top: -14px; right: 25px; border-width: 0 0 15px 28px; border-style: solid; border-color: transparent transparent var(--dialogue-bg) transparent; }
-.dialogue-name { position: absolute; top: -14px; left: 10px; min-width: 150px; padding: 6px 13px; border-radius: 4px; background: var(--archive-cyan); color: #fff; font-size: .7rem; font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,.12); }
-.home-dialogue p { min-height: 54px; margin: 0; white-space: pre-line; font-size: .78rem; font-weight: 520; line-height: 1.68; }
-.dialogue-meta { display: flex; align-items: center; gap: 8px; min-width: 0; margin-top: 9px; color: var(--dialogue-muted); font-size: .58rem; }
-.dialogue-meta span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dialogue-meta code { margin-left: auto; color: #97a2a8; white-space: nowrap; }
-.dialogue-actions { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
-.dialogue-actions button { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 1px solid var(--control-border); border-radius: 4px; background: var(--control-bg); color: #19a8b4; cursor: pointer; }
-.dialogue-actions button:hover { border-color: var(--archive-cyan); background: #f3fdfe; }
-.dialogue-actions > span { margin-left: 5px; color: #788992; font-size: .6rem; }
-.voice-error { display: block; margin-top: 5px; color: #a25353; font-size: .58rem; }
-
-.settings-scrim { position: absolute; z-index: 10; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; background: rgba(4,10,15,.12); cursor: default; }
-.scene-settings {
-  position: absolute;
-  z-index: 11;
-  top: 0;
-  right: 0;
-  display: flex;
-  flex-direction: column;
-  width: min(340px, 100%);
-  height: 100%;
-  overflow: hidden;
-  border-left: 1px solid rgba(33,183,197,.65);
-  background: rgba(10,24,35,.97);
-  color: #fff;
-  box-shadow: -18px 0 45px rgba(0,0,0,.32);
-  animation: drawer-in .2s ease-out;
-}
-@keyframes drawer-in { from { transform: translateX(28px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-.scene-settings > header { display: flex; flex: 0 0 auto; align-items: flex-start; justify-content: space-between; gap: 18px; padding: 18px 20px 12px; }
-.scene-settings h3 { margin: 0; font-size: 1.02rem; }
-.scene-settings header p { margin: 5px 0 0; color: #a8b8c1; font-size: .61rem; }
-.scene-settings header button { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; background: transparent; color: #fff; cursor: pointer; }
-.settings-body { display: flex; flex: 1; flex-direction: column; gap: 13px; min-height: 0; padding: 5px 20px 12px; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
-.settings-field, .settings-range { display: flex; flex-direction: column; gap: 7px; color: #d9e3e7; font-size: .65rem; }
-.settings-field select { width: 100%; height: 36px; padding: 0 34px 0 11px; border: 1px solid #647782; border-radius: 4px; outline: 0; background: #0f202d; color: #fff; font: inherit; font-size: .66rem; }
-.settings-field select:focus { border-color: var(--archive-cyan); box-shadow: 0 0 0 2px rgba(33,183,197,.13); }
-.settings-segment { display: grid; grid-template-columns: 1fr 1fr; margin: 0; padding: 0; border: 1px solid #536773; border-radius: 4px; }
-.settings-segment legend { margin-bottom: 7px; padding: 0; color: #d9e3e7; font-size: .65rem; }
-.settings-segment button { height: 34px; border: 0; background: transparent; color: #b9c7ce; font: inherit; font-size: .65rem; cursor: pointer; }
-.settings-segment button.active { margin: 3px; height: 28px; border-radius: 3px; background: #138ba2; color: #fff; }
-.settings-toggle { display: grid; grid-template-columns: minmax(0, 1fr) 40px; align-items: center; gap: 12px; min-height: 30px; color: #e2e9ec; font-size: .67rem; cursor: pointer; }
-.settings-toggle span { display: flex; flex-direction: column; gap: 3px; }
-.settings-toggle small { color: #8da0aa; font-size: .54rem; line-height: 1.45; }
-.settings-toggle input { position: absolute; opacity: 0; pointer-events: none; }
-.settings-toggle i { position: relative; width: 38px; height: 22px; border-radius: 12px; background: #43545f; transition: background .16s ease; }
-.settings-toggle i::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .16s ease; }
-.settings-toggle input:checked + i { background: var(--archive-green); }
-.settings-toggle input:checked + i::after { transform: translateX(16px); }
-.settings-toggle input:focus-visible + i { outline: 2px solid var(--archive-cyan); outline-offset: 2px; }
-.settings-range > div { display: grid; grid-template-columns: minmax(0, 1fr) 42px; align-items: center; gap: 10px; }
-.settings-range input { width: 100%; accent-color: var(--archive-cyan); }
-.settings-range output { color: #fff; font-size: .68rem; text-align: right; }
-.scene-settings > footer { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 20px 16px; border-top: 1px solid rgba(255,255,255,.08); background: #0a1823; }
-.scene-settings footer button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 38px; border-radius: 4px; font: inherit; font-size: .65rem; cursor: pointer; }
-.settings-reset { padding: 0; border: 0; background: transparent; color: #d5e0e4; }
-.settings-done { min-width: 116px; padding: 0 18px; border: 1px solid #29c5d0; background: #14aebe; color: #fff; }
-
-@media (max-width: 980px) {
-  .context-idol select { width: 96px; }
-  .context-costume select { width: 115px; }
-  .home-highlight { width: 250px; }
-  .home-dialogue { width: min(390px, 45vw); }
-}
-
-@media (max-width: 760px) {
-  .immersive-home { min-height: 0; }
-  .home-masthead { top: 16px; left: 14px; }
-  .idol-heading h2 { font-size: 1.18rem; }
-  .home-context { top: 16px; right: 12px; }
-  .context-costume, .context-divider { display: none; }
-  .settings-trigger { margin-left: 4px; }
-  .home-highlight { top: 76px; right: 12px; width: 190px; }
-  .highlight-copy { padding: 6px 7px 3px; }
-  .highlight-copy strong { font-size: .57rem; }
-  .highlight-copy small { display: none; }
-  .home-dialogue { left: 14px; bottom: 14px; width: min(365px, calc(100vw - 28px)); min-height: 138px; padding: 24px 16px 12px; }
-}
-
-@media (max-width: 560px) {
-  .scene-shade { background: linear-gradient(180deg, rgba(8,17,24,.42), transparent 34%, transparent 58%, rgba(7,14,20,.38)); }
-  .home-masthead { max-width: calc(100% - 82px); }
-  .idol-heading span, .idol-heading h2, .idol-heading small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .home-context { display: none; }
-  .mobile-idol-switch,
-  .mobile-settings-trigger,
-  .mobile-costume-trigger {
-    position: absolute;
-    z-index: 6;
-    right: 12px;
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    border: 1px solid var(--chrome-border);
-    border-radius: 5px;
-    background: var(--chrome-bg);
-    color: var(--chrome-ink);
-    box-shadow: 0 8px 24px rgba(0,0,0,.18);
-  }
-  .mobile-idol-switch { top: 16px; overflow: hidden; cursor: pointer; }
-  .mobile-idol-switch > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  .mobile-idol-switch select { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; opacity: 0; cursor: pointer; }
-  .mobile-costume-trigger { top: 66px; }
-  .mobile-settings-trigger { top: 116px; }
-  .mobile-costume-trigger[aria-expanded="true"] { border-color: var(--archive-cyan); color: var(--archive-cyan); }
-  .costume-picker-scrim {
-    position: absolute;
-    z-index: 8;
-    inset: 0;
-    display: block;
-    width: 100%;
-    height: 100%;
-    padding: 0;
-    border: 0;
-    background: rgba(4,10,15,.16);
-  }
-  .mobile-costume-picker {
-    position: absolute;
-    z-index: 9;
-    top: 16px;
-    right: 64px;
-    display: block;
-    width: min(310px, calc(100% - 76px));
-    max-height: min(420px, calc(100% - 32px));
-    overflow: hidden;
-    border: 1px solid rgba(33,183,197,.58);
-    border-radius: 8px;
-    background: rgba(10,24,35,.97);
-    color: #fff;
-    box-shadow: 0 18px 42px rgba(0,0,0,.34);
-  }
-  .mobile-costume-picker > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 14px 10px; border-bottom: 1px solid rgba(255,255,255,.09); }
-  .mobile-costume-picker header div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-  .mobile-costume-picker header span { color: #95aab4; font-size: .54rem; }
-  .mobile-costume-picker header strong { overflow: hidden; font-size: .72rem; text-overflow: ellipsis; white-space: nowrap; }
-  .mobile-costume-picker header button { display: grid; flex: 0 0 auto; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; background: transparent; color: #fff; }
-  .costume-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; max-height: 342px; padding: 10px 12px 13px; overflow-y: auto; overscroll-behavior: contain; }
-  .costume-grid > button { display: grid; grid-template-columns: 34px minmax(0, 1fr); align-items: center; gap: 8px; min-height: 50px; padding: 7px; border: 1px solid #455c69; border-radius: 5px; background: #0f202d; color: #dce7eb; text-align: left; }
-  .costume-grid > button > span { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 4px; background: rgba(255,255,255,.07); color: #72d8de; }
-  .costume-grid small { overflow: hidden; font-size: .58rem; line-height: 1.35; text-overflow: ellipsis; }
-  .costume-grid > button.active { border-color: var(--archive-cyan); background: rgba(19,139,162,.24); color: #fff; }
-  .costume-grid > button.active > span { background: #138ba2; color: #fff; }
-  .home-highlight { display: none; }
-  .home-dialogue { right: 12px; left: 12px; bottom: 12px; width: auto; min-height: 132px; }
-  .home-dialogue p { min-height: 48px; font-size: .72rem; line-height: 1.58; }
-  .dialogue-meta code { display: none; }
-  .scene-settings { width: 100%; }
-  .settings-costume-field { display: none; }
-  .stage-tap-target { top: 12%; left: 20%; width: 60%; }
-}
-
-@media (max-width: 380px) {
-  .home-masthead { max-width: calc(100% - 80px); }
-  .idol-heading small { display: none; }
-  .idol-heading h2 { font-size: 1.02rem; }
-  .mobile-idol-switch, .mobile-settings-trigger, .mobile-costume-trigger { right: 10px; }
-  .mobile-costume-picker { right: 62px; width: calc(100% - 74px); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .scene-settings { animation: none; }
-}
-</style>
+<style scoped src="../../styles/archive-home-day.css"></style>

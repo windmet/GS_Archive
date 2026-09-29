@@ -1,3 +1,4 @@
+import { tracePlayer } from './PlayerTrace.js'
 /** Bounded compressed bytes. Stable URLs let the browser honor HTTP validators.
  * Memory reuse is limited to explicitly fresh, cacheable audio responses.
  */
@@ -6,7 +7,7 @@ export function createCompressedVoiceCache({
   now = () => Date.now(),
   maxBytes = 16 * 1024 * 1024,
   maxEntries = 128,
-  timeoutMs = 10000,
+  timeoutMs = 30000, // physical shared-flight safety ceiling; playback owns its shorter deadline
 } = {}) {
   const entries = new Map()
   const flights = new Map()
@@ -19,7 +20,7 @@ export function createCompressedVoiceCache({
     entries.delete(url)
   }
 
-  function remember(url, response, bytes) {
+  function remember(url, response, bytes, diagnostics) {
     forget(url)
     const control = response.headers?.get?.('cache-control') || ''
     if (/(?:^|,)\s*(?:no-store|no-cache)\b/i.test(control)) return
@@ -30,7 +31,7 @@ export function createCompressedVoiceCache({
     const apparentAge = Number.isFinite(date) ? Math.max(0, (now() - date) / 1000) : 0
     const remaining = Math.min(300, Number(maxAge[1]) - Math.max(age, apparentAge))
     if (!(remaining > 0)) return
-    entries.set(url, { bytes, freshUntil: now() + remaining * 1000 })
+    entries.set(url, { bytes, diagnostics, freshUntil: now() + remaining * 1000 })
     retainedBytes += bytes.byteLength
     while (retainedBytes > maxBytes || entries.size > maxEntries) {
       forget(entries.keys().next().value)
@@ -42,25 +43,30 @@ export function createCompressedVoiceCache({
     if (cached && now() < cached.freshUntil) {
       entries.delete(url)
       entries.set(url, cached)
-      return cached.bytes
+      return { bytes: cached.bytes, diagnostics: { ...cached.diagnostics, cache: 'memory' } }
     }
     forget(url)
     // The browser performs conditional GET when stale and uses fresh HTTP cache
     // entries directly. No HEAD round trip, timestamp URL or custom CORS header.
+    tracePlayer('voice-http-request', { url })
     const response = await fetchImpl(url, { signal, cache: 'default' })
+    tracePlayer('voice-http-headers', { url, status: response.status, contentType: response.headers?.get?.('content-type') })
     signal.throwIfAborted()
-    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    const diagnostics = { url: response.url || url, status: response.status ?? null, contentType: response.headers?.get?.('content-type') || '', cache: 'http', bytes: null }
+    if (!response.ok) throw Object.assign(new Error(`HTTP ${response.status}`), { diagnostics, status: response.status, code: `HTTP_${response.status}` })
     const contentType = response.headers?.get?.('content-type') || ''
     const bytes = await response.arrayBuffer()
+    diagnostics.bytes = bytes.byteLength
+    tracePlayer('voice-http-body', { url, bytes: bytes.byteLength })
     signal.throwIfAborted()
     if (bytes.byteLength < 1000 || /(?:text\/html|application\/xhtml\+xml)/i.test(contentType)) {
-      throw new Error(`Not an audio file: ${contentType} (${bytes.byteLength} bytes)`)
+      throw Object.assign(new Error(`Not an audio file: ${contentType} (${bytes.byteLength} bytes)`), { diagnostics })
     }
-    if (/^audio\//i.test(contentType)) remember(url, response, bytes)
-    return bytes
+    if (/^audio\//i.test(contentType)) remember(url, response, bytes, diagnostics)
+    return { bytes, diagnostics }
   }
 
-  async function get(url, { signal } = {}) {
+  async function get(url, { signal, onDiagnostics = () => {} } = {}) {
     signal?.throwIfAborted()
     let flight = flights.get(url)
     if (flight?.controller.signal.aborted) {
@@ -89,7 +95,8 @@ export function createCompressedVoiceCache({
           if (signal.aborted) onAbort()
         })])
         : flight.promise)
-      return result.slice(0) // decodeAudioData may detach the caller's copy.
+      onDiagnostics({ ...result.diagnostics })
+      return result.bytes.slice(0) // decodeAudioData may detach the caller's copy.
     } finally {
       if (onAbort) signal.removeEventListener('abort', onAbort)
       flight.consumers -= 1

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_014hid_1_5_014_03",
-  "logical_id": "story-collection:1_5_014hid_1_5_014_03",
+  "logical_id": "story:1_5_014hid_1_5_014_03",
   "scenario_id": "1_5_014hid_1_5_014_03",
   "text_catalog_id": "1_5_014hid_1_5_014_03",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_014hid_1_5_014_03.json",
-    "sha256": "sha256:7cae3309e368ffaf43cf7bcb85b560aa08236d1265bd5196eb52707052d3c73c",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:9c81839f23270e43f330632082c50de1689d97b973135a79e5fefc7491493374",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 14,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_014hid_1_5_014_03.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_014hid_1_5_014_03:1_5_014_03:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_014hid_1_5_014_03",
+          "part_id": "1_5_014_03",
+          "file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_014hid_1_5_014_03:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_014_03",
+        "source_file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_014hid_1_5_014_03:1_5_014_03:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_014hid_1_5_014_03",
+          "part_id": "1_5_014_03",
+          "file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_014hid_1_5_014_03:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_014_03",
+        "source_file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_014hid_1_5_014_03:1_5_014_03:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_014hid_1_5_014_03",
+          "part_id": "1_5_014_03",
+          "file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_014hid_1_5_014_03:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_014_03",
+        "source_file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "交通安全PRキャラクターのお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_014hid_1_5_014_03:1_5_014_03:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_014hid_1_5_014_03",
+          "part_id": "1_5_014_03",
+          "file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:df8c3efb5417c3c29cb6658708c31fc7e8127b1fcc828512fc54453135f4b0a5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,17 +212,28 @@
         "row_id": "1_5_014hid_1_5_014_03:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_014_03",
+        "source_file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "もうすぐ本番ですね。\n緊張しているようですが……大丈夫ですか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_014hid_1_5_014_03:1_5_014_03:cmd-000014:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_014hid_1_5_014_03",
+          "part_id": "1_5_014_03",
+          "file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+          "command_index": 14,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4107d77e8fa658f4f8654a305f1637804ccf99fb439b2d70ef80fcce40a4123e"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -202,21 +260,32 @@
         "row_id": "1_5_014hid_1_5_014_03:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_014_03",
+        "source_file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "すっげぇ緊張してる……けど、それと同じくらいに\n心がやる気で満たされてるんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_014hid_1_5_014_03:1_5_014_03:cmd-000019:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_014hid_1_5_014_03",
+          "part_id": "1_5_014_03",
+          "file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+          "command_index": 19,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:490c4a342ccbb73b345342330df08a35afa6262a9fe79e59c96ab51310f8fb59"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "014hid",
         "sourceName": "握野 英雄"
       },
       "performance": {
@@ -233,7 +302,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -242,21 +310,32 @@
         "row_id": "1_5_014hid_1_5_014_03:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_014_03",
+        "source_file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "俺が交通安全のPRキャラクターをやることで、\nみんなの交通意識が改善するなら嬉しいし。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_014hid_1_5_014_03:1_5_014_03:cmd-000024:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_014hid_1_5_014_03",
+          "part_id": "1_5_014_03",
+          "file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+          "command_index": 24,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ef3738091c09ab9a8570b1757cd9a4ce9e53f226bee997a6dcbc5a1ff6c45e45"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "014hid",
         "sourceName": "握野 英雄"
       },
       "performance": {
@@ -272,30 +351,39 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_014hid_1_5_014_03:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_014_03",
+        "source_file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "小さな積み重ねって大事だろ？\n少しでも事故が減るといいよな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_014hid_1_5_014_03:1_5_014_03:cmd-000029:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_014hid_1_5_014_03",
+          "part_id": "1_5_014_03",
+          "file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+          "command_index": 29,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b7ba618d2eadb5b36a88179f86942b87085e2701ad631961a3e07d5b608894d6"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "014hid",
         "sourceName": "握野 英雄"
       },
       "performance": {
@@ -312,7 +400,6 @@
         "stepId": 8
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -321,17 +408,28 @@
         "row_id": "1_5_014hid_1_5_014_03:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_014_03",
+        "source_file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "英雄さんの思い、\nきっと皆さんに伝わると思いますよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_014hid_1_5_014_03:1_5_014_03:cmd-000031:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_014hid_1_5_014_03",
+          "part_id": "1_5_014_03",
+          "file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+          "command_index": 31,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:14d380cef8e276a89ef67e90552f6b611d2bbf1f8eb37448a5f99692a0f16f3e"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -358,17 +456,28 @@
         "row_id": "1_5_014hid_1_5_014_03:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_014_03",
+        "source_file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "なにせPRキャラクターに選ばれたんですから！\n英雄さんにしかできないことがあるはずです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_014hid_1_5_014_03:1_5_014_03:cmd-000036:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_014hid_1_5_014_03",
+          "part_id": "1_5_014_03",
+          "file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+          "command_index": 36,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:49d08a5df7b2f575e9f37c8c8b0a31f9d948825e023967d1d6513002c826d08b"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -395,21 +504,32 @@
         "row_id": "1_5_014hid_1_5_014_03:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_014_03",
+        "source_file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+        "command_start": 36,
+        "command_end": 36
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "はは、そうだといいな！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_014hid_1_5_014_03:1_5_014_03:cmd-000040:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_014hid_1_5_014_03",
+          "part_id": "1_5_014_03",
+          "file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+          "command_index": 40,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:97e0817145b76809fea21fd628a49c8ab1cc72b4521cbf9575a2b4bfc58d7628"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "014hid",
         "sourceName": "握野 英雄"
       },
       "performance": {
@@ -426,7 +546,6 @@
         "stepId": 11
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -435,21 +554,32 @@
         "row_id": "1_5_014hid_1_5_014_03:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_014_03",
+        "source_file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+        "command_start": 40,
+        "command_end": 40
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "サンキュー、●●●●プロデューサー。\n俺、今日も全力で頑張ってくるよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_014hid_1_5_014_03:1_5_014_03:cmd-000049:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_014hid_1_5_014_03",
+          "part_id": "1_5_014_03",
+          "file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+          "command_index": 49,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f076b105100ef2beaa473040c8fdf5d61ff2febe3385e4775ac50164323bbabc"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "014hid",
         "sourceName": "握野 英雄"
       },
       "performance": {
@@ -466,7 +596,6 @@
         "stepId": 12
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -475,17 +604,28 @@
         "row_id": "1_5_014hid_1_5_014_03:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_014_03",
+        "source_file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+        "command_start": 49,
+        "command_end": 49
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "舞台袖から応援しています。\n……あ、そろそろ出番のようですね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_014hid_1_5_014_03:1_5_014_03:cmd-000051:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_014hid_1_5_014_03",
+          "part_id": "1_5_014_03",
+          "file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+          "command_index": 51,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8d60df6ca31522999d54eba389f9369e6d38b459d7caf7a378e1c2d3e5e5f609"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -512,21 +652,32 @@
         "row_id": "1_5_014hid_1_5_014_03:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_014_03",
+        "source_file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+        "command_start": 51,
+        "command_end": 51
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ああ！　行ってくるぜ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_014hid_1_5_014_03:1_5_014_03:cmd-000056:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_014hid_1_5_014_03",
+          "part_id": "1_5_014_03",
+          "file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+          "command_index": 56,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4280d8a053d466a1c8e55c66ea4948d36e8a97d99615e25665c81750baeaf4d4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "014hid",
         "sourceName": "握野 英雄"
       },
       "performance": {
@@ -543,7 +694,6 @@
         "stepId": 14
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -552,92 +702,16 @@
         "row_id": "1_5_014hid_1_5_014_03:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_014_03",
+        "source_file": "assets/resources/scenariodata/1_5_014hid/scenario_1_5_014_03.json",
+        "command_start": 56,
+        "command_end": 56
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "交通安全PRキャラクターのお仕事",
     "episode_label": null

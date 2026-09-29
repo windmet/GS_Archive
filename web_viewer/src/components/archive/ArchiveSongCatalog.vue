@@ -14,6 +14,11 @@
       </dl>
     </header>
 
+    <p v-if="status" class="song-catalog-status" role="status">
+      {{ status }}
+      <button v-if="status.includes('重试')" type="button" @click="$emit('retry')">重试</button>
+    </p>
+
     <div class="song-toolbar">
       <div class="song-filters" role="group" aria-label="曲目过滤">
         <button
@@ -67,7 +72,7 @@
         <ChevronRight :size="17" aria-hidden="true" />
       </button>
     </div>
-    <p v-if="!filteredSongs.length" class="song-empty">没有匹配的曲目。</p>
+    <p v-if="!status && !filteredSongs.length" class="song-empty">没有匹配的曲目。</p>
   </section>
 </template>
 
@@ -77,10 +82,11 @@ import { ChevronRight, Search } from '@lucide/vue'
 
 const props = defineProps({
   catalog: { type: Object, default: null },
+  status: { type: String, default: '' },
   scope: { type: String, default: 'all' },
   query: { type: String, default: '' },
 })
-const emit = defineEmits(['open', 'update:scope', 'update:query'])
+const emit = defineEmits(['open', 'retry', 'update:scope', 'update:query'])
 
 const activeFilter = computed({
   get: () => props.scope,
@@ -151,6 +157,8 @@ const filteredSongs = computed(() => {
 
 <style scoped>
 .song-catalog { height: 100%; padding: 24px; overflow-y: auto; background: #f7f9fa; }
+.song-catalog-status { padding: 12px 16px; background: #eef8f7; color: #246d67; font-size: .8rem; }
+.song-catalog-status button { margin-left: 8px; border: 0; background: none; color: #176f69; font: inherit; text-decoration: underline; cursor: pointer; }
 .song-hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

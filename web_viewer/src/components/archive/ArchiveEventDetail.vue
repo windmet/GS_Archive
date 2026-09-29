@@ -167,6 +167,7 @@ const props = defineProps({
   cards: { type: Array, default: () => [] },
   idols: { type: Array, default: () => [] },
   units: { type: Array, default: () => [] },
+  projectedCastReferences: { type: Array, default: null },
   identity: { type: Object, default: null },
   manifest: { type: Object, default: null },
   visualRegistry: { type: Object, default: null },
@@ -178,7 +179,14 @@ const props = defineProps({
 const emit = defineEmits(['read', 'retry-reading', 'play', 'play-episode', 'open-card', 'open-idol', 'open-unit'])
 const readingByFile = computed(() => new Map(props.readingEntries.filter(entry => entry.status === 'ready').map(entry => [entry.source_file, entry])))
 
-const castReferences = computed(() => props.idols.map(idol => ({
+const castReferences = computed(() => props.projectedCastReferences?.map(entry => {
+  const raw = entry.reference.source.kind === 'event_story_visual_promotion'
+    ? props.rawVisualUrl(entry.idol_code) : ''
+  return { idol: props.idols.find(idol => idol.idol_code === entry.idol_code),
+    reference: raw ? { ...entry.reference, imageCandidates: [
+      { url: raw, kind: 'event_story_visual' }, ...entry.reference.imageCandidates,
+    ] } : entry.reference }
+}) || props.idols.map(idol => ({
   idol,
   reference: buildEventIdolReference(idol.idol_code, props.identity, props.manifest,
     props.visualRegistry, props.event, props.rawVisualUrl(idol.idol_code)),

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_002sht_1_5_002_01",
-  "logical_id": "story-collection:1_5_002sht_1_5_002_01",
+  "logical_id": "story:1_5_002sht_1_5_002_01",
   "scenario_id": "1_5_002sht_1_5_002_01",
   "text_catalog_id": "1_5_002sht_1_5_002_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_002sht_1_5_002_01.json",
-    "sha256": "sha256:3dc3a9ddc5b2d544b9c88bdf03d047e3f7b9a31ee3d9a4357c34b4d788b5b4b6",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:ff82d0af376197642fbf928ad7f49f83148dd780d81fab2e73340ddd4311b042",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 14,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_002sht_1_5_002_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_01:1_5_002_01:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_01",
+          "part_id": "1_5_002_01",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_002sht_1_5_002_01:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_01",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_01:1_5_002_01:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_01",
+          "part_id": "1_5_002_01",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_002sht_1_5_002_01:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_01",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_01:1_5_002_01:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_01",
+          "part_id": "1_5_002_01",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_002sht_1_5_002_01:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_01",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "ホテルのビュッフェレポートのお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_01:1_5_002_01:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_01",
+          "part_id": "1_5_002_01",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:b606849240eb80e967b7dcbd26a26c93467afedeff33555a65e0105f2c289abe"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,21 +212,32 @@
         "row_id": "1_5_002sht_1_5_002_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_01",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "見たことある番組からのオファーって\n嬉しいよね～。しかもそれのグルメコーナーって！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_01:1_5_002_01:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_01",
+          "part_id": "1_5_002_01",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:098b3440338aa521a04edc07003ffd1a3090e8c355ae9a448043e166dfd1003b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -196,7 +254,6 @@
         "stepId": 5
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -205,21 +262,32 @@
         "row_id": "1_5_002sht_1_5_002_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_01",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "好きな物をいーっぱい食べていいんだよねー？\n楽しみ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_01:1_5_002_01:cmd-000022:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_01",
+          "part_id": "1_5_002_01",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+          "command_index": 22,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:560257b114d888eb9726b5b903cb79f94c22816f370975a4e22d93b481f3eeef"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -236,7 +304,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -245,17 +312,28 @@
         "row_id": "1_5_002sht_1_5_002_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_01",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "資料としてメニューをもらいましたけど\nもう食べたい物は決まってるんですか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_01:1_5_002_01:cmd-000026:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_01",
+          "part_id": "1_5_002_01",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+          "command_index": 26,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:960863990e79af4c6ea991740732b991de8bda0eb9c3b3340be7169686434a70"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -282,21 +360,32 @@
         "row_id": "1_5_002sht_1_5_002_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_01",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "まだ！　だって僕の好きなメニューが\nたくさんあるんだもん。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_01:1_5_002_01:cmd-000031:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_01",
+          "part_id": "1_5_002_01",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+          "command_index": 31,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a78367548944feaa5c3a3833f5a4e39eeaf8a54ef8c04be9ce0c803f10395379"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -313,7 +402,6 @@
         "stepId": 8
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -322,21 +410,32 @@
         "row_id": "1_5_002sht_1_5_002_01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_01",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "だからさ、いっぱい食べられるようにお腹を\n空かせてきたんだよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_01:1_5_002_01:cmd-000037:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_01",
+          "part_id": "1_5_002_01",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+          "command_index": 37,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d6f19cbf4dfac7e385d5672d644d87cbd549752fa1a7777bbec9ddd936f279a8"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -353,7 +452,6 @@
         "stepId": 9
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -362,17 +460,28 @@
         "row_id": "1_5_002sht_1_5_002_01:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_01",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+        "command_start": 37,
+        "command_end": 37
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "色々な料理を味わうのは番組的にも\nほしいところだと思いますし、頼もしいです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_01:1_5_002_01:cmd-000041:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_01",
+          "part_id": "1_5_002_01",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+          "command_index": 41,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fa5b9303b8f0ed9dec96c964dedb3da999d05a2fa7e7d2887bff86997acdc115"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -399,21 +508,32 @@
         "row_id": "1_5_002sht_1_5_002_01:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_01",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+        "command_start": 41,
+        "command_end": 41
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "任せちゃってよ！\n僕の選んだ料理を魅力的に紹介するからね！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_01:1_5_002_01:cmd-000046:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_01",
+          "part_id": "1_5_002_01",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+          "command_index": 46,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bc1943a88845ef16a6876ca3facfb3a72ebddc1f2a034251d8ff4d2ab7872e59"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -430,7 +550,6 @@
         "stepId": 11
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -439,21 +558,32 @@
         "row_id": "1_5_002sht_1_5_002_01:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_01",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+        "command_start": 46,
+        "command_end": 46
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "見てる人が今すぐビュッフェに\n行きたくなるようにしちゃうんだから。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_01:1_5_002_01:cmd-000051:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_01",
+          "part_id": "1_5_002_01",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+          "command_index": 51,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:517a28424773fc60cde04286fe4aec75397913636bb5a6fe45519d2e19b6c806"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -470,7 +600,6 @@
         "stepId": 12
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -479,17 +608,28 @@
         "row_id": "1_5_002sht_1_5_002_01:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_01",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+        "command_start": 51,
+        "command_end": 51
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "それでこそ翔太さん。みんなの食欲をそそるような\nレポートお願いしますよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_01:1_5_002_01:cmd-000055:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_01",
+          "part_id": "1_5_002_01",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+          "command_index": 55,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:714e13d6157787a16438bc37b92fe553283eb766f41902d7d2421a5a139f7f64"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -516,21 +656,32 @@
         "row_id": "1_5_002sht_1_5_002_01:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_01",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+        "command_start": 55,
+        "command_end": 55
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "任せて。それにあのホテル、デザートも美味しいって\n有名なんだよね～。へへっ、楽しみっ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_002sht_1_5_002_01:1_5_002_01:cmd-000065:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_002sht_1_5_002_01",
+          "part_id": "1_5_002_01",
+          "file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+          "command_index": 65,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:55f173ac3a4bbe3821e6a2f164d696a3dd9a3efd84df33f004ab1ff5776e898c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -547,7 +698,6 @@
         "stepId": 14
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -556,92 +706,16 @@
         "row_id": "1_5_002sht_1_5_002_01:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_002_01",
+        "source_file": "assets/resources/scenariodata/1_5_002sht/scenario_1_5_002_01.json",
+        "command_start": 65,
+        "command_end": 65
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "ホテルのビュッフェレポートのお仕事",
     "episode_label": null

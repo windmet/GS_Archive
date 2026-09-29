@@ -1,9 +1,9 @@
-export const ARCHIVE_USER_PREFERENCES_VERSION = 1
+export const ARCHIVE_USER_PREFERENCES_VERSION = 2
 export const ARCHIVE_USER_PREFERENCES_KEY = 'sidem:archive-user-preferences'
 
 export const DEFAULT_ARCHIVE_USER_PREFERENCES = Object.freeze({
   version: ARCHIVE_USER_PREFERENCES_VERSION,
-  startupMode: 'unset',
+  homeMode: 'unset',
   startupIdol: null,
   preferredIdol: null,
   onboardingComplete: false,
@@ -14,10 +14,10 @@ function idolCode(value) {
 }
 
 export function normalizeArchiveUserPreferences(value = {}) {
-  if (value?.version !== ARCHIVE_USER_PREFERENCES_VERSION) return { ...DEFAULT_ARCHIVE_USER_PREFERENCES }
+  if (![1, ARCHIVE_USER_PREFERENCES_VERSION].includes(value?.version)) return { ...DEFAULT_ARCHIVE_USER_PREFERENCES }
   return {
     version: ARCHIVE_USER_PREFERENCES_VERSION,
-    startupMode: ['light', 'immersive'].includes(value.startupMode) ? value.startupMode : 'unset',
+    homeMode: value.version === 1 ? ({ light: 'card', immersive: 'spine' }[value.startupMode] || 'unset') : (['card', 'spine'].includes(value.homeMode) ? value.homeMode : 'unset'),
     startupIdol: idolCode(value.startupIdol),
     preferredIdol: idolCode(value.preferredIdol),
     onboardingComplete: value.onboardingComplete === true,
@@ -32,7 +32,7 @@ export function loadArchiveUserPreferences(storage) {
     if (!raw) return { preferences: { ...DEFAULT_ARCHIVE_USER_PREFERENCES }, issue: '' }
     const parsed = JSON.parse(raw)
     const preferences = normalizeArchiveUserPreferences(parsed)
-    const issue = parsed?.version === ARCHIVE_USER_PREFERENCES_VERSION ? '' : '启动设置版本已更新，请重新选择。'
+    const issue = [1, ARCHIVE_USER_PREFERENCES_VERSION].includes(parsed?.version) ? '' : '启动设置版本已更新，请重新选择。'
     return { preferences, issue }
   } catch {
     return { preferences: { ...DEFAULT_ARCHIVE_USER_PREFERENCES }, issue: '无法读取本地设置，本次选择仍可使用。' }

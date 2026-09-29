@@ -1,4 +1,4 @@
-import { languageMode } from './LanguageStore.js'
+import { languageMode, producerName } from './LanguageStore.js'
 import {
   normalizeLegacyDialogue,
   preferencesFromLegacyLanguageMode,
@@ -22,7 +22,7 @@ export function resolveText(dialogue, mode) {
   const normalized = normalizeLegacyDialogue(dialogue)
   const display = resolveStoryText({
     ...normalized,
-    preferences: preferencesFromLegacyLanguageMode(m),
+    preferences: { ...preferencesFromLegacyLanguageMode(m), producer_name: producerName.value },
   })
 
   return {

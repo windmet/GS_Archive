@@ -53,7 +53,7 @@
             </span>
             <span class="main-domain-copy">
               <small>{{ collection.isPlaceholder ? '未公开章节' : 'MAIN STORY' }}</small>
-              <strong>{{ collection.title }}</strong>
+              <strong>{{ presentProducerAddressingText(collection.title) }}</strong>
               <span v-if="collection.chapterCount">
                 {{ collection.chapterCount }} 话目 · {{ collection.logicalEntryCount }} 分段
               </span>
@@ -206,7 +206,7 @@
             <span v-else class="chapter-fallback">{{ chapter.label }}</span>
             <span class="chapter-copy">
               <small>{{ chapter.label }}</small>
-              <strong>{{ chapter.entries[0]?.title }}</strong>
+              <strong>{{ presentProducerAddressingText(chapter.entries[0]?.title) }}</strong>
               <span>{{ chapter.entries.length }} 篇剧情</span>
             </span>
             <ArrowRight :size="18" />
@@ -223,7 +223,7 @@
           <button v-for="(entry, index) in featuredEvents" :key="entry.id" @click="emit('select', entry)">
             <img :src="eventBanner(entry)" :alt="entry.title" :loading="index < 3 ? 'eager' : 'lazy'"
               :decoding="index < 3 ? 'auto' : 'async'" width="940" height="510" />
-            <span><small>{{ entry.eventScopeLabel || entry.domainLabel }}</small><strong>{{ entry.title }}</strong></span>
+            <span><small>{{ entry.eventScopeLabel || entry.domainLabel }}</small><strong>{{ presentProducerAddressingText(entry.title) }}</strong></span>
           </button>
         </div>
       </section>
@@ -309,7 +309,7 @@
           </span>
           <span class="event-entity-copy">
             <small>{{ eventTypeLabel(entry) }} · {{ formatEventDate(entry) }}</small>
-            <strong>{{ entry.masterEvent?.name || entry.title }}</strong>
+            <strong>{{ presentProducerAddressingText(entry.masterEvent?.name || entry.title) }}</strong>
             <span>{{ entry.preplaySynopsis?.text || '查看活动剧情与关联资料。' }}</span>
           </span>
           <span class="event-reward-icons">
@@ -344,7 +344,7 @@
           <span class="story-domain">{{ entry.eventScopeLabel || entry.domainLabel }}</span>
           <span class="story-main">
             <small class="story-hierarchy">{{ hierarchyLabel(entry) }}</small>
-            <strong>{{ entry.title }}</strong>
+            <strong>{{ presentProducerAddressingText(entry.title) }}</strong>
             <span v-if="entry.preplaySynopsis?.text" class="story-synopsis">{{ entry.preplaySynopsis.text }}</span>
           </span>
           <span class="story-stats">{{ entry.exists ? '已收录' : '暂未收录' }}</span>
@@ -361,11 +361,13 @@
 </template>
 
 <script setup>
+import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../../../shared/deploy/ExternalStoryResourcePolicy.js'
 import { computed } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { ArrowRight, BookOpen, Briefcase, Cake, CalendarRange, ChevronDown, CreditCard, FileWarning, Languages, LayoutGrid, Search, Sparkles, UserRound, X } from '@lucide/vue'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
+import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 
 const props = defineProps({
   entries: { type: Array, default: () => [] }, allEntries: { type: Array, default: () => [] },
@@ -374,8 +376,8 @@ const props = defineProps({
   eventScopeOptions: { type: Array, default: () => [] }, eventScope: { type: String, default: 'all' },
   availability: { type: String, default: 'all' }, sort: { type: String, default: 'domain' },
   catalogTotal: { type: Number, default: 0 }, filteredTotal: { type: Number, default: 0 },
-  seasonalCampaigns: { type: Array, default: () => [] },
-  workIdols: { type: Array, default: () => [] },
+  seasonalCount: { type: Number, default: 0 },
+  workCount: { type: Number, default: 0 },
   idolStoryCount: { type: Number, default: 0 },
   externalResourceCount: { type: Number, default: 0 },
   mainDomain: { type: Object, default: null },
@@ -417,7 +419,7 @@ const secondaryGateways = [
   { id: 'work', label: '工作剧情', icon: Briefcase, unit: '人', action: 'work' }, { id: 'birthday', label: '生日剧情', icon: Cake },
   { id: 'extra', label: '额外剧情', icon: Sparkles },
   { id: 'seasonal_campaign', label: '季节企划', icon: CalendarRange, unit: '组', action: 'seasonal' },
-]
+].filter(gateway => EXTERNAL_STORY_RESOURCES_ENABLED || gateway.action !== 'external-resources')
 const sectionLabel = computed(() => props.allEntries.find(entry => entry.domain === props.domain && entry.sectionId === props.section)?.sectionLabel || props.section)
 
 function browse(domain, section = '') { emit('browse', { domain, section }) }
@@ -425,8 +427,8 @@ function openDomain(domain) { emit('browse', { domain, section: '', mode: 'porta
 function domainCount(domain) { return props.allEntries.filter(entry => entry.domain === domain).length }
 function gatewayCount(gateway) {
   if (gateway.action === 'external-resources') return props.externalResourceCount
-  if (gateway.action === 'seasonal') return props.seasonalCampaigns.length
-  if (gateway.action === 'work') return props.workIdols.length
+  if (gateway.action === 'seasonal') return props.seasonalCount
+  if (gateway.action === 'work') return props.workCount
   if (gateway.action === 'idol-story') return props.idolStoryCount
   return domainCount(gateway.id)
 }

@@ -15,15 +15,15 @@ function matchesCardAssetState(status, state) {
 
 function matchesCardRelationState(card, state, { eventRelations, gashaRelations } = {}) {
   if (state === 'all') return true
-  if (state === 'card_story') return Boolean(card?.scenario_entries?.length)
-  if (state === 'event_card') return Boolean(eventRelations?.[card?.resource_id])
-  if (state === 'gasha_card') return Boolean(gashaRelations?.[card?.resource_id])
-  if (state === 'release_series') return Boolean(card?.release_series)
+  if (state === 'card_story') return Boolean(card?.has_story ?? card?.scenario_entries?.length)
+  if (state === 'event_card') return Boolean(card?.has_event_relation ?? eventRelations?.[card?.resource_id])
+  if (state === 'gasha_card') return Boolean(card?.has_gasha_relation ?? gashaRelations?.[card?.resource_id])
+  if (state === 'release_series') return Boolean(card?.has_release_series ?? card?.release_series)
   if (state === 'unrelated') {
-    return !card?.scenario_entries?.length &&
-      !card?.release_series &&
-      !eventRelations?.[card?.resource_id] &&
-      !gashaRelations?.[card?.resource_id]
+    return !matchesCardRelationState(card, 'card_story', { eventRelations, gashaRelations }) &&
+      !matchesCardRelationState(card, 'release_series', { eventRelations, gashaRelations }) &&
+      !matchesCardRelationState(card, 'event_card', { eventRelations, gashaRelations }) &&
+      !matchesCardRelationState(card, 'gasha_card', { eventRelations, gashaRelations })
   }
   return true
 }
@@ -32,11 +32,28 @@ export function filterArchiveCards(cards, { query = '', rarity = 'all', assetSta
   const q = query.toLowerCase()
   return cards.filter(card =>
     (rarity === 'all' || card.rarity === rarity) &&
-    matchesCardAssetState(assets?.[card.resource_id], assetState) &&
+    matchesCardAssetState(card.asset_status || assets?.[card.resource_id], assetState) &&
     matchesCardRelationState(card, relationState, { eventRelations, gashaRelations }) &&
     (!q ||
     String(card.title || '').toLowerCase().includes(q) ||
     String(card.resource_id || '').toLowerCase().includes(q) ||
     String(card.rarity || '').toLowerCase().includes(q))
   )
+}
+
+export function buildCardRarityTabs(cards) {
+  const order = ['SSR', 'SR', 'R', 'N']
+  const counts = new Map()
+  for (const card of cards) {
+    const rarity = card.rarity || 'CARD'
+    counts.set(rarity, (counts.get(rarity) || 0) + 1)
+  }
+  const tabs = [{ id: 'all', label: 'All', count: cards.length }]
+  for (const rarity of order) {
+    if (counts.has(rarity)) tabs.push({ id: rarity, label: rarity, count: counts.get(rarity) })
+  }
+  for (const [rarity, count] of [...counts.entries()].sort()) {
+    if (!order.includes(rarity)) tabs.push({ id: rarity, label: rarity, count })
+  }
+  return tabs
 }

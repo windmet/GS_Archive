@@ -307,6 +307,7 @@ export class SpineManager {
   }
 
   removeSpine(idolId, immediate = false) {
+    this.manager.lipSyncController?.clearPending(idolId)
     this._fadeOutAndDestroy(idolId, immediate)
   }
 

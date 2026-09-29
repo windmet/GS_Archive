@@ -16,7 +16,7 @@ export function isBareArchiveEntry(input) {
 }
 
 export function canResolveArchiveStartupBeforeData(input, preferences) {
-  return !(isBareArchiveEntry(input) && preferences?.startupMode === 'immersive')
+  return !(isBareArchiveEntry(input) && ['card', 'spine'].includes(preferences?.homeMode))
 }
 
 function validIdol(idolCode, validHomeIdols) {
@@ -33,22 +33,14 @@ export function resolveArchiveStartup(input, preferences, validHomeIdols = []) {
       source: 'explicit',
     }
   }
-  if (preferences?.startupMode === 'light') {
-    return { route: { view: 'portal' }, lightweight: true, source: 'preference' }
-  }
-  if (preferences?.startupMode === 'immersive') {
-    if (validIdol(preferences.startupIdol, validHomeIdols)) {
-      return { route: { view: 'home', homeIdol: preferences.startupIdol }, lightweight: false, source: 'preference' }
-    }
-    return { route: { view: 'home' }, lightweight: true, source: 'invalid-immersive-idol' }
+  if (['card', 'spine'].includes(preferences?.homeMode)) {
+    const idol = [preferences.startupIdol, preferences.preferredIdol].find(id => validIdol(id, validHomeIdols))
+    return { route: idol ? { view: 'home', homeIdol: idol } : { view: 'home' }, lightweight: !idol, source: idol ? 'preference' : 'invalid-home-idol' }
   }
   return { route: { view: 'welcome' }, lightweight: true, source: 'new-user' }
 }
 
 export function resolveArchiveHomeAction(preferences, validHomeIdols = []) {
-  if (preferences?.startupMode === 'light') return { view: 'portal' }
-  if (preferences?.startupMode === 'immersive' && validIdol(preferences.startupIdol, validHomeIdols)) {
-    return { view: 'home', homeIdol: preferences.startupIdol }
-  }
-  return preferences?.startupMode === 'immersive' ? { view: 'home' } : { view: 'welcome' }
+  const idol = [preferences?.startupIdol, preferences?.preferredIdol].find(id => validIdol(id, validHomeIdols))
+  return idol ? { view: 'home', homeIdol: idol } : { view: 'home' }
 }

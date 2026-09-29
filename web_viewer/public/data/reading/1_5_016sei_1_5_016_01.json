@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_5_016sei_1_5_016_01",
-  "logical_id": "story-collection:1_5_016sei_1_5_016_01",
+  "logical_id": "story:1_5_016sei_1_5_016_01",
   "scenario_id": "1_5_016sei_1_5_016_01",
   "text_catalog_id": "1_5_016sei_1_5_016_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_5_016sei_1_5_016_01.json",
-    "sha256": "sha256:45704d56231dcdccab51ec861379216777b0995680fe07518504efc4ad9d1fb9",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:bd68c41c0d1079734889aa23416b830279fd6881b556f45a1dd6697109323270",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65592b1ef6033340c69326e77ecd9f3222edaf5c771a2a43ed3057f566491ef1",
     "aggregate_source": null,
     "step_count": 16,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_5_016sei_1_5_016_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-28-story-work-text-backfill-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "お仕事中",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_016sei_1_5_016_01:1_5_016_01:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "1_5_016sei_1_5_016_01",
+          "part_id": "1_5_016_01",
+          "file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c391997b55a2964fa0fc166f4cc2e2a84ff43baeb6237ada6e314982654dd101"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "1_5_016sei_1_5_016_01:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_016_01",
+        "source_file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "【あらすじ】",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_016sei_1_5_016_01:1_5_016_01:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "1_5_016sei_1_5_016_01",
+          "part_id": "1_5_016_01",
+          "file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5d3e8fa043af75a87dd4faef01ce8885090903c7489ecb33e70005fc16c71c5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "1_5_016sei_1_5_016_01:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_016_01",
+        "source_file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "お仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_016sei_1_5_016_01:1_5_016_01:cmd-000010:title:000",
+        "source": {
+          "scenario_id": "1_5_016sei_1_5_016_01",
+          "part_id": "1_5_016_01",
+          "file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33d8451285d4e5f69626e1f5771ddc007ba751ec655f29067561078d2496c78f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "1_5_016sei_1_5_016_01:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_016_01",
+        "source_file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "調味料のCM撮影のお仕事",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_016sei_1_5_016_01:1_5_016_01:cmd-000010:title:001",
+        "source": {
+          "scenario_id": "1_5_016sei_1_5_016_01",
+          "part_id": "1_5_016_01",
+          "file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+          "command_index": 10,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:005c162b2a06974bc95337c508f5a16f40d40ddf2b6273c7af955a93eeed739a"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,21 +212,32 @@
         "row_id": "1_5_016sei_1_5_016_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_016_01",
+        "source_file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサーさん、ちょうどよかった！\nＣＭ用の料理を作ったんだ。試食してくれないか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_016sei_1_5_016_01:1_5_016_01:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_016sei_1_5_016_01",
+          "part_id": "1_5_016_01",
+          "file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2c9e554568450f12ef77c60c54601834c9a6e532e684c6374a26bd49fb1ef293"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -196,7 +254,6 @@
         "stepId": 5
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -205,17 +262,28 @@
         "row_id": "1_5_016sei_1_5_016_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_016_01",
+        "source_file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "美味しそうなハンバーグですね。\nあれ、でも今回は焼き肉のたれのCMですよね？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_016sei_1_5_016_01:1_5_016_01:cmd-000020:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_016sei_1_5_016_01",
+          "part_id": "1_5_016_01",
+          "file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+          "command_index": 20,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2e890452cb5e5216111a38066292550c1696093eaf4c9f9f4fea50a4d6f44107"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -242,21 +310,32 @@
         "row_id": "1_5_016sei_1_5_016_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_016_01",
+        "source_file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "焼き肉以外にも使い道はあるんだ。\nまあ、とりあえず食べてみてくれ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_016sei_1_5_016_01:1_5_016_01:cmd-000025:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_016sei_1_5_016_01",
+          "part_id": "1_5_016_01",
+          "file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+          "command_index": 25,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:64098d7eb9bc877ad5eabcf3545a9320274c5e79dcde7ca92d7b142a6638aef7"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -272,26 +351,35 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_016sei_1_5_016_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_016_01",
+        "source_file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "はい！　では、いただきますね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_016sei_1_5_016_01:1_5_016_01:cmd-000030:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_016sei_1_5_016_01",
+          "part_id": "1_5_016_01",
+          "file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+          "command_index": 30,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6bf04dca591634b138bf5df39f74d99fd76b121d3eb9efe8c19aa729297bc131"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -318,17 +406,28 @@
         "row_id": "1_5_016sei_1_5_016_01:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_016_01",
+        "source_file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+        "command_start": 30,
+        "command_end": 30
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "……お、美味しい！\nしっかりと味がついていますね！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_016sei_1_5_016_01:1_5_016_01:cmd-000036:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_016sei_1_5_016_01",
+          "part_id": "1_5_016_01",
+          "file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+          "command_index": 36,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:916cf7f23a348476ae84f217c17dde0e1b0b216fddca59664c81ae57749af4a9"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -355,21 +454,32 @@
         "row_id": "1_5_016sei_1_5_016_01:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_016_01",
+        "source_file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+        "command_start": 36,
+        "command_end": 36
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "はは、そう言ってもらえてよかった。\n作った甲斐がある。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_016sei_1_5_016_01:1_5_016_01:cmd-000042:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_016sei_1_5_016_01",
+          "part_id": "1_5_016_01",
+          "file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+          "command_index": 42,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a5e86c32d14cc823eff4e9924af35a89f28009bcd6d282859e9e33fb4959aaf1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -386,7 +496,6 @@
         "stepId": 12
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -395,21 +504,32 @@
         "row_id": "1_5_016sei_1_5_016_01:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_016_01",
+        "source_file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+        "command_start": 42,
+        "command_end": 42
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "実は、ハンバーグのタネに今回宣伝する\n焼き肉のたれを混ぜ込んだんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_016sei_1_5_016_01:1_5_016_01:cmd-000046:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_016sei_1_5_016_01",
+          "part_id": "1_5_016_01",
+          "file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+          "command_index": 46,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:79e3ad7785186392c20e05e8dadb2d587c05db9230d9bc1fd444b19d6ca44af7"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -425,26 +545,35 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_016sei_1_5_016_01:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_016_01",
+        "source_file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+        "command_start": 46,
+        "command_end": 46
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "すごいアイデアですね、誠司さん！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_016sei_1_5_016_01:1_5_016_01:cmd-000048:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_016sei_1_5_016_01",
+          "part_id": "1_5_016_01",
+          "file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+          "command_index": 48,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:13bad5f7f98f5846ac3fa2b017227465db5b084c160449a7bef85f088e862e2f"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -471,21 +600,32 @@
         "row_id": "1_5_016sei_1_5_016_01:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_016_01",
+        "source_file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+        "command_start": 48,
+        "command_end": 48
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "実際にCMでもレシピを流すことになってるから\n少し緊張していたんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_016sei_1_5_016_01:1_5_016_01:cmd-000051:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_016sei_1_5_016_01",
+          "part_id": "1_5_016_01",
+          "file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+          "command_index": 51,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ece9740b46b340aeffb5cf7628588ab478078ca2be7f1b7af3d87ffc066d6958"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -501,30 +641,39 @@
         "snapshot": "entry",
         "stepId": 15
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_5_016sei_1_5_016_01:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_016_01",
+        "source_file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+        "command_start": 51,
+        "command_end": 51
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "だが、●●●●プロデューサーさんの言葉で\n自信がついた！　本番も美味しく作ってみせるよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_5_016sei_1_5_016_01:1_5_016_01:cmd-000056:dialogue:000",
+        "source": {
+          "scenario_id": "1_5_016sei_1_5_016_01",
+          "part_id": "1_5_016_01",
+          "file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+          "command_index": 56,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fc753ee130047e87c974d0e9736c0d827ea16869c063189dcffe7bd9f79b5642"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -541,7 +690,6 @@
         "stepId": 16
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -550,92 +698,16 @@
         "row_id": "1_5_016sei_1_5_016_01:step-16:text",
         "step_id": 16,
         "step_index": 15,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_5_016_01",
+        "source_file": "assets/resources/scenariodata/1_5_016sei/scenario_1_5_016_01.json",
+        "command_start": 56,
+        "command_end": 56
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 15,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "調味料のCM撮影のお仕事",
     "episode_label": null

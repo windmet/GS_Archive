@@ -10,6 +10,7 @@ function freeze(value) {
 
 export function createReadingRepository({ fetchImpl = (...args) => fetch(...args),
   digest = async bytes => `sha256:${Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)), b => b.toString(16).padStart(2, '0')).join('')}`,
+  locatorResolver = null,
 } = {}) {
   let manifestRequest = null
   const documents = new Map()
@@ -30,9 +31,25 @@ export function createReadingRepository({ fetchImpl = (...args) => fetch(...args
     }
     return manifestRequest
   }
-  async function load(documentId) {
+  async function locator(documentId, { fresh = false } = {}) {
     if (!/^[A-Za-z0-9_-]+$/.test(documentId || '')) throw new TypeError('Invalid reading document ID')
-    const entry = (await manifest()).entries.find(e => e.document_id === documentId)
+    if (!locatorResolver) {
+      const entries = (await manifest({ fresh })).entries
+      return { entry: entries.find(entry => entry.document_id === documentId) || null, entries }
+    }
+    const result = await locatorResolver(documentId, { fresh })
+    const entries = validateReadingManifest({ schema_version: 1, entries: result.entries }).entries
+    const entry = entries.find(candidate => candidate.document_id === documentId)
+    if (!entry && result.entry === null && entries.length === 0) return freeze({ entry: null, entries })
+    if (!entry || Object.keys(entry).some(key => entry[key] !== result.entry?.[key]) ||
+      Object.keys(result.entry).some(key => entry[key] !== result.entry[key])) throw Error('Reading locator identity mismatch')
+    if (entries.some(candidate => candidate.logical_id !== entry.logical_id)) throw Error('Reading locator segment mismatch')
+    return freeze({ entry, entries })
+  }
+  async function load(documentId, knownEntry = undefined) {
+    if (!/^[A-Za-z0-9_-]+$/.test(documentId || '')) throw new TypeError('Invalid reading document ID')
+    const entry = knownEntry === undefined ? (await locator(documentId)).entry : knownEntry
+    if (entry && entry.document_id !== documentId) throw Error('Reading locator identity mismatch')
     if (!entry) return { status: 'not-generated', document: null }
     const key = `${entry.schema_version}:${entry.document_id}:${entry.sha256}`
     if (!documents.has(key)) {
@@ -51,5 +68,5 @@ export function createReadingRepository({ fetchImpl = (...args) => fetch(...args
     const document = await documents.get(key)
     return { status: document.status, document }
   }
-  return { manifest, load }
+  return { manifest, locator, load }
 }

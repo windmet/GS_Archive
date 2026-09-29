@@ -13,6 +13,7 @@ const tick = () => { const pending = [...frames.values()]; frames.clear(); pendi
 try {
   const stage = Object.assign(Object.create(PixiStageManager.prototype), {
     spineInstances: { fixture: { spine: { tint: 0xFFFFFF } } }, _spineColorTweens: {},
+    _spawnLoads: new Map(),
     backgroundManager: Object.create(BackgroundManager.prototype),
     removeSilhouette: () => {}, clearAllSilhouettes: () => {},
   })

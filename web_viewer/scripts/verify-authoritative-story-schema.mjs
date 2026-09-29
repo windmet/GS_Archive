@@ -234,6 +234,35 @@ async function verifyPythonParity(input, label) {
 
 await verifyPythonParity(compatibilityFixture, 'tracked compatibility fixture')
 
+const stampOnly = clone(compatibilityFixture)
+stampOnly.steps[0].type = 'talk_stamp'
+stampOnly.steps[0].dialogue.source_text = ''
+delete stampOnly.steps[0].dialogue.text_ref
+stampOnly.steps[0].stamp = { id: 'image_mobile_stamp_001', raw_id: '001',
+  speaker: '天ヶ瀬 冬馬', chara_id: '001tom', side: 'left' }
+const stampCandidate = compileAuthoritativeScenario(stampOnly)
+assert.equal('dialogue' in stampCandidate.steps[0], false, 'empty stamp has no translation unit')
+assert.equal(validate(stampCandidate), true, ajv.errorsText(validate.errors))
+assert.deepEqual(compareAuthoritativeRuntimeProjection(stampOnly, stampCandidate), { passed: true, differences: [] })
+await verifyPythonParity(stampOnly, 'empty stamp has no dialogue text')
+
+const titleOnly = clone(compatibilityFixture)
+titleOnly.steps[0].type = 'synopsis'
+titleOnly.steps[0].dialogue.speaker_source_text = 'タイトル'
+titleOnly.steps[0].dialogue.speaker_text_ref = clone(titleOnly.steps[0].dialogue.text_ref)
+titleOnly.steps[0].dialogue.source_text = ''
+delete titleOnly.steps[0].dialogue.text_ref
+const titleCandidate = compileAuthoritativeScenario(titleOnly)
+assert.equal('text_ref' in titleCandidate.steps[0].dialogue, false, 'empty synopsis has no body unit')
+assert.deepEqual(titleCandidate.steps[0].dialogue.speaker_text_ref, titleOnly.steps[0].dialogue.speaker_text_ref)
+assert.equal(validate(titleCandidate), true, ajv.errorsText(validate.errors))
+assert.deepEqual(compareAuthoritativeRuntimeProjection(titleOnly, titleCandidate), { passed: true, differences: [] })
+await verifyPythonParity(titleOnly, 'empty synopsis retains title unit')
+
+const missingBody = clone(compatibilityFixture)
+delete missingBody.steps[0].dialogue.text_ref
+assert.throws(() => compileAuthoritativeScenario(missingBody), /dialogue\.text_ref/)
+
 try {
   const episodeDirectory = path.join(root, 'public', 'data', 'compiled', 'episodes')
   await access(path.join(episodeDirectory, '1_4_001_01_a.json'))
@@ -296,10 +325,15 @@ try {
 }
 
 const publicationManifest = await readJson('public/data/publication/manifest.json')
+const authoritativeRegistry = await readJson('public/data/authoritative_story_publications.json')
+const storyKinds = new Map(authoritativeRegistry.entries.map(entry => [entry.logical_id, entry.kind]))
 let ledgerStoryFiles = 0
 for (const [logicalId, state] of Object.entries(publicationManifest.by_logical_id || {})) {
   if (state.domain !== 'story') continue
-  assert.ok(state.artifacts.length >= 2, `${logicalId} must publish an aggregate and at least one episode`)
+  const kind = storyKinds.get(logicalId)
+  assert.ok(kind, `${logicalId} must appear in the authoritative Story registry`)
+  if (kind === 'collection') assert.ok(state.artifacts.length >= 2, `${logicalId} must publish an aggregate and at least one episode`)
+  else assert.equal(state.artifacts.length, 1, `${logicalId} must publish one standalone artifact`)
   const aggregateArtifacts = state.artifacts.filter(artifact => !artifact.path.includes('/episodes/'))
   assert.equal(aggregateArtifacts.length, 1, `${logicalId} must publish exactly one aggregate`)
   for (const artifact of state.artifacts) {

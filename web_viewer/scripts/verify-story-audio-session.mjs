@@ -1,3 +1,7 @@
+import { until } from './repair/helpers.mjs'
+import { setStoryRuntimePaused } from '../src/core/story-runtime/StoryPausePolicy.js'
+import { StoryClock } from '../src/core/story-runtime/StoryClock.js'
+import { EffectScheduler } from '../src/core/story-runtime/EffectScheduler.js'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { StoryAudioSession } from '../src/core/story-runtime/StoryAudioSession.js'
@@ -48,13 +52,14 @@ class FakeAudioContext {
     this.gains = []
     this.sources = []
     this.closeCount = 0
+    this.suspendCount = 0
   }
   createGain() { const gain = new FakeGain(); this.gains.push(gain); return gain }
   createBuffer() { return {} }
   createBufferSource() { const source = new FakeSource(); this.sources.push(source); return source }
   async decodeAudioData() { return {} }
   async resume() { this.state = 'running' }
-  async suspend() { this.state = 'suspended' }
+  async suspend() { this.suspendCount++; this.state = 'suspended' }
   async close() { this.state = 'closed'; this.closeCount++ }
 }
 
@@ -127,9 +132,9 @@ const voicePlayer = useVoicePlayer({
   audioSession: voiceSession,
 })
 const prepared = { voice: 'voice-a', audioBuffer: {}, step: { chara_id: null } }
-voicePlayer.playPreparedVoice(prepared)
+await voicePlayer.playPreparedVoice(prepared)
 const firstVoiceSource = voiceContext.sources.at(-1)
-voicePlayer.playPreparedVoice({ ...prepared, voice: 'voice-b' })
+await voicePlayer.playPreparedVoice({ ...prepared, voice: 'voice-b' })
 firstVoiceSource.onended?.()
 assert.equal(voiceSession.inspect().active_sources, 1, 'an old onended callback must not release the new voice source')
 assert.equal(playing.value, true, 'an old onended callback must not mark the new voice as ended')
@@ -170,7 +175,7 @@ for (const phase of ['fetch', 'decode']) {
   const player = useVoicePlayer({ spineStageRef: { value: null }, currentStep: { value: { dialogue: { voice: 'portal-exit' } } }, currentStepIndex: { value: 0 }, compiledData: { value: {} }, isPlaying: { value: false }, audioSession: session })
   try {
     const preparation = player.prepareVoice({ includeLip: false })
-    if (phase === 'decode') { for (let n = 0; n < 10 && !decodes; n++) await Promise.resolve(); assert.equal(decodes, 1) }
+    if (phase === 'decode') { await until(() => decodes > 0); assert.equal(decodes, 1) }
     player.dispose()
     release()
     assert.equal(await preparation, null)
@@ -206,6 +211,8 @@ for (const phase of ['fetch', 'decode']) {
     const repeated = await player.prepareVoice({ step, scenarioId: 'story-a', includeLip: false })
     assert.equal(repeated.audioBuffer, first.audioBuffer, 'same story voice should reuse decoded audio')
     assert.equal(fetches, 1)
+    assert.equal(player.getDiagnostics().attempt.cache, 'decoded')
+    assert.equal(player.getDiagnostics().attempt.decoded.channels, 2)
     assert.equal(decodes, 1)
     await player.prepareVoice({ step, scenarioId: 'story-b', includeLip: false })
     assert.equal(fetches, 2, 'different story source must not reuse a voice with the same name')
@@ -326,19 +333,20 @@ for (const phase of ['fetch', 'decode']) {
     audioSession: session, voiceTimeoutMs: 30, onStateChange: state => statuses.push(state) })
   try {
     const pending = player.playVoice()
-    while (!lipStarted) await new Promise(resolve => setImmediate(resolve))
-    assert.equal(player.getVoiceState(), 'preparing')
+    await until(() => lipStarted)
+    assert.equal(await pending, true, 'audio starts while the parallel lip request remains stalled')
+    assert.equal(player.getVoiceState(), 'playing', 'optional lip must not gate playable audio')
     player.stopCurrentVoice('next-dialogue')
-    assert.equal(await pending, false)
+    assert.equal(await pending, true)
     assert.equal(lipAborted, true)
     assert.equal(player.getVoiceState(), 'idle')
     assert.equal(playing.value, false)
     assert.equal(session.inspect().active_sources, 0)
     assert.ok(statuses.includes('preparing'))
     player.resetVoiceDedup()
-    assert.equal(await player.playVoice(), false, 'a stalled lip request must time out')
-    assert.equal(player.getVoiceState(), 'unavailable', 'failed soft audio must release AUTO waiting')
-    assert.equal(session.inspect().active_sources, 0)
+    assert.equal(await player.playVoice(), true, 'a stalled optional lip cannot prevent voice playback')
+    assert.equal(player.getVoiceState(), 'playing')
+    assert.equal(session.inspect().active_sources, 1)
   } finally {
     player.dispose(); await session.dispose(); globalThis.fetch = originalFetch
     if (originalWindow === undefined) delete globalThis.window
@@ -392,6 +400,32 @@ try {
     '00_action_volume_default_sebgm',
     '00_action_volume_down_sebgm',
   ])
+
+  // Exercise the same pause policy used by StoryViewer, with real scheduler/session.
+  const reasons = new Set()
+  const cues = new EffectScheduler({ clock: new StoryClock(), requestFrame: () => 1, cancelFrame: () => {} })
+  cues.start()
+  await audioManager.playBgm('continuous', 0)
+  await audioManager.playAmbient('continuous-room', 0)
+  const continuousSources = [...soakContext.sources]
+  for (let step = 0; step < 30; step++) {
+    await setStoryRuntimePaused({ reasons, cues, audioSession: soakSession }, 'buffering', true)
+    assert.equal(cues.inspect().running, false, 'waiting must freeze new cue scheduling')
+    assert.equal(reasons.has('buffering'), true)
+    assert.equal(soakContext.state, 'running')
+    await setStoryRuntimePaused({ reasons, cues, audioSession: soakSession }, 'buffering', false)
+    assert.equal(cues.inspect().running, true)
+  }
+  assert.equal(soakContext.suspendCount, 0, '30 waiting/playable transitions must not suspend BGM')
+  assert.ok(continuousSources.every(source => !source.stopped))
+  await setStoryRuntimePaused({ reasons, cues, audioSession: soakSession }, 'buffering', true)
+  await setStoryRuntimePaused({ reasons, cues, audioSession: soakSession }, 'visibility', true)
+  await setStoryRuntimePaused({ reasons, cues, audioSession: soakSession }, 'buffering', false)
+  assert.equal(cues.inspect().running, false, 'ready must not clear visibility pause')
+  assert.equal(soakContext.state, 'suspended')
+  await setStoryRuntimePaused({ reasons, cues, audioSession: soakSession }, 'visibility', false)
+  assert.equal(soakContext.state, 'running')
+  await cues.cancelAll()
 
   for (let index = 0; index < 100; index++) {
     await audioManager.playBgm(`bgm-${index % 3}`, 0.01)
@@ -564,6 +598,8 @@ const [appSource, homeSource, viewerSource, voicePlayerSource, audioManagerSourc
 assert.doesNotMatch(viewerSource, /prepareStepAudio:|voice-preparing|voicePending/, 'audio must not participate in scene readiness or frame hold')
 assert.match(viewerSource, /runtimeReadinessStatus\.value !== 'playable'/, 'scene loading must reject manual advance')
 assert.match(viewerSource, /new StoryAudioSession/)
+assert.match(viewerSource, /voice_player: voicePlayer.getDiagnostics\(\)/)
+assert.match(viewerSource, /setStoryRuntimePaused\(\{ reasons: runtimePauseReasons/)
 assert.match(viewerSource, /new AudioManager\(\{ audioSession: storyAudioSession \}\)/)
 assert.match(viewerSource, /audioSession: storyAudioSession/)
 assert.match(viewerSource, /const NO_AUDIO = URL_FLAGS\.get\('noAudio'\) === '1'/)
@@ -572,7 +608,9 @@ assert.match(appSource, /const NO_AUDIO = URL_FLAGS\.get\('noAudio'\) === '1'/)
 assert.match(appSource, /:no-audio="NO_AUDIO"/)
 assert.match(appSource, /const\s*\{[^}]*\bview\b[^}]*\}\s*=\s*useArchiveNavigationState\(\)/)
 assert.equal(useArchiveNavigationState().view.value, '__boot__', 'startup must not mount audible home before route restoration')
-assert.match(appSource, /const loading = ref\(true\)/)
+// Route-specific loading is verified by verify-archive-startup-route. The
+// audio safety boundary is the non-audible __boot__ view until restoration,
+// not a global loading overlay (bootstrap routes deliberately avoid it).
 assert.match(homeSource, /new StoryAudioSession\(\{ disabled: props\.noAudio \}\)/)
 assert.match(homeSource, /audioSession: homeAudioSession/)
 assert.doesNotMatch(voicePlayerSource, /new \(window\.AudioContext/)
