@@ -1,0 +1,2913 @@
+{
+  "scenario_id": "1_4_002_10_b",
+  "total_steps": 35,
+  "steps": [
+    {
+      "step_id": 1,
+      "type": "fadeout",
+      "state": {
+        "bg": "bg002_sky_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [
+          {
+            "id": "cameraflare",
+            "visible": true,
+            "action": "start",
+            "delay": 0,
+            "duration": 1
+          }
+        ],
+        "bg_profile": {
+          "imageId": "bg002_sky_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": {
+          "type": "in",
+          "duration": 0.5,
+          "delay": 0,
+          "color": "#000000"
+        },
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 2,
+      "type": "text_time",
+      "state": {
+        "bg": "bg002_sky_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [
+          {
+            "id": "cameraflare",
+            "visible": true
+          }
+        ],
+        "bg_profile": {
+          "imageId": "bg002_sky_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 1.2,
+      "text_time": {
+        "text": "ライブ当日……",
+        "text_ref": {
+          "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000033:time_caption:000",
+          "source": {
+            "scenario_id": "1_4_002_10",
+            "part_id": "1_4_002_10_b",
+            "file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+            "command_index": 33,
+            "field_kind": "time_caption",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:188c35d7729d74913c5e131fc78f59cc3fe1803a539dbc1f794d40a1f9c7a1e4"
+        }
+      },
+      "auto_advance": true,
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 3,
+      "type": "stage",
+      "state": {
+        "bg": "bg002_sky_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [
+          {
+            "id": "cameraflare",
+            "visible": true
+          }
+        ],
+        "bg_profile": {
+          "imageId": "bg002_sky_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": {
+          "cue": "bus_stop",
+          "delay": 3
+        },
+        "se_events": [
+          {
+            "cue": "bus_int_drive",
+            "delay": 0
+          },
+          {
+            "cue": "soccer_whistle_caution",
+            "delay": 2
+          },
+          {
+            "cue": "bus_stop",
+            "delay": 3
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 8,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 4,
+      "type": "stage",
+      "state": {
+        "bg": "bg004_townst_out_01",
+        "bg_effect": null,
+        "bg_transition": {
+          "type": "dissolve",
+          "color": "",
+          "delay": 0,
+          "duration": 1.5
+        },
+        "bg_effects": [
+          {
+            "id": "cameraflare",
+            "visible": false,
+            "action": "end",
+            "delay": 0,
+            "duration": 1.5
+          }
+        ],
+        "bg_profile": {
+          "imageId": "bg002_sky_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.2,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 5,
+      "type": "stage",
+      "state": {
+        "bg": "bg004_townst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [
+          {
+            "id": "cameraflare",
+            "visible": true,
+            "action": "start",
+            "delay": 0,
+            "duration": 0.6
+          }
+        ],
+        "bg_profile": {
+          "imageId": "bg002_sky_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "mysterious",
+        "bgm_volume": 0,
+        "se": {
+          "cue": "step_run_come_conc_boot",
+          "delay": 0
+        },
+        "se_events": [
+          {
+            "cue": "step_run_come_conc_boot",
+            "delay": 0
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 1.8,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 6,
+      "type": "adv",
+      "state": {
+        "bg": "bg004_townst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [
+          {
+            "id": "cameraflare",
+            "visible": true
+          }
+        ],
+        "bg_profile": {
+          "imageId": "bg002_sky_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "mysterious",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "chara_id": "mob",
+      "dialogue": {
+        "speaker": "スタッフ",
+        "text": "315プロダクションのバスですよね。\nこちらの駐車場で、少々お待ちいただけますか？",
+        "text_jp": "315プロダクションのバスですよね。\nこちらの駐車場で、少々お待ちいただけますか？",
+        "text_cn": "",
+        "text_ref": {
+          "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000046:dialogue:000",
+          "source": {
+            "scenario_id": "1_4_002_10",
+            "part_id": "1_4_002_10_b",
+            "file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+            "command_index": 46,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:46695c9cf7e7f4860b52b49cd23692e9c57a1f41648c7aaeaa2d5c4f0f0905d0"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 7,
+      "type": "stage",
+      "state": {
+        "bg": "bg004_townst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [
+          {
+            "id": "cameraflare",
+            "visible": false,
+            "action": "end",
+            "delay": 0,
+            "duration": 0.5
+          }
+        ],
+        "bg_profile": {
+          "imageId": "bg002_sky_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "mysterious",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.5,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 8,
+      "type": "stage",
+      "state": {
+        "bg": "bg004_townst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg002_sky_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "mysterious",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [
+          {
+            "id": "101ken",
+            "model": "101ken_001_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0,
+              "duration": 0.2
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.2,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 9,
+      "type": "adv",
+      "state": {
+        "bg": "bg004_townst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg002_sky_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "mysterious",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [
+          {
+            "id": "101ken",
+            "model": "101ken_001_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 4.3,
+          "type": "spine_face",
+          "chara_id": "101ken",
+          "value": "face_angry",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "mob",
+      "dialogue": {
+        "speaker": "スタッフ",
+        "text": "実はまだ、関係者の受け入れ準備が出来ていなくて……\nあと30分、いえ40分は、ここで待機してください！",
+        "text_jp": "実はまだ、関係者の受け入れ準備が出来ていなくて……\nあと30分、いえ40分は、ここで待機してください！",
+        "text_cn": "",
+        "text_ref": {
+          "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000053:dialogue:000",
+          "source": {
+            "scenario_id": "1_4_002_10",
+            "part_id": "1_4_002_10_b",
+            "file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+            "command_index": 53,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:93f8d1c6e60e1c742b789bd5c817bd8aeff93ebf47015817319f9ff7af562a95"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 10,
+      "type": "adv",
+      "state": {
+        "bg": "bg004_townst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg002_sky_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "mysterious",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [
+          {
+            "id": "101ken",
+            "model": "101ken_001_00",
+            "face": "face_angry",
+            "anim": "sad",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 2.4,
+          "type": "spine_face",
+          "chara_id": "101ken",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "101ken",
+      "dialogue": {
+        "speaker": "山村 賢",
+        "text": "ええっ、そんなぁ！\nどうしましょう、●●●●プロデューサーさん。",
+        "text_jp": "ええっ、そんなぁ！\nどうしましょう、●●●●プロデューサーさん。",
+        "text_cn": "",
+        "voice": "b1003.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1003.json",
+          "frames": 308
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000058:dialogue:000",
+          "source": {
+            "scenario_id": "1_4_002_10",
+            "part_id": "1_4_002_10_b",
+            "file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+            "command_index": 58,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:52a4b5f777c15f767e5ced778f3b97298d4dcfd56ff81f2fca82527e1e446575"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 11,
+      "type": "adv",
+      "state": {
+        "bg": "bg004_townst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg002_sky_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "mysterious",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [
+          {
+            "id": "101ken",
+            "model": "101ken_001_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "dialogue": {
+        "speaker": "<P>",
+        "text": "困りましたね。\nただでさえ、この先の道は混みやすいのに……。",
+        "text_jp": "困りましたね。\nただでさえ、この先の道は混みやすいのに……。",
+        "text_cn": "",
+        "text_ref": {
+          "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000061:dialogue:000",
+          "source": {
+            "scenario_id": "1_4_002_10",
+            "part_id": "1_4_002_10_b",
+            "file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+            "command_index": 61,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:fc6d6d9a328aedaa7d58a285ec1174079025631f47a038c76a23e68de4083e80"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 12,
+      "type": "stage",
+      "state": {
+        "bg": "bg004_townst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg002_sky_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [
+          {
+            "id": "101ken",
+            "model": "101ken_001_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": 0,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.5,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 13,
+      "type": "text_disable",
+      "state": {
+        "bg": "bg004_townst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg002_sky_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [
+          {
+            "id": "101ken",
+            "model": "101ken_001_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#AAAAAA",
+        "bg_dof": 0.8,
+        "bg_color_transition": {
+          "delay": 0.1,
+          "duration": 0.4
+        },
+        "bg_dof_transition": {
+          "delay": 0,
+          "duration": 0.4
+        },
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.6,
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 14,
+      "type": "adv",
+      "state": {
+        "bg": "bg004_townst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg002_sky_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": {
+          "cue": "herobelt_light",
+          "delay": 3
+        },
+        "se_events": [
+          {
+            "cue": "herobelt_light",
+            "delay": 3
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [
+          {
+            "id": "101ken",
+            "model": "101ken_001_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#AAAAAA",
+        "bg_dof": 0.8,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 1.5,
+          "type": "spine_face",
+          "chara_id": "101ken",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 2.5,
+          "type": "spine_face",
+          "chara_id": "101ken",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "dialogue": {
+        "speaker": "<P>",
+        "text": "（ですが……何分待たされようと、問題ありません。\nなぜならこのバスは、おとりですから！）",
+        "text_jp": "（ですが……何分待たされようと、問題ありません。\nなぜならこのバスは、おとりですから！）",
+        "text_cn": "",
+        "text_ref": {
+          "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000072:dialogue:000",
+          "source": {
+            "scenario_id": "1_4_002_10",
+            "part_id": "1_4_002_10_b",
+            "file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+            "command_index": 72,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:4401e0c4d6bb3351b763c91acb1ac42b43a23b28f5643396b5ab250ad37c9937"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 15,
+      "type": "slidein",
+      "state": {
+        "bg": "bg004_townst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg002_sky_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [
+          {
+            "id": "101ken",
+            "model": "101ken_001_00",
+            "face": "face_joy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": {
+          "type": "in",
+          "delay": 0,
+          "duration": 0.5,
+          "direction": "6",
+          "color": "#000000"
+        },
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#AAAAAA",
+        "bg_dof": 0.8,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 16,
+      "type": "stage",
+      "state": {
+        "bg": "bg004_townst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg002_sky_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [
+          {
+            "id": "101ken",
+            "model": "101ken_001_00",
+            "face": "face_joy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "out",
+              "delay": 0,
+              "duration": 0.2
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#AAAAAA",
+        "bg_dof": 0.8,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.2,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 17,
+      "type": "slideout",
+      "state": {
+        "bg": "bg025_shoppingst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg025_shoppingst_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "city_usual_day",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": {
+          "type": "out",
+          "delay": 1,
+          "duration": 0.5,
+          "direction": "6",
+          "color": "#000000"
+        },
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": {
+          "delay": 0,
+          "duration": 0.4
+        },
+        "bg_dof_transition": {
+          "delay": 0.1,
+          "duration": 0.4
+        },
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 18,
+      "type": "stage",
+      "state": {
+        "bg": "bg025_shoppingst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg025_shoppingst_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "city_usual_day",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [
+          {
+            "id": "011min",
+            "model": "011min_109_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0,
+              "duration": 0.2
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.2,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 19,
+      "type": "stage",
+      "state": {
+        "bg": "bg025_shoppingst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg025_shoppingst_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "city_usual_day",
+        "bgm_volume": 0,
+        "se": {
+          "cue": "smartphone_tap",
+          "delay": 2
+        },
+        "se_events": [
+          {
+            "cue": "cellphone_vibrate",
+            "delay": 0
+          },
+          {
+            "cue": "cloth_move_ss01",
+            "delay": 1.5
+          },
+          {
+            "cue": "smartphone_tap",
+            "delay": 2
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [
+          {
+            "id": "011min",
+            "model": "011min_109_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 4.2,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "timeline": [
+        {
+          "time": 0.5,
+          "type": "spine_face",
+          "chara_id": "011min",
+          "value": "face_surprise",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 1.5,
+          "type": "spine_face",
+          "chara_id": "011min",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 1.5,
+          "type": "spine_anim",
+          "chara_id": "011min",
+          "value": "weight"
+        },
+        {
+          "time": 3.5,
+          "type": "spine_face",
+          "chara_id": "011min",
+          "value": "face_serious",
+          "anim_flag": "off",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 20,
+      "type": "adv",
+      "state": {
+        "bg": "bg025_shoppingst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg025_shoppingst_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "fight",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [
+          {
+            "id": "011min",
+            "model": "011min_109_00",
+            "face": "face_serious",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "chara_id": "011min",
+      "dialogue": {
+        "speaker": "渡辺 みのり",
+        "text": "……●●●●プロデューサーから連絡だ！　\nやっぱり、315プロのバスは足止めされたみたいだね。",
+        "text_jp": "……●●●●プロデューサーから連絡だ！　\nやっぱり、315プロのバスは足止めされたみたいだね。",
+        "text_cn": "",
+        "voice": "b1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1006.json",
+          "frames": 468
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000095:dialogue:000",
+          "source": {
+            "scenario_id": "1_4_002_10",
+            "part_id": "1_4_002_10_b",
+            "file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+            "command_index": 95,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:284359ff83c10ad0fe01e6ed751c2c53a10db2b1c54c7840739483599bf4c357"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 21,
+      "type": "adv",
+      "state": {
+        "bg": "bg025_shoppingst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg025_shoppingst_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "fight",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [
+          {
+            "id": "011min",
+            "model": "011min_109_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": 0,
+            "anim_flag": "off",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 1,
+          "type": "spine_face",
+          "chara_id": "011min",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 5,
+          "type": "spine_anim",
+          "chara_id": "011min",
+          "value": "angry"
+        }
+      ],
+      "chara_id": "011min",
+      "dialogue": {
+        "speaker": "渡辺 みのり",
+        "text": "でも、計画通り、2人が敵の目を欺いてくれてる。\n今のうちに、俺たちはステージに向かおう！",
+        "text_jp": "でも、計画通り、2人が敵の目を欺いてくれてる。\n今のうちに、俺たちはステージに向かおう！",
+        "text_cn": "",
+        "voice": "b1007.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1007.json",
+          "frames": 503
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000100:dialogue:000",
+          "source": {
+            "scenario_id": "1_4_002_10",
+            "part_id": "1_4_002_10_b",
+            "file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+            "command_index": 100,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:5e51226af19f219f55bf9d37801ca4a69d8bf38a162d527428ad8892e4a29356"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 22,
+      "type": "slidein",
+      "state": {
+        "bg": "bg025_shoppingst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg025_shoppingst_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "fight",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [
+          {
+            "id": "011min",
+            "model": "011min_109_00",
+            "face": "face_default",
+            "anim": "angry",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": {
+          "type": "in",
+          "delay": 0,
+          "duration": 0.5,
+          "direction": "6",
+          "color": "#000000"
+        },
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 23,
+      "type": "stage",
+      "state": {
+        "bg": "bg025_shoppingst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg025_shoppingst_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "fight",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [
+          {
+            "id": "011min",
+            "model": "011min_109_00",
+            "face": "face_default",
+            "anim": "angry",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "out",
+              "delay": 0,
+              "duration": 0.2
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1,
+          "offset_x": 0,
+          "offset_y": 95,
+          "duration": 0,
+          "delay": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.2,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 24,
+      "type": "slideout",
+      "state": {
+        "bg": "bg025_shoppingst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg025_shoppingst_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "fight",
+        "bgm_volume": 0,
+        "se": {
+          "cue": "bike_harley_onboard_loop",
+          "delay": 3
+        },
+        "se_events": [
+          {
+            "cue": "bike_harley_onboard_loop",
+            "delay": 3
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1,
+          "offset_x": 0,
+          "offset_y": 95,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": {
+          "type": "out",
+          "delay": 3,
+          "duration": 0.5,
+          "direction": "6",
+          "color": "#000000"
+        },
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 25,
+      "type": "stage",
+      "state": {
+        "bg": "bg025_shoppingst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg025_shoppingst_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "fight",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.5,
+          "offset_x": 0,
+          "offset_y": 95,
+          "duration": 0.5,
+          "delay": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 1,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 26,
+      "type": "adv",
+      "state": {
+        "bg": "bg025_shoppingst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg025_shoppingst_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "fight",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.5,
+          "offset_x": 0,
+          "offset_y": 95,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "chara_id": "044ame",
+      "dialogue": {
+        "speaker": "葛之葉 雨彦",
+        "text": "次は曲がり角だな。\n硲サン、後ろは問題ないかい？",
+        "text_jp": "次は曲がり角だな。\n硲サン、後ろは問題ないかい？",
+        "text_cn": "",
+        "voice": "b1009.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1009.json",
+          "frames": 380
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000126:dialogue:000",
+          "source": {
+            "scenario_id": "1_4_002_10",
+            "part_id": "1_4_002_10_b",
+            "file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+            "command_index": 126,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:ec3dba1e5f95ebe696c55ae0740e1e9451d8beed28fe1df91325ea937eb0100e"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 27,
+      "type": "adv",
+      "state": {
+        "bg": "bg025_shoppingst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg025_shoppingst_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "fight",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.5,
+          "offset_x": 0,
+          "offset_y": 95,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "chara_id": "035mco",
+      "dialogue": {
+        "speaker": "硲 道夫",
+        "text": "うむ、問題ない。\n葛之葉君、素晴らしい安全運転だ！",
+        "text_jp": "うむ、問題ない。\n葛之葉君、素晴らしい安全運転だ！",
+        "text_cn": "",
+        "voice": "b1010.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1010.json",
+          "frames": 340
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000128:dialogue:000",
+          "source": {
+            "scenario_id": "1_4_002_10",
+            "part_id": "1_4_002_10_b",
+            "file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+            "command_index": 128,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:4023c51c6729b87c283c1a97ba972d53cebdd829f2a2cea33d4076c4645ca405"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 28,
+      "type": "slidein",
+      "state": {
+        "bg": "bg025_shoppingst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg025_shoppingst_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "fight",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.5,
+          "offset_x": 0,
+          "offset_y": 95,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": {
+          "type": "in",
+          "delay": 0,
+          "duration": 0.5,
+          "direction": "6",
+          "color": "#000000"
+        },
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 29,
+      "type": "slideout",
+      "state": {
+        "bg": "bg004_townst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg004_townst_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "fight",
+        "bgm_volume": 0,
+        "se": {
+          "cue": "bike_harley_run_2",
+          "delay": 0
+        },
+        "se_events": [
+          {
+            "cue": "bike_harley_run_2",
+            "delay": 0
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.5,
+          "offset_x": 0,
+          "offset_y": 75,
+          "duration": 0,
+          "delay": 0
+        },
+        "screen_fade": null,
+        "screen_slide": {
+          "type": "out",
+          "delay": 3,
+          "duration": 0.5,
+          "direction": "6",
+          "color": "#000000"
+        },
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 30,
+      "type": "adv",
+      "state": {
+        "bg": "bg004_townst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg004_townst_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "fight",
+        "bgm_volume": 0,
+        "se": {
+          "cue": "bike_harley_onboard_loop",
+          "delay": 0
+        },
+        "se_events": [
+          {
+            "cue": "bike_harley_onboard_loop",
+            "delay": 0
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.5,
+          "offset_x": 0,
+          "offset_y": 75,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "chara_id": "016sei",
+      "dialogue": {
+        "speaker": "信玄 誠司",
+        "text": "次郎、大丈夫か？\nそうそう、しっかり掴まっていてくれ！",
+        "text_jp": "次郎、大丈夫か？\nそうそう、しっかり掴まっていてくれ！",
+        "text_cn": "",
+        "voice": "b1011.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1011.json",
+          "frames": 322
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000137:dialogue:000",
+          "source": {
+            "scenario_id": "1_4_002_10",
+            "part_id": "1_4_002_10_b",
+            "file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+            "command_index": 137,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:f201e918e077e8e2390f4417bf7b69a9bdddddcf616f3187aca8572829e5098e"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 31,
+      "type": "slidein",
+      "state": {
+        "bg": "bg004_townst_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg004_townst_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "fight",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.5,
+          "offset_x": 0,
+          "offset_y": 75,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": {
+          "type": "in",
+          "delay": 0,
+          "duration": 0.5,
+          "direction": "6",
+          "color": "#000000"
+        },
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 32,
+      "type": "slideout",
+      "state": {
+        "bg": "bg012_residence_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg012_residence_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "fight",
+        "bgm_volume": 0,
+        "se": {
+          "cue": "bike_harley_run",
+          "delay": 0
+        },
+        "se_events": [
+          {
+            "cue": "bike_harley_run",
+            "delay": 0
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.5,
+          "offset_x": 0,
+          "offset_y": 75,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": {
+          "type": "out",
+          "delay": 2.8,
+          "duration": 0.5,
+          "direction": "6",
+          "color": "#000000"
+        },
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 33,
+      "type": "adv",
+      "state": {
+        "bg": "bg012_residence_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg012_residence_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "fight",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.5,
+          "offset_x": 0,
+          "offset_y": 75,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "chara_id": "016sei",
+      "dialogue": {
+        "speaker": "信玄 誠司",
+        "text": "道は混んでいるし、遠回りしているはずなのに、\nどんどん会場に近づいているぞ！",
+        "text_jp": "道は混んでいるし、遠回りしているはずなのに、\nどんどん会場に近づいているぞ！",
+        "text_cn": "",
+        "voice": "b1013.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1013.json",
+          "frames": 366
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000144:dialogue:000",
+          "source": {
+            "scenario_id": "1_4_002_10",
+            "part_id": "1_4_002_10_b",
+            "file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+            "command_index": 144,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:e4d0dcb45720ed9d499cf1ad759f7d7a592259a506405a0df68a5d7225c3f828"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 34,
+      "type": "adv",
+      "state": {
+        "bg": "bg012_residence_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg012_residence_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "fight",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.5,
+          "offset_x": 0,
+          "offset_y": 75,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "chara_id": "011min",
+      "dialogue": {
+        "speaker": "渡辺 みのり",
+        "text": "ふふっ。まずは第一関門、突破だね！",
+        "text_jp": "ふふっ。まずは第一関門、突破だね！",
+        "text_cn": "",
+        "voice": "b1014.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/main/1_4_002/1_4_002_10/1_4_002_10_b/1_4_002_10_b1014.json",
+          "frames": 278
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_b:cmd-000146:dialogue:000",
+          "source": {
+            "scenario_id": "1_4_002_10",
+            "part_id": "1_4_002_10_b",
+            "file": "assets/resources/scenariodata/1_4_002_10/scenario_1_4_002_10_b.json",
+            "command_index": 146,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:baa0ecd7d5843273708a2fe6c3c1acbc550b66a95bf88f0b0ec0feefcb752cd2"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 35,
+      "type": "text_disable",
+      "state": {
+        "bg": "bg012_residence_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg012_residence_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": "fight",
+        "bgm_volume": 0,
+        "se": {
+          "cue": "bike_go",
+          "delay": 0
+        },
+        "se_events": [
+          {
+            "cue": "bike_harley_run_2",
+            "delay": 0
+          },
+          {
+            "cue": "bike_go",
+            "delay": 0
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_shop_street_day"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.5,
+          "offset_x": 0,
+          "offset_y": 75,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 3,
+      "episode_index": 0,
+      "episode_part": "b"
+    }
+  ],
+  "jump_points": {},
+  "episodes": [
+    {
+      "episode_index": 0,
+      "episode_no": 1,
+      "part": "b",
+      "source_scenario_id": "1_4_002_10_b",
+      "start_step_index": 0,
+      "start_step_id": 1,
+      "end_step_index": 34,
+      "end_step_id": 35,
+      "step_count": 35
+    }
+  ],
+  "aggregate_source": {
+    "file": "1_4_002_10.json",
+    "scenario_id": "1_4_002_10",
+    "start_step_index": 44,
+    "end_step_index": 78
+  }
+}

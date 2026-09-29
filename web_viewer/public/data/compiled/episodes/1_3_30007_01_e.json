@@ -1,0 +1,3031 @@
+{
+  "scenario_id": "1_3_30007_01_e",
+  "total_steps": 26,
+  "steps": [
+    {
+      "step_id": 1,
+      "type": "fadeout",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "011min",
+            "model": "011min_002_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0,
+              "duration": 0
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.3,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0,
+          "delay": 0
+        },
+        "screen_fade": {
+          "type": "in",
+          "duration": 0.5,
+          "delay": 0,
+          "color": "#000000"
+        },
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 2,
+      "type": "adv",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": {
+          "cue": "scenario_pass",
+          "delay": 3.3
+        },
+        "se_events": [
+          {
+            "cue": "scenario_pass",
+            "delay": 3.3
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "011min",
+            "model": "011min_002_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.3,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 1.5,
+          "type": "spine_face",
+          "chara_id": "011min",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 2,
+          "type": "spine_anim",
+          "chara_id": "011min",
+          "value": "joy"
+        },
+        {
+          "time": 3.3,
+          "type": "spine_face",
+          "chara_id": "011min",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "011min",
+      "dialogue": {
+        "speaker": "渡辺 みのり",
+        "text": "本題に入ろうか。みんな、資料は手元にある？",
+        "text_jp": "本題に入ろうか。みんな、資料は手元にある？",
+        "text_cn": "",
+        "voice": "e1000.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_e/1_3_30007_01_e1000.json",
+          "frames": 315
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_e:cmd-000032:dialogue:000",
+          "source": {
+            "scenario_id": "1_3_30007_01",
+            "part_id": "1_3_30007_01_e",
+            "file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_e.json",
+            "command_index": 32,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:3f17ce21180932fca79237686063b2e9cce44c4db32232a7260ce1a1479ea0cd"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 3,
+      "type": "text_disable",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "011min",
+            "model": "011min_002_00",
+            "face": "face_joy",
+            "anim": "joy",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "out",
+              "delay": 0,
+              "duration": 0.2
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.3,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.6,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 4,
+      "type": "stage",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.15,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5,
+          "delay": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.5,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 5,
+      "type": "stage",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "015ryu",
+            "model": "015ryu_002_00",
+            "face": "face_happy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 300,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0,
+              "duration": 0.2
+            }
+          },
+          {
+            "id": "020hay",
+            "model": "020hay_001_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -320,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0,
+              "duration": 0.2
+            }
+          },
+          {
+            "id": "025suz",
+            "model": "025suz_002_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0,
+              "duration": 0.2
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.15,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.5,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 6,
+      "type": "adv",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": {
+          "cue": "page_turn",
+          "delay": 2.9
+        },
+        "se_events": [
+          {
+            "cue": "page_turn",
+            "delay": 2.9
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "015ryu",
+            "model": "015ryu_002_00",
+            "face": "face_happy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 300,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "020hay",
+            "model": "020hay_001_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -320,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "025suz",
+            "model": "025suz_002_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.15,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 1.3,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 2.5,
+          "type": "spine_anim",
+          "chara_id": "015ryu",
+          "value": "weight"
+        }
+      ],
+      "chara_id": "015ryu",
+      "dialogue": {
+        "speaker": "木村 龍",
+        "text": "あります！\nどんなことが書いてあるんだろう。どれどれ……。",
+        "text_jp": "あります！\nどんなことが書いてあるんだろう。どれどれ……。",
+        "text_cn": "",
+        "voice": "e1001.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_e/1_3_30007_01_e1001.json",
+          "frames": 270
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_e:cmd-000046:dialogue:000",
+          "source": {
+            "scenario_id": "1_3_30007_01",
+            "part_id": "1_3_30007_01_e",
+            "file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_e.json",
+            "command_index": 46,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:603519c4925177eb4df1d9d1ec6fa5f8407e06b7f404aaf635e13cd3817bb2af"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 7,
+      "type": "adv",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": {
+          "cue": "page_turn",
+          "delay": 3
+        },
+        "se_events": [
+          {
+            "cue": "page_turn",
+            "delay": 3
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "015ryu",
+            "model": "015ryu_002_00",
+            "face": "face_joy",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": 300,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "020hay",
+            "model": "020hay_001_00",
+            "face": "face_joy",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": -320,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "025suz",
+            "model": "025suz_002_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.15,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 3.3,
+          "type": "spine_face",
+          "chara_id": "020hay",
+          "value": "face_happy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "020hay",
+      "dialogue": {
+        "speaker": "秋山 隼人",
+        "text": "やって欲しいこと、色々あるみたいですね。\n……あ、こっちは名指しの企画だ。",
+        "text_jp": "やって欲しいこと、色々あるみたいですね。\n……あ、こっちは名指しの企画だ。",
+        "text_cn": "",
+        "voice": "e1002.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_e/1_3_30007_01_e1002.json",
+          "frames": 372
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_e:cmd-000052:dialogue:000",
+          "source": {
+            "scenario_id": "1_3_30007_01",
+            "part_id": "1_3_30007_01_e",
+            "file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_e.json",
+            "command_index": 52,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:320bd0497c88bbf945b9b33b1fc1ec8bc85b5d57177585d8994c7594c328bcc7"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 8,
+      "type": "adv",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "015ryu",
+            "model": "015ryu_002_00",
+            "face": "face_joy",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": 300,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "020hay",
+            "model": "020hay_001_00",
+            "face": "face_happy",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": -320,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "025suz",
+            "model": "025suz_002_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": -50,
+            "anim_flag": "off",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.15,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 2.5,
+          "type": "spine_face",
+          "chara_id": "025suz",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 3,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_happy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 3,
+          "type": "spine_anim",
+          "chara_id": "015ryu",
+          "value": "wait_loop"
+        },
+        {
+          "time": 4,
+          "type": "spine_face",
+          "chara_id": "025suz",
+          "value": "face_happy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 4,
+          "type": "spine_anim",
+          "chara_id": "025suz",
+          "value": "angry"
+        },
+        {
+          "time": 5,
+          "type": "spine_anim",
+          "chara_id": "020hay",
+          "value": "wait_loop"
+        },
+        {
+          "time": 5.5,
+          "type": "spine_face",
+          "chara_id": "025suz",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 7.2,
+          "type": "spine_face",
+          "chara_id": "020hay",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 7.2,
+          "type": "spine_anim",
+          "chara_id": "020hay",
+          "value": "joy"
+        }
+      ],
+      "chara_id": "025suz",
+      "dialogue": {
+        "speaker": "紅井 朱雀",
+        "text": "料理に、イラスト対決に、鬼ごっこか！\nウオオオ！　気になる企画がありすぎて迷うぜ！",
+        "text_jp": "料理に、イラスト対決に、鬼ごっこか！\nウオオオ！　気になる企画がありすぎて迷うぜ！",
+        "text_cn": "",
+        "voice": "e1003.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_e/1_3_30007_01_e1003.json",
+          "frames": 540
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_e:cmd-000064:dialogue:000",
+          "source": {
+            "scenario_id": "1_3_30007_01",
+            "part_id": "1_3_30007_01_e",
+            "file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_e.json",
+            "command_index": 64,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:b63f6a29c5898eeeb908c3daabe9facd6dc5ea082c2dc0ac2c99ace0f5624ef3"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 9,
+      "type": "adv",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "015ryu",
+            "model": "015ryu_002_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 300,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "020hay",
+            "model": "020hay_001_00",
+            "face": "face_joy",
+            "anim": "joy",
+            "position": 0,
+            "visible": true,
+            "pos_x": -320,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "025suz",
+            "model": "025suz_002_00",
+            "face": "face_joy",
+            "anim": "angry",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.15,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 0.8,
+          "type": "spine_face",
+          "chara_id": "020hay",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 0.8,
+          "type": "spine_anim",
+          "chara_id": "020hay",
+          "value": "wait_loop"
+        },
+        {
+          "time": 0.9,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_shy",
+          "anim_flag": "off",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 0.9,
+          "type": "spine_anim",
+          "chara_id": "015ryu",
+          "value": "sad",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 2.4,
+          "type": "spine_face",
+          "chara_id": "020hay",
+          "value": "face_happy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 2.8,
+          "type": "spine_face",
+          "chara_id": "025suz",
+          "value": "face_happy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "015ryu",
+      "dialogue": {
+        "speaker": "木村 龍",
+        "text": "ああ、これはなかなか決まらなさそうだな。",
+        "text_jp": "ああ、これはなかなか決まらなさそうだな。",
+        "text_cn": "",
+        "voice": "e1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_e/1_3_30007_01_e1004.json",
+          "frames": 236
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_e:cmd-000075:dialogue:000",
+          "source": {
+            "scenario_id": "1_3_30007_01",
+            "part_id": "1_3_30007_01_e",
+            "file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_e.json",
+            "command_index": 75,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:98c6e5548d8770dadcf0c131532822b1b46e7892e2f4a42dadbbae0a2be806d5"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 10,
+      "type": "text_disable",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "015ryu",
+            "model": "015ryu_002_00",
+            "face": "face_shy",
+            "anim": "sad",
+            "position": 0,
+            "visible": true,
+            "pos_x": 300,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "out",
+              "delay": 0,
+              "duration": 0.2
+            }
+          },
+          {
+            "id": "020hay",
+            "model": "020hay_001_00",
+            "face": "face_happy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -320,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "out",
+              "delay": 0,
+              "duration": 0.2
+            }
+          },
+          {
+            "id": "025suz",
+            "model": "025suz_002_00",
+            "face": "face_happy",
+            "anim": "angry",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "out",
+              "delay": 0,
+              "duration": 0.2
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.15,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.6,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 11,
+      "type": "stage",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.3,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5,
+          "delay": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.5,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 12,
+      "type": "stage",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": {
+          "cue": "cloth_move_ss01",
+          "delay": 0
+        },
+        "se_events": [
+          {
+            "cue": "cloth_move_ss01",
+            "delay": 0
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "011min",
+            "model": "011min_002_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 200,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0,
+              "duration": 0.2
+            }
+          },
+          {
+            "id": "049eis",
+            "model": "049eis_001_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -200,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0,
+              "duration": 0.2
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.3,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.5,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 13,
+      "type": "adv",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "011min",
+            "model": "011min_002_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 200,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "049eis",
+            "model": "049eis_001_00",
+            "face": "face_default",
+            "anim": "sad",
+            "position": 0,
+            "visible": true,
+            "pos_x": -200,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.3,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "chara_id": "049eis",
+      "dialogue": {
+        "speaker": "眉見 鋭心",
+        "text": "では、俺が意見をまとめましょう。\n構いませんか？",
+        "text_jp": "では、俺が意見をまとめましょう。\n構いませんか？",
+        "text_cn": "",
+        "voice": "e1005.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_e/1_3_30007_01_e1005.json",
+          "frames": 266
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_e:cmd-000092:dialogue:000",
+          "source": {
+            "scenario_id": "1_3_30007_01",
+            "part_id": "1_3_30007_01_e",
+            "file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_e.json",
+            "command_index": 92,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:7f7aa3332edaa2e201cf053061741bbef2cdf0d368a56e4c4f5ad570d20d51d5"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 14,
+      "type": "adv",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "011min",
+            "model": "011min_002_00",
+            "face": "face_joy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 200,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "049eis",
+            "model": "049eis_001_00",
+            "face": "face_default",
+            "anim": "sad",
+            "position": 0,
+            "visible": true,
+            "pos_x": -200,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.3,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 2.5,
+          "type": "spine_face",
+          "chara_id": "011min",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 5,
+          "type": "spine_neck_anim",
+          "chara_id": "011min",
+          "value": "neck_question"
+        }
+      ],
+      "chara_id": "011min",
+      "dialogue": {
+        "speaker": "渡辺 みのり",
+        "text": "うん、もちろん。\nそれじゃここからはよろしく、鋭心くん。",
+        "text_jp": "うん、もちろん。\nそれじゃここからはよろしく、鋭心くん。",
+        "text_cn": "",
+        "voice": "e1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_e/1_3_30007_01_e1006.json",
+          "frames": 368
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_e:cmd-000097:dialogue:000",
+          "source": {
+            "scenario_id": "1_3_30007_01",
+            "part_id": "1_3_30007_01_e",
+            "file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_e.json",
+            "command_index": 97,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:4d57075faeb85b5ffa38795f5027dc2436fa4c8e63e9bd458fb990425d8bca70"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 15,
+      "type": "text_disable",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "011min",
+            "model": "011min_002_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 200,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "out",
+              "delay": 0,
+              "duration": 0.2
+            }
+          },
+          {
+            "id": "049eis",
+            "model": "049eis_001_00",
+            "face": "face_default",
+            "anim": "sad",
+            "position": 0,
+            "visible": true,
+            "pos_x": -200,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "out",
+              "delay": 0,
+              "duration": 0.2
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.3,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.6,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 16,
+      "type": "stage",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.15,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5,
+          "delay": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.5,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 17,
+      "type": "stage",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "020hay",
+            "model": "020hay_001_00",
+            "face": "face_happy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -320,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0,
+              "duration": 0.2
+            }
+          },
+          {
+            "id": "025suz",
+            "model": "025suz_002_00",
+            "face": "face_surprise",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 240,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0,
+              "duration": 0.2
+            }
+          },
+          {
+            "id": "049eis",
+            "model": "049eis_001_00",
+            "face": "face_default",
+            "anim": "sad",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0,
+              "duration": 0.2
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.15,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.5,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 18,
+      "type": "text_disable",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "020hay",
+            "model": "020hay_001_00",
+            "face": "face_happy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -320,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "025suz",
+            "model": "025suz_002_00",
+            "face": "face_surprise",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 240,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "idol_color": "#AAAAAA",
+            "idol_color_transition": {
+              "delay": 0.1,
+              "duration": 0.4
+            }
+          },
+          {
+            "id": "049eis",
+            "model": "049eis_001_00",
+            "face": "face_default",
+            "anim": "sad",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "idol_color": "#AAAAAA",
+            "idol_color_transition": {
+              "delay": 0.1,
+              "duration": 0.4
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.15,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#AAAAAA",
+        "bg_dof": 0.8,
+        "bg_color_transition": {
+          "delay": 0.1,
+          "duration": 0.4
+        },
+        "bg_dof_transition": {
+          "delay": 0,
+          "duration": 0.4
+        },
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.6,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 19,
+      "type": "adv",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "020hay",
+            "model": "020hay_001_00",
+            "face": "face_happy",
+            "anim": "joy",
+            "position": 0,
+            "visible": true,
+            "pos_x": -320,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "025suz",
+            "model": "025suz_002_00",
+            "face": "face_surprise",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 240,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "idol_color": "#AAAAAA"
+          },
+          {
+            "id": "049eis",
+            "model": "049eis_001_00",
+            "face": "face_default",
+            "anim": "sad",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "idol_color": "#AAAAAA"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.15,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#AAAAAA",
+        "bg_dof": 0.8,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 1.3,
+          "type": "spine_face",
+          "chara_id": "020hay",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 4.8,
+          "type": "spine_face",
+          "chara_id": "020hay",
+          "value": "face_happy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 7.7,
+          "type": "spine_face",
+          "chara_id": "020hay",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "020hay",
+      "lipSync": false,
+      "dialogue": {
+        "speaker": "秋山 隼人",
+        "text": "（わ～、さすが有名生徒会長だ！　こういう時、\nサッと中心に立てるの、カッコいいよなぁ……）",
+        "text_jp": "（わ～、さすが有名生徒会長だ！　こういう時、\nサッと中心に立てるの、カッコいいよなぁ……）",
+        "text_cn": "",
+        "voice": "e1007.m4a",
+        "text_ref": {
+          "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_e:cmd-000127:dialogue:000",
+          "source": {
+            "scenario_id": "1_3_30007_01",
+            "part_id": "1_3_30007_01_e",
+            "file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_e.json",
+            "command_index": 127,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:056d511f74169a4738dd351b08982a80570c9e22a87011ba7e6019d883e6f537"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 20,
+      "type": "text_disable",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "020hay",
+            "model": "020hay_001_00",
+            "face": "face_joy",
+            "anim": "joy",
+            "position": 0,
+            "visible": true,
+            "pos_x": -320,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "idol_color": "#AAAAAA",
+            "idol_color_transition": {
+              "delay": 0.1,
+              "duration": 0.4
+            }
+          },
+          {
+            "id": "025suz",
+            "model": "025suz_002_00",
+            "face": "face_surprise",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 240,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "idol_color": "#FFFFFF",
+            "idol_color_transition": {
+              "delay": 0.1,
+              "duration": 0.4
+            }
+          },
+          {
+            "id": "049eis",
+            "model": "049eis_001_00",
+            "face": "face_default",
+            "anim": "sad",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "idol_color": "#AAAAAA"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.15,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#AAAAAA",
+        "bg_dof": 0.8,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.6,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 21,
+      "type": "adv",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "020hay",
+            "model": "020hay_001_00",
+            "face": "face_joy",
+            "anim": "joy",
+            "position": 0,
+            "visible": true,
+            "pos_x": -320,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "idol_color": "#AAAAAA"
+          },
+          {
+            "id": "025suz",
+            "model": "025suz_002_00",
+            "face": "face_serious",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 240,
+            "pos_y": -50,
+            "anim_flag": "off",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "idol_color": "#FFFFFF"
+          },
+          {
+            "id": "049eis",
+            "model": "049eis_001_00",
+            "face": "face_default",
+            "anim": "sad",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "idol_color": "#AAAAAA"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.15,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#AAAAAA",
+        "bg_dof": 0.8,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 0.1,
+          "type": "spine_face",
+          "chara_id": "025suz",
+          "value": "face_serious",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 2.2,
+          "type": "spine_face",
+          "chara_id": "025suz",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 5,
+          "type": "spine_anim",
+          "chara_id": "025suz",
+          "value": "angry"
+        }
+      ],
+      "chara_id": "025suz",
+      "lipSync": false,
+      "dialogue": {
+        "speaker": "紅井 朱雀",
+        "text": "（この堂々とした態度。学校で頭を張ってるのが、\n言葉から伝わってくるぜぇ！）",
+        "text_jp": "（この堂々とした態度。学校で頭を張ってるのが、\n言葉から伝わってくるぜぇ！）",
+        "text_cn": "",
+        "voice": "e1008.m4a",
+        "text_ref": {
+          "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_e:cmd-000138:dialogue:000",
+          "source": {
+            "scenario_id": "1_3_30007_01",
+            "part_id": "1_3_30007_01_e",
+            "file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_e.json",
+            "command_index": 138,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:4bded1d48b85006462e2d10f1b3d243fee54a5a475408f3d6bf39d128c5622a2"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 22,
+      "type": "text_disable",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "020hay",
+            "model": "020hay_001_00",
+            "face": "face_joy",
+            "anim": "joy",
+            "position": 0,
+            "visible": true,
+            "pos_x": -320,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "idol_color": "#FFFFFF",
+            "fade": {
+              "type": "out",
+              "delay": 0,
+              "duration": 0.2
+            },
+            "idol_color_transition": {
+              "delay": 0.1,
+              "duration": 0.4
+            }
+          },
+          {
+            "id": "025suz",
+            "model": "025suz_002_00",
+            "face": "face_joy",
+            "anim": "angry",
+            "position": 0,
+            "visible": true,
+            "pos_x": 240,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "idol_color": "#FFFFFF",
+            "fade": {
+              "type": "out",
+              "delay": 0,
+              "duration": 0.2
+            }
+          },
+          {
+            "id": "049eis",
+            "model": "049eis_001_00",
+            "face": "face_default",
+            "anim": "sad",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "idol_color": "#FFFFFF",
+            "fade": {
+              "type": "out",
+              "delay": 0,
+              "duration": 0.2
+            },
+            "idol_color_transition": {
+              "delay": 0.1,
+              "duration": 0.4
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.15,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": {
+          "delay": 0,
+          "duration": 0.4
+        },
+        "bg_dof_transition": {
+          "delay": 0.1,
+          "duration": 0.4
+        },
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.6,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 23,
+      "type": "stage",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.3,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5,
+          "delay": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.5,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 24,
+      "type": "stage",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "049eis",
+            "model": "049eis_001_00",
+            "face": "face_default",
+            "anim": "sad",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "idol_color": "#FFFFFF",
+            "fade": {
+              "type": "in",
+              "delay": 0,
+              "duration": 0.2
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.3,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.2,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 25,
+      "type": "adv",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "049eis",
+            "model": "049eis_001_00",
+            "face": "face_default",
+            "anim": "sad",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": -50,
+            "anim_flag": "off",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "idol_color": "#FFFFFF"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.3,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 3.5,
+          "type": "spine_face",
+          "chara_id": "049eis",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "049eis",
+      "dialogue": {
+        "speaker": "眉見 鋭心",
+        "text": "他の動画では、それぞれチームの個性に\nあったものを題材にしていました。",
+        "text_jp": "他の動画では、それぞれチームの個性に\nあったものを題材にしていました。",
+        "text_cn": "",
+        "voice": "e1009.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_e/1_3_30007_01_e1009.json",
+          "frames": 310
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_e:cmd-000155:dialogue:000",
+          "source": {
+            "scenario_id": "1_3_30007_01",
+            "part_id": "1_3_30007_01_e",
+            "file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_e.json",
+            "command_index": 155,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:a6e0abb4b18422d4f279a5ac6349b94ce28bacb0dca2c0c7f3598b6fd3632b07"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 26,
+      "type": "adv",
+      "state": {
+        "bg": "bg060_interviewroom_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg060_interviewroom_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "049eis",
+            "model": "049eis_001_00",
+            "face": "face_default",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0,
+            "pos_y": -50,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "idol_color": "#FFFFFF"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.3,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": "#FFFFFF",
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "chara_id": "049eis",
+      "dialogue": {
+        "speaker": "眉見 鋭心",
+        "text": "まずは俺たちも『自分達にあっているかどうか』を\n基準に、企画を選んでいくのはどうでしょうか。",
+        "text_jp": "まずは俺たちも『自分達にあっているかどうか』を\n基準に、企画を選んでいくのはどうでしょうか。",
+        "text_cn": "",
+        "voice": "e1010.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/event/1_3_30007_01/1_3_30007_01_e/1_3_30007_01_e1010.json",
+          "frames": 388
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_3_30007_01:1_3_30007_01_e:cmd-000158:dialogue:000",
+          "source": {
+            "scenario_id": "1_3_30007_01",
+            "part_id": "1_3_30007_01_e",
+            "file": "assets/resources/scenariodata/1_3_30007_01/scenario_1_3_30007_01_e.json",
+            "command_index": 158,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:da41cb774145fa1af48670bccb6e57ff01c42dfb885551510461b7834e359b63"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    }
+  ],
+  "jump_points": {},
+  "episodes": [
+    {
+      "episode_index": 0,
+      "episode_no": 1,
+      "part": "e",
+      "source_scenario_id": "1_3_30007_01_e",
+      "start_step_index": 0,
+      "start_step_id": 1,
+      "end_step_index": 25,
+      "end_step_id": 26,
+      "step_count": 26
+    }
+  ],
+  "aggregate_source": {
+    "file": "1_3_30007_01.json",
+    "scenario_id": "1_3_30007_01",
+    "start_step_index": 90,
+    "end_step_index": 115
+  }
+}
