@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "5_06_020_22_5_06_020_22",
-  "logical_id": "story-collection:5_06_020_22_5_06_020_22",
+  "logical_id": "story:5_06_020_22_5_06_020_22",
   "scenario_id": "5_06_020_22_5_06_020_22",
   "text_catalog_id": "5_06_020_22_5_06_020_22",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "5_06_020_22_5_06_020_22.json",
-    "sha256": "sha256:a00477c03e4d667127fa3ca9e2c6d11dae40794365eb55067cf7327e408e31d2",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:37dc13c3a744800c4680fd5fe2d7d127d3510c530d2df5125e07e9f30a6bdde5",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:d010163d04366731d369cd5391059a0481da82dcb771399c92525afc1e2ab995",
     "aggregate_source": null,
     "step_count": 34,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "5_06_020_22_5_06_020_22.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "挑戦は続いていく",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_020_22_5_06_020_22:5_06_020_22:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "5_06_020_22_5_06_020_22",
+          "part_id": "5_06_020_22",
+          "file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:cba19352f03496d2484e9435fb5dda7599eca77dcb19e55295f7b3745828a6a4"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "5_06_020_22_5_06_020_22:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_020_22",
+        "source_file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "315プロダクションの記念日を祝う、\nスペシャルライブの開催が決定。\nパッションあふれる最高の舞台にすべく、\nアイドルたちは一丸となって新曲や衣装、\nステージ演出を作り上げていく。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_020_22_5_06_020_22:5_06_020_22:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "5_06_020_22_5_06_020_22",
+          "part_id": "5_06_020_22",
+          "file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:128b3bb9304447098f1b4bbc1bb56cf707060803dc9a098e2b19247715e7282b"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,21 +116,32 @@
         "row_id": "5_06_020_22_5_06_020_22:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_020_22",
+        "source_file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "おはようございます、プロデューサーさん。\n先日のライブ、お疲れさまでした！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_020_22_5_06_020_22:5_06_020_22:cmd-000022:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_020_22_5_06_020_22",
+          "part_id": "5_06_020_22",
+          "file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+          "command_index": 22,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:57e01a9998bf583fe9c8d5bdd3cc073c60d683d64d245debdf7be547960f47a3"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "101ken",
         "sourceName": "山村 賢"
       },
       "performance": {
@@ -130,17 +166,28 @@
         "row_id": "5_06_020_22_5_06_020_22:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_020_22",
+        "source_file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ありがとうございます！\n無事に本番を迎えられてよかったです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_020_22_5_06_020_22:5_06_020_22:cmd-000026:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_020_22_5_06_020_22",
+          "part_id": "5_06_020_22",
+          "file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+          "command_index": 26,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d8f9018b6c828aa1459b81fb69abfe70283148c2776f3ed88aaf7fe386e96816"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -167,21 +214,32 @@
         "row_id": "5_06_020_22_5_06_020_22:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_020_22",
+        "source_file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "みんな、ご苦労だった！　315プロダクションの\n主催ライブは、大成功で幕を閉じた。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_020_22_5_06_020_22:5_06_020_22:cmd-000033:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_020_22_5_06_020_22",
+          "part_id": "5_06_020_22",
+          "file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+          "command_index": 33,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3f698445e4a8559c6faedce54bf75e74569f6d7e2f9c7a5d5c3fdf83538e76a9"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "102sha",
         "sourceName": "齋藤社長"
       },
       "performance": {
@@ -206,21 +264,32 @@
         "row_id": "5_06_020_22_5_06_020_22:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_020_22",
+        "source_file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "この成功は、みんなのパッションが一つに\nなったからこそ得られたものだ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_020_22_5_06_020_22:5_06_020_22:cmd-000081:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_020_22_5_06_020_22",
+          "part_id": "5_06_020_22",
+          "file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+          "command_index": 81,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:57f0f9792dae3bb63ad8c9d4a6e53ff21927d27480c3c793673be5f233f5c337"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "102sha",
         "sourceName": "齋藤社長"
       },
       "performance": {
@@ -245,17 +314,28 @@
         "row_id": "5_06_020_22_5_06_020_22:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_020_22",
+        "source_file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+        "command_start": 81,
+        "command_end": 81
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "はい！　準備を始めてから本番まで、\n皆さんの心が一つになっていくのを感じました。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_020_22_5_06_020_22:5_06_020_22:cmd-000108:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_020_22_5_06_020_22",
+          "part_id": "5_06_020_22",
+          "file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+          "command_index": 108,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e5d9a2431caebe33026ea7257891b610330d94b502b89e4dc8137a687e1b891b"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -282,21 +362,32 @@
         "row_id": "5_06_020_22_5_06_020_22:step-18:text",
         "step_id": 18,
         "step_index": 17,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_020_22",
+        "source_file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+        "command_start": 108,
+        "command_end": 108
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "アイドルの皆さんはもちろん、プロデューサーさんの\n熱意も、ライブの成功に繋がりましたね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_020_22_5_06_020_22:5_06_020_22:cmd-000117:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_020_22_5_06_020_22",
+          "part_id": "5_06_020_22",
+          "file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+          "command_index": 117,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8cdfe4919d5754c3e55321ab893a2c42df0ddb5593a9e4dd74e3b31f7fc45c6e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "101ken",
         "sourceName": "山村 賢"
       },
       "performance": {
@@ -321,21 +412,32 @@
         "row_id": "5_06_020_22_5_06_020_22:step-21:text",
         "step_id": 21,
         "step_index": 20,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_020_22",
+        "source_file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+        "command_start": 117,
+        "command_end": 117
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "しかし！　このライブは決してゴールではない、\n我々の挑戦はまだまだ続いていく！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_020_22_5_06_020_22:5_06_020_22:cmd-000124:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_020_22_5_06_020_22",
+          "part_id": "5_06_020_22",
+          "file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+          "command_index": 124,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a4af077448ea1c97de78a4dad33e3c4edd6c6ba1d1750772cfdad9ab64d68e9c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "102sha",
         "sourceName": "齋藤社長"
       },
       "performance": {
@@ -360,21 +462,32 @@
         "row_id": "5_06_020_22_5_06_020_22:step-24:text",
         "step_id": 24,
         "step_index": 23,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_020_22",
+        "source_file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+        "command_start": 124,
+        "command_end": 124
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "君たちのパッションが切り拓く未来に期待している。\n引き続き、みんなのサポートを頼んだぞ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_020_22_5_06_020_22:5_06_020_22:cmd-000126:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_020_22_5_06_020_22",
+          "part_id": "5_06_020_22",
+          "file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+          "command_index": 126,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bd1b316f483eeb01cf9f3e3fb8264c21339769c93134c274ae4644f679a1b121"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "102sha",
         "sourceName": "齋藤社長"
       },
       "performance": {
@@ -399,17 +512,28 @@
         "row_id": "5_06_020_22_5_06_020_22:step-25:text",
         "step_id": 25,
         "step_index": 24,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_020_22",
+        "source_file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+        "command_start": 126,
+        "command_end": 126
       },
       "option": null
     },
     {
       "kind": "choice",
       "source_text": "もちろんです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_020_22_5_06_020_22:5_06_020_22:cmd-000130:choice_short:000",
+        "source": {
+          "scenario_id": "5_06_020_22_5_06_020_22",
+          "part_id": "5_06_020_22",
+          "file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+          "command_index": 130,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9c3e0eab7135bbf0124c363d162784a0708abfe045d94917138ffb36a58b21a3"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -436,15 +560,15 @@
         "row_id": "5_06_020_22_5_06_020_22:step-27:option-0",
         "step_id": 27,
         "step_index": 26,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_020_22",
+        "source_file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+        "command_start": 130,
+        "command_end": 130
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "a1008",
+        "choice_id": "choice:v1:5_06_020_22_5_06_020_22:5_06_020_22:cmd-000130",
+        "option_id": "choice-option:v1:5_06_020_22_5_06_020_22:5_06_020_22:cmd-000130:000",
+        "source_label": null,
         "target_step_id": 28,
         "target_step_index": 27,
         "resolution": "resolved"
@@ -453,7 +577,18 @@
     {
       "kind": "choice_detail",
       "source_text": "appeal",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_020_22_5_06_020_22:5_06_020_22:cmd-000130:choice_detail:000",
+        "source": {
+          "scenario_id": "5_06_020_22_5_06_020_22",
+          "part_id": "5_06_020_22",
+          "file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+          "command_index": 130,
+          "field_kind": "choice_detail",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:da7e2d4b40b63f98e9fc566d7b5145da923c16c638a22c9f1885bf030e4dc72a"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -480,15 +615,15 @@
         "row_id": "5_06_020_22_5_06_020_22:step-27:option-0-detail",
         "step_id": 27,
         "step_index": 26,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_020_22",
+        "source_file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+        "command_start": 130,
+        "command_end": 130
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "a1008",
+        "choice_id": "choice:v1:5_06_020_22_5_06_020_22:5_06_020_22:cmd-000130",
+        "option_id": "choice-option:v1:5_06_020_22_5_06_020_22:5_06_020_22:cmd-000130:000",
+        "source_label": null,
         "target_step_id": 28,
         "target_step_index": 27,
         "resolution": "resolved"
@@ -497,7 +632,18 @@
     {
       "kind": "dialogue",
       "source_text": "今後も全力でサポートしていきます。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_020_22_5_06_020_22:5_06_020_22:cmd-000135:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_020_22_5_06_020_22",
+          "part_id": "5_06_020_22",
+          "file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+          "command_index": 135,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bd3a328c96363e566faa2e8037bc4690e318a7544e32b007c5d18847599d58bb"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -524,21 +670,32 @@
         "row_id": "5_06_020_22_5_06_020_22:step-29:text",
         "step_id": 29,
         "step_index": 28,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_020_22",
+        "source_file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+        "command_start": 135,
+        "command_end": 135
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "これからも、一緒に頑張っていきましょうね。\nよろしくお願いします、プロデューサーさん！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_020_22_5_06_020_22:5_06_020_22:cmd-000147:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_020_22_5_06_020_22",
+          "part_id": "5_06_020_22",
+          "file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+          "command_index": 147,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:206278512a1b3306a3eb91969dc201e0257ffa1ce79c1309de0c257e63be7885"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "101ken",
         "sourceName": "山村 賢"
       },
       "performance": {
@@ -563,10 +720,10 @@
         "row_id": "5_06_020_22_5_06_020_22:step-32:text",
         "step_id": 32,
         "step_index": 31,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_020_22",
+        "source_file": "assets/resources/scenariodata/5_06_020_22/scenario_5_06_020_22.json",
+        "command_start": 147,
+        "command_end": 147
       },
       "option": null
     }
@@ -578,9 +735,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "a1008",
+          "choice_id": "choice:v1:5_06_020_22_5_06_020_22:5_06_020_22:cmd-000130",
+          "option_id": "choice-option:v1:5_06_020_22_5_06_020_22:5_06_020_22:cmd-000130:000",
+          "source_label": null,
           "target_step_id": 28,
           "target_step_index": 27,
           "resolution": "resolved"
@@ -588,83 +745,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 17,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 20,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 23,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 24,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 26,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 26,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 28,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 31,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "315プロダクションの記念日を祝う、",
     "episode_label": null

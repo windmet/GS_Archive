@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_101ken_2_1_8_101_02",
-  "logical_id": "story-collection:1_x_101ken_2_1_8_101_02",
+  "logical_id": "story:1_x_101ken_2_1_8_101_02",
   "scenario_id": "1_x_101ken_2_1_8_101_02",
   "text_catalog_id": "1_x_101ken_2_1_8_101_02",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_101ken_2_1_8_101_02.json",
-    "sha256": "sha256:ef274ad2c5f89e1f5a5d75125b48b7a5019a85c514a4c77fbf15c903840b6b8d",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:3575548d5f48a3b02c939273deb1f20d4ffe08165febba4b86c314f2de5acc1a",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:932cc9780790b1beca93977fb1add93b1bf97a72fc2b326e2280526e1387e97b",
     "aggregate_source": null,
     "step_count": 8,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_101ken_2_1_8_101_02.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサーさん、\nお誕生日おめでとうございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_101ken_2_1_8_101_02:1_8_101_02:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_101ken_2_1_8_101_02",
+          "part_id": "1_8_101_02",
+          "file": "assets/resources/scenariodata/1_x_101ken_2/scenario_1_8_101_02.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:707ab0e91a3892a59f2751c91961f29005218a228492cf477fc25dccd929b1a0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "101ken",
         "sourceName": "山村 賢"
       },
       "performance": {
@@ -56,10 +70,10 @@
         "row_id": "1_x_101ken_2_1_8_101_02:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_101_02",
+        "source_file": "assets/resources/scenariodata/1_x_101ken_2/scenario_1_8_101_02.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -67,7 +81,18 @@
     {
       "kind": "choice",
       "source_text": "ありがとう\nございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_101ken_2_1_8_101_02:1_8_101_02:cmd-000012:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_101ken_2_1_8_101_02",
+          "part_id": "1_8_101_02",
+          "file": "assets/resources/scenariodata/1_x_101ken_2/scenario_1_8_101_02.json",
+          "command_index": 12,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:42ccdb247ca887c1f4279c535933ad9b6b5a8b10a7a92d1c133ba0546c376d51"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -94,15 +119,15 @@
         "row_id": "1_x_101ken_2_1_8_101_02:step-5:option-0",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_101_02",
+        "source_file": "assets/resources/scenariodata/1_x_101ken_2/scenario_1_8_101_02.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:1_x_101ken_2_1_8_101_02:1_8_101_02:cmd-000012",
+        "option_id": "choice-option:v1:1_x_101ken_2_1_8_101_02:1_8_101_02:cmd-000012:000",
+        "source_label": null,
         "target_step_id": 6,
         "target_step_index": 5,
         "resolution": "resolved"
@@ -112,11 +137,22 @@
     {
       "kind": "dialogue",
       "source_text": "これからの1年がさらに充実した日々になるよう、\nぼくも精一杯お手伝いします。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_101ken_2_1_8_101_02:1_8_101_02:cmd-000015:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_101ken_2_1_8_101_02",
+          "part_id": "1_8_101_02",
+          "file": "assets/resources/scenariodata/1_x_101ken_2/scenario_1_8_101_02.json",
+          "command_index": 15,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fef0cd8363fd159048595553f50616439fafa54be4ccdfc55f11339809d5cb82"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "101ken",
         "sourceName": "山村 賢"
       },
       "performance": {
@@ -141,10 +177,10 @@
         "row_id": "1_x_101ken_2_1_8_101_02:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_101_02",
+        "source_file": "assets/resources/scenariodata/1_x_101ken_2/scenario_1_8_101_02.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null,
       "presentation": "call"
@@ -152,11 +188,22 @@
     {
       "kind": "dialogue",
       "source_text": "一緒に315プロで頑張っていきましょう！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_101ken_2_1_8_101_02:1_8_101_02:cmd-000017:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_101ken_2_1_8_101_02",
+          "part_id": "1_8_101_02",
+          "file": "assets/resources/scenariodata/1_x_101ken_2/scenario_1_8_101_02.json",
+          "command_index": 17,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1606e224af40e6a430010049cec858891f31ecc27c4f070f58415313eff1b579"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "101ken",
         "sourceName": "山村 賢"
       },
       "performance": {
@@ -181,10 +228,10 @@
         "row_id": "1_x_101ken_2_1_8_101_02:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_101_02",
+        "source_file": "assets/resources/scenariodata/1_x_101ken_2/scenario_1_8_101_02.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null,
       "presentation": "call"
@@ -197,9 +244,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:1_x_101ken_2_1_8_101_02:1_8_101_02:cmd-000012",
+          "option_id": "choice-option:v1:1_x_101ken_2_1_8_101_02:1_8_101_02:cmd-000012:000",
+          "source_label": null,
           "target_step_id": 6,
           "target_step_index": 5,
           "resolution": "resolved"
@@ -207,33 +254,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "●●●●プロデューサーさん、",
     "episode_label": null

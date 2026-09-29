@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_008rei_2_1_8_008_02",
-  "logical_id": "story-collection:1_x_008rei_2_1_8_008_02",
+  "logical_id": "story:1_x_008rei_2_1_8_008_02",
   "scenario_id": "1_x_008rei_2_1_8_008_02",
   "text_catalog_id": "1_x_008rei_2_1_8_008_02",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_008rei_2_1_8_008_02.json",
-    "sha256": "sha256:104854fabf0ee32bb4499d2557d56c7be2ba3922b93a6797bf0fbe251d265504",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:8be6ac92cb13ec3154abcb95b01f687b7c1cece0155a137ece90e9112b603c90",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:932cc9780790b1beca93977fb1add93b1bf97a72fc2b326e2280526e1387e97b",
     "aggregate_source": null,
     "step_count": 10,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_008rei_2_1_8_008_02.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "お疲れさま。\n貴殿がそろそろ戻ると聞いて、立ち寄ったんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_008rei_2_1_8_008_02:1_8_008_02:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_008rei_2_1_8_008_02",
+          "part_id": "1_8_008_02",
+          "file": "assets/resources/scenariodata/1_x_008rei_2/scenario_1_8_008_02.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c626d0cef5c39bcbc598bfe0ff7ae65ada9f532c3d313c80d1964217f8c11233"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -47,30 +61,39 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_008rei_2_1_8_008_02:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_008_02",
+        "source_file": "assets/resources/scenariodata/1_x_008rei_2/scenario_1_8_008_02.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "誕生日おめでとう。\nそれだけ伝えておきたかった。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_008rei_2_1_8_008_02:1_8_008_02:cmd-000020:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_008rei_2_1_8_008_02",
+          "part_id": "1_8_008_02",
+          "file": "assets/resources/scenariodata/1_x_008rei_2/scenario_1_8_008_02.json",
+          "command_index": 20,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ddd11df3faa0870efd772b25076b29e9e5673624f13c582c2d9f605b07071875"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -86,26 +109,35 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_008rei_2_1_8_008_02:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_008_02",
+        "source_file": "assets/resources/scenariodata/1_x_008rei_2/scenario_1_8_008_02.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ありがとうございます。\nもしかして、お待たせしてしまいましたか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_008rei_2_1_8_008_02:1_8_008_02:cmd-000022:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_008rei_2_1_8_008_02",
+          "part_id": "1_8_008_02",
+          "file": "assets/resources/scenariodata/1_x_008rei_2/scenario_1_8_008_02.json",
+          "command_index": 22,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e540b3d77b3a6a4aa3d96fc9dffb56948b52342e71e10a77fedf9a4a277fc95b"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -132,21 +164,32 @@
         "row_id": "1_x_008rei_2_1_8_008_02:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_008_02",
+        "source_file": "assets/resources/scenariodata/1_x_008rei_2/scenario_1_8_008_02.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "いや。わたしもさっき来たばかりだ。それに、\n貴殿を祝うのに待ち時間など問題ではない。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_008rei_2_1_8_008_02:1_8_008_02:cmd-000029:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_008rei_2_1_8_008_02",
+          "part_id": "1_8_008_02",
+          "file": "assets/resources/scenariodata/1_x_008rei_2/scenario_1_8_008_02.json",
+          "command_index": 29,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:07020dddabab385f4f0b87e201d1f6313697d8a86bbbcf55b997c137161d04af"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -163,7 +206,6 @@
         "stepId": 9
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -172,21 +214,32 @@
         "row_id": "1_x_008rei_2_1_8_008_02:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_008_02",
+        "source_file": "assets/resources/scenariodata/1_x_008rei_2/scenario_1_8_008_02.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "既に陽が傾きかけてはいるが、\n素晴らしい1日を過ごしてくれ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_008rei_2_1_8_008_02:1_8_008_02:cmd-000033:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_008rei_2_1_8_008_02",
+          "part_id": "1_8_008_02",
+          "file": "assets/resources/scenariodata/1_x_008rei_2/scenario_1_8_008_02.json",
+          "command_index": 33,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:186bbf6acdcb93fc9db1d5cd25565962c9acd745c4fd6468292f8f089e0e874b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -203,7 +256,6 @@
         "stepId": 10
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -212,47 +264,16 @@
         "row_id": "1_x_008rei_2_1_8_008_02:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_008_02",
+        "source_file": "assets/resources/scenariodata/1_x_008rei_2/scenario_1_8_008_02.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "お疲れさま。",
     "episode_label": null

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_037jir_1_7_037_01",
-  "logical_id": "story-collection:1_x_037jir_1_7_037_01",
+  "logical_id": "story:1_x_037jir_1_7_037_01",
   "scenario_id": "1_x_037jir_1_7_037_01",
   "text_catalog_id": "1_x_037jir_1_7_037_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_037jir_1_7_037_01.json",
-    "sha256": "sha256:cdcf5e66559691efef1ff7f044ed982a6b626cee52ab1a0e4a2bdab3cdf82f2c",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:b36cb1373ced542a27fe54e4fb162718c8ee0fbe03811fdffdc9c3f2a346bdf7",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:36c8f7741332c8fecf23fb0f9787456478a1810412c6406467bc52ea47232691",
     "aggregate_source": null,
     "step_count": 7,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_037jir_1_7_037_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "dialogue",
       "source_text": "次郎さん、お誕生日ですよね。\nおめでとうございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_037jir_1_7_037_01:1_7_037_01:cmd-000011:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_037jir_1_7_037_01",
+          "part_id": "1_7_037_01",
+          "file": "assets/resources/scenariodata/1_x_037jir/scenario_1_7_037_01.json",
+          "command_index": 11,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:be08d994ae5a152a4511a70587d42a267d80c11a69baf3179503db86f370ad6d"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -54,21 +68,32 @@
         "row_id": "1_x_037jir_1_7_037_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_037_01",
+        "source_file": "assets/resources/scenariodata/1_x_037jir/scenario_1_7_037_01.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "え、誕生日……？　ああ、今日は俺の\n誕生日だったっけ。どうりで、見覚えがあるはずだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_037jir_1_7_037_01:1_7_037_01:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_037jir_1_7_037_01",
+          "part_id": "1_7_037_01",
+          "file": "assets/resources/scenariodata/1_x_037jir/scenario_1_7_037_01.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0432e3cc4de0571a94cb6becec38979d94225ed703c187bceb2ab6e8c82091ea"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -85,7 +110,6 @@
         "stepId": 4
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -94,21 +118,32 @@
         "row_id": "1_x_037jir_1_7_037_01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_037_01",
+        "source_file": "assets/resources/scenariodata/1_x_037jir/scenario_1_7_037_01.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサーちゃん、\n覚えててくれたなんてなぁ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_037jir_1_7_037_01:1_7_037_01:cmd-000020:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_037jir_1_7_037_01",
+          "part_id": "1_7_037_01",
+          "file": "assets/resources/scenariodata/1_x_037jir/scenario_1_7_037_01.json",
+          "command_index": 20,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fb62a88a86c1b4dfc5b3e4e4b888426a6adff0505905b53b321d6838690db5c3"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -125,7 +160,6 @@
         "stepId": 5
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -134,21 +168,32 @@
         "row_id": "1_x_037jir_1_7_037_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_037_01",
+        "source_file": "assets/resources/scenariodata/1_x_037jir/scenario_1_7_037_01.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "もう誕生日を喜ぶような歳じゃないけど、\n祝ってもらえるのって、いいねぇ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_037jir_1_7_037_01:1_7_037_01:cmd-000026:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_037jir_1_7_037_01",
+          "part_id": "1_7_037_01",
+          "file": "assets/resources/scenariodata/1_x_037jir/scenario_1_7_037_01.json",
+          "command_index": 26,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0e37e813daa7a429b771578b15181870fa679f751716b69a04e248eebdff5d16"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -165,7 +210,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -174,21 +218,32 @@
         "row_id": "1_x_037jir_1_7_037_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_037_01",
+        "source_file": "assets/resources/scenariodata/1_x_037jir/scenario_1_7_037_01.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "アリガト、●●●●プロデューサーちゃん。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_037jir_1_7_037_01:1_7_037_01:cmd-000030:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_037jir_1_7_037_01",
+          "part_id": "1_7_037_01",
+          "file": "assets/resources/scenariodata/1_x_037jir/scenario_1_7_037_01.json",
+          "command_index": 30,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8cfdd5e859407a20643e7ff6830704cc2afa9eb10d28379ace7119d8c4524291"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -205,7 +260,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -214,47 +268,16 @@
         "row_id": "1_x_037jir_1_7_037_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_037_01",
+        "source_file": "assets/resources/scenariodata/1_x_037jir/scenario_1_7_037_01.json",
+        "command_start": 30,
+        "command_end": 30
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "次郎さん、お誕生日ですよね。",
     "episode_label": null

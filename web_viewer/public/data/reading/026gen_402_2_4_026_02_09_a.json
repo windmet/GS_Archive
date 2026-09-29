@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "026gen_402_2_4_026_02_09_a",
-  "logical_id": "story-collection:026gen_402_2_4_026_02_09_a",
+  "logical_id": "story:026gen_402_2_4_026_02_09_a",
   "scenario_id": "026gen_402_2_4_026_02_09_a",
   "text_catalog_id": "026gen_402_2_4_026_02_09_a",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "026gen_402_2_4_026_02_09_a.json",
-    "sha256": "sha256:6f20174baa0b90244fe7e6523c9fe13c1e7a6c32883ed0e1240fb5dbb4bf408e",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:4c0017d2906b023811272ba8c3e028944c34c7a2e99858a1bfa70bfd3e15b854",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:4d91783d67b51caf9d43edf46c68160bc15fa6d5c203966d3c85a771a3baaf9a",
     "aggregate_source": null,
     "step_count": 17,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "026gen_402_2_4_026_02_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "unsupported",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "●●●●●●●●●●番長さん、お疲れさん。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000007:phone_message:000",
+        "source": {
+          "scenario_id": "026gen_402_2_4_026_02_09_a",
+          "part_id": "2_4_026_02_09_a",
+          "file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+          "command_index": 7,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2e889ae7777df79ff06c99f1b78886f5fd94780f76cd78884c47dfca2645cd98"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "026gen",
         "sourceName": "黒野 玄武"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "026gen_402_2_4_026_02_09_a:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_026_02_09_a",
+        "source_file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+        "command_start": 7,
+        "command_end": 7
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "こっちは着替えも済んで、今からそっちに\n合流するとこだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000009:phone_message:000",
+        "source": {
+          "scenario_id": "026gen_402_2_4_026_02_09_a",
+          "part_id": "2_4_026_02_09_a",
+          "file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+          "command_index": 9,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6e42eccbbfcddba73f7817f5b8c76e8bddb98750f5b39498e74f2ab697f49a83"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "026gen",
         "sourceName": "黒野 玄武"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "026gen_402_2_4_026_02_09_a:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_026_02_09_a",
+        "source_file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+        "command_start": 9,
+        "command_end": 9
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "最後にペンギンの水槽に寄ってから、\n向かうつもりだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000011:phone_message:000",
+        "source": {
+          "scenario_id": "026gen_402_2_4_026_02_09_a",
+          "part_id": "2_4_026_02_09_a",
+          "file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+          "command_index": 11,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f7000283b99376b018d0a9dfefb47c656d7fd2b146a481dd25a8ac6f3e44174a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "026gen",
         "sourceName": "黒野 玄武"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "026gen_402_2_4_026_02_09_a:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_026_02_09_a",
+        "source_file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": null,
       "presentation": "call"
@@ -147,11 +177,22 @@
     {
       "kind": "dialogue",
       "source_text": "1日だけの撮影とはいえ、背中を預けて泳いだ仲だ。\n礼を言っておかねぇとな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000013:phone_message:000",
+        "source": {
+          "scenario_id": "026gen_402_2_4_026_02_09_a",
+          "part_id": "2_4_026_02_09_a",
+          "file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+          "command_index": 13,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1952436c9215e10b847814f874ab365778a07b491b30df52ae022de11a008a41"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "026gen",
         "sourceName": "黒野 玄武"
       },
       "performance": {
@@ -167,19 +208,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "026gen_402_2_4_026_02_09_a:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_026_02_09_a",
+        "source_file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+        "command_start": 13,
+        "command_end": 13
       },
       "option": null,
       "presentation": "call"
@@ -187,7 +226,18 @@
     {
       "kind": "choice",
       "source_text": "ペンギンたち、\n懐いてましたね",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000015:choice_short:000",
+        "source": {
+          "scenario_id": "026gen_402_2_4_026_02_09_a",
+          "part_id": "2_4_026_02_09_a",
+          "file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+          "command_index": 15,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7dc75dde974c1abb65c251b1948e0bf0f26da77df56355fc23afa666ecf6f706"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -214,15 +264,15 @@
         "row_id": "026gen_402_2_4_026_02_09_a:step-7:option-0",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_026_02_09_a",
+        "source_file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+        "command_start": 15,
+        "command_end": 16
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000015",
+        "option_id": "choice-option:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000015:000",
+        "source_label": null,
         "target_step_id": 8,
         "target_step_index": 7,
         "resolution": "resolved"
@@ -232,7 +282,18 @@
     {
       "kind": "choice",
       "source_text": "一緒に泳ぐ姿、\nいい写真でした",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000016:choice_short:000",
+        "source": {
+          "scenario_id": "026gen_402_2_4_026_02_09_a",
+          "part_id": "2_4_026_02_09_a",
+          "file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+          "command_index": 16,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b8db3304d7aa15339412173140b2637a852e2aeffbb10123d1891af535878a75"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -259,15 +320,15 @@
         "row_id": "026gen_402_2_4_026_02_09_a:step-7:option-1",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_026_02_09_a",
+        "source_file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+        "command_start": 15,
+        "command_end": 16
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select2",
+        "choice_id": "choice:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000015",
+        "option_id": "choice-option:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000016:001",
+        "source_label": null,
         "target_step_id": 9,
         "target_step_index": 8,
         "resolution": "resolved"
@@ -277,11 +338,22 @@
     {
       "kind": "dialogue",
       "source_text": "ああ。撮影中以外も、俺が近くを通る度に\nついてくるから驚いたぜ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000019:phone_message:000",
+        "source": {
+          "scenario_id": "026gen_402_2_4_026_02_09_a",
+          "part_id": "2_4_026_02_09_a",
+          "file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+          "command_index": 19,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:acf8a44ee7ded9f71d338014d3e872596f014b006554ca0e2f7078e50935f62e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "026gen",
         "sourceName": "黒野 玄武"
       },
       "performance": {
@@ -297,19 +369,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "026gen_402_2_4_026_02_09_a:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_026_02_09_a",
+        "source_file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null,
       "presentation": "call"
@@ -317,11 +387,22 @@
     {
       "kind": "dialogue",
       "source_text": "ずっとついてくるから、撮影はスムーズだったな。\n番長さんが撮ったオフショットも、いい写真だった。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000024:phone_message:000",
+        "source": {
+          "scenario_id": "026gen_402_2_4_026_02_09_a",
+          "part_id": "2_4_026_02_09_a",
+          "file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+          "command_index": 24,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7c6ed5d2b7f06a02f914dba83385ab02b8393687001f660747a47ecdc74bba9c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "026gen",
         "sourceName": "黒野 玄武"
       },
       "performance": {
@@ -337,19 +418,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "026gen_402_2_4_026_02_09_a:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_026_02_09_a",
+        "source_file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null,
       "presentation": "call"
@@ -357,11 +436,22 @@
     {
       "kind": "dialogue",
       "source_text": "俺は日頃から、朱雀とにゃこのやり取りを\n見てるからな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000029:phone_message:000",
+        "source": {
+          "scenario_id": "026gen_402_2_4_026_02_09_a",
+          "part_id": "2_4_026_02_09_a",
+          "file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+          "command_index": 29,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ef10517b9946548ddf9c0be742ed9b88b636856ad79d42dad0707a8570427973"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "026gen",
         "sourceName": "黒野 玄武"
       },
       "performance": {
@@ -377,19 +467,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "026gen_402_2_4_026_02_09_a:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_026_02_09_a",
+        "source_file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null,
       "presentation": "call"
@@ -397,11 +485,22 @@
     {
       "kind": "dialogue",
       "source_text": "あいつらみてぇに、仲間として対等に接するように\nしてたんだが……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000031:phone_message:000",
+        "source": {
+          "scenario_id": "026gen_402_2_4_026_02_09_a",
+          "part_id": "2_4_026_02_09_a",
+          "file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+          "command_index": 31,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2d484dd500284f9e46db8e2cc6b05183b40f7cbe6bfbe5b8485a4e2a5d2dda42"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "026gen",
         "sourceName": "黒野 玄武"
       },
       "performance": {
@@ -417,19 +516,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "026gen_402_2_4_026_02_09_a:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_026_02_09_a",
+        "source_file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null,
       "presentation": "call"
@@ -437,11 +534,22 @@
     {
       "kind": "dialogue",
       "source_text": "一緒にいいもん撮ろうぜって意気込みは、\n言葉がなくとも伝わったらしい。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000033:phone_message:000",
+        "source": {
+          "scenario_id": "026gen_402_2_4_026_02_09_a",
+          "part_id": "2_4_026_02_09_a",
+          "file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+          "command_index": 33,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:be990fee718b17ebe4d07e3f9238674c391a2ae3ce3d1e500513ea34490f865d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "026gen",
         "sourceName": "黒野 玄武"
       },
       "performance": {
@@ -457,19 +565,17 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "026gen_402_2_4_026_02_09_a:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_026_02_09_a",
+        "source_file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null,
       "presentation": "call"
@@ -477,7 +583,18 @@
     {
       "kind": "choice",
       "source_text": "写真からも信頼が\n伝わります",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000035:choice_short:000",
+        "source": {
+          "scenario_id": "026gen_402_2_4_026_02_09_a",
+          "part_id": "2_4_026_02_09_a",
+          "file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+          "command_index": 35,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1586147187639a7b77c1f2f347e43a73dac8b27cc4313a7656387765df3b3828"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -504,15 +621,15 @@
         "row_id": "026gen_402_2_4_026_02_09_a:step-13:option-0",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_026_02_09_a",
+        "source_file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+        "command_start": 35,
+        "command_end": 35
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select4",
+        "choice_id": "choice:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000035",
+        "option_id": "choice-option:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000035:000",
+        "source_label": null,
         "target_step_id": 14,
         "target_step_index": 13,
         "resolution": "resolved"
@@ -522,11 +639,22 @@
     {
       "kind": "dialogue",
       "source_text": "ああ。あの写真がポスターになりゃ、\nあいつらはもっと人気者になるだろうな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000038:phone_message:000",
+        "source": {
+          "scenario_id": "026gen_402_2_4_026_02_09_a",
+          "part_id": "2_4_026_02_09_a",
+          "file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+          "command_index": 38,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f9c99a2ee34fce6daf509aa58da69a00413efdf298bef9c3cddfc8bf27d530e0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "026gen",
         "sourceName": "黒野 玄武"
       },
       "performance": {
@@ -542,19 +670,17 @@
         "snapshot": "entry",
         "stepId": 14
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "026gen_402_2_4_026_02_09_a:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_026_02_09_a",
+        "source_file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+        "command_start": 38,
+        "command_end": 38
       },
       "option": null,
       "presentation": "call"
@@ -562,11 +688,22 @@
     {
       "kind": "dialogue",
       "source_text": "俺も機会があれば、また顔を出しに来てやるか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000040:phone_message:000",
+        "source": {
+          "scenario_id": "026gen_402_2_4_026_02_09_a",
+          "part_id": "2_4_026_02_09_a",
+          "file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+          "command_index": 40,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7279e041346426485b99dd2a6030cb5676bf8a1011e1a516d66d0306b901879f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "026gen",
         "sourceName": "黒野 玄武"
       },
       "performance": {
@@ -582,19 +719,17 @@
         "snapshot": "entry",
         "stepId": 15
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "026gen_402_2_4_026_02_09_a:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_026_02_09_a",
+        "source_file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+        "command_start": 40,
+        "command_end": 40
       },
       "option": null,
       "presentation": "call"
@@ -602,11 +737,22 @@
     {
       "kind": "dialogue",
       "source_text": "胸張ってあいつらと再会できるように、\n今後の仕事も気合い入れて挑んでいくぜ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000042:phone_message:000",
+        "source": {
+          "scenario_id": "026gen_402_2_4_026_02_09_a",
+          "part_id": "2_4_026_02_09_a",
+          "file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+          "command_index": 42,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a53cbb33d912ded74ee8b4555d5d6edbab73ba549d058d1871f0cd6843de66f5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "026gen",
         "sourceName": "黒野 玄武"
       },
       "performance": {
@@ -622,19 +768,17 @@
         "snapshot": "entry",
         "stepId": 16
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "026gen_402_2_4_026_02_09_a:step-16:text",
         "step_id": 16,
         "step_index": 15,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_026_02_09_a",
+        "source_file": "assets/resources/scenariodata/026gen_402/scenario_2_4_026_02_09_a.json",
+        "command_start": 42,
+        "command_end": 42
       },
       "option": null,
       "presentation": "call"
@@ -647,17 +791,17 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000015",
+          "option_id": "choice-option:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000015:000",
+          "source_label": null,
           "target_step_id": 8,
           "target_step_index": 7,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select2",
+          "choice_id": "choice:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000015",
+          "option_id": "choice-option:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000016:001",
+          "source_label": null,
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
@@ -670,9 +814,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select4",
+          "choice_id": "choice:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000035",
+          "option_id": "choice-option:v1:026gen_402_2_4_026_02_09_a:2_4_026_02_09_a:cmd-000035:000",
+          "source_label": null,
           "target_step_id": 14,
           "target_step_index": 13,
           "resolution": "resolved"
@@ -682,94 +826,14 @@
   ],
   "diagnostics": [
     {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
       "code": "branch-exits-unavailable",
       "step_index": 6,
       "severity": "unsupported"
     },
     {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
       "code": "nonsequential-choice-path",
       "step_index": 6,
       "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 15,
-      "severity": "warning"
     }
   ],
   "presentation": {

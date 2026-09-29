@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "5_00_012_23_5_00_012_23",
-  "logical_id": "story-collection:5_00_012_23_5_00_012_23",
+  "logical_id": "story:5_00_012_23_5_00_012_23",
   "scenario_id": "5_00_012_23_5_00_012_23",
   "text_catalog_id": "5_00_012_23_5_00_012_23",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "5_00_012_23_5_00_012_23.json",
-    "sha256": "sha256:e262122baacd6196a3ac08fa709f46eb70e6853611afe7a85e3ed4c7bc17f470",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:8c0c2cf1bf7fde17cc52aaf7446bd2b69d2ffd13a5dc00e164cf7562b2e72650",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:a916b6fb2e6691efb56598d8f67529e7a80c63521281e45ab45c3f0e33e2ce44",
     "aggregate_source": null,
     "step_count": 19,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "5_00_012_23_5_00_012_23.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "unsupported",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "忘年会の余韻の中で",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_012_23_5_00_012_23:5_00_012_23:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "5_00_012_23_5_00_012_23",
+          "part_id": "5_00_012_23",
+          "file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:cece73c280a846a3f967f7cedc493ff49f03d3b40b4ba0e77e8bc80434f18dfc"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "5_00_012_23_5_00_012_23:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_012_23",
+        "source_file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "新年を迎えた315プロダクション。\nアイドル達は気持ちも新たに、\nプロデューサーと挨拶を交わす。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_012_23_5_00_012_23:5_00_012_23:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "5_00_012_23_5_00_012_23",
+          "part_id": "5_00_012_23",
+          "file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:34e73cd896f66dd802cdba9d0abbc85b94874a2227efaa28d45e9d9882865b4c"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,21 +116,32 @@
         "row_id": "5_00_012_23_5_00_012_23:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_012_23",
+        "source_file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサーか？\nあけましておめでとう。電話ですまない。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_012_23_5_00_012_23:5_00_012_23:cmd-000016:phone_message:000",
+        "source": {
+          "scenario_id": "5_00_012_23_5_00_012_23",
+          "part_id": "5_00_012_23",
+          "file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+          "command_index": 16,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a4a89b571c5fe9946731c72d9e2b3def628ec6974f5d26bed3a804640fbc5da2"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -121,19 +157,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_00_012_23_5_00_012_23:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_012_23",
+        "source_file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "call"
@@ -141,11 +175,22 @@
     {
       "kind": "dialogue",
       "source_text": "後日改めて挨拶をするが、先んじて新年の……",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_012_23_5_00_012_23:5_00_012_23:cmd-000019:phone_message:000",
+        "source": {
+          "scenario_id": "5_00_012_23_5_00_012_23",
+          "part_id": "5_00_012_23",
+          "file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+          "command_index": 19,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8c58c605b2ecea3afaba12ea7db2ceb2fc14aeb8fd428a4cb8b44a8607c4e562"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -161,19 +206,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_00_012_23_5_00_012_23:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_012_23",
+        "source_file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null,
       "presentation": "call"
@@ -181,11 +224,22 @@
     {
       "kind": "dialogue",
       "source_text": "Good morning、プロデューサーちゃん！\nあれ？　もうお昼かな？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_012_23_5_00_012_23:5_00_012_23:cmd-000021:phone_message:000",
+        "source": {
+          "scenario_id": "5_00_012_23_5_00_012_23",
+          "part_id": "5_00_012_23",
+          "file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+          "command_index": 21,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ebaedd35a74de75ffaa7d7ceb15bccec72105fcd26c6883a1181be0e93f70108"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "036rui",
         "sourceName": "舞田 類"
       },
       "performance": {
@@ -201,19 +255,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_00_012_23_5_00_012_23:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_012_23",
+        "source_file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null,
       "presentation": "call"
@@ -221,11 +273,22 @@
     {
       "kind": "dialogue",
       "source_text": "Happy new year！　今年もよろしくね☆\nほらほら、ミスターやましたも！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_012_23_5_00_012_23:5_00_012_23:cmd-000023:phone_message:000",
+        "source": {
+          "scenario_id": "5_00_012_23_5_00_012_23",
+          "part_id": "5_00_012_23",
+          "file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+          "command_index": 23,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7c35c479160904e61bb00a0869eed18b83920980b60fc356485e87cc5fc5b1d1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "036rui",
         "sourceName": "舞田 類"
       },
       "performance": {
@@ -241,19 +304,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_00_012_23_5_00_012_23:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_012_23",
+        "source_file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null,
       "presentation": "call"
@@ -261,11 +322,22 @@
     {
       "kind": "dialogue",
       "source_text": "えっ、電話？　ああ、プロデューサーちゃんか。\nあけましておめでとう、今年もよろしくね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_012_23_5_00_012_23:5_00_012_23:cmd-000026:phone_message:000",
+        "source": {
+          "scenario_id": "5_00_012_23_5_00_012_23",
+          "part_id": "5_00_012_23",
+          "file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+          "command_index": 26,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e84cf94078c1343cb9b54bfded25220c60045bcd077eda605cbe5c25033194ce"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -281,19 +353,17 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_00_012_23_5_00_012_23:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_012_23",
+        "source_file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null,
       "presentation": "call"
@@ -301,7 +371,18 @@
     {
       "kind": "choice",
       "source_text": "あけましておめでとう\nございます",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_012_23_5_00_012_23:5_00_012_23:cmd-000028:choice_short:000",
+        "source": {
+          "scenario_id": "5_00_012_23_5_00_012_23",
+          "part_id": "5_00_012_23",
+          "file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+          "command_index": 28,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f41e1d5a53e9a491f648274fddf157b9253d048c0a750385cc58c143911b7b47"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -328,15 +409,15 @@
         "row_id": "5_00_012_23_5_00_012_23:step-13:option-0",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_012_23",
+        "source_file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+        "command_start": 28,
+        "command_end": 29
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:5_00_012_23_5_00_012_23:5_00_012_23:cmd-000028",
+        "option_id": "choice-option:v1:5_00_012_23_5_00_012_23:5_00_012_23:cmd-000028:000",
+        "source_label": null,
         "target_step_id": 14,
         "target_step_index": 13,
         "resolution": "resolved"
@@ -346,7 +427,18 @@
     {
       "kind": "choice",
       "source_text": "今年もよろしく\nお願いします！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_012_23_5_00_012_23:5_00_012_23:cmd-000029:choice_short:000",
+        "source": {
+          "scenario_id": "5_00_012_23_5_00_012_23",
+          "part_id": "5_00_012_23",
+          "file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+          "command_index": 29,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:82897636ef848d15633bd37c2dab9561925e995878363cafb84522a1b9c15500"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -373,15 +465,15 @@
         "row_id": "5_00_012_23_5_00_012_23:step-13:option-1",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_012_23",
+        "source_file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+        "command_start": 28,
+        "command_end": 29
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select2",
+        "choice_id": "choice:v1:5_00_012_23_5_00_012_23:5_00_012_23:cmd-000028",
+        "option_id": "choice-option:v1:5_00_012_23_5_00_012_23:5_00_012_23:cmd-000029:001",
+        "source_label": null,
         "target_step_id": 14,
         "target_step_index": 13,
         "resolution": "resolved"
@@ -391,11 +483,22 @@
     {
       "kind": "dialogue",
       "source_text": "悪いね。忘年会が盛り上がっちゃって、遅くまで\n飲んでたから、おじさんちょっと眠くて……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_012_23_5_00_012_23:5_00_012_23:cmd-000033:phone_message:000",
+        "source": {
+          "scenario_id": "5_00_012_23_5_00_012_23",
+          "part_id": "5_00_012_23",
+          "file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+          "command_index": 33,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:cb327360d2ea8b6ae7baaebeeacf785395b1b44f2081a585cf3f2cdb7877f382"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -411,19 +514,17 @@
         "snapshot": "entry",
         "stepId": 14
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_00_012_23_5_00_012_23:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_012_23",
+        "source_file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null,
       "presentation": "call"
@@ -431,11 +532,22 @@
     {
       "kind": "dialogue",
       "source_text": "というわけで、スタジオのはざまさんに\nお返ししまーす。ふあ……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_012_23_5_00_012_23:5_00_012_23:cmd-000035:phone_message:000",
+        "source": {
+          "scenario_id": "5_00_012_23_5_00_012_23",
+          "part_id": "5_00_012_23",
+          "file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+          "command_index": 35,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:57e7f8d604048db3c8743014ca1b89c3ae0be6c659e059e91630528f835b5b37"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -451,19 +563,17 @@
         "snapshot": "entry",
         "stepId": 15
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_00_012_23_5_00_012_23:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_012_23",
+        "source_file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+        "command_start": 35,
+        "command_end": 35
       },
       "option": null,
       "presentation": "call"
@@ -471,11 +581,22 @@
     {
       "kind": "dialogue",
       "source_text": "Oh！　また寝るの！？\nせっかく起きたんだから、もっと話そうよ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_012_23_5_00_012_23:5_00_012_23:cmd-000037:phone_message:000",
+        "source": {
+          "scenario_id": "5_00_012_23_5_00_012_23",
+          "part_id": "5_00_012_23",
+          "file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+          "command_index": 37,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1c170f5b27097c3247ca17c530aa6cb5622f4f9f66527dd84ddf744e4a756158"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "036rui",
         "sourceName": "舞田 類"
       },
       "performance": {
@@ -491,19 +612,17 @@
         "snapshot": "entry",
         "stepId": 16
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_00_012_23_5_00_012_23:step-16:text",
         "step_id": 16,
         "step_index": 15,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_012_23",
+        "source_file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+        "command_start": 37,
+        "command_end": 37
       },
       "option": null,
       "presentation": "call"
@@ -511,11 +630,22 @@
     {
       "kind": "dialogue",
       "source_text": "もしもし、硲だ。すまない、このあたりで一旦\n電話を切らせてもらう。では、今年もよろしく頼む。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_012_23_5_00_012_23:5_00_012_23:cmd-000041:phone_message:000",
+        "source": {
+          "scenario_id": "5_00_012_23_5_00_012_23",
+          "part_id": "5_00_012_23",
+          "file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+          "command_index": 41,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ce05429527f2811d0d17ebd8a006d8cf02824948b9c2e9f214f4a5663c55ce90"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -531,19 +661,17 @@
         "snapshot": "entry",
         "stepId": 18
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_00_012_23_5_00_012_23:step-18:text",
         "step_id": 18,
         "step_index": 17,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_012_23",
+        "source_file": "assets/resources/scenariodata/5_00_012_23/scenario_5_00_012_23.json",
+        "command_start": 41,
+        "command_end": 41
       },
       "option": null,
       "presentation": "call"
@@ -556,17 +684,17 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:5_00_012_23_5_00_012_23:5_00_012_23:cmd-000028",
+          "option_id": "choice-option:v1:5_00_012_23_5_00_012_23:5_00_012_23:cmd-000028:000",
+          "source_label": null,
           "target_step_id": 14,
           "target_step_index": 13,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select2",
+          "choice_id": "choice:v1:5_00_012_23_5_00_012_23:5_00_012_23:cmd-000028",
+          "option_id": "choice-option:v1:5_00_012_23_5_00_012_23:5_00_012_23:cmd-000029:001",
+          "source_label": null,
           "target_step_id": 14,
           "target_step_index": 13,
           "resolution": "resolved"
@@ -576,79 +704,9 @@
   ],
   "diagnostics": [
     {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
       "code": "branch-exits-unavailable",
       "step_index": 12,
       "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 15,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 17,
-      "severity": "warning"
     }
   ],
   "presentation": {

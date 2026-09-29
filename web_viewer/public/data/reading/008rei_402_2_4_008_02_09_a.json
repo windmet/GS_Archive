@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "008rei_402_2_4_008_02_09_a",
-  "logical_id": "story-collection:008rei_402_2_4_008_02_09_a",
+  "logical_id": "story:008rei_402_2_4_008_02_09_a",
   "scenario_id": "008rei_402_2_4_008_02_09_a",
   "text_catalog_id": "008rei_402_2_4_008_02_09_a",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "008rei_402_2_4_008_02_09_a.json",
-    "sha256": "sha256:04c23779dc5e10d3511144263adaec493995dd45c117e2517afec7eaa63086c1",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:0f9d1ca2d2449baad3ac779b608211d9b3bd3d4f0ba9ec817a5c6803e6b6c004",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:d9d14ec1786f5b2a346b22b91b066ecc4ece8ba003374cc76432b65ce8995ce4",
     "aggregate_source": null,
     "step_count": 11,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "008rei_402_2_4_008_02_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "unsupported",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "お疲れさま。\nキャンプ場で撮影したMV、完成したそうだな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_402_2_4_008_02_09_a:2_4_008_02_09_a:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "008rei_402_2_4_008_02_09_a",
+          "part_id": "2_4_008_02_09_a",
+          "file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_a.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:22ea7e177282af21cb60d4848b71337b8a2df7a99ea04ea3dd536711452d7ec5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "008rei_402_2_4_008_02_09_a:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_02_09_a",
+        "source_file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_a.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "あのキャンプはアイドルとして成長するだけでなく、\n自身の心のリフレッシュにもなる時間だったと思う。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_402_2_4_008_02_09_a:2_4_008_02_09_a:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "008rei_402_2_4_008_02_09_a",
+          "part_id": "2_4_008_02_09_a",
+          "file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_a.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d04ccda4033d697aa4d56a80e8294dc7ad37e010fe2638150f302ab9cdb58f2d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "008rei_402_2_4_008_02_09_a:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_02_09_a",
+        "source_file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_a.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "キャンプ場での時間を素直に楽しんだことが、\nMVにも表れていたのではないだろうか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_402_2_4_008_02_09_a:2_4_008_02_09_a:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "008rei_402_2_4_008_02_09_a",
+          "part_id": "2_4_008_02_09_a",
+          "file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_a.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:91c8f9cfa7a429c69887894e5ecf2d2cd9a731c95de511edbc0db5021eb59785"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "008rei_402_2_4_008_02_09_a:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_02_09_a",
+        "source_file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_a.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -147,11 +177,22 @@
     {
       "kind": "dialogue",
       "source_text": "この仕事をわたしに任せてくれたことに礼を言う。\nありがとう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_402_2_4_008_02_09_a:2_4_008_02_09_a:cmd-000012:phone_message:000",
+        "source": {
+          "scenario_id": "008rei_402_2_4_008_02_09_a",
+          "part_id": "2_4_008_02_09_a",
+          "file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_a.json",
+          "command_index": 12,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f2617ed9de1aa44a4851e304b2bf3bbebc00b0f1b4165a8f044736fb458f3cab"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -167,19 +208,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "008rei_402_2_4_008_02_09_a:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_02_09_a",
+        "source_file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_a.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null,
       "presentation": "call"
@@ -187,7 +226,18 @@
     {
       "kind": "choice",
       "source_text": "MVでの表情、\n好評ですよ",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_402_2_4_008_02_09_a:2_4_008_02_09_a:cmd-000014:choice_short:000",
+        "source": {
+          "scenario_id": "008rei_402_2_4_008_02_09_a",
+          "part_id": "2_4_008_02_09_a",
+          "file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_a.json",
+          "command_index": 14,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:62e65436fd312affed145d076368850994e3142b246f15480c75900f3d6db1cf"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -214,15 +264,15 @@
         "row_id": "008rei_402_2_4_008_02_09_a:step-6:option-0",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_02_09_a",
+        "source_file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_a.json",
+        "command_start": 14,
+        "command_end": 15
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:008rei_402_2_4_008_02_09_a:2_4_008_02_09_a:cmd-000014",
+        "option_id": "choice-option:v1:008rei_402_2_4_008_02_09_a:2_4_008_02_09_a:cmd-000014:000",
+        "source_label": null,
         "target_step_id": 7,
         "target_step_index": 6,
         "resolution": "resolved"
@@ -232,7 +282,18 @@
     {
       "kind": "choice",
       "source_text": "今回のお仕事は\n自然体こそ魅力です",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_402_2_4_008_02_09_a:2_4_008_02_09_a:cmd-000015:choice_short:000",
+        "source": {
+          "scenario_id": "008rei_402_2_4_008_02_09_a",
+          "part_id": "2_4_008_02_09_a",
+          "file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_a.json",
+          "command_index": 15,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b9885dcd539d987839859aab7538eda07326a75f34788c0d014693443985d62a"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -259,15 +320,15 @@
         "row_id": "008rei_402_2_4_008_02_09_a:step-6:option-1",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_02_09_a",
+        "source_file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_a.json",
+        "command_start": 14,
+        "command_end": 15
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select2",
+        "choice_id": "choice:v1:008rei_402_2_4_008_02_09_a:2_4_008_02_09_a:cmd-000014",
+        "option_id": "choice-option:v1:008rei_402_2_4_008_02_09_a:2_4_008_02_09_a:cmd-000015:001",
+        "source_label": null,
         "target_step_id": 8,
         "target_step_index": 7,
         "resolution": "resolved"
@@ -277,11 +338,22 @@
     {
       "kind": "dialogue",
       "source_text": "よかった。あれは、貴殿や皆が\n和やかな雰囲気をつくってくれたおかげでもある。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_402_2_4_008_02_09_a:2_4_008_02_09_a:cmd-000018:phone_message:000",
+        "source": {
+          "scenario_id": "008rei_402_2_4_008_02_09_a",
+          "part_id": "2_4_008_02_09_a",
+          "file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_a.json",
+          "command_index": 18,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:cd37607e789268edc41d71853c9f6fa23411e4db4b98ce951b491df2dd91a921"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -297,19 +369,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "008rei_402_2_4_008_02_09_a:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_02_09_a",
+        "source_file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_a.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "call"
@@ -317,11 +387,22 @@
     {
       "kind": "dialogue",
       "source_text": "それならばよかった。求められているものを見せる\nことができた、ということだな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_402_2_4_008_02_09_a:2_4_008_02_09_a:cmd-000022:phone_message:000",
+        "source": {
+          "scenario_id": "008rei_402_2_4_008_02_09_a",
+          "part_id": "2_4_008_02_09_a",
+          "file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_a.json",
+          "command_index": 22,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d0df80a2bccfafd272c0f0d70dd39ef3b0d45fbc44854170fee12d507d8b1c4b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -337,19 +418,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "008rei_402_2_4_008_02_09_a:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_02_09_a",
+        "source_file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_a.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null,
       "presentation": "call"
@@ -357,11 +436,22 @@
     {
       "kind": "dialogue",
       "source_text": "自然体というにはおこがましいが、\nわたしの中の違った一面が引き出せた。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_402_2_4_008_02_09_a:2_4_008_02_09_a:cmd-000026:phone_message:000",
+        "source": {
+          "scenario_id": "008rei_402_2_4_008_02_09_a",
+          "part_id": "2_4_008_02_09_a",
+          "file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_a.json",
+          "command_index": 26,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1852069f41e1349b40d825c37773e6f5844e6e5c665abd638cf63c9f6cc02c50"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -377,19 +467,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "008rei_402_2_4_008_02_09_a:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_02_09_a",
+        "source_file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_a.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null,
       "presentation": "call"
@@ -397,11 +485,22 @@
     {
       "kind": "dialogue",
       "source_text": "この経験を糧に、今まで以上に豊かな表現を\n目指していきたい。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_402_2_4_008_02_09_a:2_4_008_02_09_a:cmd-000028:phone_message:000",
+        "source": {
+          "scenario_id": "008rei_402_2_4_008_02_09_a",
+          "part_id": "2_4_008_02_09_a",
+          "file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_a.json",
+          "command_index": 28,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c5f5d3a1a36153af1feaff69fabea042c62b6fdfc5b62492c561b85ad5fcb484"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -417,19 +516,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "008rei_402_2_4_008_02_09_a:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_02_09_a",
+        "source_file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_a.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null,
       "presentation": "call"
@@ -437,11 +534,22 @@
     {
       "kind": "dialogue",
       "source_text": "貴殿が次はどんな仕事を持ってきてくれるか、\n楽しみだ。これからもよろしく頼む。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_402_2_4_008_02_09_a:2_4_008_02_09_a:cmd-000030:phone_message:000",
+        "source": {
+          "scenario_id": "008rei_402_2_4_008_02_09_a",
+          "part_id": "2_4_008_02_09_a",
+          "file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_a.json",
+          "command_index": 30,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:feaf34290e1c4305220f64d2209c3dbb8bd7722406954d1a266b4b1d9f138637"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -457,19 +565,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "008rei_402_2_4_008_02_09_a:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_02_09_a",
+        "source_file": "assets/resources/scenariodata/008rei_402/scenario_2_4_008_02_09_a.json",
+        "command_start": 30,
+        "command_end": 30
       },
       "option": null,
       "presentation": "call"
@@ -482,17 +588,17 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:008rei_402_2_4_008_02_09_a:2_4_008_02_09_a:cmd-000014",
+          "option_id": "choice-option:v1:008rei_402_2_4_008_02_09_a:2_4_008_02_09_a:cmd-000014:000",
+          "source_label": null,
           "target_step_id": 7,
           "target_step_index": 6,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select2",
+          "choice_id": "choice:v1:008rei_402_2_4_008_02_09_a:2_4_008_02_09_a:cmd-000014",
+          "option_id": "choice-option:v1:008rei_402_2_4_008_02_09_a:2_4_008_02_09_a:cmd-000015:001",
+          "source_label": null,
           "target_step_id": 8,
           "target_step_index": 7,
           "resolution": "resolved"
@@ -502,74 +608,14 @@
   ],
   "diagnostics": [
     {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
       "code": "branch-exits-unavailable",
       "step_index": 5,
       "severity": "unsupported"
     },
     {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
       "code": "nonsequential-choice-path",
       "step_index": 5,
       "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
     }
   ],
   "presentation": {

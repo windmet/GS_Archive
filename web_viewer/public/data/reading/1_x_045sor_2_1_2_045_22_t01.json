@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_045sor_2_1_2_045_22_t01",
-  "logical_id": "story-collection:1_x_045sor_2_1_2_045_22_t01",
+  "logical_id": "story:1_x_045sor_2_1_2_045_22_t01",
   "scenario_id": "1_x_045sor_2_1_2_045_22_t01",
   "text_catalog_id": "1_x_045sor_2_1_2_045_22_t01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_045sor_2_1_2_045_22_t01.json",
-    "sha256": "sha256:87f7b177a6b06832b1d4e44cf3ec8b77ca05a60c32b43321401cd23836c61b9f",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:225129d0b2f4347acb3ad29db34d80052eb1d89e6e046a9221625fcbee2f13e2",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:0379cf8d73b827251972279f96471ae4049caeff0dd0ac0fba207bf005b103de",
     "aggregate_source": null,
     "step_count": 10,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_045sor_2_1_2_045_22_t01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "unsupported",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "あ、●●●●プロデューサーさん？\n今日はお祝いありがとうー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_045sor_2_1_2_045_22_t01:1_2_045_22_t01:cmd-000007:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_045sor_2_1_2_045_22_t01",
+          "part_id": "1_2_045_22_t01",
+          "file": "assets/resources/scenariodata/1_x_045sor_2/scenario_1_2_045_22_t01.json",
+          "command_index": 7,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8cc450c8c7837cf5c1df4900c388bbd6bbe7c9b61edd2ee79582e38dce887df9"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_045sor_2_1_2_045_22_t01:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_045_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_045sor_2/scenario_1_2_045_22_t01.json",
+        "command_start": 7,
+        "command_end": 7
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "クリスさんと雨彦さんのお迎えが来るとは\n思ってもいなかったよー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_045sor_2_1_2_045_22_t01:1_2_045_22_t01:cmd-000009:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_045sor_2_1_2_045_22_t01",
+          "part_id": "1_2_045_22_t01",
+          "file": "assets/resources/scenariodata/1_x_045sor_2/scenario_1_2_045_22_t01.json",
+          "command_index": 9,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:31f9903ae40c2165d37b65fda4223af051c2959f1f3cc189579e4b72598e9e15"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_045sor_2_1_2_045_22_t01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_045_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_045sor_2/scenario_1_2_045_22_t01.json",
+        "command_start": 9,
+        "command_end": 9
       },
       "option": null,
       "presentation": "call"
@@ -107,7 +128,18 @@
     {
       "kind": "choice",
       "source_text": "驚きましたか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_045sor_2_1_2_045_22_t01:1_2_045_22_t01:cmd-000011:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_045sor_2_1_2_045_22_t01",
+          "part_id": "1_2_045_22_t01",
+          "file": "assets/resources/scenariodata/1_x_045sor_2/scenario_1_2_045_22_t01.json",
+          "command_index": 11,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ea9b462cb610a7022d3faff857c030b2b1de1dede952f0f6110f77a80c2f4dde"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -134,15 +166,15 @@
         "row_id": "1_x_045sor_2_1_2_045_22_t01:step-4:option-0",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_045_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_045sor_2/scenario_1_2_045_22_t01.json",
+        "command_start": 11,
+        "command_end": 12
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:1_x_045sor_2_1_2_045_22_t01:1_2_045_22_t01:cmd-000011",
+        "option_id": "choice-option:v1:1_x_045sor_2_1_2_045_22_t01:1_2_045_22_t01:cmd-000011:000",
+        "source_label": null,
         "target_step_id": 5,
         "target_step_index": 4,
         "resolution": "resolved"
@@ -152,7 +184,18 @@
     {
       "kind": "choice",
       "source_text": "サプライズは\nどうでしたか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_045sor_2_1_2_045_22_t01:1_2_045_22_t01:cmd-000012:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_045sor_2_1_2_045_22_t01",
+          "part_id": "1_2_045_22_t01",
+          "file": "assets/resources/scenariodata/1_x_045sor_2/scenario_1_2_045_22_t01.json",
+          "command_index": 12,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:41b777f19d0c286384981b93181e287049739eac265c6deb32d301b897223ccc"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -179,15 +222,15 @@
         "row_id": "1_x_045sor_2_1_2_045_22_t01:step-4:option-1",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_045_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_045sor_2/scenario_1_2_045_22_t01.json",
+        "command_start": 11,
+        "command_end": 12
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:1_x_045sor_2_1_2_045_22_t01:1_2_045_22_t01:cmd-000011",
+        "option_id": "choice-option:v1:1_x_045sor_2_1_2_045_22_t01:1_2_045_22_t01:cmd-000012:001",
+        "source_label": null,
         "target_step_id": 5,
         "target_step_index": 4,
         "resolution": "resolved"
@@ -197,11 +240,22 @@
     {
       "kind": "dialogue",
       "source_text": "すごく驚いたよー。昨日の打ち合わせで、\nクリスさんがそわそわしてたから、",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_045sor_2_1_2_045_22_t01:1_2_045_22_t01:cmd-000015:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_045sor_2_1_2_045_22_t01",
+          "part_id": "1_2_045_22_t01",
+          "file": "assets/resources/scenariodata/1_x_045sor_2/scenario_1_2_045_22_t01.json",
+          "command_index": 15,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fb3a242c7ddc91319c8aba60f1e69060c7d784d2fe22693879d14845476d0a30"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -217,19 +271,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_045sor_2_1_2_045_22_t01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_045_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_045sor_2/scenario_1_2_045_22_t01.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null,
       "presentation": "call"
@@ -237,11 +289,22 @@
     {
       "kind": "dialogue",
       "source_text": "今日のことで何かあるのかもとは\n思ってはいたんだけどねー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_045sor_2_1_2_045_22_t01:1_2_045_22_t01:cmd-000017:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_045sor_2_1_2_045_22_t01",
+          "part_id": "1_2_045_22_t01",
+          "file": "assets/resources/scenariodata/1_x_045sor_2/scenario_1_2_045_22_t01.json",
+          "command_index": 17,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:14e594b281f90d6396933b225714db0643246d2719ac9105af83748731880436"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -257,19 +320,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_045sor_2_1_2_045_22_t01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_045_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_045sor_2/scenario_1_2_045_22_t01.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null,
       "presentation": "call"
@@ -277,11 +338,22 @@
     {
       "kind": "dialogue",
       "source_text": "2人が大学まで迎えに来るとは\n想像もしてなかったよー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_045sor_2_1_2_045_22_t01:1_2_045_22_t01:cmd-000019:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_045sor_2_1_2_045_22_t01",
+          "part_id": "1_2_045_22_t01",
+          "file": "assets/resources/scenariodata/1_x_045sor_2/scenario_1_2_045_22_t01.json",
+          "command_index": 19,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:535cbbd46542e118d5fadb90edf6c08867c5d00bce90a63127a57b23a421b272"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -297,19 +369,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_045sor_2_1_2_045_22_t01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_045_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_045sor_2/scenario_1_2_045_22_t01.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null,
       "presentation": "call"
@@ -317,11 +387,22 @@
     {
       "kind": "dialogue",
       "source_text": "車に乗ろうとしたら、シートの上に\nプレゼントが置いてあるしー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_045sor_2_1_2_045_22_t01:1_2_045_22_t01:cmd-000021:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_045sor_2_1_2_045_22_t01",
+          "part_id": "1_2_045_22_t01",
+          "file": "assets/resources/scenariodata/1_x_045sor_2/scenario_1_2_045_22_t01.json",
+          "command_index": 21,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2b1a297f6f4d2eb5efab4365361915f583d924a00df6d8b6e5cf066d452cf0db"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -337,19 +418,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_045sor_2_1_2_045_22_t01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_045_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_045sor_2/scenario_1_2_045_22_t01.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null,
       "presentation": "call"
@@ -357,11 +436,22 @@
     {
       "kind": "dialogue",
       "source_text": "本当、いろんな意味で驚くことだらけの\n1日だったなー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_045sor_2_1_2_045_22_t01:1_2_045_22_t01:cmd-000023:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_045sor_2_1_2_045_22_t01",
+          "part_id": "1_2_045_22_t01",
+          "file": "assets/resources/scenariodata/1_x_045sor_2/scenario_1_2_045_22_t01.json",
+          "command_index": 23,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e45d3fabf9232d8c0494b560f2a8336e21684bae7b1c04059684ebb382752ba9"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -377,19 +467,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_045sor_2_1_2_045_22_t01:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_045_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_045sor_2/scenario_1_2_045_22_t01.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null,
       "presentation": "call"
@@ -397,11 +485,22 @@
     {
       "kind": "dialogue",
       "source_text": "改めて、これからもよろしくね、\n●●●●プロデューサーさん。お疲れさまー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_045sor_2_1_2_045_22_t01:1_2_045_22_t01:cmd-000025:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_045sor_2_1_2_045_22_t01",
+          "part_id": "1_2_045_22_t01",
+          "file": "assets/resources/scenariodata/1_x_045sor_2/scenario_1_2_045_22_t01.json",
+          "command_index": 25,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9b08008232b0a8385dc95eaf161c81a47f4ce734f58407d2fbd1c7d5cb51b358"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -417,19 +516,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_045sor_2_1_2_045_22_t01:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_045_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_045sor_2/scenario_1_2_045_22_t01.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null,
       "presentation": "call"
@@ -442,17 +539,17 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:1_x_045sor_2_1_2_045_22_t01:1_2_045_22_t01:cmd-000011",
+          "option_id": "choice-option:v1:1_x_045sor_2_1_2_045_22_t01:1_2_045_22_t01:cmd-000011:000",
+          "source_label": null,
           "target_step_id": 5,
           "target_step_index": 4,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:1_x_045sor_2_1_2_045_22_t01:1_2_045_22_t01:cmd-000011",
+          "option_id": "choice-option:v1:1_x_045sor_2_1_2_045_22_t01:1_2_045_22_t01:cmd-000012:001",
+          "source_label": null,
           "target_step_id": 5,
           "target_step_index": 4,
           "resolution": "resolved"
@@ -462,64 +559,9 @@
   ],
   "diagnostics": [
     {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
       "code": "branch-exits-unavailable",
       "step_index": 3,
       "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
     }
   ],
   "presentation": {

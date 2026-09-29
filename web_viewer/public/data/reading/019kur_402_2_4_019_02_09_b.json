@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "019kur_402_2_4_019_02_09_b",
-  "logical_id": "story-collection:019kur_402_2_4_019_02_09_b",
+  "logical_id": "story:019kur_402_2_4_019_02_09_b",
   "scenario_id": "019kur_402_2_4_019_02_09_b",
   "text_catalog_id": "019kur_402_2_4_019_02_09_b",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "019kur_402_2_4_019_02_09_b.json",
-    "sha256": "sha256:75b0eec0418942e08ac7886da730584d21eea1fb42d4c9f4d4510e5cf9a45a44",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:f3124ff5d9a9113ab1f3278223218bc276f7bc871bb5e91391152cfd1b963417",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:d7392df494beea118d015a454410c97165d1ff093078b8f60fa5d5e2e13dd286",
     "aggregate_source": null,
     "step_count": 9,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "019kur_402_2_4_019_02_09_b.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "お疲れさまです。清澄です。本日、円城寺さんと\n信玄さんは事務所にいらっしゃるでしょうか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:019kur_402_2_4_019_02_09_b:2_4_019_02_09_b:cmd-000007:phone_message:000",
+        "source": {
+          "scenario_id": "019kur_402_2_4_019_02_09_b",
+          "part_id": "2_4_019_02_09_b",
+          "file": "assets/resources/scenariodata/019kur_402/scenario_2_4_019_02_09_b.json",
+          "command_index": 7,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:635795f820be0d7df62dbc0291e1e45475e7f36e0409c988c861c4ddd2a2a083"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "019kur",
         "sourceName": "清澄 九郎"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "019kur_402_2_4_019_02_09_b:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_019_02_09_b",
+        "source_file": "assets/resources/scenariodata/019kur_402/scenario_2_4_019_02_09_b.json",
+        "command_start": 7,
+        "command_end": 7
       },
       "option": null,
       "presentation": "call"
@@ -67,7 +79,18 @@
     {
       "kind": "choice",
       "source_text": "これから\nいらっしゃいますよ",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:019kur_402_2_4_019_02_09_b:2_4_019_02_09_b:cmd-000009:choice_short:000",
+        "source": {
+          "scenario_id": "019kur_402_2_4_019_02_09_b",
+          "part_id": "2_4_019_02_09_b",
+          "file": "assets/resources/scenariodata/019kur_402/scenario_2_4_019_02_09_b.json",
+          "command_index": 9,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3c223be933e06352d33202452bd874c1e94a92d382216fb675f35e636940551e"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -94,15 +117,15 @@
         "row_id": "019kur_402_2_4_019_02_09_b:step-4:option-0",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_019_02_09_b",
+        "source_file": "assets/resources/scenariodata/019kur_402/scenario_2_4_019_02_09_b.json",
+        "command_start": 9,
+        "command_end": 9
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:019kur_402_2_4_019_02_09_b:2_4_019_02_09_b:cmd-000009",
+        "option_id": "choice-option:v1:019kur_402_2_4_019_02_09_b:2_4_019_02_09_b:cmd-000009:000",
+        "source_label": null,
         "target_step_id": 5,
         "target_step_index": 4,
         "resolution": "resolved"
@@ -112,11 +135,22 @@
     {
       "kind": "dialogue",
       "source_text": "ありがとうございます。心ばかりですが、\nお二人にお礼の品をと思いまして。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:019kur_402_2_4_019_02_09_b:2_4_019_02_09_b:cmd-000012:phone_message:000",
+        "source": {
+          "scenario_id": "019kur_402_2_4_019_02_09_b",
+          "part_id": "2_4_019_02_09_b",
+          "file": "assets/resources/scenariodata/019kur_402/scenario_2_4_019_02_09_b.json",
+          "command_index": 12,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9d587f97cd70df41b0fd1d94449365ce1652a9fee6517f6aac20863dbb48bbb2"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "019kur",
         "sourceName": "清澄 九郎"
       },
       "performance": {
@@ -132,19 +166,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "019kur_402_2_4_019_02_09_b:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_019_02_09_b",
+        "source_file": "assets/resources/scenariodata/019kur_402/scenario_2_4_019_02_09_b.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null,
       "presentation": "call"
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "お二人のトレーニングのおかげで、\n腕の疲れが軽減するようになりました。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:019kur_402_2_4_019_02_09_b:2_4_019_02_09_b:cmd-000014:phone_message:000",
+        "source": {
+          "scenario_id": "019kur_402_2_4_019_02_09_b",
+          "part_id": "2_4_019_02_09_b",
+          "file": "assets/resources/scenariodata/019kur_402/scenario_2_4_019_02_09_b.json",
+          "command_index": 14,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e8edd8a0f81b8b0390fd58ddae251bd3e0e1482b915383f11ad640c2bde8e3d0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "019kur",
         "sourceName": "清澄 九郎"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "019kur_402_2_4_019_02_09_b:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_019_02_09_b",
+        "source_file": "assets/resources/scenariodata/019kur_402/scenario_2_4_019_02_09_b.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null,
       "presentation": "call"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "今度、抹茶味のプロテインを分けて頂けるそうです。\n私の好みに合わせて、選んでくださったのですね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:019kur_402_2_4_019_02_09_b:2_4_019_02_09_b:cmd-000016:phone_message:000",
+        "source": {
+          "scenario_id": "019kur_402_2_4_019_02_09_b",
+          "part_id": "2_4_019_02_09_b",
+          "file": "assets/resources/scenariodata/019kur_402/scenario_2_4_019_02_09_b.json",
+          "command_index": 16,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a881cc83e358899ee4262abc62bce51e69f2e9d29d583c1104722641e532f386"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "019kur",
         "sourceName": "清澄 九郎"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "019kur_402_2_4_019_02_09_b:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_019_02_09_b",
+        "source_file": "assets/resources/scenariodata/019kur_402/scenario_2_4_019_02_09_b.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "call"
@@ -232,11 +282,22 @@
     {
       "kind": "dialogue",
       "source_text": "では、これより事務所に伺います。\nまた後ほど。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:019kur_402_2_4_019_02_09_b:2_4_019_02_09_b:cmd-000018:phone_message:000",
+        "source": {
+          "scenario_id": "019kur_402_2_4_019_02_09_b",
+          "part_id": "2_4_019_02_09_b",
+          "file": "assets/resources/scenariodata/019kur_402/scenario_2_4_019_02_09_b.json",
+          "command_index": 18,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0ba64590b81dadcf631994743878deafee2ded1707a0c6d58d1954d92580d406"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "019kur",
         "sourceName": "清澄 九郎"
       },
       "performance": {
@@ -252,19 +313,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "019kur_402_2_4_019_02_09_b:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_019_02_09_b",
+        "source_file": "assets/resources/scenariodata/019kur_402/scenario_2_4_019_02_09_b.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "call"
@@ -277,9 +336,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:019kur_402_2_4_019_02_09_b:2_4_019_02_09_b:cmd-000009",
+          "option_id": "choice-option:v1:019kur_402_2_4_019_02_09_b:2_4_019_02_09_b:cmd-000009:000",
+          "source_label": null,
           "target_step_id": 5,
           "target_step_index": 4,
           "resolution": "resolved"
@@ -287,43 +346,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "お疲れさまです。清澄です。本日、円城寺さんと",
     "episode_label": null

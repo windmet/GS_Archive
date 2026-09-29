@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "034kan_401_2_4_034_01_09_b",
-  "logical_id": "story-collection:034kan_401_2_4_034_01_09_b",
+  "logical_id": "story:034kan_401_2_4_034_01_09_b",
   "scenario_id": "034kan_401_2_4_034_01_09_b",
   "text_catalog_id": "034kan_401_2_4_034_01_09_b",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "034kan_401_2_4_034_01_09_b.json",
-    "sha256": "sha256:9cd5f9363030c379f152a67e484b83799b3399ff155af2c3ee207095457ca56c",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:963527c1e5aea7953a70fccdf06746dff258940542a5034a5ba59b9baa4a11f8",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:488bcde86636dac9bb3c0282c410bb33bb741573b7abdadd72850c33dce77868",
     "aggregate_source": null,
     "step_count": 7,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "034kan_401_2_4_034_01_09_b.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "お疲れさま、プロデューサーさん。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:034kan_401_2_4_034_01_09_b:2_4_034_01_09_b:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "034kan_401_2_4_034_01_09_b",
+          "part_id": "2_4_034_01_09_b",
+          "file": "assets/resources/scenariodata/034kan_401/scenario_2_4_034_01_09_b.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:644e0194407fe74f511735daffc51e78c8f0beda22b2ed91cc06797b0e834b12"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "034kan",
         "sourceName": "姫野 かのん"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "034kan_401_2_4_034_01_09_b:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_034_01_09_b",
+        "source_file": "assets/resources/scenariodata/034kan_401/scenario_2_4_034_01_09_b.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "今日の撮影とっても楽しかったね♪\nあのね、さっきは聞けなかったんだけど、",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:034kan_401_2_4_034_01_09_b:2_4_034_01_09_b:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "034kan_401_2_4_034_01_09_b",
+          "part_id": "2_4_034_01_09_b",
+          "file": "assets/resources/scenariodata/034kan_401/scenario_2_4_034_01_09_b.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:422344be9486524f8104530b7b826a185a82980cd74d9042b107d1a5d53679dd"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "034kan",
         "sourceName": "姫野 かのん"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "034kan_401_2_4_034_01_09_b:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_034_01_09_b",
+        "source_file": "assets/resources/scenariodata/034kan_401/scenario_2_4_034_01_09_b.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "いつもと違うかのん、どうだった？\nかっこいい怪盗になれてたかな？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:034kan_401_2_4_034_01_09_b:2_4_034_01_09_b:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "034kan_401_2_4_034_01_09_b",
+          "part_id": "2_4_034_01_09_b",
+          "file": "assets/resources/scenariodata/034kan_401/scenario_2_4_034_01_09_b.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ea2d0a388c2ee2ceed2ae1bdb3c966044da1f5a744a042443456ed762da0583a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "034kan",
         "sourceName": "姫野 かのん"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "034kan_401_2_4_034_01_09_b:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_034_01_09_b",
+        "source_file": "assets/resources/scenariodata/034kan_401/scenario_2_4_034_01_09_b.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -147,7 +177,18 @@
     {
       "kind": "choice",
       "source_text": "もちろんですよ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:034kan_401_2_4_034_01_09_b:2_4_034_01_09_b:cmd-000012:choice_short:000",
+        "source": {
+          "scenario_id": "034kan_401_2_4_034_01_09_b",
+          "part_id": "2_4_034_01_09_b",
+          "file": "assets/resources/scenariodata/034kan_401/scenario_2_4_034_01_09_b.json",
+          "command_index": 12,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:154611d2f62dda7edf2735194a4bcc35c82a5c1d9290f2e5cc0502222ed90cd3"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -174,15 +215,15 @@
         "row_id": "034kan_401_2_4_034_01_09_b:step-5:option-0",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_034_01_09_b",
+        "source_file": "assets/resources/scenariodata/034kan_401/scenario_2_4_034_01_09_b.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:034kan_401_2_4_034_01_09_b:2_4_034_01_09_b:cmd-000012",
+        "option_id": "choice-option:v1:034kan_401_2_4_034_01_09_b:2_4_034_01_09_b:cmd-000012:000",
+        "source_label": null,
         "target_step_id": 6,
         "target_step_index": 5,
         "resolution": "resolved"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "よかった～！　これで、かのんはカッコいい\nお仕事も大丈夫だね！　任せて！　あ、でもでも、",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:034kan_401_2_4_034_01_09_b:2_4_034_01_09_b:cmd-000015:phone_message:000",
+        "source": {
+          "scenario_id": "034kan_401_2_4_034_01_09_b",
+          "part_id": "2_4_034_01_09_b",
+          "file": "assets/resources/scenariodata/034kan_401/scenario_2_4_034_01_09_b.json",
+          "command_index": 15,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f30e54dfb1e0721f6f83ec42b4b71f2cd923ef3506c5f5b44d6560797ded9676"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "034kan",
         "sourceName": "姫野 かのん"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "034kan_401_2_4_034_01_09_b:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_034_01_09_b",
+        "source_file": "assets/resources/scenariodata/034kan_401/scenario_2_4_034_01_09_b.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null,
       "presentation": "call"
@@ -232,11 +282,22 @@
     {
       "kind": "dialogue",
       "source_text": "次はかわいいお仕事をおねがいしまーす！\nそのためにもかのんも頑張るから！　それじゃね！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:034kan_401_2_4_034_01_09_b:2_4_034_01_09_b:cmd-000017:phone_message:000",
+        "source": {
+          "scenario_id": "034kan_401_2_4_034_01_09_b",
+          "part_id": "2_4_034_01_09_b",
+          "file": "assets/resources/scenariodata/034kan_401/scenario_2_4_034_01_09_b.json",
+          "command_index": 17,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2914ee39d01c5c9bbbffce7fedecef234d3a1726b500844dc75fc2d4eeb78b23"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "034kan",
         "sourceName": "姫野 かのん"
       },
       "performance": {
@@ -252,19 +313,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "034kan_401_2_4_034_01_09_b:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_034_01_09_b",
+        "source_file": "assets/resources/scenariodata/034kan_401/scenario_2_4_034_01_09_b.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null,
       "presentation": "call"
@@ -277,9 +336,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:034kan_401_2_4_034_01_09_b:2_4_034_01_09_b:cmd-000012",
+          "option_id": "choice-option:v1:034kan_401_2_4_034_01_09_b:2_4_034_01_09_b:cmd-000012:000",
+          "source_label": null,
           "target_step_id": 6,
           "target_step_index": 5,
           "resolution": "resolved"
@@ -287,43 +346,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "お疲れさま、プロデューサーさん。",
     "episode_label": null

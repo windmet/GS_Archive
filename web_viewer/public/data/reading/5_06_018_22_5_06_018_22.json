@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "5_06_018_22_5_06_018_22",
-  "logical_id": "story-collection:5_06_018_22_5_06_018_22",
+  "logical_id": "story:5_06_018_22_5_06_018_22",
   "scenario_id": "5_06_018_22_5_06_018_22",
   "text_catalog_id": "5_06_018_22_5_06_018_22",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "5_06_018_22_5_06_018_22.json",
-    "sha256": "sha256:26cdf5906191ace2136ae74b49cc00c8bf3427a4e2b183ada4f7fee864b52a3d",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:3f4adc1a068b6595687f7016d6789435d317bfb26beea363cddb80256f17dde9",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:64a75c935b25a9db9a3a2e1c846cc6b3d4688731e0bdf8e195634aa3bb3322d5",
     "aggregate_source": null,
     "step_count": 13,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "5_06_018_22_5_06_018_22.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "ライブが終わって",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_018_22_5_06_018_22:5_06_018_22:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "5_06_018_22_5_06_018_22",
+          "part_id": "5_06_018_22",
+          "file": "assets/resources/scenariodata/5_06_018_22/scenario_5_06_018_22.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c8b5c806c01ba2a8c90acd87cc0fd6f3cabe7450822ea538bd370af01c98230c"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "5_06_018_22_5_06_018_22:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_018_22",
+        "source_file": "assets/resources/scenariodata/5_06_018_22/scenario_5_06_018_22.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "315プロダクションの記念日を祝う、\nスペシャルライブの開催が決定。\nパッションあふれる最高の舞台にすべく、\nアイドルたちは一丸となって新曲や衣装、\nステージ演出を作り上げていく。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_018_22_5_06_018_22:5_06_018_22:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "5_06_018_22_5_06_018_22",
+          "part_id": "5_06_018_22",
+          "file": "assets/resources/scenariodata/5_06_018_22/scenario_5_06_018_22.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:128b3bb9304447098f1b4bbc1bb56cf707060803dc9a098e2b19247715e7282b"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "5_06_018_22_5_06_018_22:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_018_22",
+        "source_file": "assets/resources/scenariodata/5_06_018_22/scenario_5_06_018_22.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "caption",
       "source_text": "ライブ終了後",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_018_22_5_06_018_22:5_06_018_22:cmd-000006:time_caption:000",
+        "source": {
+          "scenario_id": "5_06_018_22_5_06_018_22",
+          "part_id": "5_06_018_22",
+          "file": "assets/resources/scenariodata/5_06_018_22/scenario_5_06_018_22.json",
+          "command_index": 6,
+          "field_kind": "time_caption",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7341169a14aad90ef3fd47ff2ce36ccc767a31e739d7ce18656b8fc90e2db0de"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,21 +164,32 @@
         "row_id": "5_06_018_22_5_06_018_22:step-3:caption",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_018_22",
+        "source_file": "assets/resources/scenariodata/5_06_018_22/scenario_5_06_018_22.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ライブお疲れ様でした、\n●●●●プロデューサーさん！\n今、控え室に着きました。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_018_22_5_06_018_22:5_06_018_22:cmd-000016:mobile_message:000",
+        "source": {
+          "scenario_id": "5_06_018_22_5_06_018_22",
+          "part_id": "5_06_018_22",
+          "file": "assets/resources/scenariodata/5_06_018_22/scenario_5_06_018_22.json",
+          "command_index": 16,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:50cd7490fe1eca3517f3625dbc66b9821b4d3132ed333e3585dbabb4bcbbf421"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "101ken",
         "sourceName": "山村 賢"
       },
       "performance": {
@@ -167,10 +214,10 @@
         "row_id": "5_06_018_22_5_06_018_22:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_018_22",
+        "source_file": "assets/resources/scenariodata/5_06_018_22/scenario_5_06_018_22.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "talk"
@@ -178,11 +225,22 @@
     {
       "kind": "dialogue",
       "source_text": "皆さん早速、ライブの感想や、\n反省会で盛り上がっています！\nそれと……",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_018_22_5_06_018_22:5_06_018_22:cmd-000018:mobile_message:000",
+        "source": {
+          "scenario_id": "5_06_018_22_5_06_018_22",
+          "part_id": "5_06_018_22",
+          "file": "assets/resources/scenariodata/5_06_018_22/scenario_5_06_018_22.json",
+          "command_index": 18,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0e1c043e83a0d24479d094e7975fc96d1bf0b8ce6905500bb2acff583f64734b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "101ken",
         "sourceName": "山村 賢"
       },
       "performance": {
@@ -207,10 +265,10 @@
         "row_id": "5_06_018_22_5_06_018_22:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_018_22",
+        "source_file": "assets/resources/scenariodata/5_06_018_22/scenario_5_06_018_22.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "talk"
@@ -218,11 +276,22 @@
     {
       "kind": "dialogue",
       "source_text": "残りのロケ弁をかけてダンス\n対決すると、練習スペースに\n向かったアイドルもいました！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_018_22_5_06_018_22:5_06_018_22:cmd-000020:mobile_message:000",
+        "source": {
+          "scenario_id": "5_06_018_22_5_06_018_22",
+          "part_id": "5_06_018_22",
+          "file": "assets/resources/scenariodata/5_06_018_22/scenario_5_06_018_22.json",
+          "command_index": 20,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:760b213a6b70b8f2f0da558ff35e3e3e1ab9123d130b2dd5fb673dfa1723d58b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "101ken",
         "sourceName": "山村 賢"
       },
       "performance": {
@@ -247,10 +316,10 @@
         "row_id": "5_06_018_22_5_06_018_22:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_018_22",
+        "source_file": "assets/resources/scenariodata/5_06_018_22/scenario_5_06_018_22.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null,
       "presentation": "talk"
@@ -258,11 +327,22 @@
     {
       "kind": "dialogue",
       "source_text": "ライブ直後なのに、\n元気いっぱいです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_018_22_5_06_018_22:5_06_018_22:cmd-000022:mobile_message:000",
+        "source": {
+          "scenario_id": "5_06_018_22_5_06_018_22",
+          "part_id": "5_06_018_22",
+          "file": "assets/resources/scenariodata/5_06_018_22/scenario_5_06_018_22.json",
+          "command_index": 22,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:88122a7678d12ddfcf89f91c71a9fb10a8b52dedf724933438b437850e1989c4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "101ken",
         "sourceName": "山村 賢"
       },
       "performance": {
@@ -287,10 +367,10 @@
         "row_id": "5_06_018_22_5_06_018_22:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_018_22",
+        "source_file": "assets/resources/scenariodata/5_06_018_22/scenario_5_06_018_22.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null,
       "presentation": "talk"
@@ -298,11 +378,22 @@
     {
       "kind": "dialogue",
       "source_text": "それからプロデューサーさんが\n提案したマッサージルームも、\n大盛況でしたよ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_018_22_5_06_018_22:5_06_018_22:cmd-000024:mobile_message:000",
+        "source": {
+          "scenario_id": "5_06_018_22_5_06_018_22",
+          "part_id": "5_06_018_22",
+          "file": "assets/resources/scenariodata/5_06_018_22/scenario_5_06_018_22.json",
+          "command_index": 24,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:12de173fdb483229eb807b2c4014869ad2e8ec95497db41e16767205b173922b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "101ken",
         "sourceName": "山村 賢"
       },
       "performance": {
@@ -327,10 +418,10 @@
         "row_id": "5_06_018_22_5_06_018_22:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_018_22",
+        "source_file": "assets/resources/scenariodata/5_06_018_22/scenario_5_06_018_22.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null,
       "presentation": "talk"
@@ -338,11 +429,22 @@
     {
       "kind": "dialogue",
       "source_text": "控え室の様子は以上です！\n連日のライブ、\n本当にお疲れ様でした！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_018_22_5_06_018_22:5_06_018_22:cmd-000026:mobile_message:000",
+        "source": {
+          "scenario_id": "5_06_018_22_5_06_018_22",
+          "part_id": "5_06_018_22",
+          "file": "assets/resources/scenariodata/5_06_018_22/scenario_5_06_018_22.json",
+          "command_index": 26,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1eeb41d0309bb0fd5d219cb4139ee9f6c73e9576ce6b6ba407371ec65894e34f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "101ken",
         "sourceName": "山村 賢"
       },
       "performance": {
@@ -367,68 +469,17 @@
         "row_id": "5_06_018_22_5_06_018_22:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_018_22",
+        "source_file": "assets/resources/scenariodata/5_06_018_22/scenario_5_06_018_22.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null,
       "presentation": "talk"
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "315プロダクションの記念日を祝う、",
     "episode_label": null

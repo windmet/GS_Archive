@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "049eis_402_2_4_049_02_09_a",
-  "logical_id": "story-collection:049eis_402_2_4_049_02_09_a",
+  "logical_id": "story:049eis_402_2_4_049_02_09_a",
   "scenario_id": "049eis_402_2_4_049_02_09_a",
   "text_catalog_id": "049eis_402_2_4_049_02_09_a",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "049eis_402_2_4_049_02_09_a.json",
-    "sha256": "sha256:6d6dbffc9a9102cb4405d939a004352bd70102a646cbb54b1903ae07d0962d47",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:5ac88fdb6f7264212e767d5955b8fb6403ebc79a76aa725d75937c3b76a603fe",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:5a171871eb1b29cbb5e61540cf89091b73d44dff46cbf9241d300d8c82cd99d3",
     "aggregate_source": null,
     "step_count": 9,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "049eis_402_2_4_049_02_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "unsupported",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサー。\n先日のイベントの件で伝え忘れがあった。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:049eis_402_2_4_049_02_09_a:2_4_049_02_09_a:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "049eis_402_2_4_049_02_09_a",
+          "part_id": "2_4_049_02_09_a",
+          "file": "assets/resources/scenariodata/049eis_402/scenario_2_4_049_02_09_a.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:564bd93ff18f2fd0eae946bad8783399caad68e25cc713d2a14af15b57b8e475"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "049eis",
         "sourceName": "眉見 鋭心"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "049eis_402_2_4_049_02_09_a:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_049_02_09_a",
+        "source_file": "assets/resources/scenariodata/049eis_402/scenario_2_4_049_02_09_a.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "今回はお前の采配と助言のおかげで、\n十分に実力を発揮することができた。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:049eis_402_2_4_049_02_09_a:2_4_049_02_09_a:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "049eis_402_2_4_049_02_09_a",
+          "part_id": "2_4_049_02_09_a",
+          "file": "assets/resources/scenariodata/049eis_402/scenario_2_4_049_02_09_a.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fb8f3c3910f7b229fda21815ca6392fcefdcab027a6f61a141ec4076979a8189"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "049eis",
         "sourceName": "眉見 鋭心"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "049eis_402_2_4_049_02_09_a:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_049_02_09_a",
+        "source_file": "assets/resources/scenariodata/049eis_402/scenario_2_4_049_02_09_a.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "……お前に対する信頼も、改めて増した。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:049eis_402_2_4_049_02_09_a:2_4_049_02_09_a:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "049eis_402_2_4_049_02_09_a",
+          "part_id": "2_4_049_02_09_a",
+          "file": "assets/resources/scenariodata/049eis_402/scenario_2_4_049_02_09_a.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5494e8ea662d316d763b30fbd90f50cb396be55dd285a1a4f822ac5def43fc50"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "049eis",
         "sourceName": "眉見 鋭心"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "049eis_402_2_4_049_02_09_a:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_049_02_09_a",
+        "source_file": "assets/resources/scenariodata/049eis_402/scenario_2_4_049_02_09_a.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -147,11 +177,22 @@
     {
       "kind": "dialogue",
       "source_text": "感謝する。そして、今後も引き続き協力を頼む。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:049eis_402_2_4_049_02_09_a:2_4_049_02_09_a:cmd-000012:phone_message:000",
+        "source": {
+          "scenario_id": "049eis_402_2_4_049_02_09_a",
+          "part_id": "2_4_049_02_09_a",
+          "file": "assets/resources/scenariodata/049eis_402/scenario_2_4_049_02_09_a.json",
+          "command_index": 12,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:704a1dfd29678976b924acfb91bc950177da10a35501c908003d263032cb323f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "049eis",
         "sourceName": "眉見 鋭心"
       },
       "performance": {
@@ -167,19 +208,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "049eis_402_2_4_049_02_09_a:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_049_02_09_a",
+        "source_file": "assets/resources/scenariodata/049eis_402/scenario_2_4_049_02_09_a.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null,
       "presentation": "call"
@@ -187,7 +226,18 @@
     {
       "kind": "choice",
       "source_text": "お役に立てて\nよかったです",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:049eis_402_2_4_049_02_09_a:2_4_049_02_09_a:cmd-000014:choice_short:000",
+        "source": {
+          "scenario_id": "049eis_402_2_4_049_02_09_a",
+          "part_id": "2_4_049_02_09_a",
+          "file": "assets/resources/scenariodata/049eis_402/scenario_2_4_049_02_09_a.json",
+          "command_index": 14,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:45a5cbb777804ba929615a6a3308aa2831d59b8e4bccb541c0eb44992f5e0762"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -214,15 +264,15 @@
         "row_id": "049eis_402_2_4_049_02_09_a:step-6:option-0",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_049_02_09_a",
+        "source_file": "assets/resources/scenariodata/049eis_402/scenario_2_4_049_02_09_a.json",
+        "command_start": 14,
+        "command_end": 15
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:049eis_402_2_4_049_02_09_a:2_4_049_02_09_a:cmd-000014",
+        "option_id": "choice-option:v1:049eis_402_2_4_049_02_09_a:2_4_049_02_09_a:cmd-000014:000",
+        "source_label": null,
         "target_step_id": 7,
         "target_step_index": 6,
         "resolution": "resolved"
@@ -232,7 +282,18 @@
     {
       "kind": "choice",
       "source_text": "任せてください！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:049eis_402_2_4_049_02_09_a:2_4_049_02_09_a:cmd-000015:choice_short:000",
+        "source": {
+          "scenario_id": "049eis_402_2_4_049_02_09_a",
+          "part_id": "2_4_049_02_09_a",
+          "file": "assets/resources/scenariodata/049eis_402/scenario_2_4_049_02_09_a.json",
+          "command_index": 15,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1328858b72076382b4434a1d60241e572fa393e0e21d8022ddd6bd6bcd0ca477"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -259,15 +320,15 @@
         "row_id": "049eis_402_2_4_049_02_09_a:step-6:option-1",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_049_02_09_a",
+        "source_file": "assets/resources/scenariodata/049eis_402/scenario_2_4_049_02_09_a.json",
+        "command_start": 14,
+        "command_end": 15
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select2",
+        "choice_id": "choice:v1:049eis_402_2_4_049_02_09_a:2_4_049_02_09_a:cmd-000014",
+        "option_id": "choice-option:v1:049eis_402_2_4_049_02_09_a:2_4_049_02_09_a:cmd-000015:001",
+        "source_label": null,
         "target_step_id": 8,
         "target_step_index": 7,
         "resolution": "resolved"
@@ -277,11 +338,22 @@
     {
       "kind": "dialogue",
       "source_text": "……こういう時は、もっと胸を張ってもいいだろう。\nそれだけの事を、お前はしているんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:049eis_402_2_4_049_02_09_a:2_4_049_02_09_a:cmd-000018:phone_message:000",
+        "source": {
+          "scenario_id": "049eis_402_2_4_049_02_09_a",
+          "part_id": "2_4_049_02_09_a",
+          "file": "assets/resources/scenariodata/049eis_402/scenario_2_4_049_02_09_a.json",
+          "command_index": 18,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:09996038afcc4192aac636f44f43ff25bf5925dcaefbeb7c4fbd30e6bc84db5d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "049eis",
         "sourceName": "眉見 鋭心"
       },
       "performance": {
@@ -297,19 +369,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "049eis_402_2_4_049_02_09_a:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_049_02_09_a",
+        "source_file": "assets/resources/scenariodata/049eis_402/scenario_2_4_049_02_09_a.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "call"
@@ -317,11 +387,22 @@
     {
       "kind": "dialogue",
       "source_text": "ああ。これからも、お前と共に、\n自分のアイドルとしての力を見極めていきたい。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:049eis_402_2_4_049_02_09_a:2_4_049_02_09_a:cmd-000022:phone_message:000",
+        "source": {
+          "scenario_id": "049eis_402_2_4_049_02_09_a",
+          "part_id": "2_4_049_02_09_a",
+          "file": "assets/resources/scenariodata/049eis_402/scenario_2_4_049_02_09_a.json",
+          "command_index": 22,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:21cae1f5ab7330abfe120f142818924fbc21ae00edd7c72ea2085bb612238823"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "049eis",
         "sourceName": "眉見 鋭心"
       },
       "performance": {
@@ -337,19 +418,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "049eis_402_2_4_049_02_09_a:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_049_02_09_a",
+        "source_file": "assets/resources/scenariodata/049eis_402/scenario_2_4_049_02_09_a.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null,
       "presentation": "call"
@@ -357,11 +436,22 @@
     {
       "kind": "dialogue",
       "source_text": "用件は以上だ。\nまた明日会おう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:049eis_402_2_4_049_02_09_a:2_4_049_02_09_a:cmd-000026:phone_message:000",
+        "source": {
+          "scenario_id": "049eis_402_2_4_049_02_09_a",
+          "part_id": "2_4_049_02_09_a",
+          "file": "assets/resources/scenariodata/049eis_402/scenario_2_4_049_02_09_a.json",
+          "command_index": 26,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0c92722ca6543a3dc272431b59971278426fc2e758d7816d99e15278f8d69af1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "049eis",
         "sourceName": "眉見 鋭心"
       },
       "performance": {
@@ -377,19 +467,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "049eis_402_2_4_049_02_09_a:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_049_02_09_a",
+        "source_file": "assets/resources/scenariodata/049eis_402/scenario_2_4_049_02_09_a.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null,
       "presentation": "call"
@@ -402,17 +490,17 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:049eis_402_2_4_049_02_09_a:2_4_049_02_09_a:cmd-000014",
+          "option_id": "choice-option:v1:049eis_402_2_4_049_02_09_a:2_4_049_02_09_a:cmd-000014:000",
+          "source_label": null,
           "target_step_id": 7,
           "target_step_index": 6,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select2",
+          "choice_id": "choice:v1:049eis_402_2_4_049_02_09_a:2_4_049_02_09_a:cmd-000014",
+          "option_id": "choice-option:v1:049eis_402_2_4_049_02_09_a:2_4_049_02_09_a:cmd-000015:001",
+          "source_label": null,
           "target_step_id": 8,
           "target_step_index": 7,
           "resolution": "resolved"
@@ -422,64 +510,14 @@
   ],
   "diagnostics": [
     {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
       "code": "branch-exits-unavailable",
       "step_index": 5,
       "severity": "unsupported"
     },
     {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
       "code": "nonsequential-choice-path",
       "step_index": 5,
       "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
     }
   ],
   "presentation": {

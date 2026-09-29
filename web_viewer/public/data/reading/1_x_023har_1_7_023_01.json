@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_023har_1_7_023_01",
-  "logical_id": "story-collection:1_x_023har_1_7_023_01",
+  "logical_id": "story:1_x_023har_1_7_023_01",
   "scenario_id": "1_x_023har_1_7_023_01",
   "text_catalog_id": "1_x_023har_1_7_023_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_023har_1_7_023_01.json",
-    "sha256": "sha256:eb080d9f8a3be3130eefd24e936795969a615ba8a4bc5f1599da795556207b6a",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:865eb8239cdd30e109eae60ffd9e49a27482a4df56b7fea10f1c741b70210fa2",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:90f07ec29de625abc97efb7e7455846059175f535ef240017c23a9492b5772b9",
     "aggregate_source": null,
     "step_count": 7,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_023har_1_7_023_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "dialogue",
       "source_text": "春名さん、お誕生日おめでとうございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_023har_1_7_023_01:1_7_023_01:cmd-000010:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_023har_1_7_023_01",
+          "part_id": "1_7_023_01",
+          "file": "assets/resources/scenariodata/1_x_023har/scenario_1_7_023_01.json",
+          "command_index": 10,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:116c24add120789d62f42a498d749a3e4d8f8aa03c42202caebbdff9c678e5a9"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -54,21 +68,32 @@
         "row_id": "1_x_023har_1_7_023_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_023_01",
+        "source_file": "assets/resources/scenariodata/1_x_023har/scenario_1_7_023_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "おっ、覚えててくれてたんだな。\nありがとう、●●●●プロデューサー！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_023har_1_7_023_01:1_7_023_01:cmd-000014:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_023har_1_7_023_01",
+          "part_id": "1_7_023_01",
+          "file": "assets/resources/scenariodata/1_x_023har/scenario_1_7_023_01.json",
+          "command_index": 14,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f9e01145e018d949f19fd0da098afd2e98f62bcc70e4069f558cc8ada1c2031b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "023har",
         "sourceName": "若里 春名"
       },
       "performance": {
@@ -84,30 +109,39 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_023har_1_7_023_01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_023_01",
+        "source_file": "assets/resources/scenariodata/1_x_023har/scenario_1_7_023_01.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "祝ってもらえて、すげー嬉しいよ。\n今日はドーナツでお祝いだな！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_023har_1_7_023_01:1_7_023_01:cmd-000020:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_023har_1_7_023_01",
+          "part_id": "1_7_023_01",
+          "file": "assets/resources/scenariodata/1_x_023har/scenario_1_7_023_01.json",
+          "command_index": 20,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:cf1b1aa4b1d047782b822370f01c81f0efb0877508cae4e438a2a65d8b4da6b3"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "023har",
         "sourceName": "若里 春名"
       },
       "performance": {
@@ -124,7 +158,6 @@
         "stepId": 5
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -133,21 +166,32 @@
         "row_id": "1_x_023har_1_7_023_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_023_01",
+        "source_file": "assets/resources/scenariodata/1_x_023har/scenario_1_7_023_01.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ん？　お祝いって言ったらドーナツだろ？\n誕生日に食べるヤツは格別にうまいんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_023har_1_7_023_01:1_7_023_01:cmd-000024:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_023har_1_7_023_01",
+          "part_id": "1_7_023_01",
+          "file": "assets/resources/scenariodata/1_x_023har/scenario_1_7_023_01.json",
+          "command_index": 24,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8c2fa31bb899f1030b306ce37d854c48bc1788505bf244af1898a3daaa943781"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "023har",
         "sourceName": "若里 春名"
       },
       "performance": {
@@ -164,7 +208,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -173,21 +216,32 @@
         "row_id": "1_x_023har_1_7_023_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_023_01",
+        "source_file": "assets/resources/scenariodata/1_x_023har/scenario_1_7_023_01.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "たくさん買ってきたから、\n●●●●プロデューサーも一緒に食べようぜ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_023har_1_7_023_01:1_7_023_01:cmd-000029:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_023har_1_7_023_01",
+          "part_id": "1_7_023_01",
+          "file": "assets/resources/scenariodata/1_x_023har/scenario_1_7_023_01.json",
+          "command_index": 29,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:27c3c4071b8db0fb2315e419d5d7744085d263ab3b3045947a6cb75950bbc1ad"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "023har",
         "sourceName": "若里 春名"
       },
       "performance": {
@@ -204,7 +258,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -213,47 +266,16 @@
         "row_id": "1_x_023har_1_7_023_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_023_01",
+        "source_file": "assets/resources/scenariodata/1_x_023har/scenario_1_7_023_01.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "春名さん、お誕生日おめでとうございます！",
     "episode_label": null

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_005kao_2_1_8_005_02",
-  "logical_id": "story-collection:1_x_005kao_2_1_8_005_02",
+  "logical_id": "story:1_x_005kao_2_1_8_005_02",
   "scenario_id": "1_x_005kao_2_1_8_005_02",
   "text_catalog_id": "1_x_005kao_2_1_8_005_02",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_005kao_2_1_8_005_02.json",
-    "sha256": "sha256:431515a96fb32f4c68dd850a4d2be87626329e72c006826e0633783b63a6bd97",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:a962f4254909e3e8fd95e2f5bde600ff13cd7640fbb3182c7213812ae8656b94",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:932cc9780790b1beca93977fb1add93b1bf97a72fc2b326e2280526e1387e97b",
     "aggregate_source": null,
     "step_count": 11,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_005kao_2_1_8_005_02.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサー、ここにいたのか。\n丁度よかった、話がある。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_005kao_2_1_8_005_02:1_8_005_02:cmd-000015:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_005kao_2_1_8_005_02",
+          "part_id": "1_8_005_02",
+          "file": "assets/resources/scenariodata/1_x_005kao_2/scenario_1_8_005_02.json",
+          "command_index": 15,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e85c197cebb135e69f39d8e5ac4aea8ce570e6347c5b82338fea6d2229258143"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "005kao",
         "sourceName": "桜庭 薫"
       },
       "performance": {
@@ -47,30 +61,39 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_005kao_2_1_8_005_02:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_005_02",
+        "source_file": "assets/resources/scenariodata/1_x_005kao_2/scenario_1_8_005_02.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "誕生日おめでとう。今日だっただろう？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_005kao_2_1_8_005_02:1_8_005_02:cmd-000019:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_005kao_2_1_8_005_02",
+          "part_id": "1_8_005_02",
+          "file": "assets/resources/scenariodata/1_x_005kao_2/scenario_1_8_005_02.json",
+          "command_index": 19,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b01d622971e25b694094de1b1a4a931ece7b2b61cfba729d5fd482c9035c5897"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "005kao",
         "sourceName": "桜庭 薫"
       },
       "performance": {
@@ -86,26 +109,35 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_005kao_2_1_8_005_02:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_005_02",
+        "source_file": "assets/resources/scenariodata/1_x_005kao_2/scenario_1_8_005_02.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ありがとうございます……！\nお仕事のご相談かと思いました。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_005kao_2_1_8_005_02:1_8_005_02:cmd-000021:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_005kao_2_1_8_005_02",
+          "part_id": "1_8_005_02",
+          "file": "assets/resources/scenariodata/1_x_005kao_2/scenario_1_8_005_02.json",
+          "command_index": 21,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:60290581b478f2a94ff54dcd4bbc632dcb30e1d7a2441b3e68a1b9d7755378f5"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -132,21 +164,32 @@
         "row_id": "1_x_005kao_2_1_8_005_02:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_005_02",
+        "source_file": "assets/resources/scenariodata/1_x_005kao_2/scenario_1_8_005_02.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "今日のうちに伝えておきたかったんだ。\n仕事の合間なら確実に捕まると思ってな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_005kao_2_1_8_005_02:1_8_005_02:cmd-000026:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_005kao_2_1_8_005_02",
+          "part_id": "1_8_005_02",
+          "file": "assets/resources/scenariodata/1_x_005kao_2/scenario_1_8_005_02.json",
+          "command_index": 26,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:30544b9878b14c01e4046811aa744436d545bb06371ce1af7e90041422de1f32"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "005kao",
         "sourceName": "桜庭 薫"
       },
       "performance": {
@@ -162,30 +205,39 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_005kao_2_1_8_005_02:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_005_02",
+        "source_file": "assets/resources/scenariodata/1_x_005kao_2/scenario_1_8_005_02.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "君には世話になっているからな。\nでは、僕はそろそろ仕事に戻る。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_005kao_2_1_8_005_02:1_8_005_02:cmd-000031:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_005kao_2_1_8_005_02",
+          "part_id": "1_8_005_02",
+          "file": "assets/resources/scenariodata/1_x_005kao_2/scenario_1_8_005_02.json",
+          "command_index": 31,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f1bd15acaa2c4becd426612b8ad2334e5788e6cb50b8e1ebbe8a1e412a86a072"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "005kao",
         "sourceName": "桜庭 薫"
       },
       "performance": {
@@ -202,7 +254,6 @@
         "stepId": 9
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -211,47 +262,16 @@
         "row_id": "1_x_005kao_2_1_8_005_02:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_005_02",
+        "source_file": "assets/resources/scenariodata/1_x_005kao_2/scenario_1_8_005_02.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "●●●●プロデューサー、ここにいたのか。",
     "episode_label": null

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "035mco_302_2_3_035_02_09_a",
-  "logical_id": "story-collection:035mco_302_2_3_035_02_09_a",
+  "logical_id": "story:035mco_302_2_3_035_02_09_a",
   "scenario_id": "035mco_302_2_3_035_02_09_a",
   "text_catalog_id": "035mco_302_2_3_035_02_09_a",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "035mco_302_2_3_035_02_09_a.json",
-    "sha256": "sha256:011957803ef710c87e156c11060d8ee3a338c822604b1e2942b1afb89d355d79",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:93880ae6fb658d22b7ab6d8c11d0a5ac6fedbd2c09e914360899c79c1f8c584e",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:ccd220e771ffcd814ca11a650926ad3f4bc4c48361c25fc6b4494fd70f9d2845",
     "aggregate_source": null,
     "step_count": 11,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "035mco_302_2_3_035_02_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "お疲れ様、●●●●プロデューサー。\nすまない、少し時間をもらえるだろうか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_302_2_3_035_02_09_a:2_3_035_02_09_a:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "035mco_302_2_3_035_02_09_a",
+          "part_id": "2_3_035_02_09_a",
+          "file": "assets/resources/scenariodata/035mco_302/scenario_2_3_035_02_09_a.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:10cc50e1b50877102257e583aea8be02819cf5c3dde9c5b34f8463468c726b9a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "035mco_302_2_3_035_02_09_a:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_035_02_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_302/scenario_2_3_035_02_09_a.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "どうしても今、\n君に伝えたいことがある。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_302_2_3_035_02_09_a:2_3_035_02_09_a:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "035mco_302_2_3_035_02_09_a",
+          "part_id": "2_3_035_02_09_a",
+          "file": "assets/resources/scenariodata/035mco_302/scenario_2_3_035_02_09_a.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ae99367a85e0627cbeb644801b384d2694fd7cb8e3a606054da5006f9af7cdf8"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "035mco_302_2_3_035_02_09_a:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_035_02_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_302/scenario_2_3_035_02_09_a.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "今日の撮影が終わった後、台本を書いた\n彼の顔つきが、すっかり変わっていた。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_302_2_3_035_02_09_a:2_3_035_02_09_a:cmd-000012:phone_message:000",
+        "source": {
+          "scenario_id": "035mco_302_2_3_035_02_09_a",
+          "part_id": "2_3_035_02_09_a",
+          "file": "assets/resources/scenariodata/035mco_302/scenario_2_3_035_02_09_a.json",
+          "command_index": 12,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8356ace1e6475a9ed272c4d751b6917ee6bb73544092f25a2d5581aaaf858b94"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "035mco_302_2_3_035_02_09_a:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_035_02_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_302/scenario_2_3_035_02_09_a.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null,
       "presentation": "call"
@@ -147,11 +177,22 @@
     {
       "kind": "dialogue",
       "source_text": "久々に再会した時とはまるで違う。\n学生の頃のような、希望に満ちた目だった。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_302_2_3_035_02_09_a:2_3_035_02_09_a:cmd-000014:phone_message:000",
+        "source": {
+          "scenario_id": "035mco_302_2_3_035_02_09_a",
+          "part_id": "2_3_035_02_09_a",
+          "file": "assets/resources/scenariodata/035mco_302/scenario_2_3_035_02_09_a.json",
+          "command_index": 14,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7bf705e11a51cee3d9ba5ca57dad3d241e2653e681a82962f283f326fc949936"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -167,19 +208,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "035mco_302_2_3_035_02_09_a:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_035_02_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_302/scenario_2_3_035_02_09_a.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null,
       "presentation": "call"
@@ -187,11 +226,22 @@
     {
       "kind": "dialogue",
       "source_text": "今回の撮影を通して、彼の気持ちに\n何らかの変化が生じたのかもしれない。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_302_2_3_035_02_09_a:2_3_035_02_09_a:cmd-000016:phone_message:000",
+        "source": {
+          "scenario_id": "035mco_302_2_3_035_02_09_a",
+          "part_id": "2_3_035_02_09_a",
+          "file": "assets/resources/scenariodata/035mco_302/scenario_2_3_035_02_09_a.json",
+          "command_index": 16,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:998c4c115ddc98b27ee25741f2ca1fa3c29e3537103ddc2b96dcd139c0f4c1db"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -207,19 +257,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "035mco_302_2_3_035_02_09_a:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_035_02_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_302/scenario_2_3_035_02_09_a.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "call"
@@ -227,11 +275,22 @@
     {
       "kind": "dialogue",
       "source_text": "我々がアイドルとして、彼の力に\nなれたのだとしたら……これほど嬉しいことはない。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_302_2_3_035_02_09_a:2_3_035_02_09_a:cmd-000018:phone_message:000",
+        "source": {
+          "scenario_id": "035mco_302_2_3_035_02_09_a",
+          "part_id": "2_3_035_02_09_a",
+          "file": "assets/resources/scenariodata/035mco_302/scenario_2_3_035_02_09_a.json",
+          "command_index": 18,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0087de53e8ca763f7bae84b489120b41d71c45367e5a5f125121bb3b50b446b4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -247,19 +306,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "035mco_302_2_3_035_02_09_a:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_035_02_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_302/scenario_2_3_035_02_09_a.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "call"
@@ -267,7 +324,18 @@
     {
       "kind": "choice",
       "source_text": "私も嬉しいです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_302_2_3_035_02_09_a:2_3_035_02_09_a:cmd-000020:choice_short:000",
+        "source": {
+          "scenario_id": "035mco_302_2_3_035_02_09_a",
+          "part_id": "2_3_035_02_09_a",
+          "file": "assets/resources/scenariodata/035mco_302/scenario_2_3_035_02_09_a.json",
+          "command_index": 20,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:622e208fa5bc6ff860cc86d6e1aa2991f1e17ae6091ffd651a8b1fc7c1592123"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -294,15 +362,15 @@
         "row_id": "035mco_302_2_3_035_02_09_a:step-8:option-0",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_035_02_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_302/scenario_2_3_035_02_09_a.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "0.5-sel1",
+        "choice_id": "choice:v1:035mco_302_2_3_035_02_09_a:2_3_035_02_09_a:cmd-000020",
+        "option_id": "choice-option:v1:035mco_302_2_3_035_02_09_a:2_3_035_02_09_a:cmd-000020:000",
+        "source_label": null,
         "target_step_id": 9,
         "target_step_index": 8,
         "resolution": "resolved"
@@ -312,11 +380,22 @@
     {
       "kind": "dialogue",
       "source_text": "ありがとう。今回、皆と素晴らしい作品を\n作ることができて、本当に良かった。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_302_2_3_035_02_09_a:2_3_035_02_09_a:cmd-000023:phone_message:000",
+        "source": {
+          "scenario_id": "035mco_302_2_3_035_02_09_a",
+          "part_id": "2_3_035_02_09_a",
+          "file": "assets/resources/scenariodata/035mco_302/scenario_2_3_035_02_09_a.json",
+          "command_index": 23,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:28dc20e70a7654f48998a74192b7cf3947fbadd61bb15e8f0e8b6591e4cccecd"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -332,19 +411,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "035mco_302_2_3_035_02_09_a:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_035_02_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_302/scenario_2_3_035_02_09_a.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null,
       "presentation": "call"
@@ -352,11 +429,22 @@
     {
       "kind": "dialogue",
       "source_text": "君にも、本当に世話になった。\n改めて礼を言おう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_302_2_3_035_02_09_a:2_3_035_02_09_a:cmd-000025:phone_message:000",
+        "source": {
+          "scenario_id": "035mco_302_2_3_035_02_09_a",
+          "part_id": "2_3_035_02_09_a",
+          "file": "assets/resources/scenariodata/035mco_302/scenario_2_3_035_02_09_a.json",
+          "command_index": 25,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:473c76e2a8083d9c45e64328a95fd234eedf47020c42370609d63a0b7836deed"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -372,19 +460,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "035mco_302_2_3_035_02_09_a:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_035_02_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_302/scenario_2_3_035_02_09_a.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null,
       "presentation": "call"
@@ -392,11 +478,22 @@
     {
       "kind": "dialogue",
       "source_text": "では、そろそろ失礼する。\nまた明日からも、よろしく頼む。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_302_2_3_035_02_09_a:2_3_035_02_09_a:cmd-000027:phone_message:000",
+        "source": {
+          "scenario_id": "035mco_302_2_3_035_02_09_a",
+          "part_id": "2_3_035_02_09_a",
+          "file": "assets/resources/scenariodata/035mco_302/scenario_2_3_035_02_09_a.json",
+          "command_index": 27,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1d3afa8a7e03b9c456fa91981130a01f6c163da8cf7843bc0aebc9cd1024a675"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -412,19 +509,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "035mco_302_2_3_035_02_09_a:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_035_02_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_302/scenario_2_3_035_02_09_a.json",
+        "command_start": 27,
+        "command_end": 27
       },
       "option": null,
       "presentation": "call"
@@ -437,9 +532,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "0.5-sel1",
+          "choice_id": "choice:v1:035mco_302_2_3_035_02_09_a:2_3_035_02_09_a:cmd-000020",
+          "option_id": "choice-option:v1:035mco_302_2_3_035_02_09_a:2_3_035_02_09_a:cmd-000020:000",
+          "source_label": null,
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
@@ -447,63 +542,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "お疲れ様、●●●●プロデューサー。",
     "episode_label": null

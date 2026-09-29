@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "007kei_401_2_4_007_01_09_b",
-  "logical_id": "story-collection:007kei_401_2_4_007_01_09_b",
+  "logical_id": "story:007kei_401_2_4_007_01_09_b",
   "scenario_id": "007kei_401_2_4_007_01_09_b",
   "text_catalog_id": "007kei_401_2_4_007_01_09_b",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "007kei_401_2_4_007_01_09_b.json",
-    "sha256": "sha256:6431cbeb9009f908bd26482d5828291cbfae501ef49239e74d63459a4dbb347f",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:cc8bf1e31cc33d1a8d3f4774de409902e157be8c5606ba186e3cb01d44404b94",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:b6f7368d356cfaab85fcd0d35424c2c765b79ecbe68e0980053b3c863b69f1a6",
     "aggregate_source": null,
     "step_count": 7,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "007kei_401_2_4_007_01_09_b.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "明日は、クリスマスデートの撮影だね。\n今からみんなの撮影を見るのが、楽しみなんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:007kei_401_2_4_007_01_09_b:2_4_007_01_09_b:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "007kei_401_2_4_007_01_09_b",
+          "part_id": "2_4_007_01_09_b",
+          "file": "assets/resources/scenariodata/007kei_401/scenario_2_4_007_01_09_b.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:18d022ff81ce63ed087878856b074b5bf831ead3953e40778877ab6ab04ccd7b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "007kei",
         "sourceName": "都築 圭"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "007kei_401_2_4_007_01_09_b:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_007_01_09_b",
+        "source_file": "assets/resources/scenariodata/007kei_401/scenario_2_4_007_01_09_b.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "プレゼントを選んでいる時の\nみんなの真剣な表情に感化されたのかな？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:007kei_401_2_4_007_01_09_b:2_4_007_01_09_b:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "007kei_401_2_4_007_01_09_b",
+          "part_id": "2_4_007_01_09_b",
+          "file": "assets/resources/scenariodata/007kei_401/scenario_2_4_007_01_09_b.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:18b7104e272deebaa1988660716159f25e88004b35c10ae40a446dd1006beb3f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "007kei",
         "sourceName": "都築 圭"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "007kei_401_2_4_007_01_09_b:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_007_01_09_b",
+        "source_file": "assets/resources/scenariodata/007kei_401/scenario_2_4_007_01_09_b.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -107,7 +128,18 @@
     {
       "kind": "choice",
       "source_text": "様子が目に浮かびます",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:007kei_401_2_4_007_01_09_b:2_4_007_01_09_b:cmd-000010:choice_short:000",
+        "source": {
+          "scenario_id": "007kei_401_2_4_007_01_09_b",
+          "part_id": "2_4_007_01_09_b",
+          "file": "assets/resources/scenariodata/007kei_401/scenario_2_4_007_01_09_b.json",
+          "command_index": 10,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a4da63fd24363d1ad266607921f498c4e500d8dbb63fdf5b9bcba48979b6a550"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -134,15 +166,15 @@
         "row_id": "007kei_401_2_4_007_01_09_b:step-4:option-0",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_007_01_09_b",
+        "source_file": "assets/resources/scenariodata/007kei_401/scenario_2_4_007_01_09_b.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:007kei_401_2_4_007_01_09_b:2_4_007_01_09_b:cmd-000010",
+        "option_id": "choice-option:v1:007kei_401_2_4_007_01_09_b:2_4_007_01_09_b:cmd-000010:000",
+        "source_label": null,
         "target_step_id": 5,
         "target_step_index": 4,
         "resolution": "resolved"
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "プロデューサーさんが想像している通りだと思うよ。\n他の仕事がなければ来れたのに、残念だったね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:007kei_401_2_4_007_01_09_b:2_4_007_01_09_b:cmd-000013:phone_message:000",
+        "source": {
+          "scenario_id": "007kei_401_2_4_007_01_09_b",
+          "part_id": "2_4_007_01_09_b",
+          "file": "assets/resources/scenariodata/007kei_401/scenario_2_4_007_01_09_b.json",
+          "command_index": 13,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9283233621d4fa46720be496dfa500c78db3f3c67e9ae9a00d04a8c08dd1e9be"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "007kei",
         "sourceName": "都築 圭"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "007kei_401_2_4_007_01_09_b:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_007_01_09_b",
+        "source_file": "assets/resources/scenariodata/007kei_401/scenario_2_4_007_01_09_b.json",
+        "command_start": 13,
+        "command_end": 13
       },
       "option": null,
       "presentation": "call"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "今度は君も行けるといいな。プレゼントを\n選んでいる時、何度も君の名前が出てたから。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:007kei_401_2_4_007_01_09_b:2_4_007_01_09_b:cmd-000015:phone_message:000",
+        "source": {
+          "scenario_id": "007kei_401_2_4_007_01_09_b",
+          "part_id": "2_4_007_01_09_b",
+          "file": "assets/resources/scenariodata/007kei_401/scenario_2_4_007_01_09_b.json",
+          "command_index": 15,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b3c6a056f0b6557adad3144d911950a1960475940cdf5f8b9c85f2cfa466cfb9"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "007kei",
         "sourceName": "都築 圭"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "007kei_401_2_4_007_01_09_b:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_007_01_09_b",
+        "source_file": "assets/resources/scenariodata/007kei_401/scenario_2_4_007_01_09_b.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null,
       "presentation": "call"
@@ -232,11 +282,22 @@
     {
       "kind": "dialogue",
       "source_text": "それじゃあ、また明日。待ち合わせ場所で。\nおやすみ、プロデューサーさん。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:007kei_401_2_4_007_01_09_b:2_4_007_01_09_b:cmd-000017:phone_message:000",
+        "source": {
+          "scenario_id": "007kei_401_2_4_007_01_09_b",
+          "part_id": "2_4_007_01_09_b",
+          "file": "assets/resources/scenariodata/007kei_401/scenario_2_4_007_01_09_b.json",
+          "command_index": 17,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e2ea6370a01fb6f504add95ad2a0bae0563355682c7178372915e809c1a8d786"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "007kei",
         "sourceName": "都築 圭"
       },
       "performance": {
@@ -252,19 +313,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "007kei_401_2_4_007_01_09_b:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_007_01_09_b",
+        "source_file": "assets/resources/scenariodata/007kei_401/scenario_2_4_007_01_09_b.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null,
       "presentation": "call"
@@ -277,9 +336,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:007kei_401_2_4_007_01_09_b:2_4_007_01_09_b:cmd-000010",
+          "option_id": "choice-option:v1:007kei_401_2_4_007_01_09_b:2_4_007_01_09_b:cmd-000010:000",
+          "source_label": null,
           "target_step_id": 5,
           "target_step_index": 4,
           "resolution": "resolved"
@@ -287,43 +346,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "明日は、クリスマスデートの撮影だね。",
     "episode_label": null

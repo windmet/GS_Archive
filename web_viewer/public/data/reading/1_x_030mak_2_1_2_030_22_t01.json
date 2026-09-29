@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_030mak_2_1_2_030_22_t01",
-  "logical_id": "story-collection:1_x_030mak_2_1_2_030_22_t01",
+  "logical_id": "story:1_x_030mak_2_1_2_030_22_t01",
   "scenario_id": "1_x_030mak_2_1_2_030_22_t01",
   "text_catalog_id": "1_x_030mak_2_1_2_030_22_t01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_030mak_2_1_2_030_22_t01.json",
-    "sha256": "sha256:9cdaf5a101fd47e362d5c3f2aacc394c315f00e7538f05fd315683f0d2f6078f",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:b9f6626d5e3bed9a6baec61abca40b91f24d095070d1b613ac73bdf3781f1fb2",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:2fe80dde41dba7943665d9ea92afb148408aed48d7168fd49b71a1c131d1a516",
     "aggregate_source": null,
     "step_count": 16,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_030mak_2_1_2_030_22_t01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "unsupported",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "こんばんは、●●●●プロデューサーさん。\n今日は本当にありがとうございました！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000007:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_030mak_2_1_2_030_22_t01",
+          "part_id": "1_2_030_22_t01",
+          "file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+          "command_index": 7,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:afd88176b8fe93ae8576d5c5470214319fbf0290bad1684720834ccbf9f7f41a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "030mak",
         "sourceName": "卯月 巻緒"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_030mak_2_1_2_030_22_t01:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_030_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+        "command_start": 7,
+        "command_end": 7
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "さっき、プロデューサーさんがお願いしてくれた\n荘一郎さんのケーキを、家族と食べました。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000009:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_030mak_2_1_2_030_22_t01",
+          "part_id": "1_2_030_22_t01",
+          "file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+          "command_index": 9,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:514e41a5db2c74151c1b41a84665a7e32da61fcc34c7430e62da8deceefd65f5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "030mak",
         "sourceName": "卯月 巻緒"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_030mak_2_1_2_030_22_t01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_030_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+        "command_start": 9,
+        "command_end": 9
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "Cafe Paradeで食べたケーキと\n全く違うテイストになっていたので驚きました！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000011:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_030mak_2_1_2_030_22_t01",
+          "part_id": "1_2_030_22_t01",
+          "file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+          "command_index": 11,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:586229cf4ee3188b4a04c09d09a03024c3d90622e4e0ef84719b0e2da0c5aa83"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "030mak",
         "sourceName": "卯月 巻緒"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_030mak_2_1_2_030_22_t01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_030_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": null,
       "presentation": "call"
@@ -147,11 +177,22 @@
     {
       "kind": "dialogue",
       "source_text": "どっちも本当に素敵で、\nフルーツや飴細工がキラキラ輝いていて……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000013:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_030mak_2_1_2_030_22_t01",
+          "part_id": "1_2_030_22_t01",
+          "file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+          "command_index": 13,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8a695057a0ee6fb44ed15edda70e592000e84f521d9b7e83831793f9ed3ae2db"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "030mak",
         "sourceName": "卯月 巻緒"
       },
       "performance": {
@@ -167,19 +208,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_030mak_2_1_2_030_22_t01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_030_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+        "command_start": 13,
+        "command_end": 13
       },
       "option": null,
       "presentation": "call"
@@ -187,11 +226,22 @@
     {
       "kind": "dialogue",
       "source_text": "2種類も荘一郎さんの作った誕生日ケーキを\n味わえるなんて、幸せです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000015:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_030mak_2_1_2_030_22_t01",
+          "part_id": "1_2_030_22_t01",
+          "file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+          "command_index": 15,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:120667a814be26ae2a416ad981643c3ba86a22dc13a7af19b6d232bce731ffe1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "030mak",
         "sourceName": "卯月 巻緒"
       },
       "performance": {
@@ -207,19 +257,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_030mak_2_1_2_030_22_t01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_030_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null,
       "presentation": "call"
@@ -227,11 +275,22 @@
     {
       "kind": "dialogue",
       "source_text": "一緒に特別なケーキを食べられて、\n家族も喜んでくれていました！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000017:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_030mak_2_1_2_030_22_t01",
+          "part_id": "1_2_030_22_t01",
+          "file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+          "command_index": 17,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fe9508908e454c61e85c36381c716112ef86405cac7d5941dfafd8471d79cba4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "030mak",
         "sourceName": "卯月 巻緒"
       },
       "performance": {
@@ -247,19 +306,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_030mak_2_1_2_030_22_t01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_030_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null,
       "presentation": "call"
@@ -267,7 +324,18 @@
     {
       "kind": "choice",
       "source_text": "喜んでいただけて\nよかったです",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000019:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_030mak_2_1_2_030_22_t01",
+          "part_id": "1_2_030_22_t01",
+          "file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+          "command_index": 19,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e299e0163eb60fbe87a909c0220d538304bcf3fed98514606d8c8ccbb02a37d9"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -294,15 +362,15 @@
         "row_id": "1_x_030mak_2_1_2_030_22_t01:step-8:option-0",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_030_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+        "command_start": 19,
+        "command_end": 20
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000019",
+        "option_id": "choice-option:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000019:000",
+        "source_label": null,
         "target_step_id": 9,
         "target_step_index": 8,
         "resolution": "resolved"
@@ -312,7 +380,18 @@
     {
       "kind": "choice",
       "source_text": "私も嬉しいです",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000020:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_030mak_2_1_2_030_22_t01",
+          "part_id": "1_2_030_22_t01",
+          "file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+          "command_index": 20,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:32f002e71b9f074a574ad11479a0b545a566d309f95277ada2da87511d56babb"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -339,15 +418,15 @@
         "row_id": "1_x_030mak_2_1_2_030_22_t01:step-8:option-1",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_030_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+        "command_start": 19,
+        "command_end": 20
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select2",
+        "choice_id": "choice:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000019",
+        "option_id": "choice-option:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000020:001",
+        "source_label": null,
         "target_step_id": 10,
         "target_step_index": 9,
         "resolution": "resolved"
@@ -357,11 +436,22 @@
     {
       "kind": "dialogue",
       "source_text": "プロデューサーさんのおかげで\n最高の一日になりました！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000023:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_030mak_2_1_2_030_22_t01",
+          "part_id": "1_2_030_22_t01",
+          "file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+          "command_index": 23,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e4df92c969188009194b50a8d526a87557b1ff22f1e60b650c5c78f74646eae1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "030mak",
         "sourceName": "卯月 巻緒"
       },
       "performance": {
@@ -377,19 +467,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_030mak_2_1_2_030_22_t01:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_030_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null,
       "presentation": "call"
@@ -397,11 +485,22 @@
     {
       "kind": "dialogue",
       "source_text": "ありがとうございます！\n俺、本当に嬉しかったです。それに……",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000028:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_030mak_2_1_2_030_22_t01",
+          "part_id": "1_2_030_22_t01",
+          "file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+          "command_index": 28,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3e28425fca33530c8c34912d01dfe931279bca99af1166c405297c2034ccadda"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "030mak",
         "sourceName": "卯月 巻緒"
       },
       "performance": {
@@ -417,19 +516,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_030mak_2_1_2_030_22_t01:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_030_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null,
       "presentation": "call"
@@ -437,11 +534,22 @@
     {
       "kind": "dialogue",
       "source_text": "誕生日にこんなケーキが食べられるなんて、\n幸先がいいですよね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000032:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_030mak_2_1_2_030_22_t01",
+          "part_id": "1_2_030_22_t01",
+          "file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+          "command_index": 32,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d2f430211ec96ba626a3a213aeda0801444f293cf9844b31cfe9ef0919ad113d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "030mak",
         "sourceName": "卯月 巻緒"
       },
       "performance": {
@@ -457,19 +565,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_030mak_2_1_2_030_22_t01:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_030_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+        "command_start": 32,
+        "command_end": 32
       },
       "option": null,
       "presentation": "call"
@@ -477,11 +583,22 @@
     {
       "kind": "dialogue",
       "source_text": "これからの1年はどんなケーキに\n出会えるんだろうって、ワクワクします！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000034:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_030mak_2_1_2_030_22_t01",
+          "part_id": "1_2_030_22_t01",
+          "file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+          "command_index": 34,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f7d5586e9c57945bbfc7c2d9141f4be4242124dbb607714d34f9808414cfc081"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "030mak",
         "sourceName": "卯月 巻緒"
       },
       "performance": {
@@ -497,19 +614,17 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_030mak_2_1_2_030_22_t01:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_030_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+        "command_start": 34,
+        "command_end": 34
       },
       "option": null,
       "presentation": "call"
@@ -517,11 +632,22 @@
     {
       "kind": "dialogue",
       "source_text": "そうだ。プロデューサーさんの本当の\nおすすめのケーキも、今度教えてくださいね！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000036:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_030mak_2_1_2_030_22_t01",
+          "part_id": "1_2_030_22_t01",
+          "file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+          "command_index": 36,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3ee4d3688ee9bf5dc674e180ed0a2ca9c8984de94965d8ca21e756f67fc572ac"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "030mak",
         "sourceName": "卯月 巻緒"
       },
       "performance": {
@@ -537,19 +663,17 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_030mak_2_1_2_030_22_t01:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_030_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+        "command_start": 36,
+        "command_end": 36
       },
       "option": null,
       "presentation": "call"
@@ -557,7 +681,18 @@
     {
       "kind": "choice",
       "source_text": "わかりました！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000038:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_030mak_2_1_2_030_22_t01",
+          "part_id": "1_2_030_22_t01",
+          "file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+          "command_index": 38,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:59c55d4b878df63d50ff372587f8319ae3821c1cf3fe8c6bce31cf184b4a7c34"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -584,15 +719,15 @@
         "row_id": "1_x_030mak_2_1_2_030_22_t01:step-14:option-0",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_030_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+        "command_start": 38,
+        "command_end": 38
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select4",
+        "choice_id": "choice:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000038",
+        "option_id": "choice-option:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000038:000",
+        "source_label": null,
         "target_step_id": 15,
         "target_step_index": 14,
         "resolution": "resolved"
@@ -602,11 +737,22 @@
     {
       "kind": "dialogue",
       "source_text": "一緒におすすめのケーキが食べられるのを、\n楽しみにしてます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000041:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_030mak_2_1_2_030_22_t01",
+          "part_id": "1_2_030_22_t01",
+          "file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+          "command_index": 41,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:581d3a92e75715f3ec436f9b892dff24edbf7ad821547ec467bce68e1eef6bef"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "030mak",
         "sourceName": "卯月 巻緒"
       },
       "performance": {
@@ -622,19 +768,17 @@
         "snapshot": "entry",
         "stepId": 15
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_030mak_2_1_2_030_22_t01:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_030_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+        "command_start": 41,
+        "command_end": 41
       },
       "option": null,
       "presentation": "call"
@@ -642,11 +786,22 @@
     {
       "kind": "dialogue",
       "source_text": "明日お会いした時に、またゆっくりケーキの話を\nさせてくださいね。それでは、おやすみなさい。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000043:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_030mak_2_1_2_030_22_t01",
+          "part_id": "1_2_030_22_t01",
+          "file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+          "command_index": 43,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:42dcc9fe64402111b7b860c0f43e18926898572897b5ee02c7bfcd646a4352e2"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "030mak",
         "sourceName": "卯月 巻緒"
       },
       "performance": {
@@ -662,19 +817,17 @@
         "snapshot": "entry",
         "stepId": 16
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_030mak_2_1_2_030_22_t01:step-16:text",
         "step_id": 16,
         "step_index": 15,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_030_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_030mak_2/scenario_1_2_030_22_t01.json",
+        "command_start": 43,
+        "command_end": 43
       },
       "option": null,
       "presentation": "call"
@@ -687,17 +840,17 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000019",
+          "option_id": "choice-option:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000019:000",
+          "source_label": null,
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select2",
+          "choice_id": "choice:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000019",
+          "option_id": "choice-option:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000020:001",
+          "source_label": null,
           "target_step_id": 10,
           "target_step_index": 9,
           "resolution": "resolved"
@@ -710,9 +863,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select4",
+          "choice_id": "choice:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000038",
+          "option_id": "choice-option:v1:1_x_030mak_2_1_2_030_22_t01:1_2_030_22_t01:cmd-000038:000",
+          "source_label": null,
           "target_step_id": 15,
           "target_step_index": 14,
           "resolution": "resolved"
@@ -722,99 +875,14 @@
   ],
   "diagnostics": [
     {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
       "code": "branch-exits-unavailable",
       "step_index": 7,
       "severity": "unsupported"
     },
     {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
       "code": "nonsequential-choice-path",
       "step_index": 7,
       "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 15,
-      "severity": "warning"
     }
   ],
   "presentation": {

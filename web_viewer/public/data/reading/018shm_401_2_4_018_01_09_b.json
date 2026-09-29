@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "018shm_401_2_4_018_01_09_b",
-  "logical_id": "story-collection:018shm_401_2_4_018_01_09_b",
+  "logical_id": "story:018shm_401_2_4_018_01_09_b",
   "scenario_id": "018shm_401_2_4_018_01_09_b",
   "text_catalog_id": "018shm_401_2_4_018_01_09_b",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "018shm_401_2_4_018_01_09_b.json",
-    "sha256": "sha256:a1d51119fdcc593a90e44aac2876907c2d25956bd6055321f3be71150510cd29",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:ef23bd74154fa1390e098b0db9673be56d4ebb44fdea9d7aaf91d205e2fc22fb",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:231e07f2d2f7f7c6a0a37ee9cca7d10e73a81441506fd183145d6ae84af160c1",
     "aggregate_source": null,
     "step_count": 7,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "018shm_401_2_4_018_01_09_b.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "……あ、●●●●プロデューサーちゃん？\nちょいとばかし頼みがあってね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:018shm_401_2_4_018_01_09_b:2_4_018_01_09_b:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "018shm_401_2_4_018_01_09_b",
+          "part_id": "2_4_018_01_09_b",
+          "file": "assets/resources/scenariodata/018shm_401/scenario_2_4_018_01_09_b.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:43de8dedff04f11cbf07b77c79f954832f4bf6349af58fe1b45fc5c18a0e11b6"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "018shm_401_2_4_018_01_09_b:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_018_01_09_b",
+        "source_file": "assets/resources/scenariodata/018shm_401/scenario_2_4_018_01_09_b.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "ボーヤたちとフェスの話で盛り上がってサ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:018shm_401_2_4_018_01_09_b:2_4_018_01_09_b:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "018shm_401_2_4_018_01_09_b",
+          "part_id": "2_4_018_01_09_b",
+          "file": "assets/resources/scenariodata/018shm_401/scenario_2_4_018_01_09_b.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:052781ac9ef5aa23c8f856321c326db6f2d9b4bc63f30fc22cbbdf3979d1aa6f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "018shm_401_2_4_018_01_09_b:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_018_01_09_b",
+        "source_file": "assets/resources/scenariodata/018shm_401/scenario_2_4_018_01_09_b.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "フェスで披露した曲を\nレッスン前に軽く踊ろうってことになったのよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:018shm_401_2_4_018_01_09_b:2_4_018_01_09_b:cmd-000012:phone_message:000",
+        "source": {
+          "scenario_id": "018shm_401_2_4_018_01_09_b",
+          "part_id": "2_4_018_01_09_b",
+          "file": "assets/resources/scenariodata/018shm_401/scenario_2_4_018_01_09_b.json",
+          "command_index": 12,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:01fc3cb47eb297291869aa95bf03aea798fb29040ee1dd3d14f1a6eecb32db11"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "018shm_401_2_4_018_01_09_b:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_018_01_09_b",
+        "source_file": "assets/resources/scenariodata/018shm_401/scenario_2_4_018_01_09_b.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null,
       "presentation": "call"
@@ -147,11 +177,22 @@
     {
       "kind": "dialogue",
       "source_text": "だけど手元に音源がなくてねぇ。\nよかったら送ってもらえないかい？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:018shm_401_2_4_018_01_09_b:2_4_018_01_09_b:cmd-000014:phone_message:000",
+        "source": {
+          "scenario_id": "018shm_401_2_4_018_01_09_b",
+          "part_id": "2_4_018_01_09_b",
+          "file": "assets/resources/scenariodata/018shm_401/scenario_2_4_018_01_09_b.json",
+          "command_index": 14,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:56eb7430333f2af9b3c0394ffebab04668c53ac11d63d38f52adfa16f6249a7b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -167,19 +208,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "018shm_401_2_4_018_01_09_b:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_018_01_09_b",
+        "source_file": "assets/resources/scenariodata/018shm_401/scenario_2_4_018_01_09_b.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null,
       "presentation": "call"
@@ -187,7 +226,18 @@
     {
       "kind": "choice",
       "source_text": "すぐに送りますね！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:018shm_401_2_4_018_01_09_b:2_4_018_01_09_b:cmd-000016:choice_short:000",
+        "source": {
+          "scenario_id": "018shm_401_2_4_018_01_09_b",
+          "part_id": "2_4_018_01_09_b",
+          "file": "assets/resources/scenariodata/018shm_401/scenario_2_4_018_01_09_b.json",
+          "command_index": 16,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f8d4f6d24c62f66b745c7292022a8f3cf2efa3fb40d53e2d5d2e1cdd0f8e1c8c"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -214,15 +264,15 @@
         "row_id": "018shm_401_2_4_018_01_09_b:step-6:option-0",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_018_01_09_b",
+        "source_file": "assets/resources/scenariodata/018shm_401/scenario_2_4_018_01_09_b.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:018shm_401_2_4_018_01_09_b:2_4_018_01_09_b:cmd-000016",
+        "option_id": "choice-option:v1:018shm_401_2_4_018_01_09_b:2_4_018_01_09_b:cmd-000016:000",
+        "source_label": null,
         "target_step_id": 7,
         "target_step_index": 6,
         "resolution": "resolved"
@@ -232,11 +282,22 @@
     {
       "kind": "dialogue",
       "source_text": "ありがとね。それじゃあ、よろしく頼んだよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:018shm_401_2_4_018_01_09_b:2_4_018_01_09_b:cmd-000019:phone_message:000",
+        "source": {
+          "scenario_id": "018shm_401_2_4_018_01_09_b",
+          "part_id": "2_4_018_01_09_b",
+          "file": "assets/resources/scenariodata/018shm_401/scenario_2_4_018_01_09_b.json",
+          "command_index": 19,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2601edf3c1ca0ea7183284cf2d7da63ef35a42d9dd09d74920ca69b35a9e9f69"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -252,19 +313,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "018shm_401_2_4_018_01_09_b:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_018_01_09_b",
+        "source_file": "assets/resources/scenariodata/018shm_401/scenario_2_4_018_01_09_b.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null,
       "presentation": "call"
@@ -277,9 +336,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:018shm_401_2_4_018_01_09_b:2_4_018_01_09_b:cmd-000016",
+          "option_id": "choice-option:v1:018shm_401_2_4_018_01_09_b:2_4_018_01_09_b:cmd-000016:000",
+          "source_label": null,
           "target_step_id": 7,
           "target_step_index": 6,
           "resolution": "resolved"
@@ -287,43 +346,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "……あ、●●●●プロデューサーちゃん？",
     "episode_label": null

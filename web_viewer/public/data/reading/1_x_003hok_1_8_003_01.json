@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_003hok_1_8_003_01",
-  "logical_id": "story-collection:1_x_003hok_1_8_003_01",
+  "logical_id": "story:1_x_003hok_1_8_003_01",
   "scenario_id": "1_x_003hok_1_8_003_01",
   "text_catalog_id": "1_x_003hok_1_8_003_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_003hok_1_8_003_01.json",
-    "sha256": "sha256:41a4a3251a45b308ad098f1808b82abd41c998f97c5f33cf13643242b7208d76",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:ecd4fd98ebc533591098e7609a0243866ea995bf9bea3cf825194e8d3ec9875a",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:932cc9780790b1beca93977fb1add93b1bf97a72fc2b326e2280526e1387e97b",
     "aggregate_source": null,
     "step_count": 9,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_003hok_1_8_003_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "もしもし？　お疲れさまです。\n今、お時間大丈夫ですか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_003hok_1_8_003_01:1_8_003_01:cmd-000014:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_003hok_1_8_003_01",
+          "part_id": "1_8_003_01",
+          "file": "assets/resources/scenariodata/1_x_003hok/scenario_1_8_003_01.json",
+          "command_index": 14,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:dbe417f6ee374adc75dd08e841c47c38df31ec62ffba74006c9c23d4d585d0a3"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_003hok_1_8_003_01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_003_01",
+        "source_file": "assets/resources/scenariodata/1_x_003hok/scenario_1_8_003_01.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "ありがとうございます。\nそれでは●●●●プロデューサー……",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_003hok_1_8_003_01:1_8_003_01:cmd-000016:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_003hok_1_8_003_01",
+          "part_id": "1_8_003_01",
+          "file": "assets/resources/scenariodata/1_x_003hok/scenario_1_8_003_01.json",
+          "command_index": 16,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0d2f577759dfd5794b00fbff3f6c73374f4b35a19320cdf8375a689b716dff2a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_003hok_1_8_003_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_003_01",
+        "source_file": "assets/resources/scenariodata/1_x_003hok/scenario_1_8_003_01.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "お誕生日おめでとうございます。\nあなたにとって素敵な日になりますように。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_003hok_1_8_003_01:1_8_003_01:cmd-000018:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_003hok_1_8_003_01",
+          "part_id": "1_8_003_01",
+          "file": "assets/resources/scenariodata/1_x_003hok/scenario_1_8_003_01.json",
+          "command_index": 18,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6c57b8e2758d1984926aad3cb7edd2306038b0b8751300c12fd334decddeedbf"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_003hok_1_8_003_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_003_01",
+        "source_file": "assets/resources/scenariodata/1_x_003hok/scenario_1_8_003_01.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "call"
@@ -147,7 +177,18 @@
     {
       "kind": "choice",
       "source_text": "ありがとうございます。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_003hok_1_8_003_01:1_8_003_01:cmd-000020:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_003hok_1_8_003_01",
+          "part_id": "1_8_003_01",
+          "file": "assets/resources/scenariodata/1_x_003hok/scenario_1_8_003_01.json",
+          "command_index": 20,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1749b2e403ed486913e24bcd3490de927c37efc3a5846c0788bb31b203465499"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -174,15 +215,15 @@
         "row_id": "1_x_003hok_1_8_003_01:step-7:option-0",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_003_01",
+        "source_file": "assets/resources/scenariodata/1_x_003hok/scenario_1_8_003_01.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:1_x_003hok_1_8_003_01:1_8_003_01:cmd-000020",
+        "option_id": "choice-option:v1:1_x_003hok_1_8_003_01:1_8_003_01:cmd-000020:000",
+        "source_label": null,
         "target_step_id": 8,
         "target_step_index": 7,
         "resolution": "resolved"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "ふふ、後で改めてお祝いさせてくださいね。\nそれでは、これから仕事なので失礼します。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_003hok_1_8_003_01:1_8_003_01:cmd-000023:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_003hok_1_8_003_01",
+          "part_id": "1_8_003_01",
+          "file": "assets/resources/scenariodata/1_x_003hok/scenario_1_8_003_01.json",
+          "command_index": 23,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ce0a9fe626c709b2cdfbe149536bad5ab9138bd1b937955ebf0d7b2afd2a07ea"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_003hok_1_8_003_01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_003_01",
+        "source_file": "assets/resources/scenariodata/1_x_003hok/scenario_1_8_003_01.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null,
       "presentation": "call"
@@ -237,9 +287,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:1_x_003hok_1_8_003_01:1_8_003_01:cmd-000020",
+          "option_id": "choice-option:v1:1_x_003hok_1_8_003_01:1_8_003_01:cmd-000020:000",
+          "source_label": null,
           "target_step_id": 8,
           "target_step_index": 7,
           "resolution": "resolved"
@@ -247,38 +297,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "もしもし？　お疲れさまです。",
     "episode_label": null

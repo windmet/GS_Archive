@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_035mco_2_1_2_035_22_t01",
-  "logical_id": "story-collection:1_x_035mco_2_1_2_035_22_t01",
+  "logical_id": "story:1_x_035mco_2_1_2_035_22_t01",
   "scenario_id": "1_x_035mco_2_1_2_035_22_t01",
   "text_catalog_id": "1_x_035mco_2_1_2_035_22_t01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_035mco_2_1_2_035_22_t01.json",
-    "sha256": "sha256:14a67b75532601a9edab6664402ed4cafa226f1008cb250c6d8a5bba465ac93c",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:f928739851d60004d8714162ecd0a06c55a0b527bb7aa001625742245950bd19",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:8a1b91bd313abcbc6f78f70be28bc007d18f668a54dbcc718b406f894b14981e",
     "aggregate_source": null,
     "step_count": 9,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_035mco_2_1_2_035_22_t01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "unsupported",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "もしもし、プロデューサー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_035mco_2_1_2_035_22_t01:1_2_035_22_t01:cmd-000007:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_035mco_2_1_2_035_22_t01",
+          "part_id": "1_2_035_22_t01",
+          "file": "assets/resources/scenariodata/1_x_035mco_2/scenario_1_2_035_22_t01.json",
+          "command_index": 7,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ebe80cd30fe89c310ec5afffc26973299089a40a02b8dd91b6604a37deb58acc"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_035mco_2_1_2_035_22_t01:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_035_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_035mco_2/scenario_1_2_035_22_t01.json",
+        "command_start": 7,
+        "command_end": 7
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "今、時間はいいだろうか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_035mco_2_1_2_035_22_t01:1_2_035_22_t01:cmd-000009:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_035mco_2_1_2_035_22_t01",
+          "part_id": "1_2_035_22_t01",
+          "file": "assets/resources/scenariodata/1_x_035mco_2/scenario_1_2_035_22_t01.json",
+          "command_index": 9,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a80c9fc818327f943e6d23616362e4f83d4eea8d7e5aa9a1fc574dbbc25f0535"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_035mco_2_1_2_035_22_t01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_035_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_035mco_2/scenario_1_2_035_22_t01.json",
+        "command_start": 9,
+        "command_end": 9
       },
       "option": null,
       "presentation": "call"
@@ -107,7 +128,18 @@
     {
       "kind": "choice",
       "source_text": "はい、大丈夫です",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_035mco_2_1_2_035_22_t01:1_2_035_22_t01:cmd-000011:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_035mco_2_1_2_035_22_t01",
+          "part_id": "1_2_035_22_t01",
+          "file": "assets/resources/scenariodata/1_x_035mco_2/scenario_1_2_035_22_t01.json",
+          "command_index": 11,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6675d6089c919cb09cc4d8d696a0193186f7cc82b9b1af0f491acfdc10f69909"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -134,15 +166,15 @@
         "row_id": "1_x_035mco_2_1_2_035_22_t01:step-4:option-0",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_035_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_035mco_2/scenario_1_2_035_22_t01.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:1_x_035mco_2_1_2_035_22_t01:1_2_035_22_t01:cmd-000011",
+        "option_id": "choice-option:v1:1_x_035mco_2_1_2_035_22_t01:1_2_035_22_t01:cmd-000011:000",
+        "source_label": null,
         "target_step_id": 5,
         "target_step_index": 4,
         "resolution": "resolved"
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "先ほどはありがとう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_035mco_2_1_2_035_22_t01:1_2_035_22_t01:cmd-000014:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_035mco_2_1_2_035_22_t01",
+          "part_id": "1_2_035_22_t01",
+          "file": "assets/resources/scenariodata/1_x_035mco_2/scenario_1_2_035_22_t01.json",
+          "command_index": 14,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bb2feab697fa49f12b58c7a5caf011fc1ef74b740e3c2b292f4954568f5d8942"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_035mco_2_1_2_035_22_t01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_035_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_035mco_2/scenario_1_2_035_22_t01.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null,
       "presentation": "call"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "山下くんと舞田くんから聞いた。\n君もスケジュールの調整など、尽力してくれたと。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_035mco_2_1_2_035_22_t01:1_2_035_22_t01:cmd-000016:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_035mco_2_1_2_035_22_t01",
+          "part_id": "1_2_035_22_t01",
+          "file": "assets/resources/scenariodata/1_x_035mco_2/scenario_1_2_035_22_t01.json",
+          "command_index": 16,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:02a06af2e99fd404141f2101659df844d47bfcec0e3cb194d011bc0201658a6d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_035mco_2_1_2_035_22_t01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_035_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_035mco_2/scenario_1_2_035_22_t01.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "call"
@@ -232,11 +282,22 @@
     {
       "kind": "dialogue",
       "source_text": "おかげで、楽しい夜を過ごせた。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_035mco_2_1_2_035_22_t01:1_2_035_22_t01:cmd-000018:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_035mco_2_1_2_035_22_t01",
+          "part_id": "1_2_035_22_t01",
+          "file": "assets/resources/scenariodata/1_x_035mco_2/scenario_1_2_035_22_t01.json",
+          "command_index": 18,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e723a47b7540ed99dd818f198acb627117510777b1cea192166211057219f62e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -252,19 +313,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_035mco_2_1_2_035_22_t01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_035_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_035mco_2/scenario_1_2_035_22_t01.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "call"
@@ -272,7 +331,18 @@
     {
       "kind": "choice",
       "source_text": "私も楽しかったです",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_035mco_2_1_2_035_22_t01:1_2_035_22_t01:cmd-000020:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_035mco_2_1_2_035_22_t01",
+          "part_id": "1_2_035_22_t01",
+          "file": "assets/resources/scenariodata/1_x_035mco_2/scenario_1_2_035_22_t01.json",
+          "command_index": 20,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:91fb122148efb7d565deac0231dfca9b9ac98e477797f363c86a449767943f20"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -299,15 +369,15 @@
         "row_id": "1_x_035mco_2_1_2_035_22_t01:step-8:option-0",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_035_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_035mco_2/scenario_1_2_035_22_t01.json",
+        "command_start": 20,
+        "command_end": 21
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select2",
+        "choice_id": "choice:v1:1_x_035mco_2_1_2_035_22_t01:1_2_035_22_t01:cmd-000020",
+        "option_id": "choice-option:v1:1_x_035mco_2_1_2_035_22_t01:1_2_035_22_t01:cmd-000020:000",
+        "source_label": null,
         "target_step_id": 9,
         "target_step_index": 8,
         "resolution": "resolved"
@@ -317,7 +387,18 @@
     {
       "kind": "choice",
       "source_text": "改めてお誕生日\nおめでとうございます",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_035mco_2_1_2_035_22_t01:1_2_035_22_t01:cmd-000021:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_035mco_2_1_2_035_22_t01",
+          "part_id": "1_2_035_22_t01",
+          "file": "assets/resources/scenariodata/1_x_035mco_2/scenario_1_2_035_22_t01.json",
+          "command_index": 21,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bfd831870efd4d1c6b637b7059151fb86c31eef1bd1adfbf4ec836ffdf61324a"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -344,15 +425,15 @@
         "row_id": "1_x_035mco_2_1_2_035_22_t01:step-8:option-1",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_035_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_035mco_2/scenario_1_2_035_22_t01.json",
+        "command_start": 20,
+        "command_end": 21
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select3",
+        "choice_id": "choice:v1:1_x_035mco_2_1_2_035_22_t01:1_2_035_22_t01:cmd-000020",
+        "option_id": "choice-option:v1:1_x_035mco_2_1_2_035_22_t01:1_2_035_22_t01:cmd-000021:001",
+        "source_label": null,
         "target_step_id": 9,
         "target_step_index": 8,
         "resolution": "resolved"
@@ -362,11 +443,22 @@
     {
       "kind": "dialogue",
       "source_text": "ああ。ありがとう。\nそれでは失礼する。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_035mco_2_1_2_035_22_t01:1_2_035_22_t01:cmd-000025:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_035mco_2_1_2_035_22_t01",
+          "part_id": "1_2_035_22_t01",
+          "file": "assets/resources/scenariodata/1_x_035mco_2/scenario_1_2_035_22_t01.json",
+          "command_index": 25,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1fa6bbb285cb656fd5e49a4eae26145385df0afa6f1dccec7d97e4fc12d6e750"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -382,19 +474,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_035mco_2_1_2_035_22_t01:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_035_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_035mco_2/scenario_1_2_035_22_t01.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null,
       "presentation": "call"
@@ -407,9 +497,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:1_x_035mco_2_1_2_035_22_t01:1_2_035_22_t01:cmd-000011",
+          "option_id": "choice-option:v1:1_x_035mco_2_1_2_035_22_t01:1_2_035_22_t01:cmd-000011:000",
+          "source_label": null,
           "target_step_id": 5,
           "target_step_index": 4,
           "resolution": "resolved"
@@ -422,17 +512,17 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select2",
+          "choice_id": "choice:v1:1_x_035mco_2_1_2_035_22_t01:1_2_035_22_t01:cmd-000020",
+          "option_id": "choice-option:v1:1_x_035mco_2_1_2_035_22_t01:1_2_035_22_t01:cmd-000020:000",
+          "source_label": null,
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select3",
+          "choice_id": "choice:v1:1_x_035mco_2_1_2_035_22_t01:1_2_035_22_t01:cmd-000020",
+          "option_id": "choice-option:v1:1_x_035mco_2_1_2_035_22_t01:1_2_035_22_t01:cmd-000021:001",
+          "source_label": null,
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
@@ -442,59 +532,9 @@
   ],
   "diagnostics": [
     {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
       "code": "branch-exits-unavailable",
       "step_index": 7,
       "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
     }
   ],
   "presentation": {

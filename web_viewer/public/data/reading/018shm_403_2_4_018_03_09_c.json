@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "018shm_403_2_4_018_03_09_c",
-  "logical_id": "story-collection:018shm_403_2_4_018_03_09_c",
+  "logical_id": "story:018shm_403_2_4_018_03_09_c",
   "scenario_id": "018shm_403_2_4_018_03_09_c",
   "text_catalog_id": "018shm_403_2_4_018_03_09_c",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "018shm_403_2_4_018_03_09_c.json",
-    "sha256": "sha256:336f9382203de825965069b1133729fd69498a6e141a16c82df6bd991697d2dd",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:90f920c75af5b8dbb97dd4d1a9616e7ca028c4c0ca31cf0ab8e04d9780270b65",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:6da13b5f3098def158d2c6f846663beb88096869269fdfc964253716015e66c6",
     "aggregate_source": null,
     "step_count": 14,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "018shm_403_2_4_018_03_09_c.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "unsupported",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "もしもし、●●●●プロデューサーちゃん？\nこっちは今、男道らーめんに到着したところだよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:018shm_403_2_4_018_03_09_c:2_4_018_03_09_c:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "018shm_403_2_4_018_03_09_c",
+          "part_id": "2_4_018_03_09_c",
+          "file": "assets/resources/scenariodata/018shm_403/scenario_2_4_018_03_09_c.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:65951c116452d8c6737ee27c76a4eb64a6afd5a75b06715a48f95abb014548f6"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "018shm_403_2_4_018_03_09_c:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_018_03_09_c",
+        "source_file": "assets/resources/scenariodata/018shm_403/scenario_2_4_018_03_09_c.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "あとどれくらいで来れそうか、わかるかい？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:018shm_403_2_4_018_03_09_c:2_4_018_03_09_c:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "018shm_403_2_4_018_03_09_c",
+          "part_id": "2_4_018_03_09_c",
+          "file": "assets/resources/scenariodata/018shm_403/scenario_2_4_018_03_09_c.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2ae027b1f8182406e159460068610501007a6b8ec484ac12c4139bd716db4218"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "018shm_403_2_4_018_03_09_c:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_018_03_09_c",
+        "source_file": "assets/resources/scenariodata/018shm_403/scenario_2_4_018_03_09_c.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -107,7 +128,18 @@
     {
       "kind": "choice",
       "source_text": "今出るので、\n調べて連絡します！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:018shm_403_2_4_018_03_09_c:2_4_018_03_09_c:cmd-000013:choice_short:000",
+        "source": {
+          "scenario_id": "018shm_403_2_4_018_03_09_c",
+          "part_id": "2_4_018_03_09_c",
+          "file": "assets/resources/scenariodata/018shm_403/scenario_2_4_018_03_09_c.json",
+          "command_index": 13,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a9efd2ffb9596fe18500f1551486c533f0046435c7cd85a6dc14839187802fdd"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -134,15 +166,15 @@
         "row_id": "018shm_403_2_4_018_03_09_c:step-5:option-0",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_018_03_09_c",
+        "source_file": "assets/resources/scenariodata/018shm_403/scenario_2_4_018_03_09_c.json",
+        "command_start": 13,
+        "command_end": 14
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:018shm_403_2_4_018_03_09_c:2_4_018_03_09_c:cmd-000013",
+        "option_id": "choice-option:v1:018shm_403_2_4_018_03_09_c:2_4_018_03_09_c:cmd-000013:000",
+        "source_label": null,
         "target_step_id": 6,
         "target_step_index": 5,
         "resolution": "resolved"
@@ -152,7 +184,18 @@
     {
       "kind": "choice",
       "source_text": "もうすぐ事務所を\n出られそうです",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:018shm_403_2_4_018_03_09_c:2_4_018_03_09_c:cmd-000014:choice_short:000",
+        "source": {
+          "scenario_id": "018shm_403_2_4_018_03_09_c",
+          "part_id": "2_4_018_03_09_c",
+          "file": "assets/resources/scenariodata/018shm_403/scenario_2_4_018_03_09_c.json",
+          "command_index": 14,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1aa58ed5c7ed13f42b17351414f4e0ff6444abe318797df7fd33a520b8f82e73"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -179,15 +222,15 @@
         "row_id": "018shm_403_2_4_018_03_09_c:step-5:option-1",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_018_03_09_c",
+        "source_file": "assets/resources/scenariodata/018shm_403/scenario_2_4_018_03_09_c.json",
+        "command_start": 13,
+        "command_end": 14
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select2",
+        "choice_id": "choice:v1:018shm_403_2_4_018_03_09_c:2_4_018_03_09_c:cmd-000013",
+        "option_id": "choice-option:v1:018shm_403_2_4_018_03_09_c:2_4_018_03_09_c:cmd-000014:001",
+        "source_label": null,
         "target_step_id": 6,
         "target_step_index": 5,
         "resolution": "resolved"
@@ -197,11 +240,22 @@
     {
       "kind": "dialogue",
       "source_text": "そうかい。遅くまでお疲れさま。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:018shm_403_2_4_018_03_09_c:2_4_018_03_09_c:cmd-000018:phone_message:000",
+        "source": {
+          "scenario_id": "018shm_403_2_4_018_03_09_c",
+          "part_id": "2_4_018_03_09_c",
+          "file": "assets/resources/scenariodata/018shm_403/scenario_2_4_018_03_09_c.json",
+          "command_index": 18,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2cfb586122cd5d4c4eccc5fe64795c2b7aa96b9c0b65cc9bf0f0bee97f3da973"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -217,19 +271,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "018shm_403_2_4_018_03_09_c:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_018_03_09_c",
+        "source_file": "assets/resources/scenariodata/018shm_403/scenario_2_4_018_03_09_c.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "call"
@@ -237,11 +289,22 @@
     {
       "kind": "dialogue",
       "source_text": "焦らなくて良いから、気を付けて来ておくれよ。\nみんな、時間は気にしなくていいって言ってるから。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:018shm_403_2_4_018_03_09_c:2_4_018_03_09_c:cmd-000020:phone_message:000",
+        "source": {
+          "scenario_id": "018shm_403_2_4_018_03_09_c",
+          "part_id": "2_4_018_03_09_c",
+          "file": "assets/resources/scenariodata/018shm_403/scenario_2_4_018_03_09_c.json",
+          "command_index": 20,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2ea01191071eb9518d2032b82c237259bd3242c8b22a444b0b8dc8eb558a509c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -257,19 +320,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "018shm_403_2_4_018_03_09_c:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_018_03_09_c",
+        "source_file": "assets/resources/scenariodata/018shm_403/scenario_2_4_018_03_09_c.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null,
       "presentation": "call"
@@ -277,11 +338,22 @@
     {
       "kind": "dialogue",
       "source_text": "合流したら、今日の打ち合わせの話を\nゆっくりしようじゃないか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:018shm_403_2_4_018_03_09_c:2_4_018_03_09_c:cmd-000022:phone_message:000",
+        "source": {
+          "scenario_id": "018shm_403_2_4_018_03_09_c",
+          "part_id": "2_4_018_03_09_c",
+          "file": "assets/resources/scenariodata/018shm_403/scenario_2_4_018_03_09_c.json",
+          "command_index": 22,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bcada0870c515d73ce47eb8101cd59218eac97ef9024b3cf1e5f5b4a8ca51d0b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -297,19 +369,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "018shm_403_2_4_018_03_09_c:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_018_03_09_c",
+        "source_file": "assets/resources/scenariodata/018shm_403/scenario_2_4_018_03_09_c.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null,
       "presentation": "call"
@@ -317,11 +387,22 @@
     {
       "kind": "dialogue",
       "source_text": "アンタに話しておきたいことが、たくさんあるんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:018shm_403_2_4_018_03_09_c:2_4_018_03_09_c:cmd-000024:phone_message:000",
+        "source": {
+          "scenario_id": "018shm_403_2_4_018_03_09_c",
+          "part_id": "2_4_018_03_09_c",
+          "file": "assets/resources/scenariodata/018shm_403/scenario_2_4_018_03_09_c.json",
+          "command_index": 24,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e68f4bffa53c32e42081907f5cf7028547d1b88d0e40573a9090acbe0d636b5c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -337,19 +418,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "018shm_403_2_4_018_03_09_c:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_018_03_09_c",
+        "source_file": "assets/resources/scenariodata/018shm_403/scenario_2_4_018_03_09_c.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null,
       "presentation": "call"
@@ -357,11 +436,22 @@
     {
       "kind": "dialogue",
       "source_text": "それも有意義な話し合いができたって証拠さ。\n話題が尽きなかったんだよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:018shm_403_2_4_018_03_09_c:2_4_018_03_09_c:cmd-000026:phone_message:000",
+        "source": {
+          "scenario_id": "018shm_403_2_4_018_03_09_c",
+          "part_id": "2_4_018_03_09_c",
+          "file": "assets/resources/scenariodata/018shm_403/scenario_2_4_018_03_09_c.json",
+          "command_index": 26,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a5f11b3cf69db93a1eb976cad4d25db3f9072111c8f8e4af6bab4a7a3e6376a3"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -377,19 +467,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "018shm_403_2_4_018_03_09_c:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_018_03_09_c",
+        "source_file": "assets/resources/scenariodata/018shm_403/scenario_2_4_018_03_09_c.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null,
       "presentation": "call"
@@ -397,11 +485,22 @@
     {
       "kind": "dialogue",
       "source_text": "例えば…って、話し始めたら終わらなくなりそうだし、\nやめとくわ。楽しみにしてておくれ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:018shm_403_2_4_018_03_09_c:2_4_018_03_09_c:cmd-000028:phone_message:000",
+        "source": {
+          "scenario_id": "018shm_403_2_4_018_03_09_c",
+          "part_id": "2_4_018_03_09_c",
+          "file": "assets/resources/scenariodata/018shm_403/scenario_2_4_018_03_09_c.json",
+          "command_index": 28,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6a70de912066cf740029183048fd834fc42802a50983707f31eac41c810f515d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -417,19 +516,17 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "018shm_403_2_4_018_03_09_c:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_018_03_09_c",
+        "source_file": "assets/resources/scenariodata/018shm_403/scenario_2_4_018_03_09_c.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null,
       "presentation": "call"
@@ -437,11 +534,22 @@
     {
       "kind": "dialogue",
       "source_text": "それじゃあ、一旦切るよ。\nまた何かあれば連絡してちょうだい。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:018shm_403_2_4_018_03_09_c:2_4_018_03_09_c:cmd-000030:phone_message:000",
+        "source": {
+          "scenario_id": "018shm_403_2_4_018_03_09_c",
+          "part_id": "2_4_018_03_09_c",
+          "file": "assets/resources/scenariodata/018shm_403/scenario_2_4_018_03_09_c.json",
+          "command_index": 30,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:73b38a21a1cd71470beac646c21edb8bd089ad37ccbf0b92b9eade406bae2f32"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -457,19 +565,17 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "018shm_403_2_4_018_03_09_c:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_018_03_09_c",
+        "source_file": "assets/resources/scenariodata/018shm_403/scenario_2_4_018_03_09_c.json",
+        "command_start": 30,
+        "command_end": 30
       },
       "option": null,
       "presentation": "call"
@@ -482,17 +588,17 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:018shm_403_2_4_018_03_09_c:2_4_018_03_09_c:cmd-000013",
+          "option_id": "choice-option:v1:018shm_403_2_4_018_03_09_c:2_4_018_03_09_c:cmd-000013:000",
+          "source_label": null,
           "target_step_id": 6,
           "target_step_index": 5,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select2",
+          "choice_id": "choice:v1:018shm_403_2_4_018_03_09_c:2_4_018_03_09_c:cmd-000013",
+          "option_id": "choice-option:v1:018shm_403_2_4_018_03_09_c:2_4_018_03_09_c:cmd-000014:001",
+          "source_label": null,
           "target_step_id": 6,
           "target_step_index": 5,
           "resolution": "resolved"
@@ -502,69 +608,9 @@
   ],
   "diagnostics": [
     {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
       "code": "branch-exits-unavailable",
       "step_index": 4,
       "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
     }
   ],
   "presentation": {

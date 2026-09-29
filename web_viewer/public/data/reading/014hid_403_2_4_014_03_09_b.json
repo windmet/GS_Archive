@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "014hid_403_2_4_014_03_09_b",
-  "logical_id": "story-collection:014hid_403_2_4_014_03_09_b",
+  "logical_id": "story:014hid_403_2_4_014_03_09_b",
   "scenario_id": "014hid_403_2_4_014_03_09_b",
   "text_catalog_id": "014hid_403_2_4_014_03_09_b",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "014hid_403_2_4_014_03_09_b.json",
-    "sha256": "sha256:f63401ddb625fc9ead508a164508ce0ee4fa844cbe0174540a275ab2bed934b0",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:5f065e8a3a37eed665a44e966d1b103a285607d99f61b2c82621aca37cfd39fa",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:2fddc6a4602a128cf66ca5dedf177fed15e8593e3b509080d2acb08e38e582e2",
     "aggregate_source": null,
     "step_count": 13,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "014hid_403_2_4_014_03_09_b.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "もしもし、●●●●プロデューサー？\n今どこにいるんだ？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:014hid_403_2_4_014_03_09_b:2_4_014_03_09_b:cmd-000007:phone_message:000",
+        "source": {
+          "scenario_id": "014hid_403_2_4_014_03_09_b",
+          "part_id": "2_4_014_03_09_b",
+          "file": "assets/resources/scenariodata/014hid_403/scenario_2_4_014_03_09_b.json",
+          "command_index": 7,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8553271ae389dd138ffbc00b3d11373b3e93a53c8af03331ea09b565d8dfdf20"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "014hid",
         "sourceName": "握野 英雄"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "014hid_403_2_4_014_03_09_b:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_014_03_09_b",
+        "source_file": "assets/resources/scenariodata/014hid_403/scenario_2_4_014_03_09_b.json",
+        "command_start": 7,
+        "command_end": 7
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "つきたての餅を試食できるらしいから、\nよかったらプロデューサーもどうだ？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:014hid_403_2_4_014_03_09_b:2_4_014_03_09_b:cmd-000009:phone_message:000",
+        "source": {
+          "scenario_id": "014hid_403_2_4_014_03_09_b",
+          "part_id": "2_4_014_03_09_b",
+          "file": "assets/resources/scenariodata/014hid_403/scenario_2_4_014_03_09_b.json",
+          "command_index": 9,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f0619ebef61964e8d7ad5e7ce841d1285b826f6d322ed155f70eacc6dd132b5e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "014hid",
         "sourceName": "握野 英雄"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "014hid_403_2_4_014_03_09_b:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_014_03_09_b",
+        "source_file": "assets/resources/scenariodata/014hid_403/scenario_2_4_014_03_09_b.json",
+        "command_start": 9,
+        "command_end": 9
       },
       "option": null,
       "presentation": "call"
@@ -107,7 +128,18 @@
     {
       "kind": "choice",
       "source_text": "近くにいるので\n向かいます",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:014hid_403_2_4_014_03_09_b:2_4_014_03_09_b:cmd-000011:choice_short:000",
+        "source": {
+          "scenario_id": "014hid_403_2_4_014_03_09_b",
+          "part_id": "2_4_014_03_09_b",
+          "file": "assets/resources/scenariodata/014hid_403/scenario_2_4_014_03_09_b.json",
+          "command_index": 11,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d18ada90004ca3300167344d46df84137fb94dec443d68de4bac2df4a7276ad1"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -134,15 +166,15 @@
         "row_id": "014hid_403_2_4_014_03_09_b:step-5:option-0",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_014_03_09_b",
+        "source_file": "assets/resources/scenariodata/014hid_403/scenario_2_4_014_03_09_b.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:014hid_403_2_4_014_03_09_b:2_4_014_03_09_b:cmd-000011",
+        "option_id": "choice-option:v1:014hid_403_2_4_014_03_09_b:2_4_014_03_09_b:cmd-000011:000",
+        "source_label": null,
         "target_step_id": 6,
         "target_step_index": 5,
         "resolution": "resolved"
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "わかった！　正面の鳥居のほうに来れば、\nいい匂いがするからわかると思うが……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:014hid_403_2_4_014_03_09_b:2_4_014_03_09_b:cmd-000014:phone_message:000",
+        "source": {
+          "scenario_id": "014hid_403_2_4_014_03_09_b",
+          "part_id": "2_4_014_03_09_b",
+          "file": "assets/resources/scenariodata/014hid_403/scenario_2_4_014_03_09_b.json",
+          "command_index": 14,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ee598625207857522a75a51c182388014adb34e445ca4beb2157a5bdd5a31dd4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "014hid",
         "sourceName": "握野 英雄"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "014hid_403_2_4_014_03_09_b:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_014_03_09_b",
+        "source_file": "assets/resources/scenariodata/014hid_403/scenario_2_4_014_03_09_b.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null,
       "presentation": "call"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "もし場所がわからなかったら、\n案内するから言ってくれ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:014hid_403_2_4_014_03_09_b:2_4_014_03_09_b:cmd-000016:phone_message:000",
+        "source": {
+          "scenario_id": "014hid_403_2_4_014_03_09_b",
+          "part_id": "2_4_014_03_09_b",
+          "file": "assets/resources/scenariodata/014hid_403/scenario_2_4_014_03_09_b.json",
+          "command_index": 16,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e25b86351d82e4416b0344fb2ac46211e43b1c63f8a20b752f8cdc55f29de811"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "014hid",
         "sourceName": "握野 英雄"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "014hid_403_2_4_014_03_09_b:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_014_03_09_b",
+        "source_file": "assets/resources/scenariodata/014hid_403/scenario_2_4_014_03_09_b.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "call"
@@ -232,11 +282,22 @@
     {
       "kind": "dialogue",
       "source_text": "俺もさっきまで餅つきに参加してたんだが、\nなかなか腕がいいって褒められたんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:014hid_403_2_4_014_03_09_b:2_4_014_03_09_b:cmd-000018:phone_message:000",
+        "source": {
+          "scenario_id": "014hid_403_2_4_014_03_09_b",
+          "part_id": "2_4_014_03_09_b",
+          "file": "assets/resources/scenariodata/014hid_403/scenario_2_4_014_03_09_b.json",
+          "command_index": 18,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:14f8abe6575c73133952adf0410d9670478598853c1e7dc2837bd48c88a8e869"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "014hid",
         "sourceName": "握野 英雄"
       },
       "performance": {
@@ -252,19 +313,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "014hid_403_2_4_014_03_09_b:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_014_03_09_b",
+        "source_file": "assets/resources/scenariodata/014hid_403/scenario_2_4_014_03_09_b.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "call"
@@ -272,11 +331,22 @@
     {
       "kind": "dialogue",
       "source_text": "神社に人が大勢来るのは、\n年が明けてからってイメージだけど、",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:014hid_403_2_4_014_03_09_b:2_4_014_03_09_b:cmd-000020:phone_message:000",
+        "source": {
+          "scenario_id": "014hid_403_2_4_014_03_09_b",
+          "part_id": "2_4_014_03_09_b",
+          "file": "assets/resources/scenariodata/014hid_403/scenario_2_4_014_03_09_b.json",
+          "command_index": 20,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1c6078d02e91f35b640d41e77284d0c3c762aed646a24c1bd91520ae02f7f49e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "014hid",
         "sourceName": "握野 英雄"
       },
       "performance": {
@@ -292,19 +362,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "014hid_403_2_4_014_03_09_b:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_014_03_09_b",
+        "source_file": "assets/resources/scenariodata/014hid_403/scenario_2_4_014_03_09_b.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null,
       "presentation": "call"
@@ -312,11 +380,22 @@
     {
       "kind": "dialogue",
       "source_text": "この時期にはもう、準備で忙しいんだな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:014hid_403_2_4_014_03_09_b:2_4_014_03_09_b:cmd-000022:phone_message:000",
+        "source": {
+          "scenario_id": "014hid_403_2_4_014_03_09_b",
+          "part_id": "2_4_014_03_09_b",
+          "file": "assets/resources/scenariodata/014hid_403/scenario_2_4_014_03_09_b.json",
+          "command_index": 22,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fcfe4f3e3cb01532895f28f60ffeb53f22d188bcc8a789ca3a83cc293b59df15"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "014hid",
         "sourceName": "握野 英雄"
       },
       "performance": {
@@ -332,19 +411,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "014hid_403_2_4_014_03_09_b:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_014_03_09_b",
+        "source_file": "assets/resources/scenariodata/014hid_403/scenario_2_4_014_03_09_b.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null,
       "presentation": "call"
@@ -352,11 +429,22 @@
     {
       "kind": "dialogue",
       "source_text": "面白い経験ができたし、\n役にも立てたみたいでよかったぜ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:014hid_403_2_4_014_03_09_b:2_4_014_03_09_b:cmd-000024:phone_message:000",
+        "source": {
+          "scenario_id": "014hid_403_2_4_014_03_09_b",
+          "part_id": "2_4_014_03_09_b",
+          "file": "assets/resources/scenariodata/014hid_403/scenario_2_4_014_03_09_b.json",
+          "command_index": 24,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c7f8fe62b9b72ff6818dada09b6427873c4feb52f20f94334a7e1bd82e4a7dc5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "014hid",
         "sourceName": "握野 英雄"
       },
       "performance": {
@@ -372,19 +460,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "014hid_403_2_4_014_03_09_b:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_014_03_09_b",
+        "source_file": "assets/resources/scenariodata/014hid_403/scenario_2_4_014_03_09_b.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null,
       "presentation": "call"
@@ -392,11 +478,22 @@
     {
       "kind": "dialogue",
       "source_text": "それじゃ、鳥居のほうで待ってるから。\nせっかくの餅が冷めないうちにな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:014hid_403_2_4_014_03_09_b:2_4_014_03_09_b:cmd-000026:phone_message:000",
+        "source": {
+          "scenario_id": "014hid_403_2_4_014_03_09_b",
+          "part_id": "2_4_014_03_09_b",
+          "file": "assets/resources/scenariodata/014hid_403/scenario_2_4_014_03_09_b.json",
+          "command_index": 26,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:44a69e45122f6121099981757749aa63c8e117f08f607940b7a725564374dd98"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "014hid",
         "sourceName": "握野 英雄"
       },
       "performance": {
@@ -412,19 +509,17 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "014hid_403_2_4_014_03_09_b:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_014_03_09_b",
+        "source_file": "assets/resources/scenariodata/014hid_403/scenario_2_4_014_03_09_b.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null,
       "presentation": "call"
@@ -437,9 +532,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:014hid_403_2_4_014_03_09_b:2_4_014_03_09_b:cmd-000011",
+          "option_id": "choice-option:v1:014hid_403_2_4_014_03_09_b:2_4_014_03_09_b:cmd-000011:000",
+          "source_label": null,
           "target_step_id": 6,
           "target_step_index": 5,
           "resolution": "resolved"
@@ -447,63 +542,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "もしもし、●●●●プロデューサー？",
     "episode_label": null

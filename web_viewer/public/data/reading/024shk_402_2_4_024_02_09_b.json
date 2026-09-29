@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "024shk_402_2_4_024_02_09_b",
-  "logical_id": "story-collection:024shk_402_2_4_024_02_09_b",
+  "logical_id": "story:024shk_402_2_4_024_02_09_b",
   "scenario_id": "024shk_402_2_4_024_02_09_b",
   "text_catalog_id": "024shk_402_2_4_024_02_09_b",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "024shk_402_2_4_024_02_09_b.json",
-    "sha256": "sha256:3f267f309a117f9737e517e2ac8c7421b3dcd56cb9c49c5b9fc6115d215d85ae",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:c8c802c48472ffe1ad0ac241127c99e02d1d2d04198009b4db843a67d021ade5",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:cd6a2d8f70eaf9f7b831ceef9689a54649c654561c82bed05d739ab3b837f35e",
     "aggregate_source": null,
     "step_count": 13,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "024shk_402_2_4_024_02_09_b.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "unsupported",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサーちゃん、お疲れっす！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:024shk_402_2_4_024_02_09_b:2_4_024_02_09_b:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "024shk_402_2_4_024_02_09_b",
+          "part_id": "2_4_024_02_09_b",
+          "file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:51096a9def36c602a95cf659cd82c8c44bc2c59fd8aeecb81f9220716bdaa8a4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "024shk",
         "sourceName": "伊瀬谷 四季"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "024shk_402_2_4_024_02_09_b:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_024_02_09_b",
+        "source_file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "昨日の打ち合わせで言ってたトークコーナーの\n準備、なんとかなりそうっすよ～！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:024shk_402_2_4_024_02_09_b:2_4_024_02_09_b:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "024shk_402_2_4_024_02_09_b",
+          "part_id": "2_4_024_02_09_b",
+          "file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:03a90d2d2d50df54a82c7da30fa92b6aeac63c1f73959772af6f5eb3b00885c5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "024shk",
         "sourceName": "伊瀬谷 四季"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "024shk_402_2_4_024_02_09_b:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_024_02_09_b",
+        "source_file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -107,7 +128,18 @@
     {
       "kind": "choice",
       "source_text": "早いですね！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:024shk_402_2_4_024_02_09_b:2_4_024_02_09_b:cmd-000010:choice_short:000",
+        "source": {
+          "scenario_id": "024shk_402_2_4_024_02_09_b",
+          "part_id": "2_4_024_02_09_b",
+          "file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+          "command_index": 10,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a49aed8c3546746d7a9eab999ec05dc69a9dfab816226b499a2e082a137e43d6"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -134,15 +166,15 @@
         "row_id": "024shk_402_2_4_024_02_09_b:step-4:option-0",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_024_02_09_b",
+        "source_file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+        "command_start": 10,
+        "command_end": 11
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:024shk_402_2_4_024_02_09_b:2_4_024_02_09_b:cmd-000010",
+        "option_id": "choice-option:v1:024shk_402_2_4_024_02_09_b:2_4_024_02_09_b:cmd-000010:000",
+        "source_label": null,
         "target_step_id": 5,
         "target_step_index": 4,
         "resolution": "resolved"
@@ -152,7 +184,18 @@
     {
       "kind": "choice",
       "source_text": "順調そうですね",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:024shk_402_2_4_024_02_09_b:2_4_024_02_09_b:cmd-000011:choice_short:000",
+        "source": {
+          "scenario_id": "024shk_402_2_4_024_02_09_b",
+          "part_id": "2_4_024_02_09_b",
+          "file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+          "command_index": 11,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4add220f6fc797d449172bf1c8fe31fa9e0336cffe9ae4f6c9642c17cbed8c4c"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -179,15 +222,15 @@
         "row_id": "024shk_402_2_4_024_02_09_b:step-4:option-1",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_024_02_09_b",
+        "source_file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+        "command_start": 10,
+        "command_end": 11
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:024shk_402_2_4_024_02_09_b:2_4_024_02_09_b:cmd-000010",
+        "option_id": "choice-option:v1:024shk_402_2_4_024_02_09_b:2_4_024_02_09_b:cmd-000011:001",
+        "source_label": null,
         "target_step_id": 5,
         "target_step_index": 4,
         "resolution": "resolved"
@@ -197,11 +240,22 @@
     {
       "kind": "dialogue",
       "source_text": "先輩たちのことを紹介するっていうのは\nすぐにオッケーしてもらえたっす！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:024shk_402_2_4_024_02_09_b:2_4_024_02_09_b:cmd-000014:phone_message:000",
+        "source": {
+          "scenario_id": "024shk_402_2_4_024_02_09_b",
+          "part_id": "2_4_024_02_09_b",
+          "file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+          "command_index": 14,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b1c257aa8771442d748e1cad4437884edf6f504e8721808c0c40ed0a5d0a25d7"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "024shk",
         "sourceName": "伊瀬谷 四季"
       },
       "performance": {
@@ -217,19 +271,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "024shk_402_2_4_024_02_09_b:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_024_02_09_b",
+        "source_file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null,
       "presentation": "call"
@@ -237,11 +289,22 @@
     {
       "kind": "dialogue",
       "source_text": "でも、思い出の写真も見せようって言ったら、\nジュンっちがなかなか許してくれなくて……！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:024shk_402_2_4_024_02_09_b:2_4_024_02_09_b:cmd-000016:phone_message:000",
+        "source": {
+          "scenario_id": "024shk_402_2_4_024_02_09_b",
+          "part_id": "2_4_024_02_09_b",
+          "file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+          "command_index": 16,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:951241f50946aef3abff571188a41f96b3722176309699cfba30a5f839c3a2e8"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "024shk",
         "sourceName": "伊瀬谷 四季"
       },
       "performance": {
@@ -257,19 +320,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "024shk_402_2_4_024_02_09_b:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_024_02_09_b",
+        "source_file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "call"
@@ -277,11 +338,22 @@
     {
       "kind": "dialogue",
       "source_text": "オレ、レコーディングの休憩中の、みんなが\nリラックスしてる姿を見せたいなーって思って。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:024shk_402_2_4_024_02_09_b:2_4_024_02_09_b:cmd-000018:phone_message:000",
+        "source": {
+          "scenario_id": "024shk_402_2_4_024_02_09_b",
+          "part_id": "2_4_024_02_09_b",
+          "file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+          "command_index": 18,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:540eda73184c354f1218b94e0dc7433c875666debbd7051e265b36cb473702a0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "024shk",
         "sourceName": "伊瀬谷 四季"
       },
       "performance": {
@@ -297,19 +369,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "024shk_402_2_4_024_02_09_b:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_024_02_09_b",
+        "source_file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "call"
@@ -317,11 +387,22 @@
     {
       "kind": "dialogue",
       "source_text": "ジュンっちが休んでるところを撮った\nとっておきの写真があったんすけど。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:024shk_402_2_4_024_02_09_b:2_4_024_02_09_b:cmd-000020:phone_message:000",
+        "source": {
+          "scenario_id": "024shk_402_2_4_024_02_09_b",
+          "part_id": "2_4_024_02_09_b",
+          "file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+          "command_index": 20,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7db700ea4c8b867d95cb1ea832951bf09fcb3ac71075eaf41f0fd65de3d28326"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "024shk",
         "sourceName": "伊瀬谷 四季"
       },
       "performance": {
@@ -337,19 +418,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "024shk_402_2_4_024_02_09_b:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_024_02_09_b",
+        "source_file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null,
       "presentation": "call"
@@ -357,11 +436,22 @@
     {
       "kind": "dialogue",
       "source_text": "それは却下されちゃったんで、みんなで一緒に\n喋ってる写真にしたっす！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:024shk_402_2_4_024_02_09_b:2_4_024_02_09_b:cmd-000022:phone_message:000",
+        "source": {
+          "scenario_id": "024shk_402_2_4_024_02_09_b",
+          "part_id": "2_4_024_02_09_b",
+          "file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+          "command_index": 22,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:75c32331f0b5b4976bb3781e2b9383143cf272230765f26a2de89af7d3a01c88"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "024shk",
         "sourceName": "伊瀬谷 四季"
       },
       "performance": {
@@ -377,19 +467,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "024shk_402_2_4_024_02_09_b:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_024_02_09_b",
+        "source_file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null,
       "presentation": "call"
@@ -397,11 +485,22 @@
     {
       "kind": "dialogue",
       "source_text": "でもでも、この写真もメガ眩しい1枚なんすよ～！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:024shk_402_2_4_024_02_09_b:2_4_024_02_09_b:cmd-000024:phone_message:000",
+        "source": {
+          "scenario_id": "024shk_402_2_4_024_02_09_b",
+          "part_id": "2_4_024_02_09_b",
+          "file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+          "command_index": 24,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c260e454f19e2a37ede75c66a37486291650a851b09ad68a983b25d9406ebaf5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "024shk",
         "sourceName": "伊瀬谷 四季"
       },
       "performance": {
@@ -417,19 +516,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "024shk_402_2_4_024_02_09_b:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_024_02_09_b",
+        "source_file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null,
       "presentation": "call"
@@ -437,11 +534,22 @@
     {
       "kind": "dialogue",
       "source_text": "ザ・オフショットって感じで、オレたちのいつもの\n雰囲気が伝わると思うっす！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:024shk_402_2_4_024_02_09_b:2_4_024_02_09_b:cmd-000026:phone_message:000",
+        "source": {
+          "scenario_id": "024shk_402_2_4_024_02_09_b",
+          "part_id": "2_4_024_02_09_b",
+          "file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+          "command_index": 26,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:075e609d692f57071bdcd5f77faa7a2fd4f6cb0a36fa39d03ac8917bf95cf36a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "024shk",
         "sourceName": "伊瀬谷 四季"
       },
       "performance": {
@@ -457,19 +565,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "024shk_402_2_4_024_02_09_b:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_024_02_09_b",
+        "source_file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null,
       "presentation": "call"
@@ -477,11 +583,22 @@
     {
       "kind": "dialogue",
       "source_text": "この写真にちなんだエピソードもたくさん\nあるんで、収録までにまとめておかないと！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:024shk_402_2_4_024_02_09_b:2_4_024_02_09_b:cmd-000028:phone_message:000",
+        "source": {
+          "scenario_id": "024shk_402_2_4_024_02_09_b",
+          "part_id": "2_4_024_02_09_b",
+          "file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+          "command_index": 28,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:48e969e9dfcf618cf67952273cb32d530e17f93486f42eccfdb3bf993e2f9e78"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "024shk",
         "sourceName": "伊瀬谷 四季"
       },
       "performance": {
@@ -497,19 +614,17 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "024shk_402_2_4_024_02_09_b:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_024_02_09_b",
+        "source_file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null,
       "presentation": "call"
@@ -517,11 +632,22 @@
     {
       "kind": "dialogue",
       "source_text": "ってことでプロデューサーちゃん、\n今度の収録もよろしくっす！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:024shk_402_2_4_024_02_09_b:2_4_024_02_09_b:cmd-000030:phone_message:000",
+        "source": {
+          "scenario_id": "024shk_402_2_4_024_02_09_b",
+          "part_id": "2_4_024_02_09_b",
+          "file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+          "command_index": 30,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7f8696fc340c7c4f074ce4ceab5e738f2fe5abf1f0fb2480dc86a4d0cb38fec6"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "024shk",
         "sourceName": "伊瀬谷 四季"
       },
       "performance": {
@@ -537,19 +663,17 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "024shk_402_2_4_024_02_09_b:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_024_02_09_b",
+        "source_file": "assets/resources/scenariodata/024shk_402/scenario_2_4_024_02_09_b.json",
+        "command_start": 30,
+        "command_end": 30
       },
       "option": null,
       "presentation": "call"
@@ -562,17 +686,17 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:024shk_402_2_4_024_02_09_b:2_4_024_02_09_b:cmd-000010",
+          "option_id": "choice-option:v1:024shk_402_2_4_024_02_09_b:2_4_024_02_09_b:cmd-000010:000",
+          "source_label": null,
           "target_step_id": 5,
           "target_step_index": 4,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:024shk_402_2_4_024_02_09_b:2_4_024_02_09_b:cmd-000010",
+          "option_id": "choice-option:v1:024shk_402_2_4_024_02_09_b:2_4_024_02_09_b:cmd-000011:001",
+          "source_label": null,
           "target_step_id": 5,
           "target_step_index": 4,
           "resolution": "resolved"
@@ -582,79 +706,9 @@
   ],
   "diagnostics": [
     {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
       "code": "branch-exits-unavailable",
       "step_index": 3,
       "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
     }
   ],
   "presentation": {

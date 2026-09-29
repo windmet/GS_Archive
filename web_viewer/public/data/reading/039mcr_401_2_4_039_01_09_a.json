@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "039mcr_401_2_4_039_01_09_a",
-  "logical_id": "story-collection:039mcr_401_2_4_039_01_09_a",
+  "logical_id": "story:039mcr_401_2_4_039_01_09_a",
   "scenario_id": "039mcr_401_2_4_039_01_09_a",
   "text_catalog_id": "039mcr_401_2_4_039_01_09_a",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "039mcr_401_2_4_039_01_09_a.json",
-    "sha256": "sha256:fab6d85c93dbd299b14453c100f6d5340893fd9d81b602a407db285e92ffda6a",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:eb3e1232c783f56a36347ee2a9b1062c335f9d938ad30347883f3a646e2ff46d",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:5e42e228e1d41a3fbd886cbdd897c7a358507bceab5f9acbb2059683c89e2fbf",
     "aggregate_source": null,
     "step_count": 12,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "039mcr_401_2_4_039_01_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "unsupported",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "●●●●●●●●●●師匠！\n今少しいいッスか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "039mcr_401_2_4_039_01_09_a",
+          "part_id": "2_4_039_01_09_a",
+          "file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4f314d6d92f789221a42998084c68a92a1733719edd694f7796a978ea90e2f77"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "039mcr",
         "sourceName": "円城寺 道流"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "039mcr_401_2_4_039_01_09_a:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_039_01_09_a",
+        "source_file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,7 +79,18 @@
     {
       "kind": "choice",
       "source_text": "はい、大丈夫ですよ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000008:choice_short:000",
+        "source": {
+          "scenario_id": "039mcr_401_2_4_039_01_09_a",
+          "part_id": "2_4_039_01_09_a",
+          "file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+          "command_index": 8,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7edf5d233a4a792e4c8509e182f3afe9cce956a6d4164b92911c8ac8eac82a73"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -94,15 +117,15 @@
         "row_id": "039mcr_401_2_4_039_01_09_a:step-3:option-0",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_039_01_09_a",
+        "source_file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "1-sel1",
+        "choice_id": "choice:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000008",
+        "option_id": "choice-option:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000008:000",
+        "source_label": null,
         "target_step_id": 4,
         "target_step_index": 3,
         "resolution": "resolved"
@@ -112,11 +135,22 @@
     {
       "kind": "dialogue",
       "source_text": "まずは、師匠。自分にドラマの仕事を\n取って来てくれて、ありがとうございました！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000011:phone_message:000",
+        "source": {
+          "scenario_id": "039mcr_401_2_4_039_01_09_a",
+          "part_id": "2_4_039_01_09_a",
+          "file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+          "command_index": 11,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e4f45f8119810ca9fbdd7a6e82a5e08e338075a7faada0caed8ef45e8f122454"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "039mcr",
         "sourceName": "円城寺 道流"
       },
       "performance": {
@@ -132,19 +166,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "039mcr_401_2_4_039_01_09_a:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_039_01_09_a",
+        "source_file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": null,
       "presentation": "call"
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "昨日放送されたあのドラマを見て、\n改めてお礼を言いたくなったんス！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000013:phone_message:000",
+        "source": {
+          "scenario_id": "039mcr_401_2_4_039_01_09_a",
+          "part_id": "2_4_039_01_09_a",
+          "file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+          "command_index": 13,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bcd21a8c2608d0524b911e74d08edc6ee44e03576232675c565f1e68bd0ac275"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "039mcr",
         "sourceName": "円城寺 道流"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "039mcr_401_2_4_039_01_09_a:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_039_01_09_a",
+        "source_file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+        "command_start": 13,
+        "command_end": 13
       },
       "option": null,
       "presentation": "call"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "視聴者の1人としても、楽しませてもらいました。\nそんなドラマに出られたのは、師匠のおかげです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000015:phone_message:000",
+        "source": {
+          "scenario_id": "039mcr_401_2_4_039_01_09_a",
+          "part_id": "2_4_039_01_09_a",
+          "file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+          "command_index": 15,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0b85e660d11b8820a31cebad101c328044fd133234dbb88a9a2721c10367d665"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "039mcr",
         "sourceName": "円城寺 道流"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "039mcr_401_2_4_039_01_09_a:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_039_01_09_a",
+        "source_file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null,
       "presentation": "call"
@@ -232,7 +282,18 @@
     {
       "kind": "choice",
       "source_text": "道流さんの\n努力の成果ですよ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000017:choice_short:000",
+        "source": {
+          "scenario_id": "039mcr_401_2_4_039_01_09_a",
+          "part_id": "2_4_039_01_09_a",
+          "file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+          "command_index": 17,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bb2c6849c8e737041759831ec8139bd02f95670a89351a7b7c1cad5a336cc1e4"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -259,15 +320,15 @@
         "row_id": "039mcr_401_2_4_039_01_09_a:step-7:option-0",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_039_01_09_a",
+        "source_file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+        "command_start": 17,
+        "command_end": 18
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "2-sel1",
+        "choice_id": "choice:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000017",
+        "option_id": "choice-option:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000017:000",
+        "source_label": null,
         "target_step_id": 8,
         "target_step_index": 7,
         "resolution": "resolved"
@@ -277,7 +338,18 @@
     {
       "kind": "choice",
       "source_text": "私からもお礼を\n言わせてください！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000018:choice_short:000",
+        "source": {
+          "scenario_id": "039mcr_401_2_4_039_01_09_a",
+          "part_id": "2_4_039_01_09_a",
+          "file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+          "command_index": 18,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e57429a965dd559664e348b1f93944ab6a8889b7fb7a11d07224e0ef498cae12"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -304,15 +376,15 @@
         "row_id": "039mcr_401_2_4_039_01_09_a:step-7:option-1",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_039_01_09_a",
+        "source_file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+        "command_start": 17,
+        "command_end": 18
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "2-sel2",
+        "choice_id": "choice:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000017",
+        "option_id": "choice-option:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000018:001",
+        "source_label": null,
         "target_step_id": 10,
         "target_step_index": 9,
         "resolution": "resolved"
@@ -322,11 +394,22 @@
     {
       "kind": "dialogue",
       "source_text": "ははっ。師匠ならそう言うんじゃないかって\n思ってました。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000021:phone_message:000",
+        "source": {
+          "scenario_id": "039mcr_401_2_4_039_01_09_a",
+          "part_id": "2_4_039_01_09_a",
+          "file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+          "command_index": 21,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:791da97fe32390f22297c9a3e9dfdbe3bf151b87cd36e3628f349ee4c4934370"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "039mcr",
         "sourceName": "円城寺 道流"
       },
       "performance": {
@@ -342,19 +425,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "039mcr_401_2_4_039_01_09_a:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_039_01_09_a",
+        "source_file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null,
       "presentation": "call"
@@ -362,11 +443,22 @@
     {
       "kind": "dialogue",
       "source_text": "けど、これだけは言わせてください。師匠が\n支えてくれるからこそ、努力できるんスよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000023:phone_message:000",
+        "source": {
+          "scenario_id": "039mcr_401_2_4_039_01_09_a",
+          "part_id": "2_4_039_01_09_a",
+          "file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+          "command_index": 23,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:83d6ae38402e9f664b5d0b303726a294598f87c3e8e3b6ff507df0b3b7c6f5e8"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "039mcr",
         "sourceName": "円城寺 道流"
       },
       "performance": {
@@ -382,19 +474,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "039mcr_401_2_4_039_01_09_a:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_039_01_09_a",
+        "source_file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null,
       "presentation": "call"
@@ -402,11 +492,22 @@
     {
       "kind": "dialogue",
       "source_text": "こちらこそありがとうございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000027:phone_message:000",
+        "source": {
+          "scenario_id": "039mcr_401_2_4_039_01_09_a",
+          "part_id": "2_4_039_01_09_a",
+          "file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+          "command_index": 27,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fdeda80f98643b9e133edfa9b078343c5df64736fc27e09fb2ebad865d822af0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "039mcr",
         "sourceName": "円城寺 道流"
       },
       "performance": {
@@ -422,19 +523,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "039mcr_401_2_4_039_01_09_a:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_039_01_09_a",
+        "source_file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+        "command_start": 27,
+        "command_end": 27
       },
       "option": null,
       "presentation": "call"
@@ -442,11 +541,22 @@
     {
       "kind": "dialogue",
       "source_text": "……ってこれじゃ、お互いにお礼を言い続ける事に\nなりそうッスね！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000029:phone_message:000",
+        "source": {
+          "scenario_id": "039mcr_401_2_4_039_01_09_a",
+          "part_id": "2_4_039_01_09_a",
+          "file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+          "command_index": 29,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:071946dbf6a351201aa0c1b34c1d393a5dc7e1396fc1cfc9bab8ac3ad80fc1ce"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "039mcr",
         "sourceName": "円城寺 道流"
       },
       "performance": {
@@ -462,19 +572,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "039mcr_401_2_4_039_01_09_a:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_039_01_09_a",
+        "source_file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null,
       "presentation": "call"
@@ -482,11 +590,22 @@
     {
       "kind": "dialogue",
       "source_text": "次もこんな風にお礼を言い合えるように\nアイドル活動頑張っていくッス！　それじゃ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000033:phone_message:000",
+        "source": {
+          "scenario_id": "039mcr_401_2_4_039_01_09_a",
+          "part_id": "2_4_039_01_09_a",
+          "file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+          "command_index": 33,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3f8dca4e60a2527d71870a737fe5b074abf0150ac7a7fc6e280c69dee29159ba"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "039mcr",
         "sourceName": "円城寺 道流"
       },
       "performance": {
@@ -502,19 +621,17 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "039mcr_401_2_4_039_01_09_a:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_039_01_09_a",
+        "source_file": "assets/resources/scenariodata/039mcr_401/scenario_2_4_039_01_09_a.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null,
       "presentation": "call"
@@ -527,9 +644,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "1-sel1",
+          "choice_id": "choice:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000008",
+          "option_id": "choice-option:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000008:000",
+          "source_label": null,
           "target_step_id": 4,
           "target_step_index": 3,
           "resolution": "resolved"
@@ -542,17 +659,17 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "2-sel1",
+          "choice_id": "choice:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000017",
+          "option_id": "choice-option:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000017:000",
+          "source_label": null,
           "target_step_id": 8,
           "target_step_index": 7,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "2-sel2",
+          "choice_id": "choice:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000017",
+          "option_id": "choice-option:v1:039mcr_401_2_4_039_01_09_a:2_4_039_01_09_a:cmd-000018:001",
+          "source_label": null,
           "target_step_id": 10,
           "target_step_index": 9,
           "resolution": "resolved"
@@ -562,79 +679,14 @@
   ],
   "diagnostics": [
     {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
       "code": "branch-exits-unavailable",
       "step_index": 6,
       "severity": "unsupported"
     },
     {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
       "code": "nonsequential-choice-path",
       "step_index": 6,
       "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
     }
   ],
   "presentation": {

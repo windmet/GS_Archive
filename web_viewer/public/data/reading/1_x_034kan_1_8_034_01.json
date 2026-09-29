@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_034kan_1_8_034_01",
-  "logical_id": "story-collection:1_x_034kan_1_8_034_01",
+  "logical_id": "story:1_x_034kan_1_8_034_01",
   "scenario_id": "1_x_034kan_1_8_034_01",
   "text_catalog_id": "1_x_034kan_1_8_034_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_034kan_1_8_034_01.json",
-    "sha256": "sha256:7ac4b2ad68eeefb03e4196705ad16063ec207ac8ad2b3be728dc975a3e4c6087",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:50d530504bc765f861d7bc24747086dcc9be682e48537135ecf5ce2db3b334b6",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:932cc9780790b1beca93977fb1add93b1bf97a72fc2b326e2280526e1387e97b",
     "aggregate_source": null,
     "step_count": 9,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_034kan_1_8_034_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "かのんからの問題だよ～！\n今日はなんの日でしょうか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_034kan_1_8_034_01:1_8_034_01:cmd-000015:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_034kan_1_8_034_01",
+          "part_id": "1_8_034_01",
+          "file": "assets/resources/scenariodata/1_x_034kan/scenario_1_8_034_01.json",
+          "command_index": 15,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:86f7bddf260cf5caecbed3aaff8491dc3580892abf2a1ea942d2d379808b93e5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "034kan",
         "sourceName": "姫野 かのん"
       },
       "performance": {
@@ -48,7 +62,6 @@
         "stepId": 4
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -57,21 +70,32 @@
         "row_id": "1_x_034kan_1_8_034_01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_034_01",
+        "source_file": "assets/resources/scenariodata/1_x_034kan/scenario_1_8_034_01.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "正解は～……●●●●プロデューサーさんの\nお誕生日です！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_034kan_1_8_034_01:1_8_034_01:cmd-000024:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_034kan_1_8_034_01",
+          "part_id": "1_8_034_01",
+          "file": "assets/resources/scenariodata/1_x_034kan/scenario_1_8_034_01.json",
+          "command_index": 24,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f9f07994339ca14dfed539f4058e8839079136737bc0fbd84099767ee72a7590"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "034kan",
         "sourceName": "姫野 かのん"
       },
       "performance": {
@@ -88,7 +112,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -97,17 +120,28 @@
         "row_id": "1_x_034kan_1_8_034_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_034_01",
+        "source_file": "assets/resources/scenariodata/1_x_034kan/scenario_1_8_034_01.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "覚えててくれたんですね。\nありがとうございます、かのんくん！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_034kan_1_8_034_01:1_8_034_01:cmd-000026:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_034kan_1_8_034_01",
+          "part_id": "1_8_034_01",
+          "file": "assets/resources/scenariodata/1_x_034kan/scenario_1_8_034_01.json",
+          "command_index": 26,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:50d5c60551d6afabaab31ccf0bb5cb652c6f8e18455613e6b1f0569893f1d704"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -134,21 +168,32 @@
         "row_id": "1_x_034kan_1_8_034_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_034_01",
+        "source_file": "assets/resources/scenariodata/1_x_034kan/scenario_1_8_034_01.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "えへへ、だーい好きな●●●●プロデューサーさんの\nお誕生日だから、ちゃんと覚えてるよ♪",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_034kan_1_8_034_01:1_8_034_01:cmd-000032:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_034kan_1_8_034_01",
+          "part_id": "1_8_034_01",
+          "file": "assets/resources/scenariodata/1_x_034kan/scenario_1_8_034_01.json",
+          "command_index": 32,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2fbbee0a7edba4fe46972050f0adf1468a7c3cfa24f5bb51fa7b3e39c003c773"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "034kan",
         "sourceName": "姫野 かのん"
       },
       "performance": {
@@ -164,30 +209,39 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_034kan_1_8_034_01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_034_01",
+        "source_file": "assets/resources/scenariodata/1_x_034kan/scenario_1_8_034_01.json",
+        "command_start": 32,
+        "command_end": 32
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサーさん、\nお誕生日おめでとう！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_034kan_1_8_034_01:1_8_034_01:cmd-000037:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_034kan_1_8_034_01",
+          "part_id": "1_8_034_01",
+          "file": "assets/resources/scenariodata/1_x_034kan/scenario_1_8_034_01.json",
+          "command_index": 37,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3f1eceaa2f115a1a07a7254a8facd6b9644ceea105e0b5074215cee20101b794"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "034kan",
         "sourceName": "姫野 かのん"
       },
       "performance": {
@@ -204,7 +258,6 @@
         "stepId": 9
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -213,47 +266,16 @@
         "row_id": "1_x_034kan_1_8_034_01:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_034_01",
+        "source_file": "assets/resources/scenariodata/1_x_034kan/scenario_1_8_034_01.json",
+        "command_start": 37,
+        "command_end": 37
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "かのんからの問題だよ～！",
     "episode_label": null

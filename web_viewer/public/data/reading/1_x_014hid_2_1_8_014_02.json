@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_014hid_2_1_8_014_02",
-  "logical_id": "story-collection:1_x_014hid_2_1_8_014_02",
+  "logical_id": "story:1_x_014hid_2_1_8_014_02",
   "scenario_id": "1_x_014hid_2_1_8_014_02",
   "text_catalog_id": "1_x_014hid_2_1_8_014_02",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_014hid_2_1_8_014_02.json",
-    "sha256": "sha256:d2d4a3710e62749f18d5dd0750e16ffb8a72b3564550f88c370671751cf60604",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:ab73469d9b87bbd03cddd957dc22f7c67c4f9cf703f314261951dba593fc1400",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:932cc9780790b1beca93977fb1add93b1bf97a72fc2b326e2280526e1387e97b",
     "aggregate_source": null,
     "step_count": 9,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_014hid_2_1_8_014_02.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "もしもし、●●●●プロデューサー？　もう事務所\nにいるのか？　お疲れさま。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_014hid_2_1_8_014_02:1_8_014_02:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_014hid_2_1_8_014_02",
+          "part_id": "1_8_014_02",
+          "file": "assets/resources/scenariodata/1_x_014hid_2/scenario_1_8_014_02.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6bb2943af763ad5f87b4ce151a308cc39da391fb7f7a835a13c409519d94e006"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "014hid",
         "sourceName": "握野 英雄"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_014hid_2_1_8_014_02:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_014_02",
+        "source_file": "assets/resources/scenariodata/1_x_014hid_2/scenario_1_8_014_02.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "今日って、あんたの誕生日だったろ。\nおめでとう！　いい1日にしようぜ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_014hid_2_1_8_014_02:1_8_014_02:cmd-000012:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_014hid_2_1_8_014_02",
+          "part_id": "1_8_014_02",
+          "file": "assets/resources/scenariodata/1_x_014hid_2/scenario_1_8_014_02.json",
+          "command_index": 12,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:50eafaa836f5cff4d77a72c5b3b4d56b46a37b27a082b679f07e27385abfa414"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "014hid",
         "sourceName": "握野 英雄"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_014hid_2_1_8_014_02:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_014_02",
+        "source_file": "assets/resources/scenariodata/1_x_014hid_2/scenario_1_8_014_02.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null,
       "presentation": "call"
@@ -107,7 +128,18 @@
     {
       "kind": "choice",
       "source_text": "ありがとう\nございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_014hid_2_1_8_014_02:1_8_014_02:cmd-000014:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_014hid_2_1_8_014_02",
+          "part_id": "1_8_014_02",
+          "file": "assets/resources/scenariodata/1_x_014hid_2/scenario_1_8_014_02.json",
+          "command_index": 14,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:42ccdb247ca887c1f4279c535933ad9b6b5a8b10a7a92d1c133ba0546c376d51"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -134,15 +166,15 @@
         "row_id": "1_x_014hid_2_1_8_014_02:step-6:option-0",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_014_02",
+        "source_file": "assets/resources/scenariodata/1_x_014hid_2/scenario_1_8_014_02.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:1_x_014hid_2_1_8_014_02:1_8_014_02:cmd-000014",
+        "option_id": "choice-option:v1:1_x_014hid_2_1_8_014_02:1_8_014_02:cmd-000014:000",
+        "source_label": null,
         "target_step_id": 7,
         "target_step_index": 6,
         "resolution": "resolved"
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "今日、午前中は事務所にいるんだよな。\n後で差し入れを持って行くぜ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_014hid_2_1_8_014_02:1_8_014_02:cmd-000017:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_014hid_2_1_8_014_02",
+          "part_id": "1_8_014_02",
+          "file": "assets/resources/scenariodata/1_x_014hid_2/scenario_1_8_014_02.json",
+          "command_index": 17,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6373f0306ad2c62b21a6cf1cac1e7b3307912c7224811b54e7ce7a6e2490f14b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "014hid",
         "sourceName": "握野 英雄"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_014hid_2_1_8_014_02:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_014_02",
+        "source_file": "assets/resources/scenariodata/1_x_014hid_2/scenario_1_8_014_02.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null,
       "presentation": "call"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "誕生日にぴったりのとっておきを用意するから、\n楽しみにしててくれ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_014hid_2_1_8_014_02:1_8_014_02:cmd-000019:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_014hid_2_1_8_014_02",
+          "part_id": "1_8_014_02",
+          "file": "assets/resources/scenariodata/1_x_014hid_2/scenario_1_8_014_02.json",
+          "command_index": 19,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a2cfbab46d3b26a38bd9cc9b9ab84fdc74f9105ec092957e1cb4f83055607144"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "014hid",
         "sourceName": "握野 英雄"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_014hid_2_1_8_014_02:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_014_02",
+        "source_file": "assets/resources/scenariodata/1_x_014hid_2/scenario_1_8_014_02.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null,
       "presentation": "call"
@@ -237,9 +287,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:1_x_014hid_2_1_8_014_02:1_8_014_02:cmd-000014",
+          "option_id": "choice-option:v1:1_x_014hid_2_1_8_014_02:1_8_014_02:cmd-000014:000",
+          "source_label": null,
           "target_step_id": 7,
           "target_step_index": 6,
           "resolution": "resolved"
@@ -247,38 +297,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "もしもし、●●●●プロデューサー？　もう事務所",
     "episode_label": null

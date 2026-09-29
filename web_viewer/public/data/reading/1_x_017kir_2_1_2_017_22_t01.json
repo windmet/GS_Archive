@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_017kir_2_1_2_017_22_t01",
-  "logical_id": "story-collection:1_x_017kir_2_1_2_017_22_t01",
+  "logical_id": "story:1_x_017kir_2_1_2_017_22_t01",
   "scenario_id": "1_x_017kir_2_1_2_017_22_t01",
   "text_catalog_id": "1_x_017kir_2_1_2_017_22_t01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_017kir_2_1_2_017_22_t01.json",
-    "sha256": "sha256:bda582bfbcee0df5d518e7e734d862d340d6603072fc5fd7ddb5562be67659ed",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:d31ae0fb1e381d180c76c1d5e68d7947c4041a4590e6bffe7448d3de70b37e3c",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:66fcca953948597919c5d682ceae1392a9eac0ab76ca6f3a90f58c230f97026d",
     "aggregate_source": null,
     "step_count": 12,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_017kir_2_1_2_017_22_t01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "プロデューサークン！　もしもしでにゃんす。\n今、話しても大丈夫でにゃんすか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_017kir_2_1_2_017_22_t01:1_2_017_22_t01:cmd-000007:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_017kir_2_1_2_017_22_t01",
+          "part_id": "1_2_017_22_t01",
+          "file": "assets/resources/scenariodata/1_x_017kir_2/scenario_1_2_017_22_t01.json",
+          "command_index": 7,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2154e7534238177942e88523d99727a7f1f21bd87ba22738e08fe4929504b284"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "017kir",
         "sourceName": "猫柳 キリオ"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_017kir_2_1_2_017_22_t01:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_017_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_017kir_2/scenario_1_2_017_22_t01.json",
+        "command_start": 7,
+        "command_end": 7
       },
       "option": null,
       "presentation": "call"
@@ -67,7 +79,18 @@
     {
       "kind": "choice",
       "source_text": "はい、大丈夫ですよ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_017kir_2_1_2_017_22_t01:1_2_017_22_t01:cmd-000009:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_017kir_2_1_2_017_22_t01",
+          "part_id": "1_2_017_22_t01",
+          "file": "assets/resources/scenariodata/1_x_017kir_2/scenario_1_2_017_22_t01.json",
+          "command_index": 9,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7edf5d233a4a792e4c8509e182f3afe9cce956a6d4164b92911c8ac8eac82a73"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -94,15 +117,15 @@
         "row_id": "1_x_017kir_2_1_2_017_22_t01:step-3:option-0",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_017_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_017kir_2/scenario_1_2_017_22_t01.json",
+        "command_start": 9,
+        "command_end": 9
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:1_x_017kir_2_1_2_017_22_t01:1_2_017_22_t01:cmd-000009",
+        "option_id": "choice-option:v1:1_x_017kir_2_1_2_017_22_t01:1_2_017_22_t01:cmd-000009:000",
+        "source_label": null,
         "target_step_id": 4,
         "target_step_index": 3,
         "resolution": "resolved"
@@ -112,11 +135,22 @@
     {
       "kind": "dialogue",
       "source_text": "今日は楽しい誕生日会をありがとうでにゃんした！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_017kir_2_1_2_017_22_t01:1_2_017_22_t01:cmd-000012:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_017kir_2_1_2_017_22_t01",
+          "part_id": "1_2_017_22_t01",
+          "file": "assets/resources/scenariodata/1_x_017kir_2/scenario_1_2_017_22_t01.json",
+          "command_index": 12,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:396c72d1cf708ea187d15d4a5a2bff0b2e465df4a16a96502c6d374e48362d13"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "017kir",
         "sourceName": "猫柳 キリオ"
       },
       "performance": {
@@ -132,19 +166,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_017kir_2_1_2_017_22_t01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_017_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_017kir_2/scenario_1_2_017_22_t01.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null,
       "presentation": "call"
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "あんなに盛大に祝ってもらえるとは、\n思っていなかったでにゃんすよ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_017kir_2_1_2_017_22_t01:1_2_017_22_t01:cmd-000014:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_017kir_2_1_2_017_22_t01",
+          "part_id": "1_2_017_22_t01",
+          "file": "assets/resources/scenariodata/1_x_017kir_2/scenario_1_2_017_22_t01.json",
+          "command_index": 14,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f575a04a774b489a5ce6406056df7f3549001fcfe43397ae2575d54ba0863e46"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "017kir",
         "sourceName": "猫柳 キリオ"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_017kir_2_1_2_017_22_t01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_017_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_017kir_2/scenario_1_2_017_22_t01.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null,
       "presentation": "call"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "美味しいけぇきも誕生日ぷれぜんとも、\nぜんぶ嬉しかったでにゃんす。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_017kir_2_1_2_017_22_t01:1_2_017_22_t01:cmd-000016:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_017kir_2_1_2_017_22_t01",
+          "part_id": "1_2_017_22_t01",
+          "file": "assets/resources/scenariodata/1_x_017kir_2/scenario_1_2_017_22_t01.json",
+          "command_index": 16,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fe77cb88eebcf4e71e7a9d72b98147412a4dbf3132ab3d9e1dd6e2c261d606c1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "017kir",
         "sourceName": "猫柳 キリオ"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_017kir_2_1_2_017_22_t01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_017_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_017kir_2/scenario_1_2_017_22_t01.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "call"
@@ -232,11 +282,22 @@
     {
       "kind": "dialogue",
       "source_text": "それにしても、いつの間にあんな計画を\nしてたでにゃんすか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_017kir_2_1_2_017_22_t01:1_2_017_22_t01:cmd-000018:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_017kir_2_1_2_017_22_t01",
+          "part_id": "1_2_017_22_t01",
+          "file": "assets/resources/scenariodata/1_x_017kir_2/scenario_1_2_017_22_t01.json",
+          "command_index": 18,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6761c5d2acc77ff0d5569aa96bc6869b61613366e4930e3af2716382e00974fc"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "017kir",
         "sourceName": "猫柳 キリオ"
       },
       "performance": {
@@ -252,19 +313,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_017kir_2_1_2_017_22_t01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_017_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_017kir_2/scenario_1_2_017_22_t01.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "call"
@@ -272,11 +331,22 @@
     {
       "kind": "dialogue",
       "source_text": "ワガハイ、ちっとも気付かなかったでにゃんす。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_017kir_2_1_2_017_22_t01:1_2_017_22_t01:cmd-000020:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_017kir_2_1_2_017_22_t01",
+          "part_id": "1_2_017_22_t01",
+          "file": "assets/resources/scenariodata/1_x_017kir_2/scenario_1_2_017_22_t01.json",
+          "command_index": 20,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:12b84466339eab7909a3a935155d52ffd2e70d2a21cf286e9b2b95455de39bff"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "017kir",
         "sourceName": "猫柳 キリオ"
       },
       "performance": {
@@ -292,19 +362,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_017kir_2_1_2_017_22_t01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_017_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_017kir_2/scenario_1_2_017_22_t01.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null,
       "presentation": "call"
@@ -312,7 +380,18 @@
     {
       "kind": "choice",
       "source_text": "サプライズが成功して\nよかったです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_017kir_2_1_2_017_22_t01:1_2_017_22_t01:cmd-000022:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_017kir_2_1_2_017_22_t01",
+          "part_id": "1_2_017_22_t01",
+          "file": "assets/resources/scenariodata/1_x_017kir_2/scenario_1_2_017_22_t01.json",
+          "command_index": 22,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5c6a5b81ea8518a1eb3d52660f57c714d1503a58aea9278246421eb700498b2c"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -339,15 +418,15 @@
         "row_id": "1_x_017kir_2_1_2_017_22_t01:step-9:option-0",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_017_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_017kir_2/scenario_1_2_017_22_t01.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select2",
+        "choice_id": "choice:v1:1_x_017kir_2_1_2_017_22_t01:1_2_017_22_t01:cmd-000022",
+        "option_id": "choice-option:v1:1_x_017kir_2_1_2_017_22_t01:1_2_017_22_t01:cmd-000022:000",
+        "source_label": null,
         "target_step_id": 10,
         "target_step_index": 9,
         "resolution": "resolved"
@@ -357,11 +436,22 @@
     {
       "kind": "dialogue",
       "source_text": "うにゃにゃ……嬉しい気持ちの中に、\nほんの少し悔しい気持ちがあるぞなもし。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_017kir_2_1_2_017_22_t01:1_2_017_22_t01:cmd-000025:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_017kir_2_1_2_017_22_t01",
+          "part_id": "1_2_017_22_t01",
+          "file": "assets/resources/scenariodata/1_x_017kir_2/scenario_1_2_017_22_t01.json",
+          "command_index": 25,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:47a48fd77c31c6754f6fd096d864fc59fa07c02a3756f563cd831373229a6140"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "017kir",
         "sourceName": "猫柳 キリオ"
       },
       "performance": {
@@ -377,19 +467,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_017kir_2_1_2_017_22_t01:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_017_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_017kir_2/scenario_1_2_017_22_t01.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null,
       "presentation": "call"
@@ -397,11 +485,22 @@
     {
       "kind": "dialogue",
       "source_text": "次はワガハイがプロデューサークンたちのことを\nあっと言わせるでにゃんすよ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_017kir_2_1_2_017_22_t01:1_2_017_22_t01:cmd-000027:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_017kir_2_1_2_017_22_t01",
+          "part_id": "1_2_017_22_t01",
+          "file": "assets/resources/scenariodata/1_x_017kir_2/scenario_1_2_017_22_t01.json",
+          "command_index": 27,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4ba323247526b75e0f171d2e4c8552d115407dd173dfabd30cd460cc2dfb8dcc"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "017kir",
         "sourceName": "猫柳 キリオ"
       },
       "performance": {
@@ -417,19 +516,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_017kir_2_1_2_017_22_t01:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_017_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_017kir_2/scenario_1_2_017_22_t01.json",
+        "command_start": 27,
+        "command_end": 27
       },
       "option": null,
       "presentation": "call"
@@ -437,11 +534,22 @@
     {
       "kind": "dialogue",
       "source_text": "こうご期待♪\nそれでは、またでにゃんす！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_017kir_2_1_2_017_22_t01:1_2_017_22_t01:cmd-000029:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_017kir_2_1_2_017_22_t01",
+          "part_id": "1_2_017_22_t01",
+          "file": "assets/resources/scenariodata/1_x_017kir_2/scenario_1_2_017_22_t01.json",
+          "command_index": 29,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4335968c81a37807f1fd56f7a68a0e7c628bf1c4a0aa24224d0f7e6ac6923fda"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "017kir",
         "sourceName": "猫柳 キリオ"
       },
       "performance": {
@@ -457,19 +565,17 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_017kir_2_1_2_017_22_t01:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_017_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_017kir_2/scenario_1_2_017_22_t01.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null,
       "presentation": "call"
@@ -482,9 +588,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:1_x_017kir_2_1_2_017_22_t01:1_2_017_22_t01:cmd-000009",
+          "option_id": "choice-option:v1:1_x_017kir_2_1_2_017_22_t01:1_2_017_22_t01:cmd-000009:000",
+          "source_label": null,
           "target_step_id": 4,
           "target_step_index": 3,
           "resolution": "resolved"
@@ -497,9 +603,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select2",
+          "choice_id": "choice:v1:1_x_017kir_2_1_2_017_22_t01:1_2_017_22_t01:cmd-000022",
+          "option_id": "choice-option:v1:1_x_017kir_2_1_2_017_22_t01:1_2_017_22_t01:cmd-000022:000",
+          "source_label": null,
           "target_step_id": 10,
           "target_step_index": 9,
           "resolution": "resolved"
@@ -507,68 +613,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "プロデューサークン！　もしもしでにゃんす。",
     "episode_label": null

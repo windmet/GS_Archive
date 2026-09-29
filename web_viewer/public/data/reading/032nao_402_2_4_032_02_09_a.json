@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "032nao_402_2_4_032_02_09_a",
-  "logical_id": "story-collection:032nao_402_2_4_032_02_09_a",
+  "logical_id": "story:032nao_402_2_4_032_02_09_a",
   "scenario_id": "032nao_402_2_4_032_02_09_a",
   "text_catalog_id": "032nao_402_2_4_032_02_09_a",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "032nao_402_2_4_032_02_09_a.json",
-    "sha256": "sha256:8bf4a1084a2bc5e0aa311770cd096035d9efbe5f41407c32078b6e594c56ce3f",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:21ce5426b049a8cda5ad816cf389469e14c6ae0fa611ea6fe38d527d081b41d1",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:fefae547d0b78f22b34b346cf784a38ed38cd1307ae4799658435075fdedcdd9",
     "aggregate_source": null,
     "step_count": 16,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "032nao_402_2_4_032_02_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "unsupported",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "お疲れさまです、●●●●プロデューサーさん。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "032nao_402_2_4_032_02_09_a",
+          "part_id": "2_4_032_02_09_a",
+          "file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6ed2335d036a817df54852b66f2dcc813d59b48b1608915984602a991c9d893a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "032nao",
         "sourceName": "岡村 直央"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "032nao_402_2_4_032_02_09_a:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_032_02_09_a",
+        "source_file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "今度出演する番組用のアンケート、\n書き終わったので明日お渡ししますね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "032nao_402_2_4_032_02_09_a",
+          "part_id": "2_4_032_02_09_a",
+          "file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c5f8829435636d958cfb69527ee16eb28e42ddd17031f991c91c8da6f854752e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "032nao",
         "sourceName": "岡村 直央"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "032nao_402_2_4_032_02_09_a:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_032_02_09_a",
+        "source_file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -107,7 +128,18 @@
     {
       "kind": "choice",
       "source_text": "早いですね！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000010:choice_short:000",
+        "source": {
+          "scenario_id": "032nao_402_2_4_032_02_09_a",
+          "part_id": "2_4_032_02_09_a",
+          "file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+          "command_index": 10,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a49aed8c3546746d7a9eab999ec05dc69a9dfab816226b499a2e082a137e43d6"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -134,15 +166,15 @@
         "row_id": "032nao_402_2_4_032_02_09_a:step-4:option-0",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_032_02_09_a",
+        "source_file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000010",
+        "option_id": "choice-option:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000010:000",
+        "source_label": null,
         "target_step_id": 5,
         "target_step_index": 4,
         "resolution": "resolved"
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "最近はずっと『プラネットシューター』の\nプロモーション活動があったので、",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000013:phone_message:000",
+        "source": {
+          "scenario_id": "032nao_402_2_4_032_02_09_a",
+          "part_id": "2_4_032_02_09_a",
+          "file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+          "command_index": 13,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:50d660498e538648808817f834197606bbc188f44e851e24ec2c77a5c850b72d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "032nao",
         "sourceName": "岡村 直央"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "032nao_402_2_4_032_02_09_a:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_032_02_09_a",
+        "source_file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+        "command_start": 13,
+        "command_end": 13
       },
       "option": null,
       "presentation": "call"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "嬉しかった思い出とか、話したいことが\n色々あって。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000015:phone_message:000",
+        "source": {
+          "scenario_id": "032nao_402_2_4_032_02_09_a",
+          "part_id": "2_4_032_02_09_a",
+          "file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+          "command_index": 15,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fd7d048620cb0758908503b78aa92ac31575237c35b9d83da193fc36fd9c89f6"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "032nao",
         "sourceName": "岡村 直央"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "032nao_402_2_4_032_02_09_a:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_032_02_09_a",
+        "source_file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null,
       "presentation": "call"
@@ -232,11 +282,22 @@
     {
       "kind": "dialogue",
       "source_text": "映画が公開されて、感想もたくさん届いていて\n嬉しいです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000017:phone_message:000",
+        "source": {
+          "scenario_id": "032nao_402_2_4_032_02_09_a",
+          "part_id": "2_4_032_02_09_a",
+          "file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+          "command_index": 17,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:64751aa175f74807f97da6c74bc5e992ed97bde55146e3201666ac2168fd4eab"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "032nao",
         "sourceName": "岡村 直央"
       },
       "performance": {
@@ -252,19 +313,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "032nao_402_2_4_032_02_09_a:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_032_02_09_a",
+        "source_file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null,
       "presentation": "call"
@@ -272,11 +331,22 @@
     {
       "kind": "dialogue",
       "source_text": "プロキオンは、いつも堂々としてて、自分の仕事に\n自信を持っているキャラクターなので、",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000019:phone_message:000",
+        "source": {
+          "scenario_id": "032nao_402_2_4_032_02_09_a",
+          "part_id": "2_4_032_02_09_a",
+          "file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+          "command_index": 19,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ddb0b50f42a3a1f32d03284818392c8802ff8fcc519cce2202e23ca89f491ce5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "032nao",
         "sourceName": "岡村 直央"
       },
       "performance": {
@@ -292,19 +362,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "032nao_402_2_4_032_02_09_a:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_032_02_09_a",
+        "source_file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null,
       "presentation": "call"
@@ -312,11 +380,22 @@
     {
       "kind": "dialogue",
       "source_text": "かっこいいプロキオンになれてるかなって、\n不安もあったんですけど……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000021:phone_message:000",
+        "source": {
+          "scenario_id": "032nao_402_2_4_032_02_09_a",
+          "part_id": "2_4_032_02_09_a",
+          "file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+          "command_index": 21,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0e23242d484478faa13c1dd24e3d38158231da75cfb6f3026ca5873cc717ed75"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "032nao",
         "sourceName": "岡村 直央"
       },
       "performance": {
@@ -332,19 +411,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "032nao_402_2_4_032_02_09_a:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_032_02_09_a",
+        "source_file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null,
       "presentation": "call"
@@ -352,11 +429,22 @@
     {
       "kind": "dialogue",
       "source_text": "でもファンレターに、プロキオンの活躍を見て\n勇気が出たって書いてくれてる方がいて。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000023:phone_message:000",
+        "source": {
+          "scenario_id": "032nao_402_2_4_032_02_09_a",
+          "part_id": "2_4_032_02_09_a",
+          "file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+          "command_index": 23,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3addbe91c0e14cff6ca7e3497f6cf1f1fa55ae366724737d0588f477d53a33e3"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "032nao",
         "sourceName": "岡村 直央"
       },
       "performance": {
@@ -372,19 +460,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "032nao_402_2_4_032_02_09_a:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_032_02_09_a",
+        "source_file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null,
       "presentation": "call"
@@ -392,11 +478,22 @@
     {
       "kind": "dialogue",
       "source_text": "それを見たら、ボク、ちゃんと伝えられたんだって\n思えました。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000025:phone_message:000",
+        "source": {
+          "scenario_id": "032nao_402_2_4_032_02_09_a",
+          "part_id": "2_4_032_02_09_a",
+          "file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+          "command_index": 25,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:63b9244c8b0250ef6fa5621e1600f0af938ff63bbe6769ca11acad7fe63b02cb"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "032nao",
         "sourceName": "岡村 直央"
       },
       "performance": {
@@ -412,19 +509,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "032nao_402_2_4_032_02_09_a:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_032_02_09_a",
+        "source_file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null,
       "presentation": "call"
@@ -432,7 +527,18 @@
     {
       "kind": "choice",
       "source_text": "かっこよかったです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000027:choice_short:000",
+        "source": {
+          "scenario_id": "032nao_402_2_4_032_02_09_a",
+          "part_id": "2_4_032_02_09_a",
+          "file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+          "command_index": 27,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:55f3460aa54aa408c885dd019889486ec922a98908c9f8be40829e3ed832f27f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -459,15 +565,15 @@
         "row_id": "032nao_402_2_4_032_02_09_a:step-12:option-0",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_032_02_09_a",
+        "source_file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+        "command_start": 27,
+        "command_end": 28
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select2",
+        "choice_id": "choice:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000027",
+        "option_id": "choice-option:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000027:000",
+        "source_label": null,
         "target_step_id": 13,
         "target_step_index": 12,
         "resolution": "resolved"
@@ -477,7 +583,18 @@
     {
       "kind": "choice",
       "source_text": "頑張った成果ですね",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000028:choice_short:000",
+        "source": {
+          "scenario_id": "032nao_402_2_4_032_02_09_a",
+          "part_id": "2_4_032_02_09_a",
+          "file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+          "command_index": 28,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1f8ba0f289d37cd5c8acdda8843cc48a70c2a59be412558a0433682f1bd071f9"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -504,15 +621,15 @@
         "row_id": "032nao_402_2_4_032_02_09_a:step-12:option-1",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_032_02_09_a",
+        "source_file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+        "command_start": 27,
+        "command_end": 28
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select3",
+        "choice_id": "choice:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000027",
+        "option_id": "choice-option:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000028:001",
+        "source_label": null,
         "target_step_id": 14,
         "target_step_index": 13,
         "resolution": "resolved"
@@ -522,11 +639,22 @@
     {
       "kind": "dialogue",
       "source_text": "ありがとうございます。なんだか\nちょっと恥ずかしいですけど、嬉しいです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000031:phone_message:000",
+        "source": {
+          "scenario_id": "032nao_402_2_4_032_02_09_a",
+          "part_id": "2_4_032_02_09_a",
+          "file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+          "command_index": 31,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:905cbaee099d0593e2d6249a25f607ad698548357dfd6a1b1d6f0566e5d66a03"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "032nao",
         "sourceName": "岡村 直央"
       },
       "performance": {
@@ -542,19 +670,17 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "032nao_402_2_4_032_02_09_a:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_032_02_09_a",
+        "source_file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null,
       "presentation": "call"
@@ -562,11 +688,22 @@
     {
       "kind": "dialogue",
       "source_text": "難しかったけど、乗り越えられてよかったです。\nありがとうございます。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000035:phone_message:000",
+        "source": {
+          "scenario_id": "032nao_402_2_4_032_02_09_a",
+          "part_id": "2_4_032_02_09_a",
+          "file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+          "command_index": 35,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3de1fc3f11083b5a764b46c48d822344b17a3e898602f412c1802c1893082be4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "032nao",
         "sourceName": "岡村 直央"
       },
       "performance": {
@@ -582,19 +719,17 @@
         "snapshot": "entry",
         "stepId": 14
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "032nao_402_2_4_032_02_09_a:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_032_02_09_a",
+        "source_file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+        "command_start": 35,
+        "command_end": 35
       },
       "option": null,
       "presentation": "call"
@@ -602,11 +737,22 @@
     {
       "kind": "dialogue",
       "source_text": "これから勇気がほしいときは、プロキオンのことを\n思い出してみようと思います。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000039:phone_message:000",
+        "source": {
+          "scenario_id": "032nao_402_2_4_032_02_09_a",
+          "part_id": "2_4_032_02_09_a",
+          "file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+          "command_index": 39,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4cabbb6457fcec8ecdab283286ee3b8d21d33e44ee9425f98885a450fed02506"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "032nao",
         "sourceName": "岡村 直央"
       },
       "performance": {
@@ -622,19 +768,17 @@
         "snapshot": "entry",
         "stepId": 15
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "032nao_402_2_4_032_02_09_a:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_032_02_09_a",
+        "source_file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+        "command_start": 39,
+        "command_end": 39
       },
       "option": null,
       "presentation": "call"
@@ -642,11 +786,22 @@
     {
       "kind": "dialogue",
       "source_text": "次のお仕事も、頑張りますね。\nそれでは、また明日。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000041:phone_message:000",
+        "source": {
+          "scenario_id": "032nao_402_2_4_032_02_09_a",
+          "part_id": "2_4_032_02_09_a",
+          "file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+          "command_index": 41,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c95323100a26db90c956fb706045882048aa747c41a693f7943c3d2cc7b56ae9"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "032nao",
         "sourceName": "岡村 直央"
       },
       "performance": {
@@ -662,19 +817,17 @@
         "snapshot": "entry",
         "stepId": 16
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "032nao_402_2_4_032_02_09_a:step-16:text",
         "step_id": 16,
         "step_index": 15,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_032_02_09_a",
+        "source_file": "assets/resources/scenariodata/032nao_402/scenario_2_4_032_02_09_a.json",
+        "command_start": 41,
+        "command_end": 41
       },
       "option": null,
       "presentation": "call"
@@ -687,9 +840,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000010",
+          "option_id": "choice-option:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000010:000",
+          "source_label": null,
           "target_step_id": 5,
           "target_step_index": 4,
           "resolution": "resolved"
@@ -702,17 +855,17 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select2",
+          "choice_id": "choice:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000027",
+          "option_id": "choice-option:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000027:000",
+          "source_label": null,
           "target_step_id": 13,
           "target_step_index": 12,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select3",
+          "choice_id": "choice:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000027",
+          "option_id": "choice-option:v1:032nao_402_2_4_032_02_09_a:2_4_032_02_09_a:cmd-000028:001",
+          "source_label": null,
           "target_step_id": 14,
           "target_step_index": 13,
           "resolution": "resolved"
@@ -722,99 +875,14 @@
   ],
   "diagnostics": [
     {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
       "code": "branch-exits-unavailable",
       "step_index": 11,
       "severity": "unsupported"
     },
     {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
       "code": "nonsequential-choice-path",
       "step_index": 11,
       "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 15,
-      "severity": "warning"
     }
   ],
   "presentation": {

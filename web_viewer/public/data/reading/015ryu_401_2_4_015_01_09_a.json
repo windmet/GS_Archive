@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "015ryu_401_2_4_015_01_09_a",
-  "logical_id": "story-collection:015ryu_401_2_4_015_01_09_a",
+  "logical_id": "story:015ryu_401_2_4_015_01_09_a",
   "scenario_id": "015ryu_401_2_4_015_01_09_a",
   "text_catalog_id": "015ryu_401_2_4_015_01_09_a",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "015ryu_401_2_4_015_01_09_a.json",
-    "sha256": "sha256:556dd5cac69f48eb102757986e29e2a38a0712c85203b2a46e7e99f2d6315402",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:f40923c471185776da0296ee57aaba84c4fccbe6347610fc3460bdf0ce651f18",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:b791e2abfeda8fd53e7c99d328acb2829a0f3023a73874643c3e44bf2b48c571",
     "aggregate_source": null,
     "step_count": 11,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "015ryu_401_2_4_015_01_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "unsupported",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "ちょっといいかな！　さっき困ってる人に道案内\nしたら、お礼にたくさんのお菓子をもらってさ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "015ryu_401_2_4_015_01_09_a",
+          "part_id": "2_4_015_01_09_a",
+          "file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f843f5c63de0fbc374bd76ae08d965535575a6fae0a153e44e0ddf4e1c4d46c1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "015ryu",
         "sourceName": "木村 龍"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "015ryu_401_2_4_015_01_09_a:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_015_01_09_a",
+        "source_file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "俺だけじゃ食べられないし、今度事務所へ\n持っていこうと思うんだけど、どうかな？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "015ryu_401_2_4_015_01_09_a",
+          "part_id": "2_4_015_01_09_a",
+          "file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1a97f9f2ff45a6fea4f592abeb604d1c2f4af3bb6b0602938671d511dbc592e6"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "015ryu",
         "sourceName": "木村 龍"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "015ryu_401_2_4_015_01_09_a:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_015_01_09_a",
+        "source_file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -107,7 +128,18 @@
     {
       "kind": "choice",
       "source_text": "嬉しいです！　皆さんも\n喜ぶと思いますよ",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000010:choice_short:000",
+        "source": {
+          "scenario_id": "015ryu_401_2_4_015_01_09_a",
+          "part_id": "2_4_015_01_09_a",
+          "file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+          "command_index": 10,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bf19a7fa1009ad0e351ebf03d8cf81837e77141226ad8a27f04c5ec8ab997cad"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -134,15 +166,15 @@
         "row_id": "015ryu_401_2_4_015_01_09_a:step-4:option-0",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_015_01_09_a",
+        "source_file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+        "command_start": 10,
+        "command_end": 11
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000010",
+        "option_id": "choice-option:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000010:000",
+        "source_label": null,
         "target_step_id": 5,
         "target_step_index": 4,
         "resolution": "resolved"
@@ -152,7 +184,18 @@
     {
       "kind": "choice",
       "source_text": "大歓迎です。是非\n持って来てください。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000011:choice_short:000",
+        "source": {
+          "scenario_id": "015ryu_401_2_4_015_01_09_a",
+          "part_id": "2_4_015_01_09_a",
+          "file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+          "command_index": 11,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f11061a68a9ae8c560ac853443f373604255b63929c76331184b55d47d9f1c92"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -179,15 +222,15 @@
         "row_id": "015ryu_401_2_4_015_01_09_a:step-4:option-1",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_015_01_09_a",
+        "source_file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+        "command_start": 10,
+        "command_end": 11
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000010",
+        "option_id": "choice-option:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000011:001",
+        "source_label": null,
         "target_step_id": 5,
         "target_step_index": 4,
         "resolution": "resolved"
@@ -197,11 +240,22 @@
     {
       "kind": "dialogue",
       "source_text": "よかった！　いつも通る道が工事中だったんだけど、\n迂回した先で、こんなラッキーに巡り合えたんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000014:phone_message:000",
+        "source": {
+          "scenario_id": "015ryu_401_2_4_015_01_09_a",
+          "part_id": "2_4_015_01_09_a",
+          "file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+          "command_index": 14,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9a9343badb1bb058b7988d01334343b6b20b4a6d71dce88b8d6f7937aefe7b2e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "015ryu",
         "sourceName": "木村 龍"
       },
       "performance": {
@@ -217,19 +271,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "015ryu_401_2_4_015_01_09_a:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_015_01_09_a",
+        "source_file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null,
       "presentation": "call"
@@ -237,11 +289,22 @@
     {
       "kind": "dialogue",
       "source_text": "あ、ラッキーといえば芸術祭の時もそうだよな。\n転んで絵具をこぼしちゃったのは不運だけど……",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000016:phone_message:000",
+        "source": {
+          "scenario_id": "015ryu_401_2_4_015_01_09_a",
+          "part_id": "2_4_015_01_09_a",
+          "file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+          "command_index": 16,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:47183feec64d8480591344c4d0ea4ef2c16d3bfebc9e5224e8105b65fd9f3942"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "015ryu",
         "sourceName": "木村 龍"
       },
       "performance": {
@@ -257,19 +320,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "015ryu_401_2_4_015_01_09_a:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_015_01_09_a",
+        "source_file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "call"
@@ -277,11 +338,22 @@
     {
       "kind": "dialogue",
       "source_text": "偶然、それが絵のいいアクセントになって、\nみんなにも喜んでもらえたからさ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000018:phone_message:000",
+        "source": {
+          "scenario_id": "015ryu_401_2_4_015_01_09_a",
+          "part_id": "2_4_015_01_09_a",
+          "file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+          "command_index": 18,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9cad802cd2424a7ac6091cf7ce3dcfedbbc4d60ca5332ece849632b3e1cd12ed"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "015ryu",
         "sourceName": "木村 龍"
       },
       "performance": {
@@ -297,19 +369,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "015ryu_401_2_4_015_01_09_a:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_015_01_09_a",
+        "source_file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "call"
@@ -317,7 +387,18 @@
     {
       "kind": "choice",
       "source_text": "龍さんの人柄に\nよるものかと思います",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000020:choice_short:000",
+        "source": {
+          "scenario_id": "015ryu_401_2_4_015_01_09_a",
+          "part_id": "2_4_015_01_09_a",
+          "file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+          "command_index": 20,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6c23f1368cc68447aa8ece48ba82867a28d14e4949f6c551f968ac2ced1c57f3"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -344,15 +425,15 @@
         "row_id": "015ryu_401_2_4_015_01_09_a:step-8:option-0",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_015_01_09_a",
+        "source_file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+        "command_start": 20,
+        "command_end": 21
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select2",
+        "choice_id": "choice:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000020",
+        "option_id": "choice-option:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000020:000",
+        "source_label": null,
         "target_step_id": 9,
         "target_step_index": 8,
         "resolution": "resolved"
@@ -362,7 +443,18 @@
     {
       "kind": "choice",
       "source_text": "確かに不運ではなく、\nラッキーだったかと！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000021:choice_short:000",
+        "source": {
+          "scenario_id": "015ryu_401_2_4_015_01_09_a",
+          "part_id": "2_4_015_01_09_a",
+          "file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+          "command_index": 21,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7594ad5f3f05c525e3e0e1e0e38e2dd9a544294205cbbe74f6127c516581830b"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -389,15 +481,15 @@
         "row_id": "015ryu_401_2_4_015_01_09_a:step-8:option-1",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_015_01_09_a",
+        "source_file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+        "command_start": 20,
+        "command_end": 21
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select2",
+        "choice_id": "choice:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000020",
+        "option_id": "choice-option:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000021:001",
+        "source_label": null,
         "target_step_id": 9,
         "target_step_index": 8,
         "resolution": "resolved"
@@ -407,11 +499,22 @@
     {
       "kind": "dialogue",
       "source_text": "はは、ありがとう！　嬉しいこと言ってくれるなぁ、\n●●●●プロデューサーさん！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000024:phone_message:000",
+        "source": {
+          "scenario_id": "015ryu_401_2_4_015_01_09_a",
+          "part_id": "2_4_015_01_09_a",
+          "file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+          "command_index": 24,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fa0d5524f014af91484196dcf34082a13f99b042858cc19034e2816d9d143d51"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "015ryu",
         "sourceName": "木村 龍"
       },
       "performance": {
@@ -427,19 +530,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "015ryu_401_2_4_015_01_09_a:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_015_01_09_a",
+        "source_file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null,
       "presentation": "call"
@@ -447,11 +548,22 @@
     {
       "kind": "dialogue",
       "source_text": "これからも前向きに進んでいくよ、\nって、あ、あれ……？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000026:phone_message:000",
+        "source": {
+          "scenario_id": "015ryu_401_2_4_015_01_09_a",
+          "part_id": "2_4_015_01_09_a",
+          "file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+          "command_index": 26,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b7cfb4a2e88f1d502cc86fb9338993ad0884558d3176931f9d72b653f9de8d12"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "015ryu",
         "sourceName": "木村 龍"
       },
       "performance": {
@@ -467,19 +579,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "015ryu_401_2_4_015_01_09_a:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_015_01_09_a",
+        "source_file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null,
       "presentation": "call"
@@ -487,11 +597,22 @@
     {
       "kind": "dialogue",
       "source_text": "まずい。充電が切れかけてるんだった……！\nそれじゃまた今度な、プロデューサーさん！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000028:phone_message:000",
+        "source": {
+          "scenario_id": "015ryu_401_2_4_015_01_09_a",
+          "part_id": "2_4_015_01_09_a",
+          "file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+          "command_index": 28,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2ea2be939b480b9799d101499fc8966fa9eef6299c2ed17ecfe4ec2634a10f72"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "015ryu",
         "sourceName": "木村 龍"
       },
       "performance": {
@@ -507,19 +628,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "015ryu_401_2_4_015_01_09_a:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_015_01_09_a",
+        "source_file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null,
       "presentation": "call"
@@ -532,17 +651,17 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000010",
+          "option_id": "choice-option:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000010:000",
+          "source_label": null,
           "target_step_id": 5,
           "target_step_index": 4,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000010",
+          "option_id": "choice-option:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000011:001",
+          "source_label": null,
           "target_step_id": 5,
           "target_step_index": 4,
           "resolution": "resolved"
@@ -555,17 +674,17 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select2",
+          "choice_id": "choice:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000020",
+          "option_id": "choice-option:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000020:000",
+          "source_label": null,
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select2",
+          "choice_id": "choice:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000020",
+          "option_id": "choice-option:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000021:001",
+          "source_label": null,
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
@@ -575,79 +694,14 @@
   ],
   "diagnostics": [
     {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
       "code": "branch-exits-unavailable",
       "step_index": 3,
       "severity": "unsupported"
     },
     {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
       "code": "branch-exits-unavailable",
       "step_index": 7,
       "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
     }
   ],
   "presentation": {

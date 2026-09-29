@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_006tsu_1_8_006_01",
-  "logical_id": "story-collection:1_x_006tsu_1_8_006_01",
+  "logical_id": "story:1_x_006tsu_1_8_006_01",
   "scenario_id": "1_x_006tsu_1_8_006_01",
   "text_catalog_id": "1_x_006tsu_1_8_006_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_006tsu_1_8_006_01.json",
-    "sha256": "sha256:77983bce75aa312b312d60049b2561ece706cef2faf4f79a3d72584116460aed",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:a6e4ee55af99cff4b7131992c9122cbe50fc6300b6338013e769a35313d4ca01",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:932cc9780790b1beca93977fb1add93b1bf97a72fc2b326e2280526e1387e97b",
     "aggregate_source": null,
     "step_count": 8,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_006tsu_1_8_006_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "お疲れさまです。今日は\n●●●●プロデューサーに\nとって、大切な日ですよね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_006tsu_1_8_006_01:1_8_006_01:cmd-000009:mobile_message:000",
+        "source": {
+          "scenario_id": "1_x_006tsu_1_8_006_01",
+          "part_id": "1_8_006_01",
+          "file": "assets/resources/scenariodata/1_x_006tsu/scenario_1_8_006_01.json",
+          "command_index": 9,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d28fe984c34fff75e110ddd86dd90723565113e721acc386c1156205dfa02db5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "006tsu",
         "sourceName": "柏木 翼"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "1_x_006tsu_1_8_006_01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_006_01",
+        "source_file": "assets/resources/scenariodata/1_x_006tsu/scenario_1_8_006_01.json",
+        "command_start": 9,
+        "command_end": 9
       },
       "option": null,
       "presentation": "talk"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "お誕生日\nおめでとうございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_006tsu_1_8_006_01:1_8_006_01:cmd-000011:mobile_message:000",
+        "source": {
+          "scenario_id": "1_x_006tsu_1_8_006_01",
+          "part_id": "1_8_006_01",
+          "file": "assets/resources/scenariodata/1_x_006tsu/scenario_1_8_006_01.json",
+          "command_index": 11,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b99f1140ab5ad2f82fd535a606beaa1829d7fd0be38e062952fa9cb211386d4e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "006tsu",
         "sourceName": "柏木 翼"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "1_x_006tsu_1_8_006_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_006_01",
+        "source_file": "assets/resources/scenariodata/1_x_006tsu/scenario_1_8_006_01.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": null,
       "presentation": "talk"
@@ -107,7 +128,18 @@
     {
       "kind": "choice",
       "source_text": "ありがとうございます",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_006tsu_1_8_006_01:1_8_006_01:cmd-000013:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_006tsu_1_8_006_01",
+          "part_id": "1_8_006_01",
+          "file": "assets/resources/scenariodata/1_x_006tsu/scenario_1_8_006_01.json",
+          "command_index": 13,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:21b2ba1811e66eef3e01a48e589b379c48c9efa25b3a8354c7e883e04351ba73"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -134,15 +166,15 @@
         "row_id": "1_x_006tsu_1_8_006_01:step-6:option-0",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_006_01",
+        "source_file": "assets/resources/scenariodata/1_x_006tsu/scenario_1_8_006_01.json",
+        "command_start": 13,
+        "command_end": 13
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "talk_select1",
+        "choice_id": "choice:v1:1_x_006tsu_1_8_006_01:1_8_006_01:cmd-000013",
+        "option_id": "choice-option:v1:1_x_006tsu_1_8_006_01:1_8_006_01:cmd-000013:000",
+        "source_label": null,
         "target_step_id": 7,
         "target_step_index": 6,
         "resolution": "resolved"
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "ふふ、オレも\n●●●●プロデューサーを\nお祝いできて嬉しいです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_006tsu_1_8_006_01:1_8_006_01:cmd-000016:mobile_message:000",
+        "source": {
+          "scenario_id": "1_x_006tsu_1_8_006_01",
+          "part_id": "1_8_006_01",
+          "file": "assets/resources/scenariodata/1_x_006tsu/scenario_1_8_006_01.json",
+          "command_index": 16,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c8c9a740191048c525af1a20193699db913f9f732ee6db77a94d5c7dccfe3e44"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "006tsu",
         "sourceName": "柏木 翼"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "1_x_006tsu_1_8_006_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_006_01",
+        "source_file": "assets/resources/scenariodata/1_x_006tsu/scenario_1_8_006_01.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "talk"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "楽しい誕生日を\n過ごしてくださいね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_006tsu_1_8_006_01:1_8_006_01:cmd-000018:mobile_message:000",
+        "source": {
+          "scenario_id": "1_x_006tsu_1_8_006_01",
+          "part_id": "1_8_006_01",
+          "file": "assets/resources/scenariodata/1_x_006tsu/scenario_1_8_006_01.json",
+          "command_index": 18,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:24e6da1128c42ae1147145ac7f46e69507d32a30d9bdff57ef13b3980a8725bf"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "006tsu",
         "sourceName": "柏木 翼"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "1_x_006tsu_1_8_006_01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_006_01",
+        "source_file": "assets/resources/scenariodata/1_x_006tsu/scenario_1_8_006_01.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "talk"
@@ -237,9 +287,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "talk_select1",
+          "choice_id": "choice:v1:1_x_006tsu_1_8_006_01:1_8_006_01:cmd-000013",
+          "option_id": "choice-option:v1:1_x_006tsu_1_8_006_01:1_8_006_01:cmd-000013:000",
+          "source_label": null,
           "target_step_id": 7,
           "target_step_index": 6,
           "resolution": "resolved"
@@ -247,38 +297,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "お疲れさまです。今日は",
     "episode_label": null

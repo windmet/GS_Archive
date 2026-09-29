@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "005kao_402_2_4_005_02_09_b",
-  "logical_id": "story-collection:005kao_402_2_4_005_02_09_b",
+  "logical_id": "story:005kao_402_2_4_005_02_09_b",
   "scenario_id": "005kao_402_2_4_005_02_09_b",
   "text_catalog_id": "005kao_402_2_4_005_02_09_b",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "005kao_402_2_4_005_02_09_b.json",
-    "sha256": "sha256:c74ae0c2d1c7b3106daf91c90381f87d15c6bc3b8f03dc70a33263c136973a5a",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:d32f2357f2933e1fdd116642a470c36a6de1443d5c69095cdd4c49832b08a7d5",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:15a400926fbf5dbb38b3c07d97afc4c5071814a64070ed22bc4ed43d536c795a",
     "aggregate_source": null,
     "step_count": 8,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "005kao_402_2_4_005_02_09_b.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "ああ、●●●●プロデューサー。\n先ほど荷物が届いた。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:005kao_402_2_4_005_02_09_b:2_4_005_02_09_b:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "005kao_402_2_4_005_02_09_b",
+          "part_id": "2_4_005_02_09_b",
+          "file": "assets/resources/scenariodata/005kao_402/scenario_2_4_005_02_09_b.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:68882b96ca885f04f2f98d46456ca2058862074e873ba4b71d221b2323a95846"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "005kao",
         "sourceName": "桜庭 薫"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "005kao_402_2_4_005_02_09_b:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_005_02_09_b",
+        "source_file": "assets/resources/scenariodata/005kao_402/scenario_2_4_005_02_09_b.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "今度の収録で使うシューズだというが、\nもらってよかったのか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:005kao_402_2_4_005_02_09_b:2_4_005_02_09_b:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "005kao_402_2_4_005_02_09_b",
+          "part_id": "2_4_005_02_09_b",
+          "file": "assets/resources/scenariodata/005kao_402/scenario_2_4_005_02_09_b.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3dcfa79cea8715144b5b269823e5db3827dd8465cf5ad624cc8466194dcc04bb"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "005kao",
         "sourceName": "桜庭 薫"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "005kao_402_2_4_005_02_09_b:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_005_02_09_b",
+        "source_file": "assets/resources/scenariodata/005kao_402/scenario_2_4_005_02_09_b.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -107,7 +128,18 @@
     {
       "kind": "choice",
       "source_text": "スポンサーが是非にと\n言ってくれています",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:005kao_402_2_4_005_02_09_b:2_4_005_02_09_b:cmd-000010:choice_short:000",
+        "source": {
+          "scenario_id": "005kao_402_2_4_005_02_09_b",
+          "part_id": "2_4_005_02_09_b",
+          "file": "assets/resources/scenariodata/005kao_402/scenario_2_4_005_02_09_b.json",
+          "command_index": 10,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:564a623aafd8ce13d5cfba1beddf7e077e1ab6dbf9e58a81e05d22d7f6cb88a8"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -134,15 +166,15 @@
         "row_id": "005kao_402_2_4_005_02_09_b:step-4:option-0",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_005_02_09_b",
+        "source_file": "assets/resources/scenariodata/005kao_402/scenario_2_4_005_02_09_b.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:005kao_402_2_4_005_02_09_b:2_4_005_02_09_b:cmd-000010",
+        "option_id": "choice-option:v1:005kao_402_2_4_005_02_09_b:2_4_005_02_09_b:cmd-000010:000",
+        "source_label": null,
         "target_step_id": 5,
         "target_step_index": 4,
         "resolution": "resolved"
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "そうか。練習から同じ物が使えるのはありがたい。\nシューズが違うだけで感覚がだいぶ変わるからな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:005kao_402_2_4_005_02_09_b:2_4_005_02_09_b:cmd-000013:phone_message:000",
+        "source": {
+          "scenario_id": "005kao_402_2_4_005_02_09_b",
+          "part_id": "2_4_005_02_09_b",
+          "file": "assets/resources/scenariodata/005kao_402/scenario_2_4_005_02_09_b.json",
+          "command_index": 13,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:416dadf87371eec8ca3b3781841a5bea27e7f5d467a829c3501939638a091131"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "005kao",
         "sourceName": "桜庭 薫"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "005kao_402_2_4_005_02_09_b:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_005_02_09_b",
+        "source_file": "assets/resources/scenariodata/005kao_402/scenario_2_4_005_02_09_b.json",
+        "command_start": 13,
+        "command_end": 13
       },
       "option": null,
       "presentation": "call"
@@ -192,7 +233,18 @@
     {
       "kind": "choice",
       "source_text": "もう履いて\nみましたか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:005kao_402_2_4_005_02_09_b:2_4_005_02_09_b:cmd-000015:choice_short:000",
+        "source": {
+          "scenario_id": "005kao_402_2_4_005_02_09_b",
+          "part_id": "2_4_005_02_09_b",
+          "file": "assets/resources/scenariodata/005kao_402/scenario_2_4_005_02_09_b.json",
+          "command_index": 15,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fa546f5ddb3250afe176faebbb7370d2f1853a4d2076d401172798e60dab2a82"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -219,15 +271,15 @@
         "row_id": "005kao_402_2_4_005_02_09_b:step-6:option-0",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_005_02_09_b",
+        "source_file": "assets/resources/scenariodata/005kao_402/scenario_2_4_005_02_09_b.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select2",
+        "choice_id": "choice:v1:005kao_402_2_4_005_02_09_b:2_4_005_02_09_b:cmd-000015",
+        "option_id": "choice-option:v1:005kao_402_2_4_005_02_09_b:2_4_005_02_09_b:cmd-000015:000",
+        "source_label": null,
         "target_step_id": 7,
         "target_step_index": 6,
         "resolution": "resolved"
@@ -237,11 +289,22 @@
     {
       "kind": "dialogue",
       "source_text": "ああ、悪くはない。\nこれでシュートの精度が上げられればいいんだが。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:005kao_402_2_4_005_02_09_b:2_4_005_02_09_b:cmd-000018:phone_message:000",
+        "source": {
+          "scenario_id": "005kao_402_2_4_005_02_09_b",
+          "part_id": "2_4_005_02_09_b",
+          "file": "assets/resources/scenariodata/005kao_402/scenario_2_4_005_02_09_b.json",
+          "command_index": 18,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5f9686983932c5bdf5055f627ee6ce9380dd4135a5169aa459d88253ba68bf72"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "005kao",
         "sourceName": "桜庭 薫"
       },
       "performance": {
@@ -257,19 +320,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "005kao_402_2_4_005_02_09_b:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_005_02_09_b",
+        "source_file": "assets/resources/scenariodata/005kao_402/scenario_2_4_005_02_09_b.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "call"
@@ -277,11 +338,22 @@
     {
       "kind": "dialogue",
       "source_text": "本番までそう時間はない。\nいっそう練習に打ち込むとしよう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:005kao_402_2_4_005_02_09_b:2_4_005_02_09_b:cmd-000020:phone_message:000",
+        "source": {
+          "scenario_id": "005kao_402_2_4_005_02_09_b",
+          "part_id": "2_4_005_02_09_b",
+          "file": "assets/resources/scenariodata/005kao_402/scenario_2_4_005_02_09_b.json",
+          "command_index": 20,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b3cf98167565a77ce94889834a3a61c80156dcc67a86c29de0ba834aedbc3d97"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "005kao",
         "sourceName": "桜庭 薫"
       },
       "performance": {
@@ -297,19 +369,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "005kao_402_2_4_005_02_09_b:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_005_02_09_b",
+        "source_file": "assets/resources/scenariodata/005kao_402/scenario_2_4_005_02_09_b.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null,
       "presentation": "call"
@@ -322,9 +392,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:005kao_402_2_4_005_02_09_b:2_4_005_02_09_b:cmd-000010",
+          "option_id": "choice-option:v1:005kao_402_2_4_005_02_09_b:2_4_005_02_09_b:cmd-000010:000",
+          "source_label": null,
           "target_step_id": 5,
           "target_step_index": 4,
           "resolution": "resolved"
@@ -337,9 +407,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select2",
+          "choice_id": "choice:v1:005kao_402_2_4_005_02_09_b:2_4_005_02_09_b:cmd-000015",
+          "option_id": "choice-option:v1:005kao_402_2_4_005_02_09_b:2_4_005_02_09_b:cmd-000015:000",
+          "source_label": null,
           "target_step_id": 7,
           "target_step_index": 6,
           "resolution": "resolved"
@@ -347,48 +417,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "ああ、●●●●プロデューサー。",
     "episode_label": null

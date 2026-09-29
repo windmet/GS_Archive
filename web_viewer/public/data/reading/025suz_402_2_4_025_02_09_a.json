@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "025suz_402_2_4_025_02_09_a",
-  "logical_id": "story-collection:025suz_402_2_4_025_02_09_a",
+  "logical_id": "story:025suz_402_2_4_025_02_09_a",
   "scenario_id": "025suz_402_2_4_025_02_09_a",
   "text_catalog_id": "025suz_402_2_4_025_02_09_a",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "025suz_402_2_4_025_02_09_a.json",
-    "sha256": "sha256:1454edfac2108ca3fb3171a8c34c50ccc1673fa03107419c84d344b9ea8b4cdb",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:b7446a650d6067a3c83b95ddac4d7afbd70b783fdf06ee3945e7f70ab61be806",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:82d68e4bcda7ab0af1bf306f3104c8ffcf2b9755c9ee328a17ebfedc4e3084f9",
     "aggregate_source": null,
     "step_count": 14,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "025suz_402_2_4_025_02_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "unsupported",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサーさんよぉ、例の話聞いたぜ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "025suz_402_2_4_025_02_09_a",
+          "part_id": "2_4_025_02_09_a",
+          "file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3c66349870927b2f49a4b8d7df8b38829c678446d98a502db2017b68d3a95210"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "025suz_402_2_4_025_02_09_a:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_025_02_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "あのロケに来てた編集さんから、\n連絡があったんだろ？　なんて言ってたんだ？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "025suz_402_2_4_025_02_09_a",
+          "part_id": "2_4_025_02_09_a",
+          "file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a36def58d63e7457a4f687cb6cab528c28a44e77e1a1e685e098d2fd85e72338"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "025suz_402_2_4_025_02_09_a:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_025_02_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -107,7 +128,18 @@
     {
       "kind": "choice",
       "source_text": "いい誌面ができたと\n感謝していました",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000010:choice_short:000",
+        "source": {
+          "scenario_id": "025suz_402_2_4_025_02_09_a",
+          "part_id": "2_4_025_02_09_a",
+          "file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+          "command_index": 10,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b32bb482d127aee904f3d378593e37d72452fc55f1dd6811b1332c398b6bffe5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -134,15 +166,15 @@
         "row_id": "025suz_402_2_4_025_02_09_a:step-4:option-0",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_025_02_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000010",
+        "option_id": "choice-option:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000010:000",
+        "source_label": null,
         "target_step_id": 5,
         "target_step_index": 4,
         "resolution": "resolved"
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "おおっ！　また何か悩んでるんじゃねぇかと\n思ったが、いいもんができたんだな！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000013:phone_message:000",
+        "source": {
+          "scenario_id": "025suz_402_2_4_025_02_09_a",
+          "part_id": "2_4_025_02_09_a",
+          "file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+          "command_index": 13,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:68166cdb46ea14da041f27a0ff641fcc3cf1ba11fea7dace9f37c8f21ba29991"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "025suz_402_2_4_025_02_09_a:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_025_02_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+        "command_start": 13,
+        "command_end": 13
       },
       "option": null,
       "presentation": "call"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "あの編集さん、すげぇ悩みながら一生懸命\n雑誌作ってるみてぇだったからな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000015:phone_message:000",
+        "source": {
+          "scenario_id": "025suz_402_2_4_025_02_09_a",
+          "part_id": "2_4_025_02_09_a",
+          "file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+          "command_index": 15,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:763f6d50e30ac2b640a519ff9238ae23e0ceb00a143e14e9c50116fae2ee69d7"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "025suz_402_2_4_025_02_09_a:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_025_02_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null,
       "presentation": "call"
@@ -232,11 +282,22 @@
     {
       "kind": "dialogue",
       "source_text": "困ってんなら助けてぇ、って思ってるうちに\nオレもなんかアイデアが浮かんできちまってよ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000017:phone_message:000",
+        "source": {
+          "scenario_id": "025suz_402_2_4_025_02_09_a",
+          "part_id": "2_4_025_02_09_a",
+          "file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+          "command_index": 17,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2022a9b597fffed2eda9dad6a91c7eab40cd62bc4f2fd48304302e227ef77312"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -252,19 +313,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "025suz_402_2_4_025_02_09_a:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_025_02_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null,
       "presentation": "call"
@@ -272,11 +331,22 @@
     {
       "kind": "dialogue",
       "source_text": "あれこれ話してみたんだが、\nそれが役に立ったってんならよかったぜ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000019:phone_message:000",
+        "source": {
+          "scenario_id": "025suz_402_2_4_025_02_09_a",
+          "part_id": "2_4_025_02_09_a",
+          "file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+          "command_index": 19,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f66afee42c186c680de7c91b5beb0a512dcf00cca85f6e6b2985302ba65b8d10"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -292,19 +362,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "025suz_402_2_4_025_02_09_a:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_025_02_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null,
       "presentation": "call"
@@ -312,11 +380,22 @@
     {
       "kind": "dialogue",
       "source_text": "太陽の下、海での撮影ってのも、オレにとっちゃ\nよかったのかもしれねぇ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000021:phone_message:000",
+        "source": {
+          "scenario_id": "025suz_402_2_4_025_02_09_a",
+          "part_id": "2_4_025_02_09_a",
+          "file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+          "command_index": 21,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:094d53fb001d15c7265736b8a2ba8ebc5dee93418b839141fa0162097ad705e5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -332,19 +411,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "025suz_402_2_4_025_02_09_a:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_025_02_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null,
       "presentation": "call"
@@ -352,11 +429,22 @@
     {
       "kind": "dialogue",
       "source_text": "オレは爆炎の朱雀！　太陽にも負けねぇくらい\n熱い漢だからな！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000023:phone_message:000",
+        "source": {
+          "scenario_id": "025suz_402_2_4_025_02_09_a",
+          "part_id": "2_4_025_02_09_a",
+          "file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+          "command_index": 23,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:01ede846e72d4239d579e00232397253ccacd7ce1c9dba8ca6a7fc67fa817b9c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -372,19 +460,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "025suz_402_2_4_025_02_09_a:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_025_02_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null,
       "presentation": "call"
@@ -392,7 +478,18 @@
     {
       "kind": "choice",
       "source_text": "今後も熱い魅力を\n見せていきましょう",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000025:choice_short:000",
+        "source": {
+          "scenario_id": "025suz_402_2_4_025_02_09_a",
+          "part_id": "2_4_025_02_09_a",
+          "file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+          "command_index": 25,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:025b7cee2ed2881c36f278cdfbe51bf2ecf18b5cb4c18c53c2a545760f760730"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -419,15 +516,15 @@
         "row_id": "025suz_402_2_4_025_02_09_a:step-11:option-0",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_025_02_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+        "command_start": 25,
+        "command_end": 26
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select2",
+        "choice_id": "choice:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000025",
+        "option_id": "choice-option:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000025:000",
+        "source_label": null,
         "target_step_id": 12,
         "target_step_index": 11,
         "resolution": "resolved"
@@ -437,7 +534,18 @@
     {
       "kind": "choice",
       "source_text": "夕暮れの撮影も\nいい表情でした！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000026:choice_short:000",
+        "source": {
+          "scenario_id": "025suz_402_2_4_025_02_09_a",
+          "part_id": "2_4_025_02_09_a",
+          "file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+          "command_index": 26,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9019a4d3afd3539a0612e8cd38acb773e09b0566c4ea06f6abcebaf517b0b494"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -464,15 +572,15 @@
         "row_id": "025suz_402_2_4_025_02_09_a:step-11:option-1",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_025_02_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+        "command_start": 25,
+        "command_end": 26
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select3",
+        "choice_id": "choice:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000025",
+        "option_id": "choice-option:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000026:001",
+        "source_label": null,
         "target_step_id": 13,
         "target_step_index": 12,
         "resolution": "resolved"
@@ -482,11 +590,22 @@
     {
       "kind": "dialogue",
       "source_text": "おう！　オレが力になれることがあるなら、\nなんだってやってやるぜっ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000028:phone_message:000",
+        "source": {
+          "scenario_id": "025suz_402_2_4_025_02_09_a",
+          "part_id": "2_4_025_02_09_a",
+          "file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+          "command_index": 28,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:cb3bc697195e1b703836e4b436c838fd531ca9aa1e8240b511c28869ff1cc19f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -502,19 +621,17 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "025suz_402_2_4_025_02_09_a:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_025_02_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null,
       "presentation": "call"
@@ -522,11 +639,22 @@
     {
       "kind": "dialogue",
       "source_text": "そうか！　自分じゃよくわかんなかったが、\nあの雑誌、見返してみるか！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000032:phone_message:000",
+        "source": {
+          "scenario_id": "025suz_402_2_4_025_02_09_a",
+          "part_id": "2_4_025_02_09_a",
+          "file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+          "command_index": 32,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a5ccc978a155d672fc37f84d3c1fd0f74c07dea06e0b672812724e0ab64ffd02"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -542,19 +670,17 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "025suz_402_2_4_025_02_09_a:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_025_02_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+        "command_start": 32,
+        "command_end": 32
       },
       "option": null,
       "presentation": "call"
@@ -562,11 +688,22 @@
     {
       "kind": "dialogue",
       "source_text": "次の仕事も、この調子で全力でぶつかってくから、\n任せとけよ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000036:phone_message:000",
+        "source": {
+          "scenario_id": "025suz_402_2_4_025_02_09_a",
+          "part_id": "2_4_025_02_09_a",
+          "file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+          "command_index": 36,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5d50272b91c9e3aa81b562cac72779322edd484f051f99f27e00da2c457ea26a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -582,19 +719,17 @@
         "snapshot": "entry",
         "stepId": 14
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "025suz_402_2_4_025_02_09_a:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_025_02_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_402/scenario_2_4_025_02_09_a.json",
+        "command_start": 36,
+        "command_end": 36
       },
       "option": null,
       "presentation": "call"
@@ -607,9 +742,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000010",
+          "option_id": "choice-option:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000010:000",
+          "source_label": null,
           "target_step_id": 5,
           "target_step_index": 4,
           "resolution": "resolved"
@@ -622,17 +757,17 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select2",
+          "choice_id": "choice:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000025",
+          "option_id": "choice-option:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000025:000",
+          "source_label": null,
           "target_step_id": 12,
           "target_step_index": 11,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select3",
+          "choice_id": "choice:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000025",
+          "option_id": "choice-option:v1:025suz_402_2_4_025_02_09_a:2_4_025_02_09_a:cmd-000026:001",
+          "source_label": null,
           "target_step_id": 13,
           "target_step_index": 12,
           "resolution": "resolved"
@@ -642,89 +777,14 @@
   ],
   "diagnostics": [
     {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
       "code": "branch-exits-unavailable",
       "step_index": 10,
       "severity": "unsupported"
     },
     {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
       "code": "nonsequential-choice-path",
       "step_index": 10,
       "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
     }
   ],
   "presentation": {

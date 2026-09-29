@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "037jir_401_2_4_037_01_09_b",
-  "logical_id": "story-collection:037jir_401_2_4_037_01_09_b",
+  "logical_id": "story:037jir_401_2_4_037_01_09_b",
   "scenario_id": "037jir_401_2_4_037_01_09_b",
   "text_catalog_id": "037jir_401_2_4_037_01_09_b",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "037jir_401_2_4_037_01_09_b.json",
-    "sha256": "sha256:1f5a5a060628d9e25c797bfa9b35f82f1d67d49bd1a8a00dd965b90653c88470",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:2d17c7a46c1c02f570a644dd650ea9f0ca8f11feb2e1158a1176165101aa0a3c",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:0b8bfbc1326057aa351c29b238214330b6e5d204aa5314cd4c93f21b174c3cd7",
     "aggregate_source": null,
     "step_count": 10,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "037jir_401_2_4_037_01_09_b.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "ちょっとちょっと、スマホいじっちゃダメだよ。\n……って、あれ？　通話になってる？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:037jir_401_2_4_037_01_09_b:2_4_037_01_09_b:cmd-000012:phone_message:000",
+        "source": {
+          "scenario_id": "037jir_401_2_4_037_01_09_b",
+          "part_id": "2_4_037_01_09_b",
+          "file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_b.json",
+          "command_index": 12,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c5a42a35ee63c7bb17ad266e4dede0adb16c413911f66f0c9774b6b90606f42f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "037jir_401_2_4_037_01_09_b:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_037_01_09_b",
+        "source_file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_b.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "えっと……●●●●プロデューサーちゃん？\nあちゃー……いきなりごめんね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:037jir_401_2_4_037_01_09_b:2_4_037_01_09_b:cmd-000017:phone_message:000",
+        "source": {
+          "scenario_id": "037jir_401_2_4_037_01_09_b",
+          "part_id": "2_4_037_01_09_b",
+          "file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_b.json",
+          "command_index": 17,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1b5935958f2f134db20ca498095bb75d605fe1b5dce72ba8510a3d8f9a3f8f2e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "037jir_401_2_4_037_01_09_b:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_037_01_09_b",
+        "source_file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_b.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "フェスが終わって、久しぶりに猫カフェに\n来たんだけど、猫がスマホに触っちゃってさ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:037jir_401_2_4_037_01_09_b:2_4_037_01_09_b:cmd-000019:phone_message:000",
+        "source": {
+          "scenario_id": "037jir_401_2_4_037_01_09_b",
+          "part_id": "2_4_037_01_09_b",
+          "file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_b.json",
+          "command_index": 19,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a04375d0d6b5e85284b049b867d9fa7f0022bdbcba2382bc4665f58832d7fe35"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "037jir_401_2_4_037_01_09_b:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_037_01_09_b",
+        "source_file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_b.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null,
       "presentation": "call"
@@ -147,11 +177,22 @@
     {
       "kind": "dialogue",
       "source_text": "スマホの画面って肉球にも反応するんだね。\nいやぁ、おじさんもビックリだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:037jir_401_2_4_037_01_09_b:2_4_037_01_09_b:cmd-000021:phone_message:000",
+        "source": {
+          "scenario_id": "037jir_401_2_4_037_01_09_b",
+          "part_id": "2_4_037_01_09_b",
+          "file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_b.json",
+          "command_index": 21,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ce569c3f37d14b3eeac6415dc2262afc0b3d4c08a8b012ce79163f85514e18ca"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -167,19 +208,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "037jir_401_2_4_037_01_09_b:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_037_01_09_b",
+        "source_file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_b.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null,
       "presentation": "call"
@@ -187,7 +226,18 @@
     {
       "kind": "choice",
       "source_text": "ふふ、私もです",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:037jir_401_2_4_037_01_09_b:2_4_037_01_09_b:cmd-000023:choice_short:000",
+        "source": {
+          "scenario_id": "037jir_401_2_4_037_01_09_b",
+          "part_id": "2_4_037_01_09_b",
+          "file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_b.json",
+          "command_index": 23,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:93c2bc3f4409e517a36605ecf0af8217888765932187b81f6b6c0c95c45d2ec8"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -214,15 +264,15 @@
         "row_id": "037jir_401_2_4_037_01_09_b:step-9:option-0",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_037_01_09_b",
+        "source_file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_b.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:037jir_401_2_4_037_01_09_b:2_4_037_01_09_b:cmd-000023",
+        "option_id": "choice-option:v1:037jir_401_2_4_037_01_09_b:2_4_037_01_09_b:cmd-000023:000",
+        "source_label": null,
         "target_step_id": 10,
         "target_step_index": 9,
         "resolution": "resolved"
@@ -232,11 +282,22 @@
     {
       "kind": "dialogue",
       "source_text": "ははそうだよね……って、こら、肩によじ登ったら\n危ないでしょ。それじゃ、また事務所でね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:037jir_401_2_4_037_01_09_b:2_4_037_01_09_b:cmd-000028:phone_message:000",
+        "source": {
+          "scenario_id": "037jir_401_2_4_037_01_09_b",
+          "part_id": "2_4_037_01_09_b",
+          "file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_b.json",
+          "command_index": 28,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:353be76e706cd67ef5699e7afec64b772125c7a86c9a85f54ee109114a63887f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -252,19 +313,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "037jir_401_2_4_037_01_09_b:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_037_01_09_b",
+        "source_file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_b.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null,
       "presentation": "call"
@@ -277,9 +336,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:037jir_401_2_4_037_01_09_b:2_4_037_01_09_b:cmd-000023",
+          "option_id": "choice-option:v1:037jir_401_2_4_037_01_09_b:2_4_037_01_09_b:cmd-000023:000",
+          "source_label": null,
           "target_step_id": 10,
           "target_step_index": 9,
           "resolution": "resolved"
@@ -287,43 +346,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "ちょっとちょっと、スマホいじっちゃダメだよ。",
     "episode_label": null

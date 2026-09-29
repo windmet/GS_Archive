@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "020hay_401_2_4_020_01_09_a",
-  "logical_id": "story-collection:020hay_401_2_4_020_01_09_a",
+  "logical_id": "story:020hay_401_2_4_020_01_09_a",
   "scenario_id": "020hay_401_2_4_020_01_09_a",
   "text_catalog_id": "020hay_401_2_4_020_01_09_a",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "020hay_401_2_4_020_01_09_a.json",
-    "sha256": "sha256:fe6808df805e289a47949f002e130eddc56a4795d863bd901766839aae18b33b",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:cd1f130ffcad896cd87698f844e263b47c549e3d5b2a375a050b9fdba0dc76e7",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:78fc17b32a2919f297b5f205192026bc18f04625c5f889513a29400d16e31b24",
     "aggregate_source": null,
     "step_count": 11,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "020hay_401_2_4_020_01_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "unsupported",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "この間のライブを思い返してみると、\n改めて、みんなすごいなって思ったんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "020hay_401_2_4_020_01_09_a",
+          "part_id": "2_4_020_01_09_a",
+          "file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9d2e7b79e335ff65749f3a8251ea5669ce0f68f8a6b116fd368e53d6fb8340b4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "020hay",
         "sourceName": "秋山 隼人"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "020hay_401_2_4_020_01_09_a:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_020_01_09_a",
+        "source_file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,7 +79,18 @@
     {
       "kind": "choice",
       "source_text": "雪まつりの\nことですか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000008:choice_short:000",
+        "source": {
+          "scenario_id": "020hay_401_2_4_020_01_09_a",
+          "part_id": "2_4_020_01_09_a",
+          "file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+          "command_index": 8,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:feee837829f755559a272e399f29afbe4122a8a03b2cc1ca2ec356cc0035271a"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -94,15 +117,15 @@
         "row_id": "020hay_401_2_4_020_01_09_a:step-3:option-0",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_020_01_09_a",
+        "source_file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+        "command_start": 8,
+        "command_end": 9
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000008",
+        "option_id": "choice-option:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000008:000",
+        "source_label": null,
         "target_step_id": 4,
         "target_step_index": 3,
         "resolution": "resolved"
@@ -112,7 +135,18 @@
     {
       "kind": "choice",
       "source_text": "この間出演した\n雪まつりですか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000009:choice_short:000",
+        "source": {
+          "scenario_id": "020hay_401_2_4_020_01_09_a",
+          "part_id": "2_4_020_01_09_a",
+          "file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+          "command_index": 9,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:42254a7fb17805754bef270e28c550f07d739d69dc4e1c638dc352a90a8f23b3"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -139,15 +173,15 @@
         "row_id": "020hay_401_2_4_020_01_09_a:step-3:option-1",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_020_01_09_a",
+        "source_file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+        "command_start": 8,
+        "command_end": 9
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000008",
+        "option_id": "choice-option:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000009:001",
+        "source_label": null,
         "target_step_id": 4,
         "target_step_index": 3,
         "resolution": "resolved"
@@ -157,11 +191,22 @@
     {
       "kind": "dialogue",
       "source_text": "うん。ピエールの笑顔って、\n見てるこっちまで笑顔になっちゃうんだよな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000012:phone_message:000",
+        "source": {
+          "scenario_id": "020hay_401_2_4_020_01_09_a",
+          "part_id": "2_4_020_01_09_a",
+          "file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+          "command_index": 12,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8552d17189ab0f1594bf3262ed5a256f090fd93bf8396d0778e71abf17f67749"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "020hay",
         "sourceName": "秋山 隼人"
       },
       "performance": {
@@ -177,19 +222,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "020hay_401_2_4_020_01_09_a:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_020_01_09_a",
+        "source_file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null,
       "presentation": "call"
@@ -197,11 +240,22 @@
     {
       "kind": "dialogue",
       "source_text": "秀は、すごくしっかりしてて……\n雪像作りの時なんか、一番テキパキしてた。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000014:phone_message:000",
+        "source": {
+          "scenario_id": "020hay_401_2_4_020_01_09_a",
+          "part_id": "2_4_020_01_09_a",
+          "file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+          "command_index": 14,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d1456f31aa62e80b6c871f4af7f5171973e5a7b0f9a13a299cf7c76183c9c128"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "020hay",
         "sourceName": "秋山 隼人"
       },
       "performance": {
@@ -217,19 +271,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "020hay_401_2_4_020_01_09_a:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_020_01_09_a",
+        "source_file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null,
       "presentation": "call"
@@ -237,11 +289,22 @@
     {
       "kind": "dialogue",
       "source_text": "冬馬さんは、さすが慣れてるだけあって\nライブ中もカッコよくリードしてくれたし。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000016:phone_message:000",
+        "source": {
+          "scenario_id": "020hay_401_2_4_020_01_09_a",
+          "part_id": "2_4_020_01_09_a",
+          "file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+          "command_index": 16,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e92ed583b0efd092291b6f0e5ef17162a331d9af531ab450e6023ea99499522a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "020hay",
         "sourceName": "秋山 隼人"
       },
       "performance": {
@@ -257,19 +320,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "020hay_401_2_4_020_01_09_a:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_020_01_09_a",
+        "source_file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "call"
@@ -277,11 +338,22 @@
     {
       "kind": "dialogue",
       "source_text": "すごい仲間に囲まれてるからこそ、\n俺も、もっとカッコよくなりたいなーって思ってさ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000018:phone_message:000",
+        "source": {
+          "scenario_id": "020hay_401_2_4_020_01_09_a",
+          "part_id": "2_4_020_01_09_a",
+          "file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+          "command_index": 18,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d27e95650f133d249077a9b80afab2593a681de8a4b9d9976a3944959d249dc8"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "020hay",
         "sourceName": "秋山 隼人"
       },
       "performance": {
@@ -297,19 +369,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "020hay_401_2_4_020_01_09_a:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_020_01_09_a",
+        "source_file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "call"
@@ -317,7 +387,18 @@
     {
       "kind": "choice",
       "source_text": "隼人さんも\nカッコよかったです",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000020:choice_short:000",
+        "source": {
+          "scenario_id": "020hay_401_2_4_020_01_09_a",
+          "part_id": "2_4_020_01_09_a",
+          "file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+          "command_index": 20,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c9ae31a3661bced5623fcfde0db9116eabfbd2a8726f47941b672eefb8786c1b"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -344,15 +425,15 @@
         "row_id": "020hay_401_2_4_020_01_09_a:step-8:option-0",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_020_01_09_a",
+        "source_file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+        "command_start": 20,
+        "command_end": 21
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select2",
+        "choice_id": "choice:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000020",
+        "option_id": "choice-option:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000020:000",
+        "source_label": null,
         "target_step_id": 9,
         "target_step_index": 8,
         "resolution": "resolved"
@@ -362,7 +443,18 @@
     {
       "kind": "choice",
       "source_text": "十分カッコいいですよ",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000021:choice_short:000",
+        "source": {
+          "scenario_id": "020hay_401_2_4_020_01_09_a",
+          "part_id": "2_4_020_01_09_a",
+          "file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+          "command_index": 21,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8553b76206755b741547fed1783fb9db32d2cb352a4a07393b035cdfe189d474"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -389,15 +481,15 @@
         "row_id": "020hay_401_2_4_020_01_09_a:step-8:option-1",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_020_01_09_a",
+        "source_file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+        "command_start": 20,
+        "command_end": 21
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select2",
+        "choice_id": "choice:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000020",
+        "option_id": "choice-option:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000021:001",
+        "source_label": null,
         "target_step_id": 9,
         "target_step_index": 8,
         "resolution": "resolved"
@@ -407,11 +499,22 @@
     {
       "kind": "dialogue",
       "source_text": "えっ！　そ、そうかな！？\nへへ……照れるな……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000024:phone_message:000",
+        "source": {
+          "scenario_id": "020hay_401_2_4_020_01_09_a",
+          "part_id": "2_4_020_01_09_a",
+          "file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+          "command_index": 24,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0cb27e82b0196e82f2ee76616444b4cafb42740e750743e2e4b1f921cad8e7bb"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "020hay",
         "sourceName": "秋山 隼人"
       },
       "performance": {
@@ -427,19 +530,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "020hay_401_2_4_020_01_09_a:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_020_01_09_a",
+        "source_file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null,
       "presentation": "call"
@@ -447,11 +548,22 @@
     {
       "kind": "dialogue",
       "source_text": "励ましてくれてありがとう！\n●●●●プロデューサー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000026:phone_message:000",
+        "source": {
+          "scenario_id": "020hay_401_2_4_020_01_09_a",
+          "part_id": "2_4_020_01_09_a",
+          "file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+          "command_index": 26,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3e663e4330f6ce954da4a066bb15dff1179ea8f60566bf91d0fb344b1ff6a64a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "020hay",
         "sourceName": "秋山 隼人"
       },
       "performance": {
@@ -467,19 +579,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "020hay_401_2_4_020_01_09_a:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_020_01_09_a",
+        "source_file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null,
       "presentation": "call"
@@ -487,11 +597,22 @@
     {
       "kind": "dialogue",
       "source_text": "人と自分を比べるだけじゃなくて、\n俺なりのカッコよさを磨いてみるよ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000028:phone_message:000",
+        "source": {
+          "scenario_id": "020hay_401_2_4_020_01_09_a",
+          "part_id": "2_4_020_01_09_a",
+          "file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+          "command_index": 28,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:cee58fb1034575e2e660338d449947e139b9500378e1143b4e1a17e136348597"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "020hay",
         "sourceName": "秋山 隼人"
       },
       "performance": {
@@ -507,19 +628,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "020hay_401_2_4_020_01_09_a:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_020_01_09_a",
+        "source_file": "assets/resources/scenariodata/020hay_401/scenario_2_4_020_01_09_a.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null,
       "presentation": "call"
@@ -532,17 +651,17 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000008",
+          "option_id": "choice-option:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000008:000",
+          "source_label": null,
           "target_step_id": 4,
           "target_step_index": 3,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000008",
+          "option_id": "choice-option:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000009:001",
+          "source_label": null,
           "target_step_id": 4,
           "target_step_index": 3,
           "resolution": "resolved"
@@ -555,17 +674,17 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select2",
+          "choice_id": "choice:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000020",
+          "option_id": "choice-option:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000020:000",
+          "source_label": null,
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select2",
+          "choice_id": "choice:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000020",
+          "option_id": "choice-option:v1:020hay_401_2_4_020_01_09_a:2_4_020_01_09_a:cmd-000021:001",
+          "source_label": null,
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
@@ -575,79 +694,14 @@
   ],
   "diagnostics": [
     {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
       "code": "branch-exits-unavailable",
       "step_index": 2,
       "severity": "unsupported"
     },
     {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
       "code": "branch-exits-unavailable",
       "step_index": 7,
       "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
     }
   ],
   "presentation": {

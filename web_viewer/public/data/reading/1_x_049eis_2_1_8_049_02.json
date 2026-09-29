@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_049eis_2_1_8_049_02",
-  "logical_id": "story-collection:1_x_049eis_2_1_8_049_02",
+  "logical_id": "story:1_x_049eis_2_1_8_049_02",
   "scenario_id": "1_x_049eis_2_1_8_049_02",
   "text_catalog_id": "1_x_049eis_2_1_8_049_02",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_049eis_2_1_8_049_02.json",
-    "sha256": "sha256:c308461b5e9fc16f230b8c8d3cda7de3ac33a61af9425ae242b0870c46dfc705",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:712f91e28ebd292952677be7c4a31c73395c983be3560470a344c2f102756999",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:932cc9780790b1beca93977fb1add93b1bf97a72fc2b326e2280526e1387e97b",
     "aggregate_source": null,
     "step_count": 9,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_049eis_2_1_8_049_02.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "おはよう、●●●●プロデューサー。\n今日は誕生日だったな。おめでとう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_049eis_2_1_8_049_02:1_8_049_02:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_049eis_2_1_8_049_02",
+          "part_id": "1_8_049_02",
+          "file": "assets/resources/scenariodata/1_x_049eis_2/scenario_1_8_049_02.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0d361d67d437739c17493350f8e8e5ca0b88ca7a6ecfec472df5c3a8fe673368"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "049eis",
         "sourceName": "眉見 鋭心"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_049eis_2_1_8_049_02:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_049_02",
+        "source_file": "assets/resources/scenariodata/1_x_049eis_2/scenario_1_8_049_02.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -67,7 +79,18 @@
     {
       "kind": "choice",
       "source_text": "ありがとう\nございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_049eis_2_1_8_049_02:1_8_049_02:cmd-000012:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_049eis_2_1_8_049_02",
+          "part_id": "1_8_049_02",
+          "file": "assets/resources/scenariodata/1_x_049eis_2/scenario_1_8_049_02.json",
+          "command_index": 12,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:42ccdb247ca887c1f4279c535933ad9b6b5a8b10a7a92d1c133ba0546c376d51"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -94,15 +117,15 @@
         "row_id": "1_x_049eis_2_1_8_049_02:step-5:option-0",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_049_02",
+        "source_file": "assets/resources/scenariodata/1_x_049eis_2/scenario_1_8_049_02.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
-        "source_label": "phone_select1",
+        "choice_id": "choice:v1:1_x_049eis_2_1_8_049_02:1_8_049_02:cmd-000012",
+        "option_id": "choice-option:v1:1_x_049eis_2_1_8_049_02:1_8_049_02:cmd-000012:000",
+        "source_label": null,
         "target_step_id": 6,
         "target_step_index": 5,
         "resolution": "resolved"
@@ -112,11 +135,22 @@
     {
       "kind": "dialogue",
       "source_text": "今仕事に向かっているところだが、\n終わりが何時になるか分からない。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_049eis_2_1_8_049_02:1_8_049_02:cmd-000015:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_049eis_2_1_8_049_02",
+          "part_id": "1_8_049_02",
+          "file": "assets/resources/scenariodata/1_x_049eis_2/scenario_1_8_049_02.json",
+          "command_index": 15,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:10a7292839a329e97d751b9bb8568a57f2f82e0d92d30543854c8fd60fb40226"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "049eis",
         "sourceName": "眉見 鋭心"
       },
       "performance": {
@@ -132,19 +166,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_049eis_2_1_8_049_02:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_049_02",
+        "source_file": "assets/resources/scenariodata/1_x_049eis_2/scenario_1_8_049_02.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null,
       "presentation": "call"
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "だから、朝のうちに電話をかけさせてもらった。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_049eis_2_1_8_049_02:1_8_049_02:cmd-000017:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_049eis_2_1_8_049_02",
+          "part_id": "1_8_049_02",
+          "file": "assets/resources/scenariodata/1_x_049eis_2/scenario_1_8_049_02.json",
+          "command_index": 17,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:50481ccefdea5d8fa6ab13a9ae4e8a822d55092a34140a0c66cd1742e192ef6d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "049eis",
         "sourceName": "眉見 鋭心"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_049eis_2_1_8_049_02:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_049_02",
+        "source_file": "assets/resources/scenariodata/1_x_049eis_2/scenario_1_8_049_02.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null,
       "presentation": "call"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "予定が合えば、帰りに事務所にも行くつもりだ。\nいい1日を過ごしてくれ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_049eis_2_1_8_049_02:1_8_049_02:cmd-000019:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_049eis_2_1_8_049_02",
+          "part_id": "1_8_049_02",
+          "file": "assets/resources/scenariodata/1_x_049eis_2/scenario_1_8_049_02.json",
+          "command_index": 19,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3c2a60d76f1ea488116c078eb3a20f89def37f89552bbde94d20015dc9d482de"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "049eis",
         "sourceName": "眉見 鋭心"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_049eis_2_1_8_049_02:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_049_02",
+        "source_file": "assets/resources/scenariodata/1_x_049eis_2/scenario_1_8_049_02.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null,
       "presentation": "call"
@@ -237,9 +287,9 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
-          "source_label": "phone_select1",
+          "choice_id": "choice:v1:1_x_049eis_2_1_8_049_02:1_8_049_02:cmd-000012",
+          "option_id": "choice-option:v1:1_x_049eis_2_1_8_049_02:1_8_049_02:cmd-000012:000",
+          "source_label": null,
           "target_step_id": 6,
           "target_step_index": 5,
           "resolution": "resolved"
@@ -247,38 +297,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "おはよう、●●●●プロデューサー。",
     "episode_label": null
