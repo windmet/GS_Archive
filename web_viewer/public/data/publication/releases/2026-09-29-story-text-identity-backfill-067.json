@@ -1,0 +1,176 @@
+{
+  "schema_version": 2,
+  "release_id": "2026-09-29-story-text-identity-backfill-067",
+  "created_at": "2026-09-29T08:16:06.152Z",
+  "prepared_from_commit": "4e25a7cb847dadc268cd8382279d2b86c9d2945f",
+  "transaction_kind": "backfill",
+  "scope": {
+    "kind": "collection",
+    "ids": [
+      "1_2_008rei_01_1_2_008_01"
+    ]
+  },
+  "entries": [
+    {
+      "logical_id": "story-collection:1_2_008rei_01_1_2_008_01",
+      "domain": "story",
+      "source": {
+        "archive_relative_path": "asset/scenario_1_2_008_01.unity3d",
+        "sha256": "603dc51ea5fcabdc918a767be060babb0d55fdb3cd63e6654224f9829c9292a3",
+        "objects": [
+          {
+            "type": "TextAsset",
+            "name": "scenario_1_2_008_01_a",
+            "container_path": "assets/resources/scenariodata/1_2_008rei_01/scenario_1_2_008_01_a.json",
+            "path_id": null
+          },
+          {
+            "type": "TextAsset",
+            "name": "scenario_1_2_008_01_b",
+            "container_path": "assets/resources/scenariodata/1_2_008rei_01/scenario_1_2_008_01_b.json",
+            "path_id": null
+          },
+          {
+            "type": "TextAsset",
+            "name": "scenario_1_2_008_01_c",
+            "container_path": "assets/resources/scenariodata/1_2_008rei_01/scenario_1_2_008_01_c.json",
+            "path_id": null
+          },
+          {
+            "type": "TextAsset",
+            "name": "scenario_1_2_008_01_d",
+            "container_path": "assets/resources/scenariodata/1_2_008rei_01/scenario_1_2_008_01_d.json",
+            "path_id": null
+          },
+          {
+            "type": "TextAsset",
+            "name": "scenario_1_2_008_01_e",
+            "container_path": "assets/resources/scenariodata/1_2_008rei_01/scenario_1_2_008_01_e.json",
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "story_catalog",
+          "key": "1_2_008rei_01_1_2_008_01",
+          "evidence": "RAW group candidate supplies text coordinates only; mounted legacy Runtime fields remain unchanged"
+        }
+      ],
+      "transform": {
+        "tool": "backfill-story-text-identities.mjs",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/compiled/1_2_008rei_01_1_2_008_01.json",
+          "url": "/data/compiled/1_2_008rei_01_1_2_008_01.json",
+          "bytes": 226224,
+          "sha256": "b7b32c502ff6ce61d1597da2d94144166e6f6d7a4fcc3d88c79ce53cad3c0b90"
+        },
+        {
+          "path": "web_viewer/public/data/compiled/episodes/1_2_008_01_a.json",
+          "url": "/data/compiled/episodes/1_2_008_01_a.json",
+          "bytes": 52244,
+          "sha256": "2e52cfa6568fbb6212686a828d4843e42996a7b77e328bd873a7d1cfb061c1c5"
+        },
+        {
+          "path": "web_viewer/public/data/compiled/episodes/1_2_008_01_b.json",
+          "url": "/data/compiled/episodes/1_2_008_01_b.json",
+          "bytes": 36528,
+          "sha256": "1ec33803bbba7bc854bd8e80e25dbb623d26a90d0503393141c8e23ec9aed5c4"
+        },
+        {
+          "path": "web_viewer/public/data/compiled/episodes/1_2_008_01_c.json",
+          "url": "/data/compiled/episodes/1_2_008_01_c.json",
+          "bytes": 33312,
+          "sha256": "990b7319095be5202efb7b184880d33240ae225cced9f13c2eff9fc8e7f9780b"
+        },
+        {
+          "path": "web_viewer/public/data/compiled/episodes/1_2_008_01_d.json",
+          "url": "/data/compiled/episodes/1_2_008_01_d.json",
+          "bytes": 62463,
+          "sha256": "c47f05e36f1e238b8f4f789c9370a09defe5a5dec4026a859561e527fbeaf00b"
+        },
+        {
+          "path": "web_viewer/public/data/compiled/episodes/1_2_008_01_e.json",
+          "url": "/data/compiled/episodes/1_2_008_01_e.json",
+          "bytes": 42950,
+          "sha256": "c0ec313ceadff8070f640c3cf95be8346325835787cd5d257e936f28fb27456c"
+        }
+      ],
+      "consumers": [
+        "Story Runtime",
+        "ReadingDocument",
+        "translation preflight"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "Identity-only: all non-identity compiled fields deep-equal before and after",
+          "Reader row kind, source text, speaker source name, order, anchors, controls and status unchanged",
+          "RAW bundle, source coordinates, candidate hashes and source hashes verified; strict runtime candidate not mounted"
+        ]
+      },
+      "browser_acceptance": {
+        "state": "not-tested",
+        "tested_url": null,
+        "tested_at": null,
+        "tested_commit": null,
+        "environment": null,
+        "evidence": []
+      },
+      "previous_state": {
+        "kind": "unmanaged-existing",
+        "release_id": null,
+        "artifacts": [
+          {
+            "path": "web_viewer/public/data/compiled/1_2_008rei_01_1_2_008_01.json",
+            "url": "/data/compiled/1_2_008rei_01_1_2_008_01.json",
+            "bytes": 201224,
+            "sha256": "f1d186488f75952d339f9cd3e1355c538d58b5aa4654827467b9e7c86569ac8a"
+          },
+          {
+            "path": "web_viewer/public/data/compiled/episodes/1_2_008_01_a.json",
+            "url": "/data/compiled/episodes/1_2_008_01_a.json",
+            "bytes": 45458,
+            "sha256": "1f3afef06b717806c2f5f0f353743f1080c28e187986ef0f87f34c740059a1c2"
+          },
+          {
+            "path": "web_viewer/public/data/compiled/episodes/1_2_008_01_b.json",
+            "url": "/data/compiled/episodes/1_2_008_01_b.json",
+            "bytes": 31614,
+            "sha256": "f31cd177772c104dbf1c39a10b4f573c69dc65e421d44b8f69ff231f5282d847"
+          },
+          {
+            "path": "web_viewer/public/data/compiled/episodes/1_2_008_01_c.json",
+            "url": "/data/compiled/episodes/1_2_008_01_c.json",
+            "bytes": 28253,
+            "sha256": "11bbe26dac41e3ca2dd145155cc4c6dec4008c8f933cdd4721c0b795cecb1236"
+          },
+          {
+            "path": "web_viewer/public/data/compiled/episodes/1_2_008_01_d.json",
+            "url": "/data/compiled/episodes/1_2_008_01_d.json",
+            "bytes": 58600,
+            "sha256": "850da9dd284d54441d26221a1e0c52bb6601bddb997b9a5d145efa4562ca1e14"
+          },
+          {
+            "path": "web_viewer/public/data/compiled/episodes/1_2_008_01_e.json",
+            "url": "/data/compiled/episodes/1_2_008_01_e.json",
+            "bytes": 38630,
+            "sha256": "a4a5f9d8312d30fa91076a410e76175693add477cbe8c70c33f0bc543370a396"
+          }
+        ],
+        "evidence": [
+          "Git baseline 4e25a7cb847dadc268cd8382279d2b86c9d2945f"
+        ]
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    }
+  ]
+}
