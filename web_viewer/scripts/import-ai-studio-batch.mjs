@@ -4,6 +4,7 @@ import { checkStudioBatch } from './lib/ai-studio-check.mjs'
 
 if (process.argv.length !== 3) throw Error('Usage: node scripts/import-ai-studio-batch.mjs .analysis/translation-studio/RUN/BATCH')
 const { folder, report, completed, overlays } = await checkStudioBatch(process.argv[2])
+if (report.scope === 'pilot-only') throw Error('Pilot output is review-only; complete the parent batch before draft import')
 if (report.structure !== 'PASS') throw Error(`Batch ${report.batch_id} has ${report.blocking.length} blocking errors`)
 const draftDir = path.join(folder, 'completed-drafts'), overlayDir = path.join(folder, 'draft-overlays')
 await fs.mkdir(draftDir, { recursive: true })

@@ -22,25 +22,38 @@ function splitRow(line) {
 }
 
 export function renderStudioInput(batch) {
+  const contextual = batch.projection_version === 2 || batch.projection_version === 3
   const lines = [`# GS Archive Translation Batch ${batch.batch_id}`, '',
     `Batch schema: ${studioSchema}`, 'Target: Simplified Chinese',
     `Source commit: ${batch.source_commit}`, '',
     'Translate every T ID exactly once. Return only a Markdown table with columns `ID` and `Chinese`.',
-    batch.projection_version === 2
+    contextual
       ? 'Do not copy Japanese or context columns into the answer. Do not invent missing rows.'
       : 'Do not copy Japanese, Speaker or Kind into the answer. Do not invent missing rows.',
     '`{{GS_ADDRESS:...}}` is an immutable placeholder: it may move with Chinese word order, but must not be edited, deleted or duplicated.',
     'Keep title short, synopsis natural, dialogue in character, choices concise, and narration/captions clear.',
     'Preserve the meaning of honorifics and fixed forms of address; do not invent character-specific naming rules.',
     'Use `\\|` for a literal pipe and `<br>` for a line break inside a table cell.', '']
-  if (batch.projection_version === 2) {
+  if (contextual) {
     lines.push('Context is source-bound guidance for this trial, not approved Chinese name policy.',
       'Speaker is the original visible label. Voice is internal acting context only: never reveal a concealed name in the translated line.',
       'An empty or unresolved Voice must not be guessed from sprites, the preceding line, or dialogue content.',
       'Phone and message rows need their channel preserved. Choice targets are entry-only; keep wrong answers wrong.',
       'Voice suggestions below are provisional. Pending Chinese proper names and honorifics require human review.', '')
-    for (const [id, profile] of Object.entries(batch.voice_roster || {}))
-      lines.push(`- ${id} (${profile.name}): ${profile.style || 'No voice proposal.'}${profile.avoid ? ` Avoid: ${profile.avoid}` : ''}`)
+    if (batch.projection_version === 3) {
+      lines.push(batch.trial_prompt.trim(), '',
+        '## 本轮已冻结的试译词条（不是官方审定）', '')
+      for (const item of batch.trial_policy.items)
+        lines.push(`- ${item.key}: ${item.scope} → ${item.chosen_rendering}。要求：${item.required}`)
+      lines.push('', `精确保留专名：${batch.trial_policy.proper_name_exceptions.join('、')}。此例外不适用于普通日语语法。`,
+        `待审术语：${batch.trial_policy.pending_terms.join('；')}。不要在Chinese写译注。`, '')
+    }
+    for (const [id, profile] of Object.entries(batch.voice_roster || {})) {
+      if (batch.projection_version === 3) lines.push(profile.style
+        ? `- ${id} (${profile.name}): 风格 ${profile.style} 必须 ${profile.required} 禁止 ${profile.forbidden}`
+        : `- ${id} (${profile.name})`)
+      else lines.push(`- ${id} (${profile.name}): ${profile.style || 'No voice proposal.'}${profile.avoid ? ` Avoid: ${profile.avoid}` : ''}`)
+    }
     lines.push('')
   }
   let number = 0
@@ -48,23 +61,29 @@ export function renderStudioInput(batch) {
     const title = protectProducerAddressingForTranslation(doc.title || '').text
     if (title.includes('●')) throw Error(`Unprotected title placeholder: ${doc.document_id}`)
     lines.push(`## D${String(++number).padStart(3, '0')} — ${title.replace(/[\r\n]+/gu, ' ') || doc.document_id}`, '')
-    if (batch.projection_version === 2) lines.push('| ID | Speaker | Voice | Kind | Mode | Japanese |', '|---|---|---|---|---|---|')
+    if (contextual) lines.push('| ID | Speaker | Voice | Kind | Mode | Japanese |', '|---|---|---|---|---|---|')
     else lines.push('| ID | Speaker | Kind | Japanese |', '|---|---|---|---|')
     for (const row of batch.rows.filter(item => item.document_id === doc.document_id)) {
       if (row.protected_source.includes('●')) throw Error(`Unprotected source placeholder: ${row.rid}`)
-      if (batch.projection_version === 2) {
+      if (contextual) {
         const actor = row.context?.actor
         const voice = actor?.status === 'resolved' ? actor.entity_id : ''
         const mode = row.context?.channel?.value || row.kind
         lines.push(`| ${row.rid} | ${escapeCell(row.speaker)} | ${escapeCell(voice)} | ${escapeCell(row.kind)} | ${escapeCell(mode)} | ${escapeCell(row.protected_source)} |`)
       } else lines.push(`| ${row.rid} | ${escapeCell(row.speaker)} | ${escapeCell(row.kind)} | ${escapeCell(row.protected_source)} |`)
     }
-    if (batch.projection_version === 2) {
+    if (contextual) {
       const choices = batch.rows.filter(row => row.document_id === doc.document_id && row.context?.choice_entry)
       for (const row of choices) {
         const entry = row.context.choice_entry
-        lines.push(`Choice entry ${row.rid}: ${entry.resolution}; target step ${entry.target_step_index ?? 'unknown'}; target text units ${entry.target_text_unit_ids.length}. Entry only; exit and reconvergence unverified.`)
+        if (batch.projection_version === 3) {
+          const targetIds = entry.target_text_unit_ids.map(id => batch.rows.find(candidate => candidate.unit_id === id)?.rid).filter(Boolean)
+          lines.push(`Choice entry ${row.rid}: ${entry.resolution}; ${targetIds.length ? `target ${targetIds.join(', ')}` : 'no direct text target in this request'}; entry only, exit unverified.`)
+        } else lines.push(`Choice entry ${row.rid}: ${entry.resolution}; target step ${entry.target_step_index ?? 'unknown'}; target text units ${entry.target_text_unit_ids.length}. Entry only; exit and reconvergence unverified.`)
       }
+      if (batch.projection_version === 3) for (const row of batch.rows.filter(item => item.document_id === doc.document_id && item.context?.mentions?.length))
+        for (const mention of row.context.mentions)
+          lines.push(`Mention ${row.rid}: ${mention.source_form} → ${mention.canonical_ja} (${mention.target_entity_id}); this trial renders ${mention.chosen_rendering}. Preserve source naming level; do not replace Speaker or add a name absent from Japanese.`)
     }
     lines.push('')
   }
@@ -97,7 +116,7 @@ export function parseStudioResult(markdown, expectedIds) {
   return { translations, missing, errors }
 }
 
-export function checkStudioRows(rows, translations) {
+export function checkStudioRows(rows, translations, { trialPolicy = null } = {}) {
   const blocking = [], review = []
   for (const row of rows) {
     const translated = translations.get(row.rid)
@@ -106,8 +125,16 @@ export function checkStudioRows(rows, translations) {
       protectProducerAddressingForTranslation(row.source_text)) }
     catch (error) { blocking.push(`${row.rid}: ${error.message}`); continue }
     if (translated === row.protected_source) review.push(`${row.rid}: unchanged source`)
-    if (/[\p{Script=Hiragana}\p{Script=Katakana}]/u.test(translated.replace(/\{\{GS_ADDRESS:[^{}]*\}\}/gu, '')))
+    let languageText = translated.replace(/\{\{GS_ADDRESS:[^{}]*\}\}/gu, '')
+    if (trialPolicy && row.source_text.includes('タケル')) languageText = languageText.replaceAll('タケル', '')
+    if (/[\p{Script=Hiragana}\p{Script=Katakana}]/u.test(languageText))
       review.push(`${row.rid}: Japanese kana remains`)
+    if (/^\n|\n$/u.test(translated)) review.push(`${row.rid}: leading or trailing line break`)
+    if (trialPolicy) for (const item of trialPolicy.items) {
+      if (item.source_form && row.source_text.includes(item.source_form)
+        && !translated.includes(item.chosen_rendering))
+        review.push(`${row.rid}: trial term ${item.key} needs review`)
+    }
     const displayLength = Array.from(translated.replace(/\{\{GS_ADDRESS:[^{}]*\}\}/gu, '制作人')).length
     if (row.kind === 'choice' && displayLength > 36) review.push(`${row.rid}: long choice (${displayLength})`)
   }
@@ -116,14 +143,18 @@ export function checkStudioRows(rows, translations) {
 
 export function renderRepair(batch, missing) {
   const needed = new Set(missing)
-  if (batch.projection_version === 2) {
+  if (batch.projection_version === 2 || batch.projection_version === 3) {
     const rows = batch.rows.filter(row => needed.has(row.rid))
     const ids = new Set(rows.map(row => row.context?.actor?.entity_id).filter(Boolean))
     const roster = Object.fromEntries(Object.entries(batch.voice_roster || {}).filter(([id]) => ids.has(id)))
     const lines = [`# ${batch.batch_id} Repair`, '', 'Return only the missing T IDs in a two-column ID | Chinese table.',
       'C rows are read-only context; do not output or revise them.',
       'Hidden Speaker labels must stay hidden in translated text.', '']
-    for (const [id, profile] of Object.entries(roster)) lines.push(`- ${id} (${profile.name}): ${profile.style || 'No voice proposal.'}`)
+    if (batch.projection_version === 3) lines.push(batch.trial_prompt.trim(), '',
+      ...batch.trial_policy.items.map(item => `- ${item.key}: ${item.scope} → ${item.chosen_rendering}。${item.required}`), '')
+    for (const [id, profile] of Object.entries(roster)) lines.push(batch.projection_version === 3
+      ? `- ${id} (${profile.name}): ${profile.style || ''} 必须 ${profile.required || ''} 禁止 ${profile.forbidden || ''}`
+      : `- ${id} (${profile.name}): ${profile.style || 'No voice proposal.'}`)
     lines.push('', '| ID | Speaker | Voice | Kind | Mode | Japanese |', '|---|---|---|---|---|---|')
     for (const row of rows) {
       const i = batch.rows.indexOf(row)
