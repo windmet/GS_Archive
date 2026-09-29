@@ -77,6 +77,9 @@ for(const parent of selected){
       if(oldFields.length!==strictFields.length)throw Error(`Text slot drift: ${file}#${i}`)
       for(let j=0;j<oldFields.length;j++){
         const [oldObj,key,...textKeys]=oldFields[j], [strictObj]=strictFields[j], [newObj]=newFields[j]
+        if(oldStep.type==='talk_stamp'&&oldObj&&!strictObj&&newObj&&
+          !oldStep.dialogue?.text&&!oldStep.dialogue?.text_jp&&!oldStep.dialogue?.source_text&&
+          !oldStep.dialogue?.text_ref&&!oldStep.dialogue?.speaker_text_ref)continue
         if(Boolean(oldObj)!==Boolean(strictObj)||Boolean(oldObj)!==Boolean(newObj))throw Error(`Text container drift: ${file}#${i}/${j}`)
         if(!oldObj)continue
         const ref=strictObj[key],oldRef=oldObj[key],sourceText=value(oldObj,textKeys)
