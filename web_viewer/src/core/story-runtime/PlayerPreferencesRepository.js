@@ -6,6 +6,7 @@ export const DEFAULT_PLAYER_PREFERENCES = Object.freeze({
   ui_locale: 'zh-CN',
   story_content_mode: 'original',
   story_translation_locale: 'zh-CN',
+  producer_name: '',
   bilingual_primary: 'original',
   missing_translation_policy: 'fallback-source',
   auto_enabled: false,
@@ -45,6 +46,7 @@ function normalize(input = {}) {
     story_translation_locale: typeof input.story_translation_locale === 'string' && input.story_translation_locale
       ? input.story_translation_locale
       : defaults.story_translation_locale,
+    producer_name: typeof input.producer_name === 'string' ? input.producer_name : defaults.producer_name,
     bilingual_primary: ['original', 'translation'].includes(input.bilingual_primary)
       ? input.bilingual_primary
       : defaults.bilingual_primary,

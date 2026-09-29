@@ -11,6 +11,7 @@
       <div class="reader-toolbar"><div class="reader-languages" role="group" aria-label="正文语言">
         <button v-for="item in modes" :key="item.id" :aria-pressed="mode === item.id" @click="emit('mode', item.id)">{{ item.label }}</button>
       </div>
+        <label class="reader-producer-name">Producer 显示名<input :value="producerName" type="text" autocomplete="off" placeholder="未设置时保留原文黑点" @input="saveProducerName($event.target.value)" /></label>
         <button v-if="state.status === 'ready'" ref="searchToggle" :aria-expanded="searchOpen" aria-controls="reader-search" @click="toggleSearch">篇内查找</button>
       </div>
       <p v-if="state.status === 'ready' && mode !== 'original'" class="reader-notice" role="status">
@@ -64,6 +65,7 @@ import { reflowReadingText } from '../../../shared/reading/ReadingTypography.js'
 import { computed, nextTick, ref, watch } from 'vue'
 import ArchivePageChrome from './ArchivePageChrome.vue'
 import { createStoryLocalization } from '../../localization/story/StoryLocalizationContext.js'
+import { producerName, saveProducerName } from '../../utils/LanguageStore.js'
 import { readingAvatarEntity, readingPresentationSpeaker } from '../../../shared/reading/ReadingDocument.js'
 import { getCharaIconUrl } from '../../utils/AssetResolver.js'
 import { projectReadingFrontMatter } from '../../presentation/ReadingFrontMatter.js'
@@ -104,7 +106,7 @@ const localizationInput = computed(() => document.value ? ({
     source_name: row.speaker.sourceName,
   } } })),
 }) : null)
-const preferences = computed(() => ({ story_content_mode: props.mode, story_translation_locale: 'zh-CN', bilingual_primary: 'original' }))
+const preferences = computed(() => ({ story_content_mode: props.mode, story_translation_locale: 'zh-CN', bilingual_primary: 'original', producer_name: producerName.value }))
 const localization = createStoryLocalization({ compiledData: localizationInput, storyPreferences: preferences })
 const title = computed(() => document.value?.presentation?.title || document.value?.rows.find(r => r.kind === 'title')?.source_text || '剧情阅读')
 const episodeLabel = computed(() => presentIdolEpisodeLabel({ sourceName: document.value?.presentation?.episode_label }))
@@ -186,6 +188,8 @@ h1 { margin: 0; font-size: 26px; line-height: 1.5; letter-spacing: -.5px; outlin
 .reader-languages { min-width: 210px; display: grid; grid-template-columns: repeat(3, 1fr); margin: 0; border-radius: 6px; overflow: hidden; background: #edf1f4; }
 .reader-languages button { font-size: 15px; border-right: 1px solid white; color: #183846; }
 .reader-languages button[aria-pressed="true"] { background: #168f98; color: #fff; font-weight: 700; }
+.reader-producer-name { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.reader-producer-name input { box-sizing: border-box; width: min(210px, 42vw); min-height: 38px; padding: 7px 9px; border: 1px solid #becdd5; border-radius: 6px; font: inherit; }
 .reader-transcript { margin-top: 32px; }
 .reader-segments { font-size: 14px; color: #60727e; }
 .reader-segments summary { cursor: pointer; padding: 10px 0; }

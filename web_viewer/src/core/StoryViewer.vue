@@ -155,6 +155,7 @@
           <span>{{ uiText('player.settings.uiLanguage') }}</span>
           <select :value="uiLocale" @change="saveUiLocale"><option value="zh-CN">简体中文</option><option value="ja-JP">日本語</option></select>
         </label>
+        <label class="menu-setting"><span>{{ uiText('player.settings.producerName') }}</span><input class="producer-name-input" :value="producerName" type="text" autocomplete="off" :placeholder="uiText('player.settings.producerNamePlaceholder')" @input="saveProducerName($event.target.value)" /></label>
         <button @click="uiHidden = true; menuOpen = false"><EyeOff :size="19" /><span>{{ uiText('player.settings.hideUi') }}</span></button>
         <label class="menu-setting"><span>{{ uiText('player.voice.backend') }}</span>
           <select v-model="voiceBackend" @change="changeVoiceBackend">
@@ -239,6 +240,8 @@ import PlayerControlDock from '../components/player/PlayerControlDock.vue'
 // SpineStage is lazy-loaded so PIXI.js only loads when a story opens
 const SpineStage = defineAsyncComponent(() => import('../components/SpineStage.vue'))
 import {
+  producerName,
+  saveProducerName,
   setStoryLanguagePreferences,
   storyLanguagePreferences,
   uiLocale,
@@ -1439,6 +1442,7 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 .menu-toggle input { width: 42px; height: 22px; accent-color: #12a87d; cursor: pointer; }
 .menu-setting { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 7px; min-height: 42px; padding: 0 13px; border: 1px solid #e3e8ea; border-radius: 5px; background: #f7f9fa; color: #4b5b63; font-size: .78rem; }
 .menu-setting input { width: 76px; }
+.menu-setting .producer-name-input { width: min(150px, 42vw); }
 .menu-setting select, .menu-setting input { min-height: 28px; border: 1px solid #ccd5d9; border-radius: 4px; background: #fff; color: #26343c; }
 .menu-setting small { color: #839096; }
 .episode-complete { position: absolute; inset: 0; z-index: 35; display: grid; place-items: center; background: rgba(0,0,0,.5); }

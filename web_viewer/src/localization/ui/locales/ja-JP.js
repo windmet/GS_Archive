@@ -40,6 +40,8 @@ export default Object.freeze({
   'player.settings.readOnly': '既読のみ',
   'player.settings.all': 'すべて',
   'player.settings.uiLanguage': 'UI言語',
+  'player.settings.producerName': 'プロデューサー名',
+  'player.settings.producerNamePlaceholder': '未設定なら原文のまま',
   'player.settings.hideUi': 'UIを隠す',
   'player.settings.backlog': 'ログ',
   'player.settings.skipEpisode': 'エピソードをスキップ',

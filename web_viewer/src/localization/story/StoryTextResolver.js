@@ -1,3 +1,5 @@
+import { renderProducerAddressing } from './ProducerAddressing.js'
+
 const VALID_MODES = new Set(['original', 'translation', 'bilingual'])
 const VALID_PRIMARY = new Set(['original', 'translation'])
 
@@ -6,6 +8,7 @@ const DEFAULT_PREFERENCES = Object.freeze({
   story_translation_locale: 'zh-CN',
   bilingual_primary: 'original',
   missing_translation_policy: 'fallback-source',
+  producer_name: '',
 })
 
 function textValue(value) {
@@ -24,6 +27,7 @@ function normalizePreferences(preferences) {
       ? input.bilingual_primary
       : DEFAULT_PREFERENCES.bilingual_primary,
     missing_translation_policy: 'fallback-source',
+    producer_name: textValue(input.producer_name),
   }
 }
 
@@ -106,8 +110,9 @@ export function resolveStoryText({
   const sourceText = textValue(source)
   const prefs = normalizePreferences(preferences)
   const translation = translationState({ overlayEntry, textRef, allowStale })
-  const original = originalBlock(sourceText)
-  const localized = translationBlock(prefs.story_translation_locale, translation.text)
+  const original = originalBlock(renderProducerAddressing(sourceText, prefs.producer_name))
+  const localized = translationBlock(prefs.story_translation_locale,
+    renderProducerAddressing(translation.text, prefs.producer_name))
   const normalizedSpeaker = normalizeSpeaker(speaker)
 
   let primary = original

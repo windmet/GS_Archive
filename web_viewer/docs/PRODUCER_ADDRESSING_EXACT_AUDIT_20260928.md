@@ -1,5 +1,7 @@
 # Producer 人称称呼：截图与原文的进一步核实
 
+后续状态（2026-09-29）：两类姓名宏的屏幕显示语义已经用户批准并接入共享文本入口；运行时合同与验收边界见 [PRODUCER_ADDRESSING_RUNTIME_20260929.md](PRODUCER_ADDRESSING_RUNTIME_20260929.md)。下文保留 2026-09-28 的原始审计结论与当时未决状态。
+
 2026-09-28；审计输入为 `codex/gs-architecture-rebuild` 的 `55f85b865469867dde8eac2c73d42e6758bdce21`。参考包 `GS_Producer_Bible_Audit_20260928.zip` 的 SHA-256 为 `280ffd3d7cb9b2d79bf5850bf8e0422e8b9aa78bbaf31277f0e423e78d1f9118`。包内说明与执行指令作为待验证材料；以下结论来自当前 checkout、包内 7 张截图的目视核对，以及本地 Reader、compiled、隔离候选和指定 RAW TextAsset 的只读扫描。
 
 ## 扫描范围与结论边界
