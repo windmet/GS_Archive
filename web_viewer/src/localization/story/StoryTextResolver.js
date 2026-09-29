@@ -154,7 +154,7 @@ export function resolveStoryText({
       entityType: normalizedSpeaker.entityType,
       entityId: normalizedSpeaker.entityId,
       source: normalizedSpeaker.source,
-      display: preferTranslatedSpeaker && translatedSpeaker
+      display: normalizedSpeaker.kind !== 'unknown' && preferTranslatedSpeaker && translatedSpeaker
         ? translatedSpeaker
         : normalizedSpeaker.source,
     },

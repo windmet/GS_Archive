@@ -18,7 +18,7 @@ export function collectScenarioEntitySourceNames(compiledData) {
     const entityType = speaker?.entity_type || speaker?.entityType
     const entityId = speaker?.entity_id || speaker?.entityId
     const sourceName = speaker?.source_name || speaker?.sourceName
-    if (!entityType || !entityId || !sourceName) continue
+    if (!entityType || !entityId || !sourceName || speaker?.kind === 'unknown') continue
     if (!sources.has(entityType)) sources.set(entityType, {})
     sources.get(entityType)[entityId] = sourceName
   }

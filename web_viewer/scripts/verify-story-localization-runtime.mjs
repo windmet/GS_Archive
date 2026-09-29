@@ -236,6 +236,19 @@ const unknownSpeaker = resolve({
   preferences: { story_content_mode: 'translation', story_translation_locale: 'zh-CN' },
 })
 assert.equal(unknownSpeaker.speaker.display, '？？？')
+for (const mode of ['translation', 'bilingual']) {
+  const hidden = resolve({
+    speaker: { kind: 'unknown', entityType: 'idol', entityId: '007kei', sourceName: '？？？' },
+    entityNames: { 'zh-CN': { '007kei': '都筑圭' } },
+    preferences: {
+      story_content_mode: mode,
+      story_translation_locale: 'zh-CN',
+      bilingual_primary: 'translation',
+    },
+  })
+  assert.equal(hidden.speaker.display, '？？？')
+  assert.equal(hidden.speaker.entityId, '007kei')
+}
 
 // Legacy adapter: source priority, inline translation, speaker identity and mode migration.
 const legacy = normalizeLegacyDialogue({
@@ -391,6 +404,10 @@ scope.stop()
 
 const collectedEntityNames = collectScenarioEntitySourceNames(compiledData.value)
 assert.deepEqual(collectedEntityNames.get('idol'), { '007kei': speaker.sourceName })
+assert.equal(collectScenarioEntitySourceNames({ steps: [
+  { dialogue: { speaker_identity: { kind: 'unknown', entity_type: 'idol', entity_id: '047shu', source_name: '？？？' } } },
+  { dialogue: { speaker_identity: { kind: 'idol', entity_type: 'idol', entity_id: '047shu', source_name: '天峰 秀' } } },
+] }).get('idol')['047shu'], '天峰 秀')
 
 assert.equal(resolveUiText('player.settings.backlog', {}, 'zh-CN'), '剧情回看')
 assert.equal(resolveUiText('player.settings.backlog', {}, 'ja-JP'), 'ログ')
