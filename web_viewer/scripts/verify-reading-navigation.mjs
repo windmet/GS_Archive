@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
-import { createReadingSession } from '../src/core/ReadingSession.js'
-import { createChapterReadingSession } from '../src/core/ChapterReadingPlan.js'
+import { createReadingSession, knownReadingLocator } from '../src/core/ReadingSession.js'
+import { chapterReadingPlan, createChapterReadingSession } from '../src/core/ChapterReadingPlan.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { buildArchiveUrl, readArchiveRoute, readPortalReturnRoute, buildPortalReturnQuery } from '../src/core/archiveRoute.js'
@@ -62,7 +62,7 @@ for (const status of ['empty', 'unsupported', 'not-generated', 'error']) {
   assert.equal(state.document, null)
 }
 // Exercise the actual App route branch with no player/preloader globals present.
-const context = { ...useArchiveNavigationState(), navigation, readingSession: session, isDirectScenarioEntry,
+const context = { ...useArchiveNavigationState(), navigation, readingSession: session, isDirectScenarioEntry, knownReadingLocator,
   readerCollectionDetail: { value:null }, loadCollectionDetail: async () => { throw Error('optional directory unavailable') },
   chapterReadingState: { value:null }, chapterReadingSession: createChapterReadingSession({ repository, publish: () => {} }),
   readingPlaybackNotice: { value: '' }, currentScenario: { value: { old: true } }, loading: { value: true }, loadingPurpose: { value: 'archive-data' },
@@ -150,6 +150,19 @@ for (const scope of ['', 'chapter']) {
   assert.equal(readArchiveSourceRoute(targetRoute.sourceRoute).story,'two.json')
   context.applyArchiveRoute = applyRoute
 }
+// The actual App cutover keeps the same chapter surface and formal directory.
+const chapterTransitions = []
+let mountedChapter = {chapterId:'one',segments:[]}
+context.chapterReadingState = {get value(){return mountedChapter},set value(value){chapterTransitions.push(value);mountedChapter=value}}
+context.readerCollectionDetail.value = {view:{collection,readingEntries:chapterEntries}}
+context.currentStoryDomain.value = 'main'; context.currentStorySection.value = '101'; context.view.value = 'reader'
+context.readingState = {value:{}}
+context.chapterReadingPlan = chapterReadingPlan
+context.loadCollectionDetail = () => { throw Error('mounted directory must not refetch during chapter switch') }
+context.chapterReadingSession = createChapterReadingSession({repository:{peek:id=>({status:'ready',document:{document_id:id}})},publish:value=>{context.chapterReadingState.value=value}})
+await context.applyArchiveRoute({view:'reader',reading:'second',readingScope:'chapter',storyType:'main',storySection:'101',story:'two.json'})
+assert.equal(mountedChapter.chapterId,'two')
+assert.ok(chapterTransitions.length && chapterTransitions.every(value=>value!==null),'chapter switch never remounts the generic single-reader loading page')
 const unknown = { speaker: { kind: 'unknown', entityType: 'idol', entityId: '047shu', sourceName: '？？？' } }
 const display = resolveStoryText({ source: 'text', speaker: readingPresentationSpeaker(unknown),
   entityNames: { 'zh-CN': { '047shu': 'must not reveal' } }, preferences: { story_content_mode: 'translation' } })

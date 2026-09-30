@@ -16,7 +16,9 @@
   color-scheme: var(--reader-color-scheme);
   background: var(--reader-bg-page);
   color: var(--reader-text-main);
+  font-family:Inter,"Noto Sans JP","Noto Sans SC",system-ui,sans-serif;
 }
+.reader-workspace { position:relative; display:flex; flex-direction:column; height:100%; min-height:0; overflow:hidden; }
 .reader-container[data-theme="warm"], .archive-shell:has(.reader-container[data-theme="warm"]) {
   --reader-bg-page: #f3efe6;
   --reader-bg-card: #faf7f0;
@@ -44,12 +46,3 @@
   --reader-accent: #208075;
   --reader-accent-text: #1e7a70;
 }
-/* The mobile navigation remains visible while reading. Match its surface
- * only while a Reader is mounted; all other archive views keep their palette. */
-.archive-shell:has(.reader-container) .archive-mobile-nav {
-  background: var(--reader-bg-card);
-  border-color: var(--reader-border);
-  color-scheme: var(--reader-color-scheme);
-}
-.archive-shell:has(.reader-container) .archive-mobile-nav button { color: var(--reader-text-sub); }
-.archive-shell:has(.reader-container) .archive-mobile-nav button.active { color: var(--reader-accent-text); }

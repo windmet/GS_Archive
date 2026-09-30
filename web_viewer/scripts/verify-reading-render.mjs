@@ -19,6 +19,9 @@ try {
   const { default: ChapterSegment } = await server.ssrLoadModule('/src/components/archive/ChapterReadingSegment.vue')
   const { default: ChapterReader } = await server.ssrLoadModule('/src/components/archive/ChapterStoryReader.vue')
   const { default: StoryNavigation } = await server.ssrLoadModule('/src/components/archive/ReaderStoryNavigation.vue')
+  const { default: ControlBar } = await server.ssrLoadModule('/src/components/archive/ReaderControlBar.vue')
+  const producerOnlyHtml = await renderToString(createSSRApp(ControlBar,{producerOnly:true,mode:'bilingual'}))
+  assert.ok(producerOnlyHtml.includes('Producer 显示名') && !producerOnlyHtml.includes('正文语言') && !producerOnlyHtml.includes('阅读主题') && !producerOnlyHtml.includes('篇内查找'),'desktop Producer panel does not duplicate inline reading controls')
   const branchDoc = JSON.parse(readFileSync(new URL('../public/data/reading/1_4_001_03_d.json',import.meta.url)))
   const fork = branchDoc.controls.find(control => control.fork).fork
   const compact = value => value.replace(/\s+/g, '')
@@ -38,8 +41,11 @@ try {
     chapterNavigation:{chapterId:'one',chapters:[{id:'one',label:'第1話',title:'One',documentId:'first',storyFile:'one.json'},{id:'two',label:'第2話',title:'Two',documentId:'second',storyFile:'two.json'},{id:'missing',label:'第3話',title:'Missing',documentId:'',storyFile:'three.json'}]}}
   const navHtml = await renderToString(createSSRApp(StoryNavigation,navProps))
   assert.ok(navHtml.includes('切换话目') && navHtml.includes('第2話 · Two'))
-  assert.ok(navHtml.includes('value="missing" disabled'))
+  assert.ok(navHtml.includes('data-chapter-id="missing"') && /data-chapter-id="missing"[^>]*disabled/.test(navHtml), 'unavailable chapter cannot be selected')
   assert.ok(navHtml.includes('EP 01') && navHtml.includes('EP 02') && navHtml.includes('aria-current="location"'))
+  const coldReaderHtml = await renderToString(createSSRApp(Reader,{state:{status:'loading',entries:[{document_id:'first',logical_id:'one',episode_label:'EPISODE 01'}],document:null},documentId:'first',mode:'original',chapterNavigation:navProps.chapterNavigation}))
+  assert.ok(coldReaderHtml.includes('第1話 · One'), 'cold reader retains the formally declared chapter title')
+  assert.ok(!coldReaderHtml.includes('gs-loading-indicator'), 'cold reader uses its own inline loading state')
   const { setReaderTheme } = await server.ssrLoadModule('/src/presentation/ReaderTheme.js')
   const synopsisDoc=JSON.parse(readFileSync(new URL('../public/data/reading/1_4_001_01_a.json',import.meta.url)))
   const synopsis=readingSynopsisRow(synopsisDoc)
@@ -163,7 +169,7 @@ try {
     state: { status: 'ready', entries: [], document: chapter }, documentId: chapter.document_id, mode: 'original', anchor: '',
   }))
   assert.ok(chapterHtml.includes(`id="reading-${firstTitle.anchor.row_id}"`), 'merged title anchor stays addressable')
-  assert.equal(chapterHtml.split(chapter.presentation.title).length - 1, 1, 'matching leading title is only visually printed once')
+  assert.equal(chapterHtml.split(chapter.presentation.title).length - 1, 2, 'one desktop heading and one mobile dock title; leading source heading stays merged')
   assert.ok(chapterHtml.includes('第1話'), 'distinct structural episode title stays visible')
   assert.ok(chapterHtml.includes('kind-synopsis front-matter'), 'synopsis is projected as front matter')
   const prologue = JSON.parse(readFileSync(new URL('../public/data/reading/1_4_001_00_a.json', import.meta.url)))

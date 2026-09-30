@@ -1,5 +1,5 @@
 <template>
-  <div class="archive-shell" :class="{ 'is-home-focus': homeFocus && activeSection === 'home', 'has-inspector': hasInspector, 'is-home': activeSection === 'home', 'is-portal': activeSection === 'portal' || activeSection === 'reader' }">
+  <div class="archive-shell" :class="{ 'is-reader': activeSection === 'reader', 'is-home-focus': homeFocus && activeSection === 'home', 'has-inspector': hasInspector, 'is-home': activeSection === 'home', 'is-portal': activeSection === 'portal' || activeSection === 'reader' }">
     <aside class="archive-sidebar" aria-label="资料馆导航">
       <div class="archive-brand">
         <img :src="getBrandMarkUrl()" alt="" />
@@ -55,7 +55,7 @@
       <slot name="inspector" />
     </aside>
 
-    <nav class="archive-mobile-nav" aria-label="移动资料馆导航">
+    <nav v-if="activeSection !== 'reader'" class="archive-mobile-nav" aria-label="移动资料馆导航">
       <button
         v-for="item in mobileNavigation"
         :key="item.id"
@@ -268,6 +268,8 @@ const mobileNavigation = [
     grid-template-rows: var(--archive-topbar) minmax(0, 1fr) calc(74px + env(safe-area-inset-bottom, 0px));
   }
   .archive-shell.is-home { --archive-topbar: 0px; }
+  .archive-shell.is-reader { grid-template-rows: minmax(0,1fr); }
+  .archive-shell.is-reader .archive-content, .archive-shell.is-reader .archive-pending-layer { grid-row:1; }
   .archive-sidebar { display: none; }
   .archive-topbar {
     grid-column: 1;

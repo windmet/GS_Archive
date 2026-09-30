@@ -19,6 +19,7 @@ const repo = createReadingRepository({ digest, fetchImpl: async url => {
   return new Response(url.endsWith('manifest.json') ? manifestBody : documentBody,
     { status: url.endsWith('manifest.json') ? 200 : responseStatus, headers: { 'content-type': 'application/json' } })
 } })
+assert.equal(repo.peek(entry.document_id, entry), null, 'unverified bytes are never a synchronous hit')
 await repo.manifest()
 assert.deepEqual(calls, ['/data/reading/manifest.json'])
 assert.equal((await repo.load('not_generated')).status, 'not-generated')
@@ -27,6 +28,9 @@ const [a, b] = await Promise.all([repo.load(entry.document_id), repo.load(entry.
 assert.equal(a.document, b.document)
 assert.equal(calls.length, 2)
 assert.ok(Object.isFrozen(a.document.rows[0].anchor))
+assert.equal(repo.peek(entry.document_id, {...entry}).document, a.document)
+assert.equal(repo.peek(entry.document_id, {...entry,sha256:'sha256:new'}), null, 'cached evidence cannot satisfy a new revision')
+assert.equal(repo.peek(entry.document_id, {...entry,source_file:'wrong.json'}), null, 'cached evidence cannot bypass changed locator identity')
 assert.throws(() => { a.document.rows[0].source_text = 'changed' }, TypeError)
 await assert.rejects(repo.load('../../RAW'), /Invalid/)
 

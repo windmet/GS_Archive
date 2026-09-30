@@ -25,6 +25,7 @@ export function createChapterReadingSession({ repository, publish }) {
   function notify() { publish({ ...state, segments: state.segments.map(segment => ({ ...segment })) }) }
   async function load(segment, token, fresh = false) {
     if (!segment.entry || !current(token)) return
+    if (!fresh && segment.document) return
     segment.status = 'loading'; segment.error = ''; notify()
     try {
       const entry = fresh ? (await repository.locator(segment.documentId, { fresh: true })).entry : segment.entry
@@ -38,10 +39,10 @@ export function createChapterReadingSession({ repository, publish }) {
   return {
     async open(plan, intent) {
       const token = ++generation; activeIntent = intent
-      state = { ...plan, status: 'loading', segments: plan.segments.map(segment => ({ ...segment })) }
+      state = { ...plan, status: 'loading', segments: plan.segments.map(segment => ({ ...segment, ...repository.peek?.(segment.documentId, segment.entry) })) }
       notify()
       const target = state.segments.find(segment => segment.documentId === plan.documentId)
-      const pending = state.segments.filter(segment => segment !== target && segment.entry)
+      const pending = state.segments.filter(segment => segment !== target && segment.entry && !segment.document)
       const worker = async () => { while (current(token) && pending.length) await load(pending.shift(), token) }
       // Start target first; other texts fill in independently. No compiled/media.
       const targetFlight = load(target, token)

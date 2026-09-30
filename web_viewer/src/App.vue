@@ -529,7 +529,7 @@ import { chapterReadingPlan, createChapterReadingSession } from './core/ChapterR
 import { readerChapterNavigation } from './core/ReaderChapterNavigation.js'
 import { readingPlaybackTarget } from './core/ReadingPlayback.js'
 import { createReadingRepository } from './data/ReadingRepository.js'
-import { createReadingSession } from './core/ReadingSession.js'
+import { createReadingSession, knownReadingLocator } from './core/ReadingSession.js'
 import ArchivePortalLauncher from './components/archive/ArchivePortalLauncher.vue'
 import ArchiveWelcome from './components/archive/ArchiveWelcome.vue'
 import { buildIdolReference } from './presentation/IdolReferencePresentation.js'
@@ -1535,13 +1535,19 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
         [], intent, destination)
     }
     if (route.view === 'reader' || (route.view === 'player' && route.returnView === 'reader')) {
+      // Reuse only this mounted collection's verified membership. Keep the
+      // chapter component mounted while changing its plan; never flash through
+      // the generic single-document loading page between two chapters.
+      const reusableDirectory = view.value === 'reader' && currentStoryDomain.value === route.storyType && currentStorySection.value === route.storySection
+        ? readerCollectionDetail.value : null
       readingDocumentId.value = route.reading
       readingRowId.value = route.readingRow || ''
       readingMode.value = route.readingMode || 'original'
       readingRevision.value = route.readingRev || ''
       readingScope.value = route.readingScope || ''
-      chapterReadingSession.close(); chapterReadingState.value = null
-      readerCollectionDetail.value = null
+      chapterReadingSession.close()
+      if (route.readingScope !== 'chapter' || !reusableDirectory) chapterReadingState.value = null
+      readerCollectionDetail.value = reusableDirectory
       currentStoryDomain.value = route.storyType || ''
       currentStorySection.value = route.storySection || ''
       currentEpisodeId.value = route.episode || ''
@@ -1558,20 +1564,20 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
       view.value = 'reader'
       loading.value = false
       if (readingScope.value === 'chapter') {
-        readingState.value = { status:'loading', document:null, entries:[], error:'' }
+        if (!reusableDirectory) readingState.value = { status:'loading', document:null, entries:[], error:'' }
         try {
           if (!route.storyType || !route.storySection) throw Error('整话阅读缺少正式目录来源')
-          const detail = await loadCollectionDetail(route.storyType, route.storySection, { signal:intent.signal, priority:'foreground' })
+          const detail = reusableDirectory || await loadCollectionDetail(route.storyType, route.storySection, { signal:intent.signal, priority:'foreground' })
           if (!intent.isCurrent()) return
           const plan = chapterReadingPlan(detail.view.collection, detail.view.readingEntries, route.reading, route.story || '')
           readerCollectionDetail.value = detail
           await chapterReadingSession.open(plan, intent)
-        } catch (error) { if (intent.isCurrent()) readingState.value = {status:'error', document:null, entries:[], error:error.message} }
+        } catch (error) { if (intent.isCurrent()) { chapterReadingState.value = null; readingState.value = {status:'error', document:null, entries:[], error:error.message} } }
       } else {
-        const directory = route.storyType && route.storySection ? loadCollectionDetail(route.storyType, route.storySection, { signal:intent.signal, priority:'background' })
+        const directory = !reusableDirectory && route.storyType && route.storySection ? loadCollectionDetail(route.storyType, route.storySection, { signal:intent.signal, priority:'background' })
           .then(detail => { if (intent.isCurrent()) readerCollectionDetail.value = detail })
           .catch(() => { /* Optional chapter navigation must not block a readable document. */ }) : Promise.resolve()
-        await readingSession.open(route.reading, intent)
+        await readingSession.open(route.reading, intent, knownReadingLocator(reusableDirectory, route.reading))
         await directory
       }
       if (!intent.isCurrent()) return
