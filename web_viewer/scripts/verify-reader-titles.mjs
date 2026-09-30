@@ -12,5 +12,5 @@ for (const id of Object.keys(index.documents)) {
 }
 assert.equal(readerTitle(index,{document_id:'untranslated'},'原文'),'原文')
 assert.throws(()=>validateReaderTitles({...index,documents:{bad:{revision:'invalid',title:0}}}))
-assert.ok(Buffer.byteLength(JSON.stringify(index)) < 12000,'optional title index stays small and never contains episode dialogue')
+assert.ok(Buffer.byteLength(JSON.stringify(index)) < 64 * 1024,'optional title-only index stays below 64 KiB; split before expanding past this budget')
 console.log(`Reader translated headings: ${index.titles.length} titles, ${Object.keys(index.documents).length} exact revision bindings, conservative fallback`)

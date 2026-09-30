@@ -106,6 +106,7 @@ export function resolveStoryText({
   speaker = null,
   overlayEntry = null,
   entityNames = null,
+  speakerLabelNames = null,
   preferences = null,
   allowStale = false,
 } = {}) {
@@ -143,7 +144,8 @@ export function resolveStoryText({
     normalizedSpeaker.entityId,
     prefs.story_translation_locale,
     normalizedSpeaker.entityType,
-  )
+  ) || (typeof speakerLabelNames === 'function'
+    ? textValue(speakerLabelNames(normalizedSpeaker, prefs.story_translation_locale)) : '')
   const preferTranslatedSpeaker = prefs.story_content_mode === 'translation'
     || (prefs.story_content_mode === 'bilingual' && prefs.bilingual_primary === 'translation')
   // A Producer nameplate is presentation, not a translation of the source label.

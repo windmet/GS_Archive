@@ -133,6 +133,11 @@ export function checkStudioRows(rows, translations, { trialPolicy = null } = {})
     let languageText = translated.replace(/\{\{GS_ADDRESS:[^{}]*\}\}/gu, '')
     if (trialPolicy) for (const name of trialPolicy.proper_name_exceptions || [])
       if (row.source_text.includes(name)) languageText = languageText.replaceAll(name, '')
+    if (trialPolicy) for (const form of trialPolicy.meaningful_kana || []) {
+      if (!row.source_text.includes(form.source_form)) continue
+      if (!translated.includes(form.retained_form)) review.push(`${row.rid}: meaningful reading ${form.retained_form} missing`)
+      languageText = languageText.replaceAll(form.retained_form, '')
+    }
     if (/[\p{Script=Hiragana}\p{Script=Katakana}]/u.test(languageText))
       review.push(`${row.rid}: Japanese kana remains`)
     if (/^\n|\n$/u.test(translated)) review.push(`${row.rid}: leading or trailing line break`)

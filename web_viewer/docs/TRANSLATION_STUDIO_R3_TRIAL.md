@@ -89,3 +89,13 @@ boundaries. The result parser still rejects shortened IDs; it performs no
 automatic padding, renumbering or translation repair. Input refinement does
 not validate the supplied audit's claims about an external model output.
 See [B002 input refinement acceptance](TRANSLATION_B002_INPUT_R31_20260930.md).
+
+## R3.2: targeted B002 editing and project names
+
+The active V3 recipe now uses `translation-r3.2.md`,
+`trial-policy.v2.2.json`, and `idol-names.v1.json`; the voice profiles stay
+at v1.1. Prior inputs and outputs retain their original policy hashes.
+R3.2 adds four short rules for Chinese honorifics, meaningful kana,
+dictionary-bound names, and natural interjections, plus the compact 49-name
+dictionary. See [B002 draft integration and name table](TRANSLATION_B002_R32_20261001.md)
+for the source-bound editing receipt and local Browser acceptance.

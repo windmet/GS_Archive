@@ -348,7 +348,7 @@ const context = scope.run(() => createStoryLocalization({
     async loadEntity({ entityType, locale, sourceNames }) {
       assert.equal(entityType, 'idol')
       assert.equal(locale, overlay.locale)
-      assert.deepEqual(sourceNames, { '007kei': speaker.sourceName })
+      assert.deepEqual(sourceNames, { '007kei': '都築 圭' }) // Published label spelling; RAW whitespace stays on speaker.
       return { entries: { '007kei': { name: '都筑圭' } } }
     },
     getEntry({ entityType, entityId, locale }) {
@@ -403,7 +403,7 @@ assert.deepEqual(runtimeSentinel, sentinelBefore)
 scope.stop()
 
 const collectedEntityNames = collectScenarioEntitySourceNames(compiledData.value)
-assert.deepEqual(collectedEntityNames.get('idol'), { '007kei': speaker.sourceName })
+assert.deepEqual(collectedEntityNames.get('idol'), { '007kei': '都築 圭' })
 assert.equal(collectScenarioEntitySourceNames({ steps: [
   { dialogue: { speaker_identity: { kind: 'unknown', entity_type: 'idol', entity_id: '047shu', source_name: '？？？' } } },
   { dialogue: { speaker_identity: { kind: 'idol', entity_type: 'idol', entity_id: '047shu', source_name: '天峰 秀' } } },

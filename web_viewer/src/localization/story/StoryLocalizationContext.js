@@ -3,21 +3,29 @@ import { inject, onScopeDispose, provide, ref, watch } from 'vue'
 import {
   normalizeChoiceSelection,
   normalizeLegacyDialogue,
+  normalizeLegacySpeaker,
   preferencesFromLegacyLanguageMode,
 } from './LegacyDialogueAdapter.js'
 import { resolveStoryText } from './StoryTextResolver.js'
 import { TranslationRepository } from './TranslationRepository.js'
 import { EntityTranslationRepository } from './EntityTranslationRepository.js'
+import { speakerDisplayLookup } from './SpeakerDisplayNames.js'
 
 export const STORY_LOCALIZATION_KEY = Symbol('story-localization')
 
 export function collectScenarioEntitySourceNames(compiledData) {
   const sources = new Map()
   for (const step of compiledData?.steps || []) {
-    const speaker = step?.dialogue?.speaker_identity
+    const speaker = step?.dialogue ? normalizeLegacySpeaker(step.dialogue) : null
     const entityType = speaker?.entity_type || speaker?.entityType
     const entityId = speaker?.entity_id || speaker?.entityId
     const sourceName = speaker?.source_name || speaker?.sourceName
+    const display = speakerDisplayLookup(speaker)
+    if (display) {
+      if (!sources.has(display.entityType)) sources.set(display.entityType, {})
+      sources.get(display.entityType)[display.entityId] = display.sourceName
+      continue
+    }
     if (!entityType || !entityId || !sourceName || speaker?.kind === 'unknown') continue
     if (!sources.has(entityType)) sources.set(entityType, {})
     sources.get(entityType)[entityId] = sourceName
@@ -149,6 +157,11 @@ export function createStoryLocalization({
       entityNames: entityNames || ((entityId, locale, entityType = 'idol') => (
         entityRepository.getEntry({ entityType, entityId, locale })?.name || ''
       )),
+      speakerLabelNames: (value, locale) => {
+        const display = speakerDisplayLookup(value)
+        return display ? entityRepository.getEntry({ entityType: display.entityType,
+          entityId: display.entityId, locale })?.name || '' : ''
+      },
       preferences: preferences(),
     })
   }
@@ -169,7 +182,13 @@ export function createStoryLocalization({
           ?? (typeof dialogue.speaker === 'string' ? dialogue.speaker : ''),
         textRef: dialogue.speaker_text_ref,
       })
-      speakerText = joinDisplay(speakerView)
+      // An untranslated label unit must not replace an available entity label
+      // with its RAW name. Explicitly translated label units retain priority.
+      const labelLookup = speakerDisplayLookup({ ...normalized.speaker,
+        sourceName: dialogue.speaker_source_text
+          ?? (typeof dialogue.speaker === 'string' ? dialogue.speaker : '') })
+      if (speakerView.translation.available || !labelLookup || view.speaker.display === view.speaker.source)
+        speakerText = joinDisplay(speakerView)
     }
     return { speaker: speakerText, speakerView, text: joinDisplay(view), view }
   }

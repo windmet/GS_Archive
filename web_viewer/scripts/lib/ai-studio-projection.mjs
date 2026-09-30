@@ -16,8 +16,9 @@ export async function loadStudioPolicy({ version = 2 } = {}) {
   const selected = version === 3 ? {
     ...files,
     voice: 'translation/studio/policy/voice-profiles.trial.v1.1.json',
-    trial: 'translation/studio/policy/trial-policy.v2.1.json',
-    prompt: 'translation/studio/policy/translation-r3.1.md',
+    trial: 'translation/studio/policy/trial-policy.v2.2.json',
+    prompt: 'translation/studio/policy/translation-r3.2.md',
+    names: 'translation/studio/policy/idol-names.v1.json',
   } : files
   const bytes = Object.fromEntries(await Promise.all(Object.entries(selected).map(async ([key, file]) =>
     [key, await fs.readFile(path.join(projectRoot, file))])))
@@ -31,6 +32,14 @@ export async function loadStudioPolicy({ version = 2 } = {}) {
     && profile.public_approval === false && profile.required && profile.forbidden))
   assert(glossary.items.every(item => item.chosen_zh === null), 'Approved terminology requires an explicit policy revision')
   const trial = version === 3 ? JSON.parse(bytes.trial) : null
+  const names = version === 3 ? JSON.parse(bytes.names) : null
+  if (names) {
+    assert.equal(names.schema, 'GS-IDOL-NAME-POLICY-V1')
+    assert.equal(names.entries.length, 49)
+    assert.equal(new Set(names.entries.map(entry => entry.entity_id)).size, 49)
+    const ids = buildIdolIndex(dictionary)
+    assert(names.entries.every(entry => ids.has(entry.entity_id) && entry.name && entry.source_name))
+  }
   if (trial) {
     assert.equal(trial.schema, 'GS-TRIAL-POLICY-V2')
     assert.equal(trial.editorial_status, 'frozen-for-trial')
@@ -46,7 +55,8 @@ export async function loadStudioPolicy({ version = 2 } = {}) {
   }
   return {
     version, idolIndex: buildIdolIndex(dictionary), voice, glossary, trial,
-    prompt: version === 3 ? bytes.prompt.toString('utf8') : null,
+    prompt: version === 3 ? `${bytes.prompt.toString('utf8').trim()}\n\n## 项目姓名显示表\n\n${names.entries.map(entry =>
+      `- ${[entry.source_name, ...(entry.source_aliases || [])].join('／')} → ${entry.name}${entry.status === 'pending-human-name-selection' ? '（中文名待确认，暂保留原名）' : ''}`).join('\n')}\n` : null,
     hashes: Object.fromEntries(Object.entries(bytes).map(([key, data]) => [`${key}_sha256`, sha256(data)])),
   }
 }

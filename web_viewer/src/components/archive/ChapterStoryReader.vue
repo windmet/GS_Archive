@@ -14,7 +14,7 @@
       <p v-if="notice" role="alert">{{ notice }} <button @click="emit('refresh')">重新载入正文</button></p>
       <p v-if="missingAnchor" role="alert">原定位行已不存在，请确认当前正文后重新选择。</p>
       <p v-if="title !== originalTitle" class="reader-source-title" lang="ja">{{ originalTitle }}</p>
-      <ChapterReadingSegment v-for="(segment, index) in chapter.segments" :key="segment.episodeKey" :ref="el => sections[index] = el" :segment="segment" :mode="mode" :anchor="segment.documentId === documentId ? anchor : ''" :query="query" :busy="busy" :idol-directory="idolDirectory" @play="emit('play', $event)" @retry="emit('retry', $event)" />
+      <ChapterReadingSegment v-for="(segment, index) in chapter.segments" :key="segment.episodeKey" :ref="el => sections[index] = el" :segment="segment" :mode="mode" :anchor="segment.documentId === documentId ? anchor : ''" :query="query" :busy="busy" :idol-directory="idolDirectory" @play="emit('play', $event)" @retry="emit('retry', $event)" @before-layout="beforeSegmentLayout" @after-layout="afterSegmentLayout" />
       <ReaderChapterEnd :chapter-navigation="chapterNavigation" @chapter="emit('chapter', $event)" />
     </div>
   </section>
@@ -84,10 +84,21 @@ watch(() => [props.documentId, props.anchor, focused.value?.status], async () =>
   positioned = key; anchoring.value = true
   node.focus({ preventScroll:true }); node.scrollIntoView({ block:'start', behavior:'instant' })
 }, { immediate:true })
+const segmentTops = new Map()
+function finishAnchoring() {
+  if (loadedCount.value === props.chapter.segments.length && sections.value.length === props.chapter.segments.length && sections.value.every(section => section && !section.presentationLoading)) anchoring.value = false
+}
+function beforeSegmentLayout(id) { segmentTops.set(id, anchoring.value ? target()?.getBoundingClientRect().top ?? null : null) }
+function afterSegmentLayout(id) {
+  const top = segmentTops.get(id)
+  segmentTops.delete(id)
+  if (anchoring.value && top != null && target() && root.value) root.value.scrollTop += target().getBoundingClientRect().top - top
+  finishAnchoring()
+}
 onBeforeUpdate(() => { beforeTop = anchoring.value ? target()?.getBoundingClientRect().top ?? null : null })
 onUpdated(() => {
   if (anchoring.value && beforeTop !== null && target() && root.value) root.value.scrollTop += target().getBoundingClientRect().top - beforeTop
-  if (loadedCount.value === props.chapter.segments.length) anchoring.value = false
+  finishAnchoring()
   beforeTop = null
 })
 </script>

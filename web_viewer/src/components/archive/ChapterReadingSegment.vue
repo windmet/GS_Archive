@@ -15,18 +15,18 @@
   </section>
 </template>
 <script setup>
-import { computed } from 'vue'
+import { computed, onBeforeUpdate, onUpdated } from 'vue'
 import ReadingTranscriptSection from './ReadingTranscriptSection.vue'
 import { useReadingPresentation } from './useReadingPresentation.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { resolveUiText as uiText } from '../../localization/ui/UiTextResolver.js'
 const props = defineProps({ segment: Object, mode: String, anchor: String, query: String, busy: Boolean, idolDirectory:{type:Array,default:()=>[]} })
-const emit = defineEmits(['play', 'retry'])
+const emit = defineEmits(['play', 'retry', 'before-layout', 'after-layout'])
 const label = computed(() => presentIdolEpisodeLabel({ sourceName: props.segment.label }))
 const document = computed(() => props.segment.status === 'ready' ? props.segment.document : null)
 const { localization, presentedRows } = useReadingPresentation(document, computed(() => props.mode))
 const translationNotice = computed(() => localization.loading.value ? '正在读取本段译文，暂时显示原文。' :
-  presentedRows.value.some(item => item.view.translation.fallbackUsed) ? '本段部分台词暂无可用译文，保留原文。' : props.mode === 'bilingual' ? '本段显示原文与译文。' : '本段显示译文。')
+  presentedRows.value.some(item => item.row.kind !== 'stamp' && item.view.translation.fallbackUsed) ? '本段部分台词暂无可用译文，保留原文。' : props.mode === 'bilingual' ? '本段显示原文与译文。' : '本段显示译文。')
 const normalize = value => String(value || '').normalize('NFKC').replace(/\s+/g, '').toLowerCase()
 function matches(query) {
   const text = normalize(query)
@@ -34,7 +34,10 @@ function matches(query) {
     [item.view.primary.text, item.view.secondary?.text, item.view.speaker.display].some(value => normalize(value).includes(text)))
     .map(item => ({ documentId: props.segment.documentId, rowId: item.row.anchor.row_id, revision: props.segment.entry.sha256 })) : []
 }
-defineExpose({ matches })
+const presentationLoading = computed(() => localization.loading.value)
+onBeforeUpdate(() => emit('before-layout', props.segment.documentId))
+onUpdated(() => emit('after-layout', props.segment.documentId))
+defineExpose({ matches, presentationLoading })
 </script>
 <style scoped>
 .chapter-reading-segment { scroll-margin-top:20px; outline:none; margin:32px 0; overflow-anchor:auto; }

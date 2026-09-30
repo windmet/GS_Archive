@@ -7,7 +7,7 @@ const policy = await loadStudioPolicy({ version: 3 })
 assert.equal(policy.trial.schema, 'GS-TRIAL-POLICY-V2')
 assert.equal(policy.trial.editorial_status, 'frozen-for-trial')
 assert.equal(policy.trial.public_approval, false)
-assert.equal(policy.trial.revision, 'R3.1')
+assert.equal(policy.trial.revision, 'R3.2')
 assert(policy.voice.profiles.every(profile => profile.required && profile.forbidden))
 const sourceRow = (id, text, speaker = { kind: 'none' }, extra = {}) => ({
   kind: 'dialogue', source_text: text, speaker,
@@ -81,6 +81,13 @@ assert(!wrongActor.review.some(w => /aslan-|hokuto-angel/.test(w)))
 const keptUnit = checkStudioRows([{ rid: 'T000001', kind: 'dialogue', source_text: 'もふもふえん',
   protected_source: 'もふもふえん' }], new Map([['T000001', 'もふもふえん']]), { trialPolicy: policy.trial })
 assert(!keptUnit.review.some(w => w.includes('kana')))
+const lesson = { rid: 'T000287', kind: 'dialogue', source_text: 'これは『こうひょう』だな。', protected_source: 'これは『こうひょう』だな。' }
+assert(!checkStudioRows([lesson], new Map([[lesson.rid, '好评（こうひょう）']]), { trialPolicy: policy.trial }).review.length)
+assert(checkStudioRows([lesson], new Map([[lesson.rid, '好评']]), { trialPolicy: policy.trial }).review.some(w => w.includes('meaningful reading')))
+assert(checkStudioRows([lesson], new Map([[lesson.rid, '好评（こうひょう）っす']]), { trialPolicy: policy.trial }).review.some(w => w.includes('kana')))
+const minori = projectDocumentContext([sourceRow('minori', 'みのりさん、ありがとう')], policy)[0]
+assert(minori.mentions.some(m => m.target_entity_id === '011min' && m.chosen_rendering === '实'))
+assert(policy.prompt.includes('渡辺 みのり → 渡边实'))
 const qa = checkStudioRows([batch.rows[1]], new Map([['T000002', '道夫先生']]), { trialPolicy: policy.trial })
 assert(qa.review.some(item => item.includes('trial term name-michiru')))
 const name = checkStudioRows([{ rid: 'T1', source_text: 'タケルさん', protected_source: 'タケルさん', kind: 'dialogue' }],

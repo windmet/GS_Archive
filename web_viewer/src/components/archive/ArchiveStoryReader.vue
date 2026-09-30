@@ -104,7 +104,7 @@ async function moveMatch(direction) {
 watch(() => props.documentId, () => { searchQuery.value = ''; controls.value?.closePanel({restoreFocus:false}) })
 const missingAnchor = computed(() => props.anchor && !document.value?.rows.some(r => r.anchor.row_id === props.anchor))
 const choiceRows = control => document.value.rows.filter(r => r.kind === 'choice' && r.anchor.step_index === control.step_index)
-watch(() => [props.state.status, props.documentId, props.anchor, props.notice], async () => {
+watch(() => [props.state.status, props.documentId, props.anchor, props.notice, localization.loading.value], async () => {
   await nextTick()
   if (props.chapter) return
   if (props.notice && playbackNotice.value) {
@@ -113,6 +113,9 @@ watch(() => [props.state.status, props.documentId, props.anchor, props.notice], 
     return
   }
   if (props.state.status !== 'ready') return
+  // Locate a translated row after its final text height is known. The source
+  // fallback still locates normally when a request fails and loading ends.
+  if (props.anchor && props.mode !== 'original' && localization.loading.value) return
   const target = props.anchor && readerRoot.value?.querySelector(`[id="reading-${props.anchor}"]`)
   if (target) {
     if (target.classList.contains('merged-title')) { readerRoot.value?.scrollTo({top:0}); controls.value?.focusHeading(); return }

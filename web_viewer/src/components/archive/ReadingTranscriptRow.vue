@@ -10,8 +10,8 @@
             <span v-if="item.row.presentation" class="reader-kind">{{ item.row.presentation === 'call' ? '通话' : '短信' }}</span>
             <StorySynopsisCard v-if="item.row.kind === 'synopsis'" :view="item.view" />
             <MobileStamp v-else-if="item.row.kind === 'stamp'" :id="item.row.media.id" />
-            <p v-else class="reader-primary" :lang="item.view.primary.locale">{{ reflowReadingText(item.view.primary.text, item.view.primary.locale) }}</p>
-            <p v-if="item.row.kind !== 'synopsis' && item.view.secondary" class="reader-secondary" :lang="item.view.secondary.locale">{{ reflowReadingText(item.view.secondary.text, item.view.secondary.locale) }}</p>
+            <p v-else class="reader-primary" :lang="item.view.primary.locale"><ReadingInlineText :text="item.view.primary.text" :locale="item.view.primary.locale" /></p>
+            <p v-if="item.row.kind !== 'synopsis' && item.view.secondary" class="reader-secondary" :lang="item.view.secondary.locale"><ReadingInlineText :text="item.view.secondary.text" :locale="item.view.secondary.locale" /></p>
             <span v-if="mode !== 'original' && item.view.translation.stale" class="reader-kind">译文待更新</span>
             </div>
             </template>
@@ -22,7 +22,7 @@
 import MobileStamp from '../mobile/MobileStamp.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import StorySynopsisCard from './StorySynopsisCard.vue'
-import { reflowReadingText } from '../../../shared/reading/ReadingTypography.js'
+import ReadingInlineText from './ReadingInlineText.vue'
 defineProps({ item: Object, mode: String, anchor: String, idolDirectory:{type:Array,default:()=>[]}, searchMatchIds: { type: Set, default: () => new Set() } })
 </script>
 <style scoped>
