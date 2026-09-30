@@ -4,7 +4,18 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readCheckout } from '../lib/checkout_adapter.mjs';
-import { validateDomainPayload, validateMediaPayload, REVIEWED_DOMAIN_PB } from '../lib/domain_expansion.mjs';
+import { validateDomainPayload, validateMediaPayload, REVIEWED_DOMAIN_PB,domainProductTarget } from '../lib/domain_expansion.mjs';
+
+test('Reward targets require exact canonical cards and typed photo identities',()=>{
+  const card={card_id:10,resource_id:'001tom_sr01'},cards=[card],materials={spots:[{id:10}]};
+  const product={referenceStatus:'resolved-entity',kind:'card',productId:10};
+  assert.deepEqual(domainProductTarget(product,cards,materials),{view:'card_detail',card:'001tom_sr01'});
+  assert.deepEqual(domainProductTarget({...product,kind:'photoSpot'},cards,materials),{view:'photo_catalog',photoEntity:'spots:10'});
+  assert.equal(domainProductTarget({...product,productId:11},cards,materials),null);
+  assert.equal(domainProductTarget({...product,referenceStatus:'missing-entity'},cards,materials),null);
+  assert.equal(domainProductTarget({...product,kind:'storyCostume'},cards,materials),null);
+  assert.throws(()=>domainProductTarget(product,[card,card],materials),/Ambiguous/);
+});
 
 test('Domain gate rejects mixed snapshots and generator versions', () => {
   const source = {decodedPbSha256:REVIEWED_DOMAIN_PB,generatorVersion:'gs-archive-domains-v1'};
@@ -63,4 +74,21 @@ test('[local-corpus] domain projection preserves story identities, typed rewards
   assert.equal(actor.media.entries['faces:10102001'].preset.face,'face_joy');
   assert.equal(actor.media.models['001tom_002_00'].status,'verified-local-files');
   assert.equal(actor.media.voiceCues.length,5);
+  for(const person of domains.photos.records.filter(row=>row.id!=='materials')){
+    const profile=domains.idols.records.find(row=>row.id===person.summary.idolCode).view.photo;
+    assert.equal(profile.idolId,person.view.actor.idolId);
+    assert.equal(profile.faceCount,person.view.actor.faces.length);
+    assert.equal(profile.poseCount,person.view.actor.poses.length);
+    assert.equal(profile.cueCount,person.view.media.voiceCues.length);
+  }
+  for(const domain of ['items','honors'])for(const row of domains[domain].records)assert.equal(row.summary.image.url,row.view.media.image.url);
+  let linkedCards=0,linkedPhotos=0;
+  for(const event of domains.events.records)for(const row of event.view.supplement.rewards){
+    const target=row.product.target;if(!target)continue;
+    if(target.view==='card_detail'){linkedCards++;assert(product.cards.some(card=>card.resource_id===target.card && Number(card.card_id)===row.product.productId))}
+    else{linkedPhotos++;assert.match(target.photoEntity,/^(spots|scenes|stickers|frames|filters):\d+$/)}
+  }
+  assert(linkedCards>0);assert(linkedPhotos>0);
+  const seasonal=domains.events.records.filter(row=>row.view.supplement.seasonalCampaign);assert.equal(seasonal.length,4);
+  for(const event of seasonal){const campaign=domains.seasonal.records.find(row=>row.id===event.view.supplement.seasonalCampaign.id);assert.equal(String(campaign.view.campaign.event_code),event.view.supplement.event.eventCode);assert.equal(campaign.view.campaign.campaign_detail_id,event.view.supplement.event.eventDetailId)}
 });

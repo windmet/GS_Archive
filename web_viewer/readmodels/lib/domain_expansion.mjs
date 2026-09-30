@@ -1,6 +1,18 @@
 import { assert, pick } from './common.mjs';
 
 export const REVIEWED_DOMAIN_PB = '25d48a557c50ac2429f0f55e5d0b766b490b37711eece4baa720cf47570f0ea1';
+const photoProductKinds={photoFilter:'filters',photoSticker:'stickers',photoSpot:'spots',photoScene:'scenes',photoFrame:'frames'};
+export function domainProductTarget(product,cards,materials){
+  if(product?.referenceStatus!=='resolved-entity')return null;
+  if(['card','cardFragment'].includes(product.kind)){
+    const matches=cards.filter(card=>Number(card.card_id)===product.productId);
+    assert(matches.length<=1,'Ambiguous reward card identity');
+    return matches.length===1 ? {view:'card_detail',card:matches[0].resource_id} : null;
+  }
+  const kind=photoProductKinds[product.kind];
+  if(kind && materials[kind]?.some(row=>row.id===product.productId))return {view:'photo_catalog',photoEntity:`${kind}:${product.productId}`};
+  return null;
+}
 const sourceKeys = ['relation','eventId','eventKind','scope','totalPoint','upperRank','lowerRank','offsetPoint','intervalPoint','limitPoint','level','episodeId','sectionId','chapterRelation','amount','cardRarityId','idolType','sourceTable','sourceRowId','role','groupId','dayCount','sumFanAmount','sourceDomain'];
 
 export function validateMediaPayload(payload, kind) {
@@ -56,6 +68,9 @@ export async function applyDomainExpansion(domains, data, readSource) {
     const related = events.filter(other => other.id !== event.id && (
       other.storyChapterRelations.some(r => event.storyChapterRelations.some(s => r.chapterId === s.chapterId)) ||
       source.relatedValentineEventIds?.includes(other.id)));
+    const seasonal=domains.seasonal.records.filter(row=>String(row.view.campaign.event_code)===event.eventCode);
+    assert(seasonal.length<=1,'Ambiguous seasonal event identity');
+    if(seasonal.length)assert(seasonal[0].view.campaign.campaign_detail_id===event.eventDetailId,'Seasonal event detail identity mismatch');
     return { id, summary:{ event_id:id, event_code:event.eventCode, title:event.name,
       release_at:event.term?.openAt || 0, event_scope:identity.event_scope,
       eventKind:event.eventKind, isReprint:event.storyChapterRelations.some(r => r.relation === 'reprint'),
@@ -65,6 +80,8 @@ export async function applyDomainExpansion(domains, data, readSource) {
       cards:original?.view.cards || [], idols:base?.view.idols || [], units:base?.view.units || [],
       castReferences:base?.view.castReferences || [],
       supplement:{ event, ...source, relatedEvents:related.map(other => eventLink(other.id)),
+        seasonalCampaign:seasonal.length?{id:seasonal[0].id,title:seasonal[0].view.campaign.name}:null,
+        rewards:source.rewards.map(row=>({...row,product:{...row.product,target:domainProductTarget(row.product,data.domainCards,data.domainPhotoMaterials)}})),
         items:source.items.map(link => ({...link,
           nameJa:data.domainItems.entries.find(item => item.id === link.itemId)?.nameJa || String(link.itemId)})) } } };
   }));
@@ -90,7 +107,7 @@ export async function applyDomainExpansion(domains, data, readSource) {
           ...(link.eventId ? {event:eventLink(link.eventId)} : {}) };
       });
       assert(collectionMedia[entry.key], `Missing collection media binding: ${entry.key}`);
-      return { id:String(entry.id), summary:pick(entry,['nameJa','itemType','honorType','effectType','resourceId','hasPrefab']),
+      return { id:String(entry.id), summary:{...pick(entry,['nameJa','name','displayName','itemType','honorType','effectType','resourceId','hasPrefab']),image:pick(collectionMedia[entry.key].image,['url','status'])},
         view:{ entry, media:collectionMedia[entry.key], sources:links, sourceCoverage:'partial-client-masterdata' } };
     }));
     domains[domain] = { searchable:true, packed:true, records };
@@ -107,4 +124,10 @@ export async function applyDomainExpansion(domains, data, readSource) {
     return { id:String(id), summary:{ nameJa:idol.display_name, idolCode:idol.code }, view:{actor,media} };
   }));
   domains.photos = { records:[{id:'materials',summary:{nameJa:'摄影素材'},view:{materials,index:data.domainPhotoIndex,media:photoMedia}},...photoRecords] };
+  for(const person of photoRecords){
+    const idol=domains.idols.records.find(row=>row.id===person.summary.idolCode);
+    assert(idol,'Photo profile identity mismatch');
+    idol.view.photo={idolId:person.view.actor.idolId,faceCount:person.view.actor.faces.length,poseCount:person.view.actor.poses.length,
+      cueCount:person.view.media.voiceCues.length};
+  }
 }
