@@ -4,9 +4,9 @@
   --reader-text-main: #1e293b;
   --reader-text-sub: #64748b;
   --reader-border: #e2e8f0;
-  --reader-accent: #268579;
-  --reader-accent-text: #23786e;
-  --reader-active: #247e73;
+  --reader-accent: #1e7a70;
+  --reader-accent-text: var(--reader-accent);
+  --reader-active: var(--reader-accent);
   --reader-on-accent: #ffffff;
   --archive-back-ink: var(--reader-accent-text);
   --archive-back-hover: var(--reader-bg-card);
@@ -18,27 +18,31 @@
   color: var(--reader-text-main);
 }
 .reader-container[data-theme="warm"], .archive-shell:has(.reader-container[data-theme="warm"]) {
-  --reader-bg-page: #f4efe6;
-  --reader-bg-card: #faf6ee;
-  --reader-text-main: #3d352e;
-  --reader-text-sub: #746a60;
-  --reader-border: #e5dcce;
+  --reader-bg-page: #f3efe6;
+  --reader-bg-card: #faf7f0;
+  --reader-text-main: #383129;
+  --reader-text-sub: #746b60;
+  --reader-border: #e4dcce;
+  --reader-accent: #4a6b5d;
 }
 .reader-container[data-theme="dark"], .archive-shell:has(.reader-container[data-theme="dark"]) {
-  --reader-bg-page: #111827;
-  --reader-bg-card: #1f2937;
-  --reader-text-main: #e2e8f0;
+  --reader-bg-page: #0f172a;
+  --reader-bg-card: #1e293b;
+  --reader-text-main: #f1f5f9;
   --reader-text-sub: #94a3b8;
-  --reader-border: #374151;
-  --reader-accent-text: #83c8ba;
+  --reader-border: #334155;
+  --reader-accent: #2dd4bf;
+  --reader-on-accent: #0f172a;
   --reader-color-scheme: dark;
 }
-.reader-container[data-theme="game"], .archive-shell:has(.reader-container[data-theme="game"]) {
-  --reader-bg-page: #ebf3f5;
+.reader-container[data-theme="mint"], .archive-shell:has(.reader-container[data-theme="mint"]) {
+  --reader-bg-page: #edf5f5;
   --reader-bg-card: #ffffff;
-  --reader-text-main: #16333c;
-  --reader-text-sub: #526f77;
-  --reader-border: #d7e1e6;
+  --reader-text-main: #133036;
+  --reader-text-sub: #527279;
+  --reader-border: #d3e4e4;
+  --reader-accent: #208075;
+  --reader-accent-text: #1e7a70;
 }
 /* The mobile navigation remains visible while reading. Match its surface
  * only while a Reader is mounted; all other archive views keep their palette. */

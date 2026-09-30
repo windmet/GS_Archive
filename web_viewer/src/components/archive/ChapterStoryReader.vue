@@ -1,6 +1,6 @@
 <template>
   <section ref="root" class="story-reader reader-container" :data-theme="readerTheme" aria-label="整话阅读" data-testid="chapter-reader" :data-anchor-follow="anchoring" :data-scroll-input="scrollInput" :data-scroll-input-count="scrollInputCount" @wheel.passive="stopAnchoring('wheel')" @touchstart.passive="stopAnchoring('touch')" @keydown="onUserKey">
-    <ArchivePageChrome class="reader-top" @back="emit('back')"><template #title><span>{{ uiText('reader.chapter') }}</span></template></ArchivePageChrome>
+    <ReaderPageHeader @back="emit('back')">{{ uiText('reader.chapter') }}</ReaderPageHeader>
     <div class="reader-body">
       <h1>{{ presentProducerAddressingText(chapter.title) }}</h1><p>{{ chapter.label }} · {{ chapter.segments.length }} 段</p>
       <nav aria-label="本话阅读目录" class="chapter-reader-directory"><button v-for="segment in chapter.segments" :key="segment.episodeKey" :aria-label="`${presentIdolEpisodeLabel({ sourceName: segment.label })}${segment.status === 'ready' ? '' : ` · ${statusLabel(segment.status)}`}`" :title="statusLabel(segment.status) || undefined" :aria-current="segment.documentId === documentId ? 'location' : undefined" @click="select(segment)"><span>{{ presentIdolEpisodeLabel({ sourceName: segment.label, format:'reader' }) }}</span><i v-if="segment.status !== 'ready'" :class="`status-${segment.status}`" aria-hidden="true"></i></button></nav>
@@ -14,7 +14,7 @@
 </template>
 <script setup>
 import { computed, nextTick, onBeforeUpdate, onUpdated, ref, watch } from 'vue'
-import ArchivePageChrome from './ArchivePageChrome.vue'
+import ReaderPageHeader from './ReaderPageHeader.vue'
 import ChapterReadingSegment from './ChapterReadingSegment.vue'
 import ReaderControlBar from './ReaderControlBar.vue'
 import { readerTheme } from '../../presentation/ReaderTheme.js'
@@ -65,7 +65,6 @@ onUpdated(() => {
 </script>
 <style scoped>
 .story-reader { height:100%; overflow-y:auto; overflow-x:hidden; background:var(--reader-bg-page); color:var(--reader-text-main); font-family:Inter,"Noto Sans JP","Noto Sans SC",system-ui,sans-serif; }
-.reader-top { min-height:64px; border-bottom:1px solid var(--reader-border); }
 .reader-body { max-width:1000px; margin:0 auto; padding:28px max(24px,var(--archive-safe-right)) 60px max(24px,var(--archive-safe-left)); }
 h1 { margin:0; font-size:26px; line-height:1.5; }
 .chapter-reader-directory { display:grid; grid-template-columns:repeat(10,minmax(0,1fr)); gap:8px; margin:20px 0; }
@@ -80,5 +79,5 @@ label { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
 form { padding:16px; background:var(--reader-bg-card); border:1px solid var(--reader-border); border-radius:12px; }
 button:focus-visible,input:focus-visible { outline:2px solid var(--reader-accent-text); outline-offset:3px; }
 @media(max-width:1100px) { .chapter-reader-directory { grid-template-columns:repeat(5,minmax(0,1fr)); } }
-@media(max-width:620px) { .reader-body { padding:20px 14px 40px; } h1 { font-size:22px; } .chapter-reader-directory { gap:6px; } .chapter-reader-directory button { font-size:13px; } }
+@media(max-width:760px) { .reader-body { padding:20px 14px 40px; } h1 { font-size:22px; } .chapter-reader-directory { gap:6px; } .chapter-reader-directory button { font-size:13px; } }
 </style>

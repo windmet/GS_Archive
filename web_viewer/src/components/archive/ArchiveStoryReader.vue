@@ -1,7 +1,7 @@
 <template>
   <ChapterStoryReader v-if="chapter" :chapter="chapter" :document-id="documentId" :mode="mode" :anchor="anchor" :notice="notice" :busy="busy" :idol-directory="idolDirectory" @select="emit('select', $event)" @mode="emit('mode', $event)" @back="emit('back')" @retry="emit('retry-segment', $event)" @play="emit('play-segment', $event)" @locate="emit('locate-segment', $event)" @refresh="emit('refresh')" />
   <section v-else ref="readerRoot" class="story-reader reader-container" :data-theme="readerTheme" :aria-busy="busy" aria-labelledby="reading-heading">
-    <ArchivePageChrome class="reader-top" back-class="reader-back" @back="emit('back')"><template #title><span>剧情阅读</span></template></ArchivePageChrome>
+    <ReaderPageHeader @back="emit('back')">剧情阅读</ReaderPageHeader>
     <div class="reader-body">
       <h1 id="reading-heading" ref="heading" tabindex="-1">{{ title }}</h1>
       <p class="reader-subtitle">{{ episodeLabel }}</p>
@@ -49,7 +49,7 @@ import GsLoadingIndicator from '../GsLoadingIndicator.vue'
 import ReaderControlBar from './ReaderControlBar.vue'
 import { useReadingPresentation } from './useReadingPresentation.js'
 import { computed, nextTick, ref, watch } from 'vue'
-import ArchivePageChrome from './ArchivePageChrome.vue'
+import ReaderPageHeader from './ReaderPageHeader.vue'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 
@@ -139,8 +139,6 @@ watch(() => [props.state.status, props.documentId, props.anchor, props.notice], 
 .reader-play:disabled { opacity: .5; cursor: wait; }
 .reader-play:focus-visible { outline: 2px solid var(--reader-accent-text); outline-offset: 3px; }
 .story-reader { height: 100%; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--reader-border) transparent; background: var(--reader-bg-page); color: var(--reader-text-main); font-family: Inter, "Noto Sans JP", "Noto Sans SC", system-ui, sans-serif; }
-.reader-top { height: calc(64px + var(--archive-safe-top)); box-sizing: border-box; padding-top: var(--archive-safe-top); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--reader-border); position: relative; font-size: 17px; font-weight: 700; }
-.reader-top :deep(.reader-back) { position: absolute; left: 12px; }
 button, select { font: inherit; font-size: 15px; color: inherit; cursor: pointer; }
 button { min-height: 44px; border: 0; background: none; color: var(--reader-accent-text); }
 button:focus-visible, select:focus-visible { outline: 3px solid var(--reader-accent-text); outline-offset: 3px; }

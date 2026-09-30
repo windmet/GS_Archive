@@ -1,5 +1,7 @@
 # 阅读主题与品牌色解耦
 
+本页记录第一版验收；当前色值与兼容调整见[阅读器配色统一校准](GS_READER_PALETTE_HARMONY_20260930.md)。
+
 输入 HEAD `6d434172`，分支 `codex/story-interaction-v2-before-b002`。
 此批落实用户提供的四套阅读配色指导，范围为整话与单段 Reader 的呈现及偏好。
 

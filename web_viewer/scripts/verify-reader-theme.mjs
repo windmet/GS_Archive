@@ -15,6 +15,13 @@ assert.equal(reopened.theme.value, 'warm', 'invalid input cannot replace a valid
 assert.equal(records.get('player-preferences'), 'untouched', 'Reader owns only its own storage key')
 records.set(READER_THEME_KEY, 'obsolete')
 assert.equal(createReaderThemeStore(options).theme.value, 'light', 'obsolete saved value falls back')
+records.set(READER_THEME_KEY, 'game')
+const legacy = createReaderThemeStore(options)
+assert.equal(legacy.theme.value, 'mint', 'existing office preference migrates without resetting to white')
+assert.equal(records.get(READER_THEME_KEY), 'game', 'loading a preference does not write storage')
+assert.equal(legacy.setTheme('game'), true, 'legacy callers remain compatible')
+assert.equal(records.get(READER_THEME_KEY), 'mint', 'next explicit selection persists the canonical identifier')
+assert.equal(createReaderThemeStore(options).theme.value, 'mint')
 for (const getStorage of [() => undefined, () => { throw Error('denied') }, () => ({
   getItem() { throw Error('read blocked') }, setItem() { throw Error('quota exceeded') },
 })]) {
