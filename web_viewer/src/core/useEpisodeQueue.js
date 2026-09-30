@@ -26,11 +26,15 @@ export function useEpisodeQueue() {
     revision.value++
     return current.value
   }
-  function restore(episodes, file, { startStep, endStep } = {}) {
+  function restore(episodes, file, { startStep, endStep, verifiedWholeFile = false } = {}) {
     const available = episodes
-    const index = available.findIndex(episode => episode.exists !== false && episode.file === file &&
+    let index = available.findIndex(episode => episode.exists !== false && episode.file === file &&
       (boundary(startStep) === null || boundary(episode.startStep) === boundary(startStep)) &&
       (boundary(endStep) === null || boundary(episode.endStep) === boundary(endStep)))
+    if (index < 0 && verifiedWholeFile && Number(startStep) === 1 && Number(endStep) > 0) {
+      const candidates = available.map((episode,index)=>({episode,index})).filter(({episode})=>episode.exists !== false && episode.file === file)
+      if (candidates.length === 1 && Number(candidates[0].episode.startStep || 1) >= 1 && Number(candidates[0].episode.endStep || endStep) <= Number(endStep)) index=candidates[0].index
+    }
     if (index < 0) { clear(); return false }
     start(available, index)
     return true

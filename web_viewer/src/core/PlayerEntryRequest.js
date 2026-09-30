@@ -17,7 +17,11 @@ export function selectPlayerQueue(groups, file, range = {}) {
   const same = episode => episode.file === file &&
     (!range.startStep || Number(episode.startStep) === Number(range.startStep)) &&
     (!range.endStep || Number(episode.endStep) === Number(range.endStep))
-  const group = (groups || []).find(item => (item.episodes || []).some(same))
+  let group = (groups || []).find(item => (item.episodes || []).some(same))
+  if (!group && range.verifiedWholeFile && Number(range.startStep) === 1 && Number(range.endStep) > 0) {
+    const candidates=(groups || []).flatMap(item=>(item.episodes || []).filter(episode=>episode.file === file).map(episode=>({group:item,episode})))
+    if (candidates.length === 1 && Number(candidates[0].episode.startStep || 1) >= 1 && Number(candidates[0].episode.endStep || range.endStep) <= Number(range.endStep)) group=candidates[0].group
+  }
   return group?.episodes || []
 }
 

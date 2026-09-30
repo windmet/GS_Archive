@@ -1907,13 +1907,27 @@ async function openReaderPlayback(rowId, { intent: inherited, route, fullDocumen
         // A picker URL keeps the original Reader locator while identifying a
         // different full segment. Validate both identities independently.
         if (!entry || revision !== entry.sha256) throw Error('阅读版本已变化，请重新打开本篇正文后再演出。')
-        const candidates = readingState.value.entries.filter(item => item.source_file === route.scenario)
+        let candidates = readingState.value.entries.filter(item => item.source_file === route.scenario)
+        if (!candidates.length && route.storyType && route.storySection) {
+          const detail=await loadCollectionDetail(route.storyType,route.storySection,{signal:intent.signal,priority:'foreground'})
+          if (!intent.isCurrent()) return false
+          const memberships=detail.view.collection.chapters.filter(chapter=>!chapter.canonicalRelation)
+            .flatMap(chapter=>chapter.episodes.filter(episode=>episode.file === route.scenario && episode.exists !== false))
+          if (memberships.length === 1) candidates=detail.view.readingEntries.filter(item=>item.source_file === route.scenario)
+        }
         if (candidates.length !== 1 || ![0,1].includes(route.initialStep || 0)) throw Error('选集来源或演出定位不一致。')
         const selectedEntry = candidates[0]
         const selectedDocument = selectedEntry.document_id === readingDocumentId.value
           ? readingState.value.document : (await readingRepository.load(selectedEntry.document_id, selectedEntry)).document
         if (!intent.isCurrent()) return false
         target = readingPlaybackTarget(selectedDocument, '', selectedEntry.sha256, selectedEntry, { fullDocument:true })
+        if (route.startStep !== target.startStep || route.endStep !== target.endStep) {
+          const queue = await loadPlayerQueue({ ...route, view:'reader' }, { file:route.scenario, startStep:route.startStep, endStep:route.endStep, signal:intent.signal })
+          if (!intent.isCurrent()) return false
+          const ranges=(Array.isArray(queue) ? queue : queue.episodes || []).filter(item=>item.file === route.scenario && item.exists !== false)
+          if (ranges.length !== 1 || Number(ranges[0].startStep || 1) !== route.startStep || Number(ranges[0].endStep || target.endStep) !== route.endStep || route.startStep < target.startStep || route.endStep > target.endStep) throw Error('选集范围与正式目录不一致。')
+          target.startStep=route.startStep; target.endStep=route.endStep
+        }
         target.initialStep = route.initialStep
       } else target = readingPlaybackTarget(readingState.value.document, rowId, revision, entry,
         { fullDocument: route ? route.initialStep === 1 : fullDocument })
@@ -3620,7 +3634,7 @@ async function loadPlayerQueue(route, request) {
     const options = { signal, priority: 'background' }
     if (['story_collection', 'reader'].includes(route.view) && route.storyType && route.storySection) {
       const detail = await loadCollectionDetail(route.storyType, route.storySection, options)
-      return selectCollectionContinuation(detail.view.collection, request.file, request)
+      return selectCollectionContinuation(detail.view.collection, request.file, { ...request, verifiedWholeFile:route.view === 'reader' })
     }
     if (['event_detail', 'reader'].includes(route.view) && route.event) {
       const detail = await loadEventDetail(String(route.event), options)
@@ -3639,14 +3653,26 @@ async function loadPlayerQueue(route, request) {
   }, { signal: request.signal, timeoutMs: 15000, label: 'episode-queue' })
 }
 
-async function resolveReaderContinuationSource(file) {
-  const entries = (await readingRepository.locator(readingDocumentId.value)).entries
+async function resolveReaderContinuationSource(file, returnRoute = currentArchiveRoute()) {
+  const mountedFile = currentScenarioFile.value
+  let entries = (await readingRepository.locator(returnRoute.reading || readingDocumentId.value)).entries
+  if (!entries.some(entry => entry.source_file === file) && returnRoute.storyType && returnRoute.storySection) {
+    const detail = await loadCollectionDetail(returnRoute.storyType, returnRoute.storySection, { priority:'background' })
+    const chapters=detail.view.collection.chapters
+    const owners=chapters.map((chapter,index)=>({chapter,index})).filter(({chapter})=>!chapter.canonicalRelation && chapter.episodes.some(episode=>episode.file === mountedFile))
+    if (owners.length !== 1) throw Error('后续演出缺少唯一正式话目来源')
+    const {chapter,index}=owners[0], adjacent=chapters[index+1]
+    const allowed=chapter.episodes.some(episode=>episode.file === file && episode.exists !== false) ||
+      (!adjacent?.canonicalRelation && adjacent?.exists && adjacent.episodes[0]?.exists && adjacent.episodes[0].file === file)
+    if (!allowed) throw Error('后续演出不是当前话目或相邻话目的明确入口')
+    entries=detail.view.readingEntries
+  }
   const candidates = entries.filter(entry => entry.source_file === file)
   if (candidates.length !== 1) throw Error('后续演出缺少唯一正文来源')
   const documentId = candidates[0].document_id
   const { entry } = await readingRepository.locator(documentId)
   const { document } = await readingRepository.load(documentId, entry)
-  if (!document || entry.source_file !== file) throw Error('后续演出缺少匹配正文来源，请返回目录重新打开。')
+  if (!document || entry.document_id !== documentId || entry.source_file !== file || entry.sha256 !== candidates[0].sha256 || entry.source_sha256 !== candidates[0].source_sha256) throw Error('后续演出缺少匹配正文来源，请返回目录重新打开。')
   return readingPlaybackTarget(document, null, entry.sha256, entry, { fullDocument: true }).readScenario
 }
 

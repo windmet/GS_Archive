@@ -178,6 +178,14 @@ assert.equal(state.currentScenarioFile.value,selectedDocument.source.file)
 assert.equal(state.readingDocumentId.value,document.document_id)
 assert.equal(state.readingRowId.value,row.anchor.row_id)
 await context.playbackController.close()
+context.loadPlayerQueue=async()=>({episodes:[{file:selectedDocument.source.file,startStep:2,endStep:document.source.step_count}]})
+await context.applyArchiveRoute({...selectedShare,startStep:2})
+assert.equal(state.view.value,'player','a source-verified picked segment can restore its exact canonical synopsis-excluding range')
+assert.equal(state.currentScenarioStartStep.value,2)
+await context.playbackController.close()
+await context.applyArchiveRoute({...selectedShare,startStep:3})
+assert.equal(state.view.value,'reader','a guessed subrange is rejected even inside the verified file')
+assert.match(state.readingPlaybackNotice.value,/正式目录/)
 assert.equal(state.view.value,'reader')
 await context.applyArchiveRoute({...fullShared,scenario:selectedDocument.source.file,initialStep:2})
 assert.equal(state.view.value,'reader','picked segment cannot invent an initial position')
@@ -204,5 +212,36 @@ settleFetch(new Response(bytes))
 await obsolete
 assert.equal(state.view.value, 'portal', 'late source verification must not reopen media after leaving')
 assert.equal(context.playbackController.currentScenario.value, null)
+// Execute the production resolver for explicit adjacent-chapter continuation.
+const adjacentDocuments=['next-a','next-b'].map(id=>({...structuredClone(document),document_id:id,
+  source:{...document.source,file:`${id}.json`},playback:{...document.playback,file:`${id}.json`}}))
+const adjacentEntries=adjacentDocuments.map(doc=>({...entry,document_id:doc.document_id,source_file:doc.source.file}))
+const adjacentChapters=[{exists:true,episodes:[{file:document.source.file,exists:true}]},
+  {exists:true,episodes:adjacentEntries.map(item=>({file:item.source_file,exists:true}))}]
+const sourceRoute={view:'reader',reading:document.document_id,storyType:'main',storySection:'101'}
+const sourceContext={readingPlaybackTarget,readingDocumentId:ref(document.document_id),currentScenarioFile:ref(document.source.file),currentArchiveRoute:()=>sourceRoute,
+  loadCollectionDetail:async(type,section)=>{assert.equal(type,'main');assert.equal(section,'101');return {view:{collection:{chapters:adjacentChapters},readingEntries:adjacentEntries}}},
+  readingRepository:{locator:async id=>id===document.document_id?{entries:[entry]}:{entry:adjacentEntries.find(item=>item.document_id===id)},
+    load:async id=>({document:adjacentDocuments.find(doc=>doc.document_id===id)})}}
+vm.runInNewContext(app.match(/async function resolveReaderContinuationSource\([^]*?\n\}/)[0],sourceContext)
+const adjacentGuard=await sourceContext.resolveReaderContinuationSource('next-a.json')
+await adjacentGuard(new Response(bytes))
+await assert.rejects(adjacentGuard(new Response('{}')),/来源已更新/)
+await assert.rejects(sourceContext.resolveReaderContinuationSource('next-b.json'),/明确入口/)
+sourceContext.currentScenarioFile.value='next-a.json'
+await sourceContext.resolveReaderContinuationSource('next-b.json')
+sourceContext.currentScenarioFile.value=document.source.file
+adjacentChapters.splice(1,0,{exists:true,canonicalRelation:{},episodes:[]})
+await assert.rejects(sourceContext.resolveReaderContinuationSource('next-a.json'),/明确入口/)
+adjacentChapters.splice(1,1)
+context.loadCollectionDetail=sourceContext.loadCollectionDetail
+context.readingRepository=sourceContext.readingRepository
+pendingFetch=null
+await context.applyArchiveRoute({...fullShared,scenario:'next-a.json',initialStep:0})
+assert.equal(state.view.value,'player','a refreshed adjacent chapter uses its independently verified document while retaining the original Reader')
+assert.equal(state.currentScenarioFile.value,'next-a.json')
+assert.equal(state.readingDocumentId.value,document.document_id)
+await context.playbackController.close()
+console.log('Reader adjacent chapter: exact source mapping, guarded bytes, current chapter membership and unskippable canonical relation passed')
 console.log(localSources ? 'LOCAL published source verified' : 'CI synthetic non-sequential source verified')
 console.log('Reading playback verified: source integrity before media, versioned URL, App round trip, refresh, invalid links and separate target/range')

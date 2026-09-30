@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { trapDialogKey } from '../src/components/player/dialogFocus.js'
 import { chapterReadingPlan, createChapterReadingSession } from '../src/core/ChapterReadingPlan.js'
 import { useEpisodeQueue } from '../src/core/useEpisodeQueue.js'
+import { selectPlayerQueue } from '../src/core/PlayerEntryRequest.js'
 import { buildArchiveUrl, readArchiveRoute, buildPortalReturnQuery, readPortalReturnRoute } from '../src/core/archiveRoute.js'
 import { setStoryRuntimePaused, transferOverlayPause } from '../src/core/story-runtime/StoryPausePolicy.js'
 const ownerDocument = { activeElement: null }
@@ -40,6 +41,14 @@ assert.equal(queue.peekNext().id,'5', 'missing slot stays adjacent rather than s
 assert.equal(queue.next(),null)
 assert.equal(queue.snapshot.value.entries.length,10)
 assert.throws(()=>{ queue.snapshot.value.entries[0].file='mutated' },TypeError)
+const synopsisQueue=useEpisodeQueue()
+const uniqueRange=[{id:'one',file:'whole.json',startStep:2,endStep:9}]
+assert.equal(selectPlayerQueue([{episodes:uniqueRange}],'whole.json',{startStep:1,endStep:9}).length,0)
+assert.equal(selectPlayerQueue([{episodes:uniqueRange}],'whole.json',{startStep:1,endStep:9,verifiedWholeFile:true}).length,1)
+assert.equal(selectPlayerQueue([{episodes:uniqueRange},{episodes:uniqueRange}],'whole.json',{startStep:1,endStep:9,verifiedWholeFile:true}).length,0)
+assert.equal(synopsisQueue.restore(uniqueRange,'whole.json',{startStep:1,endStep:9}),false)
+assert.equal(synopsisQueue.restore(uniqueRange,'whole.json',{startStep:1,endStep:9,verifiedWholeFile:true}),true)
+assert.equal(synopsisQueue.restore([...uniqueRange,{id:'two',file:'whole.json',startStep:3,endStep:9}],'whole.json',{startStep:1,endStep:9,verifiedWholeFile:true}),false,'shared-file ambiguity never becomes a guessed segment')
 
 let inflight=0, peak=0, chapterState, active=true
 const requests=[]

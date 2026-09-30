@@ -205,7 +205,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
       if (!owner.current() || owner.instance !== currentScenarioInstance.value) return false
       const episodes = Array.isArray(result) ? result : result?.episodes
       continuation.value = Array.isArray(result) ? null : result
-      queue.restore(episodes || [], owner.name, { startStep: currentScenarioStartStep.value, endStep: currentScenarioEndStep.value })
+      queue.restore(episodes || [], owner.name, { startStep: currentScenarioStartStep.value, endStep: currentScenarioEndStep.value, verifiedWholeFile:owner.returnView === 'reader' })
       queueStatus.value = 'ready'
       return true
     }).catch(failure => {
