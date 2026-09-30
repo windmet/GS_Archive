@@ -110,12 +110,8 @@
               </div>
               <button @click="emit('open-idol-story', chapter.canonicalRelation)">前往正式章节 <ChevronRight :size="15" /></button>
             </div>
-            <div v-if="chapter.synopsis" class="chapter-synopsis">
-              <span>STORY</span>
-              <strong>{{ presentProducerAddressingText(chapter.synopsis.title || chapter.title) }}</strong>
-              <p>{{ chapter.synopsis.text }}</p>
-            </div>
-            <p v-else-if="!chapter.exists" class="chapter-unavailable">此章节已建档，剧情暂未收录。</p>
+            <CollectionStorySynopsis class="chapter-synopsis" :key="chapter.id" :entry="chapter.episodes.map(readingEntry).find(Boolean)" :load-document="loadReadingDocument" :fallback="chapter.synopsis" :title="chapter.synopsis?.title || chapter.title" />
+            <p v-if="!chapter.exists && !chapter.synopsis" class="chapter-unavailable">此章节已建档，剧情暂未收录。</p>
 
             <p v-if="readingStatusNotice" role="status">{{ readingStatusNotice }}</p>
             <p v-if="!chapter.canonicalRelation" class="entry-help">点击分段阅读，▶ 播放演出。连播接续本话各段；逐句播放可开启 AUTO。剧情播放器为实验功能。</p>
@@ -140,6 +136,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
+import CollectionStorySynopsis from './CollectionStorySynopsis.vue'
 import { BookOpen, ChevronDown, ChevronRight, ChevronUp, ExternalLink, Play } from '@lucide/vue'
 import { buildArchiveUrl, buildArchiveSourceQuery } from '../../core/archiveRoute.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
@@ -152,6 +149,7 @@ const props = defineProps({
   initialChapterId: { type: String, default: '' },
   readingEntries: { type: Array, default: () => [] },
   readingError: { type: String, default: '' },
+  loadReadingDocument: Function,
 })
 const emit = defineEmits(['read-episode', 'retry-reading', 'play-chapter', 'play-episode', 'select-chapter', 'open-gasha', 'open-idol-story'])
 const expandedChapterId = ref('')
@@ -216,7 +214,7 @@ function externalResourcesForChapter(chapterId) {
 .collection-visual img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .visual-fallback { display: grid; place-items: center; width: 100%; height: 100%; background: url('/assets/stories/story_background.png') center / cover; color: #16877f; }
 .collection-copy { align-self: center; min-width: 0; }
-.collection-copy > span, .section-heading span, .chapter-synopsis > span { color: #168a82; font-size: .59rem; font-weight: 800; }
+.collection-copy > span, .section-heading span { color: #168a82; font-size: .59rem; font-weight: 800; }
 .collection-copy h2 { margin: 5px 0 10px; font-size: 1.45rem; line-height: 1.35; }
 .collection-copy > p { margin: 0 0 18px; color: #53636b; font-size: .7rem; line-height: 1.75; }
 .collection-copy dl { margin: 0; }
@@ -254,7 +252,7 @@ function externalResourcesForChapter(chapterId) {
 .chapter-play:disabled { border-color: #d3dade; background: #e4e9eb; color: #78858b; cursor: not-allowed; }
 .chapter-panel { padding: 5px 16px 18px 72px; border-top: 1px solid #edf1f2; background: #fbfcfc; }
 .canonical-note { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 16px; margin: 13px 0 5px; padding: 13px 14px; border: 1px solid #ddd4e8; border-radius: 6px; background: #fff; }.canonical-note > div { display: flex; flex-direction: column; gap: 4px; }.canonical-note span { color: #765b98; font-size: .51rem; font-weight: 800; }.canonical-note strong { font-size: .68rem; }.canonical-note p { margin: 0; color: #706579; font-size: .55rem; line-height: 1.55; }.canonical-note button { display: inline-flex; align-items: center; gap: 5px; min-height: 34px; padding: 0 10px; border: 1px solid #8065a2; border-radius: 5px; background: #765b98; color: #fff; cursor: pointer; font: inherit; font-size: .57rem; font-weight: 700; white-space: nowrap; }
-.chapter-synopsis { padding: 14px 0 16px; }.chapter-synopsis strong { display: block; margin: 5px 0 6px; font-size: .75rem; }.chapter-synopsis p { max-width: 820px; margin: 0; color: #4b5d65; font-size: .66rem; line-height: 1.75; white-space: pre-line; }
+.chapter-synopsis { margin:16px 0; }
 .chapter-unavailable { margin: 14px 0; color: #78858b; font-size: .65rem; }
 .episode-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: #dfe6e8; }
 .episode-grid button { display: grid; grid-template-columns: 34px minmax(0, 1fr) 18px; align-items: center; gap: 8px; min-height: 54px; padding: 8px 11px; border: 0; background: #fff; color: #2d3d45; cursor: pointer; font: inherit; text-align: left; }

@@ -3,7 +3,7 @@
     <button @click="emit('back')">{{ uiText('player.picker.back') }}</button>
     <p v-if="pending" role="status">{{ uiText('player.picker.loading') }}</p>
     <template v-if="status === 'ready' && snapshot?.entries.length">
-      <button v-for="entry in snapshot.entries" :key="entry.entryKey" :disabled="!entry.available" :aria-current="entry.entryKey === snapshot.currentKey ? 'true' : undefined" :aria-label="`${uiText('player.picker.select')} ${entry.label}`" @click="select(entry)">{{ entry.label }} <small>{{ entry.entryKey === snapshot.currentKey ? uiText('player.picker.current') : entry.available ? '' : uiText('player.picker.missing') }}</small></button>
+      <button v-for="entry in snapshot.entries" :key="entry.entryKey" :disabled="!entry.available" :aria-current="entry.entryKey === snapshot.currentKey ? 'true' : undefined" :aria-label="`${uiText('player.picker.select')} ${presentIdolEpisodeLabel({sourceName:entry.label,format:'player'})}`" @click="select(entry)">{{ presentIdolEpisodeLabel({sourceName:entry.label,format:'player'}) }} <small>{{ entry.entryKey === snapshot.currentKey ? uiText('player.picker.current') : entry.available ? '' : uiText('player.picker.missing') }}</small></button>
       <button @click="emit('select', { queueRevision:snapshot.revision, entryKey:snapshot.currentKey, restart:true })">{{ uiText('player.picker.restart') }}</button>
       <button v-if="pending" @click="emit('select', { queueRevision:snapshot.revision, entryKey:snapshot.currentKey })">{{ uiText('player.picker.cancel') }}</button>
     </template>
@@ -12,6 +12,7 @@
 </template>
 <script setup>
 import { resolveUiText as uiText } from '../../localization/ui/UiTextResolver.js'
+import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 const props = defineProps({ snapshot:Object, status:String, pending:Boolean })
 const emit = defineEmits(['back','select','retry'])
 function select(entry) { emit('select', { queueRevision:props.snapshot.revision, entryKey:entry.entryKey }) }

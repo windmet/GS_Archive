@@ -1,5 +1,5 @@
 <template>
-  <ChapterStoryReader v-if="chapter" :chapter="chapter" :document-id="documentId" :mode="mode" :anchor="anchor" :notice="notice" :busy="busy" @select="emit('select', $event)" @mode="emit('mode', $event)" @back="emit('back')" @retry="emit('retry-segment', $event)" @play="emit('play-segment', $event)" @locate="emit('locate-segment', $event)" @refresh="emit('refresh')" />
+  <ChapterStoryReader v-if="chapter" :chapter="chapter" :document-id="documentId" :mode="mode" :anchor="anchor" :notice="notice" :busy="busy" :idol-directory="idolDirectory" @select="emit('select', $event)" @mode="emit('mode', $event)" @back="emit('back')" @retry="emit('retry-segment', $event)" @play="emit('play-segment', $event)" @locate="emit('locate-segment', $event)" @refresh="emit('refresh')" />
   <section v-else ref="readerRoot" class="story-reader" :aria-busy="busy" aria-labelledby="reading-heading">
     <ArchivePageChrome class="reader-top" back-class="reader-back" @back="emit('back')"><template #title><span>剧情阅读</span></template></ArchivePageChrome>
     <div class="reader-body">
@@ -9,12 +9,7 @@
         <option v-if="!state.entries.some(e => e.document_id === documentId)" :value="documentId">{{ state.status === 'loading' ? '正在载入分段…' : '当前分段尚未收录' }}</option>
         <option v-for="entry in segmentEntries" :key="entry.document_id" :value="entry.document_id">{{ [presentProducerAddressingText(entry.title) || '剧情标题待确认', presentIdolEpisodeLabel({ sourceName: entry.episode_label })].filter(Boolean).join(' · ') }}{{ entry.status === 'ready' ? '' : '（暂不支持阅读）' }}</option>
       </select></label></details>
-      <div class="reader-toolbar"><div class="reader-languages" role="group" aria-label="正文语言">
-        <button v-for="item in modes" :key="item.id" :aria-pressed="mode === item.id" @click="emit('mode', item.id)">{{ item.label }}</button>
-      </div>
-        <label class="reader-producer-name">Producer 显示名<input :value="producerName" type="text" autocomplete="off" placeholder="未设置时保留原文黑点" @input="saveProducerName($event.target.value)" /></label>
-        <button v-if="state.status === 'ready'" ref="searchToggle" :aria-expanded="searchOpen" aria-controls="reader-search" @click="toggleSearch">篇内查找</button>
-      </div>
+      <ReaderControlBar ref="controlBar" :mode="mode" :searchable="state.status === 'ready'" :search-open="searchOpen" search-id="reader-search" @mode="emit('mode',$event)" @search="toggleSearch" />
       <p v-if="state.status === 'ready' && mode !== 'original'" class="reader-notice" role="status">
         已选择{{ mode === 'bilingual' ? '双语' : '译文' }}。{{ translationStatus }}
         <button v-if="translationLoadFailed" :disabled="localization.loading.value" @click="localization.retryTranslation()">重试译文</button>
@@ -39,7 +34,7 @@
         </form>
         <p v-if="missingAnchor" class="reader-notice" role="status">原定位行已不存在，现显示本篇正文。</p>
 
-        <ReadingTranscriptSection :rows="presentedRows" :mode="mode" :anchor="anchor" :search-match-ids="searchMatchIds" />
+        <ReadingTranscriptSection :rows="presentedRows" :mode="mode" :anchor="anchor" :idol-directory="idolDirectory" :search-match-ids="searchMatchIds" />
       </template>
     </div>
   </section>
@@ -49,28 +44,24 @@
 import ReadingTranscriptSection from './ReadingTranscriptSection.vue'
 import ChapterStoryReader from './ChapterStoryReader.vue'
 import GsLoadingIndicator from '../GsLoadingIndicator.vue'
-import { reflowReadingText } from '../../../shared/reading/ReadingTypography.js'
+import ReaderControlBar from './ReaderControlBar.vue'
+import { useReadingPresentation } from './useReadingPresentation.js'
 import { computed, nextTick, ref, watch } from 'vue'
 import ArchivePageChrome from './ArchivePageChrome.vue'
-import { createStoryLocalization } from '../../localization/story/StoryLocalizationContext.js'
-import { producerName, saveProducerName } from '../../utils/LanguageStore.js'
-import { readingAvatarEntity, readingPresentationSpeaker, readingBranchRows } from '../../../shared/reading/ReadingDocument.js'
-import { getCharaIconUrl } from '../../utils/AssetResolver.js'
-import { projectReadingFrontMatter } from '../../presentation/ReadingFrontMatter.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 
-const props = defineProps({ state: { type: Object, required: true }, chapter: { type: Object, default: null }, documentId: String, mode: String, anchor: String, notice: String, busy: Boolean })
+const props = defineProps({ state: { type: Object, required: true }, chapter: { type: Object, default: null }, documentId: String, mode: String, anchor: String, notice: String, busy: Boolean, idolDirectory:{type:Array,default:()=>[]} })
 const emit = defineEmits(['select', 'mode', 'back', 'retry', 'play-document', 'refresh', 'locate', 'retry-segment', 'play-segment', 'locate-segment'])
 const searchQuery = ref('')
 const searchOpen = ref(false)
 const searchInput = ref(null)
-const searchToggle = ref(null)
+const controlBar = ref(null)
 async function closeSearch() {
   searchOpen.value = false
   searchQuery.value = ''
   await nextTick()
-  searchToggle.value?.focus()
+  controlBar.value?.focusSearch()
 }
 async function toggleSearch() {
   if (searchOpen.value) return closeSearch()
@@ -81,32 +72,14 @@ async function toggleSearch() {
 const heading = ref(null)
 const readerRoot = ref(null)
 const playbackNotice = ref(null)
-const modes = [{ id: 'original', label: '原文' }, { id: 'translation', label: '译文' }, { id: 'bilingual', label: '双语' }]
 const document = computed(() => props.state.document)
 const segmentEntries = computed(() => {
   const logicalId = document.value?.logical_id || props.state.entries.find(entry => entry.document_id === props.documentId)?.logical_id
   return logicalId ? props.state.entries.filter(entry => entry.logical_id === logicalId) : []
 })
-// The localization context consumes text identities only, never compiled media.
-const localizationInput = computed(() => document.value ? ({
-  scenario_id: document.value.scenario_id, text_catalog_id: document.value.text_catalog_id,
-  steps: document.value.rows.map(row => ({ dialogue: { speaker_identity: {
-    kind: row.speaker.kind, entity_type: row.speaker.entityType, entity_id: row.speaker.entityId,
-    source_name: row.speaker.sourceName,
-  } } })),
-}) : null)
-const preferences = computed(() => ({ story_content_mode: props.mode, story_translation_locale: 'zh-CN', bilingual_primary: 'original', producer_name: producerName.value }))
-const localization = createStoryLocalization({ compiledData: localizationInput, storyPreferences: preferences })
-const sourceTitle = computed(() => document.value?.presentation?.title || document.value?.rows.find(r => r.kind === 'title')?.source_text || '剧情阅读')
+const { localization, sourceTitle, presentedRows } = useReadingPresentation(document, computed(() => props.mode))
 const title = computed(() => presentProducerAddressingText(sourceTitle.value))
 const episodeLabel = computed(() => presentIdolEpisodeLabel({ sourceName: document.value?.presentation?.episode_label }))
-const frontMatter = computed(() => projectReadingFrontMatter(document.value?.rows, sourceTitle.value))
-const presentedRows = computed(() => readingBranchRows(document.value).map(({ row, branch }) => ({ row, branch,
-  frontMatter: frontMatter.value.frontMatterIds.has(row.anchor.row_id),
-  mergedTitle: frontMatter.value.mergedTitleIds.has(row.anchor.row_id),
-  avatar: readingAvatarEntity(row), view: localization.resolveUnit({ source: row.source_text,
-    textRef: row.text_ref, speaker: readingPresentationSpeaker(row), inlineEntry: row.inline_translation }),
-})))
 const fallbackCount = computed(() => presentedRows.value.filter(item => !item.mergedTitle && item.row.kind !== 'stamp' && item.view.translation.fallbackUsed).length)
 const translationLoadFailed = computed(() => localization.diagnostics.value?.code === 'translation_invalid')
 const translationStatus = computed(() => {
@@ -153,14 +126,12 @@ watch(() => [props.state.status, props.documentId, props.anchor, props.notice], 
 </script>
 
 <style scoped>
-.reader-branch-label { border-left: 3px solid #0a8878; padding: 10px 14px; background: #edf7f4; color: #176f69; font-size: 14px; font-weight: 700; }
 .reader-search { margin: 20px 0; padding: 16px; background: #fff; border: 1px solid #cbd8df; border-radius: 12px; }
 .reader-search label { display: flex; align-items: center; gap: 12px; font-size: 14px; white-space: nowrap; }
 .reader-search input { min-width: 0; width: 100%; min-height: 44px; padding: 8px; font: inherit; border: 1px solid #becdd5; border-radius: 6px; }
 .reader-search-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font-size: 13px; }
 .reader-search-actions span { margin-right: auto; }
 .reader-search-actions button:disabled { opacity: .45; cursor: default; }
-.reader-row.search-match { background: #f0faf8; border-radius: 4px; }
 .reader-notice[role="alert"] { scroll-margin-top: 20px; padding: 12px; border: 1px solid #d3dfe4; border-radius: 8px; outline: none; }
 .reader-play { min-height: 44px; padding: 8px 12px; margin-top: 8px; border: 1px solid #cddde4; border-radius: 8px; background: #f5f9fb; color: #315a6b; font: inherit; font-size: 13px; cursor: pointer; }
 .reader-play:disabled { opacity: .5; cursor: wait; }
@@ -176,33 +147,14 @@ h1 { margin: 0; font-size: 26px; line-height: 1.5; letter-spacing: -.5px; outlin
 .reader-subtitle { font-size: 14px; color: #6e808a; margin: 4px 0 22px; }
 .reader-picker { display: flex; align-items: center; gap: 22px; white-space: nowrap; font-size: 15px; font-weight: 600; }
 .reader-picker select { min-height: 44px; width: min(100%, 310px); min-width: 0; border: 1px solid #becdd5; border-radius: 6px; padding: 10px; background: #fff; font-weight: 400; }
-.reader-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 18px 0 10px; }
-.reader-languages { min-width: 210px; display: grid; grid-template-columns: repeat(3, 1fr); margin: 0; border-radius: 6px; overflow: hidden; background: #edf1f4; }
-.reader-languages button { font-size: 15px; border-right: 1px solid white; color: #183846; }
-.reader-languages button[aria-pressed="true"] { background: #168f98; color: #fff; font-weight: 700; }
-.reader-producer-name { display: flex; align-items: center; gap: 8px; font-size: 13px; }
-.reader-producer-name input { box-sizing: border-box; width: min(210px, 42vw); min-height: 38px; padding: 7px 9px; border: 1px solid #becdd5; border-radius: 6px; font: inherit; }
-.reader-transcript { margin-top: 32px; }
 .reader-segments { font-size: 14px; color: #60727e; }
 .reader-segments summary { cursor: pointer; padding: 10px 0; }
 .reader-full-play { padding: 10px 20px; border-radius: 8px; background: #16838d; color: white; }
 .reader-full-play:disabled { opacity: .5; cursor: wait; }
-.reader-row { position: relative; margin: 14px 0; padding: 24px 32px; background: #fff; border: 1px solid #e1eaea; border-radius: 12px; scroll-margin-top: 20px; outline: none; }
-.reader-row.front-matter:not(.merged-title) { margin-block: 0 8px; padding: 14px 24px; border-color: #e4ecec; background: #f8fbfb; }
-.reader-row.merged-title { height: 0; margin: 0; padding: 0; border: 0; overflow: hidden; }
-.reader-row.selected { border-color: #168f98; box-shadow: inset 3px 0 #168f98; }
-.reader-primary, .reader-secondary { max-width: min(100%, 52em); margin: 5px 0; white-space: pre-wrap; overflow-wrap: break-word; line-break: strict; word-break: normal; font-size: 17px; line-height: 1.9; }
-.reader-secondary { color: #657986; font-size: 16px; }
-.reader-speaker { color: #167e89; font-size: 15px; font-weight: 700; margin: 0 0 4px; }
-.kind-title .reader-primary { font-weight: 700; font-size: 21px; line-height: 1.6; }
-.kind-caption, .kind-narration, .kind-synopsis { background: #edf3f3; padding: 24px 32px; border-block: 1px solid #e3e9ed; color: #607a88; }
-.kind-choice, .kind-choice_detail { border-left: 2px solid #9acbd0; padding-left: 32px; }
-.reader-kind { display: inline-block; margin-inline-end: 8px; font-size: 12px; color: #607a88; }
-.reader-avatar { width: 36px; height: 36px; border-radius: 50%; float: left; margin: 0 12px 4px 0; object-fit: cover; }
 .reader-notice, .reader-feedback { font-size: 14px; line-height: 1.8; color: #60727e; }
 .reader-feedback h2 { font-size: 18px; color: #183846; }
 .reader-feedback details { margin-top: 18px; overflow-wrap: anywhere; }
 .reader-feedback summary { cursor: pointer; }
-@media (max-width: 760px) { .reader-row { padding: 20px 18px; } .reader-search { padding: 12px; } .reader-search label { display: block; white-space: normal; } .reader-search input { box-sizing: border-box; margin-top: 8px; } .reader-languages { flex: 1; } .reader-body { padding: 24px 20px 40px; } h1 { font-size: 24px; } .reader-primary { font-size: 16px; } .reader-secondary { font-size: 15px; } .kind-title .reader-primary { font-size: 19px; } }
+@media (max-width:760px) { .reader-search { padding:12px; } .reader-search label { display:block; white-space:normal; } .reader-search input { box-sizing:border-box; margin-top:8px; } .reader-body { padding:20px 14px 40px; } h1 { font-size:22px; } }
 .reader-loading { margin-block: 18px; max-width: 100%; }
 </style>

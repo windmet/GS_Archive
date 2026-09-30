@@ -403,7 +403,7 @@ const uiHidden = ref(initialPreferences.ui_hidden)
 const episodeFinished = ref(false)
 const completionDismissed = ref(false)
 let automaticNextRequested = false
-const nextLabel = computed(() => props.nextTarget ? `${props.nextTarget.kind === 'chapter' ? '下一话' : '下一段'} · ${presentIdolEpisodeLabel({ sourceName: props.nextTarget.label })}` : '')
+const nextLabel = computed(() => props.nextTarget ? `${props.nextTarget.kind === 'chapter' ? '下一话' : '下一段'} · ${presentIdolEpisodeLabel({ sourceName: props.nextTarget.label, format:'player' })}` : '')
 function requestNextEpisode({ automatic = false } = {}) {
   if (props.transitionPending || (automatic && automaticNextRequested)) return
   if (automatic) automaticNextRequested = true

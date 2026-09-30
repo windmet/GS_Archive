@@ -3,7 +3,7 @@
     <header><h2>{{ label }}</h2><button v-if="segment.status === 'ready'" :disabled="busy" @click="emit('play', { documentId: segment.documentId, rowId: anchor })">{{ uiText('reader.playSegment') }}</button></header>
     <template v-if="segment.status === 'ready'">
       <p v-if="mode !== 'original'" role="status" class="segment-notice">{{ translationNotice }} <button v-if="localization.diagnostics.value?.code === 'translation_invalid'" @click="localization.retryTranslation()">重试译文</button></p>
-      <ReadingTranscriptSection :rows="presentedRows" :mode="mode" :anchor="anchor" :search-match-ids="new Set(matches(query).map(item => item.rowId))" />
+      <ReadingTranscriptSection :rows="presentedRows" :mode="mode" :anchor="anchor" :idol-directory="idolDirectory" :search-match-ids="new Set(matches(query).map(item => item.rowId))" />
     </template>
     <div v-else class="segment-placeholder" :aria-busy="segment.status === 'loading'">
       <p v-if="segment.status === 'idle' || segment.status === 'loading'" role="status">正在载入本段正文…</p>
@@ -20,7 +20,7 @@ import ReadingTranscriptSection from './ReadingTranscriptSection.vue'
 import { useReadingPresentation } from './useReadingPresentation.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { resolveUiText as uiText } from '../../localization/ui/UiTextResolver.js'
-const props = defineProps({ segment: Object, mode: String, anchor: String, query: String, busy: Boolean })
+const props = defineProps({ segment: Object, mode: String, anchor: String, query: String, busy: Boolean, idolDirectory:{type:Array,default:()=>[]} })
 const emit = defineEmits(['play', 'retry'])
 const label = computed(() => presentIdolEpisodeLabel({ sourceName: props.segment.label }))
 const document = computed(() => props.segment.status === 'ready' ? props.segment.document : null)

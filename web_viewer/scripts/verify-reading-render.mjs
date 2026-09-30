@@ -5,11 +5,37 @@ import { createSSRApp } from 'vue'
 import { renderToString } from '@vue/server-renderer'
 import { readFileSync } from 'node:fs'
 import { projectReadingFrontMatter } from '../src/presentation/ReadingFrontMatter.js'
+import { readingSynopsisRow } from '../src/presentation/StorySynopsis.js'
+import { resolveStoryText } from '../src/localization/story/StoryTextResolver.js'
+import { validateStoryTranslationOverlay } from '../src/localization/story/TranslationRepository.js'
 
 // Exercise the actual Vue template's uncommon states without publishing fake stories.
 const server = await createServer({ configFile: false, plugins: [vue()], optimizeDeps: { noDiscovery: true }, server: { middlewareMode: true, watch: null }, appType: 'custom' })
 try {
   const { default: Reader } = await server.ssrLoadModule('/src/components/archive/ArchiveStoryReader.vue')
+  const { default: Synopsis } = await server.ssrLoadModule('/src/components/archive/StorySynopsisCard.vue')
+  const { default: CollectionSynopsis } = await server.ssrLoadModule('/src/components/archive/CollectionStorySynopsis.vue')
+  const synopsisDoc=JSON.parse(readFileSync(new URL('../public/data/reading/1_4_001_01_a.json',import.meta.url)))
+  const synopsis=readingSynopsisRow(synopsisDoc)
+  assert.equal(synopsis.text_ref.unit_id,'story-text:v1:1_4_001_01:1_4_001_01_a:cmd-000000:synopsis:000')
+  assert.equal(readingSynopsisRow({rows:[synopsisDoc.rows.find(row=>row.kind==='dialogue'),synopsis]}),null,'never treat later content as leading synopsis')
+  assert.equal(readingSynopsisRow({rows:[{...synopsis,text_ref:null}]}),null,'plain text cannot unlock translation controls')
+  const overlay=JSON.parse(readFileSync(new URL('../public/translations/zh-CN/scenarios/1_4_001_01.json',import.meta.url)))
+  assert.equal(validateStoryTranslationOverlay(overlay,{scenarioId:synopsisDoc.text_catalog_id,locale:'zh-CN'}).valid,true)
+  const exactEntry=overlay.entries[synopsis.text_ref.unit_id]
+  assert.equal(exactEntry.status,'reviewed')
+  for(const mode of ['original','translation','bilingual']) {
+    const view=resolveStoryText({source:synopsis.source_text,textRef:synopsis.text_ref,overlayEntry:exactEntry,preferences:{story_content_mode:mode}})
+    const synopsisHtml=await renderToString(createSSRApp(Synopsis,{view,mode,switchable:true}))
+    assert.ok(synopsisHtml.includes('aria-label="简介语言"'))
+    assert.ok(synopsisHtml.includes(mode==='original' ? 'ついに始動した315プロダクション！' : '315 Production终于启动！'))
+    assert.equal(Boolean(view.secondary),mode==='bilingual')
+  }
+  const stale=resolveStoryText({source:synopsis.source_text,textRef:synopsis.text_ref,overlayEntry:{...exactEntry,source_hash:'sha256:'+'0'.repeat(64)},preferences:{story_content_mode:'translation'}})
+  assert.equal(stale.primary.text,synopsis.source_text,'stale synopsis overlay retains source')
+  const fallbackHtml=await renderToString(createSSRApp(CollectionSynopsis,{fallback:{text:synopsis.source_text},title:'Fallback'}))
+  assert.ok(fallbackHtml.includes('ついに始動した315プロダクション！'))
+  assert.ok(!fallbackHtml.includes('aria-label="简介语言"'),'unbound directory synopsis has no translation controls')
   const { default: Event } = await server.ssrLoadModule('/src/components/archive/ArchiveEventDetail.vue')
   const eventHtml = await renderToString(createSSRApp(Event, {
     event: { event_id: 'test', event_code: 'test', title: 'Event', exists: true },

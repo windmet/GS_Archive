@@ -17,7 +17,7 @@
       @navigate="navigateArchiveSection"
       @back="goArchiveBack"
     >
-      <ArchiveStoryReader v-if="view === 'reader'" :state="readingState" :chapter="chapterReadingState" :document-id="readingDocumentId" :mode="readingMode" :anchor="readingRowId"
+      <ArchiveStoryReader v-if="view === 'reader'" :state="readingState" :chapter="chapterReadingState" :document-id="readingDocumentId" :mode="readingMode" :anchor="readingRowId" :idol-directory="archiveBootstrap.idols"
         :notice="readingPlaybackNotice" :busy="loading" @refresh="refreshStoryReader" @play-document="openReaderPlayback(readingRowId, { fullDocument: true })" @select="selectReaderDocument" @retry-segment="chapterReadingSession.retry" @play-segment="playChapterReadingSegment" @locate-segment="locateChapterReadingRow" @mode="updateReadingMode" @locate="locateReadingRow" @back="closeStoryReader" @retry="openStoryReader(readingDocumentId)" />
       <ArchivePortalLauncher
         v-if="view === 'portal'"
@@ -321,7 +321,7 @@
         :collection="currentStoryCollection"
         :external-resources="EXTERNAL_STORY_RESOURCES_ENABLED ? currentStoryCollectionExternalResources : []"
         :initial-chapter-id="currentStoryCollectionChapter?.id || ''"
-        :reading-entries="readingCatalogEntries" :reader-source="currentArchiveRoute()"
+        :reading-entries="readingCatalogEntries" :reader-source="currentArchiveRoute()" :load-reading-document="loadSynopsisReadingDocument"
         @read-episode="openCollectionReader"
         @play-chapter="playStoryCollectionChapter"
         @play-episode="playStoryCollectionEpisode"
@@ -459,7 +459,7 @@
       :initial-step="currentScenarioInitialStep"
       :has-next-episode="hasNextPlaybackEpisode"
       :next-target="playbackController.nextTarget.value"
-      :position-label="[playbackController.continuation.value?.currentLabel, playbackController.queue.current.value?.label].filter(Boolean).join(' · ')"
+      :position-label="[playbackController.continuation.value?.currentLabel, presentIdolEpisodeLabel({ sourceName:playbackController.queue.current.value?.label, format:'player' })].filter(Boolean).join(' · ')"
       :return-label="returnViewAfterPlayer === 'reader' ? '返回阅读页' : returnViewAfterPlayer === 'mobile_archive' ? '返回通讯目录' : '返回来源目录'"
       :transition-pending="loading && Boolean(playbackController.pendingEntry.value)"
       :recovery-open="Boolean(playbackError || playbackReadiness?.status === 'blocked') && !loading"
@@ -532,6 +532,7 @@ import { createReadingSession } from './core/ReadingSession.js'
 import ArchivePortalLauncher from './components/archive/ArchivePortalLauncher.vue'
 import ArchiveWelcome from './components/archive/ArchiveWelcome.vue'
 import { buildIdolReference } from './presentation/IdolReferencePresentation.js'
+import { presentIdolEpisodeLabel } from './presentation/idolEpisodeLabel.js'
 import { resolveMobileArchiveUnit } from './core/mobileArchiveIdentity.js'
 import { readyEpisodeReading } from './data/IdolStoryReading.js'
 import {
@@ -1257,6 +1258,7 @@ const readingRepository = createReadingRepository({ locatorResolver: async (docu
     return { entry: null, entries: [] }
   }
 } })
+function loadSynopsisReadingDocument(entry) { return readingRepository.load(entry.document_id, entry) }
 const readingCatalogEntries = computed(() => {
   if (view.value === 'story_collection' && currentStoryCollection.value)
     return collectionReadModelDetail.value.view.readingEntries

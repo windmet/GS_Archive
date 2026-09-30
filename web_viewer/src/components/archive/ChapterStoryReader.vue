@@ -3,12 +3,12 @@
     <ArchivePageChrome class="reader-top" @back="emit('back')"><template #title><span>{{ uiText('reader.chapter') }}</span></template></ArchivePageChrome>
     <div class="reader-body">
       <h1>{{ presentProducerAddressingText(chapter.title) }}</h1><p>{{ chapter.label }} · {{ chapter.segments.length }} 段</p>
-      <nav aria-label="本话阅读目录" class="chapter-reader-directory"><button v-for="segment in chapter.segments" :key="segment.episodeKey" :aria-current="segment.documentId === documentId ? 'location' : undefined" @click="select(segment)">{{ presentIdolEpisodeLabel({ sourceName: segment.label }) }}{{ segment.status === 'ready' ? '' : ` · ${statusLabel(segment.status)}` }}</button></nav>
-      <div class="reader-toolbar"><div role="group" aria-label="正文语言"><button v-for="item in modes" :key="item.id" :aria-pressed="mode === item.id" @click="emit('mode', item.id)">{{ item.label }}</button></div><label>Producer 显示名<input :value="producerName" @input="saveProducerName($event.target.value)" autocomplete="off" /></label><button @click="searchOpen = !searchOpen">篇内查找</button></div>
+      <nav aria-label="本话阅读目录" class="chapter-reader-directory"><button v-for="segment in chapter.segments" :key="segment.episodeKey" :aria-label="`${presentIdolEpisodeLabel({ sourceName: segment.label })}${segment.status === 'ready' ? '' : ` · ${statusLabel(segment.status)}`}`" :title="statusLabel(segment.status) || undefined" :aria-current="segment.documentId === documentId ? 'location' : undefined" @click="select(segment)"><span>{{ presentIdolEpisodeLabel({ sourceName: segment.label, format:'reader' }) }}</span><i v-if="segment.status !== 'ready'" :class="`status-${segment.status}`" aria-hidden="true"></i></button></nav>
+      <ReaderControlBar :mode="mode" :search-open="searchOpen" @mode="emit('mode',$event)" @search="searchOpen = !searchOpen" />
       <form v-if="searchOpen" role="search" aria-label="篇内查找" @submit.prevent="moveMatch(1)"><label>篇内查找<input v-model="query" type="search" placeholder="查找已载入的整话正文或说话人" /></label><p role="status">已处理 {{ loadedCount }}/{{ chapter.segments.length }} 段（{{ readableCount }} 段可读）；{{ searchMatches.length }} 处匹配{{ loadedCount < chapter.segments.length ? '（尚未载入的段落未搜索）' : '' }}</p><button type="button" :disabled="!searchMatches.length" @click="moveMatch(-1)">上一处</button><button :disabled="!searchMatches.length">下一处</button><button type="button" @click="searchOpen = false; query = ''">关闭查找</button></form>
       <p v-if="notice" role="alert">{{ notice }} <button @click="emit('refresh')">重新载入正文</button></p>
       <p v-if="missingAnchor" role="alert">原定位行已不存在，请确认当前正文后重新选择。</p>
-      <ChapterReadingSegment v-for="(segment, index) in chapter.segments" :key="segment.episodeKey" :ref="el => sections[index] = el" :segment="segment" :mode="mode" :anchor="segment.documentId === documentId ? anchor : ''" :query="query" :busy="busy" @play="emit('play', $event)" @retry="emit('retry', $event)" />
+      <ChapterReadingSegment v-for="(segment, index) in chapter.segments" :key="segment.episodeKey" :ref="el => sections[index] = el" :segment="segment" :mode="mode" :anchor="segment.documentId === documentId ? anchor : ''" :query="query" :busy="busy" :idol-directory="idolDirectory" @play="emit('play', $event)" @retry="emit('retry', $event)" />
     </div>
   </section>
 </template>
@@ -16,14 +16,13 @@
 import { computed, nextTick, onBeforeUpdate, onUpdated, ref, watch } from 'vue'
 import ArchivePageChrome from './ArchivePageChrome.vue'
 import ChapterReadingSegment from './ChapterReadingSegment.vue'
+import ReaderControlBar from './ReaderControlBar.vue'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
-import { producerName, saveProducerName } from '../../utils/LanguageStore.js'
 import { resolveUiText as uiText } from '../../localization/ui/UiTextResolver.js'
-const props = defineProps({ chapter: Object, documentId: String, anchor: String, mode: String, notice: String, busy: Boolean })
+const props = defineProps({ chapter: Object, documentId: String, anchor: String, mode: String, notice: String, busy: Boolean, idolDirectory:{type:Array,default:()=>[]} })
 const emit = defineEmits(['select', 'mode', 'back', 'retry', 'play', 'locate', 'refresh'])
 const root = ref(null), sections = ref([]), query = ref(''), searchOpen = ref(false)
-const modes = [{ id:'original',label:'原文' },{ id:'translation',label:'译文' },{ id:'bilingual',label:'双语' }]
 const loadedCount = computed(() => props.chapter.segments.filter(segment => !['idle','loading'].includes(segment.status)).length)
 const readableCount = computed(() => props.chapter.segments.filter(segment => segment.status === 'ready').length)
 const searchMatches = computed(() => sections.value.flatMap(section => section?.matches(query.value) || []))
@@ -64,13 +63,17 @@ onUpdated(() => {
 .reader-top { min-height:64px; border-bottom:1px solid #d7e1e6; }
 .reader-body { max-width:1000px; margin:0 auto; padding:28px max(24px,var(--archive-safe-right)) 60px max(24px,var(--archive-safe-left)); }
 h1 { margin:0; font-size:26px; line-height:1.5; }
-.chapter-reader-directory,.reader-toolbar { display:flex; flex-wrap:wrap; gap:8px; margin:20px 0; }
+.chapter-reader-directory { display:grid; grid-template-columns:repeat(10,minmax(0,1fr)); gap:8px; margin:20px 0; }
+.chapter-reader-directory button { position:relative; padding:8px 4px; font-size:14px; font-variant-numeric:tabular-nums; }
+.chapter-reader-directory i { position:absolute; width:5px; height:5px; top:5px; right:5px; border-radius:50%; background:#a0b4b5; }
+.chapter-reader-directory .status-error { background:#ba6659; }
 button { min-height:44px; padding:8px 14px; border:1px solid #cddde4; border-radius:6px; background:white; color:#16838d; font:inherit; cursor:pointer; }
 button[aria-current],button[aria-pressed=true] { background:#16838d; color:white; }
 button:disabled { opacity:.5; cursor:default; }
 input { box-sizing:border-box; min-height:44px; width:min(250px,100%); border:1px solid #becdd5; border-radius:6px; padding:8px; font:inherit; }
 label { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
 form { padding:16px; background:#fff; border:1px solid #cbd8df; border-radius:12px; }
-:focus-visible { outline:2px solid #168f98; outline-offset:3px; }
-@media(max-width:620px) { .reader-body { padding:20px 14px 40px; } h1 { font-size:22px; } }
+button:focus-visible,input:focus-visible { outline:2px solid #168f98; outline-offset:3px; }
+@media(max-width:1100px) { .chapter-reader-directory { grid-template-columns:repeat(5,minmax(0,1fr)); } }
+@media(max-width:620px) { .reader-body { padding:20px 14px 40px; } h1 { font-size:22px; } .chapter-reader-directory { gap:6px; } .chapter-reader-directory button { font-size:13px; } }
 </style>
