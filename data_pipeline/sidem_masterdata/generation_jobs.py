@@ -26,6 +26,7 @@ from .card_tables import extract_card_parameters, extract_card_voice_cues
 from .diagnostics import build_table_scan, build_validation_report, build_archive_summary, build_card_probe
 from .adapters import build_work_story_index, build_background_catalog
 from .wire import extract_table_rows
+from .archive_domain_job import generate_archive_domains
 
 
 def generate_birthday_semantic(inputs: GenerationInputs) -> dict[str, Any]:
@@ -266,4 +267,5 @@ SELECTED_JOBS = {
     'idol_communication': generate_idol_communication,
     'seasonal_campaign': generate_seasonal_campaign,
     'work_story': generate_work_story,
+    'archive_domains': generate_archive_domains,
 }

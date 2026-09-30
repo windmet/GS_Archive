@@ -18,6 +18,7 @@ class GenerationInputs:
     bg_dir: Path | None = None
     curated_card_voices: Path | None = None
     curated_gasha_titles: Path | None = None
+    decoded_sha256: str | None = None
 
     @cached_property
     def compiled_stems(self) -> set[str]:

@@ -44,11 +44,18 @@ def write_json_outputs(
     The caller creates out_dir and owns decoded binary output separately.
     A selected-mode caller omits public_names to publish its whole small output set.
     """
+    def target(root, name):
+        path = (root / name).resolve()
+        if Path(name).is_absolute() or not path.is_relative_to(root.resolve()):
+            raise ValueError('Output path escaped its root')
+        path.parent.mkdir(parents=True, exist_ok=True)
+        return path
+
     for filename, data in outputs.items():
-        (out_dir / filename).write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        target(out_dir, filename).write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     if public_out_dir:
         public_out_dir.mkdir(parents=True, exist_ok=True)
         for filename in outputs if public_names is None else public_names:
-            (public_out_dir / filename).write_text(
+            target(public_out_dir, filename).write_text(
                 json.dumps(outputs[filename], ensure_ascii=False, indent=2), encoding="utf-8"
             )
