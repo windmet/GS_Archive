@@ -10,6 +10,7 @@ export function loadImageTexture(url, {
   createTexture = base => PIXI.Texture.from(base),
   setTimer = setTimeout, clearTimer = clearTimeout,
   signal, networkTimeoutMs = 25000, textureTimeoutMs = 10000,
+  alphaMode = PIXI.ALPHA_MODES.PMA,
 } = {}) {
   return new Promise((resolve, reject) => {
     const startedAt = performance.now()
@@ -53,7 +54,7 @@ export function loadImageTexture(url, {
       tracePlayer('image-onload', { url, width: image.naturalWidth, height: image.naturalHeight, elapsedMs: Math.round(performance.now() - startedAt) })
       try {
         base = createBaseTexture(image)
-        base.alphaMode = PIXI.ALPHA_MODES.PMA
+        base.alphaMode = alphaMode
         if (base.valid) onReady()
         else {
           base.on('update', onReady)

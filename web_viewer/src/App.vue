@@ -189,20 +189,8 @@
 
       <ArchiveEventDetail
         v-if="view === 'event_detail'"
-        :event="currentEvent"
-        :master-event="currentMasterEvent"
-        :supplement="currentEventProjection?.supplement || null"
-        :story="currentEventStory"
-        :episodes="currentEventEpisodes"
-        :cards="currentEventCards"
-        :idols="currentEventIdols"
-        :units="currentEventUnits"
-        :projected-cast-references="currentEventProjection?.castReferences || null"
-        :identity="bootstrapIdolDictionary"
-        :manifest="bootstrapMembership"
-        :raw-visual-url="eventStoryIdolRawCandidateUrl"
+        :view="currentEventProjection"
         :external-resources="EXTERNAL_STORY_RESOURCES_ENABLED ? currentEventExternalResources : []"
-        :reading-entries="readingCatalogEntries"
         @read="openEventReader"
         @play="playCurrentEvent"
         @play-episode="playCurrentEventEpisode"
@@ -213,14 +201,14 @@
         @open-event="openEventDetail($event, 'event_detail')"
       />
 
-      <ArchiveDomainCatalog v-if="['event_catalog','collection_catalog','photo_catalog'].includes(view)"
-        :mode="view" :client="readModelClient" :bootstrap="archiveBootstrap" :entity="currentEntityKey"
-        :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" :query="filterQuery"
-        @query="filterQuery = $event; syncArchiveRoute({ replace:true })"
-        @entity="openCollectionEntity" @photo-idol="selectPhotoIdol" @photo-entity="selectPhotoEntity" @open-studio="openPictureStudio"
-        @open-event="openEventDetail($event, view)" />
+      <ArchiveEventCatalog v-if="view==='event_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :query="filterQuery"
+        @query="filterQuery=$event; syncArchiveRoute({replace:true})" @open-event="openEventDetail($event,view)" />
+      <ArchiveCollectionCatalog v-if="view==='collection_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :entity="currentEntityKey" :query="filterQuery"
+        @query="filterQuery=$event; syncArchiveRoute({replace:true})" @entity="openCollectionEntity" @open-event="openEventDetail($event,view)" />
+      <ArchivePhotoCatalog v-if="view==='photo_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" :query="filterQuery"
+        @query="filterQuery=$event; syncArchiveRoute({replace:true})" @photo-idol="selectPhotoIdol" @photo-entity="selectPhotoEntity" @open-studio="openPictureStudio" />
 
-      <PictureStudio v-if="view==='picture_studio'" :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" @photo-idol="selectPhotoIdol" />
+      <PictureStudio v-if="view==='picture_studio'" :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" />
 
       <p v-if="['groups', 'files', 'episodes', 'episode_zero_units'].includes(view) && legacyAliasStatus" class="idol-read-model-status" role="status">{{ legacyAliasStatus }}</p>
       <ArchiveGroupList
@@ -622,9 +610,9 @@ const ArchiveImmersiveHome = defineAsyncComponent(immersiveHomeLoader)
 const SpineViewer = defineAsyncComponent(spineViewerLoader)
 const ChibiStageViewer = defineAsyncComponent(chibiStageViewerLoader)
 const archiveRouteLoaders = {
-  event_catalog: () => import('./components/archive/ArchiveDomainCatalog.vue'),
-  collection_catalog: () => import('./components/archive/ArchiveDomainCatalog.vue'),
-  photo_catalog: () => import('./components/archive/ArchiveDomainCatalog.vue'),
+  event_catalog: () => import('./components/archive/ArchiveEventCatalog.vue'),
+  collection_catalog: () => import('./components/archive/ArchiveCollectionCatalog.vue'),
+  photo_catalog: () => import('./components/archive/ArchivePhotoCatalog.vue'),
   picture_studio: () => import('./components/archive/PictureStudio.vue'),
   reader: () => import('./components/archive/ArchiveStoryReader.vue'),
   event_detail: () => import('./components/archive/ArchiveEventDetail.vue'),
@@ -654,7 +642,9 @@ const archiveRouteLoaders = {
 }
 const ArchiveStoryReader = defineAsyncComponent(archiveRouteLoaders.reader)
 const ArchiveEventDetail = defineAsyncComponent(archiveRouteLoaders.event_detail)
-const ArchiveDomainCatalog = defineAsyncComponent(archiveRouteLoaders.collection_catalog)
+const ArchiveEventCatalog = defineAsyncComponent(archiveRouteLoaders.event_catalog)
+const ArchiveCollectionCatalog = defineAsyncComponent(archiveRouteLoaders.collection_catalog)
+const ArchivePhotoCatalog = defineAsyncComponent(archiveRouteLoaders.photo_catalog)
 const PictureStudio = defineAsyncComponent(archiveRouteLoaders.picture_studio)
 const ArchiveStoryCatalog = defineAsyncComponent(archiveRouteLoaders.story_catalog)
 const ArchiveStoryDetail = defineAsyncComponent(archiveRouteLoaders.story_detail)
@@ -1123,7 +1113,6 @@ const externalStoryNavigationEntries = []
 
 const currentStoryRelated = computed(() => storyReadModelDetail.value?.view?.related || [])
 
-const currentEventStory = computed(() => currentEventProjection.value?.story || null)
 const currentEventEpisodes = computed(() => currentEventProjection.value?.episodes || [])
 
 watch(continuousPlayback, enabled => {
@@ -1221,14 +1210,10 @@ const currentGasha = computed(() => gashaReadModelDetail.value?.id === currentGa
   : null)
 const currentEventProjection = computed(() => eventReadModelDetail.value?.id === currentEventId.value
   ? eventReadModelDetail.value.view : null)
-const currentEvent = computed(() => currentEventProjection.value?.event || null)
-const currentMasterEvent = computed(() => currentEventProjection.value?.masterEvent || null)
+const currentEvent = computed(() => currentEventProjection.value?.story.entry || null)
 const currentEventExternalResources = computed(() =>
   externalResourcesForEvent(externalStoryResourcesData.value, currentEvent.value?.event_code),
 )
-const currentEventCards = computed(() => currentEventProjection.value?.cards || [])
-const currentEventIdols = computed(() => currentEventProjection.value?.idols || [])
-const currentEventUnits = computed(() => currentEventProjection.value?.units || [])
 const currentCardIndex = computed(() => currentCards.value.findIndex(card => card.resource_id === currentCardId.value))
 const previousCard = computed(() => currentCardIndex.value > 0
   ? currentCards.value[currentCardIndex.value - 1]
@@ -3971,16 +3956,24 @@ async function loadEventCatalog() {
 async function loadEventDetail(id, options = {}) {
   const row = (await loadEventCatalog()).find(entry => String(entry.id) === id)
   if (!row) throw new Error(`Unavailable event: ${id}`)
-  return readModelClient.load(row.detail, { ...options, expectedId: id, validate: data => {
-    if (String(data.view?.event?.event_id) !== id || !Array.isArray(data.view?.episodes) ||
-      !Array.isArray(data.view?.cards) || !Array.isArray(data.view?.idols) ||
+  const detail=await readModelClient.load(row.detail, { ...options, expectedId: id, validate: data => {
+    if (data.view?.schemaVersion !== 2 || String(data.view?.identity?.id) !== id || !Array.isArray(data.view?.episodes) ||
+      !Array.isArray(data.view?.cards) || !Array.isArray(data.view?.cast) ||
       !Array.isArray(data.view?.units) || !Array.isArray(data.view?.castReferences) ||
       !Array.isArray(data.view?.readingEntries) ||
-      data.view.castReferences.length !== data.view.idols.length ||
-      data.view.castReferences.some((entry, index) => entry.idol_code !== data.view.idols[index].idol_code ||
+      !Array.isArray(data.view?.rewards?.generalPages) || !Number.isSafeInteger(data.view?.rewards?.generalCount) || data.view.rewards.generalCount < 0 ||
+      data.view.castReferences.length !== data.view.cast.length ||
+      data.view.castReferences.some((entry, index) => entry.idol_code !== data.view.cast[index].idol_code ||
         entry.reference?.idolCode !== entry.idol_code))
       throw new Error('Event detail identity or shape mismatch')
   } })
+  const pages=await Promise.all(detail.view.rewards.generalPages.map(page=>readModelClient.load(page,{...options,validate:data=>{
+    if(!Array.isArray(data.rows) || data.rows.some(row=>row?.eventId!==detail.view.provenance.eventId))throw Error('Event reward page identity mismatch')
+  }})))
+  const general=pages.flatMap(page=>page.rows)
+  if(general.length!==detail.view.rewards.generalCount || general.some(row=>row.eventId!==detail.view.provenance.eventId))throw Error('Event reward identity mismatch')
+  return {...detail,view:{...detail.view,rewards:{...detail.view.rewards,general}}}
+
 }
 
 async function loadSeasonalCatalog() {

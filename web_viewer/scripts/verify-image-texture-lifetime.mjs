@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import * as PIXI from 'pixi.js'
 import { loadImageTexture } from '../src/core/loadImageTexture.js'
 
 function setup(options = {}) {
@@ -59,4 +60,8 @@ for (const failure of ['createBaseTexture', 'createTexture']) {
   })
   assert.equal(result, texture); assert.equal(image.onload, null)
 }
-console.log('Image texture lifecycle: immediate completion, readiness, timeout, duplicate callbacks and exception cleanup passed')
+for(const alphaMode of [undefined,PIXI.ALPHA_MODES.UNPACK]){
+  const t=setup(alphaMode===undefined?{}:{alphaMode});t.base.valid=true;t.image.onload();await t.pending;
+  assert.equal(t.base.alphaMode,alphaMode??PIXI.ALPHA_MODES.PMA);t.clean();
+}
+console.log('Image texture lifecycle: readiness, timeout, duplicate callbacks, cleanup and default PMA/explicit PNG upload passed')

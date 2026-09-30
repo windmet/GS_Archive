@@ -27,7 +27,7 @@ function setup() {
   vm.runInContext(source, context)
   return { context, jobs, commits, errors, captured: () => captured, invalidate: () => revision++ }
 }
-const detail = id => ({ id, view: { event: { event_id: id } } })
+const detail = id => ({ id, view: { schemaVersion:2, identity: { id }, story:{entry:{event_id:id}} } })
 
 {
   const t = setup()

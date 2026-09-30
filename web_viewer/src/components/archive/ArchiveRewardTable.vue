@@ -9,7 +9,7 @@
         <tbody><tr v-for="(row,i) in visible" :key="row.key || `${page}:${i}`">
           <td><span>{{ rewardScopeLabels[row.scope] || relationLabel(row) }}</span><button v-if="row.event" type="button" class="domain-link" @click="emit('open-event',row.event)">{{ row.event.title }}</button></td>
           <td>{{ rewardCondition(row) }}<small v-for="campaign in row.campaigns" :key="campaign.id">历史企划 {{ campaign.id }} · {{ historicalDate(campaign.term?.openAt) }} — {{ historicalDate(campaign.term?.closeAt) }}</small></td>
-          <td v-if="!sources"><button v-if="['item','honor'].includes(row.product?.kind) && row.product.referenceStatus === 'resolved-entity'" type="button" class="domain-link" @click="emit('open-entity',row.product.entityKey)">{{ productName(row.product) }}</button><button v-else-if="row.product?.target" type="button" class="domain-link" @click="emit('open-target',row.product.target)">{{ productName(row.product) }}</button><span v-else>{{ productName(row.product) }}</span><small v-if="row.product?.referenceStatus === 'unknown-type' || row.product?.referenceStatus === 'missing-entity'">奖励引用待确认</small></td>
+          <td v-if="!sources"><DomainMediaPreview v-if="row.product?.presentation?.image" :binding="row.product.presentation.image" :name="productName(row.product)" compact/><button v-if="['item','honor'].includes(row.product?.kind) && row.product.referenceStatus === 'resolved-entity'" type="button" class="domain-link" @click="emit('open-entity',row.product.entityKey)">{{ productName(row.product) }}</button><button v-else-if="row.product?.target" type="button" class="domain-link" @click="emit('open-target',row.product.target)">{{ productName(row.product) }}</button><span v-else>{{ productName(row.product) }}</span><small v-if="row.product?.referenceStatus === 'unknown-type' || row.product?.referenceStatus === 'missing-entity'">奖励引用待确认</small></td>
           <td>{{ typeof (row.product?.amount ?? row.amount)==='number' ? number(row.product?.amount ?? row.amount) : '未记录' }}</td>
         </tr></tbody>
       </table>
@@ -21,6 +21,7 @@
 <script setup>
 import {computed,ref,watch} from 'vue'
 import {historicalDate,number,rewardCondition,rewardScopeLabels,sourceDomainLabels} from './DomainPresentation.mjs'
+import DomainMediaPreview from './DomainMediaPreview.vue'
 const props=defineProps({rows:{type:Array,default:()=>[]},sources:Boolean})
 const emit=defineEmits(['open-entity','open-event','open-target'])
 const scope=ref(''),page=ref(0),size=25
@@ -28,6 +29,6 @@ const scopes=computed(()=>[...new Set(props.rows.map(row=>row.scope).filter(Bool
 const filtered=computed(()=>props.rows.filter(row=>!scope.value || row.scope===scope.value))
 const pages=computed(()=>Math.ceil(filtered.value.length/size)),visible=computed(()=>filtered.value.slice(page.value*size,(page.value+1)*size))
 watch(()=>props.rows,()=>{scope.value='';page.value=0});watch(scope,()=>{page.value=0})
-const productName=product=>product?.nameJa || product?.typeNameJa || `未解析奖励 ${product?.productId ?? ''}`
+const productName=product=>product?.presentation?.name || product?.nameJa || product?.typeNameJa || `未解析奖励 ${product?.productId ?? ''}`
 const relationLabel=row=>row.relation==='card-awakening-cost'?'觉醒消耗':row.relation==='event-material'?'活动材料':sourceDomainLabels[row.sourceTable] || '其他客户端来源'
 </script>

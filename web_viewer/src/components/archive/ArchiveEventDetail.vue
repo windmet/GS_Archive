@@ -1,8 +1,11 @@
 <template>
-  <article v-if="event" class="event-detail" data-archive-scroll-container>
+  <article v-if="view" class="event-detail" data-archive-scroll-container>
     <section class="event-identity">
       <div class="event-visual">
-        <img v-if="!bannerFailed" class="event-banner" :src="getEventBannerUrl(event.event_code)" :alt="event.title" @error="bannerFailed=true" />
+        <template v-if="bannerBinding?.url && !bannerFailed">
+          <img class="event-banner" :src="bannerBinding.url" :alt="view.identity.title" @error="bannerFailed=true" />
+          <small v-if="!view.media.banner?.url && view.media.logo?.url" class="event-media-note">活动横幅未收录，此处展示本活动标志。</small>
+        </template>
         <p v-else class="event-banner-unavailable">{{ event.title }}<small>活动横幅尚未收录</small></p>
       </div>
       <div class="event-summary">
@@ -11,25 +14,29 @@
           <small>{{ eventTypeLabel }}</small>
           <small>{{ scopeLabel }}</small>
         </div>
-        <h2>{{ masterEvent?.name || event.title }}</h2>
+        <h2>{{ view.identity.title }}</h2>
         <dl>
-          <div><dt>活动开始</dt><dd>{{ formatDateTime(supplement?.event?.term?.openAt ?? masterEvent?.start_at ?? event.release_at) }}</dd></div>
-          <div><dt>活动结束</dt><dd>{{ formatDateTime(supplement?.event?.term?.closeAt ?? masterEvent?.end_at) }}</dd></div>
-          <div><dt>展示结束</dt><dd>{{ formatDateTime(supplement?.event?.displayTerm?.closeAt ?? masterEvent?.display_end_at) }}</dd></div>
+          <div><dt>活动开始</dt><dd>{{ formatDateTime(view.period.startAt) }}</dd></div>
+          <div><dt>活动结束</dt><dd>{{ formatDateTime(view.period.endAt) }}</dd></div>
+          <div><dt>展示结束</dt><dd>{{ formatDateTime(view.period.displayEndAt) }}</dd></div>
           <div><dt>活动形式</dt><dd>{{ eventTypeLabel }}</dd></div>
 
         </dl>
       </div>
     </section>
 
+    <details class="event-media-archive">
+      <summary>活动视觉资料</summary>
+      <div class="event-media-grid"><DomainMediaPreview v-for="role in ['logo','background','resultBackground']" :key="role" :binding="view.media[role]" :name="({logo:'活动标志',background:'活动背景',resultBackground:'结算背景'})[role]"/></div>
+    </details>
     <section class="story-band" aria-labelledby="event-synopsis-title">
       <div>
         <span>故事简介</span>
         <h3 id="event-synopsis-title">{{ story?.preplaySynopsis?.title || event.title }}</h3>
-        <p>{{ story?.preplaySynopsis?.text || (supplement?.seasonalCampaign ? '引子及角色篇章已收录于关联季节企划。' : event.exists ? '剧情已收录，可选择章节观看。' : '剧情暂未收录。') }}</p>
+        <p>{{ story?.preplaySynopsis?.text || (view.seasonalCampaign ? '引子及角色篇章已收录于关联季节企划。' : event.exists ? '剧情已收录，可选择章节观看。' : '剧情暂未收录。') }}</p>
       </div>
       <div class="story-actions">
-        <button v-if="supplement?.seasonalCampaign" @click="emit('open-seasonal',supplement.seasonalCampaign.id)"><BookOpen :size="17"/>阅读季节企划</button>
+        <button v-if="view.seasonalCampaign" @click="emit('open-seasonal',view.seasonalCampaign.id)"><BookOpen :size="17"/>阅读季节企划</button>
         <button v-else :disabled="!event.exists" @click="emit('play')">
           <Play :size="17" fill="currentColor" />
           <span>{{ event.exists ? '播放活动剧情' : '缺少剧情文件' }}</span>
@@ -88,7 +95,7 @@
       </div>
       <div v-if="rewardCards.length" class="reward-grid">
         <button v-for="card in rewardCards" :key="card.card_resource_id" @click="emit('open-card', card)">
-          <img :src="getCardIconUrl(card.card_resource_id, true)" :alt="card.card_title" />
+          <DomainMediaPreview :binding="card.image" :name="card.card_title" compact/>
           <div class="reward-copy">
             <span>{{ card.rarity }} · {{ idolName(card.character_id) }}</span>
             <strong>{{ card.card_title }}</strong>
@@ -106,11 +113,11 @@
       <p v-else class="empty-copy">尚未收录此活动的卡片报酬信息。</p>
     </section>
 
-    <section v-if="supplement" class="detail-section" aria-labelledby="event-general-rewards">
+    <section v-if="view.rewards" class="detail-section" aria-labelledby="event-general-rewards">
       <div class="section-heading"><div><h3 id="event-general-rewards">奖励明细与藏品</h3><p>历史客户端配置。兑换商店明细与实时排行榜尚未收录。</p></div></div>
-      <nav v-if="supplement.items?.length" class="domain-tabs" aria-label="活动材料"><button v-for="item in supplement.items" :key="`${item.role}:${item.itemId}`" type="button" @click="emit('open-entity',`item:${item.itemId}`)">{{ item.nameJa }}</button></nav>
-      <ArchiveRewardTable :rows="supplement.rewards || []" @open-entity="emit('open-entity',$event)" @open-target="emit('open-target',$event)" />
-      <div v-if="supplement.relatedEvents?.length" class="event-related-history"><h3>关联活动</h3><button v-for="related in supplement.relatedEvents" :key="related.event_id" type="button" class="domain-link" @click="emit('open-event',related)">{{ related.title }}</button></div>
+      <nav v-if="view.rewards.materials?.length" class="domain-tabs" aria-label="活动材料"><button v-for="item in view.rewards.materials" :key="`${item.role}:${item.itemId}`" type="button" @click="emit('open-entity',`item:${item.itemId}`)"><DomainMediaPreview v-if="item.image?.url" :binding="item.image" :name="item.nameJa" compact/>{{ item.nameJa }}</button></nav>
+      <ArchiveRewardTable :rows="view.rewards.general || []" @open-entity="emit('open-entity',$event)" @open-target="emit('open-target',$event)" />
+      <div v-if="view.relatedEvents?.length" class="event-related-history"><h3>关联活动</h3><button v-for="related in view.relatedEvents" :key="related.event_id" type="button" class="domain-link" @click="emit('open-event',related)">{{ related.title }}</button></div>
     </section>
 
     <section class="detail-section" aria-labelledby="event-cast-title">
@@ -142,13 +149,13 @@
       <ArchiveRelationList layout="grid" :items="derivedRelationItems" @select="emit('open-card', $event.payload)" />
     </section>
 
-    <ArchiveTechnicalDetails :key="event.event_id" :evidence="{ event, masterEvent, episodes }">
+    <ArchiveTechnicalDetails :key="event.event_id" :evidence="view.provenance">
       <section class="detail-section evidence-section" aria-labelledby="event-evidence-title">
         <div class="section-heading"><h3 id="event-evidence-title">资料来源</h3></div>
         <dl>
           <div><dt>活动实体</dt><dd>Raw · table 112</dd></div>
-          <div><dt>活动详情</dt><dd>Raw · table {{ masterEvent?.event_type === 3 ? 124 : 113 }}</dd></div>
-          <div><dt>累计 PT 报酬</dt><dd>Raw · table {{ masterEvent?.event_type === 3 ? 126 : 114 }}</dd></div>
+          <div><dt>活动详情</dt><dd>Raw · table {{ view.provenance.detailTable }}</dd></div>
+          <div><dt>累计 PT 报酬</dt><dd>Raw · table {{ [...new Set(view.rewards.general.map(row=>row.sourceTable))].join(' / ') }}</dd></div>
           <div><dt>剧情阅读报酬</dt><dd>Raw · table 10 / 11 / 12 / 70</dd></div>
           <div><dt>剧情文件</dt><dd>{{ event.file }}</dd></div>
           <div><dt>归属判定</dt><dd>{{ event.classification_source }}</dd></div>
@@ -165,97 +172,33 @@ import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import ArchiveRewardTable from './ArchiveRewardTable.vue'
+import DomainMediaPreview from './DomainMediaPreview.vue'
 import '../../styles/archive-domains.css'
-import { buildEventIdolReference } from '../../presentation/IdolReferencePresentation.js'
-import { getEventBannerUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
+import { getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 
 const props = defineProps({
-  supplement:{type:Object,default:null},
-  event: { type: Object, default: null },
-  masterEvent: { type: Object, default: null },
-  story: { type: Object, default: null },
-  episodes: { type: Array, default: () => [] },
-  cards: { type: Array, default: () => [] },
-  idols: { type: Array, default: () => [] },
-  units: { type: Array, default: () => [] },
-  projectedCastReferences: { type: Array, default: null },
-  identity: { type: Object, default: null },
-  manifest: { type: Object, default: null },
-  visualRegistry: { type: Object, default: null },
-  rawVisualUrl: { type: Function, default: () => '' },
+  view: {type:Object,default:null},
   externalResources: { type: Array, default: () => [] },
-  readingEntries: { type: Array, default: () => [] },
   readingError: { type: String, default: '' },
 })
 const emit = defineEmits(['read', 'retry-reading', 'play', 'play-episode', 'open-card', 'open-idol', 'open-unit','open-entity','open-event','open-target','open-seasonal'])
 const bannerFailed=ref(false)
-watch(()=>props.event?.event_code,()=>{bannerFailed.value=false})
-const readingByFile = computed(() => new Map(props.readingEntries.filter(entry => entry.status === 'ready').map(entry => [entry.source_file, entry])))
+watch(()=>props.view?.identity.eventCode,()=>{bannerFailed.value=false})
+const readingByFile = computed(() => new Map((props.view?.readingEntries || []).filter(entry => entry.status === 'ready').map(entry => [entry.source_file, entry])))
 
-const castReferences = computed(() => props.projectedCastReferences?.map(entry => {
-  const raw = entry.reference.source.kind === 'event_story_visual_promotion'
-    ? props.rawVisualUrl(entry.idol_code) : ''
-  return { idol: props.idols.find(idol => idol.idol_code === entry.idol_code),
-    reference: raw ? { ...entry.reference, imageCandidates: [
-      { url: raw, kind: 'event_story_visual' }, ...entry.reference.imageCandidates,
-    ] } : entry.reference }
-}) || props.idols.map(idol => ({
-  idol,
-  reference: buildEventIdolReference(idol.idol_code, props.identity, props.manifest,
-    props.visualRegistry, props.event, props.rawVisualUrl(idol.idol_code)),
-})))
-const hasStoryVisuals = computed(() => castReferences.value.some(entry =>
-  entry.reference.imageCandidates[0]?.kind === 'event_story_visual'))
-const eventTypeLabel = computed(() => ({
-  theater: 'THEATER 累计 PT',
-  tour: 'TOUR 累计 PT',
-  carnival: '315 CARNIVAL',
-  collection: '315 CARNIVAL',
-  valentine: 'VALENTINE',
-  whiteday: 'WHITEDAY',
-}[props.supplement?.eventKind || props.masterEvent?.event_type_label] || '活动剧情'))
-const scopeLabel = computed(() => ({
-  fixed_unit_event: '固定组合团活',
-  attribute_event: `${props.event?.attribute || ''} 属性团曲`.trim(),
-  mixed_unit_event: '跨组合团活',
-}[props.event?.event_scope] || '活动剧情'))
-
-const rewardCards = computed(() => {
-  const grouped = new Map()
-  const add = reward => {
-    const id = reward.card_resource_id
-    if (!id) return
-    if (!grouped.has(id)) grouped.set(id, { ...reward, methods: [] })
-    const card = grouped.get(id)
-    if (reward.source === 'event_story_read_reward') {
-      card.methods.push({
-        key: `story-${reward.episode_id}-${reward.availability}`,
-        kind: 'story',
-        label: `${reward.episode_title} 阅读报酬${reward.availability === 'in_event_term' ? '（活动期内）' : ''}`,
-      })
-    } else if (reward.reward_kind === 'card') {
-      card.methods.push({ key: `point-card-${reward.required_points}`, kind: 'point', label: `${formatNumber(reward.required_points)} PT 获得卡片` })
-    }
-  }
-  for (const reward of props.masterEvent?.story_reward_cards || []) add(reward)
-  for (const reward of props.masterEvent?.point_reward_cards || []) add(reward)
-  for (const card of grouped.values()) {
-    const fragments = (props.masterEvent?.point_reward_cards || []).filter(reward =>
-      reward.card_resource_id === card.card_resource_id && reward.reward_kind === 'card_fragment',
-    )
-    if (fragments.length) {
-      card.methods.push({
-        key: `fragments-${card.card_resource_id}`,
-        kind: 'point',
-        label: `${formatNumber(fragments[0].required_points)} PT 起，共 ${fragments.length} 次碎片报酬`,
-      })
-    }
-  }
-  return [...grouped.values()]
-})
+const event=computed(()=>props.view?.story.entry)
+const story=computed(()=>props.view?.story)
+const episodes=computed(()=>props.view?.episodes || [])
+const units=computed(()=>props.view?.units || [])
+const bannerBinding=computed(()=>props.view?.media.banner?.url?props.view.media.banner:props.view?.media.logo)
+const castReferences=computed(()=>(props.view?.castReferences || []).map(entry=>({idol:props.view.cast.find(idol=>idol.idol_code===entry.idol_code),reference:entry.reference})))
+const hasStoryVisuals=computed(()=>castReferences.value.some(entry=>entry.reference.imageCandidates[0]?.kind==='event_story_visual'))
+const eventTypeLabel=computed(()=>({theater:'THEATER 累计 PT',tour:'TOUR 累计 PT',collection:'315 CARNIVAL',valentine:'VALENTINE',whiteday:'WHITEDAY'}[props.view?.identity.kind] || '活动剧情'))
+const scopeLabel=computed(()=>({fixed_unit_event:'固定组合团活',attribute_event:`${props.view?.identity.attribute || ''} 属性团曲`.trim(),mixed_unit_event:'跨组合团活'}[props.view?.identity.scope] || (props.view?.identity.isReprint?'复刻活动':'历史活动')))
+const rewardCards=computed(()=>props.view?.rewards.cards || [])
 const rewardCardIds = computed(() => new Set(rewardCards.value.map(card => card.card_resource_id)))
-const derivedOnlyCards = computed(() => props.cards.filter(card => !rewardCardIds.value.has(card.card_resource_id)))
+const derivedOnlyCards = computed(() => (props.view?.cards || []).filter(card => !rewardCardIds.value.has(card.card_resource_id)))
 const derivedRelationItems = computed(() => derivedOnlyCards.value.map(card => ({
   id: `card-${card.card_resource_id}`,
   kind: 'card',
@@ -274,7 +217,7 @@ const derivedRelationItems = computed(() => derivedOnlyCards.value.map(card => (
 })))
 
 function idolName(id) {
-  return props.idols.find(idol => idol.idol_code === id)?.display_name || '姓名待确认'
+  return props.view.cast.find(idol => idol.idol_code === id)?.display_name || '姓名待确认'
 }
 function formatNumber(value) {
   return new Intl.NumberFormat('zh-CN').format(Number(value || 0))
@@ -294,6 +237,7 @@ function formatDateTime(timestamp) {
 .episode-entry > button:first-child { flex: 1; min-width: 0; }
 .episode-list .episode-reading { display: flex; justify-content: center; flex: 0 0 auto; min-width: 62px; gap: 5px; color: #157c78; font-size: 13px; }
 .event-detail { height: 100%; overflow-y: auto; background: #f5f7f8; color: #24313a; }
+.event-media-note{position:absolute;bottom:0;left:0;right:0;padding:7px;background:#fffffff2;font-size:12px;color:#536872}.event-media-archive{padding:14px 24px;border-bottom:1px solid #dfe5e8;font-size:13px}.event-media-archive summary{cursor:pointer}.event-media-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:12px}
 .event-identity { display: grid; grid-template-columns: minmax(420px, 1.4fr) minmax(280px, .6fr); gap: 28px; padding: 26px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #dfe5e8; background: #fff; }
 .event-visual { position: relative; align-self: start; overflow: hidden; aspect-ratio: 940 / 510; border: 1px solid #e1e6e8; border-radius: 6px; background: #e9eef0; }
 .event-banner { display: block; width: 100%; height: 100%; object-fit: contain; }
