@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+import re
 from typing import Any
 from .provenance import source
 
@@ -37,8 +38,20 @@ def render_skill_description(template: str, level: dict[str, Any], effects: list
         "calc_rate": level.get("10"),
         "period": level.get("12"),
     }
-    if effects and isinstance(effects[0].get("4"), int):
-        replacements["d01"] = effects[0]["4"]
+    # Current PB templates use dXY: sorted effect ordinal X, parameter ordinal Y.
+    # Field 4 is EffectGroupId, never a display value. These observed type/param
+    # pairs are supported; a future unverified pair remains literal text.
+    observed_parameters = {(2, 1), (3, 1), (4, 0), (11, 0), (14, 0)}
+    for match in re.finditer(r"<d([0-9])([0-2])>", template):
+        effect_index, parameter_index = map(int, match.groups())
+        if effect_index >= len(effects):
+            continue
+        effect = effects[effect_index]
+        if (effect.get("3"), parameter_index) not in observed_parameters:
+            continue
+        value = effect.get(str(5 + parameter_index), 0)
+        if isinstance(value, int) and not isinstance(value, bool):
+            replacements[match.group(0)[1:-1]] = value
     rendered = template
     for key, value in replacements.items():
         if value is not None:
@@ -52,7 +65,7 @@ def build_card_reference_maps(tables: dict[int, list[dict[str, Any]]]) -> dict[s
         if isinstance(row.get("2"), int):
             skill_levels[row["2"]].append(row)
     skill_effects: dict[int, list[dict[str, Any]]] = defaultdict(list)
-    for row in tables.get(40, []):
+    for row in tables.get(74, []):
         if isinstance(row.get("2"), int):
             skill_effects[row["2"]].append(row)
     return {
@@ -99,29 +112,41 @@ def build_card_gameplay(card: dict[str, Any], references: dict[str, Any]) -> dic
     skill_category_id = skill_row.get("8")
     skill_category = skill_categories.get(skill_category_id, {})
     level_entries = []
-    for level in sorted(skill_levels.get(skill_id, []), key=lambda item: item.get("3") or 0):
+    detail_group_id = skill_row.get("5")
+    for level in sorted(skill_levels.get(detail_group_id, []), key=lambda item: item.get("3") or 0):
         effect_group_id = level.get("8")
         effects = sorted(
             skill_effects.get(effect_group_id, []),
-            key=lambda item: (item.get("9") or 0, item.get("1") or 0),
+            key=lambda item: (item.get("8") or 0, item.get("1") or 0),
         )
         template = skill_row.get("3") if isinstance(skill_row.get("3"), str) else ""
+        description = render_skill_description(template, level, effects)
         level_entries.append({
             "level": level.get("3"),
             "rate": level.get("10"),
             "interval": level.get("11"),
             "duration": level.get("12"),
             "effect_group_id": effect_group_id,
-            "description": render_skill_description(template, level, effects),
+            "description": description,
+            "description_status": "unresolved-template" if re.search(r"<[^>]+>", description) else "configuration-projection",
             "effects": [
                 {
                     "id": effect.get("1"),
-                    "value": effect.get("4"),
+                    "group_id": effect.get("2"),
+                    "type": effect.get("3", 0),
+                    "effect_group_id": effect.get("4", 0),
+                    "param1": effect.get("5", 0),
+                    "param2": effect.get("6", 0),
+                    "param3": effect.get("7", 0),
+                    "sort_order": effect.get("8", 0),
+                    "_source": source(74, {"id": 1, "group_id": 2, "type": 3,
+                        "effect_group_id": 4, "param1": 5, "param2": 6,
+                        "param3": 7, "sort_order": 8}, effect.get("_offset")),
                 }
                 for effect in effects
             ],
             "_source": source(21, {
-                "skill_id": 2,
+                "skill_detail_group_id": 2,
                 "level": 3,
                 "effect_group_id": 8,
                 "rate": 10,
@@ -145,6 +170,7 @@ def build_card_gameplay(card: dict[str, Any], references: dict[str, Any]) -> dic
             "id": skill_id,
             "name": skill_row.get("2"),
             "description_template": skill_row.get("3"),
+            "detail_group_id": detail_group_id,
             "category": {
                 "id": skill_category_id,
                 "name": skill_category.get("2"),

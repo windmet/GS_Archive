@@ -25,7 +25,7 @@ def corpus(data, api=legacy, split=split_card_index):
     cards = legacy.extract_card_parameters(records)
     cues = legacy.extract_card_voice_cues(records)
     stories = legacy.extract_scenario_titles(records)
-    tables = extract_table_rows(records, {2, 16, 20, 21, 23, 27, 28, 32, 40, 75, 130})
+    tables = extract_table_rows(records, {2, 16, 20, 21, 23, 27, 28, 32, 74, 75, 130})
     # Controlled evidence exercises audio classification and compiled lookup without media IO.
     bases = {cue['scenario_base'][:-3] for cue in cues
              if isinstance(cue.get('scenario_base'), str) and cue['scenario_base'].endswith('_00')}
