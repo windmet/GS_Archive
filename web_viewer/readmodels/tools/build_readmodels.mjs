@@ -22,7 +22,7 @@ const status = execFileSync('git', ['-C', repo, 'status', '--porcelain', '--untr
   { encoding: 'utf8' }).split(/\r?\n/).filter(line => line.trim() &&
     // Ignore unrelated new data files only; every consumed input and every
     // tracked modification still requires a committed baseline.
-    !(line.startsWith('?? web_viewer/public/') && !dataInputs.has(line.slice(3)))).join('\n');
+    !(line.startsWith('?? web_viewer/public/') && !dataInputs.has(line.slice(3)) && !line.slice(3).startsWith('web_viewer/public/data/masterdata/domains/'))).join('\n');
 assert(!status, `Read-model inputs or generator are uncommitted:\n${status}`);
 // Build is intentionally independent of master. Starting from current compatible product ancestry is required.
 execFileSync('git', ['-C', repo, 'merge-base','--is-ancestor','a6929d4054a8a9ce7da64b3d962c86eedd2cfb27',head]);
@@ -33,7 +33,7 @@ try {
   // Only code that affects projection bytes belongs in the data release.
   // Assembler, audit and verification changes must not rotate immutable URLs.
   const generatorHashes = {};
-  for (const relative of ['lib/common.mjs', 'lib/checkout_adapter.mjs', 'lib/legacy_alias_projection.mjs', 'lib/mobile_projection.mjs', 'lib/reading_locator_projection.mjs', 'lib/projections.mjs', 'tools/build_readmodels.mjs']) {
+  for (const relative of ['lib/common.mjs', 'lib/checkout_adapter.mjs', 'lib/domain_expansion.mjs', 'lib/legacy_alias_projection.mjs', 'lib/mobile_projection.mjs', 'lib/reading_locator_projection.mjs', 'lib/projections.mjs', 'tools/build_readmodels.mjs']) {
     generatorHashes[relative] = sha256(await safeRead(kit, relative));
   }
   const release = sha256(jsonBytes({ format: 'gs-readmodels-v1', ...provenance, generatorHashes }));

@@ -107,6 +107,23 @@ export async function writeReadModels(root, release, product, provenance = {}) {
   for (const [domain, value] of Object.entries(product.extraDomains || {})) {
     assert(/^[a-z-]+$/.test(domain) && !Object.hasOwn(domains, domain), `Invalid extra domain: ${domain}`);
     const rows = [];
+    if (value.packed) {
+      assert(new Set(value.records.map(record => String(record.id))).size === value.records.length &&
+        value.records.every(record => record.id !== null && record.id !== undefined && String(record.id)), `Duplicate/missing ${domain} identity`);
+      // Collections share bounded detail pages to stay within the existing file
+      // budget; the consumer selects and verifies an entity inside the page.
+      const pages = await writer.pages(`${domain}/details`, `${domain}.details`,
+        value.records.map(record => ({id:String(record.id),view:stripEvidence(record.view)})));
+      const fs = await import('node:fs/promises'); const path = await import('node:path');
+      const pageById = new Map();
+      for (const page of pages) {
+        const payload = JSON.parse(await fs.readFile(path.join(root,'pages',page.url.slice(1)), 'utf8'));
+        for (const record of payload.data.rows) pageById.set(record.id,page);
+      }
+      for (const record of value.records) rows.push({id:String(record.id),...record.summary,detail:pageById.get(String(record.id))});
+      await directory(domain, rows, {searchRows:value.searchable ? rows : null});
+      continue;
+    }
     for (const record of value.records) {
       const descriptor = await detail(domain, record.id, { view: stripEvidence(record.view) });
       rows.push({ id: String(record.id), ...record.summary, detail: descriptor });

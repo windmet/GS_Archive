@@ -5,8 +5,12 @@ import { assert, safeRead, sha256, jsonBytes, listFiles, pick } from './common.m
 import { buildMobileRecords } from './mobile_projection.mjs';
 import { buildLegacyAliasRecords } from './legacy_alias_projection.mjs';
 import { buildReadingLocatorRecords, readingEntriesForFiles } from './reading_locator_projection.mjs';
+import { applyDomainExpansion } from './domain_expansion.mjs';
 
 export const INPUTS = {
+ domainItems:'data/masterdata/domains/item_catalog.json', domainHonors:'data/masterdata/domains/honor_catalog.json',
+ domainEvents:'data/masterdata/domains/event_supplement_index.json', domainPhotoIndex:'data/masterdata/domains/photo_index.json',
+ domainPhotoMaterials:'data/masterdata/domains/photo_materials.json',
  cardIndex: 'data/masterdata/card_index.json', cardDetailIndex: 'data/masterdata/card_detail_index.json',
  idolUnit: 'data/masterdata/idol_unit_dictionary.json', costumeDictionary: 'data/masterdata/costume_dictionary.json',
  archiveManifest: 'data/archive_manifest.json', uiAssetCatalog: 'data/assets/ui_asset_catalog.json',
@@ -51,10 +55,13 @@ export function projectUnitRecord(entry, stories, songs) {
 /** Production adapter: executes the existing, checkout-owned pure selectors. No hand-reimplementation of card precedence or story identity. */
 export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
   const sources = {}, data = {};
-  for (const [key, name] of Object.entries(INPUTS)) {
+  const readSource = async name => {
     const bytes = await safeRead(path.join(viewer, 'public'), name);
-    sources[name] = { sha256: sha256(bytes), bytes: bytes.length };
-    data[key] = JSON.parse(bytes.toString('utf8').replace(/^\uFEFF/, ''));
+    sources[name] = { sha256:sha256(bytes), bytes:bytes.length };
+    return JSON.parse(bytes.toString('utf8').replace(/^\uFEFF/, ''));
+  };
+  for (const [key, name] of Object.entries(INPUTS)) {
+    data[key] = await readSource(name);
   }
   const codeHashes = {};
   // Include transitive pure-module code in the release digest, not only direct import entrypoints.
@@ -222,6 +229,7 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
           episodes:[...(campaign.introduction||[]),...(campaign.participants||[]).flatMap(participant=>participant.episodes||[])]
             .filter(episode=>episode._source).map(episode=>({id:episode.id,source:episode._source}))}}})) },
   };
+  await applyDomainExpansion(extraDomains, data, readSource);
   return { product: { home: homes, homeStats, homeHighlights, identities, cards, stories, gashas,
     songs: Object.values(data.songCatalog.songs), songViews, songSummary: data.songCatalog.summary, cardContext, storyViews,
     storyCatalogView: { mainDomain, extraDomain, birthdayDomain,
