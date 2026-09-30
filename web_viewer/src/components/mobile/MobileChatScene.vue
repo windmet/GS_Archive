@@ -135,6 +135,8 @@ const historyMessages = computed(() => {
   const talkMap = talkByIndex.value
 
   for (const idx of path) {
+    const thread = props.steps?.[idx]?.presentation_context?.thread
+    if (context.value.threadId && thread?.id !== context.value.threadId) continue
     const chosenText = props.choiceTexts[idx]
     if (chosenText) {
       const fallbackText = (typeof chosenText === 'string' ? chosenText : chosenText.source_text) || ''
@@ -151,9 +153,6 @@ const historyMessages = computed(() => {
 
 // ── Unit / theme / title ──
 const unitCode = computed(() => {
-  const sid = props.scenarioId || ''
-  const m = sid.match(/8_2_x_(\d{3}[a-z0-9]{3})/)
-  if (m) return normalizeUnitCode(m[1])
   return context.value.unitCode || null
 })
 
@@ -172,6 +171,7 @@ const deviceSurfaceStyle = computed(() => {
 })
 
 const chatTitle = computed(() => {
+  if (context.value.threadTitle) return context.value.threadTitle
   const sid = props.scenarioId || ''
   if (sid.startsWith('8_2_')) {
     const uc = unitCode.value

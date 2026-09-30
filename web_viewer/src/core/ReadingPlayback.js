@@ -5,6 +5,9 @@ export function readingPlaybackTarget(document, rowId, revision, entry, { fullDo
   if (document?.status !== 'ready' || (!fullDocument && (!row || ['title', 'synopsis'].includes(row.kind)))) {
     throw Error('这一行暂时不能定位演出，请选择正文台词。')
   }
+  if (!fullDocument && document.controls?.some(c => c.fork?.branches.some(b => b.step_indices.includes(row.anchor.step_index)))) {
+    throw Error('分支内定位演出暂未开放，请播放完整剧情并选择对应选项。')
+  }
   // Full playback includes opening steps; the reading row remains a return anchor only.
   if (document.schema_version !== 2 || document.playback?.file !== document.source.file ||
       document.playback.start_step_index !== 0 || document.playback.end_step_index !== document.source.step_count - 1) {

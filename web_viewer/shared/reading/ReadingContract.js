@@ -1,4 +1,5 @@
 import { READING_SOURCE_FILE } from './ReadingCatalog.js'
+import { validatedFiniteForks } from '../story/FiniteBranchFlow.js'
 const ID = /^[A-Za-z0-9_-]+$/
 const HASH = /^sha256:[a-f0-9]{64}$/
 const STATUS = new Set(['ready', 'empty', 'unsupported'])
@@ -72,6 +73,14 @@ export function validateReadingDocument(d, entry) {
     }
   }
   requireValue(d.status !== 'empty' || d.rows.length === 0, 'empty status')
+  const forks = d.controls.filter(c => c.fork).map(c => c.fork)
+  if (forks.length) {
+    const steps = Array.from({ length: d.source.step_count }, () => null)
+    for (const row of d.rows) steps[row.anchor.step_index] = { step_id: row.anchor.step_id, type: row.presentation === 'call' ? 'call' : row.kind }
+    for (const control of d.controls) steps[control.step_index] = { step_id: control.step_id, type: 'choice',
+      options: control.options.map(o => ({ label: o.source_label, target_step_id: o.target_step_id })) }
+    validatedFiniteForks({ steps, reading_control_flow: { version: 1, base_compiled_sha256: d.source.sha256, forks } })
+  }
   requireValue(d.status !== 'ready' || (d.rows.length > 0 && !d.diagnostics.some(x => x.severity === 'unsupported')), 'ready status')
   return d
 }

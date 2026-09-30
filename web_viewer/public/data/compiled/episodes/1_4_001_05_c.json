@@ -3397,5 +3397,48 @@
     "scenario_id": "1_4_001_05",
     "start_step_index": 60,
     "end_step_index": 92
+  },
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:5134e3f27bebb0ce28d251ca3b775b3036c040cb90b9101d61ddfa0a8745f9d2",
+    "forks": [
+      {
+        "choice_index": 25,
+        "choice_step_id": 26,
+        "join_index": 28,
+        "join_step_id": 29,
+        "source_file": "assets/resources/scenariodata/1_4_001_05/scenario_1_4_001_05_c.json",
+        "raw_sha256": "sha256:fb30fe901fcbe451a2249666ab112d7d28b20bbd2105007ad5c902be3bd6772d",
+        "choice_commands": [
+          116,
+          117
+        ],
+        "join_command": 126,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [
+              26
+            ],
+            "exit_index": 26,
+            "command_indices": [
+              119
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select2",
+            "step_indices": [
+              27
+            ],
+            "exit_index": 27,
+            "command_indices": [
+              123
+            ]
+          }
+        ]
+      }
+    ]
   }
 }

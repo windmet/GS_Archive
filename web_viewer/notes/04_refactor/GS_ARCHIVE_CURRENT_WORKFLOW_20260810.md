@@ -26,7 +26,7 @@ current-state entry requested by this workflow now exists.
 | P2-B long soak | **NOT EXECUTED** |
 
 <!-- authoritative-v2-summary collections=4 standalone=1174 artifacts=1203 -->
-<!-- publication-ledger-summary releases=6 stable_logical_ids=1175 -->
+<!-- publication-ledger-summary releases=199 stable_logical_ids=1367 -->
 
 The pre-closeout PR #37 registry drift is closed. Release `002` is now the
 registry and publication-manifest owner; PR-head run `31325277234` and

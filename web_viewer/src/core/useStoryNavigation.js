@@ -2,6 +2,7 @@ import { episodeStartIndex, episodeEndIndex, resolveStoryPlaybackWindow } from '
 import { computed } from 'vue'
 import { isTransitionStep } from '../utils/StoryStepFlow.js'
 import { createChoiceSelectionRecord } from '../localization/story/LegacyDialogueAdapter.js'
+import { finiteBranchNextIndex } from '../../shared/story/FiniteBranchFlow.js'
 
 export function useStoryNavigation({
   compiledData,
@@ -77,7 +78,8 @@ export function useStoryNavigation({
     if (!isLastStep.value) {
       // Enter every authored step. Transition timers carry the scene to the
       // next reading boundary without dropping its animations or silent text.
-      const target = currentStepIndex.value + 1
+      const target = finiteBranchNextIndex(compiledData.value, currentStepIndex.value)
+      if (target > navigationEndIndex.value) return false
       const step = compiledData.value?.steps?.[currentStepIndex.value]
       if (!isTransitionStep(step)) {
         historyStack.value.push(currentStepIndex.value)

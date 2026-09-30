@@ -2,6 +2,7 @@ import { resolveCommunicationContext } from '../../src/core/story-runtime/Commun
 import { normalizeLegacyDialogue } from '../../src/localization/story/LegacyDialogueAdapter.js'
 import { normalizeScenario } from '../story/ScenarioNormalizer.js'
 import { projectReadingIdentity, readingVisualAvatarEntity } from './ReadingVisualIdentity.js'
+import { validatedFiniteForks } from '../story/FiniteBranchFlow.js'
 
 export const READING_SCHEMA_VERSION = 2
 const clone = value => value == null ? null : JSON.parse(JSON.stringify(value))
@@ -25,6 +26,8 @@ export function createReadingDocument(input, { documentId, logicalId, file, sha2
     ids.set(step.step_id, index)
   }
   const diagnostics = []
+  let forks = []
+  try { forks = validatedFiniteForks(input) } catch { diagnostics.push({ code: 'invalid-branch-evidence', step_index: null, severity: 'unsupported' }) }
   const rows = []
   const controls = []
   const diagnose = (code, stepIndex, severity = 'warning') => diagnostics.push({ code, step_index: stepIndex, severity })
@@ -38,7 +41,8 @@ export function createReadingDocument(input, { documentId, logicalId, file, sha2
     if (step.stamp && !/^[A-Za-z0-9_-]+$/.test(step.stamp.id || '')) diagnose('invalid-stamp-identity', stepIndex, 'unsupported')
     // Published formats do not define a complete branch-exit graph. Never infer
     // reconvergence from label names, adjacency, or the existing player's behavior.
-    if (step.type === 'choice' && (step.options?.length ?? 0) !== 1) diagnose('branch-exits-unavailable', stepIndex, 'unsupported')
+    const fork = forks.find(fork => fork.choice_index === stepIndex)
+    if (step.type === 'choice' && !fork && (step.options?.length ?? 0) !== 1) diagnose('branch-exits-unavailable', stepIndex, 'unsupported')
     if (step.jump || step.jump_to || step.next_step_id || step.flow?.target_step_id) diagnose('unsupported-control-flow', stepIndex, 'unsupported')
 
     const anchor = slot => ({
@@ -84,7 +88,7 @@ export function createReadingDocument(input, { documentId, logicalId, file, sha2
         const targetIndex = ids.get(targetId) ?? null
         if (targetIndex === null) diagnose('unresolved-choice-target', stepIndex, 'unsupported')
         // Single-option back jumps or skips also require explicit traversal support.
-        if (targetIndex !== null && targetIndex !== stepIndex + 1) diagnose('nonsequential-choice-path', stepIndex, 'unsupported')
+        if (!fork && targetIndex !== null && targetIndex !== stepIndex + 1) diagnose('nonsequential-choice-path', stepIndex, 'unsupported')
         const option = { choice_id: step.choice_id ?? null, option_id: o.option_id ?? null,
           source_label: o.label ?? null, target_step_id: targetId, target_step_index: targetIndex,
           resolution: targetIndex === null ? 'unresolved' : 'resolved' }
@@ -94,7 +98,8 @@ export function createReadingDocument(input, { documentId, logicalId, file, sha2
           slot: `option-${index}-detail`, option })
         return option
       })
-      controls.push({ step_id: step.step_id, step_index: stepIndex, kind: 'choice', options })
+      controls.push({ step_id: step.step_id, step_index: stepIndex, kind: 'choice', options,
+        ...(fork ? { fork: clone(fork) } : {}) })
     }
   }
   return {
@@ -106,6 +111,26 @@ export function createReadingDocument(input, { documentId, logicalId, file, sha2
     status: diagnostics.some(d => d.severity === 'unsupported') ? 'unsupported' : (rows.length ? 'ready' : 'empty'),
     rows, controls, diagnostics,
   }
+}
+
+// Rows remain canonical and unique. Reorder references, never duplicate units.
+export function readingBranchRows(document) {
+  const rows = document?.rows || [], result = [], consumed = new Set()
+  for (const row of rows) {
+    if (consumed.has(row.anchor.row_id)) continue
+    const control = document.controls?.find(c => c.fork && c.step_index === row.anchor.step_index)
+    if (!control) { result.push({ row, branch: null }); continue }
+    for (const [index, branch] of control.fork.branches.entries()) {
+      const option = control.options[index]
+      const branchRows = rows.filter(r => (r.anchor.step_index === control.step_index && r.option?.source_label === option.source_label)
+        || branch.step_indices.includes(r.anchor.step_index))
+      for (const r of branchRows) {
+        consumed.add(r.anchor.row_id)
+        result.push({ row: r, branch: { index, choice: control.step_id, first: r === branchRows[0] } })
+      }
+    }
+  }
+  return result
 }
 
 /** v2 portraits follow visual evidence, independently of the public label. */

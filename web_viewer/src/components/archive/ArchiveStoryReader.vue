@@ -41,6 +41,7 @@
         <article class="reader-transcript" aria-label="剧情正文">
           <section v-for="item in presentedRows" :key="item.row.anchor.row_id" :id="`reading-${item.row.anchor.row_id}`" tabindex="-1" class="reader-row" :aria-hidden="item.mergedTitle ? 'true' : undefined" :class="[`kind-${item.row.kind}`, { selected: anchor === item.row.anchor.row_id, 'search-match': searchMatchIds.has(item.row.anchor.row_id), 'front-matter': item.frontMatter, 'merged-title': item.mergedTitle }]">
             <template v-if="!item.mergedTitle">
+            <p v-if="item.branch?.first" class="reader-branch-label">选项 {{ item.branch.index + 1 }} 的分支（与其他选项互斥；下方汇合后继续）</p>
             <img v-if="item.avatar" class="reader-avatar" :src="getCharaIconUrl(item.avatar)" alt="" loading="lazy" @error="$event.target.hidden = true" />
             <p v-if="item.view.speaker.display" class="reader-speaker">{{ item.view.speaker.display }}</p>
             <span v-if="item.row.kind === 'choice'" class="reader-kind">选项</span>
@@ -66,7 +67,7 @@ import { computed, nextTick, ref, watch } from 'vue'
 import ArchivePageChrome from './ArchivePageChrome.vue'
 import { createStoryLocalization } from '../../localization/story/StoryLocalizationContext.js'
 import { producerName, saveProducerName } from '../../utils/LanguageStore.js'
-import { readingAvatarEntity, readingPresentationSpeaker } from '../../../shared/reading/ReadingDocument.js'
+import { readingAvatarEntity, readingPresentationSpeaker, readingBranchRows } from '../../../shared/reading/ReadingDocument.js'
 import { getCharaIconUrl } from '../../utils/AssetResolver.js'
 import { projectReadingFrontMatter } from '../../presentation/ReadingFrontMatter.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
@@ -113,7 +114,7 @@ const sourceTitle = computed(() => document.value?.presentation?.title || docume
 const title = computed(() => presentProducerAddressingText(sourceTitle.value))
 const episodeLabel = computed(() => presentIdolEpisodeLabel({ sourceName: document.value?.presentation?.episode_label }))
 const frontMatter = computed(() => projectReadingFrontMatter(document.value?.rows, sourceTitle.value))
-const presentedRows = computed(() => (document.value?.rows || []).map(row => ({ row,
+const presentedRows = computed(() => readingBranchRows(document.value).map(({ row, branch }) => ({ row, branch,
   frontMatter: frontMatter.value.frontMatterIds.has(row.anchor.row_id),
   mergedTitle: frontMatter.value.mergedTitleIds.has(row.anchor.row_id),
   avatar: readingAvatarEntity(row), view: localization.resolveUnit({ source: row.source_text,
@@ -164,6 +165,7 @@ watch(() => [props.state.status, props.documentId, props.anchor, props.notice], 
 </script>
 
 <style scoped>
+.reader-branch-label { border-left: 3px solid #0a8878; padding: 10px 14px; background: #edf7f4; color: #176f69; font-size: 14px; font-weight: 700; }
 .reader-search { margin: 20px 0; padding: 16px; background: #fff; border: 1px solid #cbd8df; border-radius: 12px; }
 .reader-search label { display: flex; align-items: center; gap: 12px; font-size: 14px; white-space: nowrap; }
 .reader-search input { min-width: 0; width: 100%; min-height: 44px; padding: 8px; font: inherit; border: 1px solid #becdd5; border-radius: 6px; }
