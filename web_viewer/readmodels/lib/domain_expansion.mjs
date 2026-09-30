@@ -13,7 +13,7 @@ export function domainProductTarget(product,cards,materials){
   if(kind && materials[kind]?.some(row=>row.id===product.productId))return {view:'photo_catalog',photoEntity:`${kind}:${product.productId}`};
   return null;
 }
-const sourceKeys = ['relation','eventId','eventKind','scope','totalPoint','upperRank','lowerRank','offsetPoint','intervalPoint','limitPoint','level','episodeId','sectionId','chapterRelation','amount','cardRarityId','idolType','sourceTable','sourceRowId','role','groupId','dayCount','sumFanAmount','sourceDomain'];
+const sourceKeys = ['relation','eventId','eventKind','scope','totalPoint','upperRank','lowerRank','offsetPoint','intervalPoint','limitPoint','level','episodeId','sectionId','chapterRelation','amount','cardRarityId','idolId','idolType','sourceTable','sourceRowId','role','groupId','dayCount','sumFanAmount','sourceDomain'];
 
 export function validateMediaPayload(payload, kind) {
   assert(payload?.schemaVersion === 1 && payload.kind === kind &&
@@ -129,5 +129,8 @@ export async function applyDomainExpansion(domains, data, readSource) {
     assert(idol,'Photo profile identity mismatch');
     idol.view.photo={idolId:person.view.actor.idolId,faceCount:person.view.actor.faces.length,poseCount:person.view.actor.poses.length,
       cueCount:person.view.media.voiceCues.length};
+    idol.view.honors=domains.honors.records.filter(honor=>honor.view.sources.some(source=>source.idolId===person.view.actor.idolId)).map(honor=>({
+      key:honor.view.entry.key,nameJa:honor.view.entry.nameJa,
+      sources:honor.view.sources.filter(source=>source.idolId===person.view.actor.idolId).map(source=>pick(source,['idolId','scope','upperRank','lowerRank','event']))}));
   }
 }

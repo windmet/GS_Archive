@@ -6,6 +6,7 @@
 
 - 奖励卡片/卡片碎片只按 Product.productId 等于既有 canonical card_id 的唯一映射生成卡片目标；不猜 resource_id 前缀。不同 Product 类型使用不同命名空间，缺失/未知实体不产生按钮。
 - 摄影 Filter/Sticker/Spot/Scene/Frame 只在对应摄影表存在相同主键时生成 typed `photo` 目标。衣装、talk 等未实现目标仍为原文本。
+- 49 位偶像各8个排名称号（392个）按来源显式 IdolId 关联，不按名字归属；保留源条件中的 IdolId 并可从个人资料进入称号详情、返回个人资料。
 - 49 个偶像资料页新增 photo 摘要：由 idolUnit 的数值 idol_id 和已验证 photo actor 连接，提供表情/姿势/真实去重 cue 数；不由名字推称号归属。
 - 藏品薄目录追加本地图片 URL/status 和原 Name/DisplayName，详情媒体/来源不复制进全局页。
 - 4 个情人节/白色情人节活动按精确 event_code 连接既有 seasonal campaign，同时校验 campaign_detail_id；复用现有阅读身份，不复制正文，不用年份猜映射。

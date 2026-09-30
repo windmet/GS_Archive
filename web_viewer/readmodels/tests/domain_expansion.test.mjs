@@ -80,6 +80,13 @@ test('[local-corpus] domain projection preserves story identities, typed rewards
     assert.equal(profile.faceCount,person.view.actor.faces.length);
     assert.equal(profile.poseCount,person.view.actor.poses.length);
     assert.equal(profile.cueCount,person.view.media.voiceCues.length);
+    const honors=domains.idols.records.find(row=>row.id===person.summary.idolCode).view.honors;
+    assert.equal(honors.length,8);
+    for(const honor of honors){
+      const entry=domains.honors.records.find(row=>row.view.entry.key===honor.key);
+      assert.equal(honor.nameJa,entry.view.entry.nameJa);
+      assert(honor.sources.every(source=>source.idolId===profile.idolId && source.scope==='idol-ranking'));
+    }
   }
   for(const domain of ['items','honors'])for(const row of domains[domain].records)assert.equal(row.summary.image.url,row.view.media.image.url);
   let linkedCards=0,linkedPhotos=0;
