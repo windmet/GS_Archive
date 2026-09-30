@@ -22,7 +22,7 @@ export function validateMediaPayload(payload, kind) {
   const inspect=value=>{
     if (!value || typeof value!=='object') return;
     for (const [key,child] of Object.entries(value)) {
-      if (key==='url') assert(typeof child==='string' && /^\/assets\/(domain-images|bg|spines|voice)\/[a-z0-9_./-]+$/i.test(child) && !child.split('/').includes('..'), 'Unsafe domain media URL');
+      if (key==='url') assert(typeof child==='string' && /^\/assets\/(domain-images|bg|spines|voice|cards)\/[a-z0-9_./-]+$/i.test(child) && !child.split('/').includes('..'), 'Unsafe domain media URL');
       if (key==='sha256') assert(/^[a-f0-9]{64}$/.test(child), 'Invalid domain media digest');
       inspect(child);
     }
@@ -42,6 +42,7 @@ export function validateDomainPayload(payload, kind) {
 export async function applyDomainExpansion(domains, data, readSource) {
   const collectionMedia=validateMediaPayload(data.domainCollectionMedia,'gs-collection-media').entries;
   const photoMedia=validateMediaPayload(data.domainPhotoMedia,'gs-photo-media').entries;
+  const eventMedia=validateMediaPayload(data.domainEventMedia,'gs-event-media');
   const loginCampaigns=validateDomainPayload(data.domainLogin,'gs-login-campaign-catalog').entries;
   const events = validateDomainPayload(data.domainEvents, 'gs-event-supplement-index').entries;
   assert(Array.isArray(events) && new Set(events.map(e => e.eventCode)).size === events.length, 'Duplicate event codes');
@@ -71,19 +72,37 @@ export async function applyDomainExpansion(domains, data, readSource) {
     const seasonal=domains.seasonal.records.filter(row=>String(row.view.campaign.event_code)===event.eventCode);
     assert(seasonal.length<=1,'Ambiguous seasonal event identity');
     if(seasonal.length)assert(seasonal[0].view.campaign.campaign_detail_id===event.eventDetailId,'Seasonal event detail identity mismatch');
+    const rewards=source.rewards.map(row=>{
+      const target=domainProductTarget(row.product,data.domainCards,data.domainPhotoMaterials);
+      const card=target?.view==='card_detail'?data.domainCards.find(card=>card.resource_id===target.card):null;
+      const image=collectionMedia[row.product.entityKey]?.image || (target?.photoEntity?photoMedia[target.photoEntity]?.image:null) || (card?eventMedia.cardImages[card.resource_id]:null);
+      return {...row,product:{...row.product,target,presentation:{name:row.product.nameJa || card?.title || row.product.typeNameJa,image:image?pick(image,['url','status','sha256']):null,target:target || (['item','honor'].includes(row.product.kind)&&row.product.referenceStatus==='resolved-entity'?{view:'collection_catalog',entity:row.product.entityKey}:null)}}};
+    });
+    const rewardCards=new Map();
+    for(const row of rewards.filter(row=>row.product.kind==='card'&&row.product.target)){
+      const card=data.domainCards.find(card=>card.resource_id===row.product.target.card);
+      if(!rewardCards.has(card.resource_id))rewardCards.set(card.resource_id,{card_resource_id:card.resource_id,card_title:card.title,character_id:card.character_id,character_name:data.idolUnit.by_idol_code[card.character_id]?.display_name,rarity:card.rarity,image:row.product.presentation.image,methods:[]});
+      rewardCards.get(card.resource_id).methods.push({key:row.key,kind:row.scope.startsWith('story')?'story':'point',label:row.scope.startsWith('story')?`剧情 ${row.episodeId} 阅读报酬${row.scope==='story-in-event-term'?'（活动期内）':''}`:`${row.totalPoint?.toLocaleString('zh-CN') ?? '未记录'} PT 获得卡片`});
+    }
+    for(const card of rewardCards.values()){
+      const fragments=rewards.filter(row=>row.product.kind==='cardFragment'&&row.product.target?.card===card.card_resource_id);
+      if(fragments.length)card.methods.push({key:`fragments-${card.card_resource_id}`,kind:'point',label:`${fragments[0].totalPoint?.toLocaleString('zh-CN')} PT 起，共 ${fragments.length} 次碎片报酬`});
+    }
+    const media=eventMedia.entries[`event:${event.id}`];assert(media,'Missing event media identity');
+    const cast=base?.view.idols || [];
     return { id, summary:{ event_id:id, event_code:event.eventCode, title:event.name,
       release_at:event.term?.openAt || 0, event_scope:identity.event_scope,
       eventKind:event.eventKind, isReprint:event.storyChapterRelations.some(r => r.relation === 'reprint'),
-      storyAvailable:!!identity.exists }, view:{ event:{...identity,event_id:id},
-      masterEvent:data.eventIndex.by_code?.[event.eventCode] || null,
-      story:base?.view.story || null, episodes:base?.view.episodes || [], readingEntries:base?.view.readingEntries || [],
-      cards:original?.view.cards || [], idols:base?.view.idols || [], units:base?.view.units || [],
+      storyAvailable:!!identity.exists,image:pick(media.banner,['url','status']) }, view:{schemaVersion:2,
+      identity:{id,eventCode:event.eventCode,title:event.name,kind:event.eventKind,isReprint:event.storyChapterRelations.some(r=>r.relation==='reprint'),scope:identity.event_scope,attribute:identity.attribute || null,eventDetailId:event.eventDetailId},
+      period:{startAt:event.term?.openAt??null,endAt:event.term?.closeAt??null,displayEndAt:event.displayTerm?.closeAt??null,exchangeEndAt:event.exchangeTerm?.closeAt??null},media,
+      story:{...(base?.view.story || {}),entry:{...identity,event_id:id},available:!!identity.exists}, episodes:base?.view.episodes || [], readingEntries:base?.view.readingEntries || [],
+      cards:original?.view.cards || [], cast, units:base?.view.units || [],
       castReferences:base?.view.castReferences || [],
-      supplement:{ event, ...source, relatedEvents:related.map(other => eventLink(other.id)),
+      relatedEvents:related.map(other => eventLink(other.id)),
         seasonalCampaign:seasonal.length?{id:seasonal[0].id,title:seasonal[0].view.campaign.name}:null,
-        rewards:source.rewards.map(row=>({...row,product:{...row.product,target:domainProductTarget(row.product,data.domainCards,data.domainPhotoMaterials)}})),
-        items:source.items.map(link => ({...link,
-          nameJa:data.domainItems.entries.find(item => item.id === link.itemId)?.nameJa || String(link.itemId)})) } } };
+      rewards:{cards:[...rewardCards.values()],general:rewards,materials:source.items.map(link=>({...link,nameJa:data.domainItems.entries.find(item=>item.id===link.itemId)?.nameJa || String(link.itemId),image:pick(collectionMedia[`item:${link.itemId}`]?.image || {},['url','status'])}))},
+      provenance:{eventId:event.id,detailTable:source.sourceTable,coverage:source.coverage,storyChapterRelations:event.storyChapterRelations} } };
   }));
   assert(legacy.every(record => domains.events.records.some(next => next.id === record.id)), 'Lost existing event routes');
 
@@ -118,10 +137,12 @@ export async function applyDomainExpansion(domains, data, readSource) {
   const photoRecords = await Promise.all(data.domainPhotoIndex.actorIds.map(async id => {
     const actor = validateDomainPayload(await readSource(`data/masterdata/domains/photo_idols/${id}.json`), 'gs-photo-idol');
     const media = validateMediaPayload(await readSource(`data/masterdata/domains/photo_media_idols/${id}.json`), 'gs-photo-media-actor');
+    const costumes=validateMediaPayload(await readSource(`data/masterdata/domains/photo_costumes/${id}.json`),'gs-photo-costumes');
+    assert(costumes.idolId===id && costumes.costumes.every(row=>row.idolId===id),'Photo costume identity mismatch');
     assert(media.idolId === id, 'Photo media identity mismatch');
     assert([...actor.faces,...actor.poses].every(row=>media.entries[`${actor.faces.includes(row)?'faces':'poses'}:${row.id}`]?.preset?.label===row.animationName), 'Photo media label mismatch');
     const idol = idolsById.get(id); assert(idol && actor.idolId === id, 'Photo idol identity mismatch');
-    return { id:String(id), summary:{ nameJa:idol.display_name, idolCode:idol.code }, view:{actor,media} };
+    return { id:String(id), summary:{ nameJa:idol.display_name, idolCode:idol.code }, view:{actor,costumes:costumes.costumes,media:{...media,models:{...media.models,...costumes.models}}} };
   }));
   domains.photos = { records:[{id:'materials',summary:{nameJa:'摄影素材'},view:{materials,index:data.domainPhotoIndex,media:photoMedia}},...photoRecords] };
   for(const person of photoRecords){

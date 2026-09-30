@@ -125,7 +125,13 @@ export async function writeReadModels(root, release, product, provenance = {}) {
       continue;
     }
     for (const record of value.records) {
-      const descriptor = await detail(domain, record.id, { view: stripEvidence(record.view) });
+      let view=stripEvidence(record.view);
+      if(domain==='events'){
+        const generalPages=await writer.pages(`events/rewards/${entityKey(record.id)}`,'events.rewards',view.rewards.general,{maxRaw:192*1024});
+        const {general,...rewards}=view.rewards;
+        view={...view,rewards:{...rewards,generalPages,generalCount:general.length}};
+      }
+      const descriptor = await detail(domain, record.id, { view });
       rows.push({ id: String(record.id), ...record.summary, detail: descriptor });
     }
     await directory(domain, rows, { searchRows: value.searchable ? rows : null });

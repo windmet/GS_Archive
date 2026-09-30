@@ -40,18 +40,27 @@ test('[local-corpus] domain projection preserves story identities, typed rewards
   const domains = product.extraDomains;
   const manifest = JSON.parse(await fs.readFile(path.join(viewer,'public/data/archive_manifest.json'),'utf8'));
   assert.equal(domains.events.records.length,59);
+  for(const record of domains.events.records){
+    const view=record.view;
+    assert.equal(view.schemaVersion,2);assert.equal(view.identity.id,record.id);
+    assert(!('masterEvent' in view));assert(!('supplement' in view));assert(!('event' in view));
+    for(const role of ['banner','logo','background','resultBackground']){
+      assert(view.media[role]);assert.equal(view.media[role].sourceField,({banner:'bannerResourceId',logo:'logoResourceId',background:'backgroundResourceId',resultBackground:'resultBgResourceId'})[role]);
+    }
+    for(const row of view.rewards.general.filter(row=>row.product.presentation.image?.url))assert.match(row.product.presentation.image.url,/^\/assets\//);
+  }
   for (const event of manifest.unit_event_relations) {
     const projected = domains.events.records.find(r => r.id === String(event.event_id));
-    assert.equal(projected.view.event.file,event.file);
-    assert.equal(String(projected.view.supplement.event.eventCode),String(event.event_code));
+    assert.equal(projected.view.story.entry.file,event.file);
+    assert.equal(String(projected.view.identity.eventCode),String(event.event_code));
   }
   const original = domains.events.records.find(r => r.id === '410001');
   const reprint = domains.events.records.find(r => r.id === 'event:10019');
   assert.notEqual(original.id,reprint.id);
-  assert.equal(original.view.event.file,reprint.view.event.file);
-  assert.equal(reprint.view.supplement.event.storyChapterRelations[0].chapterId,410001);
+  assert.equal(original.view.story.entry.file,reprint.view.story.entry.file);
+  assert.equal(reprint.view.provenance.storyChapterRelations[0].chapterId,410001);
   assert.equal(reprint.summary.isReprint,true);
-  assert.deepEqual(domains.events.records.filter(r=>r.summary.eventKind === 'collection').map(r=>r.view.supplement.sourceTable),Array(17).fill(118));
+  assert.deepEqual(domains.events.records.filter(r=>r.summary.eventKind === 'collection').map(r=>r.view.provenance.detailTable),Array(17).fill(118));
   assert.equal(domains.items.records.length,535);
   assert.equal(domains.honors.records.length,1613);
   assert.equal(domains.photos.records.length,50);
@@ -75,6 +84,12 @@ test('[local-corpus] domain projection preserves story identities, typed rewards
   assert.equal(actor.media.models['001tom_002_00'].status,'verified-local-files');
   assert.equal(actor.media.voiceCues.length,5);
   for(const person of domains.photos.records.filter(row=>row.id!=='materials')){
+    assert(person.view.costumes.length>1);
+    for(const costume of person.view.costumes){
+      assert.equal(costume.idolId,person.view.actor.idolId);
+      assert.equal(person.view.media.models[costume.modelId].status,'verified-local-files');
+      assert(person.view.media.models[costume.modelId].animationNames.includes('wait_loop'));
+    }
     const profile=domains.idols.records.find(row=>row.id===person.summary.idolCode).view.photo;
     assert.equal(profile.idolId,person.view.actor.idolId);
     assert.equal(profile.faceCount,person.view.actor.faces.length);
@@ -90,12 +105,12 @@ test('[local-corpus] domain projection preserves story identities, typed rewards
   }
   for(const domain of ['items','honors'])for(const row of domains[domain].records)assert.equal(row.summary.image.url,row.view.media.image.url);
   let linkedCards=0,linkedPhotos=0;
-  for(const event of domains.events.records)for(const row of event.view.supplement.rewards){
+  for(const event of domains.events.records)for(const row of event.view.rewards.general){
     const target=row.product.target;if(!target)continue;
     if(target.view==='card_detail'){linkedCards++;assert(product.cards.some(card=>card.resource_id===target.card && Number(card.card_id)===row.product.productId))}
     else{linkedPhotos++;assert.match(target.photoEntity,/^(spots|scenes|stickers|frames|filters):\d+$/)}
   }
   assert(linkedCards>0);assert(linkedPhotos>0);
-  const seasonal=domains.events.records.filter(row=>row.view.supplement.seasonalCampaign);assert.equal(seasonal.length,4);
-  for(const event of seasonal){const campaign=domains.seasonal.records.find(row=>row.id===event.view.supplement.seasonalCampaign.id);assert.equal(String(campaign.view.campaign.event_code),event.view.supplement.event.eventCode);assert.equal(campaign.view.campaign.campaign_detail_id,event.view.supplement.event.eventDetailId)}
+  const seasonal=domains.events.records.filter(row=>row.view.seasonalCampaign);assert.equal(seasonal.length,4);
+  for(const event of seasonal){const campaign=domains.seasonal.records.find(row=>row.id===event.view.seasonalCampaign.id);assert.equal(String(campaign.view.campaign.event_code),event.view.identity.eventCode);assert.equal(campaign.view.campaign.campaign_detail_id,event.view.identity.eventDetailId)}
 });

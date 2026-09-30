@@ -74,7 +74,8 @@ export function createArchiveAssetResolver(roots = loadArchiveAssetRoots()) {
     },
     domainImagePath(urlPath) {
       const clean=urlPath.replace(/^\/+/, '')
-      if (!roots.domainImages || !/^image\/(image_item|image_honor|image_picturestudio)\/[a-z0-9_/-]+\.png$/i.test(clean) || clean.split('/').some(part=>part==='..' || part==='')) return null
+      const allowed=/^image\/(image_item|image_honor|image_picturestudio|image_home_announce)\/[a-z0-9_/-]+\.png$/i.test(clean) || /^event\/(theater|tour|collection|valentine|whiteday)\/[0-9]+\/(permanent|temporary)\/image_event_[a-z0-9_]+\.png$/i.test(clean)
+      if (!roots.domainImages || !allowed || clean.split('/').some(part=>part==='..' || part==='')) return null
       const file=path.resolve(roots.domainImages,clean)
       return isWithinRoot(roots.domainImages,file) ? file : null
     },
