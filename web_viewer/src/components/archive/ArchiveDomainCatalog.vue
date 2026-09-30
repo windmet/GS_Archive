@@ -15,13 +15,13 @@
         <div class="domain-tools">
           <label>搜索<input :value="query" placeholder="名称或编号" @input="emit('query',$event.target.value)"/></label>
           <label v-if="mode==='event_catalog'">活动形式<select v-model="eventKind"><option value="">全部</option><option v-for="(label,id) in eventKindLabels" :key="id" :value="id">{{ label }}</option></select></label>
-          <label v-if="mode==='collection_catalog'">{{ kind==='items'?'道具':'称号' }}类别<select v-model="category"><option value="">全部</option><option v-for="type in types" :key="type" :value="String(type)">类别 {{ type }}</option></select></label>
+          <label v-if="mode==='collection_catalog'">{{ kind==='items'?'用途分类':'称号类别' }}<select v-model="category"><option value="">全部</option><template v-if="kind==='items'"><option v-for="group in itemBrowseGroups" :key="group.key" :value="group.key">{{ group.label }}</option></template><template v-else><option v-for="type in types" :key="type" :value="String(type)">类别 {{ type }}</option></template></select></label>
           <label v-if="mode==='photo_catalog' && ['faces','poses'].includes(photoTab)">偶像<select :value="actorId" @change="emit('photo-idol',$event.target.value)"><option v-for="idol in actors" :key="idol.id" :value="idol.id">{{ idol.nameJa }}</option></select></label>
         </div>
         <p class="domain-count">{{ filtered.length }} 条资料</p>
         <div class="domain-list">
           <button v-for="row in visible" :key="row.id" type="button" :aria-pressed="String(row.id)===selectedId" @click="select(row)">
-            <span class="domain-symbol"><CalendarDays v-if="mode==='event_catalog'" :size="21"/><Camera v-else-if="mode==='photo_catalog'" :size="21"/><Medal v-else-if="kind==='honors'" :size="21"/><Box v-else :size="21"/></span>
+            <span class="domain-symbol"><img v-if="mode==='collection_catalog' && row.image?.url && !failedThumbnails.has(`${kind}:${row.id}`)" :src="row.image.url" alt="" loading="lazy" @error="failedThumbnails=new Set([...failedThumbnails,`${kind}:${row.id}`])"/><CalendarDays v-if="mode==='event_catalog'" :size="21"/><Camera v-else-if="mode==='photo_catalog'" :size="21"/><Medal v-else-if="kind==='honors' && (!row.image?.url || failedThumbnails.has(`${kind}:${row.id}`))" :size="21"/><Box v-else-if="!row.image?.url || failedThumbnails.has(`${kind}:${row.id}`)" :size="21"/></span>
             <span class="domain-list-copy"><strong>{{ row.nameJa || row.title || row.name || photoName(row) }}</strong><small v-if="mode==='event_catalog'">{{ eventKindLabels[row.eventKind] }} · {{ historicalDate(row.release_at) }}{{ row.isReprint?' · 复刻':'' }}</small><small v-else-if="mode==='collection_catalog'">{{ kind==='items'?'道具':'称号' }} · {{ row.id }}</small><small v-else>{{ row.resourceId || row.iconResourceId || '配置资料' }}</small></span><ChevronRight :size="16"/>
           </button>
         </div>
@@ -40,7 +40,7 @@
               <div v-if="kind==='items'"><dt>持有上限</dt><dd>{{ detail.entry.maxAmount===undefined?'未记录':number(detail.entry.maxAmount) }}</dd></div>
               <div v-if="detail.entry.hasPrefab"><dt>原始效果</dt><dd>原配置含 Prefab，当前展示静态图片。</dd></div>
             </dl>
-            <p class="domain-muted">{{ kind==='honors'?'以下是已知来源，不代表完整的解锁条件。':'历史配置不代表当前可获得。兑换商店和任务来源尚未完整收录。' }}</p>
+            <p class="domain-muted">{{ kind==='honors'?'以下是已知来源，不代表完整的解锁条件。':'历史配置不代表当前可获得。用途分类为阅读整理标签；兑换商店和任务来源尚未完整收录。' }}</p>
           </section>
           <section class="domain-panel"><h3>已知来源与用途</h3><ArchiveRewardTable :rows="detail.sources" sources @open-event="emit('open-event',$event)"/></section>
         </template>
@@ -74,7 +74,7 @@
 import {computed,nextTick,onBeforeUnmount,ref,shallowRef,watch} from 'vue'
 import {Box,Camera,CalendarDays,ChevronRight,Medal} from '@lucide/vue'
 import {DomainRepository} from '../../../readmodels/runtime/DomainRepository.mjs'
-import {eventKindLabels,historicalDate,number} from './DomainPresentation.mjs'
+import {eventKindLabels,historicalDate,number,itemBrowseGroups,itemBrowseGroup} from './DomainPresentation.mjs'
 import ArchiveRewardTable from './ArchiveRewardTable.vue'
 import DomainMediaPreview from './DomainMediaPreview.vue'
 import DomainVoicePreview from './DomainVoicePreview.vue'
@@ -85,7 +85,7 @@ const repository=new DomainRepository(props.client,props.bootstrap)
 const kind=ref(props.entity.startsWith('honor:')?'honors':'items'),rows=shallowRef([]),detail=shallowRef(null),materials=shallowRef(null),actor=shallowRef(null),actors=shallowRef([])
 const busy=ref(false),error=ref(''),category=ref(''),eventKind=ref(''),page=ref(0),photoTab=ref('spots'),photoSelection=ref('')
 const detailElement=ref(null)
-const materialMedia=shallowRef(null),actorMedia=shallowRef(null)
+const materialMedia=shallowRef(null),actorMedia=shallowRef(null),failedThumbnails=shallowRef(new Set())
 const photoTabs=[{id:'spots',label:'地点'},{id:'scenes',label:'场景'},{id:'faces',label:'表情'},{id:'poses',label:'动作'},{id:'stickers',label:'贴纸'},{id:'frames',label:'相框'},{id:'filters',label:'滤镜'}]
 const title=computed(()=>({event_catalog:'活动一览',collection_catalog:'藏品馆',photo_catalog:'摄影资料'})[props.mode])
 const intro=computed(()=>({event_catalog:'查阅历次活动的剧情、奖励和关联藏品。',collection_catalog:'收录游戏内的道具与称号，查阅说明、已知来源和用途。',photo_catalog:'查阅摄影地点、场景和偶像的表情、动作配置。'})[props.mode])
@@ -93,7 +93,7 @@ const actorId=computed(()=>props.photoIdol || actors.value[0]?.id || '')
 const photoRows=computed(()=>['faces','poses'].includes(photoTab.value)?actor.value?.[photoTab.value] || []:materials.value?.[photoTab.value] || [])
 const sourceRows=computed(()=>props.mode==='photo_catalog'?photoRows.value:rows.value)
 const types=computed(()=>[...new Set(rows.value.map(row=>kind.value==='items'?row.itemType:row.honorType))].sort((a,b)=>a-b))
-const filtered=computed(()=>{const q=props.query.trim().toLocaleLowerCase();return sourceRows.value.filter(row=>(!q || `${row.nameJa || row.name || row.title || ''} ${row.id} ${row.resourceId || row.animationName || ''}`.toLocaleLowerCase().includes(q)) && (props.mode!=='collection_catalog' || !category.value || String(kind.value==='items'?row.itemType:row.honorType)===category.value) && (props.mode!=='event_catalog' || !eventKind.value || row.eventKind===eventKind.value))})
+const filtered=computed(()=>{const q=props.query.trim().toLocaleLowerCase();return sourceRows.value.filter(row=>(!q || `${row.nameJa || row.name || row.title || ''} ${row.name || ''} ${row.displayName || ''} ${row.id} ${row.resourceId || row.animationName || ''}`.toLocaleLowerCase().includes(q)) && (props.mode!=='collection_catalog' || !category.value || (kind.value==='items'?itemBrowseGroup(row.itemType).key===category.value:String(row.honorType)===category.value)) && (props.mode!=='event_catalog' || !eventKind.value || row.eventKind===eventKind.value))})
 const pages=computed(()=>Math.ceil(filtered.value.length/25)),visible=computed(()=>filtered.value.slice(page.value*25,(page.value+1)*25))
 const selectedId=computed(()=>props.mode==='photo_catalog'?String(photoEntry.value?.id || ''):String(detail.value?.entry?.id || ''))
 const photoEntry=computed(()=>photoRows.value.find(row=>String(row.id)===photoSelection.value) || photoRows.value[0] || null)
@@ -115,6 +115,8 @@ async function load(){
       if(!selected)throw Error('Unknown photo idol')
       const [material,person]=await Promise.all([repository.detail(domain,catalog.find(row=>row.id==='materials'),options),repository.detail(domain,selected,options)])
       if(id!==request)return;materials.value=material.materials;actor.value=person.actor;materialMedia.value=material.media;actorMedia.value=person.media
+      const position=filtered.value.findIndex(row=>String(row.id)===photoSelection.value);if(position>=0)page.value=Math.floor(position/25)
+      if(props.photoEntity && window.matchMedia('(max-width:700px)').matches){await nextTick();if(id===request)detailElement.value?.scrollIntoView({block:'start'})}
     }else if(domain!=='events'){
       const selectedKey=props.entity.split(':');const compatible=(kind.value==='honors'?'honor':'item')===selectedKey[0]
       const selected=compatible&&selectedKey[1]?catalog.find(row=>row.id===selectedKey[1]):catalog[0]
@@ -134,7 +136,7 @@ async function select(row){
     if(photoSelection.value===String(row.id) && window.matchMedia('(max-width:700px)').matches)detailElement.value?.scrollIntoView({block:'start'})
   }else emit('entity',`${kind.value==='honors'?'honor':'item'}:${row.id}`)
 }
-function applyPhotoSelection(key){const [kind,id]=(key || '').split(':');if(photoTabs.some(tab=>tab.id===kind)){photoTab.value=kind;photoSelection.value=id;page.value=0}else photoSelection.value=''}
+function applyPhotoSelection(key){const [kind,id]=(key || '').split(':');if(photoTabs.some(tab=>tab.id===kind)){photoTab.value=kind;photoSelection.value=id;const position=filtered.value.findIndex(row=>String(row.id)===id);page.value=position>=0?Math.floor(position/25):0}else photoSelection.value=''}
 function switchPhotoTab(tab){photoTab.value=tab;page.value=0;photoSelection.value='';if(photoRows.value[0])emit('photo-entity',`${tab}:${photoRows.value[0].id}`)}
 watch(()=>props.photoEntity,applyPhotoSelection,{immediate:true})
 function switchKind(value){if(kind.value===value)return;emit('query','');pendingKindSelection=value;kind.value=value;category.value='';page.value=0}

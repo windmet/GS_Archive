@@ -9,7 +9,7 @@
         <tbody><tr v-for="(row,i) in visible" :key="row.key || `${page}:${i}`">
           <td><span>{{ rewardScopeLabels[row.scope] || relationLabel(row) }}</span><button v-if="row.event" type="button" class="domain-link" @click="emit('open-event',row.event)">{{ row.event.title }}</button></td>
           <td>{{ rewardCondition(row) }}<small v-for="campaign in row.campaigns" :key="campaign.id">历史企划 {{ campaign.id }} · {{ historicalDate(campaign.term?.openAt) }} — {{ historicalDate(campaign.term?.closeAt) }}</small></td>
-          <td v-if="!sources"><button v-if="['item','honor'].includes(row.product?.kind) && row.product.referenceStatus === 'resolved-entity'" type="button" class="domain-link" @click="emit('open-entity',row.product.entityKey)">{{ productName(row.product) }}</button><span v-else>{{ productName(row.product) }}</span><small v-if="row.product?.referenceStatus === 'unknown-type' || row.product?.referenceStatus === 'missing-entity'">奖励引用待确认</small></td>
+          <td v-if="!sources"><button v-if="['item','honor'].includes(row.product?.kind) && row.product.referenceStatus === 'resolved-entity'" type="button" class="domain-link" @click="emit('open-entity',row.product.entityKey)">{{ productName(row.product) }}</button><button v-else-if="row.product?.target" type="button" class="domain-link" @click="emit('open-target',row.product.target)">{{ productName(row.product) }}</button><span v-else>{{ productName(row.product) }}</span><small v-if="row.product?.referenceStatus === 'unknown-type' || row.product?.referenceStatus === 'missing-entity'">奖励引用待确认</small></td>
           <td>{{ typeof (row.product?.amount ?? row.amount)==='number' ? number(row.product?.amount ?? row.amount) : '未记录' }}</td>
         </tr></tbody>
       </table>
@@ -22,7 +22,7 @@
 import {computed,ref,watch} from 'vue'
 import {historicalDate,number,rewardCondition,rewardScopeLabels,sourceDomainLabels} from './DomainPresentation.mjs'
 const props=defineProps({rows:{type:Array,default:()=>[]},sources:Boolean})
-const emit=defineEmits(['open-entity','open-event'])
+const emit=defineEmits(['open-entity','open-event','open-target'])
 const scope=ref(''),page=ref(0),size=25
 const scopes=computed(()=>[...new Set(props.rows.map(row=>row.scope).filter(Boolean))])
 const filtered=computed(()=>props.rows.filter(row=>!scope.value || row.scope===scope.value))

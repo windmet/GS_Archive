@@ -13,9 +13,9 @@
         </div>
         <h2>{{ masterEvent?.name || event.title }}</h2>
         <dl>
-          <div><dt>活动开始</dt><dd>{{ formatDateTime(masterEvent?.start_at || event.release_at) }}</dd></div>
-          <div><dt>活动结束</dt><dd>{{ formatDateTime(masterEvent?.end_at) }}</dd></div>
-          <div><dt>展示结束</dt><dd>{{ formatDateTime(masterEvent?.display_end_at) }}</dd></div>
+          <div><dt>活动开始</dt><dd>{{ formatDateTime(supplement?.event?.term?.openAt ?? masterEvent?.start_at ?? event.release_at) }}</dd></div>
+          <div><dt>活动结束</dt><dd>{{ formatDateTime(supplement?.event?.term?.closeAt ?? masterEvent?.end_at) }}</dd></div>
+          <div><dt>展示结束</dt><dd>{{ formatDateTime(supplement?.event?.displayTerm?.closeAt ?? masterEvent?.display_end_at) }}</dd></div>
           <div><dt>活动形式</dt><dd>{{ eventTypeLabel }}</dd></div>
 
         </dl>
@@ -26,10 +26,11 @@
       <div>
         <span>故事简介</span>
         <h3 id="event-synopsis-title">{{ story?.preplaySynopsis?.title || event.title }}</h3>
-        <p>{{ story?.preplaySynopsis?.text || (event.exists ? '剧情已收录，可选择章节观看。' : '剧情暂未收录。') }}</p>
+        <p>{{ story?.preplaySynopsis?.text || (supplement?.seasonalCampaign ? '引子及角色篇章已收录于关联季节企划。' : event.exists ? '剧情已收录，可选择章节观看。' : '剧情暂未收录。') }}</p>
       </div>
       <div class="story-actions">
-        <button :disabled="!event.exists" @click="emit('play')">
+        <button v-if="supplement?.seasonalCampaign" @click="emit('open-seasonal',supplement.seasonalCampaign.id)"><BookOpen :size="17"/>阅读季节企划</button>
+        <button v-else :disabled="!event.exists" @click="emit('play')">
           <Play :size="17" fill="currentColor" />
           <span>{{ event.exists ? '播放活动剧情' : '缺少剧情文件' }}</span>
         </button>
@@ -108,7 +109,7 @@
     <section v-if="supplement" class="detail-section" aria-labelledby="event-general-rewards">
       <div class="section-heading"><div><h3 id="event-general-rewards">奖励明细与藏品</h3><p>历史客户端配置。兑换商店明细与实时排行榜尚未收录。</p></div></div>
       <nav v-if="supplement.items?.length" class="domain-tabs" aria-label="活动材料"><button v-for="item in supplement.items" :key="`${item.role}:${item.itemId}`" type="button" @click="emit('open-entity',`item:${item.itemId}`)">{{ item.nameJa }}</button></nav>
-      <ArchiveRewardTable :rows="supplement.rewards || []" @open-entity="emit('open-entity',$event)" />
+      <ArchiveRewardTable :rows="supplement.rewards || []" @open-entity="emit('open-entity',$event)" @open-target="emit('open-target',$event)" />
       <div v-if="supplement.relatedEvents?.length" class="event-related-history"><h3>关联活动</h3><button v-for="related in supplement.relatedEvents" :key="related.event_id" type="button" class="domain-link" @click="emit('open-event',related)">{{ related.title }}</button></div>
     </section>
 
@@ -187,7 +188,7 @@ const props = defineProps({
   readingEntries: { type: Array, default: () => [] },
   readingError: { type: String, default: '' },
 })
-const emit = defineEmits(['read', 'retry-reading', 'play', 'play-episode', 'open-card', 'open-idol', 'open-unit','open-entity','open-event'])
+const emit = defineEmits(['read', 'retry-reading', 'play', 'play-episode', 'open-card', 'open-idol', 'open-unit','open-entity','open-event','open-target','open-seasonal'])
 const bannerFailed=ref(false)
 watch(()=>props.event?.event_code,()=>{bannerFailed.value=false})
 const readingByFile = computed(() => new Map(props.readingEntries.filter(entry => entry.status === 'ready').map(entry => [entry.source_file, entry])))
@@ -210,9 +211,10 @@ const eventTypeLabel = computed(() => ({
   theater: 'THEATER 累计 PT',
   tour: 'TOUR 累计 PT',
   carnival: '315 CARNIVAL',
+  collection: '315 CARNIVAL',
   valentine: 'VALENTINE',
   whiteday: 'WHITEDAY',
-}[props.masterEvent?.event_type_label] || '活动剧情'))
+}[props.supplement?.eventKind || props.masterEvent?.event_type_label] || '活动剧情'))
 const scopeLabel = computed(() => ({
   fixed_unit_event: '固定组合团活',
   attribute_event: `${props.event?.attribute || ''} 属性团曲`.trim(),
@@ -278,6 +280,7 @@ function formatNumber(value) {
   return new Intl.NumberFormat('zh-CN').format(Number(value || 0))
 }
 function formatDateTime(timestamp) {
+  if(Number(timestamp)>=4102412400)return '配置占位日期'
   if (timestamp===null || timestamp===undefined || !Number.isFinite(Number(timestamp)) || Number(timestamp)<=0) return '未记录'
   return new Intl.DateTimeFormat('zh-CN', {
     dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Tokyo',

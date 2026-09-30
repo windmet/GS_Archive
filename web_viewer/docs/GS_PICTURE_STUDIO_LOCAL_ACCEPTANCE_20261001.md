@@ -31,3 +31,7 @@
 - 小型证据 E:/Web_build/GS_Archive_Domain_Work/browser-qa-r2/：studio-mono-desktop.png、studio-export-preview.png、studio-mobile-top.png、studio-mobile-controls.png、studio-model-failure.png、studio-effect-boundary.png。已逐张用 view_image 检视桌面/窄屏/PNG预览。
 - 设计 mismatch：语音被右侧长控件推低已修正，移到画布列下方；三张源表情缩略图已实现。实际源服装/背景替代概念示意人物；原相框排布未知因此保留明确网页排布边界。
 - 不包含 public 全库构建或部署，不是物理 Android/iOS 验收。
+
+## 最终绑定补充
+
+完成后的读取产物为 r4：release `e687f9ea33ec12cb28210e91297f068e3b7f458e1fb433a5af4a1881f0f6332c`，producer `cbea52caaecd16d0dbd8ff78f2e0ef7bafcc50c4`；来源媒体未改动。收尾连接、原Player回归、PNG预览和窄屏证据见 [域连接收尾](GS_DOMAIN_COMPLETION_JOINS_20261001.md)。IAB文件下载及设备/原版效果边界保持未验证。

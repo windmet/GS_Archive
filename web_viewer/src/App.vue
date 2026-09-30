@@ -109,12 +109,12 @@
       <ArchiveIdolDetail
         v-if="view === 'idol_detail'"
         :idol="currentIdolProfile"
-        :stats="currentIdolStats"
+        :stats="currentIdolStats" :photo="currentIdolDetail?.photo" :honors="currentIdolDetail?.honors || []"
         :events="currentIdolEvents"
         :songs="currentIdolSongs"
         :idols="bootstrapIdolSwitcher"
         :selected-idol="currentCharacterId"
-        @open-domain="openIdolDomain"
+        @open-domain="openIdolDomain" @open-honor="openCollectionEntity"
         @open-unit="openUnitFromIdol"
         @open-event="openIdolEvent"
         @open-song="openSong"
@@ -209,7 +209,7 @@
         @open-card="openEventCard"
         @open-idol="openEventIdol"
         @open-unit="openEventUnit"
-        @open-entity="openCollectionEntity"
+        @open-entity="openCollectionEntity" @open-target="openDomainTarget" @open-seasonal="openSeasonalCampaign"
         @open-event="openEventDetail($event, 'event_detail')"
       />
 
@@ -1860,6 +1860,10 @@ function selectPhotoIdol(id) {
   currentPhotoIdol.value=String(id); syncArchiveRoute()
 }
 
+async function openDomainTarget(target){
+  if(target?.view==='card_detail' && /^[a-z0-9_]+$/.test(target.card || ''))return openEventCard({card_resource_id:target.card})
+  if(target?.view==='photo_catalog' && /^(spots|scenes|stickers|frames|filters):\d+$/.test(target.photoEntity || '')){captureDetailSource();currentPhotoIdol.value='';currentPhotoEntity.value=target.photoEntity;currentEventId.value='';currentCharacterId.value='';currentCategoryId.value='';filterQuery.value='';commitView('photo_catalog')}
+}
 function selectPhotoEntity(key) {
   if (!/^(spots|scenes|faces|poses|stickers|frames|filters):\d+$/.test(key || '')) return
   currentPhotoEntity.value=key; syncArchiveRoute({replace:true})
@@ -3329,6 +3333,7 @@ function openIdol(entry) {
 }
 
 function openIdolDomain(domain) {
+  if(domain==='photos' && currentIdolDetail.value?.photo){captureDetailSource();currentPhotoIdol.value=String(currentIdolDetail.value.photo.idolId);currentPhotoEntity.value='';currentEventId.value='';currentCharacterId.value='';currentCategoryId.value='';filterQuery.value='';commitView('photo_catalog');return}
   if (domain === 'cards') return openPrimaryCards(currentCharacterId.value, { captureSource: true })
   if (domain === 'stories') {
     openIdolStoryArchive(currentCharacterId.value)

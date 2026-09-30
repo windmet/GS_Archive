@@ -48,6 +48,12 @@
       </div>
     </section>
 
+    <section v-if="honors.length" class="idol-related" aria-labelledby="idol-honors-title">
+      <div class="section-heading"><h3 id="idol-honors-title">关联排名称号</h3><span>{{ honors.length }} 条 · 已知来源</span></div>
+      <div class="related-grid"><button v-for="honor in honors" :key="honor.key" @click="emit('open-honor',honor.key)"><Medal :size="20"/><span><strong>{{ honor.nameJa }}</strong><small>{{ honor.sources.map(source=>source.event?.title).filter(Boolean).join(' · ') }}</small></span><ChevronRight :size="18" aria-hidden="true"/></button></div>
+      <p class="idol-honor-note">按历史排名配置中的偶像编号关联；未推断持有或其他称号的归属。</p>
+    </section>
+
     <section v-if="songs.length" class="idol-songs" aria-labelledby="idol-songs-title">
       <div class="section-heading">
         <h3 id="idol-songs-title">演唱歌曲</h3>
@@ -90,7 +96,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { BookOpenText, ChevronRight, Images, MessageSquareText, Music, Phone, UsersRound } from '@lucide/vue'
+import { BookOpenText, ChevronRight, Images, Camera, Medal, MessageSquareText, Music, Phone, UsersRound } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
@@ -98,6 +104,8 @@ import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 
 const props = defineProps({
   idol: { type: Object, default: null },
+  honors: {type:Array,default:()=>[]},
+  photo: {type:Object,default:null},
   stats: { type: Object, default: () => ({}) },
   events: { type: Array, default: () => [] },
   songs: { type: Array, default: () => [] },
@@ -105,7 +113,7 @@ const props = defineProps({
   selectedIdol: { type: String, default: '' },
 })
 
-const emit = defineEmits(['open-domain', 'open-unit', 'open-event', 'open-song', 'select-idol'])
+const emit = defineEmits(['open-domain', 'open-unit', 'open-event', 'open-song', 'select-idol','open-honor'])
 
 const facts = computed(() => [
   { label: '年龄', value: props.idol?.age ? `${props.idol.age}岁` : '' },
@@ -125,6 +133,7 @@ const related = computed(() => [
   { id: 'stories', label: '个人故事', count: communicationCount(props.stats.stories, '篇'), icon: BookOpenText },
   { id: 'cards', label: '卡片', count: `${props.stats.cards || 0} 张`, icon: Images },
   { id: 'chat', label: '个人聊天', count: communicationCount(props.stats.chats, '条'), icon: MessageSquareText },
+  ...(props.photo?[{id:'photos',label:'摄影姿势与语音',count:`${props.photo.faceCount} 表情 · ${props.photo.poseCount} 姿势 · ${props.photo.cueCount} 语音`,icon:Camera}]:[]),
   { id: 'phone', label: '电话通信', count: communicationCount(props.stats.phones, '条'), icon: Phone },
 ])
 
@@ -243,4 +252,8 @@ function formatDate(timestamp) {
   .song-links { grid-template-columns: 1fr; }
   .idol-notes { grid-template-columns: 1fr; gap: 16px; }
 }
+</style>
+
+<style scoped>
+.idol-honor-note{color:#70848a;font-size:12px;line-height:1.7}.idol-related .related-grid button span{min-width:0}.idol-related .related-grid button strong{overflow-wrap:anywhere}
 </style>

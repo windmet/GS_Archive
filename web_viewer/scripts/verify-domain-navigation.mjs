@@ -2,8 +2,9 @@ import assert from 'node:assert/strict';
 import {useArchiveNavigationState} from '../src/core/useArchiveNavigationState.js';
 import {buildArchiveUrl,readArchiveRoute,buildArchiveSourceQuery,readArchiveSourceRoute} from '../src/core/archiveRoute.js';
 import {DomainRepository} from '../readmodels/runtime/DomainRepository.mjs';
-import {rewardCondition,historicalDate} from '../src/components/archive/DomainPresentation.mjs';
+import {rewardCondition,historicalDate,itemBrowseGroup} from '../src/components/archive/DomainPresentation.mjs';
 
+assert.equal(itemBrowseGroup(1).key,'recovery');assert.equal(itemBrowseGroup(18).key,'tickets');assert.equal(itemBrowseGroup(999).key,'other');
 const state=useArchiveNavigationState();
 state.view.value='collection_catalog';state.currentEntityKey.value='honor:30017001';state.filterQuery.value='周年';
 const route=readArchiveRoute(buildArchiveUrl('http://localhost/?entity=item:999&photo_idol=2',state.currentArchiveRoute()));

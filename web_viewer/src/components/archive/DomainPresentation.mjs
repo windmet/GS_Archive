@@ -24,3 +24,16 @@ export function rewardCondition(row) {
   if (row.sectionId) values.push('阅读对应章节');
   return values.join(' · ') || (row.relation==='event-material' ? '活动所用材料' : row.relation==='card-awakening-cost' ? '卡片觉醒消耗' : '条件未完整收录');
 }
+// Editorial navigation labels reviewed against source descriptions; not official enums.
+export const itemBrowseGroups=[
+  {key:'recovery',label:'体力恢复',codes:[1]},
+  {key:'tickets',label:'招募与自选票券',codes:[3,18]},
+  {key:'card-materials',label:'觉醒与突破材料',codes:[4,5]},
+  {key:'skill-training',label:'技能培养',codes:[7]},
+  {key:'live-boost',label:'演出增幅',codes:[10]},
+  {key:'story-unlock',label:'剧情解锁',codes:[12]},
+  {key:'exchange',label:'兑换资源',codes:[14]},
+  {key:'event-materials',label:'活动专属物品',codes:[15,16,17]},
+  {key:'other',label:'其他 / 待分类',codes:[]},
+];
+export const itemBrowseGroup=code=>itemBrowseGroups.find(group=>group.codes.includes(code)) || itemBrowseGroups.at(-1);
