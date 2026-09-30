@@ -8,7 +8,7 @@
       <table><thead><tr><th>方式 / 关联活动</th><th>条件</th><th v-if="!sources">奖励</th><th>数量</th></tr></thead>
         <tbody><tr v-for="(row,i) in visible" :key="row.key || `${page}:${i}`">
           <td><span>{{ rewardScopeLabels[row.scope] || relationLabel(row) }}</span><button v-if="row.event" type="button" class="domain-link" @click="emit('open-event',row.event)">{{ row.event.title }}</button></td>
-          <td>{{ rewardCondition(row) }}</td>
+          <td>{{ rewardCondition(row) }}<small v-for="campaign in row.campaigns" :key="campaign.id">历史企划 {{ campaign.id }} · {{ historicalDate(campaign.term?.openAt) }} — {{ historicalDate(campaign.term?.closeAt) }}</small></td>
           <td v-if="!sources"><button v-if="['item','honor'].includes(row.product?.kind) && row.product.referenceStatus === 'resolved-entity'" type="button" class="domain-link" @click="emit('open-entity',row.product.entityKey)">{{ productName(row.product) }}</button><span v-else>{{ productName(row.product) }}</span><small v-if="row.product?.referenceStatus === 'unknown-type' || row.product?.referenceStatus === 'missing-entity'">奖励引用待确认</small></td>
           <td>{{ typeof (row.product?.amount ?? row.amount)==='number' ? number(row.product?.amount ?? row.amount) : '未记录' }}</td>
         </tr></tbody>
@@ -20,7 +20,7 @@
 </template>
 <script setup>
 import {computed,ref,watch} from 'vue'
-import {number,rewardCondition,rewardScopeLabels,sourceDomainLabels} from './DomainPresentation.mjs'
+import {historicalDate,number,rewardCondition,rewardScopeLabels,sourceDomainLabels} from './DomainPresentation.mjs'
 const props=defineProps({rows:{type:Array,default:()=>[]},sources:Boolean})
 const emit=defineEmits(['open-entity','open-event'])
 const scope=ref(''),page=ref(0),size=25

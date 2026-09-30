@@ -17,6 +17,7 @@ export class DomainRepository {
     if (!record || String(record.id)!==String(row.id) || !record.view) throw Error('Domain detail identity mismatch');
     if (['items','honors'].includes(domain) && String(record.view.entry?.id)!==String(row.id)) throw Error('Collection entry identity mismatch');
     if (domain==='photos' && row.id!=='materials' && String(record.view.actor?.idolId)!==String(row.id)) throw Error('Photo actor identity mismatch');
+    if (domain==='photos' && row.id!=='materials' && String(record.view.media?.idolId)!==String(row.id)) throw Error('Photo media identity mismatch');
     return record.view;
   }
 }

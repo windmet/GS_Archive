@@ -10,7 +10,7 @@
     </nav>
     <p v-if="busy" role="status" class="domain-muted">正在读取{{ title }}…</p>
     <p v-if="error" role="alert" class="domain-error">{{ error }}<button type="button" @click="load">重试</button></p>
-    <div v-if="rows.length" class="domain-layout">
+    <div v-if="!busy && rows.length" class="domain-layout">
       <section class="domain-panel" aria-label="资料目录">
         <div class="domain-tools">
           <label>搜索<input :value="query" placeholder="名称或编号" @input="emit('query',$event.target.value)"/></label>
@@ -32,12 +32,13 @@
         <template v-if="mode==='collection_catalog' && detail?.entry">
           <section class="domain-panel">
             <div class="domain-detail-title"><Medal v-if="kind==='honors'"/><Box v-else/><h3>{{ detail.entry.nameJa }}</h3></div>
+            <DomainMediaPreview :binding="detail.media?.image" :effect-status="detail.media?.effectStatus" :name="detail.entry.nameJa"/>
             <p class="domain-description">{{ detail.entry.descriptionText?.plain || '尚未收录说明。' }}</p>
             <dl class="domain-meta">
               <div><dt>种类</dt><dd>{{ kind==='items'?'道具':'称号' }} · 类别 {{ detail.entry.itemType ?? detail.entry.honorType }}</dd></div>
               <div v-if="detail.entry.term"><dt>历史配置期</dt><dd>{{ historicalDate(detail.entry.term.openAt) }} — {{ historicalDate(detail.entry.term.closeAt) }}</dd></div>
               <div v-if="kind==='items'"><dt>持有上限</dt><dd>{{ detail.entry.maxAmount===undefined?'未记录':number(detail.entry.maxAmount) }}</dd></div>
-              <div><dt>资源展示</dt><dd>资源待绑定{{ detail.entry.hasPrefab?' · 原配置含 Prefab':'' }}</dd></div>
+              <div v-if="detail.entry.hasPrefab"><dt>原始效果</dt><dd>原配置含 Prefab，当前展示静态图片。</dd></div>
             </dl>
             <p class="domain-muted">{{ kind==='honors'?'以下是已知来源，不代表完整的解锁条件。':'历史配置不代表当前可获得。兑换商店和任务来源尚未完整收录。' }}</p>
           </section>
@@ -49,15 +50,19 @@
         </section>
         <section v-else-if="mode==='photo_catalog' && photoEntry" class="domain-panel">
           <h3>{{ photoEntry.name || photoName(photoEntry) }}</h3>
-          <div class="domain-resource-empty"><ImageOff :size="30"/><p>资源待绑定<br/><small>此页展示原配置资料。</small></p></div>
-          <p class="domain-description">{{ photoEntry.description || '摄影配置资料，尚未验证对应的媒体展示。' }}</p>
+          <DomainMediaPreview v-if="photoTab!=='filters' && !busy" :binding="photoBinding?.image" :effect-status="photoBinding?.effectStatus" :name="photoEntry.name || photoName(photoEntry)"/>
+          <p v-if="photoTab==='filters'" class="domain-muted">原始 shader 参数尚未解析，此页仅展示滤镜名称与配置。</p>
+          <p class="domain-description">{{ photoEntry.description || '摄影脚本配置；图片展示对应的配置图标。' }}</p>
           <dl class="domain-meta"><div><dt>配置编号</dt><dd>{{ photoEntry.id }}</dd></div><div><dt>资源名称</dt><dd>{{ photoEntry.resourceId || photoEntry.iconResourceId || '未记录' }}</dd></div>
             <div v-if="['faces','poses'].includes(photoTab)"><dt>脚本预设</dt><dd>{{ photoEntry.animationName }}</dd></div>
             <div v-if="photoEntry.scenarioResourceId"><dt>脚本资源</dt><dd>{{ photoEntry.scenarioResourceId }}</dd></div>
+            <div v-if="photoBinding?.preset?.motion"><dt>脚本动作</dt><dd>{{ photoBinding.preset.motion }}</dd></div>
+            <div v-if="photoBinding?.preset?.face"><dt>脚本表情</dt><dd>{{ photoBinding.preset.face }}</dd></div>
+            <div v-if="photoBinding?.preset?.neck"><dt>颈部动作</dt><dd>{{ photoBinding.preset.neck }}</dd></div>
             <div v-if="initialGrant!==null"><dt>初始配置</dt><dd>{{ initialGrant?'属于客户端初始授予配置':'未在初始授予表中出现' }}</dd></div>
           </dl>
-          <div v-if="photoTab==='spots'"><h3>关联场景</h3><div class="domain-records"><div v-for="scene in scenesForSpot" :key="scene.id">{{ scene.name || `场景 ${scene.id}` }}<small>{{ scene.resourceId }}</small></div></div><p v-if="!scenesForSpot.length" class="domain-muted">没有关联的场景配置。</p></div>
-          <div v-if="photoTab==='poses'"><h3>语音配置</h3><div class="domain-records"><div v-for="cue in poseCues" :key="cue.cueName">{{ cue.cueName }}<small>语音表 {{ cue.cueSheetName }} · 媒体尚未验证</small></div></div></div>
+          <div v-if="photoTab==='spots'"><h3>关联场景</h3><div class="domain-records"><div v-for="scene in scenesForSpot" :key="scene.id">{{ scene.name || `场景 ${scene.id}` }}<small>{{ scene.backgroundResourceId }}{{ scene.effectResourceId?' · 效果尚未重建':'' }}</small></div></div><p v-if="!scenesForSpot.length" class="domain-muted">没有关联的场景配置。</p></div>
+          <div v-if="photoTab==='poses' && !busy"><h3>语音试听</h3><DomainVoicePreview :cues="poseCues" :bindings="actorMedia?.voiceCues"/></div>
         </section>
         <p v-else-if="!busy" class="domain-muted">选择资料查看详情。</p>
       </div>
@@ -66,10 +71,12 @@
 </template>
 <script setup>
 import {computed,nextTick,onBeforeUnmount,ref,shallowRef,watch} from 'vue'
-import {Box,Camera,CalendarDays,ChevronRight,Medal,ImageOff} from '@lucide/vue'
+import {Box,Camera,CalendarDays,ChevronRight,Medal} from '@lucide/vue'
 import {DomainRepository} from '../../../readmodels/runtime/DomainRepository.mjs'
 import {eventKindLabels,historicalDate,number} from './DomainPresentation.mjs'
 import ArchiveRewardTable from './ArchiveRewardTable.vue'
+import DomainMediaPreview from './DomainMediaPreview.vue'
+import DomainVoicePreview from './DomainVoicePreview.vue'
 import '../../styles/archive-domains.css'
 const props=defineProps({mode:String,client:Object,bootstrap:Object,entity:{type:String,default:''},photoIdol:{type:String,default:''},query:{type:String,default:''}})
 const emit=defineEmits(['query','entity','photo-idol','open-event'])
@@ -77,6 +84,7 @@ const repository=new DomainRepository(props.client,props.bootstrap)
 const kind=ref(props.entity.startsWith('honor:')?'honors':'items'),rows=shallowRef([]),detail=shallowRef(null),materials=shallowRef(null),actor=shallowRef(null),actors=shallowRef([])
 const busy=ref(false),error=ref(''),category=ref(''),eventKind=ref(''),page=ref(0),photoTab=ref('spots'),photoSelection=ref('')
 const detailElement=ref(null)
+const materialMedia=shallowRef(null),actorMedia=shallowRef(null)
 const photoTabs=[{id:'spots',label:'地点'},{id:'scenes',label:'场景'},{id:'faces',label:'表情'},{id:'poses',label:'动作'},{id:'stickers',label:'贴纸'},{id:'frames',label:'相框'},{id:'filters',label:'滤镜'}]
 const title=computed(()=>({event_catalog:'活动一览',collection_catalog:'藏品馆',photo_catalog:'摄影资料'})[props.mode])
 const intro=computed(()=>({event_catalog:'查阅历次活动的剧情、奖励和关联藏品。',collection_catalog:'收录游戏内的道具与称号，查阅说明、已知来源和用途。',photo_catalog:'查阅摄影地点、场景和偶像的表情、动作配置。'})[props.mode])
@@ -88,13 +96,14 @@ const filtered=computed(()=>{const q=props.query.trim().toLocaleLowerCase();retu
 const pages=computed(()=>Math.ceil(filtered.value.length/25)),visible=computed(()=>filtered.value.slice(page.value*25,(page.value+1)*25))
 const selectedId=computed(()=>props.mode==='photo_catalog'?String(photoEntry.value?.id || ''):String(detail.value?.entry?.id || ''))
 const photoEntry=computed(()=>photoRows.value.find(row=>String(row.id)===photoSelection.value) || photoRows.value[0] || null)
+const photoBinding=computed(()=>(['faces','poses'].includes(photoTab.value)?actorMedia.value?.entries:materialMedia.value)?.[`${photoTab.value}:${photoEntry.value?.id}`])
 const initialGrant=computed(()=>{const field=({filters:'photoFilterId',stickers:'photoStickerId',spots:'photoSpotId',scenes:'photoSceneId',frames:'photoFrameId'})[photoTab.value];return field&&materials.value?.initialGrants?.[photoTab.value]?materials.value.initialGrants[photoTab.value].some(row=>row[field]===photoEntry.value?.id):null})
 const scenesForSpot=computed(()=>{const ids=materials.value?.sceneIdsBySpotId?.[photoEntry.value?.id] || [];return (materials.value?.scenes || []).filter(row=>ids.includes(row.id))})
 const poseCues=computed(()=>{const map=new Map();for (const cue of actor.value?.poseVoices || []) if (cue.photoPoseId===photoEntry.value?.id) map.set(`${cue.cueSheetName}:${cue.cueName}`,cue);return [...map.values()]})
 function photoName(row){return `${({faces:'表情',poses:'动作',stickers:'贴纸',frames:'相框',filters:'滤镜',scenes:'场景',spots:'地点'})[photoTab.value]} ${row.id}`}
 let controller=null,request=0,pendingKindSelection=''
 async function load(){
-  controller?.abort();controller=new AbortController();const id=++request,options={signal:controller.signal};busy.value=true;error.value='';detail.value=null
+  controller?.abort();controller=new AbortController();const id=++request,options={signal:controller.signal};busy.value=true;error.value='';detail.value=null;rows.value=[]
   try {
     const domain=props.mode==='event_catalog'?'events':props.mode==='photo_catalog'?'photos':kind.value
     const catalog=await repository.catalog(domain,options);if(id!==request)return
@@ -104,7 +113,7 @@ async function load(){
       const selected=catalog.find(row=>row.id===actorId.value)
       if(!selected)throw Error('Unknown photo idol')
       const [material,person]=await Promise.all([repository.detail(domain,catalog.find(row=>row.id==='materials'),options),repository.detail(domain,selected,options)])
-      if(id!==request)return;materials.value=material.materials;actor.value=person.actor
+      if(id!==request)return;materials.value=material.materials;actor.value=person.actor;materialMedia.value=material.media;actorMedia.value=person.media
     }else if(domain!=='events'){
       const selectedKey=props.entity.split(':');const compatible=(kind.value==='honors'?'honor':'item')===selectedKey[0]
       const selected=compatible&&selectedKey[1]?catalog.find(row=>row.id===selectedKey[1]):catalog[0]
@@ -117,7 +126,13 @@ async function load(){
     }
   }catch(cause){if(id!==request || options.signal.aborted)return;console.error('[ArchiveDomains]',cause);error.value='资料暂时无法读取，请重试。'}finally{if(id===request)busy.value=false}
 }
-function select(row){if(props.mode==='event_catalog')emit('open-event',{event_id:row.id});else if(props.mode==='photo_catalog')photoSelection.value=String(row.id);else emit('entity',`${kind.value==='honors'?'honor':'item'}:${row.id}`)}
+async function select(row){
+  if(props.mode==='event_catalog')emit('open-event',{event_id:row.id})
+  else if(props.mode==='photo_catalog'){
+    photoSelection.value=String(row.id);await nextTick()
+    if(photoSelection.value===String(row.id) && window.matchMedia('(max-width:700px)').matches)detailElement.value?.scrollIntoView({block:'start'})
+  }else emit('entity',`${kind.value==='honors'?'honor':'item'}:${row.id}`)
+}
 function switchKind(value){if(kind.value===value)return;emit('query','');pendingKindSelection=value;kind.value=value;category.value='';page.value=0}
 watch(()=>[props.mode,props.entity,props.photoIdol],()=>{if(props.entity)kind.value=props.entity.startsWith('honor:')?'honors':'items';load()},{immediate:true})
 watch(kind,load);watch(()=>[props.query,category.value,eventKind.value],()=>{page.value=0})

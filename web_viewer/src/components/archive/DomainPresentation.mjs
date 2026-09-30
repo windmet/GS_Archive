@@ -18,6 +18,8 @@ export function rewardCondition(row) {
   if (row.offsetPoint!==undefined) values.push(`起点 ${number(row.offsetPoint)} PT`);
   if (row.limitPoint!==undefined) values.push(`上限 ${number(row.limitPoint)} PT`);
   if (row.totalCount!==undefined) values.push(`累计 ${number(row.totalCount)} 次`);
+  if (row.dayCount!==undefined) values.push(`第 ${number(row.dayCount)} 天`);
+  if (row.sumFanAmount!==undefined) values.push(`累计粉丝 ${number(row.sumFanAmount)}`);
   if (row.episodeId) values.push('阅读对应分段');
   if (row.sectionId) values.push('阅读对应章节');
   return values.join(' · ') || (row.relation==='event-material' ? '活动所用材料' : row.relation==='card-awakening-cost' ? '卡片觉醒消耗' : '条件未完整收录');

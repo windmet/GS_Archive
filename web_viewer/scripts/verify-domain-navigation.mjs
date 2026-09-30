@@ -15,6 +15,8 @@ assert.equal(readArchiveRoute('http://localhost/?view=collection_catalog&entity=
 assert.equal(readArchiveRoute('http://localhost/?view=photo_catalog&photo_idol=../../bad').photoIdol,'');
 assert.match(rewardCondition({intervalPoint:0,offsetPoint:0,limitPoint:1000}),/每 0 PT/);
 assert.match(rewardCondition({upperRank:1,lowerRank:10}),/1–10/);
+assert.equal(rewardCondition({dayCount:0}),'第 0 天');
+assert.equal(rewardCondition({dayCount:2,sumFanAmount:1000}),'第 2 天 · 累计粉丝 1,000');
 assert.equal(historicalDate(7258086000),'配置占位日期');assert.equal(historicalDate(null),'未记录');
 
 const index={count:2,pages:[{url:'page'}]},rows=[{id:'1',detail:{url:'detail'}},{id:'2',detail:{url:'detail'}}];
