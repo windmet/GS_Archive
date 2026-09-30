@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { createStoryAssetPriority } from '../../shared/story/StoryAssetPriority.js'
 import { useEpisodeQueue } from './useEpisodeQueue.js'
 import { prepareScenario } from '../data/prepareScenario.js'
@@ -12,7 +12,7 @@ const boundary = value => Number(value) > 0 ? Number(value) : null
  * URL context is a descriptor, never a requirement to hydrate the return page. */
 export function useStoryPlaybackController({ state, navigation, loadPlayer, preloadAssets,
   syncRoute, returnTo, prepare = prepareScenario, queue = useEpisodeQueue(),
-  resolveQueue = null, onError = error => console.error('Failed to load:', error),
+  resolveQueue = null, resolveReaderSource = null, onError = error => console.error('Failed to load:', error),
 }) {
   const currentScenario = state.currentScenario || ref(null)
   const currentScenarioInstance = state.currentScenarioInstance || ref(0)
@@ -20,6 +20,13 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
   const error = ref(''), preloadStatus = ref(null), playbackBuffering = ref(false)
   const playbackReadiness = ref(null), canRetry = ref(false), pendingEntry = ref(null)
   const queueStatus = ref('ready'), queueError = ref('')
+  const continuation = ref(null)
+  const nextTarget = computed(() => {
+    const segment = queue.peekNext()
+    return segment ? { kind: 'segment', label: segment.label || segment.id, available: true }
+      : (continuation.value?.nextChapter ? { kind: 'chapter', ...continuation.value.nextChapter } : null)
+  })
+  let nextFlight = null
   const { view, loading, preloadProgress, currentScenarioFile, currentScenarioStartStep,
     currentScenarioEndStep, currentPreviewCue, returnViewAfterPlayer } = state
   let active = null, failedEntry = null
@@ -48,6 +55,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
     if (state.playerEntryRoute) state.playerEntryRoute.value = null
     returnViewAfterPlayer.value = 'files'
     queue.clear()
+    continuation.value = null
     queueStatus.value = 'ready'
     queueError.value = ''
     error.value = ''
@@ -98,9 +106,10 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
     currentPreviewCue.value = options.previewCue || ''
     returnViewAfterPlayer.value = owner.returnView
     if (state.playerEntryRoute) state.playerEntryRoute.value = { ...owner.returnRoute }
-    if (options.queueCommit) { queueStatus.value = 'ready'; options.queueCommit() }
+    if (options.queueCommit) { queueStatus.value = options.lazyQueue && resolveQueue ? 'idle' : 'ready'; options.queueCommit(); continuation.value = options.continuation ?? continuation.value }
     else if (!options.preserveQueue) {
       queue.clear()
+      continuation.value = null
       queueStatus.value = options.lazyQueue && resolveQueue ? 'idle' : 'ready'
     }
     owner.published = true
@@ -115,9 +124,12 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
     return navigation.run(async intent => {
       const owner = begin(intent, name, returnView, options)
       try {
+        const readScenario = options.readScenario || (returnView === 'reader' && resolveReaderSource
+          ? await resolveReaderSource(name, owner.returnRoute) : undefined)
+        if (!owner.current()) return false
         const scenario = await prepare(name, {
           isCurrent: owner.current, signal: owner.controller.signal, loadPlayer, preloadAssets,
-          readScenario: options.readScenario,
+          readScenario,
           onBackgroundReady: (start, updatePriority, controls = {}) => {
             owner.warmup = { start, updatePriority, ...controls }
           },
@@ -158,10 +170,10 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
       }
     }, { intent: options.intent })
   }
-  function startQueue(episodes, index, returnView) {
+  function startQueue(episodes, index, returnView, options = {}) {
     const episode = episodes[index]
     if (!episode?.file) return
-    return load(episode.file, returnView, { startStep: episode.startStep, endStep: episode.endStep,
+    return load(episode.file, returnView, { ...options, startStep: episode.startStep, endStep: episode.endStep,
       queueCommit: () => queue.start(episodes, index) })
   }
   function restore(name, returnView, range, episodes = [], intent, returnRoute) {
@@ -179,8 +191,10 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
     owner.queueFlight = Promise.resolve().then(() => resolveQueue(owner.returnRoute, {
       file: owner.name, startStep: currentScenarioStartStep.value, endStep: currentScenarioEndStep.value,
       signal: owner.controller.signal, priority: 'background',
-    })).then(episodes => {
+    })).then(result => {
       if (!owner.current() || owner.instance !== currentScenarioInstance.value) return false
+      const episodes = Array.isArray(result) ? result : result?.episodes
+      continuation.value = Array.isArray(result) ? null : result
       queue.restore(episodes || [], owner.name, { startStep: currentScenarioStartStep.value, endStep: currentScenarioEndStep.value })
       queueStatus.value = 'ready'
       return true
@@ -190,18 +204,37 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
     }).finally(() => { owner.queueFlight = null })
     return owner.queueFlight
   }
-  function next() {
+  function next(instance = currentScenarioInstance.value, { chapter = false } = {}) {
+    if (instance !== currentScenarioInstance.value) return false
+    if (nextFlight) return nextFlight
     if (loading.value) return false
+    const owner = active
+    const run = async () => {
     if (queueStatus.value === 'idle' || queueStatus.value === 'loading') {
-      const owner = active
-      return ensureQueue().then(() => owner?.current() ? next() : false)
+      await ensureQueue()
     }
+    if (instance !== currentScenarioInstance.value || active !== owner) return false
+    if (failedEntry && canRetry.value) return retry()
+    if (!owner?.current() || queueStatus.value !== 'ready') return false
     const episode = queue.peekNext()
-    if (!episode) return false
+    if (!episode) {
+      const target = continuation.value?.nextChapter
+      if (!chapter || !target?.available) return false
+      return startQueue(target.episodes, 0, returnViewAfterPlayer.value, {
+        returnRoute: owner.returnRoute, lazyQueue: true, continuation: null,
+      })
+    }
     return load(episode.file, returnViewAfterPlayer.value, {
       startStep: episode.startStep, endStep: episode.endStep,
+      returnRoute: owner.returnRoute,
       queueCommit: () => queue.next(),
     })
+    }
+    const flight = run()
+    nextFlight = flight
+    const settled = () => { if (nextFlight === flight) nextFlight = null }
+    void flight.then(settled, settled)
+    return flight
   }
   function retry() {
     if (!failedEntry || loading.value) return false
@@ -258,7 +291,7 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
   function dispose() { navigation.invalidate(); reset(); loading.value = false }
   return { currentScenario, currentScenarioInstance, currentScenarioInitialStep, error, preloadStatus,
     playbackBuffering, playbackReadiness, pendingEntry, canRetry, queue, hasNext: queue.hasNext,
-    queueStatus, queueError, ensureQueue,
+    queueStatus, queueError, ensureQueue, continuation, nextTarget,
     inspect: () => ({ file: active?.name, firstPlayable: active?.firstPlayable, queueStatus: queueStatus.value,
       pending: Boolean(pendingEntry.value), readiness: playbackReadiness.value, error: error.value }),
     load, retry, retryCurrentStep, preview, startQueue, restore, next, close, ready, readinessChanged, stepChanged, reset, dispose }

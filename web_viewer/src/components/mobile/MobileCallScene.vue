@@ -110,7 +110,8 @@ const callSurfaceStyle = computed(() => bgUrl.value ? {
   backgroundColor: '#c4babd',
 } : null)
 
-const replyLabel = 'プロデューサー：'
+const replyLabel = computed(() => `${localization.resolveUnit({ source: '',
+  speaker: { kind: 'producer', source: '<P>' } }).speaker.display}：`)
 </script>
 
 <style scoped>

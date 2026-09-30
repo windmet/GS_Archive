@@ -267,15 +267,15 @@ const legacyView = resolveStoryText({
 assert.equal(legacyView.primary.text, '日本語')
 assert.equal(legacyView.secondary.text, '中文')
 assert.deepEqual(resolveText({ speaker: '<P>', text_jp: '日本語', text_cn: '中文' }, 'JP'), {
-  speaker: '<P>',
+  speaker: 'プロデューサー',
   text: '日本語',
 })
 assert.deepEqual(resolveText({ speaker: '<P>', text_jp: '日本語', text_cn: '中文' }, 'CN'), {
-  speaker: '<P>',
+  speaker: 'プロデューサー',
   text: '中文',
 })
 assert.deepEqual(resolveText({ speaker: '<P>', text_jp: '日本語', text_cn: '中文' }, 'BILINGUAL'), {
-  speaker: '<P>',
+  speaker: 'プロデューサー',
   text: '日本語\n中文',
 })
 

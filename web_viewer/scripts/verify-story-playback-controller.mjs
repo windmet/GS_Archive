@@ -4,7 +4,7 @@ import { useStoryPlaybackController } from '../src/core/useStoryPlaybackControll
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 
-function setup() {
+function setup(overrides = {}) {
   const requests = [], writes = [], returns = [], errors = []
   const state = { ...useArchiveNavigationState(), loading: ref(false), preloadProgress: ref(0) }
   const navigation = createArchiveNavigationCoordinator({ onFinish: () => { state.loading.value = false } })
@@ -14,6 +14,7 @@ function setup() {
     syncRoute: () => writes.push(state.currentArchiveRoute()),
     returnTo: destination => { state.view.value = destination; returns.push(destination) },
     onError: failure => errors.push(failure.message),
+    ...overrides,
   })
   const reply = (index = requests.length - 1) => requests[index].resolve({ scenario_id: requests[index].file, steps: [{ step_id: 1 }] })
   return { state, navigation, controller, requests, writes, returns, errors, reply }
@@ -145,3 +146,55 @@ for (const destination of ['reader', 'card_detail', 'idol_story']) {
   assert.equal(t.writes.length, 0)
 }
 console.log('Pending-entry cancellation returns to source and rejects stale publication')
+
+{
+  const t = setup()
+  const initial = t.controller.startQueue([...episodes, { id: 'c', file: 'c.json' }], 0, 'story_collection')
+  t.reply(); await initial
+  const instance = t.controller.currentScenarioInstance.value
+  const manual = t.controller.next(instance), automatic = t.controller.next(instance)
+  assert.equal(manual, automatic, 'concurrent navigation requests share one flight')
+  assert.equal(t.requests.length, 2)
+  t.reply(); await manual
+  assert.equal(t.controller.queue.current.value.id, 'b')
+  assert.equal(t.controller.next(instance), false, 'late callback from old keyed viewer cannot skip another episode')
+  const failed = t.controller.next(t.controller.currentScenarioInstance.value)
+  t.requests[2].reject(Error('503')); await failed
+  assert.equal(t.controller.queue.current.value.id, 'b')
+  const retry = t.controller.retry(); t.reply(); await retry
+  assert.equal(t.controller.queue.current.value.id, 'c')
+}
+{
+  const t = setup()
+  const initial = t.controller.startQueue([episodes[0]], 0, 'reader', { returnRoute: { view: 'reader', reading: 'source', readingRow: 'original-row' },
+    continuation: { nextChapter: { id: 'next', label: '第6话', available: true, episodes: [episodes[1]] } } })
+  t.reply(); await initial
+  const instance = t.controller.currentScenarioInstance.value
+  assert.equal(await t.controller.next(instance), false, 'continuous playback never crosses chapter boundary')
+  const manual = t.controller.next(instance, { chapter: true }); t.reply(); await manual
+  assert.equal(t.state.playerEntryRoute.value.readingRow, 'original-row', 'Reader return locator survives chapter navigation')
+}
+console.log('Navigation competition, failure/retry, manual canonical chapter and Reader return locator passed')
+
+{
+  let rejectSource = true
+  const guard = () => {}
+  const t = setup({ resolveReaderSource: async () => {
+    if (rejectSource) throw Error('Reader source mismatch')
+    return guard
+  } })
+  const initial = t.controller.startQueue(episodes, 0, 'reader', { readScenario: guard,
+    returnRoute: { view: 'reader', reading: 'original', readingRow: 'kept' } })
+  t.reply(); await initial
+  assert.equal(await t.controller.next(), false)
+  assert.equal(t.requests.length, 1, 'source validation rejects before media preparation')
+  assert.equal(t.controller.queue.current.value.id, 'a')
+  rejectSource = false
+  const retry = t.controller.retry()
+  await Promise.resolve(); await Promise.resolve()
+  assert.equal(t.requests[1].options.readScenario, guard)
+  t.reply(); await retry
+  assert.equal(t.controller.queue.current.value.id, 'b')
+  assert.equal(t.state.playerEntryRoute.value.readingRow, 'kept')
+}
+console.log('Reader continuation rejects source mismatch, retries with the guard and retains its original return anchor')

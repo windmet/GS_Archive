@@ -5,8 +5,11 @@ This directory imports the executable core of the user-supplied
 checkout's existing pure selectors. The copied kit's synthetic tests cover the
 artifact writer, client, assembler and optional media helpers.
 
-`bootstrap.inline.json` is the verified local r22 candidate's 13,610-byte bootstrap
-(`23493f6b8994a51851cae7b8e0fd0b265a04c303e80d1e41ee86f85be638912c`).
+`bootstrap.inline.json` is the verified local 2026-09-30 Player QA candidate's
+13,610-byte bootstrap (release `be375f3d4a7668beda4efe361474b2e4928ecb71e152a542e39fe0701be11fe8`).
+The candidate rebuilds Reader locators for RAW-proven Episode3/4 branches and
+the Episode8 thread metadata. Its 8,420 model files were byte-verified locally;
+this does not grant current-build route parity or physical-device acceptance.
 Vite embeds it in HTML. Portal, welcome, the idol picker, Home, the idol directory, song, gasha, card, event detail, seasonal campaign, work archive, idol story, story collection, story detail, story catalog and resource status routes
 can open without the legacy 21-source `/data` startup batch. Home loads its
 index, selected idol detail and cue pages; it keeps duplicate cue IDs in source

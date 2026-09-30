@@ -163,7 +163,7 @@ export function createStoryLocalization({
     })
     let speakerText = view.speaker.display
     let speakerView = null
-    if (dialogue?.speaker_text_ref) {
+    if (dialogue?.speaker_text_ref && normalized.speaker.kind !== 'producer') {
       speakerView = resolveUnit({
         source: dialogue.speaker_source_text
           ?? (typeof dialogue.speaker === 'string' ? dialogue.speaker : ''),

@@ -1,5 +1,5 @@
 <template>
-  <div ref="playerRoot" class="story-viewer-root" :class="{ 'stage-only': HIDE_UI || uiHidden, 'immersive-landscape': immersiveCompact }" tabindex="0"
+  <div ref="playerRoot" class="story-viewer-root" :class="{ 'stage-only': HIDE_UI || uiHidden, 'immersive-landscape': immersiveCompact, 'completion-open': episodeFinished && !completionDismissed && !uiHidden }" tabindex="0"
     @pointerdown.capture="_ensureAudioCtx" @keydown="handlePlayerKeydown">
     <pre
       v-if="RUNTIME_DEBUG"
@@ -40,7 +40,7 @@
     <!-- Audio output is owned by useVoicePlayer, not the scene DOM. -->
 
     <!-- UI overlay for step-specific screens -->
-    <div class="ui-overlay" :class="{ 'held-underlay': frameHolding }" :aria-hidden="frameHolding ? 'true' : undefined" v-if="compiledData && !HIDE_UI && !uiHidden && (!episodeFinished || communicationCompleted)">
+    <div class="ui-overlay" :class="{ 'held-underlay': frameHolding }" :aria-hidden="frameHolding ? 'true' : undefined" v-if="compiledData && !HIDE_UI && !uiHidden">
 
       <!-- ADV dialogue -->
       <Transition name="adv-dialogue-fade" appear>
@@ -114,7 +114,7 @@
 
     <!-- Bottom control dock -->
     <PlayerControlDock
-      v-if="compiledData && compiledData.steps.length > 0 && !HIDE_UI && !uiHidden && (!episodeFinished || communicationCompleted)"
+      v-if="compiledData && compiledData.steps.length > 0 && !HIDE_UI && !uiHidden"
       :compact="immersiveCompact"
       :auto-enabled="autoEnabled"
       :skip-enabled="skipEnabled"
@@ -130,6 +130,13 @@
     <Transition name="menu-slide">
       <aside v-if="menuOpen && !HIDE_UI" class="playback-menu" :aria-label="uiText('player.settings.panel')">
         <header><strong>MENU</strong><button class="icon-btn dark" :title="uiText('player.settings.close')" :aria-label="uiText('player.settings.close')" @click="menuOpen = false"><X :size="20" /></button></header>
+        <p v-if="positionLabel" class="menu-position">{{ positionLabel }}</p>
+        <button v-if="nextTarget?.available" :disabled="transitioning" @click="requestNextEpisode()"><SkipForward :size="19" /><span>{{ nextLabel }}</span></button>
+        <button v-if="queueStatus === 'error'" @click="emit('retry-queue')">{{ uiText('player.queue.retry') }}</button>
+        <p v-else-if="queueStatus === 'loading' || queueStatus === 'idle'" role="status">{{ uiText('player.queue.loading') }}</p>
+        <button @click="openBacklog"><BookOpenText :size="19" /><span>{{ uiText('player.settings.backlog') }}</span></button>
+        <button @click="emit('back')"><LogOut :size="19" /><span>{{ returnLabel }}</span></button>
+        <h3>播放</h3>
         <template v-if="immersiveEligible">
           <button v-if="!immersive.active.value" :disabled="immersive.pending.value" @click="enterImmersive"><span>{{ uiText('player.immersive.enter') }}</span></button>
           <button v-else @click="immersive.leave()"><span>{{ uiText('player.immersive.leave') }}</span></button>
@@ -165,9 +172,6 @@
           </select>
         </label>
         <button @click="menuOpen = false; retryCurrentVoice()">{{ uiText('backlog.replayVoice') }}</button>
-        <button @click="openBacklog"><BookOpenText :size="19" /><span>{{ uiText('player.settings.backlog') }}</span></button>
-        <button @click="skipEpisode"><SkipForward :size="19" /><span>{{ uiText('player.settings.skipEpisode') }}</span></button>
-        <button @click="emit('back')"><LogOut :size="19" /><span>{{ uiText('player.settings.returnCatalog') }}</span></button>
       </aside>
     </Transition>
 
@@ -180,23 +184,17 @@
       @replay-voice="replayBacklogVoice"
     />
 
-    <Transition name="communication-complete-fade">
-      <div v-if="communicationCompleted && !HIDE_UI" class="communication-complete-toast" role="status" aria-live="polite">
-        <span aria-hidden="true">✓</span>{{ uiText('player.complete.communication') }}
-      </div>
-    </Transition>
-
-    <div v-if="episodeFinished && !communicationCompleted && !HIDE_UI" class="episode-complete">
+    <div v-if="episodeFinished && !completionDismissed && !HIDE_UI && !uiHidden" class="episode-complete" role="region" aria-label="观看导航">
       <div class="complete-panel">
-        <span>{{ hasNextEpisode ? 'EPISODE COMPLETE' : 'STORY COMPLETE' }}</span>
-        <strong>{{ hasNextEpisode ? uiText('player.complete.episode') : uiText('player.complete.story') }}</strong>
-        <GsLoadingIndicator v-if="transitioning" class="complete-loading"
-          variant="inline" :message="uiText('player.complete.loadingNext')" />
-        <div v-else class="complete-actions">
+        <strong>{{ communicationCompleted ? uiText('player.complete.communication') : uiText('player.complete.episode') }}</strong>
+        <div class="complete-actions">
           <span v-if="queueStatus === 'idle' || queueStatus === 'loading'" role="status">{{ uiText('player.queue.loading') }}</span>
-          <button v-if="queueStatus === 'error'" @click="emit('retry-queue')">{{ uiText('player.queue.retry') }}</button>
-          <button v-if="hasNextEpisode" class="primary" @click="emit('next-episode')"><SkipForward :size="18" />{{ uiText('player.complete.nextEpisode') }}</button>
-          <button @click="emit('back')"><LogOut :size="18" />{{ uiText('player.settings.returnCatalog') }}</button>
+          <button v-else-if="queueStatus === 'error'" @click="emit('retry-queue')">{{ uiText('player.queue.retry') }}</button>
+          <button v-else-if="nextTarget?.available" class="primary" :disabled="transitioning" @click="requestNextEpisode()">{{ transitioning ? uiText('player.complete.loadingNext') : nextLabel }}</button>
+          <span v-else-if="nextTarget">{{ nextTarget.reason }}</span>
+          <span v-else>当前观看范围已结束</span>
+          <button @click="continueReview">继续回看</button>
+          <button @click="emit('back')">{{ returnLabel }}</button>
         </div>
       </div>
     </div>
@@ -213,8 +211,8 @@
     </div>
     <div v-else-if="!HIDE_UI && !uiHidden && ((showViewingShortcut && !immersive.active.value) || immersive.notice.value)" class="viewing-notice">
       <span v-if="immersive.notice.value" role="status">{{ uiText(`player.immersive.${immersive.notice.value}`) }}</span>
-      <button v-if="!immersive.active.value || immersive.notice.value" :disabled="immersive.pending.value" @click="enterImmersive">{{ uiText('player.immersive.enter') }}</button>
-      <button @click="viewingShortcutDismissed = true; immersive.notice.value = ''">{{ uiText('player.immersive.dismiss') }}</button>
+      <button v-if="!immersive.active.value" :disabled="immersive.pending.value" @click="enterImmersive">{{ uiText('player.immersive.enter') }}</button>
+      <button @click="viewingShortcutDismissed = true; immersive.dismiss()">{{ uiText('player.immersive.dismiss') }}</button>
     </div>
     <GsLoadingIndicator class="story-data-loading" v-if="!compiledData && !HIDE_UI"
       tone="dark" :message="uiText('player.loading')" />
@@ -223,7 +221,7 @@
 
 <script setup>
 import { setStoryRuntimePaused } from './story-runtime/StoryPausePolicy.js'
-import { usePlayerImmersiveMode, claimMobileViewingOffer } from '../composables/usePlayerImmersiveMode.js'
+import { usePlayerSession } from '../composables/PlayerSession.js'
 import { ref, shallowRef, computed, watch, onMounted, onBeforeUnmount, onUnmounted, reactive, nextTick, defineAsyncComponent } from 'vue'
 import AdvUI from '../components/AdvUI.vue'
 import GsLoadingIndicator from '../components/GsLoadingIndicator.vue'
@@ -276,6 +274,9 @@ const props = defineProps({
   startStep: { type: Number, default: null },
   initialStep: { type: Number, default: null },
   endStep: { type: Number, default: null },
+  nextTarget: { type: Object, default: null },
+  positionLabel: { type: String, default: '' },
+  returnLabel: { type: String, default: '返回来源目录' },
   hasNextEpisode: { type: Boolean, default: false },
   continuousPlayback: { type: Boolean, default: false },
   transitionPending: Boolean,
@@ -311,19 +312,20 @@ const viewingOfferOpen = ref(false)
 const rememberViewingChoice = ref(true)
 const mobileViewMode = ref(initialPreferences.story_mobile_view_mode)
 const viewingShortcutDismissed = ref(false)
-const immersive = usePlayerImmersiveMode()
+const playerSession = usePlayerSession()
+const immersive = playerSession.immersive
 const smallScreen = ref(false)
 const shortLandscape = ref(false)
 const portraitScreen = ref(false)
 const immersiveEligible = computed(() => !props.previewOnly && !HIDE_UI && (compiledData.value?.steps || [])
   .slice(Math.max(0, (props.startStep || 1) - 1), props.endStep || undefined)
-  .some(step => step.type === 'adv'))
+  .some(step => ['adv', 'talk', 'call', 'choice'].includes(step.type)))
 const immersiveCompact = computed(() => immersiveEligible.value && immersive.active.value && shortLandscape.value)
 const showViewingShortcut = computed(() => immersiveEligible.value && smallScreen.value && mobileViewMode.value === 'landscape' && !viewingShortcutDismissed.value)
 function saveMobileViewMode() { preferencesRepository.update({ story_mobile_view_mode: mobileViewMode.value }) }
 function enterImmersive() {
   // Keep this call before awaits: browsers require a fresh user gesture.
-  const request = immersive.enter(playerRoot.value)
+  const request = playerSession.enter()
   viewingOfferOpen.value = false
   menuOpen.value = false
   return request
@@ -383,6 +385,17 @@ const skipEnabled = ref(false)
 const skipMode = ref(initialPreferences.skip_mode)
 const uiHidden = ref(initialPreferences.ui_hidden)
 const episodeFinished = ref(false)
+const completionDismissed = ref(false)
+let automaticNextRequested = false
+const nextLabel = computed(() => props.nextTarget ? `${props.nextTarget.kind === 'chapter' ? '下一话' : '下一段'} · ${props.nextTarget.label}` : '')
+function requestNextEpisode({ automatic = false } = {}) {
+  if (props.transitionPending || (automatic && automaticNextRequested)) return
+  if (automatic) automaticNextRequested = true
+  menuOpen.value = false
+  emit('next-episode', { instance: props.playbackInstance, chapter: !automatic && props.nextTarget?.kind === 'chapter' })
+}
+function continueReview() { completionDismissed.value = true; nextTick(() => playerRoot.value?.focus()) }
+
 const transitioning = computed(() => props.transitionPending)
 const runtimeDiagnostics = ref(null)
 const debugVisibilityOverride = ref(null)
@@ -664,10 +677,10 @@ function finishEpisode() {
   clearFadeAutoAdvance()
   storyRuntimeCues.cancelCurrentStep('episode-complete')
   _stopCurrentVoice('episode-complete')
-  menuOpen.value = false
   episodeFinished.value = true
+  completionDismissed.value = false
   if (props.continuousPlayback && props.hasNextEpisode) {
-    emit('next-episode')
+    requestNextEpisode({ automatic: true })
   }
 }
 
@@ -841,7 +854,8 @@ function restoreFromBacklog(nodeId) {
   if (!node || !sceneSnapshotStore.truncateAfter(nodeId)) return
   sceneSnapshotStore.popPrevious()
   backlogOpen.value = false
-  if (communicationCompleted.value) episodeFinished.value = false
+  episodeFinished.value = false
+  completionDismissed.value = false
   stopPlaybackModes('backlog-restore')
   if (!restoreHistoryNode(node)) restoredSceneState.value = null
 }
@@ -890,9 +904,8 @@ function goNext(source = 'user', onSettled) {
 
 function goPrev() {
   if (backlogOpen.value || menuOpen.value || viewingOfferOpen.value) return
-  if (communicationCompleted.value) {
-    episodeFinished.value = false
-  }
+  episodeFinished.value = false
+  completionDismissed.value = false
   stopPlaybackModes('previous')
   storyRuntimeCues.cancelCurrentStep('previous')
   const node = storyRuntimeCues.isSnapshotEnabled() ? sceneSnapshotStore.popPrevious() : null
@@ -1243,11 +1256,11 @@ watch([menuOpen, backlogOpen, episodeFinished, viewingOfferOpen], ([menu, backlo
 // A late queue lookup must not turn a completed episode into a permanent dead end.
 watch(() => props.hasNextEpisode, hasNext => {
   if (hasNext && episodeFinished.value && props.continuousPlayback && !transitioning.value) {
-    emit('next-episode')
+    requestNextEpisode({ automatic: true })
   }
 })
 watch([immersiveEligible, smallScreen, portraitScreen], ([eligible, small, portrait]) => {
-  if (eligible && small && portrait && !uiHidden.value && mobileViewMode.value === 'ask' && claimMobileViewingOffer()) {
+  if (eligible && small && portrait && !immersive.active.value && !immersive.pending.value && !uiHidden.value && mobileViewMode.value === 'ask' && playerSession.claimOffer()) {
     viewingOfferOpen.value = true
     nextTick(() => viewingOfferAction.value?.focus())
   }
@@ -1311,6 +1324,8 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
   --player-content-top: calc(var(--player-edge) + var(--player-topbar-height) + var(--player-topbar-gap));
   --player-content-bottom: calc(var(--player-dock-bottom) + var(--player-dock-height) + var(--player-dock-gap) + env(safe-area-inset-bottom));
 }
+.story-viewer-root.completion-open { --player-content-bottom: calc(var(--player-dock-bottom) + var(--player-dock-height) + 156px + env(safe-area-inset-bottom)); --player-dialogue-bottom: var(--player-content-bottom); }
+.playback-menu h3, .menu-position { padding: 8px 16px; margin: 0; font-size: 14px; }
 .viewer-stage {
   position: relative;
   width: 100%; height: 100%;
@@ -1445,17 +1460,17 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 .menu-setting .producer-name-input { width: min(150px, 42vw); }
 .menu-setting select, .menu-setting input { min-height: 28px; border: 1px solid #ccd5d9; border-radius: 4px; background: #fff; color: #26343c; }
 .menu-setting small { color: #839096; }
-.episode-complete { position: absolute; inset: 0; z-index: 35; display: grid; place-items: center; background: rgba(0,0,0,.5); }
+.episode-complete { position: absolute; left: var(--player-edge); right: var(--player-edge); bottom: calc(var(--player-dock-bottom) + var(--player-dock-height) + 8px + env(safe-area-inset-bottom)); z-index: 35; }
 .communication-complete-toast { position: absolute; right: var(--player-edge); bottom: var(--player-content-bottom); z-index: 24; display: inline-flex; align-items: center; gap: 7px; max-width: min(320px, calc(100vw - 32px)); min-height: 38px; padding: 0 14px; border: 1px solid rgba(255,255,255,.72); border-radius: 999px; background: rgba(250,252,252,.94); color: #2c4545; box-shadow: 0 10px 28px rgba(0,0,0,.2); font-size: .78rem; font-weight: 700; pointer-events: none; }
 .communication-complete-toast span { color: #0d9c75; font-size: 1rem; }
 .communication-complete-fade-enter-active, .communication-complete-fade-leave-active { transition: opacity var(--player-motion-fast) var(--player-ease-standard), transform var(--player-motion-fast) var(--player-ease-standard); }
 .communication-complete-fade-enter-from, .communication-complete-fade-leave-to { opacity: 0; transform: translateY(6px); }
-.complete-panel { width: min(390px, calc(100vw - 32px)); padding: 24px; border: 1px solid rgba(255,255,255,.6); border-radius: 6px; background: rgba(250,252,252,.97); color: #26343c; text-align: center; box-shadow: 0 18px 45px rgba(0,0,0,.28); }
+.complete-panel { box-sizing: border-box; width: 100%; padding: 10px 14px; border: 1px solid rgba(255,255,255,.6); border-radius: 6px; background: rgba(250,252,252,.97); color: #26343c; text-align: center; box-shadow: 0 18px 45px rgba(0,0,0,.28); }
 .complete-panel > span { color: #0d9c75; font-size: .66rem; font-weight: 800; }
-.complete-panel > strong { display: block; margin: 6px 0 18px; font-size: 1.05rem; }
+.complete-panel > strong { display: block; margin: 0 0 6px; font-size: 1.05rem; }
 .complete-panel p { margin: 8px 0 0; color: #64727a; }
 .complete-panel > .complete-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-.complete-panel button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 0 14px; border: 1px solid #d6dfe2; border-radius: 5px; background: #fff; color: #26343c; cursor: pointer; font: inherit; }
+.complete-panel button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; padding: 4px 14px; border: 1px solid #d6dfe2; border-radius: 5px; background: #fff; color: #26343c; cursor: pointer; font: inherit; }
 .complete-panel button.primary { border-color: #0d9c75; background: #0d9c75; color: #fff; }
 
 @media (max-width: 699px) {
